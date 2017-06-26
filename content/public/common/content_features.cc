@@ -21,6 +21,10 @@ const base::Feature kAllowContentInitiatedDataUrlNavigations{
 const base::Feature kAsmJsToWebAssembly{"AsmJsToWebAssembly",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables async wheel events.
+const base::Feature kAsyncWheelEvents{"AsyncWheelEvents",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Block subresource requests whose URLs contain embedded credentials (e.g.
 // `https://user:pass@example.com/resource`).
 const base::Feature kBlockCredentialedSubresources{

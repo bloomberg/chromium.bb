@@ -149,31 +149,55 @@ bool EventListIsSubset(
 }
 #endif  // defined(USE_AURA)
 
+enum WheelScrollingMode {
+  kWheelScrollingModeNone,
+  kWheelScrollLatching,
+  kAsyncWheelEvents,
+};
+
 }  // namespace
 
 class LegacyInputRouterImplTest : public testing::Test {
  public:
-  LegacyInputRouterImplTest(bool raf_aligned_touch = true,
-                            bool wheel_scroll_latching = true)
-      : scoped_task_environment_(
+  LegacyInputRouterImplTest(
+      bool raf_aligned_touch = true,
+      WheelScrollingMode wheel_scrolling_mode = kWheelScrollLatching)
+      : wheel_scroll_latching_enabled_(wheel_scrolling_mode !=
+                                       kWheelScrollingModeNone),
+        scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI) {
-    if (raf_aligned_touch && wheel_scroll_latching) {
+    if (raf_aligned_touch && wheel_scrolling_mode == kAsyncWheelEvents) {
+      feature_list_.InitWithFeatures({features::kRafAlignedTouchInputEvents,
+                                      features::kTouchpadAndWheelScrollLatching,
+                                      features::kAsyncWheelEvents},
+                                     {});
+    } else if (raf_aligned_touch &&
+               wheel_scrolling_mode == kWheelScrollLatching) {
       feature_list_.InitWithFeatures(
           {features::kRafAlignedTouchInputEvents,
            features::kTouchpadAndWheelScrollLatching},
-          {});
-    } else if (raf_aligned_touch && !wheel_scroll_latching) {
-      feature_list_.InitWithFeatures(
-          {features::kRafAlignedTouchInputEvents},
-          {features::kTouchpadAndWheelScrollLatching});
-    } else if (!raf_aligned_touch && wheel_scroll_latching) {
+          {features::kAsyncWheelEvents});
+    } else if (raf_aligned_touch &&
+               wheel_scrolling_mode == kWheelScrollingModeNone) {
+      feature_list_.InitWithFeatures({features::kRafAlignedTouchInputEvents},
+                                     {features::kTouchpadAndWheelScrollLatching,
+                                      features::kAsyncWheelEvents});
+    } else if (!raf_aligned_touch &&
+               wheel_scrolling_mode == kAsyncWheelEvents) {
+      feature_list_.InitWithFeatures({features::kTouchpadAndWheelScrollLatching,
+                                      features::kAsyncWheelEvents},
+                                     {features::kRafAlignedTouchInputEvents});
+    } else if (!raf_aligned_touch &&
+               wheel_scrolling_mode == kWheelScrollLatching) {
       feature_list_.InitWithFeatures(
           {features::kTouchpadAndWheelScrollLatching},
-          {features::kRafAlignedTouchInputEvents});
-    } else {  // !raf_aligned_touch && !wheel_scroll_latching
-      feature_list_.InitWithFeatures(
-          {}, {features::kRafAlignedTouchInputEvents,
-               features::kTouchpadAndWheelScrollLatching});
+          {features::kRafAlignedTouchInputEvents, features::kAsyncWheelEvents});
+    } else {  // !raf_aligned_touch && wheel_scroll_latching ==
+              // kWheelScrollingModeNone.
+      feature_list_.InitWithFeatures({},
+                                     {features::kRafAlignedTouchInputEvents,
+                                      features::kTouchpadAndWheelScrollLatching,
+                                      features::kAsyncWheelEvents});
     }
   }
 
@@ -246,6 +270,21 @@ class LegacyInputRouterImplTest : public testing::Test {
         x, y, dX, dY, modifiers, precise);
     wheel_event.phase = phase;
     input_router_->SendWheelEvent(MouseWheelEventWithLatencyInfo(wheel_event));
+  }
+
+  void SimulateWheelEventPossiblyIncludingPhase(
+      bool ignore_phase,
+      float x,
+      float y,
+      float dX,
+      float dY,
+      int modifiers,
+      bool precise,
+      WebMouseWheelEvent::Phase phase) {
+    if (ignore_phase)
+      SimulateWheelEvent(x, y, dX, dY, modifiers, precise);
+    else
+      SimulateWheelEventWithPhase(x, y, dX, dY, modifiers, precise, phase);
   }
 
   void SimulateMouseEvent(WebInputEvent::Type type, int x, int y) {
@@ -379,91 +418,16 @@ class LegacyInputRouterImplTest : public testing::Test {
     base::RunLoop().Run();
   }
 
-  void UnhandledWheelEvent(bool wheel_scroll_latching_enabled) {
-    // Simulate wheel events.
-    if (wheel_scroll_latching_enabled) {
-      SimulateWheelEventWithPhase(
-          0, 0, 0, -5, 0, false,
-          WebMouseWheelEvent::kPhaseBegan);  // sent directly
-      SimulateWheelEventWithPhase(
-          0, 0, 0, -10, 0, false,
-          WebMouseWheelEvent::kPhaseChanged);  // enqueued
-    } else {
-      SimulateWheelEvent(0, 0, 0, -5, 0, false);   // sent directly
-      SimulateWheelEvent(0, 0, 0, -10, 0, false);  // enqueued
-    }
+  void UnhandledWheelEvent();
 
-    // Check that only the first event was sent.
-    EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-        InputMsg_HandleInputEvent::ID));
-    EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
-
-    // Indicate that the wheel event was unhandled.
-    SendInputEventACK(WebInputEvent::kMouseWheel,
-                      INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-
-    // Check that the ack for the MouseWheel and ScrollBegin
-    // were processed.
-    EXPECT_EQ(2U, ack_handler_->GetAndResetAckCount());
-
-    // There should be a ScrollBegin and ScrollUpdate, MouseWheel sent.
-    EXPECT_EQ(3U, GetSentMessageCountAndResetSink());
-
-    EXPECT_EQ(ack_handler_->acked_wheel_event().delta_y, -5);
-    SendInputEventACK(WebInputEvent::kGestureScrollUpdate,
-                      INPUT_EVENT_ACK_STATE_CONSUMED);
-
-    if (wheel_scroll_latching_enabled) {
-      // Check that the ack for ScrollUpdate were processed.
-      EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
-    } else {
-      // The GestureScrollUpdate ACK releases the GestureScrollEnd.
-      EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
-
-      // Check that the ack for the ScrollUpdate and ScrollEnd
-      // were processed.
-      EXPECT_EQ(2U, ack_handler_->GetAndResetAckCount());
-    }
-
-    SendInputEventACK(WebInputEvent::kMouseWheel,
-                      INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-
-    if (wheel_scroll_latching_enabled) {
-      // There should be a ScrollUpdate sent.
-      EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
-      EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
-    } else {
-      // There should be a ScrollBegin and ScrollUpdate sent.
-      EXPECT_EQ(2U, GetSentMessageCountAndResetSink());
-      EXPECT_EQ(2U, ack_handler_->GetAndResetAckCount());
-    }
-
-    // Check that the correct unhandled wheel event was received.
-    EXPECT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED,
-              ack_handler_->acked_wheel_event_state());
-    EXPECT_EQ(ack_handler_->acked_wheel_event().delta_y, -10);
-
-    SendInputEventACK(WebInputEvent::kGestureScrollUpdate,
-                      INPUT_EVENT_ACK_STATE_CONSUMED);
-
-    if (wheel_scroll_latching_enabled) {
-      // Check that the ack for ScrollUpdate were processed.
-      EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
-    } else {
-      // The GestureScrollUpdate ACK releases the GestureScrollEnd.
-      EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
-
-      // Check that the ack for the ScrollUpdate and ScrollEnd
-      // were processed.
-      EXPECT_EQ(2U, ack_handler_->GetAndResetAckCount());
-    }
-  }
+  void OverscrollDispatch();
 
   InputRouter::Config config_;
   std::unique_ptr<MockRenderProcessHost> process_;
   std::unique_ptr<MockInputRouterClient> client_;
   std::unique_ptr<MockInputAckHandler> ack_handler_;
   std::unique_ptr<LegacyInputRouterImpl> input_router_;
+  bool wheel_scroll_latching_enabled_;
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -477,14 +441,21 @@ class LegacyInputRouterImplRafAlignedTouchDisabledTest
     : public LegacyInputRouterImplTest {
  public:
   LegacyInputRouterImplRafAlignedTouchDisabledTest()
-      : LegacyInputRouterImplTest(false, false) {}
+      : LegacyInputRouterImplTest(false, kWheelScrollingModeNone) {}
 };
 
 class LegacyInputRouterImplWheelScrollLatchingDisabledTest
     : public LegacyInputRouterImplTest {
  public:
   LegacyInputRouterImplWheelScrollLatchingDisabledTest()
-      : LegacyInputRouterImplTest(true, false) {}
+      : LegacyInputRouterImplTest(true, kWheelScrollingModeNone) {}
+};
+
+class LegacyInputRouterImplAsyncWheelEventEnabledTest
+    : public LegacyInputRouterImplTest {
+ public:
+  LegacyInputRouterImplAsyncWheelEventEnabledTest()
+      : LegacyInputRouterImplTest(true, kAsyncWheelEvents) {}
 };
 
 TEST_F(LegacyInputRouterImplTest, CoalescesRangeSelection) {
@@ -578,8 +549,8 @@ TEST_F(LegacyInputRouterImplTest,
       new InputMsg_SelectRange(0, gfx::Point(7, 8), gfx::Point(9, 10))));
   EXPECT_EQ(0u, GetSentMessageCountAndResetSink());
 
-  // Ack the messages and verify that they're not coalesced and that they're in
-  // correct order.
+  // Ack the messages and verify that they're not coalesced and that they're
+  // in correct order.
 
   // Ack the first message.
   {
@@ -658,8 +629,8 @@ TEST_F(LegacyInputRouterImplTest,
     input_router_->OnMessageReceived(*response);
   }
 
-  // Verify that the three MoveRangeSelectionExtent messages are coalesced into
-  // one message.
+  // Verify that the three MoveRangeSelectionExtent messages are coalesced
+  // into one message.
   ExpectIPCMessageWithArg1<InputMsg_MoveRangeSelectionExtent>(
       process_->sink().GetMessageAt(0), gfx::Point(9, 10));
   EXPECT_EQ(1u, GetSentMessageCountAndResetSink());
@@ -774,7 +745,7 @@ TEST_F(LegacyInputRouterImplTest, NoncorrespondingKeyEvents) {
   EXPECT_TRUE(ack_handler_->unexpected_event_ack_called());
 }
 
-// Tests ported from RenderWidgetHostTest --------------------------------------
+// Tests ported from RenderWidgetHostTest -------------------------------------
 
 TEST_F(LegacyInputRouterImplTest, HandleKeyEventsWeSent) {
   // Simulate a keyboard event.
@@ -806,11 +777,21 @@ TEST_F(LegacyInputRouterImplTest, IgnoreKeyEventsWeDidntSend) {
 
 TEST_F(LegacyInputRouterImplTest, CoalescesWheelEvents) {
   // Simulate wheel events.
-  SimulateWheelEvent(0, 0, 0, -5, 0, false);   // sent directly
-  SimulateWheelEvent(0, 0, 0, -10, 0, false);  // enqueued
-  SimulateWheelEvent(0, 0, 8, -6, 0, false);   // coalesced into previous event
-  SimulateWheelEvent(0, 0, 9, -7, 1, false);   // enqueued, different modifiers
-  SimulateWheelEvent(0, 0, 0, -10, 0, false);  // enqueued, different modifiers
+  SimulateWheelEventPossiblyIncludingPhase(
+      !wheel_scroll_latching_enabled_, 0, 0, 0, -5, 0, false,
+      WebMouseWheelEvent::kPhaseBegan);  // sent directly
+  SimulateWheelEventPossiblyIncludingPhase(
+      !wheel_scroll_latching_enabled_, 0, 0, 0, -10, 0, false,
+      WebMouseWheelEvent::kPhaseChanged);  // enqueued
+  SimulateWheelEventPossiblyIncludingPhase(
+      !wheel_scroll_latching_enabled_, 0, 0, 8, -6, 0, false,
+      WebMouseWheelEvent::kPhaseChanged);  // coalesced into previous event
+  SimulateWheelEventPossiblyIncludingPhase(
+      !wheel_scroll_latching_enabled_, 0, 0, 9, -7, 1, false,
+      WebMouseWheelEvent::kPhaseChanged);  // enqueued, different modifiers
+  SimulateWheelEventPossiblyIncludingPhase(
+      !wheel_scroll_latching_enabled_, 0, 0, 0, -10, 0, false,
+      WebMouseWheelEvent::kPhaseChanged);  // enqueued, different modifiers
   // Explicitly verify that PhaseEnd isn't coalesced to avoid bugs like
   // https://crbug.com/154740.
   SimulateWheelEventWithPhase(WebMouseWheelEvent::kPhaseEnded);  // enqueued
@@ -960,8 +941,8 @@ TEST_F(LegacyInputRouterImplTest, TouchEventQueue) {
   EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
 }
 
-// Tests that the touch-queue is emptied after a page stops listening for touch
-// events and the outstanding ack is received.
+// Tests that the touch-queue is emptied after a page stops listening for
+// touch events and the outstanding ack is received.
 TEST_F(LegacyInputRouterImplTest, TouchEventQueueFlush) {
   OnHasTouchEventHandlers(true);
   EXPECT_TRUE(client_->has_touch_handler());
@@ -1089,12 +1070,131 @@ TEST_F(LegacyInputRouterImplTest, MAYBE_AckedTouchEventState) {
 }
 #endif  // defined(USE_AURA)
 
+void LegacyInputRouterImplTest::UnhandledWheelEvent() {
+  // Simulate wheel events.
+  SimulateWheelEventPossiblyIncludingPhase(!wheel_scroll_latching_enabled_, 0,
+                                           0, 0, -5, 0, false,
+                                           WebMouseWheelEvent::kPhaseBegan);
+  SimulateWheelEventPossiblyIncludingPhase(!wheel_scroll_latching_enabled_, 0,
+                                           0, 0, -10, 0, false,
+                                           WebMouseWheelEvent::kPhaseChanged);
+
+  // Check that only the first event was sent.
+  EXPECT_TRUE(
+      process_->sink().GetUniqueMessageMatching(InputMsg_HandleInputEvent::ID));
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+
+  // Indicate that the wheel event was unhandled.
+  SendInputEventACK(WebInputEvent::kMouseWheel,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+
+  // Check that the ack for the MouseWheel and ScrollBegin
+  // were processed.
+  EXPECT_EQ(2U, ack_handler_->GetAndResetAckCount());
+
+  // There should be a ScrollBegin and ScrollUpdate, MouseWheel sent.
+  EXPECT_EQ(3U, GetSentMessageCountAndResetSink());
+
+  EXPECT_EQ(ack_handler_->acked_wheel_event().delta_y, -5);
+  SendInputEventACK(WebInputEvent::kGestureScrollUpdate,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  if (wheel_scroll_latching_enabled_) {
+    // Check that the ack for ScrollUpdate were processed.
+    EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
+  } else {
+    // The GestureScrollUpdate ACK releases the GestureScrollEnd.
+    EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+
+    // Check that the ack for the ScrollUpdate and ScrollEnd
+    // were processed.
+    EXPECT_EQ(2U, ack_handler_->GetAndResetAckCount());
+  }
+
+  SendInputEventACK(WebInputEvent::kMouseWheel,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+
+  if (wheel_scroll_latching_enabled_) {
+    // There should be a ScrollUpdate sent.
+    EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+    EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
+  } else {
+    // There should be a ScrollBegin and ScrollUpdate sent.
+    EXPECT_EQ(2U, GetSentMessageCountAndResetSink());
+    EXPECT_EQ(2U, ack_handler_->GetAndResetAckCount());
+  }
+
+  // Check that the correct unhandled wheel event was received.
+  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED,
+            ack_handler_->acked_wheel_event_state());
+  EXPECT_EQ(ack_handler_->acked_wheel_event().delta_y, -10);
+
+  SendInputEventACK(WebInputEvent::kGestureScrollUpdate,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  if (wheel_scroll_latching_enabled_) {
+    // Check that the ack for ScrollUpdate were processed.
+    EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
+  } else {
+    // The GestureScrollUpdate ACK releases the GestureScrollEnd.
+    EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+
+    // Check that the ack for the ScrollUpdate and ScrollEnd
+    // were processed.
+    EXPECT_EQ(2U, ack_handler_->GetAndResetAckCount());
+  }
+}
+
 TEST_F(LegacyInputRouterImplTest, UnhandledWheelEvent) {
-  UnhandledWheelEvent(true);
+  UnhandledWheelEvent();
 }
 TEST_F(LegacyInputRouterImplWheelScrollLatchingDisabledTest,
        UnhandledWheelEvent) {
-  UnhandledWheelEvent(false);
+  UnhandledWheelEvent();
+}
+TEST_F(LegacyInputRouterImplAsyncWheelEventEnabledTest, UnhandledWheelEvent) {
+  // Simulate wheel events.
+  SimulateWheelEventWithPhase(0, 0, 0, -5, 0, false,
+                              WebMouseWheelEvent::kPhaseBegan);
+  SimulateWheelEventWithPhase(0, 0, 0, -10, 0, false,
+                              WebMouseWheelEvent::kPhaseChanged);
+
+  // Check that only the first event was sent.
+  EXPECT_TRUE(
+      process_->sink().GetUniqueMessageMatching(InputMsg_HandleInputEvent::ID));
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+
+  // Indicate that the wheel event was unhandled.
+  SendInputEventACK(WebInputEvent::kMouseWheel,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+
+  // Check that the ack for the first MouseWheel, ScrollBegin, and the second
+  // MouseWheel were processed.
+  EXPECT_EQ(3U, ack_handler_->GetAndResetAckCount());
+
+  // There should be a ScrollBegin and ScrollUpdate, MouseWheel sent.
+  EXPECT_EQ(3U, GetSentMessageCountAndResetSink());
+
+  // The last acked wheel event should be the second one since the input router
+  // has alread sent the immediate ack for the second wheel event.
+  EXPECT_EQ(ack_handler_->acked_wheel_event().delta_y, -10);
+  EXPECT_EQ(INPUT_EVENT_ACK_STATE_IGNORED,
+            ack_handler_->acked_wheel_event_state());
+
+  SendInputEventACK(WebInputEvent::kGestureScrollUpdate,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  // Check that the ack for the first ScrollUpdate were processed.
+  EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
+
+  // There should be a second ScrollUpdate sent.
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+
+  SendInputEventACK(WebInputEvent::kGestureScrollUpdate,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  // Check that the ack for ScrollUpdate were processed.
+  EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
 }
 
 TEST_F(LegacyInputRouterImplTest, TouchTypesIgnoringAck) {
@@ -1892,7 +1992,7 @@ TEST_F(LegacyInputRouterImplTest, TouchpadPinchAndScrollUpdate) {
 
 // Test proper routing of overscroll notifications received either from
 // event acks or from |DidOverscroll| IPC messages.
-TEST_F(LegacyInputRouterImplTest, OverscrollDispatch) {
+void LegacyInputRouterImplTest::OverscrollDispatch() {
   DidOverscrollParams overscroll;
   overscroll.accumulated_overscroll = gfx::Vector2dF(-14, 14);
   overscroll.latest_overscroll_delta = gfx::Vector2dF(-7, 0);
@@ -1912,7 +2012,9 @@ TEST_F(LegacyInputRouterImplTest, OverscrollDispatch) {
   wheel_overscroll.latest_overscroll_delta = gfx::Vector2dF(3, 0);
   wheel_overscroll.current_fling_velocity = gfx::Vector2dF(1, 0);
 
-  SimulateWheelEvent(0, 0, 3, 0, 0, false);
+  SimulateWheelEventPossiblyIncludingPhase(!wheel_scroll_latching_enabled_, 0,
+                                           0, 3, 0, 0, false,
+                                           WebMouseWheelEvent::kPhaseBegan);
   InputEventAck ack(InputEventAckSource::COMPOSITOR_THREAD,
                     WebInputEvent::kMouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
@@ -1926,6 +2028,16 @@ TEST_F(LegacyInputRouterImplTest, OverscrollDispatch) {
             client_overscroll.latest_overscroll_delta);
   EXPECT_EQ(wheel_overscroll.current_fling_velocity,
             client_overscroll.current_fling_velocity);
+}
+TEST_F(LegacyInputRouterImplTest, OverscrollDispatch) {
+  OverscrollDispatch();
+}
+TEST_F(LegacyInputRouterImplWheelScrollLatchingDisabledTest,
+       OverscrollDispatch) {
+  OverscrollDispatch();
+}
+TEST_F(LegacyInputRouterImplAsyncWheelEventEnabledTest, OverscrollDispatch) {
+  OverscrollDispatch();
 }
 
 // Tests that touch event stream validation passes when events are filtered
@@ -2024,7 +2136,8 @@ TEST_F(LegacyInputRouterImplScaleMouseEventTest, ScaleMouseEventTest) {
 
 TEST_F(LegacyInputRouterImplScaleEventTest, ScaleMouseWheelEventTest) {
   ASSERT_EQ(0u, process_->sink().message_count());
-  SimulateWheelEvent(5, 5, 10, 10, 0, false);
+  SimulateWheelEventWithPhase(5, 5, 10, 10, 0, false,
+                              WebMouseWheelEvent::kPhaseBegan);
   ASSERT_EQ(1u, process_->sink().message_count());
 
   const WebMouseWheelEvent* sent_event =

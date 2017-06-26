@@ -7,6 +7,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
+#include "content/common/input/input_event_dispatch_type.h"
+#include "content/public/common/content_features.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/web_input_event_traits.h"
 
@@ -40,6 +42,9 @@ MouseWheelEventQueue::MouseWheelEventQueue(MouseWheelEventQueueClient* client,
       needs_scroll_begin_(true),
       needs_scroll_end_(false),
       enable_scroll_latching_(enable_scroll_latching),
+      enable_async_wheel_events_(
+          base::FeatureList::IsEnabled(features::kAsyncWheelEvents)),
+      send_wheel_events_async_(false),
       scrolling_device_(blink::kWebGestureDeviceUninitialized) {
   DCHECK(client);
 }
@@ -176,6 +181,7 @@ void MouseWheelEventQueue::ProcessMouseWheelAck(
     if (enable_scroll_latching_) {
       if (event_sent_for_gesture_ack_->event.phase ==
           blink::WebMouseWheelEvent::kPhaseBegan) {
+        send_wheel_events_async_ = true;
         SendScrollBegin(scroll_update, false);
       }
 
@@ -266,6 +272,20 @@ void MouseWheelEventQueue::TryForwardNextEventToRenderer() {
 
   event_sent_for_gesture_ack_ = std::move(wheel_queue_.front());
   wheel_queue_.pop_front();
+
+  if (enable_async_wheel_events_) {
+    DCHECK(event_sent_for_gesture_ack_->event.phase !=
+               blink::WebMouseWheelEvent::kPhaseNone ||
+           event_sent_for_gesture_ack_->event.momentum_phase !=
+               blink::WebMouseWheelEvent::kPhaseNone);
+    if (event_sent_for_gesture_ack_->event.phase ==
+        blink::WebMouseWheelEvent::kPhaseBegan) {
+      send_wheel_events_async_ = false;
+    } else if (send_wheel_events_async_) {
+      event_sent_for_gesture_ack_->event.dispatch_type =
+          WebInputEvent::kEventNonBlocking;
+    }
+  }
 
   client_->SendMouseWheelEventImmediately(*event_sent_for_gesture_ack_);
 }

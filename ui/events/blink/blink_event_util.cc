@@ -283,6 +283,7 @@ void Coalesce(const WebMouseWheelEvent& event_to_coalesce,
   float old_wheelTicksY = event->wheel_ticks_y;
   float old_movementX = event->movement_x;
   float old_movementY = event->movement_y;
+  WebInputEvent::DispatchType old_dispatch_type = event->dispatch_type;
   *event = event_to_coalesce;
   event->delta_x += old_deltaX;
   event->delta_y += old_deltaY;
@@ -294,6 +295,8 @@ void Coalesce(const WebMouseWheelEvent& event_to_coalesce,
       GetAccelerationRatio(event->delta_x, unaccelerated_x);
   event->acceleration_ratio_y =
       GetAccelerationRatio(event->delta_y, unaccelerated_y);
+  event->dispatch_type =
+      MergeDispatchTypes(old_dispatch_type, event_to_coalesce.dispatch_type);
 }
 
 bool CanCoalesce(const WebTouchEvent& event_to_coalesce,
