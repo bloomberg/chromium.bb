@@ -51,6 +51,9 @@ class MetricsServicesManagerClient {
   // Returns whether metrics reporting is enabled.
   virtual bool IsMetricsReportingEnabled() = 0;
 
+  // Returns whether there are any Incognito browsers/tabs open.
+  virtual bool IsIncognitoSessionActive() = 0;
+
   // Update the running state of metrics services managed by the embedder, for
   // example, crash reporting.
   virtual void UpdateRunningServices(bool may_record, bool may_upload) {}

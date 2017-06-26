@@ -922,6 +922,8 @@ void ChromeMetricsServiceClient::RegisterForNotifications() {
   // Observe history deletions for all profiles.
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_ADDED,
                  content::NotificationService::AllBrowserContextsAndSources());
+  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
+                 content::NotificationService::AllBrowserContextsAndSources());
   for (Profile* profile :
        g_browser_process->profile_manager()->GetLoadedProfiles()) {
     RegisterForProfileEvents(profile);
@@ -956,6 +958,10 @@ void ChromeMetricsServiceClient::Observe(
 
   switch (type) {
     case chrome::NOTIFICATION_BROWSER_OPENED:
+      // May have opened an incognito window.
+      UpdateRunningServices();
+      metrics_service_->OnApplicationNotIdle();
+      break;
     case chrome::NOTIFICATION_BROWSER_CLOSED:
     case chrome::NOTIFICATION_TAB_PARENTED:
     case chrome::NOTIFICATION_TAB_CLOSING:
@@ -968,6 +974,10 @@ void ChromeMetricsServiceClient::Observe(
 
     case chrome::NOTIFICATION_PROFILE_ADDED:
       RegisterForProfileEvents(content::Source<Profile>(source).ptr());
+      break;
+    case chrome::NOTIFICATION_PROFILE_DESTROYED:
+      // May have closed last incognito window.
+      UpdateRunningServices();
       break;
 
     default:
