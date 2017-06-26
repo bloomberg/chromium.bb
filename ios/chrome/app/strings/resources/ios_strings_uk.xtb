@@ -65,7 +65,6 @@
 <translation id="2103075008456228677">Відкрити history.google.com</translation>
 <translation id="2116625576999540962">Переміщено елементів: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="2149973817440762519">Редагувати закладку</translation>
-<translation id="2154710561487035718">Копіювати URL-адресу</translation>
 <translation id="2230173723195178503">Веб-сторінку завантажено</translation>
 <translation id="2241634353105152135">Лише цього разу</translation>
 <translation id="2267753748892043616">Додати обліковий запис</translation>
@@ -322,7 +321,6 @@
 <translation id="7336264872878993241">Завантажено <ph name="PERCENT" />%</translation>
 <translation id="7346909386216857016">OK</translation>
 <translation id="7400418766976504921">URL-адреса</translation>
-<translation id="7419187830569376338">Шукати це зображення в <ph name="SEARCH_ENGINE" /></translation>
 <translation id="7425346204213733349">Зміни в закладках, історії, паролях та інших налаштуваннях більше не синхронізуватимуться з вашим обліковим записом Google. Однак наявні дані залишаться у вашому обліковому записі.</translation>
 <translation id="744343212394640790">Не <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Область</translation>

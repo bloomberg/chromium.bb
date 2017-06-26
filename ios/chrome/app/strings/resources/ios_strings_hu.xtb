@@ -65,7 +65,6 @@ Bizonyos webhelyek például úgy válaszolhatnak a kérésre, hogy olyan hirdet
 <translation id="2103075008456228677">A history.google.com megnyitása</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elem áthelyezve</translation>
 <translation id="2149973817440762519">Könyvjelző szerkesztése</translation>
-<translation id="2154710561487035718">URL másolása</translation>
 <translation id="2230173723195178503">A weboldal betöltött</translation>
 <translation id="2241634353105152135">Csak egyszer</translation>
 <translation id="2267753748892043616">Fiók hozzáadása</translation>
@@ -322,7 +321,6 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="7336264872878993241"><ph name="PERCENT" /> százalék letöltve</translation>
 <translation id="7346909386216857016">Rendben, értem</translation>
 <translation id="7400418766976504921">URL</translation>
-<translation id="7419187830569376338">Kép keresése a(z) <ph name="SEARCH_ENGINE" /> segítségével</translation>
 <translation id="7425346204213733349">Könyvjelzői, előzményei, jelszavai és más beállításai a továbbiakban már nem lesznek szinkronizálva Google-fiókjával. Meglévő adatait azonban továbbra is tárolni fogja a fiók.</translation>
 <translation id="744343212394640790">Nem <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Állam/megye</translation>

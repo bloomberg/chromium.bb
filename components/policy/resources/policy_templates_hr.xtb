@@ -142,6 +142,7 @@
       Ako se ta postavka onemogući ili ne konfigurira, poslovni korisnici
       ne mogu upotrebljavati ARC.</translation>
 <translation id="1561424797596341174">Nadjačavanja pravila za međuverzije za otklanjanje pogrešaka hosta daljinskog pristupa</translation>
+<translation id="1561967320164410511">U2F i proširenja za pojedinačno atestiranje</translation>
 <translation id="1583248206450240930">Upotrijebi <ph name="PRODUCT_FRAME_NAME" /> kao zadano</translation>
 <translation id="1608755754295374538">URL-ovi koji će dobiti pristup uređajima za snimanje zvuka bez postavljanja upita</translation>
 <translation id="1617235075406854669">Omogući brisanje povijesti preglednika i preuzimanja</translation>
@@ -176,6 +177,7 @@
       Ako pravilo nije postavljeno, Uvjeti pružanja usluge ne prikazuju se.
 
       Pravilo treba biti postavljeno na URL s kojeg <ph name="PRODUCT_OS_NAME" /> može preuzeti Uvjete pružanja usluge. Uvjeti pružanja usluge moraju biti običan tekst, poslužen kao vrsta "text/plain" protokola MIME. Jezik za označavanje nije dopušten.</translation>
+<translation id="1750315445671978749">Blokiranje svih preuzimanja</translation>
 <translation id="1781356041596378058">To pravilo kontrolira i pristup Opcijama za razvojne programere Androida. Ako to pravilo postavite na True, korisnici ne mogu pristupiti Opcijama za razvojne programere. Ako to pravilo postavite na False ili ga ne postavite, korisnici mogu pristupiti Opcijama za razvojne programere tako što će sedam puta dodirnuti broj međuverzije u aplikaciji postavki Androida.</translation>
 <translation id="1803646570632580723">Popis prikvačenih aplikacija za prikazivanje u pokretaču</translation>
 <translation id="1808715480127969042">Blokiraj kolačiće na ovim web-lokacijama</translation>
@@ -536,6 +538,9 @@
       Ako omogućite tu postavku, sve autentifikacijske stranice zaštitnog portala (tj., sve web-stranice koje se pokreću sa stranice za prijavu na zaštitnom portalu dok <ph name="PRODUCT_NAME" /> ne otkrije uspješnu internetsku vezu) prikazivat će se u zasebnom prozoru, zanemarujući sve postavke i ograničenja pravila za trenutačnog korisnika.
 
       Ako onemogućite tu postavku ili je ostavite nepostavljenu, sve autentifikacijske stranice zaštitnog portala prikazivat će se u (uobičajenoj) novoj kartici preglednika, na temelju trenutačnih korisničkih postavki proxyja.</translation>
+<translation id="3001534538097271560">Ako se to pravilo postavi na "false", korisnici neće moći odabrati slanje nekih informacija sustava i sadržaja stranice Googleovim poslužiteljima. Ako se ta postavka postavi na "true" ili se ne konfigurira, korisnici će moći slati neke informacije sustava i sadržaj stranice Sigurnom pregledavanju radi boljeg otkrivanja opasnih aplikacija i web-lokacija.
+
+      Više informacija o Sigurnom pregledavanju potražite na stranici https://developers.google.com/safe-browsing.</translation>
 <translation id="3021409116652377124">Onemogući alat za traženje dodataka</translation>
 <translation id="3030000825273123558">Omogući izvješće o metrici</translation>
 <translation id="3034580675120919256">Omogućuje da postavite smiju li web-lokacije pokretati JavaScript. Pokretanje JavaScripta može biti dopušteno za sve web-lokacije ili odbijeno za sve web-lokacije. Ako ovo pravilo nije postavljeno, upotrebljavat će se pravilo "AllowJavaScript", a korisnik će to moći promijeniti.</translation>
@@ -672,6 +677,11 @@
 <translation id="3646859102161347133">Postavljanje vrste povećala</translation>
 <translation id="3653237928288822292">Ikona zadanog davatelja usluga pretraživanja</translation>
 <translation id="3660562134618097814">Prenesi kolačiće SAML IdP-a tijekom prijave</translation>
+<translation id="3687282113223807271">Usluga Sigurno pregledavanje prikazuje stranicu upozorenja kada korisnici dođu do web-lokacija koje su označene kao potencijalno zlonamjerne. Omogućavanje te postavke sprječava korisnike da ipak krenu dalje sa stranice upozorenja do zlonamjerne web-lokacije.
+
+      Ako je ta postavka onemogućena ili ako nije konfigurirana, korisnici prema želji mogu nastaviti do označene web-lokacije nakon što im se prikazalo upozorenje.
+
+      Više informacija o Sigurnom pregledavanju potražite na stranici https://developers.google.com/safe-browsing.</translation>
 <translation id="3709266154059827597">Konfiguriraj crnu listu instalacije proširenja</translation>
 <translation id="3711895659073496551">Obustavi</translation>
 <translation id="3736879847913515635">Omogućivanje dodavanja osobe u upravitelju korisnika</translation>
@@ -755,6 +765,7 @@
       Navodi proširenja koja se automatski instaliraju za korisnike demo verzije, za uređaje u prodajnom načinu. Ta se proširenja spremaju na uređaj i mogu se instalirati izvanmrežno, nakon instalacije.
 
       Svaki unos popisa sadrži rječnik koji mora uključivati ID proširenja u polju "extension-id" i njegov URL za ažuriranje u polju "update-url".</translation>
+<translation id="3877517141460819966">Integrirani način dvostruke autentifikacije</translation>
 <translation id="388237772682176890">To je pravilo obustavljeno u verziji M53 i uklonjeno u verziji M54 jer je uklonjena podrška za SPDY/3.1.
 
       Onemogućuje upotrebu protokola SPDY za uslugu <ph name="PRODUCT_NAME" />.
@@ -849,6 +860,23 @@
 <translation id="4239720644496144453">Za Android aplikacije ne upotrebljava se predmemorija. Ako više korisnika instalira istu Android aplikaciju, ta će se aplikacija preuzeti iznova za svakog korisnika.</translation>
 <translation id="4250680216510889253">Ne</translation>
 <translation id="4261820385751181068">Oznaka zemlje/jezika za zaslon za prijavu na uređaju</translation>
+<translation id="4275782538576261754">Konfigurira vrste preuzimanja koje će <ph name="PRODUCT_NAME" /> potpuno blokirati, bez omogućivanja korisnicima da nadjačaju sigurnosnu odluku.
+
+      Ako postavite to pravilo, usluga <ph name="PRODUCT_NAME" /> spriječit će određene vrste preuzimanja i neće dopustiti da korisnici zaobiđu sigurnosna upozorenja.
+
+      Kada je odabrana opcija "Blokiraj opasna preuzimanja", dopuštena su sva preuzimanja osim onih koja imaju upozorenja Sigurnog pregledavanja.
+
+      Kada je odabrana opcija "Blokiraj potencijalno opasna preuzimanja", dopuštena su sva preuzimanja osim onih koja imaju upozorenja Sigurnog pregledavanja o potencijalno opasnim preuzimanjima.
+
+      Kada je odabrana opcija "Blokiraj sva preuzimanja", blokirana su sva preuzimanja.
+
+      Kada se to pravilo ne postavi (ili se odabere opcija "Nema posebnih ograničenja"), preuzimanja će prolaziti kroz uobičajena sigurnosna ograničenja na temelju rezultata analize Sigurnog pregledavanja.
+
+      Napominjemo da se ta ograničenja primjenjuju na preuzimanja aktivirana iz sadržaja web-stranice, kao i putem opcije kontekstnog izbornika "Preuzmi vezu...".
+
+      Ta se ograničenja ne primjenjuju na spremanje ili preuzimanje trenutačno prikazane stranice ni na spremanje u obliku PDF-a u opcijama ispisa.
+
+      Više informacija o Sigurnom pregledavanju potražite na stranici https://developers.google.com/safe-browsing.</translation>
 <translation id="427632463972968153">Određuje parametre koji se upotrebljavaju prilikom pretraživanja slika pomoću POST metode. Sastoji se od zarezom odvojenih parova naziv/vrijednost. Ako je vrijednost parametar predloška, primjerice {imageThumbnail} u gornjem primjeru, zamijenit će se podacima stvarne minijature slike.
 
           To je pravilo izborno. Ako nije postavljeno, zahtjev za pretraživanje slika poslat će se pomoću GET metode.
@@ -1055,6 +1083,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="5219844027738217407">Za Android aplikacije to pravilo utječe samo na mikrofon. Kada se to pravilo postavi na True, mikrofon je isključen za sve Android aplikacije, bez iznimke.</translation>
 <translation id="5226033722357981948">Odredi treba li onemogućiti alat za traženje dodataka</translation>
 <translation id="523505283826916779">Postavke pristupačnosti</translation>
+<translation id="5247006254130721952">Blokiraj opasna preuzimanja</translation>
 <translation id="5255162913209987122">Može se preporučiti</translation>
 <translation id="527237119693897329">Omogućuje vam da odredite koji se hostovi za lokalno slanje poruka ne bi smjeli učitavati.
 
@@ -1134,6 +1163,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
       Ako ne postavite to pravilo, <ph name="PRODUCT_OS_NAME" /> upotrebljavat će zadanu vrijednost od 3 sata.
 
       Ako platforma podržava obavijesti o pravilima, odgoda osvježavanja postavit će se na 24 sata (sve zadane postavke i vrijednost ovog pravila zanemarit će se) jer se očekuje da će obavijesti o pravilima automatski nametnuti osvježavanje nakon svake promjene pravila, zbog čega su češća osvježavanja nepotrebna.</translation>
+<translation id="5530347722229944744">Blokiraj potencijalno opasna preuzimanja</translation>
 <translation id="5535973522252703021">Bijela lista Kerberos poslužitelja za ovlašćivanje</translation>
 <translation id="555077880566103058">Dopusti svim web-lokacijama pokretanje dodatka <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="5559079916187891399">To pravilo nema utjecaja na Android aplikacije.</translation>
@@ -1256,6 +1286,17 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="5966615072639944554">Proširenja koja smiju upotrebljavati API za daljinsku ovjeru</translation>
 <translation id="5983708779415553259">Zadano ponašanje za web-lokacije koje nisu ni u jednom paketu sadržaja</translation>
 <translation id="5997543603646547632">Upotrijebi sat s 24-satnim prikazom prema zadanim postavkama</translation>
+<translation id="6005179188836322782">Omogućuje značajku Sigurno pregledavanje usluge <ph name="PRODUCT_NAME" /> i onemogućuje korisnicima da promijene tu postavku.
+
+      Ako omogućite tu postavku, Sigurno pregledavanje uvijek je aktivno.
+
+      Ako je onemogućite, Sigurno pregledavanje nikada nije aktivno.
+
+      Ako omogućite ili onemogućite tu postavku, korisnici ne mogu promijeniti niti nadjačati postavku "Omogući zaštitu od krađe identiteta i zlonamjernog softvera" na usluzi <ph name="PRODUCT_NAME" />.
+
+      Ako se to pravilo ne postavi, ta će postavka biti omogućena, ali će je korisnici moći promijeniti.
+
+      Više informacija o Sigurnom pregledavanju potražite na stranici https://developers.google.com/safe-browsing.</translation>
 <translation id="6017568866726630990">Prikaži dijalog ispisa iz sustava umjesto pretpregleda ispisa.
 
       Kada je omogućena ta postavka, proizvod <ph name="PRODUCT_NAME" /> otvorit će dijalog ispisa iz sustava umjesto ugrađenog pretpregleda ispisa kada korisnik zatraži ispis stranice.
@@ -1324,6 +1365,11 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="6281043242780654992">Konfigurira pravila za lokalno slanje poruka. Zabranjeni hostovi za lokalno slanje poruka bit će dopušteni samo ako se nalaze na popisu dopuštenih.</translation>
 <translation id="6282799760374509080">Omogući ili onemogući snimanje zvuka</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
+<translation id="6287694548537067861">Omogućuje ažuriranja komponenti za sve komponente na usluzi <ph name="PRODUCT_NAME" /> kada pravilo nije postavljeno ili je postavljeno na True.
+
+      Ako se postavi na False, ažuriranje je komponenti onemogućeno. No neke su komponente izuzete od tog pravila i dalje će se ažurirati, a to su komponente koje ne sadrže izvršni kôd, koje bitno ne mijenjaju ponašanje preglednika ili koje su važne za sigurnost.
+      Primjeri takvih komponenti uključuju popise opozvanih certifikata i podatke sigurnog pregledavanja.
+      Više informacija o Sigurnom pregledavanju potražite na stranici https://developers.google.com/safe-browsing.</translation>
 <translation id="6310223829319187614">Omogući samodovršavanje naziva domene tijekom prijave korisnika</translation>
 <translation id="6315673513957120120">Chrome prikazuje stranicu upozorenja kada korisnici dođu do web-lokacija koje sadrže pogreške SSL-a. Prema zadanim postavkama ili kada se to pravilo postavi na "True", korisnicima je dopušteno klikanjem proći stranice upozorenja.
       Ako se pravilo postavi na "False", korisnici neće moći klikanjem proći stranice upozorenja.</translation>
@@ -1512,6 +1558,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
           Ako je <ph name="PRODUCT_NAME" /> pokrenut u "pozadinskom načinu", sesija se možda neće završiti kada se zatvori posljednji prozor, već će ostati aktivna dok se ne zatvori preglednik. Više informacija o konfiguriranju tog ponašanja potražite u pravilu "BackgroundModeEnabled".
 
           Ako se pravilo "RestoreOnStartup" postavi na vraćanje URL-ova iz prethodnih sesija, ovo se pravilo neće poštovati i za te će se web-lokacije kolačići trajno pohranjivati.</translation>
+<translation id="7202925763179776247">Dopusti ograničenja za preuzimanja</translation>
 <translation id="7207095846245296855">Nametni Google sigurno pretraživanje</translation>
 <translation id="7216442368414164495">Omogućivanje korisnicima da se uključe u prošireno izvješćivanje Sigurnog pregledavanja</translation>
 <translation id="7234280155140786597">Nazivi zabranjenih hostova za lokalno slanje poruka (ili "*" za sve)</translation>
@@ -1632,6 +1679,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 
           To je pravilo za internu upotrebu preglednika <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7712109699186360774">Pitaj svaki put kada web-lokacija želi pristupiti kameri i/ili mikrofonu</translation>
+<translation id="7713608076604149344">Ograničenja za preuzimanja</translation>
 <translation id="7715711044277116530">Postotak za skaliranje odgode zatamnjenja zaslona u načinu prezentacije</translation>
 <translation id="7717938661004793600">Konfiguriranje značajki pristupačnosti proizvoda <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7719251660743813569">Kontrolira hoće li se mjerni podaci upotrebe prijavljivati Googleu. Ako je to pravilo postavljeno na "istinito", sustav <ph name="PRODUCT_OS_NAME" /> prijavljivat će mjerne podatke o upotrebi. Ako to pravilo nije konfigurirano ili je postavljeno na "lažno", prijavljivanje mjernih podataka o upotrebi bit će onemogućeno.</translation>
@@ -1729,6 +1777,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="7953256619080733119">Hostovi ručnih iznimaka upravljanih korisnika</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Ovo pravilo više se ne podržava. Omogućuje upotrebu STUN i relejnih poslužitelja prilikom povezivanja s udaljenim klijentom. Ako je ova postavka omogućena, onda ovo računalo može otkriti udaljena računala hostove i povezati se s njima, čak i ako su odvojena vatrozidom. Ako je ova postavka onemogućena, a izlazne UDP veze filtrirane su vatrozidom, onda se ovo računalo može jedino povezati s računalima hostovima unutar lokalne mreže.</translation>
+<translation id="7980227303582973781">Nema posebnih ograničenja</translation>
 <translation id="802147957407376460">Zakreni zaslon 0 stupnjeva</translation>
 <translation id="8044493735196713914">Izvješće načina pokretanja uređaja</translation>
 <translation id="8050080920415773384">Nativni ispis</translation>
@@ -1840,6 +1889,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
       Kada je pravilo "DeviceIdleLogoutTimeout" navedeno, to pravilo određuje trajanje okvira za upozorenje s odbrojavanjem koji se prikazuje korisniku prije nego što se izvrši odjava.
 
       Vrijednost pravila trebala bi biti navedena u milisekundama.</translation>
+<translation id="8339420913453596618">Dvostruka autentifikacija onemogućena</translation>
 <translation id="8344454543174932833">Uvoz oznaka iz zadanog preglednika pri prvom pokretanju</translation>
 <translation id="8359734107661430198">Omogući ExampleDeprecatedFeature API do 2008/09/02</translation>
 <translation id="8369602308428138533">Odgoda isključivanja zaslona za vrijeme napajanja izmjeničnom strujom</translation>
@@ -1886,6 +1936,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 
           Ako ne postavite ovo pravilo, <ph name="PRODUCT_NAME" /> pokušat će otkriti je li poslužitelj na intranetu te će jedino tada odgovoriti na IWA zahtjeve. Ako otkrije da se radi o poslužitelju na internetu, <ph name="PRODUCT_NAME" /> zanemarit će njegove IWA zahtjeve.</translation>
 <translation id="8672321184841719703">Ciljna verzija automatskog ažuriranja</translation>
+<translation id="867410340948518937">U2F (univerzalna dvostruka autentifikacija)</translation>
 <translation id="8693243869659262736">Upotreba ugrađenog DNS klijenta</translation>
 <translation id="8704831857353097849">Popis onemogućenih dodataka</translation>
 <translation id="8711086062295757690">Određuje ključnu riječ koja je prečac u višenamjenskom okviru za pokretanje usluge pretraživanja ovog davatelja usluga. Ovo je pravilo izborno. Ako nije postavljeno, nijedna ključna riječ neće aktivirati davatelja usluga pretraživanja. Ovo se pravilo uzima u obzir samo ako je omogućeno pravilo "DefaultSearchProviderEnabled".</translation>

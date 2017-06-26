@@ -65,7 +65,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta visualizzando a
 <translation id="2103075008456228677">Apri la pagina history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementi spostati</translation>
 <translation id="2149973817440762519">Modifica Preferito</translation>
-<translation id="2154710561487035718">Copia URL</translation>
 <translation id="2230173723195178503">Pagina web caricata</translation>
 <translation id="2241634353105152135">Solo una volta</translation>
 <translation id="2267753748892043616">Aggiungi account</translation>
@@ -322,7 +321,6 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="7336264872878993241"><ph name="PERCENT" />% scaricato</translation>
 <translation id="7346909386216857016">OK</translation>
 <translation id="7400418766976504921">URL</translation>
-<translation id="7419187830569376338">Cerca questa immagine su <ph name="SEARCH_ENGINE" /></translation>
 <translation id="7425346204213733349">Le modifiche ai preferiti, alla cronologia, alle password e ad altre impostazioni non verranno più sincronizzate con il tuo account Google. Tuttavia, i dati esistenti rimarranno memorizzati.</translation>
 <translation id="744343212394640790">Non sono <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Stato/contea</translation>

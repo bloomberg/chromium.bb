@@ -65,7 +65,6 @@ En del webbplatser kan till exempel svara genom att visa annonser som inte baser
 <translation id="2103075008456228677">Öppna history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> objekt flyttades</translation>
 <translation id="2149973817440762519">Redigera bokmärke</translation>
-<translation id="2154710561487035718">Kopiera webbadress</translation>
 <translation id="2230173723195178503">Webbsidan har lästs in</translation>
 <translation id="2241634353105152135">Bara en gång</translation>
 <translation id="2267753748892043616">Lägg till konto</translation>
@@ -322,7 +321,6 @@ Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vil
 <translation id="7336264872878993241"><ph name="PERCENT" /> procent har laddats ned</translation>
 <translation id="7346909386216857016">OK, jag förstår</translation>
 <translation id="7400418766976504921">Webbadress</translation>
-<translation id="7419187830569376338">Sök på <ph name="SEARCH_ENGINE" /> efter den här bilden</translation>
 <translation id="7425346204213733349">Ändringar i bokmärken, historik, lösenord och andra inställningar synkroniseras inte längre med ditt Google-konto. Befintlig data fortsätter dock att lagras i Google-kontot.</translation>
 <translation id="744343212394640790">Inte <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Delstat/county</translation>

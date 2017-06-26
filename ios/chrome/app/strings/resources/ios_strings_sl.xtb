@@ -65,7 +65,6 @@ Nekatera spletna mesta se bodo na primer odzvala na to zahtevo s prikazom oglaso
 <translation id="2103075008456228677">Odpri history.google.com</translation>
 <translation id="2116625576999540962">Št. premaknjenih elementov: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="2149973817440762519">Uredi zaznamek</translation>
-<translation id="2154710561487035718">Kopiraj URL</translation>
 <translation id="2230173723195178503">Spletna stran je naložena</translation>
 <translation id="2241634353105152135">Samo enkrat</translation>
 <translation id="2267753748892043616">Dodaj račun</translation>
@@ -322,7 +321,6 @@ Podatki so bili šifrirani z vašim geslom za sinhronizacijo <ph name="TIME" />.
 <translation id="7336264872878993241">Preneseno: <ph name="PERCENT" /> %</translation>
 <translation id="7346909386216857016">V redu, razumem</translation>
 <translation id="7400418766976504921">URL</translation>
-<translation id="7419187830569376338">Uporabi <ph name="SEARCH_ENGINE" /> za iskanje te slike</translation>
 <translation id="7425346204213733349">Spremembe zaznamkov, zgodovine, gesel in drugih nastavitev ne bodo več sinhronizirane z Google Računom. Obstoječi podatki bodo še naprej shranjeni v Google Računu.</translation>
 <translation id="744343212394640790">Nisem <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Regija</translation>

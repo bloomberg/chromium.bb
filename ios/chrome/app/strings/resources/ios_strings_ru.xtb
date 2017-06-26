@@ -65,7 +65,6 @@
 <translation id="2103075008456228677">Открыть history.google.com</translation>
 <translation id="2116625576999540962">Перемещено закладок: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="2149973817440762519">Закладка</translation>
-<translation id="2154710561487035718">Копировать URL</translation>
 <translation id="2230173723195178503">Веб-страница загружена</translation>
 <translation id="2241634353105152135">Однократно</translation>
 <translation id="2267753748892043616">Добавить аккаунт</translation>
@@ -322,7 +321,6 @@
 <translation id="7336264872878993241">Скачивается: <ph name="PERCENT" />%</translation>
 <translation id="7346909386216857016">ОК</translation>
 <translation id="7400418766976504921">URL</translation>
-<translation id="7419187830569376338">Найти это изображение в <ph name="SEARCH_ENGINE" /></translation>
 <translation id="7425346204213733349">Изменения в ваших закладках, паролях, истории и других настройках больше не будут синхронизироваться с аккаунтом Google. Это не повлияет на данные, сохраненные в аккаунте ранее.</translation>
 <translation id="744343212394640790">Не <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Регион</translation>

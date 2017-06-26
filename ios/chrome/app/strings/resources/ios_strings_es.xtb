@@ -65,7 +65,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="2103075008456228677">Abrir history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementos eliminados</translation>
 <translation id="2149973817440762519">Editar marcador</translation>
-<translation id="2154710561487035718">Copiar URL</translation>
 <translation id="2230173723195178503">Página web cargada</translation>
 <translation id="2241634353105152135">Solo una vez</translation>
 <translation id="2267753748892043616">Añadir cuenta</translation>
@@ -322,7 +321,6 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="7336264872878993241"><ph name="PERCENT" />% descargado</translation>
 <translation id="7346909386216857016">Entendido</translation>
 <translation id="7400418766976504921">URL</translation>
-<translation id="7419187830569376338">Buscar esta imagen en <ph name="SEARCH_ENGINE" /></translation>
 <translation id="7425346204213733349">Los cambios que hagas en los marcadores, el historial, las contraseñas y otras opciones no se sincronizarán con tu cuenta de Google. Sin embargo, tus datos actuales seguirán almacenados en tu cuenta.</translation>
 <translation id="744343212394640790">No soy <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Región</translation>

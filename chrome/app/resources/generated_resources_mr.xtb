@@ -768,6 +768,7 @@
 <translation id="2150661552845026580">"<ph name="EXTENSION_NAME" />" जोडायचे ?</translation>
 <translation id="2151576029659734873">अवैध टॅब अनुक्रमणिका प्रविष्ट केली.</translation>
 <translation id="2152580633399033274">सर्व प्रतिमा दर्शवा (शिफारस केलेले)</translation>
+<translation id="2154484045852737596">कार्ड संपादित करा</translation>
 <translation id="2154710561487035718">URL कॉपी करा</translation>
 <translation id="2155931291251286316">नेहमी <ph name="HOST" /> कडील पॉप-अप ना परवानगी द्या</translation>
 <translation id="215753907730220065">पूर्ण स्क्रीनमधून निर्गमन करा</translation>
@@ -950,6 +951,7 @@
 <translation id="2424091190911472304">नेहमी <ph name="ORIGIN" /> वर चालवा</translation>
 <translation id="2425665904502185219">एकूण फाइल आकार</translation>
 <translation id="2428510569851653187">टॅब क्रॅश झाला तेव्हा तुम्ही नेमके काय करत होता ते सांगा</translation>
+<translation id="2432876185343582491">एक कार्ड जोडा</translation>
 <translation id="2433452467737464329">पृष्ठ स्वयं-रीफ्रेश करण्यासाठी URL मध्ये क्वेरी परम जोडा: chrome://network/?refresh=&lt;sec&gt;</translation>
 <translation id="2433507940547922241">स्वरूप</translation>
 <translation id="2435248616906486374">नेटवर्क डिस्कनेक्ट झाले</translation>
@@ -961,7 +963,6 @@
 <translation id="2440300961915670171"><ph name="REASON" />
 ही साइट अवरोधित व्‍हावी असे मला वाटत नाही!</translation>
 <translation id="2440604414813129000">स्त्रो&amp;त पाहा</translation>
-<translation id="2441722919115465484">आपले क्रेडिट कार्ड कालबाह्य झाले आहे</translation>
 <translation id="2444664589142010199"><ph name="LINK_TEXT" /> वर कोणत्याही डिव्हाइसवरून आपल्या संकेतशब्दांवर प्रवेश करा</translation>
 <translation id="2445081178310039857">विस्तार मूळ निर्देशिका आवश्यक आहे.</translation>
 <translation id="2448046586580826824">सुरक्षित HTTP प्रॉक्झी</translation>
@@ -1080,6 +1081,7 @@
 <translation id="2609896558069604090">शॉर्टकट तयार करा...</translation>
 <translation id="2610260699262139870">वा&amp;स्तविक आकार</translation>
 <translation id="2610780100389066815">Microsoft Trust List Signing</translation>
+<translation id="2612676031748830579">कार्ड नंबर</translation>
 <translation id="2616366145935564096"><ph name="WEBSITE_1" /> वर आपला डेटा वाचा आणि बदला</translation>
 <translation id="2617342710774726426">सिम कार्ड लॉक केले आहे</translation>
 <translation id="2617919205928008385">अपुरी जागा</translation>
@@ -1090,7 +1092,7 @@
 <translation id="2624142942574147739">हे पृष्‍ठ आपल्या कॅमेरा आणि मायक्रोफोनवर प्रवेश करत आहे.</translation>
 <translation id="2626799779920242286">कृपया नंतर पुन्हा प्रयत्न करा.</translation>
 <translation id="2630681426381349926">सुरुवात करण्यासाठी Wi-Fi वर कनेक्ट करा</translation>
-<translation id="2631006050119455616">जतन केलेले</translation>
+<translation id="2631006050119455616">वाचवला</translation>
 <translation id="2631498379019108537">शेल्फ मधील इनपुट पर्याय दर्शवा</translation>
 <translation id="2633199387167390344"><ph name="NAME" /> <ph name="USAGE" /> MB डिस्क स्थान वापरत आहे.</translation>
 <translation id="2633212996805280240">"<ph name="EXTENSION_NAME" />" काढायचे?</translation>
@@ -1441,7 +1443,6 @@
 <translation id="3108967419958202225">निवडा...</translation>
 <translation id="3112378005171663295">संक्षिप्त करा</translation>
 <translation id="3115147772012638511">कॅशेसाठी प्रतीक्षा करीत आहे...</translation>
-<translation id="3116902203001917540">तुमच्या स्क्रीनकडे पाहणे किंवा मंद उजेडात वाचणे सोपे करते</translation>
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME" /> मदत</translation>
 <translation id="3120430004221004537">दिलेल्या ऑपरेशनसाठी यावर अपुरे कूटबद्धीकरण: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="3121793941267913344">हा <ph name="IDS_SHORT_PRODUCT_NAME" /> डिव्हाइस रीसेट करा</translation>
@@ -2513,7 +2514,6 @@
 <translation id="4821935166599369261">&amp;प्रोफाइलिंग सक्षम</translation>
 <translation id="4823484602432206655">वापरकर्ता आणि डिव्हाइस सेटिंग्ज वाचा आणि बदला</translation>
 <translation id="4823651846660089135">डिव्हाइस केवळ वाचनीय आहे</translation>
-<translation id="4827948050554950725">क्रेडिट कार्ड जोडा</translation>
 <translation id="4828493911650550108">अॅप्स आणि सेवांना Wi-Fi नेटवर्क आणि Bluetooth डिव्हाइसेस स्कॅन करण्याची अनुमती देऊन स्थान अचूकता सुधारित करा.</translation>
 <translation id="4828937774870308359">ऑस्ट्रेलियन</translation>
 <translation id="4829768588131278040">पिन सेट करा</translation>
@@ -2689,6 +2689,7 @@
 <translation id="5086082738160935172">HID</translation>
 <translation id="5086874064903147617">डीफॉल्ट मुख्यपृष्ठ पुनर्संचयित करायचे?</translation>
 <translation id="5087249366037322692">तृतीय-पक्षाने जोडला</translation>
+<translation id="5087580092889165836">कार्ड जोडा</translation>
 <translation id="5087864757604726239">परत</translation>
 <translation id="508794495705880051">नवीन क्रेडिट कार्ड जोडा...</translation>
 <translation id="5088534251099454936">PKCS #1 RSA कूटबद्धीकरणासह SHA-512</translation>
@@ -3082,7 +3083,6 @@
 <translation id="5659593005791499971">ईमेल</translation>
 <translation id="5661272705528507004">हे सिम कार्ड अक्षम झाले आहे आणि वापरणे शक्य नाही. कृपया पुनर्स्थित करण्यासाठी आपल्या सेवा प्रदात्याशी संपर्क साधा.</translation>
 <translation id="5669267381087807207">सक्रिय करीत आहे </translation>
-<translation id="5669462439438204699">क्रेडिट कार्ड जतन करा</translation>
 <translation id="5669691691057771421">नवीन पिन प्रविष्ट करा</translation>
 <translation id="5677503058916217575">पृष्ठ भाषा:</translation>
 <translation id="5677928146339483299">अवरोधित</translation>
@@ -3263,7 +3263,6 @@
 <translation id="5941343993301164315">कृपया <ph name="TOKEN_NAME" /> मध्ये साइन इन करा.</translation>
 <translation id="5941711191222866238">लहान करा</translation>
 <translation id="5941907479813014493">इनपुट पद्धतींमध्ये स्विच करण्यासाठी Ctrl+Shift+Space.</translation>
-<translation id="5946106656820696578">अधिक उबदार</translation>
 <translation id="5946591249682680882">अहवाल आयडी <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
 <translation id="5948205789991352045">उघडू नका</translation>
 <translation id="5948544841277865110">खाजगी नेटवर्क जोडा</translation>
@@ -3436,7 +3435,6 @@
 <translation id="6232017090690406397">बॅटरी</translation>
 <translation id="6232116551750539448"><ph name="NAME" /> वरील कनेक्शन गमावले गेले आहे</translation>
 <translation id="6237816943013845465">आपले स्क्रीन रिझोल्यूशन समायोजित करण्याची आपल्याला अनुमती देते</translation>
-<translation id="6238730967087877808">कस्टम वेळापत्रक</translation>
 <translation id="6239558157302047471">रीलोड आणि फ्रेम करा</translation>
 <translation id="6241530762627360640">आपल्या सिस्टीमशी जोडलेल्या Bluetooth डिव्हाइसविषयीच्या माहितीवर प्रवेश करा आणि जवळपासचे Bluetooth डिव्हाइसेस शोधा.</translation>
 <translation id="6243774244933267674">सर्व्हर अनुपलब्ध</translation>
@@ -3680,7 +3678,6 @@
 <translation id="656398493051028875">"<ph name="FILENAME" />" हटवत आहे...</translation>
 <translation id="6565108107088666812">हे सर्व डिव्हाइसेसवरून संकालित केलेला डेटा साफ करेल.</translation>
 <translation id="6567688344210276845">पृष्ठ क्रियांसाठी प्रतीक '<ph name="ICON" />' लोड करणे शक्य नाही.</translation>
-<translation id="6571070086367343653">क्रेडिट कार्ड संपादित करा</translation>
 <translation id="657402800789773160">हे पृष्ठ &amp;रीलोड करा</translation>
 <translation id="6575134580692778371">कॉन्फिगर केले नाही</translation>
 <translation id="6575251558004911012">एखाद्या साइटला आपल्या कॅमेर्‍यावर प्रवेश करायचे असते तेव्हा विचारा (शिफारस केलेले)</translation>
@@ -3971,7 +3968,6 @@
 <translation id="7025325401470358758">पुढील उपखंड</translation>
 <translation id="7027125358315426638">डेटाबेस नाव:</translation>
 <translation id="7029809446516969842">संकेतशब्द</translation>
-<translation id="7029916574452167660">कमी उबदार</translation>
 <translation id="7030031465713069059">संकेतशब्द जतन करा</translation>
 <translation id="7031962166228839643">TPM तयार केले जात आहे, कृपया प्रतीक्षा करा (याला काही मिनिटे लागू शकतात)...</translation>
 <translation id="7039326228527141150"><ph name="VENDOR_NAME" /> कडील USB डिव्हाइसेसवर प्रवेश करा</translation>
@@ -3988,7 +3984,6 @@
 <translation id="7053983685419859001">अवरोधित करा</translation>
 <translation id="7054808953701320293">मला समजले, मला पुन्हा दर्शवू नका.</translation>
 <translation id="7056526158851679338">&amp;निरीक्षण डिव्हाइसेस</translation>
-<translation id="7057058088140140610">Google Payments वापरून क्रेडिट कार्ड आणि पत्ते</translation>
 <translation id="7059858479264779982">स्वयं-लाँच करा वर सेट करा</translation>
 <translation id="7062222374113411376">अलीकडील बंद केलेल्या साइटना डेटा पाठविणे आणि प्राप्त करणे समाप्त करण्यासाठी अनुमती द्या (शिफारस केलेले)</translation>
 <translation id="7063129466199351735">प्रक्रिया करण्‍याचे शॉर्टकट...</translation>
@@ -4665,7 +4660,6 @@
 <translation id="8104696615244072556">आपले <ph name="IDS_SHORT_PRODUCT_NAME" /> डिव्हाइस Powerwash करा आणि मागील आवृत्तीकडे परत या.</translation>
 <translation id="8105368624971345109">बंद करा</translation>
 <translation id="8106045200081704138">माझ्याशी सामायिक केलेले</translation>
-<translation id="8106211421800660735">क्रेडिट कार्ड क्रमांक</translation>
 <translation id="8107015733319732394">तुमच्या <ph name="DEVICE_TYPE" />वर Google Play स्टोअर इंस्टॉल करत आहे. यासाठी काही मिनिटे लागतील.</translation>
 <translation id="8109930990200908494">वापरकर्ता प्रमाणपत्रासाठी साइन इन आवश्यक.</translation>
 <translation id="8111155949205007504">आपल्या iPhone सह हा संकेतशब्द सामायिक करा</translation>
@@ -5091,7 +5085,6 @@
 <translation id="8791534160414513928">आपल्या ब्राउझिंग रहदारीसह "Do Not Track" विनंती पाठवा</translation>
 <translation id="8794025342371547160">प्रतिबंधित IP</translation>
 <translation id="879413103056696865">हॉटस्पॉट चालू असताना, आपला <ph name="PHONE_NAME" /> हे करेल:</translation>
-<translation id="8795668016723474529">क्रेडिट कार्ड जोडा</translation>
 <translation id="8795916974678578410">नवीन विंडो</translation>
 <translation id="8797459392481275117">कधीही या साइटचे भाषांतर करू नका</translation>
 <translation id="8798099450830957504">डीफॉल्ट</translation>

@@ -65,7 +65,6 @@ Noen nettsteder kan for eksempel svare på forespørselen ved å vise deg annons
 <translation id="2103075008456228677">Åpne history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementer er flyttet</translation>
 <translation id="2149973817440762519">Rediger bokmerke</translation>
-<translation id="2154710561487035718">Kopier nettadresse</translation>
 <translation id="2230173723195178503">Nettsiden er lastet inn</translation>
 <translation id="2241634353105152135">Bare én gang</translation>
 <translation id="2267753748892043616">Legg til konto</translation>
@@ -322,7 +321,6 @@ Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME
 <translation id="7336264872878993241"><ph name="PERCENT" /> prosent fullført</translation>
 <translation id="7346909386216857016">Greit</translation>
 <translation id="7400418766976504921">Nettadresse</translation>
-<translation id="7419187830569376338">Søk i <ph name="SEARCH_ENGINE" /> etter dette bildet</translation>
 <translation id="7425346204213733349">Endringer i bokmerkene, loggoppføringene, passordene og de andre innstillingene dine blir ikke synkronisert med Google-kontoen din lenger. Data som allerede er lagret i Google-kontoen din, blir imidlertid ikke fjernet.</translation>
 <translation id="744343212394640790">Ikke <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Fylke/kommune</translation>

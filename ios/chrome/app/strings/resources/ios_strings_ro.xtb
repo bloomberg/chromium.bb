@@ -65,7 +65,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="2103075008456228677">Deschide history.google.com</translation>
 <translation id="2116625576999540962">Elemente mutate: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="2149973817440762519">Editați marcajul</translation>
-<translation id="2154710561487035718">Copiați adresa URL</translation>
 <translation id="2230173723195178503">Pagina web s-a încărcat</translation>
 <translation id="2241634353105152135">Numai o singură dată</translation>
 <translation id="2267753748892043616">Adaugă un cont</translation>
@@ -322,7 +321,6 @@ Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TI
 <translation id="7336264872878993241"><ph name="PERCENT" />% descărcat</translation>
 <translation id="7346909386216857016">Ok, am înțeles</translation>
 <translation id="7400418766976504921">Adresă URL</translation>
-<translation id="7419187830569376338">Caută imaginea cu <ph name="SEARCH_ENGINE" /></translation>
 <translation id="7425346204213733349">Modificările marcajelor, istoricului, parolelor sau ale altor setări nu vor mai fi sincronizate cu Contul Google. Totuși, datele existente vor rămâne stocate în Contul Google.</translation>
 <translation id="744343212394640790">Nu ca <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Stat/Județ</translation>

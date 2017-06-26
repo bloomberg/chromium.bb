@@ -65,7 +65,6 @@ Niektoré webové stránky môžu napríklad na túto žiadosť odpovedať zobra
 <translation id="2103075008456228677">Otvoriť history.google.com</translation>
 <translation id="2116625576999540962">Počet presunutých položiek: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="2149973817440762519">Upraviť záložku</translation>
-<translation id="2154710561487035718">Kopírovať webovú adresu</translation>
 <translation id="2230173723195178503">Načítala sa webová stránka</translation>
 <translation id="2241634353105152135">Iba raz</translation>
 <translation id="2267753748892043616">Pridať účet</translation>
@@ -322,7 +321,6 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="7336264872878993241">Stiahnuté: <ph name="PERCENT" /> percent</translation>
 <translation id="7346909386216857016">Ok, dobre</translation>
 <translation id="7400418766976504921">Webová adresa</translation>
-<translation id="7419187830569376338">Hľadať tento obrázok v službe <ph name="SEARCH_ENGINE" /></translation>
 <translation id="7425346204213733349">Záložky, história, heslá a ďalšie nastavenia sa už nebudú ďalej synchronizovať do vášho účtu Google. Vaše súčasné údaje však zostanú uložené v účte Google.</translation>
 <translation id="744343212394640790">Nie som <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Štát/okres</translation>

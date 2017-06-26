@@ -65,7 +65,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="2103075008456228677">Open history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> items moved</translation>
 <translation id="2149973817440762519">Edit Bookmark</translation>
-<translation id="2154710561487035718">Copy URL</translation>
 <translation id="2230173723195178503">Web page loaded</translation>
 <translation id="2241634353105152135">Just once</translation>
 <translation id="2267753748892043616">Add Account</translation>
@@ -322,7 +321,6 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="7336264872878993241"><ph name="PERCENT" /> percent downloaded</translation>
 <translation id="7346909386216857016">OK, got it</translation>
 <translation id="7400418766976504921">URL</translation>
-<translation id="7419187830569376338">Search <ph name="SEARCH_ENGINE" /> For This Image</translation>
 <translation id="7425346204213733349">Changes to your bookmarks, history, passwords and other settings will no longer be synced to your Google Account. However, your existing data will remain stored in your Google Account.</translation>
 <translation id="744343212394640790">Not <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">State / County</translation>

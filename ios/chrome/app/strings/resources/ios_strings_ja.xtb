@@ -65,7 +65,6 @@
 <translation id="2103075008456228677">history.google.com を開く</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" />件の項目を移動しました</translation>
 <translation id="2149973817440762519">ブックマークを編集</translation>
-<translation id="2154710561487035718">URL をコピー</translation>
 <translation id="2230173723195178503">ウェブページを読み込みました</translation>
 <translation id="2241634353105152135">一回限り</translation>
 <translation id="2267753748892043616">アカウントを追加</translation>
@@ -322,7 +321,6 @@
 <translation id="7336264872878993241"><ph name="PERCENT" />%ダウンロード</translation>
 <translation id="7346909386216857016">OK</translation>
 <translation id="7400418766976504921">URL</translation>
-<translation id="7419187830569376338">この画像を<ph name="SEARCH_ENGINE" />で検索</translation>
 <translation id="7425346204213733349">今後、ブックマーク、履歴、パスワード、その他の設定に行った変更は Google アカウントに同期されません。ただし、既存のデータは Google アカウントに保存されたままとなります。</translation>
 <translation id="744343212394640790"><ph name="EMAIL" /> ではありません</translation>
 <translation id="7454057999980797137">州/都道府県</translation>

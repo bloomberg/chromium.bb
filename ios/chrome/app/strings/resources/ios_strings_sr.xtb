@@ -65,7 +65,6 @@
 <translation id="2103075008456228677">Отвори history.google.com</translation>
 <translation id="2116625576999540962">Број премештених ставки је <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="2149973817440762519">Измените обележивач</translation>
-<translation id="2154710561487035718">Копирање URL адресе</translation>
 <translation id="2230173723195178503">Веб-страница је учитана</translation>
 <translation id="2241634353105152135">Само једном</translation>
 <translation id="2267753748892043616">Додај налог</translation>
@@ -322,7 +321,6 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="7336264872878993241">Проценат преузимања: <ph name="PERCENT" /></translation>
 <translation id="7346909386216857016">Важи</translation>
 <translation id="7400418766976504921">URL адреса</translation>
-<translation id="7419187830569376338">Потражи ову слику на <ph name="SEARCH_ENGINE" />-у</translation>
 <translation id="7425346204213733349">Промене обележивача, историје, лозинки и других подешавања се више неће синхронизовати са Google налогом. Међутим, постојећи подаци ће остати сачувани на Google налогу.</translation>
 <translation id="744343212394640790">Нисам <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Држава/земља</translation>
