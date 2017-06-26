@@ -8,6 +8,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar_constants.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
@@ -180,6 +181,30 @@ TEST_F(BrowserViewTest, RepeatedAccelerators) {
   const ui::Accelerator kNextTabRepeatAccel(
       ui::VKEY_TAB, ui::EF_CONTROL_DOWN | ui::EF_IS_REPEAT);
   EXPECT_TRUE(browser_view()->AcceleratorPressed(kNextTabRepeatAccel));
+}
+
+// Test that the bookmark bar view's parent is not set to nullptr when closing
+// the browser. If the parent is set to nullptr, then the bookmark bar
+// disappears before the browser is closed, which looks weird.
+TEST_F(BrowserViewTest, BookmarkBarParentIsNotNullOnShutdown) {
+  BookmarkBarView::DisableAnimationsForTesting(true);
+
+  Browser* browser = browser_view()->browser();
+  TabStripModel* tab_strip_model = browser->tab_strip_model();
+  EXPECT_EQ(0, tab_strip_model->count());
+
+  AddTab(browser, GURL("about:blank"));
+  EXPECT_EQ(1, tab_strip_model->count());
+
+  BookmarkBarView* bookmark_bar = browser_view()->GetBookmarkBarView();
+  chrome::ExecuteCommand(browser, IDC_SHOW_BOOKMARK_BAR);
+  EXPECT_NE(nullptr, bookmark_bar->parent());
+
+  tab_strip_model->CloseWebContentsAt(tab_strip_model->active_index(), 0);
+  EXPECT_EQ(0, tab_strip_model->count());
+  EXPECT_NE(nullptr, bookmark_bar->parent());
+
+  BookmarkBarView::DisableAnimationsForTesting(false);
 }
 
 class BrowserViewHostedAppTest : public TestWithBrowserView {
