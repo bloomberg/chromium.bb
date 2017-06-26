@@ -288,14 +288,30 @@ TEST_F(DisplaySchedulerTest, SurfaceDamaged) {
             scheduler_.DesiredBeginFrameDeadlineTimeForTest());
   scheduler_.BeginFrameDeadlineForTest();
 
-  // SurfaceDamage with |!has_damage| triggers early deadline.
-  AdvanceTimeAndBeginFrameForTest({sid1});
+  // SurfaceDamage with |!has_damage| triggers early deadline if other damage
+  // exists.
+  AdvanceTimeAndBeginFrameForTest({sid1, sid2});
+  EXPECT_LT(now_src().NowTicks(),
+            scheduler_.DesiredBeginFrameDeadlineTimeForTest());
+  SurfaceDamaged(sid2);
   EXPECT_LT(now_src().NowTicks(),
             scheduler_.DesiredBeginFrameDeadlineTimeForTest());
   BeginFrameAck ack = AckForCurrentBeginFrame();
   ack.has_damage = false;
   scheduler_.ProcessSurfaceDamage(sid1, ack, false);
   EXPECT_GE(now_src().NowTicks(),
+            scheduler_.DesiredBeginFrameDeadlineTimeForTest());
+  scheduler_.BeginFrameDeadlineForTest();
+
+  // SurfaceDamage with |!has_damage| does not trigger early deadline if no
+  // other damage exists.
+  AdvanceTimeAndBeginFrameForTest({sid1});
+  EXPECT_LT(now_src().NowTicks(),
+            scheduler_.DesiredBeginFrameDeadlineTimeForTest());
+  ack = AckForCurrentBeginFrame();
+  ack.has_damage = false;
+  scheduler_.ProcessSurfaceDamage(sid1, ack, false);
+  EXPECT_LT(now_src().NowTicks(),
             scheduler_.DesiredBeginFrameDeadlineTimeForTest());
   scheduler_.BeginFrameDeadlineForTest();
 
