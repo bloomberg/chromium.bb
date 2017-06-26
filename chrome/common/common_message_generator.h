@@ -21,6 +21,7 @@
 #include "chrome/common/cast_messages.h"
 #include "chrome/common/extensions/chrome_extension_messages.h"
 #include "chrome/common/extensions/chrome_utility_extensions_messages.h"
+#include "chrome/common/extensions/mojom/inline_install_traits.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
