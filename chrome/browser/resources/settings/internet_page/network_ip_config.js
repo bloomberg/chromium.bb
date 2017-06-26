@@ -44,7 +44,7 @@ Polymer({
      * property is a human-readable mask instead of a prefix length.
      * @private {?{
      *   ipv4: !CrOnc.IPConfigUIProperties,
-     *   ipv6: !CrOnc.IPConfigUIProperties
+     *   ipv6: (!CrOnc.IPConfigUIProperties|undefined)
      * }}
      */
     ipConfig_: {
@@ -108,13 +108,23 @@ Polymer({
 
   /** @private */
   automaticChanged_: function() {
-    if (!this.automatic_ || !this.ipConfig_) {
-      // When switching from automatic, don't send any changes, ip-change will
-      // be fired in onIPChange when a field is changed.
+    if (!this.automatic_) {
+      // Ensure that there is a valid IPConfig object.
+      this.ipConfig_ = this.ipConfig_ || {
+        ipv4: {
+          Gateway: '192.168.1.1',
+          IPAddress: '192.168.1.1',
+          RoutingPrefix: '255.255.255.0',
+          Type: CrOnc.IPType.IPV4,
+        },
+      };
+      this.sendStaticIpConfig_();
       return;
     }
+
     // Save the static IP configuration when switching to automatic.
-    this.savedStaticIp_ = this.ipConfig_.ipv4;
+    if (this.ipConfig_)
+      this.savedStaticIp_ = this.ipConfig_.ipv4;
     // Send the change.
     this.fire('ip-change', {
       field: 'IPAddressConfigType',
@@ -188,6 +198,11 @@ Polymer({
     var value = event.detail.value;
     // Note: |field| includes the 'ipv4.' prefix.
     this.set('ipConfig_.' + field, value);
+    this.sendStaticIpConfig_();
+  },
+
+  /** @private */
+  sendStaticIpConfig_: function() {
     // This will also set IPAddressConfigType to STATIC.
     this.fire('ip-change', {
       field: 'StaticIPConfig',
