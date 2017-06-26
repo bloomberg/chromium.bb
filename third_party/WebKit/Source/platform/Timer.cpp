@@ -88,7 +88,7 @@ double TimerBase::NextFireInterval() const {
 void TimerBase::MoveToNewTaskRunner(RefPtr<WebTaskRunner> task_runner) {
 #if DCHECK_IS_ON()
   DCHECK_EQ(thread_, CurrentThread());
-  DCHECK(task_runner->RunsTasksOnCurrentThread());
+  DCHECK(task_runner->RunsTasksInCurrentSequence());
 #endif
   // If the underlying task runner stays the same, ignore it.
   if (web_task_runner_->ToSingleThreadTaskRunner() ==

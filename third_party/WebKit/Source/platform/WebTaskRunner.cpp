@@ -111,10 +111,6 @@ TaskHandle::TaskHandle(RefPtr<Runner> runner) : runner_(std::move(runner)) {
   DCHECK(runner_);
 }
 
-bool WebTaskRunner::RunsTasksOnCurrentThread() {
-  return RunsTasksInCurrentSequence();
-}
-
 // Use a custom function for base::Bind instead of convertToBaseCallback to
 // avoid copying the closure later in the call chain. Copying the bound state
 // can lead to data races with ref counted objects like StringImpl. See
@@ -148,7 +144,7 @@ void WebTaskRunner::PostDelayedTask(const WebTraceLocation& location,
 TaskHandle WebTaskRunner::PostCancellableTask(
     const WebTraceLocation& location,
     std::unique_ptr<WTF::Closure> task) {
-  DCHECK(RunsTasksOnCurrentThread());
+  DCHECK(RunsTasksInCurrentSequence());
   RefPtr<TaskHandle::Runner> runner =
       AdoptRef(new TaskHandle::Runner(std::move(task)));
   PostTask(location, WTF::Bind(&TaskHandle::Runner::Run, runner->AsWeakPtr(),
@@ -160,7 +156,7 @@ TaskHandle WebTaskRunner::PostDelayedCancellableTask(
     const WebTraceLocation& location,
     std::unique_ptr<WTF::Closure> task,
     TimeDelta delay) {
-  DCHECK(RunsTasksOnCurrentThread());
+  DCHECK(RunsTasksInCurrentSequence());
   RefPtr<TaskHandle::Runner> runner =
       AdoptRef(new TaskHandle::Runner(std::move(task)));
   PostDelayedTask(location,

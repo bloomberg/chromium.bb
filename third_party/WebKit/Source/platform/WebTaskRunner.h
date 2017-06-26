@@ -60,10 +60,6 @@ class BLINK_PLATFORM_EXPORT TaskHandle {
 class BLINK_PLATFORM_EXPORT WebTaskRunner
     : public ThreadSafeRefCounted<WebTaskRunner> {
  public:
-  // Drepecated: favor RunsTasksInCurrentSequence().
-  // TODO(http://crbug.com/665062): mass redirect callers and remove this.
-  bool RunsTasksOnCurrentThread();
-
   // Returns true if tasks posted to this TaskRunner are sequenced
   // with this call.
   virtual bool RunsTasksInCurrentSequence() = 0;

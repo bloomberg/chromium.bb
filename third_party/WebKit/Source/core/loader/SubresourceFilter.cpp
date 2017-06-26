@@ -69,7 +69,7 @@ bool SubresourceFilter::AllowWebSocketConnection(const KURL& url) {
   // preloads) happening here.
   RefPtr<WebTaskRunner> task_runner = TaskRunnerHelper::Get(
       TaskType::kNetworking, document_loader_->GetFrame());
-  DCHECK(task_runner->RunsTasksOnCurrentThread());
+  DCHECK(task_runner->RunsTasksInCurrentSequence());
   task_runner->PostTask(BLINK_FROM_HERE,
                         WTF::Bind(&SubresourceFilter::ReportLoad,
                                   WrapPersistent(this), url, load_policy));
