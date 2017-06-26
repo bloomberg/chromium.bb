@@ -35,10 +35,14 @@
 #import "ios/chrome/browser/web/network_activity_indicator_tab_helper.h"
 #import "ios/chrome/browser/web/repost_form_tab_helper.h"
 #import "ios/chrome/browser/web/sad_tab_tab_helper.h"
+#import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/web/public/web_state/web_state.h"
 
 void AttachTabHelpers(web::WebState* web_state) {
+  // TabIdHelper sets up the tab ID which is required for the creation of the
+  // Tab by LegacyTabHelper.
+  TabIdTabHelper::CreateForWebState(web_state);
   LegacyTabHelper::CreateForWebState(web_state);
   Tab* tab = LegacyTabHelper::GetTabForWebState(web_state);
   DCHECK(tab);
@@ -46,8 +50,8 @@ void AttachTabHelpers(web::WebState* web_state) {
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(web_state->GetBrowserState());
 
-  // IOSChromeSessionTabHelper comes first because it sets up the tab ID,
-  // and other helpers may rely on that.
+  // IOSChromeSessionTabHelper sets up the session ID used by other helpers,
+  // so it needs to be created before them.
   IOSChromeSessionTabHelper::CreateForWebState(web_state);
 
   NetworkActivityIndicatorTabHelper::CreateForWebState(web_state, tab.tabId);

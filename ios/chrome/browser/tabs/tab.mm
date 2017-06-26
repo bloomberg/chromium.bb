@@ -100,6 +100,7 @@
 #import "ios/chrome/browser/web/navigation_manager_util.h"
 #import "ios/chrome/browser/web/passkit_dialog_provider.h"
 #include "ios/chrome/browser/web/print_observer.h"
+#import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
@@ -153,10 +154,6 @@ namespace {
 class TabHistoryContext;
 class FaviconDriverObserverBridge;
 class TabInfoBarObserver;
-
-// The key under which the Tab ID is stored in the WebState's serializable user
-// data.
-NSString* const kTabIDKey = @"TabID";
 
 // Name of histogram for recording the state of the tab when the renderer is
 // terminated.
@@ -425,7 +422,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 @implementation Tab
 
 @synthesize browserState = _browserState;
-@synthesize tabId = tabId_;
 @synthesize useGreyImageCache = useGreyImageCache_;
 @synthesize isPrerenderTab = _isPrerenderTab;
 @synthesize isLinkLoadingPrerenderTab = isLinkLoadingPrerenderTab_;
@@ -614,22 +610,9 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     // tabId should be nil.
     return nil;
   }
-
-  if (tabId_)
-    return tabId_;
-
-  web::SerializableUserDataManager* userDataManager =
-      web::SerializableUserDataManager::FromWebState(self.webState);
-  NSString* tabId = base::mac::ObjCCast<NSString>(
-      userDataManager->GetValueForSerializationKey(kTabIDKey));
-
-  if (!tabId || ![tabId length]) {
-    tabId = [[NSUUID UUID] UUIDString];
-    userDataManager->AddSerializableData(tabId, kTabIDKey);
-  }
-
-  tabId_ = [tabId copy];
-  return tabId_;
+  TabIdTabHelper* tab_id_helper = TabIdTabHelper::FromWebState(self.webState);
+  DCHECK(tab_id_helper);
+  return tab_id_helper->tab_id();
 }
 
 - (web::WebState*)webState {

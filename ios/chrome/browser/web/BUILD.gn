@@ -25,6 +25,8 @@ source_set("web") {
     "repost_form_tab_helper.mm",
     "sad_tab_tab_helper.h",
     "sad_tab_tab_helper.mm",
+    "tab_id_tab_helper.h",
+    "tab_id_tab_helper.mm",
   ]
   deps = [
     ":sad_tab_tab_helper_delegate",
@@ -63,6 +65,7 @@ source_set("unit_tests") {
     "network_activity_indicator_tab_helper_unittest.mm",
     "repost_form_tab_helper_unittest.mm",
     "sad_tab_tab_helper_unittest.mm",
+    "tab_id_tab_helper_unittest.mm",
   ]
   deps = [
     ":sad_tab_tab_helper_delegate",
