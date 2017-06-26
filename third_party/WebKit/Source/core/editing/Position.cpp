@@ -188,7 +188,7 @@ int PositionTemplate<Strategy>::ComputeOffsetInContainerNode() const {
     case PositionAnchorType::kBeforeChildren:
       return 0;
     case PositionAnchorType::kAfterChildren:
-      return LastOffsetInNode(anchor_node_.Get());
+      return LastOffsetInNode(*anchor_node_);
     case PositionAnchorType::kOffsetInAnchor:
       return MinOffsetForNode<Strategy>(anchor_node_.Get(), offset_);
     case PositionAnchorType::kBeforeAnchor:
@@ -481,10 +481,10 @@ PositionTemplate<Strategy> PositionTemplate<Strategy>::AfterNode(
 
 // static
 template <typename Strategy>
-int PositionTemplate<Strategy>::LastOffsetInNode(Node* node) {
-  return node->IsCharacterDataNode()
-             ? node->MaxCharacterOffset()
-             : static_cast<int>(Strategy::CountChildren(*node));
+int PositionTemplate<Strategy>::LastOffsetInNode(const Node& node) {
+  return node.IsCharacterDataNode()
+             ? node.MaxCharacterOffset()
+             : static_cast<int>(Strategy::CountChildren(node));
 }
 
 // static
@@ -501,9 +501,10 @@ PositionTemplate<Strategy> PositionTemplate<Strategy>::FirstPositionInNode(
 template <typename Strategy>
 PositionTemplate<Strategy> PositionTemplate<Strategy>::LastPositionInNode(
     Node* anchor_node) {
-  if (anchor_node->IsTextNode())
+  if (anchor_node->IsTextNode()) {
     return PositionTemplate<Strategy>(anchor_node,
-                                      LastOffsetInNode(anchor_node));
+                                      LastOffsetInNode(*anchor_node));
+  }
   return PositionTemplate<Strategy>(anchor_node,
                                     PositionAnchorType::kAfterChildren);
 }

@@ -192,7 +192,7 @@ class CORE_TEMPLATE_CLASS_EXPORT PositionTemplate {
   static PositionTemplate<Strategy> AfterNode(const Node& anchor_node);
   static PositionTemplate<Strategy> InParentBeforeNode(const Node& anchor_node);
   static PositionTemplate<Strategy> InParentAfterNode(const Node& anchor_node);
-  static int LastOffsetInNode(Node* anchor_node);
+  static int LastOffsetInNode(const Node& anchor_node);
   static PositionTemplate<Strategy> FirstPositionInNode(
       const Node& anchor_node);
   static PositionTemplate<Strategy> LastPositionInNode(Node* anchor_node);

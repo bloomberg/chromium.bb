@@ -421,7 +421,8 @@ bool InsertListCommand::DoApplyForSingleParagraph(
       if (range_start_is_in_list && new_list)
         current_selection.setStart(new_list, 0, IGNORE_EXCEPTION_FOR_TESTING);
       if (range_end_is_in_list && new_list) {
-        current_selection.setEnd(new_list, Position::LastOffsetInNode(new_list),
+        current_selection.setEnd(new_list,
+                                 Position::LastOffsetInNode(*new_list),
                                  IGNORE_EXCEPTION_FOR_TESTING);
       }
 
