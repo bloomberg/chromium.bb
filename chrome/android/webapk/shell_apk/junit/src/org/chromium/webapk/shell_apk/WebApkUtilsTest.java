@@ -53,8 +53,9 @@ public class WebApkUtilsTest {
     @Before
     public void setUp() {
         mContext = RuntimeEnvironment.application;
-        mPackageManager =
-                Mockito.spy((RobolectricPackageManager) RuntimeEnvironment.getPackageManager());
+        WebApkTestHelper.setUpPackageManager();
+
+        mPackageManager = Mockito.spy(RuntimeEnvironment.getRobolectricPackageManager());
         RuntimeEnvironment.setRobolectricPackageManager(mPackageManager);
 
         WebApkUtils.resetCachedHostPackageForTesting();
@@ -81,7 +82,7 @@ public class WebApkUtilsTest {
         setHostBrowserInSharedPreferences(expectedHostBrowser);
 
         String hostBrowser = WebApkUtils.getHostBrowserPackageName(mContext);
-        Assert.assertEquals(hostBrowser, expectedHostBrowser);
+        Assert.assertEquals(expectedHostBrowser, hostBrowser);
     }
 
     /**
@@ -108,7 +109,7 @@ public class WebApkUtilsTest {
         // Simulates there is a host browser stored in the SharedPreference but uninstalled.
         setHostBrowserInSharedPreferences(BROWSER_UNINSTALLED_SUPPORTING_WEBAPKS);
         hostBrowser = WebApkUtils.getHostBrowserPackageName(mContext);
-        Assert.assertEquals(hostBrowser, expectedHostBrowser);
+        Assert.assertEquals(expectedHostBrowser, hostBrowser);
     }
 
     /**
@@ -148,7 +149,7 @@ public class WebApkUtilsTest {
         setHostBrowserInSharedPreferences(null);
 
         String hostBrowser = WebApkUtils.getHostBrowserPackageName(mContext);
-        Assert.assertEquals(hostBrowser, defaultBrowser);
+        Assert.assertEquals(defaultBrowser, hostBrowser);
     }
 
     /**

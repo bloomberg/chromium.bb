@@ -29,6 +29,10 @@ import java.util.Map;
  * Stores info for WebAPK.
  */
 public class WebApkInfo extends WebappInfo {
+    public static final String RESOURCE_NAME = "name";
+    public static final String RESOURCE_SHORT_NAME = "short_name";
+    public static final String RESOURCE_STRING_TYPE = "string";
+
     private static final String TAG = "WebApkInfo";
 
     private boolean mForceNavigation;
@@ -89,8 +93,24 @@ public class WebApkInfo extends WebappInfo {
             return null;
         }
 
-        String name = IntentUtils.safeGetString(bundle, WebApkMetaDataKeys.NAME);
-        String shortName = IntentUtils.safeGetString(bundle, WebApkMetaDataKeys.SHORT_NAME);
+        Resources res = null;
+        try {
+            res = ContextUtils.getApplicationContext()
+                          .getPackageManager()
+                          .getResourcesForApplication(webApkPackageName);
+        } catch (PackageManager.NameNotFoundException e) {
+            return null;
+        }
+
+        int nameId = res.getIdentifier(RESOURCE_NAME, RESOURCE_STRING_TYPE, webApkPackageName);
+        int shortNameId =
+                res.getIdentifier(RESOURCE_SHORT_NAME, RESOURCE_STRING_TYPE, webApkPackageName);
+        String name = nameId != 0 ? res.getString(nameId)
+                                  : IntentUtils.safeGetString(bundle, WebApkMetaDataKeys.NAME);
+        String shortName = shortNameId != 0
+                ? res.getString(shortNameId)
+                : IntentUtils.safeGetString(bundle, WebApkMetaDataKeys.SHORT_NAME);
+
         String scope = IntentUtils.safeGetString(bundle, WebApkMetaDataKeys.SCOPE);
 
         int displayMode = displayModeFromString(
@@ -110,10 +130,10 @@ public class WebApkInfo extends WebappInfo {
         Map<String, String> iconUrlToMurmur2HashMap = getIconUrlAndIconMurmur2HashMap(bundle);
 
         int primaryIconId = IntentUtils.safeGetInt(bundle, WebApkMetaDataKeys.ICON_ID, 0);
-        Bitmap primaryIcon = decodeImageResource(webApkPackageName, primaryIconId);
+        Bitmap primaryIcon = decodeImageResource(res, primaryIconId);
 
         int badgeIconId = IntentUtils.safeGetInt(bundle, WebApkMetaDataKeys.BADGE_ICON_ID, 0);
-        Bitmap badgeIcon = decodeImageResource(webApkPackageName, badgeIconId);
+        Bitmap badgeIcon = decodeImageResource(res, badgeIconId);
 
         return create(WebApkConstants.WEBAPK_ID_PREFIX + webApkPackageName, url, forceNavigation,
                 scope, new Icon(primaryIcon), new Icon(badgeIcon), name, shortName, displayMode,
@@ -250,16 +270,10 @@ public class WebApkInfo extends WebappInfo {
     }
 
     /**
-     * Decodes bitmap from WebAPK's resources. Returns null when resource is not found.
+     * Decodes bitmap from WebAPK's resources.
      */
-    private static Bitmap decodeImageResource(String webApkPackageName, int resourceId) {
-        PackageManager packageManager = ContextUtils.getApplicationContext().getPackageManager();
-        try {
-            Resources resources = packageManager.getResourcesForApplication(webApkPackageName);
-            return BitmapFactory.decodeResource(resources, resourceId);
-        } catch (PackageManager.NameNotFoundException e) {
-            return null;
-        }
+    private static Bitmap decodeImageResource(Resources webApkResources, int resourceId) {
+        return BitmapFactory.decodeResource(webApkResources, resourceId);
     }
 
     /**

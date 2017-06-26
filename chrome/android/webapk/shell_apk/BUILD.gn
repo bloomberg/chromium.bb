@@ -23,8 +23,6 @@ declare_args() {
 
   # Attributes from Web Manifest.
   webapk_start_url = "https://pwa.rocks/"
-  webapk_name = "Progressive Web Apps"
-  webapk_short_name = "PWA List"
   webapk_scope_url = "https://pwa.rocks/"
   webapk_display_mode = "standalone"
   webapk_orientation = "portrait"
@@ -64,8 +62,6 @@ manifest_processor_template("shell_apk_manifest") {
     "runtime_host=$webapk_runtime_host",
     "runtime_host_application_name=$webapk_runtime_host_application_name",
     "start_url=$webapk_start_url",
-    "name=$webapk_name",
-    "short_name=$webapk_short_name",
     "scope_url=$webapk_scope_url",
     "display_mode=$webapk_display_mode",
     "orientation=$webapk_orientation",
@@ -92,8 +88,6 @@ manifest_processor_template("unbound_shell_apk_manifest") {
     # Intentionally omitted: "runtime_host=org.chromium.chrome",
     "include_label=true",
     "start_url=$webapk_start_url",
-    "name=$webapk_name",
-    "short_name=$webapk_short_name",
     "scope_url=$webapk_scope_url",
     "display_mode=$webapk_display_mode",
     "orientation=$webapk_orientation",
@@ -119,8 +113,6 @@ manifest_processor_template("shell_apk_manifest_javatests") {
     "manifest_package=org.chromium.webapk.test",
     "runtime_host=org.chromium.chrome",
     "start_url=https://pwa.rocks",
-    "name=Test",
-    "short_name=Test",
     "scope_url=https://pwa.rocks",
     "display_mode=standalone",
     "orientation=portrait",
