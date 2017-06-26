@@ -62,3 +62,20 @@ TEST_F(ShortcutInfoTest, UserTitleBecomesShortName) {
 
   ASSERT_EQ(manifest_.short_name.string(), info_.user_title);
 }
+
+// Test that if a manifest with an empty name and empty short_name is passed,
+// that ShortcutInfo::UpdateFromManifest() does not overwrite the current
+// ShortcutInfo::name and ShortcutInfo::short_name.
+TEST_F(ShortcutInfoTest, IgnoreEmptyNameAndShortName) {
+  base::string16 initial_name(base::ASCIIToUTF16("initial_name"));
+  base::string16 initial_short_name(base::ASCIIToUTF16("initial_short_name"));
+
+  info_.name = initial_name;
+  info_.short_name = initial_short_name;
+  manifest_.display = blink::kWebDisplayModeStandalone;
+  manifest_.name = base::NullableString16(base::string16(), false);
+  info_.UpdateFromManifest(manifest_);
+
+  ASSERT_EQ(initial_name, info_.name);
+  ASSERT_EQ(initial_short_name, info_.short_name);
+}
