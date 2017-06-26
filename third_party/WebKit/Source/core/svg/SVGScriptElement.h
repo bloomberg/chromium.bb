@@ -40,7 +40,7 @@ class SVGScriptElement final : public SVGElement,
  public:
   static SVGScriptElement* Create(Document&, bool was_inserted_by_parser);
 
-  ScriptLoader* Loader() const { return loader_.Get(); }
+  ScriptLoader* Loader() const final { return loader_.Get(); }
 
 #if DCHECK_IS_ON()
   bool IsAnimatableAttribute(const QualifiedName&) const override;
@@ -49,6 +49,7 @@ class SVGScriptElement final : public SVGElement,
   bool IsScriptElement() const override { return true; }
 
   DECLARE_VIRTUAL_TRACE();
+  DECLARE_TRACE_WRAPPERS();
 
  private:
   SVGScriptElement(Document&,
@@ -98,6 +99,8 @@ class SVGScriptElement final : public SVGElement,
 
   Element* CloneElementWithoutAttributesAndChildren() override;
   bool LayoutObjectIsNeeded(const ComputedStyle&) override { return false; }
+
+  TraceWrapperMember<ScriptLoader> loader_;
 };
 
 }  // namespace blink

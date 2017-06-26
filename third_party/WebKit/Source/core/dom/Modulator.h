@@ -32,15 +32,25 @@ class WebTaskRunner;
 // A SingleModuleClient is notified when single module script node (node as in a
 // module tree graph) load is complete and its corresponding entry is created in
 // module map.
-class CORE_EXPORT SingleModuleClient : public GarbageCollectedMixin {
+class CORE_EXPORT SingleModuleClient
+    : public GarbageCollectedFinalized<SingleModuleClient>,
+      public TraceWrapperBase {
  public:
+  virtual ~SingleModuleClient() = default;
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
+
   virtual void NotifyModuleLoadFinished(ModuleScript*) = 0;
 };
 
 // A ModuleTreeClient is notified when a module script and its whole descendent
 // tree load is complete.
-class CORE_EXPORT ModuleTreeClient : public GarbageCollectedMixin {
+class CORE_EXPORT ModuleTreeClient
+    : public GarbageCollectedFinalized<ModuleTreeClient>,
+      public TraceWrapperBase {
  public:
+  virtual ~ModuleTreeClient() = default;
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
+
   virtual void NotifyModuleTreeLoadFinished(ModuleScript*) = 0;
 };
 

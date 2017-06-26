@@ -15,11 +15,7 @@ namespace blink {
 class ModuleScript;
 
 // A ModuleTreeClient that lives on the worklet context's thread.
-class WorkletModuleTreeClient final
-    : public GarbageCollectedFinalized<WorkletModuleTreeClient>,
-      public ModuleTreeClient {
-  USING_GARBAGE_COLLECTED_MIXIN(WorkletModuleTreeClient);
-
+class WorkletModuleTreeClient final : public ModuleTreeClient {
  public:
   WorkletModuleTreeClient(Modulator*,
                           RefPtr<WebTaskRunner> outside_settings_task_runner,

@@ -10,7 +10,7 @@
 namespace blink {
 
 ModulePendingScriptTreeClient::ModulePendingScriptTreeClient()
-    : module_script_(nullptr), pending_script_(nullptr) {}
+    : module_script_(this, nullptr), pending_script_(this, nullptr) {}
 
 void ModulePendingScriptTreeClient::SetPendingScript(
     ModulePendingScript* pending_script) {
@@ -40,9 +40,16 @@ DEFINE_TRACE(ModulePendingScriptTreeClient) {
   ModuleTreeClient::Trace(visitor);
 }
 
+DEFINE_TRACE_WRAPPERS(ModulePendingScriptTreeClient) {
+  visitor->TraceWrappers(module_script_);
+  visitor->TraceWrappers(pending_script_);
+  ModuleTreeClient::TraceWrappers(visitor);
+}
+
 ModulePendingScript::ModulePendingScript(ScriptElementBase* element,
                                          ModulePendingScriptTreeClient* client)
-    : PendingScript(element, TextPosition()), module_tree_client_(client) {
+    : PendingScript(element, TextPosition()),
+      module_tree_client_(this, client) {
   CHECK(this->GetElement());
   DCHECK(module_tree_client_);
   client->SetPendingScript(this);
@@ -57,6 +64,11 @@ void ModulePendingScript::DisposeInternal() {
 DEFINE_TRACE(ModulePendingScript) {
   visitor->Trace(module_tree_client_);
   PendingScript::Trace(visitor);
+}
+
+DEFINE_TRACE_WRAPPERS(ModulePendingScript) {
+  visitor->TraceWrappers(module_tree_client_);
+  PendingScript::TraceWrappers(visitor);
 }
 
 void ModulePendingScript::NotifyModuleTreeLoadFinished() {

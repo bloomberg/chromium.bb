@@ -8,6 +8,8 @@
 #include "core/dom/Modulator.h"
 #include "core/dom/ModuleScript.h"
 #include "core/dom/PendingScript.h"
+#include "platform/bindings/ScriptWrappable.h"
+#include "platform/bindings/TraceWrapperMember.h"
 
 namespace blink {
 
@@ -19,11 +21,7 @@ class ModulePendingScript;
 // registered as ModuleTreeClient to FetchTree() first, and later
 // ModulePendingScript is supplied to ModulePendingScriptTreeClient via
 // SetPendingScript() and is notified of module tree load finish.
-class ModulePendingScriptTreeClient final
-    : public GarbageCollectedFinalized<ModulePendingScriptTreeClient>,
-      public ModuleTreeClient {
-  USING_GARBAGE_COLLECTED_MIXIN(ModulePendingScriptTreeClient);
-
+class ModulePendingScriptTreeClient final : public ModuleTreeClient {
  public:
   static ModulePendingScriptTreeClient* Create() {
     return new ModulePendingScriptTreeClient();
@@ -35,6 +33,7 @@ class ModulePendingScriptTreeClient final
   ModuleScript* GetModuleScript() const { return module_script_; }
 
   DECLARE_TRACE();
+  DECLARE_TRACE_WRAPPERS();
 
  private:
   ModulePendingScriptTreeClient();
@@ -43,8 +42,8 @@ class ModulePendingScriptTreeClient final
   void NotifyModuleTreeLoadFinished(ModuleScript*) override;
 
   bool finished_ = false;
-  Member<ModuleScript> module_script_;
-  Member<ModulePendingScript> pending_script_;
+  TraceWrapperMember<ModuleScript> module_script_;
+  TraceWrapperMember<ModulePendingScript> pending_script_;
 };
 
 // PendingScript for a module script
@@ -65,6 +64,7 @@ class CORE_EXPORT ModulePendingScript : public PendingScript {
   }
 
   DECLARE_TRACE();
+  DECLARE_TRACE_WRAPPERS();
 
  private:
   ModulePendingScript(ScriptElementBase*, ModulePendingScriptTreeClient*);
@@ -89,7 +89,7 @@ class CORE_EXPORT ModulePendingScript : public PendingScript {
 
   void CheckState() const override {}
 
-  Member<ModulePendingScriptTreeClient> module_tree_client_;
+  TraceWrapperMember<ModulePendingScriptTreeClient> module_tree_client_;
   bool ready_ = false;
 };
 

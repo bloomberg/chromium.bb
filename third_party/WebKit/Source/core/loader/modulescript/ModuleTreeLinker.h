@@ -8,6 +8,8 @@
 #include "core/CoreExport.h"
 #include "core/dom/AncestorList.h"
 #include "core/dom/Modulator.h"
+#include "platform/bindings/ScriptWrappable.h"
+#include "platform/bindings/TraceWrapperMember.h"
 
 namespace blink {
 
@@ -19,11 +21,7 @@ class ModuleTreeLinkerRegistry;
 // for "internal module script graph fetching procedure" for a module graph tree
 // node.
 // https://html.spec.whatwg.org/multipage/webappapis.html#internal-module-script-graph-fetching-procedure
-class CORE_EXPORT ModuleTreeLinker final
-    : public GarbageCollectedFinalized<ModuleTreeLinker>,
-      public SingleModuleClient {
-  USING_GARBAGE_COLLECTED_MIXIN(ModuleTreeLinker);
-
+class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
  public:
   static ModuleTreeLinker* Fetch(const ModuleScriptFetchRequest&,
                                  const AncestorList&,
@@ -39,6 +37,7 @@ class CORE_EXPORT ModuleTreeLinker final
 
   virtual ~ModuleTreeLinker() = default;
   DECLARE_TRACE();
+  DECLARE_TRACE_WRAPPERS();
 
   bool IsFetching() const {
     return State::kFetchingSelf <= state_ && state_ < State::kFinished;
@@ -86,10 +85,10 @@ class CORE_EXPORT ModuleTreeLinker final
   State state_ = State::kInitial;
   // Correspond to _result_ in
   // https://html.spec.whatwg.org/multipage/webappapis.html#internal-module-script-graph-fetching-procedure
-  Member<ModuleScript> module_script_;
+  TraceWrapperMember<ModuleScript> module_script_;
   // Correspond to _descendants result_ in
   // https://html.spec.whatwg.org/multipage/webappapis.html#internal-module-script-graph-fetching-procedure
-  Member<ModuleScript> descendants_module_script_;
+  TraceWrapperMember<ModuleScript> descendants_module_script_;
   size_t num_incomplete_descendants_ = 0;
   HeapHashSet<Member<DependencyModuleClient>> dependency_clients_;
 };

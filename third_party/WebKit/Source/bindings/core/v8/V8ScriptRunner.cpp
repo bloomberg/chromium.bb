@@ -730,6 +730,10 @@ void V8ScriptRunner::SetCacheTimeStamp(CachedMetadataHandler* cache_handler) {
 void V8ScriptRunner::ThrowException(v8::Isolate* isolate,
                                     v8::Local<v8::Value> exception,
                                     const v8::ScriptOrigin& origin) {
+  // This is intentionally a CHECK, as CallInternalFunction below will deref
+  // nullptr if this condition is false.
+  CHECK(!exception.IsEmpty());
+
   // In order for the current TryCatch to catch this exception and
   // call MessageCallback when SetVerbose(true), create a v8::Function
   // that calls isolate->throwException().
