@@ -14,7 +14,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/rand_util.h"
-#include "base/sha1.h"
 #include "base/strings/string_piece.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/mock_entropy_provider.h"
@@ -68,9 +67,6 @@ const char kExpectStapleStaticIncludeSubdomainsHostname[] =
 
 // kGoodPath is blog.torproject.org.
 const char* const kGoodPath[] = {
-    "sha1/Yz4vayd/83rQfDXkDPn2yhzIScw=",
-    "sha1/3lKvjNsfmrn+WmfDhvr2iVh/yRs=",
-    "sha1/gzF+YoVCU9bXeDGQ7JGQVumRueM=",
     "sha256/4osU79hfY3P2+WJGlT2mxmSL+5FIwLEVxTQcavyBNgQ=",
     "sha256/k2v657xBsOVe1PQRwOsHsw3bsGT2VzIqz5K+59sNQws=",
     "sha256/WoiWRyIOVNa9ihaBciRSC7XHjliYS9VwUGOIud4PB18=",
@@ -84,9 +80,6 @@ const char kGoodPin3[] = "WoiWRyIOVNa9ihaBciRSC7XHjliYS9VwUGOIud4PB18=";
 // kBadPath is plus.google.com via Trustcenter, which is utterly wrong for
 // torproject.org.
 const char* const kBadPath[] = {
-    "sha1/111111111111111111111111111=",
-    "sha1/222222222222222222222222222=",
-    "sha1/333333333333333333333333333=",
     "sha256/1111111111111111111111111111111111111111111=",
     "sha256/2222222222222222222222222222222222222222222=",
     "sha256/3333333333333333333333333333333333333333333=",

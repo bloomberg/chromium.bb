@@ -15,7 +15,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
-#include "base/sha1.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -152,12 +151,13 @@ bool GetHPKPReport(const HostPortPair& host_port_pair,
     std::string known_pin;
 
     switch (hash_value.tag) {
-      case HASH_VALUE_SHA1:
-        known_pin += "pin-sha1=";
-        break;
       case HASH_VALUE_SHA256:
         known_pin += "pin-sha256=";
         break;
+      default:
+        // Don't bother reporting about hash types we don't support. SHA-256 is
+        // the only standardized hash function for HPKP anyway.
+        continue;
     }
 
     std::string base64_value;
