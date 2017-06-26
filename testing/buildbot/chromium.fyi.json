@@ -946,10 +946,20 @@
         "test": "gin_unittests"
       },
       {
+        "args": [
+          "--use-gpu-in-tests"
+        ],
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Ubuntu"
+            }
+          ]
         },
-        "test": "gl_unittests"
+        "test": "gl_unittests",
+        "use_xvfb": false
       },
       {
         "swarming": {
