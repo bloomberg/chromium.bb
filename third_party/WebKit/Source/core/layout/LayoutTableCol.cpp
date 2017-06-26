@@ -167,33 +167,4 @@ LayoutTableCol* LayoutTableCol::NextColumn() const {
   return ToLayoutTableCol(next);
 }
 
-BorderValue LayoutTableCol::BorderAdjoiningCellStartBorder(
-    const LayoutTableCell*) const {
-  return Style()->BorderStart();
-}
-
-BorderValue LayoutTableCol::BorderAdjoiningCellEndBorder(
-    const LayoutTableCell*) const {
-  return Style()->BorderEnd();
-}
-
-BorderValue LayoutTableCol::BorderAdjoiningCellBefore(
-    const LayoutTableCell* cell) const {
-  DCHECK_EQ(Table()
-                ->ColElementAtAbsoluteColumn(cell->AbsoluteColumnIndex() +
-                                             cell->ColSpan())
-                .InnermostColOrColGroup(),
-            this);
-  return Style()->BorderStart();
-}
-
-BorderValue LayoutTableCol::BorderAdjoiningCellAfter(
-    const LayoutTableCell* cell) const {
-  DCHECK_EQ(Table()
-                ->ColElementAtAbsoluteColumn(cell->AbsoluteColumnIndex() - 1)
-                .InnermostColOrColGroup(),
-            this);
-  return Style()->BorderEnd();
-}
-
 }  // namespace blink

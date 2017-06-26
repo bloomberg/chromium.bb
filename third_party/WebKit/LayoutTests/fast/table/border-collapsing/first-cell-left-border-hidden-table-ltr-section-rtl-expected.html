@@ -2,15 +2,11 @@
 <html>
 <body>
     <style>
-        table td
-        {
-            border: 6px solid green;
-        }
         table
         {
+            border: 6px solid green;
             border-collapse: collapse;
             border-spacing: 0px;
-            border-right-style: hidden;
         }
         td {
             height: 20px;
@@ -18,9 +14,10 @@
             padding: 0px;
         }
     </style>
-    <p>Test for bug <a href="https://bugs.webkit.org/show_bug.cgi?id=87900">87900</a>: Add support for direction on table row group with collapsing borders</p>
-    <p>This test checks that a ltr table and a rtl row group properly compute its collapsing borders when the right-most cell's right border is 'hidden'.</p>
-    <p>For this test to pass, there should be only green borders on the cells and no right border on the table.</p>
+    <p>This was a test for wkbug.com/87900: Add support for direction on table row group with collapsing borders,
+    but changed behavior when fixing crbug.com/727173.
+    <p>This test checks that a ltr table and a rtl row group (which should not affect cell ordering) properly compute its collapsing borders when the left-most cell's right border is 'hidden'.</p>
+    <p>For this test to pass, there should be only a rectangle with green borders.</p>
     <table>
         <tbody>
         <tr>

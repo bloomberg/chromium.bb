@@ -1671,10 +1671,15 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
            BorderBottomWidthInternal() == o.BorderBottomWidthInternal();
   }
 
-  BorderValue BorderBefore() const;
-  BorderValue BorderAfter() const;
-  BorderValue BorderStart() const;
-  BorderValue BorderEnd() const;
+  BorderValue BorderBeforeUsing(const ComputedStyle& other) const;
+  BorderValue BorderAfterUsing(const ComputedStyle& other) const;
+  BorderValue BorderStartUsing(const ComputedStyle& other) const;
+  BorderValue BorderEndUsing(const ComputedStyle& other) const;
+
+  BorderValue BorderBefore() const { return BorderBeforeUsing(*this); }
+  BorderValue BorderAfter() const { return BorderAfterUsing(*this); }
+  BorderValue BorderStart() const { return BorderStartUsing(*this); }
+  BorderValue BorderEnd() const { return BorderEndUsing(*this); }
 
   float BorderAfterWidth() const;
   float BorderBeforeWidth() const;

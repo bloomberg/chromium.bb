@@ -295,7 +295,7 @@ void CollapsedBorderPainter::AdjustJoints() {
 }
 
 void CollapsedBorderPainter::AdjustForWritingModeAndDirection() {
-  const auto& style = cell_.StyleForCellFlow();
+  const auto& style = cell_.TableStyle();
   if (!style.IsLeftToRightDirection()) {
     std::swap(start_, end_);
     std::swap(before_.begin_outset, before_.end_outset);

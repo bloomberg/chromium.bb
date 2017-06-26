@@ -75,7 +75,7 @@ class CORE_EXPORT LayoutTableRow final : public LayoutTableBoxComponent {
   LayoutTableRow* NextRow() const;
 
   LayoutTableSection* Section() const { return ToLayoutTableSection(Parent()); }
-  LayoutTable* Table() const { return ToLayoutTable(Parent()->Parent()); }
+  LayoutTable* Table() const final { return ToLayoutTable(Parent()->Parent()); }
 
   static LayoutTableRow* CreateAnonymous(Document*);
   static LayoutTableRow* CreateAnonymousWithParent(const LayoutObject*);
@@ -98,23 +98,6 @@ class CORE_EXPORT LayoutTableRow final : public LayoutTableBoxComponent {
              ->NeedsCellRecalc());  // index may be bogus if cells need recalc.
     return row_index_;
   }
-
-  BorderValue BorderAdjoiningTableStart() const {
-    if (Section()->HasSameDirectionAs(Table()))
-      return Style()->BorderStart();
-
-    return Style()->BorderEnd();
-  }
-
-  BorderValue BorderAdjoiningTableEnd() const {
-    if (Section()->HasSameDirectionAs(Table()))
-      return Style()->BorderEnd();
-
-    return Style()->BorderStart();
-  }
-
-  BorderValue BorderAdjoiningStartCell(const LayoutTableCell*) const;
-  BorderValue BorderAdjoiningEndCell(const LayoutTableCell*) const;
 
   bool NodeAtPoint(HitTestResult&,
                    const HitTestLocation& location_in_container,

@@ -1383,15 +1383,14 @@ LayoutRect LayoutTableSection::LogicalRectForWritingModeAndDirection(
 
   FlipForWritingMode(table_aligned_rect);
 
-  if (!Style()->IsHorizontalWritingMode())
+  if (!TableStyle().IsHorizontalWritingMode())
     table_aligned_rect = table_aligned_rect.TransposedRect();
 
   const Vector<int>& column_pos = Table()->EffectiveColumnPositions();
-  // FIXME: The table's direction should determine our row's direction, not the
-  // section's (see bug 96691).
-  if (!Style()->IsLeftToRightDirection())
+  if (!TableStyle().IsLeftToRightDirection()) {
     table_aligned_rect.SetX(column_pos[column_pos.size() - 1] -
                             table_aligned_rect.MaxX());
+  }
 
   return table_aligned_rect;
 }
@@ -1593,38 +1592,6 @@ unsigned LayoutTableSection::NumEffectiveColumns() const {
   return result + 1;
 }
 
-BorderValue LayoutTableSection::BorderAdjoiningStartCell(
-    const LayoutTableCell* cell) const {
-#if DCHECK_IS_ON()
-  DCHECK(cell->IsFirstOrLastCellInRow());
-#endif
-  return HasSameDirectionAs(cell) ? Style()->BorderStart()
-                                  : Style()->BorderEnd();
-}
-
-BorderValue LayoutTableSection::BorderAdjoiningEndCell(
-    const LayoutTableCell* cell) const {
-#if DCHECK_IS_ON()
-  DCHECK(cell->IsFirstOrLastCellInRow());
-#endif
-  return HasSameDirectionAs(cell) ? Style()->BorderEnd()
-                                  : Style()->BorderStart();
-}
-
-const LayoutTableCell* LayoutTableSection::FirstRowCellAdjoiningTableStart()
-    const {
-  unsigned adjoining_start_cell_column_index =
-      HasSameDirectionAs(Table()) ? 0 : Table()->LastEffectiveColumnIndex();
-  return PrimaryCellAt(0, adjoining_start_cell_column_index);
-}
-
-const LayoutTableCell* LayoutTableSection::FirstRowCellAdjoiningTableEnd()
-    const {
-  unsigned adjoining_end_cell_column_index =
-      HasSameDirectionAs(Table()) ? Table()->LastEffectiveColumnIndex() : 0;
-  return PrimaryCellAt(0, adjoining_end_cell_column_index);
-}
-
 LayoutTableCell* LayoutTableSection::OriginatingCellAt(
     unsigned row,
     unsigned effective_column) {
@@ -1772,19 +1739,18 @@ void LayoutTableSection::SetLogicalPositionForCell(
   LayoutPoint cell_location(0, row_pos_[cell->RowIndex()]);
   int horizontal_border_spacing = Table()->HBorderSpacing();
 
-  // FIXME: The table's direction should determine our row's direction, not the
-  // section's (see bug 96691).
-  if (!Style()->IsLeftToRightDirection())
+  if (!TableStyle().IsLeftToRightDirection()) {
     cell_location.SetX(LayoutUnit(
         Table()->EffectiveColumnPositions()[Table()->NumEffectiveColumns()] -
         Table()->EffectiveColumnPositions()
             [Table()->AbsoluteColumnToEffectiveColumn(
                 cell->AbsoluteColumnIndex() + cell->ColSpan())] +
         horizontal_border_spacing));
-  else
+  } else {
     cell_location.SetX(
         LayoutUnit(Table()->EffectiveColumnPositions()[effective_column] +
                    horizontal_border_spacing));
+  }
 
   cell->SetLogicalLocation(cell_location);
 }
