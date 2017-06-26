@@ -112,6 +112,9 @@
       status: "stable",
     },
     {
+      name: "BlinkRuntimeCallStats",
+    },
+    {
       name: "BlockCredentialedSubresources",
       status: "stable",
     },

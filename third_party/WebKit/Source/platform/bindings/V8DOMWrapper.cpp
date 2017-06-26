@@ -41,6 +41,9 @@ v8::Local<v8::Object> V8DOMWrapper::CreateWrapper(
     v8::Isolate* isolate,
     v8::Local<v8::Object> creation_context,
     const WrapperTypeInfo* type) {
+  RUNTIME_CALL_TIMER_SCOPE(isolate,
+                           RuntimeCallStats::CounterId::kCreateWrapper);
+
   // TODO(adithyas): We should abort wrapper creation if the context access
   // check fails and throws an exception.
   V8WrapperInstantiationScope scope(creation_context, isolate, type);

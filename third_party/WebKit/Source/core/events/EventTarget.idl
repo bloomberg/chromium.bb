@@ -27,5 +27,5 @@
 ] interface EventTarget {
     [Custom=(CallPrologue,CallEpilogue)] void addEventListener(DOMString type, EventListener? listener, optional (AddEventListenerOptions or boolean) options);
     [Custom=(CallPrologue,CallEpilogue)] void removeEventListener(DOMString type, EventListener? listener, optional (EventListenerOptions or boolean) options);
-    [ImplementedAs=dispatchEventForBindings, RaisesException] boolean dispatchEvent(Event event);
+    [ImplementedAs=dispatchEventForBindings, RaisesException, RuntimeCallStatsCounter=EventTargetDispatchEvent] boolean dispatchEvent(Event event);
 };

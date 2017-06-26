@@ -33,6 +33,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/bindings/DOMDataStore.h"
+#include "platform/bindings/RuntimeCallStats.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/bindings/V8Binding.h"
 #include "platform/bindings/WrapperCreationSecurityCheck.h"
@@ -114,6 +115,8 @@ inline v8::Local<v8::Object> V8DOMWrapper::AssociateObjectWithWrapper(
     ScriptWrappable* impl,
     const WrapperTypeInfo* wrapper_type_info,
     v8::Local<v8::Object> wrapper) {
+  RUNTIME_CALL_TIMER_SCOPE(
+      isolate, RuntimeCallStats::CounterId::kAssociateObjectWithWrapper);
   if (DOMDataStore::SetWrapper(isolate, impl, wrapper_type_info, wrapper)) {
     WrapperTypeInfo::WrapperCreated();
     SetNativeInfo(isolate, wrapper, wrapper_type_info, impl);

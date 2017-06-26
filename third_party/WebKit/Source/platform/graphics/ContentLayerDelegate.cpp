@@ -57,9 +57,8 @@ void ContentLayerDelegate::PaintContents(
     WebDisplayItemList* web_display_item_list,
     WebContentLayerClient::PaintingControlSetting painting_control) {
   TRACE_EVENT0("blink,benchmark", "ContentLayerDelegate::paintContents");
-  RuntimeCallTimerScope runtime_timer_scope(
-      RuntimeCallStats::From(V8PerIsolateData::MainThreadIsolate()),
-      RuntimeCallStats::CounterId::kPaintContents);
+  RUNTIME_CALL_TIMER_SCOPE(V8PerIsolateData::MainThreadIsolate(),
+                           RuntimeCallStats::CounterId::kPaintContents);
 
   PaintController& paint_controller = graphics_layer_->GetPaintController();
   paint_controller.SetDisplayItemConstructionIsDisabled(
