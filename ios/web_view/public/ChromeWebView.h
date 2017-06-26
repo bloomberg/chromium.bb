@@ -19,6 +19,7 @@
 #import "cwv_translation_controller.h"
 #import "cwv_translation_controller_delegate.h"
 #import "cwv_translation_language.h"
+#import "cwv_translation_policy.h"
 #import "cwv_ui_delegate.h"
 #import "cwv_user_content_controller.h"
 #import "cwv_user_script.h"
