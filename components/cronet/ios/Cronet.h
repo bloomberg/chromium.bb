@@ -18,7 +18,7 @@ typedef NS_ENUM(NSInteger, CRNHttpCacheType) {
 };
 
 /// Cronet error domain name.
-NSString* const CRNCronetErrorDomain = @"CRNCronetErrorDomain";
+FOUNDATION_EXPORT GRPC_SUPPORT_EXPORT NSString* const CRNCronetErrorDomain;
 
 /// Enum of Cronet NSError codes.
 NS_ENUM(NSInteger){
@@ -27,7 +27,7 @@ NS_ENUM(NSInteger){
 
 /// The corresponding value is a String object that contains the name of
 /// an invalid argument inside the NSError userInfo dictionary.
-NSString* const CRNInvalidArgumentKey = @"CRNInvalidArgumentKey";
+FOUNDATION_EXPORT GRPC_SUPPORT_EXPORT NSString* const CRNInvalidArgumentKey;
 
 // A block, that takes a request, and returns YES if the request should
 // be handled.
