@@ -538,12 +538,12 @@ TEST(ObserverListThreadSafeTest, NotificationOnValidSequence) {
   SequenceVerificationObserver observer_1(task_runner_1);
   SequenceVerificationObserver observer_2(task_runner_2);
 
-  task_runner_1->PostTask(
-      FROM_HERE, Bind(&ObserverListThreadSafe<Foo>::AddObserver, observer_list,
-                      Unretained(&observer_1)));
-  task_runner_2->PostTask(
-      FROM_HERE, Bind(&ObserverListThreadSafe<Foo>::AddObserver, observer_list,
-                      Unretained(&observer_2)));
+  task_runner_1->PostTask(FROM_HERE,
+                          BindOnce(&ObserverListThreadSafe<Foo>::AddObserver,
+                                   observer_list, Unretained(&observer_1)));
+  task_runner_2->PostTask(FROM_HERE,
+                          BindOnce(&ObserverListThreadSafe<Foo>::AddObserver,
+                                   observer_list, Unretained(&observer_2)));
 
   TaskScheduler::GetInstance()->FlushForTesting();
 
@@ -620,8 +620,8 @@ TEST(ObserverListThreadSafeTest, RemoveWhileNotificationIsRunning) {
 
   CreateSequencedTaskRunnerWithTraits({WithBaseSyncPrimitives()})
       ->PostTask(FROM_HERE,
-                 base::Bind(&ObserverListThreadSafe<Foo>::AddObserver,
-                            observer_list, Unretained(&observer)));
+                 base::BindOnce(&ObserverListThreadSafe<Foo>::AddObserver,
+                                observer_list, Unretained(&observer)));
   TaskScheduler::GetInstance()->FlushForTesting();
 
   observer_list->Notify(FROM_HERE, &Foo::Observe, 1);
