@@ -279,6 +279,9 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
     changes.reserve(update.nodes.size());
     for (size_t i = 0; i < update.nodes.size(); ++i) {
       AXNode* node = GetFromId(update.nodes[i].id);
+      if (!node)
+        continue;
+
       bool is_new_node = new_nodes.find(node) != new_nodes.end();
       bool is_reparented_node =
           is_new_node && update_state.HasRemovedNode(node);

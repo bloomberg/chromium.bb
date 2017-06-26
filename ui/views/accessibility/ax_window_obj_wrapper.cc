@@ -96,7 +96,7 @@ void AXWindowObjWrapper::OnWindowHierarchyChanged(
 void AXWindowObjWrapper::OnWindowBoundsChanged(aura::Window* window,
                                                const gfx::Rect& old_bounds,
                                                const gfx::Rect& new_bounds) {
-  if (window != window_)
+  if (window != window_ || !window->IsVisible())
     return;
 
   AXAuraObjCache::GetInstance()->FireEvent(this, ui::AX_EVENT_LOCATION_CHANGED);
@@ -112,7 +112,7 @@ void AXWindowObjWrapper::OnWindowBoundsChanged(aura::Window* window,
 void AXWindowObjWrapper::OnWindowPropertyChanged(aura::Window* window,
                                                  const void* key,
                                                  intptr_t old) {
-  if (window == window_ && key == ui::kChildAXTreeID) {
+  if (window == window_ && key == ui::kChildAXTreeID && window->IsVisible()) {
     AXAuraObjCache::GetInstance()->FireEvent(this,
                                              ui::AX_EVENT_CHILDREN_CHANGED);
   }
