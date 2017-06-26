@@ -92,9 +92,7 @@ void DumpPluginProcessOnIOThread(const std::set<int>& child_ids) {
   // Wait a bit to let dump finish (if requested) before rebooting the device.
   const int kDumpWaitSeconds = 10;
   content::BrowserThread::PostDelayedTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&RebootDevice),
+      content::BrowserThread::UI, FROM_HERE, base::BindOnce(&RebootDevice),
       base::TimeDelta::FromSeconds(dump_requested ? kDumpWaitSeconds : 0));
 }
 
@@ -169,9 +167,9 @@ class AppSession::BrowserWindowHandler : public chrome::BrowserListObserver {
   void OnBrowserAdded(Browser* browser) override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&BrowserWindowHandler::HandleBrowser,
-                   base::Unretained(this),  // LazyInstance, always valid
-                   browser));
+        base::BindOnce(&BrowserWindowHandler::HandleBrowser,
+                       base::Unretained(this),  // LazyInstance, always valid
+                       browser));
   }
 
   DISALLOW_COPY_AND_ASSIGN(BrowserWindowHandler);
@@ -266,7 +264,7 @@ void AppSession::OnPluginHung(const std::set<int>& hung_plugins) {
   LOG(ERROR) << "Plugin hung detected. Dump and reboot.";
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&DumpPluginProcessOnIOThread, hung_plugins));
+      base::BindOnce(&DumpPluginProcessOnIOThread, hung_plugins));
 }
 
 }  // namespace chromeos

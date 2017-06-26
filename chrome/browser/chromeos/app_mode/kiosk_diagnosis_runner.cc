@@ -74,10 +74,9 @@ void KioskDiagnosisRunner::Start(const std::string& app_id) {
 
   // Schedules system logs to be collected after 1 minute.
   content::BrowserThread::PostDelayedTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&KioskDiagnosisRunner::StartSystemLogCollection,
-                 weak_factory_.GetWeakPtr()),
+      content::BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&KioskDiagnosisRunner::StartSystemLogCollection,
+                     weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromMinutes(1));
 }
 
