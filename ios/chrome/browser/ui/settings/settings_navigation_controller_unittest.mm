@@ -89,9 +89,9 @@ TEST_F(SettingsNavigationControllerTest, PopController) {
   @autoreleasepool {
     SettingsNavigationController* settingsController =
         [SettingsNavigationController
-            newSettingsMainControllerWithMainBrowserState:chrome_browser_state_
-                                                              .get()
-                                                 delegate:nil];
+            newSettingsMainControllerWithBrowserState:chrome_browser_state_
+                                                          .get()
+                                             delegate:nil];
     UIViewController* viewController =
         [[UIViewController alloc] initWithNibName:nil bundle:nil];
     [settingsController pushViewController:viewController animated:NO];
@@ -110,9 +110,9 @@ TEST_F(SettingsNavigationControllerTest, DontPopRootController) {
   @autoreleasepool {
     SettingsNavigationController* settingsController =
         [SettingsNavigationController
-            newSettingsMainControllerWithMainBrowserState:chrome_browser_state_
-                                                              .get()
-                                                 delegate:nil];
+            newSettingsMainControllerWithBrowserState:chrome_browser_state_
+                                                          .get()
+                                             delegate:nil];
     EXPECT_EQ(1U, [[settingsController viewControllers] count]);
 
     EXPECT_FALSE([settingsController popViewControllerAnimated:NO]);
@@ -127,9 +127,9 @@ TEST_F(SettingsNavigationControllerTest,
   @autoreleasepool {
     SettingsNavigationController* settingsController =
         [SettingsNavigationController
-            newSettingsMainControllerWithMainBrowserState:chrome_browser_state_
-                                                              .get()
-                                                 delegate:mockDelegate_];
+            newSettingsMainControllerWithBrowserState:chrome_browser_state_
+                                                          .get()
+                                             delegate:mockDelegate_];
     UIViewController* viewController =
         [[UIViewController alloc] initWithNibName:nil bundle:nil];
     [settingsController pushViewController:viewController animated:NO];
@@ -149,9 +149,9 @@ TEST_F(SettingsNavigationControllerTest,
   @autoreleasepool {
     SettingsNavigationController* settingsController =
         [SettingsNavigationController
-            newSettingsMainControllerWithMainBrowserState:chrome_browser_state_
-                                                              .get()
-                                                 delegate:mockDelegate_];
+            newSettingsMainControllerWithBrowserState:chrome_browser_state_
+                                                          .get()
+                                             delegate:mockDelegate_];
     EXPECT_EQ(1U, [[settingsController viewControllers] count]);
     [[mockDelegate_ expect] closeSettings];
     [settingsController popViewControllerOrCloseSettingsAnimated:NO];

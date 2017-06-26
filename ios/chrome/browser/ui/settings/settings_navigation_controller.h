@@ -48,13 +48,12 @@ class ChromeBrowserState;
 
 // Creates a new SettingsCollectionViewController and the chrome around it.
 // |browserState| is used to personalize some settings aspects and should not be
-// nil. |delegate| may be nil.
-// clang-format off
-+ (SettingsNavigationController*)newSettingsMainControllerWithMainBrowserState:
-        (ios::ChromeBrowserState*)browserState
-                                                                      delegate:
-        (id<SettingsNavigationControllerDelegate>)delegate;
-// clang-format on
+// nil nor Off-the-Record. |delegate| may be nil.
++ (SettingsNavigationController*)
+newSettingsMainControllerWithBrowserState:(ios::ChromeBrowserState*)browserState
+                                 delegate:
+                                     (id<SettingsNavigationControllerDelegate>)
+                                         delegate;
 
 // Creates a new AccountsCollectionViewController and the chrome around it.
 // |browserState| is used to personalize some settings aspects and should not be
