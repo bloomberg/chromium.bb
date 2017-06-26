@@ -1118,9 +1118,9 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 }
 
 - (void)startFreeMemoryMonitoring {
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
-      base::BindOnce(&ios_internal::AsynchronousFreeMemoryMonitor));
+  // No need for a post-task or a deferred initialisation as the memory
+  // monitoring already happens on a background sequence.
+  StartFreeMemoryMonitor();
 }
 
 - (void)scheduleLowPriorityStartupTasks {
