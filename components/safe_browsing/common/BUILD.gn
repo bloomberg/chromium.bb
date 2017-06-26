@@ -14,10 +14,13 @@ source_set("common") {
     "safebrowsing_switches.cc",
     "safebrowsing_switches.h",
     "safebrowsing_types.h",
+    "utils.cc",
+    "utils.h",
   ]
 
   deps = [
     "//base",
+    "//crypto:crypto",
     "//ipc",
     "//url/ipc:url_ipc",
   ]

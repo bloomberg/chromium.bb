@@ -16,6 +16,7 @@
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/common/utils.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -57,6 +58,10 @@ ReferrerChainEntry::URLType GetURLTypeAndAdjustAttributionResult(
     *out_result = SafeBrowsingNavigationObserverManager::SUCCESS_LANDING_PAGE;
     return ReferrerChainEntry::LANDING_PAGE;
   }
+}
+
+std::string GetOrigin(const std::string& url) {
+  return GURL(url).GetOrigin().spec();
 }
 
 }  // namespace
@@ -217,6 +222,38 @@ bool SafeBrowsingNavigationObserverManager::IsEnabledAndReady(
          g_browser_process->safe_browsing_service() &&
          g_browser_process->safe_browsing_service()
              ->navigation_observer_manager();
+}
+
+// static
+void SafeBrowsingNavigationObserverManager::SanitizeReferrerChain(
+    ReferrerChain* referrer_chain) {
+  for (int i = 0; i < referrer_chain->size(); i++) {
+    ReferrerChainEntry* entry = referrer_chain->Mutable(i);
+    ReferrerChainEntry entry_copy(*entry);
+    entry->Clear();
+    if (entry_copy.has_url())
+      entry->set_url(GetOrigin(entry_copy.url()));
+    if (entry_copy.has_main_frame_url())
+      entry->set_main_frame_url(GetOrigin(entry_copy.main_frame_url()));
+    entry->set_type(entry_copy.type());
+    for (int j = 0; j < entry_copy.ip_addresses_size(); j++)
+      entry->add_ip_addresses(entry_copy.ip_addresses(j));
+    if (entry_copy.has_referrer_url())
+      entry->set_referrer_url(GetOrigin(entry_copy.referrer_url()));
+    if (entry_copy.has_referrer_main_frame_url())
+      entry->set_referrer_main_frame_url(
+          GetOrigin(entry_copy.referrer_main_frame_url()));
+    entry->set_is_retargeting(entry_copy.is_retargeting());
+    entry->set_navigation_time_msec(entry_copy.navigation_time_msec());
+    for (int j = 0; j < entry_copy.server_redirect_chain_size(); j++) {
+      ReferrerChainEntry::ServerRedirect* server_redirect_entry =
+          entry->add_server_redirect_chain();
+      if (entry_copy.server_redirect_chain(j).has_url()) {
+        server_redirect_entry->set_url(
+            GetOrigin(entry_copy.server_redirect_chain(j).url()));
+      }
+    }
+  }
 }
 
 SafeBrowsingNavigationObserverManager::SafeBrowsingNavigationObserverManager()
@@ -486,10 +523,11 @@ void SafeBrowsingNavigationObserverManager::AddToReferrerChain(
   std::unique_ptr<ReferrerChainEntry> referrer_chain_entry =
       base::MakeUnique<ReferrerChainEntry>();
   const GURL destination_url = nav_event->GetDestinationUrl();
-  referrer_chain_entry->set_url(destination_url.spec());
+  referrer_chain_entry->set_url(ShortURLForReporting(destination_url));
   if (destination_main_frame_url.is_valid() &&
       destination_url != destination_main_frame_url)
-    referrer_chain_entry->set_main_frame_url(destination_main_frame_url.spec());
+    referrer_chain_entry->set_main_frame_url(
+        ShortURLForReporting(destination_main_frame_url));
   referrer_chain_entry->set_type(type);
   auto ip_it = host_to_ip_map_.find(destination_url.host());
   if (ip_it != host_to_ip_map_.end()) {
@@ -500,12 +538,13 @@ void SafeBrowsingNavigationObserverManager::AddToReferrerChain(
   // Since we only track navigation to landing referrer, we will not log the
   // referrer of the landing referrer page.
   if (type != ReferrerChainEntry::LANDING_REFERRER) {
-    referrer_chain_entry->set_referrer_url(nav_event->source_url.spec());
+    referrer_chain_entry->set_referrer_url(
+        ShortURLForReporting(nav_event->source_url));
     // Only set |referrer_main_frame_url| if it is diff from |referrer_url|.
     if (nav_event->source_main_frame_url.is_valid() &&
         nav_event->source_url != nav_event->source_main_frame_url) {
       referrer_chain_entry->set_referrer_main_frame_url(
-          nav_event->source_main_frame_url.spec());
+          ShortURLForReporting(nav_event->source_main_frame_url));
     }
   }
   referrer_chain_entry->set_is_retargeting(nav_event->source_tab_id !=
@@ -517,10 +556,11 @@ void SafeBrowsingNavigationObserverManager::AddToReferrerChain(
     // url.
     ReferrerChainEntry::ServerRedirect* server_redirect =
         referrer_chain_entry->add_server_redirect_chain();
-    server_redirect->set_url(nav_event->original_request_url.spec());
+    server_redirect->set_url(
+        ShortURLForReporting(nav_event->original_request_url));
     for (const GURL& redirect : nav_event->server_redirect_urls) {
       server_redirect = referrer_chain_entry->add_server_redirect_chain();
-      server_redirect->set_url(redirect.spec());
+      server_redirect->set_url(ShortURLForReporting(redirect));
     }
   }
   referrer_chain->Add()->Swap(referrer_chain_entry.get());

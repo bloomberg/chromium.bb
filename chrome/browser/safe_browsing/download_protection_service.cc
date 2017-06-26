@@ -56,11 +56,11 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/common/safebrowsing_switches.h"
+#include "components/safe_browsing/common/utils.h"
 #include "components/safe_browsing/csd.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/page_navigator.h"
-#include "crypto/sha2.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
@@ -107,15 +107,6 @@ void RecordCountOfWhitelistedDownload(WhitelistType type) {
                             WHITELIST_TYPE_MAX);
 }
 
-}  // namespace
-
-const char DownloadProtectionService::kDownloadRequestUrl[] =
-    "https://sb-ssl.google.com/safebrowsing/clientreport/download";
-
-const void* const DownloadProtectionService::kDownloadPingTokenKey
-    = &kDownloadPingTokenKey;
-
-namespace {
 void RecordFileExtensionType(const std::string& metric_name,
                              const base::FilePath& file) {
   UMA_HISTOGRAM_SPARSE_SLOWLY(
@@ -165,6 +156,12 @@ enum SBStatsType {
 };
 
 }  // namespace
+
+const char DownloadProtectionService::kDownloadRequestUrl[] =
+    "https://sb-ssl.google.com/safebrowsing/clientreport/download";
+
+const void* const DownloadProtectionService::kDownloadPingTokenKey =
+    &kDownloadPingTokenKey;
 
 // SafeBrowsing::Client class used to lookup the bad binary URL list.
 
@@ -954,16 +951,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
     if (type_ == ClientDownloadRequest::SAMPLED_UNSUPPORTED_FILE)
       return url.GetOrigin().spec();
 
-    std::string spec = url.spec();
-    if (url.SchemeIs(url::kDataScheme)) {
-      size_t comma_pos = spec.find(',');
-      if (comma_pos != std::string::npos && comma_pos != spec.size() - 1) {
-        std::string hash_value = crypto::SHA256HashString(spec);
-        spec.erase(comma_pos + 1);
-        spec += base::HexEncode(hash_value.data(), hash_value.size());
-      }
-    }
-    return spec;
+    return ShortURLForReporting(url);
   }
 
   void SendRequest() {
@@ -1034,6 +1022,9 @@ class DownloadProtectionService::CheckClientDownloadRequest
         !referrer_chain_data->GetReferrerChain()->empty()) {
       request.mutable_referrer_chain()->Swap(
           referrer_chain_data->GetReferrerChain());
+      if (type_ == ClientDownloadRequest::SAMPLED_UNSUPPORTED_FILE)
+        SafeBrowsingNavigationObserverManager::SanitizeReferrerChain(
+            request.mutable_referrer_chain());
     }
 
     if (archive_is_valid_ != ArchiveValid::UNSET)
