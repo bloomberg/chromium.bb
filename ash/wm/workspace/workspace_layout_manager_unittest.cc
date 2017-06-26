@@ -9,12 +9,12 @@
 
 #include "ash/accessibility_delegate.h"
 #include "ash/frame/custom_frame_view_ash.h"
+#include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller.h"
-#include "ash/shared/app_types.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_layout_manager.h"

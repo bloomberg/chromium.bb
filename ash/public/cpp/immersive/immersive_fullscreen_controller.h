@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SHARED_IMMERSIVE_FULLSCREEN_CONTROLLER_H_
-#define ASH_SHARED_IMMERSIVE_FULLSCREEN_CONTROLLER_H_
+#ifndef ASH_PUBLIC_CPP_IMMERSIVE_IMMERSIVE_FULLSCREEN_CONTROLLER_H_
+#define ASH_PUBLIC_CPP_IMMERSIVE_IMMERSIVE_FULLSCREEN_CONTROLLER_H_
 
 #include <memory>
 #include <vector>
 
-#include "ash/ash_export.h"
-#include "ash/shared/immersive_revealed_lock.h"
+#include "ash/public/cpp/ash_public_export.h"
+#include "ash/public/cpp/immersive/immersive_revealed_lock.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "ui/gfx/animation/animation_delegate.h"
@@ -19,19 +19,19 @@
 namespace gfx {
 class Point;
 class SlideAnimation;
-}
+}  // namespace gfx
 
 namespace ui {
 class GestureEvent;
 class LocatedEvent;
 class MouseEvent;
 class TouchEvent;
-}
+}  // namespace ui
 
 namespace views {
 class View;
 class Widget;
-}
+}  // namespace views
 
 namespace ash {
 
@@ -40,7 +40,7 @@ class ImmersiveFullscreenControllerDelegate;
 class ImmersiveFullscreenControllerTestApi;
 class ImmersiveGestureHandler;
 
-class ASH_EXPORT ImmersiveFullscreenController
+class ASH_PUBLIC_EXPORT ImmersiveFullscreenController
     : public gfx::AnimationDelegate,
       public views::PointerWatcher,
       public views::WidgetObserver,
@@ -271,4 +271,4 @@ class ASH_EXPORT ImmersiveFullscreenController
 
 }  // namespace ash
 
-#endif  // ASH_SHARED_IMMERSIVE_FULLSCREEN_CONTROLLER_H_
+#endif  // ASH_PUBLIC_CPP_IMMERSIVE_IMMERSIVE_FULLSCREEN_CONTROLLER_H_

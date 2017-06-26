@@ -4,7 +4,7 @@
 
 #include "ash/metrics/pointer_metrics_recorder.h"
 
-#include "ash/shared/app_types.h"
+#include "ash/public/cpp/app_types.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FRAME_IMMERSIVE_HANDLER_FACTORY_MUS_H_
 #define CHROME_BROWSER_UI_VIEWS_FRAME_IMMERSIVE_HANDLER_FACTORY_MUS_H_
 
-#include "ash/shared/immersive_handler_factory.h"
+#include "ash/public/cpp/immersive/immersive_handler_factory.h"
 #include "base/macros.h"
 
 class ImmersiveHandlerFactoryMus : public ash::ImmersiveHandlerFactory {

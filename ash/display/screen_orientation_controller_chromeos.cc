@@ -6,7 +6,7 @@
 
 #include "ash/ash_switches.h"
 #include "ash/display/display_configuration_controller.h"
-#include "ash/shared/app_types.h"
+#include "ash/public/cpp/app_types.h"
 #include "ash/shell.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/mru_window_tracker.h"

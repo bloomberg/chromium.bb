@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
 
-#include "ash/shared/immersive_revealed_lock.h"
+#include "ash/public/cpp/immersive/immersive_revealed_lock.h"
 #include "ash/shell.h"
 #include "ash/wm/window_state.h"
 #include "base/macros.h"

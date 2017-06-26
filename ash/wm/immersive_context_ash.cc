@@ -4,7 +4,7 @@
 
 #include "ash/wm/immersive_context_ash.h"
 
-#include "ash/shared/immersive_fullscreen_controller.h"
+#include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"

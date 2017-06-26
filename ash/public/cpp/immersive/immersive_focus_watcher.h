@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SHARED_IMMERSIVE_FOCUS_WATCHER_H_
-#define ASH_SHARED_IMMERSIVE_FOCUS_WATCHER_H_
+#ifndef ASH_PUBLIC_CPP_IMMERSIVE_IMMERSIVE_FOCUS_WATCHER_H_
+#define ASH_PUBLIC_CPP_IMMERSIVE_IMMERSIVE_FOCUS_WATCHER_H_
 
-#include "ash/ash_export.h"
+#include "ash/public/cpp/ash_public_export.h"
 
 namespace ash {
 
 // ImmersiveFocusWatcher is responsible for grabbing a reveal lock based on
 // activation and/or focus.
-class ASH_EXPORT ImmersiveFocusWatcher {
+class ASH_PUBLIC_EXPORT ImmersiveFocusWatcher {
  public:
   virtual ~ImmersiveFocusWatcher() {}
 
@@ -26,4 +26,4 @@ class ASH_EXPORT ImmersiveFocusWatcher {
 
 }  // namespace ash
 
-#endif  // ASH_SHARED_IMMERSIVE_FOCUS_WATCHER_H_
+#endif  // ASH_PUBLIC_CPP_IMMERSIVE_IMMERSIVE_FOCUS_WATCHER_H_

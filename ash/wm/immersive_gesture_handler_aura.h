@@ -6,7 +6,7 @@
 #define ASH_WM_IMMERSIVE_GESTURE_HANDLER_AURA_H_
 
 #include "ash/ash_export.h"
-#include "ash/shared/immersive_gesture_handler.h"
+#include "ash/public/cpp/immersive/immersive_gesture_handler.h"
 #include "ui/events/event_handler.h"
 
 namespace ash {

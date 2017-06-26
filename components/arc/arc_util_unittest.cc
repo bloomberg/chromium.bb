@@ -7,7 +7,7 @@
 #include <memory>
 #include <string>
 
-#include "ash/shared/app_types.h"
+#include "ash/public/cpp/app_types.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"

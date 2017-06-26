@@ -1,4 +1,5 @@
 include_rules = [
+  "+ash/public/cpp",
   "+chromeos/chromeos_switches.h",
   "+chromeos/cryptohome",
   "+chromeos/dbus",
@@ -16,11 +17,9 @@ include_rules = [
 
 specific_include_rules = {
   "arc_util.cc": [
-    "+ash/shared",
     "+ui/aura",
   ],
   "arc_util_unittest.cc": [
-    "+ash/shared",
     "+ui/aura",
   ],
 }

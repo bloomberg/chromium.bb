@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SHARED_IMMERSIVE_FULLSCREEN_CONTROLLER_DELEGATE_H_
-#define ASH_SHARED_IMMERSIVE_FULLSCREEN_CONTROLLER_DELEGATE_H_
+#ifndef ASH_PUBLIC_CPP_IMMERSIVE_IMMERSIVE_FULLSCREEN_CONTROLLER_DELEGATE_H_
+#define ASH_PUBLIC_CPP_IMMERSIVE_IMMERSIVE_FULLSCREEN_CONTROLLER_DELEGATE_H_
 
 #include <vector>
 
-#include "ash/ash_export.h"
+#include "ash/public/cpp/ash_public_export.h"
 
 namespace gfx {
 class Rect;
@@ -15,7 +15,7 @@ class Rect;
 
 namespace ash {
 
-class ASH_EXPORT ImmersiveFullscreenControllerDelegate {
+class ASH_PUBLIC_EXPORT ImmersiveFullscreenControllerDelegate {
  public:
   // Called when a reveal of the top-of-window views starts.
   virtual void OnImmersiveRevealStarted() = 0;
@@ -44,4 +44,4 @@ class ASH_EXPORT ImmersiveFullscreenControllerDelegate {
 
 }  // namespace ash
 
-#endif  // ASH_SHARED_IMMERSIVE_FULLSCREEN_CONTROLLER_DELEGATE_H_
+#endif  // ASH_PUBLIC_CPP_IMMERSIVE_IMMERSIVE_FULLSCREEN_CONTROLLER_DELEGATE_H_

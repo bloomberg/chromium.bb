@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SHARED_APP_TYPES_H_
-#define ASH_SHARED_APP_TYPES_H_
+#ifndef ASH_PUBLIC_CPP_APP_TYPES_H_
+#define ASH_PUBLIC_CPP_APP_TYPES_H_
 
 namespace ash {
 
@@ -22,4 +22,4 @@ const int kAppCount = static_cast<int>(AppType::APP_TYPE_LAST) + 1;
 
 }  // namespace ash
 
-#endif  // ASH_SHARED_APP_TYPES_H_
+#endif  // ASH_PUBLIC_CPP_APP_TYPES_H_

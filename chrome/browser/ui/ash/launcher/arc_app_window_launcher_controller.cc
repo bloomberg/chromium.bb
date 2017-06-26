@@ -6,9 +6,9 @@
 #include <string>
 
 #include "ash/display/screen_orientation_controller_chromeos.h"
+#include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/window_properties.h"
-#include "ash/shared/app_types.h"
 #include "ash/shell.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/window_state.h"

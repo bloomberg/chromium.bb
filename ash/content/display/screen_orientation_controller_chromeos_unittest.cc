@@ -10,7 +10,7 @@
 #include "ash/ash_switches.h"
 #include "ash/content/shell_content_state.h"
 #include "ash/display/screen_orientation_controller_chromeos.h"
-#include "ash/shared/app_types.h"
+#include "ash/public/cpp/app_types.h"
 #include "ash/shell.h"
 #include "ash/system/screen_layout_observer.h"
 #include "ash/test/ash_test_base.h"
