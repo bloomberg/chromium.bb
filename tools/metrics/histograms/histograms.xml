@@ -16370,6 +16370,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Event.ActionAfterDoubleTapNoDelay" enum="ActionAfterDoubleTap">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     On non-mobile sites, gesture taps are delayed to prevent double taps from
@@ -16382,6 +16385,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Event.ActionAfterDoubleTapWithDelay"
     enum="ActionAfterDoubleTap">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     On non-mobile sites, gesture taps are delayed to prevent double taps from
@@ -16435,6 +16441,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Event.CoalescedLatency.Mouse" units="ms">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between the first and last events in a coalesced mouse events group.
@@ -16444,6 +16453,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Event.CoalescedLatency.Touch" units="ms">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between the first and last events in a coalesced touch events group.
@@ -16578,6 +16590,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Event.Frequency.Renderer.FlingAnimate" units="hertz">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Emitted after a renderer process main-thread fling curve animation
@@ -16591,6 +16606,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Event.Frequency.RendererImpl.FlingAnimate" units="hertz">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Emitted after a renderer process impl-thread fling curve animation
@@ -16728,6 +16746,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Event.Latency.Browser" units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between initiation of all input events and browser processing.
@@ -16738,6 +16759,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Event.Latency.Browser.ET_DROP_TARGET_EVENT"
     units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between initiation of input event and browser processing.
@@ -16747,6 +16771,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Event.Latency.Browser.ET_GESTURE_BEGIN" units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between initiation of input event and browser processing.
@@ -16757,6 +16784,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Event.Latency.Browser.ET_GESTURE_DOUBLE_TAP"
     units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between initiation of input event and browser processing.
@@ -16766,6 +16796,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Event.Latency.Browser.ET_GESTURE_END" units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between initiation of input event and browser processing.
@@ -16776,6 +16809,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Event.Latency.Browser.ET_GESTURE_LONG_PRESS"
     units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between initiation of input event and browser processing.
@@ -16786,6 +16822,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Event.Latency.Browser.ET_GESTURE_LONG_TAP"
     units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between initiation of input event and browser processing.
@@ -16796,6 +16835,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Event.Latency.Browser.ET_GESTURE_MULTIFINGER_SWIPE"
     units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between initiation of input event and browser processing.
@@ -16806,6 +16848,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Event.Latency.Browser.ET_GESTURE_PINCH_BEGIN"
     units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between initiation of input event and browser processing.
@@ -16816,6 +16861,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Event.Latency.Browser.ET_GESTURE_PINCH_END"
     units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between initiation of input event and browser processing.
@@ -16826,6 +16874,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Event.Latency.Browser.ET_GESTURE_PINCH_UPDATE"
     units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between initiation of input event and browser processing.
@@ -16836,6 +16887,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Event.Latency.Browser.ET_GESTURE_SCROLL_BEGIN"
     units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between initiation of input event and browser processing.
@@ -16846,6 +16900,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Event.Latency.Browser.ET_GESTURE_SCROLL_END"
     units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between initiation of input event and browser processing.
@@ -16856,6 +16913,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Event.Latency.Browser.ET_GESTURE_SCROLL_UPDATE"
     units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between initiation of input event and browser processing.
@@ -16865,6 +16925,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Event.Latency.Browser.ET_GESTURE_TAP" units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between initiation of input event and browser processing.
@@ -16875,6 +16938,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Event.Latency.Browser.ET_GESTURE_TAP_CANCEL"
     units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between initiation of input event and browser processing.
@@ -16885,6 +16951,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Event.Latency.Browser.ET_GESTURE_TAP_DOWN"
     units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between initiation of input event and browser processing.
@@ -16895,6 +16964,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Event.Latency.Browser.ET_GESTURE_TWO_FINGER_TAP"
     units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between initiation of input event and browser processing.
@@ -16904,6 +16976,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Event.Latency.Browser.ET_KEY_PRESSED" units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between initiation of input event and browser processing.
@@ -16913,6 +16988,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Event.Latency.Browser.ET_KEY_RELEASED" units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between initiation of input event and browser processing.
@@ -16923,6 +17001,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Event.Latency.Browser.ET_MOUSE_CAPTURE_CHANGED"
     units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between initiation of input event and browser processing.
@@ -16932,6 +17013,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Event.Latency.Browser.ET_MOUSE_DRAGGED" units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between initiation of input event and browser processing.
@@ -16941,6 +17025,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Event.Latency.Browser.ET_MOUSE_ENTERED" units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between initiation of input event and browser processing.
@@ -16950,6 +17037,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Event.Latency.Browser.ET_MOUSE_EXITED" units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between initiation of input event and browser processing.
@@ -16959,6 +17049,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Event.Latency.Browser.ET_MOUSE_MOVED" units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between initiation of input event and browser processing.
@@ -16968,6 +17061,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Event.Latency.Browser.ET_MOUSE_RELEASED" units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between initiation of input event and browser processing.
@@ -16977,6 +17073,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Event.Latency.Browser.ET_MOUSEWHEEL" units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between initiation of input event and browser processing.
@@ -16986,6 +17085,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Event.Latency.Browser.ET_SCROLL" units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between initiation of input event and browser processing.
@@ -16996,6 +17098,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Event.Latency.Browser.ET_SCROLL_FLING_CANCEL"
     units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between initiation of input event and browser processing.
@@ -17006,6 +17111,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Event.Latency.Browser.ET_SCROLL_FLING_START"
     units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between initiation of input event and browser processing.
@@ -17015,6 +17123,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Event.Latency.Browser.ET_TOUCH_CANCELLED" units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between initiation of input event and browser processing.
@@ -17024,6 +17135,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Event.Latency.Browser.ET_TOUCH_MOVED" units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between initiation of input event and browser processing.
@@ -17033,6 +17147,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Event.Latency.Browser.ET_TOUCH_PRESSED" units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between initiation of input event and browser processing.
@@ -17042,6 +17159,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Event.Latency.Browser.ET_TOUCH_RELEASED" units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between initiation of input event and browser processing.
@@ -17052,6 +17172,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Event.Latency.Browser.ET_TOUCH_STATIONARY"
     units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between initiation of input event and browser processing.
@@ -17062,6 +17185,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Event.Latency.Browser.ET_TRANSLATED_KEY_PRESS"
     units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between initiation of input event and browser processing.
@@ -17072,6 +17198,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Event.Latency.Browser.ET_TRANSLATED_KEY_RELEASE"
     units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between initiation of input event and browser processing.
@@ -17081,6 +17210,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Event.Latency.Browser.ET_UNKNOWN" units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between initiation of input event and browser processing.
@@ -17090,8 +17222,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Event.Latency.Browser.KeyPressAcked" units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
-  <owner>input-dev@chromium.org</owner>
   <summary>
     Time between key events sent from RWH to renderer and acked by renderer.
     Only monitors key presses.
@@ -17099,8 +17233,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Event.Latency.Browser.KeyPressUI" units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
-  <owner>input-dev@chromium.org</owner>
   <summary>
     Time between key events received by Chrome and sent from RWH to renderer.
     Only monitors key presses.
@@ -17108,6 +17244,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Event.Latency.Browser.TouchAcked" units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between touch events sent from RWH to renderer and acked by renderer.
@@ -17117,6 +17256,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Event.Latency.Browser.TouchUI" units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between touch events received by Chrome and sent from RWH to renderer.
@@ -17126,6 +17268,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Event.Latency.Browser.WheelAcked" units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>ccameron@chromium.org</owner>
   <summary>
     Time between wheel events sent from RWH to renderer and acked by renderer.
@@ -17135,6 +17280,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Event.Latency.Browser.WheelUI" units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>ccameron@chromium.org</owner>
   <summary>
     Time between wheel events received by Chrome and sent from RWH to renderer.
@@ -17272,6 +17420,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Event.Latency.Renderer" units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between initiation of all input events and renderer processing. This is
@@ -17282,6 +17433,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Event.Latency.Renderer2" units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between input event creation and the renderer receiving and starting to
@@ -17295,6 +17449,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Event.Latency.RendererImpl" units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between input event creation and the renderer impl thread receiving and
@@ -17320,6 +17477,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Event.Latency.RendererImpl.GestureScroll2"
     units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between touch event creation and when the resulting GestureScroll
@@ -17965,6 +18125,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Event.RenderView.DiscardInput" enum="BooleanHit">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>dtapuska@chromium.org</owner>
   <summary>
     Whether the input IPC messages were discarded before being fully processed
@@ -18077,6 +18240,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Event.Touch.TouchDispositionsAfterPageLoad"
     enum="TouchEventDispatchResultType">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Records the disposition (handled or not handled) of touchstart events and
@@ -18089,6 +18255,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Event.Touch.TouchDispositionsBeforePageLoad"
     enum="TouchEventDispatchResultType">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Records the disposition (handled or not handled) of touchstart events and
@@ -18114,6 +18283,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Event.Touch.TouchDispositionsDuringFling2"
     enum="TouchEventDispatchResultType">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Records the disposition (handled or not handled) of touchstart and first
@@ -18139,6 +18311,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Event.Touch.TouchDispositionsOutsideFling2"
     enum="TouchEventDispatchResultType">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Records the disposition (handled or not handled) of touchstart and first
@@ -18150,6 +18325,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Event.Touch.TouchLatencyAfterPageLoad" units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between when a touch event was generated and the event was processed.
@@ -18161,6 +18339,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Event.Touch.TouchLatencyBeforePageLoad" units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between when a touch event was generated and the event was processed.
@@ -18173,6 +18354,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Event.Touch.TouchLatencyOutsideFling" units="microseconds">
+  <obsolete>
+    Deprecated 06/2017 due to lack of usage.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between when a touch event was generated and the event was processed.
