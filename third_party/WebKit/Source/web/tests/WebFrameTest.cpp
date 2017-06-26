@@ -9874,13 +9874,18 @@ class WebFrameOverscrollTest
     if (type == WebInputEvent::kGestureScrollUpdate) {
       event.data.scroll_update.delta_x = delta_x;
       event.data.scroll_update.delta_y = delta_y;
+    } else if (type == WebInputEvent::kGestureScrollBegin) {
+      event.data.scroll_begin.delta_x_hint = delta_x;
+      event.data.scroll_begin.delta_y_hint = delta_y;
     }
     return WebCoalescedInputEvent(event);
   }
 
-  void ScrollBegin(FrameTestHelpers::WebViewHelper* web_view_helper) {
-    web_view_helper->WebView()->HandleInputEvent(
-        GenerateEvent(WebInputEvent::kGestureScrollBegin));
+  void ScrollBegin(FrameTestHelpers::WebViewHelper* web_view_helper,
+                   float delta_x_hint,
+                   float delta_y_hint) {
+    web_view_helper->WebView()->HandleInputEvent(GenerateEvent(
+        WebInputEvent::kGestureScrollBegin, delta_x_hint, delta_y_hint));
   }
 
   void ScrollUpdate(FrameTestHelpers::WebViewHelper* web_view_helper,
@@ -9913,7 +9918,7 @@ TEST_P(WebFrameOverscrollTest,
 
   // Calculation of accumulatedRootOverscroll and unusedDelta on multiple
   // scrollUpdate.
-  ScrollBegin(&web_view_helper);
+  ScrollBegin(&web_view_helper, -300, -316);
   EXPECT_CALL(client, DidOverscroll(WebFloatSize(8, 16), WebFloatSize(8, 16),
                                     WebFloatPoint(100, 100), WebFloatSize()));
   ScrollUpdate(&web_view_helper, -308, -316);
@@ -9961,7 +9966,7 @@ TEST_P(WebFrameOverscrollTest,
       ConfigureAndroid);
   web_view_helper.Resize(WebSize(200, 200));
 
-  ScrollBegin(&web_view_helper);
+  ScrollBegin(&web_view_helper, 0, -316);
 
   // Scroll the Div to the end.
   EXPECT_CALL(client, DidOverscroll(_, _, _, _)).Times(0);
@@ -9969,7 +9974,7 @@ TEST_P(WebFrameOverscrollTest,
   Mock::VerifyAndClearExpectations(&client);
 
   ScrollEnd(&web_view_helper);
-  ScrollBegin(&web_view_helper);
+  ScrollBegin(&web_view_helper, 0, -100);
 
   // Now On Scrolling DIV, scroll is bubbled and root layer is over-scrolled.
   EXPECT_CALL(client, DidOverscroll(WebFloatSize(0, 100), WebFloatSize(0, 100),
@@ -10008,7 +10013,7 @@ TEST_P(WebFrameOverscrollTest, RootLayerOverscrolledOnInnerDivOverScroll) {
       ConfigureAndroid);
   web_view_helper.Resize(WebSize(200, 200));
 
-  ScrollBegin(&web_view_helper);
+  ScrollBegin(&web_view_helper, 0, -316);
 
   // Scroll the Div to the end.
   EXPECT_CALL(client, DidOverscroll(_, _, _, _)).Times(0);
@@ -10016,7 +10021,7 @@ TEST_P(WebFrameOverscrollTest, RootLayerOverscrolledOnInnerDivOverScroll) {
   Mock::VerifyAndClearExpectations(&client);
 
   ScrollEnd(&web_view_helper);
-  ScrollBegin(&web_view_helper);
+  ScrollBegin(&web_view_helper, 0, -150);
 
   // Now On Scrolling DIV, scroll is bubbled and root layer is over-scrolled.
   EXPECT_CALL(client, DidOverscroll(WebFloatSize(0, 50), WebFloatSize(0, 50),
@@ -10035,7 +10040,7 @@ TEST_P(WebFrameOverscrollTest, RootLayerOverscrolledOnInnerIFrameOverScroll) {
       nullptr, ConfigureAndroid);
   web_view_helper.Resize(WebSize(200, 200));
 
-  ScrollBegin(&web_view_helper);
+  ScrollBegin(&web_view_helper, 0, -320);
   // Scroll the IFrame to the end.
   EXPECT_CALL(client, DidOverscroll(_, _, _, _)).Times(0);
 
@@ -10049,7 +10054,7 @@ TEST_P(WebFrameOverscrollTest, RootLayerOverscrolledOnInnerIFrameOverScroll) {
   Mock::VerifyAndClearExpectations(&client);
 
   ScrollEnd(&web_view_helper);
-  ScrollBegin(&web_view_helper);
+  ScrollBegin(&web_view_helper, 0, -150);
 
   // Now On Scrolling IFrame, scroll is bubbled and root layer is over-scrolled.
   EXPECT_CALL(client, DidOverscroll(WebFloatSize(0, 50), WebFloatSize(0, 50),
@@ -10073,7 +10078,7 @@ TEST_P(WebFrameOverscrollTest, ScaledPageRootLayerOverscrolled) {
   // Calculation of accumulatedRootOverscroll and unusedDelta on scaled page.
   // The point is (99, 99) because we clamp in the division by 3 to 33 so when
   // we go back to viewport coordinates it becomes (99, 99).
-  ScrollBegin(&web_view_helper);
+  ScrollBegin(&web_view_helper, 0, 30);
   EXPECT_CALL(client, DidOverscroll(WebFloatSize(0, -30), WebFloatSize(0, -30),
                                     WebFloatPoint(99, 99), WebFloatSize()));
   ScrollUpdate(&web_view_helper, 0, 30);
@@ -10111,7 +10116,7 @@ TEST_P(WebFrameOverscrollTest, NoOverscrollForSmallvalues) {
                                     ConfigureAndroid);
   web_view_helper.Resize(WebSize(200, 200));
 
-  ScrollBegin(&web_view_helper);
+  ScrollBegin(&web_view_helper, 10, 10);
   EXPECT_CALL(client,
               DidOverscroll(WebFloatSize(-10, -10), WebFloatSize(-10, -10),
                             WebFloatPoint(100, 100), WebFloatSize()));

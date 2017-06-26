@@ -43,6 +43,10 @@ class CORE_EXPORT ScrollState final
   double deltaX() const { return data_->delta_x; };
   // Positive when scrolling down.
   double deltaY() const { return data_->delta_y; };
+  // Positive when scrolling right.
+  double deltaXHint() const { return data_->delta_x_hint; };
+  // Positive when scrolling down.
+  double deltaYHint() const { return data_->delta_y_hint; };
   // Indicates the smallest delta the input device can produce. 0 for
   // unquantized inputs.
   double deltaGranularity() const { return data_->delta_granularity; };

@@ -108,13 +108,16 @@ class BrowserControlsTest : public ::testing::Test {
     if (type == WebInputEvent::kGestureScrollUpdate) {
       event.data.scroll_update.delta_x = delta_x;
       event.data.scroll_update.delta_y = delta_y;
+    } else if (type == WebInputEvent::kGestureScrollBegin) {
+      event.data.scroll_begin.delta_x_hint = delta_x;
+      event.data.scroll_begin.delta_y_hint = delta_y;
     }
     return WebCoalescedInputEvent(event);
   }
 
   void VerticalScroll(float delta_y) {
     GetWebView()->HandleInputEvent(
-        GenerateEvent(WebInputEvent::kGestureScrollBegin));
+        GenerateEvent(WebInputEvent::kGestureScrollBegin, 0, delta_y));
     GetWebView()->HandleInputEvent(
         GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, delta_y));
     GetWebView()->HandleInputEvent(

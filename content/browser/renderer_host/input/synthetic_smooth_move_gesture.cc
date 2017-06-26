@@ -149,6 +149,8 @@ void SyntheticSmoothMoveGesture::ForwardTouchInputEvents(
 void SyntheticSmoothMoveGesture::ForwardMouseWheelInputEvents(
     const base::TimeTicks& timestamp,
     SyntheticGestureTarget* target) {
+  blink::WebMouseWheelEvent::Phase phase =
+      blink::WebMouseWheelEvent::kPhaseChanged;
   switch (state_) {
     case STARTED:
       if (MoveIsNoOp()) {
@@ -157,6 +159,7 @@ void SyntheticSmoothMoveGesture::ForwardMouseWheelInputEvents(
       }
       ComputeNextMoveSegment();
       state_ = MOVING;
+      phase = blink::WebMouseWheelEvent::kPhaseBegan;
       // Fall through to forward the first event.
     case MOVING: {
       // Even though WebMouseWheelEvents take floating point deltas,
@@ -170,7 +173,7 @@ void SyntheticSmoothMoveGesture::ForwardMouseWheelInputEvents(
       gfx::Vector2d delta_discrete =
           FloorTowardZero(current_move_segment_total_delta -
                           current_move_segment_total_delta_discrete_);
-      ForwardMouseWheelEvent(target, delta_discrete, event_timestamp);
+      ForwardMouseWheelEvent(target, delta_discrete, phase, event_timestamp);
       current_move_segment_total_delta_discrete_ += delta_discrete;
 
       if (FinishedCurrentMoveSegment(event_timestamp)) {
@@ -180,6 +183,9 @@ void SyntheticSmoothMoveGesture::ForwardMouseWheelInputEvents(
           ForwardMouseWheelInputEvents(timestamp, target);
         } else {
           state_ = DONE;
+          ForwardMouseWheelEvent(target, gfx::Vector2d(),
+                                 blink::WebMouseWheelEvent::kPhaseEnded,
+                                 event_timestamp);
         }
       }
     } break;
@@ -240,6 +246,7 @@ void SyntheticSmoothMoveGesture::ForwardMouseClickInputEvents(
 void SyntheticSmoothMoveGesture::ForwardMouseWheelEvent(
     SyntheticGestureTarget* target,
     const gfx::Vector2dF& delta,
+    const blink::WebMouseWheelEvent::Phase phase,
     const base::TimeTicks& timestamp) const {
   blink::WebMouseWheelEvent mouse_wheel_event =
       SyntheticWebMouseWheelEventBuilder::Build(0, 0, delta.x(), delta.y(), 0,
@@ -248,6 +255,7 @@ void SyntheticSmoothMoveGesture::ForwardMouseWheelEvent(
   mouse_wheel_event.SetPositionInWidget(
       current_move_segment_start_position_.x(),
       current_move_segment_start_position_.y());
+  mouse_wheel_event.phase = phase;
 
   mouse_wheel_event.SetTimeStampSeconds(ConvertTimestampToSeconds(timestamp));
 

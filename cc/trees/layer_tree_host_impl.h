@@ -170,7 +170,7 @@ class CC_EXPORT LayerTreeHostImpl
   InputHandler::ScrollStatus RootScrollBegin(
       ScrollState* scroll_state,
       InputHandler::ScrollInputType type) override;
-  ScrollStatus ScrollAnimatedBegin(const gfx::Point& viewport_point) override;
+  ScrollStatus ScrollAnimatedBegin(ScrollState* scroll_state) override;
   InputHandler::ScrollStatus ScrollAnimated(
       const gfx::Point& viewport_point,
       const gfx::Vector2dF& scroll_delta,
@@ -634,6 +634,16 @@ class CC_EXPORT LayerTreeHostImpl
   BeginFrameTracker current_begin_frame_tracker_;
 
  private:
+  // Transforms viewport start point and scroll delta to local start point and
+  // local delta, respectively. If the transformation of either the start or end
+  // point of a scroll is clipped, the function returns false.
+  bool CalculateLocalScrollDeltaAndStartPoint(
+      const ScrollNode& scroll_node,
+      const gfx::PointF& viewport_point,
+      const gfx::Vector2dF& viewport_delta,
+      const ScrollTree& scroll_tree,
+      gfx::Vector2dF* out_local_scroll_delta,
+      gfx::PointF* out_local_start_point = nullptr);
   gfx::Vector2dF ScrollNodeWithViewportSpaceDelta(
       ScrollNode* scroll_node,
       const gfx::PointF& viewport_point,
@@ -665,6 +675,8 @@ class CC_EXPORT LayerTreeHostImpl
       InputHandler::ScrollInputType type);
   bool IsInitialScrollHitTestReliable(LayerImpl* layer, const gfx::PointF&);
   void DistributeScrollDelta(ScrollState* scroll_state);
+  bool CanConsumeDelta(ScrollNode* scroll_node,
+                       const ScrollState& scroll_state);
 
   bool AnimatePageScale(base::TimeTicks monotonic_time);
   bool AnimateScrollbars(base::TimeTicks monotonic_time);

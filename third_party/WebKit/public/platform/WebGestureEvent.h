@@ -85,7 +85,6 @@ class WebGestureEvent : public WebInputEvent {
 
     struct {
       // Initial motion that triggered the scroll.
-      // May be redundant with deltaX/deltaY in the first scrollUpdate.
       float delta_x_hint;
       float delta_y_hint;
       // Default initialized to ScrollUnits::PrecisePixels.

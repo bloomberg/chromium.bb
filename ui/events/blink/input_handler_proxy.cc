@@ -141,6 +141,8 @@ cc::ScrollState CreateScrollStateForGesture(const WebGestureEvent& event) {
     case WebInputEvent::kGestureScrollBegin:
       scroll_state_data.position_x = event.x;
       scroll_state_data.position_y = event.y;
+      scroll_state_data.delta_x_hint = -event.data.scroll_begin.delta_x_hint;
+      scroll_state_data.delta_y_hint = -event.data.scroll_begin.delta_y_hint;
       scroll_state_data.is_beginning = true;
       // On Mac, a GestureScrollBegin in the inertial phase indicates a fling
       // start.
@@ -856,8 +858,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollBegin(
   } else if (ShouldAnimate(gesture_event.data.scroll_begin.delta_hint_units !=
                            blink::WebGestureEvent::ScrollUnits::kPixels)) {
     DCHECK(!scroll_state.is_in_inertial_phase());
-    gfx::Point scroll_point(gesture_event.x, gesture_event.y);
-    scroll_status = input_handler_->ScrollAnimatedBegin(scroll_point);
+    scroll_status = input_handler_->ScrollAnimatedBegin(&scroll_state);
   } else {
     scroll_status = input_handler_->ScrollBegin(
         &scroll_state, GestureScrollInputType(gesture_event.source_device));

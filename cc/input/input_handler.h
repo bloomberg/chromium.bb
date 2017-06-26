@@ -131,8 +131,7 @@ class CC_EXPORT InputHandler {
 
   // Returns SCROLL_ON_IMPL_THREAD if a layer is actively being scrolled or
   // a subsequent call to ScrollAnimated can begin on the impl thread.
-  virtual ScrollStatus ScrollAnimatedBegin(
-      const gfx::Point& viewport_point) = 0;
+  virtual ScrollStatus ScrollAnimatedBegin(ScrollState* scroll_state) = 0;
 
   // Returns SCROLL_ON_IMPL_THREAD if an animation is initiated on the impl
   // thread. delayed_by is the delay that is taken into account when determining

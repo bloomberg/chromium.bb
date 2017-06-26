@@ -22,6 +22,11 @@ class CC_EXPORT ScrollStateData {
   // Scroll delta in viewport coordinates (DIP).
   double delta_x;
   double delta_y;
+  // Scroll delta hint in viewport coordinates (DIP).
+  // Delta hints are equal to deltas of the first gesture scroll update event in
+  // a scroll sequence and are used for hittesting.
+  double delta_x_hint;
+  double delta_y_hint;
   // Pointer (i.e. cursor/touch point) position in viewport coordinates (DIP).
   int position_x;
   int position_y;

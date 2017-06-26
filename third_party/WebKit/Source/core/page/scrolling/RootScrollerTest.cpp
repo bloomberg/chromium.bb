@@ -156,6 +156,9 @@ class RootScrollerTest : public ::testing::Test,
     if (type == WebInputEvent::kGestureScrollUpdate) {
       event.data.scroll_update.delta_x = delta_x;
       event.data.scroll_update.delta_y = delta_y;
+    } else if (type == WebInputEvent::kGestureScrollBegin) {
+      event.data.scroll_begin.delta_x_hint = delta_x;
+      event.data.scroll_begin.delta_y_hint = delta_y;
     }
     return WebCoalescedInputEvent(event);
   }
@@ -748,7 +751,7 @@ TEST_P(RootScrollerTest, RemoteMainFrame) {
   // Try scrolling in the iframe.
   {
     widget->HandleInputEvent(
-        GenerateWheelGestureEvent(WebInputEvent::kGestureScrollBegin));
+        GenerateWheelGestureEvent(WebInputEvent::kGestureScrollBegin, 0, -100));
     widget->HandleInputEvent(GenerateWheelGestureEvent(
         WebInputEvent::kGestureScrollUpdate, 0, -100));
     widget->HandleInputEvent(
@@ -766,7 +769,7 @@ TEST_P(RootScrollerTest, RemoteMainFrame) {
   // Try scrolling in the iframe now that it has a root scroller set.
   {
     widget->HandleInputEvent(
-        GenerateWheelGestureEvent(WebInputEvent::kGestureScrollBegin));
+        GenerateWheelGestureEvent(WebInputEvent::kGestureScrollBegin, 0, -100));
     widget->HandleInputEvent(GenerateWheelGestureEvent(
         WebInputEvent::kGestureScrollUpdate, 0, -100));
     widget->HandleInputEvent(

@@ -32,6 +32,8 @@ ScrollState* ScrollState::Create(ScrollStateInit init) {
       WTF::MakeUnique<ScrollStateData>();
   scroll_state_data->delta_x = init.deltaX();
   scroll_state_data->delta_y = init.deltaY();
+  scroll_state_data->delta_x_hint = init.deltaXHint();
+  scroll_state_data->delta_y_hint = init.deltaYHint();
   scroll_state_data->position_x = init.positionX();
   scroll_state_data->position_y = init.positionY();
   scroll_state_data->velocity_x = init.velocityX();

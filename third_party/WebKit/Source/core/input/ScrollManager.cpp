@@ -85,7 +85,9 @@ AutoscrollController* ScrollManager::GetAutoscrollController() const {
 }
 
 void ScrollManager::RecomputeScrollChain(const Node& start_node,
+                                         const ScrollState& scroll_state,
                                          std::deque<int>& scroll_chain) {
+  DCHECK(!scroll_chain.size());
   scroll_chain.clear();
 
   DCHECK(start_node.GetLayoutObject());
@@ -110,7 +112,8 @@ void ScrollManager::RecomputeScrollChain(const Node& start_node,
     }
 
     if (cur_element) {
-      scroll_chain.push_front(DOMNodeIds::IdForNode(cur_element));
+      if (CanScroll(scroll_state, *cur_element))
+        scroll_chain.push_front(DOMNodeIds::IdForNode(cur_element));
       if (IsViewportScrollingElement(*cur_element) ||
           cur_element == document_element)
         break;
@@ -118,6 +121,35 @@ void ScrollManager::RecomputeScrollChain(const Node& start_node,
 
     cur_box = cur_box->ContainingBlock();
   }
+}
+
+bool ScrollManager::CanScroll(const ScrollState& scroll_state,
+                              const Element& current_element) {
+  const double delta_x = scroll_state.isBeginning() ? scroll_state.deltaXHint()
+                                                    : scroll_state.deltaX();
+  const double delta_y = scroll_state.isBeginning() ? scroll_state.deltaYHint()
+                                                    : scroll_state.deltaY();
+  if (!delta_x && !delta_y)
+    return true;
+
+  if (IsViewportScrollingElement(current_element))
+    return true;
+
+  if (current_element == *(frame_->GetDocument()->documentElement()))
+    return true;
+
+  ScrollableArea* scrollable_area =
+      current_element.GetLayoutBox()
+          ? current_element.GetLayoutBox()->GetScrollableArea()
+          : nullptr;
+  if (!scrollable_area)
+    return false;
+
+  ScrollOffset current_offset = scrollable_area->GetScrollOffset();
+  ScrollOffset target_offset = current_offset + ScrollOffset(delta_x, delta_y);
+  ScrollOffset clamped_offset =
+      scrollable_area->ClampScrollOffset(target_offset);
+  return clamped_offset != current_offset;
 }
 
 bool ScrollManager::LogicalScroll(ScrollDirection direction,
@@ -189,16 +221,14 @@ void ScrollManager::SetFrameWasScrolledByUser() {
     document_loader->GetInitialScrollState().was_scrolled_by_user = true;
 }
 
-void ScrollManager::CustomizedScroll(const Node& start_node,
-                                     ScrollState& scroll_state) {
+void ScrollManager::CustomizedScroll(ScrollState& scroll_state) {
   if (scroll_state.FullyConsumed())
     return;
 
   if (scroll_state.deltaX() || scroll_state.deltaY())
     frame_->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-  if (current_scroll_chain_.empty())
-    RecomputeScrollChain(start_node, current_scroll_chain_);
+  DCHECK(!current_scroll_chain_.empty());
   scroll_state.SetScrollChain(current_scroll_chain_);
 
   scroll_state.distributeToScrollChainDescendant();
@@ -323,6 +353,8 @@ WebInputEventResult ScrollManager::HandleGestureScrollBegin(
   IntPoint position = FlooredIntPoint(gesture_event.PositionInRootFrame());
   scroll_state_data->position_x = position.X();
   scroll_state_data->position_y = position.Y();
+  scroll_state_data->delta_x_hint = -gesture_event.DeltaXInRootFrame();
+  scroll_state_data->delta_y_hint = -gesture_event.DeltaYInRootFrame();
   scroll_state_data->is_beginning = true;
   scroll_state_data->from_user_input = true;
   scroll_state_data->is_direct_manipulation =
@@ -330,7 +362,12 @@ WebInputEventResult ScrollManager::HandleGestureScrollBegin(
   scroll_state_data->delta_consumed_for_scroll_sequence =
       delta_consumed_for_scroll_sequence_;
   ScrollState* scroll_state = ScrollState::Create(std::move(scroll_state_data));
-  CustomizedScroll(*scroll_gesture_handling_node_.Get(), *scroll_state);
+  RecomputeScrollChain(*scroll_gesture_handling_node_.Get(), *scroll_state,
+                       current_scroll_chain_);
+  if (current_scroll_chain_.empty())
+    return WebInputEventResult::kNotHandled;
+
+  CustomizedScroll(*scroll_state);
 
   if (gesture_event.source_device == kWebGestureDeviceTouchscreen)
     UseCounter::Count(frame_->GetDocument(), WebFeature::kScrollByTouch);
@@ -372,6 +409,9 @@ WebInputEventResult ScrollManager::HandleGestureScrollUpdate(
     return result;
   }
 
+  if (current_scroll_chain_.empty())
+    return WebInputEventResult::kNotHandled;
+
   std::unique_ptr<ScrollStateData> scroll_state_data =
       WTF::MakeUnique<ScrollStateData>();
   scroll_state_data->delta_x = delta.Width();
@@ -399,7 +439,8 @@ WebInputEventResult ScrollManager::HandleGestureScrollUpdate(
     scroll_state->SetCurrentNativeScrollingElement(
         previous_gesture_scrolled_element_);
   }
-  CustomizedScroll(*node, *scroll_state);
+
+  CustomizedScroll(*scroll_state);
   previous_gesture_scrolled_element_ =
       scroll_state->CurrentNativeScrollingElement();
   delta_consumed_for_scroll_sequence_ =
@@ -428,6 +469,10 @@ WebInputEventResult ScrollManager::HandleGestureScrollEnd(
 
   if (node && node->GetLayoutObject()) {
     PassScrollGestureEvent(gesture_event, node->GetLayoutObject());
+    if (current_scroll_chain_.empty()) {
+      ClearGestureScrollState();
+      return WebInputEventResult::kNotHandled;
+    }
     std::unique_ptr<ScrollStateData> scroll_state_data =
         WTF::MakeUnique<ScrollStateData>();
     scroll_state_data->is_ending = true;
@@ -440,7 +485,7 @@ WebInputEventResult ScrollManager::HandleGestureScrollEnd(
         delta_consumed_for_scroll_sequence_;
     ScrollState* scroll_state =
         ScrollState::Create(std::move(scroll_state_data));
-    CustomizedScroll(*node, *scroll_state);
+    CustomizedScroll(*scroll_state);
   }
 
   ClearGestureScrollState();
