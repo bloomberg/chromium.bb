@@ -16,14 +16,28 @@ void ScriptModuleResolverImpl::RegisterModuleScript(
   if (module_script->Record().IsNull())
     return;
 
-  DVLOG(1) << "ScriptModuleResolverImpl::registerModuleScript(url=\""
+  DVLOG(1) << "ScriptModuleResolverImpl::RegisterModuleScript(url="
            << module_script->BaseURL().GetString()
-           << "\", hash=" << ScriptModuleHash::GetHash(module_script->Record())
+           << ", hash=" << ScriptModuleHash::GetHash(module_script->Record())
            << ")";
 
   auto result =
       record_to_module_script_map_.Set(module_script->Record(), module_script);
   DCHECK(result.is_new_entry);
+}
+
+void ScriptModuleResolverImpl::UnregisterModuleScript(
+    ModuleScript* module_script) {
+  DCHECK(module_script);
+  if (module_script->Record().IsNull())
+    return;
+
+  DVLOG(1) << "ScriptModuleResolverImpl::UnregisterModuleScript(url="
+           << module_script->BaseURL().GetString()
+           << ", hash=" << ScriptModuleHash::GetHash(module_script->Record())
+           << ")";
+
+  record_to_module_script_map_.erase(module_script->Record());
 }
 
 ScriptModule ScriptModuleResolverImpl::Resolve(
@@ -68,7 +82,8 @@ ScriptModule ScriptModuleResolverImpl::Resolve(
 
   // Step 5. If resolved module script's instantiation state is "errored", then
   // throw resolved module script's instantiation error.
-  if (module_script->State() == ModuleInstantiationState::kErrored) {
+  // TODO(kouhei): Update spec references.
+  if (module_script->IsErrored()) {
     ScriptValue error = modulator_->GetError(module_script);
     exception_state.RethrowV8Exception(error.V8Value());
     return ScriptModule();

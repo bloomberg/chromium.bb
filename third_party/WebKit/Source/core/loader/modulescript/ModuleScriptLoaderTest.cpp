@@ -160,8 +160,7 @@ TEST_F(ModuleScriptLoaderTest, InvalidSpecifier) {
   EXPECT_TRUE(client->WasNotifyFinished())
       << "ModuleScriptLoader should finish synchronously.";
   ASSERT_TRUE(client->GetModuleScript());
-  EXPECT_EQ(client->GetModuleScript()->State(),
-            ModuleInstantiationState::kErrored);
+  EXPECT_TRUE(client->GetModuleScript()->IsErrored());
 }
 
 TEST_F(ModuleScriptLoaderTest, fetchInvalidURL) {

@@ -185,9 +185,7 @@ void ModulatorImpl::ExecuteModule(const ModuleScript* module_script) {
 
   // Step 3. "If s is errored, then report the exception given by s's error for
   // s and abort these steps." [spec text]
-  // TODO(kouhei): Update "is errored".
-  ModuleInstantiationState instantiationState = module_script->State();
-  if (instantiationState == ModuleInstantiationState::kErrored) {
+  if (module_script->IsErrored()) {
     v8::Isolate* isolate = script_state_->GetIsolate();
     ScriptModule::ReportException(
         script_state_.Get(), module_script->CreateErrorInternal(isolate),

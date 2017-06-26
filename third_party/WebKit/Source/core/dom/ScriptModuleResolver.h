@@ -28,10 +28,13 @@ class CORE_EXPORT ScriptModuleResolver
   virtual ~ScriptModuleResolver() {}
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
-  // Notify the ScriptModuleResolver that a ModuleScript exists.
+  // Notifies the ScriptModuleResolver that a ModuleScript exists.
   // This hook gives a chance for the resolver impl to populate module record
   // identifier -> ModuleScript mapping entry.
   virtual void RegisterModuleScript(ModuleScript*) = 0;
+
+  // Notifies the ScriptModuleResolver to clear its ModuleScript mapping.
+  virtual void UnregisterModuleScript(ModuleScript*) = 0;
 
   // Implements "Runtime Semantics: HostResolveImportedModule"
   // https://tc39.github.io/ecma262/#sec-hostresolveimportedmodule

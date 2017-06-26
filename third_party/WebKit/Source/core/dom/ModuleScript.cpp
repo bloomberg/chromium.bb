@@ -151,7 +151,7 @@ ModuleScript::ModuleScript(Modulator* settings_object,
     : settings_object_(settings_object),
       record_(this),
       base_url_(base_url),
-      error_(this),
+      preinstantiation_error_(this),
       nonce_(nonce),
       parser_state_(parser_state),
       credentials_mode_(credentials_mode),
@@ -185,31 +185,23 @@ bool ModuleScript::HasEmptyRecord() const {
 void ModuleScript::SetErrorAndClearRecord(ScriptValue error) {
   DVLOG(1) << "ModuleScript[" << this << "]::SetErrorAndClearRecord()";
 
-  // https://html.spec.whatwg.org/multipage/webappapis.html#error-a-module-script
-  // Step 1. Assert: script's state is not "errored".
-  DCHECK_NE(state_, ModuleInstantiationState::kErrored);
-
-  // Step 2. If script's module record is set, then:
+  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-set-pre-instantiation-error
+  // Step 1. "If script's module record is not null, ..." [spec text]
   if (!record_.IsEmpty()) {
-    // Step 2.1. Set script module record's [[HostDefined]] field to undefined.
-    // TODO(kouhei): Implement this step.
-    // if (ScriptModuleResolver* resolver =
-    // modulator_->GetScriptModuleResolver())
-    //   resolver->UnregisterModuleScript(this);
-    NOTIMPLEMENTED();
-
-    // Step 2.2. Set script's module record to null.
-    record_.Clear();
+    // "set its [[HostDefined]] field to undefined." [spec text]
+    if (ScriptModuleResolver* resolver =
+            settings_object_->GetScriptModuleResolver())
+      resolver->UnregisterModuleScript(this);
   }
 
-  // Step 3. Set script's state to "errored".
-  state_ = ModuleInstantiationState::kErrored;
+  // Step 2. "Set script's module record to null." [spec text]
+  record_.Clear();
 
-  // Step 4. Set script's error to error.
+  // Step 3. "Set script's pre-instantiation error to error." [spec text]
   DCHECK(!error.IsEmpty());
   {
     ScriptState::Scope scope(error.GetScriptState());
-    error_.Set(error.GetIsolate(), error.V8Value());
+    preinstantiation_error_.Set(error.GetIsolate(), error.V8Value());
   }
 }
 
@@ -230,7 +222,7 @@ DEFINE_TRACE_WRAPPERS(ModuleScript) {
   // TODO(mlippautz): Support TraceWrappers(const
   // TraceWrapperV8Reference<v8::Module>&) to remove the cast.
   visitor->TraceWrappers(record_.Cast<v8::Value>());
-  visitor->TraceWrappers(error_);
+  visitor->TraceWrappers(preinstantiation_error_);
 }
 
 bool ModuleScript::IsEmpty() const {
