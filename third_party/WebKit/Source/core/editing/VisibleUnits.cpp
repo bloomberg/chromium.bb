@@ -549,7 +549,7 @@ VisiblePosition StartOfBlock(const VisiblePosition& visible_position,
       position.ComputeContainerNode()
           ? EnclosingBlock(position.ComputeContainerNode(), rule)
           : 0;
-  return start_block ? VisiblePosition::FirstPositionInNode(start_block)
+  return start_block ? VisiblePosition::FirstPositionInNode(*start_block)
                      : VisiblePosition();
 }
 
@@ -643,7 +643,7 @@ VisiblePosition StartOfEditableContent(
   if (!highest_root)
     return VisiblePosition();
 
-  return VisiblePosition::FirstPositionInNode(highest_root);
+  return VisiblePosition::FirstPositionInNode(*highest_root);
 }
 
 VisiblePosition EndOfEditableContent(const VisiblePosition& visible_position) {

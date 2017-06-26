@@ -630,9 +630,9 @@ void ReplaceSelectionCommand::RemoveRedundantStylesAndKeepStyleSpanInline(
     // FIXME: Tolerate differences in id, class, and style attributes.
     if (element->parentNode() && IsNonTableCellHTMLBlockElement(element) &&
         AreIdenticalElements(*element, *element->parentNode()) &&
-        VisiblePosition::FirstPositionInNode(element->parentNode())
+        VisiblePosition::FirstPositionInNode(*element->parentNode())
                 .DeepEquivalent() ==
-            VisiblePosition::FirstPositionInNode(element).DeepEquivalent() &&
+            VisiblePosition::FirstPositionInNode(*element).DeepEquivalent() &&
         VisiblePosition::LastPositionInNode(element->parentNode())
                 .DeepEquivalent() ==
             VisiblePosition::LastPositionInNode(element).DeepEquivalent()) {

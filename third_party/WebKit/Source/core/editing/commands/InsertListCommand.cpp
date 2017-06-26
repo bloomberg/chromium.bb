@@ -384,7 +384,7 @@ bool InsertListCommand::DoApplyForSingleParagraph(
 
       GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
       Node* first_child_in_list =
-          EnclosingListChild(VisiblePosition::FirstPositionInNode(list_element)
+          EnclosingListChild(VisiblePosition::FirstPositionInNode(*list_element)
                                  .DeepEquivalent()
                                  .AnchorNode(),
                              list_element);
@@ -394,7 +394,7 @@ bool InsertListCommand::DoApplyForSingleParagraph(
               : list_element;
 
       MoveParagraphWithClones(
-          VisiblePosition::FirstPositionInNode(list_element),
+          VisiblePosition::FirstPositionInNode(*list_element),
           VisiblePosition::LastPositionInNode(list_element), new_list,
           outer_block, editing_state);
       if (editing_state->IsAborted())
@@ -460,7 +460,7 @@ void InsertListCommand::UnlistifyParagraph(
   VisiblePosition end;
   DCHECK(list_child_node);
   if (isHTMLLIElement(*list_child_node)) {
-    start = VisiblePosition::FirstPositionInNode(list_child_node);
+    start = VisiblePosition::FirstPositionInNode(*list_child_node);
     end = VisiblePosition::LastPositionInNode(list_child_node);
     next_list_child = list_child_node->nextSibling();
     previous_list_child = list_child_node->previousSibling();

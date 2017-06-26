@@ -686,7 +686,7 @@ VisiblePosition PreviousLinePosition(const VisiblePosition& visible_position,
                               : node->GetDocument().documentElement();
   if (!root_element)
     return VisiblePosition();
-  return VisiblePosition::FirstPositionInNode(root_element);
+  return VisiblePosition::FirstPositionInNode(*root_element);
 }
 
 VisiblePosition NextLinePosition(const VisiblePosition& visible_position,
