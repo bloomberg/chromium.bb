@@ -61,7 +61,10 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
 
   ModuleInstantiationState State() const { return state_; }
 
-  // https://html.spec.whatwg.org/multipage/webappapis.html#error-a-module-script
+  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-is-errored
+  bool IsErrored() const { return record_.IsEmpty(); }
+
+  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-set-pre-instantiation-error
   void SetErrorAndClearRecord(ScriptValue error);
 
   // Implements Step 7.2 of:
@@ -69,7 +72,7 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
   void SetInstantiationSuccess();
 
   v8::Local<v8::Value> CreateError(v8::Isolate* isolate) const {
-    return error_.NewLocal(isolate);
+    return preinstantiation_error_.NewLocal(isolate);
   }
 
   ParserDisposition ParserState() const { return parser_state_; }
@@ -113,8 +116,10 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
   friend class ModuleTreeLinkerTestModulator;
   // Access this func only via ModulatorImpl::GetError(),
   // or via Modulator mocks for unit tests.
+  // TODO(kouhei): Needs update after V8 change. The error may also be stored
+  // inside record_.
   v8::Local<v8::Value> CreateErrorInternal(v8::Isolate* isolate) const {
-    return error_.NewLocal(isolate);
+    return preinstantiation_error_.NewLocal(isolate);
   }
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#settings-object
@@ -129,9 +134,10 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-instantiation-state
   ModuleInstantiationState state_ = ModuleInstantiationState::kUninstantiated;
 
-  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-error
+  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-pre-instantiation-error
   //
-  // |record_| and |error_| are TraceWrappers()ed and kept alive via the path of
+  // |record_| and |preinstantiation_error_| are TraceWrappers()ed and kept
+  // alive via the path of
   // DOMWindow -> Modulator/ModulatorImpl -> ModuleMap -> ModuleMap::Entry
   // -> ModuleScript, or
   // Modulator/ModulatorImpl -> ModuleTreeLinkerRegistry -> ModuleTreeLinker
@@ -140,8 +146,7 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
   // ModulePendingScriptTreeClient -> ModuleScript.
   // All the classes/references on the path above should be
   // TraceWrapperBase/TraceWrapperMember<>/etc.,
-  // but other references to those classes can be normal Member<>.
-  TraceWrapperV8Reference<v8::Value> error_;
+  TraceWrapperV8Reference<v8::Value> preinstantiation_error_;
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-nonce
   const String nonce_;

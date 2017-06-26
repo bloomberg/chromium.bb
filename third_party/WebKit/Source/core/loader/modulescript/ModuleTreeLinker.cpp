@@ -182,8 +182,9 @@ void ModuleTreeLinker::NotifyModuleLoadFinished(ModuleScript* result) {
 
   // Step 3. "If result is null, ..."
   // Step 4. "If result's state is "instantiated" or "errored", ..."
+  // TODO(kouhei): Update the spec references.
   if (!result || result->State() == ModuleInstantiationState::kInstantiated ||
-      result->State() == ModuleInstantiationState::kErrored) {
+      result->IsErrored()) {
     // "asynchronously complete this algorithm with result, and abort these
     // steps."
     descendants_module_script_ = result;
@@ -242,8 +243,9 @@ void ModuleTreeLinker::FetchDescendants() {
   // Step 2. If module script's state is "instantiated" or "errored",
   // asynchronously complete this algorithm with module script, and abort these
   // steps.
+  // TODO(kouhei): Update spec references
   if (module_script_->State() == ModuleInstantiationState::kInstantiated ||
-      module_script_->State() == ModuleInstantiationState::kErrored) {
+      module_script_->IsErrored()) {
     descendants_module_script_ = module_script_;
     AdvanceState(State::kFinished);
     return;
@@ -400,7 +402,8 @@ void ModuleTreeLinker::NotifyOneDescendantFinished(
   // "If any invocation of the internal module script graph fetching procedure
   // asynchronously completes with a module script whose state is "errored",
   // then ..." [spec text]
-  if (module_script->State() == ModuleInstantiationState::kErrored) {
+  // TODO(kouhei): Update spec references.
+  if (module_script->IsErrored()) {
     // "optionally abort all other invocations, ..." [spec text]
     // TODO(kouhei) Implement this.
 
@@ -440,8 +443,7 @@ void ModuleTreeLinker::Instantiate() {
   // Contrary to the spec, we don't store the "record" in Step 4 for its use in
   // Step 10. If Instantiate() was called on descendant ModuleTreeLinker and
   // failed, module_script_->Record() may be already cleared.
-  if (module_script_->State() == ModuleInstantiationState::kErrored) {
-    DCHECK(module_script_->HasEmptyRecord());
+  if (module_script_->IsErrored()) {
     AdvanceState(State::kFinished);
     return;
   }

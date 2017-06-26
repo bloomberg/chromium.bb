@@ -15,9 +15,10 @@ class EmptyScriptModuleResolver final : public ScriptModuleResolver {
  public:
   EmptyScriptModuleResolver() {}
 
-  // We ignore RegisterModuleScript() calls caused by
+  // We ignore {Unr,R}egisterModuleScript() calls caused by
   // ModuleScript::CreateForTest().
   void RegisterModuleScript(ModuleScript*) override {}
+  void UnregisterModuleScript(ModuleScript*) override {}
 
   ScriptModule Resolve(const String& specifier,
                        const ScriptModule& referrer,

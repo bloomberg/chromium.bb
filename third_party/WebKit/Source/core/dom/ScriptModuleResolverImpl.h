@@ -42,6 +42,8 @@ class CORE_EXPORT ScriptModuleResolverImpl final
   // Implements ScriptModuleResolver:
 
   void RegisterModuleScript(ModuleScript*) final;
+  void UnregisterModuleScript(ModuleScript*) final;
+
   // Implements "Runtime Semantics: HostResolveImportedModule" per HTML spec.
   // https://html.spec.whatwg.org/#hostresolveimportedmodule(referencingmodule,-specifier)
   ScriptModule Resolve(const String& specifier,

@@ -56,6 +56,10 @@ class TestScriptModuleResolver final : public ScriptModuleResolver {
     register_module_script_call_count_++;
   }
 
+  void UnregisterModuleScript(ModuleScript*) override {
+    FAIL() << "UnregisterModuleScript shouldn't be called in ModuleMapTest";
+  }
+
   ScriptModule Resolve(const String& specifier,
                        const ScriptModule& referrer,
                        ExceptionState&) override {

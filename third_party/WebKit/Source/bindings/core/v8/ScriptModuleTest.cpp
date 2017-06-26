@@ -35,6 +35,7 @@ class TestScriptModuleResolver final : public ScriptModuleResolver {
   // Implements ScriptModuleResolver:
 
   void RegisterModuleScript(ModuleScript*) override { NOTREACHED(); }
+  void UnregisterModuleScript(ModuleScript*) override { NOTREACHED(); }
 
   ScriptModule Resolve(const String& specifier,
                        const ScriptModule&,
