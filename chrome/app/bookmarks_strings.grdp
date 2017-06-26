@@ -413,6 +413,12 @@
   <message name="IDS_MD_BOOKMARK_MANAGER_NO_SEARCH_RESULTS" desc="Text on the bookmarks list that indicates that no bookmarks or folders match the search.">
     No search results found
   </message>
+  <message name="IDS_MD_BOOKMARK_MANAGER_OPEN_DIALOG_TITLE" desc="Title of the dialog confirming whether a large number of bookmarks should be opened.">
+    Open selected items
+  </message>
+  <message name="IDS_MD_BOOKMARK_MANAGER_OPEN_DIALOG_CONFIRM" desc="Label for the button to confirm opening a large number of bookmarks.">
+    Open
+  </message>
   <message name="IDS_MD_BOOKMARK_MANAGER_ITEMS_SELECTED" desc="Label displayed in bookmark manager toolbar telling the user how many items they have selected.">
     <ph name="NUMBER_OF_ITEMS_SELECTED">$1</ph> selected
   </message>

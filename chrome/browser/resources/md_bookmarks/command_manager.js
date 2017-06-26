@@ -48,6 +48,9 @@ cr.define('bookmarks', function() {
       globalCanEdit_: Boolean,
     },
 
+    /** @private {?Function} */
+    confirmOpenCallback_: null,
+
     attached: function() {
       assert(CommandManager.instance_ == null);
       CommandManager.instance_ = this;
@@ -344,6 +347,8 @@ cr.define('bookmarks', function() {
     },
 
     /**
+     * Open the given |urls| in response to a |command|. May show a confirmation
+     * dialog before opening large numbers of URLs.
      * @param {!Array<string>} urls
      * @param {Command} command
      * @private
@@ -357,16 +362,29 @@ cr.define('bookmarks', function() {
       if (urls.length == 0)
         return;
 
-      var incognito = command == Command.OPEN_INCOGNITO;
-      if (command == Command.OPEN_NEW_WINDOW || incognito) {
-        chrome.windows.create({url: urls, incognito: incognito});
-      } else {
-        if (command == Command.OPEN)
-          chrome.tabs.create({url: urls.shift(), active: true});
-        urls.forEach(function(url) {
-          chrome.tabs.create({url: url, active: false});
-        });
+      var openUrlsCallback = function() {
+        var incognito = command == Command.OPEN_INCOGNITO;
+        if (command == Command.OPEN_NEW_WINDOW || incognito) {
+          chrome.windows.create({url: urls, incognito: incognito});
+        } else {
+          if (command == Command.OPEN)
+            chrome.tabs.create({url: urls.shift(), active: true});
+          urls.forEach(function(url) {
+            chrome.tabs.create({url: url, active: false});
+          });
+        }
+      };
+
+      if (urls.length <= OPEN_CONFIRMATION_LIMIT) {
+        openUrlsCallback();
+        return;
       }
+
+      this.confirmOpenCallback_ = openUrlsCallback;
+      var dialog = this.$.openDialog.get();
+      dialog.querySelector('.body').textContent =
+          loadTimeData.getStringF('openDialogBody', urls.length);
+      dialog.showModal();
     },
 
     /**
@@ -468,6 +486,17 @@ cr.define('bookmarks', function() {
         return;
 
       this.closeCommandMenu();
+    },
+
+    /** @private */
+    onOpenCancelTap_: function() {
+      this.$.openDialog.get().cancel();
+    },
+
+    /** @private */
+    onOpenConfirmTap_: function() {
+      this.confirmOpenCallback_();
+      this.$.openDialog.get().close();
     },
 
     /**

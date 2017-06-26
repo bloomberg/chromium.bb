@@ -16,6 +16,12 @@ suite('<bookmarks-command-manager>', function() {
   });
 
   setup(function() {
+    var bulkChildren = [];
+    for (var i = 1; i <= 20; i++) {
+      var id = '3' + i;
+      bulkChildren.push(createItem(id, {url: `http://${id}/`}));
+    }
+
     store = new bookmarks.TestStore({
       nodes: testTree(
           createFolder(
@@ -42,7 +48,8 @@ suite('<bookmarks-command-manager>', function() {
               '2',
               [
                 createFolder('21', []),
-              ]))
+              ]),
+          createFolder('3', bulkChildren)),
     });
     store.replaceSingleton();
 
@@ -179,6 +186,36 @@ suite('<bookmarks-command-manager>', function() {
 
     MockInteractions.pressAndReleaseKeyOn(document.body, 13, 'shift', 'Enter');
     commandManager.assertLastCommand(Command.OPEN_NEW_WINDOW);
+  });
+
+  test('opening many items causes a confirmation dialog', function() {
+    var lastCreate = null;
+    chrome.windows.create = function(createConfig) {
+      lastCreate = createConfig;
+    };
+
+    var items = new Set(['3']);
+    assertTrue(commandManager.canExecute(Command.OPEN_NEW_WINDOW, items));
+
+    commandManager.handle(Command.OPEN_NEW_WINDOW, items);
+    // No window should be created right away.
+    assertEquals(null, lastCreate);
+
+    var dialog = commandManager.$.openDialog.getIfExists();
+    assertTrue(dialog.open);
+
+    // Pressing 'cancel' should not open the window.
+    MockInteractions.tap(dialog.querySelector('.cancel-button'));
+    assertFalse(dialog.open);
+    assertEquals(null, lastCreate);
+
+    commandManager.handle(Command.OPEN_NEW_WINDOW, items);
+    assertTrue(dialog.open);
+
+    // Pressing 'yes' will open all the URLs.
+    MockInteractions.tap(dialog.querySelector('.action-button'));
+    assertFalse(dialog.open);
+    assertEquals(20, lastCreate.url.length);
   });
 
   test('cannot execute "Open in New Tab" on folders with no items', function() {
