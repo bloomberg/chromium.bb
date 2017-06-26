@@ -9,6 +9,8 @@ if (is_android) {
 
 source_set("public") {
   sources = [
+    "event_constants.cc",
+    "event_constants.h",
     "feature_constants.cc",
     "feature_constants.h",
     "feature_engagement_tracker.h",
