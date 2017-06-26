@@ -109,59 +109,32 @@ LayoutSelection::LayoutSelection(FrameSelection& frame_selection)
       has_pending_selection_(false),
       paint_range_(SelectionPaintRange()) {}
 
-static SelectionInFlatTree CalcSelection(
-    const VisibleSelectionInFlatTree& original_selection,
-    bool should_show_blok_cursor) {
-  const PositionInFlatTree& start = original_selection.Start();
-  const PositionInFlatTree& end = original_selection.End();
-  SelectionType selection_type = original_selection.GetSelectionType();
-  const TextAffinity affinity = original_selection.Affinity();
-
-  bool paint_block_cursor =
-      should_show_blok_cursor &&
-      selection_type == SelectionType::kCaretSelection &&
-      !IsLogicalEndOfLine(CreateVisiblePosition(end, affinity));
-  if (EnclosingTextControl(start.ComputeContainerNode())) {
-    // TODO(yosin) We should use |PositionMoveType::CodePoint| to avoid
-    // ending paint at middle of character.
-    PositionInFlatTree end_position =
-        paint_block_cursor ? NextPositionOf(original_selection.Extent(),
-                                            PositionMoveType::kCodeUnit)
-                           : end;
-    return SelectionInFlatTree::Builder()
-        .SetBaseAndExtent(start, end_position)
-        .Build();
-  }
-
-  const VisiblePositionInFlatTree& visible_start = CreateVisiblePosition(
-      start, selection_type == SelectionType::kRangeSelection
-                 ? TextAffinity::kDownstream
-                 : affinity);
-  if (visible_start.IsNull())
-    return SelectionInFlatTree();
-  if (paint_block_cursor) {
-    const VisiblePositionInFlatTree visible_extent = NextPositionOf(
-        CreateVisiblePosition(end, affinity), kCanSkipOverEditingBoundary);
-    if (visible_extent.IsNull())
-      return SelectionInFlatTree();
-    SelectionInFlatTree::Builder builder;
-    builder.Collapse(visible_start.ToPositionWithAffinity());
-    builder.Extend(visible_extent.DeepEquivalent());
-    return builder.Build();
-  }
-  const VisiblePositionInFlatTree visible_end = CreateVisiblePosition(
-      end, selection_type == SelectionType::kRangeSelection
-               ? TextAffinity::kUpstream
-               : affinity);
-  if (visible_end.IsNull())
-    return SelectionInFlatTree();
-  SelectionInFlatTree::Builder builder;
-  builder.Collapse(visible_start.ToPositionWithAffinity());
-  builder.Extend(visible_end.DeepEquivalent());
-  return builder.Build();
+static bool ShouldShowBlockCursor(const FrameSelection& frame_selection,
+                                  const VisibleSelectionInFlatTree& selection) {
+  if (!frame_selection.ShouldShowBlockCursor())
+    return false;
+  if (selection.GetSelectionType() != SelectionType::kCaretSelection)
+    return false;
+  if (IsLogicalEndOfLine(selection.VisibleEnd()))
+    return false;
+  return true;
 }
 
+static VisibleSelectionInFlatTree CalcSelection(
+    const FrameSelection& frame_selection) {
+  const VisibleSelectionInFlatTree& original_selection =
+      frame_selection.ComputeVisibleSelectionInFlatTree();
 
+  if (!ShouldShowBlockCursor(frame_selection, original_selection))
+    return original_selection;
+
+  const PositionInFlatTree end_position = NextPositionOf(
+      original_selection.Start(), PositionMoveType::kGraphemeCluster);
+  return CreateVisibleSelection(
+      SelectionInFlatTree::Builder()
+          .SetBaseAndExtent(original_selection.Start(), end_position)
+          .Build());
+}
 
 // Objects each have a single selection rect to examine.
 using SelectedObjectMap = HashMap<LayoutObject*, SelectionState>;
@@ -324,17 +297,7 @@ static SelectionPaintRange CalcSelectionPaintRange(
   if (selection_in_dom.IsNone())
     return SelectionPaintRange();
 
-  const VisibleSelectionInFlatTree& original_selection =
-      frame_selection.ComputeVisibleSelectionInFlatTree();
-  // Construct a new VisibleSolution, since visibleSelection() is not
-  // necessarily valid, and the following steps assume a valid selection. See
-  // <https://bugs.webkit.org/show_bug.cgi?id=69563> and
-  // <rdar://problem/10232866>.
-  const SelectionInFlatTree& new_selection = CalcSelection(
-      original_selection, frame_selection.ShouldShowBlockCursor());
-  const VisibleSelectionInFlatTree& selection =
-      CreateVisibleSelection(new_selection);
-
+  const VisibleSelectionInFlatTree& selection = CalcSelection(frame_selection);
   if (!selection.IsRange() || frame_selection.IsHidden())
     return SelectionPaintRange();
 
