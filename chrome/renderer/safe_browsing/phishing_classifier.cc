@@ -119,8 +119,8 @@ void PhishingClassifier::BeginClassification(
   // this is the case, post a task to begin feature extraction on the next
   // iteration of the message loop.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&PhishingClassifier::BeginFeatureExtraction,
-                            weak_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&PhishingClassifier::BeginFeatureExtraction,
+                                weak_factory_.GetWeakPtr()));
 }
 
 void PhishingClassifier::BeginFeatureExtraction() {

@@ -126,8 +126,8 @@ void PhishingTermFeatureExtractor::ExtractFeatures(
   state_.reset(new ExtractionState(*page_text_, clock_->Now()));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&PhishingTermFeatureExtractor::ExtractFeaturesWithTimeout,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&PhishingTermFeatureExtractor::ExtractFeaturesWithTimeout,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void PhishingTermFeatureExtractor::CancelPendingExtraction() {
@@ -181,7 +181,7 @@ void PhishingTermFeatureExtractor::ExtractFeaturesWithTimeout() {
                             chunk_elapsed);
         base::ThreadTaskRunnerHandle::Get()->PostTask(
             FROM_HERE,
-            base::Bind(
+            base::BindOnce(
                 &PhishingTermFeatureExtractor::ExtractFeaturesWithTimeout,
                 weak_factory_.GetWeakPtr()));
         return;

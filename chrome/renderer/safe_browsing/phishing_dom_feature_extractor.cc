@@ -132,8 +132,8 @@ void PhishingDOMFeatureExtractor::ExtractFeatures(
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&PhishingDOMFeatureExtractor::ExtractFeaturesWithTimeout,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&PhishingDOMFeatureExtractor::ExtractFeaturesWithTimeout,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void PhishingDOMFeatureExtractor::CancelPendingExtraction() {
@@ -212,7 +212,7 @@ void PhishingDOMFeatureExtractor::ExtractFeaturesWithTimeout() {
                               chunk_elapsed);
           base::ThreadTaskRunnerHandle::Get()->PostTask(
               FROM_HERE,
-              base::Bind(
+              base::BindOnce(
                   &PhishingDOMFeatureExtractor::ExtractFeaturesWithTimeout,
                   weak_factory_.GetWeakPtr()));
           return;

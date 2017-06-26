@@ -182,8 +182,9 @@ class PhishingDOMFeatureExtractorTest : public ChromeRenderViewTest {
   // the iframe "frame1" from the document.
   void ScheduleRemoveIframe() {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&PhishingDOMFeatureExtractorTest::RemoveIframe,
-                              weak_factory_.GetWeakPtr()));
+        FROM_HERE,
+        base::BindOnce(&PhishingDOMFeatureExtractorTest::RemoveIframe,
+                       weak_factory_.GetWeakPtr()));
   }
 
  protected:

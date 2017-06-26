@@ -117,8 +117,9 @@ class PhishingTermFeatureExtractorTest : public ::testing::Test {
         base::Bind(&PhishingTermFeatureExtractorTest::ExtractionDone,
                    base::Unretained(this)));
     msg_loop_.task_runner()->PostTask(
-        FROM_HERE, base::Bind(&PhishingTermFeatureExtractorTest::QuitExtraction,
-                              base::Unretained(this)));
+        FROM_HERE,
+        base::BindOnce(&PhishingTermFeatureExtractorTest::QuitExtraction,
+                       base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
   }
 
