@@ -402,6 +402,12 @@ bool AXLayoutObject::IsReadOnly() const {
 
   if (IsWebArea()) {
     Document& document = layout_object_->GetDocument();
+    // Non-active documents don't have an editable style.
+    // Return |true| so as not to confuse Windows screen readers which will not
+    // initialize their virtual buffer if the document is marked editable.
+    if (!document.IsActive())
+      return true;
+
     HTMLElement* body = document.body();
     if (body && HasEditableStyle(*body)) {
       AXObject* ax_body = AxObjectCache().GetOrCreate(body);
