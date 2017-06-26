@@ -4,6 +4,7 @@
 
 #include "content/browser/accessibility/ax_platform_position.h"
 
+#include "content/browser/accessibility/accessibility_flags.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "ui/accessibility/ax_enums.h"
@@ -103,8 +104,7 @@ int AXPlatformPosition::MaxTextOffset() const {
 // with a special (embedded object) character and not with their actual text
 // contents.
 int AXPlatformPosition::MaxTextOffsetInParent() const {
-#if defined(OS_WIN) || \
-    (defined(OS_LINUX) && defined(USE_X11) && !defined(OS_CHROMEOS))
+#if defined(OS_WIN) || BUILDFLAG(USE_ATK)
   if (IsNullPosition())
     return INVALID_OFFSET;
   if (GetAnchor()->IsTextOnlyObject())

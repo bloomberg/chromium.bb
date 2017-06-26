@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//gpu/vulkan/features.gni")
@@ -172,6 +173,7 @@ source_set("browser") {
   ]
 
   public_deps = [
+    ":accessibility_flags",
     "//ipc",
     "//media/mojo/interfaces:remoting",
     "//third_party/WebKit/public:offscreen_canvas_mojo_bindings",
@@ -2142,6 +2144,12 @@ source_set("browser") {
       "hyphenation/hyphenation_impl.h",
     ]
   }
+}
+
+buildflag_header("accessibility_flags") {
+  header = "accessibility_flags.h"
+  header_dir = "content/browser/accessibility"
+  flags = [ "USE_ATK=$use_atk" ]
 }
 
 # See comment at the top of //content/BUILD.gn for how this works.
