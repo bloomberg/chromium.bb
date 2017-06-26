@@ -20,6 +20,7 @@ HostCachePersistenceManager::HostCachePersistenceManager(
     : cache_(cache),
       pref_service_(pref_service),
       pref_name_(pref_name),
+      writing_pref_(false),
       delay_(delay),
       weak_factory_(this) {
   DCHECK(cache_);
