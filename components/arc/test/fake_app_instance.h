@@ -79,7 +79,7 @@ class FakeAppInstance : public mojom::AppInstance {
   ~FakeAppInstance() override;
 
   // mojom::AppInstance overrides:
-  void Init(mojom::AppHostPtr host_ptr) override {}
+  void Init(mojom::AppHostPtr host_ptr) override;
   void RefreshAppList() override;
   void LaunchApp(const std::string& package_name,
                  const std::string& activity,
