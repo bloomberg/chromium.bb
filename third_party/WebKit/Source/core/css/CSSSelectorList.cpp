@@ -47,7 +47,8 @@ CSSSelectorList CSSSelectorList::Copy() const {
   unsigned length = this->ComputeLength();
   list.selector_array_ =
       reinterpret_cast<CSSSelector*>(WTF::Partitions::FastMalloc(
-          sizeof(CSSSelector) * length, kCSSSelectorTypeName));
+          WTF::Partitions::ComputeAllocationSize(length, sizeof(CSSSelector)),
+          kCSSSelectorTypeName));
   for (unsigned i = 0; i < length; ++i)
     new (&list.selector_array_[i]) CSSSelector(selector_array_[i]);
 
@@ -65,9 +66,10 @@ CSSSelectorList CSSSelectorList::AdoptSelectorVector(
   DCHECK(flattened_size);
 
   CSSSelectorList list;
-  list.selector_array_ =
-      reinterpret_cast<CSSSelector*>(WTF::Partitions::FastMalloc(
-          sizeof(CSSSelector) * flattened_size, kCSSSelectorTypeName));
+  list.selector_array_ = reinterpret_cast<CSSSelector*>(
+      WTF::Partitions::FastMalloc(WTF::Partitions::ComputeAllocationSize(
+                                      flattened_size, sizeof(CSSSelector)),
+                                  kCSSSelectorTypeName));
   size_t array_index = 0;
   for (size_t i = 0; i < selector_vector.size(); ++i) {
     CSSParserSelector* current = selector_vector[i].get();
