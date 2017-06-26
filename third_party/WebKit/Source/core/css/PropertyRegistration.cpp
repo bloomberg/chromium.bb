@@ -22,30 +22,21 @@
 
 namespace blink {
 
-static InterpolationTypes SetRegistrationOnCSSInterpolationTypes(
-    CSSInterpolationTypes css_interpolation_types,
-    const PropertyRegistration& registration) {
-  InterpolationTypes result;
-  for (auto& css_interpolation_type : css_interpolation_types) {
-    css_interpolation_type->SetCustomPropertyRegistration(registration);
-    result.push_back(std::move(css_interpolation_type));
-  }
-  return result;
-}
-
 PropertyRegistration::PropertyRegistration(
+    const AtomicString& name,
     const CSSSyntaxDescriptor& syntax,
     bool inherits,
     const CSSValue* initial,
-    PassRefPtr<CSSVariableData> initial_variable_data,
-    CSSInterpolationTypes css_interpolation_types)
+    PassRefPtr<CSSVariableData> initial_variable_data)
     : syntax_(syntax),
       inherits_(inherits),
       initial_(initial),
       initial_variable_data_(std::move(initial_variable_data)),
-      interpolation_types_(SetRegistrationOnCSSInterpolationTypes(
-          std::move(css_interpolation_types),
-          *this)) {}
+      interpolation_types_(
+          CSSInterpolationTypesMap::CreateInterpolationTypesForCSSSyntax(
+              name,
+              syntax,
+              *this)) {}
 
 static bool ComputationallyIndependent(const CSSValue& value) {
   DCHECK(!value.IsCSSWideKeyword());
@@ -119,14 +110,12 @@ void PropertyRegistration::registerProperty(
     return;
   }
 
-  CSSInterpolationTypes css_interpolation_types =
-      CSSInterpolationTypesMap::CreateCSSInterpolationTypesForSyntax(
-          atomic_name, syntax_descriptor);
-
+  const CSSValue* initial = nullptr;
+  RefPtr<CSSVariableData> initial_variable_data;
   if (descriptor.hasInitialValue()) {
     CSSTokenizer tokenizer(descriptor.initialValue());
     bool is_animation_tainted = false;
-    const CSSValue* initial = syntax_descriptor.Parse(
+    initial = syntax_descriptor.Parse(
         tokenizer.TokenRange(),
         document->ElementSheet().Contents()->ParserContext(),
         is_animation_tainted);
@@ -144,11 +133,8 @@ void PropertyRegistration::registerProperty(
     }
     initial =
         &StyleBuilderConverter::ConvertRegisteredPropertyInitialValue(*initial);
-    RefPtr<CSSVariableData> initial_variable_data = CSSVariableData::Create(
+    initial_variable_data = CSSVariableData::Create(
         tokenizer.TokenRange(), is_animation_tainted, false);
-    registry.RegisterProperty(
-        atomic_name, syntax_descriptor, descriptor.inherits(), initial,
-        std::move(initial_variable_data), std::move(css_interpolation_types));
   } else {
     if (!syntax_descriptor.IsTokenStream()) {
       exception_state.ThrowDOMException(
@@ -156,10 +142,11 @@ void PropertyRegistration::registerProperty(
           "An initial value must be provided if the syntax is not '*'");
       return;
     }
-    registry.RegisterProperty(atomic_name, syntax_descriptor,
-                              descriptor.inherits(), nullptr, nullptr,
-                              std::move(css_interpolation_types));
   }
+  registry.RegisterProperty(
+      atomic_name, *new PropertyRegistration(atomic_name, syntax_descriptor,
+                                             descriptor.inherits(), initial,
+                                             std::move(initial_variable_data)));
 
   // TODO(timloh): Invalidate only elements with this custom property set
   document->SetNeedsStyleRecalc(kSubtreeStyleChange,

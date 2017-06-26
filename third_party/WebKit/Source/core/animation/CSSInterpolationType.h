@@ -17,8 +17,6 @@ class StyleResolverState;
 
 class CSSInterpolationType : public InterpolationType {
  public:
-  void SetCustomPropertyRegistration(const PropertyRegistration&);
-
   class CSSConversionChecker : public ConversionChecker {
    public:
     bool IsValid(const InterpolationEnvironment& environment,
@@ -33,7 +31,7 @@ class CSSInterpolationType : public InterpolationType {
   };
 
  protected:
-  CSSInterpolationType(PropertyHandle);
+  CSSInterpolationType(PropertyHandle, const PropertyRegistration* = nullptr);
 
   CSSPropertyID CssProperty() const { return GetProperty().CssProperty(); }
 
