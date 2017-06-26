@@ -61,6 +61,7 @@ const SkColor kActionsRowBackgroundColor = SkColorSetRGB(0xee, 0xee, 0xee);
 constexpr int kMaxLinesForMessageView = 1;
 constexpr int kMaxLinesForExpandedMessageView = 4;
 
+constexpr int kListNotificationOverflowIndicatorSpacing = 4;
 constexpr int kCompactTitleMessageViewSpacing = 12;
 
 constexpr int kProgressBarHeight = 4;
@@ -105,12 +106,47 @@ class ItemView : public views::View {
   explicit ItemView(const message_center::NotificationItem& item);
   ~ItemView() override;
 
+  void SetRemainingCount(int num_remaining);
+  void SetRemainingCountVisible(bool visible);
+
  private:
+  class LayoutManager : public views::FillLayout {
+   public:
+    LayoutManager(ItemView* item_view)
+        : views::FillLayout(), item_view_(item_view) {}
+
+    void Layout(View* host) override {
+      gfx::Rect container_bounds = host->GetContentsBounds();
+      if (item_view_->remaining_count_->visible()) {
+        // Show the full content of the overflow indicator and collapse the
+        // message container.
+        container_bounds.set_width(
+            container_bounds.width() -
+            item_view_->remaining_count_->GetPreferredSize().width() -
+            kListNotificationOverflowIndicatorSpacing);
+      }
+      item_view_->container_->SetBoundsRect(container_bounds);
+      item_view_->remaining_count_->SetBoundsRect(host->GetContentsBounds());
+    }
+
+   private:
+    ItemView* item_view_;
+  };
+
+  // Container of the title and the message.
+  views::View* container_;
+  // Overflow indicator e.g. "+3" shown on the right bottom.
+  views::Label* remaining_count_;
+
   DISALLOW_COPY_AND_ASSIGN(ItemView);
 };
 
 ItemView::ItemView(const message_center::NotificationItem& item) {
-  SetLayoutManager(
+  SetLayoutManager(new ItemView::LayoutManager(this));
+
+  container_ = new views::View;
+  AddChildView(container_);
+  container_->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, gfx::Insets(),
                            message_center::kItemTitleToMessagePadding));
 
@@ -119,17 +155,36 @@ ItemView::ItemView(const message_center::NotificationItem& item) {
   title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title->SetEnabledColor(message_center::kRegularTextColor);
   title->SetBackgroundColor(message_center::kDimTextBackgroundColor);
-  AddChildView(title);
+  container_->AddChildView(title);
 
   views::Label* message = new views::Label(item.message);
   message->set_collapse_when_hidden(true);
   message->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   message->SetEnabledColor(message_center::kDimTextColor);
   message->SetBackgroundColor(message_center::kDimTextBackgroundColor);
-  AddChildView(message);
+  container_->AddChildView(message);
+
+  remaining_count_ = new views::Label();
+  remaining_count_->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
+  remaining_count_->SetEnabledColor(message_center::kDimTextColor);
+  remaining_count_->SetBackgroundColor(message_center::kDimTextBackgroundColor);
+  remaining_count_->SetVisible(false);
+  AddChildView(remaining_count_);
 }
 
 ItemView::~ItemView() {}
+
+void ItemView::SetRemainingCount(int num_remaining) {
+  if (num_remaining > 0) {
+    remaining_count_->SetText(l10n_util::GetStringFUTF16Int(
+        IDS_MESSAGE_CENTER_LIST_NOTIFICATION_OVERFLOW_INDICATOR,
+        num_remaining));
+  }
+}
+
+void ItemView::SetRemainingCountVisible(bool visible) {
+  remaining_count_->SetVisible(visible);
+}
 
 // CompactTitleMessageView /////////////////////////////////////////////////////
 
@@ -521,15 +576,20 @@ void NotificationViewMD::CreateOrUpdateListItemViews(
 
   const std::vector<NotificationItem>& items = notification.items();
 
-  for (size_t i = 0; i < items.size() && i < kNotificationMaximumItems; ++i) {
+  for (size_t i = 0; i < items.size() && i < kMaxLinesForExpandedMessageView;
+       ++i) {
     ItemView* item_view = new ItemView(items[i]);
     item_views_.push_back(item_view);
     left_content_->AddChildView(item_view);
   }
 
-  // Needed when CreateOrUpdateViews is called for update.
-  if (!item_views_.empty())
+  if (!item_views_.empty()) {
+    item_views_.front()->SetRemainingCount(items.size() - 1);
+    item_views_.back()->SetRemainingCount(items.size() - item_views_.size());
+
+    // Needed when CreateOrUpdateViews is called for update.
     left_content_->InvalidateLayout();
+  }
 }
 
 void NotificationViewMD::CreateOrUpdateIconView(
@@ -700,6 +760,10 @@ void NotificationViewMD::UpdateViewForExpandedState(bool expanded) {
   actions_row_->SetVisible(expanded && actions_row_->has_children());
   for (size_t i = 1; i < item_views_.size(); ++i) {
     item_views_[i]->SetVisible(expanded);
+  }
+  if (!item_views_.empty()) {
+    item_views_.front()->SetRemainingCountVisible(!expanded);
+    item_views_.back()->SetRemainingCountVisible(expanded);
   }
 }
 

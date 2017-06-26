@@ -108,7 +108,9 @@ MESSAGE_CENTER_EXPORT gfx::Size GetImageSizeForContainerSize(
     const gfx::Size& container_size,
     const gfx::Size& image_size);
 
-const size_t kNotificationMaximumItems = 5;     // For list notifications.
+// For list notifications.
+// Not used when --enabled-new-style-notification is set.
+const size_t kNotificationMaximumItems = 5;
 
 // Timing.
 const int kAutocloseDefaultDelaySeconds = 8;

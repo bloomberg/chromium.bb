@@ -631,6 +631,9 @@ need to be translated for each locale.-->
       <message name="IDS_MESSAGE_CENTER_CLEAR_ALL" desc="The button for clearing all notifications.">
         Clear All
       </message>
+      <message name="IDS_MESSAGE_CENTER_LIST_NOTIFICATION_OVERFLOW_INDICATOR" desc="The overflow indicator shown when a list notification has more list items than visible ones. Should be same as AndroidPlatform msgId 1863231301642314183. (frameworks/base/packages/SystemUI/res/values/strings.xml:notification_group_overflow_indicator)">
+        + <ph name="NUMBER">$1<ex>3</ex></ph>
+      </message>
       <if expr="not use_titlecase">
         <message name="IDS_MESSAGE_CENTER_QUIET_MODE_BUTTON_TOOLTIP" desc="The tooltip text for the do not disturb button.">
           Do not disturb
