@@ -1520,14 +1520,14 @@ class TestGitCl(TestCase):
     ]
 
     ref_suffix = ''
-    if title:
-      ref_suffix += '%m=' + title
+    if not notify:
+      ref_suffix = '%wip'
 
-    notify_suffix = 'notify=NONE'
-    if ref_suffix:
-      ref_suffix += ',' + notify_suffix
-    else:
-      ref_suffix = '%' + notify_suffix
+    if title:
+      if ref_suffix:
+        ref_suffix += ',m=' + title
+      else:
+        ref_suffix = '%m=' + title
 
     if git_mirror is None:
       calls += [

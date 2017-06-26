@@ -3012,13 +3012,12 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       change_desc.update_reviewers(options.reviewers, options.tbrs,
                                    options.add_owners_to, change)
 
-    if options.send_mail:
-      if not change_desc.get_reviewers():
-        DieWithError('Must specify reviewers to send email.', change_desc)
-
     # Extra options that can be specified at push time. Doc:
     # https://gerrit-review.googlesource.com/Documentation/user-upload.html
     refspec_opts = []
+
+    if not options.send_mail:
+      refspec_opts.append('wip')
 
     # TODO(tandrii): options.message should be posted as a comment
     # if --send-email is set on non-initial upload as Rietveld used to do it.
@@ -3034,10 +3033,6 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       # Per doc, spaces must be converted to underscores, and Gerrit will do the
       # reverse on its side.
       refspec_opts.append('m=' + title.replace(' ', '_'))
-
-    # Never notify now because no one is on the review. Notify when we add
-    # reviewers and CCs below.
-    refspec_opts.append('notify=NONE')
 
     if options.private:
       refspec_opts.append('private')
