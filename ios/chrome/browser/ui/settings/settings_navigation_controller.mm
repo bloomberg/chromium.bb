@@ -288,7 +288,9 @@ initWithRootViewController:(UIViewController*)rootViewController
                   delegate:(id<SettingsNavigationControllerDelegate>)delegate {
   DCHECK(browserState);
   DCHECK(!browserState->IsOffTheRecord());
-  self = [super initWithRootViewController:rootViewController];
+  self = rootViewController
+             ? [super initWithRootViewController:rootViewController]
+             : [super init];
   if (self) {
     mainBrowserState_ = browserState;
     delegate_ = delegate;

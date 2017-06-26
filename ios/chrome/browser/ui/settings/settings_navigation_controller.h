@@ -124,6 +124,16 @@ newImportDataController:(ios::ChromeBrowserState*)browserState
 newAutofillController:(ios::ChromeBrowserState*)browserState
              delegate:(id<SettingsNavigationControllerDelegate>)delegate;
 
+// Initializes the UINavigationController with |rootViewController|.
+- (instancetype)
+initWithRootViewController:(UIViewController*)rootViewController
+              browserState:(ios::ChromeBrowserState*)browserState
+                  delegate:(id<SettingsNavigationControllerDelegate>)delegate
+    NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)initWithRootViewController:(UIViewController*)rootViewController
+    NS_UNAVAILABLE;
+
 // Returns a new Done button for a UINavigationItem which will call
 // closeSettings when it is pressed. Should only be called by view controllers
 // owned by SettingsNavigationController.
@@ -143,17 +153,6 @@ newAutofillController:(ios::ChromeBrowserState*)browserState
 // the navigation stack. Closes the settings if the top view controller is the
 // only view controller in the navigation stack.
 - (void)popViewControllerOrCloseSettingsAnimated:(BOOL)animated;
-
-@end
-
-@interface SettingsNavigationController (ExposedForTesting)
-
-// Initializes the UINavigationController with |rootViewController|.
-// User of this class should not call the normal |initWithRootViewController|.
-- (instancetype)
-initWithRootViewController:(UIViewController*)rootViewController
-              browserState:(ios::ChromeBrowserState*)browserState
-                  delegate:(id<SettingsNavigationControllerDelegate>)delegate;
 
 @end
 

@@ -11,6 +11,7 @@
 
 // A coordinator for the Settings UI, which is usually presented modally
 // on top of whatever other UI is currently active.
+// The Browser of this coordinator must be non-incognito.
 @interface SettingsCoordinator : BrowserCoordinator
 @end
 
