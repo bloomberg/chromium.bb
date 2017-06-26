@@ -1045,6 +1045,27 @@ static const aom_prob default_inter_compound_mode_probs
       { 25, 29, 50, 192, 128, 180, 180 },   // 6 = two intra neighbours
     };
 
+#if CONFIG_EC_ADAPT
+static const aom_cdf_prob
+    default_inter_compound_mode_cdf[INTER_MODE_CONTEXTS][CDF_SIZE(
+        INTER_COMPOUND_MODES)] = {
+      { AOM_ICDF(21971), AOM_ICDF(24071), AOM_ICDF(24317), AOM_ICDF(24421),
+        AOM_ICDF(24667), AOM_ICDF(24771), AOM_ICDF(25027), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(18052), AOM_ICDF(24530), AOM_ICDF(25289), AOM_ICDF(25610),
+        AOM_ICDF(26369), AOM_ICDF(26690), AOM_ICDF(27586), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(20666), AOM_ICDF(24802), AOM_ICDF(25287), AOM_ICDF(25492),
+        AOM_ICDF(25977), AOM_ICDF(26182), AOM_ICDF(27078), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(11703), AOM_ICDF(19503), AOM_ICDF(20417), AOM_ICDF(20803),
+        AOM_ICDF(21717), AOM_ICDF(22103), AOM_ICDF(22999), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(7936), AOM_ICDF(12400), AOM_ICDF(12923), AOM_ICDF(13144),
+        AOM_ICDF(13667), AOM_ICDF(13888), AOM_ICDF(14912), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(9679), AOM_ICDF(12865), AOM_ICDF(13238), AOM_ICDF(13396),
+        AOM_ICDF(13769), AOM_ICDF(13927), AOM_ICDF(16103), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(3349), AOM_ICDF(7190), AOM_ICDF(7640), AOM_ICDF(7830),
+        AOM_ICDF(8280), AOM_ICDF(8470), AOM_ICDF(11670), AOM_ICDF(32768), 0 }
+    };
+#endif
+
 #if CONFIG_COMPOUND_SINGLEREF
 // TODO(zoeliu): Default values to be further adjusted based on the collected
 //               stats.
@@ -4747,6 +4768,9 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 #if CONFIG_EXT_INTER
   av1_copy(fc->inter_compound_mode_probs, default_inter_compound_mode_probs);
+#if CONFIG_EC_ADAPT
+  av1_copy(fc->inter_compound_mode_cdf, default_inter_compound_mode_cdf);
+#endif
 #if CONFIG_COMPOUND_SINGLEREF
   av1_copy(fc->inter_singleref_comp_mode_probs,
            default_inter_singleref_comp_mode_probs);

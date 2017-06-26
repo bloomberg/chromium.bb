@@ -380,9 +380,16 @@ static void read_ncobmc_mode(AV1_COMMON *cm, MACROBLOCKD *xd, MODE_INFO *mi,
 #if CONFIG_EXT_INTER
 static PREDICTION_MODE read_inter_compound_mode(AV1_COMMON *cm, MACROBLOCKD *xd,
                                                 aom_reader *r, int16_t ctx) {
+#if CONFIG_EC_ADAPT
+  (void)cm;
+  const int mode =
+      aom_read_symbol(r, xd->tile_ctx->inter_compound_mode_cdf[ctx],
+                      INTER_COMPOUND_MODES, ACCT_STR);
+#else
   const int mode =
       aom_read_tree(r, av1_inter_compound_mode_tree,
                     cm->fc->inter_compound_mode_probs[ctx], ACCT_STR);
+#endif
   FRAME_COUNTS *counts = xd->counts;
 
   if (counts) ++counts->inter_compound_mode[ctx][mode];

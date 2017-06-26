@@ -193,6 +193,7 @@ static void read_inter_mode_probs(FRAME_CONTEXT *fc, aom_reader *r) {
 #endif
 
 #if CONFIG_EXT_INTER
+#if !CONFIG_EC_ADAPT
 static void read_inter_compound_mode_probs(FRAME_CONTEXT *fc, aom_reader *r) {
   int i, j;
   if (aom_read(r, GROUP_DIFF_UPDATE_PROB, ACCT_STR)) {
@@ -203,6 +204,7 @@ static void read_inter_compound_mode_probs(FRAME_CONTEXT *fc, aom_reader *r) {
     }
   }
 }
+#endif  // CONFIG_EC_ADAPT
 
 #if CONFIG_COMPOUND_SINGLEREF
 static void read_inter_singleref_comp_mode_probs(FRAME_CONTEXT *fc,
@@ -5100,7 +5102,9 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 #endif
 
 #if CONFIG_EXT_INTER
+#if !CONFIG_EC_ADAPT
     read_inter_compound_mode_probs(fc, &r);
+#endif
 #if CONFIG_COMPOUND_SINGLEREF
     read_inter_singleref_comp_mode_probs(fc, &r);
 #endif  // CONFIG_COMPOUND_SINGLEREF
