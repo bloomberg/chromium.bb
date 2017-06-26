@@ -13,11 +13,13 @@
 #include "core/workers/WorkerOrWorkletGlobalScope.h"
 #include "platform/bindings/ActiveScriptWrappable.h"
 #include "platform/bindings/ScriptWrappable.h"
+#include "platform/bindings/TraceWrapperMember.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
 class EventQueue;
+class Modulator;
 
 class CORE_EXPORT WorkletGlobalScope
     : public GarbageCollectedFinalized<WorkletGlobalScope>,
@@ -70,7 +72,10 @@ class CORE_EXPORT WorkletGlobalScope
     return nullptr;
   }  // WorkletGlobalScopes don't have timers.
 
+  void SetModulator(Modulator*);
+
   DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
  protected:
   // The url, userAgent and securityOrigin arguments are inherited from the
@@ -90,6 +95,9 @@ class CORE_EXPORT WorkletGlobalScope
 
   KURL url_;
   String user_agent_;
+  // LocalDOMWindow::modulator_ workaround equivalent.
+  // TODO(kouhei): Remove this.
+  TraceWrapperMember<Modulator> modulator_;
 };
 
 DEFINE_TYPE_CASTS(WorkletGlobalScope,

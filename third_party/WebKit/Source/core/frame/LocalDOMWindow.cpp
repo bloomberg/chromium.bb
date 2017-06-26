@@ -38,6 +38,7 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/DOMImplementation.h"
 #include "core/dom/FrameRequestCallback.h"
+#include "core/dom/Modulator.h"
 #include "core/dom/SandboxFlags.h"
 #include "core/dom/SinkDocument.h"
 #include "core/dom/TaskRunnerHelper.h"
@@ -277,7 +278,8 @@ LocalDOMWindow::LocalDOMWindow(LocalFrame& frame)
           this,
           &LocalDOMWindow::WarnUnusedPreloads),
       should_print_when_finished_loading_(false),
-      custom_elements_(this, nullptr) {}
+      custom_elements_(this, nullptr),
+      modulator_(this, nullptr) {}
 
 void LocalDOMWindow::ClearDocument() {
   if (!document_)
@@ -1407,6 +1409,11 @@ CustomElementRegistry* LocalDOMWindow::MaybeCustomElements() const {
   return custom_elements_;
 }
 
+void LocalDOMWindow::SetModulator(Modulator* modulator) {
+  DCHECK(!modulator_);
+  modulator_ = modulator;
+}
+
 External* LocalDOMWindow::external() {
   if (!external_)
     external_ = new External;
@@ -1668,6 +1675,7 @@ DEFINE_TRACE(LocalDOMWindow) {
 
 DEFINE_TRACE_WRAPPERS(LocalDOMWindow) {
   visitor->TraceWrappers(custom_elements_);
+  visitor->TraceWrappers(modulator_);
   DOMWindow::TraceWrappers(visitor);
 }
 
