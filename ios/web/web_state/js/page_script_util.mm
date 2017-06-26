@@ -8,6 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/mac/bundle_locations.h"
 #include "base/strings/sys_string_conversions.h"
+#include "ios/web/public/browser_state.h"
 #import "ios/web/public/web_client.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -47,9 +48,16 @@ NSString* GetEarlyPageScript(BrowserState* browser_state) {
   // JS to the native code. Wrapping injected script into "if (!injected)" check
   // prevents multiple injections into the same page.
   NSString* kScriptTemplate = @"if (typeof __gCrWeb !== 'object') { %@; %@ }";
-  return [NSString stringWithFormat:kScriptTemplate,
-                                    GetPageScript(@"web_bundle"),
-                                    embedder_page_script];
+
+  NSString* web_bundle = GetPageScript(@"web_bundle");
+  // The WKBackForwardList based navigation manager doesn't need to inject
+  // JavaScript to intercept navigation calls.
+  if (!GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    web_bundle = [NSString
+        stringWithFormat:@"%@; %@", web_bundle, GetPageScript(@"nav_bundle")];
+  }
+  return [NSString
+      stringWithFormat:kScriptTemplate, web_bundle, embedder_page_script];
 }
 
 }  // namespace web

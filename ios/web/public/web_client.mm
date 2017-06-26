@@ -91,4 +91,8 @@ WebClient::GetTaskSchedulerInitParams() {
   return nullptr;
 }
 
+bool WebClient::IsSlimNavigationManagerEnabled() const {
+  return false;
+}
+
 }  // namespace web
