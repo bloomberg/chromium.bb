@@ -25,6 +25,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.webapk.lib.common.WebApkConstants;
 
 import java.io.File;
 import java.util.HashSet;
@@ -41,6 +42,9 @@ public class WebappDirectoryManagerTest {
     private static final String WEBAPP_ID_1 = "webapp_1";
     private static final String WEBAPP_ID_2 = "webapp_2";
     private static final String WEBAPP_ID_3 = "webapp_3";
+    private static final String WEBAPK_ID_1 = WebApkConstants.WEBAPK_ID_PREFIX + "webapp_1";
+    private static final String WEBAPK_ID_2 = WebApkConstants.WEBAPK_ID_PREFIX + "webapp_2";
+    private static final String WEBAPK_ID_3 = WebApkConstants.WEBAPK_ID_PREFIX + "webapp_3";
 
     private static class TestWebappDirectoryManager extends WebappDirectoryManager {
         private Set<Intent> mBaseIntents = new HashSet<Intent>();
@@ -140,6 +144,41 @@ public class WebappDirectoryManagerTest {
         // would not be in the foreground and would have persisted its state.
         mWebappDirectoryManager.mBaseIntents.add(
                 new Intent(Intent.ACTION_VIEW, Uri.parse("webapp://webapp_2")));
+
+        // Only the directory for the background web app should survive.
+        runCleanup();
+        Assert.assertFalse(directory1.exists());
+        Assert.assertTrue(directory2.exists());
+        Assert.assertFalse(directory3.exists());
+    }
+
+    /**
+     * On Lollipop and higher, the {@link WebappDirectoryManager} also deletes directories for
+     * *WebApks* that no longer correspond to tasks in Recents.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Webapps"})
+    public void testDeletesDirectoriesForDeadWebApkTasks() throws Exception {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
+
+        // Track the three web app directories.
+        File directory1 =
+                new File(mWebappDirectoryManager.getBaseWebappDirectory(mMockContext), WEBAPK_ID_1);
+        File directory2 =
+                new File(mWebappDirectoryManager.getBaseWebappDirectory(mMockContext), WEBAPK_ID_2);
+        File directory3 =
+                new File(mWebappDirectoryManager.getBaseWebappDirectory(mMockContext), WEBAPK_ID_3);
+
+        // Seed the directory with folders for web apps.
+        Assert.assertTrue(directory1.mkdirs());
+        Assert.assertTrue(directory2.mkdirs());
+        Assert.assertTrue(directory3.mkdirs());
+
+        // Indicate that another of the web apps is listed in Recents; in real usage this web app
+        // would not be in the foreground and would have persisted its state.
+        mWebappDirectoryManager.mBaseIntents.add(
+                new Intent(Intent.ACTION_VIEW, Uri.parse("webapp://webapk-webapp_2")));
 
         // Only the directory for the background web app should survive.
         runCleanup();
