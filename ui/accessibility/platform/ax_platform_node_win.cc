@@ -13,6 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/win/enum_variant.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_variant.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
@@ -645,9 +646,58 @@ STDMETHODIMP AXPlatformNodeWin::put_accValue(VARIANT var_id,
 
 STDMETHODIMP AXPlatformNodeWin::get_accSelection(VARIANT* selected) {
   COM_OBJECT_VALIDATE_1_ARG(selected);
-  if (selected)
+
+  if (GetData().role != ui::AX_ROLE_LIST_BOX)
+    return E_NOTIMPL;
+
+  unsigned long selected_count = 0;
+  for (auto i = 0; i < delegate_->GetChildCount(); ++i) {
+    AXPlatformNodeWin* node = static_cast<AXPlatformNodeWin*>(
+        FromNativeViewAccessible(delegate_->ChildAtIndex(i)));
+
+    if (node && node->GetData().state & (1 << ui::AX_STATE_SELECTED))
+      ++selected_count;
+  }
+
+  if (selected_count == 0) {
     selected->vt = VT_EMPTY;
-  return E_NOTIMPL;
+    return S_OK;
+  }
+
+  if (selected_count == 1) {
+    for (auto i = 0; i < delegate_->GetChildCount(); ++i) {
+      AXPlatformNodeWin* node = static_cast<AXPlatformNodeWin*>(
+          FromNativeViewAccessible(delegate_->ChildAtIndex(i)));
+
+      if (node && node->GetData().state & (1 << ui::AX_STATE_SELECTED)) {
+        selected->vt = VT_DISPATCH;
+        selected->pdispVal = node;
+        node->AddRef();
+        return S_OK;
+      }
+    }
+  }
+
+  // Multiple items are selected.
+  base::win::EnumVariant* enum_variant =
+      new base::win::EnumVariant(selected_count);
+  enum_variant->AddRef();
+  unsigned long index = 0;
+  for (auto i = 0; i < delegate_->GetChildCount(); ++i) {
+    AXPlatformNodeWin* node = static_cast<AXPlatformNodeWin*>(
+        FromNativeViewAccessible(delegate_->ChildAtIndex(i)));
+
+    if (node && node->GetData().state & (1 << ui::AX_STATE_SELECTED)) {
+      enum_variant->ItemAt(index)->vt = VT_DISPATCH;
+      enum_variant->ItemAt(index)->pdispVal = node;
+      node->AddRef();
+      ++index;
+    }
+  }
+  selected->vt = VT_UNKNOWN;
+  selected->punkVal = static_cast<IUnknown*>(
+      static_cast<base::win::IUnknownImpl*>(enum_variant));
+  return S_OK;
 }
 
 STDMETHODIMP AXPlatformNodeWin::accSelect(

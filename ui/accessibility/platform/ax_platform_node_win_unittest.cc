@@ -74,6 +74,18 @@ class AXPlatformNodeWinTest : public testing::Test {
     update.nodes.push_back(node3);
     Init(update);
   }
+  void Init(const AXNodeData& node1,
+            const AXNodeData& node2,
+            const AXNodeData& node3,
+            const AXNodeData& node4) {
+    AXTreeUpdate update;
+    update.root_id = node1.id;
+    update.nodes.push_back(node1);
+    update.nodes.push_back(node2);
+    update.nodes.push_back(node3);
+    update.nodes.push_back(node4);
+    Init(update);
+  }
 
  protected:
   AXNode* GetRootNode() {
@@ -231,6 +243,172 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleShortcut) {
   ScopedBstr k2;
   EXPECT_EQ(E_INVALIDARG,
             root_obj->get_accKeyboardShortcut(bad_id, k2.Receive()));
+}
+
+TEST_F(AXPlatformNodeWinTest, TestIAccessibleSelectionNotListBox) {
+  // We only support AX_ROLE_LIST_BOX as this point, so, this should return
+  // not implemented. We're choosing AX_ROLE_ALERT, but it could be anything
+  // but AX_ROLE_LIST_BOX_OPTION.
+
+  AXNodeData not_supported;
+  not_supported.id = 0;
+  not_supported.role = AX_ROLE_ALERT;
+
+  Init(not_supported);
+  ScopedComPtr<IAccessible> root_obj(GetRootIAccessible());
+
+  ScopedVariant selection;
+  EXPECT_EQ(E_NOTIMPL, root_obj->get_accSelection(selection.Receive()));
+}
+
+TEST_F(AXPlatformNodeWinTest, TestIAccessibleSelectionNothingSelected) {
+  // We're going to set up a AX_ROLE_LIST_BOX_OPTION with 2 options with
+  // nothing selected
+  AXNodeData list;
+  list.id = 0;
+  list.role = AX_ROLE_LIST_BOX;
+
+  list.child_ids.push_back(2);
+  list.child_ids.push_back(3);
+
+  AXNodeData list_item_2;
+  list_item_2.id = 2;
+  list_item_2.role = AX_ROLE_LIST_BOX_OPTION;
+  list_item_2.AddStringAttribute(AX_ATTR_NAME, "Name2");
+
+  AXNodeData list_item_3;
+  list_item_3.id = 3;
+  list_item_3.role = AX_ROLE_LIST_BOX_OPTION;
+  list_item_3.AddStringAttribute(AX_ATTR_NAME, "Name3");
+
+  // Nothing is selected.  This should return S_OK and the selection should
+  // be VT_EMPTY.
+
+  Init(list, list_item_2, list_item_3);
+  ScopedComPtr<IAccessible> root_obj(GetRootIAccessible());
+
+  ScopedVariant selection;
+  EXPECT_EQ(S_OK, root_obj->get_accSelection(selection.Receive()));
+  EXPECT_EQ(VT_EMPTY, selection.type());
+}
+
+TEST_F(AXPlatformNodeWinTest, TestIAccessibleSelectionOneSelected) {
+  // We're going to set up a AX_ROLE_LIST_BOX_OPTION with 2 options with
+  // one selected.
+  AXNodeData list;
+  list.id = 0;
+  list.role = AX_ROLE_LIST_BOX;
+
+  list.child_ids.push_back(2);
+  list.child_ids.push_back(3);
+
+  AXNodeData list_item_2;
+  list_item_2.id = 2;
+  list_item_2.role = AX_ROLE_LIST_BOX_OPTION;
+  list_item_2.state = 1 << ui::AX_STATE_SELECTED;
+  list_item_2.AddStringAttribute(AX_ATTR_NAME, "Name2");
+
+  AXNodeData list_item_3;
+  list_item_3.id = 3;
+  list_item_3.role = AX_ROLE_LIST_BOX_OPTION;
+  list_item_3.AddStringAttribute(AX_ATTR_NAME, "Name3");
+
+  Init(list, list_item_2, list_item_3);
+
+  ScopedComPtr<IAccessible> root_obj(GetRootIAccessible());
+
+  ScopedVariant selection;
+  EXPECT_EQ(S_OK, root_obj->get_accSelection(selection.Receive()));
+  ASSERT_NE(nullptr, selection.ptr());
+
+  // We got something back, make sure that it has the correct name.
+  base::win::ScopedComPtr<IAccessible> accessible;
+  HRESULT hr =
+      V_DISPATCH(selection.ptr())->QueryInterface(IID_PPV_ARGS(&accessible));
+  EXPECT_EQ(S_OK, hr);
+  ScopedBstr name;
+  EXPECT_EQ(S_OK, accessible->get_accName(SELF, name.Receive()));
+  EXPECT_STREQ(L"Name2", name);
+}
+
+TEST_F(AXPlatformNodeWinTest, TestIAccessibleSelectionMultipleSelected) {
+  // We're going to set up a AX_ROLE_LIST_BOX_OPTION with 3 options with
+  // two selected.
+  AXNodeData list;
+  list.id = 0;
+  list.role = AX_ROLE_LIST_BOX;
+
+  list.child_ids.push_back(2);
+  list.child_ids.push_back(3);
+  list.child_ids.push_back(4);
+
+  AXNodeData list_item_2;
+  list_item_2.id = 2;
+  list_item_2.role = AX_ROLE_LIST_BOX_OPTION;
+  list_item_2.state = 1 << ui::AX_STATE_SELECTED;
+  list_item_2.AddStringAttribute(AX_ATTR_NAME, "Name2");
+
+  AXNodeData list_item_3;
+  list_item_3.id = 3;
+  list_item_3.role = AX_ROLE_LIST_BOX_OPTION;
+  list_item_3.state = 1 << ui::AX_STATE_SELECTED;
+  list_item_3.AddStringAttribute(AX_ATTR_NAME, "Name3");
+
+  AXNodeData list_item_4;
+  list_item_4.id = 4;
+  list_item_4.role = AX_ROLE_LIST_BOX_OPTION;
+  list_item_4.AddStringAttribute(AX_ATTR_NAME, "Name4");
+  Init(list, list_item_2, list_item_3, list_item_4);
+
+  ScopedComPtr<IAccessible> root_obj(GetRootIAccessible());
+
+  ScopedVariant selection;
+  EXPECT_EQ(S_OK, root_obj->get_accSelection(selection.Receive()));
+  ASSERT_NE(nullptr, selection.ptr());
+
+  // We got something back, make sure that it has the corrent name.
+  base::win::ScopedComPtr<IEnumVARIANT> accessibles;
+  HRESULT hr =
+      V_DISPATCH(selection.ptr())->QueryInterface(IID_PPV_ARGS(&accessibles));
+  EXPECT_EQ(S_OK, hr);
+  ULONG ignore;
+
+  // Check out the first selected item.
+  {
+    ScopedVariant item;
+    hr = accessibles->Next(1, item.Receive(), &ignore);
+    EXPECT_EQ(S_OK, hr);
+
+    base::win::ScopedComPtr<IAccessible> accessible;
+    HRESULT hr =
+        V_DISPATCH(item.ptr())->QueryInterface(IID_PPV_ARGS(&accessible));
+    EXPECT_EQ(S_OK, hr);
+    ScopedBstr name;
+    EXPECT_EQ(S_OK, accessible->get_accName(SELF, name.Receive()));
+    EXPECT_STREQ(L"Name2", name);
+  }
+
+  // and the second selected element.
+  {
+    ScopedVariant item;
+    hr = accessibles->Next(1, item.Receive(), &ignore);
+    EXPECT_EQ(S_OK, hr);
+
+    base::win::ScopedComPtr<IAccessible> accessible;
+    HRESULT hr =
+        V_DISPATCH(item.ptr())->QueryInterface(IID_PPV_ARGS(&accessible));
+    EXPECT_EQ(S_OK, hr);
+    ScopedBstr name;
+    EXPECT_EQ(S_OK, accessible->get_accName(SELF, name.Receive()));
+    EXPECT_STREQ(L"Name3", name);
+  }
+
+  // There shouldn't be any more selected.
+  {
+    ScopedVariant item;
+    hr = accessibles->Next(1, item.Receive(), &ignore);
+    EXPECT_EQ(S_FALSE, hr);
+  }
 }
 
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleRole) {
