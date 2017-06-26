@@ -129,6 +129,8 @@ class CORE_EXPORT ScrollingCoordinator final
 
   void UpdateTouchEventTargetRectsIfNeeded();
 
+  void UpdateUserInputScrollable(ScrollableArea*);
+
   CompositorAnimationHost* GetCompositorAnimationHost() {
     return animation_host_.get();
   }

@@ -2312,7 +2312,12 @@ bool CompositedLayerMapping::UpdateScrollingLayers(
 
   bool layer_changed = false;
   if (needs_scrolling_layers) {
-    if (!scrolling_layer_) {
+    if (scrolling_layer_) {
+      if (scrolling_coordinator) {
+        scrolling_coordinator->UpdateUserInputScrollable(
+            owning_layer_.GetScrollableArea());
+      }
+    } else {
       // Outer layer which corresponds with the scroll view.
       scrolling_layer_ =
           CreateGraphicsLayer(kCompositingReasonLayerForScrollingContainer);

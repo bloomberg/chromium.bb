@@ -26,7 +26,6 @@
 #include "core/page/scrolling/ScrollingCoordinator.h"
 
 #include "core/dom/Document.h"
-#include "core/dom/Fullscreen.h"
 #include "core/dom/Node.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/LocalFrame.h"
@@ -222,34 +221,14 @@ void ScrollingCoordinator::UpdateAfterCompositingChangeIfNeeded() {
   }
   was_frame_scrollable_ = frame_is_scrollable;
 
-  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-    if (WebLayer* layout_viewport_scroll_layer =
-            frame_view ? toWebLayer(frame_view->LayoutViewportScrollableArea()
-                                        ->LayerForScrolling())
-                       : nullptr) {
-      layout_viewport_scroll_layer->SetBounds(frame_view->ContentsSize());
-      layout_viewport_scroll_layer->SetUserScrollable(
-          frame_view->UserInputScrollable(kHorizontalScrollbar),
-          frame_view->UserInputScrollable(kVerticalScrollbar));
+  if (frame_view && !RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
+    if (WebLayer* scroll_layer = toWebLayer(frame_view->LayerForScrolling())) {
+      UpdateUserInputScrollable(frame_view);
+      scroll_layer->SetBounds(frame_view->ContentsSize());
     }
   }
 
-  // If there is a non-root fullscreen element, prevent the viewport from
-  // scrolling.
-  Document* main_frame_document =
-      page_->DeprecatedLocalMainFrame()->GetDocument();
-  Element* fullscreen_element =
-      Fullscreen::FullscreenElementFrom(*main_frame_document);
-  WebLayer* visual_viewport_scroll_layer =
-      toWebLayer(page_->GetVisualViewport().ScrollLayer());
-
-  if (visual_viewport_scroll_layer) {
-    if (fullscreen_element &&
-        fullscreen_element != main_frame_document->documentElement())
-      visual_viewport_scroll_layer->SetUserScrollable(false, false);
-    else
-      visual_viewport_scroll_layer->SetUserScrollable(true, true);
-  }
+  UpdateUserInputScrollable(&page_->GetVisualViewport());
 
   if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
     const FrameTree& tree = page_->MainFrame()->Tree();
@@ -503,6 +482,8 @@ bool ScrollingCoordinator::ScrollableAreaScrollLayerDidChange(
     scroll_layer->SetScrollableArea(scrollable_area, is_for_visual_viewport);
   }
 
+  UpdateUserInputScrollable(scrollable_area);
+
   WebLayer* web_layer = toWebLayer(scrollable_area->LayerForScrolling());
   WebLayer* container_layer = toWebLayer(scrollable_area->LayerForContainer());
   if (web_layer) {
@@ -512,11 +493,6 @@ bool ScrollingCoordinator::ScrollableAreaScrollLayerDidChange(
     web_layer->SetScrollPosition(scroll_position);
 
     web_layer->SetBounds(scrollable_area->ContentsSize());
-    bool can_scroll_x =
-        scrollable_area->UserInputScrollable(kHorizontalScrollbar);
-    bool can_scroll_y =
-        scrollable_area->UserInputScrollable(kVerticalScrollbar);
-    web_layer->SetUserScrollable(can_scroll_x, can_scroll_y);
   }
   if (WebScrollbarLayer* scrollbar_layer =
           GetWebScrollbarLayer(scrollable_area, kHorizontalScrollbar)) {
@@ -738,6 +714,18 @@ void ScrollingCoordinator::UpdateTouchEventTargetRectsIfNeeded() {
   LayerHitTestRects touch_event_target_rects;
   ComputeTouchEventTargetRects(touch_event_target_rects);
   SetTouchEventTargetRects(touch_event_target_rects);
+}
+
+void ScrollingCoordinator::UpdateUserInputScrollable(
+    ScrollableArea* scrollable_area) {
+  WebLayer* web_layer = toWebLayer(scrollable_area->LayerForScrolling());
+  if (web_layer) {
+    bool can_scroll_x =
+        scrollable_area->UserInputScrollable(kHorizontalScrollbar);
+    bool can_scroll_y =
+        scrollable_area->UserInputScrollable(kVerticalScrollbar);
+    web_layer->SetUserScrollable(can_scroll_x, can_scroll_y);
+  }
 }
 
 void ScrollingCoordinator::Reset() {
