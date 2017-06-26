@@ -1056,9 +1056,10 @@ def ParseIssueNumberArgument(arg, codereview=None):
   fail_result = _ParsedIssueNumberArgument()
 
   if arg.isdigit():
-    return _ParsedIssueNumberArgument(issue=int(arg))
+    return _ParsedIssueNumberArgument(issue=int(arg), codereview=codereview)
   if not arg.startswith('http'):
     return fail_result
+
   url = gclient_utils.UpgradeToHttps(arg)
   try:
     parsed_url = urlparse.urlparse(url)
