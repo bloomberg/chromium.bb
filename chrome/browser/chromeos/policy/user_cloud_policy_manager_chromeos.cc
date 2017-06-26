@@ -99,8 +99,7 @@ UserCloudPolicyManagerChromeOS::UserCloudPolicyManagerChromeOS(
       store_(std::move(store)),
       external_data_manager_(std::move(external_data_manager)),
       component_policy_cache_path_(component_policy_cache_path),
-      wait_for_policy_fetch_(wait_for_policy_fetch),
-      policy_fetch_timeout_(false, false) {
+      wait_for_policy_fetch_(wait_for_policy_fetch) {
   time_init_started_ = base::Time::Now();
 
   // Caller must pass a non-zero policy_fetch_timeout iff
@@ -111,8 +110,7 @@ UserCloudPolicyManagerChromeOS::UserCloudPolicyManagerChromeOS(
           chromeos::switches::kAllowFailedPolicyFetchForTest) ||
       !initial_policy_fetch_timeout.is_max();
   // No need to set the timer when the timeout is infinite.
-  if (wait_for_policy_fetch_ && allow_failed_policy_fetches_ &&
-      !initial_policy_fetch_timeout.is_max()) {
+  if (wait_for_policy_fetch_ && !initial_policy_fetch_timeout.is_max()) {
     policy_fetch_timeout_.Start(
         FROM_HERE,
         initial_policy_fetch_timeout,
