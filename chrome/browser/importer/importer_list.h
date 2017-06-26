@@ -13,6 +13,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "base/strings/string16.h"
 #include "chrome/common/importer/importer_data_types.h"
 
@@ -53,6 +54,8 @@ class ImporterList {
 
   // The list of profiles with the default one first.
   std::vector<importer::SourceProfile> source_profiles_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<ImporterList> weak_ptr_factory_;
 
