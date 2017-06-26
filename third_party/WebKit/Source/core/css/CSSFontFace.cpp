@@ -101,7 +101,7 @@ PassRefPtr<SimpleFontData> CSSFontFace::GetFontData(
         SetLoadStatus(FontFace::kLoading);
       if (LoadStatus() == FontFace::kLoading && source->IsLoaded())
         SetLoadStatus(FontFace::kLoaded);
-      return result.Release();
+      return result;
     }
     sources_.pop_front();
   }

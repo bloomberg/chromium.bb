@@ -137,7 +137,7 @@ PassRefPtr<EncodedFormData> BlobBytesConsumer::DrainAsFormData() {
     return nullptr;
   RefPtr<EncodedFormData> form_data = EncodedFormData::Create();
   form_data->AppendBlob(handle->Uuid(), handle);
-  return form_data.Release();
+  return form_data;
 }
 
 void BlobBytesConsumer::SetClient(BytesConsumer::Client* client) {

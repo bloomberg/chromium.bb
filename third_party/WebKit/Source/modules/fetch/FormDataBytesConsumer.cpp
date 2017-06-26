@@ -177,7 +177,7 @@ class ComplexFormDataBytesConsumer final : public BytesConsumer {
         blob_bytes_consumer_->DrainAsBlobDataHandle(policy);
     if (handle)
       form_data_ = nullptr;
-    return handle.Release();
+    return handle;
   }
   PassRefPtr<EncodedFormData> DrainAsFormData() override {
     if (!form_data_)

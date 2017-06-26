@@ -225,7 +225,7 @@ PassRefPtr<EncodedFormData> FormData::EncodeFormData(
                         : entry->Value(),
         encoding_type);
   form_data->AppendData(encoded_data.data(), encoded_data.size());
-  return form_data.Release();
+  return form_data;
 }
 
 PassRefPtr<EncodedFormData> FormData::EncodeMultiPartFormData() {
@@ -301,7 +301,7 @@ PassRefPtr<EncodedFormData> FormData::EncodeMultiPartFormData() {
   FormDataEncoder::AddBoundaryToMultiPartHeader(
       encoded_data, form_data->Boundary().data(), true);
   form_data->AppendData(encoded_data.data(), encoded_data.size());
-  return form_data.Release();
+  return form_data;
 }
 
 PairIterable<String, FormDataEntryValue>::IterationSource*

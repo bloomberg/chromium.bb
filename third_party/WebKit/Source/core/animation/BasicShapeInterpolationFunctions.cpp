@@ -226,7 +226,7 @@ PassRefPtr<BasicShape> CreateBasicShape(
       CreateCoordinate(*list.Get(kCircleCenterYIndex), conversion_data));
   circle->SetRadius(
       CreateRadius(*list.Get(kCircleRadiusIndex), conversion_data));
-  return circle.Release();
+  return circle;
 }
 
 }  // namespace CircleFunctions
@@ -303,7 +303,7 @@ PassRefPtr<BasicShape> CreateBasicShape(
       CreateRadius(*list.Get(kEllipseRadiusXIndex), conversion_data));
   ellipse->SetRadiusY(
       CreateRadius(*list.Get(kEllipseRadiusYIndex), conversion_data));
-  return ellipse.Release();
+  return ellipse;
 }
 
 }  // namespace EllipseFunctions
@@ -442,7 +442,7 @@ PassRefPtr<BasicShape> CreateBasicShape(
   inset->SetBottomLeftRadius(CreateBorderRadius(
       *list.Get(kInsetBorderBottomLeftWidthIndex),
       *list.Get(kInsetBorderBottomLeftHeightIndex), conversion_data));
-  return inset.Release();
+  return inset;
 }
 
 }  // namespace InsetFunctions
@@ -497,7 +497,7 @@ PassRefPtr<BasicShape> CreateBasicShape(
         LengthInterpolationFunctions::CreateLength(
             *list.Get(i + 1), nullptr, conversion_data, kValueRangeAll));
   }
-  return polygon.Release();
+  return polygon;
 }
 
 }  // namespace PolygonFunctions

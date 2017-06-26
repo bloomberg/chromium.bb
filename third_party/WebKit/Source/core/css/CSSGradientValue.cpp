@@ -153,7 +153,7 @@ PassRefPtr<Image> CSSGradientValue::GetImage(
   if (is_cacheable_)
     PutImage(size, new_image);
 
-  return new_image.Release();
+  return new_image;
 }
 
 // Should only ever be called for deprecated gradients.
@@ -1042,7 +1042,7 @@ PassRefPtr<Gradient> CSSLinearGradientValue::CreateGradient(
   // Now add the stops.
   gradient->AddColorStops(desc.stops);
 
-  return gradient.Release();
+  return gradient;
 }
 
 bool CSSLinearGradientValue::Equals(const CSSLinearGradientValue& other) const {
@@ -1416,7 +1416,7 @@ PassRefPtr<Gradient> CSSRadialGradientValue::CreateGradient(
   // Now add the stops.
   gradient->AddColorStops(desc.stops);
 
-  return gradient.Release();
+  return gradient;
 }
 
 bool CSSRadialGradientValue::Equals(const CSSRadialGradientValue& other) const {
@@ -1530,7 +1530,7 @@ PassRefPtr<Gradient> CSSConicGradientValue::CreateGradient(
       position, angle, Gradient::ColorInterpolation::kPremultiplied);
   gradient->AddColorStops(desc.stops);
 
-  return gradient.Release();
+  return gradient;
 }
 
 bool CSSConicGradientValue::Equals(const CSSConicGradientValue& other) const {

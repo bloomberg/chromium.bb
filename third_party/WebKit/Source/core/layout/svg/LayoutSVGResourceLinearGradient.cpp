@@ -59,7 +59,7 @@ PassRefPtr<Gradient> LayoutSVGResourceLinearGradient::BuildGradient() const {
       PlatformSpreadMethodFromSVGType(attributes.SpreadMethod()),
       Gradient::ColorInterpolation::kUnpremultiplied);
   gradient->AddColorStops(attributes.Stops());
-  return gradient.Release();
+  return gradient;
 }
 
 }  // namespace blink

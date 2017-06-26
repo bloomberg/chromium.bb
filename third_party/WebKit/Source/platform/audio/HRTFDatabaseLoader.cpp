@@ -53,13 +53,13 @@ HRTFDatabaseLoader::CreateAndLoadAsynchronouslyIfNecessary(float sample_rate) {
   RefPtr<HRTFDatabaseLoader> loader = GetLoaderMap().at(sample_rate);
   if (loader) {
     DCHECK_EQ(sample_rate, loader->DatabaseSampleRate());
-    return loader.Release();
+    return loader;
   }
 
   loader = AdoptRef(new HRTFDatabaseLoader(sample_rate));
   GetLoaderMap().insert(sample_rate, loader.Get());
   loader->LoadAsynchronously();
-  return loader.Release();
+  return loader;
 }
 
 HRTFDatabaseLoader::HRTFDatabaseLoader(float sample_rate)

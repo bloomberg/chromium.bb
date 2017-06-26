@@ -115,7 +115,7 @@ PassRefPtr<BasicShape> BasicShapeCircle::Blend(const BasicShape* other,
   result->SetCenterX(center_x_.Blend(o->CenterX(), progress));
   result->SetCenterY(center_y_.Blend(o->CenterY(), progress));
   result->SetRadius(radius_.Blend(o->Radius(), progress));
-  return result.Release();
+  return result;
 }
 
 bool BasicShapeEllipse::operator==(const BasicShape& o) const {
@@ -175,7 +175,7 @@ PassRefPtr<BasicShape> BasicShapeEllipse::Blend(const BasicShape* other,
   result->SetCenterY(center_y_.Blend(o->CenterY(), progress));
   result->SetRadiusX(radius_x_.Blend(o->RadiusX(), progress));
   result->SetRadiusY(radius_y_.Blend(o->RadiusY(), progress));
-  return result.Release();
+  return result;
 }
 
 void BasicShapePolygon::GetPath(Path& path, const FloatRect& bounding_box) {
@@ -213,7 +213,7 @@ PassRefPtr<BasicShape> BasicShapePolygon::Blend(const BasicShape* other,
   size_t length = values_.size();
   RefPtr<BasicShapePolygon> result = BasicShapePolygon::Create();
   if (!length)
-    return result.Release();
+    return result;
 
   result->SetWindRule(o->GetWindRule());
 
@@ -224,7 +224,7 @@ PassRefPtr<BasicShape> BasicShapePolygon::Blend(const BasicShape* other,
                                 kValueRangeAll));
   }
 
-  return result.Release();
+  return result;
 }
 
 bool BasicShapePolygon::operator==(const BasicShape& o) const {
@@ -294,7 +294,7 @@ PassRefPtr<BasicShape> BasicShapeInset::Blend(const BasicShape* other,
   result->SetBottomLeftRadius(BlendLengthSize(
       bottom_left_radius_, other_inset.BottomLeftRadius(), progress));
 
-  return result.Release();
+  return result;
 }
 
 bool BasicShapeInset::operator==(const BasicShape& o) const {

@@ -1920,7 +1920,7 @@ PassRefPtr<ComputedStyle> Element::StyleForLayoutObject() {
   style->UpdateIsStackingContext(this == GetDocument().documentElement(),
                                  IsInTopLayer());
 
-  return style.Release();
+  return style;
 }
 
 PassRefPtr<ComputedStyle> Element::OriginalStyleForLayoutObject() {
@@ -3527,7 +3527,7 @@ PassRefPtr<ComputedStyle> Element::GetUncachedPseudoStyle(
         GetDocument().EnsureStyleResolver().StyleForElement(
             this, parent_style, parent_style, kDisallowStyleSharing);
     result->SetStyleType(kPseudoIdFirstLineInherited);
-    return result.Release();
+    return result;
   }
 
   return GetDocument().EnsureStyleResolver().PseudoStyleForElement(

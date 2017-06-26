@@ -345,7 +345,7 @@ PassRefPtr<ComputedStyle> LayoutTextControlSingleLine::CreateInnerEditorStyle(
   text_block_style->AddCachedPseudoStyle(no_scrollbar_style);
   text_block_style->SetHasPseudoStyle(kPseudoIdScrollbar);
 
-  return text_block_style.Release();
+  return text_block_style;
 }
 
 bool LayoutTextControlSingleLine::TextShouldBeTruncated() const {

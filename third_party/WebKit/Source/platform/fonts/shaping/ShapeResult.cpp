@@ -366,7 +366,7 @@ PassRefPtr<ShapeResult> ShapeResult::ApplySpacingToCopy(
     const TextRun& run) const {
   RefPtr<ShapeResult> result = ShapeResult::Create(*this);
   result->ApplySpacing(spacing, run, run.Rtl());
-  return result.Release();
+  return result;
 }
 
 static inline float HarfBuzzPositionToFloat(hb_position_t value) {
@@ -511,7 +511,7 @@ PassRefPtr<ShapeResult> ShapeResult::CreateForTabulationCharacters(
   result->has_vertical_offsets_ =
       font_data->PlatformData().IsVerticalAnyUpright();
   result->runs_.push_back(std::move(run));
-  return result.Release();
+  return result;
 }
 
 }  // namespace blink

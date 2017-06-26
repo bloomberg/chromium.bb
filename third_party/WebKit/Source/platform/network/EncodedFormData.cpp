@@ -53,20 +53,20 @@ PassRefPtr<EncodedFormData> EncodedFormData::Create(const void* data,
                                                     size_t size) {
   RefPtr<EncodedFormData> result = Create();
   result->AppendData(data, size);
-  return result.Release();
+  return result;
 }
 
 PassRefPtr<EncodedFormData> EncodedFormData::Create(const CString& string) {
   RefPtr<EncodedFormData> result = Create();
   result->AppendData(string.data(), string.length());
-  return result.Release();
+  return result;
 }
 
 PassRefPtr<EncodedFormData> EncodedFormData::Create(
     const Vector<char>& vector) {
   RefPtr<EncodedFormData> result = Create();
   result->AppendData(vector.data(), vector.size());
-  return result.Release();
+  return result;
 }
 
 PassRefPtr<EncodedFormData> EncodedFormData::Copy() const {
@@ -104,7 +104,7 @@ PassRefPtr<EncodedFormData> EncodedFormData::DeepCopy() const {
         break;
     }
   }
-  return form_data.Release();
+  return form_data;
 }
 
 void EncodedFormData::AppendData(const void* data, size_t size) {
