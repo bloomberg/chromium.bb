@@ -36,6 +36,7 @@ WebRtcMediaStreamAdapter::WebRtcMediaStreamAdapter(
     TrackAdded(video_track);
 
   MediaStream* const native_stream = MediaStream::GetMediaStream(web_stream_);
+  DCHECK(native_stream);
   native_stream->AddObserver(this);
 }
 
