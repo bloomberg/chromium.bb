@@ -5615,6 +5615,9 @@ the Bookmarks menu.">
         Nope
       </message>
       <if expr="not is_android">
+        <message name="IDS_PASSWORD_MANAGER_EDIT_BUTTON" desc="Edit button text for password manager">
+          Edit
+        </message>
         <message name="IDS_PASSWORD_MANAGER_SAVE_BUTTON" desc="Save button text for password manager">
           Save
         </message>
