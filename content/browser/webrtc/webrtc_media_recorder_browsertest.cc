@@ -154,8 +154,16 @@ IN_PROC_BROWSER_TEST_F(WebRtcMediaRecorderTest,
                   kMediaRecorderHtmlFile);
 }
 
+// Flaky on Linux Tsan (crbug.com/736268)
+#if defined(THREAD_SANITIZER)
+#define MAYBE_IllegalStartWhilePausedThrowsDOMError \
+  DISABLED_IllegalStartWhilePausedThrowsDOMError
+#else
+#define MAYBE_IllegalStartWhilePausedThrowsDOMError \
+  IllegalStartWhilePausedThrowsDOMError
+#endif
 IN_PROC_BROWSER_TEST_F(WebRtcMediaRecorderTest,
-                       IllegalStartWhilePausedThrowsDOMError) {
+                       MAYBE_IllegalStartWhilePausedThrowsDOMError) {
   MakeTypicalCall("testIllegalStartInPausedStateThrowsDOMError();",
                   kMediaRecorderHtmlFile);
 }
