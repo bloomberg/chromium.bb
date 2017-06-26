@@ -43,12 +43,23 @@ class CONTENT_EXPORT Sandbox {
   // Returns true if the sandbox has been enabled for the current process.
   static bool SandboxIsCurrentlyActive();
 
- private:
   // Convert provided path into a "canonical" path matching what the Sandbox
   // expects i.e. one without symlinks.
   // This path is not necessarily unique e.g. in the face of hardlinks.
   static base::FilePath GetCanonicalSandboxPath(const base::FilePath& path);
 
+  static const char* kSandboxEnableLogging;
+  static const char* kSandboxDisableDenialLogging;
+  static const char* kSandboxHomedirAsLiteral;
+  static const char* kSandboxElCapOrLater;
+  static const char* kSandboxPermittedDir;
+  static const char* kSandboxBundlePath;
+  static const char* kSandboxLoggingPathAsLiteral;
+  static const char* kSandboxChromeBundleId;
+  static const char* kSandboxComponentPath;
+  static const char* kSandboxChromePID;
+
+ private:
   FRIEND_TEST_ALL_PREFIXES(MacDirAccessSandboxTest, StringEscape);
   FRIEND_TEST_ALL_PREFIXES(MacDirAccessSandboxTest, RegexEscape);
   FRIEND_TEST_ALL_PREFIXES(MacDirAccessSandboxTest, SandboxAccess);

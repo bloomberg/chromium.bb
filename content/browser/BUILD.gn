@@ -1328,6 +1328,8 @@ source_set("browser") {
     "resolve_proxy_msg_helper.h",
     "resource_context_impl.cc",
     "resource_context_impl.h",
+    "sandbox_parameters_mac.h",
+    "sandbox_parameters_mac.mm",
     "screen_orientation/screen_orientation_provider.cc",
     "screen_orientation/screen_orientation_provider.h",
     "service_manager/common_browser_interfaces.cc",
@@ -1678,6 +1680,7 @@ source_set("browser") {
         "media/capture/window_activity_tracker_mac.h",
         "media/capture/window_activity_tracker_mac.mm",
       ]
+      deps += [ "//sandbox/mac:seatbelt" ]
     }
     if (enable_webrtc) {
       sources += [

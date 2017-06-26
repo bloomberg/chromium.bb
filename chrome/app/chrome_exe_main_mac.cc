@@ -56,22 +56,19 @@ __attribute__((noreturn)) void SandboxExec(const char* exec_path,
 
   // The name of the parameter containing the executable path.
   const std::string exec_param = "EXECUTABLE_PATH";
-  // The name of the parameter containing the PID of Chrome.
-  const std::string pid_param = "CHROMIUM_PID";
 
-  if (!server.SetParameter(exec_param, rp) ||
-      !server.SetParameter(pid_param, std::to_string(getpid()))) {
+  if (!server.SetParameter(exec_param, rp)) {
     fprintf(stderr, "Failed to set up parameters for sandbox.\n");
     abort();
   }
 
-  if (server.InitializeSandbox() != 0) {
+  if (!server.InitializeSandbox()) {
     fprintf(stderr, "Failed to initialize sandbox.\n");
     abort();
   }
 
   std::vector<char*> new_argv;
-  for (int i = 1; i < argc; ++i) {
+  for (int i = 0; i < argc; ++i) {
     if (strcmp(argv[i], v2_sandbox_arg) != 0 &&
         strncmp(argv[i], fd_mapping_arg, strlen(fd_mapping_arg)) != 0) {
       new_argv.push_back(argv[i]);
