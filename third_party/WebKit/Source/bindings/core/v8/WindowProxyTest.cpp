@@ -48,4 +48,4 @@ TEST_F(WindowProxyTest, ReinitializedAfterNavigation) {
   ASSERT_GT(ConsoleMessages().size(), 0U);
   EXPECT_EQ("PASSED", ConsoleMessages()[0]);
 }
-}
+}  // namespace blink
