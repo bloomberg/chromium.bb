@@ -267,7 +267,7 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
           TranslateBrowserMetrics::INITIATION_STATUS_AUTO_BY_CONFIG);
       translate_event_->set_modified_target_language(auto_target_lang);
       RecordTranslateEvent(
-          metrics::TranslateEventProto::AUTOMATICALLY_TRANSLATED);
+          metrics::TranslateEventProto::AUTO_TRANSLATION_BY_PREF);
       TranslatePage(language_code, auto_target_lang, false);
       return;
     }
@@ -280,7 +280,7 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
         TranslateBrowserMetrics::INITIATION_STATUS_AUTO_BY_LINK);
     translate_event_->set_modified_target_language(auto_translate_to);
     RecordTranslateEvent(
-        metrics::TranslateEventProto::AUTOMATICALLY_TRANSLATED);
+        metrics::TranslateEventProto::AUTO_TRANSLATION_BY_LINK);
     TranslatePage(language_code, auto_translate_to, false);
     return;
   }

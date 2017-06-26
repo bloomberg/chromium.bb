@@ -63,7 +63,10 @@ message Translation {
     // and to_language_code will be previous chosen values.
     TRANSLATION_REVERTED = 6;
     // Automatically triggered translation.
-    AUTOMATIC_TRANSLATION = 7;
+    // User sets always translate in user settings.
+    AUTO_TRANSLATION_BY_PREF = 7;
+    // User navigated through a click from a translated page.
+    AUTO_TRANSLATION_BY_LINK = 8;
   }
   optional Interaction interaction = 3;
 }
