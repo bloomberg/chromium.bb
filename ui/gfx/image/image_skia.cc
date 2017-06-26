@@ -80,8 +80,9 @@ ImageSkiaRep ScaleImageSkiaRep(const ImageSkiaRep& rep, float target_scale) {
 // read-only ImageSkiaStorage'.
 class ImageSkiaStorage : public base::RefCountedThreadSafe<ImageSkiaStorage> {
  public:
-  ImageSkiaStorage(ImageSkiaSource* source, const gfx::Size& size);
-  ImageSkiaStorage(ImageSkiaSource* source, float scale);
+  ImageSkiaStorage(std::unique_ptr<ImageSkiaSource> source,
+                   const gfx::Size& size);
+  ImageSkiaStorage(std::unique_ptr<ImageSkiaSource> source, float scale);
 
   bool has_source() const { return source_ != nullptr; }
   std::vector<gfx::ImageSkiaRep>& image_reps() { return image_reps_; }
@@ -144,12 +145,14 @@ class ImageSkiaStorage : public base::RefCountedThreadSafe<ImageSkiaStorage> {
   DISALLOW_COPY_AND_ASSIGN(ImageSkiaStorage);
 };
 
-ImageSkiaStorage::ImageSkiaStorage(ImageSkiaSource* source,
+ImageSkiaStorage::ImageSkiaStorage(std::unique_ptr<ImageSkiaSource> source,
                                    const gfx::Size& size)
-    : source_(source), size_(size), read_only_(false) {}
+    : source_(std::move(source)), size_(size), read_only_(false) {}
 
-ImageSkiaStorage::ImageSkiaStorage(ImageSkiaSource* source, float scale)
-    : source_(source), read_only_(false) {
+ImageSkiaStorage::ImageSkiaStorage(std::unique_ptr<ImageSkiaSource> source,
+                                   float scale)
+    : source_(std::move(source)), read_only_(false) {
+  DCHECK(source_);
   ImageSkia::ImageSkiaReps::iterator it = FindRepresentation(scale, true);
   if (it == image_reps_.end() || it->is_null())
     source_.reset();
@@ -274,24 +277,33 @@ ImageSkiaStorage::~ImageSkiaStorage() = default;
 
 }  // internal
 
-ImageSkia::ImageSkia() : storage_(NULL) {
+ImageSkia::ImageSkia() {}
+
+ImageSkia::ImageSkia(std::unique_ptr<ImageSkiaSource> source,
+                     const gfx::Size& size)
+    : storage_(
+          base::MakeRefCounted<internal::ImageSkiaStorage>(std::move(source),
+                                                           size)) {
+  DCHECK(storage_->has_source());
+  // No other thread has reference to this, so it's safe to detach the sequence.
+  DetachStorageFromSequence();
+}
+
+ImageSkia::ImageSkia(std::unique_ptr<ImageSkiaSource> source, float scale)
+    : storage_(
+          base::MakeRefCounted<internal::ImageSkiaStorage>(std::move(source),
+                                                           scale)) {
+  if (!storage_->has_source())
+    storage_ = nullptr;
+  // No other thread has reference to this, so it's safe to detach the sequence.
+  DetachStorageFromSequence();
 }
 
 ImageSkia::ImageSkia(ImageSkiaSource* source, const gfx::Size& size)
-    : storage_(new internal::ImageSkiaStorage(source, size)) {
-  DCHECK(source);
-  // No other thread has reference to this, so it's safe to detach the sequence.
-  DetachStorageFromSequence();
-}
+    : ImageSkia(base::WrapUnique(source), size) {}
 
 ImageSkia::ImageSkia(ImageSkiaSource* source, float scale)
-    : storage_(new internal::ImageSkiaStorage(source, scale)) {
-  DCHECK(source);
-  if (!storage_->has_source())
-    storage_ = NULL;
-  // No other thread has reference to this, so it's safe to detach the sequence.
-  DetachStorageFromSequence();
-}
+    : ImageSkia(base::WrapUnique(source), scale) {}
 
 ImageSkia::ImageSkia(const ImageSkiaRep& image_rep) {
   Init(image_rep);
