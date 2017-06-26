@@ -60,15 +60,15 @@ Second, familiarize yourself with the following:
 
 | Topic | Description |
 |-------|-------------|
-| [Key Concepts in Chrome Memory](/memory/key_concepts.md) | Primer for memory terminology in Chrome. |
-| [memory-infra](/memory-infra/README.md) | The primary tool used for inspecting allocations. |
+| [Key Concepts in Chrome Memory](/docs/memory/key_concepts.md) | Primer for memory terminology in Chrome. |
+| [memory-infra](/docs/memory-infra/README.md) | The primary tool used for inspecting allocations. |
 
 
 ## What are people actively working on?
 | Project | Description |
 |---------|-------------|
 | [Memory Coordinator](https://docs.google.com/document/d/1dkUXXmpJk7xBUeQM-olBpTHJ2MXamDgY_kjNrl9JXMs/edit#heading=h.swke19b7apg5) (including [Purge+Throttle/Suspend](https://docs.google.com/document/d/1EgLimgxWK5DGhptnNVbEGSvVn6Q609ZJaBkLjEPRJvI/edit)) | Centralized policy and coordination of all memory components in Chrome |
-| [Memory-Infra](/memory-infra/README.md) | Tooling and infrastructure for Memory |
+| [Memory-Infra](/docs/memory-infra/README.md) | Tooling and infrastructure for Memory |
 | [System health benchmarks](https://docs.google.com/document/d/1pEeCnkbtrbsK3uuPA-ftbg4kzM4Bk7a2A9rhRYklmF8/edit?usp=sharing) | Automated tests based on telemetry |
 
 
