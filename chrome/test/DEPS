@@ -28,5 +28,4 @@ include_rules = [
   "+mojo/edk/embedder",
   "+sandbox/win/tests",
   "+third_party/ocmock",
-  "+win8/test",
 ]

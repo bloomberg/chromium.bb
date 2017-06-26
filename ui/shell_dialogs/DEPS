@@ -5,5 +5,4 @@ include_rules = [
   "+ui/base",
   "+ui/gfx",
   "+ui/strings/grit/ui_strings.h",
-  "+win8/viewer",
 ]
