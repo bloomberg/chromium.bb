@@ -68,10 +68,24 @@ const int kTextBreakDone = -1;
 
 enum class LineBreakType {
   kNormal,
-  kBreakAll,  // word-break:break-all allows breaks between letters/numbers
-  kKeepAll,   // word-break:keep-all doesn't allow breaks between all kind of
-              // letters/numbers except some south east asians'.
+
+  // word-break:break-all allows breaks between letters/numbers, but prohibits
+  // break before/after certain punctuation.
+  kBreakAll,
+
+  // Allows breaks at every grapheme cluster boundary.
+  // Terminal style line breaks described in UAX#14: Examples of Customization
+  // http://unicode.org/reports/tr14/#Examples
+  // CSS is discussing to add this feature crbug.com/720205
+  // Used internally for word-break:break-word.
+  kBreakCharacter,
+
+  // word-break:keep-all doesn't allow breaks between all kind of
+  // letters/numbers except some south east asians'.
+  kKeepAll,
 };
+
+PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, LineBreakType);
 
 class PLATFORM_EXPORT LazyLineBreakIterator final {
   STACK_ALLOCATED();
@@ -193,6 +207,7 @@ class PLATFORM_EXPORT LazyLineBreakIterator final {
     ReleaseIterator();
   }
 
+  LineBreakType BreakType() const { return break_type_; }
   void SetBreakType(LineBreakType break_type) { break_type_ = break_type; }
 
   inline bool IsBreakable(int pos,
@@ -206,8 +221,12 @@ class PLATFORM_EXPORT LazyLineBreakIterator final {
         case LineBreakType::kKeepAll:
           next_breakable = NextBreakablePositionKeepAll(pos);
           break;
-        default:
+        case LineBreakType::kNormal:
           next_breakable = NextBreakablePositionIgnoringNBSP(pos);
+          break;
+        case LineBreakType::kBreakCharacter:
+          next_breakable = NextBreakablePositionBreakCharacter(pos);
+          break;
       }
     }
     return pos == next_breakable;
@@ -240,6 +259,7 @@ class PLATFORM_EXPORT LazyLineBreakIterator final {
   int NextBreakablePositionIgnoringNBSP(int pos) const;
   int NextBreakablePositionBreakAll(int pos) const;
   int NextBreakablePositionKeepAll(int pos) const;
+  int NextBreakablePositionBreakCharacter(int pos) const;
 
   static const unsigned kPriorContextCapacity = 2;
   String string_;
