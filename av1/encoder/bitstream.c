@@ -2620,7 +2620,8 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
                            int mi_col) {
   AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &cpi->td.mb.e_mbd;
-  MODE_INFO *const m = xd->mi[0];
+  const int mi_offset = mi_row * cm->mi_stride + mi_col;
+  MODE_INFO *const m = *(cm->mi_grid_visible + mi_offset);
   MB_MODE_INFO *const mbmi = &m->mbmi;
   int plane;
   int bh, bw;
@@ -2629,7 +2630,7 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
   (void)tok;
   (void)tok_end;
 #endif
-  xd->mi = cm->mi_grid_visible + (mi_row * cm->mi_stride + mi_col);
+  xd->mi = cm->mi_grid_visible + mi_offset;
 
   assert(mbmi->sb_type <= cm->sb_size);
 
