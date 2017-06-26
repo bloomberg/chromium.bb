@@ -530,8 +530,6 @@ public class BottomSheetNewTabControllerTest {
         // Close the new tab.
         closeNewTab();
         assertEquals(1, mTabModelSelector.getTotalTabCount());
-        assertFalse("Overview mode should not be showing.",
-                mActivity.getLayoutManager().overviewVisible());
     }
 
     @Test
@@ -545,8 +543,6 @@ public class BottomSheetNewTabControllerTest {
         // Close the new tab.
         closeNewTab();
         assertEquals(1, mTabModelSelector.getTotalTabCount());
-        assertFalse("Overview mode should not be showing.",
-                mActivity.getLayoutManager().overviewVisible());
     }
 
     private void loadChromeHomeNewTab() throws InterruptedException {
@@ -564,6 +560,7 @@ public class BottomSheetNewTabControllerTest {
             @Override
             public void run() {
                 mBottomSheet.loadUrl(new LoadUrlParams("about:blank"), incognito);
+                mActivity.getLayoutManager().getActiveLayout().finishAnimationsForTests();
             }
         });
     }
