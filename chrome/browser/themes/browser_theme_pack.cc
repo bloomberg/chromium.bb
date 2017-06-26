@@ -12,6 +12,7 @@
 
 #include "base/files/file.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -791,8 +792,8 @@ gfx::Image BrowserThemePack::GetImageNamed(int idr_id) {
       png_map[scale_factors_[i]] = memory;
   }
   if (!png_map.empty()) {
-    gfx::ImageSkia image_skia(new ThemeImagePngSource(png_map), 1.0f);
-    // |image_skia| takes ownership of ThemeImagePngSource.
+    gfx::ImageSkia image_skia(base::MakeUnique<ThemeImagePngSource>(png_map),
+                              1.0f);
     gfx::Image ret = gfx::Image(image_skia);
     images_[prs_id] = ret;
     return ret;

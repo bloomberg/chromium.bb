@@ -19,6 +19,7 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/nix/mime_util_xdg.h"
 #include "base/nix/xdg_util.h"
 #include "base/stl_util.h"
@@ -229,8 +230,8 @@ class GtkButtonPainter : public views::Painter {
 
   gfx::Size GetMinimumSize() const override { return gfx::Size(); }
   void Paint(gfx::Canvas* canvas, const gfx::Size& size) override {
-    gfx::ImageSkiaSource* source = new GtkButtonImageSource(idr_.c_str(), size);
-    gfx::ImageSkia image(source, 1);
+    gfx::ImageSkia image(
+        base::MakeUnique<GtkButtonImageSource>(idr_.c_str(), size), 1);
     canvas->DrawImageInt(image, 0, 0);
   }
 

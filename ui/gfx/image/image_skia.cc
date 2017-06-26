@@ -302,9 +302,6 @@ ImageSkia::ImageSkia(std::unique_ptr<ImageSkiaSource> source, float scale)
 ImageSkia::ImageSkia(ImageSkiaSource* source, const gfx::Size& size)
     : ImageSkia(base::WrapUnique(source), size) {}
 
-ImageSkia::ImageSkia(ImageSkiaSource* source, float scale)
-    : ImageSkia(base::WrapUnique(source), scale) {}
-
 ImageSkia::ImageSkia(const ImageSkiaRep& image_rep) {
   Init(image_rep);
   // No other thread has reference to this, so it's safe to detach the sequence.
