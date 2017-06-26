@@ -7,9 +7,12 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_remote_gatt_descriptor.h"
 #include "device/bluetooth/bluetooth_uuid.h"
+#include "device/bluetooth/test/fake_read_response.h"
 
 namespace bluetooth {
 
@@ -23,6 +26,12 @@ class FakeRemoteGattDescriptor : public device::BluetoothRemoteGattDescriptor {
       const device::BluetoothUUID& descriptor_uuid,
       device::BluetoothRemoteGattCharacteristic* characteristic);
   ~FakeRemoteGattDescriptor() override;
+
+  // If |gatt_code| is mojom::kGATTSuccess the next read request will call
+  // its success callback with |value|. Otherwise it will call its error
+  // callback.
+  void SetNextReadResponse(uint16_t gatt_code,
+                           const base::Optional<std::vector<uint8_t>>& value);
 
   // device::BluetoothGattDescriptor overrides:
   std::string GetIdentifier() const override;
@@ -40,10 +49,19 @@ class FakeRemoteGattDescriptor : public device::BluetoothRemoteGattDescriptor {
                              const ErrorCallback& error_callback) override;
 
  private:
+  void DispatchReadResponse(const ValueCallback& callback,
+                            const ErrorCallback& error_callback);
+
   const std::string descriptor_id_;
   const device::BluetoothUUID descriptor_uuid_;
   device::BluetoothRemoteGattCharacteristic* characteristic_;
   std::vector<uint8_t> value_;
+
+  // Used to decide which callback should be called when
+  // ReadRemoteDescriptor is called.
+  base::Optional<FakeReadResponse> next_read_response_;
+
+  base::WeakPtrFactory<FakeRemoteGattDescriptor> weak_ptr_factory_;
 };
 
 }  // namespace bluetooth

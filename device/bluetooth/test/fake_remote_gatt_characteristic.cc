@@ -11,6 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "device/bluetooth/public/interfaces/test/fake_bluetooth.mojom.h"
+#include "device/bluetooth/test/fake_read_response.h"
 
 namespace bluetooth {
 
@@ -149,9 +150,8 @@ void FakeRemoteGattCharacteristic::DispatchReadResponse(
     const ValueCallback& callback,
     const ErrorCallback& error_callback) {
   DCHECK(next_read_response_);
-  uint16_t gatt_code = next_read_response_->gatt_code;
-  base::Optional<std::vector<uint8_t>> value =
-      std::move(next_read_response_->value);
+  uint16_t gatt_code = next_read_response_->gatt_code();
+  base::Optional<std::vector<uint8_t>> value = next_read_response_->value();
   next_read_response_.reset();
 
   if (gatt_code == mojom::kGATTSuccess) {
@@ -165,12 +165,5 @@ void FakeRemoteGattCharacteristic::DispatchReadResponse(
     return;
   }
 }
-
-FakeRemoteGattCharacteristic::ReadResponse::ReadResponse(
-    uint16_t gatt_code,
-    const base::Optional<std::vector<uint8_t>>& value)
-    : gatt_code(gatt_code), value(value) {}
-
-FakeRemoteGattCharacteristic::ReadResponse::~ReadResponse() {}
 
 }  // namespace bluetooth
