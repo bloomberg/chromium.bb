@@ -5,15 +5,8 @@
 #ifndef IOS_CHROME_APP_MEMORY_MONITOR_H_
 #define IOS_CHROME_APP_MEMORY_MONITOR_H_
 
-namespace ios_internal {
-
-// Timer to launch [UpdateBreakpadMemoryValues] every 5 seconds.
-void AsynchronousFreeMemoryMonitor();
-
-// Checks the values of free RAM and free disk space and updates breakpad with
-// these values.
-void UpdateBreakpadMemoryValues();
-
-}  // namespace ios_internal
+// Starts the memory monitor that periodically updates the amount of free
+// memory and free disk space with breakpad in the background.
+void StartFreeMemoryMonitor();
 
 #endif  // IOS_CHROME_APP_MEMORY_MONITOR_H_

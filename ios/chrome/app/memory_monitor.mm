@@ -14,33 +14,47 @@
 #import "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/sys_info.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/threading/thread_restrictions.h"
 #import "ios/chrome/browser/crash_report/breakpad_helper.h"
-#include "ios/web/public/web_thread.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-namespace ios_internal {
+namespace {
+// Delay between each invocations of |UpdateBreakpadMemoryValues|.
+const int64_t kMemoryMonitorDelayInSeconds = 30;
 
-void AsynchronousFreeMemoryMonitor() {
-  UpdateBreakpadMemoryValues();
-  web::WebThread::PostDelayedTask(
-      web::WebThread::FILE, FROM_HERE,
-      base::Bind(&ios_internal::AsynchronousFreeMemoryMonitor),
-      base::TimeDelta::FromSeconds(30));
-}
-
+// Checks the values of free RAM and free disk space and updates breakpad with
+// these values.
 void UpdateBreakpadMemoryValues() {
-  int freeMemory =
+  base::ThreadRestrictions::AssertIOAllowed();
+  const int free_memory =
       static_cast<int>(base::SysInfo::AmountOfAvailablePhysicalMemory() / 1024);
-  breakpad_helper::SetCurrentFreeMemoryInKB(freeMemory);
+  breakpad_helper::SetCurrentFreeMemoryInKB(free_memory);
   NSArray* paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,
                                                        NSUserDomainMask, YES);
   NSString* value = base::mac::ObjCCastStrict<NSString>([paths lastObject]);
   base::FilePath filePath = base::FilePath(base::SysNSStringToUTF8(value));
-  int freeDiskSpace =
+  const int free_disk_space =
       static_cast<int>(base::SysInfo::AmountOfFreeDiskSpace(filePath) / 1024);
-  breakpad_helper::SetCurrentFreeDiskInKB(freeDiskSpace);
+  breakpad_helper::SetCurrentFreeDiskInKB(free_disk_space);
 }
+
+// Invokes |UpdateBreakpadMemoryValues| and schedules itself to be called
+// after |kMemoryMonitorDelayInSeconds|.
+void AsynchronousFreeMemoryMonitor() {
+  UpdateBreakpadMemoryValues();
+  base::PostDelayedTaskWithTraits(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      base::BindOnce(&AsynchronousFreeMemoryMonitor),
+      base::TimeDelta::FromSeconds(kMemoryMonitorDelayInSeconds));
+}
+}  // namespace
+
+void StartFreeMemoryMonitor() {
+  base::PostTaskWithTraits(FROM_HERE,
+                           {base::MayBlock(), base::TaskPriority::BACKGROUND},
+                           base::BindOnce(&AsynchronousFreeMemoryMonitor));
 }
