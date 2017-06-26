@@ -61,6 +61,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/display/display_switches.h"
+#include "ui/gfx/color_space_switches.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -277,6 +278,10 @@ void InProcessBrowserTest::SetUpDefaultCommandLine(
 
   // This is a Browser test.
   command_line->AppendSwitchASCII(switches::kTestType, kBrowserTestType);
+
+  // Use an sRGB color profile to ensure that the machine's color profile does
+  // not affect the results.
+  command_line->AppendSwitchASCII(switches::kForceColorProfile, "srgb");
 
 #if defined(OS_MACOSX)
   // Explicitly set the path of the binary used for child processes, otherwise
