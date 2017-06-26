@@ -37,6 +37,7 @@ from webkitpy.common.system.output_capture import OutputCapture
 from webkitpy.common.system.platform_info_mock import MockPlatformInfo
 from webkitpy.common.system.system_host import SystemHost
 from webkitpy.common.system.system_host_mock import MockSystemHost
+from webkitpy.common.path_finder import PathFinder
 from webkitpy.layout_tests.models.test_expectations import TestExpectations
 from webkitpy.layout_tests.port.base import Port, VirtualTestSuite
 from webkitpy.layout_tests.port.test import add_unit_tests_to_mock_filesystem, LAYOUT_TEST_DIR, TestPort
@@ -90,7 +91,8 @@ class PortTest(unittest.TestCase):
         port = self.make_port()
 
         def add_text_file(dirname, filename, content='some content'):
-            dirname = port.host.filesystem.join(port.perf_tests_dir(), dirname)
+            dirname = port.host.filesystem.join(
+                PathFinder(port.host.filesystem).perf_tests_dir(), dirname)
             port.host.filesystem.maybe_make_directory(dirname)
             port.host.filesystem.write_text_file(port.host.filesystem.join(dirname, filename), content)
 
