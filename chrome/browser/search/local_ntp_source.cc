@@ -484,8 +484,9 @@ void LocalNtpSource::DefaultSearchProviderIsGoogleChanged(bool is_google) {
   default_search_provider_is_google_ = is_google;
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&LocalNtpSource::SetDefaultSearchProviderIsGoogleOnIOThread,
-                 weak_ptr_factory_.GetWeakPtr(), is_google));
+      base::BindOnce(
+          &LocalNtpSource::SetDefaultSearchProviderIsGoogleOnIOThread,
+          weak_ptr_factory_.GetWeakPtr(), is_google));
 }
 
 void LocalNtpSource::SetDefaultSearchProviderIsGoogleOnIOThread(

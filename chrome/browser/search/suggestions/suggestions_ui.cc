@@ -210,8 +210,8 @@ void SuggestionsSource::StartDataRequest(
     RequestContext* context =
         new RequestContext(is_refresh, suggestions_profile, callback);
     base::Closure barrier = BarrierClosure(
-        size, base::Bind(&SuggestionsSource::OnThumbnailsFetched,
-                         weak_ptr_factory_.GetWeakPtr(), context));
+        size, base::BindOnce(&SuggestionsSource::OnThumbnailsFetched,
+                             weak_ptr_factory_.GetWeakPtr(), context));
     for (size_t i = 0; i < size; ++i) {
       const ChromeSuggestion& suggestion = suggestions_profile.suggestions(i);
       // Fetch the thumbnail for this URL (exercising the fetcher). After all
