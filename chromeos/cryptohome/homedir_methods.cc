@@ -225,6 +225,9 @@ class HomedirMethodsImpl : public HomedirMethods {
     if (request.to_migrate_from_ecryptfs)
       request_proto.set_to_migrate_from_ecryptfs(true);
 
+    if (request.public_mount)
+      request_proto.set_public_mount(true);
+
     DBusThreadManager::Get()->GetCryptohomeClient()->MountEx(
         id, auth_proto, request_proto,
         base::Bind(&HomedirMethodsImpl::OnMountExCallback,
