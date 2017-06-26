@@ -52,8 +52,10 @@ if (is_win) {
     ]
     outputs = [
       "$root_out_dir/chrome.exe",
-      "$root_out_dir/chrome.exe.pdb",
     ]
+    if (symbol_level != 0) {
+      outputs += [ "$root_out_dir/chrome.exe.pdb" ]
+    }
     args = [
       "-i",
       rebase_path("$root_out_dir/initialexe", root_build_dir),
