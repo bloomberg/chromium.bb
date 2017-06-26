@@ -208,4 +208,51 @@ TEST_F(ServerGpuMemoryBufferManagerTest, AllocationRequestsForDestroyedClient) {
 #endif
 }
 
+TEST_F(ServerGpuMemoryBufferManagerTest,
+       RequestsFromUntrustedClientsValidated) {
+  gfx::ClientNativePixmapFactory::ResetInstance();
+  TestGpuService gpu_service;
+  ServerGpuMemoryBufferManager manager(&gpu_service, 1);
+  const auto buffer_id = static_cast<gfx::GpuMemoryBufferId>(1);
+  const int client_id = 2;
+  // SCANOUT cannot be used if native gpu memory buffer is not supported.
+  // When ATC is used, both width and height should be multiples of 4.
+  struct {
+    gfx::BufferUsage usage;
+    gfx::BufferFormat format;
+    gfx::Size size;
+    bool expect_null_handle;
+  } configs[] = {
+      {gfx::BufferUsage::SCANOUT, gfx::BufferFormat::YVU_420, {10, 20}, true},
+      {gfx::BufferUsage::GPU_READ, gfx::BufferFormat::ATC, {10, 20}, true},
+      {gfx::BufferUsage::GPU_READ, gfx::BufferFormat::YVU_420, {10, 20}, false},
+  };
+  for (const auto& config : configs) {
+    gfx::GpuMemoryBufferHandle allocated_handle;
+    base::RunLoop runloop;
+    manager.AllocateGpuMemoryBuffer(
+        buffer_id, client_id, config.size, config.format, config.usage,
+        gpu::kNullSurfaceHandle,
+        base::BindOnce(
+            [](gfx::GpuMemoryBufferHandle* allocated_handle,
+               const base::Closure& callback,
+               const gfx::GpuMemoryBufferHandle& handle) {
+              *allocated_handle = handle;
+              callback.Run();
+            },
+            &allocated_handle, runloop.QuitClosure()));
+    // Since native gpu memory buffers are not supported, the mojom.GpuService
+    // should not receive any allocation requests.
+    EXPECT_FALSE(gpu_service.HasAllocationRequest(buffer_id, client_id));
+    runloop.Run();
+    if (config.expect_null_handle) {
+      EXPECT_TRUE(allocated_handle.is_null());
+    } else {
+      EXPECT_FALSE(allocated_handle.is_null());
+      EXPECT_EQ(gfx::GpuMemoryBufferType::SHARED_MEMORY_BUFFER,
+                allocated_handle.type);
+    }
+  }
+}
+
 }  // namespace viz

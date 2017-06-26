@@ -47,14 +47,18 @@ void ServerGpuMemoryBufferManager::AllocateGpuMemoryBuffer(
     }
   }
 
-  DCHECK(gpu::GpuMemoryBufferImplSharedMemory::IsUsageSupported(usage))
-      << static_cast<int>(usage);
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          std::move(callback),
-          gpu::GpuMemoryBufferImplSharedMemory::CreateGpuMemoryBuffer(id, size,
-                                                                      format)));
+  gfx::GpuMemoryBufferHandle buffer_handle;
+  // The requests are coming in from untrusted clients. So verify that it is
+  // possible to allocate shared memory buffer first.
+  if (gpu::GpuMemoryBufferImplSharedMemory::IsUsageSupported(usage) &&
+      gpu::GpuMemoryBufferImplSharedMemory::IsSizeValidForFormat(size,
+                                                                 format)) {
+    buffer_handle = gpu::GpuMemoryBufferImplSharedMemory::CreateGpuMemoryBuffer(
+        id, size, format);
+  }
+
+  task_runner_->PostTask(FROM_HERE,
+                         base::BindOnce(std::move(callback), buffer_handle));
 }
 
 std::unique_ptr<gfx::GpuMemoryBuffer>
