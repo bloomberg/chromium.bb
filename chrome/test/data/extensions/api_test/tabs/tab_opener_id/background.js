@@ -54,6 +54,38 @@ function testSetOpenerOutsideOfWindow() {
   });
 }
 
+// Tests that, when windowId and openerTabId params are set, the tab opener must
+// be in the same window as the updated tab.
+function testSetOpenerOutsideOfWindowWithWindowIdSet() {
+  var url1 = getUrl('title1.html');
+  var url2 = getUrl('title2.html');
+
+  // Create a new window with a single tab (url1).
+  chrome.windows.create({url: url1}, (win) => {
+    chrome.test.assertNoLastError();
+    chrome.test.assertTrue(!!win);
+    chrome.test.assertTrue(!!win.tabs);
+    chrome.test.assertEq(1, win.tabs.length);
+
+    // Create a second window with a single tab (url2).
+    chrome.windows.create({url: url2}, (secondWin) => {
+      chrome.test.assertNoLastError();
+      chrome.test.assertTrue(!!secondWin);
+      chrome.test.assertTrue(!!secondWin.tabs);
+      chrome.test.assertEq(1, secondWin.tabs.length);
+
+      // Try to create a tab in the second window from a tab opener in the first
+      // window. This *should* fail.
+      chrome.tabs.create({windowId: secondWin.id, openerTabId: win.tabs[0].id},
+          () => {
+        chrome.test.assertLastError(
+            'Tab opener must be in the same window as the updated tab.');
+        chrome.test.succeed();
+      });
+    });
+  });
+}
+
 // Tests that the tab in a window cannot be set to have an opener of itself.
 // Regression test for crbug.com/709961
 function testSetOpenerToSelf() {
@@ -80,5 +112,7 @@ function testSetOpenerToSelf() {
 chrome.test.getConfig((config) => {
   port = config.testServer.port;
 
-  chrome.test.runTests([testSetOpenerOutsideOfWindow, testSetOpenerToSelf]);
+  chrome.test.runTests([testSetOpenerOutsideOfWindow,
+      testSetOpenerOutsideOfWindowWithWindowIdSet,
+      testSetOpenerToSelf]);
 });
