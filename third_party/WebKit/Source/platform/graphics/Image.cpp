@@ -72,7 +72,7 @@ PassRefPtr<Image> Image::LoadPlatformResource(const char* name) {
 
   RefPtr<Image> image = BitmapImage::Create();
   image->SetData(resource, true);
-  return image.Release();
+  return image;
 }
 
 bool Image::SupportsType(const String& type) {
@@ -341,7 +341,7 @@ void Image::DrawPattern(GraphicsContext& context,
 PassRefPtr<Image> Image::ImageForDefaultFrame() {
   RefPtr<Image> image(this);
 
-  return image.Release();
+  return image;
 }
 
 PaintImage Image::PaintImageForCurrentFrame() {

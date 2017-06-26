@@ -149,7 +149,7 @@ PassRefPtr<BlobDataHandle> BodyStreamBuffer::DrainAsBlobDataHandle(
       consumer_->DrainAsBlobDataHandle(policy);
   if (blob_data_handle) {
     CloseAndLockAndDisturb();
-    return blob_data_handle.Release();
+    return blob_data_handle;
   }
   return nullptr;
 }
@@ -166,7 +166,7 @@ PassRefPtr<EncodedFormData> BodyStreamBuffer::DrainAsFormData() {
   RefPtr<EncodedFormData> form_data = consumer_->DrainAsFormData();
   if (form_data) {
     CloseAndLockAndDisturb();
-    return form_data.Release();
+    return form_data;
   }
   return nullptr;
 }

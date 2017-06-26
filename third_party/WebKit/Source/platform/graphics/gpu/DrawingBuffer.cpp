@@ -123,7 +123,7 @@ PassRefPtr<DrawingBuffer> DrawingBuffer::Create(
     drawing_buffer->BeginDestruction();
     return PassRefPtr<DrawingBuffer>();
   }
-  return drawing_buffer.Release();
+  return drawing_buffer;
 }
 
 void DrawingBuffer::ForceNextDrawingBufferCreationToFail() {

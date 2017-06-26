@@ -96,7 +96,7 @@ PassRefPtr<ComputedStyle> LayoutTextControlMultiLine::CreateInnerEditorStyle(
   text_block_style->SetDisplay(EDisplay::kBlock);
   text_block_style->SetUnique();
 
-  return text_block_style.Release();
+  return text_block_style;
 }
 
 LayoutObject* LayoutTextControlMultiLine::LayoutSpecialExcludedChild(

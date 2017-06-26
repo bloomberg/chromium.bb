@@ -136,7 +136,7 @@ PassRefPtr<SharedBuffer> DeferredImageDecoder::Data() {
   do {
     shared_buffer->Append(static_cast<const char*>(it.data()), it.size());
   } while (it.next());
-  return shared_buffer.Release();
+  return shared_buffer;
 }
 
 void DeferredImageDecoder::SetData(PassRefPtr<SharedBuffer> data,

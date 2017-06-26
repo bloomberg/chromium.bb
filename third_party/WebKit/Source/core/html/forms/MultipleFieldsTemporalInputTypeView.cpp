@@ -350,7 +350,7 @@ MultipleFieldsTemporalInputTypeView::CustomStyleForLayoutObject(
   style->SetDirection(content_direction);
   style->SetDisplay(new_display);
   style->SetUnique();
-  return style.Release();
+  return style;
 }
 
 void MultipleFieldsTemporalInputTypeView::CreateShadowSubtree() {

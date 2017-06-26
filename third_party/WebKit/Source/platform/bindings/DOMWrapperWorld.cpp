@@ -157,7 +157,7 @@ PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::EnsureIsolatedWorld(
     RefPtr<DOMWrapperWorld> world = it->value;
     DCHECK(world->IsIsolatedWorld());
     DCHECK_EQ(world_id, world->GetWorldId());
-    return world.Release();
+    return world;
   }
 
   return AdoptRef(new DOMWrapperWorld(isolate, WorldType::kIsolated, world_id));

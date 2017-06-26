@@ -106,7 +106,7 @@ PassRefPtr<StyleReflection> StyleBuilderConverter::ConvertBoxReflect(
     reflection->SetMask(mask);
   }
 
-  return reflection.Release();
+  return reflection;
 }
 
 Color StyleBuilderConverter::ConvertColor(StyleResolverState& state,
@@ -1066,7 +1066,7 @@ PassRefPtr<QuotesData> StyleBuilderConverter::ConvertQuotes(
       String end_quote = ToCSSStringValue(list.Item(i + 1)).Value();
       quotes->AddPair(std::make_pair(start_quote, end_quote));
     }
-    return quotes.Release();
+    return quotes;
   }
   DCHECK_EQ(ToCSSIdentifierValue(value).GetValueID(), CSSValueNone);
   return QuotesData::Create();
@@ -1199,7 +1199,7 @@ PassRefPtr<SVGDashArray> StyleBuilderConverter::ConvertStrokeDasharray(
     array->push_back(ConvertLength(state, ToCSSPrimitiveValue(dashes.Item(i))));
   }
 
-  return array.Release();
+  return array;
 }
 
 StyleColor StyleBuilderConverter::ConvertStyleColor(StyleResolverState& state,

@@ -130,7 +130,7 @@ PassRefPtr<Image> OffscreenCanvas::GetSourceImageForCanvas(
   } else {
     *status = kNormalSourceImageStatus;
   }
-  return image.Release();
+  return image;
 }
 
 IntSize OffscreenCanvas::BitmapSourceSize() const {

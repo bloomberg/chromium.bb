@@ -456,7 +456,7 @@ PassRefPtr<Image> HTMLVideoElement::GetSourceImageForCanvas(
   }
 
   *status = kNormalSourceImageStatus;
-  return snapshot.Release();
+  return snapshot;
 }
 
 bool HTMLVideoElement::WouldTaintOrigin(

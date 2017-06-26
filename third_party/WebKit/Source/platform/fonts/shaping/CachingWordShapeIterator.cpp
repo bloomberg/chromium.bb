@@ -27,7 +27,7 @@ PassRefPtr<const ShapeResult> CachingWordShapeIterator::ShapeWordWithoutSpacing(
   if (cache_entry)
     cache_entry->shape_result_ = shape_result;
 
-  return shape_result.Release();
+  return shape_result;
 }
 
 }  // namespace blink

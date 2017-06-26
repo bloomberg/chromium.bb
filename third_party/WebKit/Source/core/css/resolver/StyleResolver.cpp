@@ -583,7 +583,7 @@ PassRefPtr<ComputedStyle> StyleResolver::StyleForDocument(Document& document) {
 
   document.SetupFontBuilder(*document_style);
 
-  return document_style.Release();
+  return document_style;
 }
 
 void StyleResolver::AdjustComputedStyle(StyleResolverState& state,
@@ -676,7 +676,7 @@ PassRefPtr<ComputedStyle> StyleResolver::StyleForElement(
       (default_parent || element_context.ParentStyle())) {
     if (RefPtr<ComputedStyle> shared_style =
             GetDocument().GetStyleEngine().FindSharedStyle(element_context))
-      return shared_style.Release();
+      return shared_style;
   }
 
   StyleResolverState state(GetDocument(), element_context, default_parent,
@@ -1057,7 +1057,7 @@ PassRefPtr<ComputedStyle> StyleResolver::InitialStyleForElement() {
   font_builder.SetInitial(style->EffectiveZoom());
   font_builder.CreateFont(GetDocument().GetStyleEngine().FontSelector(),
                           *style);
-  return style.Release();
+  return style;
 }
 
 PassRefPtr<ComputedStyle> StyleResolver::StyleForText(Text* text_node) {

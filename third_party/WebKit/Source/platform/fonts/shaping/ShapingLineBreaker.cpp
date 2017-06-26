@@ -86,7 +86,7 @@ inline PassRefPtr<ShapeResult> ShapingLineBreaker::Shape(
 
   RefPtr<ShapeResult> result = shaper_->Shape(font_, direction, start, end);
   result->ApplySpacing(*spacing_, direction);
-  return result.Release();
+  return result;
 }
 
 // Shapes a line of text by finding a valid and appropriate break opportunity
@@ -244,7 +244,7 @@ PassRefPtr<ShapeResult> ShapingLineBreaker::ShapeLine(
             line_result->NumCharacters());
 
   *break_offset = break_opportunity;
-  return line_result.Release();
+  return line_result;
 }
 
 // Shape from the specified offset to the end of the ShapeResult.
@@ -271,7 +271,7 @@ PassRefPtr<ShapeResult> ShapingLineBreaker::ShapeToEnd(
     // If no safe-to-break in the ragne, reshape the whole range.
     line_result = Shape(direction, start, range_end);
   }
-  return line_result.Release();
+  return line_result;
 }
 
 }  // namespace blink
