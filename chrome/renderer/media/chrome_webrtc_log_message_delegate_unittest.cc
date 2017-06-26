@@ -30,8 +30,8 @@ TEST(ChromeWebRtcLogMessageDelegateTest, Basic) {
 
   // Start logging on the IO loop.
   message_loop.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&ChromeWebRtcLogMessageDelegate::OnStartLogging,
-                            base::Unretained(log_message_delegate)));
+      FROM_HERE, base::BindOnce(&ChromeWebRtcLogMessageDelegate::OnStartLogging,
+                                base::Unretained(log_message_delegate)));
 
   // These log messages should be added to the log buffer outside of the IO
   // loop.
@@ -40,8 +40,8 @@ TEST(ChromeWebRtcLogMessageDelegateTest, Basic) {
 
   // Stop logging on IO loop.
   message_loop.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&ChromeWebRtcLogMessageDelegate::OnStopLogging,
-                            base::Unretained(log_message_delegate)));
+      FROM_HERE, base::BindOnce(&ChromeWebRtcLogMessageDelegate::OnStopLogging,
+                                base::Unretained(log_message_delegate)));
 
   // This log message should not be added to the log buffer.
   log_message_delegate->LogMessage(kTestString);

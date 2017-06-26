@@ -18,9 +18,9 @@ WebRtcLoggingMessageFilter::WebRtcLoggingMessageFilter(
   // May be null in a browsertest using MockRenderThread.
   if (io_task_runner_.get()) {
     io_task_runner_->PostTask(
-        FROM_HERE, base::Bind(
-            &WebRtcLoggingMessageFilter::CreateLoggingHandler,
-            base::Unretained(this)));
+        FROM_HERE,
+        base::BindOnce(&WebRtcLoggingMessageFilter::CreateLoggingHandler,
+                       base::Unretained(this)));
   }
 }
 

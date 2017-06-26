@@ -216,7 +216,7 @@ class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
     void OnVideoFrame(const scoped_refptr<media::VideoFrame>& video_frame,
                       base::TimeTicks estimated_capture_time) {
       main_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&CastVideoSink::DidReceiveFrame, sink_));
+          FROM_HERE, base::BindOnce(&CastVideoSink::DidReceiveFrame, sink_));
 
       const base::TimeTicks timestamp = estimated_capture_time.is_null()
                                             ? base::TimeTicks::Now()
@@ -583,6 +583,5 @@ void CastRtpStream::DidEncounterError(const std::string& message) {
   base::WeakPtr<CastRtpStream> ptr = weak_factory_.GetWeakPtr();
   error_callback_.Run(message);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&CastRtpStream::Stop, ptr));
+      FROM_HERE, base::BindOnce(&CastRtpStream::Stop, ptr));
 }
