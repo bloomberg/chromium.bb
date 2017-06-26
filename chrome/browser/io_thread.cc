@@ -181,34 +181,6 @@ base::FilePath GetSSLKeyLogFile(const base::CommandLine& command_line) {
 #endif
 }
 
-// Used for the "system" URLRequestContext.
-class SystemURLRequestContext : public net::URLRequestContext {
- public:
-  SystemURLRequestContext() {
-#if defined(USE_NSS_CERTS)
-    net::SetURLRequestContextForNSSHttpIO(this);
-#endif
-#if defined(OS_ANDROID)
-    net::CertVerifyProcAndroid::SetCertNetFetcher(
-        net::CreateCertNetFetcher(this));
-#endif
-  }
-
-  ~SystemURLRequestContext() override {
-    AssertNoURLRequests();
-#if defined(USE_NSS_CERTS)
-    net::SetURLRequestContextForNSSHttpIO(NULL);
-#endif
-
-#if defined(OS_ANDROID)
-    net::CertVerifyProcAndroid::ShutdownCertNetFetcher();
-#endif
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SystemURLRequestContext);
-};
-
 std::unique_ptr<net::HostResolver> CreateGlobalHostResolver(
     net::NetLog* net_log) {
   TRACE_EVENT0("startup", "IOThread::CreateGlobalHostResolver");
@@ -644,8 +616,17 @@ void IOThread::CleanUp() {
     ct_tree_tracker_.reset();
   }
 
-  if (globals_->system_request_context)
+  if (globals_->system_request_context) {
     globals_->system_request_context->proxy_service()->OnShutdown();
+
+#if defined(USE_NSS_CERTS)
+    net::SetURLRequestContextForNSSHttpIO(nullptr);
+#endif
+
+#if defined(OS_ANDROID)
+    net::CertVerifyProcAndroid::ShutdownCertNetFetcher();
+#endif
+  }
 
   // Release objects that the net::URLRequestContext could have been pointing
   // to.
@@ -887,6 +868,14 @@ void IOThread::ConstructSystemRequestContext() {
   builder.DisableHttpCache();
 
   globals_->system_request_context = builder.Build();
+
+#if defined(USE_NSS_CERTS)
+  net::SetURLRequestContextForNSSHttpIO(globals_->system_request_context.get());
+#endif
+#if defined(OS_ANDROID)
+  net::CertVerifyProcAndroid::SetCertNetFetcher(
+      net::CreateCertNetFetcher(globals_->system_request_context.get()));
+#endif
 }
 
 // static
