@@ -550,11 +550,11 @@ void DeviceEmulatorMessageHandler::OnJavascriptAllowed() {
   power_observer_.reset(new PowerObserver(this));
 
   system::InputDeviceSettings::Get()->TouchpadExists(
-      base::Bind(&DeviceEmulatorMessageHandler::TouchpadExists,
-          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&DeviceEmulatorMessageHandler::TouchpadExists,
+                     weak_ptr_factory_.GetWeakPtr()));
   system::InputDeviceSettings::Get()->MouseExists(
-      base::Bind(&DeviceEmulatorMessageHandler::MouseExists,
-          weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&DeviceEmulatorMessageHandler::MouseExists,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DeviceEmulatorMessageHandler::OnJavascriptDisallowed() {

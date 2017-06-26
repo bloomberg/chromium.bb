@@ -672,11 +672,12 @@ void DriveInternalsWebUIHandler::UpdateGCacheContentsSection() {
   base::DictionaryValue* gcache_summary = new base::DictionaryValue;
   base::PostTaskWithTraitsAndReply(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-      base::Bind(&GetGCacheContents, root_path, gcache_contents,
-                 gcache_summary),
-      base::Bind(&DriveInternalsWebUIHandler::OnGetGCacheContents,
-                 weak_ptr_factory_.GetWeakPtr(), base::Owned(gcache_contents),
-                 base::Owned(gcache_summary)));
+      base::BindOnce(&GetGCacheContents, root_path, gcache_contents,
+                     gcache_summary),
+      base::BindOnce(&DriveInternalsWebUIHandler::OnGetGCacheContents,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     base::Owned(gcache_contents),
+                     base::Owned(gcache_summary)));
 }
 
 void DriveInternalsWebUIHandler::UpdateFileSystemContentsSection() {
@@ -711,10 +712,10 @@ void DriveInternalsWebUIHandler::UpdateLocalStorageUsageSection() {
     base::DictionaryValue* local_storage_summary = new base::DictionaryValue;
     base::PostTaskWithTraitsAndReply(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-        base::Bind(&GetFreeDiskSpace, home_path, local_storage_summary),
-        base::Bind(&DriveInternalsWebUIHandler::OnGetFreeDiskSpace,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   base::Owned(local_storage_summary)));
+        base::BindOnce(&GetFreeDiskSpace, home_path, local_storage_summary),
+        base::BindOnce(&DriveInternalsWebUIHandler::OnGetFreeDiskSpace,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       base::Owned(local_storage_summary)));
   } else {
     LOG(ERROR) << "Home directory not found";
   }

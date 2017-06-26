@@ -41,9 +41,10 @@ void OobeDisplayChooser::TryToPlaceUiOnTouchDisplay() {
       display::Screen::GetScreen()->GetPrimaryDisplay();
 
   if (primary_display.is_valid() && !TouchSupportAvailable(primary_display)) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(&OobeDisplayChooser::MoveToTouchDisplay,
-                                       weak_ptr_factory_.GetWeakPtr()));
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&OobeDisplayChooser::MoveToTouchDisplay,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
