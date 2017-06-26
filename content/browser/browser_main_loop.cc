@@ -119,6 +119,7 @@
 #include "skia/ext/event_tracer_impl.h"
 #include "skia/ext/skia_memory_dump_provider.h"
 #include "sql/sql_memory_dump_provider.h"
+#include "third_party/boringssl/src/include/openssl/evp.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/gfx/switches.h"
 
@@ -873,6 +874,9 @@ int BrowserMainLoop::PreCreateThreads() {
   if (parsed_command_line_.HasSwitch(switches::kSingleProcess))
     RenderProcessHost::SetRunRendererInProcess(true);
 #endif
+
+  EVP_set_buggy_rsa_parser(
+      base::FeatureList::IsEnabled(features::kBuggyRSAParser));
 
   return result_code_;
 }

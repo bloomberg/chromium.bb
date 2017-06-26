@@ -173,6 +173,7 @@
 #include "third_party/WebKit/public/web/WebScriptController.h"
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
 #include "third_party/WebKit/public/web/WebView.h"
+#include "third_party/boringssl/src/include/openssl/evp.h"
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_switches.h"
@@ -944,6 +945,9 @@ void RenderThreadImpl::Init(
   // redirection experiment concludes https://crbug.com/622400.
   if (!command_line.HasSwitch(switches::kSingleProcess))
     base::SequencedWorkerPool::EnableForProcess();
+
+  EVP_set_buggy_rsa_parser(
+      base::FeatureList::IsEnabled(features::kBuggyRSAParser));
 
   GetConnector()->BindInterface(mojom::kBrowserServiceName,
                                 mojo::MakeRequest(&frame_sink_provider_));
