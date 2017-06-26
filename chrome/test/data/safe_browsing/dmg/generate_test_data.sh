@@ -84,6 +84,23 @@ generate_test_data() {
     "${OUT_DIR}/mach_o_in_dmg"
 
   rm -rf "${DMG_SOURCE}"
+
+  # Copy of Mach-O DMG with 'koly' signature overwritten #######################
+  cp "${OUT_DIR}/mach_o_in_dmg.dmg" \
+      "${OUT_DIR}/mach_o_in_dmg_no_koly_signature.dmg"
+  # Gets size of Mach-O DMG copy.
+  SIZE=`stat -f%z "${OUT_DIR}/mach_o_in_dmg_no_koly_signature.dmg"`
+  # Overwrites 'koly' with '????'.
+  printf '\xa1\xa1\xa1\xa1' | dd conv=notrunc \
+      of="${OUT_DIR}/mach_o_in_dmg_no_koly_signature.dmg" \
+      bs=1 seek=$(($SIZE - 512))
+
+  # Copy of Mach-O DMG with extension changed to .txt.
+  cp "${OUT_DIR}/mach_o_in_dmg.dmg" "${OUT_DIR}/mach_o_in_dmg.txt"
+
+  # Copy of Mach-O DMG with extension changed to .txt and no 'koly' signature ##
+  cp "${OUT_DIR}/mach_o_in_dmg_no_koly_signature.dmg" \
+      "${OUT_DIR}/mach_o_in_dmg_no_koly_signature.txt"
 }
 
 # Silence any stdout, but keep stderr.

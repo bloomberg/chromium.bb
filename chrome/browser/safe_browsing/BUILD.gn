@@ -133,6 +133,8 @@ static_library("safe_browsing") {
         "client_side_detection_service.h",
         "client_side_model_loader.cc",
         "client_side_model_loader.h",
+        "disk_image_type_sniffer_mac.cc",
+        "disk_image_type_sniffer_mac.h",
         "download_feedback.cc",
         "download_feedback.h",
         "download_feedback_service.cc",
