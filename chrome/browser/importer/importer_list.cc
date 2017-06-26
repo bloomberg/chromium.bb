@@ -7,13 +7,15 @@
 #include <stdint.h>
 
 #include "base/bind.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/common/importer/firefox_importer_utils.h"
 #include "chrome/common/importer/importer_bridge.h"
 #include "chrome/common/importer/importer_data_types.h"
 #include "chrome/grit/generated_resources.h"
-#include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_MACOSX)
@@ -27,13 +29,12 @@
 #include "chrome/common/importer/edge_importer_utils_win.h"
 #endif
 
-using content::BrowserThread;
-
 namespace {
 
 #if defined(OS_WIN)
 void DetectIEProfiles(std::vector<importer::SourceProfile>* profiles) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  base::ThreadRestrictions::AssertIOAllowed();
+
   // IE always exists and doesn't have multiple profiles.
   importer::SourceProfile ie;
   ie.importer_name = l10n_util::GetStringUTF16(IDS_IMPORT_FROM_IE);
@@ -65,7 +66,8 @@ void DetectBuiltinWindowsProfiles(
 
 #if defined(OS_MACOSX)
 void DetectSafariProfiles(std::vector<importer::SourceProfile>* profiles) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  base::ThreadRestrictions::AssertIOAllowed();
+
   uint16_t items = importer::NONE;
   if (!SafariImporterCanImport(base::mac::GetUserLibraryPath(), &items))
     return;
@@ -83,7 +85,8 @@ void DetectSafariProfiles(std::vector<importer::SourceProfile>* profiles) {
 // details).
 void DetectFirefoxProfiles(const std::string locale,
                            std::vector<importer::SourceProfile>* profiles) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  base::ThreadRestrictions::AssertIOAllowed();
+
   base::FilePath profile_path = GetFirefoxProfilePath();
   if (profile_path.empty())
     return;
@@ -124,7 +127,7 @@ void DetectFirefoxProfiles(const std::string locale,
 std::vector<importer::SourceProfile> DetectSourceProfilesWorker(
     const std::string& locale,
     bool include_interactive_profiles) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  base::ThreadRestrictions::AssertIOAllowed();
 
   std::vector<importer::SourceProfile> profiles;
 
@@ -165,27 +168,25 @@ std::vector<importer::SourceProfile> DetectSourceProfilesWorker(
 
 ImporterList::ImporterList()
     : weak_ptr_factory_(this) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 ImporterList::~ImporterList() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 void ImporterList::DetectSourceProfiles(
     const std::string& locale,
     bool include_interactive_profiles,
     const base::Closure& profiles_loaded_callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::FILE,
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
-      base::Bind(&DetectSourceProfilesWorker,
-                 locale,
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      base::Bind(&DetectSourceProfilesWorker, locale,
                  include_interactive_profiles),
       base::Bind(&ImporterList::SourceProfilesLoaded,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 profiles_loaded_callback));
+                 weak_ptr_factory_.GetWeakPtr(), profiles_loaded_callback));
 }
 
 const importer::SourceProfile& ImporterList::GetSourceProfileAt(
@@ -197,7 +198,7 @@ const importer::SourceProfile& ImporterList::GetSourceProfileAt(
 void ImporterList::SourceProfilesLoaded(
     const base::Closure& profiles_loaded_callback,
     const std::vector<importer::SourceProfile>& profiles) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   source_profiles_.assign(profiles.begin(), profiles.end());
   profiles_loaded_callback.Run();
