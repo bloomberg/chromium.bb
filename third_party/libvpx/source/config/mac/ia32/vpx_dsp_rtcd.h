@@ -1055,6 +1055,7 @@ void vpx_highbd_idct32x32_34_add_c(const tran_low_t *input, uint16_t *dest, int 
 
 void vpx_highbd_idct4x4_16_add_c(const tran_low_t *input, uint16_t *dest, int stride, int bd);
 void vpx_highbd_idct4x4_16_add_sse2(const tran_low_t *input, uint16_t *dest, int stride, int bd);
+void vpx_highbd_idct4x4_16_add_sse4_1(const tran_low_t *input, uint16_t *dest, int stride, int bd);
 RTCD_EXTERN void (*vpx_highbd_idct4x4_16_add)(const tran_low_t *input, uint16_t *dest, int stride, int bd);
 
 void vpx_highbd_idct4x4_1_add_c(const tran_low_t *input, uint16_t *dest, int stride, int bd);
@@ -1391,7 +1392,6 @@ RTCD_EXTERN void (*vpx_idct16x16_38_add)(const tran_low_t *input, uint8_t *dest,
 
 void vpx_idct32x32_1024_add_c(const tran_low_t *input, uint8_t *dest, int stride);
 void vpx_idct32x32_1024_add_sse2(const tran_low_t *input, uint8_t *dest, int stride);
-void vpx_idct32x32_1024_add_ssse3(const tran_low_t *input, uint8_t *dest, int stride);
 RTCD_EXTERN void (*vpx_idct32x32_1024_add)(const tran_low_t *input, uint8_t *dest, int stride);
 
 void vpx_idct32x32_135_add_c(const tran_low_t *input, uint8_t *dest, int stride);
@@ -1427,7 +1427,6 @@ RTCD_EXTERN void (*vpx_idct8x8_1_add)(const tran_low_t *input, uint8_t *dest, in
 
 void vpx_idct8x8_64_add_c(const tran_low_t *input, uint8_t *dest, int stride);
 void vpx_idct8x8_64_add_sse2(const tran_low_t *input, uint8_t *dest, int stride);
-void vpx_idct8x8_64_add_ssse3(const tran_low_t *input, uint8_t *dest, int stride);
 RTCD_EXTERN void (*vpx_idct8x8_64_add)(const tran_low_t *input, uint8_t *dest, int stride);
 
 int16_t vpx_int_pro_col_c(const uint8_t *ref, const int width);
@@ -2422,6 +2421,7 @@ static void setup_rtcd_internal(void)
     if (flags & HAS_SSE2) vpx_highbd_idct32x32_1_add = vpx_highbd_idct32x32_1_add_sse2;
     vpx_highbd_idct4x4_16_add = vpx_highbd_idct4x4_16_add_c;
     if (flags & HAS_SSE2) vpx_highbd_idct4x4_16_add = vpx_highbd_idct4x4_16_add_sse2;
+    if (flags & HAS_SSE4_1) vpx_highbd_idct4x4_16_add = vpx_highbd_idct4x4_16_add_sse4_1;
     vpx_highbd_idct4x4_1_add = vpx_highbd_idct4x4_1_add_c;
     if (flags & HAS_SSE2) vpx_highbd_idct4x4_1_add = vpx_highbd_idct4x4_1_add_sse2;
     vpx_highbd_idct8x8_12_add = vpx_highbd_idct8x8_12_add_c;
@@ -2554,7 +2554,6 @@ static void setup_rtcd_internal(void)
     if (flags & HAS_SSE2) vpx_idct16x16_38_add = vpx_idct16x16_256_add_sse2;
     vpx_idct32x32_1024_add = vpx_idct32x32_1024_add_c;
     if (flags & HAS_SSE2) vpx_idct32x32_1024_add = vpx_idct32x32_1024_add_sse2;
-    if (flags & HAS_SSSE3) vpx_idct32x32_1024_add = vpx_idct32x32_1024_add_ssse3;
     vpx_idct32x32_135_add = vpx_idct32x32_135_add_c;
     if (flags & HAS_SSE2) vpx_idct32x32_135_add = vpx_idct32x32_1024_add_sse2;
     if (flags & HAS_SSSE3) vpx_idct32x32_135_add = vpx_idct32x32_135_add_ssse3;
@@ -2574,7 +2573,6 @@ static void setup_rtcd_internal(void)
     if (flags & HAS_SSE2) vpx_idct8x8_1_add = vpx_idct8x8_1_add_sse2;
     vpx_idct8x8_64_add = vpx_idct8x8_64_add_c;
     if (flags & HAS_SSE2) vpx_idct8x8_64_add = vpx_idct8x8_64_add_sse2;
-    if (flags & HAS_SSSE3) vpx_idct8x8_64_add = vpx_idct8x8_64_add_ssse3;
     vpx_int_pro_col = vpx_int_pro_col_c;
     if (flags & HAS_SSE2) vpx_int_pro_col = vpx_int_pro_col_sse2;
     vpx_int_pro_row = vpx_int_pro_row_c;
