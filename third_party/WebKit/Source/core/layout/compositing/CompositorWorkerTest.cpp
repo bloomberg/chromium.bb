@@ -108,7 +108,6 @@ class CompositorWorkerTest
 
 INSTANTIATE_TEST_CASE_P(All, CompositorWorkerTest, ::testing::Bool());
 
-
 TEST_P(CompositorWorkerTest, applyingMutationsMultipleElements) {
   RegisterMockedHttpURLLoad("compositor-worker-basic.html");
   NavigateTo(base_url_ + "compositor-worker-basic.html");
