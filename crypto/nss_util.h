@@ -23,11 +23,6 @@ class Time;
 // initialization functions.
 namespace crypto {
 
-// EarlySetupForNSSInit performs lightweight setup which must occur before the
-// process goes multithreaded. This does not initialise NSS. For test, see
-// EnsureNSSInit.
-CRYPTO_EXPORT void EarlySetupForNSSInit();
-
 // Initialize NRPR if it isn't already initialized.  This function is
 // thread-safe, and NSPR will only ever be initialized once.
 CRYPTO_EXPORT void EnsureNSPRInit();

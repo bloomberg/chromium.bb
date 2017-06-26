@@ -95,10 +95,6 @@
 
 #endif  // OS_POSIX
 
-#if defined(USE_NSS_CERTS)
-#include "crypto/nss_util.h"
-#endif
-
 #if !defined(CHROME_MULTIPLE_DLL_BROWSER)
 #include "content/public/gpu/content_gpu_client.h"
 #include "content/public/renderer/content_renderer_client.h"
@@ -597,10 +593,6 @@ class ContentMainRunnerImpl : public ContentMainRunner {
       if (!base::debug::BeingDebugged())
         signal(SIGINT, SIG_IGN);
     }
-#endif
-
-#if defined(USE_NSS_CERTS)
-    crypto::EarlySetupForNSSInit();
 #endif
 
     RegisterPathProvider();
