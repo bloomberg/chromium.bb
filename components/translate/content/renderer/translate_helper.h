@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
@@ -99,8 +100,15 @@ class TranslateHelper : public content::RenderFrameObserver,
   virtual double ExecuteScriptAndGetDoubleResult(const std::string& script);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest, TestBuildTranslationScript);
+
   // Converts language code to the one used in server supporting list.
   static void ConvertLanguageCodeSynonym(std::string* code);
+
+  // Builds the translation JS used to translate from source_lang to
+  // target_lang.
+  static std::string BuildTranslationScript(const std::string& source_lang,
+                                            const std::string& target_lang);
 
   const mojom::ContentTranslateDriverPtr& GetTranslateDriver();
 

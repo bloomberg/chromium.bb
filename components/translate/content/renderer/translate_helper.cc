@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/json/string_escape.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -167,12 +168,8 @@ bool TranslateHelper::HasTranslationFailed() {
 }
 
 bool TranslateHelper::StartTranslation() {
-  std::string script = "cr.googleTranslate.translate('" +
-                       source_lang_ +
-                       "','" +
-                       target_lang_ +
-                       "')";
-  return ExecuteScriptAndGetBoolResult(script, false);
+  return ExecuteScriptAndGetBoolResult(
+      BuildTranslationScript(source_lang_, target_lang_), false);
 }
 
 std::string TranslateHelper::GetOriginalPageLanguage() {
@@ -428,6 +425,15 @@ void TranslateHelper::ResetPage() {
 
 void TranslateHelper::OnDestruct() {
   delete this;
+}
+
+/* static */
+std::string TranslateHelper::BuildTranslationScript(
+    const std::string& source_lang,
+    const std::string& target_lang) {
+  return "cr.googleTranslate.translate(" +
+         base::GetQuotedJSONString(source_lang) + "," +
+         base::GetQuotedJSONString(target_lang) + ")";
 }
 
 }  // namespace translate
