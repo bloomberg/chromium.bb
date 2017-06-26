@@ -30,7 +30,8 @@ SavePageRequest::SavePageRequest(const SavePageRequest& other)
       last_attempt_time_(other.last_attempt_time_),
       user_requested_(other.user_requested_),
       state_(other.state_),
-      original_url_(other.original_url_) {}
+      original_url_(other.original_url_),
+      request_origin_(other.request_origin_) {}
 
 SavePageRequest::~SavePageRequest() {}
 
@@ -41,7 +42,8 @@ bool SavePageRequest::operator==(const SavePageRequest& other) const {
          started_attempt_count_ == other.started_attempt_count_ &&
          completed_attempt_count_ == other.completed_attempt_count_ &&
          last_attempt_time_ == other.last_attempt_time_ &&
-         state_ == other.state_ && original_url_ == other.original_url_;
+         state_ == other.state_ && original_url_ == other.original_url_ &&
+         request_origin_ == other.request_origin_;
 }
 
 void SavePageRequest::MarkAttemptStarted(const base::Time& start_time) {

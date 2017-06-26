@@ -14,6 +14,7 @@ const GURL kUrl("http://example.com");
 const GURL kUrl2("http://example.com/test");
 const ClientId kClientId("bookmark", "1234");
 const bool kUserRequested = true;
+const std::string kRequestOrigin = "abc.xyz";
 }  // namespace
 
 class SavePageRequestTest : public testing::Test {
@@ -38,12 +39,14 @@ TEST_F(SavePageRequestTest, CreatePendingReqeust) {
   EXPECT_EQ(0, request.started_attempt_count());
   EXPECT_EQ(0, request.completed_attempt_count());
   EXPECT_EQ(kUrl2, request.original_url());
+  EXPECT_EQ("", request.request_origin());
 }
 
 TEST_F(SavePageRequestTest, StartAndCompleteRequest) {
   base::Time creation_time = base::Time::Now();
   SavePageRequest request(kRequestId, kUrl, kClientId, creation_time,
                           kUserRequested);
+  request.set_request_origin(kRequestOrigin);
 
   base::Time start_time = creation_time + base::TimeDelta::FromHours(3);
   request.MarkAttemptStarted(start_time);
@@ -53,6 +56,7 @@ TEST_F(SavePageRequestTest, StartAndCompleteRequest) {
   EXPECT_EQ(kUrl, request.url());
   EXPECT_EQ(kClientId, request.client_id());
   EXPECT_EQ(creation_time, request.creation_time());
+  EXPECT_EQ(kRequestOrigin, request.request_origin());
 
   // Attempt time, attempt count and status will though.
   EXPECT_EQ(start_time, request.last_attempt_time());
@@ -85,6 +89,7 @@ TEST_F(SavePageRequestTest, StartAndAbortRequest) {
   EXPECT_EQ(kUrl, request.url());
   EXPECT_EQ(kClientId, request.client_id());
   EXPECT_EQ(creation_time, request.creation_time());
+  EXPECT_EQ("", request.request_origin());
 
   // Attempt time and attempt count will though.
   EXPECT_EQ(start_time, request.last_attempt_time());
@@ -98,6 +103,7 @@ TEST_F(SavePageRequestTest, StartAndAbortRequest) {
   EXPECT_EQ(kUrl, request.url());
   EXPECT_EQ(kClientId, request.client_id());
   EXPECT_EQ(creation_time, request.creation_time());
+  EXPECT_EQ("", request.request_origin());
 
   // Last attempt time is updated and completed attempt count did not rise.
   EXPECT_EQ(0, request.completed_attempt_count());

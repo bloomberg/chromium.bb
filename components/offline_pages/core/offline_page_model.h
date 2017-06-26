@@ -57,6 +57,7 @@ class OfflinePageModel : public base::SupportsUserData {
   struct SavePageParams {
     SavePageParams();
     SavePageParams(const SavePageParams& other);
+    ~SavePageParams();
 
     // The last committed URL of the page to save.
     GURL url;
@@ -76,6 +77,9 @@ class OfflinePageModel : public base::SupportsUserData {
 
     // Run page problem detectors while generating MTHML if true.
     bool use_page_problem_detectors;
+
+    // The app package that the request originated from.
+    std::string request_origin;
   };
 
   // Observer of the OfflinePageModel.
