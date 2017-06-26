@@ -123,9 +123,6 @@ class OfflineAudioDestinationHandler final : public AudioDestinationHandler {
   // 'created' and 'suspended'. If this flag is false and the current state
   // is 'suspended', it means the context is created and have not started yet.
   bool is_rendering_started_;
-
-  // This flag indicates whether the rendering should be suspended or not.
-  bool should_suspend_;
 };
 
 class OfflineAudioDestinationNode final : public AudioDestinationNode {
