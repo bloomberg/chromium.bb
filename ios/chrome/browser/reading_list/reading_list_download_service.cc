@@ -13,11 +13,12 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/threading/thread_restrictions.h"
 #include "components/reading_list/core/offline_url_utils.h"
 #include "components/reading_list/core/reading_list_entry.h"
 #include "components/reading_list/core/reading_list_model.h"
 #include "ios/chrome/browser/reading_list/reading_list_distiller_page_factory.h"
-#include "ios/web/public/web_thread.h"
 
 namespace {
 // Status of the download when it ends, for UMA report.
@@ -144,8 +145,8 @@ void ReadingListDownloadService::SyncWithModel() {
         break;
     }
   }
-  web::WebThread::PostTaskAndReply(
-      web::WebThread::FILE, FROM_HERE,
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&ReadingListDownloadService::CleanUpFiles,
                  base::Unretained(this), processed_directories),
       base::Bind(&ReadingListDownloadService::DownloadUnprocessedEntries,
@@ -154,6 +155,7 @@ void ReadingListDownloadService::SyncWithModel() {
 
 void ReadingListDownloadService::CleanUpFiles(
     const std::set<std::string>& processed_directories) {
+  base::ThreadRestrictions::AssertIOAllowed();
   base::FileEnumerator file_enumerator(OfflineRoot(), false,
                                        base::FileEnumerator::DIRECTORIES);
   for (base::FilePath sub_directory = file_enumerator.Next();
@@ -180,8 +182,8 @@ void ReadingListDownloadService::ScheduleDownloadEntry(const GURL& url) {
       entry->DistilledState() == ReadingListEntry::PROCESSED || entry->IsRead())
     return;
   GURL local_url(url);
-  web::WebThread::PostDelayedTask(
-      web::WebThread::UI, FROM_HERE,
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
       base::Bind(&ReadingListDownloadService::DownloadEntry,
                  weak_ptr_factory_.GetWeakPtr(), local_url),
       entry->TimeUntilNextTry());
