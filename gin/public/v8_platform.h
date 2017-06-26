@@ -54,12 +54,16 @@ class GIN_EXPORT V8Platform : public NON_EXPORTED_BASE(v8::Platform) {
   void AddTraceStateObserver(v8::Platform::TraceStateObserver*) override;
   void RemoveTraceStateObserver(v8::Platform::TraceStateObserver*) override;
   StackTracePrinter GetStackTracePrinter() override;
+  v8::TracingController* GetTracingController() override;
 
  private:
   friend struct base::LazyInstanceTraitsBase<V8Platform>;
 
   V8Platform();
   ~V8Platform() override;
+
+  class TracingControllerImpl;
+  std::unique_ptr<TracingControllerImpl> tracing_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(V8Platform);
 };
