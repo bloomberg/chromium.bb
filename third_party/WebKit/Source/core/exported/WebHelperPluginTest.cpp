@@ -4,12 +4,12 @@
 
 #include "public/web/WebHelperPlugin.h"
 
+#include "core/exported/FakeWebPlugin.h"
 #include "core/frame/FrameTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebLocalFrame.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "web/tests/FakeWebPlugin.h"
 
 namespace blink {
 
