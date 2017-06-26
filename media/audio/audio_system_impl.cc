@@ -163,9 +163,17 @@ AudioParameters AudioSystemImpl::GetInputParametersOnDeviceThread(
 
   // TODO(olka): remove this when AudioManager::GetInputStreamParameters()
   // returns invalid parameters if the device is not found.
-  if (!audio_manager->HasAudioInputDevices())
-    return AudioParameters();
-
+  if (device_id.compare(AudioDeviceDescription::kLoopbackInputDeviceId) == 0 ||
+      device_id.compare(AudioDeviceDescription::kLoopbackWithMuteDeviceId) ==
+          0) {
+    // For system audio capture, we need an output device (namely speaker)
+    // instead of an input device (namely microphone) to work.
+    if (!audio_manager->HasAudioOutputDevices())
+      return AudioParameters();
+  } else {
+    if (!audio_manager->HasAudioInputDevices())
+      return AudioParameters();
+  }
   return audio_manager->GetInputStreamParameters(device_id);
 }
 
