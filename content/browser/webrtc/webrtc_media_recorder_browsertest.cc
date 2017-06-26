@@ -153,8 +153,15 @@ IN_PROC_BROWSER_TEST_F(WebRtcMediaRecorderTest,
                   kMediaRecorderHtmlFile);
 }
 
+// Flaky on Linux Tsan (crbug.com/736268)
+#if defined(OS_LINUX)
+#define MAYBE_IllegalRequestDataThrowsDOMError \
+  DISABLED_IllegalRequestDataThrowsDOMError
+#else
+#define MAYBE_IllegalRequestDataThrowsDOMError IllegalRequestDataThrowsDOMError
+#endif
 IN_PROC_BROWSER_TEST_F(WebRtcMediaRecorderTest,
-                       IllegalRequestDataThrowsDOMError) {
+                       MAYBE_IllegalRequestDataThrowsDOMError) {
   MakeTypicalCall("testIllegalRequestDataThrowsDOMError();",
                   kMediaRecorderHtmlFile);
 }
