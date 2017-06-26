@@ -127,7 +127,6 @@ class SmoothnessToughWebGLCases(_Smoothness):
     return 'smoothness.tough_webgl_cases'
 
 
-@benchmark.Disabled('win') # http://crbug.com/692663
 @benchmark.Disabled('android-webview')  # http://crbug.com/653933
 @benchmark.Owner(emails=['kbr@chromium.org', 'zmo@chromium.org'])
 class SmoothnessMaps(perf_benchmark.PerfBenchmark):
