@@ -122,27 +122,6 @@ def get_fyi_waterfall_config():
       }
     ])
 
-  waterfall = add_tester(
-    waterfall, 'Android Nexus5X WebView Perf',
-    'fyi-android-webview-nexus5X', 'android', swarming=[
-      {
-       'os': 'Android',
-       'android_devices': '1',
-       'pool': 'Chrome-perf-fyi',
-       'device_ids': [
-           'build243-m4--device1', 'build243-m4--device2',
-           'build243-m4--device3', 'build243-m4--device4',
-           'build243-m4--device5', 'build243-m4--device6',
-           'build243-m4--device7',
-          ],
-       'perf_tests': [
-         # TODO(martiniss): implement these isolate targets
-         # ('tracing_webview_perftests', 'build112-b1--device2'),
-         # ('gpu_webview_perftests', 'build113-b1--device2'),
-         # ('cc_webview_perftests', 'build114-b1--device2'),
-        ]
-      }
-    ], replace_system_webview=True)
   return waterfall
 
 
@@ -290,66 +269,53 @@ def get_waterfall_config():
       }
     ])
 
-  # TODO(martiniss): comment this back in once we're confident webview works
-  # waterfall = add_tester(
-  #   waterfall, 'Android Nexus5X WebView Perf', 'android-webview-nexus5X',
-  #   'android', swarming=[
-  #     {
-  #      'os': 'Android',
-  #      'android_devices': '1',
-  #      'pool': 'Chrome-perf',
-  #      'device_ids': [
-  #          'build164-b1--device1', 'build164-b1--device2',
-  #          'build164-b1--device3', 'build164-b1--device4',
-  #          'build164-b1--device5', 'build164-b1--device6',
-  #          'build164-b1--device7',
-  #          'build165-b1--device1', 'build165-b1--device2',
-  #          'build165-b1--device3', 'build165-b1--device4',
-  #          'build165-b1--device5', 'build165-b1--device6',
-  #          'build165-b1--device7',
-  #          'build166-b1--device1', 'build166-b1--device2',
-  #          'build166-b1--device3', 'build166-b1--device4',
-  #          'build166-b1--device5', 'build166-b1--device6',
-  #          'build166-b1--device7',
-  #         ],
-  #      'perf_tests': [
-  #        # TODO(martiniss): implement these isolate targets
-  #        # ('tracing_webview_perftests', 'build164-b1--device2'),
-  #        # ('gpu_webview_perftests', 'build165-b1--device2'),
-  #        # ('cc_webview_perftests', 'build166-b1--device2'),
-  #       ]
-  #     }
-  #   ], replace_system_webview=True)
+  waterfall = add_tester(
+    waterfall, 'Android Nexus5X WebView Perf', 'android-webview-nexus5X',
+    'android', swarming=[
+      {
+       'os': 'Android',
+       'android_devices': '1',
+       'pool': 'Chrome-perf',
+       'device_ids': [
+           'build164-b1--device1', 'build164-b1--device2',
+           'build164-b1--device3', 'build164-b1--device4',
+           'build164-b1--device5', 'build164-b1--device6',
+           'build164-b1--device7',
+           'build165-b1--device1', 'build165-b1--device2',
+           'build165-b1--device3', 'build165-b1--device4',
+           'build165-b1--device5', 'build165-b1--device6',
+           'build165-b1--device7',
+           'build166-b1--device1', 'build166-b1--device2',
+           'build166-b1--device3', 'build166-b1--device4',
+           'build166-b1--device5', 'build166-b1--device6',
+           'build166-b1--device7',
+          ],
+      }
+    ], replace_system_webview=True)
 
-  # waterfall = add_tester(
-  #   waterfall, 'Android Nexus6 WebView Perf', 'android-webview-nexus6',
-  #   'android', swarming=[
-  #     {
-  #      'os': 'Android',
-  #      'android_devices': '1',
-  #      'pool': 'Chrome-perf',
-  #      'device_ids': [
-  #          'build112-b1--device1', 'build112-b1--device2',
-  #          'build112-b1--device3', 'build112-b1--device4',
-  #          'build112-b1--device5', 'build112-b1--device6',
-  #          'build112-b1--device7',
-  #          'build113-b1--device1', 'build113-b1--device2',
-  #          'build113-b1--device3', 'build113-b1--device4',
-  #          'build113-b1--device5', 'build113-b1--device6',
-  #          'build113-b1--device7',
-  #          'build114-b1--device1', 'build114-b1--device2',
-  #          'build114-b1--device3', 'build114-b1--device4',
-  #          'build114-b1--device5', 'build114-b1--device6',
-  #          'build114-b1--device7',
-  #         ],
-  #      'perf_tests': [
-  #        # TODO(martiniss): implement these isolate targets
-  #        # ('tracing_webview_perftests', 'build112-b1--device2'),
-  #        # ('gpu_webview_perftests', 'build113-b1--device2'),
-  #        # ('cc_webview_perftests', 'build114-b1--device2'),
-  #       ]
-  #     }
-  #   ], replace_system_webview=True)
+  waterfall = add_tester(
+    waterfall, 'Android Nexus6 WebView Perf', 'android-webview-nexus6',
+    'android', swarming=[
+      {
+       'os': 'Android',
+       'android_devices': '1',
+       'pool': 'Chrome-perf',
+       'device_ids': [
+           'build112-b1--device1', 'build112-b1--device2',
+           'build112-b1--device3', 'build112-b1--device4',
+           'build112-b1--device5', 'build112-b1--device6',
+           'build112-b1--device7',
+           'build113-b1--device1', 'build113-b1--device2',
+           'build113-b1--device3', 'build113-b1--device4',
+           'build113-b1--device5', 'build113-b1--device6',
+           'build113-b1--device7',
+           'build114-b1--device1', 'build114-b1--device2',
+           'build114-b1--device3', 'build114-b1--device4',
+           'build114-b1--device5', 'build114-b1--device6',
+           'build114-b1--device7',
+          ],
+      }
+    ], replace_system_webview=True)
 
   waterfall = add_tester(
     waterfall, 'Win 10 High-DPI Perf', 'win-high-dpi', 'win',
