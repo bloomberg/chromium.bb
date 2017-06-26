@@ -151,6 +151,10 @@ public class ChildConnectionAllocatorTest {
     public void testPlainAllocate() {
         assertFalse(mAllocator.anyConnectionAllocated());
         assertEquals(MAX_CONNECTION_NUMBER, mAllocator.getNumberOfServices());
+
+        ChildConnectionAllocator.Listener listener = mock(ChildConnectionAllocator.Listener.class);
+        mAllocator.addListener(listener);
+
         ChildProcessConnection connection =
                 mAllocator.allocate(null /* context */, null /* serviceBundle */, mServiceCallback);
         assertNotNull(connection);
@@ -158,6 +162,7 @@ public class ChildConnectionAllocatorTest {
         verify(connection, times(1))
                 .start(eq(false) /* useStrongBinding */,
                         any(ChildProcessConnection.ServiceCallback.class));
+        verify(listener, times(1)).onConnectionAllocated(mAllocator, connection);
         assertTrue(mAllocator.anyConnectionAllocated());
     }
 
