@@ -68,10 +68,9 @@ public class ChildProcessLauncherHelper {
                             creationParams == null ? false : creationParams.getBindToCallerCheck();
                     ChildConnectionAllocator allocator =
                             getConnectionAllocator(context, creationParams, true /* sandboxed */);
-                    return ChildProcessLauncherHelper.allocateBoundConnection(context, allocator,
-                            true /* useBindingManager */,
-                            ChildProcessLauncherHelper.createServiceBundle(bindToCallerCheck),
-                            serviceCallback);
+                    Bundle serviceBundle =
+                            ChildProcessLauncherHelper.createServiceBundle(bindToCallerCheck);
+                    return allocator.allocate(context, serviceBundle, serviceCallback);
                 }
             };
 
@@ -329,10 +328,24 @@ public class ChildProcessLauncherHelper {
             // Tracks connections removal so the allocator can be freed when no longer used.
             connectionAllocator.addListener(new ChildConnectionAllocator.Listener() {
                 @Override
+                public void onConnectionAllocated(
+                        ChildConnectionAllocator allocator, ChildProcessConnection connection) {
+                    assert connection != null;
+                    if (!allocator.isFreeConnectionAvailable()) {
+                        // Proactively releases all the moderate bindings once all the sandboxed
+                        // services are allocated, which will be very likely to have some of them
+                        // killed by OOM killer.
+                        getBindingManager().releaseAllModerateBindings();
+                    }
+                }
+
+                @Override
                 public void onConnectionFreed(
                         ChildConnectionAllocator allocator, ChildProcessConnection connection) {
                     assert allocator == finalConnectionAllocator;
                     if (!allocator.anyConnectionAllocated()) {
+                        // Last connection was freed, the allocator is going aways, remove the
+                        // listener.
                         allocator.removeListener(this);
                         ChildConnectionAllocator removedAllocator =
                                 sSandboxedChildConnectionAllocatorMap.remove(packageName);
@@ -342,23 +355,6 @@ public class ChildProcessLauncherHelper {
             });
         }
         return sSandboxedChildConnectionAllocatorMap.get(packageName);
-    }
-
-    private static ChildProcessConnection allocateBoundConnection(Context context,
-            final ChildConnectionAllocator connectionAllocator, boolean useBindingManager,
-            Bundle serviceBundle, ChildProcessConnection.ServiceCallback serviceCallback) {
-        assert LauncherThread.runningOnLauncherThread();
-
-        ChildProcessConnection connection =
-                connectionAllocator.allocate(context, serviceBundle, serviceCallback);
-        if (connection != null && useBindingManager
-                && !connectionAllocator.isFreeConnectionAvailable()) {
-            // Proactively releases all the moderate bindings once all the sandboxed services
-            // are allocated, which will be very likely to have some of them killed by OOM
-            // killer.
-            getBindingManager().releaseAllModerateBindings();
-        }
-        return connection;
     }
 
     private ChildProcessLauncherHelper(long nativePointer,
@@ -448,12 +444,15 @@ public class ChildProcessLauncherHelper {
             onBeforeConnectionAllocated(serviceBundle);
 
             boolean useBindingManager = mSandboxed;
-            mConnection = allocateBoundConnection(context, mConnectionAllocator, useBindingManager,
-                    serviceBundle, serviceCallback);
+            mConnection = mConnectionAllocator.allocate(context, serviceBundle, serviceCallback);
             if (mConnection == null) {
                 // No connection is available at this time. Add a listener so when one becomes
                 // available we can create the service.
                 mConnectionAllocator.addListener(new ChildConnectionAllocator.Listener() {
+                    @Override
+                    public void onConnectionAllocated(ChildConnectionAllocator allocator,
+                            ChildProcessConnection connection) {}
+
                     @Override
                     public void onConnectionFreed(
                             ChildConnectionAllocator allocator, ChildProcessConnection connection) {

@@ -11,12 +11,12 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 
 import org.chromium.base.Log;
+import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.process_launcher.ChildProcessCreationParams;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * This class is responsible for allocating and managing connections to child
@@ -26,8 +26,13 @@ import java.util.List;
 public class ChildConnectionAllocator {
     private static final String TAG = "ChildConnAllocator";
 
-    /** Listener that clients can use to get notified when connections get freed. */
+    /** Listener that clients can use to get notified when connections get allocated/freed. */
     public interface Listener {
+        /** Called when a connection has been allocated, before it gets bound. */
+        void onConnectionAllocated(
+                ChildConnectionAllocator allocator, ChildProcessConnection connection);
+
+        /** Called when a connection has been freed. */
         void onConnectionFreed(
                 ChildConnectionAllocator allocator, ChildProcessConnection connection);
     }
@@ -66,7 +71,7 @@ public class ChildConnectionAllocator {
     // The list of free (not bound) service indices.
     private final ArrayList<Integer> mFreeConnectionIndices;
 
-    private final List<Listener> mListeners = new ArrayList<>();
+    private final ObserverList<Listener> mListeners = new ObserverList<>();
 
     private ConnectionFactory mConnectionFactory = new ConnectionFactoryImpl();
 
@@ -232,6 +237,11 @@ public class ChildConnectionAllocator {
         ChildProcessConnection connection = mConnectionFactory.createConnection(
                 context, serviceName, mBindAsExternalService, serviceBundle, mCreationParams);
         mChildProcessConnections[slot] = connection;
+
+        for (Listener listener : mListeners) {
+            listener.onConnectionAllocated(this, connection);
+        }
+
         connection.start(mUseStrongBinding, serviceCallbackWrapper);
         Log.d(TAG, "Allocator allocated and bound a connection, name: %s, slot: %d",
                 mServiceClassName, slot);
@@ -254,9 +264,8 @@ public class ChildConnectionAllocator {
             mFreeConnectionIndices.add(slot);
             Log.d(TAG, "Allocator freed a connection, name: %s, slot: %d", mServiceClassName, slot);
         }
-        // Copy the listeners list so listeners can unregister themselves while we are iterating.
-        List<Listener> listeners = new ArrayList<>(mListeners);
-        for (Listener listener : listeners) {
+
+        for (Listener listener : mListeners) {
             listener.onConnectionFreed(this, connection);
         }
     }
@@ -279,12 +288,12 @@ public class ChildConnectionAllocator {
     }
 
     public void addListener(Listener listener) {
-        assert !mListeners.contains(listener);
-        mListeners.add(listener);
+        assert !mListeners.hasObserver(listener);
+        mListeners.addObserver(listener);
     }
 
     public void removeListener(Listener listener) {
-        boolean removed = mListeners.remove(listener);
+        boolean removed = mListeners.removeObserver(listener);
         assert removed;
     }
 
