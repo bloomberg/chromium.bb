@@ -621,7 +621,7 @@ DispatchEventResult EventTarget::FireEventListeners(Event* event) {
   bool fired_event_listeners = false;
   if (listeners_vector) {
     fired_event_listeners = FireEventListeners(event, d, *listeners_vector);
-  } else if (legacy_listeners_vector) {
+  } else if (event->isTrusted() && legacy_listeners_vector) {
     AtomicString unprefixed_type_name = event->type();
     event->SetType(legacy_type_name);
     fired_event_listeners =
