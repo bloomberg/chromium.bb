@@ -509,6 +509,8 @@ message ClientDownloadRequest {
       [deprecated = true];
 }
 
+// Please update SafeBrowsingNavigationObserverManager::SanitizeReferrerChain()
+// if you're adding more fields to this message.
 message ReferrerChainEntry {
   enum URLType {
     // URL of safe browsing events that are at the end of the referrer chain.
