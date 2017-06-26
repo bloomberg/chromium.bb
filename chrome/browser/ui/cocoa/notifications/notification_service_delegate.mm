@@ -15,10 +15,14 @@
 @class NSUserNotificationCenter;
 
 @implementation ServiceDelegate {
+  // Helper to manage the XPC transaction reference count with respect to
+  // still-visible notifications.
   base::scoped_nsobject<XPCTransactionHandler> transactionHandler_;
-}
 
-@synthesize connection = connection_;
+  // Client connection accepted from the browser process, to which messages
+  // are sent in response to notification actions.
+  base::scoped_nsobject<NSXPCConnection> connection_;
+}
 
 - (instancetype)init {
   if ((self = [super init])) {
@@ -52,7 +56,7 @@
   newConnection.exportedObject = object.get();
   newConnection.remoteObjectInterface =
       [NSXPCInterface interfaceWithProtocol:@protocol(NotificationReply)];
-  connection_ = newConnection;
+  connection_.reset(newConnection, base::scoped_policy::RETAIN);
   [newConnection resume];
 
   return YES;
