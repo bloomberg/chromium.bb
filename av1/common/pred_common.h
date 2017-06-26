@@ -109,32 +109,62 @@ static INLINE aom_cdf_prob *av1_get_reference_mode_cdf(const AV1_COMMON *cm,
 #endif
 
 #if CONFIG_EXT_COMP_REFS
-int av1_get_comp_reference_type_context(const AV1_COMMON *cm,
-                                        const MACROBLOCKD *xd);
+int av1_get_comp_reference_type_context(const MACROBLOCKD *xd);
 
 static INLINE aom_prob av1_get_comp_reference_type_prob(const AV1_COMMON *cm,
                                                         const MACROBLOCKD *xd) {
-  return cm->fc
-      ->comp_ref_type_prob[av1_get_comp_reference_type_context(cm, xd)];
+  return cm->fc->comp_ref_type_prob[av1_get_comp_reference_type_context(xd)];
 }
 
-int av1_get_pred_context_uni_comp_ref_p(const AV1_COMMON *cm,
-                                        const MACROBLOCKD *xd);
+int av1_get_pred_context_uni_comp_ref_p(const MACROBLOCKD *xd);
 
 static INLINE aom_prob av1_get_pred_prob_uni_comp_ref_p(const AV1_COMMON *cm,
                                                         const MACROBLOCKD *xd) {
-  const int pred_context = av1_get_pred_context_uni_comp_ref_p(cm, xd);
+  const int pred_context = av1_get_pred_context_uni_comp_ref_p(xd);
   return cm->fc->uni_comp_ref_prob[pred_context][0];
 }
 
-int av1_get_pred_context_uni_comp_ref_p1(const AV1_COMMON *cm,
-                                         const MACROBLOCKD *xd);
+int av1_get_pred_context_uni_comp_ref_p1(const MACROBLOCKD *xd);
 
 static INLINE aom_prob
 av1_get_pred_prob_uni_comp_ref_p1(const AV1_COMMON *cm, const MACROBLOCKD *xd) {
-  const int pred_context = av1_get_pred_context_uni_comp_ref_p1(cm, xd);
+  const int pred_context = av1_get_pred_context_uni_comp_ref_p1(xd);
   return cm->fc->uni_comp_ref_prob[pred_context][1];
 }
+
+int av1_get_pred_context_uni_comp_ref_p2(const MACROBLOCKD *xd);
+
+static INLINE aom_prob
+av1_get_pred_prob_uni_comp_ref_p2(const AV1_COMMON *cm, const MACROBLOCKD *xd) {
+  const int pred_context = av1_get_pred_context_uni_comp_ref_p2(xd);
+  return cm->fc->uni_comp_ref_prob[pred_context][2];
+}
+
+#if CONFIG_NEW_MULTISYMBOL
+static INLINE aom_cdf_prob *av1_get_comp_reference_type_cdf(
+    const MACROBLOCKD *xd) {
+  const int pred_context = av1_get_comp_reference_type_context(xd);
+  return xd->tile_ctx->comp_ref_type_cdf[pred_context];
+}
+
+static INLINE aom_cdf_prob *av1_get_pred_cdf_uni_comp_ref_p(
+    const MACROBLOCKD *xd) {
+  const int pred_context = av1_get_pred_context_uni_comp_ref_p(xd);
+  return xd->tile_ctx->uni_comp_ref_cdf[pred_context][0];
+}
+
+static INLINE aom_cdf_prob *av1_get_pred_cdf_uni_comp_ref_p1(
+    const MACROBLOCKD *xd) {
+  const int pred_context = av1_get_pred_context_uni_comp_ref_p1(xd);
+  return xd->tile_ctx->uni_comp_ref_cdf[pred_context][1];
+}
+
+static INLINE aom_cdf_prob *av1_get_pred_cdf_uni_comp_ref_p2(
+    const MACROBLOCKD *xd) {
+  const int pred_context = av1_get_pred_context_uni_comp_ref_p2(xd);
+  return xd->tile_ctx->uni_comp_ref_cdf[pred_context][2];
+}
+#endif  // CONFIG_NEW_MULTISYMBOL
 #endif  // CONFIG_EXT_COMP_REFS
 
 int av1_get_pred_context_comp_ref_p(const AV1_COMMON *cm,

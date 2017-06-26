@@ -4184,7 +4184,7 @@ static int get_ref_frame_flags(const AV1_COMP *cpi) {
       map[cpi->lst_fb_idxes[2]] == map[cpi->lst_fb_idxes[1]];
   const int gld_is_last2 = map[cpi->gld_fb_idx] == map[cpi->lst_fb_idxes[1]];
   const int gld_is_last3 = map[cpi->gld_fb_idx] == map[cpi->lst_fb_idxes[2]];
-#else
+#else  // !CONFIG_ONE_SIDED_COMPOUND
   const int bwd_is_last = map[cpi->bwd_fb_idx] == map[cpi->lst_fb_idxes[0]];
   const int alt_is_last = map[cpi->alt_fb_idx] == map[cpi->lst_fb_idxes[0]];
 
@@ -4198,12 +4198,12 @@ static int get_ref_frame_flags(const AV1_COMP *cpi) {
 
   const int bwd_is_gld = map[cpi->bwd_fb_idx] == map[cpi->gld_fb_idx];
 
-#endif
+#endif  // CONFIG_ONE_SIDED_COMPOUND
   const int last2_is_alt = map[cpi->lst_fb_idxes[1]] == map[cpi->alt_fb_idx];
   const int last3_is_alt = map[cpi->lst_fb_idxes[2]] == map[cpi->alt_fb_idx];
   const int gld_is_alt = map[cpi->gld_fb_idx] == map[cpi->alt_fb_idx];
   const int bwd_is_alt = map[cpi->bwd_fb_idx] == map[cpi->alt_fb_idx];
-#else
+#else   // !CONFIG_EXT_REFS
   const int gld_is_last = map[cpi->gld_fb_idx] == map[cpi->lst_fb_idx];
   const int gld_is_alt = map[cpi->gld_fb_idx] == map[cpi->alt_fb_idx];
   const int alt_is_last = map[cpi->alt_fb_idx] == map[cpi->lst_fb_idx];
@@ -4229,12 +4229,7 @@ static int get_ref_frame_flags(const AV1_COMP *cpi) {
 
   if (last3_is_last || last3_is_last2 || last3_is_alt) flags &= ~AOM_LAST3_FLAG;
 
-#if CONFIG_EXT_COMP_REFS
-  if (gld_is_last2) flags &= ~AOM_GOLD_FLAG;
-  if (gld_is_last3) flags &= ~AOM_LAST3_FLAG;
-#else
   if (gld_is_last2 || gld_is_last3) flags &= ~AOM_GOLD_FLAG;
-#endif  // CONFIG_EXT_COMP_REFS
 
 #if CONFIG_ONE_SIDED_COMPOUND  // Changes LL & HL bitstream
   /* Allow biprediction between two identical frames (e.g. bwd_is_last = 1) */
@@ -4380,11 +4375,14 @@ static void dump_filtered_recon_frames(AV1_COMP *cpi) {
   }
   printf(
       "\nFrame=%5d, encode_update_type[%5d]=%1d, show_existing_frame=%d, "
-      "y_stride=%4d, uv_stride=%4d, width=%4d, height=%4d\n",
+      "source_alt_ref_active=%d, refresh_alt_ref_frame=%d, rf_level=%d, "
+      "y_stride=%4d, uv_stride=%4d, cm->width=%4d, cm->height=%4d\n",
       cm->current_video_frame, cpi->twopass.gf_group.index,
       cpi->twopass.gf_group.update_type[cpi->twopass.gf_group.index],
-      cm->show_existing_frame, recon_buf->y_stride, recon_buf->uv_stride,
-      cm->width, cm->height);
+      cm->show_existing_frame, cpi->rc.source_alt_ref_active,
+      cpi->refresh_alt_ref_frame,
+      cpi->twopass.gf_group.rf_level[cpi->twopass.gf_group.index],
+      recon_buf->y_stride, recon_buf->uv_stride, cm->width, cm->height);
 
   // --- Y ---
   for (h = 0; h < cm->height; ++h) {

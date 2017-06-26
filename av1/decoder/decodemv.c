@@ -1354,10 +1354,21 @@ static REFERENCE_MODE read_block_reference_mode(AV1_COMMON *cm,
 static REFERENCE_MODE read_comp_reference_type(AV1_COMMON *cm,
                                                const MACROBLOCKD *xd,
                                                aom_reader *r) {
-  const int ctx = av1_get_comp_reference_type_context(cm, xd);
+  const int ctx = av1_get_comp_reference_type_context(xd);
 #if USE_UNI_COMP_REFS
-  const COMP_REFERENCE_TYPE comp_ref_type = (COMP_REFERENCE_TYPE)aom_read(
-      r, cm->fc->comp_ref_type_prob[ctx], ACCT_STR);
+  COMP_REFERENCE_TYPE comp_ref_type;
+#if CONFIG_VAR_REFS
+  if ((L_OR_L2(cm) || L3_OR_G(cm)) && BWD_OR_ALT(cm))
+    if (L_AND_L2(cm) || L_AND_L3(cm) || L_AND_G(cm) || BWD_AND_ALT(cm))
+#endif  // CONFIG_VAR_REFS
+      comp_ref_type = (COMP_REFERENCE_TYPE)aom_read(
+          r, cm->fc->comp_ref_type_prob[ctx], ACCT_STR);
+#if CONFIG_VAR_REFS
+    else
+      comp_ref_type = BIDIR_COMP_REFERENCE;
+  else
+    comp_ref_type = UNIDIR_COMP_REFERENCE;
+#endif  // CONFIG_VAR_REFS
 #else   // !USE_UNI_COMP_REFS
   // TODO(zoeliu): Temporarily turn off uni-directional comp refs
   const COMP_REFERENCE_TYPE comp_ref_type = BIDIR_COMP_REFERENCE;
@@ -1395,22 +1406,54 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 #endif  // !USE_UNI_COMP_REFS
 
       if (comp_ref_type == UNIDIR_COMP_REFERENCE) {
-        const int ctx = av1_get_pred_context_uni_comp_ref_p(cm, xd);
-        const int bit = aom_read(r, fc->uni_comp_ref_prob[ctx][0], ACCT_STR);
+        const int ctx = av1_get_pred_context_uni_comp_ref_p(xd);
+        int bit;
+#if CONFIG_VAR_REFS
+        if ((L_AND_L2(cm) || L_AND_L3(cm) || L_AND_G(cm)) && BWD_AND_ALT(cm))
+#endif  // CONFIG_VAR_REFS
+          bit = aom_read(r, fc->uni_comp_ref_prob[ctx][0], ACCT_STR);
+#if CONFIG_VAR_REFS
+        else
+          bit = BWD_AND_ALT(cm);
+#endif  // CONFIG_VAR_REFS
         if (counts) ++counts->uni_comp_ref[ctx][0][bit];
 
         if (bit) {
           ref_frame[0] = BWDREF_FRAME;
           ref_frame[1] = ALTREF_FRAME;
         } else {
-          const int ctx1 = av1_get_pred_context_uni_comp_ref_p1(cm, xd);
-          const int bit1 =
-              aom_read(r, fc->uni_comp_ref_prob[ctx1][1], ACCT_STR);
+          const int ctx1 = av1_get_pred_context_uni_comp_ref_p1(xd);
+          int bit1;
+#if CONFIG_VAR_REFS
+          if (L_AND_L2(cm) && (L_AND_L3(cm) || L_AND_G(cm)))
+#endif  // CONFIG_VAR_REFS
+            bit1 = aom_read(r, fc->uni_comp_ref_prob[ctx1][1], ACCT_STR);
+#if CONFIG_VAR_REFS
+          else
+            bit1 = L_AND_L3(cm) || L_AND_G(cm);
+#endif  // CONFIG_VAR_REFS
           if (counts) ++counts->uni_comp_ref[ctx1][1][bit1];
 
           if (bit1) {
-            ref_frame[0] = LAST_FRAME;
-            ref_frame[1] = GOLDEN_FRAME;
+            const int ctx2 = av1_get_pred_context_uni_comp_ref_p2(xd);
+            int bit2;
+#if CONFIG_VAR_REFS
+            if (L_AND_L3(cm) && L_AND_G(cm))
+#endif  // CONFIG_VAR_REFS
+              bit2 = aom_read(r, fc->uni_comp_ref_prob[ctx2][2], ACCT_STR);
+#if CONFIG_VAR_REFS
+            else
+              bit2 = L_AND_G(cm);
+#endif  // CONFIG_VAR_REFS
+            if (counts) ++counts->uni_comp_ref[ctx2][2][bit2];
+
+            if (bit2) {
+              ref_frame[0] = LAST_FRAME;
+              ref_frame[1] = GOLDEN_FRAME;
+            } else {
+              ref_frame[0] = LAST_FRAME;
+              ref_frame[1] = LAST3_FRAME;
+            }
           } else {
             ref_frame[0] = LAST_FRAME;
             ref_frame[1] = LAST2_FRAME;
@@ -1419,6 +1462,8 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 
         return;
       }
+
+      assert(comp_ref_type == BIDIR_COMP_REFERENCE);
 #endif  // CONFIG_EXT_COMP_REFS
 
 // Normative in decoder (for low delay)
@@ -2077,9 +2122,7 @@ static void dec_dump_logs(AV1_COMMON *cm, MODE_INFO *const mi,
 
   int8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
 #define FRAME_TO_CHECK 1
-  if (cm->current_video_frame == FRAME_TO_CHECK
-      // && cm->show_frame == 0
-      ) {
+  if (cm->current_video_frame == FRAME_TO_CHECK /*&& cm->show_frame == 0*/) {
     printf(
         "=== DECODER ===: "
         "Frame=%d, (mi_row,mi_col)=(%d,%d), mode=%d, bsize=%d, "

@@ -518,6 +518,7 @@ static INLINE int has_uni_comp_refs(const MB_MODE_INFO *mbmi) {
 static INLINE MV_REFERENCE_FRAME comp_ref0(int ref_idx) {
   static const MV_REFERENCE_FRAME lut[] = {
     LAST_FRAME,    // LAST_LAST2_FRAMES,
+    LAST_FRAME,    // LAST_LAST3_FRAMES,
     LAST_FRAME,    // LAST_GOLDEN_FRAMES,
     BWDREF_FRAME,  // BWDREF_ALTREF_FRAMES,
   };
@@ -528,6 +529,7 @@ static INLINE MV_REFERENCE_FRAME comp_ref0(int ref_idx) {
 static INLINE MV_REFERENCE_FRAME comp_ref1(int ref_idx) {
   static const MV_REFERENCE_FRAME lut[] = {
     LAST2_FRAME,   // LAST_LAST2_FRAMES,
+    LAST3_FRAME,   // LAST_LAST3_FRAMES,
     GOLDEN_FRAME,  // LAST_GOLDEN_FRAMES,
     ALTREF_FRAME,  // BWDREF_ALTREF_FRAMES,
   };
@@ -621,8 +623,6 @@ typedef struct RefBuffer {
   YV12_BUFFER_CONFIG *buf;
   struct scale_factors sf;
 #if CONFIG_VAR_REFS
-  // TODO(zoeliu): To evaluate whether "is_valid" is needed or the use of it can
-  // be simply replaced by checking the "idx".
   int is_valid;
 #endif  // CONFIG_VAR_REFS
 } RefBuffer;

@@ -543,6 +543,8 @@ post_process_cmdline() {
     enabled warped_motion && disable_feature ncobmc_adapt_weight
     enabled ncobmc_adapt_weight && enable_feature motion_var
     enabled bgsprite && enable_feature global_motion
+    enabled ext_comp_refs && enable_feature var_refs
+    enabled ext_comp_refs && disable_feature one_sided_compound
 
     if ! enabled delta_q && enabled ext_delta_q; then
       log_echo "ext_delta_q requires delta_q, so disabling ext_delta_q"

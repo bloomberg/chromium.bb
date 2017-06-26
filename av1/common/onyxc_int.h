@@ -522,6 +522,8 @@ static INLINE void ref_cnt_fb(RefCntBuffer *bufs, int *idx, int new_idx) {
 
 #define L_OR_L2(cm) (LAST_IS_VALID(cm) || LAST2_IS_VALID(cm))
 #define L_AND_L2(cm) (LAST_IS_VALID(cm) && LAST2_IS_VALID(cm))
+#define L_AND_L3(cm) (LAST_IS_VALID(cm) && LAST3_IS_VALID(cm))
+#define L_AND_G(cm) (LAST_IS_VALID(cm) && GOLDEN_IS_VALID(cm))
 
 #define L3_OR_G(cm) (LAST3_IS_VALID(cm) || GOLDEN_IS_VALID(cm))
 #define L3_AND_G(cm) (LAST3_IS_VALID(cm) && GOLDEN_IS_VALID(cm))

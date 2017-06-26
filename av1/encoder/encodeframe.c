@@ -1613,17 +1613,21 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
           // TODO(zoeliu): Temporarily turn off uni-directional comp refs
           assert(comp_ref_type == BIDIR_COMP_REFERENCE);
 #endif  // !USE_UNI_COMP_REFS
-          counts->comp_ref_type[av1_get_comp_reference_type_context(cm, xd)]
+          counts->comp_ref_type[av1_get_comp_reference_type_context(xd)]
                                [comp_ref_type]++;
 
           if (comp_ref_type == UNIDIR_COMP_REFERENCE) {
             const int bit = (ref0 == BWDREF_FRAME);
-            counts->uni_comp_ref[av1_get_pred_context_uni_comp_ref_p(cm, xd)][0]
+            counts->uni_comp_ref[av1_get_pred_context_uni_comp_ref_p(xd)][0]
                                 [bit]++;
             if (!bit) {
-              const int bit1 = (ref1 == GOLDEN_FRAME);
-              counts->uni_comp_ref[av1_get_pred_context_uni_comp_ref_p1(cm, xd)]
-                                  [1][bit1]++;
+              const int bit1 = (ref1 == LAST3_FRAME || ref1 == GOLDEN_FRAME);
+              counts->uni_comp_ref[av1_get_pred_context_uni_comp_ref_p1(xd)][1]
+                                  [bit1]++;
+              if (bit1) {
+                counts->uni_comp_ref[av1_get_pred_context_uni_comp_ref_p2(xd)]
+                                    [2][ref1 == GOLDEN_FRAME]++;
+              }
             }
           } else {
 #endif  // CONFIG_EXT_COMP_REFS
