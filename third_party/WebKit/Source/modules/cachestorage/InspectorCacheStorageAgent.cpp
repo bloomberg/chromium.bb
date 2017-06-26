@@ -188,8 +188,7 @@ class ResponsesAccumulator : public RefCounted<ResponsesAccumulator> {
         responses_.at(responses_.size() - num_responses_left_);
     request_response.request = request.Url().GetString();
     request_response.response = response.StatusText();
-    request_response.response_time =
-        WTF::Time::FromInternalValue(response.ResponseTime()).ToDoubleT();
+    request_response.response_time = response.ResponseTime().ToDoubleT();
 
     if (--num_responses_left_ != 0)
       return;

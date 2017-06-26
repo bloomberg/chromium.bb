@@ -32,6 +32,8 @@
 #define WebURLResponse_h
 
 #include <memory>
+
+#include "base/time/time.h"
 #include "net/http/http_response_info.h"
 #include "public/platform/WebCString.h"
 #include "public/platform/WebCommon.h"
@@ -160,7 +162,7 @@ class WebURLResponse {
 
   BLINK_PLATFORM_EXPORT void SetHTTPLoadInfo(const WebHTTPLoadInfo&);
 
-  BLINK_PLATFORM_EXPORT void SetResponseTime(long long);
+  BLINK_PLATFORM_EXPORT void SetResponseTime(base::Time);
 
   BLINK_PLATFORM_EXPORT WebString MimeType() const;
   BLINK_PLATFORM_EXPORT void SetMIMEType(const WebString&);

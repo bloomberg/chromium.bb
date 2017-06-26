@@ -5,6 +5,7 @@
 #ifndef WebServiceWorkerResponse_h
 #define WebServiceWorkerResponse_h
 
+#include "base/time/time.h"
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebPrivatePtr.h"
 #include "public/platform/WebString.h"
@@ -74,8 +75,8 @@ class BLINK_PLATFORM_EXPORT WebServiceWorkerResponse {
   void SetError(WebServiceWorkerResponseError);
   WebServiceWorkerResponseError GetError() const;
 
-  void SetResponseTime(int64_t);
-  int64_t ResponseTime() const;
+  void SetResponseTime(base::Time);
+  base::Time ResponseTime() const;
 
   void SetCacheStorageCacheName(const WebString&);
   const WebString& CacheStorageCacheName() const;

@@ -281,8 +281,7 @@ FetchResponseData::FetchResponseData(Type type,
     : type_(type),
       status_(status),
       status_message_(status_message),
-      header_list_(FetchHeaderList::Create()),
-      response_time_(0) {}
+      header_list_(FetchHeaderList::Create()) {}
 
 void FetchResponseData::ReplaceBodyStreamBuffer(BodyStreamBuffer* buffer) {
   if (type_ == kBasicType || type_ == kCORSType) {

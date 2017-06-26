@@ -58,6 +58,7 @@
 #include "WebURLLoader.h"
 #include "WebVector.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/time/time.h"
 #include "cc/resources/shared_bitmap.h"
 #include "cc/surfaces/frame_sink_id.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -350,7 +351,7 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // A suggestion to cache this metadata in association with this URL.
   virtual void CacheMetadata(const WebURL&,
-                             int64_t response_time,
+                             base::Time response_time,
                              const char* data,
                              size_t data_size) {}
 
@@ -358,7 +359,7 @@ class BLINK_PLATFORM_EXPORT Platform {
   // resource is in CacheStorage.
   virtual void CacheMetadataInCacheStorage(
       const WebURL&,
-      int64_t response_time,
+      base::Time response_time,
       const char* data,
       size_t data_size,
       const blink::WebSecurityOrigin& cache_storage_origin,

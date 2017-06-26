@@ -1074,7 +1074,7 @@ void WebURLLoaderImpl::PopulateURLResponse(const GURL& url,
                                            WebURLResponse* response,
                                            bool report_security_info) {
   response->SetURL(url);
-  response->SetResponseTime(info.response_time.ToInternalValue());
+  response->SetResponseTime(info.response_time);
   response->SetMIMEType(WebString::FromUTF8(info.mime_type));
   response->SetTextEncodingName(WebString::FromUTF8(info.charset));
   response->SetExpectedContentLength(info.content_length);
