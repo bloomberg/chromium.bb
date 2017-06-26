@@ -100,7 +100,7 @@ TEST(AudioInputDeviceTest, FailToCreateStream) {
 
 ACTION_P5(ReportOnStreamCreated, device, handle, socket, length, segments) {
   static_cast<AudioInputIPCDelegate*>(device)->OnStreamCreated(
-      handle, socket, length, segments);
+      handle, socket, length, segments, false);
 }
 
 TEST(AudioInputDeviceTest, CreateStream) {

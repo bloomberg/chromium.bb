@@ -79,7 +79,8 @@ void PepperPlatformAudioInput::OnStreamCreated(
     base::SharedMemoryHandle handle,
     base::SyncSocket::Handle socket_handle,
     int length,
-    int total_segments) {
+    int total_segments,
+    bool initially_muted) {
 #if defined(OS_WIN)
   DCHECK(handle.IsValid());
   DCHECK(socket_handle);
@@ -95,8 +96,9 @@ void PepperPlatformAudioInput::OnStreamCreated(
     // If shutdown has occurred, |client_| will be NULL and the handles will be
     // cleaned up on the main thread.
     main_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&PepperPlatformAudioInput::OnStreamCreated, this,
-                              handle, socket_handle, length, total_segments));
+        FROM_HERE,
+        base::Bind(&PepperPlatformAudioInput::OnStreamCreated, this, handle,
+                   socket_handle, length, total_segments, initially_muted));
   } else {
     // Must dereference the client only on the main thread. Shutdown may have
     // occurred while the request was in-flight, so we need to NULL check.

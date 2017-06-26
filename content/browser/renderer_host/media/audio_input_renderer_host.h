@@ -110,7 +110,8 @@ class CONTENT_EXPORT AudioInputRendererHost
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // AudioInputController::EventHandler implementation.
-  void OnCreated(media::AudioInputController* controller) override;
+  void OnCreated(media::AudioInputController* controller,
+                 bool initially_muted) override;
   void OnError(media::AudioInputController* controller,
                media::AudioInputController::ErrorCode error_code) override;
   void OnLog(media::AudioInputController* controller,
@@ -165,7 +166,8 @@ class CONTENT_EXPORT AudioInputRendererHost
   // Complete the process of creating an audio input stream. This will set up
   // the shared memory or shared socket in low latency mode and send the
   // NotifyStreamCreated message to the peer.
-  void DoCompleteCreation(media::AudioInputController* controller);
+  void DoCompleteCreation(media::AudioInputController* controller,
+                          bool initially_muted);
 
   // Send a state change message to the renderer.
   void DoSendRecordingMessage(media::AudioInputController* controller);

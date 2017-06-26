@@ -73,7 +73,8 @@ class CONTENT_EXPORT AudioInputMessageFilter : public IPC::MessageFilter {
                        base::FileDescriptor socket_descriptor,
 #endif
                        uint32_t length,
-                       uint32_t total_segments);
+                       uint32_t total_segments,
+                       bool initially_muted);
 
   // Received when internal state of browser process' audio input stream has
   // encountered an error.

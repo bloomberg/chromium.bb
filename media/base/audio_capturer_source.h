@@ -41,7 +41,8 @@ class AudioCapturerSource
     // Signals an error has occurred.
     virtual void OnCaptureError(const std::string& message) = 0;
 
-    // Signals the muted state has changed.
+    // Signals the muted state has changed. May be called before
+    // OnCaptureStarted.
     virtual void OnCaptureMuted(bool is_muted) = 0;
 
    protected:
