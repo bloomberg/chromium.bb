@@ -28,6 +28,7 @@ class ProportionalImageView;
 
 namespace {
 class CompactTitleMessageView;
+class ItemView;
 }
 
 // View that displays all current types of notification (web, basic, image, and
@@ -104,7 +105,7 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   views::View* image_container_ = nullptr;
   ProportionalImageView* image_view_ = nullptr;
   std::vector<views::LabelButton*> action_buttons_;
-  std::vector<views::View*> item_views_;
+  std::vector<ItemView*> item_views_;
   views::ProgressBar* progress_bar_view_ = nullptr;
   CompactTitleMessageView* compact_title_message_view_ = nullptr;
 
