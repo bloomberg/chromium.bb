@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/views/passwords/manage_password_items_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -288,8 +289,8 @@ void ManagePasswordsBubbleView::AutoSigninView::OnTimer() {
 // ManagePasswordsBubbleView::PendingView -------------------------------------
 
 // A view offering the user the ability to save credentials. Contains a
-// single ManagePasswordItemsView, along with a "Save Passwords" button
-// and a "Never" button.
+// single ManagePasswordItemsView, along with a "Save Passwords" button,
+// a "Never" button and an "Edit" button to edit username field.
 class ManagePasswordsBubbleView::PendingView
     : public views::View,
       public views::ButtonListener,
@@ -309,6 +310,7 @@ class ManagePasswordsBubbleView::PendingView
 
   ManagePasswordsBubbleView* parent_;
 
+  views::Button* edit_button_;
   views::Button* save_button_;
   views::Button* never_button_;
 
@@ -317,7 +319,7 @@ class ManagePasswordsBubbleView::PendingView
 
 ManagePasswordsBubbleView::PendingView::PendingView(
     ManagePasswordsBubbleView* parent)
-    : parent_(parent) {
+    : parent_(parent), edit_button_(nullptr) {
   views::GridLayout* layout = new views::GridLayout(this);
   layout->set_minimum_size(gfx::Size(kDesiredBubbleWidth, 0));
   SetLayoutManager(layout);
@@ -327,6 +329,11 @@ ManagePasswordsBubbleView::PendingView::PendingView(
   if (!parent->model()->pending_password().username_value.empty()) {
     item = new ManagePasswordItemsView(parent_->model(),
                                        &parent->model()->pending_password());
+  }
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kEnableUsernameCorrection)) {
+    edit_button_ = views::MdTextButton::CreateSecondaryUiButton(
+        this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_EDIT_BUTTON));
   }
   save_button_ = views::MdTextButton::CreateSecondaryUiBlueButton(
       this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SAVE_BUTTON));
@@ -349,8 +356,13 @@ ManagePasswordsBubbleView::PendingView::PendingView(
   }
 
   // Button row.
-  BuildColumnSet(layout, DOUBLE_BUTTON_COLUMN_SET);
-  layout->StartRow(0, DOUBLE_BUTTON_COLUMN_SET);
+  ColumnSetType column_set_type =
+      edit_button_ ? TRIPLE_BUTTON_COLUMN_SET : DOUBLE_BUTTON_COLUMN_SET;
+  BuildColumnSet(layout, column_set_type);
+  layout->StartRow(0, column_set_type);
+  if (column_set_type == TRIPLE_BUTTON_COLUMN_SET) {
+    layout->AddView(edit_button_);
+  }
   layout->AddView(save_button_);
   layout->AddView(never_button_);
 
@@ -363,7 +375,10 @@ ManagePasswordsBubbleView::PendingView::~PendingView() {
 void ManagePasswordsBubbleView::PendingView::ButtonPressed(
     views::Button* sender,
     const ui::Event& event) {
-  if (sender == save_button_) {
+  // TODO(https://crbug.com/734965): Implement edit button logic.
+  if (sender == edit_button_) {
+    return;
+  } else if (sender == save_button_) {
     parent_->model()->OnSaveClicked();
     if (parent_->model()->ReplaceToShowPromotionIfNeeded()) {
       parent_->Refresh();

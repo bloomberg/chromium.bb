@@ -21,6 +21,7 @@ extern const base::Feature kAffiliationBasedMatching;
 extern const base::Feature kDropSyncCredential;
 extern const base::Feature kEnableManualPasswordGeneration;
 extern const base::Feature kEnablePasswordForceSaving;
+extern const base::Feature kEnableUsernameCorrection;
 extern const base::Feature kProtectSyncCredential;
 extern const base::Feature kProtectSyncCredentialOnReauth;
 extern const base::Feature kPasswordImportExport;
