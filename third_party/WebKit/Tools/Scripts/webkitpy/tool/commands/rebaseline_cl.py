@@ -9,6 +9,7 @@ import logging
 import optparse
 
 from webkitpy.common.net.git_cl import GitCL
+from webkitpy.common.path_finder import PathFinder
 from webkitpy.tool.commands.rebaseline import AbstractParallelRebaselineCommand
 from webkitpy.tool.commands.rebaseline import TestBaselineSet
 from webkitpy.w3c.wpt_manifest import WPTManifest
@@ -226,8 +227,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
             files_in_cl = self._tool.git().changed_files(diff_filter='AM')
             # In the changed files list from Git, paths always use "/" as
             # the path separator, and they're always relative to repo root.
-            # TODO(qyearsley): Do this without using a hard-coded constant.
-            test_base = 'third_party/WebKit/LayoutTests/'
+            test_base = self._test_base_path()
             tests_in_cl = [f[len(test_base):] for f in files_in_cl if f.startswith(test_base)]
 
         test_baseline_set = TestBaselineSet(self._tool)
@@ -237,6 +237,13 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
                     continue
                 test_baseline_set.add(test, build)
         return test_baseline_set
+
+    def _test_base_path(self):
+        """Returns the relative path from the repo root to the layout tests."""
+        finder = PathFinder(self._tool.filesystem)
+        return self._tool.filesystem.relpath(
+            finder.layout_tests_dir(),
+            finder.path_from_chromium_base()) + '/'
 
     def _tests_to_rebaseline(self, build, layout_test_results):
         """Fetches a list of tests that should be rebaselined for some build."""
