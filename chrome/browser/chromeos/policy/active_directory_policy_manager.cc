@@ -17,9 +17,9 @@
 
 namespace {
 
-// Refresh policy every 90 minutes which matches the Windows default:
+// Fetch policy every 90 minutes which matches the Windows default:
 // https://technet.microsoft.com/en-us/library/cc940895.aspx
-constexpr base::TimeDelta kRefreshInterval = base::TimeDelta::FromMinutes(90);
+constexpr base::TimeDelta kFetchInterval = base::TimeDelta::FromMinutes(90);
 
 }  // namespace
 
@@ -56,11 +56,11 @@ void ActiveDirectoryPolicyManager::Init(SchemaRegistry* registry) {
   PublishPolicy();
 
   scheduler_ = base::MakeUnique<PolicyScheduler>(
-      base::BindRepeating(&ActiveDirectoryPolicyManager::DoRefresh,
+      base::BindRepeating(&ActiveDirectoryPolicyManager::DoFetch,
                           weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&ActiveDirectoryPolicyManager::OnPolicyRefreshed,
+      base::BindRepeating(&ActiveDirectoryPolicyManager::OnPolicyFetched,
                           weak_ptr_factory_.GetWeakPtr()),
-      kRefreshInterval);
+      kFetchInterval);
 }
 
 void ActiveDirectoryPolicyManager::Shutdown() {
@@ -117,7 +117,7 @@ void ActiveDirectoryPolicyManager::PublishPolicy() {
   UpdatePolicy(std::move(bundle));
 }
 
-void ActiveDirectoryPolicyManager::DoRefresh(
+void ActiveDirectoryPolicyManager::DoFetch(
     base::OnceCallback<void(bool success)> callback) {
   chromeos::DBusThreadManager* thread_manager =
       chromeos::DBusThreadManager::Get();
@@ -132,9 +132,9 @@ void ActiveDirectoryPolicyManager::DoRefresh(
   }
 }
 
-void ActiveDirectoryPolicyManager::OnPolicyRefreshed(bool success) {
+void ActiveDirectoryPolicyManager::OnPolicyFetched(bool success) {
   if (!success) {
-    LOG(ERROR) << "Active Directory policy refresh failed.";
+    LOG(ERROR) << "Active Directory policy fetch failed.";
   }
   // Load independently of success or failure to keep up to date with whatever
   // has happened on the authpolicyd / session manager side.
