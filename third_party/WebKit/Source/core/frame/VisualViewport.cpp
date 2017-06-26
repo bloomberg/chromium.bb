@@ -32,6 +32,7 @@
 
 #include <memory>
 #include "core/dom/DOMNodeIds.h"
+#include "core/dom/Fullscreen.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
@@ -360,6 +361,7 @@ void VisualViewport::CreateLayerTree() {
   DCHECK(coordinator);
   coordinator->SetLayerIsContainerForFixedPositionLayers(
       inner_viewport_scroll_layer_.get(), true);
+  coordinator->UpdateUserInputScrollable(this);
 
   // Set masks to bounds so the compositor doesn't clobber a manually
   // set inner viewport container layer size.
@@ -369,7 +371,6 @@ void VisualViewport::CreateLayerTree() {
 
   inner_viewport_scroll_layer_->PlatformLayer()->SetScrollClipLayer(
       inner_viewport_container_layer_->PlatformLayer());
-  inner_viewport_scroll_layer_->PlatformLayer()->SetUserScrollable(true, true);
   if (MainFrame()) {
     if (Document* document = MainFrame()->GetDocument()) {
       inner_viewport_scroll_layer_->SetElementId(
@@ -615,6 +616,19 @@ IntRect VisualViewport::ScrollableAreaBoundingBox() const {
     return IntRect();
 
   return frame->View()->FrameRect();
+}
+
+bool VisualViewport::UserInputScrollable(ScrollbarOrientation) const {
+  // If there is a non-root fullscreen element, prevent the viewport from
+  // scrolling.
+  Document* main_document = MainFrame() ? MainFrame()->GetDocument() : nullptr;
+  if (main_document) {
+    Element* fullscreen_element =
+        Fullscreen::FullscreenElementFrom(*main_document);
+    if (fullscreen_element)
+      return false;
+  }
+  return true;
 }
 
 IntSize VisualViewport::ContentsSize() const {

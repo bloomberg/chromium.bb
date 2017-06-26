@@ -4080,13 +4080,8 @@ void LocalFrameView::SetScrollbarModes(ScrollbarMode horizontal_mode,
 
   UpdateScrollbars();
 
-  if (!LayerForScrolling())
-    return;
-  WebLayer* layer = LayerForScrolling()->PlatformLayer();
-  if (!layer)
-    return;
-  layer->SetUserScrollable(UserInputScrollable(kHorizontalScrollbar),
-                           UserInputScrollable(kVerticalScrollbar));
+  if (GetScrollingCoordinator())
+    GetScrollingCoordinator()->UpdateUserInputScrollable(this);
 }
 
 IntSize LocalFrameView::VisibleContentSize(
