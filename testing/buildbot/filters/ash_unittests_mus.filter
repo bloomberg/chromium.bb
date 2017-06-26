@@ -1,3 +1,14 @@
+# TODO: fix these. http://crbug.com/726838
+-AppListPresenterDelegateTest.BottomShelfAlignmentTextStateTransitions
+-AppListPresenterDelegateTest.MaximizeModeTextStateTransitions
+-AppListPresenterDelegateTest.PeekingToFullscreenWhenMaximizeModeIsActive
+-AppListPresenterDelegateTest.HalfToFullscreenWhenMaximizeModeIsActive
+-AppListPresenterDelegateTest.AppListViewDragHandler
+-AppListPresenterDelegateTest.AppListViewDragHandlerMaximizeModeFromAllApps
+-AppListPresenterDelegateTest.AppListViewDragHandlerMaximizeModeFromSearch
+-AppListPresenterDelegateTest.TapAndClickOutsideClosesPeekingAppList
+-AppListPresenterDelegateTest.TapAndClickOutsideClosesHalfAppList
+
 # TODO: fix these. They fail because wm::CursorManager isn't created.
 # http://crbug.com/734806.
 # The following fail as they use wm::CursorManager:
