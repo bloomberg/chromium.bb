@@ -321,9 +321,9 @@ public class WebappRegistryTest {
     @Test
     @Feature({"WebApk"})
     public void testCleanupRemovesUninstalledWebApks() throws Exception {
-        String webappId1 = "webapk:uninstalledWebApk1";
+        String webappId1 = WebApkConstants.WEBAPK_ID_PREFIX + "uninstalledWebApk1";
         String webApkPackage1 = "uninstalledWebApk1";
-        String webappId2 = "webapk:uninstalledWebApk2";
+        String webappId2 = WebApkConstants.WEBAPK_ID_PREFIX + "uninstalledWebApk2";
         String webApkPackage2 = "uninstalledWebApk2";
 
         FetchStorageCallback storageCallback1 = new FetchStorageCallback(
@@ -359,9 +359,9 @@ public class WebappRegistryTest {
     @Test
     @Feature({"WebApk"})
     public void testCleanupDoesNotRemoveInstalledWebApks() throws Exception {
-        String webappId = "webapk:installedWebApk";
+        String webappId = WebApkConstants.WEBAPK_ID_PREFIX + "installedWebApk";
         String webApkPackage = "installedWebApk";
-        String uninstalledWebappId = "webapk:uninstalledWebApk";
+        String uninstalledWebappId = WebApkConstants.WEBAPK_ID_PREFIX + "uninstalledWebApk";
         String uninstalledWebApkPackage = "uninstalledWebApk";
 
         FetchStorageCallback storageCallback = new FetchStorageCallback(
@@ -395,6 +395,46 @@ public class WebappRegistryTest {
 
         long lastCleanup = mSharedPreferences.getLong(
                 WebappRegistry.KEY_LAST_CLEANUP, -1);
+        assertEquals(currentTime, lastCleanup);
+    }
+
+    @Test
+    @Feature({"WebApk"})
+    public void testCleanupDoesRemoveOldInstalledWebApks() throws Exception {
+        String deprecatedWebappId = "webapk:installedWebApk";
+        String webApkPackage = "installedWebApk";
+        String installedWebappId = WebApkConstants.WEBAPK_ID_PREFIX + "installedWebApk";
+
+        FetchStorageCallback storageCallback =
+                new FetchStorageCallback(createWebApkIntent(deprecatedWebappId, webApkPackage));
+        registerWebapp(deprecatedWebappId, storageCallback);
+        assertTrue(storageCallback.getCallbackCalled());
+
+        FetchStorageCallback storageCallback2 =
+                new FetchStorageCallback(createWebApkIntent(installedWebappId, webApkPackage));
+        registerWebapp(installedWebappId, storageCallback2);
+        assertTrue(storageCallback2.getCallbackCalled());
+
+        // Verify that both WebAPKs are registered.
+        Set<String> actual = getRegisteredWebapps();
+        assertEquals(2, actual.size());
+        assertTrue(actual.contains(deprecatedWebappId));
+        assertTrue(actual.contains(installedWebappId));
+
+        RuntimeEnvironment.getRobolectricPackageManager().addPackage(webApkPackage);
+
+        // Set the current time such that the task runs.
+        long currentTime = System.currentTimeMillis() + WebappRegistry.FULL_CLEANUP_DURATION;
+        // Because the time is just inside the window, there should be a cleanup of
+        // uninstalled WebAPKs and the last cleaned up time should be set to the
+        // current time.
+        WebappRegistry.getInstance().unregisterOldWebapps(currentTime);
+
+        actual = getRegisteredWebapps();
+        assertEquals(1, actual.size());
+        assertTrue(actual.contains(installedWebappId));
+
+        long lastCleanup = mSharedPreferences.getLong(WebappRegistry.KEY_LAST_CLEANUP, -1);
         assertEquals(currentTime, lastCleanup);
     }
 
