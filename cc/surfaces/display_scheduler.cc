@@ -326,9 +326,7 @@ base::TimeTicks DisplayScheduler::DesiredBeginFrameDeadlineTime() {
            current_begin_frame_args_.interval;
   }
 
-  bool all_surfaces_ready =
-      !has_pending_surfaces_ && root_surface_id_.is_valid();
-  if (!needs_draw_ && !all_surfaces_ready) {
+  if (!needs_draw_) {
     TRACE_EVENT_INSTANT0("cc", "No damage yet", TRACE_EVENT_SCOPE_THREAD);
     return current_begin_frame_args_.frame_time +
            current_begin_frame_args_.interval;
@@ -341,6 +339,8 @@ base::TimeTicks DisplayScheduler::DesiredBeginFrameDeadlineTime() {
            current_begin_frame_args_.interval;
   }
 
+  bool all_surfaces_ready =
+      !has_pending_surfaces_ && root_surface_id_.is_valid();
   if (all_surfaces_ready && !expecting_root_surface_damage_because_of_resize_) {
     TRACE_EVENT_INSTANT0("cc", "All active surfaces ready",
                          TRACE_EVENT_SCOPE_THREAD);
