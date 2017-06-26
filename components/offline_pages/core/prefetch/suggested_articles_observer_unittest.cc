@@ -34,7 +34,9 @@ ContentSuggestion ContentSuggestionFromTestURL(const GURL& test_url) {
 
 class OfflinePageSuggestedArticlesObserverTest : public testing::Test {
  public:
-  OfflinePageSuggestedArticlesObserverTest() {
+  OfflinePageSuggestedArticlesObserverTest()
+      : task_runner_(new base::TestSimpleTaskRunner),
+        task_runner_handle_(task_runner_) {
     test_prefetch_dispatcher_ = new TestPrefetchDispatcher();
     prefetch_service_test_taco_.SetPrefetchDispatcher(
         base::WrapUnique(test_prefetch_dispatcher_));
@@ -57,6 +59,8 @@ class OfflinePageSuggestedArticlesObserverTest : public testing::Test {
       Category::FromKnownCategory(ntp_snippets::KnownCategories::ARTICLES);
 
  private:
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
+  base::ThreadTaskRunnerHandle task_runner_handle_;
   PrefetchServiceTestTaco prefetch_service_test_taco_;
 
   // Owned by the PrefetchServiceTestTaco.

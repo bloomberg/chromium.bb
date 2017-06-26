@@ -5,6 +5,9 @@
 #include "components/offline_pages/core/prefetch/test_prefetch_gcm_handler.h"
 
 namespace offline_pages {
+namespace {
+const char kToken[] = "an_instance_id_token";
+}
 
 TestPrefetchGCMHandler::TestPrefetchGCMHandler() = default;
 TestPrefetchGCMHandler::~TestPrefetchGCMHandler() = default;
@@ -18,7 +21,9 @@ std::string TestPrefetchGCMHandler::GetAppId() const {
 }
 
 void TestPrefetchGCMHandler::GetGCMToken(
-    instance_id::InstanceID::GetTokenCallback callback) {}
+    instance_id::InstanceID::GetTokenCallback callback) {
+  callback.Run(kToken, instance_id::InstanceID::Result::SUCCESS);
+}
 
 void TestPrefetchGCMHandler::SetService(PrefetchService* service) {}
 }  // namespace offline_pages

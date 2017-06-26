@@ -4,23 +4,29 @@
 
 #include "components/offline_pages/core/prefetch/prefetch_service_test_taco.h"
 
-#include "base/memory/ptr_util.h"
+#include <utility>
 
+#include "base/memory/ptr_util.h"
+#include "base/test/test_simple_task_runner.h"
 #include "components/offline_pages/core/prefetch/offline_metrics_collector.h"
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
-#include "components/offline_pages/core/prefetch/prefetch_dispatcher_impl.h"
 #include "components/offline_pages/core/prefetch/prefetch_gcm_handler.h"
 #include "components/offline_pages/core/prefetch/prefetch_service_impl.h"
 #include "components/offline_pages/core/prefetch/suggested_articles_observer.h"
 #include "components/offline_pages/core/prefetch/test_offline_metrics_collector.h"
+#include "components/offline_pages/core/prefetch/test_prefetch_dispatcher.h"
 #include "components/offline_pages/core/prefetch/test_prefetch_gcm_handler.h"
+#include "components/offline_pages/core/prefetch/test_prefetch_network_request_factory.h"
 
 namespace offline_pages {
 
 PrefetchServiceTestTaco::PrefetchServiceTestTaco() {
   metrics_collector_ = base::MakeUnique<TestOfflineMetricsCollector>();
-  dispatcher_ = base::MakeUnique<PrefetchDispatcherImpl>();
+  dispatcher_ = base::MakeUnique<TestPrefetchDispatcher>();
   gcm_handler_ = base::MakeUnique<TestPrefetchGCMHandler>();
+  network_request_factory_ =
+      base::MakeUnique<TestPrefetchNetworkRequestFactory>();
+
   suggested_articles_observer_ = base::MakeUnique<SuggestedArticlesObserver>();
   // This sets up the testing articles as an empty vector, we can ignore the
   // result here.  This allows us to not create a ContentSuggestionsService.
@@ -47,6 +53,12 @@ void PrefetchServiceTestTaco::SetPrefetchGCMHandler(
   gcm_handler_ = std::move(gcm_handler);
 }
 
+void PrefetchServiceTestTaco::SetPrefetchNetworkRequestFactory(
+    std::unique_ptr<PrefetchNetworkRequestFactory> network_request_factory) {
+  CHECK(!prefetch_service_);
+  network_request_factory_ = std::move(network_request_factory);
+}
+
 void PrefetchServiceTestTaco::SetSuggestedArticlesObserver(
     std::unique_ptr<SuggestedArticlesObserver> suggested_articles_observer) {
   CHECK(!prefetch_service_);
@@ -55,10 +67,11 @@ void PrefetchServiceTestTaco::SetSuggestedArticlesObserver(
 
 void PrefetchServiceTestTaco::CreatePrefetchService() {
   CHECK(metrics_collector_ && dispatcher_ && gcm_handler_ &&
-        suggested_articles_observer_);
+        suggested_articles_observer_ && network_request_factory_);
   prefetch_service_ = base::MakeUnique<PrefetchServiceImpl>(
       std::move(metrics_collector_), std::move(dispatcher_),
-      std::move(gcm_handler_), std::move(suggested_articles_observer_));
+      std::move(gcm_handler_), std::move(network_request_factory_),
+      std::move(suggested_articles_observer_));
 }
 
 std::unique_ptr<PrefetchService>
@@ -67,4 +80,4 @@ PrefetchServiceTestTaco::CreateAndReturnPrefetchService() {
   return std::move(prefetch_service_);
 }
 
-}  // namespace offline_page
+}  // namespace offline_pages

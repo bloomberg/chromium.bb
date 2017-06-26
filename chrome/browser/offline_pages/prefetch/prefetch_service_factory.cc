@@ -11,9 +11,13 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/offline_pages/prefetch/offline_metrics_collector_impl.h"
 #include "chrome/browser/offline_pages/prefetch/prefetch_instance_id_proxy.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/common/channel_info.h"
+#include "chrome/common/chrome_content_client.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher_impl.h"
 #include "components/offline_pages/core/prefetch/prefetch_gcm_app_handler.h"
+#include "components/offline_pages/core/prefetch/prefetch_network_request_factory_impl.h"
 #include "components/offline_pages/core/prefetch/prefetch_service_impl.h"
 #include "components/offline_pages/core/prefetch/suggested_articles_observer.h"
 #include "content/public/browser/browser_context.h"
@@ -38,10 +42,14 @@ PrefetchService* PrefetchServiceFactory::GetForBrowserContext(
 
 KeyedService* PrefetchServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
+  Profile* profile = Profile::FromBrowserContext(context);
   auto prefetch_dispatcher = base::MakeUnique<PrefetchDispatcherImpl>();
   auto prefetch_gcm_app_handler = base::MakeUnique<PrefetchGCMAppHandler>(
       base::MakeUnique<PrefetchInstanceIDProxy>(kPrefetchingOfflinePagesAppId,
                                                 context));
+  auto prefetch_network_request_factory =
+      base::MakeUnique<PrefetchNetworkRequestFactoryImpl>(
+          profile->GetRequestContext(), chrome::GetChannel(), GetUserAgent());
   auto offline_metrics_collector =
       base::MakeUnique<OfflineMetricsCollectorImpl>();
   auto suggested_articles_observer =
@@ -50,6 +58,7 @@ KeyedService* PrefetchServiceFactory::BuildServiceInstanceFor(
   return new PrefetchServiceImpl(std::move(offline_metrics_collector),
                                  std::move(prefetch_dispatcher),
                                  std::move(prefetch_gcm_app_handler),
+                                 std::move(prefetch_network_request_factory),
                                  std::move(suggested_articles_observer));
 }
 
