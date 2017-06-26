@@ -7,11 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow BODY",
-          "rect": [8, 8, 784, 43],
-          "reason": "geometry"
-        },
-        {
           "object": "LayoutTextControl TEXTAREA id='editor'",
           "rect": [7, 7, 183, 40],
           "reason": "subtree"
@@ -40,14 +35,6 @@
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow BODY",
-      "reason": "geometry"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "geometry"
-    },
     {
       "object": "LayoutTextControl TEXTAREA id='editor'",
       "reason": "subtree"

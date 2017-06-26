@@ -1558,7 +1558,7 @@ LayoutPoint PaintLayer::VisualOffsetFromAncestor(
   return offset;
 }
 
-void PaintLayer::DidUpdateNeedsCompositedScrolling() {
+void PaintLayer::DidUpdateScrollsOverflow() {
   UpdateSelfPaintingLayer();
 }
 

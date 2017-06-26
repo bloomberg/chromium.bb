@@ -1839,3 +1839,6 @@ Bug(none) paint/pagination/composited-paginated-inline.html [ Failure ]
 Bug(none) paint/invalidation/absolute-display-block-to-none.html [ Failure ]
 Bug(none) paint/invalidation/overhanging-float-detach-repaint.html [ Failure ]
 Bug(none) paint/invalidation/trailing-floats-root-line-box-overflow.html [ Failure ]
+
+Bug(none) compositing/overflow/ancestor-overflow-layer-of-sticky-child-of-compositing-container.html [ Failure ]
+Bug(none) fast/block/float/float-change-composited-scrolling.html [ Failure ]
