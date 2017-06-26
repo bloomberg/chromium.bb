@@ -24,6 +24,7 @@
 
 #include "core/html/TextDocument.h"
 
+#include "core/frame/UseCounter.h"
 #include "core/html/parser/TextDocumentParser.h"
 
 namespace blink {

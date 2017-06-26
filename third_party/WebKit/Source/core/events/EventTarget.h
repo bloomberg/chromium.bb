@@ -40,7 +40,6 @@
 #include "core/events/AddEventListenerOptionsResolved.h"
 #include "core/events/EventDispatchResult.h"
 #include "core/events/EventListenerMap.h"
-#include "core/frame/UseCounter.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Allocator.h"
@@ -57,6 +56,7 @@ class LocalDOMWindow;
 class MessagePort;
 class Node;
 class ServiceWorker;
+enum class WebFeature : uint32_t;
 
 struct FiringEventIterator {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();

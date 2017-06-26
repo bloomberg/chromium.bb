@@ -33,6 +33,7 @@
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLParamElement.h"
 #include "core/html/LinkRelAttribute.h"
 #include "core/html/parser/HTMLDocumentParser.h"
