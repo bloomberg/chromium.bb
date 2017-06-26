@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "remoting/client/input/text_keyboard_input_strategy.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 
 namespace remoting {
 
@@ -22,7 +23,43 @@ void KeyboardInterpreter::HandleTextEvent(const std::string& text,
 }
 
 void KeyboardInterpreter::HandleDeleteEvent(uint8_t modifiers) {
-  input_strategy_->HandleDeleteEvent(modifiers);
+  std::queue<KeyEvent> keys;
+  // TODO(nicholss): Handle modifers.
+  // Key press.
+  keys.push({static_cast<uint32_t>(ui::DomCode::BACKSPACE), true});
+
+  // Key release.
+  keys.push({static_cast<uint32_t>(ui::DomCode::BACKSPACE), false});
+
+  input_strategy_->HandleKeysEvent(keys);
+}
+
+void KeyboardInterpreter::HandleCtrlAltDeleteEvent() {
+  std::queue<KeyEvent> keys;
+
+  // Key press.
+  keys.push({static_cast<uint32_t>(ui::DomCode::CONTROL_LEFT), true});
+  keys.push({static_cast<uint32_t>(ui::DomCode::ALT_LEFT), true});
+  keys.push({static_cast<uint32_t>(ui::DomCode::DEL), true});
+
+  // Key release.
+  keys.push({static_cast<uint32_t>(ui::DomCode::DEL), false});
+  keys.push({static_cast<uint32_t>(ui::DomCode::ALT_LEFT), false});
+  keys.push({static_cast<uint32_t>(ui::DomCode::CONTROL_LEFT), false});
+
+  input_strategy_->HandleKeysEvent(keys);
+}
+
+void KeyboardInterpreter::HandlePrintScreenEvent() {
+  std::queue<KeyEvent> keys;
+
+  // Key press.
+  keys.push({static_cast<uint32_t>(ui::DomCode::PRINT_SCREEN), true});
+
+  // Key release.
+  keys.push({static_cast<uint32_t>(ui::DomCode::PRINT_SCREEN), false});
+
+  input_strategy_->HandleKeysEvent(keys);
 }
 
 }  // namespace remoting
