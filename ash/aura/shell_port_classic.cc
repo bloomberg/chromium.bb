@@ -15,11 +15,9 @@
 #include "ash/keyboard/keyboard_ui.h"
 #include "ash/laser/laser_pointer_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
-#include "ash/metrics/task_switch_metrics_recorder.h"
 #include "ash/public/cpp/config.h"
 #include "ash/shared/immersive_fullscreen_controller.h"
 #include "ash/shell.h"
-#include "ash/touch/touch_uma.h"
 #include "ash/virtual_keyboard_controller.h"
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/maximize_mode/maximize_mode_event_handler_aura.h"
@@ -99,18 +97,6 @@ void ShellPortClassic::SetGlobalOverrideCursor(
 
 bool ShellPortClassic::IsMouseEventsEnabled() {
   return Shell::Get()->cursor_manager()->IsMouseEventsEnabled();
-}
-
-void ShellPortClassic::RecordUserMetricsAction(UserMetricsAction action) {
-  Shell::Get()->metrics()->RecordUserMetricsAction(action);
-}
-
-void ShellPortClassic::RecordGestureAction(GestureActionType action) {
-  TouchUMA::GetInstance()->RecordGestureAction(action);
-}
-
-void ShellPortClassic::RecordTaskSwitchMetric(TaskSwitchSource source) {
-  Shell::Get()->metrics()->task_switch_metrics_recorder().OnTaskSwitch(source);
 }
 
 std::unique_ptr<WindowResizer> ShellPortClassic::CreateDragWindowResizer(

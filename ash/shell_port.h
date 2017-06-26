@@ -11,8 +11,6 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/metrics/gesture_action_type.h"
-#include "ash/metrics/user_metrics_action.h"
 #include "ash/wm/lock_state_observer.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
@@ -110,10 +108,6 @@ class ASH_EXPORT ShellPort {
   virtual void SetGlobalOverrideCursor(
       base::Optional<ui::CursorData> cursor) = 0;
   virtual bool IsMouseEventsEnabled() = 0;
-
-  virtual void RecordGestureAction(GestureActionType action) = 0;
-  virtual void RecordUserMetricsAction(UserMetricsAction action) = 0;
-  virtual void RecordTaskSwitchMetric(TaskSwitchSource source) = 0;
 
   // Shows the context menu for the wallpaper or shelf at |location_in_screen|.
   void ShowContextMenu(const gfx::Point& location_in_screen,

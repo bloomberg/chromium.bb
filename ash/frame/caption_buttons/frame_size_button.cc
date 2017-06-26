@@ -4,7 +4,8 @@
 
 #include "ash/frame/caption_buttons/frame_size_button.h"
 
-#include "ash/shell_port.h"
+#include "ash/metrics/user_metrics_recorder.h"
+#include "ash/shell.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
@@ -251,7 +252,7 @@ bool FrameSizeButton::CommitSnap(const ui::LocatedEvent& event) {
                                      ? wm::WM_EVENT_SNAP_LEFT
                                      : wm::WM_EVENT_SNAP_RIGHT);
     window_state->OnWMEvent(&snap_event);
-    ShellPort::Get()->RecordUserMetricsAction(
+    Shell::Get()->metrics()->RecordUserMetricsAction(
         snap_type_ == SNAP_LEFT ? UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE_LEFT
                                 : UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE_RIGHT);
     SetButtonsToNormalMode(FrameSizeButtonDelegate::ANIMATE_NO);

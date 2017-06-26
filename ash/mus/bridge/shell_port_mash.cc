@@ -31,7 +31,6 @@
 #include "ash/shared/immersive_fullscreen_controller.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
-#include "ash/touch/touch_uma.h"
 #include "ash/virtual_keyboard_controller.h"
 #include "ash/wallpaper/wallpaper_delegate.h"
 #include "ash/wm/drag_window_resizer.h"
@@ -161,34 +160,6 @@ bool ShellPortMash::IsMouseEventsEnabled() {
   // TODO: http://crbug.com/637853
   NOTIMPLEMENTED();
   return true;
-}
-
-void ShellPortMash::RecordGestureAction(GestureActionType action) {
-  if (GetAshConfig() == Config::MUS) {
-    TouchUMA::GetInstance()->RecordGestureAction(action);
-    return;
-  }
-  // TODO: http://crbug.com/616581.
-  NOTIMPLEMENTED();
-}
-
-void ShellPortMash::RecordUserMetricsAction(UserMetricsAction action) {
-  if (GetAshConfig() == Config::MUS) {
-    Shell::Get()->metrics()->RecordUserMetricsAction(action);
-    return;
-  }
-  // TODO: http://crbug.com/616581.
-  NOTIMPLEMENTED();
-}
-
-void ShellPortMash::RecordTaskSwitchMetric(TaskSwitchSource source) {
-  if (GetAshConfig() == Config::MUS) {
-    Shell::Get()->metrics()->task_switch_metrics_recorder().OnTaskSwitch(
-        source);
-    return;
-  }
-  // TODO: http://crbug.com/616581.
-  NOTIMPLEMENTED();
 }
 
 std::unique_ptr<WindowResizer> ShellPortMash::CreateDragWindowResizer(

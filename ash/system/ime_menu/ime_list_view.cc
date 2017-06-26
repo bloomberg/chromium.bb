@@ -6,6 +6,7 @@
 
 #include "ash/ime/ime_controller.h"
 #include "ash/ime/ime_switch_type.h"
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/interfaces/ime_info.mojom.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
@@ -297,7 +298,8 @@ void ImeListView::PrependKeyboardStatusRow() {
 void ImeListView::HandleViewClicked(views::View* view) {
   std::map<views::View*, std::string>::const_iterator ime = ime_map_.find(view);
   if (ime != ime_map_.end()) {
-    ShellPort::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_IME_SWITCH_MODE);
+    Shell::Get()->metrics()->RecordUserMetricsAction(
+        UMA_STATUS_AREA_IME_SWITCH_MODE);
     std::string ime_id = ime->second;
     last_selected_item_id_ = ime_id;
     InputMethodManager::Get()->GetActiveIMEState()->ChangeInputMethod(

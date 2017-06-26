@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/multi_profile_uma.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -247,7 +248,7 @@ int UserView::GetHeightForWidth(int width) const {
 
 void UserView::ButtonPressed(views::Button* sender, const ui::Event& event) {
   if (sender == logout_button_) {
-    ShellPort::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_SIGN_OUT);
+    Shell::Get()->metrics()->RecordUserMetricsAction(UMA_STATUS_AREA_SIGN_OUT);
     HideUserDropdownWidget();
     Shell::Get()->system_tray_controller()->SignOut();
   } else if (sender == user_card_container_ &&

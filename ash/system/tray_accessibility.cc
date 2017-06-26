@@ -9,10 +9,10 @@
 
 #include "ash/accessibility_delegate.h"
 #include "ash/accessibility_types.h"
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/system_notifier.h"
 #include "ash/system/tray/hover_highlight_view.h"
@@ -298,7 +298,7 @@ void AccessibilityDetailedView::HandleViewClicked(views::View* view) {
   } else {
     return;
   }
-  ShellPort::Get()->RecordUserMetricsAction(user_action);
+  Shell::Get()->metrics()->RecordUserMetricsAction(user_action);
 }
 
 void AccessibilityDetailedView::HandleButtonPressed(views::Button* sender,
@@ -399,7 +399,7 @@ views::View* TrayAccessibility::CreateDefaultView(LoginStatus status) {
 views::View* TrayAccessibility::CreateDetailedView(LoginStatus status) {
   CHECK(detailed_menu_ == nullptr);
 
-  ShellPort::Get()->RecordUserMetricsAction(
+  Shell::Get()->metrics()->RecordUserMetricsAction(
       UMA_STATUS_AREA_DETAILED_ACCESSIBILITY);
   detailed_menu_ = CreateDetailedMenu();
   return detailed_menu_;

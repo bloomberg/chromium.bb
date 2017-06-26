@@ -7,9 +7,9 @@
 #include <utility>
 
 #include "ash/ash_switches.h"
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
-#include "ash/shell_port.h"
 #include "ash/wm/maximize_mode/maximize_mode_window_manager.h"
 #include "ash/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard.h"
 #include "base/bind.h"
@@ -131,7 +131,7 @@ MaximizeModeController::MaximizeModeController()
       scoped_session_observer_(this),
       weak_factory_(this) {
   Shell::Get()->AddShellObserver(this);
-  ShellPort::Get()->RecordUserMetricsAction(
+  Shell::Get()->metrics()->RecordUserMetricsAction(
       UMA_MAXIMIZE_MODE_INITIALLY_DISABLED);
 
   // TODO(jonross): Do not create MaximizeModeController if the flag is
@@ -179,7 +179,7 @@ void MaximizeModeController::EnableMaximizeModeWindowManager(
     maximize_mode_window_manager_.reset(new MaximizeModeWindowManager());
     // TODO(jonross): Move the maximize mode notifications from ShellObserver
     // to MaximizeModeController::Observer
-    ShellPort::Get()->RecordUserMetricsAction(UMA_MAXIMIZE_MODE_ENABLED);
+    Shell::Get()->metrics()->RecordUserMetricsAction(UMA_MAXIMIZE_MODE_ENABLED);
     Shell::Get()->NotifyMaximizeModeStarted();
 
     observers_.ForAllPtrs([](mojom::TouchViewObserver* observer) {
@@ -190,7 +190,8 @@ void MaximizeModeController::EnableMaximizeModeWindowManager(
     maximize_mode_window_manager_->SetIgnoreWmEventsForExit();
     Shell::Get()->NotifyMaximizeModeEnding();
     maximize_mode_window_manager_.reset();
-    ShellPort::Get()->RecordUserMetricsAction(UMA_MAXIMIZE_MODE_DISABLED);
+    Shell::Get()->metrics()->RecordUserMetricsAction(
+        UMA_MAXIMIZE_MODE_DISABLED);
     Shell::Get()->NotifyMaximizeModeEnded();
 
     observers_.ForAllPtrs([](mojom::TouchViewObserver* observer) {

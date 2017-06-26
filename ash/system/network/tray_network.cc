@@ -4,8 +4,8 @@
 
 #include "ash/system/network/tray_network.h"
 
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/network/network_icon.h"
 #include "ash/system/network/network_icon_animation.h"
@@ -242,7 +242,7 @@ views::View* TrayNetwork::CreateDefaultView(LoginStatus status) {
 
 views::View* TrayNetwork::CreateDetailedView(LoginStatus status) {
   CHECK(detailed_ == nullptr);
-  ShellPort::Get()->RecordUserMetricsAction(
+  Shell::Get()->metrics()->RecordUserMetricsAction(
       UMA_STATUS_AREA_DETAILED_NETWORK_VIEW);
   if (!chromeos::NetworkHandler::IsInitialized())
     return nullptr;
@@ -267,7 +267,7 @@ void TrayNetwork::RequestToggleWifi() {
   // This will always be triggered by a user action (e.g. keyboard shortcut)
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
   bool enabled = handler->IsTechnologyEnabled(NetworkTypePattern::WiFi());
-  ShellPort::Get()->RecordUserMetricsAction(
+  Shell::Get()->metrics()->RecordUserMetricsAction(
       enabled ? UMA_STATUS_AREA_DISABLE_WIFI : UMA_STATUS_AREA_ENABLE_WIFI);
   handler->SetTechnologyEnabled(NetworkTypePattern::WiFi(), !enabled,
                                 chromeos::network_handler::ErrorCallback());

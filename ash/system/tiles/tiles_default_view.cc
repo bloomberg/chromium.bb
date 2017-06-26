@@ -5,10 +5,10 @@
 #include "ash/system/tiles/tiles_default_view.h"
 
 #include "ash/metrics/user_metrics_action.h"
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/shutdown_controller.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/night_light/night_light_controller.h"
@@ -117,23 +117,23 @@ void TilesDefaultView::ButtonPressed(views::Button* sender,
                                      const ui::Event& event) {
   DCHECK(sender);
   if (sender == settings_button_) {
-    ShellPort::Get()->RecordUserMetricsAction(UMA_TRAY_SETTINGS);
+    Shell::Get()->metrics()->RecordUserMetricsAction(UMA_TRAY_SETTINGS);
     Shell::Get()->system_tray_controller()->ShowSettings();
   } else if (sender == help_button_) {
-    ShellPort::Get()->RecordUserMetricsAction(UMA_TRAY_HELP);
+    Shell::Get()->metrics()->RecordUserMetricsAction(UMA_TRAY_HELP);
     Shell::Get()->system_tray_controller()->ShowHelp();
   } else if (NightLightController::IsFeatureEnabled() &&
              sender == night_light_button_) {
-    ShellPort::Get()->RecordUserMetricsAction(UMA_TRAY_NIGHT_LIGHT);
+    Shell::Get()->metrics()->RecordUserMetricsAction(UMA_TRAY_NIGHT_LIGHT);
     Shell::Get()->night_light_controller()->Toggle();
     night_light_button_->Update();
   } else if (sender == lock_button_) {
-    ShellPort::Get()->RecordUserMetricsAction(UMA_TRAY_LOCK_SCREEN);
+    Shell::Get()->metrics()->RecordUserMetricsAction(UMA_TRAY_LOCK_SCREEN);
     chromeos::DBusThreadManager::Get()
         ->GetSessionManagerClient()
         ->RequestLockScreen();
   } else if (sender == power_button_) {
-    ShellPort::Get()->RecordUserMetricsAction(UMA_TRAY_SHUT_DOWN);
+    Shell::Get()->metrics()->RecordUserMetricsAction(UMA_TRAY_SHUT_DOWN);
     Shell::Get()->lock_state_controller()->RequestShutdown();
   }
 }

@@ -7,11 +7,11 @@
 #include "ash/accessibility_delegate.h"
 #include "ash/ash_constants.h"
 #include "ash/ime/ime_controller.h"
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/ime_menu/ime_list_view.h"
 #include "ash/system/tray/system_menu_button.h"
@@ -56,7 +56,8 @@ gfx::Range GetImeListViewRange() {
 
 // Shows language and input settings page.
 void ShowIMESettings() {
-  ShellPort::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_IME_SHOW_DETAILED);
+  Shell::Get()->metrics()->RecordUserMetricsAction(
+      UMA_STATUS_AREA_IME_SHOW_DETAILED);
   Shell::Get()->system_tray_controller()->ShowIMESettings();
 }
 

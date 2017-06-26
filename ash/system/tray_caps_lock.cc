@@ -5,9 +5,9 @@
 #include "ash/system/tray_caps_lock.h"
 
 #include "ash/accessibility_delegate.h"
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/system_notifier.h"
 #include "ash/system/tray/actionable_view.h"
@@ -146,7 +146,7 @@ class CapsLockDefaultView : public ActionableView {
     chromeos::input_method::ImeKeyboard* keyboard =
         chromeos::input_method::InputMethodManager::Get()->GetImeKeyboard();
     if (keyboard) {
-      ShellPort::Get()->RecordUserMetricsAction(
+      Shell::Get()->metrics()->RecordUserMetricsAction(
           keyboard->CapsLockIsEnabled()
               ? UMA_STATUS_AREA_CAPS_LOCK_DISABLED_BY_CLICK
               : UMA_STATUS_AREA_CAPS_LOCK_ENABLED_BY_CLICK);
@@ -199,7 +199,7 @@ void TrayCapsLock::OnCapsLockChanged(bool enabled) {
         message_center::MessageCenter::Get();
     if (caps_lock_enabled_) {
       if (!message_shown_) {
-        ShellPort::Get()->RecordUserMetricsAction(
+        Shell::Get()->metrics()->RecordUserMetricsAction(
             UMA_STATUS_AREA_CAPS_LOCK_POPUP);
 
         message_center->AddNotification(CreateNotification());

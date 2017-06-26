@@ -7,9 +7,9 @@
 #include <memory>
 #include <utility>
 
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/network/network_icon.h"
 #include "ash/system/network/network_icon_animation.h"
@@ -262,7 +262,7 @@ class WifiHeaderRowView : public NetworkListView::SectionHeaderRowView {
 
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
     if (sender == join_) {
-      ShellPort::Get()->RecordUserMetricsAction(
+      Shell::Get()->metrics()->RecordUserMetricsAction(
           UMA_STATUS_AREA_NETWORK_JOIN_OTHER_CLICKED);
       Shell::Get()->system_tray_controller()->ShowNetworkCreate(
           shill::kTypeWifi);

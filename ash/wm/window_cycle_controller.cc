@@ -4,7 +4,9 @@
 
 #include "ash/wm/window_cycle_controller.h"
 
+#include "ash/metrics/task_switch_metrics_recorder.h"
 #include "ash/metrics/task_switch_source.h"
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
@@ -81,7 +83,7 @@ void WindowCycleController::StartCycling() {
   window_cycle_list_.reset(new WindowCycleList(window_list));
   event_filter_ = ShellPort::Get()->CreateWindowCycleEventFilter();
   cycle_start_time_ = base::Time::Now();
-  ShellPort::Get()->RecordUserMetricsAction(UMA_WINDOW_CYCLE);
+  Shell::Get()->metrics()->RecordUserMetricsAction(UMA_WINDOW_CYCLE);
   UMA_HISTOGRAM_COUNTS_100("Ash.WindowCycleController.Items",
                            window_list.size());
 }
@@ -118,7 +120,7 @@ void WindowCycleController::StopCycling() {
 
   if (active_window_after_window_cycle != nullptr &&
       active_window_before_window_cycle_ != active_window_after_window_cycle) {
-    ShellPort::Get()->RecordTaskSwitchMetric(
+    Shell::Get()->metrics()->task_switch_metrics_recorder().OnTaskSwitch(
         TaskSwitchSource::WINDOW_CYCLE_CONTROLLER);
   }
   active_window_before_window_cycle_ = nullptr;

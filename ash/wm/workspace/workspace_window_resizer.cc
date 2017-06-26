@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "ash/metrics/user_metrics_action.h"
+#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
@@ -408,9 +409,9 @@ void WorkspaceWindowResizer::CompleteDrag() {
     const wm::WMEvent event(snap_type_ == SNAP_LEFT ? wm::WM_EVENT_SNAP_LEFT
                                                     : wm::WM_EVENT_SNAP_RIGHT);
     window_state()->OnWMEvent(&event);
-    ShellPort::Get()->RecordUserMetricsAction(snap_type_ == SNAP_LEFT
-                                                  ? UMA_DRAG_MAXIMIZE_LEFT
-                                                  : UMA_DRAG_MAXIMIZE_RIGHT);
+    Shell::Get()->metrics()->RecordUserMetricsAction(
+        snap_type_ == SNAP_LEFT ? UMA_DRAG_MAXIMIZE_LEFT
+                                : UMA_DRAG_MAXIMIZE_RIGHT);
     snapped = true;
   }
 
