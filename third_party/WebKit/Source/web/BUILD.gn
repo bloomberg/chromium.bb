@@ -116,7 +116,6 @@ test("webkit_unit_tests") {
     "tests/WebPluginContainerTest.cpp",
     "tests/WebURLRequestTest.cpp",
     "tests/WebURLResponseTest.cpp",
-    "tests/WindowProxyTest.cpp",
     "tests/scheduler/ActiveConnectionThrottlingTest.cpp",
     "tests/scheduler/FrameThrottlingTest.cpp",
     "tests/scheduler/ThrottlingTest.cpp",

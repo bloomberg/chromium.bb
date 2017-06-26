@@ -197,6 +197,7 @@ bindings_unittest_files =
                     "core/v8/ScriptPromisePropertyTest.cpp",
                     "core/v8/ScriptPromiseResolverTest.cpp",
                     "core/v8/ScriptPromiseTest.cpp",
+                    "core/v8/WindowProxyTest.cpp",
                     "core/v8/ScriptStreamerTest.cpp",
                     "core/v8/ScriptWrappableVisitorTest.cpp",
                     "core/v8/ToV8Test.cpp",
