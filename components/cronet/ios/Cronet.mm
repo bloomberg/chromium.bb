@@ -22,6 +22,10 @@
 #include "net/cert/cert_verifier.h"
 #include "net/url_request/url_request_context_getter.h"
 
+// Cronet NSError constants.
+NSString* const CRNCronetErrorDomain = @"CRNCronetErrorDomain";
+NSString* const CRNInvalidArgumentKey = @"CRNInvalidArgumentKey";
+
 namespace {
 
 class CronetHttpProtocolHandlerDelegate;
