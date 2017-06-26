@@ -29413,6 +29413,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Media.InfoLoadDelay" units="ms">
+  <obsolete>
+    Deprecated June 2017. Found that the MediaInfoLoader class (the only user of
+    this histogram) is no longer used by anyone.
+  </obsolete>
   <owner>qinmin@chromium.org</owner>
   <summary>
     The time it takes to perform redirect tracking and a CORS access check while
