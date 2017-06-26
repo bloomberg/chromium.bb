@@ -218,8 +218,8 @@ class EasyUnlockService::PowerMonitor
     wake_up_time_ = base::Time::Now();
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&PowerMonitor::ResetWakingUp,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::BindOnce(&PowerMonitor::ResetWakingUp,
+                       weak_ptr_factory_.GetWeakPtr()),
         base::TimeDelta::FromSeconds(5));
     service_->OnSuspendDone();
     service_->UpdateAppState();

@@ -180,7 +180,7 @@ void ProcessMirrorResponseHeaderIfExists(
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(ProcessMirrorHeaderUIThread, params, web_contents_getter));
+      base::BindOnce(ProcessMirrorHeaderUIThread, params, web_contents_getter));
 }
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
