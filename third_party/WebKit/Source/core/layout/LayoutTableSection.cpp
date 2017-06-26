@@ -28,6 +28,7 @@
 
 #include <algorithm>
 #include <limits>
+#include "core/frame/UseCounter.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/LayoutTableCell.h"

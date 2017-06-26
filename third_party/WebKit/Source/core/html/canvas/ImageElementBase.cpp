@@ -5,6 +5,7 @@
 #include "core/html/canvas/ImageElementBase.h"
 
 #include "core/frame/LocalDOMWindow.h"
+#include "core/frame/UseCounter.h"
 #include "core/imagebitmap/ImageBitmap.h"
 #include "core/layout/LayoutObject.h"
 #include "core/loader/ImageLoader.h"

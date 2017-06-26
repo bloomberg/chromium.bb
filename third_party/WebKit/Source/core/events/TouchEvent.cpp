@@ -30,6 +30,7 @@
 #include "core/frame/FrameConsole.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrameView.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLElement.h"
 #include "core/input/InputDeviceCapabilities.h"
 #include "core/inspector/ConsoleMessage.h"
