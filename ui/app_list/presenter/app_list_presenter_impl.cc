@@ -6,6 +6,7 @@
 
 #include "base/metrics/user_metrics.h"
 #include "ui/app_list/app_list_constants.h"
+#include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/pagination_model.h"
 #include "ui/app_list/presenter/app_list_presenter_delegate_factory.h"
@@ -34,7 +35,8 @@ inline ui::Layer* GetLayer(views::Widget* widget) {
 
 AppListPresenterImpl::AppListPresenterImpl(
     std::unique_ptr<AppListPresenterDelegateFactory> factory)
-    : factory_(std::move(factory)) {
+    : factory_(std::move(factory)),
+      is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()) {
   DCHECK(factory_);
 }
 
@@ -268,10 +270,16 @@ void AppListPresenterImpl::TransitionChanged() {
   if (!view_)
     return;
 
+  // Disable overscroll animation when the fullscreen app list feature is
+  // enabled.
+  if (is_fullscreen_app_list_enabled_)
+    return;
+
   PaginationModel* pagination_model = view_->GetAppsPaginationModel();
 
   const PaginationModel::Transition& transition =
       pagination_model->transition();
+
   if (pagination_model->is_valid_page(transition.target_page))
     return;
 
