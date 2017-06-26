@@ -133,7 +133,7 @@ void EulaScreenHandler::DeclareLocalizedValues(
   builder->Add("eulaTpmDescPowerwash",
                IDS_EULA_SECURE_MODULE_KEY_DESCRIPTION_POWERWASH);
   builder->Add("eulaTpmBusy", IDS_EULA_SECURE_MODULE_BUSY);
-  ::login::GetSecureModuleUsed(base::Bind(
+  ::login::GetSecureModuleUsed(base::BindOnce(
       &EulaScreenHandler::UpdateLocalizedValues, weak_factory_.GetWeakPtr()));
 
   builder->Add("eulaSystemInstallationSettingsOkButton", IDS_OK);

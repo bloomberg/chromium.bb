@@ -587,8 +587,9 @@ void SimUnlockHandler::HandleChangePinCode(const base::ListValue* args) {
 void SimUnlockHandler::HandleEnterCode(SimUnlockCode code_type,
                                        const std::string& code) {
   scoped_refptr<TaskProxy> task = new TaskProxy(AsWeakPtr(), code, code_type);
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      base::Bind(&TaskProxy::HandleEnterCode, task.get()));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&TaskProxy::HandleEnterCode, task.get()));
 }
 
 void SimUnlockHandler::HandleEnterPinCode(const base::ListValue* args) {
@@ -622,8 +623,9 @@ void SimUnlockHandler::HandleProceedToPukInput(const base::ListValue* args) {
     return;
   }
   scoped_refptr<TaskProxy> task = new TaskProxy(AsWeakPtr());
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      base::Bind(&TaskProxy::HandleProceedToPukInput, task.get()));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&TaskProxy::HandleProceedToPukInput, task.get()));
 }
 
 void SimUnlockHandler::HandleSimStatusInitialize(const base::ListValue* args) {
@@ -637,8 +639,9 @@ void SimUnlockHandler::HandleSimStatusInitialize(const base::ListValue* args) {
   dialog_mode_ = static_cast<SimDialogDelegate::SimDialogMode>(mode);
   VLOG(1) << "Initializing SIM dialog in mode: " << dialog_mode_;
   scoped_refptr<TaskProxy> task = new TaskProxy(AsWeakPtr());
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      base::Bind(&TaskProxy::HandleInitialize, task.get()));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&TaskProxy::HandleInitialize, task.get()));
 }
 
 void SimUnlockHandler::InitializeSimStatus() {

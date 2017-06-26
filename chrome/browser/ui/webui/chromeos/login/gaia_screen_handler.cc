@@ -626,8 +626,8 @@ void GaiaScreenHandler::HandleCompleteAdPasswordChange(
   authpolicy_login_helper_->AuthenticateUser(
       username, std::string() /* object_guid */,
       old_password + "\n" + new_password + "\n" + new_password,
-      base::Bind(&GaiaScreenHandler::DoAdAuth, weak_factory_.GetWeakPtr(),
-                 username, Key(new_password)));
+      base::BindOnce(&GaiaScreenHandler::DoAdAuth, weak_factory_.GetWeakPtr(),
+                     username, Key(new_password)));
 }
 
 void GaiaScreenHandler::HandleCancelActiveDirectoryAuth() {
@@ -759,10 +759,10 @@ void GaiaScreenHandler::StartClearingDnsCache() {
 
   dns_cleared_ = false;
   BrowserThread::PostTaskAndReply(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&ClearDnsCache, g_browser_process->io_thread()),
-      base::Bind(&GaiaScreenHandler::OnDnsCleared, weak_factory_.GetWeakPtr()));
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&ClearDnsCache, g_browser_process->io_thread()),
+      base::BindOnce(&GaiaScreenHandler::OnDnsCleared,
+                     weak_factory_.GetWeakPtr()));
   dns_clear_task_running_ = true;
 }
 
