@@ -31,7 +31,6 @@
 #include "core/HTMLNames.h"
 #include "core/css/CSSMarkup.h"
 #include "core/css/CSSSelectorList.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/StdLibExtras.h"
@@ -426,10 +425,6 @@ static CSSSelector::PseudoType NameToPseudoType(const AtomicString& name,
       std::lower_bound(pseudo_type_map, pseudo_type_map_end, dummy_key,
                        NameToPseudoCompare(name));
   if (match == pseudo_type_map_end || match->string != name.GetString())
-    return CSSSelector::kPseudoUnknown;
-
-  if (match->type == CSSSelector::kPseudoDefined &&
-      !RuntimeEnabledFeatures::CustomElementsV1Enabled())
     return CSSSelector::kPseudoUnknown;
 
   return static_cast<CSSSelector::PseudoType>(match->type);

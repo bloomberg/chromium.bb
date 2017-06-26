@@ -335,10 +335,6 @@
       status: "test",
     },
     {
-      name: "CustomElementsV1",
-      status: "stable",
-    },
-    {
       name: "CustomSchemeHandler",
       depends_on: ["NavigatorContentUtils"],
       status: "experimental",

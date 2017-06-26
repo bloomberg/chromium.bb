@@ -1090,7 +1090,6 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
     case CSSSelector::kPseudoUnresolved:
       return element.IsUnresolvedV0CustomElement();
     case CSSSelector::kPseudoDefined:
-      DCHECK(RuntimeEnabledFeatures::CustomElementsV1Enabled());
       return element.IsDefined();
     case CSSSelector::kPseudoHost:
     case CSSSelector::kPseudoHostContext:
