@@ -1,6 +1,6 @@
 {
   "name": "gpu driver bug list",
-  "version": "10.16",
+  "version": "10.17",
   "entries": [
     {
       "id": 1,
@@ -2535,6 +2535,27 @@
       "gl_vendor": "NVIDIA.*",
       "disabled_extensions": [
         "EGL_EXT_image_flush_external"
+      ]
+    },
+    {
+      "id": 235,
+      "description": "Adreno 4xx support for EXT_multisampled_render_to_texture is broken on Android 8.0",
+      "comment": [
+        "EXT_multisampled_render_to_texture is broken on Adreno 4xx GPUs in Android 8.0"
+      ],
+      "cr_bugs": [722962],
+      "os": {
+        "type": "android",
+        "version": {
+          "op": "between",
+          "value": "8.0.0",
+          "value2": "8.0.99",
+          "comment": "Only initial version of O."
+        }
+      },
+      "gl_renderer": "Adreno \\(TM\\) 4.*",
+      "disabled_extensions": [
+        "GL_EXT_multisampled_render_to_texture"
       ]
     }
   ],
