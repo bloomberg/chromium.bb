@@ -11,26 +11,13 @@
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/task/cancelable_task_tracker.h"
 #include "components/favicon/core/fallback_url_util.h"
-#include "components/favicon/core/large_icon_service.h"
-#include "components/favicon_base/fallback_icon_style.h"
-#include "components/favicon_base/favicon_types.h"
-#include "components/history/core/browser/top_sites.h"
-#include "components/suggestions/suggestions_service.h"
-#import "ios/chrome/browser/favicon/favicon_loader.h"
-#include "ios/chrome/browser/favicon/favicon_service_factory.h"
-#include "ios/chrome/browser/favicon/large_icon_cache.h"
-#include "ios/chrome/browser/history/top_sites_factory.h"
-#include "ios/chrome/browser/suggestions/suggestions_service_factory.h"
 #import "ios/chrome/browser/ui/ntp/google_landing_data_source.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
-#include "skia/ext/skia_utils_ios.h"
 
 const CGFloat kFaviconSize = 48;
-const CGFloat kFaviconMinSize = 32;
 const CGFloat kImageViewBackgroundColor = 0.941;
 const CGFloat kImageViewCornerRadius = 3;
 const NSInteger kLabelNumLines = 2;
@@ -49,8 +36,6 @@ const CGFloat kMaximumHeight = 100;
   base::scoped_nsobject<UILabel> _label;
   base::scoped_nsobject<UILabel> _noIconLabel;
   base::scoped_nsobject<UIImageView> _imageView;
-  // Used to cancel tasks for the LargeIconService.
-  base::CancelableTaskTracker _cancelable_task_tracker;
 }
 // Set the background color and center the first letter of the site title (or
 // domain if the title is a url).
@@ -152,56 +137,25 @@ const CGFloat kMaximumHeight = 100;
   [self setURL:URL];
   base::WeakNSObject<MostVisitedCell> weakSelf(self);
 
-  void (^faviconBlock)(const favicon_base::LargeIconResult&) =
-      ^(const favicon_base::LargeIconResult& result) {
-        base::scoped_nsobject<MostVisitedCell> strongSelf([weakSelf retain]);
-        if (!strongSelf)
-          return;
+  void (^faviconImageBlock)(UIImage*) = ^(UIImage* favicon) {
 
-        if (URL == [strongSelf URL]) {  // Tile has not been reused.
-          if (result.bitmap.is_valid()) {
-            scoped_refptr<base::RefCountedMemory> data =
-                result.bitmap.bitmap_data.get();
-            UIImage* favicon =
-                [UIImage imageWithData:[NSData dataWithBytes:data->front()
-                                                      length:data->size()]
-                                 scale:[UIScreen mainScreen].scale];
-            [strongSelf setImage:favicon];
-          } else if (result.fallback_icon_style) {
-            UIColor* backgroundColor = skia::UIColorFromSkColor(
-                result.fallback_icon_style->background_color);
-            UIColor* textColor = skia::UIColorFromSkColor(
-                result.fallback_icon_style->text_color);
-            [strongSelf updateIconLabelWithColor:textColor
-                                 backgroundColor:backgroundColor
-                        isDefaultBackgroundColor:result.fallback_icon_style->
-                                                 is_default_background_color];
-          }
-        }
+    if (URL == [weakSelf URL])  // Tile has not been reused.
+      [weakSelf setImage:favicon];
+  };
 
-        if (result.bitmap.is_valid() || result.fallback_icon_style) {
-          LargeIconCache* largeIconCache =
-              [strongSelf.get()->_dataSource largeIconCache];
-          if (largeIconCache)
-            largeIconCache->SetCachedResult(URL, result);
-        }
+  void (^faviconFallbackBlock)(UIColor*, UIColor*, BOOL) =
+      ^(UIColor* textColor, UIColor* backgroundColor, BOOL isDefaultColor) {
+        if (URL == [weakSelf URL])  // Tile has not been reused.
+          [weakSelf updateIconLabelWithColor:textColor
+                             backgroundColor:backgroundColor
+                    isDefaultBackgroundColor:isDefaultColor];
       };
 
-  LargeIconCache* cache = [_dataSource largeIconCache];
-  std::unique_ptr<favicon_base::LargeIconResult> cached_result =
-      cache->GetCachedResult(URL);
-  if (cached_result) {
-    faviconBlock(*cached_result);
-  }
-
-  // Always call LargeIconService in case the favicon was updated.
-  favicon::LargeIconService* large_icon_service =
-      [_dataSource largeIconService];
-  CGFloat faviconSize = [UIScreen mainScreen].scale * kFaviconSize;
-  CGFloat faviconMinSize = [UIScreen mainScreen].scale * kFaviconMinSize;
-  large_icon_service->GetLargeIconOrFallbackStyle(
-      URL, faviconMinSize, faviconSize, base::BindBlock(faviconBlock),
-      &_cancelable_task_tracker);
+  [_dataSource getFaviconForURL:URL
+                           size:kFaviconSize
+                       useCache:YES
+                  imageCallback:faviconImageBlock
+               fallbackCallback:faviconFallbackBlock];
 }
 
 - (void)removePlaceholderImage {
