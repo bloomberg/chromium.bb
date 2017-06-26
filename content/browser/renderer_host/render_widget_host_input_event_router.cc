@@ -790,26 +790,21 @@ void RenderWidgetHostInputEventRouter::RouteTouchscreenGestureEvent(
     return;
   }
 
-  // We use GestureTapDown to detect the start of a gesture sequence since there
-  // is no WebGestureEvent equivalent for ET_GESTURE_BEGIN. Note that this
-  // means the GestureFlingCancel that always comes between ET_GESTURE_BEGIN and
-  // GestureTapDown is sent to the previous target, in case it is still in a
-  // fling.
-  if (event->GetType() == blink::WebInputEvent::kGestureTapDown) {
-    bool no_target = touchscreen_gesture_target_queue_.empty();
-    // This UMA metric is temporary, and will be removed once it has fulfilled
-    // it's purpose, namely telling us when the incidents of empty
-    // gesture-queues has dropped to zero. https://crbug.com/642008
-    UMA_HISTOGRAM_BOOLEAN("Event.FrameEventRouting.NoGestureTarget", no_target);
-    if (no_target) {
-      LOG(ERROR) << "Gesture sequence start detected with no target available.";
-      // Ignore this gesture sequence as no target is available.
-      // TODO(wjmaclean): this only happens on Windows, and should not happen.
-      // https://crbug.com/595422
-      touchscreen_gesture_target_.target = nullptr;
-      return;
-    }
-
+  // On Android it is possible for touchscreen gesture events to arrive that
+  // are not associated with touch events, because non-synthetic events can be
+  // created by ContentView. In that case the target queue will be empty.
+  if (touchscreen_gesture_target_queue_.empty()) {
+    gfx::Point transformed_point;
+    gfx::Point original_point(event->x, event->y);
+    touchscreen_gesture_target_.target =
+        FindEventTarget(root_view, original_point, &transformed_point);
+    touchscreen_gesture_target_.delta = transformed_point - original_point;
+  } else if (event->GetType() == blink::WebInputEvent::kGestureTapDown) {
+    // We use GestureTapDown to detect the start of a gesture sequence since
+    // there is no WebGestureEvent equivalent for ET_GESTURE_BEGIN. Note that
+    // this means the GestureFlingCancel that always comes between
+    // ET_GESTURE_BEGIN and GestureTapDown is sent to the previous target, in
+    // case it is still in a fling.
     touchscreen_gesture_target_ = touchscreen_gesture_target_queue_.front();
     touchscreen_gesture_target_queue_.pop_front();
 

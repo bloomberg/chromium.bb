@@ -1015,9 +1015,14 @@ void RenderWidgetHostViewAndroid::ResetGestureDetection() {
     bool causes_scrolling = false;
     ui::LatencyInfo latency_info(ui::SourceEventType::TOUCH);
     latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
-    host_->ForwardTouchEventWithLatencyInfo(
-        ui::CreateWebTouchEventFromMotionEvent(*cancel_event, causes_scrolling),
-        latency_info);
+    blink::WebTouchEvent web_event =
+        ui::CreateWebTouchEventFromMotionEvent(*cancel_event, causes_scrolling);
+    if (host_->delegate()->GetInputEventRouter()) {
+      host_->delegate()->GetInputEventRouter()->RouteTouchEvent(
+          this, &web_event, latency_info);
+    } else {
+      host_->ForwardTouchEventWithLatencyInfo(web_event, latency_info);
+    }
   }
 }
 
