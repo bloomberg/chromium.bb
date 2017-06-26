@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/posix/global_descriptors.h"
@@ -10,11 +12,18 @@
 #include "content/browser/child_process_launcher_helper.h"
 #include "content/browser/child_process_launcher_helper_posix.h"
 #include "content/browser/mach_broker_mac.h"
+#include "content/browser/sandbox_parameters_mac.h"
+#include "content/grit/content_resources.h"
+#include "content/public/browser/content_browser_client.h"
+#include "content/public/common/content_features.h"
+#include "content/public/common/content_paths.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "sandbox/mac/bootstrap_sandbox.h"
 #include "sandbox/mac/pre_exec_delegate.h"
+#include "sandbox/mac/seatbelt_exec.h"
 
 namespace content {
 namespace internal {
@@ -47,6 +56,31 @@ void ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
           base::GlobalDescriptors::kBaseDescriptor);
 
   options->environ = delegate_->GetEnvironment();
+
+  if (base::FeatureList::IsEnabled(features::kMacV2Sandbox) &&
+      GetProcessType() == switches::kRendererProcess) {
+    seatbelt_exec_client_ = base::MakeUnique<sandbox::SeatbeltExecClient>();
+    base::StringPiece renderer_sb = GetContentClient()->GetDataResource(
+        IDR_RENDERER_SANDBOX_V2_PROFILE, ui::SCALE_FACTOR_NONE);
+    std::string profile = renderer_sb.as_string();
+
+    seatbelt_exec_client_->SetProfile(profile);
+
+    SetupRendererSandboxParameters(seatbelt_exec_client_.get());
+
+    int pipe = seatbelt_exec_client_->SendProfileAndGetFD();
+
+    base::FilePath helper_executable;
+    CHECK(PathService::Get(content::CHILD_PROCESS_EXE, &helper_executable));
+
+    fds_to_map->push_back(std::make_pair(pipe, pipe));
+
+    // Update the command line to enable the V2 sandbox and pass the
+    // communication FD to the helper executable.
+    command_line_->AppendSwitch(switches::kEnableV2Sandbox);
+    command_line_->AppendArg("--fd_mapping=" + std::to_string(pipe));
+  }
+
   // fds_to_remap will de deleted in AfterLaunchOnLauncherThread() below.
   options->fds_to_remap = fds_to_map.release();
 

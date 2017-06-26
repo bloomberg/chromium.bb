@@ -73,6 +73,19 @@ static_assert(arraysize(kDefaultSandboxTypeToResourceIDMapping) == \
 
 }  // namespace
 
+// Static variable declarations.
+const char* Sandbox::kSandboxEnableLogging = "ENABLE_LOGGING";
+const char* Sandbox::kSandboxDisableDenialLogging =
+    "DISABLE_SANDBOX_DENIAL_LOGGING";
+const char* Sandbox::kSandboxHomedirAsLiteral = "USER_HOMEDIR_AS_LITERAL";
+const char* Sandbox::kSandboxElCapOrLater = "ELCAP_OR_LATER";
+const char* Sandbox::kSandboxPermittedDir = "PERMITTED_DIR";
+const char* Sandbox::kSandboxBundlePath = "BUNDLE_PATH";
+const char* Sandbox::kSandboxLoggingPathAsLiteral = "LOG_FILE_PATH";
+const char* Sandbox::kSandboxChromeBundleId = "BUNDLE_ID";
+const char* Sandbox::kSandboxComponentPath = "COMPONENT_PATH";
+const char* Sandbox::kSandboxChromePID = "CHROMIUM_PID";
+
 // Warm up System APIs that empirically need to be accessed before the Sandbox
 // is turned on.
 // This method is layed out in blocks, each one containing a separate function
@@ -250,7 +263,7 @@ bool Sandbox::EnableSandbox(int sandbox_type,
   if (!allowed_dir.empty()) {
     // Add the sandbox parameters necessary to access the given directory.
     base::FilePath allowed_dir_canonical = GetCanonicalSandboxPath(allowed_dir);
-    if (!compiler.InsertStringParam("PERMITTED_DIR",
+    if (!compiler.InsertStringParam(kSandboxPermittedDir,
                                     allowed_dir_canonical.value()))
       return false;
   }
@@ -261,12 +274,12 @@ bool Sandbox::EnableSandbox(int sandbox_type,
       base::CommandLine::ForCurrentProcess();
   bool enable_logging =
       command_line->HasSwitch(switches::kEnableSandboxLogging);;
-  if (!compiler.InsertBooleanParam("ENABLE_LOGGING", enable_logging))
+  if (!compiler.InsertBooleanParam(kSandboxEnableLogging, enable_logging))
     return false;
 
   // Without this, the sandbox will print a message to the system log every
   // time it denies a request.  This floods the console with useless spew.
-  if (!compiler.InsertBooleanParam("DISABLE_SANDBOX_DENIAL_LOGGING",
+  if (!compiler.InsertBooleanParam(kSandboxDisableDenialLogging,
                                    !enable_logging))
     return false;
 
@@ -277,12 +290,12 @@ bool Sandbox::EnableSandbox(int sandbox_type,
   base::FilePath home_dir_canonical =
       GetCanonicalSandboxPath(base::FilePath(home_dir));
 
-  if (!compiler.InsertStringParam("USER_HOMEDIR_AS_LITERAL",
+  if (!compiler.InsertStringParam(kSandboxHomedirAsLiteral,
                                   home_dir_canonical.value()))
     return false;
 
   bool elcap_or_later = base::mac::IsAtLeastOS10_11();
-  if (!compiler.InsertBooleanParam("ELCAP_OR_LATER", elcap_or_later))
+  if (!compiler.InsertBooleanParam(kSandboxElCapOrLater, elcap_or_later))
     return false;
 
   // Initialize sandbox.

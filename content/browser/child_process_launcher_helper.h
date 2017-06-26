@@ -32,6 +32,10 @@
 #include "content/public/common/zygote_handle.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "sandbox/mac/seatbelt_exec.h"
+#endif
+
 namespace base {
 class CommandLine;
 }
@@ -197,6 +201,10 @@ class ChildProcessLauncherHelper :
   mojo::edk::ScopedPlatformHandle mojo_client_handle_;
   mojo::edk::ScopedPlatformHandle mojo_server_handle_;
   bool terminate_on_shutdown_;
+
+#if defined(OS_MACOSX)
+  std::unique_ptr<sandbox::SeatbeltExecClient> seatbelt_exec_client_;
+#endif  // defined(OS_MACOSX)
 
 #if defined(OS_ANDROID)
   base::android::ScopedJavaGlobalRef<jobject> java_peer_;

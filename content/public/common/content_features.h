@@ -104,6 +104,10 @@ CONTENT_EXPORT extern const base::Feature kWebNfc;
 CONTENT_EXPORT extern const base::Feature kWinSboxDisableExtensionPoints;
 #endif  // defined(OS_WIN)
 
+#if defined(OS_MACOSX)
+CONTENT_EXPORT extern const base::Feature kMacV2Sandbox;
+#endif  // defined(OS_MACOSX)
+
 // DON'T ADD RANDOM STUFF HERE. Put it in the main section above in
 // alphabetical order, or in one of the ifdefs (also in order in each section).
 
