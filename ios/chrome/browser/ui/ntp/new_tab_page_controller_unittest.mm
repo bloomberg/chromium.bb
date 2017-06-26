@@ -34,31 +34,6 @@
 #error "This file requires ARC support."
 #endif
 
-@interface NewTabPageController (TestSupport)
-- (id<NewTabPagePanelProtocol>)currentController;
-- (BookmarkHomeTabletNTPController*)bookmarkController;
-- (id<NewTabPagePanelProtocol>)incognitoController;
-@end
-
-@interface NewTabPageController (PrivateMethods)
-@property(nonatomic, retain) NewTabPageView* ntpView;
-@end
-
-@implementation NewTabPageController (TestSupport)
-
-- (id<NewTabPagePanelProtocol>)currentController {
-  return currentController_;
-}
-
-- (BookmarkHomeTabletNTPController*)bookmarkController {
-  return bookmarkController_.get();
-}
-
-- (id<NewTabPagePanelProtocol>)incognitoController {
-  return incognitoController_;
-}
-
-@end
 
 namespace {
 

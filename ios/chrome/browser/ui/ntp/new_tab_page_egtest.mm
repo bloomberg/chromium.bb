@@ -23,12 +23,6 @@
 #error "This file requires ARC support."
 #endif
 
-@implementation NewTabPageController (ExposedForTesting)
-- (GoogleLandingViewController*)googleLandingController {
-  return googleLandingController_;
-}
-@end
-
 @interface GoogleLandingViewController (ExposedForTesting)
 - (BOOL)scrolledToTop;
 - (BOOL)animateHeader;
