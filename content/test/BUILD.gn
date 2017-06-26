@@ -1438,7 +1438,6 @@ test("content_unittests") {
     "../renderer/input/input_event_filter_unittest.cc",
     "../renderer/input/main_thread_event_queue_unittest.cc",
     "../renderer/manifest/manifest_parser_unittest.cc",
-    "../renderer/media/android/media_info_loader_unittest.cc",
     "../renderer/media/audio_ipc_factory_unittest.cc",
     "../renderer/media/audio_message_filter_unittest.cc",
     "../renderer/media/audio_renderer_mixer_manager_unittest.cc",
