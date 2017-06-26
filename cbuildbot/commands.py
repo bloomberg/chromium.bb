@@ -708,7 +708,7 @@ def RunTestSuite(buildroot, board, image_path, results_dir, test_type,
       cmd.append('--suite=gce-sanity')
     elif test_type == constants.TELEMETRY_SUITE_TEST_TYPE:
       cmd.append('--only_verify')
-      cmd.append('--suite=telemetry_unit')
+      cmd.append('--suite=telemetry_unit_server')
     else:
       cmd.append('--quick_update')
 
