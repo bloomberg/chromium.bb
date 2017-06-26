@@ -4,11 +4,28 @@
 
 #include "media/gpu/android_video_surface_chooser_impl.h"
 
+#include "base/memory/ptr_util.h"
+#include "base/time/default_tick_clock.h"
+
 namespace media {
 
+// Minimum time that we require after a failed overlay attempt before we'll try
+// again for an overlay.
+constexpr base::TimeDelta MinimumDelayAfterFailedOverlay =
+    base::TimeDelta::FromSeconds(5);
+
 AndroidVideoSurfaceChooserImpl::AndroidVideoSurfaceChooserImpl(
-    bool allow_dynamic)
-    : allow_dynamic_(allow_dynamic), weak_factory_(this) {}
+    bool allow_dynamic,
+    base::TickClock* tick_clock)
+    : allow_dynamic_(allow_dynamic),
+      tick_clock_(tick_clock),
+      weak_factory_(this) {
+  // Use a DefaultTickClock if one wasn't provided.
+  if (!tick_clock_) {
+    optional_tick_clock_ = base::MakeUnique<base::DefaultTickClock>();
+    tick_clock_ = optional_tick_clock_.get();
+  }
+}
 
 AndroidVideoSurfaceChooserImpl::~AndroidVideoSurfaceChooserImpl() {}
 
@@ -96,6 +113,17 @@ void AndroidVideoSurfaceChooserImpl::Choose() {
   if (current_state_.is_secure)
     new_overlay_state = kUsingOverlay;
 
+  // If we're requesting an overlay, check that we haven't asked too recently
+  // since the last failure.  This includes L1.  We don't bother to check for
+  // our current state, since using an overlay would imply that our most recent
+  // failure was long ago enough to pass this check earlier.
+  if (new_overlay_state == kUsingOverlay) {
+    base::TimeDelta time_since_last_failure =
+        tick_clock_->NowTicks() - most_recent_overlay_failure_;
+    if (time_since_last_failure < MinimumDelayAfterFailedOverlay)
+      new_overlay_state = kUsingSurfaceTexture;
+  }
+
   // If we have no factory, then we definitely don't want to use overlays.
   if (!overlay_factory_)
     new_overlay_state = kUsingSurfaceTexture;
@@ -172,6 +200,7 @@ void AndroidVideoSurfaceChooserImpl::OnOverlayFailed(AndroidOverlay* overlay) {
   DCHECK_EQ(overlay, overlay_.get());
 
   overlay_ = nullptr;
+  most_recent_overlay_failure_ = tick_clock_->NowTicks();
 
   // If the client isn't already using a SurfaceTexture, then switch to it.
   // Note that this covers the case of kUnknown, when we might not have told the

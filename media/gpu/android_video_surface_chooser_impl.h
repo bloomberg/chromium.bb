@@ -8,6 +8,8 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/tick_clock.h"
+#include "base/time/time.h"
 #include "media/base/android/android_overlay.h"
 #include "media/gpu/android_video_surface_chooser.h"
 #include "media/gpu/media_gpu_export.h"
@@ -19,8 +21,11 @@ class MEDIA_GPU_EXPORT AndroidVideoSurfaceChooserImpl
     : public AndroidVideoSurfaceChooser {
  public:
   // |allow_dynamic| should be true if and only if we are allowed to change the
-  // surface selection after the initial callback.
-  AndroidVideoSurfaceChooserImpl(bool allow_dynamic);
+  // surface selection after the initial callback.  |tick_clock|, if provided,
+  // will be used as our time source.  Otherwise, we'll use wall clock.  If
+  // provided, then it must outlast |this|.
+  AndroidVideoSurfaceChooserImpl(bool allow_dynamic,
+                                 base::TickClock* tick_clock = nullptr);
   ~AndroidVideoSurfaceChooserImpl() override;
 
   // AndroidVideoSurfaceChooser
@@ -73,6 +78,15 @@ class MEDIA_GPU_EXPORT AndroidVideoSurfaceChooserImpl
   OverlayState client_overlay_state_ = kUnknown;
 
   State current_state_;
+
+  // Not owned by us.
+  base::TickClock* tick_clock_;
+
+  // Owned copy of |tick_clock_|, or nullptr if one was provided to us.
+  std::unique_ptr<base::TickClock> optional_tick_clock_;
+
+  // Time at which we most recently got a failed overlay request.
+  base::TimeTicks most_recent_overlay_failure_;
 
   base::WeakPtrFactory<AndroidVideoSurfaceChooserImpl> weak_factory_;
 
