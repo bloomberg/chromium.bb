@@ -96,7 +96,7 @@ function test()
 
     function dumpSourceFrame(sourceFrame)
     {
-        InspectorTest.addResult("SourceFrame: " + sourceFrame._url);
+        InspectorTest.addResult("SourceFrame: " + sourceFrame.uiSourceCode().url());
         InspectorTest.addResult("    selection: " + sourceFrame.selection());
         InspectorTest.addResult("    firstVisibleLine: " + sourceFrame.textEditor.firstVisibleLine());
         InspectorTest.addResult("    isDirty: " + sourceFrame.uiSourceCode().isDirty());
