@@ -35,10 +35,33 @@ BlobReader::BlobReader(content::BrowserContext* browser_context,
   }
   DCHECK(blob_url.is_valid());
 
-  // This network request is annotated with NO_TRAFFIC_ANNOTATION_YET as
-  // it is scheduled to be removed in (crbug.com/701851).
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("blob_reader", R"(
+        semantics {
+          sender: "BlobReader"
+          description:
+            "Blobs are used for a variety of use cases, and are basically "
+            "immutable blocks of data. See https://chromium.googlesource.com/"
+            "chromium/src/+/master/storage/browser/blob/README.md for an "
+            "explanation of blobs and their implementation in Chrome. These "
+            "can be created by scripts in a website, web platform features, or "
+            "internally in the browser."
+          trigger:
+            "Request for reading the contents of a blob."
+          data:
+            "A reference to a Blob, File, or CacheStorage entry created from "
+            "script, a web platform feature, or browser internals."
+          destination: LOCAL
+        }
+        policy {
+          cookies_allowed: false
+          setting: "This feature cannot be disabled by settings."
+          policy_exception_justification:
+            "Not implemented. This is a local data fetch request and has no "
+            "network activity."
+        })");
   fetcher_ = net::URLFetcher::Create(blob_url, net::URLFetcher::GET, this,
-                                     NO_TRAFFIC_ANNOTATION_YET);
+                                     traffic_annotation);
   fetcher_->SetRequestContext(
       content::BrowserContext::GetDefaultStoragePartition(browser_context)
           ->GetURLRequestContext());
