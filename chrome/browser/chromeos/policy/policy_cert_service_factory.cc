@@ -10,14 +10,11 @@
 #include "chrome/browser/chromeos/policy/policy_cert_verifier.h"
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
-#include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/user_manager/user_manager.h"
 
@@ -101,28 +98,6 @@ KeyedService* PolicyCertServiceFactory::BuildServiceInstanceFor(
   if (!user)
     return NULL;
 
-  // Backwards compatibility: profiles that used policy-pushed certificates used
-  // to have this condition marked in their prefs. This signal has moved to
-  // local_state though, to support checking it before the profile is loaded.
-  // Check the profile here and update the local_state, if appropriate.
-  // TODO(joaodasilva): remove this, eventually.
-  PrefService* prefs = profile->GetOriginalProfile()->GetPrefs();
-  if (prefs->GetBoolean(prefs::kUsedPolicyCertificatesOnce)) {
-    SetUsedPolicyCertificates(user->GetAccountId().GetUserEmail());
-    prefs->ClearPref(prefs::kUsedPolicyCertificatesOnce);
-
-    if (user_manager->GetLoggedInUsers().size() > 1u) {
-      // This login should not have been allowed. After rebooting, local_state
-      // will contain the updated list of users that used policy-pushed
-      // certificates and this won't happen again.
-      // Note that a user becomes logged in before their profile is created.
-      LOG(ERROR) << "Shutdown session because a tainted profile was added.";
-      g_browser_process->local_state()->CommitPendingWrite();
-      prefs->CommitPendingWrite();
-      chrome::AttemptUserExit();
-    }
-  }
-
   UserNetworkConfigurationUpdater* net_conf_updater =
       UserNetworkConfigurationUpdaterFactory::GetForProfile(profile);
   if (!net_conf_updater)
@@ -135,13 +110,6 @@ KeyedService* PolicyCertServiceFactory::BuildServiceInstanceFor(
 content::BrowserContext* PolicyCertServiceFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
   return chrome::GetBrowserContextOwnInstanceInIncognito(context);
-}
-
-void PolicyCertServiceFactory::RegisterProfilePrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
-  // TODO(joaodasilva): this is used for backwards compatibility.
-  // Remove once it's not necessary anymore.
-  registry->RegisterBooleanPref(prefs::kUsedPolicyCertificatesOnce, false);
 }
 
 bool PolicyCertServiceFactory::ServiceIsNULLWhileTesting() const {

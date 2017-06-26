@@ -290,7 +290,6 @@ extern const char kPowerUserActivityScreenDimDelayFactor[];
 extern const char kPowerWaitForInitialUserActivity[];
 extern const char kPowerForceNonzeroBrightnessForUserActivity[];
 extern const char kTermsOfServiceURL[];
-extern const char kUsedPolicyCertificatesOnce[];
 extern const char kAttestationEnabled[];
 extern const char kAttestationExtensionWhitelist[];
 extern const char kTouchHudProjectionEnabled[];
