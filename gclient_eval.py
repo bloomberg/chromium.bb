@@ -9,6 +9,22 @@ from third_party import schema
 
 
 # See https://github.com/keleshev/schema for docs how to configure schema.
+_GCLIENT_DEPS_SCHEMA = {
+    schema.Optional(basestring): schema.Or(
+        None,
+        basestring,
+        {
+            # Repo and revision to check out under the path
+            # (same as if no dict was used).
+            'url': basestring,
+
+            # Optional condition string. The dep will only be processed
+            # if the condition evaluates to True.
+            schema.Optional('condition'): basestring,
+        },
+    ),
+}
+
 _GCLIENT_HOOKS_SCHEMA = [{
     # Hook action: list of command-line arguments to invoke.
     'action': [basestring],
@@ -43,27 +59,12 @@ _GCLIENT_SCHEMA = schema.Schema({
     #
     #   Var(): allows variable substitution (either from 'vars' dict below,
     #          or command-line override)
-    schema.Optional('deps'): {
-        schema.Optional(basestring): schema.Or(
-            basestring,
-            {
-                # Repo and revision to check out under the path
-                # (same as if no dict was used).
-                'url': basestring,
-
-                # Optional condition string. The dep will only be processed
-                # if the condition evaluates to True.
-                schema.Optional('condition'): basestring,
-            },
-        ),
-    },
+    schema.Optional('deps'): _GCLIENT_DEPS_SCHEMA,
 
     # Similar to 'deps' (see above) - also keyed by OS (e.g. 'linux').
     # Also see 'target_os'.
     schema.Optional('deps_os'): {
-        schema.Optional(basestring): {
-            schema.Optional(basestring): schema.Or(basestring, None)
-        }
+        schema.Optional(basestring): _GCLIENT_DEPS_SCHEMA,
     },
 
     # Path to GN args file to write selected variables.

@@ -1864,7 +1864,17 @@ def _DepsOsToLines(deps_os):
   s = ['deps_os = {']
   for dep_os, os_deps in sorted(deps_os.iteritems()):
     s.append('  "%s": {' % dep_os)
-    s.extend(['    %s' % l for l in _DepsToLines(os_deps)])
+    for name, dep in sorted(os_deps.iteritems()):
+      condition_part = (['      "condition": "%s",' % dep.condition]
+                        if dep.condition else [])
+      s.extend([
+          '    # %s' % dep.hierarchy(include_url=False),
+          '    "%s": {' % (name,),
+          '      "url": "%s",' % (dep.url,),
+      ] + condition_part + [
+          '    },',
+          '',
+      ])
     s.extend(['  },', ''])
   s.extend(['}', ''])
   return s
@@ -1884,7 +1894,7 @@ def _HooksToLines(name, hooks):
       s.append('    "pattern": "%s",' % hook.pattern)
     s.extend(
         # Hooks run in the parent directory of their dep.
-        ['    "cwd": "%s"' % os.path.normpath(os.path.dirname(dep.name))] +
+        ['    "cwd": "%s",' % os.path.normpath(os.path.dirname(dep.name))] +
         ['    "action": ['] +
         ['        "%s",' % arg for arg in hook.action] +
         ['    ]', '  },', '']
