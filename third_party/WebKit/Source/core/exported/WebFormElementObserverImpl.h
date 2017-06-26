@@ -5,19 +5,19 @@
 #ifndef WebFormElementObserverImpl_h
 #define WebFormElementObserverImpl_h
 
+#include "core/CoreExport.h"
 #include "platform/heap/HeapAllocator.h"
 #include "platform/heap/Member.h"
 #include "platform/heap/SelfKeepAlive.h"
 #include "platform/wtf/Compiler.h"
 #include "public/web/modules/password_manager/WebFormElementObserver.h"
-#include "web/WebExport.h"
 
 namespace blink {
 
 class HTMLElement;
 class WebFormElementObserverCallback;
 
-class WEB_EXPORT WebFormElementObserverImpl final
+class CORE_EXPORT WebFormElementObserverImpl final
     : public GarbageCollectedFinalized<WebFormElementObserverImpl>,
       NON_EXPORTED_BASE(public WebFormElementObserver) {
   WTF_MAKE_NONCOPYABLE(WebFormElementObserverImpl);
