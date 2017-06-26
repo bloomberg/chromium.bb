@@ -122,7 +122,14 @@ IN_PROC_BROWSER_TEST_F(WebRtcMediaRecorderTest,
                   kMediaRecorderHtmlFile);
 }
 
-IN_PROC_BROWSER_TEST_F(WebRtcMediaRecorderTest, IllegalPauseThrowsDOMError) {
+// TODO (crbug.com/736268): Flaky on Linux TSan bots.
+#if defined(OS_LINUX)
+#define MAYBE_IllegalPauseThrowsDOMError DISABLED_IllegalPauseThrowsDOMError
+#else
+#define MAYBE_IllegalPauseThrowsDOMError IllegalPauseThrowsDOMError
+#endif
+IN_PROC_BROWSER_TEST_F(WebRtcMediaRecorderTest,
+                       MAYBE_IllegalPauseThrowsDOMError) {
   MakeTypicalCall("testIllegalPauseThrowsDOMError();", kMediaRecorderHtmlFile);
 }
 
