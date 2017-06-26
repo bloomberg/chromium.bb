@@ -135,15 +135,15 @@ class PDFiumEngine : public PDFEngine,
     ~SelectionChangeInvalidator();
 
    private:
-    // Sets the given container to the all the currently visible selection
-    // rectangles, in screen coordinates.
-    void GetVisibleSelectionsScreenRects(std::vector<pp::Rect>* rects);
+    // Returns all the currently visible selection rectangles, in screen
+    // coordinates.
+    std::vector<pp::Rect> GetVisibleSelections() const;
 
-    PDFiumEngine* engine_;
+    PDFiumEngine* const engine_;
+    // The origin at the time this object was constructed.
+    const pp::Point previous_origin_;
     // Screen rectangles that were selected on construction.
     std::vector<pp::Rect> old_selections_;
-    // The origin at the time this object was constructed.
-    pp::Point previous_origin_;
   };
 
   // Used to store mouse down state to handle it in other mouse event handlers.
