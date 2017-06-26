@@ -67,6 +67,20 @@ void DialogOverlayImpl::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, this);
 }
 
+void DialogOverlayImpl::GetCompositorOffset(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    const base::android::JavaParamRef<jobject>& rect) {
+  gfx::Point point;
+  if (cvc_) {
+    if (ui::ViewAndroid* view = cvc_->GetViewAndroid())
+      point = view->GetLocationOfContainerViewOnScreen();
+  }
+
+  Java_DialogOverlayImpl_receiveCompositorOffset(env, obj.obj(), rect.obj(),
+                                                 point.x(), point.y());
+}
+
 void DialogOverlayImpl::UnregisterForTokensIfNeeded() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!cvc_)
