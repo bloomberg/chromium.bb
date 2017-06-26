@@ -131,7 +131,11 @@ class {{v8_class}} {
   {% endif %}
 
   {% if has_partial_interface %}
-  {{exported}}static void updateWrapperTypeInfo(InstallTemplateFunction, InstallRuntimeEnabledFunction, PreparePrototypeAndInterfaceObjectFunction);
+  {{exported}}static void UpdateWrapperTypeInfo(
+      InstallTemplateFunction,
+      InstallRuntimeEnabledFeaturesFunction,
+      InstallRuntimeEnabledFeaturesOnTemplateFunction,
+      PreparePrototypeAndInterfaceObjectFunction);
   {{exported}}static void install{{v8_class}}Template(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::FunctionTemplate> interfaceTemplate);
   {% for method in methods if method.overloads and method.overloads.has_partial_overloads %}
   {{exported}}static void register{{method.name | blink_capitalize}}MethodForPartialInterface(void (*)(const v8::FunctionCallbackInfo<v8::Value>&));
@@ -249,17 +253,29 @@ class {{v8_class}} {
   {% endif %}
 
   {% if needs_runtime_enabled_installer %}
-  {{exported}}static void installRuntimeEnabledFeatures(
-      v8::Isolate* isolate,
+  {{exported if has_partial_interface else ''}}static void InstallRuntimeEnabledFeatures(
+      v8::Isolate*,
       const DOMWrapperWorld& world,
       v8::Local<v8::Object> instance,
       v8::Local<v8::Object> prototype,
       v8::Local<v8::Function> interface);
 
   {% if has_partial_interface %}
-  static InstallRuntimeEnabledFunction install{{v8_class}}RuntimeEnabledFunction;
+  static InstallRuntimeEnabledFeaturesFunction
+  install_runtime_enabled_features_function_;
   {% endif %}
+  {% endif %}{# needs_runtime_enabled_installer #}
+
+  {% if not is_array_buffer_or_view %}
+  {{exported if has_partial_interface else ''}}static void InstallRuntimeEnabledFeaturesOnTemplate(
+      v8::Isolate*,
+      const DOMWrapperWorld&,
+      v8::Local<v8::FunctionTemplate> interface_template);
+  {% if has_partial_interface %}
+  static InstallRuntimeEnabledFeaturesOnTemplateFunction
+  install_runtime_enabled_features_on_template_function_;
   {% endif %}
+  {% endif %}{# not is_array_buffer_or_view #}
 
   {% if has_partial_interface %}
  private:

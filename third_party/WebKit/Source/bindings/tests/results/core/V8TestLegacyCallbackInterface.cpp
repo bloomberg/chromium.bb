@@ -73,7 +73,9 @@ static void InstallV8TestLegacyCallbackInterfaceTemplate(
   const V8DOMConfiguration::ConstantConfiguration V8TestLegacyCallbackInterfaceConstants[] = {
       {"CONST_VALUE_USHORT_42", 42, 0, V8DOMConfiguration::kConstantTypeUnsignedShort},
   };
-  V8DOMConfiguration::InstallConstants(isolate, interfaceTemplate, prototypeTemplate, V8TestLegacyCallbackInterfaceConstants, WTF_ARRAY_LENGTH(V8TestLegacyCallbackInterfaceConstants));
+  V8DOMConfiguration::InstallConstants(
+      isolate, interfaceTemplate, prototypeTemplate,
+      V8TestLegacyCallbackInterfaceConstants, WTF_ARRAY_LENGTH(V8TestLegacyCallbackInterfaceConstants));
   static_assert(42 == TestLegacyCallbackInterface::kConstValueUshort42, "the value of TestLegacyCallbackInterface_kConstValueUshort42 does not match with implementation");
 }
 

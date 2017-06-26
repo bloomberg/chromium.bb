@@ -29,6 +29,11 @@ class V8TestInterface2Partial {
  public:
   static void initialize();
 
+  static void InstallRuntimeEnabledFeaturesOnTemplate(
+      v8::Isolate*,
+      const DOMWrapperWorld&,
+      v8::Local<v8::FunctionTemplate> interface_template);
+
   // Callback functions
 
   static void voidMethodPartial1MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info);

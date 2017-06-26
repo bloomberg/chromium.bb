@@ -64,12 +64,14 @@ using InstallTemplateFunction =
              const DOMWrapperWorld& world,
              v8::Local<v8::FunctionTemplate> interface_template);
 
-using InstallRuntimeEnabledFunction =
-    void (*)(v8::Isolate* isolate,
-             const DOMWrapperWorld& world,
+using InstallRuntimeEnabledFeaturesFunction =
+    void (*)(v8::Isolate*,
+             const DOMWrapperWorld&,
              v8::Local<v8::Object> instance,
              v8::Local<v8::Object> prototype,
              v8::Local<v8::Function> interface);
+
+using InstallRuntimeEnabledFeaturesOnTemplateFunction = InstallTemplateFunction;
 
 }  // namespace blink
 

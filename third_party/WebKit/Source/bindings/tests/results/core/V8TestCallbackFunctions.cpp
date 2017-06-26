@@ -250,7 +250,10 @@ static const V8DOMConfiguration::MethodConfiguration V8TestCallbackFunctionsMeth
     {"customElementCallbacksMethod", V8TestCallbackFunctions::customElementCallbacksMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
 };
 
-static void installV8TestCallbackFunctionsTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate) {
+static void installV8TestCallbackFunctionsTemplate(
+    v8::Isolate* isolate,
+    const DOMWrapperWorld& world,
+    v8::Local<v8::FunctionTemplate> interfaceTemplate) {
   // Initialize the interface object's template.
   V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestCallbackFunctions::wrapperTypeInfo.interface_name, v8::Local<v8::FunctionTemplate>(), V8TestCallbackFunctions::internalFieldCount);
 
@@ -261,11 +264,37 @@ static void installV8TestCallbackFunctionsTemplate(v8::Isolate* isolate, const D
   v8::Local<v8::ObjectTemplate> prototypeTemplate = interfaceTemplate->PrototypeTemplate();
   ALLOW_UNUSED_LOCAL(prototypeTemplate);
 
-  // Register DOM constants, attributes and operations.
-  V8DOMConfiguration::InstallAccessors(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestCallbackFunctionsAccessors, WTF_ARRAY_LENGTH(V8TestCallbackFunctionsAccessors));
-  V8DOMConfiguration::InstallMethods(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestCallbackFunctionsMethods, WTF_ARRAY_LENGTH(V8TestCallbackFunctionsMethods));
+  // Register IDL constants, attributes and operations.
+  V8DOMConfiguration::InstallAccessors(
+      isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
+      signature, V8TestCallbackFunctionsAccessors, WTF_ARRAY_LENGTH(V8TestCallbackFunctionsAccessors));
+  V8DOMConfiguration::InstallMethods(
+      isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
+      signature, V8TestCallbackFunctionsMethods, WTF_ARRAY_LENGTH(V8TestCallbackFunctionsMethods));
+
+  // Custom signature
+
+  V8TestCallbackFunctions::InstallRuntimeEnabledFeaturesOnTemplate(
+      isolate, world, interfaceTemplate);
 }
 
+void V8TestCallbackFunctions::InstallRuntimeEnabledFeaturesOnTemplate(
+    v8::Isolate* isolate,
+    const DOMWrapperWorld& world,
+    v8::Local<v8::FunctionTemplate> interface_template) {
+  v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interface_template);
+  ALLOW_UNUSED_LOCAL(signature);
+  v8::Local<v8::ObjectTemplate> instance_template = interface_template->InstanceTemplate();
+  ALLOW_UNUSED_LOCAL(instance_template);
+  v8::Local<v8::ObjectTemplate> prototype_template = interface_template->PrototypeTemplate();
+  ALLOW_UNUSED_LOCAL(prototype_template);
+
+  // Register IDL constants, attributes and operations.
+
+  // Custom signature
+}
+
+#line 759 "interface_base.cpp.tmpl"
 v8::Local<v8::FunctionTemplate> V8TestCallbackFunctions::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
   return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), installV8TestCallbackFunctionsTemplate);
 }

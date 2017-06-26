@@ -919,29 +919,42 @@ v8::Local<v8::Object> {{v8_class}}::findInstanceInPrototypeChain(v8::Local<v8::V
 {% block partial_interface %}
 {% if has_partial_interface %}
 {% if needs_runtime_enabled_installer %}
-InstallRuntimeEnabledFunction {{v8_class}}::install{{v8_class}}RuntimeEnabledFunction =
-    &{{v8_class}}::installRuntimeEnabledFeatures;
+InstallRuntimeEnabledFeaturesFunction
+{{v8_class}}::install_runtime_enabled_features_function_ =
+    &{{v8_class}}::InstallRuntimeEnabledFeatures;
+{% endif %}
+{% if not is_array_buffer_or_view %}
+InstallRuntimeEnabledFeaturesOnTemplateFunction
+{{v8_class}}::install_runtime_enabled_features_on_template_function_ =
+    &{{v8_class}}::InstallRuntimeEnabledFeaturesOnTemplate;
 {% endif %}
 
 InstallTemplateFunction {{v8_class}}::install{{v8_class}}TemplateFunction =
     &{{v8_class}}::install{{v8_class}}Template;
 
-void {{v8_class}}::updateWrapperTypeInfo(
-    InstallTemplateFunction installTemplateFunction,
-    InstallRuntimeEnabledFunction installRuntimeEnabledFunction,
-    PreparePrototypeAndInterfaceObjectFunction preparePrototypeAndInterfaceObjectFunction) {
-  ALLOW_UNUSED_LOCAL(installRuntimeEnabledFunction);
-
+void {{v8_class}}::UpdateWrapperTypeInfo(
+    InstallTemplateFunction install_template_function,
+    InstallRuntimeEnabledFeaturesFunction install_runtime_enabled_features_function,
+    InstallRuntimeEnabledFeaturesOnTemplateFunction install_runtime_enabled_features_on_template_function,
+    PreparePrototypeAndInterfaceObjectFunction prepare_prototype_and_interface_object_function) {
   {{v8_class}}::install{{v8_class}}TemplateFunction =
-      installTemplateFunction;
+      install_template_function;
+
   {% if needs_runtime_enabled_installer %}
-  CHECK(installRuntimeEnabledFunction);
-  {{v8_class}}::install{{v8_class}}RuntimeEnabledFunction =
-      installRuntimeEnabledFunction;
+  CHECK(install_runtime_enabled_features_function);
+  {{v8_class}}::install_runtime_enabled_features_function_ =
+      install_runtime_enabled_features_function;
+
   {% endif %}
-  if (preparePrototypeAndInterfaceObjectFunction) {
+  {% if not is_array_buffer_or_view  %}
+  CHECK(install_runtime_enabled_features_on_template_function);
+  {{v8_class}}::install_runtime_enabled_features_on_template_function_ =
+      install_runtime_enabled_features_on_template_function;
+  {% endif %}
+
+  if (prepare_prototype_and_interface_object_function) {
     {{v8_class}}::wrapperTypeInfo.prepare_prototype_and_interface_object_function =
-        preparePrototypeAndInterfaceObjectFunction;
+        prepare_prototype_and_interface_object_function;
   }
 }
 
@@ -951,5 +964,5 @@ void {{v8_class}}::register{{method.name | blink_capitalize}}MethodForPartialInt
 }
 
 {% endfor %}
-{% endif %}
+{% endif %}{# has_partial_interface #}
 {% endblock %}
