@@ -363,6 +363,7 @@ if (CONFIG_AV1_ENCODER)
 
     set(AOM_DSP_ENCODER_INTRIN_AVX2
         ${AOM_DSP_ENCODER_INTRIN_AVX2}
+        "${AOM_ROOT}/aom_dsp/x86/highbd_quantize_intrin_avx2.c"
         "${AOM_ROOT}/aom_dsp/x86/sad_highbd_avx2.c")
   endif ()
 
