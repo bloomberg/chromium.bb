@@ -87,7 +87,9 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule
                 origin:(NSString*)origin {
   DCHECK(delegate);
   DCHECK(reauthenticationModule);
-  self = [super initWithStyle:CollectionViewControllerStyleAppBar];
+  UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
+  self =
+      [super initWithLayout:layout style:CollectionViewControllerStyleAppBar];
   if (self) {
     _weakDelegate = delegate;
     _weakReauthenticationModule = reauthenticationModule;

@@ -119,7 +119,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
            closeSettingsOnAddAccount:(BOOL)closeSettingsOnAddAccount {
   DCHECK(browserState);
   DCHECK(!browserState->IsOffTheRecord());
-  self = [super initWithStyle:CollectionViewControllerStyleAppBar];
+  UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
+  self =
+      [super initWithLayout:layout style:CollectionViewControllerStyleAppBar];
   if (self) {
     _browserState = browserState;
     _closeSettingsOnAddAccount = closeSettingsOnAddAccount;

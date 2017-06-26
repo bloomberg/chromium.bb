@@ -59,6 +59,10 @@ folderEditorWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
                        folder:(const bookmarks::BookmarkNode*)folder
                  browserState:(ios::ChromeBrowserState*)browserState;
 
+- (instancetype)initWithLayout:(UICollectionViewLayout*)layout
+                         style:(CollectionViewControllerStyle)style
+    NS_UNAVAILABLE;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_FOLDER_EDITOR_VIEW_CONTROLLER_H_

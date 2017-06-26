@@ -152,7 +152,8 @@
 
   self.paymentRequestEditViewController =
       [[PaymentRequestEditViewController alloc]
-          initWithStyle:CollectionViewControllerStyleAppBar];
+          initWithLayout:[[MDCCollectionViewFlowLayout alloc] init]
+                   style:CollectionViewControllerStyleAppBar];
   [self.paymentRequestEditViewController setTitle:@"Add info"];
   self.mediator = [[SCPaymentsEditorMediator alloc] init];
   [self.mediator setConsumer:self.paymentRequestEditViewController];

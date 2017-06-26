@@ -21,7 +21,8 @@ class ChromeBrowserState;
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
-- (instancetype)initWithStyle:(CollectionViewControllerStyle)style
+- (instancetype)initWithLayout:(UICollectionViewLayout*)layout
+                         style:(CollectionViewControllerStyle)style
     NS_UNAVAILABLE;
 @end
 

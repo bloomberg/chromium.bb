@@ -15,7 +15,8 @@ class PrefService;
 
 // |prefs| must not be nil.
 - (instancetype)initWithPrefs:(PrefService*)prefs NS_DESIGNATED_INITIALIZER;
-- (instancetype)initWithStyle:(CollectionViewControllerStyle)style
+- (instancetype)initWithLayout:(UICollectionViewLayout*)layout
+                         style:(CollectionViewControllerStyle)style
     NS_UNAVAILABLE;
 - (instancetype)init NS_UNAVAILABLE;
 

@@ -56,7 +56,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @synthesize dataSource = _dataSource;
 
 - (instancetype)initWithPayButtonEnabled:(BOOL)payButtonEnabled {
-  if ((self = [super initWithStyle:CollectionViewControllerStyleAppBar])) {
+  UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
+  if ((self = [super initWithLayout:layout
+                              style:CollectionViewControllerStyleAppBar])) {
     [self setTitle:l10n_util::GetNSString(IDS_PAYMENTS_ORDER_SUMMARY_LABEL)];
 
     // Set up leading (return) button.

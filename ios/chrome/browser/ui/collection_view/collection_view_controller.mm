@@ -22,8 +22,8 @@
 @synthesize appBar = _appBar;
 @synthesize collectionViewModel = _collectionViewModel;
 
-- (instancetype)initWithStyle:(CollectionViewControllerStyle)style {
-  UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
+- (instancetype)initWithLayout:(UICollectionViewLayout*)layout
+                         style:(CollectionViewControllerStyle)style {
   self = [super initWithCollectionViewLayout:layout];
   if (self) {
     if (style == CollectionViewControllerStyleAppBar) {

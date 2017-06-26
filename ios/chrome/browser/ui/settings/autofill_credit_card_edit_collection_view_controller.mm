@@ -67,7 +67,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (instancetype)initWithCreditCard:(const autofill::CreditCard&)creditCard
                personalDataManager:(autofill::PersonalDataManager*)dataManager {
-  self = [super initWithStyle:CollectionViewControllerStyleAppBar];
+  UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
+  self =
+      [super initWithLayout:layout style:CollectionViewControllerStyleAppBar];
   if (self) {
     DCHECK(dataManager);
 

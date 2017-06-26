@@ -60,7 +60,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @synthesize delegate = _delegate;
 
 - (instancetype)init {
-  self = [super initWithStyle:CollectionViewControllerStyleAppBar];
+  UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
+  self =
+      [super initWithLayout:layout style:CollectionViewControllerStyleAppBar];
   if (self) {
     _identityServiceObserver.reset(
         new ChromeIdentityServiceObserverBridge(self));

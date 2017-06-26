@@ -21,7 +21,8 @@
                    dataSource:(id<ContentSuggestionsDataSource>)dataSource
     NS_DESIGNATED_INITIALIZER;
 
-- (instancetype)initWithStyle:(CollectionViewControllerStyle)style
+- (instancetype)initWithLayout:(UICollectionViewLayout*)layout
+                         style:(CollectionViewControllerStyle)style
     NS_UNAVAILABLE;
 
 // Handler for the commands sent by the ContentSuggestionsViewController.

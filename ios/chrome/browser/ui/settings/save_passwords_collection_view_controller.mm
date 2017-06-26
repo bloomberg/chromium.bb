@@ -175,7 +175,9 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
   DCHECK(browserState);
-  self = [super initWithStyle:CollectionViewControllerStyleAppBar];
+  UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
+  self =
+      [super initWithLayout:layout style:CollectionViewControllerStyleAppBar];
   if (self) {
     browserState_ = browserState;
     reauthenticationModule_ = [[ReauthenticationModule alloc]

@@ -19,7 +19,8 @@ class PrefService;
                      wifiPref:(const char*)wifiPreference
                         title:(NSString*)title NS_DESIGNATED_INITIALIZER;
 
-- (instancetype)initWithStyle:(CollectionViewControllerStyle)style
+- (instancetype)initWithLayout:(UICollectionViewLayout*)layout
+                         style:(CollectionViewControllerStyle)style
     NS_UNAVAILABLE;
 
 // Returns the text for the current setting, based on the values of the

@@ -79,7 +79,9 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
 @implementation SignedInAccountsCollectionViewController
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
-  self = [super initWithStyle:CollectionViewControllerStyleDefault];
+  UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
+  self =
+      [super initWithLayout:layout style:CollectionViewControllerStyleDefault];
   if (self) {
     _browserState = browserState;
     _avatarCache = [[ResizedAvatarCache alloc] init];

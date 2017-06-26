@@ -144,7 +144,9 @@ typedef void (^EntryUpdater)(CollectionViewItem* item);
 
 - (instancetype)initWithDataSource:(id<ReadingListDataSource>)dataSource
                            toolbar:(ReadingListToolbar*)toolbar {
-  self = [super initWithStyle:CollectionViewControllerStyleAppBar];
+  UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
+  self =
+      [super initWithLayout:layout style:CollectionViewControllerStyleAppBar];
   if (self) {
     _toolbar = toolbar;
 

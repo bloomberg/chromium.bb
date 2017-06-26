@@ -51,7 +51,8 @@ class ChromeBrowserState;
                       delegate:
                           (id<HistoryCollectionViewControllerDelegate>)delegate
     NS_DESIGNATED_INITIALIZER;
-- (instancetype)initWithStyle:(CollectionViewControllerStyle)style
+- (instancetype)initWithLayout:(UICollectionViewLayout*)layout
+                         style:(CollectionViewControllerStyle)style
     NS_UNAVAILABLE;
 
 // Search history for text |query| and display the results. |query| may be nil.

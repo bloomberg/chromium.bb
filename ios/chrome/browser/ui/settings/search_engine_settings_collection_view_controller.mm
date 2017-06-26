@@ -80,7 +80,9 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
   DCHECK(browserState);
-  self = [super initWithStyle:CollectionViewControllerStyleAppBar];
+  UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
+  self =
+      [super initWithLayout:layout style:CollectionViewControllerStyleAppBar];
   if (self) {
     templateURLService_ =
         ios::TemplateURLServiceFactory::GetForBrowserState(browserState);

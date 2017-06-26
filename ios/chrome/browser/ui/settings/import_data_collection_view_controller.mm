@@ -62,7 +62,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
                       isSignedIn:(BOOL)isSignedIn {
   DCHECK(fromEmail);
   DCHECK(toEmail);
-  self = [super initWithStyle:CollectionViewControllerStyleAppBar];
+  UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
+  self =
+      [super initWithLayout:layout style:CollectionViewControllerStyleAppBar];
   if (self) {
     _delegate = delegate;
     _fromEmail = [fromEmail copy];
