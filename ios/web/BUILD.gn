@@ -234,8 +234,6 @@ source_set("web_arc") {
     "webui/crw_web_ui_page_builder.mm",
     "webui/mojo_facade.h",
     "webui/mojo_facade.mm",
-    "webui/mojo_js_constants.cc",
-    "webui/mojo_js_constants.h",
     "webui/shared_resources_data_source_ios.h",
     "webui/shared_resources_data_source_ios.mm",
     "webui/url_data_manager_ios.cc",
@@ -783,6 +781,7 @@ test("ios_web_inttests") {
     "//base/test:test_support",
     "//ios/testing:http_server_bundle_data",
     "//ios/testing:ios_test_support",
+    "//ios/web:resources_grit",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
     "//ios/web/public/test/http_server",
@@ -817,11 +816,10 @@ js_compile_bundle("web_ui_bundle") {
   closure_entry_point = "__crWeb.webUIBundle"
 
   sources = [
-    "../third_party/requirejs/require.js",
+    "webui/resources/mojo_api.js",
     "webui/resources/web_ui_base.js",
     "webui/resources/web_ui_bind.js",
     "webui/resources/web_ui_bundle.js",
-    "webui/resources/web_ui_module_load_notifier.js",
     "webui/resources/web_ui_send.js",
   ]
 }
@@ -878,6 +876,6 @@ grit("resources") {
     "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
   ]
   deps = [
-    "//mojo/public/js:bindings",
+    "//mojo/public/js:new_bindings",
   ]
 }
