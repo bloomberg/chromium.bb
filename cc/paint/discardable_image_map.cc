@@ -20,19 +20,20 @@ DiscardableImageMap::~DiscardableImageMap() {}
 
 std::unique_ptr<DiscardableImageStore>
 DiscardableImageMap::BeginGeneratingMetadata(const gfx::Size& bounds) {
-  DCHECK(all_images_.empty());
-  return base::MakeUnique<DiscardableImageStore>(
-      bounds.width(), bounds.height(), &all_images_, &image_id_to_rect_);
+  return base::MakeUnique<DiscardableImageStore>(bounds.width(),
+                                                 bounds.height());
 }
 
-void DiscardableImageMap::EndGeneratingMetadata() {
-  // TODO(vmpstr): We should be able to store the payload right on the rtree.
+void DiscardableImageMap::EndGeneratingMetadata(
+    std::vector<std::pair<DrawImage, gfx::Rect>> images,
+    base::flat_map<PaintImage::Id, gfx::Rect> image_id_to_rect) {
   images_rtree_.Build(
-      all_images_,
+      images,
       [](const std::vector<std::pair<DrawImage, gfx::Rect>>& items,
          size_t index) { return items[index].second; },
       [](const std::vector<std::pair<DrawImage, gfx::Rect>>& items,
-         size_t index) { return index; });
+         size_t index) { return items[index].first; });
+  image_id_to_rect_ = std::move(image_id_to_rect);
 }
 
 void DiscardableImageMap::GetDiscardableImagesInRect(
@@ -40,11 +41,15 @@ void DiscardableImageMap::GetDiscardableImagesInRect(
     float contents_scale,
     const gfx::ColorSpace& target_color_space,
     std::vector<DrawImage>* images) const {
-  for (size_t index : images_rtree_.Search(rect)) {
-    images->push_back(all_images_[index]
-                          .first.ApplyScale(contents_scale)
-                          .ApplyTargetColorSpace(target_color_space));
-  }
+  *images = images_rtree_.Search(rect);
+  // TODO(vmpstr): Remove the second pass and do this in TileManager.
+  // crbug.com/727772.
+  std::transform(
+      images->begin(), images->end(), images->begin(),
+      [&contents_scale, &target_color_space](const DrawImage& image) {
+        return image.ApplyScale(contents_scale)
+            .ApplyTargetColorSpace(target_color_space);
+      });
 }
 
 gfx::Rect DiscardableImageMap::GetRectForImage(PaintImage::Id image_id) const {
@@ -59,11 +64,11 @@ DiscardableImageMap::ScopedMetadataGenerator::ScopedMetadataGenerator(
       image_store_(image_map->BeginGeneratingMetadata(bounds)) {}
 
 DiscardableImageMap::ScopedMetadataGenerator::~ScopedMetadataGenerator() {
-  image_map_->EndGeneratingMetadata();
+  image_map_->EndGeneratingMetadata(image_store_->TakeImages(),
+                                    image_store_->TakeImageIdToRectMap());
 }
 
 void DiscardableImageMap::Reset() {
-  all_images_.clear();
   image_id_to_rect_.clear();
   images_rtree_.Reset();
 }

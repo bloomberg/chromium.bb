@@ -81,13 +81,12 @@ class RTree {
     // valid index pointing to an element in the vector that was used to build
     // this rtree. When the level is not 0, it's an internal node and it has a
     // valid subtree pointer.
-    union {
-      Node<U>* subtree;
-      U payload;
-    };
+    Node<U>* subtree;
+    U payload;
+
     gfx::Rect bounds;
 
-    Branch() {}
+    Branch() = default;
     Branch(U payload, const gfx::Rect& bounds)
         : payload(std::move(payload)), bounds(bounds) {}
   };

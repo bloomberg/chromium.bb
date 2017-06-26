@@ -44,7 +44,7 @@ class CC_PAINT_EXPORT DiscardableImageMap {
   DiscardableImageMap();
   ~DiscardableImageMap();
 
-  bool empty() const { return all_images_.empty(); }
+  bool empty() const { return image_id_to_rect_.empty(); }
   void GetDiscardableImagesInRect(const gfx::Rect& rect,
                                   float contents_scale,
                                   const gfx::ColorSpace& target_color_space,
@@ -59,12 +59,13 @@ class CC_PAINT_EXPORT DiscardableImageMap {
 
   std::unique_ptr<DiscardableImageStore> BeginGeneratingMetadata(
       const gfx::Size& bounds);
-  void EndGeneratingMetadata();
+  void EndGeneratingMetadata(
+      std::vector<std::pair<DrawImage, gfx::Rect>> images,
+      base::flat_map<PaintImage::Id, gfx::Rect> image_id_to_rect);
 
-  std::vector<std::pair<DrawImage, gfx::Rect>> all_images_;
   base::flat_map<PaintImage::Id, gfx::Rect> image_id_to_rect_;
 
-  RTree<size_t> images_rtree_;
+  RTree<DrawImage> images_rtree_;
 };
 
 }  // namespace cc

@@ -68,14 +68,8 @@ class DiscardableImageStore::PaintTrackingCanvas : public SkNoDrawCanvas {
   std::vector<SkPaint> saved_paints_;
 };
 
-DiscardableImageStore::DiscardableImageStore(
-    int width,
-    int height,
-    std::vector<std::pair<DrawImage, gfx::Rect>>* image_set,
-    base::flat_map<PaintImage::Id, gfx::Rect>* image_id_to_rect)
-    : canvas_(base::MakeUnique<PaintTrackingCanvas>(width, height)),
-      image_set_(image_set),
-      image_id_to_rect_(image_id_to_rect) {}
+DiscardableImageStore::DiscardableImageStore(int width, int height)
+    : canvas_(base::MakeUnique<PaintTrackingCanvas>(width, height)) {}
 
 DiscardableImageStore::~DiscardableImageStore() = default;
 
@@ -245,11 +239,10 @@ void DiscardableImageStore::AddImage(PaintImage paint_image,
   if (local_matrix)
     matrix.postConcat(*local_matrix);
 
-  (*image_id_to_rect_)[paint_image.stable_id()].Union(image_rect);
-  image_set_->push_back(
-      std::make_pair(DrawImage(std::move(paint_image), src_irect,
-                               filter_quality, matrix, target_color_space),
-                     image_rect));
+  image_id_to_rect_[paint_image.stable_id()].Union(image_rect);
+  image_set_.emplace_back(DrawImage(std::move(paint_image), src_irect,
+                                    filter_quality, matrix, target_color_space),
+                          image_rect);
 }
 
 }  // namespace cc

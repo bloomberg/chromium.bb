@@ -20,15 +20,18 @@ class PaintImage;
 
 class CC_PAINT_EXPORT DiscardableImageStore {
  public:
-  DiscardableImageStore(
-      int width,
-      int height,
-      std::vector<std::pair<DrawImage, gfx::Rect>>* image_set,
-      base::flat_map<PaintImage::Id, gfx::Rect>* image_id_to_rect);
+  DiscardableImageStore(int width, int height);
   ~DiscardableImageStore();
 
   void GatherDiscardableImages(const PaintOpBuffer* buffer);
   SkNoDrawCanvas* GetNoDrawCanvas();
+
+  std::vector<std::pair<DrawImage, gfx::Rect>> TakeImages() {
+    return std::move(image_set_);
+  }
+  base::flat_map<PaintImage::Id, gfx::Rect> TakeImageIdToRectMap() {
+    return std::move(image_id_to_rect_);
+  }
 
  private:
   class PaintTrackingCanvas;
@@ -43,8 +46,8 @@ class CC_PAINT_EXPORT DiscardableImageStore {
   // This canvas is used only for tracking transform/clip/filter state from the
   // non-drawing ops.
   std::unique_ptr<PaintTrackingCanvas> canvas_;
-  std::vector<std::pair<DrawImage, gfx::Rect>>* image_set_;
-  base::flat_map<PaintImage::Id, gfx::Rect>* image_id_to_rect_;
+  std::vector<std::pair<DrawImage, gfx::Rect>> image_set_;
+  base::flat_map<PaintImage::Id, gfx::Rect> image_id_to_rect_;
 };
 
 }  // namespace cc
