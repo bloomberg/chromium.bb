@@ -309,6 +309,33 @@
 
       if (!success) throw 'setNextReadCharacteristicResponse failed';
     }
+
+    // Sets the next write response for this characteristic to |code|. If
+    // writing to a characteristic that only supports 'write_without_response'
+    // the set response will be ignored.
+    // |code| could be a GATT Error Response from
+    // BT 4.2 Vol 3 Part F 3.4.1.1 Error Response or a number outside that range
+    // returned by specific platforms e.g. Android returns 0x101 to signal a GATT
+    // failure.
+    async setNextWriteResponse(gatt_code) {
+      let {success} =
+        await this.fake_central_ptr_.setNextWriteCharacteristicResponse(
+          gatt_code, ...this.ids_);
+
+      if (!success) throw 'setNextWriteResponse failed';
+    }
+
+    // Gets the last successfully written value to the characteristic.
+    // Returns null if no value has yet been written to the characteristic.
+    async getLastWrittenValue() {
+      let {success, value} =
+        await this.fake_central_ptr_.getLastWrittenValue(...this.ids_);
+
+      if (!success) throw 'getLastWrittenValue failed';
+
+      return value;
+    }
+
   }
 
   class FakeRemoteGATTDescriptor {
@@ -317,7 +344,8 @@
                 service_id,
                 peripheral_address,
                 fake_central_ptr) {
-      this.ids_ = [descriptor_id, characteristic_id, service_id, peripheral_address];
+      this.ids_ = [
+        descriptor_id, characteristic_id, service_id, peripheral_address];
       this.fake_central_ptr_ = fake_central_ptr;
     }
 
