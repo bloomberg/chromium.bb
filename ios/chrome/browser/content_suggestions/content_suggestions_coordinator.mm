@@ -374,6 +374,28 @@
   NOTREACHED();
 }
 
+- (void)updateFakeOmniboxForScrollView:(UIScrollView*)scrollView {
+  [self.delegate updateNtpBarShadowForPanelController:self];
+
+  // Unfocus the omnibox when the scroll view is scrolled below the pinned
+  // offset.
+  CGFloat pinnedOffsetY = [self pinnedOffsetY];
+  if (self.headerController.omniboxFocused && scrollView.dragging &&
+      scrollView.contentOffset.y < pinnedOffsetY) {
+    [self.dispatcher cancelOmniboxEdit];
+  }
+
+  if (IsIPadIdiom()) {
+    return;
+  }
+
+  if (self.animateHeader) {
+    [self.headerController
+        updateSearchFieldForOffset:self.suggestionsViewController.collectionView
+                                       .contentOffset.y];
+  }
+}
+
 #pragma mark - NewTabPagePanelProtocol
 
 - (CGFloat)alphaForBottomShadow {
@@ -466,6 +488,20 @@
   message.action = action;
   message.category = @"MostVisitedUndo";
   [MDCSnackbarManager showMessage:message];
+}
+
+// Returns the Y value to use for the scroll view's contentOffset when scrolling
+// the omnibox to the top of the screen.
+- (CGFloat)pinnedOffsetY {
+  CGFloat headerHeight = content_suggestions::heightForLogoHeader(
+      self.headerController.logoIsShowing,
+      [self.contentSuggestionsMediator notificationPromo]->CanShow());
+  CGFloat offsetY =
+      headerHeight - ntp_header::kScrolledToTopOmniboxBottomMargin;
+  if (!IsIPadIdiom())
+    offsetY -= ntp_header::kToolbarHeight;
+
+  return offsetY;
 }
 
 @end
