@@ -39,7 +39,8 @@ SyncSessionsRouterTabHelper::~SyncSessionsRouterTabHelper() {}
 
 void SyncSessionsRouterTabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  NotifyRouter();
+  if (navigation_handle && navigation_handle->IsInMainFrame())
+    NotifyRouter();
 }
 
 void SyncSessionsRouterTabHelper::TitleWasSet(content::NavigationEntry* entry,
@@ -54,7 +55,10 @@ void SyncSessionsRouterTabHelper::WebContentsDestroyed() {
 void SyncSessionsRouterTabHelper::DidFinishLoad(
     content::RenderFrameHost* render_frame_host,
     const GURL& validated_url) {
-  NotifyRouter(true);
+  // Only notify when the main frame finishes loading; only the main frame
+  // doesn't have a parent.
+  if (render_frame_host && !render_frame_host->GetParent())
+    NotifyRouter(true);
 }
 
 void SyncSessionsRouterTabHelper::DidOpenRequestedURL(
