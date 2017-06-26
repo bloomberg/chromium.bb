@@ -2170,7 +2170,7 @@ ContentsLayoutManager* BrowserView::GetContentsLayoutManager() const {
 }
 
 bool BrowserView::MaybeShowBookmarkBar(WebContents* contents) {
-  bool show_bookmark_bar = contents &&
+  bool show_bookmark_bar =
       browser_->SupportsWindowFeature(Browser::FEATURE_BOOKMARKBAR);
   if (!show_bookmark_bar && !bookmark_bar_view_.get())
     return false;
