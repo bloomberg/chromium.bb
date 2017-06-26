@@ -81,15 +81,8 @@ class ResourceRequestDetectorTest : public testing::Test {
             new StrictMock<safe_browsing::MockIncidentReceiver>()),
         mock_database_manager_(new StrictMock<MockSafeBrowsingDatabaseManager>),
         fake_resource_request_detector_(
-            base::MakeUnique<FakeResourceRequestDetector>(
-                mock_database_manager_,
-                base::WrapUnique(mock_incident_receiver_))) {}
-
-  void TearDown() override {
-    fake_resource_request_detector_.reset();
-    mock_database_manager_ = nullptr;
-    base::RunLoop().RunUntilIdle();
-  }
+            mock_database_manager_,
+            base::WrapUnique(mock_incident_receiver_)) {}
 
   std::unique_ptr<net::URLRequest> GetTestURLRequest(
       const std::string& url,
@@ -142,7 +135,7 @@ class ResourceRequestDetectorTest : public testing::Test {
 
     ResourceRequestInfo info =
         ResourceRequestDetector::GetRequestInfo(request.get());
-    fake_resource_request_detector_->ProcessResourceRequest(&info);
+    fake_resource_request_detector_.ProcessResourceRequest(&info);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -159,7 +152,7 @@ class ResourceRequestDetectorTest : public testing::Test {
 
     ResourceRequestInfo info =
         ResourceRequestDetector::GetRequestInfo(request.get());
-    fake_resource_request_detector_->ProcessResourceRequest(&info);
+    fake_resource_request_detector_.ProcessResourceRequest(&info);
     base::RunLoop().RunUntilIdle();
 
     ASSERT_TRUE(incident);
@@ -175,7 +168,7 @@ class ResourceRequestDetectorTest : public testing::Test {
 
   StrictMock<safe_browsing::MockIncidentReceiver>* mock_incident_receiver_;
   scoped_refptr<MockSafeBrowsingDatabaseManager> mock_database_manager_;
-  std::unique_ptr<FakeResourceRequestDetector> fake_resource_request_detector_;
+  FakeResourceRequestDetector fake_resource_request_detector_;
 
  private:
   // UrlRequest requires a message loop. This provides one.

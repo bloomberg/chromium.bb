@@ -167,11 +167,7 @@ class V4Database {
   V4Database(const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
              std::unique_ptr<StoreMap> store_map);
 
-  // The collection of V4Stores, keyed by ListIdentifier.
-  // The map itself lives on the V4Database's parent thread, but its V4Store
-  // objects live on the db_task_runner_thread.
-  // TODO(vakh): Consider writing a container object which encapsulates or
-  // harmonizes thread affinity for the associative container and the data.
+  // Map of ListIdentifier to the V4Store.
   const std::unique_ptr<StoreMap> store_map_;
 
  private:
