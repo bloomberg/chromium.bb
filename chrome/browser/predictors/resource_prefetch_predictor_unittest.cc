@@ -1632,6 +1632,61 @@ TEST_F(ResourcePrefetchPredictorTest, GetPrefetchData) {
   EXPECT_THAT(urls, UnorderedElementsAre(GURL(font_url)));
 }
 
+TEST_F(ResourcePrefetchPredictorTest, TestPredictPreconnectOrigins) {
+  const GURL main_frame_url("http://google.com/?query=cats");
+  auto prediction = base::MakeUnique<PreconnectPrediction>();
+  // No prefetch data.
+  EXPECT_FALSE(
+      predictor_->PredictPreconnectOrigins(main_frame_url, prediction.get()));
+
+  const char* cdn_origin = "https://cdn%d.google.com";
+  auto gen_origin = [cdn_origin](int n) {
+    return base::StringPrintf(cdn_origin, n);
+  };
+
+  // Add origins associated with the main frame host.
+  OriginData google = CreateOriginData("google.com");
+  InitializeOriginStat(google.add_origins(), gen_origin(1), 10, 0, 0, 1.0, true,
+                       true);  // High confidence - preconnect.
+  InitializeOriginStat(google.add_origins(), gen_origin(2), 10, 5, 0, 2.0, true,
+                       true);  // Medium confidence - preresolve.
+  InitializeOriginStat(google.add_origins(), gen_origin(3), 1, 10, 10, 3.0,
+                       true, true);  // Low confidence - ignore.
+  predictor_->origin_data_->UpdateData(google.host(), google);
+
+  prediction = base::MakeUnique<PreconnectPrediction>();
+  EXPECT_TRUE(
+      predictor_->PredictPreconnectOrigins(main_frame_url, prediction.get()));
+  EXPECT_EQ(*prediction, CreatePreconnectPrediction("google.com", false,
+                                                    {GURL(gen_origin(1))},
+                                                    {GURL(gen_origin(2))}));
+
+  // Add a redirect.
+  RedirectData redirect = CreateRedirectData("google.com", 3);
+  InitializeRedirectStat(redirect.add_redirect_endpoints(), "www.google.com",
+                         10, 0, 0);
+  predictor_->host_redirect_data_->UpdateData(redirect.primary_key(), redirect);
+
+  // Prediction failed: no data associated with the redirect endpoint.
+  prediction = base::MakeUnique<PreconnectPrediction>();
+  EXPECT_FALSE(
+      predictor_->PredictPreconnectOrigins(main_frame_url, prediction.get()));
+
+  // Add a resource associated with the redirect endpoint.
+  OriginData www_google = CreateOriginData("www.google.com", 4);
+  InitializeOriginStat(www_google.add_origins(), gen_origin(4), 10, 0, 0, 1.0,
+                       true,
+                       true);  // High confidence - preconnect.
+  predictor_->origin_data_->UpdateData(www_google.host(), www_google);
+
+  prediction = base::MakeUnique<PreconnectPrediction>();
+  EXPECT_TRUE(
+      predictor_->PredictPreconnectOrigins(main_frame_url, prediction.get()));
+  EXPECT_EQ(*prediction, CreatePreconnectPrediction("www.google.com", true,
+                                                    {GURL(gen_origin(4))},
+                                                    std::vector<GURL>()));
+}
+
 TEST_F(ResourcePrefetchPredictorTest, TestRecordFirstContentfulPaint) {
   auto res1_time = base::TimeTicks::FromInternalValue(1);
   auto res2_time = base::TimeTicks::FromInternalValue(2);

@@ -207,6 +207,19 @@ ResourcePrefetchPredictor::Prediction CreatePrediction(
   return prediction;
 }
 
+PreconnectPrediction CreatePreconnectPrediction(
+    std::string host,
+    bool is_redirected,
+    std::vector<GURL> preconnect_origins,
+    std::vector<GURL> preresolve_hosts) {
+  PreconnectPrediction prediction;
+  prediction.host = host;
+  prediction.is_redirected = is_redirected;
+  prediction.preconnect_origins = preconnect_origins;
+  prediction.preresolve_hosts = preresolve_hosts;
+  return prediction;
+}
+
 void PopulateTestConfig(LoadingPredictorConfig* config, bool small_db) {
   if (small_db) {
     config->max_urls_to_track = 3;
@@ -372,6 +385,21 @@ std::ostream& operator<<(std::ostream& os, const NavigationID& navigation_id) {
   return os << navigation_id.tab_id << "," << navigation_id.main_frame_url;
 }
 
+std::ostream& operator<<(std::ostream& os,
+                         const PreconnectPrediction& prediction) {
+  os << "[" << prediction.host << "," << prediction.is_redirected << "]"
+     << std::endl;
+
+  os << "Preconnect:" << std::endl;
+  for (const auto& url : prediction.preconnect_origins)
+    os << "\t\t" << url << std::endl;
+
+  os << "Preresolve:" << std::endl;
+  for (const auto& url : prediction.preresolve_hosts)
+    os << "\t\t" << url << std::endl;
+  return os;
+}
+
 bool operator==(const PrefetchData& lhs, const PrefetchData& rhs) {
   bool equal = lhs.primary_key() == rhs.primary_key() &&
                lhs.resources_size() == rhs.resources_size();
@@ -458,6 +486,13 @@ bool operator==(const OriginStat& lhs, const OriginStat& rhs) {
          AlmostEqual(lhs.average_position(), rhs.average_position()) &&
          lhs.always_access_network() == rhs.always_access_network() &&
          lhs.accessed_network() == rhs.accessed_network();
+}
+
+bool operator==(const PreconnectPrediction& lhs,
+                const PreconnectPrediction& rhs) {
+  return lhs.is_redirected == rhs.is_redirected && lhs.host == rhs.host &&
+         lhs.preconnect_origins == rhs.preconnect_origins &&
+         lhs.preresolve_hosts == rhs.preresolve_hosts;
 }
 
 }  // namespace predictors
