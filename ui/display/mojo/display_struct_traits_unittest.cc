@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -36,6 +39,7 @@ void CheckDisplaysEqual(const Display& input, const Display& output) {
   EXPECT_EQ(input.device_scale_factor(), output.device_scale_factor());
   EXPECT_EQ(input.rotation(), output.rotation());
   EXPECT_EQ(input.touch_support(), output.touch_support());
+  EXPECT_EQ(input.accelerometer_support(), output.accelerometer_support());
   EXPECT_EQ(input.maximum_cursor_size(), output.maximum_cursor_size());
   EXPECT_EQ(input.color_depth(), output.color_depth());
   EXPECT_EQ(input.depth_per_component(), output.depth_per_component());
@@ -51,10 +55,17 @@ void CheckDisplayLayoutsEqual(const DisplayLayout& input,
   EXPECT_EQ(input.primary_id, output.primary_id);
 }
 
-bool CompareModes(const DisplayMode& lhs, const DisplayMode& rhs) {
-  return lhs.size() == rhs.size() &&
-         lhs.is_interlaced() == rhs.is_interlaced() &&
-         lhs.refresh_rate() == rhs.refresh_rate();
+void CheckDisplayModesEqual(const DisplayMode* input,
+                            const DisplayMode* output) {
+  // DisplaySnapshot can have null DisplayModes, so if |input| is null then
+  // |output| should be null too.
+  if (input == nullptr && output == nullptr)
+    return;
+
+  EXPECT_NE(input, output);  // Make sure they aren't the same object.
+  EXPECT_EQ(input->size(), output->size());
+  EXPECT_EQ(input->is_interlaced(), output->is_interlaced());
+  EXPECT_EQ(input->refresh_rate(), output->refresh_rate());
 }
 
 void CheckDisplaySnapShotMojoEqual(const DisplaySnapshotMojo& input,
@@ -77,19 +88,12 @@ void CheckDisplaySnapShotMojoEqual(const DisplaySnapshotMojo& input,
   EXPECT_EQ(input.modes().size(), output.modes().size());
 
   for (size_t i = 0; i < input.modes().size(); i++)
-    EXPECT_TRUE(CompareModes(*input.modes()[i], *output.modes()[i]));
+    CheckDisplayModesEqual(input.modes()[i].get(), output.modes()[i].get());
 
   EXPECT_EQ(input.edid(), output.edid());
 
-  if (!input.current_mode())
-    EXPECT_EQ(nullptr, output.current_mode());
-  else
-    EXPECT_TRUE(CompareModes(*input.current_mode(), *output.current_mode()));
-
-  if (!input.native_mode())
-    EXPECT_EQ(nullptr, output.native_mode());
-  else
-    EXPECT_TRUE(CompareModes(*input.native_mode(), *output.native_mode()));
+  CheckDisplayModesEqual(input.current_mode(), output.current_mode());
+  CheckDisplayModesEqual(input.native_mode(), output.native_mode());
 
   EXPECT_EQ(input.maximum_cursor_size(), output.maximum_cursor_size());
 }
@@ -128,6 +132,7 @@ TEST(DisplayStructTraitsTest, SetAllDisplayValues) {
   input.set_device_scale_factor(2.0f);
   input.set_rotation(Display::ROTATE_270);
   input.set_touch_support(Display::TOUCH_SUPPORT_AVAILABLE);
+  input.set_accelerometer_support(Display::ACCELEROMETER_SUPPORT_UNAVAILABLE);
   input.set_maximum_cursor_size(maximum_cursor_size);
   input.set_color_depth(input.color_depth() + 1);
   input.set_depth_per_component(input.depth_per_component() + 1);
@@ -146,11 +151,7 @@ TEST(DisplayStructTraitsTest, DefaultDisplayMode) {
   std::unique_ptr<DisplayMode> output;
   SerializeAndDeserialize<mojom::DisplayMode>(input->Clone(), &output);
 
-  // We want to test each component individually to make sure each data member
-  // was correctly serialized and deserialized.
-  EXPECT_EQ(input->size(), output->size());
-  EXPECT_EQ(input->is_interlaced(), output->is_interlaced());
-  EXPECT_EQ(input->refresh_rate(), output->refresh_rate());
+  CheckDisplayModesEqual(input.get(), output.get());
 }
 
 TEST(DisplayStructTraitsTest, DisplayPlacementFlushAtTop) {
@@ -267,8 +268,7 @@ TEST(DisplayStructTraitsTest, DisplaySnapshotCurrentAndNativeModesNull) {
   const gfx::Point origin(1, 2);
   const gfx::Size physical_size(5, 9);
   const gfx::Size maximum_cursor_size(3, 5);
-  const DisplayConnectionType type =
-      display::DISPLAY_CONNECTION_TYPE_DISPLAYPORT;
+  const DisplayConnectionType type = DISPLAY_CONNECTION_TYPE_DISPLAYPORT;
   const bool is_aspect_preserving_scaling = true;
   const bool has_overscan = true;
   const bool has_color_correction_matrix = true;
@@ -278,7 +278,7 @@ TEST(DisplayStructTraitsTest, DisplaySnapshotCurrentAndNativeModesNull) {
 
   const DisplayMode display_mode(gfx::Size(13, 11), true, 40.0f);
 
-  display::DisplaySnapshot::DisplayModeList modes;
+  DisplaySnapshot::DisplayModeList modes;
   modes.push_back(display_mode.Clone());
 
   const DisplayMode* current_mode = nullptr;
@@ -306,7 +306,7 @@ TEST(DisplayStructTraitsTest, DisplaySnapshotCurrentModeNull) {
   const gfx::Point origin(11, 32);
   const gfx::Size physical_size(55, 49);
   const gfx::Size maximum_cursor_size(13, 95);
-  const DisplayConnectionType type = display::DISPLAY_CONNECTION_TYPE_VGA;
+  const DisplayConnectionType type = DISPLAY_CONNECTION_TYPE_VGA;
   const bool is_aspect_preserving_scaling = true;
   const bool has_overscan = true;
   const bool has_color_correction_matrix = true;
@@ -316,7 +316,7 @@ TEST(DisplayStructTraitsTest, DisplaySnapshotCurrentModeNull) {
 
   const DisplayMode display_mode(gfx::Size(13, 11), true, 50.0f);
 
-  display::DisplaySnapshot::DisplayModeList modes;
+  DisplaySnapshot::DisplayModeList modes;
   modes.push_back(display_mode.Clone());
 
   const DisplayMode* current_mode = nullptr;
@@ -344,7 +344,7 @@ TEST(DisplayStructTraitsTest, DisplaySnapshotExternal) {
   const gfx::Point origin(0, 1760);
   const gfx::Size physical_size(520, 320);
   const gfx::Size maximum_cursor_size(4, 5);
-  const DisplayConnectionType type = display::DISPLAY_CONNECTION_TYPE_HDMI;
+  const DisplayConnectionType type = DISPLAY_CONNECTION_TYPE_HDMI;
   const bool is_aspect_preserving_scaling = false;
   const bool has_overscan = false;
   const bool has_color_correction_matrix = false;
@@ -356,7 +356,7 @@ TEST(DisplayStructTraitsTest, DisplaySnapshotExternal) {
   const DisplayMode display_current_mode(gfx::Size(1440, 900), false, 59.89f);
   const DisplayMode display_native_mode(gfx::Size(1920, 1200), false, 59.89f);
 
-  display::DisplaySnapshot::DisplayModeList modes;
+  DisplaySnapshot::DisplayModeList modes;
   modes.push_back(display_mode.Clone());
   modes.push_back(display_current_mode.Clone());
   modes.push_back(display_native_mode.Clone());
@@ -385,7 +385,7 @@ TEST(DisplayStructTraitsTest, DisplaySnapshotInternal) {
   const gfx::Point origin(0, 0);
   const gfx::Size physical_size(270, 180);
   const gfx::Size maximum_cursor_size(64, 64);
-  const DisplayConnectionType type = display::DISPLAY_CONNECTION_TYPE_INTERNAL;
+  const DisplayConnectionType type = DISPLAY_CONNECTION_TYPE_INTERNAL;
   const bool is_aspect_preserving_scaling = true;
   const bool has_overscan = false;
   const bool has_color_correction_matrix = false;
@@ -395,7 +395,7 @@ TEST(DisplayStructTraitsTest, DisplaySnapshotInternal) {
 
   const DisplayMode display_mode(gfx::Size(2560, 1700), false, 95.96f);
 
-  display::DisplaySnapshot::DisplayModeList modes;
+  DisplaySnapshot::DisplayModeList modes;
   modes.push_back(display_mode.Clone());
 
   const DisplayMode* current_mode = modes[0].get();

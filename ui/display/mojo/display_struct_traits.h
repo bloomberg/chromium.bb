@@ -28,6 +28,15 @@ struct EnumTraits<display::mojom::TouchSupport,
 };
 
 template <>
+struct EnumTraits<display::mojom::AccelerometerSupport,
+                  display::Display::AccelerometerSupport> {
+  static display::mojom::AccelerometerSupport ToMojom(
+      display::Display::AccelerometerSupport type);
+  static bool FromMojom(display::mojom::AccelerometerSupport type,
+                        display::Display::AccelerometerSupport* output);
+};
+
+template <>
 struct StructTraits<display::mojom::DisplayDataView, display::Display> {
   static int64_t id(const display::Display& display) { return display.id(); }
 
@@ -54,6 +63,11 @@ struct StructTraits<display::mojom::DisplayDataView, display::Display> {
   static display::Display::TouchSupport touch_support(
       const display::Display& display) {
     return display.touch_support();
+  }
+
+  static display::Display::AccelerometerSupport accelerometer_support(
+      const display::Display& display) {
+    return display.accelerometer_support();
   }
 
   static const gfx::Size& maximum_cursor_size(const display::Display& display) {
