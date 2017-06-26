@@ -47,7 +47,7 @@
     </style>
 
     <style name="TabbedModeTheme" parent="MainTheme">
-        <item name="android:windowBackground">@drawable/window_background</item>
+        <item name="android:windowBackground">@android:color/white</item>
     </style>
 
     <style name="FullscreenWhite" parent="Theme.AppCompat.Light" >
