@@ -290,8 +290,14 @@ IN_PROC_BROWSER_TEST_F(CastFeaturesBrowserTest,
   ASSERT_TRUE(GetDCSExperimentIds().empty());
 }
 
+#if defined(OS_LINUX)
+#define MAYBE_TestExperimentIdsPersisted DISABLED_TestExperimentIdsPersisted
+#else
+#define MAYBE_TestExperimentIdsPersisted TestExperimentIdsPersisted
+#endif
 // Test that experiment ids are persisted to disk. Part 3 of 3.
-IN_PROC_BROWSER_TEST_F(CastFeaturesBrowserTest, TestExperimentIdsPersisted) {
+IN_PROC_BROWSER_TEST_F(CastFeaturesBrowserTest,
+                       MAYBE_TestExperimentIdsPersisted) {
   // The experiments set in the last run should be active now.
   std::unordered_set<int32_t> ids({1234, 1, 4000});
   ASSERT_EQ(ids, GetDCSExperimentIds());
