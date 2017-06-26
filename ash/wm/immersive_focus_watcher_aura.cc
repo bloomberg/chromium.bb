@@ -4,7 +4,7 @@
 
 #include "ash/wm/immersive_focus_watcher_aura.h"
 
-#include "ash/shared/immersive_fullscreen_controller.h"
+#include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ui/aura/window.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/view.h"

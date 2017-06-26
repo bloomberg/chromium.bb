@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SHARED_IMMERSIVE_HANDLER_FACTORY_H_
-#define ASH_SHARED_IMMERSIVE_HANDLER_FACTORY_H_
+#ifndef ASH_PUBLIC_CPP_IMMERSIVE_IMMERSIVE_HANDLER_FACTORY_H_
+#define ASH_PUBLIC_CPP_IMMERSIVE_IMMERSIVE_HANDLER_FACTORY_H_
 
 #include <memory>
 
-#include "ash/ash_export.h"
+#include "ash/public/cpp/ash_public_export.h"
 
 namespace ash {
 
@@ -16,7 +16,7 @@ class ImmersiveFullscreenController;
 class ImmersiveGestureHandler;
 
 // Used by ImmersiveFullscreenController to create event handlers/watchers.
-class ASH_EXPORT ImmersiveHandlerFactory {
+class ASH_PUBLIC_EXPORT ImmersiveHandlerFactory {
  public:
   static ImmersiveHandlerFactory* Get() { return instance_; }
 
@@ -36,4 +36,4 @@ class ASH_EXPORT ImmersiveHandlerFactory {
 
 }  // namespace ash
 
-#endif  // ASH_SHARED_IMMERSIVE_HANDLER_FACTORY_H_
+#endif  // ASH_PUBLIC_CPP_IMMERSIVE_IMMERSIVE_HANDLER_FACTORY_H_

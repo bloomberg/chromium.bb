@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/public/cpp/immersive/immersive_fullscreen_controller_delegate.h"
 #include "ash/public/interfaces/window_style.mojom.h"
-#include "ash/shared/immersive_fullscreen_controller_delegate.h"
 #include "ash/shell_observer.h"
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkColor.h"

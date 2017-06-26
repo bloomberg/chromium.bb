@@ -6,8 +6,8 @@
 
 #include "ash/accessibility_delegate.h"
 #include "ash/keyboard/keyboard_observer_register.h"
+#include "ash/public/cpp/app_types.h"
 #include "ash/root_window_controller.h"
-#include "ash/shared/app_types.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/wm/window_util.h"

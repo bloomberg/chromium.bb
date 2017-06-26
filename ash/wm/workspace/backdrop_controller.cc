@@ -5,9 +5,9 @@
 #include "ash/wm/workspace/backdrop_controller.h"
 
 #include "ash/accessibility_delegate.h"
+#include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
-#include "ash/shared/app_types.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/wm/window_util.h"

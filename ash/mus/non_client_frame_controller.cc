@@ -18,7 +18,7 @@
 #include "ash/mus/property_util.h"
 #include "ash/mus/window_manager.h"
 #include "ash/mus/window_properties.h"
-#include "ash/shared/immersive_fullscreen_controller_delegate.h"
+#include "ash/public/cpp/immersive/immersive_fullscreen_controller_delegate.h"
 #include "ash/wm/panels/panel_frame_view.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"

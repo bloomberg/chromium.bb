@@ -6,7 +6,7 @@
 #define ASH_WM_IMMERSIVE_FOCUS_WATCHER_AURA_H_
 
 #include "ash/ash_export.h"
-#include "ash/shared/immersive_focus_watcher.h"
+#include "ash/public/cpp/immersive/immersive_focus_watcher.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/widget_observer.h"
 #include "ui/wm/core/transient_window_observer.h"

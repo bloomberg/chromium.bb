@@ -7,8 +7,8 @@
 
 #include <memory>
 
-#include "ash/shared/immersive_fullscreen_controller.h"
-#include "ash/shared/immersive_fullscreen_controller_delegate.h"
+#include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
+#include "ash/public/cpp/immersive/immersive_fullscreen_controller_delegate.h"
 #include "ash/wm/window_state_observer.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"

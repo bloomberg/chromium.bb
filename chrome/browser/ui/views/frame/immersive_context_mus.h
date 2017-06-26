@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FRAME_IMMERSIVE_CONTEXT_MUS_H_
 #define CHROME_BROWSER_UI_VIEWS_FRAME_IMMERSIVE_CONTEXT_MUS_H_
 
-#include "ash/shared/immersive_context.h"
+#include "ash/public/cpp/immersive/immersive_context.h"
 #include "base/macros.h"
 
 class ImmersiveContextMus : public ash::ImmersiveContext {

@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/shared/immersive_handler_factory.h"
+#include "ash/public/cpp/immersive/immersive_context.h"
 
 #include "base/logging.h"
 
 namespace ash {
 
 // static
-ImmersiveHandlerFactory* ImmersiveHandlerFactory::instance_ = nullptr;
+ImmersiveContext* ImmersiveContext::instance_ = nullptr;
 
-ImmersiveHandlerFactory::ImmersiveHandlerFactory() {
+ImmersiveContext::ImmersiveContext() {
   DCHECK(!instance_);
   instance_ = this;
 }
 
-ImmersiveHandlerFactory::~ImmersiveHandlerFactory() {
+ImmersiveContext::~ImmersiveContext() {
   DCHECK_EQ(instance_, this);
   instance_ = nullptr;
 }

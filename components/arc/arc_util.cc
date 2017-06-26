@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "ash/shared/app_types.h"
+#include "ash/public/cpp/app_types.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "chromeos/chromeos_switches.h"

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SHARED_IMMERSIVE_CONTEXT_H_
-#define ASH_SHARED_IMMERSIVE_CONTEXT_H_
+#ifndef ASH_PUBLIC_CPP_IMMERSIVE_IMMERSIVE_CONTEXT_H_
+#define ASH_PUBLIC_CPP_IMMERSIVE_IMMERSIVE_CONTEXT_H_
 
-#include "ash/ash_export.h"
+#include "ash/public/cpp/ash_public_export.h"
 
 namespace gfx {
 class Rect;
@@ -14,7 +14,7 @@ namespace views {
 class PointerWatcher;
 enum class PointerWatcherEventTypes;
 class Widget;
-}
+}  // namespace views
 
 namespace ash {
 
@@ -28,7 +28,7 @@ class ImmersiveFullscreenController;
 // depend upon aura, mus or ash.
 //
 // ImmersiveContext is a singleton.
-class ASH_EXPORT ImmersiveContext {
+class ASH_PUBLIC_EXPORT ImmersiveContext {
  public:
   static ImmersiveContext* Get() { return instance_; }
 
@@ -68,4 +68,4 @@ class ASH_EXPORT ImmersiveContext {
 
 }  // namespace ash
 
-#endif  // ASH_SHARED_IMMERSIVE_CONTEXT_H_
+#endif  // ASH_PUBLIC_CPP_IMMERSIVE_IMMERSIVE_CONTEXT_H_

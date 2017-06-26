@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/shared/immersive_revealed_lock.h"
+#include "ash/public/cpp/immersive/immersive_revealed_lock.h"
 
 namespace ash {
 

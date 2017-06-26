@@ -46,7 +46,7 @@
 #include "ui/views/widget/widget_delegate.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/shared/app_types.h"
+#include "ash/public/cpp/app_types.h"
 #endif
 
 namespace {

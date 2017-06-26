@@ -70,7 +70,6 @@ static_library("arc") {
   deps = [
     "//ash:ash",
     "//ash/public/cpp:ash_public_cpp",
-    "//ash/shared:app_types",
     "//base",
     "//chromeos",
     "//chromeos:login_manager_proto",
@@ -230,7 +229,7 @@ source_set("unit_tests") {
 
   deps = [
     ":arc_test_support",
-    "//ash/shared:app_types",
+    "//ash/public/cpp:ash_public_cpp",
     "//base",
     "//base/test:test_support",
     "//chromeos",

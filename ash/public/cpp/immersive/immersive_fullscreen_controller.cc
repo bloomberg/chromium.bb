@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/shared/immersive_fullscreen_controller.h"
+#include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 
 #include <set>
 
-#include "ash/shared/immersive_context.h"
-#include "ash/shared/immersive_focus_watcher.h"
-#include "ash/shared/immersive_fullscreen_controller_delegate.h"
-#include "ash/shared/immersive_gesture_handler.h"
-#include "ash/shared/immersive_handler_factory.h"
+#include "ash/public/cpp/immersive/immersive_context.h"
+#include "ash/public/cpp/immersive/immersive_focus_watcher.h"
+#include "ash/public/cpp/immersive/immersive_fullscreen_controller_delegate.h"
+#include "ash/public/cpp/immersive/immersive_gesture_handler.h"
+#include "ash/public/cpp/immersive/immersive_handler_factory.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"

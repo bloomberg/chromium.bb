@@ -5,7 +5,8 @@
 #ifndef ASH_WM_IMMERSIVE_CONTEXT_ASH_H_
 #define ASH_WM_IMMERSIVE_CONTEXT_ASH_H_
 
-#include "ash/shared/immersive_context.h"
+#include "ash/ash_export.h"
+#include "ash/public/cpp/immersive/immersive_context.h"
 #include "base/macros.h"
 
 namespace ash {

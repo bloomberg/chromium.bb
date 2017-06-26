@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SHARED_IMMERSIVE_REVEALED_LOCK_H_
-#define ASH_SHARED_IMMERSIVE_REVEALED_LOCK_H_
+#ifndef ASH_PUBLIC_CPP_IMMERSIVE_IMMERSIVE_REVEALED_LOCK_H_
+#define ASH_PUBLIC_CPP_IMMERSIVE_IMMERSIVE_REVEALED_LOCK_H_
 
-#include "ash/ash_export.h"
+#include "ash/public/cpp/ash_public_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 
@@ -16,9 +16,9 @@ namespace ash {
 // will animate according to the |animate_reveal| parameter passed in the
 // constructor. See ImmersiveFullscreenController::GetRevealedLock() for more
 // details.
-class ASH_EXPORT ImmersiveRevealedLock {
+class ASH_PUBLIC_EXPORT ImmersiveRevealedLock {
  public:
-  class ASH_EXPORT Delegate {
+  class ASH_PUBLIC_EXPORT Delegate {
    public:
     enum AnimateReveal { ANIMATE_REVEAL_YES, ANIMATE_REVEAL_NO };
 
@@ -41,4 +41,4 @@ class ASH_EXPORT ImmersiveRevealedLock {
 
 }  // namespace ash
 
-#endif  // ASH_SHARED_IMMERSIVE_REVEALED_LOCK_H_
+#endif  // ASH_PUBLIC_CPP_IMMERSIVE_IMMERSIVE_REVEALED_LOCK_H_
