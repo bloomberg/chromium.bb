@@ -374,6 +374,8 @@ static_library("extensions") {
     "api/signed_in_devices/signed_in_devices_manager.h",
     "api/spellcheck/spellcheck_api.cc",
     "api/spellcheck/spellcheck_api.h",
+    "api/storage/backend_task_runner.cc",
+    "api/storage/backend_task_runner.h",
     "api/storage/managed_value_store_cache.cc",
     "api/storage/managed_value_store_cache.h",
     "api/storage/policy_value_store.cc",

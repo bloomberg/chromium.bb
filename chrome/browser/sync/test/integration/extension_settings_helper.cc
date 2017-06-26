@@ -11,18 +11,17 @@
 #include "base/logging.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/api/storage/backend_task_runner.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/test/integration/extensions_helper.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_extension_helper.h"
-#include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/storage/storage_frontend.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/value_store/value_store.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 
-using content::BrowserThread;
 using extensions::ExtensionRegistry;
 using sync_datatype_helper::test;
 
@@ -37,10 +36,10 @@ std::string ToJson(const base::Value& value) {
   return json;
 }
 
-void GetAllSettingsOnFileThread(base::DictionaryValue* out,
-                                base::WaitableEvent* signal,
-                                ValueStore* storage) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+void GetAllSettingsOnBackendSequence(base::DictionaryValue* out,
+                                     base::WaitableEvent* signal,
+                                     ValueStore* storage) {
+  EXPECT_TRUE(extensions::GetBackendTaskRunner()->RunsTasksInCurrentSequence());
   out->Swap(&storage->Get()->settings());
   signal->Signal();
 }
@@ -53,7 +52,7 @@ std::unique_ptr<base::DictionaryValue> GetAllSettings(Profile* profile,
   extensions::StorageFrontend::Get(profile)->RunWithStorage(
       ExtensionRegistry::Get(profile)->enabled_extensions().GetByID(id),
       extensions::settings_namespace::SYNC,
-      base::Bind(&GetAllSettingsOnFileThread, settings.get(), &signal));
+      base::Bind(&GetAllSettingsOnBackendSequence, settings.get(), &signal));
   signal.Wait();
   return settings;
 }
@@ -85,11 +84,10 @@ bool AreSettingsSame(Profile* expected_profile, Profile* actual_profile) {
   return same;
 }
 
-void SetSettingsOnFileThread(
-    const base::DictionaryValue* settings,
-    base::WaitableEvent* signal,
-    ValueStore* storage) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+void SetSettingsOnBackendSequence(const base::DictionaryValue* settings,
+                                  base::WaitableEvent* signal,
+                                  ValueStore* storage) {
+  EXPECT_TRUE(extensions::GetBackendTaskRunner()->RunsTasksInCurrentSequence());
   storage->Set(ValueStore::DEFAULTS, *settings);
   signal->Signal();
 }
@@ -105,7 +103,7 @@ void SetExtensionSettings(
   extensions::StorageFrontend::Get(profile)->RunWithStorage(
       ExtensionRegistry::Get(profile)->enabled_extensions().GetByID(id),
       extensions::settings_namespace::SYNC,
-      base::Bind(&SetSettingsOnFileThread, &settings, &signal));
+      base::Bind(&SetSettingsOnBackendSequence, &settings, &signal));
   signal.Wait();
 }
 

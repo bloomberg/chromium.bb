@@ -379,9 +379,8 @@ IOSChromeSyncClient::CreateModelWorkerForGroup(syncer::ModelSafeGroup group) {
           web::WebThread::GetTaskRunnerForThread(web::WebThread::DB),
           syncer::GROUP_DB);
     case syncer::GROUP_FILE:
-      return new syncer::SequencedModelWorker(
-          web::WebThread::GetTaskRunnerForThread(web::WebThread::FILE),
-          syncer::GROUP_FILE);
+      // Not supported on iOS.
+      return nullptr;
     case syncer::GROUP_UI:
       return new syncer::UIModelWorker(
           web::WebThread::GetTaskRunnerForThread(web::WebThread::UI));
