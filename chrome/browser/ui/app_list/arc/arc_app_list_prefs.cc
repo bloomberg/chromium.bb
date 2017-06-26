@@ -777,9 +777,8 @@ void ArcAppListPrefs::SimulateDefaultAppAvailabilityTimeoutForTesting() {
 }
 
 void ArcAppListPrefs::OnInstanceReady() {
-  // Init() is also available at version 0.
   arc::mojom::AppInstance* app_instance =
-      ARC_GET_INSTANCE_FOR_METHOD(app_instance_holder_, RefreshAppList);
+      ARC_GET_INSTANCE_FOR_METHOD(app_instance_holder_, Init);
 
   // Note, sync_service_ may be nullptr in testing.
   sync_service_ = arc::ArcPackageSyncableService::Get(profile_);
@@ -793,7 +792,6 @@ void ArcAppListPrefs::OnInstanceReady() {
   arc::mojom::AppHostPtr host_proxy;
   binding_.Bind(mojo::MakeRequest(&host_proxy));
   app_instance->Init(std::move(host_proxy));
-  app_instance->RefreshAppList();
 }
 
 void ArcAppListPrefs::OnInstanceClosed() {
@@ -1396,11 +1394,6 @@ void ArcAppListPrefs::OnPackageListRefreshed(
     if (!current_packages.count(package_name))
       RemovePackageFromPrefs(prefs_, package_name);
   }
-
-  // TODO(lgcheng@) File http://b/31944261. Remove the flag after Android side
-  // cleanup.
-  if (package_list_initial_refreshed_)
-    return;
 
   package_list_initial_refreshed_ = true;
   for (auto& observer : observer_list_)

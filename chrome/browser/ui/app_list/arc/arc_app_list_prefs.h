@@ -439,7 +439,7 @@ class ArcAppListPrefs
   bool is_initialized_ = false;
   // True if apps were restored.
   bool apps_restored_ = false;
-  // True is ARC package list has been refreshed once.
+  // True is ARC package list has been successfully refreshed.
   bool package_list_initial_refreshed_ = false;
   // Play Store does not have publicly available observers for default app
   // installations. This timeout is for validating default app availability.

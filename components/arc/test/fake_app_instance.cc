@@ -42,6 +42,12 @@ FakeAppInstance::FakeAppInstance(mojom::AppHost* app_host)
     : app_host_(app_host) {}
 FakeAppInstance::~FakeAppInstance() {}
 
+void FakeAppInstance::Init(mojom::AppHostPtr host_ptr) {
+  // ARC app instance calls RefreshAppList after Init() successfully. Call
+  // RefreshAppList() here to keep the same behavior.
+  RefreshAppList();
+}
+
 void FakeAppInstance::RefreshAppList() {
   ++refresh_app_list_count_;
 }
