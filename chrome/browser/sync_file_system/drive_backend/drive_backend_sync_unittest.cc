@@ -109,7 +109,8 @@ class DriveBackendSyncTest : public testing::Test,
     ASSERT_TRUE(drive::test_util::SetUpTestEntries(drive_service.get()));
 
     std::unique_ptr<drive::DriveUploaderInterface> uploader(
-        new drive::DriveUploader(drive_service.get(), file_task_runner_.get()));
+        new drive::DriveUploader(drive_service.get(), file_task_runner_.get(),
+                                 nullptr));
 
     fake_drive_service_helper_.reset(new FakeDriveServiceHelper(
         drive_service.get(), uploader.get(),

@@ -48,9 +48,14 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/common/service_manager_connection.h"
 #include "content/public/common/user_agent.h"
+#include "device/wake_lock/public/interfaces/wake_lock_provider.mojom.h"
 #include "google_apis/drive/auth_service.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/device/public/interfaces/constants.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -265,11 +270,17 @@ DriveIntegrationService::DriveIntegrationService(
         GURL(google_apis::DriveApiUrlGenerator::kBaseThumbnailUrlForProduction),
         GetDriveUserAgent(), NO_TRAFFIC_ANNOTATION_YET));
   }
+
+  device::mojom::WakeLockProviderPtr wake_lock_provider;
+  DCHECK(content::ServiceManagerConnection::GetForProcess());
+  auto* connector =
+      content::ServiceManagerConnection::GetForProcess()->GetConnector();
+  connector->BindInterface(device::mojom::kServiceName,
+                           mojo::MakeRequest(&wake_lock_provider));
+
   scheduler_.reset(new JobScheduler(
-      profile_->GetPrefs(),
-      logger_.get(),
-      drive_service_.get(),
-      blocking_task_runner_.get()));
+      profile_->GetPrefs(), logger_.get(), drive_service_.get(),
+      blocking_task_runner_.get(), std::move(wake_lock_provider)));
   metadata_storage_.reset(new internal::ResourceMetadataStorage(
       cache_root_directory_.Append(kMetadataDirectory),
       blocking_task_runner_.get()));

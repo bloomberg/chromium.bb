@@ -176,17 +176,21 @@ struct JobScheduler::ResumeUploadParams {
   std::string content_type;
 };
 
-JobScheduler::JobScheduler(PrefService* pref_service,
-                           EventLogger* logger,
-                           DriveServiceInterface* drive_service,
-                           base::SequencedTaskRunner* blocking_task_runner)
+JobScheduler::JobScheduler(
+    PrefService* pref_service,
+    EventLogger* logger,
+    DriveServiceInterface* drive_service,
+    base::SequencedTaskRunner* blocking_task_runner,
+    device::mojom::WakeLockProviderPtr wake_lock_provider)
     : throttle_count_(0),
       wait_until_(base::Time::Now()),
       disable_throttling_(false),
       logger_(logger),
       drive_service_(drive_service),
       blocking_task_runner_(blocking_task_runner),
-      uploader_(new DriveUploader(drive_service, blocking_task_runner)),
+      uploader_(new DriveUploader(drive_service,
+                                  blocking_task_runner,
+                                  std::move(wake_lock_provider))),
       pref_service_(pref_service),
       weak_ptr_factory_(this) {
   for (int i = 0; i < NUM_QUEUES; ++i)

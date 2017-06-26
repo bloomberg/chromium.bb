@@ -115,10 +115,8 @@ class FileSystemTest : public testing::Test {
     fake_free_disk_space_getter_.reset(new FakeFreeDiskSpaceGetter);
 
     scheduler_.reset(new JobScheduler(
-        pref_service_.get(),
-        logger_.get(),
-        fake_drive_service_.get(),
-        base::ThreadTaskRunnerHandle::Get().get()));
+        pref_service_.get(), logger_.get(), fake_drive_service_.get(),
+        base::ThreadTaskRunnerHandle::Get().get(), nullptr));
 
     mock_directory_observer_.reset(new MockDirectoryChangeObserver);
 

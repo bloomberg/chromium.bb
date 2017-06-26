@@ -56,7 +56,7 @@ static_library("drive") {
 
     # TODO(lukasza): Remove this dependency (see DEPS file for more info).
     "//content/public/browser",
-    "//device/power_save_blocker",
+    "//device/wake_lock/public/interfaces",
     "//google_apis:google_apis",
     "//net:net",
     "//third_party/cacheinvalidation",

@@ -15,6 +15,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/file_chooser_file_info.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_service_manager_context.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/shell_dialogs/selected_file_info.h"
@@ -50,6 +51,7 @@ TEST(FileManagerFileAPIUtilTest,
      ConvertSelectedFileInfoListToFileChooserFileInfoList) {
   // Prepare the test drive environment.
   content::TestBrowserThreadBundle threads;
+  content::TestServiceManagerContext service_manager_context;
   TestingProfileManager profile_manager(TestingBrowserProcess::GetGlobal());
   ASSERT_TRUE(profile_manager.SetUp());
   base::ScopedTempDir drive_cache_dir;
