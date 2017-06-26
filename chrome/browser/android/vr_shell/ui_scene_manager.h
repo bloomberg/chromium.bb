@@ -11,6 +11,7 @@
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "chrome/browser/android/vr_shell/color_scheme.h"
+#include "chrome/browser/android/vr_shell/ui_elements/simple_textured_element.h"
 #include "chrome/browser/android/vr_shell/ui_interface.h"
 #include "chrome/browser/android/vr_shell/ui_unsupported_mode.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -18,7 +19,6 @@
 namespace vr_shell {
 
 class LoadingIndicator;
-class SplashScreenIcon;
 class TransientUrlBar;
 class UiBrowserInterface;
 class UiElement;
