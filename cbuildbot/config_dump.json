@@ -14875,7 +14875,7 @@
             "daisy_skate-chrome-pfq",
             "hana-chrome-pfq",
             "lumpy-chrome-pfq",
-            "nyan-chrome-pfq",
+            "nyan_big-chrome-pfq",
             "peach_pit-chrome-pfq",
             "peppy-chrome-pfq",
             "reef-chrome-pfq",
@@ -16481,10 +16481,10 @@
     },
     "nyan-chrome-pfq": {
         "_template": "chrome_pfq",
-        "active_waterfall": "chromeos",
         "boards": [
             "nyan"
         ],
+        "important": false,
         "manifest": "official.xml",
         "vm_tests": []
     },
@@ -16699,6 +16699,7 @@
     },
     "nyan_big-chrome-pfq": {
         "_template": "chrome_pfq",
+        "active_waterfall": "chromeos",
         "boards": [
             "nyan_big"
         ],
