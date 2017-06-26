@@ -135,12 +135,12 @@ void AudioInputRendererHost::OnDestruct() const {
   BrowserThread::DeleteOnIOThread::Destruct(this);
 }
 
-void AudioInputRendererHost::OnCreated(
-    media::AudioInputController* controller) {
+void AudioInputRendererHost::OnCreated(media::AudioInputController* controller,
+                                       bool initially_muted) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&AudioInputRendererHost::DoCompleteCreation, this,
-                     base::RetainedRef(controller)));
+                     base::RetainedRef(controller), initially_muted));
 }
 
 void AudioInputRendererHost::OnError(media::AudioInputController* controller,
@@ -173,7 +173,8 @@ void AudioInputRendererHost::set_renderer_pid(int32_t renderer_pid) {
 }
 
 void AudioInputRendererHost::DoCompleteCreation(
-    media::AudioInputController* controller) {
+    media::AudioInputController* controller,
+    bool initially_muted) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   AudioEntry* entry = LookupByController(controller);
@@ -205,13 +206,15 @@ void AudioInputRendererHost::DoCompleteCreation(
   }
 
   LogMessage(entry->stream_id,
-             "DoCompleteCreation: IPC channel and stream are now open",
+             base::StringPrintf("DoCompleteCreation: IPC channel and stream "
+                                "are now open (initially %s",
+                                initially_muted ? "muted" : "not muted"),
              true);
 
   Send(new AudioInputMsg_NotifyStreamCreated(
       entry->stream_id, foreign_memory_handle, socket_transit_descriptor,
       writer->shared_memory()->requested_size(),
-      writer->shared_memory_segment_count()));
+      writer->shared_memory_segment_count(), initially_muted));
 
   // Free the foreign socket on here since it isn't needed anymore in this
   // process.

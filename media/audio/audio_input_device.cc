@@ -149,11 +149,11 @@ void AudioInputDevice::SetAutomaticGainControl(bool enabled) {
           this, enabled));
 }
 
-void AudioInputDevice::OnStreamCreated(
-    base::SharedMemoryHandle handle,
-    base::SyncSocket::Handle socket_handle,
-    int length,
-    int total_segments) {
+void AudioInputDevice::OnStreamCreated(base::SharedMemoryHandle handle,
+                                       base::SyncSocket::Handle socket_handle,
+                                       int length,
+                                       int total_segments,
+                                       bool initially_muted) {
   DCHECK(task_runner()->BelongsToCurrentThread());
   DCHECK(base::SharedMemory::IsHandleValid(handle));
 #if defined(OS_WIN)
@@ -175,6 +175,10 @@ void AudioInputDevice::OnStreamCreated(
 
   DCHECK(!audio_callback_);
   DCHECK(!audio_thread_);
+
+  if (initially_muted)
+    callback_->OnCaptureMuted(true);
+
   audio_callback_.reset(new AudioInputDevice::AudioThreadCallback(
       audio_parameters_, handle, length, total_segments, callback_,
       base::BindRepeating(&AudioInputDevice::SetLastCallbackTimeToNow, this)));

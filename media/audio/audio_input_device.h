@@ -104,7 +104,8 @@ class MEDIA_EXPORT AudioInputDevice
   void OnStreamCreated(base::SharedMemoryHandle handle,
                        base::SyncSocket::Handle socket_handle,
                        int length,
-                       int total_segments) override;
+                       int total_segments,
+                       bool initially_muted) override;
   void OnError() override;
   void OnMuted(bool is_muted) override;
   void OnIPCClosed() override;

@@ -128,7 +128,8 @@ void AudioInputMessageFilter::OnStreamCreated(
     base::SharedMemoryHandle handle,
     base::SyncSocket::TransitDescriptor socket_descriptor,
     uint32_t length,
-    uint32_t total_segments) {
+    uint32_t total_segments,
+    bool initially_muted) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   LogMessage(stream_id, "OnStreamCreated");
 
@@ -143,7 +144,8 @@ void AudioInputMessageFilter::OnStreamCreated(
     return;
   }
   // Forward message to the stream delegate.
-  delegate->OnStreamCreated(handle, socket_handle, length, total_segments);
+  delegate->OnStreamCreated(handle, socket_handle, length, total_segments,
+                            initially_muted);
 }
 
 void AudioInputMessageFilter::OnStreamError(int stream_id) {

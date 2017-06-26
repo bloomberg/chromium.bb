@@ -359,11 +359,11 @@ void AudioInputController::DoCreateForStream(
 
   // Finally, keep the stream pointer around, update the state and notify.
   stream_ = stream_to_control;
-  handler_->OnCreated(this);
 
-  // Check the current muted state and start the repeating timer to keep that
-  // updated.
-  CheckMutedState();
+  // Send initial muted state along with OnCreated, to avoid races.
+  is_muted_ = stream_->IsMuted();
+  handler_->OnCreated(this, is_muted_);
+
   check_muted_state_timer_.Start(
       FROM_HERE, base::TimeDelta::FromSeconds(kCheckMutedStateIntervalSeconds),
       this, &AudioInputController::CheckMutedState);
