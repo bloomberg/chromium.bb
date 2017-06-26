@@ -77,6 +77,41 @@ bool EnumTraits<display::mojom::TouchSupport, display::Display::TouchSupport>::
   return false;
 }
 
+display::mojom::AccelerometerSupport
+EnumTraits<display::mojom::AccelerometerSupport,
+           display::Display::AccelerometerSupport>::
+    ToMojom(display::Display::AccelerometerSupport accelerometer_support) {
+  switch (accelerometer_support) {
+    case display::Display::ACCELEROMETER_SUPPORT_UNKNOWN:
+      return display::mojom::AccelerometerSupport::UNKNOWN;
+    case display::Display::ACCELEROMETER_SUPPORT_AVAILABLE:
+      return display::mojom::AccelerometerSupport::AVAILABLE;
+    case display::Display::ACCELEROMETER_SUPPORT_UNAVAILABLE:
+      return display::mojom::AccelerometerSupport::UNAVAILABLE;
+  }
+  NOTREACHED();
+  return display::mojom::AccelerometerSupport::UNKNOWN;
+}
+
+bool EnumTraits<display::mojom::AccelerometerSupport,
+                display::Display::AccelerometerSupport>::
+    FromMojom(display::mojom::AccelerometerSupport accelerometer_support,
+              display::Display::AccelerometerSupport* out) {
+  switch (accelerometer_support) {
+    case display::mojom::AccelerometerSupport::UNKNOWN:
+      *out = display::Display::ACCELEROMETER_SUPPORT_UNKNOWN;
+      return true;
+    case display::mojom::AccelerometerSupport::AVAILABLE:
+      *out = display::Display::ACCELEROMETER_SUPPORT_AVAILABLE;
+      return true;
+    case display::mojom::AccelerometerSupport::UNAVAILABLE:
+      *out = display::Display::ACCELEROMETER_SUPPORT_UNAVAILABLE;
+      return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
 bool StructTraits<display::mojom::DisplayDataView, display::Display>::Read(
     display::mojom::DisplayDataView data,
     display::Display* out) {
@@ -97,6 +132,9 @@ bool StructTraits<display::mojom::DisplayDataView, display::Display>::Read(
     return false;
 
   if (!data.ReadTouchSupport(&out->touch_support_))
+    return false;
+
+  if (!data.ReadAccelerometerSupport(&out->accelerometer_support_))
     return false;
 
   if (!data.ReadMaximumCursorSize(&out->maximum_cursor_size_))

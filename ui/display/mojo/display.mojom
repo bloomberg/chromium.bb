@@ -21,6 +21,13 @@ enum TouchSupport {
   UNAVAILABLE,
 };
 
+// Corresponds to display::Display::AccelerometerSupport.
+enum AccelerometerSupport {
+  UNKNOWN,
+  AVAILABLE,
+  UNAVAILABLE,
+};
+
 // Corresponds to display::Display.
 struct Display {
   int64 id;
@@ -30,6 +37,7 @@ struct Display {
   float device_scale_factor;
   Rotation rotation;
   TouchSupport touch_support;
+  AccelerometerSupport accelerometer_support;
   gfx.mojom.Size maximum_cursor_size;
   int32 color_depth;
   int32 depth_per_component;
