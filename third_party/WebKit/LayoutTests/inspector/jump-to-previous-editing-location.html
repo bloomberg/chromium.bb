@@ -27,7 +27,7 @@ function test()
     {
         var selection = panel.visibleView.textEditor.selection();
         var label = "<" + label + ">";
-        var fileName = "[" + panel.visibleView._url.split("/").pop() + "]";
+        var fileName = "[" + panel.visibleView.uiSourceCode().url().split("/").pop() + "]";
         var selectionText = "";
         if (selection.isEmpty())
             selectionText = "line: " + selection.startLine + " column: " + selection.startColumn;
