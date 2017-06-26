@@ -2,21 +2,20 @@
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script src="../../../resources/bluetooth/web-bluetooth-test.js"></script>
+<script src="../../../resources/mojo-helpers.js"></script>
 <script>
 'use strict';
 promise_test(() => {
-  return setBluetoothFakeAdapter('DisconnectingHealthThermometerAdapter')
-    .then(() => requestDeviceWithKeyDown({
-      filters: [{services: ['health_thermometer']}]}))
-    .then(device => device.gatt.connect())
-    .then(gattServer => gattServer.getPrimaryService('health_thermometer'))
-    .then(service => service.getCharacteristic('measurement_interval'))
-    .then(characteristic => characteristic.getDescriptor(user_description.name))
-    .then(descriptor => descriptor.readValue())
-    .then(value => {
-      let decoder = new TextDecoder('utf-8');
-      let value_str = decoder.decode(value);
-      assert_equals(value_str, "gatt.characteristic_user_description");
+  const EXPECTED_VALUE = [0, 1, 2];
+  return getUserDescriptionDescriptor()
+    .then(({descriptor, fake_descriptor}) => {
+      return fake_descriptor.setNextReadResponse(GATT_SUCCESS, EXPECTED_VALUE)
+        .then(() => descriptor.readValue())
+        .then(value => {
+          assert_array_equals(Array.from(new Uint8Array(
+            value.buffer)), EXPECTED_VALUE);
+        });
     });
 }, 'A read request succeeds and returns the descriptor\'s value.');
 </script>

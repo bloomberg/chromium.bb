@@ -145,4 +145,21 @@ interface FakeCentral {
   SetNextReadCharacteristicResponse(uint16 gatt_code, array<uint8>? value,
                                     string characteristic_id, string service_id,
                                     string peripheral_address) => (bool success);
+
+  // Sets the next read response for descriptor with |descriptor_id| in
+  // |characteristics_id| in |service_id| and in |peripheral_address| to |code|
+  // and |value|. |code| could be a GATT Error Response from
+  // BT 4.2 Vol 3 Part F 3.4.1.1 Error Response or a number outside that range
+  // returned by specific platforms e.g. Android returns 0x101 to signal a GATT
+  // failure.
+  // https://developer.android.com/reference/android/bluetooth/BluetoothGatt.html#GATT_FAILURE
+  // Calls callback with false if there was any error when simulating the next
+  // response.
+  SetNextReadDescriptorResponse(
+      uint16 gatt_code,
+      array<uint8>? value,
+      string descriptor_id,
+      string characteristic_id,
+      string service_id,
+      string peripheral_address) => (bool success);
 };

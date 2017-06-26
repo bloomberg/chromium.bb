@@ -148,6 +148,25 @@ void FakeCentral::SetNextReadCharacteristicResponse(
   std::move(callback).Run(true);
 }
 
+void FakeCentral::SetNextReadDescriptorResponse(
+    uint16_t gatt_code,
+    const base::Optional<std::vector<uint8_t>>& value,
+    const std::string& descriptor_id,
+    const std::string& characteristic_id,
+    const std::string& service_id,
+    const std::string& peripheral_address,
+    SetNextReadDescriptorResponseCallback callback) {
+  FakeRemoteGattDescriptor* fake_remote_gatt_descriptor =
+      GetFakeRemoteGattDescriptor(peripheral_address, service_id,
+                                  characteristic_id, descriptor_id);
+  if (fake_remote_gatt_descriptor == nullptr) {
+    std::move(callback).Run(false);
+  }
+
+  fake_remote_gatt_descriptor->SetNextReadResponse(gatt_code, value);
+  std::move(callback).Run(true);
+}
+
 std::string FakeCentral::GetAddress() const {
   NOTREACHED();
   return std::string();
@@ -307,6 +326,22 @@ FakeRemoteGattCharacteristic* FakeCentral::GetFakeRemoteGattCharacteristic(
 
   return static_cast<FakeRemoteGattCharacteristic*>(
       fake_remote_gatt_service->GetCharacteristic(characteristic_id));
+}
+
+FakeRemoteGattDescriptor* FakeCentral::GetFakeRemoteGattDescriptor(
+    const std::string& peripheral_address,
+    const std::string& service_id,
+    const std::string& characteristic_id,
+    const std::string& descriptor_id) const {
+  FakeRemoteGattCharacteristic* fake_remote_gatt_characteristic =
+      GetFakeRemoteGattCharacteristic(peripheral_address, service_id,
+                                      characteristic_id);
+  if (fake_remote_gatt_characteristic == nullptr) {
+    return nullptr;
+  }
+
+  return static_cast<FakeRemoteGattDescriptor*>(
+      fake_remote_gatt_characteristic->GetDescriptor(descriptor_id));
 }
 
 }  // namespace bluetooth
