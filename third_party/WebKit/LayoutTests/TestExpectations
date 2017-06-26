@@ -2005,6 +2005,10 @@ crbug.com/736056 external/wpt/encoding/legacy-mb-tchinese/big5/big5-encode-href-
 crbug.com/736056 external/wpt/encoding/legacy-mb-tchinese/big5/big5-encode-href-errors-misc.html [ Pass Timeout ]
 crbug.com/736056 external/wpt/encoding/legacy-mb-tchinese/big5/big5-encode-href.html [ Pass Timeout ]
 
+# rebaseline-cl does not handle ref-tests yet...
+crbug.com/736811 fast/css/text-overflow-ellipsis-multiple-shadows.html [ Pass Failure ]
+crbug.com/736811 external/wpt/css/selectors4/focus-within-004.html [ Pass Failure ]
+
 # Failures in non-wpt tests from:
 # https://chromium-review.googlesource.com/c/543695/
 # Possibly became flaky after a change in testharness.js.
