@@ -29,7 +29,10 @@ class BLINK_PLATFORM_EXPORT WebServiceWorkerStreamHandle {
 
 #if INSIDE_BLINK
   WebServiceWorkerStreamHandle(mojo::ScopedDataPipeConsumerHandle stream)
-      : stream_(std::move(stream)) {}
+      : stream_(std::move(stream)) {
+    // Temporary CHECK to debug https://crbug.com/734978.
+    CHECK(stream_.is_valid());
+  }
   void Aborted();
   void Completed();
 #endif
