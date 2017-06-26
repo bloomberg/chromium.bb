@@ -73,8 +73,9 @@ class BudgetDatabaseTest : public ::testing::Test {
   void GetBudgetDetails() {
     base::RunLoop run_loop;
     db_.GetBudgetDetails(
-        origin(), base::Bind(&BudgetDatabaseTest::GetBudgetDetailsComplete,
-                             base::Unretained(this), run_loop.QuitClosure()));
+        origin(),
+        base::BindOnce(&BudgetDatabaseTest::GetBudgetDetailsComplete,
+                       base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
   }
 

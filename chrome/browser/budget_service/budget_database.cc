@@ -57,25 +57,25 @@ BudgetDatabase::BudgetDatabase(Profile* profile,
       clock_(base::WrapUnique(new base::DefaultClock)),
       weak_ptr_factory_(this) {
   db_->Init(kDatabaseUMAName, database_dir,
-            base::Bind(&BudgetDatabase::OnDatabaseInit,
-                       weak_ptr_factory_.GetWeakPtr()));
+            base::BindOnce(&BudgetDatabase::OnDatabaseInit,
+                           weak_ptr_factory_.GetWeakPtr()));
 }
 
 BudgetDatabase::~BudgetDatabase() {}
 
 void BudgetDatabase::GetBudgetDetails(const url::Origin& origin,
                                       GetBudgetCallback callback) {
-  SyncCache(origin, base::Bind(&BudgetDatabase::GetBudgetAfterSync,
-                               weak_ptr_factory_.GetWeakPtr(), origin,
-                               base::Passed(&callback)));
+  SyncCache(origin, base::BindOnce(&BudgetDatabase::GetBudgetAfterSync,
+                                   weak_ptr_factory_.GetWeakPtr(), origin,
+                                   base::Passed(&callback)));
 }
 
 void BudgetDatabase::SpendBudget(const url::Origin& origin,
                                  double amount,
                                  SpendBudgetCallback callback) {
-  SyncCache(origin, base::Bind(&BudgetDatabase::SpendBudgetAfterSync,
-                               weak_ptr_factory_.GetWeakPtr(), origin, amount,
-                               base::Passed(&callback)));
+  SyncCache(origin, base::BindOnce(&BudgetDatabase::SpendBudgetAfterSync,
+                                   weak_ptr_factory_.GetWeakPtr(), origin,
+                                   amount, base::Passed(&callback)));
 }
 
 void BudgetDatabase::SetClockForTesting(std::unique_ptr<base::Clock> clock) {
@@ -283,10 +283,10 @@ void BudgetDatabase::SyncCache(const url::Origin& origin,
     CacheCallback add_callback = base::BindOnce(
         &BudgetDatabase::SyncLoadedCache, weak_ptr_factory_.GetWeakPtr(),
         origin, std::move(callback));
-    db_->GetEntry(
-        origin.Serialize(),
-        base::Bind(&BudgetDatabase::AddToCache, weak_ptr_factory_.GetWeakPtr(),
-                   origin, base::Passed(&add_callback)));
+    db_->GetEntry(origin.Serialize(),
+                  base::BindOnce(&BudgetDatabase::AddToCache,
+                                 weak_ptr_factory_.GetWeakPtr(), origin,
+                                 base::Passed(&add_callback)));
     return;
   }
   SyncLoadedCache(origin, std::move(callback), true /* success */);

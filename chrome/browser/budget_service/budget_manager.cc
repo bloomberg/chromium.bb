@@ -45,9 +45,9 @@ void BudgetManager::GetBudget(const url::Origin& origin,
                             std::vector<blink::mojom::BudgetStatePtr>());
     return;
   }
-  db_.GetBudgetDetails(origin, base::Bind(&BudgetManager::DidGetBudget,
-                                          weak_ptr_factory_.GetWeakPtr(),
-                                          base::Passed(&callback)));
+  db_.GetBudgetDetails(origin, base::BindOnce(&BudgetManager::DidGetBudget,
+                                              weak_ptr_factory_.GetWeakPtr(),
+                                              base::Passed(&callback)));
 }
 
 void BudgetManager::Reserve(const url::Origin& origin,
