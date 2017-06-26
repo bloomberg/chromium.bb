@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "components/payments/mojom/payment_manifest_parser.mojom.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace service_manager {
 struct BindSourceInfo;
@@ -21,11 +22,18 @@ namespace payments {
 // Parser for payment method manifests and web app manifests. Should be used
 // only in a sandboxed utility process.
 //
-// Example valid payment method manifest structure:
+// Example 1 of valid payment method manifest structure:
 //
 // {
 //   "default_applications": ["https://bobpay.com/payment-app.json"],
-//   "supported_origins": ["https://alicepay.com"]  // Not yet parsed or used.
+//   "supported_origins": ["https://alicepay.com"]
+// }
+//
+// Example 2 of valid payment method manifest structure:
+//
+// {
+//   "default_applications": ["https://bobpay.com/payment-app.json"],
+//   "supported_origins": "*"
 // }
 //
 // Example valid web app manifest structure:
@@ -49,8 +57,11 @@ class PaymentManifestParser : public mojom::PaymentManifestParser {
   static void Create(const service_manager::BindSourceInfo& source_info,
                      mojom::PaymentManifestParserRequest request);
 
-  static std::vector<GURL> ParsePaymentMethodManifestIntoVector(
-      const std::string& input);
+  static void ParsePaymentMethodManifestIntoVectors(
+      const std::string& input,
+      std::vector<GURL>* web_app_manifest_urls,
+      std::vector<url::Origin>* supported_origins,
+      bool* all_origins_supported);
 
   // The return value is move-only, so no copying occurs.
   static std::vector<mojom::WebAppManifestSectionPtr>

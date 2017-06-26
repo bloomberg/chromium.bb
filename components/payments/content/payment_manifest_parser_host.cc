@@ -17,6 +17,11 @@
 #include "url/url_constants.h"
 
 namespace payments {
+namespace {
+
+const size_t kMaximumNumberOfItems = 100U;
+
+}  // namespace
 
 PaymentManifestParserHost::PaymentManifestParserHost() : callback_counter_(0) {}
 
@@ -37,7 +42,8 @@ void PaymentManifestParserHost::ParsePaymentMethodManifest(
     const std::string& content,
     PaymentMethodCallback callback) {
   if (!mojo_client_) {
-    std::move(callback).Run(std::vector<GURL>());
+    std::move(callback).Run(std::vector<GURL>(), std::vector<url::Origin>(),
+                            false);
     return;
   }
 
@@ -72,7 +78,9 @@ void PaymentManifestParserHost::ParseWebAppManifest(const std::string& content,
 
 void PaymentManifestParserHost::OnPaymentMethodParse(
     int64_t callback_identifier,
-    const std::vector<GURL>& web_app_manifest_urls) {
+    const std::vector<GURL>& web_app_manifest_urls,
+    const std::vector<url::Origin>& supported_origins,
+    bool all_origins_supported) {
   const auto& pending_callback_it =
       pending_payment_method_callbacks_.find(callback_identifier);
   if (pending_callback_it == pending_payment_method_callbacks_.end()) {
@@ -82,8 +90,8 @@ void PaymentManifestParserHost::OnPaymentMethodParse(
     return;
   }
 
-  const size_t kMaximumNumberOfWebAppUrls = 100U;
-  if (web_app_manifest_urls.size() > kMaximumNumberOfWebAppUrls) {
+  if (web_app_manifest_urls.size() > kMaximumNumberOfItems ||
+      supported_origins.size() > kMaximumNumberOfItems) {
     // If more than 100 items, then something went wrong in the utility
     // process. Stop the utility process and notify all callbacks.
     OnUtilityProcessStopped();
@@ -99,12 +107,30 @@ void PaymentManifestParserHost::OnPaymentMethodParse(
     }
   }
 
+  if (all_origins_supported && !supported_origins.empty()) {
+    // The format of the payment method manifest does not allow for both of
+    // these conditions to be true. Something went wrong in the utility process.
+    // Stop the utility process and notify all callbacks.
+    OnUtilityProcessStopped();
+    return;
+  }
+
+  for (const auto& origin : supported_origins) {
+    if (!origin.GetURL().is_valid() || origin.scheme() != url::kHttpsScheme) {
+      // If not a valid origin with HTTPS scheme, then something went wrong in
+      // the utility process. Stop the utility process and notify all callbacks.
+      OnUtilityProcessStopped();
+      return;
+    }
+  }
+
   PaymentMethodCallback callback = std::move(pending_callback_it->second);
   pending_payment_method_callbacks_.erase(pending_callback_it);
 
   // Can trigger synchronous deletion of this object, so can't access any of
   // the member variables after this block.
-  std::move(callback).Run(web_app_manifest_urls);
+  std::move(callback).Run(web_app_manifest_urls, supported_origins,
+                          all_origins_supported);
 }
 
 void PaymentManifestParserHost::OnWebAppParse(
@@ -119,8 +145,7 @@ void PaymentManifestParserHost::OnWebAppParse(
     return;
   }
 
-  const size_t kMaximumNumberOfSections = 100U;
-  if (manifest.size() > kMaximumNumberOfSections) {
+  if (manifest.size() > kMaximumNumberOfItems) {
     // If more than 100 items, then something went wrong in the utility
     // process. Stop the utility process and notify all callbacks.
     OnUtilityProcessStopped();
@@ -128,8 +153,7 @@ void PaymentManifestParserHost::OnWebAppParse(
   }
 
   for (size_t i = 0; i < manifest.size(); ++i) {
-    const size_t kMaximumNumberOfFingerprints = 100U;
-    if (manifest[i]->fingerprints.size() > kMaximumNumberOfFingerprints) {
+    if (manifest[i]->fingerprints.size() > kMaximumNumberOfItems) {
       // If more than 100 items, then something went wrong in the utility
       // process. Stop the utility process and notify all callbacks.
       OnUtilityProcessStopped();
@@ -148,15 +172,16 @@ void PaymentManifestParserHost::OnWebAppParse(
 void PaymentManifestParserHost::OnUtilityProcessStopped() {
   mojo_client_.reset();
 
-  std::unordered_map<int64_t, PaymentMethodCallback> payment_method_callbacks =
+  std::map<int64_t, PaymentMethodCallback> payment_method_callbacks =
       std::move(pending_payment_method_callbacks_);
-  std::unordered_map<int64_t, WebAppCallback> web_app_callbacks =
+  std::map<int64_t, WebAppCallback> web_app_callbacks =
       std::move(pending_web_app_callbacks_);
 
   for (auto& callback : payment_method_callbacks) {
     // Can trigger synchronous deletion of this object, so can't access any of
     // the member variables after this line.
-    std::move(callback.second).Run(std::vector<GURL>());
+    std::move(callback.second)
+        .Run(std::vector<GURL>(), std::vector<url::Origin>(), false);
   }
 
   for (auto& callback : web_app_callbacks) {

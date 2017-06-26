@@ -11,5 +11,6 @@ mojom("mojom_parser") {
 
   public_deps = [
     "//url/mojo:url_mojom_gurl",
+    "//url/mojo:url_mojom_origin",
   ]
 }
