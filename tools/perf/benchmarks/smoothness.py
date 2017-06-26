@@ -10,6 +10,7 @@ from measurements import smoothness
 import page_sets
 import page_sets.key_silk_cases
 from telemetry import benchmark
+from telemetry import story as story_module
 
 
 class _Smoothness(perf_benchmark.PerfBenchmark):
@@ -61,6 +62,15 @@ class SmoothnessTop25(_Smoothness):
       return True
     return False
 
+  def GetExpectations(self):
+    class StoryExpectations(story_module.expectations.StoryExpectations):
+      def SetExpectations(self):
+        self.DisableStory('http://www.cnn.com', [story_module.expectations.ALL],
+                          'crbug.com/528474')
+        self.DisableStory('http://www.amazon.com', [story_module.expectations.ALL],
+                          'crbug.com/667432')
+    return StoryExpectations()
+
 
 @benchmark.Owner(emails=['senorblanco@chromium.org'])
 class SmoothnessToughFiltersCases(_Smoothness):
@@ -85,6 +95,12 @@ class SmoothnessToughFiltersCases(_Smoothness):
       return True
     return False
 
+  def GetExpectations(self):
+    class StoryExpectations(story_module.expectations.StoryExpectations):
+      def SetExpectations(self):
+        pass # Nothing.
+    return StoryExpectations()
+
 
 @benchmark.Owner(emails=['senorblanco@chromium.org'])
 class SmoothnessToughPathRenderingCases(_Smoothness):
@@ -96,6 +112,12 @@ class SmoothnessToughPathRenderingCases(_Smoothness):
   @classmethod
   def Name(cls):
     return 'smoothness.tough_path_rendering_cases'
+
+  def GetExpectations(self):
+    class StoryExpectations(story_module.expectations.StoryExpectations):
+      def SetExpectations(self):
+        pass # Nothing.
+    return StoryExpectations()
 
 
 @benchmark.Disabled('android')  # crbug.com/526901
@@ -115,6 +137,21 @@ class SmoothnessToughCanvasCases(_Smoothness):
   def Name(cls):
     return 'smoothness.tough_canvas_cases'
 
+  def GetExpectations(self):
+    class StoryExpectations(story_module.expectations.StoryExpectations):
+      def SetExpectations(self):
+        # TODO(rnephew): Uncomment out after story is added back to set after
+        # rerecording.
+        # self.DisableStory(
+        #     'http://ie.microsoft.com/testdrive/Performance/Fireflies/Default.'
+        #     'html', [story_module.expectations.ALL], 'crbug.com/314131')
+
+        # pylint: disable=line-too-long
+        self.DisableStory('http://geoapis.appspot.com/agdnZW9hcGlzchMLEgtFeGFtcGxlQ29kZRjh1wIM',
+                          [story_module.expectations.ANDROID_NEXUS5],
+                          'crbug.com/364248')
+    return StoryExpectations()
+
 
 @benchmark.Disabled('android')  # crbug.com/373812
 @benchmark.Disabled('win-reference')  # crbug.com/612810
@@ -126,6 +163,12 @@ class SmoothnessToughWebGLCases(_Smoothness):
   def Name(cls):
     return 'smoothness.tough_webgl_cases'
 
+  def GetExpectations(self):
+    class StoryExpectations(story_module.expectations.StoryExpectations):
+      def SetExpectations(self):
+        pass # Nothing.
+    return StoryExpectations()
+
 
 @benchmark.Disabled('android-webview')  # http://crbug.com/653933
 @benchmark.Owner(emails=['kbr@chromium.org', 'zmo@chromium.org'])
@@ -135,6 +178,12 @@ class SmoothnessMaps(perf_benchmark.PerfBenchmark):
   @classmethod
   def Name(cls):
     return 'smoothness.maps'
+
+  def GetExpectations(self):
+    class StoryExpectations(story_module.expectations.StoryExpectations):
+      def SetExpectations(self):
+        pass # Nothing.
+    return StoryExpectations()
 
 
 @benchmark.Disabled('android',
@@ -151,6 +200,12 @@ class SmoothnessKeyDesktopMoveCases(_Smoothness):
   def ShouldDisable(cls, possible_browser):  # http://crbug.com/597656
       return (possible_browser.browser_type == 'reference' and
               possible_browser.platform.GetOSName() == 'win')
+
+  def GetExpectations(self):
+    class StoryExpectations(story_module.expectations.StoryExpectations):
+      def SetExpectations(self):
+        pass # Nothing.
+    return StoryExpectations()
 
 
 @benchmark.Enabled('android')
@@ -171,6 +226,13 @@ class SmoothnessKeyMobileSites(_Smoothness):
       return (possible_browser.browser_type == 'reference' and
               possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X')
 
+  def GetExpectations(self):
+    class StoryExpectations(story_module.expectations.StoryExpectations):
+      def SetExpectations(self):
+        pass # Nothing.
+    return StoryExpectations()
+
+
 @benchmark.Disabled('android')  # crbug.com/589580
 @benchmark.Disabled('android-reference')  # crbug.com/588786
 @benchmark.Disabled('mac')  # crbug.com/563615
@@ -187,6 +249,13 @@ class SmoothnessToughAnimationCases(_Smoothness):
     # This test is flaky on low-end windows machine.
     return (possible_browser.platform.GetOSName() == 'win' and
             multiprocessing.cpu_count() <= 2)
+
+  def GetExpectations(self):
+    class StoryExpectations(story_module.expectations.StoryExpectations):
+      def SetExpectations(self):
+        self.DisableStory('robohornetpro', [story_module.expectations.ALL],
+                          'crbug.com/350692')
+    return StoryExpectations()
 
 
 @benchmark.Enabled('android')
@@ -234,6 +303,15 @@ class SmoothnessGpuRasterizationTop25(_Smoothness):
       return (possible_browser.browser_type == 'reference' and
               possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X')
 
+  def GetExpectations(self):
+    class StoryExpectations(story_module.expectations.StoryExpectations):
+      def SetExpectations(self):
+        self.DisableStory('http://www.cnn.com', [story_module.expectations.ALL],
+                          'crbug.com/528474')
+        self.DisableStory('http://www.amazon.com', [story_module.expectations.ALL],
+                          'crbug.com/667432')
+    return StoryExpectations()
+
 
 # Although GPU rasterization is enabled on Mac, it is blacklisted for certain
 # path cases, so it is still valuable to run both the GPU and non-GPU versions
@@ -252,6 +330,12 @@ class SmoothnessGpuRasterizationToughPathRenderingCases(_Smoothness):
   @classmethod
   def Name(cls):
     return 'smoothness.gpu_rasterization.tough_path_rendering_cases'
+
+  def GetExpectations(self):
+    class StoryExpectations(story_module.expectations.StoryExpectations):
+      def SetExpectations(self):
+        pass # Nothing.
+    return StoryExpectations()
 
 
 # With GPU Raster enabled on Mac, there's no reason to run this benchmark in
@@ -277,6 +361,12 @@ class SmoothnessGpuRasterizationFiltersCases(_Smoothness):
     return (cls.IsSvelte(possible_browser) and
             possible_browser.browser_type == 'reference')
 
+  def GetExpectations(self):
+    class StoryExpectations(story_module.expectations.StoryExpectations):
+      def SetExpectations(self):
+        pass # Nothing.
+    return StoryExpectations()
+
 
 @benchmark.Enabled('android')
 @benchmark.Owner(emails=['tdresser@chromium.org', 'rbyers@chromium.org'])
@@ -299,6 +389,12 @@ class SmoothnessSyncScrollKeyMobileSites(_Smoothness):
       return (possible_browser.browser_type == 'reference' and
               possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X')
 
+  def GetExpectations(self):
+    class StoryExpectations(story_module.expectations.StoryExpectations):
+      def SetExpectations(self):
+        pass # Nothing.
+    return StoryExpectations()
+
 
 @benchmark.Enabled('android')
 @benchmark.Owner(emails=['vmiura@chromium.org'])
@@ -310,6 +406,12 @@ class SmoothnessSimpleMobilePages(_Smoothness):
   @classmethod
   def Name(cls):
     return 'smoothness.simple_mobile_sites'
+
+  def GetExpectations(self):
+    class StoryExpectations(story_module.expectations.StoryExpectations):
+      def SetExpectations(self):
+        pass # Nothing.
+    return StoryExpectations()
 
 
 @benchmark.Disabled('all') # http://crbug.com/631015
@@ -332,6 +434,12 @@ class SmoothnessToughPinchZoomCases(_Smoothness):
        # http://crbug.com/630701
        possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X')
 
+  def GetExpectations(self):
+    class StoryExpectations(story_module.expectations.StoryExpectations):
+      def SetExpectations(self):
+        pass # Nothing.
+    return StoryExpectations()
+
 
 @benchmark.Enabled('mac')
 @benchmark.Owner(emails=['ericrk@chromium.org'])
@@ -344,6 +452,12 @@ class SmoothnessDesktopToughPinchZoomCases(_Smoothness):
   @classmethod
   def Name(cls):
     return 'smoothness.desktop_tough_pinch_zoom_cases'
+
+  def GetExpectations(self):
+    class StoryExpectations(story_module.expectations.StoryExpectations):
+      def SetExpectations(self):
+        pass # Nothing.
+    return StoryExpectations()
 
 
 # This benchmark runs only on android by it is disabled on android as well
@@ -370,6 +484,12 @@ class SmoothnessGpuRasterizationToughPinchZoomCases(_Smoothness):
   def ShouldDisable(cls, possible_browser):
     return cls.IsSvelte(possible_browser)  # http://crbug.com/564008
 
+  def GetExpectations(self):
+    class StoryExpectations(story_module.expectations.StoryExpectations):
+      def SetExpectations(self):
+        pass # Nothing.
+    return StoryExpectations()
+
 
 @benchmark.Enabled('android')
 @benchmark.Owner(emails=['vmiura@chromium.org'])
@@ -385,6 +505,12 @@ class SmoothnessGpuRasterizationPolymer(_Smoothness):
   @classmethod
   def Name(cls):
     return 'smoothness.gpu_rasterization.polymer'
+
+  def GetExpectations(self):
+    class StoryExpectations(story_module.expectations.StoryExpectations):
+      def SetExpectations(self):
+        pass # Nothing.
+    return StoryExpectations()
 
 
 @benchmark.Owner(emails=['reveman@chromium.org'])
@@ -403,6 +529,13 @@ class SmoothnessToughScrollingCases(_Smoothness):
   def Name(cls):
     return 'smoothness.tough_scrolling_cases'
 
+  def GetExpectations(self):
+    class StoryExpectations(story_module.expectations.StoryExpectations):
+      def SetExpectations(self):
+        pass # Nothing.
+    return StoryExpectations()
+
+
 @benchmark.Disabled('all')  # crbug.com/667489
 @benchmark.Owner(emails=['ericrk@chromium.org'])
 class SmoothnessGpuRasterizationToughScrollingCases(_Smoothness):
@@ -417,6 +550,12 @@ class SmoothnessGpuRasterizationToughScrollingCases(_Smoothness):
   def Name(cls):
     return 'smoothness.gpu_rasterization.tough_scrolling_cases'
 
+  def GetExpectations(self):
+    class StoryExpectations(story_module.expectations.StoryExpectations):
+      def SetExpectations(self):
+        pass # Nothing.
+    return StoryExpectations()
+
 
 @benchmark.Disabled('android')  # http://crbug.com/531593
 @benchmark.Disabled('win')  # http://crbug.com/652372
@@ -426,6 +565,12 @@ class SmoothnessToughImageDecodeCases(_Smoothness):
   @classmethod
   def Name(cls):
     return 'smoothness.tough_image_decode_cases'
+
+  def GetExpectations(self):
+    class StoryExpectations(story_module.expectations.StoryExpectations):
+      def SetExpectations(self):
+        pass # Nothing.
+    return StoryExpectations()
 
 
 @benchmark.Disabled('android')  # http://crbug.com/610015
@@ -447,6 +592,12 @@ class SmoothnessImageDecodingCases(_Smoothness):
   def ShouldDisable(cls, possible_browser):
     return cls.IsSvelte(possible_browser)  # http://crbug.com/563974
 
+  def GetExpectations(self):
+    class StoryExpectations(story_module.expectations.StoryExpectations):
+      def SetExpectations(self):
+        pass # Nothing.
+    return StoryExpectations()
+
 
 @benchmark.Disabled('android')  # http://crbug.com/513699
 @benchmark.Owner(emails=['cblume@chromium.org'])
@@ -464,6 +615,12 @@ class SmoothnessGpuImageDecodingCases(_Smoothness):
   @classmethod
   def Name(cls):
     return 'smoothness.gpu_rasterization_and_decoding.image_decoding_cases'
+
+  def GetExpectations(self):
+    class StoryExpectations(story_module.expectations.StoryExpectations):
+      def SetExpectations(self):
+        pass # Nothing.
+    return StoryExpectations()
 
 
 @benchmark.Enabled('android')
@@ -484,6 +641,12 @@ class SmoothnessPathologicalMobileSites(_Smoothness):
       return True
     return False
 
+  def GetExpectations(self):
+    class StoryExpectations(story_module.expectations.StoryExpectations):
+      def SetExpectations(self):
+        pass # Nothing.
+    return StoryExpectations()
+
 
 @benchmark.Owner(emails=['vmiura@chromium.org'])
 class SmoothnessToughTextureUploadCases(_Smoothness):
@@ -492,6 +655,11 @@ class SmoothnessToughTextureUploadCases(_Smoothness):
   @classmethod
   def Name(cls):
     return 'smoothness.tough_texture_upload_cases'
+
+  def GetExpectations(self):
+    class StoryExpectations(story_module.expectations.StoryExpectations):
+      pass # Nothing.
+    return StoryExpectations()
 
 
 @benchmark.Owner(emails=['skyostil@chromium.org'])
@@ -513,6 +681,12 @@ class SmoothnessToughAdCases(_Smoothness):
     # These pages don't scroll so it's not necessary to measure input latency.
     return value.name != 'first_gesture_scroll_update_latency'
 
+  def GetExpectations(self):
+    class StoryExpectations(story_module.expectations.StoryExpectations):
+      def SetExpectations(self):
+        pass # Nothing.
+    return StoryExpectations()
+
 
 # http://crbug.com/522619 (mac/win)
 # http://crbug.com/683247 (android/linux)
@@ -531,6 +705,16 @@ class SmoothnessScrollingToughAdCases(_Smoothness):
   def Name(cls):
     return 'smoothness.scrolling_tough_ad_cases'
 
+  def GetExpectations(self):
+    class StoryExpectations(story_module.expectations.StoryExpectations):
+      def SetExpectations(self):
+        self.DisableStory(
+            'http://time.com/3977891/donald-trump-debate-republican/',
+            [story_module.expectations.ALL], 'crbug.com/520509')
+        self.DisableStory(
+            'http://m.tmz.com', [story_module.expectations.ALL], 'crbug.com/597656')
+    return StoryExpectations()
+
 
 @benchmark.Owner(emails=['skyostil@chromium.org'])
 class SmoothnessToughWebGLAdCases(_Smoothness):
@@ -544,6 +728,12 @@ class SmoothnessToughWebGLAdCases(_Smoothness):
   @classmethod
   def ShouldDisable(cls, possible_browser):
     return cls.IsSvelte(possible_browser)  # http://crbug.com/574485
+
+  def GetExpectations(self):
+    class StoryExpectations(story_module.expectations.StoryExpectations):
+      def SetExpectations(self):
+        pass # Nothing.
+    return StoryExpectations()
 
 
 @benchmark.Disabled('reference')  # crbug.com/549428
@@ -562,3 +752,20 @@ class SmoothnessToughSchedulingCases(_Smoothness):
     # has been named this way for long time, we keep the name as-is to avoid
     # data migration.
     return 'scheduler.tough_scheduling_cases'
+
+  def GetExpectations(self):
+    class StoryExpectations(story_module.expectations.StoryExpectations):
+      def SetExpectations(self):
+
+        self.DisableStory('simple_text_page.html?medium_raster',
+                          [story_module.expectations.ALL], 'crbug.com/413829')
+        self.DisableStory('simple_text_page.html?heavy_raster',
+                          [story_module.expectations.ALL],
+                          'crbug.com/413829 and crbug.com/368532')
+        self.DisableStory('raf.html?medium_handler',
+                          [story_module.expectations.ALL],
+                          'crbug.com/413829')
+        self.DisableStory('raf.html?heavy_handler',
+                          [story_module.expectations.ALL],
+                          'crbug.com/413829 and crbug.com/368532')
+    return StoryExpectations()
