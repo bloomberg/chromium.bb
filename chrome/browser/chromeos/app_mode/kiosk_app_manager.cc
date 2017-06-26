@@ -418,10 +418,10 @@ void KioskAppManager::OnReadImmutableAttributes(
         bool* owner_present = new bool(false);
         base::PostTaskWithTraitsAndReply(
             FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
-            base::Bind(&CheckOwnerFilePresence, owner_present),
-            base::Bind(&KioskAppManager::OnOwnerFileChecked,
-                       base::Unretained(this), callback,
-                       base::Owned(owner_present)));
+            base::BindOnce(&CheckOwnerFilePresence, owner_present),
+            base::BindOnce(&KioskAppManager::OnOwnerFileChecked,
+                           base::Unretained(this), callback,
+                           base::Owned(owner_present)));
         return;
       }
       break;
@@ -849,7 +849,7 @@ void KioskAppManager::ClearRemovedApps(
       if (it.second->account_id() == active_account_id) {
         VLOG(1) << "Currently running kiosk app removed from policy, exiting";
         cryptohomes_barrier_closure = BarrierClosure(
-            old_apps.size(), base::Bind(&chrome::AttemptUserExit));
+            old_apps.size(), base::BindOnce(&chrome::AttemptUserExit));
         break;
       }
     }

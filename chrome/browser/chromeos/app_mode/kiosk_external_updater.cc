@@ -151,15 +151,13 @@ void KioskExternalUpdater::OnMountEvent(
     ExternalUpdateErrorCode* parsing_error = new ExternalUpdateErrorCode;
     backend_task_runner_->PostTaskAndReply(
         FROM_HERE,
-        base::Bind(&ParseExternalUpdateManifest,
-                   base::FilePath(mount_info.mount_path),
-                   parsed_manifest,
-                   parsing_error),
-        base::Bind(&KioskExternalUpdater::ProcessParsedManifest,
-                   weak_factory_.GetWeakPtr(),
-                   base::Owned(parsing_error),
-                   base::FilePath(mount_info.mount_path),
-                   base::Owned(parsed_manifest)));
+        base::BindOnce(&ParseExternalUpdateManifest,
+                       base::FilePath(mount_info.mount_path), parsed_manifest,
+                       parsing_error),
+        base::BindOnce(&KioskExternalUpdater::ProcessParsedManifest,
+                       weak_factory_.GetWeakPtr(), base::Owned(parsing_error),
+                       base::FilePath(mount_info.mount_path),
+                       base::Owned(parsed_manifest)));
   } else {  // unmounting a removable device.
     if (external_update_path_.value().empty()) {
       // Clear any previously displayed message.
@@ -210,17 +208,11 @@ void KioskExternalUpdater::OnExtenalUpdateUnpackSuccess(
   bool* success = new bool;
   backend_task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&CopyExternalCrxAndDeleteTempDir,
-                 external_crx_path,
-                 temp_crx_path,
-                 temp_dir,
-                 success),
-      base::Bind(&KioskExternalUpdater::PutValidatedExtension,
-                 weak_factory_.GetWeakPtr(),
-                 base::Owned(success),
-                 app_id,
-                 temp_crx_path,
-                 version));
+      base::BindOnce(&CopyExternalCrxAndDeleteTempDir, external_crx_path,
+                     temp_crx_path, temp_dir, success),
+      base::BindOnce(&KioskExternalUpdater::PutValidatedExtension,
+                     weak_factory_.GetWeakPtr(), base::Owned(success), app_id,
+                     temp_crx_path, version));
 }
 
 void KioskExternalUpdater::OnExternalUpdateUnpackFailure(

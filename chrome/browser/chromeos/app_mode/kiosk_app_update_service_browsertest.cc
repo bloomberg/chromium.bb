@@ -103,8 +103,9 @@ class KioskAppUpdateServiceTest
     // |SequenceToken| and waiting for it to finish.
     worker_pool->PostSequencedWorkerTask(
         worker_pool->GetNamedSequenceToken("automatic-reboot-manager"),
-        FROM_HERE, base::Bind(&RunCallback, base::ThreadTaskRunnerHandle::Get(),
-                              run_loop.QuitClosure()));
+        FROM_HERE,
+        base::BindOnce(&RunCallback, base::ThreadTaskRunnerHandle::Get(),
+                       run_loop.QuitClosure()));
     run_loop.Run();
     // Ensure that the |automatic_reboot_manager_| has had a chance to fully
     // process the result of the task posted to the blocking pool.

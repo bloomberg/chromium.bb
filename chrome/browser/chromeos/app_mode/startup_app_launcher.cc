@@ -120,9 +120,9 @@ void StartupAppLauncher::StartLoadingOAuthFile() {
   KioskOAuthParams* auth_params = new KioskOAuthParams();
   base::PostTaskWithTraitsAndReply(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
-      base::Bind(&StartupAppLauncher::LoadOAuthFileAsync, auth_params),
-      base::Bind(&StartupAppLauncher::OnOAuthFileLoaded, AsWeakPtr(),
-                 base::Owned(auth_params)));
+      base::BindOnce(&StartupAppLauncher::LoadOAuthFileAsync, auth_params),
+      base::BindOnce(&StartupAppLauncher::OnOAuthFileLoaded, AsWeakPtr(),
+                     base::Owned(auth_params)));
 }
 
 // static.
@@ -269,16 +269,15 @@ void StartupAppLauncher::MaybeLaunchApp() {
   // launching.
   if (offline_enabled || delegate_->IsNetworkReady()) {
     BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&StartupAppLauncher::OnReadyToLaunch, AsWeakPtr()));
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&StartupAppLauncher::OnReadyToLaunch, AsWeakPtr()));
   } else {
     ++launch_attempt_;
     if (launch_attempt_ < kMaxLaunchAttempt) {
       BrowserThread::PostTask(
-          BrowserThread::UI,
-          FROM_HERE,
-          base::Bind(&StartupAppLauncher::MaybeInitializeNetwork, AsWeakPtr()));
+          BrowserThread::UI, FROM_HERE,
+          base::BindOnce(&StartupAppLauncher::MaybeInitializeNetwork,
+                         AsWeakPtr()));
       return;
     }
     OnLaunchFailure(KioskAppLaunchError::UNABLE_TO_LAUNCH);

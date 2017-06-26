@@ -152,7 +152,7 @@ class KioskAppData::CrxLoader : public extensions::SandboxedUnpackerClient {
 
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&CrxLoader::NotifyFinishedOnUIThread, this));
+        base::BindOnce(&CrxLoader::NotifyFinishedOnUIThread, this));
   }
 
   void NotifyFinishedOnUIThread() {

@@ -27,7 +27,7 @@ class IconImageRequest : public ImageDecoder::ImageRequest {
     gfx::ImageSkia image = gfx::ImageSkia::CreateFrom1xBitmap(decoded_image);
     image.MakeThreadSafe();
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(result_callback_, image));
+                            base::BindOnce(result_callback_, image));
     delete this;
   }
 
@@ -35,7 +35,7 @@ class IconImageRequest : public ImageDecoder::ImageRequest {
     LOG(ERROR) << "Failed to decode icon image.";
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(result_callback_, base::Optional<gfx::ImageSkia>()));
+        base::BindOnce(result_callback_, base::Optional<gfx::ImageSkia>()));
     delete this;
   }
 
@@ -55,7 +55,7 @@ void LoadOnBlockingPool(
     LOG(ERROR) << "Failed to read icon file.";
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(result_callback, base::Optional<gfx::ImageSkia>()));
+        base::BindOnce(result_callback, base::Optional<gfx::ImageSkia>()));
     return;
   }
 
@@ -78,9 +78,9 @@ void KioskAppIconLoader::Start(const base::FilePath& icon_path) {
       token, base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&LoadOnBlockingPool, icon_path, task_runner_,
-                 base::Bind(&KioskAppIconLoader::OnImageDecodingFinished,
-                            weak_factory_.GetWeakPtr())));
+      base::BindOnce(&LoadOnBlockingPool, icon_path, task_runner_,
+                     base::Bind(&KioskAppIconLoader::OnImageDecodingFinished,
+                                weak_factory_.GetWeakPtr())));
 }
 
 void KioskAppIconLoader::OnImageDecodingFinished(
