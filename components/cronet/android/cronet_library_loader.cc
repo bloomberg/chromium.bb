@@ -19,6 +19,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/statistics_recorder.h"
 #include "components/cronet/android/cronet_bidirectional_stream_adapter.h"
+#include "components/cronet/android/cronet_jni_registration.h"
 #include "components/cronet/android/cronet_upload_data_stream_adapter.h"
 #include "components/cronet/android/cronet_url_request_adapter.h"
 #include "components/cronet/android/cronet_url_request_context_adapter.h"
@@ -84,6 +85,11 @@ bool OnInitThread() {
 jint CronetOnLoad(JavaVM* vm, void* reserved) {
   base::android::InitVM(vm);
   JNIEnv* env = base::android::AttachCurrentThread();
+  if (!RegisterMainDexNatives(env) || !RegisterNonMainDexNatives(env)) {
+    return -1;
+  }
+  // TODO(agrieve): Delete this block, this is a no-op now.
+  // https://crbug.com/683256.
   if (!RegisterJNI(env) || !NativeInit()) {
     return -1;
   }

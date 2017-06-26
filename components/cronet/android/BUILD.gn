@@ -25,6 +25,16 @@ generate_jni("cronet_jni_headers") {
   jni_package = "cronet"
 }
 
+generate_jni_registration("cronet_jni_registration") {
+  target = ":cronet_sample_apk"
+  output = "$root_gen_dir/components/cronet/android/${target_name}.h"
+  exception_files = [
+    "//base/android/java/src/org/chromium/base/library_loader/LegacyLinker.java",
+    "//base/android/java/src/org/chromium/base/library_loader/Linker.java",
+    "//base/android/java/src/org/chromium/base/library_loader/ModernLinker.java",
+  ]
+}
+
 java_cpp_enum("effective_connection_type_java") {
   sources = [
     "//net/nqe/effective_connection_type.h",
@@ -165,6 +175,7 @@ template("cronet_static_tmpl") {
     deps = [
       ":cronet_android_cert_proto",
       ":cronet_jni_headers",
+      ":cronet_jni_registration",
       ":cronet_version_header",
       "//base",
       "//base/third_party/dynamic_annotations",
@@ -529,6 +540,9 @@ shared_library("cronet_tests") {
   ]
 
   include_dirs = [ _cronet_version_header_include_dir ]
+
+  configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
+  configs += [ "//build/config/android:hide_all_but_jni" ]
 }
 
 android_resources("cronet_test_apk_resources") {

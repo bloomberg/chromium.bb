@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "net/android/net_jni_registrar.h"
 #include "remoting/client/jni/remoting_jni_registrar.h"
+#include "remoting/client/remoting_jni_registration.h"
 #include "ui/gfx/android/gfx_jni_registrar.h"
 
 namespace {
@@ -32,6 +33,12 @@ bool RegisterJNI(JNIEnv* env) {
 JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
   base::android::InitVM(vm);
   JNIEnv* env = base::android::AttachCurrentThread();
+  if (!RegisterMainDexNatives(env) || !RegisterNonMainDexNatives(env)) {
+    return -1;
+  }
+
+  // TODO(agrieve): Delete this block, this is a no-op now.
+  // https://crbug.com/683256.
   if (!RegisterJNI(env) || !base::android::OnJNIOnLoadInit()) {
     return -1;
   }

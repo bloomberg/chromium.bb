@@ -2,6 +2,7 @@ include_rules = [
   "-components/devtools_bridge",
   "+cc/layers/layer.h",
   "+cc/output/context_provider.h",
+  "+chrome_jni_registration/chrome_jni_registration.h",
   "+components/doodle",
   "+components/ntp_snippets",
   "+components/spellcheck/browser",
