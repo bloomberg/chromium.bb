@@ -49,6 +49,8 @@ using bookmarks::BookmarkNode;
                             configuration:configuration])) {
     // "Add Page..." has no "node" so this may be NULL.
     node_ = node;
+    urlFieldEditor_.reset([[DialogTextFieldEditor alloc] init]);
+    nameFieldEditor_.reset([[DialogTextFieldEditor alloc] init]);
   }
   return self;
 }
@@ -83,25 +85,19 @@ using bookmarks::BookmarkNode;
 }
 
 - (void)windowWillClose:(NSNotification*)notification {
-  // Force the field editors to resign the first responder so that they'll
-  // be removed from the view hierarchy and its delegate be set to nil.
-  [[self window] endEditingFor:urlField_];
-  [[self window] endEditingFor:nameTextField_];
+  [urlFieldEditor_ setFieldEditor:NO];
+  [nameFieldEditor_ setFieldEditor:NO];
 
+  urlFieldEditor_.reset();
+  nameFieldEditor_.reset();
   [super windowWillClose:notification];
 }
 
 - (id)windowWillReturnFieldEditor:(NSWindow*)sender toObject:(id)obj {
-  if (obj == urlField_) {
-    if (!urlFieldEditor_)
-      urlFieldEditor_.reset([[DialogTextFieldEditor alloc] init]);
+  if (obj == urlField_)
     return urlFieldEditor_.get();
-  } else if (obj == nameTextField_) {
-    if (!nameFieldEditor_)
-      nameFieldEditor_.reset([[DialogTextFieldEditor alloc] init]);
-
+  else if (obj == nameTextField_)
     return nameFieldEditor_.get();
-  }
 
   return nil;
 }
