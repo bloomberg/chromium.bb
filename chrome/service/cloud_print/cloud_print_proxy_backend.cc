@@ -454,7 +454,8 @@ void CloudPrintProxyBackend::Core::ScheduleJobPoll() {
     base::TimeDelta interval = base::TimeDelta::FromSeconds(
         base::RandInt(kMinJobPollIntervalSecs, kMaxJobPollIntervalSecs));
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&CloudPrintProxyBackend::Core::PollForJobs, this),
+        FROM_HERE,
+        base::BindOnce(&CloudPrintProxyBackend::Core::PollForJobs, this),
         interval);
     job_poll_scheduled_ = true;
   }
@@ -473,7 +474,8 @@ void CloudPrintProxyBackend::Core::PingXmppServer() {
     // Check ping status when we close to the limit.
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&CloudPrintProxyBackend::Core::CheckXmppPingStatus, this),
+        base::BindOnce(&CloudPrintProxyBackend::Core::CheckXmppPingStatus,
+                       this),
         base::TimeDelta::FromSeconds(kXmppPingCheckIntervalSecs));
   }
 
@@ -491,7 +493,7 @@ void CloudPrintProxyBackend::Core::ScheduleXmppPing() {
                     settings_.xmpp_ping_timeout_sec() * 1.1));
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&CloudPrintProxyBackend::Core::PingXmppServer, this),
+        base::BindOnce(&CloudPrintProxyBackend::Core::PingXmppServer, this),
         interval);
     xmpp_ping_scheduled_ = true;
   }
