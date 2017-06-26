@@ -81,7 +81,7 @@ assigned files by:
  2. Removing the plumbing: if GetTaskRunnerForThread(BrowserThread::FOO) is
     passed down into a component the prefered paradigm is to remove all of that
     plumbing and simply have the leaf layers requiring a TaskRunner get it from
-    base::CreateSequenceTaskRunnerWithTraits() directly.
+    base::CreateSequencedTaskRunnerWithTraits() directly.
  3. Ideally migrating from a single-threaded context to a
     [much preferred](threading_and_tasks.md#Prefer-Sequences-to-Threads) sequenced context.
     * Note: if your tasks use COM APIs (Component Object Model on Windows),

@@ -656,11 +656,11 @@ class FooWithCustomizableTaskRunnerForTesting {
  public:
 
   void SetBackgroundTaskRunnerForTesting(
-      scoped_refptr<base::SequenceTaskRunner> background_task_runner);
+      scoped_refptr<base::SequencedTaskRunner> background_task_runner);
 
  private:
-  scoped_refptr<base::SequenceTaskRunner> background_task_runner_ =
-      base::CreateSequenceTaskRunnerWithTraits(
+  scoped_refptr<base::SequencedTaskRunner> background_task_runner_ =
+      base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BACKGROUND});
 }
 ```
