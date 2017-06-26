@@ -68,6 +68,18 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/misc/tex-base-level-bug.html',
         ['win', 'd3d11'], bug=705865)
 
+    # Failing intermittently with out-of-memory crashes on some Windows bots.
+    self.Flaky('deqp/functional/gles3/texturefiltering/3d_formats_05.html',
+               ['win'], bug=735527)
+    self.Flaky('deqp/functional/gles3/texturefiltering/3d_formats_06.html',
+               ['win'], bug=735527)
+    self.Flaky('deqp/functional/gles3/texturefiltering/3d_formats_07.html',
+               ['win'], bug=735527)
+    self.Flaky('deqp/functional/gles3/texturefiltering/3d_sizes_02.html',
+               ['win'], bug=735527)
+    self.Flaky('deqp/functional/gles3/texturefiltering/3d_sizes_03.html',
+               ['win'], bug=735527)
+
     # Win / NVidia
     self.Flaky('deqp/functional/gles3/fbomultisample*',
         ['win', 'nvidia', 'd3d11'], bug=631317)
