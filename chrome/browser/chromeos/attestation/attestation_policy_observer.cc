@@ -311,8 +311,8 @@ void AttestationPolicyObserver::Reschedule() {
   if (++num_retries_ < kRetryLimit) {
     content::BrowserThread::PostDelayedTask(
         content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&AttestationPolicyObserver::Start,
-                   weak_factory_.GetWeakPtr()),
+        base::BindOnce(&AttestationPolicyObserver::Start,
+                       weak_factory_.GetWeakPtr()),
         base::TimeDelta::FromSeconds(retry_delay_));
   } else {
     LOG(WARNING) << "AttestationPolicyObserver: Retry limit exceeded.";

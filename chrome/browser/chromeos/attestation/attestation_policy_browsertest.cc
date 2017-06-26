@@ -31,7 +31,7 @@ class CustomFakeCryptohomeClient : public chromeos::FakeCryptohomeClient {
       const chromeos::BoolDBusMethodCallback& callback) override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(callback, chromeos::DBUS_METHOD_CALL_FAILURE, false));
+        base::BindOnce(callback, chromeos::DBUS_METHOD_CALL_FAILURE, false));
   }
 };
 
