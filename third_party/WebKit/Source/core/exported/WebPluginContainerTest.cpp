@@ -34,6 +34,7 @@
 #include <string>
 #include "core/dom/Element.h"
 #include "core/events/KeyboardEvent.h"
+#include "core/exported/FakeWebPlugin.h"
 #include "core/exported/WebPluginContainerBase.h"
 #include "core/exported/WebViewBase.h"
 #include "core/frame/EventHandlerRegistry.h"
@@ -66,7 +67,6 @@
 #include "public/web/WebSettings.h"
 #include "public/web/WebView.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "web/tests/FakeWebPlugin.h"
 
 using blink::testing::RunPendingTasks;
 
