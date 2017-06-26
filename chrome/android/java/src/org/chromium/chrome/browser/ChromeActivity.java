@@ -742,7 +742,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      * @return Whether contextual search is allowed for this activity or not.
      */
     protected boolean isContextualSearchAllowed() {
-        return !LocaleManager.getInstance().needToCheckForSearchEnginePromo();
+        return true;
     }
 
     @Override
