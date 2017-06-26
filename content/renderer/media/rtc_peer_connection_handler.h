@@ -21,6 +21,7 @@
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "content/renderer/media/webrtc/media_stream_track_metrics.h"
+#include "content/renderer/media/webrtc/webrtc_media_stream_adapter_map.h"
 #include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter_map.h"
 #include "ipc/ipc_platform_file.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
@@ -43,7 +44,6 @@ class PeerConnectionDependencyFactory;
 class PeerConnectionTracker;
 class RemoteMediaStreamImpl;
 class RtcDataChannelHandler;
-class WebRtcMediaStreamAdapter;
 
 // Mockable wrapper for blink::WebRTCStatsResponse
 class CONTENT_EXPORT LocalRTCStatsResponse
@@ -262,12 +262,23 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   // needs to reference it, and automatically disposed when there are no longer
   // any components referencing it.
   scoped_refptr<WebRtcMediaStreamTrackAdapterMap> track_adapter_map_;
+  // Map and owners of stream adapters. Every stream that is in use by the peer
+  // connection has an associated blink and webrtc layer representation of it.
+  // The map keeps track of the relationship between |blink::WebMediaStream|s
+  // and |webrtc::MediaStreamInterface|s. Stream adapters are created on the fly
+  // when a component (such as |local_streams_| or a sender) needs to reference
+  // it, and automatically disposed when there are no longer any components
+  // referencing it.
+  // TODO(hbos): Update and use the map for the |remote_streams_| case too.
+  // crbug.com/705901
+  scoped_refptr<WebRtcMediaStreamAdapterMap> stream_adapter_map_;
   // Local stream adapters. Every stream that is in use by the peer connection
   // has an associated blink and webrtc layer representation of it. This vector
   // keeps track of the relationship between |blink::WebMediaStream|s and
   // |webrtc::MediaStreamInterface|s. Streams are added and removed from the
   // peer connection using |AddStream| and |RemoveStream|.
-  std::vector<std::unique_ptr<WebRtcMediaStreamAdapter>> local_streams_;
+  std::vector<std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>>
+      local_streams_;
 
   base::WeakPtr<PeerConnectionTracker> peer_connection_tracker_;
 

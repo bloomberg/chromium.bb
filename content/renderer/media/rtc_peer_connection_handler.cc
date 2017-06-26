@@ -1105,6 +1105,8 @@ RTCPeerConnectionHandler::RTCPeerConnectionHandler(
       dependency_factory_(dependency_factory),
       track_adapter_map_(
           new WebRtcMediaStreamTrackAdapterMap(dependency_factory_)),
+      stream_adapter_map_(new WebRtcMediaStreamAdapterMap(dependency_factory_,
+                                                          track_adapter_map_)),
       weak_factory_(this) {
   CHECK(client_);
   GetPeerConnectionHandlers()->insert(this);
@@ -1524,8 +1526,8 @@ bool RTCPeerConnectionHandler::AddStream(
     const blink::WebMediaConstraints& options) {
   DCHECK(thread_checker_.CalledOnValidThread());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::addStream");
-  for (const auto& adapter : local_streams_) {
-    if (adapter->IsEqual(stream)) {
+  for (const auto& adapter_ref : local_streams_) {
+    if (adapter_ref->adapter().IsEqual(stream)) {
       DVLOG(1) << "RTCPeerConnectionHandler::addStream called with the same "
                << "stream twice. id=" << stream.Id().Utf8();
       return false;
@@ -1539,11 +1541,11 @@ bool RTCPeerConnectionHandler::AddStream(
 
   PerSessionWebRTCAPIMetrics::GetInstance()->IncrementStreamCounter();
 
-  local_streams_.push_back(base::MakeUnique<WebRtcMediaStreamAdapter>(
-      dependency_factory_, track_adapter_map_, stream));
+  local_streams_.push_back(
+      stream_adapter_map_->GetOrCreateLocalStreamAdapter(stream));
 
   webrtc::MediaStreamInterface* webrtc_stream =
-      local_streams_.back()->webrtc_media_stream();
+      local_streams_.back()->adapter().webrtc_media_stream();
   track_metrics_.AddStream(MediaStreamTrackMetrics::SENT_STREAM,
                            webrtc_stream);
 
@@ -1567,8 +1569,8 @@ void RTCPeerConnectionHandler::RemoveStream(
   scoped_refptr<webrtc::MediaStreamInterface> webrtc_stream;
   for (auto adapter_it = local_streams_.begin();
        adapter_it != local_streams_.end(); ++adapter_it) {
-    if ((*adapter_it)->IsEqual(stream)) {
-      webrtc_stream = (*adapter_it)->webrtc_media_stream();
+    if ((*adapter_it)->adapter().IsEqual(stream)) {
+      webrtc_stream = (*adapter_it)->adapter().webrtc_media_stream();
       local_streams_.erase(adapter_it);
       break;
     }
@@ -1759,9 +1761,9 @@ blink::WebRTCDTMFSenderHandler* RTCPeerConnectionHandler::CreateDTMFSender(
 
   // Find the WebRtc track referenced by the blink track's ID.
   webrtc::AudioTrackInterface* webrtc_track = nullptr;
-  for (const auto& adapter : local_streams_) {
-    webrtc_track =
-        adapter->webrtc_media_stream()->FindAudioTrack(track.Id().Utf8());
+  for (const auto& adapter_ref : local_streams_) {
+    webrtc_track = adapter_ref->adapter().webrtc_media_stream()->FindAudioTrack(
+        track.Id().Utf8());
     if (webrtc_track)
       break;
   }
