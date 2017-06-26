@@ -714,11 +714,19 @@ class SessionsSyncManagerTest : public testing::Test {
                    const std::string& url,
                    base::Time time,
                    ui::PageTransition transition) {
+    sync_pb::TabNavigation tab_navigation;
+    tab_navigation.set_virtual_url(url);
+    tab_navigation.set_title(kTitle);
+    tab_navigation.set_global_id(time.ToInternalValue());
+    tab_navigation.set_unique_id(time.ToInternalValue());
+    tab_navigation.set_http_status_code(200);
+
     auto entry = base::MakeUnique<sessions::SerializedNavigationEntry>(
-        SerializedNavigationEntryTestHelper::CreateNavigation(url, kTitle));
+        sessions::SerializedNavigationEntry::FromSyncData(0, tab_navigation));
     SerializedNavigationEntryTestHelper::SetTimestamp(time, entry.get());
     SerializedNavigationEntryTestHelper::SetTransitionType(transition,
                                                            entry.get());
+
     delegate->AppendEntry(std::move(entry));
     delegate->set_current_entry_index(delegate->GetCurrentEntryIndex() + 1);
     router_->NotifyNav(delegate);
@@ -2590,7 +2598,7 @@ TEST_F(SessionsSyncManagerTest, TrackTasksOnLocalTabModified) {
   // Sync data of updating Tab 1 change
   tab = SyncDataLocal(changes[1].sync_data()).GetSpecifics().session().tab();
   EXPECT_EQ(tab.navigation_size(), 2);
-  // navigation(0) and navigation(1) are two seperated tasks.
+  // navigation(0) and navigation(1) are two separated tasks.
   EXPECT_EQ(tab.navigation(0).global_id(), tab.navigation(0).task_id());
   EXPECT_TRUE(tab.navigation(0).ancestor_task_id().empty());
   EXPECT_EQ(tab.navigation(1).global_id(), tab.navigation(1).task_id());

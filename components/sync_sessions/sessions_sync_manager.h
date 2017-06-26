@@ -236,10 +236,11 @@ class SessionsSyncManager : public syncer::SyncableService,
   void LocalTabDelegateToSpecifics(const SyncedTabDelegate& tab_delegate,
                                    sync_pb::SessionSpecifics* specifics);
 
-  // Updates task tracker with current navigation of |tab_delegate|, and fills
-  // TabNavigation's task id related fields in |specifics|.
-  void TrackTasks(SyncedTabDelegate* const tab_delegate,
-                  sync_pb::SessionSpecifics* specifics);
+  // Updates task tracker with the navigations of |tab_delegate|.
+  void UpdateTaskTracker(SyncedTabDelegate* const tab_delegate);
+
+  // Update |tab_specifics| with the corresponding task ids.
+  void WriteTasksIntoSpecifics(sync_pb::SessionTab* tab_specifics);
 
   // It's possible that when we associate windows, tabs aren't all loaded
   // into memory yet (e.g on android) and we don't have a WebContents. In this

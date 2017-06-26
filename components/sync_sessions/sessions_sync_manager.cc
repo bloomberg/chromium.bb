@@ -429,6 +429,9 @@ void SessionsSyncManager::AssociateTab(SyncedTabDelegate* const tab_delegate,
     return;
   }
 
+  // Ensure the task tracker has up to date task ids for this tab.
+  UpdateTaskTracker(tab_delegate);
+
   if (!tab_delegate->ShouldSync(sessions_client_))
     return;
 
@@ -466,9 +469,7 @@ void SessionsSyncManager::AssociateTab(SyncedTabDelegate* const tab_delegate,
   sync_pb::EntitySpecifics specifics;
   specifics.mutable_session()->CopyFrom(
       SessionTabToSpecifics(*session_tab, current_machine_tag(), tab_node_id));
-  // Intercept the sync model here to update task tracker and fill navigations
-  // with their ancestor navigations.
-  TrackTasks(tab_delegate, specifics.mutable_session());
+  WriteTasksIntoSpecifics(specifics.mutable_session()->mutable_tab());
   syncer::SyncData data = syncer::SyncData::CreateLocalData(
       TabNodeIdToTag(current_machine_tag(), tab_node_id), current_session_name_,
       specifics);
@@ -488,25 +489,29 @@ void SessionsSyncManager::AssociateTab(SyncedTabDelegate* const tab_delegate,
   }
 }
 
-void SessionsSyncManager::TrackTasks(
-    SyncedTabDelegate* const tab_delegate,
-    sync_pb::SessionSpecifics* session_specifics) {
-  sync_pb::SessionTab* tab_specifics = session_specifics->mutable_tab();
-  // Index in the whole navigations of the tab.
-  int current_navigation_index = tab_delegate->GetCurrentEntryIndex();
-  // Index in the tab_specifics, where the navigations is a -6/+6 window
-  int current_index_in_tab_specifics =
-      tab_specifics->current_navigation_index();
-  int64_t current_navigation_global_id =
-      tab_specifics->navigation(current_index_in_tab_specifics).global_id();
+void SessionsSyncManager::UpdateTaskTracker(
+    SyncedTabDelegate* const tab_delegate) {
+  TabTasks* tab_tasks = task_tracker_->GetTabTasks(
+      tab_delegate->GetSessionId(), tab_delegate->GetSourceTabID());
 
+  // Iterate through all navigations in the tab to ensure they all have a task
+  // id set (it's possible some haven't been seen before, such as when a tab
+  // is restored).
+  for (int i = 0; i < tab_delegate->GetEntryCount(); ++i) {
+    sessions::SerializedNavigationEntry serialized_entry;
+    tab_delegate->GetSerializedNavigationAtIndex(i, &serialized_entry);
+
+    int nav_id = serialized_entry.unique_id();
+    int64_t global_id = serialized_entry.timestamp().ToInternalValue();
+    tab_tasks->UpdateWithNavigation(
+        nav_id, tab_delegate->GetTransitionAtIndex(i), global_id);
+  }
+}
+
+void SessionsSyncManager::WriteTasksIntoSpecifics(
+    sync_pb::SessionTab* tab_specifics) {
   TabTasks* tab_tasks =
-      task_tracker_->GetTabTasks(tab_delegate->GetSessionId());
-  tab_tasks->UpdateWithNavigation(
-      current_navigation_index,
-      tab_delegate->GetTransitionAtIndex(current_navigation_index),
-      current_navigation_global_id);
-
+      task_tracker_->GetTabTasks(tab_specifics->tab_id(), kInvalidTabID);
   for (int i = 0; i < tab_specifics->navigation_size(); i++) {
     // Excluding blocked navigations, which are appended at tail.
     if (tab_specifics->navigation(i).blocked_state() ==
@@ -514,21 +519,15 @@ void SessionsSyncManager::TrackTasks(
       break;
     }
 
-    int navigation_index =
-        current_navigation_index - current_index_in_tab_specifics + i;
-    // Skipping navigations not been tracked by task_tracker.
-    if (navigation_index < 0 ||
-        navigation_index >= tab_tasks->GetNavigationsCount()) {
-      continue;
-    }
-    std::vector<int64_t> task_ids =
-        tab_tasks->GetTaskIdsForNavigation(navigation_index);
+    std::vector<int64_t> task_ids = tab_tasks->GetTaskIdsForNavigation(
+        tab_specifics->navigation(i).unique_id());
     if (task_ids.empty())
       continue;
 
     tab_specifics->mutable_navigation(i)->set_task_id(task_ids.back());
     // Pop the task id of navigation self.
     task_ids.pop_back();
+    tab_specifics->mutable_navigation(i)->clear_ancestor_task_id();
     for (auto ancestor_task_id : task_ids) {
       tab_specifics->mutable_navigation(i)->add_ancestor_task_id(
           ancestor_task_id);
