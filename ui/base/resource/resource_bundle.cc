@@ -454,8 +454,9 @@ gfx::Image& ResourceBundle::GetImageNamed(int resource_id) {
     // ResourceBundle::GetSharedInstance() is destroyed after the
     // BrowserMainLoop has finished running. |image_skia| is guaranteed to be
     // destroyed before the resource bundle is destroyed.
-    gfx::ImageSkia image_skia(new ResourceBundleImageSource(this, resource_id),
-                              GetScaleForScaleFactor(scale_factor_to_load));
+    gfx::ImageSkia image_skia(
+        base::MakeUnique<ResourceBundleImageSource>(this, resource_id),
+        GetScaleForScaleFactor(scale_factor_to_load));
     if (image_skia.isNull()) {
       LOG(WARNING) << "Unable to load image with id " << resource_id;
       NOTREACHED();  // Want to assert in debug mode.

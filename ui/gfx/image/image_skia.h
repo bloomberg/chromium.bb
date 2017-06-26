@@ -56,7 +56,6 @@ class GFX_EXPORT ImageSkia {
   // Deprecated versions of the above constructors. ImageSkia takes ownership of
   // |source|.
   ImageSkia(ImageSkiaSource* source, const gfx::Size& size);
-  ImageSkia(ImageSkiaSource* source, float scale);
 
   explicit ImageSkia(const gfx::ImageSkiaRep& image_rep);
 
