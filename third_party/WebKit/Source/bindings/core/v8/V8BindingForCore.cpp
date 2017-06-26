@@ -56,6 +56,7 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkletGlobalScope.h"
 #include "core/xml/XPathNSResolver.h"
+#include "platform/bindings/RuntimeCallStats.h"
 #include "platform/bindings/V8BindingMacros.h"
 #include "platform/bindings/V8ObjectConstructor.h"
 #include "platform/instrumentation/tracing/TracedValue.h"
@@ -716,6 +717,8 @@ LocalDOMWindow* CurrentDOMWindow(v8::Isolate* isolate) {
 ExecutionContext* ToExecutionContext(v8::Local<v8::Context> context) {
   if (context.IsEmpty())
     return 0;
+  RUNTIME_CALL_TIMER_SCOPE(context->GetIsolate(),
+                           RuntimeCallStats::CounterId::kToExecutionContext);
   v8::Local<v8::Object> global = context->Global();
   v8::Local<v8::Object> window_wrapper =
       V8Window::findInstanceInPrototypeChain(global, context->GetIsolate());

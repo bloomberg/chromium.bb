@@ -26,6 +26,7 @@
 #include "platform/bindings/V8ValueCache.h"
 
 #include <utility>
+#include "platform/bindings/RuntimeCallStats.h"
 #include "platform/bindings/V8Binding.h"
 #include "platform/wtf/text/StringHash.h"
 
@@ -93,6 +94,8 @@ static v8::Local<v8::String> MakeExternalString(v8::Isolate* isolate,
 v8::Local<v8::String> StringCache::V8ExternalStringSlow(
     v8::Isolate* isolate,
     StringImpl* string_impl) {
+  RUNTIME_CALL_TIMER_SCOPE(isolate,
+                           RuntimeCallStats::CounterId::kV8ExternalStringSlow);
   if (!string_impl->length())
     return v8::String::Empty(isolate);
 
@@ -110,6 +113,9 @@ v8::Local<v8::String> StringCache::V8ExternalStringSlow(
 void StringCache::SetReturnValueFromStringSlow(
     v8::ReturnValue<v8::Value> return_value,
     StringImpl* string_impl) {
+  RUNTIME_CALL_TIMER_SCOPE(
+      return_value.GetIsolate(),
+      RuntimeCallStats::CounterId::kSetReturnValueFromStringSlow);
   if (!string_impl->length()) {
     return_value.SetEmptyString();
     return;

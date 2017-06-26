@@ -9,7 +9,9 @@
 #define RuntimeCallStats_h
 
 #include "platform/PlatformExport.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/wtf/Allocator.h"
+#include "platform/wtf/Optional.h"
 #include "platform/wtf/Time.h"
 #include "platform/wtf/text/WTFString.h"
 #include "v8/include/v8.h"
@@ -48,7 +50,7 @@ class PLATFORM_EXPORT RuntimeCallCounter {
 
 // Used to track elapsed time for a counter.
 // NOTE: Do not use this class directly to track execution times, instead use it
-// with RuntimeCallStats::Enter/Leave.
+// with the macros below.
 class PLATFORM_EXPORT RuntimeCallTimer {
  public:
   RuntimeCallTimer() = default;
@@ -88,6 +90,51 @@ class PLATFORM_EXPORT RuntimeCallTimer {
   TimeDelta elapsed_time_;
 };
 
+// Macros that take RuntimeCallStats as a parameter; used only in
+// RuntimeCallStatsTest.
+#define RUNTIME_CALL_STATS_ENTER_WITH_RCS(runtime_call_stats, timer,      \
+                                          counterId)                      \
+  if (UNLIKELY(RuntimeEnabledFeatures::BlinkRuntimeCallStatsEnabled())) { \
+    (runtime_call_stats)->Enter(timer, counterId);                        \
+  }
+
+#define RUNTIME_CALL_STATS_LEAVE_WITH_RCS(runtime_call_stats, timer)      \
+  if (UNLIKELY(RuntimeEnabledFeatures::BlinkRuntimeCallStatsEnabled())) { \
+    (runtime_call_stats)->Leave(timer);                                   \
+  }
+
+#define RUNTIME_CALL_TIMER_SCOPE_WITH_RCS(runtime_call_stats, counterId)  \
+  Optional<RuntimeCallTimerScope> rcs_scope;                              \
+  if (UNLIKELY(RuntimeEnabledFeatures::BlinkRuntimeCallStatsEnabled())) { \
+    rcs_scope.emplace(runtime_call_stats, counterId);                     \
+  }
+
+#define RUNTIME_CALL_TIMER_SCOPE_WITH_OPTIONAL_RCS(                       \
+    optional_scope_name, runtime_call_stats, counterId)                   \
+  if (UNLIKELY(RuntimeEnabledFeatures::BlinkRuntimeCallStatsEnabled())) { \
+    optional_scope_name.emplace(runtime_call_stats, counterId);           \
+  }
+
+// Use the macros below instead of directly using RuntimeCallStats::Enter,
+// RuntimeCallStats::Leave and RuntimeCallTimerScope. They force an early
+// exit if Runtime Call Stats is disabled.
+#define RUNTIME_CALL_STATS_ENTER(isolate, timer, counterId)                 \
+  RUNTIME_CALL_STATS_ENTER_WITH_RCS(RuntimeCallStats::From(isolate), timer, \
+                                    counterId)
+
+#define RUNTIME_CALL_STATS_LEAVE(isolate, timer) \
+  RUNTIME_CALL_STATS_LEAVE_WITH_RCS(RuntimeCallStats::From(isolate), timer)
+
+#define RUNTIME_CALL_TIMER_SCOPE(isolate, counterId) \
+  RUNTIME_CALL_TIMER_SCOPE_WITH_RCS(RuntimeCallStats::From(isolate), counterId)
+
+#define RUNTIME_CALL_TIMER_SCOPE_IF_ISOLATE_EXISTS(isolate, counterId) \
+  Optional<RuntimeCallTimerScope> rcs_scope;                           \
+  if (isolate) {                                                       \
+    RUNTIME_CALL_TIMER_SCOPE_WITH_OPTIONAL_RCS(                        \
+        rcs_scope, RuntimeCallStats::From(isolate), counterId)         \
+  }
+
 // Maintains a stack of timers and provides functions to manage recording scopes
 // by pausing and resuming timers in the chain when entering and leaving a
 // scope.
@@ -122,13 +169,23 @@ class PLATFORM_EXPORT RuntimeCallStats {
 
 // Counters
 #define FOR_EACH_COUNTER(V)                                             \
-  V(UpdateStyle)                                                        \
-  V(UpdateLayout)                                                       \
+  V(AssociateObjectWithWrapper)                                         \
   V(CollectGarbage)                                                     \
-  V(PerformIdleLazySweep)                                               \
-  V(UpdateLayerPositionsAfterLayout)                                    \
+  V(CreateWrapper)                                                      \
   V(PaintContents)                                                      \
+  V(PerformIdleLazySweep)                                               \
   V(ProcessStyleSheet)                                                  \
+  V(ToExecutionContext)                                                 \
+  V(ToV8DOMWindow)                                                      \
+  V(UpdateLayerPositionsAfterLayout)                                    \
+  V(UpdateLayout)                                                       \
+  V(UpdateStyle)                                                        \
+  V(SetReturnValueFromStringSlow)                                       \
+  V(V8ExternalStringSlow)                                               \
+  BINDINGS_METHOD(V, EventTargetDispatchEvent)                          \
+  BINDINGS_METHOD(V, HTMLElementClick)                                  \
+  BINDINGS_METHOD(V, WindowSetTimeout)                                  \
+  BINDINGS_ATTRIBUTE(V, ElementInnerHTML)                               \
   V(TestCounter1)                                                       \
   V(TestCounter2)                                                       \
   BINDINGS_METHOD(V, BindingsMethodTestCounter)                         \
@@ -144,12 +201,20 @@ class PLATFORM_EXPORT RuntimeCallStats {
 
   // Enters a new recording scope by pausing the currently running timer that
   // was started by the current instance, and starting <timer>.
-  virtual void Enter(RuntimeCallTimer*, CounterId);
+  // NOTE: Do not use this function directly, use RUNTIME_CALL_STATS_ENTER.
+  void Enter(RuntimeCallTimer* timer, CounterId id) {
+    timer->Start(GetCounter(id), current_timer_);
+    current_timer_ = timer;
+  }
 
   // Exits the current recording scope, by stopping <timer> (and updating the
   // counter associated with <timer>) and resuming the timer that was paused
   // before entering the current scope.
-  virtual void Leave(RuntimeCallTimer*);
+  // NOTE: Do not use this function directly, use RUNTIME_CALL_STATS_LEAVE.
+  void Leave(RuntimeCallTimer* timer) {
+    DCHECK_EQ(timer, current_timer_);
+    current_timer_ = timer->Stop();
+  }
 
   // Reset all the counters.
   void Reset();
@@ -160,7 +225,6 @@ class PLATFORM_EXPORT RuntimeCallStats {
 
   String ToString() const;
 
-  // Use these two functions to stub out RuntimeCallStats in tests.
   static void SetRuntimeCallStatsForTesting();
   static void ClearRuntimeCallStatsForTesting();
 
@@ -173,6 +237,7 @@ class PLATFORM_EXPORT RuntimeCallStats {
 
 // A utility class that creates a RuntimeCallTimer and uses it with
 // RuntimeCallStats to measure execution time of a C++ scope.
+// Do not use this class directly, use RUNTIME_CALL_TIMER_SCOPE instead.
 class PLATFORM_EXPORT RuntimeCallTimerScope {
  public:
   RuntimeCallTimerScope(RuntimeCallStats* stats,
@@ -185,12 +250,6 @@ class PLATFORM_EXPORT RuntimeCallTimerScope {
  private:
   RuntimeCallStats* call_stats_;
   RuntimeCallTimer timer_;
-};
-
-// Used to stub out RuntimeCallStats for testing.
-class RuntimeCallStatsForTesting : public RuntimeCallStats {
-  void Enter(RuntimeCallTimer*, RuntimeCallStats::CounterId) override {}
-  void Leave(RuntimeCallTimer*) override {}
 };
 
 }  // namespace blink

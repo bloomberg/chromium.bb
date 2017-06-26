@@ -55,16 +55,6 @@ RuntimeCallStats* RuntimeCallStats::From(v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->GetRuntimeCallStats();
 }
 
-void RuntimeCallStats::Enter(RuntimeCallTimer* timer, CounterId id) {
-  timer->Start(GetCounter(id), current_timer_);
-  current_timer_ = timer;
-}
-
-void RuntimeCallStats::Leave(RuntimeCallTimer* timer) {
-  DCHECK_EQ(timer, current_timer_);
-  current_timer_ = timer->Stop();
-}
-
 void RuntimeCallStats::Reset() {
   for (int i = 0; i < number_of_counters_; i++) {
     counters_[i].Reset();
@@ -88,7 +78,7 @@ String RuntimeCallStats::ToString() const {
 
 // static
 void RuntimeCallStats::SetRuntimeCallStatsForTesting() {
-  DEFINE_STATIC_LOCAL(RuntimeCallStatsForTesting, s_rcs_for_testing, ());
+  DEFINE_STATIC_LOCAL(RuntimeCallStats, s_rcs_for_testing, ());
   g_runtime_call_stats_for_testing =
       static_cast<RuntimeCallStats*>(&s_rcs_for_testing);
 }

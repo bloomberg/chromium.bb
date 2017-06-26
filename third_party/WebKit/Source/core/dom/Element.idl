@@ -80,7 +80,7 @@ interface Element : Node {
 
     // DOM Parsing and Serialization
     // https://w3c.github.io/DOM-Parsing/#extensions-to-the-element-interface
-    [TreatNullAs=NullString, CEReactions, CustomElementCallbacks, RaisesException=Setter] attribute DOMString innerHTML;
+    [TreatNullAs=NullString, CEReactions, CustomElementCallbacks, RaisesException=Setter, RuntimeCallStatsCounter=ElementInnerHTML] attribute DOMString innerHTML;
     [TreatNullAs=NullString, CEReactions, CustomElementCallbacks, RaisesException=Setter] attribute DOMString outerHTML;
     [CEReactions, CustomElementCallbacks, RaisesException] void insertAdjacentHTML(DOMString position, DOMString text);
 

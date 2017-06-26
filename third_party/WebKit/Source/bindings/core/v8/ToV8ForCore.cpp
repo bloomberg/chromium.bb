@@ -8,12 +8,16 @@
 #include "core/events/EventTarget.h"
 #include "core/frame/DOMWindow.h"
 #include "core/frame/Frame.h"
+#include "platform/bindings/RuntimeCallStats.h"
 
 namespace blink {
 
 v8::Local<v8::Value> ToV8(DOMWindow* window,
                           v8::Local<v8::Object> creation_context,
                           v8::Isolate* isolate) {
+  RUNTIME_CALL_TIMER_SCOPE(isolate,
+                           RuntimeCallStats::CounterId::kToV8DOMWindow);
+
   // Notice that we explicitly ignore creationContext because the DOMWindow
   // has its own creationContext.
 

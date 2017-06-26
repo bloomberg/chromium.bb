@@ -3,9 +3,8 @@
 {##############################################################################}
 {% macro runtime_timer_scope(counter) %}
 {% if counter -%}
-RuntimeCallStats* runtime_call_stats = RuntimeCallStats::From(info.GetIsolate());
-RuntimeCallTimerScope timer_scope(runtime_call_stats,
-                                  RuntimeCallStats::CounterId::{{counter}});
+RUNTIME_CALL_TIMER_SCOPE(info.GetIsolate(),
+                         RuntimeCallStats::CounterId::{{counter}});
 {%- endif %}
 {% endmacro %}
 
