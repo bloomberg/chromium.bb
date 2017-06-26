@@ -30,20 +30,6 @@ class SyncSessionsRouterTabHelper
       content::WebContents* web_contents,
       SyncSessionsWebContentsRouter* session_router);
 
-  // Get the tab id of the tab responsible for creating the tab this helper
-  // corresponds to. Returns -1 if there is no such tab.
-  SessionID::id_type source_tab_id() const { return source_tab_id_; }
-
- private:
-  friend class content::WebContentsUserData<SyncSessionsRouterTabHelper>;
-
-  explicit SyncSessionsRouterTabHelper(content::WebContents* web_contents,
-                                       SyncSessionsWebContentsRouter* router);
-
-  // Set the tab id of the tab reponsible for creating the tab this helper
-  // corresponds to.
-  void set_source_tab_id(const SessionID::id_type id) { source_tab_id_ = id; }
-
   // WebContentsObserver implementation.
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
@@ -59,6 +45,20 @@ class SyncSessionsRouterTabHelper
                            ui::PageTransition transition,
                            bool started_from_context_menu,
                            bool renderer_initiated) override;
+
+  // Get the tab id of the tab responsible for creating the tab this helper
+  // corresponds to. Returns -1 if there is no such tab.
+  SessionID::id_type source_tab_id() const { return source_tab_id_; }
+
+ private:
+  friend class content::WebContentsUserData<SyncSessionsRouterTabHelper>;
+
+  explicit SyncSessionsRouterTabHelper(content::WebContents* web_contents,
+                                       SyncSessionsWebContentsRouter* router);
+
+  // Set the tab id of the tab reponsible for creating the tab this helper
+  // corresponds to.
+  void set_source_tab_id(const SessionID::id_type id) { source_tab_id_ = id; }
 
   void NotifyRouter(bool page_load_completed = false);
 
