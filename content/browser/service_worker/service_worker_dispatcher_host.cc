@@ -940,8 +940,8 @@ void ServiceWorkerDispatcherHost::OnProviderCreated(
   if (!GetContext())
     return;
   if (GetContext()->GetProviderHost(render_process_id_, info.provider_id)) {
-    bad_message::ReceivedBadMessage(this,
-                                    bad_message::SWDH_PROVIDER_CREATED_NO_HOST);
+    bad_message::ReceivedBadMessage(
+        this, bad_message::SWDH_PROVIDER_CREATED_DUPLICATE_ID);
     return;
   }
 
@@ -966,7 +966,7 @@ void ServiceWorkerDispatcherHost::OnProviderCreated(
     // Otherwise, completed the initialization of the pre-created host.
     if (info.type != SERVICE_WORKER_PROVIDER_FOR_WINDOW) {
       bad_message::ReceivedBadMessage(
-          this, bad_message::SWDH_PROVIDER_CREATED_ILLEGAL_TYPE);
+          this, bad_message::SWDH_PROVIDER_CREATED_ILLEGAL_TYPE_NOT_WINDOW);
       return;
     }
     provider_host->CompleteNavigationInitialized(render_process_id_,
@@ -977,12 +977,12 @@ void ServiceWorkerDispatcherHost::OnProviderCreated(
     // ServiceWorkerVersion.
     if (info.type == SERVICE_WORKER_PROVIDER_FOR_CONTROLLER) {
       bad_message::ReceivedBadMessage(
-          this, bad_message::SWDH_PROVIDER_CREATED_ILLEGAL_TYPE);
+          this, bad_message::SWDH_PROVIDER_CREATED_ILLEGAL_TYPE_CONTROLLER);
       return;
     }
     if (ServiceWorkerUtils::IsBrowserAssignedProviderId(info.provider_id)) {
       bad_message::ReceivedBadMessage(
-          this, bad_message::SWDH_PROVIDER_CREATED_NO_HOST);
+          this, bad_message::SWDH_PROVIDER_CREATED_BAD_ID);
       return;
     }
     GetContext()->AddProviderHost(ServiceWorkerProviderHost::Create(
