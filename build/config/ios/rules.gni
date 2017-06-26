@@ -345,6 +345,7 @@ template("ios_info_plist") {
                              "executable_name",
                              "output_name",
                              "visibility",
+                             "testonly",
                            ])
   }
 }
@@ -1390,10 +1391,13 @@ template("ios_xctest_bundle") {
 
   source_set(_arch_loadable_module_source) {
     forward_variables_from(invoker, [ "deps" ])
+
+    testonly = true
     visibility = [ ":$_arch_loadable_module_target" ]
   }
 
   loadable_module(_arch_loadable_module_target) {
+    testonly = true
     visibility = [ ":$_lipo_loadable_module_target($default_toolchain)" ]
     if (current_toolchain != default_toolchain) {
       visibility += [ ":$_target_name" ]
@@ -1416,6 +1420,7 @@ template("ios_xctest_bundle") {
     # arch-specific binary, thus the default target is just a group().
     group(_target_name) {
       forward_variables_from(invoker, [ "visibility" ])
+      testonly = true
 
       public_deps = [
         ":$_arch_loadable_module_target",
@@ -1430,6 +1435,7 @@ template("ios_xctest_bundle") {
     }
 
     ios_info_plist(_info_plist_target) {
+      testonly = true
       visibility = [ ":$_info_plist_bundle" ]
 
       info_plist = "//build/config/ios/Module-Info.plist"
@@ -1448,6 +1454,7 @@ template("ios_xctest_bundle") {
     }
 
     bundle_data(_info_plist_bundle) {
+      testonly = true
       visibility = [ ":$_target_name" ]
 
       public_deps = [
