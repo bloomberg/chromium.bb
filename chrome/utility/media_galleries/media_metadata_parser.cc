@@ -146,10 +146,11 @@ void MediaMetadataParser::Start(const MetadataCallback& callback) {
   CHECK(media_thread_->Start());
 
   media_thread_->task_runner()->PostTaskAndReply(
-      FROM_HERE, base::Bind(&ParseAudioVideoMetadata, source_.get(),
-                            get_attached_images_, metadata, images),
-      base::Bind(&FinishParseAudioVideoMetadata, callback,
-                 base::Owned(metadata), base::Owned(images)));
+      FROM_HERE,
+      base::BindOnce(&ParseAudioVideoMetadata, source_.get(),
+                     get_attached_images_, metadata, images),
+      base::BindOnce(&FinishParseAudioVideoMetadata, callback,
+                     base::Owned(metadata), base::Owned(images)));
 }
 
 }  // namespace metadata

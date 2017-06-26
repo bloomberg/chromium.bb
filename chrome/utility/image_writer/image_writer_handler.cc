@@ -35,7 +35,7 @@ void ImageWriterHandler::Write(
     extensions::mojom::RemovableStorageWriterClientPtr client) {
   client_ = std::move(client);
   client_.set_connection_error_handler(
-      base::Bind(&ImageWriterHandler::Cancel, base::Unretained(this)));
+      base::BindOnce(&ImageWriterHandler::Cancel, base::Unretained(this)));
 
   base::FilePath target_device = device;
   const bool test_mode = IsTestDevice(device);
@@ -70,7 +70,7 @@ void ImageWriterHandler::Verify(
     extensions::mojom::RemovableStorageWriterClientPtr client) {
   client_ = std::move(client);
   client_.set_connection_error_handler(
-      base::Bind(&ImageWriterHandler::Cancel, base::Unretained(this)));
+      base::BindOnce(&ImageWriterHandler::Cancel, base::Unretained(this)));
 
   base::FilePath target_device = device;
   const bool test_mode = IsTestDevice(device);

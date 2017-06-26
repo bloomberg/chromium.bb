@@ -59,8 +59,9 @@ void ProfileImportHandler::StartImport(
       *localized_strings,
       ThreadSafeProfileImportObserverPtr::Create(std::move(observer)));
   import_thread_->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&Importer::StartImport, importer_,
-                            source_profile, items, base::RetainedRef(bridge_)));
+      FROM_HERE,
+      base::BindOnce(&Importer::StartImport, importer_, source_profile, items,
+                     base::RetainedRef(bridge_)));
 }
 
 void ProfileImportHandler::CancelImport() {
