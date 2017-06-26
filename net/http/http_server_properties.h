@@ -200,6 +200,9 @@ struct NET_EXPORT ServerNetworkStats {
 
 typedef std::vector<AlternativeService> AlternativeServiceVector;
 typedef std::vector<AlternativeServiceInfo> AlternativeServiceInfoVector;
+// Flattened representation of servers (scheme, host, port) that either support
+// or not support SPDY protocol.
+typedef base::MRUCache<std::string, bool> SpdyServersMap;
 typedef base::MRUCache<url::SchemeHostPort, AlternativeServiceInfoVector>
     AlternativeServiceMap;
 // Pairs of broken alternative services and when their brokenness expires.

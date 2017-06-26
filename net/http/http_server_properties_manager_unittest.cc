@@ -407,46 +407,25 @@ TEST_P(HttpServerPropertiesManagerTest,
   EXPECT_FALSE(http_server_props_manager_->SupportsRequestPriority(foo_server));
 
   // Verify alternative service.
-  if (GetParam() >= 4) {
-    const AlternativeServiceMap& map =
-        http_server_props_manager_->alternative_service_map();
-    ASSERT_EQ(2u, map.size());
+  const AlternativeServiceMap& map =
+      http_server_props_manager_->alternative_service_map();
+  ASSERT_EQ(2u, map.size());
 
-    AlternativeServiceMap::const_iterator map_it = map.begin();
-    EXPECT_EQ("mail.google.com", map_it->first.host());
-    ASSERT_EQ(1u, map_it->second.size());
-    EXPECT_EQ(kProtoHTTP2, map_it->second[0].alternative_service().protocol);
-    EXPECT_TRUE(map_it->second[0].alternative_service().host.empty());
-    EXPECT_EQ(444, map_it->second[0].alternative_service().port);
-    ++map_it;
-    EXPECT_EQ("www.google.com", map_it->first.host());
-    ASSERT_EQ(2u, map_it->second.size());
-    EXPECT_EQ(kProtoHTTP2, map_it->second[0].alternative_service().protocol);
-    EXPECT_TRUE(map_it->second[0].alternative_service().host.empty());
-    EXPECT_EQ(443, map_it->second[0].alternative_service().port);
-    EXPECT_EQ(kProtoQUIC, map_it->second[1].alternative_service().protocol);
-    EXPECT_TRUE(map_it->second[1].alternative_service().host.empty());
-    EXPECT_EQ(1234, map_it->second[1].alternative_service().port);
-  } else {
-    const AlternativeServiceMap& map =
-        http_server_props_manager_->alternative_service_map();
-    ASSERT_EQ(2u, map.size());
-    AlternativeServiceMap::const_iterator map_it = map.begin();
-    EXPECT_EQ("www.google.com", map_it->first.host());
-    ASSERT_EQ(2u, map_it->second.size());
-    EXPECT_EQ(kProtoHTTP2, map_it->second[0].alternative_service().protocol);
-    EXPECT_TRUE(map_it->second[0].alternative_service().host.empty());
-    EXPECT_EQ(443, map_it->second[0].alternative_service().port);
-    EXPECT_EQ(kProtoQUIC, map_it->second[1].alternative_service().protocol);
-    EXPECT_TRUE(map_it->second[1].alternative_service().host.empty());
-    EXPECT_EQ(1234, map_it->second[1].alternative_service().port);
-    ++map_it;
-    EXPECT_EQ("mail.google.com", map_it->first.host());
-    ASSERT_EQ(1u, map_it->second.size());
-    EXPECT_EQ(kProtoHTTP2, map_it->second[0].alternative_service().protocol);
-    EXPECT_TRUE(map_it->second[0].alternative_service().host.empty());
-    EXPECT_EQ(444, map_it->second[0].alternative_service().port);
-  }
+  AlternativeServiceMap::const_iterator map_it = map.begin();
+  EXPECT_EQ("www.google.com", map_it->first.host());
+  ASSERT_EQ(2u, map_it->second.size());
+  EXPECT_EQ(kProtoHTTP2, map_it->second[0].alternative_service().protocol);
+  EXPECT_TRUE(map_it->second[0].alternative_service().host.empty());
+  EXPECT_EQ(443, map_it->second[0].alternative_service().port);
+  EXPECT_EQ(kProtoQUIC, map_it->second[1].alternative_service().protocol);
+  EXPECT_TRUE(map_it->second[1].alternative_service().host.empty());
+  EXPECT_EQ(1234, map_it->second[1].alternative_service().port);
+  ++map_it;
+  EXPECT_EQ("mail.google.com", map_it->first.host());
+  ASSERT_EQ(1u, map_it->second.size());
+  EXPECT_EQ(kProtoHTTP2, map_it->second[0].alternative_service().protocol);
+  EXPECT_TRUE(map_it->second[0].alternative_service().host.empty());
+  EXPECT_EQ(444, map_it->second[0].alternative_service().port);
 
   // Verify SupportsQuic.
   IPAddress last_address;
