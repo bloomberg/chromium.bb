@@ -12,6 +12,10 @@
 #include "ios/chrome/browser/crash_report/crash_keys.h"
 #include "ios/chrome/common/channel_info.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 NSString* const kUIApplicationDelegateInfoKey = @"UIApplicationDelegate";

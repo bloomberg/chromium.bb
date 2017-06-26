@@ -245,6 +245,7 @@ source_set("app_internal") {
 }
 
 source_set("main") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "chrome_exe_main.mm",
   ]
