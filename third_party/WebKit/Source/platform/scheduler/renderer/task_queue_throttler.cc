@@ -186,7 +186,7 @@ void TaskQueueThrottler::UnregisterTaskQueue(TaskQueue* task_queue) {
 void TaskQueueThrottler::OnQueueNextWakeUpChanged(
     TaskQueue* queue,
     base::TimeTicks next_wake_up) {
-  if (!control_task_queue_->RunsTasksOnCurrentThread()) {
+  if (!control_task_queue_->RunsTasksInCurrentSequence()) {
     control_task_queue_->PostTask(
         FROM_HERE,
         base::Bind(forward_immediate_work_callback_, queue, next_wake_up));

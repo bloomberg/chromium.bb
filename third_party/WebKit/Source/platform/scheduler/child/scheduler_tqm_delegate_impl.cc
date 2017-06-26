@@ -61,7 +61,7 @@ bool SchedulerTqmDelegateImpl::RunsTasksInCurrentSequence() const {
 }
 
 bool SchedulerTqmDelegateImpl::IsNested() const {
-  DCHECK(RunsTasksOnCurrentThread());
+  DCHECK(RunsTasksInCurrentSequence());
   return base::RunLoop::IsNestedOnCurrentThread();
 }
 

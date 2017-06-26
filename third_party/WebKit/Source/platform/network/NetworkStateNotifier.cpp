@@ -218,7 +218,7 @@ void NetworkStateNotifier::NotifyObserversOnTaskRunner(
   if (!observer_list)
     return;
 
-  DCHECK(task_runner->RunsTasksOnCurrentThread());
+  DCHECK(task_runner->RunsTasksInCurrentSequence());
 
   observer_list->iterating = true;
 
@@ -249,7 +249,7 @@ void NetworkStateNotifier::NotifyObserversOnTaskRunner(
 void NetworkStateNotifier::AddObserver(ObserverListMap& map,
                                        NetworkStateObserver* observer,
                                        PassRefPtr<WebTaskRunner> task_runner) {
-  DCHECK(task_runner->RunsTasksOnCurrentThread());
+  DCHECK(task_runner->RunsTasksInCurrentSequence());
   DCHECK(observer);
 
   MutexLocker locker(mutex_);
@@ -265,7 +265,7 @@ void NetworkStateNotifier::AddObserver(ObserverListMap& map,
 void NetworkStateNotifier::RemoveObserver(ObserverListMap& map,
                                           NetworkStateObserver* observer,
                                           RefPtr<WebTaskRunner> task_runner) {
-  DCHECK(task_runner->RunsTasksOnCurrentThread());
+  DCHECK(task_runner->RunsTasksInCurrentSequence());
   DCHECK(observer);
 
   ObserverList* observer_list = LockAndFindObserverList(map, task_runner);
@@ -296,7 +296,7 @@ void NetworkStateNotifier::CollectZeroedObservers(
     ObserverListMap& map,
     ObserverList* list,
     PassRefPtr<WebTaskRunner> task_runner) {
-  DCHECK(task_runner->RunsTasksOnCurrentThread());
+  DCHECK(task_runner->RunsTasksInCurrentSequence());
   DCHECK(!list->iterating);
 
   // If any observers were removed during the iteration they will have
