@@ -116,7 +116,7 @@ void SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::Init(Node* start_node,
     // traversing the children twice.
     if (Node* child_at_offset = Strategy::ChildAt(*end_node, end_offset - 1)) {
       end_node = child_at_offset;
-      end_offset = Position::LastOffsetInNode(end_node);
+      end_offset = Position::LastOffsetInNode(*end_node);
     }
   }
 

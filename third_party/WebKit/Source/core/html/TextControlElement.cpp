@@ -630,7 +630,7 @@ SelectionInDOMTree TextControlElement::Selection() const {
   for (Node& node : NodeTraversal::DescendantsOf(*inner_text)) {
     DCHECK(!node.hasChildren());
     DCHECK(node.IsTextNode() || isHTMLBRElement(node));
-    int length = node.IsTextNode() ? Position::LastOffsetInNode(&node) : 1;
+    int length = node.IsTextNode() ? Position::LastOffsetInNode(node) : 1;
 
     if (offset <= start && start <= offset + length)
       SetContainerAndOffsetForRange(&node, start - offset, start_node, start);
