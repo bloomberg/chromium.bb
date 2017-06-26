@@ -8,7 +8,6 @@
 #import <UIKit/UIKit.h>
 #include <string>
 
-#include "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/native_content_controller.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_bar.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_panel_protocol.h"
@@ -55,15 +54,15 @@ std::string FragmentFromIdentifier(PanelIdentifier panel);
 // A controller for the New Tab Page user interface. Supports multiple "panels",
 // each with its own controller. The panels are created lazily.
 //
-// The scoped_nsobjects instance variables |*Controller_| are instances of
+// The strongly retained instance variables |*Controller_| are instances of
 // subclasses of NewTabPagePanelProtocol that are created lazily.
 // Each Panel is its own controller with the accessible views are added to the
-// |newTabPageView_|.
+// |ntpView_|.
 //
-// newTabPageView_ (aka |ntpView|) is a horizontally scrollable view that
-// contains the *PanelController instances available to the user at the moment.
-// A tab-page bar inside |ntpView| provides direct access to the
-// *PanelControllers on the scrollable view.
+// newTabPageView_ is a horizontally scrollable view that contains the
+// *PanelController instances available to the user at the moment. A tab-page
+// bar inside |ntpView| provides direct access to the *PanelControllers on the
+// scrollable view.
 //
 // The currently visible *PanelController is accessible through
 // |currentController_|.
@@ -74,16 +73,9 @@ std::string FragmentFromIdentifier(PanelIdentifier panel);
                               NewTabPagePanelControllerDelegate,
                               ToolbarOwner,
                               UIGestureRecognizerDelegate,
-                              UIScrollViewDelegate> {
- @private
-  base::scoped_nsobject<BookmarkHomeTabletNTPController> bookmarkController_;
-  base::scoped_nsobject<GoogleLandingViewController> googleLandingController_;
-  base::scoped_nsprotocol<id<NewTabPagePanelProtocol>> incognitoController_;
-  // The currently visible controller, one of the above.
-  id<NewTabPagePanelProtocol> currentController_;  // weak
-}
+                              UIScrollViewDelegate>
 
-@property(nonatomic, assign) id<CRWSwipeRecognizerProvider>
+@property(nonatomic, weak) id<CRWSwipeRecognizerProvider>
     swipeRecognizerProvider;
 
 // Init with the given url (presumably "chrome://newtab") and loader object.
@@ -112,6 +104,19 @@ std::string FragmentFromIdentifier(PanelIdentifier panel);
 // bar hint text.
 - (BOOL)wantsLocationBarHintText;
 
+@end
+
+#pragma mark - Testing
+
+@class NewTabPageView;
+
+@interface NewTabPageController (TestSupport)
+@property(nonatomic, strong) NewTabPageView* ntpView;
+
+- (id<NewTabPagePanelProtocol>)currentController;
+- (BookmarkHomeTabletNTPController*)bookmarkController;
+- (GoogleLandingViewController*)googleLandingController;
+- (id<NewTabPagePanelProtocol>)incognitoController;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_NTP_NEW_TAB_PAGE_CONTROLLER_H_

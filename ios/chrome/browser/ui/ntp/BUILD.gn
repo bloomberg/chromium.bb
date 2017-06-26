@@ -138,6 +138,7 @@ source_set("ntp_header") {
 }
 
 source_set("ntp_controller") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "new_tab_page_controller.h",
     "new_tab_page_controller.mm",
