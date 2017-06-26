@@ -8,6 +8,8 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/test/test_simple_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
 #include "components/offline_pages/core/prefetch/prefetch_service_test_taco.h"
 #include "components/offline_pages/core/prefetch/test_prefetch_dispatcher.h"
@@ -34,7 +36,9 @@ class TestTokenFactory : public PrefetchGCMAppHandler::TokenFactory {
 
 class PrefetchGCMAppHandlerTest : public testing::Test {
  public:
-  PrefetchGCMAppHandlerTest() {
+  PrefetchGCMAppHandlerTest()
+      : task_runner_(new base::TestSimpleTaskRunner),
+        task_runner_handle_(task_runner_) {
     auto dispatcher = base::MakeUnique<TestPrefetchDispatcher>();
 
     auto token_factory = base::MakeUnique<TestTokenFactory>();
@@ -56,6 +60,8 @@ class PrefetchGCMAppHandlerTest : public testing::Test {
   TestTokenFactory* token_factory() { return token_factory_; }
 
  private:
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
+  base::ThreadTaskRunnerHandle task_runner_handle_;
   PrefetchServiceTestTaco prefetch_service_taco_;
   // Owned by the taco.
   TestPrefetchDispatcher* test_dispatcher_;

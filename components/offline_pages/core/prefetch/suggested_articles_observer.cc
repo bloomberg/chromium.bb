@@ -51,26 +51,36 @@ void SuggestedArticlesObserver::SetContentSuggestionsServiceAndObserve(
   content_suggestions_service_->AddObserver(this);
 }
 
-void SuggestedArticlesObserver::OnNewSuggestions(Category category) {
-  // TODO(dewittj): Change this to check whether a given category is not
-  // a _remote_ category.
-  if (category != ArticlesCategory() ||
-      category_status_ != ntp_snippets::CategoryStatus::AVAILABLE) {
-    return;
-  }
+bool SuggestedArticlesObserver::GetCurrentSuggestions(
+    std::vector<PrefetchURL>* result) {
+  DCHECK(result);
+
+  std::vector<PrefetchURL> prefetch_urls;
+  if (category_status_ != ntp_snippets::CategoryStatus::AVAILABLE)
+    return false;
 
   const std::vector<ContentSuggestion>& suggestions =
       test_articles_ ? *test_articles_
                      : content_suggestions_service_->GetSuggestionsForCategory(
                            ArticlesCategory());
-  if (suggestions.empty())
-    return;
-
-  std::vector<PrefetchURL> prefetch_urls;
   for (const ContentSuggestion& suggestion : suggestions) {
     prefetch_urls.push_back(
         {suggestion.id().id_within_category(), suggestion.url()});
   }
+
+  *result = prefetch_urls;
+  return true;
+}
+
+void SuggestedArticlesObserver::OnNewSuggestions(Category category) {
+  // TODO(dewittj): Change this to check whether a given category is not
+  // a _remote_ category.
+  if (category != ArticlesCategory())
+    return;
+
+  std::vector<PrefetchURL> prefetch_urls;
+  if (!GetCurrentSuggestions(&prefetch_urls))
+    return;
 
   prefetch_service_->GetPrefetchDispatcher()->AddCandidatePrefetchURLs(
       kSuggestedArticlesNamespace, prefetch_urls);

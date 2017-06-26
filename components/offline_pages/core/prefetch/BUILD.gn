@@ -13,8 +13,12 @@ static_library("prefetch") {
     "add_unique_urls_task.h",
     "generate_page_bundle_request.cc",
     "generate_page_bundle_request.h",
+    "generate_page_bundle_task.cc",
+    "generate_page_bundle_task.h",
     "get_operation_request.cc",
     "get_operation_request.h",
+    "get_operation_task.cc",
+    "get_operation_task.h",
     "offline_metrics_collector.h",
     "prefetch_dispatcher.h",
     "prefetch_dispatcher_impl.cc",
@@ -24,6 +28,9 @@ static_library("prefetch") {
     "prefetch_gcm_handler.h",
     "prefetch_item.cc",
     "prefetch_item.h",
+    "prefetch_network_request_factory.h",
+    "prefetch_network_request_factory_impl.cc",
+    "prefetch_network_request_factory_impl.h",
     "prefetch_proto_utils.cc",
     "prefetch_proto_utils.h",
     "prefetch_request_fetcher.cc",
@@ -40,6 +47,7 @@ static_library("prefetch") {
   public_deps = [
     ":proto",
   ]
+
   deps = [
     "//base",
     "//components/gcm_driver",
@@ -58,13 +66,19 @@ static_library("prefetch") {
 static_library("test_support") {
   testonly = true
   sources = [
+    "prefetch_request_test_base.cc",
+    "prefetch_request_test_base.h",
     "prefetch_service_test_taco.cc",
     "prefetch_service_test_taco.h",
+    "task_test_base.cc",
+    "task_test_base.h",
     "test_offline_metrics_collector.h",
     "test_prefetch_dispatcher.cc",
     "test_prefetch_dispatcher.h",
     "test_prefetch_gcm_handler.cc",
     "test_prefetch_gcm_handler.h",
+    "test_prefetch_network_request_factory.cc",
+    "test_prefetch_network_request_factory.h",
   ]
 
   deps = [
@@ -73,6 +87,8 @@ static_library("test_support") {
     "//components/gcm_driver/instance_id",
     "//components/keyed_service/core",
     "//components/offline_pages/core",
+    "//components/version_info:channel",
+    "//net:test_support",
   ]
 }
 
@@ -89,14 +105,15 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "generate_page_bundle_request_unittest.cc",
+    "generate_page_bundle_task_unittest.cc",
     "get_operation_request_unittest.cc",
+    "get_operation_task_unittest.cc",
     "prefetch_dispatcher_impl_unittest.cc",
     "prefetch_gcm_app_handler_unittest.cc",
     "prefetch_item_unittest.cc",
+    "prefetch_network_request_factory_impl_unittest.cc",
     "prefetch_request_fetcher_unittest.cc",
     "prefetch_request_operation_response_unittest.cc",
-    "prefetch_request_test_base.cc",
-    "prefetch_request_test_base.h",
     "suggested_articles_observer_unittest.cc",
   ]
 
@@ -107,6 +124,7 @@ source_set("unit_tests") {
     "//components/offline_pages/core",
     "//components/offline_pages/core:switches",
     "//components/offline_pages/core:test_support",
+    "//components/version_info:channel",
     "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",

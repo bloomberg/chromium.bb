@@ -15,6 +15,7 @@ namespace offline_pages {
 class OfflineMetricsCollector;
 class PrefetchDispatcher;
 class PrefetchGCMHandler;
+class PrefetchNetworkRequestFactory;
 class SuggestedArticlesObserver;
 
 class PrefetchServiceImpl : public PrefetchService {
@@ -23,6 +24,7 @@ class PrefetchServiceImpl : public PrefetchService {
       std::unique_ptr<OfflineMetricsCollector> offline_metrics_collector,
       std::unique_ptr<PrefetchDispatcher> dispatcher,
       std::unique_ptr<PrefetchGCMHandler> gcm_handler,
+      std::unique_ptr<PrefetchNetworkRequestFactory> network_request_factory,
       std::unique_ptr<SuggestedArticlesObserver> suggested_articles_observer);
   ~PrefetchServiceImpl() override;
 
@@ -30,6 +32,7 @@ class PrefetchServiceImpl : public PrefetchService {
   OfflineMetricsCollector* GetOfflineMetricsCollector() override;
   PrefetchDispatcher* GetPrefetchDispatcher() override;
   PrefetchGCMHandler* GetPrefetchGCMHandler() override;
+  PrefetchNetworkRequestFactory* GetPrefetchNetworkRequestFactory() override;
   SuggestedArticlesObserver* GetSuggestedArticlesObserver() override;
   OfflineEventLogger* GetLogger() override;
 
@@ -42,6 +45,7 @@ class PrefetchServiceImpl : public PrefetchService {
   std::unique_ptr<OfflineMetricsCollector> offline_metrics_collector_;
   std::unique_ptr<PrefetchDispatcher> prefetch_dispatcher_;
   std::unique_ptr<PrefetchGCMHandler> prefetch_gcm_handler_;
+  std::unique_ptr<PrefetchNetworkRequestFactory> network_request_factory_;
   std::unique_ptr<SuggestedArticlesObserver> suggested_articles_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefetchServiceImpl);
