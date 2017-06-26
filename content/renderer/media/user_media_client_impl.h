@@ -37,10 +37,11 @@ class TaskRunner;
 }
 
 namespace content {
-class PeerConnectionDependencyFactory;
+class AudioCaptureSettings;
 class MediaStreamAudioSource;
 class MediaStreamDispatcher;
 class MediaStreamVideoSource;
+class PeerConnectionDependencyFactory;
 class VideoCaptureSettings;
 
 // UserMediaClientImpl is a delegate for the Media Stream GetUserMedia API.
@@ -101,8 +102,7 @@ class CONTENT_EXPORT UserMediaClientImpl
   // |request| have completed.
   virtual void GetUserMediaRequestSucceeded(const blink::WebMediaStream& stream,
                                             blink::WebUserMediaRequest request);
-  virtual void GetUserMediaRequestFailed(blink::WebUserMediaRequest request,
-                                         MediaStreamRequestResult result,
+  virtual void GetUserMediaRequestFailed(MediaStreamRequestResult result,
                                          const blink::WebString& result_name);
 
   virtual void EnumerateDevicesSucceded(
@@ -121,9 +121,12 @@ class CONTENT_EXPORT UserMediaClientImpl
 
   // Returns no value if there is no request being processed. Use only for
   // testing.
-  // TODO(guidou): Remove this method once spec-compliant constraints algorithm
-  // for audio is implemented. http://crbug.com/543997
+  // TODO(guidou): Remove this function. http://crbug.com/706408
   base::Optional<bool> AutomaticOutputDeviceSelectionEnabledForCurrentRequest();
+
+  // Intended to be used only for testing.
+  const AudioCaptureSettings& AudioCaptureSettingsForTesting() const;
+  const VideoCaptureSettings& VideoCaptureSettingsForTesting() const;
 
  private:
   class UserMediaRequestInfo;
@@ -225,21 +228,25 @@ class CONTENT_EXPORT UserMediaClientImpl
 
   const ::mojom::MediaDevicesDispatcherHostPtr& GetMediaDevicesDispatcher();
 
-  void SelectAudioInputDevice(
+  // TODO(guidou): Remove these functions. http://crbug.com/706408
+  void LegacySetupAudioInput();
+  void LegacySelectAudioInputDevice(
       const blink::WebUserMediaRequest& user_media_request,
       const EnumerationResult& device_enumeration);
 
-  void SetupVideoInput(const blink::WebUserMediaRequest& user_media_request);
+  void SetupAudioInput();
+  void SelectAudioSettings(const blink::WebUserMediaRequest& user_media_request,
+                           std::vector<::mojom::AudioInputDeviceCapabilitiesPtr>
+                               audio_input_capabilities);
 
+  void SetupVideoInput();
   void SelectVideoDeviceSettings(
       const blink::WebUserMediaRequest& user_media_request,
       std::vector<::mojom::VideoInputDeviceCapabilitiesPtr>
           video_input_capabilities);
-
   void FinalizeSelectVideoDeviceSettings(
       const blink::WebUserMediaRequest& user_media_request,
       const VideoCaptureSettings& settings);
-
   void FinalizeSelectVideoContentSettings(
       const blink::WebUserMediaRequest& user_media_request,
       const VideoCaptureSettings& settings);

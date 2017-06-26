@@ -5,6 +5,8 @@
 #ifndef CONTENT_RENDERER_MEDIA_MEDIA_STREAM_AUDIO_PROCESSOR_H_
 #define CONTENT_RENDERER_MEDIA_MEDIA_STREAM_AUDIO_PROCESSOR_H_
 
+#include <memory>
+
 #include "base/atomicops.h"
 #include "base/files/file.h"
 #include "base/gtest_prod_util.h"
@@ -19,6 +21,7 @@
 #include "content/public/common/media_stream_request.h"
 #include "content/renderer/media/aec_dump_message_filter.h"
 #include "content/renderer/media/audio_repetition_detector.h"
+#include "content/renderer/media/media_stream_audio_processor_options.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "media/base/audio_converter.h"
 #include "third_party/webrtc/api/mediastreaminterface.h"
@@ -33,10 +36,6 @@
 #define ENABLE_AUDIO_REPETITION_DETECTOR 0
 #endif
 #endif
-
-namespace blink {
-class WebMediaConstraints;
-}
 
 namespace media {
 class AudioBus;
@@ -70,10 +69,8 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
   //
   // Threading note: The constructor assumes it is being run on the main render
   // thread.
-  MediaStreamAudioProcessor(
-      const blink::WebMediaConstraints& constraints,
-      const MediaStreamDevice::AudioDeviceParameters& input_params,
-      WebRtcPlayoutDataSource* playout_data_source);
+  MediaStreamAudioProcessor(const AudioProcessingProperties& properties,
+                            WebRtcPlayoutDataSource* playout_data_source);
 
   // Called when the format of the capture data has changed.
   // Called on the main render thread. The caller is responsible for stopping
@@ -126,15 +123,10 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
   void OnIpcClosing() override;
 
   // Returns true if MediaStreamAudioProcessor would modify the audio signal,
-  // based on the |constraints| and |effects_flags| parsed from a user media
-  // request. If the audio signal would not be modified, there is no need to
-  // instantiate a MediaStreamAudioProcessor and feed audio through it. Doing so
-  // would waste a non-trivial amount of memory and CPU resources.
-  //
-  // See media::AudioParameters::PlatformEffectsMask for interpretation of
-  // |effects_flags|.
-  static bool WouldModifyAudio(const blink::WebMediaConstraints& constraints,
-                               int effects_flags);
+  // based on |properties|. If the audio signal would not be modified, there is
+  // no need to instantiate a MediaStreamAudioProcessor and feed audio through
+  // it. Doing so would waste a non-trivial amount of memory and CPU resources.
+  static bool WouldModifyAudio(const AudioProcessingProperties& properties);
 
  protected:
   ~MediaStreamAudioProcessor() override;
@@ -158,8 +150,7 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
 
   // Helper to initialize the WebRtc AudioProcessing.
   void InitializeAudioProcessingModule(
-      const blink::WebMediaConstraints& constraints,
-      const MediaStreamDevice::AudioDeviceParameters& input_params);
+      const AudioProcessingProperties& properties);
 
   // Helper to initialize the capture converter.
   void InitializeCaptureFifo(const media::AudioParameters& input_format);

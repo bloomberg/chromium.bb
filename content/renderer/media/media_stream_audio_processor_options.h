@@ -110,6 +110,14 @@ struct CONTENT_EXPORT AudioProcessingProperties {
   AudioProcessingProperties& operator=(AudioProcessingProperties&& other);
   ~AudioProcessingProperties();
 
+  // Disables properties that are enabled by default.
+  void DisableDefaultPropertiesForTesting();
+
+  // TODO(guidou): Remove this function. http://crbug.com/706408
+  static AudioProcessingProperties FromConstraints(
+      const blink::WebMediaConstraints& constraints,
+      const MediaStreamDevice::AudioDeviceParameters& input_params);
+
   bool enable_sw_echo_cancellation = true;
   bool disable_hw_echo_cancellation = false;
   bool goog_audio_mirroring = false;
@@ -197,9 +205,13 @@ void GetAudioProcessingStats(
 
 // Returns the array geometry from the media constraints if existing and
 // otherwise that provided by the input device.
-CONTENT_EXPORT std::vector<webrtc::Point> GetArrayGeometryPreferringConstraints(
+// TODO(guidou): Remove this function. http://crbug.com/706408
+CONTENT_EXPORT std::vector<media::Point> GetArrayGeometryPreferringConstraints(
     const MediaAudioConstraints& audio_constraints,
     const MediaStreamDevice::AudioDeviceParameters& input_params);
+
+// TODO(guidou): Remove this function. http://crbug.com/706408
+CONTENT_EXPORT bool IsOldAudioConstraints();
 
 }  // namespace content
 

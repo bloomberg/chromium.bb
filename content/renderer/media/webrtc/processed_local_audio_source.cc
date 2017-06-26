@@ -4,6 +4,9 @@
 
 #include "content/renderer/media/webrtc/processed_local_audio_source.h"
 
+#include <algorithm>
+#include <utility>
+
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
@@ -29,13 +32,13 @@ void* const kClassIdentifier = const_cast<void**>(&kClassIdentifier);
 ProcessedLocalAudioSource::ProcessedLocalAudioSource(
     int consumer_render_frame_id,
     const StreamDeviceInfo& device_info,
-    const blink::WebMediaConstraints& constraints,
+    const AudioProcessingProperties& audio_processing_properties,
     const ConstraintsCallback& started_callback,
     PeerConnectionDependencyFactory* factory)
     : MediaStreamAudioSource(true /* is_local_source */),
       consumer_render_frame_id_(consumer_render_frame_id),
       pc_factory_(factory),
-      constraints_(constraints),
+      audio_processing_properties_(audio_processing_properties),
       started_callback_(started_callback),
       volume_(0),
       allow_invalid_render_frame_id_for_testing_(false) {
@@ -91,28 +94,15 @@ bool ProcessedLocalAudioSource::EnsureSourceIsStarted() {
       device_info().device.matched_output.frames_per_buffer,
       device_info().device.input.effects));
 
-  // Sanity-check that the constraints, plus the additional input effects are
-  // valid when combined.
-  const MediaAudioConstraints audio_constraints(
-      constraints_, device_info().device.input.effects);
-  if (!audio_constraints.IsValid()) {
-    WebRtcLogMessage("ProcessedLocalAudioSource::EnsureSourceIsStarted() fails "
-                     " because MediaAudioConstraints are not valid.");
-    return false;
-  }
-
-  if (device_info().device.input.effects &
-      media::AudioParameters::ECHO_CANCELLER) {
-    // TODO(hta): Figure out if we should be looking at echoCancellation.
-    // Previous code had googEchoCancellation only.
-    const blink::BooleanConstraint& echoCancellation =
-        constraints_.Basic().goog_echo_cancellation;
-    if (echoCancellation.HasExact() && !echoCancellation.Exact()) {
-      StreamDeviceInfo modified_device_info(device_info());
-      modified_device_info.device.input.effects &=
-          ~media::AudioParameters::ECHO_CANCELLER;
-      SetDeviceInfo(modified_device_info);
-    }
+  // Disable HW echo cancellation if constraints explicitly specified no
+  // echo cancellation.
+  if (audio_processing_properties_.disable_hw_echo_cancellation &&
+      (device_info().device.input.effects &
+       media::AudioParameters::ECHO_CANCELLER)) {
+    StreamDeviceInfo modified_device_info(device_info());
+    modified_device_info.device.input.effects &=
+        ~media::AudioParameters::ECHO_CANCELLER;
+    SetDeviceInfo(modified_device_info);
   }
 
   // Create the MediaStreamAudioProcessor, bound to the WebRTC audio device
@@ -125,7 +115,7 @@ bool ProcessedLocalAudioSource::EnsureSourceIsStarted() {
     return false;
   }
   audio_processor_ = new rtc::RefCountedObject<MediaStreamAudioProcessor>(
-      constraints_, device_info().device.input, rtc_audio_device);
+      audio_processing_properties_, rtc_audio_device);
 
   // If KEYBOARD_MIC effect is set, change the layout to the corresponding
   // layout that includes the keyboard mic.
@@ -133,7 +123,7 @@ bool ProcessedLocalAudioSource::EnsureSourceIsStarted() {
       device_info().device.input.channel_layout);
   if ((device_info().device.input.effects &
        media::AudioParameters::KEYBOARD_MIC) &&
-      audio_constraints.GetGoogExperimentalNoiseSuppression()) {
+      audio_processing_properties_.goog_experimental_noise_suppression) {
     if (channel_layout == media::CHANNEL_LAYOUT_STEREO) {
       channel_layout = media::CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC;
       DVLOG(1) << "Changed stereo layout to stereo + keyboard mic layout due "

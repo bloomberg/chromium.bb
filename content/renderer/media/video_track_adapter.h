@@ -34,6 +34,9 @@ struct CONTENT_EXPORT VideoTrackAdapterSettings {
   int max_height;
   double min_aspect_ratio;
   double max_aspect_ratio;
+  // A |max_frame_rate| of zero is used to signal that no frame-rate adjustment
+  // is necessary.
+  // TODO(guidou): Change this to base::Optional. http://crbug.com/734528
   double max_frame_rate;
   // If supplied, this can be used to detect frames from a rotated device.
   base::Optional<gfx::Size> expected_native_size;
