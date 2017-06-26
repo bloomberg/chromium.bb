@@ -462,7 +462,7 @@ class TestPort(Port):
     def layout_tests_dir(self):
         return LAYOUT_TEST_DIR
 
-    def perf_tests_dir(self):
+    def _perf_tests_dir(self):
         return PERF_TEST_DIR
 
     def skipped_layout_tests(self, _):

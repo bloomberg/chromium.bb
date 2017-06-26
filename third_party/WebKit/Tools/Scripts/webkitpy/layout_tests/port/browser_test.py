@@ -57,7 +57,9 @@ class BrowserTestPortOverrides(object):
         """Overridden function from the base port class. Redirects everything
         to src/chrome/test/data/printing/layout_tests.
         """
-        return self.path_from_chromium_base('chrome', 'test', 'data', 'printing', 'layout_tests')  # pylint: disable=no-member
+        # pylint: disable=no-member
+        return self._path_from_chromium_base(
+            'chrome', 'test', 'data', 'printing', 'layout_tests')
 
     def check_sys_deps(self, needs_http):
         """This function is meant to be a no-op since we don't want to actually
