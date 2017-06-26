@@ -61,6 +61,7 @@ class ASH_EXPORT AppListButton : public views::ImageButton,
   // ShellObserver overrides:
   void OnAppListVisibilityChanged(bool shown,
                                   aura::Window* root_window) override;
+  void OnVoiceInteractionStatusChanged(bool running) override;
 
   // True if the app list is currently showing for this display.
   // This is useful because other IsApplistVisible functions aren't per-display.
@@ -74,6 +75,8 @@ class ASH_EXPORT AppListButton : public views::ImageButton,
   Shelf* shelf_;
 
   VoiceInteractionOverlay* voice_interaction_overlay_;
+
+  bool voice_interaction_running_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AppListButton);
 };

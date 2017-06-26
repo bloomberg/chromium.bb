@@ -24,7 +24,7 @@ void AppListDelegateImpl::OnAppListVisibilityChanged(bool visible,
   if (app_list::features::IsFullscreenAppListEnabled()) {
     aura::Window* root_window =
         Shell::Get()->GetRootWindowForDisplayId(display_id);
-    Shell::Get()->OnAppListVisibilityChanged(visible, root_window);
+    Shell::Get()->NotifyAppListVisibilityChanged(visible, root_window);
   }
 }
 

@@ -70,6 +70,9 @@ class ASH_EXPORT ShellObserver {
   // Called when a new KeyboardController is created.
   virtual void OnKeyboardControllerCreated() {}
 
+  // Called when voice interaction session starts / finishes.
+  virtual void OnVoiceInteractionStatusChanged(bool running) {}
+
   // Called at the end of Shell::Init.
   virtual void OnShellInitialized() {}
 
