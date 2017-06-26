@@ -8508,7 +8508,7 @@ TEST_P(ParameterizedWebFrameTest, HasVisibleContentOnVisibleFrames) {
       web_view_helper.InitializeAndLoad(base_url_ + "visible_frames.html");
   for (WebFrame* frame = web_view_impl->MainFrameImpl()->TraverseNext(); frame;
        frame = frame->TraverseNext()) {
-    EXPECT_TRUE(frame->HasVisibleContent());
+    EXPECT_TRUE(frame->ToWebLocalFrame()->HasVisibleContent());
   }
 }
 
@@ -8519,7 +8519,7 @@ TEST_P(ParameterizedWebFrameTest, HasVisibleContentOnHiddenFrames) {
       web_view_helper.InitializeAndLoad(base_url_ + "hidden_frames.html");
   for (WebFrame* frame = web_view_impl->MainFrameImpl()->TraverseNext(); frame;
        frame = frame->TraverseNext()) {
-    EXPECT_FALSE(frame->HasVisibleContent());
+    EXPECT_FALSE(frame->ToWebLocalFrame()->HasVisibleContent());
   }
 }
 

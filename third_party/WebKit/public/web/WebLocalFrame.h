@@ -14,6 +14,7 @@
 #include "WebHistoryItem.h"
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebFocusType.h"
+#include "public/platform/WebSize.h"
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/site_engagement.mojom-shared.h"
@@ -707,12 +708,21 @@ class WebLocalFrame : public WebFrame {
 
   // Geometry -----------------------------------------------------------------
 
+  // NOTE: These routines do not force page layout so their results may
+  // not be accurate if the page layout is out-of-date.
+
   // The scroll offset from the top-left corner of the frame in pixels.
   virtual WebSize GetScrollOffset() const = 0;
   virtual void SetScrollOffset(const WebSize&) = 0;
 
   // If set to false, do not draw scrollbars on this frame's view.
   virtual void SetCanHaveScrollbars(bool) = 0;
+
+  // The size of the contents area.
+  virtual WebSize ContentsSize() const = 0;
+
+  // Returns true if the contents (minus scrollbars) has non-zero area.
+  virtual bool HasVisibleContent() const = 0;
 
   // Printing ------------------------------------------------------------
 

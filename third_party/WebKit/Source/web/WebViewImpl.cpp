@@ -1288,14 +1288,13 @@ WebRect WebViewImpl::WidenRectWithinPageBounds(const WebRect& source,
                                                int target_margin,
                                                int minimum_margin) {
   WebSize max_size;
-  if (MainFrame())
-    max_size = MainFrame()->ContentsSize();
   IntSize scroll_offset;
   if (MainFrame()) {
     // TODO(lukasza): https://crbug.com/734209: The DCHECK below holds now, but
     // only because all of the callers don't support OOPIFs and exit early if
     // the main frame is not local.
     DCHECK(MainFrame()->IsWebLocalFrame());
+    max_size = MainFrame()->ToWebLocalFrame()->ContentsSize();
     scroll_offset = MainFrame()->ToWebLocalFrame()->GetScrollOffset();
   }
   int left_margin = target_margin;

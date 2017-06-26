@@ -37,8 +37,6 @@ class CORE_EXPORT WebRemoteFrameImpl final
   void Close() override;
   WebString AssignedName() const override;
   void SetName(const WebString&) override;
-  WebSize ContentsSize() const override;
-  bool HasVisibleContent() const override;
   WebRect VisibleContentRect() const override;
   WebView* View() const override;
   WebPerformance Performance() const override;

@@ -113,16 +113,6 @@ void WebRemoteFrameImpl::SetName(const WebString&) {
   NOTREACHED();
 }
 
-WebSize WebRemoteFrameImpl::ContentsSize() const {
-  NOTREACHED();
-  return WebSize();
-}
-
-bool WebRemoteFrameImpl::HasVisibleContent() const {
-  NOTREACHED();
-  return false;
-}
-
 WebRect WebRemoteFrameImpl::VisibleContentRect() const {
   NOTREACHED();
   return WebRect();

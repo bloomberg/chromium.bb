@@ -61,7 +61,6 @@ class WebView;
 enum class WebSandboxFlags;
 struct WebFrameOwnerProperties;
 struct WebRect;
-struct WebSize;
 
 // Frames may be rendered in process ('local') or out of process ('remote').
 // A remote frame is always cross-site; a local frame may be either same-site or
@@ -137,12 +136,6 @@ class BLINK_EXPORT WebFrame {
 
   // NOTE: These routines do not force page layout so their results may
   // not be accurate if the page layout is out-of-date.
-
-  // The size of the contents area.
-  virtual WebSize ContentsSize() const = 0;
-
-  // Returns true if the contents (minus scrollbars) has non-zero area.
-  virtual bool HasVisibleContent() const = 0;
 
   // Returns the visible content rect (minus scrollbars, in absolute coordinate)
   virtual WebRect VisibleContentRect() const = 0;
