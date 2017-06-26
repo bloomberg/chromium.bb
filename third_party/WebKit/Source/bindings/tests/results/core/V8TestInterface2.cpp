@@ -696,7 +696,6 @@ void V8TestInterface2::InstallRuntimeEnabledFeaturesOnTemplate(
   // Custom signature
 }
 
-#line 759 "interface_base.cpp.tmpl"
 v8::Local<v8::FunctionTemplate> V8TestInterface2::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
   return V8DOMConfiguration::DomClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), V8TestInterface2::installV8TestInterface2TemplateFunction);
 }

@@ -124,8 +124,6 @@ void V8TestInterface2Partial::InstallRuntimeEnabledFeaturesOnTemplate(
   }
 }
 
-#line 759 "interface_base.cpp.tmpl"
-
 void V8TestInterface2Partial::initialize() {
   // Should be invoked from ModulesInitializer.
   V8TestInterface2::UpdateWrapperTypeInfo(

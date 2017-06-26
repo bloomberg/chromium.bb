@@ -58,7 +58,6 @@ static_assert(
     "[ActiveScriptWrappable] extended attribute in the IDL file.  "
     "Be consistent.");
 
-#line 759 "interface_base.cpp.tmpl"
 TestUint8ClampedArray* V8Uint8ClampedArray::toImpl(v8::Local<v8::Object> object) {
   DCHECK(object->IsUint8ClampedArray());
   ScriptWrappable* scriptWrappable = ToScriptWrappable(object);

@@ -414,12 +414,13 @@ static const V8DOMConfiguration::MethodConfiguration {{v8_class}}Methods[] = {
 {##############################################################################}
 {% block install_dom_template %}
 {% if not is_array_buffer_or_view %}
-{% from 'methods.cpp.tmpl' import install_custom_signature with context %}
+{% from 'methods.cpp.tmpl' import install_custom_signature,
+        method_configuration with context %}
 {% from 'attributes.cpp.tmpl' import accessor_configuration,
         attribute_configuration,
         with context %}
- {% from 'constants.cpp.tmpl' import install_constants, constant_configuration with context %}
-{% from 'methods.cpp.tmpl' import method_configuration with context %}
+{% from 'constants.cpp.tmpl' import install_constants,
+        constant_configuration with context %}
 {% if has_partial_interface or is_partial %}
 void {{v8_class_or_partial}}::install{{v8_class}}Template(
     v8::Isolate* isolate,
@@ -752,7 +753,6 @@ void {{v8_class_or_partial}}::InstallRuntimeEnabledFeaturesOnTemplate(
 {% endblock %}
 {##############################################################################}
 {% block install_runtime_enabled %}
-#line 759 "interface_base.cpp.tmpl"
 {% if needs_runtime_enabled_installer %}
 {% from 'attributes.cpp.tmpl' import accessor_configuration,
         attribute_configuration,
@@ -765,7 +765,7 @@ void {{v8_class_or_partial}}::InstallRuntimeEnabledFeatures(
     v8::Local<v8::Object> prototype,
     v8::Local<v8::Function> interface) {
   {% if runtime_enabled_feature_name %}
-#error "We don't expect a runtime enabled interface {{v8_class_or_partial}} to have installRuntimeEnabledFeatures()."
+#error "We don't expect a runtime enabled interface {{v8_class_or_partial}} to have InstallRuntimeEnabledFeatures()."
   {% endif %}
 
   {% if is_partial %}
