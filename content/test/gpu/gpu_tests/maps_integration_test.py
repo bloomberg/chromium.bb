@@ -64,7 +64,10 @@ class MapsIntegrationTest(
   def SetUpProcess(cls):
     color_profile_manager.ForceUntilExitSRGB()
     super(MapsIntegrationTest, cls).SetUpProcess()
-    cls.CustomizeBrowserArgs(['--force-color-profile=srgb'])
+    browser_args = [
+        '--force-color-profile=srgb',
+        '--enable-features=ColorCorrectRendering']
+    cls.CustomizeBrowserArgs(browser_args)
     cls.StartWPRServer(os.path.join(data_path, 'maps_004.wpr.updated'),
                        cloud_storage.PUBLIC_BUCKET)
     cls.StartBrowser()
