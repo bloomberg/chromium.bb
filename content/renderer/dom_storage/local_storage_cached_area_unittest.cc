@@ -173,6 +173,11 @@ class LocalStorageCachedAreaTest : public testing::Test {
     return LocalStorageCachedArea::String16ToUint8Vector(input);
   }
 
+  static base::string16 Uint8VectorToString16(
+      const std::vector<uint8_t>& input) {
+    return LocalStorageCachedArea::Uint8VectorToString16(input);
+  }
+
  protected:
   TestBrowserThreadBundle test_browser_thread_bundle_;
   MockLevelDBWrapper mock_leveldb_wrapper_;
@@ -382,6 +387,19 @@ TEST_F(LocalStorageCachedAreaTest, KeyMutationsAreIgnoredUntilCompletion) {
   mock_leveldb_wrapper_.CompleteOnePendingCallback(false);
   mock_leveldb_wrapper_.Flush();
   EXPECT_FALSE(IsCacheLoaded(cached_area.get()));
+}
+
+TEST_F(LocalStorageCachedAreaTest, StringEncoding) {
+  base::string16 ascii_key = base::ASCIIToUTF16("simplekey");
+  base::string16 non_ascii_key = base::ASCIIToUTF16("key");
+  non_ascii_key.push_back(0xd83d);
+  non_ascii_key.push_back(0xde00);
+  EXPECT_EQ(Uint8VectorToString16(String16ToUint8Vector(ascii_key)), ascii_key);
+  EXPECT_EQ(Uint8VectorToString16(String16ToUint8Vector(non_ascii_key)),
+            non_ascii_key);
+  EXPECT_LT(String16ToUint8Vector(ascii_key).size(), ascii_key.size() * 2);
+  EXPECT_GT(String16ToUint8Vector(non_ascii_key).size(),
+            non_ascii_key.size() * 2);
 }
 
 }  // namespace content
