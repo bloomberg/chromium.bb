@@ -20,6 +20,16 @@ generate_jni("jni_headers") {
   jni_package = "remoting"
 }
 
+generate_jni_registration("remoting_jni_registration") {
+  target = ":remoting_apk"
+  output = "$root_gen_dir/remoting/client/${target_name}.h"
+  exception_files = [
+    "//base/android/java/src/org/chromium/base/library_loader/LegacyLinker.java",
+    "//base/android/java/src/org/chromium/base/library_loader/Linker.java",
+    "//base/android/java/src/org/chromium/base/library_loader/ModernLinker.java",
+  ]
+}
+
 _raw_resources_base_dir = "$target_gen_dir/credits_resources_raw/res"
 
 # The target is named this way, instead of "..._raw_resources", specifically

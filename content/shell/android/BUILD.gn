@@ -15,10 +15,22 @@ generate_jni("content_shell_jni_headers") {
   ]
 }
 
+generate_jni_registration("content_shell_jni_registration") {
+  testonly = true
+  target = ":content_shell_apk"
+  output = "$root_gen_dir/content/shell/android/${target_name}.h"
+  exception_files = [
+    "//base/android/java/src/org/chromium/base/library_loader/LegacyLinker.java",
+    "//base/android/java/src/org/chromium/base/library_loader/Linker.java",
+    "//base/android/java/src/org/chromium/base/library_loader/ModernLinker.java",
+  ]
+}
+
 shared_library("libcontent_shell_content_view") {
   testonly = true
   deps = [
     ":content_shell_jni_headers",
+    ":content_shell_jni_registration",
     "//build/config:exe_and_shlib_deps",
     "//components/crash/content/browser",
     "//content/shell:content_shell_lib",
@@ -26,6 +38,17 @@ shared_library("libcontent_shell_content_view") {
     "//media",
     "//skia",
   ]
+
+  # Explicit dependency required for JNI registration to be able to
+  # find the native side functions.
+  if (is_component_build) {
+    deps += [
+      "//device/gamepad",
+      "//device/generic_sensor",
+      "//device/sensors",
+      "//media/midi",
+    ]
+  }
   sources = [
     "shell_library_loader.cc",
   ]
@@ -242,6 +265,7 @@ if (current_cpu != "x64") {
 
     deps = [
       ":linker_test_jni_headers",
+      ":linker_test_jni_registration",
       "//build/config:exe_and_shlib_deps",
       "//content/shell:content_shell_lib",
 
@@ -250,6 +274,17 @@ if (current_cpu != "x64") {
       "//skia",
       "//third_party/re2",
     ]
+
+    # Explicit dependency required for JNI registration to be able to
+    # find the native side functions.
+    if (is_component_build) {
+      deps += [
+        "//device/gamepad",
+        "//device/generic_sensor",
+        "//device/sensors",
+        "//media/midi",
+      ]
+    }
   }
 
   generate_jni("linker_test_jni_headers") {
@@ -257,6 +292,18 @@ if (current_cpu != "x64") {
     jni_package = "content/shell"
     sources = [
       "linker_test_apk/src/org/chromium/chromium_linker_test_apk/LinkerTests.java",
+    ]
+  }
+
+  generate_jni_registration("linker_test_jni_registration") {
+    testonly = true
+    target = ":chromium_linker_test_apk__apk"
+    output =
+        "$root_gen_dir/content/shell/android/linker_test_apk/${target_name}.h"
+    exception_files = [
+      "//base/android/java/src/org/chromium/base/library_loader/LegacyLinker.java",
+      "//base/android/java/src/org/chromium/base/library_loader/Linker.java",
+      "//base/android/java/src/org/chromium/base/library_loader/ModernLinker.java",
     ]
   }
 }
