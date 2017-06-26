@@ -548,7 +548,7 @@ bool FrameFetchContext::ShouldLoadNewResource(Resource::Type type) const {
     return true;
 
   if (IsDetached())
-    return true;
+    return false;
 
   FrameLoader& loader = document_loader_->GetFrame()->Loader();
   if (type == Resource::kMainResource)
