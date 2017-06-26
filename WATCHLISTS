@@ -1016,7 +1016,7 @@
       'filepath': '^styleguide/',
     },
     'subresource_filter': {
-      'filepath': 'subresource_filter|SubresourceFilter',
+      'filepath': 'subresource_filter|SubresourceFilter|url_pattern_index',
     },
     'supervised_users': {
       'filepath': 'chrome/browser/.*managed_mode'\
