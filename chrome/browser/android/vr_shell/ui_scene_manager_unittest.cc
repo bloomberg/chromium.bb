@@ -6,7 +6,8 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_mock_time_message_loop_task_runner.h"
 #include "chrome/browser/android/vr_shell/ui_browser_interface.h"
 #include "chrome/browser/android/vr_shell/ui_elements/ui_element.h"
 #include "chrome/browser/android/vr_shell/ui_elements/ui_element_debug_id.h"
@@ -102,7 +103,7 @@ class UiSceneManagerTest : public testing::Test {
     return true;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::MessageLoop message_loop_;
   std::unique_ptr<MockBrowserInterface> browser_;
   std::unique_ptr<UiScene> scene_;
   std::unique_ptr<UiSceneManager> manager_;
@@ -146,6 +147,21 @@ TEST_F(UiSceneManagerTest, WebVrWarningsDoNotShowWhenInitiallyOutsideWebVr) {
   manager_->SetWebVrMode(true, false, false);
   EXPECT_TRUE(IsVisible(kWebVrPermanentHttpSecurityWarning));
   EXPECT_TRUE(IsVisible(kWebVrTransientHttpSecurityWarning));
+}
+
+TEST_F(UiSceneManagerTest, WebVrTransientWarningTimesOut) {
+  base::ScopedMockTimeMessageLoopTaskRunner task_runner_;
+
+  MakeManager(kNotInCct, kInWebVr);
+  EXPECT_TRUE(IsVisible(kWebVrTransientHttpSecurityWarning));
+
+  // Note: Fast-forwarding appears broken in conjunction with restarting timers.
+  // In this test, we can fast-forward by the appropriate time interval, but in
+  // other cases (until the bug is addressed), we could work around the problem
+  // by using FastForwardUntilNoTasksRemain() instead.
+  // See http://crbug.com/736558.
+  task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(31));
+  EXPECT_FALSE(IsVisible(kWebVrTransientHttpSecurityWarning));
 }
 
 TEST_F(UiSceneManagerTest, ToastVisibility) {
