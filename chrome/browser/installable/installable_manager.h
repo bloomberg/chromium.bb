@@ -194,7 +194,6 @@ class InstallableManager
   InstallableStatusCode valid_manifest_error() const;
   void set_valid_manifest_error(InstallableStatusCode error_code);
   InstallableStatusCode worker_error() const;
-  bool worker_waiting() const;
   InstallableStatusCode icon_error(const IconParams& icon_params);
   GURL& icon_url(const IconParams& icon_params);
   const SkBitmap* icon(const IconParams& icon);
@@ -248,6 +247,9 @@ class InstallableManager
 
   // The list of <params, callback> pairs that have come from a call to GetData.
   std::vector<Task> tasks_;
+
+  // Tasks which are waiting indefinitely for a service worker to be detected.
+  std::vector<Task> paused_tasks_;
 
   // Installable properties cached on this object.
   std::unique_ptr<ManifestProperty> manifest_;
