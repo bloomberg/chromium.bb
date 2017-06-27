@@ -499,17 +499,18 @@ public class ChildProcessLauncherTest {
                 context.getPackageName(), false /* isExternalService */,
                 LibraryProcessType.PROCESS_CHILD, true /* bindToCallerCheck */);
 
-        for (final boolean useStrongBinding : new boolean[] {true, false}) {
+        for (final boolean sandboxed : new boolean[] {true, false}) {
             ChildProcessLauncherHelper launcher = ChildProcessLauncherTestUtils.startForTesting(
-                    false /* sandboxed */, useStrongBinding, sProcessWaitArguments,
-                    new FileDescriptorInfo[0], creationParams, true /* doSetupConnection */);
+                    sandboxed, sProcessWaitArguments, new FileDescriptorInfo[0], creationParams,
+                    true /* doSetupConnection */);
             final ChildProcessConnection connection =
                     ChildProcessLauncherTestUtils.getConnection(launcher);
             Assert.assertNotNull(connection);
             ChildProcessLauncherTestUtils.runOnLauncherThreadBlocking(new Runnable() {
                 @Override
                 public void run() {
-                    Assert.assertEquals(useStrongBinding, connection.isStrongBindingBound());
+                    // Only non sandboxed connections should use strong bindings.
+                    Assert.assertNotEquals(sandboxed, connection.isStrongBindingBound());
                 }
             });
         }
@@ -562,9 +563,8 @@ public class ChildProcessLauncherTest {
                             public ChildProcessLauncherHelper call() {
                                 return ChildProcessLauncherHelper.createAndStartForTesting(
                                         creationParams, sProcessWaitArguments,
-                                        new FileDescriptorInfo[0], false /* useStrongBinding */,
-                                        true /* sandboxed */, null /* binderCallback */,
-                                        doSetupConnection);
+                                        new FileDescriptorInfo[0], true /* sandboxed */,
+                                        null /* binderCallback */, doSetupConnection);
                             }
                         });
         if (blockingPolicy != DONT_BLOCK) {

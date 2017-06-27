@@ -45,11 +45,9 @@ public class ChildProcessLauncherIntegrationTest {
         @Override
         public ChildProcessConnection createConnection(Context context, ComponentName serviceName,
                 boolean bindAsExternalService, Bundle serviceBundle,
-                ChildProcessCreationParams creationParams,
-                ChildProcessConnection.DeathCallback deathCallback) {
-            TestChildProcessConnection connection =
-                    new TestChildProcessConnection(context, serviceName, bindAsExternalService,
-                            serviceBundle, creationParams, deathCallback);
+                ChildProcessCreationParams creationParams) {
+            TestChildProcessConnection connection = new TestChildProcessConnection(
+                    context, serviceName, bindAsExternalService, serviceBundle, creationParams);
             mConnections.add(connection);
             return connection;
         }
@@ -64,10 +62,9 @@ public class ChildProcessLauncherIntegrationTest {
 
         public TestChildProcessConnection(Context context, ComponentName serviceName,
                 boolean bindAsExternalService, Bundle childProcessCommonParameters,
-                ChildProcessCreationParams creationParams,
-                ChildProcessConnection.DeathCallback deathCallback) {
+                ChildProcessCreationParams creationParams) {
             super(context, serviceName, bindAsExternalService, childProcessCommonParameters,
-                    creationParams, deathCallback);
+                    creationParams);
         }
 
         @Override

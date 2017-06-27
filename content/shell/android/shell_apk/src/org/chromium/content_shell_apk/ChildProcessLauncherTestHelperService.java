@@ -72,9 +72,8 @@ public class ChildProcessLauncherTestHelperService extends Service {
         ChildProcessCreationParams params = new ChildProcessCreationParams(
                 getPackageName(), false, LibraryProcessType.PROCESS_CHILD, bindToCaller);
         final ChildProcessLauncherHelper processLauncher =
-                ChildProcessLauncherTestUtils.startForTesting(true /* sandboxed */,
-                        false /* useStrongBinding */, commandLine, new FileDescriptorInfo[0],
-                        params, true /* doSetupConnection */);
+                ChildProcessLauncherTestUtils.startForTesting(true /* sandboxed */, commandLine,
+                        new FileDescriptorInfo[0], params, true /* doSetupConnection */);
 
         // Poll the launcher until the connection is set up. The main test in
         // ChildProcessLauncherTest, which has bound the connection to this service, manages the
