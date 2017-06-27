@@ -84,7 +84,6 @@ import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.multiwindow.MultiInstanceChromeTabbedActivity;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
-import org.chromium.chrome.browser.ntp.ChromeHomeNewTabPage;
 import org.chromium.chrome.browser.ntp.NativePageAssassin;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
@@ -1713,12 +1712,11 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         if (!mUIInitialized) return false;
         final Tab currentTab = getActivityTab();
 
-        // Close the bottom sheet before trying to navigate back. If the tab is on the NTP, fall
-        // through to decide if the browser should be sent into the background.
+        // Close the bottom sheet before trying to navigate back.
         if (getBottomSheet() != null
-                && getBottomSheet().getSheetState() != BottomSheet.SHEET_STATE_PEEK
-                && (currentTab == null
-                           || !(currentTab.getNativePage() instanceof ChromeHomeNewTabPage))) {
+                && getBottomSheet().getSheetState() != BottomSheet.SHEET_STATE_PEEK) {
+            getBottomSheet().getBottomSheetMetrics().setSheetCloseReason(
+                    BottomSheetMetrics.CLOSED_BY_BACK_PRESS);
             getBottomSheet().setSheetState(BottomSheet.SHEET_STATE_PEEK, true);
             return true;
         }
