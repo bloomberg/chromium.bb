@@ -1,4 +1,4 @@
-    
+
 focus foo
 blur foo
 focus bar
