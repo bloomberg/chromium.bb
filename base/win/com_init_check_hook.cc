@@ -16,7 +16,7 @@
 namespace base {
 namespace win {
 
-#if COM_INIT_CHECK_HOOK_ENABLED()
+#if defined(COM_INIT_CHECK_HOOK_ENABLED)
 
 namespace {
 
@@ -244,18 +244,18 @@ decltype(::CoCreateInstance)*
 
 }  // namespace
 
-#endif  // COM_INIT_CHECK_HOOK_ENABLED()
+#endif  // defined(COM_INIT_CHECK_HOOK_ENABLED)
 
 ComInitCheckHook::ComInitCheckHook() {
-#if COM_INIT_CHECK_HOOK_ENABLED()
+#if defined(COM_INIT_CHECK_HOOK_ENABLED)
   HookManager::GetInstance()->RegisterHook();
-#endif  // COM_INIT_CHECK_HOOK_ENABLED()
+#endif  // defined(COM_INIT_CHECK_HOOK_ENABLED)
 }
 
 ComInitCheckHook::~ComInitCheckHook() {
-#if COM_INIT_CHECK_HOOK_ENABLED()
+#if defined(COM_INIT_CHECK_HOOK_ENABLED)
   HookManager::GetInstance()->UnregisterHook();
-#endif  // COM_INIT_CHECK_HOOK_ENABLED()
+#endif  // defined(COM_INIT_CHECK_HOOK_ENABLED)
 }
 
 }  // namespace win
