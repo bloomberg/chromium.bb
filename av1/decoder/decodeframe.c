@@ -5117,10 +5117,12 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
           av1_diff_update_prob(&r, &fc->interintra_prob[i], ACCT_STR);
         }
       }
+#if !CONFIG_EC_ADAPT
       for (i = 0; i < BLOCK_SIZE_GROUPS; i++) {
         for (j = 0; j < INTERINTRA_MODES - 1; j++)
           av1_diff_update_prob(&r, &fc->interintra_mode_prob[i][j], ACCT_STR);
       }
+#endif
 #if CONFIG_WEDGE
       for (i = 0; i < BLOCK_SIZES; i++) {
         if (is_interintra_allowed_bsize(i) && is_interintra_wedge_used(i)) {

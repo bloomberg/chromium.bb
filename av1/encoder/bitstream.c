@@ -219,14 +219,6 @@ static void write_intra_mode_kf(const AV1_COMMON *cm, FRAME_CONTEXT *frame_ctx,
   (void)cm;
 }
 
-#if CONFIG_EXT_INTER && CONFIG_INTERINTRA
-static void write_interintra_mode(aom_writer *w, INTERINTRA_MODE mode,
-                                  const aom_prob *probs) {
-  av1_write_token(w, av1_interintra_mode_tree, probs,
-                  &interintra_mode_encodings[mode]);
-}
-#endif  // CONFIG_EXT_INTER && CONFIG_INTERINTRA
-
 static void write_inter_mode(aom_writer *w, PREDICTION_MODE mode,
                              FRAME_CONTEXT *ec_ctx, const int16_t mode_ctx) {
   const int16_t newmv_ctx = mode_ctx & NEWMV_CTX_MASK;
@@ -2236,8 +2228,15 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
       const int bsize_group = size_group_lookup[bsize];
       aom_write(w, interintra, cm->fc->interintra_prob[bsize_group]);
       if (interintra) {
-        write_interintra_mode(w, mbmi->interintra_mode,
-                              cm->fc->interintra_mode_prob[bsize_group]);
+#if CONFIG_EC_ADAPT
+        aom_write_symbol(w, mbmi->interintra_mode,
+                         ec_ctx->interintra_mode_cdf[bsize_group],
+                         INTERINTRA_MODES);
+#else
+        av1_write_token(w, av1_interintra_mode_tree,
+                        cm->fc->interintra_mode_prob[bsize_group],
+                        &interintra_mode_encodings[mbmi->interintra_mode]);
+#endif
         if (is_interintra_wedge_used(bsize)) {
           aom_write(w, mbmi->use_wedge_interintra,
                     cm->fc->wedge_interintra_prob[bsize]);
@@ -5119,11 +5118,13 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
                                     cm->counts.interintra[i], probwt);
         }
       }
+#if !CONFIG_EC_ADAPT
       for (i = 0; i < BLOCK_SIZE_GROUPS; i++) {
         prob_diff_update(
             av1_interintra_mode_tree, cm->fc->interintra_mode_prob[i],
             counts->interintra_mode[i], INTERINTRA_MODES, probwt, header_bc);
       }
+#endif
 #if CONFIG_WEDGE
       for (i = 0; i < BLOCK_SIZES; i++) {
         if (is_interintra_allowed_bsize(i) && is_interintra_wedge_used(i))

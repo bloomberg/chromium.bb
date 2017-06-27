@@ -1226,7 +1226,6 @@ static const aom_cdf_prob default_compound_type_cdf[BLOCK_SIZES]
 static const aom_prob default_interintra_prob[BLOCK_SIZE_GROUPS] = {
   208, 208, 208, 208,
 };
-
 static const aom_prob
     default_interintra_mode_prob[BLOCK_SIZE_GROUPS][INTERINTRA_MODES - 1] = {
       { 88, 16, 150 },  // block_size < 8x8
@@ -1234,6 +1233,16 @@ static const aom_prob
       { 73, 24, 150 },  // block_size < 32x32
       { 96, 27, 150 }   // block_size >= 32x32
     };
+#if CONFIG_EC_ADAPT
+static const aom_cdf_prob
+    default_interintra_mode_cdf[BLOCK_SIZE_GROUPS][CDF_SIZE(
+        INTERINTRA_MODES)] = {
+      { AOM_ICDF(11263), AOM_ICDF(23076), AOM_ICDF(31424), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(9600), AOM_ICDF(21796), AOM_ICDF(30415), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(9344), AOM_ICDF(21782), AOM_ICDF(30572), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(12288), AOM_ICDF(23022), AOM_ICDF(30608), AOM_ICDF(32768), 0 }
+    };
+#endif
 
 static const aom_prob default_wedge_interintra_prob[BLOCK_SIZES] = {
 #if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
@@ -1244,6 +1253,7 @@ static const aom_prob default_wedge_interintra_prob[BLOCK_SIZES] = {
   208, 208, 208
 #endif  // CONFIG_EXT_PARTITION
 };
+
 #endif  // CONFIG_INTERINTRA
 #endif  // CONFIG_EXT_INTER
 
@@ -4869,9 +4879,12 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
 #endif
 #if CONFIG_INTERINTRA
   av1_copy(fc->interintra_prob, default_interintra_prob);
-  av1_copy(fc->interintra_mode_prob, default_interintra_mode_prob);
   av1_copy(fc->wedge_interintra_prob, default_wedge_interintra_prob);
+  av1_copy(fc->interintra_mode_prob, default_interintra_mode_prob);
+#if CONFIG_EC_ADAPT
+  av1_copy(fc->interintra_mode_cdf, default_interintra_mode_cdf);
 #endif
+#endif  // CONFIG_INTERINTRA
 #endif  // CONFIG_EXT_INTER
 #if CONFIG_SUPERTX
   av1_copy(fc->supertx_prob, default_supertx_prob);

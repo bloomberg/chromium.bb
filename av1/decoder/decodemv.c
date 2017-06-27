@@ -192,9 +192,16 @@ static int read_cfl_alphas(FRAME_CONTEXT *const ec_ctx, aom_reader *r,
 #if CONFIG_EXT_INTER && CONFIG_INTERINTRA
 static INTERINTRA_MODE read_interintra_mode(AV1_COMMON *cm, MACROBLOCKD *xd,
                                             aom_reader *r, int size_group) {
+#if CONFIG_EC_ADAPT
+  (void)cm;
+  const INTERINTRA_MODE ii_mode = (INTERINTRA_MODE)aom_read_symbol(
+      r, xd->tile_ctx->interintra_mode_cdf[size_group], INTERINTRA_MODES,
+      ACCT_STR);
+#else
   const INTERINTRA_MODE ii_mode = (INTERINTRA_MODE)aom_read_tree(
       r, av1_interintra_mode_tree, cm->fc->interintra_mode_prob[size_group],
       ACCT_STR);
+#endif
   FRAME_COUNTS *counts = xd->counts;
   if (counts) ++counts->interintra_mode[size_group][ii_mode];
   return ii_mode;
