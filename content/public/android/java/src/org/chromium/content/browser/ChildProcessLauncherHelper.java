@@ -57,23 +57,6 @@ public class ChildProcessLauncherHelper {
     // Delay between the call to freeConnection and the connection actually beeing freed.
     private static final long FREE_CONNECTION_DELAY_MILLIS = 1;
 
-    // Factory used by the SpareConnection to create the actual ChildProcessConnection.
-    private static final SpareChildConnection.ConnectionFactory SANDBOXED_CONNECTION_FACTORY =
-            new SpareChildConnection.ConnectionFactory() {
-                @Override
-                public ChildProcessConnection allocateBoundConnection(Context context,
-                        ChildProcessCreationParams creationParams,
-                        ChildProcessConnection.ServiceCallback serviceCallback) {
-                    boolean bindToCallerCheck =
-                            creationParams == null ? false : creationParams.getBindToCallerCheck();
-                    ChildConnectionAllocator allocator =
-                            getConnectionAllocator(context, creationParams, true /* sandboxed */);
-                    Bundle serviceBundle =
-                            ChildProcessLauncherHelper.createServiceBundle(bindToCallerCheck);
-                    return allocator.allocate(context, serviceBundle, serviceCallback);
-                }
-            };
-
     // A warmed-up connection to a sandboxed service.
     private static SpareChildConnection sSpareSandboxedConnection;
 
@@ -189,9 +172,16 @@ public class ChildProcessLauncherHelper {
                 if (sSpareSandboxedConnection != null && !sSpareSandboxedConnection.isEmpty()) {
                     return;
                 }
+
+                ChildProcessCreationParams creationParams = ChildProcessCreationParams.getDefault();
+                boolean bindToCallerCheck =
+                        creationParams == null ? false : creationParams.getBindToCallerCheck();
+                Bundle serviceBundle =
+                        ChildProcessLauncherHelper.createServiceBundle(bindToCallerCheck);
+                ChildConnectionAllocator allocator =
+                        getConnectionAllocator(context, creationParams, true /* sandboxed */);
                 sSpareSandboxedConnection =
-                        new SpareChildConnection(context, SANDBOXED_CONNECTION_FACTORY,
-                                ChildProcessCreationParams.getDefault(), true /* sandboxed */);
+                        new SpareChildConnection(context, allocator, serviceBundle);
             }
         });
     }
@@ -417,7 +407,7 @@ public class ChildProcessLauncherHelper {
             // Try to use the spare connection if there's one.
             if (sSpareSandboxedConnection != null) {
                 mConnection = sSpareSandboxedConnection.getConnection(
-                        mCreationParams, mSandboxed, serviceCallback);
+                        mConnectionAllocator, serviceCallback);
                 if (mConnection != null) {
                     Log.d(TAG, "Using warmed-up connection for service %s.",
                             mConnection.getServiceName());

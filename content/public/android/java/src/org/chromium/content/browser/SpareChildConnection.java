@@ -5,11 +5,11 @@
 package org.chromium.content.browser;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.process_launcher.ChildProcessCreationParams;
 
 /**
  * This class is used to create a single spare ChildProcessConnection (usually early on during
@@ -18,19 +18,8 @@ import org.chromium.base.process_launcher.ChildProcessCreationParams;
 public class SpareChildConnection {
     private static final String TAG = "SpareChildConn";
 
-    // Factory interface used to create the actual connection.
-    interface ConnectionFactory {
-        ChildProcessConnection allocateBoundConnection(Context context,
-                ChildProcessCreationParams creationParams,
-                ChildProcessConnection.ServiceCallback serviceCallback);
-    }
-
-    // The parameters passed to the Connectionfactory when creating the connection.
-    // Also used to identify the connection when the connection is retrieved.
-    private final ChildProcessCreationParams mCreationParams;
-
-    // Whether the connection is sandboxed.
-    private final boolean mSandoxed;
+    // The allocator used to create the connection.
+    private final ChildConnectionAllocator mConnectionAllocator;
 
     // The actual spare connection.
     private ChildProcessConnection mConnection;
@@ -43,12 +32,11 @@ public class SpareChildConnection {
     private ChildProcessConnection.ServiceCallback mConnectionServiceCallback;
 
     /** Creates and binds a ChildProcessConnection using the specified parameters. */
-    public SpareChildConnection(Context context, ConnectionFactory connectionFactory,
-            ChildProcessCreationParams creationParams, boolean sandboxed) {
+    public SpareChildConnection(
+            Context context, ChildConnectionAllocator connectionAllocator, Bundle serviceBundle) {
         assert LauncherThread.runningOnLauncherThread();
 
-        mCreationParams = creationParams;
-        mSandoxed = sandboxed;
+        mConnectionAllocator = connectionAllocator;
 
         ChildProcessConnection.ServiceCallback serviceCallback =
                 new ChildProcessConnection.ServiceCallback() {
@@ -86,19 +74,17 @@ public class SpareChildConnection {
                     }
                 };
 
-        mConnection = connectionFactory.allocateBoundConnection(
-                context, mCreationParams, serviceCallback);
+        mConnection = mConnectionAllocator.allocate(context, serviceBundle, serviceCallback);
     }
 
     /**
-     * @return a connection that has been bound or is being bound matching the given paramters, null
-     * otherwise.
+     * @return a connection that has been bound or is being bound if one was created with the same
+     * allocator as the one provided, null otherwise.
      */
-    public ChildProcessConnection getConnection(ChildProcessCreationParams creationParams,
-            boolean sandboxed,
+    public ChildProcessConnection getConnection(ChildConnectionAllocator allocator,
             @NonNull final ChildProcessConnection.ServiceCallback serviceCallback) {
         assert LauncherThread.runningOnLauncherThread();
-        if (mConnection == null || creationParams != mCreationParams || sandboxed != mSandoxed
+        if (mConnection == null || allocator != mConnectionAllocator
                 || mConnectionServiceCallback != null) {
             return null;
         }
