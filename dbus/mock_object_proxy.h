@@ -5,6 +5,7 @@
 #ifndef DBUS_MOCK_OBJECT_PROXY_H_
 #define DBUS_MOCK_OBJECT_PROXY_H_
 
+#include <memory>
 #include <string>
 
 #include "dbus/message.h"
@@ -21,29 +22,13 @@ class MockObjectProxy : public ObjectProxy {
                   const std::string& service_name,
                   const ObjectPath& object_path);
 
-  // GMock doesn't support the return type of std::unique_ptr<> because
-  // std::unique_ptr is uncopyable. This is a workaround which defines
-  // |MockCallMethodAndBlock| as a mock method and makes
-  // |CallMethodAndBlock| call the mocked method.  Use |MockCallMethodAndBlock|
-  // for setting/testing expectations.
-  MOCK_METHOD3(MockCallMethodAndBlockWithErrorDetails,
-               Response*(MethodCall* method_call,
-                         int timeout_ms,
-                         ScopedDBusError* error));
-  std::unique_ptr<Response> CallMethodAndBlockWithErrorDetails(
-      MethodCall* method_call,
-      int timeout_ms,
-      ScopedDBusError* error) override {
-    return std::unique_ptr<Response>(
-        MockCallMethodAndBlockWithErrorDetails(method_call, timeout_ms, error));
-  }
-  MOCK_METHOD2(MockCallMethodAndBlock, Response*(MethodCall* method_call,
-                                                 int timeout_ms));
-  std::unique_ptr<Response> CallMethodAndBlock(MethodCall* method_call,
-                                               int timeout_ms) override {
-    return std::unique_ptr<Response>(
-        MockCallMethodAndBlock(method_call, timeout_ms));
-  }
+  MOCK_METHOD3(CallMethodAndBlockWithErrorDetails,
+               std::unique_ptr<Response>(MethodCall* method_call,
+                                         int timeout_ms,
+                                         ScopedDBusError* error));
+  MOCK_METHOD2(CallMethodAndBlock,
+               std::unique_ptr<Response>(MethodCall* method_call,
+                                         int timeout_ms));
   MOCK_METHOD3(CallMethod, void(MethodCall* method_call,
                                 int timeout_ms,
                                 ResponseCallback callback));

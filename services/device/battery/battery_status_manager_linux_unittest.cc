@@ -46,8 +46,9 @@ class MockUPowerObject {
       const std::string& signal_name,
       dbus::ObjectProxy::SignalCallback signal_callback,
       dbus::ObjectProxy::OnConnectedCallback on_connected_callback);
-  dbus::Response* CreateCallMethodResponse(dbus::MethodCall* method_call,
-                                           Unused);
+  std::unique_ptr<dbus::Response> CreateCallMethodResponse(
+      dbus::MethodCall* method_call,
+      Unused);
   void SignalDeviceAdded(const std::string& added_device_path);
   void SignalDeviceRemoved(const std::string& removed_device_path);
 
@@ -88,7 +89,7 @@ void MockUPowerObject::ConnectToSignal(
   on_connected_callback.Run(interface_name, signal_name, on_connected_success);
 }
 
-dbus::Response* MockUPowerObject::CreateCallMethodResponse(
+std::unique_ptr<dbus::Response> MockUPowerObject::CreateCallMethodResponse(
     dbus::MethodCall* method_call,
     Unused) {
   if (method_call->GetInterface() == kUPowerInterfaceName) {
@@ -100,14 +101,14 @@ dbus::Response* MockUPowerObject::CreateCallMethodResponse(
       for (const auto& device : devices)
         array_writer.AppendObjectPath(dbus::ObjectPath(device));
       writer.CloseContainer(&array_writer);
-      return response.release();
+      return response;
     } else if (method_call->GetMember() == kUPowerMethodGetDisplayDevice) {
       std::unique_ptr<dbus::Response> response = dbus::Response::CreateEmpty();
       if (!display_device.empty()) {
         dbus::MessageWriter writer(response.get());
         writer.AppendObjectPath(dbus::ObjectPath(display_device));
       }
-      return response.release();
+      return response;
     }
   } else if (method_call->GetInterface() == dbus::kPropertiesInterface) {
     std::unique_ptr<dbus::Response> response = dbus::Response::CreateEmpty();
@@ -120,7 +121,7 @@ dbus::Response* MockUPowerObject::CreateCallMethodResponse(
           reader.PopString(&property_name) &&
           property_name == kUPowerPropertyDaemonVersion) {
         writer.AppendVariantOfString(daemon_version);
-        return response.release();
+        return response;
       }
     } else if (method_call->GetMember() == dbus::kPropertiesGetAll) {
       dbus::MessageWriter array_writer(nullptr);
@@ -131,7 +132,7 @@ dbus::Response* MockUPowerObject::CreateCallMethodResponse(
       dict_entry_writer.AppendVariantOfString(daemon_version);
       array_writer.CloseContainer(&dict_entry_writer);
       writer.CloseContainer(&array_writer);
-      return response.release();
+      return response;
     }
   }
 
@@ -175,8 +176,9 @@ class MockBatteryObject {
       const std::string& signal_name,
       dbus::ObjectProxy::SignalCallback signal_callback,
       dbus::ObjectProxy::OnConnectedCallback on_connected_callback);
-  dbus::Response* CreateCallMethodResponse(dbus::MethodCall* method_call,
-                                           Unused);
+  std::unique_ptr<dbus::Response> CreateCallMethodResponse(
+      dbus::MethodCall* method_call,
+      Unused);
   MockBatteryObject& ExpectConnectToSignalChanged();
   MockBatteryObject& ExpectConnectToSignalPropertyChanged();
   void SignalChanged();
@@ -226,7 +228,7 @@ void MockBatteryObject::ConnectToSignal(
   on_connected_callback.Run(interface_name, signal_name, on_connected_success);
 }
 
-dbus::Response* MockBatteryObject::CreateCallMethodResponse(
+std::unique_ptr<dbus::Response> MockBatteryObject::CreateCallMethodResponse(
     dbus::MethodCall* method_call,
     Unused) {
   if (method_call->GetInterface() == dbus::kPropertiesInterface) {
@@ -243,7 +245,7 @@ dbus::Response* MockBatteryObject::CreateCallMethodResponse(
             dbus::Response::CreateEmpty();
         dbus::MessageWriter writer(response.get());
         AppendPropertyToWriter(&writer, property_name);
-        return response.release();
+        return response;
       }
     } else if (method_call->GetMember() == dbus::kPropertiesGetAll) {
       if (!properties)
@@ -252,7 +254,7 @@ dbus::Response* MockBatteryObject::CreateCallMethodResponse(
       std::unique_ptr<dbus::Response> response = dbus::Response::CreateEmpty();
       dbus::MessageWriter writer(response.get());
       AppendAllPropertiesToWriter(&writer);
-      return response.release();
+      return response;
     }
   }
   LOG(ERROR) << "Unexpected method call: " << method_call->ToString();
@@ -400,7 +402,7 @@ void BatteryStatusManagerLinuxTest::SetUp() {
   mock_upower_.proxy = new NiceMock<dbus::MockObjectProxy>(
       mock_bus_.get(), kUPowerServiceName, dbus::ObjectPath(kUPowerPath));
   ExpectGetObjectProxy(kUPowerPath, mock_upower_.proxy.get());
-  EXPECT_CALL(*mock_upower_.proxy.get(), MockCallMethodAndBlock(_, _))
+  EXPECT_CALL(*mock_upower_.proxy.get(), CallMethodAndBlock(_, _))
       .WillRepeatedly(
           Invoke(&mock_upower_, &MockUPowerObject::CreateCallMethodResponse));
   EXPECT_CALL(
@@ -514,7 +516,7 @@ BatteryStatusManagerLinuxTest::CreateMockBatteryObject(
   std::unique_ptr<MockBatteryObject> mock_object(
       new MockBatteryObject(mock_bus_.get(), object_path, properties));
   ExpectGetObjectProxy(object_path, mock_object.get());
-  EXPECT_CALL(*mock_object->proxy.get(), MockCallMethodAndBlock(_, _))
+  EXPECT_CALL(*mock_object->proxy.get(), CallMethodAndBlock(_, _))
       .WillRepeatedly(Invoke(mock_object.get(),
                              &MockBatteryObject::CreateCallMethodResponse));
   return mock_object;

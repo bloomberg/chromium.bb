@@ -61,7 +61,7 @@ class BlockingMethodCallerTest : public testing::Test {
     // Set an expectation so mock_proxy's CallMethodAndBlock() will use
     // CreateMockProxyResponse() to return responses.
     EXPECT_CALL(*mock_proxy_.get(),
-                MockCallMethodAndBlockWithErrorDetails(_, _, _))
+                CallMethodAndBlockWithErrorDetails(_, _, _))
         .WillRepeatedly(
             Invoke(this, &BlockingMethodCallerTest::CreateMockProxyResponse));
 
@@ -91,9 +91,10 @@ class BlockingMethodCallerTest : public testing::Test {
  private:
   // Returns a response for the given method call. Used to implement
   // CallMethodAndBlock() for |mock_proxy_|.
-  dbus::Response* CreateMockProxyResponse(dbus::MethodCall* method_call,
-                                          int timeout_ms,
-                                          dbus::ScopedDBusError* error) {
+  std::unique_ptr<dbus::Response> CreateMockProxyResponse(
+      dbus::MethodCall* method_call,
+      int timeout_ms,
+      dbus::ScopedDBusError* error) {
     if (method_call->GetInterface() == "org.chromium.TestInterface" &&
         method_call->GetMember() == "Echo") {
       dbus::MessageReader reader(method_call);
@@ -103,12 +104,12 @@ class BlockingMethodCallerTest : public testing::Test {
             dbus::Response::CreateEmpty();
         dbus::MessageWriter writer(response.get());
         writer.AppendString(text_message);
-        return response.release();
+        return response;
       }
     }
 
     LOG(ERROR) << "Unexpected method call: " << method_call->ToString();
-    return NULL;
+    return nullptr;
   }
 };
 
