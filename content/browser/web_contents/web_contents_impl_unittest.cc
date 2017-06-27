@@ -860,7 +860,8 @@ TEST_F(WebContentsImplTest, NavigateFromRestoredSitelessUrl) {
   ASSERT_EQ(0u, entries.size());
   ASSERT_EQ(1, controller().GetEntryCount());
 
-  controller().GoToIndex(0);
+  EXPECT_TRUE(controller().NeedsReload());
+  controller().LoadIfNecessary();
   NavigationEntry* entry = controller().GetPendingEntry();
   orig_rfh->PrepareForCommit();
   contents()->TestDidNavigate(orig_rfh, entry->GetUniqueID(), false,
@@ -909,7 +910,8 @@ TEST_F(WebContentsImplTest, NavigateFromRestoredRegularUrl) {
   ASSERT_EQ(0u, entries.size());
 
   ASSERT_EQ(1, controller().GetEntryCount());
-  controller().GoToIndex(0);
+  EXPECT_TRUE(controller().NeedsReload());
+  controller().LoadIfNecessary();
   NavigationEntry* entry = controller().GetPendingEntry();
   orig_rfh->PrepareForCommit();
   contents()->TestDidNavigate(orig_rfh, entry->GetUniqueID(), false,
@@ -1467,8 +1469,9 @@ TEST_F(WebContentsImplTest, NavigationEntryContentState) {
   controller().GoBack();
   entry_id = controller().GetPendingEntry()->GetUniqueID();
   orig_rfh->PrepareForCommit();
-  contents()->TestDidNavigate(orig_rfh, entry_id, false, url,
-                              ui::PAGE_TRANSITION_TYPED);
+  contents()->TestDidNavigate(
+      orig_rfh, entry_id, false, url,
+      controller().GetPendingEntry()->GetTransitionType());
   entry = controller().GetLastCommittedEntry();
   EXPECT_TRUE(entry->GetPageState().IsValid());
 }

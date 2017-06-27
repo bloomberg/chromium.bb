@@ -424,7 +424,9 @@ TEST_F(NavigationControllerTest, GoToOffset) {
     // Check that the GoToOffset will land on the expected page.
     EXPECT_EQ(urls[url_index], controller.GetPendingEntry()->GetVirtualURL());
     main_test_rfh()->PrepareForCommit();
-    main_test_rfh()->SendNavigate(entry_id, false, urls[url_index]);
+    main_test_rfh()->SendNavigateWithTransition(
+        entry_id, false, urls[url_index],
+        controller.GetPendingEntry()->GetTransitionType());
     EXPECT_EQ(1U, navigation_entry_committed_counter_);
     navigation_entry_committed_counter_ = 0;
     // Check that we can go to any valid offset into the history.
@@ -1366,7 +1368,9 @@ TEST_F(NavigationControllerTest, LoadURL_WithBindings) {
   // Going back, the first entry should still appear unprivileged.
   controller.GoBack();
   new_rfh->PrepareForCommit();
-  contents()->GetPendingMainFrame()->SendNavigate(entry1_id, false, url1);
+  contents()->GetPendingMainFrame()->SendNavigateWithTransition(
+      entry1_id, false, url1,
+      controller.GetPendingEntry()->GetTransitionType());
   EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
   EXPECT_EQ(0, controller.GetLastCommittedEntry()->bindings());
 }
@@ -1696,7 +1700,8 @@ TEST_F(NavigationControllerTest, GoBackWithUserAgentOverrideChange) {
   entry_id = controller.GetPendingEntry()->GetUniqueID();
   EXPECT_FALSE(controller.GetPendingEntry()->GetIsOverridingUserAgent());
   main_test_rfh()->PrepareForCommit();
-  main_test_rfh()->SendNavigate(entry_id, false, url1);
+  main_test_rfh()->SendNavigateWithTransition(
+      entry_id, false, url1, controller.GetPendingEntry()->GetTransitionType());
 
   EXPECT_EQ(1, change_counter);
 }
@@ -1801,7 +1806,8 @@ TEST_F(NavigationControllerTest, Back_GeneratesNewPage) {
   EXPECT_TRUE(controller.CanGoForward());
 
   main_test_rfh()->PrepareForCommitWithServerRedirect(url3);
-  main_test_rfh()->SendNavigate(entry1_id, true, url3);
+  main_test_rfh()->SendNavigateWithTransition(
+      entry1_id, true, url3, controller.GetPendingEntry()->GetTransitionType());
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
 
@@ -1874,7 +1880,9 @@ TEST_F(NavigationControllerTest, Forward) {
 
   controller.GoBack();
   main_test_rfh()->PrepareForCommit();
-  main_test_rfh()->SendNavigate(entry1->GetUniqueID(), false, url1);
+  main_test_rfh()->SendNavigateWithTransition(
+      entry1->GetUniqueID(), false, url1,
+      controller.GetPendingEntry()->GetTransitionType());
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
 
@@ -1899,7 +1907,9 @@ TEST_F(NavigationControllerTest, Forward) {
             controller.GetEntryAtIndex(1)->GetTimestamp());
 
   main_test_rfh()->PrepareForCommit();
-  main_test_rfh()->SendNavigate(entry2->GetUniqueID(), false, url2);
+  main_test_rfh()->SendNavigateWithTransition(
+      entry2->GetUniqueID(), false, url2,
+      controller.GetPendingEntry()->GetTransitionType());
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
 
@@ -1946,7 +1956,9 @@ TEST_F(NavigationControllerTest, Forward_GeneratesNewPage) {
 
   controller.GoBack();
   main_test_rfh()->PrepareForCommit();
-  main_test_rfh()->SendNavigate(entry1->GetUniqueID(), false, url1);
+  main_test_rfh()->SendNavigateWithTransition(
+      entry1->GetUniqueID(), false, url1,
+      controller.GetPendingEntry()->GetTransitionType());
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
 
@@ -3006,7 +3018,8 @@ TEST_F(NavigationControllerTest, RestoreNavigate) {
   EXPECT_FALSE(our_controller.GetEntryAtIndex(0)->site_instance());
 
   // After navigating, we should have one entry, and it should be "pending".
-  our_controller.GoToIndex(0);
+  EXPECT_TRUE(our_controller.NeedsReload());
+  our_controller.LoadIfNecessary();
   EXPECT_EQ(1, our_controller.GetEntryCount());
   EXPECT_EQ(our_controller.GetEntryAtIndex(0),
             our_controller.GetPendingEntry());
@@ -3076,7 +3089,8 @@ TEST_F(NavigationControllerTest, RestoreNavigateAfterFailure) {
   EXPECT_FALSE(our_controller.GetEntryAtIndex(0)->site_instance());
 
   // After navigating, we should have one entry, and it should be "pending".
-  our_controller.GoToIndex(0);
+  EXPECT_TRUE(our_controller.NeedsReload());
+  our_controller.LoadIfNecessary();
   EXPECT_EQ(1, our_controller.GetEntryCount());
   EXPECT_EQ(our_controller.GetEntryAtIndex(0),
             our_controller.GetPendingEntry());
@@ -3198,7 +3212,8 @@ TEST_F(NavigationControllerTest, RemoveEntry) {
 
   // Now commit and delete the last entry.
   main_test_rfh()->PrepareForCommit();
-  main_test_rfh()->SendNavigate(entry_id, false, url4);
+  main_test_rfh()->SendNavigateWithTransition(
+      entry_id, false, url4, controller.GetPendingEntry()->GetTransitionType());
   EXPECT_TRUE(controller.RemoveEntryAtIndex(controller.GetEntryCount() - 1));
   EXPECT_EQ(4, controller.GetEntryCount());
   EXPECT_EQ(3, controller.GetLastCommittedEntryIndex());
@@ -3246,6 +3261,8 @@ TEST_F(NavigationControllerTest, RemoveEntryWithPending) {
   // and pending entries.
   controller.GoBack();
   entry_id = controller.GetPendingEntry()->GetUniqueID();
+  ui::PageTransition entry_transition =
+      controller.GetPendingEntry()->GetTransitionType();
   EXPECT_FALSE(controller.RemoveEntryAtIndex(2));
   EXPECT_FALSE(controller.RemoveEntryAtIndex(1));
 
@@ -3260,7 +3277,8 @@ TEST_F(NavigationControllerTest, RemoveEntryWithPending) {
 
   // Now commit and ensure we land on the right entry.
   main_test_rfh()->PrepareForCommit();
-  main_test_rfh()->SendNavigate(entry_id, false, url2);
+  main_test_rfh()->SendNavigateWithTransition(entry_id, false, url2,
+                                              entry_transition);
   EXPECT_EQ(2, controller.GetEntryCount());
   EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
   EXPECT_FALSE(controller.GetPendingEntry());
@@ -3363,7 +3381,8 @@ TEST_F(NavigationControllerTest, TransientEntry) {
   controller.GoToOffset(-1);
   entry_id = controller.GetPendingEntry()->GetUniqueID();
   main_test_rfh()->PrepareForCommit();
-  main_test_rfh()->SendNavigate(entry_id, false, url3);
+  main_test_rfh()->SendNavigateWithTransition(
+      entry_id, false, url3, controller.GetPendingEntry()->GetTransitionType());
 
   // Add a transient and go to an entry before the current one.
   transient_entry.reset(new NavigationEntryImpl);
@@ -3378,7 +3397,8 @@ TEST_F(NavigationControllerTest, TransientEntry) {
   // Visible entry does not update for history navigations until commit.
   EXPECT_EQ(url3, controller.GetVisibleEntry()->GetURL());
   main_test_rfh()->PrepareForCommit();
-  main_test_rfh()->SendNavigate(entry_id, false, url1);
+  main_test_rfh()->SendNavigateWithTransition(
+      entry_id, false, url1, controller.GetPendingEntry()->GetTransitionType());
   EXPECT_EQ(url1, controller.GetVisibleEntry()->GetURL());
 
   // Add a transient and go to an entry after the current one.
@@ -3394,7 +3414,8 @@ TEST_F(NavigationControllerTest, TransientEntry) {
   EXPECT_EQ(url2, controller.GetPendingEntry()->GetURL());
   EXPECT_EQ(url1, controller.GetVisibleEntry()->GetURL());
   main_test_rfh()->PrepareForCommit();
-  main_test_rfh()->SendNavigate(entry_id, false, url2);
+  main_test_rfh()->SendNavigateWithTransition(
+      entry_id, false, url2, controller.GetPendingEntry()->GetTransitionType());
   EXPECT_EQ(url2, controller.GetVisibleEntry()->GetURL());
 
   // Add a transient and go forward.
@@ -3410,7 +3431,8 @@ TEST_F(NavigationControllerTest, TransientEntry) {
   EXPECT_EQ(url3, controller.GetPendingEntry()->GetURL());
   EXPECT_EQ(url2, controller.GetVisibleEntry()->GetURL());
   main_test_rfh()->PrepareForCommit();
-  main_test_rfh()->SendNavigate(entry_id, false, url3);
+  main_test_rfh()->SendNavigateWithTransition(
+      entry_id, false, url3, controller.GetPendingEntry()->GetTransitionType());
   EXPECT_EQ(url3, controller.GetVisibleEntry()->GetURL());
 
   // Add a transient and do an in-page navigation, replacing the current entry.
