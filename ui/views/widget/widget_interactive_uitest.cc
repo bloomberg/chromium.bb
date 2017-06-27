@@ -16,6 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "mojo/edk/embedder/embedder.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -280,6 +281,11 @@ class WidgetTestInteractive : public WidgetTest {
     // On mus these tests run as part of views::ViewsTestSuite which already
     // does this initialization.
     if (!IsMus()) {
+      // Mojo is initialized here similar to how each browser test case
+      // initializes Mojo when starting. This only works because each
+      // interactive_ui_test runs in a new process.
+      mojo::edk::Init();
+
       gl::GLSurfaceTestSupport::InitializeOneOff();
       ui::RegisterPathProvider();
       base::FilePath ui_test_pak_path;

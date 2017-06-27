@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/sys_info.h"
 #include "components/viz/host/host_frame_sink_manager.h"
+#include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/compositor/test/in_process_context_factory.h"
@@ -14,10 +15,27 @@
 
 namespace {
 
-static viz::HostFrameSinkManager* g_frame_sink_manager = nullptr;
-static cc::SurfaceManager* g_surface_manager = nullptr;
+static viz::HostFrameSinkManager* g_host_frame_sink_manager = nullptr;
+static viz::FrameSinkManagerImpl* g_frame_sink_manager_impl = nullptr;
 static ui::InProcessContextFactory* g_implicit_factory = nullptr;
 static gl::DisableNullDrawGLBindings* g_disable_null_draw = nullptr;
+
+// Connect HostFrameSinkManager to FrameSinkManagerImpl.
+void ConnectFrameSinkManager() {
+  // Interfaces and requests to bind to each of the interfaces.
+  cc::mojom::FrameSinkManagerClientPtr host_mojo;
+  cc::mojom::FrameSinkManagerPtr manager_mojo;
+  cc::mojom::FrameSinkManagerClientRequest host_mojo_request =
+      mojo::MakeRequest(&host_mojo);
+  cc::mojom::FrameSinkManagerRequest manager_mojo_request =
+      mojo::MakeRequest(&manager_mojo);
+
+  // Make the Mojo connections on both ends.
+  g_frame_sink_manager_impl->BindPtrAndSetClient(
+      std::move(manager_mojo_request), std::move(host_mojo));
+  g_host_frame_sink_manager->BindManagerClientAndSetManagerPtr(
+      std::move(host_mojo_request), std::move(manager_mojo));
+}
 
 }  // namespace
 
@@ -35,13 +53,15 @@ void InitializeContextFactoryForTests(
     enable_pixel_output = true;
   if (enable_pixel_output)
     g_disable_null_draw = new gl::DisableNullDrawGLBindings;
-  g_frame_sink_manager = new viz::HostFrameSinkManager;
-  g_surface_manager = new cc::SurfaceManager;
-  g_implicit_factory =
-      new InProcessContextFactory(g_frame_sink_manager, g_surface_manager);
+  g_host_frame_sink_manager = new viz::HostFrameSinkManager;
+  g_frame_sink_manager_impl = new viz::FrameSinkManagerImpl(false, nullptr);
+  g_implicit_factory = new InProcessContextFactory(
+      g_host_frame_sink_manager, g_frame_sink_manager_impl->surface_manager());
   g_implicit_factory->SetUseFastRefreshRateForTests();
   *context_factory = g_implicit_factory;
   *context_factory_private = g_implicit_factory;
+
+  ConnectFrameSinkManager();
 }
 
 void TerminateContextFactoryForTests() {
@@ -50,10 +70,10 @@ void TerminateContextFactoryForTests() {
     delete g_implicit_factory;
     g_implicit_factory = nullptr;
   }
-  delete g_surface_manager;
-  g_surface_manager = nullptr;
-  delete g_frame_sink_manager;
-  g_frame_sink_manager = nullptr;
+  delete g_host_frame_sink_manager;
+  g_host_frame_sink_manager = nullptr;
+  delete g_frame_sink_manager_impl;
+  g_frame_sink_manager_impl = nullptr;
   delete g_disable_null_draw;
   g_disable_null_draw = nullptr;
 }

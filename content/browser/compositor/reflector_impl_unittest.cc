@@ -130,9 +130,9 @@ class ReflectorImplTest : public testing::Test {
     ui::ContextFactory* context_factory = nullptr;
     ui::ContextFactoryPrivate* context_factory_private = nullptr;
 
+    message_loop_ = base::MakeUnique<base::MessageLoop>();
     ui::InitializeContextFactoryForTests(enable_pixel_output, &context_factory,
                                          &context_factory_private);
-    message_loop_.reset(new base::MessageLoop());
     ImageTransportFactory::InitializeForUnitTests(
         base::MakeUnique<NoTransportImageTransportFactory>());
     task_runner_ = message_loop_->task_runner();

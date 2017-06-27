@@ -171,6 +171,7 @@ test("keyboard_unittests") {
     ":keyboard",
     "//base",
     "//base/test:test_support",
+    "//mojo/edk/system",
     "//skia",
     "//testing/gtest",
     "//ui/aura:test_support",

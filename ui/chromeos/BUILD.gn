@@ -71,6 +71,7 @@ test("ui_chromeos_unittests") {
     ":chromeos",
     "//base/test:test_support",
     "//chromeos",
+    "//mojo/edk/system",
     "//skia",
     "//testing/gtest",
     "//ui/aura:test_support",

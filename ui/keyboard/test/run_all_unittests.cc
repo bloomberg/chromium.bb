@@ -8,6 +8,7 @@
 #include "base/path_service.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
+#include "mojo/edk/embedder/embedder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
@@ -43,6 +44,8 @@ class KeyboardTestSuite : public base::TestSuite {
 
 int main(int argc, char** argv) {
   KeyboardTestSuite test_suite(argc, argv);
+
+  mojo::edk::Init();
 
   return base::LaunchUnitTests(
       argc,

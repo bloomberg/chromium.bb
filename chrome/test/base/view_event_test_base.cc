@@ -13,6 +13,7 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/view_event_test_platform_part.h"
+#include "mojo/edk/embedder/embedder.h"
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/base/test/ui_controls.h"
 #include "ui/compositor/test/context_factories_for_test.h"
@@ -70,6 +71,11 @@ void ViewEventTestBase::SetUpTestCase() {
 }
 
 void ViewEventTestBase::SetUp() {
+  // Mojo is initialized here similar to how each browser test case initializes
+  // Mojo when starting. This only works because each interactive_ui_test runs
+  // in a new process.
+  mojo::edk::Init();
+
   ui::InitializeInputMethodForTesting();
 
   // The ContextFactory must exist before any Compositors are created.

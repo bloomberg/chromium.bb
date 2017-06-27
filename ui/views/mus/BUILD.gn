@@ -243,6 +243,7 @@ test("views_mus_interactive_ui_tests") {
     ":mus",
     ":test_support",
     "//base",
+    "//mojo/edk/system",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/aura",

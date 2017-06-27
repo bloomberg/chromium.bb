@@ -140,6 +140,7 @@ test("wm_unittests") {
     ":wm",
     "//base",
     "//base/test:test_support",
+    "//mojo/edk/system",
     "//skia",
     "//testing/gtest",
     "//ui/aura:test_support",
