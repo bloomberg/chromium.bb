@@ -2249,6 +2249,12 @@ source_set("unit_tests") {
     "graphics/test/FakeWebGraphicsContext3DProvider.h",
     "graphics/test/MockImageDecoder.h",
 
+    # Tests migrated from the web/tests directory.
+    "TimerPerfTest.cpp",
+    "exported/WebImageTest.cpp",
+    "exported/WebURLRequestTest.cpp",
+    "exported/WebURLResponseTest.cpp",
+
     # TODO(toyoshim): Remove Platform dependency and move to loader/BUILD.gn
     "loader/fetch/ResourceResponseTest.cpp",
 
