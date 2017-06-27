@@ -6175,6 +6175,16 @@ interface ValidityState
     getter valid
     getter valueMissing
     method constructor
+interface VisualViewport : EventTarget
+    attribute @@toStringTag
+    getter height
+    getter offsetLeft
+    getter offsetTop
+    getter pageLeft
+    getter pageTop
+    getter scale
+    getter width
+    method constructor
 interface WaveShaperNode : AudioNode
     attribute @@toStringTag
     getter curve
@@ -8017,6 +8027,7 @@ interface webkitURL
     getter statusbar
     getter styleMedia
     getter toolbar
+    getter visualViewport
     getter webkitStorageInfo
     method NodeFilter
     method alert
@@ -8193,6 +8204,7 @@ interface webkitURL
     setter status
     setter statusbar
     setter toolbar
+    setter visualViewport
 PASS successfullyParsed is true
 
 TEST COMPLETE
