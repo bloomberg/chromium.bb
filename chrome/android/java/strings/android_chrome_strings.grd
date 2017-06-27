@@ -1773,7 +1773,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_BROWSER_ACTIONS_SINGLE_LINK_OPEN_NOTIFICATION_TITLE" desc="Content title displayed in the notification when one link is opened in the background from Browser Actions. [CHAR-LIMIT=30]">
         Link opened in Chrome
       </message>
-      <message name="IDS_BROWSER_ACTIONS_MULTI_LINKS_OPEN_NOTIFICATION_TITLE" desc="Content title displayed in the notification when multiple links are opened in the background from Browser Actions. [CHAR-LIMIT=30]">
+      <message name="IDS_BROWSER_ACTIONS_MULTI_LINKS_OPEN_NOTIFICATION_TITLE" desc="Content title displayed in the notification when multiple links are opened in the background from Browser Actions. [CHAR-LIMIT=41]">
         Multiple links opened in Chrome
       </message>
       <message name="IDS_BROWSER_ACTIONS_NOTIFICATION_TEXT" desc="Context text displayed in the notification when links are opened in the background from Browser Actions. [CHAR-LIMIT=30]">
