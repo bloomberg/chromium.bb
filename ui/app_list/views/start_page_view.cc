@@ -23,6 +23,7 @@
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/custom_launcher_page_view.h"
+#include "ui/app_list/views/expand_arrow_view.h"
 #include "ui/app_list/views/indicator_chip_view.h"
 #include "ui/app_list/views/search_box_view.h"
 #include "ui/app_list/views/search_result_container_view.h"
@@ -56,6 +57,7 @@ constexpr int kStartPageSearchBoxWidthFullscreen = 544;
 constexpr int kWebViewWidth = 700;
 constexpr int kWebViewHeight = 224;
 
+constexpr int kExpandArrowTopPadding = 28;
 constexpr int kLauncherPageBackgroundWidth = 400;
 
 }  // namespace
@@ -125,6 +127,11 @@ StartPageView::StartPageView(AppListMainView* app_list_main_view,
 
   // The view containing the start page tiles.
   AddChildView(suggestions_container_);
+  if (is_fullscreen_app_list_enabled_) {
+    expand_arrow_view_ = new ExpandArrowView(
+        app_list_main_view_->contents_view(), app_list_view);
+    AddChildView(expand_arrow_view_);
+  }
   AddChildView(custom_launcher_page_background_);
 
   suggestions_container_->SetResults(view_delegate_->GetModel()->results());
@@ -244,6 +251,18 @@ void StartPageView::Layout() {
                   0);
   }
   suggestions_container_->SetBoundsRect(bounds);
+
+  if (expand_arrow_view_) {
+    gfx::Rect expand_arrow_rect(GetContentsBounds());
+    int left_right_padding =
+        (bounds.width() - expand_arrow_view_->GetPreferredSize().width()) / 2;
+
+    expand_arrow_rect.Inset(left_right_padding, 0, left_right_padding, 0);
+    expand_arrow_rect.set_y(bounds.bottom() + kExpandArrowTopPadding);
+    expand_arrow_rect.set_height(
+        expand_arrow_view_->GetPreferredSize().height());
+    expand_arrow_view_->SetBoundsRect(expand_arrow_rect);
+  }
 
   CustomLauncherPageView* custom_launcher_page_view =
       app_list_main_view_->contents_view()->custom_page_view();
