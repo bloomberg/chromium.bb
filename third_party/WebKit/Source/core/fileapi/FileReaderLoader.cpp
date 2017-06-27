@@ -304,7 +304,8 @@ DOMArrayBuffer* FileReaderLoader::ArrayBufferResult() {
   DOMArrayBuffer* result = DOMArrayBuffer::Create(raw_data_->ToArrayBuffer());
   if (finished_loading_) {
     array_buffer_result_ = result;
-    AdjustReportedMemoryUsageToV8(-1 * raw_data_->ByteLength());
+    AdjustReportedMemoryUsageToV8(
+        -1 * static_cast<int64_t>(raw_data_->ByteLength()));
     raw_data_.reset();
   }
   return result;
@@ -338,14 +339,16 @@ String FileReaderLoader::StringResult() {
 
   if (finished_loading_) {
     DCHECK(is_raw_data_converted_);
-    AdjustReportedMemoryUsageToV8(-1 * raw_data_->ByteLength());
+    AdjustReportedMemoryUsageToV8(
+        -1 * static_cast<int64_t>(raw_data_->ByteLength()));
     raw_data_.reset();
   }
   return string_result_;
 }
 
 void FileReaderLoader::SetStringResult(const String& result) {
-  AdjustReportedMemoryUsageToV8(-1 * string_result_.CharactersSizeInBytes());
+  AdjustReportedMemoryUsageToV8(
+      -1 * static_cast<int64_t>(string_result_.CharactersSizeInBytes()));
   is_raw_data_converted_ = true;
   string_result_ = result;
   AdjustReportedMemoryUsageToV8(string_result_.CharactersSizeInBytes());
