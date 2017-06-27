@@ -67,18 +67,19 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'd3d11'], bug=644740)
     self.Fail('conformance2/textures/misc/tex-base-level-bug.html',
         ['win', 'd3d11'], bug=705865)
+    self.Flaky('conformance2/textures/svg_image/' +
+        'tex-2d-rgb565-rgb-unsigned_short_5_6_5.html',
+        ['win'], bug=736926)
 
     # Failing intermittently with out-of-memory crashes on some Windows bots.
-    self.Flaky('deqp/functional/gles3/texturefiltering/3d_formats_05.html',
-               ['win'], bug=735527)
-    self.Flaky('deqp/functional/gles3/texturefiltering/3d_formats_06.html',
-               ['win'], bug=735527)
-    self.Flaky('deqp/functional/gles3/texturefiltering/3d_formats_07.html',
-               ['win'], bug=735527)
-    self.Flaky('deqp/functional/gles3/texturefiltering/3d_sizes_02.html',
-               ['win'], bug=735527)
-    self.Flaky('deqp/functional/gles3/texturefiltering/3d_sizes_03.html',
-               ['win'], bug=735527)
+    self.Flaky('deqp/functional/gles3/texturefiltering/*',
+        ['win'], bug=725664)
+    self.Flaky('deqp/functional/gles3/textureformat/*',
+        ['win'], bug=725664)
+    self.Flaky('deqp/functional/gles3/textureshadow/*',
+        ['win'], bug=725664)
+    self.Flaky('deqp/functional/gles3/texturespecification/*',
+        ['win'], bug=725664)
 
     # Win / NVidia
     self.Flaky('deqp/functional/gles3/fbomultisample*',
