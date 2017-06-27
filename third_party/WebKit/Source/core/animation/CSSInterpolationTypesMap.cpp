@@ -379,15 +379,16 @@ CSSInterpolationTypesMap::CreateInterpolationTypesForCSSSyntax(
         result.push_back(WTF::MakeUnique<CSSImageInterpolationType>(
             property, &registration));
         break;
-      case CSSSyntaxType::kUrl:
       case CSSSyntaxType::kInteger:
       case CSSSyntaxType::kTransformList:
         // TODO(alancutter): Support smooth interpolation of these types.
         break;
-      case CSSSyntaxType::kTokenStream:
-      case CSSSyntaxType::kIdent:
       case CSSSyntaxType::kCustomIdent:
-        // Uses the CSSValueInterpolationType added below.
+      case CSSSyntaxType::kIdent:
+      case CSSSyntaxType::kTokenStream:
+      case CSSSyntaxType::kUrl:
+        // No interpolation behaviour defined, uses the
+        // CSSValueInterpolationType added below.
         break;
       default:
         NOTREACHED();

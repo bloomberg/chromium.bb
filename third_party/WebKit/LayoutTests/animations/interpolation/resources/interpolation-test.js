@@ -86,8 +86,8 @@
       }
       cssAnimationsData.sharedStyle.textContent += '' +
         '@keyframes animation' + id + ' {' +
-          (isNeutralKeyframe(from) ? '' : `from {${property}: ${from};}`) +
-          (isNeutralKeyframe(to) ? '' : `to {${property}: ${to};}`) +
+          (isNeutralKeyframe(from) ? '' : `from {${property}:${from};}`) +
+          (isNeutralKeyframe(to) ? '' : `to {${property}:${to};}`) +
         '}';
       target.style.animationName = 'animation' + id;
       target.style.animationDuration = '2e10s';
@@ -323,7 +323,9 @@ assertInterpolation({
     return expectations.map(function(expectation) {
       var actualTargetContainer = createTargetContainer(testContainer, 'actual');
       var expectedTargetContainer = createTargetContainer(testContainer, 'expected');
-      expectedTargetContainer.target.style.setProperty(property, expectation.is);
+      if (!isNeutralKeyframe(expectation.is)) {
+        expectedTargetContainer.target.style.setProperty(property, expectation.is);
+      }
       var target = actualTargetContainer.target;
       interpolationMethod.setup(property, from, target);
       target.interpolate = function() {
