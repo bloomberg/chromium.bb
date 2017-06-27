@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/files/file_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/loader/test_url_loader_client.h"
 #include "content/network/network_context.h"
@@ -66,7 +66,10 @@ std::string ReadData(MojoHandle consumer, size_t size) {
 
 class URLLoaderImplTest : public testing::Test {
  public:
-  URLLoaderImplTest() : context_(NetworkContext::CreateForTesting()) {}
+  URLLoaderImplTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::IO),
+        context_(NetworkContext::CreateForTesting()) {}
   ~URLLoaderImplTest() override {}
 
   void SetUp() override {
@@ -115,7 +118,7 @@ class URLLoaderImplTest : public testing::Test {
   void DestroyContext() { context_.reset(); }
 
  private:
-  base::MessageLoopForIO message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   net::EmbeddedTestServer test_server_;
   std::unique_ptr<NetworkContext> context_;
 };
