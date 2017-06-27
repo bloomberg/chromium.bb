@@ -75,6 +75,9 @@ class HEADLESS_EXPORT Request {
 
   virtual ResourceType GetResourceType() const = 0;
 
+  // Whether or not an asynchronous IPC was used to load this resource.
+  virtual bool IsAsync() const = 0;
+
  protected:
   Request() {}
   virtual ~Request() {}
@@ -188,6 +191,7 @@ class HEADLESS_EXPORT GenericURLRequestJob
   std::string GetDevToolsAgentHostId() const override;
   std::string GetPostData() const override;
   ResourceType GetResourceType() const override;
+  bool IsAsync() const override;
 
   // PendingRequest implementation:
   const Request* GetRequest() const override;
