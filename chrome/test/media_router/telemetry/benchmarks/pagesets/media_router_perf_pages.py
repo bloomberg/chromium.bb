@@ -31,11 +31,11 @@ class CastDialogPage(media_router_page.CastPage):
   """Cast page to open a cast-enabled page and open media router dialog."""
 
   def __init__(self, page_set, url='file://basic_test.html',
-               shared_page_state_class=shared_page_state.SharedPageState,
-               name='basic_test.html'):
+               shared_page_state_class=shared_page_state.SharedPageState):
     super(CastDialogPage, self).__init__(
         url=url, page_set=page_set,
-        shared_page_state_class=shared_page_state_class)
+        shared_page_state_class=shared_page_state_class,
+        name='basic_test.html')
 
   def RunPageInteractions(self, action_runner):
     # Wait for 5s after Chrome is opened in order to get consistent results.
