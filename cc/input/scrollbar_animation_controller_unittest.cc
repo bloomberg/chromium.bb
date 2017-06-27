@@ -82,7 +82,6 @@ class ScrollbarAnimationControllerAuraOverlayTest : public testing::Test {
     clip_layer_ = clip.get();
     scroll_layer->SetElementId(
         LayerIdToElementIdForTesting(scroll_layer->id()));
-    scroll_layer->SetScrollClipLayer(clip_layer_->id());
     LayerImpl* scroll_layer_ptr = scroll_layer.get();
 
     const int kTrackStart = 0;
@@ -119,6 +118,7 @@ class ScrollbarAnimationControllerAuraOverlayTest : public testing::Test {
     h_scrollbar_layer_->test_properties()->opacity_can_animate = true;
 
     clip_layer_->SetBounds(gfx::Size(100, 100));
+    scroll_layer_ptr->SetScrollable(gfx::Size(100, 100));
     scroll_layer_ptr->SetBounds(gfx::Size(200, 200));
     host_impl_.active_tree()->BuildLayerListAndPropertyTreesForTesting();
     host_impl_.active_tree()->UpdateScrollbarGeometries();
@@ -185,12 +185,15 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest, AppearOnResize) {
 
   // Make the Layer non-scrollable, scrollbar disappears.
   clip_layer_->SetBounds(gfx::Size(200, 200));
+  LayerImpl* scroll_layer = host_impl_.active_tree()->LayerById(1);
+  scroll_layer->SetScrollable(gfx::Size(200, 200));
   host_impl_.active_tree()->BuildLayerListAndPropertyTreesForTesting();
   scrollbar_controller_->DidScrollUpdate();
   ExpectScrollbarsOpacity(0);
 
   // Make the layer scrollable, scrollbar appears again.
   clip_layer_->SetBounds(gfx::Size(100, 100));
+  scroll_layer->SetScrollable(gfx::Size(100, 100));
   host_impl_.active_tree()->BuildLayerListAndPropertyTreesForTesting();
   scrollbar_controller_->DidScrollUpdate();
   ExpectScrollbarsOpacity(1);
@@ -208,6 +211,7 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest, HideOnResize) {
   // Shrink along X axis, horizontal scrollbar should appear.
   clip_layer_->SetBounds(gfx::Size(100, 200));
   EXPECT_EQ(gfx::Size(100, 200), clip_layer_->bounds());
+  scroll_layer->SetScrollable(gfx::Size(100, 200));
   host_impl_.active_tree()->BuildLayerListAndPropertyTreesForTesting();
 
   scrollbar_controller_->DidScrollBegin();
@@ -221,6 +225,7 @@ TEST_F(ScrollbarAnimationControllerAuraOverlayTest, HideOnResize) {
   // should disappear.
   clip_layer_->SetBounds(gfx::Size(200, 100));
   EXPECT_EQ(gfx::Size(200, 100), clip_layer_->bounds());
+  scroll_layer->SetScrollable(gfx::Size(200, 100));
   host_impl_.active_tree()->BuildLayerListAndPropertyTreesForTesting();
 
   scrollbar_controller_->DidScrollBegin();
@@ -1353,20 +1358,18 @@ class ScrollbarAnimationControllerAndroidTest
     scrollbar->test_properties()->opacity = 0.0f;
     scrollbar_layer_ = scrollbar.get();
     scrollbar_layer_->test_properties()->opacity_can_animate = true;
-    std::unique_ptr<LayerImpl> clip =
+    std::unique_ptr<LayerImpl> root =
         LayerImpl::Create(host_impl_.active_tree(), 3);
-    clip_layer_ = clip.get();
+
+    scroll_layer->SetScrollable(gfx::Size(100, 100));
     scroll_layer->SetElementId(
         LayerIdToElementIdForTesting(scroll_layer->id()));
-
-    scroll_layer->SetScrollClipLayer(clip_layer_->id());
     LayerImpl* scroll_layer_ptr = scroll_layer.get();
     scroll_layer->test_properties()->AddChild(std::move(scrollbar));
-    clip->test_properties()->AddChild(std::move(scroll_layer));
-    host_impl_.active_tree()->SetRootLayerForTesting(std::move(clip));
+    root->test_properties()->AddChild(std::move(scroll_layer));
+    host_impl_.active_tree()->SetRootLayerForTesting(std::move(root));
 
     scrollbar_layer_->SetScrollElementId(scroll_layer_ptr->element_id());
-    clip_layer_->SetBounds(gfx::Size(100, 100));
     scroll_layer_ptr->SetBounds(gfx::Size(200, 200));
     host_impl_.active_tree()->BuildLayerListAndPropertyTreesForTesting();
     DCHECK(host_impl_.active_tree()->ScrollbarGeometriesNeedUpdate());
@@ -1385,7 +1388,6 @@ class ScrollbarAnimationControllerAndroidTest
   TestTaskGraphRunner task_graph_runner_;
   FakeLayerTreeHostImpl host_impl_;
   std::unique_ptr<ScrollbarAnimationController> scrollbar_controller_;
-  LayerImpl* clip_layer_;
   SolidColorScrollbarLayerImpl* scrollbar_layer_;
 
   base::Closure start_fade_;
@@ -1451,21 +1453,17 @@ TEST_F(ScrollbarAnimationControllerAndroidTest, HideOnResize) {
   EXPECT_EQ(HORIZONTAL, scrollbar_layer_->orientation());
 
   // Shrink along X axis, horizontal scrollbar should appear.
-  clip_layer_->SetBounds(gfx::Size(100, 200));
-  EXPECT_EQ(gfx::Size(100, 200), clip_layer_->bounds());
+  scroll_layer->SetScrollable(gfx::Size(100, 200));
   host_impl_.active_tree()->BuildLayerListAndPropertyTreesForTesting();
-
   scrollbar_controller_->DidScrollBegin();
 
   scrollbar_controller_->DidScrollUpdate();
   EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
-
   scrollbar_controller_->DidScrollEnd();
 
   // Shrink along Y axis and expand along X, horizontal scrollbar
   // should disappear.
-  clip_layer_->SetBounds(gfx::Size(200, 100));
-  EXPECT_EQ(gfx::Size(200, 100), clip_layer_->bounds());
+  scroll_layer->SetScrollable(gfx::Size(200, 100));
   host_impl_.active_tree()->BuildLayerListAndPropertyTreesForTesting();
 
   scrollbar_controller_->DidScrollBegin();
@@ -1484,20 +1482,16 @@ TEST_F(VerticalScrollbarAnimationControllerAndroidTest, HideOnResize) {
   EXPECT_EQ(VERTICAL, scrollbar_layer_->orientation());
 
   // Shrink along X axis, vertical scrollbar should remain invisible.
-  clip_layer_->SetBounds(gfx::Size(100, 200));
-  EXPECT_EQ(gfx::Size(100, 200), clip_layer_->bounds());
+  scroll_layer->SetScrollable(gfx::Size(100, 200));
   host_impl_.active_tree()->BuildLayerListAndPropertyTreesForTesting();
-
   scrollbar_controller_->DidScrollBegin();
 
   scrollbar_controller_->DidScrollUpdate();
   EXPECT_FLOAT_EQ(0.0f, scrollbar_layer_->Opacity());
-
   scrollbar_controller_->DidScrollEnd();
 
   // Shrink along Y axis and expand along X, vertical scrollbar should appear.
-  clip_layer_->SetBounds(gfx::Size(200, 100));
-  EXPECT_EQ(gfx::Size(200, 100), clip_layer_->bounds());
+  scroll_layer->SetScrollable(gfx::Size(200, 100));
   host_impl_.active_tree()->BuildLayerListAndPropertyTreesForTesting();
 
   scrollbar_controller_->DidScrollBegin();

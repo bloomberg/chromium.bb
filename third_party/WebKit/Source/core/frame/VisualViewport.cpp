@@ -114,6 +114,7 @@ void VisualViewport::SetSize(const IntSize& size) {
 
   if (inner_viewport_container_layer_) {
     inner_viewport_container_layer_->SetSize(FloatSize(size_));
+    inner_viewport_scroll_layer_->PlatformLayer()->SetScrollable(size_);
 
     // Need to re-compute sizes for the overlay scrollbars.
     InitializeScrollbars();
@@ -369,8 +370,7 @@ void VisualViewport::CreateLayerTree() {
       GetPage().GetSettings().GetMainFrameClipsContent());
   inner_viewport_container_layer_->SetSize(FloatSize(size_));
 
-  inner_viewport_scroll_layer_->PlatformLayer()->SetScrollClipLayer(
-      inner_viewport_container_layer_->PlatformLayer());
+  inner_viewport_scroll_layer_->PlatformLayer()->SetScrollable(size_);
   if (MainFrame()) {
     if (Document* document = MainFrame()->GetDocument()) {
       inner_viewport_scroll_layer_->SetElementId(

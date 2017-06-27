@@ -780,9 +780,9 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, OneScrollNode) {
   EXPECT_EQ(transform_node_index, transform_node.id);
 
   EXPECT_EQ(0u, scroll_client.did_scroll_count);
-  // TODO(pdr): The PaintArtifactCompositor should set the scroll clip layer id
-  // so the Layer is scrollable. This call should be removed.
-  layer->SetScrollClipLayerId(layer->id());
+  // TODO(pdr): The PaintArtifactCompositor should set the scrolling content
+  // bounds so the Layer is scrollable. This call should be removed.
+  layer->SetScrollable(gfx::Size(1, 1));
   layer->SetScrollOffsetFromImplSide(gfx::ScrollOffset(1, 2));
   EXPECT_EQ(1u, scroll_client.did_scroll_count);
   EXPECT_EQ(gfx::ScrollOffset(1, 2), scroll_client.last_scroll_offset);

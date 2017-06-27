@@ -217,14 +217,13 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   gfx::ScrollOffset scroll_offset() const { return inputs_.scroll_offset; }
   void SetScrollOffsetFromImplSide(const gfx::ScrollOffset& scroll_offset);
 
-  // TODO(pdr): Remove scroll_clip_layer_id and store the scroll clip bounds
-  // directly instead of using scroll_clip_layer's bounds.
-  void SetScrollClipLayerId(int clip_layer_id);
-  Layer* scroll_clip_layer() const;
-
-  // Marks this layer as being scrollable and needing an associated scroll node
-  // with bounds synced to this layer's bounds.
-  void SetScrollable(bool scrollable = true);
+  // Marks this layer as being scrollable and needing an associated scroll node.
+  // The scroll node's bounds and scroll_clip_layer_bounds will be kept in sync
+  // with this layer. Once scrollable, a Layer cannot become un-scrollable.
+  void SetScrollable(const gfx::Size& scroll_container_bounds);
+  gfx::Size scroll_container_bounds() const {
+    return inputs_.scroll_container_bounds;
+  }
   bool scrollable() const { return inputs_.scrollable; }
 
   void SetUserScrollable(bool horizontal, bool vertical);
@@ -256,8 +255,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   }
 
   void set_did_scroll_callback(
-      const base::Callback<void(const gfx::ScrollOffset&)>& callback) {
-    inputs_.did_scroll_callback = callback;
+      base::Callback<void(const gfx::ScrollOffset&)> callback) {
+    inputs_.did_scroll_callback = std::move(callback);
   }
 
   void SetForceRenderSurfaceForTesting(bool force_render_surface);
@@ -418,8 +417,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   void SetScrollbarsHiddenFromImplSide(bool hidden);
 
-  void set_is_scroll_clip_layer() { is_scroll_clip_layer_ = true; }
-
   const gfx::Rect& update_rect() const { return inputs_.update_rect; }
 
   LayerTreeHost* layer_tree_host() const { return layer_tree_host_; }
@@ -429,7 +426,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   bool has_transform_node() { return has_transform_node_; }
   void SetHasTransformNode(bool val) { has_transform_node_ = val; }
-  void SetHasScrollNode(bool val) { has_scroll_node_ = val; }
 
  protected:
   friend class LayerImpl;
@@ -573,14 +569,14 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
     gfx::ScrollOffset scroll_offset;
 
-    // This variable indicates which ancestor layer (if any) whose size,
-    // transformed relative to this layer, defines the maximum scroll offset
-    // for this layer.
-    int scroll_clip_layer_id;
+    // Size of the scroll container that this layer scrolls in.
+    gfx::Size scroll_container_bounds;
 
     // Indicates that this layer will need a scroll property node and that this
-    // layer's bounds correspond to the scroll node's bounds.
+    // layer's bounds correspond to the scroll node's bounds (both |bounds| and
+    // |scroll_container_bounds|).
     bool scrollable : 1;
+
     bool user_scrollable_horizontal : 1;
     bool user_scrollable_vertical : 1;
 
@@ -633,12 +629,10 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   bool force_render_surface_for_testing_ : 1;
   bool subtree_property_changed_ : 1;
   bool may_contain_video_ : 1;
-  bool is_scroll_clip_layer_ : 1;
   bool needs_show_scrollbars_ : 1;
   // Whether the nodes referred to by *_tree_index_
   // "belong" to this layer. Only applicable if use_layer_lists is false.
   bool has_transform_node_ : 1;
-  bool has_scroll_node_ : 1;
   // This value is valid only when LayerTreeHost::has_copy_request() is true
   bool subtree_has_copy_request_ : 1;
   SkColor safe_opaque_background_color_;

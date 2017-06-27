@@ -70,7 +70,6 @@ class SingleScrollbarAnimationControllerThinningTest : public testing::Test {
     scroll_layer->SetElementId(
         LayerIdToElementIdForTesting(scroll_layer->id()));
     clip_layer_ = clip.get();
-    scroll_layer->SetScrollClipLayer(clip_layer_->id());
     LayerImpl* scroll_layer_ptr = scroll_layer.get();
 
     const int kId = 2;

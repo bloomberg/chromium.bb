@@ -226,6 +226,10 @@ bool WebLayerImpl::HasTickingAnimationForTesting() {
   return layer_->HasTickingAnimationForTesting();
 }
 
+void WebLayerImpl::SetScrollable(const blink::WebSize& size) {
+  layer_->SetScrollable(size);
+}
+
 void WebLayerImpl::SetScrollPosition(blink::WebFloatPoint position) {
   layer_->SetScrollOffset(gfx::ScrollOffset(position.x, position.y));
 }
@@ -233,14 +237,6 @@ void WebLayerImpl::SetScrollPosition(blink::WebFloatPoint position) {
 blink::WebFloatPoint WebLayerImpl::ScrollPosition() const {
   return blink::WebFloatPoint(layer_->scroll_offset().x(),
                               layer_->scroll_offset().y());
-}
-
-void WebLayerImpl::SetScrollClipLayer(WebLayer* clip_layer) {
-  if (!clip_layer) {
-    layer_->SetScrollClipLayerId(Layer::INVALID_ID);
-    return;
-  }
-  layer_->SetScrollClipLayerId(clip_layer->Id());
 }
 
 bool WebLayerImpl::Scrollable() const {

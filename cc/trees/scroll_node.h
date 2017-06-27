@@ -30,6 +30,7 @@ struct CC_EXPORT ScrollNode {
   // The layer id that corresponds to the layer contents that are scrolled.
   // Unlike |id|, this id is stable across frames that don't change the
   // composited layer list.
+  // TODO(pdr): This is no longer used and can be removed.
   int owning_layer_id;
 
   uint32_t main_thread_scrolling_reasons;
@@ -38,6 +39,7 @@ struct CC_EXPORT ScrollNode {
 
   // Size of the clipped area, not including non-overlay scrollbars. Overlay
   // scrollbars do not affect the clipped area.
+  // TODO(pdr): Rename this to scroll_container_bounds.
   gfx::Size scroll_clip_layer_bounds;
 
   // Bounds of the overflow scrolling area.

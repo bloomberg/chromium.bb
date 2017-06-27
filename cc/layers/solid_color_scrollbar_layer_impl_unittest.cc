@@ -39,9 +39,6 @@ TEST(SolidColorScrollbarLayerImplTest, Occlusion) {
   // SolidColorScrollbarLayers construct with opacity = 0.f, so override.
   scrollbar_layer_impl->test_properties()->opacity = 1.f;
 
-  DCHECK(impl.host_impl()->active_tree()->ScrollbarGeometriesNeedUpdate());
-  impl.host_impl()->active_tree()->UpdateScrollbarGeometries();
-
   impl.CalcDrawProps(viewport_size);
 
   gfx::Rect thumb_rect = scrollbar_layer_impl->ComputeThumbQuadRect();

@@ -366,11 +366,15 @@ class COMPOSITOR_EXPORT Layer
   // Requets a copy of the layer's output as a texture or bitmap.
   void RequestCopyOfOutput(std::unique_ptr<cc::CopyOutputRequest> request);
 
-  // Makes this Layer scrollable, clipping to |parent_clip_layer|. |on_scroll|
-  // is invoked when scrolling performed by the cc::InputHandler is committed.
-  void SetScrollable(
-      Layer* parent_clip_layer,
-      const base::Callback<void(const gfx::ScrollOffset&)>& on_scroll);
+  // Invoked when scrolling performed by the cc::InputHandler is committed. This
+  // will only occur if the Layer has set scroll container bounds.
+  void SetDidScrollCallback(
+      base::Callback<void(const gfx::ScrollOffset&)> callback);
+
+  // Marks this layer as scrollable inside the provided bounds. This size only
+  // affects scrolling so if clipping is desired, a separate clipping layer
+  // needs to be created.
+  void SetScrollable(const gfx::Size& container_bounds);
 
   // Gets and sets the current scroll offset of the layer.
   gfx::ScrollOffset CurrentScrollOffset() const;

@@ -237,9 +237,9 @@ void ScrollView::SetContents(View* a_view) {
       a_view->SetBackground(CreateSolidBackground(GetBackgroundColor()));
     }
     a_view->SetPaintToLayer();
-    a_view->layer()->SetScrollable(
-        contents_viewport_->layer(),
+    a_view->layer()->SetDidScrollCallback(
         base::Bind(&ScrollView::OnLayerScrolled, base::Unretained(this)));
+    a_view->layer()->SetScrollable(contents_viewport_->bounds().size());
   }
   SetHeaderOrContents(contents_viewport_, a_view, &contents_);
 }
@@ -474,6 +474,7 @@ void ScrollView::Layout() {
     gfx::Size container_size = contents_ ? contents_->size() : gfx::Size();
     container_size.SetToMax(viewport_bounds.size());
     contents_->SetBoundsRect(gfx::Rect(container_size));
+    contents_->layer()->SetScrollable(viewport_bounds.size());
   }
 
   header_viewport_->SetBounds(contents_x, contents_y,

@@ -439,8 +439,10 @@ class CC_EXPORT LayerTreeHostImpl
   virtual void ActivateSyncTree();
 
   // Shortcuts to layers/nodes on the active tree.
+  LayerImpl* InnerViewportContainerLayer() const;
   LayerImpl* InnerViewportScrollLayer() const;
   ScrollNode* InnerViewportScrollNode() const;
+  LayerImpl* OuterViewportContainerLayer() const;
   LayerImpl* OuterViewportScrollLayer() const;
   ScrollNode* OuterViewportScrollNode() const;
   ScrollNode* CurrentlyScrollingNode();

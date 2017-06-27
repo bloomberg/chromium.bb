@@ -913,8 +913,7 @@ TEST_F(LayerTest, CheckPropertyChangeCausesCorrectBehavior) {
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetContentsOpaque(true));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetPosition(gfx::PointF(4.f, 9.f)));
   // We can use any layer pointer here since we aren't syncing for real.
-  EXPECT_SET_NEEDS_COMMIT(2,
-                          test_layer->SetScrollClipLayerId(test_layer->id()));
+  EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetScrollable(gfx::Size(1, 1)));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetUserScrollable(true, false));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetScrollOffset(
       gfx::ScrollOffset(10, 10)));

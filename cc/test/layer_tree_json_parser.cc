@@ -98,29 +98,6 @@ scoped_refptr<Layer> ParseTreeFromValue(const base::Value& val,
   if (dict->GetBoolean("ContentsOpaque", &contents_opaque))
     new_layer->SetContentsOpaque(contents_opaque);
 
-  bool scrollable;
-  // TODO(wjmaclean) At some time in the future we may wish to test that a
-  // reconstructed layer tree contains the correct linkage for the scroll
-  // clip layer. This is complicated by the fact that the json output doesn't
-  // (currently) re-construct the tree with the same layer IDs as the original.
-  // But, since a clip layer is always an ancestor of the scrollable layer, we
-  // can just count the number of upwards hops to the clip layer and write that
-  // into the json file (with 0 hops implying no clip layer, i.e. not
-  // scrollable). Reconstructing the tree can then be accomplished by passing
-  // the parent pointer to this function and traversing the same number of
-  // ancestors to determine the pointer to the clip layer. The LayerTreesMatch()
-  // function should then check that both original and reconstructed layers
-  // have the same positioning with respect to their clip layers.
-  //
-  // For now, we can safely indicate a layer is scrollable by giving it a
-  // pointer to itself, something not normally allowed in a working tree.
-  //
-  // https://code.google.com/p/chromium/issues/detail?id=330622
-  //
-  if (dict->GetBoolean("Scrollable", &scrollable))
-    new_layer->SetScrollClipLayerId(scrollable ? new_layer->id()
-                                               : Layer::INVALID_ID);
-
   bool is_3d_sorted;
   if (dict->GetBoolean("Is3DSorted", &is_3d_sorted)) {
     // A non-zero context ID will put the layer into a 3D sorting context

@@ -169,9 +169,9 @@ class WebLayer {
   virtual void SetScrollPosition(WebFloatPoint) = 0;
   virtual WebFloatPoint ScrollPosition() const = 0;
 
-  // To set a WebLayer as scrollable we must specify the corresponding clip
-  // layer.
-  virtual void SetScrollClipLayer(WebLayer*) = 0;
+  // To set a WebLayer as scrollable we must specify the scrolling container
+  // bounds.
+  virtual void SetScrollable(const WebSize& scroll_container_bounds) = 0;
   virtual bool Scrollable() const = 0;
   virtual void SetUserScrollable(bool horizontal, bool vertical) = 0;
   virtual bool UserScrollableHorizontal() const = 0;

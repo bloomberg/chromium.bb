@@ -872,11 +872,13 @@ void Layer::OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) {
     delegate_->OnDelegatedFrameDamage(damage_rect_in_dip);
 }
 
-void Layer::SetScrollable(
-    Layer* parent_clip_layer,
-    const base::Callback<void(const gfx::ScrollOffset&)>& on_scroll) {
-  cc_layer_->SetScrollClipLayerId(parent_clip_layer->cc_layer_->id());
-  cc_layer_->set_did_scroll_callback(on_scroll);
+void Layer::SetDidScrollCallback(
+    base::Callback<void(const gfx::ScrollOffset&)> callback) {
+  cc_layer_->set_did_scroll_callback(std::move(callback));
+}
+
+void Layer::SetScrollable(const gfx::Size& container_bounds) {
+  cc_layer_->SetScrollable(container_bounds);
   cc_layer_->SetUserScrollable(true, true);
 }
 

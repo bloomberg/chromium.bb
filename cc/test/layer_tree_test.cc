@@ -57,18 +57,16 @@ void CreateVirtualViewportLayers(Layer* root_layer,
   inner_viewport_scroll_layer->AddChild(outer_viewport_container_layer);
   outer_viewport_container_layer->AddChild(outer_scroll_layer);
 
-  inner_viewport_scroll_layer->SetScrollClipLayerId(
-      inner_viewport_container_layer->id());
   inner_viewport_scroll_layer->SetElementId(
       LayerIdToElementIdForTesting(inner_viewport_scroll_layer->id()));
-  outer_scroll_layer->SetScrollClipLayerId(
-      outer_viewport_container_layer->id());
   outer_scroll_layer->SetElementId(
       LayerIdToElementIdForTesting(outer_scroll_layer->id()));
 
   inner_viewport_container_layer->SetBounds(inner_bounds);
+  inner_viewport_scroll_layer->SetScrollable(inner_bounds);
   inner_viewport_scroll_layer->SetBounds(outer_bounds);
   outer_viewport_container_layer->SetBounds(outer_bounds);
+  outer_scroll_layer->SetScrollable(outer_bounds);
 
   inner_viewport_scroll_layer->SetIsContainerForFixedPositionLayers(true);
   outer_scroll_layer->SetIsContainerForFixedPositionLayers(true);

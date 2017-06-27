@@ -813,17 +813,18 @@ class LayerTreeHostTestPushNodeOwnerToNodeIdMap : public LayerTreeHostTest {
         break;
       case 2:
         // child_ should create a scroll node.
-        child_->SetScrollClipLayerId(root_->id());
+        child_->SetScrollable(gfx::Size(1, 1));
         break;
       case 3:
         // child_ should create a clip node.
         child_->SetMasksToBounds(true);
         break;
       case 4:
-        // child_ should not create any property tree node.
+        // child_ should only create the scroll-related nodes.
         child_->SetMasksToBounds(false);
         child_->SetForceRenderSurfaceForTesting(false);
-        child_->SetScrollClipLayerId(Layer::INVALID_ID);
+        // Should have no effect because empty bounds do not prevent scrolling.
+        child_->SetScrollable(gfx::Size(0, 0));
     }
   }
 
@@ -877,11 +878,11 @@ class LayerTreeHostTestPushNodeOwnerToNodeIdMap : public LayerTreeHostTest {
         EXPECT_NE(root_clip_node, child_clip_node);
         break;
       case 4:
-        // child_ should not create any property tree nodes.
-        EXPECT_EQ(child_transform_node, root_transform_node);
+        // child_ should only create the scroll-related nodes.
+        EXPECT_EQ(child_transform_node->id, child_scroll_node->transform_id);
         EXPECT_EQ(child_effect_node, root_effect_node);
         EXPECT_EQ(root_clip_node, child_clip_node);
-        EXPECT_EQ(root_scroll_node, child_scroll_node);
+        EXPECT_NE(root_scroll_node, child_scroll_node);
         EndTest();
         break;
     }
@@ -2742,7 +2743,7 @@ class ViewportDeltasAppliedDuringPinch : public LayerTreeHostTest {
 
     scoped_refptr<Layer> pinch = Layer::Create();
     pinch->SetBounds(gfx::Size(500, 500));
-    pinch->SetScrollClipLayerId(root_clip->id());
+    pinch->SetScrollable(gfx::Size(200, 200));
     pinch->SetIsContainerForFixedPositionLayers(true);
     page_scale_layer->AddChild(pinch);
     root_clip->AddChild(page_scale_layer);
@@ -4766,8 +4767,8 @@ class LayerTreeHostTestElasticOverscroll : public LayerTreeHostTest {
     scoped_refptr<Layer> overscroll_elasticity_layer = Layer::Create();
     scoped_refptr<Layer> page_scale_layer = Layer::Create();
     scoped_refptr<Layer> inner_viewport_scroll_layer = Layer::Create();
-    inner_viewport_scroll_layer->SetScrollClipLayerId(
-        inner_viewport_container_layer->id());
+    inner_viewport_scroll_layer->SetScrollable(
+        inner_viewport_container_layer->bounds());
     inner_viewport_scroll_layer->SetIsContainerForFixedPositionLayers(true);
 
     root_layer_->AddChild(inner_viewport_container_layer);
@@ -6191,7 +6192,7 @@ class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
 
     scoped_refptr<Layer> pinch = Layer::Create();
     pinch->SetBounds(gfx::Size(500, 500));
-    pinch->SetScrollClipLayerId(root_clip->id());
+    pinch->SetScrollable(gfx::Size(500, 500));
     pinch->SetIsContainerForFixedPositionLayers(true);
     page_scale_layer->AddChild(pinch);
     root_clip->AddChild(page_scale_layer);
@@ -6498,7 +6499,7 @@ class LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles
 
     scoped_refptr<Layer> pinch = Layer::Create();
     pinch->SetBounds(gfx::Size(500, 500));
-    pinch->SetScrollClipLayerId(root_clip->id());
+    pinch->SetScrollable(gfx::Size(500, 500));
     pinch->SetIsContainerForFixedPositionLayers(true);
     page_scale_layer->AddChild(pinch);
     root_clip->AddChild(page_scale_layer);
@@ -6904,7 +6905,7 @@ class LayerTreeTestMaskLayerForSurfaceWithContentRectNotAtOrigin
     CreateVirtualViewportLayers(root.get(), outer_viewport_scroll_layer,
                                 gfx::Size(50, 50), gfx::Size(50, 50),
                                 layer_tree_host());
-    outer_viewport_scroll_layer->scroll_clip_layer()->SetMasksToBounds(true);
+    layer_tree_host()->outer_viewport_container_layer()->SetMasksToBounds(true);
     outer_viewport_scroll_layer->AddChild(content_layer);
 
     client_.set_bounds(root->bounds());
