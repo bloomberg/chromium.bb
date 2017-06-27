@@ -67,13 +67,9 @@ static const JNINativeMethod kMethodsTestJni[] = {
 "I", reinterpret_cast<void*>(Java_org_chromium_TestJni_nativeInit) },
 };
 
-// TODO(agrieve): Remove these empty registration functions and functions
-// calling them. https://crbug.com/683256.
 static bool RegisterNativesImpl(JNIEnv* env) {
-  return true;
-}
-
-JNI_REGISTRATION_EXPORT bool RegisterNative_org_chromium_TestJni(JNIEnv* env) {
+  if (jni_generator::ShouldSkipJniRegistration(false))
+    return true;
 
   const int kMethodsMyOtherInnerClassSize =
       arraysize(kMethodsMyOtherInnerClass);
@@ -86,8 +82,7 @@ JNI_REGISTRATION_EXPORT bool RegisterNative_org_chromium_TestJni(JNIEnv* env) {
     return false;
   }
 
-  const int kMethodsTestJniSize =
-      arraysize(kMethodsTestJni);
+  const int kMethodsTestJniSize = arraysize(kMethodsTestJni);
 
   if (env->RegisterNatives(TestJni_clazz(env),
                            kMethodsTestJni,

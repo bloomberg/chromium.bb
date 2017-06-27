@@ -401,7 +401,7 @@ def ExtractNatives(contents, ptr_type):
 
 
 def IsMainDexJavaClass(contents):
-  """Returns True if the class is annotated with "@MainDex", False if not.
+  """Returns "true" if the class is annotated with "@MainDex", "false" if not.
 
   JNI registration doesn't always need to be completed for non-browser processes
   since most Java code is only used by the browser process. Classes that are
@@ -409,17 +409,8 @@ def IsMainDexJavaClass(contents):
   to force JNI registration.
   """
   re_maindex = re.compile(r'@MainDex[\s\S]*class({|[\s\S]*{)')
-  return bool(re.search(re_maindex, contents))
-
-
-def GetBinaryClassName(fully_qualified_class):
-  """Returns a string concatenating the Java package and class."""
-  return fully_qualified_class.replace('_', '_1').replace('/', '_')
-
-
-def GetRegistrationFunctionName(fully_qualified_class):
-  """Returns the register name with a given class."""
-  return 'RegisterNative_' + GetBinaryClassName(fully_qualified_class)
+  found = re.search(re_maindex, contents)
+  return 'true' if found else 'false'
 
 
 def GetStaticCastForReturnType(return_type):
@@ -629,6 +620,7 @@ class JNIFromJavaP(object):
           is_constructor=True)]
     self.called_by_natives = MangleCalledByNatives(self.jni_params,
                                                    self.called_by_natives)
+
     self.constant_fields = []
     re_constant_field = re.compile('.*?public static final int (?P<name>.*?);')
     re_constant_field_value = re.compile(
@@ -681,12 +673,13 @@ class JNIFromJavaSource(object):
     jni_namespace = ExtractJNINamespace(contents) or options.namespace
     natives = ExtractNatives(contents, options.ptr_type)
     called_by_natives = ExtractCalledByNatives(self.jni_params, contents)
+    maindex = IsMainDexJavaClass(contents)
     if len(natives) == 0 and len(called_by_natives) == 0:
       raise SyntaxError('Unable to find any JNI methods for %s.' %
                         fully_qualified_class)
     inl_header_file_generator = InlHeaderFileGenerator(
         jni_namespace, fully_qualified_class, natives, called_by_natives, [],
-        self.jni_params, options)
+        self.jni_params, options, maindex)
     self.content = inl_header_file_generator.GetContent()
 
   @classmethod
@@ -722,7 +715,8 @@ class InlHeaderFileGenerator(object):
   """Generates an inline header file for JNI integration."""
 
   def __init__(self, namespace, fully_qualified_class, natives,
-               called_by_natives, constant_fields, jni_params, options):
+               called_by_natives, constant_fields, jni_params, options,
+               maindex='false'):
     self.namespace = namespace
     self.fully_qualified_class = fully_qualified_class
     self.class_name = self.fully_qualified_class.split('/')[-1]
@@ -730,6 +724,7 @@ class InlHeaderFileGenerator(object):
     self.called_by_natives = called_by_natives
     self.header_guard = fully_qualified_class.replace('/', '_') + '_JNI'
     self.constant_fields = constant_fields
+    self.maindex = maindex
     self.jni_params = jni_params
     self.options = options
 
@@ -771,9 +766,8 @@ $METHOD_STUBS
 
 // Step 3: RegisterNatives.
 $JNI_NATIVE_METHODS
-$REGISTER_NATIVES_EMPTY
-$CLOSE_NAMESPACE
 $REGISTER_NATIVES
+$CLOSE_NAMESPACE
 
 #endif  // ${HEADER_GUARD}
 """)
@@ -785,9 +779,8 @@ $REGISTER_NATIVES
         'METHOD_STUBS': self.GetMethodStubsString(),
         'OPEN_NAMESPACE': self.GetOpenNamespaceString(),
         'JNI_NATIVE_METHODS': self.GetJNINativeMethodsString(),
-        'REGISTER_NATIVES_EMPTY': self.GetOriginalRegisterNativesString(),
-        'CLOSE_NAMESPACE': self.GetCloseNamespaceString(),
         'REGISTER_NATIVES': self.GetRegisterNativesString(),
+        'CLOSE_NAMESPACE': self.GetCloseNamespaceString(),
         'HEADER_GUARD': self.header_guard,
         'INCLUDES': self.GetIncludesString(),
     }
@@ -836,19 +829,14 @@ $REGISTER_NATIVES
     return '\n'.join(ret)
 
   def SubstituteNativeMethods(self, template):
-    """Substitutes NAMESPACE, JAVA_CLASS and KMETHODS in the provided
-    template."""
+    """Substitutes JAVA_CLASS and KMETHODS in the provided template."""
     ret = []
     all_classes = self.GetUniqueClasses(self.natives)
     all_classes[self.class_name] = self.fully_qualified_class
     for clazz in all_classes:
       kmethods = self.GetKMethodsString(clazz)
-      namespace_str = ''
-      if self.namespace:
-        namespace_str = self.namespace + '::'
       if kmethods:
-        values = {'NAMESPACE': namespace_str,
-                  'JAVA_CLASS': clazz,
+        values = {'JAVA_CLASS': clazz,
                   'KMETHODS': kmethods}
         ret += [template.substitute(values)]
     if not ret: return ''
@@ -865,38 +853,32 @@ ${KMETHODS}
 """)
     return self.SubstituteNativeMethods(template)
 
-  # TODO(agrieve): Remove this function when deleting original registers.
-  # https://crbug.com/683256.
-  def GetOriginalRegisterNativesString(self):
-    """Return the code for original RegisterNatives"""
-    natives = self.GetRegisterNativesImplString()
-    if not natives:
-      return ''
-
-    return """
-// TODO(agrieve): Remove these empty registration functions and functions
-// calling them. https://crbug.com/683256.
-static bool RegisterNativesImpl(JNIEnv* env) {
-  return true;
-}
-"""
-
   def GetRegisterNativesString(self):
     """Returns the code for RegisterNatives."""
     natives = self.GetRegisterNativesImplString()
     if not natives:
       return ''
+
     template = Template("""\
-JNI_REGISTRATION_EXPORT bool ${REGISTER_NAME}(JNIEnv* env) {
+${REGISTER_NATIVES_SIGNATURE} {
+${EARLY_EXIT}
 ${NATIVES}
   return true;
 }
 """)
-    values = {
-        'REGISTER_NAME':
-            GetRegistrationFunctionName(self.fully_qualified_class),
-        'NATIVES': natives
-    }
+    signature = 'static bool RegisterNativesImpl(JNIEnv* env)'
+    early_exit = ''
+    if self.options.native_exports_optional:
+      early_exit = """\
+  if (jni_generator::ShouldSkipJniRegistration(%s))
+    return true;
+""" % self.maindex
+
+    values = {'REGISTER_NATIVES_SIGNATURE': signature,
+              'EARLY_EXIT': early_exit,
+              'NATIVES': natives,
+             }
+
     return template.substitute(values)
 
   def GetRegisterNativesImplString(self):
@@ -905,11 +887,10 @@ ${NATIVES}
       return ''
 
     template = Template("""\
-  const int kMethods${JAVA_CLASS}Size =
-      arraysize(${NAMESPACE}kMethods${JAVA_CLASS});
+  const int kMethods${JAVA_CLASS}Size = arraysize(kMethods${JAVA_CLASS});
 
   if (env->RegisterNatives(${JAVA_CLASS}_clazz(env),
-                           ${NAMESPACE}kMethods${JAVA_CLASS},
+                           kMethods${JAVA_CLASS},
                            kMethods${JAVA_CLASS}Size) < 0) {
     jni_generator::HandleRegistrationError(
         env, ${JAVA_CLASS}_clazz(env), __FILE__);
@@ -993,7 +974,7 @@ ${NATIVES}
     """
     template = Template("Java_${JAVA_NAME}_native${NAME}")
 
-    java_name = GetBinaryClassName(self.fully_qualified_class)
+    java_name = self.fully_qualified_class.replace('_', '_1').replace('/', '_')
     if native.java_class_name:
       java_name += '_00024' + native.java_class_name
 
@@ -1333,19 +1314,17 @@ def GenerateJNIHeader(input_file, output_file, options):
     print e
     sys.exit(1)
   if output_file:
-    WriteOutput(output_file, content)
+    if not os.path.exists(os.path.dirname(os.path.abspath(output_file))):
+      os.makedirs(os.path.dirname(os.path.abspath(output_file)))
+    if options.optimize_generation and os.path.exists(output_file):
+      with file(output_file, 'r') as f:
+        existing_content = f.read()
+        if existing_content == content:
+          return
+    with file(output_file, 'w') as f:
+      f.write(content)
   else:
     print content
-
-
-def WriteOutput(output_file, content):
-  if os.path.exists(output_file):
-    with open(output_file) as f:
-      existing_content = f.read()
-      if existing_content == content:
-        return
-  with open(output_file, 'w') as f:
-    f.write(content)
 
 
 def GetScriptName():
@@ -1384,6 +1363,10 @@ See SampleForTests.java for more details.
   option_parser.add_option('--output_dir',
                            help='The output directory. Must be used with '
                            '--input')
+  option_parser.add_option('--optimize_generation', type="int",
+                           default=0, help='Whether we should optimize JNI '
+                           'generation by not regenerating files if they have '
+                           'not changed.')
   option_parser.add_option('--script_name', default=GetScriptName(),
                            help='The name of this script in the generated '
                            'header.')
