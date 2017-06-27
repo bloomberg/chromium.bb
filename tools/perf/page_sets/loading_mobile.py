@@ -174,6 +174,3 @@ class LoadingMobileExpectations(story.expectations.StoryExpectations):
     # self.DisableStory('Detik', [story.expectations.ALL], 'crbug.com/653775')
     # self.DisableStory(
     #     'Blogspot', [story.expectations.ALL], 'crbug.com/653775')
-
-    self.DisableStory('Facebook', [story.expectations.ANDROID_NEXUS7],
-                      'crbug.com/736877')
