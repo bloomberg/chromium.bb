@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//build/config/ui.gni")
-import("//testing/test.gni")
 
 config("viz_service_implementation") {
 }
@@ -16,12 +15,6 @@ component("service") {
     "display_compositor/display_output_surface.cc",
     "display_compositor/display_output_surface.h",
     "display_compositor/display_provider.h",
-    "display_compositor/gl_helper.cc",
-    "display_compositor/gl_helper.h",
-    "display_compositor/gl_helper_readback_support.cc",
-    "display_compositor/gl_helper_readback_support.h",
-    "display_compositor/gl_helper_scaling.cc",
-    "display_compositor/gl_helper_scaling.h",
     "display_compositor/gpu_display_provider.cc",
     "display_compositor/gpu_display_provider.h",
     "display_compositor/host_shared_bitmap_manager.cc",
@@ -47,10 +40,13 @@ component("service") {
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   deps = [
+    "//components/viz/common",
+
     # Note that dependency on //gpu/ipc/client is for GpuMemoryBufferImpl. This
     # dependency should not be in public_deps.
     "//gpu/ipc/client",
     "//gpu/ipc/service",
+    "//ui/display/types",
   ]
 
   public_deps = [
@@ -58,14 +54,8 @@ component("service") {
     "//cc",
     "//cc/ipc:interfaces",
     "//cc/surfaces",
-    "//gpu/command_buffer/client",
     "//gpu/command_buffer/client:gles2_interface",
-    "//gpu/command_buffer/common",
     "//gpu/ipc:command_buffer",
-    "//gpu/ipc/common:surface_handle_type",
-    "//skia",
-    "//ui/display/types",
-    "//ui/gfx",
   ]
 
   if (is_mac) {
@@ -123,85 +113,9 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//cc:test_support",
-    "//gpu/command_buffer/client",
-    "//gpu/command_buffer/client:gles2_implementation",
-    "//gpu/ipc:gl_in_process_context",
-    "//media",
-    "//skia",
+    "//components/viz/common",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/display/types",
-    "//ui/gl:test_support",
-  ]
-
-  data_deps = [
-    "//third_party/mesa:osmesa",
-  ]
-}
-
-test("display_compositor_gl_tests") {
-  sources = [
-    "display_compositor/display_compositor_test_suite.cc",
-    "display_compositor/display_compositor_test_suite.h",
-    "display_compositor/gl_helper_unittest.cc",
-    "display_compositor/run_all_unittests.cc",
-    "display_compositor/yuv_readback_unittest.cc",
-  ]
-
-  configs += [
-    "//build/config/compiler:no_size_t_to_int_warning",
-    "//third_party/khronos:khronos_headers",
-  ]
-
-  deps = [
-    ":service",
-    "//base",
-    "//base/test:test_support",
-    "//cc:test_support",
-    "//gpu/command_buffer/client",
-    "//gpu/command_buffer/client:gles2_implementation",
-    "//gpu/ipc:gl_in_process_context",
-    "//media",
-    "//skia",
-    "//testing/gmock",
-    "//testing/gtest",
-    "//ui/gl:test_support",
-  ]
-
-  data_deps = [
-    "//third_party/mesa:osmesa",
-  ]
-}
-
-test("display_compositor_benchmark") {
-  sources = [
-    "display_compositor/display_compositor_test_suite.cc",
-    "display_compositor/display_compositor_test_suite.h",
-    "display_compositor/gl_helper_benchmark.cc",
-    "display_compositor/run_all_unittests.cc",
-  ]
-
-  configs += [
-    "//build/config/compiler:no_size_t_to_int_warning",
-    "//third_party/khronos:khronos_headers",
-  ]
-
-  deps = [
-    ":service",
-    "//base",
-    "//base/test:test_support",
-    "//cc:test_support",
-    "//gpu/command_buffer/client",
-    "//gpu/command_buffer/client:gles2_implementation",
-    "//gpu/ipc:gl_in_process_context",
-    "//media",
-    "//skia",
-    "//testing/gmock",
-    "//testing/gtest",
-    "//ui/gl:test_support",
-  ]
-
-  data_deps = [
-    "//third_party/mesa:osmesa",
   ]
 }

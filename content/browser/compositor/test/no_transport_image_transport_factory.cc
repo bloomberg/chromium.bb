@@ -10,7 +10,7 @@
 #include "build/build_config.h"
 #include "cc/output/context_provider.h"
 #include "cc/surfaces/surface_manager.h"
-#include "components/viz/service/display_compositor/gl_helper.h"
+#include "components/viz/common/gl_helper.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "ui/compositor/compositor.h"

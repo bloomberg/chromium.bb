@@ -2,19 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_COMPOSITOR_GL_HELPER_READBACK_SUPPORT_H_
-#define COMPONENTS_VIZ_SERVICE_DISPLAY_COMPOSITOR_GL_HELPER_READBACK_SUPPORT_H_
+#ifndef COMPONENTS_VIZ_COMMON_GL_HELPER_READBACK_SUPPORT_H_
+#define COMPONENTS_VIZ_COMMON_GL_HELPER_READBACK_SUPPORT_H_
 
 #include <stddef.h>
 
 #include <vector>
 
-#include "components/viz/service/display_compositor/gl_helper.h"
-#include "components/viz/service/viz_service_export.h"
+#include "components/viz/common/gl_helper.h"
 
 namespace viz {
 
-class VIZ_SERVICE_EXPORT GLHelperReadbackSupport {
+class GLHelperReadbackSupport {
  public:
   enum FormatSupport { SUPPORTED, SWIZZLE, NOT_SUPPORTED };
 
@@ -73,4 +72,4 @@ class VIZ_SERVICE_EXPORT GLHelperReadbackSupport {
 
 }  // namespace viz
 
-#endif  // COMPONENTS_VIZ_SERVICE_DISPLAY_COMPOSITOR_GL_HELPER_READBACK_SUPPORT_H_
+#endif  // COMPONENTS_VIZ_COMMON_GL_HELPER_READBACK_SUPPORT_H_

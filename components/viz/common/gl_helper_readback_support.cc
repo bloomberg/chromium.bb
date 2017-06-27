@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/viz/service/display_compositor/gl_helper_readback_support.h"
+#include "components/viz/common/gl_helper_readback_support.h"
 #include "base/logging.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "third_party/skia/include/core/SkImageInfo.h"

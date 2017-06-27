@@ -30,7 +30,6 @@
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gl/gl_share_group.h"
 
 namespace cc {
 

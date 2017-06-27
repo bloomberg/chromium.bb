@@ -5,25 +5,27 @@ include_rules = [
   "+cc/resources",
   "+cc/scheduler",
   "+cc/surfaces",
-  "+cc/test",
   "+gpu/GLES2",
   "+gpu/command_buffer/client",
   "+gpu/command_buffer/common",
-  "+gpu/ipc",
+  "+gpu/command_buffer/service",
+  "+gpu/ipc/client",
   "+gpu/ipc/common",
+  "+gpu/ipc/service",
   "+mojo/public/cpp/bindings",
   "+mojo/public/cpp/system",
-  "+third_party/khronos/GLES2",
   "+third_party/skia",
   "+ui/display",
   "+ui/gfx",
+  "+ui/gfx/geometry",
   "+ui/gl",
   "+ui/latency",
   "+ui/ozone/public",
 ]
 
 specific_include_rules = {
-  "yuv_readback_unittest\.cc": [
-    "+media/base",
+  ".*_unittest\.cc": [
+    "+cc/test",
+    "+third_party/khronos/GLES2",
   ],
 }

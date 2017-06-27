@@ -1,0 +1,82 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//testing/test.gni")
+
+source_set("common") {
+  sources = [
+    "gl_helper.cc",
+    "gl_helper.h",
+    "gl_helper_readback_support.cc",
+    "gl_helper_readback_support.h",
+    "gl_helper_scaling.cc",
+    "gl_helper_scaling.h",
+  ]
+
+  deps = [
+    "//gpu/command_buffer/client:gles2_interface",
+    "//skia",
+    "//ui/gfx/geometry",
+  ]
+
+  public_deps = [
+    "//gpu/command_buffer/client",
+    "//gpu/command_buffer/common",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "yuv_readback_unittest.cc",
+  ]
+
+  if (!is_android) {
+    sources += [
+      # Many of these fail on Android with the test GL implementation.
+      "gl_helper_unittest.cc",
+    ]
+  }
+
+  deps = [
+    ":common",
+    "//base/test:test_support",
+    "//gpu/command_buffer/client:gles2_implementation",
+    "//gpu/command_buffer/client:gles2_interface",
+    "//gpu/ipc:gl_in_process_context",
+    "//gpu/ipc/common:surface_handle_type",
+    "//media",
+    "//testing/gtest",
+  ]
+}
+
+# Microbenchmark to measure performance of GLHelper code, for use in
+# debugging, profiling, and optimizing.
+test("viz_benchmark") {
+  sources = [
+    "gl_helper_benchmark.cc",
+  ]
+
+  configs += [
+    "//build/config/compiler:no_size_t_to_int_warning",
+    "//third_party/khronos:khronos_headers",
+  ]
+
+  deps = [
+    ":common",
+    "//base",
+    "//base/test:test_support",
+    "//components/test:run_all_unittests",
+    "//gpu/command_buffer/client",
+    "//gpu/command_buffer/client:gles2_implementation",
+    "//gpu/ipc:gl_in_process_context",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//ui/gfx",
+  ]
+
+  data_deps = [
+    "//third_party/mesa:osmesa",
+  ]
+}

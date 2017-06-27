@@ -14,32 +14,24 @@
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
 
-#include "base/at_exit.h"
 #include "base/bind.h"
-#include "base/command_line.h"
-#include "base/files/file_util.h"
-#include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/test/launcher/unit_test_launcher.h"
-#include "base/test/test_suite.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "base/trace_event/trace_event.h"
-#include "components/viz/service/display_compositor/gl_helper.h"
-#include "components/viz/service/display_compositor/gl_helper_readback_support.h"
-#include "components/viz/service/display_compositor/gl_helper_scaling.h"
+#include "components/viz/common/gl_helper.h"
+#include "components/viz/common/gl_helper_readback_support.h"
+#include "components/viz/common/gl_helper_scaling.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/ipc/gl_in_process_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkTypes.h"
-#include "ui/gl/gl_implementation.h"
 
 namespace viz {
 
