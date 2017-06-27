@@ -7525,11 +7525,10 @@ void GLES2DecoderImpl::DoClearBufferfi(
 void GLES2DecoderImpl::DoFramebufferRenderbuffer(
     GLenum target, GLenum attachment, GLenum renderbuffertarget,
     GLuint client_renderbuffer_id) {
+  const char* func_name = "glFramebufferRenderbuffer";
   Framebuffer* framebuffer = GetFramebufferInfoForTarget(target);
   if (!framebuffer) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION,
-        "glFramebufferRenderbuffer", "no framebuffer bound");
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name, "no framebuffer bound");
     return;
   }
   GLuint service_id = 0;
@@ -7537,9 +7536,13 @@ void GLES2DecoderImpl::DoFramebufferRenderbuffer(
   if (client_renderbuffer_id) {
     renderbuffer = GetRenderbuffer(client_renderbuffer_id);
     if (!renderbuffer) {
-      LOCAL_SET_GL_ERROR(
-          GL_INVALID_OPERATION,
-          "glFramebufferRenderbuffer", "unknown renderbuffer");
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name,
+                         "unknown renderbuffer");
+      return;
+    }
+    if (!renderbuffer->IsValid()) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name,
+                         "renderbuffer never bound or deleted");
       return;
     }
     service_id = renderbuffer->service_id();
@@ -7551,11 +7554,11 @@ void GLES2DecoderImpl::DoFramebufferRenderbuffer(
   } else {
     attachments.push_back(attachment);
   }
-  LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glFramebufferRenderbuffer");
+  LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER(func_name);
   for (GLenum attachment_point : attachments) {
     glFramebufferRenderbufferEXT(
         target, attachment_point, renderbuffertarget, service_id);
-    GLenum error = LOCAL_PEEK_GL_ERROR("glFramebufferRenderbuffer");
+    GLenum error = LOCAL_PEEK_GL_ERROR(func_name);
     if (error == GL_NO_ERROR) {
       framebuffer->AttachRenderbuffer(attachment_point, renderbuffer);
     }

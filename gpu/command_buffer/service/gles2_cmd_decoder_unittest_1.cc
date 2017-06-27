@@ -133,6 +133,8 @@ void GLES2DecoderTestBase::SpecializedSetup<cmds::FramebufferRenderbuffer, 0>(
     bool valid) {
   DoBindFramebuffer(GL_FRAMEBUFFER, client_framebuffer_id_,
                     kServiceFramebufferId);
+  DoBindRenderbuffer(GL_RENDERBUFFER, client_renderbuffer_id_,
+                     kServiceRenderbufferId);
   if (valid) {
     EXPECT_CALL(*gl_, GetError())
         .WillOnce(Return(GL_NO_ERROR))

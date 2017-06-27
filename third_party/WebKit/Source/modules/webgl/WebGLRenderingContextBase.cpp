@@ -2519,9 +2519,10 @@ void WebGLRenderingContextBase::framebufferRenderbuffer(
                       "invalid target");
     return;
   }
-  if (buffer && !buffer->Validate(ContextGroup(), this)) {
+  if (buffer && (!buffer->HasEverBeenBound() ||
+                 !buffer->Validate(ContextGroup(), this))) {
     SynthesizeGLError(GL_INVALID_OPERATION, "framebufferRenderbuffer",
-                      "no buffer or buffer not from this context");
+                      "buffer never bound or buffer not from this context");
     return;
   }
   // Don't allow the default framebuffer to be mutated; all current
