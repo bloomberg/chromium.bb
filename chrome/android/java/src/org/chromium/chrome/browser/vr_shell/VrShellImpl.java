@@ -19,7 +19,6 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewTreeObserver.OnPreDrawListener;
 import android.widget.FrameLayout;
-import android.widget.FrameLayout.LayoutParams;
 
 import com.google.vr.ndk.base.AndroidCompat;
 import com.google.vr.ndk.base.GvrLayout;
@@ -129,6 +128,11 @@ public class VrShellImpl
         mActivity = activity;
         mDelegate = delegate;
         mTabModelSelector = tabModelSelector;
+
+        // This overrides the default intent created by GVR to return to Chrome when the DON flow
+        // is triggered by resuming the GvrLayout, which is the usual way Daydream apps enter VR.
+        // See VrShellDelegate#getEnterVrPendingIntent for why we need to do this.
+        setReentryIntent(VrShellDelegate.getEnterVrPendingIntent(activity));
 
         mReprojectedRendering = setAsyncReprojectionEnabled(true);
         if (mReprojectedRendering) {
@@ -725,9 +729,9 @@ public class VrShellImpl
     public void removeWindowAndroidChangedObserver(WindowAndroidChangedObserver observer) {}
 
     /**
-     * Sets the runnable that will be run when VrShellImpl's dispatchTouchEvent
+     * Sets the callback that will be run when VrShellImpl's dispatchTouchEvent
      * is run and the parent consumed the event.
-     * @param runnable The Runnable that will be run
+     * @param callback The Callback to be run.
      */
     @VisibleForTesting
     public void setOnDispatchTouchEventForTesting(OnDispatchTouchEventCallback callback) {

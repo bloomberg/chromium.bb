@@ -178,6 +178,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
             getInstance(activity);
             assert sInstance != null;
             if (sInstance == null) return;
+            assert !sInstance.mInVr;
             sInstance.mDonSucceeded = true;
             if (sInstance.mPaused) {
                 if (sInstance.mInVrAtChromeLaunch == null) sInstance.mInVrAtChromeLaunch = false;
@@ -415,16 +416,23 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         }
     }
 
-    private static PendingIntent getEnterVrPendingIntent(ChromeActivity activity) {
+    // We need a custom Intent for entering VR in order to support VR in Custom Tabs. Custom Tabs
+    // are not a singleInstance activity, so they cannot be resumed through Activity PendingIntents,
+    // which is the typical way Daydream resumes your Activity. Instead, we use a broadcast intent
+    // and then use the broadcast to bring ourselves back to the foreground.
+    /* package */ static PendingIntent getEnterVrPendingIntent(ChromeActivity activity) {
         if (sVrBroadcastReceiver != null) sVrBroadcastReceiver.unregister();
         IntentFilter filter = new IntentFilter(VR_ENTRY_RESULT_ACTION);
-        sVrBroadcastReceiver = new VrBroadcastReceiver(activity);
-        activity.registerReceiver(sVrBroadcastReceiver, filter);
-
+        VrBroadcastReceiver receiver = new VrBroadcastReceiver(activity);
+        // If we set sVrBroadcastReceiver then use it in registerReceiver, findBugs considers this
+        // a thread-safety issue since it thinks the receiver isn't fully initialized before being
+        // exposed to other threads. This isn't actually an issue in this case, but we need to set
+        // sVrBroadcastReceiver after we're done using it here to fix the compile error.
+        activity.registerReceiver(receiver, filter);
+        sVrBroadcastReceiver = receiver;
         Intent vrIntent = new Intent(VR_ENTRY_RESULT_ACTION);
         vrIntent.setPackage(activity.getPackageName());
-        return PendingIntent.getBroadcast(activity, 0, vrIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_ONE_SHOT);
+        return PendingIntent.getBroadcast(activity, 0, vrIntent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
     /**
@@ -669,11 +677,6 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         removeOverlayView();
     }
 
-    private boolean launchInVr() {
-        assert mActivity != null && mVrSupportLevel != VR_NOT_AVAILABLE;
-        return mVrDaydreamApi.launchInVr(getEnterVrPendingIntent(mActivity));
-    }
-
     private void onAutopresentIntent() {
         // Autopresent intents are only expected from trusted first party apps while
         // we're not in vr.
@@ -779,21 +782,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         if (mVrSupportLevel == VR_NOT_AVAILABLE) return ENTER_VR_CANCELLED;
         if (mInVr) return ENTER_VR_NOT_NECESSARY;
         if (!canEnterVr(mActivity.getActivityTab())) return ENTER_VR_CANCELLED;
-
-        if (mVrSupportLevel == VR_CARDBOARD || !isDaydreamCurrentViewer()) {
-            // Avoid using launchInVr which would trigger DON flow regardless current viewer type
-            // due to the lack of support for unexported activities.
-            enterVr(false);
-        } else {
-            // LANDSCAPE orientation is needed before we can safely enter VR. DON can make sure that
-            // the device is at LANDSCAPE orientation once it is finished. So here we use SENSOR to
-            // avoid forcing LANDSCAPE orientation in order to have a smoother transition.
-            setWindowModeForVr(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
-            if (!launchInVr()) {
-                restoreWindowMode();
-                return ENTER_VR_CANCELLED;
-            }
-        }
+        enterVr(false);
         return ENTER_VR_REQUESTED;
     }
 
