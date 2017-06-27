@@ -203,6 +203,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Flaky('conformance/textures/misc/copytexsubimage2d-subrects.html',
         ['win', 'amd', 'passthrough', 'd3d11'], bug=685232)
 
+    # Win / NVIDIA / Passthrough command decoder / D3D11
+    self.Flaky('conformance/programs/program-test.html',
+        ['win', 'nvidia', 'passthrough', 'd3d11'], bug=737016)
+
     # Win failures
     # Note that the following test seems to pass, but it may still be flaky.
     self.Fail('conformance/glsl/constructors/' +
@@ -229,6 +233,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win10', ('nvidia', 0x1cb3), 'd3d9'], bug=680754)
     self.Fail('conformance/limits/gl-max-texture-dimensions.html',
         ['win10', ('nvidia', 0x1cb3)], bug=715001)
+    self.Fail('conformance/ogles/GL/atan/atan_001_to_008.html',
+        ['win10', ('nvidia', 0x1cb3), 'd3d9'], bug=737018)
     self.Fail('conformance/ogles/GL/cos/cos_001_to_006.html',
         ['win10', ('nvidia', 0x1cb3), 'd3d9'], bug=680754)
 
