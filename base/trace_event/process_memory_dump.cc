@@ -416,14 +416,13 @@ void ProcessMemoryDump::CreateSharedMemoryOwnershipEdgeInternal(
 
     // The guid of the local dump created by SharedMemoryTracker for the memory
     // segment.
-    auto local_shm_dump_name =
-        SharedMemoryTracker::GetDumpNameForTracing(shared_memory_guid);
-    auto local_shm_guid = GetOrCreateAllocatorDump(local_shm_dump_name)->guid();
+    auto local_shm_guid =
+        SharedMemoryTracker::GetDumpIdForTracing(shared_memory_guid);
 
     // The dump guid of the global dump created by the tracker for the memory
     // segment.
     auto global_shm_guid =
-        SharedMemoryTracker::GetGlobalDumpGUIDForTracing(shared_memory_guid);
+        SharedMemoryTracker::GetGlobalDumpIdForTracing(shared_memory_guid);
 
     // Create an edge between local dump of the client and the local dump of the
     // SharedMemoryTracker. Do not need to create the dumps here since the
