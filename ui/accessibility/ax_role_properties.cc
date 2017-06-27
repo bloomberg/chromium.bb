@@ -32,4 +32,56 @@ bool IsRoleClickable(AXRole role) {
   }
 }
 
+bool IsCellOrTableHeaderRole(ui::AXRole role) {
+  switch (role) {
+    case ui::AX_ROLE_CELL:
+    case ui::AX_ROLE_COLUMN_HEADER:
+    case ui::AX_ROLE_ROW_HEADER:
+      return true;
+    default:
+      return false;
+  }
+}
+
+bool IsTableLikeRole(ui::AXRole role) {
+  switch (role) {
+    case ui::AX_ROLE_TABLE:
+    case ui::AX_ROLE_GRID:
+    case ui::AX_ROLE_TREE_GRID:
+      return true;
+    default:
+      return false;
+  }
+}
+
+bool IsContainerWithSelectableChildrenRole(ui::AXRole role) {
+  switch (role) {
+    case ui::AX_ROLE_COMBO_BOX:
+    case ui::AX_ROLE_GRID:
+    case ui::AX_ROLE_LIST_BOX:
+    case ui::AX_ROLE_MENU:
+    case ui::AX_ROLE_MENU_BAR:
+    case ui::AX_ROLE_RADIO_GROUP:
+    case ui::AX_ROLE_TAB_LIST:
+    case ui::AX_ROLE_TOOLBAR:
+    case ui::AX_ROLE_TREE:
+    case ui::AX_ROLE_TREE_GRID:
+      return true;
+    default:
+      return false;
+  }
+}
+
+bool IsRowContainer(ui::AXRole role) {
+  switch (role) {
+    case ui::AX_ROLE_TREE:
+    case ui::AX_ROLE_TREE_GRID:
+    case ui::AX_ROLE_GRID:
+    case ui::AX_ROLE_TABLE:
+      return true;
+    default:
+      return false;
+  }
+}
+
 }  // namespace ui

@@ -27,6 +27,8 @@
 #include "content/public/common/content_client.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_range.h"
+#include "ui/accessibility/ax_role_properties.h"
+
 #import "ui/accessibility/platform/ax_platform_node_mac.h"
 
 using AXPlatformPositionInstance =
@@ -657,7 +659,7 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
 }
 
 - (NSNumber*)ariaColumnCount {
-  if (!browserAccessibility_->IsTableLikeRole())
+  if (!ui::IsTableLikeRole(browserAccessibility_->GetRole()))
     return nil;
   int count = -1;
   if (!browserAccessibility_->GetIntAttribute(ui::AX_ATTR_ARIA_COLUMN_COUNT,
@@ -668,7 +670,7 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
 }
 
 - (NSNumber*)ariaColumnIndex {
-  if (!browserAccessibility_->IsCellOrTableHeaderRole())
+  if (!ui::IsCellOrTableHeaderRole(browserAccessibility_->GetRole()))
     return nil;
   int index = -1;
   if (!browserAccessibility_->GetIntAttribute(
@@ -700,7 +702,7 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
 }
 
 - (NSNumber*)ariaRowCount {
-  if (!browserAccessibility_->IsTableLikeRole())
+  if (!ui::IsTableLikeRole(browserAccessibility_->GetRole()))
     return nil;
   int count = -1;
   if (!browserAccessibility_->GetIntAttribute(ui::AX_ATTR_ARIA_ROW_COUNT,
@@ -711,7 +713,7 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
 }
 
 - (NSNumber*)ariaRowIndex {
-  if (!browserAccessibility_->IsCellOrTableHeaderRole())
+  if (!ui::IsCellOrTableHeaderRole(browserAccessibility_->GetRole()))
     return nil;
   int index = -1;
   if (!browserAccessibility_->GetIntAttribute(ui::AX_ATTR_ARIA_CELL_ROW_INDEX,
@@ -781,7 +783,7 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
 - (NSArray*)columnHeaders {
   if (![self instanceActive])
     return nil;
-  if (!browserAccessibility_->IsTableLikeRole()) {
+  if (!ui::IsTableLikeRole(browserAccessibility_->GetRole())) {
     return nil;
   }
 
@@ -801,7 +803,7 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
 - (NSValue*)columnIndexRange {
   if (![self instanceActive])
     return nil;
-  if (!browserAccessibility_->IsCellOrTableHeaderRole())
+  if (!ui::IsCellOrTableHeaderRole(browserAccessibility_->GetRole()))
     return nil;
 
   int column = -1;
@@ -1009,7 +1011,7 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
   if (![self instanceActive])
     return nil;
   int headerElementId = -1;
-  if (browserAccessibility_->IsTableLikeRole()) {
+  if (ui::IsTableLikeRole(browserAccessibility_->GetRole())) {
     browserAccessibility_->GetIntAttribute(
         ui::AX_ATTR_TABLE_HEADER_ID, &headerElementId);
   } else if ([self internalRole] == ui::AX_ROLE_COLUMN) {
@@ -1507,7 +1509,7 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
 - (NSArray*)rowHeaders {
   if (![self instanceActive])
     return nil;
-  if (!browserAccessibility_->IsTableLikeRole()) {
+  if (!ui::IsTableLikeRole(browserAccessibility_->GetRole())) {
     return nil;
   }
 
@@ -1527,7 +1529,7 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
 - (NSValue*)rowIndexRange {
   if (![self instanceActive])
     return nil;
-  if (!browserAccessibility_->IsCellOrTableHeaderRole())
+  if (!ui::IsCellOrTableHeaderRole(browserAccessibility_->GetRole()))
     return nil;
 
   int row = -1;
@@ -2112,7 +2114,7 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
            j < child->PlatformChildCount();
            ++j) {
         BrowserAccessibility* cell = child->PlatformGetChild(j);
-        if (!cell->IsCellOrTableHeaderRole())
+        if (!ui::IsCellOrTableHeaderRole(cell->GetRole()))
           continue;
         int colIndex;
         if (!cell->GetIntAttribute(

@@ -743,13 +743,14 @@ bool BrowserAccessibility::GetHtmlAttribute(
 
 BrowserAccessibility* BrowserAccessibility::GetTable() const {
   BrowserAccessibility* table = const_cast<BrowserAccessibility*>(this);
-  while (table && !table->IsTableLikeRole())
+  while (table && !ui::IsTableLikeRole(table->GetRole()))
     table = table->PlatformGetParent();
   return table;
 }
 
 BrowserAccessibility* BrowserAccessibility::GetTableCell(int index) const {
-  if (!IsTableLikeRole() && !IsCellOrTableHeaderRole())
+  if (!ui::IsTableLikeRole(GetRole()) &&
+      !ui::IsCellOrTableHeaderRole(GetRole()))
     return nullptr;
 
   BrowserAccessibility* table = GetTable();
@@ -764,7 +765,8 @@ BrowserAccessibility* BrowserAccessibility::GetTableCell(int index) const {
 
 BrowserAccessibility* BrowserAccessibility::GetTableCell(int row,
                                                          int column) const {
-  if (!IsTableLikeRole() && !IsCellOrTableHeaderRole())
+  if (!ui::IsTableLikeRole(GetRole()) &&
+      !ui::IsCellOrTableHeaderRole(GetRole()))
     return nullptr;
   if (row < 0 || row >= GetTableRowCount() || column < 0 ||
       column >= GetTableColumnCount()) {
@@ -788,7 +790,7 @@ BrowserAccessibility* BrowserAccessibility::GetTableCell(int row,
 }
 
 int BrowserAccessibility::GetTableCellIndex() const {
-  if (!IsCellOrTableHeaderRole())
+  if (!ui::IsCellOrTableHeaderRole(GetRole()))
     return -1;
 
   BrowserAccessibility* table = GetTable();
@@ -818,7 +820,7 @@ int BrowserAccessibility::GetTableColumnCount() const {
 }
 
 int BrowserAccessibility::GetTableColumnSpan() const {
-  if (!IsCellOrTableHeaderRole())
+  if (!ui::IsCellOrTableHeaderRole(GetRole()))
     return 0;
 
   int column_span;
@@ -840,7 +842,7 @@ int BrowserAccessibility::GetTableRowCount() const {
 }
 
 int BrowserAccessibility::GetTableRowSpan() const {
-  if (!IsCellOrTableHeaderRole())
+  if (!ui::IsCellOrTableHeaderRole(GetRole()))
     return 0;
 
   int row_span;
@@ -859,18 +861,6 @@ bool BrowserAccessibility::HasState(ui::AXState state_enum) const {
 
 bool BrowserAccessibility::HasAction(ui::AXAction action_enum) const {
   return GetData().HasAction(action_enum);
-}
-
-bool BrowserAccessibility::IsCellOrTableHeaderRole() const {
-  return (GetRole() == ui::AX_ROLE_CELL ||
-          GetRole() == ui::AX_ROLE_COLUMN_HEADER ||
-          GetRole() == ui::AX_ROLE_ROW_HEADER);
-}
-
-bool BrowserAccessibility::IsTableLikeRole() const {
-  return (GetRole() == ui::AX_ROLE_TABLE ||
-          GetRole() == ui::AX_ROLE_GRID ||
-          GetRole() == ui::AX_ROLE_TREE_GRID);
 }
 
 bool BrowserAccessibility::HasCaret() const {

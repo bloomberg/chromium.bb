@@ -5,11 +5,11 @@
 #include "content/browser/accessibility/browser_accessibility_manager_mac.h"
 
 #include "base/bind.h"
+#include "base/location.h"
+#include "base/logging.h"
 #import "base/mac/mac_util.h"
 #import "base/mac/scoped_nsobject.h"
 #import "base/mac/sdk_forward_declarations.h"
-#include "base/location.h"
-#include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -17,6 +17,7 @@
 #import "content/browser/accessibility/browser_accessibility_mac.h"
 #include "content/common/accessibility_messages.h"
 #include "content/public/browser/browser_thread.h"
+#include "ui/accessibility/ax_role_properties.h"
 
 namespace {
 
@@ -210,7 +211,7 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
       mac_notification = NSAccessibilityInvalidStatusChangedNotification;
       break;
     case ui::AX_EVENT_SELECTED_CHILDREN_CHANGED:
-      if (node->IsTableLikeRole()) {
+      if (ui::IsTableLikeRole(node->GetRole())) {
         mac_notification = NSAccessibilitySelectedRowsChangedNotification;
       } else {
         mac_notification = NSAccessibilitySelectedChildrenChangedNotification;
@@ -431,36 +432,6 @@ void BrowserAccessibilityManagerMac::OnNodeDataWillChange(
   }
 }
 
-bool IsContainerWithSelectableChildrenRole(ui::AXRole role) {
-  switch (role) {
-    case ui::AX_ROLE_COMBO_BOX:
-    case ui::AX_ROLE_GRID:
-    case ui::AX_ROLE_LIST_BOX:
-    case ui::AX_ROLE_MENU:
-    case ui::AX_ROLE_MENU_BAR:
-    case ui::AX_ROLE_RADIO_GROUP:
-    case ui::AX_ROLE_TAB_LIST:
-    case ui::AX_ROLE_TOOLBAR:
-    case ui::AX_ROLE_TREE:
-    case ui::AX_ROLE_TREE_GRID:
-      return true;
-    default:
-      return false;
-  }
-}
-
-bool IsRowContainer(ui::AXRole role) {
-  switch (role) {
-    case ui::AX_ROLE_TREE:
-    case ui::AX_ROLE_TREE_GRID:
-    case ui::AX_ROLE_GRID:
-    case ui::AX_ROLE_TABLE:
-      return true;
-    default:
-      return false;
-  }
-}
-
 void BrowserAccessibilityManagerMac::OnStateChanged(ui::AXTree* tree,
                                                     ui::AXNode* node,
                                                     ui::AXState state,
@@ -474,7 +445,7 @@ void BrowserAccessibilityManagerMac::OnStateChanged(ui::AXTree* tree,
       else
         tree_events_[node->id()].insert(ui::AX_EVENT_ROW_COLLAPSED);
       ui::AXNode* container = node;
-      while (container && !IsRowContainer(container->data().role))
+      while (container && !ui::IsRowContainer(container->data().role))
         container = container->parent();
       if (container)
         tree_events_[container->id()].insert(ui::AX_EVENT_ROW_COUNT_CHANGED);
@@ -485,7 +456,7 @@ void BrowserAccessibilityManagerMac::OnStateChanged(ui::AXTree* tree,
   if (state == ui::AX_STATE_SELECTED) {
     ui::AXNode* container = node;
     while (container &&
-           !IsContainerWithSelectableChildrenRole(container->data().role))
+           !ui::IsContainerWithSelectableChildrenRole(container->data().role))
       container = container->parent();
     if (container)
       tree_events_[container->id()].insert(
