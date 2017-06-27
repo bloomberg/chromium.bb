@@ -45,10 +45,13 @@ class CORE_EXPORT FirstMeaningfulPaintDetector
                                          int contents_height_before_layout,
                                          int contents_height_after_layout,
                                          int visible_height);
+  void NotifyInputEvent();
   void NotifyPaint();
   void CheckNetworkStable();
 
   DECLARE_TRACE();
+
+  enum HadUserInput { kNoUserInput, kHadUserInput, kHadUserInputEnumMax };
 
  private:
   friend class FirstMeaningfulPaintDetectorTest;
@@ -66,6 +69,9 @@ class CORE_EXPORT FirstMeaningfulPaintDetector
   void ReportHistograms();
 
   bool next_paint_is_meaningful_ = false;
+  HadUserInput had_user_input_ = kNoUserInput;
+  HadUserInput had_user_input_before_provisional_first_meaningful_paint_ =
+      kNoUserInput;
 
   Member<PaintTiming> paint_timing_;
   double provisional_first_meaningful_paint_ = 0.0;

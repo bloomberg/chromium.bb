@@ -93,6 +93,7 @@ void FirstMeaningfulPaintDetector::NotifyPaint() {
     return;
 
   provisional_first_meaningful_paint_ = MonotonicallyIncreasingTime();
+  had_user_input_before_provisional_first_meaningful_paint_ = had_user_input_;
   next_paint_is_meaningful_ = false;
 
   if (network2_quiet_reached_)
@@ -110,6 +111,14 @@ void FirstMeaningfulPaintDetector::NotifyPaint() {
   }
   paint_timing_->SetFirstMeaningfulPaintCandidate(
       provisional_first_meaningful_paint_);
+}
+
+// This is called only on FirstMeaningfulPaintDetector for main frame.
+void FirstMeaningfulPaintDetector::NotifyInputEvent() {
+  // Ignore user inputs before first paint.
+  if (paint_timing_->FirstPaint() == 0.0)
+    return;
+  had_user_input_ = kHadUserInput;
 }
 
 int FirstMeaningfulPaintDetector::ActiveConnections() {
@@ -176,7 +185,9 @@ void FirstMeaningfulPaintDetector::Network2QuietTimerFired(TimerBase*) {
         std::max(provisional_first_meaningful_paint_,
                  paint_timing_->FirstContentfulPaint());
     // Report FirstMeaningfulPaint when the page reached network 2-quiet.
-    paint_timing_->SetFirstMeaningfulPaint(first_meaningful_paint2_quiet_);
+    paint_timing_->SetFirstMeaningfulPaint(
+        first_meaningful_paint2_quiet_,
+        had_user_input_before_provisional_first_meaningful_paint_);
   }
   ReportHistograms();
 }

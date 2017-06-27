@@ -16470,6 +16470,9 @@ uploading your change for review.  These are checked by presubmit scripts.
 </enum>
 
 <enum name="FirstMeaningfulPaintSignalStatus">
+  <obsolete>
+    Deprecated as of 05/17/2017.
+  </obsolete>
   <int value="0" label="No input, network active"/>
   <int value="1" label="Had input, network active"/>
   <int value="2" label="No input, network stable"/>
@@ -18675,6 +18678,11 @@ uploading your change for review.  These are checked by presubmit scripts.
 <enum name="HadFormInteraction">
   <int value="0" label="No form interaction"/>
   <int value="1" label="Observed form interaction"/>
+</enum>
+
+<enum name="HadUserInput">
+  <int value="0" label="Did not have user input"/>
+  <int value="1" label="Had user input"/>
 </enum>
 
 <enum name="HandleStateType">

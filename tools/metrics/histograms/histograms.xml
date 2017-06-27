@@ -50119,6 +50119,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram
     name="PageLoad.Experimental.PaintTiming.FirstMeaningfulPaintSignalStatus2"
     enum="FirstMeaningfulPaintSignalStatus">
+  <obsolete>
+    Deprecated as of 05/17/2017.
+  </obsolete>
   <owner>ksakamoto@chromium.org</owner>
   <summary>
     Whether the user had any interaction on the page (except mouse move) after
@@ -50140,6 +50143,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram
     name="PageLoad.Experimental.PaintTiming.FirstMeaningfulPaintToNetworkStable"
     units="ms">
+  <obsolete>
+    Deprecated as of 05/17/2017.
+  </obsolete>
   <owner>ksakamoto@chromium.org</owner>
   <summary>
     Measures the time between when the first meaningful paint
@@ -50347,6 +50353,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The status of PageLoadTiming structs received from the render process over
     IPC.
+  </summary>
+</histogram>
+
+<histogram
+    name="PageLoad.Internal.PaintTiming.HadUserInputBeforeFirstMeaningfulPaint"
+    enum="HadUserInput">
+  <owner>ksakamoto@chromium.org</owner>
+  <summary>
+    Whether the user had any interaction on the page before
+    FirstMeaningfulPaint. Recorded when the page load reaches network idle.
   </summary>
 </histogram>
 
@@ -89722,6 +89738,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram_suffixes>
 
 <histogram_suffixes name="HadUserInput" separator=".">
+  <obsolete>
+    Deprecated as of 05/17/2017.
+  </obsolete>
   <suffix name="HadUserInput" label="Had user input"/>
   <suffix name="NoUserInput" label="No user input"/>
   <affected-histogram

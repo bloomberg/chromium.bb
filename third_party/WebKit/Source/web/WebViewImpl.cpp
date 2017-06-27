@@ -98,6 +98,7 @@
 #include "core/page/TouchDisambiguation.h"
 #include "core/page/ValidationMessageClientImpl.h"
 #include "core/page/scrolling/TopDocumentRootScrollerController.h"
+#include "core/paint/FirstMeaningfulPaintDetector.h"
 #include "core/paint/LinkHighlightImpl.h"
 #include "core/paint/PaintLayer.h"
 #include "core/timing/DOMWindowPerformance.h"
@@ -2179,6 +2180,12 @@ WebInputEventResult WebViewImpl::HandleInputEvent(
       WebInputEvent::IsMouseEventType(input_event.GetType())) {
     MainFrameImpl()->FrameWidget()->PointerLockMouseEvent(coalesced_event);
     return WebInputEventResult::kHandledSystem;
+  }
+
+  if (input_event.GetType() != WebInputEvent::kMouseMove) {
+    FirstMeaningfulPaintDetector::From(
+        *MainFrameImpl()->GetFrame()->GetDocument())
+        .NotifyInputEvent();
   }
 
   if (mouse_capture_node_ &&

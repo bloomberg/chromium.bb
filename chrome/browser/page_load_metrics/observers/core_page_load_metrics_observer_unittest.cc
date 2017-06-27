@@ -710,35 +710,3 @@ TEST_F(CorePageLoadMetricsObserverTest, FirstMeaningfulPaint) {
       internal::kHistogramFirstMeaningfulPaintStatus,
       internal::FIRST_MEANINGFUL_PAINT_RECORDED, 1);
 }
-
-TEST_F(CorePageLoadMetricsObserverTest, FirstMeaningfulPaintAfterInteraction) {
-  page_load_metrics::mojom::PageLoadTiming timing;
-  page_load_metrics::InitPageLoadTimingForTest(&timing);
-  timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.parse_timing->parse_start = base::TimeDelta::FromMilliseconds(5);
-  timing.paint_timing->first_paint = base::TimeDelta::FromMilliseconds(10);
-  PopulateRequiredTimingFields(&timing);
-
-  NavigateAndCommit(GURL(kDefaultTestUrl));
-  SimulateTimingUpdate(timing);
-
-  blink::WebMouseEvent mouse_event(blink::WebInputEvent::kMouseDown,
-                                   blink::WebInputEvent::kNoModifiers,
-                                   blink::WebInputEvent::kTimeStampForTesting);
-  SimulateInputEvent(mouse_event);
-
-  timing.paint_timing->first_meaningful_paint =
-      base::TimeDelta::FromMilliseconds(1000);
-  PopulateRequiredTimingFields(&timing);
-  SimulateTimingUpdate(timing);
-
-  NavigateAndCommit(GURL(kDefaultTestUrl2));
-
-  histogram_tester().ExpectTotalCount(
-      internal::kHistogramFirstMeaningfulPaint, 0);
-  histogram_tester().ExpectTotalCount(
-      internal::kHistogramParseStartToFirstMeaningfulPaint, 0);
-  histogram_tester().ExpectBucketCount(
-      internal::kHistogramFirstMeaningfulPaintStatus,
-      internal::FIRST_MEANINGFUL_PAINT_USER_INTERACTION_BEFORE_FMP, 1);
-}
