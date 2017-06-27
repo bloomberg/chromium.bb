@@ -9,6 +9,7 @@ source_set("content_suggestions") {
     "content_suggestions_commands.h",
     "content_suggestions_data_sink.h",
     "content_suggestions_data_source.h",
+    "content_suggestions_header_commands.h",
     "content_suggestions_image_fetcher.h",
     "content_suggestions_layout.h",
     "content_suggestions_layout.mm",

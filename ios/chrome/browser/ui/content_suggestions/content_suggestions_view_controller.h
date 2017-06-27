@@ -12,6 +12,7 @@
 @class ContentSuggestionsSectionInformation;
 @protocol ContentSuggestionsCommands;
 @protocol ContentSuggestionsDataSource;
+@protocol ContentSuggestionsHeaderCommands;
 @protocol SuggestedContent;
 
 // CollectionViewController to display the suggestions items.
@@ -28,6 +29,9 @@
 // Handler for the commands sent by the ContentSuggestionsViewController.
 @property(nonatomic, weak) id<ContentSuggestionsCommands>
     suggestionCommandHandler;
+// Handler for the commands sent by the ContentSuggestionsViewController.
+@property(nonatomic, weak) id<ContentSuggestionsHeaderCommands>
+    headerCommandHandler;
 // Override from superclass to have a more specific type.
 @property(nonatomic, readonly)
     CollectionViewModel<CollectionViewItem<SuggestedContent>*>*
