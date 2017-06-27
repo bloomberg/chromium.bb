@@ -1224,8 +1224,8 @@ def GeneralTemplates(site_config, ge_build_config):
       chrome_sdk=True,
       unittests=False,
       description='Preflight Chromium Uprev & Build (public)',
-      vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE),
-                config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE)],
+      # Add betty smoke VMTest crbug.com/710629.
+      vm_tests=[config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE)],
       vm_tests_override=None,
   )
 
@@ -2031,8 +2031,7 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       android_rev=constants.ANDROID_REV_LATEST,
       description='Preflight Android Uprev & Build (internal)',
       # Add betty smoke VMTest crbug.com/710629.
-      vm_tests=[#config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE),
-                config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE)],
+      vm_tests=[config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE)],
       vm_tests_override=None,
   )
 
