@@ -31,7 +31,7 @@ bool GetAppOutputInternal(const std::vector<std::string>& argv,
   launchpad_create(MX_HANDLE_INVALID, argv_cstr[0], &lp);
   launchpad_load_from_file(lp, argv_cstr[0]);
   launchpad_set_args(lp, argv.size(), argv_cstr.data());
-  launchpad_clone(lp, LP_CLONE_MXIO_ROOT | LP_CLONE_MXIO_CWD |
+  launchpad_clone(lp, LP_CLONE_MXIO_NAMESPACE | LP_CLONE_MXIO_CWD |
                           LP_CLONE_DEFAULT_JOB | LP_CLONE_ENVIRON);
   launchpad_clone_fd(lp, STDIN_FILENO, STDIN_FILENO);
   int pipe_fd;
@@ -93,7 +93,7 @@ Process LaunchProcess(const std::vector<std::string>& argv,
   launchpad_load_from_file(lp, argv_cstr[0]);
   launchpad_set_args(lp, argv.size(), argv_cstr.data());
 
-  uint32_t to_clone = LP_CLONE_MXIO_ROOT | LP_CLONE_DEFAULT_JOB;
+  uint32_t to_clone = LP_CLONE_MXIO_NAMESPACE | LP_CLONE_DEFAULT_JOB;
 
   std::unique_ptr<char* []> new_environ;
   char* const empty_environ = nullptr;
