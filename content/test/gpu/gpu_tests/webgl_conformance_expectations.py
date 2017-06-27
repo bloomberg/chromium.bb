@@ -259,12 +259,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Flaky('conformance/canvas/canvas-test.html',
         ['win7', 'nvidia', 'd3d9'], bug=690248)
 
-    # Win / AMD flakiness seen on new tryservers.
-    # It's unfortunate that this suppression needs to be so broad, but
-    # basically any test that uses readPixels is potentially flaky, and
-    # it's infeasible to suppress individual failures one by one.
-    self.Flaky('conformance/*', ['win', ('amd', 0x6779)], bug=491419)
-
     # Win AMD failures
     # This test is probably flaky on all AMD, but only visible on the
     # new AMD (the whole test suite is flaky on the old config).
@@ -314,12 +308,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Win / OpenGL / AMD failures
     self.Skip('conformance/attribs/gl-bindAttribLocation-aliasing.html',
         ['win', 'amd', 'opengl'], bug=649824)
-    self.Flaky('conformance/attribs/gl-bindAttribLocation-matrix.html',
-        ['win', ('amd', 0x6779), 'opengl'], bug=649824)
-    self.Flaky('conformance/attribs/gl-bindAttribLocation-repeated.html',
-        ['win', ('amd', 0x6779), 'opengl'], bug=649824)
-    self.Fail('conformance/extensions/webgl-draw-buffers.html',
-        ['win', ('amd', 0x6779), 'opengl', 'no_passthrough'], bug=649824)
     self.Skip('conformance/glsl/misc/shader-struct-scope.html',
         ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
     self.Skip('conformance/glsl/misc/shaders-with-invariance.html',
@@ -446,30 +434,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # AMD Radeon 6450 and/or R7 240
     self.Fail('conformance/extensions/angle-instanced-arrays.html',
         ['linux', 'amd', 'no_angle'], bug=479260)
-    self.Flaky('conformance/extensions/ext-texture-filter-anisotropic.html',
-        ['linux', ('amd', 0x6779)], bug=436212)
-    self.Flaky('conformance/glsl/misc/shader-struct-scope.html',
-        ['linux', ('amd', 0x6779), 'no_passthrough'], bug=436212)
-    self.Flaky('conformance/glsl/misc/struct-nesting-of-variable-names.html',
-        ['linux', ('amd', 0x6779), 'no_passthrough'], bug=436212)
-    self.Flaky('conformance/rendering/point-size.html',
-        ['linux', ('amd', 0x6779)], bug=436212)
-    self.Flaky('conformance/textures/misc/texture-sub-image-cube-maps.html',
-        ['linux', ('amd', 0x6779)], bug=436212)
-    self.Flaky('conformance/more/functions/uniformf.html',
-        ['linux', ('amd', 0x6779)], bug=436212)
     self.Fail('conformance/glsl/misc/shaders-with-invariance.html',
         ['linux', 'amd', 'no_passthrough'], bug=479952)
-    self.Flaky('conformance/textures/misc/texture-mips.html',
-        ['linux', ('amd', 0x6779), 'no_passthrough'], bug=479981)
-    self.Flaky('conformance/textures/misc/texture-size-cube-maps.html',
-        ['linux', ('amd', 0x6779)], bug=479983)
-    self.Flaky('conformance/uniforms/uniform-default-values.html',
-        ['linux', ('amd', 0x6779)], bug=482013)
-    self.Flaky('conformance/glsl/samplers/glsl-function-texture2dlod.html',
-        ['linux', ('amd', 0x6779)], bug=436212)
-    self.Flaky('conformance/glsl/samplers/glsl-function-texture2dprojlod.html',
-        ['linux', ('amd', 0x6779)], bug=436212)
     # Intel
     # See https://bugs.freedesktop.org/show_bug.cgi?id=94477
     self.Skip('conformance/glsl/bugs/temp-expressions-should-not-crash.html',
