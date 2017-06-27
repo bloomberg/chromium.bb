@@ -194,7 +194,7 @@ class Surface : public ui::ContextFactoryObserver,
   void SetBeginFrameSource(cc::BeginFrameSource* begin_frame_source);
 
   // Returns the active contents size.
-  gfx::Size content_size() const { return content_size_; }
+  const gfx::Size& content_size() const { return content_size_; }
 
   // Returns true if the associated window is in 'stylus-only' mode.
   bool IsStylusOnly();

@@ -28,12 +28,12 @@ void ArcNotificationSurfaceImpl::Attach(
   DCHECK(!native_view_host_);
   DCHECK(native_view_host);
   native_view_host_ = native_view_host;
-  native_view_host->Attach(surface_->window());
+  native_view_host->Attach(surface_->host_window());
 }
 
 void ArcNotificationSurfaceImpl::Detach() {
   DCHECK(native_view_host_);
-  DCHECK_EQ(surface_->window(), native_view_host_->native_view());
+  DCHECK_EQ(surface_->host_window(), native_view_host_->native_view());
   native_view_host_->Detach();
   native_view_host_ = nullptr;
 }
@@ -43,14 +43,14 @@ bool ArcNotificationSurfaceImpl::IsAttached() const {
 }
 
 aura::Window* ArcNotificationSurfaceImpl::GetWindow() const {
-  return surface_->window();
+  return surface_->host_window();
 }
 
 aura::Window* ArcNotificationSurfaceImpl::GetContentWindow() const {
-  DCHECK(surface_->window());
-  DCHECK(!surface_->window()->children().empty());
+  DCHECK(surface_->host_window());
+  DCHECK(!surface_->host_window()->children().empty());
 
-  aura::Window* content_window = surface_->window()->children()[0];
+  aura::Window* content_window = surface_->host_window()->children()[0];
 
   DCHECK(!content_window);
   return content_window;

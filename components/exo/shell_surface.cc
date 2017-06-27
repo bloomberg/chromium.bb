@@ -292,8 +292,8 @@ ShellSurface::ShellSurface(Surface* surface,
                            bool activatable,
                            bool can_minimize,
                            int container)
-    : widget_(nullptr),
-      surface_(surface),
+    : SurfaceTreeHost("ExoShellSurfaceHost", nullptr),
+      widget_(nullptr),
       parent_(parent ? parent->GetWidget()->GetNativeWindow() : nullptr),
       bounds_mode_(bounds_mode),
       primary_display_id_(
@@ -304,9 +304,9 @@ ShellSurface::ShellSurface(Surface* surface,
       container_(container) {
   WMHelper::GetInstance()->AddActivationObserver(this);
   WMHelper::GetInstance()->AddDisplayConfigurationObserver(this);
-  surface_->SetSurfaceDelegate(this);
-  surface_->AddSurfaceObserver(this);
-  surface_->window()->Show();
+  surface->AddSurfaceObserver(this);
+  SetRootSurface(surface);
+  host_window()->Show();
   set_owned_by_client();
   if (parent_)
     parent_->AddObserver(this);
@@ -339,12 +339,8 @@ ShellSurface::~ShellSurface() {
   WMHelper::GetInstance()->RemoveDisplayConfigurationObserver(this);
   if (parent_)
     parent_->RemoveObserver(this);
-  if (surface_) {
-    if (scale_ != 1.0)
-      surface_->window()->SetTransform(gfx::Transform());
-    surface_->SetSurfaceDelegate(nullptr);
-    surface_->RemoveSurfaceObserver(this);
-  }
+  if (root_surface())
+    root_surface()->RemoveSurfaceObserver(this);
 }
 
 void ShellSurface::AcknowledgeConfigure(uint32_t serial) {
@@ -704,11 +700,11 @@ std::unique_ptr<base::trace_event::TracedValue> ShellSurface::AsTracedValue()
 // SurfaceDelegate overrides:
 
 void ShellSurface::OnSurfaceCommit() {
-  surface_->CommitSurfaceHierarchy();
+  SurfaceTreeHost::OnSurfaceCommit();
 
   if (enabled() && !widget_) {
     // Defer widget creation until surface contains some contents.
-    if (surface_->content_size().IsEmpty()) {
+    if (host_window()->bounds().size().IsEmpty()) {
       Configure();
       return;
     }
@@ -743,7 +739,7 @@ void ShellSurface::OnSurfaceCommit() {
     // region is empty, then it is non interactive window and won't be
     // activated.
     if (container_ == ash::kShellWindowId_SystemModalContainer) {
-      gfx::Rect hit_test_bounds = surface_->GetHitTestBounds();
+      gfx::Rect hit_test_bounds = GetHitTestBounds();
 
       // Prevent window from being activated when hit test bounds are empty.
       bool activatable = activatable_ && !hit_test_bounds.IsEmpty();
@@ -764,7 +760,7 @@ void ShellSurface::OnSurfaceCommit() {
       gfx::Transform transform;
       DCHECK_NE(pending_scale_, 0.0);
       transform.Scale(1.0 / pending_scale_, 1.0 / pending_scale_);
-      surface_->window()->SetTransform(transform);
+      host_window()->SetTransform(transform);
       scale_ = pending_scale_;
     }
 
@@ -780,21 +776,18 @@ void ShellSurface::OnSurfaceCommit() {
   }
 }
 
-bool ShellSurface::IsSurfaceSynchronized() const {
-  // A shell surface is always desynchronized.
-  return false;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // SurfaceObserver overrides:
 
 void ShellSurface::OnSurfaceDestroying(Surface* surface) {
+  DCHECK_EQ(root_surface(), surface);
+  surface->RemoveSurfaceObserver(this);
+  SetRootSurface(nullptr);
+
   if (resizer_)
     EndDrag(false /* revert */);
   if (widget_)
     SetMainSurface(widget_->GetNativeWindow(), nullptr);
-  surface->RemoveSurfaceObserver(this);
-  surface_ = nullptr;
 
   // Hide widget before surface is destroyed. This allows hide animations to
   // run using the current surface contents.
@@ -886,13 +879,13 @@ views::NonClientFrameView* ShellSurface::CreateNonClientFrameView(
 }
 
 bool ShellSurface::WidgetHasHitTestMask() const {
-  return surface_ ? surface_->HasHitTestMask() : false;
+  return HasHitTestMask();
 }
 
 void ShellSurface::GetWidgetHitTestMask(gfx::Path* mask) const {
   DCHECK(WidgetHasHitTestMask());
-  surface_->GetHitTestMask(mask);
-  gfx::Point origin = surface_->window()->bounds().origin();
+  GetHitTestMask(mask);
+  gfx::Point origin = host_window()->bounds().origin();
   mask->offset(SkIntToScalar(origin.x()), SkIntToScalar(origin.y()));
 }
 
@@ -903,7 +896,7 @@ gfx::Size ShellSurface::CalculatePreferredSize() const {
   if (!geometry_.IsEmpty())
     return geometry_.size();
 
-  return surface_ ? surface_->content_size() : gfx::Size();
+  return host_window()->bounds().size();
 }
 
 gfx::Size ShellSurface::GetMinimumSize() const {
@@ -968,7 +961,7 @@ void ShellSurface::OnWindowBoundsChanged(aura::Window* window,
   if (bounds_mode_ == BoundsMode::CLIENT)
     return;
 
-  if (!widget_ || !surface_ || ignore_window_bounds_changes_)
+  if (!widget_ || !root_surface() || ignore_window_bounds_changes_)
     return;
 
   if (window == widget_->GetNativeWindow()) {
@@ -1162,7 +1155,7 @@ void ShellSurface::CreateShellSurfaceWidget(ui::WindowShowState show_state) {
   // ShellSurfaces in system modal container are only activatable if input
   // region is non-empty. See OnCommitSurface() for more details.
   if (container_ == ash::kShellWindowId_SystemModalContainer)
-    activatable &= !surface_->GetHitTestBounds().IsEmpty();
+    activatable &= !GetHitTestBounds().IsEmpty();
   params.activatable = activatable ? views::Widget::InitParams::ACTIVATABLE_YES
                                    : views::Widget::InitParams::ACTIVATABLE_NO;
 
@@ -1174,10 +1167,10 @@ void ShellSurface::CreateShellSurfaceWidget(ui::WindowShowState show_state) {
   window->SetName("ExoShellSurface");
   window->SetProperty(aura::client::kAccessibilityFocusFallsbackToWidgetKey,
                       false);
-  window->AddChild(surface_->window());
+  window->AddChild(host_window());
   window->SetEventTargeter(base::WrapUnique(new CustomWindowTargeter(widget_)));
   SetApplicationId(window, application_id_);
-  SetMainSurface(window, surface_);
+  SetMainSurface(window, root_surface());
 
   // Start tracking changes to window bounds and window state.
   window->AddObserver(this);
@@ -1270,13 +1263,13 @@ void ShellSurface::Configure() {
       << pending_configs_.size();
 }
 
-aura::Window* ShellSurface::GetDragWindow() const {
+aura::Window* ShellSurface::GetDragWindow() {
   switch (bounds_mode_) {
     case BoundsMode::SHELL:
       return widget_->GetNativeWindow();
 
     case BoundsMode::CLIENT:
-      return surface_ ? surface_->window() : nullptr;
+      return host_window();
 
     case BoundsMode::FIXED:
       return nullptr;
@@ -1412,7 +1405,8 @@ bool ShellSurface::IsResizing() const {
 
 gfx::Rect ShellSurface::GetVisibleBounds() const {
   // Use |geometry_| if set, otherwise use the visual bounds of the surface.
-  return geometry_.IsEmpty() ? gfx::Rect(surface_->content_size()) : geometry_;
+  return geometry_.IsEmpty() ? gfx::Rect(host_window()->bounds().size())
+                             : geometry_;
 }
 
 gfx::Point ShellSurface::GetSurfaceOrigin() const {
@@ -1535,13 +1529,13 @@ void ShellSurface::UpdateSurfaceBounds() {
   gfx::Rect client_view_bounds =
       widget_->non_client_view()->frame_view()->GetBoundsForClientView();
 
-  surface_->window()->SetBounds(
+  host_window()->SetBounds(
       gfx::Rect(GetSurfaceOrigin() + client_view_bounds.OffsetFromOrigin(),
-                surface_->content_size()));
+                host_window()->bounds().size()));
 }
 
 void ShellSurface::UpdateShadow() {
-  if (!widget_ || !surface_)
+  if (!widget_ || !root_surface())
     return;
   if (shadow_underlay_in_surface_ != pending_shadow_underlay_in_surface_) {
     shadow_underlay_in_surface_ = pending_shadow_underlay_in_surface_;
@@ -1580,7 +1574,7 @@ void ShellSurface::UpdateShadow() {
     gfx::Rect shadow_underlay_bounds = shadow_content_bounds_;
 
     if (shadow_underlay_bounds.IsEmpty()) {
-      shadow_underlay_bounds = gfx::Rect(surface_->window()->bounds().size());
+      shadow_underlay_bounds = gfx::Rect(host_window()->bounds().size());
     } else if (shadow_underlay_in_surface_) {
       // Since the shadow underlay is positioned relative to the surface, its
       // origin corresponds to the shadow content position relative to the
@@ -1619,8 +1613,8 @@ void ShellSurface::UpdateShadow() {
       shadow_underlay_->layer()->SetColor(SK_ColorBLACK);
       DCHECK(shadow_underlay_->layer()->fills_bounds_opaquely());
       if (shadow_underlay_in_surface_) {
-        surface_->window()->AddChild(shadow_underlay());
-        surface_->window()->StackChildAtBottom(shadow_underlay());
+        host_window()->AddChild(shadow_underlay());
+        host_window()->StackChildAtBottom(shadow_underlay());
       } else {
         window->AddChild(shadow_underlay());
         window->StackChildAtBottom(shadow_underlay());
@@ -1666,7 +1660,7 @@ void ShellSurface::UpdateShadow() {
       window->AddChild(shadow_overlay());
 
       if (shadow_underlay_in_surface_) {
-        window->StackChildBelow(shadow_overlay(), surface_->window());
+        window->StackChildBelow(shadow_overlay(), host_window());
       } else {
         window->StackChildAbove(shadow_overlay(), shadow_underlay());
       }

@@ -10,8 +10,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/unguessable_token.h"
-#include "components/exo/surface_delegate.h"
 #include "components/exo/surface_observer.h"
+#include "components/exo/surface_tree_host.h"
 #include "components/exo/wm_helper.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/cursor/cursor.h"
@@ -33,14 +33,15 @@ class MouseEvent;
 namespace exo {
 class PointerDelegate;
 class Surface;
+class SurfaceTreeHost;
 
 // This class implements a client pointer that represents one or more input
 // devices, such as mice, which control the pointer location and pointer focus.
-class Pointer : public ui::EventHandler,
+class Pointer : public SurfaceTreeHost,
+                public SurfaceObserver,
+                public ui::EventHandler,
                 public WMHelper::CursorObserver,
-                public WMHelper::DisplayConfigurationObserver,
-                public SurfaceDelegate,
-                public SurfaceObserver {
+                public WMHelper::DisplayConfigurationObserver {
  public:
   explicit Pointer(PointerDelegate* delegate);
   ~Pointer() override;
@@ -55,6 +56,12 @@ class Pointer : public ui::EventHandler,
   // Returns the current cursor for the pointer.
   gfx::NativeCursor GetCursor();
 
+  // Overridden from SurfaceDelegate:
+  void OnSurfaceCommit() override;
+
+  // Overriden from SurfaceObserver:
+  void OnSurfaceDestroying(Surface* surface) override;
+
   // Overridden from ui::EventHandler:
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnScrollEvent(ui::ScrollEvent* event) override;
@@ -66,21 +73,16 @@ class Pointer : public ui::EventHandler,
   // Overridden from WMHelper::DisplayConfigurationObserver:
   void OnDisplayConfigurationChanged() override;
 
-  // Overridden from SurfaceDelegate:
-  void OnSurfaceCommit() override;
-  bool IsSurfaceSynchronized() const override;
-
-  // Overridden from SurfaceObserver:
-  void OnSurfaceDestroying(Surface* surface) override;
-
  private:
   // Returns the effective target for |event|.
   Surface* GetEffectiveTargetForEvent(ui::Event* event) const;
 
-  // Updates the |surface_| from which the cursor is captured.
+  // Updates the root_surface in |SurfaceTreeHost| from which the cursor
+  // is captured.
   void UpdatePointerSurface(Surface* surface);
 
-  // Asynchronously update the cursor by capturing a snapshot of |surface_|.
+  // Asynchronously update the cursor by capturing a snapshot of
+  // |SurfaceTreeHost::root_surface()|.
   void CaptureCursor(const gfx::Point& hotspot);
 
   // Called when cursor snapshot has been captured.
@@ -93,11 +95,8 @@ class Pointer : public ui::EventHandler,
   // The delegate instance that all events are dispatched to.
   PointerDelegate* const delegate_;
 
-  // The current pointer surface.
-  Surface* surface_ = nullptr;
-
   // The current focus surface for the pointer.
-  Surface* focus_ = nullptr;
+  Surface* focus_surface_ = nullptr;
 
   // The location of the pointer in the current focus surface.
   gfx::PointF location_;
