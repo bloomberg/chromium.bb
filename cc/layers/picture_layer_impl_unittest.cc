@@ -3117,7 +3117,7 @@ TEST_F(PictureLayerImplTest, RasterScaleChangeWithoutAnimation) {
   ResetTilingsAndRasterScales();
 
   float contents_scale = 2.f;
-  float device_scale = 1.f;
+  float device_scale = 1.5f;
   float page_scale = 1.f;
   float maximum_animation_scale = 1.f;
   float starting_animation_scale = 0.f;
@@ -3144,26 +3144,28 @@ TEST_F(PictureLayerImplTest, RasterScaleChangeWithoutAnimation) {
                                starting_animation_scale, animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 0.5f);
 
-  // However, if the layer has a will-change property, then the raster scale
-  // will get fixed at the last value.
+  // If we change the layer contents scale after setting will change
+  // will, then it will be updated if it's below the minimum scale (page scale *
+  // device scale).
   active_layer()->SetHasWillChangeTransformHint(true);
   pending_layer()->SetHasWillChangeTransformHint(true);
 
-  contents_scale = 3.f;
+  contents_scale = 0.75f;
 
   SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
                                maximum_animation_scale,
                                starting_animation_scale, animating_transform);
-  EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 0.5f);
+  // The scale is clamped to the native scale.
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 1.5f);
 
   // Further changes to the source scale will no longer be reflected in the
   // contents scale.
-  contents_scale = 1.f;
+  contents_scale = 2.f;
 
   SetContentsScaleOnBothLayers(contents_scale, device_scale, page_scale,
                                maximum_animation_scale,
                                starting_animation_scale, animating_transform);
-  EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 0.5f);
+  EXPECT_BOTH_EQ(HighResTiling()->contents_scale_key(), 1.5f);
 
   // Disabling the will-change hint will once again make the raster scale update
   // with the ideal scale.
@@ -3422,8 +3424,11 @@ TEST_F(NoLowResPictureLayerImplTest, CleanUpTilings) {
   float low_res_factor = host_impl()->settings().low_res_contents_scale_factor;
   EXPECT_LT(low_res_factor, 1.f);
 
-  float device_scale = 1.7f;
-  float page_scale = 3.2f;
+  // Set the device scale and page scale so that the minimum that we would clamp
+  // to is small. This test isn't testing the clamping. See
+  // RasterScaleChangeWithoutAnimation for this test.
+  float device_scale = 0.5f;
+  float page_scale = 1.f;
   float scale = 1.f;
 
   active_layer()->SetHasWillChangeTransformHint(true);

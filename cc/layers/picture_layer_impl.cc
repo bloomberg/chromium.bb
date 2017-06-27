@@ -1019,11 +1019,16 @@ bool PictureLayerImpl::ShouldAdjustRasterScale() const {
 
   // Don't change the raster scale if any of the following are true:
   //  - We have an animating transform.
-  //  - We have a will-change transform hint.
   //  - The raster scale is already ideal.
   if (draw_properties().screen_space_transform_is_animating ||
-      has_will_change_transform_hint() ||
       raster_source_scale_ == ideal_source_scale_) {
+    return false;
+  }
+
+  // Don't update will-change: transform layers if the raster contents scale is
+  // at least the native scale (otherwise, we'd need to clamp it).
+  if (has_will_change_transform_hint() &&
+      raster_contents_scale_ >= raster_page_scale_ * raster_device_scale_) {
     return false;
   }
 
@@ -1162,6 +1167,15 @@ void PictureLayerImpl::RecalculateRasterScales() {
       raster_contents_scale_ = maximum_scale;
     else
       raster_contents_scale_ = 1.f * ideal_page_scale_ * ideal_device_scale_;
+  }
+
+  // Clamp will-change: transform layers to be at least the native scale.
+  if (has_will_change_transform_hint()) {
+    float min_desired_scale = raster_device_scale_ * raster_page_scale_;
+    if (raster_contents_scale_ < min_desired_scale) {
+      raster_contents_scale_ = min_desired_scale;
+      raster_page_scale_ = 1.f;
+    }
   }
 
   raster_contents_scale_ =
