@@ -4,7 +4,7 @@
 
 #include "services/ui/ws/gpu_client.h"
 
-#include "components/viz/common/server_gpu_memory_buffer_manager.h"
+#include "components/viz/host/server_gpu_memory_buffer_manager.h"
 #include "services/ui/gpu/interfaces/gpu_service.mojom.h"
 
 namespace {

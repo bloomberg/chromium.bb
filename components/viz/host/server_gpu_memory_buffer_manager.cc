@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/viz/common/server_gpu_memory_buffer_manager.h"
+#include "components/viz/host/server_gpu_memory_buffer_manager.h"
 
 #include "base/logging.h"
 #include "base/threading/sequenced_task_runner_handle.h"

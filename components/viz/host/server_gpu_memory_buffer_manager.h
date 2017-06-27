@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_VIZ_COMMON_SERVER_GPU_MEMORY_BUFFER_MANAGER_H_
-#define COMPONENTS_VIZ_COMMON_SERVER_GPU_MEMORY_BUFFER_MANAGER_H_
+#ifndef COMPONENTS_VIZ_HOST_SERVER_GPU_MEMORY_BUFFER_MANAGER_H_
+#define COMPONENTS_VIZ_HOST_SERVER_GPU_MEMORY_BUFFER_MANAGER_H_
 
 #include <memory>
 
@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "components/viz/host/viz_host_export.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/ipc/host/gpu_memory_buffer_support.h"
 
@@ -18,7 +19,7 @@ namespace ui {
 namespace mojom {
 class GpuService;
 }
-}
+}  // namespace ui
 
 namespace viz {
 
@@ -26,7 +27,8 @@ namespace viz {
 // from the gpu process over the mojom.GpuService api.
 // Note that |CreateGpuMemoryBuffer()| can be called on any thread. All the rest
 // of the functions must be called on the thread this object is created on.
-class ServerGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
+class VIZ_HOST_EXPORT ServerGpuMemoryBufferManager
+    : public gpu::GpuMemoryBufferManager {
  public:
   ServerGpuMemoryBufferManager(ui::mojom::GpuService* gpu_service,
                                int client_id);
@@ -81,4 +83,4 @@ class ServerGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
 
 }  // namespace viz
 
-#endif  // COMPONENTS_VIZ_COMMON_SERVER_GPU_MEMORY_BUFFER_MANAGER_H_
+#endif  // COMPONENTS_VIZ_HOST_SERVER_GPU_MEMORY_BUFFER_MANAGER_H_
