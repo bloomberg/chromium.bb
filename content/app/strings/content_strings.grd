@@ -171,23 +171,11 @@ below:
       <message name="IDS_DOWNLOAD_BUTTON_LABEL" desc="Clickable button label to download media file.">
         Save
       </message>
-      <message name="IDS_SEARCHABLE_INDEX_INTRO" desc="Text that appears at the start of nearly-obsolete webpages in the form of a 'searchable index'.">
-        This is a searchable index. Enter search keywords: '''
-      </message>
       <message name="IDS_FORM_CALENDAR_CLEAR" desc="Label for a button which clears a date input field.">
         Clear
       </message>
       <message name="IDS_FORM_CALENDAR_TODAY" desc="Label for a button which sets today to a date input field.">
         Today
-      </message>
-      <message name="IDS_FORM_DATE_FORMAT_DAY_IN_MONTH" desc="Short word to indicate which is the day-in-month part in a date format. e.g. 'Day' in 'Month/Day/Year'">
-        Day
-      </message>
-      <message name="IDS_FORM_DATE_FORMAT_MONTH" desc="Short word to indicate which is the month part in a date format. e.g. 'Month' in 'Month/Day/Year'">
-        Month
-      </message>
-      <message name="IDS_FORM_DATE_FORMAT_YEAR" desc="Short word to indicate which is the year part in a date format. e.g. 'Year' in 'Month/Day/Year'">
-        Year
       </message>
       <message name="IDS_FORM_SUBMIT_LABEL" desc="Default label for Submit buttons in forms on webpages.">
         Submit
@@ -219,9 +207,6 @@ below:
       <message name="IDS_FORM_OTHER_MONTH_LABEL" desc="Label for button that opens a full month picker so the user can choose dates other than the ones in the list." meaning="for month label">
         Other...
       </message>
-      <message name="IDS_FORM_OTHER_TIME_LABEL" desc="Label for button that opens a full time picker so the user can choose dates other than the ones in the list." meaning="for time label">
-        Other...
-      </message>
       <message name="IDS_FORM_OTHER_WEEK_LABEL" desc="Label for button that opens a full week picker so the user can choose dates other than the ones in the list." meaning="for week label">
         Other...
       </message>
@@ -245,16 +230,6 @@ below:
       </message>
       <message name="IDS_FORM_WEEK_NUMBER_LABEL" desc="Label for week number column in a calendar.">
         Week
-      </message>
-
-      <message name="IDS_RECENT_SEARCHES_NONE" desc="Label for only item in menu that appears when clicking on the search field image, when no searches have been performed">
-        No recent searches
-      </message>
-      <message name="IDS_RECENT_SEARCHES" desc="label for first item in the menu that appears when clicking on the search field image, used as embedded menu title">
-        Recent Searches
-      </message>
-      <message name="IDS_RECENT_SEARCHES_CLEAR" desc="menu item in Recent Searches menu that empties menu's contents">
-        Clear Recent Searches
       </message>
 
       <message name="IDS_AX_CALENDAR_SHOW_MONTH_SELECTOR" desc="Accessible description of a button to show month selection panel in a calendar picker.">
@@ -320,14 +295,8 @@ below:
       <message name="IDS_AX_ROLE_HEADING" desc="Accessibility role description for headings">
         heading
       </message>
-      <message name="IDS_AX_ROLE_IMAGE_MAP" desc="Accessibility role description for image map">
-        image map
-      </message>
       <message name="IDS_AX_ROLE_LINK" desc="Accessibility role description for link">
         link
-      </message>
-      <message name="IDS_AX_ROLE_LIST_MARKER" desc="Accessibility role description for list marker">
-        list marker
       </message>
       <message name="IDS_AX_ROLE_MAIN_CONTENT" desc="Accessibility role description for main content of the document.">
         main
@@ -558,24 +527,12 @@ below:
         pause
       </message>
 
-      <message name="IDS_AX_MEDIA_SLIDER" desc="Accessibility role description for timeline slider">
-        movie time
-      </message>
-
-      <message name="IDS_AX_MEDIA_SLIDER_THUMB" desc="Accessibility role description for timeline thumb">
-        movie timeline thumb
-      </message>
-
       <message name="IDS_AX_MEDIA_CURRENT_TIME_DISPLAY" desc="Accessibility role description for elapsed time display">
         elapsed time
       </message>
 
       <message name="IDS_AX_MEDIA_TIME_REMAINING_DISPLAY" desc="Accessibility role description for time remaining display">
         remaining time
-      </message>
-
-      <message name="IDS_AX_MEDIA_STATUS_DISPLAY" desc="Accessibility role description for movie status">
-        status
       </message>
 
       <message name="IDS_AX_MEDIA_ENTER_FULL_SCREEN_BUTTON" desc="Accessibility role description for enter fullscreen button">
@@ -642,20 +599,12 @@ below:
         movie time scrubber
       </message>
 
-      <message name="IDS_AX_MEDIA_SLIDER_THUMB_HELP" desc="Accessibility help description for timeline thumb">
-        movie time scrubber thumb
-      </message>
-
       <message name="IDS_AX_MEDIA_CURRENT_TIME_DISPLAY_HELP" desc="Accessibility help description for elapsed time display">
         current time in seconds
       </message>
 
       <message name="IDS_AX_MEDIA_TIME_REMAINING_DISPLAY_HELP" desc="Accessibility help description for time remaining display">
         number of seconds of movie remaining
-      </message>
-
-      <message name="IDS_AX_MEDIA_STATUS_DISPLAY_HELP" desc="Accessibility help description for movie status">
-        current movie status
       </message>
 
       <message name="IDS_AX_MEDIA_ENTER_FULL_SCREEN_BUTTON_HELP" desc="Accessibility help description for enter fullscreen button">

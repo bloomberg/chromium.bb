@@ -214,8 +214,6 @@ blink::WebString TestBlinkWebUnitTestSupport::QueryLocalizedString(
       return WebString::FromASCII("<<OtherDateLabel>>");
     case blink::WebLocalizedString::kOtherMonthLabel:
       return WebString::FromASCII("<<OtherMonthLabel>>");
-    case blink::WebLocalizedString::kOtherTimeLabel:
-      return WebString::FromASCII("<<OtherTimeLabel>>");
     case blink::WebLocalizedString::kOtherWeekLabel:
       return WebString::FromASCII("<<OtherWeekLabel>>");
     case blink::WebLocalizedString::kCalendarClear:

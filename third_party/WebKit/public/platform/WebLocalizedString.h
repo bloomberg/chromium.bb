@@ -41,11 +41,7 @@ struct WebLocalizedString {
     kAXCalendarShowPreviousMonth,
     kAXCalendarWeekDescription,
     kAXDayOfMonthFieldText,
-    kAXHeadingText,  // Deprecated.
     kAXHourFieldText,
-    kAXImageMapText,    // Deprecated.
-    kAXLinkText,        // Deprecated.
-    kAXListMarkerText,  // Deprecated.
     kAXMediaAudioElement,
     kAXMediaAudioElementHelp,
     kAXMediaAudioSliderHelp,
@@ -73,11 +69,6 @@ struct WebLocalizedString {
     kAXMediaPlayButtonHelp,
     kAXMediaShowClosedCaptionsButton,
     kAXMediaShowClosedCaptionsButtonHelp,
-    kAXMediaSlider,           // Deprecated.
-    kAXMediaSliderThumb,      // Deprecated.
-    kAXMediaSliderThumbHelp,  // Deprecated.
-    kAXMediaStatusDisplay,
-    kAXMediaStatusDisplayHelp,
     kAXMediaTimeRemainingDisplay,
     kAXMediaTimeRemainingDisplayHelp,
     kAXMediaUnMuteButton,
@@ -89,15 +80,11 @@ struct WebLocalizedString {
     kAXMinuteFieldText,
     kAXMonthFieldText,
     kAXSecondFieldText,
-    kAXWebAreaText,  // Deprecated.
     kAXWeekOfYearFieldText,
     kAXYearFieldText,
     kBlockedPluginText,
     kCalendarClear,
     kCalendarToday,
-    kDateFormatDayInMonthLabel,
-    kDateFormatMonthLabel,
-    kDateFormatYearLabel,
     kDetailsLabel,
     kDownloadButtonLabel,
     kFileButtonChooseFileLabel,
@@ -111,7 +98,6 @@ struct WebLocalizedString {
     kOtherColorLabel,
     kOtherDateLabel,
     kOtherMonthLabel,
-    kOtherTimeLabel,
     kOtherWeekLabel,
     kOverflowMenuCaptions,
     kOverflowMenuCast,
@@ -136,10 +122,6 @@ struct WebLocalizedString {
     // "datetime-local" input UI instead of "----".
     kPlaceholderForYearField,
     kResetButtonDefaultLabel,
-    kSearchableIndexIntroduction,
-    kSearchMenuClearRecentSearchesText,  // Deprecated.
-    kSearchMenuNoRecentSearchesText,     // Deprecated.
-    kSearchMenuRecentSearchesText,       // Deprecated.
     kSelectMenuListText,
     kSubmitButtonDefaultLabel,
     kTextTracksNoLabel,
