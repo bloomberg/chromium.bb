@@ -15325,7 +15325,6 @@ crbug.com/591099 http/tests/security/contentSecurityPolicy/cascade/cross-origin-
 crbug.com/591099 http/tests/security/contentSecurityPolicy/cascade/cross-origin.html [ Crash ]
 crbug.com/591099 http/tests/security/contentSecurityPolicy/cascade/same-origin-with-own-policy.html [ Crash ]
 crbug.com/591099 http/tests/security/contentSecurityPolicy/cascade/same-origin.html [ Crash ]
-crbug.com/591099 http/tests/security/contentSecurityPolicy/connect-src-beacon-redirect-to-blocked.html [ Failure ]
 crbug.com/591099 http/tests/security/contentSecurityPolicy/directive-parsing-01.html [ Failure ]
 crbug.com/591099 http/tests/security/contentSecurityPolicy/directive-parsing-02.html [ Failure ]
 crbug.com/591099 http/tests/security/contentSecurityPolicy/directive-parsing-03.html [ Failure ]

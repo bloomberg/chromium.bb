@@ -54,6 +54,7 @@
 #include "platform/loader/fetch/FetchContext.h"
 #include "platform/loader/fetch/FetchInitiatorTypeNames.h"
 #include "platform/loader/fetch/FetchUtils.h"
+#include "platform/loader/fetch/RawResource.h"
 #include "platform/loader/fetch/ResourceError.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
@@ -459,7 +460,6 @@ bool SendBeaconCommon(LocalFrame* frame,
   if (!frame->GetDocument())
     return false;
 
-  // TODO(mkwst): CSP is not enforced on redirects, crbug.com/372197
   if (!ContentSecurityPolicy::ShouldBypassMainWorld(frame->GetDocument()) &&
       !frame->GetDocument()->GetContentSecurityPolicy()->AllowConnectToSource(
           url)) {
@@ -476,12 +476,20 @@ bool SendBeaconCommon(LocalFrame* frame,
   ResourceRequest request(url);
   request.SetHTTPMethod(HTTPNames::POST);
   request.SetHTTPHeaderField(HTTPNames::Cache_Control, "max-age=0");
-  FinishPingRequestInitialization(request, frame,
-                                  WebURLRequest::kRequestContextBeacon);
-
+  request.SetKeepalive(true);
+  request.SetRequestContext(WebURLRequest::kRequestContextBeacon);
   beacon.Serialize(request);
+  FetchParameters params(request);
+  params.MutableOptions().initiator_info.name = FetchInitiatorTypeNames::beacon;
 
-  return SendPingCommon(frame, request, FetchInitiatorTypeNames::beacon);
+  Resource* resource =
+      RawResource::Fetch(params, frame->GetDocument()->Fetcher());
+  if (resource && resource->GetStatus() != ResourceStatus::kLoadError) {
+    frame->Loader().Client()->DidDispatchPingLoader(request.Url());
+    return true;
+  }
+
+  return false;
 }
 
 }  // namespace

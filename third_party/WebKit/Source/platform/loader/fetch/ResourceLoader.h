@@ -31,6 +31,8 @@
 
 #include <memory>
 #include "platform/PlatformExport.h"
+#include "platform/heap/Handle.h"
+#include "platform/heap/SelfKeepAlive.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/wtf/Forward.h"
@@ -75,6 +77,7 @@ class PLATFORM_EXPORT ResourceLoader final
   }
 
   ResourceFetcher* Fetcher() { return fetcher_; }
+  bool GetKeepalive() const;
 
   // WebURLLoaderClient
   //
@@ -132,6 +135,11 @@ class PLATFORM_EXPORT ResourceLoader final
   std::unique_ptr<WebURLLoader> loader_;
   Member<ResourceFetcher> fetcher_;
   Member<Resource> resource_;
+
+  // Set when the request's "keepalive" is specified (e.g., for SendBeacon).
+  // https://fetch.spec.whatwg.org/#request-keepalive-flag
+  SelfKeepAlive<ResourceLoader> keepalive_;
+
   bool is_cache_aware_loading_activated_;
 };
 
