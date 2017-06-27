@@ -103,7 +103,7 @@ L10nUtilTest::~L10nUtilTest() {
 void L10nUtilTest::SetUp() {
   chromeos::input_method::InitializeForTesting(input_manager_);
   input_manager_->SetComponentExtensionIMEManager(
-      base::WrapUnique(new ComponentExtensionIMEManager));
+      base::MakeUnique<ComponentExtensionIMEManager>());
   MachineStatisticsInitializer::GetInstance();  // Ignore result.
 }
 
