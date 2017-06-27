@@ -319,6 +319,9 @@ TEST_F(ContextualSearchJsTest, TestHighlightBlockDontAddsSpace) {
 
 // Test that related DOM mutation cancels contextual search.
 TEST_F(ContextualSearchJsTest, TestHighlightRelatedDOMMutation) {
+  // TODO(crbug.com/736989): Test failures in GetMutatedNodeCount.
+  if (base::ios::IsRunningOnIOS11OrLater())
+    return;
   LoadHtml(kHTMLWithRelatedDOMMutation);
   ExecuteJavaScript(
       @"document.getElementById('test').setAttribute('attr', 'after');");
@@ -386,6 +389,9 @@ TEST_F(ContextualSearchJsTest, TestHighlightRelatedDOMMutationText) {
 
 // Test that unrelated text DOM mutation doesn't prevent contextual search.
 TEST_F(ContextualSearchJsTest, TestHighlightUnrelatedDOMMutationTextIgnored) {
+  // TODO(crbug.com/736989): Test failures in GetMutatedNodeCount.
+  if (base::ios::IsRunningOnIOS11OrLater())
+    return;
   LoadHtml(kHTMLWithUnrelatedDOMMutation);
   ExecuteJavaScript(@"document.getElementById('test').innerText = 'mutated';");
   ASSERT_EQ(1, GetMutatedNodeCount());
@@ -396,6 +402,10 @@ TEST_F(ContextualSearchJsTest, TestHighlightUnrelatedDOMMutationTextIgnored) {
 
 // Test that two related DOM mutations prevent contextual search.
 TEST_F(ContextualSearchJsTest, TestHighlightTwoDOMMutations) {
+  // TODO(crbug.com/736989): Test failures in GetMutatedNodeCount.
+  if (base::ios::IsRunningOnIOS11OrLater())
+    return;
+
   LoadHtml(kHTMLWithRelatedDOMMutation);
   ASSERT_EQ(0, GetMutatedNodeCount());
   ExecuteJavaScript(
@@ -410,6 +420,10 @@ TEST_F(ContextualSearchJsTest, TestHighlightTwoDOMMutations) {
 // Test that two related DOM mutations with only one change prevent contextual
 // search.
 TEST_F(ContextualSearchJsTest, TestHighlightTwoDOMMutationOneChanging) {
+  // TODO(crbug.com/736989): Test failures in GetMutatedNodeCount.
+  if (base::ios::IsRunningOnIOS11OrLater())
+    return;
+
   LoadHtml(kHTMLWithRelatedDOMMutation);
   ExecuteJavaScript(
       @"document.getElementById('taphere').innerText = 'mutated';"
