@@ -3,14 +3,12 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
@@ -48,8 +46,6 @@
 #include "net/url_request/url_request_context_getter.h"
 
 namespace {
-using IPCType =
-    page_load_metrics::MetricsWebContentsObserver::TestingObserver::IPCType;
 
 void FailAllNetworkTransactions(net::URLRequestContextGetter* getter) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -106,9 +102,9 @@ class PageLoadMetricsWaiter
     return observed_page_fields_.IsSet(field);
   }
 
-  // Waits for a TimingUpdated IPC that matches the fields set by
+  // Waits for a OnTimingUpdated call that matches the fields set by
   // |AddPageExpectation| and |AddSubFrameExpectation|. All matching fields
-  // must be set in a TimingUpdated IPC for it to end this wait.
+  // must be set in a OnTimingUpdated call for it to end this wait.
   void Wait() {
     if (expectations_satisfied())
       return;
@@ -120,9 +116,9 @@ class PageLoadMetricsWaiter
     EXPECT_TRUE(expectations_satisfied());
   }
 
-  void OnTimingUpdate(bool is_subframe,
-                      const page_load_metrics::mojom::PageLoadTiming& timing,
-                      const page_load_metrics::PageLoadExtraInfo& extra_info) {
+  void OnTimingUpdated(bool is_subframe,
+                       const page_load_metrics::mojom::PageLoadTiming& timing,
+                       const page_load_metrics::PageLoadExtraInfo& extra_info) {
     if (expectations_satisfied())
       return;
 
@@ -157,7 +153,7 @@ class PageLoadMetricsWaiter
         const page_load_metrics::mojom::PageLoadTiming& timing,
         const page_load_metrics::PageLoadExtraInfo& extra_info) override {
       if (waiter_)
-        waiter_->OnTimingUpdate(is_subframe, timing, extra_info);
+        waiter_->OnTimingUpdated(is_subframe, timing, extra_info);
     }
 
    private:
@@ -254,81 +250,14 @@ class PageLoadMetricsWaiter
 
 using TimingField = PageLoadMetricsWaiter::TimingField;
 
-class IPCTypeVerifier
-    : public page_load_metrics::MetricsWebContentsObserver::TestingObserver {
- public:
-  explicit IPCTypeVerifier(content::WebContents* web_contents)
-      : TestingObserver(web_contents) {}
-
-  ~IPCTypeVerifier() override { AssertValidUpdateState(); }
-
-  void ExpectNoTimingUpdates() { expect_updates_ = false; }
-
-  void DidReceiveTimingUpdate(IPCType type) override {
-    ++num_updates_;
-    const bool is_mojo_enabled =
-        base::FeatureList::IsEnabled(features::kPageLoadMetricsMojofication);
-    switch (type) {
-      case IPCType::LEGACY:
-        ASSERT_FALSE(is_mojo_enabled);
-        break;
-      case IPCType::MOJO:
-        ASSERT_TRUE(is_mojo_enabled);
-        break;
-      default:
-        FAIL() << "Unknown IPCType";
-        break;
-    }
-  }
-
- private:
-  void AssertValidUpdateState() {
-    ASSERT_EQ(expect_updates_, num_updates_ > 0);
-  }
-
-  bool expect_updates_ = true;
-  int num_updates_ = 0;
-};
-
 }  // namespace
 
-class PageLoadMetricsBrowserTest : public InProcessBrowserTest,
-                                   public testing::WithParamInterface<IPCType> {
+class PageLoadMetricsBrowserTest : public InProcessBrowserTest {
  public:
   PageLoadMetricsBrowserTest() {}
   ~PageLoadMetricsBrowserTest() override {}
 
  protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
-
-    // We need to set the feature state before the render process is created,
-    // in order for it to inherit the feature state from the browser process.
-    // SetUp() runs too early, and SetUpOnMainThread() runs too late.
-    const IPCType ipc_type = GetParam();
-    switch (ipc_type) {
-      case IPCType::LEGACY:
-        scoped_feature_list_.InitAndDisableFeature(
-            features::kPageLoadMetricsMojofication);
-        break;
-      case IPCType::MOJO:
-        scoped_feature_list_.InitAndEnableFeature(
-            features::kPageLoadMetricsMojofication);
-        break;
-      default:
-        CHECK(false) << "Unknown IPCType.";
-        break;
-    }
-  }
-
-  void SetUpOnMainThread() override {
-    InProcessBrowserTest::SetUpOnMainThread();
-
-    content::WebContents* web_contents =
-        browser()->tab_strip_model()->GetActiveWebContents();
-    ipc_type_verifier_ = base::MakeUnique<IPCTypeVerifier>(web_contents);
-  }
-
   // Force navigation to a new page, so the currently tracked page load runs its
   // OnComplete callback. You should prefer to use PageLoadMetricsWaiter, and
   // only use NavigateToUntrackedUrl for cases where the waiter isn't
@@ -354,23 +283,18 @@ class PageLoadMetricsBrowserTest : public InProcessBrowserTest,
     return base::MakeUnique<PageLoadMetricsWaiter>(web_contents);
   }
 
-  void ExpectNoTimingUpdates() { ipc_type_verifier_->ExpectNoTimingUpdates(); }
-
-  base::test::ScopedFeatureList scoped_feature_list_;
   base::HistogramTester histogram_tester_;
-  std::unique_ptr<IPCTypeVerifier> ipc_type_verifier_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PageLoadMetricsBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, NoNavigation) {
-  ExpectNoTimingUpdates();
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NoNavigation) {
   ASSERT_TRUE(embedded_test_server()->Start());
   EXPECT_TRUE(NoPageLoadMetricsRecorded());
 }
 
-IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, NewPage) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NewPage) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   auto waiter = CreatePageLoadMetricsWaiter();
@@ -401,13 +325,8 @@ IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, NewPage) {
   EXPECT_FALSE(NoPageLoadMetricsRecorded());
 }
 
-IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, NewPageInNewForegroundTab) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NewPageInNewForegroundTab) {
   ASSERT_TRUE(embedded_test_server()->Start());
-
-  // The IPCTypeVerifier watches for IPCs in the main web contents. This test
-  // navigates in a new web contents, so we need to indicate that we expect no
-  // timing updates in the main web contents.
-  ExpectNoTimingUpdates();
 
   chrome::NavigateParams params(browser(),
                                 embedded_test_server()->GetURL("/title1.html"),
@@ -426,7 +345,7 @@ IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, NewPageInNewForegroundTab) {
   histogram_tester_.ExpectTotalCount(internal::kBackgroundHistogramLoad, 0);
 }
 
-IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, NoPaintForEmptyDocument) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NoPaintForEmptyDocument) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   auto waiter = CreatePageLoadMetricsWaiter();
@@ -444,7 +363,7 @@ IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, NoPaintForEmptyDocument) {
                                      0);
 }
 
-IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest,
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
                        NoPaintForEmptyDocumentInChildFrame) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -467,7 +386,7 @@ IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest,
                                      0);
 }
 
-IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, PaintInChildFrame) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, PaintInChildFrame) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL a_url(embedded_test_server()->GetURL("/page_load_metrics/iframe.html"));
@@ -484,7 +403,7 @@ IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, PaintInChildFrame) {
   histogram_tester_.ExpectTotalCount(internal::kHistogramFirstPaint, 1);
 }
 
-IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, PaintInMultipleChildFrames) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, PaintInMultipleChildFrames) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL a_url(embedded_test_server()->GetURL("/page_load_metrics/iframes.html"));
@@ -502,7 +421,7 @@ IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, PaintInMultipleChildFrames) {
   histogram_tester_.ExpectTotalCount(internal::kHistogramFirstPaint, 1);
 }
 
-IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, PaintInMainAndChildFrame) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, PaintInMainAndChildFrame) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL a_url(embedded_test_server()->GetURL(
@@ -523,7 +442,7 @@ IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, PaintInMainAndChildFrame) {
   histogram_tester_.ExpectTotalCount(internal::kHistogramFirstPaint, 1);
 }
 
-IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, SameDocumentNavigation) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, SameDocumentNavigation) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   auto waiter = CreatePageLoadMetricsWaiter();
@@ -547,7 +466,7 @@ IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, SameDocumentNavigation) {
   histogram_tester_.ExpectTotalCount(internal::kHistogramFirstLayout, 1);
 }
 
-IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, SameUrlNavigation) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, SameUrlNavigation) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   auto waiter = CreatePageLoadMetricsWaiter();
@@ -574,36 +493,33 @@ IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, SameUrlNavigation) {
   histogram_tester_.ExpectTotalCount(internal::kHistogramFirstLayout, 2);
 }
 
-IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, NonHtmlMainResource) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NonHtmlMainResource) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ui_test_utils::NavigateToURL(browser(),
                                embedded_test_server()->GetURL("/circle.svg"));
   NavigateToUntrackedUrl();
-  ExpectNoTimingUpdates();
   EXPECT_TRUE(NoPageLoadMetricsRecorded());
 }
 
-IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, NonHttpOrHttpsUrl) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NonHttpOrHttpsUrl) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIVersionURL));
   NavigateToUntrackedUrl();
-  ExpectNoTimingUpdates();
   EXPECT_TRUE(NoPageLoadMetricsRecorded());
 }
 
-IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, HttpErrorPage) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, HttpErrorPage) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/page_load_metrics/404.html"));
   NavigateToUntrackedUrl();
-  ExpectNoTimingUpdates();
   EXPECT_TRUE(NoPageLoadMetricsRecorded());
 }
 
-IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, ChromeErrorPage) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, ChromeErrorPage) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Configure the network stack to fail all attempted loads with a network
@@ -618,21 +534,19 @@ IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, ChromeErrorPage) {
   ui_test_utils::NavigateToURL(browser(),
                                embedded_test_server()->GetURL("/title1.html"));
   NavigateToUntrackedUrl();
-  ExpectNoTimingUpdates();
   EXPECT_TRUE(NoPageLoadMetricsRecorded());
 }
 
-IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, Ignore204Pages) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, Ignore204Pages) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ui_test_utils::NavigateToURL(browser(),
                                embedded_test_server()->GetURL("/page204.html"));
   NavigateToUntrackedUrl();
-  ExpectNoTimingUpdates();
   EXPECT_TRUE(NoPageLoadMetricsRecorded());
 }
 
-IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, IgnoreDownloads) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, IgnoreDownloads) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   base::ThreadRestrictions::ScopedAllowIO allow_io;
@@ -650,11 +564,10 @@ IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, IgnoreDownloads) {
   downloads_observer.WaitForFinished();
 
   NavigateToUntrackedUrl();
-  ExpectNoTimingUpdates();
   EXPECT_TRUE(NoPageLoadMetricsRecorded());
 }
 
-IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, PreloadDocumentWrite) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, PreloadDocumentWrite) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   auto waiter = CreatePageLoadMetricsWaiter();
@@ -669,7 +582,7 @@ IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, PreloadDocumentWrite) {
       internal::kHistogramDocWriteParseStartToFirstContentfulPaint, 1);
 }
 
-IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, NoPreloadDocumentWrite) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NoPreloadDocumentWrite) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   auto waiter = CreatePageLoadMetricsWaiter();
@@ -685,7 +598,7 @@ IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, NoPreloadDocumentWrite) {
       internal::kHistogramDocWriteParseStartToFirstContentfulPaint, 0);
 }
 
-IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, NoDocumentWrite) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NoDocumentWrite) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   auto waiter = CreatePageLoadMetricsWaiter();
@@ -704,7 +617,7 @@ IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, NoDocumentWrite) {
   histogram_tester_.ExpectTotalCount(internal::kHistogramDocWriteBlockCount, 0);
 }
 
-IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, DocumentWriteBlock) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, DocumentWriteBlock) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   auto waiter = CreatePageLoadMetricsWaiter();
@@ -720,7 +633,7 @@ IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, DocumentWriteBlock) {
   histogram_tester_.ExpectTotalCount(internal::kHistogramDocWriteBlockCount, 1);
 }
 
-IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, DocumentWriteReload) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, DocumentWriteReload) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   auto waiter = CreatePageLoadMetricsWaiter();
@@ -762,7 +675,7 @@ IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, DocumentWriteReload) {
   histogram_tester_.ExpectTotalCount(internal::kHistogramDocWriteBlockCount, 1);
 }
 
-IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, DocumentWriteAsync) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, DocumentWriteAsync) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   auto waiter = CreatePageLoadMetricsWaiter();
@@ -779,7 +692,7 @@ IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, DocumentWriteAsync) {
   histogram_tester_.ExpectTotalCount(internal::kHistogramDocWriteBlockCount, 0);
 }
 
-IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, DocumentWriteSameDomain) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, DocumentWriteSameDomain) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   auto waiter = CreatePageLoadMetricsWaiter();
@@ -796,7 +709,7 @@ IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, DocumentWriteSameDomain) {
   histogram_tester_.ExpectTotalCount(internal::kHistogramDocWriteBlockCount, 0);
 }
 
-IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, NoDocumentWriteScript) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NoDocumentWriteScript) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   auto waiter = CreatePageLoadMetricsWaiter();
@@ -819,7 +732,7 @@ IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, NoDocumentWriteScript) {
 #else
 #define MAYBE_BadXhtml BadXhtml
 #endif
-IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, MAYBE_BadXhtml) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, MAYBE_BadXhtml) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // When an XHTML page contains invalid XML, it causes a paint of the error
@@ -849,7 +762,7 @@ IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, MAYBE_BadXhtml) {
 // Test code that aborts provisional navigations.
 // TODO(csharrison): Move these to unit tests once the navigation API in content
 // properly calls NavigationHandle/NavigationThrottle methods.
-IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, AbortNewNavigation) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, AbortNewNavigation) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/title1.html"));
@@ -873,7 +786,7 @@ IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, AbortNewNavigation) {
       internal::kHistogramAbortNewNavigationBeforeCommit, 1);
 }
 
-IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, AbortReload) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, AbortReload) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/title1.html"));
@@ -901,7 +814,7 @@ IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, AbortReload) {
 #else
 #define MAYBE_AbortClose AbortClose
 #endif
-IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, MAYBE_AbortClose) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, MAYBE_AbortClose) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/title1.html"));
@@ -918,10 +831,9 @@ IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, MAYBE_AbortClose) {
 
   histogram_tester_.ExpectTotalCount(internal::kHistogramAbortCloseBeforeCommit,
                                      1);
-  ExpectNoTimingUpdates();
 }
 
-IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, AbortMultiple) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, AbortMultiple) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/title1.html"));
@@ -955,7 +867,7 @@ IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, AbortMultiple) {
       internal::kHistogramAbortNewNavigationBeforeCommit, 2);
 }
 
-IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest,
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
                        NoAbortMetricsOnClientRedirect) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -986,7 +898,7 @@ IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest,
                   .empty());
 }
 
-IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest,
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
                        FirstMeaningfulPaintRecorded) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -1005,7 +917,7 @@ IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest,
       internal::kHistogramParseStartToFirstMeaningfulPaint, 1);
 }
 
-IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest,
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
                        FirstMeaningfulPaintNotRecorded) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -1031,7 +943,7 @@ IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest,
       internal::kHistogramParseStartToFirstMeaningfulPaint, 0);
 }
 
-IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest,
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
                        NoStatePrefetchObserverCacheable) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -1049,7 +961,7 @@ IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest,
       "Prerender.none_PrefetchTTFCP.Reference.Cacheable.Visible", 1);
 }
 
-IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest,
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
                        NoStatePrefetchObserverNoStore) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -1067,7 +979,7 @@ IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest,
       "Prerender.none_PrefetchTTFCP.Reference.Cacheable.Visible", 0);
 }
 
-IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, CSSTiming) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, CSSTiming) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   auto waiter = CreatePageLoadMetricsWaiter();
@@ -1091,7 +1003,7 @@ IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, CSSTiming) {
       "PageLoad.CSSTiming.ParseAndUpdate.BeforeFirstContentfulPaint", 1);
 }
 
-IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, PayloadSize) {
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, PayloadSize) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   auto waiter = CreatePageLoadMetricsWaiter();
@@ -1111,7 +1023,7 @@ IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest, PayloadSize) {
   histogram_tester_.ExpectBucketCount(internal::kHistogramTotalBytes, 10, 1);
 }
 
-IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest,
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
                        PayloadSizeIgnoresDownloads) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -1137,8 +1049,3 @@ IN_PROC_BROWSER_TEST_P(PageLoadMetricsBrowserTest,
 
   histogram_tester_.ExpectUniqueSample(internal::kHistogramTotalBytes, 0, 1);
 }
-
-INSTANTIATE_TEST_CASE_P(
-    /* no prefix */,
-    PageLoadMetricsBrowserTest,
-    testing::Values(IPCType::LEGACY, IPCType::MOJO));

@@ -9,7 +9,6 @@
 #include <string>
 #include <utility>
 
-#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -19,8 +18,6 @@
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
 #include "chrome/browser/prerender/prerender_contents.h"
-#include "chrome/common/chrome_features.h"
-#include "chrome/common/page_load_metrics/page_load_metrics_messages.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/global_request_id.h"
@@ -31,8 +28,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "ipc/ipc_message.h"
-#include "ipc/ipc_message_macros.h"
 #include "net/base/net_errors.h"
 #include "ui/base/page_transition_types.h"
 
@@ -152,19 +147,6 @@ void MetricsWebContentsObserver::MediaStartedPlaying(
   if (committed_load_)
     committed_load_->MediaStartedPlaying(
         video_type, render_frame_host == web_contents()->GetMainFrame());
-}
-
-bool MetricsWebContentsObserver::OnMessageReceived(
-    const IPC::Message& message,
-    content::RenderFrameHost* render_frame_host) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(MetricsWebContentsObserver, message,
-                                   render_frame_host)
-    IPC_MESSAGE_HANDLER(PageLoadMetricsMsg_TimingUpdated, OnUpdateTimingOverIPC)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
 }
 
 void MetricsWebContentsObserver::WillStartNavigationRequest(
@@ -623,27 +605,12 @@ void MetricsWebContentsObserver::OnTimingUpdated(
   }
 }
 
-void MetricsWebContentsObserver::OnUpdateTimingOverIPC(
-    content::RenderFrameHost* render_frame_host,
-    const mojom::PageLoadTiming& timing,
-    const mojom::PageLoadMetadata& metadata) {
-  DCHECK(!base::FeatureList::IsEnabled(features::kPageLoadMetricsMojofication));
-  OnTimingUpdated(render_frame_host, timing, metadata);
-
-  for (auto& observer : testing_observers_)
-    observer.DidReceiveTimingUpdate(TestingObserver::IPCType::LEGACY);
-}
-
 void MetricsWebContentsObserver::UpdateTiming(
     const mojom::PageLoadTimingPtr timing,
     const mojom::PageLoadMetadataPtr metadata) {
   content::RenderFrameHost* render_frame_host =
       page_load_metrics_binding_.GetCurrentTargetFrame();
-  DCHECK(base::FeatureList::IsEnabled(features::kPageLoadMetricsMojofication));
   OnTimingUpdated(render_frame_host, *timing, *metadata);
-
-  for (auto& observer : testing_observers_)
-    observer.DidReceiveTimingUpdate(TestingObserver::IPCType::MOJO);
 }
 
 bool MetricsWebContentsObserver::ShouldTrackNavigation(

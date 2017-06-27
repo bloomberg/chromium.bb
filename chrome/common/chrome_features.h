@@ -202,8 +202,6 @@ extern const base::Feature kCrOSComponent;
 extern const base::Feature kInstantTethering;
 #endif  // defined(OS_CHROMEOS)
 
-extern const base::Feature kPageLoadMetricsMojofication;
-
 bool PrefServiceEnabled();
 
 // DON'T ADD RANDOM STUFF HERE. Put it in the main section above in

@@ -29,10 +29,6 @@ class NavigationHandle;
 class RenderFrameHost;
 }  // namespace content
 
-namespace IPC {
-class Message;
-}  // namespace IPC
-
 namespace page_load_metrics {
 
 class PageLoadMetricsEmbedderInterface;
@@ -53,15 +49,12 @@ class MetricsWebContentsObserver
   // have been observed.
   class TestingObserver {
    public:
-    enum class IPCType { LEGACY, MOJO };
-
     explicit TestingObserver(content::WebContents* web_contents);
     virtual ~TestingObserver();
 
     void OnGoingAway();
 
     virtual void OnCommit(PageLoadTracker* tracker) {}
-    virtual void DidReceiveTimingUpdate(IPCType type) {}
 
    private:
     page_load_metrics::MetricsWebContentsObserver* observer_;
@@ -81,8 +74,6 @@ class MetricsWebContentsObserver
   ~MetricsWebContentsObserver() override;
 
   // content::WebContentsObserver implementation:
-  bool OnMessageReceived(const IPC::Message& message,
-                         content::RenderFrameHost* render_frame_host) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
   void DidRedirectNavigation(
@@ -151,11 +142,6 @@ class MetricsWebContentsObserver
   // page_load_metrics::mojom::PageLoadMetrics implementation.
   void UpdateTiming(mojom::PageLoadTimingPtr timing,
                     mojom::PageLoadMetadataPtr metadata) override;
-
-  // Called from legacy IPC.
-  void OnUpdateTimingOverIPC(content::RenderFrameHost* render_frame_host,
-                             const mojom::PageLoadTiming& timing,
-                             const mojom::PageLoadMetadata& metadata);
 
   void HandleFailedNavigationForTrackedLoad(
       content::NavigationHandle* navigation_handle,
