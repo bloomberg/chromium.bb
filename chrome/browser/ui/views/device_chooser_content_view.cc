@@ -6,9 +6,9 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
-#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
@@ -154,7 +154,8 @@ gfx::ImageSkia DeviceChooserContentView::GetIcon(int row) {
   DCHECK_LT(row, base::checked_cast<int>(num_options));
 
   if (chooser_controller_->IsConnected(row))
-    return gfx::CreateVectorIcon(kBluetoothConnectedIcon, gfx::kChromeIconGrey);
+    return gfx::CreateVectorIcon(vector_icons::kBluetoothConnectedIcon,
+                                 gfx::kChromeIconGrey);
 
   int level = chooser_controller_->GetSignalStrengthLevel(row);
 

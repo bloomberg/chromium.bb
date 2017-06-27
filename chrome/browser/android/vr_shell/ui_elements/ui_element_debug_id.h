@@ -31,6 +31,7 @@ enum UiElementDebugId {
   kLocationAccessIndicator,
   kExclusiveScreenToast,
   kSplashScreenIcon,
+  kBluetoothConnectedIndicator,
 };
 
 }  // namespace vr_shell
