@@ -14,6 +14,8 @@ issues]].
     thanks to James Teh.
 ** Other changes
 ** Braille table improvements
+- Fix the character definition for the exclamation mark in the Spanish
+  tables thanks to Simon Aittamaa.
 ** License changes
 ** Backwards incompatible changes
 ** New, renamed or removed tables
