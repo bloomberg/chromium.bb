@@ -261,6 +261,17 @@ void RenderAccessibilityImpl::HandleAXEvent(
     serializer_.DeleteClientSubtree(obj);
 #endif
 
+  // If some cell IDs have been added or removed, we need to update the whole
+  // table.
+  if (obj.Role() == blink::kWebAXRoleRow &&
+      event == ui::AX_EVENT_CHILDREN_CHANGED) {
+    WebAXObject table_like_object = obj.ParentObject();
+    if (!table_like_object.IsDetached()) {
+      serializer_.DeleteClientSubtree(table_like_object);
+      HandleAXEvent(table_like_object, ui::AX_EVENT_CHILDREN_CHANGED);
+    }
+  }
+
   // Add the accessibility object to our cache and ensure it's valid.
   AccessibilityHostMsg_EventParams acc_event;
   acc_event.id = obj.AxID();
