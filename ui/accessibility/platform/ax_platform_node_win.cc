@@ -1564,43 +1564,162 @@ std::string AXPlatformNodeWin::StringOverrideForMSAARole() {
   return "";
 }
 
+bool AXPlatformNodeWin::ShouldNodeHaveReadonlyState(
+    const AXNodeData& data) const {
+  if (data.GetBoolAttribute(ui::AX_ATTR_ARIA_READONLY))
+    return true;
+
+  if (!data.HasState(ui::AX_STATE_READ_ONLY))
+    return false;
+
+  switch (data.role) {
+    case ui::AX_ROLE_ARTICLE:
+    case ui::AX_ROLE_BUSY_INDICATOR:
+    case ui::AX_ROLE_DEFINITION:
+    case ui::AX_ROLE_DESCRIPTION_LIST:
+    case ui::AX_ROLE_DESCRIPTION_LIST_TERM:
+    case ui::AX_ROLE_DOCUMENT:
+    case ui::AX_ROLE_IFRAME:
+    case ui::AX_ROLE_IMAGE:
+    case ui::AX_ROLE_IMAGE_MAP:
+    case ui::AX_ROLE_IMAGE_MAP_LINK:
+    case ui::AX_ROLE_LIST:
+    case ui::AX_ROLE_LIST_ITEM:
+    case ui::AX_ROLE_PROGRESS_INDICATOR:
+    case ui::AX_ROLE_ROOT_WEB_AREA:
+    case ui::AX_ROLE_RULER:
+    case ui::AX_ROLE_SCROLL_AREA:
+    case ui::AX_ROLE_TERM:
+    case ui::AX_ROLE_TIMER:
+    case ui::AX_ROLE_TOOLBAR:
+    case ui::AX_ROLE_TOOLTIP:
+    case ui::AX_ROLE_WEB_AREA:
+      return true;
+
+    case ui::AX_ROLE_GRID:
+      // TODO(aleventhal) this changed between ARIA 1.0 and 1.1,
+      // need to determine whether grids/treegrids should really be readonly
+      // or editable by default
+      // msaa_state |= STATE_SYSTEM_READONLY;
+      break;
+
+    case ui::AX_ROLE_TEXT_FIELD:
+    case ui::AX_ROLE_SEARCH_BOX:
+      if (data.HasState(ui::AX_STATE_READ_ONLY))
+        return true;
+
+    default:
+      break;
+  }
+  return false;
+}
+
+bool AXPlatformNodeWin::ShouldNodeHaveFocusableState(
+    const AXNodeData& data) const {
+  switch (data.role) {
+    case ui::AX_ROLE_DOCUMENT:
+    case ui::AX_ROLE_ROOT_WEB_AREA:
+    case ui::AX_ROLE_WEB_AREA:
+      return true;
+
+    case ui::AX_ROLE_IFRAME:
+      return false;
+
+    case ui::AX_ROLE_LIST_BOX_OPTION:
+    case ui::AX_ROLE_MENU_LIST_OPTION:
+      if (data.HasState(ui::AX_STATE_SELECTABLE))
+        return true;
+
+    default:
+      break;
+  }
+
+  return data.HasState(ui::AX_STATE_FOCUSABLE);
+}
+
 int AXPlatformNodeWin::MSAAState() {
   const AXNodeData& data = GetData();
-  const uint32_t state = data.state;
-
   int msaa_state = 0;
-  if (state & (1 << ui::AX_STATE_COLLAPSED))
+
+  // Map the AXState to MSAA state. Note that some of the states are not
+  // currently handled.
+
+  if (data.HasState(ui::AX_STATE_BUSY))
+    msaa_state |= STATE_SYSTEM_BUSY;
+
+  if (data.HasState(ui::AX_STATE_COLLAPSED))
     msaa_state |= STATE_SYSTEM_COLLAPSED;
-  if (state & (1 << ui::AX_STATE_DEFAULT))
+
+  if (data.HasState(ui::AX_STATE_DEFAULT))
     msaa_state |= STATE_SYSTEM_DEFAULT;
-  if (state & (1 << ui::AX_STATE_EXPANDED))
+
+  if (data.HasState(ui::AX_STATE_DISABLED))
+    msaa_state |= STATE_SYSTEM_UNAVAILABLE;
+
+  // TODO(dougt) unhandled ux::AX_STATE_EDITABLE
+
+  if (data.HasState(ui::AX_STATE_EXPANDED))
     msaa_state |= STATE_SYSTEM_EXPANDED;
-  if (state & (1 << ui::AX_STATE_FOCUSABLE))
+
+  if (ShouldNodeHaveFocusableState(data))
     msaa_state |= STATE_SYSTEM_FOCUSABLE;
-  if (state & (1 << ui::AX_STATE_HASPOPUP))
+
+  if (data.HasState(ui::AX_STATE_HASPOPUP))
     msaa_state |= STATE_SYSTEM_HASPOPUP;
-  if (state & (1 << ui::AX_STATE_HOVERED))
-    msaa_state |= STATE_SYSTEM_HOTTRACKED;
-  if (state & (1 << ui::AX_STATE_INVISIBLE) ||
+
+  // TODO(dougt) unhandled ux::AX_STATE_HORIZONTAL
+
+  if (data.HasState(ui::AX_STATE_HOVERED)) {
+    // Expose whether or not the mouse is over an element, but suppress
+    // this for tests because it can make the test results flaky depending
+    // on the position of the mouse.
+    if (delegate_->ShouldIgnoreHoveredStateForTesting())
+      msaa_state |= STATE_SYSTEM_HOTTRACKED;
+  }
+
+  // TODO(dougt) Why do we set any state on AX_ROLE_IGNORED?
+  if (data.HasState(ui::AX_STATE_INVISIBLE) ||
       GetData().role == ui::AX_ROLE_IGNORED) {
     msaa_state |= STATE_SYSTEM_INVISIBLE;
   }
-  if (state & (1 << ui::AX_STATE_LINKED))
+  if (data.HasState(ui::AX_STATE_LINKED))
     msaa_state |= STATE_SYSTEM_LINKED;
-  if (state & (1 << ui::AX_STATE_OFFSCREEN))
-    msaa_state |= STATE_SYSTEM_OFFSCREEN;
-  if (state & (1 << ui::AX_STATE_PROTECTED))
-    msaa_state |= STATE_SYSTEM_PROTECTED;
-  if (state & (1 << ui::AX_STATE_READ_ONLY))
-    msaa_state |= STATE_SYSTEM_READONLY;
-  if (state & (1 << ui::AX_STATE_SELECTABLE))
-    msaa_state |= STATE_SYSTEM_SELECTABLE;
-  if (state & (1 << ui::AX_STATE_SELECTED))
-    msaa_state |= STATE_SYSTEM_SELECTED;
-  if (state & (1 << ui::AX_STATE_DISABLED))
-    msaa_state |= STATE_SYSTEM_UNAVAILABLE;
 
+  // TODO(dougt) unhandled ux::AX_STATE_MULTILINE
+
+  if (data.HasState(ui::AX_STATE_MULTISELECTABLE)) {
+    msaa_state |= STATE_SYSTEM_EXTSELECTABLE;
+    msaa_state |= STATE_SYSTEM_MULTISELECTABLE;
+  }
+
+  if (data.HasState(ui::AX_STATE_OFFSCREEN))
+    msaa_state |= STATE_SYSTEM_OFFSCREEN;
+
+  if (data.HasState(ui::AX_STATE_PROTECTED))
+    msaa_state |= STATE_SYSTEM_PROTECTED;
+
+  // READONLY state is complex on windows.  We set STATE_SYSTEM_READONLY
+  // on *some* roles even if the node data isn't marked as AX_STATE_READ_ONLY.
+  if (ShouldNodeHaveReadonlyState(data))
+    msaa_state |= STATE_SYSTEM_READONLY;
+
+  // TODO(dougt) unhandled ux::AX_STATE_REQUIRED
+  // TODO(dougt) unhandled ux::AX_STATE_RICHLY_EDITABLE
+
+  if (data.HasState(ui::AX_STATE_SELECTABLE))
+    msaa_state |= STATE_SYSTEM_SELECTABLE;
+
+  if (data.HasState(ui::AX_STATE_SELECTED))
+    msaa_state |= STATE_SYSTEM_SELECTED;
+
+  // TODO(dougt) unhandled VERTICAL
+
+  if (data.HasState(ui::AX_STATE_VISITED))
+    msaa_state |= STATE_SYSTEM_TRAVERSED;
+
+  //
   // Checked state
+  //
   const auto checked_state = static_cast<ui::AXCheckedState>(
       GetIntAttribute(ui::AX_ATTR_CHECKED_STATE));
   switch (checked_state) {
@@ -1616,6 +1735,9 @@ int AXPlatformNodeWin::MSAAState() {
       break;
   }
 
+  //
+  // Handle STATE_SYSTEM_FOCUSED
+  //
   gfx::NativeViewAccessible focus = delegate_->GetFocus();
   if (focus == GetNativeViewAccessible())
     msaa_state |= STATE_SYSTEM_FOCUSED;
@@ -1627,8 +1749,14 @@ int AXPlatformNodeWin::MSAAState() {
   // the menu bar, but we don't currently track focus inside menu pop-ups,
   // and Chrome only has one menu visible at a time so this works for now.
   if (data.role == ui::AX_ROLE_MENU_BAR &&
-      !(state & (1 << ui::AX_STATE_INVISIBLE))) {
+      !(data.HasState(ui::AX_STATE_INVISIBLE))) {
     msaa_state |= STATE_SYSTEM_FOCUSED;
+  }
+
+  // Handle STATE_SYSTEM_LINKED
+  if (GetData().role == ui::AX_ROLE_IMAGE_MAP_LINK ||
+      GetData().role == ui::AX_ROLE_LINK) {
+    msaa_state |= STATE_SYSTEM_LINKED;
   }
 
   return msaa_state;

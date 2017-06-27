@@ -608,23 +608,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_accState(VARIANT var_id,
   if (!owner())
     return E_FAIL;
 
-  auto* manager = Manager();
-  if (!manager)
-    return E_FAIL;
-
-  if (!state)
-    return E_INVALIDARG;
-
-  BrowserAccessibilityComWin* target = GetTargetFromChildID(var_id);
-  if (!target)
-    return E_INVALIDARG;
-
-  state->vt = VT_I4;
-  state->lVal = target->ia_state();
-  if (manager->GetFocus() == owner())
-    state->lVal |= STATE_SYSTEM_FOCUSED;
-
-  return S_OK;
+  return AXPlatformNodeWin::get_accState(var_id, state);
 }
 
 bool BrowserAccessibilityComWin::IsRangeValueSupported() {
@@ -2485,7 +2469,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_anchorTarget(
     return E_INVALIDARG;
 
   BSTR target;
-  if (!(ia_state() & STATE_SYSTEM_LINKED) ||
+  if (!(MSAAState() & STATE_SYSTEM_LINKED) ||
       FAILED(GetStringAttributeAsBstr(ui::AX_ATTR_URL, &target))) {
     target = SysAllocString(L"");
   }
@@ -3718,7 +3702,7 @@ void BrowserAccessibilityComWin::UpdateStep1ComputeWinAttributes() {
     // If this doesn't have a value and is linked then set its value to the url
     // attribute. This allows screen readers to read an empty link's
     // destination.
-    if (value.empty() && (ia_state() & STATE_SYSTEM_LINKED))
+    if (value.empty() && (MSAAState() & STATE_SYSTEM_LINKED))
       value = owner()->GetString16Attribute(ui::AX_ATTR_URL);
   }
 
@@ -3815,11 +3799,15 @@ void BrowserAccessibilityComWin::UpdateStep3FireEvents(
       FireNativeEvent(EVENT_OBJECT_DESCRIPTIONCHANGE);
     if (value() != old_win_attributes_->value)
       FireNativeEvent(EVENT_OBJECT_VALUECHANGE);
-    if (ia_state() != old_win_attributes_->ia_state)
+
+    // Do not fire EVENT_OBJECT_STATECHANGE if the change was due to a focus
+    // change.
+    if ((MSAAState() & ~STATE_SYSTEM_FOCUSED) !=
+        (old_win_attributes_->ia_state & ~STATE_SYSTEM_FOCUSED))
       FireNativeEvent(EVENT_OBJECT_STATECHANGE);
 
     // Handle selection being added or removed.
-    bool is_selected_now = (ia_state() & STATE_SYSTEM_SELECTED) != 0;
+    bool is_selected_now = (MSAAState() & STATE_SYSTEM_SELECTED) != 0;
     bool was_selected_before =
         (old_win_attributes_->ia_state & STATE_SYSTEM_SELECTED) != 0;
     if (is_selected_now || was_selected_before) {
@@ -4934,83 +4922,26 @@ void BrowserAccessibilityComWin::FireNativeEvent(LONG win_event_type) const {
 
 void BrowserAccessibilityComWin::InitRoleAndState() {
   int32_t ia_role = 0;
-  int32_t ia_state = 0;
   base::string16 role_name;
   int32_t ia2_role = 0;
   int32_t ia2_state = IA2_STATE_OPAQUE;
-
-  if (owner()->HasState(ui::AX_STATE_BUSY))
-    ia_state |= STATE_SYSTEM_BUSY;
 
   const auto checked_state = static_cast<ui::AXCheckedState>(
       owner()->GetIntAttribute(ui::AX_ATTR_CHECKED_STATE));
   if (checked_state) {
     ia2_state |= IA2_STATE_CHECKABLE;
-    switch (checked_state) {
-      case ui::AX_CHECKED_STATE_TRUE:
-        ia_state |= owner()->GetRole() == ui::AX_ROLE_TOGGLE_BUTTON
-                        ? STATE_SYSTEM_PRESSED
-                        : STATE_SYSTEM_CHECKED;
-        break;
-      case ui::AX_CHECKED_STATE_MIXED:
-        ia_state |= STATE_SYSTEM_MIXED;
-        break;
-      default:
-        break;
-    }
   }
 
-  if (owner()->HasState(ui::AX_STATE_COLLAPSED))
-    ia_state |= STATE_SYSTEM_COLLAPSED;
-  if (owner()->HasState(ui::AX_STATE_EXPANDED))
-    ia_state |= STATE_SYSTEM_EXPANDED;
-  if (owner()->HasState(ui::AX_STATE_FOCUSABLE))
-    ia_state |= STATE_SYSTEM_FOCUSABLE;
-  if (owner()->HasState(ui::AX_STATE_HASPOPUP))
-    ia_state |= STATE_SYSTEM_HASPOPUP;
   if (owner()->HasIntAttribute(ui::AX_ATTR_INVALID_STATE) &&
       owner()->GetIntAttribute(ui::AX_ATTR_INVALID_STATE) !=
           ui::AX_INVALID_STATE_FALSE)
     ia2_state |= IA2_STATE_INVALID_ENTRY;
-  if (owner()->HasState(ui::AX_STATE_INVISIBLE))
-    ia_state |= STATE_SYSTEM_INVISIBLE;
-  if (owner()->HasState(ui::AX_STATE_LINKED))
-    ia_state |= STATE_SYSTEM_LINKED;
-  if (owner()->HasState(ui::AX_STATE_MULTISELECTABLE)) {
-    ia_state |= STATE_SYSTEM_EXTSELECTABLE;
-    ia_state |= STATE_SYSTEM_MULTISELECTABLE;
-  }
-  // TODO(ctguil): Support STATE_SYSTEM_EXTSELECTABLE/accSelect.
-  if (owner()->HasState(ui::AX_STATE_OFFSCREEN))
-    ia_state |= STATE_SYSTEM_OFFSCREEN;
-  if (owner()->HasState(ui::AX_STATE_PROTECTED))
-    ia_state |= STATE_SYSTEM_PROTECTED;
   if (owner()->HasState(ui::AX_STATE_REQUIRED))
     ia2_state |= IA2_STATE_REQUIRED;
-  if (owner()->HasState(ui::AX_STATE_SELECTABLE))
-    ia_state |= STATE_SYSTEM_SELECTABLE;
-  if (owner()->HasState(ui::AX_STATE_SELECTED))
-    ia_state |= STATE_SYSTEM_SELECTED;
-  if (owner()->HasState(ui::AX_STATE_VISITED))
-    ia_state |= STATE_SYSTEM_TRAVERSED;
-  if (owner()->HasState(ui::AX_STATE_DISABLED))
-    ia_state |= STATE_SYSTEM_UNAVAILABLE;
   if (owner()->HasState(ui::AX_STATE_VERTICAL))
     ia2_state |= IA2_STATE_VERTICAL;
   if (owner()->HasState(ui::AX_STATE_HORIZONTAL))
     ia2_state |= IA2_STATE_HORIZONTAL;
-  if (owner()->HasState(ui::AX_STATE_VISITED))
-    ia_state |= STATE_SYSTEM_TRAVERSED;
-
-  // Expose whether or not the mouse is over an element, but suppress
-  // this for tests because it can make the test results flaky depending
-  // on the position of the mouse.
-  BrowserAccessibilityStateImpl* accessibility_state =
-      BrowserAccessibilityStateImpl::GetInstance();
-  if (!accessibility_state->disable_hot_tracking_for_testing()) {
-    if (owner()->HasState(ui::AX_STATE_HOVERED))
-      ia_state |= STATE_SYSTEM_HOTTRACKED;
-  }
 
   if (owner()->HasState(ui::AX_STATE_EDITABLE))
     ia2_state |= IA2_STATE_EDITABLE;
@@ -5037,7 +4968,6 @@ void BrowserAccessibilityComWin::InitRoleAndState() {
       break;
     case ui::AX_ROLE_ARTICLE:
       ia_role = ROLE_SYSTEM_DOCUMENT;
-      ia_state |= STATE_SYSTEM_READONLY;
       break;
     case ui::AX_ROLE_AUDIO:
       ia_role = ROLE_SYSTEM_GROUPING;
@@ -5052,7 +4982,6 @@ void BrowserAccessibilityComWin::InitRoleAndState() {
       break;
     case ui::AX_ROLE_BUSY_INDICATOR:
       ia_role = ROLE_SYSTEM_ANIMATION;
-      ia_state |= STATE_SYSTEM_READONLY;
       break;
     case ui::AX_ROLE_BUTTON:
       ia_role = ROLE_SYSTEM_PUSHBUTTON;
@@ -5104,7 +5033,6 @@ void BrowserAccessibilityComWin::InitRoleAndState() {
     case ui::AX_ROLE_DEFINITION:
       role_name = html_tag;
       ia2_role = IA2_ROLE_PARAGRAPH;
-      ia_state |= STATE_SYSTEM_READONLY;
       break;
     case ui::AX_ROLE_DESCRIPTION_LIST_DETAIL:
       role_name = html_tag;
@@ -5114,11 +5042,9 @@ void BrowserAccessibilityComWin::InitRoleAndState() {
     case ui::AX_ROLE_DESCRIPTION_LIST:
       role_name = html_tag;
       ia_role = ROLE_SYSTEM_LIST;
-      ia_state |= STATE_SYSTEM_READONLY;
       break;
     case ui::AX_ROLE_DESCRIPTION_LIST_TERM:
       ia_role = ROLE_SYSTEM_LISTITEM;
-      ia_state |= STATE_SYSTEM_READONLY;
       break;
     case ui::AX_ROLE_DETAILS:
       role_name = html_tag;
@@ -5134,8 +5060,6 @@ void BrowserAccessibilityComWin::InitRoleAndState() {
     case ui::AX_ROLE_ROOT_WEB_AREA:
     case ui::AX_ROLE_WEB_AREA:
       ia_role = ROLE_SYSTEM_DOCUMENT;
-      ia_state |= STATE_SYSTEM_READONLY;
-      ia_state |= STATE_SYSTEM_FOCUSABLE;
       break;
     case ui::AX_ROLE_EMBEDDED_OBJECT:
       if (owner()->PlatformChildCount()) {
@@ -5173,10 +5097,6 @@ void BrowserAccessibilityComWin::InitRoleAndState() {
       break;
     case ui::AX_ROLE_GRID:
       ia_role = ROLE_SYSTEM_TABLE;
-      // TODO(aleventhal) this changed between ARIA 1.0 and 1.1,
-      // need to determine whether grids/treegrids should really be readonly
-      // or editable by default
-      // ia_state |= STATE_SYSTEM_READONLY;
       break;
     case ui::AX_ROLE_GROUP:
       ia_role = ROLE_SYSTEM_GROUPING;
@@ -5190,24 +5110,19 @@ void BrowserAccessibilityComWin::InitRoleAndState() {
     case ui::AX_ROLE_IFRAME:
       ia_role = ROLE_SYSTEM_DOCUMENT;
       ia2_role = IA2_ROLE_INTERNAL_FRAME;
-      ia_state = STATE_SYSTEM_READONLY;
       break;
     case ui::AX_ROLE_IFRAME_PRESENTATIONAL:
       ia_role = ROLE_SYSTEM_GROUPING;
       break;
     case ui::AX_ROLE_IMAGE:
       ia_role = ROLE_SYSTEM_GRAPHIC;
-      ia_state |= STATE_SYSTEM_READONLY;
       break;
     case ui::AX_ROLE_IMAGE_MAP:
       role_name = html_tag;
       ia2_role = IA2_ROLE_IMAGE_MAP;
-      ia_state |= STATE_SYSTEM_READONLY;
       break;
     case ui::AX_ROLE_IMAGE_MAP_LINK:
       ia_role = ROLE_SYSTEM_LINK;
-      ia_state |= STATE_SYSTEM_LINKED;
-      ia_state |= STATE_SYSTEM_READONLY;
       break;
     case ui::AX_ROLE_INPUT_TIME:
       ia_role = ROLE_SYSTEM_GROUPING;
@@ -5219,11 +5134,9 @@ void BrowserAccessibilityComWin::InitRoleAndState() {
       break;
     case ui::AX_ROLE_LINK:
       ia_role = ROLE_SYSTEM_LINK;
-      ia_state |= STATE_SYSTEM_LINKED;
       break;
     case ui::AX_ROLE_LIST:
       ia_role = ROLE_SYSTEM_LIST;
-      ia_state |= STATE_SYSTEM_READONLY;
       break;
     case ui::AX_ROLE_LIST_BOX:
       ia_role = ROLE_SYSTEM_LIST;
@@ -5233,7 +5146,6 @@ void BrowserAccessibilityComWin::InitRoleAndState() {
       break;
     case ui::AX_ROLE_LIST_ITEM:
       ia_role = ROLE_SYSTEM_LISTITEM;
-      ia_state |= STATE_SYSTEM_READONLY;
       break;
     case ui::AX_ROLE_MAIN:
       ia_role = ROLE_SYSTEM_GROUPING;
@@ -5308,7 +5220,6 @@ void BrowserAccessibilityComWin::InitRoleAndState() {
       break;
     case ui::AX_ROLE_PROGRESS_INDICATOR:
       ia_role = ROLE_SYSTEM_PROGRESSBAR;
-      ia_state |= STATE_SYSTEM_READONLY;
       break;
     case ui::AX_ROLE_RADIO_BUTTON:
       ia_role = ROLE_SYSTEM_RADIOBUTTON;
@@ -5341,12 +5252,10 @@ void BrowserAccessibilityComWin::InitRoleAndState() {
     case ui::AX_ROLE_RULER:
       ia_role = ROLE_SYSTEM_CLIENT;
       ia2_role = IA2_ROLE_RULER;
-      ia_state |= STATE_SYSTEM_READONLY;
       break;
     case ui::AX_ROLE_SCROLL_AREA:
       ia_role = ROLE_SYSTEM_CLIENT;
       ia2_role = IA2_ROLE_SCROLL_PANE;
-      ia_state |= STATE_SYSTEM_READONLY;
       ia2_state &= ~(IA2_STATE_EDITABLE);
       break;
     case ui::AX_ROLE_SCROLL_BAR:
@@ -5392,7 +5301,6 @@ void BrowserAccessibilityComWin::InitRoleAndState() {
     case ui::AX_ROLE_TABLE_HEADER_CONTAINER:
       ia_role = ROLE_SYSTEM_GROUPING;
       ia2_role = IA2_ROLE_SECTION;
-      ia_state |= STATE_SYSTEM_READONLY;
       break;
     case ui::AX_ROLE_TAB_LIST:
       ia_role = ROLE_SYSTEM_PAGETABLIST;
@@ -5402,7 +5310,6 @@ void BrowserAccessibilityComWin::InitRoleAndState() {
       break;
     case ui::AX_ROLE_TERM:
       ia_role = ROLE_SYSTEM_LISTITEM;
-      ia_state |= STATE_SYSTEM_READONLY;
       break;
     case ui::AX_ROLE_TOGGLE_BUTTON:
       ia_role = ROLE_SYSTEM_PUSHBUTTON;
@@ -5416,8 +5323,6 @@ void BrowserAccessibilityComWin::InitRoleAndState() {
       } else {
         ia2_state |= IA2_STATE_SINGLE_LINE;
       }
-      if (owner()->HasState(ui::AX_STATE_READ_ONLY))
-        ia_state |= STATE_SYSTEM_READONLY;
       ia2_state |= IA2_STATE_SELECTABLE_TEXT;
       break;
     case ui::AX_ROLE_ABBR:
@@ -5428,15 +5333,12 @@ void BrowserAccessibilityComWin::InitRoleAndState() {
       break;
     case ui::AX_ROLE_TIMER:
       ia_role = ROLE_SYSTEM_CLOCK;
-      ia_state |= STATE_SYSTEM_READONLY;
       break;
     case ui::AX_ROLE_TOOLBAR:
       ia_role = ROLE_SYSTEM_TOOLBAR;
-      ia_state |= STATE_SYSTEM_READONLY;
       break;
     case ui::AX_ROLE_TOOLTIP:
       ia_role = ROLE_SYSTEM_TOOLTIP;
-      ia_state |= STATE_SYSTEM_READONLY;
       break;
     case ui::AX_ROLE_TREE:
       ia_role = ROLE_SYSTEM_OUTLINE;
@@ -5469,22 +5371,6 @@ void BrowserAccessibilityComWin::InitRoleAndState() {
       break;
   }
 
-  // Compute the final value of READONLY for MSAA.
-  //
-  // We always set the READONLY state for elements that have the
-  // aria-readonly attribute and for a few roles (in the switch above),
-  // including read-only text fields.
-  // The majority of focusable controls should not have the read-only state
-  // set.
-  if (owner()->HasState(ui::AX_STATE_FOCUSABLE) &&
-      ia_role != ROLE_SYSTEM_DOCUMENT && ia_role != ROLE_SYSTEM_TEXT) {
-    ia_state &= ~(STATE_SYSTEM_READONLY);
-  }
-  if (!owner()->HasState(ui::AX_STATE_READ_ONLY))
-    ia_state &= ~(STATE_SYSTEM_READONLY);
-  if (owner()->GetBoolAttribute(ui::AX_ATTR_ARIA_READONLY))
-    ia_state |= STATE_SYSTEM_READONLY;
-
   // The role should always be set.
   DCHECK(!role_name.empty() || ia_role);
 
@@ -5494,7 +5380,7 @@ void BrowserAccessibilityComWin::InitRoleAndState() {
     ia2_role = ia_role;
 
   win_attributes_->ia_role = ia_role;
-  win_attributes_->ia_state = ia_state;
+  win_attributes_->ia_state = MSAAState();
   win_attributes_->role_name = role_name;
   win_attributes_->ia2_role = ia2_role;
   win_attributes_->ia2_state = ia2_state;

@@ -114,6 +114,8 @@ class AuraLinuxApplication
     return false;
   }
 
+  bool ShouldIgnoreHoveredStateForTesting() override { return false; }
+
  private:
   friend struct base::DefaultSingletonTraits<AuraLinuxApplication>;
 

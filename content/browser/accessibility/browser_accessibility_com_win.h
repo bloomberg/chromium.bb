@@ -728,7 +728,6 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
  private:
   // Private accessors.
   int32_t ia_role() const { return win_attributes_->ia_role; }
-  int32_t ia_state() const { return win_attributes_->ia_state; }
   int32_t ia2_role() const { return win_attributes_->ia2_role; }
   int32_t ia2_state() const { return win_attributes_->ia2_state; }
   const std::vector<base::string16>& ia2_attributes() const {
