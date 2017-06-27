@@ -7,23 +7,17 @@ package org.chromium.chrome.browser.offlinepages.prefetch;
 import android.content.Context;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.annotations.SuppressFBWarnings;
-import org.chromium.base.library_loader.LibraryProcessType;
-import org.chromium.base.library_loader.ProcessInitException;
-import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
+import org.chromium.chrome.browser.background_task_scheduler.NativeBackgroundTask;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.components.background_task_scheduler.BackgroundTask;
 import org.chromium.components.background_task_scheduler.BackgroundTask.TaskFinishedCallback;
 import org.chromium.components.background_task_scheduler.BackgroundTaskScheduler;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
 import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.background_task_scheduler.TaskInfo;
 import org.chromium.components.background_task_scheduler.TaskParameters;
-import org.chromium.content.browser.BrowserStartupController;
 
 import java.util.concurrent.TimeUnit;
 
@@ -34,7 +28,7 @@ import java.util.concurrent.TimeUnit;
  * happens when a task fires.
  */
 @JNINamespace("offline_pages::prefetch")
-public class PrefetchBackgroundTask implements BackgroundTask {
+public class PrefetchBackgroundTask extends NativeBackgroundTask {
     public static final long DEFAULT_START_DELAY_SECONDS = 15 * 60;
 
     private static final String TAG = "OPPrefetchBGTask";
@@ -43,22 +37,20 @@ public class PrefetchBackgroundTask implements BackgroundTask {
 
     private long mNativeTask = 0;
     private TaskFinishedCallback mTaskFinishedCallback = null;
+    private Profile mProfile = null;
 
-    private Profile mProfile;
-
-    public PrefetchBackgroundTask() {
-        mProfile = Profile.getLastUsedProfile();
-    }
-
-    public PrefetchBackgroundTask(Profile profile) {
-        mProfile = profile;
-    }
+    public PrefetchBackgroundTask() {}
 
     static BackgroundTaskScheduler getScheduler() {
         if (sSchedulerInstance != null) {
             return sSchedulerInstance;
         }
         return BackgroundTaskSchedulerFactory.getScheduler();
+    }
+
+    protected Profile getProfile() {
+        if (mProfile == null) mProfile = Profile.getLastUsedProfile();
+        return mProfile;
     }
 
     /**
@@ -94,39 +86,47 @@ public class PrefetchBackgroundTask implements BackgroundTask {
                 ContextUtils.getApplicationContext(), TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID);
     }
 
-    /**
-     * Initializer that runs when the task wakes up Chrome.
-     *
-     * Loads the native library and then calls into the PrefetchService, which then manages the
-     * lifetime of this task.
-     */
     @Override
-    public boolean onStartTask(
+    public int onStartTaskBeforeNativeLoaded(
             Context context, TaskParameters taskParameters, TaskFinishedCallback callback) {
-        assert taskParameters.getTaskId() == TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID;
-        if (mNativeTask != 0) return false;
-
         // TODO(dewittj): Ensure that the conditions are right to do work.  If the maximum time to
         // wait is reached, it is possible the task will fire even if network conditions are
-        // incorrect.
-
-        // Ensures that native potion of the browser is launched.
-        launchBrowserIfNecessary(context);
-
-        mTaskFinishedCallback = callback;
-        return nativeStartPrefetchTask(mProfile);
+        // incorrect.  We want:
+        // * Unmetered WiFi connection
+        // * >50% battery
+        // * Preferences enabled.
+        return NativeBackgroundTask.LOAD_NATIVE;
     }
 
     @Override
-    public boolean onStopTask(Context context, TaskParameters taskParameters) {
+    protected void onStartTaskWithNative(
+            Context context, TaskParameters taskParameters, TaskFinishedCallback callback) {
         assert taskParameters.getTaskId() == TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID;
-        if (mNativeTask == 0) return false;
+        if (mNativeTask != 0) return;
+
+        mTaskFinishedCallback = callback;
+        nativeStartPrefetchTask(getProfile());
+    }
+
+    @Override
+    protected boolean onStopTaskBeforeNativeLoaded(Context context, TaskParameters taskParameters) {
+        // TODO(dewittj): Implement this properly.
+        return true;
+    }
+
+    @Override
+    protected boolean onStopTaskWithNative(Context context, TaskParameters taskParameters) {
+        assert taskParameters.getTaskId() == TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID;
+        assert mNativeTask != 0;
 
         return nativeOnStopTask(mNativeTask);
     }
 
     @Override
-    public void reschedule(Context context) {}
+    public void reschedule(Context context) {
+        // TODO(dewittj): Set the backoff time appropriately.
+        scheduleTask(0);
+    }
 
     /**
      * Called during construction of the native task.
@@ -148,26 +148,6 @@ public class PrefetchBackgroundTask implements BackgroundTask {
         assert mTaskFinishedCallback != null;
         mTaskFinishedCallback.taskFinished(needsReschedule);
         setNativeTask(0);
-    }
-
-    @VisibleForTesting
-    @SuppressFBWarnings("DM_EXIT")
-    void launchBrowserIfNecessary(Context context) {
-        if (BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                        .isStartupSuccessfullyCompleted()) {
-            return;
-        }
-
-        // TODO(https://crbug.com/717251): Remove when BackgroundTaskScheduler supports loading the
-        // native library.
-        try {
-            ChromeBrowserInitializer.getInstance(context).handleSynchronousStartup();
-        } catch (ProcessInitException e) {
-            Log.e(TAG, "ProcessInitException while starting the browser process.");
-            // Since the library failed to initialize nothing in the application can work, so kill
-            // the whole application not just the activity.
-            System.exit(-1);
-        }
     }
 
     @VisibleForTesting

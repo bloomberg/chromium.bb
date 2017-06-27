@@ -22,7 +22,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.background_task_scheduler.BackgroundTask.TaskFinishedCallback;
@@ -56,7 +55,6 @@ public class PrefetchBackgroundTaskTest {
         private Semaphore mStopSemaphore = new Semaphore(0);
 
         public TestPrefetchBackgroundTask(TaskInfo taskInfo) {
-            super(Profile.getLastUsedProfile());
             mTaskInfo = taskInfo;
         }
 

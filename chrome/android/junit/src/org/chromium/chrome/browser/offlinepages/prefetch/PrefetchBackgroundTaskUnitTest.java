@@ -9,10 +9,12 @@ import android.content.Context;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -20,6 +22,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.mockito.invocation.InvocationOnMock;
@@ -30,6 +35,9 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.internal.ShadowExtractor;
 import org.robolectric.shadows.multidex.ShadowMultiDex;
 
+import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.chrome.browser.init.BrowserParts;
+import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.components.background_task_scheduler.BackgroundTask.TaskFinishedCallback;
 import org.chromium.components.background_task_scheduler.BackgroundTaskScheduler;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
@@ -76,12 +84,33 @@ public class PrefetchBackgroundTaskUnitTest {
     }
 
     @Spy
-    private PrefetchBackgroundTask mPrefetchBackgroundTask = new PrefetchBackgroundTask(null);
+    private PrefetchBackgroundTask mPrefetchBackgroundTask = new PrefetchBackgroundTask();
+    @Mock
+    private ChromeBrowserInitializer mChromeBrowserInitializer;
+    @Captor
+    ArgumentCaptor<BrowserParts> mBrowserParts;
     private ShadowBackgroundTaskScheduler mShadowTaskScheduler;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        doNothing().when(mChromeBrowserInitializer).handlePreNativeStartup(any(BrowserParts.class));
+        try {
+            doAnswer(new Answer<Void>() {
+                @Override
+                public Void answer(InvocationOnMock invocation) {
+                    mBrowserParts.getValue().finishNativeInitialization();
+                    return null;
+                }
+            })
+                    .when(mChromeBrowserInitializer)
+                    .handlePostNativeStartup(eq(true), mBrowserParts.capture());
+        } catch (ProcessInitException ex) {
+            fail("Unexpected exception while initializing mock of ChromeBrowserInitializer.");
+        }
+
+        ChromeBrowserInitializer.setForTesting(mChromeBrowserInitializer);
+
         doAnswer(new Answer() {
             public Object answer(InvocationOnMock invocation) {
                 mPrefetchBackgroundTask.setNativeTask(1);
@@ -91,7 +120,7 @@ public class PrefetchBackgroundTaskUnitTest {
                 .when(mPrefetchBackgroundTask)
                 .nativeStartPrefetchTask(any());
         doReturn(true).when(mPrefetchBackgroundTask).nativeOnStopTask(1);
-        doNothing().when(mPrefetchBackgroundTask).launchBrowserIfNecessary(any());
+        doReturn(null).when(mPrefetchBackgroundTask).getProfile();
 
         mShadowTaskScheduler = (ShadowBackgroundTaskScheduler) ShadowExtractor.extract(
                 BackgroundTaskSchedulerFactory.getScheduler());
