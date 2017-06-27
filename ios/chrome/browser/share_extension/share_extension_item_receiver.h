@@ -18,14 +18,13 @@ class ReadingListModel;
 // when a new file is created or when application is put in foreground.
 @interface ShareExtensionItemReceiver : NSObject
 
-+ (instancetype)sharedInstance;
-
-// Sets the bookmark and reading list models to use. |shutdown| must be called
-// before other models are set.
-// The receiver will start observe the share extension folder and send items to
-// these models.
-- (void)setBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
-        readingListModel:(ReadingListModel*)readingListModel;
+// Initialize the ShareExtensionItemReceiver with the bookmark and reading
+// list models to use. |shutdown| must be called before the last reference
+// to the object is released.
+- (instancetype)initWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
+                     readingListModel:(ReadingListModel*)readingListModel
+    NS_DESIGNATED_INITIALIZER;
+- (instancetype)init NS_UNAVAILABLE;
 
 // Stops observers and pending operations.
 - (void)shutdown;

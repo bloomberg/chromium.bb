@@ -14,6 +14,7 @@ class BookmarkModel;
 }
 
 class ReadingListModel;
+@class ShareExtensionItemReceiver;
 
 // AuthenticationService is the Chrome interface to the iOS shared
 // authentication library.
@@ -21,25 +22,33 @@ class ShareExtensionService : public KeyedService,
                               public bookmarks::BaseBookmarkModelObserver,
                               public ReadingListModelObserver {
  public:
-  explicit ShareExtensionService(bookmarks::BookmarkModel* bookmark_model,
-                                 ReadingListModel* reading_list_model);
+  ShareExtensionService(bookmarks::BookmarkModel* bookmark_model,
+                        ReadingListModel* reading_list_model);
   ~ShareExtensionService() override;
 
   void Initialize();
+
+  // KeyedService implementation.
   void Shutdown() override;
+
+  // ReadingListModelObserver implementation.
   void ReadingListModelLoaded(const ReadingListModel* model) override;
+
+  // BookmarkModelObserver implementation.
   void BookmarkModelLoaded(bookmarks::BookmarkModel* model,
                            bool ids_reassigned) override;
-
-  void BookmarkModelChanged() override {}
+  void BookmarkModelChanged() override;
 
  private:
+  // Invoked when any of the observed model has finished loading. Will
+  // initialize the ShareExtensionItemReceiver if they are all loaded.
   void AnyModelLoaded();
 
-  ReadingListModel* reading_list_model_;  // not owned.
+  ReadingListModel* reading_list_model_;
   bool reading_list_model_loaded_;
-  bookmarks::BookmarkModel* bookmark_model_;  // not owned;
+  bookmarks::BookmarkModel* bookmark_model_;
   bool bookmark_model_loaded_;
+  __strong ShareExtensionItemReceiver* receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(ShareExtensionService);
 };
