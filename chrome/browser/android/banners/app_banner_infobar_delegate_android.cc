@@ -41,7 +41,6 @@ namespace banners {
 bool AppBannerInfoBarDelegateAndroid::Create(
     content::WebContents* web_contents,
     base::WeakPtr<AppBannerManager> weak_manager,
-    const base::string16& app_title,
     std::unique_ptr<ShortcutInfo> shortcut_info,
     const SkBitmap& primary_icon,
     const SkBitmap& badge_icon,
@@ -55,8 +54,8 @@ bool AppBannerInfoBarDelegateAndroid::Create(
 
   auto infobar_delegate =
       base::WrapUnique(new banners::AppBannerInfoBarDelegateAndroid(
-          weak_manager, app_title, std::move(shortcut_info), primary_icon,
-          badge_icon, event_request_id, is_webapk, webapk_install_source));
+          weak_manager, std::move(shortcut_info), primary_icon, badge_icon,
+          event_request_id, is_webapk, webapk_install_source));
   auto* raw_delegate = infobar_delegate.get();
   auto infobar = base::MakeUnique<AppBannerInfoBarAndroid>(
       std::move(infobar_delegate), url, is_webapk);
@@ -203,7 +202,6 @@ void AppBannerInfoBarDelegateAndroid::UpdateStateForInstalledWebAPK(
 
 AppBannerInfoBarDelegateAndroid::AppBannerInfoBarDelegateAndroid(
     base::WeakPtr<AppBannerManager> weak_manager,
-    const base::string16& app_title,
     std::unique_ptr<ShortcutInfo> shortcut_info,
     const SkBitmap& primary_icon,
     const SkBitmap& badge_icon,
@@ -211,7 +209,7 @@ AppBannerInfoBarDelegateAndroid::AppBannerInfoBarDelegateAndroid(
     bool is_webapk,
     webapk::InstallSource webapk_install_source)
     : weak_manager_(weak_manager),
-      app_title_(app_title),
+      app_title_(shortcut_info->name),
       shortcut_info_(std::move(shortcut_info)),
       primary_icon_(primary_icon),
       badge_icon_(badge_icon),

@@ -39,7 +39,6 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
   // app, and adds the infobar to the InfoBarManager for |web_contents|.
   static bool Create(content::WebContents* web_contents,
                      base::WeakPtr<AppBannerManager> weak_manager,
-                     const base::string16& app_title,
                      std::unique_ptr<ShortcutInfo> info,
                      const SkBitmap& primary_icon,
                      const SkBitmap& badge_icon,
@@ -94,7 +93,6 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
   // Delegate for promoting a web app.
   AppBannerInfoBarDelegateAndroid(
       base::WeakPtr<AppBannerManager> weak_manager,
-      const base::string16& app_title,
       std::unique_ptr<ShortcutInfo> info,
       const SkBitmap& primary_icon,
       const SkBitmap& badge_icon,
