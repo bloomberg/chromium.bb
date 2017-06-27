@@ -12,6 +12,8 @@ if (enable_oop_heap_profiling) {
       "memlog_sender.cc",
       "memlog_sender.h",
       "memlog_sender_pipe.h",
+      "memlog_sender_pipe_posix.cc",
+      "memlog_sender_pipe_posix.h",
       "memlog_sender_pipe_win.cc",
       "memlog_sender_pipe_win.h",
       "memlog_stream.cc",

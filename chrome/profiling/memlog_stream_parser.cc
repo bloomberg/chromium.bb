@@ -24,6 +24,8 @@ using AddressVector = base::StackVector<Address, 128>;
 MemlogStreamParser::Block::Block(std::unique_ptr<char[]> d, size_t s)
     : data(std::move(d)), size(s) {}
 
+MemlogStreamParser::Block::~Block() {}
+
 MemlogStreamParser::MemlogStreamParser(MemlogReceiver* receiver)
     : receiver_(receiver) {}
 

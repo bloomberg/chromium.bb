@@ -9,3 +9,5 @@ Currently this is used for out-of-process logging of heap profiling data and
 is enabled by setting the GN flag `enable_oop_heap_profiling`. The in-process
 code that communicates with the profiling process is in
 `//chrome/common/profiling`.
+
+The browser must be started with `--memlog`.

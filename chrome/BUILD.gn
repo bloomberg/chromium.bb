@@ -391,7 +391,6 @@ if (is_win) {
       "//chrome/common:features",
       "//chrome/install_static:install_static_util",
       "//chrome/install_static:secondary_module",
-      "//chrome/profiling",
       "//chrome_elf",
       "//components/crash/content/app",
       "//components/policy:generated",
@@ -1415,6 +1414,7 @@ group("browser_dependencies") {
   public_deps = [
     "//chrome/browser",
     "//chrome/common",
+    "//chrome/profiling",
     "//components/sync",
   ]
   if (enable_plugins) {
