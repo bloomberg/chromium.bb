@@ -6,7 +6,6 @@
 
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
-#include "media/capture/video/chromeos/camera_hal_dispatcher_impl.h"
 #include "media/capture/video/linux/video_capture_device_factory_linux.h"
 
 namespace media {
@@ -26,17 +25,9 @@ bool VideoCaptureDeviceFactoryChromeOS::Init() {
     LOG(ERROR) << "Module thread failed to start";
     return false;
   }
-
-  if (!CameraHalDispatcherImpl::GetInstance()->IsStarted() &&
-      !CameraHalDispatcherImpl::GetInstance()->Start()) {
-    LOG(ERROR) << "Failed to start CameraHalDispatcherImpl";
-    return false;
-  }
-
   camera_hal_delegate_ =
       new CameraHalDelegate(camera_hal_ipc_thread_.task_runner());
-  camera_hal_delegate_->RegisterCameraClient();
-  return true;
+  return camera_hal_delegate_->StartCameraModuleIpc();
 }
 
 std::unique_ptr<VideoCaptureDevice>
