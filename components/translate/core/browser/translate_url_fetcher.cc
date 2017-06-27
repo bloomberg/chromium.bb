@@ -22,13 +22,10 @@ const int kMaxRetry = 16;
 
 }  // namespace
 
-TranslateURLFetcher::TranslateURLFetcher(int id) : id_(id),
-                                                   state_(IDLE),
-                                                   retry_count_(0) {
-}
+TranslateURLFetcher::TranslateURLFetcher(int id)
+    : id_(id), state_(IDLE), retry_count_(0) {}
 
-TranslateURLFetcher::~TranslateURLFetcher() {
-}
+TranslateURLFetcher::~TranslateURLFetcher() {}
 
 bool TranslateURLFetcher::Request(
     const GURL& url,
@@ -63,22 +60,17 @@ bool TranslateURLFetcher::Request(
           description:
             "Chrome can provide translations for the web sites visited by the "
             "user. If this feature is enabled, Chrome sends network requests "
-            "to download the list of supported languages, a library to perform "
-            "translations, and a predictive model to know when to offer "
-            "translation."
+            "to download the list of supported languages and a library to "
+            "perform translations."
           trigger:
-            "When Chrome starts, it downloads the list of supported langagues "
-            "for translation, and a predictive model to infer whether a "
-            "translation from the detected language to some other language "
-            "would be useful/accepted by the user. The model is cached and the "
-            "link to the latest model is provided by field study. If the "
-            "latest model is already cached, it is not fetched. The first time "
-            "the model decides to offer translation of a web site, it triggers "
-            "a popup to ask if user wants a translation and if user approves, "
+            "When Chrome starts, it downloads the list of supported languages "
+            "for translation. The first time Chrome decides to offer "
+            "translation of a web site, it triggers a popup to ask "
+            "if user wants a translation and if user approves, "
             "translation library is downloaded. The library is cached for a "
             "day and is not fetched if it is available and fresh."
           data:
-            "Current locale is sent to fetch the list of supported lanaguges. "
+            "Current locale is sent to fetch the list of supported languages. "
             "Translation library that is obtained via this interface would "
             "perform actual translation, and it will send words and phrases in "
             "the site to the server to translate it, but this request doesn't "

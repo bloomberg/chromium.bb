@@ -18,10 +18,11 @@
 #include "base/strings/string_util.h"
 #include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/machine_intelligence/proto/ranker_model.pb.h"
+#include "components/machine_intelligence/proto/translate_ranker_model.pb.h"
+#include "components/machine_intelligence/ranker_model.h"
 #include "components/metrics/proto/translate_event.pb.h"
-#include "components/translate/core/browser/proto/ranker_model.pb.h"
-#include "components/translate/core/browser/proto/translate_ranker_model.pb.h"
-#include "components/translate/core/browser/ranker_model.h"
+#include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/common/translate_switches.h"
 #include "components/ukm/public/ukm_entry_builder.h"
 #include "components/ukm/public/ukm_recorder.h"
@@ -32,9 +33,10 @@ namespace translate {
 
 namespace {
 
-using chrome_intelligence::RankerModel;
-using chrome_intelligence::RankerModelProto;
-using chrome_intelligence::TranslateRankerModel;
+using machine_intelligence::RankerModel;
+using machine_intelligence::RankerModelProto;
+using machine_intelligence::TranslateRankerModel;
+using machine_intelligence::RankerModelStatus;
 
 const double kTranslationOfferDefaultThreshold = 0.5;
 
@@ -141,11 +143,12 @@ TranslateRankerImpl::TranslateRankerImpl(const base::FilePath& model_path,
           translate::kTranslateRankerDecisionOverride)),
       weak_ptr_factory_(this) {
   if (is_query_enabled_ || is_enforcement_enabled_) {
-    model_loader_ = base::MakeUnique<RankerModelLoader>(
+    model_loader_ = base::MakeUnique<machine_intelligence::RankerModelLoader>(
         base::Bind(&ValidateModel),
         base::Bind(&TranslateRankerImpl::OnModelAvailable,
                    weak_ptr_factory_.GetWeakPtr()),
-        model_path, model_url, kUmaPrefix);
+        TranslateDownloadManager::GetInstance()->request_context(), model_path,
+        model_url, kUmaPrefix);
     // Kick off the initial load from cache.
     model_loader_->NotifyOfRankerActivity();
   }

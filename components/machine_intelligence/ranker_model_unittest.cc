@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/translate/core/browser/ranker_model.h"
+#include "components/machine_intelligence/ranker_model.h"
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
-#include "components/translate/core/browser/proto/ranker_model.pb.h"
+#include "components/machine_intelligence/proto/ranker_model.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
-using chrome_intelligence::RankerModel;
+using machine_intelligence::RankerModel;
 
 const char kModelURL[] = "https://some.url.net/model";
 

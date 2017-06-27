@@ -88724,6 +88724,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="UpdateClient"/>
   <suffix name="WebResourceService"/>
   <suffix name="LargeIconService"/>
+  <suffix name="MachineIntelligence"/>
   <affected-histogram name="DataUse.MessageSize"/>
 </histogram_suffixes>
 

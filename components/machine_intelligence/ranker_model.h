@@ -2,19 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_TRANSLATE_CORE_BROWSER_RANKER_MODEL_H_
-#define COMPONENTS_TRANSLATE_CORE_BROWSER_RANKER_MODEL_H_
+#ifndef COMPONENTS_MACHINE_INTELLIGENCE_RANKER_MODEL_H_
+#define COMPONENTS_MACHINE_INTELLIGENCE_RANKER_MODEL_H_
 
 #include <memory>
 #include <string>
 
 #include "base/macros.h"
 
-namespace chrome_intelligence {
+namespace machine_intelligence {
 
 class RankerModelProto;
 
-// Wrapper class for chrome_intelligence::TranslateRankerProto.
 class RankerModel {
  public:
   RankerModel();
@@ -41,6 +40,6 @@ class RankerModel {
   DISALLOW_COPY_AND_ASSIGN(RankerModel);
 };
 
-}  // namesapce chrome_intelligence
+}  // namespace machine_intelligence
 
-#endif  // COMPONENTS_TRANSLATE_CORE_BROWSER_RANKER_MODEL_H_
+#endif  // COMPONENTS_MACHINE_INTELLIGENCE_RANKER_MODEL_H_

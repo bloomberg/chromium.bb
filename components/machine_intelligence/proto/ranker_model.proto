@@ -10,7 +10,7 @@ option optimize_for = LITE_RUNTIME;
 
 import "translate_ranker_model.proto";
 
-package chrome_intelligence;
+package machine_intelligence;
 
 // Metadata for a ranker model instance. This data describes how the ranker
 // model should be interpreted/used.
