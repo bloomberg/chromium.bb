@@ -1367,6 +1367,17 @@ extern const char kOfficeEditingComponentAppDescription[];
 extern const char kSmartVirtualKeyboardName[];
 extern const char kSmartVirtualKeyboardDescription[];
 
+extern const char kSpuriousPowerButtonWindowName[];
+extern const char kSpuriousPowerButtonWindowDescription[];
+extern const char kSpuriousPowerButtonAccelCountName[];
+extern const char kSpuriousPowerButtonAccelCountDescription[];
+extern const char kSpuriousPowerButtonScreenAccelName[];
+extern const char kSpuriousPowerButtonScreenAccelDescription[];
+extern const char kSpuriousPowerButtonKeyboardAccelName[];
+extern const char kSpuriousPowerButtonKeyboardAccelDescription[];
+extern const char kSpuriousPowerButtonLidAngleChangeName[];
+extern const char kSpuriousPowerButtonLidAngleChangeDescription[];
+
 extern const char kTeamDrivesName[];
 extern const char kTeamDrivesDescription[];
 

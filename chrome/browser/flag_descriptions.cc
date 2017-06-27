@@ -3049,6 +3049,37 @@ const char kEnableEncryptionMigrationDescription[] =
     "If enabled and the device supports ARC, the user will be asked to update "
     "the encryption of user data when the user signs in.";
 
+// Spurious power button detection
+
+const char kSpuriousPowerButtonWindowName[] = "Spurious power button window";
+const char kSpuriousPowerButtonWindowDescription[] =
+    "Number of recent accelerometer samples to examine to determine if a power "
+    "button event was spurious.";
+
+const char kSpuriousPowerButtonAccelCountName[] =
+    "Spurious power button acceleration count";
+const char kSpuriousPowerButtonAccelCountDescription[] =
+    "Number of recent acceleration samples that must meet or exceed exceed the "
+    "threshold in order for a power button event to be considered spurious.";
+
+const char kSpuriousPowerButtonScreenAccelName[] =
+    "Spurious power button screen acceleration threshold";
+const char kSpuriousPowerButtonScreenAccelDescription[] =
+    "Threshold (in m/s^2, disregarding gravity) that screen acceleration must "
+    "meet or exceed for a power button event to be considered spurious.";
+
+const char kSpuriousPowerButtonKeyboardAccelName[] =
+    "Spurious power button keyboard acceleration threshold";
+const char kSpuriousPowerButtonKeyboardAccelDescription[] =
+    "Threshold (in m/s^2, disregarding gravity) that keyboard acceleration "
+    "must meet or exceed for a power button event to be considered spurious.";
+
+const char kSpuriousPowerButtonLidAngleChangeName[] =
+    "Spurious power button lid angle change threshold";
+const char kSpuriousPowerButtonLidAngleChangeDescription[] =
+    "Change in lid angle (i.e. hinge between keyboard and screen) that must be "
+    "met or exceeded for a power button event to be considered spurious.";
+
 #endif  // #if defined(OS_CHROMEOS)
 
 #if defined(OS_ANDROID)
