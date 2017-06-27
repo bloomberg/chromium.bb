@@ -1,19 +1,17 @@
 <!DOCTYPE html>
+<html class="reftest-wait">
+<link rel="match" href="variable-box-font-ref.html">
 <meta charset="utf-8">
 <style>
     @font-face {
     font-family: variabletest_box;
-    src: url(../../../http/tests/resources/variabletest_box.ttf);
+    src: url(resources/variabletest_box.ttf);
     }
 
     body {
     font-family: variabletest_box,
     sans-serif;
     font-size: 200px;
-    }
-
-    .a_low {
-    font-variation-settings: "UPWD" 0;
     }
 
     .a_up {
@@ -26,3 +24,8 @@
   and LOWER HALF BLOCK, which look identical to the respective variations of A.
 -->
 A <span class="a_up">A</span>
+<script>
+    document.fonts.ready.then(
+        () => { document.documentElement.classList.remove("reftest-wait"); });
+</script>
+</html>
