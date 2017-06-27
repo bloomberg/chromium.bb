@@ -1532,6 +1532,7 @@ COMMON_GTESTS = {
         'names': [
           'Win10 Debug (Intel HD 530)',
           'Win10 Release (Intel HD 530)',
+          'Win10 Release (Intel HD 630)',
         ],
       },
     ],
