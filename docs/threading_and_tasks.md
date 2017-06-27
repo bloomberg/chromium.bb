@@ -189,17 +189,17 @@ class A {
  public:
   A() {
     // Do not require accesses to be on the creation sequence.
-    sequence_checker_.DetachFromSequence();
+    DETACH_FROM_SEQUENCE(sequence_checker_);
   }
 
   void AddValue(int v) {
     // Check that all accesses are on the same sequence.
-    DCHECK(sequence_checker_.CalledOnValidSequence());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     values_.push_back(v);
 }
 
  private:
-  base::SequenceChecker sequence_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   // No lock required, because all accesses are on the
   // same sequence.
