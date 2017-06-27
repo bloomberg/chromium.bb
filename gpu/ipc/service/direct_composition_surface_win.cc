@@ -999,7 +999,7 @@ bool DirectCompositionSurfaceWin::AreOverlaysSupported() {
 
 // static
 bool DirectCompositionSurfaceWin::IsHDRSupported() {
-  bool hdr_monitor_found = true;
+  bool hdr_monitor_found = false;
 #if defined(ENABLE_HDR_DETECTION)
   base::win::ScopedComPtr<ID3D11Device> d3d11_device =
       gl::QueryD3D11DeviceObjectFromANGLE();
@@ -1031,14 +1031,11 @@ bool DirectCompositionSurfaceWin::IsHDRSupported() {
 
     if (desc.ColorSpace == DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020) {
       hdr_monitor_found = true;
-      return true;
     }
   }
   UMA_HISTOGRAM_BOOLEAN("GPU.Output.HDR", hdr_monitor_found);
-  return hdr_monitor_found;
-#else
-  return false;
 #endif
+  return hdr_monitor_found;
 }
 
 bool DirectCompositionSurfaceWin::InitializeNativeWindow() {
