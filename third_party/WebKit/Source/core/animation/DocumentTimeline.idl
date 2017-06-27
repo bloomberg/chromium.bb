@@ -5,7 +5,6 @@
 // https://w3c.github.io/web-animations/#the-documenttimeline-interface
 
 [
-    RuntimeEnabled=WebAnimationsAPI,
-    ImplementedAs=AnimationTimeline
+    RuntimeEnabled=WebAnimationsAPI
 ] interface DocumentTimeline : AnimationTimeline {
 };

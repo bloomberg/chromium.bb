@@ -35,7 +35,6 @@
 #include "core/CSSValueKeywords.h"
 #include "core/SVGNames.h"
 #include "core/XMLNames.h"
-#include "core/animation/AnimationTimeline.h"
 #include "core/animation/CustomCompositorAnimations.h"
 #include "core/animation/css/CSSAnimations.h"
 #include "core/css/CSSIdentifierValue.h"

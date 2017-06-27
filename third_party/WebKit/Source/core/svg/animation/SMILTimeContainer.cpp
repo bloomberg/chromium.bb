@@ -256,10 +256,10 @@ void SMILTimeContainer::ScheduleAnimationFrame(double delay_time) {
   DCHECK(IsTimelineRunning());
   DCHECK(!wakeup_timer_.IsActive());
 
-  if (delay_time < AnimationTimeline::kMinimumDelay) {
+  if (delay_time < DocumentTimeline::kMinimumDelay) {
     ServiceOnNextFrame();
   } else {
-    ScheduleWakeUp(delay_time - AnimationTimeline::kMinimumDelay,
+    ScheduleWakeUp(delay_time - DocumentTimeline::kMinimumDelay,
                    kFutureAnimationFrame);
   }
 }

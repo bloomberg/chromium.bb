@@ -31,25 +31,141 @@
 #ifndef DocumentTimeline_h
 #define DocumentTimeline_h
 
+#include <memory>
 #include "core/CoreExport.h"
-#include "core/animation/AnimationTimeline.h"
+#include "core/animation/AnimationEffectReadOnly.h"
+#include "core/animation/EffectModel.h"
+#include "core/animation/SuperAnimationTimeline.h"
+#include "core/dom/Element.h"
+#include "core/dom/TaskRunnerHelper.h"
+#include "platform/Timer.h"
+#include "platform/animation/CompositorAnimationTimeline.h"
 #include "platform/bindings/ScriptWrappable.h"
+#include "platform/heap/Handle.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 
+class Animation;
+class AnimationEffectReadOnly;
 class Document;
 
-class CORE_EXPORT DocumentTimeline final : public AnimationTimeline {
+// DocumentTimeline is constructed and owned by Document, and tied to its
+// lifecycle.
+class CORE_EXPORT DocumentTimeline : public SuperAnimationTimeline {
+  DEFINE_WRAPPERTYPEINFO();
+
  public:
-  static DocumentTimeline* Create(Document* document) {
-    return new DocumentTimeline(document);
+  class PlatformTiming : public GarbageCollectedFinalized<PlatformTiming> {
+   public:
+    // Calls DocumentTimeline's wake() method after duration seconds.
+    virtual void WakeAfter(double duration) = 0;
+    virtual void ServiceOnNextFrame() = 0;
+    virtual ~PlatformTiming() {}
+    DEFINE_INLINE_VIRTUAL_TRACE() {}
+  };
+
+  static DocumentTimeline* Create(Document*, PlatformTiming* = nullptr);
+
+  virtual ~DocumentTimeline() {}
+
+  bool IsDocumentTimeline() const final { return true; }
+
+  void ServiceAnimations(TimingUpdateReason);
+  void ScheduleNextService();
+
+  Animation* Play(AnimationEffectReadOnly*);
+  HeapVector<Member<Animation>> getAnimations();
+
+  void AnimationAttached(Animation&);
+
+  bool IsActive();
+  bool HasPendingUpdates() const {
+    return !animations_needing_update_.IsEmpty();
+  }
+  double ZeroTime();
+  double currentTime(bool& is_null) override;
+  double currentTime();
+  double CurrentTimeInternal(bool& is_null);
+  double CurrentTimeInternal();
+  double EffectiveTime();
+  void PauseAnimationsForTesting(double);
+
+  void SetAllCompositorPending(bool source_changed = false);
+  void SetOutdatedAnimation(Animation*);
+  void ClearOutdatedAnimation(Animation*);
+  bool HasOutdatedAnimation() const { return outdated_animation_count_ > 0; }
+  bool NeedsAnimationTimingUpdate();
+  void InvalidateKeyframeEffects(const TreeScope&);
+
+  void SetPlaybackRate(double);
+  double PlaybackRate() const;
+
+  CompositorAnimationTimeline* CompositorTimeline() const {
+    return compositor_timeline_.get();
   }
 
+  Document* GetDocument() { return document_.Get(); }
+  void Wake();
+  void ResetForTesting();
+
+  DECLARE_VIRTUAL_TRACE();
+
+ protected:
+  DocumentTimeline(Document*, PlatformTiming*);
+
  private:
-  DocumentTimeline(Document* document) : AnimationTimeline(document, nullptr) {}
+  Member<Document> document_;
+  double zero_time_;
+  bool zero_time_initialized_;
+  unsigned outdated_animation_count_;
+  // Animations which will be updated on the next frame
+  // i.e. current, in effect, or had timing changed
+  HeapHashSet<Member<Animation>> animations_needing_update_;
+  HeapHashSet<WeakMember<Animation>> animations_;
+
+  double playback_rate_;
+
+  friend class SMILTimeContainer;
+  static const double kMinimumDelay;
+
+  Member<PlatformTiming> timing_;
+  double last_current_time_internal_;
+
+  std::unique_ptr<CompositorAnimationTimeline> compositor_timeline_;
+
+  class DocumentTimelineTiming final : public PlatformTiming {
+   public:
+    DocumentTimelineTiming(DocumentTimeline* timeline)
+        : timeline_(timeline),
+          timer_(TaskRunnerHelper::Get(TaskType::kUnspecedTimer,
+                                       timeline->GetDocument()),
+                 this,
+                 &DocumentTimelineTiming::TimerFired) {
+      DCHECK(timeline_);
+    }
+
+    void WakeAfter(double duration) override;
+    void ServiceOnNextFrame() override;
+
+    void TimerFired(TimerBase*) { timeline_->Wake(); }
+
+    DECLARE_VIRTUAL_TRACE();
+
+   private:
+    Member<DocumentTimeline> timeline_;
+    TaskRunnerTimer<DocumentTimelineTiming> timer_;
+  };
 
   friend class AnimationDocumentTimelineTest;
 };
+
+DEFINE_TYPE_CASTS(DocumentTimeline,
+                  SuperAnimationTimeline,
+                  timeline,
+                  timeline->IsDocumentTimeline(),
+                  timeline.IsDocumentTimeline());
 
 }  // namespace blink
 

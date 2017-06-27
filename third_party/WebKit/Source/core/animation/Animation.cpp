@@ -30,7 +30,6 @@
 
 #include "core/animation/Animation.h"
 
-#include "core/animation/AnimationTimeline.h"
 #include "core/animation/CompositorPendingAnimations.h"
 #include "core/animation/DocumentTimeline.h"
 #include "core/animation/KeyframeEffectReadOnly.h"
@@ -70,13 +69,13 @@ static unsigned NextSequenceNumber() {
 
 Animation* Animation::Create(AnimationEffectReadOnly* effect,
                              SuperAnimationTimeline* timeline) {
-  if (!timeline || !timeline->IsAnimationTimeline()) {
+  if (!timeline || !timeline->IsDocumentTimeline()) {
     // FIXME: Support creating animations without a timeline.
     NOTREACHED();
     return nullptr;
   }
 
-  AnimationTimeline* subtimeline = ToAnimationTimeline(timeline);
+  DocumentTimeline* subtimeline = ToDocumentTimeline(timeline);
 
   Animation* animation = new Animation(
       subtimeline->GetDocument()->ContextDocument(), *subtimeline, effect);
@@ -112,7 +111,7 @@ Animation* Animation::Create(ExecutionContext* execution_context,
 }
 
 Animation::Animation(ExecutionContext* execution_context,
-                     AnimationTimeline& timeline,
+                     DocumentTimeline& timeline,
                      AnimationEffectReadOnly* content)
     : ContextLifecycleObserver(execution_context),
       play_state_(kIdle),
@@ -151,7 +150,7 @@ Animation::~Animation() {
 
 void Animation::Dispose() {
   DestroyCompositorPlayer();
-  // If the AnimationTimeline and its Animation objects are
+  // If the DocumentTimeline and its Animation objects are
   // finalized by the same GC, we have to eagerly clear out
   // this Animation object's compositor player registration.
   DCHECK(!compositor_player_);

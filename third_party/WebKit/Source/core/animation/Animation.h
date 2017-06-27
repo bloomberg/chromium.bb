@@ -38,8 +38,8 @@
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
 #include "core/animation/AnimationEffectReadOnly.h"
-#include "core/animation/AnimationTimeline.h"
 #include "core/animation/CompositorAnimations.h"
+#include "core/animation/DocumentTimeline.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/DOMException.h"
 #include "core/events/EventTarget.h"
@@ -142,8 +142,8 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   SuperAnimationTimeline* timeline() {
     return static_cast<SuperAnimationTimeline*>(timeline_);
   }
-  const AnimationTimeline* TimelineInternal() const { return timeline_; }
-  AnimationTimeline* TimelineInternal() { return timeline_; }
+  const DocumentTimeline* TimelineInternal() const { return timeline_; }
+  DocumentTimeline* TimelineInternal() { return timeline_; }
 
   double CalculateStartTime(double current_time) const;
   bool HasStartTime() const { return !IsNull(start_time_); }
@@ -217,7 +217,7 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
                           RegisteredEventListener&) override;
 
  private:
-  Animation(ExecutionContext*, AnimationTimeline&, AnimationEffectReadOnly*);
+  Animation(ExecutionContext*, DocumentTimeline&, AnimationEffectReadOnly*);
 
   void ClearOutdated();
   void ForceServiceOnNextFrame();
@@ -268,7 +268,7 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   Member<AnimationPromise> ready_promise_;
 
   Member<AnimationEffectReadOnly> content_;
-  Member<AnimationTimeline> timeline_;
+  Member<DocumentTimeline> timeline_;
 
   // Reflects all pausing, including via pauseForTesting().
   bool paused_;

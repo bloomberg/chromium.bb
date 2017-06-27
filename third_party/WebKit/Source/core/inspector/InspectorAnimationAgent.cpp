@@ -548,7 +548,7 @@ Response InspectorAnimationAgent::AssertAnimation(const String& id,
   return Response::OK();
 }
 
-AnimationTimeline& InspectorAnimationAgent::ReferenceTimeline() {
+DocumentTimeline& InspectorAnimationAgent::ReferenceTimeline() {
   return inspected_frames_->Root()->GetDocument()->Timeline();
 }
 

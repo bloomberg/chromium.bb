@@ -1159,7 +1159,6 @@ source_set("unit_tests") {
     "animation/AnimationTest.cpp",
     "animation/AnimationTestHelper.cpp",
     "animation/AnimationTestHelper.h",
-    "animation/AnimationTimelineTest.cpp",
     "animation/CompositorAnimationsTest.cpp",
     "animation/DocumentTimelineTest.cpp",
     "animation/EffectInputTest.cpp",
