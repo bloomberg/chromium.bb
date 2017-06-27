@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/translate/core/browser/ranker_model_loader.h"
+#include "components/machine_intelligence/ranker_model_loader.h"
 
 #include <deque>
 #include <initializer_list>
@@ -22,10 +22,9 @@
 #include "base/test/scoped_task_scheduler.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/translate/core/browser/proto/ranker_model.pb.h"
-#include "components/translate/core/browser/proto/translate_ranker_model.pb.h"
-#include "components/translate/core/browser/ranker_model.h"
-#include "components/translate/core/browser/translate_download_manager.h"
+#include "components/machine_intelligence/proto/ranker_model.pb.h"
+#include "components/machine_intelligence/proto/translate_ranker_model.pb.h"
+#include "components/machine_intelligence/ranker_model.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -33,10 +32,9 @@
 namespace {
 
 using base::TaskScheduler;
-using chrome_intelligence::RankerModel;
-using translate::RankerModelLoader;
-using translate::RankerModelStatus;
-using translate::TranslateDownloadManager;
+using machine_intelligence::RankerModel;
+using machine_intelligence::RankerModelLoader;
+using machine_intelligence::RankerModelStatus;
 
 const char kInvalidModelData[] = "not a valid model";
 const int kInvalidModelSize = sizeof(kInvalidModelData) - 1;
@@ -92,11 +90,8 @@ class RankerModelLoaderTest : public ::testing::Test {
   // Temporary directory for model files.
   base::ScopedTempDir scoped_temp_dir_;
 
-  // Cache and reset the application locale for each test.
-  std::string locale_;
-
-  // Used to initialize the translate download manager.
-  scoped_refptr<net::TestURLRequestContextGetter> request_context_;
+  // Used for URLFetcher.
+  scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
 
   // A queue of responses to return from Validate(). If empty, validate will
   // return 'OK'.
@@ -131,13 +126,8 @@ RankerModelLoaderTest::RankerModelLoaderTest()
     : url_fetcher_factory_(nullptr) {}
 
 void RankerModelLoaderTest::SetUp() {
-  // Setup the translate download manager.
-  locale_ = TranslateDownloadManager::GetInstance()->application_locale();
-  request_context_ =
+  request_context_getter_ =
       new net::TestURLRequestContextGetter(base::ThreadTaskRunnerHandle::Get());
-  TranslateDownloadManager::GetInstance()->set_application_locale("fr-CA");
-  TranslateDownloadManager::GetInstance()->set_request_context(
-      request_context_.get());
 
   ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
   const auto& temp_dir_path = scoped_temp_dir_.GetPath();
@@ -159,8 +149,6 @@ void RankerModelLoaderTest::SetUp() {
 
 void RankerModelLoaderTest::TearDown() {
   base::RunLoop().RunUntilIdle();
-  TranslateDownloadManager::GetInstance()->set_application_locale(locale_);
-  TranslateDownloadManager::GetInstance()->set_request_context(nullptr);
 }
 
 // static
@@ -195,7 +183,8 @@ bool RankerModelLoaderTest::DoLoaderTest(const base::FilePath& model_path,
       base::Bind(&RankerModelLoaderTest::ValidateModel, base::Unretained(this)),
       base::Bind(&RankerModelLoaderTest::OnModelAvailable,
                  base::Unretained(this)),
-      model_path, model_url, "RankerModelLoaderTest");
+      request_context_getter_.get(), model_path, model_url,
+      "RankerModelLoaderTest");
   loader->NotifyOfRankerActivity();
   base::RunLoop().RunUntilIdle();
 

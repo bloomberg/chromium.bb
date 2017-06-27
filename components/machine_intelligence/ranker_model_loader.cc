@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/translate/core/browser/ranker_model_loader.h"
+#include "components/machine_intelligence/ranker_model_loader.h"
 
 #include <utility>
 
@@ -20,17 +20,12 @@
 #include "base/task_runner_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "components/translate/core/browser/proto/ranker_model.pb.h"
-#include "components/translate/core/browser/ranker_model.h"
-#include "components/translate/core/browser/translate_url_fetcher.h"
+#include "components/machine_intelligence/proto/ranker_model.pb.h"
+#include "components/machine_intelligence/ranker_model.h"
+#include "components/machine_intelligence/ranker_url_fetcher.h"
 
-namespace translate {
+namespace machine_intelligence {
 namespace {
-
-using chrome_intelligence::RankerModel;
-using chrome_intelligence::RankerModelProto;
-
-constexpr int kUrlFetcherId = 2;
 
 // The minimum duration, in minutes, between download attempts.
 constexpr int kMinRetryDelayMins = 3;
@@ -96,6 +91,7 @@ void SaveToFile(const GURL& model_url,
 RankerModelLoader::RankerModelLoader(
     ValidateModelCallback validate_model_cb,
     OnModelAvailableCallback on_model_available_cb,
+    net::URLRequestContextGetter* request_context_getter,
     base::FilePath model_path,
     GURL model_url,
     std::string uma_prefix)
@@ -104,18 +100,19 @@ RankerModelLoader::RankerModelLoader(
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
       validate_model_cb_(std::move(validate_model_cb)),
       on_model_available_cb_(std::move(on_model_available_cb)),
+      request_context_getter_(request_context_getter),
       model_path_(std::move(model_path)),
       model_url_(std::move(model_url)),
       uma_prefix_(std::move(uma_prefix)),
-      url_fetcher_(base::MakeUnique<TranslateURLFetcher>(kUrlFetcherId)),
+      url_fetcher_(base::MakeUnique<RankerURLFetcher>()),
       weak_ptr_factory_(this) {}
 
 RankerModelLoader::~RankerModelLoader() {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 void RankerModelLoader::NotifyOfRankerActivity() {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   switch (state_) {
     case LoaderState::NOT_STARTED:
       if (!model_path_.empty()) {
@@ -142,7 +139,7 @@ void RankerModelLoader::NotifyOfRankerActivity() {
 }
 
 void RankerModelLoader::StartLoadFromFile() {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(state_, LoaderState::NOT_STARTED);
   DCHECK(!model_path_.empty());
   state_ = LoaderState::LOADING_FROM_FILE;
@@ -154,7 +151,7 @@ void RankerModelLoader::StartLoadFromFile() {
 }
 
 void RankerModelLoader::OnFileLoaded(const std::string& data) {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(state_, LoaderState::LOADING_FROM_FILE);
 
   // Record the duration of the download.
@@ -201,7 +198,7 @@ void RankerModelLoader::OnFileLoaded(const std::string& data) {
 }
 
 void RankerModelLoader::StartLoadFromURL() {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(state_, LoaderState::IDLE);
   DCHECK(model_url_.is_valid());
 
@@ -219,9 +216,11 @@ void RankerModelLoader::StartLoadFromURL() {
   load_start_time_ = base::TimeTicks::Now();
   next_earliest_download_time_ =
       load_start_time_ + base::TimeDelta::FromMinutes(kMinRetryDelayMins);
-  bool request_started = url_fetcher_->Request(
-      model_url_, base::Bind(&RankerModelLoader::OnURLFetched,
-                             weak_ptr_factory_.GetWeakPtr()));
+  bool request_started =
+      url_fetcher_->Request(model_url_,
+                            base::Bind(&RankerModelLoader::OnURLFetched,
+                                       weak_ptr_factory_.GetWeakPtr()),
+                            request_context_getter_.get());
 
   // |url_fetcher_| maintains a request retry counter. If all allowed attempts
   // have already been exhausted, then the loader is finished and has abandoned
@@ -233,10 +232,8 @@ void RankerModelLoader::StartLoadFromURL() {
   }
 }
 
-void RankerModelLoader::OnURLFetched(int /* id */,
-                                     bool success,
-                                     const std::string& data) {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
+void RankerModelLoader::OnURLFetched(bool success, const std::string& data) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(state_, LoaderState::LOADING_FROM_URL);
 
   // Record the duration of the download.
@@ -280,9 +277,9 @@ void RankerModelLoader::OnURLFetched(int /* id */,
   on_model_available_cb_.Run(std::move(model));
 }
 
-std::unique_ptr<chrome_intelligence::RankerModel>
-RankerModelLoader::CreateAndValidateModel(const std::string& data) {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
+std::unique_ptr<RankerModel> RankerModelLoader::CreateAndValidateModel(
+    const std::string& data) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   MyScopedHistogramTimer timer(uma_prefix_ + kParsetimerHistogram);
   auto model = RankerModel::FromString(data);
   if (ReportModelStatus(model ? validate_model_cb_.Run(*model)
@@ -295,7 +292,7 @@ RankerModelLoader::CreateAndValidateModel(const std::string& data) {
 
 RankerModelStatus RankerModelLoader::ReportModelStatus(
     RankerModelStatus model_status) {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::HistogramBase* histogram = base::LinearHistogram::FactoryGet(
       uma_prefix_ + kModelStatusHistogram, 1,
       static_cast<int>(RankerModelStatus::MAX),
@@ -306,4 +303,4 @@ RankerModelStatus RankerModelLoader::ReportModelStatus(
   return model_status;
 }
 
-}  // namespace translate
+}  // namespace machine_intelligence

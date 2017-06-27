@@ -14,15 +14,15 @@
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/translate/core/browser/ranker_model_loader.h"
+#include "components/machine_intelligence/ranker_model_loader.h"
 #include "components/translate/core/browser/translate_ranker.h"
 #include "url/gurl.h"
 
 class GURL;
 
-namespace chrome_intelligence {
+namespace machine_intelligence {
 class RankerModel;
-}  // namespace chrome_intelligence
+}  // namespace machine_intelligence
 
 namespace ukm {
 class UkmRecorder;
@@ -107,7 +107,7 @@ class TranslateRankerImpl : public TranslateRanker {
       metrics::TranslateEventProto* translate_event) override;
 
   void OnModelAvailable(
-      std::unique_ptr<chrome_intelligence::RankerModel> model);
+      std::unique_ptr<machine_intelligence::RankerModel> model);
 
   // Get the model decision on whether we should show the translate
   // UI or not given |translate_event|.
@@ -132,10 +132,10 @@ class TranslateRankerImpl : public TranslateRanker {
   base::SequenceChecker sequence_checker_;
 
   // A helper to load the translate ranker model from disk cache or a URL.
-  std::unique_ptr<RankerModelLoader> model_loader_;
+  std::unique_ptr<machine_intelligence::RankerModelLoader> model_loader_;
 
   // The translation ranker model.
-  std::unique_ptr<chrome_intelligence::RankerModel> model_;
+  std::unique_ptr<machine_intelligence::RankerModel> model_;
 
   // Tracks whether or not translate event logging is enabled.
   bool is_logging_enabled_ = true;

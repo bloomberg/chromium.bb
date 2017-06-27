@@ -8,7 +8,7 @@ syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
 
-package chrome_intelligence;
+package machine_intelligence;
 
 // Defines a Chrome Ranker Translate Model.
 // Next tag: 13

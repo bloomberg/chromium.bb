@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/translate/core/browser/ranker_model.h"
+#include "components/machine_intelligence/ranker_model.h"
 
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
-#include "components/translate/core/browser/proto/ranker_model.pb.h"
+#include "components/machine_intelligence/proto/ranker_model.pb.h"
 
-namespace chrome_intelligence {
+namespace machine_intelligence {
 
 RankerModel::RankerModel() : proto_(base::MakeUnique<RankerModelProto>()) {}
 
@@ -51,4 +51,4 @@ std::string RankerModel::SerializeAsString() const {
   return proto_->SerializeAsString();
 }
 
-}  // namespace chrome_intelligence
+}  // namespace machine_intelligence

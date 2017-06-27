@@ -14,11 +14,11 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
+#include "components/machine_intelligence/proto/ranker_model.pb.h"
+#include "components/machine_intelligence/proto/translate_ranker_model.pb.h"
+#include "components/machine_intelligence/ranker_model.h"
 #include "components/metrics/proto/translate_event.pb.h"
 #include "components/metrics/proto/ukm/source.pb.h"
-#include "components/translate/core/browser/proto/ranker_model.pb.h"
-#include "components/translate/core/browser/proto/translate_ranker_model.pb.h"
-#include "components/translate/core/browser/ranker_model.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "components/ukm/ukm_source.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -94,7 +94,7 @@ void TranslateRankerImplTest::InitFeatures(
 
 std::unique_ptr<TranslateRankerImpl> TranslateRankerImplTest::GetRankerForTest(
     float threshold) {
-  auto model = base::MakeUnique<chrome_intelligence::RankerModel>();
+  auto model = base::MakeUnique<machine_intelligence::RankerModel>();
   model->mutable_proto()->mutable_translate()->set_version(kModelVersion);
   auto* details = model->mutable_proto()
                       ->mutable_translate()
