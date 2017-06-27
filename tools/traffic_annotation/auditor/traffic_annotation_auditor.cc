@@ -172,18 +172,29 @@ std::string RunClangTool(const base::FilePath& source_path,
                          const base::FilePath& build_path,
                          const base::CommandLine::StringVector& path_filters,
                          const bool full_run) {
-  base::CommandLine cmdline(source_path.Append(FILE_PATH_LITERAL("tools"))
-                                .Append(FILE_PATH_LITERAL("clang"))
-                                .Append(FILE_PATH_LITERAL("scripts"))
-                                .Append(FILE_PATH_LITERAL("run_tool.py")));
-  cmdline.AppendSwitch("generate-compdb");
-  cmdline.AppendSwitch("tool=traffic_annotation_extractor");
-  cmdline.AppendArg(
-      base::StringPrintf("-p=%s", build_path.MaybeAsASCII().c_str()));
+  base::FilePath options_filepath;
+  if (!base::CreateTemporaryFile(&options_filepath)) {
+    LOG(ERROR) << "Could not create temporary options file.";
+    return std::string();
+  }
+  FILE* options_file = base::OpenFile(options_filepath, "wt");
+  if (!options_file) {
+    LOG(ERROR) << "Could not create temporary options file.";
+    return std::string();
+  }
+  fprintf(options_file,
+          "--generate-compdb --tool=traffic_annotation_extractor -p=%s ",
+          build_path.MaybeAsASCII().c_str());
 
   if (full_run) {
-    for (const auto& path : path_filters)
-      cmdline.AppendArgNative(path);
+    for (const auto& file_path : path_filters)
+      fprintf(options_file, "%s ",
+#if defined(OS_WIN)
+              base::WideToUTF8(file_path).c_str()
+#else
+              file_path.c_str()
+#endif
+                  );
   } else {
     TrafficAnnotationFileFilter filter;
     std::vector<std::string> file_paths;
@@ -202,18 +213,35 @@ std::string RunClangTool(const base::FilePath& source_path,
       filter.GetRelevantFiles(source_path, "", &file_paths);
     }
 
-    if (!file_paths.size())
-      return "";
+    if (!file_paths.size()) {
+      base::CloseFile(options_file);
+      base::DeleteFile(options_filepath, false);
+      return std::string();
+    }
     for (const auto& file_path : file_paths)
-      cmdline.AppendArg(file_path);
+      fprintf(options_file, "%s ", file_path.c_str());
   }
+  base::CloseFile(options_file);
+
+  base::CommandLine cmdline(source_path.Append(FILE_PATH_LITERAL("tools"))
+                                .Append(FILE_PATH_LITERAL("clang"))
+                                .Append(FILE_PATH_LITERAL("scripts"))
+                                .Append(FILE_PATH_LITERAL("run_tool.py")));
 
 #if defined(OS_WIN)
   cmdline.PrependWrapper(L"python");
 #endif
 
+  cmdline.AppendArg(base::StringPrintf(
+      "--options-file=%s", options_filepath.MaybeAsASCII().c_str()));
+
   std::string results;
-  return base::GetAppOutput(cmdline, &results) ? results : "";
+  if (!base::GetAppOutput(cmdline, &results))
+    results = std::string();
+
+  base::DeleteFile(options_filepath, false);
+
+  return results;
 }
 
 bool ParseClangToolRawOutput(const std::string& clang_output,
