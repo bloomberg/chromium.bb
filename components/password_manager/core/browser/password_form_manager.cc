@@ -742,8 +742,8 @@ void PasswordFormManager::SendVoteOnCredentialsReuse(
   FormStructure pending_structure(pending->form_data);
   FormStructure observed_structure(observed.form_data);
 
-  if (pending_structure.FormSignatureAsStr() !=
-      observed_structure.FormSignatureAsStr()) {
+  if (pending_structure.form_signature() !=
+      observed_structure.form_signature()) {
     // Only upload if this is the first time the password has been used.
     // Otherwise the credentials have been used on the same field before so
     // they aren't from an account creation form.
