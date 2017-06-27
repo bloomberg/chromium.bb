@@ -13,8 +13,8 @@
 #include "ash/wm/window_state_observer.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "components/exo/surface_delegate.h"
 #include "components/exo/surface_observer.h"
+#include "components/exo/surface_tree_host.h"
 #include "components/exo/wm_helper.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/hit_test.h"
@@ -42,7 +42,7 @@ class Surface;
 // This class provides functions for treating a surfaces like toplevel,
 // fullscreen or popup widgets, move, resize or maximize them, associate
 // metadata like title and class, etc.
-class ShellSurface : public SurfaceDelegate,
+class ShellSurface : public SurfaceTreeHost,
                      public SurfaceObserver,
                      public views::WidgetDelegate,
                      public views::View,
@@ -220,7 +220,6 @@ class ShellSurface : public SurfaceDelegate,
 
   // Overridden from SurfaceDelegate:
   void OnSurfaceCommit() override;
-  bool IsSurfaceSynchronized() const override;
 
   // Overridden from SurfaceObserver:
   void OnSurfaceDestroying(Surface* surface) override;
@@ -279,7 +278,7 @@ class ShellSurface : public SurfaceDelegate,
   aura::Window* shadow_overlay() { return shadow_overlay_.get(); }
   aura::Window* shadow_underlay() { return shadow_underlay_.get(); }
 
-  Surface* surface_for_testing() { return surface_; }
+  Surface* surface_for_testing() { return root_surface(); }
 
  private:
   class ScopedConfigure;
@@ -300,7 +299,7 @@ class ShellSurface : public SurfaceDelegate,
   void Configure();
 
   // Returns the window that has capture during dragging.
-  aura::Window* GetDragWindow() const;
+  aura::Window* GetDragWindow();
 
   // Attempt to start a drag operation. The type of drag operation to start is
   // determined by |component|.
@@ -336,7 +335,6 @@ class ShellSurface : public SurfaceDelegate,
   gfx::Point GetMouseLocation() const;
 
   views::Widget* widget_ = nullptr;
-  Surface* surface_;
   aura::Window* parent_;
   const BoundsMode bounds_mode_;
   int64_t primary_display_id_;

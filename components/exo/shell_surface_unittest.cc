@@ -298,7 +298,7 @@ TEST_F(ShellSurfaceTest, SetGeometry) {
       shell_surface->GetWidget()->GetWindowBoundsInScreen().size().ToString());
   EXPECT_EQ(gfx::Rect(gfx::Point() - geometry.OffsetFromOrigin(), buffer_size)
                 .ToString(),
-            surface->window()->bounds().ToString());
+            shell_surface->host_window()->bounds().ToString());
 }
 
 TEST_F(ShellSurfaceTest, SetScale) {
@@ -315,8 +315,9 @@ TEST_F(ShellSurfaceTest, SetScale) {
 
   gfx::Transform transform;
   transform.Scale(1.0 / scale, 1.0 / scale);
-  EXPECT_EQ(transform.ToString(),
-            surface->window()->layer()->GetTargetTransform().ToString());
+  EXPECT_EQ(
+      transform.ToString(),
+      shell_surface->host_window()->layer()->GetTargetTransform().ToString());
 }
 
 TEST_F(ShellSurfaceTest, SetTopInset) {
@@ -627,10 +628,11 @@ TEST_F(ShellSurfaceTest, SurfaceShadow) {
   EXPECT_TRUE(shadow->layer()->visible());
 
   // For surface shadow, the underlay is placed at the bottom of shell surfaces.
-  EXPECT_EQ(surface->window(), shell_surface->shadow_underlay()->parent());
+  EXPECT_EQ(shell_surface->host_window(),
+            shell_surface->shadow_underlay()->parent());
   EXPECT_EQ(window, shell_surface->shadow_overlay()->parent());
 
-  EXPECT_EQ(*surface->window()->children().begin(),
+  EXPECT_EQ(*shell_surface->host_window()->children().begin(),
             shell_surface->shadow_underlay());
 }
 
