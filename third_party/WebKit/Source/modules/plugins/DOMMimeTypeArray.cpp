@@ -30,7 +30,8 @@
 namespace blink {
 
 DOMMimeTypeArray::DOMMimeTypeArray(LocalFrame* frame)
-    : ContextLifecycleObserver(frame ? frame->GetDocument() : nullptr) {
+    : ContextLifecycleObserver(frame ? frame->GetDocument() : nullptr),
+      PluginsChangedObserver(frame ? frame->GetPage() : nullptr) {
   UpdatePluginData();
 }
 
@@ -100,6 +101,10 @@ void DOMMimeTypeArray::UpdatePluginData() {
 
 void DOMMimeTypeArray::ContextDestroyed(ExecutionContext*) {
   dom_mime_types_.clear();
+}
+
+void DOMMimeTypeArray::PluginsChanged() {
+  UpdatePluginData();
 }
 
 }  // namespace blink

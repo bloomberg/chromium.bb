@@ -22,6 +22,7 @@
 #define DOMMimeTypeArray_h
 
 #include "core/dom/ContextLifecycleObserver.h"
+#include "core/page/PluginsChangedObserver.h"
 #include "modules/plugins/DOMMimeType.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
@@ -34,7 +35,8 @@ class PluginData;
 
 class DOMMimeTypeArray final : public GarbageCollected<DOMMimeTypeArray>,
                                public ScriptWrappable,
-                               public ContextLifecycleObserver {
+                               public ContextLifecycleObserver,
+                               public PluginsChangedObserver {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(DOMMimeTypeArray);
 
@@ -47,6 +49,9 @@ class DOMMimeTypeArray final : public GarbageCollected<DOMMimeTypeArray>,
   unsigned length() const;
   DOMMimeType* item(unsigned index);
   DOMMimeType* namedItem(const AtomicString& property_name);
+
+  // PluginsChangedObserver implementation.
+  void PluginsChanged();
 
   DECLARE_VIRTUAL_TRACE();
 
