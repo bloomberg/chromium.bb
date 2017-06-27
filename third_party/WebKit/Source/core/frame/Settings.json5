@@ -469,11 +469,11 @@
       initial: false,
     },
 
-    // Experiment to have all APIs reflect the layout viewport.
-    // crbug.com/489206 tracks the experiment.
+    // Setting to have all APIs reflect the layout viewport.
+    // crbug.com/489206 tracks the reason for this flag's existence.
     {
       name: "inertVisualViewport",
-      initial: false,
+      initial: true,
     },
 
     // The rubber-band overscroll effect is implemented in Blink and is being moved

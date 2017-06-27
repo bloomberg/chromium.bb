@@ -14,6 +14,7 @@
 #include "core/frame/WebLocalFrameBase.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLElement.h"
+#include "core/html/HTMLHtmlElement.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/api/LayoutViewItem.h"
@@ -102,6 +103,15 @@ namespace blink {
 }
 
 namespace {
+
+void configureAndroidCompositing(WebSettings* settings) {
+  settings->SetAcceleratedCompositingEnabled(true);
+  settings->SetPreferCompositingToLCDTextEnabled(true);
+  settings->SetViewportMetaEnabled(true);
+  settings->SetViewportEnabled(true);
+  settings->SetMainFrameResizesAreOrientationChanges(true);
+  settings->SetShrinksViewportContentToFit(true);
+}
 
 typedef bool TestParamRootLayerScrolling;
 class VisualViewportTest
@@ -1710,81 +1720,85 @@ TEST_P(VisualViewportTest, ElementVisibleBoundsInVisualViewport) {
 }
 
 // Test that the various window.scroll and document.body.scroll properties and
-// methods work unchanged from the pre-virtual viewport mode.
-TEST_P(VisualViewportTest, bodyAndWindowScrollPropertiesAccountForViewport) {
-  InitializeWithAndroidSettings();
+// methods don't change with the visual viewport.
+TEST_P(VisualViewportTest, visualViewportIsInert) {
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  WebViewBase* web_view_impl = web_view_helper.Initialize(
+      nullptr, nullptr, nullptr, &configureAndroidCompositing);
 
-  WebViewImpl()->Resize(IntSize(200, 300));
+  web_view_impl->Resize(IntSize(200, 300));
 
-  // Load page with no main frame scrolling.
-  RegisterMockedHttpURLLoad("200-by-300-viewport.html");
-  NavigateTo(base_url_ + "200-by-300-viewport.html");
-
-  VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
-  visual_viewport.SetScale(2);
-
-  // Chrome's quirky behavior regarding viewport scrolling means we treat the
-  // body element as the viewport and don't apply scrolling to the HTML element.
-  RuntimeEnabledFeatures::SetScrollTopLeftInteropEnabled(false);
+  WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
+  FrameTestHelpers::LoadHTMLString(
+      web_view_impl->MainFrameImpl(),
+      "<!DOCTYPE html>"
+      "<meta name='viewport' content='width=200,minimum-scale=1'>"
+      "<style>"
+      "  body {"
+      "    width: 800px;"
+      "    height: 800px;"
+      "    margin: 0;"
+      "  }"
+      "</style>",
+      base_url);
+  web_view_impl->UpdateAllLifecyclePhases();
 
   LocalDOMWindow* window =
-      WebViewImpl()->MainFrameImpl()->GetFrame()->DomWindow();
-  window->scrollTo(100, 150);
-  EXPECT_EQ(100, window->scrollX());
-  EXPECT_EQ(150, window->scrollY());
-  EXPECT_FLOAT_SIZE_EQ(FloatSize(100, 150), visual_viewport.GetScrollOffset());
+      web_view_impl->MainFrameImpl()->GetFrame()->DomWindow();
+  HTMLElement* html = toHTMLHtmlElement(window->document()->documentElement());
 
-  HTMLElement* body = toHTMLBodyElement(window->document()->body());
-  body->setScrollLeft(50);
-  body->setScrollTop(130);
-  EXPECT_EQ(50, body->scrollLeft());
-  EXPECT_EQ(130, body->scrollTop());
-  EXPECT_FLOAT_SIZE_EQ(FloatSize(50, 130), visual_viewport.GetScrollOffset());
+  ASSERT_EQ(200, window->innerWidth());
+  ASSERT_EQ(300, window->innerHeight());
+  ASSERT_EQ(200, html->clientWidth());
+  ASSERT_EQ(300, html->clientHeight());
 
-  HTMLElement* document_element =
-      ToHTMLElement(window->document()->documentElement());
-  document_element->setScrollLeft(40);
-  document_element->setScrollTop(50);
-  EXPECT_EQ(0, document_element->scrollLeft());
-  EXPECT_EQ(0, document_element->scrollTop());
-  EXPECT_FLOAT_SIZE_EQ(FloatSize(50, 130), visual_viewport.GetScrollOffset());
+  VisualViewport& visual_viewport = web_view_impl->MainFrameImpl()
+                                        ->GetFrame()
+                                        ->GetPage()
+                                        ->GetVisualViewport();
+  visual_viewport.SetScale(2);
 
-  visual_viewport.SetLocation(FloatPoint(10, 20));
-  EXPECT_EQ(10, body->scrollLeft());
-  EXPECT_EQ(20, body->scrollTop());
-  EXPECT_EQ(0, document_element->scrollLeft());
-  EXPECT_EQ(0, document_element->scrollTop());
-  EXPECT_EQ(10, window->scrollX());
-  EXPECT_EQ(20, window->scrollY());
+  ASSERT_EQ(100, visual_viewport.VisibleSize().Width());
+  ASSERT_EQ(150, visual_viewport.VisibleSize().Height());
 
-  // Turning on the standards-compliant viewport scrolling impl should make the
-  // document element the viewport and not body.
-  RuntimeEnabledFeatures::SetScrollTopLeftInteropEnabled(true);
+  EXPECT_EQ(200, window->innerWidth());
+  EXPECT_EQ(300, window->innerHeight());
+  EXPECT_EQ(200, html->clientWidth());
+  EXPECT_EQ(300, html->clientHeight());
 
-  window->scrollTo(100, 150);
-  EXPECT_EQ(100, window->scrollX());
-  EXPECT_EQ(150, window->scrollY());
-  EXPECT_FLOAT_SIZE_EQ(FloatSize(100, 150), visual_viewport.GetScrollOffset());
+  visual_viewport.SetScrollOffset(ScrollOffset(10, 15), kProgrammaticScroll);
 
-  body->setScrollLeft(50);
-  body->setScrollTop(130);
-  EXPECT_EQ(0, body->scrollLeft());
-  EXPECT_EQ(0, body->scrollTop());
-  EXPECT_FLOAT_SIZE_EQ(FloatSize(100, 150), visual_viewport.GetScrollOffset());
+  ASSERT_EQ(10, visual_viewport.GetScrollOffset().Width());
+  ASSERT_EQ(15, visual_viewport.GetScrollOffset().Height());
+  EXPECT_EQ(0, window->scrollX());
+  EXPECT_EQ(0, window->scrollY());
 
-  document_element->setScrollLeft(40);
-  document_element->setScrollTop(50);
-  EXPECT_EQ(40, document_element->scrollLeft());
-  EXPECT_EQ(50, document_element->scrollTop());
-  EXPECT_FLOAT_SIZE_EQ(FloatSize(40, 50), visual_viewport.GetScrollOffset());
+  html->setScrollLeft(5);
+  html->setScrollTop(30);
+  EXPECT_EQ(5, html->scrollLeft());
+  EXPECT_EQ(30, html->scrollTop());
+  EXPECT_EQ(10, visual_viewport.GetScrollOffset().Width());
+  EXPECT_EQ(15, visual_viewport.GetScrollOffset().Height());
 
-  visual_viewport.SetLocation(FloatPoint(10, 20));
-  EXPECT_EQ(0, body->scrollLeft());
-  EXPECT_EQ(0, body->scrollTop());
-  EXPECT_EQ(10, document_element->scrollLeft());
-  EXPECT_EQ(20, document_element->scrollTop());
-  EXPECT_EQ(10, window->scrollX());
-  EXPECT_EQ(20, window->scrollY());
+  html->setScrollLeft(5000);
+  html->setScrollTop(5000);
+  EXPECT_EQ(600, html->scrollLeft());
+  EXPECT_EQ(500, html->scrollTop());
+  EXPECT_EQ(10, visual_viewport.GetScrollOffset().Width());
+  EXPECT_EQ(15, visual_viewport.GetScrollOffset().Height());
+
+  html->setScrollLeft(0);
+  html->setScrollTop(0);
+  EXPECT_EQ(0, html->scrollLeft());
+  EXPECT_EQ(0, html->scrollTop());
+  EXPECT_EQ(10, visual_viewport.GetScrollOffset().Width());
+  EXPECT_EQ(15, visual_viewport.GetScrollOffset().Height());
+
+  window->scrollTo(5000, 5000);
+  EXPECT_EQ(600, html->scrollLeft());
+  EXPECT_EQ(500, html->scrollTop());
+  EXPECT_EQ(10, visual_viewport.GetScrollOffset().Width());
+  EXPECT_EQ(15, visual_viewport.GetScrollOffset().Height());
 }
 
 // Tests that when a new frame is created, it is created with the intended size
@@ -2104,15 +2118,6 @@ TEST_P(VisualViewportTest, RotationAnchoringWithRootScroller) {
   EXPECT_EQ(600, scroller->scrollTop());
 
   RuntimeEnabledFeatures::SetSetRootScrollerEnabled(wasRootScrollerEnabled);
-}
-
-static void configureAndroidCompositing(WebSettings* settings) {
-  settings->SetAcceleratedCompositingEnabled(true);
-  settings->SetPreferCompositingToLCDTextEnabled(true);
-  settings->SetViewportMetaEnabled(true);
-  settings->SetViewportEnabled(true);
-  settings->SetMainFrameResizesAreOrientationChanges(true);
-  settings->SetShrinksViewportContentToFit(true);
 }
 
 // Make sure a composited background-attachment:fixed background gets resized
