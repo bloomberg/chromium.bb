@@ -199,6 +199,8 @@ configuration:
         *   `<action name="InProductHelp.NotifyEvent.IPH_MyFunFeature">`
         *   `<action name="InProductHelp.NotifyUsedEvent.IPH_MyFunFeature">`
         *   `<action name="InProductHelp.ShouldTriggerHelpUI.IPH_MyFunFeature">`
+        *   `<action name="InProductHelp.ShouldTriggerHelpUIResult.NotTriggered.IPH_MyFunFeature">`
+        *   `<action name="InProductHelp.ShouldTriggerHelpUIResult.Triggered.IPH_MyFunFeature">`
 
 ## Demo mode
 
