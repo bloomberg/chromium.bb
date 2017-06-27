@@ -1759,7 +1759,7 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       afdo_use=False,
       important=True,
       active_waterfall=constants.WATERFALL_INTERNAL,
-      buildslave_type=constants.GCE_WIMPY_BUILD_SLAVE_TYPE,
+      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
       slave_configs=[],
   )
 
@@ -1811,6 +1811,7 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       'chell',
       'daisy',
       'kevin',
+      'lakitu',
       'link',
       'lulu',
       'nyan_big',
@@ -1820,6 +1821,7 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       'sentry',
       'squawks',
       'terra',
+      'whirlwind',
   ])
   site_config.AddForBoards(
       'gcc-toolchain',

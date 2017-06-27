@@ -12512,6 +12512,21 @@
             "-chrome_internal"
         ]
     },
+    "lakitu-gcc-toolchain": {
+        "_template": "gcc_toolchain",
+        "afdo_use": false,
+        "boards": [
+            "lakitu"
+        ],
+        "chrome_sdk": false,
+        "disk_layout": "base",
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
+        "hw_tests": [],
+        "image_test": false,
+        "sync_chrome": false
+    },
     "lakitu-gpu-compile-only-pre-cq": {
         "_template": "compile_only_pre_cq",
         "boards": [
@@ -12766,6 +12781,36 @@
         "useflags": [
             "chrome_internal"
         ]
+    },
+    "lakitu-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "afdo_use": false,
+        "boards": [
+            "lakitu"
+        ],
+        "chrome_sdk": false,
+        "disk_layout": "base",
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
+        "hw_tests": [],
+        "image_test": false,
+        "sync_chrome": false
+    },
+    "lakitu-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "afdo_use": false,
+        "boards": [
+            "lakitu"
+        ],
+        "chrome_sdk": false,
+        "disk_layout": "base",
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
+        "hw_tests": [],
+        "image_test": false,
+        "sync_chrome": false
     },
     "lakitu-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -15162,7 +15207,6 @@
         "active_waterfall": "chromeos",
         "afdo_use": false,
         "boards": [],
-        "buildslave_type": "gce_wimpy",
         "description": "Toolchain master (all others are slaves).",
         "health_alert_recipients": [
             "c-compiler-chrome@google.com"
@@ -27608,6 +27652,33 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "whirlwind-gcc-toolchain": {
+        "_template": "gcc_toolchain",
+        "afdo_use": false,
+        "boards": [
+            "whirlwind"
+        ],
+        "chrome_sdk": false,
+        "sync_chrome": false
+    },
+    "whirlwind-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "afdo_use": false,
+        "boards": [
+            "whirlwind"
+        ],
+        "chrome_sdk": false,
+        "sync_chrome": false
+    },
+    "whirlwind-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "afdo_use": false,
+        "boards": [
+            "whirlwind"
+        ],
+        "chrome_sdk": false,
+        "sync_chrome": false
     },
     "whirlwind-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
