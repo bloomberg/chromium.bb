@@ -5,25 +5,25 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_PREEMPTION_FLAG_H_
 #define GPU_COMMAND_BUFFER_SERVICE_PREEMPTION_FLAG_H_
 
-#include "base/atomic_ref_count.h"
-#include "base/atomicops.h"
+#include <atomic>
+
 #include "base/memory/ref_counted.h"
 #include "gpu/gpu_export.h"
 
 namespace gpu {
 
+// Boolean flag that can be set, unset and checked.
+// IsSet acquires changes to memory published by Set/Reset.
 class PreemptionFlag : public base::RefCountedThreadSafe<PreemptionFlag> {
  public:
-  PreemptionFlag() : flag_(0) {}
-
-  bool IsSet() { return !base::AtomicRefCountIsZero(&flag_); }
-  void Set() { base::AtomicRefCountInc(&flag_); }
-  void Reset() { base::subtle::NoBarrier_Store(&flag_, 0); }
+  bool IsSet() const { return flag_.load(std::memory_order_acquire) != 0; }
+  void Set() { flag_.store(1, std::memory_order_release); }
+  void Reset() { flag_.store(0, std::memory_order_release); }
 
  private:
-  base::AtomicRefCount flag_;
-
   ~PreemptionFlag() {}
+
+  std::atomic_int flag_{0};
 
   friend class base::RefCountedThreadSafe<PreemptionFlag>;
 };
