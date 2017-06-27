@@ -5,6 +5,7 @@
 #include "components/gcm_driver/crypto/message_payload_parser.h"
 
 #include "base/big_endian.h"
+#include "components/gcm_driver/crypto/gcm_decryption_result.h"
 
 namespace gcm {
 
@@ -27,8 +28,10 @@ constexpr size_t kMinimumMessageSize =
 }  // namespace
 
 MessagePayloadParser::MessagePayloadParser(base::StringPiece message) {
-  if (message.size() < kMinimumMessageSize)
+  if (message.size() < kMinimumMessageSize) {
+    failure_reason_ = GCMDecryptionResult::INVALID_BINARY_HEADER_PAYLOAD_LENGTH;
     return;
+  }
 
   salt_ = message.substr(0, kSaltSize).as_string();
   message.remove_prefix(kSaltSize);
@@ -36,26 +39,32 @@ MessagePayloadParser::MessagePayloadParser(base::StringPiece message) {
   base::ReadBigEndian(message.data(), &record_size_);
   message.remove_prefix(sizeof(record_size_));
 
-  if (record_size_ < kMinimumRecordSize)
+  if (record_size_ < kMinimumRecordSize) {
+    failure_reason_ = GCMDecryptionResult::INVALID_BINARY_HEADER_RECORD_SIZE;
     return;
+  }
 
   uint8_t public_key_length;
   base::ReadBigEndian(message.data(), &public_key_length);
   message.remove_prefix(sizeof(public_key_length));
 
-  if (public_key_length != kUncompressedPointSize)
+  if (public_key_length != kUncompressedPointSize) {
+    failure_reason_ =
+        GCMDecryptionResult::INVALID_BINARY_HEADER_PUBLIC_KEY_LENGTH;
     return;
+  }
 
-  if (message[0] != 0x04)
+  if (message[0] != 0x04) {
+    failure_reason_ =
+        GCMDecryptionResult::INVALID_BINARY_HEADER_PUBLIC_KEY_FORMAT;
     return;
+  }
 
   public_key_ = message.substr(0, kUncompressedPointSize).as_string();
   message.remove_prefix(kUncompressedPointSize);
 
   ciphertext_ = message.as_string();
-
-  if (ciphertext_.size() < kMinimumRecordSize)
-    return;
+  DCHECK_GE(ciphertext_.size(), kMinimumRecordSize);
 
   is_valid_ = true;
 }

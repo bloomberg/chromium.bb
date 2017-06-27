@@ -5,6 +5,7 @@
 #include "components/gcm_driver/crypto/message_payload_parser.h"
 
 #include "base/big_endian.h"
+#include "components/gcm_driver/crypto/gcm_decryption_result.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gcm {
@@ -23,7 +24,7 @@ const uint8_t kValidMessage[] = {
     0x00, 0x00, 0x00, 0x12,
     // idlen (1 byte)
     0x41,
-    // public key (65 bytes, kPublicKeySize)
+    // public key (65 bytes, kPublicKeySize, must start with 0x04)
     0x04, 0x35, 0x02, 0x67, 0xB9, 0x10, 0x8F, 0x9B, 0xF1, 0x85, 0xF5, 0x1B,
     0xD7, 0xA4, 0xEF, 0xBD, 0x28, 0xB3, 0x11, 0x40, 0xBA, 0xD0, 0xEE, 0xB2,
     0x97, 0xDA, 0x6A, 0x93, 0x2D, 0x26, 0x45, 0xBD, 0xB2, 0x9A, 0x9F, 0xB8,
@@ -75,6 +76,8 @@ TEST(MessagePayloadParserTest, MinimumMessageSize) {
 
   MessagePayloadParser parser(message);
   EXPECT_FALSE(parser.IsValid());
+  EXPECT_EQ(parser.GetFailureReason(),
+            GCMDecryptionResult::INVALID_BINARY_HEADER_PAYLOAD_LENGTH);
 }
 
 TEST(MessagePayloadParserTest, MinimumRecordSize) {
@@ -85,9 +88,11 @@ TEST(MessagePayloadParserTest, MinimumRecordSize) {
 
   MessagePayloadParser parser(message);
   EXPECT_FALSE(parser.IsValid());
+  EXPECT_EQ(parser.GetFailureReason(),
+            GCMDecryptionResult::INVALID_BINARY_HEADER_RECORD_SIZE);
 }
 
-TEST(MessagePayloadParserTest, InvalidPublicKey) {
+TEST(MessagePayloadParserTest, InvalidPublicKeyLength) {
   std::string message = CreateMessageString();
 
   uint8_t invalid_public_key_size = 42;
@@ -96,6 +101,21 @@ TEST(MessagePayloadParserTest, InvalidPublicKey) {
 
   MessagePayloadParser parser(message);
   EXPECT_FALSE(parser.IsValid());
+  EXPECT_EQ(parser.GetFailureReason(),
+            GCMDecryptionResult::INVALID_BINARY_HEADER_PUBLIC_KEY_LENGTH);
+}
+
+TEST(MessagePayloadParserTest, InvalidPublicKeyFormat) {
+  std::string message = CreateMessageString();
+
+  uint8_t invalid_p256_uncompressed_key_prefix = 0x42;
+  base::WriteBigEndian(&message[0] + 16 /* salt */ + 4 /* rs */ + 1 /* idlen */,
+                       invalid_p256_uncompressed_key_prefix);
+
+  MessagePayloadParser parser(message);
+  EXPECT_FALSE(parser.IsValid());
+  EXPECT_EQ(parser.GetFailureReason(),
+            GCMDecryptionResult::INVALID_BINARY_HEADER_PUBLIC_KEY_FORMAT);
 }
 
 }  // namespace

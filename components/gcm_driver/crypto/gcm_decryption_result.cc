@@ -26,8 +26,19 @@ std::string ToGCMDecryptionResultDetailsString(GCMDecryptionResult result) {
       return "The shared secret cannot be derived from the keying material";
     case GCMDecryptionResult::INVALID_PAYLOAD:
       return "AES-GCM decryption failed";
-    case GCMDecryptionResult::INVALID_BINARY_HEADER:
-      return "The message's binary header could not be parsed.";
+    case GCMDecryptionResult::INVALID_BINARY_HEADER_PAYLOAD_LENGTH:
+      return "The message payload is smaller than the smallest valid message "
+             "(104 bytes)";
+    case GCMDecryptionResult::INVALID_BINARY_HEADER_RECORD_SIZE:
+      return "The record size indicated in the binary message header is "
+             "smaller than the smallest valid record size (18 bytes)";
+    case GCMDecryptionResult::INVALID_BINARY_HEADER_PUBLIC_KEY_LENGTH:
+      return "The public key included in the binary message header must be a "
+             "valid P-256 ECDH uncompressed point that is 65 bytes in length.";
+    case GCMDecryptionResult::INVALID_BINARY_HEADER_PUBLIC_KEY_FORMAT:
+      return "The public key included in the binary message header must be a "
+             "valid P-256 ECDH uncompressed poin that starts with an 0x04 "
+             "byte.";
     case GCMDecryptionResult::ENUM_SIZE:
       break;  // deliberate fall-through
   }
