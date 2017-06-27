@@ -1646,11 +1646,7 @@ TEST_F(JobControllerLimitMultipleH2Requests, MultipleRequests) {
   }
 
   for (int i = 0; i < kNumRequests; ++i) {
-    // When a request is completed, delete it. This is needed because
-    // otherwise request will be completed twice. See crbug.com/706974.
-    EXPECT_CALL(*request_delegates[i].get(), OnStreamReadyImpl(_, _, _))
-        .WillOnce(testing::InvokeWithoutArgs(
-            [this, &requests, i]() { requests[i].reset(); }));
+    EXPECT_CALL(*request_delegates[i].get(), OnStreamReadyImpl(_, _, _));
   }
 
   base::RunLoop().RunUntilIdle();
@@ -1723,11 +1719,7 @@ TEST_F(JobControllerLimitMultipleH2Requests, MultipleRequestsFirstRequestHang) {
   }
 
   for (int i = 0; i < kNumRequests; ++i) {
-    // When a request is completed, delete it. This is needed because
-    // otherwise request will be completed twice. See crbug.com/706974.
-    EXPECT_CALL(*request_delegates[i].get(), OnStreamReadyImpl(_, _, _))
-        .WillOnce(testing::InvokeWithoutArgs(
-            [this, &requests, i]() { requests[i].reset(); }));
+    EXPECT_CALL(*request_delegates[i].get(), OnStreamReadyImpl(_, _, _));
   }
 
   EXPECT_TRUE(test_task_runner->HasPendingTask());
@@ -1735,7 +1727,10 @@ TEST_F(JobControllerLimitMultipleH2Requests, MultipleRequestsFirstRequestHang) {
       HttpStreamFactoryImpl::Job::kHTTP2ThrottleMs));
   base::RunLoop().RunUntilIdle();
 
+  EXPECT_FALSE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
+  requests.clear();
   EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
+
   EXPECT_TRUE(hangdata.AllReadDataConsumed());
   for (const auto& data : socket_data) {
     EXPECT_TRUE(data.AllReadDataConsumed());
@@ -1798,14 +1793,14 @@ TEST_F(JobControllerLimitMultipleH2Requests,
   requests[0].reset();
 
   for (int i = 1; i < kNumRequests; ++i) {
-    // When a request is completed, delete it. This is needed because
-    // otherwise request will be completed twice. See crbug.com/706974.
-    EXPECT_CALL(*request_delegates[i].get(), OnStreamReadyImpl(_, _, _))
-        .WillOnce(testing::InvokeWithoutArgs(
-            [this, &requests, i]() { requests[i].reset(); }));
+    EXPECT_CALL(*request_delegates[i].get(), OnStreamReadyImpl(_, _, _));
   }
   base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
+  requests.clear();
   EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
+
   EXPECT_TRUE(first_socket.AllReadDataConsumed());
   for (const auto& data : socket_data) {
     EXPECT_TRUE(data.AllReadDataConsumed());
@@ -1895,14 +1890,14 @@ TEST_F(JobControllerLimitMultipleH2Requests, H1NegotiatedForFirstRequest) {
   }
 
   for (int i = 0; i < 2; ++i) {
-    // When a request is completed, delete it. This is needed because
-    // otherwise request will be completed twice. See crbug.com/706974.
-    EXPECT_CALL(*request_delegates[i].get(), OnStreamReadyImpl(_, _, _))
-        .WillOnce(testing::InvokeWithoutArgs(
-            [this, &requests, i]() { requests[i].reset(); }));
+    EXPECT_CALL(*request_delegates[i].get(), OnStreamReadyImpl(_, _, _));
   }
   base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
+  requests.clear();
   EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
+
   EXPECT_TRUE(first_socket.AllReadDataConsumed());
   EXPECT_FALSE(second_socket.AllReadDataConsumed());
 }
