@@ -16,6 +16,8 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_feature_list.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/previews/core/previews_io_data.h"
 #include "components/previews/core/previews_ui_service.h"
 #include "components/variations/variations_associated_data.h"
@@ -66,7 +68,7 @@ class PreviewsServiceTest : public testing::Test {
  public:
   PreviewsServiceTest()
 
-      : field_trial_list_(nullptr) {}
+      : field_trial_list_(nullptr), scoped_feature_list_() {}
 
   void SetUp() override {
     io_data_ = base::MakeUnique<TestPreviewsIOData>();
@@ -77,6 +79,8 @@ class PreviewsServiceTest : public testing::Test {
                          content::BrowserThread::GetTaskRunnerForThread(
                              content::BrowserThread::UI),
                          file_path);
+    scoped_feature_list_.InitAndDisableFeature(
+        data_reduction_proxy::features::kDataReductionProxyDecidesTransform);
   }
 
   void TearDown() override { variations::testing::ClearAllVariationParams(); }
@@ -90,6 +94,7 @@ class PreviewsServiceTest : public testing::Test {
   base::FieldTrialList field_trial_list_;
   std::unique_ptr<TestPreviewsIOData> io_data_;
   std::unique_ptr<PreviewsService> service_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 }  // namespace
@@ -146,6 +151,9 @@ TEST_F(PreviewsServiceTest, TestServerLoFiFieldTrialNotSet) {
 }
 
 TEST_F(PreviewsServiceTest, TestLitePageFieldTrialEnabledPreview) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      data_reduction_proxy::features::kDataReductionProxyDecidesTransform);
   base::FieldTrialList::CreateFieldTrial("DataCompressionProxyLoFi",
                                          "Enabled_Preview");
   EXPECT_TRUE(io_data()->IsPreviewEnabled(previews::PreviewsType::LITE_PAGE));
@@ -164,4 +172,18 @@ TEST_F(PreviewsServiceTest, TestLitePageFieldTrialDisabled) {
 
 TEST_F(PreviewsServiceTest, TestLitePageFieldTrialNotSet) {
   EXPECT_FALSE(io_data()->IsPreviewEnabled(previews::PreviewsType::LITE_PAGE));
+}
+
+TEST_F(PreviewsServiceTest, TestServerLoFiProxyDecidesTransform) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      data_reduction_proxy::features::kDataReductionProxyDecidesTransform);
+  EXPECT_TRUE(io_data()->IsPreviewEnabled(previews::PreviewsType::LITE_PAGE));
+}
+
+TEST_F(PreviewsServiceTest, TestLitePageProxyDecidesTransform) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      data_reduction_proxy::features::kDataReductionProxyDecidesTransform);
+  EXPECT_TRUE(io_data()->IsPreviewEnabled(previews::PreviewsType::LITE_PAGE));
 }

@@ -10,6 +10,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task_scheduler/post_task.h"
 #include "chrome/common/chrome_constants.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_io_data.h"
@@ -22,15 +23,19 @@ namespace {
 
 // Returns true if previews can be shown for |type|.
 bool IsPreviewsTypeEnabled(previews::PreviewsType type) {
+  bool server_previews_enabled = base::FeatureList::IsEnabled(
+      data_reduction_proxy::features::kDataReductionProxyDecidesTransform);
   switch (type) {
     case previews::PreviewsType::OFFLINE:
       return previews::params::IsOfflinePreviewsEnabled();
     case previews::PreviewsType::LOFI:
-      return previews::params::IsClientLoFiEnabled() ||
+      return server_previews_enabled ||
+             previews::params::IsClientLoFiEnabled() ||
              data_reduction_proxy::params::IsLoFiOnViaFlags() ||
              data_reduction_proxy::params::IsIncludedInLoFiEnabledFieldTrial();
     case previews::PreviewsType::LITE_PAGE:
-      return (data_reduction_proxy::params::IsLoFiOnViaFlags() &&
+      return server_previews_enabled ||
+             (data_reduction_proxy::params::IsLoFiOnViaFlags() &&
               data_reduction_proxy::params::AreLitePagesEnabledViaFlags()) ||
              data_reduction_proxy::params::IsIncludedInLitePageFieldTrial();
     case previews::PreviewsType::NONE:
