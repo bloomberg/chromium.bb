@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chromeos/dbus/session_manager_client.h"
 #include "components/arc/arc_session.h"
 #include "components/arc/arc_stop_reason.h"
 
@@ -18,7 +19,8 @@ namespace arc {
 
 // Accept requests to start/stop ARC instance. Also supports automatic
 // restarting on unexpected ARC instance crash.
-class ArcSessionRunner : public ArcSession::Observer {
+class ArcSessionRunner : public ArcSession::Observer,
+                         public chromeos::SessionManagerClient::Observer {
  public:
   // Observer to notify events across multiple ARC session runs.
   class Observer {
@@ -50,7 +52,8 @@ class ArcSessionRunner : public ArcSession::Observer {
   void RequestStart();
 
   // Stops the ARC service.
-  void RequestStop();
+  // TODO(yusukes): Remove the parameter.
+  void RequestStop(bool always_stop_session);
 
   // OnShutdown() should be called when the browser is shutting down. This can
   // only be called on the thread that this class was created on. We assume that
@@ -94,6 +97,10 @@ class ArcSessionRunner : public ArcSession::Observer {
     // ARC instance is not currently running.
     STOPPED,
 
+    // Request to start ARC instance for login screen is received. Starting an
+    // ARC instance.
+    STARTING_FOR_LOGIN_SCREEN,
+
     // Request to start ARC instance is received. Starting an ARC instance.
     STARTING,
 
@@ -111,6 +118,9 @@ class ArcSessionRunner : public ArcSession::Observer {
   // ArcSession::Observer:
   void OnSessionReady() override;
   void OnSessionStopped(ArcStopReason reason) override;
+
+  // chromeos::SessionManagerClient::Observer:
+  void EmitLoginPromptVisibleCalled() override;
 
   THREAD_CHECKER(thread_checker_);
 

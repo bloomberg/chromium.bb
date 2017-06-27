@@ -413,6 +413,8 @@ void ArcSessionManager::SetProfile(Profile* profile) {
   // Do not expect that SetProfile() is called for various Profile instances.
   // At the moment, it is used for testing purposes.
   DCHECK(profile != profile_);
+  // TODO(yusukes): Once Shutdown() is removed, always call RequestStop() with
+  // |true|. We can actually remove the boolean parameter then.
   Shutdown();
 
   profile_ = profile;
@@ -470,7 +472,7 @@ void ArcSessionManager::ShutdownSession() {
   playstore_launcher_.reset();
   terms_of_service_negotiator_.reset();
   android_management_checker_.reset();
-  arc_session_runner_->RequestStop();
+  arc_session_runner_->RequestStop(false);
   // TODO(hidehiko): The ARC instance's stopping is asynchronous, so it might
   // still be running when we return from this function. Do not set the
   // STOPPED state immediately here.
@@ -624,7 +626,9 @@ void ArcSessionManager::RequestDisable() {
   DCHECK(profile_);
 
   if (!enable_requested_) {
-    VLOG(1) << "ARC is already disabled. Do nothing.";
+    VLOG(1) << "ARC is already disabled. "
+            << "Killing an instance for login screen (if any).";
+    arc_session_runner_->RequestStop(true);
     return;
   }
   enable_requested_ = false;

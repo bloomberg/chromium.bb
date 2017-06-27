@@ -84,6 +84,8 @@ bool FakeSessionManagerClient::IsScreenLocked() const {
 }
 
 void FakeSessionManagerClient::EmitLoginPromptVisible() {
+  for (auto& observer : observers_)
+    observer.EmitLoginPromptVisibleCalled();
 }
 
 void FakeSessionManagerClient::RestartJob(
