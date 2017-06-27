@@ -481,7 +481,7 @@ void BrowserContext::Initialize(
 
     if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kDisableMojoLocalStorage)) {
-      ServiceInfo info;
+      service_manager::EmbeddedServiceInfo info;
       // TODO(mek): Use sequenced task runner rather than single thread task
       // runner when mojo supports that (http://crbug.com/678155).
       info.factory = base::Bind(

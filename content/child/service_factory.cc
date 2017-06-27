@@ -8,8 +8,8 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "content/common/service_manager/embedded_service_runner.h"
 #include "content/public/common/content_client.h"
+#include "services/service_manager/embedder/embedded_service_runner.h"
 
 namespace content {
 
@@ -25,8 +25,9 @@ void ServiceFactory::CreateService(
     ServiceMap services;
     RegisterServices(&services);
     for (const auto& service : services) {
-      std::unique_ptr<EmbeddedServiceRunner> runner(
-          new EmbeddedServiceRunner(service.first, service.second));
+      std::unique_ptr<service_manager::EmbeddedServiceRunner> runner(
+          new service_manager::EmbeddedServiceRunner(service.first,
+                                                     service.second));
       runner->SetQuitClosure(base::Bind(&ServiceFactory::OnServiceQuit,
                                         base::Unretained(this)));
       services_.insert(std::make_pair(service.first, std::move(runner)));

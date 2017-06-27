@@ -1129,7 +1129,7 @@ ProfileImpl::CreateMediaRequestContextForStoragePartition(
 
 void ProfileImpl::RegisterInProcessServices(StaticServiceMap* services) {
   if (features::PrefServiceEnabled()) {
-    content::ServiceInfo info;
+    service_manager::EmbeddedServiceInfo info;
     info.factory = base::Bind(
         &prefs::CreatePrefService, chrome::ExpectedPrefStores(),
         make_scoped_refptr(content::BrowserThread::GetBlockingPool()));
@@ -1140,7 +1140,7 @@ void ProfileImpl::RegisterInProcessServices(StaticServiceMap* services) {
     services->insert(std::make_pair(prefs::mojom::kServiceName, info));
   }
 
-  content::ServiceInfo identity_service_info;
+  service_manager::EmbeddedServiceInfo identity_service_info;
 
   // The Identity Service must run on the UI thread.
   identity_service_info.task_runner = base::ThreadTaskRunnerHandle::Get();

@@ -29,14 +29,14 @@ GpuServiceFactory::~GpuServiceFactory() {}
 
 void GpuServiceFactory::RegisterServices(ServiceMap* services) {
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
-  ServiceInfo info;
+  service_manager::EmbeddedServiceInfo info;
   info.factory = base::Bind(&media::CreateGpuMediaService, task_runner_,
                             media_gpu_channel_manager_);
   info.use_own_thread = true;
   services->insert(std::make_pair("media", info));
 #endif
 
-  ServiceInfo shape_detection_info;
+  service_manager::EmbeddedServiceInfo shape_detection_info;
   shape_detection_info.factory =
       base::Bind(&shape_detection::ShapeDetectionService::Create);
   services->insert(std::make_pair(shape_detection::mojom::kServiceName,

@@ -4,6 +4,10 @@
 
 component("embedder") {
   sources = [
+    "embedded_service_info.cc",
+    "embedded_service_info.h",
+    "embedded_service_runner.cc",
+    "embedded_service_runner.h",
     "main.cc",
     "main.h",
     "main_delegate.cc",

@@ -34,7 +34,7 @@ TEST(ServiceManagerConnectionImplTest, ServiceLaunchThreading) {
   ServiceManagerConnectionImpl connection_impl(mojo::MakeRequest(&service),
                                                io_thread.task_runner());
   ServiceManagerConnection& connection = connection_impl;
-  ServiceInfo info;
+  service_manager::EmbeddedServiceInfo info;
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
   info.factory = base::Bind(&LaunchService, &event);

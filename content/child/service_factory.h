@@ -9,19 +9,22 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "content/public/common/service_info.h"
+#include "services/service_manager/embedder/embedded_service_info.h"
 #include "services/service_manager/public/interfaces/service.mojom.h"
 #include "services/service_manager/public/interfaces/service_factory.mojom.h"
 
-namespace content {
-
+namespace service_manager {
 class EmbeddedServiceRunner;
+}
+
+namespace content {
 
 // Base class for child-process specific implementations of
 // service_manager::mojom::ServiceFactory.
 class ServiceFactory : public service_manager::mojom::ServiceFactory {
  public:
-  using ServiceMap = std::map<std::string, ServiceInfo>;
+  using ServiceMap =
+      std::map<std::string, service_manager::EmbeddedServiceInfo>;
 
   ServiceFactory();
   ~ServiceFactory() override;
@@ -38,7 +41,8 @@ class ServiceFactory : public service_manager::mojom::ServiceFactory {
   virtual void OnLoadFailed() {}
 
   bool has_registered_services_ = false;
-  std::unordered_map<std::string, std::unique_ptr<EmbeddedServiceRunner>>
+  std::unordered_map<std::string,
+                     std::unique_ptr<service_manager::EmbeddedServiceRunner>>
       services_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceFactory);
