@@ -169,6 +169,8 @@ RendererSchedulerImpl::~RendererSchedulerImpl() {
   DCHECK(GetMainThreadOnly().was_shutdown);
 }
 
+#define TASK_DURATION_METRIC_NAME "RendererScheduler.TaskDurationPerQueueType2"
+
 RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
     RendererSchedulerImpl* renderer_scheduler_impl,
     const scoped_refptr<TaskQueue>& compositor_task_runner,
@@ -221,22 +223,19 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
       background_status_changed_at(now),
       rail_mode_observer(nullptr),
       wake_up_budget_pool(nullptr),
-      task_duration_reporter("RendererScheduler.TaskDurationPerQueueType2"),
-      foreground_task_duration_reporter(
-          "RendererScheduler.TaskDurationPerQueueType2.Foreground"),
-      background_task_duration_reporter(
-          "RendererScheduler.TaskDurationPerQueueType2.Background"),
-      background_first_minute_task_duration_reporter(
-          "RendererScheduler.TaskDurationPerQueueType2.Background.FirstMinute"),
+      task_duration_reporter(TASK_DURATION_METRIC_NAME),
+      foreground_task_duration_reporter(TASK_DURATION_METRIC_NAME
+                                        ".Foreground"),
+      background_task_duration_reporter(TASK_DURATION_METRIC_NAME
+                                        ".Background"),
+      background_first_minute_task_duration_reporter(TASK_DURATION_METRIC_NAME
+                                                     ".Background.FirstMinute"),
       background_after_first_minute_task_duration_reporter(
-          "RendererScheduler.TaskDurationPerQueueType2.Background."
-          "AfterFirstMinute"),
-      hidden_task_duration_reporter(
-          "RendererScheduler.TaskDurationPerQueueType2.Hidden"),
-      visible_task_duration_reporter(
-          "RendererScheduler.TaskDurationPerQueueType.Visible"),
-      hidden_music_task_duration_reporter(
-          "RendererScheduler.TaskDurationPerQueueType.HiddenMusic") {
+          TASK_DURATION_METRIC_NAME ".Background.AfterFirstMinute"),
+      hidden_task_duration_reporter(TASK_DURATION_METRIC_NAME ".Hidden"),
+      visible_task_duration_reporter(TASK_DURATION_METRIC_NAME ".Visible"),
+      hidden_music_task_duration_reporter(TASK_DURATION_METRIC_NAME
+                                          ".HiddenMusic") {
   foreground_main_thread_load_tracker.Resume(now);
 }
 
