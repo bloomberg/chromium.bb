@@ -87,7 +87,7 @@
     <output filename="remoting/webapp/_locales/da/messages.json" lang="da" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/de/messages.json" lang="de" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/fa/messages.json" lang="fa" type="chrome_messages_json"/>
-    <output filename="remoting/webapp/_locales/fake_bidi/messages.json" lang="fake_bidi" type="chrome_messages_json"/>
+    <output filename="remoting/webapp/_locales/fake_bidi/messages.json" lang="fake-bidi" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/el/messages.json" lang="el" type="chrome_messages_json"/>
     <output filename="remoting/webapp/_locales/en/messages.json" lang="en" type="chrome_messages_json"/>
     <if expr="chromeos or is_ios">
