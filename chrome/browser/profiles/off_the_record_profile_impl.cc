@@ -383,7 +383,7 @@ OffTheRecordProfileImpl::CreateMediaRequestContextForStoragePartition(
 void OffTheRecordProfileImpl::RegisterInProcessServices(
     StaticServiceMap* services) {
   if (features::PrefServiceEnabled()) {
-    content::ServiceInfo info;
+    service_manager::EmbeddedServiceInfo info;
     info.factory = base::Bind(
         &prefs::CreatePrefService, chrome::ExpectedPrefStores(),
         make_scoped_refptr(content::BrowserThread::GetBlockingPool()));

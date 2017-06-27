@@ -296,8 +296,7 @@ ServiceManagerContext::ServiceManagerContext() {
       std::move(root_browser_service), mojo::MakeRequest(&pid_receiver));
   pid_receiver->SetPID(base::GetCurrentProcId());
 
-
-  ServiceInfo device_info;
+  service_manager::EmbeddedServiceInfo device_info;
 #if defined(OS_ANDROID)
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaGlobalRef<jobject> java_nfc_delegate;
@@ -323,7 +322,7 @@ ServiceManagerContext::ServiceManagerContext() {
                                                     device_info);
 
   if (base::FeatureList::IsEnabled(features::kGlobalResourceCoordinator)) {
-    ServiceInfo resource_coordinator_info;
+    service_manager::EmbeddedServiceInfo resource_coordinator_info;
     resource_coordinator_info.factory =
         base::Bind(&resource_coordinator::ResourceCoordinatorService::Create);
     packaged_services_connection_->AddEmbeddedService(

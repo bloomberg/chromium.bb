@@ -18,7 +18,6 @@
 #include "components/payments/content/utility/payment_manifest_parser.h"
 #include "components/safe_json/utility/safe_json_parser_mojo_impl.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/service_info.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/simple_connection_filter.h"
 #include "content/public/utility/utility_thread.h"
@@ -27,6 +26,7 @@
 #include "extensions/features/features.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "printing/features/features.h"
+#include "services/service_manager/embedder/embedded_service_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/zlib/google/zip.h"
 
@@ -324,7 +324,7 @@ bool ChromeContentUtilityClient::OnMessageReceived(
 void ChromeContentUtilityClient::RegisterServices(
     ChromeContentUtilityClient::StaticServiceMap* services) {
 #if BUILDFLAG(ENABLE_PRINTING)
-  content::ServiceInfo pdf_compositor_info;
+  service_manager::EmbeddedServiceInfo pdf_compositor_info;
   pdf_compositor_info.factory =
       base::Bind(&printing::CreatePdfCompositorService, GetUserAgent());
   services->emplace(printing::mojom::kServiceName, pdf_compositor_info);

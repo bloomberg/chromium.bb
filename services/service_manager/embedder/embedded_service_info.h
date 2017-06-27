@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_COMMON_SERVICE_INFO_H_
-#define CONTENT_PUBLIC_COMMON_SERVICE_INFO_H_
+#ifndef SERVICES_SERVICE_MANAGER_EMBEDDER_EMBEDDED_SERVICE_INFO_H_
+#define SERVICES_SERVICE_MANAGER_EMBEDDER_EMBEDDED_SERVICE_INFO_H_
 
 #include <memory>
 
@@ -12,23 +12,20 @@
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/platform_thread.h"
-#include "content/common/content_export.h"
+#include "services/service_manager/embedder/service_manager_embedder_export.h"
 
 namespace service_manager {
 class Service;
-}
 
-namespace content {
-
-// ServiceInfo provides details necessary to construct and bind new instances
-// of embedded services.
-struct CONTENT_EXPORT ServiceInfo {
+// EmbeddedServiceInfo provides details necessary to construct and bind new
+// instances of embedded services.
+struct SERVICE_MANAGER_EMBEDDER_EXPORT EmbeddedServiceInfo {
   using ServiceFactory =
       base::Callback<std::unique_ptr<service_manager::Service>()>;
 
-  ServiceInfo();
-  ServiceInfo(const ServiceInfo& other);
-  ~ServiceInfo();
+  EmbeddedServiceInfo();
+  EmbeddedServiceInfo(const EmbeddedServiceInfo& other);
+  ~EmbeddedServiceInfo();
 
   // A factory function which will be called to produce a new Service
   // instance for this service whenever one is needed.
@@ -55,6 +52,6 @@ struct CONTENT_EXPORT ServiceInfo {
   base::ThreadPriority thread_priority = base::ThreadPriority::NORMAL;
 };
 
-}  // namespace content
+}  // namespace service_manager
 
-#endif  // CONTENT_PUBLIC_COMMON_SERVICE_INFO_H_
+#endif  // SERVICES_SERVICE_MANAGER_EMBEDDER_EMBEDDED_SERVICE_INFO_H_

@@ -236,7 +236,7 @@ void ShellContentBrowserClient::RegisterInProcessServices(
     StaticServiceMap* services) {
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
   {
-    content::ServiceInfo info;
+    service_manager::EmbeddedServiceInfo info;
     info.factory = base::Bind(&media::CreateMediaServiceForTesting);
     services->insert(std::make_pair("media", info));
   }

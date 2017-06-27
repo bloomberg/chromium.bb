@@ -17,11 +17,11 @@
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/common/child.mojom.h"
-#include "content/common/service_manager/embedded_service_runner.h"
 #include "content/public/common/connection_filter.h"
 #include "content/public/common/service_names.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/system/message_pipe.h"
+#include "services/service_manager/embedder/embedded_service_runner.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/interfaces/constants.mojom.h"
@@ -105,7 +105,8 @@ class ServiceManagerConnectionImpl::IOThreadContext
                    filter_id));
   }
 
-  void AddEmbeddedService(const std::string& name, const ServiceInfo& info) {
+  void AddEmbeddedService(const std::string& name,
+                          const service_manager::EmbeddedServiceInfo& info) {
     io_task_runner_->PostTask(
         FROM_HERE, base::Bind(&ServiceManagerConnectionImpl::IOThreadContext::
                                   AddEmbeddedServiceRequestHandlerOnIoThread,
@@ -217,14 +218,16 @@ class ServiceManagerConnectionImpl::IOThreadContext
       connection_filters_.erase(it);
   }
 
-  void AddEmbeddedServiceRequestHandlerOnIoThread(const std::string& name,
-                                                  const ServiceInfo& info) {
+  void AddEmbeddedServiceRequestHandlerOnIoThread(
+      const std::string& name,
+      const service_manager::EmbeddedServiceInfo& info) {
     DCHECK(io_thread_checker_.CalledOnValidThread());
-    std::unique_ptr<EmbeddedServiceRunner> service(
-        new EmbeddedServiceRunner(name, info));
+    std::unique_ptr<service_manager::EmbeddedServiceRunner> service(
+        new service_manager::EmbeddedServiceRunner(name, info));
     AddServiceRequestHandlerOnIoThread(
-        name, base::Bind(&EmbeddedServiceRunner::BindServiceRequest,
-                         base::Unretained(service.get())));
+        name,
+        base::Bind(&service_manager::EmbeddedServiceRunner::BindServiceRequest,
+                   base::Unretained(service.get())));
     auto result =
         embedded_services_.insert(std::make_pair(name, std::move(service)));
     DCHECK(result.second);
@@ -315,7 +318,8 @@ class ServiceManagerConnectionImpl::IOThreadContext
   base::Lock lock_;
   std::map<int, std::unique_ptr<ConnectionFilter>> connection_filters_;
 
-  std::unordered_map<std::string, std::unique_ptr<EmbeddedServiceRunner>>
+  std::unordered_map<std::string,
+                     std::unique_ptr<service_manager::EmbeddedServiceRunner>>
       embedded_services_;
   std::unordered_map<std::string, ServiceRequestHandler> request_handlers_;
 
@@ -413,8 +417,9 @@ void ServiceManagerConnectionImpl::RemoveConnectionFilter(int filter_id) {
   context_->RemoveConnectionFilter(filter_id);
 }
 
-void ServiceManagerConnectionImpl::AddEmbeddedService(const std::string& name,
-                                                      const ServiceInfo& info) {
+void ServiceManagerConnectionImpl::AddEmbeddedService(
+    const std::string& name,
+    const service_manager::EmbeddedServiceInfo& info) {
   context_->AddEmbeddedService(name, info);
 }
 
