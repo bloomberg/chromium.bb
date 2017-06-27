@@ -3016,7 +3016,9 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     # https://gerrit-review.googlesource.com/Documentation/user-upload.html
     refspec_opts = []
 
-    if not options.send_mail:
+    if options.send_mail:
+      refspec_opts.append('ready')
+    else:
       refspec_opts.append('wip')
 
     # TODO(tandrii): options.message should be posted as a comment

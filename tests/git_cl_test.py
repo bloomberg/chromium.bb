@@ -1519,15 +1519,12 @@ class TestGitCl(TestCase):
       '1hashPerLine\n'),
     ]
 
-    ref_suffix = ''
-    if not notify:
-      ref_suffix = '%wip'
+    ref_suffix = '%wip'
+    if notify:
+      ref_suffix = '%ready'
 
     if title:
-      if ref_suffix:
-        ref_suffix += ',m=' + title
-      else:
-        ref_suffix = '%m=' + title
+      ref_suffix += ',m=' + title
 
     if git_mirror is None:
       calls += [
