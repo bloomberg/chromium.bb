@@ -87,7 +87,7 @@
     <div class="list-frame">
       <div id="addressList" class="vertical-list">
         <template is="dom-repeat" items="[[addresses]]">
-          <div class="list-item two-line">
+          <div class="list-item">
             <div class="start">
               <span id="addressSummary">
                 <span class="ellipses">
@@ -146,7 +146,7 @@
       </div>
       <div id="creditCardList" class="vertical-list list-with-header">
         <template is="dom-repeat" items="[[creditCards]]">
-          <div class="list-item two-line">
+          <div class="list-item">
             <div class="type-column">
               <span id="creditCardLabel">[[item.metadata.summaryLabel]]</span>
               <span class="payments-label" hidden$="[[item.metadata.isLocal]]">
