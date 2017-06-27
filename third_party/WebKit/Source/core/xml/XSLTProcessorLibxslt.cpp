@@ -231,9 +231,13 @@ static const char** XsltParamArrayFromParameterMap(
   if (parameters.IsEmpty())
     return nullptr;
 
-  const char** parameter_array = static_cast<const char**>(
-      WTF::Partitions::FastMalloc(((parameters.size() * 2) + 1) * sizeof(char*),
-                                  WTF_HEAP_PROFILER_TYPE_NAME(XSLTProcessor)));
+  WTF::CheckedSizeT size = parameters.size();
+  size *= 2;
+  ++size;
+  size *= sizeof(char*);
+  const char** parameter_array =
+      static_cast<const char**>(WTF::Partitions::FastMalloc(
+          size.ValueOrDie(), WTF_HEAP_PROFILER_TYPE_NAME(XSLTProcessor)));
 
   unsigned index = 0;
   for (auto& parameter : parameters) {

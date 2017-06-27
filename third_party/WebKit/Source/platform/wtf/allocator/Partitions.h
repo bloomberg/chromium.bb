@@ -173,6 +173,8 @@ using base::PartitionMemoryStats;
 using base::PartitionBucketMemoryStats;
 using base::PartitionAllocHooks;
 
+using CheckedSizeT = base::CheckedNumeric<size_t>;
+
 }  // namespace WTF
 
 #endif  // Partitions_h
