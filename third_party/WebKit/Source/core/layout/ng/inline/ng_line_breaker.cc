@@ -162,7 +162,7 @@ void NGLineBreaker::BreakLine(NGLineInfo* line_info) {
         NGInlineItemResult(item_index_, offset_, item.EndOffset()));
     NGInlineItemResult* item_result = &item_results->back();
     if (item.Type() == NGInlineItem::kText) {
-      state = HandleText(item, item_result);
+      state = HandleText(*item_results, item, item_result);
     } else if (item.Type() == NGInlineItem::kAtomicInline) {
       state = HandleAtomicInline(item, item_result);
     } else if (item.Type() == NGInlineItem::kControl) {
@@ -208,7 +208,15 @@ void NGLineBreaker::ComputeLineLocation(NGLineInfo* line_info) const {
                              content_offset_.block_offset);
 }
 
+bool NGLineBreaker::IsFirstBreakOpportunity(
+    unsigned offset,
+    const NGInlineItemResults& results) const {
+  unsigned line_start_offset = results.front().start_offset;
+  return break_iterator_.NextBreakOpportunity(line_start_offset) >= offset;
+}
+
 NGLineBreaker::LineBreakState NGLineBreaker::HandleText(
+    const NGInlineItemResults& results,
     const NGInlineItem& item,
     NGInlineItemResult* item_result) {
   DCHECK_EQ(item.Type(), NGInlineItem::kText);
@@ -234,9 +242,22 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleText(
   if (auto_wrap_) {
     // Try to break inside of this text item.
     BreakText(item_result, item, available_width - position_);
-    position_ += item_result->inline_size;
+    LayoutUnit next_position = position_ + item_result->inline_size;
+    bool is_overflow = next_position > available_width;
 
-    bool is_overflow = position_ > available_width;
+    // If overflow and no break opportunities exist, and if 'break-word', try to
+    // break at every grapheme cluster boundary.
+    if (is_overflow && break_if_overflow_ &&
+        IsFirstBreakOpportunity(item_result->end_offset, results)) {
+      DCHECK_EQ(break_iterator_.BreakType(), LineBreakType::kNormal);
+      break_iterator_.SetBreakType(LineBreakType::kBreakCharacter);
+      BreakText(item_result, item, available_width - position_);
+      break_iterator_.SetBreakType(LineBreakType::kNormal);
+      next_position = position_ + item_result->inline_size;
+      is_overflow = next_position > available_width;
+    }
+
+    position_ = next_position;
     item_result->no_break_opportunities_inside = is_overflow;
     if (item_result->end_offset < item.EndOffset()) {
       offset_ = item_result->end_offset;
@@ -608,16 +629,24 @@ void NGLineBreaker::SetCurrentStyle(const ComputedStyle& style) {
   if (auto_wrap_) {
     break_iterator_.SetLocale(style.LocaleForLineBreakIterator());
 
-    if (style.WordBreak() == EWordBreak::kBreakAll ||
-        style.WordBreak() == EWordBreak::kBreakWord) {
-      break_iterator_.SetBreakType(LineBreakType::kBreakAll);
-    } else if (style.WordBreak() == EWordBreak::kKeepAll) {
-      break_iterator_.SetBreakType(LineBreakType::kKeepAll);
-    } else {
-      break_iterator_.SetBreakType(LineBreakType::kNormal);
+    switch (style.WordBreak()) {
+      case EWordBreak::kNormal:
+        break_if_overflow_ = style.OverflowWrap() == EOverflowWrap::kBreakWord;
+        break_iterator_.SetBreakType(LineBreakType::kNormal);
+        break;
+      case EWordBreak::kBreakAll:
+        break_if_overflow_ = false;
+        break_iterator_.SetBreakType(LineBreakType::kBreakAll);
+        break;
+      case EWordBreak::kBreakWord:
+        break_if_overflow_ = true;
+        break_iterator_.SetBreakType(LineBreakType::kNormal);
+        break;
+      case EWordBreak::kKeepAll:
+        break_if_overflow_ = false;
+        break_iterator_.SetBreakType(LineBreakType::kKeepAll);
+        break;
     }
-
-    // TODO(kojii): Implement word-wrap/overflow-wrap property
   }
 
   spacing_.SetSpacing(style.GetFontDescription());
