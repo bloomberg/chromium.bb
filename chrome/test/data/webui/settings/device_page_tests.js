@@ -682,7 +682,7 @@ cr.define('device_page_tests', function() {
         var powerSourceWrapper;
         var powerSourceSelect;
         var idleSelect;
-        var lidClosedSelect;
+        var lidClosedToggle;
 
         suiteSetup(function() {
           // Always show power settings.
@@ -705,7 +705,7 @@ cr.define('device_page_tests', function() {
                         .updatePowerStatusCalled_);
 
                 idleSelect = assert(powerPage.$$('#idleSelect'));
-                lidClosedSelect = assert(powerPage.$$('#lidClosedSelect'));
+                lidClosedToggle = assert(powerPage.$$('#lidClosedToggle'));
 
                 assertEquals(
                     1,
@@ -802,17 +802,31 @@ cr.define('device_page_tests', function() {
         });
 
         test('set lid behavior', function() {
-          selectValue(lidClosedSelect, settings.LidClosedBehavior.DO_NOTHING);
+          var sendLid = function(lidBehavior) {
+            sendPowerManagementSettings(
+                settings.IdleBehavior.DISPLAY_OFF,
+                false /* idleControlled */, lidBehavior,
+                false /* lidClosedControlled */, true /* hasLid */);
+          };
+
+          sendLid(settings.LidClosedBehavior.SUSPEND);
+          assertTrue(lidClosedToggle.checked);
+
+          MockInteractions.tap(lidClosedToggle.$$('#control'));
           expectEquals(
               settings.LidClosedBehavior.DO_NOTHING,
               settings.DevicePageBrowserProxyImpl.getInstance()
                   .lidClosedBehavior_);
+          sendLid(settings.LidClosedBehavior.DO_NOTHING);
+          expectFalse(lidClosedToggle.checked);
 
-          selectValue(lidClosedSelect, settings.LidClosedBehavior.SUSPEND);
+          MockInteractions.tap(lidClosedToggle.$$('#control'));
           expectEquals(
               settings.LidClosedBehavior.SUSPEND,
               settings.DevicePageBrowserProxyImpl.getInstance()
                   .lidClosedBehavior_);
+          sendLid(settings.LidClosedBehavior.SUSPEND);
+          expectTrue(lidClosedToggle.checked);
         });
 
         test('display idle and lid behavior', function() {
@@ -827,11 +841,10 @@ cr.define('device_page_tests', function() {
                 settings.IdleBehavior.DISPLAY_ON.toString(), idleSelect.value);
             expectFalse(idleSelect.disabled);
             expectEquals(null, powerPage.$$('#idleControlledIndicator'));
-            expectEquals(
-                settings.LidClosedBehavior.DO_NOTHING.toString(),
-                lidClosedSelect.value);
-            expectFalse(lidClosedSelect.disabled);
-            expectEquals(null, powerPage.$$('#lidClosedControlledIndicator'));
+            expectEquals(loadTimeData.getString('powerLidSleepLabel'),
+                         lidClosedToggle.label);
+            expectFalse(lidClosedToggle.checked);
+            expectFalse(lidClosedToggle.isPrefEnforced());
           }).then(function() {
             sendPowerManagementSettings(
                 settings.IdleBehavior.DISPLAY_OFF,
@@ -843,21 +856,20 @@ cr.define('device_page_tests', function() {
                          idleSelect.value);
             expectFalse(idleSelect.disabled);
             expectEquals(null, powerPage.$$('#idleControlledIndicator'));
-            expectEquals(
-                settings.LidClosedBehavior.SUSPEND.toString(),
-                lidClosedSelect.value);
-            expectFalse(lidClosedSelect.disabled);
-            expectEquals(null, powerPage.$$('#lidClosedControlledIndicator'));
+            expectEquals(loadTimeData.getString('powerLidSleepLabel'),
+                         lidClosedToggle.label);
+            expectTrue(lidClosedToggle.checked);
+            expectFalse(lidClosedToggle.isPrefEnforced());
           });
         });
 
         test('display controlled idle and lid behavior', function() {
-          // When settings are controlled, the selects should be disabled and
+          // When settings are controlled, the controls should be disabled and
           // the indicators should be shown.
           return new Promise(function(resolve) {
             sendPowerManagementSettings(
                 settings.IdleBehavior.OTHER, true /* idleControlled */,
-                settings.LidClosedBehavior.SUSPEND,
+                settings.LidClosedBehavior.SHUT_DOWN,
                 true /* lidClosedControlled */, true /* hasLid */);
             powerPage.async(resolve);
           }).then(function() {
@@ -865,12 +877,27 @@ cr.define('device_page_tests', function() {
                 settings.IdleBehavior.OTHER.toString(), idleSelect.value);
             expectTrue(idleSelect.disabled);
             expectNotEquals(null, powerPage.$$('#idleControlledIndicator'));
+            expectEquals(loadTimeData.getString('powerLidShutDownLabel'),
+                         lidClosedToggle.label);
+            expectTrue(lidClosedToggle.checked);
+            expectTrue(lidClosedToggle.isPrefEnforced());
+          }).then(function() {
+            sendPowerManagementSettings(
+                settings.IdleBehavior.DISPLAY_OFF,
+                true /* idleControlled */,
+                settings.LidClosedBehavior.STOP_SESSION,
+                true /* lidClosedControlled */, true /* hasLid */);
+            return new Promise(function(resolve) { powerPage.async(resolve); });
+          }).then(function() {
             expectEquals(
-                settings.LidClosedBehavior.SUSPEND.toString(),
-                lidClosedSelect.value);
-            expectTrue(lidClosedSelect.disabled);
-            expectNotEquals(
-                null, powerPage.$$('#lidClosedControlledIndicator'));
+                settings.IdleBehavior.DISPLAY_OFF.toString(),
+                idleSelect.value);
+            expectTrue(idleSelect.disabled);
+            expectNotEquals(null, powerPage.$$('#idleControlledIndicator'));
+            expectEquals(loadTimeData.getString('powerLidSignOutLabel'),
+                         lidClosedToggle.label);
+            expectTrue(lidClosedToggle.checked);
+            expectTrue(lidClosedToggle.isPrefEnforced());
           });
         });
 
