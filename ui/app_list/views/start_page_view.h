@@ -21,6 +21,7 @@ class AppListViewDelegate;
 class CustomLauncherPageBackgroundView;
 class IndicatorChipView;
 class SearchResultTileItemView;
+class SuggestionsContainerView;
 class TileItemView;
 
 // The start page for the app list.
@@ -54,8 +55,6 @@ class APP_LIST_EXPORT StartPageView : public AppListPage {
   void OnScrollEvent(ui::ScrollEvent* event) override;
 
  private:
-  class StartPageTilesContainer;
-
   void InitInstantContainer();
 
   void MaybeOpenCustomLauncherPage();
@@ -76,9 +75,10 @@ class APP_LIST_EXPORT StartPageView : public AppListPage {
 
   views::View* instant_container_;  // Owned by views hierarchy.
   CustomLauncherPageBackgroundView*
-      custom_launcher_page_background_;       // Owned by views hierarchy.
-  IndicatorChipView* indicator_ = nullptr;    // Owned by views hierarchy.
-  StartPageTilesContainer* tiles_container_;  // Owned by views hierarchy.
+      custom_launcher_page_background_;     // Owned by views hierarchy.
+  IndicatorChipView* indicator_ = nullptr;  // Owned by views hierarchy.
+  SuggestionsContainerView*
+      suggestions_container_;  // Owned by views hierarchy.
 
   const bool is_fullscreen_app_list_enabled_;
 
