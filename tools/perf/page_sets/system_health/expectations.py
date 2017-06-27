@@ -82,8 +82,6 @@ class SystemHealthMobileCommonExpectations(expectations.StoryExpectations):
                       [expectations.ALL_ANDROID], 'crbug.com/726301')
     self.DisableStory('long_running:tools:gmail-foreground',
                       [expectations.ALL_ANDROID], 'crbug.com/726301')
-    self.DisableStory('browse:news:toi', [expectations.ALL_ANDROID],
-                      'crbug.com/728081')
     self.DisableStory('browse:social:facebook_infinite_scroll',
                       [expectations.ALL], 'crbug.com/728152')
     self.DisableStory('browse:media:flickr_infinite_scroll',
@@ -118,8 +116,6 @@ class SystemHealthMobileMemoryExpectations(expectations.StoryExpectations):
                       [expectations.ALL_ANDROID], 'crbug.com/726301')
     self.DisableStory('long_running:tools:gmail-foreground',
                       [expectations.ALL_ANDROID], 'crbug.com/726301')
-    self.DisableStory('browse:news:toi', [expectations.ALL_ANDROID],
-                      'crbug.com/728081')
     self.DisableStory('browse:social:facebook_infinite_scroll',
                       [expectations.ALL], 'crbug.com/728152')
     self.DisableStory('browse:media:flickr_infinite_scroll',
@@ -199,8 +195,6 @@ class V8BrowsingMobileExpecations(expectations.StoryExpectations):
                       'crbug.com/708300')
     self.DisableStory('browse:news:globo', [expectations.ALL_ANDROID],
                       'crbug.com/714650')
-    self.DisableStory('browse:news:toi', [expectations.ALL_ANDROID],
-                      'crbug.com/728081')
     self.DisableStory('browse:social:facebook_infinite_scroll',
                       [expectations.ALL], 'crbug.com/728152')
     self.DisableStory('browse:media:flickr_infinite_scroll',
