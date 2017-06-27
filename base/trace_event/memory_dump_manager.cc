@@ -426,7 +426,7 @@ void MemoryDumpManager::CreateProcessDump(
   if (!is_initialized()) {
     VLOG(1) << "CreateProcessDump() FAIL: MemoryDumpManager is not initialized";
     if (!callback.is_null()) {
-      callback.Run(args.dump_guid, false /* success */,
+      callback.Run(false /* success */, args.dump_guid,
                    Optional<MemoryDumpCallbackResult>());
     }
     return;
@@ -458,7 +458,7 @@ void MemoryDumpManager::CreateProcessDump(
     // absent we fail the dump immediately.
     if (args.dump_type != MemoryDumpType::SUMMARY_ONLY &&
         heap_profiling_enabled_ && !heap_profiler_serialization_state_) {
-      callback.Run(args.dump_guid, false /* success */, base::nullopt);
+      callback.Run(false /* success */, args.dump_guid, base::nullopt);
       return;
     }
 
@@ -721,7 +721,7 @@ void MemoryDumpManager::FinalizeDumpAndAddToTrace(
   }
 
   if (!pmd_async_state->callback.is_null()) {
-    pmd_async_state->callback.Run(dump_guid, dump_successful, result);
+    pmd_async_state->callback.Run(dump_successful, dump_guid, result);
     pmd_async_state->callback.Reset();
   }
 

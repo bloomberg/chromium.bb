@@ -50,7 +50,7 @@ void MemoryInstrumentation::RequestGlobalDumpAndAppendToTrace(
     RequestGlobalDumpAndAppendToTraceCallback callback) {
   const auto& coordinator = GetCoordinatorBindingForCurrentThread();
   auto callback_adapter = [](RequestGlobalDumpAndAppendToTraceCallback callback,
-                             uint64_t dump_id, bool success,
+                             bool success, uint64_t dump_id,
                              mojom::GlobalMemoryDumpPtr) {
     if (callback)
       callback.Run(success, dump_id);

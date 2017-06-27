@@ -28,8 +28,8 @@ class ProcessMemoryMetricsEmitter
 
   // Virtual for testing.
   virtual void ReceivedMemoryDump(
-      uint64_t dump_guid,
       bool success,
+      uint64_t dump_guid,
       memory_instrumentation::mojom::GlobalMemoryDumpPtr ptr);
 
  private:

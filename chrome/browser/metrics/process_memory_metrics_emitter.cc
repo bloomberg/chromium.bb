@@ -78,8 +78,8 @@ void ProcessMemoryMetricsEmitter::FetchAndEmitProcessMemoryMetrics() {
 ProcessMemoryMetricsEmitter::~ProcessMemoryMetricsEmitter() {}
 
 void ProcessMemoryMetricsEmitter::ReceivedMemoryDump(
-    uint64_t dump_guid,
     bool success,
+    uint64_t dump_guid,
     memory_instrumentation::mojom::GlobalMemoryDumpPtr ptr) {
   if (!success)
     return;

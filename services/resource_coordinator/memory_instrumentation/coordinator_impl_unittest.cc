@@ -106,7 +106,7 @@ class MockClientProcess : public mojom::ClientProcess {
         .WillByDefault(
             Invoke([](const MemoryDumpRequestArgs& args,
                       const RequestProcessMemoryDumpCallback& callback) {
-              callback.Run(args.dump_guid, true, nullptr);
+              callback.Run(true, args.dump_guid, nullptr);
 
             }));
   }
@@ -124,10 +124,10 @@ class MockClientProcess : public mojom::ClientProcess {
 class MockGlobalMemoryDumpCallback {
  public:
   MockGlobalMemoryDumpCallback() = default;
-  MOCK_METHOD3(OnCall, void(uint64_t, bool, GlobalMemoryDump*));
+  MOCK_METHOD3(OnCall, void(bool, uint64_t, GlobalMemoryDump*));
 
-  void Run(uint64_t dump_guid, bool success, GlobalMemoryDumpPtr ptr) {
-    OnCall(dump_guid, success, ptr.get());
+  void Run(bool success, uint64_t dump_guid, GlobalMemoryDumpPtr ptr) {
+    OnCall(success, dump_guid, ptr.get());
   }
 
   RequestGlobalMemoryDumpCallback Get() {
@@ -146,7 +146,7 @@ TEST_F(CoordinatorImplTest, NoClients) {
       base::trace_event::MemoryDumpLevelOfDetail::DETAILED};
 
   MockGlobalMemoryDumpCallback callback;
-  EXPECT_CALL(callback, OnCall(Ne(0u), true, NotNull()));
+  EXPECT_CALL(callback, OnCall(true, Ne(0u), NotNull()));
   RequestGlobalMemoryDump(args, callback.Get());
 }
 
@@ -165,7 +165,7 @@ TEST_F(CoordinatorImplTest, SeveralClients) {
       base::trace_event::MemoryDumpLevelOfDetail::DETAILED};
 
   MockGlobalMemoryDumpCallback callback;
-  EXPECT_CALL(callback, OnCall(Ne(0u), true, NotNull()))
+  EXPECT_CALL(callback, OnCall(true, Ne(0u), NotNull()))
       .WillOnce(RunClosure(run_loop.QuitClosure()));
   RequestGlobalMemoryDump(args, callback.Get());
   run_loop.Run();
@@ -196,7 +196,7 @@ TEST_F(CoordinatorImplTest, ClientCrashDuringGlobalDump) {
                      const MockClientProcess::RequestProcessMemoryDumpCallback&
                          callback) {
             client_process_2.reset();
-            callback.Run(args.dump_guid, true, nullptr);
+            callback.Run(true, args.dump_guid, nullptr);
           }));
   ON_CALL(*client_process_2, RequestProcessMemoryDump(_, _))
       .WillByDefault(
@@ -205,11 +205,11 @@ TEST_F(CoordinatorImplTest, ClientCrashDuringGlobalDump) {
                      const MockClientProcess::RequestProcessMemoryDumpCallback&
                          callback) {
             client_process_1.reset();
-            callback.Run(args.dump_guid, true, nullptr);
+            callback.Run(true, args.dump_guid, nullptr);
           }));
 
   MockGlobalMemoryDumpCallback callback;
-  EXPECT_CALL(callback, OnCall(Ne(0u), false, NotNull()))
+  EXPECT_CALL(callback, OnCall(false, Ne(0u), NotNull()))
       .WillOnce(RunClosure(run_loop.QuitClosure()));
   RequestGlobalMemoryDump(args, callback.Get());
   run_loop.Run();
@@ -228,7 +228,7 @@ TEST_F(CoordinatorImplTest, GlobalMemoryDumpStruct) {
             auto dump = mojom::RawProcessMemoryDump::New();
             dump->chrome_dump.malloc_total_kb = 1;
             dump->os_dump.resident_set_kb = 1;
-            callback.Run(args.dump_guid, true, std::move(dump));
+            callback.Run(true, args.dump_guid, std::move(dump));
 
           }));
   EXPECT_CALL(client_process_2, RequestProcessMemoryDump(_, _))
@@ -239,11 +239,11 @@ TEST_F(CoordinatorImplTest, GlobalMemoryDumpStruct) {
             auto dump = mojom::RawProcessMemoryDump::New();
             dump->chrome_dump.malloc_total_kb = 2;
             dump->os_dump.resident_set_kb = 2;
-            callback.Run(args.dump_guid, true, std::move(dump));
+            callback.Run(true, args.dump_guid, std::move(dump));
           }));
 
   MockGlobalMemoryDumpCallback callback;
-  EXPECT_CALL(callback, OnCall(Ne(0u), true, NotNull()))
+  EXPECT_CALL(callback, OnCall(true, Ne(0u), NotNull()))
       .WillOnce(Invoke([&run_loop](uint64_t dump_guid, bool success,
                                    GlobalMemoryDump* dump) {
 

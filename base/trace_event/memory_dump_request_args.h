@@ -111,8 +111,8 @@ using GlobalMemoryDumpCallback =
     Callback<void(bool success, uint64_t dump_guid)>;
 
 using ProcessMemoryDumpCallback =
-    Callback<void(uint64_t dump_guid,
-                  bool success,
+    Callback<void(bool success,
+                  uint64_t dump_guid,
                   const Optional<MemoryDumpCallbackResult>& result)>;
 
 BASE_EXPORT const char* MemoryDumpTypeToString(const MemoryDumpType& dump_type);

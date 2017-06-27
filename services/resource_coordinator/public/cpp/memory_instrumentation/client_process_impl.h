@@ -64,8 +64,8 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT ClientProcessImpl
   // Callback passed to base::MemoryDumpManager::CreateProcessDump().
   void OnProcessMemoryDumpDone(
       const RequestProcessMemoryDumpCallback&,
-      uint64_t dump_guid,
       bool success,
+      uint64_t dump_guid,
       const base::Optional<base::trace_event::MemoryDumpCallbackResult>&);
 
   mojom::CoordinatorPtr coordinator_;
