@@ -62,6 +62,9 @@ const char* WebThreadSafeData::Data() const {
 WebThreadSafeData::WebThreadSafeData(PassRefPtr<RawData> data)
     : private_(std::move(data)) {}
 
+WebThreadSafeData::WebThreadSafeData(RefPtr<RawData>&& data)
+    : private_(std::move(data)) {}
+
 WebThreadSafeData::WebThreadSafeData(const WebThreadSafeData& other) {
   private_ = other.private_;
 }
