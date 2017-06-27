@@ -39,6 +39,7 @@
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/frame_host/render_widget_host_view_child_frame.h"
+#include "content/browser/image_capture/image_capture_impl.h"
 #include "content/browser/installedapp/installed_app_provider_impl_default.h"
 #include "content/browser/keyboard_lock/keyboard_lock_service_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
@@ -2896,6 +2897,8 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
 
   GetInterfaceRegistry()->AddInterface(base::Bind(
       &KeyboardLockServiceImpl::CreateMojoService));
+
+  GetInterfaceRegistry()->AddInterface(base::Bind(&ImageCaptureImpl::Create));
 
   GetInterfaceRegistry()->AddInterface(
       base::Bind(&ForwardShapeDetectionRequest<

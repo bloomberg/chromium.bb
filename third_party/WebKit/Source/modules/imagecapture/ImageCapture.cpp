@@ -9,6 +9,7 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/fileapi/Blob.h"
+#include "core/frame/LocalFrame.h"
 #include "core/imagebitmap/ImageBitmap.h"
 #include "modules/EventTargetModules.h"
 #include "modules/imagecapture/MediaSettingsRange.h"
@@ -622,7 +623,7 @@ ImageCapture::ImageCapture(ExecutionContext* context, MediaStreamTrack* track)
   DCHECK(stream_track_);
   DCHECK(!service_.is_bound());
 
-  Platform::Current()->GetInterfaceProvider()->GetInterface(
+  GetFrame()->GetInterfaceProvider()->GetInterface(
       mojo::MakeRequest(&service_));
 
   service_.set_connection_error_handler(ConvertToBaseCallback(WTF::Bind(
