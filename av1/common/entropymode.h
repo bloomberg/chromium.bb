@@ -230,6 +230,9 @@ typedef struct frame_contexts {
 
 #if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
   aom_prob obmc_prob[BLOCK_SIZES];
+#if CONFIG_NEW_MULTISYMBOL
+  aom_cdf_prob obmc_cdf[BLOCK_SIZES][CDF_SIZE(2)];
+#endif  // CONFIG_NEW_MULTISYMBOL
 #endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
   aom_prob intra_inter_prob[INTRA_INTER_CONTEXTS];

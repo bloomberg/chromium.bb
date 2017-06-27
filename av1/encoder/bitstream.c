@@ -609,9 +609,13 @@ static void write_is_inter(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 }
 
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
-static void write_motion_mode(const AV1_COMMON *cm, const MODE_INFO *mi,
-                              aom_writer *w) {
+static void write_motion_mode(const AV1_COMMON *cm, MACROBLOCKD *xd,
+                              const MODE_INFO *mi, aom_writer *w) {
   const MB_MODE_INFO *mbmi = &mi->mbmi;
+#if !CONFIG_NEW_MULTISYMBOL
+  (void)xd;
+#endif
+
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
   MOTION_MODE last_motion_mode_allowed =
       motion_mode_allowed_wrapper(0,
@@ -629,8 +633,13 @@ static void write_motion_mode(const AV1_COMMON *cm, const MODE_INFO *mi,
   if (last_motion_mode_allowed == SIMPLE_TRANSLATION) return;
 #if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
   if (last_motion_mode_allowed == OBMC_CAUSAL) {
+#if CONFIG_NEW_MULTISYMBOL
+    aom_write_symbol(w, mbmi->motion_mode == OBMC_CAUSAL,
+                     xd->tile_ctx->obmc_cdf[mbmi->sb_type], 2);
+#else
     aom_write(w, mbmi->motion_mode == OBMC_CAUSAL,
               cm->fc->obmc_prob[mbmi->sb_type]);
+#endif
   } else {
 #endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
     av1_write_token(w, av1_motion_mode_tree,
@@ -2281,7 +2290,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
 #if CONFIG_EXT_INTER
       if (mbmi->ref_frame[1] != INTRA_FRAME)
 #endif  // CONFIG_EXT_INTER
-        write_motion_mode(cm, mi, w);
+        write_motion_mode(cm, xd, mi, w);
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
     write_ncobmc_mode(cm, mi, w);
 #endif
