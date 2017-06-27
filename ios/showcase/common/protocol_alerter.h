@@ -20,6 +20,9 @@
 // The view controller (if any) that will be used to present alerts.
 @property(nonatomic, weak) UIViewController* baseViewController;
 
+// Removes the logging for the method corresponding to |sel|.
+- (void)ignoreSelector:(SEL)sel;
+
 @end
 
 #endif  // IOS_SHOWCASE_COMMON_PROTOCOL_ALERTER_H_
