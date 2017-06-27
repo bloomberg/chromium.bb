@@ -89,7 +89,15 @@ def is_exportable(chromium_commit, local_wpt, wpt_github):
     patch = chromium_commit.format_patch()
     if not (patch and local_wpt.test_patch(patch, chromium_commit)):
         return False
-    pull_request = wpt_github.pr_with_position(chromium_commit.position)
+
+    # If there's a corresponding closed PR, then this commit should not
+    # be considered exportable; the PR might have been merged and reverted,
+    # or it might have been closed manually without merging.
+    pull_request = wpt_github.pr_with_change_id(chromium_commit.change_id())
+    if not pull_request:
+        # The Change ID can't be used for commits made via Rietveld.
+        # TODO(qyearsley): Remove this fallback after Gerrit migration.
+        pull_request = wpt_github.pr_with_position(chromium_commit.position)
     if pull_request and pull_request.state == 'closed':
         return False
     return True

@@ -7,14 +7,17 @@ import hashlib
 
 class MockChromiumCommit(object):
 
-    def __init__(self, host, position='refs/heads/master@{#123}',
+    def __init__(self, host,
+                 position='refs/heads/master@{#123}',
                  message='Fake commit message',
-                 patch='Fake patch contents'):
+                 patch='Fake patch contents',
+                 change_id='Iba5eba11'):
         self.host = host
         self.position = position
         self.sha = hashlib.sha1(position).hexdigest()
         self._message = message
         self._patch = patch
+        self._change_id = change_id
 
     @property
     def short_sha(self):
@@ -37,3 +40,6 @@ class MockChromiumCommit(object):
 
     def format_patch(self):
         return self._patch
+
+    def change_id(self):
+        return self._change_id
