@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_PROFILES_FORCED_REAUTHENTICATION_DIALOG_H_
-#define CHROME_BROWSER_UI_VIEWS_PROFILES_FORCED_REAUTHENTICATION_DIALOG_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_PROFILES_FORCED_REAUTHENTICATION_DIALOG_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_PROFILES_FORCED_REAUTHENTICATION_DIALOG_VIEW_H_
 
 #include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/ui/forced_reauthentication_dialog.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/window/dialog_delegate.h"
 
@@ -20,19 +22,19 @@ class SigninManager;
 
 // A modal dialog that displays a warning message of the auth failure
 // and ask user to sign in again.
-class ForcedReauthenticationDialog : public views::DialogDelegateView {
+class ForcedReauthenticationDialogView : public views::DialogDelegateView {
  public:
-  ~ForcedReauthenticationDialog() override;
+  ~ForcedReauthenticationDialogView() override;
 
   // Shows a warning dialog for |profile|. If there are no Browser windows
   // associated with |profile|, signs out the profile immediately, otherwise the
   // user can clicks accept to sign in again. Dialog will be closed after
   // |countdown_duration| seconds.
   // Dialog will delete itself after closing.
-  static ForcedReauthenticationDialog* ShowDialog(
+  static ForcedReauthenticationDialogView* ShowDialog(
       Profile* profile,
       SigninManager* signin_manager,
-      const base::TimeDelta& countdown_duration);
+      base::TimeDelta countdown_duration);
 
   // override views::DialogDelegateView
   bool Accept() override;
@@ -45,11 +47,18 @@ class ForcedReauthenticationDialog : public views::DialogDelegateView {
   // override views::View
   void AddedToWidget() override;
 
+  // Close the dialog
+  void CloseDialog();
+
+  base::WeakPtr<ForcedReauthenticationDialogView> AsWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
+
  private:
   // Show the dialog for |browser|. The dialog will delete itself after closing.
-  ForcedReauthenticationDialog(Browser* browser,
-                               SigninManager* signin_manager,
-                               const base::TimeDelta& countdown_duration);
+  ForcedReauthenticationDialogView(Browser* browser,
+                                   SigninManager* signin_manager,
+                                   base::TimeDelta countdown_duration);
 
   void OnCountDown();
   base::TimeDelta GetTimeRemaining() const;
@@ -63,7 +72,23 @@ class ForcedReauthenticationDialog : public views::DialogDelegateView {
   // remaining time.
   base::RepeatingTimer refresh_timer_;
 
-  DISALLOW_COPY_AND_ASSIGN(ForcedReauthenticationDialog);
+  base::WeakPtrFactory<ForcedReauthenticationDialogView> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(ForcedReauthenticationDialogView);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_PROFILES_FORCED_REAUTHENTICATION_DIALOG_H_
+class ForcedReauthenticationDialogImpl : public ForcedReauthenticationDialog {
+ public:
+  ForcedReauthenticationDialogImpl();
+  ~ForcedReauthenticationDialogImpl() override;
+
+  // override ForcedReauthenticationDialog
+  void ShowDialog(Profile* profile,
+                  SigninManager* signin_manager,
+                  base::TimeDelta countdown_duration) override;
+
+ private:
+  base::WeakPtr<ForcedReauthenticationDialogView> dialog_view_;
+};
+
+#endif  // CHROME_BROWSER_UI_VIEWS_PROFILES_FORCED_REAUTHENTICATION_DIALOG_VIEW_H_
