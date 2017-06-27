@@ -595,6 +595,9 @@ bool TranslateManager::ShouldSuppressBubbleUI(
       !language_state_.HasLanguageChanged() &&
       !ShouldOverrideDecision(
           metrics::TranslateEventProto::MATCHES_PREVIOUS_LANGUAGE)) {
+    TranslateBrowserMetrics::ReportInitiationStatus(
+        TranslateBrowserMetrics::
+            INITIATION_STATUS_ABORTED_BY_MATCHES_PREVIOUS_LANGUAGE);
     return true;
   }
 
@@ -605,6 +608,8 @@ bool TranslateManager::ShouldSuppressBubbleUI(
           source_language) &&
       !ShouldOverrideDecision(
           metrics::TranslateEventProto::LANGUAGE_DISABLED_BY_AUTO_BLACKLIST)) {
+    TranslateBrowserMetrics::ReportInitiationStatus(
+        TranslateBrowserMetrics::INITIATION_STATUS_ABORTED_BY_TOO_OFTEN_DENIED);
     return true;
   }
 
