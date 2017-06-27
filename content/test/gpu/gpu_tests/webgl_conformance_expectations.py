@@ -246,6 +246,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
         ['win10', ('nvidia', 0x1cb3)], bug=728670)
 
+    # Win10 / Intel failures
+    self.Fail('conformance/rendering/clear-after-copyTexImage2D.html',
+        ['win10', 'intel'], bug=737002)
+
     # Win7 / Intel failures
     self.Fail('conformance/textures/misc/' +
               'copy-tex-image-and-sub-image-2d.html',
@@ -617,6 +621,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Skip('conformance/more/functions/bindBufferBadArgs.html',
         ['android', 'android-webview-instrumentation',
          ('qualcomm', 'Adreno (TM) 420')], bug=499874)
+    self.Fail('conformance/rendering/clear-after-copyTexImage2D.html',
+        ['android', ('qualcomm', 'Adreno (TM) 420')], bug=737002)
     self.Fail('conformance/rendering/gl-scissor-test.html',
         ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
     self.Fail('conformance/rendering/gl-viewport-test.html',
