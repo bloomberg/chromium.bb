@@ -106,8 +106,6 @@ BackgroundLoaderOffliner::BackgroundLoaderOffliner(
       network_bytes_(0LL),
       is_low_bar_met_(false),
       did_snapshot_on_last_retry_(false),
-      started_count_(0LL),
-      completed_count_(0LL),
       weak_ptr_factory_(this) {
   DCHECK(offline_page_model_);
   DCHECK(browser_context_);
@@ -116,6 +114,11 @@ BackgroundLoaderOffliner::BackgroundLoaderOffliner(
   // crashing, adding a check here.
   if (load_termination_listener_)
     load_termination_listener_->set_offliner(this);
+
+  for (int i = 0; i < ResourceDataType::RESOURCE_DATA_TYPE_COUNT; ++i) {
+    stats_[i].requested = 0;
+    stats_[i].completed = 0;
+  }
 }
 
 BackgroundLoaderOffliner::~BackgroundLoaderOffliner() {}
@@ -354,21 +357,17 @@ void BackgroundLoaderOffliner::SetSnapshotControllerForTest(
     std::unique_ptr<SnapshotController> controller) {
   snapshot_controller_ = std::move(controller);
 }
+
 void BackgroundLoaderOffliner::ObserveResourceLoading(
     ResourceLoadingObserver::ResourceDataType type,
     bool started) {
-  // TODO(petewil): Use actual signal type instead of hardcoding name to
-  // image.
   // Add the signal to extra data, and use for tracking.
-  if (type == ResourceDataType::IMAGE) {
-    if (started) {
-      started_count_++;
-      signal_data_.SetDouble("StartedImages", started_count_);
-    } else {
-      completed_count_++;
-      signal_data_.SetDouble("CompletedImages", completed_count_);
-    }
-  }
+
+  RequestStats& found_stats = stats_[type];
+  if (started)
+    ++found_stats.requested;
+  else
+    ++found_stats.completed;
 }
 
 void BackgroundLoaderOffliner::OnNetworkBytesChanged(int64_t bytes) {
@@ -416,6 +415,18 @@ void BackgroundLoaderOffliner::StartSnapshot() {
   // Add loading signal into the MHTML that will be generated if the command
   // line flag is set for it.
   if (IsOfflinePagesLoadSignalCollectingEnabled()) {
+    // Write resource percentage signal data into extra data before emitting it
+    // to the MHTML.
+    RequestStats& image_stats = stats_[ResourceDataType::IMAGE];
+    signal_data_.SetDouble("StartedImages", image_stats.requested);
+    signal_data_.SetDouble("CompletedImages", image_stats.completed);
+    RequestStats& css_stats = stats_[ResourceDataType::TEXT_CSS];
+    signal_data_.SetDouble("StartedCSS", css_stats.requested);
+    signal_data_.SetDouble("CompletedCSS", css_stats.completed);
+    RequestStats& xhr_stats = stats_[ResourceDataType::XHR];
+    signal_data_.SetDouble("StartedXHR", xhr_stats.requested);
+    signal_data_.SetDouble("CompletedXHR", xhr_stats.completed);
+
     // Stash loading signals for writing when we write out the MHTML.
     std::string headers = base::StringPrintf(
         "%s\r\n%s\r\n\r\n", kContentTransferEncodingBinary, kXHeaderForSignals);
@@ -517,6 +528,11 @@ void BackgroundLoaderOffliner::ResetState() {
   did_snapshot_on_last_retry_ = false;
   content::WebContentsObserver::Observe(nullptr);
   loader_.reset();
+
+  for (int i = 0; i < ResourceDataType::RESOURCE_DATA_TYPE_COUNT; ++i) {
+    stats_[i].requested = 0;
+    stats_[i].completed = 0;
+  }
 }
 
 void BackgroundLoaderOffliner::ResetLoader() {

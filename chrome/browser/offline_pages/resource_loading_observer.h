@@ -16,6 +16,7 @@ class ResourceLoadingObserver {
   enum ResourceDataType {
     IMAGE,
     TEXT_CSS,
+    XHR,
     OTHER,
     RESOURCE_DATA_TYPE_COUNT,
   };
