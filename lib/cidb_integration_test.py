@@ -901,6 +901,48 @@ class BuildTableTest(CIDBIntegrationTest):
         bot_db.GetSlaveStatuses(build_id, buildbucket_ids=[]))
     self.assertListEqual(build_bb_id_list, [])
 
+  def _InsertBuildAndUpdateMetadata(self, bot_db, build_config, milestone,
+                                    platform):
+    build_id = bot_db.InsertBuild(build_config,
+                                  constants.WATERFALL_INTERNAL,
+                                  _random(),
+                                  build_config,
+                                  'bot_hostname')
+    metadata = metadata_lib.CBuildbotMetadata(metadata_dict={
+        'version': {
+            'milestone': milestone,
+            'platform': platform
+        }
+    })
+    return bot_db.UpdateMetadata(build_id, metadata)
+
+  def testGetPlatformVersions(self):
+    """Test GetPlatformVersions."""
+    self._PrepareDatabase()
+    bot_db = self.LocalCIDBConnection(self.CIDB_USER_BOT)
+    self._InsertBuildAndUpdateMetadata(
+        bot_db, 'master-release', '59', '9352.0.0')
+    self._InsertBuildAndUpdateMetadata(
+        bot_db, 'master-release', '60', '9462.0.0')
+    self._InsertBuildAndUpdateMetadata(
+        bot_db, 'master-release', '60', '9475.0.0')
+    self._InsertBuildAndUpdateMetadata(
+        bot_db, 'master-release', '61', '9623.0.0')
+
+    r = bot_db.GetPlatformVersions('master-paladin')
+    self.assertItemsEqual(r, [])
+
+    r = bot_db.GetPlatformVersions('master-release')
+    self.assertItemsEqual(r, ['9352.0.0', '9462.0.0', '9475.0.0', '9623.0.0'])
+
+    r = bot_db.GetPlatformVersions('master-release',
+                                   starting_milestone_version=60)
+    self.assertItemsEqual(r, ['9462.0.0', '9475.0.0', '9623.0.0'])
+
+    r = bot_db.GetPlatformVersions('master-release', num_results=1,
+                                   starting_milestone_version=60)
+    self.assertItemsEqual(r, ['9462.0.0'])
+
 
 class HWTestResultTableTest(CIDBIntegrationTest):
   """Tests for hwTestResultTable."""

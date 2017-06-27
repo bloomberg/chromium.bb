@@ -1365,6 +1365,35 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     return [dict(zip(CIDBConnection.BUILD_STATUS_KEYS, values))
             for values in results]
 
+  def GetPlatformVersions(self, build_config,
+                          num_results=NUM_RESULTS_NO_LIMIT,
+                          starting_milestone_version=None):
+    """Get the platform versions for a build_config.
+
+    Args:
+      build_config: The build config (string) to get the platform version.
+      num_results: Number of platform_version to get. Default to
+        CIDBConnection.NUM_RESULTS_NO_LIMIT to request no limit on the number
+        of results.
+      starting_milestone_version: The starting milestone version to get the
+        platform version.
+
+    Returns:
+      A list of platform_version which match the requirement.
+    """
+    where_clauses = ['build_config = "%s"' % build_config]
+    if starting_milestone_version is not None:
+      starting_milestone_version_int = int(starting_milestone_version)
+      where_clauses.append('CAST(milestone_version as UNSIGNED) >= %d' %
+                           starting_milestone_version_int)
+    query = ('SELECT platform_version FROM buildTable WHERE %s' %
+             ' AND '.join(where_clauses))
+    if num_results != self.NUM_RESULTS_NO_LIMIT:
+      query += ' LIMIT %d' % num_results
+
+    results = self._Execute(query).fetchall()
+    return [r['platform_version'] for r in results]
+
   @minimum_schema(47)
   def GetMostRecentBuild(self, waterfall, build_config, milestone_version=None):
     """Returns basic information about most recent completed build.
