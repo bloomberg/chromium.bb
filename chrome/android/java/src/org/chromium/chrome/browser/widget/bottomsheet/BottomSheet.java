@@ -1065,7 +1065,7 @@ public class BottomSheet
 
         if (offset > getMinOffset()) {
             onSheetOpened();
-        } else if (getSheetOffsetFromBottom() > getMinOffset()) {
+        } else {
             onSheetClosed();
         }
 
