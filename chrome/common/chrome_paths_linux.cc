@@ -11,6 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/nix/xdg_util.h"
 #include "base/path_service.h"
+#include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_paths_internal.h"
@@ -59,7 +60,8 @@ bool GetUserMediaDirectory(const std::string& xdg_name,
 
 // This returns <config-home>/<product>, where
 //   <config-home> is:
-//     $XDG_CONFIG_HOME if set
+//     $CHROME_CONFIG_HOME if set
+//     otherwise $XDG_CONFIG_HOME if set
 //     otherwise ~/.config
 //   and <product> is:
 //     "chromium" for Chromium
@@ -75,9 +77,16 @@ bool GetUserMediaDirectory(const std::string& xdg_name,
 // issues with other apps grabbing ~/.chromium .
 bool GetDefaultUserDataDirectory(base::FilePath* result) {
   std::unique_ptr<base::Environment> env(base::Environment::Create());
-  base::FilePath config_dir(GetXDGDirectory(env.get(),
-                                            kXdgConfigHomeEnvVar,
-                                            kDotConfigDir));
+  base::FilePath config_dir;
+  std::string chrome_config_home_str;
+  if (env->GetVar("CHROME_CONFIG_HOME", &chrome_config_home_str) &&
+      base::IsStringUTF8(chrome_config_home_str)) {
+    config_dir = base::FilePath::FromUTF8Unsafe(chrome_config_home_str);
+  } else {
+    config_dir =
+        GetXDGDirectory(env.get(), kXdgConfigHomeEnvVar, kDotConfigDir);
+  }
+
 #if defined(GOOGLE_CHROME_BUILD)
   *result = config_dir.Append("google-chrome" + GetChannelSuffixForDataDir());
 #else
