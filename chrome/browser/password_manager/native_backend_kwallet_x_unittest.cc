@@ -337,10 +337,10 @@ class NativeBackendKWalletTest : public NativeBackendKWalletTestBase {
   std::set<std::string> failing_methods_;
 
  private:
-  dbus::Response* KLauncherMethodCall(
+  std::unique_ptr<dbus::Response> KLauncherMethodCall(
       dbus::MethodCall* method_call, testing::Unused);
 
-  dbus::Response* KWalletMethodCall(
+  std::unique_ptr<dbus::Response> KWalletMethodCall(
       dbus::MethodCall* method_call, testing::Unused);
 };
 
@@ -353,7 +353,7 @@ void NativeBackendKWalletTest::SetUp() {
       new dbus::MockObjectProxy(mock_session_bus_.get(),
                                 "org.kde.klauncher",
                                 dbus::ObjectPath("/KLauncher"));
-  EXPECT_CALL(*mock_klauncher_proxy_.get(), MockCallMethodAndBlock(_, _))
+  EXPECT_CALL(*mock_klauncher_proxy_.get(), CallMethodAndBlock(_, _))
       .WillRepeatedly(
            Invoke(this, &NativeBackendKWalletTest::KLauncherMethodCall));
 
@@ -368,7 +368,7 @@ void NativeBackendKWalletTest::SetUp() {
                                   "org.kde.kwalletd",
                                   dbus::ObjectPath("/modules/kwalletd"));
   }
-  EXPECT_CALL(*mock_kwallet_proxy_.get(), MockCallMethodAndBlock(_, _))
+  EXPECT_CALL(*mock_kwallet_proxy_.get(), CallMethodAndBlock(_, _))
       .WillRepeatedly(
            Invoke(this, &NativeBackendKWalletTest::KWalletMethodCall));
 
@@ -460,7 +460,7 @@ void NativeBackendKWalletTest::TestRemoveLoginsBetween(
   CheckPasswordForms("Chrome Form Data (42)", ExpectationArray());
 }
 
-dbus::Response* NativeBackendKWalletTest::KLauncherMethodCall(
+std::unique_ptr<dbus::Response> NativeBackendKWalletTest::KLauncherMethodCall(
     dbus::MethodCall* method_call, testing::Unused) {
   EXPECT_EQ("org.kde.KLauncher", method_call->GetInterface());
   EXPECT_EQ("start_service_by_desktop_name", method_call->GetMember());
@@ -498,10 +498,10 @@ dbus::Response* NativeBackendKWalletTest::KLauncherMethodCall(
   writer.AppendString(std::string());  // dbus_name
   writer.AppendString(klauncher_error_);
   writer.AppendInt32(1234);  // pid
-  return response.release();
+  return response;
 }
 
-dbus::Response* NativeBackendKWalletTest::KWalletMethodCall(
+std::unique_ptr<dbus::Response> NativeBackendKWalletTest::KWalletMethodCall(
     dbus::MethodCall* method_call, testing::Unused) {
   if (!kwallet_running_)
     return nullptr;
@@ -618,7 +618,7 @@ dbus::Response* NativeBackendKWalletTest::KWalletMethodCall(
   }
 
   EXPECT_TRUE(response);
-  return response.release();
+  return response;
 }
 
 void NativeBackendKWalletTest::CheckPasswordForms(

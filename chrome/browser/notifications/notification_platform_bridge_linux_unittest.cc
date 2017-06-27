@@ -26,6 +26,7 @@
 #include "ui/gfx/image/image_skia.h"
 
 using testing::_;
+using testing::ByMove;
 using testing::Return;
 using testing::StrictMock;
 
@@ -155,9 +156,9 @@ NotificationRequest ParseRequest(dbus::MethodCall* method_call) {
   return request;
 }
 
-dbus::Response* GetIdResponse(uint32_t id) {
-  dbus::Response* response = dbus::Response::CreateEmpty().release();
-  dbus::MessageWriter writer(response);
+std::unique_ptr<dbus::Response> GetIdResponse(uint32_t id) {
+  std::unique_ptr<dbus::Response> response = dbus::Response::CreateEmpty();
+  dbus::MessageWriter writer(response.get());
   writer.AppendUint32(id);
   return response;
 }
@@ -165,15 +166,6 @@ dbus::Response* GetIdResponse(uint32_t id) {
 ACTION_P(RegisterSignalCallback, callback_addr) {
   *callback_addr = arg2;
   arg3.Run("" /* interface_name */, "" /* signal_name */, true /* success */);
-}
-
-ACTION_P(OnGetCapabilities, capabilities) {
-  // MockObjectProxy::CallMethodAndBlock will wrap the return value in
-  // a unique_ptr.
-  dbus::Response* response = dbus::Response::CreateEmpty().release();
-  dbus::MessageWriter writer(response);
-  writer.AppendArrayOfStrings(capabilities);
-  return response;
 }
 
 ACTION_P2(OnNotify, verifier, id) {
@@ -190,7 +182,7 @@ ACTION(OnCloseNotification) {
   EXPECT_TRUE(reader.PopUint32(&uint32));
   EXPECT_FALSE(reader.HasMoreData());
 
-  return dbus::Response::CreateEmpty().release();
+  return dbus::Response::CreateEmpty();
 }
 
 ACTION_P(OnNotificationBridgeReady, success) {
@@ -242,9 +234,12 @@ class NotificationPlatformBridgeLinuxTest : public testing::Test {
                                dbus::ObjectPath(kFreedesktopNotificationsPath)))
         .WillOnce(Return(mock_notification_proxy_.get()));
 
+    std::unique_ptr<dbus::Response> response = dbus::Response::CreateEmpty();
+    dbus::MessageWriter writer(response.get());
+    writer.AppendArrayOfStrings(capabilities);
     EXPECT_CALL(*mock_notification_proxy_.get(),
-                MockCallMethodAndBlock(Calls("GetCapabilities"), _))
-        .WillOnce(OnGetCapabilities(capabilities));
+                CallMethodAndBlock(Calls("GetCapabilities"), _))
+        .WillOnce(Return(ByMove(std::move(response))));
 
     if (connect_signals) {
       EXPECT_CALL(
@@ -295,10 +290,10 @@ TEST_F(NotificationPlatformBridgeLinuxTest, SetUpAndTearDown) {
 
 TEST_F(NotificationPlatformBridgeLinuxTest, NotifyAndCloseFormat) {
   EXPECT_CALL(*mock_notification_proxy_.get(),
-              MockCallMethodAndBlock(Calls("Notify"), _))
+              CallMethodAndBlock(Calls("Notify"), _))
       .WillOnce(OnNotify([](const NotificationRequest&) {}, 1));
   EXPECT_CALL(*mock_notification_proxy_.get(),
-              MockCallMethodAndBlock(Calls("CloseNotification"), _))
+              CallMethodAndBlock(Calls("CloseNotification"), _))
       .WillOnce(OnCloseNotification());
 
   CreateNotificationBridgeLinux();
@@ -310,7 +305,7 @@ TEST_F(NotificationPlatformBridgeLinuxTest, NotifyAndCloseFormat) {
 
 TEST_F(NotificationPlatformBridgeLinuxTest, ProgressPercentageAddedToSummary) {
   EXPECT_CALL(*mock_notification_proxy_.get(),
-              MockCallMethodAndBlock(Calls("Notify"), _))
+              CallMethodAndBlock(Calls("Notify"), _))
       .WillOnce(OnNotify(
           [](const NotificationRequest& request) {
             EXPECT_EQ(
@@ -331,7 +326,7 @@ TEST_F(NotificationPlatformBridgeLinuxTest, ProgressPercentageAddedToSummary) {
 
 TEST_F(NotificationPlatformBridgeLinuxTest, NotificationListItemsInBody) {
   EXPECT_CALL(*mock_notification_proxy_.get(),
-              MockCallMethodAndBlock(Calls("Notify"), _))
+              CallMethodAndBlock(Calls("Notify"), _))
       .WillOnce(OnNotify(
           [](const NotificationRequest& request) {
             EXPECT_EQ("<b>abc</b> 123\n<b>def</b> 456", request.body);
@@ -353,7 +348,7 @@ TEST_F(NotificationPlatformBridgeLinuxTest, NotificationTimeouts) {
   const int32_t kExpireTimeoutDefault = -1;
   const int32_t kExpireTimeoutNever = 0;
   EXPECT_CALL(*mock_notification_proxy_.get(),
-              MockCallMethodAndBlock(Calls("Notify"), _))
+              CallMethodAndBlock(Calls("Notify"), _))
       .WillOnce(OnNotify(
           [=](const NotificationRequest& request) {
             EXPECT_EQ(kExpireTimeoutDefault, request.expire_timeout);
@@ -387,7 +382,7 @@ TEST_F(NotificationPlatformBridgeLinuxTest, NotificationImages) {
       gfx::Image(CreateImageSkia(original_width, original_height));
 
   EXPECT_CALL(*mock_notification_proxy_.get(),
-              MockCallMethodAndBlock(Calls("Notify"), _))
+              CallMethodAndBlock(Calls("Notify"), _))
       .WillOnce(OnNotify(
           [=](const NotificationRequest& request) {
             std::string file_name;
@@ -416,7 +411,7 @@ TEST_F(NotificationPlatformBridgeLinuxTest, NotificationImages) {
 
 TEST_F(NotificationPlatformBridgeLinuxTest, NotificationAttribution) {
   EXPECT_CALL(*mock_notification_proxy_.get(),
-              MockCallMethodAndBlock(Calls("Notify"), _))
+              CallMethodAndBlock(Calls("Notify"), _))
       .WillOnce(OnNotify(
           [](const NotificationRequest& request) {
             EXPECT_EQ(

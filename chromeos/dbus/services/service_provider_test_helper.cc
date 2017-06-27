@@ -21,8 +21,7 @@ using ::testing::Unused;
 
 namespace chromeos {
 
-ServiceProviderTestHelper::ServiceProviderTestHelper()
-    : response_received_(false) {
+ServiceProviderTestHelper::ServiceProviderTestHelper() {
   if (!base::MessageLoop::current())
     message_loop_.reset(new base::MessageLoop());
 }
@@ -58,17 +57,17 @@ void ServiceProviderTestHelper::SetUp(
   // |mock_exported_object_|.
   mock_object_proxy_ =
       new dbus::MockObjectProxy(mock_bus_.get(), service_name, service_path);
-  // |mock_object_proxy_|'s MockCallMethodAndBlock() will use
-  // MockCallMethodAndBlock() to return responses.
+  // |mock_object_proxy_|'s CallMethodAndBlock() will use CallMethodAndBlock()
+  // to return responses.
   EXPECT_CALL(*mock_object_proxy_.get(),
-              MockCallMethodAndBlock(
+              CallMethodAndBlock(
                   AllOf(ResultOf(std::mem_fun(&dbus::MethodCall::GetInterface),
                                  interface_name),
                         ResultOf(std::mem_fun(&dbus::MethodCall::GetMember),
                                  exported_method_name)),
                   _))
       .WillOnce(
-          Invoke(this, &ServiceProviderTestHelper::MockCallMethodAndBlock));
+          Invoke(this, &ServiceProviderTestHelper::CallMethodAndBlock));
 
   service_provider->Start(mock_exported_object_.get());
 }
@@ -118,7 +117,7 @@ void ServiceProviderTestHelper::MockExportMethod(
   method_callback_ = method_callback;
 }
 
-dbus::Response* ServiceProviderTestHelper::MockCallMethodAndBlock(
+std::unique_ptr<dbus::Response> ServiceProviderTestHelper::CallMethodAndBlock(
     dbus::MethodCall* method_call,
     Unused) {
   // Set the serial number to non-zero, so
@@ -127,14 +126,15 @@ dbus::Response* ServiceProviderTestHelper::MockCallMethodAndBlock(
   // Run the callback captured in MockExportMethod(). In addition to returning
   // a response that the caller will ignore, this will send a signal, which
   // will be received by |on_signal_callback_|.
+  std::unique_ptr<dbus::Response> response;
   method_callback_.Run(method_call,
                        base::Bind(&ServiceProviderTestHelper::OnResponse,
-                                  base::Unretained(this)));
+                                  base::Unretained(this), &response));
   // Check for a response.
-  if (!response_received_)
+  if (!response)
     base::RunLoop().Run();
   // Return response.
-  return response_.release();
+  return response;
 }
 
 void ServiceProviderTestHelper::MockConnectToSignal(
@@ -155,9 +155,9 @@ void ServiceProviderTestHelper::MockSendSignal(dbus::Signal* signal) {
 }
 
 void ServiceProviderTestHelper::OnResponse(
+    std::unique_ptr<dbus::Response>* out_response,
     std::unique_ptr<dbus::Response> response) {
-  response_ = std::move(response);
-  response_received_ = true;
+  *out_response = std::move(response);
   if (base::RunLoop::IsRunningOnCurrentThread())
     base::MessageLoop::current()->QuitWhenIdle();
 }
