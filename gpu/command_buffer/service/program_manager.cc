@@ -420,7 +420,8 @@ void Program::UpdateFragmentOutputBaseTypes() {
   fragment_output_type_mask_ = 0u;
   fragment_output_written_mask_ = 0u;
   Shader* fragment_shader =
-      attached_shaders_[ShaderTypeToIndex(GL_FRAGMENT_SHADER)].get();
+      shaders_from_last_successful_link_[ShaderTypeToIndex(GL_FRAGMENT_SHADER)]
+          .get();
   DCHECK(fragment_shader);
   for (auto const& output : fragment_shader->output_variable_list()) {
     int location = output.location;
@@ -502,7 +503,7 @@ void Program::UpdateTransformFeedbackInfo() {
   effective_transform_feedback_buffer_mode_ = transform_feedback_buffer_mode_;
   effective_transform_feedback_varyings_ = transform_feedback_varyings_;
 
-  Shader* vertex_shader = attached_shaders_[0].get();
+  Shader* vertex_shader = shaders_from_last_successful_link_[0].get();
   DCHECK(vertex_shader);
 
   if (effective_transform_feedback_buffer_mode_ == GL_INTERLEAVED_ATTRIBS) {
@@ -830,7 +831,7 @@ bool Program::UpdateUniforms() {
     bool is_array = false;
     std::string client_name;
     for (size_t i = 0; i < kMaxAttachedShaders && client_name.empty(); ++i) {
-      const auto& shader = attached_shaders_[i];
+      const auto& shader = shaders_from_last_successful_link_[i];
       if (!shader)
         continue;
       const sh::ShaderVariable* info = nullptr;
@@ -982,7 +983,8 @@ void Program::UpdateFragmentInputs() {
   std::unique_ptr<char[]> name_buffer(new char[max_len]);
 
   Shader* fragment_shader =
-      attached_shaders_[ShaderTypeToIndex(GL_FRAGMENT_SHADER)].get();
+      shaders_from_last_successful_link_[ShaderTypeToIndex(GL_FRAGMENT_SHADER)]
+          .get();
 
   const GLenum kQueryProperties[] = {GL_LOCATION, GL_TYPE, GL_ARRAY_SIZE};
 
@@ -1089,7 +1091,8 @@ void Program::UpdateProgramOutputs() {
     return;
 
   Shader* fragment_shader =
-      attached_shaders_[ShaderTypeToIndex(GL_FRAGMENT_SHADER)].get();
+      shaders_from_last_successful_link_[ShaderTypeToIndex(GL_FRAGMENT_SHADER)]
+          .get();
 
   for (auto const& output_var : fragment_shader->output_variable_list()) {
     const std::string& service_name = output_var.mappedName;
@@ -1155,6 +1158,7 @@ void Program::ExecuteBindAttribLocationCalls() {
 
 bool Program::ExecuteTransformFeedbackVaryingsCall() {
   if (!transform_feedback_varyings_.empty()) {
+    // This is called before program linking, so refer to attached_shaders_.
     Shader* vertex_shader = attached_shaders_[0].get();
     if (!vertex_shader) {
       set_log_info("TransformFeedbackVaryings: missing vertex shader");
@@ -1189,6 +1193,7 @@ void Program::ExecuteProgramOutputBindCalls() {
     return;
   }
 
+  // This is called before program linking, so refer to attached_shaders_.
   Shader* fragment_shader =
       attached_shaders_[ShaderTypeToIndex(GL_FRAGMENT_SHADER)].get();
   DCHECK(fragment_shader && fragment_shader->valid());
@@ -1287,6 +1292,7 @@ bool Program::Link(ShaderManager* manager,
   TimeTicks before_time = TimeTicks::Now();
   bool link = true;
   ProgramCache* cache = manager_->program_cache_;
+  // This is called before program linking, so refer to attached_shaders_.
   if (cache &&
       !attached_shaders_[0]->last_compiled_source().empty() &&
       !attached_shaders_[1]->last_compiled_source().empty()) {
@@ -1395,8 +1401,12 @@ bool Program::Link(ShaderManager* manager,
   GLint success = 0;
   glGetProgramiv(service_id(), GL_LINK_STATUS, &success);
   if (success == GL_TRUE) {
+    for (size_t ii = 0; ii < kMaxAttachedShaders; ++ii)
+      shaders_from_last_successful_link_[ii] = attached_shaders_[ii];
     Update();
     if (link) {
+      // Here it makes no difference because attached_shaders_ and
+      // shaders_from_last_successful_link_ are still the same.
       // ANGLE updates the translated shader sources on link.
       for (auto shader : attached_shaders_) {
         shader->RefreshTranslatedShaderSource();
@@ -1517,6 +1527,9 @@ bool Program::IsInactiveUniformLocationByFakeLocation(
 
 const std::string* Program::GetAttribMappedName(
     const std::string& original_name) const {
+  // This is called by DetectAttribLocationBindingConflicts() and
+  // ExecuteBindAttribLocationCalls(). Both are called before program linking,
+  // so refer to attached_shaders_.
   for (auto shader : attached_shaders_) {
     if (shader) {
       const std::string* mapped_name =
@@ -1530,6 +1543,8 @@ const std::string* Program::GetAttribMappedName(
 
 const std::string* Program::GetUniformMappedName(
     const std::string& original_name) const {
+  // This is called by DetectUniformLocationBindingConflicts(), which is called
+  // before program linking, so refer to attached_shaders_.
   for (auto shader : attached_shaders_) {
     if (shader) {
       const std::string* mapped_name =
@@ -1543,6 +1558,14 @@ const std::string* Program::GetUniformMappedName(
 
 const std::string* Program::GetOriginalNameFromHashedName(
     const std::string& hashed_name) const {
+  // This is called by ProcessLogInfo(), which could in turn be called by
+  // UpdateLogInfo(). All these cases are either before program linking, or
+  // right after program linking and shader attachments haven't been changed,
+  // so refer to attached_shaders_.
+  // TODO(zmo): The only exception is for Validate(), for which
+  // shaders_from_last_successful_link_ should be used. This is minor issue
+  // though, leading to log information from ValidateProgram() could end up
+  // with hashed variable names.
   for (auto shader : attached_shaders_) {
     if (shader) {
       const std::string* original_name =
@@ -1556,7 +1579,7 @@ const std::string* Program::GetOriginalNameFromHashedName(
 
 const sh::Varying* Program::GetVaryingInfo(
     const std::string& hashed_name) const {
-  for (auto shader : attached_shaders_) {
+  for (auto shader : shaders_from_last_successful_link_) {
     if (shader) {
       const sh::Varying* info = shader->GetVaryingInfo(hashed_name);
       if (info)
@@ -1568,7 +1591,7 @@ const sh::Varying* Program::GetVaryingInfo(
 
 const sh::InterfaceBlock* Program::GetInterfaceBlockInfo(
     const std::string& hashed_name) const {
-  for (auto shader : attached_shaders_) {
+  for (auto shader : shaders_from_last_successful_link_) {
     if (shader) {
       const sh::InterfaceBlock* info =
           shader->GetInterfaceBlockInfo(hashed_name);
@@ -1646,7 +1669,9 @@ void Program::GetVertexAttribData(
     const std::string& name, std::string* original_name, GLenum* type) const {
   DCHECK(original_name);
   DCHECK(type);
-  Shader* shader = attached_shaders_[ShaderTypeToIndex(GL_VERTEX_SHADER)].get();
+  Shader* shader =
+      shaders_from_last_successful_link_[ShaderTypeToIndex(GL_VERTEX_SHADER)]
+          .get();
   if (shader) {
     // Vertex attributes can not be arrays or structs (GLSL ES 3.00.4, section
     // 4.3.4, "Input Variables"), so the top level sh::Attribute returns the
@@ -1805,6 +1830,7 @@ bool Program::CanLink() const {
 
 bool Program::DetectShaderVersionMismatch() const {
   int version = Shader::kUndefinedShaderVersion;
+  // This is called before program linking, so refer to attached_shaders_.
   for (auto shader : attached_shaders_) {
     if (shader) {
       if (version != Shader::kUndefinedShaderVersion &&

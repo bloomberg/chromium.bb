@@ -569,6 +569,7 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
 
   // Shaders by type of shader.
   scoped_refptr<Shader> attached_shaders_[kMaxAttachedShaders];
+  scoped_refptr<Shader> shaders_from_last_successful_link_[kMaxAttachedShaders];
 
   // True if this program is marked as deleted.
   bool deleted_;
