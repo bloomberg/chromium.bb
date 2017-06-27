@@ -865,5 +865,19 @@ void SessionRestore::AddURLsToOpen(const Profile* profile,
 }
 
 // static
+void SessionRestore::AddObserver(SessionRestoreObserver* observer) {
+  observers().AddObserver(observer);
+}
+
+// static
+void SessionRestore::RemoveObserver(SessionRestoreObserver* observer) {
+  observers().RemoveObserver(observer);
+}
+
+// static
 base::CallbackList<void(int)>*
     SessionRestore::on_session_restored_callbacks_ = nullptr;
+
+// static
+base::ObserverList<SessionRestoreObserver>* SessionRestore::observers_ =
+    nullptr;

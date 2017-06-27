@@ -35,6 +35,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/tab_manager_observer.h"
 #include "chrome/browser/resource_coordinator/tab_manager_web_contents_data.h"
+#include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -126,6 +127,29 @@ class BoundsList {
 ////////////////////////////////////////////////////////////////////////////////
 // TabManager
 
+class TabManager::TabManagerSessionRestoreObserver
+    : public SessionRestoreObserver {
+ public:
+  explicit TabManagerSessionRestoreObserver(TabManager* tab_manager)
+      : tab_manager_(tab_manager) {
+    SessionRestore::AddObserver(this);
+  }
+
+  ~TabManagerSessionRestoreObserver() { SessionRestore::RemoveObserver(this); }
+
+  // SessionRestoreObserver implementation:
+  void OnSessionRestoreStartedLoadingTabs() override {
+    tab_manager_->OnSessionRestoreStartedLoadingTabs();
+  }
+
+  void OnSessionRestoreFinishedLoadingTabs() override {
+    tab_manager_->OnSessionRestoreFinishedLoadingTabs();
+  }
+
+ private:
+  TabManager* tab_manager_;
+};
+
 constexpr base::TimeDelta TabManager::kDefaultMinTimeToPurge;
 
 TabManager::TabManager()
@@ -137,11 +161,13 @@ TabManager::TabManager()
 #endif
       browser_tab_strip_tracker_(this, nullptr, nullptr),
       test_tick_clock_(nullptr),
+      is_session_restore_loading_tabs_(false),
       weak_ptr_factory_(this) {
 #if defined(OS_CHROMEOS)
   delegate_.reset(new TabManagerDelegate(weak_ptr_factory_.GetWeakPtr()));
 #endif
   browser_tab_strip_tracker_.Init();
+  session_restore_observer_.reset(new TabManagerSessionRestoreObserver(this));
 }
 
 TabManager::~TabManager() {
@@ -476,6 +502,16 @@ bool TabManager::CompareTabStats(const TabStats& first,
 // static
 int64_t TabManager::IdFromWebContents(WebContents* web_contents) {
   return reinterpret_cast<int64_t>(web_contents);
+}
+
+void TabManager::OnSessionRestoreStartedLoadingTabs() {
+  DCHECK(!is_session_restore_loading_tabs_);
+  is_session_restore_loading_tabs_ = true;
+}
+
+void TabManager::OnSessionRestoreFinishedLoadingTabs() {
+  DCHECK(is_session_restore_loading_tabs_);
+  is_session_restore_loading_tabs_ = false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

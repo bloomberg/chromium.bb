@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/logging.h"
@@ -17,9 +18,11 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/tab_manager_web_contents_data.h"
 #include "chrome/browser/resource_coordinator/tab_stats.h"
+#include "chrome/browser/sessions/tab_loader.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/test_tab_strip_model_delegate.h"
 #include "chrome/common/chrome_features.h"
@@ -576,6 +579,26 @@ TEST_F(TabManagerTest, GetUnsortedTabStatsIsInVisibleWindow) {
   EXPECT_FALSE(tab_stats[3].is_in_visible_window);
   EXPECT_FALSE(tab_stats[4].is_in_visible_window);
   EXPECT_FALSE(tab_stats[5].is_in_visible_window);
+}
+
+TEST_F(TabManagerTest, OnSessionRestoreStartedAndFinishedLoadingTabs) {
+  std::unique_ptr<content::WebContents> test_contents(
+      WebContentsTester::CreateTestWebContents(browser_context(), nullptr));
+
+  std::vector<SessionRestoreDelegate::RestoredTab> restored_tabs{
+      SessionRestoreDelegate::RestoredTab(test_contents.get(), false, false,
+                                          false)};
+
+  TabManager* tab_manager = g_browser_process->GetTabManager();
+  EXPECT_FALSE(tab_manager->IsSessionRestoreLoadingTabs());
+
+  TabLoader::RestoreTabs(restored_tabs, base::TimeTicks());
+  EXPECT_TRUE(tab_manager->IsSessionRestoreLoadingTabs());
+
+  WebContentsTester::For(test_contents.get())
+      ->NavigateAndCommit(GURL("about:blank"));
+  WebContentsTester::For(test_contents.get())->TestSetIsLoading(false);
+  EXPECT_FALSE(tab_manager->IsSessionRestoreLoadingTabs());
 }
 
 }  // namespace resource_coordinator
