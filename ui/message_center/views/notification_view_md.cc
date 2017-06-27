@@ -551,6 +551,7 @@ void NotificationViewMD::CreateOrUpdateProgressBarView(
   if (notification.type() != NOTIFICATION_TYPE_PROGRESS) {
     left_content_->RemoveChildView(progress_bar_view_);
     progress_bar_view_ = nullptr;
+    header_row_->ClearProgress();
     return;
   }
 
@@ -566,6 +567,8 @@ void NotificationViewMD::CreateOrUpdateProgressBarView(
 
   progress_bar_view_->SetValue(notification.progress() / 100.0);
   progress_bar_view_->SetVisible(notification.items().empty());
+
+  header_row_->SetProgress(notification.progress());
 }
 
 void NotificationViewMD::CreateOrUpdateListItemViews(

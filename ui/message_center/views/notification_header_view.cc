@@ -4,6 +4,8 @@
 
 #include "ui/message_center/views/notification_header_view.h"
 
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/font_list.h"
@@ -28,6 +30,8 @@ constexpr int kExpandIconSize = 12;
 constexpr gfx::Insets kHeaderPadding(0, 12, 0, 2);
 constexpr int kHeaderHorizontalSpacing = 2;
 constexpr int kAppInfoConatainerTopPadding = 12;
+// Bullet character. The divider symbol between different parts of the header.
+constexpr base::char16 kNotificationHeaderDividerSymbol = 0x2022;
 
 }  // namespace
 
@@ -61,6 +65,23 @@ NotificationHeaderView::NotificationHeaderView(views::ButtonListener* listener)
   app_name_view_->SetFontList(font_list);
   app_name_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   app_info_container->AddChildView(app_name_view_);
+
+  // Summary text divider
+  summary_text_divider_ =
+      new views::Label(base::ASCIIToUTF16(" ") +
+                       base::string16(1, kNotificationHeaderDividerSymbol) +
+                       base::ASCIIToUTF16(" "));
+  summary_text_divider_->SetFontList(font_list);
+  summary_text_divider_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  summary_text_divider_->SetVisible(false);
+  app_info_container->AddChildView(summary_text_divider_);
+
+  // Summary text view
+  summary_text_view_ = new views::Label(base::string16());
+  summary_text_view_->SetFontList(font_list);
+  summary_text_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  summary_text_view_->SetVisible(false);
+  app_info_container->AddChildView(summary_text_view_);
 
   // Expand button view
   expand_button_ = new views::ImageButton(listener);
@@ -104,6 +125,18 @@ void NotificationHeaderView::SetAppIcon(const gfx::ImageSkia& img) {
 
 void NotificationHeaderView::SetAppName(const base::string16& name) {
   app_name_view_->SetText(name);
+}
+
+void NotificationHeaderView::SetProgress(int progress) {
+  summary_text_view_->SetText(l10n_util::GetStringFUTF16Int(
+      IDS_MESSAGE_CENTER_NOTIFICATION_PROGRESS_PERCENTAGE, progress));
+  has_summary_text_ = true;
+  UpdateSummaryTextVisibility();
+}
+
+void NotificationHeaderView::ClearProgress() {
+  has_summary_text_ = false;
+  UpdateSummaryTextVisibility();
 }
 
 void NotificationHeaderView::SetExpandButtonEnabled(bool enabled) {
@@ -156,6 +189,12 @@ void NotificationHeaderView::UpdateControlButtonsVisibility() {
                                is_control_buttons_visible_);
   close_button_->SetVisible(close_button_enabled_ &&
                             is_control_buttons_visible_);
+  Layout();
+}
+
+void NotificationHeaderView::UpdateSummaryTextVisibility() {
+  summary_text_divider_->SetVisible(has_summary_text_);
+  summary_text_view_->SetVisible(has_summary_text_);
   Layout();
 }
 
