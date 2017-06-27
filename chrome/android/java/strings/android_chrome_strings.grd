@@ -2541,31 +2541,19 @@ To obtain new licenses, connect to the internet and play your downloaded content
       </message>
 
       <!-- Omnibox -->
-      <message name="IDS_SEARCH_OR_TYPE_URL" desc="Prompt to enter text into the text field that will either perform web searches or navigate to a URL. [CHAR-LIMIT=38]">
-        Search or type URL
-      </message>
       <message name="IDS_LOCATION_BAR_VERBOSE_STATUS_OFFLINE" desc="Verbose indication of offline status in the location bar. [CHAR-LIMIT=20]">
         Offline
       </message>
 
       <!-- Omnibox Placeholder Experiment -->
-      <message name="IDS_SEARCH_OR_TYPE_WEBSITE_NAME" desc="Prompt to enter text into the text field that will either perform web searches or navigate to a URL. [CHAR-LIMIT=38]">
-        Search or type website name
+      <message name="IDS_SEARCH_OR_TYPE_WEB_ADDRESS" desc="Prompt to enter text into the text field that will either perform web searches or navigate to a website. [CHAR-LIMIT=38]">
+        Search or type web address
       </message>
-      <message name="IDS_SEARCH_THE_WEB" desc="Prompt to enter text into the text field that will either perform web searches or navigate to a URL. [CHAR-LIMIT=38]">
-        Search the web
+      <message name="IDS_TYPE_WHAT_YOU_ARE_LOOKING_FOR" desc="Prompt to enter what user is looking for into the text field that will either perform web searches or navigate to a website. [CHAR-LIMIT=38]">
+        Type what you’re looking for
       </message>
-      <message name="IDS_ENTER_A_SEARCH_OR_WEBSITE" desc="Prompt to enter text into the text field that will either perform web searches or navigate to a URL. [CHAR-LIMIT=38]">
-        Enter a search or website
-      </message>
-      <message name="IDS_SEARCH_NEWS" desc="Prompt to enter text into the text field that will either perform web searches or navigate to a URL, with a suggestion of searching news. [CHAR-LIMIT=38]">
-        Search… news
-      </message>
-      <message name="IDS_SEARCH_RECIPES" desc="Prompt to enter text into the text field that will either perform web searches or navigate to a URL, with a suggestion of searching recipes. [CHAR-LIMIT=38]">
-        Search… recipes
-      </message>
-      <message name="IDS_SEARCH_WEATHER" desc="Prompt to enter text into the text field that will either perform web searches or navigate to a URL, with a suggestion of searching weather. [CHAR-LIMIT=38]">
-        Search… weather
+      <message name="IDS_FIND_NEWS_RECIPES_WEATHER" desc="Prompt to enter text into the text field that will either perform web searches or navigate to a website, with suggestions of finding news, recipes or weather. [CHAR-LIMIT=38]">
+         Find news, recipes, weather...
       </message>
 
       <!-- Voice search -->

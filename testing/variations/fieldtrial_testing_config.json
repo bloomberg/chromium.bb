@@ -1909,22 +1909,13 @@
                     "name": "SearchOrTypeUrl"
                 },
                 {
-                    "name": "SearchOrTypeWebsiteName"
+                    "name": "SearchOrTypeWebAddress"
                 },
                 {
-                    "name": "SearchTheWeb"
+                    "name": "TypeWhatYouAreLookingFor"
                 },
                 {
-                    "name": "EnterASearchOrWebsite"
-                },
-                {
-                    "name": "SearchNews"
-                },
-                {
-                    "name": "SearchRecipes"
-                },
-                {
-                    "name": "SearchWeather"
+                    "name": "FindNewsRecipesWeather"
                 },
                 {
                     "name": "Blank"
