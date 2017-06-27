@@ -498,6 +498,16 @@ hooks = [
                'open(\\'src/git_hooked2\\', \\'w\\').write(\\'git_hooked2\\')'],
   },
 ]
+hooks_os = {
+  'mac': [
+    {
+      'pattern': '.',
+      'action': ['python', '-c',
+                 'open(\\'src/git_hooked_mac\\', \\'w\\').write('
+                     '\\'git_hooked_mac\\')'],
+    },
+  ],
+}
 recursedeps = [
   'src/repo2',
 ]""" % {

@@ -662,6 +662,24 @@ class GClientSmokeGIT(GClientSmokeBase):
         'pre_deps_hooks = [',
         ']',
         '',
+        'hooks_os = {',
+        '  "mac": {',
+        '    # src',
+        '    {',
+        '      "pattern": ".",',
+        '      "cwd": ".",',
+        '      "action": [',
+        '          "python",',
+        '          "-c",',
+        '          "open(\'src/git_hooked_mac\', \'w\').write('
+                             '\'git_hooked_mac\')",',
+        '      ]',
+        '    },',
+        '',
+        '  },',
+        '',
+        '}',
+        '',
     ], deps_contents.splitlines())
 
 

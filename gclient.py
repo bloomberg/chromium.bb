@@ -373,8 +373,10 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     self._dependencies = []
     # Keep track of original values, before post-processing (e.g. deps_os).
     self._orig_dependencies = []
+    self._orig_deps_hooks = []
     self._vars = {}
     self._os_dependencies = {}
+    self._os_deps_hooks = {}
 
     # A cache of the files affected by the current operation, necessary for
     # hooks.
@@ -784,8 +786,15 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     for hook in local_scope.get('hooks', []):
       if hook.get('name', '') not in hook_names_to_suppress:
         hooks_to_run.append(hook)
+    orig_hooks = gclient_utils.freeze(hooks_to_run)
     if 'hooks_os' in local_scope and target_os_list:
       hooks_os = local_scope['hooks_os']
+
+      # Keep original contents of hooks_os for flatten.
+      for hook_os, os_hooks in hooks_os.iteritems():
+        self._os_deps_hooks[hook_os] = [
+            Hook.from_dict(hook, variables=self._vars) for hook in os_hooks]
+
       # Specifically append these to ensure that hooks_os run after hooks.
       for the_target_os in target_os_list:
         the_target_os_hooks = hooks_os.get(the_target_os, [])
@@ -802,7 +811,8 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
           local_scope.get('pre_deps_hooks', [])]
 
     self.add_dependencies_and_close(
-        deps_to_add, hooks_to_run, orig_deps_to_add=orig_deps_to_add)
+        deps_to_add, hooks_to_run, orig_deps_to_add=orig_deps_to_add,
+        orig_hooks=orig_hooks)
     logging.info('ParseDepsFile(%s) done' % self.name)
 
   def _get_option(self, attr, default):
@@ -812,7 +822,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     return getattr(obj._options, attr, default)
 
   def add_dependencies_and_close(
-      self, deps_to_add, hooks, orig_deps_to_add=None):
+      self, deps_to_add, hooks, orig_deps_to_add=None, orig_hooks=None):
     """Adds the dependencies, hooks and mark the parsing as done."""
     for dep in deps_to_add:
       if dep.verify_validity():
@@ -820,7 +830,9 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     for dep in (orig_deps_to_add or deps_to_add):
       self.add_orig_dependency(dep)
     self._mark_as_parsed(
-        [Hook.from_dict(h, variables=self._vars) for h in hooks])
+        [Hook.from_dict(h, variables=self._vars) for h in hooks],
+        orig_hooks=[Hook.from_dict(h, variables=self._vars)
+                    for h in orig_hooks or hooks])
 
   def findDepsFromNotAllowedHosts(self):
     """Returns a list of depenecies from not allowed hosts.
@@ -1030,8 +1042,9 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     self._orig_dependencies.append(new_dep)
 
   @gclient_utils.lockedmethod
-  def _mark_as_parsed(self, new_hooks):
+  def _mark_as_parsed(self, new_hooks, orig_hooks=None):
     self._deps_hooks.extend(new_hooks)
+    self._orig_deps_hooks.extend(orig_hooks or new_hooks)
     self._deps_parsed = True
 
   @property
@@ -1053,6 +1066,16 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
   @gclient_utils.lockedmethod
   def deps_hooks(self):
     return tuple(self._deps_hooks)
+
+  @property
+  @gclient_utils.lockedmethod
+  def orig_deps_hooks(self):
+    return tuple(self._orig_deps_hooks)
+
+  @property
+  @gclient_utils.lockedmethod
+  def os_deps_hooks(self):
+    return dict(self._os_deps_hooks)
 
   @property
   @gclient_utils.lockedmethod
@@ -1702,12 +1725,14 @@ def CMDflatten(parser, args):
   deps = {}
   deps_os = {}
   hooks = []
+  hooks_os = {}
   pre_deps_hooks = []
   unpinned_deps = {}
 
   for solution in client.dependencies:
     _FlattenSolution(
-        solution, deps, deps_os, hooks, pre_deps_hooks, unpinned_deps)
+        solution, deps, deps_os, hooks, hooks_os, pre_deps_hooks,
+        unpinned_deps)
 
   if options.require_pinned_revisions and unpinned_deps:
     sys.stderr.write('The following dependencies are not pinned:\n')
@@ -1722,6 +1747,7 @@ def CMDflatten(parser, args):
     _DepsOsToLines(deps_os) +
     _HooksToLines('hooks', hooks) +
     _HooksToLines('pre_deps_hooks', pre_deps_hooks) +
+    _HooksOsToLines(hooks_os) +
     ['']  # Ensure newline at end of file.
   )
 
@@ -1735,7 +1761,7 @@ def CMDflatten(parser, args):
 
 
 def _FlattenSolution(
-    solution, deps, deps_os, hooks, pre_deps_hooks, unpinned_deps):
+    solution, deps, deps_os, hooks, hooks_os, pre_deps_hooks, unpinned_deps):
   """Visits a solution in order to flatten it (see CMDflatten).
 
   Arguments:
@@ -1747,6 +1773,8 @@ def _FlattenSolution(
     deps_os (dict of os name -> dep name -> Dependency): same as above,
         for OS-specific deps
     hooks (list of (Dependency, hook)): will be filled with flattened hooks
+    hooks_os (dict of os name -> list of (Dependency, hook)): same as above,
+        for OS-specific hooks
     pre_deps_hooks (list of (Dependency, hook)): will be filled with flattened
         pre_deps_hooks
     unpinned_deps (dict of name -> Dependency): will be filled with unpinned
@@ -1754,11 +1782,14 @@ def _FlattenSolution(
   """
   logging.debug('_FlattenSolution(%r)', solution)
 
-  _FlattenDep(solution, deps, deps_os, hooks, pre_deps_hooks, unpinned_deps)
-  _FlattenRecurse(solution, deps, deps_os, hooks, pre_deps_hooks, unpinned_deps)
+  _FlattenDep(solution, deps, deps_os, hooks, hooks_os, pre_deps_hooks,
+              unpinned_deps)
+  _FlattenRecurse(solution, deps, deps_os, hooks, hooks_os, pre_deps_hooks,
+                  unpinned_deps)
 
 
-def _FlattenDep(dep, deps, deps_os, hooks, pre_deps_hooks, unpinned_deps):
+def _FlattenDep(dep, deps, deps_os, hooks, hooks_os, pre_deps_hooks,
+                unpinned_deps):
   """Visits a dependency in order to flatten it (see CMDflatten).
 
   Arguments:
@@ -1768,6 +1799,7 @@ def _FlattenDep(dep, deps, deps_os, hooks, pre_deps_hooks, unpinned_deps):
     deps (dict): will be filled with flattened deps
     deps_os (dict): will be filled with flattened deps_os
     hooks (list): will be filled with flattened hooks
+    hooks_os (dict): will be filled with flattened hooks_os
     pre_deps_hooks (list): will be filled with flattened pre_deps_hooks
     unpinned_deps (dict): will be filled with unpinned deps
   """
@@ -1782,15 +1814,19 @@ def _FlattenDep(dep, deps, deps_os, hooks, pre_deps_hooks, unpinned_deps):
   deps_by_name = dict((d.name, d) for d in dep.dependencies)
   for recurse_dep_name in (dep.recursedeps or []):
     _FlattenRecurse(
-        deps_by_name[recurse_dep_name], deps, deps_os, hooks, pre_deps_hooks,
-        unpinned_deps)
+        deps_by_name[recurse_dep_name], deps, deps_os, hooks, hooks_os,
+        pre_deps_hooks, unpinned_deps)
 
   # TODO(phajdan.jr): also handle hooks_os.
-  hooks.extend([(dep, hook) for hook in dep.deps_hooks])
+  hooks.extend([(dep, hook) for hook in dep.orig_deps_hooks])
   pre_deps_hooks.extend([(dep, hook) for hook in dep.pre_deps_hooks])
 
+  for hook_os, os_hooks in dep.os_deps_hooks.iteritems():
+    hooks_os.setdefault(hook_os, []).extend([(dep, hook) for hook in os_hooks])
 
-def _FlattenRecurse(dep, deps, deps_os, hooks, pre_deps_hooks, unpinned_deps):
+
+def _FlattenRecurse(dep, deps, deps_os, hooks, hooks_os, pre_deps_hooks,
+                    unpinned_deps):
   """Helper for flatten that recurses into |dep|'s dependencies.
 
   Arguments:
@@ -1800,14 +1836,15 @@ def _FlattenRecurse(dep, deps, deps_os, hooks, pre_deps_hooks, unpinned_deps):
     deps (dict): will be filled with flattened deps
     deps_os (dict): will be filled with flattened deps_os
     hooks (list): will be filled with flattened hooks
+    hooks_os (dict): will be filled with flattened hooks_os
     pre_deps_hooks (list): will be filled with flattened pre_deps_hooks
     unpinned_deps (dict): will be filled with unpinned deps
   """
   logging.debug('_FlattenRecurse(%r)', dep)
 
-  # TODO(phajdan.jr): also handle deps_os.
   for sub_dep in dep.orig_dependencies:
-    _FlattenDep(sub_dep, deps, deps_os, hooks, pre_deps_hooks, unpinned_deps)
+    _FlattenDep(sub_dep, deps, deps_os, hooks, hooks_os, pre_deps_hooks,
+                unpinned_deps)
 
 
 def _AddDep(dep, deps, unpinned_deps):
@@ -1900,6 +1937,32 @@ def _HooksToLines(name, hooks):
         ['    ]', '  },', '']
     )
   s.extend([']', ''])
+  return s
+
+
+def _HooksOsToLines(hooks_os):
+  """Converts |hooks| list to list of lines for output."""
+  s = ['hooks_os = {']
+  for hook_os, os_hooks in hooks_os.iteritems():
+    s.append('  "%s": {' % hook_os)
+    for dep, hook in os_hooks:
+      s.extend([
+          '    # %s' % dep.hierarchy(include_url=False),
+          '    {',
+      ])
+      if hook.name is not None:
+        s.append('      "name": "%s",' % hook.name)
+      if hook.pattern is not None:
+        s.append('      "pattern": "%s",' % hook.pattern)
+      s.extend(
+          # Hooks run in the parent directory of their dep.
+          ['      "cwd": "%s",' % os.path.normpath(os.path.dirname(dep.name))] +
+          ['      "action": ['] +
+          ['          "%s",' % arg for arg in hook.action] +
+          ['      ]', '    },', '']
+      )
+    s.extend(['  },', ''])
+  s.extend(['}', ''])
   return s
 
 
