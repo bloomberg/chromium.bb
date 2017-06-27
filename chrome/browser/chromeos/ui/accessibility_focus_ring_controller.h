@@ -68,6 +68,8 @@ class AccessibilityFocusRingController : public FocusRingLayerDelegate {
  private:
   FRIEND_TEST_ALL_PREFIXES(AccessibilityFocusRingControllerTest,
                            CursorWorksOnMultipleDisplays);
+  FRIEND_TEST_ALL_PREFIXES(AccessibilityFocusRingControllerTest,
+                           CaretRingDrawnOnlyWithinBounds);
 
   // FocusRingLayerDelegate overrides.
   void OnDeviceScaleFactorChanged() override;
@@ -81,11 +83,10 @@ class AccessibilityFocusRingController : public FocusRingLayerDelegate {
 
   AccessibilityFocusRing RingFromSortedRects(
       const std::vector<gfx::Rect>& rects) const;
-  void SplitIntoParagraphShape(
-      const std::vector<gfx::Rect>& rects,
-      gfx::Rect* top,
-      gfx::Rect* middle,
-      gfx::Rect* bottom) const;
+  void SplitIntoParagraphShape(const std::vector<gfx::Rect>& rects,
+                               gfx::Rect* top,
+                               gfx::Rect* middle,
+                               gfx::Rect* bottom) const;
   bool Intersects(const gfx::Rect& r1, const gfx::Rect& r2) const;
 
   struct LayerAnimationInfo {

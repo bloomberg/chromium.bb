@@ -46,6 +46,8 @@ class AccessibilityHighlightManager
  protected:
   FRIEND_TEST_ALL_PREFIXES(AccessibilityFocusRingControllerTest,
                            CursorWorksOnMultipleDisplays);
+  FRIEND_TEST_ALL_PREFIXES(AccessibilityFocusRingControllerTest,
+                           CaretRingDrawnOnlyWithinBounds);
 
   // ui::EventHandler overrides:
   void OnMouseEvent(ui::MouseEvent* event) override;
@@ -71,6 +73,7 @@ class AccessibilityHighlightManager
   virtual bool IsCursorVisible();
 
  private:
+  bool IsCaretVisible(const gfx::Rect& caret_bounds);
   void UpdateFocusAndCaretHighlights();
   void UpdateCursorHighlight();
 
