@@ -120,12 +120,10 @@ TopSitesImpl::TopSitesImpl(PrefService* pref_service,
   DCHECK(!can_add_url_to_history_.is_null());
 }
 
-void TopSitesImpl::Init(
-    const base::FilePath& db_name,
-    const scoped_refptr<base::SingleThreadTaskRunner>& db_task_runner) {
+void TopSitesImpl::Init(const base::FilePath& db_name) {
   // Create the backend here, rather than in the constructor, so that
   // unit tests that do not need the backend can run without a problem.
-  backend_ = new TopSitesBackend(db_task_runner);
+  backend_ = new TopSitesBackend();
   backend_->Init(db_name);
   backend_->GetMostVisitedThumbnails(
       base::Bind(&TopSitesImpl::OnGotMostVisitedThumbnails,

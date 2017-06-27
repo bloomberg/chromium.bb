@@ -39,7 +39,6 @@ namespace base {
 class FilePath;
 class RefCountedBytes;
 class RefCountedMemory;
-class SingleThreadTaskRunner;
 }
 
 namespace history {
@@ -64,8 +63,7 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
                const CanAddURLToHistoryFn& can_add_url_to_history);
 
   // Initializes TopSitesImpl.
-  void Init(const base::FilePath& db_name,
-            const scoped_refptr<base::SingleThreadTaskRunner>& db_task_runner);
+  void Init(const base::FilePath& db_name);
 
   // TopSites implementation.
   bool SetPageThumbnail(const GURL& url,

@@ -16,7 +16,7 @@
 namespace base {
 class CancelableTaskTracker;
 class FilePath;
-class SingleThreadTaskRunner;
+class SequencedTaskRunner;
 }
 
 namespace history {
@@ -42,8 +42,7 @@ class TopSitesBackend : public base::RefCountedThreadSafe<TopSitesBackend> {
   typedef base::Callback<void(const scoped_refptr<MostVisitedThumbnails>&)>
       GetMostVisitedThumbnailsCallback;
 
-  explicit TopSitesBackend(
-      const scoped_refptr<base::SingleThreadTaskRunner>& db_task_runner);
+  TopSitesBackend();
 
   void Init(const base::FilePath& path);
 
@@ -103,7 +102,7 @@ class TopSitesBackend : public base::RefCountedThreadSafe<TopSitesBackend> {
   base::FilePath db_path_;
 
   std::unique_ptr<TopSitesDatabase> db_;
-  scoped_refptr<base::SingleThreadTaskRunner> db_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> db_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(TopSitesBackend);
 };
