@@ -60,7 +60,7 @@
                                                         [0] : {
                                                             attributes : [
                                                                 [0] : src
-                                                                [1] : ../dom/resources/shadow-dom-iframe.html
+                                                                [1] : ./shadow-dom-iframe.html
                                                             ]
                                                             backendNodeId : <backendNodeId>
                                                             childNodeCount : 0

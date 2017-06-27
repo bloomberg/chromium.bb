@@ -35,8 +35,7 @@
       <label for='text9'>label-for-text9</label>
       <label>label-wrapping-text9<input data-dump id='text9' type='text' title='text9-title' aria-placeholder='text9-aria-placeholder' placeholder='text9-placeholder'></label>
 
-      <label>label-wrapping-text10<input data-dump id='text10' type='text' title='text10-title' aria-placeholder='text10-aria-placeholder' placeholder='text10-placeholder'>
-      </label>
+      <label>label-wrapping-text10<input data-dump id='text10' type='text' title='text10-title' aria-placeholder='text10-aria-placeholder' placeholder='text10-placeholder'></label>
 
       <input data-dump id='text11' type='text'>
       <label for='text11'>first-label-for-text11</label>

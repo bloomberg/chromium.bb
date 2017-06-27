@@ -18,10 +18,11 @@
   await runTest(session);
   testRunner.log('Closing inspector.');
   testRunner.log('\nRemoving style sheet.\n');
-  session.evaluate('setTimeout(() => { document.head.removeChild(styleElement1); document.body.offsetWidth; }, 0)');
+  session.evaluate('Promise.resolve().then(() => { document.head.removeChild(styleElement1); document.body.offsetWidth; })');
   await session.disconnect();
   testRunner.log('Reopening inspector.');
   session = await page.createSession();
+  await session.evaluateAsync('new Promise(f => setTimeout(f, 0))');
   testRunner.log('Running test');
   testRunner.log('Opening front-end second time');
   await runTest(session);

@@ -948,7 +948,7 @@
         "type": "relatedElement",
         "value": {
           "type": "computedString",
-          "value": "label-wrapping-text10 "
+          "value": "label-wrapping-text10"
         },
         "nativeSource": "labelwrapped",
         "nativeSourceValue": {
@@ -956,7 +956,7 @@
           "relatedNodes": [
             {
               "backendDOMNodeId": "<number>",
-              "text": "label-wrapping-text10 "
+              "text": "label-wrapping-text10"
             }
           ]
         }
@@ -1037,7 +1037,7 @@
         "type": "nodeList",
         "relatedNodes": [
           {
-            "text": "label-wrapping-text10 ",
+            "text": "label-wrapping-text10",
             "nodeResult": "label"
           }
         ]
