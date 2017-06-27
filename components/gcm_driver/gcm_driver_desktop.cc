@@ -114,7 +114,7 @@ class GCMDriverDesktop::IOWorker : public GCMClient::Delegate {
                    const std::string& scope);
 
   void RecordDecryptionFailure(const std::string& app_id,
-                               GCMEncryptionProvider::DecryptionResult result);
+                               GCMDecryptionResult result);
 
   // For testing purpose. Can be called from UI thread. Use with care.
   GCMClient* gcm_client_for_testing() const { return gcm_client_.get(); }
@@ -518,7 +518,7 @@ void GCMDriverDesktop::IOWorker::RemoveHeartbeatInterval(
 
 void GCMDriverDesktop::IOWorker::RecordDecryptionFailure(
     const std::string& app_id,
-    GCMEncryptionProvider::DecryptionResult result) {
+    GCMDecryptionResult result) {
   DCHECK(io_thread_->RunsTasksInCurrentSequence());
   gcm_client_->RecordDecryptionFailure(app_id, result);
 }
@@ -798,9 +798,8 @@ void GCMDriverDesktop::DoSend(const std::string& app_id,
                  message));
 }
 
-void GCMDriverDesktop::RecordDecryptionFailure(
-    const std::string& app_id,
-    GCMEncryptionProvider::DecryptionResult result) {
+void GCMDriverDesktop::RecordDecryptionFailure(const std::string& app_id,
+                                               GCMDecryptionResult result) {
   DCHECK(ui_thread_->RunsTasksInCurrentSequence());
   io_thread_->PostTask(
       FROM_HERE,

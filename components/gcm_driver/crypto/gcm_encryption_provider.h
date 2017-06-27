@@ -23,6 +23,7 @@ class SequencedTaskRunner;
 
 namespace gcm {
 
+enum class GCMDecryptionResult;
 class GCMKeyStore;
 struct IncomingMessage;
 class KeyPair;
@@ -31,44 +32,6 @@ class KeyPair;
 // and decryption of incoming messages.
 class GCMEncryptionProvider {
  public:
-  // Result of decrypting an incoming message. The values of these reasons must
-  // not be changed, because they are being recorded using UMA.
-  enum DecryptionResult {
-    // The message had not been encrypted by the sender.
-    DECRYPTION_RESULT_UNENCRYPTED = 0,
-
-    // The message had been encrypted by the sender, and could successfully be
-    // decrypted for the registration it has been received for. The encryption
-    // scheme used for the message was draft-ietf-webpush-encryption-03.
-    DECRYPTION_RESULT_DECRYPTED_DRAFT_03 = 1,
-
-    // The contents of the Encryption HTTP header could not be parsed.
-    DECRYPTION_RESULT_INVALID_ENCRYPTION_HEADER = 2,
-
-    // The contents of the Crypto-Key HTTP header could not be parsed.
-    DECRYPTION_RESULT_INVALID_CRYPTO_KEY_HEADER = 3,
-
-    // No public/private key-pair was associated with the app_id.
-    DECRYPTION_RESULT_NO_KEYS = 4,
-
-    // The shared secret cannot be derived from the keying material.
-    DECRYPTION_RESULT_INVALID_SHARED_SECRET = 5,
-
-    // The payload could not be decrypted as AES-128-GCM.
-    DECRYPTION_RESULT_INVALID_PAYLOAD = 6,
-
-    // The binary header leading the ciphertext could not be parsed. Only
-    // applicable to messages encrypted per draft-ietf-webpush-encryption-08.
-    DECRYPTION_RESULT_INVALID_BINARY_HEADER = 7,
-
-    // The message had been encrypted by the sender, and could successfully be
-    // decrypted for the registration it has been received for. The encryption
-    // scheme used for the message was draft-ietf-webpush-encryption-08.
-    DECRYPTION_RESULT_DECRYPTED_DRAFT_08 = 8,
-
-    DECRYPTION_RESULT_LAST = DECRYPTION_RESULT_DECRYPTED_DRAFT_08
-  };
-
   // Callback to be invoked when the public key and auth secret are available.
   using EncryptionInfoCallback =
       base::Callback<void(const std::string& p256dh,
@@ -77,11 +40,8 @@ class GCMEncryptionProvider {
   // Callback to be invoked when a message may have been decrypted, as indicated
   // by the |result|. The |message| contains the dispatchable message in success
   // cases, or will be initialized to an empty, default state for failure.
-  using MessageCallback = base::Callback<void(DecryptionResult result,
+  using MessageCallback = base::Callback<void(GCMDecryptionResult result,
                                               const IncomingMessage& message)>;
-
-  // Converts |result| to a string describing the details of said result.
-  static std::string ToDecryptionResultDetailsString(DecryptionResult result);
 
   GCMEncryptionProvider();
   ~GCMEncryptionProvider();

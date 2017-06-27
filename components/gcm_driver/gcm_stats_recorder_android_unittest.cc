@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "components/gcm_driver/crypto/gcm_encryption_provider.h"
+#include "components/gcm_driver/crypto/gcm_decryption_result.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gcm {
@@ -58,8 +58,8 @@ TEST_F(GCMStatsRecorderAndroidTest, RecordsAndCallsDelegate) {
                                      42 /* message_byte_size */);
   EXPECT_EQ(5u, activity_recorded_calls());
 
-  recorder.RecordDecryptionFailure(
-      kTestAppId, GCMEncryptionProvider::DECRYPTION_RESULT_INVALID_PAYLOAD);
+  recorder.RecordDecryptionFailure(kTestAppId,
+                                   GCMDecryptionResult::INVALID_PAYLOAD);
   EXPECT_EQ(6u, activity_recorded_calls());
 
   RecordedActivities activities;

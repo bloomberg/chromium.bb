@@ -8,6 +8,8 @@ static_library("crypto") {
   sources = [
     "encryption_header_parsers.cc",
     "encryption_header_parsers.h",
+    "gcm_decryption_result.cc",
+    "gcm_decryption_result.h",
     "gcm_encryption_provider.cc",
     "gcm_encryption_provider.h",
     "gcm_key_store.cc",

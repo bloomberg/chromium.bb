@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include "components/gcm_driver/crypto/gcm_decryption_result.h"
 #include "components/gcm_driver/gcm_stats_recorder_android.h"
 
 namespace gcm {
@@ -125,19 +126,16 @@ void GCMStatsRecorderAndroid::RecordDataMessageReceived(
 
 void GCMStatsRecorderAndroid::RecordDecryptionFailure(
     const std::string& app_id,
-    GCMEncryptionProvider::DecryptionResult result) {
-  DCHECK_NE(result, GCMEncryptionProvider::DECRYPTION_RESULT_UNENCRYPTED);
-  DCHECK_NE(result,
-            GCMEncryptionProvider::DECRYPTION_RESULT_DECRYPTED_DRAFT_03);
-  DCHECK_NE(result,
-            GCMEncryptionProvider::DECRYPTION_RESULT_DECRYPTED_DRAFT_08);
+    GCMDecryptionResult result) {
+  DCHECK_NE(result, GCMDecryptionResult::UNENCRYPTED);
+  DCHECK_NE(result, GCMDecryptionResult::DECRYPTED_DRAFT_03);
+  DCHECK_NE(result, GCMDecryptionResult::DECRYPTED_DRAFT_08);
   if (!is_recording_)
     return;
 
   DecryptionFailureActivity activity;
   activity.app_id = app_id;
-  activity.details =
-      GCMEncryptionProvider::ToDecryptionResultDetailsString(result);
+  activity.details = ToGCMDecryptionResultDetailsString(result);
 
   decryption_failure_activities_.push_front(activity);
   if (decryption_failure_activities_.size() > MAX_LOGGED_ACTIVITY_COUNT)

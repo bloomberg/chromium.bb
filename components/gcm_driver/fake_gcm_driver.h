@@ -65,8 +65,7 @@ class FakeGCMDriver : public GCMDriver {
                 const std::string& receiver_id,
                 const OutgoingMessage& message) override;
   void RecordDecryptionFailure(const std::string& app_id,
-                               GCMEncryptionProvider::DecryptionResult result)
-      override;
+                               GCMDecryptionResult result) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeGCMDriver);

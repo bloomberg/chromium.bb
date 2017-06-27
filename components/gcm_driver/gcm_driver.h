@@ -27,6 +27,7 @@ namespace gcm {
 
 class GCMAppHandler;
 class GCMConnectionObserver;
+enum class GCMDecryptionResult;
 struct AccountMapping;
 
 // Provides the InstanceID support via GCMDriver.
@@ -279,9 +280,8 @@ class GCMDriver {
                         const OutgoingMessage& message) = 0;
 
   // Platform-specific implementation of recording message decryption failures.
-  virtual void RecordDecryptionFailure(
-      const std::string& app_id,
-      GCMEncryptionProvider::DecryptionResult result) = 0;
+  virtual void RecordDecryptionFailure(const std::string& app_id,
+                                       GCMDecryptionResult result) = 0;
 
   // Runs the Register callback.
   void RegisterFinished(const std::string& app_id,
@@ -323,7 +323,7 @@ class GCMDriver {
   // if |result| indicates that it is safe to do so, or will report a decryption
   // failure for the |app_id| otherwise.
   void DispatchMessageInternal(const std::string& app_id,
-                               GCMEncryptionProvider::DecryptionResult result,
+                               GCMDecryptionResult result,
                                const IncomingMessage& message);
 
   // Called after unregistration completes in order to trigger the pending

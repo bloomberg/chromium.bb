@@ -17,6 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/tuple.h"
+#include "components/gcm_driver/crypto/gcm_decryption_result.h"
 #include "components/gcm_driver/gcm_channel_status_syncer.h"
 #include "components/gcm_driver/gcm_client.h"
 #include "components/gcm_driver/gcm_connection_observer.h"
@@ -38,6 +39,7 @@ namespace gcm {
 class GCMAccountMapper;
 class GCMAppHandler;
 class GCMClientFactory;
+enum class GCMDecryptionResult;
 class GCMDelayedTaskController;
 
 // GCMDriver implementation for desktop and Chrome OS, using GCMClient.
@@ -107,8 +109,7 @@ class GCMDriverDesktop : public GCMDriver,
                 const std::string& receiver_id,
                 const OutgoingMessage& message) override;
   void RecordDecryptionFailure(const std::string& app_id,
-                               GCMEncryptionProvider::DecryptionResult result)
-      override;
+                               GCMDecryptionResult result) override;
 
   // InstanceIDHandler implementation:
   void GetToken(const std::string& app_id,

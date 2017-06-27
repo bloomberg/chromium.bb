@@ -12,6 +12,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "components/gcm_driver/crypto/gcm_decryption_result.h"
+#include "components/gcm_driver/crypto/gcm_encryption_provider.h"
 
 namespace gcm {
 
@@ -187,14 +189,11 @@ void GCMStatsRecorderImpl::NotifyActivityRecorded() {
     delegate_->OnActivityRecorded();
 }
 
-void GCMStatsRecorderImpl::RecordDecryptionFailure(
-    const std::string& app_id,
-    GCMEncryptionProvider::DecryptionResult result) {
-  DCHECK_NE(result, GCMEncryptionProvider::DECRYPTION_RESULT_UNENCRYPTED);
-  DCHECK_NE(result,
-            GCMEncryptionProvider::DECRYPTION_RESULT_DECRYPTED_DRAFT_03);
-  DCHECK_NE(result,
-            GCMEncryptionProvider::DECRYPTION_RESULT_DECRYPTED_DRAFT_08);
+void GCMStatsRecorderImpl::RecordDecryptionFailure(const std::string& app_id,
+                                                   GCMDecryptionResult result) {
+  DCHECK_NE(result, GCMDecryptionResult::UNENCRYPTED);
+  DCHECK_NE(result, GCMDecryptionResult::DECRYPTED_DRAFT_03);
+  DCHECK_NE(result, GCMDecryptionResult::DECRYPTED_DRAFT_08);
   if (!is_recording_)
     return;
 
@@ -202,8 +201,7 @@ void GCMStatsRecorderImpl::RecordDecryptionFailure(
   DecryptionFailureActivity* inserted_data = InsertCircularBuffer(
       &decryption_failure_activities_, data);
   inserted_data->app_id = app_id;
-  inserted_data->details =
-      GCMEncryptionProvider::ToDecryptionResultDetailsString(result);
+  inserted_data->details = ToGCMDecryptionResultDetailsString(result);
 
   NotifyActivityRecorded();
 }

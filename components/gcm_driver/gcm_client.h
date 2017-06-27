@@ -14,7 +14,6 @@
 
 #include "base/memory/linked_ptr.h"
 #include "components/gcm_driver/common/gcm_messages.h"
-#include "components/gcm_driver/crypto/gcm_encryption_provider.h"
 #include "components/gcm_driver/gcm_activity.h"
 #include "components/gcm_driver/registration_info.h"
 
@@ -33,8 +32,9 @@ class URLRequestContextGetter;
 
 namespace gcm {
 
-class Encryptor;
 struct AccountMapping;
+class Encryptor;
+enum class GCMDecryptionResult;
 
 // Interface that encapsulates the network communications with the Google Cloud
 // Messaging server. This interface is not supposed to be thread-safe.
@@ -288,9 +288,8 @@ class GCMClient {
                     const OutgoingMessage& message) = 0;
 
   // Records a decryption failure due to |result| for the |app_id|.
-  virtual void RecordDecryptionFailure(
-      const std::string& app_id,
-      GCMEncryptionProvider::DecryptionResult result) = 0;
+  virtual void RecordDecryptionFailure(const std::string& app_id,
+                                       GCMDecryptionResult result) = 0;
 
   // Enables or disables internal activity recording.
   virtual void SetRecording(bool recording) = 0;
