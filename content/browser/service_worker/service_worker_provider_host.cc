@@ -100,44 +100,6 @@ void RemoveProviderHost(base::WeakPtr<ServiceWorkerContextCore> context,
   context->RemoveProviderHost(process_id, provider_id);
 }
 
-// Wraps associated request for another associated request.
-class AssociatedURLLoaderRelay final : public mojom::URLLoader {
- public:
-  static void CreateLoaderAndStart(
-      mojom::URLLoaderFactory* factory,
-      mojom::URLLoaderAssociatedRequest request,
-      int routing_id,
-      int request_id,
-      uint32_t options,
-      const ResourceRequest& resource_request,
-      mojom::URLLoaderClientPtr client,
-      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
-    mojom::URLLoaderAssociatedPtr associated_ptr;
-    mojom::URLLoaderAssociatedRequest associated_request =
-        mojo::MakeRequest(&associated_ptr);
-    factory->CreateLoaderAndStart(std::move(associated_request), routing_id,
-                                  request_id, options, resource_request,
-                                  std::move(client), traffic_annotation);
-    mojo::MakeStrongAssociatedBinding(
-        base::MakeUnique<AssociatedURLLoaderRelay>(std::move(associated_ptr)),
-        std::move(request));
-  }
-
-  explicit AssociatedURLLoaderRelay(
-      mojom::URLLoaderAssociatedPtr associated_ptr)
-      : associated_ptr_(std::move(associated_ptr)) {}
-  ~AssociatedURLLoaderRelay() override {}
-  void FollowRedirect() override { associated_ptr_->FollowRedirect(); }
-  void SetPriority(net::RequestPriority priority,
-                   int intra_priority_value) override {
-    associated_ptr_->SetPriority(priority, intra_priority_value);
-  }
-
- private:
-  mojom::URLLoaderAssociatedPtr associated_ptr_;
-  DISALLOW_COPY_AND_ASSIGN(AssociatedURLLoaderRelay);
-};
-
 // Used by a Service Worker for script loading only during the installation
 // time. For now this is just a proxy loader for the network loader.
 // Eventually this should replace the existing URLRequestJob-based request
@@ -264,12 +226,10 @@ class ScriptURLLoaderFactory : public mojom::URLLoaderFactory {
                                 traffic_annotation) override {
     if (!ShouldHandleScriptRequest(resource_request)) {
       // If the request should not be handled by ScriptURLLoader, just
-      // fallback to the network. This needs a relaying as we use different
-      // associated message pipes.
+      // fallback to the network.
       // TODO(kinuko): Record the reason like what we do with netlog in
       // ServiceWorkerContextRequestHandler.
-      AssociatedURLLoaderRelay::CreateLoaderAndStart(
-          loader_factory_getter_->GetNetworkFactory()->get(),
+      loader_factory_getter_->GetNetworkFactory()->get()->CreateLoaderAndStart(
           std::move(request), routing_id, request_id, options, resource_request,
           std::move(client), traffic_annotation);
       return;
