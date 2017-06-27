@@ -59,6 +59,11 @@ class TestInputMethodManager : public MockInputMethodManager {
     }
 
     // MockInputMethodManager::State:
+    void ChangeInputMethod(const std::string& input_method_id,
+                           bool show_message) override {
+      ++change_input_method_count_;
+      current_ime_id_ = input_method_id;
+    }
     std::unique_ptr<std::vector<InputMethodDescriptor>> GetActiveInputMethods()
         const override {
       return base::MakeUnique<std::vector<InputMethodDescriptor>>(
@@ -79,9 +84,16 @@ class TestInputMethodManager : public MockInputMethodManager {
       }
       return InputMethodUtil::GetFallbackInputMethodDescriptor();
     }
+    void SwitchToNextInputMethod() override { ++next_input_method_count_; }
+    void SwitchToPreviousInputMethod() override {
+      ++previous_input_method_count_;
+    }
 
     std::string current_ime_id_;
     std::vector<InputMethodDescriptor> input_methods_;
+    int next_input_method_count_ = 0;
+    int previous_input_method_count_ = 0;
+    int change_input_method_count_ = 0;
 
    protected:
     friend base::RefCounted<InputMethodManager::State>;
@@ -269,6 +281,25 @@ TEST_F(ImeControllerClientTest, MenuItemChanged) {
   EXPECT_TRUE(ime_controller_.menu_items_[0]->checked);
   EXPECT_EQ("key2", ime_controller_.menu_items_[1]->key);
   EXPECT_FALSE(ime_controller_.menu_items_[1]->checked);
+}
+
+TEST_F(ImeControllerClientTest, SwitchToNextIme) {
+  ImeControllerClient client(&input_method_manager_);
+  client.SwitchToNextIme();
+  EXPECT_EQ(1, input_method_manager_.state_->next_input_method_count_);
+}
+
+TEST_F(ImeControllerClientTest, SwitchToPreviousIme) {
+  ImeControllerClient client(&input_method_manager_);
+  client.SwitchToPreviousIme();
+  EXPECT_EQ(1, input_method_manager_.state_->previous_input_method_count_);
+}
+
+TEST_F(ImeControllerClientTest, SwitchImeById) {
+  ImeControllerClient client(&input_method_manager_);
+  client.SwitchImeById("ime2");
+  EXPECT_EQ(1, input_method_manager_.state_->change_input_method_count_);
+  EXPECT_EQ("ime2", input_method_manager_.state_->current_ime_id_);
 }
 
 }  // namespace

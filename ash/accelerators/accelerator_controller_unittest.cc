@@ -8,8 +8,10 @@
 #include "ash/accessibility_delegate.h"
 #include "ash/accessibility_types.h"
 #include "ash/ash_switches.h"
+#include "ash/ime/ime_controller.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/interfaces/ime_info.mojom.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
@@ -57,6 +59,18 @@ using chromeos::input_method::InputMethodManager;
 namespace ash {
 
 namespace {
+
+void AddTestImes() {
+  mojom::ImeInfoPtr ime1 = mojom::ImeInfo::New();
+  ime1->id = "id1";
+  mojom::ImeInfoPtr ime2 = mojom::ImeInfo::New();
+  ime2->id = "id2";
+  std::vector<mojom::ImeInfoPtr> available_imes;
+  available_imes.push_back(std::move(ime1));
+  available_imes.push_back(std::move(ime2));
+  Shell::Get()->ime_controller()->RefreshIme(
+      "id1", std::move(available_imes), std::vector<mojom::ImeMenuItemPtr>());
+}
 
 class TestTarget : public ui::AcceleratorTarget {
  public:
@@ -124,54 +138,18 @@ class DummyBrightnessControlDelegate : public BrightnessControlDelegate {
   DISALLOW_COPY_AND_ASSIGN(DummyBrightnessControlDelegate);
 };
 
-class TestInputMethodManagerState
-    : public chromeos::input_method::MockInputMethodManager::State {
- public:
-  TestInputMethodManagerState() = default;
-
-  // InputMethodManager::State:
-  bool CanCycleInputMethod() override { return can_change_input_method_; }
-  void SwitchToNextInputMethod() override { next_ime_count_++; }
-  void SwitchToPreviousInputMethod() override { previous_ime_count_++; }
-  bool CanSwitchInputMethod(const ui::Accelerator& accelerator) override {
-    return can_change_input_method_;
-  }
-  void SwitchInputMethod(const ui::Accelerator& accelerator) override {
-    switch_ime_count_++;
-  }
-
-  bool can_change_input_method_ = true;
-  int next_ime_count_ = 0;
-  int previous_ime_count_ = 0;
-  int switch_ime_count_ = 0;
-
- private:
-  // Base class is ref-counted.
-  ~TestInputMethodManagerState() override = default;
-
-  DISALLOW_COPY_AND_ASSIGN(TestInputMethodManagerState);
-};
-
 class TestInputMethodManager
     : public chromeos::input_method::MockInputMethodManager {
  public:
-  TestInputMethodManager() : state_(new TestInputMethodManagerState) {}
+  TestInputMethodManager() = default;
   ~TestInputMethodManager() override = default;
-
-  void SetCanChangeInputMethod(bool can_change) {
-    state_->can_change_input_method_ = can_change;
-  }
 
   // MockInputMethodManager:
   chromeos::input_method::ImeKeyboard* GetImeKeyboard() override {
     return &keyboard_;
   }
-  scoped_refptr<InputMethodManager::State> GetActiveIMEState() override {
-    return state_;
-  }
 
   chromeos::input_method::FakeImeKeyboard keyboard_;
-  scoped_refptr<TestInputMethodManagerState> state_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestInputMethodManager);
@@ -887,45 +865,23 @@ TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleAppList) {
 }
 
 TEST_F(AcceleratorControllerTest, ImeGlobalAccelerators) {
-  TestInputMethodManagerState* test_state =
-      test_input_method_manager_->state_.get();
+  ASSERT_EQ(0u, Shell::Get()->ime_controller()->available_imes().size());
 
-  // Test IME shortcuts when cycling IME is blocked.
-  test_state->can_change_input_method_ = false;
+  // Cycling IME is blocked because there is nothing to switch to.
   ui::Accelerator control_space_down(ui::VKEY_SPACE, ui::EF_CONTROL_DOWN);
   ui::Accelerator control_space_up(ui::VKEY_SPACE, ui::EF_CONTROL_DOWN);
   control_space_up.set_key_state(ui::Accelerator::KeyState::RELEASED);
-  const ui::Accelerator convert(ui::VKEY_CONVERT, ui::EF_NONE);
-  const ui::Accelerator non_convert(ui::VKEY_NONCONVERT, ui::EF_NONE);
-  const ui::Accelerator wide_half_1(ui::VKEY_DBE_SBCSCHAR, ui::EF_NONE);
-  const ui::Accelerator wide_half_2(ui::VKEY_DBE_DBCSCHAR, ui::EF_NONE);
-  const ui::Accelerator hangul(ui::VKEY_HANGUL, ui::EF_NONE);
+  ui::Accelerator control_shift_space(ui::VKEY_SPACE,
+                                      ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
   EXPECT_FALSE(ProcessInController(control_space_down));
   EXPECT_FALSE(ProcessInController(control_space_up));
-  EXPECT_FALSE(ProcessInController(convert));
-  EXPECT_FALSE(ProcessInController(non_convert));
-  EXPECT_FALSE(ProcessInController(wide_half_1));
-  EXPECT_FALSE(ProcessInController(wide_half_2));
-  EXPECT_FALSE(ProcessInController(hangul));
+  EXPECT_FALSE(ProcessInController(control_shift_space));
 
-  // Test IME shortcuts when cycling IME is allowed.
-  test_state->can_change_input_method_ = true;
-  EXPECT_EQ(0, test_state->previous_ime_count_);
+  // Cycling IME works when there are IMEs available.
+  AddTestImes();
   EXPECT_TRUE(ProcessInController(control_space_down));
-  EXPECT_EQ(1, test_state->previous_ime_count_);
   EXPECT_TRUE(ProcessInController(control_space_up));
-  EXPECT_EQ(1, test_state->previous_ime_count_);
-  EXPECT_EQ(0, test_state->switch_ime_count_);
-  EXPECT_TRUE(ProcessInController(convert));
-  EXPECT_EQ(1, test_state->switch_ime_count_);
-  EXPECT_TRUE(ProcessInController(non_convert));
-  EXPECT_EQ(2, test_state->switch_ime_count_);
-  EXPECT_TRUE(ProcessInController(wide_half_1));
-  EXPECT_EQ(3, test_state->switch_ime_count_);
-  EXPECT_TRUE(ProcessInController(wide_half_2));
-  EXPECT_EQ(4, test_state->switch_ime_count_);
-  EXPECT_TRUE(ProcessInController(hangul));
-  EXPECT_EQ(5, test_state->switch_ime_count_);
+  EXPECT_TRUE(ProcessInController(control_shift_space));
 }
 
 // TODO(nona|mazda): Remove this when crbug.com/139556 in a better way.
@@ -1347,6 +1303,9 @@ TEST_F(DeprecatedAcceleratorTester, TestNewAccelerators) {
       {true, ui::VKEY_K, ui::EF_SHIFT_DOWN | ui::EF_COMMAND_DOWN,
        SHOW_IME_MENU_BUBBLE},
   };
+
+  // The NEXT_IME accelerator requires multiple IMEs to be available.
+  AddTestImes();
 
   EXPECT_TRUE(IsMessageCenterEmpty());
 

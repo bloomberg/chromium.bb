@@ -133,7 +133,6 @@ IN_PROC_BROWSER_TEST_F(ModeIndicatorBrowserTest, Bounds) {
   // Add keyboard layouts to enable the mode indicator.
   imm->GetActiveIMEState()->EnableLoginLayouts("fr", keyboard_layouts);
   ASSERT_LT(1UL, imm->GetActiveIMEState()->GetNumActiveInputMethods());
-  EXPECT_TRUE(imm->GetActiveIMEState()->CanCycleInputMethod());
 
   chromeos::IMECandidateWindowHandlerInterface* candidate_window =
       ui::IMEBridge::Get()->GetCandidateWindowHandler();
@@ -203,7 +202,6 @@ IN_PROC_BROWSER_TEST_F(ModeIndicatorBrowserTest, NumOfWidgets) {
   // Add keyboard layouts to enable the mode indicator.
   imm->GetActiveIMEState()->EnableLoginLayouts("fr", keyboard_layouts);
   ASSERT_LT(1UL, imm->GetActiveIMEState()->GetNumActiveInputMethods());
-  EXPECT_TRUE(imm->GetActiveIMEState()->CanCycleInputMethod());
 
   chromeos::IMECandidateWindowHandlerInterface* candidate_window =
       ui::IMEBridge::Get()->GetCandidateWindowHandler();

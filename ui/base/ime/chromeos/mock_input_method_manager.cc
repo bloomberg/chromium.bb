@@ -71,21 +71,9 @@ void MockInputMethodManager::State::SetInputMethodLoginDefaultFromVPD(
     const std::string& locale,
     const std::string& layout) {}
 
-bool MockInputMethodManager::State::CanCycleInputMethod() {
-  return true;
-}
-
 void MockInputMethodManager::State::SwitchToNextInputMethod() {}
 
 void MockInputMethodManager::State::SwitchToPreviousInputMethod() {}
-
-bool MockInputMethodManager::State::CanSwitchInputMethod(
-    const ui::Accelerator& accelerator) {
-  return true;
-}
-
-void MockInputMethodManager::State::SwitchInputMethod(
-    const ui::Accelerator& accelerator) {}
 
 InputMethodDescriptor MockInputMethodManager::State::GetCurrentInputMethod()
     const {

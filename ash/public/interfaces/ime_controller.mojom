@@ -38,8 +38,10 @@ interface ImeControllerClient {
   // method is installed.
   SwitchToPreviousIme();
 
-  // Switches to an input method by |id| (for example, "xkb:jp::jpn"). Does
-  // nothing if the input method is not installed.
+  // Switches to an input method by |id|. Does nothing if the input method is
+  // not installed. The ID is usually the output of a call like
+  // chromeos::extension_ime_util::GetInputMethodIDByEngineID("xkb:jp::jpn"),
+  // see that function for details.
   SwitchImeById(string id);
 
   // Activates an input method property. These are settings that are provided by
