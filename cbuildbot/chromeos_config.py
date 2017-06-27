@@ -2211,7 +2211,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'gale',
       'glados',
       'guado',
-      'kevin',
       'kip',
       'leon',
       'link',
@@ -2255,6 +2254,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'bob',
       'eve',
       'hana',
+      'kevin',
       'lakitu-gpu', # crbug.com/732942
       'lakitu-st',
       'reef',
@@ -2478,7 +2478,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
     ('wizpig',         None,             'cyan'),          # strago (BSW)
     ('cave',           'sentry',         'caroline'),      # glados (SKL)
     ('elm',            None,             'hana'),          # oak (MTK8173)
-    ('bob',            None,             'kevin'),         # gru (RK3399)
+    ('kevin',          None,             'bob'),           # gru (RK3399)
     ('reef',           None,             None),            # reef (APL)
     (None,             None,             None),            # poppy (KBL)
   ])
