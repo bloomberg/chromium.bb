@@ -9,6 +9,7 @@ config("libunwind_config") {
 
 source_set("libunwind") {
   visibility = [ "//buildtools/third_party/libc++abi" ]
+  defines = [ "_LIBUNWIND_DISABLE_VISIBILITY_ANNOTATIONS" ]
   sources = [
     # C++ sources
     "trunk/src/Unwind-EHABI.cpp",
