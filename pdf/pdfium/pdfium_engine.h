@@ -139,6 +139,10 @@ class PDFiumEngine : public PDFEngine,
     // coordinates.
     std::vector<pp::Rect> GetVisibleSelections() const;
 
+    // Invalidates |selection|, but with |selection| slightly expanded to
+    // compensate for any rounding errors.
+    void Invalidate(const pp::Rect& selection);
+
     PDFiumEngine* const engine_;
     // The origin at the time this object was constructed.
     const pp::Point previous_origin_;
