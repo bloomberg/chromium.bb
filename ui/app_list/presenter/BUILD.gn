@@ -93,6 +93,7 @@ test("app_list_presenter_unittests") {
     ":test_support",
     "//base",
     "//base/test:test_support",
+    "//mojo/edk/system",
     "//testing/gtest",
     "//ui/app_list:test_support",
     "//ui/aura:aura",

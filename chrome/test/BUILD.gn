@@ -554,6 +554,7 @@ if (!is_android) {
       "//crypto:test_support",
       "//extensions/features",
       "//google_apis:test_support",
+      "//mojo/edk/system",
       "//net",
       "//net:net_resources",
       "//net:test_support",
