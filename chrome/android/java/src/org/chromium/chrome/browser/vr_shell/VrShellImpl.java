@@ -287,7 +287,14 @@ public class VrShellImpl
         mRenderToSurfaceLayoutParent = new FrameLayout(mActivity) {
             @Override
             public boolean dispatchTouchEvent(MotionEvent event) {
-                getContainer().dispatchTouchEvent(event);
+                // We only want to target touch events to the actual screen to the GvrUiLayout,
+                // which is dynamically loaded and attached to the GvrLayoutImpl.
+                for (int i = 0; i < getContainer().getChildCount(); ++i) {
+                    View child = getContainer().getChildAt(i);
+                    if (child.getClass().getSimpleName().equals("GvrLayoutImpl")) {
+                        child.dispatchTouchEvent(event);
+                    }
+                }
                 return true;
             }
         };
@@ -334,6 +341,7 @@ public class VrShellImpl
             }
             @Override
             protected void onPostExecute(Bitmap bitmap) {
+                if (mNativeVrShell == 0) return;
                 nativeSetSplashScreenIcon(mNativeVrShell, bitmap);
             }
         }
