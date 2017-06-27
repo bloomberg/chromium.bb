@@ -739,6 +739,8 @@ weston_wm_handle_configure_notify(struct weston_wm *wm, xcb_generic_event_t *eve
 {
 	xcb_configure_notify_event_t *configure_notify =
 		(xcb_configure_notify_event_t *) event;
+	const struct weston_desktop_xwayland_interface *xwayland_api =
+		wm->server->compositor->xwayland_interface;
 	struct weston_wm_window *window;
 
 	wm_log("XCB_CONFIGURE_NOTIFY (window %d) %d,%d @ %dx%d%s\n",
@@ -760,6 +762,13 @@ weston_wm_handle_configure_notify(struct weston_wm *wm, xcb_generic_event_t *eve
 		if (window->frame)
 			frame_resize_inside(window->frame,
 					    window->width, window->height);
+
+		/* We should check if shsurf has been created because sometimes
+		 * there are races
+		 * (configure_notify is sent before xserver_map_surface) */
+		if (window->shsurf)
+			xwayland_api->set_xwayland(window->shsurf,
+						   window->x, window->y);
 	}
 }
 

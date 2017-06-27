@@ -112,7 +112,6 @@ weston_desktop_xwayland_surface_change_state(struct weston_desktop_xwayland_surf
 				weston_desktop_surface_create_view(surface->surface);
 			weston_layer_entry_insert(&surface->xwayland->layer.view_list,
 						  &surface->view->layer_link);
-			weston_view_set_position(surface->view, x, y);
 			surface->view->is_mapped = true;
 			wsurface->is_mapped = true;
 		}
@@ -316,6 +315,7 @@ set_xwayland(struct weston_desktop_xwayland_surface *surface, int x, int y)
 {
 	weston_desktop_xwayland_surface_change_state(surface, XWAYLAND, NULL,
 						     x, y);
+	weston_view_set_position(surface->view, x, y);
 }
 
 static int
