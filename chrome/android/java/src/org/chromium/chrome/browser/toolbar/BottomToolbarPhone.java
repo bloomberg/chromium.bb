@@ -22,6 +22,7 @@ import android.widget.ImageView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.ColorUtils;
@@ -410,6 +411,13 @@ public class BottomToolbarPhone extends ToolbarPhone {
         mBrowsingModeViews.remove(mLocationBar);
 
         updateToolbarTopMargin();
+    }
+
+    @Override
+    public void initialize(ToolbarDataProvider toolbarDataProvider,
+            ToolbarTabController tabController, AppMenuButtonHelper appMenuButtonHelper) {
+        super.initialize(toolbarDataProvider, tabController, appMenuButtonHelper);
+        mAppMenuButtonHelper.setShowMenuOnUp(true);
     }
 
     /**
