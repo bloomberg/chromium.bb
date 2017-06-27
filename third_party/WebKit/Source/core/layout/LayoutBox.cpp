@@ -3791,11 +3791,14 @@ void LayoutBox::ComputeAndSetBlockDirectionMargins(
     const LayoutBlock* containing_block) {
   LayoutUnit margin_before;
   LayoutUnit margin_after;
+  DCHECK(Style());
+  DCHECK(containing_block);
+  DCHECK(containing_block->Style());
   ComputeMarginsForDirection(
       kBlockDirection, containing_block,
       ContainingBlockLogicalWidthForContent(), LogicalHeight(), margin_before,
-      margin_after, Style()->MarginBeforeUsing(containing_block->Style()),
-      Style()->MarginAfterUsing(containing_block->Style()));
+      margin_after, Style()->MarginBeforeUsing(*containing_block->Style()),
+      Style()->MarginAfterUsing(*containing_block->Style()));
   // Note that in this 'positioning phase' of the layout we are using the
   // containing block's writing mode rather than our own when calculating
   // margins.
