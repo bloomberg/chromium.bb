@@ -174,7 +174,8 @@ external/wpt/css/css-ruby-1 [ Skip ]
 external/wpt/css/css-speech-1 [ Skip ]
 external/wpt/css/css-syntax-3 [ Skip ]
 external/wpt/css/css-style-attr [ Skip ]
-external/wpt/css/css-tables-3 [ Skip ]
+## Owners: dgrogan@chromium.org,joysyu@google.com
+# external/wpt/css/css-tables-3 [ Pass ]
 external/wpt/css/css-text-3/hanging-punctuation [ Skip ]
 ## Owners: kojii@chromium.org
 # external/wpt/css/css-text-3/i18n [ Pass ]
