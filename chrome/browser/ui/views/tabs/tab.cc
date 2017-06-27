@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/time/time.h"
 #include "build/build_config.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_recorder.h"
@@ -97,11 +96,6 @@ const double kSelectedTabOpacity = 0.3;
 const double kSelectedTabThrobScale = 0.95 - kSelectedTabOpacity;
 
 const char kTabCloseButtonName[] = "TabCloseButton";
-
-bool ShouldShowThrobber(TabRendererData::NetworkState state) {
-  return state != TabRendererData::NETWORK_STATE_NONE &&
-         state != TabRendererData::NETWORK_STATE_ERROR;
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Drawing and utility functions
@@ -367,10 +361,11 @@ class Tab::ThrobberView : public views::View {
   // Resets the times tracking when the throbber changes state.
   void ResetStartTimes();
 
+ private:
   // views::View:
+  bool CanProcessEventsWithinSubtree() const override;
   void OnPaint(gfx::Canvas* canvas) override;
 
- private:
   Tab* owner_;  // Weak. Owns |this|.
 
   // The point in time when the tab icon was first painted in the waiting state.
@@ -385,9 +380,7 @@ class Tab::ThrobberView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(ThrobberView);
 };
 
-Tab::ThrobberView::ThrobberView(Tab* owner) : owner_(owner) {
-  set_can_process_events_within_subtree(false);
-}
+Tab::ThrobberView::ThrobberView(Tab* owner) : owner_(owner) {}
 
 void Tab::ThrobberView::ResetStartTimes() {
   waiting_start_time_ = base::TimeTicks();
@@ -395,9 +388,15 @@ void Tab::ThrobberView::ResetStartTimes() {
   waiting_state_ = gfx::ThrobberWaitingState();
 }
 
+bool Tab::ThrobberView::CanProcessEventsWithinSubtree() const {
+  return false;
+}
+
 void Tab::ThrobberView::OnPaint(gfx::Canvas* canvas) {
   const TabRendererData::NetworkState state = owner_->data().network_state;
-  CHECK(ShouldShowThrobber(state));
+  if (state == TabRendererData::NETWORK_STATE_NONE ||
+      state == TabRendererData::NETWORK_STATE_ERROR)
+    return;
 
   const ui::ThemeProvider* tp = GetThemeProvider();
   const gfx::Rect bounds = GetLocalBounds();
@@ -535,8 +534,8 @@ void Tab::SetData(const TabRendererData& data) {
     return;
 
   TabRendererData old(data_);
+  UpdateLoadingAnimation(data.network_state);
   data_ = data;
-  UpdateThrobber(old);
 
   base::string16 title = data_.title;
   if (title.empty()) {
@@ -570,11 +569,17 @@ void Tab::SetData(const TabRendererData& data) {
   SchedulePaint();
 }
 
-void Tab::StepLoadingAnimation() {
-  if (!throbber_->visible())
+void Tab::UpdateLoadingAnimation(TabRendererData::NetworkState state) {
+  if (state == data_.network_state &&
+      (state == TabRendererData::NETWORK_STATE_NONE ||
+       state == TabRendererData::NETWORK_STATE_ERROR)) {
+    // If the network state is none or is a network error and hasn't changed,
+    // do nothing. Otherwise we need to advance the animation frame.
     return;
+  }
 
-  RefreshThrobber();
+  data_.network_state = state;
+  AdvanceLoadingAnimation();
 }
 
 void Tab::StartPulse() {
@@ -1268,8 +1273,10 @@ void Tab::PaintIcon(gfx::Canvas* canvas) {
     return;
 
   // Throbber will do its own painting.
-  if (throbber_->visible())
+  if (data().network_state != TabRendererData::NETWORK_STATE_NONE &&
+      data().network_state != TabRendererData::NETWORK_STATE_ERROR) {
     return;
+  }
   // Ensure that |favicon_| is created.
   if (favicon_.isNull()) {
     ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
@@ -1299,31 +1306,10 @@ void Tab::PaintIcon(gfx::Canvas* canvas) {
   }
 }
 
-void Tab::UpdateThrobber(const TabRendererData& old) {
-  const bool should_show = ShouldShowThrobber(data_.network_state);
-  const bool is_showing = throbber_->visible();
-
-  // Delay the switch to showing the throbber for short duration resource
-  // loading that occurs after the initial navigation. See crbug.com/734104
-  if (!is_showing && should_show && old.url == data_.url) {
-    if (!delayed_throbber_show_timer_.IsRunning()) {
-      delayed_throbber_show_timer_.Start(FROM_HERE,
-                                         base::TimeDelta::FromSeconds(3), this,
-                                         &Tab::RefreshThrobber);
-    }
-    return;
-  }
-
-  delayed_throbber_show_timer_.Stop();
-
-  if (!is_showing && !should_show)
-    return;
-
-  RefreshThrobber();
-}
-
-void Tab::RefreshThrobber() {
-  if (!ShouldShowThrobber(data().network_state)) {
+void Tab::AdvanceLoadingAnimation() {
+  const TabRendererData::NetworkState state = data().network_state;
+  if (state == TabRendererData::NETWORK_STATE_NONE ||
+      state == TabRendererData::NETWORK_STATE_ERROR) {
     throbber_->ResetStartTimes();
     throbber_->SetVisible(false);
     ScheduleIconPaint();
