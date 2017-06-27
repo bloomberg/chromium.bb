@@ -1070,21 +1070,21 @@ Value RunFunction(Scope* scope,
                   Err* err) {
   const Token& name = function->function();
 
+  std::string template_name = function->function().value().as_string();
+  const Template* templ = scope->GetTemplate(template_name);
+  if (templ) {
+    Value args = args_list->Execute(scope, err);
+    if (err->has_error())
+      return Value();
+    return templ->Invoke(scope, function, template_name, args.list_value(),
+                         block, err);
+  }
+
+  // No template matching this, check for a built-in function.
   const FunctionInfoMap& function_map = GetFunctions();
   FunctionInfoMap::const_iterator found_function =
       function_map.find(name.value());
   if (found_function == function_map.end()) {
-    // No built-in function matching this, check for a template.
-    std::string template_name = function->function().value().as_string();
-    const Template* templ = scope->GetTemplate(template_name);
-    if (templ) {
-      Value args = args_list->Execute(scope, err);
-      if (err->has_error())
-        return Value();
-      return templ->Invoke(scope, function, template_name, args.list_value(),
-                           block, err);
-    }
-
     *err = Err(name, "Unknown function.");
     return Value();
   }

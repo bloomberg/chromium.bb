@@ -2591,6 +2591,22 @@
   would have a dependency on the action to make it run.
 ```
 
+#### **Overriding builtin targets**
+
+```
+  You can use template to redefine a built-in target in which case your template
+  takes a precedence over the built-in one. All uses of the target from within
+  the template definition will refer to the built-in target which makes it
+  possible to extend the behavior of the built-in target:
+
+    template("shared_library") {
+      shared_library(shlib) {
+        forward_variables_from(invoker, [ "*" ])
+        ...
+      }
+    }
+```
+
 #### **Example of defining a template**
 
 ```
