@@ -245,12 +245,11 @@ void AppBannerManagerAndroid::ShowBanner() {
   DCHECK(contents);
 
   if (native_app_data_.is_null()) {
-    std::unique_ptr<ShortcutInfo> info =
-        CreateShortcutInfo(manifest_url_, manifest_, primary_icon_url_,
-                           badge_icon_url_, can_install_webapk_);
     if (AppBannerInfoBarDelegateAndroid::Create(
-            contents, GetWeakPtr(), info->name, std::move(info), primary_icon_,
-            badge_icon_, event_request_id(), can_install_webapk_,
+            contents, GetWeakPtr(),
+            CreateShortcutInfo(manifest_url_, manifest_, primary_icon_url_,
+                               badge_icon_url_, can_install_webapk_),
+            primary_icon_, badge_icon_, event_request_id(), can_install_webapk_,
             webapk::INSTALL_SOURCE_BANNER)) {
       RecordDidShowBanner("AppBanner.WebApp.Shown");
       TrackDisplayEvent(DISPLAY_EVENT_WEB_APP_BANNER_CREATED);
