@@ -7,7 +7,8 @@
 
 #include <stdint.h>
 
-#include "base/containers/hash_tables.h"
+#include <map>
+
 #include "base/macros.h"
 #include "base/supports_user_data.h"
 #include "components/data_use_measurement/core/data_use.h"
@@ -25,12 +26,24 @@ namespace data_use_measurement {
 // tracked by exactly one DataUseRecorder.
 class DataUseRecorder {
  public:
+  // Stores network data used by a URLRequest.
+  struct URLRequestDataUse {
+    URLRequestDataUse() : bytes_received(0), bytes_sent(0) {}
+
+    int64_t bytes_received;
+    int64_t bytes_sent;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(URLRequestDataUse);
+  };
+
   explicit DataUseRecorder(DataUse::TrafficType traffic_type);
   virtual ~DataUseRecorder();
 
   // Returns the actual data used by the entity being tracked.
   DataUse& data_use() { return data_use_; }
-  const base::hash_set<net::URLRequest*>& pending_url_requests() const {
+  const std::map<net::URLRequest*, URLRequestDataUse>& pending_url_requests()
+      const {
     return pending_url_requests_;
   }
   const net::URLRequest* main_url_request() const { return main_url_request_; }
@@ -57,12 +70,13 @@ class DataUseRecorder {
   // this recorder.
   void AddPendingURLRequest(net::URLRequest* request);
 
+  // Moves pending |request| from |this| recorder to |other| recorder, and
+  // updates the data use for the recorders.
+  void MovePendingURLRequest(DataUseRecorder* other, net::URLRequest* request);
+
   // Clears the list of pending URLRequests that ascribe data use to this
   // recorder.
   void RemoveAllPendingURLRequests();
-
-  // Merge another DataUseRecorder to this instance.
-  void MergeFrom(DataUseRecorder* other);
 
   // Network Delegate methods:
   void OnBeforeUrlRequest(net::URLRequest* request);
@@ -71,12 +85,13 @@ class DataUseRecorder {
   void OnNetworkBytesReceived(net::URLRequest* request, int64_t bytes_received);
 
  private:
-  // Pending URLRequests whose data is being tracked by this DataUseRecorder.
-  base::hash_set<net::URLRequest*> pending_url_requests_;
+  // Updates the network data use for the url request.
+  void UpdateNetworkByteCounts(net::URLRequest* request,
+                               int64_t bytes_received,
+                               int64_t bytes_sent);
 
-  // Data sources other than URLRequests, whose data is being tracked by this
-  // DataUseRecorder.
-  base::hash_set<const void*> pending_data_sources_;
+  // Pending URLRequests whose data is being tracked by this DataUseRecorder.
+  std::map<net::URLRequest*, URLRequestDataUse> pending_url_requests_;
 
   // The main frame URLRequest for page loads. Null if this is not tracking a
   // page load.

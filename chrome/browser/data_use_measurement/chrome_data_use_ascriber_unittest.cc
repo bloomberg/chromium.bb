@@ -125,7 +125,7 @@ TEST_F(ChromeDataUseAscriberTest, RenderFrameShownAndHidden) {
       content::GlobalRequestID(kRenderProcessId, 0), kRenderProcessId,
       kRenderFrameId);
   ascriber()->DidFinishMainFrameNavigation(kRenderProcessId, kRenderFrameId,
-                                           GURL("http://test.com"), true,
+                                           GURL("http://test.com"), false,
                                            kPageTransition);
   ascriber()->WasShownOrHidden(kRenderProcessId, kRenderFrameId, true);
 
@@ -148,7 +148,7 @@ TEST_F(ChromeDataUseAscriberTest, RenderFrameHiddenAndShown) {
       content::GlobalRequestID(kRenderProcessId, 0), kRenderProcessId,
       kRenderFrameId);
   ascriber()->DidFinishMainFrameNavigation(kRenderProcessId, kRenderFrameId,
-                                           GURL("http://test.com"), true,
+                                           GURL("http://test.com"), false,
                                            kPageTransition);
   ascriber()->WasShownOrHidden(kRenderProcessId, kRenderFrameId, false);
 
@@ -171,7 +171,7 @@ TEST_F(ChromeDataUseAscriberTest, RenderFrameHostChanged) {
       content::GlobalRequestID(kRenderProcessId, 0), kRenderProcessId,
       kRenderFrameId);
   ascriber()->DidFinishMainFrameNavigation(kRenderProcessId, kRenderFrameId,
-                                           GURL("http://test.com"), true,
+                                           GURL("http://test.com"), false,
                                            kPageTransition);
   ascriber()->WasShownOrHidden(kRenderProcessId, kRenderFrameId, true);
   EXPECT_TRUE(ascriber()->GetDataUseRecorder(*request)->is_visible());

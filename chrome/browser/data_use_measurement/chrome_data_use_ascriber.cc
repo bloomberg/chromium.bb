@@ -379,12 +379,10 @@ void ChromeDataUseAscriber::DidFinishMainFrameNavigation(
   NotifyPageLoadCommit(old_frame_entry);
 
   if (is_same_page_navigation) {
-    old_frame_entry->MergeFrom(&(*entry));
-
-    for (auto* request : entry->pending_url_requests())
-      AscribeRecorderWithRequest(request, old_frame_entry);
-
-    entry->RemoveAllPendingURLRequests();
+    for (auto& request : entry->pending_url_requests()) {
+      AscribeRecorderWithRequest(request.first, old_frame_entry);
+      old_frame_entry->MovePendingURLRequest(&(*entry), request.first);
+    }
     data_use_recorders_.erase(entry);
   } else {
     if (old_frame_entry->IsDataUseComplete()) {
@@ -434,11 +432,10 @@ ChromeDataUseAscriber::CreateNewDataUseRecorder(
 
 void ChromeDataUseAscriber::AscribeRecorderWithRequest(
     net::URLRequest* request,
-    DataUseRecorderEntry recorder) {
-  recorder->AddPendingURLRequest(request);
-  request->SetUserData(
-      DataUseRecorderEntryAsUserData::kUserDataKey,
-      base::MakeUnique<DataUseRecorderEntryAsUserData>(recorder));
+    DataUseRecorderEntry entry) {
+  entry->AddPendingURLRequest(request);
+  request->SetUserData(DataUseRecorderEntryAsUserData::kUserDataKey,
+                       base::MakeUnique<DataUseRecorderEntryAsUserData>(entry));
 }
 
 void ChromeDataUseAscriber::WasShownOrHidden(int main_render_process_id,

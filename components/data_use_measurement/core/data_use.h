@@ -40,11 +40,6 @@ class DataUse : public base::SupportsUserData {
   explicit DataUse(TrafficType traffic_type);
   ~DataUse() override;
 
-  // Merge data use from another instance.
-  // TODO(rajendrant): Check if the merge can be removed. Otherwise user data
-  // needs to support mergeability.
-  void MergeFrom(const DataUse& other);
-
   // Returns the page URL.
   const GURL& url() const { return url_; }
 
