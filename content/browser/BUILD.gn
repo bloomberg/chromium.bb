@@ -53,6 +53,7 @@ source_set("browser") {
     "//components/ukm/public",
     "//components/url_formatter",
     "//components/variations",
+    "//components/viz/common",
     "//components/viz/host",
     "//components/viz/service",
     "//content:resources",

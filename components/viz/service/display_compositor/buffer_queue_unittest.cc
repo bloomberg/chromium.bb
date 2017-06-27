@@ -14,7 +14,7 @@
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "cc/test/test_web_graphics_context_3d.h"
-#include "components/viz/service/display_compositor/gl_helper.h"
+#include "components/viz/common/gl_helper.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -36,3 +36,16 @@ source_set("test_support") {
     public_deps += [ "//content/test:test_support" ]
   }
 }
+
+# Defines a main() function that uses components_test_suite.h
+source_set("run_all_unittests") {
+  testonly = true
+
+  sources = [
+    "run_all_unittests.cc",
+  ]
+
+  deps = [
+    ":test_support",
+  ]
+}

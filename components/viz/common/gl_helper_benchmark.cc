@@ -23,10 +23,11 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "components/viz/service/display_compositor/gl_helper.h"
-#include "components/viz/service/display_compositor/gl_helper_scaling.h"
+#include "components/viz/common/gl_helper.h"
+#include "components/viz/common/gl_helper_scaling.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/ipc/gl_in_process_context.h"
@@ -34,7 +35,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkTypes.h"
 #include "ui/gfx/codec/png_codec.h"
-#include "ui/gl/gl_surface.h"
 
 namespace viz {
 
@@ -115,6 +115,7 @@ class GLHelperBenchmark : public testing::Test {
     base::CloseFile(f);
   }
 
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<gpu::GLInProcessContext> context_;
   gpu::gles2::GLES2Interface* gl_;
   std::unique_ptr<GLHelper> helper_;

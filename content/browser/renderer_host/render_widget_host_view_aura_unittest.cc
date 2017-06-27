@@ -33,7 +33,7 @@
 #include "cc/test/begin_frame_args_test.h"
 #include "cc/test/fake_external_begin_frame_source.h"
 #include "cc/test/fake_surface_observer.h"
-#include "components/viz/service/display_compositor/gl_helper.h"
+#include "components/viz/common/gl_helper.h"
 #include "components/viz/service/display_compositor/host_shared_bitmap_manager.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/compositor/test/no_transport_image_transport_factory.h"

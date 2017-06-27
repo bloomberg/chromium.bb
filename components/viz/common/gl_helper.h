@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_COMPOSITOR_GL_HELPER_H_
-#define COMPONENTS_VIZ_SERVICE_DISPLAY_COMPOSITOR_GL_HELPER_H_
+#ifndef COMPONENTS_VIZ_COMMON_GL_HELPER_H_
+#define COMPONENTS_VIZ_COMMON_GL_HELPER_H_
 
 #include <memory>
 
 #include "base/atomicops.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -19,12 +18,12 @@ namespace gfx {
 class Point;
 class Rect;
 class Size;
-}
+}  // namespace gfx
 
 namespace gpu {
 class ContextSupport;
 struct Mailbox;
-}
+}  // namespace gpu
 
 class SkRegion;
 
@@ -32,7 +31,7 @@ namespace viz {
 
 class GLHelperScaling;
 
-class VIZ_SERVICE_EXPORT ScopedGLuint {
+class ScopedGLuint {
  public:
   typedef void (gpu::gles2::GLES2Interface::*GenFunc)(GLsizei n, GLuint* ids);
   typedef void (gpu::gles2::GLES2Interface::*DeleteFunc)(GLsizei n,
@@ -134,7 +133,7 @@ class GLHelperReadbackSupport;
 
 // Provides higher level operations on top of the gpu::gles2::GLES2Interface
 // interfaces.
-class VIZ_SERVICE_EXPORT GLHelper {
+class GLHelper {
  public:
   GLHelper(gpu::gles2::GLES2Interface* gl,
            gpu::ContextSupport* context_support);
@@ -280,7 +279,7 @@ class VIZ_SERVICE_EXPORT GLHelper {
   // needed to scale from a specified size to a destination size.
   // If the source or destination sizes changes, you must create
   // a new scaler.
-  class VIZ_SERVICE_EXPORT ScalerInterface {
+  class ScalerInterface {
    public:
     ScalerInterface() {}
     virtual ~ScalerInterface() {}
@@ -354,7 +353,7 @@ class VIZ_SERVICE_EXPORT GLHelper {
 // can handle multiple outstanding readbacks at the same time, but
 // if the source or destination sizes change, you'll need to create
 // a new readback pipeline.
-class VIZ_SERVICE_EXPORT ReadbackYUVInterface {
+class ReadbackYUVInterface {
  public:
   ReadbackYUVInterface() {}
   virtual ~ReadbackYUVInterface() {}
@@ -380,4 +379,4 @@ class VIZ_SERVICE_EXPORT ReadbackYUVInterface {
 
 }  // namespace viz
 
-#endif  // COMPONENTS_VIZ_SERVICE_DISPLAY_COMPOSITOR_GL_HELPER_H_
+#endif  // COMPONENTS_VIZ_COMMON_GL_HELPER_H_

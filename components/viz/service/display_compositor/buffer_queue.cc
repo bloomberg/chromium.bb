@@ -7,7 +7,7 @@
 #include "base/containers/adapters.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
-#include "components/viz/service/display_compositor/gl_helper.h"
+#include "components/viz/common/gl_helper.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"

@@ -39,10 +39,6 @@ if (is_ios) {
 # no tests will run) and add a reference here. You can add more than one unit
 # test target if convenient.
 test("components_unittests") {
-  sources = [
-    "test/run_all_unittests.cc",
-  ]
-
   if (is_android || is_linux || is_mac || is_win) {
     data = [
       "test/data/",
@@ -142,7 +138,7 @@ test("components_unittests") {
     "//components/sync_preferences:unit_tests",
     "//components/sync_sessions:unit_tests",
     "//components/task_scheduler_util/common:unit_tests",
-    "//components/test:test_support",
+    "//components/test:run_all_unittests",
     "//components/translate/core/browser:unit_tests",
     "//components/translate/core/common:unit_tests",
     "//components/translate/core/language_detection:unit_tests",

@@ -1,0 +1,16 @@
+include_rules = [
+  "+ui/gfx/geometry",
+  "+services/ui/gpu/interfaces",
+  "+third_party/skia",
+]
+
+specific_include_rules = {
+  ".*_unittest\.cc": [
+    "+media/base",
+    "+ui/gfx",
+    "+ui/gl",
+  ],
+  ".*_benchmark\.cc": [
+    "+ui/gfx",
+  ],
+}

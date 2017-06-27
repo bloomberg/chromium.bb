@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/viz/service/display_compositor/gl_helper_scaling.h"
+#include "components/viz/common/gl_helper_scaling.h"
 
 #include <stddef.h>
 
@@ -14,6 +14,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
@@ -169,8 +170,9 @@ class ScalerImpl : public GLHelper::ScalerInterface,
     ScopedFramebufferBinder<GL_FRAMEBUFFER> framebuffer_binder(
         gl_, dst_framebuffer_);
     DCHECK_GT(dest_textures.size(), 0U);
-    std::unique_ptr<GLenum[]> buffers(new GLenum[dest_textures.size()]);
-    for (size_t t = 0; t < dest_textures.size(); t++) {
+    auto num_dest_textures = static_cast<GLsizei>(dest_textures.size());
+    auto buffers = base::MakeUnique<GLenum[]>(num_dest_textures);
+    for (GLsizei t = 0; t < num_dest_textures; t++) {
       ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(gl_, dest_textures[t]);
       gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + t,
                                 GL_TEXTURE_2D, dest_textures[t], 0);
@@ -190,10 +192,9 @@ class ScalerImpl : public GLHelper::ScalerInterface,
                                 spec_.vertically_flip_texture, color_weights_);
     gl_->Viewport(0, 0, spec_.dst_size.width(), spec_.dst_size.height());
 
-    if (dest_textures.size() > 1) {
-      DCHECK_LE(static_cast<int>(dest_textures.size()),
-                scaler_helper_->helper_->MaxDrawBuffers());
-      gl_->DrawBuffersEXT(dest_textures.size(), buffers.get());
+    if (num_dest_textures > 1) {
+      DCHECK_LE(num_dest_textures, scaler_helper_->helper_->MaxDrawBuffers());
+      gl_->DrawBuffersEXT(num_dest_textures, buffers.get());
     }
     // Conduct texture mapping by drawing a quad composed of two triangles.
     gl_->DrawArrays(GL_TRIANGLE_STRIP, 0, 4);

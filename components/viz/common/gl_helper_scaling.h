@@ -2,16 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_COMPOSITOR_GL_HELPER_SCALING_H_
-#define COMPONENTS_VIZ_SERVICE_DISPLAY_COMPOSITOR_GL_HELPER_SCALING_H_
+#ifndef COMPONENTS_VIZ_COMMON_GL_HELPER_SCALING_H_
+#define COMPONENTS_VIZ_COMMON_GL_HELPER_SCALING_H_
 
 #include <deque>
 #include <map>
 #include <vector>
 
 #include "base/macros.h"
-#include "components/viz/service/display_compositor/gl_helper.h"
-#include "components/viz/service/viz_service_export.h"
+#include "components/viz/common/gl_helper.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -24,7 +23,7 @@ class GLHelperTest;
 // Implements GPU texture scaling methods.
 // Note that you should probably not use this class directly.
 // See gl_helper.cc::CreateScaler instead.
-class VIZ_SERVICE_EXPORT GLHelperScaling {
+class GLHelperScaling {
  public:
   enum ShaderType {
     SHADER_BILINEAR,
@@ -41,7 +40,7 @@ class VIZ_SERVICE_EXPORT GLHelperScaling {
 
   // Similar to ScalerInterface, but can generate multiple outputs.
   // Used for YUV conversion in gl_helper.c
-  class VIZ_SERVICE_EXPORT ShaderInterface {
+  class ShaderInterface {
    public:
     ShaderInterface() {}
     virtual ~ShaderInterface() {}
@@ -51,7 +50,7 @@ class VIZ_SERVICE_EXPORT GLHelperScaling {
                          const std::vector<GLuint>& dest_textures) = 0;
   };
 
-  typedef std::pair<ShaderType, bool> ShaderProgramKeyType;
+  using ShaderProgramKeyType = std::pair<ShaderType, bool>;
 
   GLHelperScaling(gpu::gles2::GLES2Interface* gl, GLHelper* helper);
   ~GLHelperScaling();
@@ -205,4 +204,4 @@ class VIZ_SERVICE_EXPORT GLHelperScaling {
 
 }  // namespace viz
 
-#endif  // COMPONENTS_VIZ_SERVICE_DISPLAY_COMPOSITOR_GL_HELPER_SCALING_H_
+#endif  // COMPONENTS_VIZ_COMMON_GL_HELPER_SCALING_H_

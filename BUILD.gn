@@ -161,6 +161,7 @@ group("gn_all") {
       "//chrome/test:unit_tests",
       "//components:components_browsertests",
       "//components/policy:policy_templates",
+      "//components/viz/common:viz_benchmark",
       "//content/shell:content_shell",
       "//content/test:content_browsertests",
       "//content/test:content_perftests",
