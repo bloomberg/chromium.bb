@@ -29,7 +29,7 @@ TEST(LanguageDetectionLoggingHelperTest, ConstructUserEventSpecifics) {
       ConstructLanguageDetectionEvent(navigation_id, details);
   // Expect the navigation id is correctly set.
   EXPECT_EQ(user_event->navigation_id(), navigation_id);
-  EXPECT_EQ(user_event->language_detection().SerializeAsString(),
+  EXPECT_EQ(user_event->language_detection_event().SerializeAsString(),
             lang_detection.SerializeAsString());
 }
 
@@ -49,7 +49,7 @@ TEST(LanguageDetectionLoggingHelperTest, DontSetAdoptedLanguage) {
       ConstructLanguageDetectionEvent(100, details);
   // Expect the navigation id is correctly set.
   EXPECT_EQ(user_event->navigation_id(), 100);
-  EXPECT_EQ(user_event->language_detection().SerializeAsString(),
+  EXPECT_EQ(user_event->language_detection_event().SerializeAsString(),
             lang_detection.SerializeAsString());
 }
 

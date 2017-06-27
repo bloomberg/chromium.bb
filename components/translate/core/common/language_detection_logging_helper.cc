@@ -31,7 +31,7 @@ std::unique_ptr<sync_pb::UserEventSpecifics> ConstructLanguageDetectionEvent(
   if (details.adopted_language != details.cld_language) {
     lang_detection.set_adopted_language_code(details.adopted_language);
   }
-  *specifics->mutable_language_detection() = lang_detection;
+  *specifics->mutable_language_detection_event() = lang_detection;
   return specifics;
 }
 

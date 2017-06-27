@@ -472,13 +472,13 @@ VISIT_PROTO_FIELDS(const sync_pb::FaviconTrackingSpecifics& proto) {
   VISIT(is_bookmarked);
 }
 
-VISIT_PROTO_FIELDS(const sync_pb::FieldTrialEvent::FieldTrial& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::FieldTrial::FieldTrialPair& proto) {
   VISIT(name_id);
   VISIT(group_id);
 }
 
-VISIT_PROTO_FIELDS(const sync_pb::FieldTrialEvent& proto) {
-  VISIT_REP(field_trials);
+VISIT_PROTO_FIELDS(const sync_pb::FieldTrial& proto) {
+  VISIT_REP(field_trial_pairs);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::GcmChannelFlags& proto) {
@@ -877,10 +877,10 @@ VISIT_PROTO_FIELDS(const sync_pb::UserEventSpecifics& proto) {
   VISIT(event_time_usec);
   VISIT(navigation_id);
   VISIT(session_id);
-  VISIT(test);
+  VISIT(test_event);
   VISIT(field_trial_event);
-  VISIT(language_detection);
-  VISIT(translation);
+  VISIT(language_detection_event);
+  VISIT(translation_event);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::UserEventSpecifics::Test& proto) {}

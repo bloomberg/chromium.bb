@@ -22,7 +22,7 @@ bool ConstructTranslateEvent(const int64_t navigation_id,
   // TODO(renjieliu): Revisit this field when the best way to identify
   // navigations is determined.
   specifics->set_navigation_id(navigation_id);
-  auto* const translation = specifics->mutable_translation();
+  auto* const translation = specifics->mutable_translation_event();
   translation->set_from_language_code(translate_event.source_language());
   translation->set_to_language_code(translate_event.target_language());
   switch (translate_event.event_type()) {
