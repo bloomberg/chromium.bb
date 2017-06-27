@@ -100,6 +100,10 @@ void ViewAndroid::SetDelegate(const JavaRef<jobject>& delegate) {
   delegate_ = JavaObjectWeakGlobalRef(env, delegate);
 }
 
+void ViewAndroid::UpdateFrameInfo(const FrameInfo& frame_info) {
+  frame_info_ = frame_info;
+}
+
 float ViewAndroid::GetDipScale() {
   return ui::GetScaleFactorForNativeView(this);
 }

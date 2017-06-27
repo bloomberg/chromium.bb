@@ -25,6 +25,16 @@ class MotionEventAndroid;
 class ViewClient;
 class WindowAndroid;
 
+// View-related parameters from frame updates.
+struct FrameInfo {
+  gfx::SizeF viewport_size;  // In CSS pixels.
+  float page_scale;
+
+  // Content offset from the top. Used to translate snapshots to
+  // the correct part of the view. In CSS pixels.
+  float content_offset;
+};
+
 // A simple container for a UI layer.
 // At the root of the hierarchy is a WindowAndroid, when attached.
 // Dispatches input/view events coming from Java layer. Hit testing against
@@ -95,12 +105,10 @@ class UI_ANDROID_EXPORT ViewAndroid {
   ViewAndroid();
   virtual ~ViewAndroid();
 
-  // The content offset is in CSS pixels, and is used to translate
-  // snapshots to the correct part of the view.
-  void set_content_offset(float content_offset) {
-    content_offset_ = content_offset;
-  }
-  float content_offset() const { return content_offset_; }
+  void UpdateFrameInfo(const FrameInfo& frame_info);
+  float content_offset() const { return frame_info_.content_offset; }
+  float page_scale() const { return frame_info_.page_scale; }
+  gfx::SizeF viewport_size() const { return frame_info_.viewport_size; }
 
   // Returns the window at the root of this hierarchy, or |null|
   // if disconnected.
@@ -141,10 +149,6 @@ class UI_ANDROID_EXPORT ViewAndroid {
   void OnBottomControlsChanged(float bottom_controls_offset,
                                float bottom_content_offset);
   int GetSystemWindowInsetBottom();
-  void set_viewport_size(const gfx::SizeF& viewport_size) {
-    viewport_size_ = viewport_size;
-  }
-  gfx::SizeF viewport_size() const { return viewport_size_; }
 
   ScopedAnchorView AcquireAnchorView();
   void SetAnchorRect(const base::android::JavaRef<jobject>& anchor,
@@ -223,9 +227,7 @@ class UI_ANDROID_EXPORT ViewAndroid {
   // In physical pixel.
   gfx::Size physical_size_;
 
-  // In CSS pixel.
-  gfx::SizeF viewport_size_;  // viewport size from frame update.
-  float content_offset_;      // y content offset from the top.
+  FrameInfo frame_info_;
 
   std::unique_ptr<EventForwarder> event_forwarder_;
 
