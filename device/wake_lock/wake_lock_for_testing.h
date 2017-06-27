@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "device/wake_lock/public/interfaces/wake_lock.mojom.h"
 #include "device/wake_lock/public/interfaces/wake_lock_context.mojom.h"
 #include "device/wake_lock/wake_lock.h"
@@ -20,14 +20,13 @@ namespace device {
 
 class WakeLockForTesting : public WakeLock {
  public:
-  WakeLockForTesting(
-      mojom::WakeLockRequest request,
-      mojom::WakeLockType type,
-      mojom::WakeLockReason reason,
-      const std::string& description,
-      int context_id,
-      WakeLockContextCallback native_view_getter,
-      scoped_refptr<base::SingleThreadTaskRunner> file_task_runner);
+  WakeLockForTesting(mojom::WakeLockRequest request,
+                     mojom::WakeLockType type,
+                     mojom::WakeLockReason reason,
+                     const std::string& description,
+                     int context_id,
+                     WakeLockContextCallback native_view_getter,
+                     scoped_refptr<base::SequencedTaskRunner> file_task_runner);
   ~WakeLockForTesting() override;
 
   void HasWakeLockForTests(HasWakeLockForTestsCallback callback) override;

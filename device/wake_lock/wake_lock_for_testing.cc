@@ -15,7 +15,7 @@ WakeLockForTesting::WakeLockForTesting(
     const std::string& description,
     int context_id,
     WakeLockContextCallback native_view_getter,
-    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner)
+    scoped_refptr<base::SequencedTaskRunner> file_task_runner)
     : WakeLock(std::move(request),
                type,
                reason,

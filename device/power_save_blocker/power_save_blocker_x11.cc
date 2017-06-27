@@ -81,7 +81,7 @@ class PowerSaveBlocker::Delegate
            const std::string& description,
            bool freedesktop_only,
            scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
-           scoped_refptr<base::SingleThreadTaskRunner> blocking_task_runner);
+           scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
 
   // Post a task to initialize the delegate on the UI thread, which will itself
   // then post a task to apply the power save block on the FILE thread.
@@ -164,7 +164,7 @@ class PowerSaveBlocker::Delegate
   uint32_t inhibit_cookie_;
 
   scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> blocking_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(Delegate);
 };
@@ -174,7 +174,7 @@ PowerSaveBlocker::Delegate::Delegate(
     const std::string& description,
     bool freedesktop_only,
     scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> blocking_task_runner)
+    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
     : type_(type),
       description_(description),
       freedesktop_only_(freedesktop_only),
@@ -486,7 +486,7 @@ PowerSaveBlocker::PowerSaveBlocker(
     Reason reason,
     const std::string& description,
     scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> blocking_task_runner)
+    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
     : delegate_(new Delegate(type,
                              description,
                              false /* freedesktop_only */,

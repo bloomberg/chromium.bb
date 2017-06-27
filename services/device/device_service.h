@@ -6,6 +6,7 @@
 #define SERVICES_DEVICE_DEVICE_SERVICE_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/sequenced_task_runner.h"
 #include "device/generic_sensor/public/interfaces/sensor_provider.mojom.h"
 #include "device/screen_orientation/public/interfaces/screen_orientation.mojom.h"
 #include "device/sensors/public/interfaces/motion.mojom.h"
@@ -41,25 +42,25 @@ class TimeZoneMonitor;
 // and NFCDelegate.java to understand the semantics and usage of these
 // parameters.
 std::unique_ptr<service_manager::Service> CreateDeviceService(
-    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
+    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     const WakeLockContextCallback& wake_lock_context_callback,
     const base::android::JavaRef<jobject>& java_nfc_delegate);
 #else
 std::unique_ptr<service_manager::Service> CreateDeviceService(
-    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
+    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
 #endif
 
 class DeviceService : public service_manager::Service {
  public:
 #if defined(OS_ANDROID)
-  DeviceService(scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
+  DeviceService(scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
                 scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
                 const WakeLockContextCallback& wake_lock_context_callback,
                 const base::android::JavaRef<jobject>& java_nfc_delegate);
 #else
-  DeviceService(scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
+  DeviceService(scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
                 scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
 #endif
   ~DeviceService() override;
@@ -122,7 +123,7 @@ class DeviceService : public service_manager::Service {
   std::unique_ptr<PowerMonitorMessageBroadcaster>
       power_monitor_message_broadcaster_;
   std::unique_ptr<TimeZoneMonitor> time_zone_monitor_;
-  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   WakeLockContextCallback wake_lock_context_callback_;

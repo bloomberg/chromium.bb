@@ -14,7 +14,7 @@ const int WakeLockContext::WakeLockInvalidContextId = -1;
 
 WakeLockContext::WakeLockContext(
     int context_id,
-    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
+    scoped_refptr<base::SequencedTaskRunner> file_task_runner,
     const WakeLockContextCallback& native_view_getter)
     : file_task_runner_(std::move(file_task_runner)),
       context_id_(context_id),

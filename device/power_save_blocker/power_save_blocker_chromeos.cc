@@ -97,7 +97,7 @@ PowerSaveBlocker::PowerSaveBlocker(
     Reason reason,
     const std::string& description,
     scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> blocking_task_runner)
+    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
     : delegate_(new Delegate(type, reason, description, ui_task_runner)),
       ui_task_runner_(ui_task_runner),
       blocking_task_runner_(blocking_task_runner) {

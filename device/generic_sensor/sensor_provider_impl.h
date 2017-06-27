@@ -6,7 +6,7 @@
 #define DEVICE_GENERIC_SENSOR_SENSOR_PROVIDER_IMPL_H_
 
 #include "base/macros.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "device/generic_sensor/generic_sensor_export.h"
 #include "device/generic_sensor/public/interfaces/sensor_provider.mojom.h"
 
@@ -21,9 +21,8 @@ class PlatformSensor;
 class DEVICE_GENERIC_SENSOR_EXPORT SensorProviderImpl final
     : public mojom::SensorProvider {
  public:
-  static void Create(
-      scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
-      mojom::SensorProviderRequest request);
+  static void Create(scoped_refptr<base::SequencedTaskRunner> file_task_runner,
+                     mojom::SensorProviderRequest request);
 
   ~SensorProviderImpl() override;
 

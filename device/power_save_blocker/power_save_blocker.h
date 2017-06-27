@@ -58,7 +58,7 @@ class DEVICE_POWER_SAVE_BLOCKER_EXPORT PowerSaveBlocker {
       Reason reason,
       const std::string& description,
       scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> blocking_task_runner);
+      scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
   virtual ~PowerSaveBlocker();
 
 #if defined(OS_ANDROID)

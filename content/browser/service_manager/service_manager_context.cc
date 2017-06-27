@@ -18,6 +18,7 @@
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/service_manager/common_browser_interfaces.h"
@@ -70,7 +71,9 @@ namespace {
 base::LazyInstance<std::unique_ptr<service_manager::Connector>>::Leaky
     g_io_thread_connector = LAZY_INSTANCE_INITIALIZER;
 
-void DestroyConnectorOnIOThread() { g_io_thread_connector.Get().reset(); }
+void DestroyConnectorOnIOThread() {
+  g_io_thread_connector.Get().reset();
+}
 
 void StartServiceInUtilityProcess(
     const std::string& service_name,
@@ -199,9 +202,11 @@ class ServiceManagerContext::InProcessServiceManagerContext
   }
 
   void ShutDown() {
-    BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)->PostTask(
-        FROM_HERE,
-        base::Bind(&InProcessServiceManagerContext::ShutDownOnIOThread, this));
+    BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)
+        ->PostTask(
+            FROM_HERE,
+            base::Bind(&InProcessServiceManagerContext::ShutDownOnIOThread,
+                       this));
   }
 
  private:
@@ -296,8 +301,11 @@ ServiceManagerContext::ServiceManagerContext() {
       std::move(root_browser_service), mojo::MakeRequest(&pid_receiver));
   pid_receiver->SetPID(base::GetCurrentProcId());
 
-
   ServiceInfo device_info;
+  scoped_refptr<base::SequencedTaskRunner> background_task_runner =
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND});
+
 #if defined(OS_ANDROID)
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaGlobalRef<jobject> java_nfc_delegate;
@@ -307,15 +315,13 @@ ServiceManagerContext::ServiceManagerContext() {
   // See the comments on wake_lock_context_host.h and ContentNfcDelegate.java
   // respectively for comments on those parameters.
   device_info.factory =
-      base::Bind(&device::CreateDeviceService,
-                 BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE),
+      base::Bind(&device::CreateDeviceService, background_task_runner,
                  BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
                  base::Bind(&WakeLockContextHost::GetNativeViewForContext),
                  std::move(java_nfc_delegate));
 #else
   device_info.factory =
-      base::Bind(&device::CreateDeviceService,
-                 BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE),
+      base::Bind(&device::CreateDeviceService, background_task_runner,
                  BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
 #endif
   device_info.task_runner = base::ThreadTaskRunnerHandle::Get();
@@ -343,9 +349,8 @@ ServiceManagerContext::ServiceManagerContext() {
   g_io_thread_connector.Get() = browser_connection->GetConnector()->Clone();
 
   ContentBrowserClient::OutOfProcessServiceMap sandboxed_services;
-  GetContentClient()
-      ->browser()
-      ->RegisterOutOfProcessServices(&sandboxed_services);
+  GetContentClient()->browser()->RegisterOutOfProcessServices(
+      &sandboxed_services);
   sandboxed_services.insert(
       std::make_pair(data_decoder::mojom::kServiceName,
                      base::ASCIIToUTF16("Data Decoder Service")));
@@ -356,9 +361,8 @@ ServiceManagerContext::ServiceManagerContext() {
   }
 
   ContentBrowserClient::OutOfProcessServiceMap unsandboxed_services;
-  GetContentClient()
-      ->browser()
-      ->RegisterUnsandboxedOutOfProcessServices(&unsandboxed_services);
+  GetContentClient()->browser()->RegisterUnsandboxedOutOfProcessServices(
+      &unsandboxed_services);
 
   bool network_service_enabled =
       base::CommandLine::ForCurrentProcess()->HasSwitch(

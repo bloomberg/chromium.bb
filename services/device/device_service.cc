@@ -39,7 +39,7 @@ namespace device {
 
 #if defined(OS_ANDROID)
 std::unique_ptr<service_manager::Service> CreateDeviceService(
-    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
+    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     const WakeLockContextCallback& wake_lock_context_callback,
     const base::android::JavaRef<jobject>& java_nfc_delegate) {
@@ -49,25 +49,25 @@ std::unique_ptr<service_manager::Service> CreateDeviceService(
   }
 
   return base::MakeUnique<DeviceService>(
-      std::move(file_task_runner), std::move(io_task_runner),
+      std::move(blocking_task_runner), std::move(io_task_runner),
       wake_lock_context_callback, java_nfc_delegate);
 }
 #else
 std::unique_ptr<service_manager::Service> CreateDeviceService(
-    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
+    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
-  return base::MakeUnique<DeviceService>(std::move(file_task_runner),
+  return base::MakeUnique<DeviceService>(std::move(blocking_task_runner),
                                          std::move(io_task_runner));
 }
 #endif
 
 #if defined(OS_ANDROID)
 DeviceService::DeviceService(
-    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
+    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     const WakeLockContextCallback& wake_lock_context_callback,
     const base::android::JavaRef<jobject>& java_nfc_delegate)
-    : file_task_runner_(std::move(file_task_runner)),
+    : blocking_task_runner_(std::move(blocking_task_runner)),
       io_task_runner_(std::move(io_task_runner)),
       wake_lock_context_callback_(wake_lock_context_callback),
       java_interface_provider_initialized_(false) {
@@ -75,9 +75,9 @@ DeviceService::DeviceService(
 }
 #else
 DeviceService::DeviceService(
-    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
+    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
-    : file_task_runner_(std::move(file_task_runner)),
+    : blocking_task_runner_(std::move(blocking_task_runner)),
       io_task_runner_(std::move(io_task_runner)) {}
 #endif
 
@@ -245,7 +245,7 @@ void DeviceService::BindSensorProviderRequest(
   if (io_task_runner_) {
     io_task_runner_->PostTask(
         FROM_HERE, base::Bind(&device::SensorProviderImpl::Create,
-                              file_task_runner_, base::Passed(&request)));
+                              blocking_task_runner_, base::Passed(&request)));
   }
 }
 
@@ -253,14 +253,14 @@ void DeviceService::BindTimeZoneMonitorRequest(
     const service_manager::BindSourceInfo& source_info,
     mojom::TimeZoneMonitorRequest request) {
   if (!time_zone_monitor_)
-    time_zone_monitor_ = TimeZoneMonitor::Create(file_task_runner_);
+    time_zone_monitor_ = TimeZoneMonitor::Create(blocking_task_runner_);
   time_zone_monitor_->Bind(std::move(request));
 }
 
 void DeviceService::BindWakeLockProviderRequest(
     const service_manager::BindSourceInfo& source_info,
     mojom::WakeLockProviderRequest request) {
-  WakeLockProvider::Create(std::move(request), file_task_runner_,
+  WakeLockProvider::Create(std::move(request), blocking_task_runner_,
                            wake_lock_context_callback_);
 }
 
