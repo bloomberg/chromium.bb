@@ -51,6 +51,7 @@ extern "C" {
 #define DRM_AMDGPU_GEM_OP		0x10
 #define DRM_AMDGPU_GEM_USERPTR		0x11
 #define DRM_AMDGPU_WAIT_FENCES		0x12
+#define DRM_AMDGPU_VM			0x13
 
 #define DRM_IOCTL_AMDGPU_GEM_CREATE	DRM_IOWR(DRM_COMMAND_BASE + DRM_AMDGPU_GEM_CREATE, union drm_amdgpu_gem_create)
 #define DRM_IOCTL_AMDGPU_GEM_MMAP	DRM_IOWR(DRM_COMMAND_BASE + DRM_AMDGPU_GEM_MMAP, union drm_amdgpu_gem_mmap)
@@ -65,6 +66,7 @@ extern "C" {
 #define DRM_IOCTL_AMDGPU_GEM_OP		DRM_IOWR(DRM_COMMAND_BASE + DRM_AMDGPU_GEM_OP, struct drm_amdgpu_gem_op)
 #define DRM_IOCTL_AMDGPU_GEM_USERPTR	DRM_IOWR(DRM_COMMAND_BASE + DRM_AMDGPU_GEM_USERPTR, struct drm_amdgpu_gem_userptr)
 #define DRM_IOCTL_AMDGPU_WAIT_FENCES	DRM_IOWR(DRM_COMMAND_BASE + DRM_AMDGPU_WAIT_FENCES, union drm_amdgpu_wait_fences)
+#define DRM_IOCTL_AMDGPU_VM		DRM_IOWR(DRM_COMMAND_BASE + DRM_AMDGPU_VM, union drm_amdgpu_vm)
 
 #define AMDGPU_GEM_DOMAIN_CPU		0x1
 #define AMDGPU_GEM_DOMAIN_GTT		0x2
@@ -190,6 +192,26 @@ union drm_amdgpu_ctx {
 	union drm_amdgpu_ctx_out out;
 };
 
+/* vm ioctl */
+#define AMDGPU_VM_OP_RESERVE_VMID	1
+#define AMDGPU_VM_OP_UNRESERVE_VMID	2
+
+struct drm_amdgpu_vm_in {
+	/** AMDGPU_VM_OP_* */
+	__u32	op;
+	__u32	flags;
+};
+
+struct drm_amdgpu_vm_out {
+	/** For future use, no flags defined so far */
+	__u64	flags;
+};
+
+union drm_amdgpu_vm {
+	struct drm_amdgpu_vm_in in;
+	struct drm_amdgpu_vm_out out;
+};
+
 /*
  * This is not a reliable API and you should expect it to fail for any
  * number of reasons and have fallback path that do not use userptr to
@@ -295,7 +317,10 @@ union drm_amdgpu_gem_wait_idle {
 };
 
 struct drm_amdgpu_wait_cs_in {
-	/** Command submission handle */
+	/* Command submission handle
+         * handle equals 0 means none to wait for
+         * handle equals ~0ull means wait for the latest sequence number
+         */
 	__u64 handle;
 	/** Absolute timeout to wait */
 	__u64 timeout;
@@ -415,6 +440,8 @@ struct drm_amdgpu_gem_va {
 #define AMDGPU_CHUNK_ID_IB		0x01
 #define AMDGPU_CHUNK_ID_FENCE		0x02
 #define AMDGPU_CHUNK_ID_DEPENDENCIES	0x03
+#define AMDGPU_CHUNK_ID_SYNCOBJ_IN      0x04
+#define AMDGPU_CHUNK_ID_SYNCOBJ_OUT     0x05
 
 struct drm_amdgpu_cs_chunk {
 	__u32		chunk_id;
@@ -480,6 +507,10 @@ struct drm_amdgpu_cs_chunk_dep {
 struct drm_amdgpu_cs_chunk_fence {
 	__u32 handle;
 	__u32 offset;
+};
+
+struct drm_amdgpu_cs_chunk_sem {
+	__u32 handle;
 };
 
 struct drm_amdgpu_cs_chunk_data {
@@ -578,6 +609,8 @@ struct drm_amdgpu_cs_chunk_data {
 	#define AMDGPU_INFO_SENSOR_VDDNB		0x6
 	/* Subquery id: Query graphics voltage */
 	#define AMDGPU_INFO_SENSOR_VDDGFX		0x7
+/* Number of VRAM page faults on CPU access. */
+#define AMDGPU_INFO_NUM_VRAM_CPU_PAGE_FAULTS	0x1E
 
 #define AMDGPU_INFO_MMR_SE_INDEX_SHIFT	0
 #define AMDGPU_INFO_MMR_SE_INDEX_MASK	0xff
@@ -766,6 +799,25 @@ struct drm_amdgpu_info_device {
 	__u64 cntl_sb_buf_gpu_addr;
 	/* NGG Parameter Cache */
 	__u64 param_buf_gpu_addr;
+	__u32 prim_buf_size;
+	__u32 pos_buf_size;
+	__u32 cntl_sb_buf_size;
+	__u32 param_buf_size;
+	/* wavefront size*/
+	__u32 wave_front_size;
+	/* shader visible vgprs*/
+	__u32 num_shader_visible_vgprs;
+	/* CU per shader array*/
+	__u32 num_cu_per_sh;
+	/* number of tcc blocks*/
+	__u32 num_tcc_blocks;
+	/* gs vgt table depth*/
+	__u32 gs_vgt_table_depth;
+	/* gs primitive buffer depth*/
+	__u32 gs_prim_buffer_depth;
+	/* max gs wavefront per vgt*/
+	__u32 max_gs_waves_per_vgt;
+	__u32 _pad1;
 };
 
 struct drm_amdgpu_info_hw_ip {
