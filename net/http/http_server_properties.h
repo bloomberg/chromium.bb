@@ -20,6 +20,7 @@
 #include "net/base/net_export.h"
 #include "net/quic/core/quic_bandwidth.h"
 #include "net/quic/core/quic_server_id.h"
+#include "net/quic/core/quic_versions.h"
 #include "net/socket/next_proto.h"
 #include "net/spdy/core/spdy_framer.h"  // TODO(willchan): Reconsider this.
 #include "net/spdy/core/spdy_protocol.h"
@@ -116,24 +117,28 @@ NET_EXPORT_PRIVATE std::ostream& operator<<(
 
 class NET_EXPORT_PRIVATE AlternativeServiceInfo {
  public:
+  static AlternativeServiceInfo CreateHttp2AlternativeServiceInfo(
+      const AlternativeService& alternative_service,
+      base::Time expiration);
+
+  static AlternativeServiceInfo CreateQuicAlternativeServiceInfo(
+      const AlternativeService& alternative_service,
+      base::Time expiration,
+      const QuicVersionVector& advertised_versions);
+
   AlternativeServiceInfo();
-
-  AlternativeServiceInfo(const AlternativeService& alternative_service,
-                         base::Time expiration);
-
-  AlternativeServiceInfo(NextProto protocol,
-                         const std::string& host,
-                         uint16_t port,
-                         base::Time expiration);
+  ~AlternativeServiceInfo();
 
   AlternativeServiceInfo(
       const AlternativeServiceInfo& alternative_service_info);
+
   AlternativeServiceInfo& operator=(
       const AlternativeServiceInfo& alternative_service_info);
 
   bool operator==(const AlternativeServiceInfo& other) const {
     return alternative_service_ == other.alternative_service() &&
-           expiration_ == other.expiration();
+           expiration_ == other.expiration() &&
+           advertised_versions_ == other.advertised_versions();
   }
 
   bool operator!=(const AlternativeServiceInfo& other) const {
@@ -158,15 +163,37 @@ class NET_EXPORT_PRIVATE AlternativeServiceInfo {
     expiration_ = expiration;
   }
 
+  void set_advertised_versions(const QuicVersionVector& advertised_versions) {
+    if (alternative_service_.protocol != kProtoQUIC)
+      return;
+
+    advertised_versions_ = advertised_versions;
+    std::sort(advertised_versions_.begin(), advertised_versions_.end());
+  }
+
   const AlternativeService& alternative_service() const {
     return alternative_service_;
   }
 
   base::Time expiration() const { return expiration_; }
 
+  const QuicVersionVector& advertised_versions() const {
+    return advertised_versions_;
+  }
+
  private:
+  AlternativeServiceInfo(const AlternativeService& alternative_service,
+                         base::Time expiration,
+                         const QuicVersionVector& advertised_versions);
+
   AlternativeService alternative_service_;
   base::Time expiration_;
+
+  // Lists all the QUIC versions that are advertised by the server and supported
+  // by Chrome. If empty, defaults to versions used by the current instance of
+  // the netstack.
+  // This list MUST be sorted in ascending order.
+  QuicVersionVector advertised_versions_;
 };
 
 struct NET_EXPORT SupportsQuic {
@@ -270,15 +297,26 @@ class NET_EXPORT HttpServerProperties {
   virtual AlternativeServiceInfoVector GetAlternativeServiceInfos(
       const url::SchemeHostPort& origin) = 0;
 
-  // Set a single alternative service for |origin|.  Previous alternative
+  // Set a single HTTP/2 alternative service for |origin|.  Previous
+  // alternative services for |origin| are discarded.
+  // |alternative_service.host| may be empty.
+  // Return true if |alternative_service_map_| has changed significantly enough
+  // that it should be persisted to disk.
+  virtual bool SetHttp2AlternativeService(
+      const url::SchemeHostPort& origin,
+      const AlternativeService& alternative_service,
+      base::Time expiration) = 0;
+
+  // Set a single QUIC alternative service for |origin|.  Previous alternative
   // services for |origin| are discarded.
   // |alternative_service.host| may be empty.
   // Return true if |alternative_service_map_| has changed significantly enough
   // that it should be persisted to disk.
-  virtual bool SetAlternativeService(
+  virtual bool SetQuicAlternativeService(
       const url::SchemeHostPort& origin,
       const AlternativeService& alternative_service,
-      base::Time expiration) = 0;
+      base::Time expiration,
+      const QuicVersionVector& advertised_versions) = 0;
 
   // Set alternative services for |origin|.  Previous alternative services for
   // |origin| are discarded.

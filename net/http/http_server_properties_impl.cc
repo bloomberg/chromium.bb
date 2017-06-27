@@ -287,8 +287,16 @@ HttpServerPropertiesImpl::GetAlternativeServiceInfos(
         ++it;
         continue;
       }
-      valid_alternative_service_infos.push_back(
-          AlternativeServiceInfo(alternative_service, it->expiration()));
+      if (alternative_service.protocol == kProtoQUIC) {
+        valid_alternative_service_infos.push_back(
+            AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
+                alternative_service, it->expiration(),
+                it->advertised_versions()));
+      } else {
+        valid_alternative_service_infos.push_back(
+            AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
+                alternative_service, it->expiration()));
+      }
       ++it;
     }
     if (map_it->second.empty()) {
@@ -323,8 +331,16 @@ HttpServerPropertiesImpl::GetAlternativeServiceInfos(
       ++it;
       continue;
     }
-    valid_alternative_service_infos.push_back(
-        AlternativeServiceInfo(alternative_service, it->expiration()));
+    if (alternative_service.protocol == kProtoQUIC) {
+      valid_alternative_service_infos.push_back(
+          AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
+              alternative_service, it->expiration(),
+              it->advertised_versions()));
+    } else {
+      valid_alternative_service_infos.push_back(
+          AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
+              alternative_service, it->expiration()));
+    }
     ++it;
   }
   if (map_it->second.empty()) {
@@ -333,14 +349,31 @@ HttpServerPropertiesImpl::GetAlternativeServiceInfos(
   return valid_alternative_service_infos;
 }
 
-bool HttpServerPropertiesImpl::SetAlternativeService(
+bool HttpServerPropertiesImpl::SetHttp2AlternativeService(
     const url::SchemeHostPort& origin,
     const AlternativeService& alternative_service,
     base::Time expiration) {
+  DCHECK_EQ(alternative_service.protocol, kProtoHTTP2);
+
   return SetAlternativeServices(
       origin,
       AlternativeServiceInfoVector(
-          /*size=*/1, AlternativeServiceInfo(alternative_service, expiration)));
+          /*size=*/1, AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
+                          alternative_service, expiration)));
+}
+
+bool HttpServerPropertiesImpl::SetQuicAlternativeService(
+    const url::SchemeHostPort& origin,
+    const AlternativeService& alternative_service,
+    base::Time expiration,
+    const QuicVersionVector& advertised_versions) {
+  DCHECK(alternative_service.protocol == kProtoQUIC);
+
+  return SetAlternativeServices(
+      origin, AlternativeServiceInfoVector(
+                  /*size=*/1,
+                  AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
+                      alternative_service, expiration, advertised_versions)));
 }
 
 bool HttpServerPropertiesImpl::SetAlternativeServices(
@@ -377,6 +410,12 @@ bool HttpServerPropertiesImpl::SetAlternativeServices(
         base::Time new_time = new_it->expiration();
         if (new_time - now > 2 * (old_time - now) ||
             2 * (new_time - now) < (old_time - now)) {
+          changed = true;
+          break;
+        }
+        // Also persist to disk if new entry has a different list of advertised
+        // versions.
+        if (old.advertised_versions() != new_it->advertised_versions()) {
           changed = true;
           break;
         }

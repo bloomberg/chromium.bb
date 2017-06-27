@@ -157,9 +157,19 @@ class JobControllerPeer {
       HttpStreamFactoryImpl::JobController* job_controller) {
     return job_controller->main_job_is_blocked_;
   }
+
   static bool main_job_is_resumed(
       HttpStreamFactoryImpl::JobController* job_controller) {
     return job_controller->main_job_is_resumed_;
+  }
+
+  static AlternativeServiceInfo GetAlternativeServiceInfoFor(
+      HttpStreamFactoryImpl::JobController* job_controller,
+      const HttpRequestInfo& request_info,
+      HttpStreamRequest::Delegate* delegate,
+      HttpStreamRequest::StreamType stream_type) {
+    return job_controller->GetAlternativeServiceInfoFor(request_info, delegate,
+                                                        stream_type);
   }
 };
 
@@ -253,8 +263,14 @@ class HttpStreamFactoryImplJobControllerTest : public ::testing::Test {
     HostPortPair host_port_pair = HostPortPair::FromURL(request_info.url);
     url::SchemeHostPort server(request_info.url);
     base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
-    session_->http_server_properties()->SetAlternativeService(
-        server, alternative_service, expiration);
+    if (alternative_service.protocol == kProtoQUIC) {
+      session_->http_server_properties()->SetQuicAlternativeService(
+          server, alternative_service, expiration,
+          session_->params().quic_supported_versions);
+    } else {
+      session_->http_server_properties()->SetHttp2AlternativeService(
+          server, alternative_service, expiration);
+    }
   }
 
   void VerifyBrokenAlternateProtocolMapping(const HttpRequestInfo& request_info,
@@ -2067,6 +2083,57 @@ TEST_P(HttpStreamFactoryImplJobControllerPreconnectTest,
       HttpStreamFactoryImplJobPeer::GetNumStreams(job_controller_->main_job()));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
+}
+
+// Test that GetAlternativeServiceInfoFor will include a list of advertised
+// versions. Returns an empty list if advertised versions are missing in
+// HttpServerProperties.
+TEST_F(HttpStreamFactoryImplJobControllerTest, GetAlternativeServiceInfoFor) {
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("https://www.google.com");
+
+  Initialize(request_info);
+  url::SchemeHostPort server(request_info.url);
+  AlternativeService alternative_service(kProtoQUIC, server.host(), 443);
+  HostPortPair host_port_pair = HostPortPair::FromURL(request_info.url);
+  base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
+
+  // Set alternative service with no advertised version.
+  session_->http_server_properties()->SetQuicAlternativeService(
+      server, alternative_service, expiration, QuicVersionVector());
+
+  AlternativeServiceInfo alt_svc_info =
+      JobControllerPeer::GetAlternativeServiceInfoFor(
+          job_controller_, request_info, &request_delegate_,
+          HttpStreamRequest::HTTP_STREAM);
+  // Verify that JobController get an empty list of supported QUIC versions.
+  EXPECT_TRUE(alt_svc_info.advertised_versions().empty());
+
+  // Set alternative service for the same server with QUIC_VERSION_39 specified.
+  ASSERT_TRUE(session_->http_server_properties()->SetQuicAlternativeService(
+      server, alternative_service, expiration, {QUIC_VERSION_39}));
+
+  alt_svc_info = JobControllerPeer::GetAlternativeServiceInfoFor(
+      job_controller_, request_info, &request_delegate_,
+      HttpStreamRequest::HTTP_STREAM);
+  EXPECT_EQ(1u, alt_svc_info.advertised_versions().size());
+  // Verify that JobController returns the single version specified in set.
+  EXPECT_EQ(QUIC_VERSION_39, alt_svc_info.advertised_versions()[0]);
+
+  // Set alternative service for the same server with two QUIC versions:
+  // QUIC_VERSION_35, QUIC_VERSION_39.
+  ASSERT_TRUE(session_->http_server_properties()->SetQuicAlternativeService(
+      server, alternative_service, expiration,
+      {QUIC_VERSION_35, QUIC_VERSION_39}));
+
+  alt_svc_info = JobControllerPeer::GetAlternativeServiceInfoFor(
+      job_controller_, request_info, &request_delegate_,
+      HttpStreamRequest::HTTP_STREAM);
+  EXPECT_EQ(2u, alt_svc_info.advertised_versions().size());
+  // Verify that JobController returns the list of versions specified in set.
+  EXPECT_EQ(QUIC_VERSION_35, alt_svc_info.advertised_versions()[0]);
+  EXPECT_EQ(QUIC_VERSION_39, alt_svc_info.advertised_versions()[1]);
 }
 
 }  // namespace test
