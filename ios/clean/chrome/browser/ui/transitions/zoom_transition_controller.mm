@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/clean/chrome/browser/ui/animators/zoom_transition_controller.h"
+#import "ios/clean/chrome/browser/ui/transitions/zoom_transition_controller.h"
 
-#import "ios/clean/chrome/browser/ui/animators/zoom_transition_animator.h"
+#import "ios/clean/chrome/browser/ui/transitions/animators/zoom_transition_animator.h"
 
 @implementation ZoomTransitionController
 @synthesize presentationKey = _presentationKey;

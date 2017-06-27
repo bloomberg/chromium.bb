@@ -184,7 +184,7 @@ CGFloat kTabStripHeight = 120.0f;
   return self.view.bounds;
 }
 - (CGRect)originForMenuPresentation {
-  return [self rectForZoomWithKey:@"" inView:self.view];
+  return [self rectForZoomWithKey:nil inView:self.view];
 }
 
 #pragma mark - ZoomTransitionDelegate

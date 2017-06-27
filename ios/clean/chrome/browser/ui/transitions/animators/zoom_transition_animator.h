@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CLEAN_CHROME_BROWSER_UI_ANIMATORS_ZOOM_TRANSITION_ANIMATOR_H_
-#define IOS_CLEAN_CHROME_BROWSER_UI_ANIMATORS_ZOOM_TRANSITION_ANIMATOR_H_
+#ifndef IOS_CLEAN_CHROME_BROWSER_UI_TRANSITIONS_ANIMATORS_ZOOM_TRANSITION_ANIMATOR_H_
+#define IOS_CLEAN_CHROME_BROWSER_UI_TRANSITIONS_ANIMATORS_ZOOM_TRANSITION_ANIMATOR_H_
 
 #import <UIKit/UIKit.h>
 
-#import "ios/clean/chrome/browser/ui/animators/zoom_transition_delegate.h"
+#import "ios/clean/chrome/browser/ui/transitions/animators/zoom_transition_delegate.h"
 
 // A transition animator object. The transition (for presentation) will begin
 // with the presented view occupying a rectangle supplied by the delegate, or
@@ -41,4 +41,4 @@
 
 @end
 
-#endif  // IOS_CLEAN_CHROME_BROWSER_UI_ANIMATORS_ZOOM_TRANSITION_ANIMATOR_H_
+#endif  // IOS_CLEAN_CHROME_BROWSER_UI_TRANSITIONS_ANIMATORS_ZOOM_TRANSITION_ANIMATOR_H_

@@ -17,6 +17,7 @@ source_set("tools") {
     ":tools_ui",
     "//base",
     "//ios/clean/chrome/browser/ui/commands",
+    "//ios/clean/chrome/browser/ui/transitions",
     "//ios/shared/chrome/browser/ui/browser_list",
     "//ios/shared/chrome/browser/ui/coordinators",
     "//ios/shared/chrome/browser/ui/tools_menu",
@@ -36,8 +37,6 @@ source_set("tools_ui") {
     "tools_menu_item.mm",
     "tools_menu_model.h",
     "tools_menu_model.mm",
-    "tools_menu_transition_controller.h",
-    "tools_menu_transition_controller.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -50,10 +49,9 @@ source_set("tools_ui") {
     "//ios/chrome/app/theme",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/tools_menu",
-    "//ios/clean/chrome/browser/ui/animators",
     "//ios/clean/chrome/browser/ui/commands",
-    "//ios/clean/chrome/browser/ui/presenters",
     "//ios/clean/chrome/browser/ui/toolbar:toolbar_components_ui",
+    "//ios/clean/chrome/browser/ui/transitions",
     "//ios/third_party/material_components_ios",
   ]
 }

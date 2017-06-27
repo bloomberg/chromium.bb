@@ -15,12 +15,12 @@ source_set("tab") {
     "//base",
     "//ios/chrome/browser",
     "//ios/clean/chrome/browser/ui/actions",
-    "//ios/clean/chrome/browser/ui/animators",
     "//ios/clean/chrome/browser/ui/commands",
     "//ios/clean/chrome/browser/ui/find_in_page",
     "//ios/clean/chrome/browser/ui/ntp",
     "//ios/clean/chrome/browser/ui/tab_strip",
     "//ios/clean/chrome/browser/ui/toolbar",
+    "//ios/clean/chrome/browser/ui/transitions",
     "//ios/clean/chrome/browser/ui/web_contents",
     "//ios/shared/chrome/browser/ui/broadcaster",
     "//ios/shared/chrome/browser/ui/browser_list",
@@ -37,8 +37,8 @@ source_set("tab_ui") {
   ]
   deps = [
     "//ios/clean/chrome/browser/ui",
-    "//ios/clean/chrome/browser/ui/animators",
-    "//ios/clean/chrome/browser/ui/presenters",
+    "//ios/clean/chrome/browser/ui/transitions/animators",
+    "//ios/clean/chrome/browser/ui/transitions/presenters",
   ]
   libs = [ "UIKit.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
