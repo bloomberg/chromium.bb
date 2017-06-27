@@ -126,7 +126,7 @@ class CameraDeviceDelegateTest : public ::testing::Test {
     hal_delegate_thread_.Start();
     camera_hal_delegate_ =
         new CameraHalDelegate(hal_delegate_thread_.task_runner());
-    camera_hal_delegate_->StartForTesting(
+    camera_hal_delegate_->SetCameraModule(
         mock_camera_module_.GetInterfacePtrInfo());
 
     ResetCaptureClient();
