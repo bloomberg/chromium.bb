@@ -225,7 +225,6 @@ test("components_unittests") {
       "//components/subresource_filter/content/renderer:unit_tests",
       "//components/tracing:unit_tests",
       "//components/visitedlink/test:unit_tests",
-      "//components/viz/common:unit_tests",
       "//components/viz/host:unit_tests",
       "//components/viz/service:unit_tests",
       "//components/wallpaper:unit_tests",

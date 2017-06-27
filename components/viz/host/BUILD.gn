@@ -9,6 +9,8 @@ component("host") {
     "frame_sink_observer.h",
     "host_frame_sink_manager.cc",
     "host_frame_sink_manager.h",
+    "server_gpu_memory_buffer_manager.cc",
+    "server_gpu_memory_buffer_manager.h",
     "viz_host_export.h",
   ]
 
@@ -16,6 +18,14 @@ component("host") {
     "//base",
     "//cc/ipc:interfaces",
     "//cc/surfaces",
+    "//gpu/ipc/client",
+    "//gpu/ipc/common",
+    "//services/ui/gpu/interfaces",
+  ]
+
+  public_deps = [
+    "//gpu/command_buffer/client",
+    "//gpu/ipc/host",
   ]
 }
 
@@ -24,15 +34,18 @@ source_set("unit_tests") {
 
   sources = [
     "host_frame_sink_manager_unittests.cc",
+    "server_gpu_memory_buffer_manager_unittest.cc",
   ]
 
   deps = [
+    ":host",
     "//base",
     "//base/test:test_support",
     "//cc/ipc:interfaces",
     "//cc/surfaces",
-    "//components/viz/host",
+    "//gpu/ipc/host",
     "//mojo/public/cpp/bindings",
+    "//services/ui/gpu/interfaces",
     "//testing/gmock",
     "//testing/gtest",
   ]

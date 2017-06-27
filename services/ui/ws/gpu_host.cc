@@ -9,7 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/viz/common/server_gpu_memory_buffer_manager.h"
+#include "components/viz/host/server_gpu_memory_buffer_manager.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/ipc/client/gpu_memory_buffer_impl_shared_memory.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"

@@ -1,4 +1,11 @@
 include_rules = [
   "+cc/ipc",
   "+cc/surfaces",
+  "+services/ui/gpu/interfaces",
 ]
+
+specific_include_rules = {
+  "server_gpu_memory_buffer_manager_unittest\.cc": [
+    "+ui/gfx",
+  ]
+}
