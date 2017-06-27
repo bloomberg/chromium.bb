@@ -2369,6 +2369,8 @@ cr.define('login', function() {
       this.querySelector('.info').textContent =
           loadTimeData.getStringF('publicAccountInfoFormat',
                                   this.user_.enterpriseDomain);
+      if (this.querySelector('.full-name'))
+        this.querySelector('.full-name').textContent = this.user_.displayName;
     },
 
     /** @override */
@@ -2455,7 +2457,6 @@ cr.define('login', function() {
      */
     transitionToAdvanced_: function() {
       this.classList.add('advanced');
-      // TODO(wzang): Add transition animation when its spec becomes available.
     },
 
     /**
@@ -3908,6 +3909,14 @@ cr.define('login', function() {
           pod.nameElement.style.width = cr.ui.toCssPx(CROS_POD_WIDTH);
           nameArea.style.left = cr.ui.toCssPx(0);
           nameArea.style.right = 'auto';
+          // For public session pods whose names are cut off, add a banner
+          // which shows the full name upon hovering.
+          if (pod.isPublicSessionPod && !pod.querySelector('.full-name')) {
+            var fullNameContainer = document.createElement('div');
+            fullNameContainer.classList.add('full-name');
+            fullNameContainer.textContent = pod.nameElement.textContent;
+            nameArea.appendChild(fullNameContainer);
+          }
         }
 
         // Update info container area for public session pods.
