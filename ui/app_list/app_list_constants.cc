@@ -26,6 +26,9 @@ const SkColor kDialogSeparatorColor = SkColorSetRGB(0xD1, 0xD1, 0xD1);
 const SkColor kHighlightedColor = SkColorSetARGB(8, 0, 0, 0);
 // The keyboard select colour (6% black).
 const SkColor kSelectedColor = SkColorSetARGB(15, 0, 0, 0);
+// The keyboard select color for grid views, which are on top of a black shield
+// view for new design (12% white).
+const SkColor kGridSelectedColor = SkColorSetARGB(0x1F, 0xFF, 0xFF, 0xFF);
 
 const SkColor kPagerHoverColor = SkColorSetRGB(0xB4, 0xB4, 0xB4);
 const SkColor kPagerNormalColor = SkColorSetRGB(0xE2, 0xE2, 0xE2);
@@ -41,9 +44,12 @@ const SkColor kGridTitleColorFullscreen = SK_ColorWHITE;
 
 const int kGridTileWidth = 96;
 const int kGridTileHeight = 99;
+const int kGridTileSpacing = 24;
 const int kGridIconTopPadding = 24;
 const int kGridTitleSpacing = 10;
 const int kGridTitleHorizontalPadding = 8;
+const int kGridSelectedSize = 64;
+const int kGridSelectedCornerRadius = 8;
 
 const SkColor kFolderTitleColor = SkColorSetRGB(0x33, 0x33, 0x33);
 const SkColor kFolderTitleHintTextColor = SkColorSetRGB(0xA0, 0xA0, 0xA0);
