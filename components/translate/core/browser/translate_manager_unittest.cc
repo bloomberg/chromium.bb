@@ -39,6 +39,7 @@ namespace translate {
 namespace {
 
 const char kTrialName[] = "MyTrial";
+const char kInitiationStatusName[] = "Translate.InitiationStatus.v2";
 
 // Overrides NetworkChangeNotifier, simulating connection type changes
 // for tests.
@@ -299,7 +300,6 @@ TEST_F(TranslateManagerTest, DontTranslateOffline) {
 
   // The test measures that the "Translate was disabled" exit can only be
   // reached after the early-out tests including IsOffline() passed.
-  const char kMetricName[] = "Translate.InitiationStatus.v2";
   base::HistogramTester histogram_tester;
 
   prefs_.SetBoolean(prefs::kEnableTranslate, false);
@@ -310,13 +310,13 @@ TEST_F(TranslateManagerTest, DontTranslateOffline) {
   // key test.
   network_notifier_.SimulateOffline();
   translate_manager_->InitiateTranslation("de");
-  histogram_tester.ExpectTotalCount(kMetricName, 0);
+  histogram_tester.ExpectTotalCount(kInitiationStatusName, 0);
 
   // In the online case, InitiateTranslation will proceed past early out tests.
   network_notifier_.SimulateOnline();
   translate_manager_->InitiateTranslation("de");
   histogram_tester.ExpectUniqueSample(
-      kMetricName,
+      kInitiationStatusName,
       translate::TranslateBrowserMetrics::INITIATION_STATUS_DISABLED_BY_PREFS,
       1);
 }
@@ -505,8 +505,10 @@ TEST_F(TranslateManagerTest, TestShouldOverrideDecision) {
 TEST_F(TranslateManagerTest, ShouldSuppressBubbleUI_Default) {
   PrepareTranslateManager();
   SetHasLanguageChanged(true);
+  base::HistogramTester histogram_tester;
   EXPECT_FALSE(translate_manager_->ShouldSuppressBubbleUI(false, "en"));
   EXPECT_FALSE(translate_manager_->ShouldSuppressBubbleUI(true, "en"));
+  histogram_tester.ExpectTotalCount(kInitiationStatusName, 0);
 }
 
 TEST_F(TranslateManagerTest, ShouldSuppressBubbleUI_HasLanguageChangedFalse) {
@@ -517,20 +519,33 @@ TEST_F(TranslateManagerTest, ShouldSuppressBubbleUI_HasLanguageChangedFalse) {
       ShouldOverrideDecision(
           metrics::TranslateEventProto::MATCHES_PREVIOUS_LANGUAGE, _, _))
       .WillOnce(Return(false));
+  base::HistogramTester histogram_tester;
   EXPECT_TRUE(translate_manager_->ShouldSuppressBubbleUI(false, "en"));
+  histogram_tester.ExpectUniqueSample(
+      kInitiationStatusName,
+      translate::TranslateBrowserMetrics::
+          INITIATION_STATUS_ABORTED_BY_MATCHES_PREVIOUS_LANGUAGE,
+      1);
 
   EXPECT_CALL(mock_translate_ranker_, ShouldOverrideDecision(_, _, _))
       .WillOnce(Return(false));
 
   EXPECT_TRUE(translate_manager_->ShouldSuppressBubbleUI(true, "en"));
+  histogram_tester.ExpectUniqueSample(
+      kInitiationStatusName,
+      translate::TranslateBrowserMetrics::
+          INITIATION_STATUS_ABORTED_BY_MATCHES_PREVIOUS_LANGUAGE,
+      2);
 }
 
 TEST_F(TranslateManagerTest, ShouldSuppressBubbleUI_NewUI) {
   PrepareTranslateManager();
   base::test::ScopedFeatureList scoped_feature_list;
+  base::HistogramTester histogram_tester;
   scoped_feature_list.InitAndEnableFeature(translate::kTranslateUI2016Q2);
   SetHasLanguageChanged(false);
   EXPECT_FALSE(translate_manager_->ShouldSuppressBubbleUI(false, "en"));
+  histogram_tester.ExpectTotalCount(kInitiationStatusName, 0);
 }
 
 TEST_F(TranslateManagerTest, ShouldSuppressBubbleUI_IsTooOftenDenied) {
@@ -543,13 +558,20 @@ TEST_F(TranslateManagerTest, ShouldSuppressBubbleUI_IsTooOftenDenied) {
           metrics::TranslateEventProto::LANGUAGE_DISABLED_BY_AUTO_BLACKLIST, _,
           _))
       .WillOnce(Return(false));
+  base::HistogramTester histogram_tester;
   EXPECT_TRUE(translate_manager_->ShouldSuppressBubbleUI(false, "en"));
   EXPECT_FALSE(translate_manager_->ShouldSuppressBubbleUI(false, "de"));
   EXPECT_FALSE(translate_manager_->ShouldSuppressBubbleUI(true, "en"));
+  histogram_tester.ExpectUniqueSample(
+      kInitiationStatusName,
+      translate::TranslateBrowserMetrics::
+          INITIATION_STATUS_ABORTED_BY_TOO_OFTEN_DENIED,
+      1);
 }
 
 TEST_F(TranslateManagerTest, ShouldSuppressBubbleUI_Override) {
   PrepareTranslateManager();
+  base::HistogramTester histogram_tester;
   EXPECT_CALL(
       mock_translate_ranker_,
       ShouldOverrideDecision(
@@ -564,6 +586,7 @@ TEST_F(TranslateManagerTest, ShouldSuppressBubbleUI_Override) {
   SetHasLanguageChanged(false);
   SetLanguageTooOftenDenied("en");
   EXPECT_FALSE(translate_manager_->ShouldSuppressBubbleUI(false, "en"));
+  histogram_tester.ExpectTotalCount(kInitiationStatusName, 0);
 }
 
 }  // namespace testing
