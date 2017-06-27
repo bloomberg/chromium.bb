@@ -19,10 +19,9 @@ namespace ash {
 namespace {
 
 // Refreshes the IME list with fake IMEs and fake menu items.
-void RefreshImes(const std::string& current_ime_id,
-                 const std::vector<std::string>& ime_ids,
-                 const std::vector<std::string>& menu_item_keys =
-                     std::vector<std::string>()) {
+void RefreshImesWithMenuItems(const std::string& current_ime_id,
+                              const std::vector<std::string>& ime_ids,
+                              const std::vector<std::string>& menu_item_keys) {
   std::vector<mojom::ImeInfoPtr> available_imes;
   for (const std::string& ime_id : ime_ids) {
     mojom::ImeInfoPtr ime = mojom::ImeInfo::New();
@@ -37,6 +36,13 @@ void RefreshImes(const std::string& current_ime_id,
   }
   Shell::Get()->ime_controller()->RefreshIme(
       current_ime_id, std::move(available_imes), std::move(menu_items));
+}
+
+// Refreshes the IME list without adding any menu items.
+void RefreshImes(const std::string& current_ime_id,
+                 const std::vector<std::string>& ime_ids) {
+  const std::vector<std::string> empty_menu_items;
+  RefreshImesWithMenuItems(current_ime_id, ime_ids, empty_menu_items);
 }
 
 class TestImeObserver : public IMEObserver {
@@ -92,7 +98,7 @@ TEST_F(ImeControllerTest, RefreshIme) {
   TestImeObserver observer;
   Shell::Get()->system_tray_notifier()->AddIMEObserver(&observer);
 
-  RefreshImes("ime1", {"ime1", "ime2"}, {"menu1"});
+  RefreshImesWithMenuItems("ime1", {"ime1", "ime2"}, {"menu1"});
 
   // Cached data was updated.
   EXPECT_EQ("ime1", controller->current_ime().id);
