@@ -43,6 +43,7 @@ void ParamTraits<ui::LatencyInfo>::GetSize(base::PickleSizer* s,
   GetParamSize(s, p.trace_name_);
   GetParamSize(s, p.latency_components_);
   GetParamSize(s, p.trace_id_);
+  GetParamSize(s, p.began_);
   GetParamSize(s, p.terminated_);
   GetParamSize(s, p.source_event_type_);
 }
@@ -51,6 +52,7 @@ void ParamTraits<ui::LatencyInfo>::Write(base::Pickle* m, const param_type& p) {
   WriteParam(m, p.trace_name_);
   WriteParam(m, p.latency_components_);
   WriteParam(m, p.trace_id_);
+  WriteParam(m, p.began_);
   WriteParam(m, p.terminated_);
   WriteParam(m, p.source_event_type_);
 }
@@ -64,6 +66,8 @@ bool ParamTraits<ui::LatencyInfo>::Read(const base::Pickle* m,
     return false;
 
   if (!ReadParam(m, iter, &p->trace_id_))
+    return false;
+  if (!ReadParam(m, iter, &p->began_))
     return false;
   if (!ReadParam(m, iter, &p->terminated_))
     return false;
@@ -79,6 +83,8 @@ void ParamTraits<ui::LatencyInfo>::Log(const param_type& p, std::string* l) {
   LogParam(p.latency_components_, l);
   l->append(" ");
   LogParam(p.trace_id_, l);
+  l->append(" ");
+  LogParam(p.began_, l);
   l->append(" ");
   LogParam(p.terminated_, l);
   l->append(" ");

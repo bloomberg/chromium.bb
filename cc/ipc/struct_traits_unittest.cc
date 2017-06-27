@@ -362,6 +362,7 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   selection.end.set_visible(false);
   selection.end.set_type(gfx::SelectionBound::RIGHT);
   ui::LatencyInfo latency_info;
+  latency_info.set_trace_id(5);
   latency_info.AddLatencyNumber(
       ui::LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT, 1337, 7331);
   std::vector<ui::LatencyInfo> latency_infos = {latency_info};

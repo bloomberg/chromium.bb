@@ -199,6 +199,7 @@ TEST_F(InputParamTraitsTest, InitializedEvents) {
   InputEvents events;
 
   ui::LatencyInfo latency;
+  latency.set_trace_id(5);
 
   blink::WebKeyboardEvent key_event(blink::WebInputEvent::kRawKeyDown,
                                     blink::WebInputEvent::kNoModifiers,

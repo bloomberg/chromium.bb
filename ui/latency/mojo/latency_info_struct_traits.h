@@ -96,6 +96,7 @@ struct StructTraits<ui::mojom::LatencyInfoDataView, ui::LatencyInfo> {
       const ui::LatencyInfo& info);
   static int64_t trace_id(const ui::LatencyInfo& info);
   static bool coalesced(const ui::LatencyInfo& info);
+  static bool began(const ui::LatencyInfo& info);
   static bool terminated(const ui::LatencyInfo& info);
   static ui::mojom::SourceEventType source_event_type(
       const ui::LatencyInfo& info);

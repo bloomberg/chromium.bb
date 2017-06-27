@@ -12,11 +12,14 @@ namespace ui {
 
 TEST(LatencyInfoTest, AddTwoSeparateEvent) {
   LatencyInfo info;
+  info.set_trace_id(1);
+  EXPECT_FALSE(info.began());
   info.AddLatencyNumberWithTimestamp(INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
                                      0,
                                      1,
                                      base::TimeTicks::FromInternalValue(100),
                                      1);
+  EXPECT_TRUE(info.began());
   info.AddLatencyNumberWithTimestamp(INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
                                      1,
                                      5,
@@ -43,6 +46,7 @@ TEST(LatencyInfoTest, AddTwoSeparateEvent) {
 
 TEST(LatencyInfoTest, AddTwoSameEvent) {
   LatencyInfo info;
+  info.set_trace_id(1);
   info.AddLatencyNumberWithTimestamp(INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
                                      0,
                                      30,
@@ -69,6 +73,7 @@ TEST(LatencyInfoTest, AddTwoSameEvent) {
 
 TEST(LatencyInfoTest, RemoveLatency) {
   LatencyInfo info;
+  info.set_trace_id(1);
   info.AddLatencyNumber(INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, 0);
   info.AddLatencyNumber(INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 1, 0);
   info.AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);

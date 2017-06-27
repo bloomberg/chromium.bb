@@ -208,10 +208,12 @@ class LatencyInfo {
     source_event_type_ = type;
   }
 
+  bool began() const { return began_; }
   bool terminated() const { return terminated_; }
   void set_coalesced() { coalesced_ = true; }
   bool coalesced() const { return coalesced_; }
   int64_t trace_id() const { return trace_id_; }
+  void set_trace_id(int64_t trace_id) { trace_id_ = trace_id; }
 
  private:
   void AddLatencyNumberWithTimestampImpl(LatencyComponentType component,
@@ -235,6 +237,8 @@ class LatencyInfo {
   int64_t trace_id_;
   // Whether this event has been coalesced into another event.
   bool coalesced_;
+  // Whether a begin component has been added.
+  bool began_;
   // Whether a terminal component has been added.
   bool terminated_;
   // Stores the type of the first source event.

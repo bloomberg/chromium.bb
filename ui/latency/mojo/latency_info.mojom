@@ -115,6 +115,7 @@ struct LatencyInfo {
   array<LatencyComponentPair> latency_components;
   int64 trace_id;
   bool coalesced;
+  bool began;
   bool terminated;
   SourceEventType source_event_type;
 };

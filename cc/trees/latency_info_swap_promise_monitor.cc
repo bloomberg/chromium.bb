@@ -90,12 +90,12 @@ void LatencyInfoSwapPromiseMonitor::OnForwardScrollUpdateToMainThreadOnImpl() {
     if (!new_sequence_number)
       return;
     ui::LatencyInfo new_latency;
-    new_latency.AddLatencyNumberWithTraceName(
-        ui::LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT, 0,
-        new_sequence_number, "ScrollUpdate");
     new_latency.CopyLatencyFrom(
         *latency_,
         ui::INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT);
+    new_latency.AddLatencyNumberWithTraceName(
+        ui::LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT, 0,
+        new_sequence_number, "ScrollUpdate");
     std::unique_ptr<SwapPromise> swap_promise(
         new LatencyInfoSwapPromise(new_latency));
     layer_tree_host_impl_->QueueSwapPromiseForMainThreadScrollUpdate(

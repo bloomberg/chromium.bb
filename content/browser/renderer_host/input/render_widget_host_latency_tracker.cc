@@ -13,6 +13,7 @@
 #include "components/rappor/public/rappor_utils.h"
 #include "components/ukm/public/ukm_entry_builder.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
 #include "ui/events/blink/web_input_event_traits.h"
@@ -193,6 +194,10 @@ void RenderWidgetHostLatencyTracker::OnInputEvent(
     const blink::WebInputEvent& event,
     LatencyInfo* latency) {
   DCHECK(latency);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  static uint64_t global_trace_id = 0;
+  latency->set_trace_id(++global_trace_id);
 
   if (event.GetType() == WebInputEvent::kTouchStart) {
     const WebTouchEvent& touch_event =

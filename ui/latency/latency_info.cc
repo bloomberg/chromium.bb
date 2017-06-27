@@ -135,6 +135,7 @@ LatencyInfo::LatencyInfo() : LatencyInfo(SourceEventType::UNKNOWN) {}
 LatencyInfo::LatencyInfo(SourceEventType type)
     : trace_id_(-1),
       coalesced_(false),
+      began_(false),
       terminated_(false),
       source_event_type_(type) {}
 
@@ -144,6 +145,7 @@ LatencyInfo::~LatencyInfo() {}
 
 LatencyInfo::LatencyInfo(int64_t trace_id, bool terminated)
     : trace_id_(trace_id),
+      began_(false),
       terminated_(terminated),
       source_event_type_(SourceEventType::UNKNOWN) {}
 
@@ -171,6 +173,12 @@ void LatencyInfo::CopyLatencyFrom(const LatencyInfo& other,
                                     lc.second.event_count);
     }
   }
+  trace_id_ = other.trace_id();
+  coalesced_ = other.coalesced();
+  // TODO(tdresser): Ideally we'd copy |began_| here as well, but |began_| isn't
+  // very intuitive, and we can actually begin multiple times across copied
+  // events.
+  terminated_ = other.terminated();
 }
 
 void LatencyInfo::AddNewLatencyFrom(const LatencyInfo& other) {
@@ -183,6 +191,12 @@ void LatencyInfo::AddNewLatencyFrom(const LatencyInfo& other) {
                                     lc.second.event_count);
     }
   }
+  trace_id_ = other.trace_id();
+  coalesced_ = other.coalesced();
+  // TODO(tdresser): Ideally we'd copy |began_| here as well, but |began_| isn't
+  // very intuitive, and we can actually begin multiple times across copied
+  // events.
+  terminated_ = other.terminated();
 }
 
 void LatencyInfo::AddLatencyNumber(LatencyComponentType component,
@@ -223,8 +237,10 @@ void LatencyInfo::AddLatencyNumberWithTimestampImpl(
 
   if (IsBeginComponent(component)) {
     // Should only ever add begin component once.
-    CHECK_EQ(-1, trace_id_);
-    trace_id_ = component_sequence_number;
+    CHECK(!began_);
+    began_ = true;
+    // We should have a trace ID assigned by now.
+    DCHECK(trace_id_ != -1);
 
     if (*latency_info_enabled) {
       // The timestamp for ASYNC_BEGIN trace event is used for drawing the
@@ -287,7 +303,7 @@ void LatencyInfo::AddLatencyNumberWithTimestampImpl(
     }
   }
 
-  if (IsTerminalComponent(component) && trace_id_ != -1) {
+  if (IsTerminalComponent(component) && began_) {
     // Should only ever add terminal component once.
     CHECK(!terminated_);
     terminated_ = true;
