@@ -472,7 +472,6 @@ void HttpStreamFactoryImpl::Job::OnNewSpdySessionReadyCallback() {
   MaybeCopyConnectionAttemptsFromSocketOrHandle();
 
   delegate_->OnNewSpdySessionReady(this, spdy_session, spdy_session_direct_);
-
   // |this| may be deleted after this call.
 }
 

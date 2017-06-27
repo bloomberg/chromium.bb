@@ -426,14 +426,14 @@ void SpdySessionPool::OnNewSpdySessionReady(
     request->Complete(was_alpn_negotiated, negotiated_protocol, using_spdy);
     RemoveRequestFromSpdySessionRequestMap(request);
     if (request->stream_type() == HttpStreamRequest::BIDIRECTIONAL_STREAM) {
-      request->OnBidirectionalStreamImplReady(
+      request->OnBidirectionalStreamImplReadyOnPooledConnection(
           used_ssl_config, used_proxy_info,
           base::MakeUnique<BidirectionalStreamSpdyImpl>(spdy_session,
                                                         source_dependency));
     } else {
       bool use_relative_url =
           direct || request->url().SchemeIs(url::kHttpsScheme);
-      request->OnStreamReady(
+      request->OnStreamReadyOnPooledConnection(
           used_ssl_config, used_proxy_info,
           base::MakeUnique<SpdyHttpStream>(spdy_session, use_relative_url,
                                            source_dependency));
