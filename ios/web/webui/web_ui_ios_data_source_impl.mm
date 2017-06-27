@@ -66,7 +66,7 @@ WebUIIOSDataSourceImpl::WebUIIOSDataSourceImpl(const std::string& source_name)
       source_name_(source_name),
       default_resource_(-1),
       deny_xframe_options_(true),
-      load_time_data_defaults_added_(true),
+      load_time_data_defaults_added_(false),
       replace_existing_source_(true) {}
 
 WebUIIOSDataSourceImpl::~WebUIIOSDataSourceImpl() {}
@@ -142,10 +142,10 @@ std::string WebUIIOSDataSourceImpl::GetMimeType(const std::string& path) const {
 }
 
 void WebUIIOSDataSourceImpl::EnsureLoadTimeDataDefaultsAdded() {
-  if (!load_time_data_defaults_added_)
+  if (load_time_data_defaults_added_)
     return;
 
-  load_time_data_defaults_added_ = false;
+  load_time_data_defaults_added_ = true;
   base::DictionaryValue defaults;
   webui::SetLoadTimeDataDefaults(web::GetWebClient()->GetApplicationLocale(),
                                  &defaults);
