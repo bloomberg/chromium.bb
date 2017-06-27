@@ -158,10 +158,10 @@ public class ChildProcessServiceImpl {
         }
         sCreateCalled = true;
 
-        mDelegate.onServiceCreated();
-
         // Initialize the context for the application that owns this ChildProcessServiceImpl object.
         ContextUtils.initApplicationContext(context);
+
+        mDelegate.onServiceCreated();
 
         mMainThread = new Thread(new Runnable() {
             @Override
