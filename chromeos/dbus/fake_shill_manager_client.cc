@@ -798,15 +798,15 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
     devices->SetDeviceProperty("/device/cellular1",
                                shill::kSupportedCarriersProperty,
                                carrier_list);
-    devices->SetDeviceProperty("/device/cellular1",
-                               shill::kSupportNetworkScanProperty,
-                               base::Value(true));
     if (roaming_state_ == kRoamingRequired) {
       devices->SetDeviceProperty("/device/cellular1",
                                  shill::kProviderRequiresRoamingProperty,
                                  base::Value(true));
     }
     if (cellular_technology_ == shill::kNetworkTechnologyGsm) {
+      devices->SetDeviceProperty("/device/cellular1",
+                                 shill::kSupportNetworkScanProperty,
+                                 base::Value(true));
       devices->SetDeviceProperty("/device/cellular1",
                                  shill::kSIMPresentProperty, base::Value(true));
       devices->SetSimLocked("/device/cellular1", false);

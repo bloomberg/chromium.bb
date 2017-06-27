@@ -75,19 +75,19 @@
         </template>
       </div>
       <template is="dom-if" if="[[!isSecondaryUser_]]">
-        <paper-button class="secondary-button" on-tap="onForgetTap_"
+        <paper-button on-tap="onForgetTap_"
             hidden$="[[!showForget_(networkProperties)]]">
           $i18n{networkButtonForget}
         </paper-button>
-        <paper-button class="secondary-button" on-tap="onViewAccountTap_"
+        <paper-button on-tap="onViewAccountTap_"
             hidden$="[[!showViewAccount_(networkProperties)]]">
           $i18n{networkButtonViewAccount}
         </paper-button>
-        <paper-button class="secondary-button" on-tap="onActivateTap_"
+        <paper-button on-tap="onActivateTap_"
             hidden$="[[!showActivate_(networkProperties)]]">
           $i18n{networkButtonActivate}
         </paper-button>
-        <paper-button class="secondary-button" on-tap="onConfigureTap_"
+        <paper-button on-tap="onConfigureTap_"
             hidden$="[[!showConfigure_(networkProperties, globalPolicy)]]">
           $i18n{networkButtonConfigure}
         </paper-button>
@@ -155,6 +155,16 @@
                   globalPolicy)]]"
               aria-labelledby="autoConnectToggleLabel">
           </paper-toggle-button>
+        </div>
+      </template>
+      <!-- Choose Mobile Network (Cellular only). -->
+      <template is="dom-if"
+          if="[[showCellularChooseNetwork_(networkProperties)]]">
+        <div class="settings-box">
+          <div class="start">$i18n{networkChooseMobileDetail}</div>
+          <paper-button on-tap="onChooseMobileTap_">
+            $i18n{networkChooseMobileButton}
+          </paper-button>
         </div>
       </template>
       <!-- Data roaming (Cellular only). -->
