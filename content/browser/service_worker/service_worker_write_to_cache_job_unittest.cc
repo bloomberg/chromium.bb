@@ -288,14 +288,16 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
 
   base::WeakPtr<ServiceWorkerProviderHost> CreateHostForVersion(
       int process_id,
+      int provider_id,
       const scoped_refptr<ServiceWorkerVersion>& version) {
     std::unique_ptr<ServiceWorkerProviderHost> host =
         CreateProviderHostForServiceWorkerContext(
-            process_id, true /* is_parent_frame_secure */, version.get(),
+            process_id, provider_id, true /* is_parent_frame_secure */,
             context()->AsWeakPtr(), &remote_endpoint_);
-    base::WeakPtr<ServiceWorkerProviderHost> host_weakptr = host->AsWeakPtr();
+    base::WeakPtr<ServiceWorkerProviderHost> provider_host = host->AsWeakPtr();
     context()->AddProviderHost(std::move(host));
-    return host_weakptr;
+    provider_host->running_hosted_version_ = version;
+    return provider_host;
   }
 
   void SetUpScriptRequest(int process_id, int provider_id) {
@@ -325,9 +327,11 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
         scoped_refptr<ResourceRequestBodyImpl>());
   }
 
+  int NextProviderId() { return next_provider_id_++; }
   int NextVersionId() { return next_version_id_++; }
 
   void SetUp() override {
+    int provider_id = NextProviderId();
     helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
 
     // A new unstored registration/version.
@@ -336,8 +340,8 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
     version_ =
         new ServiceWorkerVersion(registration_.get(), script_url_,
                                  NextVersionId(), context()->AsWeakPtr());
-    base::WeakPtr<ServiceWorkerProviderHost> host =
-        CreateHostForVersion(helper_->mock_render_process_id(), version_);
+    base::WeakPtr<ServiceWorkerProviderHost> host = CreateHostForVersion(
+        helper_->mock_render_process_id(), provider_id, version_);
     ASSERT_TRUE(host);
     SetUpScriptRequest(helper_->mock_render_process_id(), host->provider_id());
 
@@ -387,13 +391,14 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
   // to the script |response|. Returns the new version.
   scoped_refptr<ServiceWorkerVersion> UpdateScript(
       const std::string& response) {
+    int provider_id = NextProviderId();
     scoped_refptr<ServiceWorkerVersion> new_version =
         new ServiceWorkerVersion(registration_.get(), script_url_,
                                  NextVersionId(), context()->AsWeakPtr());
     new_version->set_pause_after_download(true);
-    base::WeakPtr<ServiceWorkerProviderHost> host =
-        CreateHostForVersion(helper_->mock_render_process_id(), new_version);
-    EXPECT_TRUE(host);
+    base::WeakPtr<ServiceWorkerProviderHost> host = CreateHostForVersion(
+        helper_->mock_render_process_id(), provider_id, new_version);
+
     SetUpScriptRequest(helper_->mock_render_process_id(), host->provider_id());
     mock_protocol_handler_->SetCreateJobCallback(
         base::Bind(&CreateResponseJob, response));
@@ -430,6 +435,7 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_refptr<ServiceWorkerVersion> version_;
+  base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
   std::unique_ptr<net::URLRequestContext> url_request_context_;
   std::unique_ptr<net::URLRequestJobFactoryImpl> url_request_job_factory_;
   std::unique_ptr<net::URLRequest> request_;

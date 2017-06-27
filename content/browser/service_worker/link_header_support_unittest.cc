@@ -106,6 +106,17 @@ class LinkHeaderServiceWorkerTest : public ::testing::Test {
   }
 
   void CreateServiceWorkerProviderHost() {
+    remote_endpoints_.emplace_back();
+    std::unique_ptr<ServiceWorkerProviderHost> host =
+        CreateProviderHostForServiceWorkerContext(
+            render_process_id(), kMockProviderId,
+            true /* is_parent_frame_secure */, context()->AsWeakPtr(),
+            &remote_endpoints_.back());
+    provider_host_ = host->AsWeakPtr();
+    EXPECT_FALSE(
+        context()->GetProviderHost(host->process_id(), host->provider_id()));
+    context()->AddProviderHost(std::move(host));
+
     scoped_refptr<ServiceWorkerRegistration> registration =
         new ServiceWorkerRegistration(GURL("https://host/scope"), 1L,
                                       context()->AsWeakPtr());
@@ -113,15 +124,7 @@ class LinkHeaderServiceWorkerTest : public ::testing::Test {
         registration.get(), GURL("https://host/script.js"), 1L,
         context()->AsWeakPtr());
 
-    remote_endpoints_.emplace_back();
-    std::unique_ptr<ServiceWorkerProviderHost> host =
-        CreateProviderHostForServiceWorkerContext(
-            render_process_id(), true /* is_parent_frame_secure */,
-            version.get(), context()->AsWeakPtr(), &remote_endpoints_.back());
-    provider_host_ = host->AsWeakPtr();
-    EXPECT_FALSE(
-        context()->GetProviderHost(host->process_id(), host->provider_id()));
-    context()->AddProviderHost(std::move(host));
+    provider_host_->running_hosted_version_ = version;
   }
 
   std::unique_ptr<net::URLRequest> CreateRequest(const GURL& request_url,
