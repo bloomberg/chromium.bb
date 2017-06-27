@@ -59,6 +59,12 @@ class MediaEngagementContentsObserverTest
     SimulatePlaybackStarted(player_info, id);
   }
 
+  void SimulateResizeEvent(int id, int size) {
+    content::WebContentsObserver::MediaPlayerId player_id =
+        std::make_pair(nullptr /* RenderFrameHost */, id);
+    contents_observer_->MediaResized(gfx::Size(size, size), player_id);
+  }
+
   void SimulatePlaybackStarted(
       content::WebContentsObserver::MediaPlayerInfo player_info,
       int id) {
@@ -111,12 +117,15 @@ TEST_F(MediaEngagementContentsObserverTest, SignificantActivePlayerCount) {
   EXPECT_EQ(0u, GetSignificantActivePlayersCount());
 
   SimulatePlaybackStarted(0);
+  SimulateResizeEvent(0, MediaEngagementContentsObserver::kSignificantSize);
   EXPECT_EQ(1u, GetSignificantActivePlayersCount());
 
   SimulatePlaybackStarted(1);
+  SimulateResizeEvent(1, MediaEngagementContentsObserver::kSignificantSize);
   EXPECT_EQ(2u, GetSignificantActivePlayersCount());
 
   SimulatePlaybackStarted(2);
+  SimulateResizeEvent(2, MediaEngagementContentsObserver::kSignificantSize);
   EXPECT_EQ(3u, GetSignificantActivePlayersCount());
 
   SimulatePlaybackStopped(1);
@@ -125,7 +134,7 @@ TEST_F(MediaEngagementContentsObserverTest, SignificantActivePlayerCount) {
   SimulatePlaybackStopped(0);
   EXPECT_EQ(1u, GetSignificantActivePlayersCount());
 
-  SimulatePlaybackStopped(2);
+  SimulateResizeEvent(2, 1);
   EXPECT_EQ(0u, GetSignificantActivePlayersCount());
 }
 
@@ -135,7 +144,12 @@ TEST_F(MediaEngagementContentsObserverTest, AreConditionsMet) {
   SimulatePlaybackStarted(0);
   SimulateIsVisible();
   web_contents()->SetAudioMuted(false);
+  SimulateResizeEvent(0, MediaEngagementContentsObserver::kSignificantSize);
   EXPECT_TRUE(AreConditionsMet());
+
+  SimulateResizeEvent(0, 1);
+  EXPECT_FALSE(AreConditionsMet());
+  SimulateResizeEvent(0, MediaEngagementContentsObserver::kSignificantSize);
 
   web_contents()->SetAudioMuted(true);
   EXPECT_FALSE(AreConditionsMet());
@@ -155,6 +169,7 @@ TEST_F(MediaEngagementContentsObserverTest, AreConditionsMet) {
   EXPECT_FALSE(AreConditionsMet());
 
   SimulatePlaybackStarted(1);
+  SimulateResizeEvent(1, MediaEngagementContentsObserver::kSignificantSize);
   EXPECT_TRUE(AreConditionsMet());
 }
 
@@ -174,7 +189,12 @@ TEST_F(MediaEngagementContentsObserverTest, TimerRunsDependingOnConditions) {
   SimulatePlaybackStarted(0);
   SimulateIsVisible();
   web_contents()->SetAudioMuted(false);
+  SimulateResizeEvent(0, MediaEngagementContentsObserver::kSignificantSize);
   EXPECT_TRUE(IsTimerRunning());
+
+  SimulateResizeEvent(0, 1);
+  EXPECT_FALSE(IsTimerRunning());
+  SimulateResizeEvent(0, MediaEngagementContentsObserver::kSignificantSize);
 
   web_contents()->SetAudioMuted(true);
   EXPECT_FALSE(IsTimerRunning());
@@ -194,6 +214,7 @@ TEST_F(MediaEngagementContentsObserverTest, TimerRunsDependingOnConditions) {
   EXPECT_FALSE(IsTimerRunning());
 
   SimulatePlaybackStarted(1);
+  SimulateResizeEvent(1, MediaEngagementContentsObserver::kSignificantSize);
   EXPECT_TRUE(IsTimerRunning());
 }
 
@@ -203,6 +224,7 @@ TEST_F(MediaEngagementContentsObserverTest, TimerDoesNotRunIfEntryRecorded) {
   SimulatePlaybackStarted(0);
   SimulateIsVisible();
   web_contents()->SetAudioMuted(false);
+  SimulateResizeEvent(0, MediaEngagementContentsObserver::kSignificantSize);
 
   EXPECT_FALSE(IsTimerRunning());
 }
@@ -212,6 +234,7 @@ TEST_F(MediaEngagementContentsObserverTest,
   SimulatePlaybackStarted(0);
   SimulateIsVisible();
   web_contents()->SetAudioMuted(false);
+  SimulateResizeEvent(0, MediaEngagementContentsObserver::kSignificantSize);
   EXPECT_TRUE(IsTimerRunning());
   EXPECT_FALSE(WasSignificantPlaybackRecorded());
 
