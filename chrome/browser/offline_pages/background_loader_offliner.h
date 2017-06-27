@@ -26,6 +26,13 @@ namespace offline_pages {
 class OfflinerPolicy;
 class OfflinePageModel;
 
+struct RequestStats {
+  int requested;
+  int completed;
+
+  RequestStats() : requested(0), completed(0) {}
+};
+
 // An Offliner implementation that attempts client-side rendering and saving
 // of an offline page. It uses the BackgroundLoader to load the page and the
 // OfflinePageModel to save it. Only one request may be active at a time.
@@ -77,6 +84,7 @@ class BackgroundLoaderOffliner : public Offliner,
 
  private:
   friend class TestBackgroundLoaderOffliner;
+  friend class BackgroundLoaderOfflinerTest;
 
   enum SaveState { NONE, SAVING, DELETE_AFTER_SAVE };
   enum PageLoadState { SUCCESS, RETRIABLE, NONRETRIABLE };
@@ -98,6 +106,9 @@ class BackgroundLoaderOffliner : public Offliner,
 
   void DeleteOfflinePageCallback(const SavePageRequest& request,
                                  DeletePageResult result);
+
+  // Testing method to examine resource stats.
+  RequestStats* GetRequestStatsForTest() { return stats_; }
 
   std::unique_ptr<background_loader::BackgroundLoaderContents> loader_;
   // Not owned.
@@ -141,9 +152,8 @@ class BackgroundLoaderOffliner : public Offliner,
   // Callback for cancel.
   CancelCallback cancel_callback_;
 
-  // TODO(petewil): Replace with a map of all types
-  int64_t started_count_;
-  int64_t completed_count_;
+  // Holds stats for resource request status for resource types we track.
+  RequestStats stats_[ResourceDataType::RESOURCE_DATA_TYPE_COUNT];
 
   base::WeakPtrFactory<BackgroundLoaderOffliner> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(BackgroundLoaderOffliner);

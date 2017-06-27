@@ -363,6 +363,8 @@ ConvertResourceTypeToResourceDataType(content::ResourceType type) {
       return offline_pages::ResourceLoadingObserver::ResourceDataType::TEXT_CSS;
     case content::RESOURCE_TYPE_IMAGE:
       return offline_pages::ResourceLoadingObserver::ResourceDataType::IMAGE;
+    case content::RESOURCE_TYPE_XHR:
+      return offline_pages::ResourceLoadingObserver::ResourceDataType::XHR;
     default:
       return offline_pages::ResourceLoadingObserver::ResourceDataType::OTHER;
   }
