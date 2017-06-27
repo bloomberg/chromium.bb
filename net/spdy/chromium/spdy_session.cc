@@ -3024,18 +3024,16 @@ void SpdySession::OnAltSvc(
     // so that SpdySession::OnAltSvc and
     // HttpStreamFactory::ProcessAlternativeServices
     // could use the the same function.
-    // Check if QUIC version is supported.
+    // Check if QUIC version is supported. Filter supported QUIC versions.
+    QuicVersionVector advertised_versions;
     if (protocol == kProtoQUIC && !altsvc.version.empty()) {
       bool match_found = false;
       for (const QuicVersion& supported : quic_supported_versions_) {
         for (const uint16_t& advertised : altsvc.version) {
           if (supported == advertised) {
             match_found = true;
-            break;
+            advertised_versions.push_back(supported);
           }
-        }
-        if (match_found) {
-          break;
         }
       }
       if (!match_found) {
@@ -3047,9 +3045,19 @@ void SpdySession::OnAltSvc(
                                                  altsvc.port);
     const base::Time expiration =
         now + base::TimeDelta::FromSeconds(altsvc.max_age);
-    alternative_service_info_vector.push_back(
-        AlternativeServiceInfo(alternative_service, expiration));
+    AlternativeServiceInfo alternative_service_info;
+    if (protocol == kProtoQUIC) {
+      alternative_service_info =
+          AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
+              alternative_service, expiration, advertised_versions);
+    } else {
+      alternative_service_info =
+          AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
+              alternative_service, expiration);
+    }
+    alternative_service_info_vector.push_back(alternative_service_info);
   }
+
   http_server_properties_->SetAlternativeServices(
       scheme_host_port, alternative_service_info_vector);
 }

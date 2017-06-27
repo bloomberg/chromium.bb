@@ -53,8 +53,9 @@ class BidirectionalStreamTestURLRequestContextGetter
       params->enable_http2 = true;
       net::AlternativeService alternative_service(net::kProtoQUIC, "", 443);
       url::SchemeHostPort quic_hint_server("https", kTestServerHost, 443);
-      server_properties_->SetAlternativeService(
-          quic_hint_server, alternative_service, base::Time::Max());
+      server_properties_->SetQuicAlternativeService(
+          quic_hint_server, alternative_service, base::Time::Max(),
+          params->quic_supported_versions);
 
       request_context_->set_cert_verifier(mock_cert_verifier_.get());
       request_context_->set_host_resolver(host_resolver_.get());

@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_address.h"
+#include "net/http/http_network_session.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -78,7 +79,14 @@ class HttpServerPropertiesImplTest : public testing::Test {
                              const AlternativeService& alternative_service) {
     const base::Time expiration =
         base::Time::Now() + base::TimeDelta::FromDays(1);
-    return impl_.SetAlternativeService(origin, alternative_service, expiration);
+    if (alternative_service.protocol == kProtoQUIC) {
+      return impl_.SetQuicAlternativeService(
+          origin, alternative_service, expiration,
+          HttpNetworkSession::Params().quic_supported_versions);
+    } else {
+      return impl_.SetHttp2AlternativeService(origin, alternative_service,
+                                              expiration);
+    }
   }
 
   void MarkBrokenAndLetExpireAlternativeServiceNTimes(
@@ -368,20 +376,25 @@ TEST_F(AlternateProtocolServerPropertiesTest, ExcludeOrigin) {
   AlternativeServiceInfoVector alternative_service_info_vector;
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   // Same hostname, same port, TCP: should be ignored.
-  AlternativeServiceInfo alternative_service_info1(kProtoHTTP2, "foo", 443,
-                                                   expiration);
+  AlternativeServiceInfo alternative_service_info1 =
+      AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
+          AlternativeService(kProtoHTTP2, "foo", 443), expiration);
   alternative_service_info_vector.push_back(alternative_service_info1);
   // Different hostname: GetAlternativeServiceInfos should return this one.
-  AlternativeServiceInfo alternative_service_info2(kProtoHTTP2, "bar", 443,
-                                                   expiration);
+  AlternativeServiceInfo alternative_service_info2 =
+      AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
+          AlternativeService(kProtoHTTP2, "bar", 443), expiration);
   alternative_service_info_vector.push_back(alternative_service_info2);
   // Different port: GetAlternativeServiceInfos should return this one too.
-  AlternativeServiceInfo alternative_service_info3(kProtoHTTP2, "foo", 80,
-                                                   expiration);
+  AlternativeServiceInfo alternative_service_info3 =
+      AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
+          AlternativeService(kProtoHTTP2, "foo", 80), expiration);
   alternative_service_info_vector.push_back(alternative_service_info3);
   // QUIC: GetAlternativeServices should return this one too.
-  AlternativeServiceInfo alternative_service_info4(kProtoQUIC, "foo", 443,
-                                                   expiration);
+  AlternativeServiceInfo alternative_service_info4 =
+      AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
+          AlternativeService(kProtoQUIC, "foo", 443), expiration,
+          HttpNetworkSession::Params().quic_supported_versions);
   alternative_service_info_vector.push_back(alternative_service_info4);
 
   url::SchemeHostPort test_server("https", "foo", 443);
@@ -405,7 +418,8 @@ TEST_F(AlternateProtocolServerPropertiesTest, Set) {
   const base::Time now = base::Time::Now();
   base::Time expiration1 = now + base::TimeDelta::FromDays(1);
   // 1st entry in the memory.
-  impl_.SetAlternativeService(test_server1, alternative_service1, expiration1);
+  impl_.SetHttp2AlternativeService(test_server1, alternative_service1,
+                                   expiration1);
 
   // |test_server2| has an alternative service, which will be
   // overwritten by SetAlternativeServiceServers(), because
@@ -415,7 +429,8 @@ TEST_F(AlternateProtocolServerPropertiesTest, Set) {
   const AlternativeService alternative_service2(kProtoHTTP2, "bar2", 443);
   base::Time expiration2 = now + base::TimeDelta::FromDays(2);
   alternative_service_info_vector.push_back(
-      AlternativeServiceInfo(alternative_service2, expiration2));
+      AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
+          alternative_service2, expiration2));
   url::SchemeHostPort test_server2("http", "foo2", 80);
   // 0th entry in the memory.
   impl_.SetAlternativeServices(test_server2, alternative_service_info_vector);
@@ -427,8 +442,9 @@ TEST_F(AlternateProtocolServerPropertiesTest, Set) {
           AlternativeServiceMap::NO_AUTO_EVICT);
   const AlternativeService alternative_service3(kProtoHTTP2, "bar3", 123);
   base::Time expiration3 = now + base::TimeDelta::FromDays(3);
-  const AlternativeServiceInfo alternative_service_info1(alternative_service3,
-                                                         expiration3);
+  const AlternativeServiceInfo alternative_service_info1 =
+      AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
+          alternative_service3, expiration3);
   // Simulate updating data for 0th entry with data from Preferences.
   alternative_service_map->Put(
       test_server2,
@@ -437,8 +453,9 @@ TEST_F(AlternateProtocolServerPropertiesTest, Set) {
   url::SchemeHostPort test_server3("http", "foo3", 80);
   const AlternativeService alternative_service4(kProtoHTTP2, "bar4", 1234);
   base::Time expiration4 = now + base::TimeDelta::FromDays(4);
-  const AlternativeServiceInfo alternative_service_info2(alternative_service4,
-                                                         expiration4);
+  const AlternativeServiceInfo alternative_service_info2 =
+      AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
+          alternative_service4, expiration4);
   // Add an old entry from Preferences, this will be added to end of recency
   // list.
   alternative_service_map->Put(
@@ -502,8 +519,9 @@ TEST_F(AlternateProtocolServerPropertiesTest, EmptyVector) {
   url::SchemeHostPort server("https", "foo", 443);
   const AlternativeService alternative_service(kProtoHTTP2, "bar", 443);
   base::Time expiration = base::Time::Now() - base::TimeDelta::FromDays(1);
-  const AlternativeServiceInfo alternative_service_info(alternative_service,
-                                                        expiration);
+  const AlternativeServiceInfo alternative_service_info =
+      AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
+          alternative_service, expiration);
   std::unique_ptr<AlternativeServiceMap> alternative_service_map =
       base::MakeUnique<AlternativeServiceMap>(
           AlternativeServiceMap::NO_AUTO_EVICT);
@@ -536,8 +554,9 @@ TEST_F(AlternateProtocolServerPropertiesTest, EmptyVectorForCanonical) {
   url::SchemeHostPort canonical_server("https", "bar.c.youtube.com", 443);
   const AlternativeService alternative_service(kProtoHTTP2, "", 443);
   base::Time expiration = base::Time::Now() - base::TimeDelta::FromDays(1);
-  const AlternativeServiceInfo alternative_service_info(alternative_service,
-                                                        expiration);
+  const AlternativeServiceInfo alternative_service_info =
+      AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
+          alternative_service, expiration);
   std::unique_ptr<AlternativeServiceMap> alternative_service_map =
       base::MakeUnique<AlternativeServiceMap>(
           AlternativeServiceMap::NO_AUTO_EVICT);
@@ -571,8 +590,10 @@ TEST_F(AlternateProtocolServerPropertiesTest, ClearServerWithCanonical) {
   url::SchemeHostPort canonical_server("https", "bar.c.youtube.com", 443);
   const AlternativeService alternative_service(kProtoQUIC, "", 443);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
-  const AlternativeServiceInfo alternative_service_info(alternative_service,
-                                                        expiration);
+  const AlternativeServiceInfo alternative_service_info =
+      AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
+          alternative_service, expiration,
+          HttpNetworkSession::Params().quic_supported_versions);
 
   impl_.SetAlternativeServices(
       canonical_server,
@@ -646,10 +667,12 @@ TEST_F(AlternateProtocolServerPropertiesTest, SetBroken) {
   AlternativeServiceInfoVector alternative_service_info_vector2;
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   alternative_service_info_vector2.push_back(
-      AlternativeServiceInfo(alternative_service1, expiration));
+      AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
+          alternative_service1, expiration));
   const AlternativeService alternative_service2(kProtoHTTP2, "foo", 1234);
   alternative_service_info_vector2.push_back(
-      AlternativeServiceInfo(alternative_service2, expiration));
+      AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
+          alternative_service2, expiration));
   impl_.SetAlternativeServices(test_server, alternative_service_info_vector2);
   alternative_service_info_vector =
       impl_.GetAlternativeServiceInfos(test_server);
@@ -680,13 +703,15 @@ TEST_F(AlternateProtocolServerPropertiesTest, MaxAge) {
   // GetAlternativeServiceInfos().
   const AlternativeService alternative_service1(kProtoHTTP2, "foo", 443);
   alternative_service_info_vector.push_back(
-      AlternativeServiceInfo(alternative_service1, now - one_day));
+      AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
+          alternative_service1, now - one_day));
 
   // Second alterrnative service will expire one day from now, should be
   // returned by GetAlternativeSerices().
   const AlternativeService alternative_service2(kProtoHTTP2, "bar", 1234);
   alternative_service_info_vector.push_back(
-      AlternativeServiceInfo(alternative_service2, now + one_day));
+      AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
+          alternative_service2, now + one_day));
 
   url::SchemeHostPort test_server("http", "foo", 80);
   impl_.SetAlternativeServices(test_server, alternative_service_info_vector);
@@ -707,13 +732,15 @@ TEST_F(AlternateProtocolServerPropertiesTest, MaxAgeCanonical) {
   // GetAlternativeServiceInfos().
   const AlternativeService alternative_service1(kProtoHTTP2, "foo", 443);
   alternative_service_info_vector.push_back(
-      AlternativeServiceInfo(alternative_service1, now - one_day));
+      AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
+          alternative_service1, now - one_day));
 
   // Second alterrnative service will expire one day from now, should be
   // returned by GetAlternativeSerices().
   const AlternativeService alternative_service2(kProtoHTTP2, "bar", 1234);
   alternative_service_info_vector.push_back(
-      AlternativeServiceInfo(alternative_service2, now + one_day));
+      AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
+          alternative_service2, now + one_day));
 
   url::SchemeHostPort canonical_server("https", "bar.c.youtube.com", 443);
   impl_.SetAlternativeServices(canonical_server,
@@ -732,10 +759,12 @@ TEST_F(AlternateProtocolServerPropertiesTest, AlternativeServiceWithScheme) {
   const AlternativeService alternative_service1(kProtoHTTP2, "foo", 443);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   alternative_service_info_vector.push_back(
-      AlternativeServiceInfo(alternative_service1, expiration));
+      AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
+          alternative_service1, expiration));
   const AlternativeService alternative_service2(kProtoHTTP2, "bar", 1234);
   alternative_service_info_vector.push_back(
-      AlternativeServiceInfo(alternative_service2, expiration));
+      AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
+          alternative_service2, expiration));
   // Set Alt-Svc list for |http_server|.
   url::SchemeHostPort http_server("http", "foo", 80);
   impl_.SetAlternativeServices(http_server, alternative_service_info_vector);
@@ -768,10 +797,12 @@ TEST_F(AlternateProtocolServerPropertiesTest, ClearAlternativeServices) {
   const AlternativeService alternative_service1(kProtoHTTP2, "foo", 443);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   alternative_service_info_vector.push_back(
-      AlternativeServiceInfo(alternative_service1, expiration));
+      AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
+          alternative_service1, expiration));
   const AlternativeService alternative_service2(kProtoHTTP2, "bar", 1234);
   alternative_service_info_vector.push_back(
-      AlternativeServiceInfo(alternative_service2, expiration));
+      AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
+          alternative_service2, expiration));
   url::SchemeHostPort test_server("http", "foo", 80);
   impl_.SetAlternativeServices(test_server, alternative_service_info_vector);
 
@@ -857,10 +888,13 @@ TEST_F(AlternateProtocolServerPropertiesTest, Canonical) {
       kProtoQUIC, "bar.c.youtube.com", 1234);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   alternative_service_info_vector.push_back(
-      AlternativeServiceInfo(canonical_alternative_service1, expiration));
+      AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
+          canonical_alternative_service1, expiration,
+          HttpNetworkSession::Params().quic_supported_versions));
   const AlternativeService canonical_alternative_service2(kProtoHTTP2, "", 443);
   alternative_service_info_vector.push_back(
-      AlternativeServiceInfo(canonical_alternative_service2, expiration));
+      AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
+          canonical_alternative_service2, expiration));
   impl_.SetAlternativeServices(canonical_server,
                                alternative_service_info_vector);
 

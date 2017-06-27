@@ -62,6 +62,7 @@ const char kProtocolKey[] = "protocol_str";
 const char kHostKey[] = "host";
 const char kPortKey[] = "port";
 const char kExpirationKey[] = "expiration";
+const char kAdvertisedVersionsKey[] = "advertised_versions";
 const char kNetworkStatsKey[] = "network_stats";
 const char kSrttKey[] = "srtt";
 
@@ -211,13 +212,27 @@ HttpServerPropertiesManager::GetAlternativeServiceInfos(
   return http_server_properties_impl_->GetAlternativeServiceInfos(origin);
 }
 
-bool HttpServerPropertiesManager::SetAlternativeService(
+bool HttpServerPropertiesManager::SetHttp2AlternativeService(
     const url::SchemeHostPort& origin,
     const AlternativeService& alternative_service,
     base::Time expiration) {
   DCHECK(network_task_runner_->RunsTasksInCurrentSequence());
-  const bool changed = http_server_properties_impl_->SetAlternativeService(
+  const bool changed = http_server_properties_impl_->SetHttp2AlternativeService(
       origin, alternative_service, expiration);
+  if (changed) {
+    ScheduleUpdatePrefsOnNetworkSequence(SET_ALTERNATIVE_SERVICES);
+  }
+  return changed;
+}
+
+bool HttpServerPropertiesManager::SetQuicAlternativeService(
+    const url::SchemeHostPort& origin,
+    const AlternativeService& alternative_service,
+    base::Time expiration,
+    const QuicVersionVector& advertised_versions) {
+  DCHECK(network_task_runner_->RunsTasksInCurrentSequence());
+  const bool changed = http_server_properties_impl_->SetQuicAlternativeService(
+      origin, alternative_service, expiration, advertised_versions);
   if (changed) {
     ScheduleUpdatePrefsOnNetworkSequence(SET_ALTERNATIVE_SERVICES);
   }
@@ -636,22 +651,48 @@ bool HttpServerPropertiesManager::ParseAlternativeServiceDict(
   }
 
   std::string expiration_string;
-  if (alternative_service_dict.GetStringWithoutPathExpansion(
+  if (!alternative_service_dict.GetStringWithoutPathExpansion(
           kExpirationKey, &expiration_string)) {
-    int64_t expiration_int64 = 0;
-    if (!base::StringToInt64(expiration_string, &expiration_int64)) {
-      DVLOG(1) << "Malformed alternative service expiration for server: "
+    DVLOG(1) << "Malformed alternative service expiration for server: "
+             << server_str;
+    return false;
+  }
+
+  int64_t expiration_int64 = 0;
+  if (!base::StringToInt64(expiration_string, &expiration_int64)) {
+    DVLOG(1) << "Malformed alternative service expiration for server: "
+             << server_str;
+    return false;
+  }
+  alternative_service_info->set_expiration(
+      base::Time::FromInternalValue(expiration_int64));
+
+  // Advertised versions list is optional.
+  if (!alternative_service_dict.HasKey(kAdvertisedVersionsKey))
+    return true;
+
+  const base::ListValue* versions_list = nullptr;
+  if (!alternative_service_dict.GetListWithoutPathExpansion(
+          kAdvertisedVersionsKey, &versions_list)) {
+    DVLOG(1)
+        << "Malformed alternative service advertised versions list for server: "
+        << server_str;
+    return false;
+  }
+
+  QuicVersionVector advertised_versions;
+  for (const auto& value : *versions_list) {
+    int version;
+    if (!value.GetAsInteger(&version)) {
+      DVLOG(1) << "Malformed alternative service version for server: "
                << server_str;
       return false;
     }
-    alternative_service_info->set_expiration(
-        base::Time::FromInternalValue(expiration_int64));
-    return true;
+    advertised_versions.push_back(QuicVersion(version));
   }
+  alternative_service_info->set_advertised_versions(advertised_versions);
 
-  DVLOG(1) << "Malformed alternative service expiration for server: "
-           << server_str;
-  return false;
+  return true;
 }
 
 bool HttpServerPropertiesManager::AddToAlternativeServiceMap(
@@ -1121,6 +1162,13 @@ void HttpServerPropertiesManager::SaveAlternativeServiceToServerPrefs(
         kExpirationKey,
         base::Int64ToString(
             alternative_service_info.expiration().ToInternalValue()));
+    std::unique_ptr<base::ListValue> advertised_versions_list =
+        base::MakeUnique<base::ListValue>();
+    for (const auto& version : alternative_service_info.advertised_versions()) {
+      advertised_versions_list->AppendInteger(version);
+    }
+    alternative_service_dict->SetList(kAdvertisedVersionsKey,
+                                      std::move(advertised_versions_list));
     alternative_service_list->Append(std::move(alternative_service_dict));
   }
   if (alternative_service_list->GetSize() == 0)

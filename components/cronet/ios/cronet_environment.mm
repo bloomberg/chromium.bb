@@ -41,6 +41,7 @@
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/write_to_file_net_log_observer.h"
 #include "net/proxy/proxy_service.h"
+#include "net/quic/core/quic_versions.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/url_request/http_user_agent_settings.h"
@@ -333,13 +334,15 @@ void CronetEnvironment::InitializeOnNetworkThread() {
 
   std::unique_ptr<net::HttpServerProperties> http_server_properties(
       new net::HttpServerPropertiesImpl());
+
   for (const auto& quic_hint : quic_hints_) {
     net::AlternativeService alternative_service(net::kProtoQUIC, "",
                                                 quic_hint.port());
     url::SchemeHostPort quic_hint_server("https", quic_hint.host(),
                                          quic_hint.port());
-    http_server_properties->SetAlternativeService(
-        quic_hint_server, alternative_service, base::Time::Max());
+    http_server_properties->SetQuicAlternativeService(
+        quic_hint_server, alternative_service, base::Time::Max(),
+        net::QuicVersionVector());
   }
 
   context_builder.SetHttpServerProperties(std::move(http_server_properties));

@@ -63,6 +63,7 @@
 #include "net/nqe/network_quality_estimator_params.h"
 #include "net/proxy/proxy_config_service_android.h"
 #include "net/proxy/proxy_service.h"
+#include "net/quic/core/quic_versions.h"
 #include "net/sdch/sdch_owner.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/url_request/url_request_context.h"
@@ -758,8 +759,9 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
       net::AlternativeService alternative_service(
           net::kProtoQUIC, "",
           static_cast<uint16_t>(quic_hint->alternate_port));
-      context_->http_server_properties()->SetAlternativeService(
-          quic_server, alternative_service, base::Time::Max());
+      context_->http_server_properties()->SetQuicAlternativeService(
+          quic_server, alternative_service, base::Time::Max(),
+          net::QuicVersionVector());
     }
   }
 

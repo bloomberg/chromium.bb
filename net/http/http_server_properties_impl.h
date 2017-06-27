@@ -81,9 +81,14 @@ class NET_EXPORT HttpServerPropertiesImpl
                         SSLConfig* ssl_config) override;
   AlternativeServiceInfoVector GetAlternativeServiceInfos(
       const url::SchemeHostPort& origin) override;
-  bool SetAlternativeService(const url::SchemeHostPort& origin,
-                             const AlternativeService& alternative_service,
-                             base::Time expiration) override;
+  bool SetHttp2AlternativeService(const url::SchemeHostPort& origin,
+                                  const AlternativeService& alternative_service,
+                                  base::Time expiration) override;
+  bool SetQuicAlternativeService(
+      const url::SchemeHostPort& origin,
+      const AlternativeService& alternative_service,
+      base::Time expiration,
+      const QuicVersionVector& advertised_versions) override;
   bool SetAlternativeServices(const url::SchemeHostPort& origin,
                               const AlternativeServiceInfoVector&
                                   alternative_service_info_vector) override;
