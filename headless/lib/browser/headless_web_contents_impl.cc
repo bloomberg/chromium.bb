@@ -101,7 +101,7 @@ class HeadlessWebContentsImpl::Delegate : public content::WebContentsDelegate {
   void CloseContents(content::WebContents* source) override {
     if (source != headless_web_contents_->web_contents())
       return;
-    headless_web_contents_->web_contents()->Close();
+    headless_web_contents_->Close();
   }
 
  private:
