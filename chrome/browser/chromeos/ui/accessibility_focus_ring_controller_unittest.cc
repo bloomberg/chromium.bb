@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/ui/accessibility_focus_ring_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_highlight_manager.h"
 #include "chrome/browser/chromeos/ui/accessibility_cursor_ring_layer.h"
-#include "chrome/browser/chromeos/ui/accessibility_focus_ring_controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/ime/dummy_text_input_client.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace chromeos {
 
@@ -170,4 +172,48 @@ TEST_F(AccessibilityFocusRingControllerTest, CursorWorksOnMultipleDisplays) {
             50);
 }
 
+class MockTextInputClient : public ui::DummyTextInputClient {
+ public:
+  MockTextInputClient() : ui::DummyTextInputClient(ui::TEXT_INPUT_TYPE_TEXT) {}
+
+  void SetCaretBounds(gfx::Rect& caret_bounds) { caret_bounds_ = caret_bounds; }
+
+ private:
+  gfx::Rect GetCaretBounds() const override { return caret_bounds_; }
+  gfx::Rect caret_bounds_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockTextInputClient);
+};
+
+TEST_F(AccessibilityFocusRingControllerTest, CaretRingDrawnOnlyWithinBounds) {
+  // Given caret bounds that are not within the active window, expect that
+  // the caret ring highlight is not drawn.
+  UpdateDisplay("400x400");
+  aura::Window* root_window = ash::Shell::GetPrimaryRootWindow();
+  gfx::Rect window_bounds(5, 5, 300, 300);
+  root_window->SetBounds(window_bounds);
+  ::wm::GetActivationClient(root_window)->ActivateWindow(root_window);
+
+  AccessibilityHighlightManager highlight_manager;
+  MockTextInputClient text_input_client;
+  highlight_manager.HighlightCaret(true);
+  gfx::Rect caret_bounds(10, 10, 40, 40);
+  text_input_client.SetCaretBounds(caret_bounds);
+  highlight_manager.OnCaretBoundsChanged(&text_input_client);
+
+  AccessibilityFocusRingController* controller =
+      AccessibilityFocusRingController::GetInstance();
+  AccessibilityCursorRingLayer* caret_layer = controller->caret_layer_.get();
+  EXPECT_EQ(root_window, caret_layer->root_window());
+  EXPECT_EQ(abs(caret_layer->layer()->GetTargetBounds().x() - caret_bounds.x()),
+            20);
+  EXPECT_EQ(abs(caret_layer->layer()->GetTargetBounds().y() - caret_bounds.y()),
+            20);
+
+  gfx::Rect not_visible_bounds(299, 299, 10, 10);
+  text_input_client.SetCaretBounds(not_visible_bounds);
+  highlight_manager.OnCaretBoundsChanged(&text_input_client);
+
+  EXPECT_FALSE(controller->caret_layer_);
+}
 }  // namespace chromeos

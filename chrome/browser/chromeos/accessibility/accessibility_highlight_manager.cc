@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/shell.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_highlight_manager.h"
+
+#include "ash/shell.h"
 #include "chrome/browser/chromeos/ui/accessibility_focus_ring_controller.h"
 #include "content/public/browser/focused_node_details.h"
 #include "content/public/browser/notification_service.h"
@@ -11,6 +12,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/cursor_manager.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace chromeos {
 
@@ -24,8 +26,7 @@ ui::InputMethod* GetInputMethod(aura::Window* root_window) {
 
 }  // namespace
 
-AccessibilityHighlightManager::AccessibilityHighlightManager() {
-}
+AccessibilityHighlightManager::AccessibilityHighlightManager() {}
 
 AccessibilityHighlightManager::~AccessibilityHighlightManager() {
   // No need to do anything during shutdown
@@ -119,10 +120,18 @@ void AccessibilityHighlightManager::OnTextInputStateChanged(
 
 void AccessibilityHighlightManager::OnCaretBoundsChanged(
     const ui::TextInputClient* client) {
+  if (!client || client->GetTextInputType() == ui::TEXT_INPUT_TYPE_NONE) {
+    caret_visible_ = false;
+    return;
+  }
   gfx::Rect caret_bounds = client->GetCaretBounds();
-  caret_point_ = caret_bounds.CenterPoint();
-  caret_visible_ = client->GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE &&
-                   (caret_bounds.width() || caret_bounds.height());
+  gfx::Point new_caret_point = caret_bounds.CenterPoint();
+  ::wm::ConvertPointFromScreen(ash::Shell::GetPrimaryRootWindow(),
+                               &new_caret_point);
+  if (new_caret_point == caret_point_)
+    return;
+  caret_point_ = new_caret_point;
+  caret_visible_ = IsCaretVisible(caret_bounds);
   UpdateFocusAndCaretHighlights();
 }
 
@@ -132,6 +141,17 @@ void AccessibilityHighlightManager::OnCursorVisibilityChanged(bool is_visible) {
 
 bool AccessibilityHighlightManager::IsCursorVisible() {
   return ash::Shell::Get()->cursor_manager()->IsCursorVisible();
+}
+
+bool AccessibilityHighlightManager::IsCaretVisible(
+    const gfx::Rect& caret_bounds) {
+  aura::Window* root_window = ash::Shell::GetPrimaryRootWindow();
+  aura::Window* active_window =
+      ::wm::GetActivationClient(root_window)->GetActiveWindow();
+  if (!active_window)
+    active_window = root_window;
+  return (caret_bounds.width() || caret_bounds.height()) &&
+         active_window->GetBoundsInScreen().Contains(caret_point_);
 }
 
 void AccessibilityHighlightManager::UpdateFocusAndCaretHighlights() {
