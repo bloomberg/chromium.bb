@@ -10,6 +10,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
 #include "components/crx_file/id_util.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/features/simple_feature.h"
 #include "extensions/common/manifest_constants.h"
@@ -119,7 +120,7 @@ TEST_F(InitValueManifestTest, InitFromValueValid) {
 
   // Test with an options page.
   extension = LoadAndExpectSuccess("init_valid_options.json");
-  EXPECT_EQ("chrome-extension",
+  EXPECT_EQ(extensions::kExtensionScheme,
             OptionsPageInfo::GetOptionsPage(extension.get()).scheme());
   EXPECT_EQ("/options.html",
             OptionsPageInfo::GetOptionsPage(extension.get()).path());

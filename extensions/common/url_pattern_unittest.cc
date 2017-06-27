@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "extensions/common/constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -258,7 +259,7 @@ TEST(ExtensionURLPatternTest, Match11) {
   EXPECT_TRUE(pattern.MatchesScheme("https"));
   EXPECT_TRUE(pattern.MatchesScheme("file"));
   EXPECT_TRUE(pattern.MatchesScheme("filesystem"));
-  EXPECT_TRUE(pattern.MatchesScheme("chrome-extension"));
+  EXPECT_TRUE(pattern.MatchesScheme(extensions::kExtensionScheme));
   EXPECT_TRUE(pattern.match_subdomains());
   EXPECT_TRUE(pattern.match_effective_tld());
   EXPECT_TRUE(pattern.match_all_urls());
@@ -294,7 +295,7 @@ TEST(ExtensionURLPatternTest, Match12) {
   EXPECT_TRUE(pattern.MatchesScheme("javascript"));
   EXPECT_TRUE(pattern.MatchesScheme("data"));
   EXPECT_TRUE(pattern.MatchesScheme("about"));
-  EXPECT_TRUE(pattern.MatchesScheme("chrome-extension"));
+  EXPECT_TRUE(pattern.MatchesScheme(extensions::kExtensionScheme));
   EXPECT_TRUE(pattern.match_subdomains());
   EXPECT_TRUE(pattern.match_effective_tld());
   EXPECT_TRUE(pattern.match_all_urls());
@@ -435,7 +436,7 @@ TEST(ExtensionURLPatternTest, Match19) {
   URLPattern pattern(URLPattern::SCHEME_EXTENSION);
   EXPECT_EQ(URLPattern::PARSE_SUCCESS,
             pattern.Parse("chrome-extension://ftw/*"));
-  EXPECT_EQ("chrome-extension", pattern.scheme());
+  EXPECT_EQ(extensions::kExtensionScheme, pattern.scheme());
   EXPECT_EQ("ftw", pattern.host());
   EXPECT_FALSE(pattern.match_subdomains());
   EXPECT_FALSE(pattern.match_all_urls());
