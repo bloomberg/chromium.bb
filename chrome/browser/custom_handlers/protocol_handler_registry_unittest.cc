@@ -638,10 +638,6 @@ TEST_F(ProtocolHandlerRegistryTest, TestDisablePreventsHandling) {
   ASSERT_FALSE(registry()->IsHandledProtocol("test"));
 }
 
-// TODO(smckay): This is much more appropriately an integration
-// test. Make that so, then update the
-// ShellIntegretion{Delegate,Callback,Worker} test classes we use to fully
-// isolate this test from the FILE thread.
 TEST_F(ProtocolHandlerRegistryTest, TestOSRegistration) {
   ProtocolHandler ph_do1 = CreateProtocolHandler("do", "test1");
   ProtocolHandler ph_do2 = CreateProtocolHandler("do", "test2");
@@ -671,10 +667,6 @@ TEST_F(ProtocolHandlerRegistryTest, TestOSRegistration) {
 #define MAYBE_TestOSRegistrationFailure TestOSRegistrationFailure
 #endif
 
-// TODO(smckay): This is much more appropriately an integration
-// test. Make that so, then update the
-// ShellIntegretion{Delegate,Callback,Worker} test classes we use to fully
-// isolate this test from the FILE thread.
 TEST_F(ProtocolHandlerRegistryTest, MAYBE_TestOSRegistrationFailure) {
   ProtocolHandler ph_do = CreateProtocolHandler("do", "test1");
   ProtocolHandler ph_dont = CreateProtocolHandler("dont", "test");
