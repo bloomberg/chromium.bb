@@ -12,8 +12,13 @@ namespace blink {
 class CSSNumberInterpolationType : public CSSInterpolationType {
  public:
   CSSNumberInterpolationType(PropertyHandle property,
-                             const PropertyRegistration* registration = nullptr)
-      : CSSInterpolationType(property, registration) {}
+                             const PropertyRegistration* registration = nullptr,
+                             bool round_to_integer = false)
+      : CSSInterpolationType(property, registration),
+        round_to_integer_(round_to_integer) {
+    // This integer flag only applies to registered custom properties.
+    DCHECK(!round_to_integer_ || property.IsCSSCustomProperty());
+  }
 
   InterpolationValue MaybeConvertStandardPropertyUnderlyingValue(
       const ComputedStyle&) const final;
@@ -36,6 +41,8 @@ class CSSNumberInterpolationType : public CSSInterpolationType {
   InterpolationValue MaybeConvertValue(const CSSValue&,
                                        const StyleResolverState*,
                                        ConversionCheckers&) const final;
+
+  const bool round_to_integer_;
 };
 
 }  // namespace blink

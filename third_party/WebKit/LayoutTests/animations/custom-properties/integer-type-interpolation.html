@@ -2,23 +2,23 @@
 <meta charset="UTF-8">
 <style>
 .parent {
-  --number: 30;
+  --integer: 30;
 }
 .target {
-  --number: 10;
+  --integer: 10;
 }
 </style>
 <body>
 <script src="../interpolation/resources/interpolation-test.js"></script>
 <script>
 CSS.registerProperty({
-  name: '--number',
-  syntax: '<number>',
+  name: '--integer',
+  syntax: '<integer>',
   initialValue: '40',
 });
 
 assertInterpolation({
-  property: '--number',
+  property: '--integer',
   from: neutralKeyframe,
   to: '20',
 }, [
@@ -30,7 +30,7 @@ assertInterpolation({
 ]);
 
 assertInterpolation({
-  property: '--number',
+  property: '--integer',
   from: 'initial',
   to: '20',
 }, [
@@ -42,7 +42,7 @@ assertInterpolation({
 ]);
 
 assertInterpolation({
-  property: '--number',
+  property: '--integer',
   from: 'inherit',
   to: '20',
 }, [
@@ -54,7 +54,7 @@ assertInterpolation({
 ]);
 
 assertInterpolation({
-  property: '--number',
+  property: '--integer',
   from: 'unset',
   to: '20',
 }, [
@@ -66,7 +66,7 @@ assertInterpolation({
 ]);
 
 assertInterpolation({
-  property: '--number',
+  property: '--integer',
   from: '-10',
   to: '10',
 }, [
@@ -78,17 +78,17 @@ assertInterpolation({
 ]);
 
 assertInterpolation({
-  property: '--number',
+  property: '--integer',
   from: '10',
   to: '15',
 }, [
-  {at: -0.3, is: '8.5'},
+  {at: -0.3, is: '9'},
   {at: 0, is: '10'},
-  {at: 0.25, is: '11.25'},
-  {at: 0.5, is: '12.5'},
-  {at: 0.75, is: '13.75'},
+  {at: 0.25, is: '11'},
+  {at: 0.5, is: '13'},
+  {at: 0.75, is: '14'},
   {at: 1, is: '15'},
-  {at: 1.5, is: '17.5'}
+  {at: 1.5, is: '18'}
 ]);
 </script>
 </body>
