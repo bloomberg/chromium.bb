@@ -53,6 +53,7 @@ class PaymentRequestMediatorTest : public PlatformTest {
         credit_card_(autofill::test::GetCreditCard()) {
     // Add testing profile and credit card to autofill::TestPersonalDataManager.
     personal_data_manager_.AddTestingProfile(&autofill_profile_);
+    credit_card_.set_billing_address_id(autofill_profile_.guid());
     personal_data_manager_.AddTestingCreditCard(&credit_card_);
 
     payment_request_ = base::MakeUnique<TestPaymentRequest>(
@@ -82,8 +83,13 @@ class PaymentRequestMediatorTest : public PlatformTest {
 
 // Tests whether payment can be completed when expected.
 TEST_F(PaymentRequestMediatorTest, TestCanPay) {
-  // Payment cannot be completed if there is no selected credit card.
+  EXPECT_TRUE(payment_request_->selected_credit_card());
+  EXPECT_TRUE(payment_request_->selected_shipping_profile());
+  EXPECT_TRUE(payment_request_->selected_shipping_option());
+  EXPECT_TRUE(payment_request_->selected_contact_profile());
   EXPECT_TRUE([GetPaymentRequestMediator() canPay]);
+
+  // Payment cannot be completed if there is no selected credit card.
   autofill::CreditCard* selected_credit_card =
       payment_request_->selected_credit_card();
   payment_request_->set_selected_credit_card(nullptr);

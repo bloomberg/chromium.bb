@@ -4,9 +4,13 @@
 
 #import "ios/chrome/browser/ui/payments/payment_method_selection_coordinator.h"
 
+#include <vector>
+
+#include "base/logging.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/payments/payment_request.h"
+#import "ios/chrome/browser/ui/payments/cells/payment_method_item.h"
 #include "ios/chrome/browser/ui/payments/payment_method_selection_mediator.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -79,12 +83,20 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
 - (void)paymentRequestSelectorViewController:
             (PaymentRequestSelectorViewController*)controller
                         didSelectItemAtIndex:(NSUInteger)index {
-  // Update the data source with the selection.
-  self.mediator.selectedItemIndex = index;
-
   DCHECK(index < self.paymentRequest->credit_cards().size());
-  [self delayedNotifyDelegateOfSelection:self.paymentRequest
-                                             ->credit_cards()[index]];
+  autofill::CreditCard* creditCard = self.paymentRequest->credit_cards()[index];
+
+  // Proceed with item selection only if the item has all required info, or
+  // else bring up the credit card editor.
+  CollectionViewItem<PaymentsIsSelectable>* selectedItem =
+      self.mediator.selectableItems[index];
+  if (selectedItem.complete) {
+    // Update the data source with the selection.
+    self.mediator.selectedItemIndex = index;
+    [self delayedNotifyDelegateOfSelection:creditCard];
+  } else {
+    [self startCreditCardEditCoordinatorWithCreditCard:creditCard];
+  }
 }
 
 - (void)paymentRequestSelectorViewControllerDidFinish:
@@ -118,6 +130,16 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
        didFinishEditingCreditCard:(autofill::CreditCard*)creditCard {
   // Update the data source with the new data.
   [self.mediator loadItems];
+
+  if (![self.viewController isEditing]) {
+    // Update the data source with the selection.
+    const std::vector<autofill::CreditCard*>& creditCards =
+        self.paymentRequest->credit_cards();
+    auto position =
+        std::find(creditCards.begin(), creditCards.end(), creditCard);
+    DCHECK(position != creditCards.end());
+    self.mediator.selectedItemIndex = position - creditCards.begin();
+  }
 
   [self.viewController loadModel];
   [self.viewController.collectionView reloadData];

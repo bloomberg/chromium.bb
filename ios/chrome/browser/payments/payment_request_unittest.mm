@@ -12,6 +12,7 @@
 #include "components/payments/core/currency_formatter.h"
 #include "components/payments/core/payment_method_data.h"
 #include "ios/chrome/browser/application_context.h"
+#include "ios/chrome/browser/payments/payment_request_test_util.h"
 #include "ios/web/public/payments/payment_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -441,4 +442,79 @@ TEST_F(PaymentRequestTest,
             payment_request.selected_shipping_profile()->guid());
   EXPECT_EQ(address1.guid(),
             payment_request.selected_contact_profile()->guid());
+}
+
+// Test that loading payment methods when none are available works as expected.
+TEST_F(PaymentRequestTest, SelectedPaymentMethod_NoPaymentMethods) {
+  autofill::TestPersonalDataManager personal_data_manager;
+  web::PaymentRequest web_payment_request =
+      payment_request_test_util::CreateTestWebPaymentRequest();
+
+  // No payment methods are selected because none are available!
+  PaymentRequest payment_request(web_payment_request, &personal_data_manager);
+  EXPECT_EQ(nullptr, payment_request.selected_credit_card());
+}
+
+// Test that loading expired credit cards works as expected.
+TEST_F(PaymentRequestTest, SelectedPaymentMethod_ExpiredCard) {
+  autofill::TestPersonalDataManager personal_data_manager;
+  autofill::AutofillProfile billing_address = autofill::test::GetFullProfile();
+  personal_data_manager.AddTestingProfile(&billing_address);
+  autofill::CreditCard credit_card = autofill::test::GetCreditCard();
+  personal_data_manager.AddTestingCreditCard(&credit_card);
+  credit_card.SetExpirationYear(2016);  // Expired.
+  credit_card.set_billing_address_id(billing_address.guid());
+
+  web::PaymentRequest web_payment_request =
+      payment_request_test_util::CreateTestWebPaymentRequest();
+
+  // credit_card is selected because expired cards are valid for payment.
+  PaymentRequest payment_request(web_payment_request, &personal_data_manager);
+  EXPECT_EQ(credit_card.guid(), payment_request.selected_credit_card()->guid());
+}
+
+// Test that loading complete payment methods works as expected.
+TEST_F(PaymentRequestTest, SelectedPaymentMethod_Complete) {
+  autofill::TestPersonalDataManager personal_data_manager;
+  autofill::AutofillProfile billing_address = autofill::test::GetFullProfile();
+  personal_data_manager.AddTestingProfile(&billing_address);
+  autofill::CreditCard credit_card = autofill::test::GetCreditCard();
+  credit_card.set_use_count(5U);
+  personal_data_manager.AddTestingCreditCard(&credit_card);
+  credit_card.set_billing_address_id(billing_address.guid());
+  autofill::CreditCard credit_card2 = autofill::test::GetCreditCard2();
+  credit_card2.set_use_count(15U);
+  personal_data_manager.AddTestingCreditCard(&credit_card2);
+  credit_card2.set_billing_address_id(billing_address.guid());
+
+  web::PaymentRequest web_payment_request =
+      payment_request_test_util::CreateTestWebPaymentRequest();
+
+  // credit_card2 is selected because it has the most use count (Frecency
+  // model).
+  PaymentRequest payment_request(web_payment_request, &personal_data_manager);
+  EXPECT_EQ(credit_card2.guid(),
+            payment_request.selected_credit_card()->guid());
+}
+
+// Test that loading incomplete payment methods works as expected.
+TEST_F(PaymentRequestTest, SelectedPaymentMethod_Incomplete) {
+  autofill::TestPersonalDataManager personal_data_manager;
+  autofill::AutofillProfile billing_address = autofill::test::GetFullProfile();
+  personal_data_manager.AddTestingProfile(&billing_address);
+  autofill::CreditCard credit_card = autofill::test::GetCreditCard();
+  credit_card.set_use_count(5U);
+  personal_data_manager.AddTestingCreditCard(&credit_card);
+  credit_card.set_billing_address_id(billing_address.guid());
+  autofill::CreditCard credit_card2 = autofill::test::GetCreditCard2();
+  credit_card2.set_use_count(15U);
+  personal_data_manager.AddTestingCreditCard(&credit_card2);
+
+  web::PaymentRequest web_payment_request =
+      payment_request_test_util::CreateTestWebPaymentRequest();
+
+  // Even though credit_card2 has more use counts, credit_card is selected
+  // because it is complete.
+  PaymentRequest payment_request(web_payment_request, &personal_data_manager);
+  EXPECT_EQ(credit_card.guid(), payment_request.selected_credit_card()->guid());
 }

@@ -9,8 +9,10 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/validation.h"
 #include "components/payments/core/payment_request_data_util.h"
 #include "components/payments/core/strings_util.h"
 #include "components/strings/grit/components_strings.h"
@@ -68,6 +70,26 @@ NSString* GetAddressNotificationLabelFromAutofillProfile(
   base::string16 label =
       payment_request.profile_comparator()->GetStringForMissingShippingFields(
           profile);
+  return !label.empty() ? base::SysUTF16ToNSString(label) : nil;
+}
+
+BOOL IsCreditCardCompleteForPayment(
+    const autofill::CreditCard& credit_card,
+    const std::vector<autofill::AutofillProfile*>& billing_profiles) {
+  // EXPIRED cards are considered valid for payment. The user will be prompted
+  // to enter the new expiration at the CVC step.
+  return autofill::GetCompletionStatusForCard(
+             credit_card, GetApplicationContext()->GetApplicationLocale(),
+             billing_profiles) <= autofill::CREDIT_CARD_EXPIRED;
+}
+
+NSString* GetPaymentMethodNotificationLabelFromCreditCard(
+    const autofill::CreditCard& credit_card,
+    const std::vector<autofill::AutofillProfile*>& billing_profiles) {
+  base::string16 label = autofill::GetCompletionMessageForCard(
+      autofill::GetCompletionStatusForCard(
+          credit_card, GetApplicationContext()->GetApplicationLocale(),
+          billing_profiles));
   return !label.empty() ? base::SysUTF16ToNSString(label) : nil;
 }
 

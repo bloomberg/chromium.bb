@@ -660,20 +660,14 @@ struct PendingPaymentResponse {
   _pendingPaymentResponse.creditCard = card;
   _pendingPaymentResponse.verificationCode = verificationCode;
 
-  // TODO(crbug.com/714768): Make sure the billing address is set and valid
-  // before getting here. Once the bug is addressed, there will be no need to
-  // copy the address, *billing_address_ptr can be used to get the basic card
-  // response.
-  if (!card.billing_address_id().empty()) {
-    autofill::AutofillProfile* billingAddressPtr =
-        autofill::PersonalDataManager::GetProfileFromProfilesByGUID(
-            card.billing_address_id(), _paymentRequest->billing_profiles());
-    if (billingAddressPtr) {
-      _pendingPaymentResponse.billingAddress = *billingAddressPtr;
-      _addressNormalizationManager->StartNormalizingAddress(
-          &_pendingPaymentResponse.billingAddress);
-    }
-  }
+  DCHECK(!card.billing_address_id().empty());
+  autofill::AutofillProfile* billingAddress =
+      autofill::PersonalDataManager::GetProfileFromProfilesByGUID(
+          card.billing_address_id(), _paymentRequest->billing_profiles());
+  DCHECK(billingAddress);
+  _pendingPaymentResponse.billingAddress = *billingAddress;
+  _addressNormalizationManager->StartNormalizingAddress(
+      &_pendingPaymentResponse.billingAddress);
 
   if (_paymentRequest->request_shipping()) {
     // TODO(crbug.com/602666): User should get here only if they have selected

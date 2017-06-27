@@ -92,6 +92,11 @@ using ::payment_request_util::GetBillingAddressLabelFromAutofillProfile;
         base::SysUTF16ToNSString(paymentMethod->NetworkAndLastFourDigits());
     item.methodDetail = base::SysUTF16ToNSString(
         paymentMethod->GetRawInfo(autofill::CREDIT_CARD_NAME_FULL));
+    item.notification =
+        payment_request_util::GetPaymentMethodNotificationLabelFromCreditCard(
+            *paymentMethod, _paymentRequest->billing_profiles());
+    item.complete = payment_request_util::IsCreditCardCompleteForPayment(
+        *paymentMethod, _paymentRequest->billing_profiles());
 
     autofill::AutofillProfile* billingAddress =
         autofill::PersonalDataManager::GetProfileFromProfilesByGUID(
