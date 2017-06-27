@@ -658,39 +658,33 @@ ProfileIOData::~ProfileIOData() {
            static_cast<void*>(it->second), sizeof(void*));
   }
 
-  // Prevent the TreeStateTracker from getting any more notifications by
-  // severing the link between it and the CTVerifier and unregistering it from
-  // new STH notifications.
-  //
-  // Only do this if the |cert_transparency_verifier_| is not null.
-  if (cert_transparency_verifier_) {
-    cert_transparency_verifier_->SetObserver(nullptr);
+  if (main_request_context_) {
+    // Prevent the TreeStateTracker from getting any more notifications by
+    // severing the link between it and the CTVerifier and unregistering it from
+    // new STH notifications.
+    main_request_context_->cert_transparency_verifier()->SetObserver(nullptr);
     ct_tree_tracker_unregistration_.Run();
-  }
 
-  // Destroy certificate_report_sender_ before main_request_context_,
-  // since the former has a reference to the latter.
-  if (transport_security_state_)
-    transport_security_state_->SetReportSender(nullptr);
-  certificate_report_sender_.reset();
+    // Destroy certificate_report_sender_ before main_request_context_,
+    // since the former has a reference to the latter.
+    main_request_context_->transport_security_state()->SetReportSender(nullptr);
+    certificate_report_sender_.reset();
 
-  if (transport_security_state_)
-    transport_security_state_->SetExpectCTReporter(nullptr);
-  expect_ct_reporter_.reset();
+    main_request_context_->transport_security_state()->SetExpectCTReporter(
+        nullptr);
+    expect_ct_reporter_.reset();
 
-  if (transport_security_state_)
-    transport_security_state_->SetRequireCTDelegate(nullptr);
+    main_request_context_->transport_security_state()->SetRequireCTDelegate(
+        nullptr);
 
-  // And the same for the ReportingService.
-  if (main_request_context_storage()) {
+    // And the same for the ReportingService.
     main_request_context_storage()->set_reporting_service(
         std::unique_ptr<net::ReportingService>());
-  }
 
-  // This should be shut down last, as any other requests may initiate more
-  // activity when the ProxyService aborts lookups.
-  if (proxy_service_)
-    proxy_service_->OnShutdown();
+    // This should be shut down last, as any other requests may initiate more
+    // activity when the ProxyService aborts lookups.
+    main_request_context_->proxy_service()->OnShutdown();
+  }
 
   // TODO(ajwong): These AssertNoURLRequests() calls are unnecessary since they
   // are already done in the URLRequestContext destructor.
@@ -1004,13 +998,18 @@ void ProfileIOData::Init(
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 
-  // Create the common request contexts.
+  // Create extension request context.  Only used for cookies.
+  extensions_request_context_.reset(new net::URLRequestContext());
+  extensions_request_context_->set_name("extensions");
+
+  // Create the main request context.
   main_request_context_.reset(new net::URLRequestContext());
   main_request_context_storage_.reset(
       new net::URLRequestContextStorage(main_request_context_.get()));
-  extensions_request_context_.reset(new net::URLRequestContext());
   main_request_context_->set_name("main");
-  extensions_request_context_->set_name("extensions");
+
+  ApplyProfileParamsToContext(main_request_context_.get());
+  main_request_context_->set_net_log(io_thread->net_log());
 
   main_request_context_->set_enable_brotli(io_thread_globals->enable_brotli);
 
@@ -1053,20 +1052,24 @@ void ProfileIOData::Init(
   main_request_context_->set_host_resolver(
       io_thread_globals->system_request_context->host_resolver());
 
-  // NOTE: Proxy service uses the default io thread network delegate, not the
-  // delegate just created.
-  proxy_service_ = ProxyServiceFactory::CreateProxyService(
-      io_thread->net_log(), main_request_context_.get(), network_delegate.get(),
-      std::move(profile_params_->proxy_config_service), command_line,
-      io_thread->WpadQuickCheckEnabled(),
-      io_thread->PacHttpsUrlStrippingEnabled());
+  main_request_context_->set_http_auth_handler_factory(
+      io_thread_globals->system_request_context->http_auth_handler_factory());
+
+  main_request_context_storage_->set_proxy_service(
+      ProxyServiceFactory::CreateProxyService(
+          io_thread->net_log(), main_request_context_.get(),
+          network_delegate.get(),
+          std::move(profile_params_->proxy_config_service), command_line,
+          io_thread->WpadQuickCheckEnabled(),
+          io_thread->PacHttpsUrlStrippingEnabled()));
 
   main_request_context_storage_->set_network_delegate(
       std::move(network_delegate));
 
-  transport_security_state_.reset(new net::TransportSecurityState());
+  std::unique_ptr<net::TransportSecurityState> transport_security_state(
+      base::MakeUnique<net::TransportSecurityState>());
   transport_security_persister_.reset(new net::TransportSecurityPersister(
-      transport_security_state_.get(), profile_params_->path,
+      transport_security_state.get(), profile_params_->path,
       base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BACKGROUND,
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN}),
@@ -1102,14 +1105,16 @@ void ProfileIOData::Init(
         })");
   certificate_report_sender_.reset(
       new net::ReportSender(main_request_context_.get(), traffic_annotation));
-  transport_security_state_->SetReportSender(certificate_report_sender_.get());
+  transport_security_state->SetReportSender(certificate_report_sender_.get());
 
   expect_ct_reporter_.reset(
       new ChromeExpectCTReporter(main_request_context_.get()));
-  transport_security_state_->SetExpectCTReporter(expect_ct_reporter_.get());
+  transport_security_state->SetExpectCTReporter(expect_ct_reporter_.get());
 
-  transport_security_state_->SetRequireCTDelegate(
+  transport_security_state->SetRequireCTDelegate(
       ct_policy_manager_->GetDelegate());
+  main_request_context_storage_->set_transport_security_state(
+      std::move(transport_security_state));
 
   // Take ownership over these parameters.
   cookie_settings_ = profile_params_->cookie_settings;
@@ -1169,17 +1174,21 @@ void ProfileIOData::Init(
   std::unique_ptr<net::MultiLogCTVerifier> ct_verifier(
       new net::MultiLogCTVerifier());
   ct_verifier->AddLogs(io_thread_globals->ct_logs);
-  main_request_context_->set_cert_transparency_verifier(ct_verifier.get());
 
   ct_tree_tracker_.reset(new certificate_transparency::TreeStateTracker(
       io_thread_globals->ct_logs, io_thread->net_log()));
   ct_verifier->SetObserver(ct_tree_tracker_.get());
 
-  cert_transparency_verifier_ = std::move(ct_verifier);
+  main_request_context_storage_->set_cert_transparency_verifier(
+      std::move(ct_verifier));
+
   io_thread->RegisterSTHObserver(ct_tree_tracker_.get());
   ct_tree_tracker_unregistration_ =
       base::Bind(&IOThread::UnregisterSTHObserver, base::Unretained(io_thread),
                  ct_tree_tracker_.get());
+
+  main_request_context_->set_ct_policy_enforcer(
+      io_thread_globals->system_request_context->ct_policy_enforcer());
 
   InitializeInternal(profile_params_.get(), protocol_handlers,
                      std::move(request_interceptors));

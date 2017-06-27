@@ -77,15 +77,12 @@ class CertVerifier;
 class ChannelIDService;
 class ClientCertStore;
 class CookieStore;
-class CTVerifier;
 class HttpTransactionFactory;
 class ProxyConfigService;
-class ProxyService;
 class ReportingService;
 class ReportSender;
 class SSLConfigService;
 class TransportSecurityPersister;
-class TransportSecurityState;
 class URLRequestContextStorage;
 class URLRequestJobFactoryImpl;
 }  // namespace net
@@ -185,10 +182,6 @@ class ProfileIOData {
 
   DevToolsNetworkControllerHandle* network_controller_handle() const {
     return &network_controller_handle_;
-  }
-
-  net::TransportSecurityState* transport_security_state() const {
-    return transport_security_state_.get();
   }
 
 #if defined(OS_CHROMEOS)
@@ -383,10 +376,6 @@ class ProfileIOData {
   void set_previews_io_data(
       std::unique_ptr<previews::PreviewsIOData> previews_io_data) const;
 
-  net::ProxyService* proxy_service() const {
-    return proxy_service_.get();
-  }
-
   net::URLRequestContext* main_request_context() const {
     return main_request_context_.get();
   }
@@ -564,10 +553,6 @@ class ProfileIOData {
   mutable std::unique_ptr<data_reduction_proxy::DataReductionProxyIOData>
       data_reduction_proxy_io_data_;
 
-  mutable std::unique_ptr<net::ProxyService> proxy_service_;
-  mutable std::unique_ptr<net::TransportSecurityState>
-      transport_security_state_;
-  mutable std::unique_ptr<net::CTVerifier> cert_transparency_verifier_;
   mutable std::unique_ptr<ChromeExpectCTReporter> expect_ct_reporter_;
 #if defined(OS_CHROMEOS)
   // Set to |cert_verifier_| if it references a PolicyCertVerifier. In that
@@ -579,13 +564,6 @@ class ProfileIOData {
   mutable std::unique_ptr<chromeos::CertificateProvider> certificate_provider_;
 #endif
 
-  // Pointed to by the TransportSecurityState.
-  mutable std::unique_ptr<net::TransportSecurityPersister>
-      transport_security_persister_;
-  mutable std::unique_ptr<net::ReportSender> certificate_report_sender_;
-  mutable std::unique_ptr<certificate_transparency::CTPolicyManager>
-      ct_policy_manager_;
-
   // Owns the subset of URLRequestContext's elements that are created by
   // subclasses of ProfileImplIOData, to ensure proper destruction ordering.
   // TODO(mmenke):  Move ownship of net objects owned by the ProfileIOData
@@ -593,6 +571,15 @@ class ProfileIOData {
   mutable std::unique_ptr<net::URLRequestContextStorage>
       main_request_context_storage_;
   mutable std::unique_ptr<net::URLRequestContext> main_request_context_;
+
+  // Pointed to by the TransportSecurityState (owned by
+  // URLRequestContextStorage), and must be disconnected from it before it's
+  // destroyed.
+  mutable std::unique_ptr<net::TransportSecurityPersister>
+      transport_security_persister_;
+  mutable std::unique_ptr<net::ReportSender> certificate_report_sender_;
+  mutable std::unique_ptr<certificate_transparency::CTPolicyManager>
+      ct_policy_manager_;
 
   mutable std::unique_ptr<net::URLRequestContext> extensions_request_context_;
   // One URLRequestContext per isolated app for main and media requests.
