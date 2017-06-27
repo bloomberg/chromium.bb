@@ -469,24 +469,12 @@ void ProfileImplIOData::InitializeInternal(
   IOThread* const io_thread = profile_params->io_thread;
   IOThread::Globals* const io_thread_globals = io_thread->globals();
 
-  ApplyProfileParamsToContext(main_context);
-
   if (lazy_params_->http_server_properties_manager) {
     lazy_params_->http_server_properties_manager->InitializeOnNetworkSequence();
     main_context_storage->set_http_server_properties(
         std::move(lazy_params_->http_server_properties_manager));
   }
 
-  main_context->set_transport_security_state(transport_security_state());
-  main_context->set_ct_policy_enforcer(
-      io_thread_globals->system_request_context->ct_policy_enforcer());
-
-  main_context->set_net_log(io_thread->net_log());
-
-  main_context->set_http_auth_handler_factory(
-      io_thread_globals->system_request_context->http_auth_handler_factory());
-
-  main_context->set_proxy_service(proxy_service());
   main_context->set_network_quality_estimator(
       io_thread_globals->network_quality_estimator.get());
 
@@ -796,9 +784,9 @@ void ProfileImplIOData::ClearNetworkingHistorySinceOnIOThread(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(initialized());
 
-  DCHECK(transport_security_state());
   // Completes synchronously.
-  transport_security_state()->DeleteAllDynamicDataSince(time);
+  main_request_context()->transport_security_state()->DeleteAllDynamicDataSince(
+      time);
   DCHECK(http_server_properties_manager_);
   http_server_properties_manager_->Clear(completion);
 }

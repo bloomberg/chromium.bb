@@ -199,21 +199,6 @@ void OffTheRecordProfileIOData::InitializeInternal(
   net::URLRequestContextStorage* main_context_storage =
       main_request_context_storage();
 
-  IOThread* const io_thread = profile_params->io_thread;
-  IOThread::Globals* const io_thread_globals = io_thread->globals();
-
-  ApplyProfileParamsToContext(main_context);
-
-  main_context->set_transport_security_state(transport_security_state());
-  main_context->set_ct_policy_enforcer(
-      io_thread_globals->system_request_context->ct_policy_enforcer());
-
-  main_context->set_net_log(io_thread->net_log());
-
-  main_context->set_http_auth_handler_factory(
-      io_thread_globals->system_request_context->http_auth_handler_factory());
-  main_context->set_proxy_service(proxy_service());
-
   // For incognito, we use the default non-persistent HttpServerPropertiesImpl.
   main_context_storage->set_http_server_properties(
       base::MakeUnique<net::HttpServerPropertiesImpl>());
