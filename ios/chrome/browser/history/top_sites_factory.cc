@@ -50,8 +50,7 @@ scoped_refptr<RefcountedKeyedService> TopSitesFactory::BuildServiceInstanceFor(
           browser_state, ServiceAccessType::EXPLICIT_ACCESS),
       history::PrepopulatedPageList(), base::Bind(CanAddURLToHistory)));
   top_sites->Init(
-      browser_state->GetStatePath().Append(history::kTopSitesFilename),
-      web::WebThread::GetTaskRunnerForThread(web::WebThread::DB));
+      browser_state->GetStatePath().Append(history::kTopSitesFilename));
   return top_sites;
 }
 

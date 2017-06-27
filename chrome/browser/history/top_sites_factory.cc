@@ -103,9 +103,7 @@ scoped_refptr<history::TopSites> TopSitesFactory::BuildTopSites(
       profile->GetPrefs(), HistoryServiceFactory::GetForProfile(
                                profile, ServiceAccessType::EXPLICIT_ACCESS),
       prepopulated_page_list, base::Bind(CanAddURLToHistory)));
-  top_sites->Init(context->GetPath().Append(history::kTopSitesFilename),
-                  content::BrowserThread::GetTaskRunnerForThread(
-                      content::BrowserThread::DB));
+  top_sites->Init(context->GetPath().Append(history::kTopSitesFilename));
   return top_sites;
 }
 
