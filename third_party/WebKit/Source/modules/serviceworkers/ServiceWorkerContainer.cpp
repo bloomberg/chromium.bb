@@ -140,6 +140,7 @@ void ServiceWorkerContainer::ContextDestroyed(ExecutionContext*) {
     provider_->SetClient(0);
     provider_ = nullptr;
   }
+  controller_ = nullptr;
   navigator_->ClearServiceWorker();
 }
 
