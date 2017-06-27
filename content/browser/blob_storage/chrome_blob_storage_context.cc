@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
@@ -21,9 +22,11 @@
 #include "content/public/browser/blob_handle.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_features.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_memory_controller.h"
+#include "storage/browser/blob/blob_registry_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
 
 using base::FilePath;
@@ -131,6 +134,9 @@ void ChromeBlobStorageContext::InitializeOnIOThread(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   context_.reset(new BlobStorageContext(std::move(blob_storage_dir),
                                         std::move(file_task_runner)));
+  if (base::FeatureList::IsEnabled(features::kMojoBlobs))
+    blob_registry_ =
+        base::MakeUnique<storage::BlobRegistryImpl>(context_.get());
   // Signal the BlobMemoryController when it's appropriate to calculate its
   // storage limits.
   BrowserThread::PostAfterStartupTask(
@@ -177,6 +183,13 @@ std::unique_ptr<BlobHandle> ChromeBlobStorageContext::CreateFileBackedBlob(
   std::unique_ptr<BlobHandle> blob_handle(
       new BlobHandleImpl(std::move(blob_data_handle)));
   return blob_handle;
+}
+
+void ChromeBlobStorageContext::BindBlobRegistry(
+    const service_manager::BindSourceInfo& source_info,
+    storage::mojom::BlobRegistryRequest request) {
+  DCHECK(base::FeatureList::IsEnabled(features::kMojoBlobs));
+  blob_registry_->Bind(std::move(request));
 }
 
 ChromeBlobStorageContext::~ChromeBlobStorageContext() {}

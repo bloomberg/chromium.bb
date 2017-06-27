@@ -16,10 +16,14 @@ component("browser") {
     "blob/blob_data_snapshot.h",
     "blob/blob_entry.cc",
     "blob/blob_entry.h",
+    "blob/blob_impl.cc",
+    "blob/blob_impl.h",
     "blob/blob_memory_controller.cc",
     "blob/blob_memory_controller.h",
     "blob/blob_reader.cc",
     "blob/blob_reader.h",
+    "blob/blob_registry_impl.cc",
+    "blob/blob_registry_impl.h",
     "blob/blob_storage_context.cc",
     "blob/blob_storage_context.h",
     "blob/blob_storage_registry.cc",
@@ -195,6 +199,7 @@ component("browser") {
 
   public_deps = [
     "//storage/common",
+    "//storage/public/interfaces",
   ]
   deps = [
     "//base",
@@ -230,8 +235,10 @@ source_set("unittests") {
     # http://crbug.com/653751
     "blob/blob_data_builder_unittest.cc",
     "blob/blob_flattener_unittest.cc",
+    "blob/blob_impl_unittest.cc",
     "blob/blob_memory_controller_unittest.cc",
     "blob/blob_reader_unittest.cc",
+    "blob/blob_registry_impl_unittest.cc",
     "blob/blob_slice_unittest.cc",
     "blob/blob_storage_context_unittest.cc",
     "blob/blob_storage_registry_unittest.cc",
@@ -283,8 +290,8 @@ source_set("unittests") {
   deps = [
     ":browser",
     ":test_support",
-    "//base/test:run_all_unittests",
     "//base/test:test_support",
+    "//mojo/edk/system",
     "//net:test_support",
     "//sql:test_support",
     "//testing/gtest",

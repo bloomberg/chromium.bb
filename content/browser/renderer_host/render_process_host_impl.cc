@@ -1583,6 +1583,12 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
                    base::Unretained(this)));
   }
 
+  if (base::FeatureList::IsEnabled(features::kMojoBlobs)) {
+    registry->AddInterface(base::Bind(
+        &ChromeBlobStorageContext::BindBlobRegistry,
+        base::Unretained(ChromeBlobStorageContext::GetFor(browser_context_))));
+  }
+
   ServiceManagerConnection* service_manager_connection =
       BrowserContext::GetServiceManagerConnectionFor(browser_context_);
   std::unique_ptr<ConnectionFilterImpl> connection_filter(
