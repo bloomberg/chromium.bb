@@ -690,6 +690,8 @@ HWTEST_CHROME_PERF_POOL = 'chromeperf'
 HWTEST_TRYBOT_POOL = HWTEST_SUITES_POOL
 HWTEST_WIFICELL_PRE_CQ_POOL = 'wificell-pre-cq'
 HWTEST_CONTINUOUS_POOL = 'continuous'
+HWTEST_CTS_POOL = 'cts'
+
 
 # How many total test retries should be done for a suite.
 HWTEST_MAX_RETRIES = 5
@@ -718,6 +720,7 @@ HWTEST_MOBLAB_QUICK_SUITE = 'moblab_quick'
 HWTEST_SANITY_SUITE = 'sanity'
 HWTEST_TOOLCHAIN_SUITE = 'toolchain-tests'
 HWTEST_PROVISION_SUITE = 'bvt-provision'
+HWTEST_CTS_QUAL_SUITE = 'arc-cts-qual'
 
 
 # Additional timeout to wait for autotest to abort a suite if the test takes

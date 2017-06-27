@@ -436,6 +436,7 @@ class HWTestConfig(object):
   """
   _MINUTE = 60
   _HOUR = 60 * _MINUTE
+  CTS_QUAL_HW_TEST_TIMEOUT = int(48.0 * _HOUR)
   SHARED_HW_TEST_TIMEOUT = int(3.0 * _HOUR)
   PALADIN_HW_TEST_TIMEOUT = int(1.5 * _HOUR)
   BRANCHED_HW_TEST_TIMEOUT = int(10.0 * _HOUR)

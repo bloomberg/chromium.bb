@@ -1437,6 +1437,19 @@ def GeneralTemplates(site_config, ge_build_config):
           'TOC-Canaries',
   )
 
+  site_config.AddTemplate(
+      'release_cts',
+      site_config.templates.release,
+      hw_tests_override=[
+          config_lib.HWTestConfig(
+              constants.HWTEST_CTS_QUAL_SUITE,
+              pool=constants.HWTEST_CTS_POOL,
+              timeout=config_lib.HWTestConfig.CTS_QUAL_HW_TEST_TIMEOUT,
+              priority='PostBuild'
+          )
+      ],
+  )
+
   ### Release AFDO configs.
 
   site_config.AddTemplate(
@@ -3090,10 +3103,29 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
   _all_release_builder_boards = builder_to_boards_dict[
       config_lib.CONFIG_TEMPLATE_RELEASE]
 
+  if is_release_branch:
+      _cts_boards = (boards_dict['all_release_boards'] |
+                     _all_release_builder_boards) - _critical_for_chrome_boards
+  else:
+      _cts_boards = frozenset([
+          'terra',
+          'kevin',
+          'veyron_mighty',
+          'kefka'
+      ])
+
+  site_config.AddForBoards(
+      config_lib.CONFIG_TYPE_RELEASE,
+      _cts_boards,
+      board_configs,
+      site_config.templates.release,
+      site_config.templates.release_cts,
+  )
+
   site_config.AddForBoards(
       config_lib.CONFIG_TYPE_RELEASE,
       ((boards_dict['all_release_boards'] | _all_release_builder_boards) -
-       _critical_for_chrome_boards),
+       _critical_for_chrome_boards - _cts_boards),
       board_configs,
       site_config.templates.release,
   )
