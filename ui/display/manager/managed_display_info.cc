@@ -393,6 +393,12 @@ void ManagedDisplayInfo::SetBounds(const gfx::Rect& new_bounds_in_native) {
   UpdateDisplaySize();
 }
 
+float ManagedDisplayInfo::GetDensityRatio() const {
+  if (Use125DSFForUIScaling() && device_scale_factor_ == 1.25f)
+    return 1.0f;
+  return device_scale_factor_;
+}
+
 float ManagedDisplayInfo::GetEffectiveDeviceScaleFactor() const {
   if (Use125DSFForUIScaling() && device_scale_factor_ == 1.25f)
     return (configured_ui_scale_ == 0.8f) ? 1.25f : 1.0f;

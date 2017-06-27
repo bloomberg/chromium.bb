@@ -227,6 +227,10 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
   // Returns the rotation set by a given |source|.
   Display::Rotation GetRotation(Display::RotationSource source) const;
 
+  // Returns a measure of density relative to a display with 1.0 DSF. Unlike the
+  // effective DSF, this is independent from the UI scale.
+  float GetDensityRatio() const;
+
   // Returns the ui scale and device scale factor actually used to create
   // display that chrome sees. This can be different from one obtained
   // from dispaly or one specified by a user in following situation.
