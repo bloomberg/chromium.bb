@@ -42,7 +42,8 @@ TEST(TranslationLoggingHelperTest, ConstructUserEventSpecifics) {
       navigation_id, translation_event, &user_specifics);
   EXPECT_TRUE(needs_logging);
   EXPECT_EQ(user_specifics.navigation_id(), navigation_id);
-  EqualTranslationProto(user_translation_event, user_specifics.translation());
+  EqualTranslationProto(user_translation_event,
+                        user_specifics.translation_event());
 }
 
 // Tests that if user change the target language, the event is MANUAL.
@@ -65,7 +66,8 @@ TEST(TranslationLoggingHelperTest, UserManualEvent) {
       navigation_id, translation_event, &user_specifics);
   EXPECT_TRUE(needs_logging);
   EXPECT_EQ(user_specifics.navigation_id(), navigation_id);
-  EqualTranslationProto(user_translation_event, user_specifics.translation());
+  EqualTranslationProto(user_translation_event,
+                        user_specifics.translation_event());
 }
 
 // Tests that we don't build unnecessary events.

@@ -13,12 +13,12 @@ option optimize_for = LITE_RUNTIME;
 
 package sync_pb;
 
-message FieldTrialEvent {
-  message FieldTrial {
+message FieldTrial {
+  message FieldTrialPair {
     optional fixed32 name_id = 1;
     optional fixed32 group_id = 2;
   }
-  repeated FieldTrial field_trials = 1;
+  repeated FieldTrialPair field_trial_pairs = 1;
 }
 
 // Language detection output.
@@ -88,9 +88,9 @@ message UserEventSpecifics {
   message Test {}
 
   oneof event {
-    Test test = 8;
-    FieldTrialEvent field_trial_event = 9;
-    LanguageDetection language_detection = 10;
-    Translation translation = 11;
+    Test test_event = 8;
+    FieldTrial field_trial_event = 9;
+    LanguageDetection language_detection_event = 10;
+    Translation translation_event = 11;
   }
 }
