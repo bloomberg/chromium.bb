@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_VR_SHELL_TEXTURES_PRESENTATION_TOAST_TEXTURE_H_
-#define CHROME_BROWSER_ANDROID_VR_SHELL_TEXTURES_PRESENTATION_TOAST_TEXTURE_H_
+#ifndef CHROME_BROWSER_ANDROID_VR_SHELL_TEXTURES_EXCLUSIVE_SCREEN_TOAST_TEXTURE_H_
+#define CHROME_BROWSER_ANDROID_VR_SHELL_TEXTURES_EXCLUSIVE_SCREEN_TOAST_TEXTURE_H_
 
 #include "base/macros.h"
 #include "chrome/browser/android/vr_shell/textures/ui_texture.h"
 
 namespace vr_shell {
 
-class PresentationToastTexture : public UiTexture {
+class ExclusiveScreenToastTexture : public UiTexture {
  public:
-  PresentationToastTexture();
-  ~PresentationToastTexture() override;
+  ExclusiveScreenToastTexture();
+  ~ExclusiveScreenToastTexture() override;
   gfx::Size GetPreferredTextureSize(int width) const override;
   gfx::SizeF GetDrawnSize() const override;
 
@@ -22,9 +22,9 @@ class PresentationToastTexture : public UiTexture {
 
   gfx::SizeF size_;
 
-  DISALLOW_COPY_AND_ASSIGN(PresentationToastTexture);
+  DISALLOW_COPY_AND_ASSIGN(ExclusiveScreenToastTexture);
 };
 
 }  // namespace vr_shell
 
-#endif  // CHROME_BROWSER_ANDROID_VR_SHELL_TEXTURES_PRESENTATION_TOAST_TEXTURE_H_
+#endif  // CHROME_BROWSER_ANDROID_VR_SHELL_TEXTURES_EXCLUSIVE_SCREEN_TOAST_TEXTURE_H_

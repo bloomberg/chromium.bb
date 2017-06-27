@@ -425,8 +425,9 @@ void UiSceneManager::CreateExitPrompt() {
 }
 
 void UiSceneManager::CreateToasts() {
-  std::unique_ptr<UiElement> element = base::MakeUnique<PresentationToast>(512);
-  element->set_debug_id(kPresentationToast);
+  std::unique_ptr<UiElement> element =
+      base::MakeUnique<ExclusiveScreenToast>(512);
+  element->set_debug_id(kExclusiveScreenToast);
   element->set_id(AllocateId());
   element->set_fill(vr_shell::Fill::NONE);
   element->set_size({kToastWidth, kToastHeight, 1});
@@ -434,7 +435,7 @@ void UiSceneManager::CreateToasts() {
   element->set_visible(false);
   element->set_hit_testable(false);
   element->set_lock_to_fov(true);
-  presentation_toast_ = element.get();
+  exclusive_screen_toast_ = element.get();
   scene_->AddUiElement(std::move(element));
 }
 
@@ -454,7 +455,7 @@ void UiSceneManager::SetWebVrMode(bool web_vr, bool show_toast) {
   toast_state_ = SET_FOR_WEB_VR;
   ConfigureScene();
   ConfigureSecurityWarnings();
-  ConfigurePresentationToast();
+  ConfigureExclusiveScreenToast();
 }
 
 void UiSceneManager::ConfigureScene() {
@@ -601,7 +602,7 @@ void UiSceneManager::SetFullscreen(bool fullscreen) {
   fullscreen_ = fullscreen;
   toast_state_ = SET_FOR_FULLSCREEN;
   ConfigureScene();
-  ConfigurePresentationToast();
+  ConfigureExclusiveScreenToast();
 }
 
 void UiSceneManager::ConfigureSecurityWarnings() {
@@ -649,7 +650,7 @@ void UiSceneManager::ConfigureIndicators() {
   }
 }
 
-void UiSceneManager::ConfigurePresentationToast() {
+void UiSceneManager::ConfigureExclusiveScreenToast() {
   bool toast_visible = false;
   switch (toast_state_) {
     case SET_FOR_WEB_VR:
@@ -661,13 +662,13 @@ void UiSceneManager::ConfigurePresentationToast() {
     case UNCHANGED:
       return;
   }
-  presentation_toast_->set_visible(toast_visible);
+  exclusive_screen_toast_->set_visible(toast_visible);
   if (toast_visible) {
-    presentation_toast_timer_.Start(
+    exclusive_screen_toast_timer_.Start(
         FROM_HERE, base::TimeDelta::FromSeconds(kToastTimeoutSeconds), this,
-        &UiSceneManager::OnPresentationToastTimer);
+        &UiSceneManager::OnExclusiveScreenToastTimer);
   } else {
-    presentation_toast_timer_.Stop();
+    exclusive_screen_toast_timer_.Stop();
   }
   toast_state_ = UNCHANGED;
 }
@@ -692,8 +693,8 @@ void UiSceneManager::OnTransientUrlBarTimer() {
   transient_url_bar_->set_visible(false);
 }
 
-void UiSceneManager::OnPresentationToastTimer() {
-  presentation_toast_->set_visible(false);
+void UiSceneManager::OnExclusiveScreenToastTimer() {
+  exclusive_screen_toast_->set_visible(false);
 }
 
 void UiSceneManager::OnBackButtonClicked() {

@@ -167,28 +167,28 @@ TEST_F(UiSceneManagerTest, ToastVisibility) {
   // Tests toast not showing when directly entering VR though WebVR
   // presentation.
   MakeManager(kNotInCct, kInWebVr);
-  EXPECT_FALSE(IsVisible(kPresentationToast));
+  EXPECT_FALSE(IsVisible(kExclusiveScreenToast));
 
   MakeManager(kNotInCct, kNotInWebVr);
-  EXPECT_FALSE(IsVisible(kPresentationToast));
+  EXPECT_FALSE(IsVisible(kExclusiveScreenToast));
 
   manager_->SetFullscreen(true);
-  EXPECT_TRUE(IsVisible(kPresentationToast));
+  EXPECT_TRUE(IsVisible(kExclusiveScreenToast));
 
   manager_->SetWebVrMode(true, true);
-  EXPECT_TRUE(IsVisible(kPresentationToast));
+  EXPECT_TRUE(IsVisible(kExclusiveScreenToast));
 
   manager_->SetWebVrMode(false, false);
-  EXPECT_FALSE(IsVisible(kPresentationToast));
+  EXPECT_FALSE(IsVisible(kExclusiveScreenToast));
 
   manager_->SetFullscreen(false);
-  EXPECT_FALSE(IsVisible(kPresentationToast));
+  EXPECT_FALSE(IsVisible(kExclusiveScreenToast));
 
   manager_->SetWebVrMode(true, false);
-  EXPECT_FALSE(IsVisible(kPresentationToast));
+  EXPECT_FALSE(IsVisible(kExclusiveScreenToast));
 
   manager_->SetWebVrMode(false, true);
-  EXPECT_TRUE(IsVisible(kPresentationToast));
+  EXPECT_TRUE(IsVisible(kExclusiveScreenToast));
 }
 
 TEST_F(UiSceneManagerTest, CloseButtonVisibleInCctFullscreen) {
@@ -295,7 +295,7 @@ TEST_F(UiSceneManagerTest, WebVrAutopresented) {
 TEST_F(UiSceneManagerTest, UiUpdatesForFullscreenChanges) {
   std::set<UiElementDebugId> visible_in_fullscreen = {
       kContentQuad, kCloseButton, kBackplane,
-      kCeiling,     kFloor,       kPresentationToast,
+      kCeiling,     kFloor,       kExclusiveScreenToast,
   };
 
   MakeManager(kNotInCct, kNotInWebVr);
