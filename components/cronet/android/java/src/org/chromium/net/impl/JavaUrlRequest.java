@@ -121,14 +121,14 @@ final class JavaUrlRequest extends UrlRequestBase {
     }
 
     // Executor that runs one task at a time on an underlying Executor.
-    private final class SeriaizingExecutor implements Executor {
+    private static final class SerializingExecutor implements Executor {
         private final Executor mUnderlyingExecutor;
         // Queue of tasks to run.  First element is the task currently executing.
         // Task processing loop is running if queue is not empty.  Synchronized on itself.
         @GuardedBy("mTaskQueue")
         private final ArrayDeque<Runnable> mTaskQueue = new ArrayDeque<>();
 
-        SeriaizingExecutor(Executor underlyingExecutor) {
+        SerializingExecutor(Executor underlyingExecutor) {
             mUnderlyingExecutor = underlyingExecutor;
         }
 
@@ -192,7 +192,7 @@ final class JavaUrlRequest extends UrlRequestBase {
         this.mAllowDirectExecutor = allowDirectExecutor;
         this.mCallbackAsync = new AsyncUrlRequestCallback(callback, userExecutor);
         this.mTrafficStatsTag = TrafficStats.getThreadStatsTag();
-        this.mExecutor = new SeriaizingExecutor(new Executor() {
+        this.mExecutor = new SerializingExecutor(new Executor() {
             @Override
             public void execute(final Runnable command) {
                 executor.execute(new Runnable() {
