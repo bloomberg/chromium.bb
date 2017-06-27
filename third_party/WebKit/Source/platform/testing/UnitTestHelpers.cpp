@@ -89,6 +89,9 @@ String BlinkRootDir() {
   return FilePathToWebString(BlinkRootFilePath());
 }
 
+// TODO(sashab): Once all tests from web/ are removed, add CoreTestDataPath() at
+// Source/core/testing/data and update callers to use CoreTestDataPath() or
+// PlatformTestDataPath() as required.
 String WebTestDataPath(const String& relative_path) {
   return FilePathToWebString(
       BlinkRootFilePath()
