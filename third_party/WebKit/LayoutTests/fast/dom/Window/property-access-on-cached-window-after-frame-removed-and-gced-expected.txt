@@ -194,6 +194,13 @@ PASS childWindow.status is ''
 PASS childWindow.statusbar.visible is false
 PASS childWindow.styleMedia.type is ''
 PASS childWindow.toolbar.visible is false
+PASS childWindow.visualViewport.height is 0
+PASS childWindow.visualViewport.offsetLeft is 0
+PASS childWindow.visualViewport.offsetTop is 0
+PASS childWindow.visualViewport.pageLeft is 0
+PASS childWindow.visualViewport.pageTop is 0
+PASS childWindow.visualViewport.scale is 0
+PASS childWindow.visualViewport.width is 0
 PASS successfullyParsed is true
 
 TEST COMPLETE

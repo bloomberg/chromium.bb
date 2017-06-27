@@ -347,7 +347,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   void ClearDocument();
 
   Member<Document> document_;
-  Member<DOMVisualViewport> view_;
+  Member<DOMVisualViewport> visualViewport_;
   TaskRunnerTimer<LocalDOMWindow> unused_preloads_timer_;
 
   bool should_print_when_finished_loading_;
