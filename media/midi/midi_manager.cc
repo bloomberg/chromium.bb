@@ -24,7 +24,8 @@ using midi::mojom::Result;
 // But the number is expected to be big enough for now.
 constexpr Sample kMaxUmaDevices = 31;
 
-// Used to count events for usage histogram.
+// Used to count events for usage histogram. The item order should not be
+// changed, and new items should be just appended.
 enum class Usage {
   CREATED,
   CREATED_ON_UNSUPPORTED_PLATFORMS,
@@ -38,9 +39,20 @@ enum class Usage {
   MAX = OUTPUT_PORT_ADDED,
 };
 
+// Used to count events for transaction usage histogram. The item order should
+// not be changed, and new items should be just appended.
+enum class SendReceiveUsage {
+  NO_USE,
+  SENT,
+  RECEIVED,
+  SENT_AND_RECEIVED,
+
+  // New items should be inserted here, and |MAX| should point the last item.
+  MAX = SENT_AND_RECEIVED,
+};
+
 void ReportUsage(Usage usage) {
-  UMA_HISTOGRAM_ENUMERATION("Media.Midi.Usage",
-                            static_cast<Sample>(usage),
+  UMA_HISTOGRAM_ENUMERATION("Media.Midi.Usage", usage,
                             static_cast<Sample>(Usage::MAX) + 1);
 }
 
@@ -50,6 +62,8 @@ MidiManager::MidiManager(MidiService* service)
     : initialization_state_(InitializationState::NOT_STARTED),
       finalized_(false),
       result_(Result::NOT_INITIALIZED),
+      data_sent_(false),
+      data_received_(false),
       service_(service) {
   ReportUsage(Usage::CREATED);
 }
@@ -70,9 +84,8 @@ MidiManager* MidiManager::Create(MidiService* service) {
 #endif
 
 void MidiManager::Shutdown() {
-  UMA_HISTOGRAM_ENUMERATION("Media.Midi.ResultOnShutdown",
-                            static_cast<int>(result_),
-                            static_cast<int>(Result::MAX) + 1);
+  UMA_HISTOGRAM_ENUMERATION("Media.Midi.ResultOnShutdown", result_,
+                            static_cast<Sample>(Result::MAX) + 1);
   bool shutdown_synchronously = false;
   {
     base::AutoLock auto_lock(lock_);
@@ -165,6 +178,7 @@ void MidiManager::EndSession(MidiManagerClient* client) {
 
 void MidiManager::AccumulateMidiBytesSent(MidiManagerClient* client, size_t n) {
   base::AutoLock auto_lock(lock_);
+  data_sent_ = true;
   if (clients_.find(client) == clients_.end())
     return;
 
@@ -239,6 +253,7 @@ void MidiManager::ReceiveMidiData(uint32_t port_index,
                                   size_t length,
                                   double timestamp) {
   base::AutoLock auto_lock(lock_);
+  data_received_ = true;
 
   for (auto* client : clients_)
     client->ReceiveMidiData(port_index, data, length, timestamp);
@@ -247,11 +262,9 @@ void MidiManager::ReceiveMidiData(uint32_t port_index,
 void MidiManager::CompleteInitializationInternal(Result result) {
   TRACE_EVENT0("midi", "MidiManager::CompleteInitialization");
   ReportUsage(Usage::INITIALIZED);
-  UMA_HISTOGRAM_ENUMERATION("Media.Midi.InputPorts",
-                            static_cast<Sample>(input_ports_.size()),
+  UMA_HISTOGRAM_ENUMERATION("Media.Midi.InputPorts", input_ports_.size(),
                             kMaxUmaDevices + 1);
-  UMA_HISTOGRAM_ENUMERATION("Media.Midi.OutputPorts",
-                            static_cast<Sample>(output_ports_.size()),
+  UMA_HISTOGRAM_ENUMERATION("Media.Midi.OutputPorts", output_ports_.size(),
                             kMaxUmaDevices + 1);
 
   base::AutoLock auto_lock(lock_);
@@ -287,6 +300,14 @@ void MidiManager::ShutdownOnSessionThread() {
   // Detach all clients so that they do not call MidiManager methods any more.
   for (auto* client : clients_)
     client->Detach();
+
+  UMA_HISTOGRAM_ENUMERATION(
+      "Media.Midi.SendReceiveUsage",
+      data_sent_ ? (data_received_ ? SendReceiveUsage::SENT_AND_RECEIVED
+                                   : SendReceiveUsage::SENT)
+                 : (data_received_ ? SendReceiveUsage::RECEIVED
+                                   : SendReceiveUsage::NO_USE),
+      static_cast<Sample>(SendReceiveUsage::MAX) + 1);
 }
 
 }  // namespace midi

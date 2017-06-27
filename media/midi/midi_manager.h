@@ -219,9 +219,13 @@ class MIDI_EXPORT MidiManager {
   MidiPortInfoList input_ports_;
   MidiPortInfoList output_ports_;
 
+  // Tracks if actual data transmission happens.
+  bool data_sent_;
+  bool data_received_;
+
   // Protects access to |clients_|, |pending_clients_|,
   // |session_thread_runner_|, |initialization_state_|, |finalize_|, |result_|,
-  // |input_ports_| and |output_ports_|.
+  // |input_ports_|, |output_ports_|, |data_sent_| and |data_received_|.
   base::Lock lock_;
 
   // MidiService outlives MidiManager.
