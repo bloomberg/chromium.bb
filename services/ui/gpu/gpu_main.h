@@ -94,12 +94,6 @@ class GpuMain : public gpu::GpuSandboxHelper, public mojom::GpuMain {
   // The thread that handles IO events for Gpu.
   base::Thread io_thread_;
 
-  // The frame sink manager gets its own thread in mus-gpu. The gpu service,
-  // where GL commands are processed resides on its own thread. Various
-  // components of the frame sink manager such as Display, ResourceProvider,
-  // and GLRenderer block on sync tokens from other command buffers. Thus,
-  // the gpu service must live on a separate thread.
-  base::Thread compositor_thread_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_thread_task_runner_;
 
   base::PowerMonitor power_monitor_;
