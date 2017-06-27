@@ -53,7 +53,6 @@
                                             ContentSuggestionsHeaderCommands>
 
 @property(nonatomic, strong) AlertCoordinator* alertCoordinator;
-@property(nonatomic, strong) UINavigationController* navigationController;
 @property(nonatomic, strong)
     ContentSuggestionsViewController* suggestionsViewController;
 @property(nonatomic, strong)
@@ -80,7 +79,6 @@
 
 @synthesize alertCoordinator = _alertCoordinator;
 @synthesize browserState = _browserState;
-@synthesize navigationController = _navigationController;
 @synthesize suggestionsViewController = _suggestionsViewController;
 @synthesize URLLoader = _URLLoader;
 @synthesize visible = _visible;
@@ -131,27 +129,9 @@
          dataSource:self.contentSuggestionsMediator];
   self.suggestionsViewController.headerCommandHandler = self;
   self.suggestionsViewController.suggestionCommandHandler = self;
-
-  _navigationController = [[UINavigationController alloc]
-      initWithRootViewController:self.suggestionsViewController];
-
-  self.suggestionsViewController.navigationItem.leftBarButtonItem =
-      [[UIBarButtonItem alloc]
-          initWithTitle:l10n_util::GetNSString(IDS_IOS_SUGGESTIONS_DONE)
-                  style:UIBarButtonItemStylePlain
-                 target:self
-                 action:@selector(stop)];
-
-  [self.baseViewController presentViewController:_navigationController
-                                        animated:YES
-                                      completion:nil];
 }
 
 - (void)stop {
-  [[self.navigationController presentingViewController]
-      dismissViewControllerAnimated:YES
-                         completion:nil];
-  self.navigationController = nil;
   self.contentSuggestionsMediator = nil;
   self.alertCoordinator = nil;
   self.headerController = nil;
@@ -207,7 +187,7 @@
   ContentSuggestionsItem* articleItem =
       base::mac::ObjCCastStrict<ContentSuggestionsItem>(item);
   self.alertCoordinator = [[ActionSheetCoordinator alloc]
-      initWithBaseViewController:self.navigationController
+      initWithBaseViewController:self.suggestionsViewController
                            title:nil
                          message:nil
                             rect:CGRectMake(touchLocation.x, touchLocation.y, 0,
@@ -286,7 +266,7 @@
   ContentSuggestionsMostVisitedItem* mostVisitedItem =
       base::mac::ObjCCastStrict<ContentSuggestionsMostVisitedItem>(item);
   self.alertCoordinator = [[ActionSheetCoordinator alloc]
-      initWithBaseViewController:self.navigationController
+      initWithBaseViewController:self.suggestionsViewController
                            title:nil
                          message:nil
                             rect:CGRectMake(touchLocation.x, touchLocation.y, 0,

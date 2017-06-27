@@ -23,5 +23,4 @@ NSString* const kToolsMenuReaderMode = @"kToolsMenuReaderMode";
 NSString* const kToolsMenuRequestDesktopId = @"kToolsMenuRequestDesktopId";
 NSString* const kToolsMenuSettingsId = @"kToolsMenuSettingsId";
 NSString* const kToolsMenuHelpId = @"kToolsMenuHelpId";
-NSString* const kToolsMenuSuggestionsId = @"kToolsMenuSuggestionsId";
 NSString* const kToolsMenuRequestMobileId = @"kToolsMenuRequestMobileId";

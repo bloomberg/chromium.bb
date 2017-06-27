@@ -35,8 +35,6 @@ extern NSString* const kToolsMenuRequestDesktopId;
 extern NSString* const kToolsMenuSettingsId;
 // Help item accessibility Identifier.
 extern NSString* const kToolsMenuHelpId;
-// Suggestions item accessibility Identifier.
-extern NSString* const kToolsMenuSuggestionsId;
 // Request mobile item accessibility Identifier.
 extern NSString* const kToolsMenuRequestMobileId;
 
