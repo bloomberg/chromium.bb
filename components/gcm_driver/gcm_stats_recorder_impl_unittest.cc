@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "components/gcm_driver/crypto/gcm_decryption_result.h"
 #include "components/gcm_driver/crypto/gcm_encryption_provider.h"
 #include "google_apis/gcm/engine/mcs_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -99,8 +100,8 @@ static const char kNotifySendStatusDetails[] = "Msg size: 99 bytes, TTL: 7";
 static const char kIncomingSendErrorEvent[] = "Received 'send error' msg";
 static const char kIncomingSendErrorDetails[] = "";
 
-static const GCMEncryptionProvider::DecryptionResult kDecryptionResultFailure =
-    GCMEncryptionProvider::DECRYPTION_RESULT_INVALID_PAYLOAD;
+static const GCMDecryptionResult kDecryptionResultFailure =
+    GCMDecryptionResult::INVALID_PAYLOAD;
 
 }  // namespace
 
@@ -301,10 +302,9 @@ class GCMStatsRecorderImplTest : public testing::Test {
     const auto& queue = recorder_.decryption_failure_activities();
 
     EXPECT_EQ(kAppId, queue.front().app_id) << remark;
-    EXPECT_EQ(
-        GCMEncryptionProvider::ToDecryptionResultDetailsString(
-            kDecryptionResultFailure),
-        queue.front().details) << remark;
+    EXPECT_EQ(ToGCMDecryptionResultDetailsString(kDecryptionResultFailure),
+              queue.front().details)
+        << remark;
   }
 
  protected:

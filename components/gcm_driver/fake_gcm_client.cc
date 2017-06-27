@@ -166,9 +166,8 @@ void FakeGCMClient::Send(const std::string& app_id,
                             weak_ptr_factory_.GetWeakPtr(), app_id, message));
 }
 
-void FakeGCMClient::RecordDecryptionFailure(
-    const std::string& app_id,
-    GCMEncryptionProvider::DecryptionResult result) {
+void FakeGCMClient::RecordDecryptionFailure(const std::string& app_id,
+                                            GCMDecryptionResult result) {
   recorder_.RecordDecryptionFailure(app_id, result);
 }
 

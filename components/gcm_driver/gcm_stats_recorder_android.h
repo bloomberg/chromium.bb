@@ -9,10 +9,11 @@
 #include <string>
 
 #include "base/macros.h"
-#include "components/gcm_driver/crypto/gcm_encryption_provider.h"
 #include "components/gcm_driver/gcm_activity.h"
 
 namespace gcm {
+
+enum class GCMDecryptionResult;
 
 // Stats recorder for Android, used for recording stats and activities on the
 // GCM Driver level for debugging purposes. Based on the GCMStatsRecorder, as
@@ -62,7 +63,7 @@ class GCMStatsRecorderAndroid {
 
   // Records a message decryption failure caused by |result| for |app_id|.
   void RecordDecryptionFailure(const std::string& app_id,
-                               GCMEncryptionProvider::DecryptionResult result);
+                               GCMDecryptionResult result);
 
   bool is_recording() const { return is_recording_; }
   void set_is_recording(bool recording) { is_recording_ = recording; }

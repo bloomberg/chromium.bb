@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "components/gcm_driver/crypto/gcm_decryption_result.h"
 #include "components/gcm_driver/gcm_app_handler.h"
 
 namespace gcm {
@@ -279,17 +280,16 @@ void GCMDriver::DispatchMessage(const std::string& app_id,
                                   weak_ptr_factory_.GetWeakPtr(), app_id));
 }
 
-void GCMDriver::DispatchMessageInternal(
-    const std::string& app_id,
-    GCMEncryptionProvider::DecryptionResult result,
-    const IncomingMessage& message) {
+void GCMDriver::DispatchMessageInternal(const std::string& app_id,
+                                        GCMDecryptionResult result,
+                                        const IncomingMessage& message) {
   UMA_HISTOGRAM_ENUMERATION("GCM.Crypto.DecryptMessageResult", result,
-                            GCMEncryptionProvider::DECRYPTION_RESULT_LAST + 1);
+                            GCMDecryptionResult::ENUM_SIZE);
 
   switch (result) {
-    case GCMEncryptionProvider::DECRYPTION_RESULT_UNENCRYPTED:
-    case GCMEncryptionProvider::DECRYPTION_RESULT_DECRYPTED_DRAFT_03:
-    case GCMEncryptionProvider::DECRYPTION_RESULT_DECRYPTED_DRAFT_08: {
+    case GCMDecryptionResult::UNENCRYPTED:
+    case GCMDecryptionResult::DECRYPTED_DRAFT_03:
+    case GCMDecryptionResult::DECRYPTED_DRAFT_08: {
       GCMAppHandler* handler = GetAppHandler(app_id);
       if (handler)
         handler->OnMessage(app_id, message);
@@ -298,14 +298,16 @@ void GCMDriver::DispatchMessageInternal(
       // chrome://gcm-internals and send a delivery receipt.
       return;
     }
-    case GCMEncryptionProvider::DECRYPTION_RESULT_INVALID_ENCRYPTION_HEADER:
-    case GCMEncryptionProvider::DECRYPTION_RESULT_INVALID_CRYPTO_KEY_HEADER:
-    case GCMEncryptionProvider::DECRYPTION_RESULT_NO_KEYS:
-    case GCMEncryptionProvider::DECRYPTION_RESULT_INVALID_SHARED_SECRET:
-    case GCMEncryptionProvider::DECRYPTION_RESULT_INVALID_PAYLOAD:
-    case GCMEncryptionProvider::DECRYPTION_RESULT_INVALID_BINARY_HEADER:
+    case GCMDecryptionResult::INVALID_ENCRYPTION_HEADER:
+    case GCMDecryptionResult::INVALID_CRYPTO_KEY_HEADER:
+    case GCMDecryptionResult::NO_KEYS:
+    case GCMDecryptionResult::INVALID_SHARED_SECRET:
+    case GCMDecryptionResult::INVALID_PAYLOAD:
+    case GCMDecryptionResult::INVALID_BINARY_HEADER:
       RecordDecryptionFailure(app_id, result);
       return;
+    case GCMDecryptionResult::ENUM_SIZE:
+      break;  // deliberate fall-through
   }
 
   NOTREACHED();

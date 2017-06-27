@@ -267,9 +267,8 @@ void GCMDriverAndroid::SendImpl(const std::string& app_id,
   NOTIMPLEMENTED();
 }
 
-void GCMDriverAndroid::RecordDecryptionFailure(
-    const std::string& app_id,
-    GCMEncryptionProvider::DecryptionResult result) {
+void GCMDriverAndroid::RecordDecryptionFailure(const std::string& app_id,
+                                               GCMDecryptionResult result) {
   recorder_.RecordDecryptionFailure(app_id, result);
 }
 

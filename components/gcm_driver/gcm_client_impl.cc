@@ -24,6 +24,7 @@
 #include "base/time/default_clock.h"
 #include "base/timer/timer.h"
 #include "components/crx_file/id_util.h"
+#include "components/gcm_driver/crypto/gcm_decryption_result.h"
 #include "components/gcm_driver/gcm_account_mapper.h"
 #include "components/gcm_driver/gcm_backoff_policy.h"
 #include "google_apis/gcm/base/encryptor.h"
@@ -1217,9 +1218,8 @@ std::string GCMClientImpl::GetStateString() const {
   return std::string();
 }
 
-void GCMClientImpl::RecordDecryptionFailure(
-    const std::string& app_id,
-    GCMEncryptionProvider::DecryptionResult result) {
+void GCMClientImpl::RecordDecryptionFailure(const std::string& app_id,
+                                            GCMDecryptionResult result) {
   recorder_.RecordDecryptionFailure(app_id, result);
 }
 
