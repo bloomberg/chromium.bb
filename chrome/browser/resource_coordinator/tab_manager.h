@@ -24,6 +24,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/resource_coordinator/tab_manager_observer.h"
 #include "chrome/browser/resource_coordinator/tab_stats.h"
+#include "chrome/browser/sessions/session_restore_observer.h"
 #include "chrome/browser/ui/browser_tab_strip_tracker.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "ui/gfx/geometry/rect.h"
@@ -155,6 +156,11 @@ class TabManager : public TabStripModelObserver {
   // Returns a unique ID for a WebContents. Do not cast back to a pointer, as
   // the WebContents could be deleted if the user closed the tab.
   static int64_t IdFromWebContents(content::WebContents* web_contents);
+
+  // Return whether tabs are being loaded during session restore.
+  bool IsSessionRestoreLoadingTabs() const {
+    return is_session_restore_loading_tabs_;
+  }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, PurgeBackgroundRenderer);
@@ -321,6 +327,9 @@ class TabManager : public TabStripModelObserver {
   // list is constructed from either |test_browser_info_list_| or BrowserList.
   std::vector<BrowserInfo> GetBrowserInfoList() const;
 
+  void OnSessionRestoreStartedLoadingTabs();
+  void OnSessionRestoreFinishedLoadingTabs();
+
   // Timer to periodically update the stats of the renderers.
   base::RepeatingTimer update_timer_;
 
@@ -382,6 +391,11 @@ class TabManager : public TabStripModelObserver {
 
   // List of observers that will receive notifications on state changes.
   base::ObserverList<TabManagerObserver> observers_;
+
+  bool is_session_restore_loading_tabs_;
+
+  class TabManagerSessionRestoreObserver;
+  std::unique_ptr<TabManagerSessionRestoreObserver> session_restore_observer_;
 
   // Weak pointer factory used for posting delayed tasks.
   base::WeakPtrFactory<TabManager> weak_ptr_factory_;

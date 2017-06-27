@@ -12,6 +12,8 @@
 
 #include "base/callback_list.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
+#include "chrome/browser/sessions/session_restore_observer.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/sessions/core/session_types.h"
 #include "ui/base/window_open_disposition.h"
@@ -106,6 +108,18 @@ class SessionRestore {
   static void AddURLsToOpen(const Profile* profile,
                             const std::vector<GURL>& urls);
 
+  // Add/remove an observer to/from this session restore.
+  static void AddObserver(SessionRestoreObserver* observer);
+  static void RemoveObserver(SessionRestoreObserver* observer);
+
+  // Accessor for the observer list. Create the list the first time to always
+  // return a valid reference.
+  static base::ObserverList<SessionRestoreObserver>& observers() {
+    if (!observers_)
+      observers_ = new base::ObserverList<SessionRestoreObserver>();
+    return *observers_;
+  }
+
  private:
   SessionRestore();
 
@@ -119,6 +133,9 @@ class SessionRestore {
 
   // Contains all registered callbacks for session restore notifications.
   static CallbackList* on_session_restored_callbacks_;
+
+  // Contains all registered observers for session restore events.
+  static base::ObserverList<SessionRestoreObserver>* observers_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionRestore);
 };
