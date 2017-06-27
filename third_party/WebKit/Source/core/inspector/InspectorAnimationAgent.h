@@ -15,7 +15,7 @@
 
 namespace blink {
 
-class AnimationTimeline;
+class DocumentTimeline;
 class InspectedFrames;
 class InspectorCSSAgent;
 
@@ -79,7 +79,7 @@ class CORE_EXPORT InspectorAnimationAgent final
       std::unique_ptr<protocol::Animation::KeyframesRule> keyframe_rule =
           nullptr);
   double NormalizedStartTime(blink::Animation&);
-  AnimationTimeline& ReferenceTimeline();
+  DocumentTimeline& ReferenceTimeline();
   blink::Animation* AnimationClone(blink::Animation*);
   String CreateCSSId(blink::Animation&);
 

@@ -32,8 +32,8 @@
 
 #include <memory>
 #include "core/animation/Animation.h"
-#include "core/animation/AnimationTimeline.h"
 #include "core/animation/CompositorPendingAnimations.h"
+#include "core/animation/DocumentTimeline.h"
 #include "core/animation/ElementAnimations.h"
 #include "core/animation/KeyframeEffect.h"
 #include "core/animation/animatable/AnimatableDouble.h"
@@ -77,7 +77,7 @@ class AnimationCompositorAnimationsTest : public ::testing::Test {
 
   Persistent<Document> document_;
   Persistent<Element> element_;
-  Persistent<AnimationTimeline> timeline_;
+  Persistent<DocumentTimeline> timeline_;
   std::unique_ptr<DummyPageHolder> page_holder_;
 
   void SetUp() override {
@@ -108,7 +108,7 @@ class AnimationCompositorAnimationsTest : public ::testing::Test {
     document_ = &page_holder_->GetDocument();
     document_->GetAnimationClock().ResetTimeForTesting();
 
-    timeline_ = AnimationTimeline::Create(document_.Get());
+    timeline_ = DocumentTimeline::Create(document_.Get());
     timeline_->ResetForTesting();
     element_ = document_->createElement("test");
   }

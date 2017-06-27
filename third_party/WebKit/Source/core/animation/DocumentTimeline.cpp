@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/animation/AnimationTimeline.h"
+#include "core/animation/DocumentTimeline.h"
 
 #include <algorithm>
 #include "core/animation/AnimationClock.h"
@@ -52,18 +52,18 @@ bool CompareAnimations(const Member<Animation>& left,
                        const Member<Animation>& right) {
   return Animation::HasLowerPriority(left.Get(), right.Get());
 }
-}
+}  // namespace
 
 // This value represents 1 frame at 30Hz plus a little bit of wiggle room.
 // TODO: Plumb a nominal framerate through and derive this value from that.
-const double AnimationTimeline::kMinimumDelay = 0.04;
+const double DocumentTimeline::kMinimumDelay = 0.04;
 
-AnimationTimeline* AnimationTimeline::Create(Document* document,
-                                             PlatformTiming* timing) {
-  return new AnimationTimeline(document, timing);
+DocumentTimeline* DocumentTimeline::Create(Document* document,
+                                           PlatformTiming* timing) {
+  return new DocumentTimeline(document, timing);
 }
 
-AnimationTimeline::AnimationTimeline(Document* document, PlatformTiming* timing)
+DocumentTimeline::DocumentTimeline(Document* document, PlatformTiming* timing)
     : document_(document),
       // 0 is used by unit tests which cannot initialize from the loader
       zero_time_(0),
@@ -72,7 +72,7 @@ AnimationTimeline::AnimationTimeline(Document* document, PlatformTiming* timing)
       playback_rate_(1),
       last_current_time_internal_(0) {
   if (!timing)
-    timing_ = new AnimationTimelineTiming(this);
+    timing_ = new DocumentTimelineTiming(this);
   else
     timing_ = timing;
 
@@ -82,17 +82,17 @@ AnimationTimeline::AnimationTimeline(Document* document, PlatformTiming* timing)
   DCHECK(document);
 }
 
-bool AnimationTimeline::IsActive() {
+bool DocumentTimeline::IsActive() {
   return document_ && document_->GetPage();
 }
 
-void AnimationTimeline::AnimationAttached(Animation& animation) {
+void DocumentTimeline::AnimationAttached(Animation& animation) {
   DCHECK_EQ(animation.TimelineInternal(), this);
   DCHECK(!animations_.Contains(&animation));
   animations_.insert(&animation);
 }
 
-Animation* AnimationTimeline::Play(AnimationEffectReadOnly* child) {
+Animation* DocumentTimeline::Play(AnimationEffectReadOnly* child) {
   if (!document_)
     return nullptr;
 
@@ -105,7 +105,7 @@ Animation* AnimationTimeline::Play(AnimationEffectReadOnly* child) {
   return animation;
 }
 
-HeapVector<Member<Animation>> AnimationTimeline::getAnimations() {
+HeapVector<Member<Animation>> DocumentTimeline::getAnimations() {
   HeapVector<Member<Animation>> animations;
   for (const auto& animation : animations_) {
     if (animation->effect() &&
@@ -116,12 +116,12 @@ HeapVector<Member<Animation>> AnimationTimeline::getAnimations() {
   return animations;
 }
 
-void AnimationTimeline::Wake() {
+void DocumentTimeline::Wake() {
   timing_->ServiceOnNextFrame();
 }
 
-void AnimationTimeline::ServiceAnimations(TimingUpdateReason reason) {
-  TRACE_EVENT0("blink", "AnimationTimeline::serviceAnimations");
+void DocumentTimeline::ServiceAnimations(TimingUpdateReason reason) {
+  TRACE_EVENT0("blink", "DocumentTimeline::serviceAnimations");
 
   last_current_time_internal_ = CurrentTimeInternal();
 
@@ -148,7 +148,7 @@ void AnimationTimeline::ServiceAnimations(TimingUpdateReason reason) {
 #endif
 }
 
-void AnimationTimeline::ScheduleNextService() {
+void DocumentTimeline::ScheduleNextService() {
   DCHECK_EQ(outdated_animation_count_, 0U);
 
   double time_to_next_effect = std::numeric_limits<double>::infinity();
@@ -164,23 +164,23 @@ void AnimationTimeline::ScheduleNextService() {
   }
 }
 
-void AnimationTimeline::AnimationTimelineTiming::WakeAfter(double duration) {
+void DocumentTimeline::DocumentTimelineTiming::WakeAfter(double duration) {
   if (timer_.IsActive() && timer_.NextFireInterval() < duration)
     return;
   timer_.StartOneShot(duration, BLINK_FROM_HERE);
 }
 
-void AnimationTimeline::AnimationTimelineTiming::ServiceOnNextFrame() {
+void DocumentTimeline::DocumentTimelineTiming::ServiceOnNextFrame() {
   if (timeline_->document_ && timeline_->document_->View())
     timeline_->document_->View()->ScheduleAnimation();
 }
 
-DEFINE_TRACE(AnimationTimeline::AnimationTimelineTiming) {
+DEFINE_TRACE(DocumentTimeline::DocumentTimelineTiming) {
   visitor->Trace(timeline_);
-  AnimationTimeline::PlatformTiming::Trace(visitor);
+  DocumentTimeline::PlatformTiming::Trace(visitor);
 }
 
-double AnimationTimeline::ZeroTime() {
+double DocumentTimeline::ZeroTime() {
   if (!zero_time_initialized_ && document_ && document_->Loader()) {
     zero_time_ = document_->Loader()->GetTiming().ReferenceMonotonicTime();
     zero_time_initialized_ = true;
@@ -188,18 +188,18 @@ double AnimationTimeline::ZeroTime() {
   return zero_time_;
 }
 
-void AnimationTimeline::ResetForTesting() {
+void DocumentTimeline::ResetForTesting() {
   zero_time_ = 0;
   zero_time_initialized_ = true;
   playback_rate_ = 1;
   last_current_time_internal_ = 0;
 }
 
-double AnimationTimeline::currentTime(bool& is_null) {
+double DocumentTimeline::currentTime(bool& is_null) {
   return CurrentTimeInternal(is_null) * 1000;
 }
 
-double AnimationTimeline::CurrentTimeInternal(bool& is_null) {
+double DocumentTimeline::CurrentTimeInternal(bool& is_null) {
   if (!IsActive()) {
     is_null = true;
     return std::numeric_limits<double>::quiet_NaN();
@@ -213,27 +213,27 @@ double AnimationTimeline::CurrentTimeInternal(bool& is_null) {
   return result;
 }
 
-double AnimationTimeline::currentTime() {
+double DocumentTimeline::currentTime() {
   return CurrentTimeInternal() * 1000;
 }
 
-double AnimationTimeline::CurrentTimeInternal() {
+double DocumentTimeline::CurrentTimeInternal() {
   bool is_null;
   return CurrentTimeInternal(is_null);
 }
 
-double AnimationTimeline::EffectiveTime() {
+double DocumentTimeline::EffectiveTime() {
   double time = CurrentTimeInternal();
   return std::isnan(time) ? 0 : time;
 }
 
-void AnimationTimeline::PauseAnimationsForTesting(double pause_time) {
+void DocumentTimeline::PauseAnimationsForTesting(double pause_time) {
   for (const auto& animation : animations_needing_update_)
     animation->PauseForTesting(pause_time);
   ServiceAnimations(kTimingUpdateOnDemand);
 }
 
-bool AnimationTimeline::NeedsAnimationTimingUpdate() {
+bool DocumentTimeline::NeedsAnimationTimingUpdate() {
   if (CurrentTimeInternal() == last_current_time_internal_)
     return false;
 
@@ -250,12 +250,12 @@ bool AnimationTimeline::NeedsAnimationTimingUpdate() {
   return !animations_needing_update_.IsEmpty();
 }
 
-void AnimationTimeline::ClearOutdatedAnimation(Animation* animation) {
+void DocumentTimeline::ClearOutdatedAnimation(Animation* animation) {
   DCHECK(!animation->Outdated());
   outdated_animation_count_--;
 }
 
-void AnimationTimeline::SetOutdatedAnimation(Animation* animation) {
+void DocumentTimeline::SetOutdatedAnimation(Animation* animation) {
   DCHECK(animation->Outdated());
   outdated_animation_count_++;
   animations_needing_update_.insert(animation);
@@ -263,7 +263,7 @@ void AnimationTimeline::SetOutdatedAnimation(Animation* animation) {
     timing_->ServiceOnNextFrame();
 }
 
-void AnimationTimeline::SetPlaybackRate(double playback_rate) {
+void DocumentTimeline::SetPlaybackRate(double playback_rate) {
   if (!IsActive())
     return;
   double current_time = CurrentTimeInternal();
@@ -279,22 +279,22 @@ void AnimationTimeline::SetPlaybackRate(double playback_rate) {
   SetAllCompositorPending(true);
 }
 
-void AnimationTimeline::SetAllCompositorPending(bool source_changed) {
+void DocumentTimeline::SetAllCompositorPending(bool source_changed) {
   for (const auto& animation : animations_) {
     animation->SetCompositorPending(source_changed);
   }
 }
 
-double AnimationTimeline::PlaybackRate() const {
+double DocumentTimeline::PlaybackRate() const {
   return playback_rate_;
 }
 
-void AnimationTimeline::InvalidateKeyframeEffects(const TreeScope& tree_scope) {
+void DocumentTimeline::InvalidateKeyframeEffects(const TreeScope& tree_scope) {
   for (const auto& animation : animations_)
     animation->InvalidateKeyframeEffect(tree_scope);
 }
 
-DEFINE_TRACE(AnimationTimeline) {
+DEFINE_TRACE(DocumentTimeline) {
   visitor->Trace(document_);
   visitor->Trace(timing_);
   visitor->Trace(animations_needing_update_);

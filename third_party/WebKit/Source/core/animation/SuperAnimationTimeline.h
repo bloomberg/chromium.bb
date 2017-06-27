@@ -16,7 +16,7 @@ class CORE_EXPORT SuperAnimationTimeline
 
   virtual double currentTime(bool&) = 0;
 
-  virtual bool IsAnimationTimeline() const { return false; }
+  virtual bool IsDocumentTimeline() const { return false; }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 };
