@@ -2214,6 +2214,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'glados',
       'guado',
       'kip',
+      'lakitu',
       'leon',
       'link',
       'lumpy',
@@ -2280,7 +2281,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'octavius', # contact:dpjacques@
       'tatl', # Still volatile - contact:smbarber@ - crbug.com/705598
       'wooten', # contact:icoolidge@
-      'lakitu', # crbug.com/736534 (lakitu is just the victim)
   ])
 
   _paladin_active = _paladin_important_boards | _paladin_experimental_boards
