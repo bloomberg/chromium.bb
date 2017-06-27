@@ -88,8 +88,10 @@ String CSSPropertyFontUtils::ConcatenateFamilyName(CSSParserTokenRange& range) {
     builder.Append(range.ConsumeIncludingWhitespace().Value());
   }
   if (!added_space &&
-      CSSPropertyParserHelpers::IsCSSWideKeyword(first_token.Value()))
+      (CSSPropertyParserHelpers::IsCSSWideKeyword(first_token.Value()) ||
+       EqualIgnoringASCIICase(first_token.Value(), "default"))) {
     return String();
+  }
   return builder.ToString();
 }
 

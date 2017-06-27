@@ -746,10 +746,10 @@ PASS style.animation is ''
 PASS computedStyle.animation is 'none 0s ease 0s 1 normal none running'
 PASS style.webkitAnimation is ''
 PASS computedStyle.webkitAnimation is 'none 0s ease 0s 1 normal none running'
-PASS style.animation is ''
-PASS computedStyle.animation is 'none 0s ease 0s 1 normal none running'
-PASS style.webkitAnimation is ''
-PASS computedStyle.webkitAnimation is 'none 0s ease 0s 1 normal none running'
+PASS style.animation is 'default 2'
+PASS computedStyle.animation is 'default 0s ease 0s 2 normal none running'
+PASS style.webkitAnimation is 'default 2'
+PASS computedStyle.webkitAnimation is 'default 0s ease 0s 2 normal none running'
 PASS successfullyParsed is true
 
 TEST COMPLETE

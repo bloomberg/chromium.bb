@@ -1152,10 +1152,10 @@ shouldBe("style.webkitAnimation", "''");
 shouldBe("computedStyle.webkitAnimation", "'none 0s ease 0s 1 normal none running'");
 
 style.animation = "2 default";
-shouldBe("style.animation", "''");
-shouldBe("computedStyle.animation", "'none 0s ease 0s 1 normal none running'");
-shouldBe("style.webkitAnimation", "''");
-shouldBe("computedStyle.webkitAnimation", "'none 0s ease 0s 1 normal none running'");
+shouldBe("style.animation", "'default 2'");
+shouldBe("computedStyle.animation", "'default 0s ease 0s 2 normal none running'");
+shouldBe("style.webkitAnimation", "'default 2'");
+shouldBe("computedStyle.webkitAnimation", "'default 0s ease 0s 2 normal none running'");
 
 // FIXME : https://code.google.com/p/chromium/issues/detail?id=273092
 /*style.animation = "ease-in ease-otu 5s";

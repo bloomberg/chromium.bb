@@ -78,6 +78,7 @@ assert_valid("banana", "banan\\61");
 assert_valid("<custom-ident>", "banan\\61");
 assert_valid("big | bigger | BIGGER", "bigger");
 assert_valid("foo+|bar", "foo foo foo");
+assert_valid("default", "default");
 
 assert_valid("banana\t", "banana");
 assert_valid("\nbanana\r\n", "banana");
@@ -105,9 +106,11 @@ assert_invalid("*|banana", "banana");
 assert_invalid("*+", "banana");
 
 assert_invalid("initial", "initial");
+assert_invalid("inherit", "inherit");
+assert_invalid("unset", "unset");
 assert_invalid("<length>|initial", "10px");
 assert_invalid("<length>|INHERIT", "10px");
-assert_invalid("<percentage>|defAult", "2%");
+assert_invalid("<percentage>|unsEt", "2%");
 
 // Invalid initialValue
 assert_invalid("*", "initial");
