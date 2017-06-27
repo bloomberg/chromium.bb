@@ -887,18 +887,27 @@
     'payments': {
       'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/payments'\
                   '|chrome/android/javatests/src/org/chromium/chrome/browser/payments'\
+                  '|chrome/browser/payments'\
+                  '|chrome/browser/ui/views/payments'\
                   '|chrome/test/data/payments'\
                   '|components/payments'\
-                  '|third_party/WebKit/LayoutTests/payments/'\
-                  '|third_party/WebKit/Source/modules/payments'\
-                  '|ios/web/payments/'\
-                  '|ios/web/public/payments/'\
-                  '|ios/chrome/browser/payments/'
+                  '|content/browser/payments'\
+                  '|content/test/data/payments'\
+                  '|ios/chrome/browser/payments'\
+                  '|ios/chrome/browser/ui/payments'\
+                  '|ios/web/payments'\
+                  '|ios/web/public/payments'\
+                  '|third_party/WebKit/LayoutTests/external/wpt/payment-request'\
+                  '|third_party/WebKit/LayoutTests/http/tests/payments'\
+                  '|third_party/WebKit/LayoutTests/payments'\
+                  '|third_party/WebKit/public/platform/modules/payments'\
+                  '|third_party/WebKit/Source/modules/payments'
     },
     'payments_ios': {
-      'filepath': 'ios/web/payments/'\
-                  '|ios/web/public/payments/'\
-                  '|ios/chrome/browser/payments/'
+      'filepath': 'ios/web/payments'\
+                  '|ios/chrome/browser/payments'\
+                  '|ios/chrome/browser/ui/payments'\
+                  '|ios/web/public/payments'
     },
     'pepper_api': {
       'filepath': 'ppapi/api'\
