@@ -1562,6 +1562,9 @@ void WebMediaPlayerImpl::OnFrameHidden() {
   if (IsHidden())
     video_locked_when_paused_when_hidden_ = true;
 
+  overlay_info_.is_frame_hidden = true;
+  MaybeSendOverlayInfoToDecoder();
+
   if (watch_time_reporter_)
     watch_time_reporter_->OnHidden();
 
@@ -1575,6 +1578,11 @@ void WebMediaPlayerImpl::OnFrameHidden() {
 
 void WebMediaPlayerImpl::OnFrameClosed() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
+
+  // Re-use |is_hidden| since nothing cares about the difference anyway.
+  overlay_info_.is_frame_hidden = true;
+  MaybeSendOverlayInfoToDecoder();
+
   UpdatePlayState();
 }
 
@@ -1584,6 +1592,9 @@ void WebMediaPlayerImpl::OnFrameShown() {
 
   // Foreground videos don't require user gesture to continue playback.
   video_locked_when_paused_when_hidden_ = false;
+
+  overlay_info_.is_frame_hidden = false;
+  MaybeSendOverlayInfoToDecoder();
 
   if (watch_time_reporter_)
     watch_time_reporter_->OnShown();
