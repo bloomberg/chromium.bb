@@ -21,7 +21,7 @@
 #include "chrome/test/chromedriver/session.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-TEST(SessionCommandTest, FileUpload) {
+TEST(SessionCommandsTest, FileUpload) {
   Session session("id");
   base::DictionaryValue params;
   std::unique_ptr<base::Value> value;
