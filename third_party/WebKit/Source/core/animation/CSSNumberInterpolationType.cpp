@@ -41,7 +41,8 @@ const CSSValue* CSSNumberInterpolationType::CreateCSSValue(
     const InterpolableValue& value,
     const NonInterpolableValue*,
     const StyleResolverState&) const {
-  return CSSPrimitiveValue::Create(ToInterpolableNumber(value).Value(),
+  double number = ToInterpolableNumber(value).Value();
+  return CSSPrimitiveValue::Create(round_to_integer_ ? round(number) : number,
                                    CSSPrimitiveValue::UnitType::kNumber);
 }
 
