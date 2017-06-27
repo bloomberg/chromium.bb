@@ -51,6 +51,7 @@ class CORE_EXPORT URLSearchParams final
   Vector<String> getAll(const String&) const;
   bool has(const String&) const;
   void set(const String& name, const String& value);
+  void sort();
   void SetInput(const String&);
 
   // Internal helpers

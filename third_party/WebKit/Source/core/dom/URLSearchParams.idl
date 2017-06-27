@@ -16,6 +16,8 @@
     boolean has(USVString name);
     void set(USVString name, USVString value);
 
+    void sort();
+
     iterable<USVString, USVString>;
     stringifier;
 };

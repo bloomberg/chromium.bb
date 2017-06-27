@@ -4,6 +4,7 @@
 
 #include "core/dom/URLSearchParams.h"
 
+#include <algorithm>
 #include <utility>
 #include "core/dom/DOMURL.h"
 #include "platform/network/FormDataEncoder.h"
@@ -37,6 +38,11 @@ class URLSearchParamsIterationSource final
   Vector<std::pair<String, String>> params_;
   size_t current_;
 };
+
+bool CompareParams(const std::pair<String, String>& a,
+                   const std::pair<String, String>& b) {
+  return WTF::CodePointCompareLessThan(a.first, b.first);
+}
 
 }  // namespace
 
@@ -226,6 +232,11 @@ void URLSearchParams::set(const String& name, const String& value) {
     append(name, value);
   else
     RunUpdateSteps();
+}
+
+void URLSearchParams::sort() {
+  std::stable_sort(params_.begin(), params_.end(), CompareParams);
+  RunUpdateSteps();
 }
 
 void URLSearchParams::EncodeAsFormData(Vector<char>& encoded_data) const {

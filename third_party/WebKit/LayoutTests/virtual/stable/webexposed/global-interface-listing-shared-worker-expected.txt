@@ -815,6 +815,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method has
 [Worker]     method keys
 [Worker]     method set
+[Worker]     method sort
 [Worker]     method toString
 [Worker]     method values
 [Worker] interface WebSocket : EventTarget
