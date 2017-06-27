@@ -10,13 +10,9 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "device/vr/features/features.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/media/android/router/media_router_dialog_controller_android.h"
-#if BUILDFLAG(ENABLE_VR)
-#include "chrome/browser/android/vr_shell/vr_tab_helper.h"
-#endif  // BUILDFLAG(ENABLE_VR)
 #else
 #include "chrome/browser/ui/webui/media_router/media_router_dialog_controller_impl.h"
 #endif
@@ -28,11 +24,6 @@ MediaRouterDialogController*
 MediaRouterDialogController::GetOrCreateForWebContents(
     content::WebContents* contents) {
 #if defined(OS_ANDROID)
-#if BUILDFLAG(ENABLE_VR)
-  if (vr_shell::VrTabHelper::IsInVr(contents)) {
-    return nullptr;
-  }
-#endif
   return MediaRouterDialogControllerAndroid::GetOrCreateForWebContents(
       contents);
 #else
