@@ -215,6 +215,7 @@ blink_core_sources("animation") {
     "SizeListPropertyFunctions.h",
     "StringKeyframe.cpp",
     "StringKeyframe.h",
+    "SuperAnimationTimeline.h",
     "Timing.cpp",
     "Timing.h",
     "TimingCalculations.h",

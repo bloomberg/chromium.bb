@@ -245,7 +245,7 @@ Response InspectorAnimationAgent::getCurrentTime(const String& id,
   } else {
     // Use startTime where possible since currentTime is limited.
     *current_time =
-        animation->timeline()->currentTime() - animation->startTime();
+        animation->TimelineInternal()->currentTime() - animation->startTime();
   }
   return Response::OK();
 }
@@ -265,7 +265,7 @@ Response InspectorAnimationAgent::setPaused(
     if (paused && !clone->Paused()) {
       // Ensure we restore a current time if the animation is limited.
       double current_time =
-          clone->timeline()->currentTime() - clone->startTime();
+          clone->TimelineInternal()->currentTime() - clone->startTime();
       clone->pause();
       clone->setCurrentTime(current_time, false);
     } else if (!paused && clone->Paused()) {
@@ -554,12 +554,13 @@ AnimationTimeline& InspectorAnimationAgent::ReferenceTimeline() {
 
 double InspectorAnimationAgent::NormalizedStartTime(
     blink::Animation& animation) {
-  if (ReferenceTimeline().PlaybackRate() == 0)
+  if (ReferenceTimeline().PlaybackRate() == 0) {
     return animation.startTime() + ReferenceTimeline().currentTime() -
-           animation.timeline()->currentTime();
-  return animation.startTime() +
-         (animation.timeline()->ZeroTime() - ReferenceTimeline().ZeroTime()) *
-             1000 * ReferenceTimeline().PlaybackRate();
+           animation.TimelineInternal()->currentTime();
+  }
+  return animation.startTime() + (animation.TimelineInternal()->ZeroTime() -
+                                  ReferenceTimeline().ZeroTime()) *
+                                     1000 * ReferenceTimeline().PlaybackRate();
 }
 
 DEFINE_TRACE(InspectorAnimationAgent) {

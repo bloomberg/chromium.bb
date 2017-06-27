@@ -33,8 +33,9 @@
 
 #include <memory>
 #include "core/CoreExport.h"
-#include "core/animation/Animation.h"
+#include "core/animation/AnimationEffectReadOnly.h"
 #include "core/animation/EffectModel.h"
+#include "core/animation/SuperAnimationTimeline.h"
 #include "core/dom/Element.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "platform/Timer.h"
@@ -46,14 +47,13 @@
 
 namespace blink {
 
-class Document;
+class Animation;
 class AnimationEffectReadOnly;
+class Document;
 
 // AnimationTimeline is constructed and owned by Document, and tied to its
 // lifecycle.
-class CORE_EXPORT AnimationTimeline
-    : public GarbageCollectedFinalized<AnimationTimeline>,
-      public ScriptWrappable {
+class CORE_EXPORT AnimationTimeline : public SuperAnimationTimeline {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -70,6 +70,8 @@ class CORE_EXPORT AnimationTimeline
 
   virtual ~AnimationTimeline() {}
 
+  bool IsAnimationTimeline() const final { return true; }
+
   void ServiceAnimations(TimingUpdateReason);
   void ScheduleNextService();
 
@@ -83,7 +85,7 @@ class CORE_EXPORT AnimationTimeline
     return !animations_needing_update_.IsEmpty();
   }
   double ZeroTime();
-  double currentTime(bool& is_null);
+  double currentTime(bool& is_null) override;
   double currentTime();
   double CurrentTimeInternal(bool& is_null);
   double CurrentTimeInternal();
@@ -108,7 +110,7 @@ class CORE_EXPORT AnimationTimeline
   void Wake();
   void ResetForTesting();
 
-  DECLARE_TRACE();
+  DECLARE_VIRTUAL_TRACE();
 
  protected:
   AnimationTimeline(Document*, PlatformTiming*);
@@ -158,6 +160,12 @@ class CORE_EXPORT AnimationTimeline
 
   friend class AnimationAnimationTimelineTest;
 };
+
+DEFINE_TYPE_CASTS(AnimationTimeline,
+                  SuperAnimationTimeline,
+                  timeline,
+                  timeline->IsAnimationTimeline(),
+                  timeline.IsAnimationTimeline());
 
 }  // namespace blink
 

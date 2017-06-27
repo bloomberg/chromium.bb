@@ -40,8 +40,6 @@ namespace blink {
 class Document;
 
 class CORE_EXPORT DocumentTimeline final : public AnimationTimeline {
-  DEFINE_WRAPPERTYPEINFO();
-
  public:
   static DocumentTimeline* Create(Document* document) {
     return new DocumentTimeline(document);
