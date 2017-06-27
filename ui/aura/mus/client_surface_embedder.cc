@@ -4,32 +4,11 @@
 
 #include "ui/aura/mus/client_surface_embedder.h"
 
-#include "cc/surfaces/surface_reference_factory.h"
+#include "cc/surfaces/stub_surface_reference_factory.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/dip_util.h"
 
 namespace aura {
-namespace {
-
-// TODO(mfomitchev, samans): Remove these stub classes once the SurfaceReference
-// work is complete.
-class StubSurfaceReferenceFactory : public cc::SurfaceReferenceFactory {
- public:
-  StubSurfaceReferenceFactory() = default;
-
-  // cc::SurfaceReferenceFactory:
-  base::Closure CreateReference(
-      cc::SurfaceReferenceOwner* owner,
-      const cc::SurfaceId& surface_id) const override {
-    return base::Closure();
-  }
-
- protected:
-  ~StubSurfaceReferenceFactory() override = default;
-
-  DISALLOW_COPY_AND_ASSIGN(StubSurfaceReferenceFactory);
-};
-}  // namespace
 
 ClientSurfaceEmbedder::ClientSurfaceEmbedder(
     Window* window,
@@ -47,7 +26,7 @@ ClientSurfaceEmbedder::ClientSurfaceEmbedder(
   // this is the case with window decorations provided by Window Manager.
   // This content should appear underneath the content of the embedded client.
   window_->layer()->StackAtTop(surface_layer_.get());
-  ref_factory_ = new StubSurfaceReferenceFactory();
+  ref_factory_ = new cc::StubSurfaceReferenceFactory();
 }
 
 ClientSurfaceEmbedder::~ClientSurfaceEmbedder() = default;
