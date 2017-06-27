@@ -159,13 +159,15 @@ class BackgroundSyncManagerTest : public testing::Test {
     bool called_2 = false;
     helper_->context()->RegisterServiceWorker(
         GURL(kPattern1), GURL(kScript1), NULL,
-        base::Bind(&RegisterServiceWorkerCallback, &called_1,
-                   &sw_registration_id_1_));
+        base::AdaptCallbackForRepeating(
+            base::BindOnce(&RegisterServiceWorkerCallback, &called_1,
+                           &sw_registration_id_1_)));
 
     helper_->context()->RegisterServiceWorker(
         GURL(kPattern2), GURL(kScript2), NULL,
-        base::Bind(&RegisterServiceWorkerCallback, &called_2,
-                   &sw_registration_id_2_));
+        base::AdaptCallbackForRepeating(
+            base::BindOnce(&RegisterServiceWorkerCallback, &called_2,
+                           &sw_registration_id_2_)));
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(called_1);
     EXPECT_TRUE(called_2);
@@ -174,11 +176,13 @@ class BackgroundSyncManagerTest : public testing::Test {
     // calling BackgroundSyncManager::Register.
     helper_->context_wrapper()->FindReadyRegistrationForId(
         sw_registration_id_1_, GURL(kPattern1).GetOrigin(),
-        base::Bind(FindServiceWorkerRegistrationCallback, &sw_registration_1_));
+        base::AdaptCallbackForRepeating(base::BindOnce(
+            FindServiceWorkerRegistrationCallback, &sw_registration_1_)));
 
     helper_->context_wrapper()->FindReadyRegistrationForId(
         sw_registration_id_2_, GURL(kPattern1).GetOrigin(),
-        base::Bind(FindServiceWorkerRegistrationCallback, &sw_registration_2_));
+        base::AdaptCallbackForRepeating(base::BindOnce(
+            FindServiceWorkerRegistrationCallback, &sw_registration_2_)));
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(sw_registration_1_);
     EXPECT_TRUE(sw_registration_2_);
@@ -274,8 +278,9 @@ class BackgroundSyncManagerTest : public testing::Test {
     bool was_called = false;
     background_sync_manager_->Register(
         sw_registration_id, options,
-        base::Bind(&BackgroundSyncManagerTest::StatusAndRegistrationCallback,
-                   base::Unretained(this), &was_called));
+        base::BindOnce(
+            &BackgroundSyncManagerTest::StatusAndRegistrationCallback,
+            base::Unretained(this), &was_called));
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(was_called);
     return callback_status_ == BACKGROUND_SYNC_STATUS_OK;
@@ -298,8 +303,9 @@ class BackgroundSyncManagerTest : public testing::Test {
     bool was_called = false;
     background_sync_manager_->GetRegistrations(
         sw_registration_id,
-        base::Bind(&BackgroundSyncManagerTest::StatusAndRegistrationsCallback,
-                   base::Unretained(this), &was_called));
+        base::BindOnce(
+            &BackgroundSyncManagerTest::StatusAndRegistrationsCallback,
+            base::Unretained(this), &was_called));
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(was_called);
 
@@ -326,8 +332,9 @@ class BackgroundSyncManagerTest : public testing::Test {
     bool was_called = false;
     background_sync_manager_->GetRegistrations(
         sw_registration_id,
-        base::Bind(&BackgroundSyncManagerTest::StatusAndRegistrationsCallback,
-                   base::Unretained(this), &was_called));
+        base::BindOnce(
+            &BackgroundSyncManagerTest::StatusAndRegistrationsCallback,
+            base::Unretained(this), &was_called));
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(was_called);
 
@@ -347,7 +354,8 @@ class BackgroundSyncManagerTest : public testing::Test {
     bool called = false;
     helper_->context()->UnregisterServiceWorker(
         PatternForSWId(sw_registration_id),
-        base::Bind(&UnregisterServiceWorkerCallback, &called));
+        base::AdaptCallbackForRepeating(
+            base::BindOnce(&UnregisterServiceWorkerCallback, &called)));
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(called);
   }
@@ -365,18 +373,19 @@ class BackgroundSyncManagerTest : public testing::Test {
   }
 
   void InitSyncEventTest() {
-    SetupForSyncEvent(
-        base::Bind(DispatchSyncSuccessfulCallback, &sync_events_called_));
+    SetupForSyncEvent(base::BindRepeating(DispatchSyncSuccessfulCallback,
+                                          &sync_events_called_));
   }
 
   void InitFailedSyncEventTest() {
     SetupForSyncEvent(
-        base::Bind(DispatchSyncFailedCallback, &sync_events_called_));
+        base::BindRepeating(DispatchSyncFailedCallback, &sync_events_called_));
   }
 
   void InitDelayedSyncEventTest() {
-    SetupForSyncEvent(base::Bind(DispatchSyncDelayedCallback,
-                                 &sync_events_called_, &sync_fired_callback_));
+    SetupForSyncEvent(base::BindRepeating(DispatchSyncDelayedCallback,
+                                          &sync_events_called_,
+                                          &sync_fired_callback_));
   }
 
   void RegisterAndVerifySyncEventDelayed(
@@ -633,12 +642,14 @@ TEST_F(BackgroundSyncManagerTest, SequentialOperations) {
   bool get_registrations_called = false;
   test_background_sync_manager_->Register(
       sw_registration_id_1_, sync_options_1_,
-      base::Bind(&BackgroundSyncManagerTest::StatusAndRegistrationCallback,
-                 base::Unretained(this), &register_called));
+      base::AdaptCallbackForRepeating(base::BindOnce(
+          &BackgroundSyncManagerTest::StatusAndRegistrationCallback,
+          base::Unretained(this), &register_called)));
   test_background_sync_manager_->GetRegistrations(
       sw_registration_id_1_,
-      base::Bind(&BackgroundSyncManagerTest::StatusAndRegistrationsCallback,
-                 base::Unretained(this), &get_registrations_called));
+      base::AdaptCallbackForRepeating(base::BindOnce(
+          &BackgroundSyncManagerTest::StatusAndRegistrationsCallback,
+          base::Unretained(this), &get_registrations_called)));
 
   base::RunLoop().RunUntilIdle();
   // Init should be blocked while loading from the backend.
@@ -673,8 +684,9 @@ TEST_F(BackgroundSyncManagerTest,
   bool callback_called = false;
   test_background_sync_manager_->Register(
       sw_registration_id_1_, sync_options_2_,
-      base::Bind(&BackgroundSyncManagerTest::StatusAndRegistrationCallback,
-                 base::Unretained(this), &callback_called));
+      base::AdaptCallbackForRepeating(base::BindOnce(
+          &BackgroundSyncManagerTest::StatusAndRegistrationCallback,
+          base::Unretained(this), &callback_called)));
 
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(callback_called);
@@ -1148,7 +1160,7 @@ TEST_F(BackgroundSyncManagerTest, TwoAttempts) {
   // The first run will fail but it will setup a timer to try again.
   EXPECT_TRUE(Register(sync_options_1_));
   EXPECT_TRUE(GetRegistration(sync_options_1_));
-  EXPECT_FALSE(test_background_sync_manager_->delayed_task().is_null());
+  EXPECT_TRUE(test_background_sync_manager_->IsDelayedTaskScheduled());
 
   // Make sure the delay is reasonable.
   EXPECT_LT(base::TimeDelta::FromMinutes(1),
@@ -1158,7 +1170,7 @@ TEST_F(BackgroundSyncManagerTest, TwoAttempts) {
 
   // Fire again and this time it should permanently fail.
   test_clock_->Advance(test_background_sync_manager_->delayed_task_delta());
-  test_background_sync_manager_->delayed_task().Run();
+  test_background_sync_manager_->RunDelayedTask();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(GetRegistration(sync_options_1_));
 }
@@ -1170,13 +1182,13 @@ TEST_F(BackgroundSyncManagerTest, ThreeAttempts) {
   // The first run will fail but it will setup a timer to try again.
   EXPECT_TRUE(Register(sync_options_1_));
   EXPECT_TRUE(GetRegistration(sync_options_1_));
-  EXPECT_FALSE(test_background_sync_manager_->delayed_task().is_null());
+  EXPECT_TRUE(test_background_sync_manager_->IsDelayedTaskScheduled());
 
   // The second run will fail but it will setup a timer to try again.
   base::TimeDelta first_delta =
       test_background_sync_manager_->delayed_task_delta();
   test_clock_->Advance(test_background_sync_manager_->delayed_task_delta());
-  test_background_sync_manager_->delayed_task().Run();
+  test_background_sync_manager_->RunDelayedTask();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(GetRegistration(sync_options_1_));
 
@@ -1185,7 +1197,7 @@ TEST_F(BackgroundSyncManagerTest, ThreeAttempts) {
 
   // The third run will permanently fail.
   test_clock_->Advance(test_background_sync_manager_->delayed_task_delta());
-  test_background_sync_manager_->delayed_task().Run();
+  test_background_sync_manager_->RunDelayedTask();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(GetRegistration(sync_options_1_));
 }
@@ -1197,13 +1209,13 @@ TEST_F(BackgroundSyncManagerTest, WaitsFullDelayTime) {
   // The first run will fail but it will setup a timer to try again.
   EXPECT_TRUE(Register(sync_options_1_));
   EXPECT_TRUE(GetRegistration(sync_options_1_));
-  EXPECT_FALSE(test_background_sync_manager_->delayed_task().is_null());
+  EXPECT_TRUE(test_background_sync_manager_->IsDelayedTaskScheduled());
 
   // Fire again one second before it's ready to retry. Expect it to reschedule
   // the delay timer for one more second.
   test_clock_->Advance(test_background_sync_manager_->delayed_task_delta() -
                        base::TimeDelta::FromSeconds(1));
-  test_background_sync_manager_->delayed_task().Run();
+  test_background_sync_manager_->RunDelayedTask();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(GetRegistration(sync_options_1_));
   EXPECT_EQ(base::TimeDelta::FromSeconds(1),
@@ -1211,7 +1223,7 @@ TEST_F(BackgroundSyncManagerTest, WaitsFullDelayTime) {
 
   // Fire one second later and it should fail permanently.
   test_clock_->Advance(base::TimeDelta::FromSeconds(1));
-  test_background_sync_manager_->delayed_task().Run();
+  test_background_sync_manager_->RunDelayedTask();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(GetRegistration(sync_options_1_));
 }
@@ -1280,7 +1292,7 @@ TEST_F(BackgroundSyncManagerTest, AllTestsEventuallyFire) {
 
   // Run it a second time.
   test_clock_->Advance(test_background_sync_manager_->delayed_task_delta());
-  test_background_sync_manager_->delayed_task().Run();
+  test_background_sync_manager_->RunDelayedTask();
   base::RunLoop().RunUntilIdle();
 
   base::TimeDelta delay_delta =
@@ -1290,10 +1302,10 @@ TEST_F(BackgroundSyncManagerTest, AllTestsEventuallyFire) {
   EXPECT_TRUE(Register(sync_options_2_));
   EXPECT_GT(delay_delta, test_background_sync_manager_->delayed_task_delta());
 
-  while (!test_background_sync_manager_->delayed_task().is_null()) {
+  while (test_background_sync_manager_->IsDelayedTaskScheduled()) {
     test_clock_->Advance(test_background_sync_manager_->delayed_task_delta());
-    test_background_sync_manager_->delayed_task().Run();
-    test_background_sync_manager_->ClearDelayedTask();
+    test_background_sync_manager_->RunDelayedTask();
+    EXPECT_FALSE(test_background_sync_manager_->IsDelayedTaskScheduled());
     base::RunLoop().RunUntilIdle();
   }
 
@@ -1312,7 +1324,7 @@ TEST_F(BackgroundSyncManagerTest, LastChance) {
 
   // Run it again.
   test_clock_->Advance(test_background_sync_manager_->delayed_task_delta());
-  test_background_sync_manager_->delayed_task().Run();
+  test_background_sync_manager_->RunDelayedTask();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(GetRegistration(sync_options_1_));
   EXPECT_EQ(blink::mojom::BackgroundSyncEventLastChance::IS_LAST_CHANCE,

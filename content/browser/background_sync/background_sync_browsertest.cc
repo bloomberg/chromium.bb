@@ -72,15 +72,15 @@ void RegistrationPendingCallback(
 
 void RegistrationPendingDidGetSyncRegistration(
     const std::string& tag,
-    const base::Callback<void(bool)>& callback,
+    base::OnceCallback<void(bool)> callback,
     BackgroundSyncStatus error_type,
     std::vector<std::unique_ptr<BackgroundSyncRegistration>> registrations) {
   ASSERT_EQ(BACKGROUND_SYNC_STATUS_OK, error_type);
   // Find the right registration in the list and check its status.
   for (const auto& registration : registrations) {
     if (registration->options()->tag == tag) {
-      callback.Run(registration->sync_state() ==
-                   blink::mojom::BackgroundSyncState::PENDING);
+      std::move(callback).Run(registration->sync_state() ==
+                              blink::mojom::BackgroundSyncState::PENDING);
       return;
     }
   }
@@ -90,7 +90,7 @@ void RegistrationPendingDidGetSyncRegistration(
 void RegistrationPendingDidGetSWRegistration(
     const scoped_refptr<BackgroundSyncContext> sync_context,
     const std::string& tag,
-    const base::Callback<void(bool)>& callback,
+    base::OnceCallback<void(bool)> callback,
     ServiceWorkerStatusCode status,
     scoped_refptr<ServiceWorkerRegistration> registration) {
   ASSERT_EQ(SERVICE_WORKER_OK, status);
@@ -98,7 +98,8 @@ void RegistrationPendingDidGetSWRegistration(
   BackgroundSyncManager* sync_manager = sync_context->background_sync_manager();
   sync_manager->GetRegistrations(
       service_worker_id,
-      base::Bind(&RegistrationPendingDidGetSyncRegistration, tag, callback));
+      base::BindOnce(&RegistrationPendingDidGetSyncRegistration, tag,
+                     std::move(callback)));
 }
 
 void RegistrationPendingOnIOThread(
@@ -106,10 +107,11 @@ void RegistrationPendingOnIOThread(
     const scoped_refptr<ServiceWorkerContextWrapper> sw_context,
     const std::string& tag,
     const GURL& url,
-    const base::Callback<void(bool)>& callback) {
+    base::OnceCallback<void(bool)> callback) {
   sw_context->FindReadyRegistrationForDocument(
-      url, base::Bind(&RegistrationPendingDidGetSWRegistration, sync_context,
-                      tag, callback));
+      url, base::AdaptCallbackForRepeating(
+               base::BindOnce(&RegistrationPendingDidGetSWRegistration,
+                              sync_context, tag, std::move(callback))));
 }
 
 void SetMaxSyncAttemptsOnIOThread(
@@ -226,16 +228,16 @@ bool BackgroundSyncBrowserTest::RegistrationPending(const std::string& tag) {
       static_cast<ServiceWorkerContextWrapper*>(
           storage->GetServiceWorkerContext());
 
-  base::Callback<void(bool)> callback =
-      base::Bind(&RegistrationPendingCallback, run_loop.QuitClosure(),
-                 base::ThreadTaskRunnerHandle::Get(), &is_pending);
+  auto callback =
+      base::BindOnce(&RegistrationPendingCallback, run_loop.QuitClosure(),
+                     base::ThreadTaskRunnerHandle::Get(), &is_pending);
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&RegistrationPendingOnIOThread,
-                 make_scoped_refptr(sync_context),
-                 make_scoped_refptr(service_worker_context), tag,
-                 https_server_->GetURL(kDefaultTestURL), callback));
+      base::BindOnce(
+          &RegistrationPendingOnIOThread, make_scoped_refptr(sync_context),
+          make_scoped_refptr(service_worker_context), tag,
+          https_server_->GetURL(kDefaultTestURL), std::move(callback)));
 
   run_loop.Run();
 
@@ -250,8 +252,8 @@ void BackgroundSyncBrowserTest::SetMaxSyncAttempts(int max_sync_attempts) {
 
   BrowserThread::PostTaskAndReply(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&SetMaxSyncAttemptsOnIOThread,
-                 make_scoped_refptr(sync_context), max_sync_attempts),
+      base::BindOnce(&SetMaxSyncAttemptsOnIOThread,
+                     make_scoped_refptr(sync_context), max_sync_attempts),
       run_loop.QuitClosure());
 
   run_loop.Run();

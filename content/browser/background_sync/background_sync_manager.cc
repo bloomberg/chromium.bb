@@ -43,11 +43,11 @@ const char kBackgroundSyncUserDataKey[] = "BackgroundSyncUserData";
 
 void RecordFailureAndPostError(
     BackgroundSyncStatus status,
-    const BackgroundSyncManager::StatusAndRegistrationCallback& callback) {
+    BackgroundSyncManager::StatusAndRegistrationCallback callback) {
   BackgroundSyncMetrics::CountRegisterFailure(status);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, status, nullptr));
+      FROM_HERE, base::BindOnce(std::move(callback), status, nullptr));
 }
 
 // Returns nullptr if the browser context cannot be accessed for any reason.
@@ -192,39 +192,40 @@ BackgroundSyncManager::~BackgroundSyncManager() {
 void BackgroundSyncManager::Register(
     int64_t sw_registration_id,
     const BackgroundSyncRegistrationOptions& options,
-    const StatusAndRegistrationCallback& callback) {
+    StatusAndRegistrationCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (disabled_) {
-    RecordFailureAndPostError(BACKGROUND_SYNC_STATUS_STORAGE_ERROR, callback);
+    RecordFailureAndPostError(BACKGROUND_SYNC_STATUS_STORAGE_ERROR,
+                              std::move(callback));
     return;
   }
 
-  op_scheduler_.ScheduleOperation(
-      base::Bind(&BackgroundSyncManager::RegisterCheckIfHasMainFrame,
-                 weak_ptr_factory_.GetWeakPtr(), sw_registration_id, options,
-                 op_scheduler_.WrapCallbackToRunNext(callback)));
+  op_scheduler_.ScheduleOperation(base::BindOnce(
+      &BackgroundSyncManager::RegisterCheckIfHasMainFrame,
+      weak_ptr_factory_.GetWeakPtr(), sw_registration_id, options,
+      op_scheduler_.WrapCallbackToRunNext(std::move(callback))));
 }
 
 void BackgroundSyncManager::GetRegistrations(
     int64_t sw_registration_id,
-    const StatusAndRegistrationsCallback& callback) {
+    StatusAndRegistrationsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (disabled_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(
-            callback, BACKGROUND_SYNC_STATUS_STORAGE_ERROR,
+        base::BindOnce(
+            std::move(callback), BACKGROUND_SYNC_STATUS_STORAGE_ERROR,
             base::Passed(
                 std::vector<std::unique_ptr<BackgroundSyncRegistration>>())));
     return;
   }
 
   op_scheduler_.ScheduleOperation(
-      base::Bind(&BackgroundSyncManager::GetRegistrationsImpl,
-                 weak_ptr_factory_.GetWeakPtr(), sw_registration_id,
-                 op_scheduler_.WrapCallbackToRunNext(callback)));
+      base::BindOnce(&BackgroundSyncManager::GetRegistrationsImpl,
+                     weak_ptr_factory_.GetWeakPtr(), sw_registration_id,
+                     op_scheduler_.WrapCallbackToRunNext(std::move(callback))));
 }
 
 void BackgroundSyncManager::OnRegistrationDeleted(int64_t sw_registration_id,
@@ -235,9 +236,9 @@ void BackgroundSyncManager::OnRegistrationDeleted(int64_t sw_registration_id,
   // or return stale results based on registrations loaded in memory. This is
   // inconsequential since the service worker is gone.
   op_scheduler_.ScheduleOperation(
-      base::Bind(&BackgroundSyncManager::OnRegistrationDeletedImpl,
-                 weak_ptr_factory_.GetWeakPtr(), sw_registration_id,
-                 MakeEmptyCompletion()));
+      base::BindOnce(&BackgroundSyncManager::OnRegistrationDeletedImpl,
+                     weak_ptr_factory_.GetWeakPtr(), sw_registration_id,
+                     MakeEmptyCompletion()));
 }
 
 void BackgroundSyncManager::OnStorageWiped() {
@@ -247,13 +248,13 @@ void BackgroundSyncManager::OnStorageWiped() {
   // or return stale results based on registrations loaded in memory. This is
   // inconsequential since the service workers are gone.
   op_scheduler_.ScheduleOperation(
-      base::Bind(&BackgroundSyncManager::OnStorageWipedImpl,
-                 weak_ptr_factory_.GetWeakPtr(), MakeEmptyCompletion()));
+      base::BindOnce(&BackgroundSyncManager::OnStorageWipedImpl,
+                     weak_ptr_factory_.GetWeakPtr(), MakeEmptyCompletion()));
 }
 
 void BackgroundSyncManager::SetMaxSyncAttemptsForTesting(int max_attempts) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  op_scheduler_.ScheduleOperation(base::Bind(
+  op_scheduler_.ScheduleOperation(base::BindOnce(
       &BackgroundSyncManager::SetMaxSyncAttemptsImpl,
       weak_ptr_factory_.GetWeakPtr(), max_attempts, MakeEmptyCompletion()));
 }
@@ -287,12 +288,12 @@ BackgroundSyncManager::BackgroundSyncManager(
 
 #if defined(OS_ANDROID)
   network_observer_.reset(new BackgroundSyncNetworkObserverAndroid(
-      base::Bind(&BackgroundSyncManager::OnNetworkChanged,
-                 weak_ptr_factory_.GetWeakPtr())));
+      base::BindRepeating(&BackgroundSyncManager::OnNetworkChanged,
+                          weak_ptr_factory_.GetWeakPtr())));
 #else
   network_observer_.reset(new BackgroundSyncNetworkObserver(
-      base::Bind(&BackgroundSyncManager::OnNetworkChanged,
-                 weak_ptr_factory_.GetWeakPtr())));
+      base::BindRepeating(&BackgroundSyncManager::OnNetworkChanged,
+                          weak_ptr_factory_.GetWeakPtr())));
 #endif
 }
 
@@ -301,55 +302,57 @@ void BackgroundSyncManager::Init() {
   DCHECK(!op_scheduler_.ScheduledOperations());
   DCHECK(!disabled_);
 
-  op_scheduler_.ScheduleOperation(base::Bind(&BackgroundSyncManager::InitImpl,
-                                             weak_ptr_factory_.GetWeakPtr(),
-                                             MakeEmptyCompletion()));
+  op_scheduler_.ScheduleOperation(
+      base::BindOnce(&BackgroundSyncManager::InitImpl,
+                     weak_ptr_factory_.GetWeakPtr(), MakeEmptyCompletion()));
 }
 
-void BackgroundSyncManager::InitImpl(const base::Closure& callback) {
+void BackgroundSyncManager::InitImpl(base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (disabled_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(callback));
     return;
   }
 
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&GetControllerParameters, service_worker_context_,
-                 base::Passed(
-                     base::MakeUnique<BackgroundSyncParameters>(*parameters_))),
-      base::Bind(&BackgroundSyncManager::InitDidGetControllerParameters,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
+      base::BindOnce(&GetControllerParameters, service_worker_context_,
+                     base::Passed(base::MakeUnique<BackgroundSyncParameters>(
+                         *parameters_))),
+      base::BindOnce(&BackgroundSyncManager::InitDidGetControllerParameters,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void BackgroundSyncManager::InitDidGetControllerParameters(
-    const base::Closure& callback,
+    base::OnceClosure callback,
     std::unique_ptr<BackgroundSyncParameters> updated_parameters) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   parameters_ = std::move(updated_parameters);
   if (parameters_->disable) {
     disabled_ = true;
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(callback));
     return;
   }
 
-  GetDataFromBackend(
-      kBackgroundSyncUserDataKey,
-      base::Bind(&BackgroundSyncManager::InitDidGetDataFromBackend,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
+  GetDataFromBackend(kBackgroundSyncUserDataKey,
+                     base::AdaptCallbackForRepeating(base::BindOnce(
+                         &BackgroundSyncManager::InitDidGetDataFromBackend,
+                         weak_ptr_factory_.GetWeakPtr(), std::move(callback))));
 }
 
 void BackgroundSyncManager::InitDidGetDataFromBackend(
-    const base::Closure& callback,
+    base::OnceClosure callback,
     const std::vector<std::pair<int64_t, std::string>>& user_data,
     ServiceWorkerStatusCode status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (status != SERVICE_WORKER_OK && status != SERVICE_WORKER_ERROR_NOT_FOUND) {
     LOG(ERROR) << "BackgroundSync failed to init due to backend failure.";
-    DisableAndClearManager(callback);
+    DisableAndClearManager(std::move(callback));
     return;
   }
 
@@ -392,63 +395,66 @@ void BackgroundSyncManager::InitDidGetDataFromBackend(
 
   if (corruption_detected) {
     LOG(ERROR) << "Corruption detected in background sync backend";
-    DisableAndClearManager(callback);
+    DisableAndClearManager(std::move(callback));
     return;
   }
 
   FireReadyEvents();
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
 }
 
 void BackgroundSyncManager::RegisterCheckIfHasMainFrame(
     int64_t sw_registration_id,
     const BackgroundSyncRegistrationOptions& options,
-    const StatusAndRegistrationCallback& callback) {
+    StatusAndRegistrationCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   ServiceWorkerRegistration* sw_registration =
       service_worker_context_->GetLiveRegistration(sw_registration_id);
   if (!sw_registration || !sw_registration->active_version()) {
     RecordFailureAndPostError(BACKGROUND_SYNC_STATUS_NO_SERVICE_WORKER,
-                              callback);
+                              std::move(callback));
     return;
   }
 
   HasMainFrameProviderHost(
       sw_registration->pattern().GetOrigin(),
-      base::Bind(&BackgroundSyncManager::RegisterDidCheckIfMainFrame,
-                 weak_ptr_factory_.GetWeakPtr(), sw_registration_id, options,
-                 callback));
+      base::BindOnce(&BackgroundSyncManager::RegisterDidCheckIfMainFrame,
+                     weak_ptr_factory_.GetWeakPtr(), sw_registration_id,
+                     options, std::move(callback)));
 }
 
 void BackgroundSyncManager::RegisterDidCheckIfMainFrame(
     int64_t sw_registration_id,
     const BackgroundSyncRegistrationOptions& options,
-    const StatusAndRegistrationCallback& callback,
+    StatusAndRegistrationCallback callback,
     bool has_main_frame_client) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!has_main_frame_client) {
-    RecordFailureAndPostError(BACKGROUND_SYNC_STATUS_NOT_ALLOWED, callback);
+    RecordFailureAndPostError(BACKGROUND_SYNC_STATUS_NOT_ALLOWED,
+                              std::move(callback));
     return;
   }
-  RegisterImpl(sw_registration_id, options, callback);
+  RegisterImpl(sw_registration_id, options, std::move(callback));
 }
 
 void BackgroundSyncManager::RegisterImpl(
     int64_t sw_registration_id,
     const BackgroundSyncRegistrationOptions& options,
-    const StatusAndRegistrationCallback& callback) {
+    StatusAndRegistrationCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (disabled_) {
-    RecordFailureAndPostError(BACKGROUND_SYNC_STATUS_STORAGE_ERROR, callback);
+    RecordFailureAndPostError(BACKGROUND_SYNC_STATUS_STORAGE_ERROR,
+                              std::move(callback));
     return;
   }
 
   if (options.tag.length() > kMaxTagLength) {
-    RecordFailureAndPostError(BACKGROUND_SYNC_STATUS_NOT_ALLOWED, callback);
+    RecordFailureAndPostError(BACKGROUND_SYNC_STATUS_NOT_ALLOWED,
+                              std::move(callback));
     return;
   }
 
@@ -456,30 +462,30 @@ void BackgroundSyncManager::RegisterImpl(
       service_worker_context_->GetLiveRegistration(sw_registration_id);
   if (!sw_registration || !sw_registration->active_version()) {
     RecordFailureAndPostError(BACKGROUND_SYNC_STATUS_NO_SERVICE_WORKER,
-                              callback);
+                              std::move(callback));
     return;
   }
 
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&GetBackgroundSyncPermissionOnUIThread,
-                 service_worker_context_,
-                 sw_registration->pattern().GetOrigin()),
-      base::Bind(&BackgroundSyncManager::RegisterDidAskForPermission,
-                 weak_ptr_factory_.GetWeakPtr(), sw_registration_id, options,
-                 callback));
+      base::BindOnce(&GetBackgroundSyncPermissionOnUIThread,
+                     service_worker_context_,
+                     sw_registration->pattern().GetOrigin()),
+      base::BindOnce(&BackgroundSyncManager::RegisterDidAskForPermission,
+                     weak_ptr_factory_.GetWeakPtr(), sw_registration_id,
+                     options, std::move(callback)));
 }
 
 void BackgroundSyncManager::RegisterDidAskForPermission(
     int64_t sw_registration_id,
     const BackgroundSyncRegistrationOptions& options,
-    const StatusAndRegistrationCallback& callback,
+    StatusAndRegistrationCallback callback,
     blink::mojom::PermissionStatus permission_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (permission_status == blink::mojom::PermissionStatus::DENIED) {
     RecordFailureAndPostError(BACKGROUND_SYNC_STATUS_PERMISSION_DENIED,
-                              callback);
+                              std::move(callback));
     return;
   }
   DCHECK(permission_status == blink::mojom::PermissionStatus::GRANTED);
@@ -489,14 +495,15 @@ void BackgroundSyncManager::RegisterDidAskForPermission(
   if (!sw_registration || !sw_registration->active_version()) {
     // The service worker was shut down in the interim.
     RecordFailureAndPostError(BACKGROUND_SYNC_STATUS_NO_SERVICE_WORKER,
-                              callback);
+                              std::move(callback));
     return;
   }
 
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(&NotifyBackgroundSyncRegisteredOnUIThread,
-                                     service_worker_context_,
-                                     sw_registration->pattern().GetOrigin()));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&NotifyBackgroundSyncRegisteredOnUIThread,
+                     service_worker_context_,
+                     sw_registration->pattern().GetOrigin()));
 
   BackgroundSyncRegistration* existing_registration =
       LookupActiveRegistration(sw_registration_id, options.tag);
@@ -518,9 +525,10 @@ void BackgroundSyncManager::RegisterDidAskForPermission(
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(callback, BACKGROUND_SYNC_STATUS_OK,
-                   base::Passed(base::MakeUnique<BackgroundSyncRegistration>(
-                       *existing_registration))));
+        base::BindOnce(
+            std::move(callback), BACKGROUND_SYNC_STATUS_OK,
+            base::Passed(base::MakeUnique<BackgroundSyncRegistration>(
+                *existing_registration))));
     return;
   }
 
@@ -536,19 +544,19 @@ void BackgroundSyncManager::RegisterDidAskForPermission(
                         sw_registration->pattern().GetOrigin(),
                         new_registration);
 
-  StoreRegistrations(
-      sw_registration_id,
-      base::Bind(&BackgroundSyncManager::RegisterDidStore,
-                 weak_ptr_factory_.GetWeakPtr(), sw_registration_id,
-                 new_registration, callback));
+  StoreRegistrations(sw_registration_id,
+                     base::AdaptCallbackForRepeating(base::BindOnce(
+                         &BackgroundSyncManager::RegisterDidStore,
+                         weak_ptr_factory_.GetWeakPtr(), sw_registration_id,
+                         new_registration, std::move(callback))));
 }
 
-void BackgroundSyncManager::DisableAndClearManager(
-    const base::Closure& callback) {
+void BackgroundSyncManager::DisableAndClearManager(base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (disabled_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(callback));
     return;
   }
 
@@ -561,39 +569,43 @@ void BackgroundSyncManager::DisableAndClearManager(
   // loading from storage), so reload the registrations from storage again.
   GetDataFromBackend(
       kBackgroundSyncUserDataKey,
-      base::Bind(&BackgroundSyncManager::DisableAndClearDidGetRegistrations,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
+      base::AdaptCallbackForRepeating(base::BindOnce(
+          &BackgroundSyncManager::DisableAndClearDidGetRegistrations,
+          weak_ptr_factory_.GetWeakPtr(), std::move(callback))));
 }
 
 void BackgroundSyncManager::DisableAndClearDidGetRegistrations(
-    const base::Closure& callback,
+    base::OnceClosure callback,
     const std::vector<std::pair<int64_t, std::string>>& user_data,
     ServiceWorkerStatusCode status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (status != SERVICE_WORKER_OK || user_data.empty()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(callback));
     return;
   }
 
-  base::Closure barrier_closure =
-      base::BarrierClosure(user_data.size(), callback);
+  base::RepeatingClosure barrier_closure =
+      base::BarrierClosure(user_data.size(), std::move(callback));
 
   for (const auto& sw_id_and_regs : user_data) {
     service_worker_context_->ClearRegistrationUserData(
         sw_id_and_regs.first, {kBackgroundSyncUserDataKey},
-        base::Bind(&BackgroundSyncManager::DisableAndClearManagerClearedOne,
-                   weak_ptr_factory_.GetWeakPtr(), barrier_closure));
+        base::AdaptCallbackForRepeating(base::BindOnce(
+            &BackgroundSyncManager::DisableAndClearManagerClearedOne,
+            weak_ptr_factory_.GetWeakPtr(), barrier_closure)));
   }
 }
 
 void BackgroundSyncManager::DisableAndClearManagerClearedOne(
-    const base::Closure& barrier_closure,
+    base::OnceClosure barrier_closure,
     ServiceWorkerStatusCode status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // The status doesn't matter at this point, there is nothing else to be done.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, barrier_closure);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                std::move(barrier_closure));
 }
 
 BackgroundSyncRegistration* BackgroundSyncManager::LookupActiveRegistration(
@@ -653,14 +665,15 @@ void BackgroundSyncManager::StoreRegistrations(
 void BackgroundSyncManager::RegisterDidStore(
     int64_t sw_registration_id,
     const BackgroundSyncRegistration& new_registration,
-    const StatusAndRegistrationCallback& callback,
+    StatusAndRegistrationCallback callback,
     ServiceWorkerStatusCode status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (status == SERVICE_WORKER_ERROR_NOT_FOUND) {
     // The service worker registration is gone.
     active_registrations_.erase(sw_registration_id);
-    RecordFailureAndPostError(BACKGROUND_SYNC_STATUS_STORAGE_ERROR, callback);
+    RecordFailureAndPostError(BACKGROUND_SYNC_STATUS_STORAGE_ERROR,
+                              std::move(callback));
     return;
   }
 
@@ -669,8 +682,8 @@ void BackgroundSyncManager::RegisterDidStore(
                   "failure.";
     BackgroundSyncMetrics::CountRegisterFailure(
         BACKGROUND_SYNC_STATUS_STORAGE_ERROR);
-    DisableAndClearManager(
-        base::Bind(callback, BACKGROUND_SYNC_STATUS_STORAGE_ERROR, nullptr));
+    DisableAndClearManager(base::BindOnce(
+        std::move(callback), BACKGROUND_SYNC_STATUS_STORAGE_ERROR, nullptr));
     return;
   }
 
@@ -686,9 +699,9 @@ void BackgroundSyncManager::RegisterDidStore(
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(callback, BACKGROUND_SYNC_STATUS_OK,
-                 base::Passed(base::MakeUnique<BackgroundSyncRegistration>(
-                     new_registration))));
+      base::BindOnce(std::move(callback), BACKGROUND_SYNC_STATUS_OK,
+                     base::Passed(base::MakeUnique<BackgroundSyncRegistration>(
+                         new_registration))));
 }
 
 void BackgroundSyncManager::RemoveActiveRegistration(int64_t sw_registration_id,
@@ -750,9 +763,10 @@ void BackgroundSyncManager::DispatchSyncEvent(
   if (active_version->running_status() != EmbeddedWorkerStatus::RUNNING) {
     active_version->RunAfterStartWorker(
         ServiceWorkerMetrics::EventType::SYNC,
-        base::Bind(&BackgroundSyncManager::DispatchSyncEvent,
-                   weak_ptr_factory_.GetWeakPtr(), tag, active_version,
-                   last_chance, callback),
+        base::AdaptCallbackForRepeating(
+            base::BindOnce(&BackgroundSyncManager::DispatchSyncEvent,
+                           weak_ptr_factory_.GetWeakPtr(), tag, active_version,
+                           last_chance, callback)),
         callback);
     return;
   }
@@ -764,33 +778,34 @@ void BackgroundSyncManager::DispatchSyncEvent(
 
   active_version->event_dispatcher()->DispatchSyncEvent(
       tag, last_chance,
-      base::Bind(&OnSyncEventFinished, std::move(active_version), request_id,
-                 callback));
+      base::BindOnce(&OnSyncEventFinished, std::move(active_version),
+                     request_id, callback));
 }
 
-void BackgroundSyncManager::ScheduleDelayedTask(const base::Closure& callback,
+void BackgroundSyncManager::ScheduleDelayedTask(base::OnceClosure callback,
                                                 base::TimeDelta delay) {
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(FROM_HERE, callback,
-                                                       delay);
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, std::move(callback), delay);
 }
 
-void BackgroundSyncManager::HasMainFrameProviderHost(
-    const GURL& origin,
-    const BoolCallback& callback) {
-  service_worker_context_->HasMainFrameProviderHost(origin, callback);
+void BackgroundSyncManager::HasMainFrameProviderHost(const GURL& origin,
+                                                     BoolCallback callback) {
+  service_worker_context_->HasMainFrameProviderHost(
+      origin, base::AdaptCallbackForRepeating(std::move(callback)));
 }
 
 void BackgroundSyncManager::GetRegistrationsImpl(
     int64_t sw_registration_id,
-    const StatusAndRegistrationsCallback& callback) {
+    StatusAndRegistrationsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   std::vector<std::unique_ptr<BackgroundSyncRegistration>> out_registrations;
 
   if (disabled_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, BACKGROUND_SYNC_STATUS_STORAGE_ERROR,
-                              base::Passed(&out_registrations)));
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  BACKGROUND_SYNC_STATUS_STORAGE_ERROR,
+                                  base::Passed(&out_registrations)));
     return;
   }
 
@@ -808,8 +823,8 @@ void BackgroundSyncManager::GetRegistrationsImpl(
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, BACKGROUND_SYNC_STATUS_OK,
-                            base::Passed(&out_registrations)));
+      FROM_HERE, base::BindOnce(std::move(callback), BACKGROUND_SYNC_STATUS_OK,
+                                base::Passed(&out_registrations)));
 }
 
 bool BackgroundSyncManager::AreOptionConditionsMet(
@@ -873,9 +888,10 @@ void BackgroundSyncManager::RunInBackgroundIfNecessary() {
   // keep the browser running.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(RunInBackgroundOnUIThread, service_worker_context_,
-                 !soonest_wakeup_delta.is_max() /* should run in background */,
-                 soonest_wakeup_delta.InMilliseconds()));
+      base::BindOnce(
+          RunInBackgroundOnUIThread, service_worker_context_,
+          !soonest_wakeup_delta.is_max() /* should run in background */,
+          soonest_wakeup_delta.InMilliseconds()));
 }
 
 void BackgroundSyncManager::FireReadyEvents() {
@@ -885,15 +901,16 @@ void BackgroundSyncManager::FireReadyEvents() {
     return;
 
   op_scheduler_.ScheduleOperation(
-      base::Bind(&BackgroundSyncManager::FireReadyEventsImpl,
-                 weak_ptr_factory_.GetWeakPtr(), MakeEmptyCompletion()));
+      base::BindOnce(&BackgroundSyncManager::FireReadyEventsImpl,
+                     weak_ptr_factory_.GetWeakPtr(), MakeEmptyCompletion()));
 }
 
-void BackgroundSyncManager::FireReadyEventsImpl(const base::Closure& callback) {
+void BackgroundSyncManager::FireReadyEventsImpl(base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (disabled_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(callback));
     return;
   }
 
@@ -918,7 +935,8 @@ void BackgroundSyncManager::FireReadyEventsImpl(const base::Closure& callback) {
 
   if (sw_id_and_tags_to_fire.empty()) {
     RunInBackgroundIfNecessary();
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(callback));
     return;
   }
 
@@ -926,16 +944,16 @@ void BackgroundSyncManager::FireReadyEventsImpl(const base::Closure& callback) {
 
   // Fire the sync event of the ready registrations and run |callback| once
   // they're all done.
-  base::Closure events_fired_barrier_closure = base::BarrierClosure(
+  base::RepeatingClosure events_fired_barrier_closure = base::BarrierClosure(
       sw_id_and_tags_to_fire.size(),
-      base::Bind(&BackgroundSyncManager::FireReadyEventsAllEventsFiring,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
+      base::BindOnce(&BackgroundSyncManager::FireReadyEventsAllEventsFiring,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 
   // Record the total time taken after all events have run to completion.
-  base::Closure events_completed_barrier_closure =
+  base::RepeatingClosure events_completed_barrier_closure =
       base::BarrierClosure(sw_id_and_tags_to_fire.size(),
-                           base::Bind(&OnAllSyncEventsCompleted, start_time,
-                                      sw_id_and_tags_to_fire.size()));
+                           base::BindOnce(&OnAllSyncEventsCompleted, start_time,
+                                          sw_id_and_tags_to_fire.size()));
 
   for (const auto& sw_id_and_tag : sw_id_and_tags_to_fire) {
     int64_t service_worker_id = sw_id_and_tag.first;
@@ -945,26 +963,27 @@ void BackgroundSyncManager::FireReadyEventsImpl(const base::Closure& callback) {
 
     service_worker_context_->FindReadyRegistrationForId(
         service_worker_id, active_registrations_[service_worker_id].origin,
-        base::Bind(&BackgroundSyncManager::FireReadyEventsDidFindRegistration,
-                   weak_ptr_factory_.GetWeakPtr(), sw_id_and_tag.second,
-                   registration->id(), events_fired_barrier_closure,
-                   events_completed_barrier_closure));
+        base::AdaptCallbackForRepeating(base::BindOnce(
+            &BackgroundSyncManager::FireReadyEventsDidFindRegistration,
+            weak_ptr_factory_.GetWeakPtr(), sw_id_and_tag.second,
+            registration->id(), events_fired_barrier_closure,
+            events_completed_barrier_closure)));
   }
 }
 
 void BackgroundSyncManager::FireReadyEventsDidFindRegistration(
     const std::string& tag,
     BackgroundSyncRegistration::RegistrationId registration_id,
-    const base::Closure& event_fired_callback,
-    const base::Closure& event_completed_callback,
+    base::OnceClosure event_fired_callback,
+    base::OnceClosure event_completed_callback,
     ServiceWorkerStatusCode service_worker_status,
     scoped_refptr<ServiceWorkerRegistration> service_worker_registration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (service_worker_status != SERVICE_WORKER_OK) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  event_fired_callback);
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  event_completed_callback);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, std::move(event_fired_callback));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, std::move(event_completed_callback));
     return;
   }
 
@@ -981,26 +1000,26 @@ void BackgroundSyncManager::FireReadyEventsDidFindRegistration(
 
   HasMainFrameProviderHost(
       service_worker_registration->pattern().GetOrigin(),
-      base::Bind(&BackgroundSyncMetrics::RecordEventStarted));
+      base::BindOnce(&BackgroundSyncMetrics::RecordEventStarted));
 
   DispatchSyncEvent(
       registration->options()->tag,
       service_worker_registration->active_version(), last_chance,
-      base::Bind(&BackgroundSyncManager::EventComplete,
-                 weak_ptr_factory_.GetWeakPtr(), service_worker_registration,
-                 service_worker_registration->id(), tag,
-                 event_completed_callback));
+      base::AdaptCallbackForRepeating(base::BindOnce(
+          &BackgroundSyncManager::EventComplete, weak_ptr_factory_.GetWeakPtr(),
+          service_worker_registration, service_worker_registration->id(), tag,
+          std::move(event_completed_callback))));
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                event_fired_callback);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, std::move(event_fired_callback));
 }
 
 void BackgroundSyncManager::FireReadyEventsAllEventsFiring(
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   RunInBackgroundIfNecessary();
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
 }
 
 // |service_worker_registration| is just to keep the registration alive
@@ -1009,30 +1028,32 @@ void BackgroundSyncManager::EventComplete(
     scoped_refptr<ServiceWorkerRegistration> service_worker_registration,
     int64_t service_worker_id,
     const std::string& tag,
-    const base::Closure& callback,
+    base::OnceClosure callback,
     ServiceWorkerStatusCode status_code) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (disabled_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(callback));
     return;
   }
 
-  op_scheduler_.ScheduleOperation(
-      base::Bind(&BackgroundSyncManager::EventCompleteImpl,
-                 weak_ptr_factory_.GetWeakPtr(), service_worker_id, tag,
-                 status_code, op_scheduler_.WrapCallbackToRunNext(callback)));
+  op_scheduler_.ScheduleOperation(base::BindOnce(
+      &BackgroundSyncManager::EventCompleteImpl, weak_ptr_factory_.GetWeakPtr(),
+      service_worker_id, tag, status_code,
+      op_scheduler_.WrapCallbackToRunNext(std::move(callback))));
 }
 
 void BackgroundSyncManager::EventCompleteImpl(
     int64_t service_worker_id,
     const std::string& tag,
     ServiceWorkerStatusCode status_code,
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (disabled_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(callback));
     return;
   }
 
@@ -1041,7 +1062,8 @@ void BackgroundSyncManager::EventCompleteImpl(
   BackgroundSyncRegistration* registration =
       LookupActiveRegistration(service_worker_id, tag);
   if (!registration) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(callback));
     return;
   }
 
@@ -1057,8 +1079,8 @@ void BackgroundSyncManager::EventCompleteImpl(
   if (sw_registration) {
     HasMainFrameProviderHost(
         sw_registration->pattern().GetOrigin(),
-        base::Bind(&BackgroundSyncMetrics::RecordEventResult,
-                   status_code == SERVICE_WORKER_OK));
+        base::BindOnce(&BackgroundSyncMetrics::RecordEventResult,
+                       status_code == SERVICE_WORKER_OK));
   }
 
   bool registration_completed = true;
@@ -1090,36 +1112,38 @@ void BackgroundSyncManager::EventCompleteImpl(
     }
   }
 
-  StoreRegistrations(
-      service_worker_id,
-      base::Bind(&BackgroundSyncManager::EventCompleteDidStore,
-                 weak_ptr_factory_.GetWeakPtr(), service_worker_id, callback));
+  StoreRegistrations(service_worker_id,
+                     base::AdaptCallbackForRepeating(base::BindOnce(
+                         &BackgroundSyncManager::EventCompleteDidStore,
+                         weak_ptr_factory_.GetWeakPtr(), service_worker_id,
+                         std::move(callback))));
 }
 
 void BackgroundSyncManager::EventCompleteDidStore(
     int64_t service_worker_id,
-    const base::Closure& callback,
+    base::OnceClosure callback,
     ServiceWorkerStatusCode status_code) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (status_code == SERVICE_WORKER_ERROR_NOT_FOUND) {
     // The registration is gone.
     active_registrations_.erase(service_worker_id);
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(callback));
     return;
   }
 
   if (status_code != SERVICE_WORKER_OK) {
     LOG(ERROR) << "BackgroundSync failed to store registration due to backend "
                   "failure.";
-    DisableAndClearManager(callback);
+    DisableAndClearManager(std::move(callback));
     return;
   }
 
   // Fire any ready events and call RunInBackground if anything is waiting.
   FireReadyEvents();
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
 }
 
 // static
@@ -1133,21 +1157,21 @@ void BackgroundSyncManager::OnAllSyncEventsCompleted(
 
 void BackgroundSyncManager::OnRegistrationDeletedImpl(
     int64_t sw_registration_id,
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // The backend (ServiceWorkerStorage) will delete the data, so just delete the
   // memory representation here.
   active_registrations_.erase(sw_registration_id);
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
 }
 
-void BackgroundSyncManager::OnStorageWipedImpl(const base::Closure& callback) {
+void BackgroundSyncManager::OnStorageWipedImpl(base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   active_registrations_.clear();
   disabled_ = false;
-  InitImpl(callback);
+  InitImpl(std::move(callback));
 }
 
 void BackgroundSyncManager::OnNetworkChanged() {
@@ -1156,18 +1180,17 @@ void BackgroundSyncManager::OnNetworkChanged() {
   FireReadyEvents();
 }
 
-void BackgroundSyncManager::SetMaxSyncAttemptsImpl(
-    int max_attempts,
-    const base::Closure& callback) {
+void BackgroundSyncManager::SetMaxSyncAttemptsImpl(int max_attempts,
+                                                   base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   parameters_->max_sync_attempts = max_attempts;
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
 }
 
-base::Closure BackgroundSyncManager::MakeEmptyCompletion() {
+base::OnceClosure BackgroundSyncManager::MakeEmptyCompletion() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return op_scheduler_.WrapCallbackToRunNext(base::Bind(&base::DoNothing));
+  return op_scheduler_.WrapCallbackToRunNext(base::BindOnce(&base::DoNothing));
 }
 
 }  // namespace content

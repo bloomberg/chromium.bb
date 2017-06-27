@@ -47,43 +47,22 @@ class CONTENT_EXPORT CacheStorageScheduler {
   template <typename... Args>
   base::OnceCallback<void(Args...)> WrapCallbackToRunNext(
       base::OnceCallback<void(Args...)> callback) {
-    return base::BindOnce(
-        &CacheStorageScheduler::RunNextOnceContinuation<Args...>,
-        weak_ptr_factory_.GetWeakPtr(), std::move(callback));
-  }
-  template <typename... Args>
-  base::RepeatingCallback<void(Args...)> WrapCallbackToRunNext(
-      const base::RepeatingCallback<void(Args...)>& callback) {
-    return base::BindRepeating(
-        &CacheStorageScheduler::RunNextRepeatingContinuation<Args...>,
-        weak_ptr_factory_.GetWeakPtr(), callback);
+    return base::BindOnce(&CacheStorageScheduler::RunNextContinuation<Args...>,
+                          weak_ptr_factory_.GetWeakPtr(), std::move(callback));
   }
 
  private:
   void RunOperationIfIdle();
 
   template <typename... Args>
-  void RunNextOnceContinuation(base::OnceCallback<void(Args...)> callback,
-                               Args... args) {
+  void RunNextContinuation(base::OnceCallback<void(Args...)> callback,
+                           Args... args) {
     // Grab a weak ptr to guard against the scheduler being deleted during the
     // callback.
     base::WeakPtr<CacheStorageScheduler> scheduler =
         weak_ptr_factory_.GetWeakPtr();
 
     std::move(callback).Run(std::forward<Args>(args)...);
-    if (scheduler)
-      CompleteOperationAndRunNext();
-  }
-  template <typename... Args>
-  void RunNextRepeatingContinuation(
-      const base::RepeatingCallback<void(Args...)>& callback,
-      Args... args) {
-    // Grab a weak ptr to guard against the scheduler being deleted during the
-    // callback.
-    base::WeakPtr<CacheStorageScheduler> scheduler =
-        weak_ptr_factory_.GetWeakPtr();
-
-    callback.Run(std::forward<Args>(args)...);
     if (scheduler)
       CompleteOperationAndRunNext();
   }

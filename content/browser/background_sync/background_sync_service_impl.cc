@@ -83,9 +83,9 @@ BackgroundSyncServiceImpl::BackgroundSyncServiceImpl(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(background_sync_context);
 
-  binding_.set_connection_error_handler(
-      base::Bind(&BackgroundSyncServiceImpl::OnConnectionError,
-                 base::Unretained(this) /* the channel is owned by this */));
+  binding_.set_connection_error_handler(base::BindOnce(
+      &BackgroundSyncServiceImpl::OnConnectionError,
+      base::Unretained(this) /* the channel is owned by this */));
 }
 
 void BackgroundSyncServiceImpl::OnConnectionError() {
@@ -107,8 +107,8 @@ void BackgroundSyncServiceImpl::Register(
   DCHECK(background_sync_manager);
   background_sync_manager->Register(
       sw_registration_id, manager_options,
-      base::Bind(&BackgroundSyncServiceImpl::OnRegisterResult,
-                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback)));
+      base::BindOnce(&BackgroundSyncServiceImpl::OnRegisterResult,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void BackgroundSyncServiceImpl::GetRegistrations(
@@ -120,8 +120,8 @@ void BackgroundSyncServiceImpl::GetRegistrations(
   DCHECK(background_sync_manager);
   background_sync_manager->GetRegistrations(
       sw_registration_id,
-      base::Bind(&BackgroundSyncServiceImpl::OnGetRegistrationsResult,
-                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback)));
+      base::BindOnce(&BackgroundSyncServiceImpl::OnGetRegistrationsResult,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void BackgroundSyncServiceImpl::OnRegisterResult(
