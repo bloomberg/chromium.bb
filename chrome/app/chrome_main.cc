@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -68,7 +69,11 @@ int ChromeMain(int argc, const char** argv) {
   content::ContentMainParams params(&chrome_main_delegate);
 
 #if defined(OS_WIN)
-  // The process should crash when going through abnormal termination.
+  // The process should crash when going through abnormal termination, but we
+  // must be sure to reset this setting when ChromeMain returns normally.
+  auto crash_on_detach_resetter = base::ScopedClosureRunner(
+      base::Bind(&base::win::SetShouldCrashOnProcessDetach,
+                 base::win::ShouldCrashOnProcessDetach()));
   base::win::SetShouldCrashOnProcessDetach(true);
   base::win::SetAbortBehaviorForCrashReporting();
   params.instance = instance;
@@ -123,10 +128,6 @@ int ChromeMain(int argc, const char** argv) {
 #endif  // BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
 
   int rv = content::ContentMain(params);
-
-#if defined(OS_WIN)
-  base::win::SetShouldCrashOnProcessDetach(false);
-#endif
 
   return rv;
 }
