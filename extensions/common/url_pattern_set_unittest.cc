@@ -8,6 +8,7 @@
 
 #include <sstream>
 
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -467,13 +468,8 @@ TEST(URLPatternSetTest, ToStringVector) {
 
   EXPECT_EQ(2UL, string_vector->size());
 
-  const auto begin = string_vector->begin();
-  const auto end = string_vector->end();
-
-  auto it = std::find(begin, end, "https://google.com/");
-  EXPECT_NE(it, end);
-  it = std::find(begin, end, "https://yahoo.com/");
-  EXPECT_NE(it, end);
+  EXPECT_TRUE(base::ContainsValue(*string_vector, "https://google.com/"));
+  EXPECT_TRUE(base::ContainsValue(*string_vector, "https://yahoo.com/"));
 }
 
 }  // namespace extensions

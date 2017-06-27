@@ -4,12 +4,12 @@
 
 #include "extensions/common/permissions/permissions_data.h"
 
-#include <algorithm>
 #include <utility>
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
@@ -84,8 +84,7 @@ bool PermissionsData::CanExecuteScriptEverywhere(const Extension* extension) {
   const ExtensionsClient::ScriptingWhitelist& whitelist =
       ExtensionsClient::Get()->GetScriptingWhitelist();
 
-  return std::find(whitelist.begin(), whitelist.end(), extension->id()) !=
-         whitelist.end();
+  return base::ContainsValue(whitelist, extension->id());
 }
 
 // static
