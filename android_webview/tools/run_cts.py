@@ -96,8 +96,8 @@ def main():
   parser = argparse.ArgumentParser()
   parser.add_argument(
       '--arch',
-      choices=['arm_64'],
-      default='arm_64',
+      choices=['arm64'],
+      default='arm64',
       help='Arch for CTS tests.')
   parser.add_argument(
       '--platform',
