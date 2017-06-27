@@ -1,0 +1,39 @@
+rootWebArea
+++grid ariaColumnCount=4 tableRowCount=3 tableColumnCount=3 cellIds=columnHeader,columnHeader,columnHeader,cell,cell,cell,cell,cell,cell
+++++row
+++++++columnHeader name='Month' ariaCellColumnIndex=1 ariaCellRowIndex=1
+++++++++staticText name='Month'
+++++++++++inlineTextBox name='Month'
+++++++columnHeader name='Day' ariaCellColumnIndex=2 ariaCellRowIndex=1
+++++++++staticText name='Day'
+++++++++++inlineTextBox name='Day'
+++++++columnHeader name='Weather' ariaCellColumnIndex=4 ariaCellRowIndex=1
+++++++++staticText name='Weather'
+++++++++++inlineTextBox name='Weather'
+++++row
+++++++cell selectable name='January' ariaCellColumnIndex=1 ariaCellRowIndex=2
+++++++++staticText name='January'
+++++++++++inlineTextBox name='January'
+++++++cell selectable name='01' ariaCellColumnIndex=2 ariaCellRowIndex=2
+++++++++staticText name='01'
+++++++++++inlineTextBox name='01'
+++++++cell selectable name='Sunny' ariaCellColumnIndex=4 ariaCellRowIndex=2
+++++++++staticText name='Sunny'
+++++++++++inlineTextBox name='Sunny'
+++++row
+++++++cell selectable name='January' ariaCellColumnIndex=1 ariaCellRowIndex=2
+++++++++staticText name='January'
+++++++++++inlineTextBox name='January'
+++++++cell selectable name='02' ariaCellColumnIndex=2 ariaCellRowIndex=2
+++++++++staticText name='02'
+++++++++++inlineTextBox name='02'
+++++++cell selectable name='Rainy' ariaCellColumnIndex=4 ariaCellRowIndex=2
+++++++++staticText name='Rainy'
+++++++++++inlineTextBox name='Rainy'
+++++column
+++++column
+++++column
+++++tableHeaderContainer
+++paragraph
+++++staticText name='done'
+++++++inlineTextBox name='done'
