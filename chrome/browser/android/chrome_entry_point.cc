@@ -7,7 +7,6 @@
 #include "base/android/library_loader/library_loader_hooks.h"
 #include "base/bind.h"
 #include "chrome/app/android/chrome_jni_onload.h"
-#include "chrome/browser/android/chrome_jni_registration.h"
 
 namespace {
 
@@ -24,19 +23,6 @@ JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
   // Java side and only register a subset of JNI methods.
   base::android::InitVM(vm);
   JNIEnv* env = base::android::AttachCurrentThread();
-
-  if (!base::android::IsSelectiveJniRegistrationEnabled(env)) {
-    if (!RegisterNonMainDexNatives(env)) {
-      return -1;
-    }
-  }
-
-  if (!RegisterMainDexNatives(env)) {
-    return -1;
-  }
-
-  // TODO(agrieve): Delete this block, this is a no-op now.
-  // https://crbug.com/683256.
   if (base::android::IsSelectiveJniRegistrationEnabled(env)) {
     base::android::SetJniRegistrationType(
         base::android::SELECTIVE_JNI_REGISTRATION);
