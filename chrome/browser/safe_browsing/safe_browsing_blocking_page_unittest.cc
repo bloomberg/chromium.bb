@@ -92,6 +92,7 @@ class TestSafeBrowsingBlockingPageFactory
         web_contents->GetBrowserContext()->IsOffTheRecord(),
         IsExtendedReportingEnabled(*prefs), IsScout(*prefs),
         is_proceed_anyway_disabled,
+        true,  // should_open_links_in_new_tab
         "cpn_safe_browsing" /* help_center_article_link */);
     return new TestSafeBrowsingBlockingPage(manager, web_contents,
                                             main_frame_url, unsafe_resources,
@@ -173,6 +174,7 @@ class TestSafeBrowsingBlockingQuietPageFactory
         web_contents->GetBrowserContext()->IsOffTheRecord(),
         IsExtendedReportingEnabled(*prefs), IsScout(*prefs),
         is_proceed_anyway_disabled,
+        true,  // should_open_links_in_new_tab
         "cpn_safe_browsing" /* help_center_article_link */);
     return new TestSafeBrowsingBlockingPageQuiet(
         manager, web_contents, main_frame_url, unsafe_resources,

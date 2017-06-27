@@ -32,6 +32,7 @@ class BaseSafeBrowsingErrorUI {
                           bool is_extended_reporting_enabled,
                           bool is_scout_reporting_enabled,
                           bool is_proceed_anyway_disabled,
+                          bool should_open_links_in_new_tab,
                           const std::string& help_center_article_link);
 
     SBErrorDisplayOptions(const SBErrorDisplayOptions& other);
@@ -53,6 +54,9 @@ class BaseSafeBrowsingErrorUI {
 
     // Indicates if kSafeBrowsingProceedAnywayDisabled preference is set.
     bool is_proceed_anyway_disabled;
+
+    // Indicates if links should use a new foreground tab or the current tab.
+    bool should_open_links_in_new_tab;
 
     // The p= query parameter used when visiting the Help Center. If this is
     // nullptr, then a default value will be used for the SafeBrowsing article.
@@ -93,6 +97,10 @@ class BaseSafeBrowsingErrorUI {
 
   bool is_proceed_anyway_disabled() const {
     return display_options_.is_proceed_anyway_disabled;
+  }
+
+  bool should_open_links_in_new_tab() const {
+    return display_options_.should_open_links_in_new_tab;
   }
 
   const std::string& get_help_center_article_link() const {
