@@ -28,13 +28,9 @@ class DesktopCaptureChooseDesktopMediaFunctionBase
   // Used for tests to supply fake picker.
   class PickerFactory {
    public:
-    typedef std::array<std::unique_ptr<DesktopMediaList>, 3> MediaListArray;
-    virtual MediaListArray CreateModel(
-        bool show_screens,
-        bool show_windows,
-        bool show_tabs,
-        bool show_audio) = 0;
     virtual std::unique_ptr<DesktopMediaPicker> CreatePicker() = 0;
+    virtual std::unique_ptr<DesktopMediaList> CreateMediaList(
+        content::DesktopMediaID::Type type) = 0;
 
    protected:
     PickerFactory() = default;
