@@ -1733,7 +1733,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       OpenURLWithExtraHeaders(
           params_.src_url, GetDocumentURL(params_),
           WindowOpenDisposition::NEW_BACKGROUND_TAB, ui::PAGE_TRANSITION_LINK,
-          data_reduction_proxy::kDataReductionPassThroughHeader, false);
+          data_reduction_proxy::chrome_proxy_pass_through_header(), false);
       break;
 
     case IDC_CONTENT_CONTEXT_LOAD_ORIGINAL_IMAGE:
@@ -2245,7 +2245,7 @@ void RenderViewContextMenu::ExecSaveAs() {
             browser_context_);
     if (params_.media_type == WebContextMenuData::kMediaTypeImage && settings &&
         settings->CanUseDataReductionProxy(params_.src_url)) {
-      headers = data_reduction_proxy::kDataReductionPassThroughHeader;
+      headers = data_reduction_proxy::chrome_proxy_pass_through_header();
     }
 
     source_web_contents_->SaveFrameWithHeaders(url, referrer, headers);

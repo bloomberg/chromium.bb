@@ -68,6 +68,11 @@ struct DataReductionProxyInfo {
 // Gets the header used for data reduction proxy requests and responses.
 const char* chrome_proxy_header();
 
+// The header used to request a data reduction proxy pass through. When a
+// request is sent to the data reduction proxy with this header, it will respond
+// with the original uncompressed response.
+const char* chrome_proxy_pass_through_header();
+
 // Gets the chrome-proxy-ect request header that includes the effective
 // connection type.
 const char* chrome_proxy_ect_header();
@@ -89,10 +94,6 @@ const char* lite_page_directive();
 // Gets the directive used by the data reduction proxy to request
 // compressed video.
 const char* compressed_video_directive();
-
-// Gets the directive used by the data reduction proxy to request that
-// a resource not be transformed.
-const char* identity_directive();
 
 // Gets the Chrome-Proxy directive used by data reduction proxy lite page
 // preview requests and responses.

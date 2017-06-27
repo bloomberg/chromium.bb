@@ -34,11 +34,6 @@ class DataReductionProxyIOData;
 class DataReductionProxyService;
 class DataReductionProxyCompressionStats;
 
-// The header used to request a data reduction proxy pass through. When a
-// request is sent to the data reduction proxy with this header, it will respond
-// with the original uncompressed response.
-extern const char kDataReductionPassThroughHeader[];
-
 // Values of the UMA DataReductionProxy.StartupState histogram.
 // This enum must remain synchronized with DataReductionProxyStartupState
 // in metrics/histograms/histograms.xml.

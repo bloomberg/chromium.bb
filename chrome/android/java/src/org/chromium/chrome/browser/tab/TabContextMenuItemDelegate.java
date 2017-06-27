@@ -37,9 +37,6 @@ import java.util.Locale;
  * A default {@link ContextMenuItemDelegate} that supports the context menu functionality in Tab.
  */
 public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
-    public static final String PAGESPEED_PASSTHROUGH_HEADERS =
-            "Chrome-Proxy-Accept-Transform: identity\nCache-Control: no-cache";
-
     private final Tab mTab;
     private boolean mLoadOriginalImageRequestedForPageLoad;
     private EmptyTabObserver mDataReductionProxyContextMenuTabObserver;
@@ -215,7 +212,10 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
     public void onOpenImageInNewTab(String url, Referrer referrer) {
         boolean useOriginal = isSpdyProxyEnabledForUrl(url);
         LoadUrlParams loadUrlParams = new LoadUrlParams(url);
-        loadUrlParams.setVerbatimHeaders(useOriginal ? PAGESPEED_PASSTHROUGH_HEADERS : null);
+        loadUrlParams.setVerbatimHeaders(useOriginal
+                        ? DataReductionProxySettings.getInstance()
+                                  .getDataReductionProxyPassThroughHeader()
+                        : null);
         loadUrlParams.setReferrer(referrer);
         mTab.getActivity().getTabModelSelector().openNewTab(loadUrlParams,
                 TabLaunchType.FROM_LONGPRESS_BACKGROUND, mTab, isIncognito());

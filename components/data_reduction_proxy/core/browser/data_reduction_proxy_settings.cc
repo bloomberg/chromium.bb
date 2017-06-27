@@ -48,9 +48,6 @@ void RecordDaysSinceEnabledMetric(int days_since_enabled) {
 
 namespace data_reduction_proxy {
 
-const char kDataReductionPassThroughHeader[] =
-    "Chrome-Proxy-Accept-Transform: identity\nCache-Control: no-cache";
-
 DataReductionProxySettings::DataReductionProxySettings()
     : unreachable_(false),
       deferred_initialization_(false),
