@@ -1265,8 +1265,9 @@ TEST_F(RenderFrameHostManagerTest, NavigateAfterMissingSwapOutACK) {
 
   // The back navigation commits.
   const NavigationEntry* entry1 = contents()->GetController().GetPendingEntry();
-  contents()->GetPendingMainFrame()->SendNavigate(
-      entry1->GetUniqueID(), false, entry1->GetURL());
+  contents()->GetPendingMainFrame()->SendNavigateWithTransition(
+      entry1->GetUniqueID(), false, entry1->GetURL(),
+      entry1->GetTransitionType());
   EXPECT_TRUE(rfh2->IsWaitingForUnloadACK());
   EXPECT_FALSE(rfh2->is_active());
 
@@ -1274,8 +1275,9 @@ TEST_F(RenderFrameHostManagerTest, NavigateAfterMissingSwapOutACK) {
   contents()->GetController().GoForward();
   contents()->GetMainFrame()->PrepareForCommit();
   const NavigationEntry* entry2 = contents()->GetController().GetPendingEntry();
-  contents()->GetPendingMainFrame()->SendNavigate(
-      entry2->GetUniqueID(), false, entry2->GetURL());
+  contents()->GetPendingMainFrame()->SendNavigateWithTransition(
+      entry2->GetUniqueID(), false, entry2->GetURL(),
+      entry2->GetTransitionType());
   EXPECT_TRUE(main_test_rfh()->is_active());
 }
 
@@ -1440,8 +1442,9 @@ TEST_F(RenderFrameHostManagerTest, DisownOpenerDuringNavigation) {
 
   // The back navigation commits.
   const NavigationEntry* entry1 = contents()->GetController().GetPendingEntry();
-  contents()->GetPendingMainFrame()->SendNavigate(
-      entry1->GetUniqueID(), false, entry1->GetURL());
+  contents()->GetPendingMainFrame()->SendNavigateWithTransition(
+      entry1->GetUniqueID(), false, entry1->GetURL(),
+      entry1->GetTransitionType());
 
   // Ensure the opener is still cleared.
   EXPECT_FALSE(contents()->HasOpener());
@@ -1474,8 +1477,9 @@ TEST_F(RenderFrameHostManagerTest, DisownOpenerAfterNavigation) {
   contents()->GetController().GoBack();
   contents()->GetMainFrame()->PrepareForCommit();
   const NavigationEntry* entry1 = contents()->GetController().GetPendingEntry();
-  contents()->GetPendingMainFrame()->SendNavigate(
-      entry1->GetUniqueID(), false, entry1->GetURL());
+  contents()->GetPendingMainFrame()->SendNavigateWithTransition(
+      entry1->GetUniqueID(), false, entry1->GetURL(),
+      entry1->GetTransitionType());
 
   // Disown the opener from rfh2.
   rfh2->DidChangeOpener(MSG_ROUTING_NONE);

@@ -398,8 +398,9 @@ TEST_F(OverscrollNavigationOverlayTest, CancelAfterSuccessfulNavigation) {
 
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
   NavigationEntry* pending = contents()->GetController().GetPendingEntry();
-  contents()->GetPendingMainFrame()->SendNavigate(
-      pending->GetUniqueID(), false, pending->GetURL());
+  contents()->GetPendingMainFrame()->SendNavigateWithTransition(
+      pending->GetUniqueID(), false, pending->GetURL(),
+      pending->GetTransitionType());
   EXPECT_EQ(contents()->GetURL(), third());
 }
 
@@ -414,8 +415,9 @@ TEST_F(OverscrollNavigationOverlayTest, Navigation_PaintUpdate) {
   EXPECT_TRUE(GetOverlay()->web_contents());
 
   NavigationEntry* pending = contents()->GetController().GetPendingEntry();
-  contents()->GetPendingMainFrame()->SendNavigate(
-      pending->GetUniqueID(), false, pending->GetURL());
+  contents()->GetPendingMainFrame()->SendNavigateWithTransition(
+      pending->GetUniqueID(), false, pending->GetURL(),
+      pending->GetTransitionType());
   ReceivePaintUpdate();
 
   // Navigation was committed and the paint update was received - we should no
