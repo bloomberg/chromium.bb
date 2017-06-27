@@ -96,8 +96,9 @@ void SearchResultTileItemView::SetSearchResult(SearchResult* item) {
         ui::ResourceBundle::GetSharedInstance().GetFontList(
             ui::ResourceBundle::BaseFont);
 
-    // Customize title UI
     if (item_->display_type() == SearchResult::DISPLAY_RECOMMENDATION) {
+      EnableWhiteSelectedColor(true);
+
       title()->SetFontList(base_font.DeriveWithSizeDelta(1));
       title()->SetEnabledColor(kGridTitleColorFullscreen);
     } else if (item_->display_type() == SearchResult::DISPLAY_TILE) {

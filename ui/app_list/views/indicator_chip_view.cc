@@ -69,9 +69,7 @@ IndicatorChipView::~IndicatorChipView() = default;
 
 gfx::Size IndicatorChipView::CalculatePreferredSize() const {
   const int label_width = label_->GetPreferredSize().width();
-  return gfx::Size(
-      label_width + 2 * kHorizontalPadding + 2 * kBorderCornerRadius,
-      kIndicatorHeight);
+  return gfx::Size(label_width + 2 * kHorizontalPadding, kIndicatorHeight);
 }
 
 void IndicatorChipView::Layout() {

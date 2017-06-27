@@ -281,8 +281,19 @@ void AppListItemView::PaintButtonContents(gfx::Canvas* canvas) {
     return;
 
   gfx::Rect rect(GetContentsBounds());
-  if (apps_grid_view_->IsSelectedView(this))
-    canvas->FillRect(rect, kSelectedColor);
+  if (apps_grid_view_->IsSelectedView(this)) {
+    if (is_fullscreen_app_list_enabled_) {
+      rect.Inset((rect.width() - kGridSelectedSize) / 2,
+                 (rect.height() - kGridSelectedSize) / 2);
+      cc::PaintFlags flags;
+      flags.setAntiAlias(true);
+      flags.setColor(kGridSelectedColor);
+      flags.setStyle(cc::PaintFlags::kFill_Style);
+      canvas->DrawRoundRect(gfx::RectF(rect), kGridSelectedCornerRadius, flags);
+    } else {
+      canvas->FillRect(GetContentsBounds(), kSelectedColor);
+    }
+  }
 
   if (ui_state_ == UI_STATE_DROPPING_IN_FOLDER) {
     DCHECK(apps_grid_view_->model()->folders_enabled());

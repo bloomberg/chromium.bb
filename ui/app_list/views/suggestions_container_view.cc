@@ -124,11 +124,13 @@ void SuggestionsContainerView::CreateAppsGrid(int apps_num) {
   SetLayoutManager(tiles_layout_manager);
 
   views::ColumnSet* column_set = tiles_layout_manager->AddColumnSet(0);
-  column_set->AddPaddingColumn(0, kTilesHorizontalMarginLeft);
+  if (!is_fullscreen_app_list_enabled_)
+    column_set->AddPaddingColumn(0, kTilesHorizontalMarginLeft);
   for (int col = 0; col < kNumTilesCols; ++col) {
     column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 0,
                           views::GridLayout::USE_PREF, 0, 0);
-    column_set->AddPaddingColumn(0, kTileSpacing);
+    column_set->AddPaddingColumn(
+        0, is_fullscreen_app_list_enabled_ ? kGridTileSpacing : kTileSpacing);
   }
 
   // Add SearchResultTileItemViews to the container.

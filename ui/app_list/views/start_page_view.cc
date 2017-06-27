@@ -238,6 +238,11 @@ void StartPageView::Layout() {
     bounds.Inset(0, indicator_->GetPreferredSize().height(), 0, 0);
   }
   bounds.set_height(suggestions_container_->GetHeightForWidth(bounds.width()));
+  if (is_fullscreen_app_list_enabled_) {
+    bounds.Offset((bounds.width() - kGridTileWidth) / 2 -
+                      (kGridTileWidth + kGridTileSpacing) * 2,
+                  0);
+  }
   suggestions_container_->SetBoundsRect(bounds);
 
   CustomLauncherPageView* custom_launcher_page_view =

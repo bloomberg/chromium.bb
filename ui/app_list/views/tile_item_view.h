@@ -50,6 +50,7 @@ class APP_LIST_EXPORT TileItemView : public views::CustomButton,
 
   // Overridden from views::CustomButton:
   void StateChanged(ButtonState old_state) override;
+  void PaintButtonContents(gfx::Canvas* canvas) override;
 
   // Overridden from views::View:
   void Layout() override;
@@ -73,6 +74,8 @@ class APP_LIST_EXPORT TileItemView : public views::CustomButton,
   views::Label* title() const { return title_; }
   void SetTitle(const base::string16& title);
 
+  void EnableWhiteSelectedColor(bool enabled);
+
  private:
   void UpdateBackgroundColor();
 
@@ -84,6 +87,11 @@ class APP_LIST_EXPORT TileItemView : public views::CustomButton,
   views::Label* title_;      // Owned by views hierarchy.
 
   bool selected_ = false;
+
+  // Indicates whether the white color background selected color should be used
+  // for this TileItemView. It is enabled for suggested apps only for new
+  // design.
+  bool white_selected_color_enabled_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TileItemView);
 };

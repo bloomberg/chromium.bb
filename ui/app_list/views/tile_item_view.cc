@@ -146,8 +146,26 @@ void TileItemView::SetTitle(const base::string16& title) {
   SetAccessibleName(title);
 }
 
+void TileItemView::EnableWhiteSelectedColor(bool enabled) {
+  white_selected_color_enabled_ = enabled;
+}
+
 void TileItemView::StateChanged(ButtonState old_state) {
   UpdateBackgroundColor();
+}
+
+void TileItemView::PaintButtonContents(gfx::Canvas* canvas) {
+  if (!white_selected_color_enabled_ || !selected_)
+    return;
+
+  gfx::Rect rect(GetContentsBounds());
+  rect.Inset((rect.width() - kGridSelectedSize) / 2,
+             (rect.height() - kGridSelectedSize) / 2);
+  cc::PaintFlags flags;
+  flags.setAntiAlias(true);
+  flags.setColor(kGridSelectedColor);
+  flags.setStyle(cc::PaintFlags::kFill_Style);
+  canvas->DrawRoundRect(gfx::RectF(rect), kGridSelectedCornerRadius, flags);
 }
 
 void TileItemView::Layout() {
@@ -187,6 +205,12 @@ bool TileItemView::GetTooltipText(const gfx::Point& p,
 }
 
 void TileItemView::UpdateBackgroundColor() {
+  if (white_selected_color_enabled_) {
+    SetBackground(nullptr);
+    SchedulePaint();
+    return;
+  }
+
   std::unique_ptr<views::Background> background;
   SkColor background_color = parent_background_color_;
 
