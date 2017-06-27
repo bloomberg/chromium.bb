@@ -88,16 +88,8 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_AX_CALENDAR_WEEK_DESCRIPTION;
     case WebLocalizedString::kAXDayOfMonthFieldText:
       return IDS_AX_DAY_OF_MONTH_FIELD_TEXT;
-    case WebLocalizedString::kAXHeadingText:
-      return IDS_AX_ROLE_HEADING;
     case WebLocalizedString::kAXHourFieldText:
       return IDS_AX_HOUR_FIELD_TEXT;
-    case WebLocalizedString::kAXImageMapText:
-      return IDS_AX_ROLE_IMAGE_MAP;
-    case WebLocalizedString::kAXLinkText:
-      return IDS_AX_ROLE_LINK;
-    case WebLocalizedString::kAXListMarkerText:
-      return IDS_AX_ROLE_LIST_MARKER;
     case WebLocalizedString::kAXMediaDefault:
       return IDS_AX_MEDIA_DEFAULT;
     case WebLocalizedString::kAXMediaAudioElement:
@@ -112,16 +104,10 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_AX_MEDIA_PLAY_BUTTON;
     case WebLocalizedString::kAXMediaPauseButton:
       return IDS_AX_MEDIA_PAUSE_BUTTON;
-    case WebLocalizedString::kAXMediaSlider:
-      return IDS_AX_MEDIA_SLIDER;
-    case WebLocalizedString::kAXMediaSliderThumb:
-      return IDS_AX_MEDIA_SLIDER_THUMB;
     case WebLocalizedString::kAXMediaCurrentTimeDisplay:
       return IDS_AX_MEDIA_CURRENT_TIME_DISPLAY;
     case WebLocalizedString::kAXMediaTimeRemainingDisplay:
       return IDS_AX_MEDIA_TIME_REMAINING_DISPLAY;
-    case WebLocalizedString::kAXMediaStatusDisplay:
-      return IDS_AX_MEDIA_STATUS_DISPLAY;
     case WebLocalizedString::kAXMediaEnterFullscreenButton:
       return IDS_AX_MEDIA_ENTER_FULL_SCREEN_BUTTON;
     case WebLocalizedString::kAXMediaExitFullscreenButton:
@@ -154,14 +140,10 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_AX_MEDIA_AUDIO_SLIDER_HELP;
     case WebLocalizedString::kAXMediaVideoSliderHelp:
       return IDS_AX_MEDIA_VIDEO_SLIDER_HELP;
-    case WebLocalizedString::kAXMediaSliderThumbHelp:
-      return IDS_AX_MEDIA_SLIDER_THUMB_HELP;
     case WebLocalizedString::kAXMediaCurrentTimeDisplayHelp:
       return IDS_AX_MEDIA_CURRENT_TIME_DISPLAY_HELP;
     case WebLocalizedString::kAXMediaTimeRemainingDisplayHelp:
       return IDS_AX_MEDIA_TIME_REMAINING_DISPLAY_HELP;
-    case WebLocalizedString::kAXMediaStatusDisplayHelp:
-      return IDS_AX_MEDIA_STATUS_DISPLAY_HELP;
     case WebLocalizedString::kAXMediaEnterFullscreenButtonHelp:
       return IDS_AX_MEDIA_ENTER_FULL_SCREEN_BUTTON_HELP;
     case WebLocalizedString::kAXMediaExitFullscreenButtonHelp:
@@ -184,8 +166,6 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_AX_MONTH_FIELD_TEXT;
     case WebLocalizedString::kAXSecondFieldText:
       return IDS_AX_SECOND_FIELD_TEXT;
-    case WebLocalizedString::kAXWebAreaText:
-      return IDS_AX_ROLE_WEB_AREA;
     case WebLocalizedString::kAXWeekOfYearFieldText:
       return IDS_AX_WEEK_OF_YEAR_FIELD_TEXT;
     case WebLocalizedString::kAXYearFieldText:
@@ -194,12 +174,6 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_FORM_CALENDAR_CLEAR;
     case WebLocalizedString::kCalendarToday:
       return IDS_FORM_CALENDAR_TODAY;
-    case WebLocalizedString::kDateFormatDayInMonthLabel:
-      return IDS_FORM_DATE_FORMAT_DAY_IN_MONTH;
-    case WebLocalizedString::kDateFormatMonthLabel:
-      return IDS_FORM_DATE_FORMAT_MONTH;
-    case WebLocalizedString::kDateFormatYearLabel:
-      return IDS_FORM_DATE_FORMAT_YEAR;
     case WebLocalizedString::kDetailsLabel:
       return IDS_DETAILS_WITHOUT_SUMMARY_LABEL;
     case WebLocalizedString::kDownloadButtonLabel:
@@ -226,8 +200,6 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_FORM_OTHER_DATE_LABEL;
     case WebLocalizedString::kOtherMonthLabel:
       return IDS_FORM_OTHER_MONTH_LABEL;
-    case WebLocalizedString::kOtherTimeLabel:
-      return IDS_FORM_OTHER_TIME_LABEL;
     case WebLocalizedString::kOtherWeekLabel:
       return IDS_FORM_OTHER_WEEK_LABEL;
     case WebLocalizedString::kOverflowMenuCaptions:
@@ -258,14 +230,6 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_FORM_PLACEHOLDER_FOR_YEAR_FIELD;
     case WebLocalizedString::kResetButtonDefaultLabel:
       return IDS_FORM_RESET_LABEL;
-    case WebLocalizedString::kSearchableIndexIntroduction:
-      return IDS_SEARCHABLE_INDEX_INTRO;
-    case WebLocalizedString::kSearchMenuClearRecentSearchesText:
-      return IDS_RECENT_SEARCHES_CLEAR;
-    case WebLocalizedString::kSearchMenuNoRecentSearchesText:
-      return IDS_RECENT_SEARCHES_NONE;
-    case WebLocalizedString::kSearchMenuRecentSearchesText:
-      return IDS_RECENT_SEARCHES;
     case WebLocalizedString::kSelectMenuListText:
       return IDS_FORM_SELECT_MENU_LIST_TEXT;
     case WebLocalizedString::kSubmitButtonDefaultLabel:
