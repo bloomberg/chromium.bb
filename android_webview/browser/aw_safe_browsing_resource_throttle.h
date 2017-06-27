@@ -35,10 +35,6 @@ class AwSafeBrowsingResourceThrottle
 
   static const void* kUserDataKey;
 
-  void OnCheckBrowseUrlResult(const GURL& url,
-                              SBThreatType threat_type,
-                              const ThreatMetadata& metadata) override;
-
  private:
   AwSafeBrowsingResourceThrottle(
       net::URLRequest* request,
