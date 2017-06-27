@@ -12,6 +12,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray_bubble.h"
@@ -21,6 +22,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/status_area_widget_test_helper.h"
 #include "ash/test/test_system_tray_item.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/window_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -56,7 +58,267 @@ class ModalWidgetDelegate : public views::WidgetDelegateView {
 
 }  // namespace
 
-typedef AshTestBase SystemTrayTest;
+class SystemTrayTest : public AshTestBase {
+ public:
+  SystemTrayTest() {}
+  ~SystemTrayTest() override {}
+
+  // Swiping on the system tray and ends with finger released.
+  void SendGestureEvent(gfx::Point& start,
+                        float delta,
+                        bool is_fling,
+                        float velocity_y) {
+    SystemTray* system_tray = GetPrimarySystemTray();
+    base::TimeTicks timestamp = base::TimeTicks::Now();
+    SendScrollStartAndUpdate(start, delta, timestamp);
+
+    ui::GestureEventDetails details =
+        is_fling
+            ? ui::GestureEventDetails(ui::ET_SCROLL_FLING_START, 0, velocity_y)
+            : ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_END);
+    ui::GestureEvent event = ui::GestureEvent(start.x(), start.y() + delta,
+                                              ui::EF_NONE, timestamp, details);
+    system_tray->OnGestureEvent(&event);
+  }
+
+  // Swiping on the system tray without releasing the finger.
+  void SendScrollStartAndUpdate(gfx::Point& start,
+                                float delta,
+                                base::TimeTicks& timestamp) {
+    SystemTray* system_tray = GetPrimarySystemTray();
+    ui::GestureEventDetails begin_details(ui::ET_GESTURE_SCROLL_BEGIN);
+    ui::GestureEvent begin_event = ui::GestureEvent(
+        start.x(), start.y(), ui::EF_NONE, timestamp, begin_details);
+    system_tray->OnGestureEvent(&begin_event);
+
+    ui::GestureEventDetails update_details(ui::ET_GESTURE_SCROLL_UPDATE, 0,
+                                           delta);
+    timestamp += base::TimeDelta::FromMilliseconds(100);
+    ui::GestureEvent update_event = ui::GestureEvent(
+        start.x(), start.y() + delta, ui::EF_NONE, timestamp, update_details);
+    system_tray->OnGestureEvent(&update_event);
+  }
+
+  // Open the default system tray bubble to get the height of the bubble and
+  // then close it.
+  float GetSystemBubbleHeight() {
+    SystemTray* system_tray = GetPrimarySystemTray();
+    system_tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+    gfx::Rect bounds = GetSystemBubbleBoundsInScreen();
+    system_tray->CloseSystemBubble();
+    return bounds.height();
+  }
+
+  gfx::Rect GetSystemBubbleBoundsInScreen() {
+    return GetPrimarySystemTray()
+        ->GetSystemBubble()
+        ->bubble_view()
+        ->GetWidget()
+        ->GetWindowBoundsInScreen();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SystemTrayTest);
+};
+
+// Swiping on the overlap area of shelf and system tray bubble during the
+// animation should close the bubble.
+TEST_F(SystemTrayTest, SwipingOnShelfDuringAnimation) {
+  Shelf* shelf = GetPrimaryShelf();
+  SystemTray* system_tray = GetPrimarySystemTray();
+  gfx::Point start = system_tray->GetLocalBounds().CenterPoint();
+  shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
+  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+      true);
+
+  gfx::Rect shelf_bounds_in_screen =
+      shelf->shelf_widget()->GetWindowBoundsInScreen();
+
+  system_tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+  gfx::Rect original_bounds = GetSystemBubbleBoundsInScreen();
+  system_tray->CloseSystemBubble();
+
+  // Enable animations so that we can make sure that they occur.
+  ui::ScopedAnimationDurationScaleMode regular_animations(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  gfx::Point point_on_shelf_start =
+      gfx::Point(original_bounds.x() + 5, shelf_bounds_in_screen.y() + 5);
+  gfx::Point point_on_shelf_end(point_on_shelf_start.x(),
+                                shelf_bounds_in_screen.bottom());
+
+  // Swiping up exceed one third of the height of the bubble should show the
+  // bubble.
+  float delta = -original_bounds.height() / 2;
+  SendGestureEvent(start, delta, false, 0);
+  EXPECT_TRUE(system_tray->HasSystemBubble());
+  gfx::Rect current_bounds = GetSystemBubbleBoundsInScreen();
+
+  // Dragging the shelf during up animation should close the bubble.
+  if (current_bounds.y() != original_bounds.y()) {
+    generator.GestureScrollSequence(point_on_shelf_start, point_on_shelf_end,
+                                    base::TimeDelta::FromMilliseconds(100), 5);
+    EXPECT_FALSE(system_tray->HasSystemBubble());
+  }
+
+  // Fling down on the shelf with a velocity that exceeds |kFlingVelocity|.
+  EXPECT_FALSE(system_tray->HasSystemBubble());
+  SendGestureEvent(start, delta, true, SystemTray::kFlingVelocity + 1);
+  current_bounds = GetSystemBubbleBoundsInScreen();
+  EXPECT_TRUE(system_tray->HasSystemBubble());
+
+  // Dragging the shelf during down animation should close the bubble.
+  if (current_bounds.y() != original_bounds.y()) {
+    generator.GestureScrollSequence(point_on_shelf_start, point_on_shelf_end,
+                                    base::TimeDelta::FromMilliseconds(100), 5);
+    EXPECT_FALSE(system_tray->HasSystemBubble());
+  }
+}
+
+// Swiping on the system tray ends with fling event.
+TEST_F(SystemTrayTest, FlingOnSystemTray) {
+  Shelf* shelf = GetPrimaryShelf();
+  SystemTray* system_tray = GetPrimarySystemTray();
+  gfx::Point start = system_tray->GetBoundsInScreen().CenterPoint();
+  shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
+  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+      true);
+
+  // Fling up on the system tray should show the bubble if the |velocity_y| is
+  // larger than |kFlingVelocity| and the dragging amount is larger than one
+  // third of the height of the bubble.
+  float delta = -GetSystemBubbleHeight();
+  SendGestureEvent(start, delta, true, -(SystemTray::kFlingVelocity + 1));
+  EXPECT_TRUE(system_tray->HasSystemBubble());
+  system_tray->CloseSystemBubble();
+
+  // Fling up on the system tray should show the bubble if the |velocity_y| is
+  // larger than |kFlingVelocity| even the dragging amount is less than one
+  // third of the height of the bubble.
+  delta /= 4;
+  SendGestureEvent(start, delta, true, -(SystemTray::kFlingVelocity + 1));
+  EXPECT_TRUE(system_tray->HasSystemBubble());
+  system_tray->CloseSystemBubble();
+
+  // Fling up on the system tray should show the bubble if the |velocity_y| is
+  // less than |kFlingVelocity| but the dragging amount if larger than one third
+  // of the height of the bubble.
+  delta = -GetSystemBubbleHeight();
+  SendGestureEvent(start, delta, true, -(SystemTray::kFlingVelocity - 1));
+  EXPECT_TRUE(system_tray->HasSystemBubble());
+  system_tray->CloseSystemBubble();
+
+  // Fling up on the system tray should close the bubble if the |velocity_y|
+  // is less than |kFlingVelocity| and the dragging amount is less than one
+  // third of the height of the bubble.
+  delta /= 4;
+  SendGestureEvent(start, delta, true, -(SystemTray::kFlingVelocity - 1));
+  EXPECT_FALSE(system_tray->HasSystemBubble());
+
+  // Fling down on the system tray should close the bubble if the |velocity_y|
+  // is larger than kFLingVelocity.
+  SendGestureEvent(start, delta, true, SystemTray::kFlingVelocity + 1);
+  EXPECT_FALSE(system_tray->HasSystemBubble());
+
+  // Fling down on the system tray should close the bubble if the |velocity_y|
+  // is larger than |kFlingVelocity| even the dragging amount is larger than one
+  // third of the height of the bubble.
+  delta = -GetSystemBubbleHeight();
+  SendGestureEvent(start, delta, true, SystemTray::kFlingVelocity + 1);
+  EXPECT_FALSE(system_tray->HasSystemBubble());
+
+  // Fling down on the system tray should open the bubble if the |velocity_y| is
+  // less than |kFlingVelocity| but the dragging amount exceed one third of the
+  // height of the bubble.
+  SendGestureEvent(start, delta, true, SystemTray::kFlingVelocity - 1);
+  EXPECT_TRUE(system_tray->HasSystemBubble());
+  system_tray->CloseSystemBubble();
+
+  // Fling down on the system tray should close the bubble if the |velocity_y|
+  // is less than |kFlingVelocity| and the dragging amount is less than one
+  // third of the height of the bubble.
+  delta /= 4;
+  SendGestureEvent(start, delta, true, SystemTray::kFlingVelocity - 1);
+  EXPECT_FALSE(system_tray->HasSystemBubble());
+}
+
+// Touch outside the system tray bubble during swiping should close the bubble.
+TEST_F(SystemTrayTest, TapOutsideCloseBubble) {
+  Shelf* shelf = GetPrimaryShelf();
+  SystemTray* system_tray = GetPrimarySystemTray();
+  gfx::Point start = system_tray->GetLocalBounds().CenterPoint();
+  shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
+
+  float delta = -GetSystemBubbleHeight();
+  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+      true);
+  base::TimeTicks timestamp = base::TimeTicks::Now();
+  SendScrollStartAndUpdate(start, delta, timestamp);
+  EXPECT_TRUE(system_tray->HasSystemBubble());
+
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  gfx::Rect bounds = GetSystemBubbleBoundsInScreen();
+  gfx::Point point_outside = gfx::Point(bounds.x() - 5, bounds.y() - 5);
+  generator.GestureTapAt(point_outside);
+  EXPECT_FALSE(system_tray->HasSystemBubble());
+}
+
+// Swiping on the system tray ends with scroll event.
+TEST_F(SystemTrayTest, SwipingOnSystemTray) {
+  Shelf* shelf = GetPrimaryShelf();
+  SystemTray* system_tray = GetPrimarySystemTray();
+  gfx::Point start = system_tray->GetLocalBounds().CenterPoint();
+  shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
+
+  // Swiping up on the system tray has no effect if it is not in maximize mode.
+  float delta = -GetSystemBubbleHeight();
+  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+      false);
+  EXPECT_FALSE(system_tray->HasSystemBubble());
+  SendGestureEvent(start, delta, false, 0);
+  EXPECT_FALSE(system_tray->HasSystemBubble());
+
+  // Swiping up on the system tray should show the system tray bubble if it is
+  // in maximize mode.
+  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+      true);
+  SendGestureEvent(start, delta, false, 0);
+  EXPECT_TRUE(system_tray->HasSystemBubble());
+  system_tray->CloseSystemBubble();
+
+  // Swiping up less than one third of the bubble's height should not show the
+  // bubble.
+  delta /= 4;
+  SendGestureEvent(start, delta, false, 0);
+  EXPECT_FALSE(system_tray->HasSystemBubble());
+
+  // Swiping up more than one third of the bubble's height should show the
+  // bubble.
+  delta = -GetSystemBubbleHeight() / 2;
+  SendGestureEvent(start, delta, false, 0);
+  EXPECT_TRUE(system_tray->HasSystemBubble());
+  system_tray->CloseSystemBubble();
+
+  // Swiping up on system tray should not show the system tray bubble if the
+  // shelf is left alignment.
+  delta = -GetSystemBubbleHeight();
+  shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
+  SendGestureEvent(start, delta, false, 0);
+  EXPECT_FALSE(system_tray->HasSystemBubble());
+
+  // Swiping up on system tray should not show the system tray bubble if the
+  // shelf is right alignment.
+  shelf->SetAlignment(SHELF_ALIGNMENT_RIGHT);
+  SendGestureEvent(start, delta, false, 0);
+  EXPECT_FALSE(system_tray->HasSystemBubble());
+
+  // Swiping down on the shelf should not show the system tray bubble.
+  shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
+  delta = -delta;
+  SendGestureEvent(start, delta, false, 0);
+  EXPECT_FALSE(system_tray->HasSystemBubble());
+}
 
 // Verifies only the visible default views are recorded in the
 // "Ash.SystemMenu.DefaultView.VisibleItems" histogram.
