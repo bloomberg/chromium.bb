@@ -615,6 +615,12 @@ Polymer({
     this.networkingPrivate.startActivate(this.guid);
   },
 
+  /** @private */
+  onChooseMobileTap_: function() {
+    // TODO(stevenjb): Integrate ChooseMobileNetworkDialog with WebUI.
+    chrome.send('addNetwork', [this.networkProperties.Type]);
+  },
+
   /** @const {string} */
   CR_EXPAND_BUTTON_TAG: 'CR-EXPAND-BUTTON',
 
@@ -985,11 +991,20 @@ Polymer({
    * @return {boolean}
    * @private
    */
+  showCellularChooseNetwork_: function(networkProperties) {
+    return networkProperties.Type == CrOnc.Type.CELLULAR &&
+        !!this.get('Cellular.SupportNetworkScan', this.networkProperties);
+  },
+
+  /**
+   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @return {boolean}
+   * @private
+   */
   showCellularSim_: function(networkProperties) {
-    if (networkProperties.Type != 'Cellular' || !networkProperties.Cellular) {
-      return false;
-    }
-    return networkProperties.Cellular.Family == 'GSM';
+    return networkProperties.Type == CrOnc.Type.CELLULAR &&
+        this.get('Cellular.Family', this.networkProperties) ==
+        CrOnc.NetworkTechnology.GSM;
   },
 
   /**

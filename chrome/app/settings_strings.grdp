@@ -1180,6 +1180,12 @@
     <message name="IDS_SETTINGS_SETTINGS_NETWORK_ALLOW_DATA_ROAMING" desc="Settings > Internet > Network details: Toggle label to allow mobile data roaming.">
       Allow mobile data roaming
     </message>
+    <message name="IDS_SETTINGS_SETTINGS_NETWORK_CHOOSE_MOBILE_DETAIL" desc="Settings > Internet > Network details: Label for section to choose a mobile data network.">
+      Choose a mobile data network
+    </message>
+    <message name="IDS_SETTINGS_SETTINGS_NETWORK_CHOOSE_MOBILE_BUTTON" desc="Settings > Internet > Network details: Label for button to choose a mobile data network.">
+      Choose network
+    </message>
     <message name="IDS_SETTINGS_INTERNET_NETWORK_SHARED" desc="Settings > Internet > Network details: Text to show when a network is shared.">
       Other users of this device can use this network.
     </message>
