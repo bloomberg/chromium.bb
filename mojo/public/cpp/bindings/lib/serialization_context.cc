@@ -17,7 +17,7 @@ SerializedHandleVector::SerializedHandleVector() = default;
 
 SerializedHandleVector::~SerializedHandleVector() = default;
 
-Handle_Data SerializedHandleVector::AddHandle(mojo::ScopedHandle handle) {
+void SerializedHandleVector::AddHandle(mojo::ScopedHandle handle) {
   Handle_Data data;
   if (!handle.is_valid()) {
     data.value = kEncodedInvalidHandleValue;
@@ -26,7 +26,29 @@ Handle_Data SerializedHandleVector::AddHandle(mojo::ScopedHandle handle) {
     data.value = static_cast<uint32_t>(handles_.size());
     handles_.emplace_back(std::move(handle));
   }
-  return data;
+  serialized_handles_.emplace_back(data);
+}
+
+void SerializedHandleVector::AddInterfaceInfo(
+    mojo::ScopedMessagePipeHandle handle,
+    uint32_t version) {
+  AddHandle(ScopedHandle::From(std::move(handle)));
+  serialized_interface_versions_.emplace_back(version);
+}
+
+void SerializedHandleVector::ConsumeNextSerializedHandle(
+    Handle_Data* out_data) {
+  DCHECK_LT(next_serialized_handle_index_, serialized_handles_.size());
+  *out_data = serialized_handles_[next_serialized_handle_index_++];
+}
+
+void SerializedHandleVector::ConsumeNextSerializedInterfaceInfo(
+    Interface_Data* out_data) {
+  ConsumeNextSerializedHandle(&out_data->handle);
+  DCHECK_LT(next_serialized_version_index_,
+            serialized_interface_versions_.size());
+  out_data->version =
+      serialized_interface_versions_[next_serialized_version_index_++];
 }
 
 mojo::ScopedHandle SerializedHandleVector::TakeHandle(
@@ -50,7 +72,6 @@ SerializationContext::~SerializationContext() {
 void SerializationContext::AttachHandlesToMessage(Message* message) {
   associated_endpoint_handles.swap(
       *message->mutable_associated_endpoint_handles());
-  message->AttachHandles(handles.mutable_handles());
 }
 
 }  // namespace internal
