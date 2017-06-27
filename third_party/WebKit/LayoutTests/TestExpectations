@@ -1998,6 +1998,8 @@ crbug.com/736056 external/wpt/encoding/legacy-mb-tchinese/big5/big5-encode-href.
 # rebaseline-cl does not handle ref-tests yet...
 crbug.com/736811 fast/css/text-overflow-ellipsis-multiple-shadows.html [ Pass Failure ]
 crbug.com/736811 external/wpt/css/selectors4/focus-within-004.html [ Pass Failure ]
+crbug.com/736811 fast/canvas/canvas-fillPath-gradient-shadow.html [ Pass Failure ]
+crbug.com/736811 virtual/display_list_2d_canvas/fast/canvas/canvas-fillPath-gradient-shadow.html [ Pass Failure ]
 
 # Failures in non-wpt tests from:
 # https://chromium-review.googlesource.com/c/543695/
