@@ -21,7 +21,8 @@ namespace {
 // Refreshes the IME list with fake IMEs and fake menu items.
 void RefreshImes(const std::string& current_ime_id,
                  const std::vector<std::string>& ime_ids,
-                 const std::vector<std::string>& menu_item_keys = {}) {
+                 const std::vector<std::string>& menu_item_keys =
+                     std::vector<std::string>()) {
   std::vector<mojom::ImeInfoPtr> available_imes;
   for (const std::string& ime_id : ime_ids) {
     mojom::ImeInfoPtr ime = mojom::ImeInfo::New();
