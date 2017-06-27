@@ -1359,3 +1359,52 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion73ToCurrent) {
     EXPECT_EQ(CreditCard::CARD_TYPE_UNKNOWN, cards.ColumnInt(2));
   }
 }
+
+// Tests that version 73 with "type" column instead of "bank_name" column can be
+// migrated to version 74 with both of these columns. This is necessary to
+// verify that the version 73 collision resolves itself.
+TEST_F(WebDatabaseMigrationTest, MigrateVersion73WithTypeColumnToCurrent) {
+  ASSERT_NO_FATAL_FAILURE(
+      LoadDatabase(FILE_PATH_LITERAL("version_73_with_type_column.sql")));
+
+  // Verify pre-conditions.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    sql::MetaTable meta_table;
+    ASSERT_TRUE(meta_table.Init(&connection, 73, 73));
+
+    EXPECT_FALSE(
+        connection.DoesColumnExist("masked_credit_cards", "bank_name"));
+    EXPECT_TRUE(connection.DoesColumnExist("masked_credit_cards", "type"));
+
+    EXPECT_TRUE(connection.Execute(
+        "INSERT INTO masked_credit_cards (type) VALUES (2)"));
+  }
+
+  DoMigration();
+
+  // Verify post-conditions.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    // Check version.
+    EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
+
+    // The bank_name column should exist.
+    EXPECT_TRUE(connection.DoesColumnExist("masked_credit_cards", "bank_name"));
+
+    // The type column should exist.
+    EXPECT_TRUE(connection.DoesColumnExist("masked_credit_cards", "type"));
+
+    // Make sure that the existing value of the type column is preserved.
+    sql::Statement s_masked_cards(
+        connection.GetUniqueStatement("SELECT type FROM masked_credit_cards"));
+    ASSERT_TRUE(s_masked_cards.Step());
+    EXPECT_EQ(2, s_masked_cards.ColumnInt(0));
+  }
+}
