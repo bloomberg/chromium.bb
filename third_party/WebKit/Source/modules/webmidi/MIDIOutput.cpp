@@ -31,9 +31,11 @@
 #include "modules/webmidi/MIDIOutput.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "core/frame/UseCounter.h"
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
 #include "media/midi/midi_service.mojom-blink.h"
@@ -228,6 +230,9 @@ void MIDIOutput::send(NotShared<DOMUint8Array> array,
 
   if (timestamp == 0.0)
     timestamp = Now(GetExecutionContext());
+
+  UseCounter::Count(*ToDocument(GetExecutionContext()),
+                    WebFeature::kMIDIOutputSend);
 
   // Implicit open. It does nothing if the port is already opened.
   // This should be performed even if |array| is invalid.

@@ -30,6 +30,8 @@
 
 #include "modules/webmidi/MIDIInput.h"
 
+#include "core/dom/Document.h"
+#include "core/frame/UseCounter.h"
 #include "modules/webmidi/MIDIAccess.h"
 #include "modules/webmidi/MIDIMessageEvent.h"
 #include "platform/heap/Handle.h"
@@ -98,6 +100,9 @@ void MIDIInput::DidReceiveMIDIData(unsigned port_index,
     return;
   DOMUint8Array* array = DOMUint8Array::Create(data, length);
   DispatchEvent(MIDIMessageEvent::Create(time_stamp, array));
+
+  UseCounter::Count(*ToDocument(GetExecutionContext()),
+                    WebFeature::kMIDIMessageEvent);
 }
 
 DEFINE_TRACE(MIDIInput) {

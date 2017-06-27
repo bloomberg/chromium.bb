@@ -15539,6 +15539,9 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2026" label="DocumentDomainSetWithDefaultPort"/>
   <int value="2027" label="FeaturePolicyHeader"/>
   <int value="2028" label="FeaturePolicyAllowAttribute"/>
+  <int value="2029" label="MIDIPortOpen"/>
+  <int value="2030" label="MIDIOutputSend"/>
+  <int value="2031" label="MIDIMessageEvent"/>
 </enum>
 
 <enum name="FeedbackSource">

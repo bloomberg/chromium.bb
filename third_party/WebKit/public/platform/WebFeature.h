@@ -1561,6 +1561,9 @@ enum class WebFeature : uint32_t {
   kDocumentDomainSetWithDefaultPort = 2026,
   kFeaturePolicyHeader = 2027,
   kFeaturePolicyAllowAttribute = 2028,
+  kMIDIPortOpen = 2029,
+  kMIDIOutputSend = 2030,
+  kMIDIMessageEvent = 2031,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
