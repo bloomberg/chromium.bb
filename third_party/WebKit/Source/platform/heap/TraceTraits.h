@@ -204,8 +204,11 @@ class TraceTrait {
 
  private:
   static const T* ToWrapperTracingType(const void* t) {
+    static_assert(sizeof(T), "type needs to be defined");
     static_assert(!NeedsAdjustAndMark<T>::value,
                   "wrapper tracing is not supported within mixins");
+    static_assert(IsGarbageCollectedType<T>::value,
+                  "only objects deriving from GarbageCollected can be used");
 #if DCHECK_IS_ON()
     HeapObjectHeader::CheckFromPayload(t);
 #endif
