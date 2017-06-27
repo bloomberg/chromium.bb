@@ -1,18 +1,18 @@
 {
-  "arm_64": {
+  "arm64": {
     "L": {
-        "filename": "arm_64/L/android-cts-arm_64-3500656.zip",
-        "apk": "arm_64/L/3500656/CtsWebkitTestCases.apk",
+        "filename": "arm64/L/android-cts-arm_64-3500656.zip",
+        "apk": "arm64/L/3500656/CtsWebkitTestCases.apk",
         "_origin": "aosp-lollipop-mr1-cts-dev@3500656"
     },
     "M": {
-        "filename": "arm_64/M/android-cts-arm_64-3505727.zip",
-        "apk": "arm_64/M/3505727/CtsWebkitTestCases.apk",
+        "filename": "arm64/M/android-cts-arm_64-3505727.zip",
+        "apk": "arm64/M/3505727/CtsWebkitTestCases.apk",
         "_origin": "aosp-marshmallow-cts-dev@3505727"
     },
     "N": {
-        "filename": "arm_64/N/android-cts-arm_64-3367285.zip",
-        "apk": "arm_64/N/3367285/CtsWebkitTestCases.apk",
+        "filename": "arm64/N/android-cts-arm_64-3367285.zip",
+        "apk": "arm64/N/3367285/CtsWebkitTestCases.apk",
         "_origin": "aosp-nougat-cts-release@3367285"
     }
   }
