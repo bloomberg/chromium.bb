@@ -74,7 +74,7 @@ void SurroundingText::Initialize(const Position& start_position,
 
   CharacterIterator forward_iterator(
       end_position,
-      Position::LastPositionInNode(root_element).ParentAnchoredEquivalent(),
+      Position::LastPositionInNode(*root_element).ParentAnchoredEquivalent(),
       TextIteratorBehavior::Builder().SetStopsOnFormControls(true).Build());
   // FIXME: why do we stop going trough the text if we were not able to select
   // something on the right?

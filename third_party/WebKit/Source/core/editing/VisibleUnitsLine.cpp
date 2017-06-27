@@ -520,7 +520,7 @@ static VisiblePositionTemplate<Strategy> LogicalEndOfLineAlgorithm(
     if (!editable_root->contains(
             vis_pos.DeepEquivalent().ComputeContainerNode())) {
       return CreateVisiblePosition(
-          PositionTemplate<Strategy>::LastPositionInNode(editable_root));
+          PositionTemplate<Strategy>::LastPositionInNode(*editable_root));
     }
   }
 

@@ -284,11 +284,11 @@ TEST_F(StyledMarkupSerializerTest, AcrossInvisibleElements) {
   Element* span1 = GetDocument().getElementById("span1");
   Element* span2 = GetDocument().getElementById("span2");
   Position start_dom = Position::FirstPositionInNode(*span1);
-  Position end_dom = Position::LastPositionInNode(span2);
+  Position end_dom = Position::LastPositionInNode(*span2);
   EXPECT_EQ("", SerializePart<EditingStrategy>(start_dom, end_dom));
   PositionInFlatTree start_ict =
       PositionInFlatTree::FirstPositionInNode(*span1);
-  PositionInFlatTree end_ict = PositionInFlatTree::LastPositionInNode(span2);
+  PositionInFlatTree end_ict = PositionInFlatTree::LastPositionInNode(*span2);
   EXPECT_EQ("", SerializePart<EditingInFlatTreeStrategy>(start_ict, end_ict));
 }
 

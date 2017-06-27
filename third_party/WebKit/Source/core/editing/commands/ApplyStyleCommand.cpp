@@ -1573,7 +1573,7 @@ void ApplyStyleCommand::SplitTextAtEnd(const Position& start,
       should_update_start
           ? Position(ToText(prev_node), start.OffsetInContainerNode())
           : start;
-  UpdateStartEnd(new_start, Position::LastPositionInNode(prev_node));
+  UpdateStartEnd(new_start, Position::LastPositionInNode(*prev_node));
 }
 
 void ApplyStyleCommand::SplitTextElementAtStart(const Position& start,

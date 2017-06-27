@@ -300,7 +300,7 @@ TEST_F(VisibleUnitsTest, ComputeInlineBoxPositionMixedEditable) {
   Element* const sample = GetDocument().getElementById("sample");
 
   const InlineBoxPosition& actual = ComputeInlineBoxPosition(
-      Position::LastPositionInNode(sample), TextAffinity::kDownstream);
+      Position::LastPositionInNode(*sample), TextAffinity::kDownstream);
   // Should not be in infinite-loop
   EXPECT_EQ(nullptr, actual.inline_box);
   EXPECT_EQ(0, actual.offset_in_box);
@@ -1240,9 +1240,9 @@ TEST_F(VisibleUnitsTest, mostBackwardCaretPositionAfterAnchor) {
 
   Element* host = GetDocument().getElementById("host");
 
-  EXPECT_EQ(Position::LastPositionInNode(host),
+  EXPECT_EQ(Position::LastPositionInNode(*host),
             MostForwardCaretPosition(Position::AfterNode(*host)));
-  EXPECT_EQ(PositionInFlatTree::LastPositionInNode(host),
+  EXPECT_EQ(PositionInFlatTree::LastPositionInNode(*host),
             MostForwardCaretPosition(PositionInFlatTree::AfterNode(*host)));
 }
 
@@ -1272,13 +1272,13 @@ TEST_F(VisibleUnitsTest, mostBackwardCaretPositionFirstLetter) {
             MostBackwardCaretPosition(Position(sample, 7)));
   EXPECT_EQ(Position(sample, 6),
             MostBackwardCaretPosition(
-                Position::LastPositionInNode(sample->parentNode())));
+                Position::LastPositionInNode(*sample->parentNode())));
   EXPECT_EQ(
       Position(sample, 6),
       MostBackwardCaretPosition(Position::AfterNode(*sample->parentNode())));
-  EXPECT_EQ(Position::LastPositionInNode(GetDocument().body()),
+  EXPECT_EQ(Position::LastPositionInNode(*GetDocument().body()),
             MostBackwardCaretPosition(
-                Position::LastPositionInNode(GetDocument().body())));
+                Position::LastPositionInNode(*GetDocument().body())));
 }
 
 TEST_F(VisibleUnitsTest, mostBackwardCaretPositionFirstLetterSplit) {
@@ -1305,7 +1305,7 @@ TEST_F(VisibleUnitsTest, mostBackwardCaretPositionFirstLetterSplit) {
   EXPECT_EQ(Position(remaining, 2),
             MostBackwardCaretPosition(Position(remaining, 2)));
   EXPECT_EQ(Position(remaining, 2),
-            MostBackwardCaretPosition(Position::LastPositionInNode(sample)));
+            MostBackwardCaretPosition(Position::LastPositionInNode(*sample)));
   EXPECT_EQ(Position(remaining, 2),
             MostBackwardCaretPosition(Position::AfterNode(*sample)));
 }
@@ -1525,7 +1525,7 @@ TEST_F(VisibleUnitsTest, rendersInDifferentPositionAfterAnchor) {
       << "if one of position is null, the reuslt is false.";
   EXPECT_FALSE(RendersInDifferentPosition(Position::AfterNode(*sample),
                                           Position(sample, 1)));
-  EXPECT_FALSE(RendersInDifferentPosition(Position::LastPositionInNode(sample),
+  EXPECT_FALSE(RendersInDifferentPosition(Position::LastPositionInNode(*sample),
                                           Position(sample, 1)));
 }
 
@@ -1537,7 +1537,7 @@ TEST_F(VisibleUnitsTest, rendersInDifferentPositionAfterAnchorWithHidden) {
   Element* one = GetDocument().getElementById("one");
   Element* two = GetDocument().getElementById("two");
 
-  EXPECT_TRUE(RendersInDifferentPosition(Position::LastPositionInNode(one),
+  EXPECT_TRUE(RendersInDifferentPosition(Position::LastPositionInNode(*one),
                                          Position(two, 0)))
       << "two doesn't have layout object";
 }
@@ -1550,9 +1550,9 @@ TEST_F(VisibleUnitsTest,
   Element* one = GetDocument().getElementById("one");
   Element* two = GetDocument().getElementById("two");
 
-  EXPECT_FALSE(RendersInDifferentPosition(Position::LastPositionInNode(one),
+  EXPECT_FALSE(RendersInDifferentPosition(Position::LastPositionInNode(*one),
                                           Position(two, 0)));
-  EXPECT_FALSE(RendersInDifferentPosition(Position::LastPositionInNode(one),
+  EXPECT_FALSE(RendersInDifferentPosition(Position::LastPositionInNode(*one),
                                           Position(two, 1)))
       << "width of two is zero since contents is collapsed whitespaces";
 }
@@ -1569,7 +1569,7 @@ TEST_F(VisibleUnitsTest, renderedOffset) {
       RendersInDifferentPosition(Position::AfterNode(*sample1->firstChild()),
                                  Position(sample2->firstChild(), 0)));
   EXPECT_FALSE(RendersInDifferentPosition(
-      Position::LastPositionInNode(sample1->firstChild()),
+      Position::LastPositionInNode(*sample1->firstChild()),
       Position(sample2->firstChild(), 0)));
 }
 
@@ -1919,7 +1919,7 @@ TEST_F(VisibleUnitsTest,
   Element* const one = GetDocument().getElementById("one");
   Element* const two = GetDocument().getElementById("two");
   const VisiblePosition& visible_position =
-      CreateVisiblePosition(Position::LastPositionInNode(two));
+      CreateVisiblePosition(Position::LastPositionInNode(*two));
   EXPECT_EQ(Position(one->firstChild(), 7),
             PreviousRootInlineBoxCandidatePosition(
                 two->lastChild(), visible_position, kContentIsEditable));

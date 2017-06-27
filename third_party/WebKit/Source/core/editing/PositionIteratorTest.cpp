@@ -19,8 +19,8 @@ TEST_F(PositionIteratorTest, decrementWithInputElement) {
 
   // Decrement until start of "123" from INPUT on DOM tree
   PositionIterator dom_iterator(
-      Position::LastPositionInNode(GetDocument().body()));
-  EXPECT_EQ(Position::LastPositionInNode(GetDocument().body()),
+      Position::LastPositionInNode(*GetDocument().body()));
+  EXPECT_EQ(Position::LastPositionInNode(*GetDocument().body()),
             dom_iterator.ComputePosition());
   dom_iterator.Decrement();
   EXPECT_EQ(Position::AfterNode(*input), dom_iterator.ComputePosition());
@@ -33,8 +33,8 @@ TEST_F(PositionIteratorTest, decrementWithInputElement) {
 
   // Decrement until start of "123" from INPUT on flat tree
   PositionIteratorInFlatTree flat_iterator(
-      PositionInFlatTree::LastPositionInNode(GetDocument().body()));
-  EXPECT_EQ(PositionInFlatTree::LastPositionInNode(GetDocument().body()),
+      PositionInFlatTree::LastPositionInNode(*GetDocument().body()));
+  EXPECT_EQ(PositionInFlatTree::LastPositionInNode(*GetDocument().body()),
             flat_iterator.ComputePosition());
   flat_iterator.Decrement();
   EXPECT_EQ(PositionInFlatTree::AfterNode(*input),
@@ -56,8 +56,8 @@ TEST_F(PositionIteratorTest, decrementWithSelectElement) {
 
   // Decrement until start of "123" from SELECT on DOM tree
   PositionIterator dom_iterator(
-      Position::LastPositionInNode(GetDocument().body()));
-  EXPECT_EQ(Position::LastPositionInNode(GetDocument().body()),
+      Position::LastPositionInNode(*GetDocument().body()));
+  EXPECT_EQ(Position::LastPositionInNode(*GetDocument().body()),
             dom_iterator.ComputePosition());
   dom_iterator.Decrement();
   EXPECT_EQ(Position::AfterNode(*select), dom_iterator.ComputePosition());
@@ -74,8 +74,8 @@ TEST_F(PositionIteratorTest, decrementWithSelectElement) {
 
   // Decrement until start of "123" from SELECT on flat tree
   PositionIteratorInFlatTree flat_iterator(
-      PositionInFlatTree::LastPositionInNode(GetDocument().body()));
-  EXPECT_EQ(PositionInFlatTree::LastPositionInNode(GetDocument().body()),
+      PositionInFlatTree::LastPositionInNode(*GetDocument().body()));
+  EXPECT_EQ(PositionInFlatTree::LastPositionInNode(*GetDocument().body()),
             flat_iterator.ComputePosition());
   flat_iterator.Decrement();
   EXPECT_EQ(PositionInFlatTree::AfterNode(*select),
@@ -103,8 +103,8 @@ TEST_F(PositionIteratorTest, decrementWithTextAreaElement) {
 
   // Decrement until end of "123" from after TEXTAREA on DOM tree
   PositionIterator dom_iterator(
-      Position::LastPositionInNode(GetDocument().body()));
-  EXPECT_EQ(Position::LastPositionInNode(GetDocument().body()),
+      Position::LastPositionInNode(*GetDocument().body()));
+  EXPECT_EQ(Position::LastPositionInNode(*GetDocument().body()),
             dom_iterator.ComputePosition());
   dom_iterator.Decrement();
   EXPECT_EQ(Position::AfterNode(*textarea), dom_iterator.ComputePosition());
@@ -117,8 +117,8 @@ TEST_F(PositionIteratorTest, decrementWithTextAreaElement) {
 
   // Decrement until end of "123" from after TEXTAREA on flat tree
   PositionIteratorInFlatTree flat_iterator(
-      PositionInFlatTree::LastPositionInNode(GetDocument().body()));
-  EXPECT_EQ(PositionInFlatTree::LastPositionInNode(GetDocument().body()),
+      PositionInFlatTree::LastPositionInNode(*GetDocument().body()));
+  EXPECT_EQ(PositionInFlatTree::LastPositionInNode(*GetDocument().body()),
             flat_iterator.ComputePosition());
   flat_iterator.Decrement();
   EXPECT_EQ(PositionInFlatTree::AfterNode(*textarea),

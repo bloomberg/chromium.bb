@@ -30,11 +30,11 @@ TEST_F(PositionTest, IsEquivalent) {
   EXPECT_TRUE(Position(sample, 3).IsEquivalent(
       Position::AfterNode(*sample->lastChild())));
   EXPECT_TRUE(
-      Position(sample, 3).IsEquivalent(Position::LastPositionInNode(sample)));
+      Position(sample, 3).IsEquivalent(Position::LastPositionInNode(*sample)));
 
   EXPECT_FALSE(Position(sample, 0).IsEquivalent(Position(sample, 1)));
   EXPECT_FALSE(
-      Position(sample, 0).IsEquivalent(Position::LastPositionInNode(sample)));
+      Position(sample, 0).IsEquivalent(Position::LastPositionInNode(*sample)));
 }
 
 TEST_F(PositionTest, NodeAsRangeLastNodeNull) {

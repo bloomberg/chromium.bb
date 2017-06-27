@@ -335,7 +335,7 @@ Position InsertTextCommand::InsertTab(const Position& pos,
     return Position();
 
   // return the position following the new tab
-  return Position::LastPositionInNode(span_element);
+  return Position::LastPositionInNode(*span_element);
 }
 
 }  // namespace blink
