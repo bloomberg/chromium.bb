@@ -26,6 +26,8 @@ char kAssociatedProtocolNameKey;
 
 @interface ProtocolAlerter () {
   NSSet<Protocol*>* _protocols;
+  // Selectors for which no logging should be done.
+  NSMutableSet<NSValue*>* _ignoredSelectors;
 }
 @end
 
@@ -39,7 +41,12 @@ char kAssociatedProtocolNameKey;
   // NSProxy isn't a subclass of NSObject, and has no superclass, so
   // there's no [super init] to call.
   _protocols = [[NSSet<Protocol*> alloc] initWithArray:protocols];
+  _ignoredSelectors = [NSMutableSet set];
   return self;
+}
+
+- (void)ignoreSelector:(SEL)sel {
+  [_ignoredSelectors addObject:[NSValue valueWithPointer:sel]];
 }
 
 #pragma mark - NSProxy
@@ -68,6 +75,10 @@ char kAssociatedProtocolNameKey;
 }
 
 - (void)forwardInvocation:(NSInvocation*)invocation {
+  if ([_ignoredSelectors
+          containsObject:[NSValue valueWithPointer:invocation.selector]]) {
+    return;
+  }
   // Instead of actually doing anything the protocol method would normally
   // do, instead just generate a title and description and display an alert or
   // log a message.
