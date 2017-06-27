@@ -65,6 +65,11 @@ class UKM_EXPORT UkmRecorder {
   UkmRecorder();
   virtual ~UkmRecorder();
 
+  // Sets an instance of UkmRecorder to provided by Get().
+  // TODO(holte): Migrate callers away from using Get, to using a context
+  // specific getter, or a MojoUkmRecorder.
+  static void Set(UkmRecorder* recorder);
+
   // Provides access to a previously constructed UkmRecorder instance. Only one
   // instance exists per process and must have been constructed prior to any
   // calls to this method.

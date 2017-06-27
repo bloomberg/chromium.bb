@@ -98,10 +98,13 @@ UkmService::UkmService(PrefService* pref_service,
     provider->Init();
 
   StoreWhitelistedEntries();
+
+  UkmRecorder::Set(this);
 }
 
 UkmService::~UkmService() {
   DisableReporting();
+  UkmRecorder::Set(nullptr);
 }
 
 void UkmService::Initialize() {

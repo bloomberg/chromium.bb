@@ -16,13 +16,14 @@ UkmRecorder* g_ukm_recorder = nullptr;
 
 const base::Feature kUkmFeature = {"Ukm", base::FEATURE_DISABLED_BY_DEFAULT};
 
-UkmRecorder::UkmRecorder() {
-  DCHECK(!g_ukm_recorder);
-  g_ukm_recorder = this;
-}
+UkmRecorder::UkmRecorder() = default;
 
-UkmRecorder::~UkmRecorder() {
-  g_ukm_recorder = nullptr;
+UkmRecorder::~UkmRecorder() = default;
+
+// static
+void UkmRecorder::Set(UkmRecorder* recorder) {
+  DCHECK(!g_ukm_recorder || !recorder);
+  g_ukm_recorder = recorder;
 }
 
 // static
