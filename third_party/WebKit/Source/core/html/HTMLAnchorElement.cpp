@@ -366,9 +366,8 @@ void HTMLAnchorElement::HandleClick(Event* event) {
     request.SetRequestContext(WebURLRequest::kRequestContextDownload);
     request.SetRequestorOrigin(SecurityOrigin::Create(GetDocument().Url()));
 
-    frame->Loader().Client()->LoadURLExternally(
-        request, kNavigationPolicyDownload, FastGetAttribute(downloadAttr),
-        false);
+    frame->Client()->LoadURLExternally(request, kNavigationPolicyDownload,
+                                       FastGetAttribute(downloadAttr), false);
   } else {
     request.SetRequestContext(WebURLRequest::kRequestContextHyperlink);
     FrameLoadRequest frame_request(&GetDocument(), request,

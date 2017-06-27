@@ -54,7 +54,6 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/layout/LayoutObject.h"
 #include "core/loader/FormSubmission.h"
-#include "core/loader/FrameLoader.h"
 #include "core/loader/MixedContentChecker.h"
 #include "core/loader/NavigationScheduler.h"
 #include "platform/wtf/AutoReset.h"
@@ -339,7 +338,7 @@ void HTMLFormElement::PrepareForSubmission(
   bool should_submit;
   {
     AutoReset<bool> submit_event_handler_scope(&in_user_js_submit_event_, true);
-    frame->Loader().Client()->DispatchWillSendSubmitEvent(this);
+    frame->Client()->DispatchWillSendSubmitEvent(this);
     should_submit =
         DispatchEvent(Event::CreateCancelableBubble(EventTypeNames::submit)) ==
         DispatchEventResult::kNotCanceled;

@@ -316,8 +316,7 @@ bool HTMLCanvasElement::IsWebGLAllowed() const {
   // The LocalFrameClient might block creation of a new WebGL context despite
   // the page settings; in particular, if WebGL contexts were lost one or more
   // times via the GL_ARB_robustness extension.
-  if (!frame->Loader().Client()->AllowWebGL(settings &&
-                                            settings->GetWebGLEnabled()))
+  if (!frame->Client()->AllowWebGL(settings && settings->GetWebGLEnabled()))
     return false;
   return true;
 }

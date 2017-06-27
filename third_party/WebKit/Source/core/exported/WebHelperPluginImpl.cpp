@@ -34,7 +34,6 @@
 #include "core/frame/LocalFrameClient.h"
 #include "core/frame/WebLocalFrameBase.h"
 #include "core/html/HTMLObjectElement.h"
-#include "core/loader/FrameLoader.h"
 #include "public/web/WebPlugin.h"
 
 namespace blink {
@@ -56,7 +55,7 @@ WebHelperPluginImpl::WebHelperPluginImpl()
 bool WebHelperPluginImpl::Initialize(const String& plugin_type,
                                      WebLocalFrameBase* frame) {
   DCHECK(!object_element_ && !plugin_container_);
-  if (!frame->GetFrame()->Loader().Client())
+  if (!frame->GetFrame()->Client())
     return false;
 
   object_element_ =
@@ -64,8 +63,8 @@ bool WebHelperPluginImpl::Initialize(const String& plugin_type,
   Vector<String> attribute_names;
   Vector<String> attribute_values;
   DCHECK(frame->GetFrame()->GetDocument()->Url().IsValid());
-  plugin_container_ = ToWebPluginContainerBase(
-      frame->GetFrame()->Loader().Client()->CreatePlugin(
+  plugin_container_ =
+      ToWebPluginContainerBase(frame->GetFrame()->Client()->CreatePlugin(
           *object_element_, frame->GetFrame()->GetDocument()->Url(),
           attribute_names, attribute_values, plugin_type, false,
           LocalFrameClient::kAllowDetachedPlugin));

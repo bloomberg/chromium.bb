@@ -1545,7 +1545,7 @@ void Document::UpdateTitle(const String& title) {
 
   if (!frame_ || old_title == title_)
     return;
-  frame_->Loader().Client()->DispatchDidReceiveTitle(title_);
+  frame_->Client()->DispatchDidReceiveTitle(title_);
 }
 
 void Document::setTitle(const String& title) {
@@ -2591,11 +2591,8 @@ void Document::Shutdown() {
     GetPage()->DocumentDetached(this);
   probe::documentDetached(this);
 
-  if (frame_->Loader().Client()->GetSharedWorkerRepositoryClient())
-    frame_->Loader()
-        .Client()
-        ->GetSharedWorkerRepositoryClient()
-        ->DocumentDetached(this);
+  if (frame_->Client()->GetSharedWorkerRepositoryClient())
+    frame_->Client()->GetSharedWorkerRepositoryClient()->DocumentDetached(this);
 
   // FIXME: consider using SuspendableObject.
   if (scripted_animation_controller_)
@@ -2849,9 +2846,9 @@ void Document::open() {
       frame_->Loader().StopAllLoaders();
       // PlzNavigate: navigations handled by the client should also be
       // cancelled.
-      if (frame_->Loader().Client() &&
+      if (frame_->Client() &&
           frame_->GetSettings()->GetBrowserSideNavigationEnabled()) {
-        frame_->Loader().Client()->AbortClientNavigation();
+        frame_->Client()->AbortClientNavigation();
       }
     }
   }
@@ -2976,7 +2973,7 @@ void Document::setBody(HTMLElement* prp_new_body,
 
 void Document::WillInsertBody() {
   if (GetFrame())
-    GetFrame()->Loader().Client()->DispatchWillInsertBody();
+    GetFrame()->Client()->DispatchWillInsertBody();
   // If we get to the <body> try to resume commits since we should have content
   // to paint now.
   // TODO(esprehn): Is this really optimal? We might start producing frames
@@ -3078,7 +3075,7 @@ void Document::ImplicitClose() {
     this->domWindow()->DocumentWasClosed();
 
   if (GetFrame()) {
-    GetFrame()->Loader().Client()->DispatchDidHandleOnloadEvents();
+    GetFrame()->Client()->DispatchDidHandleOnloadEvents();
     Loader()->GetApplicationCacheHost()->StopDeferringEvents();
   }
 
@@ -5991,7 +5988,7 @@ void Document::EnforceSandboxFlags(SandboxFlags mask) {
     GetSecurityOrigin()->SetUniqueOriginIsPotentiallyTrustworthy(
         stand_in_origin->IsPotentiallyTrustworthy());
     if (GetFrame())
-      GetFrame()->Loader().Client()->DidUpdateToUniqueOrigin();
+      GetFrame()->Client()->DidUpdateToUniqueOrigin();
   }
 }
 
@@ -6741,7 +6738,7 @@ void Document::EnforceInsecureRequestPolicy(WebInsecureRequestPolicy policy) {
   // blockage.
   SetInsecureRequestPolicy(GetInsecureRequestPolicy() | policy);
   if (GetFrame())
-    GetFrame()->Loader().Client()->DidEnforceInsecureRequestPolicy(
+    GetFrame()->Client()->DidEnforceInsecureRequestPolicy(
         GetInsecureRequestPolicy());
 }
 
