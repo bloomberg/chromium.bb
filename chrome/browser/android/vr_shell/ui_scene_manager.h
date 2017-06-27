@@ -83,12 +83,12 @@ class UiSceneManager {
   void ConfigureSecurityWarnings();
   void ConfigureTransientUrlBar();
   void ConfigureIndicators();
-  void ConfigurePresentationToast();
+  void ConfigureExclusiveScreenToast();
   void UpdateBackgroundColor();
   void CloseExitPrompt();
   void OnSecurityWarningTimer();
   void OnTransientUrlBarTimer();
-  void OnPresentationToastTimer();
+  void OnExclusiveScreenToastTimer();
   void OnBackButtonClicked();
   void OnSecurityIconClicked();
   void OnExitPromptPrimaryButtonClicked();
@@ -106,7 +106,7 @@ class UiSceneManager {
   // UI element pointers (not owned by the scene manager).
   UiElement* permanent_security_warning_ = nullptr;
   UiElement* transient_security_warning_ = nullptr;
-  UiElement* presentation_toast_ = nullptr;
+  UiElement* exclusive_screen_toast_ = nullptr;
   UiElement* exit_prompt_ = nullptr;
   UiElement* exit_prompt_backplane_ = nullptr;
   UiElement* exit_warning_ = nullptr;
@@ -147,7 +147,7 @@ class UiSceneManager {
 
   base::OneShotTimer security_warning_timer_;
   base::OneShotTimer transient_url_bar_timer_;
-  base::OneShotTimer presentation_toast_timer_;
+  base::OneShotTimer exclusive_screen_toast_timer_;
 
   base::WeakPtrFactory<UiSceneManager> weak_ptr_factory_;
 

@@ -29,7 +29,7 @@ enum UiElementDebugId {
   kExitPromptBackplane,
   kTransientUrlBar,
   kLocationAccessIndicator,
-  kPresentationToast,
+  kExclusiveScreenToast,
   kSplashScreenIcon,
 };
 
