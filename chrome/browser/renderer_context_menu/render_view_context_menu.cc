@@ -354,10 +354,10 @@ int FindUMAEnumValueForCommand(int id, UmaEnumIdLookupType enum_lookup_type) {
   const size_t kMappingSize = arraysize(kUmaEnumToControlId);
   for (size_t i = 0; i < kMappingSize; ++i) {
     if (kUmaEnumToControlId[i].control_id == id) {
-      if (enum_lookup_type == GENERAL_ENUM_ID) {
+      if (enum_lookup_type == GENERAL_ENUM_ID)
         return kUmaEnumToControlId[i].enum_id;
-      } else if (enum_lookup_type == CONTEXT_SPECIFIC_ENUM_ID &&
-                 kUmaEnumToControlId[i].context_specific_enum_id > -1) {
+      if (enum_lookup_type == CONTEXT_SPECIFIC_ENUM_ID &&
+          kUmaEnumToControlId[i].context_specific_enum_id > -1) {
         return kUmaEnumToControlId[i].context_specific_enum_id;
       }
     }
@@ -514,9 +514,8 @@ bool RenderViewContextMenu::IsDevToolsURL(const GURL& url) {
 
 // static
 bool RenderViewContextMenu::IsInternalResourcesURL(const GURL& url) {
-  if (!url.SchemeIs(content::kChromeUIScheme))
-    return false;
-  return url.host_piece() == chrome::kChromeUISyncResourcesHost;
+  return url.SchemeIs(content::kChromeUIScheme) &&
+         url.host_piece() == chrome::kChromeUISyncResourcesHost;
 }
 
 // static
@@ -677,14 +676,14 @@ void RenderViewContextMenu::AppendAllExtensionItems() {
       sorted_menu_titles.end());
 
   int index = 0;
-  for (size_t i = 0; i < sorted_menu_titles.size(); ++i) {
-    std::vector<const Extension*>& extensions =
-        title_to_extensions_map[sorted_menu_titles[i]];
-    for (auto* extension : extensions) {
+  for (const auto& title : sorted_menu_titles) {
+    const std::vector<const Extension*>& extensions =
+        title_to_extensions_map[title];
+    for (const Extension* extension : extensions) {
       MenuItem::ExtensionKey extension_key(extension->id());
       extension_items_.AppendExtensionItems(extension_key,
                                             printable_selection_text, &index,
-                                            false);  // is_action_menu
+                                            /*is_action_menu=*/false);
     }
   }
 }
@@ -712,7 +711,7 @@ void RenderViewContextMenu::AppendCurrentExtensionItems() {
   // Only add extension items from this extension.
   int index = 0;
   extension_items_.AppendExtensionItems(key, PrintableSelectionText(), &index,
-                                        false /* is_action_menu */);
+                                        /*is_action_menu=*/false);
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
@@ -733,10 +732,10 @@ void RenderViewContextMenu::InitMenu() {
       menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   }
 
-  if (content_type_->SupportsGroup(
-          ContextMenuContentType::ITEM_GROUP_MEDIA_IMAGE)) {
+  bool media_image = content_type_->SupportsGroup(
+      ContextMenuContentType::ITEM_GROUP_MEDIA_IMAGE);
+  if (media_image)
     AppendImageItems();
-  }
 
   if (content_type_->SupportsGroup(
           ContextMenuContentType::ITEM_GROUP_SEARCHWEBFORIMAGE)) {
@@ -765,12 +764,13 @@ void RenderViewContextMenu::InitMenu() {
 
   // ITEM_GROUP_MEDIA_FILE has no specific items.
 
-  if (content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_EDITABLE))
+  bool editable =
+      content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_EDITABLE);
+  if (editable)
     AppendEditableItems();
 
   if (content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_COPY)) {
-    DCHECK(!content_type_->SupportsGroup(
-               ContextMenuContentType::ITEM_GROUP_EDITABLE));
+    DCHECK(!editable);
     AppendCopyItem();
   }
 
@@ -780,15 +780,12 @@ void RenderViewContextMenu::InitMenu() {
     AppendSearchProvider();
   }
 
-  if (content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_PRINT) &&
-      !content_type_->SupportsGroup(
-          ContextMenuContentType::ITEM_GROUP_MEDIA_IMAGE)) {
+  if (!media_image &&
+      content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_PRINT)) {
     AppendPrintItem();
   }
 
-  if (content_type_->SupportsGroup(
-          ContextMenuContentType::ITEM_GROUP_EDITABLE) &&
-      params_.misspelled_word.empty()) {
+  if (editable && params_.misspelled_word.empty()) {
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
     AppendLanguageSettings();
     AppendPlatformEditableItems();
@@ -829,10 +826,10 @@ void RenderViewContextMenu::InitMenu() {
   }
 
   // Remove any redundant trailing separator.
-  if (menu_model_.GetItemCount() > 0 &&
-      menu_model_.GetTypeAt(menu_model_.GetItemCount() - 1) ==
-          ui::MenuModel::TYPE_SEPARATOR) {
-    menu_model_.RemoveItemAt(menu_model_.GetItemCount() - 1);
+  int index = menu_model_.GetItemCount() - 1;
+  if (index >= 0 &&
+      menu_model_.GetTypeAt(index) == ui::MenuModel::TYPE_SEPARATOR) {
+    menu_model_.RemoveItemAt(index);
   }
 }
 
@@ -842,38 +839,37 @@ Profile* RenderViewContextMenu::GetProfile() {
 
 void RenderViewContextMenu::RecordUsedItem(int id) {
   int enum_id = FindUMAEnumValueForCommand(id, GENERAL_ENUM_ID);
-  if (enum_id != -1) {
-    const size_t kMappingSize = arraysize(kUmaEnumToControlId);
-    UMA_HISTOGRAM_EXACT_LINEAR("RenderViewContextMenu.Used", enum_id,
-                               kUmaEnumToControlId[kMappingSize - 1].enum_id);
-    // Record to additional context specific histograms.
-    enum_id = FindUMAEnumValueForCommand(id, CONTEXT_SPECIFIC_ENUM_ID);
-
-    // Linked image context.
-    if (content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_LINK) &&
-        content_type_->SupportsGroup(
-            ContextMenuContentType::ITEM_GROUP_MEDIA_IMAGE)) {
-      UMA_HISTOGRAM_EXACT_LINEAR("ContextMenu.SelectedOption.ImageLink",
-                                 enum_id,
-                                 kUmaEnumToControlId[kMappingSize - 1].enum_id);
-    }
-    // Selected text context.
-    if (content_type_->SupportsGroup(
-            ContextMenuContentType::ITEM_GROUP_SEARCH_PROVIDER) &&
-        content_type_->SupportsGroup(
-            ContextMenuContentType::ITEM_GROUP_PRINT)) {
-      UMA_HISTOGRAM_EXACT_LINEAR("ContextMenu.SelectedOption.SelectedText",
-                                 enum_id,
-                                 kUmaEnumToControlId[kMappingSize - 1].enum_id);
-    }
-    // Misspelled word context.
-    if (!params_.misspelled_word.empty()) {
-      UMA_HISTOGRAM_EXACT_LINEAR("ContextMenu.SelectedOption.MisspelledWord",
-                                 enum_id,
-                                 kUmaEnumToControlId[kMappingSize - 1].enum_id);
-    }
-  } else {
+  if (enum_id == -1) {
     NOTREACHED() << "Update kUmaEnumToControlId. Unhanded IDC: " << id;
+    return;
+  }
+
+  const size_t kMappingSize = arraysize(kUmaEnumToControlId);
+  UMA_HISTOGRAM_EXACT_LINEAR("RenderViewContextMenu.Used", enum_id,
+                             kUmaEnumToControlId[kMappingSize - 1].enum_id);
+  // Record to additional context specific histograms.
+  enum_id = FindUMAEnumValueForCommand(id, CONTEXT_SPECIFIC_ENUM_ID);
+
+  // Linked image context.
+  if (content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_LINK) &&
+      content_type_->SupportsGroup(
+          ContextMenuContentType::ITEM_GROUP_MEDIA_IMAGE)) {
+    UMA_HISTOGRAM_EXACT_LINEAR("ContextMenu.SelectedOption.ImageLink", enum_id,
+                               kUmaEnumToControlId[kMappingSize - 1].enum_id);
+  }
+  // Selected text context.
+  if (content_type_->SupportsGroup(
+          ContextMenuContentType::ITEM_GROUP_SEARCH_PROVIDER) &&
+      content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_PRINT)) {
+    UMA_HISTOGRAM_EXACT_LINEAR("ContextMenu.SelectedOption.SelectedText",
+                               enum_id,
+                               kUmaEnumToControlId[kMappingSize - 1].enum_id);
+  }
+  // Misspelled word context.
+  if (!params_.misspelled_word.empty()) {
+    UMA_HISTOGRAM_EXACT_LINEAR("ContextMenu.SelectedOption.MisspelledWord",
+                               enum_id,
+                               kUmaEnumToControlId[kMappingSize - 1].enum_id);
   }
 }
 
@@ -909,9 +905,9 @@ void RenderViewContextMenu::HandleAuthorizeAllPlugins() {
 
 void RenderViewContextMenu::AppendPrintPreviewItems() {
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-  if (!print_preview_menu_observer_.get()) {
-    print_preview_menu_observer_.reset(
-        new PrintPreviewContextMenuObserver(source_web_contents_));
+  if (!print_preview_menu_observer_) {
+    print_preview_menu_observer_ =
+        base::MakeUnique<PrintPreviewContextMenuObserver>(source_web_contents_);
   }
 
   observers_.AddObserver(print_preview_menu_observer_.get());
@@ -1114,22 +1110,23 @@ void RenderViewContextMenu::AppendImageItems() {
 }
 
 void RenderViewContextMenu::AppendSearchWebForImageItems() {
+  if (!params_.has_image_contents)
+    return;
+
   TemplateURLService* service =
       TemplateURLServiceFactory::GetForProfile(GetProfile());
-  const TemplateURL* const default_provider =
-      service->GetDefaultSearchProvider();
-  if (params_.has_image_contents && default_provider &&
-      !default_provider->image_url().empty() &&
-      default_provider->image_url_ref().IsValid(service->search_terms_data())) {
-    menu_model_.AddItem(
-        IDC_CONTENT_CONTEXT_SEARCHWEBFORIMAGE,
-        l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_SEARCHWEBFORIMAGE,
-                                   default_provider->short_name()));
-    if (default_provider->image_url_ref().HasGoogleBaseURLs(
-            service->search_terms_data())) {
-      AddGoogleIconToLastMenuItem(&menu_model_);
-    }
+  const TemplateURL* const provider = service->GetDefaultSearchProvider();
+  if (!provider || provider->image_url().empty() ||
+      !provider->image_url_ref().IsValid(service->search_terms_data())) {
+    return;
   }
+
+  menu_model_.AddItem(
+      IDC_CONTENT_CONTEXT_SEARCHWEBFORIMAGE,
+      l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_SEARCHWEBFORIMAGE,
+                                 provider->short_name()));
+  if (provider->image_url_ref().HasGoogleBaseURLs(service->search_terms_data()))
+    AddGoogleIconToLastMenuItem(&menu_model_);
 }
 
 void RenderViewContextMenu::AppendAudioItems() {
@@ -1382,8 +1379,9 @@ void RenderViewContextMenu::AppendLanguageSettings() {
 #else
   if (!spelling_options_submenu_observer_) {
     const int kLanguageRadioGroup = 1;
-    spelling_options_submenu_observer_.reset(
-        new SpellingOptionsSubMenuObserver(this, this, kLanguageRadioGroup));
+    spelling_options_submenu_observer_ =
+        base::MakeUnique<SpellingOptionsSubMenuObserver>(this, this,
+                                                         kLanguageRadioGroup);
   }
 
   spelling_options_submenu_observer_->InitMenu(params_);
@@ -1392,8 +1390,10 @@ void RenderViewContextMenu::AppendLanguageSettings() {
 }
 
 void RenderViewContextMenu::AppendSpellingSuggestionItems() {
-  if (!spelling_suggestions_menu_observer_)
-    spelling_suggestions_menu_observer_.reset(new SpellingMenuObserver(this));
+  if (!spelling_suggestions_menu_observer_) {
+    spelling_suggestions_menu_observer_ =
+        base::MakeUnique<SpellingMenuObserver>(this);
+  }
   observers_.AddObserver(spelling_suggestions_menu_observer_.get());
   spelling_suggestions_menu_observer_->InitMenu(params_);
 }
@@ -1954,13 +1954,13 @@ bool RenderViewContextMenu::IsViewSourceEnabled() const {
 bool RenderViewContextMenu::IsDevCommandEnabled(int id) const {
   if (id == IDC_CONTENT_CONTEXT_INSPECTELEMENT ||
       id == IDC_CONTENT_CONTEXT_INSPECTBACKGROUNDPAGE) {
-    if (!GetPrefs(browser_context_)
-             ->GetBoolean(prefs::kWebKitJavascriptEnabled))
+    PrefService* prefs = GetPrefs(browser_context_);
+    if (!prefs->GetBoolean(prefs::kWebKitJavascriptEnabled))
       return false;
 
     // Don't enable the web inspector if the developer tools are disabled via
     // the preference dev-tools-disabled.
-    if (GetPrefs(browser_context_)->GetBoolean(prefs::kDevToolsDisabled))
+    if (prefs->GetBoolean(prefs::kDevToolsDisabled))
       return false;
   }
 
@@ -2033,7 +2033,7 @@ bool RenderViewContextMenu::IsSaveAsEnabled() const {
                   url.is_valid() &&
                   ProfileIOData::IsHandledProtocol(url.scheme());
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-      // Do not save the preview PDF on the print preview page.
+  // Do not save the preview PDF on the print preview page.
   can_save = can_save &&
       !(printing::PrintPreviewDialogController::IsPrintPreviewURL(url));
 #endif
@@ -2211,11 +2211,11 @@ void RenderViewContextMenu::ExecSaveLinkAs() {
           source_web_contents_->GetBrowserContext(),
           render_frame_host->GetSiteInstance());
 
-  std::unique_ptr<DownloadUrlParameters> dl_params(new DownloadUrlParameters(
+  auto dl_params = base::MakeUnique<DownloadUrlParameters>(
       url, render_frame_host->GetProcess()->GetID(),
       render_frame_host->GetRenderViewHost()->GetRoutingID(),
       render_frame_host->GetRoutingID(),
-      storage_partition->GetURLRequestContext(), NO_TRAFFIC_ANNOTATION_YET));
+      storage_partition->GetURLRequestContext(), NO_TRAFFIC_ANNOTATION_YET);
   dl_params->set_referrer(CreateReferrer(url, params_));
   dl_params->set_referrer_encoding(params_.frame_charset);
   dl_params->set_suggested_name(params_.suggested_filename);
