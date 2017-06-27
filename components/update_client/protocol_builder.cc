@@ -350,26 +350,31 @@ std::string BuildUpdateCheckRequest(
 std::string BuildEventPingRequest(const Configurator& config,
                                   const Component& component) {
   DCHECK(component.state() == ComponentState::kUpdateError ||
+         component.state() == ComponentState::kUpToDate ||
          component.state() == ComponentState::kUpdated ||
          component.state() == ComponentState::kUninstalled);
 
-  const char app_element_format[] =
-      "<app appid=\"%s\" version=\"%s\" nextversion=\"%s\">"
-      "%s"
-      "</app>";
-
-  const std::string app_element(base::StringPrintf(
-      app_element_format,
-      component.id().c_str(),                              // "appid"
-      component.previous_version().GetString().c_str(),    // "version"
-      component.next_version().GetString().c_str(),        // "nextversion"
-      base::JoinString(component.events(), "").c_str()));  // events
+  // |next_version| is an optional argument for some ping types. This member
+  // is set by the value returned in the update check response. However, some
+  // of the pings are sent as a result of actions where the response did not
+  // include a manifest, neither a version.
+  std::string app =
+      base::StringPrintf("<app appid=\"%s\"", component.id().c_str());
+  base::StringAppendF(&app, " version=\"%s\"",
+                      component.previous_version().GetString().c_str());
+  if (component.next_version().IsValid())
+    base::StringAppendF(&app, " nextversion=\"%s\"",
+                        component.next_version().GetString().c_str());
+  base::StringAppendF(&app, ">");
+  base::StringAppendF(&app, "%s",
+                      base::JoinString(component.events(), "").c_str());
+  base::StringAppendF(&app, "</app>");
 
   // The ping request does not include any updater state.
   return BuildProtocolRequest(
       config.GetProdId(), config.GetBrowserVersion().GetString(),
       config.GetChannel(), config.GetLang(), config.GetOSLongName(),
-      config.GetDownloadPreference(), app_element, "", nullptr);
+      config.GetDownloadPreference(), app, "", nullptr);
 }
 
 }  // namespace update_client
