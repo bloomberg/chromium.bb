@@ -10,12 +10,12 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "chrome/installer/util/advanced_firewall_manager_win.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/installer_util_strings.h"
 #include "chrome/installer/util/l10n_string_util.h"
-#include "chrome/installer/util/legacy_firewall_manager_win.h"
 
 namespace installer {
 
@@ -56,37 +56,8 @@ class FirewallManagerAdvancedImpl : public FirewallManager {
   }
 
   AdvancedFirewallManager manager_;
+
   DISALLOW_COPY_AND_ASSIGN(FirewallManagerAdvancedImpl);
-};
-
-class FirewallManagerLegacyImpl : public FirewallManager {
- public:
-  FirewallManagerLegacyImpl() {}
-  ~FirewallManagerLegacyImpl() override {}
-
-  bool Init(const base::string16& app_name, const base::FilePath& app_path) {
-    return manager_.Init(app_name, app_path);
-  }
-
-  // FirewallManager methods.
-  bool CanUseLocalPorts() override {
-    return !manager_.IsFirewallEnabled() ||
-        manager_.GetAllowIncomingConnection(NULL);
-  };
-
-  bool AddFirewallRules() override {
-    // Change nothing if rule is set.
-    return manager_.GetAllowIncomingConnection(NULL) ||
-        manager_.SetAllowIncomingConnection(true);
-  }
-
-  void RemoveFirewallRules() override {
-    manager_.DeleteRule();
-  }
-
- private:
-  LegacyFirewallManager manager_;
-  DISALLOW_COPY_AND_ASSIGN(FirewallManagerLegacyImpl);
 };
 
 }  // namespace
@@ -97,17 +68,10 @@ FirewallManager::~FirewallManager() {}
 std::unique_ptr<FirewallManager> FirewallManager::Create(
     BrowserDistribution* dist,
     const base::FilePath& chrome_path) {
-  // First try to connect to "Windows Firewall with Advanced Security" (Vista+).
-  std::unique_ptr<FirewallManagerAdvancedImpl> manager(
-      new FirewallManagerAdvancedImpl());
+  // Try to connect to "Windows Firewall with Advanced Security" (Vista+).
+  auto manager = base::MakeUnique<FirewallManagerAdvancedImpl>();
   if (manager->Init(dist->GetDisplayName(), chrome_path))
     return std::move(manager);
-
-  // Next try to connect to "Windows Firewall for Windows XP with SP2".
-  std::unique_ptr<FirewallManagerLegacyImpl> legacy_manager(
-      new FirewallManagerLegacyImpl());
-  if (legacy_manager->Init(dist->GetDisplayName(), chrome_path))
-    return std::move(legacy_manager);
 
   return nullptr;
 }
