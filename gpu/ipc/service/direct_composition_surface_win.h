@@ -34,6 +34,9 @@ class GPU_EXPORT DirectCompositionSurfaceWin : public gl::GLSurfaceEGL {
   // use overlays.
   static bool AreOverlaysSupported();
 
+  // Returns true if there is an HDR capable display connected.
+  static bool IsHDRSupported();
+
   bool InitializeNativeWindow();
 
   // GLSurfaceEGL implementation.

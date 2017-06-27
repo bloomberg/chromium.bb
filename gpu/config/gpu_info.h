@@ -223,6 +223,9 @@ struct GPU_EXPORT GPUInfo {
   // True if the current set of outputs supports overlays.
   bool supports_overlays = false;
 
+  // True if the current set of outputs supports HDR.
+  bool hdr = false;
+
   // The state of whether the basic/context/DxDiagnostics info is collected and
   // if the collection fails or not.
   CollectInfoResult basic_info_state;

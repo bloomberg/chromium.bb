@@ -35,6 +35,11 @@
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/scoped_make_current.h"
 
+#if defined(NTDDI_WIN10_RS2)
+#define ENABLE_HDR_DETECTION
+#include <dxgi1_6.h>
+#endif
+
 #ifndef EGL_ANGLE_flexible_surface_compatibility
 #define EGL_ANGLE_flexible_surface_compatibility 1
 #define EGL_FLEXIBLE_SURFACE_COMPATIBILITY_SUPPORTED_ANGLE 0x33A6
@@ -990,6 +995,50 @@ bool DirectCompositionSurfaceWin::AreOverlaysSupported() {
     return false;
 
   return base::FeatureList::IsEnabled(switches::kDirectCompositionOverlays);
+}
+
+// static
+bool DirectCompositionSurfaceWin::IsHDRSupported() {
+  bool hdr_monitor_found = true;
+#if defined(ENABLE_HDR_DETECTION)
+  base::win::ScopedComPtr<ID3D11Device> d3d11_device =
+      gl::QueryD3D11DeviceObjectFromANGLE();
+  if (!d3d11_device) {
+    DLOG(ERROR) << "Failing to detect HDR, couldn't retrieve D3D11 "
+                << "device from ANGLE.";
+    return false;
+  }
+  base::win::ScopedComPtr<IDXGIDevice> dxgi_device;
+  d3d11_device.CopyTo(dxgi_device.GetAddressOf());
+  base::win::ScopedComPtr<IDXGIAdapter> dxgi_adapter;
+  dxgi_device->GetAdapter(dxgi_adapter.GetAddressOf());
+
+  unsigned int i = 0;
+  while (true) {
+    base::win::ScopedComPtr<IDXGIOutput> output;
+    if (FAILED(dxgi_adapter->EnumOutputs(i++, output.GetAddressOf())))
+      break;
+    base::win::ScopedComPtr<IDXGIOutput6> output6;
+    if (FAILED(output.CopyTo(output6.GetAddressOf())))
+      continue;
+
+    DXGI_OUTPUT_DESC1 desc;
+    if (FAILED(output6->GetDesc1(&desc)))
+      continue;
+
+    UMA_HISTOGRAM_SPARSE_SLOWLY("GPU.Output.ColorSpace", desc.ColorSpace);
+    UMA_HISTOGRAM_SPARSE_SLOWLY("GPU.Output.MaxLuminance", desc.MaxLuminance);
+
+    if (desc.ColorSpace == DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020) {
+      hdr_monitor_found = true;
+      return true;
+    }
+  }
+  UMA_HISTOGRAM_BOOLEAN("GPU.Output.HDR", hdr_monitor_found);
+  return hdr_monitor_found;
+#else
+  return false;
+#endif
 }
 
 bool DirectCompositionSurfaceWin::InitializeNativeWindow() {

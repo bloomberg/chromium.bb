@@ -28,6 +28,7 @@
 #endif
 
 #if defined(OS_WIN)
+#include "gpu/ipc/service/child_window_surface_win.h"
 #include "gpu/ipc/service/direct_composition_surface_win.h"
 #endif
 
@@ -109,6 +110,9 @@ void CollectGraphicsInfo(gpu::GPUInfo& gpu_info) {
       gl::GLSurfaceEGL::IsDirectCompositionSupported() &&
       DirectCompositionSurfaceWin::AreOverlaysSupported()) {
     gpu_info.supports_overlays = true;
+  }
+  if (DirectCompositionSurfaceWin::IsHDRSupported()) {
+    gpu_info.hdr = true;
   }
 #endif  // defined(OS_WIN)
 }

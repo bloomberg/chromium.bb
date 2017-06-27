@@ -23753,6 +23753,36 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="GPU.Output.ColorSpace" enum="DXGI_COLOR_SPACE_TYPE">
+  <owner>hubbe@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    Records the output color space of the monitor as reported by Windows.
+    Recorded once for each monitor when the gpu process starts.
+    If monitor enumeration fails, this metric will not be provided.
+  </summary>
+</histogram>
+
+<histogram name="GPU.Output.HDR" enum="Boolean">
+  <owner>hubbe@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    Records if any connected monitor is HDR capable. Recorded when the gpu process
+    starts. Only recorded on Windows as of M-61.
+    If monitor enumeration fails, this metric will not be provided.
+  </summary>
+</histogram>
+
+<histogram name="GPU.Output.MaxLuminance" units="lumens">
+  <owner>hubbe@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    Records the display maximum lumens as reported by Windows.
+    Recorded once for each monitor when the gpu process starts.
+    If monitor enumeration fails, this metric will not be provided.
+  </summary>
+</histogram>
+
 <histogram name="GPU.ProgramCache.BinaryCacheHitTime" units="microseconds">
   <owner>vmiura@chromium.org</owner>
   <summary>The time to load a gpu program from the program cache.</summary>

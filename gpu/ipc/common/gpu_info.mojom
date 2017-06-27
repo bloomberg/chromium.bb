@@ -107,6 +107,7 @@ struct GpuInfo {
   bool in_process_gpu;
   bool passthrough_cmd_decoder;
   bool supports_overlays;
+  bool hdr;
   CollectInfoResult basic_info_state;
   CollectInfoResult context_info_state;
   CollectInfoResult dx_diagnostics_info_state;
