@@ -90,7 +90,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
     int eob_ctx = get_eob_ctx(tcoeffs, scan[c], txs_ctx);
 
     if (c < seg_eob - 1)
-      is_nz = aom_read(r, nz_map[coeff_ctx], tx_size);
+      is_nz = aom_read(r, nz_map[coeff_ctx], ACCT_STR);
     else
       is_nz = 1;
 
@@ -105,7 +105,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
     if (counts) ++(*nz_map_count)[coeff_ctx][is_nz];
 
     if (is_nz) {
-      int is_eob = aom_read(r, eob_flag[eob_ctx], tx_size);
+      int is_eob = aom_read(r, eob_flag[eob_ctx], ACCT_STR);
       if (counts) ++counts->eob_flag[txs_ctx][plane_type][eob_ctx][is_eob];
       if (is_eob) break;
     }
@@ -129,7 +129,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 
       ctx = get_base_ctx(tcoeffs, scan[c], bwl, height, i + 1);
 
-      if (aom_read(r, coeff_base[ctx], tx_size)) {
+      if (aom_read(r, coeff_base[ctx], ACCT_STR)) {
         *v = i + 1;
         cul_level += i + 1;
 
@@ -137,7 +137,8 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 
         if (c == 0) {
           int dc_sign_ctx = txb_ctx->dc_sign_ctx;
-          sign = aom_read(r, cm->fc->dc_sign[plane_type][dc_sign_ctx], tx_size);
+          sign =
+              aom_read(r, cm->fc->dc_sign[plane_type][dc_sign_ctx], ACCT_STR);
           if (counts) ++counts->dc_sign[plane_type][dc_sign_ctx][sign];
         } else {
           sign = aom_read_bit(r, ACCT_STR);
@@ -163,7 +164,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 
     if (c == 0) {
       int dc_sign_ctx = txb_ctx->dc_sign_ctx;
-      sign = aom_read(r, cm->fc->dc_sign[plane_type][dc_sign_ctx], tx_size);
+      sign = aom_read(r, cm->fc->dc_sign[plane_type][dc_sign_ctx], ACCT_STR);
       if (counts) ++counts->dc_sign[plane_type][dc_sign_ctx][sign];
     } else {
       sign = aom_read_bit(r, ACCT_STR);
@@ -174,7 +175,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
     if (cm->fc->coeff_lps[txs_ctx][plane_type][ctx] == 0) exit(0);
 
     for (idx = 0; idx < COEFF_BASE_RANGE; ++idx) {
-      if (aom_read(r, cm->fc->coeff_lps[txs_ctx][plane_type][ctx], tx_size)) {
+      if (aom_read(r, cm->fc->coeff_lps[txs_ctx][plane_type][ctx], ACCT_STR)) {
         *v = (idx + 1 + NUM_BASE_LEVELS);
         if (sign) *v = -(*v);
         cul_level += abs(*v);
