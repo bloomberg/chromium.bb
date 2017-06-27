@@ -8,40 +8,37 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/firewall_manager_win.h"
-#include "content/public/browser/browser_thread.h"
 
 namespace media_router {
 
 namespace {
 
-void DoCanFirewallUseLocalPorts(const base::Callback<void(bool)>& callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+bool DoCanFirewallUseLocalPorts() {
   base::FilePath exe_path;
-  bool can_use_local_ports = false;
   if (!base::PathService::Get(base::FILE_EXE, &exe_path)) {
     LOG(WARNING) << "Couldn't get path of current executable.";
-    return;
+    return false;
   }
   auto firewall_manager = installer::FirewallManager::Create(
       BrowserDistribution::GetDistribution(), exe_path);
   if (!firewall_manager) {
     LOG(WARNING) << "Couldn't get FirewallManager instance.";
-    return;
+    return false;
   }
-  can_use_local_ports = firewall_manager->CanUseLocalPorts();
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
-      base::Bind(callback, can_use_local_ports));
+  return firewall_manager->CanUseLocalPorts();
 }
 
 }  // namespace
 
-void CanFirewallUseLocalPorts(const base::Callback<void(bool)>& callback) {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&DoCanFirewallUseLocalPorts, callback));
+void CanFirewallUseLocalPorts(base::OnceCallback<void(bool)> callback) {
+  auto task_runner = base::CreateCOMSTATaskRunnerWithTraits({base::MayBlock()});
+  base::PostTaskAndReplyWithResult(task_runner.get(), FROM_HERE,
+                                   base::BindOnce(&DoCanFirewallUseLocalPorts),
+                                   std::move(callback));
 }
 
 }  // namespace media_router
