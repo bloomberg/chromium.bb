@@ -17,12 +17,9 @@ import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 public class OmniboxPlaceholderFieldTrial {
     private static final String FIELD_TRIAL_NAME = "OmniboxPlaceholderExperiment";
     private static final String GROUP_SEARCH_OR_TYPE_URL = "SearchOrTypeUrl";
-    private static final String GROUP_SEARCH_OR_TYPE_WEBSITE_NAME = "SearchOrTypeWebsiteName";
-    private static final String GROUP_SEARCH_THE_WEB = "SearchTheWeb";
-    private static final String GROUP_ENTER_A_SEARCH_OR_WEBSITE = "EnterASearchOrWebsite";
-    private static final String GROUP_SEARCH_NEWS = "SearchNews";
-    private static final String GROUP_SEARCH_RECIPES = "SearchRecipes";
-    private static final String GROUP_SEARCH_WEATHER = "SearchWeather";
+    private static final String GROUP_SEARCH_OR_TYPE_WEB_ADDRESS = "SearchOrTypeWebAddress";
+    private static final String GROUP_TYPE_WHAT_YOU_ARE_LOOKING_FOR = "TypeWhatYouAreLookingFor";
+    private static final String GROUP_FIND_NEWS_RECIPES_WEATHER = "FindNewsRecipesWeather";
     private static final String GROUP_BLANK = "Blank";
 
     private static String sCachedHint;
@@ -50,23 +47,14 @@ public class OmniboxPlaceholderFieldTrial {
             case GROUP_SEARCH_OR_TYPE_URL:
                 sCachedHint = resources.getString(R.string.search_or_type_url);
                 break;
-            case GROUP_SEARCH_OR_TYPE_WEBSITE_NAME:
-                sCachedHint = resources.getString(R.string.search_or_type_website_name);
+            case GROUP_SEARCH_OR_TYPE_WEB_ADDRESS:
+                sCachedHint = resources.getString(R.string.search_or_type_web_address);
                 break;
-            case GROUP_SEARCH_THE_WEB:
-                sCachedHint = resources.getString(R.string.search_the_web);
+            case GROUP_TYPE_WHAT_YOU_ARE_LOOKING_FOR:
+                sCachedHint = resources.getString(R.string.type_what_you_are_looking_for);
                 break;
-            case GROUP_ENTER_A_SEARCH_OR_WEBSITE:
-                sCachedHint = resources.getString(R.string.enter_a_search_or_website);
-                break;
-            case GROUP_SEARCH_NEWS:
-                sCachedHint = resources.getString(R.string.search_news);
-                break;
-            case GROUP_SEARCH_RECIPES:
-                sCachedHint = resources.getString(R.string.search_recipes);
-                break;
-            case GROUP_SEARCH_WEATHER:
-                sCachedHint = resources.getString(R.string.search_weather);
+            case GROUP_FIND_NEWS_RECIPES_WEATHER:
+                sCachedHint = resources.getString(R.string.find_news_recipes_weather);
                 break;
             case GROUP_BLANK:
                 sCachedHint = "";
