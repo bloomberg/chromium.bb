@@ -351,7 +351,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
                              ppapi::ScopedPPVar* result);
 
   // Returns true if the plugin is processing a user gesture.
-  bool IsProcessingUserGesture();
+  bool IsProcessingUserGesture() const;
 
   // Returns the user gesture token to use for creating a WebScopedUserGesture,
   // if IsProcessingUserGesture returned true.
@@ -595,6 +595,8 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
     std::list<std::string> data_;
     bool finished_loading_;
     std::unique_ptr<blink::WebURLError> error_;
+
+    DISALLOW_COPY_AND_ASSIGN(ExternalDocumentLoader);
   };
 
   // Implements PPB_Gamepad_API. This is just to avoid having an excessive
@@ -672,7 +674,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
                        int num_ranges,
                        printing::PdfMetafileSkia* metafile);
 
-  void DoSetCursor(blink::WebCursorInfo* cursor);
+  void DoSetCursor(std::unique_ptr<blink::WebCursorInfo> cursor);
 
   // Internal helper functions for HandleCompositionXXX().
   bool SendCompositionEventToPlugin(PP_InputEvent_Type type,
@@ -700,6 +702,9 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   void KeepSizeAttributesBeforeFullscreen();
   void SetSizeAttributesForFullscreen();
   void ResetSizeAttributesAfterFullscreen();
+
+  // Shared code between SetFullscreen() and FlashSetFullscreen().
+  bool SetFullscreenCommon(bool fullscreen) const;
 
   bool IsMouseLocked();
   bool LockMouse();

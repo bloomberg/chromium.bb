@@ -11,6 +11,7 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -310,7 +311,7 @@ bool SecurityOriginForInstance(PP_Instance instance_id,
 // is not modified.
 std::unique_ptr<const char* []> StringVectorToArgArray(
     const std::vector<std::string>& vector) {
-  std::unique_ptr<const char* []> array(new const char*[vector.size()]);
+  auto array = base::MakeUnique<const char* []>(vector.size());
   for (size_t i = 0; i < vector.size(); ++i)
     array[i] = vector[i].c_str();
   return array;
@@ -444,7 +445,7 @@ void PepperPluginInstanceImpl::ExternalDocumentLoader::DidFail(
   if (finished_loading_)
     return;
 
-  error_.reset(new WebURLError(error));
+  error_ = base::MakeUnique<WebURLError>(error);
 }
 
 PepperPluginInstanceImpl::GamepadImpl::GamepadImpl()
@@ -524,7 +525,7 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
       isolate_(v8::Isolate::GetCurrent()),
       is_deleted_(false),
       initialized_(false),
-      audio_controller_(new PepperAudioController(this)),
+      audio_controller_(base::MakeUnique<PepperAudioController>(this)),
       view_change_weak_ptr_factory_(this),
       weak_factory_(this) {
   pp_instance_ = HostGlobals::Get()->AddInstance(this);
@@ -848,6 +849,7 @@ bool PepperPluginInstanceImpl::Initialize(
   }
 
   message_channel_ = MessageChannel::Create(this, &message_channel_object_);
+  DCHECK(message_channel_);
 
   full_frame_ = full_frame;
 
@@ -878,17 +880,11 @@ bool PepperPluginInstanceImpl::Initialize(
   //
   // A host for external plugins will call ResetAsProxied later, at which point
   // we can Start() the MessageChannel.
-  if (success && (!module_->renderer_ppapi_host()->IsExternalPluginHost())) {
-    if (message_channel_)
-      message_channel_->Start();
-  }
+  if (success && !module_->renderer_ppapi_host()->IsExternalPluginHost())
+    message_channel_->Start();
 
-  if (success &&
-      render_frame_ &&
-      render_frame_->render_accessibility() &&
-      LoadPdfInterface()) {
-    plugin_pdf_interface_->EnableAccessibility(pp_instance());
-  }
+  if (success)
+    AccessibilityModeChanged();
 
   initialized_ = success;
   return success;
@@ -901,7 +897,7 @@ bool PepperPluginInstanceImpl::HandleDocumentLoad(
     // The external proxy isn't available, so save the response and record
     // document load notifications for later replay.
     external_document_response_ = response;
-    external_document_loader_.reset(new ExternalDocumentLoader());
+    external_document_loader_ = base::MakeUnique<ExternalDocumentLoader>();
     document_loader_ = external_document_loader_.get();
     return true;
   }
@@ -919,19 +915,16 @@ bool PepperPluginInstanceImpl::HandleDocumentLoad(
   // PPP_Instance.HandleDocumentLoad call below, since this may reentrantly
   // call into the instance and expect it to be valid.
   RendererPpapiHostImpl* host_impl = module_->renderer_ppapi_host();
-  PepperURLLoaderHost* loader_host =
-      new PepperURLLoaderHost(host_impl, true, pp_instance(), 0);
+  auto loader_host =
+      base::MakeUnique<PepperURLLoaderHost>(host_impl, true, pp_instance(), 0);
   // TODO(teravest): Remove set_document_loader() from instance and clean up
   // this relationship.
-  set_document_loader(loader_host);
+  set_document_loader(loader_host.get());
   loader_host->DidReceiveResponse(response);
 
   // This host will be pending until the resource object attaches to it.
-  //
-  // PpapiHost now owns the pointer to loader_host, so we don't have to worry
-  // about managing it.
   int pending_host_id = host_impl->GetPpapiHost()->AddPendingResourceHost(
-      std::unique_ptr<ppapi::host::ResourceHost>(loader_host));
+      std::unique_ptr<ppapi::host::ResourceHost>(std::move(loader_host)));
   DCHECK(pending_host_id);
 
   DataFromWebURLResponse(
@@ -1127,9 +1120,8 @@ bool PepperPluginInstanceImpl::HandleCoalescedInputEvent(
       result |= HandleInputEvent(event.CoalescedEvent(i), cursor_info);
     }
     return result;
-  } else {
-    return HandleInputEvent(event.Event(), cursor_info);
   }
+  return HandleInputEvent(event.Event(), cursor_info);
 }
 
 bool PepperPluginInstanceImpl::HandleInputEvent(
@@ -1998,20 +1990,13 @@ bool PepperPluginInstanceImpl::SetFullscreen(bool fullscreen) {
   if (fullscreen == IsFullscreenOrPending())
     return false;
 
-  if (!render_frame_)
-    return false;
-  if (fullscreen && !render_frame_->render_view()
-                         ->renderer_preferences()
-                         .plugin_fullscreen_allowed)
+  if (!SetFullscreenCommon(fullscreen))
     return false;
 
   // Check whether we are trying to switch while the state is in transition.
   // The 2nd request gets dropped while messing up the internal state, so
   // disallow this.
   if (view_data_.is_fullscreen != desired_fullscreen_state_)
-    return false;
-
-  if (fullscreen && !IsProcessingUserGesture())
     return false;
 
   DVLOG(1) << "Setting fullscreen to " << (fullscreen ? "on" : "off");
@@ -2154,8 +2139,7 @@ void PepperPluginInstanceImpl::UpdateLayer(bool force_creation) {
       texture_layer_->SetFlipped(false);
     }
 
-    std::unique_ptr<cc_blink::WebLayerImpl> layer(
-        new cc_blink::WebLayerImpl(texture_layer_));
+    auto layer = base::MakeUnique<cc_blink::WebLayerImpl>(texture_layer_);
     // Ignore transparency in fullscreen, since that's what Flash always
     // wants to do, and that lets it not recreate a context if
     // wmode=transparent was specified.
@@ -2165,7 +2149,7 @@ void PepperPluginInstanceImpl::UpdateLayer(bool force_creation) {
     web_layer_ = std::move(layer);
   } else if (want_compositor_layer) {
     compositor_layer_ = bound_compositor_->layer();
-    web_layer_.reset(new cc_blink::WebLayerImpl(compositor_layer_));
+    web_layer_ = base::MakeUnique<cc_blink::WebLayerImpl>(compositor_layer_);
   }
 
   if (web_layer_) {
@@ -2231,7 +2215,7 @@ void PepperPluginInstanceImpl::RemovePluginObject(PluginObject* plugin_object) {
   live_plugin_objects_.erase(plugin_object);
 }
 
-bool PepperPluginInstanceImpl::IsProcessingUserGesture() {
+bool PepperPluginInstanceImpl::IsProcessingUserGesture() const {
   PP_TimeTicks now = ppapi::TimeTicksToPPTimeTicks(base::TimeTicks::Now());
   // Give a lot of slack so tests won't be flaky.
   const PP_TimeTicks kUserGestureDurationInSeconds = 10.0;
@@ -2348,10 +2332,10 @@ PepperPluginInstanceImpl::GetContentDecryptorDelegate() {
       static_cast<const PPP_ContentDecryptor_Private*>(
           module_->GetPluginInterface(PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE));
   if (!plugin_decryption_interface)
-    return NULL;
+    return nullptr;
 
-  content_decryptor_delegate_.reset(
-      new ContentDecryptorDelegate(pp_instance_, plugin_decryption_interface));
+  content_decryptor_delegate_ = base::MakeUnique<ContentDecryptorDelegate>(
+      pp_instance_, plugin_decryption_interface);
   return content_decryptor_delegate_.get();
 }
 
@@ -2830,7 +2814,8 @@ PP_Bool PepperPluginInstanceImpl::SetCursor(PP_Instance instance,
     return PP_FALSE;
 
   if (type != PP_MOUSECURSOR_TYPE_CUSTOM) {
-    DoSetCursor(new WebCursorInfo(static_cast<WebCursorInfo::Type>(type)));
+    DoSetCursor(base::MakeUnique<WebCursorInfo>(
+        static_cast<WebCursorInfo::Type>(type)));
     return PP_TRUE;
   }
 
@@ -2844,8 +2829,8 @@ PP_Bool PepperPluginInstanceImpl::SetCursor(PP_Instance instance,
   if (!auto_mapper.is_valid())
     return PP_FALSE;
 
-  std::unique_ptr<WebCursorInfo> custom_cursor(
-      new WebCursorInfo(WebCursorInfo::kTypeCustom));
+  auto custom_cursor =
+      base::MakeUnique<WebCursorInfo>(WebCursorInfo::kTypeCustom);
   custom_cursor->hot_spot.x = hot_spot->x;
   custom_cursor->hot_spot.y = hot_spot->y;
 
@@ -2858,7 +2843,7 @@ PP_Bool PepperPluginInstanceImpl::SetCursor(PP_Instance instance,
     return PP_FALSE;
   }
 
-  DoSetCursor(custom_cursor.release());
+  DoSetCursor(std::move(custom_cursor));
   return PP_TRUE;
 }
 
@@ -3035,7 +3020,7 @@ PP_ExternalPluginResult PepperPluginInstanceImpl::ResetAsProxied(
 
   // For NaCl instances, remember the NaCl plugin instance interface, so we
   // can shut it down by calling its DidDestroy in our Delete() method.
-  original_instance_interface_.reset(instance_interface_.release());
+  original_instance_interface_ = std::move(instance_interface_);
 
   base::Callback<const void*(const char*)> get_plugin_interface_func =
       base::Bind(&PluginModule::GetPluginInterface, module_);
@@ -3085,7 +3070,7 @@ PP_ExternalPluginResult PepperPluginInstanceImpl::ResetAsProxied(
     external_document_response_ = blink::WebURLResponse();
     // Replay any document load events we've received to the real loader.
     external_document_loader_->ReplayReceivedData(document_loader_);
-    external_document_loader_.reset(NULL);
+    external_document_loader_.reset();
   }
 
   return PP_EXTERNAL_PLUGIN_OK;
@@ -3178,13 +3163,13 @@ void PepperPluginInstanceImpl::SetAlwaysOnTop(bool on_top) {
   always_on_top_ = on_top;
 }
 
-void PepperPluginInstanceImpl::DoSetCursor(WebCursorInfo* cursor) {
-  cursor_.reset(cursor);
-  if (fullscreen_container_) {
-    fullscreen_container_->PepperDidChangeCursor(*cursor);
-  } else if (render_frame_) {
-    render_frame_->PepperDidChangeCursor(this, *cursor);
-  }
+void PepperPluginInstanceImpl::DoSetCursor(
+    std::unique_ptr<WebCursorInfo> cursor) {
+  cursor_ = std::move(cursor);
+  if (fullscreen_container_)
+    fullscreen_container_->PepperDidChangeCursor(*cursor_);
+  else if (render_frame_)
+    render_frame_->PepperDidChangeCursor(this, *cursor_);
 }
 
 bool PepperPluginInstanceImpl::IsFullPagePlugin() {
@@ -3209,14 +3194,7 @@ bool PepperPluginInstanceImpl::FlashSetFullscreen(bool fullscreen,
   if (fullscreen == FlashIsFullscreenOrPending())
     return true;
 
-  if (!render_frame_)
-    return false;
-  if (fullscreen && !render_frame_->render_view()
-                         ->renderer_preferences()
-                         .plugin_fullscreen_allowed)
-    return false;
-
-  if (fullscreen && !IsProcessingUserGesture())
+  if (!SetFullscreenCommon(fullscreen))
     return false;
 
   // Unbind current 2D or 3D graphics context.
@@ -3380,6 +3358,23 @@ void PepperPluginInstanceImpl::ResetSizeAttributesAfterFullscreen() {
   element.SetAttribute(WebString::FromUTF8(kStyle), style_before_fullscreen_);
 }
 
+bool PepperPluginInstanceImpl::SetFullscreenCommon(bool fullscreen) const {
+  if (!render_frame_)
+    return false;
+
+  if (fullscreen) {
+    if (!render_frame_->render_view()
+             ->renderer_preferences()
+             .plugin_fullscreen_allowed) {
+      return false;
+    }
+
+    if (!IsProcessingUserGesture())
+      return false;
+  }
+  return true;
+}
+
 bool PepperPluginInstanceImpl::IsMouseLocked() {
   return GetMouseLockDispatcher()->IsMouseLockedTo(
       GetOrCreateLockTargetAdapter());
@@ -3391,9 +3386,8 @@ bool PepperPluginInstanceImpl::LockMouse() {
 
 MouseLockDispatcher::LockTarget*
 PepperPluginInstanceImpl::GetOrCreateLockTargetAdapter() {
-  if (!lock_target_.get()) {
-    lock_target_.reset(new PluginInstanceLockTarget(this));
-  }
+  if (!lock_target_)
+    lock_target_ = base::MakeUnique<PluginInstanceLockTarget>(this);
   return lock_target_.get();
 }
 
@@ -3402,14 +3396,14 @@ MouseLockDispatcher* PepperPluginInstanceImpl::GetMouseLockDispatcher() {
     RenderWidgetFullscreenPepper* container =
         static_cast<RenderWidgetFullscreenPepper*>(fullscreen_container_);
     return container->mouse_lock_dispatcher();
-  } else if (render_frame_) {
-    return render_frame_->render_view()->mouse_lock_dispatcher();
   }
-  return NULL;
+  if (render_frame_)
+    return render_frame_->render_view()->mouse_lock_dispatcher();
+  return nullptr;
 }
 
 void PepperPluginInstanceImpl::UnSetAndDeleteLockTargetAdapter() {
-  if (lock_target_.get()) {
+  if (lock_target_) {
     GetMouseLockDispatcher()->OnLockTargetDestroyed(lock_target_.get());
     lock_target_.reset();
   }
