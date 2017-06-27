@@ -14,6 +14,7 @@
 #include "core/page/Page.h"
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
+#include "platform/Histogram.h"
 #include "platform/WebFrameScheduler.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "public/platform/WebLayerTreeView.h"
@@ -96,15 +97,35 @@ void PaintTiming::SetFirstMeaningfulPaintCandidate(double timestamp) {
   }
 }
 
-void PaintTiming::SetFirstMeaningfulPaint(double stamp) {
+void PaintTiming::SetFirstMeaningfulPaint(
+    double stamp,
+    FirstMeaningfulPaintDetector::HadUserInput had_input) {
   DCHECK_EQ(first_meaningful_paint_, 0.0);
-  first_meaningful_paint_ = stamp;
-  TRACE_EVENT_MARK_WITH_TIMESTAMP1(
-      "loading,rail,devtools.timeline", "firstMeaningfulPaint",
-      TraceEvent::ToTraceTimestamp(first_meaningful_paint_), "frame",
-      GetFrame());
-  NotifyPaintTimingChanged();
-  RegisterNotifySwapTime(PaintEvent::kFirstMeaningfulPaint);
+  TRACE_EVENT_MARK_WITH_TIMESTAMP2("loading,rail,devtools.timeline",
+                                   "firstMeaningfulPaint",
+                                   TraceEvent::ToTraceTimestamp(stamp), "frame",
+                                   GetFrame(), "afterUserInput", had_input);
+
+  // Notify FMP for UMA only if there's no user input before FMP, so that layout
+  // changes caused by user interactions wouldn't be considered as FMP.
+  if (had_input == FirstMeaningfulPaintDetector::kNoUserInput) {
+    first_meaningful_paint_ = stamp;
+    NotifyPaintTimingChanged();
+    RegisterNotifySwapTime(PaintEvent::kFirstMeaningfulPaint);
+  }
+
+  ReportUserInputHistogram(had_input);
+}
+
+void PaintTiming::ReportUserInputHistogram(
+    FirstMeaningfulPaintDetector::HadUserInput had_input) {
+  DEFINE_STATIC_LOCAL(EnumerationHistogram, had_user_input_histogram,
+                      ("PageLoad.Internal.PaintTiming."
+                       "HadUserInputBeforeFirstMeaningfulPaint",
+                       FirstMeaningfulPaintDetector::kHadUserInputEnumMax));
+
+  if (GetFrame() && GetFrame()->IsMainFrame())
+    had_user_input_histogram.Count(had_input);
 }
 
 void PaintTiming::NotifyPaint(bool is_first_paint,

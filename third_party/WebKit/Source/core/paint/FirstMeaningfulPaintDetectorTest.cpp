@@ -56,6 +56,8 @@ class FirstMeaningfulPaintDetectorTest : public testing::Test {
     Detector().Network2QuietTimerFired(nullptr);
   }
 
+  void SimulateUserInput() { Detector().NotifyInputEvent(); }
+
   void SetActiveConnections(int connections) {
     Detector().SetNetworkQuietTimers(connections);
   }
@@ -247,6 +249,23 @@ TEST_F(FirstMeaningfulPaintDetectorTest, Network2QuietTimer) {
   SetActiveConnections(1);  // This should not reset the 2-quiet timer.
   platform_->RunForPeriodSeconds(0.1001);
   EXPECT_TRUE(HadNetwork2Quiet());
+}
+
+TEST_F(FirstMeaningfulPaintDetectorTest,
+       FirstMeaningfulPaintAfterUserInteraction) {
+  GetPaintTiming().MarkFirstContentfulPaint();
+  SimulateUserInput();
+  SimulateLayoutAndPaint(10);
+  SimulateNetworkStable();
+  EXPECT_EQ(GetPaintTiming().FirstMeaningfulPaint(), 0.0);
+}
+
+TEST_F(FirstMeaningfulPaintDetectorTest, UserInteractionBeforeFirstPaint) {
+  SimulateUserInput();
+  GetPaintTiming().MarkFirstContentfulPaint();
+  SimulateLayoutAndPaint(10);
+  SimulateNetworkStable();
+  EXPECT_NE(GetPaintTiming().FirstMeaningfulPaint(), 0.0);
 }
 
 }  // namespace blink

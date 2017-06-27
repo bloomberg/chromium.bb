@@ -50,7 +50,9 @@ class CORE_EXPORT PaintTiming final
   void MarkFirstImagePaint();
 
   void SetFirstMeaningfulPaintCandidate(double timestamp);
-  void SetFirstMeaningfulPaint(double stamp);
+  void SetFirstMeaningfulPaint(
+      double stamp,
+      FirstMeaningfulPaintDetector::HadUserInput had_input);
   void NotifyPaint(bool is_first_paint, bool text_painted, bool image_painted);
 
   // The getters below return monotonically-increasing seconds, or zero if the
@@ -110,6 +112,8 @@ class CORE_EXPORT PaintTiming final
   void SetFirstContentfulPaint(double stamp);
 
   void RegisterNotifySwapTime(PaintEvent);
+  void ReportUserInputHistogram(
+      FirstMeaningfulPaintDetector::HadUserInput had_input);
 
   double first_paint_ = 0.0;
   double first_paint_swap_ = 0.0;
