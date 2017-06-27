@@ -87,7 +87,7 @@ bool AnimationTimeline::IsActive() {
 }
 
 void AnimationTimeline::AnimationAttached(Animation& animation) {
-  DCHECK_EQ(animation.timeline(), this);
+  DCHECK_EQ(animation.TimelineInternal(), this);
   DCHECK(!animations_.Contains(&animation));
   animations_.insert(&animation);
 }
@@ -299,6 +299,7 @@ DEFINE_TRACE(AnimationTimeline) {
   visitor->Trace(timing_);
   visitor->Trace(animations_needing_update_);
   visitor->Trace(animations_);
+  SuperAnimationTimeline::Trace(visitor);
 }
 
 }  // namespace blink

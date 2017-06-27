@@ -44,7 +44,7 @@ void CompositorPendingAnimations::Add(Animation* animation) {
   DCHECK_EQ(pending_.Find(animation), kNotFound);
   pending_.push_back(animation);
 
-  Document* document = animation->timeline()->GetDocument();
+  Document* document = animation->TimelineInternal()->GetDocument();
   if (document->View())
     document->View()->ScheduleAnimation();
 
@@ -84,7 +84,8 @@ bool CompositorPendingAnimations::Update(
       }
 
       if (animation->Playing() && !animation->HasStartTime() &&
-          animation->timeline() && animation->timeline()->IsActive()) {
+          animation->TimelineInternal() &&
+          animation->TimelineInternal()->IsActive()) {
         waiting_for_start_time.push_back(animation.Get());
       }
     } else {
@@ -105,14 +106,14 @@ bool CompositorPendingAnimations::Update(
     for (auto& animation : waiting_for_start_time) {
       if (!animation->HasStartTime()) {
         animation->NotifyCompositorStartTime(
-            animation->timeline()->CurrentTimeInternal());
+            animation->TimelineInternal()->CurrentTimeInternal());
       }
     }
   }
 
   // FIXME: The postCommit should happen *after* the commit, not before.
   for (auto& animation : animations)
-    animation->PostCommit(animation->timeline()->CurrentTimeInternal());
+    animation->PostCommit(animation->TimelineInternal()->CurrentTimeInternal());
 
   DCHECK(pending_.IsEmpty());
   DCHECK(start_on_compositor || deferred.IsEmpty());
@@ -150,7 +151,8 @@ void CompositorPendingAnimations::NotifyCompositorAnimationStarted(
   for (auto animation : animations) {
     if (animation->HasStartTime() ||
         animation->PlayStateInternal() != Animation::kPending ||
-        !animation->timeline() || !animation->timeline()->IsActive()) {
+        !animation->TimelineInternal() ||
+        !animation->TimelineInternal()->IsActive()) {
       // Already started or no longer relevant.
       continue;
     }
@@ -159,8 +161,9 @@ void CompositorPendingAnimations::NotifyCompositorAnimationStarted(
       waiting_for_compositor_animation_start_.push_back(animation);
       continue;
     }
-    animation->NotifyCompositorStartTime(monotonic_animation_start_time -
-                                         animation->timeline()->ZeroTime());
+    animation->NotifyCompositorStartTime(
+        monotonic_animation_start_time -
+        animation->TimelineInternal()->ZeroTime());
   }
 }
 

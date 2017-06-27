@@ -11,6 +11,7 @@
 #include "bindings/core/v8/UnrestrictedDoubleOrKeyframeEffectOptions.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "bindings/core/v8/V8KeyframeEffectOptions.h"
+#include "core/animation/Animation.h"
 #include "core/animation/AnimationClock.h"
 #include "core/animation/AnimationEffectTiming.h"
 #include "core/animation/AnimationTestHelper.h"

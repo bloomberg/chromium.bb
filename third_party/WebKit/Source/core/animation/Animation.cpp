@@ -34,6 +34,7 @@
 #include "core/animation/CompositorPendingAnimations.h"
 #include "core/animation/DocumentTimeline.h"
 #include "core/animation/KeyframeEffectReadOnly.h"
+#include "core/animation/SuperAnimationTimeline.h"
 #include "core/animation/css/CSSAnimations.h"
 #include "core/dom/DOMNodeIds.h"
 #include "core/dom/Document.h"
@@ -68,18 +69,20 @@ static unsigned NextSequenceNumber() {
 }
 
 Animation* Animation::Create(AnimationEffectReadOnly* effect,
-                             AnimationTimeline* timeline) {
-  if (!timeline) {
+                             SuperAnimationTimeline* timeline) {
+  if (!timeline || !timeline->IsAnimationTimeline()) {
     // FIXME: Support creating animations without a timeline.
     NOTREACHED();
     return nullptr;
   }
 
-  Animation* animation = new Animation(
-      timeline->GetDocument()->ContextDocument(), *timeline, effect);
+  AnimationTimeline* subtimeline = ToAnimationTimeline(timeline);
 
-  if (timeline) {
-    timeline->AnimationAttached(*animation);
+  Animation* animation = new Animation(
+      subtimeline->GetDocument()->ContextDocument(), *subtimeline, effect);
+
+  if (subtimeline) {
+    subtimeline->AnimationAttached(*animation);
     animation->AttachCompositorTimeline();
   }
 
@@ -97,7 +100,7 @@ Animation* Animation::Create(ExecutionContext* execution_context,
 
 Animation* Animation::Create(ExecutionContext* execution_context,
                              AnimationEffectReadOnly* effect,
-                             AnimationTimeline* timeline,
+                             SuperAnimationTimeline* timeline,
                              ExceptionState& exception_state) {
   DCHECK(RuntimeEnabledFeatures::WebAnimationsAPIEnabled());
 
@@ -790,7 +793,7 @@ Animation::CheckCanStartAnimationOnCompositorInternal(
   }
 
   // FIXME: Timeline playback rates should be compositable
-  if (timeline() && timeline()->PlaybackRate() != 1) {
+  if (TimelineInternal() && TimelineInternal()->PlaybackRate() != 1) {
     return CompositorAnimations::FailureCode::NonActionable(
         "Accelerated animations do not support timelines with playback rates "
         "other than 1");
@@ -852,7 +855,7 @@ void Animation::StartAnimationOnCompositor(
 
   bool reversed = playback_rate_ < 0;
 
-  double start_time = timeline()->ZeroTime() + StartTimeInternal();
+  double start_time = TimelineInternal()->ZeroTime() + StartTimeInternal();
   if (reversed) {
     start_time -= EffectEnd() / fabs(playback_rate_);
   }
@@ -885,7 +888,8 @@ void Animation::SetCompositorPending(bool effect_changed) {
       compositor_state_->playback_rate != playback_rate_ ||
       compositor_state_->start_time != start_time_) {
     compositor_pending_ = true;
-    timeline()->GetDocument()->GetCompositorPendingAnimations().Add(this);
+    TimelineInternal()->GetDocument()->GetCompositorPendingAnimations().Add(
+        this);
   }
 }
 
@@ -941,8 +945,9 @@ bool Animation::Update(TimingUpdateReason reason) {
         const AtomicString& event_type = EventTypeNames::cancel;
         if (GetExecutionContext() && HasEventListeners(event_type)) {
           double event_current_time = NullValue();
-          pending_cancelled_event_ = AnimationPlaybackEvent::Create(
-              event_type, event_current_time, timeline()->currentTime());
+          pending_cancelled_event_ =
+              AnimationPlaybackEvent::Create(event_type, event_current_time,
+                                             TimelineInternal()->currentTime());
           pending_cancelled_event_->SetTarget(this);
           pending_cancelled_event_->SetCurrentTarget(this);
           timeline_->GetDocument()->EnqueueAnimationFrameEvent(
@@ -952,8 +957,9 @@ bool Animation::Update(TimingUpdateReason reason) {
         const AtomicString& event_type = EventTypeNames::finish;
         if (GetExecutionContext() && HasEventListeners(event_type)) {
           double event_current_time = CurrentTimeInternal() * 1000;
-          pending_finished_event_ = AnimationPlaybackEvent::Create(
-              event_type, event_current_time, timeline()->currentTime());
+          pending_finished_event_ =
+              AnimationPlaybackEvent::Create(event_type, event_current_time,
+                                             TimelineInternal()->currentTime());
           pending_finished_event_->SetTarget(this);
           pending_finished_event_->SetCurrentTarget(this);
           timeline_->GetDocument()->EnqueueAnimationFrameEvent(
@@ -1065,7 +1071,7 @@ void Animation::DetachCompositedLayers() {
 }
 
 void Animation::NotifyAnimationStarted(double monotonic_time, int group) {
-  timeline()
+  TimelineInternal()
       ->GetDocument()
       ->GetCompositorPendingAnimations()
       .NotifyCompositorAnimationStarted(monotonic_time, group);
@@ -1169,9 +1175,9 @@ Animation::PlayStateUpdateScope::~PlayStateUpdateScope() {
   animation_->EndUpdatingState();
 
   if (old_play_state != new_play_state) {
-    probe::animationPlayStateChanged(animation_->timeline()->GetDocument(),
-                                     animation_, old_play_state,
-                                     new_play_state);
+    probe::animationPlayStateChanged(
+        animation_->TimelineInternal()->GetDocument(), animation_,
+        old_play_state, new_play_state);
   }
 }
 

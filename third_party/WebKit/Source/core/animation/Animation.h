@@ -38,6 +38,7 @@
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
 #include "core/animation/AnimationEffectReadOnly.h"
+#include "core/animation/AnimationTimeline.h"
 #include "core/animation/CompositorAnimations.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/DOMException.h"
@@ -51,7 +52,6 @@
 
 namespace blink {
 
-class AnimationTimeline;
 class CompositorAnimationPlayer;
 class Element;
 class ExceptionState;
@@ -75,7 +75,7 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
     kFinished
   };
 
-  static Animation* Create(AnimationEffectReadOnly*, AnimationTimeline*);
+  static Animation* Create(AnimationEffectReadOnly*, SuperAnimationTimeline*);
 
   // Web Animations API IDL constructors.
   static Animation* Create(ExecutionContext*,
@@ -83,7 +83,7 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
                            ExceptionState&);
   static Animation* Create(ExecutionContext*,
                            AnimationEffectReadOnly*,
-                           AnimationTimeline*,
+                           SuperAnimationTimeline*,
                            ExceptionState&);
 
   ~Animation();
@@ -139,8 +139,11 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
 
   double playbackRate() const;
   void setPlaybackRate(double);
-  const AnimationTimeline* timeline() const { return timeline_; }
-  AnimationTimeline* timeline() { return timeline_; }
+  SuperAnimationTimeline* timeline() {
+    return static_cast<SuperAnimationTimeline*>(timeline_);
+  }
+  const AnimationTimeline* TimelineInternal() const { return timeline_; }
+  AnimationTimeline* TimelineInternal() { return timeline_; }
 
   double CalculateStartTime(double current_time) const;
   bool HasStartTime() const { return !IsNull(start_time_); }
