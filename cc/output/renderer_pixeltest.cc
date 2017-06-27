@@ -811,6 +811,39 @@ TYPED_TEST(RendererPixelTest, PremultipliedTextureWithBackground) {
       FuzzyPixelOffByOneComparator(true)));
 }
 
+TEST_F(GLRendererPixelTest, SolidColorBlend) {
+  gfx::Rect rect(this->device_viewport_size_);
+
+  int id = 1;
+  std::unique_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
+
+  SharedQuadState* shared_state =
+      CreateTestSharedQuadState(gfx::Transform(), rect, pass.get());
+  shared_state->opacity = 1 - 16.0f / 255;
+  shared_state->blend_mode = SkBlendMode::kDstOut;
+
+  SolidColorDrawQuad* color_quad =
+      pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+  color_quad->SetNew(shared_state, rect, rect, SK_ColorRED, false);
+
+  SharedQuadState* shared_state_background =
+      CreateTestSharedQuadState(gfx::Transform(), rect, pass.get());
+
+  SkColor background_color = SkColorSetRGB(0xff, 0xff * 14 / 16, 0xff);
+  SolidColorDrawQuad* color_quad_background =
+      pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+  color_quad_background->SetNew(shared_state_background, rect, rect,
+                                background_color, false);
+  // Result should be r=16, g=14, b=16.
+
+  RenderPassList pass_list;
+  pass_list.push_back(std::move(pass));
+
+  EXPECT_TRUE(this->RunPixelTest(
+      &pass_list, base::FilePath(FILE_PATH_LITERAL("dark_grey.png")),
+      FuzzyPixelOffByOneComparator(true)));
+}
+
 TEST_F(GLRendererPixelTest,
        PremultipliedTextureWithBackgroundAndVertexOpacity) {
   gfx::Rect rect(this->device_viewport_size_);

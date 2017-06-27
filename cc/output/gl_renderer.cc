@@ -713,6 +713,8 @@ void GLRenderer::ApplyBlendModeUsingBlendFunc(SkBlendMode blend_mode) {
     // Left no-op intentionally.
   } else if (blend_mode == SkBlendMode::kDstIn) {
     gl_->BlendFunc(GL_ZERO, GL_SRC_ALPHA);
+  } else if (blend_mode == SkBlendMode::kDstOut) {
+    gl_->BlendFunc(GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
   } else if (blend_mode == SkBlendMode::kScreen) {
     gl_->BlendFunc(GL_ONE_MINUS_DST_COLOR, GL_ONE);
   } else {
@@ -778,6 +780,7 @@ void GLRenderer::RestoreBlendFuncToDefault(SkBlendMode blend_mode) {
     case SkBlendMode::kSrcOver:
       break;
     case SkBlendMode::kDstIn:
+    case SkBlendMode::kDstOut:
     case SkBlendMode::kScreen:
       gl_->BlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
       break;
@@ -1740,7 +1743,8 @@ void GLRenderer::DrawSolidColorQuad(const SolidColorDrawQuad* quad,
 
   // Early out if alpha is small enough that quad doesn't contribute to output.
   if (alpha < std::numeric_limits<float>::epsilon() &&
-      quad->ShouldDrawWithBlending())
+      quad->ShouldDrawWithBlending() &&
+      quad->shared_quad_state->blend_mode == SkBlendMode::kSrcOver)
     return;
 
   gfx::Transform device_transform =
@@ -1787,6 +1791,7 @@ void GLRenderer::DrawSolidColorQuad(const SolidColorDrawQuad* quad,
   // Enable blending when the quad properties require it or if we decided
   // to use antialiasing.
   SetBlendEnabled(quad->ShouldDrawWithBlending() || use_aa);
+  ApplyBlendModeUsingBlendFunc(quad->shared_quad_state->blend_mode);
 
   // Antialising requires a normalized quad, but this could lead to floating
   // point precision errors, so only normalize when antialising is on.
@@ -1815,6 +1820,7 @@ void GLRenderer::DrawSolidColorQuad(const SolidColorDrawQuad* quad,
     gl_->DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
     num_triangles_drawn_ += 2;
   }
+  RestoreBlendFuncToDefault(quad->shared_quad_state->blend_mode);
 }
 
 void GLRenderer::DrawTileQuad(const TileDrawQuad* quad,
