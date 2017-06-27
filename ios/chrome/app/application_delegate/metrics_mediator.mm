@@ -169,6 +169,7 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
   [self setMetricsEnabled:optIn withUploading:allowUploading];
   [self setBreakpadEnabled:optIn withUploading:allowUploading];
   [self setWatchWWANEnabled:(optIn && wifiOnly)];
+  [self setAppGroupMetricsEnabled:optIn];
 }
 
 - (BOOL)areMetricsEnabled {
