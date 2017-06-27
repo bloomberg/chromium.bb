@@ -1079,6 +1079,7 @@ interface URLSearchParams
     method has
     method keys
     method set
+    method sort
     method toString
     method values
 interface WebGL2RenderingContext
