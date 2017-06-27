@@ -67,6 +67,8 @@ NSString* ReadingListEmptySection() {
 
 // Tests launching ContentSuggestionsViewController.
 - (void)testLaunch {
+  EARL_GREY_TEST_DISABLED(@"Disabled until it is possible to hide some alerts");
+
   showcase_utils::Open(@"ContentSuggestionsViewController");
   [CellWithMatcher(chrome_test_util::ButtonWithAccessibilityLabelId(
       IDS_IOS_CONTENT_SUGGESTIONS_FOOTER_TITLE))
@@ -79,6 +81,8 @@ NSString* ReadingListEmptySection() {
 
 // Tests the opening of a suggestion item by tapping on it.
 - (void)testOpenItem {
+  EARL_GREY_TEST_DISABLED(@"Disabled until it is possible to hide some alerts");
+
   showcase_utils::Open(@"ContentSuggestionsViewController");
   [CellWithID([SCContentSuggestionsDataSource titleFirstSuggestion])
       performAction:grey_tap()];
@@ -99,6 +103,8 @@ NSString* ReadingListEmptySection() {
 
 // Tests dismissing an item with swipe-to-dismiss.
 - (void)testSwipeToDismiss {
+  EARL_GREY_TEST_DISABLED(@"Disabled until it is possible to hide some alerts");
+
   showcase_utils::Open(@"ContentSuggestionsViewController");
 
   [CellWithID([SCContentSuggestionsDataSource titleFirstSuggestion])
@@ -124,6 +130,8 @@ NSString* ReadingListEmptySection() {
 
 // Tests that long pressing an item starts a context menu.
 - (void)testLongPressItem {
+  EARL_GREY_TEST_DISABLED(@"Disabled until it is possible to hide some alerts");
+
   showcase_utils::Open(@"ContentSuggestionsViewController");
   [CellWithID([SCContentSuggestionsDataSource titleFirstSuggestion])
       performAction:grey_longPress()];
@@ -142,6 +150,8 @@ NSString* ReadingListEmptySection() {
 
 // Tests that swipe-to-dismiss on empty item does nothing.
 - (void)testNoSwipeToDismissEmptyItem {
+  EARL_GREY_TEST_DISABLED(@"Disabled until it is possible to hide some alerts");
+
   showcase_utils::Open(@"ContentSuggestionsViewController");
   [CellWithID([SCContentSuggestionsDataSource titleReadingListItem])
       performAction:grey_swipeFastInDirection(kGREYDirectionLeft)];
