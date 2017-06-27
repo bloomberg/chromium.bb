@@ -118,8 +118,9 @@ class QueuedWebInputEvent : public ScopedWebInputEventWithLatencyInfo,
           (now - creationTimestamp()).InMicroseconds(), 1, kTenSeconds, 50);
     }
 
-    HandledEventCallback callback = base::BindOnce(
-        &QueuedWebInputEvent::HandledEvent, base::Unretained(this), queue);
+    HandledEventCallback callback =
+        base::BindOnce(&QueuedWebInputEvent::HandledEvent,
+                       base::Unretained(this), base::RetainedRef(queue));
     queue->HandleEventOnMainThread(coalesced_event(), latencyInfo(),
                                    std::move(callback));
   }

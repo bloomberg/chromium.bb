@@ -1203,9 +1203,9 @@ void ResourceDispatcherHostImpl::BeginRequest(
               it.name(), it.value(), child_id, resource_context,
               base::Bind(
                   &ResourceDispatcherHostImpl::ContinuePendingBeginRequest,
-                  base::Unretained(this), requester_info, request_id,
-                  request_data, sync_result_handler, route_id, headers,
-                  base::Passed(std::move(mojo_request)),
+                  base::Unretained(this), make_scoped_refptr(requester_info),
+                  request_id, request_data, sync_result_handler, route_id,
+                  headers, base::Passed(std::move(mojo_request)),
                   base::Passed(std::move(url_loader_client))));
           return;
         }
