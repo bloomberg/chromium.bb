@@ -35,18 +35,6 @@ namespace {
 // A non-zero brightness used for test.
 constexpr int kNonZeroBrightness = 10;
 
-// Vector pointing up (e.g. keyboard in clamshell).
-constexpr gfx::Vector3dF kUpVector = {0, 0,
-                                      TabletPowerButtonController::kGravity};
-
-// Vector pointing down (e.g. keyboard in tablet sitting on table).
-constexpr gfx::Vector3dF kDownVector = {0, 0,
-                                        -TabletPowerButtonController::kGravity};
-
-// Vector pointing sideways (e.g. screen in 90-degree clamshell).
-constexpr gfx::Vector3dF kSidewaysVector = {
-    0, TabletPowerButtonController::kGravity, 0};
-
 void CopyResult(bool* dest, bool src) {
   *dest = src;
 }
@@ -69,7 +57,7 @@ class TabletPowerButtonControllerTest : public AshTestBase {
     AshTestBase::SetUp();
     // Trigger an accelerometer update so that |tablet_controller_| can be
     // initialized.
-    SendAccelerometerUpdate(kSidewaysVector, kUpVector);
+    SendAccelerometerUpdate();
     tablet_controller_ = Shell::Get()
                              ->power_button_controller()
                              ->tablet_power_button_controller_for_test();
@@ -99,23 +87,11 @@ class TabletPowerButtonControllerTest : public AshTestBase {
   }
 
  protected:
-  // Sends an update with screen and keyboard accelerometer readings to
-  // PowerButtonController, and also |tablet_controller_| if it's non-null and
-  // has registered as an observer.
-  void SendAccelerometerUpdate(const gfx::Vector3dF& screen,
-                               const gfx::Vector3dF& keyboard) {
+  void SendAccelerometerUpdate() {
     scoped_refptr<chromeos::AccelerometerUpdate> update(
         new chromeos::AccelerometerUpdate());
-    update->Set(chromeos::ACCELEROMETER_SOURCE_SCREEN, screen.x(), screen.y(),
-                screen.z());
-    update->Set(chromeos::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD, keyboard.x(),
-                keyboard.y(), keyboard.z());
-
+    update->Set(chromeos::ACCELEROMETER_SOURCE_SCREEN, 1.0f, 0.0f, 0.0f);
     Shell::Get()->power_button_controller()->OnAccelerometerUpdated(update);
-
-    if (test_api_ && test_api_->IsObservingAccelerometerReader(
-                         chromeos::AccelerometerReader::GetInstance()))
-      tablet_controller_->OnAccelerometerUpdated(update);
   }
 
   void PressPowerButton() {
@@ -158,14 +134,14 @@ class TabletPowerButtonControllerTest : public AshTestBase {
   }
 
   // Ownership is passed on to chromeos::DBusThreadManager.
-  chromeos::FakePowerManagerClient* power_manager_client_ = nullptr;
+  chromeos::FakePowerManagerClient* power_manager_client_;
 
-  LockStateController* lock_state_controller_ = nullptr;      // Not owned.
-  TabletPowerButtonController* tablet_controller_ = nullptr;  // Not owned.
+  LockStateController* lock_state_controller_;      // Not owned.
+  TabletPowerButtonController* tablet_controller_;  // Not owned.
   std::unique_ptr<TabletPowerButtonController::TestApi> test_api_;
   std::unique_ptr<LockStateControllerTestApi> lock_state_test_api_;
-  base::SimpleTestTickClock* tick_clock_ = nullptr;  // Not owned.
-  TestShellDelegate* shell_delegate_ = nullptr;      // Not owned.
+  base::SimpleTestTickClock* tick_clock_;  // Not owned.
+  TestShellDelegate* shell_delegate_;      // Not owned.
   ui::test::EventGenerator* generator_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(TabletPowerButtonControllerTest);
@@ -554,7 +530,7 @@ TEST_F(TabletPowerButtonControllerTest, SyncTouchscreenStatus) {
   Shell::Get()
       ->power_button_controller()
       ->ResetTabletPowerButtonControllerForTest();
-  SendAccelerometerUpdate(kSidewaysVector, kSidewaysVector);
+  SendAccelerometerUpdate();
 
   // Check that the local state of touchscreen enabled state is in line with
   // backlights forced off state.
@@ -574,89 +550,11 @@ TEST_F(TabletPowerButtonControllerTest, EnableOnAccelerometerUpdate) {
                            ->tablet_power_button_controller_for_test();
   EXPECT_FALSE(tablet_controller_);
 
-  SendAccelerometerUpdate(kSidewaysVector, kSidewaysVector);
+  SendAccelerometerUpdate();
   tablet_controller_ = Shell::Get()
                            ->power_button_controller()
                            ->tablet_power_button_controller_for_test();
   EXPECT_TRUE(tablet_controller_);
-}
-
-TEST_F(TabletPowerButtonControllerTest, IgnoreSpuriousEventsForAcceleration) {
-  base::CommandLine cl(base::CommandLine::NO_PROGRAM);
-  cl.AppendSwitchASCII(switches::kSpuriousPowerButtonWindow, "3");
-  cl.AppendSwitchASCII(switches::kSpuriousPowerButtonAccelCount, "2");
-  cl.AppendSwitchASCII(switches::kSpuriousPowerButtonKeyboardAccel, "4.5");
-  cl.AppendSwitchASCII(switches::kSpuriousPowerButtonScreenAccel, "8.0");
-  test_api_->ParseSpuriousPowerButtonSwitches(cl);
-  ASSERT_FALSE(test_api_->IsSpuriousPowerButtonEvent());
-
-  // Vectors with varying amounts of acceleration beyond gravity.
-  static constexpr gfx::Vector3dF kVector0 = {
-      0, 0, TabletPowerButtonController::kGravity};
-  static constexpr gfx::Vector3dF kVector3 = {
-      0, 0, TabletPowerButtonController::kGravity + 3};
-  static constexpr gfx::Vector3dF kVector5 = {
-      0, 0, TabletPowerButtonController::kGravity + 5};
-  static constexpr gfx::Vector3dF kVector9 = {
-      0, 0, TabletPowerButtonController::kGravity + 9};
-
-  // Send two keyboard readings with vectors that exceed the threshold after
-  // subtracting gravity.
-  SendAccelerometerUpdate(kVector0, kVector5);
-  SendAccelerometerUpdate(kVector0, kVector9);
-  EXPECT_TRUE(test_api_->IsSpuriousPowerButtonEvent());
-
-  // Now send two more keyboard readings that are close to gravity. We only have
-  // one large reading saved now, so we should permit power button events again.
-  SendAccelerometerUpdate(kVector0, kVector0);
-  SendAccelerometerUpdate(kVector0, kVector0);
-  EXPECT_FALSE(test_api_->IsSpuriousPowerButtonEvent());
-
-  // Send a few large screen vectors and check that the button is again blocked.
-  SendAccelerometerUpdate(kVector9, kVector0);
-  SendAccelerometerUpdate(kVector9, kVector0);
-  EXPECT_TRUE(test_api_->IsSpuriousPowerButtonEvent());
-}
-
-TEST_F(TabletPowerButtonControllerTest, IgnoreSpuriousEventsForLidAngle) {
-  base::CommandLine cl(base::CommandLine::NO_PROGRAM);
-  cl.AppendSwitchASCII(switches::kSpuriousPowerButtonWindow, "5");
-  cl.AppendSwitchASCII(switches::kSpuriousPowerButtonLidAngleChange, "200");
-  test_api_->ParseSpuriousPowerButtonSwitches(cl);
-  ASSERT_FALSE(test_api_->IsSpuriousPowerButtonEvent());
-
-  // Send two updates in tablet mode with the screen facing up and the keyboard
-  // facing down (i.e. 360 degrees between the two).
-  SendAccelerometerUpdate(kUpVector, kDownVector);
-  SendAccelerometerUpdate(kUpVector, kDownVector);
-  EXPECT_FALSE(test_api_->IsSpuriousPowerButtonEvent());
-
-  // Now keep the screen facing up and report the keyboard as being sideways, as
-  // if it's been rotated 90 degrees.
-  SendAccelerometerUpdate(kUpVector, kSidewaysVector);
-  EXPECT_FALSE(test_api_->IsSpuriousPowerButtonEvent());
-
-  // Make the keyboard also face up (180 degrees from start).
-  SendAccelerometerUpdate(kUpVector, kUpVector);
-  EXPECT_FALSE(test_api_->IsSpuriousPowerButtonEvent());
-
-  // Now make the screen face sideways, completing the 270-degree change to
-  // a clamshell orientation. We've exceeded the threshold over the last four
-  // samples, so events should be ignored.
-  SendAccelerometerUpdate(kSidewaysVector, kUpVector);
-  EXPECT_TRUE(test_api_->IsSpuriousPowerButtonEvent());
-
-  // Make the screen travel 90 more degrees so the lid is closed (360 degrees
-  // from start).
-  SendAccelerometerUpdate(kDownVector, kUpVector);
-  EXPECT_TRUE(test_api_->IsSpuriousPowerButtonEvent());
-
-  // After two more closed samples, the 5-sample buffer just contains a
-  // 180-degree transition, so events should be accepted again.
-  SendAccelerometerUpdate(kDownVector, kUpVector);
-  EXPECT_TRUE(test_api_->IsSpuriousPowerButtonEvent());
-  SendAccelerometerUpdate(kDownVector, kUpVector);
-  EXPECT_FALSE(test_api_->IsSpuriousPowerButtonEvent());
 }
 
 // Tests that when backlights get forced off due to tablet power button, media

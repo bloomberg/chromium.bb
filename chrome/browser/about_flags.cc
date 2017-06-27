@@ -508,45 +508,6 @@ const FeatureEntry::Choice kUiShowCompositedLayerBordersChoices[] = {
      cc::switches::kCompositedLayerBorders},
     {flag_descriptions::kUiShowCompositedLayerBordersAll,
      cc::switches::kUIShowCompositedLayerBorders, ""}};
-
-const FeatureEntry::Choice kSpuriousPowerButtonWindowChoices[] = {
-    {"0", "", ""},
-    {"5", ash::switches::kSpuriousPowerButtonWindow, "5"},
-    {"10", ash::switches::kSpuriousPowerButtonWindow, "10"},
-    {"15", ash::switches::kSpuriousPowerButtonWindow, "15"},
-    {"20", ash::switches::kSpuriousPowerButtonWindow, "20"},
-};
-const FeatureEntry::Choice kSpuriousPowerButtonAccelCountChoices[] = {
-    {"0", "", ""},
-    {"1", ash::switches::kSpuriousPowerButtonAccelCount, "1"},
-    {"2", ash::switches::kSpuriousPowerButtonAccelCount, "2"},
-    {"3", ash::switches::kSpuriousPowerButtonAccelCount, "3"},
-    {"4", ash::switches::kSpuriousPowerButtonAccelCount, "4"},
-    {"5", ash::switches::kSpuriousPowerButtonAccelCount, "5"},
-};
-const FeatureEntry::Choice kSpuriousPowerButtonScreenAccelChoices[] = {
-    {"0", "", ""},
-    {"0.2", ash::switches::kSpuriousPowerButtonScreenAccel, "0.2"},
-    {"0.4", ash::switches::kSpuriousPowerButtonScreenAccel, "0.4"},
-    {"0.6", ash::switches::kSpuriousPowerButtonScreenAccel, "0.6"},
-    {"0.8", ash::switches::kSpuriousPowerButtonScreenAccel, "0.8"},
-    {"1.0", ash::switches::kSpuriousPowerButtonScreenAccel, "1.0"},
-};
-const FeatureEntry::Choice kSpuriousPowerButtonKeyboardAccelChoices[] = {
-    {"0", "", ""},
-    {"0.2", ash::switches::kSpuriousPowerButtonKeyboardAccel, "0.2"},
-    {"0.4", ash::switches::kSpuriousPowerButtonKeyboardAccel, "0.4"},
-    {"0.6", ash::switches::kSpuriousPowerButtonKeyboardAccel, "0.6"},
-    {"0.8", ash::switches::kSpuriousPowerButtonKeyboardAccel, "0.8"},
-    {"1.0", ash::switches::kSpuriousPowerButtonKeyboardAccel, "1.0"},
-};
-const FeatureEntry::Choice kSpuriousPowerButtonLidAngleChangeChoices[] = {
-    {"0", "", ""},
-    {"45", ash::switches::kSpuriousPowerButtonLidAngleChange, "45"},
-    {"90", ash::switches::kSpuriousPowerButtonLidAngleChange, "90"},
-    {"135", ash::switches::kSpuriousPowerButtonLidAngleChange, "135"},
-    {"180", ash::switches::kSpuriousPowerButtonLidAngleChange, "180"},
-};
 #endif  // OS_CHROMEOS
 
 const FeatureEntry::Choice kV8CacheOptionsChoices[] = {
@@ -1380,26 +1341,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsCrOS,
      SINGLE_VALUE_TYPE(
          proximity_auth::switches::kEnableBluetoothLowEnergyDiscovery)},
-    {"spurious-power-button-window",
-     flag_descriptions::kSpuriousPowerButtonWindowName,
-     flag_descriptions::kSpuriousPowerButtonWindowDescription, kOsCrOS,
-     MULTI_VALUE_TYPE(kSpuriousPowerButtonWindowChoices)},
-    {"spurious-power-button-accel-count",
-     flag_descriptions::kSpuriousPowerButtonAccelCountName,
-     flag_descriptions::kSpuriousPowerButtonAccelCountDescription, kOsCrOS,
-     MULTI_VALUE_TYPE(kSpuriousPowerButtonAccelCountChoices)},
-    {"spurious-power-button-screen-accel",
-     flag_descriptions::kSpuriousPowerButtonScreenAccelName,
-     flag_descriptions::kSpuriousPowerButtonScreenAccelDescription, kOsCrOS,
-     MULTI_VALUE_TYPE(kSpuriousPowerButtonScreenAccelChoices)},
-    {"spurious-power-button-keyboard-accel",
-     flag_descriptions::kSpuriousPowerButtonKeyboardAccelName,
-     flag_descriptions::kSpuriousPowerButtonKeyboardAccelDescription, kOsCrOS,
-     MULTI_VALUE_TYPE(kSpuriousPowerButtonKeyboardAccelChoices)},
-    {"spurious-power-button-lid-angle-change",
-     flag_descriptions::kSpuriousPowerButtonLidAngleChangeName,
-     flag_descriptions::kSpuriousPowerButtonLidAngleChangeDescription, kOsCrOS,
-     MULTI_VALUE_TYPE(kSpuriousPowerButtonLidAngleChangeChoices)},
 #endif  // OS_CHROMEOS
 #if defined(USE_ASH)
     {"ash-disable-night-light", flag_descriptions::kDisableNightLightName,
