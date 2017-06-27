@@ -15,6 +15,7 @@
 namespace content {
 class ContentClient;
 class ShellContentBrowserClient;
+class ShellContentGpuClient;
 class ShellContentRendererClient;
 class ShellContentUtilityClient;
 
@@ -36,6 +37,7 @@ class ShellMainDelegate : public ContentMainDelegate {
   void ZygoteForked() override;
 #endif
   ContentBrowserClient* CreateContentBrowserClient() override;
+  ContentGpuClient* CreateContentGpuClient() override;
   ContentRendererClient* CreateContentRendererClient() override;
   ContentUtilityClient* CreateContentUtilityClient() override;
 
@@ -43,6 +45,7 @@ class ShellMainDelegate : public ContentMainDelegate {
 
  private:
   std::unique_ptr<ShellContentBrowserClient> browser_client_;
+  std::unique_ptr<ShellContentGpuClient> gpu_client_;
   std::unique_ptr<ShellContentRendererClient> renderer_client_;
   std::unique_ptr<ShellContentUtilityClient> utility_client_;
   std::unique_ptr<ContentClient> content_client_;
