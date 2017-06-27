@@ -74,6 +74,50 @@ class CompositedLayerMappingTest
 
 INSTANTIATE_TEST_CASE_P(All, CompositedLayerMappingTest, ::testing::Bool());
 
+TEST_P(CompositedLayerMappingTest, SubpixelAccumulationChange) {
+  SetBodyInnerHTML(
+      "<div id='target' style='will-change: transform; background: lightblue; "
+      "position: relative; left: 0.4px; width: 100px; height: 100px'>");
+
+  Element* target = GetDocument().getElementById("target");
+  target->SetInlineStyleProperty(CSSPropertyLeft, "0.6px");
+
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+
+  PaintLayer* paint_layer =
+      ToLayoutBoxModelObject(target->GetLayoutObject())->Layer();
+  // Directly composited layers are not invalidated on subpixel accumulation
+  // change.
+  EXPECT_FALSE(paint_layer->GraphicsLayerBacking()
+                   ->GetPaintController()
+                   .GetPaintArtifact()
+                   .IsEmpty());
+}
+
+TEST_P(CompositedLayerMappingTest,
+       SubpixelAccumulationChangeIndirectCompositing) {
+  SetBodyInnerHTML(
+      "<div style='position; relative; width: 100px; height: 100px;"
+      "    background: lightgray; will-change: transform'></div>"
+      "<div id='target' style='background: lightblue; "
+      "    position: relative; top: -10px; left: 0.4px; width: 100px;"
+      "    height: 100px'></div>");
+
+  Element* target = GetDocument().getElementById("target");
+  target->SetInlineStyleProperty(CSSPropertyLeft, "0.6px");
+
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+
+  PaintLayer* paint_layer =
+      ToLayoutBoxModelObject(target->GetLayoutObject())->Layer();
+  // The PaintArtifact should have been deleted because paint was
+  // invalidated for subpixel accumulation change.
+  EXPECT_FALSE(paint_layer->GraphicsLayerBacking()
+                   ->GetPaintController()
+                   .GetPaintArtifact()
+                   .IsEmpty());
+}
+
 TEST_P(CompositedLayerMappingTest, SimpleInterestRect) {
   SetBodyInnerHTML(
       "<div id='target' style='width: 200px; height: 200px; will-change: "

@@ -877,6 +877,16 @@ void CompositedLayerMapping::ComputeBoundsOfOwningLayer(
     subpixel_accumulation = offset_from_composited_ancestor -
                             snapped_offset_from_composited_ancestor;
   }
+
+  // Invalidate the whole layer when subpixel accumulation changes, since
+  // the previous subpixel accumulation is baked into the dispay list.
+  // However, don't do so for directly composited layers, to avoid impacting
+  // performance.
+  if (subpixel_accumulation != owning_layer_.SubpixelAccumulation() &&
+      !(owning_layer_.GetCompositingReasons() &
+        kCompositingReasonComboAllDirectReasons))
+    SetContentsNeedDisplay();
+
   // Otherwise discard the sub-pixel remainder because paint offset can't be
   // transformed by a non-translation transform.
   owning_layer_.SetSubpixelAccumulation(subpixel_accumulation);
