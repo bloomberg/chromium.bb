@@ -31,7 +31,6 @@
 #include "core/dom/SynchronousMutationObserver.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/TextGranularity.h"
-#include "core/editing/VisibleSelection.h"
 #include "core/page/EventWithHitTestResults.h"
 #include "platform/heap/Handle.h"
 
@@ -115,7 +114,7 @@ class CORE_EXPORT SelectionController final
   void SetCaretAtHitTestResult(const HitTestResult&);
   bool UpdateSelectionForMouseDownDispatchingSelectStart(
       Node*,
-      const VisibleSelectionInFlatTree&,
+      const SelectionInFlatTree&,
       TextGranularity,
       HandleVisibility);
 
