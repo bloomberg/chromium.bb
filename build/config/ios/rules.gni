@@ -1614,3 +1614,75 @@ template("ios_xctest_test") {
 set_defaults("ios_xctest_test") {
   configs = default_executable_configs
 }
+
+# Template to build a XCUITest that consists of two parts: the test runner
+# application bundle and the xctest dynamic library.
+#
+# Arguments
+#
+#   deps:
+#       list of labels to depends on, these values are used to create the
+#       xctest dynamic library.
+#
+# This template defines two targets, one named "${target_name}" is the xctest
+# dynamic library, and the other named "${target_name}_runner" is the test
+# runner application bundle.
+#
+template("ios_xcuitest_test") {
+  assert(false,
+         "ios_xcuitest_test is incomplete and should not be used, see " +
+             "crbug.com/709289 for tracking")
+
+  _xcuitest_target = target_name
+  _xcuitest_runner_target = _xcuitest_target + "_runner"
+  _xctrunner_path =
+      "$ios_sdk_platform_path/Developer/Library/Xcode/Agents/XCTRunner.app"
+
+  _xcuitest_runner_info_plist_merge_plist =
+      _xcuitest_runner_target + "_info_plist_merge_plist"
+  _xcuitest_runner_info_plist_target = _xcuitest_runner_target + "_info_plist"
+  _xcuitest_runner_info_plist_bundle =
+      _xcuitest_runner_target + "_info_plist_bundle"
+
+  action(_xcuitest_runner_info_plist_merge_plist) {
+    testonly = true
+    script = "//build/config/mac/plist_util.py"
+
+    sources = [
+      "$_xctrunner_path/Info.plist",
+
+      # NOTE: The XCTRunnerAddition+Info.plist must come after the Info.plist
+      # because it overrides the values under "CFBundleIdentifier" and
+      # "CFBundleName".
+      "//ios/chrome/app/resources/XCTRunnerAddition+Info.plist",
+    ]
+
+    _output_name = "$target_gen_dir/${_xcuitest_runner_target}_merged.plist"
+    outputs = [
+      _output_name,
+    ]
+    args = [
+             "merge",
+             "-f=xml1",
+             "-o=" + rebase_path(_output_name, root_build_dir),
+           ] + rebase_path(sources, root_build_dir)
+  }
+
+  ios_info_plist(_xcuitest_runner_info_plist_target) {
+    testonly = true
+    visibility = [ ":$_xcuitest_runner_info_plist_bundle" ]
+
+    executable_name = _xcuitest_target
+    info_plist_target = ":$_xcuitest_runner_info_plist_merge_plist"
+    if (ios_automatically_manage_certs) {
+      # Use the same bundle identifier for XCUITest tests as for unit tests
+      # when managing certificates as the number of free certs is limited.
+      extra_substitutions =
+          [ "PRODUCT_NAME=${ios_generic_test_bundle_id_suffix}" ]
+    }
+  }
+}
+
+set_defaults("ios_xcuitest_test") {
+  configs = default_executable_configs
+}
