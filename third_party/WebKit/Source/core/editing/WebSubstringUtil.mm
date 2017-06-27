@@ -40,6 +40,7 @@
 #include "core/dom/Range.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/PlainTextRange.h"
+#include "core/editing/VisibleUnits.h"
 #include "core/editing/iterators/TextIterator.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
@@ -138,9 +139,7 @@ static NSAttributedString* attributedSubstringFromRange(
 WebPoint getBaselinePoint(LocalFrameView* frameView,
                           const EphemeralRange& range,
                           NSAttributedString* string) {
-  // TODO(yosin): We shold avoid to create |Range| object. See crbug.com/529985.
-  IntRect stringRect =
-      frameView->ContentsToViewport(CreateRange(range)->BoundingBox());
+  IntRect stringRect = frameView->ContentsToViewport(ComputeTextRect(range));
   IntPoint stringPoint = stringRect.MinXMaxYCorner();
 
   // Adjust for the font's descender. AppKit wants the baseline point.
