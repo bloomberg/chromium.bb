@@ -18,6 +18,7 @@
 #include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #include "ui/base/layout.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/geometry/dip_util.h"
 
 namespace content {
@@ -356,18 +357,21 @@ void BrowserCompositorMac::TransitionToState(State new_state) {
   if (state_ == HasDetachedCompositor && new_state == HasAttachedCompositor) {
     NSView* ns_view =
         accelerated_widget_mac_ns_view_->AcceleratedWidgetGetNSView();
-    float scale_factor = ui::GetScaleFactorForNativeView(ns_view);
+    display::Display display =
+        display::Screen::GetScreen()->GetDisplayNearestView(ns_view);
     NSSize dip_ns_size = [ns_view bounds].size;
-    gfx::Size pixel_size(dip_ns_size.width * scale_factor,
-                         dip_ns_size.height * scale_factor);
+    gfx::Size pixel_size(dip_ns_size.width * display.device_scale_factor(),
+                         dip_ns_size.height * display.device_scale_factor());
 
     delegated_frame_host_->SetCompositor(recyclable_compositor_->compositor());
     delegated_frame_host_->WasShown(ui::LatencyInfo());
     // Unsuspend the browser compositor after showing the delegated frame host.
     // If there is not a saved delegated frame, then the delegated frame host
     // will keep the compositor locked until a delegated frame is swapped.
-    recyclable_compositor_->compositor()->SetScaleAndSize(scale_factor,
-                                                          pixel_size);
+    recyclable_compositor_->compositor()->SetDisplayColorSpace(
+        display.color_space());
+    recyclable_compositor_->compositor()->SetScaleAndSize(
+        display.device_scale_factor(), pixel_size);
     recyclable_compositor_->Unsuspend();
     state_ = HasAttachedCompositor;
   }

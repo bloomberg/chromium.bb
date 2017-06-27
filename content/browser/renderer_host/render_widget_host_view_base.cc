@@ -251,13 +251,15 @@ bool RenderWidgetHostViewBase::HasDisplayPropertyChanged(gfx::NativeView view) {
       display::Screen::GetScreen()->GetDisplayNearestView(view);
   if (current_display_area_ == display.work_area() &&
       current_device_scale_factor_ == display.device_scale_factor() &&
-      current_display_rotation_ == display.rotation()) {
+      current_display_rotation_ == display.rotation() &&
+      current_display_color_space_ == display.color_space()) {
     return false;
   }
 
   current_display_area_ = display.work_area();
   current_device_scale_factor_ = display.device_scale_factor();
   current_display_rotation_ = display.rotation();
+  current_display_color_space_ = display.color_space();
   return true;
 }
 

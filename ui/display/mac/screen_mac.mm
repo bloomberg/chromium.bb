@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
@@ -89,8 +90,10 @@ Display BuildDisplayForScreen(NSScreen* screen) {
   if (base::mac::IsAtLeastOS10_12() && !color_correct_rendering_enabled)
     color_space = base::mac::GetSystemColorSpace();
 
-  display.set_color_space(
-      gfx::ICCProfile::FromCGColorSpace(color_space).GetColorSpace());
+  if (!gfx::ICCProfile::HasForcedProfile()) {
+    display.set_color_space(
+        gfx::ICCProfile::FromCGColorSpace(color_space).GetColorSpace());
+  }
   display.set_color_depth(NSBitsPerPixelFromDepth([screen depth]));
   display.set_depth_per_component(NSBitsPerSampleFromDepth([screen depth]));
   display.set_is_monochrome(CGDisplayUsesForceToGray());
@@ -131,9 +134,22 @@ class ScreenMac : public Screen {
     old_displays_ = displays_ = BuildDisplaysFromQuartz();
     CGDisplayRegisterReconfigurationCallback(
         ScreenMac::DisplayReconfigurationCallBack, this);
+
+    NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
+    screen_color_change_observer_.reset(
+        [[center addObserverForName:NSScreenColorSpaceDidChangeNotification
+                             object:nil
+                              queue:nil
+                         usingBlock:^(NSNotification* notification) {
+                           configure_timer_.Reset();
+                           displays_require_update_ = true;
+                         }] retain]);
   }
 
   ~ScreenMac() override {
+    NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
+    [center removeObserver:screen_color_change_observer_];
+
     CGDisplayRemoveReconfigurationCallback(
         ScreenMac::DisplayReconfigurationCallBack, this);
   }
@@ -329,6 +345,9 @@ class ScreenMac : public Screen {
 
   // The timer to delay configuring outputs and notifying observers.
   base::Timer configure_timer_;
+
+  // The observer notified by NSScreenColorSpaceDidChangeNotification.
+  base::scoped_nsobject<id> screen_color_change_observer_;
 
   DisplayChangeNotifier change_notifier_;
 

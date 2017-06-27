@@ -732,9 +732,11 @@ RenderWidgetHostViewMac::GetFocusedRenderWidgetHostDelegate() {
 }
 
 void RenderWidgetHostViewMac::UpdateBackingStoreProperties() {
-  if (!render_widget_host_)
-    return;
-  render_widget_host_->NotifyScreenInfoChanged();
+  UpdateScreenInfo(cocoa_view_);
+  // Update the ui::Compositor's color space here. The other display properties
+  // of the ui::Compositor are updated by frame metadata.
+  if (browser_compositor_)
+    browser_compositor_->SetDisplayColorSpace(current_display_color_space_);
 }
 
 RenderWidgetHost* RenderWidgetHostViewMac::GetRenderWidgetHost() const {
@@ -1740,7 +1742,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
       host->delegate()->UpdateDeviceScaleFactor(display.device_scale_factor());
   }
 
-  UpdateScreenInfo(cocoa_view_);
+  UpdateBackingStoreProperties();
 }
 
 }  // namespace content
@@ -2686,8 +2688,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
 }
 
 - (void)windowChangedGlobalFrame:(NSNotification*)notification {
-  renderWidgetHostView_->UpdateScreenInfo(
-      renderWidgetHostView_->GetNativeView());
+  renderWidgetHostView_->UpdateBackingStoreProperties();
 }
 
 - (void)setFrameSize:(NSSize)newSize {
@@ -3340,22 +3341,6 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
     renderWidgetHostView_->ForwardMouseEvent(event);
 
     hasOpenMouseDown_ = NO;
-  }
-}
-
-- (void)viewDidChangeBackingProperties {
-  NSScreen* screen = [[self window] screen];
-  if (screen) {
-    CGColorSpaceRef color_space = [[screen colorSpace] CGColorSpace];
-    // On Sierra, we need to operate in a single screen's color space because
-    // IOSurfaces do not opt-out of color correction.
-    // https://crbug.com/654488
-    if (base::mac::IsAtLeastOS10_12())
-      color_space = base::mac::GetSystemColorSpace();
-    gfx::ICCProfile icc_profile =
-        gfx::ICCProfile::FromCGColorSpace(color_space);
-    renderWidgetHostView_->browser_compositor_->SetDisplayColorSpace(
-        icc_profile.GetColorSpace());
   }
 }
 
