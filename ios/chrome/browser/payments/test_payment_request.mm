@@ -26,9 +26,13 @@ void TestPaymentRequest::ClearCreditCards() {
 }
 
 autofill::RegionDataLoader* TestPaymentRequest::GetRegionDataLoader() {
-  return region_data_loader_;
+  if (region_data_loader_)
+    return region_data_loader_;
+  return PaymentRequest::GetRegionDataLoader();
 }
 
 payments::PaymentsProfileComparator* TestPaymentRequest::profile_comparator() {
-  return profile_comparator_;
+  if (profile_comparator_)
+    return profile_comparator_;
+  return PaymentRequest::profile_comparator();
 }
