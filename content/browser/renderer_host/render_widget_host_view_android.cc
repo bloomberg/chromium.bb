@@ -1470,8 +1470,8 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
   UpdateBackgroundColor(is_transparent ? SK_ColorTRANSPARENT
                                        : frame_metadata.root_background_color);
 
-  view_.set_content_offset(top_content_offset);
-  view_.set_viewport_size(frame_metadata.scrollable_viewport_size);
+  view_.UpdateFrameInfo({frame_metadata.scrollable_viewport_size,
+                         frame_metadata.page_scale_factor, top_content_offset});
 
   bool top_changed = !FloatEquals(top_shown_pix, prev_top_shown_pix_);
   if (top_changed) {

@@ -343,9 +343,6 @@ class ContentViewCoreImpl : public ContentViewCore,
   // display in the ContentViewCore.
   WebContentsImpl* web_contents_;
 
-  // Page scale factor.
-  float page_scale_;
-
   // Device scale factor.
   float dpi_scale_;
 

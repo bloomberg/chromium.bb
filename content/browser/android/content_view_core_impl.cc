@@ -208,7 +208,6 @@ ContentViewCoreImpl::ContentViewCoreImpl(
     : WebContentsObserver(web_contents),
       java_ref_(env, obj),
       web_contents_(static_cast<WebContentsImpl*>(web_contents)),
-      page_scale_(1),
       dpi_scale_(dpi_scale),
       device_orientation_(0) {
   GetViewAndroid()->SetLayer(cc::Layer::Create());
@@ -402,10 +401,9 @@ void ContentViewCoreImpl::UpdateFrameInfo(
   if (obj.is_null() || !GetWindowAndroid())
     return;
 
-  GetViewAndroid()->set_content_offset(content_offset);
-  GetViewAndroid()->set_viewport_size(viewport_size);
-
-  page_scale_ = page_scale_factor;
+  GetViewAndroid()->UpdateFrameInfo({
+      viewport_size, page_scale_factor, content_offset,
+  });
 
   Java_ContentViewCore_updateFrameInfo(
       env, obj, scroll_offset.x(), scroll_offset.y(), page_scale_factor,
