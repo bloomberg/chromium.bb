@@ -181,7 +181,7 @@ class ChromeDataUseAscriber : public DataUseAscriber {
   bool IsRecorderInRenderFrameMap(net::URLRequest* request);
 
   void AscribeRecorderWithRequest(net::URLRequest* request,
-                                  DataUseRecorderEntry recorder);
+                                  DataUseRecorderEntry entry);
 
   // Owner for all instances of DataUseRecorder. An instance is kept in this
   // list if any entity (render frame hosts, URLRequests, pending navigations)
