@@ -12,8 +12,9 @@
 
 namespace cc {
 
-// Creates surface references. The referenced surface will be kept alive as
-// long as there is a reference to it.
+// Confusingly, SurfaceReferenceFactory is only used to create SurfaceSequences.
+// TODO(kylechar): Delete all usage of SurfaceReferenceFactory when surface
+// references are enabled by default.
 class SurfaceReferenceFactory
     : public base::RefCountedThreadSafe<SurfaceReferenceFactory> {
  public:

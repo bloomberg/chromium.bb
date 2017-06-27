@@ -15,6 +15,7 @@
 #include "cc/surfaces/compositor_frame_sink_support.h"
 #include "cc/surfaces/direct_surface_reference_factory.h"
 #include "cc/surfaces/local_surface_id_allocator.h"
+#include "cc/surfaces/stub_surface_reference_factory.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_info.h"
 
@@ -34,8 +35,12 @@ SurfaceManager::SurfaceManager(LifetimeType lifetime_type)
                        LocalSurfaceId(1u, base::UnguessableToken::Create())),
       weak_factory_(this) {
   thread_checker_.DetachFromThread();
-  reference_factory_ =
-      new DirectSurfaceReferenceFactory(weak_factory_.GetWeakPtr());
+  if (using_surface_references()) {
+    reference_factory_ = new StubSurfaceReferenceFactory();
+  } else {
+    reference_factory_ =
+        new DirectSurfaceReferenceFactory(weak_factory_.GetWeakPtr());
+  }
 }
 
 SurfaceManager::~SurfaceManager() {
