@@ -211,13 +211,6 @@ void AppBannerManager::OnDidGetManifest(const InstallableData& data) {
   manifest_url_ = data.manifest_url;
   manifest_ = data.manifest;
 
-  // One of manifest_.name or manifest_.short_name must be non-null and
-  // non-empty if the error code was NO_ERROR_DETECTED.
-  if (manifest_.name.is_null() || manifest_.name.string().empty())
-    app_title_ = manifest_.short_name.string();
-  else
-    app_title_ = manifest_.name.string();
-
   PerformInstallableCheck();
 }
 
