@@ -130,18 +130,13 @@ TEST(LayerImplTest, VerifyPendingLayerChangesAreTrackedProperly) {
   host_impl.SetVisible(true);
   EXPECT_TRUE(host_impl.InitializeRenderer(layer_tree_frame_sink.get()));
   host_impl.CreatePendingTree();
-  std::unique_ptr<LayerImpl> root_clip_ptr =
-      LayerImpl::Create(host_impl.pending_tree(), 1);
-  LayerImpl* root_clip = root_clip_ptr.get();
   std::unique_ptr<LayerImpl> root_ptr =
       LayerImpl::Create(host_impl.pending_tree(), 2);
   LayerImpl* root = root_ptr.get();
-  root_clip_ptr->test_properties()->AddChild(std::move(root_ptr));
-  host_impl.pending_tree()->SetRootLayerForTesting(std::move(root_clip_ptr));
+  host_impl.pending_tree()->SetRootLayerForTesting(std::move(root_ptr));
 
   root->test_properties()->force_render_surface = true;
   root->SetMasksToBounds(true);
-  root->SetScrollClipLayer(root_clip->id());
   root->layer_tree_impl()->ResetAllChangeTracking();
 
   root->test_properties()->AddChild(
@@ -150,7 +145,6 @@ TEST(LayerImplTest, VerifyPendingLayerChangesAreTrackedProperly) {
   child->test_properties()->AddChild(
       LayerImpl::Create(host_impl.pending_tree(), 8));
   LayerImpl* grand_child = child->test_properties()->children[0];
-  root->SetScrollClipLayer(root_clip->id());
   host_impl.pending_tree()->BuildLayerListAndPropertyTreesForTesting();
 
   // Adding children is an internal operation and should not mark layers as
@@ -224,19 +218,15 @@ TEST(LayerImplTest, VerifyActiveLayerChangesAreTrackedProperly) {
   FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
   host_impl.SetVisible(true);
   EXPECT_TRUE(host_impl.InitializeRenderer(layer_tree_frame_sink.get()));
-  std::unique_ptr<LayerImpl> root_clip_ptr =
-      LayerImpl::Create(host_impl.active_tree(), 1);
-  LayerImpl* root_clip = root_clip_ptr.get();
   std::unique_ptr<LayerImpl> root_ptr =
       LayerImpl::Create(host_impl.active_tree(), 2);
   LayerImpl* root = root_ptr.get();
-  root_clip_ptr->test_properties()->AddChild(std::move(root_ptr));
-  host_impl.active_tree()->SetRootLayerForTesting(std::move(root_clip_ptr));
+  host_impl.active_tree()->SetRootLayerForTesting(std::move(root_ptr));
 
   root->test_properties()->AddChild(
       LayerImpl::Create(host_impl.active_tree(), 7));
   LayerImpl* child = root->test_properties()->children[0];
-  root->SetScrollClipLayer(root_clip->id());
+  root->SetScrollable(gfx::Size(100, 100));
   host_impl.active_tree()->BuildLayerListAndPropertyTreesForTesting();
 
   // Make root the inner viewport container layer. This ensures the later call
@@ -306,7 +296,7 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
       LayerImpl::Create(host_impl.active_tree(), 2);
   LayerImpl* layer = layer_ptr.get();
   root->test_properties()->AddChild(std::move(layer_ptr));
-  layer->SetScrollClipLayer(root->id());
+  layer->SetScrollable(gfx::Size(1, 1));
   std::unique_ptr<LayerImpl> layer2_ptr =
       LayerImpl::Create(host_impl.active_tree(), 3);
   LayerImpl* layer2 = layer2_ptr.get();
@@ -493,12 +483,12 @@ class LayerImplScrollTest : public testing::Test {
         ->root_layer_for_testing()
         ->test_properties()
         ->AddChild(LayerImpl::Create(host_impl_.active_tree(), root_id_ + 1));
-    layer()->SetScrollClipLayer(root_id_);
     // Set the max scroll offset by noting that the root layer has bounds (1,1),
     // thus whatever bounds are set for the layer will be the max scroll
     // offset plus 1 in each direction.
     host_impl_.active_tree()->root_layer_for_testing()->SetBounds(
         gfx::Size(1, 1));
+    layer()->SetScrollable(gfx::Size(1, 1));
     gfx::Vector2d max_scroll_offset(51, 81);
     layer()->SetBounds(gfx::Size(max_scroll_offset.x(), max_scroll_offset.y()));
     host_impl_.active_tree()->BuildLayerListAndPropertyTreesForTesting();

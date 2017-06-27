@@ -487,7 +487,7 @@ bool ScrollingCoordinator::ScrollableAreaScrollLayerDidChange(
   WebLayer* web_layer = toWebLayer(scrollable_area->LayerForScrolling());
   WebLayer* container_layer = toWebLayer(scrollable_area->LayerForContainer());
   if (web_layer) {
-    web_layer->SetScrollClipLayer(container_layer);
+    web_layer->SetScrollable(container_layer->Bounds());
     FloatPoint scroll_position(scrollable_area->ScrollOrigin() +
                                scrollable_area->GetScrollOffset());
     web_layer->SetScrollPosition(scroll_position);

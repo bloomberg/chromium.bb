@@ -91,9 +91,9 @@ class CC_BLINK_EXPORT WebLayerImpl : public NON_EXPORTED_BASE(blink::WebLayer) {
   void SetFiltersOrigin(const blink::WebFloatPoint& origin) override;
   void SetBackgroundFilters(const cc::FilterOperations& filters) override;
   bool HasTickingAnimationForTesting() override;
+  void SetScrollable(const blink::WebSize&) override;
   void SetScrollPosition(blink::WebFloatPoint position) override;
   blink::WebFloatPoint ScrollPosition() const override;
-  void SetScrollClipLayer(blink::WebLayer* clip_layer) override;
   bool Scrollable() const override;
   void SetUserScrollable(bool horizontal, bool vertical) override;
   bool UserScrollableHorizontal() const override;

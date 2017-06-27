@@ -339,19 +339,14 @@ class LayerTreeHostScrollbarDamageTest : public LayerTreeHostDamageTest {
     root_layer->SetMasksToBounds(true);
     layer_tree_host()->SetRootLayer(root_layer);
 
-    scoped_refptr<Layer> scroll_clip_layer = Layer::Create();
     content_layer_ = FakePictureLayer::Create(&client_);
     content_layer_->SetElementId(
         LayerIdToElementIdForTesting(content_layer_->id()));
-    content_layer_->SetScrollClipLayerId(scroll_clip_layer->id());
+    content_layer_->SetScrollable(root_layer->bounds());
     content_layer_->SetScrollOffset(gfx::ScrollOffset(10, 20));
     content_layer_->SetBounds(gfx::Size(100, 200));
     content_layer_->SetIsDrawable(true);
-    scroll_clip_layer->SetBounds(
-        gfx::Size(content_layer_->bounds().width() - 30,
-                  content_layer_->bounds().height() - 50));
-    scroll_clip_layer->AddChild(content_layer_);
-    root_layer->AddChild(scroll_clip_layer);
+    root_layer->AddChild(content_layer_);
 
     scoped_refptr<Layer> scrollbar_layer = FakePaintedScrollbarLayer::Create(
         false, true, content_layer_->element_id());

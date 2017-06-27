@@ -724,7 +724,7 @@ class LayerTreeHostAnimationTestScrollOffsetChangesArePropagated
     LayerTreeHostAnimationTest::SetupTree();
 
     scroll_layer_ = FakePictureLayer::Create(&client_);
-    scroll_layer_->SetScrollClipLayerId(layer_tree_host()->root_layer()->id());
+    scroll_layer_->SetScrollable(gfx::Size(100, 100));
     scroll_layer_->SetBounds(gfx::Size(1000, 1000));
     client_.set_bounds(scroll_layer_->bounds());
     scroll_layer_->SetScrollOffset(gfx::ScrollOffset(10, 20));
@@ -785,7 +785,7 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationTakeover
     scroll_layer_->SetBounds(gfx::Size(10000, 10000));
     client_.set_bounds(scroll_layer_->bounds());
     scroll_layer_->SetScrollOffset(gfx::ScrollOffset(10, 20));
-    scroll_layer_->SetScrollClipLayerId(layer_tree_host()->root_layer()->id());
+    scroll_layer_->SetScrollable(gfx::Size(10, 10));
     layer_tree_host()->root_layer()->AddChild(scroll_layer_);
 
     AttachPlayersToTimeline();
@@ -845,7 +845,7 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationAdjusted
     scroll_layer_->SetBounds(gfx::Size(10000, 10000));
     client_.set_bounds(scroll_layer_->bounds());
     scroll_layer_->SetScrollOffset(gfx::ScrollOffset(10, 20));
-    scroll_layer_->SetScrollClipLayerId(layer_tree_host()->root_layer()->id());
+    scroll_layer_->SetScrollable(gfx::Size(10, 10));
     layer_tree_host()->root_layer()->AddChild(scroll_layer_);
 
     AttachPlayersToTimeline();
@@ -951,7 +951,7 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationRemoval
     LayerTreeHostAnimationTest::SetupTree();
 
     scroll_layer_ = FakePictureLayer::Create(&client_);
-    scroll_layer_->SetScrollClipLayerId(layer_tree_host()->root_layer()->id());
+    scroll_layer_->SetScrollable(gfx::Size(100, 100));
     scroll_layer_->SetBounds(gfx::Size(10000, 10000));
     client_.set_bounds(scroll_layer_->bounds());
     scroll_layer_->SetScrollOffset(gfx::ScrollOffset(100.0, 200.0));

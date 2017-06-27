@@ -224,7 +224,7 @@ class LayerTreeHostPictureTestChangeLiveTilesRectWithRecycleTree
 
     // picture_'s transform is going to be changing on the compositor thread, so
     // force it to have a transform node by making it scrollable.
-    picture_->SetScrollClipLayerId(root->id());
+    picture_->SetScrollable(root->bounds());
 
     layer_tree_host()->SetRootLayer(root);
     LayerTreeHostPictureTest::SetupTree();
@@ -412,7 +412,7 @@ class LayerTreeHostPictureTestRSLLMembershipWithScale
 
     pinch_ = Layer::Create();
     pinch_->SetBounds(gfx::Size(500, 500));
-    pinch_->SetScrollClipLayerId(root_clip->id());
+    pinch_->SetScrollable(root_clip->bounds());
     pinch_->SetIsContainerForFixedPositionLayers(true);
     page_scale_layer->AddChild(pinch_);
     root_clip->AddChild(page_scale_layer);

@@ -115,7 +115,7 @@ void TestLayerTreeHostBase::SetupPendingTree(
     if (!tile_size.IsEmpty())
       pending_layer->set_fixed_tile_size(tile_size);
     pending_layer->SetDrawsContent(true);
-    pending_layer->SetScrollClipLayer(new_pending_root->id());
+    pending_layer->SetScrollable(gfx::Size(1, 1));
     pending_root = new_pending_root.get();
     pending_tree->SetRootLayerForTesting(std::move(new_pending_root));
   } else {

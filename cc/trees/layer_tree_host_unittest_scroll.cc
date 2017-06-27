@@ -94,10 +94,8 @@ class LayerTreeHostScrollTestScrollSimple : public LayerTreeHostScrollTest {
         num_scrolls_(0) {}
 
   void BeginTest() override {
-    outer_viewport_container_layer_id_ = layer_tree_host()
-                                             ->outer_viewport_scroll_layer()
-                                             ->scroll_clip_layer()
-                                             ->id();
+    outer_viewport_container_layer_id_ =
+        layer_tree_host()->outer_viewport_container_layer()->id();
     layer_tree_host()->outer_viewport_scroll_layer()->SetScrollOffset(
         initial_scroll_);
     layer_tree_host()->outer_viewport_scroll_layer()->set_did_scroll_callback(
@@ -125,7 +123,6 @@ class LayerTreeHostScrollTestScrollSimple : public LayerTreeHostScrollTest {
     LayerImpl* scroll_layer = impl->OuterViewportScrollLayer();
     EXPECT_VECTOR_EQ(gfx::Vector2d(), ScrollDelta(scroll_layer));
 
-    scroll_layer->SetScrollClipLayer(outer_viewport_container_layer_id_);
     scroll_layer->SetBounds(
         gfx::Size(root->bounds().width() + 100, root->bounds().height() + 100));
     scroll_layer->ScrollBy(scroll_amount_);
@@ -505,15 +502,12 @@ class LayerTreeHostScrollTestScrollSnapping : public LayerTreeHostScrollTest {
   void SetupTree() override {
     LayerTreeHostScrollTest::SetupTree();
     layer_tree_host()
-        ->outer_viewport_scroll_layer()
-        ->scroll_clip_layer()
+        ->outer_viewport_container_layer()
         ->SetForceRenderSurfaceForTesting(true);
     gfx::Transform translate;
     translate.Translate(0.25f, 0.f);
-    layer_tree_host()
-        ->outer_viewport_scroll_layer()
-        ->scroll_clip_layer()
-        ->SetTransform(translate);
+    layer_tree_host()->outer_viewport_container_layer()->SetTransform(
+        translate);
     layer_tree_host()->SetPageScaleFactorAndLimits(1.f, 0.1f, 100.f);
   }
 
@@ -598,11 +592,8 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
       child_layer_->SetPosition(gfx::PointF(60.f, 5.f));
     }
 
-    scoped_refptr<Layer> outer_container_layer =
-        layer_tree_host()->outer_viewport_scroll_layer()->parent();
-
     child_layer_->SetIsDrawable(true);
-    child_layer_->SetScrollClipLayerId(outer_container_layer->id());
+    child_layer_->SetScrollable(root_layer->bounds());
     child_layer_->SetElementId(
         LayerIdToElementIdForTesting(child_layer_->id()));
     child_layer_->SetBounds(root_scroll_layer_->bounds());
@@ -1102,10 +1093,8 @@ class LayerTreeHostScrollTestScrollZeroMaxScrollOffset
   LayerTreeHostScrollTestScrollZeroMaxScrollOffset() {}
 
   void BeginTest() override {
-    outer_viewport_container_layer_id_ = layer_tree_host()
-                                             ->outer_viewport_scroll_layer()
-                                             ->scroll_clip_layer()
-                                             ->id();
+    outer_viewport_container_layer_id_ =
+        layer_tree_host()->outer_viewport_container_layer()->id();
     PostSetNeedsCommitToMainThread();
   }
 
@@ -1114,7 +1103,7 @@ class LayerTreeHostScrollTestScrollZeroMaxScrollOffset
     Layer* scroll_layer = layer_tree_host()->outer_viewport_scroll_layer();
     switch (layer_tree_host()->SourceFrameNumber()) {
       case 0:
-        scroll_layer->SetScrollClipLayerId(outer_viewport_container_layer_id_);
+        scroll_layer->SetScrollable(root->bounds());
         // Set max_scroll_offset = (100, 100).
         scroll_layer->SetBounds(gfx::Size(root->bounds().width() + 100,
                                           root->bounds().height() + 100));
@@ -1442,10 +1431,9 @@ class LayerTreeHostScrollTestLayerStructureChange
   Layer* CreateScrollLayer(Layer* parent, FakeLayerScrollClient* client) {
     scoped_refptr<PictureLayer> scroll_layer =
         PictureLayer::Create(&fake_content_layer_client_);
-    scroll_layer->SetBounds(gfx::Size(110, 110));
     scroll_layer->SetPosition(gfx::PointF());
     scroll_layer->SetIsDrawable(true);
-    scroll_layer->SetScrollClipLayerId(parent->id());
+    scroll_layer->SetScrollable(parent->bounds());
     scroll_layer->SetElementId(
         LayerIdToElementIdForTesting(scroll_layer->id()));
     scroll_layer->SetBounds(gfx::Size(parent->bounds().width() + 100,
@@ -1504,10 +1492,8 @@ class LayerTreeHostScrollTestScrollMFBA : public LayerTreeHostScrollTest {
   }
 
   void BeginTest() override {
-    outer_viewport_container_layer_id_ = layer_tree_host()
-                                             ->outer_viewport_scroll_layer()
-                                             ->scroll_clip_layer()
-                                             ->id();
+    outer_viewport_container_layer_id_ =
+        layer_tree_host()->outer_viewport_container_layer()->id();
     layer_tree_host()->outer_viewport_scroll_layer()->SetScrollOffset(
         initial_scroll_);
     layer_tree_host()->outer_viewport_scroll_layer()->set_did_scroll_callback(
@@ -1599,7 +1585,6 @@ class LayerTreeHostScrollTestScrollMFBA : public LayerTreeHostScrollTest {
     LayerImpl* root = impl->active_tree()->root_layer_for_testing();
     LayerImpl* scroll_layer = impl->OuterViewportScrollLayer();
 
-    scroll_layer->SetScrollClipLayer(outer_viewport_container_layer_id_);
     scroll_layer->SetBounds(
         gfx::Size(root->bounds().width() + 100, root->bounds().height() + 100));
     scroll_layer->ScrollBy(scroll_amount_);

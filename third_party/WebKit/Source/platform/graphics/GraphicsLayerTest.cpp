@@ -63,8 +63,8 @@ class GraphicsLayerTest : public testing::Test {
     clip_layer_->AddChild(scroll_elasticity_layer_.get());
     scroll_elasticity_layer_->AddChild(page_scale_layer_.get());
     page_scale_layer_->AddChild(graphics_layer_.get());
-    graphics_layer_->PlatformLayer()->SetScrollClipLayer(
-        clip_layer_->PlatformLayer());
+    graphics_layer_->PlatformLayer()->SetScrollable(
+        clip_layer_->PlatformLayer()->Bounds());
     platform_layer_ = graphics_layer_->PlatformLayer();
     layer_tree_view_ = WTF::WrapUnique(new WebLayerTreeViewImplForTesting);
     DCHECK(layer_tree_view_);
