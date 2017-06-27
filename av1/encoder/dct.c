@@ -2020,12 +2020,10 @@ void av1_fht16x16_c(const int16_t *input, tran_low_t *output, int stride,
   }
 }
 
-#if CONFIG_HIGHBITDEPTH
 void av1_highbd_fwht4x4_c(const int16_t *input, tran_low_t *output,
                           int stride) {
   av1_fwht4x4_c(input, output, stride);
 }
-#endif  // CONFIG_HIGHBITDEPTH
 
 void av1_fht32x32_c(const int16_t *input, tran_low_t *output, int stride,
                     int tx_type) {

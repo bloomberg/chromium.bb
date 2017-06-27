@@ -494,7 +494,6 @@ int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int block,
 }
 
 #if !CONFIG_PVQ
-#if CONFIG_HIGHBITDEPTH
 typedef enum QUANT_FUNC {
   QUANT_FUNC_LOWBD = 0,
   QUANT_FUNC_HIGHBD = 1,
@@ -514,29 +513,12 @@ static AV1_QUANT_FACADE
 #endif  // !CONFIG_NEW_QUANT
       { NULL, NULL }
     };
+#endif  // !CONFIG_PVQ
 
-#else
-
-typedef enum QUANT_FUNC {
-  QUANT_FUNC_LOWBD = 0,
-  QUANT_FUNC_TYPES = 1
-} QUANT_FUNC;
-
-static AV1_QUANT_FACADE quant_func_list[AV1_XFORM_QUANT_TYPES]
-                                       [QUANT_FUNC_TYPES] = {
-#if !CONFIG_NEW_QUANT
-                                         { av1_quantize_fp_facade },
-                                         { av1_quantize_b_facade },
-                                         { av1_quantize_dc_facade },
-#else   // !CONFIG_NEW_QUANT
-                                         { av1_quantize_fp_nuq_facade },
-                                         { av1_quantize_b_nuq_facade },
-                                         { av1_quantize_dc_nuq_facade },
-#endif  // !CONFIG_NEW_QUANT
-                                         { NULL }
-                                       };
-#endif  // CONFIG_HIGHBITDEPTH
-#endif  // CONFIG_PVQ
+typedef void (*fwdTxfmFunc)(const int16_t *diff, tran_low_t *coeff, int stride,
+                            FWD_TXFM_PARAM *param);
+static const fwdTxfmFunc fwd_txfm_func[2] = { av1_fwd_txfm,
+                                              av1_highbd_fwd_txfm };
 
 void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
                      int blk_row, int blk_col, BLOCK_SIZE plane_bsize,
@@ -668,29 +650,13 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
   fwd_txfm_param.lossless = xd->lossless[mbmi->segment_id];
 
 #if !CONFIG_PVQ
-#if CONFIG_HIGHBITDEPTH
   fwd_txfm_param.bd = xd->bd;
-  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-    av1_highbd_fwd_txfm(src_diff, coeff, diff_stride, &fwd_txfm_param);
-    if (xform_quant_idx != AV1_XFORM_QUANT_SKIP_QUANT) {
-      if (LIKELY(!x->skip_block)) {
-        quant_func_list[xform_quant_idx][QUANT_FUNC_HIGHBD](
-            coeff, tx2d_size, p, qcoeff, pd, dqcoeff, eob, scan_order, &qparam);
-      } else {
-        av1_quantize_skip(tx2d_size, qcoeff, dqcoeff, eob);
-      }
-    }
-#if CONFIG_LV_MAP
-    p->txb_entropy_ctx[block] =
-        (uint8_t)av1_get_txb_entropy_context(qcoeff, scan_order, *eob);
-#endif  // CONFIG_LV_MAP
-    return;
-  }
-#endif  // CONFIG_HIGHBITDEPTH
-  av1_fwd_txfm(src_diff, coeff, diff_stride, &fwd_txfm_param);
+  const int is_hbd = get_bitdepth_data_path_index(xd);
+  fwd_txfm_func[is_hbd](src_diff, coeff, diff_stride, &fwd_txfm_param);
+
   if (xform_quant_idx != AV1_XFORM_QUANT_SKIP_QUANT) {
     if (LIKELY(!x->skip_block)) {
-      quant_func_list[xform_quant_idx][QUANT_FUNC_LOWBD](
+      quant_func_list[xform_quant_idx][is_hbd](
           coeff, tx2d_size, p, qcoeff, pd, dqcoeff, eob, scan_order, &qparam);
     } else {
       av1_quantize_skip(tx2d_size, qcoeff, dqcoeff, eob);
@@ -700,7 +666,8 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
   p->txb_entropy_ctx[block] =
       (uint8_t)av1_get_txb_entropy_context(qcoeff, scan_order, *eob);
 #endif  // CONFIG_LV_MAP
-#else   // #if !CONFIG_PVQ
+  return;
+#else  // CONFIG_PVQ
   (void)xform_quant_idx;
 #if CONFIG_HIGHBITDEPTH
   fwd_txfm_param.bd = xd->bd;

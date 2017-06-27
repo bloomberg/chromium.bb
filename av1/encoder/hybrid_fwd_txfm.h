@@ -20,9 +20,7 @@ typedef struct FWD_TXFM_PARAM {
   TX_TYPE tx_type;
   TX_SIZE tx_size;
   int lossless;
-#if CONFIG_HIGHBITDEPTH
   int bd;
-#endif  // CONFIG_HIGHBITDEPTH
 } FWD_TXFM_PARAM;
 
 #ifdef __cplusplus
@@ -32,10 +30,8 @@ extern "C" {
 void av1_fwd_txfm(const int16_t *src_diff, tran_low_t *coeff, int diff_stride,
                   FWD_TXFM_PARAM *fwd_txfm_param);
 
-#if CONFIG_HIGHBITDEPTH
 void av1_highbd_fwd_txfm(const int16_t *src_diff, tran_low_t *coeff,
                          int diff_stride, FWD_TXFM_PARAM *fwd_txfm_param);
-#endif  // CONFIG_HIGHBITDEPTH
 
 #ifdef __cplusplus
 }  // extern "C"

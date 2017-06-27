@@ -845,7 +845,6 @@ void av1_quantize_dc_nuq_facade(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
 }
 #endif  // CONFIG_NEW_QUANT
 
-#if CONFIG_HIGHBITDEPTH
 void av1_highbd_quantize_fp_facade(const tran_low_t *coeff_ptr,
                                    intptr_t n_coeffs, const MACROBLOCK_PLANE *p,
                                    tran_low_t *qcoeff_ptr,
@@ -951,7 +950,6 @@ void av1_highbd_quantize_b_facade(const tran_low_t *coeff_ptr,
   }
 }
 
-#if CONFIG_HIGHBITDEPTH
 static INLINE void highbd_quantize_dc(
     const tran_low_t *coeff_ptr, int n_coeffs, int skip_block,
     const int16_t *round_ptr, const int16_t quant, tran_low_t *qcoeff_ptr,
@@ -980,7 +978,6 @@ static INLINE void highbd_quantize_dc(
   }
   *eob_ptr = eob + 1;
 }
-#endif  // CONFIG_HIGHBITDEPTH
 
 void av1_highbd_quantize_dc_facade(const tran_low_t *coeff_ptr,
                                    intptr_t n_coeffs, const MACROBLOCK_PLANE *p,
@@ -1519,9 +1516,7 @@ void av1_highbd_quantize_dc_nuq_facade(
   }
 }
 #endif  // CONFIG_NEW_QUANT
-#endif  // CONFIG_HIGHBITDEPTH
 
-#if CONFIG_HIGHBITDEPTH
 void av1_highbd_quantize_fp_c(const tran_low_t *coeff_ptr, intptr_t count,
                               int skip_block, const int16_t *zbin_ptr,
                               const int16_t *round_ptr,
@@ -1578,8 +1573,6 @@ void av1_highbd_quantize_fp_c(const tran_low_t *coeff_ptr, intptr_t count,
   }
   *eob_ptr = eob + 1;
 }
-
-#endif  // CONFIG_HIGHBITDEPTH
 
 static void invert_quant(int16_t *quant, int16_t *shift, int d) {
   uint32_t t;
