@@ -95,7 +95,6 @@ test("webkit_unit_tests") {
     "tests/PrerenderingTest.cpp",
     "tests/ProgrammaticScrollTest.cpp",
     "tests/RunAllTests.cpp",
-    "tests/ScreenWakeLockTest.cpp",
     "tests/ScrollMetricsTest.cpp",
     "tests/SmoothScrollTest.cpp",
     "tests/SpinLockTest.cpp",
