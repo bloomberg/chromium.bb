@@ -35,7 +35,6 @@ class SingleThreadTaskRunner;
 }
 
 namespace storage {
-class BlobStorageContext;
 class QuotaManagerProxy;
 class SpecialStoragePolicy;
 }
@@ -52,7 +51,6 @@ class ServiceWorkerNavigationHandleCore;
 class ServiceWorkerProviderHost;
 class ServiceWorkerRegistration;
 class ServiceWorkerStorage;
-class URLLoaderFactoryGetter;
 
 // This class manages data associated with service workers.
 // The class is single threaded and should only be used on the IO thread.
@@ -113,8 +111,6 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   // ServiceWorkerContextWrapper. When Notify() of |observer_list| is called in
   // ServiceWorkerContextCore, the methods of ServiceWorkerContextCoreObserver
   // will be called on the thread which called AddObserver() of |observer_list|.
-  // |blob_context| and |url_loader_factory_getter| are used only
-  // when IsServicificationEnabled is true.
   ServiceWorkerContextCore(
       const base::FilePath& user_data_directory,
       std::unique_ptr<ServiceWorkerDatabaseTaskManager>
@@ -122,8 +118,6 @@ class CONTENT_EXPORT ServiceWorkerContextCore
       const scoped_refptr<base::SingleThreadTaskRunner>& disk_cache_thread,
       storage::QuotaManagerProxy* quota_manager_proxy,
       storage::SpecialStoragePolicy* special_storage_policy,
-      base::WeakPtr<storage::BlobStorageContext> blob_context,
-      URLLoaderFactoryGetter* url_loader_factory_getter,
       base::ObserverListThreadSafe<ServiceWorkerContextCoreObserver>*
           observer_list,
       ServiceWorkerContextWrapper* wrapper);
@@ -313,14 +307,6 @@ class CONTENT_EXPORT ServiceWorkerContextCore
       int service_worker_provider_id,
       mojom::ServiceWorkerWorkerClientAssociatedPtrInfo client_ptr_info);
 
-  base::WeakPtr<storage::BlobStorageContext> blob_storage_context() {
-    return blob_storage_context_;
-  }
-
-  URLLoaderFactoryGetter* loader_factory_getter() {
-    return loader_factory_getter_.get();
-  }
-
   base::WeakPtr<ServiceWorkerContextCore> AsWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }
@@ -393,10 +379,6 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   // Map of ServiceWorkerNavigationHandleCores used for navigation requests.
   std::map<int, ServiceWorkerNavigationHandleCore*>
       navigation_handle_cores_map_;
-
-  // IsServicificationEnabled
-  base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
-  scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter_;
 
   bool force_update_on_page_load_;
   int next_handle_id_;

@@ -156,7 +156,6 @@ class ServiceWorkerURLLoaderJob : public mojom::URLLoader,
 
   bool did_navigation_preload_ = false;
   ResourceResponseHead response_head_;
-  base::Optional<net::SSLInfo> ssl_info_;
 
   // URLLoaderClient binding for loading a blob.
   mojo::Binding<mojom::URLLoaderClient> blob_client_binding_;
