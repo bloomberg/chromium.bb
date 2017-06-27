@@ -1651,9 +1651,6 @@ crbug.com/564109 [ Win ]  virtual/mojo-loading/http/tests/webfont/font-display-i
 crbug.com/399951 http/tests/mime/javascript-mimetype-usecounters.html [ Pass Failure ]
 crbug.com/399951 virtual/mojo-loading/http/tests/mime/javascript-mimetype-usecounters.html [ Pass Failure ]
 
-crbug.com/579493 http/tests/security/xss-DENIED-xsl-document-securityOrigin.xml [ Timeout ]
-crbug.com/579493 virtual/mojo-loading/http/tests/security/xss-DENIED-xsl-document-securityOrigin.xml [ Timeout ]
-
 crbug.com/572723 inspector/sources/debugger/debugger-uncaught-promise-on-pause.html [ Timeout Pass ]
 
 crbug.com/594672 fast/events/iframe-object-onload.html [ Failure Pass ]
