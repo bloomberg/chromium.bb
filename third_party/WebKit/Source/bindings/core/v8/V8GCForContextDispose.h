@@ -31,6 +31,7 @@
 #ifndef V8GCForContextDispose_h
 #define V8GCForContextDispose_h
 
+#include "bindings/core/v8/WindowProxy.h"
 #include "platform/Timer.h"
 
 namespace blink {
@@ -40,7 +41,7 @@ class V8GCForContextDispose {
   WTF_MAKE_NONCOPYABLE(V8GCForContextDispose);
 
  public:
-  void NotifyContextDisposed(bool is_main_frame);
+  void NotifyContextDisposed(bool is_main_frame, WindowProxy::FrameReuseStatus);
   void NotifyIdle();
 
   static V8GCForContextDispose& Instance();

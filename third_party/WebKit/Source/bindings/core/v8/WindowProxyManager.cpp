@@ -26,6 +26,12 @@ void WindowProxyManager::ClearForNavigation() {
     entry.value->ClearForNavigation();
 }
 
+void WindowProxyManager::ClearForSwap() {
+  window_proxy_->ClearForSwap();
+  for (auto& entry : isolated_worlds_)
+    entry.value->ClearForSwap();
+}
+
 void WindowProxyManager::ReleaseGlobalProxies(
     GlobalProxyVector& global_proxies) {
   DCHECK(global_proxies.IsEmpty());

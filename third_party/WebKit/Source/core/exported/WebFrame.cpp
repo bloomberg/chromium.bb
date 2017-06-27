@@ -84,7 +84,7 @@ bool WebFrame::Swap(WebFrame* frame) {
 
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
   WindowProxyManager::GlobalProxyVector global_proxies;
-  old_frame->GetWindowProxyManager()->ClearForNavigation();
+  old_frame->GetWindowProxyManager()->ClearForSwap();
   old_frame->GetWindowProxyManager()->ReleaseGlobalProxies(global_proxies);
 
   // Although the Document in this frame is now unloaded, many resources

@@ -95,6 +95,8 @@ class WTF_EXPORT Partitions {
     return total_size;
   }
 
+  static size_t TotalActiveBytes();
+
   static void DecommitFreeableMemory();
 
   static void ReportMemoryUsageHistogram();

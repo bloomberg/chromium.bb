@@ -49,7 +49,8 @@ RemoteWindowProxy::RemoteWindowProxy(v8::Isolate* isolate,
                                      RefPtr<DOMWrapperWorld> world)
     : WindowProxy(isolate, frame, std::move(world)) {}
 
-void RemoteWindowProxy::DisposeContext(Lifecycle next_status) {
+void RemoteWindowProxy::DisposeContext(Lifecycle next_status,
+                                       FrameReuseStatus) {
   DCHECK(next_status == Lifecycle::kGlobalObjectIsDetached ||
          next_status == Lifecycle::kFrameIsDetached);
 

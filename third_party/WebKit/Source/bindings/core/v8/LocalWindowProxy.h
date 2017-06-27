@@ -74,7 +74,7 @@ class LocalWindowProxy final : public WindowProxy {
 
   bool IsLocal() const override { return true; }
   void Initialize() override;
-  void DisposeContext(Lifecycle next_status) override;
+  void DisposeContext(Lifecycle next_status, FrameReuseStatus) override;
 
   // Creates a new v8::Context with the window wrapper object as the global
   // object (aka the inner global).  Note that the window wrapper and its
