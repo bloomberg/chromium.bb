@@ -18,7 +18,6 @@
 #include "chrome/browser/page_load_metrics/page_load_metrics_embedder_interface.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
-#include "chrome/common/page_load_metrics/page_load_metrics_messages.h"
 #include "chrome/common/page_load_metrics/test/weak_mock_timer.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"

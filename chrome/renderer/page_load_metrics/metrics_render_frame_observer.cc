@@ -6,12 +6,9 @@
 
 #include <string>
 
-#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chrome/common/chrome_features.h"
-#include "chrome/common/page_load_metrics/page_load_metrics_messages.h"
 #include "chrome/renderer/page_load_metrics/page_timing_metrics_sender.h"
 #include "chrome/renderer/page_load_metrics/page_timing_sender.h"
 #include "chrome/renderer/page_load_metrics/renderer_page_track_decider.h"
@@ -34,33 +31,14 @@ base::TimeDelta ClampDelta(double event, double start) {
   return base::Time::FromDoubleT(event) - base::Time::FromDoubleT(start);
 }
 
-class LegacyIPCPageTimingSender : public PageTimingSender {
+class MojoPageTimingSender : public PageTimingSender {
  public:
-  LegacyIPCPageTimingSender(content::RenderFrame* render_frame,
-                            const int routing_id)
-      : render_frame_(render_frame), routing_id_(routing_id) {}
-  ~LegacyIPCPageTimingSender() override {}
-
-  void SendTiming(const mojom::PageLoadTimingPtr& timing,
-                  const mojom::PageLoadMetadataPtr& metadata) override {
-    DCHECK(render_frame_);
-    render_frame_->Send(
-        new PageLoadMetricsMsg_TimingUpdated(routing_id_, *timing, *metadata));
-  }
-
- private:
-  content::RenderFrame* const render_frame_;
-  const int routing_id_;
-};
-
-class MojoIPCPageTimingSender : public PageTimingSender {
- public:
-  explicit MojoIPCPageTimingSender(content::RenderFrame* render_frame) {
+  explicit MojoPageTimingSender(content::RenderFrame* render_frame) {
     DCHECK(render_frame);
     render_frame->GetRemoteAssociatedInterfaces()->GetInterface(
         &page_load_metrics_);
   }
-  ~MojoIPCPageTimingSender() override {}
+  ~MojoPageTimingSender() override {}
   void SendTiming(const mojom::PageLoadTimingPtr& timing,
                   const mojom::PageLoadMetadataPtr& metadata) override {
     DCHECK(page_load_metrics_);
@@ -213,12 +191,8 @@ std::unique_ptr<base::Timer> MetricsRenderFrameObserver::CreateTimer() {
 
 std::unique_ptr<PageTimingSender>
 MetricsRenderFrameObserver::CreatePageTimingSender() {
-  if (base::FeatureList::IsEnabled(features::kPageLoadMetricsMojofication)) {
-    return base::WrapUnique<PageTimingSender>(
-        new MojoIPCPageTimingSender(render_frame()));
-  }
   return base::WrapUnique<PageTimingSender>(
-      new LegacyIPCPageTimingSender(render_frame(), routing_id()));
+      new MojoPageTimingSender(render_frame()));
 }
 
 bool MetricsRenderFrameObserver::HasNoRenderFrame() const {
