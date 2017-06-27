@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <string>
+#include <utility>
 
 #include "base/time/time.h"
 #include "net/base/network_change_notifier.h"
@@ -16,6 +17,11 @@
 namespace data_usage {
 
 struct DataUse {
+  // Wraps the content::GlobalRequestID.
+  typedef std::pair<int, int> MainFrameGlobalRequestID;
+
+  static const MainFrameGlobalRequestID kInvalidMainFrameGlobalRequestID;
+
   DataUse(const GURL& url,
           const base::TimeTicks& request_start,
           const GURL& first_party_for_cookies,
@@ -39,7 +45,18 @@ struct DataUse {
   // started.
   base::TimeTicks request_start;
   GURL first_party_for_cookies;
+
+  // Tab id where the data use happens. When PlzNavigate is enabled tab id could
+  // be invalid(-1) for the mainframe request since tab cannot be retrieved yet.
+  // Could be invalid(-1) if the data use does not belong to a tab, for example
+  // chrome-services traffic.
   int32_t tab_id;
+
+  // content::GlobalRequestID of the mainframe request. This is populated only
+  // when tab id cannot be retrieved of a mainframe request, and used to
+  // attribute to its tab ID later.
+  MainFrameGlobalRequestID main_frame_global_request_id;
+
   net::NetworkChangeNotifier::ConnectionType connection_type;
   // MCC+MNC (mobile country code + mobile network code) of the provider of the
   // SIM when the network traffic was exchanged. Set to empty string if SIM is

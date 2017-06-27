@@ -11,8 +11,9 @@ namespace {
 bool AreNonByteCountFieldsEqual(const DataUse& a, const DataUse& b) {
   return a.url == b.url && a.request_start == b.request_start &&
          a.first_party_for_cookies == b.first_party_for_cookies &&
-         a.tab_id == b.tab_id && a.connection_type == b.connection_type &&
-         a.mcc_mnc == b.mcc_mnc;
+         a.tab_id == b.tab_id &&
+         a.main_frame_global_request_id == b.main_frame_global_request_id &&
+         a.connection_type == b.connection_type && a.mcc_mnc == b.mcc_mnc;
 }
 
 bool AreByteCountFieldsEqual(const DataUse& a, const DataUse& b) {
@@ -20,6 +21,10 @@ bool AreByteCountFieldsEqual(const DataUse& a, const DataUse& b) {
 }
 
 }  // namespace
+
+// static
+const DataUse::MainFrameGlobalRequestID
+    DataUse::kInvalidMainFrameGlobalRequestID(-1, -1);
 
 DataUse::DataUse(const GURL& url,
                  const base::TimeTicks& request_start,
@@ -33,6 +38,7 @@ DataUse::DataUse(const GURL& url,
       request_start(request_start),
       first_party_for_cookies(first_party_for_cookies),
       tab_id(tab_id),
+      main_frame_global_request_id(DataUse::kInvalidMainFrameGlobalRequestID),
       connection_type(connection_type),
       mcc_mnc(mcc_mnc),
       tx_bytes(tx_bytes),
