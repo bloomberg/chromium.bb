@@ -9,11 +9,12 @@
 #include "base/ios/block_types.h"
 #include "base/mac/bind_objc_block.h"
 #include "base/mac/foundation_util.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/threading/thread_restrictions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/reading_list/core/reading_list_model.h"
 #include "components/reading_list/core/reading_list_model_observer.h"
@@ -61,14 +62,18 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
 }  // namespace
 
 @interface ShareExtensionItemReceiver ()<NSFilePresenter> {
-  BOOL _isObservingFolder;
-  BOOL _folderCreated;
-  ReadingListModel* _readingListModel;  // Not owned.
-  bookmarks::BookmarkModel* _bookmarkModel;  // Not owned.
+  BOOL _isObservingReadingListFolder;
+  BOOL _readingListFolderCreated;
+  ReadingListModel* _readingListModel;
+  bookmarks::BookmarkModel* _bookmarkModel;
+  scoped_refptr<base::SequencedTaskRunner> _taskRunner;
 }
 
 // Checks if the reading list folder is already created and if not, create it.
 - (void)createReadingListFolder;
+
+// Invoked on UI thread once the reading list folder has been created.
+- (void)readingListFolderCreated;
 
 // Processes the data sent by the share extension. Data should be a NSDictionary
 // serialized by +|NSKeyedArchiver archivedDataWithRootObject:|.
@@ -77,17 +82,21 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
 
 // Reads the file pointed by |url| and calls |receivedData:| on the content.
 // If the file is processed, delete it.
-// Must be called on the FILE thread.
 // |completion| is only called if the file handling is completed without error.
 - (void)handleFileAtURL:(NSURL*)url withCompletion:(ProceduralBlock)completion;
 
 // Deletes the file pointed by |url| then call |completion|.
 - (void)deleteFileAtURL:(NSURL*)url withCompletion:(ProceduralBlock)completion;
 
-// Called on UIApplicationDidBecomeActiveNotification notification. Processes
-// files that are already in the folder and starts observing the
-// app_group::ShareExtensionItemsFolder() folder for new files.
+// Called on UIApplicationDidBecomeActiveNotification notification.
 - (void)applicationDidBecomeActive;
+
+// Processes files that are already in the folder and starts observing the
+// app_group::ShareExtensionItemsFolder() folder for new files.
+- (void)processExistingFiles;
+
+// Invoked with the list of pre-existing files in the folder to process them.
+- (void)entriesReceived:(NSArray<NSURL*>*)files;
 
 // Called on UIApplicationWillResignActiveNotification. Stops observing the
 // app_group::ShareExtensionItemsFolder() folder for new files.
@@ -100,74 +109,84 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
 
 @implementation ShareExtensionItemReceiver
 
-+ (ShareExtensionItemReceiver*)sharedInstance {
-  DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  static ShareExtensionItemReceiver* instance =
-      [[ShareExtensionItemReceiver alloc] init];
-  return instance;
+#pragma mark - NSObject lifetime
+
+- (void)dealloc {
+  DCHECK(!_taskRunner) << "-shutdown must be called before -dealloc";
 }
 
-- (void)setBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
-        readingListModel:(ReadingListModel*)readingListModel {
-  DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  DCHECK(!_readingListModel);
-  DCHECK(!_bookmarkModel);
+#pragma mark - Public API
 
-  if (![self presentedItemURL]) {
-    return;
+- (instancetype)initWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
+                     readingListModel:(ReadingListModel*)readingListModel {
+  DCHECK(bookmarkModel);
+  DCHECK(readingListModel);
+
+  self = [super init];
+  if (![self presentedItemURL])
+    return nil;
+
+  if (self) {
+    _readingListModel = readingListModel;
+    _bookmarkModel = bookmarkModel;
+    _taskRunner = base::CreateSequencedTaskRunnerWithTraits(
+        {base::MayBlock(), base::TaskPriority::BACKGROUND});
+
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(applicationDidBecomeActive)
+               name:UIApplicationDidBecomeActiveNotification
+             object:nil];
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(applicationWillResignActive)
+               name:UIApplicationWillResignActiveNotification
+             object:nil];
+
+    __weak ShareExtensionItemReceiver* weakSelf = self;
+    _taskRunner->PostTask(FROM_HERE, base::BindBlockArc(^() {
+                            [weakSelf createReadingListFolder];
+                          }));
   }
 
-  _readingListModel = readingListModel;
-  _bookmarkModel = bookmarkModel;
-
-  web::WebThread::PostTask(web::WebThread::FILE, FROM_HERE,
-                           base::BindBlockArc(^() {
-                             [self createReadingListFolder];
-                           }));
-  [[NSNotificationCenter defaultCenter]
-      addObserver:self
-         selector:@selector(applicationDidBecomeActive)
-             name:UIApplicationDidBecomeActiveNotification
-           object:nil];
-  [[NSNotificationCenter defaultCenter]
-      addObserver:self
-         selector:@selector(applicationWillResignActive)
-             name:UIApplicationWillResignActiveNotification
-           object:nil];
+  return self;
 }
 
 - (void)shutdown {
-  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   [[NSNotificationCenter defaultCenter] removeObserver:self];
-  if (_isObservingFolder) {
+  if (_isObservingReadingListFolder) {
     [NSFileCoordinator removeFilePresenter:self];
   }
   _readingListModel = nil;
   _bookmarkModel = nil;
+  _taskRunner = nullptr;
 }
 
-- (void)dealloc {
-  NOTREACHED();
-}
+#pragma mark - Private API
 
 - (void)createReadingListFolder {
-  DCHECK_CURRENTLY_ON(web::WebThread::FILE);
-  if (![[NSFileManager defaultManager]
-          fileExistsAtPath:[[self presentedItemURL] path]]) {
-    [[NSFileManager defaultManager]
-              createDirectoryAtPath:[[self presentedItemURL] path]
+  base::ThreadRestrictions::AssertIOAllowed();
+  NSFileManager* manager = [NSFileManager defaultManager];
+  if (![manager fileExistsAtPath:[[self presentedItemURL] path]]) {
+    [manager createDirectoryAtPath:[[self presentedItemURL] path]
         withIntermediateDirectories:NO
                          attributes:nil
                               error:nil];
   }
-  web::WebThread::PostTask(
-      web::WebThread::UI, FROM_HERE, base::BindBlockArc(^() {
-        if ([[UIApplication sharedApplication] applicationState] ==
-            UIApplicationStateActive) {
-          _folderCreated = YES;
-          [self applicationDidBecomeActive];
-        }
-      }));
+
+  __weak ShareExtensionItemReceiver* weakSelf = self;
+  web::WebThread::PostTask(web::WebThread::UI, FROM_HERE,
+                           base::BindBlockArc(^() {
+                             [weakSelf readingListFolderCreated];
+                           }));
+}
+
+- (void)readingListFolderCreated {
+  UIApplication* application = [UIApplication sharedApplication];
+  if ([application applicationState] == UIApplicationStateActive) {
+    _readingListFolderCreated = YES;
+    [self applicationDidBecomeActive];
+  }
 }
 
 - (BOOL)receivedData:(NSData*)data withCompletion:(ProceduralBlock)completion {
@@ -248,11 +267,10 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
       }
     }
 
-    if (completion) {
-      web::WebThread::PostTask(web::WebThread::FILE, FROM_HERE,
-                               base::BindBlockArc(^() {
-                                 completion();
-                               }));
+    if (completion && _taskRunner) {
+      _taskRunner->PostTask(FROM_HERE, base::BindBlockArc(^() {
+                              completion();
+                            }));
     }
   };
   web::WebThread::PostTask(web::WebThread::UI, FROM_HERE,
@@ -261,121 +279,140 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
 }
 
 - (void)handleFileAtURL:(NSURL*)url withCompletion:(ProceduralBlock)completion {
-  DCHECK_CURRENTLY_ON(web::WebThread::FILE);
+  base::ThreadRestrictions::AssertIOAllowed();
   if (![[NSFileManager defaultManager] fileExistsAtPath:[url path]]) {
     // The handler is called on file modification, including deletion. Check
     // that the file exists before continuing.
     return;
   }
+  __weak ShareExtensionItemReceiver* weakSelf = self;
   ProceduralBlock successCompletion = ^{
-    DCHECK_CURRENTLY_ON(web::WebThread::FILE);
-    [self deleteFileAtURL:url withCompletion:completion];
+    base::ThreadRestrictions::AssertIOAllowed();
+    [weakSelf deleteFileAtURL:url withCompletion:completion];
+  };
+  void (^readingAccessor)(NSURL*) = ^(NSURL* newURL) {
+    base::ThreadRestrictions::AssertIOAllowed();
+    NSFileManager* manager = [NSFileManager defaultManager];
+    NSData* data = [manager contentsAtPath:[newURL path]];
+    if (![weakSelf receivedData:data withCompletion:successCompletion]) {
+      LogHistogramReceivedItem(INVALID_ENTRY);
+    }
   };
   NSError* error = nil;
-  base::scoped_nsobject<NSFileCoordinator> readingCoordinator(
-      [[NSFileCoordinator alloc] initWithFilePresenter:self]);
+  NSFileCoordinator* readingCoordinator =
+      [[NSFileCoordinator alloc] initWithFilePresenter:self];
   [readingCoordinator
       coordinateReadingItemAtURL:url
                          options:NSFileCoordinatorReadingWithoutChanges
                            error:&error
-                      byAccessor:^(NSURL* newURL) {
-                        NSData* data = [[NSFileManager defaultManager]
-                            contentsAtPath:[newURL path]];
-                        if (![self receivedData:data
-                                 withCompletion:successCompletion]) {
-                          LogHistogramReceivedItem(INVALID_ENTRY);
-                        }
-                      }];
+                      byAccessor:readingAccessor];
 }
 
 - (void)deleteFileAtURL:(NSURL*)url withCompletion:(ProceduralBlock)completion {
-  DCHECK_CURRENTLY_ON(web::WebThread::FILE);
-  base::scoped_nsobject<NSFileCoordinator> deletingCoordinator(
-      [[NSFileCoordinator alloc] initWithFilePresenter:self]);
+  base::ThreadRestrictions::AssertIOAllowed();
+  void (^deletingAccessor)(NSURL*) = ^(NSURL* newURL) {
+    base::ThreadRestrictions::AssertIOAllowed();
+    NSFileManager* manager = [NSFileManager defaultManager];
+    [manager removeItemAtURL:newURL error:nil];
+  };
   NSError* error = nil;
+  NSFileCoordinator* deletingCoordinator =
+      [[NSFileCoordinator alloc] initWithFilePresenter:self];
   [deletingCoordinator
       coordinateWritingItemAtURL:url
                          options:NSFileCoordinatorWritingForDeleting
                            error:&error
-                      byAccessor:^(NSURL* newURL) {
-                        [[NSFileManager defaultManager] removeItemAtURL:newURL
-                                                                  error:nil];
-                      }];
+                      byAccessor:deletingAccessor];
   if (completion) {
     completion();
   }
 }
 
 - (void)applicationDidBecomeActive {
-  if (!_folderCreated || _isObservingFolder) {
+  if (!_readingListFolderCreated || _isObservingReadingListFolder) {
     return;
   }
-  _isObservingFolder = YES;
+  _isObservingReadingListFolder = YES;
+
   // Start observing for new files.
   [NSFileCoordinator addFilePresenter:self];
 
   // There may already be files. Process them.
-  web::WebThread::PostTask(
-      web::WebThread::FILE, FROM_HERE, base::BindBlockArc(^() {
-        NSMutableArray<NSURL*>* files = [NSMutableArray array];
-        NSArray* oldFiles = [[NSFileManager defaultManager]
-              contentsOfDirectoryAtURL:app_group::
-                                           LegacyShareExtensionItemsFolder()
-            includingPropertiesForKeys:nil
-                               options:NSDirectoryEnumerationSkipsHiddenFiles
-                                 error:nil];
-        [files addObjectsFromArray:oldFiles];
+  if (_taskRunner) {
+    __weak ShareExtensionItemReceiver* weakSelf = self;
+    _taskRunner->PostTask(FROM_HERE, base::BindBlockArc(^() {
+                            [weakSelf processExistingFiles];
+                          }));
+  }
+}
 
-        NSArray* newFiles = [[NSFileManager defaultManager]
-              contentsOfDirectoryAtURL:[self presentedItemURL]
-            includingPropertiesForKeys:nil
-                               options:NSDirectoryEnumerationSkipsHiddenFiles
-                                 error:nil];
-        [files addObjectsFromArray:newFiles];
+- (void)processExistingFiles {
+  base::ThreadRestrictions::AssertIOAllowed();
+  NSMutableArray<NSURL*>* files = [NSMutableArray array];
+  NSFileManager* manager = [NSFileManager defaultManager];
+  NSArray<NSURL*>* oldFiles = [manager
+        contentsOfDirectoryAtURL:app_group::LegacyShareExtensionItemsFolder()
+      includingPropertiesForKeys:nil
+                         options:NSDirectoryEnumerationSkipsHiddenFiles
+                           error:nil];
+  [files addObjectsFromArray:oldFiles];
 
-        if ([files count] == 0) {
-          return;
-        }
-        web::WebThread::PostTask(
-            web::WebThread::UI, FROM_HERE, base::BindBlockArc(^() {
-              UMA_HISTOGRAM_COUNTS_100(
-                  "IOS.ShareExtension.ReceivedEntriesCount", [files count]);
-              for (NSURL* fileURL : files) {
-                __block std::unique_ptr<
-                    ReadingListModel::ScopedReadingListBatchUpdate>
-                    batchToken(_readingListModel->BeginBatchUpdates());
-                web::WebThread::PostTask(
-                    web::WebThread::FILE, FROM_HERE, base::BindBlockArc(^() {
-                      [self handleFileAtURL:fileURL
-                             withCompletion:^{
-                               web::WebThread::PostTask(web::WebThread::UI,
-                                                        FROM_HERE,
-                                                        base::BindBlockArc(^() {
-                                                          batchToken.reset();
-                                                        }));
-                             }];
-                    }));
-              }
-            }));
-      }));
+  NSArray<NSURL*>* newFiles =
+      [manager contentsOfDirectoryAtURL:[self presentedItemURL]
+             includingPropertiesForKeys:nil
+                                options:NSDirectoryEnumerationSkipsHiddenFiles
+                                  error:nil];
+  [files addObjectsFromArray:newFiles];
+
+  if ([files count]) {
+    __weak ShareExtensionItemReceiver* weakSelf = self;
+    web::WebThread::PostTask(web::WebThread::UI, FROM_HERE,
+                             base::BindBlockArc(^() {
+                               [weakSelf entriesReceived:files];
+                             }));
+  }
+}
+
+- (void)entriesReceived:(NSArray<NSURL*>*)files {
+  UMA_HISTOGRAM_COUNTS_100("IOS.ShareExtension.ReceivedEntriesCount",
+                           [files count]);
+  if (!_taskRunner)
+    return;
+
+  __weak ShareExtensionItemReceiver* weakSelf = self;
+  for (NSURL* fileURL : files) {
+    __block std::unique_ptr<ReadingListModel::ScopedReadingListBatchUpdate>
+        batchToken(_readingListModel->BeginBatchUpdates());
+    _taskRunner->PostTask(FROM_HERE, base::BindBlockArc(^() {
+                            [weakSelf handleFileAtURL:fileURL
+                                       withCompletion:^{
+                                         web::WebThread::PostTask(
+                                             web::WebThread::UI, FROM_HERE,
+                                             base::BindBlockArc(^() {
+                                               batchToken.reset();
+                                             }));
+                                       }];
+                          }));
+  }
 }
 
 - (void)applicationWillResignActive {
-  if (!_isObservingFolder) {
+  if (!_isObservingReadingListFolder) {
     return;
   }
-  _isObservingFolder = NO;
+  _isObservingReadingListFolder = NO;
   [NSFileCoordinator removeFilePresenter:self];
 }
 
-#pragma mark -
-#pragma mark NSFilePresenter methods
+#pragma mark - NSFilePresenter methods
 
 - (void)presentedSubitemDidChangeAtURL:(NSURL*)url {
-  web::WebThread::PostTask(web::WebThread::FILE, FROM_HERE,
-                           base::BindBlockArc(^() {
-                             [self handleFileAtURL:url withCompletion:nil];
-                           }));
+  if (_taskRunner) {
+    __weak ShareExtensionItemReceiver* weakSelf = self;
+    _taskRunner->PostTask(FROM_HERE, base::BindBlockArc(^() {
+                            [weakSelf handleFileAtURL:url withCompletion:nil];
+                          }));
+  }
 }
 
 - (NSOperationQueue*)presentedItemOperationQueue {
