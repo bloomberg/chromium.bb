@@ -24843,6 +24843,13 @@ from previous Chrome versions.
   <int value="3" label="Generic initialization error"/>
 </enum>
 
+<enum name="MidiSendReceiveUsage">
+  <int value="0" label="No transaction"/>
+  <int value="1" label="Sent"/>
+  <int value="2" label="Received"/>
+  <int value="3" label="Sent and received"/>
+</enum>
+
 <enum name="MidiUsage">
   <int value="0" label="Instantiated"/>
   <int value="1" label="Instantiated on unsupported platforms"/>

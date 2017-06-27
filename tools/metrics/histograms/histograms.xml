@@ -29564,6 +29564,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The final status of MidiManager on browser shutdown.</summary>
 </histogram>
 
+<histogram name="Media.Midi.SendReceiveUsage" enum="MidiSendReceiveUsage">
+  <owner>toyoshim@chromium.org</owner>
+  <summary>
+    Reports whether any data was sent or received by a MidiManager. Recorded
+    once per MidiManager instantiation, upon destruction. MidiManager is
+    instantiated when the first Web MIDI client starts a session, and destroyed
+    when the last client ends the session.
+  </summary>
+</histogram>
+
 <histogram name="Media.Midi.SysExMessageSizeUpTo1MB" units="bytes">
   <owner>toyoshim@chromium.org</owner>
   <summary>Reports sysex message size.</summary>
