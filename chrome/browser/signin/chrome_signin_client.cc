@@ -273,19 +273,37 @@ void ChromeSigninClient::PreSignOut(
     const base::Callback<void()>& sign_out,
     signin_metrics::ProfileSignout signout_source_metric) {
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-  if (signin_util::IsForceSigninEnabled() && !profile_->IsSystemProfile() &&
-      !profile_->IsGuestSession() && !profile_->IsSupervised()) {
-    // TODO(zmin): force window closing based on the reason of sign-out.
-    // This will be updated after force window closing CL is commited.
 
-    // User can't abort the window closing unless user sign out manually.
-    BrowserList::CloseAllBrowsersWithProfile(
-        profile_,
-        base::Bind(&ChromeSigninClient::OnCloseBrowsersSuccess,
-                   base::Unretained(this), sign_out, signout_source_metric),
-        base::Bind(&ChromeSigninClient::OnCloseBrowsersAborted,
-                   base::Unretained(this)),
-        false);
+  // These sign out won't remove the policy cache, keep the window opened.
+  bool keep_window_opened =
+      signout_source_metric ==
+          signin_metrics::GOOGLE_SERVICE_NAME_PATTERN_CHANGED ||
+      signout_source_metric == signin_metrics::SERVER_FORCED_DISABLE ||
+      signout_source_metric == signin_metrics::SIGNOUT_PREF_CHANGED;
+  if (signin_util::IsForceSigninEnabled() && !profile_->IsSystemProfile() &&
+      !profile_->IsGuestSession() && !profile_->IsSupervised() &&
+      !keep_window_opened) {
+    if (signout_source_metric ==
+        signin_metrics::SIGNIN_PREF_CHANGED_DURING_SIGNIN) {
+      // SIGNIN_PREF_CHANGED_DURING_SIGNIN will be triggered when SigninManager
+      // is initialized before window opening, there is no need to close window.
+      // Call OnCloseBrowsersSuccess to continue sign out and show UserManager
+      // afterwards.
+      should_display_user_manager_ = false;  // Don't show UserManager twice.
+      OnCloseBrowsersSuccess(sign_out, signout_source_metric,
+                             profile_->GetPath());
+    } else {
+      BrowserList::CloseAllBrowsersWithProfile(
+          profile_,
+          base::Bind(&ChromeSigninClient::OnCloseBrowsersSuccess,
+                     base::Unretained(this), sign_out, signout_source_metric),
+          base::Bind(&ChromeSigninClient::OnCloseBrowsersAborted,
+                     base::Unretained(this)),
+          signout_source_metric == signin_metrics::ABORT_SIGNIN ||
+              signout_source_metric ==
+                  signin_metrics::AUTHENTICATION_FAILED_WITH_FORCE_SIGNIN ||
+              signout_source_metric == signin_metrics::TRANSFER_CREDENTIALS);
+    }
   } else {
 #else
   {
@@ -441,8 +459,10 @@ void ChromeSigninClient::OnCloseBrowsersSuccess(
     const signin_metrics::ProfileSignout signout_source_metric,
     const base::FilePath& profile_path) {
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-  if (signin_util::IsForceSigninEnabled() && force_signin_verifier_.get())
+  if (signin_util::IsForceSigninEnabled() && force_signin_verifier_.get()) {
     force_signin_verifier_->Cancel();
+    force_signin_verifier_->AbortSignoutCountdownIfExisted();
+  }
 #endif
   SigninClient::PreSignOut(sign_out, signout_source_metric);
 

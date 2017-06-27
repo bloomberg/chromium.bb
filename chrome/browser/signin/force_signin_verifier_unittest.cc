@@ -24,6 +24,13 @@ class MockForceSigninVerifier : public ForceSigninVerifier {
 
   OAuth2TokenService::Request* request() { return GetRequestForTesting(); }
 
+  bool IsCountdownTimerRunning() {
+    base::Timer* timer = GetWindowCloseTimerForTesting();
+    return timer && timer->IsRunning();
+  }
+
+  void OnShowDialog() { StartCountdown(); }
+
   MOCK_METHOD0(ShowDialog, void(void));
 };
 
@@ -123,4 +130,17 @@ TEST_F(ForceSigninVerifierTest, OnReconnected) {
   ASSERT_EQ(0, verifier_->FailureCount());
   ASSERT_NE(nullptr, verifier_->request());
   ASSERT_FALSE(verifier_->IsDelayTaskPosted());
+}
+
+TEST_F(ForceSigninVerifierTest, OnGetTokenPersistentFailureAndStartCountdown) {
+  ASSERT_EQ(nullptr, verifier_->request());
+  ASSERT_FALSE(verifier_->IsCountdownTimerRunning());
+  EXPECT_CALL(*verifier_.get(), ShowDialog())
+      .WillOnce(::testing::Invoke(verifier_.get(),
+                                  &MockForceSigninVerifier::OnShowDialog));
+
+  verifier_->SendTestRequest();
+  verifier_->OnGetTokenFailure(verifier_->request(), persistent_error_);
+
+  ASSERT_TRUE(verifier_->IsCountdownTimerRunning());
 }

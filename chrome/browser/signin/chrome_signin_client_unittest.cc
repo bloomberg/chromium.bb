@@ -175,7 +175,7 @@ class ChromeSigninClientSignoutTest : public BrowserWithTestWindowTest {
 
 TEST_F(ChromeSigninClientSignoutTest, SignOut) {
   signin_metrics::ProfileSignout source_metric =
-      signin_metrics::ProfileSignout::SIGNOUT_TEST;
+      signin_metrics::ProfileSignout::ABORT_SIGNIN;
   signin_metrics::SignoutDelete delete_metric =
       signin_metrics::SignoutDelete::IGNORE_METRIC;
 
@@ -190,7 +190,7 @@ TEST_F(ChromeSigninClientSignoutTest, SignOut) {
 
 TEST_F(ChromeSigninClientSignoutTest, SignOutWithoutManager) {
   signin_metrics::ProfileSignout source_metric =
-      signin_metrics::ProfileSignout::SIGNOUT_TEST;
+      signin_metrics::ProfileSignout::ABORT_SIGNIN;
   signin_metrics::SignoutDelete delete_metric =
       signin_metrics::SignoutDelete::IGNORE_METRIC;
 
@@ -220,7 +220,7 @@ TEST_F(ChromeSigninClientSignoutTest, SignOutWithoutForceSignin) {
   manager_.reset(new MockSigninManager(client_.get()));
 
   signin_metrics::ProfileSignout source_metric =
-      signin_metrics::ProfileSignout::SIGNOUT_TEST;
+      signin_metrics::ProfileSignout::ABORT_SIGNIN;
   signin_metrics::SignoutDelete delete_metric =
       signin_metrics::SignoutDelete::IGNORE_METRIC;
 
@@ -241,7 +241,7 @@ TEST_F(ChromeSigninClientSignoutTest, SignOutGuestSession) {
   manager_.reset(new MockSigninManager(client_.get()));
 
   signin_metrics::ProfileSignout source_metric =
-      signin_metrics::ProfileSignout::SIGNOUT_TEST;
+      signin_metrics::ProfileSignout::ABORT_SIGNIN;
   signin_metrics::SignoutDelete delete_metric =
       signin_metrics::SignoutDelete::IGNORE_METRIC;
 

@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/profiles/forced_reauthentication_dialog.h"
+#include "chrome/browser/ui/views/profiles/forced_reauthentication_dialog_view.h"
 
+#include <map>
 #include <memory>
 #include <string>
 #include <utility>
@@ -82,13 +83,16 @@ class PromptLabel : public views::StyledLabel {
 
 }  // namespace
 
-ForcedReauthenticationDialog::ForcedReauthenticationDialog(
+// ForcedReauthenticationDialogView
+
+ForcedReauthenticationDialogView::ForcedReauthenticationDialogView(
     Browser* browser,
     SigninManager* signin_manager,
-    const base::TimeDelta& countdown_duration)
+    base::TimeDelta countdown_duration)
     : browser_(browser),
       signin_manager_(signin_manager),
-      desired_close_time_(base::TimeTicks::Now() + countdown_duration) {
+      desired_close_time_(base::TimeTicks::Now() + countdown_duration),
+      weak_factory_(this) {
   constrained_window::CreateBrowserModalDialogViews(
       this, browser->window()->GetNativeWindow())
       ->Show();
@@ -96,13 +100,13 @@ ForcedReauthenticationDialog::ForcedReauthenticationDialog(
   browser->window()->Activate();
 }
 
-ForcedReauthenticationDialog::~ForcedReauthenticationDialog() {}
+ForcedReauthenticationDialogView::~ForcedReauthenticationDialogView() {}
 
 // static
-ForcedReauthenticationDialog* ForcedReauthenticationDialog::ShowDialog(
+ForcedReauthenticationDialogView* ForcedReauthenticationDialogView::ShowDialog(
     Profile* profile,
     SigninManager* signin_manager,
-    const base::TimeDelta& countdown_duration) {
+    base::TimeDelta countdown_duration) {
   Browser* browser = FindBrowserWithProfile(profile);
   if (browser == nullptr) {  // If there is no browser, we can just sign
                              // out profile directly.
@@ -110,11 +114,11 @@ ForcedReauthenticationDialog* ForcedReauthenticationDialog::ShowDialog(
     return nullptr;
   }
 
-  return new ForcedReauthenticationDialog(browser, signin_manager,
-                                          countdown_duration);
+  return new ForcedReauthenticationDialogView(browser, signin_manager,
+                                              countdown_duration);
 }
 
-bool ForcedReauthenticationDialog::Accept() {
+bool ForcedReauthenticationDialogView::Accept() {
   if (GetTimeRemaining() < base::TimeDelta::FromSeconds(kCloseDirectlyTimer)) {
     Signout(signin_manager_);
   } else {
@@ -125,22 +129,22 @@ bool ForcedReauthenticationDialog::Accept() {
   return true;
 }
 
-bool ForcedReauthenticationDialog::Cancel() {
+bool ForcedReauthenticationDialogView::Cancel() {
   return true;
 }
 
-void ForcedReauthenticationDialog::WindowClosing() {
+void ForcedReauthenticationDialogView::WindowClosing() {
   refresh_timer_.Stop();
 }
 
-base::string16 ForcedReauthenticationDialog::GetWindowTitle() const {
+base::string16 ForcedReauthenticationDialogView::GetWindowTitle() const {
   base::TimeDelta time_left = GetTimeRemaining();
   return base::i18n::MessageFormatter::FormatWithNumberedArgs(
       l10n_util::GetStringUTF16(IDS_ENTERPRISE_FORCE_SIGNOUT_TITLE),
       time_left.InMinutes(), time_left.InSeconds() % 60);
 }
 
-base::string16 ForcedReauthenticationDialog::GetDialogButtonLabel(
+base::string16 ForcedReauthenticationDialogView::GetDialogButtonLabel(
     ui::DialogButton button) const {
   if (button == ui::DIALOG_BUTTON_OK) {
     return l10n_util::GetStringUTF16(
@@ -149,11 +153,11 @@ base::string16 ForcedReauthenticationDialog::GetDialogButtonLabel(
   return l10n_util::GetStringUTF16(IDS_ENTERPRISE_FORCE_SIGNOUT_CLOSE_DELAY);
 }
 
-ui::ModalType ForcedReauthenticationDialog::GetModalType() const {
+ui::ModalType ForcedReauthenticationDialogView::GetModalType() const {
   return ui::MODAL_TYPE_WINDOW;
 }
 
-void ForcedReauthenticationDialog::AddedToWidget() {
+void ForcedReauthenticationDialogView::AddedToWidget() {
   const SkColor prompt_bar_background_color =
       GetSigninConfirmationPromptBarColor(
           GetNativeTheme(), ui::kSigninConfirmationPromptBarBackgroundAlpha);
@@ -231,10 +235,14 @@ void ForcedReauthenticationDialog::AddedToWidget() {
                          explanation_label->GetHeightForWidth(kPreferredWidth));
   refresh_timer_.Start(FROM_HERE,
                        base::TimeDelta::FromSeconds(kRefreshTitleTimer), this,
-                       &ForcedReauthenticationDialog::OnCountDown);
+                       &ForcedReauthenticationDialogView::OnCountDown);
 }
 
-void ForcedReauthenticationDialog::OnCountDown() {
+void ForcedReauthenticationDialogView::CloseDialog() {
+  GetWidget()->Close();
+}
+
+void ForcedReauthenticationDialogView::OnCountDown() {
   if (desired_close_time_ <= base::TimeTicks::Now()) {
     Cancel();
     GetWidget()->Close();
@@ -242,9 +250,34 @@ void ForcedReauthenticationDialog::OnCountDown() {
   GetWidget()->UpdateWindowTitle();
 }
 
-base::TimeDelta ForcedReauthenticationDialog::GetTimeRemaining() const {
+base::TimeDelta ForcedReauthenticationDialogView::GetTimeRemaining() const {
   base::TimeTicks now = base::TimeTicks::Now();
   if (desired_close_time_ <= now)
     return base::TimeDelta();
   return desired_close_time_ - now;
+}
+
+// ForcedReauthenticationDialogImpl
+
+ForcedReauthenticationDialogImpl::ForcedReauthenticationDialogImpl() {}
+ForcedReauthenticationDialogImpl::~ForcedReauthenticationDialogImpl() {
+  if (dialog_view_)
+    dialog_view_->CloseDialog();
+}
+
+void ForcedReauthenticationDialogImpl::ShowDialog(
+    Profile* profile,
+    SigninManager* signin_manager,
+    base::TimeDelta countdown_duration) {
+  dialog_view_ = ForcedReauthenticationDialogView::ShowDialog(
+                     profile, signin_manager, countdown_duration)
+                     ->AsWeakPtr();
+}
+
+// ForcedReauthenticationDialog
+
+// static
+std::unique_ptr<ForcedReauthenticationDialog>
+ForcedReauthenticationDialog::Create() {
+  return base::MakeUnique<ForcedReauthenticationDialogImpl>();
 }
