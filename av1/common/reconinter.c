@@ -827,11 +827,12 @@ void av1_highbd_build_inter_predictor(
   const MV mv_q4 = { is_q4 ? src_mv->row : src_mv->row * 2,
                      is_q4 ? src_mv->col : src_mv->col * 2 };
   MV32 mv = av1_scale_mv(&mv_q4, x, y, sf);
-  const int subpel_x = mv.col & SUBPEL_MASK;
-  const int subpel_y = mv.row & SUBPEL_MASK;
+  const int subpel_x = mv.col & SCALE_SUBPEL_MASK;
+  const int subpel_y = mv.row & SCALE_SUBPEL_MASK;
   ConvolveParams conv_params = get_conv_params(ref, ref, plane);
 
-  src += (mv.row >> SUBPEL_BITS) * src_stride + (mv.col >> SUBPEL_BITS);
+  src += (mv.row >> SCALE_SUBPEL_BITS) * src_stride +
+         (mv.col >> SCALE_SUBPEL_BITS);
 
   av1_make_inter_predictor(src, src_stride, dst, dst_stride, subpel_x, subpel_y,
                            sf, w, h, &conv_params, interp_filter,
@@ -864,10 +865,11 @@ void av1_build_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
   const MV mv_q4 = { is_q4 ? src_mv->row : src_mv->row * 2,
                      is_q4 ? src_mv->col : src_mv->col * 2 };
   MV32 mv = av1_scale_mv(&mv_q4, x, y, sf);
-  const int subpel_x = mv.col & SUBPEL_MASK;
-  const int subpel_y = mv.row & SUBPEL_MASK;
+  const int subpel_x = mv.col & SCALE_SUBPEL_MASK;
+  const int subpel_y = mv.row & SCALE_SUBPEL_MASK;
 
-  src += (mv.row >> SUBPEL_BITS) * src_stride + (mv.col >> SUBPEL_BITS);
+  src += (mv.row >> SCALE_SUBPEL_BITS) * src_stride +
+         (mv.col >> SCALE_SUBPEL_BITS);
 
   av1_make_inter_predictor(src, src_stride, dst, dst_stride, subpel_x, subpel_y,
                            sf, w, h, conv_params, interp_filter,
@@ -1038,27 +1040,28 @@ void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd, int plane,
             int pos_y = sf->scale_value_y(orig_pos_y, sf);
             int pos_x = sf->scale_value_x(orig_pos_x, sf);
 
-            const int top = -((AOM_INTERP_EXTEND + bh) << SUBPEL_BITS);
+            const int top = -((AOM_INTERP_EXTEND + bh) << SCALE_SUBPEL_BITS);
             const int bottom = (pre_buf->height + AOM_INTERP_EXTEND)
-                               << SUBPEL_BITS;
-            const int left = -((AOM_INTERP_EXTEND + bw) << SUBPEL_BITS);
+                               << SCALE_SUBPEL_BITS;
+            const int left = -((AOM_INTERP_EXTEND + bw) << SCALE_SUBPEL_BITS);
             const int right = (pre_buf->width + AOM_INTERP_EXTEND)
-                              << SUBPEL_BITS;
+                              << SCALE_SUBPEL_BITS;
             pos_y = clamp(pos_y, top, bottom);
             pos_x = clamp(pos_x, left, right);
 
-            pre = pre_buf->buf0 + (pos_y >> SUBPEL_BITS) * pre_buf->stride +
-                  (pos_x >> SUBPEL_BITS);
-            subpel_x = pos_x & SUBPEL_MASK;
-            subpel_y = pos_y & SUBPEL_MASK;
+            pre = pre_buf->buf0 +
+                  (pos_y >> SCALE_SUBPEL_BITS) * pre_buf->stride +
+                  (pos_x >> SCALE_SUBPEL_BITS);
+            subpel_x = pos_x & SCALE_SUBPEL_MASK;
+            subpel_y = pos_y & SCALE_SUBPEL_MASK;
             xs = sf->x_step_q4;
             ys = sf->y_step_q4;
           } else {
             const MV mv_q4 = clamp_mv_to_umv_border_sb(
                 xd, &mv, bw, bh, pd->subsampling_x, pd->subsampling_y);
-            xs = ys = SCALE_DENOMINATOR;
-            subpel_x = mv_q4.col & SUBPEL_MASK;
-            subpel_y = mv_q4.row & SUBPEL_MASK;
+            xs = ys = SCALE_SUBPEL_SHIFTS;
+            subpel_x = (mv_q4.col & SUBPEL_MASK) << SCALE_EXTRA_BITS;
+            subpel_y = (mv_q4.row & SUBPEL_MASK) << SCALE_EXTRA_BITS;
             pre = pre_buf->buf +
                   (y + (mv_q4.row >> SUBPEL_BITS)) * pre_buf->stride +
                   (x + (mv_q4.col >> SUBPEL_BITS));
@@ -1160,26 +1163,31 @@ void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd, int plane,
 
         // Clamp against the reference frame borders, with enough extension
         // that we don't force the reference block to be partially onscreen.
-        const int top = -((AOM_INTERP_EXTEND + bh) << SUBPEL_BITS);
-        const int bottom = (pre_buf->height + AOM_INTERP_EXTEND) << SUBPEL_BITS;
-        const int left = -((AOM_INTERP_EXTEND + bw) << SUBPEL_BITS);
-        const int right = (pre_buf->width + AOM_INTERP_EXTEND) << SUBPEL_BITS;
+        const int top = -((AOM_INTERP_EXTEND + bh) << SCALE_SUBPEL_BITS);
+        const int bottom = (pre_buf->height + AOM_INTERP_EXTEND)
+                           << SCALE_SUBPEL_BITS;
+        const int left = -((AOM_INTERP_EXTEND + bw) << SCALE_SUBPEL_BITS);
+        const int right = (pre_buf->width + AOM_INTERP_EXTEND)
+                          << SCALE_SUBPEL_BITS;
         pos_y = clamp(pos_y, top, bottom);
         pos_x = clamp(pos_x, left, right);
 
-        pre[ref] = pre_buf->buf0 + (pos_y >> SUBPEL_BITS) * pre_buf->stride +
-                   (pos_x >> SUBPEL_BITS);
-        subpel_params[ref].subpel_x = pos_x & SUBPEL_MASK;
-        subpel_params[ref].subpel_y = pos_y & SUBPEL_MASK;
+        pre[ref] = pre_buf->buf0 +
+                   (pos_y >> SCALE_SUBPEL_BITS) * pre_buf->stride +
+                   (pos_x >> SCALE_SUBPEL_BITS);
+        subpel_params[ref].subpel_x = pos_x & SCALE_SUBPEL_MASK;
+        subpel_params[ref].subpel_y = pos_y & SCALE_SUBPEL_MASK;
         subpel_params[ref].xs = sf->x_step_q4;
         subpel_params[ref].ys = sf->y_step_q4;
       } else {
         const MV mv_q4 = clamp_mv_to_umv_border_sb(
             xd, &mv, bw, bh, pd->subsampling_x, pd->subsampling_y);
-        subpel_params[ref].subpel_x = mv_q4.col & SUBPEL_MASK;
-        subpel_params[ref].subpel_y = mv_q4.row & SUBPEL_MASK;
-        subpel_params[ref].xs = SCALE_DENOMINATOR;
-        subpel_params[ref].ys = SCALE_DENOMINATOR;
+        subpel_params[ref].subpel_x = (mv_q4.col & SUBPEL_MASK)
+                                      << SCALE_EXTRA_BITS;
+        subpel_params[ref].subpel_y = (mv_q4.row & SUBPEL_MASK)
+                                      << SCALE_EXTRA_BITS;
+        subpel_params[ref].xs = SCALE_SUBPEL_SHIFTS;
+        subpel_params[ref].ys = SCALE_SUBPEL_SHIFTS;
         pre[ref] = pre_buf->buf +
                    (y + (mv_q4.row >> SUBPEL_BITS)) * pre_buf->stride +
                    (x + (mv_q4.col >> SUBPEL_BITS));
@@ -1275,6 +1283,7 @@ void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd, int plane,
   }
 }
 
+#if 0
 void av1_build_inter_predictor_sub8x8(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                       int plane, int i, int ir, int ic,
                                       int mi_row, int mi_col) {
@@ -1336,6 +1345,7 @@ void av1_build_inter_predictor_sub8x8(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                 mi_row * MI_SIZE + 4 * ir, xd);
   }
 }
+#endif
 
 static void build_inter_predictors_for_planes(const AV1_COMMON *cm,
                                               MACROBLOCKD *xd, BLOCK_SIZE bsize,
@@ -3005,25 +3015,26 @@ static void build_inter_predictors_single_buf(MACROBLOCKD *xd, int plane,
     int pos_y = sf->scale_value_y(orig_pos_y, sf);
     int pos_x = sf->scale_value_x(orig_pos_x, sf);
 
-    const int top = -((AOM_INTERP_EXTEND + bh) << SUBPEL_BITS);
-    const int bottom = (pre_buf->height + AOM_INTERP_EXTEND) << SUBPEL_BITS;
-    const int left = -((AOM_INTERP_EXTEND + bw) << SUBPEL_BITS);
-    const int right = (pre_buf->width + AOM_INTERP_EXTEND) << SUBPEL_BITS;
+    const int top = -((AOM_INTERP_EXTEND + bh) << SCALE_SUBPEL_BITS);
+    const int bottom = (pre_buf->height + AOM_INTERP_EXTEND)
+                       << SCALE_SUBPEL_BITS;
+    const int left = -((AOM_INTERP_EXTEND + bw) << SCALE_SUBPEL_BITS);
+    const int right = (pre_buf->width + AOM_INTERP_EXTEND) << SCALE_SUBPEL_BITS;
     pos_y = clamp(pos_y, top, bottom);
     pos_x = clamp(pos_x, left, right);
 
-    pre = pre_buf->buf0 + (pos_y >> SUBPEL_BITS) * pre_buf->stride +
-          (pos_x >> SUBPEL_BITS);
-    subpel_x = pos_x & SUBPEL_MASK;
-    subpel_y = pos_y & SUBPEL_MASK;
+    pre = pre_buf->buf0 + (pos_y >> SCALE_SUBPEL_BITS) * pre_buf->stride +
+          (pos_x >> SCALE_SUBPEL_BITS);
+    subpel_x = pos_x & SCALE_SUBPEL_MASK;
+    subpel_y = pos_y & SCALE_SUBPEL_MASK;
     xs = sf->x_step_q4;
     ys = sf->y_step_q4;
   } else {
     const MV mv_q4 = clamp_mv_to_umv_border_sb(
         xd, &mv, bw, bh, pd->subsampling_x, pd->subsampling_y);
-    xs = ys = SCALE_DENOMINATOR;
-    subpel_x = mv_q4.col & SUBPEL_MASK;
-    subpel_y = mv_q4.row & SUBPEL_MASK;
+    xs = ys = SCALE_SUBPEL_SHIFTS;
+    subpel_x = (mv_q4.col & SUBPEL_MASK) << SCALE_EXTRA_BITS;
+    subpel_y = (mv_q4.row & SUBPEL_MASK) << SCALE_EXTRA_BITS;
     pre = pre_buf->buf + (y + (mv_q4.row >> SUBPEL_BITS)) * pre_buf->stride +
           (x + (mv_q4.col >> SUBPEL_BITS));
   }

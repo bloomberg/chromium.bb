@@ -17,6 +17,7 @@
 
 #include "./av1_rtcd.h"
 #include "av1/common/warped_motion.h"
+#include "av1/common/scale.h"
 
 #define WARP_ERROR_BLOCK 32
 
@@ -1147,8 +1148,8 @@ static void highbd_warp_plane(WarpedMotionParams *wm, const uint8_t *const ref8,
     wm->wmmat[5] = wm->wmmat[2];
     wm->wmmat[4] = -wm->wmmat[3];
   }
-  if ((wm->wmtype == ROTZOOM || wm->wmtype == AFFINE) && x_scale == 16 &&
-      y_scale == 16) {
+  if ((wm->wmtype == ROTZOOM || wm->wmtype == AFFINE) &&
+      x_scale == SCALE_SUBPEL_SHIFTS && y_scale == SCALE_SUBPEL_SHIFTS) {
     const int32_t *const mat = wm->wmmat;
     const int16_t alpha = wm->alpha;
     const int16_t beta = wm->beta;
@@ -1579,8 +1580,8 @@ static void warp_plane(WarpedMotionParams *wm, const uint8_t *const ref,
     wm->wmmat[5] = wm->wmmat[2];
     wm->wmmat[4] = -wm->wmmat[3];
   }
-  if ((wm->wmtype == ROTZOOM || wm->wmtype == AFFINE) && x_scale == 16 &&
-      y_scale == 16) {
+  if ((wm->wmtype == ROTZOOM || wm->wmtype == AFFINE) &&
+      x_scale == SCALE_SUBPEL_SHIFTS && y_scale == SCALE_SUBPEL_SHIFTS) {
     const int32_t *const mat = wm->wmmat;
     const int16_t alpha = wm->alpha;
     const int16_t beta = wm->beta;
