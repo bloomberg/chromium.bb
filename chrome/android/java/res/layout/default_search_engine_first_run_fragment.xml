@@ -11,6 +11,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/signin_body_background"
+    android:contentDescription="@string/search_engine_dialog_title"
     android:orientation="vertical" >
 
     <FrameLayout
@@ -41,6 +42,7 @@
                     android:paddingEnd="@dimen/signin_chooser_padding"
                     android:paddingBottom="@dimen/signin_chooser_padding"
                     android:background="@color/signin_head_background"
+                    android:importantForAccessibility="no"
                     android:textColor="@color/default_text_color"
                     android:textSize="@dimen/fre_title_text_size"
                     android:text="@string/search_engine_dialog_title" />
