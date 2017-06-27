@@ -109,6 +109,12 @@ shouldBe("computedStyle.transitionProperty", "'solid'");
 shouldBe("style.webkitTransitionProperty", "'solid'");
 shouldBe("computedStyle.webkitTransitionProperty", "'solid'");
 
+style.transitionProperty = "default, top";
+shouldBe("style.transitionProperty", "'default, top'");
+shouldBe("computedStyle.transitionProperty", "'default, top'");
+shouldBe("style.webkitTransitionProperty", "'default, top'");
+shouldBe("computedStyle.webkitTransitionProperty", "'default, top'");
+
 debug("Invalid transition-property values.");
 style.transitionProperty = "";
 
@@ -177,8 +183,6 @@ shouldBe("style.transitionProperty", "''");
 style.transitionProperty = "width, inherit";
 shouldBe("style.transitionProperty", "''");
 style.transitionProperty = "left, unset";
-shouldBe("style.transitionProperty", "''");
-style.transitionProperty = "default, top";
 shouldBe("style.transitionProperty", "''");
 
 style.transitionProperty = "";

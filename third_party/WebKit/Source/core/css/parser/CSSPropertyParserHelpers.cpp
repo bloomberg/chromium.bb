@@ -1446,11 +1446,11 @@ CSSValue* ConsumeImage(CSSParserTokenRange& range,
   return nullptr;
 }
 
+// https://drafts.csswg.org/css-values-4/#css-wide-keywords
 bool IsCSSWideKeyword(StringView keyword) {
   return EqualIgnoringASCIICase(keyword, "initial") ||
          EqualIgnoringASCIICase(keyword, "inherit") ||
-         EqualIgnoringASCIICase(keyword, "unset") ||
-         EqualIgnoringASCIICase(keyword, "default");
+         EqualIgnoringASCIICase(keyword, "unset");
 }
 
 // https://drafts.csswg.org/css-shapes-1/#typedef-shape-box

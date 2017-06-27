@@ -781,7 +781,8 @@ static CSSValue* ConsumeFitContent(CSSParserTokenRange& range,
 
 static CSSCustomIdentValue* ConsumeCustomIdentForGridLine(
     CSSParserTokenRange& range) {
-  if (range.Peek().Id() == CSSValueAuto || range.Peek().Id() == CSSValueSpan)
+  if (range.Peek().Id() == CSSValueAuto || range.Peek().Id() == CSSValueSpan ||
+      range.Peek().Id() == CSSValueDefault)
     return nullptr;
   return ConsumeCustomIdent(range);
 }

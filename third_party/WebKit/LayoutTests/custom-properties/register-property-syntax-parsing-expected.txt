@@ -51,6 +51,7 @@ PASS syntax:'banana', initialValue:'banan\61' is valid
 PASS syntax:'<custom-ident>', initialValue:'banan\61' is valid 
 PASS syntax:'big | bigger | BIGGER', initialValue:'bigger' is valid 
 PASS syntax:'foo+|bar', initialValue:'foo foo foo' is valid 
+PASS syntax:'default', initialValue:'default' is valid 
 PASS syntax:'banana	', initialValue:'banana' is valid 
 PASS syntax:'
 banana\r
@@ -75,9 +76,11 @@ PASS syntax:'<length> | *', initialValue:'10px' is invalid
 PASS syntax:'*|banana', initialValue:'banana' is invalid 
 PASS syntax:'*+', initialValue:'banana' is invalid 
 PASS syntax:'initial', initialValue:'initial' is invalid 
+PASS syntax:'inherit', initialValue:'inherit' is invalid 
+PASS syntax:'unset', initialValue:'unset' is invalid 
 PASS syntax:'<length>|initial', initialValue:'10px' is invalid 
 PASS syntax:'<length>|INHERIT', initialValue:'10px' is invalid 
-PASS syntax:'<percentage>|defAult', initialValue:'2%' is invalid 
+PASS syntax:'<percentage>|unsEt', initialValue:'2%' is invalid 
 PASS syntax:'*', initialValue:'initial' is invalid 
 PASS syntax:'*', initialValue:'inherit' is invalid 
 PASS syntax:'*', initialValue:'unset' is invalid 
