@@ -60,6 +60,7 @@
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
 #include "core/html/HTMLFrameOwnerElement.h"
+#include "core/html/HTMLSelectElement.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/LayoutEmbeddedContent.h"
 #include "core/layout/LayoutFlexibleBox.h"
@@ -916,6 +917,10 @@ void PaintLayerScrollableArea::UpdateAfterLayout() {
 
   DisableCompositingQueryAsserts disabler;
   PositionOverflowControls();
+
+  Node* node = Box().GetNode();
+  if (isHTMLSelectElement(node))
+    toHTMLSelectElement(node)->ScrollToOptionAfterLayout(*this);
 }
 
 void PaintLayerScrollableArea::ClampScrollOffsetAfterOverflowChange() {
@@ -1775,16 +1780,13 @@ void PaintLayerScrollableArea::Resize(const IntPoint& pos,
   // keep the point under the cursor in view.
 }
 
-LayoutRect PaintLayerScrollableArea::ScrollIntoView(
+LayoutRect PaintLayerScrollableArea::ScrollLocalRectIntoView(
     const LayoutRect& rect,
     const ScrollAlignment& align_x,
     const ScrollAlignment& align_y,
     bool is_smooth,
     ScrollType scroll_type) {
-  LayoutRect local_expose_rect(
-      Box()
-          .AbsoluteToLocalQuad(FloatQuad(FloatRect(rect)), kUseTransforms)
-          .BoundingBox());
+  LayoutRect local_expose_rect(rect);
   local_expose_rect.Move(-Box().BorderLeft(), -Box().BorderTop());
   LayoutRect visible_rect(LayoutPoint(), ClientSize());
   LayoutRect r = ScrollAlignment::GetRectToExpose(
@@ -1802,7 +1804,22 @@ LayoutRect PaintLayerScrollableArea::ScrollIntoView(
   ScrollOffset scroll_offset_difference =
       ClampScrollOffset(new_scroll_offset) - old_scroll_offset;
   local_expose_rect.Move(-LayoutSize(scroll_offset_difference));
+  return local_expose_rect;
+}
 
+LayoutRect PaintLayerScrollableArea::ScrollIntoView(
+    const LayoutRect& rect,
+    const ScrollAlignment& align_x,
+    const ScrollAlignment& align_y,
+    bool is_smooth,
+    ScrollType scroll_type) {
+  LayoutRect local_expose_rect(
+      Box()
+          .AbsoluteToLocalQuad(FloatQuad(FloatRect(rect)), kUseTransforms)
+          .BoundingBox());
+  local_expose_rect = ScrollLocalRectIntoView(local_expose_rect, align_x,
+                                              align_y, is_smooth, scroll_type);
+  LayoutRect visible_rect(LayoutPoint(), ClientSize());
   LayoutRect intersect =
       LocalToAbsolute(Box(), Intersection(visible_rect, local_expose_rect));
   if (intersect.IsEmpty() && !visible_rect.IsEmpty() &&

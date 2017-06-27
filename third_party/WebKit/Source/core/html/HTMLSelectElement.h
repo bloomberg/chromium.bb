@@ -45,6 +45,7 @@ class HTMLOptGroupElement;
 class HTMLOptionElement;
 class HTMLOptionElementOrHTMLOptGroupElement;
 class HTMLElementOrLong;
+class PaintLayerScrollableArea;
 class PopupMenu;
 
 class CORE_EXPORT HTMLSelectElement final
@@ -118,6 +119,7 @@ class CORE_EXPORT HTMLSelectElement final
 
   void ScrollToSelection();
   void ScrollToOption(HTMLOptionElement*);
+  void ScrollToOptionAfterLayout(PaintLayerScrollableArea&);
 
   bool CanSelectAll() const;
   void SelectAll();
@@ -267,7 +269,6 @@ class CORE_EXPORT HTMLSelectElement final
                                                   SkipDirection) const;
   HTMLOptionElement* EventTargetOption(const Event&);
   AutoscrollController* GetAutoscrollController() const;
-  void ScrollToOptionTask();
 
   bool AreAuthorShadowsAllowed() const override { return false; }
   void FinishParsingChildren() override;

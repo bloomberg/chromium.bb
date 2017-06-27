@@ -335,6 +335,14 @@ unsigned Internals::needsLayoutCount(ExceptionState& exception_state) const {
   return needs_layout_objects;
 }
 
+unsigned Internals::forceLayoutCount(ExceptionState& exception_state) const {
+  if (document_)
+    return document_->ForceLayoutCountForTesting();
+  exception_state.ThrowDOMException(kInvalidAccessError,
+                                    "No context document is available.");
+  return 0;
+}
+
 unsigned Internals::hitTestCount(Document* doc,
                                  ExceptionState& exception_state) const {
   if (!doc) {

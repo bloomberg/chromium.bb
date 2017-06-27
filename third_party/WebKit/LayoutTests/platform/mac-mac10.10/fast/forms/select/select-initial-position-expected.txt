@@ -3,54 +3,61 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-      LayoutText {#text} at (0,0) size 98x18
-        text run at (0,0) width 98: "initial selected:"
-      LayoutBR {BR} at (97,14) size 1x0
-      LayoutText {#text} at (132,59) size 5x18
-        text run at (132,59) width 5: " "
-      LayoutBR {BR} at (136,73) size 1x0
-      LayoutText {#text} at (0,77) size 165x18
-        text run at (0,77) width 165: "dynamic selected change:"
-      LayoutBR {BR} at (164,91) size 1x0
-      LayoutText {#text} at (132,136) size 5x18
-        text run at (132,136) width 5: " "
-      LayoutText {#text} at (0,0) size 0x0
-      LayoutBR {BR} at (0,0) size 0x0
-      LayoutText {#text} at (0,154) size 217x18
-        text run at (0,154) width 217: "dynamic insert of selected option:"
-      LayoutBR {BR} at (216,168) size 1x0
-      LayoutText {#text} at (132,213) size 5x18
-        text run at (132,213) width 5: " "
-      LayoutBR {BR} at (136,227) size 1x0
-      LayoutText {#text} at (0,231) size 98x18
-        text run at (0,231) width 98: "initial selected:"
-      LayoutBR {BR} at (97,245) size 1x0
-      LayoutMenuList {SELECT} at (0,250) size 147x18 [bgcolor=#F8F8F8]
-        LayoutBlockFlow (anonymous) at (0,0) size 147x18
-          LayoutText (anonymous) at (8,2) size 116x13
-            text run at (8,2) width 116: "this should be selected"
-      LayoutText {#text} at (147,249) size 4x18
-        text run at (147,249) width 4: " "
-      LayoutBR {BR} at (151,263) size 0x0
-      LayoutText {#text} at (0,268) size 165x18
-        text run at (0,268) width 165: "dynamic selected change:"
-      LayoutBR {BR} at (164,282) size 1x0
-      LayoutMenuList {SELECT} at (0,287) size 147x18 [bgcolor=#F8F8F8]
-        LayoutBlockFlow (anonymous) at (0,0) size 147x18
-          LayoutText (anonymous) at (8,2) size 116x13
-            text run at (8,2) width 116: "this should be selected"
-      LayoutText {#text} at (147,286) size 4x18
-        text run at (147,286) width 4: " "
-      LayoutText {#text} at (0,0) size 0x0
-      LayoutBR {BR} at (0,0) size 0x0
-      LayoutText {#text} at (0,305) size 217x18
-        text run at (0,305) width 217: "dynamic insert of selected option:"
-      LayoutBR {BR} at (216,319) size 1x0
-      LayoutMenuList {SELECT} at (0,323) size 147x18 [bgcolor=#F8F8F8]
-        LayoutBlockFlow (anonymous) at (0,0) size 147x18
-          LayoutText (anonymous) at (8,2) size 116x13
-            text run at (8,2) width 116: "this should be selected"
-      LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow (anonymous) at (0,0) size 784x341
+        LayoutText {#text} at (0,0) size 98x18
+          text run at (0,0) width 98: "initial selected:"
+        LayoutBR {BR} at (97,14) size 1x0
+        LayoutText {#text} at (132,59) size 5x18
+          text run at (132,59) width 5: " "
+        LayoutBR {BR} at (136,73) size 1x0
+        LayoutText {#text} at (0,77) size 165x18
+          text run at (0,77) width 165: "dynamic selected change:"
+        LayoutBR {BR} at (164,91) size 1x0
+        LayoutText {#text} at (132,136) size 5x18
+          text run at (132,136) width 5: " "
+        LayoutText {#text} at (0,0) size 0x0
+        LayoutBR {BR} at (0,0) size 0x0
+        LayoutText {#text} at (0,154) size 217x18
+          text run at (0,154) width 217: "dynamic insert of selected option:"
+        LayoutBR {BR} at (216,168) size 1x0
+        LayoutText {#text} at (132,213) size 5x18
+          text run at (132,213) width 5: " "
+        LayoutBR {BR} at (136,227) size 1x0
+        LayoutText {#text} at (0,231) size 98x18
+          text run at (0,231) width 98: "initial selected:"
+        LayoutBR {BR} at (97,245) size 1x0
+        LayoutMenuList {SELECT} at (0,250) size 147x18 [bgcolor=#F8F8F8]
+          LayoutBlockFlow (anonymous) at (0,0) size 147x18
+            LayoutText (anonymous) at (8,2) size 116x13
+              text run at (8,2) width 116: "this should be selected"
+        LayoutText {#text} at (147,249) size 4x18
+          text run at (147,249) width 4: " "
+        LayoutBR {BR} at (151,263) size 0x0
+        LayoutText {#text} at (0,268) size 165x18
+          text run at (0,268) width 165: "dynamic selected change:"
+        LayoutBR {BR} at (164,282) size 1x0
+        LayoutMenuList {SELECT} at (0,287) size 147x18 [bgcolor=#F8F8F8]
+          LayoutBlockFlow (anonymous) at (0,0) size 147x18
+            LayoutText (anonymous) at (8,2) size 116x13
+              text run at (8,2) width 116: "this should be selected"
+        LayoutText {#text} at (147,286) size 4x18
+          text run at (147,286) width 4: " "
+        LayoutText {#text} at (0,0) size 0x0
+        LayoutBR {BR} at (0,0) size 0x0
+        LayoutText {#text} at (0,305) size 217x18
+          text run at (0,305) width 217: "dynamic insert of selected option:"
+        LayoutBR {BR} at (216,319) size 1x0
+        LayoutMenuList {SELECT} at (0,323) size 147x18 [bgcolor=#F8F8F8]
+          LayoutBlockFlow (anonymous) at (0,0) size 147x18
+            LayoutText (anonymous) at (8,2) size 116x13
+              text run at (8,2) width 116: "this should be selected"
+        LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {P} at (0,357) size 784x18
+        LayoutText {#text} at (0,0) size 195x18
+          text run at (0,0) width 195: "Display 'none' to 'inline-block'"
+      LayoutBlockFlow (anonymous) at (0,391) size 784x59
+        LayoutText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0
 layer at (8,26) size 133x59 clip at (9,27) size 120x57 scrollY 99.00 scrollHeight 199
   LayoutListBox {SELECT} at (0,18.25) size 132.55x58.75 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     LayoutBlockFlow {OPTION} at (1,1) size 119.55x14.19
@@ -165,3 +172,26 @@ layer at (8,180) size 133x59 clip at (9,181) size 120x57 scrollY 43.00 scrollHei
     LayoutBlockFlow {OPTION} at (1,100.31) size 119.55x14.19
       LayoutText {#text} at (2,0) size 17x13
         text run at (2,0) width 17: "opt"
+layer at (8,399) size 195x59 clip at (9,400) size 182x57 scrollY 42.00 scrollHeight 100
+  LayoutListBox {SELECT} at (0,0.25) size 194.88x58.75 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    LayoutBlockFlow {OPTION} at (1,1) size 181.88x14.19
+      LayoutText {#text} at (2,0) size 38x13
+        text run at (2,0) width 38: "option1"
+    LayoutBlockFlow {OPTION} at (1,15.19) size 181.88x14.19
+      LayoutText {#text} at (2,0) size 38x13
+        text run at (2,0) width 38: "option2"
+    LayoutBlockFlow {OPTION} at (1,29.38) size 181.88x14.19
+      LayoutText {#text} at (2,0) size 38x13
+        text run at (2,0) width 38: "option3"
+    LayoutBlockFlow {OPTION} at (1,43.56) size 181.88x14.19
+      LayoutText {#text} at (2,0) size 38x13
+        text run at (2,0) width 38: "option4"
+    LayoutBlockFlow {OPTION} at (1,57.75) size 181.88x14.19
+      LayoutText {#text} at (2,0) size 38x13
+        text run at (2,0) width 38: "option5"
+    LayoutBlockFlow {OPTION} at (1,71.94) size 181.88x14.19
+      LayoutText {#text} at (2,0) size 38x13
+        text run at (2,0) width 38: "option6"
+    LayoutBlockFlow {OPTION} at (1,86.13) size 181.88x14.19 [bgcolor=#D4D4D4]
+      LayoutText {#text} at (2,0) size 178x13
+        text run at (2,0) width 178: "This should be selected and visible."

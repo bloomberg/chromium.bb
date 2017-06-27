@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<body>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+
+<select size="4" multiple>
+<option>option 1</option>
+<option>option 2</option>
+<option>option 3</option>
+<option>option 4</option>
+<option id="o5">option 5</option>
+</select>
+<script>
+var preCount;
+var t = async_test('OPTION selection should not force layout.');
+requestAnimationFrame(t.step_func(() => {
+  assert_exists(window, 'internals');
+  preCount = internals.forceLayoutCount;
+  // Make sure layout-dirty
+  document.body.append('text');
+  document.querySelector('#o5').selected = true;
+
+  requestAnimationFrame(t.step_func_done(() => {
+    assert_equals(internals.forceLayoutCount - preCount, 0);
+  }));
+}));
+</script>
+</body>
