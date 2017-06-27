@@ -698,6 +698,12 @@ To adjust your search term, long press to select. To refine your search, slide t
       <message name="IDS_IOS_JAVA_SCRIPT_DIALOG_BLOCKING_BUTTON_TEXT" desc="The text used for the button added to JavaScript dialogs to prevent a page from spamming the user with endless alerts. [Length:27em]">
         Suppress Dialogs
       </message>
+      <message name="IDS_IOS_KEYBOARD_ACCESSORY_VIEW_QR_CODE_SEARCH" desc="Accessibility label for a button that starts scanning QR Codes [iOS only].">
+        QR code Search
+      </message>
+      <message name="IDS_IOS_KEYBOARD_ACCESSORY_VIEW_VOICE_SEARCH" desc="Accessibility label for a button that starts a Voice Search [iOS only]">
+        Voice Search
+      </message>
       <message name="IDS_IOS_KEYBOARD_BOOKMARK_THIS_PAGE" desc="In Title Case: Title of the keyboard shortcut that bookmarks the current page. [Length: 20 em] [iOS only]">
         Bookmark This Page...
       </message>

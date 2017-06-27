@@ -86,6 +86,9 @@
   [voiceSearchButton addTarget:_delegate
                         action:@selector(keyboardAccessoryVoiceSearchTouchDown)
               forControlEvents:UIControlEventTouchDown];
+  SetA11yLabelAndUiAutomationName(voiceSearchButton,
+                                  IDS_IOS_KEYBOARD_ACCESSORY_VIEW_VOICE_SEARCH,
+                                  @"Voice Search");
   [voiceSearchButton
              addTarget:_delegate
                 action:@selector(keyboardAccessoryVoiceSearchTouchUpInside)
@@ -94,6 +97,9 @@
   [cameraButton addTarget:_delegate
                    action:@selector(keyboardAccessoryCameraSearchTouchUpInside)
          forControlEvents:UIControlEventTouchUpInside];
+  SetA11yLabelAndUiAutomationName(
+      cameraButton, IDS_IOS_KEYBOARD_ACCESSORY_VIEW_QR_CODE_SEARCH,
+      @"QR code Search");
 
   // Create and add a stackview containing containing the buttons for voice
   // search and camera search.
