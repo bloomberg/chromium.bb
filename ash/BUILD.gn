@@ -201,6 +201,8 @@ component("ash") {
     "login/lock_screen_controller.h",
     "login/ui/lock_contents_view.cc",
     "login/ui/lock_contents_view.h",
+    "login/ui/lock_debug_view.cc",
+    "login/ui/lock_debug_view.h",
     "login/ui/lock_screen.cc",
     "login/ui/lock_screen.h",
     "login/ui/lock_window.cc",

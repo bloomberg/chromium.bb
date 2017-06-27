@@ -435,12 +435,6 @@ const char kOobeSkipPostLogin[] = "oobe-skip-postlogin";
 // Interval at which we check for total time on OOBE.
 const char kOobeTimerInterval[] = "oobe-timer-interval";
 
-// If true, the views-based md login and lock screens will be shown.
-const char kShowMdLogin[] = "show-md-login";
-
-// If true, the non-md login and lock screens will be shown.
-const char kShowNonMdLogin[] = "show-non-md-login";
-
 // Overrides network stub behavior. By default, ethernet, wifi and vpn are
 // enabled, and transitions occur instantaneously. Multiple options can be
 // comma separated (no spaces). Note: all options are in the format 'foo=x'.
@@ -457,6 +451,16 @@ const char kShowNonMdLogin[] = "show-non-md-login";
 //  'cellular=LTE' - Cellular is initially connected, technology is LTE
 //  'interactive=3' - Interactive mode, connect/scan/etc requests take 3 secs
 const char kShillStub[] = "shill-stub";
+
+// If true, the developer tool overlay will be shown for the login/lock screen.
+// This makes it easier to test layout logic.
+const char kShowLoginDevOverlay[] = "show-login-dev-overlay";
+
+// If true, the views-based md login and lock screens will be shown.
+const char kShowMdLogin[] = "show-md-login";
+
+// If true, the non-md login and lock screens will be shown.
+const char kShowNonMdLogin[] = "show-non-md-login";
 
 // Sends test messages on first call to RequestUpdate (stub only).
 const char kSmsTestMessages[] = "sms-test-messages";
