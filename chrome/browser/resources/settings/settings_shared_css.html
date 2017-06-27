@@ -6,6 +6,12 @@
 <dom-module id="settings-shared">
   <template>
     <style include="settings-icons cr-shared-style">
+      /* Prevent action-links from being selected to avoid accidental
+       * selection when trying to click it. */
+      a[is=action-link] {
+        -webkit-user-select: none;
+      }
+
       /* Use <h2> as the "sub-header" mentioned in the UX design docs. */
       h2 {
         align-items: center;
