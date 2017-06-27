@@ -228,7 +228,7 @@ struct CONTENT_EXPORT ServiceWorkerRegistrationObjectInfo {
   int64_t registration_id;
 };
 
-struct CONTENT_EXPORT ServiceWorkerVersionAttributes {
+struct ServiceWorkerVersionAttributes {
   ServiceWorkerObjectInfo installing;
   ServiceWorkerObjectInfo waiting;
   ServiceWorkerObjectInfo active;

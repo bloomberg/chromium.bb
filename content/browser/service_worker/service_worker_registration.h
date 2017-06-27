@@ -35,7 +35,7 @@ class CONTENT_EXPORT ServiceWorkerRegistration
  public:
   typedef base::Callback<void(ServiceWorkerStatusCode status)> StatusCallback;
 
-  class CONTENT_EXPORT Listener {
+  class Listener {
    public:
     virtual void OnVersionAttributesChanged(
         ServiceWorkerRegistration* registration,
