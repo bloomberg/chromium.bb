@@ -22,7 +22,6 @@
 #include "components/previews/core/previews_experiments.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_change_notifier.h"
-#include "net/base/network_interfaces.h"
 #include "net/log/net_log_with_source.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/nqe/network_quality_estimator.h"
@@ -218,11 +217,6 @@ class DataReductionProxyConfig
   std::vector<DataReductionProxyServer> GetProxiesForHttp() const;
 
  protected:
-  // Virtualized for mocking. Returns the list of network interfaces in use.
-  // |interfaces| can be null.
-  virtual void GetNetworkList(net::NetworkInterfaceList* interfaces,
-                              int policy);
-
   // Virtualized for testing. Returns the list of intervals at which accuracy of
   // network quality prediction should be recorded.
   virtual const std::vector<base::TimeDelta>&

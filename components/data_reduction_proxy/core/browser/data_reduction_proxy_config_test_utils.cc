@@ -53,7 +53,6 @@ TestDataReductionProxyConfig::TestDataReductionProxyConfig(
       network_quality_prohibitively_slow_(false),
       lofi_accuracy_recording_intervals_set_(false),
       is_captive_portal_(false) {
-  network_interfaces_.reset(new net::NetworkInterfaceList());
 }
 
 TestDataReductionProxyConfig::~TestDataReductionProxyConfig() {
@@ -65,13 +64,6 @@ bool TestDataReductionProxyConfig::IsNetworkQualityProhibitivelySlow(
     return network_quality_prohibitively_slow_;
   return DataReductionProxyConfig::IsNetworkQualityProhibitivelySlow(
       network_quality_estimator);
-}
-
-void TestDataReductionProxyConfig::GetNetworkList(
-    net::NetworkInterfaceList* interfaces,
-    int policy) {
-  for (size_t i = 0; i < network_interfaces_->size(); ++i)
-    interfaces->push_back(network_interfaces_->at(i));
 }
 
 void TestDataReductionProxyConfig::ResetParamFlagsForTest() {
