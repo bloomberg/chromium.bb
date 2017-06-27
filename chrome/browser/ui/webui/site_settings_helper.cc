@@ -136,7 +136,7 @@ std::unique_ptr<base::DictionaryValue> GetExceptionForPage(
     const ContentSetting& setting,
     const std::string& provider_name,
     bool incognito) {
-  base::DictionaryValue* exception = new base::DictionaryValue();
+  auto exception = base::MakeUnique<base::DictionaryValue>();
   exception->SetString(kOrigin, pattern.ToString());
   exception->SetString(kDisplayName, display_name);
   exception->SetString(kEmbeddingOrigin,
@@ -151,7 +151,7 @@ std::unique_ptr<base::DictionaryValue> GetExceptionForPage(
   exception->SetString(kSetting, setting_string);
   exception->SetString(kSource, provider_name);
   exception->SetBoolean(kIncognito, incognito);
-  return base::WrapUnique(exception);
+  return exception;
 }
 
 std::string GetDisplayName(

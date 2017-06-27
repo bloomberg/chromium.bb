@@ -205,7 +205,7 @@ std::unique_ptr<base::DictionaryValue> GetGeolocationExceptionForPage(
     const ContentSettingsPattern& origin,
     const ContentSettingsPattern& embedding_origin,
     ContentSetting setting) {
-  base::DictionaryValue* exception = new base::DictionaryValue();
+  auto exception = base::MakeUnique<base::DictionaryValue>();
 
   std::string setting_string =
       content_settings::ContentSettingToString(setting);
@@ -215,7 +215,7 @@ std::unique_ptr<base::DictionaryValue> GetGeolocationExceptionForPage(
   exception->SetString(site_settings::kOrigin, origin.ToString());
   exception->SetString(
       site_settings::kEmbeddingOrigin, embedding_origin.ToString());
-  return base::WrapUnique(exception);
+  return exception;
 }
 
 // Create a DictionaryValue* that will act as a data source for a single row
@@ -229,7 +229,7 @@ std::unique_ptr<base::DictionaryValue> GetNotificationExceptionForPage(
   if (secondary_pattern != ContentSettingsPattern::Wildcard())
     embedding_origin = secondary_pattern.ToString();
 
-  base::DictionaryValue* exception = new base::DictionaryValue();
+  auto exception = base::MakeUnique<base::DictionaryValue>();
 
   std::string setting_string =
       content_settings::ContentSettingToString(setting);
@@ -239,7 +239,7 @@ std::unique_ptr<base::DictionaryValue> GetNotificationExceptionForPage(
   exception->SetString(site_settings::kOrigin, primary_pattern.ToString());
   exception->SetString(site_settings::kEmbeddingOrigin, embedding_origin);
   exception->SetString(site_settings::kSource, provider_name);
-  return base::WrapUnique(exception);
+  return exception;
 }
 
 // Returns true whenever the |extension| is hosted and has |permission|.

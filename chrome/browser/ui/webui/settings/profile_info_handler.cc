@@ -204,10 +204,10 @@ ProfileInfoHandler::GetAccountNameAndIcon() const {
   }
 #endif  // defined(OS_CHROMEOS)
 
-  base::DictionaryValue* response = new base::DictionaryValue();
+  auto response = base::MakeUnique<base::DictionaryValue>();
   response->SetString("name", name);
   response->SetString("iconUrl", icon_url);
-  return base::WrapUnique(response);
+  return response;
 }
 
 bool ProfileInfoHandler::IsProfileManagingSupervisedUsers() const {
