@@ -15,11 +15,9 @@ namespace {
 // Helper function to return both the channel enum and modifier string.
 // Implements both together to prevent their behavior from diverging, which has
 // happened multiple times in the past.
-version_info::Channel GetChannelImpl(std::string* modifier_out,
-                                     std::string* data_dir_suffix_out) {
+version_info::Channel GetChannelImpl(std::string* modifier_out) {
   version_info::Channel channel = version_info::Channel::UNKNOWN;
   std::string modifier;
-  std::string data_dir_suffix;
 
   char* env = getenv("CHROME_VERSION_EXTRA");
   if (env)
@@ -34,10 +32,8 @@ version_info::Channel GetChannelImpl(std::string* modifier_out,
     modifier = "";
   } else if (modifier == "dev") {
     channel = version_info::Channel::DEV;
-    data_dir_suffix = "-unstable";
   } else if (modifier == "beta") {
     channel = version_info::Channel::BETA;
-    data_dir_suffix = "-beta";
   } else {
     modifier = "unknown";
   }
@@ -45,8 +41,6 @@ version_info::Channel GetChannelImpl(std::string* modifier_out,
 
   if (modifier_out)
     modifier_out->swap(modifier);
-  if (data_dir_suffix_out)
-    data_dir_suffix_out->swap(data_dir_suffix);
 
   return channel;
 }
@@ -55,20 +49,12 @@ version_info::Channel GetChannelImpl(std::string* modifier_out,
 
 std::string GetChannelString() {
   std::string modifier;
-  GetChannelImpl(&modifier, nullptr);
+  GetChannelImpl(&modifier);
   return modifier;
 }
 
-#if defined(GOOGLE_CHROME_BUILD)
-std::string GetChannelSuffixForDataDir() {
-  std::string data_dir_suffix;
-  GetChannelImpl(nullptr, &data_dir_suffix);
-  return data_dir_suffix;
-}
-#endif  // defined(GOOGLE_CHROME_BUILD)
-
 version_info::Channel GetChannel() {
-  return GetChannelImpl(nullptr, nullptr);
+  return GetChannelImpl(nullptr);
 }
 
 }  // namespace chrome
