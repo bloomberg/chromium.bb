@@ -186,10 +186,10 @@ const base::Feature kImprovedA2HS{"ImprovedA2HS",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kSearchEnginePromoExistingDevice{
-    "SearchEnginePromo.ExistingDevice", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SearchEnginePromo.ExistingDevice", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kSearchEnginePromoNewDevice{
-    "SearchEnginePromo.NewDevice", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SearchEnginePromo.NewDevice", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kNewPhotoPicker{"NewPhotoPicker",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
