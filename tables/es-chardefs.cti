@@ -51,7 +51,7 @@ space       \x000C        0                                       <control> FORM
 space       \x000D        0                                       <control> CARRIAGE RETURN
 space       \x001B        1b                                      <control> ESCAPE
 space       \x0020        0                                       SPACE
-punctuation \x0021        256                 !                   EXCLAMATION MARK
+punctuation \x0021        235                 !                   EXCLAMATION MARK
 punctuation \x0022        236                 "                   QUOTATION MARK
 punctuation \x0027        3                   '                   APOSTROPHE
 punctuation \x0028        126                 (                   LEFT PARENTHESIS
