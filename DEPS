@@ -382,6 +382,10 @@ deps_os = {
 
     'src/third_party/google_toolbox_for_mac/src':
       Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
+
+    'src/third_party/material_design_icons/src':
+      Var('chromium_git') + '/external/github.com/google/material-design-icons.git' + '@' +
+      'a6145e167b4a3a65640dd6279319cbc77a7e4e96',
   },
   'mac': {
     'src/chrome/installer/mac/third_party/xz/xz':
