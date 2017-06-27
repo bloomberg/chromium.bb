@@ -112,6 +112,34 @@ ThreatSeverity GetThreatSeverity(const ListIdentifier& list_id) {
   }
 }
 
+// This is only valid for types that are passed to GetBrowseUrl().
+ListIdentifier GetUrlIdFromSBThreatType(SBThreatType sb_threat_type) {
+  switch (sb_threat_type) {
+    case SB_THREAT_TYPE_URL_MALWARE:
+      return GetUrlMalwareId();
+
+    case SB_THREAT_TYPE_URL_PHISHING:
+      return GetUrlSocEngId();
+
+    case SB_THREAT_TYPE_URL_UNWANTED:
+      return GetUrlUwsId();
+
+    default:
+      NOTREACHED();
+      // Compiler requires a return statement here.
+      return GetUrlMalwareId();
+  }
+}
+
+StoresToCheck CreateStoresToCheckFromSBThreatTypeSet(
+    const SBThreatTypeSet& threat_types) {
+  StoresToCheck stores_to_check;
+  for (SBThreatType sb_threat_type : threat_types) {
+    stores_to_check.insert(GetUrlIdFromSBThreatType(sb_threat_type));
+  }
+  return stores_to_check;
+}
+
 }  // namespace
 
 V4LocalDatabaseManager::PendingCheck::PendingCheck(
@@ -217,8 +245,12 @@ bool V4LocalDatabaseManager::ChecksAreAlwaysAsync() const {
   return false;
 }
 
-bool V4LocalDatabaseManager::CheckBrowseUrl(const GURL& url, Client* client) {
+bool V4LocalDatabaseManager::CheckBrowseUrl(const GURL& url,
+                                            const SBThreatTypeSet& threat_types,
+                                            Client* client) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(!threat_types.empty());
+  DCHECK(SBThreatTypeSetIsValidForCheckBrowseUrl(threat_types));
 
   if (!enabled_ || !CanCheckUrl(url)) {
     return true;
@@ -226,7 +258,7 @@ bool V4LocalDatabaseManager::CheckBrowseUrl(const GURL& url, Client* client) {
 
   std::unique_ptr<PendingCheck> check = base::MakeUnique<PendingCheck>(
       client, ClientCallbackType::CHECK_BROWSE_URL,
-      StoresToCheck({GetUrlMalwareId(), GetUrlSocEngId(), GetUrlUwsId()}),
+      CreateStoresToCheckFromSBThreatTypeSet(threat_types),
       std::vector<GURL>(1, url));
 
   return HandleCheck(std::move(check));

@@ -33,8 +33,10 @@ bool TestSafeBrowsingDatabaseManager::ChecksAreAlwaysAsync() const {
   return false;
 }
 
-bool TestSafeBrowsingDatabaseManager::CheckBrowseUrl(const GURL& url,
-                                                     Client* client) {
+bool TestSafeBrowsingDatabaseManager::CheckBrowseUrl(
+    const GURL& url,
+    const SBThreatTypeSet& threat_types,
+    Client* client) {
   NOTIMPLEMENTED();
   return true;
 }

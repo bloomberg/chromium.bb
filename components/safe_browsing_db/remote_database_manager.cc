@@ -13,6 +13,7 @@
 #include "base/timer/elapsed_timer.h"
 #include "components/safe_browsing_db/safe_browsing_api_handler.h"
 #include "components/safe_browsing_db/v4_get_hash_protocol_manager.h"
+#include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -181,9 +182,13 @@ bool RemoteSafeBrowsingDatabaseManager::ChecksAreAlwaysAsync() const {
   return true;
 }
 
-bool RemoteSafeBrowsingDatabaseManager::CheckBrowseUrl(const GURL& url,
-                                                       Client* client) {
+bool RemoteSafeBrowsingDatabaseManager::CheckBrowseUrl(
+    const GURL& url,
+    const SBThreatTypeSet& threat_types,
+    Client* client) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(!threat_types.empty());
+  DCHECK(SBThreatTypeSetIsValidForCheckBrowseUrl(threat_types));
   if (!enabled_)
     return true;
 
@@ -202,8 +207,7 @@ bool RemoteSafeBrowsingDatabaseManager::CheckBrowseUrl(const GURL& url,
   DCHECK(api_handler) << "SafeBrowsingApiHandler was never constructed";
   api_handler->StartURLCheck(
       base::Bind(&ClientRequest::OnRequestDoneWeak, req->GetWeakPtr()), url,
-      {SB_THREAT_TYPE_URL_MALWARE, SB_THREAT_TYPE_URL_PHISHING,
-       SB_THREAT_TYPE_URL_UNWANTED});
+      threat_types);
 
   LogPendingChecks(current_requests_.size());
   current_requests_.push_back(req.release());
@@ -249,7 +253,8 @@ bool RemoteSafeBrowsingDatabaseManager::CheckUrlForSubresourceFilter(
   DCHECK(api_handler) << "SafeBrowsingApiHandler was never constructed";
   api_handler->StartURLCheck(
       base::Bind(&ClientRequest::OnRequestDoneWeak, req->GetWeakPtr()), url,
-      {SB_THREAT_TYPE_SUBRESOURCE_FILTER, SB_THREAT_TYPE_URL_PHISHING});
+      CreateSBThreatTypeSet(
+          {SB_THREAT_TYPE_SUBRESOURCE_FILTER, SB_THREAT_TYPE_URL_PHISHING}));
 
   LogPendingChecks(current_requests_.size());
   current_requests_.push_back(req.release());

@@ -15,6 +15,7 @@
 #include "base/android/jni_android.h"
 #include "base/macros.h"
 #include "components/safe_browsing_db/safe_browsing_api_handler.h"
+#include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "url/gurl.h"
 
 namespace safe_browsing {
@@ -28,7 +29,7 @@ class SafeBrowsingApiHandlerBridge : public SafeBrowsingApiHandler {
   // Makes Native->Java call to check the URL against Safe Browsing lists.
   void StartURLCheck(const URLCheckCallbackMeta& callback,
                      const GURL& url,
-                     const std::vector<SBThreatType>& threat_types) override;
+                     const SBThreatTypeSet& threat_types) override;
 
  private:
   // Creates the j_api_handler_ if it hasn't been already.  If the API is not

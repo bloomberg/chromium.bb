@@ -42,6 +42,7 @@
 #include "components/safe_browsing_db/database_manager.h"
 #include "components/safe_browsing_db/test_database_manager.h"
 #include "components/safe_browsing_db/util.h"
+#include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "components/security_interstitials/core/controller_client.h"
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "components/security_interstitials/core/urls.h"
@@ -98,7 +99,9 @@ class FakeSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
   // Otherwise it returns false, and "client" is called asynchronously with the
   // result when it is ready.
   // Overrides SafeBrowsingDatabaseManager::CheckBrowseUrl.
-  bool CheckBrowseUrl(const GURL& gurl, Client* client) override {
+  bool CheckBrowseUrl(const GURL& gurl,
+                      const SBThreatTypeSet& threat_types,
+                      Client* client) override {
     if (badurls.find(gurl.spec()) == badurls.end() ||
         badurls.at(gurl.spec()) == SB_THREAT_TYPE_SAFE)
       return true;
@@ -111,12 +114,11 @@ class FakeSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
   }
 
   void OnCheckBrowseURLDone(const GURL& gurl, Client* client) {
-    std::vector<SBThreatType> expected_threats;
+    SBThreatTypeSet expected_threats = CreateSBThreatTypeSet(
+        {SB_THREAT_TYPE_URL_MALWARE, SB_THREAT_TYPE_URL_PHISHING,
+         SB_THREAT_TYPE_URL_UNWANTED});
     // TODO(nparker): Remove ref to LocalSafeBrowsingDatabase by calling
     // client->OnCheckBrowseUrlResult(..) directly.
-    expected_threats.push_back(SB_THREAT_TYPE_URL_MALWARE);
-    expected_threats.push_back(SB_THREAT_TYPE_URL_PHISHING);
-    expected_threats.push_back(SB_THREAT_TYPE_URL_UNWANTED);
     LocalSafeBrowsingDatabaseManager::SafeBrowsingCheck sb_check(
         std::vector<GURL>(1, gurl),
         std::vector<SBFullHash>(),

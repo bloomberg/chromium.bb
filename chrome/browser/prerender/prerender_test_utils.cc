@@ -26,6 +26,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -275,8 +276,10 @@ void RequestCounter::WaitForCount(int expected_count) {
 
 FakeSafeBrowsingDatabaseManager::FakeSafeBrowsingDatabaseManager() {}
 
-bool FakeSafeBrowsingDatabaseManager::CheckBrowseUrl(const GURL& gurl,
-                                                     Client* client) {
+bool FakeSafeBrowsingDatabaseManager::CheckBrowseUrl(
+    const GURL& gurl,
+    const safe_browsing::SBThreatTypeSet& threat_types,
+    Client* client) {
   if (bad_urls_.find(gurl.spec()) == bad_urls_.end() ||
       bad_urls_[gurl.spec()] == safe_browsing::SB_THREAT_TYPE_SAFE) {
     return true;
@@ -312,9 +315,11 @@ FakeSafeBrowsingDatabaseManager::~FakeSafeBrowsingDatabaseManager() {}
 
 void FakeSafeBrowsingDatabaseManager::OnCheckBrowseURLDone(const GURL& gurl,
                                                            Client* client) {
-  std::vector<safe_browsing::SBThreatType> expected_threats;
-  expected_threats.push_back(safe_browsing::SB_THREAT_TYPE_URL_MALWARE);
-  expected_threats.push_back(safe_browsing::SB_THREAT_TYPE_URL_PHISHING);
+  safe_browsing::SBThreatTypeSet expected_threats =
+      safe_browsing::CreateSBThreatTypeSet(
+          {safe_browsing::SB_THREAT_TYPE_URL_MALWARE,
+           safe_browsing::SB_THREAT_TYPE_URL_PHISHING});
+
   // TODO(nparker): Replace SafeBrowsingCheck w/ a call to
   // client->OnCheckBrowseUrlResult()
   safe_browsing::LocalSafeBrowsingDatabaseManager::SafeBrowsingCheck sb_check(

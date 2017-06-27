@@ -13,6 +13,7 @@
 #include "base/timer/timer.h"
 #include "components/safe_browsing/base_ui_manager.h"
 #include "components/safe_browsing_db/database_manager.h"
+#include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "components/security_interstitials/content/unsafe_resource.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/common/resource_type.h"
@@ -69,8 +70,8 @@ class BaseResourceThrottle
   BaseResourceThrottle(
       const net::URLRequest* request,
       content::ResourceType resource_type,
-      scoped_refptr<SafeBrowsingDatabaseManager>
-          database_manager,
+      SBThreatTypeSet threat_types,
+      scoped_refptr<SafeBrowsingDatabaseManager> database_manager,
       scoped_refptr<BaseUIManager> ui_manager);
 
   ~BaseResourceThrottle() override;
@@ -168,6 +169,7 @@ class BaseResourceThrottle
   GURL unchecked_redirect_url_;
   GURL url_being_checked_;
 
+  const SBThreatTypeSet threat_types_;
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
   const net::URLRequest* request_;
 

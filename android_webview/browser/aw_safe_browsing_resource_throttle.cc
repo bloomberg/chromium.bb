@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "components/safe_browsing/base_resource_throttle.h"
 #include "components/safe_browsing_db/database_manager.h"
+#include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "components/security_interstitials/content/unsafe_resource.h"
 #include "content/public/common/resource_type.h"
 #include "net/base/net_errors.h"
@@ -37,10 +38,15 @@ AwSafeBrowsingResourceThrottle::AwSafeBrowsingResourceThrottle(
     content::ResourceType resource_type,
     scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> database_manager,
     scoped_refptr<AwSafeBrowsingUIManager> ui_manager)
-    : safe_browsing::BaseResourceThrottle(request,
-                                          resource_type,
-                                          database_manager,
-                                          ui_manager),
+    : safe_browsing::BaseResourceThrottle(
+          request,
+          resource_type,
+          safe_browsing::CreateSBThreatTypeSet(
+              {safe_browsing::SB_THREAT_TYPE_URL_MALWARE,
+               safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
+               safe_browsing::SB_THREAT_TYPE_URL_UNWANTED}),
+          database_manager,
+          ui_manager),
       request_(request) {}
 
 AwSafeBrowsingResourceThrottle::~AwSafeBrowsingResourceThrottle() {}

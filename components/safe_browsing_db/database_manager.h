@@ -18,6 +18,7 @@
 #include "base/memory/ref_counted.h"
 #include "components/safe_browsing_db/hit_report.h"
 #include "components/safe_browsing_db/util.h"
+#include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "content/public/common/resource_type.h"
 #include "url/gurl.h"
 
@@ -132,9 +133,11 @@ class SafeBrowsingDatabaseManager
   // Called on the IO thread to check if the given url is safe or not.  If we
   // can synchronously determine that the url is safe, CheckUrl returns true.
   // Otherwise it returns false, and "client" is called asynchronously with the
-  // result when it is ready.
-  virtual bool CheckBrowseUrl(const GURL& url, Client* client) = 0;
-
+  // result when it is ready. The URL will only be checked for the threat types
+  // in |threat_types|.
+  virtual bool CheckBrowseUrl(const GURL& url,
+                              const SBThreatTypeSet& threat_types,
+                              Client* client) = 0;
 
   // Check if the prefix for |url| is in safebrowsing download add lists.
   // Result will be passed to callback in |client|.

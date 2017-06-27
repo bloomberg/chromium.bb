@@ -4,6 +4,8 @@
 
 #include "components/safe_browsing/base_resource_throttle.h"
 
+#include <utility>
+
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
@@ -69,10 +71,12 @@ std::unique_ptr<base::Value> NetLogStringCallback(const char* name,
 BaseResourceThrottle::BaseResourceThrottle(
     const net::URLRequest* request,
     content::ResourceType resource_type,
+    SBThreatTypeSet threat_types,
     scoped_refptr<SafeBrowsingDatabaseManager> database_manager,
     scoped_refptr<BaseUIManager> ui_manager)
     : ui_manager_(ui_manager),
       threat_type_(SB_THREAT_TYPE_SAFE),
+      threat_types_(std::move(threat_types)),
       database_manager_(database_manager),
       request_(request),
       state_(STATE_NONE),
@@ -345,7 +349,7 @@ bool BaseResourceThrottle::CheckUrl(const GURL& url) {
   UMA_HISTOGRAM_ENUMERATION("SB2.ResourceTypes2.Checked", resource_type_,
                             content::RESOURCE_TYPE_LAST_TYPE);
 
-  if (database_manager_->CheckBrowseUrl(url, this)) {
+  if (database_manager_->CheckBrowseUrl(url, threat_types_, this)) {
     threat_type_ = SB_THREAT_TYPE_SAFE;
     ui_manager_->LogPauseDelay(base::TimeDelta());  // No delay.
     return true;

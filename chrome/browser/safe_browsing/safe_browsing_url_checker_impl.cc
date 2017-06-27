@@ -6,6 +6,7 @@
 
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
+#include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/load_flags.h"
@@ -145,8 +146,15 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
     // TODO(yzshen): Consider moving CanCheckResourceType() to the renderer
     // side. That would save some IPCs. It requires a method on the
     // SafeBrowsing mojo interface to query all supported resource types.
+    // TODO(ricea):  SB_THREAT_TYPE_URL_UNWANTED should not be included for
+    // Android WebView.
     if (!database_manager_->CanCheckResourceType(resource_type_) ||
-        database_manager_->CheckBrowseUrl(urls_[next_index_], this)) {
+        database_manager_->CheckBrowseUrl(
+            urls_[next_index_],
+            CreateSBThreatTypeSet({SB_THREAT_TYPE_URL_PHISHING,
+                                   SB_THREAT_TYPE_URL_MALWARE,
+                                   SB_THREAT_TYPE_URL_UNWANTED}),
+            this)) {
       std::move(callbacks_[next_index_]).Run(true);
       next_index_++;
       continue;
