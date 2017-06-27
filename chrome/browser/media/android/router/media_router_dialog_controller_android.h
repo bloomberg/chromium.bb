@@ -30,9 +30,11 @@ class MediaRouterDialogControllerAndroid
 
   // The methods called by the Java counterpart.
 
-  // Notifies the controller that user has selected a sink with |jsink_id|.
+  // Notifies the controller that user has selected a sink with |jsink_id| for
+  // |source_id|.
   void OnSinkSelected(JNIEnv* env,
                       const base::android::JavaParamRef<jobject>& obj,
+                      const base::android::JavaParamRef<jstring>& source_id,
                       const base::android::JavaParamRef<jstring>& jsink_id);
   // Notifies the controller that user chose to close the route.
   void OnRouteClosed(
