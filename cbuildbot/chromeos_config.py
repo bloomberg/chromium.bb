@@ -2238,6 +2238,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_new_boards = frozenset([
       'auron_paine',
       'auron_yuna',
+      'betty',
       'bob',
       'eve',
       'hana',
@@ -2281,6 +2282,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_smoke_vmtest_boards = frozenset([
       'amd64-generic',
       'x86-generic',
+      'betty',
   ])
 
   _paladin_default_vmtest_boards = frozenset([

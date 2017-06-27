@@ -3790,6 +3790,7 @@
     },
     "betty-paladin": {
         "_template": "paladin",
+        "active_waterfall": "chromeos",
         "boards": [
             "betty"
         ],
@@ -14937,6 +14938,7 @@
             "auron_paine-paladin",
             "auron_yuna-paladin",
             "beaglebone-paladin",
+            "betty-paladin",
             "bob-paladin",
             "butterfly-paladin",
             "caroline-paladin",
