@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "device/serial/buffer.h"
 #include "device/serial/serial_io_handler.h"
 #include "net/base/io_buffer.h"
@@ -182,6 +183,7 @@ void BattOrConnectionImpl::ReadMessage(BattOrMessageType type) {
 }
 
 void BattOrConnectionImpl::CancelReadMessage() {
+  LogSerial("Canceling read due to timeout.");
   io_handler_->CancelRead(device::serial::ReceiveError::TIMEOUT);
 }
 
@@ -348,7 +350,7 @@ void BattOrConnectionImpl::OnBytesSent(int bytes_sent,
 }
 
 void BattOrConnectionImpl::LogSerial(const std::string& str) {
-  serial_log_ << str << std::endl << std::endl;
+  serial_log_ << base::Time::Now() << ": " << str << std::endl << std::endl;
 }
 
 }  // namespace battor
