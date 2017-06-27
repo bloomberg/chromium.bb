@@ -9,7 +9,6 @@
 #include "base/mac/foundation_util.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
-#import "ios/chrome/browser/ui/fancy_ui/colored_button.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -61,11 +60,10 @@
   if (!self.subviews.count)
     return;
 
-  const CGFloat kButtonMinWidth = 36.0;
+  const CGFloat kButtonMinWidth = 34.0;
   const CGFloat kButtonHeight = 34.0;
   const CGFloat kBetweenShortcutButtonSpacing = 5.0;
   const CGFloat kBetweenSearchButtonSpacing = 12.0;
-  const CGFloat kMarginFromBottom = 2.0;
   const CGFloat kHorizontalMargin = 12.0;
 
   // Create and add stackview filled with the shortcut buttons.
@@ -97,8 +95,8 @@
                    action:@selector(keyboardAccessoryCameraSearchTouchUpInside)
          forControlEvents:UIControlEventTouchUpInside];
 
-  // Create a stackview containing containing the buttons for voice search
-  // and camera search.
+  // Create and add a stackview containing containing the buttons for voice
+  // search and camera search.
   UIStackView* searchStackView = [[UIStackView alloc] init];
   searchStackView.translatesAutoresizingMaskIntoConstraints = NO;
   searchStackView.spacing = kBetweenSearchButtonSpacing;
@@ -110,44 +108,32 @@
   NSArray* constraints = @[
     @"H:|-horizontalMargin-[searchStackView]-(>=0)-[shortcutStackView]",
     @"[shortcutStackView]-horizontalMargin-|",
-    @"V:[searchStackView]-bottomMargin-|",
-    @"V:[shortcutStackView]-bottomMargin-|"
   ];
   NSDictionary* viewsDictionary = @{
     @"searchStackView" : searchStackView,
     @"shortcutStackView" : shortcutStackView,
   };
   NSDictionary* metrics = @{
-    @"bottomMargin" : @(kMarginFromBottom),
-    @"horizontalMargin" : @(kHorizontalMargin)
+    @"horizontalMargin" : @(kHorizontalMargin),
   };
   ApplyVisualConstraintsWithMetrics(constraints, viewsDictionary, metrics);
+  AddSameCenterYConstraint(searchStackView, self);
+  AddSameCenterYConstraint(shortcutStackView, self);
 }
 
 - (UIView*)shortcutButtonWithTitle:(NSString*)title {
-  const CGFloat kCornerRadius = 5.0;
-  const CGFloat kAlphaStateNormal = 0.3;
-  const CGFloat kAlphaStateHighlighted = 0.6;
   const CGFloat kHorizontalEdgeInset = 8;
-  const CGFloat kButtonTitleFontSize = 20.0;
-  const UIColor* kButtonBackgroundColor =
-      [UIColor colorWithRed:0.507 green:0.534 blue:0.57 alpha:1.0];
+  const CGFloat kButtonTitleFontSize = 16.0;
+  UIColor* kTitleColorStateNormal = [UIColor colorWithWhite:0.0 alpha:1.0];
+  UIColor* kTitleColorStateHighlighted = [UIColor colorWithWhite:0.0 alpha:0.3];
 
-  ColoredButton* button = [ColoredButton buttonWithType:UIButtonTypeCustom];
-
-  UIColor* stateNormalBackgroundColor =
-      [kButtonBackgroundColor colorWithAlphaComponent:kAlphaStateNormal];
-  UIColor* stateHighlightedBackgroundColor =
-      [kButtonBackgroundColor colorWithAlphaComponent:kAlphaStateHighlighted];
-
-  [button setBackgroundColor:stateNormalBackgroundColor
-                    forState:UIControlStateNormal];
-  [button setBackgroundColor:stateHighlightedBackgroundColor
-                    forState:UIControlStateHighlighted];
+  UIButton* button = [UIButton buttonWithType:UIButtonTypeCustom];
+  [button setTitleColor:kTitleColorStateNormal forState:UIControlStateNormal];
+  [button setTitleColor:kTitleColorStateHighlighted
+               forState:UIControlStateHighlighted];
 
   [button setTitle:title forState:UIControlStateNormal];
   [button setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
-  button.layer.cornerRadius = kCornerRadius;
   button.contentEdgeInsets =
       UIEdgeInsetsMake(0, kHorizontalEdgeInset, 0, kHorizontalEdgeInset);
   button.clipsToBounds = YES;
@@ -163,10 +149,18 @@
 }
 
 - (UIButton*)iconButton:(NSString*)iconName {
+  const CGFloat kButtonShadowOpacity = 0.35;
+  const CGFloat kButtonShadowRadius = 1.0;
+  const CGFloat kButtonShadowVerticalOffset = 1.0;
+
   UIButton* button = [UIButton buttonWithType:UIButtonTypeCustom];
   [button setTranslatesAutoresizingMaskIntoConstraints:NO];
   UIImage* icon = [UIImage imageNamed:iconName];
   [button setImage:icon forState:UIControlStateNormal];
+  button.layer.shadowColor = [UIColor blackColor].CGColor;
+  button.layer.shadowOffset = CGSizeMake(0, kButtonShadowVerticalOffset);
+  button.layer.shadowOpacity = kButtonShadowOpacity;
+  button.layer.shadowRadius = kButtonShadowRadius;
   return button;
 }
 
