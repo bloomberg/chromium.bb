@@ -1213,12 +1213,18 @@ void Animation::InvalidateKeyframeEffect(const TreeScope& tree_scope) {
   if (!content_ || !content_->IsKeyframeEffectReadOnly())
     return;
 
-  Element& target = *ToKeyframeEffectReadOnly(content_.Get())->Target();
+  Element* target = ToKeyframeEffectReadOnly(content_.Get())->Target();
 
-  if (CSSAnimations::IsAffectedByKeyframesFromScope(target, tree_scope))
-    target.SetNeedsStyleRecalc(kLocalStyleChange,
-                               StyleChangeReasonForTracing::Create(
-                                   StyleChangeReason::kStyleSheetChange));
+  // TODO(alancutter): Remove dependency of this function on CSSAnimations.
+  // This function makes the incorrect assumption that the animation uses
+  // @keyframes for its effect model when it may instead be using JS provided
+  // keyframes.
+  if (target &&
+      CSSAnimations::IsAffectedByKeyframesFromScope(*target, tree_scope)) {
+    target->SetNeedsStyleRecalc(kLocalStyleChange,
+                                StyleChangeReasonForTracing::Create(
+                                    StyleChangeReason::kStyleSheetChange));
+  }
 }
 
 void Animation::ResolvePromiseMaybeAsync(AnimationPromise* promise) {
