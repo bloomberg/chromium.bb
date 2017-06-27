@@ -181,7 +181,7 @@ TEST_F(FrameTreeNodeBlameContextTest, FrameCreation) {
     EXPECT_NE(nullptr, node);
     if (event->HasArg("snapshot")) {
       ExpectFrameTreeNodeSnapshot(event);
-      EXPECT_FALSE(base::ContainsValue(snapshot_traced, node));
+      EXPECT_FALSE(base::ContainsKey(snapshot_traced, node));
       snapshot_traced.insert(node);
       std::string parent_id = GetParentNodeID(event);
       EXPECT_FALSE(parent_id.empty());
@@ -189,7 +189,7 @@ TEST_F(FrameTreeNodeBlameContextTest, FrameCreation) {
                 tree()->FindByID(strtol(parent_id.c_str(), nullptr, 16)));
     } else {
       EXPECT_EQ(TRACE_EVENT_PHASE_CREATE_OBJECT, event->phase);
-      EXPECT_FALSE(base::ContainsValue(creation_traced, node));
+      EXPECT_FALSE(base::ContainsKey(creation_traced, node));
       creation_traced.insert(node);
     }
   }
@@ -230,7 +230,7 @@ TEST_F(FrameTreeNodeBlameContextTest, FrameDeletion) {
   for (auto* event : events) {
     ExpectFrameTreeNodeObject(event);
     int id = strtol(event->id.c_str(), nullptr, 16);
-    EXPECT_TRUE(base::ContainsValue(node_ids, id));
+    EXPECT_TRUE(base::ContainsKey(node_ids, id));
     node_ids.erase(id);
   }
 }

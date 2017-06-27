@@ -348,7 +348,7 @@ void UsbServiceImpl::OnDeviceList(libusb_device** platform_devices,
   for (size_t i = 0; i < device_count; ++i) {
     PlatformUsbDevice platform_device = platform_devices[i];
     // Ignore some devices.
-    if (base::ContainsValue(ignored_devices_, platform_device)) {
+    if (base::ContainsKey(ignored_devices_, platform_device)) {
       existing_ignored_devices.insert(platform_device);
       refresh_complete.Run();
       continue;
@@ -381,7 +381,7 @@ void UsbServiceImpl::OnDeviceList(libusb_device** platform_devices,
   for (auto it = ignored_devices_.begin(); it != ignored_devices_.end();
        /* incremented internally */) {
     auto current = it++;
-    if (!base::ContainsValue(existing_ignored_devices, *current)) {
+    if (!base::ContainsKey(existing_ignored_devices, *current)) {
       libusb_unref_device(*current);
       ignored_devices_.erase(current);
     }

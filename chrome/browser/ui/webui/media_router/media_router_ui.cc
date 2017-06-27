@@ -259,8 +259,8 @@ MediaRouterUI::~MediaRouterUI() {
   if (create_session_request_) {
     bool presentation_sinks_available = std::any_of(
         sinks_.begin(), sinks_.end(), [](const MediaSinkWithCastModes& sink) {
-          return base::ContainsValue(sink.cast_modes,
-                                     MediaCastMode::PRESENTATION);
+          return base::ContainsKey(sink.cast_modes,
+                                   MediaCastMode::PRESENTATION);
         });
     if (presentation_sinks_available) {
       create_session_request_->InvokeErrorCallback(content::PresentationError(

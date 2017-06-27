@@ -238,7 +238,7 @@ void OfflineContentAggregator::CheckAndNotifyItemsAvailable() {
   // Notify all observers who haven't been told about the initialization that we
   // are initialized.  Track the observers so that we don't notify them again.
   for (auto& observer : observers_) {
-    if (!base::ContainsValue(signaled_observers_, &observer)) {
+    if (!base::ContainsKey(signaled_observers_, &observer)) {
       observer.OnItemsAvailable(this);
       signaled_observers_.insert(&observer);
     }

@@ -84,8 +84,8 @@ PrefStoreManagerImpl::PrefStoreManagerImpl(
       shared_pref_registry_(base::MakeUnique<SharedPrefRegistry>()),
       worker_pool_(std::move(worker_pool)) {
   DCHECK(
-      base::ContainsValue(expected_pref_stores_, PrefValueStore::USER_STORE) &&
-      base::ContainsValue(expected_pref_stores_, PrefValueStore::DEFAULT_STORE))
+      base::ContainsKey(expected_pref_stores_, PrefValueStore::USER_STORE) &&
+      base::ContainsKey(expected_pref_stores_, PrefValueStore::DEFAULT_STORE))
       << "expected_pref_stores must always include PrefValueStore::USER_STORE "
          "and PrefValueStore::DEFAULT_STORE.";
   // The user store is not actually registered or connected to in the

@@ -91,7 +91,7 @@ void MaximizeModeWindowManager::OnWindowDestroying(aura::Window* window) {
     // container window can be removed on display destruction.
     window->RemoveObserver(this);
     observed_container_windows_.erase(window);
-  } else if (base::ContainsValue(added_windows_, window)) {
+  } else if (base::ContainsKey(added_windows_, window)) {
     // Added window was destroyed before being shown.
     added_windows_.erase(window);
     window->RemoveObserver(this);
@@ -111,7 +111,7 @@ void MaximizeModeWindowManager::OnWindowHierarchyChanged(
     // wait until it becomes visible because the client may update the
     // flag to control if the window should be added.
     if (!params.target->IsVisible()) {
-      if (!base::ContainsValue(added_windows_, params.target)) {
+      if (!base::ContainsKey(added_windows_, params.target)) {
         added_windows_.insert(params.target);
         params.target->AddObserver(this);
       }
@@ -155,7 +155,7 @@ void MaximizeModeWindowManager::OnWindowVisibilityChanged(aura::Window* window,
     return;
 
   if (IsContainerWindow(window->parent()) &&
-      base::ContainsValue(added_windows_, window) && visible) {
+      base::ContainsKey(added_windows_, window) && visible) {
     added_windows_.erase(window);
     window->RemoveObserver(this);
     MaximizeAndTrackWindow(window);

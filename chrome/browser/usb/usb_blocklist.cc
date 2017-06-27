@@ -73,7 +73,7 @@ void UsbBlocklist::Exclude(base::StringPiece blocklist_string) {
 }
 
 bool UsbBlocklist::IsExcluded(const Entry& entry) {
-  return base::ContainsValue(blocklisted_devices_, entry);
+  return base::ContainsKey(blocklisted_devices_, entry);
 }
 
 bool UsbBlocklist::IsExcluded(scoped_refptr<const device::UsbDevice> device) {
