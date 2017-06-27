@@ -6314,6 +6314,14 @@ void RenderFrameImpl::BeginNavigation(const NavigationPolicyInfo& info) {
 
   blink::WebURLRequest& request = info.url_request;
 
+  // Set RequestorOrigin and FirstPartyForCookies
+  WebDocument frame_document = frame_->GetDocument();
+  if (request.GetFrameType() == blink::WebURLRequest::kFrameTypeTopLevel)
+    request.SetFirstPartyForCookies(request.Url());
+  else
+    request.SetFirstPartyForCookies(frame_document.FirstPartyForCookies());
+  request.SetRequestorOrigin(frame_document.GetSecurityOrigin());
+
   // Note: At this stage, the goal is to apply all the modifications the
   // renderer wants to make to the request, and then send it to the browser, so
   // that the actual network request can be started. Ideally, all such
@@ -6325,14 +6333,6 @@ void RenderFrameImpl::BeginNavigation(const NavigationPolicyInfo& info) {
   // TODO(clamy): Make sure that navigation requests are not modified somewhere
   // else in blink.
   WillSendRequest(request);
-
-  // Set RequestorOrigin and FirstPartyForCookies.
-  WebDocument frame_document = frame_->GetDocument();
-  if (request.GetFrameType() == blink::WebURLRequest::kFrameTypeTopLevel)
-    request.SetFirstPartyForCookies(request.Url());
-  else
-    request.SetFirstPartyForCookies(frame_document.FirstPartyForCookies());
-  request.SetRequestorOrigin(frame_document.GetSecurityOrigin());
 
   // Update the transition type of the request for client side redirects.
   if (!info.url_request.GetExtraData())
