@@ -461,31 +461,31 @@ public class ChildProcessLauncherTest {
     @Test
     @MediumTest
     @Feature({"ProcessManagement"})
+    @ChildProcessAllocatorSettings(sandboxedServiceCount = 4)
     public void testCustomCreationParamDoesNotReuseWarmupConnection() {
         // Since warmUp only uses default params.
         final Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         ChildProcessCreationParams defaultCreationParams =
                 getDefaultChildProcessCreationParams(context.getPackageName());
-        ChildProcessCreationParams otherCreationParams =
-                getDefaultChildProcessCreationParams(context.getPackageName());
         ChildProcessCreationParams.registerDefault(defaultCreationParams);
+        ChildProcessCreationParams otherCreationParams = getDefaultChildProcessCreationParams(
+                InstrumentationRegistry.getInstrumentation().getContext().getPackageName());
 
         warmUpOnUiThreadBlocking(context);
         Assert.assertEquals(1, getConnectedSandboxedServicesCount());
 
-        // First create a connnection with different creation params then the default. It should not
-        // use the warm-up connection which uses the default creation params (check uses object
-        // identity, having the params match exactly is fine).
+        // First create a connnection with different creation params than the default, it should not
+        // use the warmup connection (note that it won't bind since we are using the wrong package,
+        // but we need to use a different package to differentiate them, and we can only have 1
+        // valid package per app).
         startSandboxedChildProcessWithCreationParams(
-                otherCreationParams, BLOCK_UNTIL_SETUP, true /* doSetupConnection */);
-        Assert.assertEquals(2, getConnectedSandboxedServicesCount());
+                otherCreationParams, DONT_BLOCK, false /* doSetupConnection */);
         Assert.assertNotNull(getWarmUpConnection());
 
         // Then start a process with the default creation params, the warmup-connection should be
         // used.
         startSandboxedChildProcessWithCreationParams(
                 defaultCreationParams, BLOCK_UNTIL_SETUP, true /* doSetupConnection */);
-        Assert.assertEquals(2, getConnectedSandboxedServicesCount());
         Assert.assertNull(getWarmUpConnection());
     }
 

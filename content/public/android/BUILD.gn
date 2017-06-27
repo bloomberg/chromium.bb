@@ -469,6 +469,7 @@ junit_binary("content_junit_tests") {
     "junit/src/org/chromium/content/browser/ChildConnectionAllocatorTest.java",
     "junit/src/org/chromium/content/browser/MenuDescriptorTest.java",
     "junit/src/org/chromium/content/browser/SpareChildConnectionTest.java",
+    "junit/src/org/chromium/content/browser/TestChildProcessConnection.java",
     "junit/src/org/chromium/content/browser/androidoverlay/DialogOverlayCoreTest.java",
     "junit/src/org/chromium/content/browser/input/RangeTest.java",
     "junit/src/org/chromium/content/browser/input/TextInputStateTest.java",
