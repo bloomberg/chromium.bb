@@ -20,10 +20,6 @@
 # implemented. http://crbug.com/734808.
 -ImmersiveFullscreenControllerTest.EndRevealViaGesture
 
-# TODO: fix these. They fail because AshNativeCursorManager isn't created
-# http://crbug.com/734809.
--WindowManagerTest.MouseEventCursors
-
 # TODO: fix these. They all timeout. http://crbug.com/734811.
 -ScreenRotationAnimatorSmoothAnimationTest.OverviewButtonTrayHideAnimationAlwaysCompletes
 -ScreenRotationAnimatorSmoothAnimationTest.RemoveExternalPrimaryDisplayBeforeSecondCopyCallback
