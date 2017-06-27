@@ -174,6 +174,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'intel', 'd3d11'], bug=666392)
 
     # Win 10 / Intel
+    self.Fail('conformance/rendering/clear-after-copyTexImage2D.html',
+        ['win10', 'intel'], bug=737002)
     self.Fail('deqp/functional/gles3/fbocolorbuffer/clear.html',
         ['win10', 'intel', 'd3d11', 'no_passthrough'], bug=483282)
 
