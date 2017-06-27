@@ -694,11 +694,9 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   static EmptyTransformOperations InitialTransform() {
     return EmptyTransformOperations();
   }
-  const TransformOperations& Transform() const {
-    return TransformOperationsInternal();
-  }
+  const TransformOperations& Transform() const { return TransformInternal(); }
   void SetTransform(const TransformOperations& ops) {
-    SetTransformOperationsInternal(ops);
+    SetTransformInternal(ops);
   }
 
   // -webkit-transform-origin-x
@@ -2080,7 +2078,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // Filter/transform utility functions.
   bool Has3DTransform() const {
-    return TransformOperationsInternal().Has3DOperation() ||
+    return TransformInternal().Has3DOperation() ||
            (Translate() && Translate()->Z() != 0) ||
            (Rotate() && (Rotate()->X() != 0 || Rotate()->Y() != 0)) ||
            (Scale() && Scale()->Z() != 1);
@@ -2090,7 +2088,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
            HasCurrentTransformAnimation() || Translate() || Rotate() || Scale();
   }
   bool HasTransformOperations() const {
-    return !TransformOperationsInternal().Operations().IsEmpty();
+    return !TransformInternal().Operations().IsEmpty();
   }
   ETransformStyle3D UsedTransformStyle3D() const {
     return HasGroupingProperty() ? ETransformStyle3D::kFlat

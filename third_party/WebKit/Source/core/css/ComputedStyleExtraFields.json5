@@ -221,22 +221,6 @@
       field_group: "background",
     },
     {
-      name: "BackgroundColor",
-      field_template: "storage_only",
-      include_paths: ["core/css/StyleColor.h"],
-      type_name: "StyleColor",
-      default_value: "StyleColor(Color::kTransparent)",
-      field_group: "background",
-    },
-    {
-      name: "TextDecoration",
-      field_template: "storage_only",
-      type_name: "TextDecoration",
-      field_size: 4,
-      default_value: "TextDecoration::kNone",
-      field_group: "visual",
-    },
-    {
       name: "HasAutoClip",
       field_template: "storage_only",
       type_name: "bool",
@@ -258,15 +242,6 @@
       field_group: "inherited",
       inherited: true,
       default_value: "Font()",
-    },
-    {
-      name: "color",
-      inherited: true,
-      field_template: "storage_only",
-      include_paths: ["platform/graphics/Color.h"],
-      type_name: "Color",
-      field_group: "inherited",
-      default_value: "Color::kBlack",
     },
     {
       name: "VisitedLinkColor",
@@ -542,24 +517,6 @@
       type_name: "FillLayer",
       field_group: "rare-non-inherited",
       default_value: "FillLayer(kMaskFillLayer, true)",
-    },
-    {
-      name: "Filter",
-      field_template: "storage_only",
-      type_name: "StyleFilterData",
-      field_group: "rare-non-inherited",
-      default_value: "DataPersistent<StyleFilterData>()",
-      wrapper_pointer_name: "DataPersistent",
-      include_paths: ["core/style/StyleFilterData.h"],
-    },
-    {
-      name: "BackdropFilter",
-      field_template: "storage_only",
-      type_name: "StyleFilterData",
-      field_group: "rare-non-inherited",
-      default_value: "DataPersistent<StyleFilterData>()",
-      wrapper_pointer_name: "DataPersistent",
-      include_paths: ["core/style/StyleFilterData.h"],
     },
     {
       name: "CounterDirectives",
@@ -864,14 +821,6 @@
       type_name: "bool",
       field_group: "rare-non-inherited->multi-col",
       default_value: "true",
-    },
-    {
-      name: "TransformOperations",
-      field_template: "storage_only",
-      type_name: "TransformOperations",
-      field_group: "rare-non-inherited->transform",
-      default_value: "EmptyTransformOperations()",
-      include_paths: ["platform/transforms/TransformOperations.h"]
     },
     {
       name: "NamedGridColumnLines",
