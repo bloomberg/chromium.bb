@@ -72,10 +72,6 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider {
   int provider_id() const { return provider_id_; }
   ServiceWorkerProviderContext* context() const { return context_.get(); }
 
-  mojom::URLLoaderFactory* script_loader_factory() {
-    return script_loader_factory_.get();
-  }
-
   bool IsControlledByServiceWorker() const;
 
  private:
@@ -83,8 +79,6 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider {
   scoped_refptr<ServiceWorkerProviderContext> context_;
   mojom::ServiceWorkerDispatcherHostAssociatedPtr dispatcher_host_;
   mojom::ServiceWorkerProviderHostAssociatedPtr provider_host_;
-  mojom::URLLoaderFactoryAssociatedPtr script_loader_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerNetworkProvider);
 };
 

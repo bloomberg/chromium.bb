@@ -55,8 +55,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
       int render_process_id,
       ResourceContext* resource_context);
 
-  // |blob_storage_context| and |loader_factory_getter| are used only
-  // if IsServicificationEnabled is true.
   void Init(ServiceWorkerContextWrapper* context_wrapper);
 
   // BrowserMessageFilter implementation
