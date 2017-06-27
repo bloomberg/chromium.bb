@@ -15,6 +15,8 @@
 #define ENABLE_SYNC_CALL_RESTRICTIONS 0
 #endif
 
+class ChromeSelectFileDialogFactory;
+
 namespace sync_preferences {
 class PrefServiceSyncable;
 }
@@ -79,7 +81,8 @@ class MOJO_CPP_BINDINGS_EXPORT SyncCallRestrictions {
   friend class prefs::PersistentPrefStoreClient;
   // Incognito pref service instances are created synchronously.
   friend class sync_preferences::PrefServiceSyncable;
-
+  // For file open and save dialogs created synchronously.
+  friend class ::ChromeSelectFileDialogFactory;
   // END ALLOWED USAGE.
 
   // BEGIN USAGE THAT NEEDS TO BE FIXED.

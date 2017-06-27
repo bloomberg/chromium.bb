@@ -7,9 +7,11 @@
 
 #include "base/macros.h"
 #include "chrome/common/shell_handler_win.mojom.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
 
-// Implements the ShellHandler mojo interface.
+namespace service_manager {
+struct BindSourceInfo;
+}
+
 class ShellHandlerImpl : public chrome::mojom::ShellHandler {
  public:
   ShellHandlerImpl();
@@ -21,6 +23,24 @@ class ShellHandlerImpl : public chrome::mojom::ShellHandler {
  private:
   // chrome::mojom::ShellHandler:
   void IsPinnedToTaskbar(const IsPinnedToTaskbarCallback& callback) override;
+
+  void CallGetOpenFileName(
+      uint32_t owner,
+      uint32_t flags,
+      const std::vector<std::tuple<base::string16, base::string16>>& filters,
+      const base::FilePath& initial_directory,
+      const base::FilePath& initial_filename,
+      const CallGetOpenFileNameCallback& callback) override;
+
+  void CallGetSaveFileName(
+      uint32_t owner,
+      uint32_t flags,
+      const std::vector<std::tuple<base::string16, base::string16>>& filters,
+      uint32_t one_based_filter_index,
+      const base::FilePath& initial_directory,
+      const base::FilePath& suggested_filename,
+      const base::string16& default_extension,
+      const CallGetSaveFileNameCallback& callback) override;
 
   DISALLOW_COPY_AND_ASSIGN(ShellHandlerImpl);
 };

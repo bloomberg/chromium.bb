@@ -4,17 +4,9 @@
 
 // Multiply-included message file, so no include guard.
 
-#if defined(OS_WIN)
-#include <Windows.h>
-#endif  // defined(OS_WIN)
+// TODO(noel): rename this file to a param traits variant for the full safe
+// browsing feature, and remove all remaining #include of this file.
 
-#include <string>
-#include <tuple>
-#include <vector>
-
-#include "base/files/file_path.h"
-#include "base/strings/string16.h"
-#include "base/values.h"
 #include "build/build_config.h"
 #include "ipc/ipc_message_macros.h"
 
@@ -23,21 +15,6 @@
 #include "chrome/common/safe_browsing/ipc_protobuf_message_macros.h"
 #include "chrome/common/safe_browsing/protobuf_message_param_traits.h"
 #endif
-
-// Singly-included section for typedefs.
-#ifndef CHROME_COMMON_CHROME_UTILITY_MESSAGES_H_
-#define CHROME_COMMON_CHROME_UTILITY_MESSAGES_H_
-
-#if defined(OS_WIN)
-// A vector of filters, each being a tuple containing a display string (i.e.
-// "Text Files") and a filter pattern (i.e. "*.txt").
-typedef std::vector<std::tuple<base::string16, base::string16>>
-    GetOpenFileNameFilter;
-#endif  // OS_WIN
-
-#endif  // CHROME_COMMON_CHROME_UTILITY_MESSAGES_H_
-
-#define IPC_MESSAGE_START ChromeUtilityMsgStart
 
 #if defined(FULL_SAFE_BROWSING)
 IPC_ENUM_TRAITS_VALIDATE(
@@ -120,53 +97,3 @@ IPC_STRUCT_TRAITS_BEGIN(safe_browsing::ArchiveAnalyzerResults)
   IPC_STRUCT_TRAITS_MEMBER(archived_archive_filenames)
 IPC_STRUCT_TRAITS_END()
 #endif  // FULL_SAFE_BROWSING
-
-#if defined(OS_WIN)
-IPC_STRUCT_BEGIN(ChromeUtilityMsg_GetSaveFileName_Params)
-  IPC_STRUCT_MEMBER(HWND, owner)
-  IPC_STRUCT_MEMBER(DWORD, flags)
-  IPC_STRUCT_MEMBER(GetOpenFileNameFilter, filters)
-  IPC_STRUCT_MEMBER(int, one_based_filter_index)
-  IPC_STRUCT_MEMBER(base::FilePath, suggested_filename)
-  IPC_STRUCT_MEMBER(base::FilePath, initial_directory)
-  IPC_STRUCT_MEMBER(base::string16, default_extension)
-IPC_STRUCT_END()
-#endif  // OS_WIN
-
-//------------------------------------------------------------------------------
-// Utility process messages:
-// These are messages from the browser to the utility process.
-
-#if defined(OS_WIN)
-// Instructs the utility process to invoke GetOpenFileName. |owner| is the
-// parent of the modal dialog, |flags| are OFN_* flags. |filter| constrains the
-// user's file choices. |initial_directory| and |filename| select the directory
-// to be displayed and the file to be initially selected.
-//
-// Either ChromeUtilityHostMsg_GetOpenFileName_Failed or
-// ChromeUtilityHostMsg_GetOpenFileName_Result will be returned when the
-// operation completes whether due to error or user action.
-IPC_MESSAGE_CONTROL5(ChromeUtilityMsg_GetOpenFileName,
-                     HWND /* owner */,
-                     DWORD /* flags */,
-                     GetOpenFileNameFilter /* filter */,
-                     base::FilePath /* initial_directory */,
-                     base::FilePath /* filename */)
-IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_GetSaveFileName,
-                     ChromeUtilityMsg_GetSaveFileName_Params /* params */)
-#endif  // defined(OS_WIN)
-
-//------------------------------------------------------------------------------
-// Utility process host messages:
-// These are messages from the utility process to the browser.
-
-#if defined(OS_WIN)
-IPC_MESSAGE_CONTROL0(ChromeUtilityHostMsg_GetOpenFileName_Failed)
-IPC_MESSAGE_CONTROL2(ChromeUtilityHostMsg_GetOpenFileName_Result,
-                     base::FilePath /* directory */,
-                     std::vector<base::FilePath> /* filenames */)
-IPC_MESSAGE_CONTROL0(ChromeUtilityHostMsg_GetSaveFileName_Failed)
-IPC_MESSAGE_CONTROL2(ChromeUtilityHostMsg_GetSaveFileName_Result,
-                     base::FilePath /* path */,
-                     int /* one_based_filter_index  */)
-#endif  // defined(OS_WIN)

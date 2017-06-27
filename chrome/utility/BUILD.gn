@@ -16,8 +16,6 @@ static_library("utility") {
     "cloud_print/bitmap_image.h",
     "cloud_print/pwg_encoder.cc",
     "cloud_print/pwg_encoder.h",
-    "ipc_shell_handler_win.cc",
-    "ipc_shell_handler_win.h",
     "printing_handler.cc",
     "printing_handler.h",
     "shell_handler_impl_win.cc",
