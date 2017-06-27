@@ -9,7 +9,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/network/cache_url_loader.h"
-#include "content/network/network_service.h"
 #include "content/network/network_service_url_loader_factory_impl.h"
 #include "content/network/url_loader_impl.h"
 #include "content/public/common/content_client.h"
@@ -87,17 +86,11 @@ std::unique_ptr<net::URLRequestContext> MakeURLRequestContext() {
 
 }  // namespace
 
-NetworkContext::NetworkContext(NetworkService* network_service,
-                               mojom::NetworkContextRequest request,
+NetworkContext::NetworkContext(mojom::NetworkContextRequest request,
                                mojom::NetworkContextParamsPtr params)
-    : network_service_(network_service),
-      url_request_context_(MakeURLRequestContext()),
+    : url_request_context_(MakeURLRequestContext()),
       params_(std::move(params)),
-      binding_(this, std::move(request)) {
-  network_service_->RegisterNetworkContext(this);
-  binding_.set_connection_error_handler(
-      base::Bind(&NetworkContext::OnConnectionError, base::Unretained(this)));
-}
+      binding_(this, std::move(request)) {}
 
 NetworkContext::~NetworkContext() {
   // Call each URLLoaderImpl and ask it to release its net::URLRequest, as the
@@ -106,10 +99,6 @@ NetworkContext::~NetworkContext() {
   // so have to be careful.
   while (!url_loaders_.empty())
     (*url_loaders_.begin())->Cleanup();
-
-  // May be nullptr in tests.
-  if (network_service_)
-    network_service_->DeregisterNetworkContext(this);
 }
 
 std::unique_ptr<NetworkContext> NetworkContext::CreateForTesting() {
@@ -139,22 +128,8 @@ void NetworkContext::HandleViewCacheRequest(const GURL& url,
   StartCacheURLLoader(url, url_request_context_.get(), std::move(client));
 }
 
-void NetworkContext::Cleanup() {
-  // The NetworkService is going away, so have to destroy the
-  // net::URLRequestContext held by this NetworkContext.
-  delete this;
-}
-
 NetworkContext::NetworkContext()
-    : network_service_(nullptr),
-      url_request_context_(MakeURLRequestContext()),
+    : url_request_context_(MakeURLRequestContext()),
       binding_(this) {}
-
-void NetworkContext::OnConnectionError() {
-  // Don't delete |this| in response to connection errors when it was created by
-  // CreateForTesting.
-  if (network_service_)
-    delete this;
-}
 
 }  // namespace content
