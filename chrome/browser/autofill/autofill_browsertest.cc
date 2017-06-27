@@ -108,7 +108,6 @@ class AutofillTest : public InProcessBrowserTest {
     test::DisableSystemServices(browser()->profile()->GetPrefs());
 
     ASSERT_TRUE(embedded_test_server()->Start());
-    InProcessBrowserTest::SetUpOnMainThread();
   }
 
   void TearDownOnMainThread() override {

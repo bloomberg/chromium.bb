@@ -426,7 +426,6 @@ class AppControllerOpenShortcutOnStartupBrowserTest
     SessionStartupPref pref(GetParam());
     pref.urls.push_back(GURL(kPresetURL));
     SessionStartupPref::SetStartupPref(browser()->profile(), pref);
-    InProcessBrowserTest::SetUpOnMainThread();
   }
 
  protected:
@@ -504,7 +503,6 @@ class AppControllerOpenShortcutInBrowserTest
     SessionStartupPref pref(session_startup_pref_);
     pref.urls.push_back(GURL(kPresetURL));
     SessionStartupPref::SetStartupPref(browser()->profile(), pref);
-    InProcessBrowserTest::SetUpOnMainThread();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {

@@ -169,7 +169,6 @@ void PlatformNotificationServiceBrowserTest::SetUpOnMainThread() {
   display_service_.reset(
       new MessageCenterDisplayService(browser()->profile(), ui_manager_.get()));
   service()->SetNotificationDisplayServiceForTesting(display_service_.get());
-  InProcessBrowserTest::SetUpOnMainThread();
 }
 
 void PlatformNotificationServiceBrowserTest::TearDown() {

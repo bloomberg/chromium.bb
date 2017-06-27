@@ -58,7 +58,6 @@ class BudgetManagerBrowserTest : public InProcessBrowserTest {
                                         std::string(), CONTENT_SETTING_ALLOW);
 
     LoadTestPage();
-    InProcessBrowserTest::SetUpOnMainThread();
     budget_manager_ = BudgetManagerFactory::GetForProfile(browser()->profile());
   }
 

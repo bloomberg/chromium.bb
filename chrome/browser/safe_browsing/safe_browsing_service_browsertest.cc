@@ -545,7 +545,6 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    InProcessBrowserTest::SetUpOnMainThread();
     g_browser_process->safe_browsing_service()->ui_manager()->AddObserver(
         &observer_);
   }

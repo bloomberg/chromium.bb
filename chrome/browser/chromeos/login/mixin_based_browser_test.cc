@@ -36,8 +36,6 @@ void MixinBasedBrowserTest::SetUpOnMainThread() {
   setup_was_launched_ = true;
   for (const auto& mixin : mixins_)
     mixin->SetUpOnMainThread();
-
-  InProcessBrowserTest::SetUpOnMainThread();
 }
 
 void MixinBasedBrowserTest::TearDownOnMainThread() {

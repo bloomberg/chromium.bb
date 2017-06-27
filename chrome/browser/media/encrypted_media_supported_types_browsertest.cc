@@ -191,8 +191,6 @@ class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
 #endif  // BUILDFLAG(ENABLE_PEPPER_CDMS)
 
   void SetUpOnMainThread() override {
-    InProcessBrowserTest::SetUpOnMainThread();
-
     // Load the test page needed so that checkKeySystemWithMediaMimeType()
     // is available.
     std::unique_ptr<net::EmbeddedTestServer> http_test_server(

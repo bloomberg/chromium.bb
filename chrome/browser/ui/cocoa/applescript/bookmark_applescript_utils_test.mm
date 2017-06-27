@@ -49,7 +49,6 @@ BookmarkAppleScriptTest::~BookmarkAppleScriptTest() {
 }
 
 void BookmarkAppleScriptTest::SetUpOnMainThread() {
-  InProcessBrowserTest::SetUpOnMainThread();
   ASSERT_TRUE(profile());
 
   BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());

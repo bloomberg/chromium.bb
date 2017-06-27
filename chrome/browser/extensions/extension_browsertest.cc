@@ -185,7 +185,6 @@ void ExtensionBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
 }
 
 void ExtensionBrowserTest::SetUpOnMainThread() {
-  InProcessBrowserTest::SetUpOnMainThread();
   observer_.reset(
       new extensions::ChromeExtensionTestNotificationObserver(browser()));
   if (extension_service()->updater()) {

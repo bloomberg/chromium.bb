@@ -312,8 +312,6 @@ class HangingPacRequestProxyScriptBrowserTest : public InProcessBrowserTest {
                    ALLOW_ADDITIONAL_CONNECTIONS);
     embedded_test_server()->SetConnectionListener(connection_listener_.get());
     embedded_test_server()->StartAcceptingConnections();
-
-    InProcessBrowserTest::SetUpOnMainThread();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {

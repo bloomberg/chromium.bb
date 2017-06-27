@@ -49,8 +49,6 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
   ~MediaRouterUIBrowserTest() override {}
 
   void SetUpOnMainThread() override {
-    InProcessBrowserTest::SetUpOnMainThread();
-
     BrowserActionsContainer* browser_actions_container =
         BrowserView::GetBrowserViewForBrowser(browser())
             ->toolbar()

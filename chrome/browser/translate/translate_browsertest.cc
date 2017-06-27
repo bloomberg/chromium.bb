@@ -70,7 +70,6 @@ class TranslateBaseBrowserTest : public InProcessBrowserTest {
     net::EmbeddedTestServer* test_server = embedded_test_server();
     test_server->ServeFilesFromSourceDirectory(kTranslateRoot);
     ASSERT_TRUE(test_server->Start());
-    InProcessBrowserTest::SetUpOnMainThread();
   }
 
  protected:

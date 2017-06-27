@@ -25,7 +25,6 @@ namespace chromeos {
 class SelectToSpeakLiveSiteTest : public InProcessBrowserTest {
  protected:
   void SetUpOnMainThread() override {
-    InProcessBrowserTest::SetUpOnMainThread();
 
     ASSERT_FALSE(AccessibilityManager::Get()->IsSelectToSpeakEnabled());
 

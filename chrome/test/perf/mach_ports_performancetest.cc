@@ -30,7 +30,6 @@ class MachPortsTest : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    InProcessBrowserTest::SetUpOnMainThread();
     ASSERT_TRUE(embedded_test_server()->Start());
   }
 

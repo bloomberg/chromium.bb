@@ -223,7 +223,6 @@ class BrowserCloseManagerBrowserTest
       public testing::WithParamInterface<bool> {
  protected:
   void SetUpOnMainThread() override {
-    InProcessBrowserTest::SetUpOnMainThread();
     SessionStartupPref::SetStartupPref(
         browser()->profile(), SessionStartupPref(SessionStartupPref::LAST));
     browsers_.push_back(browser());

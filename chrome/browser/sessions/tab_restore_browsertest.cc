@@ -100,7 +100,6 @@ class TabRestoreTest : public InProcessBrowserTest {
  protected:
   void SetUpOnMainThread() override {
     active_browser_list_ = BrowserList::GetInstance();
-    InProcessBrowserTest::SetUpOnMainThread();
   }
 
   Browser* GetBrowser(int index) {

@@ -21,8 +21,6 @@ class ComponentToolbarActionsBrowserTest : public InProcessBrowserTest {
   ~ComponentToolbarActionsBrowserTest() override {}
 
   void SetUpOnMainThread() override {
-    InProcessBrowserTest::SetUpOnMainThread();
-
     // Replace the actions factory with a mock one.
     toolbar_model_ = ToolbarActionsModel::Get(browser()->profile());
     toolbar_model_->SetMockActionsFactoryForTest(

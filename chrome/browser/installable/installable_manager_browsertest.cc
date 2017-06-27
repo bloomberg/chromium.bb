@@ -176,7 +176,6 @@ class NestedCallbackTester {
 class InstallableManagerBrowserTest : public InProcessBrowserTest {
  public:
   void SetUpOnMainThread() override {
-    InProcessBrowserTest::SetUpOnMainThread();
     ASSERT_TRUE(embedded_test_server()->Start());
   }
 

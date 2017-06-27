@@ -73,8 +73,6 @@ class IOThreadBrowserTest : public InProcessBrowserTest {
 
   void SetUpOnMainThread() override {
     embedded_test_server()->StartAcceptingConnections();
-
-    InProcessBrowserTest::SetUpOnMainThread();
   }
 
   void TearDown() override {
