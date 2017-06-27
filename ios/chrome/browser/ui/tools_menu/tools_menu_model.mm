@@ -46,9 +46,6 @@ const MenuItemInfo itemInfoList[] = {
   { IDS_IOS_TOOLS_MENU_READING_LIST,      kToolsMenuReadingListId,
     IDC_SHOW_READING_LIST,                ToolbarTypeWebAll,
     0,                                    [ReadingListMenuViewItem class] },
-  { IDS_IOS_TOOLS_MENU_SUGGESTIONS,       kToolsMenuSuggestionsId,
-    IDC_SHOW_SUGGESTIONS,                 ToolbarTypeWebAll,
-    0,                                    nil },
   { IDS_IOS_TOOLS_MENU_RECENT_TABS,       kToolsMenuOtherDevicesId,
     IDC_SHOW_OTHER_DEVICES,               ToolbarTypeWebAll,
     kVisibleNotIncognitoOnly,             nil },
@@ -96,8 +93,6 @@ bool ToolsMenuItemShouldBeVisible(const MenuItemInfo& item,
       return IsIPadIdiom();
     case IDS_IOS_TOOLS_MENU_READER_MODE:
       return experimental_flags::IsReaderModeEnabled();
-    case IDS_IOS_TOOLS_MENU_SUGGESTIONS:
-      return experimental_flags::IsSuggestionsUIEnabled();
     case IDS_IOS_OPTIONS_REPORT_AN_ISSUE:
       return ios::GetChromeBrowserProvider()
           ->GetUserFeedbackProvider()
