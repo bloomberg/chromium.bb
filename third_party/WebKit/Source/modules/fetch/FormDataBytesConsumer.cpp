@@ -75,7 +75,7 @@ class SimpleFormDataBytesConsumer : public BytesConsumer {
       return nullptr;
 
     state_ = PublicState::kClosed;
-    return form_data_.Release();
+    return std::move(form_data_);
   }
   void SetClient(BytesConsumer::Client* client) override { DCHECK(client); }
   void ClearClient() override {}
@@ -183,7 +183,7 @@ class ComplexFormDataBytesConsumer final : public BytesConsumer {
     if (!form_data_)
       return nullptr;
     blob_bytes_consumer_->Cancel();
-    return form_data_.Release();
+    return std::move(form_data_);
   }
   void SetClient(BytesConsumer::Client* client) override {
     blob_bytes_consumer_->SetClient(client);

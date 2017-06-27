@@ -66,6 +66,7 @@ class WebThreadSafeData {
 
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT WebThreadSafeData(WTF::PassRefPtr<RawData>);
+  BLINK_PLATFORM_EXPORT WebThreadSafeData(WTF::RefPtr<RawData>&&);
   BLINK_PLATFORM_EXPORT WebThreadSafeData& operator=(WTF::PassRefPtr<RawData>);
 #else
   operator std::string() const {

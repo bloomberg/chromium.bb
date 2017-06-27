@@ -241,7 +241,7 @@ PassRefPtr<SimpleFontData> FontCache::GetLastResortFallbackFont(
       GetFontData(font_description, times_str,
                   AlternateFontName::kAllowAlternate, should_retain);
   if (simple_font_data)
-    return simple_font_data.Release();
+    return simple_font_data;
 
   // The Times fallback will almost always work, but in the highly unusual case
   // where the user doesn't have it, we fall back on Lucida Grande because

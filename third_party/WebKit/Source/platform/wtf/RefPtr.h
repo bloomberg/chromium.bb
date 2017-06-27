@@ -80,7 +80,6 @@ class RefPtr {
   ALWAYS_INLINE T* Get() const { return ptr_; }
   T* LeakRef() WARN_UNUSED_RESULT;
   void Clear();
-  PassRefPtr<T> Release() WARN_UNUSED_RESULT { return std::move(*this); }
 
   T& operator*() const { return *ptr_; }
   ALWAYS_INLINE T* operator->() const { return ptr_; }

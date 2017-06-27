@@ -127,7 +127,7 @@ PassRefPtr<BlobDataHandle> BlobBytesConsumer::DrainAsBlobDataHandle(
       blob_data_handle_->size() == UINT64_MAX)
     return nullptr;
   Close();
-  return blob_data_handle_.Release();
+  return std::move(blob_data_handle_);
 }
 
 PassRefPtr<EncodedFormData> BlobBytesConsumer::DrainAsFormData() {
