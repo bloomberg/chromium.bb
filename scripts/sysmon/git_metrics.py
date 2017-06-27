@@ -7,7 +7,6 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-import collections
 import os
 import subprocess
 
@@ -15,9 +14,6 @@ from chromite.lib import cros_logging as logging
 from infra_libs import ts_mon
 
 logger = logging.getLogger(__name__)
-
-
-_Stats = collections.namedtuple('_Stats', 'added,deleted,path')
 
 
 class _GitRepo(object):
@@ -44,16 +40,18 @@ class _GitRepo(object):
 
   def get_unstaged_changes(self):
     """Return number of unstaged changes as (added, deleted)."""
-    added, deleted = 0, 0
-    # output looks like '1\t2\tfoo\n3\t4\tbar\n'
+    added_total, deleted_total = 0, 0
+    # output looks like:
+    # '1\t2\tfoo\n3\t4\tbar\n'
+    # '-\t-\tbinary_file\n'
     output = self._check_output(['diff-index', '--numstat', 'HEAD'])
     stats_strings = (line.split() for line in output.splitlines())
-    stats_iter = (_Stats(int(added), int(deleted), path)
-             for added, deleted, path in stats_strings)
-    for stats in stats_iter:
-      added += stats.added
-      deleted += stats.deleted
-    return added, deleted
+    for added, deleted, _path in stats_strings:
+      if added != '-':
+        added_total += int(added)
+      if deleted != '-':
+        deleted_total += int(deleted)
+    return added_total, deleted_total
 
 
 class _GitMetricCollector(object):
