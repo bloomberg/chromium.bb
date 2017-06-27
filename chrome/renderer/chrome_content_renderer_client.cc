@@ -141,6 +141,7 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/common/extensions/chrome_extensions_client.h"
 #include "chrome/renderer/extensions/chrome_extensions_renderer_client.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/switches.h"
 #include "extensions/renderer/dispatcher.h"
@@ -1014,7 +1015,7 @@ bool ChromeContentRendererClient::IsNaClAllowed(
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   bool is_extension_from_webstore = extension && extension->from_webstore();
 
-  bool is_invoked_by_extension = app_url.SchemeIs("chrome-extension");
+  bool is_invoked_by_extension = app_url.SchemeIs(extensions::kExtensionScheme);
   bool is_invoked_by_hosted_app = extension &&
       extension->is_hosted_app() &&
       extension->web_extent().MatchesURL(app_url);

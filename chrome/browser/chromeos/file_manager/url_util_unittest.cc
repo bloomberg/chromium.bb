@@ -11,6 +11,7 @@
 #include "base/json/json_writer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "extensions/common/constants.h"
 #include "net/base/escape.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -45,7 +46,7 @@ TEST(FileManagerUrlUtilTest, GetFileManagerMainPageUrlWithParams_NoFileTypes) {
       NULL,  // No file types
       0,  // Hence no file type index.
       FILE_PATH_LITERAL("txt"));
-  EXPECT_EQ("chrome-extension", url.scheme());
+  EXPECT_EQ(extensions::kExtensionScheme, url.scheme());
   EXPECT_EQ("hhaomjibdihmijegdhdafkllkbggdgoj", url.host());
   EXPECT_EQ("/main.html", url.path());
   // Confirm that "%20" is used instead of "+" in the query.
@@ -94,7 +95,7 @@ TEST(FileManagerUrlUtilTest,
       &file_types,
       1,  // The file type index is 1-based.
       FILE_PATH_LITERAL("txt"));
-  EXPECT_EQ("chrome-extension", url.scheme());
+  EXPECT_EQ(extensions::kExtensionScheme, url.scheme());
   EXPECT_EQ("hhaomjibdihmijegdhdafkllkbggdgoj", url.host());
   EXPECT_EQ("/main.html", url.path());
   // Confirm that "%20" is used instead of "+" in the query.

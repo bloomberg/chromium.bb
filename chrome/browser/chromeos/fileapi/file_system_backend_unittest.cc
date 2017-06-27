@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend_delegate.h"
 #include "chromeos/dbus/cros_disks_client.h"
+#include "extensions/common/constants.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -108,7 +109,8 @@ TEST(ChromeOSFileSystemBackendTest, GetRootDirectories) {
 }
 
 TEST(ChromeOSFileSystemBackendTest, AccessPermissions) {
-  url::AddStandardScheme("chrome-extension", url::SCHEME_WITHOUT_PORT);
+  url::AddStandardScheme(extensions::kExtensionScheme,
+                         url::SCHEME_WITHOUT_PORT);
 
   scoped_refptr<storage::ExternalMountPoints> mount_points(
       storage::ExternalMountPoints::CreateRefCounted());
