@@ -3384,6 +3384,49 @@ TEST_P(ResourceProviderTest, TextureMailbox_WaitSyncTokenIfNeeded_NoSyncToken) {
   }
 }
 
+TEST_P(ResourceProviderTest, TextureMailbox_PrepareSendToParent_NoSyncToken) {
+  // Mailboxing is only supported for GL textures.
+  if (GetParam() != ResourceProvider::RESOURCE_TYPE_GL_TEXTURE)
+    return;
+
+  std::unique_ptr<TextureStateTrackingContext> context_owned(
+      new TextureStateTrackingContext);
+  TextureStateTrackingContext* context = context_owned.get();
+  auto context_provider = TestContextProvider::Create(std::move(context_owned));
+  context_provider->BindToCurrentThread();
+
+  std::unique_ptr<ResourceProvider> resource_provider(
+      base::MakeUnique<ResourceProvider>(
+          context_provider.get(), shared_bitmap_manager_.get(),
+          gpu_memory_buffer_manager_.get(), nullptr,
+          kDelegatedSyncPointsRequired, kEnableColorCorrectRendering,
+          CreateResourceSettings()));
+
+  EXPECT_CALL(*context, bindTexture(_, _)).Times(0);
+  EXPECT_CALL(*context, waitSyncToken(_)).Times(0);
+  EXPECT_CALL(*context, produceTextureDirectCHROMIUM(_, _, _)).Times(0);
+  EXPECT_CALL(*context, createAndConsumeTextureCHROMIUM(_, _)).Times(0);
+
+  TextureMailbox mailbox(gpu::Mailbox::Generate(), gpu::SyncToken(),
+                         GL_TEXTURE_2D);
+
+  std::unique_ptr<SingleReleaseCallbackImpl> callback =
+      SingleReleaseCallbackImpl::Create(base::Bind(&EmptyReleaseCallback));
+
+  ResourceId id = resource_provider->CreateResourceFromTextureMailbox(
+      mailbox, std::move(callback));
+  EXPECT_NE(0u, id);
+  Mock::VerifyAndClearExpectations(context);
+
+  ResourceProvider::ResourceIdArray resource_ids_to_transfer{id};
+  TransferableResourceArray list;
+  resource_provider->PrepareSendToParent(resource_ids_to_transfer, &list);
+  ASSERT_EQ(1u, list.size());
+  EXPECT_FALSE(list[0].mailbox_holder.sync_token.HasData());
+  EXPECT_TRUE(list[0].mailbox_holder.sync_token.verified_flush());
+  Mock::VerifyAndClearExpectations(context);
+}
+
 class AllocationTrackingContext3D : public TestWebGraphicsContext3D {
  public:
   MOCK_METHOD0(NextTextureId, GLuint());
