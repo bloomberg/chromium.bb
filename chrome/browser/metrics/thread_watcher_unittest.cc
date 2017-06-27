@@ -246,22 +246,22 @@ class ThreadWatcherTest : public ::testing::Test {
   static const TimeDelta kSleepTime;
   static const TimeDelta kUnresponsiveTime;
   static const char kIOThreadName[];
-  static const char kDBThreadName[];
+  static const char kUIThreadName[];
   static const char kCrashOnHangThreadNames[];
   static const char kThreadNamesAndLiveThreshold[];
   static const char kCrashOnHangThreadData[];
 
   CustomThreadWatcher* io_watcher_;
-  CustomThreadWatcher* db_watcher_;
+  CustomThreadWatcher* ui_watcher_;
   ThreadWatcherList* thread_watcher_list_;
 
   ThreadWatcherTest()
       : setup_complete_(&lock_),
         initialized_(false) {
-    db_thread_.reset(new content::TestBrowserThread(BrowserThread::DB));
+    ui_thread_.reset(new content::TestBrowserThread(BrowserThread::UI));
     io_thread_.reset(new content::TestBrowserThread(BrowserThread::IO));
     watchdog_thread_.reset(new WatchDogThread());
-    db_thread_->StartAndWaitForTesting();
+    ui_thread_->StartAndWaitForTesting();
     io_thread_->StartAndWaitForTesting();
     watchdog_thread_->StartAndWaitForTesting();
 
@@ -288,15 +288,14 @@ class ThreadWatcherTest : public ::testing::Test {
     EXPECT_EQ(io_watcher_, registered_io_watcher);
     EXPECT_EQ(io_watcher_, thread_watcher_list_->Find(BrowserThread::IO));
 
-    // Create thread watcher object for the DB thread.
-    std::unique_ptr<CustomThreadWatcher> db_watcher(
-        new CustomThreadWatcher(BrowserThread::DB, kDBThreadName,
-                                kSleepTime, kUnresponsiveTime));
-    db_watcher_ = db_watcher.get();
-    ThreadWatcher* registered_db_watcher =
-        ThreadWatcherList::Register(std::move(db_watcher));
-    EXPECT_EQ(db_watcher_, registered_db_watcher);
-    EXPECT_EQ(db_watcher_, thread_watcher_list_->Find(BrowserThread::DB));
+    // Create thread watcher object for the UI thread.
+    std::unique_ptr<CustomThreadWatcher> ui_watcher(new CustomThreadWatcher(
+        BrowserThread::UI, kUIThreadName, kSleepTime, kUnresponsiveTime));
+    ui_watcher_ = ui_watcher.get();
+    ThreadWatcher* registered_ui_watcher =
+        ThreadWatcherList::Register(std::move(ui_watcher));
+    EXPECT_EQ(ui_watcher_, registered_ui_watcher);
+    EXPECT_EQ(ui_watcher_, thread_watcher_list_->Find(BrowserThread::UI));
 
     {
       base::AutoLock lock(lock_);
@@ -318,9 +317,9 @@ class ThreadWatcherTest : public ::testing::Test {
   ~ThreadWatcherTest() override {
     ThreadWatcherList::DeleteAll();
     io_watcher_ = nullptr;
-    db_watcher_ = nullptr;
+    ui_watcher_ = nullptr;
     io_thread_.reset();
-    db_thread_.reset();
+    ui_thread_.reset();
     watchdog_thread_.reset();
     thread_watcher_list_ = nullptr;
   }
@@ -330,7 +329,7 @@ class ThreadWatcherTest : public ::testing::Test {
   base::Lock lock_;
   base::ConditionVariable setup_complete_;
   bool initialized_;
-  std::unique_ptr<content::TestBrowserThread> db_thread_;
+  std::unique_ptr<content::TestBrowserThread> ui_thread_;
   std::unique_ptr<content::TestBrowserThread> io_thread_;
   std::unique_ptr<WatchDogThread> watchdog_thread_;
 
@@ -342,7 +341,7 @@ const TimeDelta ThreadWatcherTest::kSleepTime = TimeDelta::FromMilliseconds(50);
 const TimeDelta ThreadWatcherTest::kUnresponsiveTime =
     TimeDelta::FromMilliseconds(500);
 const char ThreadWatcherTest::kIOThreadName[] = "IO";
-const char ThreadWatcherTest::kDBThreadName[] = "DB";
+const char ThreadWatcherTest::kUIThreadName[] = "UI";
 const char ThreadWatcherTest::kCrashOnHangThreadNames[] = "UI,IO";
 const char ThreadWatcherTest::kThreadNamesAndLiveThreshold[] = "UI:4,IO:4";
 const char ThreadWatcherTest::kCrashOnHangThreadData[] =
@@ -460,12 +459,12 @@ TEST_F(ThreadWatcherTest, Registration) {
   EXPECT_EQ(kUnresponsiveTime, io_watcher_->unresponsive_time());
   EXPECT_FALSE(io_watcher_->active());
 
-  // Check ThreadWatcher object of watched DB thread has correct data.
-  EXPECT_EQ(BrowserThread::DB, db_watcher_->thread_id());
-  EXPECT_EQ(kDBThreadName, db_watcher_->thread_name());
-  EXPECT_EQ(kSleepTime, db_watcher_->sleep_time());
-  EXPECT_EQ(kUnresponsiveTime, db_watcher_->unresponsive_time());
-  EXPECT_FALSE(db_watcher_->active());
+  // Check ThreadWatcher object of watched UI thread has correct data.
+  EXPECT_EQ(BrowserThread::UI, ui_watcher_->thread_id());
+  EXPECT_EQ(kUIThreadName, ui_watcher_->thread_name());
+  EXPECT_EQ(kSleepTime, ui_watcher_->sleep_time());
+  EXPECT_EQ(kUnresponsiveTime, ui_watcher_->unresponsive_time());
+  EXPECT_FALSE(ui_watcher_->active());
 }
 
 // Test ActivateThreadWatching and DeActivateThreadWatching of IO thread. This
@@ -546,11 +545,10 @@ TEST_F(ThreadWatcherTest, ThreadNotResponding) {
 
 // Test watching of multiple threads with all threads not responding.
 TEST_F(ThreadWatcherTest, MultipleThreadsResponding) {
-  // Check for DB thread to perform ping/pong messaging.
-  WatchDogThread::PostTask(
-      FROM_HERE,
-      base::Bind(&ThreadWatcher::ActivateThreadWatching,
-                 base::Unretained(db_watcher_)));
+  // Check for UI thread to perform ping/pong messaging.
+  WatchDogThread::PostTask(FROM_HERE,
+                           base::Bind(&ThreadWatcher::ActivateThreadWatching,
+                                      base::Unretained(ui_watcher_)));
 
   // Check for IO thread to perform ping/pong messaging.
   WatchDogThread::PostTask(
@@ -558,16 +556,16 @@ TEST_F(ThreadWatcherTest, MultipleThreadsResponding) {
       base::Bind(&ThreadWatcher::ActivateThreadWatching,
                  base::Unretained(io_watcher_)));
 
-  // Verify DB thread is responding with ping/pong messaging.
-  db_watcher_->WaitForCheckResponse(
+  // Verify UI thread is responding with ping/pong messaging.
+  ui_watcher_->WaitForCheckResponse(
       kUnresponsiveTime + TimeDelta::FromMinutes(1), SUCCESSFUL);
-  EXPECT_GT(db_watcher_->ping_sent_, static_cast<uint64_t>(0));
-  EXPECT_GT(db_watcher_->pong_received_, static_cast<uint64_t>(0));
-  EXPECT_GE(db_watcher_->ping_sequence_number_, static_cast<uint64_t>(0));
-  EXPECT_GT(base::subtle::NoBarrier_Load(&(db_watcher_->success_response_)),
-      static_cast<base::subtle::Atomic32>(0));
-  EXPECT_EQ(base::subtle::NoBarrier_Load(&(db_watcher_->failed_response_)),
-      static_cast<base::subtle::Atomic32>(0));
+  EXPECT_GT(ui_watcher_->ping_sent_, static_cast<uint64_t>(0));
+  EXPECT_GT(ui_watcher_->pong_received_, static_cast<uint64_t>(0));
+  EXPECT_GE(ui_watcher_->ping_sequence_number_, static_cast<uint64_t>(0));
+  EXPECT_GT(base::subtle::NoBarrier_Load(&(ui_watcher_->success_response_)),
+            static_cast<base::subtle::Atomic32>(0));
+  EXPECT_EQ(base::subtle::NoBarrier_Load(&(ui_watcher_->failed_response_)),
+            static_cast<base::subtle::Atomic32>(0));
 
   // Verify IO thread is responding with ping/pong messaging.
   io_watcher_->WaitForCheckResponse(
@@ -586,10 +584,9 @@ TEST_F(ThreadWatcherTest, MultipleThreadsResponding) {
       base::Bind(&ThreadWatcher::DeActivateThreadWatching,
                  base::Unretained(io_watcher_)));
 
-  WatchDogThread::PostTask(
-      FROM_HERE,
-      base::Bind(&ThreadWatcher::DeActivateThreadWatching,
-                 base::Unretained(db_watcher_)));
+  WatchDogThread::PostTask(FROM_HERE,
+                           base::Bind(&ThreadWatcher::DeActivateThreadWatching,
+                                      base::Unretained(ui_watcher_)));
 }
 
 // Test watching of multiple threads with one of the threads not responding.
@@ -603,11 +600,10 @@ TEST_F(ThreadWatcherTest, MultipleThreadsNotResponding) {
       base::BindOnce(&CustomThreadWatcher::VeryLongMethod,
                      base::Unretained(io_watcher_), kUnresponsiveTime * 10));
 
-  // Activate watching of DB thread.
-  WatchDogThread::PostTask(
-      FROM_HERE,
-      base::Bind(&ThreadWatcher::ActivateThreadWatching,
-                 base::Unretained(db_watcher_)));
+  // Activate watching of UI thread.
+  WatchDogThread::PostTask(FROM_HERE,
+                           base::Bind(&ThreadWatcher::ActivateThreadWatching,
+                                      base::Unretained(ui_watcher_)));
 
   // Activate watching of IO thread.
   WatchDogThread::PostTask(
@@ -615,13 +611,13 @@ TEST_F(ThreadWatcherTest, MultipleThreadsNotResponding) {
       base::Bind(&ThreadWatcher::ActivateThreadWatching,
                  base::Unretained(io_watcher_)));
 
-  // Verify DB thread is responding with ping/pong messaging.
-  db_watcher_->WaitForCheckResponse(
+  // Verify UI thread is responding with ping/pong messaging.
+  ui_watcher_->WaitForCheckResponse(
       kUnresponsiveTime + TimeDelta::FromMinutes(1), SUCCESSFUL);
-  EXPECT_GT(base::subtle::NoBarrier_Load(&(db_watcher_->success_response_)),
-      static_cast<base::subtle::Atomic32>(0));
-  EXPECT_EQ(base::subtle::NoBarrier_Load(&(db_watcher_->failed_response_)),
-      static_cast<base::subtle::Atomic32>(0));
+  EXPECT_GT(base::subtle::NoBarrier_Load(&(ui_watcher_->success_response_)),
+            static_cast<base::subtle::Atomic32>(0));
+  EXPECT_EQ(base::subtle::NoBarrier_Load(&(ui_watcher_->failed_response_)),
+            static_cast<base::subtle::Atomic32>(0));
 
   // Verify IO thread is not responding for ping messages.
   io_watcher_->WaitForCheckResponse(
@@ -636,10 +632,9 @@ TEST_F(ThreadWatcherTest, MultipleThreadsNotResponding) {
       FROM_HERE,
       base::Bind(&ThreadWatcher::DeActivateThreadWatching,
                  base::Unretained(io_watcher_)));
-  WatchDogThread::PostTask(
-      FROM_HERE,
-      base::Bind(&ThreadWatcher::DeActivateThreadWatching,
-                 base::Unretained(db_watcher_)));
+  WatchDogThread::PostTask(FROM_HERE,
+                           base::Bind(&ThreadWatcher::DeActivateThreadWatching,
+                                      base::Unretained(ui_watcher_)));
 
   // Wait for the io_watcher_'s VeryLongMethod to finish.
   io_watcher_->WaitForWaitStateChange(kUnresponsiveTime * 10, ALL_DONE);
