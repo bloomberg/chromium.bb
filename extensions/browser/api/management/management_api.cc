@@ -17,6 +17,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -706,8 +707,7 @@ ExtensionFunction::ResponseAction ManagementSetLaunchTypeFunction::Run() {
       GetAvailableLaunchTypes(*extension, delegate);
 
   management::LaunchType app_launch_type = params->launch_type;
-  if (std::find(available_launch_types.begin(), available_launch_types.end(),
-                app_launch_type) == available_launch_types.end()) {
+  if (!base::ContainsValue(available_launch_types, app_launch_type)) {
     return RespondNow(Error(keys::kLaunchTypeNotAvailableError));
   }
 

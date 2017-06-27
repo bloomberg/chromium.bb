@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include <algorithm>
 #include <utility>
 #include <vector>
 
@@ -14,6 +13,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -182,7 +182,7 @@ bool WebRequestConditionAttributeResourceType::IsFulfilled(
   if (!(request_data.stage & GetStages()))
     return false;
   const auto resource_type = GetWebRequestResourceType(request_data.request);
-  return std::find(types_.begin(), types_.end(), resource_type) != types_.end();
+  return base::ContainsValue(types_, resource_type);
 }
 
 WebRequestConditionAttribute::Type
@@ -266,11 +266,9 @@ bool WebRequestConditionAttributeContentType::IsFulfilled(
       content_type, &mime_type, &charset, &had_charset, NULL);
 
   if (inclusive_) {
-    return std::find(content_types_.begin(), content_types_.end(),
-                     mime_type) != content_types_.end();
+    return base::ContainsValue(content_types_, mime_type);
   } else {
-    return std::find(content_types_.begin(), content_types_.end(),
-                     mime_type) == content_types_.end();
+    return !base::ContainsValue(content_types_, mime_type);
   }
 }
 

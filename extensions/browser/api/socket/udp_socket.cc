@@ -8,6 +8,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/lazy_instance.h"
+#include "base/stl_util.h"
 #include "extensions/browser/api/api_resource.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
@@ -260,9 +261,7 @@ int UDPSocket::JoinGroup(const std::string& address) {
     return net::ERR_ADDRESS_INVALID;
 
   std::string normalized_address = ip.ToString();
-  std::vector<std::string>::iterator find_result = std::find(
-      multicast_groups_.begin(), multicast_groups_.end(), normalized_address);
-  if (find_result != multicast_groups_.end())
+  if (base::ContainsValue(multicast_groups_, normalized_address))
     return net::ERR_ADDRESS_INVALID;
 
   int rv = socket_.JoinGroup(ip);

@@ -19,6 +19,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -1488,8 +1489,7 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
     }
 
     const std::vector<WebRequestResourceType>& types = listener->filter.types;
-    if (!types.empty() &&
-        std::find(types.begin(), types.end(), resource_type) == types.end()) {
+    if (!types.empty() && !base::ContainsValue(types, resource_type)) {
       continue;
     }
 
