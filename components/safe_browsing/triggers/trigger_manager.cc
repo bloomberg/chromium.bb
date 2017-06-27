@@ -51,6 +51,7 @@ SBErrorOptions TriggerManager::GetSBErrorDisplayOptions(
                         IsExtendedReportingEnabled(pref_service),
                         /*is_scout_reporting_enabled=*/false,
                         /*is_proceed_anyway_disabled=*/false,
+                        /*should_open_links_in_new_tab=*/false,
                         /*help_center_article_link=*/std::string());
 }
 

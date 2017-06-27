@@ -78,6 +78,7 @@ class SafeBrowsingBlockingPageFactoryImpl
         web_contents->GetBrowserContext()->IsOffTheRecord(),
         IsExtendedReportingEnabled(*prefs), IsScout(*prefs),
         is_proceed_anyway_disabled,
+        true,  // should_open_links_in_new_tab
         kHelpCenterLink);
 
     return new SafeBrowsingBlockingPage(ui_manager, web_contents,
