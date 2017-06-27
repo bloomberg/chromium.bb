@@ -8724,8 +8724,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2" label="Unknown"/>
 </enum>
 
-
-<enum name="DXGI_COLOR_SPACE_TYPE" type="int">
+<enum name="DXGI_COLOR_SPACE_TYPE">
   <summary>
     DirectX color space type. Documented here:
     https://msdn.microsoft.com/en-us/library/windows/desktop/dn903661(v=vs.85).aspx
@@ -8752,7 +8751,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="19" label="DXGI_COLOR_SPACE_YCBCR_FULL_GHLG_TOPLEFT_P2020"/>
 </enum>
 
-<enum name="DxgiFramePresentationMode" type="int">
+<enum name="DxgiFramePresentationMode">
   <int value="0" label="Composed"/>
   <int value="1" label="Overlay"/>
   <int value="2" label="None (Unknown)"/>
