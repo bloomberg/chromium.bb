@@ -7,8 +7,8 @@
 
 #import "ios/clean/chrome/browser/ui/tab_collection/tab_collection_view_controller.h"
 
-#import "ios/clean/chrome/browser/ui/animators/zoom_transition_delegate.h"
 #import "ios/clean/chrome/browser/ui/tab_grid/tab_grid_consumer.h"
+#import "ios/clean/chrome/browser/ui/transitions/animators/zoom_transition_delegate.h"
 
 @protocol SettingsCommands;
 @protocol TabGridCommands;

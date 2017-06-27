@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/clean/chrome/browser/ui/presenters/menu_presentation_controller.h"
+#import "ios/clean/chrome/browser/ui/transitions/presenters/menu_presentation_controller.h"
 
 #import <QuartzCore/QuartzCore.h>
 
 #include "ios/clean/chrome/browser/ui/commands/tools_menu_commands.h"
-#include "ios/clean/chrome/browser/ui/presenters/menu_presentation_delegate.h"
+#include "ios/clean/chrome/browser/ui/transitions/presenters/menu_presentation_delegate.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

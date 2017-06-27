@@ -19,7 +19,6 @@ source_set("find_in_page") {
     "//ios/chrome/browser/web_state_list",
     "//ios/clean/chrome/browser",
     "//ios/clean/chrome/browser/ui/actions",
-    "//ios/clean/chrome/browser/ui/animators",
     "//ios/clean/chrome/browser/ui/commands",
     "//ios/shared/chrome/browser/ui/browser_list",
     "//ios/shared/chrome/browser/ui/commands",
@@ -40,9 +39,7 @@ source_set("find_in_page_ui") {
     "//ios/chrome/browser/ui/find_bar",
     "//ios/clean/chrome/browser/ui",
     "//ios/clean/chrome/browser/ui/actions",
-    "//ios/clean/chrome/browser/ui/animators",
     "//ios/clean/chrome/browser/ui/commands",
-    "//ios/clean/chrome/browser/ui/presenters",
     "//ui/base",
   ]
   libs = [ "UIKit.framework" ]

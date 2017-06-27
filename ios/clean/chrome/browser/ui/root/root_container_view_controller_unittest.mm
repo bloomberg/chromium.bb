@@ -5,7 +5,7 @@
 #import "ios/clean/chrome/browser/ui/root/root_container_view_controller.h"
 
 #include "base/macros.h"
-#import "ios/clean/chrome/browser/ui/animators/zoom_transition_delegate.h"
+#import "ios/clean/chrome/browser/ui/transitions/animators/zoom_transition_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"

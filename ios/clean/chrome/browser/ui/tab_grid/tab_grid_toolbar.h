@@ -7,7 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/clean/chrome/browser/ui/animators/zoom_transition_delegate.h"
+#import "ios/clean/chrome/browser/ui/transitions/animators/zoom_transition_delegate.h"
 
 // The toolbar in the tab grid, which has a done button, incognito button, and
 // an overflow menu button. The toolbar has an intrinsic height, and its buttons

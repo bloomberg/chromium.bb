@@ -6,8 +6,6 @@ source_set("animators") {
   sources = [
     "zoom_transition_animator.h",
     "zoom_transition_animator.mm",
-    "zoom_transition_controller.h",
-    "zoom_transition_controller.mm",
     "zoom_transition_delegate.h",
   ]
 

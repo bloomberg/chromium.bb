@@ -6,7 +6,7 @@
 
 #import "ios/clean/chrome/browser/ui/tools/menu_view_controller.h"
 #import "ios/clean/chrome/browser/ui/tools/tools_mediator.h"
-#import "ios/clean/chrome/browser/ui/tools/tools_menu_transition_controller.h"
+#import "ios/clean/chrome/browser/ui/transitions/zooming_menu_transition_controller.h"
 #import "ios/shared/chrome/browser/ui/browser_list/browser.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -16,7 +16,7 @@
 @interface ToolsCoordinator ()
 @property(nonatomic, strong) ToolsMediator* mediator;
 @property(nonatomic, strong)
-    ToolsMenuTransitionController* transitionController;
+    ZoomingMenuTransitionController* transitionController;
 @property(nonatomic, strong) MenuViewController* viewController;
 @end
 
@@ -32,7 +32,7 @@
 - (void)start {
   self.viewController = [[MenuViewController alloc] init];
   self.viewController.modalPresentationStyle = UIModalPresentationCustom;
-  self.transitionController = [[ToolsMenuTransitionController alloc]
+  self.transitionController = [[ZoomingMenuTransitionController alloc]
       initWithDispatcher:static_cast<id>(self.browser->dispatcher())];
   self.viewController.transitioningDelegate = self.transitionController;
   self.viewController.dispatcher = static_cast<id>(self.browser->dispatcher());
