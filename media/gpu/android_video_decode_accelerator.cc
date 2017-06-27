@@ -1256,6 +1256,13 @@ void AndroidVideoDecodeAccelerator::SetOverlayInfo(
   if (state_ == BEFORE_OVERLAY_INIT)
     return;
 
+  // Release any overlay immediately when hiding a frame.  Otherwise, it will
+  // stick around as long as the VideoFrame does, which can be a long time.
+  if (overlay_info.is_frame_hidden)
+    picture_buffer_manager_.ImmediatelyForgetOverlay(output_picture_buffers_);
+
+  chooser_state_.is_frame_hidden = overlay_info.is_frame_hidden;
+
   // Notify the chooser about the fullscreen state.
   chooser_state_.is_fullscreen = overlay_info.is_fullscreen;
 

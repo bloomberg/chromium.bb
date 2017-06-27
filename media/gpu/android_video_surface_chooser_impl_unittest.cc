@@ -55,9 +55,13 @@ enum class ShouldUseOverlay { No, Yes };
 enum class AllowDynamic { No, Yes };
 enum class IsFullscreen { No, Yes };
 enum class IsSecure { No, Yes };
+enum class IsFrameHidden { No, Yes };
 
-using TestParams =
-    std::tuple<ShouldUseOverlay, AllowDynamic, IsFullscreen, IsSecure>;
+using TestParams = std::tuple<ShouldUseOverlay,
+                              AllowDynamic,
+                              IsFullscreen,
+                              IsSecure,
+                              IsFrameHidden>;
 
 // Useful macro for instantiating tests.
 #define Either(x) Values(x::No, x::Yes)
@@ -294,6 +298,7 @@ TEST_P(AndroidVideoSurfaceChooserImplTest, OverlayIsUsedOrNotBasedOnState) {
   allow_dynamic_ = IsTrue(AllowDynamic, 1);
   chooser_state_.is_fullscreen = IsTrue(IsFullscreen, 2);
   chooser_state_.is_secure = IsTrue(IsSecure, 3);
+  chooser_state_.is_frame_hidden = IsTrue(IsFrameHidden, 4);
 
   if (should_use_overlay) {
     EXPECT_CALL(client_, UseSurfaceTexture()).Times(0);
@@ -317,18 +322,28 @@ INSTANTIATE_TEST_CASE_P(NoFullscreenUsesSurfaceTexture,
                         Combine(Values(ShouldUseOverlay::No),
                                 Either(AllowDynamic),
                                 Values(IsFullscreen::No),
-                                Values(IsSecure::No)));
+                                Values(IsSecure::No),
+                                Values(IsFrameHidden::No)));
 INSTANTIATE_TEST_CASE_P(FullscreenUsesOverlay,
                         AndroidVideoSurfaceChooserImplTest,
                         Combine(Values(ShouldUseOverlay::Yes),
                                 Either(AllowDynamic),
                                 Values(IsFullscreen::Yes),
-                                Values(IsSecure::No)));
+                                Values(IsSecure::No),
+                                Values(IsFrameHidden::No)));
 INSTANTIATE_TEST_CASE_P(SecureUsesOverlay,
                         AndroidVideoSurfaceChooserImplTest,
                         Combine(Values(ShouldUseOverlay::Yes),
                                 Either(AllowDynamic),
                                 Either(IsFullscreen),
-                                Values(IsSecure::Yes)));
+                                Values(IsSecure::Yes),
+                                Values(IsFrameHidden::No)));
+INSTANTIATE_TEST_CASE_P(HiddenFramesUseSurfaceTexture,
+                        AndroidVideoSurfaceChooserImplTest,
+                        Combine(Values(ShouldUseOverlay::No),
+                                Values(AllowDynamic::Yes),
+                                Either(IsFullscreen),
+                                Either(IsSecure),
+                                Values(IsFrameHidden::Yes)));
 
 }  // namespace media

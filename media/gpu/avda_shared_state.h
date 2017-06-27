@@ -84,13 +84,13 @@ class AVDASharedState : public base::RefCounted<AVDASharedState> {
   // called during codec changes.
   void ClearReleaseTime();
 
+  void ClearOverlay(AndroidOverlay* overlay);
+
  protected:
   virtual ~AVDASharedState();
 
  private:
   friend class base::RefCounted<AVDASharedState>;
-
-  void OnSurfaceDestroyed(AndroidOverlay* overlay);
 
   // Texture matrix of the front buffer of the surface texture.
   float gl_matrix_[16];
