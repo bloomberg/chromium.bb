@@ -15,13 +15,14 @@ namespace ui {
 
 TEST(LatencyInfoParamTraitsTest, Basic) {
   LatencyInfo latency;
+  latency.set_trace_id(5);
   ASSERT_FALSE(latency.terminated());
   latency.AddLatencyNumber(INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 1234, 0);
   latency.AddLatencyNumber(INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 1234, 100);
   latency.AddLatencyNumber(INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT,
                            1234, 0);
 
-  EXPECT_EQ(100, latency.trace_id());
+  EXPECT_EQ(5, latency.trace_id());
   EXPECT_TRUE(latency.terminated());
 
   IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);

@@ -291,6 +291,12 @@ bool StructTraits<ui::mojom::LatencyInfoDataView, ui::LatencyInfo>::coalesced(
 }
 
 // static
+bool StructTraits<ui::mojom::LatencyInfoDataView, ui::LatencyInfo>::began(
+    const ui::LatencyInfo& info) {
+  return info.began();
+}
+
+// static
 bool StructTraits<ui::mojom::LatencyInfoDataView, ui::LatencyInfo>::terminated(
     const ui::LatencyInfo& info) {
   return info.terminated();
@@ -325,6 +331,7 @@ bool StructTraits<ui::mojom::LatencyInfoDataView, ui::LatencyInfo>::Read(
 
   out->trace_id_ = data.trace_id();
   out->coalesced_ = data.coalesced();
+  out->began_ = data.began();
   out->terminated_ = data.terminated();
   out->source_event_type_ = MojoSourceEventTypeToUI(data.source_event_type());
   return true;

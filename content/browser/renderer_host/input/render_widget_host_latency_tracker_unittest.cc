@@ -25,6 +25,9 @@ using testing::ElementsAre;
 namespace content {
 namespace {
 
+// Trace ids are generated in sequence in practice, but in these tests, we don't
+// care about the value, so we'll just use a constant.
+const int kTraceEventId = 5;
 const char kUrl[] = "http://www.foo.bar.com/subpage/1";
 
 void AddFakeComponentsWithTimeStamp(
@@ -813,6 +816,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TouchBlockingAndQueueingTime) {
       tracker()->OnInputEvent(event, &latency);
 
       ui::LatencyInfo fake_latency;
+      fake_latency.set_trace_id(kTraceEventId);
       fake_latency.set_source_event_type(ui::SourceEventType::TOUCH);
       fake_latency.AddLatencyNumberWithTimestamp(
           ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
@@ -859,6 +863,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TouchBlockingAndQueueingTime) {
       EXPECT_EQ(2U, latency.latency_components().size());
 
       ui::LatencyInfo fake_latency;
+      fake_latency.set_trace_id(kTraceEventId);
       fake_latency.set_source_event_type(ui::SourceEventType::TOUCH);
       fake_latency.AddLatencyNumberWithTimestamp(
           ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
@@ -902,6 +907,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TouchBlockingAndQueueingTime) {
       EXPECT_EQ(2U, latency.latency_components().size());
 
       ui::LatencyInfo fake_latency;
+      fake_latency.set_trace_id(kTraceEventId);
       fake_latency.set_source_event_type(ui::SourceEventType::TOUCH);
       fake_latency.AddLatencyNumberWithTimestamp(
           ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
@@ -1004,6 +1010,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, KeyBlockingAndQueueingTime) {
       tracker()->OnInputEvent(event, &latency_info);
 
       ui::LatencyInfo fake_latency;
+      fake_latency.set_trace_id(kTraceEventId);
       fake_latency.set_source_event_type(ui::SourceEventType::KEY_PRESS);
       fake_latency.AddLatencyNumberWithTimestamp(
           ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
@@ -1060,6 +1067,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, KeyUILatency) {
                                blink::WebInputEvent::kNoModifiers,
                                base::TimeTicks::Now());
   ui::LatencyInfo latency_info;
+  latency_info.set_trace_id(kTraceEventId);
   latency_info.set_source_event_type(ui::SourceEventType::KEY_PRESS);
   latency_info.AddLatencyNumberWithTimestamp(
       ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0,
@@ -1092,6 +1100,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, KeyAckedLatency) {
                                blink::WebInputEvent::kNoModifiers,
                                base::TimeTicks::Now());
   ui::LatencyInfo latency_info;
+  latency_info.set_trace_id(kTraceEventId);
   latency_info.set_source_event_type(ui::SourceEventType::KEY_PRESS);
 
   latency_info.AddLatencyNumberWithTimestamp(
@@ -1126,6 +1135,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, KeyEndToEndLatency) {
   int event_timestamps_microseconds[] = {11, 24};
 
   ui::LatencyInfo latency_info;
+  latency_info.set_trace_id(kTraceEventId);
   latency_info.set_source_event_type(ui::SourceEventType::KEY_PRESS);
   latency_info.AddLatencyNumberWithTimestamp(
       ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, 0,
@@ -1185,6 +1195,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
     tracker()->OnInputEvent(event, &latency);
 
     ui::LatencyInfo fake_latency;
+    fake_latency.set_trace_id(kTraceEventId);
     fake_latency.AddLatencyNumberWithTimestamp(
         ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
         tracker()->latency_component_id(), 0,
@@ -1254,6 +1265,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, WheelDuringMultiFingerTouch) {
     tracker()->OnInputEvent(touch_event, &latency);
 
     ui::LatencyInfo fake_latency;
+    fake_latency.set_trace_id(kTraceEventId);
     fake_latency.set_source_event_type(ui::SourceEventType::TOUCH);
     fake_latency.AddLatencyNumberWithTimestamp(
         ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
