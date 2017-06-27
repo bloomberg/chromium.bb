@@ -12,9 +12,12 @@ namespace ukm {
 
 TestUkmRecorder::TestUkmRecorder() {
   EnableRecording();
+  UkmRecorder::Set(this);
 }
 
-TestUkmRecorder::~TestUkmRecorder() = default;
+TestUkmRecorder::~TestUkmRecorder() {
+  UkmRecorder::Set(nullptr);
+};
 
 const UkmSource* TestUkmRecorder::GetSourceForUrl(const char* url) const {
   const UkmSource* source = nullptr;
