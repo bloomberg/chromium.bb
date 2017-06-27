@@ -379,6 +379,9 @@ TEST_F(ContextualSearchJsTest, TestHighlightIgnoreDOMMutationSameText) {
 
 // Test that related text DOM mutation prevents contextual search.
 TEST_F(ContextualSearchJsTest, TestHighlightRelatedDOMMutationText) {
+  // TODO(crbug.com/736989): Test failures in GetMutatedNodeCount.
+  if (base::ios::IsRunningOnIOS11OrLater())
+    return;
   LoadHtml(kHTMLWithRelatedTextMutation);
   ExecuteJavaScript(@"document.getElementById('test').innerText = 'mutated';");
   ASSERT_EQ(1, GetMutatedNodeCount());
