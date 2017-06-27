@@ -57,12 +57,13 @@ source_set("unittests") {
     "database/database_connections_unittest.cc",
     "database/database_identifier_unittest.cc",
     "fileapi/file_system_util_unittest.cc",
+    "run_all_unittests.cc",
   ]
 
   deps = [
     ":common",
-    "//base/test:run_all_unittests",
     "//base/test:test_support",
+    "//mojo/edk/system",
     "//testing/gtest",
     "//url",
   ]
