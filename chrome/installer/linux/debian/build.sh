@@ -55,14 +55,6 @@ stage_install_debian() {
   local USR_BIN_SYMLINK_NAME="${PACKAGE}-${CHANNEL}"
 
   if [ "$CHANNEL" != "stable" ]; then
-    # This would ideally be compiled into the app, but that's a bit too
-    # intrusive of a change for these limited use channels, so we'll just hack
-    # it into the wrapper script. The user can still override since it seems to
-    # work to specify --user-data-dir multiple times on the command line, with
-    # the last occurrence winning.
-    local SXS_USER_DATA_DIR="\${XDG_CONFIG_HOME:-\${HOME}/.config}/${PACKAGE}-${CHANNEL}"
-    local DEFAULT_FLAGS="--user-data-dir=\"${SXS_USER_DATA_DIR}\""
-
     # Avoid file collisions between channels.
     local INSTALLDIR="${INSTALLDIR}-${CHANNEL}"
 
