@@ -117,6 +117,36 @@ void Partitions::DumpMemoryStats(
                      partition_stats_dumper);
 }
 
+namespace {
+
+class LightPartitionStatsDumperImpl : public WTF::PartitionStatsDumper {
+ public:
+  LightPartitionStatsDumperImpl() : total_active_bytes_(0) {}
+
+  void PartitionDumpTotals(
+      const char* partition_name,
+      const WTF::PartitionMemoryStats* memory_stats) override {
+    total_active_bytes_ += memory_stats->total_active_bytes;
+  }
+
+  void PartitionsDumpBucketStats(
+      const char* partition_name,
+      const WTF::PartitionBucketMemoryStats*) override {}
+
+  size_t TotalActiveBytes() const { return total_active_bytes_; }
+
+ private:
+  size_t total_active_bytes_;
+};
+
+}  // namespace
+
+size_t Partitions::TotalActiveBytes() {
+  LightPartitionStatsDumperImpl dumper;
+  WTF::Partitions::DumpMemoryStats(true, &dumper);
+  return dumper.TotalActiveBytes();
+}
+
 static NEVER_INLINE void PartitionsOutOfMemoryUsing2G() {
   size_t signature = 2UL * 1024 * 1024 * 1024;
   base::debug::Alias(&signature);

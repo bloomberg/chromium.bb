@@ -5837,6 +5837,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>A type of Blink GC.</summary>
 </histogram>
 
+<histogram name="BlinkGC.LowMemoryPageNavigationGC.Reduction" units="MB">
+  <owner>keishi@chromium.org</owner>
+  <summary>
+    Amount of memory reduced with the GC triggered on page navigation while the
+    device is in a low memory state. Only implemented on low end Android devices
+    at the moment. Memory usage is approximated by summing the memory usage of
+    the following allocators: BlinkGC, PartitionAlloc, and V8 main thread
+    isolate heap.
+  </summary>
+</histogram>
+
 <histogram name="BlinkGC.ObjectSizeAfterGC" units="KB">
   <owner>haraken@chromium.org</owner>
   <summary>
@@ -23758,8 +23769,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>media-dev@chromium.org</owner>
   <summary>
     Records the output color space of the monitor as reported by Windows.
-    Recorded once for each monitor when the gpu process starts.
-    If monitor enumeration fails, this metric will not be provided.
+    Recorded once for each monitor when the gpu process starts. If monitor
+    enumeration fails, this metric will not be provided.
   </summary>
 </histogram>
 
@@ -23767,9 +23778,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>hubbe@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>
-    Records if any connected monitor is HDR capable. Recorded when the gpu process
-    starts. Only recorded on Windows as of M-61.
-    If monitor enumeration fails, this metric will not be provided.
+    Records if any connected monitor is HDR capable. Recorded when the gpu
+    process starts. Only recorded on Windows as of M-61. If monitor enumeration
+    fails, this metric will not be provided.
   </summary>
 </histogram>
 
@@ -23777,9 +23788,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>hubbe@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>
-    Records the display maximum lumens as reported by Windows.
-    Recorded once for each monitor when the gpu process starts.
-    If monitor enumeration fails, this metric will not be provided.
+    Records the display maximum lumens as reported by Windows. Recorded once for
+    each monitor when the gpu process starts. If monitor enumeration fails, this
+    metric will not be provided.
   </summary>
 </histogram>
 
