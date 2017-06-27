@@ -1,0 +1,9 @@
+This is a testharness.js-based test.
+FAIL addTrack when pc is closed should throw InvalidStateError assert_own_property: expected property "addTrack" missing
+FAIL addTrack with single track argument should succeed assert_own_property: expected property "addTrack" missing
+FAIL Adding the same track multiple times should throw InvalidAccessError assert_own_property: expected property "addTrack" missing
+FAIL addTrack with existing sender with null track, same kind, and recvonly direction should reuse sender assert_own_property: expected property "addTrack" missing
+FAIL addTrack with existing sender with null track, same kind, and sendrecv direction should create new sender assert_own_property: expected property "addTrack" missing
+FAIL addTrack with existing sender with null track, different kind, and recvonly direction should create new sender assert_own_property: expected property "addTrack" missing
+Harness: the test ran to completion.
+
