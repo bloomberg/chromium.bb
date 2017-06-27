@@ -178,7 +178,6 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
             getInstance(activity);
             assert sInstance != null;
             if (sInstance == null) return;
-            assert !sInstance.mInVr;
             sInstance.mDonSucceeded = true;
             if (sInstance.mPaused) {
                 if (sInstance.mInVrAtChromeLaunch == null) sInstance.mInVrAtChromeLaunch = false;
@@ -852,7 +851,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
     private void handleDonFlowSuccess() {
         mDonSucceeded = false;
         // If we fail to enter VR when we should have entered VR, return to the home screen.
-        if (!enterVrAfterDon()) {
+        if (!mInVr && !enterVrAfterDon()) {
             cancelPendingVrEntry();
             maybeSetPresentResult(false);
             mVrDaydreamApi.launchVrHomescreen();
