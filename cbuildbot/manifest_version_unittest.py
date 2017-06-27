@@ -411,7 +411,7 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
         'builderid', mock.Mock(), builders)
 
   def testGetBuildersStatusBothFinished(self):
-    """Tests GetBuilderStatus where both builds have finished."""
+    """Tests GetBuildersStatus where both builds have finished."""
     self.manager = self.BuildManager()
     status_runs = [{
         'build1': build_status_unittest.CIDBStatusInfos.GetInflightBuild(
@@ -430,7 +430,7 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
     self.assertTrue(statuses['build2'].Passed())
 
   def testGetBuildersStatusLoop(self):
-    """Tests GetBuilderStatus where builds are inflight."""
+    """Tests GetBuildersStatus where builds are inflight."""
     self.manager = self.BuildManager()
     status_runs = [{
         'build1': build_status_unittest.CIDBStatusInfos.GetInflightBuild(
@@ -511,7 +511,7 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
         'builderid', mock.Mock(), builders)
 
   def testGetBuildersStatusBothFinishedWithBuildbucket(self):
-    """Tests GetBuilderStatus where both Buildbucket builds have finished."""
+    """Tests GetBuildersStatus where both Buildbucket builds have finished."""
     self.manager = self._CreateCanaryMasterManager()
 
     status_runs = [{
@@ -541,7 +541,7 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
     self.assertTrue(statuses['build2'].Passed())
 
   def testGetBuildersStatusLoopWithBuildbucket(self):
-    """Tests GetBuilderStatus where both Buildbucket builds have finished."""
+    """Tests GetBuildersStatus where both Buildbucket builds have finished."""
     self.manager = self._CreateCanaryMasterManager()
     retry_patch = self.PatchObject(build_status.SlaveStatus,
                                    '_RetryBuilds')
@@ -589,7 +589,7 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
     self.assertEqual(retry_patch.call_count, 0)
 
   def testGetBuildersStatusLoopWithBuildbucketRetry(self):
-    """Tests GetBuilderStatus loop with buildbucket retry."""
+    """Tests GetBuildersStatus loop with buildbucket retry."""
     self.manager = self._CreateCanaryMasterManager()
     retry_patch = self.PatchObject(build_status.SlaveStatus,
                                    '_RetryBuilds')
@@ -633,7 +633,7 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
     self.assertTrue(retry_patch.call_count, 1)
 
   def testGetBuildersStatusLoopWithBuildbucketRetry_2(self):
-    """Tests GetBuilderStatus loop with buildbucket retry."""
+    """Tests GetBuildersStatus loop with buildbucket retry."""
     self.manager = self._CreateCanaryMasterManager()
     retry_patch = self.PatchObject(build_status.SlaveStatus,
                                    '_RetryBuilds')

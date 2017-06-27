@@ -788,15 +788,6 @@ class ManifestVersionedSyncStage(SyncStage):
         next_manifest, filter_cros=self._run.options.local) as new_manifest:
       self.ManifestCheckout(new_manifest)
 
-    # Set the status inflight at the end of the ManifestVersionedSync
-    # stage. This guarantees that all syncing has completed.
-    if self.manifest_manager:
-      fail_if_exists = not config_lib.ScheduledByBuildbucket(self._run.config)
-      self.manifest_manager.SetInFlight(
-          self.manifest_manager.current_version,
-          dashboard_url=self.ConstructDashboardURL(),
-          fail_if_exists=fail_if_exists)
-
 
 class MasterSlaveLKGMSyncStage(ManifestVersionedSyncStage):
   """Stage that generates a unique manifest file candidate, and sync's to it.

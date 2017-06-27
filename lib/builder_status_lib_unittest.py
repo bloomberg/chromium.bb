@@ -11,7 +11,6 @@ import mock
 from chromite.cbuildbot import build_status_unittest
 from chromite.lib import buildbucket_lib
 from chromite.lib import builder_status_lib
-from chromite.lib import build_failure_message
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_test_lib
@@ -49,30 +48,6 @@ class BuilderStatusManagerTest(cros_test_lib.MockTestCase):
 
   def setUp(self):
     self.db = fake_cidb.FakeCIDBConnection()
-
-  def testUnpickleBuildStatus(self):
-    """Tests that _UnpickleBuildStatus returns the correct values."""
-    failed_msg = build_failure_message.BuildFailureMessage(
-        'you failed', ['traceback'], True, 'taco', 'bot')
-    failed_input_status = builder_status_lib.BuilderStatus(
-        constants.BUILDER_STATUS_FAILED, failed_msg)
-    passed_input_status = builder_status_lib.BuilderStatus(
-        constants.BUILDER_STATUS_PASSED, None)
-
-    failed_output_status = (
-        builder_status_lib.BuilderStatusManager._UnpickleBuildStatus(
-            failed_input_status.AsPickledDict()))
-    passed_output_status = (
-        builder_status_lib.BuilderStatusManager._UnpickleBuildStatus(
-            passed_input_status.AsPickledDict()))
-    empty_string_status = (
-        builder_status_lib.BuilderStatusManager._UnpickleBuildStatus(''))
-
-    self.assertEqual(failed_input_status.AsFlatDict(),
-                     failed_output_status.AsFlatDict())
-    self.assertEqual(passed_input_status.AsFlatDict(),
-                     passed_output_status.AsFlatDict())
-    self.assertTrue(empty_string_status.Failed())
 
   def testCreateBuildFailureMessageWithMessages(self):
     """Test CreateBuildFailureMessage with stage failure messages."""

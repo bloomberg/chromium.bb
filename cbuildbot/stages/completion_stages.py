@@ -83,7 +83,7 @@ class ManifestVersionedSyncCompletionStage(
       # suites.
       self._run.attrs.manifest_manager.UpdateStatus(
           success_map=GetBuilderSuccessMap(self._run, self.success),
-          message=self.message, dashboard_url=self.ConstructDashboardURL())
+          message=self.message)
 
 
 class ImportantBuilderFailedException(failures_lib.StepFailure):
@@ -242,11 +242,6 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
 
   def PerformStage(self):
     super(MasterSlaveSyncCompletionStage, self).PerformStage()
-
-    # Upload our pass/fail status to Google Storage.
-    self._run.attrs.manifest_manager.UploadStatus(
-        success=self.success, message=self.message,
-        dashboard_url=self.ConstructDashboardURL())
 
     statuses = self._FetchSlaveStatuses()
     self._slave_statuses = statuses
@@ -429,7 +424,7 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       failing: Names of the builders that failed.
 
     Returns:
-      A list of BuildFailureMessage or NoneType objects.
+      A list of build_failure_message.BuildFailureMessage or NoneType objects.
     """
     return [self._slave_statuses[x].message for x in failing]
 
@@ -815,7 +810,7 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
       failing: The names of the failing builders.
 
     Returns:
-      A list of BuildFailureMessage objects.
+      A list of build_failure_message.BuildFailureMessage objects.
     """
     msgs = self._GetFailedMessages(failing)
     # Filter out None messages because we cannot analyze them.

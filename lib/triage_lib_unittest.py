@@ -66,7 +66,7 @@ class MessageHelper(object):
   @staticmethod
   def GetFailedMessage(failure_messages, stage='Build', internal=False,
                        bot='daisy_spring-paladin'):
-    """Returns a BuildFailureMessage object."""
+    """Returns a build_failure_message.BuildFailureMessage object."""
     return build_failure_message.BuildFailureMessage(
         'Stage %s failed' % stage, failure_messages, internal,
         'failure reason string', bot)
@@ -271,7 +271,7 @@ class TestFindSuspects(patch_unittest.MockPatchBase):
                          sanity=False)
 
   def _GetMessages(self, lab_fail=0, infra_fail=0, other_fail=0):
-    """Returns a list of BuildFailureMessage objects."""
+    """Returns a list ofbuild_failure_message.BuildFailureMessage objects."""
     messages = []
     messages.extend(
         [MessageHelper.GetFailedMessage([MessageHelper.GetTestLabFailure()])

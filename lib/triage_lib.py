@@ -414,8 +414,8 @@ class CalculateSuspects(object):
     """Returns True if all failure messages are in the exception_category.
 
     Args:
-      messages: A list of BuildFailureMessage or NoneType objects from the
-        failed slaves.
+      messages: A list of build_failure_message.BuildFailureMessage or NoneType
+        objects from the failed slaves.
       exception_category: The exception category to match, must be one of
         constants.EXCEPTION_CATEGORY_ALL_CATEGORIES.
       strict: If False, treat NoneType message as a match.
@@ -435,8 +435,8 @@ class CalculateSuspects(object):
     """Returns True if all failure messages are in the exception_categories.
 
     Args:
-      messages: A list of BuildFailureMessage or NoneType objects from the
-        failed slaves.
+      messages: A list of build_failure_message.BuildFailureMessage or NoneType
+        objects from the failed slaves.
       exception_categories: A list of exception categories to match, every item
         must be one of constants.EXCEPTION_CATEGORY_ALL_CATEGORIES.
       strict: If False, treat NoneType message as a match.
@@ -465,8 +465,8 @@ class CalculateSuspects(object):
     """Determine if the cause of build failure was lab failure.
 
     Args:
-      messages: A list of BuildFailureMessage or NoneType objects from the
-        failed slaves.
+      messages: A list of build_failure_message.BuildFailureMessage or NoneType
+        objects from the failed slaves.
       no_stat: A list of builders which failed prematurely without reporting
         status.
 
@@ -484,8 +484,8 @@ class CalculateSuspects(object):
     All failures in 'lab' and 'infra' categories are infra failures.
 
     Args:
-      messages: A list of BuildFailureMessage or NoneType objects from the
-        failed slaves.
+      messages: A list of build_failure_message.BuildFailureMessage or NoneType
+        objects from the failed slaves.
       no_stat: A list of builders which failed prematurely without reporting
         status.
 
@@ -513,7 +513,7 @@ class CalculateSuspects(object):
     Args:
       changes: A list of cros_patch.GerritPatch instances to consider.
       messages: A list of build failure messages, of type
-        BuildFailureMessage or of type NoneType.
+        build_failure_message.BuildFailureMessage or of type NoneType.
       infra_fail: The build failed purely due to infrastructure failures.
       lab_fail: The build failed purely due to test lab infrastructure
         failures.
@@ -568,7 +568,8 @@ class CalculateSuspects(object):
     subsystems are unrelated to this change.
 
     Args:
-      messages: A list of BuildFailureMessage from the failed slaves.
+      messages: A list of build_failure_message.BuildFailureMessage from the
+        failed slaves.
       change: A GerritPatch instance to examine.
       build_root: Build root directory.
       subsys_by_config: A dictionary of pass/fail HWTest subsystems indexed
@@ -648,8 +649,8 @@ class CalculateSuspects(object):
       failing: Names of the builders that failed.
       inflight: Names of the builders that timed out.
       no_stat: Set of builder names of slave builders that had status None.
-      messages: A list of BuildFailureMessage or NoneType objects from
-        the failed slaves.
+      messages: A list of build_failure_message.BuildFailureMessage or NoneType
+        objects from the failed slaves.
       build_root: Build root directory.
 
     Returns:

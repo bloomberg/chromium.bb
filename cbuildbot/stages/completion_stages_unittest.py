@@ -24,12 +24,12 @@ from chromite.lib import alerts
 from chromite.lib import auth
 from chromite.lib import buildbucket_lib
 from chromite.lib import builder_status_lib
+from chromite.lib import build_failure_message
 from chromite.lib import cidb
 from chromite.lib import clactions
 from chromite.lib import cros_logging as logging
 from chromite.lib import config_lib
 from chromite.lib import constants
-from chromite.lib import failures_lib
 from chromite.lib import fake_cidb
 from chromite.lib import hwtest_results
 from chromite.lib import patch_unittest
@@ -61,7 +61,7 @@ class ManifestVersionedSyncCompletionStageTest(
 
     stage.Run()
     update_status_mock.assert_called_once_with(
-        message=None, success_map={self.BOT_ID: True}, dashboard_url=mock.ANY)
+        message=None, success_map={self.BOT_ID: True})
 
   def testManifestVersionedSyncCompletedFailure(self):
     """Tests basic ManifestVersionedSyncStageCompleted on failure"""
@@ -76,9 +76,9 @@ class ManifestVersionedSyncCompletionStageTest(
 
     stage.Run()
     update_status_mock.assert_called_once_with(
-        message='foo', success_map={self.BOT_ID: False},
-        dashboard_url=mock.ANY)
+        message='foo', success_map={self.BOT_ID: False})
     get_msg_mock.assert_called_once_with()
+
 
   def testManifestVersionedSyncCompletedIncomplete(self):
     """Tests basic ManifestVersionedSyncStageCompleted on incomplete build."""
@@ -434,7 +434,7 @@ class MasterSlaveSyncCompletionStageTestWithMasterPaladin(
     failing = {'failing_build'}
     inflight = {'inflight_build'}
     no_stat = {'no_stat_build'}
-    failed_msg = failures_lib.BuildFailureMessage(
+    failed_msg = build_failure_message.BuildFailureMessage(
         'message', [], True, 'reason', 'bot')
     failed_status = builder_status_lib.BuilderStatus(
         'failed', failed_msg, 'url')

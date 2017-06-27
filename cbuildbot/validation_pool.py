@@ -1623,8 +1623,8 @@ class ValidationPool(object):
 
     Args:
       changes: A list of GerritPatch instances to examine.
-      messages: A list of BuildFailureMessage or NoneType objects from
-        the failed slaves.
+      messages: A list of build_failure_message.BuildFailureMessage or NoneType
+        objects from the failed slaves.
       changes_by_config: A dictionary of relevant changes indexed by the
         config names.
       subsys_by_config: A dictionary of pass/fail HWTest subsystems indexed
@@ -1837,7 +1837,7 @@ class ValidationPool(object):
     Args:
       change: The change to mark as failed.
       messages: A list of build failure messages from supporting builders.
-          These must be BuildFailureMessage objects.
+          These must be build_failure_message.BuildFailureMessage objects.
       suspects: An instance of triage_lib.SuspectChanges.
       sanity: A boolean indicating whether the build was considered sane. If
         not sane, none of the changes will have their CommitReady bit modified.
@@ -1867,7 +1867,8 @@ class ValidationPool(object):
 
     Args:
       messages: A list of build failure messages from supporting builders.
-          These must be BuildFailureMessage objects or NoneType objects.
+          These must be build_failure_message.BuildFailureMessage objects or
+          NoneType objects.
       changes: A list of cros_patch.GerritPatch instances to mark as failed.
         By default, mark all of the changes as failed.
       sanity: A boolean indicating whether the build was considered sane. If

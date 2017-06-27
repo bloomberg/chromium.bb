@@ -159,7 +159,6 @@ class ManifestVersionedSyncStageTest(
     self.incr_type = 'branch'
     self.next_version = 'next_version'
     self.sync_stage = None
-    self.PatchObject(manifest_version.BuildSpecsManager, 'SetInFlight')
 
     self.repo = repository.RepoRepository(
         self.source_repo, self.tempdir, self.branch)
@@ -333,7 +332,6 @@ class BaseCQTestCase(generic_stages_unittest.StageTestCase):
     """Setup patchers for specified bot id."""
     # Mock out methods as needed.
     self.PatchObject(lkgm_manager, 'GenerateBlameList')
-    self.PatchObject(lkgm_manager.LKGMManager, 'SetInFlight')
     self.PatchObject(repository.RepoRepository, 'ExportManifest',
                      return_value=self.MANIFEST_CONTENTS, autospec=True)
     self.PatchObject(sync_stages.SyncStage, 'WriteChangesToMetadata')
