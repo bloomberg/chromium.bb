@@ -76,8 +76,7 @@ void LocalWindowProxy::DisposeContext(Lifecycle next_status) {
   // The embedder could run arbitrary code in response to the
   // willReleaseScriptContext callback, so all disposing should happen after
   // it returns.
-  GetFrame()->Loader().Client()->WillReleaseScriptContext(context,
-                                                          world_->GetWorldId());
+  GetFrame()->Client()->WillReleaseScriptContext(context, world_->GetWorldId());
   MainThreadDebugger::Instance()->ContextWillBeDestroyed(script_state_.Get());
 
   if (next_status == Lifecycle::kGlobalObjectIsDetached) {
@@ -160,8 +159,7 @@ void LocalWindowProxy::Initialize() {
 
   MainThreadDebugger::Instance()->ContextCreated(script_state_.Get(),
                                                  GetFrame(), origin);
-  GetFrame()->Loader().Client()->DidCreateScriptContext(context,
-                                                        world_->GetWorldId());
+  GetFrame()->Client()->DidCreateScriptContext(context, world_->GetWorldId());
   // If conditional features for window have been queued before the V8 context
   // was ready, then inject them into the context now
   if (world_->IsMainWorld()) {
@@ -181,7 +179,7 @@ void LocalWindowProxy::CreateContext() {
 
   Vector<const char*> extension_names;
   // Dynamically tell v8 about our extensions now.
-  if (GetFrame()->Loader().Client()->AllowScriptExtensions()) {
+  if (GetFrame()->Client()->AllowScriptExtensions()) {
     const V8Extensions& extensions = ScriptController::RegisteredExtensions();
     extension_names.ReserveInitialCapacity(extensions.size());
     for (const auto* extension : extensions)

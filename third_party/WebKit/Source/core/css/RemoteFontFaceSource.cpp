@@ -28,7 +28,7 @@ namespace {
 
 bool IsEffectiveConnectionTypeSlowFor(Document* document) {
   WebEffectiveConnectionType type =
-      document->GetFrame()->Loader().Client()->GetEffectiveConnectionType();
+      document->GetFrame()->Client()->GetEffectiveConnectionType();
 
   WebEffectiveConnectionType threshold_type =
       WebEffectiveConnectionType::kTypeUnknown;
