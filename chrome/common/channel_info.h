@@ -41,6 +41,13 @@ version_info::Channel GetChannel();
 void SetChannel(const std::string& channel);
 #endif
 
+#if defined(OS_POSIX) && defined(GOOGLE_CHROME_BUILD)
+// Returns a channel-specific suffix to use when constructing the path of the
+// default user data directory, allowing multiple channels to run side-by-side.
+// In the stable channel, this returns the empty string.
+std::string GetChannelSuffixForDataDir();
+#endif
+
 }  // namespace chrome
 
 #endif  // CHROME_COMMON_CHANNEL_INFO_H_

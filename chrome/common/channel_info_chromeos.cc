@@ -46,4 +46,11 @@ void SetChannel(const std::string& channel) {
 #endif
 }
 
+#if defined(GOOGLE_CHROME_BUILD)
+std::string GetChannelSuffixForDataDir() {
+  // ChromeOS doesn't support side-by-side installations.
+  return std::string();
+}
+#endif  // defined(GOOGLE_CHROME_BUILD)
+
 }  // namespace chrome
