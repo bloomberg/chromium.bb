@@ -59,6 +59,9 @@ class ProfileListDesktopBrowserTest : public InProcessBrowserTest {
 // This test doesn't make sense for Chrome OS since it has a different
 // multi-profiles menu in the system tray instead.
 #define MAYBE_SignOut DISABLED_SignOut
+#elif defined(OS_LINUX)
+// Flaky on Linux debug builds with libc++ (https://crbug.com/734875)
+#define MAYBE_SignOut DISABLED_SignOut
 #else
 #define MAYBE_SignOut SignOut
 #endif
