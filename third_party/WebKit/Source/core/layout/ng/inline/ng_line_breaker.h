@@ -64,7 +64,8 @@ class CORE_EXPORT NGLineBreaker {
     kForcedBreak
   };
 
-  LineBreakState HandleText(const NGInlineItem&,
+  LineBreakState HandleText(const NGInlineItemResults&,
+                            const NGInlineItem&,
                             NGInlineItemResult*);
   void BreakText(NGInlineItemResult*,
                  const NGInlineItem&,
@@ -84,6 +85,7 @@ class CORE_EXPORT NGLineBreaker {
   void SetShouldCreateLineBox();
 
   void SetCurrentStyle(const ComputedStyle&);
+  bool IsFirstBreakOpportunity(unsigned, const NGInlineItemResults&) const;
 
   void MoveToNextOf(const NGInlineItem&);
   void MoveToNextOf(const NGInlineItemResult&);
@@ -105,6 +107,7 @@ class CORE_EXPORT NGLineBreaker {
   ShapeResultSpacing<String> spacing_;
 
   bool auto_wrap_;
+  bool break_if_overflow_;
 
   // We don't create "certain zero-height line boxes".
   // https://drafts.csswg.org/css2/visuren.html#phantom-line-box
