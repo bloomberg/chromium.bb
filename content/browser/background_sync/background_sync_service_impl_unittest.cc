@@ -164,14 +164,15 @@ class BackgroundSyncServiceImplTest : public testing::Test {
     bool called = false;
     embedded_worker_helper_->context()->RegisterServiceWorker(
         GURL(kServiceWorkerPattern), GURL(kServiceWorkerScript), NULL,
-        base::Bind(&RegisterServiceWorkerCallback, &called,
-                   &sw_registration_id_));
+        base::AdaptCallbackForRepeating(base::BindOnce(
+            &RegisterServiceWorkerCallback, &called, &sw_registration_id_)));
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(called);
 
     embedded_worker_helper_->context_wrapper()->FindReadyRegistrationForId(
         sw_registration_id_, GURL(kServiceWorkerPattern).GetOrigin(),
-        base::Bind(FindServiceWorkerRegistrationCallback, &sw_registration_));
+        base::AdaptCallbackForRepeating(base::BindOnce(
+            FindServiceWorkerRegistrationCallback, &sw_registration_)));
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(sw_registration_);
   }
@@ -224,8 +225,9 @@ TEST_F(BackgroundSyncServiceImplTest, Register) {
   bool called = false;
   blink::mojom::BackgroundSyncError error;
   blink::mojom::SyncRegistrationPtr reg;
-  Register(default_sync_registration_.Clone(),
-           base::Bind(&ErrorAndRegistrationCallback, &called, &error, &reg));
+  Register(
+      default_sync_registration_.Clone(),
+      base::BindOnce(&ErrorAndRegistrationCallback, &called, &error, &reg));
   EXPECT_TRUE(called);
   EXPECT_EQ(blink::mojom::BackgroundSyncError::NONE, error);
   EXPECT_EQ("", reg->tag);
@@ -235,8 +237,8 @@ TEST_F(BackgroundSyncServiceImplTest, GetRegistrations) {
   bool called = false;
   blink::mojom::BackgroundSyncError error;
   unsigned long array_size = 0UL;
-  GetRegistrations(base::Bind(&ErrorAndRegistrationListCallback, &called,
-                              &error, &array_size));
+  GetRegistrations(base::BindOnce(&ErrorAndRegistrationListCallback, &called,
+                                  &error, &array_size));
   EXPECT_TRUE(called);
   EXPECT_EQ(blink::mojom::BackgroundSyncError::NONE, error);
   EXPECT_EQ(0UL, array_size);
@@ -244,20 +246,20 @@ TEST_F(BackgroundSyncServiceImplTest, GetRegistrations) {
 
 TEST_F(BackgroundSyncServiceImplTest, GetRegistrationsWithRegisteredSync) {
   bool register_called = false;
-  bool getregistrations_called = false;
+  bool get_registrations_called = false;
   blink::mojom::BackgroundSyncError register_error;
   blink::mojom::BackgroundSyncError getregistrations_error;
   blink::mojom::SyncRegistrationPtr register_reg;
   unsigned long array_size = 0UL;
   Register(default_sync_registration_.Clone(),
-           base::Bind(&ErrorAndRegistrationCallback, &register_called,
-                      &register_error, &register_reg));
+           base::BindOnce(&ErrorAndRegistrationCallback, &register_called,
+                          &register_error, &register_reg));
   EXPECT_TRUE(register_called);
   EXPECT_EQ(blink::mojom::BackgroundSyncError::NONE, register_error);
-  GetRegistrations(base::Bind(&ErrorAndRegistrationListCallback,
-                              &getregistrations_called, &getregistrations_error,
-                              &array_size));
-  EXPECT_TRUE(getregistrations_called);
+  GetRegistrations(base::BindOnce(&ErrorAndRegistrationListCallback,
+                                  &get_registrations_called,
+                                  &getregistrations_error, &array_size));
+  EXPECT_TRUE(get_registrations_called);
   EXPECT_EQ(blink::mojom::BackgroundSyncError::NONE, getregistrations_error);
   EXPECT_EQ(1UL, array_size);
 }

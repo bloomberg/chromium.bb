@@ -53,12 +53,11 @@ class ServiceWorkerContextWrapper;
 class CONTENT_EXPORT BackgroundSyncManager
     : NON_EXPORTED_BASE(public ServiceWorkerContextCoreObserver) {
  public:
-  using BoolCallback = base::Callback<void(bool)>;
-  using StatusCallback = base::Callback<void(BackgroundSyncStatus)>;
+  using BoolCallback = base::OnceCallback<void(bool)>;
   using StatusAndRegistrationCallback =
-      base::Callback<void(BackgroundSyncStatus,
-                          std::unique_ptr<BackgroundSyncRegistration>)>;
-  using StatusAndRegistrationsCallback = base::Callback<void(
+      base::OnceCallback<void(BackgroundSyncStatus,
+                              std::unique_ptr<BackgroundSyncRegistration>)>;
+  using StatusAndRegistrationsCallback = base::OnceCallback<void(
       BackgroundSyncStatus,
       std::vector<std::unique_ptr<BackgroundSyncRegistration>>)>;
 
@@ -75,13 +74,13 @@ class CONTENT_EXPORT BackgroundSyncManager
   // supplied.
   void Register(int64_t sw_registration_id,
                 const BackgroundSyncRegistrationOptions& options,
-                const StatusAndRegistrationCallback& callback);
+                StatusAndRegistrationCallback callback);
 
   // Finds the background sync registrations associated with
   // |sw_registration_id|. Calls |callback| with BACKGROUND_SYNC_STATUS_OK on
   // success.
   void GetRegistrations(int64_t sw_registration_id,
-                        const StatusAndRegistrationsCallback& callback);
+                        StatusAndRegistrationsCallback callback);
 
   // ServiceWorkerContextCoreObserver overrides.
   void OnRegistrationDeleted(int64_t sw_registration_id,
@@ -131,10 +130,10 @@ class CONTENT_EXPORT BackgroundSyncManager
       scoped_refptr<ServiceWorkerVersion> active_version,
       blink::mojom::BackgroundSyncEventLastChance last_chance,
       const ServiceWorkerVersion::StatusCallback& callback);
-  virtual void ScheduleDelayedTask(const base::Closure& callback,
+  virtual void ScheduleDelayedTask(base::OnceClosure callback,
                                    base::TimeDelta delay);
   virtual void HasMainFrameProviderHost(const GURL& origin,
-                                        const BoolCallback& callback);
+                                        BoolCallback callback);
 
  private:
   friend class TestBackgroundSyncManager;
@@ -152,7 +151,6 @@ class CONTENT_EXPORT BackgroundSyncManager
     GURL origin;
   };
 
-  using PermissionStatusCallback = base::Callback<void(bool)>;
   using SWIdToRegistrationsMap = std::map<int64_t, BackgroundSyncRegistrations>;
 
   static const size_t kMaxTagLength = 10240;
@@ -162,12 +160,12 @@ class CONTENT_EXPORT BackgroundSyncManager
   // The list of active registrations is cleared and the backend is also cleared
   // (if it's still functioning). The manager will reenable itself once it
   // receives the OnStorageWiped message or on browser restart.
-  void DisableAndClearManager(const base::Closure& callback);
+  void DisableAndClearManager(base::OnceClosure callback);
   void DisableAndClearDidGetRegistrations(
-      const base::Closure& callback,
+      base::OnceClosure callback,
       const std::vector<std::pair<int64_t, std::string>>& user_data,
       ServiceWorkerStatusCode status);
-  void DisableAndClearManagerClearedOne(const base::Closure& barrier_closure,
+  void DisableAndClearManagerClearedOne(base::OnceClosure barrier_closure,
                                         ServiceWorkerStatusCode status);
 
   // Returns the existing registration or nullptr if it cannot be found.
@@ -189,12 +187,12 @@ class CONTENT_EXPORT BackgroundSyncManager
       const GURL& origin,
       const BackgroundSyncRegistration& sync_registration);
 
-  void InitImpl(const base::Closure& callback);
+  void InitImpl(base::OnceClosure callback);
   void InitDidGetControllerParameters(
-      const base::Closure& callback,
+      base::OnceClosure callback,
       std::unique_ptr<BackgroundSyncParameters> parameters);
   void InitDidGetDataFromBackend(
-      const base::Closure& callback,
+      base::OnceClosure callback,
       const std::vector<std::pair<int64_t, std::string>>& user_data,
       ServiceWorkerStatusCode status);
 
@@ -202,28 +200,28 @@ class CONTENT_EXPORT BackgroundSyncManager
   void RegisterCheckIfHasMainFrame(
       int64_t sw_registration_id,
       const BackgroundSyncRegistrationOptions& options,
-      const StatusAndRegistrationCallback& callback);
+      StatusAndRegistrationCallback callback);
   void RegisterDidCheckIfMainFrame(
       int64_t sw_registration_id,
       const BackgroundSyncRegistrationOptions& options,
-      const StatusAndRegistrationCallback& callback,
+      StatusAndRegistrationCallback callback,
       bool has_main_frame_client);
   void RegisterImpl(int64_t sw_registration_id,
                     const BackgroundSyncRegistrationOptions& options,
-                    const StatusAndRegistrationCallback& callback);
+                    StatusAndRegistrationCallback callback);
   void RegisterDidAskForPermission(
       int64_t sw_registration_id,
       const BackgroundSyncRegistrationOptions& options,
-      const StatusAndRegistrationCallback& callback,
+      StatusAndRegistrationCallback callback,
       blink::mojom::PermissionStatus permission_status);
   void RegisterDidStore(int64_t sw_registration_id,
                         const BackgroundSyncRegistration& new_registration,
-                        const StatusAndRegistrationCallback& callback,
+                        StatusAndRegistrationCallback callback,
                         ServiceWorkerStatusCode status);
 
   // GetRegistrations callbacks
   void GetRegistrationsImpl(int64_t sw_registration_id,
-                            const StatusAndRegistrationsCallback& callback);
+                            StatusAndRegistrationsCallback callback);
 
   bool AreOptionConditionsMet(const BackgroundSyncRegistrationOptions& options);
   bool IsRegistrationReadyToFire(
@@ -241,29 +239,29 @@ class CONTENT_EXPORT BackgroundSyncManager
   // FireReadyEvents scans the list of available events and fires those that are
   // ready to fire. For those that can't yet be fired, wakeup alarms are set.
   void FireReadyEvents();
-  void FireReadyEventsImpl(const base::Closure& callback);
+  void FireReadyEventsImpl(base::OnceClosure callback);
   void FireReadyEventsDidFindRegistration(
       const std::string& tag,
       BackgroundSyncRegistration::RegistrationId registration_id,
-      const base::Closure& event_fired_callback,
-      const base::Closure& event_completed_callback,
+      base::OnceClosure event_fired_callback,
+      base::OnceClosure event_completed_callback,
       ServiceWorkerStatusCode service_worker_status,
       scoped_refptr<ServiceWorkerRegistration> service_worker_registration);
-  void FireReadyEventsAllEventsFiring(const base::Closure& callback);
+  void FireReadyEventsAllEventsFiring(base::OnceClosure callback);
 
   // Called when a sync event has completed.
   void EventComplete(
       scoped_refptr<ServiceWorkerRegistration> service_worker_registration,
       int64_t service_worker_id,
       const std::string& tag,
-      const base::Closure& callback,
+      base::OnceClosure callback,
       ServiceWorkerStatusCode status_code);
   void EventCompleteImpl(int64_t service_worker_id,
                          const std::string& tag,
                          ServiceWorkerStatusCode status_code,
-                         const base::Closure& callback);
+                         base::OnceClosure callback);
   void EventCompleteDidStore(int64_t service_worker_id,
-                             const base::Closure& callback,
+                             base::OnceClosure callback,
                              ServiceWorkerStatusCode status_code);
 
   // Called when all sync events have completed.
@@ -272,18 +270,18 @@ class CONTENT_EXPORT BackgroundSyncManager
 
   // OnRegistrationDeleted callbacks
   void OnRegistrationDeletedImpl(int64_t sw_registration_id,
-                                 const base::Closure& callback);
+                                 base::OnceClosure callback);
 
   // OnStorageWiped callbacks
-  void OnStorageWipedImpl(const base::Closure& callback);
+  void OnStorageWipedImpl(base::OnceClosure callback);
 
   void OnNetworkChanged();
 
   // SetMaxSyncAttempts callback
   void SetMaxSyncAttemptsImpl(int max_sync_attempts,
-                              const base::Closure& callback);
+                              base::OnceClosure callback);
 
-  base::Closure MakeEmptyCompletion();
+  base::OnceClosure MakeEmptyCompletion();
 
   SWIdToRegistrationsMap active_registrations_;
   CacheStorageScheduler op_scheduler_;

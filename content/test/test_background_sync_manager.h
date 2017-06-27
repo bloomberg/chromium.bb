@@ -35,9 +35,9 @@ class ServiceWorkerVersion;
 //  - Setting the network state
 class TestBackgroundSyncManager : public BackgroundSyncManager {
  public:
-  using DispatchSyncCallback =
-      base::Callback<void(const scoped_refptr<ServiceWorkerVersion>&,
-                          const ServiceWorkerVersion::StatusCallback&)>;
+  using DispatchSyncCallback = base::RepeatingCallback<void(
+      const scoped_refptr<ServiceWorkerVersion>&,
+      const ServiceWorkerVersion::StatusCallback&)>;
 
   explicit TestBackgroundSyncManager(
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context);
@@ -75,8 +75,10 @@ class TestBackgroundSyncManager : public BackgroundSyncManager {
     has_main_frame_provider_host_ = value;
   }
 
+  bool IsDelayedTaskScheduled() const { return !delayed_task_.is_null(); }
+  void RunDelayedTask() { std::move(delayed_task_).Run(); }
+
   // Accessors to internal state
-  base::Closure delayed_task() const { return delayed_task_; }
   base::TimeDelta delayed_task_delta() const { return delayed_task_delta_; }
   blink::mojom::BackgroundSyncEventLastChance last_chance() const {
     return last_chance_;
@@ -110,13 +112,13 @@ class TestBackgroundSyncManager : public BackgroundSyncManager {
 
   // Override to just store delayed task, and allow tests to control the clock
   // and when delayed tasks are executed.
-  void ScheduleDelayedTask(const base::Closure& callback,
+  void ScheduleDelayedTask(base::OnceClosure callback,
                            base::TimeDelta delay) override;
 
   // Override to avoid actual check for main frame, instead return the value set
   // by tests.
   void HasMainFrameProviderHost(const GURL& origin,
-                                const BoolCallback& callback) override;
+                                BoolCallback callback) override;
 
  private:
   // Callback to resume the StoreDataInBackend operation, after explicit
@@ -140,9 +142,9 @@ class TestBackgroundSyncManager : public BackgroundSyncManager {
   bool has_main_frame_provider_host_ = true;
   blink::mojom::BackgroundSyncEventLastChance last_chance_ =
       blink::mojom::BackgroundSyncEventLastChance::IS_NOT_LAST_CHANCE;
-  base::Closure continuation_;
+  base::OnceClosure continuation_;
   DispatchSyncCallback dispatch_sync_callback_;
-  base::Closure delayed_task_;
+  base::OnceClosure delayed_task_;
   base::TimeDelta delayed_task_delta_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBackgroundSyncManager);

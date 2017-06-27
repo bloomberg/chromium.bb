@@ -15,9 +15,9 @@ class BackgroundSyncNetworkObserverTest : public testing::Test {
  protected:
   BackgroundSyncNetworkObserverTest()
       : network_change_notifier(net::NetworkChangeNotifier::CreateMock()),
-        network_observer_(new BackgroundSyncNetworkObserver(
-            base::Bind(&BackgroundSyncNetworkObserverTest::OnNetworkChanged,
-                       base::Unretained(this)))),
+        network_observer_(new BackgroundSyncNetworkObserver(base::BindRepeating(
+            &BackgroundSyncNetworkObserverTest::OnNetworkChanged,
+            base::Unretained(this)))),
         network_changed_count_(0) {}
 
   void SetNetwork(net::NetworkChangeNotifier::ConnectionType connection_type) {

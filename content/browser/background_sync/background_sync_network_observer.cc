@@ -21,7 +21,7 @@ void BackgroundSyncNetworkObserver::SetIgnoreNetworkChangeNotifierForTests(
 }
 
 BackgroundSyncNetworkObserver::BackgroundSyncNetworkObserver(
-    const base::Closure& network_changed_callback)
+    const base::RepeatingClosure& network_changed_callback)
     : connection_type_(net::NetworkChangeNotifier::GetConnectionType()),
       network_changed_callback_(network_changed_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);

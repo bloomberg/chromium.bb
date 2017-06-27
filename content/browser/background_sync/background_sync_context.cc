@@ -31,8 +31,8 @@ void BackgroundSyncContext::Init(
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&BackgroundSyncContext::CreateBackgroundSyncManager, this,
-                 context));
+      base::BindOnce(&BackgroundSyncContext::CreateBackgroundSyncManager, this,
+                     context));
 }
 
 void BackgroundSyncContext::Shutdown() {
@@ -40,7 +40,7 @@ void BackgroundSyncContext::Shutdown() {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&BackgroundSyncContext::ShutdownOnIO, this));
+      base::BindOnce(&BackgroundSyncContext::ShutdownOnIO, this));
 }
 
 void BackgroundSyncContext::CreateService(
@@ -50,8 +50,8 @@ void BackgroundSyncContext::CreateService(
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&BackgroundSyncContext::CreateServiceOnIOThread, this,
-                 base::Passed(&request)));
+      base::BindOnce(&BackgroundSyncContext::CreateServiceOnIOThread, this,
+                     base::Passed(&request)));
 }
 
 void BackgroundSyncContext::ServiceHadConnectionError(
