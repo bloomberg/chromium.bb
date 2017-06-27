@@ -156,8 +156,6 @@ class WPTGitHub(object):
 
         data, status_code = self.request(path, method='GET')
         if status_code == 200:
-            for item in data['items']:
-                print item['state'], item['number']
             return [self.make_pr_from_item(item) for item in data['items']]
         else:
             raise Exception('Non-200 status code (%s): %s' % (status_code, data))
