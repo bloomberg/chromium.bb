@@ -143,6 +143,26 @@ opt.innerHTML = 'opt';
 sel.appendChild(opt);
 </script>
 
-</body>
+<p>Display 'none' to 'inline-block'</p>
+<select style="display:none;" id="select-none" size="4">
+<option>option1</option>
+<option>option2</option>
+<option>option3</option>
+<option>option4</option>
+<option>option5</option>
+<option>option6</option>
+<option selected>This should be selected and visible.</option>
+</select>
+<script>
+// Force layout with display:none.
+document.body.offsetHeight;
+if (window.testRunner)
+  testRunner.waitUntilDone();
+requestAnimationFrame(() => {
+  document.querySelector('#select-none').style.display = 'inline-block';
+  testRunner.notifyDone();
+});
+</script>
 
+</body>
 </html>
