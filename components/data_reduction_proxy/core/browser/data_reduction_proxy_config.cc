@@ -1168,12 +1168,6 @@ bool DataReductionProxyConfig::ShouldEnableLitePagesInternal(
   return false;
 }
 
-void DataReductionProxyConfig::GetNetworkList(
-    net::NetworkInterfaceList* interfaces,
-    int policy) {
-  net::GetNetworkList(interfaces, policy);
-}
-
 const std::vector<base::TimeDelta>&
 DataReductionProxyConfig::GetLofiAccuracyRecordingIntervals() const {
   DCHECK(thread_checker_.CalledOnValidThread());

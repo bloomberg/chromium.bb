@@ -13,7 +13,6 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
-#include "net/base/network_interfaces.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace base {
@@ -58,9 +57,6 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
 
   ~TestDataReductionProxyConfig() override;
 
-  void GetNetworkList(net::NetworkInterfaceList* interfaces,
-                      int policy) override;
-
   // Allows tests to reset the params being used for configuration.
   void ResetParamFlagsForTest();
 
@@ -79,10 +75,6 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
 
   bool IsNetworkQualityProhibitivelySlow(
       const net::NetworkQualityEstimator* network_quality_estimator) override;
-
-  net::NetworkInterfaceList* interfaces() {
-    return network_interfaces_.get();
-  }
 
   void SetLofiAccuracyRecordingIntervals(
       const std::vector<base::TimeDelta>& lofi_accuracy_recording_intervals);
@@ -128,8 +120,6 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
 
   base::Optional<bool> was_data_reduction_proxy_used_;
   base::Optional<int> proxy_index_;
-
-  std::unique_ptr<net::NetworkInterfaceList> network_interfaces_;
 
   bool network_quality_prohibitively_slow_set_;
   // True if the network quality is slow enough to turn Lo-Fi ON.
