@@ -26,9 +26,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.LauncherShortcutActivity;
-import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChrome;
-import org.chromium.chrome.browser.ntp.ChromeHomeNewTabPageBase;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
@@ -45,8 +43,7 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import java.util.concurrent.TimeoutException;
 
 /**
- * Tests for the NTP UI displayed when Chrome Home is enabled. TODO(twellington): Remove remaining
- * tests for ChromeHomeNewTabPage after it's completely removed.
+ * Tests for the NTP UI displayed when Chrome Home is enabled.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({BottomSheetTestRule.ENABLE_CHROME_HOME,
@@ -517,72 +514,6 @@ public class BottomSheetNewTabControllerTest {
                 currentPendingTabCalls, 1);
         assertFalse("Toolbar should be normal.", toolbarDataProvider.isIncognito());
         assertFalse("Normal model should be selected.", mTabModelSelector.isIncognitoSelected());
-    }
-
-    @Test
-    @SmallTest
-    public void testCloseNTP()
-            throws IllegalArgumentException, InterruptedException, TimeoutException {
-        // Create a new tab.
-        createNewBlankTab(false);
-        loadChromeHomeNewTab();
-
-        // Close the new tab.
-        closeNewTab();
-        assertEquals(1, mTabModelSelector.getTotalTabCount());
-    }
-
-    @Test
-    @SmallTest
-    public void testCloseNTP_Incognito()
-            throws IllegalArgumentException, InterruptedException, TimeoutException {
-        // Create new incognito NTP.
-        createNewBlankTab(true);
-        loadChromeHomeNewTab();
-
-        // Close the new tab.
-        closeNewTab();
-        assertEquals(1, mTabModelSelector.getTotalTabCount());
-    }
-
-    private void loadChromeHomeNewTab() throws InterruptedException {
-        final Tab tab = mActivity.getActivityTab();
-        ChromeTabUtils.loadUrlOnUiThread(tab, UrlConstants.NTP_URL);
-        ChromeTabUtils.waitForTabPageLoaded(tab, UrlConstants.NTP_URL);
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-    }
-
-    private void createNewBlankTab(final boolean incognito) {
-        MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(),
-                mActivity, incognito ? R.id.new_incognito_tab_menu_id : R.id.new_tab_menu_id);
-
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mBottomSheet.loadUrl(new LoadUrlParams("about:blank"), incognito);
-                mActivity.getLayoutManager().getActiveLayout().finishAnimationsForTests();
-            }
-        });
-    }
-
-    private void closeNewTab() throws InterruptedException, TimeoutException {
-        Tab tab = mActivity.getActivityTab();
-        TestTabModelObserver observer =
-                tab.isIncognito() ? mIncognitoTabModelObserver : mNormalTabModelObserver;
-        int currentCallCount = observer.mDidCloseTabCallbackHelper.getCallCount();
-        final ChromeHomeNewTabPageBase newTabPage = (ChromeHomeNewTabPageBase) tab.getNativePage();
-
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                newTabPage.getCloseButtonForTests().callOnClick();
-                mActivity.getLayoutManager().getActiveLayout().finishAnimationsForTests();
-            }
-        });
-
-        observer.mDidCloseTabCallbackHelper.waitForCallback(currentCallCount, 1);
-
-        validateState(false, BottomSheet.SHEET_STATE_PEEK);
     }
 
     private void validateState(boolean chromeHomeTabPageSelected, int expectedEndState) {

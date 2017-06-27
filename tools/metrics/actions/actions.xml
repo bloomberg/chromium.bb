@@ -1122,7 +1122,18 @@ should be able to be added at any place in this file.
   <description>User closed the Chrome Home bottom sheet.</description>
 </action>
 
+<action name="Android.ChromeHome.ClosedByBackPress">
+  <owner>mdjones@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>
+    User closed the Chrome Home bottom sheet by pressing the system back button.
+  </description>
+</action>
+
 <action name="Android.ChromeHome.ClosedByNTPCloseButton">
+  <obsolete>
+    Deprecated 6/2017. There is no longer an NTP UI with a close button.
+  </obsolete>
   <owner>mdjones@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <description>
@@ -1167,6 +1178,16 @@ should be able to be added at any place in this file.
   <owner>twellington@chromium.org</owner>
   <description>
     User put the Chrome Home bottom sheet in the half-open state.
+  </description>
+</action>
+
+<action name="Android.ChromeHome.NativeNTPShown">
+  <owner>mdjones@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>
+    A user navigation instructed the NativePageFactory to create a native page
+    for the NTP. This may occur if the user has NTP URLs in a tab's navigation
+    history.
   </description>
 </action>
 
