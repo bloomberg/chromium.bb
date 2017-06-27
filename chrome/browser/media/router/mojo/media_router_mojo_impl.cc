@@ -75,8 +75,8 @@ MediaRouterMojoImpl::MediaRouterMojoImpl(
 #if defined(OS_WIN)
   if (check_firewall == FirewallCheck::RUN) {
     CanFirewallUseLocalPorts(
-        base::Bind(&MediaRouterMojoImpl::OnFirewallCheckComplete,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&MediaRouterMojoImpl::OnFirewallCheckComplete,
+                       weak_factory_.GetWeakPtr()));
   }
 #endif
 }

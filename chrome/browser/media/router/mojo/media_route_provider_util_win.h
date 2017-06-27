@@ -12,7 +12,7 @@ namespace media_router {
 // Asynchronously checks whether there will be a firewall prompt for using local
 // ports on Windows. |callback| will be called with the result where |true|
 // means that local ports can be used without triggering a firewall prompt.
-void CanFirewallUseLocalPorts(const base::Callback<void(bool)>& callback);
+void CanFirewallUseLocalPorts(base::OnceCallback<void(bool)> callback);
 
 }  // namespace media_router
 
