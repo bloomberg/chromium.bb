@@ -164,6 +164,10 @@ void FetchEvent::OnNavigationPreloadError(
   if (!script_state->ContextIsValid())
     return;
   DCHECK(preload_response_property_);
+  if (preload_response_property_->GetState() !=
+      PreloadResponseProperty::kPending) {
+    return;
+  }
   preload_response_property_->Reject(
       ServiceWorkerError::Take(nullptr, *error.get()));
 }
