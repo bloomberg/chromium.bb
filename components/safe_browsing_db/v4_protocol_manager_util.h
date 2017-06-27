@@ -8,6 +8,7 @@
 // A class that implements the stateless methods used by the GetHashUpdate and
 // GetFullHash stubby calls made by Chrome using the SafeBrowsing V4 protocol.
 
+#include <initializer_list>
 #include <memory>
 #include <ostream>
 #include <string>
@@ -15,6 +16,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/gtest_prod_util.h"
 #include "base/strings/string_piece.h"
 #include "components/safe_browsing_db/safebrowsing.pb.h"
@@ -122,6 +124,20 @@ enum SBThreatType {
   // Url detected by password protection service.
   SB_THREAT_TYPE_URL_PASSWORD_PROTECTION_PHISHING,
 };
+
+using SBThreatTypeSet = base::flat_set<SBThreatType>;
+
+// Return true if |set| only contains types that are valid for CheckBrowseUrl().
+// Intended for use in DCHECK().
+bool SBThreatTypeSetIsValidForCheckBrowseUrl(const SBThreatTypeSet& set);
+
+// Shorthand for creating an SBThreatTypeSet from a list of SBThreatTypes. Use
+// like CreateSBThreatTypeSet({SB_THREAT_TYPE_URL_PHISHING,
+//                             SB_THREAT_TYPE_URL_MALWARE})
+inline SBThreatTypeSet CreateSBThreatTypeSet(
+    std::initializer_list<SBThreatType> set) {
+  return SBThreatTypeSet(set, base::KEEP_FIRST_OF_DUPES);
+}
 
 // The information required to uniquely identify each list the client is
 // interested in maintaining and downloading from the SafeBrowsing servers.

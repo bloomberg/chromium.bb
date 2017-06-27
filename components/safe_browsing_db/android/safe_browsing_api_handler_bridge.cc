@@ -10,8 +10,10 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/containers/flat_set.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/safe_browsing_db/safe_browsing_api_handler_util.h"
+#include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/SafeBrowsingApiBridge_jni.h"
 
@@ -57,9 +59,9 @@ int SBThreatTypeToJavaThreatType(const SBThreatType& sb_threat_type) {
 }
 
 // Convert a vector of SBThreatTypes to JavaIntArray of Java threat types.
-ScopedJavaLocalRef<jintArray> SBThreatTypesToJavaArray(
+ScopedJavaLocalRef<jintArray> SBThreatTypeSetToJavaArray(
     JNIEnv* env,
-    const std::vector<SBThreatType>& threat_types) {
+    const SBThreatTypeSet& threat_types) {
   DCHECK(threat_types.size() > 0);
   int int_threat_types[threat_types.size()];
   int* itr = &int_threat_types[0];
@@ -151,7 +153,7 @@ bool SafeBrowsingApiHandlerBridge::CheckApiIsSupported() {
 void SafeBrowsingApiHandlerBridge::StartURLCheck(
     const SafeBrowsingApiHandler::URLCheckCallbackMeta& callback,
     const GURL& url,
-    const std::vector<SBThreatType>& threat_types) {
+    const SBThreatTypeSet& threat_types) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!CheckApiIsSupported()) {
@@ -168,14 +170,12 @@ void SafeBrowsingApiHandlerBridge::StartURLCheck(
 
   DVLOG(1) << "Starting check " << callback_id << " for URL " << url;
 
-  // Default threat types, to support upstream code that doesn't yet set them.
-  std::vector<SBThreatType> local_threat_types(threat_types);
-  DCHECK(!local_threat_types.empty());
+  DCHECK(!threat_types.empty());
 
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> j_url = ConvertUTF8ToJavaString(env, url.spec());
   ScopedJavaLocalRef<jintArray> j_threat_types =
-      SBThreatTypesToJavaArray(env, local_threat_types);
+      SBThreatTypeSetToJavaArray(env, threat_types);
 
   Java_SafeBrowsingApiBridge_startUriLookup(env, j_api_handler_, callback_id,
                                             j_url, j_threat_types);

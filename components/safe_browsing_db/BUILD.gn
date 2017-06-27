@@ -113,6 +113,7 @@ static_library("remote_database_manager") {
     ":database_manager",
     ":safe_browsing_api_handler",
     ":v4_get_hash_protocol_manager",
+    ":v4_protocol_manager_util",
     "//base:base",
     "//components/variations",
     "//content/public/browser",
@@ -164,6 +165,7 @@ static_library("test_database_manager") {
   ]
   deps = [
     ":database_manager",
+    ":v4_protocol_manager_util",
     "//base:base",
     "//net",
   ]
@@ -374,6 +376,7 @@ source_set("v4_local_database_manager_unittest") {
   deps = [
     ":v4_database",
     ":v4_local_database_manager",
+    ":v4_protocol_manager_util",
     ":v4_test_util",
     "//base",
     "//base/test:test_support",

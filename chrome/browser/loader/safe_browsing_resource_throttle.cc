@@ -15,6 +15,7 @@
 #include "components/safe_browsing_db/util.h"
 #include "components/safe_browsing_db/v4_feature_list.h"
 #include "components/safe_browsing_db/v4_local_database_manager.h"
+#include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "components/security_interstitials/content/unsafe_resource.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
@@ -56,10 +57,15 @@ SafeBrowsingResourceThrottle::SafeBrowsingResourceThrottle(
     const net::URLRequest* request,
     content::ResourceType resource_type,
     safe_browsing::SafeBrowsingService* sb_service)
-    : safe_browsing::BaseResourceThrottle(request,
-                                          resource_type,
-                                          sb_service->database_manager(),
-                                          sb_service->ui_manager()) {}
+    : safe_browsing::BaseResourceThrottle(
+          request,
+          resource_type,
+          safe_browsing::CreateSBThreatTypeSet(
+              {safe_browsing::SB_THREAT_TYPE_URL_MALWARE,
+               safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
+               safe_browsing::SB_THREAT_TYPE_URL_UNWANTED}),
+          sb_service->database_manager(),
+          sb_service->ui_manager()) {}
 
 SafeBrowsingResourceThrottle::~SafeBrowsingResourceThrottle() {}
 

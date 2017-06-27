@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "components/safe_browsing_db/v4_get_hash_protocol_manager.h"
+#include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "components/safe_browsing_db/v4_test_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
@@ -35,12 +36,20 @@ class LocalDatabaseManagerTest : public PlatformTest {
   };
 
   bool RunSBHashTest(const ListType list_type,
-                     const std::vector<SBThreatType>& expected_threats,
+                     const SBThreatTypeSet& expected_threats,
                      const std::vector<std::string>& result_lists);
-  bool RunUrlTest(
-      const GURL& url, ListType list_type,
-      const std::vector<SBThreatType>& expected_threats,
-      const std::vector<HostListPair>& host_list_results);
+  bool RunUrlTest(const GURL& url,
+                  ListType list_type,
+                  const SBThreatTypeSet& expected_threats,
+                  const std::vector<HostListPair>& host_list_results);
+
+  // Constant values used in tests.
+  const SBThreatTypeSet malware_threat_ =
+      CreateSBThreatTypeSet({SB_THREAT_TYPE_URL_BINARY_MALWARE});
+  const SBThreatTypeSet multiple_threats_ = CreateSBThreatTypeSet(
+      {SB_THREAT_TYPE_URL_MALWARE, SB_THREAT_TYPE_URL_PHISHING});
+  const SBThreatTypeSet unwanted_threat_ =
+      CreateSBThreatTypeSet({SB_THREAT_TYPE_URL_UNWANTED});
 
  private:
   bool RunTest(std::unique_ptr<
@@ -52,7 +61,7 @@ class LocalDatabaseManagerTest : public PlatformTest {
 
 bool LocalDatabaseManagerTest::RunSBHashTest(
     const ListType list_type,
-    const std::vector<SBThreatType>& expected_threats,
+    const SBThreatTypeSet& expected_threats,
     const std::vector<std::string>& result_lists) {
   const SBFullHash same_full_hash = {};
   std::unique_ptr<LocalSafeBrowsingDatabaseManager::SafeBrowsingCheck> check(
@@ -70,8 +79,9 @@ bool LocalDatabaseManagerTest::RunSBHashTest(
 }
 
 bool LocalDatabaseManagerTest::RunUrlTest(
-    const GURL& url, ListType list_type,
-    const std::vector<SBThreatType>& expected_threats,
+    const GURL& url,
+    ListType list_type,
+    const SBThreatTypeSet& expected_threats,
     const std::vector<HostListPair>& host_list_results) {
   std::unique_ptr<LocalSafeBrowsingDatabaseManager::SafeBrowsingCheck> check(
       new LocalSafeBrowsingDatabaseManager::SafeBrowsingCheck(
@@ -102,22 +112,16 @@ bool LocalDatabaseManagerTest::RunTest(
 }
 
 TEST_F(LocalDatabaseManagerTest, CheckCorrespondsListTypeForHash) {
-  std::vector<SBThreatType> malware_threat(1,
-                                           SB_THREAT_TYPE_URL_BINARY_MALWARE);
-  EXPECT_FALSE(RunSBHashTest(BINURL, malware_threat, {kMalwareList}));
-  EXPECT_TRUE(RunSBHashTest(BINURL, malware_threat, {kBinUrlList}));
+  EXPECT_FALSE(RunSBHashTest(BINURL, malware_threat_, {kMalwareList}));
+  EXPECT_TRUE(RunSBHashTest(BINURL, malware_threat_, {kBinUrlList}));
 
   // Check for multiple threats
-  std::vector<SBThreatType> multiple_threats;
-  multiple_threats.push_back(SB_THREAT_TYPE_URL_MALWARE);
-  multiple_threats.push_back(SB_THREAT_TYPE_URL_PHISHING);
-  EXPECT_FALSE(RunSBHashTest(MALWARE, multiple_threats, {kBinUrlList}));
-  EXPECT_TRUE(RunSBHashTest(MALWARE, multiple_threats, {kMalwareList}));
+  EXPECT_FALSE(RunSBHashTest(MALWARE, multiple_threats_, {kBinUrlList}));
+  EXPECT_TRUE(RunSBHashTest(MALWARE, multiple_threats_, {kMalwareList}));
 
   // Check for multiple hash hits
-  std::vector<SBThreatType> unwanted_threat = {SB_THREAT_TYPE_URL_UNWANTED};
   std::vector<std::string> hash_hits = {kMalwareList, kUnwantedUrlList};
-  EXPECT_TRUE(RunSBHashTest(UNWANTEDURL, unwanted_threat, hash_hits));
+  EXPECT_TRUE(RunSBHashTest(UNWANTEDURL, unwanted_threat_, hash_hits));
 }
 
 TEST_F(LocalDatabaseManagerTest, CheckCorrespondsListTypeForUrl) {
@@ -129,22 +133,17 @@ TEST_F(LocalDatabaseManagerTest, CheckCorrespondsListTypeForUrl) {
   const std::vector<HostListPair> binurl_list_result =
       {{host2, kBinUrlList}};
 
-  std::vector<SBThreatType> malware_threat =
-      {SB_THREAT_TYPE_URL_BINARY_MALWARE};
-  EXPECT_FALSE(RunUrlTest(url, BINURL, malware_threat, malware_list_result));
-  EXPECT_TRUE(RunUrlTest(url, BINURL, malware_threat, binurl_list_result));
+  EXPECT_FALSE(RunUrlTest(url, BINURL, malware_threat_, malware_list_result));
+  EXPECT_TRUE(RunUrlTest(url, BINURL, malware_threat_, binurl_list_result));
 
   // Check for multiple expected threats
-  std::vector<SBThreatType> multiple_threats =
-      {SB_THREAT_TYPE_URL_MALWARE, SB_THREAT_TYPE_URL_PHISHING};
-  EXPECT_FALSE(RunUrlTest(url, MALWARE, multiple_threats, binurl_list_result));
-  EXPECT_TRUE(RunUrlTest(url, MALWARE, multiple_threats, malware_list_result));
+  EXPECT_FALSE(RunUrlTest(url, MALWARE, multiple_threats_, binurl_list_result));
+  EXPECT_TRUE(RunUrlTest(url, MALWARE, multiple_threats_, malware_list_result));
 
   // Check for multiple database hits
-  std::vector<SBThreatType> unwanted_threat = {SB_THREAT_TYPE_URL_UNWANTED};
   std::vector<HostListPair> multiple_results = {
     {host1, kMalwareList}, {host2, kUnwantedUrlList}};
-  EXPECT_TRUE(RunUrlTest(url, UNWANTEDURL, unwanted_threat, multiple_results));
+  EXPECT_TRUE(RunUrlTest(url, UNWANTEDURL, unwanted_threat_, multiple_results));
 }
 
 TEST_F(LocalDatabaseManagerTest, GetUrlSeverestThreatType) {

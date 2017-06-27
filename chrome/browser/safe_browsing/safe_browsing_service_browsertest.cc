@@ -1145,7 +1145,12 @@ class TestSBClient : public base::RefCountedThreadSafe<TestSBClient>,
     // The async CheckDone() hook will not be called when we have a synchronous
     // safe signal, handle it right away.
     bool synchronous_safe_signal =
-        safe_browsing_service_->database_manager()->CheckBrowseUrl(url, this);
+        safe_browsing_service_->database_manager()->CheckBrowseUrl(
+            url,
+            CreateSBThreatTypeSet({SB_THREAT_TYPE_URL_PHISHING,
+                                   SB_THREAT_TYPE_URL_MALWARE,
+                                   SB_THREAT_TYPE_URL_UNWANTED}),
+            this);
     if (synchronous_safe_signal) {
       threat_type_ = SB_THREAT_TYPE_SAFE;
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,

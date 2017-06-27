@@ -13,6 +13,7 @@
 
 #include "base/callback.h"
 #include "components/safe_browsing_db/util.h"
+#include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "url/gurl.h"
 
 namespace safe_browsing {
@@ -30,7 +31,7 @@ class SafeBrowsingApiHandler {
   // Makes Native->Java call and invokes callback when check is done.
   virtual void StartURLCheck(const URLCheckCallbackMeta& callback,
                              const GURL& url,
-                             const std::vector<SBThreatType>& threat_types) = 0;
+                             const SBThreatTypeSet& threat_types) = 0;
 
   virtual ~SafeBrowsingApiHandler() {}
 

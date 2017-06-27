@@ -69,7 +69,9 @@ class FakeSafeBrowsingDatabaseManager
   // (in which that result will be communicated back via a call into the
   // client, and false will be returned).
   // Overrides SafeBrowsingDatabaseManager::CheckBrowseUrl.
-  bool CheckBrowseUrl(const GURL& gurl, Client* client) override;
+  bool CheckBrowseUrl(const GURL& gurl,
+                      const safe_browsing::SBThreatTypeSet& threat_types,
+                      Client* client) override;
 
   void SetThreatTypeForUrl(const GURL& url,
                            safe_browsing::SBThreatType threat_type) {

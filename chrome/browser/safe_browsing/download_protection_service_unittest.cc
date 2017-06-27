@@ -44,6 +44,7 @@
 #include "components/safe_browsing/csd.pb.h"
 #include "components/safe_browsing_db/database_manager.h"
 #include "components/safe_browsing_db/test_database_manager.h"
+#include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/test/mock_download_item.h"
@@ -234,7 +235,7 @@ ACTION_P(CheckDownloadUrlDone, threat_type) {
   LocalSafeBrowsingDatabaseManager::SafeBrowsingCheck* check =
       new LocalSafeBrowsingDatabaseManager::SafeBrowsingCheck(
           arg0, std::vector<SBFullHash>(), arg1, BINURL,
-          std::vector<SBThreatType>(1, SB_THREAT_TYPE_URL_BINARY_MALWARE));
+          CreateSBThreatTypeSet({SB_THREAT_TYPE_URL_BINARY_MALWARE}));
   for (size_t i = 0; i < check->url_results.size(); ++i)
     check->url_results[i] = threat_type;
   BrowserThread::PostTask(

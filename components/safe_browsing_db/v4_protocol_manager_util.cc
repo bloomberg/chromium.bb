@@ -172,6 +172,21 @@ size_t StoreAndHashPrefix::hash() const {
   return base::HashInts(first, second);
 }
 
+bool SBThreatTypeSetIsValidForCheckBrowseUrl(const SBThreatTypeSet& set) {
+  for (SBThreatType type : set) {
+    switch (type) {
+      case SB_THREAT_TYPE_URL_PHISHING:
+      case SB_THREAT_TYPE_URL_MALWARE:
+      case SB_THREAT_TYPE_URL_UNWANTED:
+        break;
+
+      default:
+        return false;
+    }
+  }
+  return true;
+}
+
 bool ListIdentifier::operator==(const ListIdentifier& other) const {
   return platform_type_ == other.platform_type_ &&
          threat_entry_type_ == other.threat_entry_type_ &&
