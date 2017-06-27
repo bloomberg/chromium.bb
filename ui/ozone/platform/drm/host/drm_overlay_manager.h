@@ -28,6 +28,8 @@ class DrmOverlayManager : public OverlayManagerOzone {
   std::unique_ptr<OverlayCandidatesOzone> CreateOverlayCandidates(
       gfx::AcceleratedWidget w) override;
 
+  // Invoked on changes to the window (aka display) that require re-populating
+  // the cache from the DRM thread.
   void ResetCache();
 
   // Communication-free implementations of actions performed in response to
