@@ -29,6 +29,8 @@ using base::TimeDelta;
 namespace {
 
 const char kChromeProxyHeader[] = "chrome-proxy";
+const char kDataReductionPassThroughHeader[] =
+    "Chrome-Proxy-Accept-Transform: identity\nCache-Control: no-cache";
 const char kChromeProxyECTHeader[] = "chrome-proxy-ect";
 const char kChromeProxyAcceptTransformHeader[] =
     "chrome-proxy-accept-transform";
@@ -41,7 +43,6 @@ const char kActionValueDelimiter = '=';
 const char kEmptyImageDirective[] = "empty-image";
 const char kLitePageDirective[] = "lite-page";
 const char kCompressedVideoDirective[] = "compressed-video";
-const char kIdentityDirective[] = "identity";
 
 // The legacy Chrome-Proxy response header directive for LoFi images.
 const char kLegacyChromeProxyLoFiResponseDirective[] = "q=low";
@@ -128,6 +129,10 @@ const char* chrome_proxy_header() {
   return kChromeProxyHeader;
 }
 
+const char* chrome_proxy_pass_through_header() {
+  return kDataReductionPassThroughHeader;
+}
+
 const char* chrome_proxy_ect_header() {
   return kChromeProxyECTHeader;
 }
@@ -150,10 +155,6 @@ const char* lite_page_directive() {
 
 const char* compressed_video_directive() {
   return kCompressedVideoDirective;
-}
-
-const char* identity_directive() {
-  return kIdentityDirective;
 }
 
 const char* chrome_proxy_experiment_force_lite_page() {

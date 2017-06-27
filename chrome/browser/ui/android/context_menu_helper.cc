@@ -36,9 +36,6 @@ using base::android::JavaParamRef;
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(ContextMenuHelper);
 
-const char kDataReductionProxyPassthroughHeader[] =
-    "Chrome-Proxy-Accept-Transform: identity\r\n";
-
 namespace {
 
 class ContextMenuHelperImageRequest : public ImageDecoder::ImageRequest {
@@ -184,7 +181,7 @@ void ContextMenuHelper::OnStartDownload(
     jboolean jis_data_reduction_proxy_enabled) {
   std::string headers;
   if (jis_data_reduction_proxy_enabled)
-    headers = kDataReductionProxyPassthroughHeader;
+    headers = data_reduction_proxy::chrome_proxy_pass_through_header();
 
   DownloadControllerBase::Get()->StartContextMenuDownload(
       context_menu_params_,

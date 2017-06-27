@@ -285,6 +285,16 @@ public class DataReductionProxySettings {
     }
 
     /**
+     * Returns the header used to request a data reduction proxy pass through. When a request is
+     * sent to the data reduction proxy with this header, it will respond with the original
+     * uncompressed response.
+     * @return The data reduction proxy pass through header.
+     */
+    public String getDataReductionProxyPassThroughHeader() {
+        return nativeGetDataReductionProxyPassThroughHeader(mNativeDataReductionProxySettings);
+    }
+
+    /**
      * Determines if the data reduction proxy is currently unreachable.
      * @return true if the data reduction proxy is unreachable.
      */
@@ -401,6 +411,8 @@ public class DataReductionProxySettings {
     private native long[] nativeGetDailyOriginalContentLengths(
             long nativeDataReductionProxySettingsAndroid);
     private native long[] nativeGetDailyReceivedContentLengths(
+            long nativeDataReductionProxySettingsAndroid);
+    private native String nativeGetDataReductionProxyPassThroughHeader(
             long nativeDataReductionProxySettingsAndroid);
     private native boolean nativeIsDataReductionProxyUnreachable(
             long nativeDataReductionProxySettingsAndroid);

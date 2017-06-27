@@ -24,6 +24,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/browser/data_usage_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "jni/DataReductionProxySettings_jni.h"
@@ -144,6 +145,14 @@ DataReductionProxySettingsAndroid::GetDailyReceivedContentLengths(
     const JavaParamRef<jobject>& obj) {
   return GetDailyContentLengths(
       env, data_reduction_proxy::prefs::kDailyHttpReceivedContentLength);
+}
+
+ScopedJavaLocalRef<jstring>
+DataReductionProxySettingsAndroid::GetDataReductionProxyPassThroughHeader(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  return ConvertUTF8ToJavaString(
+      env, data_reduction_proxy::chrome_proxy_pass_through_header());
 }
 
 jboolean DataReductionProxySettingsAndroid::IsDataReductionProxyUnreachable(

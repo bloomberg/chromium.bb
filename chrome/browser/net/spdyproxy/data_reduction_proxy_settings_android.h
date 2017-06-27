@@ -74,6 +74,9 @@ class DataReductionProxySettingsAndroid {
   ScopedJavaLocalRef<jlongArray> GetDailyReceivedContentLengths(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
+  ScopedJavaLocalRef<jstring> GetDataReductionProxyPassThroughHeader(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
 
   // Return a Java |ContentLengths| object wrapping the results of a call to
   // DataReductionProxySettings::GetContentLengths.
