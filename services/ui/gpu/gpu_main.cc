@@ -50,7 +50,6 @@ namespace ui {
 GpuMain::GpuMain(mojom::GpuMainRequest request)
     : gpu_thread_("GpuThread"),
       io_thread_("GpuIOThread"),
-      compositor_thread_("DisplayCompositorThread"),
       power_monitor_(base::MakeUnique<base::PowerMonitorDeviceSource>()),
       binding_(this) {
   base::Thread::Options thread_options;
@@ -89,9 +88,7 @@ GpuMain::GpuMain(mojom::GpuMainRequest request)
 #endif
   CHECK(io_thread_.StartWithOptions(thread_options));
 
-  // Start the compositor thread.
-  compositor_thread_.Start();
-  compositor_thread_task_runner_ = compositor_thread_.task_runner();
+  compositor_thread_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 
   // |this| will outlive the gpu thread and so it's safe to use
   // base::Unretained here.
@@ -105,15 +102,9 @@ GpuMain::GpuMain(mojom::GpuMainRequest request)
 }
 
 GpuMain::~GpuMain() {
-  // Unretained() is OK here since the thread/task runner is owned by |this|.
-  compositor_thread_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&GpuMain::TearDownOnCompositorThread, base::Unretained(this)));
-
-  // Block the main thread until the compositor thread terminates which blocks
-  // on the gpu thread. The Stop must be initiated from here instead of the gpu
-  // thread to avoid deadlock.
-  compositor_thread_.Stop();
+  DCHECK(compositor_thread_task_runner_->BelongsToCurrentThread());
+  // Tear down the compositor first because it blocks on the gpu service.
+  TearDownOnCompositorThread();
 
   gpu_thread_task_runner_->PostTask(
       FROM_HERE,
