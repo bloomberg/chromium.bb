@@ -315,9 +315,11 @@ ResourceProvider::Resource::Resource(Resource&& other) = default;
 void ResourceProvider::Resource::set_mailbox(const TextureMailbox& mailbox) {
   mailbox_ = mailbox;
   if (IsGpuResourceType(type)) {
+    // We assume that the mailbox has a valid sync token or else SetLocallyUsed
+    // must be called after this.
     synchronization_state_ =
-        (mailbox.sync_token().HasData() ? NEEDS_WAIT : LOCALLY_USED);
-    needs_sync_token_ = !mailbox.sync_token().HasData();
+        (mailbox.sync_token().HasData() ? NEEDS_WAIT : SYNCHRONIZED);
+    needs_sync_token_ = false;
   } else {
     synchronization_state_ = SYNCHRONIZED;
   }
@@ -1512,8 +1514,7 @@ void ResourceProvider::PrepareSendToParent(const ResourceIdArray& resource_ids,
     if (settings_.delegated_sync_points_required) {
       if (resource->needs_sync_token()) {
         need_synchronization_resources.push_back(resource);
-      } else if (resource->mailbox().HasSyncToken() &&
-                 !resource->mailbox().sync_token().verified_flush()) {
+      } else if (!resource->mailbox().sync_token().verified_flush()) {
         unverified_sync_tokens.push_back(resource->GetSyncTokenData());
       }
     }
@@ -1764,6 +1765,7 @@ void ResourceProvider::CreateMailboxAndBindResource(
                                      mailbox_holder.texture_target,
                                      mailbox_holder.mailbox.name);
     resource->set_mailbox(TextureMailbox(mailbox_holder));
+    resource->SetLocallyUsed();
   }
 
   if (resource->image_id && resource->dirty_image) {
