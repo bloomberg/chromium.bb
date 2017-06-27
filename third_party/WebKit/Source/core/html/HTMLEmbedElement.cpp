@@ -168,7 +168,7 @@ void HTMLEmbedElement::UpdatePluginInternal() {
 
   // Overwrites the URL and MIME type of a Flash embed to use an HTML5 embed.
   KURL overriden_url =
-      GetDocument().GetFrame()->Loader().Client()->OverrideFlashEmbedWithHTML(
+      GetDocument().GetFrame()->Client()->OverrideFlashEmbedWithHTML(
           GetDocument().CompleteURL(url_));
   if (!overriden_url.IsEmpty()) {
     url_ = overriden_url.GetString();

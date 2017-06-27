@@ -171,8 +171,8 @@ static void UpdateSuddenTerminationStatus(
     bool added_listener,
     LocalFrameClient::SuddenTerminationDisablerType disabler_type) {
   Platform::Current()->SuddenTerminationChanged(!added_listener);
-  if (dom_window->GetFrame() && dom_window->GetFrame()->Loader().Client())
-    dom_window->GetFrame()->Loader().Client()->SuddenTerminationDisablerChanged(
+  if (dom_window->GetFrame() && dom_window->GetFrame()->Client())
+    dom_window->GetFrame()->Client()->SuddenTerminationDisablerChanged(
         added_listener, disabler_type);
 }
 
@@ -1118,8 +1118,8 @@ void LocalDOMWindow::setName(const AtomicString& name) {
     return;
 
   GetFrame()->Tree().SetName(name);
-  DCHECK(GetFrame()->Loader().Client());
-  GetFrame()->Loader().Client()->DidChangeName(name);
+  DCHECK(GetFrame()->Client());
+  GetFrame()->Client()->DidChangeName(name);
 }
 
 void LocalDOMWindow::setStatus(const String& string) {

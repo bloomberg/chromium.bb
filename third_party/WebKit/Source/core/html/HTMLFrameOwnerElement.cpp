@@ -149,7 +149,7 @@ void HTMLFrameOwnerElement::SetSandboxFlags(SandboxFlags flags) {
   // Don't notify about updates if ContentFrame() is null, for example when
   // the subframe hasn't been created yet.
   if (ContentFrame()) {
-    GetDocument().GetFrame()->Loader().Client()->DidChangeFramePolicy(
+    GetDocument().GetFrame()->Client()->DidChangeFramePolicy(
         ContentFrame(), sandbox_flags_, container_policy_);
   }
 }
@@ -170,7 +170,7 @@ void HTMLFrameOwnerElement::UpdateContainerPolicy() {
   // Don't notify about updates if ContentFrame() is null, for example when
   // the subframe hasn't been created yet.
   if (ContentFrame()) {
-    GetDocument().GetFrame()->Loader().Client()->DidChangeFramePolicy(
+    GetDocument().GetFrame()->Client()->DidChangeFramePolicy(
         ContentFrame(), sandbox_flags_, container_policy_);
   }
 }
@@ -179,8 +179,7 @@ void HTMLFrameOwnerElement::FrameOwnerPropertiesChanged() {
   // Don't notify about updates if ContentFrame() is null, for example when
   // the subframe hasn't been created yet.
   if (ContentFrame()) {
-    GetDocument().GetFrame()->Loader().Client()->DidChangeFrameOwnerProperties(
-        this);
+    GetDocument().GetFrame()->Client()->DidChangeFrameOwnerProperties(this);
   }
 }
 

@@ -4204,7 +4204,7 @@ void LocalFrameView::UpdateScrollOffset(const ScrollOffset& offset,
 }
 
 void LocalFrameView::DidChangeScrollOffset() {
-  GetFrame().Loader().Client()->DidChangeScrollOffset();
+  GetFrame().Client()->DidChangeScrollOffset();
   if (GetFrame().IsMainFrame())
     GetFrame().GetPage()->GetChromeClient().MainFrameScrollOffsetChanged();
 }
