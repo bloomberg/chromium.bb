@@ -34,13 +34,19 @@
 #include <memory>
 #include "platform/PlatformExport.h"
 #include "platform/fonts/FallbackListCompositeKey.h"
+#include "platform/fonts/FontCacheClient.h"
 #include "platform/fonts/FontCacheKey.h"
+#include "platform/fonts/FontDataCache.h"
 #include "platform/fonts/FontFaceCreationParams.h"
 #include "platform/fonts/FontFallbackPriority.h"
+#include "platform/fonts/FontPlatformData.h"
+#include "platform/fonts/shaping/ShapeCache.h"
+#include "platform/heap/HeapAllocator.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/text/CString.h"
 #include "platform/wtf/text/Unicode.h"
 #include "platform/wtf/text/WTFString.h"
@@ -59,23 +65,34 @@ class ProcessMemoryDump;
 
 namespace blink {
 
-class FontCacheClient;
 class FontFaceCreationParams;
 class FontGlobalContext;
-class FontPlatformData;
 class FontDescription;
 class OpenTypeVerticalData;
-class ShapeCache;
 class SimpleFontData;
 
-enum ShouldRetain { kRetain, kDoNotRetain };
-enum PurgeSeverity { kPurgeIfNeeded, kForcePurge };
 enum class AlternateFontName {
   kAllowAlternate,
   kNoAlternate,
   kLocalUniqueFace,
   kLastResort
 };
+
+typedef HashMap<unsigned,
+                std::unique_ptr<FontPlatformData>,
+                WTF::IntHash<unsigned>,
+                WTF::UnsignedWithZeroKeyHashTraits<unsigned>>
+    SizedFontPlatformDataSet;
+typedef HashMap<FontCacheKey,
+                SizedFontPlatformDataSet,
+                FontCacheKeyHash,
+                FontCacheKeyTraits>
+    FontPlatformDataCache;
+typedef HashMap<FallbackListCompositeKey,
+                std::unique_ptr<ShapeCache>,
+                FallbackListCompositeKeyHash,
+                FallbackListCompositeKeyTraits>
+    FallbackListShaperCache;
 
 class PLATFORM_EXPORT FontCache {
   friend class FontCachePurgePreventer;
@@ -221,6 +238,8 @@ class PLATFORM_EXPORT FontCache {
   void DumpFontPlatformDataCache(base::trace_event::ProcessMemoryDump*);
   void DumpShapeResultCache(base::trace_event::ProcessMemoryDump*);
 
+  ~FontCache() {}
+
  private:
   friend class FontGlobalContext;
   FontCache();
@@ -292,6 +311,17 @@ class PLATFORM_EXPORT FontCache {
   static int32_t status_font_height_;
   static bool use_skia_font_fallback_;
 #endif
+
+  unsigned short generation_ = 0;
+  bool platform_init_ = false;
+  Persistent<HeapHashSet<WeakMember<FontCacheClient>>> font_cache_clients_;
+  FontPlatformDataCache font_platform_data_cache_;
+  FallbackListShaperCache fallback_list_shaper_cache_;
+  FontDataCache font_data_cache_;
+
+  void PurgePlatformFontDataCache();
+  void PurgeFontVerticalDataCache();
+  void PurgeFallbackListShaperCache();
 
   friend class SimpleFontData;  // For fontDataFromFontPlatformData
   friend class FontFallbackList;

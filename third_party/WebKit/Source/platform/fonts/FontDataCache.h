@@ -31,14 +31,15 @@
 #ifndef FontDataCache_h
 #define FontDataCache_h
 
-#include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontPlatformData.h"
+#include "platform/fonts/SimpleFontData.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/ListHashSet.h"
 
 namespace blink {
 
-class SimpleFontData;
+enum ShouldRetain { kRetain, kDoNotRetain };
+enum PurgeSeverity { kPurgeIfNeeded, kForcePurge };
 
 struct FontDataCacheKeyHash {
   STATIC_ONLY(FontDataCacheKeyHash);
