@@ -2658,7 +2658,6 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.lakitu_notification_emails,
       board_configs['lakitu-gpu'],
       site_config.templates.lakitu_test_customizations,
-      active_waterfall=constants.WATERFALL_INTERNAL,
   )
 
   site_config.Add(
@@ -2668,7 +2667,6 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.lakitu_notification_emails,
       board_configs['lakitu-st'],
       site_config.templates.lakitu_test_customizations,
-      active_waterfall=constants.WATERFALL_INTERNAL,
   )
 
   site_config.Add(
@@ -2678,7 +2676,6 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.lakitu_notification_emails,
       board_configs['lakitu_next'],
       site_config.templates.lakitu_test_customizations,
-      active_waterfall=constants.WATERFALL_INTERNAL,
   )
 
 

@@ -12586,7 +12586,6 @@
     },
     "lakitu-gpu-incremental": {
         "_template": "incremental",
-        "active_waterfall": "chromeos",
         "boards": [
             "lakitu-gpu"
         ],
@@ -12998,7 +12997,6 @@
     },
     "lakitu-st-incremental": {
         "_template": "incremental",
-        "active_waterfall": "chromeos",
         "boards": [
             "lakitu-st"
         ],
@@ -13241,7 +13239,6 @@
     },
     "lakitu_next-incremental": {
         "_template": "incremental",
-        "active_waterfall": "chromeos",
         "boards": [
             "lakitu_next"
         ],
