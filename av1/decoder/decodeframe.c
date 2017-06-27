@@ -5130,7 +5130,7 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 #endif  // CONFIG_WEDGE
     }
 #endif  // CONFIG_INTERINTRA
-#if CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
+#if !CONFIG_EC_ADAPT && (CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE)
 #if CONFIG_COMPOUND_SINGLEREF
     if (cm->allow_masked_compound) {
 #else   // !CONFIG_COMPOUND_SINGLEREF
@@ -5144,7 +5144,7 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
         }
       }
     }
-#endif  // CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
+#endif  // !CONFIG_EC_ADAPT && (CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE)
 #endif  // CONFIG_EXT_INTER
 
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION

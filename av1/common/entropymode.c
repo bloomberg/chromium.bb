@@ -1134,6 +1134,94 @@ static const aom_prob default_compound_type_probs[BLOCK_SIZES]
                                                  [COMPOUND_TYPES - 1];
 #endif  // CONFIG_COMPOUND_SEGMENT && CONFIG_WEDGE
 
+#if CONFIG_EC_ADAPT
+#if CONFIG_COMPOUND_SEGMENT && CONFIG_WEDGE
+static const aom_cdf_prob
+    default_compound_type_cdf[BLOCK_SIZES][CDF_SIZE(COMPOUND_TYPES)] = {
+#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
+      { AOM_ICDF(32640), AOM_ICDF(32704), AOM_ICDF(32768), 0 },  // 255, 128
+      { AOM_ICDF(32640), AOM_ICDF(32704), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(32640), AOM_ICDF(32704), AOM_ICDF(32768), 0 },
+#endif
+      { AOM_ICDF(26624), AOM_ICDF(29696), AOM_ICDF(32768), 0 },  // 208, 128
+      { AOM_ICDF(26624), AOM_ICDF(29696), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(26624), AOM_ICDF(29696), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(26624), AOM_ICDF(29696), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(26624), AOM_ICDF(29696), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(26624), AOM_ICDF(29696), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(27648), AOM_ICDF(30208), AOM_ICDF(32768), 0 },  // 216, 128
+      { AOM_ICDF(27648), AOM_ICDF(30208), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(27648), AOM_ICDF(30208), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(28672), AOM_ICDF(30720), AOM_ICDF(32768), 0 },  // 224, 128
+      { AOM_ICDF(28672), AOM_ICDF(28688), AOM_ICDF(32768), 0 },  // 224, 1
+      { AOM_ICDF(30720), AOM_ICDF(30728), AOM_ICDF(32768), 0 },  // 240, 1
+      { AOM_ICDF(30720), AOM_ICDF(30728), AOM_ICDF(32768), 0 },
+#if CONFIG_EXT_PARTITION
+      { AOM_ICDF(32640), AOM_ICDF(32641), AOM_ICDF(32768), 0 },  // 255, 1
+      { AOM_ICDF(32640), AOM_ICDF(32641), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(32640), AOM_ICDF(32641), AOM_ICDF(32768), 0 },
+#endif  // CONFIG_EXT_PARTITION
+    };
+#elif !CONFIG_COMPOUND_SEGMENT && CONFIG_WEDGE
+static const aom_cdf_prob
+    default_compound_type_cdf[BLOCK_SIZES][CDF_SIZE(COMPOUND_TYPES)] = {
+#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
+      { AOM_ICDF(32640), AOM_ICDF(32768), 0 },  // 255
+      { AOM_ICDF(32640), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(32640), AOM_ICDF(32768), 0 },
+#endif
+      { AOM_ICDF(26624), AOM_ICDF(32768), 0 },  // 208
+      { AOM_ICDF(26624), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(26624), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(26624), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(26624), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(26624), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(27648), AOM_ICDF(32768), 0 },  // 216
+      { AOM_ICDF(27648), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(27648), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(28672), AOM_ICDF(32768), 0 },  // 224
+      { AOM_ICDF(28672), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(30720), AOM_ICDF(32768), 0 },  // 240
+      { AOM_ICDF(30720), AOM_ICDF(32768), 0 },
+#if CONFIG_EXT_PARTITION
+      { AOM_ICDF(32640), AOM_ICDF(32768), 0 },  // 255
+      { AOM_ICDF(32640), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(32640), AOM_ICDF(32768), 0 },
+#endif  // CONFIG_EXT_PARTITION
+    };
+#elif CONFIG_COMPOUND_SEGMENT && !CONFIG_WEDGE
+static const aom_cdf_prob
+    default_compound_type_cdf[BLOCK_SIZES][CDF_SIZE(COMPOUND_TYPES)] = {
+#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
+      { AOM_ICDF(32640), AOM_ICDF(32768), 0 },  // 255
+      { AOM_ICDF(32640), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(32640), AOM_ICDF(32768), 0 },
+#endif
+      { AOM_ICDF(26624), AOM_ICDF(32768), 0 },  // 208
+      { AOM_ICDF(26624), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(26624), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(26624), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(26624), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(26624), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(27648), AOM_ICDF(32768), 0 },  // 216
+      { AOM_ICDF(27648), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(27648), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(28672), AOM_ICDF(32768), 0 },  // 224
+      { AOM_ICDF(28672), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(30720), AOM_ICDF(32768), 0 },  // 240
+      { AOM_ICDF(30720), AOM_ICDF(32768), 0 },
+#if CONFIG_EXT_PARTITION
+      { AOM_ICDF(32640), AOM_ICDF(32768), 0 },  // 255
+      { AOM_ICDF(32640), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(32640), AOM_ICDF(32768), 0 },
+#endif  // CONFIG_EXT_PARTITION
+    };
+#else
+static const aom_cdf_prob default_compound_type_cdf[BLOCK_SIZES]
+                                                   [CDF_SIZE(COMPOUND_TYPES)];
+#endif  // CONFIG_COMPOUND_SEGMENT && CONFIG_WEDGE
+#endif  // CONFIG_EC_ADAPT
+
 #if CONFIG_INTERINTRA
 static const aom_prob default_interintra_prob[BLOCK_SIZE_GROUPS] = {
   208, 208, 208, 208,
@@ -4776,6 +4864,9 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
            default_inter_singleref_comp_mode_probs);
 #endif  // CONFIG_COMPOUND_SINGLEREF
   av1_copy(fc->compound_type_prob, default_compound_type_probs);
+#if CONFIG_EC_ADAPT
+  av1_copy(fc->compound_type_cdf, default_compound_type_cdf);
+#endif
 #if CONFIG_INTERINTRA
   av1_copy(fc->interintra_prob, default_interintra_prob);
   av1_copy(fc->interintra_mode_prob, default_interintra_mode_prob);

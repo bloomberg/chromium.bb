@@ -204,6 +204,9 @@ typedef struct frame_contexts {
                                           [INTER_SINGLEREF_COMP_MODES - 1];
 #endif  // CONFIG_COMPOUND_SINGLEREF
   aom_prob compound_type_prob[BLOCK_SIZES][COMPOUND_TYPES - 1];
+#if CONFIG_EC_ADAPT
+  aom_cdf_prob compound_type_cdf[BLOCK_SIZES][CDF_SIZE(COMPOUND_TYPES)];
+#endif
 #if CONFIG_INTERINTRA
   aom_prob interintra_prob[BLOCK_SIZE_GROUPS];
   aom_prob interintra_mode_prob[BLOCK_SIZE_GROUPS][INTERINTRA_MODES - 1];

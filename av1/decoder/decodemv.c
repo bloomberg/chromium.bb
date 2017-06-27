@@ -2643,9 +2643,14 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
     if (is_any_masked_compound_used(bsize)) {
 #if CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
       if (cm->allow_masked_compound) {
+#if CONFIG_EC_ADAPT
+        mbmi->interinter_compound_type = aom_read_symbol(
+            r, ec_ctx->compound_type_cdf[bsize], COMPOUND_TYPES, ACCT_STR);
+#else
         mbmi->interinter_compound_type =
             aom_read_tree(r, av1_compound_type_tree,
                           cm->fc->compound_type_prob[bsize], ACCT_STR);
+#endif
 #if CONFIG_WEDGE
         if (mbmi->interinter_compound_type == COMPOUND_WEDGE) {
           mbmi->wedge_index =

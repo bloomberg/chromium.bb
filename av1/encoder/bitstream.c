@@ -2278,9 +2278,14 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
         is_any_masked_compound_used(bsize)) {
 #if CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
       if (cm->allow_masked_compound) {
+#if CONFIG_EC_ADAPT
+        aom_write_symbol(w, mbmi->interinter_compound_type,
+                         ec_ctx->compound_type_cdf[bsize], COMPOUND_TYPES);
+#else
         av1_write_token(
             w, av1_compound_type_tree, cm->fc->compound_type_prob[bsize],
             &compound_type_encodings[mbmi->interinter_compound_type]);
+#endif
 #if CONFIG_WEDGE
         if (mbmi->interinter_compound_type == COMPOUND_WEDGE) {
           aom_write_literal(w, mbmi->wedge_index, get_wedge_bits_lookup(bsize));
@@ -5128,7 +5133,7 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
 #endif  // CONFIG_WEDGE
     }
 #endif  // CONFIG_INTERINTRA
-#if CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
+#if !CONFIG_EC_ADAPT && (CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE)
 #if CONFIG_COMPOUND_SINGLEREF
     if (cm->allow_masked_compound) {
 #else   // !CONFIG_COMPOUND_SINGLEREF
@@ -5142,7 +5147,7 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
         }
       }
     }
-#endif  // CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
+#endif  // !CONFIG_EC_ADAPT && (CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE)
 #endif  // CONFIG_EXT_INTER
 
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
