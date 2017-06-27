@@ -4,6 +4,8 @@
 
 #include "ios/chrome/browser/payments/payment_request.h"
 
+#include <algorithm>
+
 #include "base/containers/adapters.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -12,10 +14,12 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/region_data_loader_impl.h"
+#include "components/autofill/core/browser/validation.h"
 #include "components/payments/core/currency_formatter.h"
 #include "components/payments/core/payment_request_data_util.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autofill/validation_rules_storage_factory.h"
+#import "ios/chrome/browser/payments/payment_request_util.h"
 #include "ios/web/public/payments/payment_request.h"
 #include "third_party/libaddressinput/chromium/chrome_metadata_source.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/source.h"
@@ -73,9 +77,17 @@ PaymentRequest::PaymentRequest(
     selected_contact_profile_ = contact_profiles_[0];
   }
 
-  // Select the highest ranking credit card.
-  if (!credit_cards_.empty())
-    selected_credit_card_ = credit_cards_[0];
+  // TODO(crbug.com/702063): Change this code to prioritize credit cards by use
+  // count and other means.
+  auto first_complete_credit_card = std::find_if(
+      credit_cards_.begin(), credit_cards_.end(),
+      [this](const autofill::CreditCard* credit_card) {
+        DCHECK(credit_card);
+        return payment_request_util::IsCreditCardCompleteForPayment(
+            *credit_card, billing_profiles());
+      });
+  if (first_complete_credit_card != credit_cards_.end())
+    selected_credit_card_ = *first_complete_credit_card;
 }
 
 PaymentRequest::~PaymentRequest() {}
@@ -186,7 +198,19 @@ payments::PaymentsProfileComparator* PaymentRequest::profile_comparator() {
 }
 
 bool PaymentRequest::CanMakePayment() const {
-  return !credit_cards_.empty();
+  for (const autofill::CreditCard* credit_card : credit_cards_) {
+    DCHECK(credit_card);
+    autofill::CreditCardCompletionStatus status =
+        autofill::GetCompletionStatusForCard(
+            *credit_card, GetApplicationContext()->GetApplicationLocale(),
+            billing_profiles());
+    // A card only has to have a cardholder name and a number for the purposes
+    // of CanMakePayment. An expired card or one without a billing address is
+    // valid for this purpose.
+    return !(status & autofill::CREDIT_CARD_NO_CARDHOLDER ||
+             status & autofill::CREDIT_CARD_NO_NUMBER);
+  }
+  return false;
 }
 
 void PaymentRequest::PopulateCreditCardCache() {

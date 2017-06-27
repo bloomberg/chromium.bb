@@ -12,6 +12,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/payments/payment_request.h"
+#include "ios/chrome/browser/payments/payment_request_util.h"
 #include "ios/chrome/browser/ui/payments/full_card_requester.h"
 #include "ios/chrome/browser/ui/payments/payment_request_mediator.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -426,6 +427,8 @@ contactInfoSelectionCoordinator:(ContactInfoSelectionCoordinator*)coordinator
             (PaymentMethodSelectionCoordinator*)coordinator
                    didSelectPaymentMethod:(autofill::CreditCard*)creditCard {
   DCHECK(creditCard);
+  DCHECK(payment_request_util::IsCreditCardCompleteForPayment(
+      *creditCard, _paymentRequest->billing_profiles()));
   _paymentRequest->set_selected_credit_card(creditCard);
   [_viewController updatePaymentMethodSection];
 
