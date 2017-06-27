@@ -1274,6 +1274,7 @@ source_set("unit_tests") {
     "exported/FakeWebPlugin.cpp",
     "exported/FakeWebPlugin.h",
     "exported/WebAssociatedURLLoaderImplTest.cpp",
+    "exported/WebDocumentSubresourceFilterTest.cpp",
     "exported/WebDocumentTest.cpp",
     "exported/WebDragDataTest.cpp",
     "exported/WebElementTest.cpp",
