@@ -46,6 +46,9 @@ enum BubbleCreationType {
 class ASH_EXPORT SystemTray : public TrayBackgroundView,
                               public views::TrayBubbleView::Delegate {
  public:
+  // The threshold of the velocity of the fling event.
+  static constexpr float kFlingVelocity = 100.0f;
+
   explicit SystemTray(Shelf* shelf);
   ~SystemTray() override;
 
@@ -146,6 +149,11 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   // Activates the system tray bubble.
   void ActivateBubble();
 
+  // ui::EventHandler:
+  void OnGestureEvent(ui::GestureEvent* event) override;
+
+  gfx::Rect GetWorkAreaBoundsInScreen() const;
+
  private:
   friend class SystemTrayTestApi;
   class ActivationObserver;
@@ -192,6 +200,37 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
 
   // Overridden from ActionableView.
   bool PerformAction(const ui::Event& event) override;
+
+  // Gesture related functions:
+  bool ProcessGestureEvent(const ui::GestureEvent& event);
+  bool StartGestureDrag(const ui::GestureEvent& gesture);
+  void UpdateGestureDrag(const ui::GestureEvent& gesture);
+  void CompleteGestureDrag(const ui::GestureEvent& gesture);
+
+  // Update the bounds of the system tray bubble according to |location|. Note
+  // that |location| is in the local coordinate space of |this|.
+  void SetBubbleBounds(const gfx::Point& location);
+
+  // Return true if the system bubble should be shown (i.e., animated upward to
+  // be made fully visible) after a sequence of scroll events terminated by
+  // |sequence_end|. Otherwise return false, indicating that the
+  // partially-visible system bubble should be animated downward and made fully
+  // hidden.
+  bool ShouldShowSystemBubbleAfterScrollSequence(
+      const ui::GestureEvent& sequence_end);
+
+  // Shelf the system tray is in.
+  Shelf* const shelf_;
+
+  // The original bounds of the system tray bubble.
+  gfx::Rect system_tray_bubble_bounds_;
+
+  // Tracks the amount of the drag. Only valid if |is_in_drag_| is true.
+  float gesture_drag_amount_ = 0.f;
+
+  // True if the user is in the process of gesture-dragging to open the system
+  // tray bubble, false otherwise.
+  bool is_in_drag_ = false;
 
   // The web notification tray view that appears adjacent to this view.
   WebNotificationTray* web_notification_tray_ = nullptr;
