@@ -45,7 +45,7 @@ import java.nio.channels.FileLock;
  * Wrapper for the steps needed to initialize the java and native sides of webview chromium.
  */
 @JNINamespace("android_webview")
-public abstract class AwBrowserProcess {
+public final class AwBrowserProcess {
     public static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "webview";
 
     private static final String TAG = "AwBrowserProcess";
@@ -294,4 +294,7 @@ public abstract class AwBrowserProcess {
         }
                 .executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
+
+    // Do not instantiate this class.
+    private AwBrowserProcess() {}
 }
