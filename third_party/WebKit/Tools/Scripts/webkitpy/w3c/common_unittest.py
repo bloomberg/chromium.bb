@@ -50,6 +50,7 @@ class CommonTest(unittest.TestCase):
             ['git', 'diff-tree', '--name-only', '--no-commit-id', '-r', 'add087a97844f4b9e307d9a216940582d96db306', '--',
              '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt'],
             ['git', 'format-patch', '-1', '--stdout', 'add087a97844f4b9e307d9a216940582d96db306', '--', 'some', 'files'],
+            ['git', 'footers', '--key', 'Change-Id', 'add087a97844f4b9e307d9a216940582d96db306'],
         ])
 
     def test_is_exportable(self):
@@ -72,23 +73,17 @@ class CommonTest(unittest.TestCase):
         self.assertFalse(is_exportable(commit, MockLocalWPT(), github))
 
     def test_commit_that_has_open_pr_is_exportable(self):
-        commit = MockChromiumCommit(
-            MockHost(),
-            message='Message\nCr-Commit-Position: refs/heads/master@{#423}',
-            position='refs/heads/master@{#423}')
+        commit = MockChromiumCommit(MockHost(), change_id='Change-Id: I00decade')
         github = MockWPTGitHub(pull_requests=[
-            PullRequest('Early PR', 3, 'Commit body\nCr-Commit-Position: refs/heads/master@{#11}', 'closed'),
-            PullRequest('Export PR', 12, 'Commit body\nCr-Commit-Position: refs/heads/master@{#423}', 'open'),
+            PullRequest('PR1', 1, 'body\nChange-Id: I00c0ffee', 'closed'),
+            PullRequest('PR2', 2, 'body\nChange-Id: I00decade', 'open'),
         ])
         self.assertTrue(is_exportable(commit, MockLocalWPT(), github))
 
     def test_commit_that_has_closed_pr_is_not_exportable(self):
-        commit = MockChromiumCommit(
-            MockHost(),
-            message='Message\nCr-Commit-Position: refs/heads/master@{#423}',
-            position='refs/heads/master@{#423}')
+        commit = MockChromiumCommit(MockHost(), change_id='Change-Id: I00decade')
         github = MockWPTGitHub(pull_requests=[
-            PullRequest('Early PR', 3, 'Commit body\nCr-Commit-Position: refs/heads/master@{#11}', 'closed'),
-            PullRequest('Export PR', 12, 'Commit body\nCr-Commit-Position: refs/heads/master@{#423}', 'closed'),
+            PullRequest('PR1', 1, 'body\nChange-Id: I00c0ffee', 'closed'),
+            PullRequest('PR2', 2, 'body\nChange-Id: I00decade', 'closed'),
         ])
         self.assertFalse(is_exportable(commit, MockLocalWPT(), github))

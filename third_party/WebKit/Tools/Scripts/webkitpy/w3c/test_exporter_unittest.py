@@ -77,8 +77,11 @@ class TestExporterTest(unittest.TestCase):
         test_exporter.run()
 
         self.assertEqual(test_exporter.wpt_github.calls, [
+            'pr_with_change_id',
             'pr_with_position',
+            'pr_with_change_id',
             'pr_with_position',
+            'pr_with_change_id',
             'pr_with_position',
             'pr_with_position',
             'pr_with_change_id',
