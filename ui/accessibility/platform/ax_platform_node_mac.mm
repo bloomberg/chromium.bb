@@ -412,6 +412,32 @@ void NotifyMacEvent(AXPlatformNodeCocoa* target, ui::AXEvent event_type) {
   return axAttributes.autorelease();
 }
 
+- (NSArray*)accessibilityParameterizedAttributeNames {
+  if (!node_)
+    return nil;
+
+  static NSArray* const kSelectableTextAttributes = [@[
+    NSAccessibilityLineForIndexParameterizedAttribute,
+    NSAccessibilityRangeForLineParameterizedAttribute,
+    NSAccessibilityStringForRangeParameterizedAttribute,
+    NSAccessibilityRangeForPositionParameterizedAttribute,
+    NSAccessibilityRangeForIndexParameterizedAttribute,
+    NSAccessibilityBoundsForRangeParameterizedAttribute,
+    NSAccessibilityRTFForRangeParameterizedAttribute,
+    NSAccessibilityStyleRangeForIndexParameterizedAttribute,
+    NSAccessibilityAttributedStringForRangeParameterizedAttribute,
+  ] retain];
+
+  switch (node_->GetData().role) {
+    case ui::AX_ROLE_TEXT_FIELD:
+    case ui::AX_ROLE_STATIC_TEXT:
+      return kSelectableTextAttributes;
+    default:
+      break;
+  }
+  return nil;
+}
+
 - (BOOL)accessibilityIsAttributeSettable:(NSString*)attributeName {
   if (node_->GetData().HasState(ui::AX_STATE_DISABLED))
     return NO;
@@ -491,6 +517,14 @@ void NotifyMacEvent(AXPlatformNodeCocoa* target, ui::AXEvent event_type) {
   SEL selector = NSSelectorFromString(attribute);
   if ([self respondsToSelector:selector])
     return [self performSelector:selector];
+  return nil;
+}
+
+- (id)accessibilityAttributeValue:(NSString*)attribute
+                     forParameter:(id)parameter {
+  SEL selector = NSSelectorFromString([attribute stringByAppendingString:@":"]);
+  if ([self respondsToSelector:selector])
+    return [self performSelector:selector withObject:parameter];
   return nil;
 }
 
@@ -631,6 +665,69 @@ void NotifyMacEvent(AXPlatformNodeCocoa* target, ui::AXEvent event_type) {
 - (NSNumber*)AXInsertionPointLineNumber {
   // Multiline is not supported on views.
   return @0;
+}
+
+// Parameterized text-specific attributes.
+
+- (id)AXLineForIndex:(id)parameter {
+  DCHECK([parameter isKindOfClass:[NSNumber class]]);
+  // Multiline is not supported on views.
+  return @0;
+}
+
+- (id)AXRangeForLine:(id)parameter {
+  DCHECK([parameter isKindOfClass:[NSNumber class]]);
+  DCHECK_EQ(0, [parameter intValue]);
+  return [NSValue valueWithRange:{0, [[self getAXValueAsString] length]}];
+}
+
+- (id)AXStringForRange:(id)parameter {
+  DCHECK([parameter isKindOfClass:[NSValue class]]);
+  return [[self getAXValueAsString] substringWithRange:[parameter rangeValue]];
+}
+
+- (id)AXRangeForPosition:(id)parameter {
+  DCHECK([parameter isKindOfClass:[NSValue class]]);
+  // TODO(tapted): Hit-test [parameter pointValue] and return an NSRange.
+  NOTIMPLEMENTED();
+  return nil;
+}
+
+- (id)AXRangeForIndex:(id)parameter {
+  DCHECK([parameter isKindOfClass:[NSNumber class]]);
+  NOTIMPLEMENTED();
+  return nil;
+}
+
+- (id)AXBoundsForRange:(id)parameter {
+  DCHECK([parameter isKindOfClass:[NSValue class]]);
+  // TODO(tapted): Provide an accessor on AXPlatformNodeDelegate to obtain this
+  // from ui::TextInputClient::GetCompositionCharacterBounds().
+  NOTIMPLEMENTED();
+  return nil;
+}
+
+- (id)AXRTFForRange:(id)parameter {
+  DCHECK([parameter isKindOfClass:[NSValue class]]);
+  NOTIMPLEMENTED();
+  return nil;
+}
+
+- (id)AXStyleRangeForIndex:(id)parameter {
+  DCHECK([parameter isKindOfClass:[NSNumber class]]);
+  NOTIMPLEMENTED();
+  return nil;
+}
+
+- (id)AXAttributedStringForRange:(id)parameter {
+  DCHECK([parameter isKindOfClass:[NSValue class]]);
+  base::scoped_nsobject<NSAttributedString> attributedString(
+      [[NSAttributedString alloc]
+          initWithString:[self AXStringForRange:parameter]]);
+  // TODO(tapted): views::WordLookupClient has a way to obtain the actual
+  // decorations, and BridgedContentView has a conversion function that creates
+  // an NSAttributedString. Refactor things so they can be used here.
+  return attributedString.autorelease();
 }
 
 @end

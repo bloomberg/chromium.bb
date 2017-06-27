@@ -536,6 +536,74 @@ TEST_F(NativeWidgetMacAccessibilityTest, TextfieldWritableAttributes) {
   EXPECT_EQ(gfx::Range(5, 5), textfield->GetSelectedRange());
 }
 
+// Test parameterized text attributes.
+TEST_F(NativeWidgetMacAccessibilityTest, TextParameterizedAttributes) {
+  AddChildTextfield(GetWidgetBounds().size());
+  id ax_node = A11yElementAtMidpoint();
+  EXPECT_TRUE(ax_node);
+
+  NSArray* attributes = [ax_node accessibilityParameterizedAttributeNames];
+  ASSERT_TRUE(attributes);
+
+  // Ensure the method names match.
+  for (NSString* attribute in attributes) {
+    SEL sel = NSSelectorFromString([attribute stringByAppendingString:@":"]);
+    EXPECT_TRUE([ax_node respondsToSelector:sel]);
+  }
+
+  NSNumber* line =
+      [ax_node accessibilityAttributeValue:
+                   NSAccessibilityLineForIndexParameterizedAttribute
+                              forParameter:@5];
+  EXPECT_TRUE(line);
+  EXPECT_EQ(0, [line intValue]);
+
+  EXPECT_NSEQ([NSValue valueWithRange:NSMakeRange(0, kTestStringLength)],
+              [ax_node accessibilityAttributeValue:
+                           NSAccessibilityRangeForLineParameterizedAttribute
+                                      forParameter:line]);
+
+  // The substring "est st" of kTestStringValue.
+  NSValue* test_range = [NSValue valueWithRange:NSMakeRange(1, 6)];
+  EXPECT_NSEQ(@"est st",
+              [ax_node accessibilityAttributeValue:
+                           NSAccessibilityStringForRangeParameterizedAttribute
+                                      forParameter:test_range]);
+  EXPECT_NSEQ(
+      @"est st",
+      [[ax_node
+          accessibilityAttributeValue:
+              NSAccessibilityAttributedStringForRangeParameterizedAttribute
+                         forParameter:test_range] string]);
+
+  // Not implemented yet. Update these tests when they are.
+  EXPECT_NSEQ(nil,
+              [ax_node accessibilityAttributeValue:
+                           NSAccessibilityRangeForPositionParameterizedAttribute
+                                      forParameter:@4]);
+  EXPECT_NSEQ(nil,
+              [ax_node accessibilityAttributeValue:
+                           NSAccessibilityRangeForIndexParameterizedAttribute
+                                      forParameter:@4]);
+  EXPECT_NSEQ(nil,
+              [ax_node accessibilityAttributeValue:
+                           NSAccessibilityBoundsForRangeParameterizedAttribute
+                                      forParameter:test_range]);
+  EXPECT_NSEQ(nil, [ax_node accessibilityAttributeValue:
+                                NSAccessibilityRTFForRangeParameterizedAttribute
+                                           forParameter:test_range]);
+  EXPECT_NSEQ(
+      nil, [ax_node accessibilityAttributeValue:
+                        NSAccessibilityStyleRangeForIndexParameterizedAttribute
+                                   forParameter:@4]);
+
+  // Non-text shouldn't have any parameterized attributes.
+  id ax_parent =
+      [ax_node accessibilityAttributeValue:NSAccessibilityParentAttribute];
+  EXPECT_TRUE(ax_parent);
+  EXPECT_FALSE([ax_parent accessibilityParameterizedAttributeNames]);
+}
+
 // Test performing a 'click' on Views with clickable roles work.
 TEST_F(NativeWidgetMacAccessibilityTest, PressAction) {
   FlexibleRoleTestView* view = new FlexibleRoleTestView(ui::AX_ROLE_BUTTON);
