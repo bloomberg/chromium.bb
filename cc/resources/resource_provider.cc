@@ -2190,8 +2190,10 @@ bool ResourceProvider::OnMemoryDump(
       case RESOURCE_TYPE_BITMAP:
         DCHECK(resource.has_shared_bitmap_id);
         guid = GetSharedBitmapGUIDForTracing(resource.shared_bitmap_id);
-        shared_memory_guid =
-            resource.shared_bitmap->GetSharedMemoryHandle().GetGUID();
+        if (resource.shared_bitmap) {
+          shared_memory_guid =
+              resource.shared_bitmap->GetSharedMemoryHandle().GetGUID();
+        }
         break;
     }
 
