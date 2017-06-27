@@ -35,6 +35,8 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.test.EmbeddedTestServer;
 
+import java.util.Arrays;
+
 /**
  * Test suite for SafeBrowsing.
  *
@@ -79,10 +81,9 @@ public class SafeBrowsingTest extends AwTestBase {
     public static class MockSafeBrowsingApiHandler implements SafeBrowsingApiHandler {
         private Observer mObserver;
         private static final String SAFE_METADATA = "{}";
-        private static final String PHISHING_METADATA = "{\"matches\":[{\"threat_type\":\"5\"}]}";
-        private static final String MALWARE_METADATA = "{\"matches\":[{\"threat_type\":\"4\"}]}";
-        private static final String UNWANTED_SOFTWARE_METADATA =
-                "{\"matches\":[{\"threat_type\":\"3\"}]}";
+        private static final int PHISHING_CODE = 5;
+        private static final int MALWARE_CODE = 4;
+        private static final int UNWANTED_SOFTWARE_CODE = 3;
 
         @Override
         public boolean init(Context context, Observer result) {
@@ -90,15 +91,27 @@ public class SafeBrowsingTest extends AwTestBase {
             return true;
         }
 
+        private String buildMetadataFromCode(int code) {
+            return "{\"matches\":[{\"threat_type\":\"" + code + "\"}]}";
+        }
+
         @Override
         public void startUriLookup(final long callbackId, String uri, int[] threatsOfInterest) {
             final String metadata;
-            if (uri.endsWith(PHISHING_HTML_PATH)) {
-                metadata = PHISHING_METADATA;
-            } else if (uri.endsWith(MALWARE_HTML_PATH)) {
-                metadata = MALWARE_METADATA;
-            } else if (uri.endsWith(UNWANTED_SOFTWARE_HTML_PATH)) {
-                metadata = UNWANTED_SOFTWARE_METADATA;
+            Arrays.sort(threatsOfInterest);
+
+            // TODO(ntfschr): remove this assert once we support UwS warnings (crbug/729272)
+            assertEquals(Arrays.binarySearch(threatsOfInterest, UNWANTED_SOFTWARE_CODE), -1);
+
+            if (uri.endsWith(PHISHING_HTML_PATH)
+                    && Arrays.binarySearch(threatsOfInterest, PHISHING_CODE) >= 0) {
+                metadata = buildMetadataFromCode(PHISHING_CODE);
+            } else if (uri.endsWith(MALWARE_HTML_PATH)
+                    && Arrays.binarySearch(threatsOfInterest, MALWARE_CODE) >= 0) {
+                metadata = buildMetadataFromCode(MALWARE_CODE);
+            } else if (uri.endsWith(UNWANTED_SOFTWARE_HTML_PATH)
+                    && Arrays.binarySearch(threatsOfInterest, UNWANTED_SOFTWARE_CODE) >= 0) {
+                metadata = buildMetadataFromCode(UNWANTED_SOFTWARE_CODE);
             } else {
                 metadata = SAFE_METADATA;
             }
@@ -280,8 +293,8 @@ public class SafeBrowsingTest extends AwTestBase {
     @Feature({"AndroidWebView"})
     @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
     public void testSafeBrowsingDoesNotBlockUnwantedSoftwarePages() throws Throwable {
-        // TODO(ntfschr): this is a temporary check until we add support for Unwanted Software
-        // warnings
+        // TODO(ntfschr): this is a temporary check until we add support for UwS warnings
+        // (crbug/729272)
         loadGreenPage();
         final String responseUrl = mTestServer.getURL(UNWANTED_SOFTWARE_HTML_PATH);
         loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), responseUrl);

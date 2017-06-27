@@ -43,8 +43,7 @@ AwSafeBrowsingResourceThrottle::AwSafeBrowsingResourceThrottle(
           resource_type,
           safe_browsing::CreateSBThreatTypeSet(
               {safe_browsing::SB_THREAT_TYPE_URL_MALWARE,
-               safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
-               safe_browsing::SB_THREAT_TYPE_URL_UNWANTED}),
+               safe_browsing::SB_THREAT_TYPE_URL_PHISHING}),
           database_manager,
           ui_manager),
       request_(request) {}
@@ -55,19 +54,6 @@ void AwSafeBrowsingResourceThrottle::CancelResourceLoad() {
   request_->SetUserData(kUserDataKey,
                         base::MakeUnique<base::SupportsUserData::Data>());
   Cancel();
-}
-
-void AwSafeBrowsingResourceThrottle::OnCheckBrowseUrlResult(
-    const GURL& url,
-    SBThreatType threat_type,
-    const ThreatMetadata& metadata) {
-  if (threat_type != safe_browsing::SB_THREAT_TYPE_URL_PHISHING &&
-      threat_type != safe_browsing::SB_THREAT_TYPE_URL_MALWARE) {
-    // If we don't recognize the threat type, just mark it as safe
-    threat_type = safe_browsing::SB_THREAT_TYPE_SAFE;
-  }
-
-  BaseResourceThrottle::OnCheckBrowseUrlResult(url, threat_type, metadata);
 }
 
 }  // namespace android_webview
