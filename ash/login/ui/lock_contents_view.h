@@ -11,6 +11,7 @@
 #include "ui/views/view.h"
 
 namespace views {
+class BoundsAnimator;
 class BoxLayout;
 class ScrollView;
 }  // namespace views
@@ -74,11 +75,14 @@ class ASH_EXPORT LockContentsView : public views::View,
   // that is invalidated whenver |users_| changes.
   UserState* FindStateForUser(const AccountId& user);
 
-  void UpdateAuthMethodsForAuthUser();
+  void UpdateAuthMethodsForAuthUser(bool animate);
 
   std::vector<UserState> users_;
 
   LoginDataDispatcher* const data_dispatcher_;  // Unowned.
+
+  std::unique_ptr<views::BoundsAnimator> auth_user_view_animator_;
+
   LoginAuthUserView* auth_user_view_;
   // All non-auth users; |auth_user_view_| is not contained in this list.
   std::vector<LoginUserView*> user_views_;

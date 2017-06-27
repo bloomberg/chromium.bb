@@ -9,6 +9,7 @@
 #include "ash/login/ui/login_display_style.h"
 #include "ash/login/ui/login_user_view.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/views/animation/bounds_animator.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/layout/box_layout.h"
@@ -35,20 +36,15 @@ constexpr int kExtraSmallHorizontalPaddingLeftOfRightOfUserListDp = 72;
 // The vertical padding between each entry in the extra-small user row
 constexpr int kExtraSmallVerticalDistanceBetweenUsersDp = 32;
 
+// Duration (in milliseconds) of the auth user view animation, ie, when enabling
+// or disabling the PIN keyboard.
+constexpr int kAuthUserViewAnimationDurationMs = 100;
+
 // Builds a view with the given preferred size.
 views::View* MakePreferredSizeView(gfx::Size size) {
   auto* view = new views::View();
   view->SetPreferredSize(size);
   return view;
-}
-
-// Wraps |view| in a horizontal box layout. This lets the view get the correct
-// preferred vertical size.
-views::View* WrapViewForPreferredVerticalSize(views::View* view) {
-  auto* host = new views::View();
-  host->SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal));
-  host->AddChildView(view);
-  return host;
 }
 
 }  // namespace
@@ -117,8 +113,12 @@ void LockContentsView::OnUsersChanged(
                               if (auth_success)
                                 ash::LockScreen::Get()->Destroy();
                             }));
-  UpdateAuthMethodsForAuthUser();
-  AddChildView(WrapViewForPreferredVerticalSize(auth_user_view_));
+  AddChildView(auth_user_view_);
+  auth_user_view_animator_ =
+      base::MakeUnique<views::BoundsAnimator>(auth_user_view_->parent());
+  auth_user_view_animator_->SetAnimationDuration(
+      kAuthUserViewAnimationDurationMs);
+  UpdateAuthMethodsForAuthUser(false /*animate*/);
 
   // Build layout for additional users.
   if (users.size() == 2)
@@ -142,7 +142,7 @@ void LockContentsView::OnPinEnabledForUserChanged(const AccountId& user,
   }
 
   state->show_pin = enabled;
-  UpdateAuthMethodsForAuthUser();
+  UpdateAuthMethodsForAuthUser(true /*animate*/);
 }
 
 void LockContentsView::CreateLowDensityLayout(
@@ -154,7 +154,7 @@ void LockContentsView::CreateLowDensityLayout(
       new LoginUserView(LoginDisplayStyle::kLarge, false /*show_dropdown*/);
   alt_user_view->UpdateForUser(users[1]);
   user_views_.push_back(alt_user_view);
-  AddChildView(WrapViewForPreferredVerticalSize(alt_user_view));
+  AddChildView(alt_user_view);
 }
 
 void LockContentsView::CreateMediumDensityLayout(
@@ -229,7 +229,7 @@ LockContentsView::UserState* LockContentsView::FindStateForUser(
   return nullptr;
 }
 
-void LockContentsView::UpdateAuthMethodsForAuthUser() {
+void LockContentsView::UpdateAuthMethodsForAuthUser(bool animate) {
   LockContentsView::UserState* state =
       FindStateForUser(auth_user_view_->current_user());
   DCHECK(state);
@@ -238,8 +238,16 @@ void LockContentsView::UpdateAuthMethodsForAuthUser() {
   if (state->show_pin)
     auth_methods |= LoginAuthUserView::AUTH_PIN;
 
+  // Update to the new layout. Capture existing size so we are able to animate.
+  gfx::Rect existing_bounds = auth_user_view_->bounds();
   auth_user_view_->SetAuthMethods(auth_methods);
   Layout();
+
+  if (animate) {
+    gfx::Rect new_bounds = auth_user_view_->bounds();
+    auth_user_view_->SetBoundsRect(existing_bounds);
+    auth_user_view_animator_->AnimateViewTo(auth_user_view_, new_bounds);
+  }
 }
 
 }  // namespace ash
