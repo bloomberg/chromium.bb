@@ -10,6 +10,7 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "media/base/android/android_overlay.h"
 #include "media/base/android/media_codec_bridge.h"
+#include "media/gpu/android/promotion_hint_aggregator.h"
 #include "media/gpu/avda_shared_state.h"
 #include "media/gpu/avda_surface_bundle.h"
 #include "ui/gl/gl_bindings.h"
@@ -86,6 +87,9 @@ class AVDASharedState : public base::RefCounted<AVDASharedState> {
 
   void ClearOverlay(AndroidOverlay* overlay);
 
+  void SetPromotionHintCB(PromotionHintAggregator::NotifyPromotionHintCB cb);
+  const PromotionHintAggregator::NotifyPromotionHintCB& GetPromotionHintCB();
+
  protected:
   virtual ~AVDASharedState();
 
@@ -96,6 +100,8 @@ class AVDASharedState : public base::RefCounted<AVDASharedState> {
   float gl_matrix_[16];
 
   scoped_refptr<AVDASurfaceBundle> surface_bundle_;
+
+  PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb_;
 
   base::WeakPtrFactory<AVDASharedState> weak_this_factory_;
 

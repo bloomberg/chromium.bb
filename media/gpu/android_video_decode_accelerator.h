@@ -35,6 +35,7 @@
 
 namespace media {
 class SharedMemoryRegion;
+class PromotionHintAggregator;
 
 // A VideoDecodeAccelerator implementation for Android. This class decodes the
 // encoded input stream using Android's MediaCodec. It handles the work of
@@ -80,6 +81,7 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   // failure.  If deferred init is pending, then we'll fail deferred init.
   // Otherwise, we'll signal errors normally.
   void NotifyError(Error error) override;
+  PromotionHintAggregator::NotifyPromotionHintCB GetPromotionHintCB() override;
 
   // AVDACodecAllocatorClient implementation:
   void OnCodecConfigured(
@@ -254,6 +256,9 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   // another codec.  Normally, one doesn't.
   void ReleaseCodecAndBundle();
 
+  // Send a |hint| to |promotion_hint_aggregator_|.
+  void NotifyPromotionHint(const PromotionHintAggregator::Hint& hint);
+
   // Used to DCHECK that we are called on the correct thread.
   base::ThreadChecker thread_checker_;
 
@@ -391,6 +396,8 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
 
   // Optional factory to produce mojo AndroidOverlay instances.
   AndroidOverlayMojoFactoryCB overlay_factory_cb_;
+
+  std::unique_ptr<PromotionHintAggregator> promotion_hint_aggregator_;
 
   // WeakPtrFactory for posting tasks back to |this|.
   base::WeakPtrFactory<AndroidVideoDecodeAccelerator> weak_this_factory_;

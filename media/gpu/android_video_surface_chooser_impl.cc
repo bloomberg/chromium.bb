@@ -106,10 +106,14 @@ void AndroidVideoSurfaceChooserImpl::Choose() {
   if (current_state_.is_fullscreen)
     new_overlay_state = kUsingOverlay;
 
-  // TODO(liberato): add other checks for things like "safe for overlay".
+  // If the compositor won't promote, then don't.
+  if (!current_state_.is_compositor_promotable)
+    new_overlay_state = kUsingSurfaceTexture;
 
   // If we need a secure surface, then we must choose an overlay.  The only way
-  // we won't is if we don't have a factory.
+  // we won't is if we don't have a factory.  If the compositor won't promote,
+  // we still use the overlay, since hopefully it's a temporary restriction.
+  // If we drop the overlay, then playback will fail.
   if (current_state_.is_secure)
     new_overlay_state = kUsingOverlay;
 

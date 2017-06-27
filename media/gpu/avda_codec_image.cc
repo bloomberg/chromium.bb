@@ -232,6 +232,17 @@ void AVDACodecImage::GetTextureMatrix(float matrix[16]) {
   YInvertMatrix(matrix);
 }
 
+void AVDACodecImage::NotifyPromotionHint(bool promotion_hint,
+                                         int display_x,
+                                         int display_y) {
+  // TODO(liberato): this should just be given to us.
+  PromotionHintAggregator::Hint hint;
+  hint.x = display_x;
+  hint.y = display_y;
+  hint.is_promotable = promotion_hint;
+  shared_state_->GetPromotionHintCB().Run(hint);
+}
+
 bool AVDACodecImage::IsCodecBufferOutstanding() const {
   static_assert(kUpdateOnly < 0 && kUpdateOnly > kRendered &&
                     kRendered > kInvalidCodecBufferIndex,
