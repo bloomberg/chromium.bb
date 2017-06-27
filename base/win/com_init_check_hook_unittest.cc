@@ -22,7 +22,7 @@ TEST(ComInitCheckHook, AssertNotInitialized) {
   ComInitCheckHook com_check_hook;
   AssertComApartmentType(ComApartmentType::NONE);
   ComPtr<IUnknown> shell_link;
-#if COM_INIT_CHECK_HOOK_ENABLED()
+#if defined(COM_INIT_CHECK_HOOK_ENABLED)
   EXPECT_DCHECK_DEATH(::CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_ALL,
                                          IID_PPV_ARGS(&shell_link)));
 #else
@@ -54,7 +54,7 @@ TEST(ComInitCheckHook, MultipleHooks) {
   ComInitCheckHook com_check_hook_2;
   AssertComApartmentType(ComApartmentType::NONE);
   ComPtr<IUnknown> shell_link;
-#if COM_INIT_CHECK_HOOK_ENABLED()
+#if defined(COM_INIT_CHECK_HOOK_ENABLED)
   EXPECT_DCHECK_DEATH(::CoCreateInstance(CLSID_ShellLink, nullptr, CLSCTX_ALL,
                                          IID_PPV_ARGS(&shell_link)));
 #else
