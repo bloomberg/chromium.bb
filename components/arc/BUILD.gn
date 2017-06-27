@@ -233,6 +233,7 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//chromeos",
+    "//chromeos:test_support_without_gmock",
     "//components/signin/core/account_id",
     "//components/user_manager",
     "//components/user_manager:test_support",

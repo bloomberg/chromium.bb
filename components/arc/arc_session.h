@@ -8,10 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
-#include "base/sequenced_task_runner.h"
-#include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_stop_reason.h"
@@ -21,8 +18,8 @@ namespace arc {
 // Starts the ARC instance and bootstraps the bridge connection.
 // Clients should implement the Delegate to be notified upon communications
 // being available.
-// The instance can be safely removed 1) before Start() is called, or 2) after
-// OnStopped() is called.
+// The instance can be safely removed 1) before Start*() is called, or 2) after
+// OnSessionStopped() is called.
 // The number of instances must be at most one. Otherwise, ARC instances will
 // conflict.
 class ArcSession {
@@ -47,17 +44,29 @@ class ArcSession {
       const scoped_refptr<base::TaskRunner>& blocking_task_runner);
   virtual ~ArcSession();
 
+  // Starts an instance for login screen. The instance is not a fully functional
+  // one, and Observer::OnSessionReady() will *never* be called.
+  virtual void StartForLoginScreen() = 0;
+
+  // Returns true if StartForLoginScreen() has been called but Start() hasn't.
+  virtual bool IsForLoginScreen() = 0;
+
   // Starts and bootstraps a connection with the instance. The Observer's
-  // OnReady() will be called if the bootstrapping is successful, or
-  // OnStopped() if it is not. Start() should not be called twice or more.
+  // OnSessionReady() will be called if the bootstrapping is successful, or
+  // OnSessionStopped() if it is not. Start() should not be called twice or
+  // more. When StartForLoginScreen() has already been called, Start() turns
+  // the mini instance to a fully functional one.
   virtual void Start() = 0;
 
-  // Requests to stop the currently-running instance.
-  // The completion is notified via OnStopped() of the Delegate.
+  // Requests to stop the currently-running instance whether or not it is for
+  // login screen.
+  // The completion is notified via OnSessionStopped() of the Observer.
   virtual void Stop() = 0;
 
   // Called when Chrome is in shutdown state. This is called when the message
-  // loop is already stopped, and the instance will soon be deleted.
+  // loop is already stopped, and the instance will soon be deleted. Caller
+  // may expect that OnSessionStopped() is synchronously called back except
+  // when it has already been called before.
   virtual void OnShutdown() = 0;
 
   void AddObserver(Observer* observer);
