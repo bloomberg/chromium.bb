@@ -61,14 +61,14 @@ bool SameLocation(const ui::LocatedEvent* event, const gfx::PointF& location) {
   return offset.LengthSquared() < (2 * kLocatedEventEpsilonSquared);
 }
 
-float GetCaptureScale() {
-  float capture_scale = 1.0f;
+display::ManagedDisplayInfo GetCaptureDisplayInfo() {
+  display::ManagedDisplayInfo capture_info;
   for (const auto& display : display::Screen::GetScreen()->GetAllDisplays()) {
     const auto& info = WMHelper::GetInstance()->GetDisplayInfo(display.id());
-    if (info.device_scale_factor() > capture_scale)
-      capture_scale = info.device_scale_factor();
+    if (info.device_scale_factor() >= capture_info.device_scale_factor())
+      capture_info = info;
   }
-  return capture_scale;
+  return capture_info;
 }
 
 }  // namespace
@@ -79,7 +79,8 @@ float GetCaptureScale() {
 Pointer::Pointer(PointerDelegate* delegate)
     : delegate_(delegate),
       cursor_(ui::CursorType::kNull),
-      capture_scale_(GetCaptureScale()),
+      capture_scale_(GetCaptureDisplayInfo().device_scale_factor()),
+      capture_ratio_(GetCaptureDisplayInfo().GetDensityRatio()),
       cursor_capture_source_id_(base::UnguessableToken::Create()),
       cursor_capture_weak_ptr_factory_(this) {
   auto* helper = WMHelper::GetInstance();
@@ -277,7 +278,9 @@ void Pointer::OnCursorDisplayChanged(const display::Display& display) {
 
 void Pointer::OnDisplayConfigurationChanged() {
   UpdatePointerSurface(surface_);
-  capture_scale_ = GetCaptureScale();
+  auto info = GetCaptureDisplayInfo();
+  capture_scale_ = info.device_scale_factor();
+  capture_ratio_ = info.GetDensityRatio();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -387,12 +390,12 @@ void Pointer::UpdateCursor() {
     cursor_ = ui::CursorType::kNone;
   } else {
     SkBitmap bitmap = cursor_bitmap_;
-    gfx::Point hotspot = gfx::ScaleToFlooredPoint(hotspot_, capture_scale_);
+    gfx::Point hotspot = gfx::ScaleToFlooredPoint(hotspot_, capture_ratio_);
 
     auto* helper = WMHelper::GetInstance();
     const display::Display& display = helper->GetCursorDisplay();
-    float scale = helper->GetDisplayInfo(display.id()).device_scale_factor() /
-                  capture_scale_;
+    float scale =
+        helper->GetDisplayInfo(display.id()).GetDensityRatio() / capture_ratio_;
 
     if (helper->GetCursorSize() == ui::CursorSize::kLarge)
       scale *= kLargeCursorScale;
