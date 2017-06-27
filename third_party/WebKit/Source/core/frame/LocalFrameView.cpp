@@ -3907,7 +3907,10 @@ void LocalFrameView::RemoveAnimatingScrollableArea(
 }
 
 void LocalFrameView::AttachToLayout() {
+  // TODO(crbug.com/729196): Trace why LocalFrameView::DetachFromLayout crashes.
   CHECK(!is_attached_);
+  if (frame_->GetDocument())
+    CHECK_NE(Lifecycle().GetState(), DocumentLifecycle::kStopping);
   is_attached_ = true;
   parent_ = ParentFrameView();
   if (!parent_) {

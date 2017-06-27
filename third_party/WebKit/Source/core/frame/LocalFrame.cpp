@@ -299,6 +299,16 @@ void LocalFrame::Detach(FrameDetachType type) {
   loader_.StopAllLoaders();
   loader_.Detach();
   GetDocument()->Shutdown();
+  // TODO(crbug.com/729196): Trace why LocalFrameView::DetachFromLayout crashes.
+  // It seems to crash because Frame is detached before LocalFrameView.
+  // Verify here that any LocalFrameView has been detached by now.
+  if (view_ && view_->IsAttached()) {
+    CHECK(DeprecatedLocalOwner());
+    CHECK(DeprecatedLocalOwner()->OwnedEmbeddedContentView());
+    CHECK_EQ(view_, DeprecatedLocalOwner()->OwnedEmbeddedContentView());
+  }
+  CHECK(!view_ || !view_->IsAttached());
+
   // This is the earliest that scripting can be disabled:
   // - FrameLoader::Detach() can fire XHR abort events
   // - Document::Shutdown() can dispose plugins which can run script.
@@ -306,21 +316,15 @@ void LocalFrame::Detach(FrameDetachType type) {
   if (!Client())
     return;
 
+  // TODO(crbug.com/729196): Trace why LocalFrameView::DetachFromLayout crashes.
+  CHECK(!view_->IsAttached());
   Client()->WillBeDetached();
   // Notify ScriptController that the frame is closing, since its cleanup ends
   // up calling back to LocalFrameClient via WindowProxy.
   GetScriptController().ClearForClose();
 
   // TODO(crbug.com/729196): Trace why LocalFrameView::DetachFromLayout crashes.
-  // It seems to crash because Frame is detached before LocalFrameView.
-  // Verify here that any LocalFrameView has been detached by now.
-  if (view_->IsAttached()) {
-    CHECK(DeprecatedLocalOwner());
-    CHECK(DeprecatedLocalOwner()->OwnedEmbeddedContentView());
-    CHECK_EQ(view_, DeprecatedLocalOwner()->OwnedEmbeddedContentView());
-  }
   CHECK(!view_->IsAttached());
-
   SetView(nullptr);
 
   page_->GetEventHandlerRegistry().DidRemoveAllEventHandlers(*DomWindow());

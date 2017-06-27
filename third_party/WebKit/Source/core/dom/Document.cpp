@@ -2575,6 +2575,8 @@ void Document::Shutdown() {
 
   lifecycle_.AdvanceTo(DocumentLifecycle::kStopping);
   View()->Dispose();
+  // TODO(crbug.com/729196): Trace why LocalFrameView::DetachFromLayout crashes.
+  CHECK(!View()->IsAttached());
 
   // If the EmbeddedContentView of the document's frame owner doesn't match
   // view() then LocalFrameView::Dispose() didn't clear the owner's
@@ -2635,6 +2637,8 @@ void Document::Shutdown() {
 
   layout_view_ = nullptr;
   ContainerNode::DetachLayoutTree();
+  // TODO(crbug.com/729196): Trace why LocalFrameView::DetachFromLayout crashes.
+  CHECK(!View()->IsAttached());
 
   if (this != &AxObjectCacheOwner()) {
     if (AXObjectCache* cache = ExistingAXObjectCache()) {
@@ -2678,6 +2682,8 @@ void Document::Shutdown() {
     media_query_matcher_->DocumentDetached();
 
   lifecycle_.AdvanceTo(DocumentLifecycle::kStopped);
+  // TODO(crbug.com/729196): Trace why LocalFrameView::DetachFromLayout crashes.
+  CHECK(!View()->IsAttached());
 
   // TODO(haraken): Call contextDestroyed() before we start any disruptive
   // operations.
@@ -2688,6 +2694,8 @@ void Document::Shutdown() {
   // a contextDestroyed() notification. This can happen for a document
   // created by DOMImplementation::createDocument().
   ExecutionContext::NotifyContextDestroyed();
+  // TODO(crbug.com/729196): Trace why LocalFrameView::DetachFromLayout crashes.
+  CHECK(!View()->IsAttached());
 
   // This is required, as our LocalFrame might delete itself as soon as it
   // detaches us. However, this violates Node::detachLayoutTree() semantics, as
