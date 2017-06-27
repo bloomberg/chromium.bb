@@ -302,6 +302,7 @@ source_set("unit_tests") {
     "remoteplayback/RemotePlaybackTest.cpp",
     "serviceworkers/ServiceWorkerContainerTest.cpp",
     "serviceworkers/WebEmbeddedWorkerImplTest.cpp",
+    "wake_lock/ScreenWakeLockTest.cpp",
     "webaudio/AudioBasicProcessorHandlerTest.cpp",
     "webaudio/AudioContextTest.cpp",
     "webaudio/AudioWorkletGlobalScopeTest.cpp",
