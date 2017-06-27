@@ -8724,7 +8724,35 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2" label="Unknown"/>
 </enum>
 
-<enum name="DxgiFramePresentationMode">
+
+<enum name="DXGI_COLOR_SPACE_TYPE" type="int">
+  <summary>
+    DirectX color space type. Documented here:
+    https://msdn.microsoft.com/en-us/library/windows/desktop/dn903661(v=vs.85).aspx
+  </summary>
+  <int value="0" label="DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709"/>
+  <int value="1" label="DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709"/>
+  <int value="2" label="DXGI_COLOR_SPACE_RGB_STUDIO_G22_NONE_P709"/>
+  <int value="3" label="DXGI_COLOR_SPACE_RGB_STUDIO_G22_NONE_P2020"/>
+  <int value="4" label="DXGI_COLOR_SPACE_RESERVED"/>
+  <int value="5" label="DXGI_COLOR_SPACE_YCBCR_FULL_G22_NONE_P709_X601"/>
+  <int value="6" label="DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P601"/>
+  <int value="7" label="DXGI_COLOR_SPACE_YCBCR_FULL_G22_LEFT_P601"/>
+  <int value="8" label="DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P709"/>
+  <int value="9" label="DXGI_COLOR_SPACE_YCBCR_FULL_G22_LEFT_P709"/>
+  <int value="10" label="DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P2020"/>
+  <int value="11" label="DXGI_COLOR_SPACE_YCBCR_FULL_G22_LEFT_P2020"/>
+  <int value="12" label="DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020"/>
+  <int value="13" label="DXGI_COLOR_SPACE_YCBCR_STUDIO_G2084_LEFT_P2020"/>
+  <int value="14" label="DXGI_COLOR_SPACE_RGB_STUDIO_G2084_NONE_P2020"/>
+  <int value="15" label="DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_TOPLEFT_P2020"/>
+  <int value="16" label="DXGI_COLOR_SPACE_YCBCR_STUDIO_G2084_TOPLEFT_P2020"/>
+  <int value="17" label="DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P2020"/>
+  <int value="18" label="DXGI_COLOR_SPACE_YCBCR_STUDIO_GHLG_TOPLEFT_P2020"/>
+  <int value="19" label="DXGI_COLOR_SPACE_YCBCR_FULL_GHLG_TOPLEFT_P2020"/>
+</enum>
+
+<enum name="DxgiFramePresentationMode" type="int">
   <int value="0" label="Composed"/>
   <int value="1" label="Overlay"/>
   <int value="2" label="None (Unknown)"/>
