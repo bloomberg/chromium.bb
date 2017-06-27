@@ -63,6 +63,7 @@ class PrefRegistrySyncable;
 
 namespace chrome_browser_net {
 
+class InitialObserver;
 typedef std::map<GURL, UrlInfo> Results;
 
 // An observer for testing.
@@ -347,38 +348,6 @@ class Predictor {
     std::queue<GURL> background_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(HostNameQueue);
-  };
-
-  // The InitialObserver monitors navigations made by the network stack. This
-  // is only used to identify startup time resolutions (for re-resolution
-  // during our next process startup).
-  // TODO(jar): Consider preconnecting at startup, which may be faster than
-  // waiting for render process to start and request a connection.
-  class InitialObserver {
-   public:
-    InitialObserver();
-    ~InitialObserver();
-    // Recording of when we observed each navigation.
-    typedef std::map<GURL, base::TimeTicks> FirstNavigations;
-
-    // Potentially add a new URL to our startup list.
-    void Append(const GURL& url, Predictor* predictor);
-
-    // Get an HTML version of our current planned first_navigations_.
-    void GetFirstResolutionsHtml(std::string* output);
-
-    // Persist the current first_navigations_ for storage in a list.
-    void GetInitialDnsResolutionList(base::ListValue* startup_list);
-
-    // Discards all initial loading history.
-    void DiscardInitialNavigationHistory() { first_navigations_.clear(); }
-
-   private:
-    // List of the first N URL resolutions observed in this run.
-    FirstNavigations first_navigations_;
-
-    // The number of URLs we'll save for pre-resolving at next startup.
-    static const size_t kStartupResolutionCount = 10;
   };
 
   // A map that is keyed with the host/port that we've learned were the cause
