@@ -119,6 +119,8 @@ class PDFiumPage {
   Area GetLinkTarget(FPDF_LINK link, LinkTarget* target) const;
   // Returns target associated with a destination.
   Area GetDestinationTarget(FPDF_DEST destination, LinkTarget* target) const;
+  // Returns target associated with a URI action.
+  Area GetURITarget(FPDF_ACTION uri_action, LinkTarget* target) const;
 
   class ScopedLoadCounter {
    public:
