@@ -192,6 +192,7 @@ component("capture_lib") {
       "video/chromeos/camera_device_context.cc",
       "video/chromeos/camera_device_delegate.cc",
       "video/chromeos/camera_hal_delegate.cc",
+      "video/chromeos/camera_hal_dispatcher_impl.cc",
       "video/chromeos/camera_metadata_utils.cc",
       "video/chromeos/display_rotation_observer.cc",
       "video/chromeos/pixel_format_utils.cc",
@@ -249,6 +250,7 @@ test("capture_unittests") {
     sources += [
       "video/chromeos/camera_device_delegate_unittest.cc",
       "video/chromeos/camera_hal_delegate_unittest.cc",
+      "video/chromeos/camera_hal_dispatcher_impl_unittest.cc",
       "video/chromeos/mock_camera_module.cc",
       "video/chromeos/mock_video_capture_client.cc",
       "video/chromeos/stream_buffer_manager_unittest.cc",
