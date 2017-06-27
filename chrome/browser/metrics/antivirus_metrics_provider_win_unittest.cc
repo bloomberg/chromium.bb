@@ -109,8 +109,8 @@ TEST_P(AntiVirusMetricsProviderTest, DISABLED_GetMetricsFullName) {
   ASSERT_TRUE(thread_checker_.CalledOnValidThread());
   base::HistogramTester histograms;
   SetFullNamesFeatureEnabled(expect_unhashed_value_);
-  // Make sure the I/O is happening on the FILE thread by disallowing it on
-  // the main thread.
+  // Make sure the I/O is happening on a valid thread by disallowing it on the
+  // main thread.
   bool previous_value = base::ThreadRestrictions::SetIOAllowed(false);
   provider_->GetAntiVirusMetrics(
       base::Bind(&AntiVirusMetricsProviderTest::GetMetricsCallback,
