@@ -64,9 +64,9 @@ DEFINE_TRACE(History) {
 }
 
 unsigned History::length() const {
-  if (!GetFrame() || !GetFrame()->Loader().Client())
+  if (!GetFrame() || !GetFrame()->Client())
     return 0;
-  return GetFrame()->Loader().Client()->BackForwardLength();
+  return GetFrame()->Client()->BackForwardLength();
 }
 
 SerializedScriptValue* History::state() {
@@ -88,7 +88,7 @@ SerializedScriptValue* History::StateInternal() const {
 
 void History::setScrollRestoration(const String& value) {
   DCHECK(value == "manual" || value == "auto");
-  if (!GetFrame() || !GetFrame()->Loader().Client())
+  if (!GetFrame() || !GetFrame()->Client())
     return;
 
   HistoryScrollRestorationType scroll_restoration =
@@ -99,7 +99,7 @@ void History::setScrollRestoration(const String& value) {
   if (HistoryItem* history_item =
           GetFrame()->Loader().GetDocumentLoader()->GetHistoryItem()) {
     history_item->SetScrollRestorationType(scroll_restoration);
-    GetFrame()->Loader().Client()->DidUpdateCurrentHistoryItem();
+    GetFrame()->Client()->DidUpdateCurrentHistoryItem();
   }
 }
 
@@ -133,7 +133,7 @@ void History::forward(ScriptState* script_state) {
 }
 
 void History::go(ScriptState* script_state, int delta) {
-  if (!GetFrame() || !GetFrame()->Loader().Client())
+  if (!GetFrame() || !GetFrame()->Client())
     return;
 
   DCHECK(IsMainThread());
@@ -149,7 +149,7 @@ void History::go(ScriptState* script_state, int delta) {
   }
 
   if (delta) {
-    GetFrame()->Loader().Client()->NavigateBackForward(delta);
+    GetFrame()->Client()->NavigateBackForward(delta);
   } else {
     // We intentionally call reload() for the current frame if delta is zero.
     // Otherwise, navigation happens on the root frame.

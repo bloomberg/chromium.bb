@@ -65,7 +65,7 @@ void HTMLFormControlElementWithState::NotifyFormStateChanged() {
   // selection before the document is active (or even in a frame).
   if (!GetDocument().IsActive())
     return;
-  GetDocument().GetFrame()->Loader().Client()->DidUpdateCurrentHistoryItem();
+  GetDocument().GetFrame()->Client()->DidUpdateCurrentHistoryItem();
 }
 
 bool HTMLFormControlElementWithState::ShouldSaveAndRestoreFormControlState()

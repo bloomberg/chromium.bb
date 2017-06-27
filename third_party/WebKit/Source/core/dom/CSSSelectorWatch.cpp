@@ -80,7 +80,7 @@ void CSSSelectorWatch::CallbackSelectorChangeTimerFired(TimerBase*) {
     Vector<String> removed_selectors;
     CopyToVector(added_selectors_, added_selectors);
     CopyToVector(removed_selectors_, removed_selectors);
-    GetSupplementable()->GetFrame()->Loader().Client()->SelectorMatchChanged(
+    GetSupplementable()->GetFrame()->Client()->SelectorMatchChanged(
         added_selectors, removed_selectors);
   }
   added_selectors_.clear();

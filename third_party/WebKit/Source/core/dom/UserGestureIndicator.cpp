@@ -18,8 +18,7 @@ void SetHasReceivedUserGesture(Document* document) {
     bool had_gesture = document->GetFrame()->HasReceivedUserGesture();
     if (!had_gesture)
       document->GetFrame()->SetDocumentHasReceivedUserGesture();
-    document->GetFrame()->Loader().Client()->SetHasReceivedUserGesture(
-        had_gesture);
+    document->GetFrame()->Client()->SetHasReceivedUserGesture(had_gesture);
   }
 }
 
