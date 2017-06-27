@@ -93,8 +93,7 @@ void Service::OnQueryEnded() {
 void Service::OnOpenResult(const ExtensionId& extension_id,
                            const std::string& item_id) {
   CacheListenerExtensionIds();
-  CHECK(
-      base::ContainsValue(*cached_listener_extension_ids_.get(), extension_id));
+  CHECK(base::ContainsKey(*cached_listener_extension_ids_.get(), extension_id));
 
   extensions::EventRouter* event_router =
       extensions::EventRouter::Get(profile_);
@@ -119,8 +118,8 @@ void Service::SetSearchResults(
 
   // If |extension| is not in the listener extensions list, ignore it.
   CacheListenerExtensionIds();
-  if (!base::ContainsValue(*cached_listener_extension_ids_.get(),
-                           extension->id())) {
+  if (!base::ContainsKey(*cached_listener_extension_ids_.get(),
+                         extension->id())) {
     return;
   }
 

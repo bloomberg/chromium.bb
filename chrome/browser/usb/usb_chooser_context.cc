@@ -160,7 +160,7 @@ bool UsbChooserContext::HasDevicePermission(
   auto it = ephemeral_devices_.find(
       std::make_pair(requesting_origin, embedding_origin));
   if (it != ephemeral_devices_.end() &&
-      base::ContainsValue(it->second, device->guid())) {
+      base::ContainsKey(it->second, device->guid())) {
     return true;
   }
 

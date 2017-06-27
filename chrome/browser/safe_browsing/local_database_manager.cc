@@ -71,7 +71,7 @@ void RecordGetHashCheckStatus(
 
 bool IsExpectedThreat(const SBThreatType threat_type,
                       const SBThreatTypeSet& expected_threats) {
-  return base::ContainsValue(expected_threats, threat_type);
+  return base::ContainsKey(expected_threats, threat_type);
 }
 
 // Returns threat level of the list. Lists with lower threat levels are more

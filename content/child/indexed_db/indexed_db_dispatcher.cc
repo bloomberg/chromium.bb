@@ -93,12 +93,12 @@ void IndexedDBDispatcher::UnregisterMojoOwnedDatabaseCallbacks(
 }
 
 void IndexedDBDispatcher::RegisterCursor(WebIDBCursorImpl* cursor) {
-  DCHECK(!base::ContainsValue(cursors_, cursor));
+  DCHECK(!base::ContainsKey(cursors_, cursor));
   cursors_.insert(cursor);
 }
 
 void IndexedDBDispatcher::UnregisterCursor(WebIDBCursorImpl* cursor) {
-  DCHECK(base::ContainsValue(cursors_, cursor));
+  DCHECK(base::ContainsKey(cursors_, cursor));
   cursors_.erase(cursor);
 }
 

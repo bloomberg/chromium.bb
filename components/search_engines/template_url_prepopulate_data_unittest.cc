@@ -402,7 +402,7 @@ TEST_F(TemplateURLPrepopulateDataTest, HttpsUrls) {
   for (const PrepopulatedEngine* engine : all_engines) {
     std::unique_ptr<TemplateURLData> data =
         TemplateURLDataFromPrepopulatedEngine(*engine);
-    if (base::ContainsValue(exceptions, data->prepopulate_id))
+    if (base::ContainsKey(exceptions, data->prepopulate_id))
       continue;
 
     GURL logo_url = data->logo_url;
