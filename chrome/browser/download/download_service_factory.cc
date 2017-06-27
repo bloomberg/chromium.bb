@@ -19,10 +19,15 @@
 #include "components/download/public/download_service.h"
 #include "components/download/public/task_scheduler.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/offline_pages/features/features.h"
 #include "content/public/browser/browser_context.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/download/service/download_task_scheduler.h"
+#endif
+
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+#include "chrome/browser/offline_pages/prefetch/offline_prefetch_download_client.h"
 #endif
 
 // static
@@ -48,7 +53,11 @@ KeyedService* DownloadServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   auto clients = base::MakeUnique<download::DownloadClientMap>();
 
-  // TODO(dtrainor): Register all clients here.
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+  clients->insert(std::make_pair(
+      download::DownloadClient::OFFLINE_PAGE_PREFETCH,
+      base::MakeUnique<offline_pages::OfflinePrefetchDownloadClient>(context)));
+#endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 
   auto* download_manager = content::BrowserContext::GetDownloadManager(context);
 

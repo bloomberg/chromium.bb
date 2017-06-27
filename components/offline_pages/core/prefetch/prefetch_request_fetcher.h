@@ -9,8 +9,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
-#include "components/version_info/channel.h"
 #include "net/url_request/url_fetcher_delegate.h"
+#include "url/gurl.h"
 
 namespace net {
 class URLRequestContextGetter;
@@ -26,16 +26,14 @@ class PrefetchRequestFetcher : public net::URLFetcherDelegate {
 
   // Creates a fetcher that will sends a GET request to the server.
   static std::unique_ptr<PrefetchRequestFetcher> CreateForGet(
-      const std::string& url_path,
-      version_info::Channel channel,
+      const GURL& url,
       net::URLRequestContextGetter* request_context_getter,
       const FinishedCallback& callback);
 
   // Creates a fetcher that will sends a POST request to the server.
   static std::unique_ptr<PrefetchRequestFetcher> CreateForPost(
-      const std::string& url_path,
+      const GURL& url,
       const std::string& message,
-      version_info::Channel channel,
       net::URLRequestContextGetter* request_context_getter,
       const FinishedCallback& callback);
 
@@ -47,9 +45,8 @@ class PrefetchRequestFetcher : public net::URLFetcherDelegate {
  private:
   // If |message| is empty, the GET request is sent. Otherwise, the POST request
   // is sent with |message| as post data.
-  PrefetchRequestFetcher(const std::string& url_path,
+  PrefetchRequestFetcher(const GURL& url,
                          const std::string& message,
-                         version_info::Channel channel,
                          net::URLRequestContextGetter* request_context_getter,
                          const FinishedCallback& callback);
 

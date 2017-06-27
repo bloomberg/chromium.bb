@@ -29,6 +29,7 @@
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/prefetch/generate_page_bundle_request.h"
 #include "components/offline_pages/core/prefetch/get_operation_request.h"
+#include "components/offline_pages/core/prefetch/prefetch_downloader.h"
 #include "components/offline_pages/core/prefetch/prefetch_service.h"
 #include "content/public/browser/web_ui.h"
 #include "net/base/network_change_notifier.h"
@@ -348,6 +349,19 @@ void OfflineInternalsUIMessageHandler::HandleGetOperation(
           weak_ptr_factory_.GetWeakPtr(), callback_id)));
 }
 
+void OfflineInternalsUIMessageHandler::HandleDownloadArchive(
+    const base::ListValue* args) {
+  AllowJavascript();
+  std::string name;
+  CHECK(args->GetString(0, &name));
+  base::TrimWhitespaceASCII(name, base::TRIM_ALL, &name);
+
+  if (prefetch_service_) {
+    prefetch_service_->GetPrefetchDownloader()->StartDownload(
+        base::GenerateGUID(), name);
+  }
+}
+
 void OfflineInternalsUIMessageHandler::HandlePrefetchRequestCallback(
     std::string callback_id,
     offline_pages::PrefetchRequestStatus status,
@@ -509,6 +523,10 @@ void OfflineInternalsUIMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getOperation",
       base::Bind(&OfflineInternalsUIMessageHandler::HandleGetOperation,
+                 weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "downloadArchive",
+      base::Bind(&OfflineInternalsUIMessageHandler::HandleDownloadArchive,
                  weak_ptr_factory_.GetWeakPtr()));
 
   // Get the offline page model associated with this web ui.

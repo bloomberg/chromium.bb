@@ -82,6 +82,9 @@ class OfflineInternalsUIMessageHandler : public content::WebUIMessageHandler {
   // Sends and processes a request to get the info about an operation.
   void HandleGetOperation(const base::ListValue* args);
 
+  // Downloads an archive.
+  void HandleDownloadArchive(const base::ListValue* args);
+
   // Callback for async GetAllPages calls.
   void HandleStoredPagesCallback(
       std::string callback_id,
@@ -107,12 +110,6 @@ class OfflineInternalsUIMessageHandler : public content::WebUIMessageHandler {
       std::string callback_id,
       offline_pages::PrefetchRequestStatus status,
       const std::string& operation_name,
-      const std::vector<offline_pages::RenderPageInfo>& pages);
-
-  // Callback for GetOperation calls.
-  void HandleGetOperationCallback(
-      std::string callback_id,
-      offline_pages::PrefetchRequestStatus status,
       const std::vector<offline_pages::RenderPageInfo>& pages);
 
   // Offline page model to call methods on.

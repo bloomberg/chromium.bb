@@ -9,14 +9,11 @@
 #include "base/logging.h"
 #include "components/offline_pages/core/prefetch/prefetch_proto_utils.h"
 #include "components/offline_pages/core/prefetch/prefetch_request_fetcher.h"
+#include "components/offline_pages/core/prefetch/prefetch_server_urls.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
 namespace offline_pages {
-
-namespace {
-const char kGetOperationURLPath[] = "v1/";
-}  // namespace
 
 GetOperationRequest::GetOperationRequest(
     const std::string& name,
@@ -24,10 +21,8 @@ GetOperationRequest::GetOperationRequest(
     net::URLRequestContextGetter* request_context_getter,
     const PrefetchRequestFinishedCallback& callback)
     : callback_(callback) {
-  std::string path(kGetOperationURLPath);
-  path += name;
   fetcher_ = PrefetchRequestFetcher::CreateForGet(
-      path, channel, request_context_getter,
+      GetOperationRequestURL(name, channel), request_context_getter,
       base::Bind(&GetOperationRequest::OnCompleted,
                  // Fetcher is owned by this instance.
                  base::Unretained(this)));
