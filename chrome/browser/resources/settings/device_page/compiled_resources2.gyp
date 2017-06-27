@@ -118,6 +118,7 @@
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:web_ui_listener_behavior',
+        '<(EXTERNS_GYP):settings_private',
         '../compiled_resources2.gyp:route',
         '../prefs/compiled_resources2.gyp:prefs_types',
         'device_page_browser_proxy'

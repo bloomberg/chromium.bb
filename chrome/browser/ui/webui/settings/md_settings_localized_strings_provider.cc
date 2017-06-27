@@ -754,11 +754,9 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
       {"powerIdleDisplayOff", IDS_SETTINGS_POWER_IDLE_DISPLAY_OFF},
       {"powerIdleDisplayOn", IDS_SETTINGS_POWER_IDLE_DISPLAY_ON},
       {"powerIdleOther", IDS_SETTINGS_POWER_IDLE_OTHER},
-      {"powerLidClosedLabel", IDS_SETTINGS_POWER_LID_CLOSED_LABEL},
-      {"powerLidClosedSleep", IDS_SETTINGS_POWER_LID_CLOSED_SLEEP},
-      {"powerLidClosedStayAwake", IDS_SETTINGS_POWER_LID_CLOSED_STAY_AWAKE},
-      {"powerLidClosedSignOut", IDS_SETTINGS_POWER_LID_CLOSED_SIGN_OUT},
-      {"powerLidClosedShutDown", IDS_SETTINGS_POWER_LID_CLOSED_SHUT_DOWN},
+      {"powerLidSleepLabel", IDS_SETTINGS_POWER_LID_CLOSED_SLEEP_LABEL},
+      {"powerLidSignOutLabel", IDS_SETTINGS_POWER_LID_CLOSED_SIGN_OUT_LABEL},
+      {"powerLidShutDownLabel", IDS_SETTINGS_POWER_LID_CLOSED_SHUT_DOWN_LABEL},
   };
   AddLocalizedStringsBulk(html_source, power_strings, arraysize(power_strings));
 
