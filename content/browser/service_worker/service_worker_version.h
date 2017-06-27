@@ -403,8 +403,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   }
   const std::set<uint32_t>& used_features() const { return used_features_; }
 
-  static bool IsInstalled(ServiceWorkerVersion::Status status);
-
  private:
   friend class base::RefCounted<ServiceWorkerVersion>;
   friend class ServiceWorkerReadFromCacheJobTest;
