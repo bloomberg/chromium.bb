@@ -85,7 +85,6 @@ struct InstallableManager::ValidManifestProperty {
 struct InstallableManager::ServiceWorkerProperty {
   InstallableStatusCode error = NO_ERROR_DETECTED;
   bool has_worker = false;
-  bool is_waiting = false;
   bool fetched = false;
 };
 
@@ -296,10 +295,6 @@ InstallableStatusCode InstallableManager::worker_error() const {
   return worker_->error;
 }
 
-bool InstallableManager::worker_waiting() const {
-  return worker_->is_waiting;
-}
-
 InstallableStatusCode InstallableManager::icon_error(
     const IconParams& icon_params) {
   return icons_[icon_params].error;
@@ -337,6 +332,7 @@ void InstallableManager::Reset() {
   // Prevent any outstanding callbacks to or from this object from being called.
   weak_factory_.InvalidateWeakPtrs();
   tasks_.clear();
+  paused_tasks_.clear();
   icons_.clear();
 
   // We may have reset prior to completion, in which case |menu_open_count_| or
@@ -548,13 +544,16 @@ void InstallableManager::OnDidCheckHasServiceWorker(
       worker_->error = NOT_OFFLINE_CAPABLE;
       break;
     case content::ServiceWorkerCapability::NO_SERVICE_WORKER:
-      InstallableParams& params = tasks_[0].first;
+      Task& task = tasks_[0];
+      InstallableParams& params = task.first;
       if (params.wait_for_worker) {
         // Wait for ServiceWorkerContextObserver::OnRegistrationStored. Set the
         // param |wait_for_worker| to false so we only wait once per task.
         params.wait_for_worker = false;
-        worker_->is_waiting = true;
         OnWaitingForServiceWorker();
+        paused_tasks_.push_back(task);
+        tasks_.erase(tasks_.begin());
+        StartNextTask();
         return;
       }
       worker_->has_worker = false;
@@ -614,19 +613,27 @@ void InstallableManager::OnIconFetched(
 }
 
 void InstallableManager::OnRegistrationStored(const GURL& pattern) {
-  // If we aren't currently waiting, either:
+  // If we don't have any paused tasks, that means:
   //   a) we've already failed the check, or
   //   b) we haven't yet called CheckHasServiceWorker.
   // Otherwise if the scope doesn't match we keep waiting.
-  if (!worker_->is_waiting || !content::ServiceWorkerContext::ScopeMatches(
-                                  pattern, manifest().start_url)) {
+  if (paused_tasks_.empty() || !content::ServiceWorkerContext::ScopeMatches(
+                                   pattern, manifest().start_url)) {
     return;
   }
 
-  // This will call CheckHasServiceWorker to check whether the service worker
-  // controls the start_url and if it has a fetch handler.
-  worker_->is_waiting = false;
-  WorkOnTask();
+  // Unpause the paused tasks.
+  for (const auto& task : paused_tasks_)
+    tasks_.push_back(task);
+  paused_tasks_.clear();
+
+  // Start the pipeline again if it is not running. This will call
+  // CheckHasServiceWorker to check if the SW has a fetch handler. Otherwise,
+  // adding the tasks to the end of the active queue is sufficient.
+  if (!is_active_) {
+    is_active_ = true;
+    StartNextTask();
+  }
 }
 
 void InstallableManager::DidFinishNavigation(

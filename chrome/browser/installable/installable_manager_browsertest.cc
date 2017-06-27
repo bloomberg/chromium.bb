@@ -708,18 +708,21 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
   auto manager = base::MakeUnique<LazyWorkerInstallableManager>(
       web_contents, sw_run_loop.QuitClosure());
 
-  // Load a URL with no service worker.
-  GURL test_url = embedded_test_server()->GetURL(
-      "/banners/manifest_no_service_worker.html");
-  ui_test_utils::NavigateToURL(browser(), test_url);
+  {
+    // Load a URL with no service worker.
+    GURL test_url = embedded_test_server()->GetURL(
+        "/banners/manifest_no_service_worker.html");
+    ui_test_utils::NavigateToURL(browser(), test_url);
 
-  // Kick off fetching the data. This should block on waiting for a worker.
-  manager->GetData(GetWebAppParams(),
-                   base::Bind(&CallbackTester::OnDidFinishInstallableCheck,
-                              base::Unretained(tester.get())));
-  sw_run_loop.Run();
+    // Kick off fetching the data. This should block on waiting for a worker.
+    manager->GetData(GetWebAppParams(),
+                     base::Bind(&CallbackTester::OnDidFinishInstallableCheck,
+                                base::Unretained(tester.get())));
+    sw_run_loop.Run();
+  }
 
   // We should now be waiting for the service worker.
+  EXPECT_TRUE(tester->manifest().IsEmpty());
   EXPECT_FALSE(manager->manifest().IsEmpty());
   EXPECT_FALSE(manager->manifest_url().is_empty());
   EXPECT_FALSE(manager->is_installable());
@@ -730,8 +733,29 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
   EXPECT_EQ(NO_ERROR_DETECTED, manager->valid_manifest_error());
   EXPECT_EQ(NO_ERROR_DETECTED, manager->worker_error());
   EXPECT_EQ(NO_ERROR_DETECTED, (manager->icon_error(kPrimaryIconParams)));
-  EXPECT_TRUE(manager->worker_waiting());
-  EXPECT_FALSE(manager->tasks_.empty());
+  EXPECT_TRUE(manager->tasks_.empty());
+  EXPECT_FALSE(manager->paused_tasks_.empty());
+
+  {
+    // Fetching just the manifest and icons should not hang while the other call
+    // is waiting for a worker.
+    base::RunLoop run_loop;
+    std::unique_ptr<CallbackTester> nested_tester(
+        new CallbackTester(run_loop.QuitClosure()));
+    manager->GetData(GetPrimaryIconParams(),
+                     base::Bind(&CallbackTester::OnDidFinishInstallableCheck,
+                                base::Unretained(nested_tester.get())));
+    run_loop.Run();
+
+    EXPECT_FALSE(nested_tester->manifest().IsEmpty());
+    EXPECT_FALSE(nested_tester->manifest_url().is_empty());
+    EXPECT_FALSE(nested_tester->primary_icon_url().is_empty());
+    EXPECT_NE(nullptr, nested_tester->primary_icon());
+    EXPECT_FALSE(nested_tester->is_installable());
+    EXPECT_TRUE(nested_tester->badge_icon_url().is_empty());
+    EXPECT_EQ(nullptr, nested_tester->badge_icon());
+    EXPECT_EQ(NO_ERROR_DETECTED, nested_tester->error_code());
+  }
 
   // Load the service worker.
   EXPECT_TRUE(content::ExecuteScript(
@@ -761,8 +785,8 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
   EXPECT_EQ(NO_ERROR_DETECTED, manager->valid_manifest_error());
   EXPECT_EQ(NO_ERROR_DETECTED, manager->worker_error());
   EXPECT_EQ(NO_ERROR_DETECTED, (manager->icon_error(kPrimaryIconParams)));
-  EXPECT_FALSE(manager->worker_waiting());
   EXPECT_TRUE(manager->tasks_.empty());
+  EXPECT_TRUE(manager->paused_tasks_.empty());
 }
 
 IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
@@ -788,8 +812,8 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
   sw_run_loop.Run();
 
   // We should now be waiting for the service worker.
-  EXPECT_TRUE(manager->worker_waiting());
-  EXPECT_FALSE(manager->tasks_.empty());
+  EXPECT_TRUE(manager->tasks_.empty());
+  EXPECT_FALSE(manager->paused_tasks_.empty());
 
   // Load the service worker with no fetch handler.
   EXPECT_TRUE(content::ExecuteScript(web_contents,
@@ -806,7 +830,6 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
   EXPECT_TRUE(tester->badge_icon_url().is_empty());
   EXPECT_EQ(nullptr, tester->badge_icon());
   EXPECT_EQ(NOT_OFFLINE_CAPABLE, tester->error_code());
-  EXPECT_FALSE(manager->worker_waiting());
   EXPECT_EQ(manager->page_status_,
             InstallabilityCheckStatus::COMPLETE_NON_PROGRESSIVE_WEB_APP);
 }
