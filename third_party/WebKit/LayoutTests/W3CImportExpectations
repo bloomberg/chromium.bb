@@ -436,8 +436,6 @@ external/wpt/resources/testharnessreport.js [ Skip ]
 external/wpt/common/vendor-prefix.js [ Skip ]
 
 # crbug.com/490939: The following tests are too large.  They cause time out frequently.
-# Also, html/dom/interfaces.html is flaky.
-external/wpt/html/dom/interfaces.html [ Skip ]
 # [ Slow ] didn't help the following svg-in-*.html tests.
 external/wpt/html/rendering/replaced-elements/svg-embedded-sizing/svg-in-iframe-auto.html [ Skip ]
 external/wpt/html/rendering/replaced-elements/svg-embedded-sizing/svg-in-iframe-fixed.html [ Skip ]
