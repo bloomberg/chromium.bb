@@ -7,6 +7,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/gpu_service_registry.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/utility_process_host.h"
@@ -47,6 +48,10 @@ void StartUtilityProcessOnIOThread(mojom::PowerMonitorTestRequest request) {
   EXPECT_TRUE(host->Start());
 
   BindInterface(host, std::move(request));
+}
+
+void BindInterfaceForGpuOnIOThread(mojom::PowerMonitorTestRequest request) {
+  BindInterfaceInGpuProcess(std::move(request));
 }
 
 class MockPowerMonitorMessageBroadcaster : public device::mojom::PowerMonitor {
@@ -108,6 +113,14 @@ class PowerMonitorTest : public ContentBrowserTest {
 
       DCHECK(utility_bound_closure_);
       std::move(utility_bound_closure_).Run();
+    } else if (source_info.identity.name() == mojom::kGpuServiceName) {
+      ++request_count_from_gpu_;
+
+      // TestRendererProcess and TestUtilityProcess also result in spinning up
+      // GPU processes as a side effect, but they do not set valid
+      // gpu_bound_closure_, so we ignore null gpu_bound_closure_ here for them.
+      if (gpu_bound_closure_)
+        std::move(gpu_bound_closure_).Run();
     }
 
     power_monitor_message_broadcaster_.Bind(
@@ -128,8 +141,13 @@ class PowerMonitorTest : public ContentBrowserTest {
     renderer_bound_closure_ = closure;
   }
 
+  void set_gpu_bound_closure(base::Closure closure) {
+    gpu_bound_closure_ = closure;
+  }
+
   int request_count_from_renderer() { return request_count_from_renderer_; }
   int request_count_from_utility() { return request_count_from_utility_; }
+  int request_count_from_gpu() { return request_count_from_gpu_; }
 
   void SimulatePowerStateChange(bool on_battery_power) {
     power_monitor_message_broadcaster_.OnPowerStateChange(on_battery_power);
@@ -138,7 +156,9 @@ class PowerMonitorTest : public ContentBrowserTest {
  private:
   int request_count_from_renderer_ = 0;
   int request_count_from_utility_ = 0;
+  int request_count_from_gpu_ = 0;
   base::OnceClosure renderer_bound_closure_;
+  base::OnceClosure gpu_bound_closure_;
   base::OnceClosure utility_bound_closure_;
 
   MockPowerMonitorMessageBroadcaster power_monitor_message_broadcaster_;
@@ -184,6 +204,29 @@ IN_PROC_BROWSER_TEST_F(PowerMonitorTest, TestUtilityProcess) {
   SimulatePowerStateChange(false);
   // Verify utility process on_battery_power changed to false.
   VerifyPowerStateInChildProcess(power_monitor_utility.get(), false);
+}
+
+IN_PROC_BROWSER_TEST_F(PowerMonitorTest, TestGpuProcess) {
+  ASSERT_EQ(0, request_count_from_gpu());
+  base::RunLoop run_loop;
+  set_gpu_bound_closure(run_loop.QuitClosure());
+  // Wait for the connection from gpu process.
+  run_loop.Run();
+  EXPECT_EQ(1, request_count_from_gpu());
+
+  mojom::PowerMonitorTestPtr power_monitor_gpu;
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&BindInterfaceForGpuOnIOThread,
+                     mojo::MakeRequest(&power_monitor_gpu)));
+
+  SimulatePowerStateChange(true);
+  // Verify gpu process on_battery_power changed to true.
+  VerifyPowerStateInChildProcess(power_monitor_gpu.get(), true);
+
+  SimulatePowerStateChange(false);
+  // Verify gpu process on_battery_power changed to false.
+  VerifyPowerStateInChildProcess(power_monitor_gpu.get(), false);
 }
 
 }  //  namespace

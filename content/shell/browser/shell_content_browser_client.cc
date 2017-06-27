@@ -254,6 +254,8 @@ ShellContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
   int id = -1;
   if (name == content::mojom::kBrowserServiceName)
     id = IDR_CONTENT_SHELL_BROWSER_MANIFEST_OVERLAY;
+  else if (name == content::mojom::kGpuServiceName)
+    id = IDR_CONTENT_SHELL_GPU_MANIFEST_OVERLAY;
   else if (name == content::mojom::kRendererServiceName)
     id = IDR_CONTENT_SHELL_RENDERER_MANIFEST_OVERLAY;
   else if (name == content::mojom::kUtilityServiceName)
