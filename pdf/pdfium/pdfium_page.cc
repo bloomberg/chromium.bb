@@ -20,9 +20,6 @@
 #include "pdf/pdfium/pdfium_engine.h"
 #include "printing/units.h"
 
-// Used when doing hit detection.
-#define kTolerance 20.0
-
 using printing::ConvertUnitDouble;
 using printing::kPointsPerInch;
 using printing::kPixelsPerInch;
@@ -247,6 +244,8 @@ PDFiumPage::Area PDFiumPage::GetCharIndex(const pp::Point& point,
   FPDF_DeviceToPage(GetPage(), 0, 0, rect_.width(), rect_.height(), rotation,
                     point2.x(), point2.y(), &new_x, &new_y);
 
+  // hit detection tolerance, in points.
+  constexpr double kTolerance = 20.0;
   int rv = FPDFText_GetCharIndexAtPos(GetTextPage(), new_x, new_y, kTolerance,
                                       kTolerance);
   *char_index = rv;
@@ -271,15 +270,15 @@ PDFiumPage::Area PDFiumPage::GetCharIndex(const pp::Point& point,
     // launch actions, cross-document links, etc.
     // In that case, GetLinkTarget() will return NONSELECTABLE_AREA
     // and we should proceed with area detection.
-    PDFiumPage::Area area = GetLinkTarget(link, target);
-    if (area != PDFiumPage::NONSELECTABLE_AREA)
+    Area area = GetLinkTarget(link, target);
+    if (area != NONSELECTABLE_AREA)
       return area;
   } else if (link) {
     // We don't handle all possible link types of the PDF. For example,
     // launch actions, cross-document links, etc.
     // See identical block above.
-    PDFiumPage::Area area = GetLinkTarget(link, target);
-    if (area != PDFiumPage::NONSELECTABLE_AREA)
+    Area area = GetLinkTarget(link, target);
+    if (area != NONSELECTABLE_AREA)
       return area;
   } else if (control > FPDF_FORMFIELD_UNKNOWN) {
     *form_type = control;
@@ -297,9 +296,9 @@ PDFiumPage::Area PDFiumPage::FormTypeToArea(int form_type) {
   switch (form_type) {
     case FPDF_FORMFIELD_COMBOBOX:
     case FPDF_FORMFIELD_TEXTFIELD:
-      return PDFiumPage::FORM_TEXT_AREA;
+      return FORM_TEXT_AREA;
     default:
-      return PDFiumPage::NONSELECTABLE_AREA;
+      return NONSELECTABLE_AREA;
   }
 }
 
@@ -315,57 +314,61 @@ int PDFiumPage::GetCharCount() {
   return FPDFText_CountChars(GetTextPage());
 }
 
-PDFiumPage::Area PDFiumPage::GetLinkTarget(
-    FPDF_LINK link,
-    PDFiumPage::LinkTarget* target) const {
+PDFiumPage::Area PDFiumPage::GetLinkTarget(FPDF_LINK link,
+                                           LinkTarget* target) const {
   FPDF_DEST dest = FPDFLink_GetDest(engine_->doc(), link);
   if (dest)
     return GetDestinationTarget(dest, target);
 
   FPDF_ACTION action = FPDFLink_GetAction(link);
-  if (action) {
-    // TODO(gene): We don't support PDFACTION_REMOTEGOTO and
-    // PDFACTION_LAUNCH at the moment.
-    switch (FPDFAction_GetType(action)) {
-      case PDFACTION_GOTO: {
-        FPDF_DEST dest = FPDFAction_GetDest(engine_->doc(), action);
-        if (dest)
-          return GetDestinationTarget(dest, target);
-        // TODO(gene): We don't fully support all types of the in-document
-        // links. Need to implement that. There is a bug to track that:
-        // http://code.google.com/p/chromium/issues/detail?id=55776
-        break;
-      }
-      case PDFACTION_URI: {
-        if (target) {
-          size_t buffer_size =
-              FPDFAction_GetURIPath(engine_->doc(), action, nullptr, 0);
-          if (buffer_size > 0) {
-            PDFiumAPIStringBufferAdapter<std::string> api_string_adapter(
-                &target->url, buffer_size, true);
-            void* data = api_string_adapter.GetData();
-            size_t bytes_written = FPDFAction_GetURIPath(engine_->doc(), action,
-                                                         data, buffer_size);
-            api_string_adapter.Close(bytes_written);
-          }
-        }
-        return WEBLINK_AREA;
-      }
-    }
-  }
+  if (!action)
+    return NONSELECTABLE_AREA;
 
-  return NONSELECTABLE_AREA;
+  switch (FPDFAction_GetType(action)) {
+    case PDFACTION_GOTO: {
+      FPDF_DEST dest = FPDFAction_GetDest(engine_->doc(), action);
+      if (dest)
+        return GetDestinationTarget(dest, target);
+      // TODO(thestig): We don't fully support all types of the in-document
+      // links. Need to implement that. There is a bug to track that:
+      // https://crbug.com/55776
+      return NONSELECTABLE_AREA;
+    }
+    case PDFACTION_URI:
+      return GetURITarget(action, target);
+    // TODO(thestig): Support remaining types for https://crbug.com/55776
+    case PDFACTION_LAUNCH:
+    case PDFACTION_REMOTEGOTO:
+    default:
+      return NONSELECTABLE_AREA;
+  }
 }
 
-PDFiumPage::Area PDFiumPage::GetDestinationTarget(
-    FPDF_DEST destination,
-    PDFiumPage::LinkTarget* target) const {
+PDFiumPage::Area PDFiumPage::GetDestinationTarget(FPDF_DEST destination,
+                                                  LinkTarget* target) const {
   if (target)
     target->page = FPDFDest_GetPageIndex(engine_->doc(), destination);
   return DOCLINK_AREA;
 }
 
-int PDFiumPage::GetLink(int char_index, PDFiumPage::LinkTarget* target) {
+PDFiumPage::Area PDFiumPage::GetURITarget(FPDF_ACTION uri_action,
+                                          LinkTarget* target) const {
+  if (target) {
+    size_t buffer_size =
+        FPDFAction_GetURIPath(engine_->doc(), uri_action, nullptr, 0);
+    if (buffer_size > 0) {
+      PDFiumAPIStringBufferAdapter<std::string> api_string_adapter(
+          &target->url, buffer_size, true);
+      void* data = api_string_adapter.GetData();
+      size_t bytes_written =
+          FPDFAction_GetURIPath(engine_->doc(), uri_action, data, buffer_size);
+      api_string_adapter.Close(bytes_written);
+    }
+  }
+  return WEBLINK_AREA;
+}
+
+int PDFiumPage::GetLink(int char_index, LinkTarget* target) {
   if (!available_)
     return -1;
 
