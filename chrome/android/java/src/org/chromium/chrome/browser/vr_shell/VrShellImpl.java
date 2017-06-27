@@ -282,20 +282,13 @@ public class VrShellImpl
         };
         // We need a parent for the RenderToSurfaceLayout because we want screen taps to only be
         // routed to the GvrUiLayout, and not propagate through to the NativePage. So screen taps
-        // are handled by the RenderToSurfaceLayoutParent, while touch events generated from the VR
-        // controller are injected directly into the RenderToSurfaceLayout, bypassing the parent.
+        // fall through the RenderToSurfaceLayoutParent, onto the GvrUiLayout, while touch events
+        // generated from the VR controller are injected directly into the RenderToSurfaceLayout,
+        // bypassing the parent.
         mRenderToSurfaceLayoutParent = new FrameLayout(mActivity) {
             @Override
             public boolean dispatchTouchEvent(MotionEvent event) {
-                // We only want to target touch events to the actual screen to the GvrUiLayout,
-                // which is dynamically loaded and attached to the GvrLayoutImpl.
-                for (int i = 0; i < getContainer().getChildCount(); ++i) {
-                    View child = getContainer().getChildAt(i);
-                    if (child.getClass().getSimpleName().equals("GvrLayoutImpl")) {
-                        child.dispatchTouchEvent(event);
-                    }
-                }
-                return true;
+                return false;
             }
         };
         mRenderToSurfaceLayoutParent.setVisibility(View.INVISIBLE);
