@@ -149,7 +149,7 @@ void ColdModeSpellCheckRequester::RequestCheckingForNextChunk() {
   const Position& chunk_end =
       CalculateCharacterSubrange(
           EphemeralRange(current_chunk_start_,
-                         Position::LastPositionInNode(current_root_editable_)),
+                         Position::LastPositionInNode(*current_root_editable_)),
           0, kColdModeChunkSize)
           .EndPosition();
   if (chunk_end <= current_chunk_start_) {

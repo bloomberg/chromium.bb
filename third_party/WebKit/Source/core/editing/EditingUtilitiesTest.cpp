@@ -64,7 +64,7 @@ TEST_F(EditingUtilitiesTest, firstEditablePositionAfterPositionInRoot) {
   EXPECT_EQ(PositionInFlatTree::AfterNode(*host),
             FirstEditablePositionAfterPositionInRoot(
                 PositionInFlatTree(three, 0), *host));
-  EXPECT_EQ(PositionInFlatTree::LastPositionInNode(host),
+  EXPECT_EQ(PositionInFlatTree::LastPositionInNode(*host),
             FirstEditableVisiblePositionAfterPositionInRoot(
                 PositionInFlatTree(three, 0), *host)
                 .DeepEquivalent());
@@ -138,7 +138,7 @@ TEST_F(EditingUtilitiesTest, tableElementJustBefore) {
   EXPECT_EQ(table,
             TableElementJustBefore(VisiblePosition::LastPositionInNode(table)));
   EXPECT_EQ(table, TableElementJustBefore(CreateVisiblePosition(
-                       PositionInFlatTree::LastPositionInNode(table))));
+                       PositionInFlatTree::LastPositionInNode(*table))));
 
   EXPECT_EQ(nullptr,
             TableElementJustBefore(CreateVisiblePosition(Position(host, 2))));
@@ -152,7 +152,7 @@ TEST_F(EditingUtilitiesTest, tableElementJustBefore) {
   EXPECT_EQ(nullptr,
             TableElementJustBefore(VisiblePosition::LastPositionInNode(host)));
   EXPECT_EQ(table, TableElementJustBefore(CreateVisiblePosition(
-                       PositionInFlatTree::LastPositionInNode(host))));
+                       PositionInFlatTree::LastPositionInNode(*host))));
 }
 
 TEST_F(EditingUtilitiesTest, lastEditablePositionBeforePositionInRoot) {

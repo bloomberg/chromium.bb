@@ -65,7 +65,7 @@ TEST_F(SpellCheckerTest, AdvancedToNextMisspellingWrapSearchNoCrash) {
   Element* div = GetDocument().QuerySelector("div");
   div->focus();
   Selection().SetSelection(SelectionInDOMTree::Builder()
-                               .Collapse(Position::LastPositionInNode(div))
+                               .Collapse(Position::LastPositionInNode(*div))
                                .Build());
   UpdateAllLifecyclePhases();
 

@@ -439,7 +439,7 @@ static PositionTemplate<Strategy> NextBoundaryAlgorithm(
       PositionTemplate<Strategy>::EditingPositionOf(
           start.AnchorNode(), start.OffsetInContainerNode());
   const PositionTemplate<Strategy> search_end =
-      PositionTemplate<Strategy>::LastPositionInNode(boundary);
+      PositionTemplate<Strategy>::LastPositionInNode(*boundary);
   TextIteratorAlgorithm<Strategy> it(
       search_start, search_end,
       TextIteratorBehavior::Builder()
@@ -611,7 +611,7 @@ static VisiblePositionTemplate<Strategy> EndOfDocumentAlgorithm(
 
   Element* doc = node->GetDocument().documentElement();
   return CreateVisiblePosition(
-      PositionTemplate<Strategy>::LastPositionInNode(doc));
+      PositionTemplate<Strategy>::LastPositionInNode(*doc));
 }
 
 VisiblePosition EndOfDocument(const VisiblePosition& c) {
@@ -1996,7 +1996,7 @@ static EphemeralRangeTemplate<Strategy> MakeSearchRange(
     return EphemeralRangeTemplate<Strategy>();
 
   return EphemeralRangeTemplate<Strategy>(
-      pos, PositionTemplate<Strategy>::LastPositionInNode(boundary));
+      pos, PositionTemplate<Strategy>::LastPositionInNode(*boundary));
 }
 
 template <typename Strategy>

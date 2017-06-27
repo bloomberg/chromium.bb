@@ -335,7 +335,7 @@ void ApplyBlockElementCommand::RangeForParagraphSplittingTextNodesIfNeeded(
               end_container, end_of_last_paragraph.OffsetInContainerNode() -
                                  end.OffsetInContainerNode());
       }
-      end = Position::LastPositionInNode(end_container->previousSibling());
+      end = Position::LastPositionInNode(*end_container->previousSibling());
     }
   }
 }

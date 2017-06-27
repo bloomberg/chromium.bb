@@ -538,7 +538,7 @@ void SpellChecker::MarkMisspellingsAfterReplaceSelectionCommand(
     return;
 
   EphemeralRange paragraph_range(Position::FirstPositionInNode(*node),
-                                 Position::LastPositionInNode(node));
+                                 Position::LastPositionInNode(*node));
   TextCheckingParagraph text_to_check(inserted_range, paragraph_range);
   ChunkAndMarkAllMisspellings(text_to_check);
 }

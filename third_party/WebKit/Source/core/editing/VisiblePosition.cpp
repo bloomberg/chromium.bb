@@ -139,7 +139,7 @@ template <typename Strategy>
 VisiblePositionTemplate<Strategy>
 VisiblePositionTemplate<Strategy>::LastPositionInNode(Node* node) {
   return Create(PositionWithAffinityTemplate<Strategy>(
-      PositionTemplate<Strategy>::LastPositionInNode(node)));
+      PositionTemplate<Strategy>::LastPositionInNode(*node)));
 }
 
 VisiblePosition CreateVisiblePosition(const Position& position,

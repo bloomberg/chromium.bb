@@ -397,7 +397,7 @@ void TextFinder::ScopeStringMatches(int identifier,
   PositionInFlatTree search_start = PositionInFlatTree::FirstPositionInNode(
       *OwnerFrame().GetFrame()->GetDocument());
   PositionInFlatTree search_end = PositionInFlatTree::LastPositionInNode(
-      OwnerFrame().GetFrame()->GetDocument());
+      *OwnerFrame().GetFrame()->GetDocument());
   DCHECK_EQ(search_start.GetDocument(), search_end.GetDocument());
 
   if (resume_scoping_from_range_) {

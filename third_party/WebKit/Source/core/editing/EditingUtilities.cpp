@@ -732,8 +732,8 @@ PositionTemplate<Strategy> LastEditablePositionBeforePositionInRootAlgorithm(
       << position << ' ' << highest_root;
   // When position falls after highestRoot, the result is easy to compute.
   if (position.CompareTo(
-          PositionTemplate<Strategy>::LastPositionInNode(&highest_root)) == 1)
-    return PositionTemplate<Strategy>::LastPositionInNode(&highest_root);
+          PositionTemplate<Strategy>::LastPositionInNode(highest_root)) == 1)
+    return PositionTemplate<Strategy>::LastPositionInNode(highest_root);
 
   PositionTemplate<Strategy> editable_position = position;
 

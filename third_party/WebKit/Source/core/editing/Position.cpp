@@ -500,12 +500,12 @@ PositionTemplate<Strategy> PositionTemplate<Strategy>::FirstPositionInNode(
 // static
 template <typename Strategy>
 PositionTemplate<Strategy> PositionTemplate<Strategy>::LastPositionInNode(
-    Node* anchor_node) {
-  if (anchor_node->IsTextNode()) {
+    const Node& anchor_node) {
+  if (anchor_node.IsTextNode()) {
     return PositionTemplate<Strategy>(anchor_node,
-                                      LastOffsetInNode(*anchor_node));
+                                      LastOffsetInNode(anchor_node));
   }
-  return PositionTemplate<Strategy>(anchor_node,
+  return PositionTemplate<Strategy>(&anchor_node,
                                     PositionAnchorType::kAfterChildren);
 }
 
@@ -526,7 +526,7 @@ PositionTemplate<Strategy>::LastPositionInOrAfterNode(Node* node) {
   if (!node)
     return PositionTemplate<Strategy>();
   return EditingIgnoresContent(*node) ? AfterNode(*node)
-                                      : LastPositionInNode(node);
+                                      : LastPositionInNode(*node);
 }
 
 PositionInFlatTree ToPositionInFlatTree(const Position& pos) {
