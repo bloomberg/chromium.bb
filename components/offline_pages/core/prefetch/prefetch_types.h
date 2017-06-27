@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/files/file_path.h"
 #include "base/time/time.h"
 #include "components/offline_pages/core/client_id.h"
 #include "url/gurl.h"
@@ -122,6 +123,24 @@ struct PrefetchURL {
   // This URL will be prefetched by the service.
   GURL url;
 };
+
+// Result of a completed download.
+struct PrefetchDownloadResult {
+  PrefetchDownloadResult();
+  PrefetchDownloadResult(const std::string& download_id,
+                         const base::FilePath& file_path,
+                         uint64_t file_size);
+  PrefetchDownloadResult(const PrefetchDownloadResult& other);
+
+  std::string download_id;
+  bool success = false;
+  base::FilePath file_path;
+  uint64_t file_size = 0u;
+};
+
+// Callback invoked upon completion of a download.
+using PrefetchDownloadCompletedCallback =
+    base::Callback<void(const PrefetchDownloadResult& result)>;
 
 }  // namespace offline_pages
 

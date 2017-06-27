@@ -6,8 +6,21 @@
 
 namespace offline_pages {
 
-RenderPageInfo::RenderPageInfo() {}
+RenderPageInfo::RenderPageInfo() = default;
 
 RenderPageInfo::RenderPageInfo(const RenderPageInfo& other) = default;
+
+PrefetchDownloadResult::PrefetchDownloadResult() = default;
+
+PrefetchDownloadResult::PrefetchDownloadResult(const std::string& download_id,
+                                               const base::FilePath& file_path,
+                                               uint64_t file_size)
+    : download_id(download_id),
+      success(true),
+      file_path(file_path),
+      file_size(file_size) {}
+
+PrefetchDownloadResult::PrefetchDownloadResult(
+    const PrefetchDownloadResult& other) = default;
 
 }  // namespace offline_pages

@@ -11,6 +11,7 @@ namespace offline_pages {
 class OfflineEventLogger;
 class OfflineMetricsCollector;
 class PrefetchDispatcher;
+class PrefetchDownloader;
 class PrefetchGCMHandler;
 class PrefetchNetworkRequestFactory;
 class SuggestedArticlesObserver;
@@ -31,6 +32,7 @@ class PrefetchService : public KeyedService {
   virtual PrefetchDispatcher* GetPrefetchDispatcher() = 0;
   virtual PrefetchGCMHandler* GetPrefetchGCMHandler() = 0;
   virtual PrefetchNetworkRequestFactory* GetPrefetchNetworkRequestFactory() = 0;
+  virtual PrefetchDownloader* GetPrefetchDownloader() = 0;
 
   // May be |nullptr| in tests.  The PrefetchService does not depend on the
   // SuggestedArticlesObserver, it merely owns it for lifetime purposes.

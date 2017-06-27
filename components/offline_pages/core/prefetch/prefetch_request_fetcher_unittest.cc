@@ -20,8 +20,7 @@ using testing::SaveArg;
 namespace offline_pages {
 
 namespace {
-const version_info::Channel kTestChannel = version_info::Channel::UNKNOWN;
-const char kTestURLPath[] = "/test";
+const GURL kTestURL("http://exmaple.org");
 const char kTestMessage[] = "Testing";
 }  // namespace
 
@@ -73,9 +72,8 @@ PrefetchRequestStatus PrefetchRequestFetcherTest::RunFetcher(
     std::string* data_received) {
   base::MockCallback<PrefetchRequestFetcher::FinishedCallback> callback;
   std::unique_ptr<PrefetchRequestFetcher> fetcher =
-      PrefetchRequestFetcher::CreateForPost(kTestURLPath, kTestMessage,
-                                            kTestChannel, request_context(),
-                                            callback.Get());
+      PrefetchRequestFetcher::CreateForPost(kTestURL, kTestMessage,
+                                            request_context(), callback.Get());
 
   PrefetchRequestStatus status;
   std::string data;
