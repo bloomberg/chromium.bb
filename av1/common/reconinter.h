@@ -66,10 +66,8 @@ static INLINE void inter_predictor(const uint8_t *src, int src_stride,
   if (has_scale(xs, ys)) {
     // TODO(afergs, debargha): Use a different scale convolve function
     // that uses higher precision for subpel_x, subpel_y, xs, ys
-    av1_convolve_c(src, src_stride, dst, dst_stride, w, h, interp_filter,
-                   subpel_x >> SCALE_EXTRA_BITS, xs >> SCALE_EXTRA_BITS,
-                   subpel_y >> SCALE_EXTRA_BITS, ys >> SCALE_EXTRA_BITS,
-                   conv_params);
+    av1_convolve_scale(src, src_stride, dst, dst_stride, w, h, interp_filter,
+                       subpel_x, xs, subpel_y, ys, conv_params);
   } else {
     subpel_x >>= SCALE_EXTRA_BITS;
     subpel_y >>= SCALE_EXTRA_BITS;

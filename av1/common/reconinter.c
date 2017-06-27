@@ -827,6 +827,8 @@ void av1_highbd_build_inter_predictor(
   const MV mv_q4 = { is_q4 ? src_mv->row : src_mv->row * 2,
                      is_q4 ? src_mv->col : src_mv->col * 2 };
   MV32 mv = av1_scale_mv(&mv_q4, x, y, sf);
+  mv.col += SCALE_EXTRA_OFF;
+  mv.row += SCALE_EXTRA_OFF;
   const int subpel_x = mv.col & SCALE_SUBPEL_MASK;
   const int subpel_y = mv.row & SCALE_SUBPEL_MASK;
   ConvolveParams conv_params = get_conv_params(ref, ref, plane);
@@ -865,6 +867,8 @@ void av1_build_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
   const MV mv_q4 = { is_q4 ? src_mv->row : src_mv->row * 2,
                      is_q4 ? src_mv->col : src_mv->col * 2 };
   MV32 mv = av1_scale_mv(&mv_q4, x, y, sf);
+  mv.col += SCALE_EXTRA_OFF;
+  mv.row += SCALE_EXTRA_OFF;
   const int subpel_x = mv.col & SCALE_SUBPEL_MASK;
   const int subpel_y = mv.row & SCALE_SUBPEL_MASK;
 
@@ -1039,6 +1043,8 @@ void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd, int plane,
             orig_pos_x += mv.col * (1 << (1 - ssx));
             int pos_y = sf->scale_value_y(orig_pos_y, sf);
             int pos_x = sf->scale_value_x(orig_pos_x, sf);
+            pos_x += SCALE_EXTRA_OFF;
+            pos_y += SCALE_EXTRA_OFF;
 
             const int top = -((AOM_INTERP_EXTEND + bh) << SCALE_SUBPEL_BITS);
             const int bottom = (pre_buf->height + AOM_INTERP_EXTEND)
@@ -1160,6 +1166,8 @@ void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd, int plane,
         orig_pos_x += mv.col * (1 << (1 - ssx));
         int pos_y = sf->scale_value_y(orig_pos_y, sf);
         int pos_x = sf->scale_value_x(orig_pos_x, sf);
+        pos_x += SCALE_EXTRA_OFF;
+        pos_y += SCALE_EXTRA_OFF;
 
         // Clamp against the reference frame borders, with enough extension
         // that we don't force the reference block to be partially onscreen.
@@ -3014,6 +3022,8 @@ static void build_inter_predictors_single_buf(MACROBLOCKD *xd, int plane,
     orig_pos_x += mv.col * (1 << (1 - ssx));
     int pos_y = sf->scale_value_y(orig_pos_y, sf);
     int pos_x = sf->scale_value_x(orig_pos_x, sf);
+    pos_x += SCALE_EXTRA_OFF;
+    pos_y += SCALE_EXTRA_OFF;
 
     const int top = -((AOM_INTERP_EXTEND + bh) << SCALE_SUBPEL_BITS);
     const int bottom = (pre_buf->height + AOM_INTERP_EXTEND)
