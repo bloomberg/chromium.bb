@@ -303,7 +303,10 @@ void GCMDriver::DispatchMessageInternal(const std::string& app_id,
     case GCMDecryptionResult::NO_KEYS:
     case GCMDecryptionResult::INVALID_SHARED_SECRET:
     case GCMDecryptionResult::INVALID_PAYLOAD:
-    case GCMDecryptionResult::INVALID_BINARY_HEADER:
+    case GCMDecryptionResult::INVALID_BINARY_HEADER_PAYLOAD_LENGTH:
+    case GCMDecryptionResult::INVALID_BINARY_HEADER_RECORD_SIZE:
+    case GCMDecryptionResult::INVALID_BINARY_HEADER_PUBLIC_KEY_LENGTH:
+    case GCMDecryptionResult::INVALID_BINARY_HEADER_PUBLIC_KEY_FORMAT:
       RecordDecryptionFailure(app_id, result);
       return;
     case GCMDecryptionResult::ENUM_SIZE:

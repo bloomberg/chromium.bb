@@ -9,9 +9,12 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/strings/string_piece.h"
 
 namespace gcm {
+
+enum class GCMDecryptionResult;
 
 // Parses and validates the binary message payload included in messages that
 // are encrypted per draft-ietf-webpush-encryption-08:
@@ -38,6 +41,13 @@ class MessagePayloadParser {
 
   // Returns whether the parser represents a valid message.
   bool IsValid() const { return is_valid_; }
+
+  // Returns the failure reason when the given payload could not be parsed. Must
+  // only be called when IsValid() returns false.
+  GCMDecryptionResult GetFailureReason() const {
+    DCHECK(failure_reason_.has_value());
+    return failure_reason_.value();
+  }
 
   // Returns the 16-byte long salt for the message. Must only be called after
   // validity of the message has been verified.
@@ -71,6 +81,7 @@ class MessagePayloadParser {
 
  private:
   bool is_valid_ = false;
+  base::Optional<GCMDecryptionResult> failure_reason_;
 
   std::string salt_;
   uint32_t record_size_ = 0;

@@ -120,8 +120,7 @@ void GCMEncryptionProvider::DecryptMessage(
     MessagePayloadParser parser(message.raw_data);
     if (!parser.IsValid()) {
       DLOG(ERROR) << "Unable to parse the message's binary header";
-      callback.Run(GCMDecryptionResult::INVALID_BINARY_HEADER,
-                   IncomingMessage());
+      callback.Run(parser.GetFailureReason(), IncomingMessage());
       return;
     }
 

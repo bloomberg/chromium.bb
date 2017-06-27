@@ -36,17 +36,30 @@ enum class GCMDecryptionResult {
   // The payload could not be decrypted as AES-128-GCM.
   INVALID_PAYLOAD = 6,
 
-  // The binary header leading the ciphertext could not be parsed. Only
-  // applicable to messages encrypted per draft-ietf-webpush-encryption-08.
-  INVALID_BINARY_HEADER = 7,
+  // Removed in favour of the more detailed reasons below (values 9-13).
+  // INVALID_BINARY_HEADER = 7,
 
   // The message had been encrypted by the sender, and could successfully be
   // decrypted for the registration it has been received for. The encryption
   // scheme used for the message was draft-ietf-webpush-encryption-08.
   DECRYPTED_DRAFT_08 = 8,
 
+  // The payload's length is smaller than the smallest valid message.
+  INVALID_BINARY_HEADER_PAYLOAD_LENGTH = 9,
+
+  // The payload's record size is smaller than the smallest valid record + 1.
+  INVALID_BINARY_HEADER_RECORD_SIZE = 10,
+
+  // The public key included in the payload does not have the length
+  // corresponding to an uncompressed P-256 ECDH key (65 bytes).
+  INVALID_BINARY_HEADER_PUBLIC_KEY_LENGTH = 11,
+
+  // The public key included in the message does not adhere to the format of
+  // an uncompressed P-256 ECDH key. (I.e. it must start with 0x04.)
+  INVALID_BINARY_HEADER_PUBLIC_KEY_FORMAT = 12,
+
   // Should be one more than the otherwise highest value in this enumeration.
-  ENUM_SIZE = DECRYPTED_DRAFT_08 + 1
+  ENUM_SIZE = INVALID_BINARY_HEADER_PUBLIC_KEY_FORMAT + 1
 };
 
 // Converts the GCMDecryptionResult value to a string that can be used to
