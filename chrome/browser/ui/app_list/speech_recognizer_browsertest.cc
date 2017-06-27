@@ -49,8 +49,6 @@ class AppListSpeechRecognizerBrowserTest : public InProcessBrowserTest {
   AppListSpeechRecognizerBrowserTest() {}
 
   void SetUpOnMainThread() override {
-    InProcessBrowserTest::SetUpOnMainThread();
-
     fake_speech_recognition_manager_.reset(
         new content::FakeSpeechRecognitionManager());
     fake_speech_recognition_manager_->set_should_send_fake_response(true);

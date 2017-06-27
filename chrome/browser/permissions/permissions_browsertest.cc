@@ -21,8 +21,6 @@ PermissionsBrowserTest::PermissionsBrowserTest(const std::string& test_url)
 PermissionsBrowserTest::~PermissionsBrowserTest() {}
 
 void PermissionsBrowserTest::SetUpOnMainThread() {
-  InProcessBrowserTest::SetUpOnMainThread();
-
   PermissionRequestManager* manager = PermissionRequestManager::FromWebContents(
       browser()->tab_strip_model()->GetActiveWebContents());
   prompt_factory_.reset(new MockPermissionPromptFactory(manager));

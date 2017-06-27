@@ -259,8 +259,6 @@ class PluginPowerSaverBrowserTest : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    InProcessBrowserTest::SetUpOnMainThread();
-
     embedded_test_server()->ServeFilesFromDirectory(
         ui_test_utils::GetTestFilePath(
             base::FilePath(FILE_PATH_LITERAL("plugin_power_saver")),

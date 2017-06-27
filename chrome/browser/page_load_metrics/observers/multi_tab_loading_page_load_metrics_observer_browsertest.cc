@@ -30,7 +30,6 @@ class MultiTabLoadingPageLoadMetricsBrowserTest : public InProcessBrowserTest {
 
   void SetUpOnMainThread() override {
     ASSERT_TRUE(embedded_test_server()->Start());
-    InProcessBrowserTest::SetUpOnMainThread();
   }
 };
 

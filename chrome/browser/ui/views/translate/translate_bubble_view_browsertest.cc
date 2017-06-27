@@ -24,9 +24,6 @@ class TranslateBubbleViewBrowserTest : public InProcessBrowserTest {
  public:
   TranslateBubbleViewBrowserTest() {}
   ~TranslateBubbleViewBrowserTest() override {}
-  void SetUpOnMainThread() override {
-    InProcessBrowserTest::SetUpOnMainThread();
-  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TranslateBubbleViewBrowserTest);

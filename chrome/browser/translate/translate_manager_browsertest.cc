@@ -82,7 +82,6 @@ class TranslateManagerBrowserTest : public InProcessBrowserTest {
   }
   void SetUpOnMainThread() override {
     ResetObserver();
-    InProcessBrowserTest::SetUpOnMainThread();
   }
 
  private:

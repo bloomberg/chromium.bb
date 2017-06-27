@@ -36,8 +36,6 @@ class DomainReliabilityBrowserTest : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    InProcessBrowserTest::SetUpOnMainThread();
-
     DomainReliabilityService* service = GetService();
     if (service)
       service->SetDiscardUploadsForTesting(false);

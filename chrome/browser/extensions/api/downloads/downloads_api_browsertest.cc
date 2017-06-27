@@ -316,7 +316,6 @@ class DownloadExtensionTest : public ExtensionApiTest {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
-    InProcessBrowserTest::SetUpOnMainThread();
     GoOnTheRecord();
     CreateAndSetDownloadsDirectory();
     current_browser()->profile()->GetPrefs()->SetBoolean(

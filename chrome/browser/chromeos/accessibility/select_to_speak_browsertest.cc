@@ -23,8 +23,6 @@ class SelectToSpeakTest : public InProcessBrowserTest {
   ~SelectToSpeakTest() override {}
 
   void SetUpOnMainThread() override {
-    InProcessBrowserTest::SetUpOnMainThread();
-
     ASSERT_FALSE(AccessibilityManager::Get()->IsSelectToSpeakEnabled());
 
     content::WindowedNotificationObserver extension_load_waiter(
@@ -42,6 +40,7 @@ class SelectToSpeakTest : public InProcessBrowserTest {
   SpeechMonitor speech_monitor_;
   std::unique_ptr<ui::test::EventGenerator> generator_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(SelectToSpeakTest);
 };
 

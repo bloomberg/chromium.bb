@@ -250,8 +250,6 @@ class KioskAppManagerTest : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    InProcessBrowserTest::SetUpOnMainThread();
-
     host_resolver()->AddRule("*", "127.0.0.1");
 
     // Start the accept thread as the sandbox host process has already been

@@ -116,8 +116,6 @@ class PopupBlockerBrowserTest : public InProcessBrowserTest {
   ~PopupBlockerBrowserTest() override {}
 
   void SetUpOnMainThread() override {
-    InProcessBrowserTest::SetUpOnMainThread();
-
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(embedded_test_server()->Start());
   }

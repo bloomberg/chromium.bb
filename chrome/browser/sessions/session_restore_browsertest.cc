@@ -106,8 +106,6 @@ class SessionRestoreTest : public InProcessBrowserTest {
       helper.ReleaseService();
     }
 #endif
-
-    InProcessBrowserTest::SetUpOnMainThread();
   }
 
   bool SetUpUserDataDirectory() override {

@@ -88,7 +88,6 @@ DriveFirstRunTest::DriveFirstRunTest() :
     success_(false) {}
 
 void DriveFirstRunTest::SetUpOnMainThread() {
-  InProcessBrowserTest::SetUpOnMainThread();
   PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);
   test_data_dir_ = test_data_dir_.AppendASCII(kTestDirectory);
 

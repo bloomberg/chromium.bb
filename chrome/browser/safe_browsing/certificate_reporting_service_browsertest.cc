@@ -88,7 +88,6 @@ class CertificateReportingServiceBrowserTest : public InProcessBrowserTest {
         ->SetServiceResetCallbackForTesting(
             base::Bind(&CertificateReportingServiceObserver::OnServiceReset,
                        base::Unretained(&service_observer_)));
-    InProcessBrowserTest::SetUpOnMainThread();
   }
 
   void TearDownOnMainThread() override {

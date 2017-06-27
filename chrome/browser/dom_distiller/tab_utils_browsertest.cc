@@ -41,7 +41,6 @@ class DomDistillerTabUtilsBrowserTest : public InProcessBrowserTest {
     if (!DistillerJavaScriptWorldIdIsSet()) {
       SetDistillerJavaScriptWorldId(content::ISOLATED_WORLD_ID_CONTENT_END);
     }
-    InProcessBrowserTest::SetUpOnMainThread();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {

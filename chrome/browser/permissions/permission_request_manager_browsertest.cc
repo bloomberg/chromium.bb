@@ -78,7 +78,6 @@ class PermissionRequestManagerBrowserTest : public InProcessBrowserTest {
   ~PermissionRequestManagerBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
-    InProcessBrowserTest::SetUpOnMainThread();
     PermissionRequestManager* manager = GetPermissionRequestManager();
     mock_permission_prompt_factory_.reset(
         new MockPermissionPromptFactory(manager));
@@ -127,7 +126,6 @@ class PermissionDialogTest
   void SetUpOnMainThread() override {
     // Skip super: It will install a mock permission UI factory, but for this
     // test we want to show "real" UI.
-    InProcessBrowserTest::SetUpOnMainThread();
     ui_test_utils::NavigateToURL(browser(), GetUrl());
   }
 

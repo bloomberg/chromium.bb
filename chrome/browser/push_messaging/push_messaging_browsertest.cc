@@ -164,7 +164,6 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
         display_service_.get());
 
     LoadTestPage();
-    InProcessBrowserTest::SetUpOnMainThread();
   }
 
   // Calls should be wrapped in the ASSERT_NO_FATAL_FAILURE() macro.

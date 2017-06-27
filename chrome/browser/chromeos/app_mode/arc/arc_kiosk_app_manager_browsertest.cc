@@ -87,8 +87,6 @@ class ArcKioskAppManagerTest : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    InProcessBrowserTest::SetUpOnMainThread();
-
     settings_helper_.ReplaceProvider(kAccountsPrefDeviceLocalAccounts);
     owner_settings_service_ =
         settings_helper_.CreateOwnerSettingsService(browser()->profile());

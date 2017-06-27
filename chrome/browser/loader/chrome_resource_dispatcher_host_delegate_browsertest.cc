@@ -209,7 +209,6 @@ class ChromeResourceDispatcherHostDelegateBrowserTest :
   ChromeResourceDispatcherHostDelegateBrowserTest() {}
 
   void SetUpOnMainThread() override {
-    InProcessBrowserTest::SetUpOnMainThread();
     // Hook navigations with our delegate.
     dispatcher_host_delegate_.reset(new TestDispatcherHostDelegate);
     content::ResourceDispatcherHost::Get()->SetDelegate(
@@ -301,7 +300,6 @@ IN_PROC_BROWSER_TEST_F(ChromeResourceDispatcherHostDelegateBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ChromeResourceDispatcherHostDelegateBrowserTest,
                        PolicyHeaderForRedirect) {
-
   // Build up a URL that results in a redirect to the DMServer URL to make
   // sure the policy header is still added.
   std::string redirect_url;

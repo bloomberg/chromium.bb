@@ -115,7 +115,6 @@ class AppBannerManagerBrowserTest : public InProcessBrowserTest {
     AppBannerSettingsHelper::SetTotalEngagementToTrigger(10);
     SiteEngagementScore::SetParamValuesForTesting();
     ASSERT_TRUE(embedded_test_server()->Start());
-    InProcessBrowserTest::SetUpOnMainThread();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {

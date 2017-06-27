@@ -482,8 +482,6 @@ class InlineLoginHelperBrowserTest : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    InProcessBrowserTest::SetUpOnMainThread();
-
     // Grab references to the fake signin manager and token service.
     Profile* profile = browser()->profile();
     signin_manager_ = static_cast<FakeSigninManagerForTesting*>(

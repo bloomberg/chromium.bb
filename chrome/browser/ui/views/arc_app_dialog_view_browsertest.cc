@@ -44,7 +44,6 @@ class ArcAppUninstallDialogViewBrowserTest : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    InProcessBrowserTest::SetUpOnMainThread();
     profile_ = browser()->profile();
     arc_app_list_pref_ = ArcAppListPrefs::Get(profile_);
     if (!arc_app_list_pref_) {
