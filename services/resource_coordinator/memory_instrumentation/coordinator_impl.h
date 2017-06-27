@@ -98,8 +98,8 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
   // Callback of RequestProcessMemoryInternalDump.
   void OnProcessMemoryDumpResponse(
       mojom::ClientProcess*,
-      uint64_t dump_guid,
       bool success,
+      uint64_t dump_guid,
       mojom::RawProcessMemoryDumpPtr process_memory_dump);
 
   void PerformNextQueuedGlobalMemoryDump();

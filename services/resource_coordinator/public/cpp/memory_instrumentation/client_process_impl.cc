@@ -64,8 +64,8 @@ void ClientProcessImpl::RequestProcessMemoryDump(
 
 void ClientProcessImpl::OnProcessMemoryDumpDone(
     const RequestProcessMemoryDumpCallback& callback,
-    uint64_t dump_guid,
     bool success,
+    uint64_t dump_guid,
     const base::Optional<base::trace_event::MemoryDumpCallbackResult>& result) {
   mojom::RawProcessMemoryDumpPtr process_memory_dump(
       mojom::RawProcessMemoryDump::New());
@@ -80,7 +80,7 @@ void ClientProcessImpl::OnProcessMemoryDumpDone(
       process_memory_dump->extra_processes_dumps[pid] = os_mem_dump;
     }
   }
-  callback.Run(dump_guid, success, std::move(process_memory_dump));
+  callback.Run(success, dump_guid, std::move(process_memory_dump));
 }
 
 void ClientProcessImpl::RequestGlobalMemoryDump_NoCallback(
