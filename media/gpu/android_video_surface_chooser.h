@@ -24,10 +24,11 @@ class MEDIA_GPU_EXPORT AndroidVideoSurfaceChooser {
     // Does playback require a secure surface?
     bool is_secure = false;
 
-    // TODO(liberato): add compositor feedback.
-
     // Is the player's frame hidden / closed?
     bool is_frame_hidden = false;
+
+    // Is the compositor willing to promote this?
+    bool is_compositor_promotable = false;
   };
 
   // Notify the client that |overlay| is ready for use.  The client may get

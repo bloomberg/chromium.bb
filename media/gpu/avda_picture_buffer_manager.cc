@@ -66,6 +66,7 @@ bool AVDAPictureBufferManager::Initialize(
   // Only do this once the surface texture is filled in, since the constructor
   // assumes that it will be.
   shared_state_ = new AVDASharedState(surface_bundle);
+  shared_state_->SetPromotionHintCB(state_provider_->GetPromotionHintCB());
 
   return true;
 }

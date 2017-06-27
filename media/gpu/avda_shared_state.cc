@@ -66,4 +66,14 @@ void AVDASharedState::ClearOverlay(AndroidOverlay* overlay_raw) {
     surface_bundle_ = nullptr;
 }
 
+void AVDASharedState::SetPromotionHintCB(
+    PromotionHintAggregator::NotifyPromotionHintCB cb) {
+  promotion_hint_cb_ = cb;
+}
+
+const PromotionHintAggregator::NotifyPromotionHintCB&
+AVDASharedState::GetPromotionHintCB() {
+  return promotion_hint_cb_;
+}
+
 }  // namespace media

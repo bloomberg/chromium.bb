@@ -35,6 +35,7 @@
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_decoder_config.h"
 #include "media/gpu/android/device_info.h"
+#include "media/gpu/android/promotion_hint_aggregator_impl.h"
 #include "media/gpu/android_video_surface_chooser_impl.h"
 #include "media/gpu/avda_picture_buffer_manager.h"
 #include "media/gpu/content_video_view_overlay.h"
@@ -249,6 +250,8 @@ AndroidVideoDecodeAccelerator::AndroidVideoDecodeAccelerator(
       device_info_(device_info),
       force_defer_surface_creation_for_testing_(false),
       overlay_factory_cb_(overlay_factory_cb),
+      promotion_hint_aggregator_(
+          base::MakeUnique<PromotionHintAggregatorImpl>()),
       weak_this_factory_(this) {}
 
 AndroidVideoDecodeAccelerator::~AndroidVideoDecodeAccelerator() {
@@ -889,13 +892,23 @@ void AndroidVideoDecodeAccelerator::SendDecodedFrameToClient(
   if (size_changed)
     picture_buffer.set_size(size_);
 
-  // TODO(liberato): request a hint for promotability.  crbug.com/671365 .
+  // Only ask for promotion hints if we can actually switch surfaces.
+  const bool want_promotion_hint = device_info_->IsSetOutputSurfaceSupported();
   const bool allow_overlay = picture_buffer_manager_.ArePicturesOverlayable();
   UMA_HISTOGRAM_BOOLEAN("Media.AVDA.FrameSentAsOverlay", allow_overlay);
+  // We unconditionally mark the picture as overlayable, even if
+  // |!allow_overlay|, if we want to get hints.  It's required, else we won't
+  // get hints.
   // TODO(hubbe): Insert the correct color space. http://crbug.com/647725
   Picture picture(picture_buffer_id, bitstream_id, gfx::Rect(size_),
-                  gfx::ColorSpace(), allow_overlay);
+                  gfx::ColorSpace(),
+                  want_promotion_hint ? true : allow_overlay);
   picture.set_size_changed(size_changed);
+  if (want_promotion_hint) {
+    picture.set_wants_promotion_hint(true);
+    // This will prevent it from actually being promoted if it shouldn't be.
+    picture.set_surface_texture(!allow_overlay);
+  }
 
   // Notify picture ready before calling UseCodecBufferForPictureBuffer() since
   // that process may be slow and shouldn't delay delivery of the frame to the
@@ -1537,6 +1550,23 @@ void AndroidVideoDecodeAccelerator::NotifyError(Error error) {
   // We're after all init.  Just signal an error.
   if (client_)
     client_->NotifyError(error);
+}
+
+PromotionHintAggregator::NotifyPromotionHintCB
+AndroidVideoDecodeAccelerator::GetPromotionHintCB() {
+  return base::Bind(&AndroidVideoDecodeAccelerator::NotifyPromotionHint,
+                    weak_this_factory_.GetWeakPtr());
+}
+
+void AndroidVideoDecodeAccelerator::NotifyPromotionHint(
+    const PromotionHintAggregator::Hint& hint) {
+  promotion_hint_aggregator_->NotifyPromotionHint(hint);
+  bool promotable = promotion_hint_aggregator_->IsSafeToPromote();
+  if (promotable != chooser_state_.is_compositor_promotable) {
+    chooser_state_.is_compositor_promotable = promotable;
+    surface_chooser_->UpdateState(base::Optional<AndroidOverlayFactoryCB>(),
+                                  chooser_state_);
+  }
 }
 
 void AndroidVideoDecodeAccelerator::ManageTimer(bool did_work) {

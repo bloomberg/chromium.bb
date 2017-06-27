@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/threading/thread_checker.h"
 #include "gpu/command_buffer/service/texture_manager.h"
+#include "media/gpu/android/promotion_hint_aggregator.h"
 #include "media/video/video_decode_accelerator.h"
 
 namespace gpu {
@@ -29,6 +30,10 @@ class AVDAStateProvider {
   // Report a fatal error. This will post NotifyError(), and transition to the
   // error state.
   virtual void NotifyError(VideoDecodeAccelerator::Error error) = 0;
+
+  // Return a callback that may be used to signal promotion hint info.
+  virtual PromotionHintAggregator::NotifyPromotionHintCB
+  GetPromotionHintCB() = 0;
 
  protected:
   ~AVDAStateProvider() = default;
