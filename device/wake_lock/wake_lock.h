@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "device/power_save_blocker/power_save_blocker.h"
 #include "device/wake_lock/public/interfaces/wake_lock.mojom.h"
 #include "device/wake_lock/public/interfaces/wake_lock_context.mojom.h"
@@ -27,7 +27,7 @@ class WakeLock : public mojom::WakeLock {
            const std::string& description,
            int context_id,
            WakeLockContextCallback native_view_getter,
-           scoped_refptr<base::SingleThreadTaskRunner> file_task_runner);
+           scoped_refptr<base::SequencedTaskRunner> file_task_runner);
   ~WakeLock() override;
 
   // WakeLockSevice implementation.
@@ -59,7 +59,7 @@ class WakeLock : public mojom::WakeLock {
 #endif
 
   scoped_refptr<base::SequencedTaskRunner> main_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
 
   // The actual power save blocker for screen.
   std::unique_ptr<PowerSaveBlocker> wake_lock_;

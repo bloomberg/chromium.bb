@@ -10,7 +10,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "device/wake_lock/public/interfaces/wake_lock_context.mojom.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -25,7 +25,7 @@ using WakeLockContextCallback = base::Callback<gfx::NativeView(int)>;
 class WakeLockContext : public mojom::WakeLockContext {
  public:
   WakeLockContext(int context_id,
-                  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
+                  scoped_refptr<base::SequencedTaskRunner> file_task_runner,
                   const WakeLockContextCallback& native_view_getter);
   ~WakeLockContext() override;
 
@@ -38,7 +38,7 @@ class WakeLockContext : public mojom::WakeLockContext {
   static const int WakeLockInvalidContextId;
 
  private:
-  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
   int context_id_;
   WakeLockContextCallback native_view_getter_;
 

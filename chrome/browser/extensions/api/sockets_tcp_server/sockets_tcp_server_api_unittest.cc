@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/extensions/extension_api_unittest.h"
@@ -48,14 +49,10 @@ class SocketsTcpServerUnitTest : public ExtensionApiUnittest {
 };
 
 TEST_F(SocketsTcpServerUnitTest, Create) {
-  // Get BrowserThread
-  content::BrowserThread::ID id;
-  CHECK(content::BrowserThread::GetCurrentThreadIdentifier(&id));
-
   // Create SocketCreateFunction and put it on BrowserThread
   SocketsTcpServerCreateFunction* function =
       new SocketsTcpServerCreateFunction();
-  function->set_work_thread_id(id);
+  function->set_work_task_runner(base::SequencedTaskRunnerHandle::Get());
 
   // Run tests
   std::unique_ptr<base::DictionaryValue> result(RunFunctionAndReturnDictionary(

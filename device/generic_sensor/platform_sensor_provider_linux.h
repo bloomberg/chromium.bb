@@ -15,7 +15,7 @@ namespace base {
 template <typename T>
 struct DefaultSingletonTraits;
 class Thread;
-}
+}  // namespace base
 
 namespace device {
 
@@ -33,7 +33,7 @@ class DEVICE_GENERIC_SENSOR_EXPORT PlatformSensorProviderLinux
 
   // Sets task runner for tests.
   void SetFileTaskRunnerForTesting(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
 
  protected:
   ~PlatformSensorProviderLinux() override;
@@ -45,7 +45,7 @@ class DEVICE_GENERIC_SENSOR_EXPORT PlatformSensorProviderLinux
   void AllSensorsRemoved() override;
 
   void SetFileTaskRunner(
-      scoped_refptr<base::SingleThreadTaskRunner> file_task_runner) override;
+      scoped_refptr<base::SequencedTaskRunner> file_task_runner) override;
 
  private:
   friend struct base::DefaultSingletonTraits<PlatformSensorProviderLinux>;
@@ -112,7 +112,7 @@ class DEVICE_GENERIC_SENSOR_EXPORT PlatformSensorProviderLinux
   // Browser's file thread task runner passed from renderer. Used by this
   // provider to stop a polling thread and passed to a manager that
   // runs a linux device monitor service on this task runner.
-  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformSensorProviderLinux);
 };

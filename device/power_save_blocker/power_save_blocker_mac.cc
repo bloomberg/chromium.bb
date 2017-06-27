@@ -84,8 +84,8 @@ void PowerSaveBlocker::Delegate::ApplyBlock() {
         base::SysUTF8ToCFStringRef(description_));
     IOReturn result = IOPMAssertionCreateWithName(level, kIOPMAssertionLevelOn,
                                                   cf_description, &assertion_);
-    LOG_IF(ERROR, result != kIOReturnSuccess) << "IOPMAssertionCreate: "
-                                              << result;
+    LOG_IF(ERROR, result != kIOReturnSuccess)
+        << "IOPMAssertionCreate: " << result;
   }
 }
 
@@ -95,8 +95,8 @@ void PowerSaveBlocker::Delegate::RemoveBlock() {
 
   if (assertion_ != kIOPMNullAssertionID) {
     IOReturn result = IOPMAssertionRelease(assertion_);
-    LOG_IF(ERROR, result != kIOReturnSuccess) << "IOPMAssertionRelease: "
-                                              << result;
+    LOG_IF(ERROR, result != kIOReturnSuccess)
+        << "IOPMAssertionRelease: " << result;
   }
 }
 
@@ -105,7 +105,7 @@ PowerSaveBlocker::PowerSaveBlocker(
     Reason reason,
     const std::string& description,
     scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> blocking_task_runner)
+    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
     : delegate_(new Delegate(type, description)),
       ui_task_runner_(ui_task_runner),
       blocking_task_runner_(blocking_task_runner) {

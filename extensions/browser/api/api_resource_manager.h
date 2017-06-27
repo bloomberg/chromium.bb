@@ -36,7 +36,7 @@ class SerialEventDispatcher;
 class TCPServerSocketEventDispatcher;
 class TCPSocketEventDispatcher;
 class UDPSocketEventDispatcher;
-}
+}  // namespace api
 
 template <typename T>
 struct NamedThreadTraits {
@@ -126,12 +126,12 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
   }
 
   // BrowserContextKeyedAPI implementation.
-  static BrowserContextKeyedAPIFactory<ApiResourceManager<T> >*
-      GetFactoryInstance();
+  static BrowserContextKeyedAPIFactory<ApiResourceManager<T>>*
+  GetFactoryInstance();
 
   // Convenience method to get the ApiResourceManager for a profile.
   static ApiResourceManager<T>* Get(content::BrowserContext* context) {
-    return BrowserContextKeyedAPIFactory<ApiResourceManager<T> >::Get(context);
+    return BrowserContextKeyedAPIFactory<ApiResourceManager<T>>::Get(context);
   }
 
   // BrowserContextKeyedAPI implementation.
@@ -171,7 +171,7 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
   friend class api::TCPServerSocketEventDispatcher;
   friend class api::TCPSocketEventDispatcher;
   friend class api::UDPSocketEventDispatcher;
-  friend class BrowserContextKeyedAPIFactory<ApiResourceManager<T> >;
+  friend class BrowserContextKeyedAPIFactory<ApiResourceManager<T>>;
 
   static const bool kServiceHasOwnInstanceInIncognito = true;
   static const bool kServiceIsNULLWhileTesting = true;
@@ -182,7 +182,7 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
    public:
     typedef std::map<int, std::unique_ptr<T>> ApiResourceMap;
     // Lookup map from extension id's to allocated resource id's.
-    typedef std::map<std::string, base::hash_set<int> > ExtensionToResourceMap;
+    typedef std::map<std::string, base::hash_set<int>> ExtensionToResourceMap;
 
     ApiResourceData() : next_id_(1) { sequence_checker_.DetachFromSequence(); }
 
@@ -197,8 +197,9 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
         ExtensionToResourceMap::iterator it =
             extension_resource_map_.find(extension_id);
         if (it == extension_resource_map_.end()) {
-          it = extension_resource_map_.insert(
-              std::make_pair(extension_id, base::hash_set<int>())).first;
+          it = extension_resource_map_
+                   .insert(std::make_pair(extension_id, base::hash_set<int>()))
+                   .first;
         }
         it->second.insert(id);
         return id;
@@ -243,24 +244,22 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
     }
 
     void InitiateExtensionUnloadedCleanup(const std::string& extension_id) {
-        ThreadingTraits::GetSequencedTaskRunner()->PostTask(
-            FROM_HERE,
-            base::Bind(&ApiResourceData::CleanupResourcesFromUnloadedExtension,
-                       this,
-                       extension_id));
+      ThreadingTraits::GetSequencedTaskRunner()->PostTask(
+          FROM_HERE,
+          base::Bind(&ApiResourceData::CleanupResourcesFromUnloadedExtension,
+                     this, extension_id));
     }
 
     void InitiateExtensionSuspendedCleanup(const std::string& extension_id) {
-        ThreadingTraits::GetSequencedTaskRunner()->PostTask(
-            FROM_HERE,
-            base::Bind(&ApiResourceData::CleanupResourcesFromSuspendedExtension,
-                       this,
-                       extension_id));
+      ThreadingTraits::GetSequencedTaskRunner()->PostTask(
+          FROM_HERE,
+          base::Bind(&ApiResourceData::CleanupResourcesFromSuspendedExtension,
+                     this, extension_id));
     }
 
     void InititateCleanup() {
-        ThreadingTraits::GetSequencedTaskRunner()->PostTask(
-            FROM_HERE, base::Bind(&ApiResourceData::Cleanup, this));
+      ThreadingTraits::GetSequencedTaskRunner()->PostTask(
+          FROM_HERE, base::Bind(&ApiResourceData::Cleanup, this));
     }
 
    private:
@@ -375,65 +374,6 @@ struct BrowserContextFactoryDependencies<ApiResourceManager<T>> {
         ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
     factory->DependsOn(ExtensionRegistryFactory::GetInstance());
     factory->DependsOn(ProcessManagerFactory::GetInstance());
-  }
-};
-
-// With WorkerPoolThreadTraits, ApiResourceManager can be used to manage the
-// lifetime of a set of resources that live on sequenced task runner threads
-// which ApiFunctions use. Examples of such resources are temporary file
-// resources produced by certain API calls.
-//
-// Instead of kThreadId. classes used for tracking such resources should define
-// kSequenceToken and kShutdownBehavior to identify sequence task runner for
-// ApiResourceManager to work on and how pending tasks should behave on
-// shutdown.
-// The user must also define a static const char* service_name() that returns
-// the name of the service, and in order for ApiWorkerPoolResourceManager to use
-// service_name() friend this class.
-//
-// In the cc file the user must define a GetFactoryInstance() and manage their
-// own instances (typically using LazyInstance or Singleton).
-//
-// E.g.:
-//
-// class PoolResource {
-//  public:
-//   static const char kSequenceToken[] = "temp_files";
-//   static const base::SequencedWorkerPool::WorkerShutdown kShutdownBehavior =
-//       base::SequencedWorkerPool::BLOCK_SHUTDOWN;
-//  private:
-//   friend class ApiResourceManager<WorkerPoolResource,
-//                                   WorkerPoolThreadTraits>;
-//   static const char* service_name() {
-//     return "TempFilesResourceManager";
-//    }
-// };
-//
-// In the cc file:
-//
-// static base::LazyInstance<BrowserContextKeyedAPIFactory<
-//     ApiResourceManager<Resource, WorkerPoolThreadTraits> > >
-//         g_factory = LAZY_INSTANCE_INITIALIZER;
-//
-//
-// template <>
-// BrowserContextKeyedAPIFactory<ApiResourceManager<WorkerPoolResource> >*
-// ApiResourceManager<WorkerPoolPoolResource,
-//                    WorkerPoolThreadTraits>::GetFactoryInstance() {
-//   return g_factory.Pointer();
-// }
-template <typename T>
-struct WorkerPoolThreadTraits {
-  static bool IsMessageLoopValid() {
-    return content::BrowserThread::GetBlockingPool() != NULL;
-  }
-
-  static scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner() {
-    return content::BrowserThread::GetBlockingPool()
-        ->GetSequencedTaskRunnerWithShutdownBehavior(
-            content::BrowserThread::GetBlockingPool()->GetNamedSequenceToken(
-                T::kSequenceToken),
-            T::kShutdownBehavior);
   }
 };
 

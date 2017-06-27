@@ -34,7 +34,7 @@ void NotifySensorCreated(mojom::SensorInitParamsPtr init_params,
 
 // static
 void SensorProviderImpl::Create(
-    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
+    scoped_refptr<base::SequencedTaskRunner> file_task_runner,
     mojom::SensorProviderRequest request) {
   PlatformSensorProvider* provider = PlatformSensorProvider::GetInstance();
   if (provider) {

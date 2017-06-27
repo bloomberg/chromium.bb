@@ -17,7 +17,7 @@ bool WakeLockProvider::is_in_unittest_ = false;
 // static
 void WakeLockProvider::Create(
     mojom::WakeLockProviderRequest request,
-    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
+    scoped_refptr<base::SequencedTaskRunner> file_task_runner,
     const WakeLockContextCallback& native_view_getter) {
   mojo::MakeStrongBinding(base::MakeUnique<WakeLockProvider>(
                               std::move(file_task_runner), native_view_getter),
@@ -25,7 +25,7 @@ void WakeLockProvider::Create(
 }
 
 WakeLockProvider::WakeLockProvider(
-    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
+    scoped_refptr<base::SequencedTaskRunner> file_task_runner,
     const WakeLockContextCallback& native_view_getter)
     : file_task_runner_(std::move(file_task_runner)),
       native_view_getter_(native_view_getter) {}

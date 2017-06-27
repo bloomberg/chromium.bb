@@ -78,7 +78,7 @@ void PlatformSensorProviderLinux::SensorDeviceFound(
 }
 
 void PlatformSensorProviderLinux::SetFileTaskRunner(
-    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner) {
+    scoped_refptr<base::SequencedTaskRunner> file_task_runner) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!file_task_runner_)
     file_task_runner_ = file_task_runner;
@@ -109,7 +109,7 @@ bool PlatformSensorProviderLinux::StartPollingThread() {
 
 void PlatformSensorProviderLinux::StopPollingThread() {
   DCHECK(file_task_runner_);
-  DCHECK(file_task_runner_->BelongsToCurrentThread());
+  DCHECK(file_task_runner_->RunsTasksInCurrentSequence());
   if (polling_thread_ && polling_thread_->IsRunning())
     polling_thread_->Stop();
 }
@@ -147,7 +147,7 @@ void PlatformSensorProviderLinux::SetSensorDeviceManagerForTesting(
 }
 
 void PlatformSensorProviderLinux::SetFileTaskRunnerForTesting(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   file_task_runner_ = std::move(task_runner);
 }
