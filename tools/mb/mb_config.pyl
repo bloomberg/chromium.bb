@@ -385,6 +385,7 @@
       'Linux ASAN Builder': 'asan_lsan_release_bot',
       'Linux Debug Builder': 'debug_bot',
       'Linux Release (NVIDIA)': 'gpu_tests_release_trybot',
+      'Linux Release - concurrent marking (NVIDIA)': 'gpu_tests_release_trybot_cm',
       'Linux Snapshot Builder': 'release_bot',
       'Mac Release (Intel)': 'gpu_tests_release_trybot',
       'V8 Android GN (dbg)': 'android_debug_bot',
@@ -1293,6 +1294,10 @@
       'gpu_tests', 'release_trybot',
     ],
 
+    'gpu_tests_release_trybot_cm': [
+      'gpu_tests', 'release_trybot', 'v8_concurrent_marking',
+    ],
+
     'gpu_tests_release_trybot_x86_minimal_symbols': [
       'gpu_tests', 'release_trybot', 'x86', 'minimal_symbols',
     ],
@@ -1948,6 +1953,10 @@
 
     'use_lld': {
       'gn_args': 'use_lld=true',
+    },
+
+    'v8_concurrent_marking': {
+      'gn_args': 'v8_enable_concurrent_marking=true',
     },
 
     'v8_future': {
