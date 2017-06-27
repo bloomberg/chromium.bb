@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/win/com_init_util.h"
 #include "base/win/patch_util.h"
@@ -141,7 +142,15 @@ class HookManager {
     HotpatchPlaceholderFormat format = GetHotpatchPlaceholderFormat(
         reinterpret_cast<const void*>(co_create_instance_padded_address_));
     if (format == HotpatchPlaceholderFormat::UNKNOWN) {
-      NOTREACHED() << "Unrecognized hotpatch function format.";
+      const unsigned char* hotpatch_bytes =
+          reinterpret_cast<const unsigned char*>(
+              co_create_instance_padded_address_);
+      NOTREACHED() << "Unrecognized hotpatch function format: "
+                   << base::StringPrintf("%02x %02x %02x %02x %02x %02x %02x",
+                                         hotpatch_bytes[0], hotpatch_bytes[1],
+                                         hotpatch_bytes[2], hotpatch_bytes[3],
+                                         hotpatch_bytes[4], hotpatch_bytes[5],
+                                         hotpatch_bytes[6]);
       return;
     }
 
