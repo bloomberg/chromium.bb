@@ -614,12 +614,14 @@ std::unique_ptr<SampleVector> Histogram::SnapshotAllSamples() const {
 
 std::unique_ptr<SampleVector> Histogram::SnapshotUnloggedSamples() const {
   // TODO(bcwhite): Remove these CHECKs once crbug/734049 is resolved.
+  HistogramSamples* unlogged = unlogged_samples_.get();
   CHECK(unlogged_samples_);
   CHECK(unlogged_samples_->id());
   CHECK(bucket_ranges());
   std::unique_ptr<SampleVector> samples(
       new SampleVector(unlogged_samples_->id(), bucket_ranges()));
   samples->Add(*unlogged_samples_);
+  debug::Alias(&unlogged);
   return samples;
 }
 
