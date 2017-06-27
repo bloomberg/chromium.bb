@@ -99,7 +99,6 @@ test("webkit_unit_tests") {
     "tests/SmoothScrollTest.cpp",
     "tests/SpinLockTest.cpp",
     "tests/VirtualTimeTest.cpp",
-    "tests/WebDocumentSubresourceFilterTest.cpp",
     "tests/WebFrameSerializerSanitizationTest.cpp",
     "tests/WebFrameTest.cpp",
     "tests/WebMeaningfulLayoutsTest.cpp",
