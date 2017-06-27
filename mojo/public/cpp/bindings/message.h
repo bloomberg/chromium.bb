@@ -45,13 +45,13 @@ class MOJO_CPP_BINDINGS_EXPORT Message {
   // This message is fully functional and may be exchanged for a
   // ScopedMessageHandle for transit over a message pipe. See TakeMojoMessage().
   //
-  // If |handles| are not known at Message construction time, they may be
-  // attached later by calling |AttachHandles()|. See the note on that method
-  // regarding performance considerations.
+  // If |handles| is non-null, any handles in |*handles| are attached to the
+  // newly constructed message.
   Message(uint32_t name,
           uint32_t flags,
           size_t payload_size,
-          size_t payload_interface_id_count);
+          size_t payload_interface_id_count,
+          std::vector<ScopedHandle>* handles = nullptr);
 
   // Constructs a new serialized Message object from an existing
   // ScopedMessageHandle; e.g., one read from a message pipe.
@@ -147,11 +147,6 @@ class MOJO_CPP_BINDINGS_EXPORT Message {
   mutable_associated_endpoint_handles() {
     return &associated_endpoint_handles_;
   }
-
-  // Attaches handles to this Message. Note that this requires the underlying
-  // message object to be reallocated and the payload to be copied into a new
-  // buffer. Takes ownership of the contents of |*handles|.
-  void AttachHandles(std::vector<ScopedHandle>* handles);
 
   // Takes a scoped MessageHandle which may be passed to |WriteMessageNew()| for
   // transmission. Note that this invalidates this Message object, taking
