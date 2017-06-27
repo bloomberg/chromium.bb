@@ -1083,54 +1083,6 @@ LayoutUnit LayoutTableCell::BorderAfter() const {
              : LayoutBlockFlow::BorderAfter();
 }
 
-unsigned LayoutTableCell::CollapsedBorderHalfLeft(bool outer) const {
-  const ComputedStyle& style_for_cell_order = TableStyle();
-  if (style_for_cell_order.IsHorizontalWritingMode()) {
-    return style_for_cell_order.IsLeftToRightDirection()
-               ? CollapsedBorderHalfStart(outer)
-               : CollapsedBorderHalfEnd(outer);
-  }
-  return style_for_cell_order.IsFlippedBlocksWritingMode()
-             ? CollapsedBorderHalfAfter(outer)
-             : CollapsedBorderHalfBefore(outer);
-}
-
-unsigned LayoutTableCell::CollapsedBorderHalfRight(bool outer) const {
-  const ComputedStyle& style_for_cell_order = TableStyle();
-  if (style_for_cell_order.IsHorizontalWritingMode()) {
-    return style_for_cell_order.IsLeftToRightDirection()
-               ? CollapsedBorderHalfEnd(outer)
-               : CollapsedBorderHalfStart(outer);
-  }
-  return style_for_cell_order.IsFlippedBlocksWritingMode()
-             ? CollapsedBorderHalfBefore(outer)
-             : CollapsedBorderHalfAfter(outer);
-}
-
-unsigned LayoutTableCell::CollapsedBorderHalfTop(bool outer) const {
-  const ComputedStyle& style_for_cell_order = TableStyle();
-  if (style_for_cell_order.IsHorizontalWritingMode()) {
-    return style_for_cell_order.IsFlippedBlocksWritingMode()
-               ? CollapsedBorderHalfAfter(outer)
-               : CollapsedBorderHalfBefore(outer);
-  }
-  return style_for_cell_order.IsLeftToRightDirection()
-             ? CollapsedBorderHalfStart(outer)
-             : CollapsedBorderHalfEnd(outer);
-}
-
-unsigned LayoutTableCell::CollapsedBorderHalfBottom(bool outer) const {
-  const ComputedStyle& style_for_cell_order = TableStyle();
-  if (style_for_cell_order.IsHorizontalWritingMode()) {
-    return style_for_cell_order.IsFlippedBlocksWritingMode()
-               ? CollapsedBorderHalfBefore(outer)
-               : CollapsedBorderHalfAfter(outer);
-  }
-  return style_for_cell_order.IsLeftToRightDirection()
-             ? CollapsedBorderHalfEnd(outer)
-             : CollapsedBorderHalfStart(outer);
-}
-
 unsigned LayoutTableCell::CollapsedBorderHalfStart(bool outer) const {
   UpdateCollapsedBorderValues();
   const auto* collapsed_border_values = this->GetCollapsedBorderValues();

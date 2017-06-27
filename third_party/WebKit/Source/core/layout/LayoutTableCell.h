@@ -33,6 +33,7 @@
 #include "core/layout/LayoutTableRow.h"
 #include "core/layout/LayoutTableSection.h"
 #include "platform/LengthFunctions.h"
+#include "platform/text/WritingModeUtils.h"
 
 namespace blink {
 
@@ -359,10 +360,26 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
   void ComputeOverflow(LayoutUnit old_client_after_edge,
                        bool recompute_floats = false) override;
 
-  unsigned CollapsedBorderHalfLeft(bool outer) const;
-  unsigned CollapsedBorderHalfRight(bool outer) const;
-  unsigned CollapsedBorderHalfTop(bool outer) const;
-  unsigned CollapsedBorderHalfBottom(bool outer) const;
+  LogicalToPhysical<unsigned> LogicalCollapsedBorderHalfToPhysical(
+      bool outer) const {
+    return LogicalToPhysical<unsigned>(
+        TableStyle().GetWritingMode(), TableStyle().Direction(),
+        CollapsedBorderHalfStart(outer), CollapsedBorderHalfEnd(outer),
+        CollapsedBorderHalfBefore(outer), CollapsedBorderHalfAfter(outer));
+  }
+
+  unsigned CollapsedBorderHalfLeft(bool outer) const {
+    return LogicalCollapsedBorderHalfToPhysical(outer).Left();
+  }
+  unsigned CollapsedBorderHalfRight(bool outer) const {
+    return LogicalCollapsedBorderHalfToPhysical(outer).Right();
+  }
+  unsigned CollapsedBorderHalfTop(bool outer) const {
+    return LogicalCollapsedBorderHalfToPhysical(outer).Top();
+  }
+  unsigned CollapsedBorderHalfBottom(bool outer) const {
+    return LogicalCollapsedBorderHalfToPhysical(outer).Bottom();
+  }
 
   // For the following methods, the 'start', 'end', 'before', 'after' directions
   // are all in the table's inline and block directions.

@@ -75,6 +75,7 @@
 #include "platform/text/TabSize.h"
 #include "platform/text/TextDirection.h"
 #include "platform/text/UnicodeBidi.h"
+#include "platform/text/WritingModeUtils.h"
 #include "platform/transforms/TransformOperations.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/LeakAnnotations.h"
@@ -1552,28 +1553,22 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   const Length& MarginStart() const { return MarginStartUsing(this); }
   const Length& MarginEnd() const { return MarginEndUsing(this); }
   const Length& MarginOver() const {
-    return LengthBox::Over(GetWritingMode(), MarginTop(), MarginRight());
+    return PhysicalMarginToLogical(*this).Over();
   }
   const Length& MarginUnder() const {
-    return LengthBox::Under(GetWritingMode(), MarginBottom(), MarginLeft());
+    return PhysicalMarginToLogical(*this).Under();
   }
   const Length& MarginStartUsing(const ComputedStyle* other) const {
-    return LengthBox::Start(other->GetWritingMode(), other->Direction(),
-                            MarginTop(), MarginLeft(), MarginRight(),
-                            MarginBottom());
+    return PhysicalMarginToLogical(*other).Start();
   }
   const Length& MarginEndUsing(const ComputedStyle* other) const {
-    return LengthBox::End(other->GetWritingMode(), other->Direction(),
-                          MarginTop(), MarginLeft(), MarginRight(),
-                          MarginBottom());
+    return PhysicalMarginToLogical(*other).End();
   }
   const Length& MarginBeforeUsing(const ComputedStyle* other) const {
-    return LengthBox::Before(other->GetWritingMode(), MarginTop(), MarginLeft(),
-                             MarginRight());
+    return PhysicalMarginToLogical(*other).Before();
   }
   const Length& MarginAfterUsing(const ComputedStyle* other) const {
-    return LengthBox::After(other->GetWritingMode(), MarginBottom(),
-                            MarginLeft(), MarginRight());
+    return PhysicalMarginToLogical(*other).After();
   }
   void SetMarginStart(const Length&);
   void SetMarginEnd(const Length&);
@@ -1586,26 +1581,20 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // Padding utility functions.
   const Length& PaddingBefore() const {
-    return LengthBox::Before(GetWritingMode(), PaddingTop(), PaddingLeft(),
-                             PaddingRight());
+    return PhysicalPaddingToLogical().Before();
   }
   const Length& PaddingAfter() const {
-    return LengthBox::After(GetWritingMode(), PaddingBottom(), PaddingLeft(),
-                            PaddingRight());
+    return PhysicalPaddingToLogical().After();
   }
   const Length& PaddingStart() const {
-    return LengthBox::Start(GetWritingMode(), Direction(), PaddingTop(),
-                            PaddingLeft(), PaddingRight(), PaddingBottom());
+    return PhysicalPaddingToLogical().Start();
   }
-  const Length& PaddingEnd() const {
-    return LengthBox::End(GetWritingMode(), Direction(), PaddingTop(),
-                          PaddingLeft(), PaddingRight(), PaddingBottom());
-  }
+  const Length& PaddingEnd() const { return PhysicalPaddingToLogical().End(); }
   const Length& PaddingOver() const {
-    return LengthBox::Over(GetWritingMode(), PaddingTop(), PaddingRight());
+    return PhysicalPaddingToLogical().Over();
   }
   const Length& PaddingUnder() const {
-    return LengthBox::Under(GetWritingMode(), PaddingBottom(), PaddingLeft());
+    return PhysicalPaddingToLogical().Under();
   }
   bool HasPadding() const {
     return !PaddingLeft().IsZero() || !PaddingRight().IsZero() ||
@@ -1669,27 +1658,53 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
            BorderBottomWidthInternal() == o.BorderBottomWidthInternal();
   }
 
-  BorderValue BorderBeforeUsing(const ComputedStyle& other) const;
-  BorderValue BorderAfterUsing(const ComputedStyle& other) const;
-  BorderValue BorderStartUsing(const ComputedStyle& other) const;
-  BorderValue BorderEndUsing(const ComputedStyle& other) const;
+  BorderValue BorderBeforeUsing(const ComputedStyle& other) const {
+    return PhysicalBorderToLogical(other).Before();
+  }
+  BorderValue BorderAfterUsing(const ComputedStyle& other) const {
+    return PhysicalBorderToLogical(other).After();
+  }
+  BorderValue BorderStartUsing(const ComputedStyle& other) const {
+    return PhysicalBorderToLogical(other).Start();
+  }
+  BorderValue BorderEndUsing(const ComputedStyle& other) const {
+    return PhysicalBorderToLogical(other).End();
+  }
 
   BorderValue BorderBefore() const { return BorderBeforeUsing(*this); }
   BorderValue BorderAfter() const { return BorderAfterUsing(*this); }
   BorderValue BorderStart() const { return BorderStartUsing(*this); }
   BorderValue BorderEnd() const { return BorderEndUsing(*this); }
 
-  float BorderAfterWidth() const;
-  float BorderBeforeWidth() const;
-  float BorderEndWidth() const;
-  float BorderStartWidth() const;
-  float BorderOverWidth() const;
-  float BorderUnderWidth() const;
+  float BorderAfterWidth() const {
+    return PhysicalBorderWidthToLogical().After();
+  }
+  float BorderBeforeWidth() const {
+    return PhysicalBorderWidthToLogical().Before();
+  }
+  float BorderEndWidth() const { return PhysicalBorderWidthToLogical().End(); }
+  float BorderStartWidth() const {
+    return PhysicalBorderWidthToLogical().Start();
+  }
+  float BorderOverWidth() const {
+    return PhysicalBorderWidthToLogical().Over();
+  }
+  float BorderUnderWidth() const {
+    return PhysicalBorderWidthToLogical().Under();
+  }
 
-  EBorderStyle BorderAfterStyle() const;
-  EBorderStyle BorderBeforeStyle() const;
-  EBorderStyle BorderEndStyle() const;
-  EBorderStyle BorderStartStyle() const;
+  EBorderStyle BorderAfterStyle() const {
+    return PhysicalBorderStyleToLogical().After();
+  }
+  EBorderStyle BorderBeforeStyle() const {
+    return PhysicalBorderStyleToLogical().Before();
+  }
+  EBorderStyle BorderEndStyle() const {
+    return PhysicalBorderStyleToLogical().End();
+  }
+  EBorderStyle BorderStartStyle() const {
+    return PhysicalBorderStyleToLogical().Start();
+  }
 
   bool HasBorderFill() const {
     return BorderImage().HasImage() && BorderImage().Fill();
@@ -1950,16 +1965,16 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // Offset utility functions.
   // Accessors for positioned object edges that take into account writing mode.
   const Length& LogicalLeft() const {
-    return LengthBox::LogicalLeft(GetWritingMode(), Left(), Top());
+    return PhysicalBoundsToLogical().LineLeft();
   }
   const Length& LogicalRight() const {
-    return LengthBox::LogicalRight(GetWritingMode(), Right(), Bottom());
+    return PhysicalBoundsToLogical().LineRight();
   }
   const Length& LogicalTop() const {
-    return LengthBox::Before(GetWritingMode(), Top(), Left(), Right());
+    return PhysicalBoundsToLogical().Before();
   }
   const Length& LogicalBottom() const {
-    return LengthBox::After(GetWritingMode(), Bottom(), Left(), Right());
+    return PhysicalBoundsToLogical().After();
   }
   bool OffsetEqual(const ComputedStyle& other) const {
     return Left() == other.Left() && Right() == other.Right() &&
@@ -2573,6 +2588,43 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   StyleInheritedVariables& MutableInheritedVariables();
   StyleNonInheritedVariables& MutableNonInheritedVariables();
+
+  PhysicalToLogical<const Length&> PhysicalMarginToLogical(
+      const ComputedStyle& other) const {
+    return PhysicalToLogical<const Length&>(
+        other.GetWritingMode(), other.Direction(), MarginTop(), MarginRight(),
+        MarginBottom(), MarginLeft());
+  }
+
+  PhysicalToLogical<const Length&> PhysicalPaddingToLogical() const {
+    return PhysicalToLogical<const Length&>(GetWritingMode(), Direction(),
+                                            PaddingTop(), PaddingRight(),
+                                            PaddingBottom(), PaddingLeft());
+  }
+
+  PhysicalToLogical<BorderValue> PhysicalBorderToLogical(
+      const ComputedStyle& other) const {
+    return PhysicalToLogical<BorderValue>(
+        other.GetWritingMode(), other.Direction(), BorderTop(), BorderRight(),
+        BorderBottom(), BorderLeft());
+  }
+
+  PhysicalToLogical<float> PhysicalBorderWidthToLogical() const {
+    return PhysicalToLogical<float>(GetWritingMode(), Direction(),
+                                    BorderTopWidth(), BorderRightWidth(),
+                                    BorderBottomWidth(), BorderLeftWidth());
+  }
+
+  PhysicalToLogical<EBorderStyle> PhysicalBorderStyleToLogical() const {
+    return PhysicalToLogical<EBorderStyle>(
+        GetWritingMode(), Direction(), BorderTopStyle(), BorderRightStyle(),
+        BorderBottomStyle(), BorderLeftStyle());
+  }
+
+  PhysicalToLogical<const Length&> PhysicalBoundsToLogical() const {
+    return PhysicalToLogical<const Length&>(GetWritingMode(), Direction(),
+                                            Top(), Right(), Bottom(), Left());
+  }
 
   FRIEND_TEST_ALL_PREFIXES(
       ComputedStyleTest,
