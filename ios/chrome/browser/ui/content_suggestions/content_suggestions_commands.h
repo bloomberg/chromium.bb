@@ -30,8 +30,6 @@
 - (void)dismissContextMenu;
 // Handles the actions following a tap on the promo.
 - (void)handlePromoTapped;
-// Updates the fake omnibox to adapt to the current scrolling.
-- (void)updateFakeOmniboxForScrollView:(nonnull UIScrollView*)scrollView;
 
 @end
 

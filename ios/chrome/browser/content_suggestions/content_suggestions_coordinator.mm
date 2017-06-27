@@ -31,6 +31,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestion_identifier.h"
 #import "ios/chrome/browser/ui/ntp/google_landing_mediator.h"
@@ -48,7 +49,8 @@
 #error "This file requires ARC support."
 #endif
 
-@interface ContentSuggestionsCoordinator ()<ContentSuggestionsCommands>
+@interface ContentSuggestionsCoordinator ()<ContentSuggestionsCommands,
+                                            ContentSuggestionsHeaderCommands>
 
 @property(nonatomic, strong) AlertCoordinator* alertCoordinator;
 @property(nonatomic, strong) UINavigationController* navigationController;
@@ -127,8 +129,9 @@
   self.suggestionsViewController = [[ContentSuggestionsViewController alloc]
       initWithStyle:CollectionViewControllerStyleDefault
          dataSource:self.contentSuggestionsMediator];
-
+  self.suggestionsViewController.headerCommandHandler = self;
   self.suggestionsViewController.suggestionCommandHandler = self;
+
   _navigationController = [[UINavigationController alloc]
       initWithRootViewController:self.suggestionsViewController];
 
@@ -373,6 +376,8 @@
   }
   NOTREACHED();
 }
+
+#pragma mark - ContentSuggestionsHeaderCommands
 
 - (void)updateFakeOmniboxForScrollView:(UIScrollView*)scrollView {
   [self.delegate updateNtpBarShadowForPanelController:self];

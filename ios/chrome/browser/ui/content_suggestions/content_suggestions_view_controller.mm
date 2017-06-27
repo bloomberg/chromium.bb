@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_updater.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_layout.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 
@@ -43,6 +44,7 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
 @implementation ContentSuggestionsViewController
 
 @synthesize suggestionCommandHandler = _suggestionCommandHandler;
+@synthesize headerCommandHandler = _headerCommandHandler;
 @synthesize collectionUpdater = _collectionUpdater;
 @synthesize cardStyleMargin = _cardStyleMargin;
 @dynamic collectionViewModel;
@@ -365,7 +367,7 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
 
 - (void)scrollViewDidScroll:(UIScrollView*)scrollView {
   [super scrollViewDidScroll:scrollView];
-  [self.suggestionCommandHandler updateFakeOmniboxForScrollView:scrollView];
+  [self.headerCommandHandler updateFakeOmniboxForScrollView:scrollView];
 }
 
 #pragma mark - Private
