@@ -12,6 +12,7 @@
 #include "extensions/browser/extension_function_histogram_value.h"
 #include "google_apis/gaia/oauth2_mint_token_flow.h"
 #include "google_apis/gaia/oauth2_token_service.h"
+#include "services/identity/public/cpp/account_state.h"
 #include "services/identity/public/interfaces/identity_manager.mojom.h"
 
 namespace extensions {
@@ -116,7 +117,8 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
   void OnReceivedPrimaryAccountInfo(
       const std::set<std::string>& scopes,
       const std::string& extension_gaia_id,
-      const base::Optional<AccountInfo>& account_info);
+      const base::Optional<AccountInfo>& account_info,
+      const identity::AccountState& account_state);
 
   // Called when the AccountInfo that this instance should use is available.
   // |is_primary_account| is a bool specifying whether the account being used is
@@ -125,7 +127,8 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
   void OnReceivedExtensionAccountInfo(
       bool is_primary_account,
       const std::set<std::string>& scopes,
-      const base::Optional<AccountInfo>& account_info);
+      const base::Optional<AccountInfo>& account_info,
+      const identity::AccountState& account_state);
 
   // ExtensionFunction:
   bool RunAsync() override;

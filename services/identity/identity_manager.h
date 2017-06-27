@@ -7,6 +7,7 @@
 
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "services/identity/public/cpp/account_state.h"
 #include "services/identity/public/cpp/scope_set.h"
 #include "services/identity/public/interfaces/identity_manager.mojom.h"
 
@@ -74,6 +75,9 @@ class IdentityManager : public mojom::IdentityManager {
 
   // Deletes |request|.
   void AccessTokenRequestCompleted(AccessTokenRequest* request);
+
+  // Gets the current state of the account represented by |account_info|.
+  AccountState GetStateOfAccount(const AccountInfo& account_info);
 
   AccountTrackerService* account_tracker_;
   SigninManagerBase* signin_manager_;
