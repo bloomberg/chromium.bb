@@ -1,239 +1,296 @@
 
 {
-    "nodeId": 20,
-    "parentId": 15,
-    "backendNodeId": "<number>",
-    "nodeType": 1,
-    "nodeName": "BODY",
-    "localName": "body",
-    "nodeValue": "",
-    "childNodeCount": 1,
-    "children": [
-        {
-            "nodeId": 21,
-            "parentId": 20,
-            "backendNodeId": "<number>",
-            "nodeType": 1,
-            "nodeName": "DIV",
-            "localName": "div",
-            "nodeValue": "",
-            "childNodeCount": 2,
-            "children": [
-                {
-                    "nodeId": 22,
-                    "parentId": 21,
-                    "backendNodeId": "<number>",
-                    "nodeType": 1,
-                    "nodeName": "DIV",
-                    "localName": "div",
-                    "nodeValue": "",
-                    "childNodeCount": 1,
-                    "children": [
-                        {
-                            "nodeId": 23,
-                            "parentId": 22,
-                            "backendNodeId": "<number>",
-                            "nodeType": 1,
-                            "nodeName": "DIV",
-                            "localName": "div",
-                            "nodeValue": "",
-                            "childNodeCount": 1,
-                            "children": [
-                                {
-                                    "nodeId": 24,
-                                    "parentId": 23,
-                                    "backendNodeId": "<number>",
-                                    "nodeType": 1,
-                                    "nodeName": "IFRAME",
-                                    "localName": "iframe",
-                                    "nodeValue": "",
-                                    "childNodeCount": 0,
-                                    "children": [],
-                                    "attributes": [
-                                        "src",
-                                        "resources/shadow-dom-iframe.html"
-                                    ],
-                                    "frameId": "???",
-                                    "contentDocument": {
-                                        "nodeId": 25,
-                                        "backendNodeId": "<number>",
-                                        "nodeType": 9,
-                                        "nodeName": "#document",
-                                        "localName": "",
-                                        "nodeValue": "",
-                                        "childNodeCount": 1,
-                                        "children": [
-                                            {
-                                                "nodeId": 26,
-                                                "parentId": 25,
-                                                "backendNodeId": "<number>",
-                                                "nodeType": 1,
-                                                "nodeName": "HTML",
-                                                "localName": "html",
-                                                "nodeValue": "",
-                                                "childNodeCount": 2,
-                                                "children": [
-                                                    {
-                                                        "nodeId": 27,
-                                                        "parentId": 26,
-                                                        "backendNodeId": "<number>",
-                                                        "nodeType": 1,
-                                                        "nodeName": "HEAD",
-                                                        "localName": "head",
-                                                        "nodeValue": "",
-                                                        "childNodeCount": 0,
-                                                        "children": [],
-                                                        "attributes": []
-                                                    },
-                                                    {
-                                                        "nodeId": 28,
-                                                        "parentId": 26,
-                                                        "backendNodeId": "<number>",
-                                                        "nodeType": 1,
-                                                        "nodeName": "BODY",
-                                                        "localName": "body",
-                                                        "nodeValue": "",
-                                                        "childNodeCount": 2,
-                                                        "children": [
-                                                            {
-                                                                "nodeId": 29,
-                                                                "parentId": 28,
-                                                                "backendNodeId": "<number>",
-                                                                "nodeType": 1,
-                                                                "nodeName": "DIV",
-                                                                "localName": "div",
-                                                                "nodeValue": "",
-                                                                "childNodeCount": 0,
-                                                                "children": [],
-                                                                "attributes": [
-                                                                    "id",
-                                                                    "element_in_an_iframe"
-                                                                ],
-                                                                "shadowRoots": [
-                                                                    {
-                                                                        "nodeId": 30,
-                                                                        "backendNodeId": "<number>",
-                                                                        "nodeType": 11,
-                                                                        "nodeName": "#document-fragment",
-                                                                        "localName": "",
-                                                                        "nodeValue": "",
-                                                                        "childNodeCount": 1,
-                                                                        "children": [
-                                                                            {
-                                                                                "nodeId": 31,
-                                                                                "parentId": 30,
-                                                                                "backendNodeId": "<number>",
-                                                                                "nodeType": 1,
-                                                                                "nodeName": "DIV",
-                                                                                "localName": "div",
-                                                                                "nodeValue": "",
-                                                                                "childNodeCount": 1,
-                                                                                "children": [
-                                                                                    {
-                                                                                        "nodeId": 32,
-                                                                                        "parentId": 31,
-                                                                                        "backendNodeId": "<number>",
-                                                                                        "nodeType": 1,
-                                                                                        "nodeName": "H1",
-                                                                                        "localName": "h1",
-                                                                                        "nodeValue": "",
-                                                                                        "childNodeCount": 1,
-                                                                                        "children": [
-                                                                                            {
-                                                                                                "nodeId": 33,
-                                                                                                "parentId": 32,
-                                                                                                "backendNodeId": "<number>",
-                                                                                                "nodeType": 3,
-                                                                                                "nodeName": "#text",
-                                                                                                "localName": "",
-                                                                                                "nodeValue": "Hello from the shadow dom!"
-                                                                                            }
-                                                                                        ],
-                                                                                        "attributes": []
-                                                                                    }
-                                                                                ],
-                                                                                "attributes": [
-                                                                                    "style",
-                                                                                    "color: red;"
+    id : <messageId>
+    result : {
+        root : {
+            backendNodeId : <backendNodeId>
+            baseURL : <baseURL>
+            childNodeCount : 1
+            children : [
+                [0] : {
+                    attributes : [
+                    ]
+                    backendNodeId : <backendNodeId>
+                    childNodeCount : 2
+                    children : [
+                        [0] : {
+                            attributes : [
+                            ]
+                            backendNodeId : <backendNodeId>
+                            childNodeCount : 0
+                            children : [
+                            ]
+                            localName : head
+                            nodeId : <nodeId>
+                            nodeName : HEAD
+                            nodeType : 1
+                            nodeValue : 
+                            parentId : <parentId>
+                        }
+                        [1] : {
+                            attributes : [
+                            ]
+                            backendNodeId : <backendNodeId>
+                            childNodeCount : 1
+                            children : [
+                                [0] : {
+                                    attributes : [
+                                        [0] : id
+                                        [1] : depth-1
+                                    ]
+                                    backendNodeId : <backendNodeId>
+                                    childNodeCount : 2
+                                    children : [
+                                        [0] : {
+                                            attributes : [
+                                                [0] : id
+                                                [1] : depth-2
+                                            ]
+                                            backendNodeId : <backendNodeId>
+                                            childNodeCount : 1
+                                            children : [
+                                                [0] : {
+                                                    attributes : [
+                                                        [0] : id
+                                                        [1] : depth-3
+                                                    ]
+                                                    backendNodeId : <backendNodeId>
+                                                    childNodeCount : 1
+                                                    children : [
+                                                        [0] : {
+                                                            attributes : [
+                                                                [0] : src
+                                                                [1] : ../dom/resources/shadow-dom-iframe.html
+                                                            ]
+                                                            backendNodeId : <backendNodeId>
+                                                            childNodeCount : 0
+                                                            children : [
+                                                            ]
+                                                            contentDocument : {
+                                                                backendNodeId : <backendNodeId>
+                                                                baseURL : <baseURL>
+                                                                childNodeCount : 1
+                                                                children : [
+                                                                    [0] : {
+                                                                        attributes : [
+                                                                        ]
+                                                                        backendNodeId : <backendNodeId>
+                                                                        childNodeCount : 2
+                                                                        children : [
+                                                                            [0] : {
+                                                                                attributes : [
                                                                                 ]
+                                                                                backendNodeId : <backendNodeId>
+                                                                                childNodeCount : 0
+                                                                                children : [
+                                                                                ]
+                                                                                localName : head
+                                                                                nodeId : <nodeId>
+                                                                                nodeName : HEAD
+                                                                                nodeType : 1
+                                                                                nodeValue : 
+                                                                                parentId : <parentId>
                                                                             }
-                                                                        ],
-                                                                        "shadowRootType": "open"
+                                                                            [1] : {
+                                                                                attributes : [
+                                                                                    [0] : onload
+                                                                                    [1] : addShadowDOM()
+                                                                                ]
+                                                                                backendNodeId : <backendNodeId>
+                                                                                childNodeCount : 2
+                                                                                children : [
+                                                                                    [0] : {
+                                                                                        attributes : [
+                                                                                            [0] : id
+                                                                                            [1] : element_in_an_iframe
+                                                                                        ]
+                                                                                        backendNodeId : <backendNodeId>
+                                                                                        childNodeCount : 0
+                                                                                        children : [
+                                                                                        ]
+                                                                                        localName : div
+                                                                                        nodeId : <nodeId>
+                                                                                        nodeName : DIV
+                                                                                        nodeType : 1
+                                                                                        nodeValue : 
+                                                                                        parentId : <parentId>
+                                                                                        shadowRoots : [
+                                                                                            [0] : {
+                                                                                                backendNodeId : <backendNodeId>
+                                                                                                childNodeCount : 1
+                                                                                                children : [
+                                                                                                    [0] : {
+                                                                                                        attributes : [
+                                                                                                            [0] : style
+                                                                                                            [1] : color: red;
+                                                                                                        ]
+                                                                                                        backendNodeId : <backendNodeId>
+                                                                                                        childNodeCount : 1
+                                                                                                        children : [
+                                                                                                            [0] : {
+                                                                                                                attributes : [
+                                                                                                                ]
+                                                                                                                backendNodeId : <backendNodeId>
+                                                                                                                childNodeCount : 1
+                                                                                                                children : [
+                                                                                                                    [0] : {
+                                                                                                                        backendNodeId : <backendNodeId>
+                                                                                                                        localName : 
+                                                                                                                        nodeId : <nodeId>
+                                                                                                                        nodeName : #text
+                                                                                                                        nodeType : 3
+                                                                                                                        nodeValue : Hello from the shadow dom!
+                                                                                                                        parentId : <parentId>
+                                                                                                                    }
+                                                                                                                ]
+                                                                                                                localName : h1
+                                                                                                                nodeId : <nodeId>
+                                                                                                                nodeName : H1
+                                                                                                                nodeType : 1
+                                                                                                                nodeValue : 
+                                                                                                                parentId : <parentId>
+                                                                                                            }
+                                                                                                        ]
+                                                                                                        localName : div
+                                                                                                        nodeId : <nodeId>
+                                                                                                        nodeName : DIV
+                                                                                                        nodeType : 1
+                                                                                                        nodeValue : 
+                                                                                                        parentId : <parentId>
+                                                                                                    }
+                                                                                                ]
+                                                                                                localName : 
+                                                                                                nodeId : <nodeId>
+                                                                                                nodeName : #document-fragment
+                                                                                                nodeType : 11
+                                                                                                nodeValue : 
+                                                                                                shadowRootType : open
+                                                                                            }
+                                                                                        ]
+                                                                                    }
+                                                                                    [1] : {
+                                                                                        attributes : [
+                                                                                        ]
+                                                                                        backendNodeId : <backendNodeId>
+                                                                                        childNodeCount : 1
+                                                                                        children : [
+                                                                                            [0] : {
+                                                                                                backendNodeId : <backendNodeId>
+                                                                                                localName : 
+                                                                                                nodeId : <nodeId>
+                                                                                                nodeName : #text
+                                                                                                nodeType : 3
+                                                                                                nodeValue :  function addShadowDOM() {     var host = document.getElementById("element_in_an_iframe").createShadowRoot();     var template = document.querySelector("#shadow-template");     host.appendChild(template.content);     template.remove(); } 
+                                                                                                parentId : <parentId>
+                                                                                            }
+                                                                                        ]
+                                                                                        localName : script
+                                                                                        nodeId : <nodeId>
+                                                                                        nodeName : SCRIPT
+                                                                                        nodeType : 1
+                                                                                        nodeValue : 
+                                                                                        parentId : <parentId>
+                                                                                    }
+                                                                                ]
+                                                                                localName : body
+                                                                                nodeId : <nodeId>
+                                                                                nodeName : BODY
+                                                                                nodeType : 1
+                                                                                nodeValue : 
+                                                                                parentId : <parentId>
+                                                                            }
+                                                                        ]
+                                                                        frameId : <frameId>
+                                                                        localName : html
+                                                                        nodeId : <nodeId>
+                                                                        nodeName : HTML
+                                                                        nodeType : 1
+                                                                        nodeValue : 
+                                                                        parentId : <parentId>
                                                                     }
                                                                 ]
-                                                            },
-                                                            {
-                                                                "nodeId": 34,
-                                                                "parentId": 28,
-                                                                "backendNodeId": "<number>",
-                                                                "nodeType": 1,
-                                                                "nodeName": "SCRIPT",
-                                                                "localName": "script",
-                                                                "nodeValue": "",
-                                                                "childNodeCount": 1,
-                                                                "children": [
-                                                                    {
-                                                                        "nodeId": 35,
-                                                                        "parentId": 34,
-                                                                        "backendNodeId": "<number>",
-                                                                        "nodeType": 3,
-                                                                        "nodeName": "#text",
-                                                                        "localName": "",
-                                                                        "nodeValue": "\nfunction addShadowDOM() {\n    var host = document.getElementById(\"element_in_an_iframe\").createShadowRoot();\n    var template = document.querySelector(\"#shadow-template\");\n    host.appendChild(template.content);\n    template.remove();\n}\n"
-                                                                    }
-                                                                ],
-                                                                "attributes": []
+                                                                documentURL : <documentURL>
+                                                                localName : 
+                                                                nodeId : <nodeId>
+                                                                nodeName : #document
+                                                                nodeType : 9
+                                                                nodeValue : 
+                                                                xmlVersion : 
                                                             }
-                                                        ],
-                                                        "attributes": [
-                                                            "onload",
-                                                            "addShadowDOM()"
-                                                        ]
-                                                    }
-                                                ],
-                                                "attributes": [],
-                                                "frameId": "???"
-                                            }
-                                        ],
-                                        "documentURL": "???",
-                                        "baseURL": "???",
-                                        "xmlVersion": ""
-                                    }
+                                                            frameId : <frameId>
+                                                            localName : iframe
+                                                            nodeId : <nodeId>
+                                                            nodeName : IFRAME
+                                                            nodeType : 1
+                                                            nodeValue : 
+                                                            parentId : <parentId>
+                                                        }
+                                                    ]
+                                                    localName : div
+                                                    nodeId : <nodeId>
+                                                    nodeName : DIV
+                                                    nodeType : 1
+                                                    nodeValue : 
+                                                    parentId : <parentId>
+                                                }
+                                            ]
+                                            localName : div
+                                            nodeId : <nodeId>
+                                            nodeName : DIV
+                                            nodeType : 1
+                                            nodeValue : 
+                                            parentId : <parentId>
+                                        }
+                                        [1] : {
+                                            attributes : [
+                                                [0] : id
+                                                [1] : targetDiv
+                                            ]
+                                            backendNodeId : <backendNodeId>
+                                            childNodeCount : 0
+                                            children : [
+                                            ]
+                                            localName : div
+                                            nodeId : <nodeId>
+                                            nodeName : DIV
+                                            nodeType : 1
+                                            nodeValue : 
+                                            parentId : <parentId>
+                                        }
+                                    ]
+                                    localName : div
+                                    nodeId : <nodeId>
+                                    nodeName : DIV
+                                    nodeType : 1
+                                    nodeValue : 
+                                    parentId : <parentId>
                                 }
-                            ],
-                            "attributes": [
-                                "id",
-                                "depth-3"
                             ]
+                            localName : body
+                            nodeId : <nodeId>
+                            nodeName : BODY
+                            nodeType : 1
+                            nodeValue : 
+                            parentId : <parentId>
                         }
-                    ],
-                    "attributes": [
-                        "id",
-                        "depth-2"
                     ]
-                },
-                {
-                    "nodeId": 36,
-                    "parentId": 21,
-                    "backendNodeId": "<number>",
-                    "nodeType": 1,
-                    "nodeName": "DIV",
-                    "localName": "div",
-                    "nodeValue": "",
-                    "childNodeCount": 0,
-                    "children": [],
-                    "attributes": [
-                        "id",
-                        "targetDiv"
-                    ]
+                    frameId : <frameId>
+                    localName : html
+                    nodeId : <nodeId>
+                    nodeName : HTML
+                    nodeType : 1
+                    nodeValue : 
+                    parentId : <parentId>
                 }
-            ],
-            "attributes": [
-                "id",
-                "depth-1"
             ]
+            documentURL : <documentURL>
+            localName : 
+            nodeId : <nodeId>
+            nodeName : #document
+            nodeType : 9
+            nodeValue : 
+            xmlVersion : 
         }
-    ],
-    "attributes": []
+    }
 }
 

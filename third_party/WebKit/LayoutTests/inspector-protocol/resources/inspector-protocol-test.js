@@ -23,11 +23,11 @@ var TestRunner = class {
     this._log.call(null, text);
   }
 
-  logMessage(originalMessage) {
+  logMessage(originalMessage, title) {
     var message = JSON.parse(JSON.stringify(originalMessage));
     if (message.id)
       message.id = '<messageId>';
-    const nonStableFields = new Set(['nodeId', 'objectId', 'scriptId', 'timestamp']);
+    const nonStableFields = new Set(['nodeId', 'objectId', 'scriptId', 'timestamp', 'backendNodeId', 'parentId', 'frameId', 'baseURL', 'documentURL']);
     var objects = [message];
     while (objects.length) {
       var object = objects.shift();
@@ -40,7 +40,7 @@ var TestRunner = class {
           objects.push(object[key]);
       }
     }
-    this.logObject(message);
+    this.logObject(message, title);
     return originalMessage;
   }
 
@@ -208,7 +208,10 @@ TestRunner.Page = class {
       if (!message.params.frame.parentId)
         callback();
     });
-    await promise;
+    await Promise.all([
+      promise,
+      session.protocol.Page.onceLoadEventFired()
+    ]);
 
     await session.disconnect();
   }
@@ -219,7 +222,7 @@ TestRunner.Page = class {
 
     html = html.replace(/'/g, "\\'").replace(/\n/g, '\\n');
     var session = await this.createSession();
-    await session.protocol.Runtime.evaluate({expression: `document.body.innerHTML='${html}'`});
+    await session.protocol.Runtime.evaluate({expression: `document.write('${html}');document.close();`});
     await session.disconnect();
   }
 };
@@ -253,6 +256,8 @@ TestRunner.Session = class {
   }
 
   async evaluate(code) {
+    if (typeof code === 'function')
+      code = `(${code.toString()})()`;
     var response = await this.protocol.Runtime.evaluate({expression: code, returnByValue: true});
     if (response.error) {
       this._testRunner.log(`Error while evaluating '${code}': ${response.error}`);
@@ -263,6 +268,8 @@ TestRunner.Session = class {
   }
 
   async evaluateAsync(code) {
+    if (typeof code === 'function')
+      code = `(${code.toString()})()`;
     var response = await this.protocol.Runtime.evaluate({expression: code, returnByValue: true, awaitPromise: true});
     if (response.error) {
       this._testRunner.log(`Error while evaluating async '${code}': ${response.error}`);

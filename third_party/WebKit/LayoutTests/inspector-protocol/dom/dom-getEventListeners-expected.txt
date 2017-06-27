@@ -1,147 +1,144 @@
-A
-B
-C
 
 Fetching listeners for depth = undefined and pierce = undefined
 {
-  "listeners": [
-    {
-      "type": "documentListener",
-      "useCapture": false,
-      "passive": false,
-      "once": false,
-      "scriptId": "<string>",
-      "lineNumber": "<number>",
-      "columnNumber": "<number>"
-    }
-  ]
+    listeners : [
+        [0] : {
+            columnNumber : 50
+            lineNumber : 8
+            once : false
+            passive : false
+            scriptId : <scriptId>
+            type : documentListener
+            useCapture : false
+        }
+    ]
 }
 Fetching listeners for depth = 1 and pierce = undefined
 {
-  "listeners": [
-    {
-      "type": "documentListener",
-      "useCapture": false,
-      "passive": false,
-      "once": false,
-      "scriptId": "<string>",
-      "lineNumber": "<number>",
-      "columnNumber": "<number>"
-    }
-  ]
+    listeners : [
+        [0] : {
+            columnNumber : 50
+            lineNumber : 8
+            once : false
+            passive : false
+            scriptId : <scriptId>
+            type : documentListener
+            useCapture : false
+        }
+    ]
 }
 Fetching listeners for depth = 4 and pierce = undefined
 {
-  "listeners": [
-    {
-      "type": "documentListener",
-      "useCapture": false,
-      "passive": false,
-      "once": false,
-      "scriptId": "<string>",
-      "lineNumber": "<number>",
-      "columnNumber": "<number>"
-    },
-    {
-      "type": "listenerA",
-      "useCapture": false,
-      "passive": false,
-      "once": false,
-      "scriptId": "<string>",
-      "lineNumber": "<number>",
-      "columnNumber": "<number>"
-    }
-  ]
+    listeners : [
+        [0] : {
+            columnNumber : 50
+            lineNumber : 8
+            once : false
+            passive : false
+            scriptId : <scriptId>
+            type : documentListener
+            useCapture : false
+        }
+        [1] : {
+            columnNumber : 63
+            lineNumber : 5
+            once : false
+            passive : false
+            scriptId : <scriptId>
+            type : listenerA
+            useCapture : false
+        }
+    ]
 }
 Fetching listeners for depth = -1 and pierce = undefined
 {
-  "listeners": [
-    {
-      "type": "documentListener",
-      "useCapture": false,
-      "passive": false,
-      "once": false,
-      "scriptId": "<string>",
-      "lineNumber": "<number>",
-      "columnNumber": "<number>"
-    },
-    {
-      "type": "listenerA",
-      "useCapture": false,
-      "passive": false,
-      "once": false,
-      "scriptId": "<string>",
-      "lineNumber": "<number>",
-      "columnNumber": "<number>"
-    },
-    {
-      "type": "listenerB",
-      "useCapture": false,
-      "passive": false,
-      "once": false,
-      "scriptId": "<string>",
-      "lineNumber": "<number>",
-      "columnNumber": "<number>"
-    },
-    {
-      "type": "listenerC",
-      "useCapture": false,
-      "passive": false,
-      "once": false,
-      "scriptId": "<string>",
-      "lineNumber": "<number>",
-      "columnNumber": "<number>"
-    }
-  ]
+    listeners : [
+        [0] : {
+            columnNumber : 50
+            lineNumber : 8
+            once : false
+            passive : false
+            scriptId : <scriptId>
+            type : documentListener
+            useCapture : false
+        }
+        [1] : {
+            columnNumber : 63
+            lineNumber : 5
+            once : false
+            passive : false
+            scriptId : <scriptId>
+            type : listenerA
+            useCapture : false
+        }
+        [2] : {
+            columnNumber : 63
+            lineNumber : 6
+            once : false
+            passive : false
+            scriptId : <scriptId>
+            type : listenerB
+            useCapture : false
+        }
+        [3] : {
+            columnNumber : 63
+            lineNumber : 7
+            once : false
+            passive : false
+            scriptId : <scriptId>
+            type : listenerC
+            useCapture : false
+        }
+    ]
 }
 Fetching listeners for depth = -1 and pierce = true
 {
-  "listeners": [
-    {
-      "type": "documentListener",
-      "useCapture": false,
-      "passive": false,
-      "once": false,
-      "scriptId": "<string>",
-      "lineNumber": "<number>",
-      "columnNumber": "<number>"
-    },
-    {
-      "type": "listenerA",
-      "useCapture": false,
-      "passive": false,
-      "once": false,
-      "scriptId": "<string>",
-      "lineNumber": "<number>",
-      "columnNumber": "<number>"
-    },
-    {
-      "type": "listenerB",
-      "useCapture": false,
-      "passive": false,
-      "once": false,
-      "scriptId": "<string>",
-      "lineNumber": "<number>",
-      "columnNumber": "<number>"
-    },
-    {
-      "type": "listenerC",
-      "useCapture": false,
-      "passive": false,
-      "once": false,
-      "scriptId": "<string>",
-      "lineNumber": "<number>",
-      "columnNumber": "<number>"
-    },
-    {
-      "type": "iframeListener",
-      "useCapture": false,
-      "passive": false,
-      "once": false,
-      "scriptId": "<string>",
-      "lineNumber": "<number>",
-      "columnNumber": "<number>"
-    }
-  ]
+    listeners : [
+        [0] : {
+            columnNumber : 50
+            lineNumber : 8
+            once : false
+            passive : false
+            scriptId : <scriptId>
+            type : documentListener
+            useCapture : false
+        }
+        [1] : {
+            columnNumber : 63
+            lineNumber : 5
+            once : false
+            passive : false
+            scriptId : <scriptId>
+            type : listenerA
+            useCapture : false
+        }
+        [2] : {
+            columnNumber : 63
+            lineNumber : 6
+            once : false
+            passive : false
+            scriptId : <scriptId>
+            type : listenerB
+            useCapture : false
+        }
+        [3] : {
+            columnNumber : 63
+            lineNumber : 7
+            once : false
+            passive : false
+            scriptId : <scriptId>
+            type : listenerC
+            useCapture : false
+        }
+        [4] : {
+            columnNumber : 73
+            lineNumber : 6
+            once : false
+            passive : false
+            scriptId : <scriptId>
+            type : iframeListener
+            useCapture : false
+        }
+    ]
 }
 
