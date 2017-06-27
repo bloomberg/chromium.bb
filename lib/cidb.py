@@ -18,7 +18,6 @@ from chromite.lib import clactions
 from chromite.lib import cros_logging as logging
 from chromite.lib import factory
 from chromite.lib import failure_message_lib
-from chromite.lib import graphite
 from chromite.lib import hwtest_results
 from chromite.lib import metrics
 from chromite.lib import osutils
@@ -710,16 +709,8 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
 
     retval = self._InsertMany('clActionTable', values)
 
-    stats = graphite.StatsFactory.GetInstance()
     for cl_action in cl_actions:
       r = cl_action.reason or 'no_reason'
-
-      # TODO(akeshet) This is a slightly hacky workaround for the fact that our
-      # strategy reasons contain a ':', but statsd considers that character to
-      # be a name terminator.
-      statsd_name = 'cl_actions.%s' % cl_action.action
-      stats.Counter(statsd_name).increment(r.replace(':', '_'))
-
       counter = metrics.Counter(constants.MON_CL_ACTION)
       counter.increment(fields={'reason': r, 'action': cl_action.action})
 

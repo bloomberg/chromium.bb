@@ -37,7 +37,6 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import failures_lib
 from chromite.lib import git
-from chromite.lib import graphite
 from chromite.lib import metrics
 from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
@@ -1859,7 +1858,7 @@ class PreCQLauncherStage(SyncStage):
     return [], []
 
   def SendChangeCountStats(self, status_map):
-    """Sends metrics of the CL counts to Monarch and statsd.
+    """Sends metrics of the CL counts to Monarch.
 
     Args:
       status_map: A map from CLs to statuses.
@@ -1875,10 +1874,6 @@ class PreCQLauncherStage(SyncStage):
       status_counts[count_bin] += 1
     for (is_mergable, status), count in sorted(status_counts.items()):
       subtype = 'mergeable' if is_mergable else 'speculative'
-      name = '.'.join(['pre-cq-status', status if status else 'None'])
-      logging.info('Sending stat (name, subtype, count): (%s, %s, %s)',
-                   name, subtype, count)
-      graphite.StatsFactory.GetInstance().Gauge(name).send(subtype, count)
       metrics.Gauge('chromeos/cbuildbot/pre-cq/cl-count').set(
           count, {'status': str(status), 'subtype': subtype})
 
