@@ -723,7 +723,9 @@ HWTEST_TOOLCHAIN_SUITE = 'toolchain-tests'
 HWTEST_PROVISION_SUITE = 'bvt-provision'
 HWTEST_CTS_QUAL_SUITE = 'arc-cts-qual'
 HWTEST_GTS_QUAL_SUITE = 'arc-gts-qual'
-
+# Non-blocking informational hardware tests for Chrome, run throughout the
+# day on tip-of-trunk Chrome rather than on the daily Chrome branch.
+HWTEST_CHROME_INFORMATIONAL = 'chrome-informational'
 
 # Additional timeout to wait for autotest to abort a suite if the test takes
 # too long to run. This is meant to be overly conservative as a timeout may

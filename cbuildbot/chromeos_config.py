@@ -183,7 +183,7 @@ class HWTestList(object):
     default_dict.update(kwargs)
     return self.DefaultListNonCanary(**default_dict)
 
-  def DefaultListPFQInformational(self, **kwargs):
+  def DefaultListChromePFQInformational(self, **kwargs):
     """Return a default list of HWTestConfigs for an inform. PFQ build.
 
     Optional arguments may be overridden in `kwargs`, except that
@@ -196,7 +196,10 @@ class HWTestList(object):
                         retry=False, max_retries=None, minimum_duts=4)
     # Allows kwargs overrides to default_dict for pfq.
     default_dict.update(kwargs)
-    return self.DefaultListNonCanary(**default_dict)
+    suite_list = self.DefaultListNonCanary(**default_dict)
+    suite_list.append(config_lib.HWTestConfig(
+        constants.HWTEST_CHROME_INFORMATIONAL, **default_dict))
+    return suite_list
 
   def SharedPoolPFQ(self, **kwargs):
     """Return a list of HWTestConfigs for PFQ which uses a shared pool.
@@ -2796,7 +2799,7 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       internal_board_configs,
       site_config.templates.chrome_pfq_informational,
       important=False,
-      hw_tests=hw_test_list.DefaultListPFQInformational(
+      hw_tests=hw_test_list.DefaultListChromePFQInformational(
           pool=constants.HWTEST_CONTINUOUS_POOL),
   )
   informational_boards = (
