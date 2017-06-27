@@ -2809,7 +2809,9 @@ inline void MakeMatrixRenderable(TransformationMatrix& matrix,
 }
 
 inline int AdjustForAbsoluteZoom(int value, LayoutObject* layout_object) {
-  return AdjustForAbsoluteZoom(value, layout_object->Style());
+  DCHECK(layout_object);
+  DCHECK(layout_object->Style());
+  return AdjustForAbsoluteZoom(value, *layout_object->Style());
 }
 
 inline LayoutUnit AdjustLayoutUnitForAbsoluteZoom(LayoutUnit value,
@@ -2820,6 +2822,7 @@ inline LayoutUnit AdjustLayoutUnitForAbsoluteZoom(LayoutUnit value,
 
 inline void AdjustFloatQuadForAbsoluteZoom(FloatQuad& quad,
                                            LayoutObject& layout_object) {
+  DCHECK(layout_object.Style());
   float zoom = layout_object.Style()->EffectiveZoom();
   if (zoom != 1)
     quad.Scale(1 / zoom, 1 / zoom);
@@ -2827,6 +2830,7 @@ inline void AdjustFloatQuadForAbsoluteZoom(FloatQuad& quad,
 
 inline void AdjustFloatRectForAbsoluteZoom(FloatRect& rect,
                                            LayoutObject& layout_object) {
+  DCHECK(layout_object.Style());
   float zoom = layout_object.Style()->EffectiveZoom();
   if (zoom != 1)
     rect.Scale(1 / zoom, 1 / zoom);

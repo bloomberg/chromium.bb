@@ -317,15 +317,19 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // backdrop-filter
   static const FilterOperations& InitialBackdropFilter();
   const FilterOperations& BackdropFilter() const {
+    DCHECK(BackdropFilterInternal().Get());
     return BackdropFilterInternal()->operations_;
   }
   FilterOperations& MutableBackdropFilter() {
+    DCHECK(BackdropFilterInternal().Get());
     return MutableBackdropFilterInternal().Access()->operations_;
   }
   bool HasBackdropFilter() const {
+    DCHECK(BackdropFilterInternal().Get());
     return !BackdropFilterInternal()->operations_.Operations().IsEmpty();
   }
   void SetBackdropFilter(const FilterOperations& ops) {
+    DCHECK(BackdropFilterInternal().Get());
     if (BackdropFilterInternal()->operations_ != ops)
       MutableBackdropFilterInternal().Access()->operations_ = ops;
   }
@@ -333,15 +337,19 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // filter (aka -webkit-filter)
   static const FilterOperations& InitialFilter();
   FilterOperations& MutableFilter() {
+    DCHECK(FilterInternal().Get());
     return MutableFilterInternal().Access()->operations_;
   }
   const FilterOperations& Filter() const {
+    DCHECK(FilterInternal().Get());
     return FilterInternal()->operations_;
   }
   bool HasFilter() const {
+    DCHECK(FilterInternal().Get());
     return !FilterInternal()->operations_.Operations().IsEmpty();
   }
   void SetFilter(const FilterOperations& v) {
+    DCHECK(FilterInternal().Get());
     if (FilterInternal()->operations_ != v)
       MutableFilterInternal().Access()->operations_ = v;
   }
@@ -1300,7 +1308,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     return !ColumnRuleColorIsCurrentColor() &&
            !ColumnRuleColorInternal().Alpha();
   }
-  bool ColumnRuleEquivalent(const ComputedStyle* other_style) const;
+  bool ColumnRuleEquivalent(const ComputedStyle& other_style) const;
   void InheritColumnPropertiesFrom(const ComputedStyle& parent) {
     SetColumnGapInternal(parent.ColumnGapInternal());
     SetColumnWidthInternal(parent.ColumnWidthInternal());
@@ -1548,27 +1556,27 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
   bool HasMarginBeforeQuirk() const { return MarginBefore().Quirk(); }
   bool HasMarginAfterQuirk() const { return MarginAfter().Quirk(); }
-  const Length& MarginBefore() const { return MarginBeforeUsing(this); }
-  const Length& MarginAfter() const { return MarginAfterUsing(this); }
-  const Length& MarginStart() const { return MarginStartUsing(this); }
-  const Length& MarginEnd() const { return MarginEndUsing(this); }
+  const Length& MarginBefore() const { return MarginBeforeUsing(*this); }
+  const Length& MarginAfter() const { return MarginAfterUsing(*this); }
+  const Length& MarginStart() const { return MarginStartUsing(*this); }
+  const Length& MarginEnd() const { return MarginEndUsing(*this); }
   const Length& MarginOver() const {
     return PhysicalMarginToLogical(*this).Over();
   }
   const Length& MarginUnder() const {
     return PhysicalMarginToLogical(*this).Under();
   }
-  const Length& MarginStartUsing(const ComputedStyle* other) const {
-    return PhysicalMarginToLogical(*other).Start();
+  const Length& MarginStartUsing(const ComputedStyle& other) const {
+    return PhysicalMarginToLogical(other).Start();
   }
-  const Length& MarginEndUsing(const ComputedStyle* other) const {
-    return PhysicalMarginToLogical(*other).End();
+  const Length& MarginEndUsing(const ComputedStyle& other) const {
+    return PhysicalMarginToLogical(other).End();
   }
-  const Length& MarginBeforeUsing(const ComputedStyle* other) const {
-    return PhysicalMarginToLogical(*other).Before();
+  const Length& MarginBeforeUsing(const ComputedStyle& other) const {
+    return PhysicalMarginToLogical(other).Before();
   }
-  const Length& MarginAfterUsing(const ComputedStyle* other) const {
-    return PhysicalMarginToLogical(*other).After();
+  const Length& MarginAfterUsing(const ComputedStyle& other) const {
+    return PhysicalMarginToLogical(other).After();
   }
   void SetMarginStart(const Length&);
   void SetMarginEnd(const Length&);
@@ -2578,7 +2586,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   bool DiffNeedsPaintInvalidationSubtree(const ComputedStyle& other) const;
   bool DiffNeedsPaintInvalidationObject(const ComputedStyle& other) const;
   bool DiffNeedsPaintInvalidationObjectForPaintImage(
-      const StyleImage*,
+      const StyleImage&,
       const ComputedStyle& other) const;
   bool DiffNeedsVisualRectUpdate(const ComputedStyle& other) const;
   void UpdatePropertySpecificDifferences(const ComputedStyle& other,
@@ -2635,8 +2643,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 // The float or LayoutUnit versions of layout values should be used.
 int AdjustForAbsoluteZoom(int value, float zoom_factor);
 
-inline int AdjustForAbsoluteZoom(int value, const ComputedStyle* style) {
-  float zoom_factor = style->EffectiveZoom();
+inline int AdjustForAbsoluteZoom(int value, const ComputedStyle& style) {
+  float zoom_factor = style.EffectiveZoom();
   if (zoom_factor == 1)
     return value;
   return AdjustForAbsoluteZoom(value, zoom_factor);

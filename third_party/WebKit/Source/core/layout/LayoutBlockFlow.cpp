@@ -638,8 +638,9 @@ void LayoutBlockFlow::DetermineLogicalLeftPositionForChild(LayoutBox& child) {
     // edge or any positive margin push it out.
     // If the child is being centred then the margin calculated to do that has
     // factored in any offset required to avoid floats, so use it if necessary.
+    DCHECK(Style());
     if (Style()->GetTextAlign() == ETextAlign::kWebkitCenter ||
-        child.Style()->MarginStartUsing(Style()).IsAuto())
+        child.Style()->MarginStartUsing(*Style()).IsAuto())
       new_position =
           std::max(new_position, position_to_avoid_floats + child_margin_start);
     else if (position_to_avoid_floats > initial_start_position)
@@ -2938,7 +2939,7 @@ void LayoutBlockFlow::StyleDidChange(StyleDifference diff,
     CreateOrDestroyMultiColumnFlowThreadIfNeeded(old_style);
   if (old_style) {
     if (LayoutMultiColumnFlowThread* flow_thread = MultiColumnFlowThread()) {
-      if (!Style()->ColumnRuleEquivalent(old_style)) {
+      if (!Style()->ColumnRuleEquivalent(*old_style)) {
         // Column rules are painted by anonymous column set children of the
         // multicol container. We need to notify them.
         flow_thread->ColumnRuleStyleDidChange();

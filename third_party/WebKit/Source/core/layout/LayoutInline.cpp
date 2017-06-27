@@ -844,23 +844,27 @@ LayoutUnit LayoutInline::MarginBottom() const {
 }
 
 LayoutUnit LayoutInline::MarginStart(const ComputedStyle* other_style) const {
+  DCHECK(Style());
   return ComputeMargin(
-      this, Style()->MarginStartUsing(other_style ? other_style : Style()));
+      this, Style()->MarginStartUsing(other_style ? *other_style : *Style()));
 }
 
 LayoutUnit LayoutInline::MarginEnd(const ComputedStyle* other_style) const {
+  DCHECK(Style());
   return ComputeMargin(
-      this, Style()->MarginEndUsing(other_style ? other_style : Style()));
+      this, Style()->MarginEndUsing(other_style ? *other_style : *Style()));
 }
 
 LayoutUnit LayoutInline::MarginBefore(const ComputedStyle* other_style) const {
+  DCHECK(Style());
   return ComputeMargin(
-      this, Style()->MarginBeforeUsing(other_style ? other_style : Style()));
+      this, Style()->MarginBeforeUsing(other_style ? *other_style : *Style()));
 }
 
 LayoutUnit LayoutInline::MarginAfter(const ComputedStyle* other_style) const {
+  DCHECK(Style());
   return ComputeMargin(
-      this, Style()->MarginAfterUsing(other_style ? other_style : Style()));
+      this, Style()->MarginAfterUsing(other_style ? *other_style : *Style()));
 }
 
 LayoutUnit LayoutInline::MarginOver() const {

@@ -728,8 +728,10 @@ LayoutUnit LayoutBlock::MarginIntrinsicLogicalWidthForChild(
   // A margin has three types: fixed, percentage, and auto (variable).
   // Auto and percentage margins become 0 when computing min/max width.
   // Fixed margins can be added in as is.
-  Length margin_left = child.Style()->MarginStartUsing(Style());
-  Length margin_right = child.Style()->MarginEndUsing(Style());
+  DCHECK(child.Style());
+  DCHECK(Style());
+  Length margin_left = child.Style()->MarginStartUsing(*Style());
+  Length margin_right = child.Style()->MarginEndUsing(*Style());
   LayoutUnit margin;
   if (margin_left.IsFixed())
     margin += margin_left.Value();
@@ -1481,8 +1483,8 @@ void LayoutBlock::ComputeBlockPreferredLogicalWidths(
     // (variable).
     // Auto and percentage margins simply become 0 when computing min/max width.
     // Fixed margins can be added in as is.
-    Length start_margin_length = child_style->MarginStartUsing(&style_to_use);
-    Length end_margin_length = child_style->MarginEndUsing(&style_to_use);
+    Length start_margin_length = child_style->MarginStartUsing(style_to_use);
+    Length end_margin_length = child_style->MarginEndUsing(style_to_use);
     LayoutUnit margin;
     LayoutUnit margin_start;
     LayoutUnit margin_end;

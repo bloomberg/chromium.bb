@@ -1636,8 +1636,10 @@ void LayoutGrid::UpdateAutoMarginsInRowAxisIfNeeded(LayoutBox& child) {
   if (available_alignment_space <= 0)
     return;
 
-  Length margin_start = child.Style()->MarginStartUsing(Style());
-  Length margin_end = child.Style()->MarginEndUsing(Style());
+  DCHECK(child.Style());
+  DCHECK(Style());
+  Length margin_start = child.Style()->MarginStartUsing(*Style());
+  Length margin_end = child.Style()->MarginEndUsing(*Style());
   if (margin_start.IsAuto() && margin_end.IsAuto()) {
     child.SetMarginStart(available_alignment_space / 2, Style());
     child.SetMarginEnd(available_alignment_space / 2, Style());
@@ -1660,8 +1662,10 @@ void LayoutGrid::UpdateAutoMarginsInColumnAxisIfNeeded(LayoutBox& child) {
   if (available_alignment_space <= 0)
     return;
 
-  Length margin_before = child.Style()->MarginBeforeUsing(Style());
-  Length margin_after = child.Style()->MarginAfterUsing(Style());
+  DCHECK(child.Style());
+  DCHECK(Style());
+  Length margin_before = child.Style()->MarginBeforeUsing(*Style());
+  Length margin_after = child.Style()->MarginAfterUsing(*Style());
   if (margin_before.IsAuto() && margin_after.IsAuto()) {
     child.SetMarginBefore(available_alignment_space / 2, Style());
     child.SetMarginAfter(available_alignment_space / 2, Style());

@@ -601,7 +601,8 @@ bool ComputedStyle::DiffNeedsPaintInvalidationObject(
 
   if (PaintImagesInternal()) {
     for (const auto& image : *PaintImagesInternal()) {
-      if (DiffNeedsPaintInvalidationObjectForPaintImage(image, other))
+      DCHECK(image);
+      if (DiffNeedsPaintInvalidationObjectForPaintImage(*image, other))
         return true;
     }
   }
@@ -610,9 +611,9 @@ bool ComputedStyle::DiffNeedsPaintInvalidationObject(
 }
 
 bool ComputedStyle::DiffNeedsPaintInvalidationObjectForPaintImage(
-    const StyleImage* image,
+    const StyleImage& image,
     const ComputedStyle& other) const {
-  CSSPaintValue* value = ToCSSPaintValue(image->CssValue());
+  CSSPaintValue* value = ToCSSPaintValue(image.CssValue());
 
   // NOTE: If the invalidation properties vectors are null, we are invalid as
   // we haven't yet been painted (and can't provide the invalidation
@@ -1906,11 +1907,11 @@ float ComputedStyle::GetOutlineStrokeWidthForFocusRing() const {
 }
 
 bool ComputedStyle::ColumnRuleEquivalent(
-    const ComputedStyle* other_style) const {
-  return ColumnRuleStyle() == other_style->ColumnRuleStyle() &&
-         ColumnRuleWidth() == other_style->ColumnRuleWidth() &&
+    const ComputedStyle& other_style) const {
+  return ColumnRuleStyle() == other_style.ColumnRuleStyle() &&
+         ColumnRuleWidth() == other_style.ColumnRuleWidth() &&
          VisitedDependentColor(CSSPropertyColumnRuleColor) ==
-             other_style->VisitedDependentColor(CSSPropertyColumnRuleColor);
+             other_style.VisitedDependentColor(CSSPropertyColumnRuleColor);
 }
 
 TextEmphasisMark ComputedStyle::GetTextEmphasisMark() const {
