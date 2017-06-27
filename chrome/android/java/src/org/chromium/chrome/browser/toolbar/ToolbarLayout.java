@@ -60,7 +60,7 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     protected TintedImageButton mMenuButton;
     protected ImageView mMenuBadge;
     protected View mMenuButtonWrapper;
-    private AppMenuButtonHelper mAppMenuButtonHelper;
+    protected AppMenuButtonHelper mAppMenuButtonHelper;
 
     protected final ColorStateList mDarkModeTint;
     protected final ColorStateList mLightModeTint;
