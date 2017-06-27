@@ -341,9 +341,9 @@ TEST_F(AudioRendererSinkCacheTest, MultithreadedAccess) {
   EXPECT_EQ(1, sink_count());
 
   // Release the sink on the second thread.
-  PostAndRunUntilDone(thread2,
-                      base::Bind(&AudioRendererSinkCache::ReleaseSink,
-                                 base::Unretained(cache_.get()), sink));
+  PostAndRunUntilDone(thread2, base::Bind(&AudioRendererSinkCache::ReleaseSink,
+                                          base::Unretained(cache_.get()),
+                                          base::RetainedRef(sink)));
 
   EXPECT_EQ(0, sink_count());
 }

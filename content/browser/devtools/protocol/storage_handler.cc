@@ -164,8 +164,8 @@ void StorageHandler::GetUsageAndQuota(
       host_->GetProcess()->GetStoragePartition()->GetQuotaManager();
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&GetUsageAndQuotaOnIOThread, manager, origin_url,
-                 base::Passed(std::move(callback))));
+      base::Bind(&GetUsageAndQuotaOnIOThread, base::RetainedRef(manager),
+                 origin_url, base::Passed(std::move(callback))));
 }
 
 }  // namespace protocol

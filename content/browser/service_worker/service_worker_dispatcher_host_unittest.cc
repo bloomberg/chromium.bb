@@ -82,7 +82,7 @@ std::unique_ptr<ServiceWorkerNavigationHandleCore> CreateNavigationHandleCore(
             return base::MakeUnique<ServiceWorkerNavigationHandleCore>(nullptr,
                                                                        wrapper);
           },
-          context_wrapper),
+          base::RetainedRef(context_wrapper)),
       base::Bind(
           [](std::unique_ptr<ServiceWorkerNavigationHandleCore>* dest,
              std::unique_ptr<ServiceWorkerNavigationHandleCore> src) {

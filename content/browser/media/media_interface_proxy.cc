@@ -111,8 +111,8 @@ void MediaInterfaceProxy::ConnectToService() {
       BrowserContext::GetDefaultStoragePartition(
           render_frame_host_->GetProcess()->GetBrowserContext())
           ->GetURLRequestContext();
-  provider->registry()->AddInterface(
-      base::Bind(&ProvisionFetcherImpl::Create, context_getter));
+  provider->registry()->AddInterface(base::Bind(
+      &ProvisionFetcherImpl::Create, base::RetainedRef(context_getter)));
 #endif  // BUILDFLAG(ENABLE_MOJO_CDM)
   GetContentClient()->browser()->ExposeInterfacesToMediaService(
       provider->registry(), render_frame_host_);
