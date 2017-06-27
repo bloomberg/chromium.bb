@@ -36,10 +36,9 @@ class CAPTURE_EXPORT CameraHalDelegate final
   explicit CameraHalDelegate(
       scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner);
 
-  // Registers the camera client observer to the CameraHalDispatcher instance.
-  void RegisterCameraClient();
-
-  void SetCameraModule(arc::mojom::CameraModulePtrInfo camera_module_ptr_info);
+  // Establishes the Mojo IPC channel to the camera HAL adapter.  This method
+  // should be called before any other methods of CameraHalDelegate is called.
+  bool StartCameraModuleIpc();
 
   // Resets |camera_module_| and |camera_module_callbacks_|.
   void Reset();
@@ -76,8 +75,9 @@ class CAPTURE_EXPORT CameraHalDelegate final
 
   ~CameraHalDelegate() final;
 
-  void SetCameraModuleOnIpcThread(
-      arc::mojom::CameraModulePtrInfo camera_module_ptr_info);
+  friend class CameraHalDelegateTest;
+  friend class CameraDeviceDelegateTest;
+  void StartForTesting(arc::mojom::CameraModulePtrInfo info);
 
   // Resets the Mojo interface and bindings.
   void ResetMojoInterfaceOnIpcThread();
@@ -111,8 +111,6 @@ class CAPTURE_EXPORT CameraHalDelegate final
   void CameraDeviceStatusChange(
       int32_t camera_id,
       arc::mojom::CameraDeviceStatus new_status) final;
-
-  base::WaitableEvent camera_module_has_been_set_;
 
   // Signaled when |num_builtin_cameras_| and |camera_info_| are updated.
   // Queried and waited by UpdateBuiltInCameraInfo, signaled by
