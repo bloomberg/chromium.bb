@@ -11,6 +11,10 @@
 constexpr base::TimeDelta
     MediaEngagementContentsObserver::kSignificantMediaPlaybackTime;
 
+// This is the minimum size (in px) of each dimension that a media
+// element has to be in order to be determined significant.
+const int MediaEngagementContentsObserver::kSignificantSize = 200;
+
 MediaEngagementContentsObserver::MediaEngagementContentsObserver(
     content::WebContents* web_contents,
     MediaEngagementService* service)
@@ -106,6 +110,19 @@ void MediaEngagementContentsObserver::MediaMutedStateChanged(
   UpdateTimer();
 }
 
+void MediaEngagementContentsObserver::MediaResized(const gfx::Size& size,
+                                                   const MediaPlayerId& id) {
+  if (size.width() >= kSignificantSize && size.height() >= kSignificantSize) {
+    GetPlayerState(id)->significant_size = true;
+    MaybeInsertSignificantPlayer(id);
+  } else {
+    GetPlayerState(id)->significant_size = false;
+    MaybeRemoveSignificantPlayer(id);
+  }
+
+  UpdateTimer();
+}
+
 void MediaEngagementContentsObserver::MediaStoppedPlaying(
     const MediaPlayerInfo& media_player_info,
     const MediaPlayerId& media_player_id) {
@@ -121,7 +138,7 @@ void MediaEngagementContentsObserver::DidUpdateAudioMutingState(bool muted) {
 bool MediaEngagementContentsObserver::IsSignificantPlayer(
     const MediaPlayerId& id) {
   PlayerState* state = GetPlayerState(id);
-  return !state->muted && state->playing;
+  return !state->muted && state->playing && state->significant_size;
 }
 
 void MediaEngagementContentsObserver::OnSignificantMediaPlaybackTime() {

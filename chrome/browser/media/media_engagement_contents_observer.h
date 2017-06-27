@@ -7,6 +7,10 @@
 
 #include "content/public/browser/web_contents_observer.h"
 
+namespace gfx {
+class Size;
+}  // namespace gfx
+
 class MediaEngagementContentsObserverTest;
 class MediaEngagementService;
 
@@ -26,6 +30,9 @@ class MediaEngagementContentsObserver : public content::WebContentsObserver {
                            const MediaPlayerId& media_player_id) override;
   void DidUpdateAudioMutingState(bool muted) override;
   void MediaMutedStateChanged(const MediaPlayerId& id, bool muted_state);
+  void MediaResized(const gfx::Size& size, const MediaPlayerId& id) override;
+
+  static const int kSignificantSize;
 
  private:
   // Only MediaEngagementService can create a MediaEngagementContentsObserver.
@@ -60,6 +67,8 @@ class MediaEngagementContentsObserver : public content::WebContentsObserver {
   struct PlayerState {
     bool muted = true;
     bool playing = false;  // Currently playing with an audio track.
+    bool significant_size = false;  // The video track has at least a certain
+                                    // frame size.
   };
   std::map<MediaPlayerId, PlayerState*> player_states_;
   PlayerState* GetPlayerState(const MediaPlayerId& id);
