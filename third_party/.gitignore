@@ -117,6 +117,7 @@
 /llvm-bootstrap
 /llvm-build
 /lss
+/material_design_icons/src
 /mesa/src
 /mingw-w64
 /minigbm/src
