@@ -96,7 +96,7 @@
           },
           {
             method: "HasFilters()",
-            field_dependencies: ["Filter"]
+            field_dependencies: ["filter"]
           },
           {
             method: "FontInternal().LoadingCustomFonts()",
@@ -324,13 +324,13 @@
     },
     {
         name: "DiffTransformData",
-        fields_to_diff: ["TransformOperations", "translate", "rotate",
+        fields_to_diff: ["transform", "translate", "rotate",
                     "scale", "offset-path", "offset-rotate", "transform-origin",
                      "offset-position", "offset-anchor", "offset-distance"],
     },
     {
         name: "UpdatePropertySpecificDifferencesTransform",
-        fields_to_diff: ["TransformOperations", "translate", "rotate",
+        fields_to_diff: ["transform", "translate", "rotate",
                     "scale", "offset-path", "offset-rotate", "transform-origin",
                      "offset-position", "offset-anchor", "offset-distance", 
                      "perspective", "perspective-origin"],
@@ -340,7 +340,7 @@
             // while hasTransform() differs, as it checks a number of conditions aside
             // from just the matrix, including but not limited to animation state.
             method: "HasTransform()",
-            field_dependencies: ["TransformOperations", "offset-position", 
+            field_dependencies: ["transform", "offset-position", 
                     "HasCurrentTransformAnimation", "translate", "rotate", 
                     "scale"]
           },
@@ -352,7 +352,7 @@
     },
     {
         name: "UpdatePropertySpecificDifferencesFilter",
-        fields_to_diff: ["Filter"],
+        fields_to_diff: ["filter"],
         predicates_to_test: [
           {
             predicate: "a.ReflectionDataEquivalent(b)",
@@ -379,11 +379,11 @@
     },
     {
         name: "UpdatePropertySpecificDifferencesBackdropFilter",
-        fields_to_diff: ["BackdropFilter"],
+        fields_to_diff: ["backdrop-filter"],
     },
     {
         name: "UpdatePropertySpecificDifferencesTextDecorationOrColor",
-        fields_to_diff: ["color", "VisitedLinkColor", "TextDecoration",
+        fields_to_diff: ["color", "VisitedLinkColor", "text-decoration-line",
                 "text-decoration-style", "text-decoration-color",
                 "VisitedLinkTextDecorationColor", "TextEmphasisFill",
                 "text-underline-position", "text-decoration-skip", "AppliedTextDecorations"],
