@@ -22,6 +22,8 @@ source_set("loader") {
     "LinkHeader.cpp",
     "LinkHeader.h",
     "fetch/AccessControlStatus.h",
+    "fetch/BufferingDataPipeWriter.cpp",
+    "fetch/BufferingDataPipeWriter.h",
     "fetch/CachedMetadata.cpp",
     "fetch/CachedMetadata.h",
     "fetch/CachedMetadataHandler.h",
@@ -92,6 +94,7 @@ source_set("loader") {
   deps = [
     ":make_platform_loader_generated_fetch_initiator_type_names",
     "//components/link_header_util:link_header_util",
+    "//mojo/public/cpp/system:system",
     "//storage/public/interfaces:interfaces_blink__generator",
   ]
 
@@ -113,6 +116,7 @@ source_set("unit_tests") {
   # Source files for blink_platform_unittests.
   sources = [
     "LinkHeaderTest.cpp",
+    "fetch/BufferingDataPipeWriterTest.cpp",
     "fetch/ClientHintsPreferencesTest.cpp",
     "fetch/CrossOriginAccessControlTest.cpp",
     "fetch/FetchUtilsTest.cpp",
