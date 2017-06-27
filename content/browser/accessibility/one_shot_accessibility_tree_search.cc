@@ -12,6 +12,7 @@
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "ui/accessibility/ax_enums.h"
+#include "ui/accessibility/ax_role_properties.h"
 
 namespace content {
 
@@ -409,7 +410,7 @@ bool AccessibilityRadioGroupPredicate(
 
 bool AccessibilityTablePredicate(
     BrowserAccessibility* start, BrowserAccessibility* node) {
-  return node->IsTableLikeRole();
+  return ui::IsTableLikeRole(node->GetRole());
 }
 
 bool AccessibilityTextfieldPredicate(

@@ -14,6 +14,7 @@
 #include "content/common/accessibility_messages.h"
 #include "content/public/common/content_client.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/platform/ax_android_constants.h"
 #include "ui/accessibility/platform/ax_snapshot_node_android_platform.h"
 
@@ -168,8 +169,9 @@ bool BrowserAccessibilityAndroid::IsCollapsed() const {
   return HasState(ui::AX_STATE_COLLAPSED);
 }
 
+// TODO(dougt) Move to ax_role_properties?
 bool BrowserAccessibilityAndroid::IsCollection() const {
-  return (IsTableLikeRole() || GetRole() == ui::AX_ROLE_LIST ||
+  return (ui::IsTableLikeRole(GetRole()) || GetRole() == ui::AX_ROLE_LIST ||
           GetRole() == ui::AX_ROLE_LIST_BOX ||
           GetRole() == ui::AX_ROLE_DESCRIPTION_LIST ||
           GetRole() == ui::AX_ROLE_TREE);
@@ -1145,7 +1147,7 @@ int BrowserAccessibilityAndroid::AndroidRangeType() const {
 }
 
 int BrowserAccessibilityAndroid::RowCount() const {
-  if (IsTableLikeRole()) {
+  if (ui::IsTableLikeRole(GetRole())) {
     return CountChildrenWithRole(ui::AX_ROLE_ROW);
   }
 
@@ -1160,7 +1162,7 @@ int BrowserAccessibilityAndroid::RowCount() const {
 }
 
 int BrowserAccessibilityAndroid::ColumnCount() const {
-  if (IsTableLikeRole()) {
+  if (ui::IsTableLikeRole(GetRole())) {
     return CountChildrenWithRole(ui::AX_ROLE_COLUMN);
   }
   return 0;

@@ -27,6 +27,7 @@
 #include "content/common/accessibility_mode.h"
 #include "content/public/common/content_client.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_text_utils.h"
 #include "ui/base/win/accessibility_ids_win.h"
 #include "ui/base/win/accessibility_misc_utils.h"
@@ -3413,7 +3414,7 @@ HRESULT WINAPI BrowserAccessibilityComWin::InternalQueryInterface(
       return E_NOINTERFACE;
     }
   } else if (iid == IID_IAccessibleTableCell) {
-    if (!accessibility->owner()->IsCellOrTableHeaderRole()) {
+    if (!ui::IsCellOrTableHeaderRole(accessibility->owner()->GetRole())) {
       *object = NULL;
       return E_NOINTERFACE;
     }
@@ -3628,9 +3629,9 @@ void BrowserAccessibilityComWin::UpdateStep1ComputeWinAttributes() {
   }
 
   // Expose table cell index.
-  if (owner()->IsCellOrTableHeaderRole()) {
+  if (ui::IsCellOrTableHeaderRole(owner()->GetRole())) {
     BrowserAccessibility* table = owner()->PlatformGetParent();
-    while (table && !table->IsTableLikeRole())
+    while (table && !ui::IsTableLikeRole(table->GetRole()))
       table = table->PlatformGetParent();
     if (table) {
       const std::vector<int32_t>& unique_cell_ids =
@@ -3645,13 +3646,13 @@ void BrowserAccessibilityComWin::UpdateStep1ComputeWinAttributes() {
   }
 
   // Expose aria-colcount and aria-rowcount in a table, grid or treegrid.
-  if (owner()->IsTableLikeRole()) {
+  if (ui::IsTableLikeRole(owner()->GetRole())) {
     IntAttributeToIA2(ui::AX_ATTR_ARIA_COLUMN_COUNT, "colcount");
     IntAttributeToIA2(ui::AX_ATTR_ARIA_ROW_COUNT, "rowcount");
   }
 
   // Expose aria-colindex and aria-rowindex in a cell or row.
-  if (owner()->IsCellOrTableHeaderRole() ||
+  if (ui::IsCellOrTableHeaderRole(owner()->GetRole()) ||
       owner()->GetRole() == ui::AX_ROLE_ROW) {
     if (owner()->GetRole() != ui::AX_ROLE_ROW)
       IntAttributeToIA2(ui::AX_ATTR_ARIA_CELL_COLUMN_INDEX, "colindex");
@@ -4845,7 +4846,7 @@ void BrowserAccessibilityComWin::RemoveTargetFromRelation(
 }
 
 void BrowserAccessibilityComWin::UpdateRequiredAttributes() {
-  if (owner()->IsCellOrTableHeaderRole()) {
+  if (ui::IsCellOrTableHeaderRole(owner()->GetRole())) {
     // Expose colspan attribute.
     base::string16 colspan;
     if (owner()->GetHtmlAttribute("aria-colspan", &colspan)) {
