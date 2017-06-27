@@ -64,13 +64,17 @@ MediaStreamTrack* MediaStreamTrack::Create(ExecutionContext* context,
 MediaStreamTrack::MediaStreamTrack(ExecutionContext* context,
                                    MediaStreamComponent* component)
     : ContextLifecycleObserver(context),
-      ready_state_(MediaStreamSource::kReadyStateLive),
+      ready_state_(component->Source()->GetReadyState()),
       is_iterating_registered_media_streams_(false),
       stopped_(false),
       component_(component),
       // The source's constraints aren't yet initialized at creation time.
       constraints_() {
   component_->Source()->AddObserver(this);
+
+  // If the source is already non-live at this point, the observer won't have
+  // been called. Update the muted state manually.
+  component_->SetMuted(ready_state_ == MediaStreamSource::kReadyStateMuted);
 
   if (component_->Source() &&
       component_->Source()->GetType() == MediaStreamSource::kTypeVideo) {
@@ -183,11 +187,12 @@ String MediaStreamTrack::readyState() const {
   if (Ended())
     return "ended";
 
+  // Although muted is tracked as a ReadyState, only "live" and "ended" are
+  // visible externally.
   switch (ready_state_) {
     case MediaStreamSource::kReadyStateLive:
-      return "live";
     case MediaStreamSource::kReadyStateMuted:
-      return "muted";
+      return "live";
     case MediaStreamSource::kReadyStateEnded:
       return "ended";
   }

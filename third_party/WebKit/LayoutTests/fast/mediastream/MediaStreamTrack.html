@@ -49,7 +49,7 @@ function onTrackUnmute() {
 function onTrackMute() {
     testPassed('Track onmute callback succeeded.');
 
-    shouldBeEqualToString('track.readyState', 'muted');
+    shouldBeEqualToString('track.readyState', 'live');
     shouldBeTrue('track.muted');
 
     track.enabled = true;

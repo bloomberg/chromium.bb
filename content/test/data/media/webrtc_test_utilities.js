@@ -18,6 +18,8 @@ var gNumberOfEvents = 0;
 
 var gAllEventsOccured = function () {};
 
+var gPendingTimeout;
+
 // Use this function to set a function that will be called once all expected
 // events has occurred.
 function setAllEventsOccuredHandler(handler) {
@@ -39,6 +41,20 @@ function sendValueToTest(value) {
 function failTest(reason) {
   var error = new Error(reason);
   window.domAutomationController.send(error.stack);
+}
+
+// Fail a test on the C++ side after a timeout. Will cancel any pending timeout.
+function failTestAfterTimeout(reason, timeout_ms) {
+  cancelTestTimeout();
+  gPendingTimeout = setTimeout(function() {
+    failTest(reason);
+  }, timeout_ms);
+}
+
+// Cancels the current test timeout.
+function cancelTestTimeout() {
+  clearTimeout(gPendingTimeout);
+  gPendingTimeout = null;
 }
 
 // Called if getUserMedia fails.
@@ -262,4 +278,3 @@ function assertTrue(booleanExpression, description) {
     failTest(description);
   }
 }
-

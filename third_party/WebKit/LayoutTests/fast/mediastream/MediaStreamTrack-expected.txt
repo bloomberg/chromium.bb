@@ -6,7 +6,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 PASS getUserMedia succeeded.
 PASS track.readyState is "live"
 PASS Track onmute callback succeeded.
-PASS track.readyState is "muted"
+PASS track.readyState is "live"
 PASS track.muted is true
 PASS Track onunmute callback succeeded.
 PASS track.readyState is "live"
