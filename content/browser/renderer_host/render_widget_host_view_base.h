@@ -467,6 +467,9 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // The scale factor of the display the renderer is currently on.
   float current_device_scale_factor_;
 
+  // The color space of the display the renderer is currently on.
+  gfx::ColorSpace current_display_color_space_;
+
   // The orientation of the display the renderer is currently on.
   display::Display::Rotation current_display_rotation_;
 
