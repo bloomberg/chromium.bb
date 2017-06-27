@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 typemaps = [
-  "//chrome/common/safe_archive_analyzer.typemap",
   "//chrome/common/instant.typemap",
+  "//chrome/common/safe_archive_analyzer.typemap",
+  "//chrome/common/shell_handler_win.typemap",
 ]
