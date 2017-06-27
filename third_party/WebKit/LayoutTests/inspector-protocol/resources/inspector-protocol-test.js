@@ -92,6 +92,18 @@ var TestRunner = class {
     return this._baseURL + relative;
   }
 
+  async runTestSuite(testSuite) {
+    for (var test of testSuite) {
+      this.log('\nRunning test: ' + test.name);
+      try {
+        await test();
+      } catch (e) {
+        this.log(`Error during test: ${e}\n${e.stack}`);
+      }
+    }
+    this.completeTest();
+  }
+
   _checkExpectation(fail, name, messageObject) {
     if (fail === !!messageObject.error) {
       this.log('PASS: ' + name);
@@ -115,6 +127,11 @@ var TestRunner = class {
     this.log(`${message}: ${error}\n${error.stack}`);
     this.completeTest();
     throw new Error(message);
+  }
+
+  fail(message) {
+    this.log('FAIL: ' + message);
+    this.completeTest();
   }
 
   async loadScript(url) {

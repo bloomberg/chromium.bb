@@ -1,6 +1,4 @@
-CONSOLE MESSAGE: line 15: div from page
 Tests that console.memory works correct.
-div from page
 === Dump console message ===
 div from page
 

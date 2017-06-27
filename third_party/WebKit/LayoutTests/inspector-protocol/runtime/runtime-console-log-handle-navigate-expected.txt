@@ -1,27 +1,26 @@
-CONSOLE MESSAGE: line 10: 42
-CONSOLE MESSAGE: line 13: 
-CONSOLE MESSAGE: line 20: undefined
-CONSOLE MESSAGE: line 27: 42
-This tests how navigation is handled from inside debugger code (console.log). 
+This tests how navigation is handled from inside debugger code (console.log).
+Got new context: true
 {
     error : {
         code : -32000
         message : Cannot find context with specified id
     }
-    id : 0
+    id : <messageId>
 }
+Got new context: true
 {
     error : {
         code : -32000
         message : Cannot find context with specified id
     }
-    id : 0
+    id : <messageId>
 }
+Got new context: true
 {
     error : {
         code : -32000
         message : Cannot find context with specified id
     }
-    id : 0
+    id : <messageId>
 }
 

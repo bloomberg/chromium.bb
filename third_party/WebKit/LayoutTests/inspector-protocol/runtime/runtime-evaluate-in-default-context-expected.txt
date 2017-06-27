@@ -1,6 +1,6 @@
-Tests that default execution context is selected correctly. 
+Tests that default execution context is selected correctly.
 {
-    id : 0
+    id : <messageId>
     result : {
         result : {
             description : 42

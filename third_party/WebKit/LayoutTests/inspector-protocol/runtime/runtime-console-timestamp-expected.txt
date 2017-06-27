@@ -1,6 +1,4 @@
-CONSOLE MESSAGE: line 1: testUnique
-CONSOLE MESSAGE: line 1: testDouble
-CONSOLE MESSAGE: line 1: testDouble
+
 Message has timestamp: true
 Message timestamp doesn't differ too much from current time (one minute interval): true
 Message 1 has non-decreasing timestamp: true
