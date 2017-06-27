@@ -13,7 +13,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/files/file_proxy.h"
+#include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 
@@ -49,7 +49,6 @@ class DevToolsFileSystemIndexer
     void StopOnImplSequence();
     void CollectFilesToIndex();
     void IndexFiles();
-    void StartFileIndexing(base::File::Error error);
     void ReadFromFile();
     void OnRead(base::File::Error error,
                 const char* data,
@@ -66,7 +65,7 @@ class DevToolsFileSystemIndexer
     typedef std::map<base::FilePath, base::Time> FilePathTimesMap;
     FilePathTimesMap file_path_times_;
     FilePathTimesMap::const_iterator indexing_it_;
-    base::FileProxy current_file_;
+    base::File current_file_;
     int64_t current_file_offset_;
     typedef int32_t Trigram;
     std::vector<Trigram> current_trigrams_;

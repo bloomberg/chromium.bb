@@ -252,7 +252,6 @@ DevToolsFileSystemIndexer::FileSystemIndexingJob::FileSystemIndexingJob(
       total_work_callback_(total_work_callback),
       worked_callback_(worked_callback),
       done_callback_(done_callback),
-      current_file_(impl_task_runner()),
       files_indexed_(0),
       stopped_(false) {
   current_trigrams_set_.resize(kTrigramCount);
@@ -315,14 +314,9 @@ void DevToolsFileSystemIndexer::FileSystemIndexingJob::IndexFiles() {
     return;
   }
   FilePath file_path = indexing_it_->first;
-  current_file_.CreateOrOpen(
-        file_path,
-        base::File::FLAG_OPEN | base::File::FLAG_READ,
-        Bind(&FileSystemIndexingJob::StartFileIndexing, this));
-}
+  current_file_.Initialize(file_path,
+                           base::File::FLAG_OPEN | base::File::FLAG_READ);
 
-void DevToolsFileSystemIndexer::FileSystemIndexingJob::StartFileIndexing(
-    base::File::Error error) {
   if (!current_file_.IsValid()) {
     FinishFileIndexing(false);
     return;
@@ -338,20 +332,16 @@ void DevToolsFileSystemIndexer::FileSystemIndexingJob::ReadFromFile() {
     CloseFile();
     return;
   }
-  current_file_.Read(current_file_offset_, kMaxReadLength,
-                     Bind(&FileSystemIndexingJob::OnRead, this));
-}
-
-void DevToolsFileSystemIndexer::FileSystemIndexingJob::OnRead(
-    base::File::Error error,
-    const char* data,
-    int bytes_read) {
-  if (error != base::File::FILE_OK) {
+  std::unique_ptr<char[]> data_ptr(new char[kMaxReadLength]);
+  const char* const data = data_ptr.get();
+  int bytes_read =
+      current_file_.Read(current_file_offset_, data_ptr.get(), kMaxReadLength);
+  if (bytes_read < 0) {
     FinishFileIndexing(false);
     return;
   }
 
-  if (!bytes_read || bytes_read < 3) {
+  if (bytes_read < 3) {
     FinishFileIndexing(true);
     return;
   }
@@ -377,7 +367,8 @@ void DevToolsFileSystemIndexer::FileSystemIndexingJob::OnRead(
     }
   }
   current_file_offset_ += bytes_read - 2;
-  ReadFromFile();
+  impl_task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&FileSystemIndexingJob::ReadFromFile, this));
 }
 
 void DevToolsFileSystemIndexer::FileSystemIndexingJob::FinishFileIndexing(
@@ -396,7 +387,7 @@ void DevToolsFileSystemIndexer::FileSystemIndexingJob::FinishFileIndexing(
 
 void DevToolsFileSystemIndexer::FileSystemIndexingJob::CloseFile() {
   if (current_file_.IsValid())
-    current_file_.Close(base::FileProxy::StatusCallback());
+    current_file_.Close();
 }
 
 void DevToolsFileSystemIndexer::FileSystemIndexingJob::ReportWorked() {
