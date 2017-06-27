@@ -1,31 +1,54 @@
-CONSOLE MESSAGE: line 1: 239
-CONSOLE MESSAGE: line 2: 239
+
 {
-    stackTrace : {
-        callFrames : [
+    method : Runtime.consoleAPICalled
+    params : {
+        args : [
             [0] : {
-                columnNumber : 8
-                functionName : 
-                lineNumber : 0
-                scriptId : 0
-                url : 
+                description : 239
+                type : number
+                value : 239
             }
         ]
+        executionContextId : 3
+        stackTrace : {
+            callFrames : [
+                [0] : {
+                    columnNumber : 8
+                    functionName : 
+                    lineNumber : 0
+                    scriptId : <scriptId>
+                    url : 
+                }
+            ]
+        }
+        timestamp : <timestamp>
+        type : log
     }
-    type : log
 }
 {
-    stackTrace : {
-        callFrames : [
+    method : Runtime.consoleAPICalled
+    params : {
+        args : [
             [0] : {
-                columnNumber : 2
-                functionName : 
-                lineNumber : 1
-                scriptId : 0
-                url : 
+                description : 239
+                type : number
+                value : 239
             }
         ]
+        executionContextId : 3
+        stackTrace : {
+            callFrames : [
+                [0] : {
+                    columnNumber : 2
+                    functionName : 
+                    lineNumber : 1
+                    scriptId : <scriptId>
+                    url : 
+                }
+            ]
+        }
+        timestamp : <timestamp>
+        type : log
     }
-    type : log
 }
 

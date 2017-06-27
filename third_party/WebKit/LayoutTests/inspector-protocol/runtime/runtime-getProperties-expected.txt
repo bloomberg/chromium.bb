@@ -1,3 +1,4 @@
+
 Properties of Object(5)
   __proto__ own object undefined
   foo own string cat

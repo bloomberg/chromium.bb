@@ -1,4 +1,3 @@
-CONSOLE ERROR: Uncaught (in promise) 239
 Tests that Runtime.evaluate works with awaitPromise flag.
 
 Running test: testResolvedPromise

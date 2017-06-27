@@ -66,9 +66,9 @@ Running test: testRejectedPromiseWithStack
             parent : {
                 callFrames : [
                     [0] : {
-                        columnNumber : 4
+                        columnNumber : 6
                         functionName : rejectPromise
-                        lineNumber : 21
+                        lineNumber : 14
                         scriptId : 0
                         url : 
                     }
