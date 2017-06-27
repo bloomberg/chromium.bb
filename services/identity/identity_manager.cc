@@ -82,13 +82,17 @@ void IdentityManager::GetPrimaryAccountInfo(
   // directly returns the authenticated GAIA ID. We can of course get it from
   // the AccountInfo but once we have the ACcountInfo we ... have the
   // AccountInfo.
-  std::move(callback).Run(signin_manager_->GetAuthenticatedAccountInfo());
+  AccountInfo account_info = signin_manager_->GetAuthenticatedAccountInfo();
+  AccountState account_state = GetStateOfAccount(account_info);
+  std::move(callback).Run(account_info, account_state);
 }
 
 void IdentityManager::GetAccountInfoFromGaiaId(
     const std::string& gaia_id,
     GetAccountInfoFromGaiaIdCallback callback) {
-  std::move(callback).Run(account_tracker_->FindAccountInfoByGaiaId(gaia_id));
+  AccountInfo account_info = account_tracker_->FindAccountInfoByGaiaId(gaia_id);
+  AccountState account_state = GetStateOfAccount(account_info);
+  std::move(callback).Run(account_info, account_state);
 }
 
 void IdentityManager::GetAccessToken(const std::string& account_id,
@@ -106,6 +110,14 @@ void IdentityManager::GetAccessToken(const std::string& account_id,
 
 void IdentityManager::AccessTokenRequestCompleted(AccessTokenRequest* request) {
   access_token_requests_.erase(request);
+}
+
+AccountState IdentityManager::GetStateOfAccount(
+    const AccountInfo& account_info) {
+  AccountState account_state;
+  account_state.has_refresh_token =
+      token_service_->RefreshTokenIsAvailable(account_info.account_id);
+  return account_state;
 }
 
 }  // namespace identity

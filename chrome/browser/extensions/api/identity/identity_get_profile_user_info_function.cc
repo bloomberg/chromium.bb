@@ -43,7 +43,8 @@ ExtensionFunction::ResponseAction IdentityGetProfileUserInfoFunction::Run() {
 }
 
 void IdentityGetProfileUserInfoFunction::OnReceivedPrimaryAccountInfo(
-    const base::Optional<AccountInfo>& account_info) {
+    const base::Optional<AccountInfo>& account_info,
+    const identity::AccountState& account_state) {
   DCHECK(extension()->permissions_data()->HasAPIPermission(
       APIPermission::kIdentityEmail));
 

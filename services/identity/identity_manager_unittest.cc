@@ -11,6 +11,7 @@
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/identity/identity_service.h"
+#include "services/identity/public/cpp/account_state.h"
 #include "services/identity/public/cpp/scope_set.h"
 #include "services/identity/public/interfaces/constants.mojom.h"
 #include "services/identity/public/interfaces/identity_manager.mojom.h"
@@ -90,15 +91,19 @@ class IdentityManagerTest : public service_manager::test::ServiceTest {
 
   void OnReceivedPrimaryAccountInfo(
       base::Closure quit_closure,
-      const base::Optional<AccountInfo>& account_info) {
+      const base::Optional<AccountInfo>& account_info,
+      const AccountState& account_state) {
     primary_account_info_ = account_info;
+    primary_account_state_ = account_state;
     quit_closure.Run();
   }
 
   void OnReceivedAccountInfoFromGaiaId(
       base::Closure quit_closure,
-      const base::Optional<AccountInfo>& account_info) {
+      const base::Optional<AccountInfo>& account_info,
+      const AccountState& account_state) {
     account_info_from_gaia_id_ = account_info;
+    account_state_from_gaia_id_ = account_state;
     quit_closure.Run();
   }
 
@@ -126,7 +131,9 @@ class IdentityManagerTest : public service_manager::test::ServiceTest {
 
   mojom::IdentityManagerPtr identity_manager_;
   base::Optional<AccountInfo> primary_account_info_;
+  AccountState primary_account_state_;
   base::Optional<AccountInfo> account_info_from_gaia_id_;
+  AccountState account_state_from_gaia_id_;
   base::Optional<std::string> access_token_;
   GoogleServiceAuthError access_token_error_;
 
@@ -154,8 +161,9 @@ TEST_F(IdentityManagerTest, GetPrimaryAccountInfoNotSignedIn) {
   EXPECT_FALSE(primary_account_info_);
 }
 
-// Check that the primary account info has expected values if signed in.
-TEST_F(IdentityManagerTest, GetPrimaryAccountInfoSignedIn) {
+// Check that the primary account info has expected values if signed in without
+// a refresh token available.
+TEST_F(IdentityManagerTest, GetPrimaryAccountInfoSignedInNoRefreshToken) {
   signin_manager()->SetAuthenticatedAccountInfo(kTestGaiaId, kTestEmail);
   base::RunLoop run_loop;
   identity_manager_->GetPrimaryAccountInfo(
@@ -163,8 +171,30 @@ TEST_F(IdentityManagerTest, GetPrimaryAccountInfoSignedIn) {
                  base::Unretained(this), run_loop.QuitClosure()));
   run_loop.Run();
   EXPECT_TRUE(primary_account_info_);
+  EXPECT_EQ(signin_manager()->GetAuthenticatedAccountId(),
+            primary_account_info_->account_id);
   EXPECT_EQ(kTestGaiaId, primary_account_info_->gaia);
   EXPECT_EQ(kTestEmail, primary_account_info_->email);
+  EXPECT_FALSE(primary_account_state_.has_refresh_token);
+}
+
+// Check that the primary account info has expected values if signed in with a
+// refresh token available.
+TEST_F(IdentityManagerTest, GetPrimaryAccountInfoSignedInRefreshToken) {
+  signin_manager()->SetAuthenticatedAccountInfo(kTestGaiaId, kTestEmail);
+  token_service()->UpdateCredentials(
+      signin_manager()->GetAuthenticatedAccountId(), kTestRefreshToken);
+  base::RunLoop run_loop;
+  identity_manager_->GetPrimaryAccountInfo(
+      base::Bind(&IdentityManagerTest::OnReceivedPrimaryAccountInfo,
+                 base::Unretained(this), run_loop.QuitClosure()));
+  run_loop.Run();
+  EXPECT_TRUE(primary_account_info_);
+  EXPECT_EQ(signin_manager()->GetAuthenticatedAccountId(),
+            primary_account_info_->account_id);
+  EXPECT_EQ(kTestGaiaId, primary_account_info_->gaia);
+  EXPECT_EQ(kTestEmail, primary_account_info_->email);
+  EXPECT_TRUE(primary_account_state_.has_refresh_token);
 }
 
 // Check that the account info for a given GAIA ID is null if that GAIA ID is
@@ -180,9 +210,10 @@ TEST_F(IdentityManagerTest, GetAccountInfoForUnknownGaiaID) {
 }
 
 // Check that the account info for a given GAIA ID has expected values if that
-// GAIA ID is known.
-TEST_F(IdentityManagerTest, GetAccountInfoForKnownGaiaId) {
-  account_tracker()->SeedAccountInfo(kTestGaiaId, kTestEmail);
+// GAIA ID is known and there is no refresh token available for it.
+TEST_F(IdentityManagerTest, GetAccountInfoForKnownGaiaIdNoRefreshToken) {
+  std::string account_id =
+      account_tracker()->SeedAccountInfo(kTestGaiaId, kTestEmail);
   base::RunLoop run_loop;
   identity_manager_->GetAccountInfoFromGaiaId(
       kTestGaiaId,
@@ -190,8 +221,29 @@ TEST_F(IdentityManagerTest, GetAccountInfoForKnownGaiaId) {
                  base::Unretained(this), run_loop.QuitClosure()));
   run_loop.Run();
   EXPECT_TRUE(account_info_from_gaia_id_);
+  EXPECT_EQ(account_id, account_info_from_gaia_id_->account_id);
   EXPECT_EQ(kTestGaiaId, account_info_from_gaia_id_->gaia);
   EXPECT_EQ(kTestEmail, account_info_from_gaia_id_->email);
+  EXPECT_FALSE(account_state_from_gaia_id_.has_refresh_token);
+}
+
+// Check that the account info for a given GAIA ID has expected values if that
+// GAIA ID is known and has a refresh token available.
+TEST_F(IdentityManagerTest, GetAccountInfoForKnownGaiaIdRefreshToken) {
+  std::string account_id =
+      account_tracker()->SeedAccountInfo(kTestGaiaId, kTestEmail);
+  token_service()->UpdateCredentials(account_id, kTestRefreshToken);
+  base::RunLoop run_loop;
+  identity_manager_->GetAccountInfoFromGaiaId(
+      kTestGaiaId,
+      base::Bind(&IdentityManagerTest::OnReceivedAccountInfoFromGaiaId,
+                 base::Unretained(this), run_loop.QuitClosure()));
+  run_loop.Run();
+  EXPECT_TRUE(account_info_from_gaia_id_);
+  EXPECT_EQ(account_id, account_info_from_gaia_id_->account_id);
+  EXPECT_EQ(kTestGaiaId, account_info_from_gaia_id_->gaia);
+  EXPECT_EQ(kTestEmail, account_info_from_gaia_id_->email);
+  EXPECT_TRUE(account_state_from_gaia_id_.has_refresh_token);
 }
 
 // Check that the expected error is received if requesting an access token when
@@ -212,12 +264,13 @@ TEST_F(IdentityManagerTest, GetAccessTokenNotSignedIn) {
 // token when signed in.
 TEST_F(IdentityManagerTest, GetAccessTokenSignedIn) {
   signin_manager()->SetAuthenticatedAccountInfo(kTestGaiaId, kTestEmail);
-  token_service()->UpdateCredentials(kTestGaiaId, kTestRefreshToken);
+  std::string account_id = signin_manager()->GetAuthenticatedAccountId();
+  token_service()->UpdateCredentials(account_id, kTestRefreshToken);
   token_service()->set_auto_post_fetch_response_on_message_loop(true);
   base::RunLoop run_loop;
 
   identity_manager_->GetAccessToken(
-      kTestGaiaId, ScopeSet(), "dummy_consumer",
+      account_id, ScopeSet(), "dummy_consumer",
       base::Bind(&IdentityManagerTest::OnReceivedAccessToken,
                  base::Unretained(this), run_loop.QuitClosure()));
   run_loop.Run();

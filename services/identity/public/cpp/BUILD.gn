@@ -8,6 +8,8 @@ source_set("cpp_types") {
   output_name = "identity_cpp_types"
 
   sources = [
+    "account_state.cc",
+    "account_state.h",
     "scope_set.h",
   ]
 }

@@ -136,7 +136,8 @@ bool IdentityGetAuthTokenFunction::RunAsync() {
 void IdentityGetAuthTokenFunction::OnReceivedPrimaryAccountInfo(
     const std::set<std::string>& scopes,
     const std::string& extension_gaia_id,
-    const base::Optional<AccountInfo>& account_info) {
+    const base::Optional<AccountInfo>& account_info,
+    const ::identity::AccountState& account_state) {
   std::string primary_gaia_id;
   if (account_info)
     primary_gaia_id = account_info->gaia;
@@ -161,13 +162,14 @@ void IdentityGetAuthTokenFunction::OnReceivedPrimaryAccountInfo(
 
   // The extension is using the primary account.
   OnReceivedExtensionAccountInfo(true /* primary account */, scopes,
-                                 account_info);
+                                 account_info, account_state);
 }
 
 void IdentityGetAuthTokenFunction::OnReceivedExtensionAccountInfo(
     bool is_primary_account,
     const std::set<std::string>& scopes,
-    const base::Optional<AccountInfo>& account_info) {
+    const base::Optional<AccountInfo>& account_info,
+    const ::identity::AccountState& account_state) {
   std::string account_id;
   if (account_info)
     account_id = account_info->account_id;
@@ -200,7 +202,7 @@ void IdentityGetAuthTokenFunction::OnReceivedExtensionAccountInfo(
   }
 #endif
 
-  if (!HasLoginToken()) {
+  if (!account_state.has_refresh_token) {
     if (!should_prompt_for_signin_) {
       CompleteFunctionWithError(identity_constants::kUserNotSignedIn);
       return;
