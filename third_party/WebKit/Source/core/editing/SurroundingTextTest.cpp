@@ -80,14 +80,12 @@ TEST_F(SurroundingTextTest, BasicCaretSelection) {
   }
 
   {
-    // FIXME: if the selection is at the end of the text, SurroundingText
-    // will return nothing.
     VisibleSelection selection = Select(7);
     SurroundingText surrounding_text(selection.Start(), 42);
 
-    EXPECT_EQ(0u, surrounding_text.Content().length());
-    EXPECT_EQ(0u, surrounding_text.StartOffsetInContent());
-    EXPECT_EQ(0u, surrounding_text.EndOffsetInContent());
+    EXPECT_EQ("foo bar", surrounding_text.Content().SimplifyWhiteSpace());
+    EXPECT_EQ(8u, surrounding_text.StartOffsetInContent());
+    EXPECT_EQ(8u, surrounding_text.EndOffsetInContent());
   }
 
   {
@@ -162,6 +160,17 @@ TEST_F(SurroundingTextTest, BasicRangeSelection) {
               surrounding_text.Content().SimplifyWhiteSpace());
     EXPECT_EQ(7u, surrounding_text.StartOffsetInContent());
     EXPECT_EQ(12u, surrounding_text.EndOffsetInContent());
+  }
+
+  {
+    // Last word.
+    VisibleSelection selection = Select(22, 26);
+    SurroundingText surrounding_text(
+        *CreateRange(FirstEphemeralRangeOf(selection)), 8);
+
+    EXPECT_EQ("sit amet", surrounding_text.Content());
+    EXPECT_EQ(4u, surrounding_text.StartOffsetInContent());
+    EXPECT_EQ(8u, surrounding_text.EndOffsetInContent());
   }
 }
 
