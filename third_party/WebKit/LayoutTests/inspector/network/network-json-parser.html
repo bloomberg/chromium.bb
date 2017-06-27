@@ -6,7 +6,7 @@
 function test() {
     function check(jsonText)
     {
-        var resultData = Network.JSONView._extractJSON(jsonText);
+        var resultData = SourceFrame.JSONView._extractJSON(jsonText);
         if (!resultData) {
             failure();
             return;

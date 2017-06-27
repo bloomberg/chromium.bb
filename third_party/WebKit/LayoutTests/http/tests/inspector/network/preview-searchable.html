@@ -39,9 +39,9 @@ function test()
                 InspectorTest.addSniffer(compontentView, "onTextEditorContentSet", previewViewHandled.bind(this, searches, callback, view));
                 return;
             }
-        } else if (compontentView instanceof Network.XMLView) {
+        } else if (compontentView instanceof SourceFrame.XMLView) {
             typeName = "XMLView";
-        } else if(compontentView instanceof Network.JSONView) {
+        } else if(compontentView instanceof SourceFrame.JSONView) {
             typeName = "JSONView";
         } else if(compontentView instanceof Network.RequestHTMLView) {
             typeName = "RequestHTMLView";
