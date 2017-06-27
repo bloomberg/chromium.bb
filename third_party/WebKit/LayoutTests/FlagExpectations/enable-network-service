@@ -2666,6 +2666,7 @@ Bug(none) inspector-enabled/console/console-uncaught-promise-no-inspector.html [
 Bug(none) inspector-protocol/accessibility/accessibility-nameSources-buttons.js [ Timeout ]
 Bug(none) inspector-protocol/css/css-get-background-colors.html [ Timeout ]
 Bug(none) inspector-protocol/css/cssom-modify-rule-and-get-rule-list.html [ Timeout ]
+Bug(none) inspector-protocol/dom/dom-request-document-with-child-nodes.js [ Failure ]
 Bug(none) inspector-protocol/heap-profiler/heap-samples-in-snapshot.html [ Failure ]
 Bug(none) inspector-protocol/heap-profiler/heap-snapshot-with-active-dom-object.html [ Failure ]
 Bug(none) inspector-protocol/heap-profiler/heap-snapshot-with-detached-dom-tree.html [ Failure ]
