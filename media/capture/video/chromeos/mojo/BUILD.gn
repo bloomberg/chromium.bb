@@ -8,6 +8,7 @@ mojom("arc_camera3") {
   sources = [
     "arc_camera3.mojom",
     "arc_camera3_metadata.mojom",
+    "arc_camera3_service.mojom",
     "camera_metadata_tags.mojom",
   ]
 }
