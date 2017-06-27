@@ -5,10 +5,12 @@
 #include "chrome/common/profiling/memlog_allocator_shim.h"
 
 #include "base/allocator/allocator_shim.h"
+#include "base/allocator/features.h"
 #include "base/debug/debugging_flags.h"
 #include "base/debug/stack_trace.h"
 #include "base/synchronization/lock.h"
 #include "base/trace_event/heap_profiler_allocation_register.h"
+#include "build/build_config.h"
 #include "chrome/common/profiling/memlog_stream.h"
 
 namespace profiling {
@@ -71,6 +73,7 @@ void DoSend(const void* address, const void* data, size_t size) {
   g_send_buffers[bin_to_use].Send(data, size);
 }
 
+#if BUILDFLAG(USE_ALLOCATOR_SHIM)
 void* HookAlloc(const AllocatorDispatch* self, size_t size, void* context) {
   const AllocatorDispatch* const next = self->next;
   void* ptr = next->alloc_function(next, size, context);
@@ -167,6 +170,7 @@ AllocatorDispatch g_memlog_hooks = {
     &HookFreeDefiniteSize,  // free_definite_size_function
     nullptr,                // next
 };
+#endif  // BUILDFLAG(USE_ALLOCATOR_SHIM)
 
 }  // namespace
 
@@ -174,7 +178,7 @@ void InitAllocatorShim(MemlogSenderPipe* sender_pipe) {
   g_send_buffers = new SendBuffer[kNumSendBuffers];
 
   g_sender_pipe = sender_pipe;
-#ifdef NDEBUG
+#if BUILDFLAG(USE_ALLOCATOR_SHIM)
   base::allocator::InsertAllocatorDispatch(&g_memlog_hooks);
 #endif
 }

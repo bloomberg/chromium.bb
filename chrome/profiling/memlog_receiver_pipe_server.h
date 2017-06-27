@@ -9,6 +9,8 @@
 
 #if defined(OS_WIN)
 #include "memlog_receiver_pipe_server_win.h"
+#else
+#include "memlog_receiver_pipe_server_posix.h"
 #endif
 
 #endif  // CHROME_PROFILING_MEMLOG_RECEIVER_PIPE_SERVER_H_

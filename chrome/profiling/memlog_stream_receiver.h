@@ -17,7 +17,6 @@ class MemlogStreamReceiver
     : public base::RefCountedThreadSafe<MemlogStreamReceiver> {
  public:
   MemlogStreamReceiver() {}
-  virtual ~MemlogStreamReceiver() {}
 
   // Returns true on success, false on unrecoverable error (in which case no
   // more blocks will be sent). May take a ref to the block, so the caller
@@ -25,6 +24,10 @@ class MemlogStreamReceiver
   virtual void OnStreamData(std::unique_ptr<char[]> data, size_t sz) = 0;
 
   virtual void OnStreamComplete() = 0;
+
+ protected:
+  friend class base::RefCountedThreadSafe<MemlogStreamReceiver>;
+  ~MemlogStreamReceiver() override {}
 };
 
 }  // namespace profiling

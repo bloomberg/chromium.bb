@@ -34,6 +34,8 @@ class AllocationTracker : public MemlogReceiver {
 
   struct Alloc {
     Alloc(size_t sz, BacktraceStorage::Key key);
+    Alloc(const Alloc& other);
+    ~Alloc();
 
     size_t size;
     BacktraceStorage::Key backtrace_key;

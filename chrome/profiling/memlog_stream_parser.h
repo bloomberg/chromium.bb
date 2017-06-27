@@ -18,7 +18,6 @@ class MemlogStreamParser : public MemlogStreamReceiver {
  public:
   // Receiver must outlive this class.
   explicit MemlogStreamParser(MemlogReceiver* receiver);
-  ~MemlogStreamParser() override;
 
   // StreamReceiver implementation.
   void OnStreamData(std::unique_ptr<char[]> data, size_t sz) override;
@@ -27,6 +26,7 @@ class MemlogStreamParser : public MemlogStreamReceiver {
  private:
   struct Block {
     Block(std::unique_ptr<char[]> d, size_t s);
+    ~Block();
 
     std::unique_ptr<char[]> data;
     size_t size;
@@ -37,6 +37,8 @@ class MemlogStreamParser : public MemlogStreamReceiver {
     READ_ERROR,   // Fatal error, don't send more data.
     READ_NO_DATA  // Not enough data, try again when we get more
   };
+
+  ~MemlogStreamParser() override;
 
   // Returns true if the given number of bytes are available now.
   bool AreBytesAvailable(size_t count) const;

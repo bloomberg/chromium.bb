@@ -13,6 +13,10 @@ namespace profiling {
 AllocationTracker::Alloc::Alloc(size_t sz, BacktraceStorage::Key key)
     : size(sz), backtrace_key(key) {}
 
+AllocationTracker::Alloc::~Alloc() {}
+AllocationTracker::Alloc::Alloc(const Alloc& other)
+    : size(other.size), backtrace_key(other.backtrace_key) {}
+
 AllocationTracker::AllocationTracker(CompleteCallback complete_cb)
     : complete_callback_(std::move(complete_cb)),
       backtrace_storage_(ProfilingGlobals::Get()->GetBacktraceStorage()) {}
