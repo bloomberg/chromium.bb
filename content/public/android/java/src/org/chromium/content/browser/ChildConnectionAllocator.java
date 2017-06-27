@@ -37,8 +37,7 @@ public class ChildConnectionAllocator {
     protected interface ConnectionFactory {
         ChildProcessConnection createConnection(Context context, ComponentName serviceName,
                 boolean bindAsExternalService, Bundle serviceBundle,
-                ChildProcessCreationParams creationParams,
-                ChildProcessConnection.DeathCallback deathCallback);
+                ChildProcessCreationParams creationParams);
     }
 
     /** Default implementation of the ConnectionFactory that creates actual connections. */
@@ -46,10 +45,9 @@ public class ChildConnectionAllocator {
         @Override
         public ChildProcessConnection createConnection(Context context, ComponentName serviceName,
                 boolean bindAsExternalService, Bundle serviceBundle,
-                ChildProcessCreationParams creationParams,
-                ChildProcessConnection.DeathCallback deathCallback) {
-            return new ChildProcessConnection(context, serviceName, bindAsExternalService,
-                    serviceBundle, creationParams, deathCallback);
+                ChildProcessCreationParams creationParams) {
+            return new ChildProcessConnection(
+                    context, serviceName, bindAsExternalService, serviceBundle, creationParams);
         }
     }
 
@@ -62,6 +60,7 @@ public class ChildConnectionAllocator {
     private final String mPackageName;
     private final String mServiceClassName;
     private final boolean mBindAsExternalService;
+    private final boolean mUseStrongBinding;
     private final ChildProcessCreationParams mCreationParams;
 
     // The list of free (not bound) service indices.
@@ -78,7 +77,7 @@ public class ChildConnectionAllocator {
     public static ChildConnectionAllocator create(Context context,
             ChildProcessCreationParams creationParams, String packageName,
             String serviceClassNameManifestKey, String numChildServicesManifestKey,
-            boolean bindAsExternalService) {
+            boolean bindAsExternalService, boolean useStrongBinding) {
         String serviceClassName = null;
         int numServices = -1;
         PackageManager packageManager = context.getPackageManager();
@@ -107,8 +106,8 @@ public class ChildConnectionAllocator {
             throw new RuntimeException("Illegal meta data value: the child service doesn't exist");
         }
 
-        return new ChildConnectionAllocator(
-                creationParams, packageName, serviceClassName, bindAsExternalService, numServices);
+        return new ChildConnectionAllocator(creationParams, packageName, serviceClassName,
+                bindAsExternalService, useStrongBinding, numServices);
     }
 
     // TODO(jcivelli): remove this method once crbug.com/693484 has been addressed.
@@ -138,17 +137,19 @@ public class ChildConnectionAllocator {
     @VisibleForTesting
     public static ChildConnectionAllocator createForTest(ChildProcessCreationParams creationParams,
             String packageName, String serviceClassName, int serviceCount,
-            boolean bindAsExternalService) {
-        return new ChildConnectionAllocator(
-                creationParams, packageName, serviceClassName, bindAsExternalService, serviceCount);
+            boolean bindAsExternalService, boolean useStrongBinding) {
+        return new ChildConnectionAllocator(creationParams, packageName, serviceClassName,
+                bindAsExternalService, useStrongBinding, serviceCount);
     }
 
     private ChildConnectionAllocator(ChildProcessCreationParams creationParams, String packageName,
-            String serviceClassName, boolean bindAsExternalService, int numChildServices) {
+            String serviceClassName, boolean bindAsExternalService, boolean useStrongBinding,
+            int numChildServices) {
         mCreationParams = creationParams;
         mPackageName = packageName;
         mServiceClassName = serviceClassName;
         mBindAsExternalService = bindAsExternalService;
+        mUseStrongBinding = useStrongBinding;
         mChildProcessConnections = new ChildProcessConnection[numChildServices];
         mFreeConnectionIndices = new ArrayList<Integer>(numChildServices);
         for (int i = 0; i < numChildServices; i++) {
@@ -156,9 +157,9 @@ public class ChildConnectionAllocator {
         }
     }
 
-    /** @return a connection ready to be bound, or null if there are no free slots. */
+    /** @return a bound connection, or null if there are no free slots. */
     public ChildProcessConnection allocate(Context context, Bundle serviceBundle,
-            final ChildProcessConnection.DeathCallback deathCallback) {
+            final ChildProcessConnection.ServiceCallback serviceCallback) {
         assert LauncherThread.runningOnLauncherThread();
         if (mFreeConnectionIndices.isEmpty()) {
             Log.d(TAG, "Ran out of services to allocate.");
@@ -168,15 +169,49 @@ public class ChildConnectionAllocator {
         assert mChildProcessConnections[slot] == null;
         ComponentName serviceName = new ComponentName(mPackageName, mServiceClassName + slot);
 
-        ChildProcessConnection.DeathCallback deathCallbackWrapper =
-                new ChildProcessConnection.DeathCallback() {
+        // Wrap the service callbacks so that:
+        // - we can intercept onChildProcessDied and clean-up connections
+        // - the callbacks are actually posted so that this method will return before the callbacks
+        //   are called (so that the caller may set any reference to the returned connection before
+        //   any callback logic potentially tries to access that connection).
+        ChildProcessConnection.ServiceCallback serviceCallbackWrapper =
+                new ChildProcessConnection.ServiceCallback() {
+                    @Override
+                    public void onChildStarted() {
+                        assert LauncherThread.runningOnLauncherThread();
+                        if (serviceCallback != null) {
+                            LauncherThread.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    serviceCallback.onChildStarted();
+                                }
+                            });
+                        }
+                    }
+
+                    @Override
+                    public void onChildStartFailed() {
+                        assert LauncherThread.runningOnLauncherThread();
+                        if (serviceCallback != null) {
+                            LauncherThread.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    serviceCallback.onChildStartFailed();
+                                }
+                            });
+                        }
+                    }
+
                     @Override
                     public void onChildProcessDied(final ChildProcessConnection connection) {
                         assert LauncherThread.runningOnLauncherThread();
-
-                        // Forward the call to the provided callback if any.
-                        if (deathCallback != null) {
-                            deathCallback.onChildProcessDied(connection);
+                        if (serviceCallback != null) {
+                            LauncherThread.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    serviceCallback.onChildProcessDied(connection);
+                                }
+                            });
                         }
 
                         // Freeing a service should be delayed. This is so that we avoid immediately
@@ -194,10 +229,13 @@ public class ChildConnectionAllocator {
                     }
                 };
 
-        mChildProcessConnections[slot] = mConnectionFactory.createConnection(context, serviceName,
-                mBindAsExternalService, serviceBundle, mCreationParams, deathCallbackWrapper);
-        Log.d(TAG, "Allocator allocated a connection, name: %s, slot: %d", mServiceClassName, slot);
-        return mChildProcessConnections[slot];
+        ChildProcessConnection connection = mConnectionFactory.createConnection(
+                context, serviceName, mBindAsExternalService, serviceBundle, mCreationParams);
+        mChildProcessConnections[slot] = connection;
+        connection.start(mUseStrongBinding, serviceCallbackWrapper);
+        Log.d(TAG, "Allocator allocated and bound a connection, name: %s, slot: %d",
+                mServiceClassName, slot);
+        return connection;
     }
 
     /** Frees a connection and notifies listeners. */

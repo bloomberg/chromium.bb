@@ -54,15 +54,13 @@ public final class ChildProcessLauncherTestUtils {
     }
 
     public static ChildProcessLauncherHelper startForTesting(final boolean sandboxed,
-            final boolean useStrongBinding, final String[] commandLine,
-            final FileDescriptorInfo[] filesToBeMapped, final ChildProcessCreationParams params,
-            final boolean doSetupConnection) {
+            final String[] commandLine, final FileDescriptorInfo[] filesToBeMapped,
+            final ChildProcessCreationParams params, final boolean doSetupConnection) {
         return runOnLauncherAndGetResult(new Callable<ChildProcessLauncherHelper>() {
             @Override
             public ChildProcessLauncherHelper call() {
                 return ChildProcessLauncherHelper.createAndStartForTesting(params, commandLine,
-                        filesToBeMapped, useStrongBinding, sandboxed, null /* binderCallback */,
-                        doSetupConnection);
+                        filesToBeMapped, sandboxed, null /* binderCallback */, doSetupConnection);
             }
         });
     }

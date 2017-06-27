@@ -71,8 +71,7 @@ public class BindingManagerImplTest {
                     false /* isExternalService */, null /* childProcessCommonParameters */,
                     new ChildProcessCreationParams("org.chromium.test",
                             false /* isExternalService */, 0 /* libraryProcessType */,
-                            false /* bindToCallerCheck */),
-                    null /* deathCallback */);
+                            false /* bindToCallerCheck */));
             mPid = pid;
         }
 
@@ -88,8 +87,8 @@ public class BindingManagerImplTest {
 
         // We don't have a real service so we have to mock the connection status.
         @Override
-        public void start(boolean useStrongBinding, StartCallback startCallback) {
-            super.start(useStrongBinding, startCallback);
+        public void start(boolean useStrongBinding, ServiceCallback serviceCallback) {
+            super.start(useStrongBinding, serviceCallback);
             mConnected = true;
         }
 
@@ -109,7 +108,7 @@ public class BindingManagerImplTest {
     private static ChildProcessConnection createTestChildProcessConnection(
             int pid, BindingManager manager) {
         ChildProcessConnection connection = new TestChildProcessConnection(pid);
-        connection.start(false /* useStrongBinding */, null /* startCallback */);
+        connection.start(false /* useStrongBinding */, null /* serviceCallback */);
         if (manager != null) {
             manager.addNewConnection(pid, connection);
         }

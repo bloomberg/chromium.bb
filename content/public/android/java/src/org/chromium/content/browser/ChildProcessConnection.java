@@ -28,21 +28,10 @@ public class ChildProcessConnection {
     private static final String TAG = "ChildProcessConn";
 
     /**
-     * Used to notify the consumer about disconnection of the service. This callback is provided
-     * earlier than ConnectionCallbacks below, as a child process might die before the connection is
-     * fully set up. This callback is invoked if the connection is stopped by the client or if it
-     * happens unexpectedly (process crashes).
-     */
-    interface DeathCallback {
-        // Called on Launcher thread.
-        void onChildProcessDied(ChildProcessConnection connection);
-    }
-
-    /**
      * Used to notify the consumer about the process start. These callbacks will be invoked before
      * the ConnectionCallbacks.
      */
-    interface StartCallback {
+    interface ServiceCallback {
         /**
          * Called when the child process has successfully started and is ready for connection
          * setup.
@@ -51,9 +40,19 @@ public class ChildProcessConnection {
 
         /**
          * Called when the child process failed to start. This can happen if the process is already
-         * in use by another client.
+         * in use by another client. Note onChildProcessDied will be called after this callback,
+         * once the client unbinds and the service gets cleaned.
+         * TODO(jcivelli): crbug.com/736948 we should improve the behavior in such cases.
          */
         void onChildStartFailed();
+
+        /**
+         * Called when the service has been disconnected. whether it was stopped by the client or
+         * if it stopped unexpectedly (process crash).
+         * This is the last callback from this interface that a client will receive for a specific
+         * connection.
+         */
+        void onChildProcessDied(ChildProcessConnection connection);
     }
 
     /**
@@ -165,11 +164,8 @@ public class ChildProcessConnection {
         }
     }
 
-    // Callback invoked when the service is stopped.
-    private DeathCallback mDeathCallback;
-
     // This is set in start() and is used in onServiceConnected().
-    private StartCallback mStartCallback;
+    private ServiceCallback mServiceCallback;
 
     // This is set in setupConnection() and is later used in doConnectionSetup(), after which the
     // variable is cleared. Therefore this is only valid while the connection is being set up.
@@ -223,18 +219,16 @@ public class ChildProcessConnection {
 
     ChildProcessConnection(Context context, ComponentName serviceName,
             boolean bindAsExternalService, Bundle serviceBundle,
-            ChildProcessCreationParams creationParams, DeathCallback deathCallback) {
+            ChildProcessCreationParams creationParams) {
         this(context, serviceName, bindAsExternalService, serviceBundle, creationParams,
-                true /* doBind */, deathCallback);
+                true /* doBind */);
     }
 
     private ChildProcessConnection(Context context, ComponentName serviceName,
             boolean bindAsExternalService, Bundle serviceBundle,
-            ChildProcessCreationParams creationParams, boolean doBind,
-            DeathCallback deathCallback) {
+            ChildProcessCreationParams creationParams, boolean doBind) {
         assert LauncherThread.runningOnLauncherThread();
         mContext = context;
-        mDeathCallback = deathCallback;
         mCreationParams = creationParams;
         mServiceName = serviceName;
         mServiceBundle = serviceBundle;
@@ -293,9 +287,10 @@ public class ChildProcessConnection {
      * remainder addStrongBinding while reducing the connection setup latency.
      * @param useStrongBinding whether a strong binding should be bound by default. If false, an
      * initial moderate binding is used.
-     * @param startCallback (optional) callback when the child process starts or fails to start.
+     * @param serviceCallback (optional) callbacks invoked when the child process starts or fails to
+     * start and when the service stops.
      */
-    public void start(boolean useStrongBinding, StartCallback startCallback) {
+    public void start(boolean useStrongBinding, ServiceCallback serviceCallback) {
         assert LauncherThread.runningOnLauncherThread();
         try {
             TraceEvent.begin("ChildProcessConnection.start");
@@ -303,13 +298,13 @@ public class ChildProcessConnection {
             assert mConnectionParams
                     == null : "setupConnection() called before start() in ChildProcessConnection.";
 
-            mStartCallback = startCallback;
+            mServiceCallback = serviceCallback;
 
             if (!bind(useStrongBinding)) {
                 Log.e(TAG, "Failed to establish the service connection.");
                 // We have to notify the caller so that they can free-up associated resources.
                 // TODO(ppi): Can we hard-fail here?
-                notifyDeathCallback();
+                notifyChildProcessDied();
             }
         } finally {
             TraceEvent.end("ChildProcessConnection.start");
@@ -357,7 +352,7 @@ public class ChildProcessConnection {
         unbind();
         mService = null;
         mConnectionParams = null;
-        notifyDeathCallback();
+        notifyChildProcessDied();
     }
 
     private void onServiceConnectedOnLauncherThread(IBinder service) {
@@ -372,9 +367,6 @@ public class ChildProcessConnection {
             mDidOnServiceConnected = true;
             mService = IChildProcessService.Stub.asInterface(service);
 
-            StartCallback startCallback = mStartCallback;
-            mStartCallback = null;
-
             boolean boundToUs = false;
             try {
                 boolean bindCheck =
@@ -382,16 +374,16 @@ public class ChildProcessConnection {
                 boundToUs = bindCheck ? mService.bindToCaller() : true;
             } catch (RemoteException ex) {
                 // Do not trigger the StartCallback here, since the service is already
-                // dead and the DeathCallback will run from onServiceDisconnected().
+                // dead and the onChildStopped callback will run from onServiceDisconnected().
                 Log.e(TAG, "Failed to bind service to connection.", ex);
                 return;
             }
 
-            if (startCallback != null) {
+            if (mServiceCallback != null) {
                 if (boundToUs) {
-                    startCallback.onChildStarted();
+                    mServiceCallback.onChildStarted();
                 } else {
-                    startCallback.onChildStartFailed();
+                    mServiceCallback.onChildStartFailed();
                 }
             }
 
@@ -602,12 +594,12 @@ public class ChildProcessConnection {
         }
     }
 
-    private void notifyDeathCallback() {
-        if (mDeathCallback != null) {
-            // Prevent nested calls to this method.
-            DeathCallback deathCallback = mDeathCallback;
-            mDeathCallback = null;
-            deathCallback.onChildProcessDied(this);
+    private void notifyChildProcessDied() {
+        if (mServiceCallback != null) {
+            // Guard against nested calls to this method.
+            ServiceCallback serviceCallback = mServiceCallback;
+            mServiceCallback = null;
+            serviceCallback.onChildProcessDied(this);
         }
     }
 
@@ -626,8 +618,8 @@ public class ChildProcessConnection {
     @VisibleForTesting
     static ChildProcessConnection createUnboundConnectionForTesting(Context context,
             ComponentName serviceName, boolean bindAsExternalService, Bundle serviceBundle,
-            ChildProcessCreationParams creationParams, DeathCallback deathCallback) {
+            ChildProcessCreationParams creationParams) {
         return new ChildProcessConnection(context, serviceName, bindAsExternalService,
-                serviceBundle, creationParams, false /* doBind */, deathCallback);
+                serviceBundle, creationParams, false /* doBind */);
     }
 }
