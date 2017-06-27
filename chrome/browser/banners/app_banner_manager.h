@@ -241,9 +241,6 @@ class AppBannerManager : public content::WebContentsObserver,
     return state_ == State::PENDING_EVENT || page_requested_prompt_;
   }
 
-  // The title to display in the banner.
-  base::string16 app_title_;
-
   // The URL for which the banner check is being conducted.
   GURL validated_url_;
 

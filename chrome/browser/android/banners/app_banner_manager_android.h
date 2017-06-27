@@ -10,6 +10,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/banners/app_banner_manager.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -127,6 +128,9 @@ class AppBannerManagerAndroid
 
   // App package name for a native app banner.
   std::string native_app_package_;
+
+  // Title to display in the banner for native app.
+  base::string16 native_app_title_;
 
   // Whether WebAPKs can be installed.
   bool can_install_webapk_;
