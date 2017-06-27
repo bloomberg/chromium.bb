@@ -110,6 +110,30 @@ const char kAuraLegacyPowerButton[] = "aura-legacy-power-button";
 // enables the IME service (i.e. InputMethodMus) instead.
 const char kUseIMEService[] = "use-ime-service";
 
+// Number of recent accelerometer samples to examine to determine if a power
+// button event was spurious.
+const char kSpuriousPowerButtonWindow[] = "spurious-power-button-window";
+
+// Number of recent acceleration samples that must meet or exceed the threshold
+// in order for a power button event to be considered spurious.
+const char kSpuriousPowerButtonAccelCount[] =
+    "spurious-power-button-accel-count";
+
+// Threshold (in m/s^2, disregarding gravity) that screen acceleration must meet
+// or exceed for a power button event to be considered spurious.
+const char kSpuriousPowerButtonScreenAccel[] =
+    "spurious-power-button-screen-accel";
+
+// Threshold (in m/s^2, disregarding gravity) that keyboard acceleration must
+// meet or exceed for a power button event to be considered spurious.
+const char kSpuriousPowerButtonKeyboardAccel[] =
+    "spurious-power-button-keyboard-accel";
+
+// Change in lid angle (i.e. hinge between keyboard and screen) that must be
+// exceeded for a power button event to be considered spurious.
+const char kSpuriousPowerButtonLidAngleChange[] =
+    "spurious-power-button-lid-angle-change";
+
 // Constrains the pointer movement within a root window on desktop.
 bool ConstrainPointerToRoot() {
   const char kAshConstrainPointerToRoot[] = "ash-constrain-pointer-to-root";
