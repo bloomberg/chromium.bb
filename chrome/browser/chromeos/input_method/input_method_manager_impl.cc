@@ -41,7 +41,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
 #include "third_party/icu/source/common/unicode/uloc.h"
-#include "ui/base/accelerators/accelerator.h"
 #include "ui/base/ime/chromeos/component_extension_ime_manager.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/fake_ime_keyboard.h"
@@ -730,7 +729,7 @@ void InputMethodManagerImpl::StateImpl::SetInputMethodLoginDefault() {
   }
 }
 
-bool InputMethodManagerImpl::StateImpl::CanCycleInputMethod() {
+bool InputMethodManagerImpl::StateImpl::CanCycleInputMethod() const {
   // Sanity checks.
   if (active_input_method_ids.empty()) {
     DVLOG(1) << "active input method is empty";
@@ -742,13 +741,10 @@ bool InputMethodManagerImpl::StateImpl::CanCycleInputMethod() {
     return false;
   }
 
-  // Do not consume key event if there is only one input method is enabled.
-  // Ctrl+Space or Alt+Shift may be used by other application.
   return active_input_method_ids.size() > 1;
 }
 
 void InputMethodManagerImpl::StateImpl::SwitchToNextInputMethod() {
-  DCHECK(CanCycleInputMethod());
   if (!CanCycleInputMethod())
     return;
 
@@ -758,7 +754,6 @@ void InputMethodManagerImpl::StateImpl::SwitchToNextInputMethod() {
 }
 
 void InputMethodManagerImpl::StateImpl::SwitchToPreviousInputMethod() {
-  DCHECK(CanCycleInputMethod());
   if (!CanCycleInputMethod())
     return;
 
@@ -780,25 +775,6 @@ void InputMethodManagerImpl::StateImpl::SwitchToPreviousInputMethod() {
   ChangeInputMethod(*iter, true);
 }
 
-bool InputMethodManagerImpl::StateImpl::CanSwitchInputMethod(
-    const ui::Accelerator& accelerator) {
-  // If none of the input methods associated with |accelerator| are active, we
-  // should ignore the accelerator. For example, we should just ignore
-  // VKEY_HANGUL when mozc-hangul is not active.
-  std::vector<std::string> candidate_ids;
-  GetCandidateInputMethodsForAccelerator(accelerator, &candidate_ids);
-  return !candidate_ids.empty();
-}
-
-void InputMethodManagerImpl::StateImpl::SwitchInputMethod(
-    const ui::Accelerator& accelerator) {
-  std::vector<std::string> candidate_ids;
-  GetCandidateInputMethodsForAccelerator(accelerator, &candidate_ids);
-  DCHECK(!candidate_ids.empty());
-  if (!candidate_ids.empty())
-    SwitchToNextInputMethodInternal(candidate_ids, current_input_method.id());
-}
-
 void InputMethodManagerImpl::StateImpl::SwitchToNextInputMethodInternal(
     const std::vector<std::string>& input_method_ids,
     const std::string& current_input_methodid) {
@@ -809,52 +785,6 @@ void InputMethodManagerImpl::StateImpl::SwitchToNextInputMethodInternal(
   if (iter == input_method_ids.end())
     iter = input_method_ids.begin();
   ChangeInputMethod(*iter, true);
-}
-
-void InputMethodManagerImpl::StateImpl::GetCandidateInputMethodsForAccelerator(
-    const ui::Accelerator& accelerator,
-    std::vector<std::string>* out_candidate_ids) {
-  out_candidate_ids->clear();
-
-  // Sanity check.
-  if (active_input_method_ids.empty()) {
-    DVLOG(1) << "active input method is empty";
-    return;
-  }
-
-  std::vector<std::string> input_method_ids_to_switch;
-  switch (accelerator.key_code()) {
-    case ui::VKEY_CONVERT:  // Henkan key on JP106 keyboard
-      input_method_ids_to_switch.push_back(
-          extension_ime_util::GetInputMethodIDByEngineID("nacl_mozc_jp"));
-      break;
-    case ui::VKEY_NONCONVERT:  // Muhenkan key on JP106 keyboard
-      input_method_ids_to_switch.push_back(
-          extension_ime_util::GetInputMethodIDByEngineID("xkb:jp::jpn"));
-      break;
-    case ui::VKEY_DBE_SBCSCHAR:  // ZenkakuHankaku key on JP106 keyboard
-    case ui::VKEY_DBE_DBCSCHAR:
-      input_method_ids_to_switch.push_back(
-          extension_ime_util::GetInputMethodIDByEngineID("nacl_mozc_jp"));
-      input_method_ids_to_switch.push_back(
-          extension_ime_util::GetInputMethodIDByEngineID("xkb:jp::jpn"));
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
-  if (input_method_ids_to_switch.empty()) {
-    DVLOG(1) << "Unexpected VKEY: " << accelerator.key_code();
-    return;
-  }
-
-  // Obtain the intersection of input_method_ids_to_switch and
-  // active_input_method_ids.
-  for (size_t i = 0; i < input_method_ids_to_switch.size(); ++i) {
-    const std::string& id = input_method_ids_to_switch[i];
-    if (base::ContainsValue(active_input_method_ids, id))
-      out_candidate_ids->push_back(id);
-  }
 }
 
 InputMethodDescriptor InputMethodManagerImpl::StateImpl::GetCurrentInputMethod()

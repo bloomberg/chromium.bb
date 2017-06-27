@@ -42,11 +42,14 @@ class ASH_EXPORT ImeController
   // Binds the mojo interface to this object.
   void BindRequest(mojom::ImeControllerRequest request);
 
-  // TODO(jamescook): Implement these. http://crbug.com/724305
   bool CanSwitchIme() const;
   void SwitchToNextIme();
   void SwitchToPreviousIme();
+
+  // Returns true if the switch is allowed and the keystroke should be
+  // consumed.
   bool CanSwitchImeWithAccelerator(const ui::Accelerator& accelerator) const;
+
   void SwitchImeWithAccelerator(const ui::Accelerator& accelerator);
 
   // mojom::ImeController:
@@ -57,7 +60,15 @@ class ASH_EXPORT ImeController
   void SetImesManagedByPolicy(bool managed) override;
   void ShowImeMenuOnShelf(bool show) override;
 
+  void FlushMojoForTesting();
+
  private:
+  // Returns the IDs of the subset of input methods which are active and are
+  // associated with |accelerator|. For example, two Japanese IMEs can be
+  // returned for ui::VKEY_DBE_SBCSCHAR if both are active.
+  std::vector<std::string> GetCandidateImesForAccelerator(
+      const ui::Accelerator& accelerator) const;
+
   // Bindings for users of the mojo interface.
   mojo::BindingSet<mojom::ImeController> bindings_;
 

@@ -21,6 +21,7 @@ const AcceleratorData kAcceleratorData[] = {
     {true, ui::VKEY_DBE_SBCSCHAR, ui::EF_NONE, SWITCH_IME},
     {true, ui::VKEY_DBE_DBCSCHAR, ui::EF_NONE, SWITCH_IME},
     // Shortcut for Koren IME.
+    // TODO(jamescook): Remove this? It doesn't look supported.
     {true, ui::VKEY_HANGUL, ui::EF_NONE, SWITCH_IME},
 
     {true, ui::VKEY_TAB, ui::EF_ALT_DOWN, CYCLE_FORWARD_MRU},
