@@ -2312,6 +2312,22 @@
       ]
     },
     {
+      "id": 218,
+      "description": "Certain Adreno 4xx and 5xx drivers often crash in glProgramBinary.",
+      "cr_bugs": [699122],
+      "os": {
+        "type": "android"
+      },
+      "driver_version": {
+        "op": ">=",
+        "value": "103.0"
+      },
+      "gl_renderer": "Adreno \\(TM\\) [45].*",
+      "features": [
+        "disable_program_disk_cache"
+      ]
+    },
+    {
       "id": 219,
       "description": "Zero-copy DXGI video hangs or displays incorrect colors on AMD drivers",
       "cr_bugs": [623029],
