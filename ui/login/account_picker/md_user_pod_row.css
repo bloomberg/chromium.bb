@@ -22,7 +22,7 @@ pin-keyboard {
   -webkit-tap-highlight-color: transparent;
   border-radius: 2px;
   cursor: pointer;
-  opacity: 0.64;
+  opacity: 0.54;
   outline: none;
   position: absolute;
   z-index: 0;
@@ -86,10 +86,7 @@ html[dir=rtl] .user-image-pane {
 }
 
 .pod .user-image {
-  border-color: rgba(255, 255, 255, .54);
   border-radius: 50%;
-  border-style: solid;
-  border-width: 0.25px;
   flex: none;
   height: 100%;
   width: 100%;
@@ -153,7 +150,7 @@ html:not([screen=login-add-user]) .pod.focused .user-image {
   height: 40px;
   left: 51px;
   position: absolute;
-  top: 244px;
+  top: 236px;
 /* On chromeos we extend the width to cover the padding on the user pods. This
  is so the submit button on chromeos can extend onto the padding as shown on
  mocks. */
@@ -176,9 +173,10 @@ html[dir=rtl] .pod.focused:not(.multiprofiles-policy-applied) .auth-container {
 
 .auth-container .submit-button {
   color: #FFFFFF;
-  height: 40px;
+  height: 24px;
+  margin: 12px 0 4px 0;
   opacity: 1;
-  padding: 12px 0 4px 0;
+  padding: 0;
   width: 24px;
 }
 
@@ -197,7 +195,8 @@ html[dir=rtl] .pod.focused:not(.multiprofiles-policy-applied) .auth-container {
 .name {
   color: #FFFFFF;
   flex: auto;
-  font: 24px Roboto, sans-serif;
+  font: 24px Roboto;
+  font-weight: 300; /* roboto-light */
   outline: none;
   overflow: hidden;
   text-align: center;
@@ -239,7 +238,8 @@ html[dir=rtl] .pod.focused:not(.multiprofiles-policy-applied) .auth-container {
 }
 
 .password-container {
-  height: 40px;
+  height: 34px;
+  margin-top: 6px;
   width: 180px;
 }
 
@@ -475,15 +475,14 @@ html[dir=rtl] .pod.focused:not(.multiprofiles-policy-applied) .auth-container {
   -webkit-mask-position: center;
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-size: 20px;
-  background-color: #f4b400;
-  height: 24px;
+  background-color: #E67C73;
   width: 24px;
 }
 
 .reauth-hint-container .reauth-name-hint {
   align-self: center;
-  color: #565656;
-  font-size: 16px;
+  color: #E67C73;
+  font-size: 12px;
   outline: none;
   overflow: hidden;
   padding: 0 6px;
@@ -613,6 +612,7 @@ html[dir=rtl] .user-type-icon-area {
 
 .action-box-area.active ~ .action-box-menu {
   -webkit-margin-start: 12px;
+  animation: fade-in 180ms;
   background-color: rgba(0, 0, 0, 0.8);
   border-radius: 2px;
   display: flex;
@@ -670,19 +670,18 @@ html[dir=rtl] .user-type-icon-area {
 }
 
 .action-box-menu-remove {
-  border-top: 0.25px solid grey;
+  border-top: 0.17px solid rgba(255, 255, 255, .34);
   color: #7BAAF7;
   outline: none;
   padding: 18px 14px;
 }
 
-.action-box-menu-remove:hover,
 .action-box-menu-remove:focus {
   font-weight: bold;
 }
 
 .action-box-remove-user-warning {
-  border-top: 0.25px solid grey;
+  border-top: 0.17px solid rgba(255, 255, 255, .34);
   color: white;
   font-size: 13px;
   line-height: 18px;
@@ -767,9 +766,11 @@ html[dir=rtl] .user-type-bubble {
 }
 
 .pod.public-account.expanded {
+  animation: fade-in 180ms;
   background-color: rgba(0, 0, 0, 0.56);
   border-radius: 2px;
   height: 324px;
+  transition: none;
   width: 622px;
 }
 
@@ -778,8 +779,8 @@ html[dir=rtl] .user-type-bubble {
 }
 
 .pod.public-account.expanded .expanded-pane {
-  border-left: 0.5px solid rgba(255, 255, 255, .34);
-  color: #FFF;
+  border-left: 0.17px solid rgba(255, 255, 255, .34);
+  color: rgba(255, 255, 255, .87);
   display: block;
   font-family: "Roboto";
   font-size: 13px;
@@ -845,6 +846,29 @@ html[dir=rtl] .expanded-pane {
 
 .enter-button {
   flex: none;
+}
+
+.pod.public-account .full-name {
+  display: none;
+  left: 50%;
+  position: absolute;
+  top: 100%;
+  z-index: 3;
+}
+
+html[dir=rtl] .pod.public-account .full-name {
+  left: auto;
+  right: 50%;
+}
+
+.pod.public-account .name-container:hover .full-name {
+  animation: fade-in 180ms;
+  background-color: rgba(0, 0, 0, 0.8);
+  border-radius: 2px;
+  color: rgba(255, 255, 255, .87);
+  display: flex;
+  font-size: 13px;
+  padding: 8px;
 }
 
 .pod .public-account-info-container {
@@ -915,10 +939,11 @@ html[dir=rtl] .pod.public-account .button-container {
 
 .advanced .monitoring-container {
   margin-top: 35px;
+  transition: margin-top 180ms;
 }
 
 .monitoring-learn-more {
-  color: rgb(49, 106, 197);
+  color: #7BAAF7;
   text-decoration: none;
 }
 
@@ -980,7 +1005,7 @@ html[dir=rtl] .pod.public-account .button-container {
 }
 
 .language-and-input {
-  color: rgb(49, 106, 197);
+  color: #7BAAF7;
   text-decoration: none;
 }
 
@@ -1089,7 +1114,8 @@ html[dir=rtl] .enter-button-container {
 .small-pod-name {
   color: #FFFFFF;
   flex: auto;
-  font: 20px Roboto, sans-serif;
+  font: 20px Roboto;
+  font-weight: 300; /* roboto-light */
   height: 28px;
   left: 90px;
   opacity: 1;
@@ -1121,4 +1147,9 @@ html[dir=rtl] .small-pod.extra-small .small-pod-name {
 @keyframes switch-image {
   from { transform: rotate3d(0, 1, 0, 90deg); }
   to { transform: none; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
