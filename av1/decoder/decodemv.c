@@ -432,6 +432,10 @@ static void read_tx_size_vartx(AV1_COMMON *cm, MACROBLOCKD *xd,
                                MB_MODE_INFO *mbmi, FRAME_COUNTS *counts,
                                TX_SIZE tx_size, int depth, int blk_row,
                                int blk_col, aom_reader *r) {
+#if CONFIG_NEW_MULTISYMBOL
+  FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
+  (void)cm;
+#endif
   int is_split = 0;
   const int tx_row = blk_row >> 1;
   const int tx_col = blk_col >> 1;
@@ -459,7 +463,11 @@ static void read_tx_size_vartx(AV1_COMMON *cm, MACROBLOCKD *xd,
     return;
   }
 
+#if CONFIG_NEW_MULTISYMBOL
+  is_split = aom_read_symbol(r, ec_ctx->txfm_partition_cdf[ctx], 2, ACCT_STR);
+#else
   is_split = aom_read(r, cm->fc->txfm_partition_prob[ctx], ACCT_STR);
+#endif
 
   if (is_split) {
     const TX_SIZE sub_txs = sub_tx_size_map[tx_size];

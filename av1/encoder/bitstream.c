@@ -390,10 +390,14 @@ static int prob_diff_update_savings(const aom_tree_index *tree,
 #endif  // !CONFIG_EC_ADAPT || CONFIG_COMPOUND_SINGLEREF
 
 #if CONFIG_VAR_TX
-static void write_tx_size_vartx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
+static void write_tx_size_vartx(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                 const MB_MODE_INFO *mbmi, TX_SIZE tx_size,
                                 int depth, int blk_row, int blk_col,
                                 aom_writer *w) {
+#if CONFIG_NEW_MULTISYMBOL
+  FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
+  (void)cm;
+#endif
   const int tx_row = blk_row >> 1;
   const int tx_col = blk_col >> 1;
   const int max_blocks_high = max_block_high(xd, mbmi->sb_type, 0);
@@ -412,7 +416,12 @@ static void write_tx_size_vartx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   }
 
   if (tx_size == mbmi->inter_tx_size[tx_row][tx_col]) {
+#if CONFIG_NEW_MULTISYMBOL
+    aom_write_symbol(w, 0, ec_ctx->txfm_partition_cdf[ctx], 2);
+#else
     aom_write(w, 0, cm->fc->txfm_partition_prob[ctx]);
+#endif
+
     txfm_partition_update(xd->above_txfm_context + blk_col,
                           xd->left_txfm_context + blk_row, tx_size, tx_size);
   } else {
@@ -420,7 +429,11 @@ static void write_tx_size_vartx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     const int bsl = tx_size_wide_unit[sub_txs];
     int i;
 
+#if CONFIG_NEW_MULTISYMBOL
+    aom_write_symbol(w, 1, ec_ctx->txfm_partition_cdf[ctx], 2);
+#else
     aom_write(w, 1, cm->fc->txfm_partition_prob[ctx]);
+#endif
 
     if (tx_size == TX_8X8) {
       txfm_partition_update(xd->above_txfm_context + blk_col,
@@ -438,6 +451,7 @@ static void write_tx_size_vartx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   }
 }
 
+#if !CONFIG_NEW_MULTISYMBOL
 static void update_txfm_partition_probs(AV1_COMMON *cm, aom_writer *w,
                                         FRAME_COUNTS *counts, int probwt) {
   int k;
@@ -445,6 +459,7 @@ static void update_txfm_partition_probs(AV1_COMMON *cm, aom_writer *w,
     av1_cond_prob_diff_update(w, &cm->fc->txfm_partition_prob[k],
                               counts->txfm_partition[k], probwt);
 }
+#endif  // CONFIG_NEW_MULTISYMBOL
 #endif
 
 static void write_selected_tx_size(const AV1_COMMON *cm, const MACROBLOCKD *xd,
@@ -5030,7 +5045,7 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
 #endif  // CONFIG_PVQ
 #endif  // CONFIG_LV_MAP
 
-#if CONFIG_VAR_TX
+#if CONFIG_VAR_TX && !CONFIG_NEW_MULTISYMBOL
   update_txfm_partition_probs(cm, header_bc, counts, probwt);
 #endif
 

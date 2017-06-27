@@ -266,7 +266,10 @@ typedef struct frame_contexts {
 #endif  // CONFIG_EXT_TX && CONFIG_RECT_TX && CONFIG_RECT_TX_EXT
 #if CONFIG_VAR_TX
   aom_prob txfm_partition_prob[TXFM_PARTITION_CONTEXTS];
+#if CONFIG_NEW_MULTISYMBOL
+  aom_cdf_prob txfm_partition_cdf[TXFM_PARTITION_CONTEXTS][CDF_SIZE(2)];
 #endif
+#endif  // CONFIG_VAR_TX
   aom_prob skip_probs[SKIP_CONTEXTS];
 #if CONFIG_NEW_MULTISYMBOL
   aom_cdf_prob skip_cdfs[SKIP_CONTEXTS][CDF_SIZE(2)];

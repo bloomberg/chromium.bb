@@ -2130,6 +2130,27 @@ int av1_get_palette_color_index_context(const uint8_t *color_map, int stride,
 static const aom_prob default_txfm_partition_probs[TXFM_PARTITION_CONTEXTS] = {
   250, 231, 212, 241, 166, 66, 241, 230, 135, 243, 154, 64, 248, 161, 63, 128,
 };
+#if CONFIG_NEW_MULTISYMBOL
+static const aom_cdf_prob
+    default_txfm_partition_cdf[TXFM_PARTITION_CONTEXTS][CDF_SIZE(2)] = {
+      { AOM_ICDF(250 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(231 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(212 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(241 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(166 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(66 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(241 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(230 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(135 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(243 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(154 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(64 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(248 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(161 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(63 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(128 * 128), AOM_ICDF(32768), 0 }
+    };
+#endif  // CONFIG_NEW_MULTISYMBOL
 #endif
 
 static const aom_prob default_skip_probs[SKIP_CONTEXTS] = { 192, 128, 64 };
@@ -4880,6 +4901,9 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
 #endif  // CONFIG_EXT_TX && CONFIG_RECT_TX && CONFIG_RECT_TX_EXT
 #if CONFIG_VAR_TX
   av1_copy(fc->txfm_partition_prob, default_txfm_partition_probs);
+#if CONFIG_NEW_MULTISYMBOL
+  av1_copy(fc->txfm_partition_cdf, default_txfm_partition_cdf);
+#endif
 #endif
   av1_copy(fc->skip_probs, default_skip_probs);
   av1_copy(fc->newmv_prob, default_newmv_prob);
