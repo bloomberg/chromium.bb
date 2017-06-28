@@ -715,26 +715,28 @@ LocalDOMWindow* CurrentDOMWindow(v8::Isolate* isolate) {
 }
 
 ExecutionContext* ToExecutionContext(v8::Local<v8::Context> context) {
-  if (context.IsEmpty())
-    return 0;
+  DCHECK(!context.IsEmpty());
+
   RUNTIME_CALL_TIMER_SCOPE(context->GetIsolate(),
                            RuntimeCallStats::CounterId::kToExecutionContext);
-  v8::Local<v8::Object> global = context->Global();
-  v8::Local<v8::Object> window_wrapper =
-      V8Window::findInstanceInPrototypeChain(global, context->GetIsolate());
-  if (!window_wrapper.IsEmpty())
-    return V8Window::toImpl(window_wrapper)->GetExecutionContext();
-  v8::Local<v8::Object> worker_wrapper =
-      V8WorkerGlobalScope::findInstanceInPrototypeChain(global,
-                                                        context->GetIsolate());
-  if (!worker_wrapper.IsEmpty())
-    return V8WorkerGlobalScope::toImpl(worker_wrapper)->GetExecutionContext();
-  v8::Local<v8::Object> worklet_wrapper =
-      V8WorkletGlobalScope::findInstanceInPrototypeChain(global,
-                                                         context->GetIsolate());
-  if (!worklet_wrapper.IsEmpty())
-    return V8WorkletGlobalScope::toImpl(worklet_wrapper);
-  // FIXME: Is this line of code reachable?
+
+  v8::Local<v8::Object> global_proxy = context->Global();
+  // There are several contexts other than Window, WorkerGlobalScope or
+  // WorkletGlobalScope but entering into ToExecutionContext, namely GC context,
+  // DevTools' context (debug context), and maybe more.  They all don't have
+  // any internal field.
+  if (global_proxy->InternalFieldCount() == 0)
+    return nullptr;
+
+  const WrapperTypeInfo* wrapper_type_info = ToWrapperTypeInfo(global_proxy);
+  if (wrapper_type_info->Equals(&V8Window::wrapperTypeInfo))
+    return V8Window::toImpl(global_proxy)->GetExecutionContext();
+  if (wrapper_type_info->IsSubclass(&V8WorkerGlobalScope::wrapperTypeInfo))
+    return V8WorkerGlobalScope::toImpl(global_proxy)->GetExecutionContext();
+  if (wrapper_type_info->IsSubclass(&V8WorkletGlobalScope::wrapperTypeInfo))
+    return V8WorkletGlobalScope::toImpl(global_proxy)->GetExecutionContext();
+
+  NOTREACHED();
   return nullptr;
 }
 

@@ -44,9 +44,10 @@ class MockCredentialManagerClient : public WebCredentialManagerClient {
 TEST(CredentialsContainerTest, TestGetWithDocumentDestroyed) {
   CredentialsContainer* credential_container = CredentialsContainer::Create();
   std::unique_ptr<WebCredentialManagerClient::RequestCallbacks> get_callback;
+
+  V8TestingScope scope;
   {
     // Set up.
-    V8TestingScope scope;
     scope.GetDocument().SetSecurityOrigin(
         SecurityOrigin::CreateFromString("https://example.test"));
     testing::StrictMock<MockCredentialManagerClient> mock_client;
