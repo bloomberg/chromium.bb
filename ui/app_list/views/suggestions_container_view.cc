@@ -89,8 +89,10 @@ int SuggestionsContainerView::DoUpdate() {
   }
 
   parent()->Layout();
-  // Add 1 to the results size to account for the all apps button.
-  return display_results.size() + 1;
+  // If |is_fullscreen_app_list_enabled_| is not enabled, add 1 to the results
+  // size to account for the all apps button.
+  return is_fullscreen_app_list_enabled_ ? display_results.size()
+                                         : display_results.size() + 1;
 }
 
 void SuggestionsContainerView::UpdateSelectedIndex(int old_selected,
