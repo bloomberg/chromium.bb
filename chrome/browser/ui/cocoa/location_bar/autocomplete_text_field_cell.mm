@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_logging.h"
+#include "base/stl_util.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/cocoa/l10n_util.h"
@@ -18,9 +19,9 @@
 #import "extensions/common/feature_switch.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #import "ui/base/cocoa/appkit_utils.h"
-#import "ui/base/cocoa/tracking_area.h"
 #import "ui/base/cocoa/nsview_additions.h"
 #include "ui/base/cocoa/scoped_cg_context_smooth_fonts.h"
+#import "ui/base/cocoa/tracking_area.h"
 #include "ui/base/material_design/material_design_controller.h"
 
 using extensions::FeatureSwitch;
@@ -281,9 +282,7 @@ size_t CalculatePositionsInFrame(
   std::vector<LocationBarDecoration*>& left_decorations =
       cocoa_l10n_util::ShouldDoExperimentalRTLLayout() ? trailingDecorations_
                                                        : leadingDecorations_;
-  *isLeftDecoration =
-      std::find(left_decorations.begin(), left_decorations.end(), decoration) !=
-      left_decorations.end();
+  *isLeftDecoration = base::ContainsValue(left_decorations, decoration);
   return decoration->GetBackgroundFrame(decorationFrame);
 }
 

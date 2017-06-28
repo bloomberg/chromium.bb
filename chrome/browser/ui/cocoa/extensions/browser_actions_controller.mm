@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/extensions/extension_message_bubble_controller.h"
 #include "chrome/browser/ui/browser.h"
@@ -460,8 +461,7 @@ void ToolbarActionsBarBridge::ShowToolbarActionBubble(
   // Tracking down crbug.com/653100.
   // TODO(devlin): Remove or relax this one the bug is fixed?
   for (BrowserActionButton* button in buttons_.get()) {
-    CHECK(std::find(toolbarActions.begin(), toolbarActions.end(),
-                    [button viewController]) != toolbarActions.end());
+    CHECK(base::ContainsValue(toolbarActions, [button viewController]));
   }
   // Reorder |buttons_| to reflect |toolbarActions|. (Ugly n^2 sort, but the
   // data set should be tiny.)

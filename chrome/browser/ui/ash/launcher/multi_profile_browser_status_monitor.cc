@@ -6,6 +6,7 @@
 
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/window_properties.h"
+#include "base/stl_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
@@ -93,8 +94,7 @@ void MultiProfileBrowserStatusMonitor::ActiveUserChanged(
 
 void MultiProfileBrowserStatusMonitor::AddV1AppToShelf(Browser* browser) {
   DCHECK(browser->is_type_popup() && browser->is_app());
-  DCHECK(std::find(app_list_.begin(), app_list_.end(), browser) ==
-             app_list_.end());
+  DCHECK(!base::ContainsValue(app_list_, browser));
   app_list_.push_back(browser);
   if (multi_user_util::IsProfileFromActiveUser(browser->profile())) {
     BrowserStatusMonitor::AddV1AppToShelf(browser);

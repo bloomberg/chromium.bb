@@ -15,6 +15,7 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/task_runner_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
@@ -278,7 +279,7 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
     // In principle, order of items is not defined.
     for (const auto& app : apps) {
       const std::string id = ArcAppTest::GetAppId(app);
-      EXPECT_NE(std::find(ids.begin(), ids.end(), id), ids.end());
+      EXPECT_TRUE(base::ContainsValue(ids, id));
       std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(id);
       ASSERT_NE(nullptr, app_info.get());
       EXPECT_EQ(app.name, app_info->name);
@@ -292,7 +293,7 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
 
     for (auto& shortcut : shortcuts) {
       const std::string id = ArcAppTest::GetAppId(shortcut);
-      EXPECT_NE(std::find(ids.begin(), ids.end(), id), ids.end());
+      EXPECT_TRUE(base::ContainsValue(ids, id));
       std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(id);
       ASSERT_NE(nullptr, app_info.get());
       EXPECT_EQ(shortcut.name, app_info->name);
