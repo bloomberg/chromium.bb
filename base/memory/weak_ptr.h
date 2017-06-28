@@ -275,22 +275,33 @@ bool operator==(std::nullptr_t, const WeakPtr<T>& weak_ptr) {
   return weak_ptr == nullptr;
 }
 
+namespace internal {
+class BASE_EXPORT WeakPtrFactoryBase {
+ protected:
+  WeakPtrFactoryBase(uintptr_t ptr);
+  ~WeakPtrFactoryBase();
+  internal::WeakReferenceOwner weak_reference_owner_;
+  uintptr_t ptr_;
+};
+}  // namespace internal
+
 // A class may be composed of a WeakPtrFactory and thereby
 // control how it exposes weak pointers to itself.  This is helpful if you only
 // need weak pointers within the implementation of a class.  This class is also
 // useful when working with primitive types.  For example, you could have a
 // WeakPtrFactory<bool> that is used to pass around a weak reference to a bool.
 template <class T>
-class WeakPtrFactory {
+class WeakPtrFactory : public internal::WeakPtrFactoryBase {
  public:
-  explicit WeakPtrFactory(T* ptr) : ptr_(ptr) {
-  }
+  explicit WeakPtrFactory(T* ptr)
+      : WeakPtrFactoryBase(reinterpret_cast<uintptr_t>(ptr)) {}
 
-  ~WeakPtrFactory() { ptr_ = nullptr; }
+  ~WeakPtrFactory() {}
 
   WeakPtr<T> GetWeakPtr() {
     DCHECK(ptr_);
-    return WeakPtr<T>(weak_reference_owner_.GetRef(), ptr_);
+    return WeakPtr<T>(weak_reference_owner_.GetRef(),
+                      reinterpret_cast<T*>(ptr_));
   }
 
   // Call this method to invalidate all existing weak pointers.
@@ -306,8 +317,6 @@ class WeakPtrFactory {
   }
 
  private:
-  internal::WeakReferenceOwner weak_reference_owner_;
-  T* ptr_;
   DISALLOW_IMPLICIT_CONSTRUCTORS(WeakPtrFactory);
 };
 

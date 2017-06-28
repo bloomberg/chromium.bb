@@ -77,5 +77,11 @@ WeakPtrBase::~WeakPtrBase() {
 WeakPtrBase::WeakPtrBase(const WeakReference& ref) : ref_(ref) {
 }
 
+WeakPtrFactoryBase::WeakPtrFactoryBase(uintptr_t ptr) : ptr_(ptr) {}
+
+WeakPtrFactoryBase::~WeakPtrFactoryBase() {
+  ptr_ = 0;
+}
+
 }  // namespace internal
 }  // namespace base
