@@ -46,3 +46,7 @@ BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID reserved) {
   }
   return TRUE;
 }
+
+void DumpProcessWithoutCrash() {
+  elf_crash::DumpWithoutCrashing();
+}

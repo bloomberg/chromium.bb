@@ -109,6 +109,8 @@ void GetReports(std::vector<Report>* reports);
 // Requests a user triggered upload for a crash report with a given id.
 void RequestSingleCrashUpload(const std::string& local_id);
 
+void DumpWithoutCrashing();
+
 namespace internal {
 
 #if defined(OS_WIN)

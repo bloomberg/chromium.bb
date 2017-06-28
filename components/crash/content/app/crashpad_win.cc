@@ -157,17 +157,6 @@ base::FilePath PlatformCrashpadInitialization(
   return database_path;
 }
 
-// TODO(scottmg): http://crbug.com/546288 These exported functions are for
-// compatibility with how Breakpad worked, but it seems like there's no need to
-// do the CreateRemoteThread() dance with a minor extension of the Crashpad API
-// (to just pass the pid we want a dump for). We should add that and then modify
-// hang_crash_dump_win.cc to work in a more direct manner.
-
-// Used for dumping a process state when there is no crash.
-extern "C" void __declspec(dllexport) __cdecl DumpProcessWithoutCrash() {
-  CRASHPAD_SIMULATE_CRASH();
-}
-
 namespace {
 
 // We need to prevent ICF from folding DumpProcessForHungInputThread(),
@@ -188,7 +177,7 @@ DWORD WINAPI DumpProcessForHungInputThread(void* crash_keys_str) {
       base::debug::SetCrashKeyValue(crash_key.first, crash_key.second);
     }
   }
-  DumpProcessWithoutCrash();
+  DumpWithoutCrashing();
   return 0;
 }
 
@@ -201,7 +190,7 @@ DWORD WINAPI DumpProcessForHungInputNoCrashKeysThread(void* reason) {
       "hung-reason", base::IntToString(reinterpret_cast<int>(reason)));
 #pragma warning(pop)
 
-  DumpProcessWithoutCrash();
+  DumpWithoutCrashing();
   return 0;
 }
 

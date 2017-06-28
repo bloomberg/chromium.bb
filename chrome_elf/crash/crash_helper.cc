@@ -103,7 +103,7 @@ void DisableSetUnhandledExceptionFilter() {
           SetUnhandledExceptionFilterPatch) != NO_ERROR) {
 #ifdef _DEBUG
     assert(false);
-#endif  //_DEBUG
+#endif  // _DEBUG
   }
 }
 
@@ -112,6 +112,10 @@ int GenerateCrashDump(EXCEPTION_POINTERS* exception_pointers) {
     crashpad::CrashpadClient::DumpWithoutCrash(
         *(exception_pointers->ContextRecord));
   return EXCEPTION_CONTINUE_SEARCH;
+}
+
+void DumpWithoutCrashing() {
+  crash_reporter::DumpWithoutCrashing();
 }
 
 }  // namespace elf_crash
