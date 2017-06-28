@@ -18,6 +18,7 @@
 #import "remoting/ios/app/app_delegate.h"
 #import "remoting/ios/app/client_connection_view_controller.h"
 #import "remoting/ios/app/host_collection_view_controller.h"
+#import "remoting/ios/app/host_fetching_view_controller.h"
 #import "remoting/ios/app/host_setup_view_controller.h"
 #import "remoting/ios/app/host_view_controller.h"
 #import "remoting/ios/app/remoting_menu_view_controller.h"
@@ -39,6 +40,7 @@ static CGFloat kHostInset = 5.f;
   MDCDialogTransitionController* _dialogTransitionController;
   MDCAppBar* _appBar;
   HostCollectionViewController* _collectionViewController;
+  HostFetchingViewController* _fetchingViewController;
   HostSetupViewController* _setupViewController;
   RemotingService* _remotingService;
 }
@@ -66,6 +68,8 @@ static CGFloat kHostInset = 5.f;
         initWithCollectionViewLayout:layout];
     _collectionViewController.delegate = self;
     _collectionViewController.scrollViewDelegate = self.headerViewController;
+
+    _fetchingViewController = [[HostFetchingViewController alloc] init];
 
     _setupViewController = [[HostSetupViewController alloc] init];
     _setupViewController.scrollViewDelegate = self.headerViewController;
@@ -147,6 +151,9 @@ static CGFloat kHostInset = 5.f;
   [super viewWillAppear:animated];
 
   [self nowAuthenticated:_remotingService.authentication.user.isAuthenticated];
+  if (_isAuthenticated) {
+    [_remotingService requestHostListFetch];
+  }
   [self presentStatus];
 }
 
@@ -157,8 +164,6 @@ static CGFloat kHostInset = 5.f;
     MDCSnackbarMessage* message = [[MDCSnackbarMessage alloc] init];
     message.text = @"Please login.";
     [MDCSnackbarManager showMessage:message];
-  } else {
-    [_remotingService requestHostListFetch];
   }
 }
 
@@ -278,7 +283,8 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
   }
 
   if (_remotingService.hostListState == HostListStateFetching) {
-    NSLog(@"Fetching host list... TODO: Show fetching UI here.");
+    self.contentViewController = _fetchingViewController;
+    _fetchingViewController.view.frame = self.view.bounds;
     return;
   }
 

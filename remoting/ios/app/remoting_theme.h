@@ -14,6 +14,7 @@
 
 @property(class, nonatomic, readonly) UIColor* connectionViewBackgroundColor;
 @property(class, nonatomic, readonly) UIColor* hostListBackgroundColor;
+@property(class, nonatomic, readonly) UIColor* hostListRefreshIndicatorColor;
 @property(class, nonatomic, readonly) UIColor* menuBlueColor;
 @property(class, nonatomic, readonly) UIColor* offlineHostColor;
 @property(class, nonatomic, readonly) UIColor* onlineHostColor;
