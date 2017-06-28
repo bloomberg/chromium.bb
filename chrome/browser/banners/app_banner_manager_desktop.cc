@@ -21,7 +21,8 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(banners::AppBannerManagerDesktop);
 namespace banners {
 
 bool AppBannerManagerDesktop::IsEnabled() {
-  return base::FeatureList::IsEnabled(features::kAppBanners);
+  return base::FeatureList::IsEnabled(features::kAppBanners) ||
+         base::FeatureList::IsEnabled(features::kExperimentalAppBanners);
 }
 
 AppBannerManagerDesktop::AppBannerManagerDesktop(

@@ -82,6 +82,7 @@ extern const base::Feature kDisplayPersistenceToggleInPermissionPrompts;
 
 extern const base::Feature kExpectCTReporting;
 
+extern const base::Feature kExperimentalAppBanners;
 extern const base::Feature kExperimentalKeyboardLockUI;
 
 #if defined(OS_WIN)
