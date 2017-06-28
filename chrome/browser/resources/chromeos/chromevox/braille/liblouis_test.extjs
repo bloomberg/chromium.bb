@@ -69,7 +69,7 @@ TEST_F('CvoxLibLouisTest', 'checkAllTables', function() {
 TEST_F('CvoxLibLouisTest', 'testTranslateComputerBraille', function() {
   var liblouis = this.createAndAttachLiblouis();
   this.withTranslator(liblouis, 'en-us-comp8.ctb', function(translator) {
-    translator.translate('Hello!', this.newCallback(
+    translator.translate('Hello!', [], this.newCallback(
         function(cells, textToBraille, brailleToText) {
           assertEqualsUint8Array([0x53, 0x11, 0x07, 0x07, 0x15, 0x2e], cells);
           assertEqualsJSON([0, 1, 2, 3, 4, 5], textToBraille);
@@ -92,7 +92,7 @@ TEST_F('CvoxLibLouisTest', 'testTranslateGermanGrade2Braille', function() {
   var liblouis = this.createAndAttachLiblouis();
   // This is one of the moderately large tables.
   this.withTranslator(liblouis, 'de-de-g2.ctb', function(translator) {
-    translator.translate('München', this.newCallback(
+    translator.translate('München', [], this.newCallback(
         function(cells, textToBraille, brailleToText) {
           assertEqualsUint8Array([0x0d, 0x33, 0x1d, 0x39, 0x09], cells);
           assertEqualsJSON([0, 1, 2, 3, 3, 4, 4], textToBraille);
@@ -142,7 +142,7 @@ TEST_F('CvoxLibLouisTest', 'testTranslateAfterDetach', function() {
   var liblouis = this.createAndAttachLiblouis();
   this.withTranslator(liblouis, 'de-de-comp8.ctb', function(translator) {
     liblouis.detach();
-    translator.translate('Hamburg', this.newCallback(
+    translator.translate('Hamburg', [], this.newCallback(
         function(cells, textToBraille, brailleToText) {
           assertEquals(null, cells);
           assertEquals(null, textToBraille);
@@ -155,7 +155,7 @@ TEST_F('CvoxLibLouisTest', 'testDetachWithOutstandingCallbacks', function() {
   var liblouis = this.createAndAttachLiblouis();
   this.withTranslator(liblouis, 'de-de-comp8.ctb', function(translator) {
     var called = false;
-    translator.translate('Berlin', this.newCallback(
+    translator.translate('Berlin', [], this.newCallback(
         function(cells, textToBraille, brailleToText) {
           assertEquals(null, cells);
           assertEquals(null, textToBraille);
@@ -170,7 +170,7 @@ TEST_F('CvoxLibLouisTest', 'testDetachWithOutstandingCallbacks', function() {
 TEST_F('CvoxLibLouisTest', 'testKeyEventStaticData', function() {
   var liblouis = this.createAndAttachLiblouis();
   this.withTranslator(liblouis, 'en-us-comp8.ctb', function(translator) {
-    translator.translate('abcdefghijklmnopqrstuvwxyz 0123456789',
+    translator.translate('abcdefghijklmnopqrstuvwxyz 0123456789', [],
                          this.newCallback(
         function(cells, textToBraille, brailleToText) {
           // A-Z.

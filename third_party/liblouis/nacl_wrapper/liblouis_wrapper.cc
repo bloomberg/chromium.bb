@@ -140,6 +140,8 @@ bool LibLouisWrapper::Translate(const TranslationParams& params,
     out_cursor_position_ptr = &out_cursor_position;
   }
 
+  std::vector<unsigned char> form_type_map(params.form_type_map);
+
   // Invoke liblouis.  Do this in a loop since we can't precalculate the
   // translated size.  We add an extra slot in the output buffer so that
   // common cases like single digits or capital letters won't always trigger
@@ -152,11 +154,11 @@ bool LibLouisWrapper::Translate(const TranslationParams& params,
     outlen = outalloc;
     outbuf.resize(outalloc);
     braille_to_text.resize(outalloc);
-    int result = lou_translate(params.table_names.c_str(),
-                               &inbuf[0], &inlen, &outbuf[0], &outlen,
-                               NULL /* typeform */, NULL /* spacing */,
-                               &text_to_braille[0], &braille_to_text[0],
-                               out_cursor_position_ptr, dotsIO /* mode */);
+    form_type_map.resize(outalloc);
+    int result = lou_translate(
+        params.table_names.c_str(), &inbuf[0], &inlen, &outbuf[0], &outlen,
+        &form_type_map[0], NULL /* spacing */, &text_to_braille[0],
+        &braille_to_text[0], out_cursor_position_ptr, dotsIO /* mode */);
     if (result == 0) {
       // TODO(jbroman): log this
       return false;

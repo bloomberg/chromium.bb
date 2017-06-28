@@ -16,6 +16,7 @@
 #define LIBLOUIS_NACL_TRANSLATION_PARAMS_H_
 
 #include <string>
+#include <vector>
 
 namespace liblouis_nacl {
 
@@ -25,6 +26,7 @@ struct TranslationParams {
   std::string table_names;
   std::string text;
   int cursor_position;
+  std::vector<unsigned char> form_type_map;
 };
 
 }

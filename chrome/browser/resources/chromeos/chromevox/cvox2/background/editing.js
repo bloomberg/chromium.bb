@@ -17,6 +17,7 @@ goog.require('cursors.Cursor');
 goog.require('cursors.Range');
 goog.require('cvox.BrailleBackground');
 goog.require('cvox.ChromeVoxEditableTextBase');
+goog.require('cvox.LibLouis.FormType');
 
 goog.scope(function() {
 var AutomationEvent = chrome.automation.AutomationEvent;
@@ -24,6 +25,7 @@ var AutomationNode = chrome.automation.AutomationNode;
 var Cursor = cursors.Cursor;
 var Dir = constants.Dir;
 var EventType = chrome.automation.EventType;
+var FormType = cvox.LibLouis.FormType;
 var Range = cursors.Range;
 var RoleType = chrome.automation.RoleType;
 var StateType = chrome.automation.StateType;
@@ -322,7 +324,7 @@ AutomationRichEditableText.prototype = {
       // Describe the current line. This accounts for previous/current
       // selections and picking the line edge boundary that changed (as computed
       // above). This is also the code path for describing paste.
-      cvox.ChromeVox.tts.speak(cur.text, cvox.QueueMode.CATEGORY_FLUSH);
+      this.speakCurrentRichLine_(prev);
       this.brailleCurrentRichLine_();
     }
 
@@ -385,10 +387,52 @@ AutomationRichEditableText.prototype = {
     }
   },
 
+  /**
+   * @param {editing.EditableLine} prevLine
+   * @private
+   */
+  speakCurrentRichLine_: function(prevLine) {
+    var prev = prevLine ? prevLine.startContainer_ : this.node_;
+    var lineNodes =
+        this.line_.value_.getSpansInstanceOf(this.node_.constructor);
+    var queueMode = cvox.QueueMode.CATEGORY_FLUSH;
+    for (var i = 0, cur; cur = lineNodes[i]; i++) {
+      if (cur.children.length)
+        continue;
+      new Output()
+          .withRichSpeech(
+              Range.fromNode(cur), Range.fromNode(prev),
+              Output.EventType.NAVIGATE)
+          .withQueueMode(queueMode)
+          .go();
+      prev = cur;
+      queueMode = cvox.QueueMode.QUEUE;
+    }
+  },
+
   /** @private */
   brailleCurrentRichLine_: function() {
     var cur = this.line_;
-    var value = cur.value_;
+    var value = new Spannable(cur.value_);
+    if (!this.node_.constructor)
+      return;
+    value.getSpansInstanceOf(this.node_.constructor).forEach(function(span) {
+      var style = span.role == RoleType.INLINE_TEXT_BOX ? span.parent : span;
+      if (!style)
+        return;
+      var formType = FormType.PLAIN_TEXT;
+      if (style.bold)
+        formType |= FormType.BOLD;
+      if (style.italic)
+        formType |= FormType.ITALIC;
+      if (style.underline)
+        formType |= FormType.UNDERLINE;
+      if (formType == FormType.PLAIN_TEXT)
+        return;
+      var start = value.getSpanStart(span);
+      var end = value.getSpanEnd(span);
+      value.setSpan(new cvox.BrailleTextStyleSpan(formType), start, end);
+    });
     value.setSpan(new cvox.ValueSpan(0), 0, cur.value_.length);
     value.setSpan(
         new cvox.ValueSelectionSpan(), cur.startOffset, cur.endOffset);

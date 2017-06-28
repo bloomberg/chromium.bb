@@ -7,7 +7,7 @@
  */
 
 goog.provide('cvox.LibLouis');
-
+goog.provide('cvox.LibLouis.FormType');
 
 /**
  * Encapsulates a liblouis Native Client instance in the page.
@@ -46,6 +46,20 @@ cvox.LibLouis = function(nmfPath, opt_tablesDir) {
    * @private {number}
    */
   this.nextMessageId_ = 1;
+};
+
+
+/**
+ * Constants taken from liblouis.h.
+ * Controls braille indicator insertion during translation.
+ * @enum {number}
+ */
+cvox.LibLouis.FormType = {
+  PLAIN_TEXT: 0,
+  ITALIC: 1,
+  UNDERLINE: 2,
+  BOLD: 4,
+  COMPUTER_BRAILLE: 8
 };
 
 
@@ -239,12 +253,17 @@ cvox.LibLouis.Translator = function(instance, tableNames) {
  *     text positions.  If translation fails for any reason, all parameters are
  *     {@code null}.
  */
-cvox.LibLouis.Translator.prototype.translate = function(text, callback) {
+cvox.LibLouis.Translator.prototype.translate = function(
+    text, formTypeMap, callback) {
   if (!this.instance_.isAttached()) {
     callback(null /*cells*/, null /*textToBraille*/, null /*brailleToText*/);
     return;
   }
-  var message = {'table_names': this.tableNames_, 'text': text};
+  var message = {
+    'table_names': this.tableNames_,
+    'text': text,
+    form_type_map: formTypeMap
+  };
   this.instance_.rpc_('Translate', message, function(reply) {
     var cells = null;
     var textToBraille = null;
