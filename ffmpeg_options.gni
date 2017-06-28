@@ -39,6 +39,16 @@ declare_args() {
   # ffmpeg.so with their own. See discussion here
   # https://groups.google.com/a/chromium.org/forum/#!msg/chromium-packagers/R5rcZXWxBEQ/B6k0zzmJbvcJ
   is_component_ffmpeg = is_component_build
+
+  # Set to true to force the use of ffmpeg's stdatomic fallback code.
+  #
+  # Windows and GCC prior to 4.9 lack stdatomic.h.
+  #
+  # This is also useful for developers who use icecc, which relies upon
+  # clang's -frewrite-includes flag which is broken with #include_next
+  # directives as used in chromium's clang stdatomic.h.
+  # Some background: https://bugs.llvm.org/show_bug.cgi?id=26828
+  ffmpeg_use_atomics_fallback = !is_clang
 }
 
 assert(ffmpeg_branding == "Chromium" ||
