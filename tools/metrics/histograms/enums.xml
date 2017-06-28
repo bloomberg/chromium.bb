@@ -15543,6 +15543,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2029" label="MIDIPortOpen"/>
   <int value="2030" label="MIDIOutputSend"/>
   <int value="2031" label="MIDIMessageEvent"/>
+  <int value="2032" label="FetchEventIsReload"/>
 </enum>
 
 <enum name="FeedbackSource">

@@ -19,6 +19,7 @@
 #include "platform/network/NetworkUtils.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/RefPtr.h"
+#include "public/platform/WebFeature.h"
 #include "public/platform/WebURLResponse.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerError.h"
 
@@ -50,6 +51,7 @@ String FetchEvent::clientId() const {
 }
 
 bool FetchEvent::isReload() const {
+  UseCounter::Count(GetExecutionContext(), WebFeature::kFetchEventIsReload);
   return is_reload_;
 }
 

@@ -887,6 +887,11 @@ void ServiceWorkerDispatcher::OnPostMessage(
 void ServiceWorkerDispatcher::OnCountFeature(int thread_id,
                                              int provider_id,
                                              uint32_t feature) {
+  ProviderContextMap::iterator provider = provider_contexts_.find(provider_id);
+  if (provider != provider_contexts_.end()) {
+    provider->second->CountFeature(feature);
+  }
+
   ProviderClientMap::iterator found = provider_clients_.find(provider_id);
   if (found != provider_clients_.end())
     found->second->CountFeature(feature);

@@ -54,7 +54,8 @@ void WebServiceWorkerProviderImpl::SetClient(
           ServiceWorkerHandleReference::Create(context_->controller()->info(),
                                                thread_safe_sender_.get()));
 
-  // Sync the controllee's use counter with the service worker's one.
+  // Sync the controllee's use counter with |context_|'s, which keeps
+  // track of the controller's use counter.
   for (uint32_t feature : context_->used_features())
     client->CountFeature(feature);
   client->SetController(WebServiceWorkerImpl::CreateHandle(controller),
