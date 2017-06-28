@@ -87,6 +87,8 @@ const NSTimeInterval kUpdatePaymentSummaryItemIntervalSeconds = 10.0;
 }
 
 - (void)stop {
+  [_updatePaymentSummaryItemTimer invalidate];
+
   [[_navigationController presentingViewController]
       dismissViewControllerAnimated:YES
                          completion:nil];
