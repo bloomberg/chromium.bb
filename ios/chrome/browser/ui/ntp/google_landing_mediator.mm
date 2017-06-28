@@ -292,8 +292,10 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 - (void)getFaviconForURL:(GURL)URL
                     size:(CGFloat)size
                 useCache:(BOOL)useCache
-           imageCallback:(void (^)(UIImage*))imageCallback
-        fallbackCallback:(void (^)(UIColor*, UIColor*, BOOL))fallbackCallback {
+           imageCallback:(void (^)(UIImage* favicon))imageCallback
+        fallbackCallback:(void (^)(UIColor* textColor,
+                                   UIColor* backgroundColor,
+                                   BOOL isDefaultColor))fallbackCallback {
   base::WeakNSObject<GoogleLandingMediator> weakSelf(self);
 
   void (^faviconBlock)(const favicon_base::LargeIconResult&) = ^(
@@ -312,7 +314,7 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
           skia::UIColorFromSkColor(result.fallback_icon_style->text_color);
       BOOL isDefaultColor =
           result.fallback_icon_style->is_default_background_color;
-      fallbackCallback(backgroundColor, textColor, isDefaultColor);
+      fallbackCallback(textColor, backgroundColor, isDefaultColor);
     }
 
     base::scoped_nsobject<GoogleLandingMediator> strongSelf([weakSelf retain]);
