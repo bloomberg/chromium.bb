@@ -7,6 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "content/browser/android/content_startup_flags.h"
+#include "content/browser/browser_main_loop.h"
 #include "ppapi/features/features.h"
 
 #include "jni/BrowserStartupController_jni.h"
@@ -14,11 +15,6 @@
 using base::android::JavaParamRef;
 
 namespace content {
-
-bool BrowserMayStartAsynchronously() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  return Java_BrowserStartupController_browserMayStartAsynchonously(env);
-}
 
 void BrowserStartupComplete(int result) {
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -63,6 +59,10 @@ static jboolean IsPluginEnabled(JNIEnv* env,
 #else
   return false;
 #endif
+}
+
+static void FlushStartupTasks(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
+  BrowserMainLoop::GetInstance()->SynchronouslyFlushStartupTasks();
 }
 
 }  // namespace content

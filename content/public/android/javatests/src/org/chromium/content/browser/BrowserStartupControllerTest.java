@@ -30,6 +30,7 @@ public class BrowserStartupControllerTest {
         private int mStartupResult;
         private boolean mLibraryLoadSucceeds;
         private int mInitializedCounter = 0;
+        private boolean mStartupCompleteCalled;
 
         @Override
         void prepareToStartBrowserProcess(boolean singleProcess, Runnable completionCallback)
@@ -49,18 +50,22 @@ public class BrowserStartupControllerTest {
         @Override
         int contentStart() {
             mInitializedCounter++;
-            if (BrowserStartupController.browserMayStartAsynchonously()) {
-                // Post to the UI thread to emulate what would happen in a real scenario.
-                ThreadUtils.postOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        BrowserStartupController.browserStartupComplete(mStartupResult);
-                    }
-                });
-            } else {
-                BrowserStartupController.browserStartupComplete(mStartupResult);
-            }
+            // Post to the UI thread to emulate what would happen in a real scenario.
+            ThreadUtils.postOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (mStartupCompleteCalled) return;
+                    BrowserStartupController.browserStartupComplete(mStartupResult);
+                }
+            });
             return mStartupResult;
+        }
+
+        @Override
+        void flushStartupTasks() {
+            assert mInitializedCounter > 0;
+            if (mStartupCompleteCalled) return;
+            BrowserStartupController.browserStartupComplete(mStartupResult);
         }
 
         private int initializedCounter() {
@@ -118,8 +123,6 @@ public class BrowserStartupControllerTest {
             }
         });
 
-        Assert.assertTrue("Asynchronous mode should have been set.",
-                BrowserStartupController.browserMayStartAsynchonously());
         Assert.assertEquals("The browser process should have been initialized one time.", 1,
                 mController.initializedCounter());
 
@@ -170,8 +173,6 @@ public class BrowserStartupControllerTest {
             }
         });
 
-        Assert.assertTrue("Asynchronous mode should have been set.",
-                BrowserStartupController.browserMayStartAsynchonously());
         Assert.assertEquals("The browser process should have been initialized one time.", 1,
                 mController.initializedCounter());
 
@@ -217,8 +218,6 @@ public class BrowserStartupControllerTest {
             }
         });
 
-        Assert.assertTrue("Asynchronous mode should have been set.",
-                BrowserStartupController.browserMayStartAsynchonously());
         Assert.assertEquals("The browser process should have been initialized one time.", 1,
                 mController.initializedCounter());
 
@@ -283,8 +282,6 @@ public class BrowserStartupControllerTest {
             }
         });
 
-        Assert.assertTrue("Asynchronous mode should have been set.",
-                BrowserStartupController.browserMayStartAsynchonously());
         Assert.assertEquals("The browser process should have been initialized one time.", 1,
                 mController.initializedCounter());
 
@@ -321,8 +318,6 @@ public class BrowserStartupControllerTest {
             }
         });
 
-        Assert.assertTrue("Asynchronous mode should have been set.",
-                BrowserStartupController.browserMayStartAsynchonously());
         Assert.assertEquals("The browser process should have been initialized one time.", 1,
                 mController.initializedCounter());
 
@@ -380,8 +375,6 @@ public class BrowserStartupControllerTest {
                 }
             }
         });
-        Assert.assertFalse("Synchronous mode should have been set",
-                BrowserStartupController.browserMayStartAsynchonously());
 
         Assert.assertEquals("The browser process should have been initialized one time.", 1,
                 mController.initializedCounter());
@@ -413,8 +406,6 @@ public class BrowserStartupControllerTest {
                 }
             }
         });
-        Assert.assertFalse("Synchronous mode should have been set",
-                BrowserStartupController.browserMayStartAsynchonously());
 
         Assert.assertEquals("The browser process should have been initialized twice.", 2,
                 mController.initializedCounter());
@@ -447,9 +438,6 @@ public class BrowserStartupControllerTest {
 
         Assert.assertEquals("The browser process should have been initialized once.", 1,
                 mController.initializedCounter());
-
-        Assert.assertFalse("Synchronous mode should have been set",
-                BrowserStartupController.browserMayStartAsynchonously());
 
         // Kick off the asynchronous startup request. This should just queue the callback.
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
