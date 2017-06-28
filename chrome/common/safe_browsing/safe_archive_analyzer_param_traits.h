@@ -2,21 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Multiply-included message file, so no include guard.
+// Multiply-included param traits file, so no include guard.
 
-// TODO(noel): rename this file to a param traits variant for the full safe
-// browsing feature, and remove all remaining #include of this file.
+#if !defined(FULL_SAFE_BROWSING)
+#error FULL_SAFE_BROWSING should be defined.
+#endif
 
-#include "build/build_config.h"
-#include "ipc/ipc_message_macros.h"
-
-#if defined(FULL_SAFE_BROWSING)
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
 #include "chrome/common/safe_browsing/ipc_protobuf_message_macros.h"
 #include "chrome/common/safe_browsing/protobuf_message_param_traits.h"
-#endif
+#include "ipc/ipc_message_macros.h"
 
-#if defined(FULL_SAFE_BROWSING)
 IPC_ENUM_TRAITS_VALIDATE(
     safe_browsing::ClientDownloadRequest_DownloadType,
     safe_browsing::ClientDownloadRequest_DownloadType_IsValid(value))
@@ -96,4 +92,3 @@ IPC_STRUCT_TRAITS_BEGIN(safe_browsing::ArchiveAnalyzerResults)
   IPC_STRUCT_TRAITS_MEMBER(archived_binary)
   IPC_STRUCT_TRAITS_MEMBER(archived_archive_filenames)
 IPC_STRUCT_TRAITS_END()
-#endif  // FULL_SAFE_BROWSING

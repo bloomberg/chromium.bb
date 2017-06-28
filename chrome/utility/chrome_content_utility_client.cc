@@ -62,8 +62,8 @@
 #endif
 
 #if defined(FULL_SAFE_BROWSING)
-#include "chrome/common/safe_archive_analyzer.mojom.h"
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
+#include "chrome/common/safe_browsing/safe_archive_analyzer.mojom.h"
 #include "chrome/common/safe_browsing/zip_analyzer.h"
 #if defined(OS_MACOSX)
 #include "chrome/utility/safe_browsing/mac/dmg_analyzer.h"
