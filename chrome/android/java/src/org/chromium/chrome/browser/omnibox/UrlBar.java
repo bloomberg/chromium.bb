@@ -120,8 +120,11 @@ public class UrlBar extends AutocompleteEditText {
     // this (and it the value will only be recalculated after the text has been changed).
     private boolean mDidEllipsizeTextHint;
 
-    /** This tracks whether or not the last ACTION_DOWN event was when the url bar had focus. */
-    boolean mDownEventHadFocus;
+    /** A cached point for getting this view's location in the window. */
+    private final int[] mCachedLocation = new int[2];
+
+    /** The location of this view on the last ACTION_DOWN event. */
+    private float mDownEventViewTop;
 
     /**
      * Implement this to get updates when the direction of the text in the URL bar changes.
@@ -386,7 +389,10 @@ public class UrlBar extends AutocompleteEditText {
             return true;
         }
 
-        if (event.getActionMasked() == MotionEvent.ACTION_DOWN) mDownEventHadFocus = mFocused;
+        if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+            getLocationInWindow(mCachedLocation);
+            mDownEventViewTop = mCachedLocation[1];
+        }
 
         Tab currentTab = mUrlBarDelegate.getCurrentTab();
         if (event.getAction() == MotionEvent.ACTION_DOWN && currentTab != null) {
@@ -400,11 +406,22 @@ public class UrlBar extends AutocompleteEditText {
 
     @Override
     public boolean performLongClick(float x, float y) {
-        // If the touch event that triggered this was when the url bar was in a different focus
-        // state, ignore the event.
-        if (mDownEventHadFocus != mFocused) return true;
+        return shouldPerformLongClick() ? super.performLongClick(x, y) : true;
+    }
 
-        return super.performLongClick(x, y);
+    @Override
+    public boolean performLongClick() {
+        return shouldPerformLongClick() ? super.performLongClick() : true;
+    }
+
+    /**
+     * @return Whether or not a long click should be performed.
+     */
+    private boolean shouldPerformLongClick() {
+        getLocationInWindow(mCachedLocation);
+
+        // If the view moved between the last down event, block the long-press.
+        return mDownEventViewTop == mCachedLocation[1];
     }
 
     @Override
