@@ -1401,11 +1401,11 @@
         },
         {
           "board_name": "reef-uni",
-          "name": "sand"
+          "name": "pyro"
         },
         {
           "board_name": "reef-uni",
-          "name": "pyro"
+          "name": "sand"
         }
       ]
     }
