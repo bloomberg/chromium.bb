@@ -19,8 +19,6 @@ $ for x in Linux_x64 Mac Win ; do \
     gsutil cp -n -a public-read gs://chromium-browser-clang-staging/$x/translation_unit-$rev.tgz \
         gs://chromium-browser-clang/$x/translation_unit-$rev.tgz ; \
     done
-$ gsutil cp -n -a public-read gs://chromium-browser-clang-staging/Linux_x64/llvmgold-$rev.tgz \
-    gs://chromium-browser-clang/Linux_x64/llvmgold-$rev.tgz
 ```
 
 1.  Run the goma package update script to push these packages to goma. If you do
