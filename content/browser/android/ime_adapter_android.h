@@ -106,10 +106,6 @@ class CONTENT_EXPORT ImeAdapterAndroid : public RenderWidgetHostConnector {
 
   void UpdateState(const TextInputState& state);
 
-  void AdvanceFocusInForm(JNIEnv*,
-                          const base::android::JavaParamRef<jobject>&,
-                          jint);
-
  private:
   RenderWidgetHostImpl* GetFocusedWidget();
   RenderFrameHost* GetFocusedFrame();

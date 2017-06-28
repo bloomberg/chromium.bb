@@ -197,10 +197,6 @@ class ImeActivityTestRule extends ContentShellActivityTestRule {
                 + ", input type history: " + Arrays.deepToString(history);
     }
 
-    void performEditorAction(final int action) {
-        mConnection.performEditorAction(action);
-    }
-
     void performGo(TestCallbackHelperContainer testCallbackHelperContainer) throws Throwable {
         final InputConnection inputConnection = mConnection;
         final Callable<Void> callable = new Callable<Void>() {
@@ -534,10 +530,10 @@ class ImeActivityTestRule extends ContentShellActivityTestRule {
      */
     void focusElementAndWaitForStateUpdate(String id)
             throws InterruptedException, TimeoutException {
-        resetAllStates();
+        resetUpdateSelectionList();
         focusElement(id);
         waitAndVerifyUpdateSelection(0, 0, 0, -1, -1);
-        resetAllStates();
+        resetUpdateSelectionList();
     }
 
     void focusElement(final String id) throws InterruptedException, TimeoutException {
@@ -574,7 +570,7 @@ class ImeActivityTestRule extends ContentShellActivityTestRule {
                 EditorInfo outAttrs) {
             mTextInputTypeList.add(inputType);
             mOutAttrs = outAttrs;
-            return mFactory.initializeAndGet(view, imeAdapter, inputType, inputFlags, inputMode,
+            return mFactory.initializeAndGet(view, imeAdapter, inputType, inputMode, inputFlags,
                     selectionStart, selectionEnd, outAttrs);
         }
 
