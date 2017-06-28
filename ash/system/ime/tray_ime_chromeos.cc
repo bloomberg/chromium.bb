@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "ash/ime/ime_controller.h"
-#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -25,6 +24,7 @@
 #include "ash/system/tray/tri_view.h"
 #include "ash/system/tray_accessibility.h"
 #include "base/logging.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_enums.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -128,8 +128,7 @@ class IMEDetailedView : public ImeListView {
   }
 
   void ShowSettings() {
-    Shell::Get()->metrics()->RecordUserMetricsAction(
-        UMA_STATUS_AREA_IME_SHOW_DETAILED);
+    base::RecordAction(base::UserMetricsAction("StatusArea_IME_Detailed"));
     Shell::Get()->system_tray_controller()->ShowIMESettings();
     if (owner()->system_tray())
       owner()->system_tray()->CloseSystemBubble();

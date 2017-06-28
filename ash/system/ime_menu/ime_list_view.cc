@@ -6,7 +6,6 @@
 
 #include "ash/ime/ime_controller.h"
 #include "ash/ime/ime_switch_type.h"
-#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/interfaces/ime_info.mojom.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
@@ -21,6 +20,7 @@
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tri_view.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -296,8 +296,7 @@ void ImeListView::HandleViewClicked(views::View* view) {
   ImeController* ime_controller = Shell::Get()->ime_controller();
   std::map<views::View*, std::string>::const_iterator ime = ime_map_.find(view);
   if (ime != ime_map_.end()) {
-    Shell::Get()->metrics()->RecordUserMetricsAction(
-        UMA_STATUS_AREA_IME_SWITCH_MODE);
+    base::RecordAction(base::UserMetricsAction("StatusArea_IME_SwitchMode"));
     std::string ime_id = ime->second;
     last_selected_item_id_ = ime_id;
     ime_controller->SwitchImeById(ime_id, false /* show_message */);

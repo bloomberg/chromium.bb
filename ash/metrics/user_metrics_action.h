@@ -8,6 +8,8 @@
 namespace ash {
 
 // Ash-owned user metrics.
+// DEPRECATED: Use base::RecordAction(base::UserMetricsAction("my_action"))
+// instead of adding things here.
 enum UserMetricsAction {
   UMA_ACCEL_EXIT_FIRST_Q,
   UMA_ACCEL_EXIT_SECOND_Q,
@@ -99,8 +101,6 @@ enum UserMetricsAction {
   UMA_STATUS_AREA_ENABLE_TAP_DRAGGING,
   UMA_STATUS_AREA_ENABLE_WIFI,
   UMA_STATUS_AREA_ENABLE_VIRTUAL_KEYBOARD,
-  UMA_STATUS_AREA_IME_SHOW_DETAILED,
-  UMA_STATUS_AREA_IME_SWITCH_MODE,
   UMA_STATUS_AREA_MENU_OPENED,
   UMA_STATUS_AREA_NETWORK_JOIN_OTHER_CLICKED,
   UMA_STATUS_AREA_NETWORK_SETTINGS_OPENED,
@@ -162,6 +162,8 @@ enum UserMetricsAction {
 
   // Closing a window in overview mode by pressing Ctrl+w shortcut.
   UMA_WINDOW_OVERVIEW_CLOSE_KEY,
+
+  // DEPRECATED: Do not add new values. See top of file.
 };
 
 }  // namespace ash
