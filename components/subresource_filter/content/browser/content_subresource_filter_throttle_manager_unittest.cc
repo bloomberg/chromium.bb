@@ -125,8 +125,6 @@ class ContentSubresourceFilterThrottleManagerTest
 
     NavigateAndCommit(GURL("https://example.first"));
 
-    Observe(RenderViewHostTestHarness::web_contents());
-
     // Initialize the ruleset dealer.
     std::vector<proto::UrlRule> rules;
     rules.push_back(testing::CreateWhitelistRuleForDocument(
@@ -148,6 +146,7 @@ class ContentSubresourceFilterThrottleManagerTest
         base::MakeUnique<ContentSubresourceFilterThrottleManager>(
             this, dealer_handle_.get(),
             RenderViewHostTestHarness::web_contents());
+    Observe(RenderViewHostTestHarness::web_contents());
   }
 
   void TearDown() override {

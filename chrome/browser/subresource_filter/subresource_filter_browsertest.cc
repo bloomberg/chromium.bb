@@ -65,10 +65,12 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/referrer.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
@@ -1037,6 +1039,26 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   ui_test_utils::NavigateToURL(browser(), a_url);
   ExpectParsedScriptElementLoadedStatusInFrames(
       std::vector<const char*>{"b", "d"}, {false, true});
+}
+
+IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
+                       RendererDebugURL_NoLeakedThrottlePtrs) {
+  // We have checks in the throttle manager that we don't improperly leak
+  // activation state throttles. It would be nice to test things directly but it
+  // isn't very feasible right now without exposing a bunch of internal guts of
+  // the throttle manager.
+  //
+  // This test should crash the *browser process* with CHECK failures if the
+  // component is faulty. The CHECK assumes that the crash URL and other
+  // renderer debug URLs do not create a navigation throttle. See
+  // crbug.com/736658.
+  content::WindowedNotificationObserver observer(
+      content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
+      content::NotificationService::AllSources());
+  browser()->OpenURL(content::OpenURLParams(
+      GURL(content::kChromeUICrashURL), content::Referrer(),
+      WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
+  observer.Wait();
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,

@@ -52,7 +52,10 @@ ActivationStateComputingNavigationThrottle::
       weak_ptr_factory_(this) {}
 
 ActivationStateComputingNavigationThrottle::
-    ~ActivationStateComputingNavigationThrottle() {}
+    ~ActivationStateComputingNavigationThrottle() {
+  if (!destruction_closure_.is_null())
+    std::move(destruction_closure_).Run();
+}
 
 void ActivationStateComputingNavigationThrottle::
     NotifyPageActivationWithRuleset(

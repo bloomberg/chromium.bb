@@ -53,6 +53,10 @@ class ActivationStateComputingNavigationThrottle
       VerifiedRuleset::Handle* ruleset_handle,
       const ActivationState& page_activation_state);
 
+  void set_destruction_closure(base::OnceClosure closure) {
+    destruction_closure_ = std::move(closure);
+  }
+
   // content::NavigationThrottle:
   content::NavigationThrottle::ThrottleCheckResult WillProcessResponse()
       override;
@@ -91,6 +95,9 @@ class ActivationStateComputingNavigationThrottle
   VerifiedRuleset::Handle* ruleset_handle_;
 
   base::TimeTicks defer_timestamp_;
+
+  // Callback to be run in the destructor.
+  base::OnceClosure destruction_closure_;
 
   // Becomes true when the throttle manager reaches ReadyToCommitNavigation and
   // sends an activation IPC to the render process. Makes sure a caller cannot
