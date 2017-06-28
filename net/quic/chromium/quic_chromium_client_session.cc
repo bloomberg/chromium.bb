@@ -673,12 +673,13 @@ QuicChromiumClientSession::~QuicChromiumClientSession() {
   else
     RecordHandshakeState(STATE_FAILED);
 
-  UMA_HISTOGRAM_COUNTS("Net.QuicSession.NumTotalStreams", num_total_streams_);
-  UMA_HISTOGRAM_COUNTS("Net.QuicNumSentClientHellos",
-                       crypto_stream_->num_sent_client_hellos());
-  UMA_HISTOGRAM_COUNTS("Net.QuicSession.Pushed", streams_pushed_count_);
-  UMA_HISTOGRAM_COUNTS("Net.QuicSession.PushedAndClaimed",
-                       streams_pushed_and_claimed_count_);
+  UMA_HISTOGRAM_COUNTS_1M("Net.QuicSession.NumTotalStreams",
+                          num_total_streams_);
+  UMA_HISTOGRAM_COUNTS_1M("Net.QuicNumSentClientHellos",
+                          crypto_stream_->num_sent_client_hellos());
+  UMA_HISTOGRAM_COUNTS_1M("Net.QuicSession.Pushed", streams_pushed_count_);
+  UMA_HISTOGRAM_COUNTS_1M("Net.QuicSession.PushedAndClaimed",
+                          streams_pushed_and_claimed_count_);
   UMA_HISTOGRAM_COUNTS_1M("Net.QuicSession.PushedBytes", bytes_pushed_count_);
   DCHECK_LE(bytes_pushed_and_unclaimed_count_, bytes_pushed_count_);
   UMA_HISTOGRAM_COUNTS_1M("Net.QuicSession.PushedAndUnclaimedBytes",
@@ -717,8 +718,8 @@ QuicChromiumClientSession::~QuicChromiumClientSession() {
   UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.ServerSideMtu",
                               stats.max_received_packet_size);
 
-  UMA_HISTOGRAM_COUNTS("Net.QuicSession.MtuProbesSent",
-                       connection()->mtu_probe_count());
+  UMA_HISTOGRAM_COUNTS_1M("Net.QuicSession.MtuProbesSent",
+                          connection()->mtu_probe_count());
 
   if (stats.packets_sent >= 100) {
     // Used to monitor for regressions that effect large uploads.
@@ -741,7 +742,7 @@ QuicChromiumClientSession::~QuicChromiumClientSession() {
     UMA_HISTOGRAM_CUSTOM_COUNTS("Net.QuicSession.MaxReorderingTimeLongRtt",
                                 reordering, 1, kMaxReordering, 50);
   }
-  UMA_HISTOGRAM_COUNTS(
+  UMA_HISTOGRAM_COUNTS_1M(
       "Net.QuicSession.MaxReordering",
       static_cast<base::HistogramBase::Sample>(stats.max_sequence_reordering));
 }
@@ -769,10 +770,10 @@ void QuicChromiumClientSession::OnHeadersHeadOfLineBlocking(
 
 void QuicChromiumClientSession::OnStreamFrame(const QuicStreamFrame& frame) {
   // Record total number of stream frames.
-  UMA_HISTOGRAM_COUNTS("Net.QuicNumStreamFramesInPacket", 1);
+  UMA_HISTOGRAM_COUNTS_1M("Net.QuicNumStreamFramesInPacket", 1);
 
   // Record number of frames per stream in packet.
-  UMA_HISTOGRAM_COUNTS("Net.QuicNumStreamFramesPerStreamInPacket", 1);
+  UMA_HISTOGRAM_COUNTS_1M("Net.QuicNumStreamFramesPerStreamInPacket", 1);
 
   return QuicSpdySession::OnStreamFrame(frame);
 }
@@ -891,8 +892,8 @@ QuicChromiumClientSession::CreateOutgoingReliableStreamImpl() {
       new QuicChromiumClientStream(GetNextOutgoingStreamId(), this, net_log_);
   ActivateStream(base::WrapUnique(stream));
   ++num_total_streams_;
-  UMA_HISTOGRAM_COUNTS("Net.QuicSession.NumOpenStreams",
-                       GetNumOpenOutgoingStreams());
+  UMA_HISTOGRAM_COUNTS_1M("Net.QuicSession.NumOpenStreams",
+                          GetNumOpenOutgoingStreams());
   // The previous histogram puts 100 in a bucket betweeen 86-113 which does
   // not shed light on if chrome ever things it has more than 100 streams open.
   UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.TooManyOpenStreams",
@@ -1288,7 +1289,7 @@ void QuicChromiumClientSession::OnConnectionClosed(
   }
 
   if (error == QUIC_NETWORK_IDLE_TIMEOUT) {
-    UMA_HISTOGRAM_COUNTS(
+    UMA_HISTOGRAM_COUNTS_1M(
         "Net.QuicSession.ConnectionClose.NumOpenStreams.TimedOut",
         GetNumOpenOutgoingStreams());
     if (IsCryptoHandshakeConfirmed()) {
@@ -1296,10 +1297,10 @@ void QuicChromiumClientSession::OnConnectionClosed(
         UMA_HISTOGRAM_BOOLEAN(
             "Net.QuicSession.TimedOutWithOpenStreams.HasUnackedPackets",
             connection()->sent_packet_manager().HasUnackedPackets());
-        UMA_HISTOGRAM_COUNTS(
+        UMA_HISTOGRAM_COUNTS_1M(
             "Net.QuicSession.TimedOutWithOpenStreams.ConsecutiveRTOCount",
             connection()->sent_packet_manager().GetConsecutiveRtoCount());
-        UMA_HISTOGRAM_COUNTS(
+        UMA_HISTOGRAM_COUNTS_1M(
             "Net.QuicSession.TimedOutWithOpenStreams.ConsecutiveTLPCount",
             connection()->sent_packet_manager().GetConsecutiveTlpCount());
         UMA_HISTOGRAM_SPARSE_SLOWLY(
@@ -1307,10 +1308,10 @@ void QuicChromiumClientSession::OnConnectionClosed(
             connection()->self_address().port());
       }
     } else {
-      UMA_HISTOGRAM_COUNTS(
+      UMA_HISTOGRAM_COUNTS_1M(
           "Net.QuicSession.ConnectionClose.NumOpenStreams.HandshakeTimedOut",
           GetNumOpenOutgoingStreams());
-      UMA_HISTOGRAM_COUNTS(
+      UMA_HISTOGRAM_COUNTS_1M(
           "Net.QuicSession.ConnectionClose.NumTotalStreams.HandshakeTimedOut",
           num_total_streams_);
     }

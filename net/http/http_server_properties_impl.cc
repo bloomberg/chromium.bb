@@ -66,10 +66,10 @@ void HttpServerPropertiesImpl::SetAlternativeServiceServers(
   int32_t size_diff =
       alternative_service_map->size() - alternative_service_map_.size();
   if (size_diff > 0) {
-    UMA_HISTOGRAM_COUNTS("Net.AlternativeServiceServers.MorePrefsEntries",
-                         size_diff);
+    UMA_HISTOGRAM_COUNTS_1M("Net.AlternativeServiceServers.MorePrefsEntries",
+                            size_diff);
   } else {
-    UMA_HISTOGRAM_COUNTS(
+    UMA_HISTOGRAM_COUNTS_1M(
         "Net.AlternativeServiceServers.MoreOrEqualCacheEntries", -size_diff);
   }
 
