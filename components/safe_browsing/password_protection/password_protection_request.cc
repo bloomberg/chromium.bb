@@ -148,6 +148,16 @@ void PasswordProtectionRequest::FillRequestProto() {
           request_proto_->mutable_password_reuse_event();
       reuse_event->set_is_chrome_signin_password(
           saved_domain_ == std::string(password_manager::kSyncPasswordDomain));
+      if (reuse_event->is_chrome_signin_password()) {
+        reuse_event->set_sync_account_type(
+            password_protection_service_->GetSyncAccountType());
+        UMA_HISTOGRAM_ENUMERATION(
+            "PasswordProtection.PasswordReuseSyncAccountType",
+            reuse_event->sync_account_type(),
+            LoginReputationClientRequest::PasswordReuseEvent::
+                    SyncAccountType_MAX +
+                1);
+      }
       break;
     }
     default:

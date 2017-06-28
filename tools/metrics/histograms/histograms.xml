@@ -52405,6 +52405,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PasswordProtection.PasswordReuseSyncAccountType"
+    enum="PasswordProtectionSyncAccountType">
+  <owner>jialiul@chromium.org</owner>
+  <owner>nparker@chromium.org</owner>
+  <summary>
+    When password protection service detects a reuse of Chrome sync password,
+    record the type of Chrome sync account on which the reuse happens (e.g.
+    @gmail.com, @googlemail.com, or other dasher account).
+  </summary>
+</histogram>
+
 <histogram name="PasswordProtection.RequestNetworkDuration" units="ms">
   <owner>jialiul@chromium.org</owner>
   <owner>nparker@chromium.org</owner>

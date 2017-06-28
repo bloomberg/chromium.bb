@@ -13,6 +13,8 @@
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/browser_sync/profile_sync_service.h"
@@ -20,6 +22,9 @@
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/password_protection/password_protection_request.h"
 #include "components/safe_browsing_db/database_manager.h"
+#include "components/signin/core/browser/account_info.h"
+#include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -142,6 +147,29 @@ bool ChromePasswordProtectionService::IsHistorySyncEnabled() {
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_);
   return sync && sync->IsSyncActive() && !sync->IsLocalSyncEnabled() &&
          sync->GetActiveDataTypes().Has(syncer::HISTORY_DELETE_DIRECTIVES);
+}
+
+PasswordProtectionService::SyncAccountType
+ChromePasswordProtectionService::GetSyncAccountType() {
+  DCHECK(profile_);
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfileIfExists(profile_);
+
+  if (!signin_manager)
+    return LoginReputationClientRequest::PasswordReuseEvent::NOT_SIGNED_IN;
+
+  AccountInfo account_info = signin_manager->GetAuthenticatedAccountInfo();
+
+  if (account_info.account_id.empty() || account_info.hosted_domain.empty()) {
+    return LoginReputationClientRequest::PasswordReuseEvent::NOT_SIGNED_IN;
+  }
+
+  // For gmail or googlemail account, the hosted_domain will always be
+  // kNoHostedDomainFound.
+  return account_info.hosted_domain ==
+                 std::string(AccountTrackerService::kNoHostedDomainFound)
+             ? LoginReputationClientRequest::PasswordReuseEvent::GMAIL
+             : LoginReputationClientRequest::PasswordReuseEvent::GSUITE;
 }
 
 void ChromePasswordProtectionService::ShowPhishingInterstitial(
