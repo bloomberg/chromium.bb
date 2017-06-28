@@ -103,6 +103,19 @@ Length Length::BlendMixedTypes(const Length& from,
       CalculationValue::Create(PixelsAndPercent(pixels, percent), range));
 }
 
+Length Length::BlendSameTypes(const Length& from,
+                              double progress,
+                              ValueRange range) const {
+  LengthType result_type = GetType();
+  if (IsZero())
+    result_type = from.GetType();
+
+  float blended_value = blink::Blend(from.Value(), Value(), progress);
+  if (range == kValueRangeNonNegative)
+    blended_value = clampTo<float>(blended_value, 0);
+  return Length(blended_value, result_type);
+}
+
 PixelsAndPercent Length::GetPixelsAndPercent() const {
   switch (GetType()) {
     case kFixed:
