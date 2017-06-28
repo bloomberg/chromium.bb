@@ -2257,4 +2257,75 @@ class DomTreeExtractionBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(DomTreeExtractionBrowserTest);
 
+class FailedUrlRequestTest : public HeadlessAsyncDevTooledBrowserTest,
+                             public HeadlessBrowserContext::Observer,
+                             public network::ExperimentalObserver,
+                             public page::Observer {
+ public:
+  void RunDevTooledTest() override {
+    EXPECT_TRUE(embedded_test_server()->Start());
+    devtools_client_->GetNetwork()->GetExperimental()->AddObserver(this);
+    devtools_client_->GetNetwork()->Enable();
+    devtools_client_->GetNetwork()
+        ->GetExperimental()
+        ->EnableRequestInterception(
+            network::EnableRequestInterceptionParams::Builder()
+                .SetEnabled(true)
+                .Build());
+
+    browser_context_->AddObserver(this);
+
+    devtools_client_->GetPage()->AddObserver(this);
+
+    base::RunLoop run_loop;
+    devtools_client_->GetPage()->Enable(run_loop.QuitClosure());
+    base::MessageLoop::ScopedNestableTaskAllower nest_loop(
+        base::MessageLoop::current());
+    run_loop.Run();
+
+    devtools_client_->GetPage()->Navigate(
+        embedded_test_server()->GetURL("/dom_tree_test.html").spec());
+  }
+
+  void OnRequestIntercepted(
+      const network::RequestInterceptedParams& params) override {
+    if (EndsWith(params.GetRequest()->GetUrl(), "/iframe.html",
+                 base::CompareCase::INSENSITIVE_ASCII)) {
+      // Block the iframe resource load.
+      devtools_client_->GetNetwork()
+          ->GetExperimental()
+          ->ContinueInterceptedRequest(
+              network::ContinueInterceptedRequestParams::Builder()
+                  .SetInterceptionId(params.GetInterceptionId())
+                  .SetErrorReason(network::ErrorReason::ABORTED)
+                  .Build());
+    } else {
+      // Allow everything else to continue.
+      devtools_client_->GetNetwork()
+          ->GetExperimental()
+          ->ContinueInterceptedRequest(
+              network::ContinueInterceptedRequestParams::Builder()
+                  .SetInterceptionId(params.GetInterceptionId())
+                  .Build());
+    }
+  }
+
+  void OnLoadEventFired(const page::LoadEventFiredParams&) override {
+    base::AutoLock lock(lock_);
+    EXPECT_EQ("iframe.html", url_that_failed_to_load_);
+    FinishAsynchronousTest();
+  }
+
+  void UrlRequestFailed(net::URLRequest* request, int net_error) override {
+    base::AutoLock lock(lock_);
+    url_that_failed_to_load_ = request->url().ExtractFileName();
+  }
+
+ private:
+  base::Lock lock_;
+  std::string url_that_failed_to_load_;
+};
+
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(FailedUrlRequestTest);
+
 }  // namespace headless

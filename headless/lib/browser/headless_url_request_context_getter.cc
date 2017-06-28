@@ -26,7 +26,8 @@ HeadlessURLRequestContextGetter::HeadlessURLRequestContextGetter(
     ProtocolHandlerMap context_protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors,
     HeadlessBrowserContextOptions* options,
-    net::NetLog* net_log)
+    net::NetLog* net_log,
+    HeadlessBrowserContextImpl* headless_browser_context)
     : io_task_runner_(std::move(io_task_runner)),
       file_task_runner_(base::CreateSingleThreadTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BACKGROUND})),
@@ -34,7 +35,8 @@ HeadlessURLRequestContextGetter::HeadlessURLRequestContextGetter(
       host_resolver_rules_(options->host_resolver_rules()),
       proxy_server_(options->proxy_server()),
       request_interceptors_(std::move(request_interceptors)),
-      net_log_(net_log) {
+      net_log_(net_log),
+      headless_browser_context_(headless_browser_context) {
   // Must first be created on the UI thread.
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -75,7 +77,8 @@ HeadlessURLRequestContextGetter::GetURLRequestContext() {
     } else {
       builder.set_proxy_config_service(std::move(proxy_config_service_));
     }
-    builder.set_network_delegate(base::MakeUnique<HeadlessNetworkDelegate>());
+    builder.set_network_delegate(
+        base::MakeUnique<HeadlessNetworkDelegate>(headless_browser_context_));
 
     if (!host_resolver_rules_.empty()) {
       std::unique_ptr<net::HostResolver> host_resolver(
