@@ -9,7 +9,7 @@ import "mojo/common/time.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
 // Decode errors (see media/video/jpeg_decode_accelerator.h).
-enum Error {
+enum DecodeError {
   NO_ERRORS,
   INVALID_ARGUMENT,
   UNREADABLE_INPUT,
@@ -51,7 +51,7 @@ interface GpuJpegDecodeAccelerator {
   // |input_buffer| and |error| is the error code.
   Decode(BitstreamBuffer input_buffer, gfx.mojom.Size coded_size,
          handle<shared_buffer> output_handle, uint32 output_buffer_size)
-      => (int32 bitstream_buffer_id, Error error);
+      => (int32 bitstream_buffer_id, DecodeError error);
 
   // TODO(c.padhi): This method might not be required, see
   // http://crbug.com/699255.
