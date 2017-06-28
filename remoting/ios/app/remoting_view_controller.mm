@@ -12,10 +12,13 @@
 #import "ios/third_party/material_components_ios/src/components/AnimationTiming/src/MaterialAnimationTiming.h"
 #import "ios/third_party/material_components_ios/src/components/AppBar/src/MaterialAppBar.h"
 #import "ios/third_party/material_components_ios/src/components/Dialogs/src/MaterialDialogs.h"
+#import "ios/third_party/material_components_ios/src/components/ShadowElevations/src/MaterialShadowElevations.h"
+#import "ios/third_party/material_components_ios/src/components/ShadowLayer/src/MaterialShadowLayer.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #import "remoting/ios/app/app_delegate.h"
 #import "remoting/ios/app/client_connection_view_controller.h"
 #import "remoting/ios/app/host_collection_view_controller.h"
+#import "remoting/ios/app/host_setup_view_controller.h"
 #import "remoting/ios/app/host_view_controller.h"
 #import "remoting/ios/app/remoting_menu_view_controller.h"
 #import "remoting/ios/app/remoting_theme.h"
@@ -36,6 +39,7 @@ static CGFloat kHostInset = 5.f;
   MDCDialogTransitionController* _dialogTransitionController;
   MDCAppBar* _appBar;
   HostCollectionViewController* _collectionViewController;
+  HostSetupViewController* _setupViewController;
   RemotingService* _remotingService;
 }
 @end
@@ -54,20 +58,22 @@ static CGFloat kHostInset = 5.f;
   CGFloat sectionInset = kHostInset * 2.f;
   [layout setSectionInset:UIEdgeInsetsMake(sectionInset, sectionInset,
                                            sectionInset, sectionInset)];
-  HostCollectionViewController* collectionVC = [
-      [HostCollectionViewController alloc] initWithCollectionViewLayout:layout];
-  self = [super initWithContentViewController:collectionVC];
+  self = [super init];
   if (self) {
     _remotingService = RemotingService.instance;
 
-    _collectionViewController = collectionVC;
-    _collectionViewController.flexHeaderContainerViewController = self;
+    _collectionViewController = [[HostCollectionViewController alloc]
+        initWithCollectionViewLayout:layout];
     _collectionViewController.delegate = self;
+    _collectionViewController.scrollViewDelegate = self.headerViewController;
+
+    _setupViewController = [[HostSetupViewController alloc] init];
+    _setupViewController.scrollViewDelegate = self.headerViewController;
 
     _appBar = [[MDCAppBar alloc] init];
     [self addChildViewController:_appBar.headerViewController];
 
-    self.navigationItem.title = @"Chrome Remote Desktop";
+    self.navigationItem.title = @"chrome remote desktop";
 
     UIBarButtonItem* menuButton =
         [[UIBarButtonItem alloc] initWithImage:RemotingTheme.menuIcon
@@ -90,6 +96,17 @@ static CGFloat kHostInset = 5.f;
     MDCNavigationBarTextColorAccessibilityMutator* mutator =
         [[MDCNavigationBarTextColorAccessibilityMutator alloc] init];
     [mutator mutate:_appBar.navigationBar];
+
+    MDCFlexibleHeaderView* headerView = self.headerViewController.headerView;
+    headerView.backgroundColor = [UIColor clearColor];
+
+    // Use a custom shadow under the flexible header.
+    MDCShadowLayer* shadowLayer = [MDCShadowLayer layer];
+    [headerView setShadowLayer:shadowLayer
+        intensityDidChangeBlock:^(CALayer* layer, CGFloat intensity) {
+          CGFloat elevation = MDCShadowElevationAppBar * intensity;
+          [(MDCShadowLayer*)layer setElevation:elevation];
+        }];
   }
   return self;
 }
@@ -116,8 +133,8 @@ static CGFloat kHostInset = 5.f;
 
   [[NSNotificationCenter defaultCenter]
       addObserver:self
-         selector:@selector(hostsDidUpdateNotification:)
-             name:kHostsDidUpdate
+         selector:@selector(hostListStateDidChangeNotification:)
+             name:kHostListStateDidChange
            object:nil];
   [[NSNotificationCenter defaultCenter]
       addObserver:self
@@ -151,8 +168,8 @@ static CGFloat kHostInset = 5.f;
 
 #pragma mark - Remoting Service Notifications
 
-- (void)hostsDidUpdateNotification:(NSNotification*)notification {
-  [_collectionViewController.collectionView reloadData];
+- (void)hostListStateDidChangeNotification:(NSNotification*)notification {
+  [self refreshContent];
 }
 
 - (void)userDidUpdateNotification:(NSNotification*)notification {
@@ -172,15 +189,7 @@ static CGFloat kHostInset = 5.f;
     [MDCSnackbarManager showMessage:message];
   }
   _isAuthenticated = authenticated;
-  [_collectionViewController.collectionView reloadData];
-}
-
-#pragma mark - RemotingHostListDelegate
-
-// TODO(nicholss): these need to be a stats change like "none, loading,
-// updated"...
-- (void)hostListUpdated {
-  [_collectionViewController.collectionView reloadData];
+  [self refreshContent];
 }
 
 #pragma mark - HostCollectionViewControllerDelegate
@@ -260,6 +269,32 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
                          _remotingService.authentication.user.userEmail];
     [MDCSnackbarManager showMessage:message];
   }
+}
+
+- (void)refreshContent {
+  if (_remotingService.hostListState == HostListStateNotFetched) {
+    self.contentViewController = nil;
+    return;
+  }
+
+  if (_remotingService.hostListState == HostListStateFetching) {
+    NSLog(@"Fetching host list... TODO: Show fetching UI here.");
+    return;
+  }
+
+  DCHECK(_remotingService.hostListState == HostListStateFetched);
+
+  if (_remotingService.hosts.count > 0) {
+    [_collectionViewController.collectionView reloadData];
+    self.headerViewController.headerView.trackingScrollView =
+        _collectionViewController.collectionView;
+    self.contentViewController = _collectionViewController;
+  } else {
+    self.contentViewController = _setupViewController;
+    self.headerViewController.headerView.trackingScrollView =
+        _setupViewController.collectionView;
+  }
+  self.contentViewController.view.frame = self.view.bounds;
 }
 
 @end

@@ -147,4 +147,8 @@ static NSString* const kFAQsUrl =
   [webView loadRequest:request];
 }
 
+- (void)emailSetupInstructions {
+  NSLog(@"TODO: emailSetupInstructions");
+}
+
 @end

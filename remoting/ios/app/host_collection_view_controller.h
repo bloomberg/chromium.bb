@@ -8,7 +8,6 @@
 #import <UIKit/UIKit.h>
 
 #import "ios/third_party/material_components_ios/src/components/Collections/src/MaterialCollections.h"
-#import "ios/third_party/material_components_ios/src/components/FlexibleHeader/src/MaterialFlexibleHeader.h"
 #import "remoting/ios/app/host_collection_view_cell.h"
 #import "remoting/ios/domain/host_info.h"
 
@@ -35,8 +34,7 @@
 @interface HostCollectionViewController : MDCCollectionViewController
 
 @property(weak, nonatomic) id<HostCollectionViewControllerDelegate> delegate;
-@property(nonatomic)
-    MDCFlexibleHeaderContainerViewController* flexHeaderContainerViewController;
+@property(weak, nonatomic) id<UIScrollViewDelegate> scrollViewDelegate;
 
 @end
 

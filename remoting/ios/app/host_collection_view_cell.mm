@@ -49,7 +49,6 @@ static const CGFloat kHostCardIconSize = 45.f;
   _imageView = [[UIImageView alloc] init];
   _imageView.translatesAutoresizingMaskIntoConstraints = NO;
   _imageView.contentMode = UIViewContentModeCenter;
-  _imageView.alpha = 0.87f;
   _imageView.backgroundColor = RemotingTheme.offlineHostColor;
   _imageView.layer.cornerRadius = kHostCardIconSize / 2.f;
   _imageView.layer.masksToBounds = YES;

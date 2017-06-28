@@ -46,7 +46,7 @@
   static UIColor* color;
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
-    color = [UIColor colorWithRed:0.75f green:0.75f blue:0.75f alpha:1.f];
+    color = [UIColor colorWithWhite:0.87f alpha:1.f];
   });
   return color;
 }
@@ -55,9 +55,30 @@
   static UIColor* color;
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
-    color = [UIColor colorWithRed:0.20f green:0.70f blue:0.20f alpha:1.f];
+    color = [UIColor colorWithRed:0.40f green:0.75f blue:0.40f alpha:1.f];
   });
   return color;
+}
+
++ (UIColor*)buttonTextColor {
+  return UIColor.whiteColor;
+}
+
++ (UIColor*)setupListBackgroundColor {
+  static UIColor* color;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    color = [UIColor colorWithWhite:1.f alpha:0.9f];
+  });
+  return color;
+}
+
++ (UIColor*)setupListTextColor {
+  return UIColor.grayColor;
+}
+
++ (UIColor*)setupListNumberColor {
+  return UIColor.whiteColor;
 }
 
 #pragma mark - Icons
