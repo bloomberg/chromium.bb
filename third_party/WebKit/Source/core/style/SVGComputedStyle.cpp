@@ -27,6 +27,8 @@
 
 #include "core/style/SVGComputedStyle.h"
 
+#include "core/style/StyleDifference.h"
+
 namespace blink {
 
 static const int kPaintOrderBitwidth = 2;
