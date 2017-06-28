@@ -11,4 +11,9 @@ class DepthCaptureExpectations(GpuTestExpectations):
     # Sample Usage:
     # self.Fail('DepthCapture_depthStreamToRGBAFloatTexture',
     #     ['mac', 'amd', ('nvidia', 0x1234)], bug=123)
-    return
+    self.Flaky('DepthCapture_depthStreamToR32FloatTexture',
+               ['linux', 'nvidia'], bug=737410)
+    self.Flaky('DepthCapture_depthStreamToRGBAFloatTexture',
+               ['linux', 'nvidia'], bug=737410)
+    self.Flaky('DepthCapture_depthStreamToRGBAUint8Texture',
+               ['linux', 'nvidia'], bug=737410)
