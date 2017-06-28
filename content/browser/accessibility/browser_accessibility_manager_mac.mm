@@ -548,6 +548,9 @@ void BrowserAccessibilityManagerMac::OnAtomicUpdateFinished(
         tree_events_[live_root->id()].insert(ui::AX_EVENT_LIVE_REGION_CHANGED);
     }
   }
+
+  if (root_changed && tree->data().loaded)
+    tree_events_[tree->root()->id()].insert(ui::AX_EVENT_LOAD_COMPLETE);
 }
 
 NSDictionary* BrowserAccessibilityManagerMac::
