@@ -2694,16 +2694,17 @@ class CannedChecksUnittest(PresubmitTestsBase):
           ).AndReturn([affected_file])
       affected_file.LocalPath()
       affected_file.NewContents().AndReturn('Hey!\nHo!\nHey!\nHo!\n\n')
+    # CheckChangeHasNoTabs() calls _FindNewViolationsOfRule() which calls
+    # ChangedContents().
     affected_file.ChangedContents().AndReturn([
         (0, 'Hey!\n'),
         (1, 'Ho!\n'),
         (2, 'Hey!\n'),
         (3, 'Ho!\n'),
         (4, '\n')])
-    for _ in range(5):
+    for _ in range(5):  # One for each ChangedContents().
       affected_file.LocalPath().AndReturn('hello.py')
-    input_api.AffectedSourceFiles(mox.IgnoreArg()).AndReturn([affected_file])
-    input_api.ReadFile(affected_file).AndReturn('Hey!\nHo!\nHey!\nHo!\n\n')
+    # CheckingLicense() calls AffectedSourceFiles() instead of AffectedFiles().
     input_api.AffectedSourceFiles(mox.IgnoreArg()).AndReturn([affected_file])
     input_api.ReadFile(affected_file, 'rb').AndReturn(
         'Hey!\nHo!\nHey!\nHo!\n\n')
