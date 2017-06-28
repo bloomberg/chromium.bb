@@ -18,7 +18,7 @@ function test()
     {
         var previewView = new Network.RequestPreviewView(request, null);
         previewView.wasShown();
-        var previewer = await previewView._previewViewPromise;
+        var previewer = await previewView._contentViewPromise;
         InspectorTest.addResult("Its previewer is searchable: " + (previewer && previewer instanceof UI.SearchableView));
         InspectorTest.addResult("Its previewer is the JSON previewer: " + (previewer && previewer._searchProvider && previewer._searchProvider instanceof SourceFrame.JSONView));
     }
