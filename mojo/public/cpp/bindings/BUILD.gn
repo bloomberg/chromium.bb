@@ -74,6 +74,7 @@ component("bindings") {
     "lib/handle_interface_serialization.h",
     "lib/hash_util.h",
     "lib/interface_endpoint_client.cc",
+    "lib/interface_ptr_state.cc",
     "lib/interface_ptr_state.h",
     "lib/map_data_internal.h",
     "lib/map_serialization.h",
