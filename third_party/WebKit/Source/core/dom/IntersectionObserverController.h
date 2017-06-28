@@ -9,7 +9,6 @@
 #include "core/dom/SuspendableObject.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/HashSet.h"
-#include "platform/wtf/WeakPtr.h"
 
 // Design doc for IntersectionObserver implementation:
 //   https://docs.google.com/a/google.com/document/d/1hLK0eyT5_BzyNS4OkjsnoqqFQDYCbKfyBinj94OnLiQ
@@ -47,7 +46,6 @@ class IntersectionObserverController
   // IntersectionObservers for which this is the execution context of the
   // callback.
   HeapHashSet<Member<IntersectionObserver>> pending_intersection_observers_;
-  WTF::WeakPtrFactory<IntersectionObserverController> weak_ptr_factory_;
 
   bool callback_fired_while_suspended_;
 };
