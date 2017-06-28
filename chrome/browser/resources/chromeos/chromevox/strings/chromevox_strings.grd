@@ -1699,7 +1699,7 @@
       <message desc="In an editable text box, describes a blank line." name="IDS_CHROMEVOX_TEXT_BOX_BLANK">
         Blank
       </message>
-      <message desc="In an editable text box, describes a line with only whitespace." name="IDS_CHROMEVOX_TEXT_BOX_WHITESPACE">
+      <message desc="In an editable text box, describes a line with only whitespace." name="IDS_CHROMEVOX_TEXT_BOX_WHITESPACE" meaning="UI element">
         Space
       </message>
       <message desc="Further describes a list-like element with a number of items. e.g. This will be combined with other messages to produce: List with 3 items." name="IDS_CHROMEVOX_LIST_WITH_ITEMS_NOT_PLURALIZED">
