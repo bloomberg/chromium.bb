@@ -8,7 +8,6 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/payments/core/payment_address.h"
-#include "components/payments/core/payment_request_data_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/payments/payment_request.h"
@@ -22,8 +21,6 @@
 #endif
 
 namespace {
-using ::payments::data_util::GetPaymentAddressFromAutofillProfile;
-
 // Time interval before updating the Payment Summary item in seconds.
 const NSTimeInterval kUpdatePaymentSummaryItemIntervalSeconds = 10.0;
 }  // namespace
@@ -374,9 +371,8 @@ contactInfoSelectionCoordinator:(ContactInfoSelectionCoordinator*)coordinator
                        (autofill::AutofillProfile*)shippingAddress {
   _pendingShippingAddress = shippingAddress;
   DCHECK(shippingAddress);
-  payments::PaymentAddress address = GetPaymentAddressFromAutofillProfile(
-      *shippingAddress, GetApplicationContext()->GetApplicationLocale());
-  [_delegate paymentRequestCoordinator:self didSelectShippingAddress:address];
+  [_delegate paymentRequestCoordinator:self
+              didSelectShippingAddress:*shippingAddress];
 }
 
 - (void)shippingAddressSelectionCoordinatorDidReturn:
@@ -392,11 +388,7 @@ contactInfoSelectionCoordinator:(ContactInfoSelectionCoordinator*)coordinator
        didFinishEditingAddress:(autofill::AutofillProfile*)address {
   _pendingShippingAddress = address;
   DCHECK(address);
-  payments::PaymentAddress shippingAddress =
-      GetPaymentAddressFromAutofillProfile(
-          *address, GetApplicationContext()->GetApplicationLocale());
-  [_delegate paymentRequestCoordinator:self
-              didSelectShippingAddress:shippingAddress];
+  [_delegate paymentRequestCoordinator:self didSelectShippingAddress:*address];
 }
 
 - (void)addressEditCoordinatorDidCancel:(AddressEditCoordinator*)coordinator {
