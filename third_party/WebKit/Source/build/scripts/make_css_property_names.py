@@ -33,6 +33,10 @@ enum CSSPropertyID {
 %(property_enums)s
 };
 
+const CSSPropertyID kCSSPropertyAliasList[] = {
+%(property_aliases)s
+};
+
 const int firstCSSProperty = %(first_property_id)s;
 const int numCSSProperties = %(properties_count)s;
 const int lastCSSProperty = %(last_property_id)d;
@@ -42,7 +46,7 @@ const size_t maxCSSPropertyNameLength = %(max_name_length)d;
 
 const char* getPropertyName(CSSPropertyID);
 const WTF::AtomicString& getPropertyNameAtomicString(CSSPropertyID);
-WTF::String getPropertyNameString(CSSPropertyID);
+WTF::String CORE_EXPORT getPropertyNameString(CSSPropertyID);
 WTF::String getJSPropertyName(CSSPropertyID);
 
 inline bool isCSSPropertyIDWithName(int id)
@@ -57,7 +61,8 @@ inline bool isValidCSSPropertyID(CSSPropertyID id)
 
 inline CSSPropertyID convertToCSSPropertyID(int value)
 {
-    DCHECK(value >= CSSPropertyInvalid && value <= lastCSSProperty);
+    DCHECK_GE(value, CSSPropertyInvalid);
+    DCHECK_LE(value, lastCSSProperty);
     return static_cast<CSSPropertyID>(value);
 }
 
@@ -201,14 +206,18 @@ class CSSPropertyNamesWriter(css_properties.CSSProperties):
                          (self.class_name + ".cpp"): self.generate_implementation,
                         }
 
-    def _enum_declaration(self, property):
-        return "    %(property_id)s = %(enum_value)s," % property
+    def _enum_declaration(self, property_):
+        return "    %(property_id)s = %(enum_value)s," % property_
+
+    def _array_item(self, property_):
+        return "    static_cast<CSSPropertyID>(%(enum_value)s), // %(property_id)s" % property_
 
     def generate_header(self):
         return HEADER_TEMPLATE % {
             'license': license.license_for_generated_cpp(),
             'class_name': self.class_name,
             'property_enums': "\n".join(map(self._enum_declaration, self._properties_including_aliases)),
+            'property_aliases': "\n".join(map(self._array_item, self._aliases)),
             'first_property_id': self._first_enum_value,
             'properties_count': len(self._properties),
             'last_property_id': self._first_enum_value + len(self._properties) - 1,

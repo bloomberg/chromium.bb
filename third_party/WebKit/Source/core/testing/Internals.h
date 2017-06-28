@@ -523,6 +523,10 @@ class Internals final : public GarbageCollected<Internals>,
   bool isCSSPropertyUseCounted(Document*, const String&);
   bool isAnimatedCSSPropertyUseCounted(Document*, const String&);
 
+  Vector<String> getCSSPropertyLonghands() const;
+  Vector<String> getCSSPropertyShorthands() const;
+  Vector<String> getCSSPropertyAliases() const;
+
   // Observes changes on Document's UseCounter. Returns a promise that is
   // resolved when |feature| is counted. When |feature| was already counted,
   // it's immediately resolved.

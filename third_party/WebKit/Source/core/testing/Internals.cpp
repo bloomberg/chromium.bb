@@ -35,9 +35,12 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/V8IteratorResultValue.h"
+#include "core/CSSPropertyNames.h"
 #include "core/HTMLNames.h"
 #include "core/SVGNames.h"
+#include "core/StylePropertyShorthand.h"
 #include "core/animation/DocumentTimeline.h"
+#include "core/css/CSSPropertyMetadata.h"
 #include "core/dom/ClientRect.h"
 #include "core/dom/ClientRectList.h"
 #include "core/dom/DOMArrayBuffer.h"
@@ -3302,6 +3305,37 @@ bool Internals::isCSSPropertyUseCounted(Document* document,
 bool Internals::isAnimatedCSSPropertyUseCounted(Document* document,
                                                 const String& property_name) {
   return UseCounter::IsCountedAnimatedCSS(*document, property_name);
+}
+
+Vector<String> Internals::getCSSPropertyLonghands() const {
+  Vector<String> result;
+  for (int id = firstCSSProperty; id <= lastCSSProperty; ++id) {
+    CSSPropertyID property = static_cast<CSSPropertyID>(id);
+    if (!isShorthandProperty(property)) {
+      result.push_back(getPropertyNameString(property));
+    }
+  }
+  return result;
+}
+
+Vector<String> Internals::getCSSPropertyShorthands() const {
+  Vector<String> result;
+  for (int id = firstCSSProperty; id <= lastCSSProperty; ++id) {
+    CSSPropertyID property = static_cast<CSSPropertyID>(id);
+    if (isShorthandProperty(property)) {
+      result.push_back(getPropertyNameString(property));
+    }
+  }
+  return result;
+}
+
+Vector<String> Internals::getCSSPropertyAliases() const {
+  Vector<String> result;
+  for (CSSPropertyID alias : kCSSPropertyAliasList) {
+    DCHECK(isPropertyAlias(alias));
+    result.push_back(getPropertyNameString(alias));
+  }
+  return result;
 }
 
 ScriptPromise Internals::observeUseCounter(ScriptState* script_state,
