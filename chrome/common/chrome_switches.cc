@@ -170,10 +170,6 @@ const char kDiagnosticsFormat[]             = "diagnostics-format";
 // Tells the diagnostics mode to do the requested recovery step(s).
 const char kDiagnosticsRecovery[]           = "diagnostics-recovery";
 
-// Disables the display of a banner allowing the user to add a web
-// app to their shelf (or platform-specific equivalent)
-const char kDisableAddToShelf[] = "disable-add-to-shelf";
-
 // Disable several subsystems which run network requests in the background.
 // This is for use when doing network performance testing to avoid noise in the
 // measurements.
@@ -297,10 +293,6 @@ const char kDumpBrowserHistograms[]         = "dump-browser-histograms";
 
 // Overrides the path of Easy Unlock component app.
 const char kEasyUnlockAppPath[]             = "easy-unlock-app-path";
-
-// Enables the display of a banner allowing the user to add a web
-// app to their shelf (or platform-specific equivalent)
-const char kEnableAddToShelf[] = "enable-add-to-shelf";
 
 // If the WebRTC logging private API is active, enables audio debug recordings.
 const char kEnableAudioDebugRecordingsFromExtension[] =

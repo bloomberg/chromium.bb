@@ -264,11 +264,11 @@ const char kScrollPredictionDescription[] =
     "Predicts the finger's future position during scrolls allowing time to "
     "render the frame before the finger is there.";
 
-const char kAddToShelfName[] = "Add to shelf";
+const char kAppBannersName[] = "App Banners";
 
-const char kAddToShelfDescription[] =
-    "Enable the display of add to shelf banners, which prompt a user to add "
-    "a web app to their shelf, or other platform-specific equivalent.";
+const char kAppBannersDescription[] =
+    "Enable the display of Progressive Web App banners, which prompt a user to "
+    "add a web app to their shelf, or other platform-specific equivalent.";
 
 const char kBypassAppBannerEngagementChecksName[] =
     "Bypass user engagement checks";

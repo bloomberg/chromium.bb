@@ -34,9 +34,6 @@ extern const char kAccelerated2dCanvasDescription[];
 extern const char kAcceleratedVideoDecodeName[];
 extern const char kAcceleratedVideoDecodeDescription[];
 
-extern const char kAddToShelfName[];
-extern const char kAddToShelfDescription[];
-
 extern const char kAffiliationBasedMatchingName[];
 extern const char kAffiliationBasedMatchingDescription[];
 
@@ -45,6 +42,9 @@ extern const char kAllowInsecureLocalhostDescription[];
 
 extern const char kAllowNaclSocketApiName[];
 extern const char kAllowNaclSocketApiDescription[];
+
+extern const char kAppBannersName[];
+extern const char kAppBannersDescription[];
 
 extern const char kAutoplayPolicyName[];
 extern const char kAutoplayPolicyDescription[];

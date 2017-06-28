@@ -1989,10 +1989,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"allow-insecure-localhost", flag_descriptions::kAllowInsecureLocalhostName,
      flag_descriptions::kAllowInsecureLocalhostDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kAllowInsecureLocalhost)},
-    {"enable-add-to-shelf", flag_descriptions::kAddToShelfName,
-     flag_descriptions::kAddToShelfDescription, kOsDesktop,
-     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableAddToShelf,
-                               switches::kDisableAddToShelf)},
+#if !defined(OS_ANDROID)
+    {"enable-app-banners", flag_descriptions::kAppBannersName,
+     flag_descriptions::kAppBannersDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kAppBanners)},
+#endif  // !OS_ANDROID
     {"bypass-app-banner-engagement-checks",
      flag_descriptions::kBypassAppBannerEngagementChecksName,
      flag_descriptions::kBypassAppBannerEngagementChecksDescription, kOsAll,

@@ -5,13 +5,14 @@
 #include "chrome/browser/banners/app_banner_manager_desktop.h"
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/banners/app_banner_infobar_delegate_desktop.h"
 #include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/extensions/bookmark_app_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/web_application_info.h"
 #include "extensions/common/constants.h"
 
@@ -20,13 +21,7 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(banners::AppBannerManagerDesktop);
 namespace banners {
 
 bool AppBannerManagerDesktop::IsEnabled() {
-#if defined(OS_CHROMEOS)
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableAddToShelf);
-#else
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableAddToShelf);
-#endif
+  return base::FeatureList::IsEnabled(features::kAppBanners);
 }
 
 AppBannerManagerDesktop::AppBannerManagerDesktop(
