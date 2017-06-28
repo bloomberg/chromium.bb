@@ -12,3 +12,4 @@ EXPORTS
   SignalChromeElf
   SignalInitializeCrashReporting
   SuccessfullyBlocked
+  DumpProcessWithoutCrash

@@ -35,6 +35,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/install_static/initialize_from_primary_module.h"
 #include "chrome/install_static/install_details.h"
+#include "chrome_elf/chrome_elf_main.h"
 
 #define DLLEXPORT __declspec(dllexport)
 
@@ -79,15 +80,9 @@ int ChromeMain(int argc, const char** argv) {
   params.instance = instance;
   params.sandbox_info = sandbox_info;
 
-  // SetDumpWithoutCrashingFunction must be passed the DumpProcess function
-  // from chrome_elf and not from the DLL in order for DumpWithoutCrashing to
-  // function correctly.
-  typedef void (__cdecl *DumpProcessFunction)();
-  DumpProcessFunction DumpProcess = reinterpret_cast<DumpProcessFunction>(
-      ::GetProcAddress(::GetModuleHandle(chrome::kChromeElfDllName),
-                       "DumpProcessWithoutCrash"));
-  CHECK(DumpProcess);
-  base::debug::SetDumpWithoutCrashingFunction(DumpProcess);
+  // Pass chrome_elf's copy of DumpProcessWithoutCrash resolved via load-time
+  // dynamic linking.
+  base::debug::SetDumpWithoutCrashingFunction(&DumpProcessWithoutCrash);
 
   // Verify that chrome_elf and this module (chrome.dll and chrome_child.dll)
   // have the same version.

@@ -7,5 +7,6 @@
 
 extern "C" void SignalInitializeCrashReporting();
 extern "C" void SignalChromeElf();
+extern "C" void DumpProcessWithoutCrash();
 
 #endif  // CHROME_ELF_CHROME_ELF_MAIN_H_
