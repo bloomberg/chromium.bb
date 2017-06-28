@@ -204,10 +204,18 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
       chromeos::quick_unlock::IsPinEnabled(profile->GetPrefs()));
   html_source->AddBoolean("fingerprintUnlockEnabled",
                           chromeos::quick_unlock::IsFingerprintEnabled());
-  html_source->AddBoolean("androidAppsVisible",
-                          arc::IsArcAllowedForProfile(profile) &&
-                              !arc::IsArcOptInVerificationDisabled() &&
-                              arc::IsPlayStoreAvailable());
+
+  // We have 2 variants of Android apps settings. Default case, when the Play
+  // Store app exists we show expandable section that allows as to
+  // enable/disable the Play Store and link to Android settings which is
+  // available once settings app is registered in the system.
+  // For AOSP images we don't have the Play Store app. In last case we Android
+  // apps settings consists only from root link to Android settings and only
+  // visible once settings app is registered.
+  const bool androidAppsVisible = arc::IsArcAllowedForProfile(profile) &&
+                                  !arc::IsArcOptInVerificationDisabled();
+  html_source->AddBoolean("androidAppsVisible", androidAppsVisible);
+  html_source->AddBoolean("havePlayStoreApp", arc::IsPlayStoreAvailable());
 
   // TODO(mash): Support Chrome power settings in Mash. crbug.com/644348
   bool enable_power_settings = !ash_util::IsRunningInMash();

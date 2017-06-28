@@ -2,48 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @constructor
- * @implements {settings.AndroidAppsBrowserProxy}
- * @extends {TestBrowserProxy}
- */
-function TestAndroidAppsBrowserProxy() {
-  TestBrowserProxy.call(this, [
-    'requestAndroidAppsInfo',
-    'showAndroidAppsSettings',
-  ]);
-}
-
-TestAndroidAppsBrowserProxy.prototype = {
-  __proto__: TestBrowserProxy.prototype,
-
-  /** @override */
-  requestAndroidAppsInfo: function() {
-    this.methodCalled('requestAndroidAppsInfo');
-    this.setAndroidAppsState(false, false);
-  },
-
-  /** override */
-  showAndroidAppsSettings: function(keyboardAction) {
-    this.methodCalled('showAndroidAppsSettings');
-  },
-
-  setAndroidAppsState: function(playStoreEnabled, settingsAppAvailable) {
-    // We need to make sure to pass a new object here, otherwise the property
-    // change event may not get fired in the listener.
-    var appsInfo = {
-      playStoreEnabled: playStoreEnabled,
-      settingsAppAvailable: settingsAppAvailable,
-    };
-    cr.webUIListenerCallback('android-apps-info-update', appsInfo);
-  },
-};
-
 /** @type {?SettingsAndroidAppsPageElement} */
 var androidAppsPage = null;
 
 /** @type {?TestAndroidAppsBrowserProxy} */
 var androidAppsBrowserProxy = null;
+
+var setAndroidAppsState = function(playStoreEnabled, settingsAppAvailable) {
+  var appsInfo = {
+    playStoreEnabled: playStoreEnabled,
+    settingsAppAvailable: settingsAppAvailable,
+  };
+  androidAppsPage.androidAppsInfo = appsInfo;
+  Polymer.dom.flush();
+}
 
 suite('AndroidAppsPageTests', function() {
   setup(function() {
@@ -59,15 +31,15 @@ suite('AndroidAppsPageTests', function() {
     androidAppsPage.remove();
   });
 
+  teardown(function() {
+    androidAppsPage.remove();
+  });
+
   suite('Main Page', function() {
     setup(function() {
+      androidAppsPage.havePlayStoreApp = true;
       androidAppsPage.prefs = {arc: {enabled: {value: false}}};
-      Polymer.dom.flush();
-
-      return androidAppsBrowserProxy.whenCalled('requestAndroidAppsInfo')
-          .then(function() {
-            androidAppsBrowserProxy.setAndroidAppsState(false, false);
-          });
+      setAndroidAppsState(false, false);
     });
 
     test('Enable', function() {
@@ -79,8 +51,7 @@ suite('AndroidAppsPageTests', function() {
       Polymer.dom.flush();
       assertTrue(androidAppsPage.prefs.arc.enabled.value);
 
-      androidAppsBrowserProxy.setAndroidAppsState(true, false);
-      Polymer.dom.flush();
+      setAndroidAppsState(true, false);
       assertTrue(!!androidAppsPage.$$('.subpage-arrow'));
     });
   });
@@ -102,32 +73,42 @@ suite('AndroidAppsPageTests', function() {
     }
 
     setup(function() {
+      androidAppsPage.havePlayStoreApp = true;
       androidAppsPage.prefs = {arc: {enabled: {value: true}}};
-      return androidAppsBrowserProxy.whenCalled('requestAndroidAppsInfo')
-          .then(function() {
-            settings.navigateTo(settings.Route.ANDROID_APPS);
-            androidAppsBrowserProxy.setAndroidAppsState(true, false);
-            MockInteractions.tap(androidAppsPage.$$('#android-apps'));
-            Polymer.dom.flush();
-            subpage = androidAppsPage.$$('settings-android-apps-subpage');
-            assertTrue(!!subpage);
-          });
+      setAndroidAppsState(true, false);
+      settings.navigateTo(settings.Route.ANDROID_APPS);
+      MockInteractions.tap(androidAppsPage.$$('#android-apps'));
+      Polymer.dom.flush();
+      subpage = androidAppsPage.$$('settings-android-apps-subpage');
+      assertTrue(!!subpage);
     });
 
     test('Sanity', function() {
       assertTrue(!!subpage.$$('#remove'));
-      assertTrue(!!subpage.$$('#manageApps'));
+      assertTrue(!subpage.$$('settings-android-settings-element'));
     });
 
     test('ManageAppsUpdate', function() {
-      var manageApps = subpage.$$('#manageApps');
-      assertTrue(manageApps.hidden);
-      androidAppsBrowserProxy.setAndroidAppsState(true, true);
+      assertTrue(!subpage.$$('settings-android-settings-element'));
+      setAndroidAppsState(true, true);
+      assertTrue(!!subpage.$$('settings-android-settings-element'));
+      assertTrue(!!subpage.$$('settings-android-settings-element').
+          $$('#manageApps'));
+      setAndroidAppsState(true, false);
+      assertTrue(!subpage.$$('settings-android-settings-element'));
+    });
+
+    test('ManageAppsOpenReqest', function() {
+      setAndroidAppsState(true, true);
+      var button = subpage.$$('settings-android-settings-element').
+          $$('#manageApps');
+      assertTrue(!!button);
+      var promise = androidAppsBrowserProxy.whenCalled(
+          'showAndroidAppsSettings');
+      // MockInteractions.tap does not work here due style is not updated.
+      button.click();
       Polymer.dom.flush();
-      assertFalse(manageApps.hidden);
-      androidAppsBrowserProxy.setAndroidAppsState(true, false);
-      Polymer.dom.flush();
-      assertTrue(manageApps.hidden);
+      return promise;
     });
 
     test('Disable', function() {
@@ -147,8 +128,7 @@ suite('AndroidAppsPageTests', function() {
     test('HideOnDisable', function() {
       assertEquals(settings.getCurrentRoute(),
                    settings.Route.ANDROID_APPS_DETAILS);
-      androidAppsBrowserProxy.setAndroidAppsState(false, false);
-      Polymer.dom.flush();
+      setAndroidAppsState(false, false);
       return whenPopState().then(function() {
         assertEquals(settings.getCurrentRoute(),
             settings.Route.ANDROID_APPS);
@@ -160,6 +140,7 @@ suite('AndroidAppsPageTests', function() {
     var subpage;
 
     setup(function() {
+      androidAppsPage.havePlayStoreApp = true;
       androidAppsPage.prefs = {
         arc: {
           enabled: {
@@ -168,20 +149,46 @@ suite('AndroidAppsPageTests', function() {
           }
         }
       };
-      return androidAppsBrowserProxy.whenCalled('requestAndroidAppsInfo')
-          .then(function() {
-            androidAppsBrowserProxy.setAndroidAppsState(true, true);
-            MockInteractions.tap(androidAppsPage.$$('#android-apps'));
-            Polymer.dom.flush();
-            subpage = androidAppsPage.$$('settings-android-apps-subpage');
-            assertTrue(!!subpage);
-          });
+      setAndroidAppsState(true, true);
+      MockInteractions.tap(androidAppsPage.$$('#android-apps'));
+      Polymer.dom.flush();
+      subpage = androidAppsPage.$$('settings-android-apps-subpage');
+      assertTrue(!!subpage);
     });
 
     test('Sanity', function() {
       Polymer.dom.flush();
-      assertTrue(!!subpage.$$('#manageApps'));
       assertFalse(!!subpage.$$('#remove'));
+      assertTrue(!!subpage.$$('settings-android-settings-element'));
+      assertTrue(!!subpage.$$('settings-android-settings-element').
+          $$('#manageApps'));
     });
   });
+
+  suite('NoPlayStore', function() {
+    setup(function() {
+      androidAppsPage.havePlayStoreApp = false;
+      androidAppsPage.prefs = {arc: {enabled: {value: true}}};
+      setAndroidAppsState(true, true);
+    });
+
+    test('Sanity', function() {
+      assertTrue(!!androidAppsPage.$$('settings-android-settings-element'));
+      assertTrue(!!androidAppsPage.$$('settings-android-settings-element').
+          $$("#manageApps"));
+    });
+
+    test('ManageAppsOpenReqest', function() {
+      var button = androidAppsPage.$$('settings-android-settings-element').
+          $$('#manageApps');
+      assertTrue(!!button);
+      var promise = androidAppsBrowserProxy.whenCalled(
+          'showAndroidAppsSettings');
+      // MockInteractions.tap does not work here due style is not updated.
+      button.click();
+      Polymer.dom.flush();
+      return promise;
+    });
+  });
+
 });

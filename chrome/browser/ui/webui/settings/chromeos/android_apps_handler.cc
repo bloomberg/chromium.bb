@@ -71,9 +71,12 @@ AndroidAppsHandler::BuildAndroidAppsInfo() {
   std::unique_ptr<base::DictionaryValue> info(new base::DictionaryValue);
   info->SetBoolean("playStoreEnabled",
                    arc::IsArcPlayStoreEnabledForProfile(profile_));
+  const ArcAppListPrefs* arc_apps_pref = ArcAppListPrefs::Get(profile_);
+  // TODO(khmel): Inverstigate why in some browser tests
+  // playStoreEnabled is true but arc_apps_pref is not set.
   info->SetBoolean(
       "settingsAppAvailable",
-      ArcAppListPrefs::Get(profile_)->IsRegistered(arc::kSettingsAppId));
+      arc_apps_pref && arc_apps_pref->IsRegistered(arc::kSettingsAppId));
   return info;
 }
 

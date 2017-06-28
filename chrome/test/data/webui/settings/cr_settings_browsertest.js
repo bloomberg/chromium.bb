@@ -1661,6 +1661,7 @@ CrSettingsAndroidAppsPageTest.prototype = {
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
     '../test_browser_proxy.js',
+    'test_android_apps_browser_proxy.js',
     'android_apps_page_test.js',
   ]),
 };
