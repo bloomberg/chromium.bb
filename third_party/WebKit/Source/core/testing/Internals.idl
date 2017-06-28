@@ -358,6 +358,10 @@ enum EffectiveConnectionType {
     boolean isCSSPropertyUseCounted(Document document, DOMString propertyName);
     boolean isAnimatedCSSPropertyUseCounted(Document document, DOMString propertyName);
 
+    sequence<DOMString> getCSSPropertyLonghands();
+    sequence<DOMString> getCSSPropertyShorthands();
+    sequence<DOMString> getCSSPropertyAliases();
+
     // Returns a promise that is resolved when |feature| is counted on
     // |document|'s UseCounter. When |feature| was already counted, it's
     // immediately resolved.
