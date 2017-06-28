@@ -367,16 +367,35 @@ DocumentMarker* DocumentMarkerController::MarkerAtPosition(
     DocumentMarker::MarkerTypes marker_types) {
   if (!PossiblyHasMarkers(marker_types))
     return nullptr;
+
   Node* const node = position.ComputeContainerNode();
+  MarkerLists* const markers = markers_.at(node);
+  if (!markers)
+    return nullptr;
+
   const unsigned offset =
       static_cast<unsigned>(position.ComputeOffsetInContainerNode());
 
-  const auto& markers = MarkersFor(node, marker_types);
-  const auto& it =
-      std::find_if(markers.begin(), markers.end(), [=](DocumentMarker* marker) {
-        return marker->StartOffset() < offset && offset < marker->EndOffset();
-      });
-  return it == markers.end() ? nullptr : *it;
+  // This position can't be in the interior of a marker if it occurs at an
+  // endpoint of the node
+  if (offset == 0 ||
+      offset == static_cast<unsigned>(node->MaxCharacterOffset()))
+    return nullptr;
+
+  // Query each of the DocumentMarkerLists until we find a marker at the
+  // specified position (or have gone through all the MarkerTypes)
+  for (DocumentMarker::MarkerType type : marker_types) {
+    const DocumentMarkerList* const list = ListForType(markers, type);
+    if (!list)
+      continue;
+
+    const HeapVector<Member<DocumentMarker>>& results =
+        list->MarkersIntersectingRange(offset, offset);
+    if (!results.IsEmpty())
+      return results.front();
+  }
+
+  return nullptr;
 }
 
 DocumentMarkerVector DocumentMarkerController::MarkersFor(
