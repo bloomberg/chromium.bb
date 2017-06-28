@@ -61,6 +61,7 @@ static_library("prefetch") {
     "//components/ntp_snippets",
     "//components/offline_pages/core",
     "//components/offline_pages/core:switches",
+    "//components/variations:variations",
     "//components/version_info",
     "//google_apis",
     "//net:net",
@@ -120,6 +121,7 @@ source_set("unit_tests") {
     "prefetch_network_request_factory_impl_unittest.cc",
     "prefetch_request_fetcher_unittest.cc",
     "prefetch_request_operation_response_unittest.cc",
+    "prefetch_server_urls_unittest.cc",
     "suggested_articles_observer_unittest.cc",
   ]
 
@@ -131,6 +133,7 @@ source_set("unit_tests") {
     "//components/offline_pages/core",
     "//components/offline_pages/core:switches",
     "//components/offline_pages/core:test_support",
+    "//components/variations:test_support",
     "//components/version_info:channel",
     "//net:test_support",
     "//testing/gmock",
