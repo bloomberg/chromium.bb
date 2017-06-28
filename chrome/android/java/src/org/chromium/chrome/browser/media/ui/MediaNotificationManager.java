@@ -870,11 +870,12 @@ public class MediaNotificationManager {
         clearNotification();
     }
 
-    @Nullable
+    @NonNull
     private MediaMetadataCompat createMetadata() {
-        if (mMediaNotificationInfo.isPrivate) return null;
-
+        // Can't return null as {@link MediaSessionCompat#setMetadata()} will crash in some versions
+        // of the Android compat library.
         MediaMetadataCompat.Builder metadataBuilder = new MediaMetadataCompat.Builder();
+        if (mMediaNotificationInfo.isPrivate) return metadataBuilder.build();
 
         metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_TITLE,
                 mMediaNotificationInfo.metadata.getTitle());
