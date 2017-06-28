@@ -107,6 +107,7 @@ static_library("common") {
     "chrome_content_client_constants.cc",
     "chrome_isolated_world_ids.h",
     "chrome_result_codes.h",
+    "chrome_utility_messages.h",
     "common_message_generator.cc",
     "common_message_generator.h",
     "common_param_traits.cc",
@@ -683,7 +684,7 @@ mojom("mojo_bindings") {
   }
 
   if (safe_browsing_mode == 1) {
-    sources += [ "safe_browsing/safe_archive_analyzer.mojom" ]
+    sources += [ "safe_archive_analyzer.mojom" ]
   }
 
   public_deps = [
