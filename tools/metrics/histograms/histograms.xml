@@ -93041,6 +93041,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="OfflinePages.Background.FinalSavePageResult"/>
   <affected-histogram name="OfflinePages.Background.LoadingErrorStatusCode"/>
   <affected-histogram name="OfflinePages.Background.OfflinerRequestStatus"/>
+  <affected-histogram name="OfflinePages.Background.OffliningPreviewStatus"/>
   <affected-histogram name="OfflinePages.Background.TimeToCanceled"/>
   <affected-histogram name="OfflinePages.Background.TimeToSaved"/>
   <affected-histogram name="OfflinePages.Background.TimeToStart"/>
