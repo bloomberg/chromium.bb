@@ -78,8 +78,10 @@ void OwnerSettingsServiceChromeOSFactory::SetOwnerKeyUtilForTesting(
 KeyedService* OwnerSettingsServiceChromeOSFactory::BuildInstanceFor(
     content::BrowserContext* browser_context) {
   Profile* profile = static_cast<Profile*>(browser_context);
-  if (profile->IsGuestSession() || ProfileHelper::IsSigninProfile(profile))
-    return NULL;
+  if (profile->IsGuestSession() || ProfileHelper::IsSigninProfile(profile) ||
+      ProfileHelper::IsLockScreenAppProfile(profile)) {
+    return nullptr;
+  }
   return new OwnerSettingsServiceChromeOS(
       GetDeviceSettingsService(),
       profile,

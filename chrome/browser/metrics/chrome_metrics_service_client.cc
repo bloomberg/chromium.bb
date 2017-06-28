@@ -936,9 +936,12 @@ void ChromeMetricsServiceClient::RegisterForProfileEvents(Profile* profile) {
       profile, new ukm::debug::DebugPage(base::Bind(
                    &BindableGetUkmService, weak_ptr_factory_.GetWeakPtr())));
 #if defined(OS_CHROMEOS)
-  // Ignore the signin profile for sync disables / history deletion.
-  if (chromeos::ProfileHelper::IsSigninProfile(profile))
+  // Ignore the signin and lock screen app profile for sync disables / history
+  // deletion.
+  if (chromeos::ProfileHelper::IsSigninProfile(profile) ||
+      chromeos::ProfileHelper::IsLockScreenAppProfile(profile)) {
     return;
+  }
 #endif
   history::HistoryService* history_service =
       HistoryServiceFactory::GetForProfile(profile,

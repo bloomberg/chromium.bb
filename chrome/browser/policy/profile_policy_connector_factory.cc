@@ -107,7 +107,8 @@ ProfilePolicyConnectorFactory::CreateForBrowserContextInternal(
 
 #if defined(OS_CHROMEOS)
   Profile* const profile = Profile::FromBrowserContext(context);
-  if (!chromeos::ProfileHelper::IsSigninProfile(profile)) {
+  if (!chromeos::ProfileHelper::IsSigninProfile(profile) &&
+      !chromeos::ProfileHelper::IsLockScreenAppProfile(profile)) {
     user = chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
     CHECK(user);
   }

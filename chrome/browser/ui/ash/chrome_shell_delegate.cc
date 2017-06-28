@@ -637,6 +637,7 @@ void ChromeShellDelegate::Observe(int type,
     case chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED: {
       Profile* profile = content::Details<Profile>(details).ptr();
       if (!chromeos::ProfileHelper::IsSigninProfile(profile) &&
+          !chromeos::ProfileHelper::IsLockScreenAppProfile(profile) &&
           !profile->IsGuestSession() && !profile->IsSupervised()) {
         // Start the error notifier services to show auth/sync notifications.
         SigninErrorNotifierFactory::GetForProfile(profile);

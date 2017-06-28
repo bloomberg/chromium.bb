@@ -8,16 +8,16 @@
 #include <memory>
 
 #include "ash/public/interfaces/tray_action.mojom.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/chromeos/lock_screen_apps/app_manager.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_observer.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/session_manager/core/session_manager_observer.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/common/api/app_runtime.h"
 #include "mojo/public/cpp/bindings/binding.h"
-
-class Profile;
 
 namespace content {
 class BrowserContext;
@@ -27,7 +27,7 @@ namespace extensions {
 class AppDelegate;
 class AppWindow;
 class Extension;
-}
+}  // namespace extensions
 
 namespace session_manager {
 class SessionManager;
@@ -63,6 +63,9 @@ class StateController : public ash::mojom::TrayActionClient,
   // Has to be called before |Initialize|.
   void SetTrayActionPtrForTesting(ash::mojom::TrayActionPtr tray_action_ptr);
   void FlushTrayActionForTesting();
+  // Sets the callback that will be run when the state controller is fully
+  // initialized and ready for action.
+  void SetReadyCallbackForTesting(const base::Closure& ready_callback);
   // Sets test AppManager implementation. Should be called before
   // |SetPrimaryProfile|
   void SetAppManagerForTesting(std::unique_ptr<AppManager> app_manager);
@@ -108,6 +111,14 @@ class StateController : public ash::mojom::TrayActionClient,
   void MoveToForeground();
 
  private:
+  // Called when profiles needed to run lock screen apps are ready - i.e. when
+  // primary user profile was set using |SetPrimaryProfile| and the profile in
+  // which app lock screen windows will be run creation is done.
+  // |status| - The lock screen profile creation status.
+  void OnProfilesReady(Profile* primary_profile,
+                       Profile* lock_screen_profile,
+                       Profile::CreateStatus status);
+
   // Called when app manager reports that note taking availability has changed.
   void OnNoteTakingAvailabilityChanged();
 
@@ -133,6 +144,8 @@ class StateController : public ash::mojom::TrayActionClient,
   mojo::Binding<ash::mojom::TrayActionClient> binding_;
   ash::mojom::TrayActionPtr tray_action_ptr_;
 
+  Profile* lock_screen_profile_ = nullptr;
+
   std::unique_ptr<AppManager> app_manager_;
 
   extensions::AppWindow* note_app_window_ = nullptr;
@@ -143,6 +156,14 @@ class StateController : public ash::mojom::TrayActionClient,
   ScopedObserver<session_manager::SessionManager,
                  session_manager::SessionManagerObserver>
       session_observer_;
+
+  // If set, this callback will be run when the state controller is fully
+  // initialized. It can be used to throttle tests until state controller
+  // is ready for action - i.e. until the state controller starts reacting
+  // to session / app manager changes.
+  base::Closure ready_callback_;
+
+  base::WeakPtrFactory<StateController> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(StateController);
 };

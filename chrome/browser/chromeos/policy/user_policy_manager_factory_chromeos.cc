@@ -146,13 +146,17 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
 
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
-  // Don't initialize cloud policy for the signin profile.
-  if (chromeos::ProfileHelper::IsSigninProfile(profile))
+  // Don't initialize cloud policy for the signin  and the lock screen app
+  // profile.
+  if (chromeos::ProfileHelper::IsSigninProfile(profile) ||
+      chromeos::ProfileHelper::IsLockScreenAppProfile(profile)) {
     return {};
+  }
 
-  // |user| should never be nullptr except for the signin profile. This object
-  // is created as part of the Profile creation, which happens right after
-  // sign-in. The just-signed-in User is the active user during that time.
+  // |user| should never be nullptr except for the signin and lock screen app
+  // profile. This object is created as part of the Profile creation, which
+  // happens right after sign-in. The just-signed-in User is the active user
+  // during that time.
   const user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
   CHECK(user);

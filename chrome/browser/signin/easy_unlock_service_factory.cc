@@ -84,6 +84,10 @@ KeyedService* EasyUnlockServiceFactory::BuildServiceInstanceFor(
   int manifest_id = 0;
 
 #if defined(OS_CHROMEOS)
+  if (chromeos::ProfileHelper::IsLockScreenAppProfile(
+          Profile::FromBrowserContext(context))) {
+    return nullptr;
+  }
   if (chromeos::ProfileHelper::IsSigninProfile(
           Profile::FromBrowserContext(context))) {
     if (!context->IsOffTheRecord())

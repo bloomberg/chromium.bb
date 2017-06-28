@@ -347,9 +347,12 @@ VolumeManager* VolumeManager::Get(content::BrowserContext* context) {
 }
 
 void VolumeManager::Initialize() {
-  // If in Sign in profile, then skip mounting and listening for mount events.
-  if (chromeos::ProfileHelper::IsSigninProfile(profile_))
+  // If in the Sign in profile pr the lock screen app profile, skip mounting
+  // and listening for mount events.
+  if (chromeos::ProfileHelper::IsSigninProfile(profile_) ||
+      chromeos::ProfileHelper::IsLockScreenAppProfile(profile_)) {
     return;
+  }
 
   // Register 'Downloads' folder for the profile to the file system.
   const base::FilePath downloads =

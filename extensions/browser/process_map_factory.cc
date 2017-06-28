@@ -34,7 +34,10 @@ ProcessMapFactory::~ProcessMapFactory() {}
 
 KeyedService* ProcessMapFactory::BuildServiceInstanceFor(
     BrowserContext* context) const {
-  return new ProcessMap;
+  ProcessMap* process_map = new ProcessMap();
+  process_map->set_is_lock_screen_context(
+      ExtensionsBrowserClient::Get()->IsLockScreenContext(context));
+  return process_map;
 }
 
 BrowserContext* ProcessMapFactory::GetBrowserContextToUse(

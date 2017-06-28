@@ -64,6 +64,8 @@ KeyedService* EasyUnlockTpmKeyManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
   const user_manager::User* user = NULL;
+  if (chromeos::ProfileHelper::IsLockScreenAppProfile(profile))
+    return nullptr;
   if (!chromeos::ProfileHelper::IsSigninProfile(profile))
     user = chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
   return new EasyUnlockTpmKeyManager(
