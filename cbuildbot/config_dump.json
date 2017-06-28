@@ -20294,11 +20294,11 @@
         "boards": [
             "reef-uni"
         ],
-        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
-        ]
+        ],
+        "vm_tests": []
     },
     "reef-uni-compile-only-pre-cq": {
         "_template": "compile_only_pre_cq",
@@ -20311,11 +20311,11 @@
         "boards": [
             "reef-uni"
         ],
-        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
-        ]
+        ],
+        "vm_tests": []
     },
     "reef-uni-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -20329,14 +20329,15 @@
             "reef-uni"
         ],
         "important": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "reef-uni-pre-cq": {
         "_template": "pre_cq",
         "boards": [
             "reef-uni"
         ],
-        "buildslave_type": "baremetal"
+        "vm_tests": []
     },
     "reef-uni-release": {
         "_template": "release",
@@ -20344,23 +20345,24 @@
         "boards": [
             "reef-uni"
         ],
-        "buildslave_type": "baremetal",
         "models": [
             "reef-uni",
             "reef-uni",
             "reef-uni",
             "reef-uni"
-        ]
+        ],
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "reef-uni-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
             "reef-uni"
         ],
-        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
+        ],
+        "vm_tests": []
     },
     "reef-uni-unittest-stress": {
         "_template": "unittest_stress",

@@ -618,6 +618,7 @@ _cheets_x86_boards = frozenset([
     'poppy',
     'pyro',
     'reef',
+    'reef-uni',
     'reks',
     'samus',
     'sand',
