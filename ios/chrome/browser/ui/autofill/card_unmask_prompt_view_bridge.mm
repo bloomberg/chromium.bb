@@ -206,11 +206,14 @@ void CardUnmaskPromptViewBridge::DeleteSelf() {
 
 - (void)viewWillLayoutSubviews {
   [super viewWillLayoutSubviews];
-  NSIndexPath* CVCIndexPath =
-      [self.collectionViewModel indexPathForItem:_CVCItem];
-  CVCCell* CVC = base::mac::ObjCCastStrict<CVCCell>(
-      [self.collectionView cellForItemAtIndexPath:CVCIndexPath]);
-  [self focusInputIfNeeded:CVC];
+  if ([self.collectionViewModel hasItemForItemType:ItemTypeCVC
+                                 sectionIdentifier:SectionIdentifierMain]) {
+    NSIndexPath* CVCIndexPath =
+        [self.collectionViewModel indexPathForItem:_CVCItem];
+    CVCCell* CVC = base::mac::ObjCCastStrict<CVCCell>(
+        [self.collectionView cellForItemAtIndexPath:CVCIndexPath]);
+    [self focusInputIfNeeded:CVC];
+  }
 }
 
 #pragma mark - CollectionViewController
