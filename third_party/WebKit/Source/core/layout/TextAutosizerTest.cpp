@@ -852,4 +852,36 @@ TEST_F(TextAutosizerTest, LayoutViewWidthProvider) {
                   content->GetLayoutObject()->Style()->ComputedFontSize());
 }
 
+TEST_F(TextAutosizerTest, MultiColumns) {
+  Element* html = GetDocument().body()->parentElement();
+  html->setInnerHTML(
+      "<head>"
+      "  <meta name='viewport' content='width=800'>"
+      "  <style>"
+      "    html { font-size:16px;}"
+      "    #mc {columns: 3;}"
+      "  </style>"
+      "</head>"
+      "<body>"
+      "  <div id='mc'>"
+      "    <div id='target'>"
+      "      Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed "
+      "      do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+      "      Ut enim ad minim veniam, quis nostrud exercitation ullamco "
+      "      laboris nisi ut aliquip ex ea commodo consequat. Duis aute "
+      "      irure dolor in reprehenderit in voluptate velit esse cillum "
+      "      dolore eu fugiat nulla pariatur. Excepteur sint occaecat "
+      "      cupidatat non proident, sunt in culpa qui officia deserunt "
+      "    </div>"
+      "  </div>"
+      "  <div> hello </div>"
+      "</body>",
+      ASSERT_NO_EXCEPTION);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  Element* target = GetDocument().getElementById("target");
+  // (specified font-size = 16px) * ( thread flow layout width = 800px / 3) /
+  // (window width = 320px) < 16px.
+  EXPECT_FLOAT_EQ(16.f, target->GetLayoutObject()->Style()->ComputedFontSize());
+}
 }  // namespace blink

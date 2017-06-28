@@ -41,6 +41,7 @@
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutListItem.h"
 #include "core/layout/LayoutListMarker.h"
+#include "core/layout/LayoutMultiColumnFlowThread.h"
 #include "core/layout/LayoutRubyRun.h"
 #include "core/layout/LayoutTable.h"
 #include "core/layout/LayoutTableCell.h"
@@ -675,8 +676,12 @@ TextAutosizer::BlockFlags TextAutosizer::ClassifyBlock(
     if (mask & POTENTIAL_ROOT)
       flags |= POTENTIAL_ROOT;
 
+    LayoutMultiColumnFlowThread* flow_thread = nullptr;
+    if (block->IsLayoutBlockFlow())
+      flow_thread = ToLayoutBlockFlow(block)->MultiColumnFlowThread();
     if ((mask & INDEPENDENT) &&
-        (IsIndependentDescendant(block) || block->IsTable()))
+        (IsIndependentDescendant(block) || block->IsTable() ||
+         (flow_thread && flow_thread->ColumnCount() > 1)))
       flags |= INDEPENDENT;
 
     if ((mask & EXPLICIT_WIDTH) && HasExplicitWidth(block))
