@@ -62,7 +62,7 @@ ProfileSet* ProfileSet::Get() {
 // even be even added to new requests. Value of 0 (initial) means that we
 // probably have some profiles to restore, while 1 means that all known
 // profiles are restored.
-base::AtomicRefCount g_all_profiles_restored_ = 0;
+base::AtomicRefCount g_all_profiles_restored_(0);
 
 }  // namespace
 
@@ -101,7 +101,8 @@ void UnblockProfile(Profile* profile) {
   // Check if there is any other profile to block on.
   if (ProfileSet::Get()->size() == 0) {
     base::AtomicRefCountInc(&g_all_profiles_restored_);
-    DVLOG(1) << "All profiles merged " << g_all_profiles_restored_;
+    DVLOG(1) << "All profiles merged "
+             << g_all_profiles_restored_.SubtleRefCountForDebug();
   }
 }
 

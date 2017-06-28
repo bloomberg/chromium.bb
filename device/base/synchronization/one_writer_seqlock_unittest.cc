@@ -68,7 +68,7 @@ class BasicSeqLockTestThread : public base::PlatformThread::Delegate {
 TEST(OneWriterSeqLockTest, MAYBE_ManyThreads) {
   OneWriterSeqLock seqlock;
   TestData data = {0, 0, 0};
-  base::AtomicRefCount ready = 0;
+  base::AtomicRefCount ready(0);
 
   ANNOTATE_BENIGN_RACE_SIZED(&data, sizeof(data), "Racey reads are discarded");
 
