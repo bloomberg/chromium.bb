@@ -10,6 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "base/sequenced_task_runner_helpers.h"
 
 namespace metrics {
@@ -62,11 +63,19 @@ class ExternalMetrics {
   // Calls CollectEvents and reschedules a future collection.
   void CollectEventsAndReschedule();
 
+  // Schedules a future collection.
+  void ScheduleCollection();
+
   // Reference to stability metrics provider, for reporting external crashes.
   CastStabilityMetricsProvider* const stability_provider_;
 
   // File used by libmetrics to send metrics to the browser process.
   const std::string uma_events_file_;
+
+  // The task runner used for running background tasks.
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<ExternalMetrics> weak_factory_;
 
