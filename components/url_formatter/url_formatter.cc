@@ -360,6 +360,7 @@ const FormatUrlType kFormatUrlOmitTrailingSlashOnBareHostname = 1 << 2;
 const FormatUrlType kFormatUrlOmitAll =
     kFormatUrlOmitUsernamePassword | kFormatUrlOmitHTTP |
     kFormatUrlOmitTrailingSlashOnBareHostname;
+const FormatUrlType kFormatUrlExperimentalElideAfterHost = 1 << 3;
 
 base::string16 FormatUrl(const GURL& url,
                          FormatUrlTypes format_types,
@@ -506,29 +507,56 @@ base::string16 FormatUrlWithAdjustments(
   }
 
   // Path & query.  Both get the same general unescape & convert treatment.
-  if (!(format_types & kFormatUrlOmitTrailingSlashOnBareHostname) ||
-      !CanStripTrailingSlash(url)) {
-    AppendFormattedComponent(spec, parsed.path,
-                             NonHostComponentTransform(unescape_rules),
-                             &url_string, &new_parsed->path, adjustments);
-  } else {
+  if ((format_types & kFormatUrlOmitTrailingSlashOnBareHostname) &&
+      CanStripTrailingSlash(url)) {
+    // Omit the path, which is a single trailing slash. There's no query or ref.
     if (parsed.path.len > 0) {
       adjustments->push_back(base::OffsetAdjuster::Adjustment(
           parsed.path.begin, parsed.path.len, 0));
     }
-  }
-  if (parsed.query.is_valid())
-    url_string.push_back('?');
-  AppendFormattedComponent(spec, parsed.query,
-                           NonHostComponentTransform(unescape_rules),
-                           &url_string, &new_parsed->query, adjustments);
+  } else if ((format_types & kFormatUrlExperimentalElideAfterHost) &&
+             url.IsStandard() && !url.SchemeIsFile() &&
+             !url.SchemeIsFileSystem()) {
+    // Replace everything after the host with a forward slash and ellipsis.
+    url_string.push_back('/');
+    constexpr base::char16 kEllipsisUTF16[] = {0x2026, 0};
+    url_string.append(kEllipsisUTF16);
 
-  // Ref.  This is valid, unescaped UTF-8, so we can just convert.
-  if (parsed.ref.is_valid())
-    url_string.push_back('#');
-  AppendFormattedComponent(spec, parsed.ref,
-                           NonHostComponentTransform(net::UnescapeRule::NONE),
-                           &url_string, &new_parsed->ref, adjustments);
+    // Compute the length of everything we're replacing. For the path, we are
+    // removing everything but the first slash.
+    size_t old_length = parsed.path.len - 1;
+
+    // We're also removing any query, plus the delimiting '?'.
+    if (parsed.query.is_valid())
+      old_length += parsed.query.len + 1;
+
+    // We're also removing any ref, plus the delimiting '#'.
+    if (parsed.ref.is_valid())
+      old_length += parsed.ref.len + 1;
+
+    // We're replacing all of these with a single character (an ellipsis). The
+    // adjustment begins after the forward slash at the beginning of the path.
+    adjustments->push_back(
+        base::OffsetAdjuster::Adjustment(parsed.path.begin + 1, old_length, 1));
+  } else {
+    // Append the formatted path, query, and ref.
+    AppendFormattedComponent(spec, parsed.path,
+                             NonHostComponentTransform(unescape_rules),
+                             &url_string, &new_parsed->path, adjustments);
+
+    if (parsed.query.is_valid())
+      url_string.push_back('?');
+    AppendFormattedComponent(spec, parsed.query,
+                             NonHostComponentTransform(unescape_rules),
+                             &url_string, &new_parsed->query, adjustments);
+
+    // Ref.  This is valid, unescaped UTF-8, so we can just convert.
+    if (parsed.ref.is_valid())
+      url_string.push_back('#');
+    AppendFormattedComponent(spec, parsed.ref,
+                             NonHostComponentTransform(net::UnescapeRule::NONE),
+                             &url_string, &new_parsed->ref, adjustments);
+  }
 
   // If we need to strip out http do it after the fact.
   if (omit_http && base::StartsWith(url_string, base::ASCIIToUTF16(kHTTP),
