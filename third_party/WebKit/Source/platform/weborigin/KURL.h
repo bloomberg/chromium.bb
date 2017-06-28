@@ -235,6 +235,7 @@ PLATFORM_EXPORT bool EqualIgnoringFragmentIdentifier(const KURL&, const KURL&);
 
 PLATFORM_EXPORT const KURL& BlankURL();
 PLATFORM_EXPORT const KURL& SrcdocURL();
+PLATFORM_EXPORT const KURL& NullURL();
 
 // Functions to do URL operations on strings.
 // These are operations that aren't faster on a parsed URL.
