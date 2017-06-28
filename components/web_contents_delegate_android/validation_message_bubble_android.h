@@ -9,13 +9,10 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/strings/string16.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
 class Rect;
-}
-
-namespace content {
-class RenderWidgetHost;
 }
 
 namespace web_contents_delegate_android {
@@ -24,13 +21,12 @@ namespace web_contents_delegate_android {
 // bridge to a Java implementation.
 class ValidationMessageBubbleAndroid {
  public:
-  ValidationMessageBubbleAndroid(content::RenderWidgetHost* widget_host,
-                                 const gfx::Rect& anchor_in_screen,
+  ValidationMessageBubbleAndroid(gfx::NativeView view,
                                  const base::string16& main_text,
                                  const base::string16& sub_text);
   virtual ~ValidationMessageBubbleAndroid();
-  virtual void SetPositionRelativeToAnchor(
-      content::RenderWidgetHost* widget_host,
+  virtual void ShowAtPositionRelativeToAnchor(
+      gfx::NativeView view,
       const gfx::Rect& anchor_in_screen);
 
  private:
