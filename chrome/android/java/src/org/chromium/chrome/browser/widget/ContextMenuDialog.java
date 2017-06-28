@@ -164,14 +164,8 @@ public class ContextMenuDialog extends AlwaysDismissedDialog {
         float fromY = fromX;
         float toY = toX;
 
-        ScaleAnimation animation;
-        if (mRenderCoordinates == null) {
-            animation = new ScaleAnimation(fromX, toX, fromY, toY, Animation.RELATIVE_TO_SELF, 0.5f,
-                    Animation.RELATIVE_TO_SELF, 0.5f);
-        } else {
-            animation = new ScaleAnimation(
-                    fromX, toX, fromY, toY, Animation.ABSOLUTE, pivotX, Animation.ABSOLUTE, pivotY);
-        }
+        ScaleAnimation animation = new ScaleAnimation(
+                fromX, toX, fromY, toY, Animation.ABSOLUTE, pivotX, Animation.ABSOLUTE, pivotY);
 
         long duration = isEnterAnimation ? ENTER_ANIMATION_DURATION_MS : EXIT_ANIMATION_DURATION_MS;
 
