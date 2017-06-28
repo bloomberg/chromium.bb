@@ -703,4 +703,12 @@ __gCrWeb['common'] = __gCrWeb.common;
     return false;
   };
 
+  /**
+   * Checks whether the two URLs are from the same origin.
+   */
+  __gCrWeb.common.isSameOrigin = function(url_one, url_two) {
+    return __gCrWeb.common.removeQueryAndReferenceFromURL(url_one) ==
+      __gCrWeb.common.removeQueryAndReferenceFromURL(url_two);
+  }
+
 }());  // End of anonymous object
