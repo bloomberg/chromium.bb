@@ -57,6 +57,8 @@ public class SuggestionsUiDelegateImpl implements SuggestionsUiDelegate {
         mProfile = profile;
         mHost = host;
         mReferencePool = referencePool;
+
+        addDestructionObserver(mSuggestionsSource);
     }
 
     @Override
@@ -158,7 +160,10 @@ public class SuggestionsUiDelegateImpl implements SuggestionsUiDelegate {
      */
     private LargeIconBridge getLargeIconBridge() {
         assert !mIsDestroyed;
-        if (mLargeIconBridge == null) mLargeIconBridge = new LargeIconBridge(mProfile);
+        if (mLargeIconBridge == null) {
+            mLargeIconBridge =
+                    SuggestionsDependencyFactory.getInstance().createLargeIconBridge(mProfile);
+        }
         return mLargeIconBridge;
     }
 }

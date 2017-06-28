@@ -11,7 +11,7 @@ import javax.annotation.Nullable;
 /**
  * Methods to provide most recent urls, titles and thumbnails.
  */
-interface MostVisitedSites {
+public interface MostVisitedSites {
     /**
      * An interface for handling events in {@link MostVisitedSites}.
      */

@@ -208,6 +208,9 @@ public class FakeSuggestionsSource implements SuggestionsSource {
     }
 
     @Override
+    public void onDestroy() {}
+
+    @Override
     public int[] getCategories() {
         int[] result = new int[mCategories.size()];
         int index = 0;
