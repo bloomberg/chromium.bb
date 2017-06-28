@@ -260,6 +260,9 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   // and passed between threads together.
   std::unique_ptr<TokenizedChunk> last_chunk_before_pause_;
   Deque<std::unique_ptr<TokenizedChunk>> speculations_;
+  // Using WeakPtr for GarbageCollected is discouraged. But in this case this is
+  // ok because HTMLDocumentParser guarantees to revoke all WeakPtrs in the pre
+  // finalizer.
   WeakPtrFactory<HTMLDocumentParser> weak_factory_;
   WeakPtr<BackgroundHTMLParser> background_parser_;
   Member<HTMLResourcePreloader> preloader_;
