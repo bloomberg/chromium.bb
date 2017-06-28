@@ -210,7 +210,7 @@ void VoiceInteractionOverlay::StartAnimation() {
     ui::ScopedLayerAnimationSettings settings(ripple_layer_->GetAnimator());
     settings.SetTransitionDuration(
         base::TimeDelta::FromMilliseconds(kRippleExpandDurationMs));
-    settings.SetTweenType(gfx::Tween::LINEAR_OUT_SLOW_IN);
+    settings.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN_2);
 
     ripple_layer_->SetTransform(transform);
 
@@ -255,7 +255,7 @@ void VoiceInteractionOverlay::StartAnimation() {
     ui::ScopedLayerAnimationSettings settings(icon_layer_->GetAnimator());
     settings.SetTransitionDuration(
         base::TimeDelta::FromMilliseconds(kFullExpandDurationMs));
-    settings.SetTweenType(gfx::Tween::LINEAR_OUT_SLOW_IN);
+    settings.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN_2);
 
     icon_layer_->SetTransform(transform);
     icon_layer_->SetOpacity(kIconOpacity);
@@ -293,7 +293,7 @@ void VoiceInteractionOverlay::StartAnimation() {
     ui::ScopedLayerAnimationSettings settings(background_layer_->GetAnimator());
     settings.SetTransitionDuration(
         base::TimeDelta::FromMilliseconds(kFullExpandDurationMs));
-    settings.SetTweenType(gfx::Tween::LINEAR_OUT_SLOW_IN);
+    settings.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN_2);
 
     background_layer_->SetTransform(transform);
   }
@@ -302,7 +302,7 @@ void VoiceInteractionOverlay::StartAnimation() {
     ui::ScopedLayerAnimationSettings settings(background_layer_->GetAnimator());
     settings.SetTransitionDuration(
         base::TimeDelta::FromMilliseconds(kBackgroundOpacityDurationMs));
-    settings.SetTweenType(gfx::Tween::LINEAR_OUT_SLOW_IN);
+    settings.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN_2);
 
     background_layer_->SetOpacity(1);
   }

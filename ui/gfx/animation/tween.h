@@ -31,6 +31,7 @@ class ANIMATION_EXPORT Tween {
     SMOOTH_IN_OUT,       // Smooth, consistent speeds in and out (sine wave).
     FAST_OUT_SLOW_IN,    // Variant of EASE_IN_OUT which should be used in most
                          // cases.
+    FAST_OUT_SLOW_IN_2,  // Variant of FAST_OUT_SLOW_IN that starts out quicker.
     LINEAR_OUT_SLOW_IN,  // Variant of EASE_OUT which should be used for
                          // fading in from 0% or motion when entering a scene.
     SLOW_OUT_LINEAR_IN,  // Reverse of LINEAR_OUT_SLOW_IN which should be used
