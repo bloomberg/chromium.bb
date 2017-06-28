@@ -312,12 +312,7 @@ cr.define('print_preview_test', function() {
     // addCloudPrinters with an empty list.
     test('PrinterListCloudEmpty', function() {
       return setupSettingsAndDestinationsWithCapabilities().then(function() {
-        var cloudPrintEnableEvent = new Event(
-            print_preview.NativeLayer.EventType.CLOUD_PRINT_ENABLE);
-        cloudPrintEnableEvent.baseCloudPrintUrl = 'cloudprint url';
-        nativeLayer.getEventTarget().dispatchEvent(
-            cloudPrintEnableEvent);
-
+        cr.webUIListenerCallback('use-cloud-print', 'cloudprint url', false);
         var searchDoneEvent =
             new Event(cloudprint.CloudPrintInterfaceEventType.SEARCH_DONE);
         searchDoneEvent.printers = [];

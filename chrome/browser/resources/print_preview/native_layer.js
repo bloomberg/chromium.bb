@@ -86,7 +86,6 @@ cr.define('print_preview', function() {
    */
   function NativeLayer() {
     // Bind global handlers
-    global.setUseCloudPrint = this.onSetUseCloudPrint_.bind(this);
     global.reloadPrintersList = this.onReloadPrintersList_.bind(this);
     global.printPreviewFailed = this.onPrintPreviewFailed_.bind(this);
     global.invalidPrinterSettings = this.onInvalidPrinterSettings_.bind(this);
@@ -131,7 +130,6 @@ cr.define('print_preview', function() {
    * @const
    */
   NativeLayer.EventType = {
-    CLOUD_PRINT_ENABLE: 'print_preview.NativeLayer.CLOUD_PRINT_ENABLE',
     DESTINATIONS_RELOAD: 'print_preview.NativeLayer.DESTINATIONS_RELOAD',
     DISABLE_SCALING: 'print_preview.NativeLayer.DISABLE_SCALING',
     MANIPULATE_SETTINGS_FOR_TEST:
@@ -552,20 +550,6 @@ cr.define('print_preview', function() {
     /** Forces browser to open a new tab with the given URL address. */
     startForceOpenNewTab: function(url) {
       chrome.send('forceOpenNewTab', [url]);
-    },
-
-    /**
-     * Turn on the integration of Cloud Print.
-     * @param {{cloudPrintURL: string, appKioskMode: string}} settings
-     *     cloudPrintUrl: The URL to use for cloud print servers.
-     * @private
-     */
-    onSetUseCloudPrint_: function(settings) {
-      var cloudPrintEnableEvent =
-          new Event(NativeLayer.EventType.CLOUD_PRINT_ENABLE);
-      cloudPrintEnableEvent.baseCloudPrintUrl = settings['cloudPrintUrl'] || '';
-      cloudPrintEnableEvent.appKioskMode = settings['appKioskMode'] || false;
-      this.eventTarget_.dispatchEvent(cloudPrintEnableEvent);
     },
 
     /** Reloads the printer list. */

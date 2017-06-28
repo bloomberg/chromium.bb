@@ -188,8 +188,6 @@ const char kPrintAutomaticallyInKioskMode[] = "printAutomaticallyInKioskMode";
 // Dictionary field to indicate whether Chrome is running in forced app (app
 // kiosk) mode. It's not the same as desktop Chrome kiosk (the one above).
 const char kAppKioskMode[] = "appKioskMode";
-// Dictionary field to store Cloud Print base URL.
-const char kCloudPrintUrl[] = "cloudPrintUrl";
 // Name of a dictionary field holding the state of selection for document.
 const char kDocumentHasSelection[] = "documentHasSelection";
 // Dictionary field holding the default destination selection rules.
@@ -1428,11 +1426,10 @@ void PrintPreviewHandler::SendCloudPrintEnabled() {
       preview_web_contents()->GetBrowserContext());
   PrefService* prefs = profile->GetPrefs();
   if (prefs->GetBoolean(prefs::kCloudPrintSubmitEnabled)) {
-    base::DictionaryValue settings;
-    settings.SetString(kCloudPrintUrl,
-                       GURL(cloud_devices::GetCloudPrintURL()).spec());
-    settings.SetBoolean(kAppKioskMode, chrome::IsRunningInForcedAppMode());
-    web_ui()->CallJavascriptFunctionUnsafe("setUseCloudPrint", settings);
+    FireWebUIListener(
+        "use-cloud-print",
+        base::Value(GURL(cloud_devices::GetCloudPrintURL()).spec()),
+        base::Value(chrome::IsRunningInForcedAppMode()));
   }
 }
 

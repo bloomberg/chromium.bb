@@ -340,16 +340,14 @@ cr.define('print_preview', function() {
           'extension-printers-added',
           this.destinationStore_.onExtensionPrintersAdded_.bind(
               this.destinationStore_));
+      this.listenerTracker.add(
+          'use-cloud-print', this.onCloudPrintEnable_.bind(this));
     },
 
     /** @override */
     enterDocument: function() {
       // Native layer events.
       var nativeLayerEventTarget = this.nativeLayer_.getEventTarget();
-      this.tracker.add(
-          nativeLayerEventTarget,
-          print_preview.NativeLayer.EventType.CLOUD_PRINT_ENABLE,
-          this.onCloudPrintEnable_.bind(this));
       this.tracker.add(
           nativeLayerEventTarget,
           print_preview.NativeLayer.EventType.SETTINGS_INVALID,
@@ -689,16 +687,17 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * Calls when the native layer enables Google Cloud Print integration.
+     * Called when Google Cloud Print integration is enabled by the
+     * PrintPreviewHandler.
      * Fetches the user's cloud printers.
-     * @param {Event} event Contains the base URL of the Google Cloud Print
-     *     service.
+     * @param {string} cloudPrintUrl The URL to use for cloud print servers.
+     * @param {boolean} appKioskMode Whether to print automatically for kiosk
+     *     mode.
      * @private
      */
-    onCloudPrintEnable_: function(event) {
+    onCloudPrintEnable_: function(cloudPrintUrl, appKioskMode) {
       this.cloudPrintInterface_ = new cloudprint.CloudPrintInterface(
-          event.baseCloudPrintUrl, this.nativeLayer_, this.userInfo_,
-          event.appKioskMode);
+          cloudPrintUrl, this.nativeLayer_, this.userInfo_, appKioskMode);
       this.tracker.add(
           this.cloudPrintInterface_,
           cloudprint.CloudPrintInterfaceEventType.SUBMIT_DONE,
