@@ -97,6 +97,19 @@ CSSRotation* CSSRotation::FromCSSValue(const CSSFunctionValue& value) {
   }
 }
 
+void CSSRotation::setAngle(CSSNumericValue* angle,
+                           ExceptionState& exception_state) {
+  if (angle->GetType() != CSSStyleValue::StyleValueType::kAngleType) {
+    exception_state.ThrowTypeError("Must pass an angle to CSSRotation");
+    return;
+  }
+  if (angle->IsCalculated()) {
+    exception_state.ThrowTypeError("Calculated angles are not supported yet");
+    return;
+  }
+  angle_ = angle;
+}
+
 CSSFunctionValue* CSSRotation::ToCSSValue() const {
   return nullptr;
   // TODO(meade): Re-implement this when we finish rewriting number/length

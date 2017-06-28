@@ -704,6 +704,10 @@ interface CSSRotation : CSSTransformComponent
     getter y
     getter z
     method constructor
+    setter angle
+    setter x
+    setter y
+    setter z
 interface CSSRule
     attribute @@toStringTag
     attribute CHARSET_RULE
