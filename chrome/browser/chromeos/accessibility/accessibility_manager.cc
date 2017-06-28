@@ -682,9 +682,8 @@ void AccessibilityManager::HandleAccessibilityGesture(ui::AXGesture gesture) {
 
 void AccessibilityManager::SetTouchAccessibilityAnchorPoint(
     const gfx::Point& anchor_point) {
-  ash::RootWindowController* root_window_controller =
-      ash::RootWindowController::ForTargetRootWindow();
-  root_window_controller->SetTouchAccessibilityAnchorPoint(anchor_point);
+  for (auto* rwc : ash::RootWindowController::root_window_controllers())
+    rwc->SetTouchAccessibilityAnchorPoint(anchor_point);
 }
 
 bool AccessibilityManager::IsHighContrastEnabled() const {

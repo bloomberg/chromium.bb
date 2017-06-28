@@ -431,7 +431,7 @@ ui::EventRewriteStatus TouchExplorationController::InDoubleTapPending(
     // If the user moves far enough from the initial touch location (outside
     // the "slop" region, jump to passthrough mode early.
     float delta = (event.location() - initial_press_->location()).Length();
-    if (delta > gesture_detector_config_.touch_slop) {
+    if (delta > gesture_detector_config_.double_tap_slop) {
       tap_timer_.Stop();
       OnTapTimerFired();
     }
@@ -919,15 +919,14 @@ void TouchExplorationController::SideSlideControl(ui::GestureEvent* gesture) {
   }
 
   location = gesture->location();
-  root_window_->GetHost()->ConvertScreenInPixelsToDIP(&location);
-  float volume_adjust_height =
-      root_window_->bounds().height() - 2 * kMaxDistanceFromEdge;
+  gfx::Rect bounds = GetRootWindowBoundsInScreenUnits();
+  float volume_adjust_height = bounds.height() - 2 * kMaxDistanceFromEdge;
   float ratio = (location.y() - kMaxDistanceFromEdge) / volume_adjust_height;
   float volume = 100 - 100 * ratio;
   if (VLOG_on_) {
     VLOG(1) << "\n Volume = " << volume
             << "\n Location = " << location.ToString()
-            << "\n Bounds = " << root_window_->bounds().right();
+            << "\n Bounds = " << bounds.right();
   }
   delegate_->SetOutputLevel(static_cast<int>(volume));
 }
@@ -1017,12 +1016,15 @@ void TouchExplorationController::OnSwipeEvent(ui::GestureEvent* swipe_gesture) {
     delegate_->HandleAccessibilityGesture(gesture);
 }
 
+gfx::Rect TouchExplorationController::GetRootWindowBoundsInScreenUnits() {
+  gfx::Point root_window_size = root_window_->bounds().bottom_right();
+  root_window_->GetHost()->ConvertDIPToScreenInPixels(&root_window_size);
+  return gfx::Rect(0, 0, root_window_size.x(), root_window_size.y());
+}
+
 int TouchExplorationController::FindEdgesWithinBounds(gfx::Point point,
                                                       float bounds) {
-  // Since GetBoundsInScreen is in DIPs but point is not, then point needs to be
-  // converted.
-  root_window_->GetHost()->ConvertScreenInPixelsToDIP(&point);
-  gfx::Rect window = root_window_->GetBoundsInScreen();
+  gfx::Rect window = GetRootWindowBoundsInScreenUnits();
 
   float left_edge_limit = window.x() + bounds;
   float right_edge_limit = window.right() - bounds;
