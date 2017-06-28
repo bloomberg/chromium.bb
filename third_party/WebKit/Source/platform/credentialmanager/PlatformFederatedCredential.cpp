@@ -20,7 +20,10 @@ PlatformFederatedCredential::PlatformFederatedCredential(
     RefPtr<SecurityOrigin> provider,
     const String& name,
     const KURL& icon_url)
-    : PlatformCredential(id, name, icon_url), provider_(std::move(provider)) {
+    : PlatformCredential(id),
+      name_(name),
+      icon_url_(icon_url),
+      provider_(std::move(provider)) {
   SetType("federated");
 }
 

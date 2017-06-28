@@ -24,6 +24,16 @@ WebSecurityOrigin WebFederatedCredential::Provider() const {
       ->Provider();
 }
 
+WebString WebFederatedCredential::Name() const {
+  return static_cast<PlatformFederatedCredential*>(platform_credential_.Get())
+      ->Name();
+}
+
+WebURL WebFederatedCredential::IconURL() const {
+  return static_cast<PlatformFederatedCredential*>(platform_credential_.Get())
+      ->IconURL();
+}
+
 WebFederatedCredential::WebFederatedCredential(PlatformCredential* credential)
     : WebCredential(credential) {}
 

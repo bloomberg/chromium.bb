@@ -119,7 +119,7 @@ PasswordCredential* PasswordCredential::Create(
 
 PasswordCredential::PasswordCredential(
     WebPasswordCredential* web_password_credential)
-    : CredentialUserData(web_password_credential->GetPlatformCredential()),
+    : Credential(web_password_credential->GetPlatformCredential()),
       id_name_("username"),
       password_name_("password") {}
 
@@ -127,14 +127,23 @@ PasswordCredential::PasswordCredential(const String& id,
                                        const String& password,
                                        const String& name,
                                        const KURL& icon)
-    : CredentialUserData(
-          PlatformPasswordCredential::Create(id, password, name, icon)),
+    : Credential(PlatformPasswordCredential::Create(id, password, name, icon)),
       id_name_("username"),
       password_name_("password") {}
 
 const String& PasswordCredential::password() const {
   return static_cast<PlatformPasswordCredential*>(platform_credential_.Get())
       ->Password();
+}
+
+const String& PasswordCredential::name() const {
+  return static_cast<PlatformPasswordCredential*>(platform_credential_.Get())
+      ->Name();
+}
+
+const KURL& PasswordCredential::iconURL() const {
+  return static_cast<PlatformPasswordCredential*>(platform_credential_.Get())
+      ->IconURL();
 }
 
 PassRefPtr<EncodedFormData> PasswordCredential::EncodeFormData(
@@ -183,7 +192,7 @@ PassRefPtr<EncodedFormData> PasswordCredential::EncodeFormData(
 }
 
 DEFINE_TRACE(PasswordCredential) {
-  CredentialUserData::Trace(visitor);
+  Credential::Trace(visitor);
   visitor->Trace(additional_data_);
 }
 

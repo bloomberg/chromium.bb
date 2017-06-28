@@ -18,9 +18,7 @@ class PlatformCredential;
 
 class WebCredential {
  public:
-  BLINK_PLATFORM_EXPORT WebCredential(const WebString& id,
-                                      const WebString& name,
-                                      const WebURL& icon_url);
+  BLINK_PLATFORM_EXPORT WebCredential(const WebString& id);
   BLINK_PLATFORM_EXPORT WebCredential(const WebCredential&);
   virtual ~WebCredential() { Reset(); }
 
@@ -28,8 +26,6 @@ class WebCredential {
   BLINK_PLATFORM_EXPORT void Reset();
 
   BLINK_PLATFORM_EXPORT WebString Id() const;
-  BLINK_PLATFORM_EXPORT WebString GetName() const;
-  BLINK_PLATFORM_EXPORT WebURL GetIconURL() const;
   BLINK_PLATFORM_EXPORT WebString GetType() const;
 
   BLINK_PLATFORM_EXPORT bool IsPasswordCredential() const;

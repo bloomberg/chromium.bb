@@ -14,8 +14,8 @@ Credential::~Credential() {}
 Credential::Credential(PlatformCredential* credential)
     : platform_credential_(credential) {}
 
-Credential::Credential(const String& id, const String& name, const KURL& icon)
-    : platform_credential_(PlatformCredential::Create(id, name, icon)) {}
+Credential::Credential(const String& id)
+    : platform_credential_(PlatformCredential::Create(id)) {}
 
 KURL Credential::ParseStringAsURL(const String& url,
                                   ExceptionState& exception_state) {

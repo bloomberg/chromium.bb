@@ -22,6 +22,8 @@ class WebPasswordCredential : public WebCredential {
   BLINK_PLATFORM_EXPORT void Assign(const WebPasswordCredential&);
 
   BLINK_PLATFORM_EXPORT WebString Password() const;
+  BLINK_PLATFORM_EXPORT WebString Name() const;
+  BLINK_PLATFORM_EXPORT WebURL IconURL() const;
 
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT WebPasswordCredential(PlatformCredential*);

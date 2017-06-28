@@ -18,7 +18,10 @@ PlatformPasswordCredential::PlatformPasswordCredential(const String& id,
                                                        const String& password,
                                                        const String& name,
                                                        const KURL& icon_url)
-    : PlatformCredential(id, name, icon_url), password_(password) {
+    : PlatformCredential(id),
+      name_(name),
+      icon_url_(icon_url),
+      password_(password) {
   SetType("password");
 }
 

@@ -7,7 +7,7 @@
 
 #include "bindings/core/v8/serialization/SerializedScriptValue.h"
 #include "modules/ModulesExport.h"
-#include "modules/credentialmanager/CredentialUserData.h"
+#include "modules/credentialmanager/Credential.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
@@ -17,7 +17,7 @@ namespace blink {
 class FederatedCredentialInit;
 class WebFederatedCredential;
 
-class MODULES_EXPORT FederatedCredential final : public CredentialUserData {
+class MODULES_EXPORT FederatedCredential final : public Credential {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -27,6 +27,8 @@ class MODULES_EXPORT FederatedCredential final : public CredentialUserData {
 
   // FederatedCredential.idl
   const String provider() const;
+  const String& name() const;
+  const KURL& iconURL() const;
 
   // TODO(mkwst): This is a stub, as we don't yet have any support on the
   // Chromium-side.

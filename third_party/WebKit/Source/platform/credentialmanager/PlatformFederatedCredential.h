@@ -7,6 +7,7 @@
 
 #include "platform/credentialmanager/PlatformCredential.h"
 #include "platform/heap/Handle.h"
+#include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/text/WTFString.h"
 
@@ -26,13 +27,16 @@ class PLATFORM_EXPORT PlatformFederatedCredential final
   RefPtr<SecurityOrigin> Provider() const { return provider_; }
 
   bool IsFederated() override { return true; }
+  const String& Name() const { return name_; }
+  const KURL& IconURL() const { return icon_url_; }
 
  private:
   PlatformFederatedCredential(const String& id,
                               RefPtr<SecurityOrigin> provider,
                               const String& name,
                               const KURL& icon_url);
-
+  String name_;
+  KURL icon_url_;
   RefPtr<SecurityOrigin> provider_;
 };
 
