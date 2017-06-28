@@ -2084,11 +2084,31 @@ WL_EXPORT void
 weston_keyboard_send_keymap(struct weston_keyboard *kbd, struct wl_resource *resource)
 {
 	struct weston_xkb_info *xkb_info = kbd->xkb_info;
+	void *area;
+	int fd;
 
+	fd = os_create_anonymous_file(xkb_info->keymap_size);
+	if (fd < 0) {
+		weston_log("creating a keymap file for %lu bytes failed: %m\n",
+			   (unsigned long) xkb_info->keymap_size);
+		return;
+	}
+
+	area = mmap(NULL, xkb_info->keymap_size, PROT_READ | PROT_WRITE,
+		    MAP_SHARED, fd, 0);
+	if (area == MAP_FAILED) {
+		weston_log("failed to mmap() %lu bytes\n",
+			   (unsigned long) xkb_info->keymap_size);
+		goto err_mmap;
+	}
+	strcpy(area, xkb_info->keymap_string);
+	munmap(area, xkb_info->keymap_size);
 	wl_keyboard_send_keymap(resource,
 				WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1,
-				xkb_info->keymap_fd,
+				fd,
 				xkb_info->keymap_size);
+err_mmap:
+	close(fd);
 }
 
 static void
@@ -3126,10 +3146,8 @@ weston_xkb_info_destroy(struct weston_xkb_info *xkb_info)
 
 	xkb_keymap_unref(xkb_info->keymap);
 
-	if (xkb_info->keymap_area)
-		munmap(xkb_info->keymap_area, xkb_info->keymap_size);
-	if (xkb_info->keymap_fd >= 0)
-		close(xkb_info->keymap_fd);
+	if (xkb_info->keymap_string)
+		free(xkb_info->keymap_string);
 	free(xkb_info);
 }
 
@@ -3157,8 +3175,6 @@ weston_xkb_info_create(struct xkb_keymap *keymap)
 	xkb_info->keymap = xkb_keymap_ref(keymap);
 	xkb_info->ref_count = 1;
 
-	char *keymap_str;
-
 	xkb_info->shift_mod = xkb_keymap_mod_get_index(xkb_info->keymap,
 						       XKB_MOD_NAME_SHIFT);
 	xkb_info->caps_mod = xkb_keymap_mod_get_index(xkb_info->keymap,
@@ -3183,38 +3199,16 @@ weston_xkb_info_create(struct xkb_keymap *keymap)
 	xkb_info->scroll_led = xkb_keymap_led_get_index(xkb_info->keymap,
 							XKB_LED_NAME_SCROLL);
 
-	keymap_str = xkb_keymap_get_as_string(xkb_info->keymap,
-					      XKB_KEYMAP_FORMAT_TEXT_V1);
-	if (keymap_str == NULL) {
+	xkb_info->keymap_string = xkb_keymap_get_as_string(xkb_info->keymap,
+							   XKB_KEYMAP_FORMAT_TEXT_V1);
+	if (xkb_info->keymap_string == NULL) {
 		weston_log("failed to get string version of keymap\n");
 		goto err_keymap;
 	}
-	xkb_info->keymap_size = strlen(keymap_str) + 1;
-
-	xkb_info->keymap_fd = os_create_anonymous_file(xkb_info->keymap_size);
-	if (xkb_info->keymap_fd < 0) {
-		weston_log("creating a keymap file for %lu bytes failed: %m\n",
-			(unsigned long) xkb_info->keymap_size);
-		goto err_keymap_str;
-	}
-
-	xkb_info->keymap_area = mmap(NULL, xkb_info->keymap_size,
-				     PROT_READ | PROT_WRITE,
-				     MAP_SHARED, xkb_info->keymap_fd, 0);
-	if (xkb_info->keymap_area == MAP_FAILED) {
-		weston_log("failed to mmap() %lu bytes\n",
-			(unsigned long) xkb_info->keymap_size);
-		goto err_dev_zero;
-	}
-	strcpy(xkb_info->keymap_area, keymap_str);
-	free(keymap_str);
+	xkb_info->keymap_size = strlen(xkb_info->keymap_string) + 1;
 
 	return xkb_info;
 
-err_dev_zero:
-	close(xkb_info->keymap_fd);
-err_keymap_str:
-	free(keymap_str);
 err_keymap:
 	xkb_keymap_unref(xkb_info->keymap);
 	free(xkb_info);

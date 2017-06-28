@@ -714,9 +714,8 @@ weston_touch_start_drag(struct weston_touch *touch,
 
 struct weston_xkb_info {
 	struct xkb_keymap *keymap;
-	int keymap_fd;
 	size_t keymap_size;
-	char *keymap_area;
+	char *keymap_string;
 	int32_t ref_count;
 	xkb_mod_index_t shift_mod;
 	xkb_mod_index_t caps_mod;
