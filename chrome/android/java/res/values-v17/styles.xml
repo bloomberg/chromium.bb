@@ -130,10 +130,9 @@
         <item name="android:paddingTop">16dp</item>
         <item name="android:layout_marginBottom">16dp</item>
     </style>
-    <style name="PreferenceCategoryTextStyle">
+    <style name="PreferenceCategoryTextStyle" parent="RobotoMediumStyle">
         <item name="android:textColor">@color/pref_accent_color</item>
         <item name="android:textSize">12sp</item>
-        <item name="android:textStyle">bold</item>
     </style>
     <style name="PreferenceTitle">
         <item name="android:ellipsize">end</item>
@@ -720,7 +719,7 @@
         <item name="android:textSize">14sp</item>
         <item name="android:lineSpacingMultiplier">1.2</item>
     </style>
-    <style name="IncognitoNewTabLearnMoreLink">
+    <style name="IncognitoNewTabLearnMoreLink" parent="RobotoMediumStyle">
         <item name="android:background">?attr/listChoiceBackgroundIndicator</item>
         <item name="android:clickable">true</item>
         <item name="android:focusable">true</item>

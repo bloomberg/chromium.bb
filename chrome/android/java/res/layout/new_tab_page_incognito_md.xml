@@ -78,10 +78,10 @@
                 android:background="?attr/listChoiceBackgroundIndicator"
                 android:clickable="true"
                 android:focusable="true"
-                android:fontFamily="sans-serif-medium"
                 android:text="@string/learn_more"
                 android:textColor="@color/google_blue_300"
-                android:lineSpacingExtra="6sp" />
+                android:lineSpacingExtra="6sp"
+                style="@style/RobotoMediumStyle" />
 
         </LinearLayout>
 

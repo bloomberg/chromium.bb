@@ -117,6 +117,7 @@
                 <View style="@style/Divider"/>
 
                 <TextView
+                    style="@style/RobotoMediumStyle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
@@ -126,7 +127,6 @@
                     android:text="@string/sync_confirmation_chrome_sync_title"
                     android:textColor="@color/default_text_color"
                     android:textSize="@dimen/fre_normal_text_size"
-                    android:fontFamily="sans-serif-medium"
                     android:drawableStart="@drawable/chrome_sync_logo"
                     android:drawablePadding="16dp"/>
 
@@ -147,6 +147,7 @@
                     android:layout_marginEnd="16dp"/>
 
                 <TextView
+                    style="@style/RobotoMediumStyle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
@@ -156,7 +157,6 @@
                     android:text="@string/sync_confirmation_personalize_services_title"
                     android:textColor="@color/default_text_color"
                     android:textSize="@dimen/fre_normal_text_size"
-                    android:fontFamily="sans-serif-medium"
                     android:drawableStart="@drawable/googleg"
                     android:drawablePadding="16dp"/>
 

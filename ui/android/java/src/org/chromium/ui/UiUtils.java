@@ -8,6 +8,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
@@ -394,5 +395,20 @@ public class UiUtils {
         ViewGroup parent = (ViewGroup) view.getParent();
         if (parent == null) return;
         parent.removeView(view);
+    }
+
+    /**
+     * Creates a {@link Typeface} that represents medium-weighted text.  This function returns
+     * Roboto Medium when it is available (Lollipop and up) and Roboto Bold where it isn't.
+     *
+     * @return Typeface that can be applied to a View.
+     */
+    public static Typeface createRobotoMediumTypeface() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            // Roboto Medium, regular.
+            return Typeface.create("sans-serif-medium", Typeface.NORMAL);
+        } else {
+            return Typeface.create("sans-serif", Typeface.BOLD);
+        }
     }
 }

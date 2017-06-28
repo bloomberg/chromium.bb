@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
-import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
 import android.text.SpannableString;
@@ -26,6 +25,7 @@ import android.widget.TextView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.DualControlLayout;
+import org.chromium.ui.UiUtils;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.widget.ButtonCompat;
 
@@ -259,10 +259,8 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
         lp.endMargin = mBigIconMargin;
 
         Resources res = getContext().getResources();
-        String typeface = res.getString(R.string.roboto_medium_typeface);
-        int textStyle = res.getInteger(R.integer.roboto_medium_textstyle);
         float textSize = res.getDimension(R.dimen.infobar_big_icon_message_size);
-        mMessageTextView.setTypeface(Typeface.create(typeface, textStyle));
+        mMessageTextView.setTypeface(UiUtils.createRobotoMediumTypeface());
         mMessageTextView.setMaxLines(1);
         mMessageTextView.setEllipsize(TextUtils.TruncateAt.END);
         mMessageTextView.setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);

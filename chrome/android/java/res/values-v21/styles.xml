@@ -25,8 +25,7 @@
         <item name="android:paddingStart">?android:attr/listPreferredItemPaddingStart</item>
         <item name="android:paddingEnd">4dp</item>
     </style>
-    <style name="PreferenceCategoryTextStyle">
-        <item name="android:fontFamily">sans-serif-medium</item>
+    <style name="PreferenceCategoryTextStyle" parent="RobotoMediumStyle">
         <item name="android:textColor">@color/pref_accent_color</item>
         <item name="android:textSize">12sp</item>
     </style>
