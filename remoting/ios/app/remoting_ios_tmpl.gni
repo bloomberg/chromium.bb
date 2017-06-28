@@ -10,6 +10,20 @@ import("//remoting/build/config/remoting_build.gni")
 
 remoting_ios_app_source_dir = get_path_info("./", "abspath")
 
+# Arguments
+#
+#   output_name:
+#     string, the filename of the generated .app folder
+#
+#   entitlements_path:
+#     string, ath of the .entitlements file
+#
+#   remoting_source_set:
+#     The source set to be compiled
+#
+#   bundle_id:
+#     (optional) string, the bundle_id. If this is not set, it will come from
+#     either branding_Chromium or branding_Chrome
 template("ios_remoting_app_tmpl") {
   info_plist_target_name = "${target_name}_tweak_info_plist"
   tweak_info_plist(info_plist_target_name) {
@@ -30,8 +44,14 @@ template("ios_remoting_app_tmpl") {
     entitlements_path = invoker.entitlements_path
     info_plist_target = ":$info_plist_target_name"
 
+    if (defined(invoker.bundle_id)) {
+      bundle_id = invoker.bundle_id
+    } else {
+      bundle_id = remoting_ios_bundle_id
+    }
+
     extra_substitutions = [
-      "BUNDLE_IDENTIFIER=$remoting_ios_bundle_id",
+      "BUNDLE_IDENTIFIER=$bundle_id",
       "DISPLAY_NAME=$remoting_ios_display_name",
       "EXECUTABLE_NAME=$remoting_ios_executable_name",
       "MINIMUM_OS_VERSION=7.0",
