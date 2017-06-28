@@ -4,6 +4,8 @@
 
 #include "core/style/SVGComputedStyle.h"
 
+#include "core/style/StyleDifference.h"
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

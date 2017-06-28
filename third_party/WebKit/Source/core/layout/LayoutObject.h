@@ -45,6 +45,7 @@
 #include "core/paint/PaintPhase.h"
 #include "core/paint/RarePaintData.h"
 #include "core/style/ComputedStyle.h"
+#include "core/style/StyleDifference.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/geometry/TransformState.h"

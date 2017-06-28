@@ -27,13 +27,14 @@
 #include "core/style/ComputedStyleConstants.h"
 #include "core/style/DataRef.h"
 #include "core/style/SVGComputedStyleDefs.h"
-#include "core/style/StyleDifference.h"
 #include "platform/Length.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/RefCounted.h"
 
 namespace blink {
+
+class StyleDifference;
 
 // TODO(sashab): Move this into a private class on ComputedStyle, and remove
 // all methods on it, merging them into copy/creation methods on ComputedStyle

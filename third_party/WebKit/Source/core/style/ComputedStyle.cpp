@@ -41,6 +41,7 @@
 #include "core/style/DataEquivalency.h"
 #include "core/style/QuotesData.h"
 #include "core/style/ShadowList.h"
+#include "core/style/StyleDifference.h"
 #include "core/style/StyleImage.h"
 #include "core/style/StyleInheritedVariables.h"
 #include "core/style/StyleNonInheritedVariables.h"
