@@ -116,7 +116,6 @@ class AV1NewEncodeDecodePerfTest
     cfg_.rc_buf_sz = 1000;
     cfg_.rc_buf_initial_sz = 500;
     cfg_.rc_buf_optimal_sz = 600;
-    cfg_.rc_resize_allowed = 0;
     cfg_.rc_end_usage = AOM_VBR;
   }
 
