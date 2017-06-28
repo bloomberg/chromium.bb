@@ -805,8 +805,6 @@ PaintResult PaintLayerPainter::PaintLayerWithTransform(
       if (!is_fixed_position_object_in_paged_media)
         clip_rect_for_fragment.MoveBy(fragment.pagination_offset);
       clip_rect_for_fragment.Intersect(fragment.background_rect);
-      if (clip_rect_for_fragment.IsEmpty())
-        continue;
       if (NeedsToClip(painting_info, clip_rect_for_fragment)) {
         clip_recorder.emplace(context, parent_layer->GetLayoutObject(),
                               DisplayItem::kClipLayerParent,
@@ -855,9 +853,7 @@ PaintResult PaintLayerPainter::PaintFragmentByApplyingTransform(
 
   // Now do a paint with the root layer shifted to be us.
   PaintLayerPaintingInfo transformed_painting_info(
-      &paint_layer_,
-      LayoutRect(EnclosingIntRect(
-          transform.Inverse().MapRect(painting_info.paint_dirty_rect))),
+      &paint_layer_, LayoutRect(LayoutRect::InfiniteIntRect()),
       painting_info.GetGlobalPaintFlags(), new_sub_pixel_accumulation);
   transformed_painting_info.ancestor_has_clip_path_clipping =
       painting_info.ancestor_has_clip_path_clipping;

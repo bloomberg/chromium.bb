@@ -444,6 +444,28 @@ void PaintInvalidator::InvalidatePaint(
   }
 }
 
+void PaintInvalidator::UpdateEmptyVisualRectFlag(
+    const LayoutObject& object,
+    PaintInvalidatorContext& context) {
+  bool is_paint_invalidation_container =
+      object == context.paint_invalidation_container;
+
+  // Content under transforms needs to invalidate, even if visual
+  // rects before and after update were the same. This is because
+  // we don't know whether this transform will end up composited in
+  // SPv2, so such transforms are painted even if not visible
+  // due to ancestor clips. This does not apply in SPv1 mode when
+  // crossing paint invalidation container boundaries.
+  if (is_paint_invalidation_container) {
+    // Remove the flag when crossing paint invalidation container boundaries.
+    context.subtree_flags &=
+        ~PaintInvalidatorContext::kInvalidateEmptyVisualRect;
+  } else if (object.StyleRef().HasTransform()) {
+    context.subtree_flags |=
+        PaintInvalidatorContext::kInvalidateEmptyVisualRect;
+  }
+}
+
 void PaintInvalidator::InvalidatePaint(
     const LayoutObject& object,
     const PaintPropertyTreeBuilderContext* tree_builder_context,
@@ -474,6 +496,7 @@ void PaintInvalidator::InvalidatePaint(
   }
 
   UpdatePaintInvalidationContainer(object, context);
+  UpdateEmptyVisualRectFlag(object, context);
   UpdateVisualRectIfNeeded(object, tree_builder_context, context);
 
   if (!object.ShouldCheckForPaintInvalidation() &&

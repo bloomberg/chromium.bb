@@ -1008,7 +1008,7 @@ void PaintController::CheckUnderInvalidation() {
           ? &current_paint_artifact_.GetDisplayItemList()[old_item_index]
           : nullptr;
 
-  bool old_and_new_equal = old_item && new_item.Equals(*old_item);
+  bool old_and_new_equal = (old_item && new_item.Equals(*old_item));
   if (!old_and_new_equal) {
     if (new_item.IsBegin()) {
       // Temporarily skip mismatching begin display item which may be removed
