@@ -116,6 +116,8 @@ class HookManager {
     INT3,
     // The hotpatch placeholder used nop's in the sled.
     NOP,
+    // This function has already been patched by a different component.
+    EXTERNALLY_PATCHED,
   };
 
   HookManager() = default;
@@ -142,15 +144,16 @@ class HookManager {
     HotpatchPlaceholderFormat format = GetHotpatchPlaceholderFormat(
         reinterpret_cast<const void*>(co_create_instance_padded_address_));
     if (format == HotpatchPlaceholderFormat::UNKNOWN) {
-      const unsigned char* hotpatch_bytes =
-          reinterpret_cast<const unsigned char*>(
-              co_create_instance_padded_address_);
       NOTREACHED() << "Unrecognized hotpatch function format: "
-                   << base::StringPrintf("%02x %02x %02x %02x %02x %02x %02x",
-                                         hotpatch_bytes[0], hotpatch_bytes[1],
-                                         hotpatch_bytes[2], hotpatch_bytes[3],
-                                         hotpatch_bytes[4], hotpatch_bytes[5],
-                                         hotpatch_bytes[6]);
+                   << FirstSevenBytesToString(
+                          co_create_instance_padded_address_);
+      return;
+    } else if (format == HotpatchPlaceholderFormat::EXTERNALLY_PATCHED) {
+      // TODO(robliao): Make this crash after resolving http://crbug.com/737090.
+      hotpatch_placeholder_format_ = format;
+      DLOG(WARNING)
+          << "CoCreateInstance appears to be previously patched. Skipping. ("
+          << FirstSevenBytesToString(co_create_instance_padded_address_) << ")";
       return;
     }
 
@@ -185,6 +188,7 @@ class HookManager {
             reinterpret_cast<const void*>(&g_hotpatch_placeholder_nop),
             sizeof(g_hotpatch_placeholder_nop));
         break;
+      case HotpatchPlaceholderFormat::EXTERNALLY_PATCHED:
       case HotpatchPlaceholderFormat::UNKNOWN:
         break;
     }
@@ -213,6 +217,16 @@ class HookManager {
       return HotpatchPlaceholderFormat::NOP;
     }
 
+    const unsigned char* instruction_bytes =
+        reinterpret_cast<const unsigned char*>(
+            co_create_instance_padded_address_);
+    const unsigned char entry_point_byte = instruction_bytes[5];
+    // Check for all of the common jmp opcodes.
+    if (entry_point_byte == 0xeb || entry_point_byte == 0xe9 ||
+        entry_point_byte == 0xff || entry_point_byte == 0xea) {
+      return HotpatchPlaceholderFormat::EXTERNALLY_PATCHED;
+    }
+
     return HotpatchPlaceholderFormat::UNKNOWN;
   }
 
@@ -233,6 +247,15 @@ class HookManager {
     AssertComInitialized();
     return original_co_create_instance_body_function_(rclsid, pUnkOuter,
                                                       dwClsContext, riid, ppv);
+  }
+
+  // Returns the first 7 bytes in hex as a string at |address|.
+  static std::string FirstSevenBytesToString(uint32_t address) {
+    const unsigned char* bytes =
+        reinterpret_cast<const unsigned char*>(address);
+    return base::StringPrintf("%02x %02x %02x %02x %02x %02x %02x", bytes[0],
+                              bytes[1], bytes[2], bytes[3], bytes[4], bytes[5],
+                              bytes[6]);
   }
 
   // Synchronizes everything in this class.
