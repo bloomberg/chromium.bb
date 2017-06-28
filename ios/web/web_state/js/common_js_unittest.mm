@@ -142,4 +142,23 @@ TEST_F(CommonJsTest, Stringify) {
   }
 }
 
+TEST_F(CommonJsTest, IsSameOrigin) {
+  TestScriptAndExpectedValue test_data[] = {
+      {@"'http://abc.com', 'http://abc.com'", @YES},
+      {@"'http://abc.com',  'https://abc.com'", @NO},
+      {@"'http://abc.com', 'http://abc.com:123'", @NO},
+      {@"'http://abc.com', 'http://def.com'", @NO}};
+
+  for (size_t i = 0; i < arraysize(test_data); i++) {
+    TestScriptAndExpectedValue& data = test_data[i];
+    LoadHtml(@"<p>");
+    id result = ExecuteJavaScript(
+        [NSString stringWithFormat:@"__gCrWeb.common.isSameOrigin(%@)",
+                                   data.test_script]);
+    EXPECT_NSEQ(data.expected_value, result)
+        << " in test " << i << ": "
+        << base::SysNSStringToUTF8(data.test_script);
+  }
+}
+
 }  // namespace web

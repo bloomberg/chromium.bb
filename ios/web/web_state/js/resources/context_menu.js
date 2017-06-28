@@ -215,9 +215,11 @@ goog.provide('__crWeb.contextMenu');
       }
       if (currentElement.tagName.toLowerCase() === 'iframe' ||
           currentElement.tagName.toLowerCase() === 'frame') {
-        // The following condition is true if the iframe is in a different
-        // domain; no further information is accessible.
-        if (typeof(currentElement.contentWindow.document) == 'undefined') {
+        // Check if the frame is in a different domain using only information
+        // visible to the current frame (i.e. currentElement.src) to avoid
+        // triggering a SecurityError in the console.
+        if (!__gCrWeb.common.isSameOrigin(
+            window.location.href, currentElement.src)) {
           return currentElement;
         }
         var framePosition = getPositionInWindow(currentElement);
