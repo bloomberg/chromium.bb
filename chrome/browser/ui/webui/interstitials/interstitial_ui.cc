@@ -126,7 +126,8 @@ class CaptivePortalBlockingPageWithNetInfo : public CaptivePortalBlockingPage {
 };
 #endif
 
-SSLBlockingPage* CreateSSLBlockingPage(content::WebContents* web_contents) {
+SSLBlockingPage* CreateSSLBlockingPage(content::WebContents* web_contents,
+                                       bool is_superfish) {
   // Random parameters for SSL blocking page.
   int cert_error = net::ERR_CERT_CONTAINS_ERRORS;
   GURL request_url("https://example.com");
@@ -169,7 +170,7 @@ SSLBlockingPage* CreateSSLBlockingPage(content::WebContents* web_contents) {
     options_mask |= security_interstitials::SSLErrorUI::STRICT_ENFORCEMENT;
   return SSLBlockingPage::Create(
       web_contents, cert_error, ssl_info, request_url, options_mask,
-      time_triggered_, nullptr, false /* is superfish */,
+      time_triggered_, nullptr, is_superfish,
       base::Callback<void(content::CertificateRequestResultType)>());
 }
 
@@ -413,7 +414,12 @@ void InterstitialHTMLSource::StartDataRequest(
   std::unique_ptr<content::InterstitialPageDelegate> interstitial_delegate;
   std::string html;
   if (base::StartsWith(path, "ssl", base::CompareCase::SENSITIVE)) {
-    interstitial_delegate.reset(CreateSSLBlockingPage(web_contents));
+    interstitial_delegate.reset(
+        CreateSSLBlockingPage(web_contents, false /* is superfish */));
+  } else if (base::StartsWith(path, "superfish-ssl",
+                              base::CompareCase::SENSITIVE)) {
+    interstitial_delegate.reset(
+        CreateSSLBlockingPage(web_contents, true /* is superfish */));
   } else if (base::StartsWith(path, "safebrowsing",
                               base::CompareCase::SENSITIVE)) {
     interstitial_delegate.reset(CreateSafeBrowsingBlockingPage(web_contents));
