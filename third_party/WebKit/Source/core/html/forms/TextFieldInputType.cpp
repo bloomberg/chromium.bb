@@ -33,7 +33,6 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/HTMLNames.h"
-#include "core/dom/NodeComputedStyle.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/editing/FrameSelection.h"
 #include "core/events/BeforeTextInsertedEvent.h"

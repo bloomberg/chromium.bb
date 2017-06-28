@@ -26,14 +26,12 @@
 #include "core/html/HTMLOptGroupElement.h"
 
 #include "core/HTMLNames.h"
-#include "core/dom/NodeComputedStyle.h"
 #include "core/dom/Text.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/html/HTMLContentElement.h"
 #include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLSelectElement.h"
 #include "core/html/shadow/ShadowElementNames.h"
-#include "core/style/ComputedStyle.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/text/CharacterNames.h"
 

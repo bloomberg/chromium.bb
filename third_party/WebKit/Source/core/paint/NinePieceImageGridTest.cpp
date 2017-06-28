@@ -6,7 +6,6 @@
 
 #include "core/css/CSSGradientValue.h"
 #include "core/layout/LayoutTestHelper.h"
-#include "core/style/ComputedStyle.h"
 #include "core/style/NinePieceImage.h"
 #include "core/style/StyleGeneratedImage.h"
 #include "testing/gtest/include/gtest/gtest.h"

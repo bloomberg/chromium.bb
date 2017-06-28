@@ -4,7 +4,6 @@
 
 #include "core/paint/NinePieceImageGrid.h"
 
-#include "core/style/ComputedStyle.h"
 #include "core/style/NinePieceImage.h"
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/FloatSize.h"
