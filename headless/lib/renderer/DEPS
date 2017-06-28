@@ -4,5 +4,4 @@ include_rules = [
   "+gin",
   "+printing",
   "+third_party/WebKit/public",
-  "+v8/include",
 ]

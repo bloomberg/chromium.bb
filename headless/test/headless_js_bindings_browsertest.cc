@@ -12,7 +12,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
-#include "content/public/common/isolated_world_ids.h"
 #include "content/public/test/browser_test.h"
 #include "headless/grit/headless_browsertest_resources.h"
 #include "headless/public/devtools/domains/runtime.h"
@@ -20,7 +19,7 @@
 #include "headless/public/headless_devtools_client.h"
 #include "headless/public/headless_tab_socket.h"
 #include "headless/public/headless_web_contents.h"
-#include "headless/test/tab_socket_test.h"
+#include "headless/test/headless_browser_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -28,9 +27,15 @@
 namespace headless {
 
 class HeadlessJsBindingsTest
-    : public TabSocketTest,
+    : public HeadlessAsyncDevTooledBrowserTest,
+      public HeadlessTabSocket::Listener,
       public HeadlessDevToolsClient::RawProtocolListener {
  public:
+  void SetUp() override {
+    options()->mojo_service_names.insert("headless::TabSocket");
+    HeadlessAsyncDevTooledBrowserTest::SetUp();
+  }
+
   void SetUpOnMainThread() override {
     base::ThreadRestrictions::SetIOAllowed(true);
     base::FilePath pak_path;
@@ -40,19 +45,15 @@ class HeadlessJsBindingsTest
         pak_path, ui::SCALE_FACTOR_NONE);
   }
 
-  void RunTabSocketTest() override {
-    headless_tab_socket_ = web_contents_->GetHeadlessTabSocket();
-    CHECK(headless_tab_socket_);
-    headless_tab_socket_->SetListener(this);
+  void RunDevTooledTest() override {
     devtools_client_->SetRawProtocolListener(this);
-    CreateMainWorldTabSocket(
-        main_frame_id(),
-        base::Bind(&HeadlessJsBindingsTest::OnInstalledHeadlessTabSocket,
-                   base::Unretained(this)));
+    headless_tab_socket_ = web_contents_->GetHeadlessTabSocket();
+    DCHECK(headless_tab_socket_);
+    headless_tab_socket_->SetListener(this);
+    PrepareToRunJsBindingsTest();
   }
 
-  void OnInstalledHeadlessTabSocket(int v8_exection_context_id) {
-    main_world_execution_context_id_ = v8_exection_context_id;
+  void PrepareToRunJsBindingsTest() {
     devtools_client_->GetRuntime()->Evaluate(
         ResourceBundle::GetSharedInstance()
             .GetRawDataResource(DEVTOOLS_BINDINGS_TEST)
@@ -72,9 +73,22 @@ class HeadlessJsBindingsTest
     }
   }
 
-  void OnMessageFromContext(const std::string& json_message,
-                            int v8_execution_context_id) override {
-    EXPECT_EQ(main_world_execution_context_id_, v8_execution_context_id);
+  void FailOnJsEvaluateException(
+      std::unique_ptr<runtime::EvaluateResult> result) {
+    if (!result->HasExceptionDetails())
+      return;
+
+    FinishAsynchronousTest();
+
+    const runtime::ExceptionDetails* exception_details =
+        result->GetExceptionDetails();
+    FAIL() << exception_details->GetText()
+           << (exception_details->HasException()
+                   ? exception_details->GetException()->GetDescription().c_str()
+                   : "");
+  }
+
+  void OnMessageFromTab(const std::string& json_message) override {
     std::unique_ptr<base::Value> message =
         base::JSONReader::Read(json_message, base::JSON_PARSE_RFC);
     const base::DictionaryValue* message_dict;
@@ -101,6 +115,10 @@ class HeadlessJsBindingsTest
     devtools_client_->SendRawDevToolsMessage(json_message);
   }
 
+  HeadlessWebContents::Builder::TabSocketType GetTabSocketType() override {
+    return HeadlessWebContents::Builder::TabSocketType::MAIN_WORLD;
+  }
+
   bool OnProtocolMessage(const std::string& devtools_agent_host_id,
                          const std::string& json_message,
                          const base::DictionaryValue& parsed_message) override {
@@ -114,8 +132,7 @@ class HeadlessJsBindingsTest
       if ((id % 2) == 0)
         return false;
 
-      headless_tab_socket_->SendMessageToContext(
-          json_message, main_world_execution_context_id_);
+      headless_tab_socket_->SendMessageToTab(json_message);
       return true;
     }
 
@@ -123,8 +140,7 @@ class HeadlessJsBindingsTest
     if (!parsed_message.GetString("method", &method))
       return false;
 
-    headless_tab_socket_->SendMessageToContext(
-        json_message, main_world_execution_context_id_);
+    headless_tab_socket_->SendMessageToTab(json_message);
 
     // Check which domain the event belongs to, if it's the DOM domain then
     // assume js handled it.
@@ -135,7 +151,6 @@ class HeadlessJsBindingsTest
 
  private:
   HeadlessTabSocket* headless_tab_socket_;
-  int main_world_execution_context_id_;
 };
 
 class SimpleCommandJsBindingsTest : public HeadlessJsBindingsTest {
