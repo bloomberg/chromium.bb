@@ -392,8 +392,7 @@ void ArcVoiceInteractionFrameworkService::StartSessionFromUserInteraction(
     // The display host will be destructed at the end of OOBE flow.
     chromeos::LoginDisplayHostImpl* display_host =
         new chromeos::LoginDisplayHostImpl(screen_bounds);
-    display_host->StartWizard(
-        chromeos::OobeScreen::SCREEN_VOICE_INTERACTION_VALUE_PROP);
+    display_host->StartVoiceInteractionOobe();
     return;
   }
 

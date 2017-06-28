@@ -535,6 +535,12 @@ void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
   oobe_ui_md_mode_ =
       g_browser_process->local_state()->GetBoolean(prefs::kOobeMdMode);
   localized_strings->SetString("newOobeUI", oobe_ui_md_mode_ ? "on" : "off");
+
+  LoginDisplayHost* default_host = LoginDisplayHost::default_host();
+  bool oobe_shield_hide =
+      default_host ? default_host->IsVoiceInteractionOobe() : false;
+  localized_strings->SetString("hideOobeShield",
+                               oobe_shield_hide ? "on" : "off");
 }
 
 void OobeUI::AddWebUIHandler(std::unique_ptr<BaseWebUIHandler> handler) {

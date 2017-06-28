@@ -778,7 +778,7 @@ void WizardController::OnUserImageSelected() {
       return;
     }
   }
-  ShowVoiceInteractionValuePropScreen();
+  OnOobeFlowFinished();
 }
 
 void WizardController::OnUserImageSkipped() {
