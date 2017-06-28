@@ -353,15 +353,23 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     inflight = set(builder for builder, status in statuses.iteritems()
                    if status.Inflight())
 
-    # If all the failing or inflight builders were sanity checkers
+    # If all the failing, inflight and no_stat builders were sanity checkers
     # then ignore the failure.
     fatal = self._IsFailureFatal(failing, inflight, no_stat)
 
+    self_destructed = self._run.attrs.metadata.GetValueWithDefault(
+        constants.SELF_DESTRUCTED_BUILD, False)
+    self_destructed_with_success = self._run.attrs.metadata.GetValueWithDefault(
+        constants.SELF_DESTRUCTED_WITH_SUCCESS_BUILD, False)
+    if self_destructed and self_destructed_with_success:
+      # For a self-destructed and successful CQ, only check the failing slaves
+      fatal = self._IsFailureFatal(failing, set(), set())
+
+    # Always annotate unsuccessful builders.
+    self._AnnotateFailingBuilders(
+        failing, inflight, no_stat, statuses, self_destructed)
+
     if fatal:
-      self_destructed = self._run.attrs.metadata.GetValueWithDefault(
-          constants.SELF_DESTRUCTED_BUILD, False)
-      self._AnnotateFailingBuilders(
-          failing, inflight, no_stat, statuses, self_destructed)
       self.HandleFailure(failing, inflight, no_stat, self_destructed)
       raise ImportantBuilderFailedException()
     else:

@@ -507,6 +507,56 @@ class MasterSlaveSyncCompletionStageTestWithMasterPaladin(
     stage._AnnotateFailingBuilders(failing, inflight, no_stat, statuses, True)
     self.assertEqual(annotate_mock.call_count, 3)
 
+  def testPerformStageWithException(self):
+    """Test PerformStage with exception."""
+    stage = self.ConstructStage()
+    stage._run.attrs.manifest_manager = mock.MagicMock()
+    statuses = {
+        'build_1': builder_status_lib.BuilderStatus(
+            constants.BUILDER_STATUS_INFLIGHT, None),
+        'build_2': builder_status_lib.BuilderStatus(
+            constants.BUILDER_STATUS_MISSING, None),
+        'build_3': builder_status_lib.BuilderStatus(
+            constants.BUILDER_STATUS_FAILED, None)
+    }
+    self.PatchObject(completion_stages.MasterSlaveSyncCompletionStage,
+                     '_FetchSlaveStatuses', return_value=statuses)
+
+    # Not self-destructed CQ
+    with self.assertRaises(completion_stages.ImportantBuilderFailedException):
+      stage.PerformStage()
+
+    # Self-destructed and successful CQ, all slaves passed the desired stage.
+    stage._run.attrs.metadata.UpdateWithDict(
+        {constants.SELF_DESTRUCTED_BUILD: True})
+    stage._run.attrs.metadata.UpdateWithDict(
+        {constants.SELF_DESTRUCTED_WITH_SUCCESS_BUILD: True})
+    with self.assertRaises(completion_stages.ImportantBuilderFailedException):
+      stage.PerformStage()
+
+    stage._run.attrs.metadata.UpdateWithDict(
+        {constants.SELF_DESTRUCTED_WITH_SUCCESS_BUILD: False})
+    with self.assertRaises(completion_stages.ImportantBuilderFailedException):
+      stage.PerformStage()
+
+  def testPerformStageWithoutException(self):
+    """Test PerformStage without exception."""
+    stage = self.ConstructStage()
+    stage._run.attrs.manifest_manager = mock.MagicMock()
+    statuses = {
+        'build_1': builder_status_lib.BuilderStatus(
+            constants.BUILDER_STATUS_INFLIGHT, None),
+        'build_2': builder_status_lib.BuilderStatus(
+            constants.BUILDER_STATUS_MISSING, None)
+    }
+    self.PatchObject(completion_stages.MasterSlaveSyncCompletionStage,
+                     '_FetchSlaveStatuses', return_value=statuses)
+    stage._run.attrs.metadata.UpdateWithDict(
+        {constants.SELF_DESTRUCTED_BUILD: True})
+    stage._run.attrs.metadata.UpdateWithDict(
+        {constants.SELF_DESTRUCTED_WITH_SUCCESS_BUILD: True})
+    stage.PerformStage()
+
 
 class CanaryCompletionStageTest(
     generic_stages_unittest.AbstractStageTestCase):
