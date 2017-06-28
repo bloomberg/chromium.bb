@@ -1,3 +1,6 @@
+<html>
+<head>
+<script>
 function setMetaViewport(override)
 {
     var VIEWPORTS = {
@@ -105,10 +108,6 @@ function dumpMetrics(full)
     testJS("document.body.offsetHeight");
     testJS("document.body.scrollHeight");
 
-    var measured = document.querySelectorAll(".device-emulation-measure");
-    for (var i = 0; i < measured.length; ++i)
-        writeResult("measured " + measured[i].getAttribute("type") + ": " + measured[i].offsetWidth + "x" + measured[i].offsetHeight);
-
     return results.join("\n");
 }
 
@@ -186,74 +185,29 @@ function writeResult(key, val)
 {
     results.push(key + (val ? " = " + val : ""));
 }
+</script>
 
-var initialize_DeviceEmulationTest = function() {
+<script>
+  // This test is based on http://jsbin.com/urowoh/latest.
+  setMetaViewport();
+</script>
 
-InspectorTest.getPageMetrics = function(full, callback)
-{
-    InspectorTest.evaluateInPage("dumpMetrics(" + full + ")", callback);
+<style>
+html {
+    overflow-x: hidden;
 }
 
-InspectorTest.applyEmulationAndReload = function(enabled, width, height, deviceScaleFactor, viewport, insets, noReload, callback)
-{
-    if (enabled) {
-        var params = {};
-        params.width = width;
-        params.height = height;
-        params.deviceScaleFactor = deviceScaleFactor;
-        params.mobile = true;
-        params.fitWindow = false;
-        params.scale = 1;
-        params.screenWidth = width;
-        params.screenHeight = height;
-        params.positionX = 0;
-        params.positionY = 0;
-        if (insets) {
-            params.screenWidth += insets.left + insets.right;
-            params.positionX = insets.left;
-            params.screenHeight += insets.top + insets.bottom;
-            params.positionY = insets.top;
-        }
-        InspectorTest.sendCommand("Emulation.setDeviceMetricsOverride", params, emulateCallback);
-    } else {
-        InspectorTest.sendCommand("Emulation.clearDeviceMetricsOverride", {}, emulateCallback);
-    }
+body {
+    margin: 0;
+    min-height: 1000px;
+    overflow-x: hidden;
+}
+body.small {
+    min-height: 100px;
+}
+</style>
+</head>
 
-    function emulateCallback(result)
-    {
-        if (result.error)
-            InspectorTest._deviceEmulationResults.push("Error: " + result.error);
-        if (noReload)
-            callback();
-        else
-            InspectorTest.navigate(InspectorTest._deviceEmulationPageUrl + "?" + viewport, callback);
-    }
-};
-
-InspectorTest.emulateAndGetMetrics = function(width, height, deviceScaleFactor, viewport, insets, noReload, callback)
-{
-    InspectorTest._deviceEmulationResults.push("Emulating device: " + width + "x" + height + "x" + deviceScaleFactor + " viewport='" + viewport + "'");
-    var full = !!width && !!height && !!deviceScaleFactor;
-    InspectorTest.applyEmulationAndReload(true, width, height, deviceScaleFactor, viewport, insets, noReload, InspectorTest.getPageMetrics.bind(InspectorTest, full, printMetrics));
-
-    function printMetrics(metrics)
-    {
-        InspectorTest._deviceEmulationResults.push(metrics + "\n");
-        callback();
-    }
-};
-
-InspectorTest.testDeviceEmulation = function(pageUrl, width, height, deviceScaleFactor, viewport, insets, noReload)
-{
-    InspectorTest._deviceEmulationPageUrl = pageUrl;
-    InspectorTest._deviceEmulationResults = [];
-    InspectorTest.emulateAndGetMetrics(width, height, deviceScaleFactor, viewport, insets, noReload, callback);
-
-    function callback()
-    {
-        InspectorTest.log(InspectorTest._deviceEmulationResults.join("\n"));
-        InspectorTest.completeTest();
-    }
-};
-
-};
+<body>
+</body>
+</html>

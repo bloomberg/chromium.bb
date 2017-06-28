@@ -1,7 +1,6 @@
 Tests that disabling device emulation restores back to original values.
-
-Page reloaded.
-Emulating device: 1200x1000x1 viewport='w=320'
+Emulating device: 1200x1000x1
+Loading page with viewport=w=320
 Device:
 window.screenX = 0px
 window.screenY = 0px
@@ -37,6 +36,5 @@ doc.docElem.scrollHeight = 1000px
 doc.body.clientHeight = 266px
 doc.body.offsetHeight = 1000px
 doc.body.scrollHeight = 1000px
-
 Original metrics restored correctly.
 
