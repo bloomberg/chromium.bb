@@ -269,6 +269,9 @@ below:
       <message name="IDS_AX_ROLE_DESCRIPTION_TERM" desc="Accessibility role description for description term (as in a description list)">
         term
       </message>
+      <message name="IDS_AX_ROLE_DISCLOSURE_TRIANGLE" desc="Accessibility role description for a disclosure triangle, a control shaped like a triangle that expands or collapses to show or hide extra content">
+        disclosure triangle
+      </message>
       <message name="IDS_AX_ROLE_FEED" desc="Accessibility role description for a scrollable list of articles.">
         feed
       </message>
@@ -370,9 +373,6 @@ below:
         </message>
         <message name="IDS_AX_ROLE_DIRECTORY" desc="Accessibility role description for a directory, for example a table of contents or list of employees">
           directory
-        </message>
-        <message name="IDS_AX_ROLE_DISCLOSURE_TRIANGLE" desc="Accessibility role description for a disclosure triangle, a control shaped like a triangle that expands or collapses to show or hide extra content">
-          disclosure triangle
         </message>
         <message name="IDS_AX_ROLE_DOCUMENT" desc="Accessibility role description for a document">
           document
