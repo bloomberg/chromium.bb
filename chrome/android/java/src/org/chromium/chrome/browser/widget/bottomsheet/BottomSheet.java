@@ -153,10 +153,7 @@ public class BottomSheet
     /** The {@link BottomSheetMetrics} used to record user actions and histograms. */
     private final BottomSheetMetrics mMetrics;
 
-    /**
-     * The {@link BottomSheetNewTabController} used to present the new tab UI when
-     * {@link ChromeFeatureList#CHROME_HOME_NTP_REDESIGN} is enabled.
-     */
+    /** The {@link BottomSheetNewTabController} used to present the new tab UI. */
     private BottomSheetNewTabController mNtpController;
 
     /** For detecting scroll and fling events on the bottom sheet. */
@@ -235,6 +232,12 @@ public class BottomSheet
 
     /** A delegate for when the action bar starts showing. */
     private ViewShiftingActionBarDelegate mActionBarDelegate;
+
+    /** The {@link LayoutManagerChrome} used to show and hide overview mode. **/
+    private LayoutManagerChrome mLayoutManager;
+
+    /** Whether the help bubble has been shown. **/
+    private boolean mHasShownTextBubble;
 
     /**
      * An interface defining content that can be displayed inside of the bottom sheet for Chrome
@@ -594,6 +597,7 @@ public class BottomSheet
      * @param layoutManager The {@link LayoutManagerChrome} used to show and hide overview mode.
      */
     public void setLayoutManagerChrome(LayoutManagerChrome layoutManager) {
+        mLayoutManager = layoutManager;
         mNtpController.setLayoutManagerChrome(layoutManager);
     }
 
@@ -965,6 +969,8 @@ public class BottomSheet
         announceForAccessibility(getResources().getString(R.string.bottom_sheet_closed));
         clearFocus();
         mActivity.removeViewObscuringAllTabs(this);
+
+        showHelpBubbleIfNecessary();
     }
 
     /**
@@ -1385,11 +1391,19 @@ public class BottomSheet
      */
     public void showHelpBubbleIfNecessary() {
         // If FRE is not complete, the FRE screen is likely covering ChromeTabbedActivity so the
-        // help bubble should not be shown. Also skip showing if the bottom sheet is already open.
-        if (!FirstRunStatus.getFirstRunFlowComplete() || mCurrentState != SHEET_STATE_PEEK) return;
+        // help bubble should not be shown. Also skip showing if the bottom sheet is already open,
+        // the UI has not been initialized (indicated by mLayoutManager == null), or the tab
+        // switcher is showing.
+        if (mHasShownTextBubble || isSheetOpen() || mLayoutManager == null
+                || mLayoutManager.overviewVisible() || !FirstRunStatus.getFirstRunFlowComplete()) {
+            return;
+        }
 
         SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
-        if (preferences.getBoolean(BOTTOM_SHEET_HELP_BUBBLE_SHOWN, false)) return;
+        if (preferences.getBoolean(BOTTOM_SHEET_HELP_BUBBLE_SHOWN, false)) {
+            mHasShownTextBubble = true;
+            return;
+        }
 
         boolean showExpandButtonHelpBubble =
                 ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_EXPAND_BUTTON);
@@ -1408,6 +1422,7 @@ public class BottomSheet
         helpBubble.setInsetPx(0, inset, 0, inset);
         helpBubble.setDismissOnTouchInteraction(true);
         helpBubble.show();
+        mHasShownTextBubble = true;
         preferences.edit().putBoolean(BOTTOM_SHEET_HELP_BUBBLE_SHOWN, true).apply();
     }
 
