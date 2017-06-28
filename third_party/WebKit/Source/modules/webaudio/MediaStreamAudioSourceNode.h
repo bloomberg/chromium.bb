@@ -49,6 +49,10 @@ class MediaStreamAudioSourceHandler final : public AudioHandler {
   // AudioHandler
   void Process(size_t frames_to_process) override;
 
+  // AudioNode
+  double TailTime() const override { return 0; }
+  double LatencyTime() const override { return 0; }
+
   // A helper for AudioSourceProviderClient implementation of
   // MediaStreamAudioSourceNode.
   void SetFormat(size_t number_of_channels, float sample_rate);

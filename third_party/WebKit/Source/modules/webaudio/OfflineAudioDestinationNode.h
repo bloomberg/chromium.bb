@@ -52,6 +52,10 @@ class OfflineAudioDestinationHandler final : public AudioDestinationHandler {
   void Initialize() override;
   void Uninitialize() override;
 
+  // AudioNode
+  double TailTime() const override { return 0; }
+  double LatencyTime() const override { return 0; }
+
   OfflineAudioContext* Context() const final;
 
   // AudioDestinationHandler

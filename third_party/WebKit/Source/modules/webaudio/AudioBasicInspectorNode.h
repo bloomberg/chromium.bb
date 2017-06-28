@@ -50,6 +50,10 @@ class AudioBasicInspectorHandler : public AudioHandler {
   void PullInputs(size_t frames_to_process) final;
   void CheckNumberOfChannelsForInput(AudioNodeInput*) final;
 
+  // AudioNode
+  double TailTime() const override { return 0; }
+  double LatencyTime() const override { return 0; }
+
   virtual void UpdatePullStatus();
 
  protected:
