@@ -13,19 +13,21 @@ const base::Feature kIPHDummyFeature{"IPH_Dummy",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if defined(OS_ANDROID)
-const base::Feature kIPHDataSaverPreviewFeature{
-    "IPH_DataSaverPreview", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHDataSaverDetailFeature{
     "IPH_DataSaverDetail", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kIPHDownloadPageFeature{"IPH_DownloadPage",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHDataSaverPreviewFeature{
+    "IPH_DataSaverPreview", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHDownloadHomeFeature{"IPH_DownloadHome",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
-#endif  // OS_ANDROID
+const base::Feature kIPHDownloadPageFeature{"IPH_DownloadPage",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // defined(OS_ANDROID)
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
+const base::Feature kIPHIncognitoWindowFeature{
+    "IPH_IncognitoWindow", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHNewTabFeature{"IPH_NewTab",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
-#endif  // OS_WIN
+#endif  // defined(OS_WIN) || defined(OS_LINUX)
 
 }  // namespace feature_engagement_tracker

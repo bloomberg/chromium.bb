@@ -45,14 +45,15 @@ namespace {
 // Defines a flags_ui::FeatureEntry::FeatureParam for each feature.
 DEFINE_VARIATION_PARAM(kIPHDummyFeature, "IPH_Dummy");
 #if defined(OS_ANDROID)
-DEFINE_VARIATION_PARAM(kIPHDataSaverPreviewFeature, "IPH_DataSaverPreview");
 DEFINE_VARIATION_PARAM(kIPHDataSaverDetailFeature, "IPH_DataSaverDetail");
-DEFINE_VARIATION_PARAM(kIPHDownloadPageFeature, "IPH_DownloadPage");
+DEFINE_VARIATION_PARAM(kIPHDataSaverPreviewFeature, "IPH_DataSaverPreview");
 DEFINE_VARIATION_PARAM(kIPHDownloadHomeFeature, "IPH_DownloadHome");
-#endif  // OS_ANDROID
-#if defined(OS_WIN)
+DEFINE_VARIATION_PARAM(kIPHDownloadPageFeature, "IPH_DownloadPage");
+#endif  // defined(OS_ANDROID)
+#if defined(OS_WIN) || defined(OS_LINUX)
+DEFINE_VARIATION_PARAM(kIPHIncognitoWindowFeature, "IPH_IncognitoWindow");
 DEFINE_VARIATION_PARAM(kIPHNewTabFeature, "IPH_NewTab");
-#endif  // OS_WIN
+#endif  // defined(OS_WIN) || defined(OS_LINUX)
 
 }  // namespace
 
@@ -62,11 +63,12 @@ DEFINE_VARIATION_PARAM(kIPHNewTabFeature, "IPH_NewTab");
 constexpr flags_ui::FeatureEntry::FeatureVariation
     kIPHDemoModeChoiceVariations[] = {
 #if defined(OS_ANDROID)
-        VARIATION_ENTRY(kIPHDataSaverPreviewFeature),
         VARIATION_ENTRY(kIPHDataSaverDetailFeature),
-        VARIATION_ENTRY(kIPHDownloadPageFeature),
+        VARIATION_ENTRY(kIPHDataSaverPreviewFeature),
         VARIATION_ENTRY(kIPHDownloadHomeFeature),
-#elif defined(OS_WIN)
+        VARIATION_ENTRY(kIPHDownloadPageFeature),
+#elif defined(OS_WIN) || defined(OS_LINUX)
+        VARIATION_ENTRY(kIPHIncognitoWindowFeature),
         VARIATION_ENTRY(kIPHNewTabFeature),
 #else
         VARIATION_ENTRY(kIPHDummyFeature),  // Ensures non-empty array.
