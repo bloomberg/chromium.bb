@@ -189,7 +189,9 @@ blink::WebIDBFactory* TestBlinkWebUnitTestSupport::IdbFactory() {
 }
 
 std::unique_ptr<blink::WebURLLoader>
-TestBlinkWebUnitTestSupport::CreateURLLoader() {
+TestBlinkWebUnitTestSupport::CreateURLLoader(
+    const blink::WebURLRequest& request,
+    base::SingleThreadTaskRunner* task_runner) {
   // This loader should be used only for process-local resources such as
   // data URLs.
   auto default_loader = base::MakeUnique<WebURLLoaderImpl>(nullptr, nullptr);

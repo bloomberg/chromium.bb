@@ -334,9 +334,11 @@ void WebViewPlugin::WebViewHelper::ScheduleAnimation() {
 }
 
 std::unique_ptr<blink::WebURLLoader>
-WebViewPlugin::WebViewHelper::CreateURLLoader() {
+WebViewPlugin::WebViewHelper::CreateURLLoader(
+    const blink::WebURLRequest& request,
+    base::SingleThreadTaskRunner* task_runner) {
   // TODO(yhirano): Stop using Platform::CreateURLLoader() here.
-  return blink::Platform::Current()->CreateURLLoader();
+  return blink::Platform::Current()->CreateURLLoader(request, task_runner);
 }
 
 void WebViewPlugin::WebViewHelper::DidClearWindowObject() {

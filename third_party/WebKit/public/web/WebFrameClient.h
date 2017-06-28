@@ -79,6 +79,10 @@ namespace service_manager {
 class InterfaceProvider;
 }
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace blink {
 
 enum class WebTreeScopeType;
@@ -815,7 +819,9 @@ class BLINK_EXPORT WebFrameClient {
 
   // Loading --------------------------------------------------------------
 
-  virtual std::unique_ptr<blink::WebURLLoader> CreateURLLoader() {
+  virtual std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
+      const WebURLRequest&,
+      base::SingleThreadTaskRunner*) {
     NOTREACHED();
     return nullptr;
   }

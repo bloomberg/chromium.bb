@@ -38,6 +38,7 @@
 #include "core/exported/WebViewBase.h"
 #include "core/frame/Settings.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCachePolicy.h"
@@ -312,9 +313,11 @@ class TestWebFrameClient : public WebFrameClient {
     return nullptr;
   }
 
-  std::unique_ptr<blink::WebURLLoader> CreateURLLoader() override {
+  std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
+      const blink::WebURLRequest& request,
+      SingleThreadTaskRunner* task_runner) override {
     // TODO(yhirano): Stop using Platform::CreateURLLoader() here.
-    return Platform::Current()->CreateURLLoader();
+    return Platform::Current()->CreateURLLoader(request, task_runner);
   }
 
  private:

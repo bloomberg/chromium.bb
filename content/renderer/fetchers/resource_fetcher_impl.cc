@@ -188,7 +188,7 @@ void ResourceFetcherImpl::Start(
 
   client_.reset(new ClientImpl(this, callback));
 
-  loader_ = frame->CreateURLLoader();
+  loader_ = frame->CreateURLLoader(request_, frame->LoadingTaskRunner());
   loader_->LoadAsynchronously(request_, client_.get());
 
   // No need to hold on to the request; reset it now.

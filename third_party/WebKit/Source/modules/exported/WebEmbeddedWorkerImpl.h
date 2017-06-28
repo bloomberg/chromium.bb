@@ -34,6 +34,7 @@
 #include <memory>
 #include "core/workers/WorkerClients.h"
 #include "modules/ModulesExport.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebContentSecurityPolicy.h"
@@ -79,9 +80,11 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final
   void AddMessageToConsole(const WebConsoleMessage&) override;
 
   void PostMessageToPageInspector(int session_id, const WTF::String&);
-  std::unique_ptr<blink::WebURLLoader> CreateURLLoader() override {
+  std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
+      const WebURLRequest& request,
+      SingleThreadTaskRunner* task_runner) override {
     // TODO(yhirano): Stop using Platform::CreateURLLoader() here.
-    return Platform::Current()->CreateURLLoader();
+    return Platform::Current()->CreateURLLoader(request, task_runner);
   }
 
  private:

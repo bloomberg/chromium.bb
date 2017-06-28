@@ -5,6 +5,7 @@
 #ifndef MockFetchContext_h
 #define MockFetchContext_h
 
+#include "platform/exported/WrappedResourceRequest.h"
 #include "platform/loader/fetch/FetchContext.h"
 #include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/ResourceTimingInfo.h"
@@ -83,8 +84,10 @@ class MockFetchContext : public FetchContext {
   }
 
   std::unique_ptr<WebURLLoader> CreateURLLoader(
-      const ResourceRequest&) override {
-    auto loader = Platform::Current()->CreateURLLoader();
+      const ResourceRequest& request) override {
+    WrappedResourceRequest wrapped(request);
+    auto loader = Platform::Current()->CreateURLLoader(
+        wrapped, runner_->ToSingleThreadTaskRunner());
     loader->SetLoadingTaskRunner(runner_.Get());
     return loader;
   }

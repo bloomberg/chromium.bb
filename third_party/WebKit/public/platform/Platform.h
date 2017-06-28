@@ -64,6 +64,10 @@
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace device {
 class Gamepads;
 }
@@ -335,7 +339,11 @@ class BLINK_PLATFORM_EXPORT Platform {
   // Network -------------------------------------------------------------
 
   // Returns a new WebURLLoader instance.
-  virtual std::unique_ptr<WebURLLoader> CreateURLLoader() { return nullptr; }
+  virtual std::unique_ptr<WebURLLoader> CreateURLLoader(
+      const WebURLRequest&,
+      base::SingleThreadTaskRunner*) {
+    return nullptr;
+  }
 
   // Returns a WebDataConsumerHandle for given a mojo data pipe endpoint.
   virtual std::unique_ptr<WebDataConsumerHandle> CreateDataConsumerHandle(

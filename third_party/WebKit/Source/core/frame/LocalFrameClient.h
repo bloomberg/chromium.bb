@@ -91,6 +91,7 @@ class WebRemotePlaybackClient;
 class WebRTCPeerConnectionHandler;
 class WebServiceWorkerProvider;
 class WebSpellCheckPanelHostClient;
+class WebTaskRunner;
 class WebURLLoader;
 
 class CORE_EXPORT LocalFrameClient : public FrameClient {
@@ -349,7 +350,8 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
 
   virtual TextCheckerClient& GetTextCheckerClient() const = 0;
 
-  virtual std::unique_ptr<WebURLLoader> CreateURLLoader() = 0;
+  virtual std::unique_ptr<WebURLLoader> CreateURLLoader(const ResourceRequest&,
+                                                        WebTaskRunner*) = 0;
 
   virtual void AnnotatedRegionsChanged() = 0;
 };

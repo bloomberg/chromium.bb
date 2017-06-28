@@ -42,6 +42,7 @@
 #include "core/page/Page.h"
 #include "platform/DragImage.h"
 #include "platform/WebFrameScheduler.h"
+#include "platform/exported/WrappedResourceRequest.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntRect.h"
@@ -367,9 +368,13 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
       WebApplicationCacheHostClient*) override;
 
   TextCheckerClient& GetTextCheckerClient() const override;
-  std::unique_ptr<WebURLLoader> CreateURLLoader() override {
+  std::unique_ptr<WebURLLoader> CreateURLLoader(
+      const ResourceRequest& request,
+      WebTaskRunner* task_runner) override {
     // TODO(yhirano): Stop using Platform::CreateURLLoader() here.
-    return Platform::Current()->CreateURLLoader();
+    WrappedResourceRequest wrapped(request);
+    return Platform::Current()->CreateURLLoader(
+        wrapped, task_runner->ToSingleThreadTaskRunner());
   }
 
   void AnnotatedRegionsChanged() override {}

@@ -1083,9 +1083,7 @@ std::unique_ptr<WebURLLoader> FrameFetchContext::CreateURLLoader(
     const ResourceRequest& request) {
   DCHECK(!IsDetached());
 
-  auto loader = GetFrame()->CreateURLLoader();
   RefPtr<WebTaskRunner> task_runner;
-
   if (request.GetKeepalive()) {
     // The loader should be able to work after the frame destruction, so we
     // cannot use the task runner associated with the frame.
@@ -1094,6 +1092,7 @@ std::unique_ptr<WebURLLoader> FrameFetchContext::CreateURLLoader(
   } else {
     task_runner = GetTaskRunner();
   }
+  auto loader = GetFrame()->CreateURLLoader(request, task_runner.Get());
   loader->SetLoadingTaskRunner(task_runner.Get());
   return loader;
 }

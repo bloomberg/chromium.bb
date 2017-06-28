@@ -45,7 +45,9 @@ FetchTestingPlatformSupport::GetURLLoaderMockFactory() {
   return url_loader_mock_factory_.get();
 }
 
-std::unique_ptr<WebURLLoader> FetchTestingPlatformSupport::CreateURLLoader() {
+std::unique_ptr<WebURLLoader> FetchTestingPlatformSupport::CreateURLLoader(
+    const blink::WebURLRequest& request,
+    base::SingleThreadTaskRunner* task_runner) {
   return url_loader_mock_factory_->CreateURLLoader(nullptr);
 }
 
