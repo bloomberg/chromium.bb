@@ -36,6 +36,9 @@ bool CanSendReport(const SBErrorOptions& error_display_options) {
 
 }  // namespace
 
+DataCollectorsContainer::DataCollectorsContainer() {}
+DataCollectorsContainer::~DataCollectorsContainer() {}
+
 TriggerManager::TriggerManager(BaseUIManager* ui_manager)
     : ui_manager_(ui_manager) {}
 
@@ -56,6 +59,7 @@ SBErrorOptions TriggerManager::GetSBErrorDisplayOptions(
 }
 
 bool TriggerManager::StartCollectingThreatDetails(
+    const SafeBrowsingTriggerType trigger_type,
     content::WebContents* web_contents,
     const security_interstitials::UnsafeResource& resource,
     net::URLRequestContextGetter* request_context_getter,
@@ -67,16 +71,21 @@ bool TriggerManager::StartCollectingThreatDetails(
     return false;
 
   // Ensure we're not already collecting data on this tab.
+  // TODO(lpz): this check should be more specific to check that this type of
+  // data collector is not running on this tab (once additional data collectors
+  // exist).
   if (base::ContainsKey(data_collectors_map_, web_contents))
     return false;
 
-  data_collectors_map_[web_contents] = scoped_refptr<ThreatDetails>(
+  DataCollectorsContainer* collectors = &data_collectors_map_[web_contents];
+  collectors->threat_details = scoped_refptr<ThreatDetails>(
       ThreatDetails::NewThreatDetails(ui_manager_, web_contents, resource,
                                       request_context_getter, history_service));
   return true;
 }
 
 bool TriggerManager::FinishCollectingThreatDetails(
+    const SafeBrowsingTriggerType trigger_type,
     content::WebContents* web_contents,
     const base::TimeDelta& delay,
     bool did_proceed,
@@ -85,19 +94,22 @@ bool TriggerManager::FinishCollectingThreatDetails(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Make sure there's a data collector running on this tab.
+  // TODO(lpz): this check should be more specific to check that the right type
+  // of data collector is running on this tab (once additional data collectors
+  // exist).
   if (!base::ContainsKey(data_collectors_map_, web_contents))
     return false;
 
   // Determine whether a report should be sent.
   bool should_send_report = CanSendReport(error_display_options);
 
+  DataCollectorsContainer* collectors = &data_collectors_map_[web_contents];
   // Find the data collector and tell it to finish collecting data, and then
   // remove it from our map. We release ownership of the data collector here but
   // it will live until the end of the FinishCollection call because it
   // implements RefCountedThreadSafe.
   if (should_send_report) {
-    scoped_refptr<ThreatDetails> threat_details =
-        data_collectors_map_[web_contents];
+    scoped_refptr<ThreatDetails> threat_details = collectors->threat_details;
     content::BrowserThread::PostDelayedTask(
         content::BrowserThread::IO, FROM_HERE,
         base::BindOnce(&ThreatDetails::FinishCollection, threat_details,
@@ -107,6 +119,7 @@ bool TriggerManager::FinishCollectingThreatDetails(
 
   // Regardless of whether the report got sent, clean up the data collector on
   // this tab.
+  collectors->threat_details = nullptr;
   data_collectors_map_.erase(web_contents);
 
   return should_send_report;

@@ -28,12 +28,31 @@ namespace safe_browsing {
 class BaseUIManager;
 class ThreatDetails;
 
+enum class SafeBrowsingTriggerType {
+  SECURITY_INTERSTITIAL,
+};
+
+// A wrapper around different kinds of data collectors that can be active on a
+// given browser tab. Any given field can be null or empty if the associated
+// data is not being collected.
+struct DataCollectorsContainer {
+ public:
+  DataCollectorsContainer();
+  ~DataCollectorsContainer();
+
+  // Note: new data collection types should be added below as additional fields.
+
+  // Collects ThreatDetails which contains resource URLs and partial DOM.
+  scoped_refptr<ThreatDetails> threat_details;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DataCollectorsContainer);
+};
+
 // Stores the data collectors that are active on each WebContents (ie: browser
 // tab).
-// TODO(lpz): This will be a multi-level map in the future so different
-// collectors can be active on the same tab.
 using DataCollectorsMap =
-    std::unordered_map<content::WebContents*, scoped_refptr<ThreatDetails>>;
+    std::unordered_map<content::WebContents*, DataCollectorsContainer>;
 
 using SBErrorOptions =
     security_interstitials::BaseSafeBrowsingErrorUI::SBErrorDisplayOptions;
@@ -67,6 +86,7 @@ class TriggerManager {
   // should be created by TriggerManager::GetSBErrorDisplayOptions().
   // Returns true if the collection began, or false if it didn't.
   bool StartCollectingThreatDetails(
+      const SafeBrowsingTriggerType trigger_type,
       content::WebContents* web_contents,
       const security_interstitials::UnsafeResource& resource,
       net::URLRequestContextGetter* request_context_getter,
@@ -84,6 +104,7 @@ class TriggerManager {
   // Returns true if the report was completed and sent, or false otherwise (eg:
   // the user was not opted-in to extended reporting after collection began).
   bool FinishCollectingThreatDetails(
+      const SafeBrowsingTriggerType trigger_type,
       content::WebContents* web_contents,
       const base::TimeDelta& delay,
       bool did_proceed,

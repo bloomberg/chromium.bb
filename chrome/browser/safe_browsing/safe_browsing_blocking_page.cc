@@ -135,7 +135,8 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
         g_browser_process->safe_browsing_service()
             ->trigger_manager()
             ->StartCollectingThreatDetails(
-                web_contents, unsafe_resources[0], profile->GetRequestContext(),
+                SafeBrowsingTriggerType::SECURITY_INTERSTITIAL, web_contents,
+                unsafe_resources[0], profile->GetRequestContext(),
                 HistoryServiceFactory::GetForProfile(
                     profile, ServiceAccessType::EXPLICIT_ACCESS),
                 sb_error_ui()->get_error_display_options());
@@ -208,6 +209,7 @@ void SafeBrowsingBlockingPage::FinishThreatDetails(const base::TimeDelta& delay,
   bool report_sent = g_browser_process->safe_browsing_service()
                          ->trigger_manager()
                          ->FinishCollectingThreatDetails(
+                             SafeBrowsingTriggerType::SECURITY_INTERSTITIAL,
                              web_contents(), delay, did_proceed, num_visits,
                              sb_error_ui()->get_error_display_options());
 
