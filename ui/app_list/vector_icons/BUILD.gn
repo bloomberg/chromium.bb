@@ -8,8 +8,6 @@ aggregate_vector_icons("app_list_vector_icons") {
   icon_directory = "."
 
   icons = [
-    "ic_arrow_up.1x.icon",
-    "ic_arrow_up.icon",
     "ic_badge_instant.1x.icon",
     "ic_badge_instant.icon",
     "ic_badge_play.1x.icon",
