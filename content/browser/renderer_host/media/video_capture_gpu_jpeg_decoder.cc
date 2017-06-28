@@ -16,6 +16,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
+#include "content/browser/gpu/gpu_process_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "media/base/media_switches.h"
@@ -214,6 +215,34 @@ void VideoCaptureGpuJpegDecoder::NotifyError(
   base::AutoLock lock(lock_);
   decode_done_closure_.Reset();
   decoder_status_ = FAILED;
+}
+
+// static
+void VideoCaptureGpuJpegDecoder::RequestGPUInfoOnIOThread(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    base::WeakPtr<VideoCaptureGpuJpegDecoder> weak_this) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  GpuProcessHost* host =
+      GpuProcessHost::Get(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED, false);
+  if (host) {
+    host->RequestGPUInfo(
+        base::Bind(&VideoCaptureGpuJpegDecoder::DidReceiveGPUInfoOnIOThread,
+                   task_runner, weak_this));
+  } else {
+    DidReceiveGPUInfoOnIOThread(std::move(task_runner), std::move(weak_this),
+                                gpu::GPUInfo());
+  }
+}
+
+// static
+void VideoCaptureGpuJpegDecoder::DidReceiveGPUInfoOnIOThread(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    base::WeakPtr<VideoCaptureGpuJpegDecoder> weak_this,
+    const gpu::GPUInfo& gpu_info) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // TODO(c.padhi): Implement this, see http://crbug.com/699255.
+  NOTIMPLEMENTED();
 }
 
 // static

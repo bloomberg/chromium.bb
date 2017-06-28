@@ -86,6 +86,8 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
       base::Callback<void(const gfx::GpuMemoryBufferHandle& handle,
                           BufferCreationStatus status)>;
 
+  using RequestGPUInfoCallback = base::Callback<void(const gpu::GPUInfo&)>;
+
   static bool gpu_enabled() { return gpu_enabled_; }
   static int gpu_crash_count() { return gpu_crash_count_; }
 
@@ -146,6 +148,8 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
                               int client_id,
                               const gpu::SyncToken& sync_token);
 
+  void RequestGPUInfo(RequestGPUInfoCallback request_cb);
+
 #if defined(OS_ANDROID)
   // Tells the GPU process that the given surface is being destroyed so that it
   // can stop using it.
@@ -164,6 +168,8 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 
  private:
   class ConnectionFilterImpl;
+
+  enum GpuInitializationStatus { UNKNOWN, SUCCESS, FAILURE };
 
   static bool ValidateHost(GpuProcessHost* host);
 
@@ -215,6 +221,8 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 
   void SendOutstandingReplies();
 
+  void RunRequestGPUInfoCallbacks(const gpu::GPUInfo& gpu_info);
+
   void BlockLiveOffscreenContexts();
 
   // Update GPU crash counters.  Disable GPU if crash limit is reached.
@@ -235,6 +243,8 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // A callback to signal the completion of a SendDestroyingVideoSurface call.
   base::Closure send_destroying_video_surface_done_cb_;
 
+  std::vector<RequestGPUInfoCallback> request_gpu_info_callbacks_;
+
   // Qeueud messages to send when the process launches.
   std::queue<IPC::Message*> queued_messages_;
 
@@ -253,8 +263,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // Whether we actually launched a GPU process.
   bool process_launched_;
 
-  // Whether the GPU process successfully initialized.
-  bool initialized_;
+  GpuInitializationStatus status_;
 
   // Time Init started.  Used to log total GPU process startup time to UMA.
   base::TimeTicks init_start_time_;

@@ -491,7 +491,7 @@ GpuProcessHost::GpuProcessHost(int host_id, GpuProcessKind kind)
       swiftshader_rendering_(false),
       kind_(kind),
       process_launched_(false),
-      initialized_(false),
+      status_(UNKNOWN),
       gpu_host_binding_(this),
       weak_ptr_factory_(this) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -515,6 +515,12 @@ GpuProcessHost::~GpuProcessHost() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   SendOutstandingReplies();
+
+  if (status_ == UNKNOWN) {
+    RunRequestGPUInfoCallbacks(gpu::GPUInfo());
+  } else {
+    DCHECK(request_gpu_info_callbacks_.empty());
+  }
 
   // In case we never started, clean up.
   while (!queued_messages_.empty()) {
@@ -753,6 +759,15 @@ void GpuProcessHost::DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
   gpu_service_ptr_->DestroyGpuMemoryBuffer(id, client_id, sync_token);
 }
 
+void GpuProcessHost::RequestGPUInfo(RequestGPUInfoCallback request_cb) {
+  if (status_ == SUCCESS || status_ == FAILURE) {
+    std::move(request_cb).Run(GpuDataManagerImpl::GetInstance()->GetGPUInfo());
+    return;
+  }
+
+  request_gpu_info_callbacks_.push_back(std::move(request_cb));
+}
+
 #if defined(OS_ANDROID)
 void GpuProcessHost::SendDestroyingVideoSurface(int surface_id,
                                                 const base::Closure& done_cb) {
@@ -845,18 +860,21 @@ void GpuProcessHost::DidInitialize(
     const gpu::GPUInfo& gpu_info,
     const gpu::GpuFeatureInfo& gpu_feature_info) {
   UMA_HISTOGRAM_BOOLEAN("GPU.GPUProcessInitialized", true);
-  initialized_ = true;
+  status_ = SUCCESS;
   GpuDataManagerImpl* gpu_data_manager = GpuDataManagerImpl::GetInstance();
   if (!gpu_data_manager->ShouldUseSwiftShader()) {
     gpu_data_manager->UpdateGpuInfo(gpu_info);
     gpu_data_manager->UpdateGpuFeatureInfo(gpu_feature_info);
   }
+  RunRequestGPUInfoCallbacks(gpu_data_manager->GetGPUInfo());
 }
 
 void GpuProcessHost::DidFailInitialize() {
   UMA_HISTOGRAM_BOOLEAN("GPU.GPUProcessInitialized", false);
-  initialized_ = false;
-  GpuDataManagerImpl::GetInstance()->OnGpuProcessInitFailure();
+  status_ = FAILURE;
+  GpuDataManagerImpl* gpu_data_manager = GpuDataManagerImpl::GetInstance();
+  gpu_data_manager->OnGpuProcessInitFailure();
+  RunRequestGPUInfoCallbacks(gpu_data_manager->GetGPUInfo());
 }
 
 void GpuProcessHost::DidCreateOffscreenContext(const GURL& url) {
@@ -1089,6 +1107,13 @@ void GpuProcessHost::SendOutstandingReplies() {
     base::ResetAndReturn(&send_destroying_video_surface_done_cb_).Run();
 }
 
+void GpuProcessHost::RunRequestGPUInfoCallbacks(const gpu::GPUInfo& gpu_info) {
+  for (auto& callback : request_gpu_info_callbacks_)
+    std::move(callback).Run(gpu_info);
+
+  request_gpu_info_callbacks_.clear();
+}
+
 void GpuProcessHost::BlockLiveOffscreenContexts() {
   for (std::multiset<GURL>::iterator iter =
            urls_with_live_offscreen_contexts_.begin();
@@ -1145,7 +1170,8 @@ void GpuProcessHost::RecordProcessCrash() {
       crashed_before_ = true;
       last_gpu_crash_time = current_time;
 
-      if ((gpu_recent_crash_count_ >= kGpuMaxCrashCount || !initialized_) &&
+      if ((gpu_recent_crash_count_ >= kGpuMaxCrashCount ||
+           status_ == FAILURE) &&
           !disable_crash_limit) {
 #if !defined(OS_CHROMEOS)
         // The GPU process is too unstable to use. Disable it for current
