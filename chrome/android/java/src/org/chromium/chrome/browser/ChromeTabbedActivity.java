@@ -941,9 +941,15 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             }
 
             mIntentWithEffect = false;
+            boolean activeTabBeingRestored = false;
             if ((mIsOnFirstRun || getSavedInstanceState() == null) && intent != null) {
                 if (!mIntentHandler.shouldIgnoreIntent(intent)) {
                     mIntentWithEffect = mIntentHandler.onNewIntent(intent);
+
+                    // Allow the active tab to be restored so that the correct tab is selected when
+                    // the bottom sheet NTP UI is closed.
+                    activeTabBeingRestored |= (getBottomSheet() != null
+                            && NewTabPage.isNTPUrl(IntentHandler.getUrlFromIntent(intent)));
                 }
 
                 if (isMainIntentFromLauncher(intent)) {
@@ -963,7 +969,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             // We always need to try to restore tabs. The set of tabs might be empty, but at least
             // it will trigger the notification that tab restore is complete which is needed by
             // other parts of Chrome such as sync.
-            boolean activeTabBeingRestored = !mIntentWithEffect;
+            activeTabBeingRestored |= !mIntentWithEffect;
+
             mMainIntentMetrics.setIgnoreEvents(true);
             mTabModelSelectorImpl.restoreTabs(activeTabBeingRestored);
             mMainIntentMetrics.setIgnoreEvents(false);
