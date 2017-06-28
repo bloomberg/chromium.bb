@@ -23,8 +23,10 @@ class ValidationDelegate {
   virtual base::string16 Format(const base::string16& text);
 
   // Only the delegate knows how to validate the input fields.
-  virtual bool IsValidTextfield(views::Textfield* textfield) = 0;
-  virtual bool IsValidCombobox(views::Combobox* combobox) = 0;
+  virtual bool IsValidTextfield(views::Textfield* textfield,
+                                base::string16* error_message) = 0;
+  virtual bool IsValidCombobox(views::Combobox* combobox,
+                               base::string16* error_message) = 0;
 
   // Notifications to let delegate react to input field changes and also let
   // caller know if the new values are valid. |was_blurred| indicates if the

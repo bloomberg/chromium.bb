@@ -63,6 +63,10 @@ ShippingAddressEditorViewController::ShippingAddressEditorViewController(
 
 ShippingAddressEditorViewController::~ShippingAddressEditorViewController() {}
 
+bool ShippingAddressEditorViewController::IsEditingExistingItem() {
+  return !!profile_to_edit_;
+}
+
 std::vector<EditorField>
 ShippingAddressEditorViewController::GetFieldDefinitions() {
   return editor_fields_;
@@ -497,14 +501,15 @@ ShippingAddressEditorViewController::ShippingAddressValidationDelegate::Format(
 }
 
 bool ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
-    IsValidTextfield(views::Textfield* textfield) {
-  return ValidateValue(textfield->text(), nullptr);
+    IsValidTextfield(views::Textfield* textfield,
+                     base::string16* error_message) {
+  return ValidateValue(textfield->text(), error_message);
 }
 
 bool ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
-    IsValidCombobox(views::Combobox* combobox) {
+    IsValidCombobox(views::Combobox* combobox, base::string16* error_message) {
   return ValidateValue(combobox->GetTextForRow(combobox->selected_index()),
-                       nullptr);
+                       error_message);
 }
 
 bool ShippingAddressEditorViewController::ShippingAddressValidationDelegate::

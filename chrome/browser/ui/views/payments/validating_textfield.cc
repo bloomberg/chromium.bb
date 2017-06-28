@@ -43,7 +43,8 @@ void ValidatingTextfield::OnContentsChanged() {
 }
 
 bool ValidatingTextfield::IsValid() {
-  return delegate_->IsValidTextfield(this);
+  base::string16 unused;
+  return delegate_->IsValidTextfield(this, &unused);
 }
 
 void ValidatingTextfield::Validate() {

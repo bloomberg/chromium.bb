@@ -40,6 +40,10 @@ ContactInfoEditorViewController::ContactInfoEditorViewController(
 
 ContactInfoEditorViewController::~ContactInfoEditorViewController() {}
 
+bool ContactInfoEditorViewController::IsEditingExistingItem() {
+  return !!profile_to_edit_;
+}
+
 std::vector<EditorField>
 ContactInfoEditorViewController::GetFieldDefinitions() {
   std::vector<EditorField> fields;
@@ -162,8 +166,9 @@ ContactInfoEditorViewController::ContactInfoValidationDelegate::Format(
 }
 
 bool ContactInfoEditorViewController::ContactInfoValidationDelegate::
-    IsValidTextfield(views::Textfield* textfield) {
-  return ValidateTextfield(textfield, nullptr);
+    IsValidTextfield(views::Textfield* textfield,
+                     base::string16* error_message) {
+  return ValidateTextfield(textfield, error_message);
 }
 
 bool ContactInfoEditorViewController::ContactInfoValidationDelegate::
@@ -232,7 +237,7 @@ bool ContactInfoEditorViewController::ContactInfoValidationDelegate::
 }
 
 bool ContactInfoEditorViewController::ContactInfoValidationDelegate::
-    IsValidCombobox(views::Combobox* combobox) {
+    IsValidCombobox(views::Combobox* combobox, base::string16* error_message) {
   // This UI doesn't contain any comboboxes.
   NOTREACHED();
   return true;

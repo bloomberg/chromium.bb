@@ -36,6 +36,7 @@ class ContactInfoEditorViewController : public EditorViewController {
   ~ContactInfoEditorViewController() override;
 
   // EditorViewController:
+  bool IsEditingExistingItem() override;
   std::vector<EditorField> GetFieldDefinitions() override;
   base::string16 GetInitialValueForType(
       autofill::ServerFieldType type) override;
@@ -73,8 +74,10 @@ class ContactInfoEditorViewController : public EditorViewController {
     // ValidationDelegate:
     bool ShouldFormat() override;
     base::string16 Format(const base::string16& text) override;
-    bool IsValidTextfield(views::Textfield* textfield) override;
-    bool IsValidCombobox(views::Combobox* combobox) override;
+    bool IsValidTextfield(views::Textfield* textfield,
+                          base::string16* error_message) override;
+    bool IsValidCombobox(views::Combobox* combobox,
+                         base::string16* error_message) override;
     bool TextfieldValueChanged(views::Textfield* textfield,
                                bool was_blurred) override;
     bool ComboboxValueChanged(views::Combobox* combobox) override;
