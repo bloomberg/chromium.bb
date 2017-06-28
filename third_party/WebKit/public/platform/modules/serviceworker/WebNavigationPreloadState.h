@@ -5,15 +5,18 @@
 #ifndef WebNavigationPreloadState_h
 #define WebNavigationPreloadState_h
 
+#include "public/platform/WebString.h"
+
 namespace blink {
 
 struct WebNavigationPreloadState {
   WebNavigationPreloadState(bool enabled, const WebString& header_value)
       : enabled(enabled), header_value(header_value) {}
 
-  bool enabled;
-  WebString header_value;
+  const bool enabled;
+  const WebString header_value;
 };
-}
+
+}  // namespace blink
 
 #endif  // WebNavigationPreloadState_h
