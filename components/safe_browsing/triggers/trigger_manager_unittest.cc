@@ -82,21 +82,23 @@ class TriggerManagerTest : public ::testing::Test {
     SBErrorOptions options =
         TriggerManager::GetSBErrorDisplayOptions(pref_service_, *web_contents);
     return trigger_manager_.StartCollectingThreatDetails(
-        web_contents, security_interstitials::UnsafeResource(), nullptr,
-        nullptr, options);
+        SafeBrowsingTriggerType::SECURITY_INTERSTITIAL, web_contents,
+        security_interstitials::UnsafeResource(), nullptr, nullptr, options);
   }
 
   bool FinishCollectingThreatDetails(content::WebContents* web_contents,
                                      bool expect_report_sent) {
     if (expect_report_sent) {
       MockThreatDetails* threat_details = static_cast<MockThreatDetails*>(
-          trigger_manager_.data_collectors_map_[web_contents].get());
+          trigger_manager_.data_collectors_map_[web_contents]
+              .threat_details.get());
       EXPECT_CALL(*threat_details, FinishCollection(_, _)).Times(1);
     }
     SBErrorOptions options =
         TriggerManager::GetSBErrorDisplayOptions(pref_service_, *web_contents);
     return trigger_manager_.FinishCollectingThreatDetails(
-        web_contents, base::TimeDelta(), false, 0, options);
+        SafeBrowsingTriggerType::SECURITY_INTERSTITIAL, web_contents,
+        base::TimeDelta(), false, 0, options);
   }
 
   const DataCollectorsMap& data_collectors_map() {
