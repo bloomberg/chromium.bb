@@ -50,7 +50,7 @@ static bool IsTableCellEmpty(Node* cell) {
   DCHECK(cell);
   DCHECK(IsTableCell(cell)) << cell;
   return VisiblePosition::FirstPositionInNode(*cell).DeepEquivalent() ==
-         VisiblePosition::LastPositionInNode(cell).DeepEquivalent();
+         VisiblePosition::LastPositionInNode(*cell).DeepEquivalent();
 }
 
 static bool IsTableRowEmpty(Node* row) {
@@ -520,7 +520,7 @@ void DeleteSelectionCommand::RemoveNode(
   }
   if (node == end_block_) {
     VisiblePosition next =
-        NextPositionOf(VisiblePosition::LastPositionInNode(end_block_.Get()));
+        NextPositionOf(VisiblePosition::LastPositionInNode(*end_block_.Get()));
     if (next.IsNotNull() && !IsStartOfBlock(next))
       need_placeholder_ = true;
   }

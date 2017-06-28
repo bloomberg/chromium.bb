@@ -633,9 +633,9 @@ void ReplaceSelectionCommand::RemoveRedundantStylesAndKeepStyleSpanInline(
         VisiblePosition::FirstPositionInNode(*element->parentNode())
                 .DeepEquivalent() ==
             VisiblePosition::FirstPositionInNode(*element).DeepEquivalent() &&
-        VisiblePosition::LastPositionInNode(element->parentNode())
+        VisiblePosition::LastPositionInNode(*element->parentNode())
                 .DeepEquivalent() ==
-            VisiblePosition::LastPositionInNode(element).DeepEquivalent()) {
+            VisiblePosition::LastPositionInNode(*element).DeepEquivalent()) {
       inserted_nodes.WillRemoveNodePreservingChildren(*element);
       RemoveNodePreservingChildren(element, editing_state);
       if (editing_state->IsAborted())
@@ -735,7 +735,7 @@ void ReplaceSelectionCommand::MoveElementOutOfAncestor(
   VisiblePosition position_at_end_of_node =
       CreateVisiblePosition(LastPositionInOrAfterNode(element));
   VisiblePosition last_position_in_paragraph =
-      VisiblePosition::LastPositionInNode(ancestor);
+      VisiblePosition::LastPositionInNode(*ancestor);
   if (position_at_end_of_node.DeepEquivalent() ==
       last_position_in_paragraph.DeepEquivalent()) {
     RemoveNode(element, editing_state);

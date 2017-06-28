@@ -561,7 +561,7 @@ VisiblePosition EndOfBlock(const VisiblePosition& visible_position,
       position.ComputeContainerNode()
           ? EnclosingBlock(position.ComputeContainerNode(), rule)
           : 0;
-  return end_block ? VisiblePosition::LastPositionInNode(end_block)
+  return end_block ? VisiblePosition::LastPositionInNode(*end_block)
                    : VisiblePosition();
 }
 
@@ -653,7 +653,7 @@ VisiblePosition EndOfEditableContent(const VisiblePosition& visible_position) {
   if (!highest_root)
     return VisiblePosition();
 
-  return VisiblePosition::LastPositionInNode(highest_root);
+  return VisiblePosition::LastPositionInNode(*highest_root);
 }
 
 bool IsEndOfEditableOrNonEditableContent(const VisiblePosition& position) {

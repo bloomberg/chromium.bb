@@ -135,8 +135,8 @@ TEST_F(EditingUtilitiesTest, tableElementJustBefore) {
   EXPECT_EQ(table, TableElementJustBefore(
                        VisiblePositionInFlatTree::AfterNode(*table)));
 
-  EXPECT_EQ(table,
-            TableElementJustBefore(VisiblePosition::LastPositionInNode(table)));
+  EXPECT_EQ(table, TableElementJustBefore(
+                       VisiblePosition::LastPositionInNode(*table)));
   EXPECT_EQ(table, TableElementJustBefore(CreateVisiblePosition(
                        PositionInFlatTree::LastPositionInNode(*table))));
 
@@ -150,7 +150,7 @@ TEST_F(EditingUtilitiesTest, tableElementJustBefore) {
                          VisiblePositionInFlatTree::AfterNode(*host)));
 
   EXPECT_EQ(nullptr,
-            TableElementJustBefore(VisiblePosition::LastPositionInNode(host)));
+            TableElementJustBefore(VisiblePosition::LastPositionInNode(*host)));
   EXPECT_EQ(table, TableElementJustBefore(CreateVisiblePosition(
                        PositionInFlatTree::LastPositionInNode(*host))));
 }

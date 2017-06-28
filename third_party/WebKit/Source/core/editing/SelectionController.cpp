@@ -521,7 +521,7 @@ bool SelectionController::SelectClosestWordFromHitTestResult(
 
     if (new_selection.RootEditableElement() &&
         pos.DeepEquivalent() == VisiblePositionInFlatTree::LastPositionInNode(
-                                    new_selection.RootEditableElement())
+                                    *new_selection.RootEditableElement())
                                     .DeepEquivalent())
       return false;
 
