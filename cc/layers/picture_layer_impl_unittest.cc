@@ -2328,7 +2328,6 @@ TEST_F(PictureLayerImplTest, SyncTilingAfterGpuRasterizationToggles) {
   EXPECT_EQ(0u, active_layer()->release_resources_count());
   // Toggling the gpu rasterization clears all tilings on both trees.
   host_impl()->SetHasGpuRasterizationTrigger(true);
-  host_impl()->SetContentIsSuitableForGpuRasterization(true);
   host_impl()->CommitComplete();
   EXPECT_EQ(1u, pending_layer()->release_tile_resources_count());
   EXPECT_EQ(1u, active_layer()->release_tile_resources_count());
@@ -2359,7 +2358,6 @@ TEST_F(PictureLayerImplTest, SyncTilingAfterGpuRasterizationToggles) {
   host_impl()->NotifyReadyToActivate();
 
   host_impl()->SetHasGpuRasterizationTrigger(true);
-  host_impl()->SetContentIsSuitableForGpuRasterization(false);
   host_impl()->CommitComplete();
   EXPECT_EQ(GpuRasterizationStatus::ON,
             host_impl()->gpu_rasterization_status());
@@ -2417,7 +2415,6 @@ TEST_F(PictureLayerImplTest, NoLowResTilingWithGpuRasterization) {
                          default_tile_size.height() * 4);
 
   host_impl()->SetHasGpuRasterizationTrigger(true);
-  host_impl()->SetContentIsSuitableForGpuRasterization(true);
   host_impl()->CommitComplete();
 
   SetupDefaultTrees(layer_bounds);
@@ -2431,7 +2428,6 @@ TEST_F(PictureLayerImplTest, NoLowResTilingWithGpuRasterization) {
 
 TEST_F(PictureLayerImplTest, RequiredTilesWithGpuRasterization) {
   host_impl()->SetHasGpuRasterizationTrigger(true);
-  host_impl()->SetContentIsSuitableForGpuRasterization(true);
   host_impl()->CommitComplete();
 
   gfx::Size viewport_size(1000, 1000);
@@ -4740,7 +4736,6 @@ TEST_F(TileSizeTest, TileSizes) {
   host_impl()->SetViewportSize(gfx::Size(1000, 1000));
   gfx::Size result;
 
-  host_impl()->SetContentIsSuitableForGpuRasterization(true);
   host_impl()->SetHasGpuRasterizationTrigger(false);
   host_impl()->CommitComplete();
   EXPECT_EQ(host_impl()->gpu_rasterization_status(),

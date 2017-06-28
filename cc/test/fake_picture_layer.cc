@@ -9,20 +9,14 @@
 namespace cc {
 
 FakePictureLayer::FakePictureLayer(ContentLayerClient* client)
-    : PictureLayer(client),
-      update_count_(0),
-      always_update_resources_(false),
-      force_unsuitable_for_gpu_rasterization_(false) {
+    : PictureLayer(client) {
   SetBounds(gfx::Size(1, 1));
   SetIsDrawable(true);
 }
 
 FakePictureLayer::FakePictureLayer(ContentLayerClient* client,
                                    std::unique_ptr<RecordingSource> source)
-    : PictureLayer(client, std::move(source)),
-      update_count_(0),
-      always_update_resources_(false),
-      force_unsuitable_for_gpu_rasterization_(false) {
+    : PictureLayer(client, std::move(source)) {
   SetBounds(gfx::Size(1, 1));
   SetIsDrawable(true);
 }
@@ -60,10 +54,16 @@ bool FakePictureLayer::Update() {
   return updated || always_update_resources_;
 }
 
-bool FakePictureLayer::IsSuitableForGpuRasterization() const {
-  if (force_unsuitable_for_gpu_rasterization_)
-    return false;
-  return PictureLayer::IsSuitableForGpuRasterization();
+bool FakePictureLayer::HasSlowPaths() const {
+  if (force_content_has_slow_paths_)
+    return true;
+  return PictureLayer::HasSlowPaths();
+}
+
+bool FakePictureLayer::HasNonAAPaint() const {
+  if (force_content_has_non_aa_paint_)
+    return true;
+  return PictureLayer::HasNonAAPaint();
 }
 
 }  // namespace cc

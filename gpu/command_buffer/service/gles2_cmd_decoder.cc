@@ -3823,6 +3823,8 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
   caps.flips_vertically = !is_offscreen && surface_->FlipsVertically();
   caps.msaa_is_slow = workarounds().msaa_is_slow;
   caps.avoid_stencil_buffers = workarounds().avoid_stencil_buffers;
+  caps.multisample_compatibility =
+      feature_info_->feature_flags().ext_multisample_compatibility;
   caps.dc_layers = supports_dc_layers_;
 
   caps.blend_equation_advanced =

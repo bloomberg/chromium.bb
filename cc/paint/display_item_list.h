@@ -108,6 +108,7 @@ class CC_PAINT_EXPORT DisplayItemList
   void Finalize();
 
   int NumSlowPaths() const { return paint_op_buffer_.numSlowPaths(); }
+  bool HasNonAAPaint() const { return paint_op_buffer_.HasNonAAPaint(); }
 
   // This gives the total number of PaintOps.
   size_t op_count() const { return paint_op_buffer_.size(); }

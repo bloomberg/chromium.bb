@@ -61018,13 +61018,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Renderer4.GpuRasterizationSlowPathsWithNonAAPaint"
+    enum="BooleanHasSlowPathsWithNonAAPaint">
+  <owner>ericrk@chromium.org</owner>
+  <summary>
+    If gpu rasterization is enabled, whether this page contains both slow-paths
+    (making it suitable for MSAA) and non-AA paints (making it not-suitable for
+    MSAA). This indicates a case where we would like to use MSAA, but may have
+    to avoid it for correctness reasons.
+  </summary>
+</histogram>
+
 <histogram name="Renderer4.GpuRasterizationSuitableContent"
     enum="BooleanEnabled">
   <owner>alokp@chromium.org</owner>
   <summary>
-    If gpu rasterization is enabled, whether the page contents are suitable for
-    gpu rasterization (checked once after the page is painted for the first
-    time).
+    If gpu rasterization is enabled, whether the page contents contain no more
+    than 5 slow paths, and is suitable for non-MSAA gpu rasterization (checked
+    once after the page is painted for the first time).
   </summary>
 </histogram>
 

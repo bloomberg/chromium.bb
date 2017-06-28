@@ -186,7 +186,6 @@ TEST(TextureLayerImplTest, ResourceNotFreedOnGpuRasterToggle) {
   EXPECT_FALSE(released);
   // Toggling the gpu rasterization clears all tilings on both trees.
   impl.host_impl()->SetHasGpuRasterizationTrigger(true);
-  impl.host_impl()->SetContentIsSuitableForGpuRasterization(true);
   impl.host_impl()->CommitComplete();
   EXPECT_TRUE(impl.host_impl()->use_gpu_rasterization());
   EXPECT_FALSE(released);
