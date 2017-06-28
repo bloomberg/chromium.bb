@@ -6,6 +6,7 @@
 #define NGInlineItemsBuilder_h
 
 #include "core/CoreExport.h"
+#include "core/layout/ng/inline/empty_offset_mapping_builder.h"
 #include "core/layout/ng/inline/ng_inline_node.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Vector.h"
@@ -27,12 +28,16 @@ class NGInlineItem;
 // By calling EnterInline/ExitInline, it inserts bidirectional control
 // characters as defined in:
 // https://drafts.csswg.org/css-writing-modes-3/#bidi-control-codes-injection-table
-class CORE_EXPORT NGInlineItemsBuilder {
+// TODO(xiaochengh): Utilize the passed-in OffsetMappingBuilder to construct
+// the whitespace-collapsed offset mapping.
+template <typename OffsetMappingBuilder>
+class CORE_TEMPLATE_CLASS_EXPORT NGInlineItemsBuilderTemplate {
   STACK_ALLOCATED();
 
  public:
-  explicit NGInlineItemsBuilder(Vector<NGInlineItem>* items) : items_(items) {}
-  ~NGInlineItemsBuilder();
+  explicit NGInlineItemsBuilderTemplate(Vector<NGInlineItem>* items)
+      : items_(items) {}
+  ~NGInlineItemsBuilderTemplate();
 
   String ToString();
 
@@ -121,6 +126,12 @@ class CORE_EXPORT NGInlineItemsBuilder {
   void Enter(LayoutObject*, UChar);
   void Exit(LayoutObject*);
 };
+
+extern template class CORE_EXTERN_TEMPLATE_EXPORT
+    NGInlineItemsBuilderTemplate<EmptyOffsetMappingBuilder>;
+
+using NGInlineItemsBuilder =
+    NGInlineItemsBuilderTemplate<EmptyOffsetMappingBuilder>;
 
 }  // namespace blink
 
