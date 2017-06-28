@@ -45,6 +45,7 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/border.h"
+#include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/image_view.h"
@@ -541,6 +542,15 @@ base::string16 PageInfoBubbleView::GetWindowTitle() const {
   return summary_text_;
 }
 
+void PageInfoBubbleView::AddedToWidget() {
+  std::unique_ptr<views::Label> title =
+      views::BubbleFrameView::CreateDefaultTitleLabel(GetWindowTitle());
+  title->SetFontList(
+      ui::ResourceBundle::GetSharedInstance().GetFontListWithDelta(
+          kSummaryFontSizeDelta));
+  GetBubbleFrameView()->SetTitleView(std::move(title));
+}
+
 bool PageInfoBubbleView::ShouldShowCloseButton() const {
   return true;
 }
@@ -553,11 +563,6 @@ void PageInfoBubbleView::OnWidgetDestroying(views::Widget* widget) {
 
 int PageInfoBubbleView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
-}
-
-const gfx::FontList& PageInfoBubbleView::GetTitleFontList() const {
-  return ui::ResourceBundle::GetSharedInstance().GetFontListWithDelta(
-      kSummaryFontSizeDelta);
 }
 
 void PageInfoBubbleView::ButtonPressed(views::Button* button,
@@ -696,7 +701,8 @@ void PageInfoBubbleView::SetIdentityInfo(const IdentityInfo& identity_info) {
       identity_info.GetSecurityDescription();
 
   summary_text_ = security_description->summary;
-  GetWidget()->UpdateWindowTitle();
+  static_cast<views::Label*>(GetBubbleFrameView()->title())
+      ->SetText(GetWindowTitle());
 
   if (identity_info.certificate) {
     certificate_ = identity_info.certificate;

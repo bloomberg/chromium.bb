@@ -33,13 +33,13 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/controls/styled_label.h"
-#include "ui/views/controls/styled_label_listener.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
@@ -171,28 +171,6 @@ views::StyledLabel::RangeStyleInfo GetLinkStyle() {
   return result;
 }
 
-// If a special title is required (i.e. one that contains links), creates a
-// title view and a row for it in |layout|.
-// TODO(estade): this should be removed and a replaced by a normal title (via
-// GetWindowTitle).
-void AddTitleRowWithLink(views::GridLayout* layout,
-                         ManagePasswordsBubbleModel* model,
-                         views::StyledLabelListener* listener) {
-  if (model->title_brand_link_range().is_empty())
-    return;
-
-  views::StyledLabel* title_label =
-      new views::StyledLabel(model->title(), listener);
-  title_label->SetBaseFontList(views::style::GetFont(
-      views::style::CONTEXT_DIALOG_TITLE, views::style::STYLE_PRIMARY));
-  title_label->AddStyleRange(model->title_brand_link_range(), GetLinkStyle());
-  layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
-  layout->AddView(title_label);
-  layout->AddPaddingRow(0, ChromeLayoutProvider::Get()
-                               ->GetInsetsMetric(views::INSETS_DIALOG_CONTENTS)
-                               .top());
-}
-
 }  // namespace
 
 // ManagePasswordsBubbleView::AutoSigninView ----------------------------------
@@ -291,10 +269,8 @@ void ManagePasswordsBubbleView::AutoSigninView::OnTimer() {
 // A view offering the user the ability to save credentials. Contains a
 // single ManagePasswordItemsView, along with a "Save Passwords" button,
 // a "Never" button and an "Edit" button to edit username field.
-class ManagePasswordsBubbleView::PendingView
-    : public views::View,
-      public views::ButtonListener,
-      public views::StyledLabelListener {
+class ManagePasswordsBubbleView::PendingView : public views::View,
+                                               public views::ButtonListener {
  public:
   explicit PendingView(ManagePasswordsBubbleView* parent);
   ~PendingView() override;
@@ -302,11 +278,6 @@ class ManagePasswordsBubbleView::PendingView
  private:
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
-  // views::StyledLabelListener:
-  void StyledLabelLinkClicked(views::StyledLabel* label,
-                              const gfx::Range& range,
-                              int event_flags) override;
 
   ManagePasswordsBubbleView* parent_;
 
@@ -341,9 +312,7 @@ ManagePasswordsBubbleView::PendingView::PendingView(
       this,
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_BUBBLE_BLACKLIST_BUTTON));
 
-  // Title row.
   BuildColumnSet(layout, SINGLE_VIEW_COLUMN_SET);
-  AddTitleRowWithLink(layout, parent_->model(), this);
 
   // Credential row.
   if (item) {
@@ -391,14 +360,6 @@ void ManagePasswordsBubbleView::PendingView::ButtonPressed(
   }
 
   parent_->CloseBubble();
-}
-
-void ManagePasswordsBubbleView::PendingView::StyledLabelLinkClicked(
-    views::StyledLabel* label,
-    const gfx::Range& range,
-    int event_flags) {
-  DCHECK_EQ(range, parent_->model()->title_brand_link_range());
-  parent_->model()->OnBrandLinkClicked();
 }
 
 // ManagePasswordsBubbleView::ManageView --------------------------------------
@@ -641,8 +602,7 @@ void ManagePasswordsBubbleView::SignInPromoView::ButtonPressed(
 // and a rejection button.
 class ManagePasswordsBubbleView::UpdatePendingView
     : public views::View,
-      public views::ButtonListener,
-      public views::StyledLabelListener {
+      public views::ButtonListener {
  public:
   explicit UpdatePendingView(ManagePasswordsBubbleView* parent);
   ~UpdatePendingView() override;
@@ -650,11 +610,6 @@ class ManagePasswordsBubbleView::UpdatePendingView
  private:
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
-  // views::StyledLabelListener:
-  void StyledLabelLinkClicked(views::StyledLabel* label,
-                              const gfx::Range& range,
-                              int event_flags) override;
 
   ManagePasswordsBubbleView* parent_;
 
@@ -689,9 +644,7 @@ ManagePasswordsBubbleView::UpdatePendingView::UpdatePendingView(
   update_button_ = views::MdTextButton::CreateSecondaryUiBlueButton(
       this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_UPDATE_BUTTON));
 
-  // Title row.
   BuildColumnSet(layout, SINGLE_VIEW_COLUMN_SET);
-  AddTitleRowWithLink(layout, parent_->model(), this);
 
   // Credential row.
   layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
@@ -729,14 +682,6 @@ void ManagePasswordsBubbleView::UpdatePendingView::ButtonPressed(
     parent_->model()->OnNopeUpdateClicked();
   }
   parent_->CloseBubble();
-}
-
-void ManagePasswordsBubbleView::UpdatePendingView::StyledLabelLinkClicked(
-    views::StyledLabel* label,
-    const gfx::Range& range,
-    int event_flags) {
-  DCHECK_EQ(range, parent_->model()->title_brand_link_range());
-  parent_->model()->OnBrandLinkClicked();
 }
 
 // ManagePasswordsBubbleView --------------------------------------------------
@@ -848,6 +793,22 @@ void ManagePasswordsBubbleView::CloseBubble() {
   LocationBarBubbleDelegateView::CloseBubble();
 }
 
+void ManagePasswordsBubbleView::AddedToWidget() {
+  auto title_view =
+      base::MakeUnique<views::StyledLabel>(base::string16(), this);
+  title_view->SetBaseFontList(views::style::GetFont(
+      views::style::CONTEXT_DIALOG_TITLE, views::style::STYLE_PRIMARY));
+  UpdateTitleText(title_view.get());
+  GetBubbleFrameView()->SetTitleView(std::move(title_view));
+}
+
+void ManagePasswordsBubbleView::UpdateTitleText(
+    views::StyledLabel* title_view) {
+  title_view->SetText(GetWindowTitle());
+  if (!model_.title_brand_link_range().is_empty())
+    title_view->AddStyleRange(model_.title_brand_link_range(), GetLinkStyle());
+}
+
 base::string16 ManagePasswordsBubbleView::GetWindowTitle() const {
   return model_.title();
 }
@@ -863,13 +824,6 @@ gfx::ImageSkia ManagePasswordsBubbleView::GetWindowIcon() {
   return gfx::ImageSkia();
 }
 
-bool ManagePasswordsBubbleView::ShouldShowWindowTitle() const {
-  // Since bubble titles don't support links, fall back to a custom title view
-  // if we need to show a link. Only use the normal title path if there's no
-  // link.
-  return model_.title_brand_link_range().is_empty();
-}
-
 bool ManagePasswordsBubbleView::ShouldShowWindowIcon() const {
   return model_.state() == password_manager::ui::CHROME_DESKTOP_IOS_PROMO_STATE;
 }
@@ -880,6 +834,14 @@ bool ManagePasswordsBubbleView::ShouldShowCloseButton() const {
          model_.state() == password_manager::ui::CHROME_DESKTOP_IOS_PROMO_STATE;
 }
 
+void ManagePasswordsBubbleView::StyledLabelLinkClicked(
+    views::StyledLabel* label,
+    const gfx::Range& range,
+    int event_flags) {
+  DCHECK_EQ(model_.title_brand_link_range(), range);
+  model_.OnBrandLinkClicked();
+}
+
 void ManagePasswordsBubbleView::Refresh() {
   RemoveAllChildViews(true);
   initially_focused_view_ = NULL;
@@ -887,7 +849,8 @@ void ManagePasswordsBubbleView::Refresh() {
   // Show/hide the close button.
   GetWidget()->non_client_view()->ResetWindowControls();
   GetWidget()->UpdateWindowIcon();
-  GetWidget()->UpdateWindowTitle();
+  UpdateTitleText(
+      static_cast<views::StyledLabel*>(GetBubbleFrameView()->title()));
   if (model_.state() == password_manager::ui::CHROME_DESKTOP_IOS_PROMO_STATE) {
     // Update the height and keep the existing width.
     gfx::Rect bubble_bounds = GetWidget()->GetWindowBoundsInScreen();

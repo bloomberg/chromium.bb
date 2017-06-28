@@ -324,6 +324,20 @@ TEST_F(DialogTest, BoundsAccommodateTitle) {
   dialog2->TearDown();
 }
 
+TEST_F(DialogTest, ActualBoundsMatchPreferredBounds) {
+  dialog()->set_title(base::ASCIIToUTF16(
+      "La la la look at me I'm a really really long title that needs to be "
+      "really really long so that the title will multiline wrap."));
+  dialog()->GetWidget()->UpdateWindowTitle();
+
+  views::View* root_view = dialog()->GetWidget()->GetRootView();
+  gfx::Size preferred_size(root_view->GetPreferredSize());
+  EXPECT_FALSE(preferred_size.IsEmpty());
+  root_view->SizeToPreferredSize();
+  root_view->Layout();
+  EXPECT_EQ(preferred_size, root_view->size());
+}
+
 // Tests default focus is assigned correctly when showing a new dialog.
 TEST_F(DialogTest, InitialFocus) {
   EXPECT_TRUE(dialog()->input()->HasFocus());

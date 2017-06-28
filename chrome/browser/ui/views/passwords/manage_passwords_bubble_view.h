@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
 #include "ui/base/ui_features.h"
+#include "ui/views/controls/styled_label_listener.h"
 
 namespace content {
 class WebContents;
@@ -22,7 +23,8 @@ class WebContents;
 // 2. ManageView: Displays the current page's saved credentials.
 // 3. BlacklistedView: Informs the user that the current page is blacklisted.
 //
-class ManagePasswordsBubbleView : public LocationBarBubbleDelegateView {
+class ManagePasswordsBubbleView : public LocationBarBubbleDelegateView,
+                                  public views::StyledLabelListener {
  public:
   static constexpr int kDesiredBubbleWidth = 370;
 
@@ -77,16 +79,22 @@ class ManagePasswordsBubbleView : public LocationBarBubbleDelegateView {
   views::View* GetInitiallyFocusedView() override;
   void Init() override;
   void CloseBubble() override;
-
-  // WidgetDelegate:
+  void AddedToWidget() override;
   base::string16 GetWindowTitle() const override;
   gfx::ImageSkia GetWindowIcon() override;
-  bool ShouldShowWindowTitle() const override;
   bool ShouldShowWindowIcon() const override;
   bool ShouldShowCloseButton() const override;
 
+  // views::StyledLabelListener:
+  void StyledLabelLinkClicked(views::StyledLabel* label,
+                              const gfx::Range& range,
+                              int event_flags) override;
+
   // Refreshes the bubble's state.
   void Refresh();
+
+  // Updates |title_view|'s text and link styling from |model_|.
+  void UpdateTitleText(views::StyledLabel* title_view);
 
   // Sets up a child view according to the model state.
   void CreateChild();
