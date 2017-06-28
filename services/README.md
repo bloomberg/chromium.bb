@@ -14,6 +14,15 @@ Roughly each subdirectory here corresponds to a service that:
   * could logically run a standalone process for security/performance isolation
     benefits depending on the constraints of the host OS.
 
+## API Standards
+
+As illustrated above, the individual services in //services are intended for
+graceful reusability across a broad variety of use cases. To enable this goal,
+we have rigorous [standards](/services/api_standards.md) on services'
+public APIs. Before doing significant work in //services (and especially before
+becoming an owner of a service), please internalize these standards -- you are
+responsible for upholding them.
+
 ## Service Directory Structure
 
 Individual services are structured like so:
