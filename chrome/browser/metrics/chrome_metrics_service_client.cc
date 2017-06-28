@@ -316,13 +316,13 @@ ChromeMetricsServiceClient::ChromeMetricsServiceClient(
       start_time_(base::TimeTicks::Now()),
       has_uploaded_profiler_data_(false),
       weak_ptr_factory_(this) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   RecordCommandLineMetrics();
   RegisterForNotifications();
 }
 
 ChromeMetricsServiceClient::~ChromeMetricsServiceClient() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::GlobalHistogramAllocator* allocator =
       base::GlobalHistogramAllocator::Get();
   if (allocator) {
@@ -517,7 +517,7 @@ void ChromeMetricsServiceClient::OnInitNextTask() {
 
 void ChromeMetricsServiceClient::CollectFinalMetricsForLog(
     const base::Closure& done_callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   collect_final_metrics_done_callback_ = done_callback;
 
@@ -790,7 +790,7 @@ void ChromeMetricsServiceClient::FinishedReceivingProfilerData() {
 }
 
 void ChromeMetricsServiceClient::CollectFinalHistograms() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Begin the multi-step process of collecting memory usage histograms:
   // First spawn a task to collect the memory details; when that task is
@@ -814,7 +814,7 @@ void ChromeMetricsServiceClient::CollectFinalHistograms() {
 }
 
 void ChromeMetricsServiceClient::OnMemoryDetailCollectionDone() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // This function should only be called as the callback from an ansynchronous
   // step.
@@ -859,7 +859,7 @@ void ChromeMetricsServiceClient::OnMemoryDetailCollectionDone() {
 }
 
 void ChromeMetricsServiceClient::OnHistogramSynchronizationDone() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // This function should only be called as the callback from an ansynchronous
   // step.
@@ -957,7 +957,7 @@ void ChromeMetricsServiceClient::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   switch (type) {
     case chrome::NOTIFICATION_BROWSER_OPENED:
