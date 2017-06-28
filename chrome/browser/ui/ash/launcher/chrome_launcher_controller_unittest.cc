@@ -347,7 +347,8 @@ void SelectItem(ash::ShelfItemDelegate* delegate) {
       ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(), ui::EventTimeForNow(),
       ui::EF_NONE, 0);
   delegate->ItemSelected(std::move(event), display::kInvalidDisplayId,
-                         ash::LAUNCH_FROM_UNKNOWN, base::Bind(&NoopCallback));
+                         ash::LAUNCH_FROM_UNKNOWN,
+                         base::BindOnce(&NoopCallback));
 }
 
 }  // namespace

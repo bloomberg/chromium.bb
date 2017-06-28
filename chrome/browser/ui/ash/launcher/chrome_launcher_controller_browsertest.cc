@@ -113,9 +113,9 @@ ash::ShelfAction SelectItem(ash::ShelfItemDelegate* delegate,
 
   base::RunLoop run_loop;
   ash::ShelfAction action = ash::SHELF_ACTION_NONE;
-  delegate->ItemSelected(std::move(event), display::kInvalidDisplayId,
-                         ash::LAUNCH_FROM_UNKNOWN,
-                         base::Bind(&SelectItemCallback, &action, &run_loop));
+  delegate->ItemSelected(
+      std::move(event), display::kInvalidDisplayId, ash::LAUNCH_FROM_UNKNOWN,
+      base::BindOnce(&SelectItemCallback, &action, &run_loop));
   run_loop.Run();
   return action;
 }

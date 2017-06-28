@@ -94,7 +94,7 @@ void NoopCallback(ash::ShelfAction, base::Optional<ash::MenuItemList>) {}
 void SelectItemWithSource(ash::ShelfItemDelegate* delegate,
                           ash::ShelfLaunchSource source) {
   delegate->ItemSelected(nullptr, display::kInvalidDisplayId, source,
-                         base::Bind(&NoopCallback));
+                         base::BindOnce(&NoopCallback));
 }
 
 // Returns true if the given |item| has a pinned shelf item type.
@@ -956,8 +956,8 @@ void ChromeLauncherController::OnIsSyncingChanged() {
 void ChromeLauncherController::ScheduleUpdateAppLaunchersFromPref() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&ChromeLauncherController::UpdateAppLaunchersFromPref,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&ChromeLauncherController::UpdateAppLaunchersFromPref,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ChromeLauncherController::UpdateAppLaunchersFromPref() {

@@ -82,7 +82,7 @@ void ReadFileAndCopyToClipboardLocal(const base::FilePath& screenshot_path) {
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(CopyScreenshotToClipboard, png_data));
+      base::BindOnce(&CopyScreenshotToClipboard, png_data));
 }
 
 void ReadFileAndCopyToClipboardDrive(
@@ -95,7 +95,7 @@ void ReadFileAndCopyToClipboardDrive(
     return;
   }
   content::BrowserThread::GetBlockingPool()->PostTask(
-      FROM_HERE, base::Bind(&ReadFileAndCopyToClipboardLocal, file_path));
+      FROM_HERE, base::BindOnce(&ReadFileAndCopyToClipboardLocal, file_path));
 }
 
 // Delegate for a notification. This class has two roles: to implement callback
@@ -132,7 +132,7 @@ class ScreenshotGrabberNotificationDelegate : public NotificationDelegate {
         }
         content::BrowserThread::GetBlockingPool()->PostTask(
             FROM_HERE,
-            base::Bind(&ReadFileAndCopyToClipboardLocal, screenshot_path_));
+            base::BindOnce(&ReadFileAndCopyToClipboardLocal, screenshot_path_));
         break;
       }
       case BUTTON_ANNOTATE: {
@@ -214,9 +214,9 @@ void EnsureDirectoryExistsCallback(
                << "in Google Drive: " << error;
     content::BrowserThread::GetBlockingPool()->PostTask(
         FROM_HERE,
-        base::Bind(callback,
-                   ui::ScreenshotGrabberDelegate::FILE_CHECK_DIR_FAILED,
-                   base::FilePath()));
+        base::BindOnce(callback,
+                       ui::ScreenshotGrabberDelegate::FILE_CHECK_DIR_FAILED,
+                       base::FilePath()));
   }
 }
 
