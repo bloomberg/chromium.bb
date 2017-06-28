@@ -481,6 +481,15 @@ buildflag_header("chromecast_features") {
 }
 
 if (is_android) {
+  generate_jni_registration("cast_shell_jni_registration") {
+    target = ":cast_shell_apk"
+    output = "$root_gen_dir/chromecast/android/${target_name}.h"
+    exception_files = [
+      "//base/android/java/src/org/chromium/base/library_loader/LegacyLinker.java",
+      "//base/android/java/src/org/chromium/base/library_loader/Linker.java",
+      "//base/android/java/src/org/chromium/base/library_loader/ModernLinker.java",
+    ]
+  }
   android_assets("cast_shell_apk_assets") {
     assert(v8_use_external_startup_data)
 
