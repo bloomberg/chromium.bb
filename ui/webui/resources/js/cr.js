@@ -357,7 +357,7 @@ var cr = cr || function() {
    * A variation of chrome.send, suitable for messages that expect a single
    * response from C++.
    * @param {string} methodName The name of the WebUI handler API.
-   * @param {...*} var_args Varibale number of arguments to be forwarded to the
+   * @param {...*} var_args Variable number of arguments to be forwarded to the
    *     C++ call.
    * @return {!Promise}
    */
