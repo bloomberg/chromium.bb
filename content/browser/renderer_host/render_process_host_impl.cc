@@ -18,6 +18,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/containers/adapters.h"
 #include "base/debug/alias.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
@@ -736,6 +737,120 @@ class SiteProcessCountTracker : public base::SupportsUserData::Data,
   using Count = int;
   using CountPerProcessPerSiteMap = std::map<GURL, std::map<ProcessID, Count>>;
   CountPerProcessPerSiteMap map_;
+};
+
+const void* const kUnmatchedServiceWorkerProcessTrackerKey =
+    "UnmatchedServiceWorkerProcessTrackerKey";
+
+// This class tracks 'unmatched' service worker processes. When a service worker
+// is started after a navigation to the site, SiteProcessCountTracker that is
+// implemented above is used to find the matching renderer process which is used
+// for the navigation. But a service worker may be started before a navigation
+// (ex: Push notification -> show the page of the notification).
+// This class tracks processes with 'unmatched' service workers until the
+// processes are reused for a navigation to a matching site. After a single
+// matching navigation is put into the process, all service workers for that
+// site in that process are considered 'matched.'
+class UnmatchedServiceWorkerProcessTracker
+    : public base::SupportsUserData::Data,
+      public RenderProcessHostObserver {
+ public:
+  // Registers |render_process_host| as having an unmatched service worker for
+  // |site_url|.
+  static void Register(BrowserContext* browser_context,
+                       RenderProcessHost* render_process_host,
+                       const GURL& site_url) {
+    DCHECK(!site_url.is_empty());
+    UnmatchedServiceWorkerProcessTracker* tracker =
+        static_cast<UnmatchedServiceWorkerProcessTracker*>(
+            browser_context->GetUserData(
+                kUnmatchedServiceWorkerProcessTrackerKey));
+    if (!tracker) {
+      tracker = new UnmatchedServiceWorkerProcessTracker();
+      browser_context->SetUserData(kUnmatchedServiceWorkerProcessTrackerKey,
+                                   base::WrapUnique(tracker));
+    }
+    tracker->RegisterProcessForSite(render_process_host, site_url);
+  }
+
+  // Find a process with an unmatched service worker for |site_url| and removes
+  // the process from the tracker if it exists.
+  static RenderProcessHost* MatchWithSite(BrowserContext* browser_context,
+                                          const GURL& site_url) {
+    if (site_url.is_empty())
+      return nullptr;
+    UnmatchedServiceWorkerProcessTracker* tracker =
+        static_cast<UnmatchedServiceWorkerProcessTracker*>(
+            browser_context->GetUserData(
+                kUnmatchedServiceWorkerProcessTrackerKey));
+    if (!tracker)
+      return nullptr;
+    return tracker->TakeFreshestProcessForSite(site_url);
+  }
+
+  UnmatchedServiceWorkerProcessTracker() {}
+
+  ~UnmatchedServiceWorkerProcessTracker() override {
+    DCHECK(site_process_set_.empty());
+  }
+
+  // Implementation of RenderProcessHostObserver.
+  void RenderProcessHostDestroyed(RenderProcessHost* host) override {
+    DCHECK(HasProcess(host));
+    int process_id = host->GetID();
+    for (auto it = site_process_set_.begin(); it != site_process_set_.end();) {
+      if (it->second == process_id) {
+        it = site_process_set_.erase(it);
+      } else {
+        ++it;
+      }
+    }
+    host->RemoveObserver(this);
+  }
+
+ private:
+  void RegisterProcessForSite(RenderProcessHost* host, const GURL& site_url) {
+    if (!HasProcess(host))
+      host->AddObserver(this);
+    site_process_set_.insert(SiteProcessIDPair(site_url, host->GetID()));
+  }
+
+  RenderProcessHost* TakeFreshestProcessForSite(const GURL& site_url) {
+    RenderProcessHost* host = FindFreshestProcessForSite(site_url);
+    if (!host)
+      return nullptr;
+    site_process_set_.erase(SiteProcessIDPair(site_url, host->GetID()));
+    if (!HasProcess(host))
+      host->RemoveObserver(this);
+    return host;
+  }
+
+  RenderProcessHost* FindFreshestProcessForSite(const GURL& site_url) const {
+    for (const auto& site_process_pair : base::Reversed(site_process_set_)) {
+      if (site_process_pair.first == site_url)
+        return RenderProcessHost::FromID(site_process_pair.second);
+    }
+    return nullptr;
+  }
+
+  // Returns true if this tracker contains the process ID |host->GetID()|.
+  bool HasProcess(RenderProcessHost* host) const {
+    int process_id = host->GetID();
+    for (const auto& site_process_id : site_process_set_) {
+      if (site_process_id.second == process_id)
+        return true;
+    }
+    return false;
+  }
+
+  using ProcessID = int;
+  using SiteProcessIDPair = std::pair<GURL, ProcessID>;
+  using SiteProcessIDPairSet = std::set<SiteProcessIDPair>;
+
+  // Use std::set because duplicates don't need to be tracked separately (eg.,
+  // service workers for the same site in the same process). It is sorted in the
+  // order of insertion.
+  SiteProcessIDPairSet site_process_set_;
 };
 
 }  // namespace
@@ -3112,6 +3227,8 @@ RenderProcessHost* RenderProcessHostImpl::GetProcessHostForSiteInstance(
   bool is_for_guests_only = site_url.SchemeIs(kGuestScheme);
   RenderProcessHost* render_process_host = nullptr;
 
+  bool is_unmatched_service_worker = site_instance->is_for_service_worker();
+
   // First, attempt to reuse an existing RenderProcessHost if necessary.
   switch (process_reuse_policy) {
     case SiteInstanceImpl::ProcessReusePolicy::PROCESS_PER_SITE:
@@ -3119,6 +3236,7 @@ RenderProcessHost* RenderProcessHostImpl::GetProcessHostForSiteInstance(
       break;
     case SiteInstanceImpl::ProcessReusePolicy::USE_DEFAULT_SUBFRAME_PROCESS:
       DCHECK(SiteIsolationPolicy::IsTopDocumentIsolationEnabled());
+      DCHECK(!site_instance->is_for_service_worker());
       render_process_host = GetDefaultSubframeProcessHost(
           browser_context, site_instance, is_for_guests_only);
       break;
@@ -3128,9 +3246,22 @@ RenderProcessHost* RenderProcessHostImpl::GetProcessHostForSiteInstance(
       UMA_HISTOGRAM_BOOLEAN(
           "SiteIsolation.ReusePendingOrCommittedSite.CouldReuse",
           render_process_host != nullptr);
+      if (render_process_host)
+        is_unmatched_service_worker = false;
       break;
     default:
       break;
+  }
+
+  // If not, attempt to reuse an existing process with an unmatched service
+  // worker for this site. Exclude cases where the policy is DEFAULT and the
+  // site instance is for a service worker. We use DEFAULT when we have failed
+  // to start the service worker before and want to use a new process.
+  if (!render_process_host &&
+      !(process_reuse_policy == SiteInstanceImpl::ProcessReusePolicy::DEFAULT &&
+        site_instance->is_for_service_worker())) {
+    render_process_host = UnmatchedServiceWorkerProcessTracker::MatchWithSite(
+        browser_context, site_url);
   }
 
   // If not (or if none found), see if we should reuse an existing process.
@@ -3151,6 +3282,11 @@ RenderProcessHost* RenderProcessHostImpl::GetProcessHostForSiteInstance(
       render_process_host = new RenderProcessHostImpl(
           browser_context, partition, is_for_guests_only);
     }
+  }
+
+  if (is_unmatched_service_worker) {
+    UnmatchedServiceWorkerProcessTracker::Register(
+        browser_context, render_process_host, site_url);
   }
   return render_process_host;
 }

@@ -224,9 +224,11 @@ void ServiceWorkerProcessManager::AllocateWorkerProcess(
   // SiteInstanceImpl::ProcessReusePolicy::REUSE_PENDING_OR_COMMITTED_SITE.
   scoped_refptr<SiteInstanceImpl> site_instance =
       SiteInstanceImpl::CreateForURL(browser_context_, script_url);
-  DCHECK_NE(
-      site_instance->process_reuse_policy(),
-      SiteInstanceImpl::ProcessReusePolicy::REUSE_PENDING_OR_COMMITTED_SITE);
+  site_instance->set_is_for_service_worker();
+  DCHECK(site_instance->process_reuse_policy() ==
+             SiteInstanceImpl::ProcessReusePolicy::DEFAULT ||
+         site_instance->process_reuse_policy() ==
+             SiteInstanceImpl::ProcessReusePolicy::PROCESS_PER_SITE);
   if (can_use_existing_process) {
     site_instance->set_process_reuse_policy(
         SiteInstanceImpl::ProcessReusePolicy::REUSE_PENDING_OR_COMMITTED_SITE);

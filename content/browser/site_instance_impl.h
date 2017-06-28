@@ -51,10 +51,13 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   bool IsDefaultSubframeSiteInstance() const override;
 
   // The policy to apply when selecting a RenderProcessHost for the
-  // SiteInstance. Normal SiteInstances don't proactively reuse processes, but
-  // when over the limit, they reuse randomly, not based on site. In contrast,
-  // process-per-site and ServiceWorkers proactively join a process that already
-  // contains the site.
+  // SiteInstance. If no suitable RenderProcessHost for the SiteInstance exists
+  // according to the policy, and there are processes with unmatched service
+  // workers for the site, the newest process with an unmatched service worker
+  // is reused. If still no RenderProcessHost exists a new RenderProcessHost
+  // will be created unless the process limit has been reached. When the limit
+  // has been reached, the RenderProcessHost reused will be chosen randomly and
+  // not based on the site.
   enum class ProcessReusePolicy {
     // In this mode, all instances of the site will be hosted in the same
     // RenderProcessHost.
@@ -65,14 +68,16 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
 
     // In this mode, the site will be rendered in a RenderProcessHost that is
     // already in use for the site, either for a pending navigation or a
-    // committed navigation.  If none exists, a new process will be created.  If
-    // multiple such processes exist, ones that have foreground frames are given
-    // priority, and otherwise one is selected randomly.
+    // committed navigation. If multiple such processes exist, ones that have
+    // foreground frames are given priority, and otherwise one is selected
+    // randomly.
     REUSE_PENDING_OR_COMMITTED_SITE,
 
-    // By default, a new RenderProcessHost will be created unless the process
-    // limit has been reached. The RenderProcessHost reused will be chosen
-    // randomly and not based on the site.
+    // In this mode, SiteInstances don't proactively reuse processes. An
+    // existing process with an unmatched service worker for the site is reused
+    // only for navigations, not for service workers. When the process limit has
+    // been reached, a randomly chosen RenderProcessHost is reused as in the
+    // other policies.
     DEFAULT,
   };
 
@@ -82,6 +87,14 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   ProcessReusePolicy process_reuse_policy() const {
     return process_reuse_policy_;
   }
+
+  // Whether the SiteInstance is created for a service worker. If this flag
+  // is true, when a new process is created for this SiteInstance or a randomly
+  // chosen existing process is reused because of the process limit, the process
+  // will be tracked as having an unmatched service worker until reused by
+  // another SiteInstance from the same site.
+  void set_is_for_service_worker() { is_for_service_worker_ = true; }
+  bool is_for_service_worker() const { return is_for_service_worker_; }
 
   // Returns the SiteInstance, related to this one, that should be used
   // for subframes when an oopif is required, but a dedicated process is not.
@@ -217,6 +230,9 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // The ProcessReusePolicy to use when creating a RenderProcessHost for this
   // SiteInstance.
   ProcessReusePolicy process_reuse_policy_;
+
+  // Whether the SiteInstance was created for a service worker.
+  bool is_for_service_worker_;
 
   base::ObserverList<Observer, true> observers_;
 
