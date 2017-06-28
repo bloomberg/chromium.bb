@@ -51,13 +51,10 @@ IPC_MESSAGE_ROUTED1(ShellViewHostMsg_TextDump,
                     std::string /* dump */)
 
 // Asks the browser process to perform a layout dump spanning all the
-// (potentially cross-process) frames.  This triggers multiple
-// ShellViewMsg_LayoutDumpRequest / ShellViewHostMsg_LayoutDumpResponse messages
-// and ends with sending of ShellViewMsg_LayoutDumpCompleted.
+// (potentially cross-process) frames.  This goes through multiple
+// LayoutTestControl.DumpFrameLayout calls and ends with sending of
+// ShellViewMsg_LayoutDumpCompleted.
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_InitiateLayoutDump)
-
-// Sends a layout dump of a frame (response to ShellViewMsg_LayoutDumpRequest).
-IPC_MESSAGE_ROUTED1(ShellViewHostMsg_LayoutDumpResponse, std::string /* dump */)
 
 // Send an image dump of the WebContents to the render host.
 IPC_MESSAGE_ROUTED2(ShellViewHostMsg_ImageDump,

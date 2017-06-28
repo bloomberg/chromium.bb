@@ -159,8 +159,6 @@ class BlinkTestController : public WebContentsObserver,
 
   // WebContentsObserver implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
-  bool OnMessageReceived(const IPC::Message& message,
-                         RenderFrameHost* render_frame_host) override;
   void PluginCrashed(const base::FilePath& plugin_path,
                      base::ProcessId plugin_pid) override;
   void RenderFrameCreated(RenderFrameHost* render_frame_host) override;
@@ -204,7 +202,8 @@ class BlinkTestController : public WebContentsObserver,
   void OnImageDump(const std::string& actual_pixel_hash, const SkBitmap& image);
   void OnTextDump(const std::string& dump);
   void OnInitiateLayoutDump();
-  void OnLayoutDumpResponse(RenderFrameHost* sender, const std::string& dump);
+  void OnDumpFrameLayoutResponse(int frame_tree_node_id,
+                                 const std::string& dump);
   void OnPrintMessageToStderr(const std::string& message);
   void OnPrintMessage(const std::string& message);
   void OnOverridePreferences(const WebPreferences& prefs);
@@ -283,7 +282,7 @@ class BlinkTestController : public WebContentsObserver,
 
   // Map from frame_tree_node_id into frame-specific dumps.
   std::map<int, std::string> frame_to_layout_dump_map_;
-  // Number of ShellViewHostMsg_LayoutDumpResponse messages we are waiting for.
+  // Number of LayoutTestControl.DumpFrameLayout responses we are waiting for.
   int pending_layout_dumps_;
 
   // Renderer processes are observed to detect crashes.

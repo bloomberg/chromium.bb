@@ -526,19 +526,6 @@ bool BlinkTestController::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-bool BlinkTestController::OnMessageReceived(
-    const IPC::Message& message,
-    RenderFrameHost* render_frame_host) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(BlinkTestController, message,
-                                   render_frame_host)
-    IPC_MESSAGE_HANDLER(ShellViewHostMsg_LayoutDumpResponse,
-                        OnLayoutDumpResponse)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
 void BlinkTestController::PluginCrashed(const base::FilePath& plugin_path,
                                         base::ProcessId plugin_pid) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -791,7 +778,9 @@ void BlinkTestController::OnInitiateLayoutDump() {
       continue;
 
     ++number_of_messages;
-    GetLayoutTestControlPtr(rfh)->LayoutDumpRequest();
+    GetLayoutTestControlPtr(rfh)->DumpFrameLayout(
+        base::Bind(&BlinkTestController::OnDumpFrameLayoutResponse,
+                   base::Unretained(this), rfh->GetFrameTreeNodeId()));
   }
 
   pending_layout_dumps_ = number_of_messages;
@@ -817,11 +806,11 @@ void BlinkTestController::OnLayoutTestRuntimeFlagsChanged(
   }
 }
 
-void BlinkTestController::OnLayoutDumpResponse(RenderFrameHost* sender,
-                                               const std::string& dump) {
+void BlinkTestController::OnDumpFrameLayoutResponse(int frame_tree_node_id,
+                                                    const std::string& dump) {
   // Store the result.
   auto pair = frame_to_layout_dump_map_.insert(
-      std::make_pair(sender->GetFrameTreeNodeId(), dump));
+      std::make_pair(frame_tree_node_id, dump));
   bool insertion_took_place = pair.second;
   DCHECK(insertion_took_place);
 

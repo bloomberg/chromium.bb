@@ -22,7 +22,7 @@ class LayoutTestRenderFrameObserver : public RenderFrameObserver,
   // RenderFrameObserver implementation.
   void OnDestruct() override;
 
-  void LayoutDumpRequest() override;
+  void DumpFrameLayout(DumpFrameLayoutCallback callback) override;
   void SetTestConfiguration(mojom::ShellTestConfigurationPtr config) override;
   void ReplicateTestConfiguration(
       mojom::ShellTestConfigurationPtr config) override;
