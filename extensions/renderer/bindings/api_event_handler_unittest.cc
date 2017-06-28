@@ -246,7 +246,7 @@ TEST_F(APIEventHandlerTest, FiringEvents) {
   EXPECT_EQ(0, get_fired_count("betaCount"));
 
   handler()->FireEventInContext(kAlphaName, context, base::ListValue(),
-                                EventFilteringInfo());
+                                nullptr);
   EXPECT_EQ(2u, handler()->GetNumEventListenersForTesting(kAlphaName, context));
   EXPECT_EQ(1u, handler()->GetNumEventListenersForTesting(kBetaName, context));
 
@@ -255,13 +255,12 @@ TEST_F(APIEventHandlerTest, FiringEvents) {
   EXPECT_EQ(0, get_fired_count("betaCount"));
 
   handler()->FireEventInContext(kAlphaName, context, base::ListValue(),
-                                EventFilteringInfo());
+                                nullptr);
   EXPECT_EQ(2, get_fired_count("alphaCount1"));
   EXPECT_EQ(2, get_fired_count("alphaCount2"));
   EXPECT_EQ(0, get_fired_count("betaCount"));
 
-  handler()->FireEventInContext(kBetaName, context, base::ListValue(),
-                                EventFilteringInfo());
+  handler()->FireEventInContext(kBetaName, context, base::ListValue(), nullptr);
   EXPECT_EQ(2, get_fired_count("alphaCount1"));
   EXPECT_EQ(2, get_fired_count("alphaCount2"));
   EXPECT_EQ(1, get_fired_count("betaCount"));
@@ -295,8 +294,7 @@ TEST_F(APIEventHandlerTest, EventArguments) {
   const char kArguments[] = "['foo',1,{'prop1':'bar'}]";
   std::unique_ptr<base::ListValue> event_args = ListValueFromString(kArguments);
   ASSERT_TRUE(event_args);
-  handler()->FireEventInContext(kEventName, context, *event_args,
-                                EventFilteringInfo());
+  handler()->FireEventInContext(kEventName, context, *event_args, nullptr);
 
   EXPECT_EQ(
       ReplaceSingleQuotes(kArguments),
@@ -359,8 +357,7 @@ TEST_F(APIEventHandlerTest, MultipleContexts) {
       ListValueFromString("['result_a:']");
   ASSERT_TRUE(arguments_a);
 
-  handler()->FireEventInContext(kEventName, context_a, *arguments_a,
-                                EventFilteringInfo());
+  handler()->FireEventInContext(kEventName, context_a, *arguments_a, nullptr);
   {
     EXPECT_EQ("\"result_a:alpha\"",
               GetStringPropertyFromObject(context_a->Global(), context_a,
@@ -376,8 +373,7 @@ TEST_F(APIEventHandlerTest, MultipleContexts) {
   std::unique_ptr<base::ListValue> arguments_b =
       ListValueFromString("['result_b:']");
   ASSERT_TRUE(arguments_b);
-  handler()->FireEventInContext(kEventName, context_b, *arguments_b,
-                                EventFilteringInfo());
+  handler()->FireEventInContext(kEventName, context_b, *arguments_b, nullptr);
   {
     EXPECT_EQ("\"result_a:alpha\"",
               GetStringPropertyFromObject(context_a->Global(), context_a,
@@ -532,7 +528,7 @@ TEST_F(APIEventHandlerTest, RemovingListenersWhileHandlingEvent) {
   EXPECT_EQ(kNumListeners,
             handler()->GetNumEventListenersForTesting(kEventName, context));
   handler()->FireEventInContext(kEventName, context, base::ListValue(),
-                                EventFilteringInfo());
+                                nullptr);
   EXPECT_EQ(0u, handler()->GetNumEventListenersForTesting(kEventName, context));
 
   // TODO(devlin): Another possible test: register listener a and listener b,
@@ -613,8 +609,7 @@ TEST_F(APIEventHandlerTest, TestEventListenersThrowingExceptions) {
 
   std::unique_ptr<base::ListValue> event_args = ListValueFromString("[42]");
   ASSERT_TRUE(event_args);
-  handler()->FireEventInContext(kEventName, context, *event_args,
-                                EventFilteringInfo());
+  handler()->FireEventInContext(kEventName, context, *event_args, nullptr);
 
   // An exception should have been thrown by the first listener and the second
   // listener should have recorded the event arguments.
@@ -798,8 +793,7 @@ TEST_F(APIEventHandlerTest, TestArgumentMassagers) {
   const char kArguments[] = "['first','second']";
   std::unique_ptr<base::ListValue> event_args = ListValueFromString(kArguments);
   ASSERT_TRUE(event_args);
-  handler()->FireEventInContext(kEventName, context, *event_args,
-                                EventFilteringInfo());
+  handler()->FireEventInContext(kEventName, context, *event_args, nullptr);
 
   EXPECT_EQ(
       "[\"first\",\"second\"]",
@@ -847,8 +841,7 @@ TEST_F(APIEventHandlerTest, TestArgumentMassagersAsyncDispatch) {
   const char kArguments[] = "['first','second']";
   std::unique_ptr<base::ListValue> event_args = ListValueFromString(kArguments);
   ASSERT_TRUE(event_args);
-  handler()->FireEventInContext(kEventName, context, *event_args,
-                                EventFilteringInfo());
+  handler()->FireEventInContext(kEventName, context, *event_args, nullptr);
 
   // The massager should have been triggered, but since it doesn't call
   // dispatch(), the listener shouldn't have been notified.
@@ -903,7 +896,7 @@ TEST_F(APIEventHandlerTest, TestArgumentMassagersNeverDispatch) {
   RunFunction(add_listener_function, context, arraysize(argv), argv);
 
   handler()->FireEventInContext(kEventName, context, base::ListValue(),
-                                EventFilteringInfo());
+                                nullptr);
 
   // Nothing should blow up. (We tested in the previous test that the event
   // isn't notified without calling dispatch, so all there is to test here is
@@ -1017,8 +1010,7 @@ TEST_F(APIEventHandlerTest, TestUnmanagedEvents) {
   EXPECT_EQ(1u, handler.GetNumEventListenersForTesting(kEventName, context));
 
   handler.FireEventInContext(kEventName, context,
-                             *ListValueFromString("[1, 'foo']"),
-                             EventFilteringInfo());
+                             *ListValueFromString("[1, 'foo']"), nullptr);
 
   EXPECT_EQ("[1,\"foo\"]", GetStringPropertyFromObject(context->Global(),
                                                        context, "eventArgs"));
