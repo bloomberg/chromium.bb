@@ -206,17 +206,17 @@ TEST_F('MaterialBookmarksPolicyTest', 'All', function() {
   mocha.run();
 });
 
-function MaterialBookmarksStoreClientTest() {}
+function MaterialBookmarksStoreTest() {}
 
-MaterialBookmarksStoreClientTest.prototype = {
+MaterialBookmarksStoreTest.prototype = {
   __proto__: MaterialBookmarksBrowserTest.prototype,
 
   extraLibraries: MaterialBookmarksBrowserTest.prototype.extraLibraries.concat([
-    'store_client_test.js',
+    'store_test.js',
   ]),
 };
 
-TEST_F('MaterialBookmarksStoreClientTest', 'All', function() {
+TEST_F('MaterialBookmarksStoreTest', 'All', function() {
   mocha.run();
 });
 
