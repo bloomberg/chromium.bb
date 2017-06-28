@@ -113,8 +113,10 @@
         INSTALL
       </message>
       <message name="IDS_NAME" desc="The name of the WebAPK." translateable="false">
+        Name
       </message>
       <message name="IDS_SHORT_NAME" desc="The short name of the WebAPK." translateable="false">
+        Short Name
       </message>
     </messages>
   </release>
