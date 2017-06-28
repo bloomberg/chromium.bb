@@ -58,7 +58,6 @@ class PLATFORM_EXPORT PaintArtifactCompositor {
   // the layers that will be output as part of a call to layersAsJSON
   // (if LayerTreeIncludesDebugInfo is specified).
   void Update(const PaintArtifact&,
-              bool store_debug_info,
               CompositorElementIdSet& composited_element_ids);
 
   // The root layer of the tree managed by this object.

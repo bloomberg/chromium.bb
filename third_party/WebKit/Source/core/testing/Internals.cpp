@@ -2504,36 +2504,6 @@ Vector<String> Internals::getReferencedFilePaths() const {
       ->GetReferencedFilePaths();
 }
 
-void Internals::startStoringCompositedLayerDebugInfo(
-    Document* document,
-    ExceptionState& exception_state) {
-  DCHECK(document);
-  if (!document->View()) {
-    exception_state.ThrowDOMException(kInvalidAccessError,
-                                      "The document provided is invalid.");
-    return;
-  }
-
-  LocalFrameView* frame_view = document->View();
-  frame_view->SetIsStoringCompositedLayerDebugInfo(true);
-  frame_view->UpdateAllLifecyclePhases();
-}
-
-void Internals::stopStoringCompositedLayerDebugInfo(
-    Document* document,
-    ExceptionState& exception_state) {
-  DCHECK(document);
-  if (!document->View()) {
-    exception_state.ThrowDOMException(kInvalidAccessError,
-                                      "The document provided is invalid.");
-    return;
-  }
-
-  LocalFrameView* frame_view = document->View();
-  frame_view->SetIsStoringCompositedLayerDebugInfo(false);
-  frame_view->UpdateAllLifecyclePhases();
-}
-
 void Internals::startTrackingRepaints(Document* document,
                                       ExceptionState& exception_state) {
   DCHECK(document);

@@ -132,7 +132,7 @@ class PaintArtifactCompositorTestWithPropertyTrees
 
   void Update(const PaintArtifact& artifact,
               CompositorElementIdSet& element_ids) {
-    paint_artifact_compositor_->Update(artifact, false, element_ids);
+    paint_artifact_compositor_->Update(artifact, element_ids);
     web_layer_tree_view_->GetLayerTreeHost()->LayoutAndUpdateLayers();
   }
 

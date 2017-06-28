@@ -381,10 +381,6 @@ class CORE_EXPORT LocalFrameView final
 
   static void SetInitialTracksPaintInvalidationsForTesting(bool);
 
-  void SetIsStoringCompositedLayerDebugInfo(bool val) {
-    is_storing_composited_layer_debug_info_ = val;
-  }
-
   // These methods are for testing.
   void SetTracksPaintInvalidations(bool);
   bool IsTrackingPaintInvalidations() const {
@@ -1223,7 +1219,6 @@ class CORE_EXPORT LocalFrameView final
   std::unique_ptr<PaintController> paint_controller_;
   std::unique_ptr<PaintArtifactCompositor> paint_artifact_compositor_;
 
-  bool is_storing_composited_layer_debug_info_;
   MainThreadScrollingReasons main_thread_scrolling_reasons_;
 
   // TODO(kenrb): Remove these when https://crbug.com/680606 is resolved.
