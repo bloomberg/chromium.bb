@@ -109,8 +109,7 @@ class ThreadableLoaderTestHelper {
  public:
   virtual ~ThreadableLoaderTestHelper() {}
 
-  virtual void CreateLoader(ThreadableLoaderClient*,
-                            WebURLRequest::FetchRequestMode) = 0;
+  virtual void CreateLoader(ThreadableLoaderClient*) = 0;
   virtual void StartLoader(const ResourceRequest&) = 0;
   virtual void CancelLoader() = 0;
   virtual void CancelAndClearLoader() = 0;
@@ -127,11 +126,8 @@ class DocumentThreadableLoaderTestHelper : public ThreadableLoaderTestHelper {
   DocumentThreadableLoaderTestHelper()
       : dummy_page_holder_(DummyPageHolder::Create(IntSize(1, 1))) {}
 
-  void CreateLoader(
-      ThreadableLoaderClient* client,
-      WebURLRequest::FetchRequestMode fetch_request_mode) override {
+  void CreateLoader(ThreadableLoaderClient* client) override {
     ThreadableLoaderOptions options;
-    options.fetch_request_mode = fetch_request_mode;
     ResourceLoaderOptions resource_loader_options;
     loader_ = DocumentThreadableLoader::Create(
         *ThreadableLoadingContext::Create(GetDocument()), client, options,
@@ -175,17 +171,15 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper {
   WorkerThreadableLoaderTestHelper()
       : dummy_page_holder_(DummyPageHolder::Create(IntSize(1, 1))) {}
 
-  void CreateLoader(
-      ThreadableLoaderClient* client,
-      WebURLRequest::FetchRequestMode fetch_request_mode) override {
+  void CreateLoader(ThreadableLoaderClient* client) override {
     std::unique_ptr<WaitableEvent> completion_event =
         WTF::MakeUnique<WaitableEvent>();
     worker_loading_task_runner_->PostTask(
         BLINK_FROM_HERE,
-        CrossThreadBind(
-            &WorkerThreadableLoaderTestHelper::WorkerCreateLoader,
-            CrossThreadUnretained(this), CrossThreadUnretained(client),
-            CrossThreadUnretained(completion_event.get()), fetch_request_mode));
+        CrossThreadBind(&WorkerThreadableLoaderTestHelper::WorkerCreateLoader,
+                        CrossThreadUnretained(this),
+                        CrossThreadUnretained(client),
+                        CrossThreadUnretained(completion_event.get())));
     completion_event->Wait();
   }
 
@@ -276,13 +270,11 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper {
   Document& GetDocument() { return dummy_page_holder_->GetDocument(); }
 
   void WorkerCreateLoader(ThreadableLoaderClient* client,
-                          WaitableEvent* event,
-                          WebURLRequest::FetchRequestMode fetch_request_mode) {
+                          WaitableEvent* event) {
     DCHECK(worker_thread_);
     DCHECK(worker_thread_->IsCurrentThread());
 
     ThreadableLoaderOptions options;
-    options.fetch_request_mode = fetch_request_mode;
     ResourceLoaderOptions resource_loader_options;
 
     // Ensure that WorkerThreadableLoader is created.
@@ -343,9 +335,12 @@ class ThreadableLoaderTest
     }
   }
 
-  void StartLoader(const KURL& url) {
+  void StartLoader(const KURL& url,
+                   WebURLRequest::FetchRequestMode fetch_request_mode =
+                       WebURLRequest::kFetchRequestModeNoCORS) {
     ResourceRequest request(url);
     request.SetRequestContext(WebURLRequest::kRequestContextObject);
+    request.SetFetchRequestMode(fetch_request_mode);
     request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeOmit);
     helper_->StartLoader(request);
   }
@@ -361,10 +356,7 @@ class ThreadableLoaderTest
     Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
   }
 
-  void CreateLoader(WebURLRequest::FetchRequestMode fetch_request_mode =
-                        WebURLRequest::kFetchRequestModeNoCORS) {
-    helper_->CreateLoader(Client(), fetch_request_mode);
-  }
+  void CreateLoader() { helper_->CreateLoader(Client()); }
 
   MockThreadableLoaderClient* Client() const { return client_.get(); }
 
@@ -653,7 +645,7 @@ TEST_P(ThreadableLoaderTest, ClearInDidFail) {
 TEST_P(ThreadableLoaderTest, DidFailInStart) {
   InSequence s;
   EXPECT_CALL(GetCheckpoint(), Call(1));
-  CreateLoader(WebURLRequest::kFetchRequestModeSameOrigin);
+  CreateLoader();
   CallCheckpoint(1);
 
   EXPECT_CALL(*Client(),
@@ -662,7 +654,7 @@ TEST_P(ThreadableLoaderTest, DidFailInStart) {
                   "Cross origin requests are not supported.")));
   EXPECT_CALL(GetCheckpoint(), Call(2));
 
-  StartLoader(ErrorURL());
+  StartLoader(ErrorURL(), WebURLRequest::kFetchRequestModeSameOrigin);
   CallCheckpoint(2);
   ServeRequests();
 }
@@ -670,14 +662,14 @@ TEST_P(ThreadableLoaderTest, DidFailInStart) {
 TEST_P(ThreadableLoaderTest, CancelInDidFailInStart) {
   InSequence s;
   EXPECT_CALL(GetCheckpoint(), Call(1));
-  CreateLoader(WebURLRequest::kFetchRequestModeSameOrigin);
+  CreateLoader();
   CallCheckpoint(1);
 
   EXPECT_CALL(*Client(), DidFail(_))
       .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::CancelLoader));
   EXPECT_CALL(GetCheckpoint(), Call(2));
 
-  StartLoader(ErrorURL());
+  StartLoader(ErrorURL(), WebURLRequest::kFetchRequestModeSameOrigin);
   CallCheckpoint(2);
   ServeRequests();
 }
@@ -685,14 +677,14 @@ TEST_P(ThreadableLoaderTest, CancelInDidFailInStart) {
 TEST_P(ThreadableLoaderTest, ClearInDidFailInStart) {
   InSequence s;
   EXPECT_CALL(GetCheckpoint(), Call(1));
-  CreateLoader(WebURLRequest::kFetchRequestModeSameOrigin);
+  CreateLoader();
   CallCheckpoint(1);
 
   EXPECT_CALL(*Client(), DidFail(_))
       .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::ClearLoader));
   EXPECT_CALL(GetCheckpoint(), Call(2));
 
-  StartLoader(ErrorURL());
+  StartLoader(ErrorURL(), WebURLRequest::kFetchRequestModeSameOrigin);
   CallCheckpoint(2);
   ServeRequests();
 }
@@ -700,7 +692,7 @@ TEST_P(ThreadableLoaderTest, ClearInDidFailInStart) {
 TEST_P(ThreadableLoaderTest, DidFailAccessControlCheck) {
   InSequence s;
   EXPECT_CALL(GetCheckpoint(), Call(1));
-  CreateLoader(WebURLRequest::kFetchRequestModeCORS);
+  CreateLoader();
   CallCheckpoint(1);
 
   EXPECT_CALL(GetCheckpoint(), Call(2));
@@ -711,7 +703,7 @@ TEST_P(ThreadableLoaderTest, DidFailAccessControlCheck) {
           "No 'Access-Control-Allow-Origin' header is present on the requested "
           "resource. Origin 'null' is therefore not allowed access.")));
 
-  StartLoader(SuccessURL());
+  StartLoader(SuccessURL(), WebURLRequest::kFetchRequestModeCORS);
   CallCheckpoint(2);
   ServeRequests();
 }
@@ -719,14 +711,14 @@ TEST_P(ThreadableLoaderTest, DidFailAccessControlCheck) {
 TEST_P(ThreadableLoaderTest, CancelInDidFailAccessControlCheck) {
   InSequence s;
   EXPECT_CALL(GetCheckpoint(), Call(1));
-  CreateLoader(WebURLRequest::kFetchRequestModeCORS);
+  CreateLoader();
   CallCheckpoint(1);
 
   EXPECT_CALL(GetCheckpoint(), Call(2));
   EXPECT_CALL(*Client(), DidFailAccessControlCheck(_))
       .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::CancelLoader));
 
-  StartLoader(SuccessURL());
+  StartLoader(SuccessURL(), WebURLRequest::kFetchRequestModeCORS);
   CallCheckpoint(2);
   ServeRequests();
 }
@@ -734,14 +726,14 @@ TEST_P(ThreadableLoaderTest, CancelInDidFailAccessControlCheck) {
 TEST_P(ThreadableLoaderTest, ClearInDidFailAccessControlCheck) {
   InSequence s;
   EXPECT_CALL(GetCheckpoint(), Call(1));
-  CreateLoader(WebURLRequest::kFetchRequestModeCORS);
+  CreateLoader();
   CallCheckpoint(1);
 
   EXPECT_CALL(GetCheckpoint(), Call(2));
   EXPECT_CALL(*Client(), DidFailAccessControlCheck(_))
       .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::ClearLoader));
 
-  StartLoader(SuccessURL());
+  StartLoader(SuccessURL(), WebURLRequest::kFetchRequestModeCORS);
   CallCheckpoint(2);
   ServeRequests();
 }
@@ -802,13 +794,13 @@ TEST_P(ThreadableLoaderTest, ClearInRedirectDidFinishLoading) {
 TEST_P(ThreadableLoaderTest, DidFailRedirectCheck) {
   InSequence s;
   EXPECT_CALL(GetCheckpoint(), Call(1));
-  CreateLoader(WebURLRequest::kFetchRequestModeCORS);
+  CreateLoader();
   CallCheckpoint(1);
 
   EXPECT_CALL(GetCheckpoint(), Call(2));
   EXPECT_CALL(*Client(), DidFailRedirectCheck());
 
-  StartLoader(RedirectLoopURL());
+  StartLoader(RedirectLoopURL(), WebURLRequest::kFetchRequestModeCORS);
   CallCheckpoint(2);
   ServeRequests();
 }
@@ -816,14 +808,14 @@ TEST_P(ThreadableLoaderTest, DidFailRedirectCheck) {
 TEST_P(ThreadableLoaderTest, CancelInDidFailRedirectCheck) {
   InSequence s;
   EXPECT_CALL(GetCheckpoint(), Call(1));
-  CreateLoader(WebURLRequest::kFetchRequestModeCORS);
+  CreateLoader();
   CallCheckpoint(1);
 
   EXPECT_CALL(GetCheckpoint(), Call(2));
   EXPECT_CALL(*Client(), DidFailRedirectCheck())
       .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::CancelLoader));
 
-  StartLoader(RedirectLoopURL());
+  StartLoader(RedirectLoopURL(), WebURLRequest::kFetchRequestModeCORS);
   CallCheckpoint(2);
   ServeRequests();
 }
@@ -831,14 +823,14 @@ TEST_P(ThreadableLoaderTest, CancelInDidFailRedirectCheck) {
 TEST_P(ThreadableLoaderTest, ClearInDidFailRedirectCheck) {
   InSequence s;
   EXPECT_CALL(GetCheckpoint(), Call(1));
-  CreateLoader(WebURLRequest::kFetchRequestModeCORS);
+  CreateLoader();
   CallCheckpoint(1);
 
   EXPECT_CALL(GetCheckpoint(), Call(2));
   EXPECT_CALL(*Client(), DidFailRedirectCheck())
       .WillOnce(InvokeWithoutArgs(this, &ThreadableLoaderTest::ClearLoader));
 
-  StartLoader(RedirectLoopURL());
+  StartLoader(RedirectLoopURL(), WebURLRequest::kFetchRequestModeCORS);
   CallCheckpoint(2);
   ServeRequests();
 }
@@ -848,7 +840,7 @@ TEST_P(ThreadableLoaderTest, ClearInDidFailRedirectCheck) {
 TEST_P(ThreadableLoaderTest, GetResponseSynchronously) {
   InSequence s;
   EXPECT_CALL(GetCheckpoint(), Call(1));
-  CreateLoader(WebURLRequest::kFetchRequestModeCORS);
+  CreateLoader();
   CallCheckpoint(1);
 
   EXPECT_CALL(*Client(), DidFailAccessControlCheck(_));
@@ -858,7 +850,8 @@ TEST_P(ThreadableLoaderTest, GetResponseSynchronously) {
   // test is not saying that didFailAccessControlCheck should be dispatched
   // synchronously, but is saying that even when a response is served
   // synchronously it should not lead to a crash.
-  StartLoader(KURL(KURL(), "about:blank"));
+  StartLoader(KURL(KURL(), "about:blank"),
+              WebURLRequest::kFetchRequestModeCORS);
   CallCheckpoint(2);
 }
 

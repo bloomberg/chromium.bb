@@ -151,15 +151,12 @@ void MimeHandlerViewContainer::OnReady() {
   blink::WebFrame* frame = render_frame()->GetWebFrame();
 
   blink::WebAssociatedURLLoaderOptions options;
-  // The embedded plugin is allowed to be cross-origin and we should always
-  // send credentials/cookies with the request.
-  options.fetch_request_mode = blink::WebURLRequest::kFetchRequestModeNoCORS;
-  options.fetch_credentials_mode =
-      blink::WebURLRequest::kFetchCredentialsModeInclude;
-
   DCHECK(!loader_);
   loader_.reset(frame->CreateAssociatedURLLoader(options));
 
+  // The embedded plugin is allowed to be cross-origin and we should always
+  // send credentials/cookies with the request. So, use the default mode
+  // "no-cors" and credentials mode "include".
   blink::WebURLRequest request(original_url_);
   request.SetRequestContext(blink::WebURLRequest::kRequestContextObject);
   loader_->LoadAsynchronously(request, this);

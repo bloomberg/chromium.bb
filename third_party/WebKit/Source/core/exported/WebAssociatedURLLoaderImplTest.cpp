@@ -163,6 +163,8 @@ class WebAssociatedURLLoaderTest : public ::testing::Test,
 
   void CheckMethodFails(const char* unsafe_method) {
     WebURLRequest request(ToKURL("http://www.test.com/success.html"));
+    request.SetFetchRequestMode(WebURLRequest::kFetchRequestModeSameOrigin);
+    request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeOmit);
     request.SetHTTPMethod(WebString::FromUTF8(unsafe_method));
     WebAssociatedURLLoaderOptions options;
     options.untrusted_http = true;
@@ -175,6 +177,8 @@ class WebAssociatedURLLoaderTest : public ::testing::Test,
 
   void CheckHeaderFails(const char* header_field, const char* header_value) {
     WebURLRequest request(ToKURL("http://www.test.com/success.html"));
+    request.SetFetchRequestMode(WebURLRequest::kFetchRequestModeSameOrigin);
+    request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeOmit);
     if (EqualIgnoringASCIICase(WebString::FromUTF8(header_field), "referer")) {
       request.SetHTTPReferrer(WebString::FromUTF8(header_value),
                               kWebReferrerPolicyDefault);
@@ -182,6 +186,7 @@ class WebAssociatedURLLoaderTest : public ::testing::Test,
       request.SetHTTPHeaderField(WebString::FromUTF8(header_field),
                                  WebString::FromUTF8(header_value));
     }
+
     WebAssociatedURLLoaderOptions options;
     options.untrusted_http = true;
     CheckFails(request, options);
@@ -211,6 +216,8 @@ class WebAssociatedURLLoaderTest : public ::testing::Test,
 
     KURL url = ToKURL(id);
     WebURLRequest request(url);
+    request.SetFetchRequestMode(WebURLRequest::kFetchRequestModeCORS);
+    request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeOmit);
 
     WebString header_name_string(WebString::FromUTF8(header_name));
     expected_response_ = WebURLResponse();
@@ -226,7 +233,6 @@ class WebAssociatedURLLoaderTest : public ::testing::Test,
         url, expected_response_, frame_file_path_);
 
     WebAssociatedURLLoaderOptions options;
-    options.fetch_request_mode = WebURLRequest::kFetchRequestModeCORS;
     expected_loader_ = CreateAssociatedURLLoader(options);
     EXPECT_TRUE(expected_loader_);
     expected_loader_->LoadAsynchronously(request, this);
@@ -265,6 +271,8 @@ class WebAssociatedURLLoaderTest : public ::testing::Test,
 TEST_F(WebAssociatedURLLoaderTest, SameOriginSuccess) {
   KURL url = ToKURL("http://www.test.com/SameOriginSuccess.html");
   WebURLRequest request(url);
+  request.SetFetchRequestMode(WebURLRequest::kFetchRequestModeSameOrigin);
+  request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeOmit);
 
   expected_response_ = WebURLResponse();
   expected_response_.SetMIMEType("text/html");
@@ -286,6 +294,8 @@ TEST_F(WebAssociatedURLLoaderTest, SameOriginRestriction) {
   // This is cross-origin since the frame was loaded from www.test.com.
   KURL url = ToKURL("http://www.other.com/SameOriginRestriction.html");
   WebURLRequest request(url);
+  request.SetFetchRequestMode(WebURLRequest::kFetchRequestModeSameOrigin);
+  request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeOmit);
   CheckFails(request);
 }
 
@@ -297,6 +307,7 @@ TEST_F(WebAssociatedURLLoaderTest, CrossOriginSuccess) {
   // No-CORS requests (CrossOriginRequestPolicyAllow) aren't allowed for the
   // default context. So we set the context as Script here.
   request.SetRequestContext(WebURLRequest::kRequestContextScript);
+  request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeOmit);
 
   expected_response_ = WebURLResponse();
   expected_response_.SetMIMEType("text/html");
@@ -305,7 +316,6 @@ TEST_F(WebAssociatedURLLoaderTest, CrossOriginSuccess) {
       url, expected_response_, frame_file_path_);
 
   WebAssociatedURLLoaderOptions options;
-  options.fetch_request_mode = WebURLRequest::kFetchRequestModeNoCORS;
   expected_loader_ = CreateAssociatedURLLoader(options);
   EXPECT_TRUE(expected_loader_);
   expected_loader_->LoadAsynchronously(request, this);
@@ -321,6 +331,8 @@ TEST_F(WebAssociatedURLLoaderTest, CrossOriginWithAccessControlSuccess) {
   KURL url =
       ToKURL("http://www.other.com/CrossOriginWithAccessControlSuccess.html");
   WebURLRequest request(url);
+  request.SetFetchRequestMode(WebURLRequest::kFetchRequestModeCORS);
+  request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeOmit);
 
   expected_response_ = WebURLResponse();
   expected_response_.SetMIMEType("text/html");
@@ -330,7 +342,6 @@ TEST_F(WebAssociatedURLLoaderTest, CrossOriginWithAccessControlSuccess) {
       url, expected_response_, frame_file_path_);
 
   WebAssociatedURLLoaderOptions options;
-  options.fetch_request_mode = WebURLRequest::kFetchRequestModeCORS;
   expected_loader_ = CreateAssociatedURLLoader(options);
   EXPECT_TRUE(expected_loader_);
   expected_loader_->LoadAsynchronously(request, this);
@@ -345,7 +356,11 @@ TEST_F(WebAssociatedURLLoaderTest, CrossOriginWithAccessControlFailure) {
   // This is cross-origin since the frame was loaded from www.test.com.
   KURL url =
       ToKURL("http://www.other.com/CrossOriginWithAccessControlFailure.html");
+  // Send credentials. This will cause the CORS checks to fail, because
+  // credentials can't be sent to a server which returns the header
+  // "access-control-allow-origin" with "*" as its value.
   WebURLRequest request(url);
+  request.SetFetchRequestMode(WebURLRequest::kFetchRequestModeCORS);
 
   expected_response_ = WebURLResponse();
   expected_response_.SetMIMEType("text/html");
@@ -355,11 +370,6 @@ TEST_F(WebAssociatedURLLoaderTest, CrossOriginWithAccessControlFailure) {
       url, expected_response_, frame_file_path_);
 
   WebAssociatedURLLoaderOptions options;
-  // Send credentials. This will cause the CORS checks to fail, because
-  // credentials can't be sent to a server which returns the header
-  // "access-control-allow-origin" with "*" as its value.
-  options.fetch_credentials_mode = WebURLRequest::kFetchCredentialsModeInclude;
-  options.fetch_request_mode = WebURLRequest::kFetchRequestModeCORS;
   expected_loader_ = CreateAssociatedURLLoader(options);
   EXPECT_TRUE(expected_loader_);
   expected_loader_->LoadAsynchronously(request, this);
@@ -379,6 +389,8 @@ TEST_F(WebAssociatedURLLoaderTest,
   KURL url =
       ToKURL("http://www.other.com/CrossOriginWithAccessControlFailure.html");
   WebURLRequest request(url);
+  request.SetFetchRequestMode(WebURLRequest::kFetchRequestModeCORS);
+  request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeOmit);
 
   expected_response_ = WebURLResponse();
   expected_response_.SetMIMEType("text/html");
@@ -388,7 +400,6 @@ TEST_F(WebAssociatedURLLoaderTest,
       url, expected_response_, frame_file_path_);
 
   WebAssociatedURLLoaderOptions options;
-  options.fetch_request_mode = WebURLRequest::kFetchRequestModeCORS;
   expected_loader_ = CreateAssociatedURLLoader(options);
   EXPECT_TRUE(expected_loader_);
   expected_loader_->LoadAsynchronously(request, this);
@@ -408,6 +419,8 @@ TEST_F(WebAssociatedURLLoaderTest, RedirectSuccess) {
   KURL redirect_url = ToKURL(redirect);
 
   WebURLRequest request(url);
+  request.SetFetchRequestMode(WebURLRequest::kFetchRequestModeSameOrigin);
+  request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeOmit);
 
   expected_redirect_response_ = WebURLResponse();
   expected_redirect_response_.SetMIMEType("text/html");
@@ -442,6 +455,8 @@ TEST_F(WebAssociatedURLLoaderTest, RedirectCrossOriginFailure) {
   KURL redirect_url = ToKURL(redirect);
 
   WebURLRequest request(url);
+  request.SetFetchRequestMode(WebURLRequest::kFetchRequestModeSameOrigin);
+  request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeOmit);
 
   expected_redirect_response_ = WebURLResponse();
   expected_redirect_response_.SetMIMEType("text/html");
@@ -480,6 +495,8 @@ TEST_F(WebAssociatedURLLoaderTest,
   KURL redirect_url = ToKURL(redirect);
 
   WebURLRequest request(url);
+  request.SetFetchRequestMode(WebURLRequest::kFetchRequestModeCORS);
+  request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeOmit);
 
   expected_redirect_response_ = WebURLResponse();
   expected_redirect_response_.SetMIMEType("text/html");
@@ -497,7 +514,6 @@ TEST_F(WebAssociatedURLLoaderTest,
       redirect_url, expected_response_, frame_file_path_);
 
   WebAssociatedURLLoaderOptions options;
-  options.fetch_request_mode = WebURLRequest::kFetchRequestModeCORS;
   expected_loader_ = CreateAssociatedURLLoader(options);
   EXPECT_TRUE(expected_loader_);
   expected_loader_->LoadAsynchronously(request, this);
@@ -522,6 +538,8 @@ TEST_F(WebAssociatedURLLoaderTest,
   KURL redirect_url = ToKURL(redirect);
 
   WebURLRequest request(url);
+  request.SetFetchRequestMode(WebURLRequest::kFetchRequestModeCORS);
+  request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeOmit);
   // Add a CORS simple header.
   request.SetHTTPHeaderField("accept", "application/json");
 
@@ -547,7 +565,6 @@ TEST_F(WebAssociatedURLLoaderTest,
       redirect_url, expected_response_, frame_file_path_);
 
   WebAssociatedURLLoaderOptions options;
-  options.fetch_request_mode = WebURLRequest::kFetchRequestModeCORS;
   expected_loader_ = CreateAssociatedURLLoader(options);
   EXPECT_TRUE(expected_loader_);
   expected_loader_->LoadAsynchronously(request, this);
@@ -647,6 +664,8 @@ TEST_F(WebAssociatedURLLoaderTest, CrossOriginHeaderAllowResponseHeaders) {
   KURL url =
       ToKURL("http://www.other.com/CrossOriginHeaderAllowResponseHeaders.html");
   WebURLRequest request(url);
+  request.SetFetchRequestMode(WebURLRequest::kFetchRequestModeCORS);
+  request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeOmit);
 
   WebString header_name_string(WebString::FromUTF8("non-whitelisted"));
   expected_response_ = WebURLResponse();
@@ -660,7 +679,6 @@ TEST_F(WebAssociatedURLLoaderTest, CrossOriginHeaderAllowResponseHeaders) {
   WebAssociatedURLLoaderOptions options;
   options.expose_all_response_headers =
       true;  // This turns off response whitelisting.
-  options.fetch_request_mode = WebURLRequest::kFetchRequestModeCORS;
   expected_loader_ = CreateAssociatedURLLoader(options);
   EXPECT_TRUE(expected_loader_);
   expected_loader_->LoadAsynchronously(request, this);
