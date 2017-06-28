@@ -1913,6 +1913,7 @@ void RendererSchedulerImpl::WillProcessTask(TaskQueue* task_queue,
 void RendererSchedulerImpl::DidProcessTask(TaskQueue* task_queue,
                                            double start_time,
                                            double end_time) {
+  DCHECK_LE(start_time, end_time);
   // TODO(scheduler-dev): Remove conversions when Blink starts using
   // base::TimeTicks instead of doubles for time.
   base::TimeTicks start_time_ticks =
