@@ -53,6 +53,10 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothLEAdvertisingManagerClient
                               const base::Closure& callback,
                               const ErrorCallback& error_callback) override;
 
+  void ResetAdvertising(const dbus::ObjectPath& manager_object_path,
+                        const base::Closure& callback,
+                        const ErrorCallback& error_callback) override;
+
   // Register, unregister and retrieve pointers to profile server providers.
   void RegisterAdvertisementServiceProvider(
       FakeBluetoothLEAdvertisementServiceProvider* service_provider);

@@ -150,6 +150,17 @@ void SetIntervalErrorCallbackConnector(
   error_callback.Run(code);
 }
 
+void ResetAdvertisingErrorCallbackConnector(
+    const device::BluetoothAdapter::AdvertisementErrorCallback& error_callback,
+    const std::string& error_name,
+    const std::string& error_message) {
+  BLUETOOTH_LOG(ERROR) << "Error while resetting advertising. error_name = "
+                       << error_name << ", error_message = " << error_message;
+
+  error_callback.Run(
+      device::BluetoothAdvertisement::ErrorCode::ERROR_RESET_ADVERTISING);
+}
+
 }  // namespace
 
 // static
@@ -520,6 +531,17 @@ void BluetoothAdapterBlueZ::SetAdvertisingInterval(
       ->SetAdvertisingInterval(
           object_path_, min_ms, max_ms, callback,
           base::Bind(&SetIntervalErrorCallbackConnector, error_callback));
+}
+
+void BluetoothAdapterBlueZ::ResetAdvertising(
+    const base::Closure& callback,
+    const AdvertisementErrorCallback& error_callback) {
+  DCHECK(bluez::BluezDBusManager::Get());
+  bluez::BluezDBusManager::Get()
+      ->GetBluetoothLEAdvertisingManagerClient()
+      ->ResetAdvertising(
+          object_path_, callback,
+          base::Bind(&ResetAdvertisingErrorCallbackConnector, error_callback));
 }
 
 device::BluetoothLocalGattService* BluetoothAdapterBlueZ::GetGattService(

@@ -456,6 +456,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
       const base::TimeDelta& max,
       const base::Closure& callback,
       const AdvertisementErrorCallback& error_callback) = 0;
+
+  // Resets advertising on this adapter. This will unregister all existing
+  // advertisements and will stop advertising them.
+  virtual void ResetAdvertising(
+      const base::Closure& callback,
+      const AdvertisementErrorCallback& error_callback) = 0;
 #endif
 
   // Returns the local GATT services associated with this adapter with the

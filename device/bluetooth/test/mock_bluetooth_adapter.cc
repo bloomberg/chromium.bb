@@ -108,6 +108,9 @@ void MockBluetoothAdapter::SetAdvertisingInterval(
     const base::TimeDelta& max,
     const base::Closure& callback,
     const AdvertisementErrorCallback& error_callback) {}
+void MockBluetoothAdapter::ResetAdvertising(
+    const base::Closure& callback,
+    const AdvertisementErrorCallback& error_callback) {}
 #endif
 
 }  // namespace device

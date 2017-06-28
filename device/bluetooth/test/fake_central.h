@@ -118,6 +118,9 @@ class FakeCentral : NON_EXPORTED_BASE(public mojom::FakeCentral),
       const base::TimeDelta& max,
       const base::Closure& callback,
       const AdvertisementErrorCallback& error_callback) override;
+  void ResetAdvertising(
+      const base::Closure& callback,
+      const AdvertisementErrorCallback& error_callback) override;
 #endif
   device::BluetoothLocalGattService* GetGattService(
       const std::string& identifier) const override;

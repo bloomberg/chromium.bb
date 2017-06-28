@@ -304,6 +304,11 @@ void FakeCentral::SetAdvertisingInterval(
     const AdvertisementErrorCallback& error_callback) {
   NOTREACHED();
 }
+void FakeCentral::ResetAdvertising(
+    const base::Closure& callback,
+    const AdvertisementErrorCallback& error_callback) {
+  NOTREACHED();
+}
 #endif
 
 device::BluetoothLocalGattService* FakeCentral::GetGattService(

@@ -132,6 +132,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
       const base::Closure& callback,
       const AdvertisementErrorCallback& error_callback) override;
 
+  void ResetAdvertising(
+      const base::Closure& callback,
+      const AdvertisementErrorCallback& error_callback) override;
+
   device::BluetoothLocalGattService* GetGattService(
       const std::string& identifier) const override;
 

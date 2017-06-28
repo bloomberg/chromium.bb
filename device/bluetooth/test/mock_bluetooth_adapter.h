@@ -141,6 +141,9 @@ class MockBluetoothAdapter : public BluetoothAdapter {
       const base::TimeDelta& max,
       const base::Closure& callback,
       const AdvertisementErrorCallback& error_callback) override;
+  void ResetAdvertising(
+      const base::Closure& callback,
+      const AdvertisementErrorCallback& error_callback) override;
 #endif
   virtual ~MockBluetoothAdapter();
 
