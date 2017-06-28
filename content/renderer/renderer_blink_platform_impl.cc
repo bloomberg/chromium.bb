@@ -97,6 +97,7 @@
 #include "third_party/WebKit/public/platform/WebRTCCertificateGenerator.h"
 #include "third_party/WebKit/public/platform/WebRTCPeerConnectionHandler.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
+#include "third_party/WebKit/public/platform/WebSocketHandshakeThrottle.h"
 #include "third_party/WebKit/public/platform/WebThread.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
@@ -929,6 +930,13 @@ RendererBlinkPlatformImpl::CreateImageCaptureFrameGrabber() {
 #else
   return nullptr;
 #endif  // BUILDFLAG(ENABLE_WEBRTC)
+}
+
+//------------------------------------------------------------------------------
+
+std::unique_ptr<blink::WebSocketHandshakeThrottle>
+RendererBlinkPlatformImpl::CreateWebSocketHandshakeThrottle() {
+  return GetContentClient()->renderer()->CreateWebSocketHandshakeThrottle();
 }
 
 //------------------------------------------------------------------------------

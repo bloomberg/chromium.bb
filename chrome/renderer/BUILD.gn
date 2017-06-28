@@ -126,6 +126,7 @@ static_library("renderer") {
     "//components/rappor/public/interfaces",
     "//components/resources:components_resources",
     "//components/safe_browsing/common:interfaces",
+    "//components/safe_browsing/renderer:websocket_sb_handshake_throttle",
     "//components/spellcheck:build_features",
     "//components/startup_metric_utils/common:interfaces",
     "//components/subresource_filter/content/renderer",
