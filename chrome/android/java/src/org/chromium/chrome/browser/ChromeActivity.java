@@ -93,7 +93,6 @@ import org.chromium.chrome.browser.media.PictureInPictureController;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.metrics.StartupMetrics;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
-import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.metrics.WebApkUma;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
@@ -939,6 +938,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      * super depending on whether the tasks should run before or after these ones.
      */
     protected void onDeferredStartup() {
+        if (mDeferredStartupPosted) return;
+
+        mDeferredStartupPosted = true;
         initDeferredStartupForActivity();
         ProcessInitializationHandler.getInstance().initializeDeferredStartupTasks();
         DeferredStartupHandler.getInstance().queueDeferredTasksOnIdleHandler();
@@ -2065,15 +2067,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             return;
         }
         mDeferredStartupQueued = false;
-
-        if (!mDeferredStartupPosted) {
-            mDeferredStartupPosted = true;
-            RecordHistogram.recordLongTimesHistogram(
-                    "UMA.Debug.EnableCrashUpload.PostDeferredStartUptime2",
-                    SystemClock.uptimeMillis() - UmaUtils.getForegroundStartTime(),
-                    TimeUnit.MILLISECONDS);
-            onDeferredStartup();
-        }
+        onDeferredStartup();
     }
 
     /**

@@ -50,7 +50,6 @@ import org.chromium.chrome.browser.invalidation.UniqueIdInvalidationClientNameGe
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.media.MediaCaptureNotificationService;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
-import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.notifications.channels.ChannelsUpdater;
@@ -252,10 +251,6 @@ public class ProcessInitializationHandler {
         ThreadUtils.checkUiThread();
         if (mInitializedDeferredStartupTasks) return;
         mInitializedDeferredStartupTasks = true;
-
-        RecordHistogram.recordLongTimesHistogram("UMA.Debug.EnableCrashUpload.DeferredStartUptime2",
-                SystemClock.uptimeMillis() - UmaUtils.getForegroundStartTime(),
-                TimeUnit.MILLISECONDS);
 
         handleDeferredStartupTasksInitialization();
     }
@@ -493,10 +488,6 @@ public class ProcessInitializationHandler {
              * minidump storage directory.
              */
             private void initCrashReporting() {
-                RecordHistogram.recordLongTimesHistogram("UMA.Debug.EnableCrashUpload.Uptime3",
-                        mAsyncTaskStartTime - UmaUtils.getForegroundStartTime(),
-                        TimeUnit.MILLISECONDS);
-
                 // Crash reports can be uploaded as part of a background service even while the main
                 // Chrome activity is not running, and hence regular metrics reporting is not
                 // possible. Instead, metrics are temporarily written to prefs; export those prefs

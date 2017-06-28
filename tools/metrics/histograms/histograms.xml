@@ -73662,6 +73662,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Startup.FirstCommitNavigationTime2" units="ms">
+  <obsolete>
+    Replaced with Startup.FirstCommitNavigationTime3 on 6/2017
+  </obsolete>
+  <owner>pasko@chromium.org</owner>
+  <owner>wnwen@chromium.org</owner>
+  <summary>
+    [Android only] The time from the first foreground entry point in the app to
+    the moment the first navigation is committed, i.e. when renderer gets the
+    first byte of the document.
+  </summary>
+</histogram>
+
+<histogram name="Startup.FirstCommitNavigationTime3" units="ms">
   <owner>pasko@chromium.org</owner>
   <owner>wnwen@chromium.org</owner>
   <summary>
@@ -79581,6 +79594,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="UMA.Debug.EnableCrashUpload.DeferredStartUptime2" units="ms">
+  <obsolete>
+    Deprecated 2017. No longer tracked.
+  </obsolete>
   <owner>wnwen@chromium.org</owner>
   <owner>asvitkine@chromium.org</owner>
   <summary>
@@ -79604,6 +79620,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="UMA.Debug.EnableCrashUpload.PostDeferredStartUptime2"
     units="ms">
+  <obsolete>
+    Deprecated 2017. No longer tracked.
+  </obsolete>
   <owner>wnwen@chromium.org</owner>
   <owner>asvitkine@chromium.org</owner>
   <summary>
@@ -79638,6 +79657,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="UMA.Debug.EnableCrashUpload.Uptime3" units="ms">
+  <obsolete>
+    Deprecated 2017. No longer tracked.
+  </obsolete>
   <owner>wnwen@chromium.org</owner>
   <owner>asvitkine@chromium.org</owner>
   <summary>
