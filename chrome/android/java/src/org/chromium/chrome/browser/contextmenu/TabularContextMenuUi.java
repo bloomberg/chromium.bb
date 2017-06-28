@@ -30,7 +30,6 @@ import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.ContextMenuDialog;
-import org.chromium.content.browser.RenderCoordinates;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +44,7 @@ public class TabularContextMenuUi implements ContextMenuUi, AdapterView.OnItemCl
     private ImageView mHeaderImageView;
     private Callback<Boolean> mOnShareItemClicked;
     private View mPagerView;
-    private RenderCoordinates mRenderCoordinates;
+    private float mTopContentOffsetPx;
 
     public TabularContextMenuUi(Callback<Boolean> onShareItemClicked) {
         mOnShareItemClicked = onShareItemClicked;
@@ -101,7 +100,7 @@ public class TabularContextMenuUi implements ContextMenuUi, AdapterView.OnItemCl
                 (TabularContextMenuViewPager) view.findViewById(R.id.custom_pager));
 
         final ContextMenuDialog dialog = new ContextMenuDialog(activity, R.style.DialogWhenLarge,
-                touchPointXPx, touchPointYPx, mPagerView, mRenderCoordinates);
+                touchPointXPx, touchPointYPx, mTopContentOffsetPx, mPagerView);
         dialog.setContentView(view);
 
         return dialog;
@@ -288,10 +287,14 @@ public class TabularContextMenuUi implements ContextMenuUi, AdapterView.OnItemCl
     }
 
     /**
-     * Gives this class access to the render coordinates to allow access to the total size of the
-     * toolbar and tab strip.
+     * Set the content offset.
+     *
+     * This should be set separately ahead of calling {@link displayMenu()}
+     * since it cannot be passed to the method.
+     * @param topContentOffsetPx y content offset from the top.
      */
-    public void setRenderCoordinates(RenderCoordinates renderCoordinates) {
-        mRenderCoordinates = renderCoordinates;
+    public void setTopContentOffsetY(float topContentOffsetPx) {
+        assert mContextMenuDialog != null;
+        mTopContentOffsetPx = topContentOffsetPx;
     }
 }

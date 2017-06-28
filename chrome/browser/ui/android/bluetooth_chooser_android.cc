@@ -11,7 +11,6 @@
 #include "chrome/common/url_constants.h"
 #include "components/security_state/core/security_state.h"
 #include "components/url_formatter/elide_url.h"
-#include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/render_frame_host.h"
 #include "jni/BluetoothChooserDialog_jni.h"
 #include "ui/android/window_android.h"
@@ -33,9 +32,7 @@ BluetoothChooserAndroid::BluetoothChooserAndroid(
   DCHECK(!origin.unique());
 
   base::android::ScopedJavaLocalRef<jobject> window_android =
-      content::ContentViewCore::FromWebContents(web_contents_)
-          ->GetWindowAndroid()
-          ->GetJavaObject();
+      web_contents_->GetNativeView()->GetWindowAndroid()->GetJavaObject();
 
   SecurityStateTabHelper* helper =
       SecurityStateTabHelper::FromWebContents(web_contents_);

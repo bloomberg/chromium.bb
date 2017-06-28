@@ -22,7 +22,6 @@
 #include "chrome/common/url_constants.h"
 #include "components/security_state/core/security_state.h"
 #include "components/url_formatter/elide_url.h"
-#include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "device/base/device_client.h"
@@ -84,9 +83,7 @@ UsbChooserDialogAndroid::UsbChooserDialogAndroid(
 
   // Create (and show) the UsbChooser dialog.
   base::android::ScopedJavaLocalRef<jobject> window_android =
-      content::ContentViewCore::FromWebContents(web_contents)
-          ->GetWindowAndroid()
-          ->GetJavaObject();
+      web_contents->GetNativeView()->GetWindowAndroid()->GetJavaObject();
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jstring> origin_string =
       base::android::ConvertUTF16ToJavaString(

@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/common/thumbnail_capturer.mojom.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
-#include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/context_menu_params.h"
@@ -25,6 +24,7 @@
 #include "jni/ContextMenuParams_jni.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/WebKit/public/web/WebContextMenuData.h"
+#include "ui/android/view_android.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
@@ -92,8 +92,9 @@ ContextMenuHelper::ContextMenuHelper(content::WebContents* web_contents)
     : web_contents_(web_contents) {
   JNIEnv* env = base::android::AttachCurrentThread();
   java_obj_.Reset(
-      env,
-      Java_ContextMenuHelper_create(env, reinterpret_cast<long>(this)).obj());
+      env, Java_ContextMenuHelper_create(env, reinterpret_cast<long>(this),
+                                         web_contents_->GetJavaWebContents())
+               .obj());
   DCHECK(!java_obj_.is_null());
 }
 
@@ -105,26 +106,14 @@ ContextMenuHelper::~ContextMenuHelper() {
 void ContextMenuHelper::ShowContextMenu(
     content::RenderFrameHost* render_frame_host,
     const content::ContextMenuParams& params) {
-  content::ContentViewCore* content_view_core =
-      content::ContentViewCore::FromWebContents(web_contents_);
-
-  if (!content_view_core)
-    return;
-
-  base::android::ScopedJavaLocalRef<jobject> jcontent_view_core(
-      content_view_core->GetJavaObject());
-
-  if (jcontent_view_core.is_null())
-    return;
-
   JNIEnv* env = base::android::AttachCurrentThread();
   context_menu_params_ = params;
   render_frame_id_ = render_frame_host->GetRoutingID();
   render_process_id_ = render_frame_host->GetProcess()->GetID();
-
+  gfx::NativeView view = web_contents_->GetNativeView();
   Java_ContextMenuHelper_showContextMenu(
-      env, java_obj_, jcontent_view_core,
-      ContextMenuHelper::CreateJavaContextMenuParams(params));
+      env, java_obj_, ContextMenuHelper::CreateJavaContextMenuParams(params),
+      view->GetContainerView(), view->content_offset() * view->GetDipScale());
 }
 
 void ContextMenuHelper::OnContextMenuClosed(
