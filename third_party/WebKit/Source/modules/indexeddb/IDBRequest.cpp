@@ -58,10 +58,12 @@ using blink::WebIDBCursor;
 
 namespace blink {
 
-IDBRequest::AsyncTraceState::AsyncTraceState(const char* tracing_name, void* id)
-    : tracing_name_(tracing_name), id_(id) {
+IDBRequest::AsyncTraceState::AsyncTraceState(const char* tracing_name,
+                                             void* id,
+                                             size_t sub_id)
+    : tracing_name_(tracing_name), id_(static_cast<char*>(id) + sub_id) {
   if (tracing_name_)
-    TRACE_EVENT_ASYNC_BEGIN0("IndexedDB", tracing_name_, id);
+    TRACE_EVENT_ASYNC_BEGIN0("IndexedDB", tracing_name_, id_);
 }
 
 void IDBRequest::AsyncTraceState::RecordAndReset() {
@@ -96,8 +98,8 @@ IDBRequest::IDBRequest(ScriptState* script_state,
     : SuspendableObject(ExecutionContext::From(script_state)),
       transaction_(transaction),
       isolate_(script_state->GetIsolate()),
-      source_(source),
-      metrics_(std::move(metrics)) {}
+      metrics_(std::move(metrics)),
+      source_(source) {}
 
 IDBRequest::~IDBRequest() {
   DCHECK((ready_state_ == DONE && !metrics_.is_valid()) ||
@@ -411,7 +413,8 @@ void IDBRequest::EnqueueResponse(std::unique_ptr<WebIDBCursor> backend,
                                  IDBKey* key,
                                  IDBKey* primary_key,
                                  RefPtr<IDBValue>&& value) {
-  IDB_TRACE("IDBRequest::EnqueueResponse(IDBCursor)");
+  IDB_TRACE1("IDBRequest::EnqueueResponse(IDBCursor)", "size",
+             value ? value->DataSize() : 0);
   if (!ShouldEnqueueEvent()) {
     metrics_.RecordAndReset();
     return;
@@ -450,8 +453,18 @@ void IDBRequest::EnqueueResponse(IDBKey* idb_key) {
   metrics_.RecordAndReset();
 }
 
+namespace {
+size_t SizeOfValues(const Vector<RefPtr<IDBValue>>& values) {
+  size_t size = 0;
+  for (const auto& value : values)
+    size += value->DataSize();
+  return size;
+}
+}  // namespace
+
 void IDBRequest::EnqueueResponse(const Vector<RefPtr<IDBValue>>& values) {
-  IDB_TRACE("IDBRequest::EnqueueResponse([IDBValue])");
+  IDB_TRACE1("IDBRequest::EnqueueResponse([IDBValue])", "size",
+             SizeOfValues(values));
   if (!ShouldEnqueueEvent()) {
     metrics_.RecordAndReset();
     return;
@@ -475,7 +488,8 @@ static IDBObjectStore* EffectiveObjectStore(IDBAny* source) {
 #endif  // DCHECK_IS_ON()
 
 void IDBRequest::EnqueueResponse(RefPtr<IDBValue>&& value) {
-  IDB_TRACE("IDBRequest::EnqueueResponse(IDBValue)");
+  IDB_TRACE1("IDBRequest::EnqueueResponse(IDBValue)", "size",
+             value ? value->DataSize() : 0);
   if (!ShouldEnqueueEvent()) {
     metrics_.RecordAndReset();
     return;

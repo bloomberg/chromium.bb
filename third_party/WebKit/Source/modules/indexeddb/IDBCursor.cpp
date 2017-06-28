@@ -138,7 +138,8 @@ IDBRequest* IDBCursor::update(ScriptState* script_state,
 
 void IDBCursor::advance(unsigned count, ExceptionState& exception_state) {
   IDB_TRACE("IDBCursor::advanceRequestSetup");
-  IDBRequest::AsyncTraceState metrics("IDBCursor::advance", this);
+  IDBRequest::AsyncTraceState metrics("IDBCursor::advance", this,
+                                      ++next_tracing_id_);
   if (!count) {
     exception_state.ThrowTypeError(
         "A count argument with value 0 (zero) was supplied, must be greater "
@@ -171,7 +172,8 @@ void IDBCursor::continueFunction(ScriptState* script_state,
                                  const ScriptValue& key_value,
                                  ExceptionState& exception_state) {
   IDB_TRACE("IDBCursor::continueRequestSetup");
-  IDBRequest::AsyncTraceState metrics("IDBCursor::continue", this);
+  IDBRequest::AsyncTraceState metrics("IDBCursor::continue", this,
+                                      ++next_tracing_id_);
 
   if (!transaction_->IsActive()) {
     exception_state.ThrowDOMException(kTransactionInactiveError,
@@ -208,7 +210,8 @@ void IDBCursor::continuePrimaryKey(ScriptState* script_state,
                                    const ScriptValue& primary_key_value,
                                    ExceptionState& exception_state) {
   IDB_TRACE("IDBCursor::continuePrimaryKeyRequestSetup");
-  IDBRequest::AsyncTraceState metrics("IDBCursor::continuePrimaryKey", this);
+  IDBRequest::AsyncTraceState metrics("IDBCursor::continuePrimaryKey", this,
+                                      ++next_tracing_id_);
 
   if (!transaction_->IsActive()) {
     exception_state.ThrowDOMException(kTransactionInactiveError,
@@ -313,7 +316,8 @@ void IDBCursor::Continue(IDBKey* key,
 IDBRequest* IDBCursor::deleteFunction(ScriptState* script_state,
                                       ExceptionState& exception_state) {
   IDB_TRACE("IDBCursor::deleteRequestSetup");
-  IDBRequest::AsyncTraceState metrics("IDBCursor::delete", this);
+  IDBRequest::AsyncTraceState metrics("IDBCursor::delete", this,
+                                      ++next_tracing_id_);
   if (!transaction_->IsActive()) {
     exception_state.ThrowDOMException(kTransactionInactiveError,
                                       transaction_->InactiveErrorMessage());

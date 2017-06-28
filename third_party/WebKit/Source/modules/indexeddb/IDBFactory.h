@@ -78,6 +78,7 @@ class IDBFactory final : public GarbageCollected<IDBFactory>,
                                            const String& name,
                                            ExceptionState&,
                                            bool);
+  int64_t next_tracing_id_ = 0;
 };
 
 }  // namespace blink

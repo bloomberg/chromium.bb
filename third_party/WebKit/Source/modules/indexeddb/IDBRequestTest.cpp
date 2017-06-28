@@ -279,7 +279,8 @@ TEST_F(IDBRequestTest, ConnectionsAfterStopping) {
     std::unique_ptr<MockWebIDBDatabase> backend = MockWebIDBDatabase::Create();
     EXPECT_CALL(*backend, Close()).Times(1);
     IDBOpenDBRequest* request = IDBOpenDBRequest::Create(
-        scope.GetScriptState(), callbacks, kTransactionId, kVersion);
+        scope.GetScriptState(), callbacks, kTransactionId, kVersion,
+        IDBRequest::AsyncTraceState());
     EXPECT_EQ(request->readyState(), "pending");
     std::unique_ptr<WebIDBCallbacks> callbacks = request->CreateWebCallbacks();
 
@@ -292,7 +293,8 @@ TEST_F(IDBRequestTest, ConnectionsAfterStopping) {
     std::unique_ptr<MockWebIDBDatabase> backend = MockWebIDBDatabase::Create();
     EXPECT_CALL(*backend, Close()).Times(1);
     IDBOpenDBRequest* request = IDBOpenDBRequest::Create(
-        scope.GetScriptState(), callbacks, kTransactionId, kVersion);
+        scope.GetScriptState(), callbacks, kTransactionId, kVersion,
+        IDBRequest::AsyncTraceState());
     EXPECT_EQ(request->readyState(), "pending");
     std::unique_ptr<WebIDBCallbacks> callbacks = request->CreateWebCallbacks();
 

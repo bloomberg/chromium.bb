@@ -31,5 +31,6 @@
 
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #define IDB_TRACE(a) TRACE_EVENT0("IndexedDB", (a));
+#define IDB_TRACE1(a, b, b_val) TRACE_EVENT1("IndexedDB", (a), (b), (b_val));
 
 #endif  // IDBTracing_h
