@@ -1,6 +1,4 @@
 Test that srcset does not use wrong image when override scalefactor and then disabled.
-
-
 Set deviceScaleFactor: 1
 Reloading Page
 

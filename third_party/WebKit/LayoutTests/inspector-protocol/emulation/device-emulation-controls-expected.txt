@@ -1,9 +1,6 @@
 Tests that form controls are rendered with correct theme. See crbug.com/591315.
-
-Radio
-Checkbox
-Page reloaded.
-Emulating device: 800x600x1 viewport='none'
+Emulating device: 800x600x1
+Loading page with viewport=none
 Device:
 window.screenX = 0px
 window.screenY = 0px
@@ -41,5 +38,4 @@ doc.body.offsetHeight = 1000px
 doc.body.scrollHeight = 1000px
 measured radio: 13x13
 measured checkbox: 13x13
-
 

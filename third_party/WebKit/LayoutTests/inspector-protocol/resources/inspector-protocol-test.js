@@ -199,20 +199,7 @@ TestRunner.Page = class {
       this._testRunner.die(`Cannot navigate to ${url} with active session`, new Error());
 
     var session = await this.createSession();
-    session.protocol.Page.enable();
-    session.protocol.Page.navigate({url: url});
-
-    var callback;
-    var promise = new Promise(f => callback = f);
-    session.protocol.Page.onFrameNavigated(message => {
-      if (!message.params.frame.parentId)
-        callback();
-    });
-    await Promise.all([
-      promise,
-      session.protocol.Page.onceLoadEventFired()
-    ]);
-
+    await session._navigate(url);
     await session.disconnect();
   }
 
@@ -277,6 +264,26 @@ TestRunner.Session = class {
     } else {
       return response.result.result.value;
     }
+  }
+
+  navigate(url) {
+    return this._navigate(this._testRunner.url(url));
+  }
+
+  async _navigate(url) {
+    this.protocol.Page.enable();
+    this.protocol.Page.navigate({url: url});
+
+    var callback;
+    var promise = new Promise(f => callback = f);
+    this.protocol.Page.onFrameNavigated(message => {
+      if (!message.params.frame.parentId)
+        callback();
+    });
+    await Promise.all([
+      promise,
+      this.protocol.Page.onceLoadEventFired()
+    ]);
   }
 
   _dispatchMessage(message) {

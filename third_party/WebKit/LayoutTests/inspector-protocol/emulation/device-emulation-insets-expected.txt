@@ -1,7 +1,6 @@
 Tests that device emulation with insets affects window.screenWidth, window.screenHeight, screen.width and screen.height.
-
-Page reloaded.
-Emulating device: 1200x1000x1 viewport='none'
+Emulating device: 1200x1000x1
+Loading page with viewport=none
 Device:
 window.screenX = 10px
 window.screenY = 20px
@@ -37,5 +36,4 @@ doc.docElem.scrollHeight = 1000px
 doc.body.clientHeight = 1000px
 doc.body.offsetHeight = 1000px
 doc.body.scrollHeight = 1000px
-
 
