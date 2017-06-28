@@ -31,10 +31,6 @@ namespace ios {
 class ChromeBrowserState;
 }  // namespace ios
 
-namespace payments {
-struct PaymentAddress;
-}  // namespace payments
-
 namespace web {
 class PaymentDetails;
 class PaymentShippingOption;
@@ -61,11 +57,13 @@ class PaymentShippingOption;
 
 // Notifies the delegate that the user has selected a shipping address.
 - (void)paymentRequestCoordinator:(PaymentRequestCoordinator*)coordinator
-         didSelectShippingAddress:(payments::PaymentAddress)shippingAddress;
+         didSelectShippingAddress:
+             (const autofill::AutofillProfile&)shippingAddress;
 
 // Notifies the delegate that the user has selected a shipping option.
 - (void)paymentRequestCoordinator:(PaymentRequestCoordinator*)coordinator
-          didSelectShippingOption:(web::PaymentShippingOption)shippingOption;
+          didSelectShippingOption:
+              (const web::PaymentShippingOption&)shippingOption;
 
 @end
 

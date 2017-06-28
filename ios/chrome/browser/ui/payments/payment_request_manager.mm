@@ -758,15 +758,20 @@ struct PendingPaymentResponse {
 }
 
 - (void)paymentRequestCoordinator:(PaymentRequestCoordinator*)coordinator
-         didSelectShippingAddress:(payments::PaymentAddress)shippingAddress {
-  [_paymentRequestJsManager updateShippingAddress:shippingAddress
+         didSelectShippingAddress:
+             (const autofill::AutofillProfile&)shippingAddress {
+  payments::PaymentAddress address =
+      payments::data_util::GetPaymentAddressFromAutofillProfile(
+          shippingAddress, GetApplicationContext()->GetApplicationLocale());
+  [_paymentRequestJsManager updateShippingAddress:address
                                 completionHandler:nil];
   [self setUnblockEventQueueTimer];
   [self setUpdateEventTimeoutTimer];
 }
 
 - (void)paymentRequestCoordinator:(PaymentRequestCoordinator*)coordinator
-          didSelectShippingOption:(web::PaymentShippingOption)shippingOption {
+          didSelectShippingOption:
+              (const web::PaymentShippingOption&)shippingOption {
   [_paymentRequestJsManager updateShippingOption:shippingOption
                                completionHandler:nil];
   [self setUnblockEventQueueTimer];

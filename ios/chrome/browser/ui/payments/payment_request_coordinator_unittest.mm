@@ -42,10 +42,10 @@ typedef void (^mock_coordinator_complete)(PaymentRequestCoordinator*,
                                           const base::string16&);
 typedef void (^mock_coordinator_select_shipping_address)(
     PaymentRequestCoordinator*,
-    payments::PaymentAddress);
+    const autofill::AutofillProfile&);
 typedef void (^mock_coordinator_select_shipping_option)(
     PaymentRequestCoordinator*,
-    web::PaymentShippingOption);
+    const web::PaymentShippingOption&);
 
 - (void)paymentRequestCoordinatorDidCancel:
     (PaymentRequestCoordinator*)coordinator {
@@ -61,13 +61,15 @@ typedef void (^mock_coordinator_select_shipping_option)(
 }
 
 - (void)paymentRequestCoordinator:(PaymentRequestCoordinator*)coordinator
-         didSelectShippingAddress:(payments::PaymentAddress)shippingAddress {
+         didSelectShippingAddress:
+             (const autofill::AutofillProfile&)shippingAddress {
   return static_cast<mock_coordinator_select_shipping_address>(
       [self blockForSelector:_cmd])(coordinator, shippingAddress);
 }
 
 - (void)paymentRequestCoordinator:(PaymentRequestCoordinator*)coordinator
-          didSelectShippingOption:(web::PaymentShippingOption)shippingOption {
+          didSelectShippingOption:
+              (const web::PaymentShippingOption&)shippingOption {
   return static_cast<mock_coordinator_select_shipping_option>(
       [self blockForSelector:_cmd])(coordinator, shippingOption);
 }
@@ -187,19 +189,8 @@ TEST_F(PaymentRequestCoordinatorTest, DidSelectShippingAddress) {
   [delegate_mock
                 onSelector:selector
       callBlockExpectation:^(PaymentRequestCoordinator* callerCoordinator,
-                             payments::PaymentAddress shippingAddress) {
-        EXPECT_EQ(base::ASCIIToUTF16("John H. Doe"), shippingAddress.recipient);
-        EXPECT_EQ(base::ASCIIToUTF16("Underworld"),
-                  shippingAddress.organization);
-        ASSERT_EQ(2U, shippingAddress.address_line.size());
-        EXPECT_EQ(base::ASCIIToUTF16("666 Erebus St."),
-                  shippingAddress.address_line[0]);
-        EXPECT_EQ(base::ASCIIToUTF16("Apt 8"), shippingAddress.address_line[1]);
-        EXPECT_EQ(base::ASCIIToUTF16("16502111111"), shippingAddress.phone);
-        EXPECT_EQ(base::ASCIIToUTF16("Elysium"), shippingAddress.city);
-        EXPECT_EQ(base::ASCIIToUTF16("CA"), shippingAddress.region);
-        EXPECT_EQ(base::ASCIIToUTF16("US"), shippingAddress.country);
-        EXPECT_EQ(base::ASCIIToUTF16("91111"), shippingAddress.postal_code);
+                             const autofill::AutofillProfile& shippingAddress) {
+        EXPECT_EQ(autofill_profile_, shippingAddress);
         EXPECT_EQ(coordinator, callerCoordinator);
       }];
   [coordinator setDelegate:delegate_mock];
@@ -221,29 +212,29 @@ TEST_F(PaymentRequestCoordinatorTest, DidSelectShippingOption) {
       initWithBaseViewController:base_view_controller];
   [coordinator setPaymentRequest:payment_request_.get()];
 
+  web::PaymentShippingOption shipping_option;
+  shipping_option.id = base::ASCIIToUTF16("123456");
+  shipping_option.label = base::ASCIIToUTF16("1-Day");
+  shipping_option.amount.value = base::ASCIIToUTF16("0.99");
+  shipping_option.amount.currency = base::ASCIIToUTF16("USD");
+
   // Mock the coordinator delegate.
   id delegate = [OCMockObject
       mockForProtocol:@protocol(PaymentMethodSelectionCoordinatorDelegate)];
   id delegate_mock([[PaymentRequestCoordinatorDelegateMock alloc]
       initWithRepresentedObject:delegate]);
   SEL selector = @selector(paymentRequestCoordinator:didSelectShippingOption:);
-  [delegate_mock onSelector:selector
-       callBlockExpectation:^(PaymentRequestCoordinator* callerCoordinator,
-                              web::PaymentShippingOption shippingOption) {
-         EXPECT_EQ(base::ASCIIToUTF16("123456"), shippingOption.id);
-         EXPECT_EQ(base::ASCIIToUTF16("1-Day"), shippingOption.label);
-         EXPECT_EQ(base::ASCIIToUTF16("0.99"), shippingOption.amount.value);
-         EXPECT_EQ(base::ASCIIToUTF16("USD"), shippingOption.amount.currency);
-         EXPECT_EQ(coordinator, callerCoordinator);
-       }];
+  [delegate_mock
+                onSelector:selector
+      callBlockExpectation:^(PaymentRequestCoordinator* callerCoordinator,
+                             const web::PaymentShippingOption& shippingOption) {
+        EXPECT_EQ(shipping_option, shippingOption);
+        EXPECT_EQ(coordinator, callerCoordinator);
+      }];
   [coordinator setDelegate:delegate_mock];
 
   // Call the ShippingOptionSelectionCoordinator delegate method.
-  web::PaymentShippingOption shipping_option;
-  shipping_option.id = base::ASCIIToUTF16("123456");
-  shipping_option.label = base::ASCIIToUTF16("1-Day");
-  shipping_option.amount.value = base::ASCIIToUTF16("0.99");
-  shipping_option.amount.currency = base::ASCIIToUTF16("USD");
+
   [coordinator shippingOptionSelectionCoordinator:nil
                           didSelectShippingOption:&shipping_option];
 }
