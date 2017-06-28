@@ -1456,6 +1456,9 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
   case ui::AX_ROLE_DESCRIPTION_LIST_TERM:
     return base::SysUTF16ToNSString(content_client->GetLocalizedString(
         IDS_AX_ROLE_DESCRIPTION_TERM));
+  case ui::AX_ROLE_DISCLOSURE_TRIANGLE:
+    return base::SysUTF16ToNSString(content_client->GetLocalizedString(
+        IDS_AX_ROLE_DISCLOSURE_TRIANGLE));
   case ui::AX_ROLE_FIGURE:
     return base::SysUTF16ToNSString(content_client->GetLocalizedString(
         IDS_AX_ROLE_FIGURE));

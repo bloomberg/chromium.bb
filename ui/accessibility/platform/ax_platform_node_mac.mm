@@ -66,7 +66,11 @@ RoleMap BuildRoleMap() {
       {ui::AX_ROLE_DIALOG, NSAccessibilityGroupRole},
       {ui::AX_ROLE_DETAILS, NSAccessibilityGroupRole},
       {ui::AX_ROLE_DIRECTORY, NSAccessibilityListRole},
-      {ui::AX_ROLE_DISCLOSURE_TRIANGLE, NSAccessibilityDisclosureTriangleRole},
+      // If Mac supports AXExpandedChanged event with
+      // NSAccessibilityDisclosureTriangleRole, We should update
+      // AX_ROLE_DISCLOSURE_TRIANGLE mapping to
+      // NSAccessibilityDisclosureTriangleRole. http://crbug.com/558324
+      {ui::AX_ROLE_DISCLOSURE_TRIANGLE, NSAccessibilityButtonRole},
       {ui::AX_ROLE_DOCUMENT, NSAccessibilityGroupRole},
       {ui::AX_ROLE_EMBEDDED_OBJECT, NSAccessibilityGroupRole},
       {ui::AX_ROLE_FIGCAPTION, NSAccessibilityGroupRole},
@@ -544,6 +548,9 @@ void NotifyMacEvent(AXPlatformNodeCocoa* target, ui::AXEvent event_type) {
       // instead). Do the same as NSTabView and put "tab" in the description.
       return [l10n_util::GetNSStringWithFixup(IDS_ACCNAME_TAB_ROLE_DESCRIPTION)
           lowercaseString];
+    case ui::AX_ROLE_DISCLOSURE_TRIANGLE:
+      return [l10n_util::GetNSStringWithFixup(
+          IDS_ACCNAME_DISCLOSURE_TRIANGLE_ROLE_DESCRIPTION) lowercaseString];
     default:
       break;
   }
