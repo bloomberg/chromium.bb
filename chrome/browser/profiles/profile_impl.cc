@@ -436,11 +436,12 @@ ProfileImpl::ProfileImpl(
                             "profile files to the root directory!";
 
 #if defined(OS_CHROMEOS)
-  if (!chromeos::ProfileHelper::IsSigninProfile(this)) {
+  if (!chromeos::ProfileHelper::IsSigninProfile(this) &&
+      !chromeos::ProfileHelper::IsLockScreenAppProfile(this)) {
     const user_manager::User* user =
         chromeos::ProfileHelper::Get()->GetUserByProfile(this);
     // A |User| instance should always exist for a profile which is not the
-    // initial or the sign-in profile.
+    // initial, the sign-in or the lock screen app profile.
     CHECK(user);
     LOG_IF(FATAL,
            !session_manager::SessionManager::Get()->HasSessionForAccountId(
@@ -694,7 +695,8 @@ void ProfileImpl::DoFinalInit() {
   // mark the session as initialized. Need to do this before we restart below
   // so we don't get in a weird state where we restart before the session is
   // marked as initialized and so try to initialize it again.
-  if (!chromeos::ProfileHelper::IsSigninProfile(this)) {
+  if (!chromeos::ProfileHelper::IsSigninProfile(this) &&
+      !chromeos::ProfileHelper::IsLockScreenAppProfile(this)) {
     chromeos::ProfileHelper* profile_helper = chromeos::ProfileHelper::Get();
     user_manager::UserManager::Get()->OnProfileInitialized(
         profile_helper->GetUserByProfile(this));

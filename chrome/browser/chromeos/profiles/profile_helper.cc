@@ -42,6 +42,9 @@ namespace {
 // As defined in /chromeos/dbus/cryptohome_client.cc.
 static const char kUserIdHashSuffix[] = "-hash";
 
+// The name for the lock screen app profile.
+static const char kLockScreenAppProfile[] = "LockScreenAppsProfile";
+
 bool ShouldAddProfileDirPrefix(const std::string& user_id_hash) {
   // Do not add profile dir prefix for legacy profile dir and test
   // user profile. The reason of not adding prefix for test user profile
@@ -168,6 +171,23 @@ base::FilePath ProfileHelper::GetUserProfileDir(
 bool ProfileHelper::IsSigninProfile(const Profile* profile) {
   return profile &&
          profile->GetPath().BaseName().value() == chrome::kInitialProfile;
+}
+
+// static
+bool ProfileHelper::IsLockScreenAppProfile(const Profile* profile) {
+  return profile &&
+         profile->GetPath().BaseName().value() == kLockScreenAppProfile;
+}
+
+// static
+base::FilePath ProfileHelper::GetLockScreenAppProfilePath() {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  return profile_manager->user_data_dir().AppendASCII(kLockScreenAppProfile);
+}
+
+// static
+std::string ProfileHelper::GetLockScreenAppProfileName() {
+  return kLockScreenAppProfile;
 }
 
 // static
@@ -358,8 +378,10 @@ const user_manager::User* ProfileHelper::GetUserByProfile(
   DCHECK(!content::BrowserThread::IsThreadInitialized(
              content::BrowserThread::UI) ||
          content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  if (ProfileHelper::IsSigninProfile(profile))
-    return NULL;
+  if (ProfileHelper::IsSigninProfile(profile) ||
+      ProfileHelper::IsLockScreenAppProfile(profile)) {
+    return nullptr;
+  }
 
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
 

@@ -355,19 +355,6 @@ ExtensionService::ExtensionService(Profile* profile,
   registrar_.Add(this,
                  chrome::NOTIFICATION_PROFILE_DESTRUCTION_STARTED,
                  content::Source<Profile>(profile_));
-#if defined(OS_CHROMEOS)
-  // Sign in profile extension service should observe session start - when the
-  // session is started, the context's process map should be updated to consider
-  // extension scripts to run in lock screen context (as the sign-in profile
-  // will be used to host lock screen apps from that point).
-  // TODO(tbarzic): Consider introducing a profile dedicated to lock screen apps
-  //     so the process map's 'is lock screen context' flag does not have to be
-  //     changed when the user session starts.
-  if (chromeos::ProfileHelper::IsSigninProfile(profile_)) {
-    registrar_.Add(this, chrome::NOTIFICATION_SESSION_STARTED,
-                   content::NotificationService::AllSources());
-  }
-#endif
 
   UpgradeDetector::GetInstance()->AddObserver(this);
 
@@ -465,7 +452,8 @@ void ExtensionService::Init() {
   bool load_saved_extensions = true;
   bool load_command_line_extensions = extensions_enabled_;
 #if defined(OS_CHROMEOS)
-  if (chromeos::ProfileHelper::IsSigninProfile(profile_)) {
+  if (chromeos::ProfileHelper::IsSigninProfile(profile_) ||
+      chromeos::ProfileHelper::IsLockScreenAppProfile(profile_)) {
     load_saved_extensions = false;
     load_command_line_extensions = false;
   }
@@ -2267,20 +2255,6 @@ void ExtensionService::Observe(int type,
       OnProfileDestructionStarted();
       break;
     }
-#if defined(OS_CHROMEOS)
-    case chrome::NOTIFICATION_SESSION_STARTED: {
-      DCHECK(chromeos::ProfileHelper::IsSigninProfile(profile_));
-
-      // When the user session starts, mark the signin context as lock screen
-      // context, as it will be used to host apps on lock screen.
-      extensions::ProcessMap::Get(profile_)->set_is_lock_screen_context(true);
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
-          base::BindOnce(&extensions::InfoMap::SetIsLockScreenContext,
-                         system_->info_map(), true));
-      break;
-    }
-#endif
 
     default:
       NOTREACHED() << "Unexpected notification type.";

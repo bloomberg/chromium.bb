@@ -10,10 +10,14 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string16.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/lock_screen_apps/app_manager_impl.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/common/service_manager_connection.h"
 #include "extensions/browser/app_window/app_window.h"
@@ -44,7 +48,10 @@ StateController* StateController::Get() {
 }
 
 StateController::StateController()
-    : binding_(this), app_window_observer_(this), session_observer_(this) {
+    : binding_(this),
+      app_window_observer_(this),
+      session_observer_(this),
+      weak_ptr_factory_(this) {
   DCHECK(!g_instance);
   DCHECK(IsEnabled());
 
@@ -63,6 +70,13 @@ void StateController::SetTrayActionPtrForTesting(
 
 void StateController::FlushTrayActionForTesting() {
   tray_action_ptr_.FlushForTesting();
+}
+
+void StateController::SetReadyCallbackForTesting(
+    const base::Closure& ready_callback) {
+  DCHECK(ready_callback_.is_null());
+
+  ready_callback_ = ready_callback;
 }
 
 void StateController::SetAppManagerForTesting(
@@ -85,15 +99,49 @@ void StateController::Initialize() {
 }
 
 void StateController::SetPrimaryProfile(Profile* profile) {
+  g_browser_process->profile_manager()->CreateProfileAsync(
+      chromeos::ProfileHelper::GetLockScreenAppProfilePath(),
+      base::Bind(&StateController::OnProfilesReady,
+                 weak_ptr_factory_.GetWeakPtr(), profile),
+      base::string16() /* name */, "" /* icon_url*/,
+      "" /* supervised_user_id */);
+}
+
+void StateController::OnProfilesReady(Profile* primary_profile,
+                                      Profile* lock_screen_profile,
+                                      Profile::CreateStatus status) {
+  // Ignore CREATED status - wait for profile to be initialized before
+  // continuing.
+  if (status == Profile::CREATE_STATUS_CREATED)
+    return;
+
+  // On error, bail out - this will cause the lock screen apps to remain
+  // unavailable on the device.
+  if (status != Profile::CREATE_STATUS_INITIALIZED) {
+    LOG(ERROR) << "Failed to create profile for lock screen apps.";
+    return;
+  }
+
+  DCHECK(!lock_screen_profile_);
+
+  lock_screen_profile_ = lock_screen_profile;
+  lock_screen_profile_->GetPrefs()->SetBoolean(prefs::kForceEphemeralProfiles,
+                                               true);
+
   // App manager might have been set previously by a test.
   if (!app_manager_)
     app_manager_ = base::MakeUnique<AppManagerImpl>();
-  app_manager_->Initialize(
-      profile,
-      chromeos::ProfileHelper::GetSigninProfile()->GetOriginalProfile());
+  app_manager_->Initialize(primary_profile,
+                           lock_screen_profile->GetOriginalProfile());
 
   session_observer_.Add(session_manager::SessionManager::Get());
   OnSessionStateChanged();
+
+  // SessionController is fully initialized at this point.
+  if (!ready_callback_.is_null()) {
+    ready_callback_.Run();
+    ready_callback_.Reset();
+  }
 }
 
 void StateController::AddObserver(StateObserver* observer) {
@@ -154,7 +202,7 @@ extensions::AppWindow* StateController::CreateAppWindowForLockScreenAction(
   if (lock_screen_note_state_ != TrayActionState::kLaunching)
     return nullptr;
 
-  if (!chromeos::ProfileHelper::GetSigninProfile()->IsSameProfile(
+  if (!lock_screen_profile_->IsSameProfile(
           Profile::FromBrowserContext(context))) {
     return nullptr;
   }
@@ -165,8 +213,8 @@ extensions::AppWindow* StateController::CreateAppWindowForLockScreenAction(
   // The ownership of the window is passed to the caller of this method.
   note_app_window_ =
       new extensions::AppWindow(context, app_delegate.release(), extension);
-  app_window_observer_.Add(extensions::AppWindowRegistry::Get(
-      chromeos::ProfileHelper::GetSigninProfile()));
+  app_window_observer_.Add(
+      extensions::AppWindowRegistry::Get(lock_screen_profile_));
   UpdateLockScreenNoteState(TrayActionState::kActive);
   return note_app_window_;
 }

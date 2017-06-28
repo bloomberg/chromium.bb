@@ -208,8 +208,10 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   bool autoupdate_enabled = !profile_->IsGuestSession() &&
                             !profile_->IsSystemProfile();
 #if defined(OS_CHROMEOS)
-  if (!extensions_enabled)
+  if (!extensions_enabled ||
+      chromeos::ProfileHelper::IsLockScreenAppProfile(profile_)) {
     autoupdate_enabled = false;
+  }
 #endif  // defined(OS_CHROMEOS)
   extension_service_.reset(new ExtensionService(
       profile_, base::CommandLine::ForCurrentProcess(),
@@ -232,7 +234,10 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
     if (mode >= ContentVerifierDelegate::BOOTSTRAP)
       content_verifier_->Start();
     info_map()->SetContentVerifier(content_verifier_.get());
-
+#if defined(OS_CHROMEOS)
+    if (chromeos::ProfileHelper::IsLockScreenAppProfile(profile_))
+      info_map()->SetIsLockScreenContext(true);
+#endif
     management_policy_.reset(new ManagementPolicy);
     RegisterManagementPolicyProviders();
   }
@@ -244,9 +249,12 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   bool skip_session_extensions = false;
 #if defined(OS_CHROMEOS)
   // Skip loading session extensions if we are not in a user session or if the
-  // profile is the sign-in profile, which doesn't correspond to a user session.
-  skip_session_extensions = !chromeos::LoginState::Get()->IsUserLoggedIn() ||
-                            chromeos::ProfileHelper::IsSigninProfile(profile_);
+  // profile is the sign-in or lock screen app profile, which don't correspond
+  // to a user session.
+  skip_session_extensions =
+      !chromeos::LoginState::Get()->IsUserLoggedIn() ||
+      chromeos::ProfileHelper::IsSigninProfile(profile_) ||
+      chromeos::ProfileHelper::IsLockScreenAppProfile(profile_);
   if (chrome::IsRunningInForcedAppMode()) {
     extension_service_->component_loader()->
         AddDefaultComponentExtensionsForKioskMode(skip_session_extensions);

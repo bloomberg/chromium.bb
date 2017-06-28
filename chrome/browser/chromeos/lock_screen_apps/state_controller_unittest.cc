@@ -15,6 +15,7 @@
 #include "base/test/scoped_command_line.h"
 #include "chrome/browser/chromeos/lock_screen_apps/app_manager.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_observer.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/ui/apps/chrome_app_delegate.h"
@@ -328,34 +329,32 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
 
     ASSERT_TRUE(lock_screen_apps::StateController::IsEnabled());
 
+    // Create fake lock screen app profile.
+    lock_screen_profile_ = profile_manager_.CreateTestingProfile(
+        chromeos::ProfileHelper::GetLockScreenAppProfileName());
+
+    InitExtensionSystem(profile());
+    InitExtensionSystem(lock_screen_profile());
+
+    std::unique_ptr<TestAppManager> app_manager =
+        base::MakeUnique<TestAppManager>(
+            &profile_, lock_screen_profile_->GetOriginalProfile());
+    app_manager_ = app_manager.get();
+
     state_controller_ = base::MakeUnique<lock_screen_apps::StateController>();
     state_controller_->SetTrayActionPtrForTesting(
         tray_action_.CreateInterfacePtrAndBind());
+    state_controller_->SetAppManagerForTesting(std::move(app_manager));
+    state_controller_->SetReadyCallbackForTesting(ready_waiter_.QuitClosure());
     state_controller_->Initialize();
     state_controller_->FlushTrayActionForTesting();
 
     state_controller_->AddObserver(&observer_);
-
-    // Create fake sign-in profile.
-    TestingProfile::Builder builder;
-    builder.SetPath(
-        profile_manager_.profiles_dir().AppendASCII(chrome::kInitialProfile));
-    signin_profile_ = builder.BuildIncognito(
-        profile_manager_.CreateTestingProfile(chrome::kInitialProfile));
-
-    InitExtensionSystem(profile());
-    InitExtensionSystem(signin_profile());
-
-    std::unique_ptr<TestAppManager> app_manager =
-        base::MakeUnique<TestAppManager>(&profile_,
-                                         signin_profile_->GetOriginalProfile());
-    app_manager_ = app_manager.get();
-    state_controller_->SetAppManagerForTesting(std::move(app_manager));
   }
 
   void TearDown() override {
     extensions::ExtensionSystem::Get(profile())->Shutdown();
-    extensions::ExtensionSystem::Get(signin_profile())->Shutdown();
+    extensions::ExtensionSystem::Get(lock_screen_profile())->Shutdown();
 
     state_controller_->RemoveObserver(&observer_);
     state_controller_.reset();
@@ -402,17 +401,22 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
     tray_action_.ClearObservedStates();
   }
 
+  void SetPrimaryProfileAndWaitUntilReady() {
+    state_controller_->SetPrimaryProfile(&profile_);
+    ready_waiter_.Run();
+  }
+
   // Helper method to move state controller to the specified state.
   // Should be called at the begining of tests, at most once.
   bool InitializeNoteTakingApp(TrayActionState target_state,
                                bool enable_app_launch) {
     app_ = CreateTestNoteTakingApp(kTestAppId);
-    extensions::ExtensionSystem::Get(signin_profile())
+    extensions::ExtensionSystem::Get(lock_screen_profile())
         ->extension_service()
         ->AddExtension(app_.get());
 
     app_manager_->SetInitialAppState(kTestAppId, enable_app_launch);
-    state_controller_->SetPrimaryProfile(&profile_);
+    SetPrimaryProfileAndWaitUntilReady();
 
     if (target_state == TrayActionState::kNotAvailable)
       return true;
@@ -446,7 +450,7 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
     if (target_state == TrayActionState::kLaunching)
       return true;
 
-    app_window_ = CreateNoteTakingWindow(signin_profile(), app());
+    app_window_ = CreateNoteTakingWindow(lock_screen_profile(), app());
     if (!app_window_->window()) {
       ADD_FAILURE() << "Not allowed to create app window.";
       return false;
@@ -461,7 +465,7 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
   }
 
   TestingProfile* profile() { return &profile_; }
-  TestingProfile* signin_profile() { return signin_profile_; }
+  TestingProfile* lock_screen_profile() { return lock_screen_profile_; }
 
   session_manager::SessionManager* session_manager() {
     return session_manager_.get();
@@ -484,7 +488,16 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
   std::unique_ptr<base::test::ScopedCommandLine> command_line_;
   TestingProfileManager profile_manager_;
   TestingProfile profile_;
-  TestingProfile* signin_profile_ = nullptr;
+  TestingProfile* lock_screen_profile_ = nullptr;
+
+  // Run loop used to throttle test until async state controller initialization
+  // is fully complete. The quit closure for this run loop will be passed to
+  // |state_controller_| as the callback to be run when the state controller is
+  // ready for action.
+  // NOTE: Tests should call |state_controller_->SetPrimaryProfile(Profile*)|
+  // before running the loop, as that is the method that starts the state
+  // controller.
+  base::RunLoop ready_waiter_;
 
   std::unique_ptr<session_manager::SessionManager> session_manager_;
 
@@ -522,7 +535,7 @@ TEST_F(LockScreenAppStateTest, InitialState) {
 
 TEST_F(LockScreenAppStateTest, SetPrimaryProfile) {
   EXPECT_EQ(TestAppManager::State::kNotInitialized, app_manager()->state());
-  state_controller()->SetPrimaryProfile(profile());
+  SetPrimaryProfileAndWaitUntilReady();
 
   EXPECT_EQ(TestAppManager::State::kStopped, app_manager()->state());
   EXPECT_EQ(TrayActionState::kNotAvailable,
@@ -538,7 +551,7 @@ TEST_F(LockScreenAppStateTest, SetPrimaryProfileWhenSessionLocked) {
   EXPECT_EQ(TestAppManager::State::kNotInitialized, app_manager()->state());
 
   app_manager()->SetInitialAppState(kTestAppId, true);
-  state_controller()->SetPrimaryProfile(profile());
+  SetPrimaryProfileAndWaitUntilReady();
 
   ASSERT_EQ(TestAppManager::State::kStarted, app_manager()->state());
 
@@ -550,7 +563,7 @@ TEST_F(LockScreenAppStateTest, SetPrimaryProfileWhenSessionLocked) {
 
 TEST_F(LockScreenAppStateTest, SessionLock) {
   app_manager()->SetInitialAppState(kTestAppId, true);
-  state_controller()->SetPrimaryProfile(profile());
+  SetPrimaryProfileAndWaitUntilReady();
   ASSERT_EQ(TestAppManager::State::kStopped, app_manager()->state());
 
   session_manager()->SetSessionState(session_manager::SessionState::LOCKED);
@@ -584,7 +597,7 @@ TEST_F(LockScreenAppStateTest, SessionLock) {
 }
 
 TEST_F(LockScreenAppStateTest, SessionUnlockedWhileStartingAppManager) {
-  state_controller()->SetPrimaryProfile(profile());
+  SetPrimaryProfileAndWaitUntilReady();
   ASSERT_EQ(TestAppManager::State::kStopped, app_manager()->state());
 
   session_manager()->SetSessionState(session_manager::SessionState::LOCKED);
@@ -612,7 +625,7 @@ TEST_F(LockScreenAppStateTest, SessionUnlockedWhileStartingAppManager) {
 }
 
 TEST_F(LockScreenAppStateTest, AppManagerNoApp) {
-  state_controller()->SetPrimaryProfile(profile());
+  SetPrimaryProfileAndWaitUntilReady();
   ASSERT_EQ(TestAppManager::State::kStopped, app_manager()->state());
 
   session_manager()->SetSessionState(session_manager::SessionState::LOCKED);
@@ -646,7 +659,7 @@ TEST_F(LockScreenAppStateTest, AppManagerNoApp) {
 }
 
 TEST_F(LockScreenAppStateTest, AppAvailabilityChanges) {
-  state_controller()->SetPrimaryProfile(profile());
+  SetPrimaryProfileAndWaitUntilReady();
   ASSERT_EQ(TestAppManager::State::kStopped, app_manager()->state());
 
   app_manager()->SetInitialAppState(kTestAppId, false);
@@ -784,7 +797,7 @@ TEST_F(LockScreenAppStateTest, AppWindowRegistration) {
                                       true /* enable_app_launch */));
 
   std::unique_ptr<TestAppWindow> app_window =
-      CreateNoteTakingWindow(signin_profile(), app());
+      CreateNoteTakingWindow(lock_screen_profile(), app());
   EXPECT_FALSE(app_window->window());
 
   tray_action()->SendNewNoteRequest();
@@ -800,10 +813,11 @@ TEST_F(LockScreenAppStateTest, AppWindowRegistration) {
   EXPECT_FALSE(non_eligible_app_window->window());
 
   EXPECT_FALSE(state_controller()->CreateAppWindowForLockScreenAction(
-      signin_profile(), app(), extensions::api::app_runtime::ACTION_TYPE_NONE,
+      lock_screen_profile(), app(),
+      extensions::api::app_runtime::ACTION_TYPE_NONE,
       base::MakeUnique<ChromeAppDelegate>(true)));
 
-  app_window = CreateNoteTakingWindow(signin_profile(), app());
+  app_window = CreateNoteTakingWindow(lock_screen_profile(), app());
   ASSERT_TRUE(app_window->window());
 
   app_window->Initialize(true /* shown */);
@@ -812,7 +826,7 @@ TEST_F(LockScreenAppStateTest, AppWindowRegistration) {
 
   // Test that second app window cannot be registered.
   std::unique_ptr<TestAppWindow> second_app_window =
-      CreateNoteTakingWindow(signin_profile(), app());
+      CreateNoteTakingWindow(lock_screen_profile(), app());
   EXPECT_FALSE(second_app_window->window());
 
   // Test the app window does not get closed by itself.
@@ -837,7 +851,7 @@ TEST_F(LockScreenAppStateTest, AppWindowClosedBeforeBeingShown) {
                                       true /* enable_app_launch */));
 
   std::unique_ptr<TestAppWindow> app_window =
-      CreateNoteTakingWindow(signin_profile(), app());
+      CreateNoteTakingWindow(lock_screen_profile(), app());
   ASSERT_TRUE(app_window->window());
   app_window->Initialize(false /* shown */);
 
@@ -862,7 +876,7 @@ TEST_F(LockScreenAppStateTest, AppWindowClosedOnAppUnload) {
   ASSERT_TRUE(InitializeNoteTakingApp(TrayActionState::kActive,
                                       true /* enable_app_launch */));
 
-  extensions::ExtensionSystem::Get(signin_profile())
+  extensions::ExtensionSystem::Get(lock_screen_profile())
       ->extension_service()
       ->UnloadExtension(app()->id(),
                         extensions::UnloadedExtensionReason::UNINSTALL);
@@ -881,7 +895,7 @@ TEST_F(LockScreenAppStateTest, AppWindowClosedOnNoteTakingAppChange) {
 
   scoped_refptr<extensions::Extension> secondary_app =
       CreateTestNoteTakingApp(kSecondaryTestAppId);
-  extensions::ExtensionSystem::Get(signin_profile())
+  extensions::ExtensionSystem::Get(lock_screen_profile())
       ->extension_service()
       ->AddExtension(secondary_app.get());
 
@@ -897,13 +911,13 @@ TEST_F(LockScreenAppStateTest, AppWindowClosedOnNoteTakingAppChange) {
   state_controller()->FlushTrayActionForTesting();
 
   std::unique_ptr<TestAppWindow> app_window =
-      CreateNoteTakingWindow(signin_profile(), app());
+      CreateNoteTakingWindow(lock_screen_profile(), app());
   EXPECT_FALSE(app_window->window());
   ASSERT_EQ(TrayActionState::kLaunching,
             state_controller()->GetLockScreenNoteState());
 
   std::unique_ptr<TestAppWindow> secondary_app_window =
-      CreateNoteTakingWindow(signin_profile(), secondary_app.get());
+      CreateNoteTakingWindow(lock_screen_profile(), secondary_app.get());
   ASSERT_TRUE(secondary_app_window->window());
 
   secondary_app_window->Initialize(true /* shown*/);
@@ -914,7 +928,7 @@ TEST_F(LockScreenAppStateTest, AppWindowClosedOnNoteTakingAppChange) {
   EXPECT_FALSE(secondary_app_window->closed());
 
   // Uninstall the app and test the secondary app window is closed.
-  extensions::ExtensionSystem::Get(signin_profile())
+  extensions::ExtensionSystem::Get(lock_screen_profile())
       ->extension_service()
       ->UnloadExtension(secondary_app->id(),
                         extensions::UnloadedExtensionReason::UNINSTALL);

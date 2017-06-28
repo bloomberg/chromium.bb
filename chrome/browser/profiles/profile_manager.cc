@@ -1211,6 +1211,11 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
       chromeos::ProfileHelper::IsSigninProfile(profile)) {
     extensions_enabled = true;
   }
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableLockScreenApps) &&
+      chromeos::ProfileHelper::IsLockScreenAppProfile(profile)) {
+    extensions_enabled = true;
+  }
 #endif
   extensions::ExtensionSystem::Get(profile)->InitForRegularProfile(
       extensions_enabled);
@@ -1609,8 +1614,10 @@ void ProfileManager::SetNonPersonalProfilePrefs(Profile* profile) {
 
 bool ProfileManager::ShouldGoOffTheRecord(Profile* profile) {
 #if defined(OS_CHROMEOS)
-  if (chromeos::ProfileHelper::IsSigninProfile(profile))
+  if (chromeos::ProfileHelper::IsSigninProfile(profile) ||
+      chromeos::ProfileHelper::IsLockScreenAppProfile(profile)) {
     return true;
+  }
 #endif
   return profile->IsGuestSession() || profile->IsSystemProfile();
 }

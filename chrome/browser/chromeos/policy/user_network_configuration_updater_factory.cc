@@ -60,9 +60,12 @@ bool UserNetworkConfigurationUpdaterFactory::ServiceIsNULLWhileTesting() const {
 
 KeyedService* UserNetworkConfigurationUpdaterFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
+  // On the login/lock screen only device network policies apply.
   Profile* profile = Profile::FromBrowserContext(context);
-  if (chromeos::ProfileHelper::IsSigninProfile(profile))
-    return NULL;  // On the login screen only device network policies apply.
+  if (chromeos::ProfileHelper::IsSigninProfile(profile) ||
+      chromeos::ProfileHelper::IsLockScreenAppProfile(profile)) {
+    return nullptr;
+  }
 
   const user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
@@ -70,7 +73,7 @@ KeyedService* UserNetworkConfigurationUpdaterFactory::BuildServiceInstanceFor(
   // Currently, only the network policy of the primary user is supported. See
   // also http://crbug.com/310685 .
   if (user != user_manager::UserManager::Get()->GetPrimaryUser())
-    return NULL;
+    return nullptr;
 
   ProfilePolicyConnector* profile_connector =
       ProfilePolicyConnectorFactory::GetForBrowserContext(context);
