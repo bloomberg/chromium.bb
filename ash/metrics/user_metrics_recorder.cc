@@ -467,12 +467,6 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
     case UMA_STATUS_AREA_ENABLE_WIFI:
       RecordAction(UserMetricsAction("StatusArea_Network_WifiEnabled"));
       break;
-    case UMA_STATUS_AREA_IME_SHOW_DETAILED:
-      RecordAction(UserMetricsAction("StatusArea_IME_Detailed"));
-      break;
-    case UMA_STATUS_AREA_IME_SWITCH_MODE:
-      RecordAction(UserMetricsAction("StatusArea_IME_SwitchMode"));
-      break;
     case UMA_STATUS_AREA_MENU_OPENED:
       RecordAction(UserMetricsAction("StatusArea_MenuOpened"));
       break;

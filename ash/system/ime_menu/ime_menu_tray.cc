@@ -8,7 +8,6 @@
 #include "ash/accessibility_delegate.h"
 #include "ash/ash_constants.h"
 #include "ash/ime/ime_controller.h"
-#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
@@ -24,6 +23,7 @@
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tray_utils.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/session_manager/session_manager_types.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
@@ -57,8 +57,7 @@ gfx::Range GetImeListViewRange() {
 
 // Shows language and input settings page.
 void ShowIMESettings() {
-  Shell::Get()->metrics()->RecordUserMetricsAction(
-      UMA_STATUS_AREA_IME_SHOW_DETAILED);
+  base::RecordAction(base::UserMetricsAction("StatusArea_IME_Detailed"));
   Shell::Get()->system_tray_controller()->ShowIMESettings();
 }
 
