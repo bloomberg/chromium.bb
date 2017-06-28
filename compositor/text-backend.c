@@ -680,9 +680,7 @@ input_method_context_grab_keyboard(struct wl_client *client,
 
 	context->keyboard = cr;
 
-	wl_keyboard_send_keymap(cr, WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1,
-				keyboard->xkb_info->keymap_fd,
-				keyboard->xkb_info->keymap_size);
+	weston_keyboard_send_keymap(keyboard, cr);
 
 	if (keyboard->grab != &keyboard->default_grab) {
 		weston_keyboard_end_grab(keyboard);

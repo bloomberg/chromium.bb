@@ -2186,6 +2186,10 @@ void
 weston_seat_set_keyboard_focus(struct weston_seat *seat,
 			       struct weston_surface *surface);
 
+void
+weston_keyboard_send_keymap(struct weston_keyboard *kbd,
+			    struct wl_resource *resource);
+
 int
 weston_compositor_load_xwayland(struct weston_compositor *compositor);
 
