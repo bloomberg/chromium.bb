@@ -52,6 +52,11 @@ IN_PROC_BROWSER_TEST_F(InterstitialUITest, SSLInterstitial) {
       "Privacy error");
 }
 
+IN_PROC_BROWSER_TEST_F(InterstitialUITest, PinnedCertInterstitial) {
+  TestInterstitial(GURL("chrome://interstitials/ssl?type=hpkp_failure"),
+                   "Privacy error");
+}
+
 IN_PROC_BROWSER_TEST_F(InterstitialUITest, MalwareInterstitial) {
   TestInterstitial(
       GURL("chrome://interstitials/safebrowsing?type=malware"),
