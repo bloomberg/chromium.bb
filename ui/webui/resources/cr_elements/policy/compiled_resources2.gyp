@@ -37,7 +37,7 @@
     {
       'target_name': 'cr_policy_network_behavior',
       'dependencies': [
-        '../network/compiled_resources2.gyp:cr_onc_types',
+        '../chromeos/network/compiled_resources2.gyp:cr_onc_types',
         'cr_policy_indicator_behavior',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
@@ -45,7 +45,7 @@
     {
       'target_name': 'cr_policy_network_indicator',
       'dependencies': [
-        '../network/compiled_resources2.gyp:cr_onc_types',
+        '../chromeos/network/compiled_resources2.gyp:cr_onc_types',
         'cr_policy_indicator_behavior',
         'cr_policy_network_behavior',
       ],

@@ -6,8 +6,8 @@
     {
       'target_name': 'network_ui',
       'dependencies': [
-        '<(DEPTH)/ui/webui/resources/cr_elements/network/compiled_resources2.gyp:cr_network_icon_externs',
-        '<(DEPTH)/ui/webui/resources/cr_elements/network/compiled_resources2.gyp:cr_onc_types',
+        '<(DEPTH)/ui/webui/resources/cr_elements/chromeos/network/compiled_resources2.gyp:cr_network_icon_externs',
+        '<(DEPTH)/ui/webui/resources/cr_elements/chromeos/network/compiled_resources2.gyp:cr_onc_types',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:util',
         '<(EXTERNS_GYP):networking_private',
