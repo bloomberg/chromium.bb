@@ -29,10 +29,10 @@ void RecordDelayedTaskLateness(base::TimeDelta lateness) {
                       lateness);
 }
 
-void RecordImmediateTaskQueueingDuration(tracked_objects::Duration duration) {
+void RecordImmediateTaskQueueingDuration(base::TimeDelta duration) {
   UMA_HISTOGRAM_TIMES(
       "RendererScheduler.TaskQueueManager.ImmediateTaskQueueingDuration",
-      base::TimeDelta::FromMilliseconds(duration.InMilliseconds()));
+      duration);
 }
 
 double MonotonicTimeInSeconds(base::TimeTicks time_ticks) {
@@ -564,7 +564,7 @@ void TaskQueueManager::MaybeRecordTaskDelayHistograms(
     RecordDelayedTaskLateness(delegate_->NowTicks() -
                               pending_task.delayed_run_time);
   } else if (!pending_task.time_posted.is_null()) {
-    RecordImmediateTaskQueueingDuration(tracked_objects::TrackedTime::Now() -
+    RecordImmediateTaskQueueingDuration(base::TimeTicks::Now() -
                                         pending_task.time_posted);
   }
 }
