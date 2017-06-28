@@ -12,8 +12,8 @@
     RuntimeEnabled=CSSTypedOM,
     RaisesException=Constructor
 ] interface CSSRotation : CSSTransformComponent {
-    readonly attribute CSSNumericValue angle;
-    readonly attribute double x;
-    readonly attribute double y;
-    readonly attribute double z;
+    [RaisesException=Setter] attribute CSSNumericValue angle;
+    attribute double x;
+    attribute double y;
+    attribute double z;
 };

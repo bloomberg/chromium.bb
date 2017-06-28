@@ -38,6 +38,10 @@ CONSOLE MESSAGE: line 147:     getter x
 CONSOLE MESSAGE: line 147:     getter y
 CONSOLE MESSAGE: line 147:     getter z
 CONSOLE MESSAGE: line 147:     method constructor
+CONSOLE MESSAGE: line 147:     setter angle
+CONSOLE MESSAGE: line 147:     setter x
+CONSOLE MESSAGE: line 147:     setter y
+CONSOLE MESSAGE: line 147:     setter z
 CONSOLE MESSAGE: line 147: interface CSSScale : CSSTransformComponent
 CONSOLE MESSAGE: line 147:     getter x
 CONSOLE MESSAGE: line 147:     getter y
