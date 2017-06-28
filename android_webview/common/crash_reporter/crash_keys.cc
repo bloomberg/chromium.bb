@@ -53,10 +53,6 @@ size_t RegisterWebViewCrashKeys() {
       {gpu::crash_keys::kGPUVertexShaderVersion, kSmallSize},
       {gpu::crash_keys::kGPUVendor, kSmallSize},
       {gpu::crash_keys::kGPURenderer, kSmallSize},
-      // Temporary for https://crbug.com/729483.
-      // TODO(sunnyps): Remove after https://crbug.com/729483 is fixed.
-      {gpu::crash_keys::kGpuChannelFilterTrace, kMediumSize},
-      {gpu::crash_keys::kMediaGpuChannelFilterTrace, kMediumSize},
 
       // content/:
       {"bad_message_reason", kSmallSize},

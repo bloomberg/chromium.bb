@@ -111,10 +111,6 @@ size_t RegisterCrashKeysHelper() {
       {gpu::crash_keys::kGPUDriverVersion, kSmallSize},
       {gpu::crash_keys::kGPUPixelShaderVersion, kSmallSize},
       {gpu::crash_keys::kGPUVertexShaderVersion, kSmallSize},
-      // Temporary for https://crbug.com/729483.
-      // TODO(sunnyps): Remove after https://crbug.com/729483 is fixed.
-      {gpu::crash_keys::kGpuChannelFilterTrace, kMediumSize},
-      {gpu::crash_keys::kMediaGpuChannelFilterTrace, kMediumSize},
 
       // browser/:
       {kThirdPartyModulesLoaded, kSmallSize},

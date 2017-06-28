@@ -74,7 +74,6 @@ target(link_target_type, "ipc_service_sources") {
     "//gpu/command_buffer/common:common_sources",
     "//gpu/command_buffer/service:service_sources",
     "//gpu/config:config_sources",
-    "//gpu/config:crash_keys",
     "//gpu/ipc/common:ipc_common_sources",
   ]
   libs = []
