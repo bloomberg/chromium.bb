@@ -10,6 +10,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -171,10 +172,8 @@ TEST_F(AccountChooserViewControllerTest, ForwardsAvatarFetchToManager) {
   local_forms.push_back(std::move(form));
   SetUpAccountChooser(&local_forms);
   EXPECT_FALSE(avatar_manager().fetchedAvatars.empty());
-  EXPECT_TRUE(std::find(avatar_manager().fetchedAvatars.begin(),
-                        avatar_manager().fetchedAvatars.end(),
-                        GURL("http://foo.com")) !=
-              avatar_manager().fetchedAvatars.end());
+  EXPECT_TRUE(base::ContainsValue(avatar_manager().fetchedAvatars,
+                                  GURL("http://foo.com")));
 }
 
 TEST_F(AccountChooserViewControllerTest,

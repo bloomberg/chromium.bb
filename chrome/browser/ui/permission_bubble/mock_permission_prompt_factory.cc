@@ -67,8 +67,7 @@ int MockPermissionPromptFactory::TotalRequestCount() {
 }
 
 bool MockPermissionPromptFactory::RequestTypeSeen(PermissionRequestType type) {
-  return std::find(request_types_seen_.begin(), request_types_seen_.end(),
-                   type) != request_types_seen_.end();
+  return base::ContainsValue(request_types_seen_, type);
 }
 
 void MockPermissionPromptFactory::WaitForPermissionBubble() {

@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -221,8 +222,7 @@ void FingerprintHandler::HandleStartEnroll(const base::ListValue* args) {
     std::string fingerprint_name = l10n_util::GetStringFUTF8(
         IDS_SETTINGS_PEOPLE_LOCK_SCREEN_NEW_FINGERPRINT_DEFAULT_NAME,
         base::IntToString16(i));
-    if (std::find(fingerprints_labels_.begin(), fingerprints_labels_.end(),
-                  fingerprint_name) == fingerprints_labels_.end()) {
+    if (!base::ContainsValue(fingerprints_labels_, fingerprint_name)) {
       fp_service_->StartEnrollSession(user_id_, fingerprint_name);
       break;
     }

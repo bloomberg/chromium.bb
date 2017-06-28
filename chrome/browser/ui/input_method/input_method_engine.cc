@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/input_method/input_method_engine.h"
+#include "base/stl_util.h"
 
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -268,16 +269,14 @@ bool InputMethodEngine::IsValidKeyForAllPages(ui::KeyEvent* ui_event) {
                                                            ui::VKEY_RETURN};
   if (ui_event->GetDomKey().IsCharacter() && !ui_event->IsControlDown() &&
       !ui_event->IsCommandDown()) {
-    return std::find(invalid_character_keycodes.begin(),
-                     invalid_character_keycodes.end(),
-                     ui_event->key_code()) == invalid_character_keycodes.end();
+    return !base::ContainsValue(invalid_character_keycodes,
+                                ui_event->key_code());
   }
 
   // Whitelists Backspace key and arrow keys.
   std::vector<ui::KeyboardCode> whitelist_keycodes{
       ui::VKEY_BACK, ui::VKEY_LEFT, ui::VKEY_RIGHT, ui::VKEY_UP, ui::VKEY_DOWN};
-  return std::find(whitelist_keycodes.begin(), whitelist_keycodes.end(),
-                   ui_event->key_code()) != whitelist_keycodes.end();
+  return base::ContainsValue(whitelist_keycodes, ui_event->key_code());
 }
 
 }  // namespace input_method

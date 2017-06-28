@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/aura/accessibility/ax_root_obj_wrapper.h"
 
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/channel_info.h"
-#include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/window.h"
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
@@ -37,7 +37,7 @@ views::AXAuraObjWrapper* AXRootObjWrapper::GetAlertForText(
 bool AXRootObjWrapper::HasChild(views::AXAuraObjWrapper* child) {
   std::vector<views::AXAuraObjWrapper*> children;
   GetChildren(&children);
-  return std::find(children.begin(), children.end(), child) != children.end();
+  return base::ContainsValue(children, child);
 }
 
 views::AXAuraObjWrapper* AXRootObjWrapper::GetParent() {

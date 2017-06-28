@@ -12,6 +12,7 @@
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
@@ -247,7 +248,7 @@ void TabDragController::Init(
     MoveBehavior move_behavior,
     EventSource event_source) {
   DCHECK(!tabs.empty());
-  DCHECK(std::find(tabs.begin(), tabs.end(), source_tab) != tabs.end());
+  DCHECK(base::ContainsValue(tabs, source_tab));
   source_tabstrip_ = source_tabstrip;
   was_source_maximized_ = source_tabstrip->GetWidget()->IsMaximized();
   was_source_fullscreen_ = source_tabstrip->GetWidget()->IsFullscreen();

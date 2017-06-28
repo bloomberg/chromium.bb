@@ -874,7 +874,7 @@ void TabStrip::MaybeStartDrag(
     }
   }
   DCHECK(!tabs.empty());
-  DCHECK(std::find(tabs.begin(), tabs.end(), tab) != tabs.end());
+  DCHECK(base::ContainsValue(tabs, tab));
   ui::ListSelectionModel selection_model;
   if (!original_selection.IsSelected(model_index))
     selection_model.Copy(original_selection);
