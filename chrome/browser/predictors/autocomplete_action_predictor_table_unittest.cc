@@ -4,24 +4,25 @@
 
 #include <stddef.h>
 
-#include <memory>
 #include <vector>
 
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_table.h"
 #include "chrome/browser/predictors/predictor_database.h"
 #include "chrome/browser/predictors/predictor_database_factory.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "content/public/test/test_utils.h"
 #include "sql/statement.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;
 using base::TimeDelta;
+using content::BrowserThread;
 using predictors::AutocompleteActionPredictorTable;
 
 namespace predictors {
@@ -44,6 +45,7 @@ class AutocompleteActionPredictorTableTest : public testing::Test {
   TestingProfile* profile() { return &profile_; }
 
  protected:
+
   // Test functions that can be run against this text fixture or
   // AutocompleteActionPredictorTableReopenTest that inherits from this.
   void TestGetRow();
@@ -77,9 +79,8 @@ AutocompleteActionPredictorTableTest::~AutocompleteActionPredictorTableTest() {
 }
 
 void AutocompleteActionPredictorTableTest::SetUp() {
-  db_ = base::MakeUnique<PredictorDatabase>(
-      &profile_, base::SequencedTaskRunnerHandle::Get());
-  content::RunAllBlockingPoolTasksUntilIdle();
+  db_.reset(new PredictorDatabase(&profile_));
+  base::RunLoop().RunUntilIdle();
 
   test_db_.push_back(AutocompleteActionPredictorTable::Row(
       "BD85DBA2-8C29-49F9-84AE-48E1E90880DF",
@@ -96,8 +97,8 @@ void AutocompleteActionPredictorTableTest::SetUp() {
 }
 
 void AutocompleteActionPredictorTableTest::TearDown() {
-  db_ = nullptr;
-  content::RunAllBlockingPoolTasksUntilIdle();
+  db_.reset(NULL);
+  base::RunLoop().RunUntilIdle();
   test_db_.clear();
 }
 

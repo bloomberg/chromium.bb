@@ -9,10 +9,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/cancellation_flag.h"
 
-namespace base {
-class SequencedTaskRunner;
-}
-
 namespace sql {
 class Connection;
 }
@@ -22,20 +18,14 @@ namespace predictors {
 // Base class for all tables in the PredictorDatabase.
 //
 // Refcounted as it is created and destroyed in the UI thread but all database
-// related functions need to happen in the database sequence. The task runner
-// for this sequence is provided by the client to the constructor of this class.
+// related functions need to happen in the database thread.
 class PredictorTableBase
     : public base::RefCountedThreadSafe<PredictorTableBase> {
- public:
-  // Returns a SequencedTaskRunner that is used to run tasks on the DB sequence.
-  base::SequencedTaskRunner* GetTaskRunner();
-
  protected:
-  explicit PredictorTableBase(
-      scoped_refptr<base::SequencedTaskRunner> db_task_runner);
+  PredictorTableBase();
   virtual ~PredictorTableBase();
 
-  // DB sequence functions.
+  // DB thread functions.
   virtual void CreateTableIfNonExistent() = 0;
   virtual void LogDatabaseStats() = 0;
   void Initialize(sql::Connection* db);
@@ -50,7 +40,6 @@ class PredictorTableBase
 
   friend class base::RefCountedThreadSafe<PredictorTableBase>;
 
-  scoped_refptr<base::SequencedTaskRunner> db_task_runner_;
   sql::Connection* db_;
 
   DISALLOW_COPY_AND_ASSIGN(PredictorTableBase);
