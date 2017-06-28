@@ -19,6 +19,8 @@ cr.define('bookmarks', function() {
     this.queuedActions_ = [];
     /** @type {!Array<!StoreObserver>} */
     this.observers_ = [];
+    /** @private {boolean} */
+    this.batchMode_ = false;
   }
 
   Store.prototype = {
@@ -55,6 +57,25 @@ cr.define('bookmarks', function() {
     removeObserver: function(observer) {
       var index = this.observers_.indexOf(observer);
       this.observers_.splice(index, 1);
+    },
+
+    /**
+     * Begin a batch update to store data, which will disable updates to the
+     * UI until `endBatchUpdate` is called. This is useful when a single UI
+     * operation is likely to cause many sequential model updates (eg, deleting
+     * 100 bookmarks).
+     */
+    beginBatchUpdate: function() {
+      this.batchMode_ = true;
+    },
+
+    /**
+     * End a batch update to the store data, notifying the UI of any changes
+     * which occurred while batch mode was enabled.
+     */
+    endBatchUpdate: function() {
+      this.batchMode_ = false;
+      this.notifyObservers_(this.data);
     },
 
     /**
@@ -104,7 +125,7 @@ cr.define('bookmarks', function() {
       this.data_ = bookmarks.reduceAction(this.data_, action);
       // Batch notifications until after all initialization queuedActions are
       // resolved.
-      if (this.isInitialized())
+      if (this.isInitialized() && !this.batchMode_)
         this.notifyObservers_(this.data_);
     },
 

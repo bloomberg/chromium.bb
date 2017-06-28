@@ -2,6 +2,46 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+suite('bookmarks.Store', function() {
+  var store;
+
+  setup(function() {
+    store = new bookmarks.TestStore({
+      nodes: testTree(createFolder(
+          '1',
+          [
+            createItem('11'),
+            createItem('12'),
+            createItem('13'),
+          ])),
+    });
+    store.setReducersEnabled(true);
+    store.replaceSingleton();
+  });
+
+  test('batch mode disables updates', function() {
+    var lastStateChange = null;
+    var observer = {
+      onStateChanged: function(state) {
+        lastStateChange = state;
+      },
+    };
+
+    store.addObserver(observer);
+    store.beginBatchUpdate();
+
+    store.dispatch(
+        bookmarks.actions.removeBookmark('11', '1', 0, store.data.nodes));
+    assertEquals(null, lastStateChange);
+    store.dispatch(
+        bookmarks.actions.removeBookmark('12', '1', 0, store.data.nodes));
+    assertEquals(null, lastStateChange);
+
+    store.endBatchUpdate();
+    assertDeepEquals(['13'], lastStateChange.nodes['1'].children);
+  });
+});
+
 suite('bookmarks.StoreClient', function() {
   var store;
   var client;

@@ -8,6 +8,27 @@
  */
 
 cr.define('bookmarks.ApiListener', function() {
+
+  /** @type {?number} */
+  var timerHandle;
+
+  /**
+   * Batches UI updates so that no changes will be made to UI until the next
+   * task after the last call to this method. This is useful for listeners which
+   * can be called in a tight loop by UI actions.
+   */
+  function batchUIUpdates() {
+    if (timerHandle)
+      clearTimeout(timerHandle);
+    else
+      bookmarks.Store.getInstance().beginBatchUpdate();
+
+    timerHandle = setTimeout(function() {
+      bookmarks.Store.getInstance().endBatchUpdate();
+      timerHandle = null;
+    });
+  }
+
   /** @param {Action} action */
   function dispatch(action) {
     bookmarks.Store.getInstance().dispatch(action);
@@ -26,6 +47,7 @@ cr.define('bookmarks.ApiListener', function() {
    * @param {BookmarkTreeNode} treeNode
    */
   function onBookmarkCreated(id, treeNode) {
+    batchUIUpdates();
     dispatch(bookmarks.actions.createBookmark(id, treeNode));
   }
 
@@ -34,6 +56,7 @@ cr.define('bookmarks.ApiListener', function() {
    * @param {{parentId: string, index: number}} removeInfo
    */
   function onBookmarkRemoved(id, removeInfo) {
+    batchUIUpdates();
     var nodes = bookmarks.Store.getInstance().data.nodes;
     dispatch(bookmarks.actions.removeBookmark(
         id, removeInfo.parentId, removeInfo.index, nodes));
@@ -49,6 +72,7 @@ cr.define('bookmarks.ApiListener', function() {
    * }} moveInfo
    */
   function onBookmarkMoved(id, moveInfo) {
+    batchUIUpdates();
     dispatch(bookmarks.actions.moveBookmark(
         id, moveInfo.parentId, moveInfo.index, moveInfo.oldParentId,
         moveInfo.oldIndex));
