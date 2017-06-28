@@ -129,6 +129,11 @@ class ContentSubresourceFilterThrottleManager
 
   void OnDocumentLoadStatistics(const DocumentLoadStatistics& statistics);
 
+  // The navigation handle ptr will be in an invalid state, do not access any
+  // members on it. This method is only for debugging crbug.com/736249.
+  void OnActivationThrottleDestroyed(
+      content::NavigationHandle* navigation_handle);
+
   // For each RenderFrameHost where the last committed load has subresource
   // filtering activated, owns the corresponding AsyncDocumentSubresourceFilter.
   std::unordered_map<content::RenderFrameHost*,

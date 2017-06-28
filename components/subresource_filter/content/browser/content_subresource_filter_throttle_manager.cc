@@ -211,11 +211,15 @@ void ContentSubresourceFilterThrottleManager::MaybeAppendNavigationThrottles(
           MaybeCreateSubframeNavigationFilteringThrottle(navigation_handle)) {
     throttles->push_back(std::move(filtering_throttle));
   }
+
+  CHECK(!base::ContainsKey(ongoing_activation_throttles_, navigation_handle));
   if (auto activation_throttle =
           MaybeCreateActivationStateComputingThrottle(navigation_handle)) {
-    CHECK(!base::ContainsKey(ongoing_activation_throttles_, navigation_handle));
     ongoing_activation_throttles_[navigation_handle] =
         activation_throttle.get();
+    activation_throttle->set_destruction_closure(base::BindOnce(
+        &ContentSubresourceFilterThrottleManager::OnActivationThrottleDestroyed,
+        weak_ptr_factory_.GetWeakPtr(), base::Unretained(navigation_handle)));
     throttles->push_back(std::move(activation_throttle));
   }
 }
@@ -316,6 +320,12 @@ void ContentSubresourceFilterThrottleManager::OnDocumentLoadStatistics(
     const DocumentLoadStatistics& statistics) {
   if (statistics_)
     statistics_->OnDocumentLoadStatistics(statistics);
+}
+
+void ContentSubresourceFilterThrottleManager::OnActivationThrottleDestroyed(
+    content::NavigationHandle* navigation_handle) {
+  size_t num_erased = ongoing_activation_throttles_.erase(navigation_handle);
+  CHECK_EQ(0u, num_erased);
 }
 
 }  // namespace subresource_filter
