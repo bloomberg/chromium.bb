@@ -43,7 +43,7 @@ function renderTemplate(moduleListData) {
  * should reply to returnModuleList() (below).
  */
 function requestModuleListData() {
-  chrome.send('requestModuleList');
+  cr.sendWithPromise('requestModuleList').then(returnModuleList);
 }
 
 /**

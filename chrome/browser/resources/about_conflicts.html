@@ -36,13 +36,13 @@ html[dir=rtl] #header {
 h1 {
   font-size: 156%;
   font-weight: bold;
-  padding: 0;
   margin: 0;
+  padding: 0;
 }
 
 #blurb-container {
-  padding-bottom: 1.5em;
   font-size: 120%;
+  padding-bottom: 1.5em;
 }
 
 div.content {
@@ -51,11 +51,11 @@ div.content {
 }
 
 .section-header {
-  background: #ebeff9;
-  border-top: 1px solid #b5c7de;
+  -webkit-padding-start: 5px;
+  background: rgb(235, 239, 249);
+  border-top: 1px solid rgb(181, 199, 222);
   font-size: 99%;
   padding-bottom: 2px;
-  -webkit-padding-start: 5px;
   padding-top: 3px;
   width: 100%;
 }
@@ -73,14 +73,14 @@ div.content {
 }
 
 .vbox-container {
-  display: -webkit-box;
   -webkit-box-orient: vertical;
+  display: -webkit-box;
 }
 
 .wbox {
-  display: -webkit-box;
   -webkit-box-align: stretch;
   -webkit-box-flex: 1;
+  display: -webkit-box;
 }
 
 #top {
@@ -101,13 +101,13 @@ div.content {
 }
 
 .no-modules {
+  font-size: 1.2em;
   margin: 6em 0 0;
   text-align: center;
-  font-size: 1.2em;
 }
 
 .suspected-bad {
-  color: #DD7700;
+  color: rgb(221, 119, 0);
 }
 
 .confirmed-bad {
@@ -119,8 +119,8 @@ div.content {
 }
 
 .extra-info-text {
-  margin-top: -1em;
   margin-bottom: 1em;
+  margin-top: -1em;
 }
 
 .clearing {
@@ -240,8 +240,10 @@ html[dir=rtl] .clearing {
     </div>
   </div>
 </div>
+<script src="chrome://resources/js/cr.js"></script>
 <script src="chrome://resources/js/jstemplate_compiled.js"></script>
 <script src="chrome://resources/js/load_time_data.js"></script>
+<script src="chrome://resources/js/promise_resolver.js"></script>
 <script src="chrome://resources/js/util.js"></script>
 
 <script src="chrome://conflicts/strings.js"></script>
