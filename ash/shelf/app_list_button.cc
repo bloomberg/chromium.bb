@@ -21,6 +21,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/timer/timer.h"
 #include "chromeos/chromeos_switches.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/app_list/presenter/app_list.h"
@@ -42,6 +43,9 @@
 #include "ui/views/painter.h"
 
 namespace ash {
+namespace {
+constexpr int kVoiceInteractionAnimationDelayMs = 200;
+}  // namespace
 
 constexpr uint8_t kVoiceInteractionRunningAlpha = 255;     // 100% alpha
 constexpr uint8_t kVoiceInteractionNotRunningAlpha = 138;  // 54% alpha
@@ -72,6 +76,7 @@ AppListButton::AppListButton(InkDropButtonListener* listener,
     voice_interaction_overlay_ = new VoiceInteractionOverlay(this);
     AddChildView(voice_interaction_overlay_);
     voice_interaction_overlay_->SetVisible(false);
+    voice_interaction_animation_delay_timer_.reset(new base::OneShotTimer());
   } else {
     voice_interaction_overlay_ = nullptr;
   }
@@ -79,6 +84,8 @@ AppListButton::AppListButton(InkDropButtonListener* listener,
 
 AppListButton::~AppListButton() {
   Shell::Get()->RemoveShellObserver(this);
+  if (voice_interaction_animation_delay_timer_)
+    voice_interaction_animation_delay_timer_->Stop();
 }
 
 void AppListButton::OnAppListShown() {
@@ -116,13 +123,21 @@ void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
       return;
     case ui::ET_GESTURE_TAP:
     case ui::ET_GESTURE_TAP_CANCEL:
-      if (voice_interaction_overlay_)
+      if (voice_interaction_overlay_) {
         voice_interaction_overlay_->EndAnimation();
+        voice_interaction_animation_delay_timer_->Stop();
+      }
       ImageButton::OnGestureEvent(event);
       return;
     case ui::ET_GESTURE_TAP_DOWN:
-      if (voice_interaction_overlay_)
-        voice_interaction_overlay_->StartAnimation();
+      if (voice_interaction_overlay_) {
+        voice_interaction_animation_delay_timer_->Start(
+            FROM_HERE,
+            base::TimeDelta::FromMilliseconds(
+                kVoiceInteractionAnimationDelayMs),
+            base::Bind(&VoiceInteractionOverlay::StartAnimation,
+                       base::Unretained(voice_interaction_overlay_)));
+      }
       if (!Shell::Get()->IsAppListVisible())
         AnimateInkDrop(views::InkDropState::ACTION_PENDING, event);
       ImageButton::OnGestureEvent(event);

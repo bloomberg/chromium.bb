@@ -48,7 +48,7 @@
 
 namespace ash {
 namespace {
-constexpr int kFullExpandDurationMs = 650;
+constexpr int kFullExpandDurationMs = 450;
 constexpr int kFullRetractDurationMs = 300;
 constexpr int kFullBurstDurationMs = 200;
 
@@ -72,7 +72,6 @@ constexpr int kIconBurstDurationMs = 100;
 constexpr float kBackgroundInitSizeDip = 48.f;
 constexpr float kBackgroundStartSizeDip = 10.f;
 constexpr float kBackgroundSizeDip = 48.f;
-constexpr int kBackgroundStartDelayMs = 100;
 constexpr int kBackgroundOpacityDurationMs = 200;
 constexpr float kBackgroundShadowElevationDip = 24.f;
 
@@ -116,8 +115,9 @@ class VoiceInteractionIconBackground : public ui::Layer,
     flags.setStyle(cc::PaintFlags::kFill_Style);
     flags.setLooper(gfx::CreateShadowDrawLooper(shadow_values_));
     gfx::Rect shadow_bounds = shadow_layer_->bounds();
-    canvas->DrawCircle({radius - shadow_bounds.x(), radius - shadow_bounds.y()},
-                       radius, flags);
+    canvas->DrawCircle(
+        gfx::PointF(radius - shadow_bounds.x(), radius - shadow_bounds.y()),
+        radius, flags);
   }
 
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
@@ -262,7 +262,6 @@ void VoiceInteractionOverlay::StartAnimation() {
   }
 
   // Setup background initial state.
-  background_layer_->SetVisible(false);
   background_layer_->SetOpacity(0);
 
   transform.MakeIdentity();
@@ -302,14 +301,9 @@ void VoiceInteractionOverlay::StartAnimation() {
   {
     ui::ScopedLayerAnimationSettings settings(background_layer_->GetAnimator());
     settings.SetTransitionDuration(
-        base::TimeDelta::FromMilliseconds(kBackgroundStartDelayMs));
-    background_layer_->SetVisible(true);
-
-    settings.SetTransitionDuration(
         base::TimeDelta::FromMilliseconds(kBackgroundOpacityDurationMs));
     settings.SetTweenType(gfx::Tween::LINEAR_OUT_SLOW_IN);
-    settings.SetPreemptionStrategy(
-        ui::LayerAnimator::PreemptionStrategy::ENQUEUE_NEW_ANIMATION);
+
     background_layer_->SetOpacity(1);
   }
 }
