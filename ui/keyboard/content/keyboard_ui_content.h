@@ -86,10 +86,14 @@ class KEYBOARD_EXPORT KeyboardUIContent : public KeyboardUI,
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds) override;
   void OnWindowDestroyed(aura::Window* window) override;
+  void OnWindowParentChanged(aura::Window* window,
+                             aura::Window* parent) override;
 
   content::BrowserContext* browser_context() { return browser_context_; }
 
   const aura::Window* GetKeyboardRootWindow() const;
+
+  virtual content::WebContents* CreateWebContents();
 
  private:
   friend class TestApi;
@@ -107,6 +111,10 @@ class KEYBOARD_EXPORT KeyboardUIContent : public KeyboardUI,
   // position while the keyboard is displayed. Any window repositioning
   // invalidates insets for overscrolling.
   void AddBoundsChangedObserver(aura::Window* window);
+
+  // Sets shadow around the keyboard. If shadow has not been created yet,
+  // this method creates it.
+  void SetShadowAroundKeyboard();
 
   // The BrowserContext to use for creating the WebContents hosting the
   // keyboard.

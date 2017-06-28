@@ -159,6 +159,7 @@ mojom("mojom") {
 
 test("keyboard_unittests") {
   sources = [
+    "content/keyboard_ui_content_unittest.cc",
     "keyboard_controller_unittest.cc",
     "keyboard_event_filter_unittest.cc",
     "keyboard_util_unittest.cc",
@@ -167,8 +168,10 @@ test("keyboard_unittests") {
 
   deps = [
     ":keyboard",
+    ":keyboard_with_content",
     "//base",
     "//base/test:test_support",
+    "//content/test:test_support",
     "//mojo/edk/system",
     "//skia",
     "//testing/gtest",
