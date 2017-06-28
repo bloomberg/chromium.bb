@@ -678,6 +678,9 @@ static sk_sp<SkImage> ApplyImageFilter(
     return nullptr;
   }
 
+  // Big filters can sometimes fallback to CPU. Therefore, we need
+  // to disable subnormal floats for performance and security reasons.
+  ScopedSubnormalFloatDisabler disabler;
   SkMatrix local_matrix;
   local_matrix.setTranslate(origin.x(), origin.y());
   local_matrix.postScale(scale.x(), scale.y());
@@ -950,6 +953,9 @@ sk_sp<SkImage> GLRenderer::ApplyBackgroundFilters(
     return nullptr;
   }
 
+  // Big filters can sometimes fallback to CPU. Therefore, we need
+  // to disable subnormal floats for performance and security reasons.
+  ScopedSubnormalFloatDisabler disabler;
   SkMatrix local_matrix;
   local_matrix.setScale(quad->filters_scale.x(), quad->filters_scale.y());
 
