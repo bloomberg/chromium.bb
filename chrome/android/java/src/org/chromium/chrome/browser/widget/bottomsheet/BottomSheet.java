@@ -40,6 +40,7 @@ import org.chromium.chrome.browser.TabLoadStatus;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChrome;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
 import org.chromium.chrome.browser.ntp.NativePageFactory;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -711,6 +712,23 @@ public class BottomSheet
         mDefaultToolbarView = (BottomToolbarPhone) mControlContainer.findViewById(R.id.toolbar);
 
         mNtpController = new BottomSheetNewTabController(this, mDefaultToolbarView);
+
+        mActivity.getFullscreenManager().addListener(new FullscreenListener() {
+            @Override
+            public void onToggleOverlayVideoMode(boolean enabled) {
+                if (isSheetOpen()) setSheetState(SHEET_STATE_PEEK, false);
+            }
+
+            @Override
+            public void onControlsOffsetChanged(
+                    float topOffset, float bottomOffset, boolean needsAnimate) {}
+
+            @Override
+            public void onContentOffsetChanged(float offset) {}
+
+            @Override
+            public void onBottomControlsHeightChanged(int bottomControlsHeight) {}
+        });
     }
 
     /**
