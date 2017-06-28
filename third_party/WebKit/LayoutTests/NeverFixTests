@@ -139,26 +139,52 @@ external/wpt/html/obsolete/requirements-for-implementations/the-marquee-element-
 # We don't allow to access external hosts in layout tests.
 external/wpt/html/the-xhtml-syntax/parsing-xhtml-documents/xhtml-mathml-dtd-entity-support.htm [ WontFix ]
 
-# Some CSS2.1 tests pass but cause 1px diff due to old font-size guidelines,
-# or render colors differently for text and images on Mac.
+# CSS2 tests that rely on undefined behaviors (height of line-height: normal).
 external/wpt/css/CSS2/linebox/inline-formatting-context-002.xht [ WontFix ]
 [ Linux Win ] external/wpt/css/CSS2/linebox/inline-formatting-context-003.xht [ WontFix ]
 [ Linux Win ] external/wpt/css/CSS2/linebox/inline-formatting-context-004.xht [ WontFix ]
 [ Linux Win ] external/wpt/css/CSS2/linebox/inline-formatting-context-005.xht [ WontFix ]
 [ Linux Win ] external/wpt/css/CSS2/linebox/inline-formatting-context-006.xht [ WontFix ]
 [ Linux Win ] external/wpt/css/CSS2/linebox/inline-formatting-context-007.xht [ WontFix ]
+virtual/layout_ng/external/wpt/css/CSS2/linebox/inline-formatting-context-002.xht [ WontFix ]
+virtual/layout_ng/external/wpt/css/CSS2/linebox/inline-formatting-context-003.xht [ WontFix ]
+virtual/layout_ng/external/wpt/css/CSS2/linebox/inline-formatting-context-004.xht [ WontFix ]
+virtual/layout_ng/external/wpt/css/CSS2/linebox/inline-formatting-context-005.xht [ WontFix ]
+virtual/layout_ng/external/wpt/css/CSS2/linebox/inline-formatting-context-006.xht [ WontFix ]
+virtual/layout_ng/external/wpt/css/CSS2/linebox/inline-formatting-context-007.xht [ WontFix ]
+
+# CSS2 tests that require files in different directories.
+external/wpt/css/CSS2/linebox/inline-formatting-context-012.xht [ WontFix ]
+external/wpt/css/CSS2/normal-flow/blocks-017.xht [ WontFix ]
+virtual/layout_ng/external/wpt/css/CSS2/linebox/inline-formatting-context-012.xht [ WontFix ]
+virtual/layout_ng/external/wpt/css/CSS2/normal-flow/blocks-017.xht [ WontFix ]
+
+# CSS2 tests that have 1px diff due to font hinting.
 external/wpt/css/CSS2/linebox/inline-formatting-context-023.xht [ WontFix ]
-[ Mac ] external/wpt/css/CSS2/linebox/line-box-height-002.xht [ WontFix ]
 external/wpt/css/CSS2/linebox/line-height-126.xht [ WontFix ]
+[ Mac Win ] external/wpt/css/CSS2/linebox/vertical-align-baseline-003.xht [ WontFix ]
+[ Linux ] external/wpt/css/CSS2/linebox/vertical-align-sub-001.xht [ WontFix ]
+[ Linux ] external/wpt/css/CSS2/linebox/vertical-align-super-001.xht [ WontFix ]
+[ Linux ] external/wpt/css/CSS2/normal-flow/max-height-applies-to-012.xht [ WontFix ]
+[ Linux ] external/wpt/css/CSS2/normal-flow/max-width-applies-to-012.xht [ WontFix ]
+[ Linux ] external/wpt/css/CSS2/normal-flow/min-height-applies-to-012.xht [ WontFix ]
+[ Linux ] external/wpt/css/CSS2/normal-flow/min-width-applies-to-012.xht [ WontFix ]
+[ Linux ] external/wpt/css/CSS2/normal-flow/width-applies-to-012.xht [ WontFix ]
+[ Mac Win ] virtual/layout_ng/external/wpt/css/CSS2/linebox/vertical-align-baseline-003.xht [ WontFix ]
+[ Linux ] virtual/layout_ng/external/wpt/css/CSS2/normal-flow/max-height-applies-to-012.xht [ WontFix ]
+[ Linux ] virtual/layout_ng/external/wpt/css/CSS2/normal-flow/max-width-applies-to-012.xht [ WontFix ]
+[ Linux ] virtual/layout_ng/external/wpt/css/CSS2/normal-flow/min-height-applies-to-012.xht [ WontFix ]
+[ Linux ] virtual/layout_ng/external/wpt/css/CSS2/normal-flow/min-width-applies-to-012.xht [ WontFix ]
+[ Linux ] virtual/layout_ng/external/wpt/css/CSS2/normal-flow/width-applies-to-012.xht [ WontFix ]
+
+# CSS2 tests that render colors differently for text and images on Mac.
+[ Mac ] external/wpt/css/CSS2/linebox/line-box-height-002.xht [ WontFix ]
 [ Mac ] external/wpt/css/CSS2/linebox/line-height-129.xht [ WontFix ]
 [ Mac ] external/wpt/css/CSS2/linebox/vertical-align-117a.xht [ WontFix ]
 [ Mac ] external/wpt/css/CSS2/linebox/vertical-align-118a.xht [ WontFix ]
-[ Mac Win ] external/wpt/css/CSS2/linebox/vertical-align-baseline-003.xht [ WontFix ]
-[ Mac Win ] virtual/layout_ng/external/wpt/css/CSS2/linebox/vertical-align-baseline-003.xht [ WontFix ]
 [ Mac ] external/wpt/css/CSS2/linebox/vertical-align-baseline-004a.xht [ WontFix ]
 [ Mac ] external/wpt/css/CSS2/linebox/vertical-align-baseline-005a.xht [ WontFix ]
-[ Linux ] external/wpt/css/CSS2/linebox/vertical-align-sub-001.xht [ WontFix ]
-[ Linux ] external/wpt/css/CSS2/linebox/vertical-align-super-001.xht [ WontFix ]
+[ Mac ] virtual/layout_ng/external/wpt/css/CSS2/linebox/line-height-129.xht [ WontFix ]
 
 # Ref tests that pass but causes 1px diff on images at direction boundaries.
 [ Win ] external/wpt/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-002c.html [ WontFix ]
@@ -346,6 +372,11 @@ external/wpt/battery-status/battery-plugging-in-manual.https.html [ WontFix ]
 external/wpt/battery-status/battery-unplugging-manual.https.html [ WontFix ]
 external/wpt/console/console-count-logging-manual.html [ WontFix ]
 external/wpt/css/CSS2/linebox/inline-formatting-context-010b.xht [ WontFix ]
+virtual/layout_ng/external/wpt/css/CSS2/linebox/inline-formatting-context-010b.xht [ WontFix ]
+external/wpt/css/CSS2/normal-flow/inline-block-replaced-height-008.xht [ WontFix ]
+external/wpt/css/CSS2/normal-flow/inline-replaced-height-008.xht [ WontFix ]
+virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-block-replaced-height-008.xht [ WontFix ]
+virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-replaced-height-008.xht [ WontFix ]
 external/wpt/css/css-flexbox-1/css-flexbox-height-animation-stretch.html [ WontFix ]
 external/wpt/css/css-flexbox-1/interactive/flexbox_interactive_break-after-column-item.html [ WontFix ]
 external/wpt/css/css-flexbox-1/interactive/flexbox_interactive_break-after-column-lastitem.html [ WontFix ]
