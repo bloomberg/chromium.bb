@@ -2757,7 +2757,70 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2" label="Unknown"/>
 </enum>
 
-<enum name="BookmarkLaunchLocation">
+<enum name="BlueZReasonOfDisconnection" type="int">
+  <int value="1" label="Disconnected by local host"/>
+  <int value="2" label="Disconnected by remote device"/>
+  <int value="3" label="Supervision timeout"/>
+  <int value="4" label="Unknown"/>
+</enum>
+
+<enum name="BlueZResultOfAdvertisementRegistration" type="int">
+  <int value="1" label="Success"/>
+  <int value="2" label="LE unsupported"/>
+  <int value="3" label="LE disabled"/>
+  <int value="4" label="Advertisement data too long"/>
+  <int value="5" label="Busy adding/removing advertisement"/>
+  <int value="6" label="Advertisement client not created"/>
+  <int value="7" label="Invalid advertisement parameters"/>
+  <int value="8" label="Parsing advertisement data failed"/>
+  <int value="9" label="MGMT op not sent"/>
+  <int value="10" label="Unknown"/>
+</enum>
+
+<enum name="BlueZResultOfConnection" type="int">
+  <int value="1" label="Success LE"/>
+  <int value="2" label="Success BR/EDR"/>
+  <int value="3" label="Already connected LE"/>
+  <int value="4" label="Already connected BR/EDR"/>
+  <int value="5" label="Busy connecting/disconnecting"/>
+  <int value="6" label="Adapter not powered"/>
+  <int value="7" label="Failed LE"/>
+  <int value="8" label="Failed BR/EDR"/>
+  <int value="9" label="Page timeout BR/EDR"/>
+  <int value="10" label="BR/EDR profile unavailable"/>
+  <int value="11" label="SDP browse failed"/>
+  <int value="12" label="GATT browse failed"/>
+  <int value="13" label="Unknown"/>
+</enum>
+
+<enum name="BlueZResultOfPairing" type="int">
+  <int value="1" label="Success"/>
+  <int value="2" label="Adapter not powered"/>
+  <int value="3" label="Already paired"/>
+  <int value="4" label="Invalid parameters"/>
+  <int value="5" label="Busy pairing"/>
+  <int value="6" label="Not supported"/>
+  <int value="7" label="Connection Establishment failed"/>
+  <int value="8" label="Authentication failed"/>
+  <int value="9" label="Authentication rejected"/>
+  <int value="10" label="Authentication cancelled"/>
+  <int value="11" label="Authentication timeout"/>
+  <int value="12" label="Unknown"/>
+</enum>
+
+<enum name="BlueZTypeOfDiscovery" type="int">
+  <int value="1" label="BR/EDR"/>
+  <int value="2" label="LE"/>
+  <int value="3" label="DUAL"/>
+</enum>
+
+<enum name="BlueZTypeOfFoundDevice" type="int">
+  <int value="1" label="BR/EDR"/>
+  <int value="2" label="LE with public address"/>
+  <int value="3" label="LE with random address"/>
+</enum>
+
+<enum name="BookmarkLaunchLocation" type="int">
   <int value="0" label="Attached bookmark bar"/>
   <int value="1" label="Detached (floating) bookmark bar"/>
   <int value="2" label="Bookmark bar subfolder"/>
