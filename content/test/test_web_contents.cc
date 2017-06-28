@@ -8,6 +8,7 @@
 
 #include "content/browser/browser_url_handler_impl.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
+#include "content/browser/frame_host/debug_urls.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigator.h"
@@ -294,7 +295,8 @@ void TestWebContents::CommitPendingNavigation() {
   if (!rfh)
     rfh = old_rfh;
   const bool browser_side_navigation = IsBrowserSideNavigationEnabled();
-  CHECK(!browser_side_navigation || rfh->is_loading());
+  CHECK(!browser_side_navigation || rfh->is_loading() ||
+        IsRendererDebugURL(entry->GetURL()));
   CHECK(!browser_side_navigation ||
         !rfh->frame_tree_node()->navigation_request());
 
