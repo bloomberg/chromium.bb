@@ -1035,19 +1035,11 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
   // Set ID to know whether printing is for preview.
   settings->SetInteger(printing::kPreviewUIID,
                        print_preview_ui()->GetIDForPrintPreviewUI());
-  RenderFrameHost* rfh = preview_web_contents()->GetMainFrame();
-  rfh->Send(new PrintMsg_PrintForPrintPreview(rfh->GetRoutingID(), *settings));
 
-  // Set this so when print preview sends "hidePreviewDialog" we clear the
-  // initiator and call PrintPreviewDone(). In the cases above, the preview
-  // dialog stays open until printing is finished and we do this when the
-  // dialog is closed. In this case, we set this so that these tasks are
-  // done in HandleHidePreview().
-  printing_started_ = true;
-
-  // This will ultimately try to activate the initiator as well, so do not
-  // clear the association with the initiator until "hidePreviewDialog" is
-  // received from JS.
+  // Save the settings and notify print preview. Print preview will respond
+  // with a "hidePreviewDialog" message, and then the message can be sent to
+  // the renderer in HandleHidePreview().
+  settings_ = std::move(settings);
   ResolveJavascriptCallback(base::Value(callback_id), base::Value());
 
 #else
@@ -1087,10 +1079,16 @@ void PrintPreviewHandler::PrintToPdf() {
 }
 
 void PrintPreviewHandler::HandleHidePreview(const base::ListValue* /*args*/) {
-  if (printing_started_) {
-    // Printing has started, so clear the initiator so that it can open a new
-    // print preview dialog, while the current print preview dialog is still
-    // handling its print job.
+  if (settings_) {
+    // Print preview is responding to a resolution of "print" promise. Send the
+    // print message to the renderer.
+    RenderFrameHost* rfh = preview_web_contents()->GetMainFrame();
+    rfh->Send(
+        new PrintMsg_PrintForPrintPreview(rfh->GetRoutingID(), *settings_));
+    settings_.reset();
+
+    // Clear the initiator so that it can open a new print preview dialog, while
+    // the current print preview dialog is still handling its print job.
     WebContents* initiator = GetInitiator();
     ClearInitiatorDetails();
 
@@ -1100,9 +1098,6 @@ void PrintPreviewHandler::HandleHidePreview(const base::ListValue* /*args*/) {
       auto* print_view_manager = PrintViewManager::FromWebContents(initiator);
       print_view_manager->PrintPreviewDone();
     }
-
-    // Since the initiator is cleared, only want to do this once.
-    printing_started_ = false;
   }
 
   print_preview_ui()->OnHidePreviewDialog();
