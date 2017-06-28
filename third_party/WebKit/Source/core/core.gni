@@ -31,7 +31,7 @@ if (is_win && is_official_build) {
 
 if (remove_webcore_debug_symbols) {
   core_config_remove += [ "//build/config/compiler:default_symbols" ]
-  core_config_add += [ "//build/config/compiler:no_symbols" ]
+  core_config_add += remove_webcore_symbols_config
 }
 
 # Use this target type to link core targets.

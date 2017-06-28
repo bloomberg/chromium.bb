@@ -170,7 +170,7 @@ target(modules_target_type, "modules") {
 
   if (remove_webcore_debug_symbols) {
     configs -= [ "//build/config/compiler:default_symbols" ]
-    configs += [ "//build/config/compiler:no_symbols" ]
+    configs += remove_webcore_symbols_config
   }
 }
 
