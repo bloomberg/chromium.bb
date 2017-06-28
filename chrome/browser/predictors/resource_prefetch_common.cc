@@ -26,7 +26,6 @@ const char kExternalPrefetchingMode[] = "external-prefetching";
 const char kPrefetchingMode[] = "prefetching";
 const char kEnableUrlLearningParamName[] = "enable-url-learning";
 const char kEnableManifestsParamName[] = "enable-manifests";
-const char kEnableOriginLearningParamName[] = "enable-origin-learning";
 
 const base::Feature kSpeculativeResourcePrefetchingFeature{
     kSpeculativeResourcePrefetchingFeatureName,
@@ -50,12 +49,7 @@ bool IsPrefetchingEnabledInternal(Profile* profile, int mode, int mask) {
 
 }  // namespace internal
 
-bool IsSpeculativeResourcePrefetchingEnabled(Profile* profile,
-                                             LoadingPredictorConfig* config) {
-  // Disabled for of-the-record. Policy choice, not a technical limitation.
-  if (!profile || profile->IsOffTheRecord())
-    return false;
-
+bool MaybeEnableResourcePrefetching(LoadingPredictorConfig* config) {
   if (!base::FeatureList::IsEnabled(kSpeculativeResourcePrefetchingFeature))
     return false;
 
@@ -71,11 +65,6 @@ bool IsSpeculativeResourcePrefetchingEnabled(Profile* profile,
         kSpeculativeResourcePrefetchingFeature, kEnableManifestsParamName);
     if (enable_manifests_value == "true")
       config->is_manifests_enabled = true;
-
-    bool enable_origin_learning = base::GetFieldTrialParamValueByFeature(
-                                      kSpeculativeResourcePrefetchingFeature,
-                                      kEnableOriginLearningParamName) == "true";
-    config->is_origin_learning_enabled = enable_origin_learning;
 
     // Ensure that a resource that was only seen once is never prefetched. This
     // prevents the easy mistake of trying to prefetch an ephemeral url.

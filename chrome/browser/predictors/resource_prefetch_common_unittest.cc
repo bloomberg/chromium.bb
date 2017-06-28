@@ -85,8 +85,7 @@ ResourcePrefetchCommonTest::ResourcePrefetchCommonTest()
 
 TEST_F(ResourcePrefetchCommonTest, IsDisabledByDefault) {
   LoadingPredictorConfig config;
-  EXPECT_FALSE(
-      IsSpeculativeResourcePrefetchingEnabled(profile_.get(), &config));
+  EXPECT_FALSE(MaybeEnableResourcePrefetching(&config));
 
   EXPECT_FALSE(config.IsLearningEnabled());
   EXPECT_FALSE(config.IsPrefetchingEnabledForOrigin(profile_.get(),
@@ -103,7 +102,7 @@ TEST_F(ResourcePrefetchCommonTest, EnableLearning) {
       {kSpeculativeResourcePrefetchingFeatureName});
 
   LoadingPredictorConfig config;
-  EXPECT_TRUE(IsSpeculativeResourcePrefetchingEnabled(profile_.get(), &config));
+  EXPECT_TRUE(MaybeEnableResourcePrefetching(&config));
   TestIsPrefetchLearning(config);
   TestIsDefaultExtraConfig(config);
 }
@@ -114,7 +113,7 @@ TEST_F(ResourcePrefetchCommonTest, EnablePrefetch) {
       {kSpeculativeResourcePrefetchingFeatureName});
 
   LoadingPredictorConfig config;
-  EXPECT_TRUE(IsSpeculativeResourcePrefetchingEnabled(profile_.get(), &config));
+  EXPECT_TRUE(MaybeEnableResourcePrefetching(&config));
   TestIsPrefetchEnabledForOrigin(config, HintOrigin::EXTERNAL);
   TestIsPrefetchEnabledForOrigin(config, HintOrigin::NAVIGATION);
   TestIsDefaultExtraConfig(config);
@@ -126,7 +125,7 @@ TEST_F(ResourcePrefetchCommonTest, EnablePrefetchExternalOnly) {
       {kSpeculativeResourcePrefetchingFeatureName});
 
   LoadingPredictorConfig config;
-  EXPECT_TRUE(IsSpeculativeResourcePrefetchingEnabled(profile_.get(), &config));
+  EXPECT_TRUE(MaybeEnableResourcePrefetching(&config));
   TestIsPrefetchEnabledForOrigin(config, HintOrigin::EXTERNAL);
   EXPECT_FALSE(config.IsPrefetchingEnabledForOrigin(profile_.get(),
                                                     HintOrigin::NAVIGATION));
@@ -140,7 +139,7 @@ TEST_F(ResourcePrefetchCommonTest, EnableUrlLearning) {
       {kSpeculativeResourcePrefetchingFeatureName});
 
   LoadingPredictorConfig config;
-  EXPECT_TRUE(IsSpeculativeResourcePrefetchingEnabled(profile_.get(), &config));
+  EXPECT_TRUE(MaybeEnableResourcePrefetching(&config));
   TestIsPrefetchLearning(config);
   EXPECT_TRUE(config.is_url_learning_enabled);
 }
@@ -152,22 +151,9 @@ TEST_F(ResourcePrefetchCommonTest, EnableManifests) {
       {kSpeculativeResourcePrefetchingFeatureName});
 
   LoadingPredictorConfig config;
-  EXPECT_TRUE(IsSpeculativeResourcePrefetchingEnabled(profile_.get(), &config));
+  EXPECT_TRUE(MaybeEnableResourcePrefetching(&config));
   TestIsPrefetchLearning(config);
   EXPECT_TRUE(config.is_manifests_enabled);
-}
-
-TEST_F(ResourcePrefetchCommonTest, EnableOriginLearning) {
-  variations::testing::VariationParamsManager params_manager(
-      "dummy-trial",
-      {{kModeParamName, kLearningMode},
-       {kEnableOriginLearningParamName, "true"}},
-      {kSpeculativeResourcePrefetchingFeatureName});
-
-  LoadingPredictorConfig config;
-  EXPECT_TRUE(IsSpeculativeResourcePrefetchingEnabled(profile_.get(), &config));
-  TestIsPrefetchLearning(config);
-  EXPECT_TRUE(config.is_origin_learning_enabled);
 }
 
 // Verifies whether prefetching is disabled according to the network type. But
@@ -178,7 +164,7 @@ TEST_F(ResourcePrefetchCommonTest, RespectsNetworkSettings) {
       {kSpeculativeResourcePrefetchingFeatureName});
 
   LoadingPredictorConfig config;
-  EXPECT_TRUE(IsSpeculativeResourcePrefetchingEnabled(profile_.get(), &config));
+  EXPECT_TRUE(MaybeEnableResourcePrefetching(&config));
   TestIsPrefetchEnabledForOrigin(config, HintOrigin::EXTERNAL);
   TestIsDefaultExtraConfig(config);
 

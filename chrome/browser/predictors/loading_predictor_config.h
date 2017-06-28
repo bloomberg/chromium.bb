@@ -15,8 +15,8 @@ struct LoadingPredictorConfig;
 
 // Returns whether the predictor is enabled, and populates |config|, if not
 // nullptr.
-bool IsLoadingPredictortEnabled(Profile* profile,
-                                LoadingPredictorConfig* config);
+bool IsLoadingPredictorEnabled(Profile* profile,
+                               LoadingPredictorConfig* config);
 
 // Indicates what caused the page load hint.
 enum class HintOrigin { NAVIGATION, EXTERNAL };
@@ -31,8 +31,9 @@ struct LoadingPredictorConfig {
   // The mode the prefetcher is running in. Forms a bit map.
   enum Mode {
     LEARNING = 1 << 0,
-    PREFETCHING_FOR_NAVIGATION = 1 << 2,  // Should also turn on LEARNING.
-    PREFETCHING_FOR_EXTERNAL = 1 << 3     // Should also turn on LEARNING.
+    PREFETCHING_FOR_NAVIGATION = 1 << 2,
+    PREFETCHING_FOR_EXTERNAL = 1 << 3,
+    PRECONNECT = 1 << 4
   };
   int mode;
 
@@ -40,6 +41,7 @@ struct LoadingPredictorConfig {
   bool IsLearningEnabled() const;
   bool IsPrefetchingEnabledForSomeOrigin(Profile* profile) const;
   bool IsPrefetchingEnabledForOrigin(Profile* profile, HintOrigin origin) const;
+  bool IsPreconnectEnabledForOrigin(Profile* profile, HintOrigin origin) const;
 
   bool IsLowConfidenceForTest() const;
   bool IsHighConfidenceForTest() const;

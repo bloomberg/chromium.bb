@@ -40,8 +40,7 @@ struct LoadingPredictorConfig;
 
 // Returns true if prefetching is enabled, and initializes |config|, if not
 // nullptr.
-bool IsSpeculativeResourcePrefetchingEnabled(Profile* profile,
-                                             LoadingPredictorConfig* config);
+bool MaybeEnableResourcePrefetching(LoadingPredictorConfig* config);
 
 // Represents the type of key based on which prefetch data is stored.
 enum PrefetchKeyType {
