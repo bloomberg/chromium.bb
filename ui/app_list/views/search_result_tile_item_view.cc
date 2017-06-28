@@ -9,7 +9,9 @@
 #include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/search_result.h"
+#include "ui/app_list/vector_icons/vector_icons.h"
 #include "ui/app_list/views/search_result_container_view.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -21,6 +23,9 @@ namespace {
 constexpr int kSearchTileWidth = 80;
 constexpr int kSearchTileTopPadding = 4;
 constexpr int kSearchTitleSpacing = 6;
+constexpr int kSearchRatingStarSize = 12;
+constexpr int kSearchRatingStarHorizontalSpacing = 1;
+constexpr int kSearchRatingStarVerticalSpacing = 2;
 
 constexpr SkColor kSearchTitleColor =
     SkColorSetARGBMacro(0xDF, 0x00, 0x00, 0x00);
@@ -28,6 +33,8 @@ constexpr SkColor kSearchAppRatingColor =
     SkColorSetARGBMacro(0x8F, 0x00, 0x00, 0x00);
 constexpr SkColor kSearchAppPriceColor =
     SkColorSetARGBMacro(0xFF, 0x0F, 0x9D, 0x58);
+constexpr SkColor kSearchRatingStarColor =
+    SkColorSetARGBMacro(0x8F, 0x00, 0x00, 0x00);
 
 }  // namespace
 
@@ -52,6 +59,14 @@ SearchResultTileItemView::SearchResultTileItemView(
     rating_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     rating_->SetVisible(false);
     AddChildView(rating_);
+
+    rating_star_ = new views::ImageView;
+    rating_star_->set_can_process_events_within_subtree(false);
+    rating_star_->SetVerticalAlignment(views::ImageView::LEADING);
+    rating_star_->SetImage(gfx::CreateVectorIcon(
+        kIcBadgeRatingIcon, kSearchRatingStarSize, kSearchRatingStarColor));
+    rating_star_->SetVisible(false);
+    AddChildView(rating_star_);
 
     price_ = new views::Label;
     price_->SetEnabledColor(kSearchAppPriceColor);
@@ -124,11 +139,13 @@ void SearchResultTileItemView::SetRating(float rating) {
 
   if (rating < 0) {
     rating_->SetVisible(false);
+    rating_star_->SetVisible(false);
     return;
   }
 
   rating_->SetText(base::FormatDouble(rating, 1));
   rating_->SetVisible(true);
+  rating_star_->SetVisible(true);
 }
 
 void SearchResultTileItemView::SetPrice(const base::string16& price) {
@@ -249,6 +266,18 @@ void SearchResultTileItemView::Layout() {
       rating_rect.Inset(0, title()->GetPreferredSize().height(), 0, 0);
       rating_rect.set_height(rating_->GetPreferredSize().height());
       rating_->SetBoundsRect(rating_rect);
+    }
+
+    if (rating_star_) {
+      gfx::Rect rating_star_rect(rect);
+      rating_star_rect.Inset(rating_->GetPreferredSize().width() +
+                                 kSearchRatingStarHorizontalSpacing,
+                             title()->GetPreferredSize().height() +
+                                 kSearchRatingStarVerticalSpacing,
+                             0, 0);
+      rating_star_rect.set_height(rating_star_->GetPreferredSize().height());
+      rating_star_rect.set_width(rating_star_->GetPreferredSize().width());
+      rating_star_->SetBoundsRect(rating_star_rect);
     }
 
     if (price_) {

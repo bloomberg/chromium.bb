@@ -69,6 +69,7 @@ class APP_LIST_EXPORT SearchResultTileItemView
 
   views::Label* rating_ = nullptr;  // Owned by views hierarchy.
   views::Label* price_ = nullptr;   // Owned by views hierarchy.
+  views::ImageView* rating_star_ = nullptr;  // Owned by views hierarchy.
 
   AppListViewDelegate* view_delegate_;
 
