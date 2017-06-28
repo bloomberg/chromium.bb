@@ -6,12 +6,13 @@
 #define NGLayoutInputNode_h
 
 #include "core/CoreExport.h"
-#include "core/style/ComputedStyle.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
+class ComputedStyle;
 class LayoutObject;
+class LayoutBox;
 class NGBreakToken;
 class NGConstraintSpace;
 class NGLayoutResult;

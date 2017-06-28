@@ -21,7 +21,6 @@
 #include "core/css/CSSStyleRule.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/DOMNodeIds.h"
-#include "core/dom/NodeComputedStyle.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorCSSAgent.h"

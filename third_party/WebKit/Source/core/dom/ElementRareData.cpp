@@ -33,7 +33,6 @@
 #include "core/css/cssom/InlineStylePropertyMap.h"
 #include "core/dom/ResizeObservation.h"
 #include "core/dom/ResizeObserver.h"
-#include "core/style/ComputedStyle.h"
 
 namespace blink {
 

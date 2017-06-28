@@ -6,11 +6,9 @@
 
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
-#include "core/dom/NodeComputedStyle.h"
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutView.h"
-#include "core/style/ComputedStyle.h"
 #include "platform/LengthFunctions.h"
 
 namespace blink {

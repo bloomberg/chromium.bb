@@ -6,7 +6,6 @@
 
 #include <memory>
 #include "core/HTMLNames.h"
-#include "core/dom/NodeComputedStyle.h"
 #include "core/frame/FrameTestHelpers.h"
 #include "core/frame/VisualViewport.h"
 #include "core/frame/WebLocalFrameBase.h"
