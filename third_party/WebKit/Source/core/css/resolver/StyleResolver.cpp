@@ -550,39 +550,21 @@ void StyleResolver::CollectTreeBoundaryCrossingRulesV0CascadeOrder(
   }
 }
 
-PassRefPtr<ComputedStyle> StyleResolver::StyleForDocument(Document& document) {
-  const LocalFrame* frame = document.GetFrame();
+PassRefPtr<ComputedStyle> StyleResolver::StyleForViewport(Document& document) {
+  RefPtr<ComputedStyle> viewport_style = InitialStyleForElement(document);
 
-  RefPtr<ComputedStyle> document_style = ComputedStyle::Create();
-  document_style->SetRtlOrdering(document.VisuallyOrdered() ? EOrder::kVisual
-                                                            : EOrder::kLogical);
-  document_style->SetZoom(
-      frame && !document.Printing() ? frame->PageZoomFactor() : 1);
-  FontDescription document_font_description =
-      document_style->GetFontDescription();
-  document_font_description.SetLocale(
-      LayoutLocale::Get(document.ContentLanguage()));
-  document_style->SetFontDescription(document_font_description);
-  document_style->SetZIndex(0);
-  document_style->SetIsStackingContext(true);
-  document_style->SetUserModify(document.InDesignMode()
-                                    ? EUserModify::kReadWrite
-                                    : EUserModify::kReadOnly);
-  // These are designed to match the user-agent stylesheet values for the
-  // document element so that the common case doesn't need to create a new
-  // ComputedStyle in Document::InheritHtmlAndBodyElementStyles.
-  document_style->SetDisplay(EDisplay::kBlock);
-  document_style->SetPosition(EPosition::kAbsolute);
+  viewport_style->SetZIndex(0);
+  viewport_style->SetIsStackingContext(true);
+  viewport_style->SetDisplay(EDisplay::kBlock);
+  viewport_style->SetPosition(EPosition::kAbsolute);
 
   // Document::InheritHtmlAndBodyElementStyles will set the final overflow
   // style values, but they should initially be auto to avoid premature
   // scrollbar removal in PaintLayerScrollableArea::UpdateAfterStyleChange.
-  document_style->SetOverflowX(EOverflow::kAuto);
-  document_style->SetOverflowY(EOverflow::kAuto);
+  viewport_style->SetOverflowX(EOverflow::kAuto);
+  viewport_style->SetOverflowY(EOverflow::kAuto);
 
-  document.SetupFontBuilder(*document_style);
-
-  return document_style;
+  return viewport_style;
 }
 
 void StyleResolver::AdjustComputedStyle(StyleResolverState& state,
@@ -687,7 +669,7 @@ PassRefPtr<ComputedStyle> StyleResolver::StyleForElement(
   if (base_computed_style) {
     state.SetStyle(ComputedStyle::Clone(*base_computed_style));
     if (!state.ParentStyle()) {
-      state.SetParentStyle(InitialStyleForElement());
+      state.SetParentStyle(InitialStyleForElement(GetDocument()));
       state.SetLayoutParentStyle(state.ParentStyle());
     }
   } else {
@@ -699,7 +681,7 @@ PassRefPtr<ComputedStyle> StyleResolver::StyleForElement(
                              : ComputedStyle::kNotAtShadowBoundary);
       state.SetStyle(std::move(style));
     } else {
-      state.SetStyle(InitialStyleForElement());
+      state.SetStyle(InitialStyleForElement(GetDocument()));
       state.SetParentStyle(ComputedStyle::Clone(*state.Style()));
       state.SetLayoutParentStyle(state.ParentStyle());
     }
@@ -926,7 +908,7 @@ bool StyleResolver::PseudoStyleForElementInternal(
     style->InheritFrom(*state.ParentStyle());
     state.SetStyle(std::move(style));
   } else {
-    state.SetStyle(InitialStyleForElement());
+    state.SetStyle(InitialStyleForElement(GetDocument()));
     state.SetParentStyle(ComputedStyle::Clone(*state.Style()));
   }
 
@@ -1009,8 +991,9 @@ PassRefPtr<ComputedStyle> StyleResolver::PseudoStyleForElement(
 }
 
 PassRefPtr<ComputedStyle> StyleResolver::StyleForPage(int page_index) {
-  // root_element_style_ will be set to the document style.
-  StyleResolverState state(GetDocument(), GetDocument().documentElement());
+  RefPtr<ComputedStyle> initial_style = InitialStyleForElement(GetDocument());
+  StyleResolverState state(GetDocument(), GetDocument().documentElement(),
+                           initial_style.Get(), initial_style.Get());
 
   RefPtr<ComputedStyle> style = ComputedStyle::Create();
   const ComputedStyle* root_element_style =
@@ -1050,13 +1033,28 @@ PassRefPtr<ComputedStyle> StyleResolver::StyleForPage(int page_index) {
   return state.TakeStyle();
 }
 
-PassRefPtr<ComputedStyle> StyleResolver::InitialStyleForElement() {
-  RefPtr<ComputedStyle> style = ComputedStyle::Create();
-  FontBuilder font_builder(&GetDocument());
-  font_builder.SetInitial(style->EffectiveZoom());
-  font_builder.CreateFont(GetDocument().GetStyleEngine().FontSelector(),
-                          *style);
-  return style;
+PassRefPtr<ComputedStyle> StyleResolver::InitialStyleForElement(
+    Document& document) {
+  const LocalFrame* frame = document.GetFrame();
+
+  RefPtr<ComputedStyle> initial_style = ComputedStyle::Create();
+
+  initial_style->SetRtlOrdering(document.VisuallyOrdered() ? EOrder::kVisual
+                                                           : EOrder::kLogical);
+  initial_style->SetZoom(frame && !document.Printing() ? frame->PageZoomFactor()
+                                                       : 1);
+
+  FontDescription document_font_description =
+      initial_style->GetFontDescription();
+  document_font_description.SetLocale(
+      LayoutLocale::Get(document.ContentLanguage()));
+
+  initial_style->SetFontDescription(document_font_description);
+  initial_style->SetUserModify(document.InDesignMode()
+                                   ? EUserModify::kReadWrite
+                                   : EUserModify::kReadOnly);
+  document.SetupFontBuilder(*initial_style);
+  return initial_style;
 }
 
 PassRefPtr<ComputedStyle> StyleResolver::StyleForText(Text* text_node) {
@@ -1064,7 +1062,7 @@ PassRefPtr<ComputedStyle> StyleResolver::StyleForText(Text* text_node) {
 
   Node* parent_node = LayoutTreeBuilderTraversal::Parent(*text_node);
   if (!parent_node || !parent_node->GetComputedStyle())
-    return InitialStyleForElement();
+    return InitialStyleForElement(GetDocument());
   return parent_node->MutableComputedStyle();
 }
 

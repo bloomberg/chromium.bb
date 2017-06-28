@@ -102,7 +102,7 @@ class CORE_EXPORT StyleResolver final
   PassRefPtr<ComputedStyle> StyleForPage(int page_index);
   PassRefPtr<ComputedStyle> StyleForText(Text*);
 
-  static PassRefPtr<ComputedStyle> StyleForDocument(Document&);
+  static PassRefPtr<ComputedStyle> StyleForViewport(Document&);
 
   // TODO(esprehn): StyleResolver should probably not contain tree walking
   // state, instead we should pass a context object during recalcStyle.
@@ -162,7 +162,7 @@ class CORE_EXPORT StyleResolver final
  private:
   explicit StyleResolver(Document&);
 
-  PassRefPtr<ComputedStyle> InitialStyleForElement();
+  static PassRefPtr<ComputedStyle> InitialStyleForElement(Document&);
 
   // FIXME: This should probably go away, folded into FontBuilder.
   void UpdateFont(StyleResolverState&);
