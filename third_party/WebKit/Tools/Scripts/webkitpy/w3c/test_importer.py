@@ -14,7 +14,7 @@ If this script is given the argument --auto-update, it will also:
 import argparse
 import logging
 
-from webkitpy.common.net.git_cl import GitCL
+from webkitpy.common.net.git_cl import GitCL, TryJobStatus
 from webkitpy.common.net.buildbot import current_build_link
 from webkitpy.common.path_finder import PathFinder
 from webkitpy.layout_tests.models.test_expectations import TestExpectations, TestExpectationParser
@@ -327,6 +327,7 @@ class TestImporter(object):
             poll_delay_seconds=POLL_DELAY_SECONDS, timeout_seconds=TIMEOUT_SECONDS)
 
         if not try_results:
+            _log.error('No initial try job results, aborting.')
             self.git_cl.run(['set-close'])
             return False
 
@@ -337,22 +338,26 @@ class TestImporter(object):
             self._upload_patchset(message)
 
         # Trigger CQ and wait for CQ try jobs to finish.
-        self.git_cl.run(['set-commit', '--gerrit'])
+        self.git_cl.run(['try'])
         try_results = self.git_cl.wait_for_try_jobs(
-            poll_delay_seconds=POLL_DELAY_SECONDS, timeout_seconds=TIMEOUT_SECONDS)
+            poll_delay_seconds=POLL_DELAY_SECONDS,
+            timeout_seconds=TIMEOUT_SECONDS)
 
-        _log.info('Try results: %s', try_results)
-
-        # If the CQ passed, then the issue will be closed already.
-        status = self.git_cl.run(['status', '--field', 'status']).strip()
-        _log.info('CL status: "%s"', status)
-        if status not in ('lgtm', 'closed'):
-            _log.error('CQ appears to have failed; aborting.')
+        if not try_results:
             self.git_cl.run(['set-close'])
+            _log.error('No CQ try job results, aborting.')
             return False
 
-        _log.info('Update completed.')
-        return True
+        if try_results and all(s == TryJobStatus('COMPLETED', 'SUCCESS') for _, s in try_results.iteritems()):
+            _log.info('CQ appears to have passed; trying to commit.')
+            self.git_cl.run(['cl', 'upload', '--send-mail'])  # Turn off WIP mode.
+            self.git_cl.run(['set-commit'])
+            _log.info('Update completed.')
+            return True
+
+        self.git_cl.run(['set-close'])
+        _log.error('CQ appears to have failed; aborting.')
+        return False
 
     def _upload_cl(self):
         _log.info('Uploading change list.')
