@@ -179,3 +179,6 @@
 -VerifyPathControlledByUserTest.OwnershipChecks
 -VerifyPathControlledByUserTest.Symlinks
 -VerifyPathControlledByUserTest.WriteBitChecks
+
+# TaskScheduler is racy, causing bot instability: https://crbug.com/735701.
+-*TaskScheduler*
