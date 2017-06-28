@@ -1,3 +1,4 @@
+<html style="-webkit-writing-mode:vertical-rl">
 <script src="resources/text-based-repaint.js"></script>
 <script>
     function repaintTest()
@@ -5,6 +6,6 @@
         document.getElementById("target").style.webkitTextStrokeColor = "green";
     }
 </script>
-<body onload="runRepaintAndPixelTest()" style="padding: 50px; -webkit-writing-mode:vertical-rl">
+<body onload="runRepaintAndPixelTest()" style="padding: 50px">
     <div><span id="target" style="font-family: Ahem; font-size: 50px; -webkit-text-stroke: 50px red;">A&nbsp;&nbsp;B</span></div>
 </body>

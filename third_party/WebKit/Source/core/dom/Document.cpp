@@ -1950,19 +1950,19 @@ void Document::InheritHtmlAndBodyElementStyles(StyleRecalcChange change) {
 
   ScrollSnapType snap_type = overflow_style->GetScrollSnapType();
 
-  RefPtr<ComputedStyle> document_style = GetLayoutViewItem().MutableStyle();
-  if (document_style->GetWritingMode() != root_writing_mode ||
-      document_style->Direction() != root_direction ||
-      document_style->VisitedDependentColor(CSSPropertyBackgroundColor) !=
+  RefPtr<ComputedStyle> viewport_style = GetLayoutViewItem().MutableStyle();
+  if (viewport_style->GetWritingMode() != root_writing_mode ||
+      viewport_style->Direction() != root_direction ||
+      viewport_style->VisitedDependentColor(CSSPropertyBackgroundColor) !=
           background_color ||
-      document_style->BackgroundLayers() != background_layers ||
-      document_style->ImageRendering() != image_rendering ||
-      document_style->OverflowAnchor() != overflow_anchor ||
-      document_style->OverflowX() != overflow_x ||
-      document_style->OverflowY() != overflow_y ||
-      document_style->ColumnGap() != column_gap ||
-      document_style->GetScrollSnapType() != snap_type) {
-    RefPtr<ComputedStyle> new_style = ComputedStyle::Clone(*document_style);
+      viewport_style->BackgroundLayers() != background_layers ||
+      viewport_style->ImageRendering() != image_rendering ||
+      viewport_style->OverflowAnchor() != overflow_anchor ||
+      viewport_style->OverflowX() != overflow_x ||
+      viewport_style->OverflowY() != overflow_y ||
+      viewport_style->ColumnGap() != column_gap ||
+      viewport_style->GetScrollSnapType() != snap_type) {
+    RefPtr<ComputedStyle> new_style = ComputedStyle::Clone(*viewport_style);
     new_style->SetWritingMode(root_writing_mode);
     new_style->SetDirection(root_direction);
     new_style->SetBackgroundColor(background_color);
@@ -2142,12 +2142,12 @@ void Document::UpdateStyle() {
 
   if (change == kForce) {
     has_nodes_with_placeholder_style_ = false;
-    RefPtr<ComputedStyle> document_style =
-        StyleResolver::StyleForDocument(*this);
+    RefPtr<ComputedStyle> viewport_style =
+        StyleResolver::StyleForViewport(*this);
     StyleRecalcChange local_change = ComputedStyle::StylePropagationDiff(
-        document_style.Get(), GetLayoutViewItem().Style());
+        viewport_style.Get(), GetLayoutViewItem().Style());
     if (local_change != kNoChange)
-      GetLayoutViewItem().SetStyle(std::move(document_style));
+      GetLayoutViewItem().SetStyle(std::move(viewport_style));
   }
 
   ClearNeedsStyleRecalc();
@@ -2530,7 +2530,7 @@ void Document::Initialize() {
   SetLayoutObject(layout_view_);
 
   layout_view_->SetIsInWindow(true);
-  layout_view_->SetStyle(StyleResolver::StyleForDocument(*this));
+  layout_view_->SetStyle(StyleResolver::StyleForViewport(*this));
   layout_view_->Compositor()->SetNeedsCompositingUpdate(
       kCompositingUpdateAfterCompositingInputChange);
 

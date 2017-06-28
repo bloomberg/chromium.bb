@@ -48,7 +48,9 @@ class CORE_EXPORT ElementResolveContext {
   const ContainerNode* LayoutParent() const { return layout_parent_; }
   const ComputedStyle* RootElementStyle() const { return root_element_style_; }
   const ComputedStyle* ParentStyle() const {
-    return ParentNode() ? ParentNode()->GetComputedStyle() : nullptr;
+    return ParentNode() && ParentNode()->IsElementNode()
+               ? ParentNode()->GetComputedStyle()
+               : nullptr;
   }
   const ComputedStyle* LayoutParentStyle() const {
     return LayoutParent() ? LayoutParent()->GetComputedStyle() : nullptr;
