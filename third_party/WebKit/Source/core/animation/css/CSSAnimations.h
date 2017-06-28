@@ -37,7 +37,6 @@
 #include "core/animation/css/CSSAnimationUpdate.h"
 #include "core/css/CSSKeyframesRule.h"
 #include "core/css/StylePropertySet.h"
-#include "core/css/resolver/StyleResolverState.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "platform/wtf/HashMap.h"

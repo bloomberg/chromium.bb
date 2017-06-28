@@ -7,7 +7,6 @@
 #include "core/animation/CSSPositionAxisListInterpolationType.h"
 #include "core/animation/LengthInterpolationFunctions.h"
 #include "core/css/CSSBasicShapeValues.h"
-#include "core/css/resolver/StyleResolverState.h"
 #include "core/style/BasicShapes.h"
 #include <memory>
 

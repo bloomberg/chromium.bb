@@ -40,6 +40,7 @@
 #include "core/dom/ShadowRoot.h"
 #include "core/events/Event.h"
 #include "core/frame/Settings.h"
+#include "core/frame/UseCounter.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLElement.h"
 #include "core/inspector/ConsoleMessage.h"
