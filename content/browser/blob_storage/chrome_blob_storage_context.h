@@ -9,12 +9,14 @@
 #include <stdint.h>
 
 #include <memory>
+#include <vector>
 
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/common/content_export.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
+#include "storage/browser/blob/blob_data_handle.h"
 #include "storage/public/interfaces/blobs.mojom.h"
 
 namespace base {
@@ -96,10 +98,14 @@ struct ChromeBlobStorageContextDeleter {
 storage::BlobStorageContext* GetBlobStorageContext(
     ChromeBlobStorageContext* blob_storage_context);
 
-// Attaches blob data handles to the ResourceRequestBodyImpl body passed in.
-// This is used for POST and PUT requests.
-bool AttachRequestBodyBlobDataHandles(ResourceRequestBodyImpl* body,
-                                      ResourceContext* resource_context);
+using BlobHandles = std::vector<std::unique_ptr<storage::BlobDataHandle>>;
+
+// Attempts to create a vector of BlobDataHandles that ensure any blob data
+// associated with |body| isn't cleaned up until the handles are destroyed.
+// Returns false on failure. This is used for POST and PUT requests.
+bool GetBodyBlobDataHandles(ResourceRequestBodyImpl* body,
+                            ResourceContext* resource_context,
+                            BlobHandles* blob_handles);
 
 }  // namespace content
 

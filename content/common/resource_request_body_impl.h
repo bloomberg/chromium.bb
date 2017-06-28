@@ -11,7 +11,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/supports_user_data.h"
 #include "content/common/content_export.h"
 #include "content/public/common/resource_request_body.h"
 #include "storage/common/data_element.h"
@@ -25,8 +24,7 @@ namespace content {
 
 // A struct used to represent upload data. The data field is populated by
 // WebURLLoader from the data given as WebHTTPBody.
-class CONTENT_EXPORT ResourceRequestBodyImpl : public ResourceRequestBody,
-                                               public base::SupportsUserData {
+class CONTENT_EXPORT ResourceRequestBodyImpl : public ResourceRequestBody {
  public:
   typedef storage::DataElement Element;
 

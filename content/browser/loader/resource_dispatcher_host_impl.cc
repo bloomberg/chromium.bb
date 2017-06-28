@@ -39,7 +39,6 @@
 #include "content/browser/appcache/appcache_navigation_handle_core.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/bad_message.h"
-#include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/browsing_data/clear_site_data_throttle.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/navigation_request_info.h"
@@ -1159,6 +1158,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
     return;
   }
 
+  BlobHandles blob_handles;
   if (!is_navigation_stream_request) {
     storage::BlobStorageContext* blob_context =
         GetBlobStorageContext(requester_info->blob_storage_context());
@@ -1168,12 +1168,11 @@ void ResourceDispatcherHostImpl::BeginRequest(
       // because ResourceMessageFilters created in PluginProcessHost don't have
       // the blob context.
       if (blob_context) {
-        // Attaches the BlobDataHandles to request_body not to free the blobs
-        // and any attached shareable files until upload completion. These data
+        // Get BlobHandles to request_body to prevent blobs and any attached
+        // shareable files from being freed until upload completion. These data
         // will be used in UploadDataStream and ServiceWorkerURLRequestJob.
-        bool blobs_alive = AttachRequestBodyBlobDataHandles(
-            request_data.request_body.get(), resource_context);
-        if (!blobs_alive) {
+        if (!GetBodyBlobDataHandles(request_data.request_body.get(),
+                                    resource_context, &blob_handles)) {
           AbortRequestBeforeItStarts(requester_info->filter(),
                                      sync_result_handler, request_id,
                                      std::move(url_loader_client));
@@ -1206,7 +1205,8 @@ void ResourceDispatcherHostImpl::BeginRequest(
                   base::Unretained(this), make_scoped_refptr(requester_info),
                   request_id, request_data, sync_result_handler, route_id,
                   headers, base::Passed(std::move(mojo_request)),
-                  base::Passed(std::move(url_loader_client))));
+                  base::Passed(std::move(url_loader_client)),
+                  base::Passed(std::move(blob_handles))));
           return;
         }
       }
@@ -1215,7 +1215,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
   ContinuePendingBeginRequest(
       requester_info, request_id, request_data, sync_result_handler, route_id,
       headers, std::move(mojo_request), std::move(url_loader_client),
-      HeaderInterceptorResult::CONTINUE);
+      std::move(blob_handles), HeaderInterceptorResult::CONTINUE);
 }
 
 void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
@@ -1227,6 +1227,7 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
     const net::HttpRequestHeaders& headers,
     mojom::URLLoaderAssociatedRequest mojo_request,
     mojom::URLLoaderClientPtr url_loader_client,
+    BlobHandles blob_handles,
     HeaderInterceptorResult interceptor_result) {
   DCHECK(requester_info->IsRenderer() || requester_info->IsNavigationPreload());
   if (interceptor_result != HeaderInterceptorResult::CONTINUE) {
@@ -1407,6 +1408,7 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
                        resource_context,
                        request_data.resource_type == RESOURCE_TYPE_MAIN_FRAME),
       request_data.request_body, request_data.initiated_in_secure_context);
+  extra_info->SetBlobHandles(std::move(blob_handles));
   // Request takes ownership.
   extra_info->AssociateWithRequest(new_request.get());
 
@@ -2115,9 +2117,9 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
 
   // Resolve elements from request_body and prepare upload data.
   ResourceRequestBodyImpl* body = info.common_params.post_data.get();
+  BlobHandles blob_handles;
   if (body) {
-    bool blobs_alive = AttachRequestBodyBlobDataHandles(body, resource_context);
-    if (!blobs_alive) {
+    if (!GetBodyBlobDataHandles(body, resource_context, &blob_handles)) {
       new_request->CancelWithError(net::ERR_INSUFFICIENT_RESOURCES);
       loader->NotifyRequestFailed(false, net::ERR_ABORTED);
       return;
@@ -2163,6 +2165,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
       // If in the future this changes this should be updated to somehow get a
       // meaningful value.
       false);  // initiated_in_secure_context
+  extra_info->SetBlobHandles(std::move(blob_handles));
   extra_info->set_navigation_ui_data(std::move(navigation_ui_data));
 
   // Request takes ownership.
