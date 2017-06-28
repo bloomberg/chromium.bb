@@ -5,10 +5,14 @@
 package org.chromium.customtabs.test;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Debug;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -26,6 +30,10 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.RadioButton;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 /** Activity used to benchmark Custom Tabs PLT.
  *
  * This activity contains benchmark code for two modes:
@@ -37,6 +45,7 @@ import android.widget.RadioButton;
  */
 public class MainActivity extends Activity implements View.OnClickListener {
     static final String TAG = "CUSTOMTABSBENCH";
+    private static final String MEMORY_TAG = "CUSTOMTABSMEMORY";
     private static final String DEFAULT_URL = "https://www.android.com";
     private static final String DEFAULT_PACKAGE = "com.google.android.apps.chrome";
     private static final int NONE = -1;
@@ -235,6 +244,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     }
 
     private final class CustomCallback extends CustomTabsCallback {
+        private final String mPackageName;
         private final boolean mWarmup;
         private final String mSpeculationMode;
         private final int mDelayToMayLaunchUrl;
@@ -244,8 +254,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
         private long mPageLoadFinishedMs = NONE;
         private long mFirstContentfulPaintMs = NONE;
 
-        public CustomCallback(boolean warmup, String speculationMode, int delayToMayLaunchUrl,
-                int delayToLaunchUrl) {
+        public CustomCallback(String packageName, boolean warmup, String speculationMode,
+                int delayToMayLaunchUrl, int delayToLaunchUrl) {
+            mPackageName = packageName;
             mWarmup = warmup;
             mSpeculationMode = speculationMode;
             mDelayToMayLaunchUrl = delayToMayLaunchUrl;
@@ -296,6 +307,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     + mPageLoadStartedMs + "," + mPageLoadFinishedMs + ","
                     + mFirstContentfulPaintMs;
             Log.w(TAG, logLine);
+            logMemory(mPackageName, "AfterMetrics");
             MainActivity.this.finish();
         }
 
@@ -308,6 +320,52 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 }
             }, delayMs);
         }
+    }
+
+    /**
+     * Sums all the memory usage of a package, and returns (PSS, Private Dirty).
+     *
+     * Only works for packages where a service is exported by each process, which is the case for
+     * Chrome. Also, doesn't work on O and above, as {@link ActivityManager.getRunningServices} is
+     * restricted.
+     *
+     * @param context Application context
+     * @param packageName the package to query
+     * @return {pss, privateDirty} in kB, or null.
+     */
+    private static int[] getPackagePssAndPrivateDirty(Context context, String packageName) {
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.N_MR1) return null;
+
+        ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        List<ActivityManager.RunningServiceInfo> services = am.getRunningServices(1000);
+        if (services == null) return null;
+
+        Set<Integer> pids = new HashSet<>();
+        for (ActivityManager.RunningServiceInfo info : services) {
+            if (packageName.equals(info.service.getPackageName())) pids.add(info.pid);
+        }
+
+        int[] pidsArray = new int[pids.size()];
+        int i = 0;
+        for (int pid : pids) pidsArray[i++] = pid;
+        Debug.MemoryInfo infos[] = am.getProcessMemoryInfo(pidsArray);
+        if (infos == null || infos.length == 0) return null;
+
+        int pss = 0;
+        int privateDirty = 0;
+        for (Debug.MemoryInfo info : infos) {
+            pss += info.getTotalPss();
+            privateDirty += info.getTotalPrivateDirty();
+        }
+
+        return new int[] {pss, privateDirty};
+    }
+
+    private void logMemory(String packageName, String message) {
+        int[] pssAndPrivateDirty = getPackagePssAndPrivateDirty(
+                getApplicationContext(), packageName);
+        if (pssAndPrivateDirty == null) return;
+        Log.w(MEMORY_TAG, message + "," + pssAndPrivateDirty[0] + "," + pssAndPrivateDirty[1]);
     }
 
     private static void forceSpeculationMode(
@@ -345,9 +403,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     private void onCustomTabsServiceConnected(CustomTabsClient client, final Uri speculatedUri,
             final Uri uri, final CustomCallback cb, boolean warmup, String speculationMode,
-            int delayToMayLaunchUrl, final int delayToLaunchUrl, final int timeoutSeconds) {
+            int delayToMayLaunchUrl, final int delayToLaunchUrl, final int timeoutSeconds,
+            final String packageName) {
         final CustomTabsSession session = client.newSession(cb);
         final CustomTabsIntent intent = (new CustomTabsIntent.Builder(session)).build();
+        logMemory(packageName, "OnServiceConnected");
 
         IBinder sessionBinder =
                 BundleCompat.getBinder(intent.intent.getExtras(), CustomTabsIntent.EXTRA_SESSION);
@@ -357,6 +417,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         final Runnable launchRunnable = new Runnable() {
             @Override
             public void run() {
+                logMemory(packageName, "BeforeLaunch");
                 intent.launchUrl(MainActivity.this, uri);
                 cb.recordIntentHasBeenSent();
                 if (timeoutSeconds != NONE) cb.logMetricsAndFinishDelayed(timeoutSeconds * 1000);
@@ -365,6 +426,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         Runnable mayLaunchRunnable = new Runnable() {
             @Override
             public void run() {
+                logMemory(packageName, "BeforeMayLaunchUrl");
                 session.mayLaunchUrl(speculatedUri, null, null);
                 mHandler.postDelayed(launchRunnable, delayToLaunchUrl);
             }
@@ -378,11 +440,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
         }
     }
 
-    private void launchCustomTabs(String packageName, String speculatedUrl, String url,
+    private void launchCustomTabs(final String packageName, String speculatedUrl, String url,
             final boolean warmup, final String speculationMode, final int delayToMayLaunchUrl,
             final int delayToLaunchUrl, final int timeoutSeconds) {
-        final CustomCallback cb =
-                new CustomCallback(warmup, speculationMode, delayToMayLaunchUrl, delayToLaunchUrl);
+        final CustomCallback cb = new CustomCallback(
+                packageName, warmup, speculationMode, delayToMayLaunchUrl, delayToLaunchUrl);
         final Uri speculatedUri = Uri.parse(speculatedUrl);
         final Uri uri = Uri.parse(url);
         CustomTabsClient.bindCustomTabsService(
@@ -392,7 +454,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                             ComponentName name, final CustomTabsClient client) {
                         MainActivity.this.onCustomTabsServiceConnected(client, speculatedUri, uri,
                                 cb, warmup, speculationMode, delayToMayLaunchUrl, delayToLaunchUrl,
-                                timeoutSeconds);
+                                timeoutSeconds, packageName);
                     }
 
                     @Override
