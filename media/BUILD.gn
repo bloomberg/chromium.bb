@@ -363,11 +363,9 @@ component("media") {
 
   if (is_mac) {
     public_deps += [ "//media/base/mac" ]
-    libs += [
-      "CoreFoundation.framework",
-      "CoreGraphics.framework",
-      "Foundation.framework",
-    ]
+
+    # For device_monitor_mac.mm
+    libs += [ "Foundation.framework" ]
   }
 
   if (is_ios) {

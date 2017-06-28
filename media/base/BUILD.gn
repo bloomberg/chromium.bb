@@ -336,9 +336,11 @@ target(link_target_type, "base") {
     ]
   } else if (is_mac) {
     sources += [ "user_input_monitor_mac.cc" ]
-
-    # Required by video_frame.cc.
-    libs = [ "CoreVideo.framework" ]
+    libs = [
+      "CoreVideo.framework",
+      "CoreFoundation.framework",
+      "CoreGraphics.framework",
+    ]
   } else if (is_win) {
     sources += [ "user_input_monitor_win.cc" ]
   } else {
