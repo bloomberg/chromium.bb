@@ -31,8 +31,10 @@
 #include "platform/blob/BlobData.h"
 
 #include <memory>
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/UUID.h"
+#include "platform/blob/BlobBytesProvider.h"
 #include "platform/blob/BlobRegistry.h"
 #include "platform/text/LineEnding.h"
 #include "platform/wtf/PassRefPtr.h"
@@ -285,6 +287,7 @@ BlobDataHandle::BlobDataHandle(std::unique_ptr<BlobData> data, long long size)
     size_t current_memory_population = 0;
     Vector<DataElementPtr> elements;
     const DataElementPtr null_element = nullptr;
+    BlobBytesProvider* last_bytes_provider = nullptr;
 
     // TODO(mek): When the mojo code path is the default BlobData should
     // directly create mojom::DataElements rather than BlobDataItems,
@@ -312,6 +315,7 @@ BlobDataHandle::BlobDataHandle(std::unique_ptr<BlobData> data, long long size)
           bool last_element_is_bytes = last_element && last_element->is_bytes();
           if (last_element_is_bytes) {
             // Append bytes to previous element.
+            DCHECK(last_bytes_provider);
             const auto& bytes_element = last_element->get_bytes();
             bytes_element->length += item.data->length();
             if (should_embed_bytes && bytes_element->embedded_data) {
@@ -322,11 +326,17 @@ BlobDataHandle::BlobDataHandle(std::unique_ptr<BlobData> data, long long size)
               current_memory_population -= bytes_element->embedded_data->size();
               bytes_element->embedded_data = WTF::nullopt;
             }
-            // TODO(mek): Append data to previous element's BytesProvider.
+            last_bytes_provider->AppendData(item.data);
           } else {
             BytesProviderPtr bytes_provider;
-            // TODO(mek): Bind bytes provider to something.
-            MakeRequest(&bytes_provider);
+            // TODO(mek): BytesProvider should be bound on a thread that doesn't
+            // run javascript to prevent deadlock if javascript starts trying to
+            // synchronously read the blob before all data has been transported
+            // to the browser process.
+            last_bytes_provider = static_cast<BlobBytesProvider*>(
+                MakeStrongBinding(WTF::MakeUnique<BlobBytesProvider>(item.data),
+                                  MakeRequest(&bytes_provider))
+                    ->impl());
             DataElementBytesPtr bytes_element = DataElementBytes::New(
                 item.data->length(), WTF::nullopt, std::move(bytes_provider));
             if (should_embed_bytes) {
