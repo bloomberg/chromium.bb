@@ -17,6 +17,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/common/chrome_features.h"
+#include "net/cert/ct_serialization.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/report_sender.h"
 
@@ -51,57 +52,42 @@ std::string SCTOriginToString(
     case net::ct::SignedCertificateTimestamp::SCT_EMBEDDED:
       return "embedded";
     case net::ct::SignedCertificateTimestamp::SCT_FROM_TLS_EXTENSION:
-      return "from-tls-extension";
+      return "tls-extension";
     case net::ct::SignedCertificateTimestamp::SCT_FROM_OCSP_RESPONSE:
-      return "from-ocsp-response";
-    default:
+      return "ocsp";
+    case net::ct::SignedCertificateTimestamp::SCT_ORIGIN_MAX:
       NOTREACHED();
   }
   return "";
 }
 
-void AddUnknownSCT(
-    const net::SignedCertificateTimestampAndStatus& sct_and_status,
-    base::ListValue* list) {
+void AddSCT(const net::SignedCertificateTimestampAndStatus& sct,
+            base::ListValue* list) {
   std::unique_ptr<base::DictionaryValue> list_item(new base::DictionaryValue());
-  list_item->SetString("origin", SCTOriginToString(sct_and_status.sct->origin));
-  list->Append(std::move(list_item));
-}
-
-void AddInvalidSCT(
-    const net::SignedCertificateTimestampAndStatus& sct_and_status,
-    base::ListValue* list) {
-  std::unique_ptr<base::DictionaryValue> list_item(new base::DictionaryValue());
-  list_item->SetString("origin", SCTOriginToString(sct_and_status.sct->origin));
-  std::string log_id;
-  base::Base64Encode(sct_and_status.sct->log_id, &log_id);
-  list_item->SetString("id", log_id);
-  list->Append(std::move(list_item));
-}
-
-void AddValidSCT(const net::SignedCertificateTimestampAndStatus& sct_and_status,
-                 base::ListValue* list) {
-  std::unique_ptr<base::DictionaryValue> list_item(new base::DictionaryValue());
-  list_item->SetString("origin", SCTOriginToString(sct_and_status.sct->origin));
-
-  // The structure of the SCT object is defined in
-  // http://tools.ietf.org/html/rfc6962#section-4.1.
-  std::unique_ptr<base::DictionaryValue> sct(new base::DictionaryValue());
-  sct->SetInteger("sct_version", sct_and_status.sct->version);
-  std::string log_id;
-  base::Base64Encode(sct_and_status.sct->log_id, &log_id);
-  sct->SetString("id", log_id);
-  base::TimeDelta timestamp =
-      sct_and_status.sct->timestamp - base::Time::UnixEpoch();
-  sct->SetString("timestamp", base::Int64ToString(timestamp.InMilliseconds()));
-  std::string extensions;
-  base::Base64Encode(sct_and_status.sct->extensions, &extensions);
-  sct->SetString("extensions", extensions);
-  std::string signature;
-  base::Base64Encode(sct_and_status.sct->signature.signature_data, &signature);
-  sct->SetString("signature", signature);
-
-  list_item->Set("sct", std::move(sct));
+  // Chrome implements RFC6962, not 6962-bis, so the reports contain v1 SCTs.
+  list_item->SetInteger("version", 1);
+  std::string status;
+  switch (sct.status) {
+    case net::ct::SCT_STATUS_LOG_UNKNOWN:
+      status = "unknown";
+      break;
+    case net::ct::SCT_STATUS_INVALID_SIGNATURE:
+    case net::ct::SCT_STATUS_INVALID_TIMESTAMP:
+      status = "invalid";
+      break;
+    case net::ct::SCT_STATUS_OK:
+      status = "valid";
+      break;
+    case net::ct::SCT_STATUS_NONE:
+      NOTREACHED();
+  }
+  list_item->SetString("status", status);
+  list_item->SetString("source", SCTOriginToString(sct.sct->origin));
+  std::string serialized_sct;
+  net::ct::EncodeSignedCertificateTimestamp(sct.sct, &serialized_sct);
+  std::string encoded_serialized_sct;
+  base::Base64Encode(serialized_sct, &encoded_serialized_sct);
+  list_item->SetString("serialized_sct", encoded_serialized_sct);
   list->Append(std::move(list_item));
 }
 
@@ -161,43 +147,26 @@ void ChromeExpectCTReporter::OnExpectCTFailed(
   if (!base::FeatureList::IsEnabled(features::kExpectCTReporting))
     return;
 
-  base::DictionaryValue report;
-  report.SetString("hostname", host_port_pair.host());
-  report.SetInteger("port", host_port_pair.port());
-  report.SetString("date-time", TimeToISO8601(base::Time::Now()));
-  report.SetString("effective-expiration-date", TimeToISO8601(expiration));
-  report.Set("served-certificate-chain",
-             GetPEMEncodedChainAsList(served_certificate_chain));
-  report.Set("validated-certificate-chain",
-             GetPEMEncodedChainAsList(validated_certificate_chain));
+  base::DictionaryValue outer_report;
+  base::DictionaryValue* report = outer_report.SetDictionary(
+      "expect-ct-report", base::MakeUnique<base::DictionaryValue>());
+  report->SetString("hostname", host_port_pair.host());
+  report->SetInteger("port", host_port_pair.port());
+  report->SetString("date-time", TimeToISO8601(base::Time::Now()));
+  report->SetString("effective-expiration-date", TimeToISO8601(expiration));
+  report->Set("served-certificate-chain",
+              GetPEMEncodedChainAsList(served_certificate_chain));
+  report->Set("validated-certificate-chain",
+              GetPEMEncodedChainAsList(validated_certificate_chain));
 
-  std::unique_ptr<base::ListValue> unknown_scts(new base::ListValue());
-  std::unique_ptr<base::ListValue> invalid_scts(new base::ListValue());
-  std::unique_ptr<base::ListValue> valid_scts(new base::ListValue());
-
+  std::unique_ptr<base::ListValue> scts(new base::ListValue());
   for (const auto& sct_and_status : signed_certificate_timestamps) {
-    switch (sct_and_status.status) {
-      case net::ct::SCT_STATUS_LOG_UNKNOWN:
-        AddUnknownSCT(sct_and_status, unknown_scts.get());
-        break;
-      case net::ct::SCT_STATUS_INVALID_SIGNATURE:
-      case net::ct::SCT_STATUS_INVALID_TIMESTAMP:
-        AddInvalidSCT(sct_and_status, invalid_scts.get());
-        break;
-      case net::ct::SCT_STATUS_OK:
-        AddValidSCT(sct_and_status, valid_scts.get());
-        break;
-      default:
-        NOTREACHED();
-    }
+    AddSCT(sct_and_status, scts.get());
   }
-
-  report.Set("unknown-scts", std::move(unknown_scts));
-  report.Set("invalid-scts", std::move(invalid_scts));
-  report.Set("valid-scts", std::move(valid_scts));
+  report->Set("scts", std::move(scts));
 
   std::string serialized_report;
-  if (!base::JSONWriter::Write(report, &serialized_report)) {
+  if (!base::JSONWriter::Write(outer_report, &serialized_report)) {
     LOG(ERROR) << "Failed to serialize Expect CT report";
     return;
   }
