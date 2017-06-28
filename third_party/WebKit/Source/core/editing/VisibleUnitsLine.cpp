@@ -750,7 +750,7 @@ VisiblePosition NextLinePosition(const VisiblePosition& visible_position,
                               : node->GetDocument().documentElement();
   if (!root_element)
     return VisiblePosition();
-  return VisiblePosition::LastPositionInNode(root_element);
+  return VisiblePosition::LastPositionInNode(*root_element);
 }
 
 }  // namespace blink

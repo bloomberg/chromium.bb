@@ -901,7 +901,7 @@ void TypingCommand::ForwardDeleteKeyPressed(TextGranularity granularity,
           EnclosingNodeOfType(visible_end.DeepEquivalent(), &IsTableCell);
       if (enclosing_table_cell &&
           visible_end.DeepEquivalent() ==
-              VisiblePosition::LastPositionInNode(enclosing_table_cell)
+              VisiblePosition::LastPositionInNode(*enclosing_table_cell)
                   .DeepEquivalent())
         return;
       if (visible_end.DeepEquivalent() ==

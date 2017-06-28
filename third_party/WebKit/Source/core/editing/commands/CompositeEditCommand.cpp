@@ -1801,7 +1801,7 @@ Position CompositeEditCommand::PositionAvoidingSpecialElementBoundary(
     VisiblePosition first_in_anchor =
         VisiblePosition::FirstPositionInNode(*enclosing_anchor);
     VisiblePosition last_in_anchor =
-        VisiblePosition::LastPositionInNode(enclosing_anchor);
+        VisiblePosition::LastPositionInNode(*enclosing_anchor);
     // If visually just after the anchor, insert *inside* the anchor unless it's
     // the last VisiblePosition in the document, to match NSTextView.
     if (visible_pos.DeepEquivalent() == last_in_anchor.DeepEquivalent()) {

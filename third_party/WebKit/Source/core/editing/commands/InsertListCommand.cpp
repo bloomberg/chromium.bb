@@ -395,7 +395,7 @@ bool InsertListCommand::DoApplyForSingleParagraph(
 
       MoveParagraphWithClones(
           VisiblePosition::FirstPositionInNode(*list_element),
-          VisiblePosition::LastPositionInNode(list_element), new_list,
+          VisiblePosition::LastPositionInNode(*list_element), new_list,
           outer_block, editing_state);
       if (editing_state->IsAborted())
         return false;
@@ -461,7 +461,7 @@ void InsertListCommand::UnlistifyParagraph(
   DCHECK(list_child_node);
   if (isHTMLLIElement(*list_child_node)) {
     start = VisiblePosition::FirstPositionInNode(*list_child_node);
-    end = VisiblePosition::LastPositionInNode(list_child_node);
+    end = VisiblePosition::LastPositionInNode(*list_child_node);
     next_list_child = list_child_node->nextSibling();
     previous_list_child = list_child_node->previousSibling();
   } else {

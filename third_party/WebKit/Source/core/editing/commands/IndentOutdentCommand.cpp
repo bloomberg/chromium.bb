@@ -236,7 +236,7 @@ void IndentOutdentCommand::OutdentParagraph(EditingState* editing_state) {
           ? position_in_enclosing_block
           : StartOfBlock(position_in_enclosing_block);
   VisiblePosition last_position_in_enclosing_block =
-      VisiblePosition::LastPositionInNode(enclosing_element);
+      VisiblePosition::LastPositionInNode(*enclosing_element);
   VisiblePosition end_of_enclosing_block =
       EndOfBlock(last_position_in_enclosing_block);
   if (visible_start_of_paragraph.DeepEquivalent() ==

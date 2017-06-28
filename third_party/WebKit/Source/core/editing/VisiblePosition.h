@@ -109,7 +109,7 @@ class CORE_TEMPLATE_CLASS_EXPORT VisiblePositionTemplate final {
   static VisiblePositionTemplate<Strategy> FirstPositionInNode(const Node&);
   static VisiblePositionTemplate<Strategy> InParentAfterNode(const Node&);
   static VisiblePositionTemplate<Strategy> InParentBeforeNode(const Node&);
-  static VisiblePositionTemplate<Strategy> LastPositionInNode(Node*);
+  static VisiblePositionTemplate<Strategy> LastPositionInNode(const Node&);
 
   DECLARE_TRACE();
 
