@@ -24540,6 +24540,7 @@ from previous Chrome versions.
   <int value="1" label="App"/>
   <int value="2" label="Tab"/>
   <int value="4" label="Desktop"/>
+  <int value="8" label="Local Media"/>
 </enum>
 
 <enum name="MediaRouterUserAction">

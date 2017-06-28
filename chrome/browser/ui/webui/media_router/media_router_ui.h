@@ -293,6 +293,10 @@ class MediaRouterUI
       const base::string16& presentation_request_source_name,
       const RouteRequestResult& result);
 
+  // Logs a UMA stat for the source that was cast if the result is successful.
+  void MaybeReportCastingSource(MediaCastMode cast_mode,
+                                const RouteRequestResult& result);
+
   // Closes the dialog after receiving a route response when using
   // |create_session_request_|. This prevents the dialog from trying to use the
   // same presentation request again.
