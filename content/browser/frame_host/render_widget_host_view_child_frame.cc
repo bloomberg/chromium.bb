@@ -91,7 +91,7 @@ void RenderWidgetHostViewChildFrame::
 
   auto* root_view = frame_connector_->GetRootRenderWidgetHostView();
   if (root_view) {
-    auto* manager = root_view->touch_selection_controller_client_manager();
+    auto* manager = root_view->GetTouchSelectionControllerClientManager();
     if (manager)
       manager->RemoveObserver(this);
   }
@@ -138,7 +138,7 @@ void RenderWidgetHostViewChildFrame::SetCrossProcessFrameConnector(
       if (current_device_scale_factor_ == 0.f)
         current_device_scale_factor_ = 1.f;
 
-      auto* manager = root_view->touch_selection_controller_client_manager();
+      auto* manager = root_view->GetTouchSelectionControllerClientManager();
       if (manager) {
         // We will only have a manager on Aura (and eventually Android).
         // TODO(wjmaclean): update this comment when TSE OOPIF support becomes

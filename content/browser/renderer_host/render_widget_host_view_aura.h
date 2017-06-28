@@ -117,6 +117,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void FocusedNodeTouched(const gfx::Point& location_dips_screen,
                           bool editable) override;
   void SetNeedsBeginFrames(bool needs_begin_frames) override;
+  TouchSelectionControllerClientManager*
+  GetTouchSelectionControllerClientManager() override;
 
   // Overridden from RenderWidgetHostViewBase:
   void InitAsPopup(RenderWidgetHostView* parent_host_view,
@@ -329,9 +331,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   RenderWidgetHostViewEventHandler* event_handler() {
     return event_handler_.get();
   }
-
-  TouchSelectionControllerClientManager*
-  touch_selection_controller_client_manager() override;
 
  protected:
   ~RenderWidgetHostViewAura() override;

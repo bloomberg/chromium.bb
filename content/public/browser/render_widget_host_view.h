@@ -35,6 +35,7 @@ namespace content {
 
 class RenderWidgetHost;
 class RenderWidgetHostViewFrameSubscriber;
+class TouchSelectionControllerClientManager;
 
 // RenderWidgetHostView is an interface implemented by an object that acts as
 // the "View" portion of a RenderWidgetHost. The RenderWidgetHost and its
@@ -124,6 +125,13 @@ class CONTENT_EXPORT RenderWidgetHostView {
 
   // Returns the currently selected text.
   virtual base::string16 GetSelectedText() = 0;
+
+  // This only returns non-null on platforms that implement touch
+  // selection editing (TSE), currently Aura and (soon) Android.
+  // TODO(wjmaclean): update this comment when OOPIF TSE is implemented on
+  // Android. https://crbug.com/470662.
+  virtual TouchSelectionControllerClientManager*
+  GetTouchSelectionControllerClientManager() = 0;
 
   // Subclasses should override this method to set the background color. |color|
   // has to be either SK_ColorTRANSPARENT or opaque. If set to
