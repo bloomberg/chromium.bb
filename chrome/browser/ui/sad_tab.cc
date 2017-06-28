@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/sad_tab.h"
 
+#include <vector>
+
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/net/referrer.h"
@@ -17,6 +19,7 @@
 #include "components/feedback/feedback_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/ui_metrics/sadtab_metrics_types.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -161,37 +164,36 @@ const char* SadTab::GetHelpLinkURL() {
                                : chrome::kCrashReasonURL;
 }
 
-int SadTab::GetSubMessage(size_t line_id) {
-  // Note: on macOS, Linux and ChromeOS, the first bullet is either one of
-  // IDS_SAD_TAB_RELOAD_CLOSE_TABS or IDS_SAD_TAB_RELOAD_CLOSE_NOTABS followed
-  // by one of these suggestions.
-  const int kLineIds[] = {IDS_SAD_TAB_RELOAD_INCOGNITO,
-                          IDS_SAD_TAB_RELOAD_RESTART_BROWSER,
-                          IDS_SAD_TAB_RELOAD_RESTART_DEVICE};
-
+std::vector<int> SadTab::GetSubMessages() {
   if (!show_feedback_button_)
-    return 0;
+    return std::vector<int>();
+
   switch (kind_) {
 #if defined(OS_CHROMEOS)
     case chrome::SAD_TAB_KIND_KILLED_BY_OOM:
-      return 0;
+      return std::vector<int>();
 #endif
     case chrome::SAD_TAB_KIND_OOM:
-      return 0;
+      return std::vector<int>();
     case chrome::SAD_TAB_KIND_CRASHED:
     case chrome::SAD_TAB_KIND_KILLED:
+      std::vector<int> message_ids = {IDS_SAD_TAB_RELOAD_RESTART_BROWSER,
+                                      IDS_SAD_TAB_RELOAD_RESTART_DEVICE};
+      // Only show incognito suggestion if not already in Incognito mode.
+      if (!web_contents_->GetBrowserContext()->IsOffTheRecord())
+        message_ids.insert(message_ids.begin(), IDS_SAD_TAB_RELOAD_INCOGNITO);
 #if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_CHROMEOS)
-      if (line_id == 0)
-        return AreOtherTabsOpen() ? IDS_SAD_TAB_RELOAD_CLOSE_TABS
-                                  : IDS_SAD_TAB_RELOAD_CLOSE_NOTABS;
-      line_id--;
+      // Note: on macOS, Linux and ChromeOS, the first bullet is either one of
+      // IDS_SAD_TAB_RELOAD_CLOSE_TABS or IDS_SAD_TAB_RELOAD_CLOSE_NOTABS
+      // followed by one of the above suggestions.
+      message_ids.insert(message_ids.begin(),
+                         AreOtherTabsOpen() ? IDS_SAD_TAB_RELOAD_CLOSE_TABS
+                                            : IDS_SAD_TAB_RELOAD_CLOSE_NOTABS);
 #endif
-      if (line_id > 2)
-        return 0;
-      return kLineIds[line_id];
+      return message_ids;
   }
   NOTREACHED();
-  return 0;
+  return std::vector<int>();
 }
 
 void SadTab::RecordFirstPaint() {

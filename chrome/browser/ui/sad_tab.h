@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_SAD_TAB_H_
 #define CHROME_BROWSER_UI_SAD_TAB_H_
 
+#include <vector>
+
 #include "base/process/kill.h"
 #include "chrome/browser/ui/sad_tab_types.h"
 
@@ -38,9 +40,9 @@ class SadTab {
   int GetButtonTitle();
   int GetHelpLinkTitle();
 
-  // Returns the resource string Id for bullet point |line_id| or 0 if no
-  // message should be displayed for the |line_id|. Line ids count from 0.
-  int GetSubMessage(size_t line_id);
+  // Returns the resource string IDs for bullet points or empty vector if no
+  // bullet points should be displayed.
+  std::vector<int> GetSubMessages();
 
   // Returns the target of the "Learn more" link. Use it for the context menu
   // and to show the URL on hover, but call PerformAction() for regular clicks.
