@@ -119,6 +119,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   void EndFrameSubscription() override;
   void FocusedNodeTouched(const gfx::Point& location_dips_screen,
                           bool editable) override;
+  TouchSelectionControllerClientManager*
+  GetTouchSelectionControllerClientManager() override;
 
   // This only needs to be overridden by RenderWidgetHostViewBase subclasses
   // that handle content embedded within other RenderWidgetHostViews.
@@ -432,13 +434,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   void set_web_contents_accessibility(WebContentsAccessibility* wcax) {
     web_contents_accessibility_ = wcax;
   }
-
-  // This only returns non-null on platforms that implement touch
-  // selection editing (TSE), currently Aura and (soon) Android.
-  // TODO(wjmaclean): update this comment when OOPIF TSE is implemented on
-  // Android.
-  virtual TouchSelectionControllerClientManager*
-  touch_selection_controller_client_manager();
 
   // Exposed for testing.
   virtual bool IsChildFrameForTesting() const;
