@@ -4,6 +4,7 @@
 
 """Utility functions used both when importing and exporting."""
 
+import json
 import logging
 
 from webkitpy.w3c.chromium_commit import ChromiumCommit
@@ -101,3 +102,18 @@ def is_exportable(chromium_commit, local_wpt, wpt_github):
     if pull_request and pull_request.state == 'closed':
         return False
     return True
+
+
+def read_credentials(host, credentials_json):
+    """Extracts credentials from a JSON file."""
+    if not credentials_json:
+        return {}
+    if not host.filesystem.exists(credentials_json):
+        _log.warning('Credentials JSON file not found at %s.', credentials_json)
+        return {}
+    credentials = {}
+    contents = json.loads(host.filesystem.read_text_file(credentials_json))
+    for key in ('GH_USER', 'GH_TOKEN', 'GERRIT_USER', 'GERRIT_TOKEN'):
+        if key in contents:
+            credentials[key] = contents[key]
+    return credentials

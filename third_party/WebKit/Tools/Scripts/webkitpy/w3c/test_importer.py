@@ -19,7 +19,7 @@ from webkitpy.common.net.buildbot import current_build_link
 from webkitpy.common.path_finder import PathFinder
 from webkitpy.layout_tests.models.test_expectations import TestExpectations, TestExpectationParser
 from webkitpy.layout_tests.port.base import Port
-from webkitpy.w3c.common import WPT_REPO_URL, WPT_DEST_NAME, exportable_commits_over_last_n_commits
+from webkitpy.w3c.common import WPT_REPO_URL, WPT_DEST_NAME, read_credentials, exportable_commits_over_last_n_commits
 from webkitpy.w3c.directory_owners_extractor import DirectoryOwnersExtractor
 from webkitpy.w3c.local_wpt import LocalWPT
 from webkitpy.w3c.wpt_github import WPTGitHub
@@ -43,10 +43,16 @@ class TestImporter(object):
         self.finder = PathFinder(self.fs)
         self.verbose = False
         self.git_cl = None
-        self.wpt_github = wpt_github or WPTGitHub(self.host)
+        self.wpt_github = wpt_github
 
     def main(self, argv=None):
         options = self.parse_args(argv)
+
+        credentials = read_credentials(self.host, options.credentials_json)
+        if self.wpt_github is None:
+            self.wpt_github = WPTGitHub(
+                self.host, credentials.get('GH_USER'), credentials.get('GH_TOKEN'))
+
         self.verbose = options.verbose
         log_level = logging.DEBUG if self.verbose else logging.INFO
         logging.basicConfig(level=log_level, format='%(message)s')
@@ -123,8 +129,12 @@ class TestImporter(object):
                             help='authentication refresh token JSON file, '
                                  'used for authentication for try jobs, '
                                  'generally not necessary on developer machines')
+        parser.add_argument('--credentials-json',
+                            help='A JSON file with an object containing zero or more of the '
+                                 'following keys: GH_USER, GH_TOKEN')
         parser.add_argument('--ignore-exportable-commits', action='store_true',
                             help='Continue even if there are exportable commits that may be overwritten.')
+
         return parser.parse_args(argv)
 
     def checkout_is_okay(self, allow_local_commits):
