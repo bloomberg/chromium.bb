@@ -1310,7 +1310,7 @@ void SourceBuffer::AppendError() {
 
   // 5. If decode error is true, then run the end of stream algorithm with the
   // error parameter set to "decode".
-  source_->endOfStream("decode", ASSERT_NO_EXCEPTION);
+  source_->EndOfStreamAlgorithm(WebMediaSource::kEndOfStreamStatusDecodeError);
 }
 
 DEFINE_TRACE(SourceBuffer) {

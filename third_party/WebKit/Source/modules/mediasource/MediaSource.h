@@ -119,6 +119,7 @@ class MediaSource final : public EventTargetWithInlineData,
   bool IsOpen() const;
   void SetSourceBufferActive(SourceBuffer*, bool);
   HTMLMediaElement* MediaElement() const;
+  void EndOfStreamAlgorithm(const WebMediaSource::EndOfStreamStatus);
 
   // Used by MediaSourceRegistry.
   void AddedToRegistry();
@@ -138,8 +139,6 @@ class MediaSource final : public EventTargetWithInlineData,
                                                          const String& codecs,
                                                          ExceptionState&);
   void ScheduleEvent(const AtomicString& event_name);
-  void EndOfStreamInternal(const WebMediaSource::EndOfStreamStatus,
-                           ExceptionState&);
 
   // Implements the duration change algorithm.
   // http://w3c.github.io/media-source/#duration-change-algorithm
