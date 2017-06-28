@@ -16,6 +16,9 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
+#include "base/threading/thread_restrictions.h"
 #include "chromecast/base/metrics/cast_histograms.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/browser/metrics/cast_stability_metrics_provider.h"
@@ -47,6 +50,16 @@ bool CheckLinearValues(const std::string& name, int maximum) {
   return CheckValues(name, 1, maximum, maximum + 1);
 }
 
+// Returns a task runner appropriate for running background tasks that perform
+// file I/O.
+scoped_refptr<base::SequencedTaskRunner> CreateTaskRunner() {
+  // Note that CollectEvents accesses a global singleton, and thus
+  // scheduling with CONTINUE_ON_SHUTDOWN might not be safe.
+  return base::CreateSequencedTaskRunnerWithTraits(
+      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+}
+
 }  // namespace
 
 // The interval between external metrics collections in seconds
@@ -57,45 +70,41 @@ ExternalMetrics::ExternalMetrics(
     const std::string& uma_events_file)
     : stability_provider_(stability_provider),
       uma_events_file_(uma_events_file),
+      task_runner_(CreateTaskRunner()),
       weak_factory_(this) {
   DCHECK(stability_provider);
+
+  // The sequence checker verifies that all of the interesting work done by this
+  // class is done on the |task_runner_|, rather than on the sequence that this
+  // object was created on.
+  DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 ExternalMetrics::~ExternalMetrics() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 void ExternalMetrics::StopAndDestroy() {
-  content::BrowserThread::DeleteSoon(
-      content::BrowserThread::FILE, FROM_HERE, this);
+  task_runner_->DeleteSoon(FROM_HERE, this);
 }
 
 void ExternalMetrics::Start() {
-  bool result = content::BrowserThread::PostDelayedTask(
-      content::BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&ExternalMetrics::CollectEventsAndReschedule,
-                 weak_factory_.GetWeakPtr()),
-      base::TimeDelta::FromSeconds(kExternalMetricsCollectionIntervalSeconds));
-  DCHECK(result);
+  ScheduleCollection();
 }
 
 void ExternalMetrics::ProcessExternalEvents(const base::Closure& cb) {
-  content::BrowserThread::PostTaskAndReply(
-      content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(
-          base::IgnoreResult(&ExternalMetrics::CollectEvents),
-          weak_factory_.GetWeakPtr()),
+  task_runner_->PostTaskAndReply(
+      FROM_HERE,
+      base::BindOnce(base::IgnoreResult(&ExternalMetrics::CollectEvents),
+                     weak_factory_.GetWeakPtr()),
       cb);
 }
 
 void ExternalMetrics::RecordCrash(const std::string& crash_kind) {
   content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&CastStabilityMetricsProvider::LogExternalCrash,
-                 base::Unretained(stability_provider_),
-                 crash_kind));
+      content::BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&CastStabilityMetricsProvider::LogExternalCrash,
+                     base::Unretained(stability_provider_), crash_kind));
 }
 
 void ExternalMetrics::RecordSparseHistogram(
@@ -107,6 +116,9 @@ void ExternalMetrics::RecordSparseHistogram(
 }
 
 int ExternalMetrics::CollectEvents() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::ThreadRestrictions::AssertIOAllowed();
+
   std::vector<std::unique_ptr<::metrics::MetricSample>> samples;
   ::metrics::SerializationUtils::ReadAndTruncateMetricsFromFile(
       uma_events_file_, &samples);
@@ -152,15 +164,17 @@ int ExternalMetrics::CollectEvents() {
 }
 
 void ExternalMetrics::CollectEventsAndReschedule() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CollectEvents();
-  bool result = content::BrowserThread::PostDelayedTask(
-      content::BrowserThread::FILE,
+  ScheduleCollection();
+}
+
+void ExternalMetrics::ScheduleCollection() {
+  task_runner_->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&ExternalMetrics::CollectEventsAndReschedule,
-                 weak_factory_.GetWeakPtr()),
+      base::BindOnce(&ExternalMetrics::CollectEventsAndReschedule,
+                     weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(kExternalMetricsCollectionIntervalSeconds));
-  DCHECK(result);
 }
 
 }  // namespace metrics
