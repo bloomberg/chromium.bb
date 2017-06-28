@@ -1063,7 +1063,6 @@ public class AwContents implements SmartClipProvider {
         assert mNativeAwContents == 0 && mCleanupReference == null && mContentViewCore == null;
 
         mNativeAwContents = newAwContentsPtr;
-        nativeSetAwGLFunctor(mNativeAwContents, mInitialFunctor.getNativeAwGLFunctor());
         updateNativeAwGLFunctor();
         // TODO(joth): when the native and java counterparts of AwBrowserContext are hooked up to
         // each other, we should update |mBrowserContext| according to the newly received native
