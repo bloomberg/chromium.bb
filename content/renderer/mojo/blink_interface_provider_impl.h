@@ -37,6 +37,9 @@ class BlinkInterfaceProviderImpl : public blink::InterfaceProvider {
                     mojo::ScopedMessagePipeHandle handle) override;
 
  private:
+  void GetInterfaceInternal(const std::string& name,
+                            mojo::ScopedMessagePipeHandle handle);
+
   const base::WeakPtr<service_manager::Connector> connector_;
   const base::WeakPtr<service_manager::InterfaceProvider> remote_interfaces_;
 
