@@ -6,7 +6,6 @@
 #define COMPONENTS_POLICY_CORE_COMMON_CLOUD_COMPONENT_CLOUD_POLICY_UPDATER_H_
 
 #include <memory>
-#include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -56,9 +55,7 @@ class POLICY_EXPORT ComponentCloudPolicyUpdater {
   void CancelUpdate(const PolicyNamespace& ns);
 
  private:
-  std::string NamespaceToKey(const PolicyNamespace& ns);
-
-  ComponentCloudPolicyStore* store_;
+  ComponentCloudPolicyStore* const store_;
   ExternalPolicyDataUpdater external_policy_data_updater_;
 
   DISALLOW_COPY_AND_ASSIGN(ComponentCloudPolicyUpdater);

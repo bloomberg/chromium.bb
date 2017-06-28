@@ -6,12 +6,15 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/policy/core/common/cloud/component_cloud_policy_store.h"
@@ -34,6 +37,12 @@ const int64_t kPolicyDataMaxSize = 5 * 1024 * 1024;
 // Tha maximum number of policy data fetches to run in parallel.
 const int64_t kMaxParallelPolicyDataFetches = 2;
 
+std::string NamespaceToKey(const PolicyNamespace& ns) {
+  const std::string domain = base::IntToString(ns.domain);
+  const std::string size = base::SizeTToString(domain.size());
+  return size + ":" + domain + ":" + ns.component_id;
+}
+
 }  // namespace
 
 ComponentCloudPolicyUpdater::ComponentCloudPolicyUpdater(
@@ -54,13 +63,19 @@ void ComponentCloudPolicyUpdater::UpdateExternalPolicy(
   // Keep a serialized copy of |response|, to cache it later.
   // The policy is also rejected if it exceeds the maximum size.
   std::string serialized_response;
-  if (!response->SerializeToString(&serialized_response) ||
-      serialized_response.size() > kPolicyProtoMaxSize) {
+  if (!response->SerializeToString(&serialized_response)) {
+    LOG(ERROR) << "Failed to serialize policy fetch response.";
+    return;
+  }
+  if (serialized_response.size() > kPolicyProtoMaxSize) {
+    LOG(ERROR) << "Policy fetch response too large: "
+               << serialized_response.size() << " bytes (max "
+               << kPolicyProtoMaxSize << ").";
     return;
   }
 
   // Validate the policy before doing anything else.
-  std::unique_ptr<em::PolicyData> policy_data(new em::PolicyData);
+  auto policy_data = base::MakeUnique<em::PolicyData>();
   em::ExternalPolicyData data;
   if (!store_->ValidatePolicy(ns, std::move(response), policy_data.get(),
                               &data)) {
@@ -96,13 +111,6 @@ void ComponentCloudPolicyUpdater::UpdateExternalPolicy(
 
 void ComponentCloudPolicyUpdater::CancelUpdate(const PolicyNamespace& ns) {
   external_policy_data_updater_.CancelExternalDataFetch(NamespaceToKey(ns));
-}
-
-std::string ComponentCloudPolicyUpdater::NamespaceToKey(
-    const PolicyNamespace& ns) {
-  const std::string domain = base::IntToString(ns.domain);
-  const std::string size = base::SizeTToString(domain.size());
-  return size + ":" + domain + ":" + ns.component_id;
 }
 
 }  // namespace policy

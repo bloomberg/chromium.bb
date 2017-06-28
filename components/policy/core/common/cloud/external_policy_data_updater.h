@@ -76,7 +76,7 @@ class POLICY_EXPORT ExternalPolicyDataUpdater {
   // it will be canceled and replaced with the new |request|. The callback will
   // be invoked after a successful fetch. See the documentation of
   // |FetchSuccessCallback| for more details.
-  void FetchExternalData(const std::string key,
+  void FetchExternalData(const std::string& key,
                          const Request& request,
                          const FetchSuccessCallback& callback);
 
@@ -101,14 +101,15 @@ class POLICY_EXPORT ExternalPolicyDataUpdater {
   // Callback for jobs that failed.
   void OnJobFailed(FetchJob* job);
 
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  std::unique_ptr<ExternalPolicyDataFetcher> external_policy_data_fetcher_;
+  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  const std::unique_ptr<ExternalPolicyDataFetcher>
+      external_policy_data_fetcher_;
 
   // The maximum number of jobs to run in parallel.
-  size_t max_parallel_jobs_;
+  const size_t max_parallel_jobs_;
 
   // The number of jobs currently running.
-  size_t running_jobs_;
+  size_t running_jobs_ = 0;
 
   // Queue of jobs waiting to be run. Jobs are taken off the queue and started
   // by StartNextJobs().
@@ -118,9 +119,9 @@ class POLICY_EXPORT ExternalPolicyDataUpdater {
   // queued, running or waiting for a retry.
   std::map<std::string, std::unique_ptr<FetchJob>> job_map_;
 
-  // |True| once the destructor starts. Prevents jobs from being started during
+  // |true| once the destructor starts. Prevents jobs from being started during
   // shutdown.
-  bool shutting_down_;
+  bool shutting_down_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalPolicyDataUpdater);
 };
