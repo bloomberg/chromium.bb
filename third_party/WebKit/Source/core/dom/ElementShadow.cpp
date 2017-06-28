@@ -24,13 +24,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/shadow/ElementShadow.h"
+#include "core/dom/ElementShadow.h"
 
 #include "core/css/StyleSheetList.h"
 #include "core/css/resolver/ScopedStyleResolver.h"
+#include "core/dom/ElementShadowV0.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/StyleChangeReason.h"
-#include "core/dom/shadow/ElementShadowV0.h"
 #include "core/frame/Deprecation.h"
 #include "core/probe/CoreProbes.h"
 #include "platform/EventDispatchForbiddenScope.h"

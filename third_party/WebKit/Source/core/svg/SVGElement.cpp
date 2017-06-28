@@ -37,7 +37,7 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
-#include "core/dom/shadow/ShadowRoot.h"
+#include "core/dom/ShadowRoot.h"
 #include "core/events/Event.h"
 #include "core/frame/Settings.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"

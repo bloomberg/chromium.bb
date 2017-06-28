@@ -8,7 +8,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/NodeList.h"
 #include "core/dom/Range.h"
-#include "core/dom/shadow/ShadowRoot.h"
+#include "core/dom/ShadowRoot.h"
 #include "core/editing/FindInPageCoordinates.h"
 #include "core/frame/FrameTestHelpers.h"
 #include "core/frame/LocalFrameView.h"

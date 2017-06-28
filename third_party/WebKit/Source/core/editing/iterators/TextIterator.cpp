@@ -31,7 +31,7 @@
 #include "core/HTMLNames.h"
 #include "core/InputTypeNames.h"
 #include "core/dom/Document.h"
-#include "core/dom/shadow/ShadowRoot.h"
+#include "core/dom/ShadowRoot.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/Position.h"

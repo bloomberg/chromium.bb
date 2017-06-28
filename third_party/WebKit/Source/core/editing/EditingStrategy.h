@@ -6,8 +6,8 @@
 #define EditingStrategy_h
 
 #include "core/CoreExport.h"
+#include "core/dom/FlatTreeTraversal.h"
 #include "core/dom/NodeTraversal.h"
-#include "core/dom/shadow/FlatTreeTraversal.h"
 #include "platform/wtf/Allocator.h"
 
 namespace blink {

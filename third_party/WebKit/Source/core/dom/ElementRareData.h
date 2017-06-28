@@ -30,13 +30,13 @@
 #include "core/dom/DOMTokenList.h"
 #include "core/dom/DatasetDOMStringMap.h"
 #include "core/dom/ElementIntersectionObserverData.h"
+#include "core/dom/ElementShadow.h"
 #include "core/dom/NamedNodeMap.h"
 #include "core/dom/NodeRareData.h"
 #include "core/dom/PseudoElement.h"
 #include "core/dom/PseudoElementData.h"
 #include "core/dom/custom/CustomElementDefinition.h"
 #include "core/dom/custom/V0CustomElementDefinition.h"
-#include "core/dom/shadow/ElementShadow.h"
 #include "platform/bindings/ScriptWrappableVisitor.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/HashSet.h"
@@ -213,8 +213,7 @@ inline LayoutSize DefaultMinimumSizeForResizing() {
 }
 
 inline ElementRareData::ElementRareData(NodeRenderingData* node_layout_data)
-    : NodeRareData(node_layout_data),
-      class_list_(nullptr) {
+    : NodeRareData(node_layout_data), class_list_(nullptr) {
   is_element_rare_data_ = true;
 }
 

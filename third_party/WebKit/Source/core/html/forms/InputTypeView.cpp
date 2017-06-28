@@ -28,7 +28,7 @@
 
 #include "core/html/forms/InputTypeView.h"
 
-#include "core/dom/shadow/ShadowRoot.h"
+#include "core/dom/ShadowRoot.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"

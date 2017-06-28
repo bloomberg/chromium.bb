@@ -28,7 +28,7 @@
 #include "core/HTMLNames.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/ElementTraversal.h"
-#include "core/dom/shadow/ShadowRoot.h"
+#include "core/dom/ShadowRoot.h"
 #include "core/frame/LocalFrameClient.h"
 #include "core/html/HTMLImageLoader.h"
 #include "core/html/HTMLObjectElement.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/shadow/SlotScopedTraversal.h"
+#include "core/dom/SlotScopedTraversal.h"
 
 #include <memory>
 #include "bindings/core/v8/ExceptionState.h"
@@ -10,7 +10,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
 #include "core/dom/NodeTraversal.h"
-#include "core/dom/shadow/ShadowRoot.h"
+#include "core/dom/ShadowRoot.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLSlotElement.h"
 #include "core/testing/DummyPageHolder.h"

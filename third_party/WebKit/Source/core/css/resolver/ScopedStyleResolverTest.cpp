@@ -5,8 +5,8 @@
 #include "core/css/resolver/ScopedStyleResolver.h"
 
 #include "bindings/core/v8/V8BindingForCore.h"
-#include "core/dom/shadow/ShadowRoot.h"
-#include "core/dom/shadow/ShadowRootInit.h"
+#include "core/dom/ShadowRoot.h"
+#include "core/dom/ShadowRootInit.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLElement.h"
 #include "core/testing/DummyPageHolder.h"

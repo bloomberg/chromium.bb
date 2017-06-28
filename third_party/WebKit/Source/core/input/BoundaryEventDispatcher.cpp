@@ -4,8 +4,8 @@
 
 #include "core/input/BoundaryEventDispatcher.h"
 
+#include "core/dom/FlatTreeTraversal.h"
 #include "core/dom/Node.h"
-#include "core/dom/shadow/FlatTreeTraversal.h"
 #include "core/input/EventHandlingUtil.h"
 
 namespace blink {

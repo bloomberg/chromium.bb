@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/shadow/InsertionPoint.h"
+#include "core/dom/InsertionPoint.h"
 
 #include "core/HTMLNames.h"
+#include "core/dom/ElementShadow.h"
+#include "core/dom/ElementShadowV0.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/QualifiedName.h"
 #include "core/dom/StaticNodeList.h"
 #include "core/dom/StyleChangeReason.h"
-#include "core/dom/shadow/ElementShadow.h"
-#include "core/dom/shadow/ElementShadowV0.h"
 
 namespace blink {
 
@@ -145,11 +145,12 @@ void InsertionPoint::WillRecalcStyle(StyleRecalcChange change) {
   else
     return;
 
-  for (size_t i = 0; i < distributed_nodes_.size(); ++i)
+  for (size_t i = 0; i < distributed_nodes_.size(); ++i) {
     distributed_nodes_.at(i)->SetNeedsStyleRecalc(
         style_change_type,
         StyleChangeReasonForTracing::Create(
             StyleChangeReason::kPropagateInheritChangeToDistributedNodes));
+  }
 }
 
 bool InsertionPoint::CanBeActive() const {

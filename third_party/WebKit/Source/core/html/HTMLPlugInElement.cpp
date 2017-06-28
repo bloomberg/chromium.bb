@@ -27,7 +27,7 @@
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/Node.h"
-#include "core/dom/shadow/ShadowRoot.h"
+#include "core/dom/ShadowRoot.h"
 #include "core/events/Event.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"

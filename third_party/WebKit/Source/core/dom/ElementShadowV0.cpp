@@ -24,11 +24,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/shadow/ElementShadowV0.h"
+#include "core/dom/ElementShadowV0.h"
 
+#include "core/dom/DistributedNodes.h"
+#include "core/dom/ElementShadow.h"
 #include "core/dom/ElementTraversal.h"
-#include "core/dom/shadow/DistributedNodes.h"
-#include "core/dom/shadow/ElementShadow.h"
 #include "core/html/HTMLContentElement.h"
 #include "core/html/HTMLShadowElement.h"
 #include "core/probe/CoreProbes.h"

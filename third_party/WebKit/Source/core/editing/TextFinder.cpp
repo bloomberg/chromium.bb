@@ -32,8 +32,8 @@
 
 #include "core/dom/AXObjectCacheBase.h"
 #include "core/dom/Range.h"
+#include "core/dom/ShadowRoot.h"
 #include "core/dom/TaskRunnerHelper.h"
-#include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FindInPageCoordinates.h"
 #include "core/editing/VisibleSelection.h"

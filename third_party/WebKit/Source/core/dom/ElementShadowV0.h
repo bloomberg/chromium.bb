@@ -28,8 +28,8 @@
 #define ElementShadowV0_h
 
 #include "core/CoreExport.h"
-#include "core/dom/shadow/InsertionPoint.h"
-#include "core/dom/shadow/SelectRuleFeatureSet.h"
+#include "core/dom/InsertionPoint.h"
+#include "core/dom/SelectRuleFeatureSet.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Noncopyable.h"

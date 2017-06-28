@@ -26,7 +26,7 @@
 
 #include "core/CSSValueKeywords.h"
 #include "core/InputTypeNames.h"
-#include "core/dom/shadow/ShadowRoot.h"
+#include "core/dom/ShadowRoot.h"
 #include "core/editing/FrameSelection.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/shadow/ShadowElementNames.h"

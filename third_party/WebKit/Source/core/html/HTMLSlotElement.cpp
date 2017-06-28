@@ -32,12 +32,12 @@
 
 #include <array>
 #include "core/HTMLNames.h"
+#include "core/dom/ElementShadow.h"
+#include "core/dom/InsertionPoint.h"
 #include "core/dom/NodeTraversal.h"
+#include "core/dom/SlotAssignment.h"
 #include "core/dom/StyleChangeReason.h"
 #include "core/dom/StyleEngine.h"
-#include "core/dom/shadow/ElementShadow.h"
-#include "core/dom/shadow/InsertionPoint.h"
-#include "core/dom/shadow/SlotAssignment.h"
 #include "core/events/Event.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/AssignedNodesOptions.h"

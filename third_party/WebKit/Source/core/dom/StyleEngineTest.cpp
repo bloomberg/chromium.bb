@@ -13,7 +13,7 @@
 #include "core/css/parser/CSSParserContext.h"
 #include "core/dom/Document.h"
 #include "core/dom/NodeComputedStyle.h"
-#include "core/dom/shadow/ShadowRootInit.h"
+#include "core/dom/ShadowRootInit.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLStyleElement.h"

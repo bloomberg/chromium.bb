@@ -24,7 +24,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/HTMLNames.h"
 #include "core/dom/NodeComputedStyle.h"
-#include "core/dom/shadow/ShadowRoot.h"
+#include "core/dom/ShadowRoot.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLContentElement.h"
 #include "core/html/HTMLDivElement.h"

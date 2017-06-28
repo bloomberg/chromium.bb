@@ -30,7 +30,7 @@
 #include <cstdint>
 #include "core/CoreExport.h"
 #include "core/dom/Element.h"
-#include "core/dom/shadow/InsertionPoint.h"
+#include "core/dom/InsertionPoint.h"
 
 namespace blink {
 

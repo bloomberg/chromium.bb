@@ -48,7 +48,7 @@
 #include "core/HTMLNames.h"
 #include "core/css/PseudoStyleRequest.h"
 #include "core/dom/Document.h"
-#include "core/dom/shadow/ShadowRoot.h"
+#include "core/dom/ShadowRoot.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"

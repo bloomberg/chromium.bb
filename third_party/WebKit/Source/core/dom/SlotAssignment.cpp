@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/shadow/SlotAssignment.h"
+#include "core/dom/SlotAssignment.h"
 
 #include "core/HTMLNames.h"
+#include "core/dom/ElementShadow.h"
 #include "core/dom/ElementTraversal.h"
+#include "core/dom/InsertionPoint.h"
 #include "core/dom/Node.h"
 #include "core/dom/NodeTraversal.h"
-#include "core/dom/shadow/ElementShadow.h"
-#include "core/dom/shadow/InsertionPoint.h"
-#include "core/dom/shadow/ShadowRoot.h"
+#include "core/dom/ShadowRoot.h"
 #include "core/html/HTMLSlotElement.h"
 
 namespace blink {

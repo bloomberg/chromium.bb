@@ -22,11 +22,11 @@
 
 #include "core/css/resolver/ElementResolveContext.h"
 
+#include "core/dom/InsertionPoint.h"
 #include "core/dom/LayoutTreeBuilderTraversal.h"
 #include "core/dom/Node.h"
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/VisitedLinkState.h"
-#include "core/dom/shadow/InsertionPoint.h"
 
 namespace blink {
 

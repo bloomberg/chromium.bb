@@ -32,7 +32,7 @@
 
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
-#include "core/dom/shadow/ShadowRoot.h"
+#include "core/dom/ShadowRoot.h"
 #include "core/frame/UseCounter.h"
 #include "core/inspector/ConsoleMessage.h"
 

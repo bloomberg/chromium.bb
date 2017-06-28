@@ -8,9 +8,9 @@
 #include "core/css/parser/CSSParser.h"
 #include "core/css/parser/CSSParserContext.h"
 #include "core/dom/Document.h"
+#include "core/dom/ElementShadow.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/StaticNodeList.h"
-#include "core/dom/shadow/ElementShadow.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLHtmlElement.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -58,7 +58,7 @@ void RunTests(ContainerNode& scope, const QueryTest (&test_cases)[length]) {
 #endif
   }
 }
-};
+};  // namespace
 
 TEST(SelectorQueryTest, NotMatchingPseudoElement) {
   Document* document = Document::Create();

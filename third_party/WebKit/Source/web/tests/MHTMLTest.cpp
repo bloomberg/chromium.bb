@@ -30,7 +30,7 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
-#include "core/dom/shadow/ElementShadow.h"
+#include "core/dom/ElementShadow.h"
 #include "core/frame/FrameTestHelpers.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Location.h"

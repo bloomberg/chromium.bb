@@ -4,7 +4,7 @@
 
 #include "core/editing/PositionIterator.h"
 
-#include "core/dom/shadow/FlatTreeTraversal.h"
+#include "core/dom/FlatTreeTraversal.h"
 #include "core/editing/EditingTestBase.h"
 
 namespace blink {
