@@ -12,7 +12,6 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #include "ios/chrome/browser/payments/payment_request_util.h"
-#include "ios/chrome/browser/ui/payments/full_card_requester.h"
 #include "ios/chrome/browser/ui/payments/payment_request_mediator.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -121,6 +120,8 @@ const NSTimeInterval kUpdatePaymentSummaryItemIntervalSeconds = 10.0;
   _fullCardRequester->GetFullCard(card, _autofillManager);
 }
 
+#pragma mark - FullCardRequesterConsumer
+
 - (void)fullCardRequestDidSucceedWithCard:(const autofill::CreditCard&)card
                          verificationCode:
                              (const base::string16&)verificationCode {
@@ -133,6 +134,8 @@ const NSTimeInterval kUpdatePaymentSummaryItemIntervalSeconds = 10.0;
       didCompletePaymentRequestWithCard:card
                        verificationCode:verificationCode];
 }
+
+#pragma mark - Public methods
 
 - (void)updatePaymentDetails:(web::PaymentDetails)paymentDetails {
   [_updatePaymentSummaryItemTimer invalidate];

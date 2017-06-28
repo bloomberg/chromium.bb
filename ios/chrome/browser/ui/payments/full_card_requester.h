@@ -23,7 +23,17 @@ namespace ios {
 class ChromeBrowserState;
 }  // namespace ios
 
-@class PaymentRequestCoordinator;
+@protocol FullCardRequesterConsumer
+
+// Called when a credit card has been successfully unmasked. Note that |card|
+// may be different from what passed to GetFullCard method of FullCardRequester,
+// because CVC unmasking process may update the credit card number and
+// expiration date.
+- (void)fullCardRequestDidSucceedWithCard:(const autofill::CreditCard&)card
+                         verificationCode:
+                             (const base::string16&)verificationCode;
+
+@end
 
 // Receives the full credit card details. Also displays the unmask prompt UI.
 class FullCardRequester
@@ -31,7 +41,7 @@ class FullCardRequester
       public autofill::payments::FullCardRequest::UIDelegate,
       public base::SupportsWeakPtr<FullCardRequester> {
  public:
-  FullCardRequester(PaymentRequestCoordinator* owner,
+  FullCardRequester(id<FullCardRequesterConsumer> consumer,
                     UIViewController* base_view_controller,
                     ios::ChromeBrowserState* browser_state);
 
@@ -53,7 +63,7 @@ class FullCardRequester
       autofill::AutofillClient::PaymentsRpcResult result) override;
 
  private:
-  __weak PaymentRequestCoordinator* owner_;
+  __weak id<FullCardRequesterConsumer> consumer_;
   __weak UIViewController* base_view_controller_;
   autofill::CardUnmaskPromptControllerImpl unmask_controller_;
 

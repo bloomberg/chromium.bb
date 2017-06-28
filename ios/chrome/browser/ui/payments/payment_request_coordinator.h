@@ -14,6 +14,7 @@
 #import "ios/chrome/browser/ui/payments/contact_info_edit_coordinator.h"
 #import "ios/chrome/browser/ui/payments/contact_info_selection_coordinator.h"
 #import "ios/chrome/browser/ui/payments/credit_card_edit_coordinator.h"
+#include "ios/chrome/browser/ui/payments/full_card_requester.h"
 #import "ios/chrome/browser/ui/payments/payment_items_display_coordinator.h"
 #import "ios/chrome/browser/ui/payments/payment_method_selection_coordinator.h"
 #include "ios/chrome/browser/ui/payments/payment_request_error_coordinator.h"
@@ -75,6 +76,7 @@ class PaymentShippingOption;
                         ContactInfoEditCoordinatorDelegate,
                         ContactInfoSelectionCoordinatorDelegate,
                         CreditCardEditCoordinatorDelegate,
+                        FullCardRequesterConsumer,
                         PaymentItemsDisplayCoordinatorDelegate,
                         PaymentMethodSelectionCoordinatorDelegate,
                         PaymentRequestErrorCoordinatorDelegate,
@@ -121,14 +123,6 @@ class PaymentShippingOption;
 
 // Displays an error message. Invokes |callback| when the message is dismissed.
 - (void)displayErrorWithCallback:(ProceduralBlock)callback;
-
-// Called when a credit card has been successfully unmasked. Note that |card|
-// may be different from what's returned by the selected_credit_card() method of
-// |paymentRequest|, because CVC unmasking process may update the credit card
-// number and expiration date.
-- (void)fullCardRequestDidSucceedWithCard:(const autofill::CreditCard&)card
-                         verificationCode:
-                             (const base::string16&)verificationCode;
 
 @end
 
