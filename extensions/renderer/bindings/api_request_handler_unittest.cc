@@ -373,7 +373,8 @@ TEST_F(APIRequestHandlerTest, SettingLastError) {
   v8::Local<v8::Context> context = MainContext();
 
   base::Optional<std::string> logged_error;
-  auto get_parent = [](v8::Local<v8::Context> context) {
+  auto get_parent = [](v8::Local<v8::Context> context,
+                       v8::Local<v8::Object>* secondary_parent) {
     return context->Global();
   };
 

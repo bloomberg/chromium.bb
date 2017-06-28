@@ -27,7 +27,8 @@ class APIBindingJSUtilUnittest : public APIBindingsSystemTest {
   }
 
   v8::Local<v8::Object> GetLastErrorParent(
-      v8::Local<v8::Context> context) override {
+      v8::Local<v8::Context> context,
+      v8::Local<v8::Object>* secondary_parent) override {
     return context->Global();
   }
 

@@ -41,7 +41,8 @@ std::string GetLastErrorMessage(v8::Local<v8::Object> parent,
 using ParentList =
     std::vector<std::pair<v8::Local<v8::Context>, v8::Local<v8::Object>>>;
 v8::Local<v8::Object> GetParent(const ParentList& parents,
-                                v8::Local<v8::Context> context) {
+                                v8::Local<v8::Context> context,
+                                v8::Local<v8::Object>* secondary_parent) {
   // This would be simpler with a map<context, object>, but Local<> doesn't
   // define an operator<.
   for (const auto& parent : parents) {
@@ -220,6 +221,57 @@ TEST_F(APILastErrorTest, MultipleContexts) {
   last_error.ClearError(context_a, false);
   EXPECT_EQ("undefined", GetLastErrorMessage(parent_a, context_a));
   EXPECT_EQ("undefined", GetLastErrorMessage(parent_b, context_b));
+}
+
+TEST_F(APILastErrorTest, SecondaryParent) {
+  auto get_parents = [](v8::Local<v8::Object> primary_parent,
+                        v8::Local<v8::Object> secondary_parent,
+                        v8::Local<v8::Context> context,
+                        v8::Local<v8::Object>* secondary_parent_out) {
+    if (secondary_parent_out)
+      *secondary_parent_out = secondary_parent;
+    return primary_parent;
+  };
+
+  base::Optional<std::string> console_error;
+  auto log_error = [](base::Optional<std::string>* console_error,
+                      v8::Local<v8::Context> context,
+                      const std::string& error) { *console_error = error; };
+
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+  v8::Local<v8::Object> primary_parent = v8::Object::New(isolate());
+  v8::Local<v8::Object> secondary_parent = v8::Object::New(isolate());
+
+  APILastError last_error(
+      base::Bind(get_parents, primary_parent, secondary_parent),
+      base::Bind(log_error, &console_error));
+
+  last_error.SetError(context, "error");
+  EXPECT_TRUE(last_error.HasError(context));
+  EXPECT_EQ("\"error\"", GetLastErrorMessage(primary_parent, context));
+  EXPECT_EQ("\"error\"", GetLastErrorMessage(secondary_parent, context));
+  EXPECT_FALSE(console_error);
+
+  last_error.ClearError(context, true);
+  EXPECT_FALSE(console_error);
+  EXPECT_EQ("undefined", GetLastErrorMessage(primary_parent, context));
+  EXPECT_EQ("undefined", GetLastErrorMessage(secondary_parent, context));
+
+  // Accessing the primary parent's error should be sufficient to not log the
+  // error in the console.
+  last_error.SetError(context, "error");
+  EXPECT_EQ("\"error\"", GetLastErrorMessage(primary_parent, context));
+  last_error.ClearError(context, true);
+  EXPECT_FALSE(console_error);
+
+  // Accessing only the secondary parent's error shouldn't count as access on
+  // the main error, and we should log it.
+  last_error.SetError(context, "error");
+  EXPECT_EQ("\"error\"", GetLastErrorMessage(secondary_parent, context));
+  last_error.ClearError(context, true);
+  ASSERT_TRUE(console_error);
+  EXPECT_EQ("Unchecked runtime.lastError: error", *console_error);
 }
 
 }  // namespace extensions
