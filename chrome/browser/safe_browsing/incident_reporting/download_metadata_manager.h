@@ -15,7 +15,6 @@
 
 namespace base {
 class SequencedTaskRunner;
-class SequencedWorkerPool;
 }
 
 namespace content {
@@ -39,15 +38,7 @@ class DownloadMetadataManager : public content::DownloadManager::Observer {
       std::unique_ptr<ClientIncidentReport_DownloadDetails>)>
       GetDownloadDetailsCallback;
 
-  // Constructs a new instance for which disk IO operations will take place in
-  // |worker_pool|.
-  explicit DownloadMetadataManager(
-      const scoped_refptr<base::SequencedWorkerPool>& worker_pool);
-
-  // Constructor that allows tests to provide a specific runner for
-  // asynchronous tasks.
-  explicit DownloadMetadataManager(
-      const scoped_refptr<base::SequencedTaskRunner>& task_runner);
+  DownloadMetadataManager();
   ~DownloadMetadataManager() override;
 
   // Adds |download_manager| to the set observed by the metadata manager.
@@ -82,11 +73,8 @@ class DownloadMetadataManager : public content::DownloadManager::Observer {
   typedef std::map<content::DownloadManager*, ManagerContext*>
       ManagerToContextMap;
 
-  // A task runner to which read tasks are posted.
-  scoped_refptr<base::SequencedTaskRunner> read_runner_;
-
-  // A task runner to which write tasks are posted.
-  scoped_refptr<base::SequencedTaskRunner> write_runner_;
+  // A task runner to which IO tasks are posted.
+  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // Contexts for each DownloadManager that has been added and has not yet
   // "gone down".

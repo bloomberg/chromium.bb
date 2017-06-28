@@ -20,7 +20,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
 #include "components/safe_browsing/csd.pb.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item.h"
@@ -126,7 +127,7 @@ bool MetadataIsValid(const DownloadMetadata& metadata) {
 
 // Reads and parses a DownloadMetadata message from |metadata_path| into
 // |metadata|.
-void ReadMetadataOnWorkerPool(const base::FilePath& metadata_path,
+void ReadMetadataInBackground(const base::FilePath& metadata_path,
                               DownloadMetadata* metadata) {
   using base::File;
   DCHECK(metadata);
@@ -166,7 +167,7 @@ void ReadMetadataOnWorkerPool(const base::FilePath& metadata_path,
 }
 
 // Writes |download_metadata| to |metadata_path|.
-void WriteMetadataOnWorkerPool(const base::FilePath& metadata_path,
+void WriteMetadataInBackground(const base::FilePath& metadata_path,
                                DownloadMetadata* download_metadata) {
   MetadataWriteResult result = NUM_WRITE_RESULTS;
   std::string file_data;
@@ -183,7 +184,7 @@ void WriteMetadataOnWorkerPool(const base::FilePath& metadata_path,
 }
 
 // Deletes |metadata_path|.
-void DeleteMetadataOnWorkerPool(const base::FilePath& metadata_path) {
+void DeleteMetadataInBackground(const base::FilePath& metadata_path) {
   bool success = base::DeleteFile(metadata_path, false /* not recursive */);
   UMA_HISTOGRAM_BOOLEAN("SBIRS.DownloadMetadata.DeleteSuccess", success);
 }
@@ -214,8 +215,7 @@ void ReturnResults(
 class DownloadMetadataManager::ManagerContext
     : public content::DownloadItem::Observer {
  public:
-  ManagerContext(const scoped_refptr<base::SequencedTaskRunner>& read_runner,
-                 const scoped_refptr<base::SequencedTaskRunner>& write_runner,
+  ManagerContext(scoped_refptr<base::SequencedTaskRunner> task_runner,
                  content::DownloadManager* download_manager);
 
   // Detaches this context from its owner. The owner must not access the context
@@ -274,14 +274,14 @@ class DownloadMetadataManager::ManagerContext
   void CommitRequest(content::DownloadItem* item,
                      std::unique_ptr<ClientDownloadRequest> request);
 
-  // Posts a task in the worker pool to read the metadata from disk.
+  // Posts a background task to read the metadata from disk.
   void ReadMetadata();
 
-  // Posts a task in the worker pool to write the metadata to disk.
+  // Posts a background task to write the metadata to disk.
   void WriteMetadata();
 
-  // Removes metadata for the context from memory and posts a task in the worker
-  // pool to delete it on disk.
+  // Removes metadata for the context from memory and posts a background task to
+  // delete it on disk.
   void RemoveMetadata();
 
   // Clears the |pending_items_| mapping.
@@ -300,11 +300,8 @@ class DownloadMetadataManager::ManagerContext
   // Updates the last opened time in the metadata and writes it to disk.
   void UpdateLastOpenedTime(const base::Time& last_opened_time);
 
-  // A task runner to which read tasks are posted.
-  scoped_refptr<base::SequencedTaskRunner> read_runner_;
-
-  // A task runner to which write tasks are posted.
-  scoped_refptr<base::SequencedTaskRunner> write_runner_;
+  // A task runner to which IO tasks are posted.
+  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // The path to the metadata file for this context.
   base::FilePath metadata_path_;
@@ -340,22 +337,11 @@ class DownloadMetadataManager::ManagerContext
 
 // DownloadMetadataManager -----------------------------------------------------
 
-DownloadMetadataManager::DownloadMetadataManager(
-    const scoped_refptr<base::SequencedWorkerPool>& worker_pool) {
-  base::SequencedWorkerPool::SequenceToken token(
-      worker_pool->GetSequenceToken());
-  // Do not block shutdown on reads since nothing will come of it.
-  read_runner_ = worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(
-      token, base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
-  // Block shutdown on writes only if they've already begun.
-  write_runner_ = worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(
-      token, base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
-}
-
-DownloadMetadataManager::DownloadMetadataManager(
-    const scoped_refptr<base::SequencedTaskRunner>& task_runner)
-    : read_runner_(task_runner), write_runner_(task_runner) {
-}
+DownloadMetadataManager::DownloadMetadataManager()
+    : task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+          {base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
+           base::MayBlock()})) {}
 
 DownloadMetadataManager::~DownloadMetadataManager() {
   // Destruction may have taken place before managers have gone down.
@@ -373,7 +359,7 @@ void DownloadMetadataManager::AddDownloadManager(
     return;
   download_manager->AddObserver(this);
   contexts_[download_manager] =
-      new ManagerContext(read_runner_, write_runner_, download_manager);
+      new ManagerContext(task_runner_, download_manager);
 }
 
 void DownloadMetadataManager::SetRequest(content::DownloadItem* item,
@@ -404,9 +390,9 @@ void DownloadMetadataManager::GetDownloadDetails(
 
   // Fire off a task to load the details and return them to the caller.
   DownloadMetadata* metadata = new DownloadMetadata();
-  read_runner_->PostTaskAndReply(
+  task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::BindOnce(&ReadMetadataOnWorkerPool,
+      base::BindOnce(&ReadMetadataInBackground,
                      GetMetadataPath(browser_context), metadata),
       base::BindOnce(&ReturnResults, callback,
                      base::Passed(base::WrapUnique(metadata))));
@@ -438,11 +424,9 @@ void DownloadMetadataManager::ManagerGoingDown(
 // DownloadMetadataManager::ManagerContext -------------------------------------
 
 DownloadMetadataManager::ManagerContext::ManagerContext(
-    const scoped_refptr<base::SequencedTaskRunner>& read_runner,
-    const scoped_refptr<base::SequencedTaskRunner>& write_runner,
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
     content::DownloadManager* download_manager)
-    : read_runner_(read_runner),
-      write_runner_(write_runner),
+    : task_runner_(std::move(task_runner)),
       metadata_path_(GetMetadataPath(download_manager->GetBrowserContext())),
       state_(WAITING_FOR_LOAD),
       weak_factory_(this) {
@@ -567,18 +551,18 @@ void DownloadMetadataManager::ManagerContext::ReadMetadata() {
 
   DownloadMetadata* metadata = new DownloadMetadata();
   // Do not block shutdown on this read since nothing will come of it.
-  read_runner_->PostTaskAndReply(
+  task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::BindOnce(&ReadMetadataOnWorkerPool, metadata_path_, metadata),
+      base::BindOnce(&ReadMetadataInBackground, metadata_path_, metadata),
       base::BindOnce(&DownloadMetadataManager::ManagerContext::OnMetadataReady,
                      weak_factory_.GetWeakPtr(),
                      base::Passed(base::WrapUnique(metadata))));
 }
 
 void DownloadMetadataManager::ManagerContext::WriteMetadata() {
-  write_runner_->PostTask(
+  task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&WriteMetadataOnWorkerPool, metadata_path_,
+      base::BindOnce(&WriteMetadataInBackground, metadata_path_,
                      base::Owned(new DownloadMetadata(*download_metadata_))));
 }
 
@@ -592,8 +576,8 @@ void DownloadMetadataManager::ManagerContext::RemoveMetadata() {
   }
   // Remove any metadata.
   download_metadata_.reset();
-  write_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&DeleteMetadataOnWorkerPool, metadata_path_));
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&DeleteMetadataInBackground, metadata_path_));
   // Run callbacks (only present in case of a transition to LOAD_COMPLETE).
   RunCallbacks();
 }
