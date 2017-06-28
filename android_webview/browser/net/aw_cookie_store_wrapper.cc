@@ -246,7 +246,7 @@ void AwCookieStoreWrapper::SetCanonicalCookieAsync(
     bool secure_source,
     bool modify_http_only,
     SetCookiesCallback callback) {
-  DCHECK(client_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(client_task_runner_->RunsTasksInCurrentSequence());
   PostTaskToCookieStoreTaskRunner(base::BindOnce(
       &SetCanonicalCookieAsyncOnCookieThread, std::move(cookie), secure_source,
       modify_http_only, CreateWrappedCallback<bool>(std::move(callback))));
