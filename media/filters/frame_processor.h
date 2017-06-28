@@ -175,6 +175,7 @@ class MEDIA_EXPORT FrameProcessor {
   // Counters that limit spam to |media_log_| for frame processor warnings.
   int num_dropped_preroll_warnings_ = 0;
   int num_dts_beyond_pts_warnings_ = 0;
+  int num_muxed_sequence_mode_warnings_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(FrameProcessor);
 };
