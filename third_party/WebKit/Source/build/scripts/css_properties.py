@@ -82,6 +82,12 @@ class CSSProperties(json5_generator.Writer):
         # The generated code will only work with at most one alias per property.
         assert len({property['alias_for'] for property in self._aliases}) == len(self._aliases)
 
+        # Check that alias_for is not being used with a runtime flag.
+        for property_ in self._aliases:
+            assert not property_['runtime_flag'], \
+                ("Property '" + property_['name'] + "' is an alias with a runtime_flag, "
+                 "but runtime flags do not currently work for aliases.")
+
         # Update property aliases to include the fields of the property being aliased.
         for i, alias in enumerate(self._aliases):
             aliased_property = self._properties[
