@@ -20391,10 +20391,10 @@
             "reef-uni"
         ],
         "models": [
-            "snappy",
+            "pyro",
             "nasher",
             "sand",
-            "pyro"
+            "snappy"
         ],
         "vm_tests": [],
         "vm_tests_override": null
