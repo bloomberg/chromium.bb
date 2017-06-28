@@ -9,6 +9,7 @@
 #include "base/test/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
+#include "chrome/browser/ui/webui/media_router/media_cast_mode.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -93,6 +94,27 @@ TEST(MediaRouterMetricsTest, RecordRouteCreationOutcome) {
       tester.GetAllSamples(MediaRouterMetrics::kHistogramRouteCreationOutcome),
       ElementsAre(Bucket(static_cast<int>(outcome1), 1),
                   Bucket(static_cast<int>(outcome2), 2)));
+}
+
+TEST(MediaRouterMetricsTest, RecordMediaRouterCastingSource) {
+  base::HistogramTester tester;
+  const MediaCastMode source1 = MediaCastMode::PRESENTATION;
+  const MediaCastMode source2 = MediaCastMode::TAB_MIRROR;
+  const MediaCastMode source3 = MediaCastMode::LOCAL_FILE;
+
+  tester.ExpectTotalCount(
+      MediaRouterMetrics::kHistogramMediaRouterCastingSource, 0);
+  MediaRouterMetrics::RecordMediaRouterCastingSource(source1);
+  MediaRouterMetrics::RecordMediaRouterCastingSource(source2);
+  MediaRouterMetrics::RecordMediaRouterCastingSource(source2);
+  MediaRouterMetrics::RecordMediaRouterCastingSource(source3);
+  tester.ExpectTotalCount(
+      MediaRouterMetrics::kHistogramMediaRouterCastingSource, 4);
+  EXPECT_THAT(tester.GetAllSamples(
+                  MediaRouterMetrics::kHistogramMediaRouterCastingSource),
+              ElementsAre(Bucket(static_cast<int>(source1), 1),
+                          Bucket(static_cast<int>(source2), 2),
+                          Bucket(static_cast<int>(source3), 1)));
 }
 
 TEST(MediaRouterMetricsTest, RecordDialDeviceCounts) {

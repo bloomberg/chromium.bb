@@ -10,6 +10,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
+#include "chrome/browser/ui/webui/media_router/media_cast_mode.h"
 
 namespace media_router {
 
@@ -64,10 +65,11 @@ class MediaRouterMetrics {
   static const char kHistogramDialAvailableDeviceCount[];
   static const char kHistogramDialKnownDeviceCount[];
   static const char kHistogramIconClickLocation[];
+  static const char kHistogramMediaRouterCastingSource[];
+  static const char kHistogramRouteCreationOutcome[];
   static const char kHistogramUiDialogPaint[];
   static const char kHistogramUiDialogLoadedWithData[];
   static const char kHistogramUiFirstAction[];
-  static const char kHistogramRouteCreationOutcome[];
 
   // Records where the user clicked to open the Media Router dialog.
   static void RecordMediaRouterDialogOrigin(
@@ -91,6 +93,9 @@ class MediaRouterMetrics {
   // Records the outcome in a create route response.
   static void RecordRouteCreationOutcome(
       MediaRouterRouteCreationOutcome outcome);
+
+  // Records casting source.
+  static void RecordMediaRouterCastingSource(MediaCastMode source);
 
   // Records device counts.
   // TODO(zhaobin): Move device count specific metrics and state into its own

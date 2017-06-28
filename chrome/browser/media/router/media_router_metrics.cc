@@ -25,14 +25,16 @@ const char MediaRouterMetrics::kHistogramDialKnownDeviceCount[] =
     "MediaRouter.Dial.KnownDevicesCount";
 const char MediaRouterMetrics::kHistogramIconClickLocation[] =
     "MediaRouter.Icon.Click.Location";
+const char MediaRouterMetrics::kHistogramMediaRouterCastingSource[] =
+    "MediaRouter.Source.CastingSource";
+const char MediaRouterMetrics::kHistogramRouteCreationOutcome[] =
+    "MediaRouter.Route.CreationOutcome";
 const char MediaRouterMetrics::kHistogramUiDialogPaint[] =
     "MediaRouter.Ui.Dialog.Paint";
 const char MediaRouterMetrics::kHistogramUiDialogLoadedWithData[] =
     "MediaRouter.Ui.Dialog.LoadedWithData";
 const char MediaRouterMetrics::kHistogramUiFirstAction[] =
     "MediaRouter.Ui.FirstAction";
-const char MediaRouterMetrics::kHistogramRouteCreationOutcome[] =
-    "MediaRouter.Route.CreationOutcome";
 
 // static
 void MediaRouterMetrics::RecordMediaRouterDialogOrigin(
@@ -74,6 +76,11 @@ void MediaRouterMetrics::RecordRouteCreationOutcome(
   UMA_HISTOGRAM_ENUMERATION(
       kHistogramRouteCreationOutcome, static_cast<int>(outcome),
       static_cast<int>(MediaRouterRouteCreationOutcome::TOTAL_COUNT));
+}
+
+// static
+void MediaRouterMetrics::RecordMediaRouterCastingSource(MediaCastMode source) {
+  UMA_HISTOGRAM_SPARSE_SLOWLY(kHistogramMediaRouterCastingSource, source);
 }
 
 void MediaRouterMetrics::RecordDialDeviceCounts(size_t available_device_count,

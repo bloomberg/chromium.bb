@@ -569,6 +569,10 @@ bool MediaRouterUI::SetRouteParameters(
     }
   }
 
+  route_response_callbacks->push_back(
+      base::Bind(&MediaRouterUI::MaybeReportCastingSource,
+                 weak_factory_.GetWeakPtr(), cast_mode));
+
   *timeout = GetRouteRequestTimeout(cast_mode);
   *incognito = Profile::FromWebUI(web_ui())->IsOffTheRecord();
 
@@ -742,6 +746,12 @@ void MediaRouterUI::OnRouteResponseReceived(
 
   if (result.result_code() == RouteRequestResult::TIMED_OUT)
     SendIssueForRouteTimeout(cast_mode, presentation_request_source_name);
+}
+
+void MediaRouterUI::MaybeReportCastingSource(MediaCastMode cast_mode,
+                                             const RouteRequestResult& result) {
+  if (result.result_code() == RouteRequestResult::OK)
+    MediaRouterMetrics::RecordMediaRouterCastingSource(cast_mode);
 }
 
 void MediaRouterUI::HandleCreateSessionRequestRouteResponse(

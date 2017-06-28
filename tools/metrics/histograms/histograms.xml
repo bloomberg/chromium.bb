@@ -31050,6 +31050,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="MediaRouter.Source.CastingSource"
+    enum="MediaRouterSourceTypes">
+  <owner>paezagon@chromium.org</owner>
+  <summary>
+    The source of a Media Router session. This is recorded to keep track of what
+    kind of media is being streamed.
+  </summary>
+</histogram>
+
 <histogram name="MediaRouter.Ui.Action.CloseLatency" units="ms">
   <owner>apacible@chromium.org</owner>
   <summary>
