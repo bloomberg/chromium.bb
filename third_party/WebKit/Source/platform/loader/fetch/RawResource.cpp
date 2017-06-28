@@ -311,7 +311,7 @@ bool RawResource::CanReuse(const FetchParameters& new_fetch_parameters) const {
       return false;
   }
 
-  return true;
+  return Resource::CanReuse(new_fetch_parameters);
 }
 
 RawResourceClientStateChecker::RawResourceClientStateChecker()

@@ -181,7 +181,8 @@ bool ImageResource::CanReuse(const FetchParameters& params) const {
           FetchParameters::kAllowPlaceholder &&
       placeholder_option_ != PlaceholderOption::kDoNotReloadPlaceholder)
     return false;
-  return true;
+
+  return Resource::CanReuse(params);
 }
 
 bool ImageResource::CanUseCacheValidator() const {
