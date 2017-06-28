@@ -254,6 +254,35 @@ public class NavigateTest {
     }
 
     /**
+     * Test 'Request Desktop Site' option is preserved after navigation to a new entry
+     * through a click on a link.
+     */
+    @Test
+    @MediumTest
+    @Feature({"Navigation"})
+    @RetryOnFailure
+    public void testRequestDesktopSiteSettingPers() throws Exception {
+        String url1 = mTestServer.getURL("/chrome/test/data/android/google.html");
+        String url2 = mTestServer.getURL("/chrome/test/data/android/about.html");
+
+        navigateAndObserve(url1, url1);
+
+        final Tab tab = mActivityTestRule.getActivity().getActivityTab();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                tab.setUseDesktopUserAgent(true /* useDesktop */, true /* reloadOnChange */);
+            }
+        });
+        ChromeTabUtils.waitForTabPageLoaded(tab, url1);
+
+        DOMUtils.clickNode(tab.getContentViewCore(), "aboutLink");
+        ChromeTabUtils.waitForTabPageLoaded(tab, url2);
+        Assert.assertEquals("Request Desktop site setting should stay turned on", true,
+                mActivityTestRule.getActivity().getActivityTab().getUseDesktopUserAgent());
+    }
+
+    /**
      * Test Opening a link and verify that TabObserver#onPageLoadStarted gives the old and new URL.
      */
     @Test
