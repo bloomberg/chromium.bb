@@ -1136,23 +1136,6 @@ static const aom_prob default_wedge_interintra_prob[BLOCK_SIZES] = {
 #endif  // CONFIG_INTERINTRA
 #endif  // CONFIG_EXT_INTER
 
-// Change this section appropriately once warped motion is supported
-#if CONFIG_MOTION_VAR && !CONFIG_WARPED_MOTION
-const aom_tree_index av1_motion_mode_tree[TREE_SIZE(MOTION_MODES)] = {
-  -SIMPLE_TRANSLATION, -OBMC_CAUSAL
-};
-static const aom_prob default_motion_mode_prob[BLOCK_SIZES][MOTION_MODES - 1] =
-    {
-#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
-      { 255 }, { 255 }, { 255 },
-#endif
-      { 255 }, { 255 }, { 255 }, { 151 }, { 153 }, { 144 }, { 178 },
-      { 165 }, { 160 }, { 207 }, { 195 }, { 168 }, { 244 },
-#if CONFIG_EXT_PARTITION
-      { 252 }, { 252 }, { 252 },
-#endif  // CONFIG_EXT_PARTITION
-    };
-
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
 const aom_tree_index av1_ncobmc_mode_tree[TREE_SIZE(MAX_NCOBMC_MODES)] = {
   -NO_OVERLAP,    2,  -NCOBMC_MODE_1, 4,
@@ -1168,6 +1151,46 @@ static const aom_prob
       { 28, 32, 37, 43, 51, 64, 85, 128 },  // 16X16 equal prob
       { 86, 22, 32, 25, 10, 40, 97, 65 },   // 32X32
       { 28, 32, 37, 43, 51, 64, 85, 128 }   // 64X64 equal prob
+    };
+#endif
+
+// Change this section appropriately once warped motion is supported
+#if CONFIG_MOTION_VAR && !CONFIG_WARPED_MOTION
+#if !CONFIG_NCOBMC_ADAPT_WEIGHT
+const aom_tree_index av1_motion_mode_tree[TREE_SIZE(MOTION_MODES)] = {
+  -SIMPLE_TRANSLATION, -OBMC_CAUSAL
+};
+static const aom_prob default_motion_mode_prob[BLOCK_SIZES][MOTION_MODES - 1] =
+    {
+#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
+      { 255 }, { 255 }, { 255 },
+#endif
+      { 255 }, { 255 }, { 255 }, { 151 }, { 153 }, { 144 }, { 178 },
+      { 165 }, { 160 }, { 207 }, { 195 }, { 168 }, { 244 },
+#if CONFIG_EXT_PARTITION
+      { 252 }, { 252 }, { 252 },
+#endif  // CONFIG_EXT_PARTITION
+    };
+#else
+// TODO(weitinglin): The default probability is copied from warped motion right
+//                   now as a place holder. It needs to be fined tuned after
+//                   NCOBMC_ADAPT_WEIGHT is actually implemented. Also needs to
+//                   change this section appropriately once warped motion is
+//                   supported.
+const aom_tree_index av1_motion_mode_tree[TREE_SIZE(MOTION_MODES)] = {
+  -SIMPLE_TRANSLATION, 2, -OBMC_CAUSAL, -NCOBMC_ADAPT_WEIGHT,
+};
+static const aom_prob default_motion_mode_prob[BLOCK_SIZES][MOTION_MODES - 1] =
+    {
+#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
+      { 255, 200 }, { 255, 200 }, { 255, 200 },
+#endif
+      { 255, 200 }, { 255, 200 }, { 255, 200 }, { 151, 200 }, { 153, 200 },
+      { 144, 200 }, { 178, 200 }, { 165, 200 }, { 160, 200 }, { 207, 200 },
+      { 195, 200 }, { 168, 200 }, { 244, 200 },
+#if CONFIG_EXT_PARTITION
+      { 252, 200 }, { 252, 200 }, { 252, 200 },
+#endif  // CONFIG_EXT_PARTITION
     };
 #endif
 
