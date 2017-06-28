@@ -7,11 +7,15 @@
 #include <utility>
 #include <vector>
 
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "components/infobars/core/infobar.h"
 #include "components/metrics/proto/translate_event.pb.h"
 #include "components/prefs/pref_service.h"
+#include "components/sync/driver/sync_driver_switches.h"
+#include "components/sync/protocol/user_event_specifics.pb.h"
+#include "components/sync/user_events/user_event_service.h"
 #include "components/translate/core/browser/page_translated_details.h"
 #include "components/translate/core/browser/translate_accept_languages.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
@@ -19,11 +23,13 @@
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/browser/translate_step.h"
 #include "components/translate/core/common/language_detection_details.h"
+#include "components/translate/core/common/translation_logging_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/infobars/infobar.h"
 #include "ios/chrome/browser/infobars/infobar_controller.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #include "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/sync/ios_user_event_service_factory.h"
 #import "ios/chrome/browser/translate/after_translate_infobar_controller.h"
 #import "ios/chrome/browser/translate/before_translate_infobar_controller.h"
 #include "ios/chrome/browser/translate/language_model_factory.h"
@@ -34,6 +40,8 @@
 #include "ios/chrome/browser/translate/translate_service_ios.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #include "ios/web/public/browser_state.h"
+#include "ios/web/public/navigation_item.h"
+#include "ios/web/public/navigation_manager.h"
 #include "ios/web/public/web_state/web_state.h"
 #include "url/gurl.h"
 
@@ -107,8 +115,30 @@ std::unique_ptr<infobars::InfoBar> ChromeIOSTranslateClient::CreateInfoBar(
 }
 
 void ChromeIOSTranslateClient::RecordTranslateEvent(
-    const metrics::TranslateEventProto&) {
-  // TODO(crbug.com/728491): Implementing gaia-keyed logging.
+    const metrics::TranslateEventProto& translate_event) {
+  if (!base::FeatureList::IsEnabled(switches::kSyncUserTranslationEvents))
+    return;
+
+  syncer::UserEventService* const user_event_service =
+      IOSUserEventServiceFactory::GetForBrowserState(
+          ios::ChromeBrowserState::FromBrowserState(
+              web_state()->GetBrowserState()));
+  const auto* const item =
+      web_state()->GetNavigationManager()->GetLastCommittedItem();
+
+  // If entry is null, we don't record the page.
+  // The navigation entry can be null in situations like download or initial
+  // blank page.
+  if (item == nullptr)
+    return;
+
+  auto specifics = base::MakeUnique<sync_pb::UserEventSpecifics>();
+  // We only log the event we care about.
+  const bool needs_logging = translate::ConstructTranslateEvent(
+      item->GetTimestamp().ToInternalValue(), translate_event, specifics.get());
+  if (needs_logging) {
+    user_event_service->RecordUserEvent(std::move(specifics));
+  }
 }
 
 void ChromeIOSTranslateClient::ShowTranslateUI(
