@@ -1513,9 +1513,11 @@ WebLocalFrame* WebLocalFrame::CreateProvisional(
     InterfaceProvider* interface_provider,
     InterfaceRegistry* interface_registry,
     WebRemoteFrame* old_web_frame,
-    WebSandboxFlags flags) {
-  return WebLocalFrameImpl::CreateProvisional(
-      client, interface_provider, interface_registry, old_web_frame, flags);
+    WebSandboxFlags flags,
+    WebParsedFeaturePolicy container_policy) {
+  return WebLocalFrameImpl::CreateProvisional(client, interface_provider,
+                                              interface_registry, old_web_frame,
+                                              flags, container_policy);
 }
 
 WebLocalFrameImpl* WebLocalFrameImpl::Create(
@@ -1556,7 +1558,8 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
     blink::InterfaceProvider* interface_provider,
     blink::InterfaceRegistry* interface_registry,
     WebRemoteFrame* old_web_frame,
-    WebSandboxFlags flags) {
+    WebSandboxFlags flags,
+    WebParsedFeaturePolicy container_policy) {
   DCHECK(client);
   WebLocalFrameImpl* web_frame = new WebLocalFrameImpl(
       old_web_frame, client, interface_provider, interface_registry);
@@ -1583,6 +1586,8 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
   if (new_frame->Owner() && new_frame->Owner()->IsRemote()) {
     ToRemoteFrameOwner(new_frame->Owner())
         ->SetSandboxFlags(static_cast<SandboxFlags>(flags));
+    ToRemoteFrameOwner(new_frame->Owner())
+        ->SetContainerPolicy(container_policy);
   }
   return web_frame;
 }
