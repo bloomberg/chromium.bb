@@ -29,7 +29,8 @@ SiteInstanceImpl::SiteInstanceImpl(BrowsingInstance* browsing_instance)
       browsing_instance_(browsing_instance),
       process_(nullptr),
       has_site_(false),
-      process_reuse_policy_(ProcessReusePolicy::DEFAULT) {
+      process_reuse_policy_(ProcessReusePolicy::DEFAULT),
+      is_for_service_worker_(false) {
   DCHECK(browsing_instance);
 }
 
