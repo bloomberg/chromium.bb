@@ -15,7 +15,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/thread_checker.h"
+#include "base/sequence_checker.h"
 #include "build/build_config.h"
 #include "chrome/browser/metrics/metrics_memory_details.h"
 #include "components/metrics/metrics_log_uploader.h"
@@ -171,7 +171,7 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
   void CountBrowserCrashDumpAttempts();
 #endif  // OS_WIN
 
-  base::ThreadChecker thread_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   // Weak pointer to the MetricsStateManager.
   metrics::MetricsStateManager* metrics_state_manager_;
