@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/compiler/compiler.gni")
 import("//build/config/ui.gni")
 import("//third_party/WebKit/public/public_features.gni")
 
@@ -63,4 +64,19 @@ if (use_default_render_theme) {
 }
 if (blink_logging_always_on) {
   feature_defines_list += [ "LOG_DISABLED=0" ]
+}
+
+if (remove_webcore_debug_symbols) {
+  if (is_win && symbol_level != 0) {
+    # If we use no_symbols on Windows when symbol_level is not zero then no
+    # PDB will be generated but ninja will be expecting one. This would mean
+    # that the build would always be dirty. Using minimal_symbols in this
+    # situation keeps the build times fast (roughly identical to no_symbols)
+    # while still generating a PDB to keep ninja happy (and it gives us proper
+    # call stacks).
+    remove_webcore_symbols_config =
+        [ "//build/config/compiler:minimal_symbols" ]
+  } else {
+    remove_webcore_symbols_config = [ "//build/config/compiler:no_symbols" ]
+  }
 }
