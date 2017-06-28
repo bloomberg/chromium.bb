@@ -23,8 +23,7 @@ static CGFloat kHostCollectionHeaderViewHeight = 25.f;
 @implementation HostCollectionViewController
 
 @synthesize delegate = _delegate;
-@synthesize flexHeaderContainerViewController =
-    _flexHeaderContainerViewController;
+@synthesize scrollViewDelegate = _scrollViewDelegate;
 
 - (instancetype)initWithCollectionViewLayout:(UICollectionViewLayout*)layout {
   self = [super initWithCollectionViewLayout:layout];
@@ -115,8 +114,7 @@ static CGFloat kHostCollectionHeaderViewHeight = 25.f;
 #pragma mark - UIScrollViewDelegate
 
 - (void)scrollViewDidScroll:(UIScrollView*)scrollView {
-  [self.flexHeaderContainerViewController.headerViewController
-      scrollViewDidScroll:scrollView];
+  [_scrollViewDelegate scrollViewDidScroll:scrollView];
 }
 
 #pragma mark - UICollectionViewDelegateFlowLayout
@@ -127,26 +125,6 @@ static CGFloat kHostCollectionHeaderViewHeight = 25.f;
     referenceSizeForHeaderInSection:(NSInteger)section {
   return CGSizeMake(collectionView.bounds.size.width,
                     kHostCollectionHeaderViewHeight);
-}
-
-#pragma mark - Private
-
-- (void)setFlexHeaderContainerViewController:
-    (MDCFlexibleHeaderContainerViewController*)
-        flexHeaderContainerViewController {
-  _flexHeaderContainerViewController = flexHeaderContainerViewController;
-  MDCFlexibleHeaderView* headerView =
-      _flexHeaderContainerViewController.headerViewController.headerView;
-  headerView.trackingScrollView = self.collectionView;
-  headerView.backgroundColor = [UIColor clearColor];
-
-  // Use a custom shadow under the flexible header.
-  MDCShadowLayer* shadowLayer = [MDCShadowLayer layer];
-  [headerView setShadowLayer:shadowLayer
-      intensityDidChangeBlock:^(CALayer* layer, CGFloat intensity) {
-        CGFloat elevation = MDCShadowElevationAppBar * intensity;
-        [(MDCShadowLayer*)layer setElevation:elevation];
-      }];
 }
 
 @end

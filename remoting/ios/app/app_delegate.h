@@ -28,6 +28,9 @@
 // controller.
 - (void)navigateToSendFeedback:(UINavigationController*)navigationController;
 
+// Pop up an Email compose view filled with the instructions to setup the host.
+- (void)emailSetupInstructions;
+
 @end
 
 #endif  // REMOTING_IOS_APP_APP_DELEGATE_H_

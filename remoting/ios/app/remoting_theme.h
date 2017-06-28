@@ -17,6 +17,10 @@
 @property(class, nonatomic, readonly) UIColor* menuBlueColor;
 @property(class, nonatomic, readonly) UIColor* offlineHostColor;
 @property(class, nonatomic, readonly) UIColor* onlineHostColor;
+@property(class, nonatomic, readonly) UIColor* buttonTextColor;
+@property(class, nonatomic, readonly) UIColor* setupListBackgroundColor;
+@property(class, nonatomic, readonly) UIColor* setupListTextColor;
+@property(class, nonatomic, readonly) UIColor* setupListNumberColor;
 
 // Icons
 

@@ -104,8 +104,8 @@ bool HostListFetcher::ProcessResponse(
 
   const base::ListValue* hosts = nullptr;
   if (!data->GetList("items", &hosts)) {
-    LOG(ERROR) << "Failed to find hosts in Hostlist response data";
-    return false;
+    // This will happen if the user has no host.
+    return true;
   }
 
   // Any host_info with malformed data will not be added to the hostlist.

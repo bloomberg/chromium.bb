@@ -30,7 +30,7 @@
 static NSString* const kCRDAuthenticatedUserEmailKey =
     @"kCRDAuthenticatedUserEmailKey";
 
-NSString* const kHostsDidUpdate = @"kHostsDidUpdate";
+NSString* const kHostListStateDidChange = @"kHostListStateDidChange";
 
 NSString* const kUserDidUpdate = @"kUserDidUpdate";
 NSString* const kUserInfo = @"kUserInfo";
@@ -39,13 +39,13 @@ NSString* const kUserInfo = @"kUserInfo";
   id<RemotingAuthentication> _authentication;
   remoting::HostListFetcher* _hostListFetcher;
   remoting::IosClientRuntimeDelegate* _clientRuntimeDelegate;
-  BOOL _isHostListFetching;
 }
 @end
 
 @implementation RemotingService
 
 @synthesize hosts = _hosts;
+@synthesize hostListState = _hostListState;
 
 // RemotingService is a singleton.
 + (RemotingService*)instance {
@@ -63,7 +63,7 @@ NSString* const kUserInfo = @"kUserInfo";
     _hosts = nil;
     _hostListFetcher = nil;
     // TODO(yuweih): Maybe better to just cancel the previous request.
-    _isHostListFetching = NO;
+    _hostListState = HostListStateNotFetched;
     // TODO(nicholss): This might need a pointer back to the service.
     _clientRuntimeDelegate =
         new remoting::IosClientRuntimeDelegate();
@@ -75,10 +75,10 @@ NSString* const kUserInfo = @"kUserInfo";
 #pragma mark - RemotingService Implementation
 
 - (void)startHostListFetchWith:(NSString*)accessToken {
-  if (_isHostListFetching) {
+  if (_hostListState == HostListStateFetching) {
     return;
   }
-  _isHostListFetching = YES;
+  [self setHostListState:HostListStateFetching];
   if (!_hostListFetcher) {
     _hostListFetcher = new remoting::HostListFetcher(
         remoting::ChromotingClientRuntime::GetInstance()->url_requester());
@@ -118,29 +118,31 @@ NSString* const kUserInfo = @"kUserInfo";
           [hosts addObject:host];
         }
         _hosts = hosts;
-        [self hostListUpdated];
-        _isHostListFetching = NO;
+        [self setHostListState:HostListStateFetched];
       }));
 }
 
-#pragma mark - Notifications
-
-- (void)hostListUpdated {
-  [[NSNotificationCenter defaultCenter] postNotificationName:kHostsDidUpdate
-                                                      object:self
-                                                    userInfo:nil];
+- (void)setHostListState:(HostListState)state {
+  if (state == _hostListState) {
+    return;
+  }
+  _hostListState = state;
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:kHostListStateDidChange
+                    object:self
+                  userInfo:nil];
 }
 
 #pragma mark - RemotingAuthenticationDelegate
 
 - (void)userDidUpdate:(UserInfo*)user {
   NSDictionary* userInfo = nil;
+  [self setHostListState:HostListStateNotFetched];
   if (user) {
     userInfo = [NSDictionary dictionaryWithObject:user forKey:kUserInfo];
     [self requestHostListFetch];
   } else {
     _hosts = nil;
-    [self hostListUpdated];
   }
   [[NSNotificationCenter defaultCenter] postNotificationName:kUserDidUpdate
                                                       object:self

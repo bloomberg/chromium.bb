@@ -12,10 +12,21 @@
 
 @protocol RemotingAuthentication;
 
+typedef NS_ENUM(NSInteger, HostListState) {
+  // Nobody has requested a host list fetch.
+  HostListStateNotFetched,
+
+  // The host list is currently being fetched.
+  HostListStateFetching,
+
+  // The host list has been fetched.
+  HostListStateFetched,
+};
+
 // Eventing related keys:
 
 // Hosts did update event.
-extern NSString* const kHostsDidUpdate;
+extern NSString* const kHostListStateDidChange;
 // User did update event name.
 extern NSString* const kUserDidUpdate;
 // Map key for UserInfo object.
@@ -36,6 +47,8 @@ extern NSString* const kUserInfo;
 
 // Returns the current host list.
 @property(nonatomic, readonly) NSArray<HostInfo*>* hosts;
+
+@property(nonatomic, readonly) HostListState hostListState;
 
 // The Chromoting Client Runtime, this holds the threads and other shared
 // resources used by the Chromoting clients
