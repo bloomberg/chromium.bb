@@ -33,10 +33,12 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestion_identifier.h"
 #import "ios/chrome/browser/ui/ntp/google_landing_mediator.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/ntp/notification_promo_whats_new.h"
+#import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -49,8 +51,11 @@
 #error "This file requires ARC support."
 #endif
 
-@interface ContentSuggestionsCoordinator ()<ContentSuggestionsCommands,
-                                            ContentSuggestionsHeaderCommands>
+@interface ContentSuggestionsCoordinator ()<
+    ContentSuggestionsCommands,
+    ContentSuggestionsHeaderCommands,
+    ContentSuggestionsViewControllerDelegate,
+    OverscrollActionsControllerDelegate>
 
 @property(nonatomic, strong) AlertCoordinator* alertCoordinator;
 @property(nonatomic, strong)
@@ -129,6 +134,8 @@
          dataSource:self.contentSuggestionsMediator];
   self.suggestionsViewController.headerCommandHandler = self;
   self.suggestionsViewController.suggestionCommandHandler = self;
+  self.suggestionsViewController.suggestionsDelegate = self;
+  self.suggestionsViewController.overscrollDelegate = self;
 }
 
 - (void)stop {
@@ -147,7 +154,7 @@
 #pragma mark - ContentSuggestionsCommands
 
 - (void)openReadingList {
-  [self.baseViewController
+  [self.suggestionsViewController
       chromeExecuteCommand:[GenericChromeCommand
                                commandWithTag:IDC_SHOW_READING_LIST]];
 }
@@ -351,7 +358,7 @@
   if (notificationPromo->IsChromeCommand()) {
     GenericChromeCommand* command = [[GenericChromeCommand alloc]
         initWithTag:notificationPromo->command_id()];
-    [self.baseViewController chromeExecuteCommand:command];
+    [self.suggestionsViewController chromeExecuteCommand:command];
     return;
   }
   NOTREACHED();
@@ -379,6 +386,70 @@
         updateSearchFieldForOffset:self.suggestionsViewController.collectionView
                                        .contentOffset.y];
   }
+}
+
+#pragma mark - ContentSuggestionsViewControllerDelegate
+
+- (CGFloat)pinnedOffsetY {
+  CGFloat headerHeight = content_suggestions::heightForLogoHeader(
+      self.headerController.logoIsShowing,
+      [self.contentSuggestionsMediator notificationPromo]->CanShow());
+  CGFloat offsetY =
+      headerHeight - ntp_header::kScrolledToTopOmniboxBottomMargin;
+  if (!IsIPadIdiom())
+    offsetY -= ntp_header::kToolbarHeight;
+
+  return offsetY;
+}
+
+- (BOOL)isOmniboxFocused {
+  return self.headerController.omniboxFocused;
+}
+
+#pragma mark - OverscrollActionsControllerDelegate
+
+- (void)overscrollActionsController:(OverscrollActionsController*)controller
+                   didTriggerAction:(OverscrollAction)action {
+  switch (action) {
+    case OverscrollAction::NEW_TAB: {
+      base::scoped_nsobject<GenericChromeCommand> command(
+          [[GenericChromeCommand alloc] initWithTag:IDC_NEW_TAB]);
+      [self.suggestionsViewController chromeExecuteCommand:command];
+    } break;
+    case OverscrollAction::CLOSE_TAB: {
+      base::scoped_nsobject<GenericChromeCommand> command(
+          [[GenericChromeCommand alloc] initWithTag:IDC_CLOSE_TAB]);
+      [self.suggestionsViewController chromeExecuteCommand:command];
+    } break;
+    case OverscrollAction::REFRESH:
+      [self reload];
+      break;
+    case OverscrollAction::NONE:
+      NOTREACHED();
+      break;
+  }
+}
+
+- (BOOL)shouldAllowOverscrollActions {
+  return YES;
+}
+
+- (UIView*)toolbarSnapshotView {
+  return
+      [[self.headerController toolBarView] snapshotViewAfterScreenUpdates:NO];
+}
+
+- (UIView*)headerView {
+  return self.suggestionsViewController.view;
+}
+
+- (CGFloat)overscrollActionsControllerHeaderInset:
+    (OverscrollActionsController*)controller {
+  return 0;
+}
+
+- (CGFloat)overscrollHeaderHeight {
+  return [self.headerController toolBarView].bounds.size.height;
 }
 
 #pragma mark - NewTabPagePanelProtocol
@@ -473,20 +544,6 @@
   message.action = action;
   message.category = @"MostVisitedUndo";
   [MDCSnackbarManager showMessage:message];
-}
-
-// Returns the Y value to use for the scroll view's contentOffset when scrolling
-// the omnibox to the top of the screen.
-- (CGFloat)pinnedOffsetY {
-  CGFloat headerHeight = content_suggestions::heightForLogoHeader(
-      self.headerController.logoIsShowing,
-      [self.contentSuggestionsMediator notificationPromo]->CanShow());
-  CGFloat offsetY =
-      headerHeight - ntp_header::kScrolledToTopOmniboxBottomMargin;
-  if (!IsIPadIdiom())
-    offsetY -= ntp_header::kToolbarHeight;
-
-  return offsetY;
 }
 
 @end

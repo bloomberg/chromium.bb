@@ -43,6 +43,9 @@ class ReadingListModel;
 // Update the iPhone fakebox's frame based on the current scroll view |offset|.
 - (void)updateSearchFieldForOffset:(CGFloat)offset;
 
+// Return the toolbar view;
+- (UIView*)toolBarView;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_HEADER_CONTROLLER_H_
