@@ -858,6 +858,10 @@ void LoginDisplayHostImpl::StartArcKiosk(const AccountId& account_id) {
   arc_kiosk_controller_->StartArcKiosk(account_id);
 }
 
+bool LoginDisplayHostImpl::IsVoiceInteractionOobe() {
+  return is_voice_interaction_oobe_;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // LoginDisplayHostImpl, public
 
@@ -1217,6 +1221,9 @@ void LoginDisplayHostImpl::SetOobeProgressBarVisible(bool visible) {
 }
 
 void LoginDisplayHostImpl::TryToPlayStartupSound() {
+  if (is_voice_interaction_oobe_)
+    return;
+
   if (startup_sound_played_ || login_prompt_visible_time_.is_null() ||
       !CrasAudioHandler::Get()->GetPrimaryActiveOutputNode()) {
     return;
@@ -1264,6 +1271,12 @@ void LoginDisplayHostImpl::DisableRestrictiveProxyCheckForTest() {
       ->GetOobeUI()
       ->GetGaiaScreenView()
       ->DisableRestrictiveProxyCheckForTest();
+}
+
+void LoginDisplayHostImpl::StartVoiceInteractionOobe() {
+  is_voice_interaction_oobe_ = true;
+  finalize_animation_type_ = ANIMATION_NONE;
+  StartWizard(chromeos::OobeScreen::SCREEN_VOICE_INTERACTION_VALUE_PROP);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

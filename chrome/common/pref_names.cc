@@ -54,7 +54,7 @@ const char kArcSignedIn[] = "arc.signedin";
 // the user directory (i.e., the user finished required migration.)
 extern const char kArcCompatibleFilesystemChosen[] =
     "arc.compatible_filesystem.chosen";
-// A preference that indicates that user accepted Assistant Value Prop.
+// A preference that indicates that user accepted Voice Interaction Value Prop.
 const char kArcVoiceInteractionValuePropAccepted[] =
     "arc.voice_interaction_value_prop.accepted";
 // A preference that indicates the user has enabled voice interaction services.

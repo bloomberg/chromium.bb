@@ -107,6 +107,8 @@ class FakeLoginDisplayHost : public chromeos::LoginDisplayHost {
                       bool is_auto_launch) override {}
   void StartDemoAppLaunch() override {}
   void StartArcKiosk(const AccountId& account_id) override {}
+  void StartVoiceInteractionOobe() override {}
+  bool IsVoiceInteractionOobe() override { return false; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeLoginDisplayHost);

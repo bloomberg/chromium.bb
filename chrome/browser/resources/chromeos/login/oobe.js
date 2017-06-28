@@ -387,6 +387,9 @@ cr.define('cr.ui.Oobe', function() {
         $('oobe-shield').removeAttribute('md-mode');
         $('popup-overlay').removeAttribute('md-mode');
       }
+
+      $('oobe-shield').hidden =
+          (loadTimeData.getString('hideOobeShield') == 'on');
     },
   };
 });
