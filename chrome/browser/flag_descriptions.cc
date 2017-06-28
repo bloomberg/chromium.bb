@@ -1477,6 +1477,12 @@ const char kAppInfoDialogDescription[] =
     "permissions dialog, or the details link (which is a link to the Web "
     "Store).";
 
+const char kMacV2SandboxName[] = "Mac V2 Sandbox";
+
+const char kMacV2SandboxDescription[] =
+    "Eliminates the unsandboxed warmup phase and sandboxes processes for their "
+    "entire life cycle.";
+
 const char kMacViewsNativeAppWindowsName[] = "Toolkit-Views App Windows.";
 
 const char kMacViewsNativeAppWindowsDescription[] =
