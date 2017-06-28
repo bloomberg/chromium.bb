@@ -8,7 +8,7 @@
 #include "bindings/core/v8/serialization/SerializedScriptValue.h"
 #include "bindings/modules/v8/FormDataOrURLSearchParams.h"
 #include "modules/ModulesExport.h"
-#include "modules/credentialmanager/CredentialUserData.h"
+#include "modules/credentialmanager/Credential.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/EncodedFormData.h"
@@ -22,7 +22,7 @@ class WebPasswordCredential;
 
 using CredentialPostBodyType = FormDataOrURLSearchParams;
 
-class MODULES_EXPORT PasswordCredential final : public CredentialUserData {
+class MODULES_EXPORT PasswordCredential final : public Credential {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -46,6 +46,8 @@ class MODULES_EXPORT PasswordCredential final : public CredentialUserData {
   }
 
   const String& password() const;
+  const String& name() const;
+  const KURL& iconURL() const;
 
   // Internal methods
   PassRefPtr<EncodedFormData> EncodeFormData(String& content_type) const;

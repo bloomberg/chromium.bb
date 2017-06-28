@@ -29,19 +29,27 @@ namespace {
 void WebCredentialToCredentialInfo(const blink::WebCredential& credential,
                                    CredentialInfo* out) {
   out->id = credential.Id().Utf16();
-  out->name = credential.GetName().Utf16();
-  out->icon = credential.GetIconURL();
   if (credential.IsPasswordCredential()) {
     out->type = CredentialType::CREDENTIAL_TYPE_PASSWORD;
     out->password = static_cast<const blink::WebPasswordCredential&>(credential)
                         .Password()
                         .Utf16();
+    out->name = static_cast<const blink::WebPasswordCredential&>(credential)
+                    .Name()
+                    .Utf16();
+    out->icon =
+        static_cast<const blink::WebPasswordCredential&>(credential).IconURL();
   } else {
     DCHECK(credential.IsFederatedCredential());
     out->type = CredentialType::CREDENTIAL_TYPE_FEDERATED;
     out->federation =
         static_cast<const blink::WebFederatedCredential&>(credential)
             .Provider();
+    out->name = static_cast<const blink::WebFederatedCredential&>(credential)
+                    .Name()
+                    .Utf16();
+    out->icon =
+        static_cast<const blink::WebFederatedCredential&>(credential).IconURL();
   }
 }
 

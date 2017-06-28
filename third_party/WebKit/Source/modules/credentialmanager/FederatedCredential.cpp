@@ -39,13 +39,13 @@ FederatedCredential* FederatedCredential::Create(
 
 FederatedCredential::FederatedCredential(
     WebFederatedCredential* web_federated_credential)
-    : CredentialUserData(web_federated_credential->GetPlatformCredential()) {}
+    : Credential(web_federated_credential->GetPlatformCredential()) {}
 
 FederatedCredential::FederatedCredential(const String& id,
                                          const KURL& provider,
                                          const String& name,
                                          const KURL& icon)
-    : CredentialUserData(
+    : Credential(
           PlatformFederatedCredential::Create(id,
                                               SecurityOrigin::Create(provider),
                                               name,
@@ -57,4 +57,13 @@ const String FederatedCredential::provider() const {
       ->ToString();
 }
 
+const String& FederatedCredential::name() const {
+  return static_cast<PlatformFederatedCredential*>(platform_credential_.Get())
+      ->Name();
+}
+
+const KURL& FederatedCredential::iconURL() const {
+  return static_cast<PlatformFederatedCredential*>(platform_credential_.Get())
+      ->IconURL();
+}
 }  // namespace blink

@@ -23,6 +23,16 @@ WebString WebPasswordCredential::Password() const {
       ->Password();
 }
 
+WebString WebPasswordCredential::Name() const {
+  return static_cast<PlatformPasswordCredential*>(platform_credential_.Get())
+      ->Name();
+}
+
+WebURL WebPasswordCredential::IconURL() const {
+  return static_cast<PlatformPasswordCredential*>(platform_credential_.Get())
+      ->IconURL();
+}
+
 WebPasswordCredential::WebPasswordCredential(PlatformCredential* credential)
     : WebCredential(credential) {}
 

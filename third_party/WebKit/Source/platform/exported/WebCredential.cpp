@@ -25,10 +25,8 @@ std::unique_ptr<WebCredential> WebCredential::Create(
   return nullptr;
 }
 
-WebCredential::WebCredential(const WebString& id,
-                             const WebString& name,
-                             const WebURL& icon_url)
-    : platform_credential_(PlatformCredential::Create(id, name, icon_url)) {}
+WebCredential::WebCredential(const WebString& id)
+    : platform_credential_(PlatformCredential::Create(id)) {}
 
 WebCredential::WebCredential(const WebCredential& other) {
   Assign(other);
@@ -52,14 +50,6 @@ void WebCredential::Reset() {
 
 WebString WebCredential::Id() const {
   return platform_credential_->Id();
-}
-
-WebString WebCredential::GetName() const {
-  return platform_credential_->GetName();
-}
-
-WebURL WebCredential::GetIconURL() const {
-  return platform_credential_->GetIconURL();
 }
 
 WebString WebCredential::GetType() const {
