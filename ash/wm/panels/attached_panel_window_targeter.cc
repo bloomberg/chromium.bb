@@ -70,6 +70,8 @@ gfx::Insets AttachedPanelWindowTargeter::GetTouchExtendForShelfAlignment()
                          default_touch_extend_.left(),
                          default_touch_extend_.bottom(), 0);
   }
+  NOTREACHED();
+  return gfx::Insets();
 }
 
 }  // namespace ash
