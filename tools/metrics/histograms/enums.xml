@@ -24872,6 +24872,7 @@ from previous Chrome versions.
   <int value="0" label="Ready"/>
   <int value="1" label="Resume"/>
   <int value="2" label="LowStorage"/>
+  <int value="3" label="ArcKiosk"/>
 </enum>
 
 <enum name="MigrationUIMigrationResult">
@@ -24883,6 +24884,10 @@ from previous Chrome versions.
   <int value="5" label="Request failure in resumed migration"/>
   <int value="6" label="Mount failure in new migration"/>
   <int value="7" label="Mount failure in resumed migration"/>
+  <int value="8" label="Success in arc kiosk migration"/>
+  <int value="9" label="General failure in arc kiosk migration"/>
+  <int value="10" label="Request failure in arc kiosk migration"/>
+  <int value="11" label="Mount failure in arc kiosk migration"/>
 </enum>
 
 <enum name="MigrationUIRemoveCryptohomeResult">
@@ -24890,6 +24895,8 @@ from previous Chrome versions.
   <int value="1" label="Success in resumed migration"/>
   <int value="2" label="Failure in new migration"/>
   <int value="3" label="Failure in resumed migration"/>
+  <int value="4" label="Success in arc kiosk migration"/>
+  <int value="5" label="Failure in arc kiosk migration"/>
 </enum>
 
 <enum name="MigrationUIScreen">

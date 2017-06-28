@@ -9,8 +9,10 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/login/auth/chrome_login_performer.h"
+#include "chrome/browser/chromeos/login/screens/encryption_migration_screen.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
@@ -97,6 +99,19 @@ void ArcKioskController::PolicyLoadFailed() {
 
 void ArcKioskController::SetAuthFlowOffline(bool offline) {
   NOTREACHED();
+}
+
+void ArcKioskController::OnOldEncryptionDetected(
+    const UserContext& user_context,
+    bool has_incomplete_migration) {
+  host_->StartWizard(OobeScreen::SCREEN_ENCRYPTION_MIGRATION);
+
+  EncryptionMigrationScreen* migration_screen =
+      static_cast<EncryptionMigrationScreen*>(
+          host_->GetWizardController()->current_screen());
+  DCHECK(migration_screen);
+  migration_screen->SetUserContext(user_context);
+  migration_screen->SetupInitialView();
 }
 
 void ArcKioskController::OnProfilePrepared(Profile* profile,
