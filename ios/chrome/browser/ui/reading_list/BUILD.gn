@@ -68,6 +68,8 @@ source_set("reading_list_ui") {
     "reading_list_toolbar.mm",
     "reading_list_view_controller.h",
     "reading_list_view_controller.mm",
+    "text_badge_view.h",
+    "text_badge_view.mm",
   ]
   deps = [
     ":resources",
@@ -102,6 +104,7 @@ source_set("unit_tests") {
     "reading_list_collection_view_controller_unittest.mm",
     "reading_list_coordinator_unittest.mm",
     "reading_list_mediator_unittest.mm",
+    "text_badge_view_unittest.mm",
   ]
   deps = [
     ":reading_list",
