@@ -15,14 +15,15 @@ namespace {
 const base::Feature* kAllFeatures[] = {
     &kIPHDummyFeature,  // Ensures non-empty array for all platforms.
 #if defined(OS_ANDROID)
-    &kIPHDataSaverPreviewFeature,
     &kIPHDataSaverDetailFeature,
-    &kIPHDownloadPageFeature,
+    &kIPHDataSaverPreviewFeature,
     &kIPHDownloadHomeFeature,
-#endif  // OS_ANDROID
-#if defined(OS_WIN)
+    &kIPHDownloadPageFeature,
+#endif  // defined(OS_ANDROID)
+#if defined(OS_WIN) || defined(OS_LINUX)
+    &kIPHIncognitoWindowFeature,
     &kIPHNewTabFeature,
-#endif  // OS_WIN
+#endif  // defined(OS_WIN) || defined(OS_LINUX)
 };
 }  // namespace
 
