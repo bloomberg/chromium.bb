@@ -51,6 +51,10 @@ class MediaElementAudioSourceHandler final : public AudioHandler {
   void Dispose() override;
   void Process(size_t frames_to_process) override;
 
+  // AudioNode
+  double TailTime() const override { return 0; }
+  double LatencyTime() const override { return 0; }
+
   // Helpers for AudioSourceProviderClient implementation of
   // MediaElementAudioSourceNode.
   void SetFormat(size_t number_of_channels, float sample_rate);

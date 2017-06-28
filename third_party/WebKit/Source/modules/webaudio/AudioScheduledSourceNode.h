@@ -62,6 +62,10 @@ class AudioScheduledSourceHandler : public AudioHandler {
   void Start(double when, ExceptionState&);
   void Stop(double when, ExceptionState&);
 
+  // AudioNode
+  double TailTime() const override { return 0; }
+  double LatencyTime() const override { return 0; }
+
   PlaybackState GetPlaybackState() const {
     return static_cast<PlaybackState>(AcquireLoad(&playback_state_));
   }

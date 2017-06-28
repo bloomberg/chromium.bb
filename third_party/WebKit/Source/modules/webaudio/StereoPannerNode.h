@@ -33,6 +33,10 @@ class StereoPannerHandler final : public AudioHandler {
   void SetChannelCount(unsigned long, ExceptionState&) final;
   void SetChannelCountMode(const String&, ExceptionState&) final;
 
+  // AudioNode
+  double TailTime() const override { return 0; }
+  double LatencyTime() const override { return 0; }
+
  private:
   StereoPannerHandler(AudioNode&, float sample_rate, AudioParamHandler& pan);
 

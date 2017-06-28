@@ -54,6 +54,10 @@ class GainHandler final : public AudioHandler {
   // have changed.
   void CheckNumberOfChannelsForInput(AudioNodeInput*) override;
 
+  // AudioNode
+  double TailTime() const override { return 0; }
+  double LatencyTime() const override { return 0; }
+
  private:
   GainHandler(AudioNode&, float sample_rate, AudioParamHandler& gain);
 

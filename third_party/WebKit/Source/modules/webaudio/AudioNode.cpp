@@ -359,14 +359,6 @@ void AudioHandler::CheckNumberOfChannelsForInput(AudioNodeInput* input) {
   input->UpdateInternalBus();
 }
 
-double AudioHandler::TailTime() const {
-  return 0;
-}
-
-double AudioHandler::LatencyTime() const {
-  return 0;
-}
-
 bool AudioHandler::PropagatesSilence() const {
   return last_non_silent_time_ + LatencyTime() + TailTime() <
          Context()->currentTime();
