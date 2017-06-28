@@ -486,4 +486,14 @@ TEST_F(HTMLSelectElementTest, SetRecalcListItemsByOptgroupRemoval) {
   // PASS if setInnerHTML didn't have a check failure.
 }
 
+TEST_F(HTMLSelectElementTest, ScrollToOptionAfterLayoutCrash) {
+  // crbug.com/737447
+  // This test passes if no crash.
+  GetDocument().documentElement()->setInnerHTML(
+      "<style>*:checked { position:fixed; }</style>"
+      "<select multiple><<option>o1</option><option "
+      "selected>o2</option></select>");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+}
+
 }  // namespace blink

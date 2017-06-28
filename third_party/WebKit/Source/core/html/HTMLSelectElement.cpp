@@ -917,13 +917,13 @@ void HTMLSelectElement::ScrollToOptionAfterLayout(
   // We can't use PaintLayerScrollableArea::ScrollIntoView(), which needs
   // absolute coordinate. We are unable to compute absolute positions because
   // ancestors' layout aren't fixed yet.
-  LayoutObject* container = option_box->Container();
-  LayoutSize option_offset = option_box->OffsetFromContainer(container);
-  for (; container && container != GetLayoutObject();
-       container = container->Container())
+  LayoutSize option_offset;
+  for (LayoutObject* container = option_box; container != GetLayoutObject();
+       container = container->Container()) {
+    if (!container->Container())
+      return;
     option_offset += container->OffsetFromContainer(container->Container());
-  if (!container)
-    return;
+  }
   scrollable_area.ScrollLocalRectIntoView(
       LayoutRect(LayoutPoint() + option_offset, option_box->Size()),
       ScrollAlignment::kAlignToEdgeIfNeeded,
