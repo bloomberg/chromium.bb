@@ -17,8 +17,8 @@
 #include "base/synchronization/lock.h"
 #include "media/base/cdm_key_information.h"
 #include "media/base/cdm_promise.h"
-#include "media/cdm/aes_decryptor.h"
 #include "media/cdm/ppapi/external_clear_key/clear_key_cdm_common.h"
+#include "media/cdm/ppapi/external_clear_key/clear_key_persistent_session_cdm.h"
 
 // Enable this to use the fake decoder for testing.
 // TODO(tomfinegan): Move fake audio decoder into a separate class.
@@ -29,10 +29,10 @@
 class GURL;
 
 namespace media {
-class FileIOTestRunner;
 class CdmVideoDecoder;
 class DecoderBuffer;
 class FFmpegCdmAudioDecoder;
+class FileIOTestRunner;
 
 // Clear key implementation of the cdm::ContentDecryptionModule interface.
 class ClearKeyCdm : public ClearKeyCdmInterface {
@@ -87,11 +87,6 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
                                      uint32_t output_protection_mask) override;
 
  private:
-  // Emulates a session stored for |session_id_for_emulated_loadsession_|. This
-  // is necessary since aes_decryptor.cc does not support storing sessions.
-  void LoadLoadableSession();
-  void OnLoadSessionUpdated();
-
   // ContentDecryptionModule callbacks.
   void OnSessionMessage(const std::string& session_id,
                         CdmMessageType message_type,
@@ -106,12 +101,14 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
   // Handle the success/failure of a promise. These methods are responsible for
   // calling |host_| to resolve or reject the promise.
   void OnSessionCreated(uint32_t promise_id, const std::string& session_id);
-  void OnSessionLoaded(uint32_t promise_id, const std::string& session_id);
   void OnPromiseResolved(uint32_t promise_id);
   void OnPromiseFailed(uint32_t promise_id,
                        CdmPromise::Exception exception_code,
                        uint32_t system_code,
                        const std::string& error_message);
+
+  // After updating a session send a 'expirationChange' event.
+  void OnUpdateSuccess(uint32_t promise_id, const std::string& session_id);
 
   // Prepares next renewal message and sets a timer for it.
   void ScheduleNextRenewal();
@@ -157,43 +154,15 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
 
   void VerifyCdmHostTest();
 
-  scoped_refptr<AesDecryptor> decryptor_;
+  scoped_refptr<ContentDecryptionModule> cdm_;
 
   ClearKeyCdmHost* host_;
 
   const std::string key_system_;
+  bool allow_persistent_state_;
 
   std::string last_session_id_;
   std::string next_renewal_message_;
-
-  // In order to simulate LoadSession(), CreateSession() and then
-  // UpdateSession() will be called to create a session with known keys.
-  // |session_id_for_emulated_loadsession_| is used to keep track of the
-  // session_id allocated by aes_decryptor, as the session_id will be returned
-  // as |kLoadableSessionId|. Future requests for this simulated session
-  // need to use |session_id_for_emulated_loadsession_| for all calls
-  // to aes_decryptor.
-  // |promise_id_for_emulated_loadsession_| is used to keep track of the
-  // original LoadSession() promise, as it is not resolved until the
-  // UpdateSession() call succeeds.
-  // |has_received_keys_change_event_for_emulated_loadsession_| is used to keep
-  // track of whether a keyschange event has been received for the loadable
-  // session in case it happens before the emulated session is fully created.
-  // |keys_info_for_emulated_loadsession_| is used to keep track of the list
-  // of keys provided as a result of calling UpdateSession() if it happens,
-  // since they can't be forwarded on until the LoadSession() promise is
-  // resolved.
-  // TODO(xhwang): Extract testing code from main implementation.
-  // See http://crbug.com/341751
-  // TODO(jrummell): Once the order of events is fixed,
-  // |has_received_keys_change_event_for_emulated_loadsession_| should be
-  // removed (the event should have either happened or never happened).
-  // |keys_info_for_emulated_loadsession_| may also go away if the event is
-  // not expected. See http://crbug.com/448225
-  std::string session_id_for_emulated_loadsession_;
-  uint32_t promise_id_for_emulated_loadsession_;
-  bool has_received_keys_change_event_for_emulated_loadsession_;
-  CdmKeysInfo keys_info_for_emulated_loadsession_;
 
   // Timer delay in milliseconds for the next host_->SetTimer() call.
   int64_t timer_delay_ms_;

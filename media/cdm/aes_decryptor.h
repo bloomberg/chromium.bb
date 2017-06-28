@@ -7,8 +7,8 @@
 
 #include <stdint.h>
 
+#include <map>
 #include <memory>
-#include <set>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -85,6 +85,37 @@ class MEDIA_EXPORT AesDecryptor : public ContentDecryptionModule,
   void DeinitializeDecoder(StreamType stream_type) override;
 
  private:
+  friend class ClearKeyPersistentSessionCdm;
+
+  // Internally this class supports persistent license type sessions so that
+  // it can be used by ClearKeyPersistentSessionCdm. The following methods
+  // will be used from ClearKeyPersistentSessionCdm to create and update
+  // persistent sessions. Note that ClearKeyPersistentSessionCdm is only used
+  // for testing, so persistent sessions will not be available generally.
+
+  // Creates a new session with ID |session_id| and type |session_type|, and
+  // adds it to the list of active sessions. Returns false if the session ID
+  // is already in the list.
+  bool CreateSession(const std::string& session_id,
+                     CdmSessionType session_type);
+
+  // Gets the state of the session |session_id| as a JWK.
+  std::string GetSessionStateAsJWK(const std::string& session_id);
+
+  // Update session |session_id| with the JWK provided in |json_web_key_set|.
+  // Returns true and sets |key_added| if successful, otherwise returns false
+  // and |error_message| is the reason for failure.
+  bool UpdateSessionWithJWK(const std::string& session_id,
+                            const std::string& json_web_key_set,
+                            bool* key_added,
+                            std::string* error_message);
+
+  // Performs the final steps of UpdateSession (notify any listeners for keys
+  // changed, resolve the promise, and generate a keys change event).
+  void FinishUpdate(const std::string& session_id,
+                    bool key_added,
+                    std::unique_ptr<SimpleCdmPromise> promise);
+
   // TODO(fgalligan): Remove this and change KeyMap to use crypto::SymmetricKey
   // as there are no decryptors that are performing an integrity check.
   // Helper class that manages the decryption key.
@@ -96,6 +127,7 @@ class MEDIA_EXPORT AesDecryptor : public ContentDecryptionModule,
     // Creates the encryption key.
     bool Init();
 
+    const std::string& secret() { return secret_; }
     crypto::SymmetricKey* decryption_key() { return decryption_key_.get(); }
 
    private:
@@ -152,8 +184,11 @@ class MEDIA_EXPORT AesDecryptor : public ContentDecryptionModule,
   KeyIdToSessionKeysMap key_map_;  // Protected by |key_map_lock_|.
   mutable base::Lock key_map_lock_;  // Protects the |key_map_|.
 
-  // Keeps track of current open sessions.
-  std::set<std::string> open_sessions_;
+  // Keeps track of current open sessions and their type. Although publicly
+  // AesDecryptor only supports temporary sessions, ClearKeyPersistentSessionCdm
+  // uses this class to also support persistent sessions, so save the
+  // CdmSessionType for each session.
+  std::map<std::string, CdmSessionType> open_sessions_;
 
   NewKeyCB new_audio_key_cb_;
   NewKeyCB new_video_key_cb_;
