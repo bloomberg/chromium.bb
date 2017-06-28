@@ -206,7 +206,9 @@ blink::WebThemeEngine* PpapiBlinkPlatformImpl::ThemeEngine() {
   return NULL;
 }
 
-std::unique_ptr<blink::WebURLLoader> PpapiBlinkPlatformImpl::CreateURLLoader() {
+std::unique_ptr<blink::WebURLLoader> PpapiBlinkPlatformImpl::CreateURLLoader(
+    const blink::WebURLRequest& request,
+    base::SingleThreadTaskRunner* task_runner) {
   NOTREACHED();
   return NULL;
 }

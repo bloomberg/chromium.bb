@@ -6711,9 +6711,11 @@ blink::WebPageVisibilityState RenderFrameImpl::VisibilityState() const {
   return current_state;
 }
 
-std::unique_ptr<blink::WebURLLoader> RenderFrameImpl::CreateURLLoader() {
+std::unique_ptr<blink::WebURLLoader> RenderFrameImpl::CreateURLLoader(
+    const blink::WebURLRequest& request,
+    base::SingleThreadTaskRunner* task_runner) {
   // TODO(yhirano): Stop using Platform::CreateURLLoader() here.
-  return blink::Platform::Current()->CreateURLLoader();
+  return blink::Platform::Current()->CreateURLLoader(request, task_runner);
 }
 
 void RenderFrameImpl::DraggableRegionsChanged() {

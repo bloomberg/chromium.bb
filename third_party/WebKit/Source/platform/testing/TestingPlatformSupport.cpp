@@ -190,8 +190,11 @@ WebURLLoaderMockFactory* TestingPlatformSupport::GetURLLoaderMockFactory() {
   return old_platform_ ? old_platform_->GetURLLoaderMockFactory() : nullptr;
 }
 
-std::unique_ptr<WebURLLoader> TestingPlatformSupport::CreateURLLoader() {
-  return old_platform_ ? old_platform_->CreateURLLoader() : nullptr;
+std::unique_ptr<WebURLLoader> TestingPlatformSupport::CreateURLLoader(
+    const WebURLRequest& request,
+    base::SingleThreadTaskRunner* runner) {
+  return old_platform_ ? old_platform_->CreateURLLoader(request, runner)
+                       : nullptr;
 }
 
 WebData TestingPlatformSupport::GetDataResource(const char* name) {

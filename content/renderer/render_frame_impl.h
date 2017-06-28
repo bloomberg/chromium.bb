@@ -669,7 +669,9 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::WebSecurityOrigin& security_origin,
       blink::WebSetSinkIdCallbacks* web_callbacks) override;
   blink::WebPageVisibilityState VisibilityState() const override;
-  std::unique_ptr<blink::WebURLLoader> CreateURLLoader() override;
+  std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
+      const blink::WebURLRequest& request,
+      base::SingleThreadTaskRunner* task_runner) override;
   void DraggableRegionsChanged() override;
 
   // WebFrameSerializerClient implementation:

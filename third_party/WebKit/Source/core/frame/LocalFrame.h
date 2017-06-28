@@ -78,10 +78,12 @@ class PerformanceMonitor;
 template <typename Strategy>
 class PositionWithAffinityTemplate;
 class PluginData;
+class ResourceRequest;
 class ScriptController;
 class SpellChecker;
 class WebFrameScheduler;
 class WebPluginContainerBase;
+class WebTaskRunner;
 class WebURLLoader;
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<LocalFrame>;
@@ -248,7 +250,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // the embedder decides that Client Lo-Fi should be used for this request.
   void MaybeAllowImagePlaceholder(FetchParameters&) const;
 
-  std::unique_ptr<WebURLLoader> CreateURLLoader();
+  std::unique_ptr<WebURLLoader> CreateURLLoader(const ResourceRequest&,
+                                                WebTaskRunner*);
 
   bool IsInert() const { return is_inert_; }
 

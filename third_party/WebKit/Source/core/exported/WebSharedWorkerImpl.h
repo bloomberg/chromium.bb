@@ -39,6 +39,7 @@
 #include "core/workers/SharedWorkerReportingProxy.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerThread.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/wtf/RefPtr.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebAddressSpace.h"
@@ -107,9 +108,11 @@ class CORE_EXPORT WebSharedWorkerImpl final
                                const WebString& method,
                                const WebString& message) override;
 
-  std::unique_ptr<blink::WebURLLoader> CreateURLLoader() override {
+  std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
+      const WebURLRequest& request,
+      SingleThreadTaskRunner* task_runner) override {
     // TODO(yhirano): Stop using Platform::CreateURLLoader() here.
-    return Platform::Current()->CreateURLLoader();
+    return Platform::Current()->CreateURLLoader(request, task_runner);
   }
 
   // Callback methods for SharedWorkerReportingProxy.

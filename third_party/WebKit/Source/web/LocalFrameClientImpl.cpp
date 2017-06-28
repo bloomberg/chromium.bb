@@ -1059,8 +1059,12 @@ TextCheckerClient& LocalFrameClientImpl::GetTextCheckerClient() const {
   return web_frame_->GetTextCheckerClient();
 }
 
-std::unique_ptr<blink::WebURLLoader> LocalFrameClientImpl::CreateURLLoader() {
-  return web_frame_->CreateURLLoader();
+std::unique_ptr<blink::WebURLLoader> LocalFrameClientImpl::CreateURLLoader(
+    const ResourceRequest& request,
+    WebTaskRunner* task_runner) {
+  WrappedResourceRequest wrapped(request);
+  return web_frame_->CreateURLLoader(wrapped,
+                                     task_runner->ToSingleThreadTaskRunner());
 }
 
 service_manager::InterfaceProvider*

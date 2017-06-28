@@ -699,7 +699,9 @@ class WebLocalFrame : public WebFrame {
 
   // Creates and returns a loader. This function can be called only when this
   // frame is attached to a document.
-  virtual std::unique_ptr<WebURLLoader> CreateURLLoader() = 0;
+  virtual std::unique_ptr<WebURLLoader> CreateURLLoader(
+      const WebURLRequest&,
+      base::SingleThreadTaskRunner*) = 0;
 
   // Reload the current document.
   // Note: reload() and reloadWithOverrideURL() will be deprecated.
