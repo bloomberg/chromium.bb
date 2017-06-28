@@ -1966,6 +1966,9 @@ def process_isolate_server_options(
       parser.error('--isolate-server is required.')
     return
 
+  if 'ISOLATED_GRPC_PROXY' in os.environ:
+    options.is_grpc = True
+
   if options.is_grpc:
     isolate_storage.set_storage_api_class(isolate_storage.IsolateServerGrpc)
   else:
