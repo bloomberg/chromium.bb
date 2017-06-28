@@ -1857,7 +1857,7 @@ bool PDFiumEngine::OnMouseUp(const pp::MouseInputEvent& event) {
     FORM_OnLButtonUp(form_, pages_[page_index]->GetPage(), 0, page_x, page_y);
   }
 
-  if (area == PDFiumPage::FORM_TEXT_AREA)
+  if (area == PDFiumPage::FORM_TEXT_AREA && last_page_mouse_down_ != -1)
     SetFormSelectedText(form_, pages_[last_page_mouse_down_]->GetPage());
 
   if (!selecting_)
