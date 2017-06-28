@@ -1,5 +1,4 @@
 
-Page reloaded.
 Frame Attached
 Stack is empty
 
@@ -12,7 +11,7 @@ Call Frames :
     lineNumber : 13
     scriptId : <scriptId>
     lineNumber : 13
-    url : <only showing file name>/frameAttachedStacktrace.html
+    url : <only showing file name>/frame-attached-stacktrace-page.html
   }
   [1] : {
     columnNumber : 0

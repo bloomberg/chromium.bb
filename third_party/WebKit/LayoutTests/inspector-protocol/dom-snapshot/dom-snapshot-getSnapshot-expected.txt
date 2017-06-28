@@ -1,17 +1,11 @@
-Some Text
-And More Text 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque sit amet est sem. Aenean ut neque volutpat, posuere odio at, mollis nibh. Aenean sodales nulla et ligula efficitur sollicitudin blandit sed lectus. Duis orci enim, sodales ac lectus sed, hendrerit efficitur est. Quisque gravida facilisis viverra.
-
-Lets have a span
-Rotated text!
-
+Tests DOMSnapshot.getSnapshot method.
 {
   "domNodes": [
     {
       "nodeType": 9,
       "nodeName": "#document",
       "nodeValue": "",
-      "backendNodeId": 2,
+      "backendNodeId": "<number>",
       "childNodeIndexes": [
         1
       ],
@@ -23,11 +17,11 @@ Rotated text!
       "nodeType": 1,
       "nodeName": "HTML",
       "nodeValue": "",
-      "backendNodeId": 3,
+      "backendNodeId": "<number>",
       "childNodeIndexes": [
         2,
-        13,
-        14
+        8,
+        9
       ],
       "layoutNodeIndex": 1,
       "frameId": "<string>"
@@ -36,29 +30,25 @@ Rotated text!
       "nodeType": 1,
       "nodeName": "HEAD",
       "nodeValue": "",
-      "backendNodeId": 4,
+      "backendNodeId": "<number>",
       "childNodeIndexes": [
         3,
         4,
         6,
-        7,
-        8,
-        9,
-        11,
-        12
+        7
       ]
     },
     {
       "nodeType": 3,
       "nodeName": "#text",
-      "nodeValue": "\n",
-      "backendNodeId": 5
+      "nodeValue": "\n  ",
+      "backendNodeId": "<number>"
     },
     {
       "nodeType": 1,
       "nodeName": "STYLE",
       "nodeValue": "",
-      "backendNodeId": 6,
+      "backendNodeId": "<number>",
       "childNodeIndexes": [
         5
       ]
@@ -66,79 +56,36 @@ Rotated text!
     {
       "nodeType": 3,
       "nodeName": "#text",
-      "nodeValue": "\n@font-face {\n  font-family: 'ahem';\n  src: url(../../resources/Ahem.ttf);\n}\n",
-      "backendNodeId": 7
+      "nodeValue": "\n    @font-face {\n      font-family: 'ahem';\n      src: url(../../resources/Ahem.ttf);\n    }\n  ",
+      "backendNodeId": "<number>"
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n  ",
+      "backendNodeId": "<number>"
     },
     {
       "nodeType": 3,
       "nodeName": "#text",
       "nodeValue": "\n",
-      "backendNodeId": 8
-    },
-    {
-      "nodeType": 1,
-      "nodeName": "SCRIPT",
-      "nodeValue": "",
-      "backendNodeId": 9,
-      "attributes": [
-        {
-          "name": "type",
-          "value": "text/javascript"
-        },
-        {
-          "name": "src",
-          "value": "../../http/tests/inspector-protocol/resources/inspector-protocol-test.js"
-        }
-      ]
+      "backendNodeId": "<number>"
     },
     {
       "nodeType": 3,
       "nodeName": "#text",
       "nodeValue": "\n",
-      "backendNodeId": 10
-    },
-    {
-      "nodeType": 1,
-      "nodeName": "SCRIPT",
-      "nodeValue": "",
-      "backendNodeId": 11,
-      "childNodeIndexes": [
-        10
-      ]
-    },
-    {
-      "nodeType": 3,
-      "nodeName": "#text",
-      "nodeValue": "\n\nasync function test() {\n    function stabilize(key, value) {\n        var unstableKeys = [\"documentURL\", \"baseURL\", \"frameId\"];\n        if (unstableKeys.indexOf(key) !== -1)\n            return \"<\" + typeof(value) + \">\";\n        return value;\n    }\n  \n    var whitelist = [\"transform\", \"transform-origin\", \"height\", \"width\", \"display\", \"outline-color\", \"color\"];\n    var response = await InspectorTest.sendCommandOrDie(\"DOMSnapshot.getSnapshot\", {\"computedStyleWhitelist\": whitelist});\n    InspectorTest.log(JSON.stringify(response, stabilize, 2));\n    InspectorTest.completeTest();\n}\n\n",
-      "backendNodeId": 12
-    },
-    {
-      "nodeType": 3,
-      "nodeName": "#text",
-      "nodeValue": "\n",
-      "backendNodeId": 13
-    },
-    {
-      "nodeType": 3,
-      "nodeName": "#text",
-      "nodeValue": "\n",
-      "backendNodeId": 14
-    },
-    {
-      "nodeType": 3,
-      "nodeName": "#text",
-      "nodeValue": "\n",
-      "backendNodeId": 15
+      "backendNodeId": "<number>"
     },
     {
       "nodeType": 1,
       "nodeName": "BODY",
       "nodeValue": "",
-      "backendNodeId": 16,
+      "backendNodeId": "<number>",
       "childNodeIndexes": [
-        15,
-        16,
-        66
+        10,
+        11,
+        58
       ],
       "attributes": [
         {
@@ -152,27 +99,25 @@ Rotated text!
       "nodeType": 3,
       "nodeName": "#text",
       "nodeValue": "\n",
-      "backendNodeId": 17
+      "backendNodeId": "<number>"
     },
     {
       "nodeType": 1,
       "nodeName": "DIV",
       "nodeValue": "",
-      "backendNodeId": 18,
+      "backendNodeId": "<number>",
       "childNodeIndexes": [
-        17,
-        18,
-        20,
-        21,
-        34,
-        35,
-        37,
-        38,
-        52,
-        53,
-        62,
-        63,
-        65
+        12,
+        13,
+        15,
+        16,
+        29,
+        30,
+        32,
+        33,
+        47,
+        48,
+        57
       ],
       "attributes": [
         {
@@ -185,16 +130,16 @@ Rotated text!
     {
       "nodeType": 3,
       "nodeName": "#text",
-      "nodeValue": "\n    ",
-      "backendNodeId": 19
+      "nodeValue": "\n  ",
+      "backendNodeId": "<number>"
     },
     {
       "nodeType": 1,
       "nodeName": "DIV",
       "nodeValue": "",
-      "backendNodeId": 20,
+      "backendNodeId": "<number>",
       "childNodeIndexes": [
-        19
+        14
       ],
       "attributes": [
         {
@@ -208,27 +153,27 @@ Rotated text!
       "nodeType": 3,
       "nodeName": "#text",
       "nodeValue": "Some Text",
-      "backendNodeId": 21,
+      "backendNodeId": "<number>",
       "layoutNodeIndex": 5
     },
     {
       "nodeType": 3,
       "nodeName": "#text",
-      "nodeValue": " And More Text\n    ",
-      "backendNodeId": 22,
+      "nodeValue": " And More Text\n  ",
+      "backendNodeId": "<number>",
       "layoutNodeIndex": 6
     },
     {
       "nodeType": 1,
       "nodeName": "DIV",
       "nodeValue": "",
-      "backendNodeId": 23,
+      "backendNodeId": "<number>",
       "childNodeIndexes": [
-        22,
-        23,
-        25,
-        26,
-        33
+        17,
+        18,
+        20,
+        21,
+        28
       ],
       "attributes": [
         {
@@ -241,43 +186,43 @@ Rotated text!
     {
       "nodeType": 3,
       "nodeName": "#text",
-      "nodeValue": "\n        ",
-      "backendNodeId": 24
+      "nodeValue": "\n    ",
+      "backendNodeId": "<number>"
     },
     {
       "nodeType": 1,
       "nodeName": "P",
       "nodeValue": "",
-      "backendNodeId": 25,
+      "backendNodeId": "<number>",
       "childNodeIndexes": [
-        24
+        19
       ],
       "layoutNodeIndex": 8
     },
     {
       "nodeType": 3,
       "nodeName": "#text",
-      "nodeValue": "\n        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque sit amet est sem.\n        Aenean ut neque volutpat, posuere odio at, mollis nibh. Aenean sodales nulla et\n        ligula efficitur sollicitudin blandit sed lectus. Duis orci enim, sodales ac lectus sed,\n        hendrerit efficitur est. Quisque gravida facilisis viverra.\n        ",
-      "backendNodeId": 26,
+      "nodeValue": "\n      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque sit amet est sem.\n      Aenean ut neque volutpat, posuere odio at, mollis nibh. Aenean sodales nulla et\n      ligula efficitur sollicitudin blandit sed lectus. Duis orci enim, sodales ac lectus sed,\n      hendrerit efficitur est. Quisque gravida facilisis viverra.\n    ",
+      "backendNodeId": "<number>",
       "layoutNodeIndex": 9
     },
     {
       "nodeType": 3,
       "nodeName": "#text",
-      "nodeValue": "\n        ",
-      "backendNodeId": 27
+      "nodeValue": "\n    ",
+      "backendNodeId": "<number>"
     },
     {
       "nodeType": 1,
       "nodeName": "UL",
       "nodeValue": "",
-      "backendNodeId": 28,
+      "backendNodeId": "<number>",
       "childNodeIndexes": [
-        27,
-        28,
-        29,
-        30,
-        32
+        22,
+        23,
+        24,
+        25,
+        27
       ],
       "attributes": [
         {
@@ -290,14 +235,14 @@ Rotated text!
     {
       "nodeType": 3,
       "nodeName": "#text",
-      "nodeValue": "\n            ",
-      "backendNodeId": 29
+      "nodeValue": "\n      ",
+      "backendNodeId": "<number>"
     },
     {
       "nodeType": 1,
       "nodeName": "LI",
       "nodeValue": "",
-      "backendNodeId": 30,
+      "backendNodeId": "<number>",
       "attributes": [
         {
           "name": "class",
@@ -309,16 +254,16 @@ Rotated text!
     {
       "nodeType": 3,
       "nodeName": "#text",
-      "nodeValue": "\n            ",
-      "backendNodeId": 31
+      "nodeValue": "\n      ",
+      "backendNodeId": "<number>"
     },
     {
       "nodeType": 1,
       "nodeName": "SPAN",
       "nodeValue": "",
-      "backendNodeId": 32,
+      "backendNodeId": "<number>",
       "childNodeIndexes": [
-        31
+        26
       ],
       "layoutNodeIndex": 12
     },
@@ -326,36 +271,36 @@ Rotated text!
       "nodeType": 3,
       "nodeName": "#text",
       "nodeValue": "Lets have a span",
-      "backendNodeId": 33,
+      "backendNodeId": "<number>",
       "layoutNodeIndex": 13
     },
     {
       "nodeType": 3,
       "nodeName": "#text",
-      "nodeValue": "\n        ",
-      "backendNodeId": 34,
+      "nodeValue": "\n    ",
+      "backendNodeId": "<number>",
       "layoutNodeIndex": 14
     },
     {
       "nodeType": 3,
       "nodeName": "#text",
-      "nodeValue": "\n    ",
-      "backendNodeId": 35
+      "nodeValue": "\n  ",
+      "backendNodeId": "<number>"
     },
     {
       "nodeType": 3,
       "nodeName": "#text",
-      "nodeValue": "\n    ",
-      "backendNodeId": 36,
+      "nodeValue": "\n  ",
+      "backendNodeId": "<number>",
       "layoutNodeIndex": 15
     },
     {
       "nodeType": 1,
       "nodeName": "DIV",
       "nodeValue": "",
-      "backendNodeId": 37,
+      "backendNodeId": "<number>",
       "childNodeIndexes": [
-        36
+        31
       ],
       "attributes": [
         {
@@ -369,24 +314,24 @@ Rotated text!
       "nodeType": 3,
       "nodeName": "#text",
       "nodeValue": "Rotated text!",
-      "backendNodeId": 38,
+      "backendNodeId": "<number>",
       "layoutNodeIndex": 17
     },
     {
       "nodeType": 3,
       "nodeName": "#text",
-      "nodeValue": "\n    ",
-      "backendNodeId": 39
+      "nodeValue": "\n  ",
+      "backendNodeId": "<number>"
     },
     {
       "nodeType": 1,
       "nodeName": "IFRAME",
       "nodeValue": "",
-      "backendNodeId": 40,
+      "backendNodeId": "<number>",
       "attributes": [
         {
           "name": "src",
-          "value": "../dom/resources/simple-iframe.html"
+          "value": "./simple-iframe.html"
         },
         {
           "name": "width",
@@ -399,15 +344,15 @@ Rotated text!
       ],
       "layoutNodeIndex": 18,
       "frameId": "<string>",
-      "contentDocumentIndex": 39
+      "contentDocumentIndex": 34
     },
     {
       "nodeType": 9,
       "nodeName": "#document",
       "nodeValue": "",
-      "backendNodeId": 41,
+      "backendNodeId": "<number>",
       "childNodeIndexes": [
-        40
+        35
       ],
       "layoutNodeIndex": 19,
       "documentURL": "<string>",
@@ -417,11 +362,11 @@ Rotated text!
       "nodeType": 1,
       "nodeName": "HTML",
       "nodeValue": "",
-      "backendNodeId": 42,
+      "backendNodeId": "<number>",
       "childNodeIndexes": [
+        36,
         41,
-        46,
-        47
+        42
       ],
       "layoutNodeIndex": 20,
       "frameId": "<string>"
@@ -430,55 +375,55 @@ Rotated text!
       "nodeType": 1,
       "nodeName": "HEAD",
       "nodeValue": "",
-      "backendNodeId": 43,
+      "backendNodeId": "<number>",
       "childNodeIndexes": [
-        42,
-        43,
-        45
+        37,
+        38,
+        40
       ]
     },
     {
       "nodeType": 3,
       "nodeName": "#text",
       "nodeValue": "\n",
-      "backendNodeId": 44
+      "backendNodeId": "<number>"
     },
     {
       "nodeType": 1,
       "nodeName": "STYLE",
       "nodeValue": "",
-      "backendNodeId": 45,
+      "backendNodeId": "<number>",
       "childNodeIndexes": [
-        44
+        39
       ]
     },
     {
       "nodeType": 3,
       "nodeName": "#text",
-      "nodeValue": "\n@font-face {\n  font-family: 'ahem';\n  src: url(../../../resources/Ahem.ttf);\n}\n",
-      "backendNodeId": 46
+      "nodeValue": "\n@font-face {\n  font-family: 'ahem';\n  src: url(../../resources/Ahem.ttf);\n}\n",
+      "backendNodeId": "<number>"
     },
     {
       "nodeType": 3,
       "nodeName": "#text",
       "nodeValue": "\n",
-      "backendNodeId": 47
+      "backendNodeId": "<number>"
     },
     {
       "nodeType": 3,
       "nodeName": "#text",
       "nodeValue": "\n",
-      "backendNodeId": 48
+      "backendNodeId": "<number>"
     },
     {
       "nodeType": 1,
       "nodeName": "BODY",
       "nodeValue": "",
-      "backendNodeId": 49,
+      "backendNodeId": "<number>",
       "childNodeIndexes": [
-        48,
-        49,
-        51
+        43,
+        44,
+        46
       ],
       "layoutNodeIndex": 21
     },
@@ -486,15 +431,15 @@ Rotated text!
       "nodeType": 3,
       "nodeName": "#text",
       "nodeValue": "\n",
-      "backendNodeId": 50
+      "backendNodeId": "<number>"
     },
     {
       "nodeType": 1,
       "nodeName": "DIV",
       "nodeValue": "",
-      "backendNodeId": 51,
+      "backendNodeId": "<number>",
       "childNodeIndexes": [
-        50
+        45
       ],
       "attributes": [
         {
@@ -508,33 +453,33 @@ Rotated text!
       "nodeType": 3,
       "nodeName": "#text",
       "nodeValue": "\nHello from the iframe.\n",
-      "backendNodeId": 52,
+      "backendNodeId": "<number>",
       "layoutNodeIndex": 23
     },
     {
       "nodeType": 3,
       "nodeName": "#text",
       "nodeValue": "\n\n\n",
-      "backendNodeId": 53
+      "backendNodeId": "<number>"
     },
     {
       "nodeType": 3,
       "nodeName": "#text",
-      "nodeValue": "\n    ",
-      "backendNodeId": 54,
+      "nodeValue": "\n  ",
+      "backendNodeId": "<number>",
       "layoutNodeIndex": 24
     },
     {
       "nodeType": 1,
       "nodeName": "DIV",
       "nodeValue": "",
-      "backendNodeId": 55,
+      "backendNodeId": "<number>",
       "childNodeIndexes": [
-        54,
-        55,
-        57,
-        58,
-        61
+        49,
+        50,
+        52,
+        53,
+        56
       ],
       "attributes": [
         {
@@ -547,37 +492,37 @@ Rotated text!
     {
       "nodeType": 3,
       "nodeName": "#text",
-      "nodeValue": "\n",
-      "backendNodeId": 56
+      "nodeValue": "\n    ",
+      "backendNodeId": "<number>"
     },
     {
       "nodeType": 1,
       "nodeName": "STYLE",
       "nodeValue": "",
-      "backendNodeId": 57,
+      "backendNodeId": "<number>",
       "childNodeIndexes": [
-        56
+        51
       ]
     },
     {
       "nodeType": 3,
       "nodeName": "#text",
-      "nodeValue": "\n:host {\n    color: red;\n}\n",
-      "backendNodeId": 58
+      "nodeValue": "\n      :host {\n        color: red;\n      }\n    ",
+      "backendNodeId": "<number>"
     },
     {
       "nodeType": 3,
       "nodeName": "#text",
-      "nodeValue": "\n",
-      "backendNodeId": 59
+      "nodeValue": "\n    ",
+      "backendNodeId": "<number>"
     },
     {
       "nodeType": 1,
       "nodeName": "DIV",
       "nodeValue": "",
-      "backendNodeId": 60,
+      "backendNodeId": "<number>",
       "childNodeIndexes": [
-        59
+        54
       ],
       "attributes": [
         {
@@ -591,9 +536,9 @@ Rotated text!
       "nodeType": 1,
       "nodeName": "H1",
       "nodeValue": "",
-      "backendNodeId": 61,
+      "backendNodeId": "<number>",
       "childNodeIndexes": [
-        60
+        55
       ],
       "layoutNodeIndex": 27
     },
@@ -601,53 +546,26 @@ Rotated text!
       "nodeType": 3,
       "nodeName": "#text",
       "nodeValue": "Hi!",
-      "backendNodeId": 62,
+      "backendNodeId": "<number>",
       "layoutNodeIndex": 28
     },
     {
       "nodeType": 3,
       "nodeName": "#text",
-      "nodeValue": "\n",
-      "backendNodeId": 63
-    },
-    {
-      "nodeType": 3,
-      "nodeName": "#text",
-      "nodeValue": "\n    ",
-      "backendNodeId": 64
-    },
-    {
-      "nodeType": 1,
-      "nodeName": "SCRIPT",
-      "nodeValue": "",
-      "backendNodeId": 65,
-      "childNodeIndexes": [
-        64
-      ],
-      "attributes": [
-        {
-          "name": "type",
-          "value": "text/javascript"
-        }
-      ]
-    },
-    {
-      "nodeType": 3,
-      "nodeName": "#text",
-      "nodeValue": "\n        var host = document.querySelector(\"#shadow-host\").createShadowRoot();\n        var template = document.querySelector(\"#shadow-template\");\n        host.appendChild(template.content);\n        template.remove();\n        window.onload = runTest;\n    ",
-      "backendNodeId": 66
+      "nodeValue": "\n  ",
+      "backendNodeId": "<number>"
     },
     {
       "nodeType": 3,
       "nodeName": "#text",
       "nodeValue": "\n",
-      "backendNodeId": 67
+      "backendNodeId": "<number>"
     },
     {
       "nodeType": 3,
       "nodeName": "#text",
       "nodeValue": "\n\n\n",
-      "backendNodeId": 68
+      "backendNodeId": "<number>"
     }
   ],
   "layoutTreeNodes": [
@@ -671,7 +589,7 @@ Rotated text!
       "styleIndex": 0
     },
     {
-      "domNodeIndex": 14,
+      "domNodeIndex": 9,
       "boundingBox": {
         "x": 8,
         "y": 8,
@@ -681,7 +599,7 @@ Rotated text!
       "styleIndex": 1
     },
     {
-      "domNodeIndex": 16,
+      "domNodeIndex": 11,
       "boundingBox": {
         "x": 8,
         "y": 8,
@@ -691,7 +609,7 @@ Rotated text!
       "styleIndex": 1
     },
     {
-      "domNodeIndex": 18,
+      "domNodeIndex": 13,
       "boundingBox": {
         "x": 8,
         "y": 8,
@@ -701,7 +619,7 @@ Rotated text!
       "styleIndex": 2
     },
     {
-      "domNodeIndex": 19,
+      "domNodeIndex": 14,
       "boundingBox": {
         "x": 8,
         "y": 8,
@@ -724,14 +642,14 @@ Rotated text!
       "styleIndex": 3
     },
     {
-      "domNodeIndex": 20,
+      "domNodeIndex": 15,
       "boundingBox": {
         "x": 8,
         "y": 568,
         "width": 224,
         "height": 16
       },
-      "layoutText": " And More Text\n    ",
+      "layoutText": " And More Text\n  ",
       "inlineTextNodes": [
         {
           "boundingBox": {
@@ -747,7 +665,7 @@ Rotated text!
       "styleIndex": 3
     },
     {
-      "domNodeIndex": 21,
+      "domNodeIndex": 16,
       "boundingBox": {
         "x": 232,
         "y": 24,
@@ -757,7 +675,7 @@ Rotated text!
       "styleIndex": 4
     },
     {
-      "domNodeIndex": 23,
+      "domNodeIndex": 18,
       "boundingBox": {
         "x": 232,
         "y": 40,
@@ -767,14 +685,14 @@ Rotated text!
       "styleIndex": 5
     },
     {
-      "domNodeIndex": 24,
+      "domNodeIndex": 19,
       "boundingBox": {
         "x": 232,
         "y": 40,
         "width": 192,
         "height": 480
       },
-      "layoutText": "\n        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque sit amet est sem.\n        Aenean ut neque volutpat, posuere odio at, mollis nibh. Aenean sodales nulla et\n        ligula efficitur sollicitudin blandit sed lectus. Duis orci enim, sodales ac lectus sed,\n        hendrerit efficitur est. Quisque gravida facilisis viverra.\n        ",
+      "layoutText": "\n      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque sit amet est sem.\n      Aenean ut neque volutpat, posuere odio at, mollis nibh. Aenean sodales nulla et\n      ligula efficitur sollicitudin blandit sed lectus. Duis orci enim, sodales ac lectus sed,\n      hendrerit efficitur est. Quisque gravida facilisis viverra.\n    ",
       "inlineTextNodes": [
         {
           "boundingBox": {
@@ -783,7 +701,7 @@ Rotated text!
             "width": 176,
             "height": 16
           },
-          "startCharacterIndex": 9,
+          "startCharacterIndex": 7,
           "numCharacters": 11
         },
         {
@@ -793,7 +711,7 @@ Rotated text!
             "width": 144,
             "height": 16
           },
-          "startCharacterIndex": 21,
+          "startCharacterIndex": 19,
           "numCharacters": 9
         },
         {
@@ -803,7 +721,7 @@ Rotated text!
             "width": 80,
             "height": 16
           },
-          "startCharacterIndex": 31,
+          "startCharacterIndex": 29,
           "numCharacters": 5
         },
         {
@@ -813,7 +731,7 @@ Rotated text!
             "width": 176,
             "height": 16
           },
-          "startCharacterIndex": 37,
+          "startCharacterIndex": 35,
           "numCharacters": 11
         },
         {
@@ -823,7 +741,7 @@ Rotated text!
             "width": 160,
             "height": 16
           },
-          "startCharacterIndex": 49,
+          "startCharacterIndex": 47,
           "numCharacters": 10
         },
         {
@@ -833,7 +751,7 @@ Rotated text!
             "width": 80,
             "height": 16
           },
-          "startCharacterIndex": 60,
+          "startCharacterIndex": 58,
           "numCharacters": 5
         },
         {
@@ -843,7 +761,7 @@ Rotated text!
             "width": 192,
             "height": 16
           },
-          "startCharacterIndex": 66,
+          "startCharacterIndex": 64,
           "numCharacters": 12
         },
         {
@@ -853,7 +771,7 @@ Rotated text!
             "width": 192,
             "height": 16
           },
-          "startCharacterIndex": 79,
+          "startCharacterIndex": 77,
           "numCharacters": 12
         },
         {
@@ -863,7 +781,7 @@ Rotated text!
             "width": 80,
             "height": 16
           },
-          "startCharacterIndex": 92,
+          "startCharacterIndex": 90,
           "numCharacters": 5
         },
         {
@@ -873,7 +791,7 @@ Rotated text!
             "width": 96,
             "height": 16
           },
-          "startCharacterIndex": 105,
+          "startCharacterIndex": 101,
           "numCharacters": 6
         },
         {
@@ -883,7 +801,7 @@ Rotated text!
             "width": 128,
             "height": 16
           },
-          "startCharacterIndex": 112,
+          "startCharacterIndex": 108,
           "numCharacters": 8
         },
         {
@@ -893,7 +811,7 @@ Rotated text!
             "width": 144,
             "height": 16
           },
-          "startCharacterIndex": 121,
+          "startCharacterIndex": 117,
           "numCharacters": 9
         },
         {
@@ -903,7 +821,7 @@ Rotated text!
             "width": 192,
             "height": 16
           },
-          "startCharacterIndex": 131,
+          "startCharacterIndex": 127,
           "numCharacters": 12
         },
         {
@@ -913,7 +831,7 @@ Rotated text!
             "width": 160,
             "height": 16
           },
-          "startCharacterIndex": 144,
+          "startCharacterIndex": 140,
           "numCharacters": 10
         },
         {
@@ -923,7 +841,7 @@ Rotated text!
             "width": 192,
             "height": 16
           },
-          "startCharacterIndex": 155,
+          "startCharacterIndex": 151,
           "numCharacters": 12
         },
         {
@@ -933,7 +851,7 @@ Rotated text!
             "width": 112,
             "height": 16
           },
-          "startCharacterIndex": 168,
+          "startCharacterIndex": 164,
           "numCharacters": 7
         },
         {
@@ -943,7 +861,7 @@ Rotated text!
             "width": 128,
             "height": 16
           },
-          "startCharacterIndex": 176,
+          "startCharacterIndex": 172,
           "numCharacters": 8
         },
         {
@@ -953,7 +871,7 @@ Rotated text!
             "width": 96,
             "height": 16
           },
-          "startCharacterIndex": 193,
+          "startCharacterIndex": 187,
           "numCharacters": 6
         },
         {
@@ -963,7 +881,7 @@ Rotated text!
             "width": 144,
             "height": 16
           },
-          "startCharacterIndex": 200,
+          "startCharacterIndex": 194,
           "numCharacters": 9
         },
         {
@@ -973,7 +891,7 @@ Rotated text!
             "width": 192,
             "height": 16
           },
-          "startCharacterIndex": 210,
+          "startCharacterIndex": 204,
           "numCharacters": 12
         },
         {
@@ -983,7 +901,7 @@ Rotated text!
             "width": 176,
             "height": 16
           },
-          "startCharacterIndex": 223,
+          "startCharacterIndex": 217,
           "numCharacters": 11
         },
         {
@@ -993,7 +911,7 @@ Rotated text!
             "width": 192,
             "height": 16
           },
-          "startCharacterIndex": 235,
+          "startCharacterIndex": 229,
           "numCharacters": 12
         },
         {
@@ -1003,7 +921,7 @@ Rotated text!
             "width": 160,
             "height": 16
           },
-          "startCharacterIndex": 248,
+          "startCharacterIndex": 242,
           "numCharacters": 10
         },
         {
@@ -1013,7 +931,7 @@ Rotated text!
             "width": 160,
             "height": 16
           },
-          "startCharacterIndex": 259,
+          "startCharacterIndex": 253,
           "numCharacters": 10
         },
         {
@@ -1023,7 +941,7 @@ Rotated text!
             "width": 176,
             "height": 16
           },
-          "startCharacterIndex": 270,
+          "startCharacterIndex": 264,
           "numCharacters": 11
         },
         {
@@ -1033,7 +951,7 @@ Rotated text!
             "width": 144,
             "height": 16
           },
-          "startCharacterIndex": 290,
+          "startCharacterIndex": 282,
           "numCharacters": 9
         },
         {
@@ -1043,7 +961,7 @@ Rotated text!
             "width": 144,
             "height": 16
           },
-          "startCharacterIndex": 300,
+          "startCharacterIndex": 292,
           "numCharacters": 9
         },
         {
@@ -1053,7 +971,7 @@ Rotated text!
             "width": 192,
             "height": 16
           },
-          "startCharacterIndex": 310,
+          "startCharacterIndex": 302,
           "numCharacters": 12
         },
         {
@@ -1063,7 +981,7 @@ Rotated text!
             "width": 112,
             "height": 16
           },
-          "startCharacterIndex": 323,
+          "startCharacterIndex": 315,
           "numCharacters": 7
         },
         {
@@ -1073,7 +991,7 @@ Rotated text!
             "width": 144,
             "height": 16
           },
-          "startCharacterIndex": 331,
+          "startCharacterIndex": 323,
           "numCharacters": 9
         },
         {
@@ -1083,14 +1001,14 @@ Rotated text!
             "width": 128,
             "height": 16
           },
-          "startCharacterIndex": 341,
+          "startCharacterIndex": 333,
           "numCharacters": 8
         }
       ],
       "styleIndex": 3
     },
     {
-      "domNodeIndex": 26,
+      "domNodeIndex": 21,
       "boundingBox": {
         "x": 232,
         "y": 536,
@@ -1100,7 +1018,7 @@ Rotated text!
       "styleIndex": 6
     },
     {
-      "domNodeIndex": 28,
+      "domNodeIndex": 23,
       "boundingBox": {
         "x": 272,
         "y": 536,
@@ -1110,7 +1028,7 @@ Rotated text!
       "styleIndex": 7
     },
     {
-      "domNodeIndex": 30,
+      "domNodeIndex": 25,
       "boundingBox": {
         "x": 272,
         "y": 552,
@@ -1120,7 +1038,7 @@ Rotated text!
       "styleIndex": 8
     },
     {
-      "domNodeIndex": 31,
+      "domNodeIndex": 26,
       "boundingBox": {
         "x": 272,
         "y": 552,
@@ -1153,18 +1071,7 @@ Rotated text!
       "styleIndex": 8
     },
     {
-      "domNodeIndex": 32,
-      "boundingBox": {
-        "x": 0,
-        "y": 0,
-        "width": 0,
-        "height": 0
-      },
-      "layoutText": "\n        ",
-      "styleIndex": 3
-    },
-    {
-      "domNodeIndex": 34,
+      "domNodeIndex": 27,
       "boundingBox": {
         "x": 0,
         "y": 0,
@@ -1175,7 +1082,18 @@ Rotated text!
       "styleIndex": 3
     },
     {
-      "domNodeIndex": 35,
+      "domNodeIndex": 29,
+      "boundingBox": {
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0
+      },
+      "layoutText": "\n  ",
+      "styleIndex": 3
+    },
+    {
+      "domNodeIndex": 30,
       "boundingBox": {
         "x": 92,
         "y": 516,
@@ -1185,7 +1103,7 @@ Rotated text!
       "styleIndex": 9
     },
     {
-      "domNodeIndex": 36,
+      "domNodeIndex": 31,
       "boundingBox": {
         "x": 92,
         "y": 516,
@@ -1218,7 +1136,7 @@ Rotated text!
       "styleIndex": 10
     },
     {
-      "domNodeIndex": 38,
+      "domNodeIndex": 33,
       "boundingBox": {
         "x": 8,
         "y": 632,
@@ -1228,7 +1146,7 @@ Rotated text!
       "styleIndex": 11
     },
     {
-      "domNodeIndex": 39,
+      "domNodeIndex": 34,
       "boundingBox": {
         "x": 0,
         "y": 0,
@@ -1237,7 +1155,7 @@ Rotated text!
       }
     },
     {
-      "domNodeIndex": 40,
+      "domNodeIndex": 35,
       "boundingBox": {
         "x": 10,
         "y": 634,
@@ -1247,7 +1165,7 @@ Rotated text!
       "styleIndex": 12
     },
     {
-      "domNodeIndex": 47,
+      "domNodeIndex": 42,
       "boundingBox": {
         "x": 18,
         "y": 642,
@@ -1257,7 +1175,7 @@ Rotated text!
       "styleIndex": 13
     },
     {
-      "domNodeIndex": 49,
+      "domNodeIndex": 44,
       "boundingBox": {
         "x": 18,
         "y": 642,
@@ -1267,7 +1185,7 @@ Rotated text!
       "styleIndex": 14
     },
     {
-      "domNodeIndex": 50,
+      "domNodeIndex": 45,
       "boundingBox": {
         "x": 8,
         "y": 8,
@@ -1290,15 +1208,25 @@ Rotated text!
       "styleIndex": 3
     },
     {
-      "domNodeIndex": 52,
+      "domNodeIndex": 47,
       "boundingBox": {
         "x": 0,
         "y": 0,
         "width": 0,
         "height": 0
       },
-      "layoutText": "\n    ",
+      "layoutText": "\n  ",
       "styleIndex": 3
+    },
+    {
+      "domNodeIndex": 48,
+      "boundingBox": {
+        "x": 8,
+        "y": 857,
+        "width": 769,
+        "height": 33
+      },
+      "styleIndex": 15
     },
     {
       "domNodeIndex": 53,
@@ -1311,7 +1239,7 @@ Rotated text!
       "styleIndex": 15
     },
     {
-      "domNodeIndex": 58,
+      "domNodeIndex": 54,
       "boundingBox": {
         "x": 8,
         "y": 857,
@@ -1321,17 +1249,7 @@ Rotated text!
       "styleIndex": 15
     },
     {
-      "domNodeIndex": 59,
-      "boundingBox": {
-        "x": 8,
-        "y": 857,
-        "width": 769,
-        "height": 33
-      },
-      "styleIndex": 15
-    },
-    {
-      "domNodeIndex": 60,
+      "domNodeIndex": 55,
       "boundingBox": {
         "x": 8,
         "y": 857,
