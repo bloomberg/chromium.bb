@@ -12,9 +12,8 @@ struct Serializer<{{data_view}}, MaybeConstUserType> {
                                    bool inlined,
                                    SerializationContext* context) {
     size_t size = inlined ? 0 : sizeof({{data_type}});
-    const bool is_null = CallIsNullIfExists<Traits>(input);
-    context->null_states.container().push_back(is_null);
-    if (is_null)
+
+    if (CallIsNullIfExists<Traits>(input))
       return size;
 
     void* custom_context = CustomContextHelper<Traits>::SetUp(input, context);
@@ -24,8 +23,7 @@ struct Serializer<{{data_view}}, MaybeConstUserType> {
 {%- for field in union.fields %}
 {%-   set name = field.name %}
       case {{data_view}}::Tag::{{name|upper}}: {
-{%-   if field.kind|is_object_kind or
-          field.kind|is_any_handle_or_interface_kind %}
+{%-   if field.kind|is_object_kind or field.kind|is_associated_kind %}
 {%-     set kind = field.kind %}
 {%-     set serializer_type = kind|unmapped_type_for_serializer %}
         decltype(CallWithContext(Traits::{{name}}, input, custom_context))
@@ -51,7 +49,7 @@ struct Serializer<{{data_view}}, MaybeConstUserType> {
                         {{data_type}}** output,
                         bool inlined,
                         SerializationContext* context) {
-    if (context->IsNextFieldNull()) {
+    if (CallIsNullIfExists<Traits>(input)) {
       if (inlined)
         (*output)->set_null();
       else

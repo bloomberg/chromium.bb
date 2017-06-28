@@ -108,18 +108,18 @@ template <typename Base, typename T>
 struct Serializer<InterfacePtrDataView<Base>, InterfacePtr<T>> {
   static_assert(std::is_base_of<Base, T>::value, "Interface type mismatch.");
 
-  static size_t PrepareToSerialize(InterfacePtr<T>& input,
+  static size_t PrepareToSerialize(const InterfacePtr<T>& input,
                                    SerializationContext* context) {
-    InterfacePtrInfo<T> info = input.PassInterface();
-    context->handles.AddInterfaceInfo(info.PassHandle(), info.version());
     return 0;
   }
 
-  static void Serialize(const InterfacePtr<T>& input,
+  static void Serialize(InterfacePtr<T>& input,
                         Interface_Data* output,
                         SerializationContext* context) {
-    DCHECK(!input.is_bound());
-    context->handles.ConsumeNextSerializedInterfaceInfo(output);
+    InterfacePtrInfo<T> info = input.PassInterface();
+    output->handle =
+        context->handles.AddHandle(ScopedHandle::From(info.PassHandle()));
+    output->version = info.version();
   }
 
   static bool Deserialize(Interface_Data* input,
@@ -136,17 +136,16 @@ template <typename Base, typename T>
 struct Serializer<InterfaceRequestDataView<Base>, InterfaceRequest<T>> {
   static_assert(std::is_base_of<Base, T>::value, "Interface type mismatch.");
 
-  static size_t PrepareToSerialize(InterfaceRequest<T>& input,
+  static size_t PrepareToSerialize(const InterfaceRequest<T>& input,
                                    SerializationContext* context) {
-    context->handles.AddHandle(ScopedHandle::From(input.PassMessagePipe()));
     return 0;
   }
 
-  static void Serialize(const InterfaceRequest<T>& input,
+  static void Serialize(InterfaceRequest<T>& input,
                         Handle_Data* output,
                         SerializationContext* context) {
-    DCHECK(!input.is_pending());
-    context->handles.ConsumeNextSerializedHandle(output);
+    *output =
+        context->handles.AddHandle(ScopedHandle::From(input.PassMessagePipe()));
   }
 
   static bool Deserialize(Handle_Data* input,
@@ -160,17 +159,15 @@ struct Serializer<InterfaceRequestDataView<Base>, InterfaceRequest<T>> {
 
 template <typename T>
 struct Serializer<ScopedHandleBase<T>, ScopedHandleBase<T>> {
-  static size_t PrepareToSerialize(ScopedHandleBase<T>& input,
+  static size_t PrepareToSerialize(const ScopedHandleBase<T>& input,
                                    SerializationContext* context) {
-    context->handles.AddHandle(ScopedHandle::From(std::move(input)));
     return 0;
   }
 
-  static void Serialize(const ScopedHandleBase<T>& input,
+  static void Serialize(ScopedHandleBase<T>& input,
                         Handle_Data* output,
                         SerializationContext* context) {
-    DCHECK(!input.is_valid());
-    context->handles.ConsumeNextSerializedHandle(output);
+    *output = context->handles.AddHandle(ScopedHandle::From(std::move(input)));
   }
 
   static bool Deserialize(Handle_Data* input,
