@@ -529,6 +529,7 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
                 iconView.setImageBitmap(iconBitmap);
             }
             iconView.setFocusable(false);
+            iconView.setId(R.id.infobar_icon);
             iconView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
         }
         return iconView;

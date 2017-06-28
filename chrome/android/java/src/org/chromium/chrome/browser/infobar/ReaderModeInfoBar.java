@@ -23,6 +23,16 @@ import org.chromium.chrome.browser.tab.Tab;
  */
 public class ReaderModeInfoBar extends InfoBar {
     /**
+     * Navigate to Reader Mode when the icon or the message text is clicked.
+     */
+    private View.OnClickListener mNavigateListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            if (getReaderModeManager() != null) getReaderModeManager().navigateToReaderMode();
+        }
+    };
+
+    /**
      * Default constructor.
      */
     private ReaderModeInfoBar() {
@@ -44,14 +54,9 @@ public class ReaderModeInfoBar extends InfoBar {
         prompt.setTextColor(
                 ApiCompatibilityUtils.getColor(layout.getResources(), R.color.default_text_color));
         prompt.setGravity(Gravity.CENTER_VERTICAL);
+        prompt.setOnClickListener(mNavigateListener);
 
-        prompt.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (getReaderModeManager() != null) getReaderModeManager().navigateToReaderMode();
-            }
-        });
-
+        layout.findViewById(R.id.infobar_icon).setOnClickListener(mNavigateListener);
         layout.addContent(prompt, 1f);
     }
 
