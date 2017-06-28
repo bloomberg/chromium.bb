@@ -11,6 +11,7 @@
 #include <queue>
 #include <vector>
 
+#include "base/containers/stack_container.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"
@@ -31,9 +32,22 @@ class MOJO_CPP_BINDINGS_EXPORT SerializedHandleVector {
 
   size_t size() const { return handles_.size(); }
   std::vector<mojo::ScopedHandle>* mutable_handles() { return &handles_; }
+  std::vector<Handle_Data>* serialized_handles() {
+    return &serialized_handles_;
+  }
 
-  // Adds a handle to the handle list and returns its index for encoding.
-  Handle_Data AddHandle(mojo::ScopedHandle handle);
+  // Adds a handle to the handle and serialized handle data lists.
+  void AddHandle(mojo::ScopedHandle handle);
+
+  // Adds an interface info to the handle and serialized handle+version data
+  // lists.
+  void AddInterfaceInfo(mojo::ScopedMessagePipeHandle handle, uint32_t version);
+
+  // Consumes the next available serialized handle data.
+  void ConsumeNextSerializedHandle(Handle_Data* out_data);
+
+  // Consumes the next available serialized handle and version data.
+  void ConsumeNextSerializedInterfaceInfo(Interface_Data* out_data);
 
   // Takes a handle from the list of serialized handle data.
   mojo::ScopedHandle TakeHandle(const Handle_Data& encoded_handle);
@@ -52,6 +66,14 @@ class MOJO_CPP_BINDINGS_EXPORT SerializedHandleVector {
   // Handles are owned by this object.
   std::vector<mojo::ScopedHandle> handles_;
 
+  // Serialized handle and (optional) version data. This is accumulated during
+  // pre-serialization by AddHandle and AddInterfaceInfo calls, and later
+  // consumed during serialization by ConsumeNextSerializedHandle/InterfaceInfo.
+  size_t next_serialized_handle_index_ = 0;
+  std::vector<Handle_Data> serialized_handles_;
+  size_t next_serialized_version_index_ = 0;
+  std::vector<uint32_t> serialized_interface_versions_;
+
   DISALLOW_COPY_AND_ASSIGN(SerializedHandleVector);
 };
 
@@ -61,12 +83,22 @@ struct MOJO_CPP_BINDINGS_EXPORT SerializationContext {
 
   ~SerializationContext();
 
-  // Transfers ownership of any accumulated handles and associated endpoint
-  // handles into |*message|.
+  bool IsNextFieldNull() {
+    DCHECK_LT(null_state_index, null_states.container().size());
+    return null_states.container()[null_state_index++];
+  }
+
+  // Transfers ownership of any accumulated associated endpoint handles into
+  // |*message|.
   void AttachHandlesToMessage(Message* message);
 
   // Opaque context pointers returned by StringTraits::SetUpContext().
   std::unique_ptr<std::queue<void*>> custom_contexts;
+
+  // A container for tracking the null-ness of every nullable field as a
+  // message's arguments are walked during serialization.
+  base::StackVector<bool, 32> null_states;
+  size_t null_state_index = 0;
 
   // Stashes handles encoded in a message by index.
   SerializedHandleVector handles;

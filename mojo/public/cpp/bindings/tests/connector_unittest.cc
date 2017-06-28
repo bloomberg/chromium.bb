@@ -91,9 +91,7 @@ class ConnectorTest : public testing::Test {
  public:
   ConnectorTest() {}
 
-  void SetUp() override {
-    CreateMessagePipe(nullptr, &handle0_, &handle1_);
-  }
+  void SetUp() override { CreateMessagePipe(nullptr, &handle0_, &handle1_); }
 
   void TearDown() override {}
 
@@ -101,9 +99,8 @@ class ConnectorTest : public testing::Test {
       const char* text,
       std::vector<ScopedHandle> handles = std::vector<ScopedHandle>()) {
     const size_t size = strlen(text) + 1;  // Plus null terminator.
-    Message message(1, 0, size, 0);
+    Message message(1, 0, size, 0, &handles);
     memcpy(message.payload_buffer()->Allocate(size), text, size);
-    message.AttachHandles(&handles);
     return message;
   }
 
@@ -418,16 +415,14 @@ TEST_F(ConnectorTest, RaiseError) {
   Connector connector0(std::move(handle0_), Connector::SINGLE_THREADED_SEND,
                        base::ThreadTaskRunnerHandle::Get());
   bool error_handler_called0 = false;
-  connector0.set_connection_error_handler(
-      base::Bind(&ForwardErrorHandler, &error_handler_called0,
-                 run_loop.QuitClosure()));
+  connector0.set_connection_error_handler(base::Bind(
+      &ForwardErrorHandler, &error_handler_called0, run_loop.QuitClosure()));
 
   Connector connector1(std::move(handle1_), Connector::SINGLE_THREADED_SEND,
                        base::ThreadTaskRunnerHandle::Get());
   bool error_handler_called1 = false;
-  connector1.set_connection_error_handler(
-      base::Bind(&ForwardErrorHandler, &error_handler_called1,
-                 run_loop2.QuitClosure()));
+  connector1.set_connection_error_handler(base::Bind(
+      &ForwardErrorHandler, &error_handler_called1, run_loop2.QuitClosure()));
 
   const char kText[] = "hello world";
   Message message = CreateMessage(kText);
@@ -489,9 +484,8 @@ TEST_F(ConnectorTest, PauseWithQueuedMessages) {
   base::RunLoop run_loop;
   // Configure the accumulator such that it pauses after the first message is
   // received.
-  MessageAccumulator accumulator(
-      base::Bind(&PauseConnectorAndRunClosure, &connector1,
-                 run_loop.QuitClosure()));
+  MessageAccumulator accumulator(base::Bind(
+      &PauseConnectorAndRunClosure, &connector1, run_loop.QuitClosure()));
   connector1.set_incoming_receiver(&accumulator);
 
   run_loop.Run();
