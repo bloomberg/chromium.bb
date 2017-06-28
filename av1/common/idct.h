@@ -70,8 +70,6 @@ void av1_inverse_transform_block_facade(MACROBLOCKD *xd, int plane, int block,
 
 void av1_highbd_iwht4x4_add(const tran_low_t *input, uint8_t *dest, int stride,
                             int eob, int bd);
-void av1_highbd_idct4x4_add(const tran_low_t *input, uint8_t *dest, int stride,
-                            int eob, int bd);
 void av1_highbd_inv_txfm_add_4x4(const tran_low_t *input, uint8_t *dest,
                                  int stride, int eob, int bd, TX_TYPE tx_type,
                                  int lossless);

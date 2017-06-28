@@ -63,14 +63,6 @@ void fht4x4_12(const int16_t *in, tran_low_t *out, int stride, int tx_type) {
   av1_fwd_txfm2d_4x4_c(in, out, stride, tx_type, 12);
 }
 
-void idct4x4_10(const tran_low_t *in, uint8_t *out, int stride) {
-  aom_highbd_idct4x4_16_add_c(in, out, stride, 10);
-}
-
-void idct4x4_12(const tran_low_t *in, uint8_t *out, int stride) {
-  aom_highbd_idct4x4_16_add_c(in, out, stride, 12);
-}
-
 void iht4x4_10(const tran_low_t *in, uint8_t *out, int stride, int tx_type) {
   av1_inv_txfm2d_add_4x4_c(in, CONVERT_TO_SHORTPTR(out), stride, tx_type, 10);
 }
@@ -86,16 +78,6 @@ void iwht4x4_10(const tran_low_t *in, uint8_t *out, int stride) {
 void iwht4x4_12(const tran_low_t *in, uint8_t *out, int stride) {
   aom_highbd_iwht4x4_16_add_c(in, out, stride, 12);
 }
-
-#if HAVE_SSE2
-void idct4x4_10_sse2(const tran_low_t *in, uint8_t *out, int stride) {
-  aom_highbd_idct4x4_16_add_sse2(in, out, stride, 10);
-}
-
-void idct4x4_12_sse2(const tran_low_t *in, uint8_t *out, int stride) {
-  aom_highbd_idct4x4_16_add_sse2(in, out, stride, 12);
-}
-#endif  // HAVE_SSE2
 #endif  // CONFIG_HIGHBITDEPTH
 
 class Trans4x4DCT : public libaom_test::TransformTestBase,
@@ -221,19 +203,10 @@ TEST_P(Trans4x4WHT, MemCheck) { RunMemCheck(); }
 TEST_P(Trans4x4WHT, InvAccuracyCheck) { RunInvAccuracyCheck(0); }
 using std::tr1::make_tuple;
 
-#if CONFIG_HIGHBITDEPTH
-INSTANTIATE_TEST_CASE_P(
-    C, Trans4x4DCT,
-    ::testing::Values(
-        make_tuple(&aom_highbd_fdct4x4_c, &idct4x4_10, 0, AOM_BITS_10, 16),
-        make_tuple(&aom_highbd_fdct4x4_c, &idct4x4_12, 0, AOM_BITS_12, 16),
-        make_tuple(&aom_fdct4x4_c, &aom_idct4x4_16_add_c, 0, AOM_BITS_8, 16)));
-#else
 INSTANTIATE_TEST_CASE_P(C, Trans4x4DCT,
                         ::testing::Values(make_tuple(&aom_fdct4x4_c,
                                                      &aom_idct4x4_16_add_c, 0,
                                                      AOM_BITS_8, 16)));
-#endif  // CONFIG_HIGHBITDEPTH
 
 #if CONFIG_HIGHBITDEPTH
 INSTANTIATE_TEST_CASE_P(
@@ -322,18 +295,6 @@ INSTANTIATE_TEST_CASE_P(
 #endif  // HAVE_SSE2 && !CONFIG_HIGHBITDEPTH
 
 #if HAVE_SSE2 && CONFIG_HIGHBITDEPTH
-INSTANTIATE_TEST_CASE_P(
-    SSE2, Trans4x4DCT,
-    ::testing::Values(
-        make_tuple(&aom_highbd_fdct4x4_c, &idct4x4_10_sse2, 0, AOM_BITS_10, 16),
-        make_tuple(&aom_highbd_fdct4x4_sse2, &idct4x4_10_sse2, 0, AOM_BITS_10,
-                   16),
-        make_tuple(&aom_highbd_fdct4x4_c, &idct4x4_12_sse2, 0, AOM_BITS_12, 16),
-        make_tuple(&aom_highbd_fdct4x4_sse2, &idct4x4_12_sse2, 0, AOM_BITS_12,
-                   16),
-        make_tuple(&aom_fdct4x4_sse2, &aom_idct4x4_16_add_c, 0, AOM_BITS_8,
-                   16)));
-
 INSTANTIATE_TEST_CASE_P(
     SSE2, Trans4x4HT,
     ::testing::Values(
