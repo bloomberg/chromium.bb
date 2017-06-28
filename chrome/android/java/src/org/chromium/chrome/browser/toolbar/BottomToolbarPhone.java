@@ -216,6 +216,11 @@ public class BottomToolbarPhone extends ToolbarPhone {
         return mBottomSheet.isSheetOpen() || super.shouldDrawShadow();
     }
 
+    @Override
+    public boolean isReadyForTextureCapture() {
+        return super.isReadyForTextureCapture() && !mBottomSheet.isShowingNewTab();
+    }
+
     /** Shows the tab switcher toolbar. */
     public void showTabSwitcherToolbar() {
         setTabSwitcherMode(true, true, false);
