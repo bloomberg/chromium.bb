@@ -45,8 +45,6 @@ class LinuxPort(base.Port):
     FALLBACK_PATHS = {}
     FALLBACK_PATHS['trusty'] = ['linux'] + win.WinPort.latest_platform_fallback_path()
 
-    DEFAULT_BUILD_DIRECTORIES = ('out',)
-
     BUILD_REQUIREMENTS_URL = 'https://chromium.googlesource.com/chromium/src/+/master/docs/linux_build_instructions.md'
 
     XVFB_START_TIMEOUT = 5.0  # Wait up to 5 seconds for Xvfb to start.
