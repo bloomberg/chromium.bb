@@ -59,8 +59,8 @@ class PermissionsBubbleDialogDelegateView
 
   // BubbleDialogDelegateView:
   bool ShouldShowCloseButton() const override;
-  const gfx::FontList& GetTitleFontList() const override;
   base::string16 GetWindowTitle() const override;
+  void AddedToWidget() override;
   void OnWidgetDestroying(views::Widget* widget) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   bool Cancel() override;
@@ -151,15 +151,17 @@ bool PermissionsBubbleDialogDelegateView::ShouldShowCloseButton() const {
   return true;
 }
 
-const gfx::FontList& PermissionsBubbleDialogDelegateView::GetTitleFontList()
-    const {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  return rb.GetFontList(ui::ResourceBundle::BaseFont);
-}
-
 base::string16 PermissionsBubbleDialogDelegateView::GetWindowTitle() const {
   return l10n_util::GetStringFUTF16(IDS_PERMISSIONS_BUBBLE_PROMPT,
                                     display_origin_);
+}
+
+void PermissionsBubbleDialogDelegateView::AddedToWidget() {
+  std::unique_ptr<views::Label> title =
+      views::BubbleFrameView::CreateDefaultTitleLabel(GetWindowTitle());
+  title->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
+      ui::ResourceBundle::BaseFont));
+  GetBubbleFrameView()->SetTitleView(std::move(title));
 }
 
 void PermissionsBubbleDialogDelegateView::SizeToContents() {

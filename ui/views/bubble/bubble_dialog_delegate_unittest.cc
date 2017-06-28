@@ -8,10 +8,12 @@
 
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ui/base/hit_test.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/test/test_views.h"
 #include "ui/views/test/test_widget_observer.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
@@ -25,7 +27,9 @@ class TestBubbleDialogDelegateView : public BubbleDialogDelegateView {
  public:
   TestBubbleDialogDelegateView(View* anchor_view)
       : BubbleDialogDelegateView(anchor_view, BubbleBorder::TOP_LEFT),
-        view_(new View()) {
+        view_(new View()),
+        title_view_(nullptr),
+        should_show_close_button_(false) {
     view_->SetFocusBehavior(FocusBehavior::ALWAYS);
     AddChildView(view_);
   }
@@ -36,12 +40,29 @@ class TestBubbleDialogDelegateView : public BubbleDialogDelegateView {
   gfx::Size CalculatePreferredSize() const override {
     return gfx::Size(200, 200);
   }
+  void AddedToWidget() override {
+    if (title_view_)
+      GetBubbleFrameView()->SetTitleView(std::move(title_view_));
+  }
+
+  base::string16 GetWindowTitle() const override {
+    return base::ASCIIToUTF16("TITLE TITLE TITLE");
+  }
+
+  bool ShouldShowCloseButton() const override {
+    return should_show_close_button_;
+  }
+
+  void set_title_view(View* title_view) { title_view_.reset(title_view); }
+  void show_close_button() { should_show_close_button_ = true; }
 
   using BubbleDialogDelegateView::SetAnchorRect;
   using BubbleDialogDelegateView::GetBubbleFrameView;
 
  private:
   View* view_;
+  std::unique_ptr<View> title_view_;
+  bool should_show_close_button_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBubbleDialogDelegateView);
 };
@@ -251,7 +272,7 @@ TEST_F(BubbleDialogDelegateTest, NonClientHitTest) {
     const int point;
     const int hit;
   } cases[] = {
-      {border, HTNOWHERE}, {border + 50, HTCLIENT}, {1000, HTNOWHERE},
+      {border, HTNOWHERE}, {border + 60, HTCLIENT}, {1000, HTNOWHERE},
   };
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
@@ -331,6 +352,36 @@ TEST_F(BubbleDialogDelegateTest, CloseMethods) {
                        ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE));
     EXPECT_TRUE(bubble_widget->IsClosed());
   }
+}
+
+TEST_F(BubbleDialogDelegateTest, CustomTitle) {
+  std::unique_ptr<Widget> anchor_widget(CreateTestWidget());
+  TestBubbleDialogDelegateView* bubble_delegate =
+      new TestBubbleDialogDelegateView(anchor_widget->GetContentsView());
+  constexpr int kTitlePreferredHeight = 20;
+  View* title_view = new StaticSizedView(gfx::Size(10, kTitlePreferredHeight));
+  bubble_delegate->set_title_view(title_view);
+  Widget* bubble_widget =
+      BubbleDialogDelegateView::CreateBubble(bubble_delegate);
+  bubble_widget->Show();
+
+  BubbleFrameView* bubble_frame = static_cast<BubbleFrameView*>(
+      bubble_widget->non_client_view()->frame_view());
+  EXPECT_EQ(title_view, bubble_frame->title());
+  EXPECT_EQ(bubble_frame, title_view->parent());
+  // Title takes up the whole bubble width when there's no icon or close button.
+  EXPECT_EQ(bubble_delegate->width(), title_view->size().width());
+  EXPECT_EQ(kTitlePreferredHeight, title_view->size().height());
+
+  bubble_delegate->show_close_button();
+  bubble_frame->ResetWindowControls();
+  bubble_frame->Layout();
+
+  Button* close_button = bubble_frame->GetCloseButtonForTest();
+  // Title moves over for the close button.
+  EXPECT_EQ(close_button->x() - LayoutProvider::Get()->GetDistanceMetric(
+                                    DISTANCE_CLOSE_BUTTON_MARGIN),
+            title_view->bounds().right());
 }
 
 }  // namespace views

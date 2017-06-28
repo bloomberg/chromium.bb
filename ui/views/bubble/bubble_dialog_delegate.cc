@@ -110,9 +110,6 @@ ClientView* BubbleDialogDelegateView::CreateClientView(Widget* widget) {
 NonClientFrameView* BubbleDialogDelegateView::CreateNonClientFrameView(
     Widget* widget) {
   BubbleFrameView* frame = new BubbleFrameView(title_margins_, margins_);
-  // Note: In CreateBubble, the call to SizeToContents() will cause
-  // the relayout that this call requires.
-  frame->SetTitleFontList(GetTitleFontList());
   frame->SetFootnoteView(CreateFootnoteView());
 
   BubbleBorder::Arrow adjusted_arrow = arrow();
@@ -236,13 +233,6 @@ gfx::Rect BubbleDialogDelegateView::GetBubbleBounds() {
   return GetBubbleFrameView()->GetUpdatedWindowBounds(
       GetAnchorRect(), GetWidget()->client_view()->GetPreferredSize(),
       adjust_if_offscreen_ && !anchor_minimized);
-}
-
-const gfx::FontList& BubbleDialogDelegateView::GetTitleFontList() const {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial())
-    return rb.GetFontListWithDelta(ui::kTitleFontSizeDelta);
-  return rb.GetFontList(ui::ResourceBundle::MediumFont);
 }
 
 void BubbleDialogDelegateView::OnNativeThemeChanged(
