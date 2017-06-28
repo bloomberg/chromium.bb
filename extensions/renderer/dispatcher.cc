@@ -728,7 +728,6 @@ std::vector<std::pair<const char*, int>> Dispatcher::GetJsResources() {
       {"messaging", IDR_MESSAGING_JS},
       {"messaging_utils", IDR_MESSAGING_UTILS_JS},
       {kSchemaUtils, IDR_SCHEMA_UTILS_JS},
-      {"sendRequest", IDR_SEND_REQUEST_JS},
       {"setIcon", IDR_SET_ICON_JS},
       {"test", IDR_TEST_CUSTOM_BINDINGS_JS},
       {"test_environment_specific_bindings",
@@ -799,6 +798,7 @@ std::vector<std::pair<const char*, int>> Dispatcher::GetJsResources() {
   if (!FeatureSwitch::native_crx_bindings()->IsEnabled()) {
     resources.emplace_back("binding", IDR_BINDING_JS);
     resources.emplace_back(kEventBindings, IDR_EVENT_BINDINGS_JS);
+    resources.emplace_back("sendRequest", IDR_SEND_REQUEST_JS);
 
     // Custom types sources.
     resources.emplace_back("StorageArea", IDR_STORAGE_AREA_JS);

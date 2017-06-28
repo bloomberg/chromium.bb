@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 var SetIconCommon = requireNative('setIcon').SetIconCommon;
-var sendRequest = require('sendRequest').sendRequest;
 
 function loadImagePath(path, callback) {
   var img = new Image();
