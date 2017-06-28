@@ -8,7 +8,7 @@
 namespace features {
 
 const base::Feature kColorCorrectRendering{"ColorCorrectRendering",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace features
 
