@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "cronet_test_util.h"
 #include "cronet_url_request_context_config_test.h"
+#include "experimental_options_test.h"
 #include "mock_cert_verifier.h"
 #include "mock_url_request_job_factory.h"
 #include "native_test_server.h"
@@ -31,6 +32,7 @@ const base::android::RegistrationMethod kCronetTestsRegisteredMethods[] = {
      cronet::TestUploadDataStreamHandlerRegisterJni},
     {"CronetUrlRequestContextConfigTest",
      cronet::RegisterCronetUrlRequestContextConfigTest},
+    {"ExperimentalOptionsTest", cronet::RegisterExperimentalOptionsTest},
     {"CronetTestUtil", cronet::TestUtil::Register},
 };
 

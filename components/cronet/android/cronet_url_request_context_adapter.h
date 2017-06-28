@@ -42,6 +42,7 @@ class FileNetLogObserver;
 }  // namespace net
 
 namespace cronet {
+class HostCachePersistenceManager;
 class TestUtil;
 
 struct URLRequestContextConfig;
@@ -220,7 +221,7 @@ class CronetURLRequestContextAdapter
   std::unique_ptr<net::FileNetLogObserver> net_log_file_observer_;
 
   // |pref_service_| should outlive the HttpServerPropertiesManager owned by
-  // |context_|.
+  // |context_| and the HostCachePersistenceManager.
   std::unique_ptr<PrefService> pref_service_;
   std::unique_ptr<net::URLRequestContext> context_;
   std::unique_ptr<net::ProxyConfigService> proxy_config_service_;
@@ -249,6 +250,11 @@ class CronetURLRequestContextAdapter
   // Manages the writing and reading of the network quality prefs.
   std::unique_ptr<net::NetworkQualitiesPrefsManager>
       network_qualities_prefs_manager_;
+
+  // Manages reading and writing the HostCache pref when persistence is enabled.
+  // Must be destroyed before |context_| (because it owns the HostResolverImpl,
+  // which owns the HostCache) and |pref_service_|.
+  std::unique_ptr<HostCachePersistenceManager> host_cache_persistence_manager_;
 
   // Java object that owns this CronetURLRequestContextAdapter.
   base::android::ScopedJavaGlobalRef<jobject> jcronet_url_request_context_;

@@ -167,6 +167,13 @@ struct URLRequestContextConfig {
   // The list of public key pins.
   std::vector<std::unique_ptr<Pkp>> pkp_list;
 
+  // Enable DNS cache persistence.
+  bool enable_host_cache_persistence = false;
+
+  // Minimum time in milliseconds between writing the HostCache contents to
+  // prefs. Only relevant when |enable_host_cache_persistence| is true.
+  int host_cache_persistence_delay_ms = 60000;
+
   // Experimental options that are recognized by the config parser.
   std::unique_ptr<base::DictionaryValue> effective_experimental_options =
       nullptr;

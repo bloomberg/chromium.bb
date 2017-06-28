@@ -38,6 +38,7 @@
 #include "components/cronet/android/cert/proto/cert_verification.pb.h"
 #include "components/cronet/android/cronet_library_loader.h"
 #include "components/cronet/histogram_manager.h"
+#include "components/cronet/host_cache_persistence_manager.h"
 #include "components/cronet/url_request_context_config.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_filter.h"
@@ -115,8 +116,12 @@ class NetLogWithNetworkChangeEvents {
 static base::LazyInstance<NetLogWithNetworkChangeEvents>::Leaky g_net_log =
     LAZY_INSTANCE_INITIALIZER;
 
-const char kHttpServerProperties[] = "net.http_server_properties";
-const char kNetworkQualities[] = "net.network_qualities";
+// Name of the pref used for host cache persistence.
+const char kHostCachePref[] = "net.host_cache";
+// Name of the pref used for HTTP server properties persistence.
+const char kHttpServerPropertiesPref[] = "net.http_server_properties";
+// Name of the pref used for NQE persistence.
+const char kNetworkQualitiesPref[] = "net.network_qualities";
 // Current version of disk storage.
 const int32_t kStorageVersion = 1;
 // Version number used when the version of disk storage is unknown.
@@ -131,7 +136,7 @@ class PrefServiceAdapter
     : public net::HttpServerPropertiesManager::PrefDelegate {
  public:
   explicit PrefServiceAdapter(PrefService* pref_service)
-      : pref_service_(pref_service), path_(kHttpServerProperties) {
+      : pref_service_(pref_service), path_(kHttpServerPropertiesPref) {
     pref_change_registrar_.Init(pref_service_);
   }
 
@@ -181,7 +186,7 @@ class NetworkQualitiesPrefDelegateImpl
   void SetDictionaryValue(const base::DictionaryValue& value) override {
     DCHECK(thread_checker_.CalledOnValidThread());
 
-    pref_service_->Set(kNetworkQualities, value);
+    pref_service_->Set(kNetworkQualitiesPref, value);
     if (lossy_prefs_writing_task_posted_)
       return;
 
@@ -204,7 +209,8 @@ class NetworkQualitiesPrefDelegateImpl
   std::unique_ptr<base::DictionaryValue> GetDictionaryValue() override {
     DCHECK(thread_checker_.CalledOnValidThread());
     UMA_HISTOGRAM_EXACT_LINEAR("NQE.Prefs.ReadCount", 1, 2);
-    return pref_service_->GetDictionary(kNetworkQualities)->CreateDeepCopy();
+    return pref_service_->GetDictionary(kNetworkQualitiesPref)
+        ->CreateDeepCopy();
   }
 
  private:
@@ -644,19 +650,23 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
                           std::unique_ptr<PrefFilter>());
     context_builder.SetFileTaskRunner(GetFileThread()->task_runner());
 
-    // Set up HttpServerPropertiesManager.
+    // Register prefs and set up the PrefService.
     PrefServiceFactory factory;
     factory.set_user_prefs(json_pref_store_);
     scoped_refptr<PrefRegistrySimple> registry(new PrefRegistrySimple());
-    registry->RegisterDictionaryPref(kHttpServerProperties,
+    registry->RegisterDictionaryPref(kHttpServerPropertiesPref,
                                      base::MakeUnique<base::DictionaryValue>());
     if (config->enable_network_quality_estimator) {
       // Use lossy prefs to limit the overhead of reading/writing the prefs.
-      registry->RegisterDictionaryPref(kNetworkQualities,
+      registry->RegisterDictionaryPref(kNetworkQualitiesPref,
                                        PrefRegistry::LOSSY_PREF);
+    }
+    if (config->enable_host_cache_persistence) {
+      registry->RegisterListPref(kHostCachePref);
     }
     pref_service_ = factory.Create(registry.get());
 
+    // Set up the HttpServerPropertiesManager.
     std::unique_ptr<net::HttpServerPropertiesManager>
         http_server_properties_manager(new net::HttpServerPropertiesManager(
             new PrefServiceAdapter(pref_service_.get()),
@@ -709,6 +719,17 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
   }
 
   context_ = context_builder.Build();
+
+  // Set up host cache persistence if it's enabled. Happens after building the
+  // URLRequestContext to get access to the HostCache.
+  if (pref_service_ && config->enable_host_cache_persistence) {
+    net::HostCache* host_cache = context_->host_resolver()->GetHostCache();
+    host_cache_persistence_manager_ =
+        base::MakeUnique<HostCachePersistenceManager>(
+            host_cache, pref_service_.get(), kHostCachePref,
+            base::TimeDelta::FromMilliseconds(
+                config->host_cache_persistence_delay_ms));
+  }
 
   context_->set_check_cleartext_permitted(true);
   context_->set_enable_brotli(config->enable_brotli);
