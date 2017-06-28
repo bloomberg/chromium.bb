@@ -39,6 +39,10 @@ class WebGestureEvent : public WebInputEvent {
   WebGestureDevice source_device;
   bool is_source_touch_event_set_non_blocking;
 
+  // The pointer type for the first touch point in the gesture.
+  WebPointerProperties::PointerType primary_pointer_type =
+      WebPointerProperties::PointerType::kUnknown;
+
   // If the WebGestureEvent has sourceDevice=WebGestureDeviceTouchscreen, this
   // field contains the unique identifier for the touch event that released
   // this event at TouchDispositionGestureFilter. If the WebGestureEvents was

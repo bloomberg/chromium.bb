@@ -82,7 +82,7 @@ const char* const kPointerTypeStringEraser = "eraser";
 
 // Assigns |pointerType| from the provided |args|. Returns false if there was
 // any error.
-bool getPointerType(gin::Arguments* args,
+bool GetPointerType(gin::Arguments* args,
                     bool isOnlyMouseAndPenAllowed,
                     WebPointerProperties::PointerType& pointerType) {
   if (args->PeekNext().IsEmpty())
@@ -132,7 +132,7 @@ bool getMousePenPointerProperties(
   tiltY = 0;
 
   // Only allow pen or mouse through this API.
-  if (!getPointerType(args, false, pointerType))
+  if (!GetPointerType(args, false, pointerType))
     return false;
   if (!args->PeekNext().IsEmpty()) {
     if (!args->GetNext(&rawPointerId)) {
@@ -1023,7 +1023,7 @@ void EventSenderBindings::MouseLeave(gin::Arguments* args) {
   int pointerId = kRawMousePointerId;
 
   // Only allow pen or mouse through this API.
-  if (!getPointerType(args, false, pointerType))
+  if (!GetPointerType(args, false, pointerType))
     return;
   if (!args->PeekNext().IsEmpty()) {
     if (!args->GetNext(&pointerId)) {
@@ -2525,6 +2525,8 @@ void EventSender::GestureEvent(WebInputEvent::Type type, gin::Arguments* args) {
   }
 
   event.unique_touch_event_id = GetUniqueTouchEventId(args);
+  if (!GetPointerType(args, false, event.primary_pointer_type))
+    return;
 
   event.global_x = event.x;
   event.global_y = event.y;
@@ -2674,7 +2676,7 @@ void EventSender::InitPointerProperties(gin::Arguments* args,
     e->tilt_y = tiltY;
   }
 
-  if (!getPointerType(args, false, e->pointer_type))
+  if (!GetPointerType(args, false, e->pointer_type))
     return;
 }
 

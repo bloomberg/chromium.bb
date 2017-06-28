@@ -119,6 +119,26 @@ WebPointerProperties::PointerType ToWebPointerType(int tool_type) {
   return WebPointerProperties::PointerType::kUnknown;
 }
 
+WebPointerProperties::PointerType ToWebPointerType(
+    EventPointerType event_pointer_type) {
+  switch (event_pointer_type) {
+    case EventPointerType::POINTER_TYPE_UNKNOWN:
+      return WebPointerProperties::PointerType::kUnknown;
+    case EventPointerType::POINTER_TYPE_MOUSE:
+      return WebPointerProperties::PointerType::kMouse;
+    case EventPointerType::POINTER_TYPE_PEN:
+      return WebPointerProperties::PointerType::kPen;
+    case EventPointerType::POINTER_TYPE_TOUCH:
+      return WebPointerProperties::PointerType::kTouch;
+    case EventPointerType::POINTER_TYPE_ERASER:
+      return WebPointerProperties::PointerType::kEraser;
+    default:
+      NOTREACHED() << "Invalid EventPointerType = "
+                   << static_cast<int>(event_pointer_type);
+      return WebPointerProperties::PointerType::kUnknown;
+  }
+}
+
 WebPointerProperties::Button ToWebPointerButton(int android_button_state) {
   if (android_button_state & MotionEvent::BUTTON_PRIMARY)
     return WebPointerProperties::Button::kLeft;
@@ -501,6 +521,7 @@ std::pair<WebGestureEvent, WebGestureEvent> CoalesceScrollAndPinch(
                                new_event.TimeStampSeconds());
   WebGestureEvent pinch_event;
   scroll_event.source_device = new_event.source_device;
+  scroll_event.primary_pointer_type = new_event.primary_pointer_type;
   pinch_event = scroll_event;
   pinch_event.SetType(WebInputEvent::kGesturePinchUpdate);
   pinch_event.x = new_event.GetType() == WebInputEvent::kGesturePinchUpdate
@@ -632,7 +653,8 @@ WebGestureEvent CreateWebGestureEvent(const GestureEventDetails& details,
 
   gesture.is_source_touch_event_set_non_blocking =
       details.is_source_touch_event_set_non_blocking();
-
+  gesture.primary_pointer_type =
+      ToWebPointerType(details.primary_pointer_type());
   gesture.unique_touch_event_id = unique_touch_event_id;
 
   switch (details.type()) {

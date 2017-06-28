@@ -37,6 +37,7 @@ struct GESTURE_DETECTION_EXPORT GestureEventData {
 
   GestureEventDetails details;
   int motion_event_id;
+  // The tool type for the first touch point in the gesture.
   MotionEvent::ToolType primary_tool_type;
   base::TimeTicks time;
   float x;

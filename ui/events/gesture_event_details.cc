@@ -68,6 +68,7 @@ GestureEventDetails::GestureEventDetails(ui::EventType type,
     : type_(type),
       data_(other.data_),
       device_type_(other.device_type_),
+      primary_pointer_type_(other.primary_pointer_type_),
       touch_points_(other.touch_points_),
       bounding_box_(other.bounding_box_) {
   DCHECK_GE(type, ET_GESTURE_TYPE_START);

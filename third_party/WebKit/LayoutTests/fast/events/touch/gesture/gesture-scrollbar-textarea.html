@@ -60,7 +60,7 @@ function verticalScrollTest() {
     eventSender.gestureShowPress(
         scrollbarX, scrollbarY, touchWidth, touchHeight);
     eventSender.gestureScrollBegin(
-        scrollbarX, scrollbarY, touchWidth, touchHeight);
+        scrollbarX, scrollbarY);
     eventSender.gestureScrollUpdate(0, 20);
     eventSender.gestureScrollEnd(0, 0);
     shouldBeGreaterThanOrEqual('textArea.scrollTop', '1');
