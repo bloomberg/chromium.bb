@@ -22,22 +22,20 @@ IntersectionObserverController* IntersectionObserverController::Create(
 IntersectionObserverController::IntersectionObserverController(
     Document* document)
     : SuspendableObject(document),
-      weak_ptr_factory_(this),
       callback_fired_while_suspended_(false) {}
 
 IntersectionObserverController::~IntersectionObserverController() {}
 
 void IntersectionObserverController::PostTaskToDeliverObservations() {
-  if (!weak_ptr_factory_.HasWeakPtrs()) {
-    // TODO(ojan): These tasks decide whether to throttle a subframe, so they
-    // need to be unthrottled, but we should throttle all the other tasks
-    // (e.g. ones coming from the web page).
-    TaskRunnerHelper::Get(TaskType::kUnthrottled, GetExecutionContext())
-        ->PostTask(BLINK_FROM_HERE,
-                   WTF::Bind(&IntersectionObserverController::
-                                 DeliverIntersectionObservations,
-                             weak_ptr_factory_.CreateWeakPtr()));
-  }
+  // TODO(ojan): These tasks decide whether to throttle a subframe, so they
+  // need to be unthrottled, but we should throttle all the other tasks
+  // (e.g. ones coming from the web page).
+  TaskRunnerHelper::Get(TaskType::kUnthrottled, GetExecutionContext())
+      ->PostTask(
+          BLINK_FROM_HERE,
+          WTF::Bind(
+              &IntersectionObserverController::DeliverIntersectionObservations,
+              WrapWeakPersistent(this)));
 }
 
 void IntersectionObserverController::ScheduleIntersectionObserverForDelivery(
