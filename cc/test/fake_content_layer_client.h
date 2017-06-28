@@ -51,6 +51,10 @@ class FakeContentLayerClient : public ContentLayerClient {
     fill_with_nonsolid_color_ = nonsolid;
   }
 
+  void set_contains_slow_paths(bool contains_slow_paths) {
+    contains_slow_paths_ = contains_slow_paths;
+  }
+
   void add_draw_rect(const gfx::Rect& rect, const PaintFlags& flags) {
     draw_rects_.push_back(std::make_pair(gfx::RectF(rect), flags));
   }
@@ -107,6 +111,7 @@ class FakeContentLayerClient : public ContentLayerClient {
   size_t reported_memory_usage_;
   gfx::Size bounds_;
   bool bounds_set_;
+  bool contains_slow_paths_;
 };
 
 }  // namespace cc

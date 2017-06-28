@@ -31,7 +31,8 @@ FakeContentLayerClient::FakeContentLayerClient()
       last_canvas_(nullptr),
       last_painting_control_(PAINTING_BEHAVIOR_NORMAL),
       reported_memory_usage_(0),
-      bounds_set_(false) {}
+      bounds_set_(false),
+      contains_slow_paths_(false) {}
 
 FakeContentLayerClient::~FakeContentLayerClient() {
 }
@@ -79,6 +80,18 @@ FakeContentLayerClient::PaintContentsToDisplayList(
       buffer->push<RestoreOp>();
       display_list->EndPaintOfPairedEnd();
     }
+  }
+
+  if (contains_slow_paths_) {
+    // Add 6 slow paths, passing the reporting threshold.
+    SkPath path;
+    path.addCircle(2, 2, 5);
+    path.addCircle(3, 4, 2);
+    PaintOpBuffer* buffer = display_list->StartPaint();
+    for (int i = 0; i < 6; ++i) {
+      buffer->push<ClipPathOp>(path, SkClipOp::kIntersect, true);
+    }
+    display_list->EndPaintOfUnpaired(PaintableRegion());
   }
 
   if (fill_with_nonsolid_color_) {

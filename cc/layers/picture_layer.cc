@@ -15,7 +15,7 @@
 #include "cc/trees/transform_node.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
-static constexpr int kMaxNumberOfSlowPathsBeforeVeto = 5;
+static constexpr int kMaxNumberOfSlowPathsBeforeReporting = 5;
 
 namespace cc {
 
@@ -184,14 +184,20 @@ sk_sp<SkPicture> PictureLayer::GetPicture() const {
   return raster_source->GetFlattenedPicture();
 }
 
-bool PictureLayer::IsSuitableForGpuRasterization() const {
+bool PictureLayer::HasSlowPaths() const {
   // The display list needs to be created (see: UpdateAndExpandInvalidation)
-  // before checking for suitability. There are cases where an update will not
-  // create a display list (e.g., if the size is empty). We return true in these
-  // cases because the gpu suitability bit sticks false.
-  return !picture_layer_inputs_.display_list ||
-         picture_layer_inputs_.display_list->NumSlowPaths() <=
-             kMaxNumberOfSlowPathsBeforeVeto;
+  // before checking for slow paths. There are cases where an update will not
+  // create a display list (e.g., if the size is empty). We return false in
+  // these cases because the slow paths bit sticks true.
+  return picture_layer_inputs_.display_list &&
+         picture_layer_inputs_.display_list->NumSlowPaths() >
+             kMaxNumberOfSlowPathsBeforeReporting;
+}
+
+bool PictureLayer::HasNonAAPaint() const {
+  // We return false by default, as this bit sticks true.
+  return picture_layer_inputs_.display_list &&
+         picture_layer_inputs_.display_list->HasNonAAPaint();
 }
 
 void PictureLayer::ClearClient() {

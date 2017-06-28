@@ -308,7 +308,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // Returns true iff anything was updated that needs to be committed.
   virtual bool Update();
   virtual void SetLayerMaskType(Layer::LayerMaskType type) {}
-  virtual bool IsSuitableForGpuRasterization() const;
+  virtual bool HasSlowPaths() const;
+  virtual bool HasNonAAPaint() const;
 
   virtual std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
   TakeDebugInfo();

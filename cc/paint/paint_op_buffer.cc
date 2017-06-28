@@ -559,6 +559,10 @@ int DrawRecordOp::CountSlowPaths() const {
   return record->numSlowPaths();
 }
 
+bool DrawRecordOp::HasNonAAPaint() const {
+  return record->HasNonAAPaint();
+}
+
 AnnotateOp::AnnotateOp(PaintCanvas::AnnotationType annotation_type,
                        const SkRect& rect,
                        sk_sp<SkData> data)

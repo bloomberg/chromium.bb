@@ -403,7 +403,8 @@ class CC_EXPORT LayerTreeHostImpl
   TileManager* tile_manager() { return &tile_manager_; }
 
   void SetHasGpuRasterizationTrigger(bool flag);
-  void SetContentIsSuitableForGpuRasterization(bool flag);
+  void SetContentHasSlowPaths(bool flag);
+  void SetContentHasNonAAPaint(bool flag);
   bool CanUseGpuRasterization();
   bool use_gpu_rasterization() const { return use_gpu_rasterization_; }
   bool use_msaa() const { return use_msaa_; }
@@ -756,7 +757,8 @@ class CC_EXPORT LayerTreeHostImpl
 
   std::unique_ptr<ResourceProvider> resource_provider_;
   bool need_update_gpu_rasterization_status_;
-  bool content_is_suitable_for_gpu_rasterization_;
+  bool content_has_slow_paths_;
+  bool content_has_non_aa_paint_;
   bool has_gpu_rasterization_trigger_;
   bool use_gpu_rasterization_;
   bool use_msaa_;

@@ -497,8 +497,8 @@ LayerTreeHost::CreateLayerTreeHostImpl(
       rendering_stats_instrumentation_.get(), task_graph_runner_,
       std::move(mutator_host_impl), id_, std::move(image_worker_task_runner_));
   host_impl->SetHasGpuRasterizationTrigger(has_gpu_rasterization_trigger_);
-  host_impl->SetContentIsSuitableForGpuRasterization(
-      content_is_suitable_for_gpu_rasterization_);
+  host_impl->SetContentHasSlowPaths(content_has_slow_paths_);
+  host_impl->SetContentHasNonAAPaint(content_has_non_aa_paint_);
   task_graph_runner_ = NULL;
   input_handler_weak_ptr_ = host_impl->AsWeakPtr();
   return host_impl;
@@ -579,7 +579,8 @@ void LayerTreeHost::SetDebugState(
 }
 
 void LayerTreeHost::ResetGpuRasterizationTracking() {
-  content_is_suitable_for_gpu_rasterization_ = true;
+  content_has_slow_paths_ = false;
+  content_has_non_aa_paint_ = false;
   gpu_rasterization_histogram_recorded_ = false;
 }
 
@@ -702,11 +703,13 @@ void LayerTreeHost::RecordGpuRasterizationHistogram(
     UMA_HISTOGRAM_BOOLEAN("Renderer4.GpuRasterizationTriggered",
                           has_gpu_rasterization_trigger_);
     UMA_HISTOGRAM_BOOLEAN("Renderer4.GpuRasterizationSuitableContent",
-                          content_is_suitable_for_gpu_rasterization_);
+                          !content_has_slow_paths_);
+    UMA_HISTOGRAM_BOOLEAN("Renderer4.GpuRasterizationSlowPathsWithNonAAPaint",
+                          content_has_slow_paths_ && content_has_non_aa_paint_);
     // Record how many pages actually get gpu rasterization when enabled.
-    UMA_HISTOGRAM_BOOLEAN("Renderer4.GpuRasterizationUsed",
-                          (has_gpu_rasterization_trigger_ &&
-                           content_is_suitable_for_gpu_rasterization_));
+    UMA_HISTOGRAM_BOOLEAN(
+        "Renderer4.GpuRasterizationUsed",
+        (has_gpu_rasterization_trigger_ && !content_has_slow_paths_));
   }
 
   gpu_rasterization_histogram_recorded_ = true;
@@ -777,20 +780,28 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
 
   EnsureValidPropertyTreeState(this);
 
-  bool content_is_suitable_for_gpu = true;
-  bool did_paint_content =
-      PaintContent(update_layer_list, &content_is_suitable_for_gpu);
+  bool content_has_slow_paths = false;
+  bool content_has_non_aa_paint = false;
+  bool did_paint_content = PaintContent(
+      update_layer_list, &content_has_slow_paths, &content_has_non_aa_paint);
 
-  if (content_is_suitable_for_gpu) {
-    ++num_consecutive_frames_suitable_for_gpu_;
-    if (num_consecutive_frames_suitable_for_gpu_ >=
-        kNumFramesToConsiderBeforeGpuRasterization) {
-      content_is_suitable_for_gpu_rasterization_ = true;
+  // |content_has_non_aa_paint| is a correctness (not performance) modifier, if
+  // it changes we immediately update. To prevent churn, this flag is sticky.
+  content_has_non_aa_paint_ |= content_has_non_aa_paint;
+
+  // If no slow-path content has appeared for a required number of frames,
+  // update the flag.
+  if (!content_has_slow_paths) {
+    ++num_consecutive_frames_without_slow_paths_;
+    if (num_consecutive_frames_without_slow_paths_ >=
+        kNumFramesToConsiderBeforeRemovingSlowPathFlag) {
+      content_has_slow_paths_ = false;
     }
   } else {
-    num_consecutive_frames_suitable_for_gpu_ = 0;
-    content_is_suitable_for_gpu_rasterization_ = false;
+    num_consecutive_frames_without_slow_paths_ = 0;
+    content_has_slow_paths_ = true;
   }
+
   return did_paint_content;
 }
 
@@ -1138,12 +1149,14 @@ size_t LayerTreeHost::NumLayers() const {
 }
 
 bool LayerTreeHost::PaintContent(const LayerList& update_layer_list,
-                                 bool* content_is_suitable_for_gpu) {
+                                 bool* content_has_slow_paths,
+                                 bool* content_has_non_aa_paint) {
   base::AutoReset<bool> painting(&in_paint_layer_contents_, true);
   bool did_paint_content = false;
   for (const auto& layer : update_layer_list) {
     did_paint_content |= layer->Update();
-    *content_is_suitable_for_gpu &= layer->IsSuitableForGpuRasterization();
+    *content_has_slow_paths |= layer->HasSlowPaths();
+    *content_has_non_aa_paint |= layer->HasNonAAPaint();
   }
   return did_paint_content;
 }
@@ -1314,8 +1327,8 @@ void LayerTreeHost::PushSurfaceIdsTo(LayerTreeImpl* tree_impl) {
 void LayerTreeHost::PushLayerTreeHostPropertiesTo(
     LayerTreeHostImpl* host_impl) {
   host_impl->SetHasGpuRasterizationTrigger(has_gpu_rasterization_trigger_);
-  host_impl->SetContentIsSuitableForGpuRasterization(
-      content_is_suitable_for_gpu_rasterization_);
+  host_impl->SetContentHasSlowPaths(content_has_slow_paths_);
+  host_impl->SetContentHasNonAAPaint(content_has_non_aa_paint_);
   RecordGpuRasterizationHistogram(host_impl);
 
   host_impl->SetViewportSize(device_viewport_size_);

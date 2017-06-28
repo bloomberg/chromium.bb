@@ -200,7 +200,8 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       current_begin_frame_tracker_(BEGINFRAMETRACKER_FROM_HERE),
       layer_tree_frame_sink_(nullptr),
       need_update_gpu_rasterization_status_(false),
-      content_is_suitable_for_gpu_rasterization_(true),
+      content_has_slow_paths_(false),
+      content_has_non_aa_paint_(false),
       has_gpu_rasterization_trigger_(false),
       use_gpu_rasterization_(false),
       use_msaa_(false),
@@ -1813,9 +1814,16 @@ void LayerTreeHostImpl::SetHasGpuRasterizationTrigger(bool flag) {
   }
 }
 
-void LayerTreeHostImpl::SetContentIsSuitableForGpuRasterization(bool flag) {
-  if (content_is_suitable_for_gpu_rasterization_ != flag) {
-    content_is_suitable_for_gpu_rasterization_ = flag;
+void LayerTreeHostImpl::SetContentHasSlowPaths(bool flag) {
+  if (content_has_slow_paths_ != flag) {
+    content_has_slow_paths_ = flag;
+    need_update_gpu_rasterization_status_ = true;
+  }
+}
+
+void LayerTreeHostImpl::SetContentHasNonAAPaint(bool flag) {
+  if (content_has_non_aa_paint_ != flag) {
+    content_has_non_aa_paint_ = flag;
     need_update_gpu_rasterization_status_ = true;
   }
 }
@@ -1847,22 +1855,25 @@ bool LayerTreeHostImpl::UpdateGpuRasterizationStatus() {
   ContextProvider* compositor_context_provider =
       layer_tree_frame_sink_->context_provider();
   bool gpu_rasterization_enabled = false;
+  bool supports_disable_msaa = false;
   if (compositor_context_provider) {
     const auto& caps = compositor_context_provider->ContextCapabilities();
     gpu_rasterization_enabled = caps.gpu_rasterization;
+    supports_disable_msaa = caps.multisample_compatibility;
     if (!caps.msaa_is_slow)
       max_msaa_samples = caps.max_samples;
   }
 
   bool use_gpu = false;
   bool use_msaa = false;
-  bool using_msaa_for_complex_content =
-      requested_msaa_samples > 0 && max_msaa_samples >= requested_msaa_samples;
+  bool using_msaa_for_slow_paths =
+      requested_msaa_samples > 0 &&
+      max_msaa_samples >= requested_msaa_samples &&
+      (!content_has_non_aa_paint_ || supports_disable_msaa);
   if (settings_.gpu_rasterization_forced) {
     use_gpu = true;
     gpu_rasterization_status_ = GpuRasterizationStatus::ON_FORCED;
-    use_msaa = !content_is_suitable_for_gpu_rasterization_ &&
-               using_msaa_for_complex_content;
+    use_msaa = content_has_slow_paths_ && using_msaa_for_slow_paths;
     if (use_msaa) {
       gpu_rasterization_status_ = GpuRasterizationStatus::MSAA_CONTENT;
     }
@@ -1870,8 +1881,7 @@ bool LayerTreeHostImpl::UpdateGpuRasterizationStatus() {
     gpu_rasterization_status_ = GpuRasterizationStatus::OFF_DEVICE;
   } else if (!has_gpu_rasterization_trigger_) {
     gpu_rasterization_status_ = GpuRasterizationStatus::OFF_VIEWPORT;
-  } else if (!content_is_suitable_for_gpu_rasterization_ &&
-             using_msaa_for_complex_content) {
+  } else if (content_has_slow_paths_ && using_msaa_for_slow_paths) {
     use_gpu = use_msaa = true;
     gpu_rasterization_status_ = GpuRasterizationStatus::MSAA_CONTENT;
   } else {

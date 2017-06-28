@@ -3233,6 +3233,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Has seek penalty (e.g. spinning disk)"/>
 </enum>
 
+<enum name="BooleanHasSlowPathsWithNonAAPaint">
+  <int value="0" label="Has no slow paths with non-AA paint"/>
+  <int value="1" label="Has slow paths with non-AA paint"/>
+</enum>
+
 <enum name="BooleanHit">
   <int value="0" label="Not_reached"/>
   <int value="1" label="Hit"/>

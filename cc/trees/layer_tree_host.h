@@ -349,7 +349,8 @@ class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(SurfaceReferenceOwner),
 
   bool in_update_property_trees() const { return in_update_property_trees_; }
   bool PaintContent(const LayerList& update_layer_list,
-                    bool* content_is_suitable_for_gpu);
+                    bool* content_has_slow_paths,
+                    bool* content_has_non_aa_paint);
   bool in_paint_layer_contents() const { return in_paint_layer_contents_; }
 
   void SetHasCopyRequest(bool has_copy_request);
@@ -525,8 +526,8 @@ class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(SurfaceReferenceOwner),
   friend class LayerTreeHostSerializationTest;
 
   // This is the number of consecutive frames in which we want the content to be
-  // suitable for GPU rasterization before re-enabling it.
-  enum { kNumFramesToConsiderBeforeGpuRasterization = 60 };
+  // free of slow-paths before toggling the flag.
+  enum { kNumFramesToConsiderBeforeRemovingSlowPathFlag = 60 };
 
   void ApplyViewportDeltas(ScrollAndScaleSet* info);
   void RecordWheelAndTouchScrollingCount(ScrollAndScaleSet* info);
@@ -565,7 +566,8 @@ class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(SurfaceReferenceOwner),
   bool visible_ = false;
 
   bool has_gpu_rasterization_trigger_ = false;
-  bool content_is_suitable_for_gpu_rasterization_ = true;
+  bool content_has_slow_paths_ = false;
+  bool content_has_non_aa_paint_ = false;
   bool gpu_rasterization_histogram_recorded_ = false;
 
   // If set, then page scale animation has completed, but the client hasn't been
@@ -582,7 +584,7 @@ class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(SurfaceReferenceOwner),
   TaskGraphRunner* task_graph_runner_;
 
   SurfaceSequenceGenerator surface_sequence_generator_;
-  uint32_t num_consecutive_frames_suitable_for_gpu_ = 0;
+  uint32_t num_consecutive_frames_without_slow_paths_ = 0;
 
   scoped_refptr<Layer> root_layer_;
 

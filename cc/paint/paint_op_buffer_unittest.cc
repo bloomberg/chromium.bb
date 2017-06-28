@@ -490,6 +490,119 @@ TEST(PaintOpBufferTest, SlowPaths) {
   EXPECT_EQ(4, buffer2->numSlowPaths());
 }
 
+TEST(PaintOpBufferTest, NonAAPaint) {
+  // PaintOpWithFlags
+  {
+    auto buffer = sk_make_sp<PaintOpBuffer>();
+    EXPECT_FALSE(buffer->HasNonAAPaint());
+
+    // Add a PaintOpWithFlags (in this case a line) with AA.
+    PaintFlags line_effect;
+    line_effect.setAntiAlias(true);
+    buffer->push<DrawLineOp>(1.f, 2.f, 3.f, 4.f, line_effect);
+    EXPECT_FALSE(buffer->HasNonAAPaint());
+
+    // Add a PaintOpWithFlags (in this case a line) without AA.
+    PaintFlags line_effect_no_aa;
+    line_effect_no_aa.setAntiAlias(false);
+    buffer->push<DrawLineOp>(1.f, 2.f, 3.f, 4.f, line_effect_no_aa);
+    EXPECT_TRUE(buffer->HasNonAAPaint());
+  }
+
+  // ClipPathOp
+  {
+    auto buffer = sk_make_sp<PaintOpBuffer>();
+    EXPECT_FALSE(buffer->HasNonAAPaint());
+
+    SkPath path;
+    path.addCircle(2, 2, 5);
+
+    // ClipPathOp with AA
+    buffer->push<ClipPathOp>(path, SkClipOp::kIntersect, true /* antialias */);
+    EXPECT_FALSE(buffer->HasNonAAPaint());
+
+    // ClipPathOp without AA
+    buffer->push<ClipPathOp>(path, SkClipOp::kIntersect, false /* antialias */);
+    EXPECT_TRUE(buffer->HasNonAAPaint());
+  }
+
+  // ClipRRectOp
+  {
+    auto buffer = sk_make_sp<PaintOpBuffer>();
+    EXPECT_FALSE(buffer->HasNonAAPaint());
+
+    // ClipRRectOp with AA
+    buffer->push<ClipRRectOp>(SkRRect::MakeEmpty(), SkClipOp::kIntersect,
+                              true /* antialias */);
+    EXPECT_FALSE(buffer->HasNonAAPaint());
+
+    // ClipRRectOp without AA
+    buffer->push<ClipRRectOp>(SkRRect::MakeEmpty(), SkClipOp::kIntersect,
+                              false /* antialias */);
+    EXPECT_TRUE(buffer->HasNonAAPaint());
+  }
+
+  // Drawing a record with non-aa paths into another propogates the value.
+  {
+    auto buffer = sk_make_sp<PaintOpBuffer>();
+    EXPECT_FALSE(buffer->HasNonAAPaint());
+
+    auto sub_buffer = sk_make_sp<PaintOpBuffer>();
+    SkPath path;
+    path.addCircle(2, 2, 5);
+    sub_buffer->push<ClipPathOp>(path, SkClipOp::kIntersect,
+                                 false /* antialias */);
+    EXPECT_TRUE(sub_buffer->HasNonAAPaint());
+
+    buffer->push<DrawRecordOp>(sub_buffer);
+    EXPECT_TRUE(buffer->HasNonAAPaint());
+  }
+
+  // The following PaintOpWithFlags types are overridden to *not* ever have
+  // non-AA paint. AA is hard to notice, and these kick us out of MSAA in too
+  // many cases.
+
+  // DrawImageOp
+  {
+    auto buffer = sk_make_sp<PaintOpBuffer>();
+    EXPECT_FALSE(buffer->HasNonAAPaint());
+
+    PaintImage image = PaintImage(PaintImage::GetNextId(),
+                                  CreateDiscardableImage(gfx::Size(100, 100)));
+    PaintFlags non_aa_flags;
+    non_aa_flags.setAntiAlias(true);
+    buffer->push<DrawImageOp>(image, SkIntToScalar(0), SkIntToScalar(0),
+                              &non_aa_flags);
+
+    EXPECT_FALSE(buffer->HasNonAAPaint());
+  }
+
+  // DrawIRectOp
+  {
+    auto buffer = sk_make_sp<PaintOpBuffer>();
+    EXPECT_FALSE(buffer->HasNonAAPaint());
+
+    PaintFlags non_aa_flags;
+    non_aa_flags.setAntiAlias(true);
+    buffer->push<DrawIRectOp>(SkIRect::MakeWH(1, 1), non_aa_flags);
+
+    EXPECT_FALSE(buffer->HasNonAAPaint());
+  }
+
+  // SaveLayerOp
+  {
+    auto buffer = sk_make_sp<PaintOpBuffer>();
+    EXPECT_FALSE(buffer->HasNonAAPaint());
+
+    PaintFlags non_aa_flags;
+    non_aa_flags.setAntiAlias(true);
+    auto bounds = SkRect::MakeWH(1, 1);
+    buffer->push<SaveLayerOp>(&bounds, &non_aa_flags);
+
+    EXPECT_FALSE(buffer->HasNonAAPaint());
+  }
+}
+
 TEST(PaintOpBufferTest, ContiguousIndices) {
   PaintOpBuffer buffer;
   MockCanvas canvas;

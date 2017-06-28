@@ -156,6 +156,7 @@ struct GPU_EXPORT Capabilities {
   bool disable_webgl_rgb_multisampling_usage = false;
   bool gpu_rasterization = false;
   bool avoid_stencil_buffers = false;
+  bool multisample_compatibility = false;
   // True if DirectComposition layers are enabled.
   bool dc_layers = false;
 

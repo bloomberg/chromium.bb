@@ -1273,8 +1273,12 @@ bool Layer::Update() {
   return false;
 }
 
-bool Layer::IsSuitableForGpuRasterization() const {
-  return true;
+bool Layer::HasSlowPaths() const {
+  return false;
+}
+
+bool Layer::HasNonAAPaint() const {
+  return false;
 }
 
 std::unique_ptr<base::trace_event::ConvertableToTraceFormat>

@@ -42,7 +42,8 @@ class CC_EXPORT PictureLayer : public Layer {
   void SetLayerMaskType(LayerMaskType mask_type) override;
   sk_sp<SkPicture> GetPicture() const override;
 
-  bool IsSuitableForGpuRasterization() const override;
+  bool HasSlowPaths() const override;
+  bool HasNonAAPaint() const override;
 
   void RunMicroBenchmark(MicroBenchmark* benchmark) override;
 
