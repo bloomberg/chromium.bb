@@ -48,7 +48,7 @@ class ScriptState;
 class MODULES_EXPORT ServiceWorker final
     : public AbstractWorker,
       public ActiveScriptWrappable<ServiceWorker>,
-      public WebServiceWorkerProxy {
+      NON_EXPORTED_BASE(public WebServiceWorkerProxy) {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(ServiceWorker);
 
