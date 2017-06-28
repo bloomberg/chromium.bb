@@ -297,7 +297,8 @@ class CheckRafCallback final : public FrameRequestCallback {
  private:
   bool was_called_ = false;
 };
-};
+
+}  // namespace
 
 TEST_F(DocumentLoadingRenderingTest,
        ShouldThrottleIframeLifecycleUntilPendingSheetsLoaded) {

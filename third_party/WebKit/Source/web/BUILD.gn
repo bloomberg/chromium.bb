@@ -86,7 +86,6 @@ test("webkit_unit_tests") {
     "tests/AccessibilityObjectModelTest.cpp",
     "tests/ChromeClientImplTest.cpp",
     "tests/DeferredLoadingTest.cpp",
-    "tests/DocumentLoadingRenderingTest.cpp",
     "tests/HTMLImportSheetsTest.cpp",
     "tests/LayoutGeometryMapTest.cpp",
     "tests/ListenerLeakTest.cpp",
