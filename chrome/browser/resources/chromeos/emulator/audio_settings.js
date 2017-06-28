@@ -160,6 +160,7 @@ Polymer({
     // in |node|.
     var node = this.nodes[this.currentEditIndex];
     chrome.send('insertAudioNode', [node]);
+    this.$.editDialog.close();
   },
 
   /**
@@ -199,7 +200,7 @@ Polymer({
     var index = event.model.index;
     this.currentEditIndex = index;
     this.currentEditableObject = this.nodes[index];
-    this.$.editDialog.toggle();
+    this.$.editDialog.showModal();
   },
 
   /**

@@ -173,15 +173,6 @@ Polymer({
     }
   },
 
-  /**
-   * Called when the device edit dialog is opened. Re-validates necessary input
-   * fields.
-   */
-  editDialogOpened: function() {
-    this.validateAddress();
-    this.validatePath();
-  },
-
   handleAddressInput: function() {
     this.autoFormatAddress();
     this.validateAddress();
@@ -480,7 +471,14 @@ Polymer({
     var index = event.model.index;
     this.currentEditIndex = index;
     this.currentEditableObject = this.devices[index];
-    this.$.editDialog.toggle();
+    this.$.editDialog.showModal();
+    this.validateAddress();
+    this.validatePath();
+  },
+
+  /** @private */
+  onCloseTap_: function() {
+    this.$.editDialog.close();
   },
 
   /**
