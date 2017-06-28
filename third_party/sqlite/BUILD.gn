@@ -63,9 +63,10 @@ if (!use_system_sqlite) {
       "SQLITE_SEPARATE_CACHE_POOLS",
 
       # TODO(shess): SQLite adds mutexes to protect structures which cross
-      # threads.  In theory Chromium should be able to turn this off for a
-      # slight speed boost.
-      "THREADSAFE",
+      # threads. In theory Chromium should be able to turn this to "2" which
+      # should give a slight speed boost. "2" is safe as long as a single
+      # connection is not used by more than one thread at a time.
+      "SQLITE_THREADSAFE=1",
 
       # SQLite can spawn threads to sort in parallel if configured
       # appropriately.  Chromium doesn't configure SQLite for that, and would
