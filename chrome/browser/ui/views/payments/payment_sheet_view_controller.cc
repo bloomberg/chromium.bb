@@ -177,6 +177,7 @@ std::unique_ptr<views::Button> CreatePaymentSheetRow(
   layout->StartRow(0, 0);
   std::unique_ptr<views::Label> name_label = CreateMediumLabel(section_name);
   name_label->SetMultiLine(true);
+  name_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   layout->AddView(name_label.release());
 
   if (content_view) {
@@ -231,6 +232,7 @@ std::unique_ptr<views::View> CreateInlineCurrencyAmountItem(
   std::unique_ptr<views::Label> amount_label =
       bold ? CreateBoldLabel(amount) : base::MakeUnique<views::Label>(amount);
   amount_label->SetMultiLine(true);
+  amount_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   amount_label->SetAllowCharacterBreak(true);
 
   item_amount_layout->StartRow(0, 0);

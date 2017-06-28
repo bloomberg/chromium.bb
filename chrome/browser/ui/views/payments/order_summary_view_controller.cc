@@ -89,6 +89,9 @@ std::unique_ptr<views::View> CreateLineItemView(const base::string16& label,
   label_text->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
   amount_text->set_id(static_cast<int>(amount_label_id));
   amount_text->SetMultiLine(true);
+  // The amount is formatted by the browser (and not provided by the website) so
+  // it can be aligned to left.
+  amount_text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   amount_text->SetAllowCharacterBreak(true);
 
   std::unique_ptr<views::View> amount_wrapper = base::MakeUnique<views::View>();

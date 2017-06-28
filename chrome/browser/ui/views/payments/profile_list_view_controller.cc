@@ -200,6 +200,7 @@ class ShippingProfileViewController : public ProfileListViewController,
     label->set_id(
         static_cast<int>(DialogViewID::SHIPPING_ADDRESS_SECTION_HEADER_LABEL));
     label->SetMultiLine(true);
+    label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
     if (!spec()->selected_shipping_option_error().empty()) {
       auto warning_icon = base::MakeUnique<views::ImageView>();
