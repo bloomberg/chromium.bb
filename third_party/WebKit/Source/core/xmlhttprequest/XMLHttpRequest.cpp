@@ -369,7 +369,7 @@ Blob* XMLHttpRequest::ResponseBlob() {
             });
         size = binary_response_builder_->size();
         blob_data->SetContentType(
-            FinalResponseMIMETypeWithFallback().DeprecatedLower());
+            FinalResponseMIMETypeWithFallback().LowerASCII());
         binary_response_builder_.Clear();
       }
       response_blob_ =
@@ -1448,7 +1448,7 @@ bool XMLHttpRequest::ResponseIsXML() const {
 }
 
 bool XMLHttpRequest::ResponseIsHTML() const {
-  return DeprecatedEqualIgnoringCase(FinalResponseMIMEType(), "text/html");
+  return EqualIgnoringASCIICase(FinalResponseMIMEType(), "text/html");
 }
 
 int XMLHttpRequest::status() const {
@@ -1584,8 +1584,7 @@ PassRefPtr<BlobDataHandle> XMLHttpRequest::CreateBlobDataHandleFromResponse() {
     // FIXME: finalResponseMIMETypeWithFallback() defaults to
     // text/xml which may be incorrect. Replace it with
     // finalResponseMIMEType() after compatibility investigation.
-    blob_data->SetContentType(
-        FinalResponseMIMETypeWithFallback().DeprecatedLower());
+    blob_data->SetContentType(FinalResponseMIMETypeWithFallback().LowerASCII());
   }
   return BlobDataHandle::Create(std::move(blob_data),
                                 length_downloaded_to_file_);
