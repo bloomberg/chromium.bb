@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/metrics/desktop_session_duration/audible_contents_tracker.h"
@@ -18,6 +19,14 @@ namespace metrics {
 // visibility, audio and user interaction.
 class DesktopSessionDurationTracker : public AudibleContentsTracker::Observer {
  public:
+  // The methods for the observer will be called on the UI thread.
+  class Observer {
+   public:
+    virtual ~Observer() {}
+    virtual void OnSessionStarted(base::TimeTicks session_start) {}
+    virtual void OnSessionEnded(base::TimeDelta session_length) {}
+  };
+
   // Creates the |DesktopSessionDurationTracker| instance and initializes the
   // observers that notify to it.
   static void Initialize();
@@ -44,6 +53,10 @@ class DesktopSessionDurationTracker : public AudibleContentsTracker::Observer {
   void SetInactivityTimeoutForTesting(int seconds) {
     inactivity_timeout_ = base::TimeDelta::FromSeconds(seconds);
   }
+
+  // For observing the status of the session tracker.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
  protected:
   DesktopSessionDurationTracker();
@@ -88,6 +101,8 @@ class DesktopSessionDurationTracker : public AudibleContentsTracker::Observer {
   base::TimeDelta inactivity_timeout_;
 
   base::OneShotTimer timer_;
+
+  base::ObserverList<Observer> observer_list_;
 
   ChromeVisibilityObserver visibility_observer_;
   AudibleContentsTracker audio_tracker_;
