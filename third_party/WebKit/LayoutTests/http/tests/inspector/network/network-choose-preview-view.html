@@ -31,8 +31,8 @@ async function test()
         var request = createNetworkRequest(contentType, content, statusCode);
         var previewView = new Network.RequestPreviewView(request, new Network.RequestResponseView(request));
         previewView.wasShown();
-        InspectorTest.addResult("Its previewer type: " + getViewName(await previewView._previewViewPromise));
-    } 
+        InspectorTest.addResult("Its previewer type: " + getViewName(await previewView._contentViewPromise));
+    }
 
     InspectorTest.addResult("Simple JSON");
     await testPreviewer("application/json", "[533,3223]", 200);
