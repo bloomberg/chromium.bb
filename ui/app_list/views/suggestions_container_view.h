@@ -18,7 +18,8 @@ class ContentsView;
 class SearchResultTileItemView;
 class TileItemView;
 
-// A container that holds the suggested app tiles and the all apps tile.
+// A container that holds the suggested app tiles. If fullscreen app list is not
+// enabled, it also holds the all apps button.
 class SuggestionsContainerView : public SearchResultContainerView {
  public:
   SuggestionsContainerView(ContentsView* contents_view,
