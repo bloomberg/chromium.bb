@@ -574,6 +574,7 @@ _x86_internal_release_boards = frozenset([
     'x86-zgb',
     'x86-zgb_he',
     'zako',
+    'zoombini',
 ])
 
 _x86_external_boards = frozenset([
@@ -631,6 +632,7 @@ _cheets_x86_boards = frozenset([
     'ultima',
     'umaro',
     'wizpig',
+    'zoombini',
 ])
 
 _beaglebone_boards = frozenset([
@@ -2263,6 +2265,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'sentry',
       'tidus',
       'wizpig',
+      'zoombini',
   ])
 
   # Paladin configs that exist and should stay as experimental until further
