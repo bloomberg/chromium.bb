@@ -31,6 +31,9 @@ class BinderRegistryWithParams {
   BinderRegistryWithParams() : weak_factory_(this) {}
   ~BinderRegistryWithParams() = default;
 
+  // Adds an interface inferring the interface name via the templated
+  // parameter Interface::Name_
+  // Usage example: //services/service_manager/README.md#OnBindInterface
   template <typename Interface>
   void AddInterface(
       const base::Callback<void(const BindSourceInfo&,
