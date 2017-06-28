@@ -118,9 +118,7 @@
   [cell setSessionType:TabSwitcherSessionType::REGULAR_SESSION];
   DCHECK_LE(indexPath.item, INT_MAX);
   int index = static_cast<int>(indexPath.item);
-  [cell setAppearanceForTabTitle:self.items[index].title
-                         favicon:nil
-                        cellSize:CGSizeZero];
+  cell.item = self.items[index];
   return cell;
 }
 
@@ -194,9 +192,7 @@
   TabCollectionTabCell* cell = base::mac::ObjCCastStrict<TabCollectionTabCell>(
       [self.tabs cellForItemAtIndexPath:[NSIndexPath indexPathForItem:index
                                                             inSection:0]]);
-  [cell setAppearanceForTabTitle:self.items[index].title
-                         favicon:nil
-                        cellSize:CGSizeZero];
+  cell.item = self.items[index];
 }
 
 - (void)populateItems:(NSArray<TabCollectionItem*>*)items

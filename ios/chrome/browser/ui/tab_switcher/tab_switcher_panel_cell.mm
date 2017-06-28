@@ -102,16 +102,22 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight() {
 
 @end
 
+@interface TabSwitcherLocalSessionCell ()
+@property(nonatomic, strong) UILabel* titleLabel;
+@property(nonatomic, strong) UIImageView* favicon;
+@property(nonatomic, strong) TabSwitcherButton* snapshotButton;
+@end
+
 @implementation TabSwitcherLocalSessionCell {
   UIView* _topBar;
-  UILabel* _titleLabel;
-  UIImageView* _favicon;
   UIButton* _closeButton;
   UIImageView* _shadow;
   UIImageView* _snapshot;
-  TabSwitcherButton* _snapshotButton;
   PendingSnapshotRequest _currentPendingSnapshotRequest;
 }
+@synthesize titleLabel = _titleLabel;
+@synthesize favicon = _favicon;
+@synthesize snapshotButton = _snapshotButton;
 
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
@@ -243,22 +249,6 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight() {
                             [weakCell setSnapshot:image];
                             _currentPendingSnapshotRequest = {};
                           }];
-}
-
-- (void)setAppearanceForTabTitle:(NSString*)title
-                         favicon:(UIImage*)favicon
-                        cellSize:(CGSize)cellSize {
-  [_titleLabel setText:title];
-  [_snapshotButton setAccessibilityIdentifier:
-                      [NSString stringWithFormat:@"%@_button", title]];
-  [self contentView].accessibilityLabel = title;
-  if (favicon) {
-    [_favicon setImage:favicon];
-  } else {
-    [_favicon setImage:NativeImage(IDR_IOS_OMNIBOX_HTTP)];
-  }
-
-  // PLACEHOLDER: Set snapshot here.
 }
 
 - (void)setSessionType:(TabSwitcherSessionType)type {
