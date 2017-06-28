@@ -737,6 +737,9 @@
       <message name="IDS_IME_NAME_KEYBOARD_US_INTERNATIONAL" desc="The input method name shows in system tray menu, this shows [US International keyboard].">
         US International keyboard
       </message>
+      <message name="IDS_IME_NAME_KEYBOARD_US_INTERNATIONAL_PC" desc="The input method name shows in system tray menu, this shows [US International (PC) keyboard].">
+        US International (PC) keyboard
+      </message>
       <message name="IDS_IME_NAME_KEYBOARD_US_WORKMAN" desc="The input method name shows in system tray menu, this shows [US Workman keyboard].">
         US Workman keyboard
       </message>
