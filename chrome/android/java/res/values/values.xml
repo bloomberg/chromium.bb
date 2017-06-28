@@ -8,12 +8,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:ignore="MissingTranslation">
 
-    <!-- Font to use when a spec asks for "Roboto Medium".
-         Bolding the text makes it look almost, but not quite, entirely unlike Roboto Medium,
-         which doesn't exist pre-L. -->
-    <string name="roboto_medium_typeface">sans-serif</string>
-    <integer name="roboto_medium_textstyle">1</integer>
-
     <!-- Menu Animation Constants -->
     <item type="fraction" format="fraction" name="menu_animation_pivot_x">95%</item>
 

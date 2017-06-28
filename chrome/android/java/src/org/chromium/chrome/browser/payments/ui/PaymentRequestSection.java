@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.payments.ui;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Color;
-import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.support.v4.view.animation.LinearOutSlowInInterpolator;
@@ -37,6 +36,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.DualControlLayout;
 import org.chromium.chrome.browser.widget.TintedDrawable;
+import org.chromium.ui.UiUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -942,8 +942,6 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
                     labelView.setEnabled(isEnabled);
                 } else if (mRowType == OPTION_ROW_TYPE_ADD) {
                     // Shows string saying that the user can add a new option, e.g. credit card no.
-                    String typeface = resources.getString(R.string.roboto_medium_typeface);
-                    int textStyle = resources.getInteger(R.integer.roboto_medium_textstyle);
                     int buttonHeight = resources.getDimensionPixelSize(
                             R.dimen.payments_section_add_button_height);
 
@@ -951,7 +949,7 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
                             labelView, R.style.PaymentsUiSectionAddButtonLabel);
                     labelView.setMinimumHeight(buttonHeight);
                     labelView.setGravity(Gravity.CENTER_VERTICAL);
-                    labelView.setTypeface(Typeface.create(typeface, textStyle));
+                    labelView.setTypeface(UiUtils.createRobotoMediumTypeface());
                 } else if (mRowType == OPTION_ROW_TYPE_DESCRIPTION) {
                     // The description spans all the columns.
                     columnStart = 0;

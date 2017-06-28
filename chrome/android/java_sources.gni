@@ -621,7 +621,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/ntp/LogoDelegateImpl.java",
   "java/src/org/chromium/chrome/browser/ntp/LogoView.java",
   "java/src/org/chromium/chrome/browser/ntp/NativePageAssassin.java",
-  "java/src/org/chromium/chrome/browser/ntp/NativePageDialog.java",
   "java/src/org/chromium/chrome/browser/ntp/NativePageFactory.java",
   "java/src/org/chromium/chrome/browser/ntp/NativePageRootFrameLayout.java",
   "java/src/org/chromium/chrome/browser/ntp/NewTabPage.java",
