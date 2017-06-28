@@ -210,7 +210,9 @@ void ContentFaviconDriver::DidStartNavigation(
     return;
 
   favicon_urls_.reset();
-  manifest_url_ = GURL();
+
+  if (!navigation_handle->IsSameDocument())
+    manifest_url_ = GURL();
 
   content::ReloadType reload_type = navigation_handle->GetReloadType();
   if (reload_type == content::ReloadType::NONE || IsOffTheRecord())
