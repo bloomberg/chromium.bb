@@ -13,10 +13,7 @@
 #include "ui/events/event_handler.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/views/views_export.h"
-
-namespace aura {
-class Window;
-}
+#include "ui/views/widget/desktop_aura/window_event_filter.h"
 
 namespace gfx {
 class Point;
@@ -26,26 +23,17 @@ namespace views {
 class DesktopWindowTreeHost;
 
 // An EventFilter that sets properties on X11 windows.
-class VIEWS_EXPORT X11WindowEventFilter : public ui::EventHandler {
+class VIEWS_EXPORT X11WindowEventFilter : public WindowEventFilter {
  public:
   explicit X11WindowEventFilter(DesktopWindowTreeHost* window_tree_host);
   ~X11WindowEventFilter() override;
 
-  // Overridden from ui::EventHandler:
-  void OnMouseEvent(ui::MouseEvent* event) override;
-
  private:
-  // Called when the user clicked the caption area.
-  void OnClickedCaption(ui::MouseEvent* event,
-                        int previous_click_component);
+  // WindowEventFilter override:
+  void MaybeDispatchHostWindowDragMovement(int hittest,
+                                           ui::MouseEvent* event) override;
+  void LowerWindow() override;
 
-  // Called when the user clicked the maximize button.
-  void OnClickedMaximizeButton(ui::MouseEvent* event);
-
-  void ToggleMaximizedState();
-
-  // Dispatches a _NET_WM_MOVERESIZE message to the window manager to tell it
-  // to act as if a border or titlebar drag occurred.
   bool DispatchHostWindowDragMovement(int hittest,
                                       const gfx::Point& screen_location);
 
@@ -55,15 +43,6 @@ class VIEWS_EXPORT X11WindowEventFilter : public ui::EventHandler {
 
   // The native root window.
   ::Window x_root_window_;
-
-  DesktopWindowTreeHost* window_tree_host_;
-
-  // The non-client component for the target of a MouseEvent. Mouse events can
-  // be destructive to the window tree, which can cause the component of a
-  // ui::EF_IS_DOUBLE_CLICK event to no longer be the same as that of the
-  // initial click. Acting on a double click should only occur for matching
-  // components.
-  int click_component_;
 
   DISALLOW_COPY_AND_ASSIGN(X11WindowEventFilter);
 };

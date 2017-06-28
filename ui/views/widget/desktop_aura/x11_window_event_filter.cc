@@ -46,131 +46,28 @@ namespace views {
 
 X11WindowEventFilter::X11WindowEventFilter(
     DesktopWindowTreeHost* window_tree_host)
-    : xdisplay_(gfx::GetXDisplay()),
+    : WindowEventFilter(window_tree_host),
+      xdisplay_(gfx::GetXDisplay()),
       xwindow_(window_tree_host->AsWindowTreeHost()->GetAcceleratedWidget()),
-      x_root_window_(DefaultRootWindow(xdisplay_)),
-      window_tree_host_(window_tree_host),
-      click_component_(HTNOWHERE) {
-}
+      x_root_window_(DefaultRootWindow(xdisplay_)) {}
 
 X11WindowEventFilter::~X11WindowEventFilter() {
 }
 
-void X11WindowEventFilter::OnMouseEvent(ui::MouseEvent* event) {
-  if (event->type() != ui::ET_MOUSE_PRESSED)
-    return;
-
-  aura::Window* target = static_cast<aura::Window*>(event->target());
-  if (!target->delegate())
-    return;
-
-  int previous_click_component = HTNOWHERE;
-  int component =
-      target->delegate()->GetNonClientComponent(event->location());
-  if (event->IsLeftMouseButton()) {
-    previous_click_component = click_component_;
-    click_component_ = component;
-  }
-
-  if (component == HTCAPTION) {
-    OnClickedCaption(event, previous_click_component);
-  } else if (component == HTMAXBUTTON) {
-    OnClickedMaximizeButton(event);
-  } else {
-    // Get the |x_root_window_| location out of the native event.
-    if (event->IsLeftMouseButton() && event->native_event()) {
-      const gfx::Point x_root_location =
-          ui::EventSystemLocationFromNative(event->native_event());
-      if ((target->GetProperty(aura::client::kResizeBehaviorKey) &
-           ui::mojom::kResizeBehaviorCanResize) &&
-          DispatchHostWindowDragMovement(component, x_root_location)) {
-        event->StopPropagation();
-      }
-    }
-  }
-}
-
-void X11WindowEventFilter::OnClickedCaption(ui::MouseEvent* event,
-                                            int previous_click_component) {
-  aura::Window* target = static_cast<aura::Window*>(event->target());
-
-  if (event->IsMiddleMouseButton()) {
-    LinuxUI::NonClientMiddleClickAction action =
-        LinuxUI::MIDDLE_CLICK_ACTION_LOWER;
-    LinuxUI* linux_ui = LinuxUI::instance();
-    if (linux_ui)
-      action = linux_ui->GetNonClientMiddleClickAction();
-
-    switch (action) {
-      case LinuxUI::MIDDLE_CLICK_ACTION_NONE:
-        break;
-      case LinuxUI::MIDDLE_CLICK_ACTION_LOWER:
-        XLowerWindow(xdisplay_, xwindow_);
-        break;
-      case LinuxUI::MIDDLE_CLICK_ACTION_MINIMIZE:
-        window_tree_host_->Minimize();
-        break;
-      case LinuxUI::MIDDLE_CLICK_ACTION_TOGGLE_MAXIMIZE:
-        if (target->GetProperty(aura::client::kResizeBehaviorKey) &
-            ui::mojom::kResizeBehaviorCanMaximize)
-          ToggleMaximizedState();
-        break;
-    }
-
-    event->SetHandled();
-    return;
-  }
-
-  if (event->IsLeftMouseButton() && event->flags() & ui::EF_IS_DOUBLE_CLICK) {
-    click_component_ = HTNOWHERE;
-    if ((target->GetProperty(aura::client::kResizeBehaviorKey) &
-         ui::mojom::kResizeBehaviorCanMaximize) &&
-        previous_click_component == HTCAPTION) {
-      // Our event is a double click in the caption area in a window that can be
-      // maximized. We are responsible for dispatching this as a minimize/
-      // maximize on X11 (Windows converts this to min/max events for us).
-      ToggleMaximizedState();
-      event->SetHandled();
-      return;
-    }
-  }
-
-  // Get the |x_root_window_| location out of the native event.
+void X11WindowEventFilter::MaybeDispatchHostWindowDragMovement(
+    int hittest,
+    ui::MouseEvent* event) {
   if (event->IsLeftMouseButton() && event->native_event()) {
+    // Get the |x_root_window_| location out of the native event.
     const gfx::Point x_root_location =
         ui::EventSystemLocationFromNative(event->native_event());
-    if (DispatchHostWindowDragMovement(HTCAPTION, x_root_location))
+    if (DispatchHostWindowDragMovement(hittest, x_root_location))
       event->StopPropagation();
   }
 }
 
-void X11WindowEventFilter::OnClickedMaximizeButton(ui::MouseEvent* event) {
-  aura::Window* target = static_cast<aura::Window*>(event->target());
-  views::Widget* widget = views::Widget::GetWidgetForNativeView(target);
-  if (!widget)
-    return;
-
-  gfx::Rect display_work_area =
-      display::Screen::GetScreen()->GetDisplayNearestWindow(target).work_area();
-  gfx::Rect bounds = widget->GetWindowBoundsInScreen();
-  if (event->IsMiddleMouseButton()) {
-    bounds.set_y(display_work_area.y());
-    bounds.set_height(display_work_area.height());
-    widget->SetBounds(bounds);
-    event->StopPropagation();
-  } else if (event->IsRightMouseButton()) {
-    bounds.set_x(display_work_area.x());
-    bounds.set_width(display_work_area.width());
-    widget->SetBounds(bounds);
-    event->StopPropagation();
-  }
-}
-
-void X11WindowEventFilter::ToggleMaximizedState() {
-  if (window_tree_host_->IsMaximized())
-    window_tree_host_->Restore();
-  else
-    window_tree_host_->Maximize();
+void X11WindowEventFilter::LowerWindow() {
+  XLowerWindow(xdisplay_, xwindow_);
 }
 
 bool X11WindowEventFilter::DispatchHostWindowDragMovement(
