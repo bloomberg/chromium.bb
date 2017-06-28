@@ -13,6 +13,10 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/controls/button/image_button.h"
 
+namespace base {
+class OneShotTimer;
+}  // namespace base
+
 namespace ash {
 class InkDropButtonListener;
 class Shelf;
@@ -75,6 +79,7 @@ class ASH_EXPORT AppListButton : public views::ImageButton,
   Shelf* shelf_;
 
   VoiceInteractionOverlay* voice_interaction_overlay_;
+  std::unique_ptr<base::OneShotTimer> voice_interaction_animation_delay_timer_;
 
   bool voice_interaction_running_ = false;
 
