@@ -24336,6 +24336,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="History.ClearBrowsingData.TimeSpentInDialog" units="ms">
+  <owner>dullweber@chromium.org</owner>
+  <owner>msramek@chromium.org</owner>
+  <summary>
+    Time spent in Clear Browsing Data dialog. From opening the dialog until data
+    is cleared. This does not record users who exit the dialog without clearing.
+  </summary>
+</histogram>
+
 <histogram name="History.ClearBrowsingData.UserDeletedCookieOrCache"
     enum="CookieOrCacheDeletion">
   <owner>msramek@chromium.org</owner>

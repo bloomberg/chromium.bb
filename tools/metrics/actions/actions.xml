@@ -3221,6 +3221,18 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="ClearBrowsingData_SwitchTo_AdvancedTab">
+  <owner>dullweber@chromium.org</owner>
+  <owner>msramek@chromium.org</owner>
+  <description>User switched to advanced tab.</description>
+</action>
+
+<action name="ClearBrowsingData_SwitchTo_BasicTab">
+  <owner>dullweber@chromium.org</owner>
+  <owner>msramek@chromium.org</owner>
+  <description>User switched to basic tab.</description>
+</action>
+
 <action name="ClearBrowsingData_TimePeriodChanged_Everything">
   <owner>dullweber@chromium.org</owner>
   <owner>msramek@chromium.org</owner>
