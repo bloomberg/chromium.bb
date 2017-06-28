@@ -664,12 +664,12 @@ void Dispatcher::OnExtensionResponse(int request_id,
 void Dispatcher::DispatchEvent(const std::string& extension_id,
                                const std::string& event_name,
                                const base::ListValue& event_args,
-                               const EventFilteringInfo& filtering_info) const {
+                               const EventFilteringInfo* filtering_info) const {
   script_context_set_->ForEach(
       extension_id, nullptr,
       base::Bind(&ExtensionBindingsSystem::DispatchEventInContext,
                  base::Unretained(bindings_system_.get()), event_name,
-                 &event_args, &filtering_info));
+                 &event_args, filtering_info));
 
   // Reset the idle handler each time there's any activity like event or message
   // dispatch.
@@ -1005,7 +1005,7 @@ void Dispatcher::OnActivateExtension(const std::string& extension_id) {
 
 void Dispatcher::OnCancelSuspend(const std::string& extension_id) {
   DispatchEvent(extension_id, kOnSuspendCanceledEvent, base::ListValue(),
-                EventFilteringInfo());
+                nullptr);
 }
 
 void Dispatcher::OnDeliverMessage(const PortId& target_port_id,
@@ -1094,7 +1094,7 @@ void Dispatcher::OnDispatchEvent(
     web_user_gesture.reset(new WebScopedUserGesture(nullptr));
 
   DispatchEvent(params.extension_id, params.event_name, event_args,
-                params.filtering_info);
+                &params.filtering_info);
 
   // Tell the browser process when an event has been dispatched with a lazy
   // background page active.
@@ -1153,8 +1153,7 @@ void Dispatcher::OnSuspend(const std::string& extension_id) {
   // the browser know when we are starting and stopping the event dispatch, so
   // that it still considers the extension idle despite any activity the suspend
   // event creates.
-  DispatchEvent(extension_id, kOnSuspendEvent, base::ListValue(),
-                EventFilteringInfo());
+  DispatchEvent(extension_id, kOnSuspendEvent, base::ListValue(), nullptr);
   RenderThread::Get()->Send(new ExtensionHostMsg_SuspendAck(extension_id));
 }
 

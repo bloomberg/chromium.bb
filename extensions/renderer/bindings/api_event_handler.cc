@@ -200,7 +200,7 @@ void APIEventHandler::InvalidateCustomEvent(v8::Local<v8::Context> context,
 void APIEventHandler::FireEventInContext(const std::string& event_name,
                                          v8::Local<v8::Context> context,
                                          const base::ListValue& args,
-                                         const EventFilteringInfo& filter) {
+                                         const EventFilteringInfo* filter) {
   APIEventPerContextData* data = GetContextData(context, false);
   if (!data)
     return;
@@ -230,7 +230,7 @@ void APIEventHandler::FireEventInContext(const std::string& event_name,
     v8_args.reserve(args.GetSize());
     for (const auto& arg : args)
       v8_args.push_back(converter->ToV8Value(&arg, context));
-    emitter->Fire(context, &v8_args, &filter);
+    emitter->Fire(context, &v8_args, filter);
   } else {
     v8::Isolate* isolate = context->GetIsolate();
     v8::HandleScope handle_scope(isolate);

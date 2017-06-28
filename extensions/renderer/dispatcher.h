@@ -125,7 +125,7 @@ class Dispatcher : public content::RenderThreadObserver,
   void DispatchEvent(const std::string& extension_id,
                      const std::string& event_name,
                      const base::ListValue& event_args,
-                     const EventFilteringInfo& filtering_info) const;
+                     const EventFilteringInfo* filtering_info) const;
 
   // Shared implementation of the various MessageInvoke IPCs.
   void InvokeModuleSystemMethod(content::RenderFrame* render_frame,

@@ -485,9 +485,8 @@ void NativeExtensionBindingsSystem::DispatchEventInContext(
     ScriptContext* context) {
   v8::HandleScope handle_scope(context->isolate());
   v8::Context::Scope context_scope(context->v8_context());
-  api_system_.FireEventInContext(
-      event_name, context->v8_context(), *event_args,
-      filtering_info ? *filtering_info : EventFilteringInfo());
+  api_system_.FireEventInContext(event_name, context->v8_context(), *event_args,
+                                 filtering_info);
 }
 
 bool NativeExtensionBindingsSystem::HasEventListenerInContext(
