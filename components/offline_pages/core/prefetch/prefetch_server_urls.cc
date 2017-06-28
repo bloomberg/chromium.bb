@@ -4,17 +4,18 @@
 
 #include "components/offline_pages/core/prefetch/prefetch_server_urls.h"
 
+#include "components/offline_pages/core/offline_page_feature.h"
+#include "components/variations/variations_associated_data.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/url_util.h"
 
 namespace offline_pages {
 
+const char kPrefetchServer[] = "https://offlinepages-pa.googleapis.com/";
+
 namespace {
 
-const char kPrefetchServer[] = "https://offlinepages-pa.googleapis.com/";
-const char kPrefetchStagingServer[] =
-    "https://staging-offlinepages-pa.sandbox.googleapis.com/";
-
+const char kOfflinePagesBackend[] = "offline_pages_backend";
 const char kGeneratePageBundleRequestURLPath[] = "v1:GeneratePageBundle";
 const char kGetOperationLeadingURLPath[] = "v1/";
 const char kDownloadLeadingURLPath[] = "v1/media/";
@@ -25,14 +26,20 @@ const char kApiKeyName[] = "key";
 const char kAltKeyName[] = "alt";
 const char kAltKeyValueForDownload[] = "media";
 
-GURL GetServerURLForPath(const std::string& url_path,
-                         version_info::Channel channel) {
-  bool is_stable_channel = channel == version_info::Channel::STABLE;
-  GURL server_url(is_stable_channel ? kPrefetchServer : kPrefetchStagingServer);
+GURL GetServerURL() {
+  GURL endpoint(variations::GetVariationParamValueByFeature(
+      offline_pages::kPrefetchingOfflinePagesFeature, kOfflinePagesBackend));
 
+  // |is_valid| returns false for bad URLs and also for empty URLs.
+  return endpoint.is_valid() && endpoint.SchemeIsCryptographic()
+             ? endpoint
+             : GURL(kPrefetchServer);
+}
+
+GURL GetServerURLForPath(const std::string& url_path) {
   GURL::Replacements replacements;
   replacements.SetPathStr(url_path);
-  return server_url.ReplaceComponents(replacements);
+  return GetServerURL().ReplaceComponents(replacements);
 }
 
 GURL AppendApiKeyToURL(const GURL& url, version_info::Channel channel) {
@@ -45,22 +52,21 @@ GURL AppendApiKeyToURL(const GURL& url, version_info::Channel channel) {
 }  // namespace
 
 GURL GeneratePageBundleRequestURL(version_info::Channel channel) {
-  GURL server_url =
-      GetServerURLForPath(kGeneratePageBundleRequestURLPath, channel);
+  GURL server_url = GetServerURLForPath(kGeneratePageBundleRequestURLPath);
   return AppendApiKeyToURL(server_url, channel);
 }
 
 GURL GetOperationRequestURL(const std::string& name,
                             version_info::Channel channel) {
   std::string url_path = kGetOperationLeadingURLPath + name;
-  GURL server_url = GetServerURLForPath(url_path, channel);
+  GURL server_url = GetServerURLForPath(url_path);
   return AppendApiKeyToURL(server_url, channel);
 }
 
 GURL PrefetchDownloadURL(const std::string& download_location,
                          version_info::Channel channel) {
   std::string url_path = kDownloadLeadingURLPath + download_location;
-  GURL server_url = GetServerURLForPath(url_path, channel);
+  GURL server_url = GetServerURLForPath(url_path);
 
   server_url = net::AppendQueryParameter(server_url, kAltKeyName,
                                          kAltKeyValueForDownload);
