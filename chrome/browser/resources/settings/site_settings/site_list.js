@@ -390,14 +390,20 @@ Polymer({
    * @return {string} The site description.
    */
   computeSiteDescription_: function(item) {
-    if (item.incognito && item.embeddingDisplayName.length > 0) {
-      return loadTimeData.getStringF(
-          'embeddedIncognitoSite', item.embeddingDisplayName);
+    var displayName = '';
+    if (item.embeddingOrigin) {
+      displayName = loadTimeData.getStringF(
+          'embeddedOnHost', this.sanitizePort(item.embeddingOrigin));
+    } else if (this.category == settings.ContentSettingsTypes.GEOLOCATION) {
+      displayName = loadTimeData.getString('embeddedOnAnyHost');
     }
 
-    if (item.incognito)
+    if (item.incognito) {
+      if (displayName.length > 0)
+        return loadTimeData.getStringF('embeddedIncognitoSite', displayName);
       return loadTimeData.getString('incognitoSite');
-    return item.embeddingDisplayName;
+    }
+    return displayName;
   },
 
   /**

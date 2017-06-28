@@ -22,7 +22,6 @@ var ContentSettingProvider = {
  * The site exception information passed form the C++ handler.
  * See also: SiteException.
  * @typedef {{embeddingOrigin: string,
- *            embeddingDisplayName: string,
  *            incognito: boolean,
  *            origin: string,
  *            displayName: string,
@@ -36,7 +35,6 @@ var RawSiteException;
  * See also: RawSiteException.
  * @typedef {{category: !settings.ContentSettingsTypes,
  *            embeddingOrigin: string,
- *            embeddingDisplayName: string,
  *            incognito: boolean,
  *            origin: string,
  *            displayName: string,
