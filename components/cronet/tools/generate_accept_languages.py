@@ -25,9 +25,11 @@ def extract_accept_langs(filename):
       return tree.get('lang'), child.text
 
 def gen_accept_langs_table():
-  return dict(filter(None, (extract_accept_langs(filename)
+  accept_langs_list = [extract_accept_langs(filename)
     for filename in os.listdir(STRINGS_DIR)
-    if re.match(r'components_locale_settings_\S+.xtb', filename))))
+    if re.match(r'components_locale_settings_\S+.xtb', filename)]
+  return dict(accept_langs for accept_langs in accept_langs_list
+    if accept_langs)
 
 HEADER = "NSDictionary* acceptLangs = @{"
 def LINE(locale, accept_langs):
