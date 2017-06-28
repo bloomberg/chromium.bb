@@ -1,5 +1,4 @@
 Tests that Page.getLayoutMetrics returns reasonable values.
-
 LayoutViewport: {
     clientHeight : 600
     clientWidth : 785

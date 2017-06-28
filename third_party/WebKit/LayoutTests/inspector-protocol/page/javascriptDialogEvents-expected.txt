@@ -1,7 +1,4 @@
-CONFIRM NAVIGATION
-ALERT: alert
-CONFIRM: confirm
-PROMPT: prompt, default text: 
+
 Opening dialog: type=beforeunload; message=beforeunload in javascriptDialogEvents
 Closed dialog: result=false
 Opening dialog: type=alert; message=alert
