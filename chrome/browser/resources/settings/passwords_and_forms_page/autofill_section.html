@@ -168,7 +168,8 @@
                 </button>
               </template>
               <template is="dom-if" if="[[!showDots_(item.metadata)]]">
-                <button is="paper-icon-button-light" class="icon-external"
+                <button is="paper-icon-button-light" id="remoteCreditCardLink"
+                    class="icon-external"
                     on-tap="onRemoteEditCreditCardTap_" actionable></button>
               </template>
             </div>
