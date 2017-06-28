@@ -359,6 +359,11 @@ const char kColorCorrectRenderingName[] = "Color correct rendering";
 const char kColorCorrectRenderingDescription[] =
     "Enables color correct rendering of web content.";
 
+const char kExperimentalAppBannersName[] = "Experimental app banners";
+
+const char kExperimentalAppBannersDescription[] =
+    "Enables a new experimental app banner flow and UI";
+
 const char kExperimentalCanvasFeaturesName[] = "Experimental canvas features";
 
 const char kExperimentalCanvasFeaturesDescription[] =

@@ -299,7 +299,8 @@ const gfx::ImageSkia& GetDefaultExtensionIcon() {
 bool IsNewBookmarkAppsEnabled() {
 #if defined(OS_MACOSX)
   return base::FeatureList::IsEnabled(features::kBookmarkApps) ||
-         base::FeatureList::IsEnabled(features::kAppBanners);
+         base::FeatureList::IsEnabled(features::kAppBanners) ||
+         base::FeatureList::IsEnabled(features::kExperimentalAppBanners);
 #else
   return true;
 #endif

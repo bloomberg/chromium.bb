@@ -1994,6 +1994,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAppBannersDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kAppBanners)},
 #endif  // !OS_ANDROID
+    {"enable-experimental-app-banners",
+     flag_descriptions::kExperimentalAppBannersName,
+     flag_descriptions::kExperimentalAppBannersDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kExperimentalAppBanners)},
     {"bypass-app-banner-engagement-checks",
      flag_descriptions::kBypassAppBannerEngagementChecksName,
      flag_descriptions::kBypassAppBannerEngagementChecksDescription, kOsAll,

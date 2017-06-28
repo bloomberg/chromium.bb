@@ -292,6 +292,9 @@ extern const char kEnableWebNotificationCustomLayoutsDescription[];
 extern const char kExpensiveBackgroundTimerThrottlingName[];
 extern const char kExpensiveBackgroundTimerThrottlingDescription[];
 
+extern const char kExperimentalAppBannersName[];
+extern const char kExperimentalAppBannersDescription[];
+
 extern const char kExperimentalCanvasFeaturesName[];
 extern const char kExperimentalCanvasFeaturesDescription[];
 
