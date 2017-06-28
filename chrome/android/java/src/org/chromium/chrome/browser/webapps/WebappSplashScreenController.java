@@ -91,22 +91,32 @@ class WebappSplashScreenController extends EmptyTabObserver {
 
     @Override
     public void didFirstVisuallyNonEmptyPaint(Tab tab) {
-        hideSplashScreen(tab, WebappUma.SPLASHSCREEN_HIDES_REASON_PAINT);
+        if (canHideSplashScreen()) {
+            hideSplashScreen(tab, WebappUma.SPLASHSCREEN_HIDES_REASON_PAINT);
+        }
     }
 
     @Override
     public void onPageLoadFinished(Tab tab) {
-        hideSplashScreen(tab, WebappUma.SPLASHSCREEN_HIDES_REASON_LOAD_FINISHED);
+        if (canHideSplashScreen()) {
+            hideSplashScreen(tab, WebappUma.SPLASHSCREEN_HIDES_REASON_LOAD_FINISHED);
+        }
     }
 
     @Override
     public void onPageLoadFailed(Tab tab, int errorCode) {
-        hideSplashScreen(tab, WebappUma.SPLASHSCREEN_HIDES_REASON_LOAD_FAILED);
+        if (canHideSplashScreen()) {
+            hideSplashScreen(tab, WebappUma.SPLASHSCREEN_HIDES_REASON_LOAD_FAILED);
+        }
     }
 
     @Override
     public void onCrash(Tab tab, boolean sadTabShown) {
         hideSplashScreen(tab, WebappUma.SPLASHSCREEN_HIDES_REASON_CRASH);
+    }
+
+    protected boolean canHideSplashScreen() {
+        return true;
     }
 
     /** Sets the splash screen layout and sets the splash screen's title and icon. */
