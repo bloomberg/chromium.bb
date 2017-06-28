@@ -9,11 +9,11 @@
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
         'cr_onc_types',
       ],
-      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+      'includes': ['../../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
       'target_name': 'cr_network_icon_externs',
-      'includes': ['../../../../../third_party/closure_compiler/include_js.gypi'],
+      'includes': ['../../../../../../third_party/closure_compiler/include_js.gypi'],
     },
     {
       'target_name': 'cr_network_list',
@@ -22,7 +22,7 @@
         'cr_network_list_types',
         'cr_onc_types',
       ],
-      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+      'includes': ['../../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
       'target_name': 'cr_network_list_item',
@@ -32,14 +32,14 @@
         'cr_network_list_types',
         'cr_onc_types',
       ],
-      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+      'includes': ['../../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
       'target_name': 'cr_network_list_types',
       'dependencies': [
         'cr_onc_types',
       ],
-      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+      'includes': ['../../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
       'target_name': 'cr_network_select',
@@ -48,14 +48,14 @@
         'cr_network_list_types',
         'cr_onc_types',
       ],
-      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+      'includes': ['../../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
       'target_name': 'cr_onc_types',
       'dependencies': [
         '<(EXTERNS_GYP):networking_private',
       ],
-      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+      'includes': ['../../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
   ],
 }

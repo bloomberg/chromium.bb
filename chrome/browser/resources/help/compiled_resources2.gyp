@@ -14,7 +14,7 @@
           '<(DEPTH)/third_party/jstemplate/util.js',
           '<(DEPTH)/third_party/jstemplate/jsevalcontext.js',
           '<(DEPTH)/third_party/jstemplate/jstemplate.js',
-          '<(DEPTH)/ui/webui/resources/cr_elements/network/cr_onc_types.js',
+          '<(DEPTH)/ui/webui/resources/cr_elements/chromeos/network/cr_onc_types.js',
           '<(DEPTH)/ui/webui/resources/js/action_link.js',
           '<(DEPTH)/ui/webui/resources/js/cr.js',
           '<(DEPTH)/ui/webui/resources/js/cr/event_target.js',
@@ -86,7 +86,7 @@
           '<(DEPTH)/third_party/closure_compiler/externs/networking_private.js',
           '<(DEPTH)/third_party/closure_compiler/externs/chrome_send.js',
           '<(DEPTH)/third_party/closure_compiler/externs/web_animations.js',
-          '<(DEPTH)/ui/webui/resources/cr_elements/network/cr_network_icon_externs.js',
+          '<(DEPTH)/ui/webui/resources/cr_elements/chromeos/network/cr_network_icon_externs.js',
           '../options/options_bundle.js',
           # Note: ^ this is just a copy of
           # ../options/compiled_resources2.gyp:options_bundle#source_files. Most
