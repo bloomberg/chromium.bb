@@ -27,11 +27,13 @@ from chromite.cbuildbot import commands
 from chromite.cbuildbot import repository
 from chromite.cbuildbot import topology
 from chromite.lib import buildbucket_lib
+from chromite.lib import builder_status_lib
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import failures_lib
+from chromite.lib import failure_message_lib
 from chromite.lib import gs
 from chromite.lib import metrics
 from chromite.lib import osutils
@@ -346,6 +348,48 @@ class BuilderStage(object):
           self._run.attrs.metadata)
 
     return buildbucket_ids
+
+  def GetBuildFailureMessageFromCIDB(self, build_id, db):
+    """Get message summarizing failures of this build from CIDB.
+
+    Args:
+      build_id: The build id of the master build.
+      db: An instance of cidb.CIDBConnection.
+
+    Returns:
+      An instance of build_failure_message.BuildFailureMessage.
+    """
+    stage_failures = db.GetBuildsFailures([build_id])
+    failure_msg_manager = failure_message_lib.FailureMessageManager()
+    failure_messages = failure_msg_manager.ConstructStageFailureMessages(
+        stage_failures)
+
+    return builder_status_lib.BuilderStatusManager.CreateBuildFailureMessage(
+        self._run.config.name,
+        self._run.config.overlays,
+        self._run.ConstructDashboardURL(),
+        failure_messages)
+
+  def GetBuildFailureMessageFromResults(self):
+    """Get message summarizing failures of this build from result_lib.Results.
+
+    Returns:
+      An instance of build_failure_message.BuildFailureMessage.
+    """
+    failure_messages = results_lib.Results.GetStageFailureMessage()
+    return builder_status_lib.BuilderStatusManager.CreateBuildFailureMessage(
+        self._run.config.name,
+        self._run.config.overlays,
+        self._run.ConstructDashboardURL(),
+        failure_messages)
+
+  def GetBuildFailureMessage(self):
+    """Get message summarizing failure of this build."""
+    build_id, db = self._run.GetCIDBHandle()
+    if db is not None:
+      return self.GetBuildFailureMessageFromCIDB(build_id, db)
+    else:
+      return self.GetBuildFailureMessageFromResults()
 
   def _Print(self, msg):
     """Prints a msg to stderr."""

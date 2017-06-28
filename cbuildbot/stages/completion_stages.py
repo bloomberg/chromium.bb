@@ -20,10 +20,8 @@ from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import failures_lib
-from chromite.lib import failure_message_lib
 from chromite.lib import hwtest_results
 from chromite.lib import metrics
-from chromite.lib import results_lib
 from chromite.lib import timeout_util
 from chromite.lib import tree_status
 
@@ -60,45 +58,6 @@ def GetBuilderSuccessMap(builder_run, overall_success):
   return success_map
 
 
-def CreateBuildFailureMessage(overlays, builder_name, dashboard_url):
-  """Creates a message summarizing the failures.
-
-  Args:
-    overlays: The overlays used for the build.
-    builder_name: The name of the builder.
-    dashboard_url: The URL of the build.
-
-  Returns:
-    A failures_lib.BuildFailureMessage object.
-  """
-  internal = overlays in [constants.PRIVATE_OVERLAYS,
-                          constants.BOTH_OVERLAYS]
-  details = []
-  tracebacks = tuple(results_lib.Results.GetTracebacks())
-  for x in tracebacks:
-    if isinstance(x.exception, failures_lib.CompoundFailure):
-      # We do not want the textual tracebacks included in the
-      # stringified CompoundFailure instance because this will be
-      # printed on the waterfall.
-      ex_str = x.exception.ToSummaryString()
-    else:
-      ex_str = str(x.exception)
-    # Truncate displayed failure reason to 1000 characters.
-    ex_str = ex_str[:200]
-    details.append('The %s stage failed: %s' % (x.failed_stage, ex_str))
-  if not details:
-    details = ['cbuildbot failed']
-
-  # reason does not include builder name or URL. This is mainly for
-  # populating the "failure message" column in the stats sheet.
-  reason = ' '.join(details)
-  details.append('in %s' % dashboard_url)
-  msg = '%s: %s' % (builder_name, ' '.join(details))
-
-  return failures_lib.BuildFailureMessage(msg, tracebacks, internal, reason,
-                                          builder_name)
-
-
 class ManifestVersionedSyncCompletionStage(
     generic_stages.ForgivingBuilderStage):
   """Stage that records board specific results for a unique manifest file."""
@@ -114,64 +73,9 @@ class ManifestVersionedSyncCompletionStage(
     # UpdateStatus.
     self.message = None
 
-    # TODO(nxia): remove self.message and use self.failure_message after we
-    # stop uploading BuilderStatus to GS.
-    self.failure_message = None
-
-  def GetBuildFailureMessageFromCIDB(self, build_id, db):
-    """Get message summarizing failures of this build from CIDB.
-
-    Args:
-      build_id: The build id of the master build.
-      db: An instance of cidb.CIDBConnection.
-
-    Returns:
-      An instance of build_failure_message.BuildFailureMessage.
-    """
-    stage_failures = db.GetBuildsFailures([build_id])
-    failure_msg_manager = failure_message_lib.FailureMessageManager()
-    failure_messages = failure_msg_manager.ConstructStageFailureMessages(
-        stage_failures)
-
-    return builder_status_lib.BuilderStatusManager.CreateBuildFailureMessage(
-        self._run.config.name,
-        self._run.config.overlays,
-        self._run.ConstructDashboardURL(),
-        failure_messages)
-
-  def GetBuildFailureMessageFromResults(self):
-    """Get message summarizing failures of this build from result_lib.Results.
-
-    Returns:
-      An instance of build_failure_message.BuildFailureMessage.
-    """
-    failure_messages = results_lib.Results.GetStageFailureMessage()
-    return builder_status_lib.BuilderStatusManager.CreateBuildFailureMessage(
-        self._run.config.name,
-        self._run.config.overlays,
-        self._run.ConstructDashboardURL(),
-        failure_messages)
-
-  # TODO(nxia): Remove this after eliminating BuildStatus pickles.
-  def GetBuildFailureMessage(self):
-    """Get message summarizing the failures from result_lib.Results.
-
-    Returns:
-      An instance of failures_lib.BuildFailureMessage.
-    """
-    return CreateBuildFailureMessage(self._run.config.overlays,
-                                     self._run.config.name,
-                                     self._run.ConstructDashboardURL())
-
   def PerformStage(self):
     if not self.success:
       self.message = self.GetBuildFailureMessage()
-
-      build_id, db = self._run.GetCIDBHandle()
-      if db is not None:
-        self.failure_message = self.GetBuildFailureMessageFromCIDB(build_id, db)
-      else:
-        self.failure_message = self.GetBuildFailureMessageFromResults()
 
     if not config_lib.IsPFQType(self._run.config.build_type):
       # Update the pass/fail status in the manifest-versions
@@ -197,7 +101,7 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
   def _GetLocalBuildStatus(self):
     """Return the status for this build as a dictionary."""
     status = builder_status_lib.BuilderStatus.GetCompletedStatus(self.success)
-    status_obj = builder_status_lib.BuilderStatus(status, self.failure_message)
+    status_obj = builder_status_lib.BuilderStatus(status, self.message)
     return {self._bot_id: status_obj}
 
   def _GetSlaveBuildStatus(self, manager, build_id, db, builder_names,
@@ -1006,39 +910,12 @@ class PreCQCompletionStage(generic_stages.BuilderStage):
     self.sync_stage = sync_stage
     self.success = success
 
-  def GetBuildFailureMessageFromCIDB(self, build_id, db):
-    """Returns message summarizing the failures from CIDB."""
-    stage_failures = db.GetBuildsFailures([build_id])
-    failure_messages = (
-        failure_message_lib.FailureMessageManager.ConstructStageFailureMessages(
-            stage_failures))
-
-    return builder_status_lib.BuilderStatusManager.CreateBuildFailureMessage(
-        self._run.config.name,
-        self._run.config.overlays,
-        self._run.ConstructDashboardURL(),
-        failure_messages)
-
-  def GetBuildFailureMessageFromResults(self):
-    """Returns message summarizing the failures from result_lib.Results."""
-    failure_messages = results_lib.Results.GetStageFailureMessage()
-    return builder_status_lib.BuilderStatusManager.CreateBuildFailureMessage(
-        self._run.config.name,
-        self._run.config.overlays,
-        self._run.ConstructDashboardURL(),
-        failure_messages)
-
   def PerformStage(self):
     # Update Gerrit and Google Storage with the Pre-CQ status.
     if self.success:
       self.sync_stage.pool.HandlePreCQPerConfigSuccess()
     else:
-      message = None
-      build_id, db = self._run.GetCIDBHandle()
-      if db is not None:
-        message = self.GetBuildFailureMessageFromCIDB(build_id, db)
-      else:
-        message = self.GetBuildFailureMessageFromResults()
+      message = self.GetBuildFailureMessage()
       self.sync_stage.pool.HandleValidationFailure([message])
 
 

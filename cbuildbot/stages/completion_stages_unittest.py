@@ -30,10 +30,8 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import failures_lib
-from chromite.lib import failure_message_lib
 from chromite.lib import fake_cidb
 from chromite.lib import hwtest_results
-from chromite.lib import results_lib
 from chromite.lib import patch_unittest
 from chromite.lib import timeout_util
 from chromite.lib import tree_status
@@ -50,16 +48,6 @@ class ManifestVersionedSyncCompletionStageTest(
 
   BOT_ID = 'x86-mario-release'
 
-  def testGetBuildFailureMessageFromResults(self):
-    """Test GetBuildFailureMessageFromResults"""
-    ex = failures_lib.StepFailure()
-    results_lib.Results.Record('CommitQueueSync', ex)
-    stage = completion_stages.ManifestVersionedSyncCompletionStage(
-        self._run, self.sync_stage, success=False)
-    build_failure_msg = stage.GetBuildFailureMessageFromResults()
-    self.assertEqual(build_failure_msg.builder, self.BOT_ID)
-    self.assertTrue(isinstance(build_failure_msg.failure_messages[0],
-                               failure_message_lib.StageFailureMessage))
 
   def testManifestVersionedSyncCompletedSuccess(self):
     """Tests basic ManifestVersionedSyncStageCompleted on success"""
@@ -80,10 +68,9 @@ class ManifestVersionedSyncCompletionStageTest(
     stage = completion_stages.ManifestVersionedSyncCompletionStage(
         self._run, self.sync_stage, success=False)
     message = 'foo'
-    get_msg = self.PatchObject(
-        stage, 'GetBuildFailureMessage', return_value=message)
-    get_msg_from_results = self.PatchObject(
-        stage, 'GetBuildFailureMessageFromResults', return_value=message)
+    get_msg_mock = self.PatchObject(
+        generic_stages.BuilderStage, 'GetBuildFailureMessage',
+        return_value=message)
     update_status_mock = self.PatchObject(
         manifest_version.BuildSpecsManager, 'UpdateStatus')
 
@@ -91,56 +78,13 @@ class ManifestVersionedSyncCompletionStageTest(
     update_status_mock.assert_called_once_with(
         message='foo', success_map={self.BOT_ID: False},
         dashboard_url=mock.ANY)
-    get_msg.assert_called_once_with()
-    get_msg_from_results.assert_called_once_with()
-
-  def testManifestVersionedSyncCompletedFailureWithCIDB(self):
-    """Tests basic ManifestVersionedSyncStageCompleted on failure with CIDB."""
-    db = fake_cidb.FakeCIDBConnection()
-    cidb.CIDBConnectionFactory.SetupMockCidb(db)
-    stage = completion_stages.ManifestVersionedSyncCompletionStage(
-        self._run, self.sync_stage, success=False)
-    master_build_id = stage._run.attrs.metadata.GetValue('build_id')
-    message = 'foo'
-    get_msg_from_results = self.PatchObject(
-        stage, 'GetBuildFailureMessage', return_value=message)
-    get_msg_from_cidb_mock = self.PatchObject(
-        stage, 'GetBuildFailureMessageFromCIDB', return_value=message)
-    update_status_mock = self.PatchObject(
-        manifest_version.BuildSpecsManager, 'UpdateStatus')
-
-    stage.Run()
-    update_status_mock.assert_called_once_with(
-        message='foo', success_map={self.BOT_ID: False},
-        dashboard_url=mock.ANY)
-    get_msg_from_results.assert_called_once_with()
-    get_msg_from_cidb_mock.assert_called_once_with(master_build_id, db)
+    get_msg_mock.assert_called_once_with()
 
   def testManifestVersionedSyncCompletedIncomplete(self):
     """Tests basic ManifestVersionedSyncStageCompleted on incomplete build."""
     stage = completion_stages.ManifestVersionedSyncCompletionStage(
         self._run, self.sync_stage, success=False)
     stage.Run()
-
-  def testMeaningfulMessage(self):
-    """Tests that all essential components are in the message."""
-    stage = completion_stages.ManifestVersionedSyncCompletionStage(
-        self._run, self.sync_stage, success=False)
-
-    exception = Exception('failed!')
-    traceback = results_lib.RecordedTraceback(
-        'TacoStage', 'Taco', exception, 'traceback_str')
-    self.PatchObject(
-        results_lib.Results, 'GetTracebacks', return_value=[traceback])
-
-    msg = stage.GetBuildFailureMessage()
-    self.assertTrue(stage._run.config.name in msg.message)
-    self.assertTrue(stage._run.ConstructDashboardURL() in msg.message)
-    self.assertTrue('TacoStage' in msg.message)
-    self.assertTrue(str(exception) in msg.message)
-
-    self.assertTrue('TacoStage' in msg.reason)
-    self.assertTrue(str(exception) in msg.reason)
 
   def testGetBuilderSuccessMap(self):
     """Tests that the builder success map is properly created."""
@@ -961,7 +905,7 @@ class MasterCommitQueueCompletionStageTest(BaseCommitQueueCompletionStageTest):
     stage.CQMasterHandleFailure(set(['test1']), set(), set(), False, [])
     stage.sync_stage.pool.handle_failure_mock.assert_called_once_with(
         mock.ANY, sanity=False, no_stat=set(), changes=self.changes,
-        failed_hwtests=set())
+        failed_hwtests=None)
 
   def testCQMasterHandleFailureWithFailedHWtests(self):
     """Test CQMasterHandleFailure with failed HWtests."""
@@ -985,43 +929,6 @@ class MasterCommitQueueCompletionStageTest(BaseCommitQueueCompletionStageTest):
         mock.ANY, sanity=True, no_stat=set(), changes=self.changes,
         failed_hwtests=mock_failed_hwtests)
     mock_get_hwtests.assert_called_once_with(db, [slave_build_id])
-
-
-class PreCQCompletionStageTest(generic_stages_unittest.AbstractStageTestCase):
-  """PreCQCompletionStage tests"""
-  BOT_ID = 'lumpy-pre-cq'
-
-  def ConstructStage(self):
-    sync_stage = mock.Mock()
-    return completion_stages.PreCQCompletionStage(
-        self._run, sync_stage, success=True)
-
-  def _Prepare(self, bot_id=None, **kwargs):
-    super(PreCQCompletionStageTest, self)._Prepare(bot_id, **kwargs)
-
-  def testGetBuildFailureMessage(self):
-    """Test GetBuildFailureMessage."""
-    db = fake_cidb.FakeCIDBConnection()
-    cidb.CIDBConnectionFactory.SetupMockCidb(db)
-
-    build_id = db.InsertBuild('lumpy-pre-cq', constants.WATERFALL_INTERNAL, 1,
-                              'lumpy-pre-cq', 'bot_hostname',
-                              status=constants.BUILDER_STATUS_INFLIGHT)
-    stage_id = db.InsertBuildStage(build_id, 'BuildPackages', status='fail')
-    db.InsertFailure(stage_id, 'PackageBuildFailure',
-                     'Packages failed in ./build_packages: sys-apps/flashrom',
-                     exception_category='build',
-                     extra_info={"shortname": "./build_packages",
-                                 "failed_packages": ["sys-apps/flashrom"]})
-    self._Prepare(build_id=build_id)
-    stage = self.ConstructStage()
-    master_build_id = stage._run.attrs.metadata.GetValue('build_id')
-    message = stage.GetBuildFailureMessageFromCIDB(master_build_id, db)
-
-    self.assertFalse(message.MatchesExceptionCategory(
-        constants.EXCEPTION_CATEGORY_LAB))
-    self.assertTrue(message.MatchesExceptionCategory(
-        constants.EXCEPTION_CATEGORY_BUILD))
 
 
 class PublishUprevChangesStageTest(

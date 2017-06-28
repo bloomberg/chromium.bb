@@ -639,10 +639,7 @@ class ReportStage(generic_stages.BuilderStage,
 
   def _SendPreCQInfraAlertMessageIfNeeded(self):
     """Send alerts on Pre-CQ infra failures."""
-    msg = completion_stages.CreateBuildFailureMessage(
-        self._run.config.overlays,
-        self._run.config.name,
-        self._run.ConstructDashboardURL())
+    msg = self.GetBuildFailureMessage()
     pre_cq = self._run.config.pre_cq
     if pre_cq and msg.HasFailureType(failures_lib.InfrastructureFailure):
       name = self._run.config.name
