@@ -209,10 +209,9 @@ void RecordSuffixedStatusHistogram(const std::string& name,
   histogram_pointer->Add(status);
 }
 
-void RecordURLMetricOnUI(const GURL& url) {
+void RecordURLMetricOnUI(const std::string& metric_name, const GURL& url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  GetContentClient()->browser()->RecordURLMetric(
-      "ServiceWorker.ControlledPageUrl", url);
+  GetContentClient()->browser()->RecordURLMetric(metric_name, url);
 }
 
 enum EventHandledRatioType {
@@ -434,8 +433,9 @@ void ServiceWorkerMetrics::CountControlledPageLoad(
         "ServiceWorker.MainFramePageLoad.RedirectChainLength",
         redirect_chain_length, 21);
   }
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(&RecordURLMetricOnUI, url));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&RecordURLMetricOnUI, "ServiceWorker.ControlledPageUrl", url));
 }
 
 void ServiceWorkerMetrics::RecordStartWorkerStatus(
@@ -953,6 +953,15 @@ void ServiceWorkerMetrics::RecordRuntime(base::TimeDelta time) {
 
   UMA_HISTOGRAM_CUSTOM_TIMES("ServiceWorker.Runtime", time, kMin, kMax,
                              kBucketCount);
+}
+
+void ServiceWorkerMetrics::RecordUninstalledScriptImport(const GURL& url) {
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&RecordURLMetricOnUI,
+                 "ServiceWorker.ContextRequestHandlerStatus."
+                 "UninstalledScriptImport",
+                 url));
 }
 
 }  // namespace content
