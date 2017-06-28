@@ -291,8 +291,16 @@ const char* ErrorCodeToString(SpdyErrorCode error_code) {
 
 const char* const kHttp2Npn = "h2";
 
+bool SpdyFrameIR::fin() const {
+  return false;
+}
+
 int SpdyFrameIR::flow_control_window_consumed() const {
   return 0;
+}
+
+bool SpdyFrameWithFinIR::fin() const {
+  return fin_;
 }
 
 SpdyFrameWithHeaderBlockIR::SpdyFrameWithHeaderBlockIR(
