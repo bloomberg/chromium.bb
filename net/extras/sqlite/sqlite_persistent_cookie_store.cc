@@ -644,7 +644,7 @@ bool SQLitePersistentCookieStore::Backend::InitializeDatabase() {
 
   int64_t db_size = 0;
   if (base::GetFileSize(path_, &db_size))
-    UMA_HISTOGRAM_COUNTS("Cookie.DBSizeInKB", db_size / 1024);
+    UMA_HISTOGRAM_COUNTS_1M("Cookie.DBSizeInKB", db_size / 1024);
 
   db_.reset(new sql::Connection);
   db_->set_histogram_tag("Cookie");
@@ -1295,8 +1295,8 @@ void SQLitePersistentCookieStore::Backend::DeleteSessionCookiesOnStartup() {
 
   UMA_HISTOGRAM_TIMES("Cookie.Startup.TimeSpentDeletingCookies",
                       base::Time::Now() - start_time);
-  UMA_HISTOGRAM_COUNTS("Cookie.Startup.NumberOfCookiesDeleted",
-                       db_->GetLastChangeCount());
+  UMA_HISTOGRAM_COUNTS_1M("Cookie.Startup.NumberOfCookiesDeleted",
+                          db_->GetLastChangeCount());
 }
 
 void SQLitePersistentCookieStore::Backend::BackgroundDeleteAllInList(

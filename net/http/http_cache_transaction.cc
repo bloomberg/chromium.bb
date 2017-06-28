@@ -80,7 +80,7 @@ void RecordNoStoreHeaderHistogram(int load_flags,
                                 validation_cause_, VALIDATION_CAUSE_MAX);    \
     }                                                                        \
     if (stale_request) {                                                     \
-      UMA_HISTOGRAM_COUNTS(                                                  \
+      UMA_HISTOGRAM_COUNTS_1M(                                               \
           "HttpCache.StaleEntry.FreshnessPeriodsSinceLastUsed" type,         \
           freshness_periods_since_last_used);                                \
     }                                                                        \
@@ -3025,16 +3025,16 @@ void HttpCache::Transaction::RecordHistograms() {
       int64_t age_in_freshness_periods =
           (stale_entry_age_ * 100) / stale_entry_freshness_;
       if (cache_entry_status_ == CacheEntryStatus::ENTRY_VALIDATED) {
-        UMA_HISTOGRAM_COUNTS("HttpCache.StaleEntry.Validated.Age",
-                             stale_entry_age_.InSeconds());
-        UMA_HISTOGRAM_COUNTS(
+        UMA_HISTOGRAM_COUNTS_1M("HttpCache.StaleEntry.Validated.Age",
+                                stale_entry_age_.InSeconds());
+        UMA_HISTOGRAM_COUNTS_1M(
             "HttpCache.StaleEntry.Validated.AgeInFreshnessPeriods",
             age_in_freshness_periods);
 
       } else {
-        UMA_HISTOGRAM_COUNTS("HttpCache.StaleEntry.Updated.Age",
-                             stale_entry_age_.InSeconds());
-        UMA_HISTOGRAM_COUNTS(
+        UMA_HISTOGRAM_COUNTS_1M("HttpCache.StaleEntry.Updated.Age",
+                                stale_entry_age_.InSeconds());
+        UMA_HISTOGRAM_COUNTS_1M(
             "HttpCache.StaleEntry.Updated.AgeInFreshnessPeriods",
             age_in_freshness_periods);
       }

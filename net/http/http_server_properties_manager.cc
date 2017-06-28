@@ -844,13 +844,13 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnNetworkSequence(
   // preferences. Update the cached data with new data from preferences.
   DCHECK(network_task_runner_->RunsTasksInCurrentSequence());
 
-  UMA_HISTOGRAM_COUNTS("Net.CountOfSpdyServers", spdy_servers_map->size());
+  UMA_HISTOGRAM_COUNTS_1M("Net.CountOfSpdyServers", spdy_servers_map->size());
   http_server_properties_impl_->SetSpdyServers(std::move(spdy_servers_map));
 
   // Update the cached data and use the new alternative service list from
   // preferences.
-  UMA_HISTOGRAM_COUNTS("Net.CountOfAlternateProtocolServers",
-                       alternative_service_map->size());
+  UMA_HISTOGRAM_COUNTS_1M("Net.CountOfAlternateProtocolServers",
+                          alternative_service_map->size());
   http_server_properties_impl_->SetAlternativeServiceServers(
       std::move(alternative_service_map));
 
@@ -909,8 +909,8 @@ void HttpServerPropertiesManager::UpdatePrefsFromCacheOnNetworkSequence(
           kMaxAlternateProtocolHostsToPersist);
   const AlternativeServiceMap& map =
       http_server_properties_impl_->alternative_service_map();
-  UMA_HISTOGRAM_COUNTS("Net.CountOfAlternateProtocolServers.Memory",
-                       map.size());
+  UMA_HISTOGRAM_COUNTS_1M("Net.CountOfAlternateProtocolServers.Memory",
+                          map.size());
   int count = 0;
   typedef std::map<std::string, bool> CanonicalHostPersistedMap;
   CanonicalHostPersistedMap persisted_map;
