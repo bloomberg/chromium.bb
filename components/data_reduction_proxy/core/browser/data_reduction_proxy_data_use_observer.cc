@@ -40,6 +40,10 @@ class DataUseUserDataBytes : public base::SupportsUserData::Data {
   int64_t original_bytes_;
 };
 
+// Hostname used for the other bucket which consists of chrome-services traffic.
+// This should be in sync with the same in DataReductionSiteBreakdownView.java
+const char kOtherHostName[] = "Other";
+
 // static
 const void* DataUseUserDataBytes::kUserDataKey =
     &DataUseUserDataBytes::kUserDataKey;
@@ -84,15 +88,13 @@ void DataReductionProxyDataUseObserver::OnPageResourceLoad(
     data_use_measurement::DataUse* data_use) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  if (data_use->traffic_type() !=
-      data_use_measurement::DataUse::TrafficType::USER_TRAFFIC) {
-    return;
-  }
-
   if (!request.url().SchemeIs(url::kHttpsScheme) &&
       !request.url().SchemeIs(url::kHttpScheme)) {
     return;
   }
+
+  if (request.GetTotalReceivedBytes() <= 0)
+    return;
 
   int64_t network_bytes = request.GetTotalReceivedBytes();
   DataReductionProxyRequestType request_type = GetDataReductionProxyRequestType(
@@ -105,7 +107,9 @@ void DataReductionProxyDataUseObserver::OnPageResourceLoad(
       request, request_type == VIA_DATA_REDUCTION_PROXY,
       data_reduction_proxy_io_data_->lofi_decider());
 
-  if (!data_use->url().is_valid()) {
+  if (data_use->traffic_type() ==
+          data_use_measurement::DataUse::TrafficType::USER_TRAFFIC &&
+      !data_use->url().is_valid()) {
     // URL will be empty until pageload navigation commits. Save the data use of
     // these mainframe, subresource, redirected requests in user data until
     // then.
@@ -120,7 +124,11 @@ void DataReductionProxyDataUseObserver::OnPageResourceLoad(
     }
   } else {
     data_reduction_proxy_io_data_->UpdateDataUseForHost(
-        network_bytes, original_bytes, data_use->url().HostNoBrackets());
+        network_bytes, original_bytes,
+        data_use->traffic_type() ==
+                data_use_measurement::DataUse::TrafficType::USER_TRAFFIC
+            ? data_use->url().HostNoBrackets()
+            : kOtherHostName);
   }
 }
 
