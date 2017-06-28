@@ -172,6 +172,7 @@ source_set("audio") {
       "AudioToolbox.framework",
       "AudioUnit.framework",
       "CoreAudio.framework",
+      "CoreFoundation.framework",
     ]
   }
 
