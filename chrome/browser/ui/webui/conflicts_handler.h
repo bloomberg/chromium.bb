@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CONFLICTS_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_CONFLICTS_HANDLER_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/win/enumerate_modules_model.h"
@@ -30,6 +32,8 @@ class ConflictsHandler : public content::WebUIMessageHandler,
 
   ScopedObserver<EnumerateModulesModel, EnumerateModulesModel::Observer>
       observer_;
+
+  std::string module_list_callback_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ConflictsHandler);
 };

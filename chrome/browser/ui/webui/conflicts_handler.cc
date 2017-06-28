@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/webui/conflicts_handler.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/strings/string16.h"
@@ -24,6 +27,9 @@ void ConflictsHandler::RegisterMessages() {
 }
 
 void ConflictsHandler::HandleRequestModuleList(const base::ListValue* args) {
+  CHECK_EQ(1U, args->GetSize());
+  CHECK(args->GetString(0, &module_list_callback_id_));
+
   // The request is handled asynchronously, and will callback via
   // OnScanCompleted on completion.
   auto* model = EnumerateModulesModel::GetInstance();
@@ -61,7 +67,8 @@ void ConflictsHandler::SendModuleList() {
   results.Set("moduleList", std::move(list));
   results.SetString("modulesTableTitle", table_title);
 
-  web_ui()->CallJavascriptFunctionUnsafe("returnModuleList", results);
+  AllowJavascript();
+  ResolveJavascriptCallback(base::Value(module_list_callback_id_), results);
 }
 
 void ConflictsHandler::OnScanCompleted() {
