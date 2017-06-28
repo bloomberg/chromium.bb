@@ -635,11 +635,11 @@ class BuildSpecsManager(object):
                     ' reached.', int((timeout / 60) + 0.5))
 
     if self.metadata:
-      ignored_builders = self.metadata.GetValueWithDefault(
-          constants.METADATA_IGNORED_BUILDERS)
+      experimental_builders = self.metadata.GetValueWithDefault(
+          constants.METADATA_EXPERIMENTAL_BUILDERS)
       builders_array = [
           builder for builder in builders_array
-          if builder not in ignored_builders
+          if builder not in experimental_builders
       ]
     return self._GetSlaveBuilderStatus(master_build_id, db, builders_array)
 

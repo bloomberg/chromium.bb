@@ -160,21 +160,22 @@ class TestTreeStatus(cros_test_lib.MockTestCase):
     self.assertEqual(data[tree_status.TREE_STATUS_MESSAGE],
                      'Tree is open (taco).')
 
-  def testGetIgnoredBuilders(self):
-    """Tests that GetIgnoredBuilders parses out IGNORED-BUILDERS=."""
+  def testGetExperimentalBuilders(self):
+    """Tests that GetExperimentalBuilders parses out EXPERIMENTAL-BUILDERS=."""
     self._SetupMockTreeStatusResponses(
         final_tree_status=(
-            'Tree is open (IGNORED-BUILDERS=x86-generic-paladin).'),
+            'Tree is open (EXPERIMENTAL-BUILDERS=x86-generic-paladin).'),
         final_general_state=constants.TREE_OPEN)
-    builders = tree_status.GetIgnoredBuilders(self.status_url)
+    builders = tree_status.GetExperimentalBuilders(self.status_url)
     self.assertItemsEqual(builders, ['x86-generic-paladin'])
 
     self._SetupMockTreeStatusResponses(
-        final_tree_status=('Tree is open (IGNORED-BUILDERS=x86-generic-paladin,'
-                           'amd64-generic-paladin IGNORED-BUILDERS='
+        final_tree_status=('Tree is open '
+                           '(EXPERIMENTAL-BUILDERS=x86-generic-paladin,'
+                           'amd64-generic-paladin EXPERIMENTAL-BUILDERS='
                            'arm-generic-paladin).'),
         final_general_state=constants.TREE_OPEN)
-    builders = tree_status.GetIgnoredBuilders(self.status_url)
+    builders = tree_status.GetExperimentalBuilders(self.status_url)
     self.assertItemsEqual(
         builders,
         ['x86-generic-paladin', 'amd64-generic-paladin', 'arm-generic-paladin'])
@@ -182,46 +183,40 @@ class TestTreeStatus(cros_test_lib.MockTestCase):
     # Builders not in the site config are filtered out.
     self._SetupMockTreeStatusResponses(
         final_tree_status=(
-            'Tree is open (IGNORED-BUILDERS=foo-generic-paladin).'),
+            'Tree is open (EXPERIMENTAL-BUILDERS=foo-generic-paladin).'),
         final_general_state=constants.TREE_OPEN)
-    builders = tree_status.GetIgnoredBuilders(self.status_url)
+    builders = tree_status.GetExperimentalBuilders(self.status_url)
     self.assertEqual(builders, [])
 
     # Underscore instead of hyphen.
     self._SetupMockTreeStatusResponses(
         final_tree_status=(
-            'Tree is open (IGNORED_BUILDERS=x86-generic-paladin).'),
+            'Tree is open (EXPERIMENTAL_BUILDERS=x86-generic-paladin).'),
         final_general_state=constants.TREE_OPEN)
-    builders = tree_status.GetIgnoredBuilders(self.status_url)
+    builders = tree_status.GetExperimentalBuilders(self.status_url)
     self.assertItemsEqual(builders, ['x86-generic-paladin'])
 
     # No plural.
     self._SetupMockTreeStatusResponses(
-        final_tree_status='Tree is open (IGNORED-BUILDER=x86-generic-paladin).',
+        final_tree_status=('Tree is open '
+                           '(EXPERIMENTAL-BUILDER=x86-generic-paladin).'),
         final_general_state=constants.TREE_OPEN)
-    builders = tree_status.GetIgnoredBuilders(self.status_url)
-    self.assertItemsEqual(builders, ['x86-generic-paladin'])
-
-    # IGNORE instead of IGNORED.
-    self._SetupMockTreeStatusResponses(
-        final_tree_status='Tree is open (IGNORE-BUILDERS=x86-generic-paladin).',
-        final_general_state=constants.TREE_OPEN)
-    builders = tree_status.GetIgnoredBuilders(self.status_url)
+    builders = tree_status.GetExperimentalBuilders(self.status_url)
     self.assertItemsEqual(builders, ['x86-generic-paladin'])
 
     # Case insensitive.
     self._SetupMockTreeStatusResponses(
         final_tree_status=(
-            'Tree is open (ignored-builders=x86-generic-paladin).'),
+            'Tree is open (experimental-builders=x86-generic-paladin).'),
         final_general_state=constants.TREE_OPEN)
-    builders = tree_status.GetIgnoredBuilders(self.status_url)
+    builders = tree_status.GetExperimentalBuilders(self.status_url)
     self.assertItemsEqual(builders, ['x86-generic-paladin'])
 
-  def testGetIgnoredBuildersTimeout(self):
-    """Tests timeout behavior of GetIgnoredBuilders."""
+  def testGetExperimentalBuildersTimeout(self):
+    """Tests timeout behavior of GetExperimentalBuilders."""
     with mock.patch.object(tree_status, '_GetStatusDict') as m:
       m.side_effect = lambda _: time.sleep(10)
-      builders = tree_status.GetIgnoredBuilders(self.status_url, timeout=1)
+      builders = tree_status.GetExperimentalBuilders(self.status_url, timeout=1)
       self.assertEqual(builders, [])
 
   def testUpdateTreeStatusWithEpilogue(self):

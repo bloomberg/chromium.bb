@@ -143,8 +143,8 @@ class MoxBase(patch_unittest.MockPatchBase, cros_test_lib.MoxTestCase):
     self.PatchObject(tree_status, 'IsTreeOpen', return_value=True)
     self.PatchObject(tree_status, 'WaitForTreeStatus',
                      return_value=constants.TREE_OPEN)
-    self.PatchObject(tree_status, 'GetIgnoredBuilders',
-                     return_value=constants.TREE_OPEN)
+    self.PatchObject(tree_status, 'GetExperimentalBuilders',
+                     return_value=[])
     self.fake_db = fake_cidb.FakeCIDBConnection()
     cidb.CIDBConnectionFactory.SetupMockCidb(self.fake_db)
     # Suppress all gerrit access; having this occur is generally a sign

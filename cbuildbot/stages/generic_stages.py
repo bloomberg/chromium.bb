@@ -451,13 +451,13 @@ class BuilderStage(object):
     Raises:
       See config_lib.Config.GetSlavesForMaster for details.
     """
-    ignored_builders = self._run.attrs.metadata.GetValueWithDefault(
-        constants.METADATA_IGNORED_BUILDERS, [])
+    experimental_builders = self._run.attrs.metadata.GetValueWithDefault(
+        constants.METADATA_EXPERIMENTAL_BUILDERS, [])
     slave_configs = self._run.site_config.GetSlavesForMaster(
         self._run.config, self._run.options)
     slave_configs = [
         config for config in slave_configs
-        if config['name'] not in ignored_builders
+        if config['name'] not in experimental_builders
     ]
     return slave_configs
 
@@ -480,11 +480,11 @@ class BuilderStage(object):
         self._run.config, self._run.options,
         important_only=important_only)
     if important_only:
-      ignored_builders = self._run.attrs.metadata.GetValueWithDefault(
-          constants.METADATA_IGNORED_BUILDERS, [])
+      experimental_builders = self._run.attrs.metadata.GetValueWithDefault(
+          constants.METADATA_EXPERIMENTAL_BUILDERS, [])
       slave_config_map = {
           k: v for k, v in slave_config_map.iteritems()
-          if k not in ignored_builders
+          if k not in experimental_builders
       }
     return slave_config_map
 

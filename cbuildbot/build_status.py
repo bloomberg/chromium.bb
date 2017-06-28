@@ -166,9 +166,9 @@ class SlaveStatus(object):
     self.completed_builds = self._GetCompletedBuilds()
 
     if self.metadata is not None:
-      ignored_builders = tree_status.GetIgnoredBuilders()
+      experimental_builders = tree_status.GetExperimentalBuilders()
       self.metadata.UpdateWithDict({
-          constants.METADATA_IGNORED_BUILDERS: ignored_builders
+          constants.METADATA_EXPERIMENTAL_BUILDERS: experimental_builders
       })
 
   def GetBuildbucketBuilds(self, build_status):
@@ -192,18 +192,18 @@ class SlaveStatus(object):
     """Returns the list of expected slave build configs.
 
     This list includes all important slave build configs that are not currently
-    ignored through the tree status.
+    marked as experimental through the tree status.
 
     Returns:
       A list of build slave config names.
     """
-    ignored_builders = []
+    experimental_builders = []
     if self.metadata:
-      ignored_builders = self.metadata.GetValueWithDefault(
-          constants.METADATA_IGNORED_BUILDERS, [])
+      experimental_builders = self.metadata.GetValueWithDefault(
+          constants.METADATA_EXPERIMENTAL_BUILDERS, [])
     return [
         builder for builder in self.all_builders
-        if builder not in ignored_builders
+        if builder not in experimental_builders
     ]
 
   def _GetMissingBuilds(self):

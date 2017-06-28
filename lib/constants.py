@@ -1201,7 +1201,9 @@ BUILDBUCKET_BUILD_RETRY_LIMIT = 2
 # Builder_run metadata keys
 METADATA_SCHEDULED_SLAVES = 'scheduled_slaves'
 METADATA_UNSCHEDULED_SLAVES = 'unscheduled_slaves'
-METADATA_IGNORED_BUILDERS = 'ignored_builders'
+# List of builders marked as experimental through the tree status, not all the
+# experimental builders for a run.
+METADATA_EXPERIMENTAL_BUILDERS = 'experimental_builders'
 
 # Metadata key to indicate whether a build is self-destructed.
 SELF_DESTRUCTED_BUILD = 'self_destructed_build'

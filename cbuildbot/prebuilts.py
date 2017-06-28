@@ -297,10 +297,10 @@ class BinhostConfWriter(object):
 
     slave_configs = self._run.site_config.GetSlavesForMaster(
         self._run.config, self._run.options)
-    ignored_builders = self._run.attrs.metadata.GetValueWithDefault(
-        constants.METADATA_IGNORED_BUILDERS, [])
+    experimental_builders = self._run.attrs.metadata.GetValueWithDefault(
+        constants.METADATA_EXPERIMENTAL_BUILDERS, [])
     for slave_config in slave_configs:
-      if slave_config in ignored_builders:
+      if slave_config in experimental_builders:
         continue
       if slave_config['prebuilts'] == constants.PUBLIC:
         public_builders.append(slave_config['name'])

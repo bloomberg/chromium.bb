@@ -429,7 +429,9 @@ class BuildbucketLibTest(cros_test_lib.MockTestCase):
     self.assertEqual(buildbucket_info_dict['config_1'].buildbucket_id,
                      'bb_id_2')
 
-    metadata.UpdateWithDict({constants.METADATA_IGNORED_BUILDERS: ['config_2']})
+    metadata.UpdateWithDict({
+        constants.METADATA_EXPERIMENTAL_BUILDERS: ['config_2']
+    })
     buildbucket_info_dict = buildbucket_lib.GetBuildInfoDict(metadata)
     self.assertIn('config_1', buildbucket_info_dict)
     self.assertNotIn('config_2', buildbucket_info_dict)

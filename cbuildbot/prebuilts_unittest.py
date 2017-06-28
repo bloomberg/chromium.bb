@@ -213,12 +213,12 @@ class BinhostConfWriterTest(
     self._VerifyResults(public_slave_boards=public_slave_boards,
                         private_slave_boards=private_slave_boards)
 
-  def testMasterPaladinIgnoredBuilders(self):
-    """Tests that commands are not run for ignored builders."""
+  def testMasterPaladinExperimentalBuilders(self):
+    """Tests that commands are not run for experimental builders."""
     self._Prepare('master-paladin')
     confwriter = prebuilts.BinhostConfWriter(self._run)
     self._run.attrs.metadata.UpdateWithDict({
-        constants.METADATA_IGNORED_BUILDERS: ['samus', 'daisy']
+        constants.METADATA_EXPERIMENTAL_BUILDERS: ['samus', 'daisy']
     })
     confwriter.Perform()
 

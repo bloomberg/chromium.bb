@@ -51,9 +51,10 @@ DEFAULT_WAIT_FOR_TREE_STATUS_SLEEP = 30
 # Default timeout (seconds) for waiting for tree status
 DEFAULT_WAIT_FOR_TREE_STATUS_TIMEOUT = 60 * 3
 
-# Match IGNORED-BUILDERS= case-insensitive as well as variants that would use
-# underscore instead of hyphen or omit the plural.
-IGNORED_BUILDERS_RE = re.compile(r'IGNORED?[-_]BUILDERS?=(\S+)', re.IGNORECASE)
+# Match EXPERIMENTAL-BUILDERS= case-insensitive as well as variants that would
+# use underscore instead of hyphen or omit the plural.
+EXPERIMENTAL_BUILDERS_RE = re.compile(
+    r'EXPERIMENTAL?[-_]BUILDERS?=(\S+)', re.IGNORECASE)
 
 
 class PasswordFileDoesNotExist(Exception):
@@ -186,11 +187,11 @@ def IsTreeOpen(status_url=None, period=1, timeout=1, throttled_ok=False):
     return False
   return True
 
-def GetIgnoredBuilders(status_url=None, timeout=1):
-  """Polls |status_url| and returns the list of ignored builders.
+def GetExperimentalBuilders(status_url=None, timeout=1):
+  """Polls |status_url| and returns the list of experimental builders.
 
   This function gets a JSON response from |status_url|, and returns the
-  list of builders marked as ignored in the tree status' message.
+  list of builders marked as experimental in the tree status' message.
 
   Args:
     status_url: The status url to check i.e.
@@ -199,7 +200,7 @@ def GetIgnoredBuilders(status_url=None, timeout=1):
 
   Returns:
     A list of strings, where each string is a builder. Returns an empty list if
-    there are no ignored builders listed in the tree status, or the query
+    there are no experimental builders listed in the tree status, or the query
     operation times out.
   """
   if not status_url:
@@ -209,26 +210,26 @@ def GetIgnoredBuilders(status_url=None, timeout=1):
 
   @timeout_util.TimeoutDecorator(timeout)
   def _get_status_dict():
-    ignored = []
+    experimental = []
     status_dict = _GetStatusDict(status_url)
     if status_dict:
-      for match in IGNORED_BUILDERS_RE.findall(
+      for match in EXPERIMENTAL_BUILDERS_RE.findall(
           status_dict.get(TREE_STATUS_MESSAGE)):
-        # The value for IGNORED-BUILDERS= could be a comma-separated list of
-        # builders.
+        # The value for EXPERIMENTAL-BUILDERS= could be a comma-separated list
+        # of builders.
         for builder in match.split(','):
           if builder in site_config:
-            ignored.append(builder)
+            experimental.append(builder)
           else:
             logging.warning(
-                'Got unknown build config "%s" in list of IGNORED-BUILDERS.',
-                builder)
-    return ignored
+                'Got unknown build config "%s" in list of '
+                'EXPERIMENTAL-BUILDERS.', builder)
+    return experimental
 
   try:
     return _get_status_dict()
   except timeout_util.TimeoutError:
-    logging.error('Timeout getting ignored builders from the tree status.')
+    logging.error('Timeout getting experimental builders from the tree status.')
     return []
 
 def _GetPassword():

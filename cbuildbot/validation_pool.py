@@ -489,9 +489,9 @@ class ValidationPool(object):
       gerrit_query, ready_fn = query
       tree_was_open = (status == constants.TREE_OPEN)
 
-      ignored_builders = tree_status.GetIgnoredBuilders()
+      experimental_builders = tree_status.GetExperimentalBuilders()
       builder_run.attrs.metadata.UpdateWithDict({
-          constants.METADATA_IGNORED_BUILDERS: ignored_builders
+          constants.METADATA_EXPERIMENTAL_BUILDERS: experimental_builders
       })
 
       pool = ValidationPool(overlays, repo.directory, build_number,
