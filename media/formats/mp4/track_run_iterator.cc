@@ -505,7 +505,9 @@ bool TrackRunIterator::CacheAuxInfo(const uint8_t* buf, int buf_size) {
       const uint8_t iv_size = GetIvSize(i);
       const bool has_subsamples = info_size > iv_size;
       SampleEncryptionEntry& entry = sample_encryption_entries[i];
-      RCHECK(entry.Parse(&reader, iv_size, has_subsamples));
+      RCHECK_MEDIA_LOGGED(
+          entry.Parse(&reader, iv_size, has_subsamples), media_log_,
+          "SampleEncryptionEntry parse failed when caching aux info");
 #if BUILDFLAG(ENABLE_CBCS_ENCRYPTION_SCHEME)
       // if we don't have a per-sample IV, get the constant IV.
       if (!iv_size) {
