@@ -451,8 +451,8 @@ void AppLaunchController::OnInstallingApp() {
   app_launch_splash_screen_view_->ToggleNetworkConfig(false);
 
   // We have connectivity at this point, so we can skip the network
-  // configuration dialog if it is being shown.
-  if (showing_network_dialog_) {
+  // configuration dialog if it is being shown and not explicitly requested.
+  if (showing_network_dialog_ && !network_config_requested_) {
     app_launch_splash_screen_view_->Show(app_id_);
     showing_network_dialog_ = false;
     launch_splash_start_time_ = base::TimeTicks::Now().ToInternalValue();
