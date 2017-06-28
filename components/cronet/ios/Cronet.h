@@ -22,7 +22,7 @@ FOUNDATION_EXPORT GRPC_SUPPORT_EXPORT NSString* const CRNCronetErrorDomain;
 
 /// Enum of Cronet NSError codes.
 NS_ENUM(NSInteger){
-    CRNErrorInvalidArgument = 1001,
+    CRNErrorInvalidArgument = 1001, CRNErrorUnsupportedConfig = 1002,
 };
 
 /// The corresponding value is a String object that contains the name of

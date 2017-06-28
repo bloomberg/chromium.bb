@@ -222,7 +222,8 @@ CronetEnvironment::CronetEnvironment(const std::string& user_agent,
       http_cache_(URLRequestContextConfig::HttpCacheType::DISK),
       user_agent_(user_agent),
       user_agent_partial_(user_agent_partial),
-      net_log_(new net::NetLog) {}
+      net_log_(new net::NetLog),
+      enable_pkp_bypass_for_local_trust_anchors_(true) {}
 
 void CronetEnvironment::Start() {
   // Threads setup.
@@ -349,7 +350,11 @@ void CronetEnvironment::InitializeOnNetworkThread() {
 
   main_context_ = context_builder.Build();
 
-  // Iterate through PKP configuration for every host.
+  main_context_->transport_security_state()
+      ->SetEnablePublicKeyPinningBypassForLocalTrustAnchors(
+          enable_pkp_bypass_for_local_trust_anchors_);
+
+  // Iterate trhough PKP configuration for every host.
   for (const auto& pkp : config->pkp_list) {
     // Add the host pinning.
     main_context_->transport_security_state()->AddHPKP(

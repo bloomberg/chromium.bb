@@ -105,6 +105,11 @@ class CronetEnvironment {
 
   void set_pkp_list(PkpVector pkp_list) { pkp_list_ = std::move(pkp_list); }
 
+  void set_enable_public_key_pinning_bypass_for_local_trust_anchors(
+      bool enable) {
+    enable_pkp_bypass_for_local_trust_anchors_ = enable;
+  }
+
   // Returns the URLRequestContext associated with this object.
   net::URLRequestContext* GetURLRequestContext() const;
 
@@ -162,6 +167,7 @@ class CronetEnvironment {
   bool user_agent_partial_;
   std::unique_ptr<net::NetLog> net_log_;
   std::unique_ptr<net::WriteToFileNetLogObserver> net_log_observer_;
+  bool enable_pkp_bypass_for_local_trust_anchors_;
 
   DISALLOW_COPY_AND_ASSIGN(CronetEnvironment);
 };

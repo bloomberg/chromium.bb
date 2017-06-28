@@ -17,6 +17,7 @@
 + (void)shutdownForTesting;
 + (void)setMockCertVerifierForTesting:
     (std::unique_ptr<net::CertVerifier>)certVerifier;
++ (void)setEnablePublicKeyPinningBypassForLocalTrustAnchors:(BOOL)enable;
 @end
 
 // NSURLSessionDataDelegate delegate implementation used by the tests to

@@ -38,6 +38,9 @@ using QuicHintVector =
 base::LazyInstance<std::unique_ptr<cronet::CronetEnvironment>>::Leaky
     gChromeNet = LAZY_INSTANCE_INITIALIZER;
 
+// TODO(lilyhoughton) make these independent across Cronet instances, i.e.:
+// refresh them on shutdown, and add tests to make sure the defaults are
+// sane.
 BOOL gHttp2Enabled = YES;
 BOOL gQuicEnabled = NO;
 cronet::URLRequestContextConfig::HttpCacheType gHttpCache =
@@ -52,9 +55,10 @@ RequestFilterBlock gRequestFilterBlock = nil;
 base::LazyInstance<std::unique_ptr<CronetHttpProtocolHandlerDelegate>>::Leaky
     gHttpProtocolHandlerDelegate = LAZY_INSTANCE_INITIALIZER;
 NSURLCache* gPreservedSharedURLCache = nil;
-BOOL gEnableTestCertVerifierForTesting = FALSE;
+BOOL gEnableTestCertVerifierForTesting = NO;
 std::unique_ptr<net::CertVerifier> gMockCertVerifier;
 NSString* gAcceptLanguages = nil;
+BOOL gEnablePKPBypassForLocalTrustAnchors = YES;
 
 // CertVerifier, which allows any certificates for testing.
 class TestCertVerifier : public net::CertVerifier {
@@ -229,6 +233,14 @@ class CronetHttpProtocolHandlerDelegate
                           error:(NSError**)outError {
   [self checkNotStarted];
 
+  // Pinning a key only makes sense if pin bypassing has been disabled
+  if (gEnablePKPBypassForLocalTrustAnchors) {
+    *outError =
+        [self createUnsupportedConfigurationError:
+                  @"Cannot pin keys while public key pinning is bypassed"];
+    return NO;
+  }
+
   auto pkp = base::MakeUnique<cronet::URLRequestContextConfig::Pkp>(
       base::SysNSStringToUTF8(host), includeSubdomains,
       base::Time::FromCFAbsoluteTime(
@@ -254,6 +266,10 @@ class CronetHttpProtocolHandlerDelegate
   return YES;
 }
 
++ (void)setEnablePublicKeyPinningBypassForLocalTrustAnchors:(BOOL)enable {
+  gEnablePKPBypassForLocalTrustAnchors = enable;
+}
+
 + (void)startInternal {
   std::string user_agent = base::SysNSStringToUTF8(gUserAgent);
 
@@ -271,6 +287,9 @@ class CronetHttpProtocolHandlerDelegate
   gChromeNet.Get()->set_ssl_key_log_file_name(
       base::SysNSStringToUTF8(gSslKeyLogFileName));
   gChromeNet.Get()->set_pkp_list(std::move(gPkpList));
+  gChromeNet.Get()
+      ->set_enable_public_key_pinning_bypass_for_local_trust_anchors(
+          gEnablePKPBypassForLocalTrustAnchors);
   for (const auto& quicHint : gQuicHints) {
     gChromeNet.Get()->AddQuicHint(quicHint->host, quicHint->port,
                                   quicHint->alternate_port);
@@ -412,12 +431,30 @@ class CronetHttpProtocolHandlerDelegate
   if (reason) {
     errorDictionary[NSLocalizedFailureReasonErrorKey] = reason;
   }
-  return [self createCronetErrorWith:CRNErrorInvalidArgument
-                            userInfo:errorDictionary];
+  return [self createCronetErrorWithCode:CRNErrorInvalidArgument
+                                userInfo:errorDictionary];
 }
 
-+ (NSError*)createCronetErrorWith:(int)errorCode
-                         userInfo:(NSDictionary*)userInfo {
++ (NSError*)createUnsupportedConfigurationError:(NSString*)contradiction {
+  NSMutableDictionary* errorDictionary =
+      [[NSMutableDictionary alloc] initWithDictionary:@{
+        NSLocalizedDescriptionKey : @"Unsupported configuration",
+        NSLocalizedRecoverySuggestionErrorKey :
+            @"Try disabling Public Key Pinning Bypass before pinning keys.",
+        NSLocalizedFailureReasonErrorKey : @"Pinning public keys while local "
+                                           @"anchor bypass is enabled is "
+                                           @"currently not supported.",
+      }];
+  if (contradiction) {
+    errorDictionary[NSLocalizedFailureReasonErrorKey] = contradiction;
+  }
+
+  return [self createCronetErrorWithCode:CRNErrorUnsupportedConfig
+                                userInfo:errorDictionary];
+}
+
++ (NSError*)createCronetErrorWithCode:(int)errorCode
+                             userInfo:(NSDictionary*)userInfo {
   return [NSError errorWithDomain:CRNCronetErrorDomain
                              code:errorCode
                          userInfo:userInfo];
