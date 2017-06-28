@@ -629,9 +629,7 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
     NotifyPageLoad();
 
   request_time_tracker_->LogRequestStartTime(request->identifier(),
-                                             base::Time::Now(),
-                                             request->url(),
-                                             browser_context);
+                                             base::Time::Now());
 
   // Whether to initialized |blocked_requests_|.
   bool initialize_blocked_requests = false;
@@ -1764,13 +1762,6 @@ void ExtensionWebRequestEventRouter::DecrementBlockCount(
 
     blocked_request.response_deltas.push_back(
         linked_ptr<helpers::EventResponseDelta>(delta));
-  }
-
-  if (!extension_id.empty()) {
-    base::TimeDelta block_time =
-        base::Time::Now() - blocked_request.blocking_time;
-    request_time_tracker_->IncrementExtensionBlockTime(
-        extension_id, request_id, block_time);
   }
 
   if (num_handlers_blocking == 0) {
