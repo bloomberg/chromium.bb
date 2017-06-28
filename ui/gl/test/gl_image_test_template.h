@@ -212,28 +212,6 @@ TYPED_TEST_P(GLImageTest, Create) {
 REGISTER_TYPED_TEST_CASE_P(GLImageTest, Create);
 
 template <typename GLImageTestDelegate>
-class GLImageFlushTest : public GLImageTest<GLImageTestDelegate> {};
-
-TYPED_TEST_CASE_P(GLImageFlushTest);
-
-TYPED_TEST_P(GLImageFlushTest, Flush) {
-  const gfx::Size image_size(256, 256);
-  const uint8_t* image_color = this->delegate_.GetImageColor();
-
-  // Create a solid color green image of preferred format.
-  scoped_refptr<GLImage> image =
-      this->delegate_.CreateSolidColorImage(image_size, image_color);
-  ASSERT_TRUE(image);
-
-  // Flush image. This must succeed in order for a GLImage to be conformant.
-  image->Flush();
-}
-
-// The GLImageTest test case verifies the flush behaviour that is expected from
-// a GLImage in order to be conformant.
-REGISTER_TYPED_TEST_CASE_P(GLImageFlushTest, Flush);
-
-template <typename GLImageTestDelegate>
 class GLImageOddSizeTest : public GLImageTest<GLImageTestDelegate> {};
 
 // This test verifies that odd-sized GLImages can be created and destroyed.

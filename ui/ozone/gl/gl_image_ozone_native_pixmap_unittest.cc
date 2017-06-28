@@ -85,10 +85,6 @@ INSTANTIATE_TYPED_TEST_CASE_P(GLImageNativePixmapScanout,
                               GLImageTest,
                               GLImageScanoutType);
 
-INSTANTIATE_TYPED_TEST_CASE_P(GLImageNativePixmapScanout,
-                              GLImageFlushTest,
-                              GLImageScanoutType);
-
 using GLImageReadWriteType = testing::Types<
     GLImageNativePixmapTestDelegate<gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
                                     gfx::BufferFormat::R_8>>;
