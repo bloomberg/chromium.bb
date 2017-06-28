@@ -20,7 +20,6 @@ namespace {
 constexpr int kTileSpacing = 7;
 constexpr int kNumTilesCols = 5;
 constexpr int kTilesHorizontalMarginLeft = 145;
-constexpr int kCenterColumnOfStartPageAppGrid = 3;
 
 }  // namespace
 
@@ -148,21 +147,14 @@ void SuggestionsContainerView::CreateAppsGrid(int apps_num) {
     search_result_tile_views_.emplace_back(tile_item);
   }
 
-  if (all_apps_button_)
+  if (all_apps_button_ && !is_fullscreen_app_list_enabled_) {
     all_apps_button_->UpdateIcon();
-  if (is_fullscreen_app_list_enabled_) {
-    // Also add a special "all apps" button to the middle of the next row of the
-    // container.
-    tiles_layout_manager->StartRow(0, 0);
-    tiles_layout_manager->SkipColumns(kCenterColumnOfStartPageAppGrid);
-  } else {
+
     // Also add a special "all apps" button to the end of the next row of the
     // container.
     if (i % kNumTilesCols == 0)
       tiles_layout_manager->StartRow(0, 0);
-  }
 
-  if (all_apps_button_) {
     tiles_layout_manager->AddView(all_apps_button_);
     AddChildView(all_apps_button_);
   }
