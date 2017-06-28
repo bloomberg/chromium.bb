@@ -98,8 +98,14 @@ cr.define('print_preview', function() {
     },
 
     /** @override */
-    print: function() {
-      this.methodCalled('print');
+    print: function(
+        destination, printTicketStore, cloudPrintInterface, documentInfo) {
+      this.methodCalled('print', {
+        destination: destination,
+        printTicketStore: printTicketStore,
+        cloudPrintInterface: cloudPrintInterface,
+        documentInfo: documentInfo,
+      });
       return Promise.resolve();
     },
 
