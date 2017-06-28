@@ -75,6 +75,14 @@ bool SendMouseClick(MouseButton type) {
   return instance_->SendMouseClick(type);
 }
 
+#if defined(OS_WIN)
+// static
+bool SendTouchEvents(int action, int num, int x, int y) {
+  CHECK(g_ui_controls_enabled);
+  return instance_->SendTouchEvents(action, num, x, y);
+}
+#endif
+
 // static
 void RunClosureAfterAllPendingUIEvents(const base::Closure& closure) {
   instance_->RunClosureAfterAllPendingUIEvents(closure);
