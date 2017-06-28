@@ -78,6 +78,7 @@ class PkpTest : public CronetTestBase {
                             NSData* hash,
                             BOOL include_subdomains,
                             NSDate* expiration_date) {
+    [Cronet setEnablePublicKeyPinningBypassForLocalTrustAnchors:NO];
     NSSet* hashes = [NSSet setWithObject:hash];
     NSError* error;
     BOOL success = [Cronet addPublicKeyPinsForHost:host
@@ -139,6 +140,21 @@ TEST_F(PkpTest, TestSuccessIfPinMatches) {
   AddPkpAndStartCronet(server_host_, MatchingHash(), kExcludeSubdomains,
                        kDistantFuture);
   ASSERT_NO_FATAL_FAILURE(sendRequestAndAssertResult(request_url_, kSuccess));
+}
+
+TEST_F(PkpTest, TestBypass) {
+  [Cronet setEnablePublicKeyPinningBypassForLocalTrustAnchors:YES];
+
+  NSSet* hashes = [NSSet setWithObject:NonMatchingHash()];
+  NSError* error;
+  BOOL success = [Cronet addPublicKeyPinsForHost:server_host_
+                                       pinHashes:hashes
+                               includeSubdomains:kExcludeSubdomains
+                                  expirationDate:(NSDate*)kDistantFuture
+                                           error:&error];
+
+  EXPECT_FALSE(success);
+  EXPECT_EQ([error code], CRNErrorUnsupportedConfig);
 }
 
 // Tests the case when the pin hash does not match and the client accesses the
