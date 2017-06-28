@@ -170,6 +170,10 @@ class CONTENT_EXPORT BrowserMainLoop {
     return startup_trace_file_;
   }
 
+#if defined(OS_ANDROID)
+  void SynchronouslyFlushStartupTasks();
+#endif  // OS_ANDROID
+
 #if !defined(OS_ANDROID)
   // TODO(fsamuel): We should find an object to own HostFrameSinkManager on all
   // platforms including Android. See http://crbug.com/732507.
