@@ -6,6 +6,7 @@
 
 #ifdef DRV_TEGRA
 
+#include <assert.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/mman.h>
@@ -272,7 +273,6 @@ static void *tegra_bo_map(struct bo *bo, struct map_info *data, size_t plane)
 			  gem_map.offset);
 
 	data->length = bo->total_size;
-
 	if ((bo->tiling & 0xFF) == NV_MEM_KIND_C32_2CRA && addr != MAP_FAILED) {
 		priv = calloc(1, sizeof(*priv));
 		priv->untiled = calloc(1, bo->total_size);
@@ -299,12 +299,47 @@ static int tegra_bo_unmap(struct bo *bo, struct map_info *data)
 	return munmap(data->addr, data->length);
 }
 
+static int tegra_bo_import(struct bo *bo, struct drv_import_fd_data *data)
+{
+	int ret;
+	struct drm_tegra_gem_get_tiling gem_get_tiling;
+
+	ret = drv_prime_bo_import(bo, data);
+	if (ret)
+		return ret;
+
+	/* TODO(gsingh): export modifiers and get rid of backdoor tiling. */
+	memset(&gem_get_tiling, 0, sizeof(gem_get_tiling));
+	gem_get_tiling.handle = bo->handles[0].u32;
+
+	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_TEGRA_GEM_GET_TILING, &gem_get_tiling);
+	if (ret) {
+		drv_gem_bo_destroy(bo);
+		return ret;
+	}
+
+	/* NOTE(djmk): we only know about one tiled format, so if our drmIoctl call tells us we are
+	   tiled, assume it is this format (NV_MEM_KIND_C32_2CRA) otherwise linear (KIND_PITCH). */
+	if (gem_get_tiling.mode == DRM_TEGRA_GEM_TILING_MODE_PITCH) {
+		bo->tiling = NV_MEM_KIND_PITCH;
+	} else if (gem_get_tiling.mode == DRM_TEGRA_GEM_TILING_MODE_BLOCK) {
+		bo->tiling = NV_MEM_KIND_C32_2CRA;
+	} else {
+		fprintf(stderr, "tegra_bo_import: unknown tile format %d", gem_get_tiling.mode);
+		drv_gem_bo_destroy(bo);
+		assert(0);
+	}
+
+	bo->format_modifiers[0] = fourcc_mod_code(NV, bo->tiling);
+	return 0;
+}
+
 struct backend backend_tegra = {
 	.name = "tegra",
 	.init = tegra_init,
 	.bo_create = tegra_bo_create,
 	.bo_destroy = drv_gem_bo_destroy,
-	.bo_import = drv_prime_bo_import,
+	.bo_import = tegra_bo_import,
 	.bo_map = tegra_bo_map,
 	.bo_unmap = tegra_bo_unmap,
 };
