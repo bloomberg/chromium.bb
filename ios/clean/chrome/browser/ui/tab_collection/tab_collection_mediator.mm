@@ -7,6 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/scoped_observer.h"
 #include "base/strings/sys_string_conversions.h"
+#import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/clean/chrome/browser/ui/tab_collection/tab_collection_consumer.h"
 #import "ios/clean/chrome/browser/ui/tab_collection/tab_collection_item.h"
@@ -137,8 +138,7 @@
 #pragma mark - Private
 
 // Constructs a TabCollectionItem from a |webState|.
-- (TabCollectionItem*)tabCollectionItemFromWebState:
-    (const web::WebState*)webState {
+- (TabCollectionItem*)tabCollectionItemFromWebState:(web::WebState*)webState {
   // PLACEHOLDER: Use real webstate title in the future.
   DCHECK(webState);
   GURL url = webState->GetVisibleURL();
@@ -146,7 +146,10 @@
   if (url.is_valid()) {
     urlText = base::SysUTF8ToNSString(url.spec());
   }
+  TabIdTabHelper* tabHelper = TabIdTabHelper::FromWebState(webState);
+  DCHECK(tabHelper);
   TabCollectionItem* item = [[TabCollectionItem alloc] init];
+  item.tabID = tabHelper->tab_id();
   item.title = urlText;
   return item;
 }

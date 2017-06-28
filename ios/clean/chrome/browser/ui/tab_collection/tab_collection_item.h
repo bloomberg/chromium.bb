@@ -9,6 +9,7 @@
 
 // The model representing a tab in the tab collection.
 @interface TabCollectionItem : NSObject
+@property(nonatomic, copy) NSString* tabID;
 @property(nonatomic, copy) NSString* title;
 @end
 

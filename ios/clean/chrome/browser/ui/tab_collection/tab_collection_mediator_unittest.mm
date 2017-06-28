@@ -5,6 +5,7 @@
 #import "ios/clean/chrome/browser/ui/tab_collection/tab_collection_mediator.h"
 
 #include "base/memory/ptr_util.h"
+#import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #include "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
@@ -44,6 +45,7 @@ class TabCollectionMediatorTest : public PlatformTest {
 
   void InsertWebState(int index) {
     auto web_state = base::MakeUnique<web::TestWebState>();
+    TabIdTabHelper::CreateForWebState(web_state.get());
     GURL url("http://test/" + std::to_string(index));
     web_state->SetCurrentURL(url);
     web_state_list_->InsertWebState(index, std::move(web_state));
@@ -77,6 +79,7 @@ TEST_F(TabCollectionMediatorTest, TestMoveWebState) {
 // webStateList.
 TEST_F(TabCollectionMediatorTest, TestReplaceWebState) {
   auto different_web_state = base::MakeUnique<web::TestWebState>();
+  TabIdTabHelper::CreateForWebState(different_web_state.get());
   web_state_list_->ReplaceWebStateAt(1, std::move(different_web_state));
   [[consumer_ verify] replaceItemAtIndex:1 withItem:[OCMArg any]];
 }
