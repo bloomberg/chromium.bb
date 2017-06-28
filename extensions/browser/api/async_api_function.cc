@@ -5,7 +5,6 @@
 #include "extensions/browser/api/async_api_function.h"
 
 #include "base/bind.h"
-#include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_system.h"
 
 using content::BrowserThread;
@@ -13,9 +12,7 @@ using content::BrowserThread;
 namespace extensions {
 
 // AsyncApiFunction
-AsyncApiFunction::AsyncApiFunction()
-    : work_task_runner_(
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)) {}
+AsyncApiFunction::AsyncApiFunction() : work_thread_id_(BrowserThread::IO) {}
 
 AsyncApiFunction::~AsyncApiFunction() {}
 
@@ -25,15 +22,15 @@ bool AsyncApiFunction::RunAsync() {
   if (!PrePrepare() || !Prepare()) {
     return false;
   }
-  bool rv = work_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&AsyncApiFunction::WorkOnWorkThread, this));
+  bool rv = BrowserThread::PostTask(
+      work_thread_id_,
+      FROM_HERE,
+      base::Bind(&AsyncApiFunction::WorkOnWorkThread, this));
   DCHECK(rv);
   return true;
 }
 
-bool AsyncApiFunction::PrePrepare() {
-  return true;
-}
+bool AsyncApiFunction::PrePrepare() { return true; }
 
 void AsyncApiFunction::Work() {}
 
@@ -45,7 +42,8 @@ void AsyncApiFunction::AsyncWorkStart() {
 void AsyncApiFunction::AsyncWorkCompleted() {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     bool rv = BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
+        BrowserThread::UI,
+        FROM_HERE,
         base::Bind(&AsyncApiFunction::RespondOnUIThread, this));
     DCHECK(rv);
   } else {
@@ -54,7 +52,11 @@ void AsyncApiFunction::AsyncWorkCompleted() {
 }
 
 void AsyncApiFunction::WorkOnWorkThread() {
-  DCHECK(work_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK_CURRENTLY_ON(work_thread_id_);
+  DLOG_IF(ERROR, (work_thread_id_ == BrowserThread::UI))
+      << "You have specified that AsyncApiFunction::Work() should happen on "
+         "the UI thread. This nullifies the point of this class. Either "
+         "specify a different thread or derive from a different class.";
   AsyncWorkStart();
 }
 

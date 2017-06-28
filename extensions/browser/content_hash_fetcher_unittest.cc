@@ -14,7 +14,6 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/version.h"
 #include "content/public/browser/browser_thread.h"
@@ -173,8 +172,7 @@ class ContentHashFetcherTest : public ExtensionsTest {
         url.scheme(), url.host(),
         content::BrowserThread::GetTaskRunnerForThread(
             content::BrowserThread::IO),
-        base::CreateTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::BACKGROUND}));
+        content::BrowserThread::GetBlockingPool());
     interceptor_->SetResponse(url, response_path);
   }
 
