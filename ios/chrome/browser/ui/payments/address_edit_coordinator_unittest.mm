@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/ios/wait_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/country_names.h"
@@ -121,6 +122,8 @@ class PaymentRequestAddressEditCoordinatorTest : public PlatformTest {
   void TearDown() override {
     personal_data_manager_.SetTestingPrefService(nullptr);
   }
+
+  base::test::ScopedTaskEnvironment scoped_task_evironment_;
 
   std::unique_ptr<PrefService> pref_service_;
   MockTestPersonalDataManager personal_data_manager_;

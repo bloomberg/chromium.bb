@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/ios/wait_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "ios/chrome/browser/payments/payment_request.h"
@@ -37,8 +38,11 @@ class MockTestPersonalDataManager : public autofill::TestPersonalDataManager {
 class MockPaymentRequest : public PaymentRequest {
  public:
   MockPaymentRequest(web::PaymentRequest web_payment_request,
-                     autofill::PersonalDataManager* personal_data_manager)
-      : PaymentRequest(web_payment_request, personal_data_manager) {}
+                     autofill::PersonalDataManager* personal_data_manager,
+                     id<PaymentRequestUIDelegate> payment_request_ui_delegate)
+      : PaymentRequest(web_payment_request,
+                       personal_data_manager,
+                       payment_request_ui_delegate) {}
   MOCK_METHOD1(AddCreditCard,
                autofill::CreditCard*(const autofill::CreditCard&));
 };
@@ -107,8 +111,10 @@ class PaymentRequestCreditCardEditCoordinatorTest : public PlatformTest {
   PaymentRequestCreditCardEditCoordinatorTest() {
     payment_request_ = base::MakeUnique<MockPaymentRequest>(
         payment_request_test_util::CreateTestWebPaymentRequest(),
-        &personal_data_manager_);
+        &personal_data_manager_, nil);
   }
+
+  base::test::ScopedTaskEnvironment scoped_task_evironment_;
 
   MockTestPersonalDataManager personal_data_manager_;
   std::unique_ptr<MockPaymentRequest> payment_request_;

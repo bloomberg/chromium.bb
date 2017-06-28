@@ -6,10 +6,12 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/payments/payment_request_test_util.h"
+#include "ios/chrome/browser/payments/test_payment_request.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
 #import "ios/chrome/browser/ui/payments/cells/price_item.h"
 #import "ios/chrome/browser/ui/payments/payment_items_display_view_controller_data_source.h"
@@ -44,7 +46,7 @@ class PaymentRequestPaymentItemsDisplayViewControllerTest
     : public CollectionViewControllerTest {
  protected:
   CollectionViewController* InstantiateController() override {
-    payment_request_ = base::MakeUnique<PaymentRequest>(
+    payment_request_ = base::MakeUnique<TestPaymentRequest>(
         payment_request_test_util::CreateTestWebPaymentRequest(),
         &personal_data_manager_);
     mediator_ = [[TestPaymentItemsDisplayMediator alloc] init];
@@ -59,8 +61,10 @@ class PaymentRequestPaymentItemsDisplayViewControllerTest
         controller());
   }
 
+  base::test::ScopedTaskEnvironment scoped_task_evironment_;
+
   autofill::TestPersonalDataManager personal_data_manager_;
-  std::unique_ptr<PaymentRequest> payment_request_;
+  std::unique_ptr<TestPaymentRequest> payment_request_;
   TestPaymentItemsDisplayMediator* mediator_ = nil;
 };
 

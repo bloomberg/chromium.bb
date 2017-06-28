@@ -9,6 +9,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
@@ -163,6 +164,8 @@ class PaymentRequestViewControllerTest : public CollectionViewControllerTest {
     return base::mac::ObjCCastStrict<PaymentRequestViewController>(
         controller());
   }
+
+  base::test::ScopedTaskEnvironment scoped_task_evironment_;
 
   autofill::AutofillProfile autofill_profile_;
   autofill::CreditCard credit_card_;

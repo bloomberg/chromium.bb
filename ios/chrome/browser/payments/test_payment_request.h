@@ -27,10 +27,17 @@ class TestPaymentRequest : public PaymentRequest {
  public:
   // |personal_data_manager| should not be null and should outlive this object.
   TestPaymentRequest(const web::PaymentRequest& web_payment_request,
-                     autofill::PersonalDataManager* personal_data_manager)
-      : PaymentRequest(web_payment_request, personal_data_manager),
+                     autofill::PersonalDataManager* personal_data_manager,
+                     id<PaymentRequestUIDelegate> payment_request_ui_delegate)
+      : PaymentRequest(web_payment_request,
+                       personal_data_manager,
+                       payment_request_ui_delegate),
         region_data_loader_(nullptr),
         profile_comparator_(nullptr) {}
+
+  TestPaymentRequest(const web::PaymentRequest& web_payment_request,
+                     autofill::PersonalDataManager* personal_data_manager)
+      : TestPaymentRequest(web_payment_request, personal_data_manager, nil) {}
 
   ~TestPaymentRequest() override {}
 

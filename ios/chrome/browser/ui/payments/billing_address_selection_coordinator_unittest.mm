@@ -7,6 +7,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/ios/wait_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/autofill_type.h"
@@ -70,6 +71,8 @@ class PaymentRequestBillingAddressSelectionCoordinatorTest
   }
 
   BillingAddressSelectionCoordinator* GetCoordinator() { return coordinator_; }
+
+  base::test::ScopedTaskEnvironment scoped_task_evironment_;
 
   UINavigationController* navigation_controller_;
   BillingAddressSelectionCoordinator* coordinator_;

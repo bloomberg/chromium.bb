@@ -7,12 +7,14 @@
 #include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/ios/wait_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #include "ios/chrome/browser/payments/payment_request_test_util.h"
+#include "ios/chrome/browser/payments/test_payment_request.h"
 #import "ios/chrome/browser/ui/payments/payment_request_selector_view_controller.h"
 #include "ios/web/public/payments/payment_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -39,16 +41,18 @@ class PaymentRequestPaymentMethodSelectionCoordinatorTest
     personal_data_manager_.AddTestingCreditCard(&credit_card1_);
     credit_card2_.set_use_count(5U);
     personal_data_manager_.AddTestingCreditCard(&credit_card2_);
-    payment_request_ = base::MakeUnique<PaymentRequest>(
+    payment_request_ = base::MakeUnique<TestPaymentRequest>(
         payment_request_test_util::CreateTestWebPaymentRequest(),
         &personal_data_manager_);
   }
+
+  base::test::ScopedTaskEnvironment scoped_task_evironment_;
 
   autofill::AutofillProfile autofill_profile_;
   autofill::CreditCard credit_card1_;
   autofill::CreditCard credit_card2_;
   autofill::TestPersonalDataManager personal_data_manager_;
-  std::unique_ptr<PaymentRequest> payment_request_;
+  std::unique_ptr<TestPaymentRequest> payment_request_;
 };
 
 // Tests that invoking start and stop on the coordinator presents and dismisses

@@ -9,6 +9,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
@@ -29,7 +30,6 @@
 #import "ios/chrome/browser/ui/payments/cells/payments_text_item.h"
 #import "ios/chrome/browser/ui/payments/cells/price_item.h"
 #include "ios/web/public/payments/payment_request.h"
-#include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -71,7 +71,7 @@ class PaymentRequestMediatorTest : public PlatformTest {
 
   PaymentRequestMediator* GetPaymentRequestMediator() { return mediator_; }
 
-  web::TestWebThreadBundle thread_bundle_;
+  base::test::ScopedTaskEnvironment scoped_task_evironment_;
 
   autofill::AutofillProfile autofill_profile_;
   autofill::CreditCard credit_card_;

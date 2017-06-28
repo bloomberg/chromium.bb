@@ -17,8 +17,8 @@
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/payments/core/basic_card_response.h"
+#include "components/payments/core/payment_request_base_delegate.h"
 #include "components/payments/core/payment_request_data_util.h"
-#include "components/payments/core/payment_request_delegate.h"
 
 namespace payments {
 
@@ -28,7 +28,7 @@ AutofillPaymentInstrument::AutofillPaymentInstrument(
     bool matches_merchant_card_type_exactly,
     const std::vector<autofill::AutofillProfile*>& billing_profiles,
     const std::string& app_locale,
-    PaymentRequestDelegate* payment_request_delegate)
+    PaymentRequestBaseDelegate* payment_request_delegate)
     : PaymentInstrument(
           method_name,
           autofill::data_util::GetPaymentRequestData(card.network())
