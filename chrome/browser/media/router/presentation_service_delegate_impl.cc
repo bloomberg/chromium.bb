@@ -338,7 +338,7 @@ class PresentationFrameManager {
   void SetDefaultPresentationUrls(
       const RenderFrameHostId& render_frame_host_id,
       const std::vector<GURL>& default_presentation_urls,
-      const content::PresentationConnectionCallback& callback);
+      content::DefaultPresentationConnectionCallback callback);
   void AddDelegateObserver(const RenderFrameHostId& render_frame_host_id,
                            DelegateObserver* observer);
   void RemoveDelegateObserver(const RenderFrameHostId& render_frame_host_id);
@@ -405,7 +405,7 @@ class PresentationFrameManager {
   std::unique_ptr<PresentationRequest> default_presentation_request_;
 
   // Callback to invoke when default presentation has started.
-  content::PresentationConnectionCallback
+  content::DefaultPresentationConnectionCallback
       default_presentation_started_callback_;
 
   // References to the observers listening for changes to this tab WebContent's
@@ -508,7 +508,7 @@ void PresentationFrameManager::ListenForConnectionStateChange(
 void PresentationFrameManager::SetDefaultPresentationUrls(
     const RenderFrameHostId& render_frame_host_id,
     const std::vector<GURL>& default_presentation_urls,
-    const content::PresentationConnectionCallback& callback) {
+    content::DefaultPresentationConnectionCallback callback) {
   if (!IsMainFrame(render_frame_host_id))
     return;
 
@@ -667,10 +667,10 @@ void PresentationServiceDelegateImpl::SetDefaultPresentationUrls(
     int render_process_id,
     int render_frame_id,
     const std::vector<GURL>& default_presentation_urls,
-    const content::PresentationConnectionCallback& callback) {
+    content::DefaultPresentationConnectionCallback callback) {
   RenderFrameHostId render_frame_host_id(render_process_id, render_frame_id);
   frame_manager_->SetDefaultPresentationUrls(
-      render_frame_host_id, default_presentation_urls, callback);
+      render_frame_host_id, default_presentation_urls, std::move(callback));
 }
 
 void PresentationServiceDelegateImpl::OnJoinRouteResponse(
@@ -678,11 +678,11 @@ void PresentationServiceDelegateImpl::OnJoinRouteResponse(
     int render_frame_id,
     const GURL& presentation_url,
     const std::string& presentation_id,
-    const content::PresentationConnectionCallback& success_cb,
-    const content::PresentationConnectionErrorCallback& error_cb,
+    content::PresentationConnectionCallback success_cb,
+    content::PresentationConnectionErrorCallback error_cb,
     const RouteRequestResult& result) {
   if (!result.route()) {
-    error_cb.Run(content::PresentationError(
+    std::move(error_cb).Run(content::PresentationError(
         content::PRESENTATION_ERROR_NO_PRESENTATION_FOUND, result.error()));
   } else {
     DVLOG(1) << "OnJoinRouteResponse: "
@@ -695,14 +695,14 @@ void PresentationServiceDelegateImpl::OnJoinRouteResponse(
     frame_manager_->OnPresentationConnection(
         RenderFrameHostId(render_process_id, render_frame_id),
         presentation_info, *result.route());
-    success_cb.Run(presentation_info);
+    std::move(success_cb).Run(presentation_info);
   }
 }
 
 void PresentationServiceDelegateImpl::OnStartPresentationSucceeded(
     int render_process_id,
     int render_frame_id,
-    const content::PresentationConnectionCallback& success_cb,
+    content::PresentationConnectionCallback success_cb,
     const content::PresentationInfo& new_presentation_info,
     const MediaRoute& route) {
   DVLOG(1) << "OnStartPresentationSucceeded: "
@@ -712,18 +712,19 @@ void PresentationServiceDelegateImpl::OnStartPresentationSucceeded(
   frame_manager_->OnPresentationConnection(
       RenderFrameHostId(render_process_id, render_frame_id),
       new_presentation_info, route);
-  success_cb.Run(new_presentation_info);
+  std::move(success_cb).Run(new_presentation_info);
 }
 
 void PresentationServiceDelegateImpl::StartPresentation(
     int render_process_id,
     int render_frame_id,
     const std::vector<GURL>& presentation_urls,
-    const content::PresentationConnectionCallback& success_cb,
-    const content::PresentationConnectionErrorCallback& error_cb) {
+    content::PresentationConnectionCallback success_cb,
+    content::PresentationConnectionErrorCallback error_cb) {
   if (presentation_urls.empty()) {
-    error_cb.Run(content::PresentationError(content::PRESENTATION_ERROR_UNKNOWN,
-                                            "Invalid presentation arguments."));
+    std::move(error_cb).Run(
+        content::PresentationError(content::PRESENTATION_ERROR_UNKNOWN,
+                                   "Invalid presentation arguments."));
     return;
   }
 
@@ -732,7 +733,7 @@ void PresentationServiceDelegateImpl::StartPresentation(
   if (presentation_urls.empty() ||
       std::find_if_not(presentation_urls.begin(), presentation_urls.end(),
                        IsValidPresentationUrl) != presentation_urls.end()) {
-    error_cb.Run(content::PresentationError(
+    std::move(error_cb).Run(content::PresentationError(
         content::PRESENTATION_ERROR_NO_PRESENTATION_FOUND,
         "Invalid presentation URL."));
     return;
@@ -743,18 +744,18 @@ void PresentationServiceDelegateImpl::StartPresentation(
       new CreatePresentationConnectionRequest(
           render_frame_host_id, presentation_urls,
           GetLastCommittedURLForFrame(render_frame_host_id),
-          base::Bind(
+          base::BindOnce(
               &PresentationServiceDelegateImpl::OnStartPresentationSucceeded,
               weak_factory_.GetWeakPtr(), render_process_id, render_frame_id,
-              success_cb),
-          error_cb));
+              std::move(success_cb)),
+          std::move(error_cb)));
   MediaRouterDialogController* controller =
       MediaRouterDialogController::GetOrCreateForWebContents(web_contents_);
   if (!controller->ShowMediaRouterDialogForPresentation(std::move(request))) {
     LOG(ERROR)
         << "Media router dialog already exists. Ignoring StartPresentation.";
-    error_cb.Run(content::PresentationError(content::PRESENTATION_ERROR_UNKNOWN,
-                                            "Unable to create dialog."));
+    std::move(error_cb).Run(content::PresentationError(
+        content::PRESENTATION_ERROR_UNKNOWN, "Unable to create dialog."));
     return;
   }
 }
@@ -764,11 +765,11 @@ void PresentationServiceDelegateImpl::ReconnectPresentation(
     int render_frame_id,
     const std::vector<GURL>& presentation_urls,
     const std::string& presentation_id,
-    const content::PresentationConnectionCallback& success_cb,
-    const content::PresentationConnectionErrorCallback& error_cb) {
+    content::PresentationConnectionCallback success_cb,
+    content::PresentationConnectionErrorCallback error_cb) {
   DVLOG(2) << "PresentationServiceDelegateImpl::ReconnectPresentation";
   if (presentation_urls.empty()) {
-    error_cb.Run(content::PresentationError(
+    std::move(error_cb).Run(content::PresentationError(
         content::PRESENTATION_ERROR_NO_PRESENTATION_FOUND,
         "Invalid presentation arguments."));
     return;
@@ -780,7 +781,7 @@ void PresentationServiceDelegateImpl::ReconnectPresentation(
 #if !defined(OS_ANDROID)
   if (IsAutoJoinPresentationId(presentation_id) &&
       ShouldCancelAutoJoinForOrigin(origin)) {
-    error_cb.Run(content::PresentationError(
+    std::move(error_cb).Run(content::PresentationError(
         content::PRESENTATION_ERROR_PRESENTATION_REQUEST_CANCELLED,
         "Auto-join request cancelled by user preferences."));
     return;
@@ -809,17 +810,18 @@ void PresentationServiceDelegateImpl::ReconnectPresentation(
 
     auto result = RouteRequestResult::FromSuccess(*route, presentation_id);
     OnJoinRouteResponse(render_process_id, render_frame_id,
-                        presentation_urls[0], presentation_id, success_cb,
-                        error_cb, *result);
+                        presentation_urls[0], presentation_id,
+                        std::move(success_cb), std::move(error_cb), *result);
   } else {
     // TODO(crbug.com/627655): Handle multiple URLs.
     const GURL& presentation_url = presentation_urls[0];
     bool incognito = web_contents_->GetBrowserContext()->IsOffTheRecord();
     std::vector<MediaRouteResponseCallback> route_response_callbacks;
-    route_response_callbacks.push_back(base::BindOnce(
-        &PresentationServiceDelegateImpl::OnJoinRouteResponse,
-        weak_factory_.GetWeakPtr(), render_process_id, render_frame_id,
-        presentation_url, presentation_id, success_cb, error_cb));
+    route_response_callbacks.push_back(
+        base::BindOnce(&PresentationServiceDelegateImpl::OnJoinRouteResponse,
+                       weak_factory_.GetWeakPtr(), render_process_id,
+                       render_frame_id, presentation_url, presentation_id,
+                       std::move(success_cb), std::move(error_cb)));
     router_->JoinRoute(MediaSourceForPresentationUrl(presentation_url).id(),
                        presentation_id, origin, web_contents_,
                        std::move(route_response_callbacks), base::TimeDelta(),
