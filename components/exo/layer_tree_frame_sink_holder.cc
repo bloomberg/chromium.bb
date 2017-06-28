@@ -45,6 +45,14 @@ void LayerTreeFrameSinkHolder::SetResourceReleaseCallback(
   release_callbacks_[id] = callback;
 }
 
+int LayerTreeFrameSinkHolder::AllocateResourceId() {
+  return next_resource_id_++;
+}
+
+base::WeakPtr<LayerTreeFrameSinkHolder> LayerTreeFrameSinkHolder::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // cc::LayerTreeFrameSinkClient overrides:
 
