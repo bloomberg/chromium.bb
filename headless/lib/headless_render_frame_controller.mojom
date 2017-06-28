@@ -4,17 +4,18 @@
 
 module headless;
 
-enum MojoBindingsPolicy {
-  // No access to the TabSocket API from within the frame.
-  NONE,
-  // Allow main world JS content within the frame to access the TabSocket API.
-  MAIN_WORLD,
-  // Allow access to the TabSocket API only from within DevTools-created
-  // isolated worlds for the frame.
-  ISOLATED_WORLD
-};
-
 interface HeadlessRenderFrameController {
-  // Set the bindings policy for TabSocket mojo services for a frame.
-  AllowTabSocketBindings(MojoBindingsPolicy policy) => ();
+  // Installs TabSocket bindings into a specified execution context.
+  InstallTabSocket(int32 v8_execution_context_id) => (bool success);
+
+  // Installs TabSocket bindings into the main world. This is useful if you
+  // don't know the execution context id (e.g. you don't have devtools
+  // connected).
+  InstallMainWorldTabSocket() => (int32 v8_execution_context_id);
+
+  // Send a message from the C++ embedder to the Tab.
+  SendMessageToTabSocket(string message, int32 v8_execution_context_id);
+
+  // To send a message from tab to the embedder use
+  // TabSocket::SendMessageToEmbedder.
 };

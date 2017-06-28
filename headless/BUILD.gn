@@ -377,6 +377,10 @@ component("headless") {
       "lib/headless_content_main_delegate.h",
       "lib/renderer/headless_content_renderer_client.cc",
       "lib/renderer/headless_content_renderer_client.h",
+      "lib/renderer/headless_render_frame_controller_impl.cc",
+      "lib/renderer/headless_render_frame_controller_impl.h",
+      "lib/renderer/headless_tab_socket_bindings.cc",
+      "lib/renderer/headless_tab_socket_bindings.h",
     ]
 
     deps += [
@@ -431,12 +435,17 @@ if (!is_component_build) {
       "lib/headless_content_main_delegate.h",
       "lib/renderer/headless_content_renderer_client.cc",
       "lib/renderer/headless_content_renderer_client.h",
+      "lib/renderer/headless_render_frame_controller_impl.cc",
+      "lib/renderer/headless_render_frame_controller_impl.h",
+      "lib/renderer/headless_tab_socket_bindings.cc",
+      "lib/renderer/headless_tab_socket_bindings.h",
     ]
 
     deps = [
       ":headless",
       "//third_party/WebKit/public:blink_headers",
       "//ui/base",
+      "//v8",
     ]
     if (enable_basic_printing) {
       deps += [ "//components/printing/renderer" ]
@@ -591,6 +600,8 @@ test("headless_browsertests") {
     "test/headless_browser_test.cc",
     "test/headless_browser_test.h",
     "test/headless_test_launcher.cc",
+    "test/tab_socket_test.cc",
+    "test/tab_socket_test.h",
     "test/test_protocol_handler.cc",
     "test/test_protocol_handler.h",
     "test/test_url_request_job.cc",

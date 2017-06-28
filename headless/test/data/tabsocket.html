@@ -1,0 +1,9 @@
+<html>
+<script>
+window.TabSocket.send('Hello world!');
+
+window.TabSocket.onmessage = function(message) {
+  window.TabSocket.send('Embedder sent us: ' + message);
+};
+</script>
+</html>

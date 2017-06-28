@@ -235,7 +235,7 @@ void HeadlessAsyncDevTooledBrowserTest::RunTest() {
   HeadlessBrowserContext::Builder builder =
       browser()->CreateBrowserContextBuilder();
   builder.SetProtocolHandlers(GetProtocolHandlers());
-  if (GetTabSocketType() != HeadlessWebContents::Builder::TabSocketType::NONE) {
+  if (GetAllowTabSockets()) {
     builder.EnableUnsafeNetworkAccessWithMojoBindings(true);
     builder.AddTabSocketMojoBindings();
   }
@@ -245,7 +245,7 @@ void HeadlessAsyncDevTooledBrowserTest::RunTest() {
   browser()->GetDevToolsTarget()->AttachClient(browser_devtools_client_.get());
 
   web_contents_ = browser_context_->CreateWebContentsBuilder()
-                      .SetTabSocketType(GetTabSocketType())
+                      .SetAllowTabSockets(GetAllowTabSockets())
                       .Build();
   web_contents_->AddObserver(this);
 
@@ -265,9 +265,8 @@ ProtocolHandlerMap HeadlessAsyncDevTooledBrowserTest::GetProtocolHandlers() {
   return ProtocolHandlerMap();
 }
 
-HeadlessWebContents::Builder::TabSocketType
-HeadlessAsyncDevTooledBrowserTest::GetTabSocketType() {
-  return HeadlessWebContents::Builder::TabSocketType::NONE;
+bool HeadlessAsyncDevTooledBrowserTest::GetAllowTabSockets() {
+  return false;
 }
 
 bool HeadlessAsyncDevTooledBrowserTest::
