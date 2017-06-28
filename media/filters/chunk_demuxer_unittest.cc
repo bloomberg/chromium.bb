@@ -4770,6 +4770,34 @@ TEST_F(ChunkDemuxerTest, RemovingIdMustRemoveStreams) {
   EXPECT_EQ(nullptr, GetStream(DemuxerStream::VIDEO));
 }
 
+TEST_F(ChunkDemuxerTest, SequenceModeMuxedAppendShouldWarn) {
+  ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
+
+  demuxer_->SetSequenceMode(kSourceId, true);
+  EXPECT_MEDIA_LOG(MuxedSequenceModeWarning());
+
+  AppendMuxedCluster(MuxedStreamInfo(kAudioTrackNum, "0D10K"),
+                     MuxedStreamInfo(kVideoTrackNum, "0D10K"));
+}
+
+TEST_F(ChunkDemuxerTest, SequenceModeSingleTrackNoWarning) {
+  std::string audio_id = "audio1";
+  std::string video_id = "video1";
+
+  EXPECT_MEDIA_LOG(MuxedSequenceModeWarning()).Times(0);
+
+  ASSERT_TRUE(InitDemuxerAudioAndVideoSources(audio_id, video_id));
+
+  demuxer_->SetSequenceMode(audio_id, true);
+  demuxer_->SetSequenceMode(video_id, true);
+
+  // Append audio and video data into separate source ids.
+  ASSERT_TRUE(AppendCluster(
+      audio_id, GenerateSingleStreamCluster(0, 23, kAudioTrackNum, 23)));
+  ASSERT_TRUE(AppendCluster(
+      video_id, GenerateSingleStreamCluster(0, 33, kVideoTrackNum, 33)));
+}
+
 TEST_F(ChunkDemuxerTest, Mp4Vp9CodecSupport) {
   ChunkDemuxer::Status expected = ChunkDemuxer::kNotSupported;
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)

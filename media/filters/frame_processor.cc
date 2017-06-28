@@ -17,6 +17,7 @@ namespace media {
 
 const int kMaxDroppedPrerollWarnings = 10;
 const int kMaxDtsBeyondPtsWarnings = 10;
+const int kMaxMuxedSequenceModeWarnings = 1;
 
 // Helper class to capture per-track details needed by a frame processor. Some
 // of this information may be duplicated in the short-term in the associated
@@ -206,6 +207,16 @@ bool FrameProcessor::ProcessFrames(
   }
 
   DCHECK(!frames.empty());
+
+  if (sequence_mode_ && track_buffers_.size() > 1) {
+    LIMITED_MEDIA_LOG(DEBUG, media_log_, num_muxed_sequence_mode_warnings_,
+                      kMaxMuxedSequenceModeWarnings)
+        << "Warning: using MSE 'sequence' AppendMode for a SourceBuffer with "
+           "multiple tracks may cause loss of track synchronization. In some "
+           "cases, buffered range gaps and playback stalls can occur. It is "
+           "recommended to instead use 'segments' mode for a multitrack "
+           "SourceBuffer.";
+  }
 
   // Implements the coded frame processing algorithm's outer loop for step 1.
   // Note that ProcessFrame() implements an inner loop for a single frame that
