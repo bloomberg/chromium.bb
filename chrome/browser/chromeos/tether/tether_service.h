@@ -19,12 +19,23 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 
+namespace chromeos {
+class NetworkStateHandler;
+class ManagedNetworkConfigurationHandler;
+class NetworkConnect;
+class NetworkConnectionHandler;
+namespace tether {
+class NotificationPresenter;
+}  // namespace tether
+}  // namespace chromeos
+
 namespace cryptauth {
 class CryptAuthService;
-}  // cryptauth
+}  // namespace cryptauth
 
 class PrefRegistrySimple;
 class Profile;
+class ProfileOAuth2TokenService;
 
 class TetherService : public KeyedService,
                       public chromeos::PowerManagerClient::Observer,
@@ -56,6 +67,24 @@ class TetherService : public KeyedService,
 
   // Stop the Tether module.
   virtual void StopTether();
+
+  // Delegate used to call the static functions of Initializer. Injected to
+  // aid in testing.
+  class InitializerDelegate {
+   public:
+    virtual void InitializeTether(
+        cryptauth::CryptAuthService* cryptauth_service,
+        std::unique_ptr<chromeos::tether::NotificationPresenter>
+            notification_presenter,
+        PrefService* pref_service,
+        ProfileOAuth2TokenService* token_service,
+        chromeos::NetworkStateHandler* network_state_handler,
+        chromeos::ManagedNetworkConfigurationHandler*
+            managed_network_configuration_handler,
+        chromeos::NetworkConnect* network_connect,
+        chromeos::NetworkConnectionHandler* network_connection_handler);
+    virtual void ShutdownTether();
+  };
 
  protected:
   // KeyedService:
@@ -113,6 +142,9 @@ class TetherService : public KeyedService,
   // Whether Tether is enabled.
   bool IsEnabledbyPreference() const;
 
+  void SetInitializerDelegateForTest(
+      std::unique_ptr<InitializerDelegate> initializer_delegate);
+
   // Whether the service has been shut down.
   bool shut_down_ = false;
 
@@ -125,6 +157,7 @@ class TetherService : public KeyedService,
   chromeos::SessionManagerClient* session_manager_client_;
   cryptauth::CryptAuthService* cryptauth_service_;
   chromeos::NetworkStateHandler* network_state_handler_;
+  std::unique_ptr<InitializerDelegate> initializer_delegate_;
 
   PrefChangeRegistrar registrar_;
   scoped_refptr<device::BluetoothAdapter> adapter_;

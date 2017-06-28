@@ -56,7 +56,8 @@ class WifiHotspotConnector;
 // Initializes the Tether Chrome OS component.
 class Initializer : public OAuth2TokenService::Observer {
  public:
-  // Initializes the tether feature.
+  // Initializes the tether feature. If the feature has already been
+  // initialized, this function is a no-op.
   static void Init(
       cryptauth::CryptAuthService* cryptauth_service,
       std::unique_ptr<NotificationPresenter> notification_presenter,

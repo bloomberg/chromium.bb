@@ -64,17 +64,16 @@ void Initializer::Init(
     NetworkConnectionHandler* network_connection_handler) {
   if (!device::BluetoothAdapterFactory::IsBluetoothSupported()) {
     PA_LOG(WARNING) << "Bluetooth is not supported on this device; cannot "
-                    << "initialize tether feature.";
+                    << "initialize Tether feature.";
     return;
   }
 
   if (instance_) {
-    PA_LOG(WARNING) << "Tether initialization was triggered when the feature "
-                    << "had already been initialized; exiting initialization "
-                    << "early.";
+    // The Tether feature has already been initialized. No need to do anything.
     return;
   }
 
+  PA_LOG(INFO) << "Initializing Tether feature.";
   instance_ =
       new Initializer(cryptauth_service, std::move(notification_presenter),
                       pref_service, token_service, network_state_handler,

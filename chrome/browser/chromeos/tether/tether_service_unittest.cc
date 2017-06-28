@@ -90,6 +90,31 @@ class TestTetherService : public TetherService {
   int updated_technology_state_count_ = 0;
 };
 
+class TestInitializerDelegate : public TetherService::InitializerDelegate {
+ public:
+  bool is_tether_running() { return is_tether_running_; }
+
+  // TetherService::InitializerDelegate:
+  void InitializeTether(
+      cryptauth::CryptAuthService* cryptauth_service,
+      std::unique_ptr<chromeos::tether::NotificationPresenter>
+          notification_presenter,
+      PrefService* pref_service,
+      ProfileOAuth2TokenService* token_service,
+      chromeos::NetworkStateHandler* network_state_handler,
+      chromeos::ManagedNetworkConfigurationHandler*
+          managed_network_configuration_handler,
+      chromeos::NetworkConnect* network_connect,
+      chromeos::NetworkConnectionHandler* network_connection_handler) override {
+    is_tether_running_ = true;
+  }
+
+  void ShutdownTether() override { is_tether_running_ = false; }
+
+ private:
+  bool is_tether_running_ = false;
+};
+
 }  // namespace
 
 class TetherServiceTest : public chromeos::NetworkStateTest {
@@ -145,10 +170,14 @@ class TetherServiceTest : public chromeos::NetworkStateTest {
   }
 
   void CreateTetherService() {
+    test_initializer_delegate_ = new TestInitializerDelegate();
+
     tether_service_ = base::WrapUnique(new TestTetherService(
         profile_.get(), fake_power_manager_client_.get(),
         fake_session_manager_client_.get(), fake_cryptauth_service_.get(),
         network_state_handler()));
+    tether_service_->SetInitializerDelegateForTest(
+        base::WrapUnique(test_initializer_delegate_));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -189,6 +218,7 @@ class TetherServiceTest : public chromeos::NetworkStateTest {
   std::unique_ptr<TestingPrefServiceSimple> test_pref_service_;
   std::unique_ptr<NiceMock<MockCryptAuthDeviceManager>>
       mock_cryptauth_device_manager_;
+  TestInitializerDelegate* test_initializer_delegate_;
   std::unique_ptr<cryptauth::FakeCryptAuthService> fake_cryptauth_service_;
   scoped_refptr<device::MockBluetoothAdapter> mock_adapter_;
   std::unique_ptr<TestTetherService> tether_service_;
@@ -199,6 +229,7 @@ class TetherServiceTest : public chromeos::NetworkStateTest {
 
 TEST_F(TetherServiceTest, TestShutdown) {
   CreateTetherService();
+  EXPECT_TRUE(test_initializer_delegate_->is_tether_running());
 
   ShutdownTetherService();
 
@@ -206,10 +237,12 @@ TEST_F(TetherServiceTest, TestShutdown) {
       chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_UNAVAILABLE,
       network_state_handler()->GetTechnologyState(
           chromeos::NetworkTypePattern::Tether()));
+  EXPECT_FALSE(test_initializer_delegate_->is_tether_running());
 }
 
 TEST_F(TetherServiceTest, TestSuspend) {
   CreateTetherService();
+  EXPECT_TRUE(test_initializer_delegate_->is_tether_running());
 
   fake_power_manager_client_->SendSuspendImminent();
 
@@ -217,16 +250,19 @@ TEST_F(TetherServiceTest, TestSuspend) {
       chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_UNAVAILABLE,
       network_state_handler()->GetTechnologyState(
           chromeos::NetworkTypePattern::Tether()));
+  EXPECT_FALSE(test_initializer_delegate_->is_tether_running());
 
   fake_power_manager_client_->SendSuspendDone();
 
   EXPECT_EQ(chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_ENABLED,
             network_state_handler()->GetTechnologyState(
                 chromeos::NetworkTypePattern::Tether()));
+  EXPECT_TRUE(test_initializer_delegate_->is_tether_running());
 }
 
 TEST_F(TetherServiceTest, TestScreenLock) {
   CreateTetherService();
+  EXPECT_TRUE(test_initializer_delegate_->is_tether_running());
 
   SetIsScreenLocked(true);
 
@@ -234,12 +270,14 @@ TEST_F(TetherServiceTest, TestScreenLock) {
       chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_UNAVAILABLE,
       network_state_handler()->GetTechnologyState(
           chromeos::NetworkTypePattern::Tether()));
+  EXPECT_FALSE(test_initializer_delegate_->is_tether_running());
 
   SetIsScreenLocked(false);
 
   EXPECT_EQ(chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_ENABLED,
             network_state_handler()->GetTechnologyState(
                 chromeos::NetworkTypePattern::Tether()));
+  EXPECT_TRUE(test_initializer_delegate_->is_tether_running());
 }
 
 TEST_F(TetherServiceTest, TestFeatureFlagDisabled) {
@@ -266,6 +304,7 @@ TEST_F(TetherServiceTest, TestNoTetherHosts) {
       chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_UNAVAILABLE,
       network_state_handler()->GetTechnologyState(
           chromeos::NetworkTypePattern::Tether()));
+  EXPECT_FALSE(test_initializer_delegate_->is_tether_running());
 }
 
 TEST_F(TetherServiceTest, TestProhibitedByPolicy) {
@@ -277,6 +316,7 @@ TEST_F(TetherServiceTest, TestProhibitedByPolicy) {
       chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_PROHIBITED,
       network_state_handler()->GetTechnologyState(
           chromeos::NetworkTypePattern::Tether()));
+  EXPECT_FALSE(test_initializer_delegate_->is_tether_running());
 }
 
 TEST_F(TetherServiceTest, TestBluetoothIsNotPowered) {
@@ -288,6 +328,7 @@ TEST_F(TetherServiceTest, TestBluetoothIsNotPowered) {
       chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_UNINITIALIZED,
       network_state_handler()->GetTechnologyState(
           chromeos::NetworkTypePattern::Tether()));
+  EXPECT_FALSE(test_initializer_delegate_->is_tether_running());
 }
 
 TEST_F(TetherServiceTest, TestCellularIsUnavailable) {
@@ -304,11 +345,13 @@ TEST_F(TetherServiceTest, TestCellularIsUnavailable) {
       chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_AVAILABLE,
       network_state_handler()->GetTechnologyState(
           chromeos::NetworkTypePattern::Tether()));
+  EXPECT_FALSE(test_initializer_delegate_->is_tether_running());
 
   SetTetherTechnologyStateEnabled(true);
   EXPECT_EQ(chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_ENABLED,
             network_state_handler()->GetTechnologyState(
                 chromeos::NetworkTypePattern::Tether()));
+  EXPECT_TRUE(test_initializer_delegate_->is_tether_running());
 }
 
 TEST_F(TetherServiceTest, TestCellularIsAvailable) {
@@ -325,35 +368,41 @@ TEST_F(TetherServiceTest, TestCellularIsAvailable) {
       chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_AVAILABLE,
       network_state_handler()->GetTechnologyState(
           chromeos::NetworkTypePattern::Cellular()));
+  EXPECT_FALSE(test_initializer_delegate_->is_tether_running());
 
   SetTetherTechnologyStateEnabled(false);
   EXPECT_EQ(
       chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_UNINITIALIZED,
       network_state_handler()->GetTechnologyState(
           chromeos::NetworkTypePattern::Tether()));
+  EXPECT_FALSE(test_initializer_delegate_->is_tether_running());
 
   SetTetherTechnologyStateEnabled(true);
   EXPECT_EQ(
       chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_UNINITIALIZED,
       network_state_handler()->GetTechnologyState(
           chromeos::NetworkTypePattern::Tether()));
+  EXPECT_FALSE(test_initializer_delegate_->is_tether_running());
 
   // Cellular enabled
   SetCellularTechnologyStateEnabled(true);
   ASSERT_EQ(chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_ENABLED,
             network_state_handler()->GetTechnologyState(
                 chromeos::NetworkTypePattern::Cellular()));
+  EXPECT_TRUE(test_initializer_delegate_->is_tether_running());
 
   SetTetherTechnologyStateEnabled(false);
   EXPECT_EQ(
       chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_AVAILABLE,
       network_state_handler()->GetTechnologyState(
           chromeos::NetworkTypePattern::Tether()));
+  EXPECT_FALSE(test_initializer_delegate_->is_tether_running());
 
   SetTetherTechnologyStateEnabled(true);
   EXPECT_EQ(chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_ENABLED,
             network_state_handler()->GetTechnologyState(
                 chromeos::NetworkTypePattern::Tether()));
+  EXPECT_TRUE(test_initializer_delegate_->is_tether_running());
 }
 
 TEST_F(TetherServiceTest, TestEnabled) {
@@ -362,6 +411,7 @@ TEST_F(TetherServiceTest, TestEnabled) {
   EXPECT_EQ(chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_ENABLED,
             network_state_handler()->GetTechnologyState(
                 chromeos::NetworkTypePattern::Tether()));
+  EXPECT_TRUE(test_initializer_delegate_->is_tether_running());
 
   SetTetherTechnologyStateEnabled(false);
   EXPECT_EQ(
@@ -370,6 +420,7 @@ TEST_F(TetherServiceTest, TestEnabled) {
           chromeos::NetworkTypePattern::Tether()));
   EXPECT_FALSE(
       profile_->GetPrefs()->GetBoolean(prefs::kInstantTetheringEnabled));
+  EXPECT_FALSE(test_initializer_delegate_->is_tether_running());
 
   SetTetherTechnologyStateEnabled(true);
   EXPECT_EQ(chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_ENABLED,
@@ -377,6 +428,7 @@ TEST_F(TetherServiceTest, TestEnabled) {
                 chromeos::NetworkTypePattern::Tether()));
   EXPECT_TRUE(
       profile_->GetPrefs()->GetBoolean(prefs::kInstantTetheringEnabled));
+  EXPECT_TRUE(test_initializer_delegate_->is_tether_running());
 }
 
 // Test against a past defect that made TetherService and NetworkStateHandler

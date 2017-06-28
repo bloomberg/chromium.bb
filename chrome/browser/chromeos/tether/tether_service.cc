@@ -46,6 +46,28 @@ bool TetherService::IsFeatureFlagEnabled() {
   return base::FeatureList::IsEnabled(features::kInstantTethering);
 }
 
+void TetherService::InitializerDelegate::InitializeTether(
+    cryptauth::CryptAuthService* cryptauth_service,
+    std::unique_ptr<chromeos::tether::NotificationPresenter>
+        notification_presenter,
+    PrefService* pref_service,
+    ProfileOAuth2TokenService* token_service,
+    chromeos::NetworkStateHandler* network_state_handler,
+    chromeos::ManagedNetworkConfigurationHandler*
+        managed_network_configuration_handler,
+    chromeos::NetworkConnect* network_connect,
+    chromeos::NetworkConnectionHandler* network_connection_handler) {
+  chromeos::tether::Initializer::Init(
+      cryptauth_service, std::move(notification_presenter), pref_service,
+      token_service, network_state_handler,
+      managed_network_configuration_handler, network_connect,
+      network_connection_handler);
+}
+
+void TetherService::InitializerDelegate::ShutdownTether() {
+  chromeos::tether::Initializer::Shutdown();
+}
+
 TetherService::TetherService(
     Profile* profile,
     chromeos::PowerManagerClient* power_manager_client,
@@ -57,6 +79,7 @@ TetherService::TetherService(
       session_manager_client_(session_manager_client),
       cryptauth_service_(cryptauth_service),
       network_state_handler_(network_state_handler),
+      initializer_delegate_(base::MakeUnique<InitializerDelegate>()),
       weak_ptr_factory_(this) {
   power_manager_client_->AddObserver(this);
   session_manager_client_->AddObserver(this);
@@ -92,7 +115,7 @@ void TetherService::StartTetherIfEnabled() {
       base::MakeUnique<chromeos::tether::TetherNotificationPresenter>(
           profile_, message_center::MessageCenter::Get(),
           chromeos::NetworkConnect::Get());
-  chromeos::tether::Initializer::Init(
+  initializer_delegate_->InitializeTether(
       cryptauth_service_, std::move(notification_presenter),
       profile_->GetPrefs(),
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_),
@@ -103,7 +126,7 @@ void TetherService::StartTetherIfEnabled() {
 }
 
 void TetherService::StopTether() {
-  chromeos::tether::Initializer::Shutdown();
+  initializer_delegate_->ShutdownTether();
 }
 
 void TetherService::Shutdown() {
@@ -198,12 +221,12 @@ bool TetherService::HasSyncedTetherHosts() const {
 }
 
 void TetherService::UpdateTetherTechnologyState() {
-  chromeos::NetworkStateHandler::TechnologyState tether_technology_state =
+  chromeos::NetworkStateHandler::TechnologyState new_tether_technology_state =
       GetTetherTechnologyState();
 
-  network_state_handler_->SetTetherTechnologyState(tether_technology_state);
+  network_state_handler_->SetTetherTechnologyState(new_tether_technology_state);
 
-  if (tether_technology_state ==
+  if (new_tether_technology_state ==
       chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_ENABLED) {
     StartTetherIfEnabled();
   } else {
@@ -263,4 +286,9 @@ bool TetherService::IsAllowedByPolicy() const {
 
 bool TetherService::IsEnabledbyPreference() const {
   return profile_->GetPrefs()->GetBoolean(prefs::kInstantTetheringEnabled);
+}
+
+void TetherService::SetInitializerDelegateForTest(
+    std::unique_ptr<InitializerDelegate> initializer_delegate) {
+  initializer_delegate_ = std::move(initializer_delegate);
 }
