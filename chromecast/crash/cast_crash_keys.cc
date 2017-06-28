@@ -37,10 +37,6 @@ size_t RegisterCastCrashKeys() {
       {gpu::crash_keys::kGPUDriverVersion, ::crash_keys::kSmallSize},
       {gpu::crash_keys::kGPUPixelShaderVersion, ::crash_keys::kSmallSize},
       {gpu::crash_keys::kGPUVertexShaderVersion, ::crash_keys::kSmallSize},
-      // Temporary for https://crbug.com/729483.
-      // TODO(sunnyps): Remove after https://crbug.com/729483 is fixed.
-      {gpu::crash_keys::kGpuChannelFilterTrace, ::crash_keys::kMediumSize},
-      {gpu::crash_keys::kMediaGpuChannelFilterTrace, ::crash_keys::kMediumSize},
 
       // content/:
       {"bad_message_reason", ::crash_keys::kSmallSize},

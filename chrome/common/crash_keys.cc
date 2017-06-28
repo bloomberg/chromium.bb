@@ -127,10 +127,6 @@ size_t RegisterChromeCrashKeys() {
     {gpu::crash_keys::kGPUVendor, kSmallSize},
     {gpu::crash_keys::kGPURenderer, kSmallSize},
 #endif
-    // Temporary for https://crbug.com/729483.
-    // TODO(sunnyps): Remove after https://crbug.com/729483 is fixed.
-    {gpu::crash_keys::kGpuChannelFilterTrace, kMediumSize},
-    {gpu::crash_keys::kMediaGpuChannelFilterTrace, kMediumSize},
 
     // content/:
     {"bad_message_reason", kSmallSize},
