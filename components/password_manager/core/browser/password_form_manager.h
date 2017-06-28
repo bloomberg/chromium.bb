@@ -521,10 +521,6 @@ class PasswordFormManager : public FormFetcher::Consumer {
   // |observed_form_| but also on the credentials that the user submitted.
   bool is_possible_change_password_form_without_username_;
 
-  // True if |submitted_form_| looks like SignUp form according to
-  // local heuristics.
-  bool does_look_like_signup_form_ = false;
-
   // The client which implements embedder-specific PasswordManager operations.
   PasswordManagerClient* client_;
 
