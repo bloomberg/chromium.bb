@@ -15,7 +15,7 @@ namespace ui {
 class TouchSelectionController;
 class TouchSelectionControllerClient;
 class TouchSelectionMenuClient;
-}
+}  // namespace ui
 
 namespace content {
 
@@ -46,12 +46,18 @@ class CONTENT_EXPORT TouchSelectionControllerClientManager {
       const gfx::SelectionBound& end,
       ui::TouchSelectionControllerClient* client,
       ui::TouchSelectionMenuClient* menu_client) = 0;
+
   // Used by clients to inform the manager that the client no longer wants to
   // participate in touch selection editing, usually because the client's view
   // is being destroyed or detached.
   virtual void InvalidateClient(ui::TouchSelectionControllerClient* client) = 0;
+
+  // Provides direct access to the TouchSelectionController that will be used
+  // with all clients accessing this manager. Always returns non-null value.
   virtual ui::TouchSelectionController* GetTouchSelectionController() = 0;
 
+  // The following two functions allow clients (or their owners, etc.) to
+  // monitor the manager's lifetime.
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
 };

@@ -23,11 +23,11 @@
 #include "cc/surfaces/surface_sequence.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
-#include "content/browser/renderer_host/input/touch_selection_controller_client_manager.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/content_export.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "content/public/browser/readback_types.h"
+#include "content/public/browser/touch_selection_controller_client_manager.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 
