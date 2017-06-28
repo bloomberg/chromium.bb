@@ -199,7 +199,6 @@ if (testing::UnitTest::GetInstance()->current_test_info()->name() == \
 
   void TearDownOnMainThread() override {
     test_body_has_run_ = true;
-    InProcessBrowserTest::TearDownOnMainThread();
   }
 
   void TearDown() override {

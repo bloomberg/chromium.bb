@@ -22,7 +22,6 @@ class ProfileSigninConfirmationHelperBrowserTest : public InProcessBrowserTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     // Force the first-run flow to trigger autoimport.
-    InProcessBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kForceFirstRun);
   }
 

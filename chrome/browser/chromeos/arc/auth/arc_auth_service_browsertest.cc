@@ -85,7 +85,6 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
   ~ArcAuthServiceTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
     arc::SetArcAvailableCommandLineForTesting(command_line);
   }
 

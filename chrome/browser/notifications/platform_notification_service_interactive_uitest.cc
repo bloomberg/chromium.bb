@@ -838,7 +838,6 @@ class PlatformNotificationServiceWithoutContentImageBrowserTest
     scoped_feature_list_.InitWithFeatures(
         {}, {features::kNotificationContentImage});
 #endif  // BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
-    InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
   }
 
  private:

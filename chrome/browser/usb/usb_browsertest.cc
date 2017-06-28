@@ -94,7 +94,6 @@ class WebUsbTest : public InProcessBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(
         switches::kEnableExperimentalWebPlatformFeatures);
-    InProcessBrowserTest::SetUpCommandLine(command_line);
   }
 
   void SetUpOnMainThread() override {

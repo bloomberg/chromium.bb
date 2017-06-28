@@ -85,7 +85,6 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
     // FILE thread's tasks being marked as shutdown blocking for legacy
     // reasons).
     file_system_context_ = nullptr;
-    InProcessBrowserTest::TearDownOnMainThread();
   }
 
   // Write |content| into |filename| in a test file system and try to move

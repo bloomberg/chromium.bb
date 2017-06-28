@@ -37,7 +37,6 @@ class WebBluetoothTest : public InProcessBrowserTest {
     // https://crbug.com/507419
     command_line->AppendSwitch(
         switches::kEnableExperimentalWebPlatformFeatures);
-    InProcessBrowserTest::SetUpCommandLine(command_line);
   }
 
   void SetUpOnMainThread() override {

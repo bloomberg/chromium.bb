@@ -514,7 +514,6 @@ class PredictorBrowserTest : public InProcessBrowserTest {
   void SetUpInProcessBrowserTestFixture() override {
     scoped_host_resolver_proc_.reset(new net::ScopedDefaultHostResolverProc(
         rule_based_resolver_proc_.get()));
-    InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -605,7 +604,6 @@ class PredictorBrowserTest : public InProcessBrowserTest {
   }
 
   void TearDownInProcessBrowserTestFixture() override {
-    InProcessBrowserTest::TearDownInProcessBrowserTestFixture();
     scoped_host_resolver_proc_.reset();
   }
 

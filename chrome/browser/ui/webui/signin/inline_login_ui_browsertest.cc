@@ -461,8 +461,6 @@ class InlineLoginHelperBrowserTest : public InProcessBrowserTest {
   InlineLoginHelperBrowserTest() {}
 
   void SetUpInProcessBrowserTestFixture() override {
-    InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
-
     will_create_browser_context_services_subscription_ =
         BrowserContextDependencyManager::GetInstance()
             ->RegisterWillCreateBrowserContextServicesCallbackForTesting(

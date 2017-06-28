@@ -58,8 +58,6 @@ class ProfileErrorBrowserTest : public InProcessBrowserTest,
   }
 
   void SetUpInProcessBrowserTestFixture() override {
-    InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
-
     // Skip showing the error message box in order to avoid freezing the main
     // thread.
     chrome::internal::g_should_skip_message_box_for_test = true;

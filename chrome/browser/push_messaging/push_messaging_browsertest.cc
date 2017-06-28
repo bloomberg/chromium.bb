@@ -145,7 +145,6 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
     // Enable experimental features for subscription restrictions.
     command_line->AppendSwitch(
         switches::kEnableExperimentalWebPlatformFeatures);
-    InProcessBrowserTest::SetUpCommandLine(command_line);
   }
 
   // InProcessBrowserTest:

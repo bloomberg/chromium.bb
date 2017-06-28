@@ -104,11 +104,6 @@ void DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture() {
   dbus_setter_->SetSessionManagerClient(
       std::unique_ptr<chromeos::SessionManagerClient>(
           fake_session_manager_client_));
-  InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
-}
-
-void DevicePolicyCrosBrowserTest::TearDownInProcessBrowserTestFixture() {
-  InProcessBrowserTest::TearDownInProcessBrowserTestFixture();
 }
 
 void DevicePolicyCrosBrowserTest::MarkOwnership() {

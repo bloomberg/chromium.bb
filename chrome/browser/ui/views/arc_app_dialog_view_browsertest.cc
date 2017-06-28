@@ -33,12 +33,10 @@ class ArcAppUninstallDialogViewBrowserTest : public InProcessBrowserTest {
   ~ArcAppUninstallDialogViewBrowserTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
     arc::SetArcAvailableCommandLineForTesting(command_line);
   }
 
   void SetUpInProcessBrowserTestFixture() override {
-    InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
     ArcSessionManager::DisableUIForTesting();
     ArcAuthNotification::DisableForTesting();
   }
@@ -89,7 +87,6 @@ class ArcAppUninstallDialogViewBrowserTest : public InProcessBrowserTest {
 
   void TearDownOnMainThread() override {
     ArcSessionManager::Get()->Shutdown();
-    InProcessBrowserTest::TearDownOnMainThread();
   }
 
   // Ensures the ArcAppDialogView is destoryed.

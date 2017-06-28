@@ -66,7 +66,6 @@ class BudgetManagerBrowserTest : public InProcessBrowserTest {
     // TODO(harkness): Remove switch once Budget API ships. (crbug.com/617971)
     command_line->AppendSwitch(
         switches::kEnableExperimentalWebPlatformFeatures);
-    InProcessBrowserTest::SetUpCommandLine(command_line);
   }
 
   // Sets the absolute Site Engagement |score| for the testing origin, assuming

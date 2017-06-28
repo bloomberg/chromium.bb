@@ -40,15 +40,12 @@ class UserAffiliationBrowserTest
  protected:
   // InProcessBrowserTest
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
     affiliation_test_helper::AppendCommandLineSwitchesForLoginManager(
         command_line);
   }
 
   // InProcessBrowserTest
   void SetUpInProcessBrowserTestFixture() override {
-    InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
-
     chromeos::FakeSessionManagerClient* fake_session_manager_client =
         new chromeos::FakeSessionManagerClient;
     chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(

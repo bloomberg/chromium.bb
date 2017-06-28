@@ -127,7 +127,6 @@ class ScreenLockerTest : public InProcessBrowserTest {
     DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
         std::unique_ptr<SessionManagerClient>(fake_session_manager_client_));
 
-    InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
     zero_duration_mode_.reset(new ui::ScopedAnimationDurationScaleMode(
         ui::ScopedAnimationDurationScaleMode::ZERO_DURATION));
   }

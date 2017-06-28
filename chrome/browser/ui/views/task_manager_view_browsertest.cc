@@ -52,8 +52,6 @@ class TaskManagerViewTest : public InProcessBrowserTest {
     chrome::HideTaskManager();
     content::RunAllPendingInMessageLoop();
     ASSERT_FALSE(GetView());
-
-    InProcessBrowserTest::TearDownOnMainThread();
   }
 
   TaskManagerView* GetView() const {

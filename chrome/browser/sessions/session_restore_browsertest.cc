@@ -85,7 +85,6 @@ class SessionRestoreTest : public InProcessBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     // TODO(nkostylev): Investigate if we can remove this switch.
     command_line->AppendSwitch(switches::kCreateBrowserOnStartupForTests);
-    InProcessBrowserTest::SetUpCommandLine(command_line);
   }
 #endif
 

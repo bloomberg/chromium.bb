@@ -861,7 +861,6 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
 class SupervisedUserBrowserCreatorTest : public InProcessBrowserTest {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kSupervisedUserId, "asdf");
   }
 };

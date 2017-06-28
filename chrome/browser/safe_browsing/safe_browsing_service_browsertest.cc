@@ -554,7 +554,6 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
   void TearDownOnMainThread() override {
     g_browser_process->safe_browsing_service()->ui_manager()->RemoveObserver(
         &observer_);
-    InProcessBrowserTest::TearDownOnMainThread();
   }
 
   void SetUpInProcessBrowserTestFixture() override {
@@ -1682,8 +1681,6 @@ class SafeBrowsingDatabaseManagerCookieTest : public InProcessBrowserTest {
   }
 
   void TearDownInProcessBrowserTestFixture() override {
-    InProcessBrowserTest::TearDownInProcessBrowserTestFixture();
-
     sql::Connection db;
     base::FilePath cookie_path(
         SafeBrowsingService::GetCookieFilePathForTesting());
