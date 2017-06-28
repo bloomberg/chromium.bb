@@ -436,9 +436,9 @@
 			<key>Type</key>
 			<string>PSToggleSwitchSpecifier</string>
 			<key>Title</key>
-			<string>Enabled New Keyboard Accessory View</string>
+			<string>Disable New Keyboard Accessory View</string>
 			<key>Key</key>
-			<string>NewKeyboardAccessoryViewEnabled</string>
+			<string>NewKeyboardAccessoryViewDisabled</string>
 			<key>DefaultValue</key>
 			<false/>
 		</dict>

@@ -287,8 +287,8 @@ bool IsNewFeedbackKitEnabled() {
 }
 
 bool IsKeyboardAccessoryViewWithCameraSearchEnabled() {
-  return [[NSUserDefaults standardUserDefaults]
-      boolForKey:@"NewKeyboardAccessoryViewEnabled"];
+  return ![[NSUserDefaults standardUserDefaults]
+      boolForKey:@"NewKeyboardAccessoryViewDisabled"];
 }
 
 bool IsSlimNavigationManagerEnabled() {
