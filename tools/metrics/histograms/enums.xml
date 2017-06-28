@@ -22572,6 +22572,7 @@ from previous Chrome versions.
   <int value="-340023285" label="WebNFC:enabled"/>
   <int value="-329727402" label="disable-files-quick-view"/>
   <int value="-328361990" label="enable-experimental-extension-apis"/>
+  <int value="-326083626" label="AppBanners:disabled"/>
   <int value="-323831744" label="token-binding:enabled"/>
   <int value="-322937746" label="disable-desktop-capture-picker-new-ui"/>
   <int value="-322827131" label="tab-management-experiment-type-basil"/>
@@ -22916,6 +22917,7 @@ from previous Chrome versions.
   <int value="943319566" label="enable-intent-picker"/>
   <int value="952558794" label="enable-remote-assistance"/>
   <int value="980396200" label="enable-new-korean-ime"/>
+  <int value="981818901" label="AppBanners:enabled"/>
   <int value="982032277" label="NTPOfflineBadge:disabled"/>
   <int value="982511393" label="NTPArticleSuggestions:disabled"/>
   <int value="983311394" label="tab-management-experiment-type"/>

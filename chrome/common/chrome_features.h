@@ -28,6 +28,10 @@ extern const base::Feature kAppleScriptExecuteJavaScript;
 extern const base::Feature kViewsTaskManager;
 #endif  // defined(OS_MACOSX)
 
+#if !defined(OS_ANDROID)
+extern const base::Feature kAppBanners;
+#endif  // !defined(OS_ANDROID)
+
 #if defined(OS_CHROMEOS)
 extern const base::Feature kArcMemoryManagement;
 #endif  // defined(OS_CHROMEOS)

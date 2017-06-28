@@ -115,12 +115,11 @@ class AppBannerManagerBrowserTest : public InProcessBrowserTest {
     AppBannerSettingsHelper::SetTotalEngagementToTrigger(10);
     SiteEngagementScore::SetParamValuesForTesting();
     ASSERT_TRUE(embedded_test_server()->Start());
-  }
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
     // Make sure app banners are disabled in the browser, otherwise they will
     // interfere with the test.
-    command_line->AppendSwitch(switches::kDisableAddToShelf);
+    feature_list_.InitAndDisableFeature(features::kAppBanners);
+    InProcessBrowserTest::SetUpOnMainThread();
   }
 
  protected:
@@ -225,6 +224,8 @@ class AppBannerManagerBrowserTest : public InProcessBrowserTest {
       EXPECT_FALSE(manager->need_to_log_status());
     }
   }
+
+  base::test::ScopedFeatureList feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, WebAppBannerCreated) {
@@ -398,8 +399,8 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, DoesNotShowInIncognito) {
 IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
                        CheckOnLoadWithSufficientEngagement) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      features::kCheckInstallabilityForBannerOnLoad);
+  feature_list.InitWithFeatures({features::kCheckInstallabilityForBannerOnLoad},
+                                {features::kAppBanners});
   std::unique_ptr<AppBannerManagerTest> manager(
       CreateAppBannerManager(browser()));
   std::vector<double> engagement_scores{10};
@@ -410,8 +411,8 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
 IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
                        CheckOnLoadWithSufficientEngagementCancelDirect) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      features::kCheckInstallabilityForBannerOnLoad);
+  feature_list.InitWithFeatures({features::kCheckInstallabilityForBannerOnLoad},
+                                {features::kAppBanners});
   std::unique_ptr<AppBannerManagerTest> manager(
       CreateAppBannerManager(browser()));
   std::vector<double> engagement_scores{10};
@@ -423,8 +424,8 @@ IN_PROC_BROWSER_TEST_F(
     AppBannerManagerBrowserTest,
     CheckOnLoadWithSufficientEngagementCancelBannerAfterPromptInHandler) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      features::kCheckInstallabilityForBannerOnLoad);
+  feature_list.InitWithFeatures({features::kCheckInstallabilityForBannerOnLoad},
+                                {features::kAppBanners});
   std::unique_ptr<AppBannerManagerTest> manager(
       CreateAppBannerManager(browser()));
   std::vector<double> engagement_scores{10};
@@ -444,8 +445,8 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
   SiteEngagementService* service =
       SiteEngagementService::Get(browser()->profile());
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      features::kCheckInstallabilityForBannerOnLoad);
+  feature_list.InitWithFeatures({features::kCheckInstallabilityForBannerOnLoad},
+                                {features::kAppBanners});
   std::unique_ptr<AppBannerManagerTest> manager(
       CreateAppBannerManager(browser()));
 
@@ -492,8 +493,8 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, CheckOnLoadThenNavigate) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      features::kCheckInstallabilityForBannerOnLoad);
+  feature_list.InitWithFeatures({features::kCheckInstallabilityForBannerOnLoad},
+                                {features::kAppBanners});
   std::unique_ptr<AppBannerManagerTest> manager(
       CreateAppBannerManager(browser()));
 

@@ -29,6 +29,17 @@ const base::Feature kViewsTaskManager{"ViewsTaskManager",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_MACOSX)
 
+#if !defined(OS_ANDROID)
+const base::Feature kAppBanners {
+  "AppBanners",
+#if defined(OS_CHROMEOS)
+      base::FEATURE_ENABLED_BY_DEFAULT,
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT,
+#endif  // defined(OS_CHROMEOS)
+};
+#endif  // !defined(OS_ANDROID)
+
 #if defined(OS_CHROMEOS)
 // Whether to handle low memory kill of ARC apps by Chrome.
 const base::Feature kArcMemoryManagement{
