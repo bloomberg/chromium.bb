@@ -53,6 +53,7 @@
 -FilePersistentMemoryAllocatorTest.CreationTest
 -FilePersistentMemoryAllocatorTest.ExtendTest
 -FileProxyTest.SetTimes
+-FileTest.Append
 -FileUtilProxyTest.Touch
 -FileUtilTest.ChangeDirectoryPermissionsAndEnumerate
 -FileUtilTest.ChangeFilePermissionsAndRead
