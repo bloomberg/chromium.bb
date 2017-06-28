@@ -985,6 +985,9 @@ void XMLHttpRequest::CreateRequest(PassRefPtr<EncodedFormData> http_body,
   ResourceRequest request(url_);
   request.SetHTTPMethod(method_);
   request.SetRequestContext(WebURLRequest::kRequestContextXMLHttpRequest);
+  request.SetFetchRequestMode(
+      upload_events ? WebURLRequest::kFetchRequestModeCORSWithForcedPreflight
+                    : WebURLRequest::kFetchRequestModeCORS);
   request.SetFetchCredentialsMode(
       with_credentials_ ? WebURLRequest::kFetchCredentialsModeInclude
                         : WebURLRequest::kFetchCredentialsModeSameOrigin);
@@ -1008,9 +1011,6 @@ void XMLHttpRequest::CreateRequest(PassRefPtr<EncodedFormData> http_body,
     request.AddHTTPHeaderFields(request_headers_);
 
   ThreadableLoaderOptions options;
-  options.fetch_request_mode =
-      upload_events ? WebURLRequest::kFetchRequestModeCORSWithForcedPreflight
-                    : WebURLRequest::kFetchRequestModeCORS;
   options.timeout_milliseconds = timeout_milliseconds_;
 
   ResourceLoaderOptions resource_loader_options;

@@ -38,7 +38,6 @@
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Noncopyable.h"
-#include "public/platform/WebURLRequest.h"
 
 namespace blink {
 
@@ -52,7 +51,6 @@ struct ThreadableLoaderOptions {
   DISALLOW_NEW();
   ThreadableLoaderOptions()
       : preflight_policy(kConsiderPreflight),
-        fetch_request_mode(WebURLRequest::kFetchRequestModeSameOrigin),
         timeout_milliseconds(0) {}
 
   // When adding members, CrossThreadThreadableLoaderOptionsData should
@@ -61,7 +59,6 @@ struct ThreadableLoaderOptions {
   // If AccessControl is used, how to determine if a preflight is needed.
   PreflightPolicy preflight_policy;
 
-  WebURLRequest::FetchRequestMode fetch_request_mode;
   unsigned long timeout_milliseconds;
 };
 
@@ -71,19 +68,16 @@ struct CrossThreadThreadableLoaderOptionsData {
   explicit CrossThreadThreadableLoaderOptionsData(
       const ThreadableLoaderOptions& options)
       : preflight_policy(options.preflight_policy),
-        fetch_request_mode(options.fetch_request_mode),
         timeout_milliseconds(options.timeout_milliseconds) {}
 
   operator ThreadableLoaderOptions() const {
     ThreadableLoaderOptions options;
     options.preflight_policy = preflight_policy;
-    options.fetch_request_mode = fetch_request_mode;
     options.timeout_milliseconds = timeout_milliseconds;
     return options;
   }
 
   PreflightPolicy preflight_policy;
-  WebURLRequest::FetchRequestMode fetch_request_mode;
   unsigned long timeout_milliseconds;
 };
 

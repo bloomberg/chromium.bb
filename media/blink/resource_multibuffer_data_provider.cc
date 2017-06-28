@@ -111,24 +111,19 @@ void ResourceMultiBufferDataProvider::Start() {
   std::unique_ptr<WebAssociatedURLLoader> loader;
   if (test_loader_) {
     loader = std::move(test_loader_);
+    request.SetFetchRequestMode(WebURLRequest::kFetchRequestModeSameOrigin);
+    request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeOmit);
   } else {
     WebAssociatedURLLoaderOptions options;
-    if (url_data_->cors_mode() == UrlData::CORS_UNSPECIFIED) {
-      options.fetch_credentials_mode =
-          WebURLRequest::kFetchCredentialsModeInclude;
-      options.fetch_request_mode = WebURLRequest::kFetchRequestModeNoCORS;
-    } else {
+    if (url_data_->cors_mode() != UrlData::CORS_UNSPECIFIED) {
       options.expose_all_response_headers = true;
       // The author header set is empty, no preflight should go ahead.
       options.preflight_policy =
           WebAssociatedURLLoaderOptions::kPreventPreflight;
-      options.fetch_request_mode = WebURLRequest::kFetchRequestModeCORS;
-      if (url_data_->cors_mode() == UrlData::CORS_USE_CREDENTIALS) {
-        options.fetch_credentials_mode =
-            WebURLRequest::kFetchCredentialsModeInclude;
-      } else {
-        options.fetch_credentials_mode =
-            WebURLRequest::kFetchCredentialsModeSameOrigin;
+      request.SetFetchRequestMode(WebURLRequest::kFetchRequestModeCORS);
+      if (url_data_->cors_mode() != UrlData::CORS_USE_CREDENTIALS) {
+        request.SetFetchCredentialsMode(
+            WebURLRequest::kFetchCredentialsModeSameOrigin);
       }
     }
     loader.reset(url_data_->frame()->CreateAssociatedURLLoader(options));

@@ -36,6 +36,8 @@ class AssociatedResourceFetcherImpl : public AssociatedResourceFetcher {
       const blink::WebAssociatedURLLoaderOptions& options) override;
   void Start(blink::WebLocalFrame* frame,
              blink::WebURLRequest::RequestContext request_context,
+             blink::WebURLRequest::FetchRequestMode request_mode,
+             blink::WebURLRequest::FetchCredentialsMode fetch_credentials_mode,
              blink::WebURLRequest::FrameType frame_type,
              const Callback& callback) override;
 

@@ -76,6 +76,7 @@ BytesConsumer::Result BlobBytesConsumer::BeginRead(const char** buffer,
 
       ResourceRequest request(blob_url_);
       request.SetRequestContext(WebURLRequest::kRequestContextInternal);
+      request.SetFetchRequestMode(WebURLRequest::kFetchRequestModeSameOrigin);
       request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeOmit);
       request.SetUseStreamOnResponse(true);
       // We intentionally skip
@@ -281,7 +282,6 @@ BlobBytesConsumer* BlobBytesConsumer::CreateForTesting(
 
 ThreadableLoader* BlobBytesConsumer::CreateLoader() {
   ThreadableLoaderOptions options;
-  options.fetch_request_mode = WebURLRequest::kFetchRequestModeSameOrigin;
 
   ResourceLoaderOptions resource_loader_options;
   resource_loader_options.data_buffering_policy = kDoNotBufferData;

@@ -714,7 +714,31 @@ void FetchManager::Loader::PerformHTTPFetch(bool cors_flag,
   ResourceRequest request(request_->Url());
   request.SetRequestContext(request_->Context());
   request.SetHTTPMethod(request_->Method());
-  request.SetFetchRequestMode(request_->Mode());
+
+  switch (request_->Mode()) {
+    case WebURLRequest::kFetchRequestModeSameOrigin:
+    case WebURLRequest::kFetchRequestModeNoCORS:
+      request.SetFetchRequestMode(request_->Mode());
+      break;
+    case WebURLRequest::kFetchRequestModeCORS:
+    case WebURLRequest::kFetchRequestModeCORSWithForcedPreflight:
+      // TODO(tyoshino): Use only the flag or the mode enum inside the
+      // FetchManager. Currently both are used due to ongoing refactoring.
+      // See http://crbug.com/727596.
+      if (cors_preflight_flag) {
+        request.SetFetchRequestMode(
+            WebURLRequest::kFetchRequestModeCORSWithForcedPreflight);
+      } else {
+        request.SetFetchRequestMode(WebURLRequest::kFetchRequestModeCORS);
+      }
+      break;
+    case WebURLRequest::kFetchRequestModeNavigate:
+      // Using kFetchRequestModeSameOrigin here to reduce the security risk.
+      // "navigate" request is only available in ServiceWorker.
+      request.SetFetchRequestMode(WebURLRequest::kFetchRequestModeSameOrigin);
+      break;
+  }
+
   request.SetFetchCredentialsMode(request_->Credentials());
   for (const auto& header : request_->HeaderList()->List()) {
     request.AddHTTPHeaderField(AtomicString(header.first),
@@ -773,31 +797,7 @@ void FetchManager::Loader::PerformHTTPFetch(bool cors_flag,
   resource_loader_options.security_origin = request_->Origin().Get();
 
   ThreadableLoaderOptions threadable_loader_options;
-  switch (request_->Mode()) {
-    case WebURLRequest::kFetchRequestModeSameOrigin:
-    case WebURLRequest::kFetchRequestModeNoCORS:
-      threadable_loader_options.fetch_request_mode = request_->Mode();
-      break;
-    case WebURLRequest::kFetchRequestModeCORS:
-    case WebURLRequest::kFetchRequestModeCORSWithForcedPreflight:
-      // TODO(tyoshino): Use only the flag or the mode enum inside the
-      // FetchManager. Currently both are used due to ongoing refactoring.
-      // See http://crbug.com/727596.
-      if (cors_preflight_flag) {
-        threadable_loader_options.fetch_request_mode =
-            WebURLRequest::kFetchRequestModeCORSWithForcedPreflight;
-      } else {
-        threadable_loader_options.fetch_request_mode =
-            WebURLRequest::kFetchRequestModeCORS;
-      }
-      break;
-    case WebURLRequest::kFetchRequestModeNavigate:
-      // Using kFetchRequestModeSameOrigin here to reduce the security risk.
-      // "navigate" request is only available in ServiceWorker.
-      threadable_loader_options.fetch_request_mode =
-          WebURLRequest::kFetchRequestModeSameOrigin;
-      break;
-  }
+
   probe::willStartFetch(execution_context_, this);
   loader_ = ThreadableLoader::Create(*execution_context_, this,
                                      threadable_loader_options,
@@ -826,8 +826,6 @@ void FetchManager::Loader::PerformDataFetch() {
   resource_loader_options.security_origin = request_->Origin().Get();
 
   ThreadableLoaderOptions threadable_loader_options;
-  threadable_loader_options.fetch_request_mode =
-      WebURLRequest::kFetchRequestModeNoCORS;
 
   probe::willStartFetch(execution_context_, this);
   loader_ = ThreadableLoader::Create(*execution_context_, this,

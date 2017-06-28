@@ -323,16 +323,6 @@ blink::WebAssociatedURLLoader* CreateAssociatedURLLoader(
     const GURL& gurl) {
   blink::WebAssociatedURLLoaderOptions options;
   options.untrusted_http = true;
-
-  // Options settings here follow the original behavior in the trusted
-  // plugin and PepperURLLoaderHost.
-  if (document.GetSecurityOrigin().CanRequest(gurl)) {
-    options.fetch_credentials_mode =
-        blink::WebURLRequest::kFetchCredentialsModeSameOrigin;
-  } else {
-    options.fetch_request_mode = blink::WebURLRequest::kFetchRequestModeCORS;
-  }
-
   return document.GetFrame()->CreateAssociatedURLLoader(options);
 }
 
@@ -340,6 +330,20 @@ blink::WebURLRequest CreateWebURLRequest(const blink::WebDocument& document,
                                          const GURL& gurl) {
   blink::WebURLRequest request(gurl);
   request.SetFirstPartyForCookies(document.FirstPartyForCookies());
+
+  // Follow the original behavior in the trusted plugin and
+  // PepperURLLoaderHost.
+  if (document.GetSecurityOrigin().CanRequest(gurl)) {
+    request.SetFetchRequestMode(
+        blink::WebURLRequest::kFetchRequestModeSameOrigin);
+    request.SetFetchCredentialsMode(
+        blink::WebURLRequest::kFetchCredentialsModeSameOrigin);
+  } else {
+    request.SetFetchRequestMode(blink::WebURLRequest::kFetchRequestModeCORS);
+    request.SetFetchCredentialsMode(
+        blink::WebURLRequest::kFetchCredentialsModeOmit);
+  }
+
   return request;
 }
 

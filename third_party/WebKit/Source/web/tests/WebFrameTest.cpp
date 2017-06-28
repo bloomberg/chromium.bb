@@ -9532,7 +9532,7 @@ TEST_P(ParameterizedWebFrameTest, LoaderOriginAccess) {
   ThreadableLoaderOptions options;
 
   // First try to load the request with regular access. Should fail.
-  options.fetch_request_mode = WebURLRequest::kFetchRequestModeCORS;
+  request.SetFetchRequestMode(WebURLRequest::kFetchRequestModeCORS);
   ResourceLoaderOptions resource_loader_options;
   DocumentThreadableLoader::LoadResourceSynchronously(
       *frame->GetDocument(), request, client, options, resource_loader_options);
@@ -9540,7 +9540,7 @@ TEST_P(ParameterizedWebFrameTest, LoaderOriginAccess) {
 
   client.Reset();
   // Try to load the request with cross origin access. Should succeed.
-  options.fetch_request_mode = WebURLRequest::kFetchRequestModeNoCORS;
+  request.SetFetchRequestMode(WebURLRequest::kFetchRequestModeNoCORS);
   DocumentThreadableLoader::LoadResourceSynchronously(
       *frame->GetDocument(), request, client, options, resource_loader_options);
   EXPECT_FALSE(client.Failed());

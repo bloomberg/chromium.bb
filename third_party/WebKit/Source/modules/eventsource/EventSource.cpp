@@ -133,6 +133,7 @@ void EventSource::Connect() {
   request.SetHTTPHeaderField(HTTPNames::Accept, "text/event-stream");
   request.SetHTTPHeaderField(HTTPNames::Cache_Control, "no-cache");
   request.SetRequestContext(WebURLRequest::kRequestContextEventSource);
+  request.SetFetchRequestMode(WebURLRequest::kFetchRequestModeCORS);
   request.SetFetchCredentialsMode(
       with_credentials_ ? WebURLRequest::kFetchCredentialsModeInclude
                         : WebURLRequest::kFetchCredentialsModeSameOrigin);
@@ -154,7 +155,6 @@ void EventSource::Connect() {
 
   ThreadableLoaderOptions options;
   options.preflight_policy = kPreventPreflight;
-  options.fetch_request_mode = WebURLRequest::kFetchRequestModeCORS;
 
   ResourceLoaderOptions resource_loader_options;
   resource_loader_options.data_buffering_policy = kDoNotBufferData;

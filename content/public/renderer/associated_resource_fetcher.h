@@ -53,10 +53,19 @@ class CONTENT_EXPORT AssociatedResourceFetcher {
 
   // Starts the request using the specified frame.  Calls |callback| when
   // done.
-  virtual void Start(blink::WebLocalFrame* frame,
-                     blink::WebURLRequest::RequestContext request_context,
-                     blink::WebURLRequest::FrameType frame_type,
-                     const Callback& callback) = 0;
+  //
+  // |fetch_request_mode| is the mode to use. See
+  // https://fetch.spec.whatwg.org/#concept-request-mode.
+  //
+  // |fetch_credentials_mode| is the credentials mode to use. See
+  // https://fetch.spec.whatwg.org/#concept-request-credentials-mode
+  virtual void Start(
+      blink::WebLocalFrame* frame,
+      blink::WebURLRequest::RequestContext request_context,
+      blink::WebURLRequest::FetchRequestMode fetch_request_mode,
+      blink::WebURLRequest::FetchCredentialsMode fetch_credentials_mode,
+      blink::WebURLRequest::FrameType frame_type,
+      const Callback& callback) = 0;
 
   // Manually cancel the request.
   virtual void Cancel() = 0;

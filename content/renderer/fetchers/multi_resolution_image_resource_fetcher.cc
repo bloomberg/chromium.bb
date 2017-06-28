@@ -35,8 +35,6 @@ MultiResolutionImageResourceFetcher::MultiResolutionImageResourceFetcher(
   fetcher_.reset(AssociatedResourceFetcher::Create(image_url));
 
   WebAssociatedURLLoaderOptions options;
-  options.fetch_credentials_mode = WebURLRequest::kFetchCredentialsModeInclude;
-  options.fetch_request_mode = WebURLRequest::kFetchRequestModeNoCORS;
   fetcher_->SetLoaderOptions(options);
 
   // To prevent cache tainting, the favicon requests have to by-pass the service
@@ -48,7 +46,9 @@ MultiResolutionImageResourceFetcher::MultiResolutionImageResourceFetcher(
   fetcher_->SetCachePolicy(cache_policy);
 
   fetcher_->Start(
-      frame, request_context, WebURLRequest::kFrameTypeNone,
+      frame, request_context, WebURLRequest::kFetchRequestModeNoCORS,
+      WebURLRequest::kFetchCredentialsModeInclude,
+      WebURLRequest::kFrameTypeNone,
       base::Bind(&MultiResolutionImageResourceFetcher::OnURLFetchComplete,
                  base::Unretained(this)));
 }

@@ -154,6 +154,8 @@ void AssociatedResourceFetcherImpl::SetLoaderOptions(
 void AssociatedResourceFetcherImpl::Start(
     blink::WebLocalFrame* frame,
     blink::WebURLRequest::RequestContext request_context,
+    blink::WebURLRequest::FetchRequestMode fetch_request_mode,
+    blink::WebURLRequest::FetchCredentialsMode fetch_credentials_mode,
     blink::WebURLRequest::FrameType frame_type,
     const Callback& callback) {
   DCHECK(!loader_);
@@ -165,6 +167,8 @@ void AssociatedResourceFetcherImpl::Start(
   request_.SetRequestContext(request_context);
   request_.SetFrameType(frame_type);
   request_.SetFirstPartyForCookies(frame->GetDocument().FirstPartyForCookies());
+  request_.SetFetchRequestMode(fetch_request_mode);
+  request_.SetFetchCredentialsMode(fetch_credentials_mode);
 
   client_.reset(new ClientImpl(callback));
 

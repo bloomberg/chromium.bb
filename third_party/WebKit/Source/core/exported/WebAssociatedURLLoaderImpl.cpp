@@ -97,6 +97,7 @@ class WebAssociatedURLLoaderImpl::ClientAdapter final
       WebAssociatedURLLoaderImpl*,
       WebAssociatedURLLoaderClient*,
       const WebAssociatedURLLoaderOptions&,
+      WebURLRequest::FetchRequestMode,
       RefPtr<WebTaskRunner>);
 
   // ThreadableLoaderClient
@@ -139,6 +140,7 @@ class WebAssociatedURLLoaderImpl::ClientAdapter final
   ClientAdapter(WebAssociatedURLLoaderImpl*,
                 WebAssociatedURLLoaderClient*,
                 const WebAssociatedURLLoaderOptions&,
+                WebURLRequest::FetchRequestMode,
                 RefPtr<WebTaskRunner>);
 
   void NotifyError(TimerBase*);
@@ -146,6 +148,7 @@ class WebAssociatedURLLoaderImpl::ClientAdapter final
   WebAssociatedURLLoaderImpl* loader_;
   WebAssociatedURLLoaderClient* client_;
   WebAssociatedURLLoaderOptions options_;
+  WebURLRequest::FetchRequestMode fetch_request_mode_;
   WebURLError error_;
 
   TaskRunnerTimer<ClientAdapter> error_timer_;
@@ -158,19 +161,22 @@ WebAssociatedURLLoaderImpl::ClientAdapter::Create(
     WebAssociatedURLLoaderImpl* loader,
     WebAssociatedURLLoaderClient* client,
     const WebAssociatedURLLoaderOptions& options,
+    WebURLRequest::FetchRequestMode fetch_request_mode,
     RefPtr<WebTaskRunner> task_runner) {
-  return WTF::WrapUnique(
-      new ClientAdapter(loader, client, options, task_runner));
+  return WTF::WrapUnique(new ClientAdapter(loader, client, options,
+                                           fetch_request_mode, task_runner));
 }
 
 WebAssociatedURLLoaderImpl::ClientAdapter::ClientAdapter(
     WebAssociatedURLLoaderImpl* loader,
     WebAssociatedURLLoaderClient* client,
     const WebAssociatedURLLoaderOptions& options,
+    WebURLRequest::FetchRequestMode fetch_request_mode,
     RefPtr<WebTaskRunner> task_runner)
     : loader_(loader),
       client_(client),
       options_(options),
+      fetch_request_mode_(fetch_request_mode),
       error_timer_(std::move(task_runner), this, &ClientAdapter::NotifyError),
       enable_error_notifications_(false),
       did_fail_(false) {
@@ -209,8 +215,8 @@ void WebAssociatedURLLoaderImpl::ClientAdapter::DidReceiveResponse(
     return;
 
   if (options_.expose_all_response_headers ||
-      (options_.fetch_request_mode != WebURLRequest::kFetchRequestModeCORS &&
-       options_.fetch_request_mode !=
+      (fetch_request_mode_ != WebURLRequest::kFetchRequestModeCORS &&
+       fetch_request_mode_ !=
            WebURLRequest::kFetchRequestModeCORSWithForcedPreflight)) {
     // Use the original ResourceResponse.
     client_->DidReceiveResponse(WrappedResourceResponse(response));
@@ -381,16 +387,14 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
       TaskType::kUnspecedLoading,
       observer_ ? ToDocument(observer_->LifecycleContext()) : nullptr);
   client_ = client;
-  client_adapter_ =
-      ClientAdapter::Create(this, client, options_, std::move(task_runner));
+  client_adapter_ = ClientAdapter::Create(this, client, options_,
+                                          request.GetFetchRequestMode(),
+                                          std::move(task_runner));
 
   if (allow_load) {
     ThreadableLoaderOptions options;
     options.preflight_policy =
         static_cast<PreflightPolicy>(options_.preflight_policy);
-    options.fetch_request_mode = options_.fetch_request_mode;
-
-    new_request.SetFetchCredentialsMode(options_.fetch_credentials_mode);
 
     ResourceLoaderOptions resource_loader_options;
     resource_loader_options.data_buffering_policy = kDoNotBufferData;
