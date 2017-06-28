@@ -757,6 +757,7 @@ if (!is_android) {
     if (is_win) {
       sources += [
         "../browser/downgrade/user_data_downgrade_browsertest.cc",
+        "../browser/ui/views/touch_events_interactive_uitest_win.cc",
         "//ui/resources/cursors/aliasb.cur",
         "//ui/resources/cursors/cell.cur",
         "//ui/resources/cursors/col_resize.cur",

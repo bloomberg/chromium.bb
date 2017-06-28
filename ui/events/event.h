@@ -717,6 +717,8 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
   // A unique identifier for the touch event.
   uint32_t unique_event_id_;
 
+  // TODO(726824): Remove rotation_angle_ from ui::TouchEvent, just use twist
+  // in PointerDetails.
   // Clockwise angle (in degrees) of the major axis from the X axis. Must be
   // less than 180 and non-negative.
   float rotation_angle_;

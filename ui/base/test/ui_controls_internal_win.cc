@@ -352,5 +352,81 @@ bool SendMouseEventsImpl(MouseButton type, int state,
   return true;
 }
 
+bool SendTouchEventsImpl(int action, int num, int x, int y) {
+  const int kTouchesLengthCap = 16;
+  DCHECK_LE(num, kTouchesLengthCap);
+
+  using InitializeTouchInjectionFn = BOOL(WINAPI*)(UINT32, DWORD);
+  static InitializeTouchInjectionFn initialize_touch_injection =
+      reinterpret_cast<InitializeTouchInjectionFn>(GetProcAddress(
+          GetModuleHandleA("user32.dll"), "InitializeTouchInjection"));
+  if (!initialize_touch_injection ||
+      !initialize_touch_injection(num, TOUCH_FEEDBACK_INDIRECT)) {
+    return false;
+  }
+
+  using InjectTouchInputFn = BOOL(WINAPI*)(UINT32, POINTER_TOUCH_INFO*);
+  static InjectTouchInputFn inject_touch_input =
+      reinterpret_cast<InjectTouchInputFn>(
+          GetProcAddress(GetModuleHandleA("user32.dll"), "InjectTouchInput"));
+  if (!inject_touch_input)
+    return false;
+
+  POINTER_TOUCH_INFO pointer_touch_info[kTouchesLengthCap];
+  for (int i = 0; i < num; i++) {
+    POINTER_TOUCH_INFO& contact = pointer_touch_info[i];
+    memset(&contact, 0, sizeof(POINTER_TOUCH_INFO));
+    contact.pointerInfo.pointerType = PT_TOUCH;
+    contact.pointerInfo.pointerId = i;
+    contact.pointerInfo.ptPixelLocation.y = y;
+    contact.pointerInfo.ptPixelLocation.x = x + 10 * i;
+
+    contact.touchFlags = TOUCH_FLAG_NONE;
+    contact.touchMask =
+        TOUCH_MASK_CONTACTAREA | TOUCH_MASK_ORIENTATION | TOUCH_MASK_PRESSURE;
+    contact.orientation = 90;
+    contact.pressure = 32000;
+
+    // defining contact area
+    contact.rcContact.top = contact.pointerInfo.ptPixelLocation.y - 2;
+    contact.rcContact.bottom = contact.pointerInfo.ptPixelLocation.y + 2;
+    contact.rcContact.left = contact.pointerInfo.ptPixelLocation.x - 2;
+    contact.rcContact.right = contact.pointerInfo.ptPixelLocation.x + 2;
+
+    contact.pointerInfo.pointerFlags =
+        POINTER_FLAG_DOWN | POINTER_FLAG_INRANGE | POINTER_FLAG_INCONTACT;
+  }
+  // Injecting the touch down on screen
+  if (!inject_touch_input(num, pointer_touch_info))
+    return false;
+
+  // Injecting the touch move on screen
+  if (action & MOVE) {
+    for (int i = 0; i < num; i++) {
+      POINTER_TOUCH_INFO& contact = pointer_touch_info[i];
+      contact.pointerInfo.ptPixelLocation.y = y + 10;
+      contact.pointerInfo.ptPixelLocation.x = x + 10 * i + 30;
+      contact.pointerInfo.pointerFlags =
+          POINTER_FLAG_UPDATE | POINTER_FLAG_INRANGE | POINTER_FLAG_INCONTACT;
+    }
+    if (!inject_touch_input(num, pointer_touch_info))
+      return false;
+  }
+
+  // Injecting the touch up on screen
+  if (action & RELEASE) {
+    for (int i = 0; i < num; i++) {
+      POINTER_TOUCH_INFO& contact = pointer_touch_info[i];
+      contact.pointerInfo.ptPixelLocation.y = y + 10;
+      contact.pointerInfo.ptPixelLocation.x = x + 10 * i + 30;
+      contact.pointerInfo.pointerFlags = POINTER_FLAG_UP | POINTER_FLAG_INRANGE;
+    }
+    if (!inject_touch_input(num, pointer_touch_info))
+      return false;
+  }
+
+  return true;
+}
+
 }  // namespace internal
 }  // namespace ui_controls

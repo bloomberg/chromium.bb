@@ -523,6 +523,14 @@ class VIEWS_EXPORT HWNDMessageHandler :
                                    LPARAM l_param,
                                    bool track_mouse);
 
+  LRESULT HandlePointerEventTypeTouch(UINT message,
+                                      WPARAM w_param,
+                                      LPARAM l_param);
+
+  LRESULT HandlePointerEventTypePen(UINT message,
+                                    WPARAM w_param,
+                                    LPARAM l_param);
+
   // Returns true if the mouse message passed in is an OS synthesized mouse
   // message.
   // |message| identifies the mouse message.

@@ -75,6 +75,9 @@ class UIControlsWin : public UIControlsAura {
   bool SendMouseClick(MouseButton type) override {
     return SendMouseEvents(type, UP | DOWN);
   }
+  bool SendTouchEvents(int action, int num, int x, int y) override {
+    return SendTouchEventsImpl(action, num, x, y);
+  }
   void RunClosureAfterAllPendingUIEvents(
       const base::Closure& closure) override {
     // On windows, posting UI events is synchronous so just post the closure.

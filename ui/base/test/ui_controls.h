@@ -80,6 +80,8 @@ enum MouseButtonState {
   DOWN = 2
 };
 
+enum TouchType { PRESS = 1 << 0, RELEASE = 1 << 1, MOVE = 1 << 2 };
+
 // Sends a mouse down and/or up message. The click will be sent to wherever
 // the cursor currently is, so be sure to move the cursor before calling this
 // (and be sure the cursor has arrived!).
@@ -90,6 +92,16 @@ bool SendMouseEventsNotifyWhenDone(MouseButton type,
 
 // Same as SendMouseEvents with UP | DOWN.
 bool SendMouseClick(MouseButton type);
+
+#if defined(OS_WIN)
+// Send WM_POINTER messages to generate touch events. There is no way to detect
+// when events are received by chrome, it's up to users of this API to detect
+// when events arrive. |action| is a bitmask of the TouchType constants that
+// indicate what events are generated, |num| is the number of the touch
+// pointers, |screen_x| and |screen_y| are the screen coordinates of a touch
+// pointer.
+bool SendTouchEvents(int action, int num, int screen_x, int screen_y);
+#endif
 
 #if defined(TOOLKIT_VIEWS)
 // Runs |closure| after processing all pending ui events.
