@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 
@@ -13,7 +14,17 @@ namespace content {
 
 // static
 bool SiteIsolationPolicy::AreCrossProcessFramesPossible() {
+// Before turning this on for Android, input event routing needs to be
+// completed there, and perf regressions in https://crbug.com/690229 need to be
+// investigated.
+#if defined(OS_ANDROID)
+  return UseDedicatedProcessesForAllSites() ||
+         IsTopDocumentIsolationEnabled() || AreIsolatedOriginsEnabled() ||
+         GetContentClient()->IsSupplementarySiteIsolationModeEnabled() ||
+         base::FeatureList::IsEnabled(::features::kGuestViewCrossProcessFrames);
+#else
   return true;
+#endif
 }
 
 // static
