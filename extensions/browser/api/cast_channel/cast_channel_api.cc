@@ -119,17 +119,13 @@ bool IsValidConnectInfoIpAddress(const ConnectInfo& connect_info) {
 }  // namespace
 
 CastChannelAPI::CastChannelAPI(content::BrowserContext* context)
-    : browser_context_(context), logger_(new Logger()) {
+    : browser_context_(context) {
   DCHECK(browser_context_);
 }
 
 // static
 CastChannelAPI* CastChannelAPI::Get(content::BrowserContext* context) {
   return BrowserContextKeyedAPIFactory<CastChannelAPI>::Get(context);
-}
-
-scoped_refptr<Logger> CastChannelAPI::GetLogger() {
-  return logger_;
 }
 
 void CastChannelAPI::SendEvent(const std::string& extension_id,
@@ -216,9 +212,7 @@ void CastChannelAsyncApiFunction::SetResultFromChannelInfo(
   SetResult(channel_info.ToValue());
 }
 
-CastChannelOpenFunction::CastChannelOpenFunction()
-    : new_channel_id_(0) {
-}
+CastChannelOpenFunction::CastChannelOpenFunction() {}
 
 CastChannelOpenFunction::~CastChannelOpenFunction() { }
 
@@ -278,21 +272,10 @@ void CastChannelOpenFunction::AsyncWorkStart() {
   DCHECK(api_);
   DCHECK(ip_endpoint_.get());
   const ConnectInfo& connect_info = params_->connect_info;
-  CastSocket* socket;
+
   std::unique_ptr<CastSocket> test_socket = api_->GetSocketForTest();
-  if (test_socket.get()) {
-    socket = test_socket.release();
-  } else {
-    socket = new CastSocketImpl(
-        *ip_endpoint_, ExtensionsBrowserClient::Get()->GetNetLog(),
-        base::TimeDelta::FromMilliseconds(connect_info.timeout.get()
-                                              ? *connect_info.timeout
-                                              : kDefaultConnectTimeoutMillis),
-        liveness_timeout_, ping_interval_, api_->GetLogger(),
-        connect_info.capabilities.get() ? *connect_info.capabilities
-                                        : CastDeviceCapability::NONE);
-  }
-  new_channel_id_ = cast_socket_service_->AddSocket(base::WrapUnique(socket));
+  if (test_socket.get())
+    cast_socket_service_->SetSocketForTest(std::move(test_socket));
 
   auto* observer = cast_socket_service_->GetObserver(extension_->id());
   if (!observer) {
@@ -300,28 +283,33 @@ void CastChannelOpenFunction::AsyncWorkStart() {
         extension_->id(), base::MakeUnique<CastMessageHandler>(
                               base::Bind(&CastChannelAPI::SendEvent,
                                          api_->AsWeakPtr(), extension_->id()),
-                              api_->GetLogger()));
+                              cast_socket_service_->GetLogger()));
   }
 
-  socket->AddObserver(observer);
-  // Construct read delegates.
-  socket->Connect(base::Bind(&CastChannelOpenFunction::OnOpen, this));
+  cast_socket_service_->OpenSocket(
+      *ip_endpoint_, ExtensionsBrowserClient::Get()->GetNetLog(),
+      base::TimeDelta::FromMilliseconds(connect_info.timeout.get()
+                                            ? *connect_info.timeout
+                                            : kDefaultConnectTimeoutMillis),
+      liveness_timeout_, ping_interval_,
+      connect_info.capabilities.get() ? *connect_info.capabilities
+                                      : CastDeviceCapability::NONE,
+      base::Bind(&CastChannelOpenFunction::OnOpen, this), observer);
 }
 
-void CastChannelOpenFunction::OnOpen(ChannelError result) {
+void CastChannelOpenFunction::OnOpen(int channel_id, ChannelError result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   VLOG(1) << "Connect finished, OnOpen invoked.";
   // TODO: If we failed to open the CastSocket, we may want to clean up here,
   // rather than relying on the extension to call close(). This can be done by
   // calling RemoveSocket() and api_->GetLogger()->ClearLastError(channel_id).
   if (result != ChannelError::UNKNOWN) {
-    CastSocket* socket = cast_socket_service_->GetSocket(new_channel_id_);
+    CastSocket* socket = cast_socket_service_->GetSocket(channel_id);
     CHECK(socket);
     SetResultFromSocket(*socket);
   } else {
     // The socket is being destroyed.
-    SetResultFromError(new_channel_id_,
-                       api::cast_channel::CHANNEL_ERROR_UNKNOWN);
+    SetResultFromError(channel_id, api::cast_channel::CHANNEL_ERROR_UNKNOWN);
   }
 
   AsyncWorkCompleted();
@@ -429,7 +417,7 @@ void CastChannelCloseFunction::OnClose(int result) {
     SetResultFromSocket(*socket);
     // This will delete |socket|.
     cast_socket_service_->RemoveSocket(channel_id);
-    api_->GetLogger()->ClearLastError(channel_id);
+    cast_socket_service_->GetLogger()->ClearLastError(channel_id);
   }
   AsyncWorkCompleted();
 }

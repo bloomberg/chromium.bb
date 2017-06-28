@@ -29,7 +29,12 @@ MockCastTransportDelegate::~MockCastTransportDelegate() {}
 MockCastSocketObserver::MockCastSocketObserver() {}
 MockCastSocketObserver::~MockCastSocketObserver() {}
 
-MockCastSocket::MockCastSocket() : mock_transport_(new MockCastTransport()) {}
+MockCastSocket::MockCastSocket()
+    : channel_id_(0),
+      error_state_(ChannelError::NONE),
+      keep_alive_(false),
+      audio_only_(false),
+      mock_transport_(new MockCastTransport()) {}
 MockCastSocket::~MockCastSocket() {}
 
 net::IPEndPoint CreateIPEndPointForTest() {

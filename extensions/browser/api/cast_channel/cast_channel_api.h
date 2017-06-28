@@ -46,14 +46,6 @@ class CastChannelAPI : public BrowserContextKeyedAPI,
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<CastChannelAPI>* GetFactoryInstance();
 
-  // Returns a pointer to the Logger member variable.
-  // TODO(imcheng): Consider whether it is possible for this class to own the
-  // CastSockets and make this class the sole owner of Logger.
-  // Alternatively,
-  // consider making Logger not ref-counted by passing a weak
-  // reference of Logger to the CastSockets instead.
-  scoped_refptr<cast_channel::Logger> GetLogger();
-
   // Sets the CastSocket instance to be used for testing.
   void SetSocketForTest(
       std::unique_ptr<cast_channel::CastSocket> socket_for_test);
@@ -79,7 +71,6 @@ class CastChannelAPI : public BrowserContextKeyedAPI,
   static const char* service_name() { return "CastChannelAPI"; }
 
   content::BrowserContext* const browser_context_;
-  scoped_refptr<cast_channel::Logger> logger_;
   std::unique_ptr<cast_channel::CastSocket> socket_for_test_;
 
   DISALLOW_COPY_AND_ASSIGN(CastChannelAPI);
@@ -163,11 +154,9 @@ class CastChannelOpenFunction : public CastChannelAsyncApiFunction {
   static net::IPEndPoint* ParseConnectInfo(
       const api::cast_channel::ConnectInfo& connect_info);
 
-  void OnOpen(cast_channel::ChannelError result);
+  void OnOpen(int channel_id, cast_channel::ChannelError result);
 
   std::unique_ptr<api::cast_channel::Open::Params> params_;
-  // The id of the newly opened socket.
-  int new_channel_id_;
   CastChannelAPI* api_;
   std::unique_ptr<net::IPEndPoint> ip_endpoint_;
   base::TimeDelta liveness_timeout_;

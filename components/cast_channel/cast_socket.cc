@@ -136,8 +136,9 @@ CastSocketImpl::~CastSocketImpl() {
   // would result in re-entrancy.
   CloseInternal();
 
-  if (!connect_callback_.is_null())
-    base::ResetAndReturn(&connect_callback_).Run(ChannelError::UNKNOWN);
+  for (auto& connect_callback : connect_callbacks_)
+    connect_callback.Run(channel_id_, ChannelError::UNKNOWN);
+  connect_callbacks_.clear();
 }
 
 ReadyState CastSocketImpl::ready_state() const {
@@ -240,20 +241,36 @@ void CastSocketImpl::SetTransportForTesting(
   transport_ = std::move(transport);
 }
 
-void CastSocketImpl::Connect(base::Callback<void(ChannelError)> callback) {
+void CastSocketImpl::Connect(const OnOpenCallback& callback) {
+  switch (ready_state_) {
+    case ReadyState::NONE:
+      connect_callbacks_.push_back(callback);
+      Connect();
+      break;
+    case ReadyState::CONNECTING:
+      connect_callbacks_.push_back(callback);
+      break;
+    case ReadyState::OPEN:
+      callback.Run(channel_id_, ChannelError::NONE);
+      break;
+    case ReadyState::CLOSED:
+      callback.Run(channel_id_, ChannelError::CONNECT_ERROR);
+      break;
+    default:
+      NOTREACHED() << "Unknown ReadyState: "
+                   << ReadyStateToString(ready_state_);
+  }
+}
+
+void CastSocketImpl::Connect() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   VLOG_WITH_CONNECTION(1) << "Connect readyState = "
                           << ReadyStateToString(ready_state_);
+  DCHECK_EQ(ReadyState::NONE, ready_state_);
   DCHECK_EQ(ConnectionState::START_CONNECT, connect_state_);
 
   delegate_ = base::MakeUnique<CastSocketMessageDelegate>(this);
 
-  if (ready_state_ != ReadyState::NONE) {
-    callback.Run(ChannelError::CONNECT_ERROR);
-    return;
-  }
-
-  connect_callback_ = callback;
   SetReadyState(ReadyState::CONNECTING);
   SetConnectState(ConnectionState::TCP_CONNECT);
 
@@ -532,7 +549,7 @@ int CastSocketImpl::DoAuthChallengeReplyComplete(int result) {
 void CastSocketImpl::DoConnectCallback() {
   VLOG(1) << "DoConnectCallback (error_state = "
           << ChannelErrorToString(error_state_) << ")";
-  if (connect_callback_.is_null()) {
+  if (connect_callbacks_.empty()) {
     DLOG(FATAL) << "Connection callback invoked multiple times.";
     return;
   }
@@ -550,7 +567,9 @@ void CastSocketImpl::DoConnectCallback() {
     CloseInternal();
   }
 
-  base::ResetAndReturn(&connect_callback_).Run(error_state_);
+  for (auto& connect_callback : connect_callbacks_)
+    connect_callback.Run(channel_id_, error_state_);
+  connect_callbacks_.clear();
 }
 
 void CastSocketImpl::Close(const net::CompletionCallback& callback) {
