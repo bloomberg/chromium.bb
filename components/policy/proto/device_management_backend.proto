@@ -1121,7 +1121,7 @@ message CheckAndroidManagementResponse {}
 
 // Request to register a new device (authenticated by enterprise enrollment
 // certificate). See http://go/zero-touch-chrome for details.
-// The response message will be the DeviceRegisterReponse.
+// The response message will be the DeviceRegisterResponse.
 message CertificateBasedDeviceRegisterRequest {
   // Signed request to register with a certificate. The signed_request.data
   // field contains a CertificateBasedDeviceRegistrationData with a nonce
@@ -1216,7 +1216,7 @@ message LicenseAvailability {
 // Response to a check device license request.
 message CheckDeviceLicenseResponse {
   enum LicenseSelectionMode {
-    // Should not happend, included for compatibility.
+    // Should not happen, included for compatibility.
     UNDEFINED = 0;
     // User is allowed to choose license.
     USER_SELECTION = 1;
@@ -1420,7 +1420,7 @@ message DeviceManagementResponse {
     POLICY_NOT_FOUND  = 5;
   }
 
-  // Error code for this reponse.
+  // Error code for this response.
   //
   // For responses to TT clients, this field MUST be set, since it WAS
   // a required field.  For special error code listed above, we return
