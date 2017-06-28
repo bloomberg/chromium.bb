@@ -52,6 +52,7 @@ def build(build_config, target_device, extra_gn_options):
             'is_component_build=false use_xcode_clang=true '
             'disable_file_support=true disable_ftp_support=true '
             'disable_brotli_filter=true ios_enable_code_signing=false '
+            'enable_dsyms=true '
             'target_cpu="%s" additional_target_cpus = ["%s"] %s %s' %
             (target_cpu, additional_cpu, build_config_gn_args,
              extra_gn_options))
