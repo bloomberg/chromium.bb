@@ -27,10 +27,9 @@ class AddressNormalizationManager {
  public:
   // Initializes an AddressNormalizationManager. |default_country_code| will be
   // used if the country code in an AutofillProfile to normalize is not valid.
-  // The AddressNormalizationManager takes ownership of |address_normalizer|.
-  AddressNormalizationManager(
-      std::unique_ptr<AddressNormalizer> address_normalizer,
-      const std::string& default_country_code);
+  // The AddressNormalizationManager does not own |address_normalizer|.
+  AddressNormalizationManager(AddressNormalizer* address_normalizer,
+                              const std::string& default_country_code);
 
   ~AddressNormalizationManager();
 
@@ -95,8 +94,8 @@ class AddressNormalizationManager {
   // Storage for all the delegates that handle the normalization requests.
   std::vector<std::unique_ptr<NormalizerDelegate>> delegates_;
 
-  // The AddressNormalizer to use. Owned by this class.
-  std::unique_ptr<AddressNormalizer> address_normalizer_;
+  // An unowned raw pointer to the AddressNormalizer to use.
+  AddressNormalizer* address_normalizer_;
 
   THREAD_CHECKER(thread_checker_);
   DISALLOW_COPY_AND_ASSIGN(AddressNormalizationManager);

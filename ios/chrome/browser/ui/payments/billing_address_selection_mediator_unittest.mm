@@ -6,6 +6,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
@@ -66,6 +67,8 @@ class PaymentRequestBillingAddressSelectionMediatorTest : public PlatformTest {
   }
 
   BillingAddressSelectionMediator* GetMediator() { return mediator_; }
+
+  base::test::ScopedTaskEnvironment scoped_task_evironment_;
 
   BillingAddressSelectionMediator* mediator_;
 

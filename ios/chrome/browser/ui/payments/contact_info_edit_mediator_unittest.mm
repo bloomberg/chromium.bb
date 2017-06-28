@@ -6,6 +6,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
@@ -31,6 +32,8 @@ class PaymentRequestContactInfoEditMediatorTest : public PlatformTest {
       : payment_request_(base::MakeUnique<TestPaymentRequest>(
             payment_request_test_util::CreateTestWebPaymentRequest(),
             &personal_data_manager_)) {}
+
+  base::test::ScopedTaskEnvironment scoped_task_evironment_;
 
   autofill::TestPersonalDataManager personal_data_manager_;
   std::unique_ptr<TestPaymentRequest> payment_request_;

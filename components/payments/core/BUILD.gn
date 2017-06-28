@@ -28,6 +28,7 @@ static_library("core") {
     "payment_options_provider.h",
     "payment_prefs.cc",
     "payment_prefs.h",
+    "payment_request_base_delegate.h",
     "payment_request_data_util.cc",
     "payment_request_data_util.h",
     "payment_request_delegate.h",

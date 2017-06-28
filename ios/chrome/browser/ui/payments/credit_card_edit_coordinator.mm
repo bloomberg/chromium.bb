@@ -36,7 +36,7 @@ using ::AutofillTypeFromAutofillUIType;
 // |error_message| can't be null and will be filled with the appropriate error
 // message iff the return value is false.
 bool IsValidCreditCardNumber(const base::string16& card_number,
-                             const PaymentRequest* payment_request,
+                             PaymentRequest* payment_request,
                              const autofill::CreditCard* credit_card_to_edit,
                              base::string16* error_message) {
   std::set<std::string> supported_card_networks(

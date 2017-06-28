@@ -17,11 +17,9 @@ class AddressNormalizationManagerTest : public testing::Test {
   AddressNormalizationManagerTest() {}
 
   void Initialize(const std::string& country_code) {
-    std::unique_ptr<TestAddressNormalizer> address_normalizer =
-        base::MakeUnique<TestAddressNormalizer>();
-    address_normalizer_ = address_normalizer.get();
+    address_normalizer_ = base::MakeUnique<TestAddressNormalizer>();
     manager_ = base::MakeUnique<AddressNormalizationManager>(
-        std::move(address_normalizer), country_code);
+        address_normalizer_.get(), country_code);
   }
 
   void Finalize() {
@@ -32,8 +30,8 @@ class AddressNormalizationManagerTest : public testing::Test {
 
   void CompletionCallback() { completion_callback_called_ = true; }
 
+  std::unique_ptr<TestAddressNormalizer> address_normalizer_;
   std::unique_ptr<AddressNormalizationManager> manager_;
-  TestAddressNormalizer* address_normalizer_ = nullptr;  // Weak.
   bool completion_callback_called_ = false;
 };
 

@@ -113,6 +113,9 @@ class PaymentShippingOption;
 // The delegate to be notified when the user confirms or cancels the request.
 @property(nonatomic, weak) id<PaymentRequestCoordinatorDelegate> delegate;
 
+// Initiates the UI that will process payment with a payment method.
+- (void)sendPaymentResponse;
+
 // Updates the payment details of the PaymentRequest and updates the UI.
 - (void)updatePaymentDetails:(web::PaymentDetails)paymentDetails;
 

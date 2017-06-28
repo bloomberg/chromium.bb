@@ -19,7 +19,7 @@
 
 namespace payments {
 
-class PaymentRequestDelegate;
+class PaymentRequestBaseDelegate;
 
 // Represents an Autofill/Payments credit card form of payment in Payment
 // Request.
@@ -36,7 +36,7 @@ class AutofillPaymentInstrument
       bool matches_merchant_card_type_exactly,
       const std::vector<autofill::AutofillProfile*>& billing_profiles,
       const std::string& app_locale,
-      PaymentRequestDelegate* payment_request_delegate);
+      PaymentRequestBaseDelegate* payment_request_delegate);
   ~AutofillPaymentInstrument() override;
 
   // PaymentInstrument:
@@ -80,7 +80,7 @@ class AutofillPaymentInstrument
   const std::string app_locale_;
 
   PaymentInstrument::Delegate* delegate_;
-  PaymentRequestDelegate* payment_request_delegate_;
+  PaymentRequestBaseDelegate* payment_request_delegate_;
   autofill::AutofillProfile billing_address_;
 
   base::string16 cvc_;

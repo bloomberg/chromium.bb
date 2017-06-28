@@ -16,10 +16,10 @@ constexpr int kAddressNormalizationTimeoutSeconds = 5;
 }  // namespace
 
 AddressNormalizationManager::AddressNormalizationManager(
-    std::unique_ptr<AddressNormalizer> address_normalizer,
+    AddressNormalizer* address_normalizer,
     const std::string& default_country_code)
     : default_country_code_(default_country_code),
-      address_normalizer_(std::move(address_normalizer)) {
+      address_normalizer_(address_normalizer) {
   DCHECK(autofill::data_util::IsValidCountryCode(default_country_code));
   DCHECK(address_normalizer_);
 
@@ -45,8 +45,8 @@ void AddressNormalizationManager::StartNormalizingAddress(
   DCHECK(accepting_requests_) << "FinalizeWithCompletionCallback has been "
                                  "called, cannot normalize more addresses";
 
-  delegates_.push_back(base::MakeUnique<NormalizerDelegate>(
-      this, address_normalizer_.get(), profile));
+  delegates_.push_back(
+      base::MakeUnique<NormalizerDelegate>(this, address_normalizer_, profile));
 }
 
 void AddressNormalizationManager::MaybeRunCompletionCallback() {
