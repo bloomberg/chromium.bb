@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import json
 import unittest
 
 from webkitpy.common.host_mock import MockHost
@@ -9,6 +10,7 @@ from webkitpy.common.system.executive_mock import mock_git_commands
 from webkitpy.w3c.chromium_commit import ChromiumCommit
 from webkitpy.w3c.chromium_commit_mock import MockChromiumCommit
 from webkitpy.w3c.common import _exportable_commits_since
+from webkitpy.w3c.common import read_credentials
 from webkitpy.w3c.common import is_exportable
 from webkitpy.w3c.wpt_github import PullRequest
 from webkitpy.w3c.wpt_github_mock import MockWPTGitHub
@@ -87,3 +89,30 @@ class CommonTest(unittest.TestCase):
             PullRequest('PR2', 2, 'body\nChange-Id: I00decade', 'closed'),
         ])
         self.assertFalse(is_exportable(commit, MockLocalWPT(), github))
+
+    def test_get_credentials_empty(self):
+        host = MockHost()
+        host.filesystem.write_text_file('/tmp/credentials.json', '{}')
+        self.assertEqual(read_credentials(host, '/tmp/credentials.json'), {})
+
+    def test_get_credentials_none(self):
+        self.assertEqual(read_credentials(MockHost(), None), {})
+
+    def test_get_credentials_gets_values_from_file(self):
+        host = MockHost()
+        host.filesystem.write_text_file(
+            '/tmp/credentials.json',
+            json.dumps({
+                'GH_USER': 'user-github',
+                'GH_TOKEN': 'pass-github',
+                'GERRIT_USER': 'user-gerrit',
+                'GERRIT_TOKEN': 'pass-gerrit',
+            }))
+        self.assertEqual(
+            read_credentials(host, '/tmp/credentials.json'),
+            {
+                'GH_USER': 'user-github',
+                'GH_TOKEN': 'pass-github',
+                'GERRIT_USER': 'user-gerrit',
+                'GERRIT_TOKEN': 'pass-gerrit',
+            })
