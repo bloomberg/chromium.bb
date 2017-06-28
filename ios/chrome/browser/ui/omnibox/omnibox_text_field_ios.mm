@@ -14,7 +14,9 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/omnibox/browser/autocomplete_input.h"
+#include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autocomplete/autocomplete_scheme_classifier_impl.h"
+#include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/ui/animation_util.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_util.h"
 #import "ios/chrome/browser/ui/reversed_animation.h"
@@ -458,7 +460,30 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
     [self clearAutocompleteText];
   }
 
-  self.attributedText = fieldText;
+  // The following BOOL was introduced to workaround a UIKit bug
+  // (crbug.com/737589, rdar/32817402). The bug relates to third party keyboards
+  // that check the value of textDocumentProxy.documentContextBeforeInput to
+  // show keyboard suggestions. It appears that calling setAttributedText during
+  // an EditingChanged UIControlEvent somehow triggers this bug. The reason we
+  // update the attributed text here is to change the colors of the omnibox
+  // (such as host, protocol) when !self.editing, but also to hide real
+  // UITextField text under the _selection text when self.editing. Since we will
+  // correct the omnibox editing text color anytime |self.text| is different
+  // than |fieldText|, it seems it's OK to skip calling self.attributedText
+  // during the condition added below. If we change mobile omnibox to match
+  // desktop and also color the omnibox while self.editing, this workaround will
+  // no longer work.
+  BOOL updateText = YES;
+  // Before M61 branch point this should also go behind a Japanese flag, e.g.
+  // [self.textInputMode.primaryLanguage isEqualToString:@"ja-JP"] to be as
+  // restrictive as possible.
+  if (experimental_flags::IsThirdPartyKeyboardWorkaroundEnabled()) {
+    updateText =
+        (!self.editing || ![self.text isEqualToString:fieldText.string]);
+  }
+  if (updateText) {
+    self.attributedText = fieldText;
+  }
 
   // iOS changes the font to .LastResort when some unexpected unicode strings
   // are used (e.g. 𝗲𝗺𝗽𝗵𝗮𝘀𝗶𝘀).  Setting the NSFontAttributeName in the

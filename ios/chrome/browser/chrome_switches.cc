@@ -59,6 +59,10 @@ const char kDisableBookmarkReordering[] = "disable-bookmark-reordering";
 // Disables the WKBackForwardList based navigation manager experiment.
 const char kDisableSlimNavigationManager[] = "disable-slim-navigation-manager";
 
+// Disables the 3rd party keyboard omnibox workaround.
+const char kDisableThirdPartyKeyboardWorkaround[] =
+    "disable-third-party-keyboard-workaround";
+
 // Enables Contextual Search.
 const char kEnableContextualSearch[] = "enable-contextual-search";
 
@@ -104,6 +108,10 @@ const char kEnableBookmarkReordering[] = "enable-bookmark-reordering";
 
 // Enables the WKBackForwardList based navigation manager experiment.
 const char kEnableSlimNavigationManager[] = "enable-slim-navigation-manager";
+
+// Enables the 3rd party keyboard omnibox workaround.
+const char kEnableThirdPartyKeyboardWorkaround[] =
+    "enable-third-party-keyboard-workaround";
 
 // Forces additional Chrome Variation Ids that will be sent in X-Client-Data
 // header, specified as a 64-bit encoded list of numeric experiment ids. Ids

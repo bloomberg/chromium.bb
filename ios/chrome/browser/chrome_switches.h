@@ -24,6 +24,7 @@ extern const char kDisableRequestMobileSite[];
 extern const char kDisableSuggestionsUI[];
 extern const char kDisableBookmarkReordering[];
 extern const char kDisableSlimNavigationManager[];
+extern const char kDisableThirdPartyKeyboardWorkaround[];
 
 extern const char kEnableContextualSearch[];
 extern const char kEnableIOSFastWebScrollViewInsets[];
@@ -40,6 +41,7 @@ extern const char kEnableIOSPhysicalWeb[];
 extern const char kEnableSuggestionsUI[];
 extern const char kEnableBookmarkReordering[];
 extern const char kEnableSlimNavigationManager[];
+extern const char kEnableThirdPartyKeyboardWorkaround[];
 
 extern const char kIOSForceVariationIds[];
 extern const char kUserAgent[];
