@@ -824,6 +824,77 @@ void Resource::FinishPendingClients() {
   DCHECK(clients_awaiting_callback_.IsEmpty() || scheduled);
 }
 
+bool Resource::CanReuse(const FetchParameters& params) const {
+  const ResourceRequest& new_request = params.GetResourceRequest();
+  const ResourceLoaderOptions& new_options = params.Options();
+
+  // Certain requests (e.g., XHRs) might have manually set headers that require
+  // revalidation. In theory, this should be a Revalidate case. In practice, the
+  // MemoryCache revalidation path assumes a whole bunch of things about how
+  // revalidation works that manual headers violate, so punt to Reload instead.
+  //
+  // Similarly, a request with manually added revalidation headers can lead to a
+  // 304 response for a request that wasn't flagged as a revalidation attempt.
+  // Normally, successful revalidation will maintain the original response's
+  // status code, but for a manual revalidation the response code remains 304.
+  // In this case, the Resource likely has insufficient context to provide a
+  // useful cache hit or revalidation. See http://crbug.com/643659
+  if (new_request.IsConditional() || response_.HttpStatusCode() == 304)
+    return false;
+
+  // Answers the question "can a separate request with different options be
+  // re-used" (e.g. preload request). The safe (but possibly slow) answer is
+  // always false.
+  //
+  // Data buffering policy differences are believed to be safe for re-use.
+  //
+  // TODO: Check content_security_policy_option.
+  //
+  // initiator_info is purely informational and should be benign for re-use.
+  //
+  // request_initiator_context is benign (indicates document vs. worker).
+
+  if (new_options.synchronous_policy != options_.synchronous_policy)
+    return false;
+
+  if (resource_request_.GetKeepalive() || new_request.GetKeepalive()) {
+    return false;
+  }
+
+  // securityOrigin has more complicated checks which callers are responsible
+  // for.
+
+  // TODO(yhirano): Clean up this condition. This is generated to keep the old
+  // behavior across refactoring.
+  //
+  // TODO(tyoshino): Consider returning false when the credentials mode
+  // differs.
+
+  bool new_is_with_fetcher_cors_suppressed =
+      new_options.cors_handling_by_resource_fetcher ==
+      kDisableCORSHandlingByResourceFetcher;
+  bool existing_was_with_fetcher_cors_suppressed =
+      options_.cors_handling_by_resource_fetcher ==
+      kDisableCORSHandlingByResourceFetcher;
+
+  bool new_is_with_cors_mode =
+      new_request.GetFetchRequestMode() == WebURLRequest::kFetchRequestModeCORS;
+  bool existing_was_with_cors_mode = resource_request_.GetFetchRequestMode() ==
+                                     WebURLRequest::kFetchRequestModeCORS;
+
+  if (new_is_with_fetcher_cors_suppressed) {
+    if (existing_was_with_fetcher_cors_suppressed)
+      return true;
+
+    return !existing_was_with_cors_mode;
+  }
+
+  if (existing_was_with_fetcher_cors_suppressed)
+    return !new_is_with_cors_mode;
+
+  return new_is_with_cors_mode == existing_was_with_cors_mode;
+}
+
 void Resource::Prune() {
   DestroyDecodedDataIfPossible();
 }
