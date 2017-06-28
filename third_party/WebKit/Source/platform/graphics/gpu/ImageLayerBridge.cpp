@@ -18,7 +18,7 @@
 namespace blink {
 
 ImageLayerBridge::ImageLayerBridge(OpacityMode opacity_mode)
-    : weak_ptr_factory_(this), opacity_mode_(opacity_mode) {
+    : opacity_mode_(opacity_mode) {
   layer_ = Platform::Current()->CompositorSupport()->CreateExternalTextureLayer(
       this);
   GraphicsLayer::RegisterContentsLayer(layer_->Layer());
@@ -83,7 +83,7 @@ bool ImageLayerBridge::PrepareTextureMailbox(
     *out_mailbox = cc::TextureMailbox(image_->GetMailbox(),
                                       image_->GetSyncToken(), GL_TEXTURE_2D);
     auto func = WTF::Bind(&ImageLayerBridge::MailboxReleasedGpu,
-                          weak_ptr_factory_.CreateWeakPtr(), image_);
+                          WrapWeakPersistent(this), image_);
     *out_release_callback = cc::SingleReleaseCallback::Create(
         ConvertToBaseCallback(std::move(func)));
   } else {
@@ -110,8 +110,8 @@ bool ImageLayerBridge::PrepareTextureMailbox(
     *out_mailbox = cc::TextureMailbox(
         bitmap.get(), gfx::Size(image_->width(), image_->height()));
     auto func = WTF::Bind(&ImageLayerBridge::MailboxReleasedSoftware,
-                          weak_ptr_factory_.CreateWeakPtr(),
-                          base::Passed(&bitmap), image_->Size());
+                          WrapWeakPersistent(this), base::Passed(&bitmap),
+                          image_->Size());
     *out_release_callback = cc::SingleReleaseCallback::Create(
         ConvertToBaseCallback(std::move(func)));
   }

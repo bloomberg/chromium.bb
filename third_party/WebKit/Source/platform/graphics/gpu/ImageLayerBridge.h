@@ -9,7 +9,6 @@
 #include "platform/PlatformExport.h"
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/heap/Heap.h"
-#include "platform/wtf/WeakPtr.h"
 
 namespace cc {
 class SharedBitmap;
@@ -61,7 +60,6 @@ class PLATFORM_EXPORT ImageLayerBridge
  private:
   std::unique_ptr<cc::SharedBitmap> CreateOrRecycleBitmap();
 
-  WeakPtrFactory<ImageLayerBridge> weak_ptr_factory_;
   RefPtr<StaticBitmapImage> image_;
   std::unique_ptr<WebExternalTextureLayer> layer_;
   SkFilterQuality filter_quality_ = kLow_SkFilterQuality;
