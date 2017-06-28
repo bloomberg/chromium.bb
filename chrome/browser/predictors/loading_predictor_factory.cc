@@ -40,7 +40,7 @@ KeyedService* LoadingPredictorFactory::BuildServiceInstanceFor(
   Profile* profile = Profile::FromBrowserContext(context);
 
   LoadingPredictorConfig config;
-  if (!IsLoadingPredictortEnabled(profile, &config))
+  if (!IsLoadingPredictorEnabled(profile, &config))
     return nullptr;
 
   return new LoadingPredictor(config, profile);
