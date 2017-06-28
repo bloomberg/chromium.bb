@@ -1159,10 +1159,12 @@ const CGFloat kNavigationBarTopMargin = 8.0;
 }
 
 - (void)wasShown {
+  [_folderView wasShown];
 }
 
 - (void)wasHidden {
   [self cachePosition];
+  [_folderView wasHidden];
 }
 
 - (void)dismissModals {

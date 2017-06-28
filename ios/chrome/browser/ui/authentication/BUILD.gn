@@ -111,7 +111,10 @@ source_set("authentication_arc") {
   deps = [
     ":authentication_ui",
     "//base",
+    "//components/prefs",
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser",
+    "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/commands",

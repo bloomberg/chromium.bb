@@ -22,6 +22,7 @@ extern const char kEnableDoNotTrack[];
 extern const char kHttpServerProperties[];
 extern const char kIosBookmarkFolderDefault[];
 extern const char kIosBookmarkPromoAlreadySeen[];
+extern const char kIosBookmarkSigninPromoDisplayedCount[];
 extern const char kIosPhysicalWebEnabled[];
 extern const char kLastSessionExitedCleanly[];
 extern const char kMetricsReportingWifiOnly[];

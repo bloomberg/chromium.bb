@@ -64,6 +64,11 @@ const char kIosBookmarkFolderDefault[] = "ios.bookmark.default_folder";
 // the bookmark promo dialog.
 const char kIosBookmarkPromoAlreadySeen[] = "ios.bookmark.promo_already_seen";
 
+// Integer to represent the number of time the sign-in promo has been displayed
+// in the bookmark view.
+const char kIosBookmarkSigninPromoDisplayedCount[] =
+    "ios.bookmark.signin_promo_displayed_count";
+
 // Whether the user has enabled the Physical Web feature to surface URLs
 // broadcast by nearby devices.
 const char kIosPhysicalWebEnabled[] = "ios.physical_web_enabled";

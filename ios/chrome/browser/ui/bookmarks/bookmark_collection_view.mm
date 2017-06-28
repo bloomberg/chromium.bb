@@ -19,10 +19,12 @@
 #include "components/favicon/core/large_icon_service.h"
 #include "components/favicon_base/fallback_icon_style.h"
 #include "components/favicon_base/favicon_types.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/bookmarks/bookmarks_utils.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
+#include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_configurator.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_consumer.h"
@@ -141,6 +143,11 @@ const NSTimeInterval kShowEmptyBookmarksBackgroundRefreshDelay = 1.0;
 @synthesize longPressRecognizer = _longPressRecognizer;
 @synthesize browserState = _browserState;
 @synthesize shadow = _shadow;
+
++ (void)registerBrowserStatePrefs:(user_prefs::PrefRegistrySyncable*)registry {
+  registry->RegisterIntegerPref(prefs::kIosBookmarkSigninPromoDisplayedCount,
+                                0);
+}
 
 #pragma mark - Initialization
 
@@ -335,14 +342,30 @@ const NSTimeInterval kShowEmptyBookmarksBackgroundRefreshDelay = 1.0;
         _signinPromoViewMediator.consumer = nil;
         _signinPromoViewMediator = nil;
       } else {
-        _signinPromoViewMediator = [[SigninPromoViewMediator alloc] init];
+        _signinPromoViewMediator = [[SigninPromoViewMediator alloc]
+            initWithBrowserState:_browserState];
         _signinPromoViewMediator.consumer = self;
+        _signinPromoViewMediator.displayedCountPreferenceKey =
+            prefs::kIosBookmarkSigninPromoDisplayedCount;
+        _signinPromoViewMediator.alreadySeenSigninViewPreferenceKey =
+            prefs::kIosBookmarkPromoAlreadySeen;
+        _signinPromoViewMediator.histograms =
+            ios::SigninPromoViewHistograms::Bookmarks;
         _signinPromoViewMediator.accessPoint =
             signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_MANAGER;
+        [_signinPromoViewMediator signinPromoViewVisible];
       }
     }
     [self.collectionView reloadData];
   }
+}
+
+- (void)wasShown {
+  [_signinPromoViewMediator signinPromoViewVisible];
+}
+
+- (void)wasHidden {
+  [_signinPromoViewMediator signinPromoViewHidden];
 }
 
 #pragma mark - Sections
@@ -773,7 +796,7 @@ const NSTimeInterval kShowEmptyBookmarksBackgroundRefreshDelay = 1.0;
           configureSigninPromoView:signinPromoCell.signinPromoView];
       __weak BookmarkCollectionView* weakSelf = self;
       signinPromoCell.closeButtonAction = ^() {
-        [weakSelf.delegate bookmarkCollectionViewDismissPromo:self];
+        [weakSelf signinPromoCloseButtonAction];
       };
       return signinPromoCell;
     } else {
@@ -792,6 +815,12 @@ const NSTimeInterval kShowEmptyBookmarksBackgroundRefreshDelay = 1.0;
 
   BookmarkItemCell* cell = [self cellForBookmark:node indexPath:indexPath];
   return cell;
+}
+
+// Removes the sign-in promo view.
+- (void)signinPromoCloseButtonAction {
+  [_signinPromoViewMediator signinPromoViewDismissed];
+  [_delegate bookmarkCollectionViewDismissPromo:self];
 }
 
 // Create a header view for the element at |indexPath|.

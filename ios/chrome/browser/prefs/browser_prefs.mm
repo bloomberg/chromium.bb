@@ -49,6 +49,7 @@
 #include "ios/chrome/browser/physical_web/physical_web_prefs_registration.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_collection_view.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_interaction_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_promo_controller.h"
 #include "ios/chrome/browser/voice/voice_search_prefs_registration.h"
@@ -121,6 +122,7 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   DesktopPromotionSyncService::RegisterDesktopPromotionUserPrefs(registry);
   RegisterVoiceSearchBrowserStatePrefs(registry);
 
+  [BookmarkCollectionView registerBrowserStatePrefs:registry];
   [BookmarkInteractionController registerBrowserStatePrefs:registry];
   [BookmarkPromoController registerBrowserStatePrefs:registry];
   [HandoffManager registerBrowserStatePrefs:registry];
