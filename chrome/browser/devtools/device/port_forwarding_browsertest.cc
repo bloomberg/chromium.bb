@@ -40,7 +40,6 @@ class PortForwardingTest: public InProcessBrowserTest {
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kRemoteDebuggingPort,
         base::IntToString(GetRemoteDebuggingPort()));
   }

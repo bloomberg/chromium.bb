@@ -50,8 +50,6 @@ class TaskManagerMacTest : public InProcessBrowserTest {
     // Make sure the task manager is closed (if any).
     chrome::HideTaskManager();
     ASSERT_FALSE(GetTaskManagerMac());
-
-    InProcessBrowserTest::TearDownOnMainThread();
   }
 
   TaskManagerMac* GetTaskManagerMac() const {

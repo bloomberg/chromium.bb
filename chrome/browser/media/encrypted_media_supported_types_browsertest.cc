@@ -159,10 +159,6 @@ class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
     clear_key_exclusive_video_common_codecs_.push_back("vp09.03.10.10");
   }
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
-  }
-
   typedef std::vector<std::string> CodecVector;
 
   const CodecVector& no_codecs() const { return no_codecs_; }

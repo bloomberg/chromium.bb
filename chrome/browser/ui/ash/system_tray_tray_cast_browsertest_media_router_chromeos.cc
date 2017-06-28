@@ -76,8 +76,6 @@ class SystemTrayTrayCastMediaRouterChromeOSTest : public InProcessBrowserTest {
   }
 
   void SetUpInProcessBrowserTestFixture() override {
-    InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
-
     ON_CALL(media_router_, RegisterMediaSinksObserver(_))
         .WillByDefault(Invoke(
             this, &SystemTrayTrayCastMediaRouterChromeOSTest::CaptureSink));
@@ -89,7 +87,6 @@ class SystemTrayTrayCastMediaRouterChromeOSTest : public InProcessBrowserTest {
 
   void TearDownInProcessBrowserTestFixture() override {
     CastConfigClientMediaRouter::SetMediaRouterForTest(nullptr);
-    InProcessBrowserTest::TearDownInProcessBrowserTestFixture();
   }
 
   media_router::MockMediaRouter media_router_;

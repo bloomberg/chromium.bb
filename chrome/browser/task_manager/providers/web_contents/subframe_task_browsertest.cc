@@ -58,7 +58,6 @@ class SubframeTaskBrowserTest : public InProcessBrowserTest {
   ~SubframeTaskBrowserTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
     content::IsolateAllSitesForTesting(command_line);
   }
 

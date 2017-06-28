@@ -240,7 +240,6 @@ class ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest
   ~ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(policy::switches::kDeviceManagementUrl,
                                     "http://localhost");
     SetArcAvailableCommandLineForTesting(command_line);

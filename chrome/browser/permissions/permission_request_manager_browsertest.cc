@@ -86,7 +86,6 @@ class PermissionRequestManagerBrowserTest : public InProcessBrowserTest {
 
   void TearDownOnMainThread() override {
     mock_permission_prompt_factory_.reset();
-    InProcessBrowserTest::TearDownOnMainThread();
   }
 
   PermissionRequestManager* GetPermissionRequestManager() {

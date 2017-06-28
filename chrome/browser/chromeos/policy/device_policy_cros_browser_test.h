@@ -53,7 +53,6 @@ class DevicePolicyCrosBrowserTest : public InProcessBrowserTest {
   ~DevicePolicyCrosBrowserTest() override;
 
   void SetUpInProcessBrowserTestFixture() override;
-  void TearDownInProcessBrowserTestFixture() override;
 
   virtual void MarkOwnership();
 

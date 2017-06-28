@@ -42,19 +42,11 @@ class PeripheralBatteryObserverTest : public InProcessBrowserTest {
     chromeos::DBusThreadManager::Initialize();
   }
 
-  void SetUpInProcessBrowserTestFixture() override {
-    InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
-  }
-
   void SetUpOnMainThread() override {
     observer_.reset(new PeripheralBatteryObserver());
   }
 
   void TearDownOnMainThread() override { observer_.reset(); }
-
-  void TearDownInProcessBrowserTestFixture() override {
-    InProcessBrowserTest::TearDownInProcessBrowserTestFixture();
-  }
 
  protected:
   std::unique_ptr<PeripheralBatteryObserver> observer_;

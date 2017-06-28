@@ -79,8 +79,6 @@ void SetCompletedState(DWORD value) {
 class ChromeCleanerTagForResettingTest : public InProcessBrowserTest {
  public:
   void SetUpInProcessBrowserTestFixture() override {
-    InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
-
     scoped_feature_list_.InitAndEnableFeature(kInBrowserCleanerUIFeature);
   }
 
@@ -152,8 +150,6 @@ class ChromeCleanerResetTaggedProfilesTest
       public ::testing::WithParamInterface<CleanupCompletionState> {
  public:
   void SetUpInProcessBrowserTestFixture() override {
-    InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
-
     completion_state_ = GetParam();
     ASSERT_TRUE(completion_state_ >= CleanupCompletionState::kNotAvailable &&
                 completion_state_ <= CleanupCompletionState::kInvalidValue);

@@ -73,7 +73,6 @@ class ArcRobotAuthCodeFetcherBrowserTest : public InProcessBrowserTest {
   ~ArcRobotAuthCodeFetcherBrowserTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(policy::switches::kDeviceManagementUrl,
                                     "http://localhost");
     arc::SetArcAvailableCommandLineForTesting(command_line);

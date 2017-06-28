@@ -38,8 +38,6 @@ class BrowserCommandControllerBrowserTest: public InProcessBrowserTest {
   ~BrowserCommandControllerBrowserTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
-
 #if defined(OS_CHROMEOS)
     command_line->AppendSwitch(
         chromeos::switches::kIgnoreUserProfileMappingForTests);

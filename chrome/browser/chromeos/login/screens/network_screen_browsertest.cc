@@ -73,10 +73,6 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
     network_screen_->SetNetworkStateHelperForTest(mock_network_state_helper_);
   }
 
-  void TearDownInProcessBrowserTestFixture() override {
-    InProcessBrowserTest::TearDownInProcessBrowserTestFixture();
-  }
-
   void EmulateContinueButtonExit(NetworkScreen* network_screen) {
     EXPECT_CALL(*mock_base_screen_delegate_,
                 OnExit(_, ScreenExitCode::NETWORK_CONNECTED, _))

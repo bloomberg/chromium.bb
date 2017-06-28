@@ -29,7 +29,6 @@ class SitePerProcessPaymentsBrowserTest : public InProcessBrowserTest {
   ~SitePerProcessPaymentsBrowserTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
     // HTTPS server only serves a valid cert for localhost, so this is needed
     // to load pages from other hosts without an error.
     command_line->AppendSwitch(switches::kIgnoreCertificateErrors);

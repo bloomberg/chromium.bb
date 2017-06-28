@@ -433,7 +433,6 @@ class AppControllerOpenShortcutOnStartupBrowserTest
     set_open_about_blank_on_browser_launch(false);
     // Skip AppControllerOpenShortcutBrowserTest::SetUpCommandLine, which adds
     // startup URL.
-    InProcessBrowserTest::SetUpCommandLine(command_line);
   }
 
   SessionStartupPref::Type GetSessionStartupPref() {

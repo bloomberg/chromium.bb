@@ -34,8 +34,6 @@ void PermissionsBrowserTest::SetUpOnMainThread() {
 
 void PermissionsBrowserTest::TearDownOnMainThread() {
   prompt_factory_.reset();
-
-  InProcessBrowserTest::TearDownOnMainThread();
 }
 
 bool PermissionsBrowserTest::RunScriptReturnBool(const std::string& script) {
