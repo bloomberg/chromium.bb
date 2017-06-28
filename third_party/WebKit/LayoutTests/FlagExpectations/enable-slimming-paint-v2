@@ -1525,11 +1525,8 @@ crbug.com/644358 fast/canvas/imagebitmap/transferFromImageBitmap-no-alpha.html [
 crbug.com/644358 fast/css3-text/css3-text-decoration/repaint/repaint-text-decoration-style.html [ Failure ]
 crbug.com/644358 paint/invalidation/justify-items-overflow-change.html [ Failure ]
 crbug.com/644358 paint/invalidation/justify-self-overflow-change.html [ Failure ]
-crbug.com/644358 paint/invalidation/multi-subsequence-scrolled.html [ Failure ]
-crbug.com/644358 paint/invalidation/repaint-subsequence-on-ancestor-clip-change.html [ Failure ]
 crbug.com/644358 paint/invalidation/svg/overflow-repaint.html [ Failure ]
 crbug.com/644358 paint/invalidation/video-paint-invalidation.html [ Crash ]
-crbug.com/644358 svg/animations/animateMotion_changingPath.html [ Failure ]
 
 Bug(none) compositing/layer-creation/main-thread-scrolling-for-non-composited-fixed-position-if-overflow-hidden.html [ Failure ]
 Bug(none) compositing/layer-creation/main-thread-scrolling-for-non-composited-fixed-position.html [ Failure ]

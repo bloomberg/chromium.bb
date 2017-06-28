@@ -12,14 +12,9 @@
           "reason": "subtree"
         },
         {
-          "object": "InlineTextBox 'test test test'",
+          "object": "LayoutBlockFlow DIV id='inner-editor'",
           "rect": [10, 11, 60, 16],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'test test test'",
-          "rect": [10, 11, 60, 16],
-          "reason": "disappeared"
+          "reason": "paint property change"
         }
       ]
     }

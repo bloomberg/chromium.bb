@@ -336,11 +336,9 @@ void PropertyTreeManager::UpdateLayerScrollMapping(
 
 int PropertyTreeManager::SwitchToEffectNode(
     const EffectPaintPropertyNode& next_effect) {
-  const EffectPaintPropertyNode* ancestor =
-      GeometryMapper::LowestCommonAncestor(CurrentEffectNode(), &next_effect);
-  DCHECK(ancestor) << "Malformed effect tree. All nodes must be descendant of "
-                      "EffectPaintPropertyNode::root().";
-  while (CurrentEffectNode() != ancestor)
+  const auto& ancestor =
+      LowestCommonAncestor(*CurrentEffectNode(), next_effect);
+  while (CurrentEffectNode() != &ancestor)
     effect_stack_.pop_back();
 
   // Now the current effect is the lowest common ancestor of previous effect

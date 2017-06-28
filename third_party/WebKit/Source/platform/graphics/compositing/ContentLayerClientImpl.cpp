@@ -84,11 +84,10 @@ std::unique_ptr<JSONObject> ContentLayerClientImpl::LayerAsJSON(
 
 IntRect ContentLayerClientImpl::MapRasterInvalidationRectFromChunkToLayer(
     const FloatRect& r,
-    const PaintChunk& chunk,
-    const PropertyTreeState& layer_state) const {
+    const PaintChunk& chunk) const {
   FloatClipRect rect(r);
   GeometryMapper::LocalToAncestorVisualRect(
-      chunk.properties.property_tree_state, layer_state, rect);
+      chunk.properties.property_tree_state, layer_state_, rect);
   if (rect.Rect().IsEmpty())
     return IntRect();
 
@@ -129,8 +128,7 @@ size_t ContentLayerClientImpl::MatchNewChunkToOldChunk(
 // larger than O(n).
 void ContentLayerClientImpl::GenerateRasterInvalidations(
     const Vector<const PaintChunk*>& new_chunks,
-    const Vector<PaintChunkInfo>& new_chunks_info,
-    const PropertyTreeState& layer_state) {
+    const Vector<PaintChunkInfo>& new_chunks_info) {
   Vector<bool> old_chunks_matched;
   old_chunks_matched.resize(paint_chunks_info_.size());
   size_t old_index = 0;
@@ -153,20 +151,24 @@ void ContentLayerClientImpl::GenerateRasterInvalidations(
     }
 
     old_chunks_matched[matched] = true;
-    if (matched == old_index) {
-      // TODO(wangxianzhu): Also fully invalidate for paint property changes.
+
+    bool properties_changed =
+        new_chunk.properties != paint_chunks_info_[matched].properties ||
+        new_chunk.properties.property_tree_state.Changed(layer_state_);
+    if (!properties_changed && matched == old_index) {
       // Add the raster invalidations found by PaintController within the chunk.
-      AddDisplayItemRasterInvalidations(new_chunk, layer_state);
+      AddDisplayItemRasterInvalidations(new_chunk);
     } else {
-      // Invalidate both old and new bounds of the chunk if the chunk is
-      // reordered and may expose area that was previously covered by it.
+      // Invalidate both old and new bounds of the chunk if the chunk's paint
+      // properties changed, or is moved backward and may expose area that was
+      // previously covered by it.
       const auto& old_chunks_info = paint_chunks_info_[matched];
-      InvalidateRasterForOldChunk(old_chunks_info,
-                                  PaintInvalidationReason::kChunkReordered);
-      if (old_chunks_info.bounds_in_layer != new_chunk_info.bounds_in_layer) {
-        InvalidateRasterForNewChunk(new_chunk_info,
-                                    PaintInvalidationReason::kChunkReordered);
-      }
+      PaintInvalidationReason reason =
+          properties_changed ? PaintInvalidationReason::kPaintProperty
+                             : PaintInvalidationReason::kChunkReordered;
+      InvalidateRasterForOldChunk(old_chunks_info, reason);
+      if (old_chunks_info.bounds_in_layer != new_chunk_info.bounds_in_layer)
+        InvalidateRasterForNewChunk(new_chunk_info, reason);
       // Ignore the display item raster invalidations because we have fully
       // invalidated the chunk.
     }
@@ -189,15 +191,14 @@ void ContentLayerClientImpl::GenerateRasterInvalidations(
 }
 
 void ContentLayerClientImpl::AddDisplayItemRasterInvalidations(
-    const PaintChunk& chunk,
-    const PropertyTreeState& layer_state) {
+    const PaintChunk& chunk) {
   DCHECK(chunk.raster_invalidation_tracking.IsEmpty() ||
          chunk.raster_invalidation_rects.size() ==
              chunk.raster_invalidation_tracking.size());
 
   for (size_t i = 0; i < chunk.raster_invalidation_rects.size(); ++i) {
     auto rect = MapRasterInvalidationRectFromChunkToLayer(
-        chunk.raster_invalidation_rects[i], chunk, layer_state);
+        chunk.raster_invalidation_rects[i], chunk);
     if (rect.IsEmpty())
       continue;
     cc_picture_layer_->SetNeedsDisplayRect(rect);
@@ -275,6 +276,8 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
 
   bool layer_bounds_was_empty = layer_bounds_.IsEmpty();
   bool layer_origin_changed = layer_bounds_.origin() != layer_bounds.origin();
+  bool layer_state_changed = layer_state_ != layer_state;
+  layer_state_ = layer_state;
   layer_bounds_ = layer_bounds;
   cc_picture_layer_->SetBounds(layer_bounds.size());
   cc_picture_layer_->SetIsDrawable(true);
@@ -282,10 +285,9 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
   Vector<PaintChunkInfo> new_chunks_info;
   new_chunks_info.ReserveCapacity(paint_chunks.size());
   for (const auto* chunk : paint_chunks) {
-    new_chunks_info.push_back(
-        PaintChunkInfo(MapRasterInvalidationRectFromChunkToLayer(
-                           chunk->bounds, *chunk, layer_state),
-                       *chunk));
+    new_chunks_info.push_back(PaintChunkInfo(
+        MapRasterInvalidationRectFromChunkToLayer(chunk->bounds, *chunk),
+        *chunk));
     if (raster_invalidation_tracking_info_) {
       raster_invalidation_tracking_info_->new_client_debug_names.insert(
           &chunk->id.client, chunk->id.client.DebugName());
@@ -293,10 +295,10 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
   }
 
   if (!layer_bounds_was_empty && !layer_bounds_.IsEmpty()) {
-    if (layer_origin_changed)
+    if (layer_origin_changed || layer_state_changed)
       InvalidateRasterForWholeLayer();
     else
-      GenerateRasterInvalidations(paint_chunks, new_chunks_info, layer_state);
+      GenerateRasterInvalidations(paint_chunks, new_chunks_info);
   }
 
   Optional<RasterUnderInvalidationCheckingParams> params;
@@ -315,14 +317,6 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
     raster_invalidation_tracking_info_->old_client_debug_names.clear();
     std::swap(raster_invalidation_tracking_info_->old_client_debug_names,
               raster_invalidation_tracking_info_->new_client_debug_names);
-  }
-
-  for (const auto* chunk : paint_chunks) {
-    // TODO(wangxianzhu): This will be unnecessary if we don't call
-    // PaintArtifactCompositor::Update() when paint artifact is unchanged.
-    chunk->client_is_just_created = false;
-    chunk->raster_invalidation_rects.clear();
-    chunk->raster_invalidation_tracking.clear();
   }
 
   return cc_picture_layer_;

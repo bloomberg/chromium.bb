@@ -12,19 +12,14 @@
           "reason": "subtree"
         },
         {
+          "object": "LayoutView #document",
+          "rect": [3, 65, 235, 235],
+          "reason": "paint property change"
+        },
+        {
           "object": "HorizontalScrollbar",
           "rect": [3, 300, 235, 15],
           "reason": "scroll control"
-        },
-        {
-          "object": "LayoutView #document",
-          "rect": [3, 65, 225, 225],
-          "reason": "subtree"
-        },
-        {
-          "object": "InlineTextBox 'scroll me'",
-          "rect": [3, 65, 55, 17],
-          "reason": "subtree"
         },
         {
           "object": "VerticalScrollbar",

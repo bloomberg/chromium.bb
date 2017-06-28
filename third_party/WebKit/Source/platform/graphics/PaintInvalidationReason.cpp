@@ -56,6 +56,8 @@ const char* PaintInvalidationReasonToString(PaintInvalidationReason reason) {
       return "chunk reordered";
     case PaintInvalidationReason::kFullLayer:
       return "full layer";
+    case PaintInvalidationReason::kPaintProperty:
+      return "paint property change";
     case PaintInvalidationReason::kForTesting:
       return "for testing";
     case PaintInvalidationReason::kDelayedFull:

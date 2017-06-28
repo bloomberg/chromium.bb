@@ -12,9 +12,14 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutSVGRect rect id='targetRect'",
+          "object": "LayoutSVGContainer g id='targetUse'",
           "rect": [209, 273, 200, 200],
-          "reason": "geometry"
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutSVGContainer g id='targetUse'",
+          "rect": [59, 273, 50, 200],
+          "reason": "paint property change"
         }
       ]
     }

@@ -26,7 +26,8 @@ class PLATFORM_EXPORT ContentLayerClientImpl : public cc::ContentLayerClient {
 
  public:
   ContentLayerClientImpl()
-      : cc_picture_layer_(cc::PictureLayer::Create(this)) {}
+      : cc_picture_layer_(cc::PictureLayer::Create(this)),
+        layer_state_(nullptr, nullptr, nullptr) {}
   ~ContentLayerClientImpl() override {}
 
   // cc::ContentLayerClient
@@ -67,7 +68,8 @@ class PLATFORM_EXPORT ContentLayerClientImpl : public cc::ContentLayerClient {
     PaintChunkInfo(const IntRect& bounds, const PaintChunk& chunk)
         : bounds_in_layer(bounds),
           id(chunk.id),
-          is_cacheable(chunk.is_cacheable) {}
+          is_cacheable(chunk.is_cacheable),
+          properties(chunk.properties) {}
 
     bool Matches(const PaintChunk& new_chunk) const {
       return is_cacheable && new_chunk.Matches(id);
@@ -76,20 +78,17 @@ class PLATFORM_EXPORT ContentLayerClientImpl : public cc::ContentLayerClient {
     IntRect bounds_in_layer;
     PaintChunk::Id id;
     bool is_cacheable;
+    PaintChunkProperties properties;
   };
 
-  IntRect MapRasterInvalidationRectFromChunkToLayer(
-      const FloatRect&,
-      const PaintChunk&,
-      const PropertyTreeState&) const;
+  IntRect MapRasterInvalidationRectFromChunkToLayer(const FloatRect&,
+                                                    const PaintChunk&) const;
 
   void GenerateRasterInvalidations(
       const Vector<const PaintChunk*>& new_chunks,
-      const Vector<PaintChunkInfo>& new_chunks_info,
-      const PropertyTreeState&);
+      const Vector<PaintChunkInfo>& new_chunks_info);
   size_t MatchNewChunkToOldChunk(const PaintChunk& new_chunk, size_t old_index);
-  void AddDisplayItemRasterInvalidations(const PaintChunk&,
-                                         const PropertyTreeState&);
+  void AddDisplayItemRasterInvalidations(const PaintChunk&);
   void InvalidateRasterForNewChunk(const PaintChunkInfo&,
                                    PaintInvalidationReason);
   void InvalidateRasterForOldChunk(const PaintChunkInfo&,
@@ -99,6 +98,7 @@ class PLATFORM_EXPORT ContentLayerClientImpl : public cc::ContentLayerClient {
   scoped_refptr<cc::PictureLayer> cc_picture_layer_;
   scoped_refptr<cc::DisplayItemList> cc_display_item_list_;
   gfx::Rect layer_bounds_;
+  PropertyTreeState layer_state_;
 
   Vector<PaintChunkInfo> paint_chunks_info_;
   Vector<std::unique_ptr<JSONArray>> paint_chunk_debug_data_;

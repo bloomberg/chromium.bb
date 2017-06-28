@@ -66,6 +66,7 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
         scroll_client == scroll_client_)
       return parent_changed;
 
+    SetChanged();
     clip_ = clip;
     bounds_ = bounds;
     user_scrollable_horizontal_ = user_scrollable_horizontal;

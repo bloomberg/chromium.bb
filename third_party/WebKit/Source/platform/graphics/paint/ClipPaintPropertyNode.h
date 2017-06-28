@@ -51,6 +51,7 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
         clip_rect == clip_rect_)
       return parent_changed;
 
+    SetChanged();
     local_transform_space_ = std::move(local_transform_space);
     clip_rect_ = clip_rect;
     return true;

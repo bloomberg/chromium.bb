@@ -8,8 +8,13 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV",
+          "rect": [8, 8, 300, 300],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
           "rect": [8, 8, 300, 200],
-          "reason": "subtree"
+          "reason": "paint property change"
         }
       ]
     }

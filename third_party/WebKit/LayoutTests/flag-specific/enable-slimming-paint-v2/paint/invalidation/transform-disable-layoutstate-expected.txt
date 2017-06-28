@@ -7,14 +7,14 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [58, 138, 500, 63],
-          "reason": "geometry"
+          "object": "LayoutBlockFlow DIV id='container'",
+          "rect": [58, 88, 500, 213],
+          "reason": "paint property change"
         },
         {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [58, 256, 500, 45],
-          "reason": "incremental"
+          "object": "LayoutBlockFlow DIV id='container'",
+          "rect": [58, 88, 500, 168],
+          "reason": "paint property change"
         }
       ]
     }

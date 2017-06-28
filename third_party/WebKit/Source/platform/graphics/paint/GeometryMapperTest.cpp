@@ -34,12 +34,6 @@ class GeometryMapperTest
     return descendant_clip->GetClipCache().GetCachedClip(clip_and_transform);
   }
 
-  const TransformPaintPropertyNode* LowestCommonAncestor(
-      const TransformPaintPropertyNode* a,
-      const TransformPaintPropertyNode* b) {
-    return GeometryMapper::LowestCommonAncestor(a, b);
-  }
-
   void LocalToAncestorVisualRectInternal(
       const PropertyTreeState& local_state,
       const PropertyTreeState& ancestor_state,
@@ -681,42 +675,6 @@ TEST_P(GeometryMapperTest, SiblingTransformsWithClip) {
   GeometryMapper::LocalToAncestorVisualRect(transform2_and_clip_state,
                                             transform1_state, float_clip_rect);
   EXPECT_RECT_EQ(FloatRect(20, -40, 40, 30), float_clip_rect.Rect());
-}
-
-TEST_P(GeometryMapperTest, LowestCommonAncestor) {
-  TransformationMatrix matrix;
-  RefPtr<TransformPaintPropertyNode> child1 =
-      TransformPaintPropertyNode::Create(TransformPaintPropertyNode::Root(),
-                                         matrix, FloatPoint3D());
-  RefPtr<TransformPaintPropertyNode> child2 =
-      TransformPaintPropertyNode::Create(TransformPaintPropertyNode::Root(),
-                                         matrix, FloatPoint3D());
-
-  RefPtr<TransformPaintPropertyNode> child_of_child1 =
-      TransformPaintPropertyNode::Create(child1, matrix, FloatPoint3D());
-  RefPtr<TransformPaintPropertyNode> child_of_child2 =
-      TransformPaintPropertyNode::Create(child2, matrix, FloatPoint3D());
-
-  EXPECT_EQ(TransformPaintPropertyNode::Root(),
-            LowestCommonAncestor(child_of_child1.Get(), child_of_child2.Get()));
-  EXPECT_EQ(TransformPaintPropertyNode::Root(),
-            LowestCommonAncestor(child_of_child1.Get(), child2.Get()));
-  EXPECT_EQ(TransformPaintPropertyNode::Root(),
-            LowestCommonAncestor(child_of_child1.Get(),
-                                 TransformPaintPropertyNode::Root()));
-  EXPECT_EQ(child1, LowestCommonAncestor(child_of_child1.Get(), child1.Get()));
-
-  EXPECT_EQ(TransformPaintPropertyNode::Root(),
-            LowestCommonAncestor(child_of_child2.Get(), child_of_child1.Get()));
-  EXPECT_EQ(TransformPaintPropertyNode::Root(),
-            LowestCommonAncestor(child_of_child2.Get(), child1.Get()));
-  EXPECT_EQ(TransformPaintPropertyNode::Root(),
-            LowestCommonAncestor(child_of_child2.Get(),
-                                 TransformPaintPropertyNode::Root()));
-  EXPECT_EQ(child2, LowestCommonAncestor(child_of_child2.Get(), child2.Get()));
-
-  EXPECT_EQ(TransformPaintPropertyNode::Root(),
-            LowestCommonAncestor(child1.Get(), child2.Get()));
 }
 
 TEST_P(GeometryMapperTest, FilterWithClipsAndTransforms) {
