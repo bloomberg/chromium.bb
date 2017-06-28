@@ -165,7 +165,7 @@ class AppLauncherHandler
 
   // Returns the ExtensionUninstallDialog object for this class, creating it if
   // needed.
-  extensions::ExtensionUninstallDialog* GetExtensionUninstallDialog();
+  extensions::ExtensionUninstallDialog* CreateExtensionUninstallDialog();
 
   // Continuation for installing a bookmark app after favicon lookup.
   void OnFaviconForApp(std::unique_ptr<AppInstallInfo> install_info,
