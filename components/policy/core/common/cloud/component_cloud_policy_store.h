@@ -132,8 +132,8 @@ class POLICY_EXPORT ComponentCloudPolicyStore {
   // parse was successful.
   bool ParsePolicy(const std::string& data, PolicyMap* policy);
 
-  Delegate* delegate_;
-  ResourceCache* cache_;
+  Delegate* const delegate_;
+  ResourceCache* const cache_;
 
   // The following fields contain credentials used for validating the policy.
   std::string username_;
