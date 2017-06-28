@@ -52,6 +52,12 @@ MATCHER_P(InfoEquals, expected, "") {
          expected.presentation_id == arg.presentation_id;
 }
 
+ACTION_TEMPLATE(SaveArgByMove,
+                HAS_1_TEMPLATE_PARAMS(int, k),
+                AND_1_VALUE_PARAMS(pointer)) {
+  *pointer = std::move(::testing::get<k>(args));
+}
+
 const char kPresentationId[] = "presentationId";
 const char kPresentationUrl1[] = "http://foo.com/index.html";
 const char kPresentationUrl2[] = "http://example.com/index.html";
@@ -95,20 +101,41 @@ class MockPresentationServiceDelegate
                void(int render_process_id,
                     int routing_id,
                     const std::vector<GURL>& default_presentation_urls,
-                    const PresentationConnectionCallback& callback));
-  MOCK_METHOD5(StartPresentation,
+                    DefaultPresentationConnectionCallback callback));
+
+  // TODO(crbug.com/729950): Use MOCK_METHOD directly once GMock gets the
+  // move-only type support.
+  void StartPresentation(int render_process_id,
+                         int render_frame_id,
+                         const std::vector<GURL>& presentation_urls,
+                         PresentationConnectionCallback success_cb,
+                         PresentationConnectionErrorCallback error_cb) {
+    StartPresentationInternal(render_process_id, render_frame_id,
+                              presentation_urls, success_cb, error_cb);
+  }
+  MOCK_METHOD5(StartPresentationInternal,
                void(int render_process_id,
                     int render_frame_id,
                     const std::vector<GURL>& presentation_urls,
-                    const PresentationConnectionCallback& success_cb,
-                    const PresentationConnectionErrorCallback& error_cb));
-  MOCK_METHOD6(ReconnectPresentation,
+                    PresentationConnectionCallback& success_cb,
+                    PresentationConnectionErrorCallback& error_cb));
+  void ReconnectPresentation(int render_process_id,
+                             int render_frame_id,
+                             const std::vector<GURL>& presentation_urls,
+                             const std::string& presentation_id,
+                             PresentationConnectionCallback success_cb,
+                             PresentationConnectionErrorCallback error_cb) {
+    ReconnectPresentationInternal(render_process_id, render_frame_id,
+                                  presentation_urls, presentation_id,
+                                  success_cb, error_cb);
+  }
+  MOCK_METHOD6(ReconnectPresentationInternal,
                void(int render_process_id,
                     int render_frame_id,
                     const std::vector<GURL>& presentation_urls,
                     const std::string& presentation_id,
-                    const PresentationConnectionCallback& success_cb,
-                    const PresentationConnectionErrorCallback& error_cb));
+                    PresentationConnectionCallback& success_cb,
+                    PresentationConnectionErrorCallback& error_cb));
   MOCK_METHOD3(CloseConnection,
                void(int render_process_id,
                     int render_frame_id,
@@ -117,11 +144,6 @@ class MockPresentationServiceDelegate
                void(int render_process_id,
                     int render_frame_id,
                     const std::string& presentation_id));
-  MOCK_METHOD4(ListenForConnectionMessages,
-               void(int render_process_id,
-                    int render_frame_id,
-                    const PresentationInfo& presentation_info,
-                    const PresentationConnectionMessageCallback& message_cb));
 
   // PresentationConnectionMessage is move-only.
   // TODO(crbug.com/729950): Use MOCK_METHOD directly once GMock gets the
@@ -424,7 +446,7 @@ TEST_F(PresentationServiceImplTest, SetDefaultPresentationUrls) {
 
   PresentationConnectionCallback callback;
   EXPECT_CALL(mock_delegate_, SetDefaultPresentationUrls(_, _, more_urls, _))
-      .WillOnce(SaveArg<3>(&callback));
+      .WillOnce(SaveArgByMove<3>(&callback));
   service_impl_->SetDefaultPresentationUrls(more_urls);
 
   PresentationInfo presentation_info(presentation_url2_, kPresentationId);
@@ -432,7 +454,8 @@ TEST_F(PresentationServiceImplTest, SetDefaultPresentationUrls) {
   EXPECT_CALL(mock_client_,
               OnDefaultPresentationStarted(InfoEquals(presentation_info)));
   EXPECT_CALL(mock_delegate_, ListenForConnectionStateChange(_, _, _, _));
-  callback.Run(PresentationInfo(presentation_url2_, kPresentationId));
+  std::move(callback).Run(
+      PresentationInfo(presentation_url2_, kPresentationId));
   base::RunLoop().RunUntilIdle();
 }
 
@@ -491,32 +514,37 @@ TEST_F(PresentationServiceImplTest, SetSameDefaultPresentationUrls) {
 
 TEST_F(PresentationServiceImplTest, StartPresentationSuccess) {
   base::MockCallback<NewPresentationCallback> mock_presentation_cb;
-  base::Callback<void(const PresentationInfo&)> success_cb;
-  EXPECT_CALL(mock_delegate_, StartPresentation(_, _, presentation_urls_, _, _))
-      .WillOnce(SaveArg<3>(&success_cb));
+  base::OnceCallback<void(const PresentationInfo&)> success_cb;
+  EXPECT_CALL(mock_delegate_,
+              StartPresentationInternal(_, _, presentation_urls_, _, _))
+      .WillOnce(SaveArgByMove<3>(&success_cb));
   service_impl_->StartPresentation(presentation_urls_,
                                    mock_presentation_cb.Get());
   EXPECT_FALSE(success_cb.is_null());
   EXPECT_CALL(mock_delegate_, ListenForConnectionStateChange(_, _, _, _))
       .Times(1);
   EXPECT_CALL(mock_presentation_cb, Run(OptionalIsNotNull(), OptionalIsNull()));
-  success_cb.Run(PresentationInfo(presentation_url1_, kPresentationId));
+  std::move(success_cb)
+      .Run(PresentationInfo(presentation_url1_, kPresentationId));
 }
 
 TEST_F(PresentationServiceImplTest, StartPresentationError) {
   base::MockCallback<NewPresentationCallback> mock_presentation_cb;
-  base::Callback<void(const PresentationError&)> error_cb;
-  EXPECT_CALL(mock_delegate_, StartPresentation(_, _, presentation_urls_, _, _))
-      .WillOnce(SaveArg<4>(&error_cb));
+  base::OnceCallback<void(const PresentationError&)> error_cb;
+  EXPECT_CALL(mock_delegate_,
+              StartPresentationInternal(_, _, presentation_urls_, _, _))
+      .WillOnce(SaveArgByMove<4>(&error_cb));
   service_impl_->StartPresentation(presentation_urls_,
                                    mock_presentation_cb.Get());
   EXPECT_FALSE(error_cb.is_null());
   EXPECT_CALL(mock_presentation_cb, Run(OptionalIsNull(), OptionalIsNotNull()));
-  error_cb.Run(PresentationError(PRESENTATION_ERROR_UNKNOWN, "Error message"));
+  std::move(error_cb).Run(
+      PresentationError(PRESENTATION_ERROR_UNKNOWN, "Error message"));
 }
 
 TEST_F(PresentationServiceImplTest, StartPresentationInProgress) {
-  EXPECT_CALL(mock_delegate_, StartPresentation(_, _, presentation_urls_, _, _))
+  EXPECT_CALL(mock_delegate_,
+              StartPresentationInternal(_, _, presentation_urls_, _, _))
       .Times(1);
   // Uninvoked callbacks must outlive |service_impl_| since they get invoked
   // at |service_impl_|'s destruction.
@@ -532,10 +560,11 @@ TEST_F(PresentationServiceImplTest, StartPresentationInProgress) {
 
 TEST_F(PresentationServiceImplTest, ReconnectPresentationSuccess) {
   base::MockCallback<NewPresentationCallback> mock_presentation_cb;
-  base::Callback<void(const PresentationInfo&)> success_cb;
-  EXPECT_CALL(mock_delegate_, ReconnectPresentation(_, _, presentation_urls_,
-                                                    kPresentationId, _, _))
-      .WillOnce(SaveArg<4>(&success_cb));
+  base::OnceCallback<void(const PresentationInfo&)> success_cb;
+  EXPECT_CALL(mock_delegate_,
+              ReconnectPresentationInternal(_, _, presentation_urls_,
+                                            kPresentationId, _, _))
+      .WillOnce(SaveArgByMove<4>(&success_cb));
   service_impl_->ReconnectPresentation(
       presentation_urls_, base::Optional<std::string>(kPresentationId),
       mock_presentation_cb.Get());
@@ -543,21 +572,24 @@ TEST_F(PresentationServiceImplTest, ReconnectPresentationSuccess) {
   EXPECT_CALL(mock_delegate_, ListenForConnectionStateChange(_, _, _, _))
       .Times(1);
   EXPECT_CALL(mock_presentation_cb, Run(OptionalIsNotNull(), OptionalIsNull()));
-  success_cb.Run(PresentationInfo(presentation_url1_, kPresentationId));
+  std::move(success_cb)
+      .Run(PresentationInfo(presentation_url1_, kPresentationId));
 }
 
 TEST_F(PresentationServiceImplTest, ReconnectPresentationError) {
   base::MockCallback<NewPresentationCallback> mock_presentation_cb;
-  base::Callback<void(const PresentationError&)> error_cb;
-  EXPECT_CALL(mock_delegate_, ReconnectPresentation(_, _, presentation_urls_,
-                                                    kPresentationId, _, _))
-      .WillOnce(SaveArg<5>(&error_cb));
+  base::OnceCallback<void(const PresentationError&)> error_cb;
+  EXPECT_CALL(mock_delegate_,
+              ReconnectPresentationInternal(_, _, presentation_urls_,
+                                            kPresentationId, _, _))
+      .WillOnce(SaveArgByMove<5>(&error_cb));
   service_impl_->ReconnectPresentation(
       presentation_urls_, base::Optional<std::string>(kPresentationId),
       mock_presentation_cb.Get());
   EXPECT_FALSE(error_cb.is_null());
   EXPECT_CALL(mock_presentation_cb, Run(OptionalIsNull(), OptionalIsNotNull()));
-  error_cb.Run(PresentationError(PRESENTATION_ERROR_UNKNOWN, "Error message"));
+  std::move(error_cb).Run(
+      PresentationError(PRESENTATION_ERROR_UNKNOWN, "Error message"));
 }
 
 TEST_F(PresentationServiceImplTest, MaxPendingReconnectPresentationRequests) {
@@ -565,7 +597,7 @@ TEST_F(PresentationServiceImplTest, MaxPendingReconnectPresentationRequests) {
   const char* presentation_id = "presentationId%d";
   int num_requests = PresentationServiceImpl::kMaxQueuedRequests;
   int i = 0;
-  EXPECT_CALL(mock_delegate_, ReconnectPresentation(_, _, _, _, _, _))
+  EXPECT_CALL(mock_delegate_, ReconnectPresentationInternal(_, _, _, _, _, _))
       .Times(num_requests);
   for (; i < num_requests; ++i) {
     std::vector<GURL> urls = {GURL(base::StringPrintf(presentation_url, i))};

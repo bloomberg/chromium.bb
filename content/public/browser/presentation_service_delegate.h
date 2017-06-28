@@ -23,13 +23,11 @@ namespace content {
 class PresentationScreenAvailabilityListener;
 
 using PresentationConnectionCallback =
-    base::RepeatingCallback<void(const PresentationInfo&)>;
+    base::OnceCallback<void(const PresentationInfo&)>;
 using PresentationConnectionErrorCallback =
-    base::RepeatingCallback<void(const PresentationError&)>;
-
-// Param: a vector of messages that are received.
-using PresentationConnectionMessageCallback = base::RepeatingCallback<void(
-    std::vector<content::PresentationConnectionMessage>)>;
+    base::OnceCallback<void(const PresentationError&)>;
+using DefaultPresentationConnectionCallback =
+    base::RepeatingCallback<void(const PresentationInfo&)>;
 
 struct PresentationConnectionStateChangeInfo {
   explicit PresentationConnectionStateChangeInfo(
@@ -131,7 +129,7 @@ class CONTENT_EXPORT ControllerPresentationServiceDelegate
       int render_process_id,
       int render_frame_id,
       const std::vector<GURL>& default_presentation_urls,
-      const PresentationConnectionCallback& callback) = 0;
+      DefaultPresentationConnectionCallback callback) = 0;
 
   // Starts a new presentation. The presentation id of the presentation will
   // be the default presentation ID if any or a generated one otherwise.
@@ -147,8 +145,8 @@ class CONTENT_EXPORT ControllerPresentationServiceDelegate
       int render_process_id,
       int render_frame_id,
       const std::vector<GURL>& presentation_urls,
-      const PresentationConnectionCallback& success_cb,
-      const PresentationConnectionErrorCallback& error_cb) = 0;
+      PresentationConnectionCallback success_cb,
+      PresentationConnectionErrorCallback error_cb) = 0;
 
   // Reconnects to an existing presentation. Unlike StartPresentation(), this
   // does not bring a screen list UI.
@@ -163,8 +161,8 @@ class CONTENT_EXPORT ControllerPresentationServiceDelegate
       int render_frame_id,
       const std::vector<GURL>& presentation_urls,
       const std::string& presentation_id,
-      const PresentationConnectionCallback& success_cb,
-      const PresentationConnectionErrorCallback& error_cb) = 0;
+      PresentationConnectionCallback success_cb,
+      PresentationConnectionErrorCallback error_cb) = 0;
 
   // Closes an existing presentation connection.
   // |render_process_id|, |render_frame_id|: ID for originating frame.

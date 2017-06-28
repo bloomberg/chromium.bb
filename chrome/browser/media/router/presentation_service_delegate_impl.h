@@ -95,20 +95,20 @@ class PresentationServiceDelegateImpl
       int render_process_id,
       int render_frame_id,
       const std::vector<GURL>& default_presentation_urls,
-      const content::PresentationConnectionCallback& callback) override;
+      content::DefaultPresentationConnectionCallback callback) override;
   void StartPresentation(
       int render_process_id,
       int render_frame_id,
       const std::vector<GURL>& presentation_urls,
-      const content::PresentationConnectionCallback& success_cb,
-      const content::PresentationConnectionErrorCallback& error_cb) override;
+      content::PresentationConnectionCallback success_cb,
+      content::PresentationConnectionErrorCallback error_cb) override;
   void ReconnectPresentation(
       int render_process_id,
       int render_frame_id,
       const std::vector<GURL>& presentation_urls,
       const std::string& presentation_id,
-      const content::PresentationConnectionCallback& success_cb,
-      const content::PresentationConnectionErrorCallback& error_cb) override;
+      content::PresentationConnectionCallback success_cb,
+      content::PresentationConnectionErrorCallback error_cb) override;
   void CloseConnection(int render_process_id,
                        int render_frame_id,
                        const std::string& presentation_id) override;
@@ -196,14 +196,14 @@ class PresentationServiceDelegateImpl
       int render_frame_id,
       const GURL& presentation_url,
       const std::string& presentation_id,
-      const content::PresentationConnectionCallback& success_cb,
-      const content::PresentationConnectionErrorCallback& error_cb,
+      content::PresentationConnectionCallback success_cb,
+      content::PresentationConnectionErrorCallback error_cb,
       const RouteRequestResult& result);
 
   void OnStartPresentationSucceeded(
       int render_process_id,
       int render_frame_id,
-      const content::PresentationConnectionCallback& success_cb,
+      content::PresentationConnectionCallback success_cb,
       const content::PresentationInfo& new_presentation_info,
       const MediaRoute& route);
 
