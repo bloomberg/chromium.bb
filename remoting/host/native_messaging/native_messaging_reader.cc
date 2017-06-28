@@ -88,7 +88,7 @@ NativeMessagingReader::Core::Core(
 NativeMessagingReader::Core::~Core() {}
 
 void NativeMessagingReader::Core::ReadMessage() {
-  DCHECK(read_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(read_task_runner_->RunsTasksInCurrentSequence());
 
   // Keep reading messages until the stream is closed or an error occurs.
   while (true) {
@@ -136,7 +136,7 @@ void NativeMessagingReader::Core::ReadMessage() {
 }
 
 void NativeMessagingReader::Core::NotifyEof() {
-  DCHECK(read_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(read_task_runner_->RunsTasksInCurrentSequence());
   caller_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&NativeMessagingReader::InvokeEofCallback, reader_));

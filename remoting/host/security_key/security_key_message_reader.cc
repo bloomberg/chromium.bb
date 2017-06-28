@@ -32,7 +32,7 @@ SecurityKeyMessageReader::SecurityKeyMessageReader(base::File input_file)
 }
 
 SecurityKeyMessageReader::~SecurityKeyMessageReader() {
-  DCHECK(main_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
 
   // In order to ensure the reader thread is stopped cleanly, we close the
   // stream it is blocking on and then wait for the thread to exit.
@@ -43,7 +43,7 @@ SecurityKeyMessageReader::~SecurityKeyMessageReader() {
 void SecurityKeyMessageReader::Start(
     SecurityKeyMessageCallback message_callback,
     base::Closure error_callback) {
-  DCHECK(main_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
 
   message_callback_ = message_callback;
   error_callback_ = error_callback;
@@ -56,7 +56,7 @@ void SecurityKeyMessageReader::Start(
 }
 
 void SecurityKeyMessageReader::ReadMessage() {
-  DCHECK(read_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(read_task_runner_->RunsTasksInCurrentSequence());
 
   while (true) {
     if (!read_stream_.IsValid()) {
@@ -112,7 +112,7 @@ void SecurityKeyMessageReader::ReadMessage() {
 }
 
 void SecurityKeyMessageReader::NotifyError() {
-  DCHECK(read_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(read_task_runner_->RunsTasksInCurrentSequence());
 
   main_task_runner_->PostTask(
       FROM_HERE, base::Bind(&SecurityKeyMessageReader::InvokeErrorCallback,
@@ -121,12 +121,12 @@ void SecurityKeyMessageReader::NotifyError() {
 
 void SecurityKeyMessageReader::InvokeMessageCallback(
     std::unique_ptr<SecurityKeyMessage> message) {
-  DCHECK(main_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   message_callback_.Run(std::move(message));
 }
 
 void SecurityKeyMessageReader::InvokeErrorCallback() {
-  DCHECK(main_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   error_callback_.Run();
 }
 

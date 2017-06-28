@@ -322,7 +322,7 @@ void Me2MeNativeMessagingHostTest::SetUp() {
 }
 
 void Me2MeNativeMessagingHostTest::StartHost() {
-  DCHECK(host_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(host_task_runner_->RunsTasksInCurrentSequence());
 
   base::File input_read_file;
   base::File output_write_file;
@@ -366,7 +366,7 @@ void Me2MeNativeMessagingHostTest::StartHost() {
 }
 
 void Me2MeNativeMessagingHostTest::StopHost() {
-  DCHECK(host_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(host_task_runner_->RunsTasksInCurrentSequence());
 
   native_messaging_pipe_.reset();
 
@@ -378,7 +378,7 @@ void Me2MeNativeMessagingHostTest::StopHost() {
 }
 
 void Me2MeNativeMessagingHostTest::ExitTest() {
-  if (!test_message_loop_->task_runner()->RunsTasksOnCurrentThread()) {
+  if (!test_message_loop_->task_runner()->RunsTasksInCurrentSequence()) {
     test_message_loop_->task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&Me2MeNativeMessagingHostTest::ExitTest,

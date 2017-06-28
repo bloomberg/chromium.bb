@@ -287,7 +287,7 @@ void It2MeNativeMessagingHostTest::TearDown() {
 
 void It2MeNativeMessagingHostTest::SetPolicies(
     const base::DictionaryValue& dict) {
-  DCHECK(test_message_loop_->task_runner()->RunsTasksOnCurrentThread());
+  DCHECK(test_message_loop_->task_runner()->RunsTasksInCurrentSequence());
   // Copy |dict| into |policy_bundle|.
   policy::PolicyNamespace policy_namespace =
       policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string());
@@ -494,7 +494,7 @@ void It2MeNativeMessagingHostTest::TestBadRequest(const base::Value& message,
 }
 
 void It2MeNativeMessagingHostTest::StartHost() {
-  DCHECK(host_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(host_task_runner_->RunsTasksInCurrentSequence());
 
   base::File input_read_file;
   base::File output_write_file;
@@ -536,7 +536,7 @@ void It2MeNativeMessagingHostTest::StartHost() {
 }
 
 void It2MeNativeMessagingHostTest::ExitTest() {
-  if (!test_message_loop_->task_runner()->RunsTasksOnCurrentThread()) {
+  if (!test_message_loop_->task_runner()->RunsTasksInCurrentSequence()) {
     test_message_loop_->task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&It2MeNativeMessagingHostTest::ExitTest,
@@ -547,7 +547,7 @@ void It2MeNativeMessagingHostTest::ExitTest() {
 }
 
 void It2MeNativeMessagingHostTest::ExitPolicyRunLoop() {
-  DCHECK(test_message_loop_->task_runner()->RunsTasksOnCurrentThread());
+  DCHECK(test_message_loop_->task_runner()->RunsTasksInCurrentSequence());
   if (policy_run_loop_) {
     policy_run_loop_->Quit();
   }
