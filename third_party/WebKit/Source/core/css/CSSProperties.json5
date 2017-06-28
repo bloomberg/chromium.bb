@@ -4148,7 +4148,6 @@
     {
       name: "line-break",
       alias_for: "-webkit-line-break",
-      runtime_flag: "CSSLineBreak",
     },
     {
       name: "-webkit-opacity",
