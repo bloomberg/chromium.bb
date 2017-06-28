@@ -17,6 +17,10 @@ namespace gfx {
 class ImageSkia;
 }
 
+namespace views {
+class ImageView;
+}
+
 namespace ash {
 
 class SessionController;
@@ -57,8 +61,6 @@ class ASH_EXPORT LockScreenActionTray : public TrayBackgroundView,
   const gfx::ImageSkia& GetImageForTesting() const;
 
  private:
-  class NewNoteActionView;
-
   // Whether the tray item should be visible in its current state.
   bool IsStateVisible() const;
 
@@ -66,7 +68,7 @@ class ASH_EXPORT LockScreenActionTray : public TrayBackgroundView,
   void UpdateNewNoteIcon();
 
   // The view for the tray item - it's a wrapper around a ImageView.
-  NewNoteActionView* new_note_action_view_;
+  views::ImageView* new_note_action_view_;
 
   mojom::TrayActionState new_note_state_ =
       mojom::TrayActionState::kNotAvailable;

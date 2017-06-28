@@ -21,47 +21,19 @@
 
 namespace ash {
 
-namespace {
-
-// The preferred size for the tray item view.
-const int kItemViewPreferredSize = 32;
-
-}  // namespace
-
-// View for the tray item for the lock screen note creation action.
-class LockScreenActionTray::NewNoteActionView : public views::View {
- public:
-  NewNoteActionView() {
-    SetLayoutManager(new views::FillLayout);
-    icon_ = new views::ImageView();
-    icon_->SetImage(CreateVectorIcon(kPaletteActionCreateNoteIcon,
-                                     kTrayIconSize, kShelfIconColor));
-    icon_->SetTooltipText(
-        l10n_util::GetStringUTF16(IDS_ASH_STYLUS_TOOLS_CREATE_NOTE_ACTION));
-    AddChildView(icon_);
-  }
-
-  ~NewNoteActionView() override {}
-
-  gfx::Size CalculatePreferredSize() const override {
-    return gfx::Size(kItemViewPreferredSize, kItemViewPreferredSize);
-  }
-
-  const gfx::ImageSkia& GetImage() const { return icon_->GetImage(); }
-
- private:
-  views::ImageView* icon_;
-
-  DISALLOW_COPY_AND_ASSIGN(NewNoteActionView);
-};
-
 LockScreenActionTray::LockScreenActionTray(Shelf* shelf)
     : TrayBackgroundView(shelf),
       session_observer_(this),
       tray_action_observer_(this) {
   SetInkDropMode(InkDropMode::ON);
   SetVisible(false);
-  new_note_action_view_ = new NewNoteActionView();
+  new_note_action_view_ = new views::ImageView();
+  new_note_action_view_->SetImage(
+      CreateVectorIcon(kTrayActionNewLockScreenNoteIcon, kShelfIconColor));
+  new_note_action_view_->SetTooltipText(
+      l10n_util::GetStringUTF16(IDS_ASH_STYLUS_TOOLS_CREATE_NOTE_ACTION));
+  new_note_action_view_->SetPreferredSize(
+      gfx::Size(kTrayItemSize, kTrayItemSize));
   tray_container()->AddChildView(new_note_action_view_);
 }
 
