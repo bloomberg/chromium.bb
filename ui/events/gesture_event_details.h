@@ -54,6 +54,13 @@ struct EVENTS_BASE_EXPORT GestureEventDetails {
         is_source_touch_event_set_non_blocking;
   }
 
+  EventPointerType primary_pointer_type() const {
+    return primary_pointer_type_;
+  }
+  void set_primary_pointer_type(EventPointerType primary_pointer_type) {
+    primary_pointer_type_ = primary_pointer_type;
+  }
+
   int touch_points() const { return touch_points_; }
   void set_touch_points(int touch_points) {
     DCHECK_GT(touch_points, 0);
@@ -235,6 +242,10 @@ struct EVENTS_BASE_EXPORT GestureEventDetails {
   GestureDeviceType device_type_;
 
   bool is_source_touch_event_set_non_blocking_ = false;
+
+  // The pointer type for the first touch point in the gesture.
+  EventPointerType primary_pointer_type_ =
+      EventPointerType::POINTER_TYPE_UNKNOWN;
 
   int touch_points_;  // Number of active touch points in the gesture.
 

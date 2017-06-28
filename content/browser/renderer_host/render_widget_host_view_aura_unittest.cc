@@ -5513,6 +5513,36 @@ TEST_F(RenderWidgetHostViewAuraTest, ForwardMouseEvent) {
   view_ = nullptr;
 }
 
+TEST_F(RenderWidgetHostViewAuraTest, GestureTapFromStylusHasPointerType) {
+  view_->InitAsFullscreen(parent_view_);
+  view_->Show();
+
+  aura::Window* root = view_->GetNativeView()->GetRootWindow();
+  root->SetTargetHandler(view_);
+
+  ui::test::EventGenerator generator(root, root->bounds().CenterPoint());
+
+  // Simulate touch press and release to generate a GestureTap.
+  sink_->ClearMessages();
+  generator.EnterPenPointerMode();
+  generator.PressTouch();
+  AckLastSentInputEventIfNecessary(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  generator.ReleaseTouch();
+  AckLastSentInputEventIfNecessary(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+
+  // GestureTap event should have correct pointer type.
+  EXPECT_EQ(5U, sink_->message_count());
+  const WebInputEvent* input_event = GetInputEventFromMessage(
+      *sink_->GetMessageAt(sink_->message_count() - 1));
+  EXPECT_EQ(WebInputEvent::kGestureTap, input_event->GetType());
+  const WebGestureEvent* geture_event =
+      static_cast<const WebGestureEvent*>(input_event);
+  EXPECT_EQ(blink::WebPointerProperties::PointerType::kPen,
+            geture_event->primary_pointer_type);
+
+  sink_->ClearMessages();
+}
+
 // This class provides functionality to test a RenderWidgetHostViewAura
 // instance which has been hooked up to a test RenderViewHost instance and
 // a WebContents instance.

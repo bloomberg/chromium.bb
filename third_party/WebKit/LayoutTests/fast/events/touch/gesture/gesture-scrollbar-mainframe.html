@@ -55,7 +55,7 @@ test(function(t) {
 
   eventSender.gestureTapDown(scrollbarX, scrollbarY, touchWidth, touchHeight);
   eventSender.gestureShowPress(scrollbarX, scrollbarY, touchWidth, touchHeight);
-  eventSender.gestureScrollBegin(scrollbarX - 20, scrollbarY, touchWidth, touchHeight);
+  eventSender.gestureScrollBegin(scrollbarX - 20, scrollbarY);
   eventSender.gestureTapCancel(scrollbarX, scrollbarY);
   assert_equals(window.scrollY, 800);
   eventSender.gestureScrollUpdate(0, 20);

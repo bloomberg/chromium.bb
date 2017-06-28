@@ -59,7 +59,7 @@ function scrollTest() {
     shouldBe('movingDiv.scrollTop', '0');
     eventSender.gestureTapDown(scrollbarX, scrollbarY, touchWidth, touchHeight);
     eventSender.gestureShowPress(scrollbarX, scrollbarY, touchWidth, touchHeight);
-    eventSender.gestureScrollBegin(scrollbarX + 20, scrollbarY, touchWidth, touchHeight);
+    eventSender.gestureScrollBegin(scrollbarX + 20, scrollbarY);
     eventSender.gestureTapCancel(scrollbarX, scrollbarY);
     shouldBe('movingDiv.scrollTop', '0');
     eventSender.gestureScrollUpdate(0, 20);
@@ -75,7 +75,7 @@ function scrollTest() {
     shouldBe('movingDiv.scrollLeft', '0');
     eventSender.gestureTapDown(scrollbarX, scrollbarY, touchWidth, touchHeight);
     eventSender.gestureShowPress(scrollbarX, scrollbarY, touchWidth, touchHeight);
-    eventSender.gestureScrollBegin(scrollbarX, scrollbarY + 20, touchWidth, touchHeight);
+    eventSender.gestureScrollBegin(scrollbarX, scrollbarY + 20);
     eventSender.gestureTapCancel(scrollbarX, scrollbarY);
     shouldBe('movingDiv.scrollLeft', '0');
     eventSender.gestureScrollUpdate(20, 0);

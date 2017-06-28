@@ -8,6 +8,28 @@
 
 namespace ui {
 
+namespace {
+
+EventPointerType ToEventPointerType(MotionEvent::ToolType tool_type) {
+  switch (tool_type) {
+    case MotionEvent::TOOL_TYPE_UNKNOWN:
+      return EventPointerType::POINTER_TYPE_UNKNOWN;
+    case MotionEvent::TOOL_TYPE_FINGER:
+      return EventPointerType::POINTER_TYPE_TOUCH;
+    case MotionEvent::TOOL_TYPE_STYLUS:
+      return EventPointerType::POINTER_TYPE_PEN;
+    case MotionEvent::TOOL_TYPE_MOUSE:
+      return EventPointerType::POINTER_TYPE_MOUSE;
+    case MotionEvent::TOOL_TYPE_ERASER:
+      return EventPointerType::POINTER_TYPE_ERASER;
+    default:
+      NOTREACHED() << "Invalid ToolType = " << tool_type;
+      return EventPointerType::POINTER_TYPE_UNKNOWN;
+  }
+}
+
+}  // anonymous namespace
+
 GestureEventData::GestureEventData(const GestureEventDetails& details,
                                    int motion_event_id,
                                    MotionEvent::ToolType primary_tool_type,
@@ -32,6 +54,7 @@ GestureEventData::GestureEventData(const GestureEventDetails& details,
       unique_touch_event_id(unique_touch_event_id) {
   DCHECK_GE(motion_event_id, 0);
   DCHECK_NE(0U, touch_point_count);
+  this->details.set_primary_pointer_type(ToEventPointerType(primary_tool_type));
   this->details.set_touch_points(static_cast<int>(touch_point_count));
   this->details.set_bounding_box(bounding_box);
 }
@@ -48,6 +71,7 @@ GestureEventData::GestureEventData(EventType type,
       raw_y(other.raw_y),
       flags(other.flags),
       unique_touch_event_id(other.unique_touch_event_id) {
+  details.set_primary_pointer_type(other.details.primary_pointer_type());
   details.set_touch_points(other.details.touch_points());
   details.set_bounding_box(other.details.bounding_box_f());
 }

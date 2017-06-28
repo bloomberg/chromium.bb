@@ -1364,6 +1364,10 @@ bool EventHandler::ShouldApplyTouchAdjustment(
   if (frame_->GetSettings() &&
       !frame_->GetSettings()->GetTouchAdjustmentEnabled())
     return false;
+
+  if (event.primary_pointer_type == WebPointerProperties::PointerType::kPen)
+    return false;
+
   return !event.TapAreaInRootFrame().IsEmpty();
 }
 
