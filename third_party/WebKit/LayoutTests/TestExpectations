@@ -226,13 +226,10 @@ crbug.com/711807 external/wpt/css/CSS2/normal-flow/block-in-inline-insert-002e.x
 crbug.com/711807 external/wpt/css/CSS2/normal-flow/block-in-inline-insert-002f.xht [ Skip ]
 crbug.com/711807 external/wpt/css/CSS2/normal-flow/block-in-inline-nested-002.xht [ Skip ]
 crbug.com/711807 external/wpt/css/CSS2/normal-flow/block-in-inline-remove-006.xht [ Skip ]
-crbug.com/711807 external/wpt/css/CSS2/normal-flow/blocks-017.xht [ Skip ]
 crbug.com/711807 external/wpt/css/CSS2/normal-flow/inline-block-002.xht [ Skip ]
 crbug.com/711807 external/wpt/css/CSS2/normal-flow/inline-block-003.xht [ Skip ]
 crbug.com/711807 external/wpt/css/CSS2/normal-flow/inline-block-004.xht [ Skip ]
 crbug.com/711807 external/wpt/css/CSS2/normal-flow/inline-block-005.xht [ Skip ]
-crbug.com/711807 external/wpt/css/CSS2/normal-flow/inline-block-replaced-height-008.xht [ Skip ]
-crbug.com/711807 external/wpt/css/CSS2/normal-flow/inline-replaced-height-008.xht [ Skip ]
 crbug.com/711807 external/wpt/css/CSS2/normal-flow/inline-table-002a.xht [ Skip ]
 crbug.com/711807 external/wpt/css/CSS2/normal-flow/inline-table-002b.xht [ Skip ]
 crbug.com/711807 external/wpt/css/CSS2/normal-flow/inline-table-valign-001.xht [ Skip ]
@@ -242,21 +239,16 @@ crbug.com/711807 external/wpt/css/CSS2/normal-flow/inlines-005.xht [ Skip ]
 crbug.com/711807 external/wpt/css/CSS2/normal-flow/inlines-006.xht [ Skip ]
 crbug.com/711807 external/wpt/css/CSS2/normal-flow/inlines-016.xht [ Skip ]
 crbug.com/711807 external/wpt/css/CSS2/normal-flow/inlines-017.xht [ Skip ]
-crbug.com/711807 external/wpt/css/CSS2/normal-flow/max-height-applies-to-012.xht [ Skip ]
 crbug.com/711807 external/wpt/css/CSS2/normal-flow/max-width-110.xht [ Skip ]
 crbug.com/711807 external/wpt/css/CSS2/normal-flow/max-width-applies-to-005.xht [ Skip ]
 crbug.com/711807 external/wpt/css/CSS2/normal-flow/max-width-applies-to-006.xht [ Skip ]
-crbug.com/711807 external/wpt/css/CSS2/normal-flow/max-width-applies-to-012.xht [ Skip ]
 crbug.com/711807 external/wpt/css/CSS2/normal-flow/max-width-applies-to-013.xht [ Skip ]
 crbug.com/711807 external/wpt/css/CSS2/normal-flow/max-width-applies-to-014.xht [ Skip ]
-crbug.com/711807 external/wpt/css/CSS2/normal-flow/min-height-applies-to-012.xht [ Skip ]
 crbug.com/711807 external/wpt/css/CSS2/normal-flow/min-width-applies-to-005.xht [ Skip ]
 crbug.com/711807 external/wpt/css/CSS2/normal-flow/min-width-applies-to-006.xht [ Skip ]
-crbug.com/711807 external/wpt/css/CSS2/normal-flow/min-width-applies-to-012.xht [ Skip ]
 crbug.com/711807 external/wpt/css/CSS2/normal-flow/min-width-applies-to-014.xht [ Skip ]
 crbug.com/711807 external/wpt/css/CSS2/normal-flow/replaced-intrinsic-001.xht [ Skip ]
 crbug.com/711807 external/wpt/css/CSS2/normal-flow/replaced-intrinsic-002.xht [ Skip ]
-crbug.com/711807 external/wpt/css/CSS2/normal-flow/width-applies-to-012.xht [ Skip ]
 crbug.com/711807 external/wpt/css/CSS2/normal-flow/width-inherit-001.xht [ Skip ]
 
 #### third_party/WebKit/LayoutTests/overflow
@@ -400,72 +392,86 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/margin-col
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/margin-collapse-clear-014.xht [ Failure ]
 
 ### virtual/layout_ng/external/wpt/css/CSS2/linebox
+
+# 1px glyph position diff at box boundary. Check if they need fix.
 crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/inline-formatting-context-001.xht [ Failure ]
-crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/inline-formatting-context-002.xht [ Failure ]
-crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/inline-formatting-context-003.xht [ Failure ]
-crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/inline-formatting-context-004.xht [ Failure ]
-crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/inline-formatting-context-005.xht [ Failure ]
-crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/inline-formatting-context-006.xht [ Failure ]
-crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/inline-formatting-context-007.xht [ Failure ]
-crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/inline-formatting-context-010b.xht [ Skip ]
-crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/inline-formatting-context-012.xht [ Failure ]
 crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/inline-formatting-context-023.xht [ Failure ]
-crbug.com/636993 [ Mac ] virtual/layout_ng/external/wpt/css/CSS2/linebox/line-height-129.xht [ Failure ]
-crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/vertical-align-baseline-004a.xht [ Failure ]
-crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/vertical-align-baseline-005a.xht [ Failure ]
 crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/vertical-align-sub-001.xht [ Failure ]
 crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/vertical-align-super-001.xht [ Failure ]
 
+# Atomic inline margins.
+crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/vertical-align-baseline-004a.xht [ Failure ]
+crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/vertical-align-baseline-005a.xht [ Failure ]
+
 ### virtual/layout_ng/external/wpt/css/CSS2/normal-flow
+
+# Block: percent height in continuations.
+crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-in-inline-percents-001.xht [ Failure ]
+
+# Block: centering by auto-margins.
+crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-replaced-width-006.xht [ Failure ]
+
+# Block: percent max-height.
+crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/max-height-percentage-002.xht [ Failure ]
+
+# Float: auto-height.
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-formatting-context-height-001.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-formatting-context-height-002.xht [ Failure ]
+
+# Inline: border in continuations. Fail in Blink.
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-in-inline-insert-001f.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-in-inline-insert-002f.xht [ Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-in-inline-percents-001.xht [ Failure ]
+
+# Inline: CopyFragmentDataToLayoutBox problems.
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-in-inline-remove-002.xht [ Failure Pass ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-in-inline-remove-004.xht [ Failure Pass ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-in-inline-remove-005.xht [ Failure Pass ]
+
+# Inline: vertical-align.
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-non-replaced-height-005.xht [ Failure ]
+crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-table-zorder-005.xht [ Failure ]
+
+# Inline: atomic inline margins.
+crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-block-non-replaced-height-002.xht [ Failure ]
+
+# Inline: atomic inline preferred width.
+crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-block-valign-001.xht [ Failure ]
+crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-block-valign-002.xht [ Failure ]
+
+# Inline: misc.
+crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-replaced-width-012.xht [ Failure ]
+crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-replaced-width-013.xht [ Failure ]
+crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-replaced-width-015.xht [ Failure ]
+crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inlines-013.xht [ Failure ]
+crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inlines-017.xht [ Failure ]
+crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/root-box-001.xht [ Failure ]
+
+# Margin collapsing quirks
+# https://html.spec.whatwg.org/multipage/rendering.html#margin-collapsing-quirks
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-non-replaced-width-007.xht [ Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-replaced-width-006.xht [ Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/blocks-017.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/blocks-025.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-block-002.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-block-003.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-block-004.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-block-005.xht [ Skip ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-block-non-replaced-height-002.xht [ Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-block-replaced-height-008.xht [ Skip ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-block-valign-001.xht [ Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-block-valign-002.xht [ Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-replaced-height-008.xht [ Skip ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-replaced-width-012.xht [ Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-replaced-width-013.xht [ Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-replaced-width-015.xht [ Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-table-zorder-005.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inlines-003.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inlines-004.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inlines-005.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inlines-006.xht [ Skip ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inlines-013.xht [ Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inlines-017.xht [ Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/max-height-applies-to-012.xht [ Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/max-height-percentage-002.xht [ Failure ]
+
+# Tables.
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/max-width-applies-to-005.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/max-width-applies-to-006.xht [ Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/max-width-applies-to-012.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/max-width-applies-to-013.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/max-width-applies-to-014.xht [ Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/min-height-applies-to-012.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/min-width-applies-to-005.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/min-width-applies-to-006.xht [ Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/min-width-applies-to-012.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/min-width-applies-to-014.xht [ Failure ]
+crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/table-in-inline-001.xht [ Failure ]
+
+# SVG intrinsic sizing.
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/replaced-intrinsic-001.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/replaced-intrinsic-002.xht [ Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/root-box-001.xht [ Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/table-in-inline-001.xht [ Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/width-applies-to-012.xht [ Failure ]
 
 ### virtual/layout_ng/external/wpt/css/CSS2/positioning
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/absolute-non-replaced-width-025.xht [ Failure ]
@@ -2059,7 +2065,6 @@ crbug.com/626703 external/wpt/2dcontext/drawing-images-to-the-canvas/drawimage_h
 crbug.com/626703 external/wpt/2dcontext/drawing-images-to-the-canvas/drawimage_html_image_13.html [ Failure ]
 crbug.com/626703 external/wpt/compat/webkit-text-fill-color-property-005.html [ Failure ]
 crbug.com/626703 external/wpt/content-security-policy/connect-src/connect-src-eventsource-blocked.sub.html [ Timeout ]
-crbug.com/626703 external/wpt/css/CSS2/linebox/inline-formatting-context-012.xht [ Failure ]
 crbug.com/626703 external/wpt/css/css-display-3/display-contents-dynamic-before-after-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-display-3/display-contents-dynamic-before-after-first-letter-001.html [ Failure ]
 crbug.com/626703 external/wpt/cssom-view/matchMedia.xht [ Timeout ]
