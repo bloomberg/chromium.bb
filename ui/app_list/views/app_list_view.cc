@@ -847,11 +847,18 @@ void AppListView::SetState(AppListState new_state) {
           break;
       }
       break;
-    case FULLSCREEN_ALL_APPS:
+    case FULLSCREEN_ALL_APPS: {
       new_widget_bounds.set_y(0);
+      AppsContainerView* apps_container_view =
+          app_list_main_view_->contents_view()->apps_container_view();
+
+      if (apps_container_view->IsInFolderView())
+        apps_container_view->app_list_folder_view()->CloseFolderPage();
+
       app_list_main_view_->contents_view()->SetActiveState(
           AppListModel::STATE_APPS);
       break;
+    }
     case FULLSCREEN_SEARCH:
       new_widget_bounds.set_y(0);
       break;

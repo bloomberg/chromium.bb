@@ -38,7 +38,8 @@ ContentsView::ContentsView(AppListMainView* app_list_main_view,
       custom_page_view_(nullptr),
       app_list_main_view_(app_list_main_view),
       app_list_view_(app_list_view),
-      page_before_search_(0) {
+      page_before_search_(0),
+      is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()) {
   pagination_model_.SetTransitionDurations(kPageTransitionDurationInMs,
                                            kOverscrollPageTransitionDurationMs);
   pagination_model_.AddObserver(this);
@@ -210,13 +211,13 @@ void ContentsView::ActivePageChanged() {
   DCHECK(start_page_view_);
 
   // Set the visibility of the search box's back button.
-  if (!features::IsFullscreenAppListEnabled()) {
+  const bool folder_active = state == AppListModel::STATE_APPS &&
+                             apps_container_view_->IsInFolderView();
+
+  if (!is_fullscreen_app_list_enabled_) {
     app_list_main_view_->search_box_view()->back_button()->SetVisible(
         state != AppListModel::STATE_START);
     app_list_main_view_->search_box_view()->Layout();
-    bool folder_active = (state == AppListModel::STATE_APPS)
-                             ? apps_container_view_->IsInFolderView()
-                             : false;
     app_list_main_view_->search_box_view()->SetBackButtonLabel(folder_active);
   }
 

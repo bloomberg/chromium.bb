@@ -81,6 +81,9 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
   // Sets voice label for Back button depending on whether a folder is open.
   void SetBackButtonLabel(bool folder);
 
+  // Swaps the google icon with the back button.
+  void ShowBackOrGoogleIcon(bool show_back_button);
+
   // Overridden from views::View:
   bool OnMouseWheel(const ui::MouseWheelEvent& event) override;
   void OnEnabledChanged() override;

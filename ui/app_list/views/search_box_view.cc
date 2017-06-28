@@ -172,6 +172,15 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
   search_box_->set_controller(this);
   search_box_->SetTextInputType(ui::TEXT_INPUT_TYPE_SEARCH);
   search_box_->SetTextInputFlags(ui::TEXT_INPUT_FLAG_AUTOCORRECT_OFF);
+  back_button_ = new SearchBoxImageButton(this);
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  back_button_->SetImage(views::ImageButton::STATE_NORMAL,
+                         rb.GetImageSkiaNamed(IDR_APP_LIST_FOLDER_BACK_NORMAL));
+  back_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
+                                  views::ImageButton::ALIGN_MIDDLE);
+  SetBackButtonLabel(false);
+  content_container_->AddChildView(back_button_);
+
   if (is_fullscreen_app_list_enabled_) {
     google_icon_ = new views::ImageView();
     google_icon_->SetImage(gfx::CreateVectorIcon(
@@ -182,17 +191,8 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
     search_box_->set_placeholder_text_draw_flags(
         gfx::Canvas::TEXT_ALIGN_CENTER);
     search_box_->SetFontList(search_box_->GetFontList().DeriveWithSizeDelta(2));
+    back_button_->SetVisible(false);
   } else {
-    back_button_ = new SearchBoxImageButton(this);
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    back_button_->SetImage(
-        views::ImageButton::STATE_NORMAL,
-        rb.GetImageSkiaNamed(IDR_APP_LIST_FOLDER_BACK_NORMAL));
-    back_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-                                    views::ImageButton::ALIGN_MIDDLE);
-    SetBackButtonLabel(false);
-    content_container_->AddChildView(back_button_);
-
     search_box_->set_placeholder_text_color(kHintTextColor);
   }
   content_container_->AddChildView(search_box_);
@@ -330,6 +330,15 @@ void SearchBoxView::SetBackButtonLabel(bool folder) {
              : IDS_APP_LIST_BACK));
   back_button_->SetAccessibleName(back_button_label);
   back_button_->SetTooltipText(back_button_label);
+}
+
+void SearchBoxView::ShowBackOrGoogleIcon(bool show_back_button) {
+  if (!is_fullscreen_app_list_enabled_)
+    return;
+
+  google_icon_->SetVisible(!show_back_button);
+  back_button_->SetVisible(show_back_button);
+  content_container_->Layout();
 }
 
 bool SearchBoxView::OnMouseWheel(const ui::MouseWheelEvent& event) {

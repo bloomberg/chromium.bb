@@ -111,6 +111,7 @@ void AppListFolderView::ScheduleShowHideAnimation(bool show,
       show ? kFolderTransitionInDurationMs : kFolderTransitionOutDurationMs));
 
   layer()->SetOpacity(show ? 1.0f : 0.0f);
+  app_list_main_view_->search_box_view()->ShowBackOrGoogleIcon(show);
 }
 
 gfx::Size AppListFolderView::CalculatePreferredSize() const {
