@@ -12,6 +12,7 @@ import static org.chromium.chrome.browser.crash.MinidumpUploadService.RENDERER;
 import android.annotation.TargetApi;
 import android.app.job.JobInfo;
 import android.app.job.JobScheduler;
+import android.app.job.JobWorkItem;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -579,7 +580,6 @@ public class MinidumpUploadServiceTest extends CrashTestCase {
         }
     }
 
-    // TODO(crbug/716236): Refer to this crbug for compilation error after the O SDK is rolled.
     /**
      * A JobScheduler wrapper that verifies that the expected properties are set correctly.
      */
@@ -598,6 +598,11 @@ public class MinidumpUploadServiceTest extends CrashTestCase {
 
         @Override
         public void cancelAll() {}
+
+        @Override
+        public int enqueue(JobInfo job, JobWorkItem work) {
+            return 0;
+        }
 
         @Override
         public List<JobInfo> getAllPendingJobs() {
