@@ -718,8 +718,7 @@ html[dir=rtl] .user-type-icon-area {
 .pod.legacy-supervised .action-box-remove-non-owner-user-warning-text,
 .pod:not(.legacy-supervised)
     .action-box-remove-legacy-supervised-user-warning-text,
-.pod.synced .non-sync,
-.pod.has-no-stats .has-stats {
+.pod.synced .non-sync {
   display: none;
 }
 

@@ -1840,15 +1840,10 @@ cr.define('login', function() {
         }
       }
 
-      // this.classList is used for selecting the appropriate dialog.
-      if (total_count)
-        this.classList.remove('has-no-stats');
-
       var is_synced_user = this.user.emailAddress !== "";
       // Write total number if all statistics are loaded.
       if (num_stats_loaded === Object.keys(stats_elements).length) {
         if (!total_count) {
-          this.classList.add('has-no-stats');
           var message = loadTimeData.getString(
               is_synced_user ? 'removeUserWarningTextSyncNoStats' :
                                'removeUserWarningTextNonSyncNoStats');
@@ -2629,8 +2624,6 @@ cr.define('login', function() {
       this.classList.toggle('legacy-supervised', isLegacySupervisedUser);
       this.classList.toggle('child', isChildUser);
       this.classList.toggle('synced', isSyncedUser);
-      this.classList.toggle('has-no-stats',
-          !isProfileLoaded && !this.user.statistics.length);
 
       if (this.isAuthTypeUserClick)
         this.passwordLabelElement.textContent = this.authValue;
@@ -3575,7 +3568,7 @@ cr.define('login', function() {
       } else {
         // When the user count exceeds the limit (currently set to 2), only the
         // main pod still has pow row as parent, all other pods should be
-        // appended to the container with scroll bar. 
+        // appended to the container with scroll bar.
         for (var pod of pods) {
           if (pod == this.mainPod_)
             this.appendChild(pod);
@@ -3673,7 +3666,7 @@ cr.define('login', function() {
       var MIDDLE_PADDING = this.isPortraitMode_() ? 84 : 220;
       var contentsWidth = LEFT_PADDING +
           CROS_POD_WIDTH + MIDDLE_PADDING + CROS_SMALL_POD_WIDTH;
-      var blankWidth = this.screenSize.width - contentsWidth;   
+      var blankWidth = this.screenSize.width - contentsWidth;
       var actualLeftPadding = LEFT_PADDING;
       actualLeftPadding +=
           this.isPortraitMode_() ? blankWidth * 2 / 3 : blankWidth / 2;
@@ -3705,10 +3698,10 @@ cr.define('login', function() {
           return;
         }
       }
-      
+
       // Start positioning of the main pod and the smallPodsContainer.
       this.mainPod_.left = actualLeftPadding;
-      this.mainPod_.top = (this.screenSize.height - CROS_POD_HEIGHT) / 2;   
+      this.mainPod_.top = (this.screenSize.height - CROS_POD_HEIGHT) / 2;
       this.smallPodsContainer.style.left =
           cr.ui.toCssPx(actualLeftPadding + CROS_POD_WIDTH + MIDDLE_PADDING);
       this.smallPodsContainer.style.top = cr.ui.toCssPx(0);
@@ -3781,7 +3774,7 @@ cr.define('login', function() {
           SCROLL_RIGHT_PADDING);
 
       // SCROLL_TOP_PADDING denotes the smallest top padding we can tolerate
-      // before allowing the container to overflow and show the scroll bar.    
+      // before allowing the container to overflow and show the scroll bar.
       var actualTopPadding = SCROLL_TOP_PADDING;
       if ((this.screenSize.height - scrollHeight) / 2 > actualTopPadding) {
         // Edge case: the total height of the scrollable container does not
@@ -3795,10 +3788,10 @@ cr.define('login', function() {
         // The scroll bar will definitely be shown if we reach here. A gradient
         // mask is applied to avoid blocking the header bar if the virtual
         // keyboard is not shown. When the keyboard is shown, there's no need
-        // to add the mask and the original top padding value should be kept. 
+        // to add the mask and the original top padding value should be kept.
         actualTopPadding = SCROLL_MASK_HEIGHT;
         this.showScrollMask_();
-      } 
+      }
 
       // Start positioning of the small pods inside the smallPodsContainer.
       var topPadding = actualTopPadding;
@@ -4107,7 +4100,7 @@ cr.define('login', function() {
       var top = pod.top;
       // Edge case: paddingBottom should be switched too because there's a
       // chance that the small pod was at the end of the scrollable container
-      // and had a non-zero paddingBottom. 
+      // and had a non-zero paddingBottom.
       var paddingBottom = pod.style.paddingBottom;
       var parent = pod.parentNode;
       parent.removeChild(pod);
