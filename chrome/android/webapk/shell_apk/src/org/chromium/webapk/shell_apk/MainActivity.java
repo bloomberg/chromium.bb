@@ -38,8 +38,9 @@ public class MainActivity extends Activity {
     private static final String HOST_BROWSER_LAUNCHER_CLASS_NAME =
             "org.chromium.webapk.lib.runtime_library.HostBrowserLauncher";
 
-    // Action for launching {@link WebappLauncherActivity}. Must stay in sync with
-    // {@link WebappLauncherActivity#ACTION_START_WEBAPP}.
+    // Action for launching {@link WebappLauncherActivity}.
+    // TODO(hanxi): crbug.com/737556. Replaces this string with the new WebAPK launch action after
+    // it is propagated to all the Chrome's channels.
     public static final String ACTION_START_WEBAPK =
             "com.google.android.apps.chrome.webapps.WebappManager.ACTION_START_WEBAPP";
 
