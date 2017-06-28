@@ -20,11 +20,13 @@ namespace blink {
 namespace {
 
 String GetErrorStringForDisallowedLoad(const KURL& url) {
-  // TODO(shivanisha): Update the string when finalized.
   StringBuilder builder;
-  builder.Append("Subresource filtering disallowed loading this resource, ");
+  builder.Append("Chrome blocked resource ");
   builder.Append(url.GetString());
-  builder.Append(".");
+  builder.Append(
+      " on this site because this site tends to show ads that interrupt, "
+      "distract, or prevent user control. Learn more at "
+      "https://www.chromestatus.com/feature/5738264052891648");
   return builder.ToString();
 }
 
