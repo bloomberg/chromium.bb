@@ -19,6 +19,7 @@
 #include "ash/test/status_area_widget_test_helper.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/test/user_action_tester.h"
@@ -157,6 +158,13 @@ TEST_F(OverviewButtonTrayTest, PerformDoubleTapAction) {
   PerformDoubleTap();
   EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
   EXPECT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
+
+  // Verify that if we minimize a window, double tapping the overlay tray button
+  // will bring up the window.
+  wm::GetWindowState(window2.get())->Minimize();
+  ASSERT_EQ(window2->layer()->GetTargetOpacity(), 0.0);
+  PerformDoubleTap();
+  EXPECT_EQ(window2->layer()->GetTargetOpacity(), 1.0);
 }
 
 // Tests that tapping on the control will record the user action Tray_Overview.

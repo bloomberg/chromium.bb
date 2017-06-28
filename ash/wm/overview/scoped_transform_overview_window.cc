@@ -405,6 +405,9 @@ void ScopedTransformOverviewWindow::UpdateMirrorWindowForMinimizedState() {
     if (!minimized_widget_)
       CreateMirrorWindowForMinimizedState();
   } else {
+    // If the original window is no longer minimized, make sure it will be
+    // visible when we restore it when selection mode ends.
+    EnsureVisible();
     minimized_widget_->CloseNow();
     minimized_widget_.reset();
   }
