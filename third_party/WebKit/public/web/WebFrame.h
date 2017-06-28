@@ -55,8 +55,6 @@ class WebPerformance;
 class WebRemoteFrame;
 class WebSecurityOrigin;
 class WebString;
-class WebURL;
-class WebURLRequest;
 class WebView;
 enum class WebSandboxFlags;
 struct WebFrameOwnerProperties;
@@ -202,13 +200,6 @@ class BLINK_EXPORT WebFrame {
   // it to be rendered in view-source mode.
   virtual void EnableViewSourceMode(bool) = 0;
   virtual bool IsViewSourceModeEnabled() const = 0;
-
-  // Sets the referrer for the given request to be the specified URL or
-  // if that is null, then it sets the referrer to the referrer that the
-  // frame would use for subresources.  NOTE: This method also filters
-  // out invalid referrers (e.g., it is invalid to send a HTTPS URL as
-  // the referrer for a HTTP request).
-  virtual void SetReferrerForRequest(WebURLRequest&, const WebURL&) = 0;
 
   // Returns an AssociatedURLLoader that is associated with this frame.  The
   // loader will, for example, be cancelled when WebFrame::stopLoading is

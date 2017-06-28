@@ -48,6 +48,7 @@ class WebScriptExecutionCallback;
 class WebSharedWorkerRepositoryClient;
 class WebSpellCheckPanelHostClient;
 class WebTextCheckClient;
+class WebURL;
 class WebURLLoader;
 class WebView;
 enum class WebTreeScopeType;
@@ -235,6 +236,13 @@ class WebLocalFrame : public WebFrame {
   // is infringed.
   virtual void ReportContentSecurityPolicyViolation(
       const blink::WebContentSecurityPolicyViolation&) = 0;
+
+  // Sets the referrer for the given request to be the specified URL or
+  // if that is null, then it sets the referrer to the referrer that the
+  // frame would use for subresources.  NOTE: This method also filters
+  // out invalid referrers (e.g., it is invalid to send a HTTPS URL as
+  // the referrer for a HTTP request).
+  virtual void SetReferrerForRequest(WebURLRequest&, const WebURL&) = 0;
 
   // Navigation State -------------------------------------------------------
 

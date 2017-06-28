@@ -150,7 +150,7 @@ class TestUrlData : public UrlData {
 
 class TestUrlIndex : public UrlIndex {
  public:
-  explicit TestUrlIndex(blink::WebFrame* frame) : UrlIndex(frame) {}
+  explicit TestUrlIndex(blink::WebLocalFrame* frame) : UrlIndex(frame) {}
 
   scoped_refptr<UrlData> NewUrlData(const GURL& url,
                                     UrlData::CORSMode cors_mode) override {

@@ -197,9 +197,10 @@ size_t UrlData::CachedSize() {
   return multibuffer()->map().size();
 }
 
-UrlIndex::UrlIndex(blink::WebFrame* frame) : UrlIndex(frame, kBlockSizeShift) {}
+UrlIndex::UrlIndex(blink::WebLocalFrame* frame)
+    : UrlIndex(frame, kBlockSizeShift) {}
 
-UrlIndex::UrlIndex(blink::WebFrame* frame, int block_shift)
+UrlIndex::UrlIndex(blink::WebLocalFrame* frame, int block_shift)
     : frame_(frame),
       lru_(new MultiBuffer::GlobalLRU(base::ThreadTaskRunnerHandle::Get())),
       block_shift_(block_shift),
