@@ -69,23 +69,40 @@ class MockCastSocket : public CastSocket {
   MockCastSocket();
   ~MockCastSocket() override;
 
-  MOCK_METHOD1(Connect, void(base::Callback<void(ChannelError)> callback));
+  MOCK_METHOD1(Connect, void(const OnOpenCallback& callback));
   MOCK_METHOD1(Close, void(const net::CompletionCallback& callback));
-  MOCK_CONST_METHOD0(ip_endpoint, const net::IPEndPoint&());
-  MOCK_CONST_METHOD0(id, int());
-  MOCK_METHOD1(set_id, void(int id));
   MOCK_CONST_METHOD0(ready_state, ReadyState());
-  MOCK_CONST_METHOD0(error_state, ChannelError());
-  MOCK_CONST_METHOD0(keep_alive, bool(void));
-  MOCK_CONST_METHOD0(audio_only, bool(void));
-  MOCK_METHOD1(SetErrorState, void(ChannelError error_state));
   MOCK_METHOD1(AddObserver, void(Observer* observer));
 
-  CastTransport* transport() const override { return mock_transport_.get(); }
+  const net::IPEndPoint& ip_endpoint() const override { return ip_endpoint_; }
+  void SetIPEndpoint(const net::IPEndPoint& ip_endpoint) {
+    ip_endpoint_ = ip_endpoint;
+  }
 
+  int id() const override { return channel_id_; }
+  void set_id(int id) override { channel_id_ = id; }
+
+  ChannelError error_state() const override { return error_state_; }
+  void SetErrorState(ChannelError error_state) override {
+    error_state_ = error_state;
+  }
+
+  bool keep_alive() const override { return keep_alive_; }
+  void SetKeepAlive(bool keep_alive) { keep_alive_ = keep_alive; }
+
+  bool audio_only() const override { return audio_only_; }
+  void SetAudioOnly(bool audio_only) { audio_only_ = audio_only; }
+
+  CastTransport* transport() const override { return mock_transport_.get(); }
   MockCastTransport* mock_transport() const { return mock_transport_.get(); }
 
  private:
+  net::IPEndPoint ip_endpoint_;
+  int channel_id_;
+  ChannelError error_state_;
+  bool keep_alive_;
+  bool audio_only_;
+
   std::unique_ptr<MockCastTransport> mock_transport_;
   std::unique_ptr<Observer> observer_;
 

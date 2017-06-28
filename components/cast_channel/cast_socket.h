@@ -56,6 +56,9 @@ enum CastDeviceCapability {
 // Public interface of the CastSocket class.
 class CastSocket {
  public:
+  using OnOpenCallback =
+      base::Callback<void(int channel_id, ChannelError error_state)>;
+
   class Observer {
    public:
     virtual ~Observer() {}
@@ -82,7 +85,7 @@ class CastSocket {
   // If the CastSocket is destroyed while the connection is pending, |callback|
   // will be invoked with CHANNEL_ERROR_UNKNOWN. In this case, invoking
   // |callback| must not result in any re-entrancy behavior.
-  virtual void Connect(base::Callback<void(ChannelError)> callback) = 0;
+  virtual void Connect(const OnOpenCallback& callback) = 0;
 
   // Closes the channel if not already closed. On completion, the channel will
   // be in READY_STATE_CLOSED.
@@ -167,7 +170,7 @@ class CastSocketImpl : public CastSocket {
   ~CastSocketImpl() override;
 
   // CastSocket interface.
-  void Connect(base::Callback<void(ChannelError)> callback) override;
+  void Connect(const OnOpenCallback& callback) override;
   CastTransport* transport() const override;
   void Close(const net::CompletionCallback& callback) override;
   const net::IPEndPoint& ip_endpoint() const override;
@@ -227,6 +230,8 @@ class CastSocketImpl : public CastSocket {
   // Audio only channel policy mandates that a device declaring a video out
   // capability must not have a certificate with audio only policy.
   bool VerifyChannelPolicy(const AuthResult& result);
+
+  void Connect();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(CastSocketTest, TestConnectAuthMessageCorrupted);
@@ -354,8 +359,8 @@ class CastSocketImpl : public CastSocket {
   // Reply received from the receiver to a challenge request.
   std::unique_ptr<CastMessage> challenge_reply_;
 
-  // Callback invoked when the socket is connected or fails to connect.
-  base::Callback<void(ChannelError)> connect_callback_;
+  // Callbacks invoked when the socket is connected or fails to connect.
+  std::vector<OnOpenCallback> connect_callbacks_;
 
   // Callback invoked by |connect_timeout_timer_| to cancel the connection.
   base::CancelableClosure connect_timeout_callback_;

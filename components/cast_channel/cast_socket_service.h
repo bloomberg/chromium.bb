@@ -24,9 +24,12 @@ class CastSocketService : public RefcountedKeyedService {
  public:
   CastSocketService();
 
-  // Adds |socket| to |sockets_| and returns the new channel_id. Takes ownership
-  // of |socket|.
-  int AddSocket(std::unique_ptr<CastSocket> socket);
+  // Returns a pointer to the Logger member variable.
+  scoped_refptr<cast_channel::Logger> GetLogger();
+
+  // Adds |socket| to |sockets_| and returns raw pointer of |socket|. Takes
+  // ownership of |socket|.
+  CastSocket* AddSocket(std::unique_ptr<CastSocket> socket);
 
   // Removes the CastSocket corresponding to |channel_id| from the
   // CastSocketRegistry. Returns nullptr if no such CastSocket exists.
@@ -36,6 +39,44 @@ class CastSocketService : public RefcountedKeyedService {
   // otherwise.
   CastSocket* GetSocket(int channel_id) const;
 
+  CastSocket* GetSocket(const net::IPEndPoint& ip_endpoint) const;
+
+  // Opens cast socket with |ip_endpoint| and invokes |open_cb| when opening
+  // operation finishes. If cast socket with |ip_endpoint| already exists,
+  // invoke |open_cb| directly with existing socket's channel ID.
+  // Parameters:
+  // |ip_endpoint|: IP address and port of the remote host.
+  // |net_log|: Log of socket events.
+  // |connect_timeout|: Connection timeout interval.
+  // |liveness_timeout|: Liveness timeout for connect calls.
+  // |ping_interval|: Ping interval.
+  // |logger|: Log of cast channel events.
+  // |device_capabilities|: Device capabilities.
+  // |open_cb|: OnOpenCallback invoked when cast socket is opened.
+  // |observer|: Observer handles messages and errors on newly opened socket.
+  // Does not take ownership of |observer|.
+  int OpenSocket(const net::IPEndPoint& ip_endpoint,
+                 net::NetLog* net_log,
+                 const base::TimeDelta& connect_timeout,
+                 const base::TimeDelta& liveness_timeout,
+                 const base::TimeDelta& ping_interval,
+                 uint64_t device_capabilities,
+                 const CastSocket::OnOpenCallback& open_cb,
+                 CastSocket::Observer* observer);
+
+  // Opens cast socket with |ip_endpoint| and invokes |open_cb| when opening
+  // operation finishes. If cast socket with |ip_endpoint| already exists,
+  // invoke |open_cb| directly with existing socket's channel ID.
+  // |ip_endpoint|: IP address and port of the remote host.
+  // |net_log|: Log of socket events.
+  // |open_cb|: OnOpenCallback invoked when cast socket is opened.
+  // |observer|: Observer handles messages and errors on newly opened socket.
+  // Does not take ownership of |observer|.
+  int OpenSocket(const net::IPEndPoint& ip_endpoint,
+                 net::NetLog* net_log,
+                 const CastSocket::OnOpenCallback& open_cb,
+                 CastSocket::Observer* observer);
+
   // Returns an observer corresponding to |id|.
   CastSocket::Observer* GetObserver(const std::string& id);
 
@@ -44,6 +85,9 @@ class CastSocketService : public RefcountedKeyedService {
   CastSocket::Observer* AddObserver(
       const std::string& id,
       std::unique_ptr<CastSocket::Observer> observer);
+
+  // Allow test to inject a mock cast socket.
+  void SetSocketForTest(std::unique_ptr<CastSocket> socket_for_test);
 
  private:
   ~CastSocketService() override;
@@ -62,6 +106,10 @@ class CastSocketService : public RefcountedKeyedService {
   // coded string.
   std::map<std::string, std::unique_ptr<CastSocket::Observer>>
       socket_observer_map_;
+
+  scoped_refptr<cast_channel::Logger> logger_;
+
+  std::unique_ptr<CastSocket> socket_for_test_;
 
   THREAD_CHECKER(thread_checker_);
 
