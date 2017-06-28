@@ -163,8 +163,11 @@ typedef Vector<RefPtr<ComputedStyle>, 4> PseudoStyleCache;
 // Currently, some properties are stored in ComputedStyle and some in
 // ComputedStyleBase. Eventually, the storage of all properties (except SVG
 // ones) will be in ComputedStyleBase.
-class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
-                                  public RefCounted<ComputedStyle> {
+//
+// Since this class is huge, do not mark all of it CORE_EXPORT.  Instead,
+// export only the methods you need below.
+class ComputedStyle : public ComputedStyleBase,
+                      public RefCounted<ComputedStyle> {
   // Needed to allow access to private/protected getters of fields to allow diff
   // generation
   friend class ComputedStyleBase;
@@ -209,14 +212,14 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   static RefPtr<ComputedStyle> CreateInitialStyle();
   // TODO(shend): Remove this. Initial style should not be mutable.
-  static ComputedStyle& MutableInitialStyle();
+  CORE_EXPORT static ComputedStyle& MutableInitialStyle();
 
  public:
-  static RefPtr<ComputedStyle> Create();
+  CORE_EXPORT static RefPtr<ComputedStyle> Create();
   static RefPtr<ComputedStyle> CreateAnonymousStyleWithDisplay(
       const ComputedStyle& parent_style,
       EDisplay);
-  static RefPtr<ComputedStyle> Clone(const ComputedStyle&);
+  CORE_EXPORT static RefPtr<ComputedStyle> Clone(const ComputedStyle&);
   static const ComputedStyle& InitialStyle() { return MutableInitialStyle(); }
   static void InvalidateInitialStyle();
 
@@ -994,7 +997,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // line-height
   static Length InitialLineHeight() { return Length(-100.0, kPercent); }
   Length LineHeight() const;
-  void SetLineHeight(const Length& specified_line_height);
+  CORE_EXPORT void SetLineHeight(const Length& specified_line_height);
 
   // List style properties.
   // list-style-image
@@ -1057,16 +1060,16 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // Font properties.
-  const Font& GetFont() const;
-  void SetFont(const Font&);
-  const FontDescription& GetFontDescription() const;
-  bool SetFontDescription(const FontDescription&);
+  CORE_EXPORT const Font& GetFont() const;
+  CORE_EXPORT void SetFont(const Font&);
+  CORE_EXPORT const FontDescription& GetFontDescription() const;
+  CORE_EXPORT bool SetFontDescription(const FontDescription&);
   bool HasIdenticalAscentDescentAndLineGap(const ComputedStyle& other) const;
 
   // font-size
   int FontSize() const;
-  float SpecifiedFontSize() const;
-  float ComputedFontSize() const;
+  CORE_EXPORT float SpecifiedFontSize() const;
+  CORE_EXPORT float ComputedFontSize() const;
   LayoutUnit ComputedFontSizeAsFixed() const;
 
   // font-size-adjust
@@ -1074,7 +1077,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   bool HasFontSizeAdjust() const;
 
   // font-weight
-  FontWeight GetFontWeight() const;
+  CORE_EXPORT FontWeight GetFontWeight() const;
 
   // font-stretch
   FontStretch GetFontStretch() const;
@@ -1200,7 +1203,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // Comparison operators
   // TODO(shend): Replace callers of operator== wth a named method instead, e.g.
   // inheritedEquals().
-  bool operator==(const ComputedStyle& other) const;
+  CORE_EXPORT bool operator==(const ComputedStyle& other) const;
   bool operator!=(const ComputedStyle& other) const {
     return !(*this == other);
   }
@@ -1297,7 +1300,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   float TextAutosizingMultiplier() const {
     return TextAutosizingMultiplierInternal();
   }
-  void SetTextAutosizingMultiplier(float);
+  CORE_EXPORT void SetTextAutosizingMultiplier(float);
 
   // Column utility functions.
   void ClearMultiCol();
@@ -1940,8 +1943,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   bool HasOutline() const {
     return OutlineWidth() > 0 && OutlineStyle() > EBorderStyle::kHidden;
   }
-  int OutlineOutsetExtent() const;
-  float GetOutlineStrokeWidthForFocusRing() const;
+  CORE_EXPORT int OutlineOutsetExtent() const;
+  CORE_EXPORT float GetOutlineStrokeWidthForFocusRing() const;
   bool HasOutlineWithCurrentColor() const {
     return HasOutline() && OutlineColor().IsCurrentColor();
   }
@@ -2207,7 +2210,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // they don't determine the stacking of the elements underneath them.  (Note:
   // There are also other elements treated as stacking context during painting,
   // but not managed in stacks. See ObjectPainter::PaintAllPhasesAtomically().)
-  void UpdateIsStackingContext(bool is_document_element, bool is_in_top_layer);
+  CORE_EXPORT void UpdateIsStackingContext(bool is_document_element,
+                                           bool is_in_top_layer);
   bool IsStacked() const {
     return IsStackingContext() || GetPosition() != EPosition::kStatic;
   }
@@ -2339,7 +2343,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // Color utility functions.
   // TODO(sashab): Rename this to just getColor(), and add a comment explaining
   // how it works.
-  Color VisitedDependentColor(int color_property) const;
+  CORE_EXPORT Color VisitedDependentColor(int color_property) const;
 
   // -webkit-appearance utility functions.
   bool HasAppearance() const { return Appearance() != kNoControlPart; }
@@ -2589,8 +2593,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
       const StyleImage&,
       const ComputedStyle& other) const;
   bool DiffNeedsVisualRectUpdate(const ComputedStyle& other) const;
-  void UpdatePropertySpecificDifferences(const ComputedStyle& other,
-                                         StyleDifference&) const;
+  CORE_EXPORT void UpdatePropertySpecificDifferences(const ComputedStyle& other,
+                                                     StyleDifference&) const;
 
   static bool ShadowListHasCurrentColor(const ShadowList*);
 
