@@ -607,7 +607,8 @@ cr.define('print_preview', function() {
         var boundHideDialog = function () {
           this.nativeLayer_.startHideDialog();
         }.bind(this);
-        // Local printers resolve when print is started. Hide the dialog.
+        // Local printers resolve when print is ready to start. Hide the
+        // dialog.
         whenPrintDone.then(boundHideDialog, boundHideDialog);
       }
 

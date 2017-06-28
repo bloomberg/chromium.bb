@@ -432,7 +432,9 @@ class PrintPreviewHandler
   // Callback ID to be used to notify UI that PDF file selection has finished.
   std::string pdf_callback_id_;
 
-  bool printing_started_ = false;
+  // Print settings to use in the local print request to send when
+  // HandleHidePreview() is called.
+  std::unique_ptr<base::DictionaryValue> settings_;
 
   // Proxy for calls to the print backend.  Lazily initialized since web_ui() is
   // not available at construction time.
