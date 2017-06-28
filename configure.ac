@@ -143,22 +143,11 @@ if test x$enable_egl = xyes; then
         PKG_CHECK_MODULES([EGL_TESTS], [egl glesv2 wayland-client wayland-egl])
 fi
 
-AC_ARG_ENABLE(xkbcommon,
-	      AS_HELP_STRING([--disable-xkbcommon], [Disable libxkbcommon
-			      support: This is only useful in environments
-			      where you do not have a hardware keyboard. If
-			      libxkbcommon support is disabled clients will not
-			      be sent a keymap and must know how to interpret
-			      the keycode sent for any key event.]),,
-	      enable_xkbcommon=yes)
-if test x$enable_xkbcommon = xyes; then
-	AC_DEFINE(ENABLE_XKBCOMMON, [1], [Build Weston with libxkbcommon support])
-	COMPOSITOR_MODULES="$COMPOSITOR_MODULES xkbcommon >= 0.3.0"
-	PKG_CHECK_MODULES(XKBCOMMON_COMPOSE, [xkbcommon >= 0.5.0],
-	                  [AC_DEFINE(HAVE_XKBCOMMON_COMPOSE, 1,
-			             [Define if xkbcommon is 0.5.0 or newer])],
-                          true)
-fi
+COMPOSITOR_MODULES="$COMPOSITOR_MODULES xkbcommon >= 0.3.0"
+
+PKG_CHECK_MODULES(XKBCOMMON_COMPOSE, [xkbcommon >= 0.5.0],
+                  [AC_DEFINE(HAVE_XKBCOMMON_COMPOSE, 1,
+	             [Define if xkbcommon is 0.5.0 or newer])],true)
 
 AC_ARG_ENABLE(setuid-install, [  --enable-setuid-install],,
 	      enable_setuid_install=yes)

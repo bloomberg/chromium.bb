@@ -924,9 +924,6 @@ struct weston_compositor {
 	struct xkb_context *xkb_context;
 	struct weston_xkb_info *xkb_info;
 
-	/* Raw keyboard processing (no libxkbcommon initialization or handling) */
-	int use_xkbcommon;
-
 	int32_t kb_repeat_rate;
 	int32_t kb_repeat_delay;
 

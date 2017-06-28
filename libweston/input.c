@@ -1123,14 +1123,10 @@ weston_keyboard_destroy(struct weston_keyboard *keyboard)
 {
 	/* XXX: What about keyboard->resource_list? */
 
-#ifdef ENABLE_XKBCOMMON
-	if (keyboard->seat->compositor->use_xkbcommon) {
-		xkb_state_unref(keyboard->xkb_state.state);
-		if (keyboard->xkb_info)
-			weston_xkb_info_destroy(keyboard->xkb_info);
-		xkb_keymap_unref(keyboard->pending_keymap);
-	}
-#endif
+	xkb_state_unref(keyboard->xkb_state.state);
+	if (keyboard->xkb_info)
+		weston_xkb_info_destroy(keyboard->xkb_info);
+	xkb_keymap_unref(keyboard->pending_keymap);
 
 	wl_array_release(&keyboard->keys);
 	wl_list_remove(&keyboard->focus_resource_listener.link);
@@ -1722,7 +1718,6 @@ WL_EXPORT int
 weston_keyboard_set_locks(struct weston_keyboard *keyboard,
 			  uint32_t mask, uint32_t value)
 {
-#ifdef ENABLE_XKBCOMMON
 	uint32_t serial;
 	xkb_mod_mask_t mods_depressed, mods_latched, mods_locked, group;
 	xkb_mod_mask_t num, caps;
@@ -1765,12 +1760,8 @@ weston_keyboard_set_locks(struct weston_keyboard *keyboard,
 	notify_modifiers(keyboard->seat, serial);
 
 	return 0;
-#else
-	return -1;
-#endif
 }
 
-#ifdef ENABLE_XKBCOMMON
 WL_EXPORT void
 notify_modifiers(struct weston_seat *seat, uint32_t serial)
 {
@@ -1848,10 +1839,6 @@ update_modifier_state(struct weston_seat *seat, uint32_t serial, uint32_t key,
 {
 	struct weston_keyboard *keyboard = weston_seat_get_keyboard(seat);
 	enum xkb_key_direction direction;
-
-	/* Keyboard modifiers don't exist in raw keyboard mode */
-	if (!seat->compositor->use_xkbcommon)
-		return;
 
 	if (state == WL_KEYBOARD_KEY_STATE_PRESSED)
 		direction = XKB_KEY_DOWN;
@@ -1945,23 +1932,6 @@ update_keymap(struct weston_seat *seat)
 	wl_resource_for_each(resource, &keyboard->focus_resource_list)
 		send_modifiers(resource, wl_display_get_serial(seat->compositor->wl_display), keyboard);
 }
-#else
-WL_EXPORT void
-notify_modifiers(struct weston_seat *seat, uint32_t serial)
-{
-}
-
-static void
-update_modifier_state(struct weston_seat *seat, uint32_t serial, uint32_t key,
-		      enum wl_keyboard_key_state state)
-{
-}
-
-static void
-update_keymap(struct weston_seat *seat)
-{
-}
-#endif
 
 WL_EXPORT void
 notify_key(struct weston_seat *seat, uint32_t time, uint32_t key,
@@ -2490,17 +2460,9 @@ seat_get_keyboard(struct wl_client *client, struct wl_resource *resource,
 					     seat->compositor->kb_repeat_delay);
 	}
 
-	if (seat->compositor->use_xkbcommon) {
-		wl_keyboard_send_keymap(cr, WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1,
-					keyboard->xkb_info->keymap_fd,
-					keyboard->xkb_info->keymap_size);
-	} else {
-		int null_fd = open("/dev/null", O_RDONLY);
-		wl_keyboard_send_keymap(cr, WL_KEYBOARD_KEYMAP_FORMAT_NO_KEYMAP,
-					null_fd,
-					0);
-		close(null_fd);
-	}
+	wl_keyboard_send_keymap(cr, WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1,
+				keyboard->xkb_info->keymap_fd,
+				keyboard->xkb_info->keymap_size);
 
 	if (should_send_modifiers_to_client(seat, client)) {
 		send_modifiers_to_resource(keyboard,
@@ -2685,13 +2647,10 @@ bind_relative_pointer_manager(struct wl_client *client, void *data,
 				       NULL);
 }
 
-#ifdef ENABLE_XKBCOMMON
 WL_EXPORT int
 weston_compositor_set_xkb_rule_names(struct weston_compositor *ec,
 				     struct xkb_rule_names *names)
 {
-	ec->use_xkbcommon = 1;
-
 	if (ec->xkb_context == NULL) {
 		ec->xkb_context = xkb_context_new(0);
 		if (ec->xkb_context == NULL) {
@@ -2730,13 +2689,6 @@ weston_xkb_info_destroy(struct weston_xkb_info *xkb_info)
 void
 weston_compositor_xkb_destroy(struct weston_compositor *ec)
 {
-	/*
-	 * If we're operating in raw keyboard mode, we never initialized
-	 * libxkbcommon so there's no cleanup to do either.
-	 */
-	if (!ec->use_xkbcommon)
-		return;
-
 	free((char *) ec->xkb_names.rules);
 	free((char *) ec->xkb_names.model);
 	free((char *) ec->xkb_names.layout);
@@ -2850,19 +2802,6 @@ weston_compositor_build_global_keymap(struct weston_compositor *ec)
 
 	return 0;
 }
-#else
-WL_EXPORT int
-weston_compositor_set_xkb_rule_names(struct weston_compositor *ec,
-				     struct xkb_rule_names *names)
-{
-	return 0;
-}
-
-void
-weston_compositor_xkb_destroy(struct weston_compositor *ec)
-{
-}
-#endif
 
 WL_EXPORT void
 weston_seat_update_keymap(struct weston_seat *seat, struct xkb_keymap *keymap)
@@ -2872,16 +2811,11 @@ weston_seat_update_keymap(struct weston_seat *seat, struct xkb_keymap *keymap)
 	if (!keyboard || !keymap)
 		return;
 
-#ifdef ENABLE_XKBCOMMON
-	if (!seat->compositor->use_xkbcommon)
-		return;
-
 	xkb_keymap_unref(keyboard->pending_keymap);
 	keyboard->pending_keymap = xkb_keymap_ref(keymap);
 
 	if (keyboard->keys.size == 0)
 		update_keymap(seat);
-#endif
 }
 
 WL_EXPORT int
@@ -2902,28 +2836,24 @@ weston_seat_init_keyboard(struct weston_seat *seat, struct xkb_keymap *keymap)
 		return -1;
 	}
 
-#ifdef ENABLE_XKBCOMMON
-	if (seat->compositor->use_xkbcommon) {
-		if (keymap != NULL) {
-			keyboard->xkb_info = weston_xkb_info_create(keymap);
-			if (keyboard->xkb_info == NULL)
-				goto err;
-		} else {
-			if (weston_compositor_build_global_keymap(seat->compositor) < 0)
-				goto err;
-			keyboard->xkb_info = seat->compositor->xkb_info;
-			keyboard->xkb_info->ref_count++;
-		}
-
-		keyboard->xkb_state.state = xkb_state_new(keyboard->xkb_info->keymap);
-		if (keyboard->xkb_state.state == NULL) {
-			weston_log("failed to initialise XKB state\n");
+	if (keymap != NULL) {
+		keyboard->xkb_info = weston_xkb_info_create(keymap);
+		if (keyboard->xkb_info == NULL)
 			goto err;
-		}
-
-		keyboard->xkb_state.leds = 0;
+	} else {
+		if (weston_compositor_build_global_keymap(seat->compositor) < 0)
+			goto err;
+		keyboard->xkb_info = seat->compositor->xkb_info;
+		keyboard->xkb_info->ref_count++;
 	}
-#endif
+
+	keyboard->xkb_state.state = xkb_state_new(keyboard->xkb_info->keymap);
+	if (keyboard->xkb_state.state == NULL) {
+		weston_log("failed to initialise XKB state\n");
+		goto err;
+	}
+
+	keyboard->xkb_state.leds = 0;
 
 	seat->keyboard_state = keyboard;
 	seat->keyboard_device_count = 1;
@@ -2947,19 +2877,15 @@ weston_keyboard_reset_state(struct weston_keyboard *keyboard)
 	struct weston_seat *seat = keyboard->seat;
 	struct xkb_state *state;
 
-#ifdef ENABLE_XKBCOMMON
-	if (seat->compositor->use_xkbcommon) {
-		state = xkb_state_new(keyboard->xkb_info->keymap);
-		if (!state) {
-			weston_log("failed to reset XKB state\n");
-			return;
-		}
-		xkb_state_unref(keyboard->xkb_state.state);
-		keyboard->xkb_state.state = state;
-
-		keyboard->xkb_state.leds = 0;
+	state = xkb_state_new(keyboard->xkb_info->keymap);
+	if (!state) {
+		weston_log("failed to reset XKB state\n");
+		return;
 	}
-#endif
+	xkb_state_unref(keyboard->xkb_state.state);
+	keyboard->xkb_state.state = state;
+
+	keyboard->xkb_state.leds = 0;
 
 	seat->modifier_state = 0;
 }
