@@ -35,9 +35,8 @@ struct ShellTestConfiguration {
 };
 
 interface LayoutTestControl {
-  // Asks a frame to dump its contents into a string and send them back over
-  // IPC.
-  LayoutDumpRequest();
+  // Dumps the frame's contents into a string.
+  DumpFrameLayout() => (string frame_layout_dump);
 
   // Replicates test config (for an already started test) to a new renderer
   // that hosts parts of the main test window.

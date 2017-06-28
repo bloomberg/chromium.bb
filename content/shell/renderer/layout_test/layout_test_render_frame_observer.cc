@@ -8,12 +8,10 @@
 
 #include "content/public/common/associated_interface_registry.h"
 #include "content/public/renderer/render_frame.h"
-#include "content/shell/common/shell_messages.h"
 #include "content/shell/renderer/layout_test/blink_test_runner.h"
 #include "content/shell/renderer/layout_test/layout_test_render_thread_observer.h"
 #include "content/shell/test_runner/web_test_interfaces.h"
 #include "content/shell/test_runner/web_test_runner.h"
-#include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 namespace content {
@@ -44,13 +42,14 @@ void LayoutTestRenderFrameObserver::OnDestruct() {
   delete this;
 }
 
-void LayoutTestRenderFrameObserver::LayoutDumpRequest() {
+void LayoutTestRenderFrameObserver::DumpFrameLayout(
+    DumpFrameLayoutCallback callback) {
   std::string dump =
       LayoutTestRenderThreadObserver::GetInstance()
           ->test_interfaces()
           ->TestRunner()
           ->DumpLayout(render_frame()->GetWebFrame());
-  Send(new ShellViewHostMsg_LayoutDumpResponse(routing_id(), dump));
+  std::move(callback).Run(dump);
 }
 
 void LayoutTestRenderFrameObserver::ReplicateTestConfiguration(
