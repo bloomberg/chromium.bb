@@ -176,8 +176,24 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
 
   // Sets the process as only permitted to use and see the cookies for the
   // given origin.
-  // Origin lock is applied only if the --site-per-process flag is used.
   void LockToOrigin(int child_id, const GURL& gurl);
+
+  // Used to indicate the result of comparing a process's origin lock to
+  // another value:
+  enum class CheckOriginLockResult {
+    // The process does not exist, or it has no origin lock.
+    NO_LOCK,
+    // The process has an origin lock and it matches the passed-in value.
+    HAS_EQUAL_LOCK,
+    // The process has an origin lock and it does not match the passed-in
+    // value.
+    HAS_WRONG_LOCK,
+  };
+
+  // Check the origin lock of the process specified by |child_id| against
+  // |site_url|.  See the definition of |CheckOriginLockResult| for possible
+  // returned values.
+  CheckOriginLockResult CheckOriginLock(int child_id, const GURL& site_url);
 
   // Register FileSystem type and permission policy which should be used
   // for the type.  The |policy| must be a bitwise-or'd value of

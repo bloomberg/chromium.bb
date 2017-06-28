@@ -10335,4 +10335,96 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossProcessInertSubframe) {
   EXPECT_EQ("", focused_element);
 }
 
+// Check that main frames for the same site rendering in unrelated tabs start
+// sharing processes that are already dedicated to that site when over process
+// limit. See https://crbug.com/513036.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       MainFrameProcessReuseWhenOverLimit) {
+  // Set the process limit to 1.
+  RenderProcessHost::SetMaxRendererProcessCount(1);
+
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  ASSERT_TRUE(NavigateToURL(shell(), url_a));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+
+  // Create an unrelated shell window.
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  Shell* new_shell = CreateBrowser();
+  EXPECT_TRUE(NavigateToURL(new_shell, url_b));
+
+  FrameTreeNode* new_shell_root =
+      static_cast<WebContentsImpl*>(new_shell->web_contents())
+          ->GetFrameTree()
+          ->root();
+
+  // The new window's b.com root should not reuse the a.com process.
+  EXPECT_NE(root->current_frame_host()->GetProcess(),
+            new_shell_root->current_frame_host()->GetProcess());
+
+  // Navigating the new window to a.com should reuse the first window's
+  // process.
+  EXPECT_TRUE(NavigateToURL(new_shell, url_a));
+  EXPECT_EQ(root->current_frame_host()->GetProcess(),
+            new_shell_root->current_frame_host()->GetProcess());
+}
+
+// Check that subframes for the same site rendering in unrelated tabs start
+// sharing processes that are already dedicated to that site when over process
+// limit. See https://crbug.com/513036.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       SubframeProcessReuseWhenOverLimit) {
+  // Set the process limit to 1.
+  RenderProcessHost::SetMaxRendererProcessCount(1);
+
+  GURL first_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b,b(c))"));
+  ASSERT_TRUE(NavigateToURL(shell(), first_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+
+  // Processes for dedicated sites should never be reused.
+  EXPECT_NE(root->current_frame_host()->GetProcess(),
+            root->child_at(0)->current_frame_host()->GetProcess());
+  EXPECT_NE(root->current_frame_host()->GetProcess(),
+            root->child_at(1)->current_frame_host()->GetProcess());
+  EXPECT_NE(root->current_frame_host()->GetProcess(),
+            root->child_at(1)->child_at(0)->current_frame_host()->GetProcess());
+  EXPECT_NE(root->child_at(1)->current_frame_host()->GetProcess(),
+            root->child_at(1)->child_at(0)->current_frame_host()->GetProcess());
+  EXPECT_EQ(root->child_at(0)->current_frame_host()->GetProcess(),
+            root->child_at(1)->current_frame_host()->GetProcess());
+
+  // Create an unrelated shell window.
+  Shell* new_shell = CreateBrowser();
+
+  GURL new_shell_url(embedded_test_server()->GetURL(
+      "d.com", "/cross_site_iframe_factory.html?d(a(b))"));
+  ASSERT_TRUE(NavigateToURL(new_shell, new_shell_url));
+
+  FrameTreeNode* new_shell_root =
+      static_cast<WebContentsImpl*>(new_shell->web_contents())
+          ->GetFrameTree()
+          ->root();
+
+  // New tab's root (d.com) should go into a separate process.
+  EXPECT_NE(root->current_frame_host()->GetProcess(),
+            new_shell_root->current_frame_host()->GetProcess());
+  EXPECT_NE(root->child_at(0)->current_frame_host()->GetProcess(),
+            new_shell_root->current_frame_host()->GetProcess());
+  EXPECT_NE(root->child_at(1)->child_at(0)->current_frame_host()->GetProcess(),
+            new_shell_root->current_frame_host()->GetProcess());
+
+  // The new tab's subframe should reuse the a.com process.
+  EXPECT_EQ(root->current_frame_host()->GetProcess(),
+            new_shell_root->child_at(0)->current_frame_host()->GetProcess());
+
+  // The new tab's grandchild frame should reuse the b.com process.
+  EXPECT_EQ(root->child_at(0)->current_frame_host()->GetProcess(),
+            new_shell_root->child_at(0)
+                ->child_at(0)
+                ->current_frame_host()
+                ->GetProcess());
+}
+
 }  // namespace content

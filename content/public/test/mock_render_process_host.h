@@ -128,6 +128,8 @@ class MockRenderProcessHost : public RenderProcessHost {
 
   void SetIsNeverSuitableForReuse() override;
   bool MayReuseHost() override;
+  bool IsUnused() override;
+  void SetIsUsed() override;
 
   // IPC::Sender via RenderProcessHost.
   bool Send(IPC::Message* msg) override;
@@ -173,6 +175,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   bool deletion_callback_called_;
   bool is_for_guests_only_;
   bool is_process_backgrounded_;
+  bool is_unused_;
   std::unique_ptr<base::ProcessHandle> process_handle;
   int worker_ref_count_;
   std::unique_ptr<mojo::AssociatedInterfacePtr<mojom::Renderer>>

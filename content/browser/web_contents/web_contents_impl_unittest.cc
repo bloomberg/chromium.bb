@@ -988,6 +988,11 @@ TEST_F(WebContentsImplTest, FindOpenerRVHWhenPending) {
 // Tests that WebContentsImpl uses the current URL, not the SiteInstance's site,
 // to determine whether a navigation is cross-site.
 TEST_F(WebContentsImplTest, CrossSiteComparesAgainstCurrentPage) {
+  // The assumptions this test makes aren't valid with --site-per-process.  For
+  // example, a cross-site URL won't ever commit in the old RFH.
+  if (AreAllSitesIsolatedForTesting())
+    return;
+
   TestRenderFrameHost* orig_rfh = main_test_rfh();
   SiteInstance* instance1 = contents()->GetSiteInstance();
 

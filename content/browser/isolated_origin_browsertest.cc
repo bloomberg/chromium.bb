@@ -353,4 +353,119 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, Cookies) {
   EXPECT_EQ("foo=bar", cookie);
 }
 
+// Check that isolated origins won't be placed into processes for other sites
+// when over the process limit.
+IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, ProcessLimit) {
+  // Set the process limit to 1.
+  RenderProcessHost::SetMaxRendererProcessCount(1);
+
+  // Navigate to an unisolated foo.com URL with an iframe.
+  GURL foo_url(
+      embedded_test_server()->GetURL("www.foo.com", "/page_with_iframe.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), foo_url));
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  RenderProcessHost* foo_process = root->current_frame_host()->GetProcess();
+  FrameTreeNode* child = root->child_at(0);
+
+  // Navigate iframe to an isolated origin.
+  GURL isolated_foo_url(
+      embedded_test_server()->GetURL("isolated.foo.com", "/title2.html"));
+  NavigateIframeToURL(web_contents(), "test_iframe", isolated_foo_url);
+
+  // Ensure that the subframe was rendered in a new process.
+  EXPECT_NE(child->current_frame_host()->GetProcess(), foo_process);
+
+  // Sanity-check IsSuitableHost values for the current processes.
+  BrowserContext* browser_context = web_contents()->GetBrowserContext();
+  auto is_suitable_host = [browser_context](RenderProcessHost* process,
+                                            GURL url) {
+    return RenderProcessHostImpl::IsSuitableHost(
+        process, browser_context,
+        SiteInstance::GetSiteForURL(browser_context, url));
+  };
+  EXPECT_TRUE(is_suitable_host(foo_process, foo_url));
+  EXPECT_FALSE(is_suitable_host(foo_process, isolated_foo_url));
+  EXPECT_TRUE(is_suitable_host(child->current_frame_host()->GetProcess(),
+                               isolated_foo_url));
+  EXPECT_FALSE(
+      is_suitable_host(child->current_frame_host()->GetProcess(), foo_url));
+
+  // Open a new, unrelated tab and navigate it to isolated.foo.com.  This
+  // should use a new, unrelated SiteInstance that reuses the existing isolated
+  // origin process from first tab's subframe.
+  Shell* new_shell = CreateBrowser();
+  EXPECT_TRUE(NavigateToURL(new_shell, isolated_foo_url));
+  scoped_refptr<SiteInstance> isolated_foo_instance(
+      new_shell->web_contents()->GetMainFrame()->GetSiteInstance());
+  RenderProcessHost* isolated_foo_process = isolated_foo_instance->GetProcess();
+  EXPECT_NE(child->current_frame_host()->GetSiteInstance(),
+            isolated_foo_instance);
+  EXPECT_FALSE(isolated_foo_instance->IsRelatedSiteInstance(
+      child->current_frame_host()->GetSiteInstance()));
+  // TODO(alexmos): with --site-per-process, this won't currently reuse the
+  // subframe process, because the new SiteInstance will initialize its
+  // process while it still has no site (during CreateBrowser()), and since
+  // dedicated processes can't currently be reused for a SiteInstance with no
+  // site, this creates a new process.  The subsequent navigation to
+  // |isolated_foo_url| stays in that new process without consulting whether it
+  // can now reuse a different process.  This should be fixed; see
+  // https://crbug.com/513036.   Without --site-per-process, this works because
+  // the site-less SiteInstance is allowed to reuse the first tab's foo.com
+  // process (which isn't dedicated), and then it swaps to the isolated.foo.com
+  // process during navigation.
+  if (!AreAllSitesIsolatedForTesting())
+    EXPECT_EQ(child->current_frame_host()->GetProcess(), isolated_foo_process);
+
+  // Navigate iframe on the first tab to a non-isolated site.  This should swap
+  // processes so that it does not reuse the isolated origin's process.
+  NavigateIframeToURL(
+      web_contents(), "test_iframe",
+      embedded_test_server()->GetURL("www.foo.com", "/title1.html"));
+  EXPECT_EQ(foo_process, child->current_frame_host()->GetProcess());
+  EXPECT_NE(isolated_foo_process, child->current_frame_host()->GetProcess());
+
+  // Navigate iframe back to isolated origin.  See that it reuses the
+  // |new_shell| process.
+  NavigateIframeToURL(web_contents(), "test_iframe", isolated_foo_url);
+  EXPECT_NE(foo_process, child->current_frame_host()->GetProcess());
+  EXPECT_EQ(isolated_foo_process, child->current_frame_host()->GetProcess());
+
+  // Navigate iframe to a different isolated origin.  Ensure that this creates
+  // a third process.
+  GURL isolated_bar_url(
+      embedded_test_server()->GetURL("isolated.bar.com", "/title3.html"));
+  NavigateIframeToURL(web_contents(), "test_iframe", isolated_bar_url);
+  RenderProcessHost* isolated_bar_process =
+      child->current_frame_host()->GetProcess();
+  EXPECT_NE(foo_process, isolated_bar_process);
+  EXPECT_NE(isolated_foo_process, isolated_bar_process);
+
+  // The new process should only be suitable to host isolated.bar.com, not
+  // regular web URLs or other isolated origins.
+  EXPECT_TRUE(is_suitable_host(isolated_bar_process, isolated_bar_url));
+  EXPECT_FALSE(is_suitable_host(isolated_bar_process, foo_url));
+  EXPECT_FALSE(is_suitable_host(isolated_bar_process, isolated_foo_url));
+
+  // Navigate second tab (currently at isolated.foo.com) to the
+  // second isolated origin, and see that it switches processes.
+  EXPECT_TRUE(NavigateToURL(new_shell, isolated_bar_url));
+  EXPECT_NE(foo_process,
+            new_shell->web_contents()->GetMainFrame()->GetProcess());
+  EXPECT_NE(isolated_foo_process,
+            new_shell->web_contents()->GetMainFrame()->GetProcess());
+  EXPECT_EQ(isolated_bar_process,
+            new_shell->web_contents()->GetMainFrame()->GetProcess());
+
+  // Navigate second tab to a non-isolated URL and see that it goes back into
+  // the www.foo.com process, and that it does not share processes with any
+  // isolated origins.
+  EXPECT_TRUE(NavigateToURL(new_shell, foo_url));
+  EXPECT_EQ(foo_process,
+            new_shell->web_contents()->GetMainFrame()->GetProcess());
+  EXPECT_NE(isolated_foo_process,
+            new_shell->web_contents()->GetMainFrame()->GetProcess());
+  EXPECT_NE(isolated_bar_process,
+            new_shell->web_contents()->GetMainFrame()->GetProcess());
+}
+
 }  // namespace content
