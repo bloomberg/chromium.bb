@@ -404,14 +404,12 @@ bool CanonicalCookie::FullCompare(const CanonicalCookie& other) const {
 }
 
 bool CanonicalCookie::IsCanonical() const {
-  // Not checking domain against ParsedCookie as it may have come purely
-  // from the URL.
+  // Not checking domain or path against ParsedCookie as it may have
+  // come purely from the URL.
   if (ParsedCookie::ParseTokenString(name_) != name_ ||
       ParsedCookie::ParseValueString(value_) != value_ ||
-      ParsedCookie::ParseValueString(path_) != path_ ||
       !ParsedCookie::IsValidCookieAttributeValue(name_) ||
-      !ParsedCookie::IsValidCookieAttributeValue(value_) ||
-      !ParsedCookie::IsValidCookieAttributeValue(path_)) {
+      !ParsedCookie::IsValidCookieAttributeValue(value_)) {
     return false;
   }
 
