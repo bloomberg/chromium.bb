@@ -113,9 +113,9 @@ def _GenerateSmokeTestCase(benchmark_class, story_to_smoke_test):
 
   # We attach the test method to SystemHealthBenchmarkSmokeTest dynamically
   # so that we can set the test method name to include
-  # '<benchmark class name>.<story display name>'.
+  # '<benchmark class name>.<story name>'.
   test_method_name = '%s.%s' % (
-      benchmark_class.Name(), story_to_smoke_test.display_name)
+      benchmark_class.Name(), story_to_smoke_test.name)
 
   class SystemHealthBenchmarkSmokeTest(unittest.TestCase):
     pass

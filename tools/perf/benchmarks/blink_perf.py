@@ -227,7 +227,7 @@ class _BlinkPerfMeasurement(legacy_page_test.LegacyPageTest):
       parts = line.split()
       values = [float(v.replace(',', '')) for v in parts[1:-1]]
       units = parts[-1]
-      metric = page.display_name.split('.')[0].replace('/', '_')
+      metric = page.name.split('.')[0].replace('/', '_')
       results.AddValue(list_of_scalar_values.ListOfScalarValues(
           results.current_page, metric, units, values))
 
