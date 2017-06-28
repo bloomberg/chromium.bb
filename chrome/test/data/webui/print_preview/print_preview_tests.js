@@ -145,6 +145,31 @@ cr.define('print_preview_test', function() {
   }
 
   /**
+   * Get the default media size for |device|.
+   * @param {!print_preview.PrinterCapabilitiesResponse} device
+   * @return {{width_microns: number,
+   *           height_microns: number}} The width and height of the default
+   *     media.
+   */
+  function getDefaultMediaSize(device) {
+    var size = device.capabilities.printer.media_size.option.find(
+        function(opt) { return opt.is_default; });
+    return { width_microns: size.width_microns,
+             height_microns: size.height_microns };
+  }
+
+  /**
+   * Get the default page orientation for |device|.
+   * @param {!print_preview.PrinterCapabilitiesResponse} device
+   * @return {string} The default orientation.
+   */
+  function getDefaultOrientation(device) {
+    return device.capabilities.printer.page_orientation.option.find(
+        function(opt) { return opt.is_default; }).type;
+  }
+
+
+  /**
    * @param {string} printerId
    * @return {!Object}
    */
@@ -1288,8 +1313,8 @@ cr.define('print_preview_test', function() {
                   return d.id == 'BarDevice';
                 });
 
-        nativeLayer.setLocalDestinationCapabilities(
-            getCddTemplate('BarDevice'));
+        var barDevice = getCddTemplate('BarDevice');
+        nativeLayer.setLocalDestinationCapabilities(barDevice);
         printPreview.destinationStore_.selectDestination(barDestination);
 
         return nativeLayer.whenCalled('getPrinterCapabilities', 'BarDevice')
@@ -1304,7 +1329,31 @@ cr.define('print_preview_test', function() {
               expectFalse(printButton.disabled);
               printButton.click();
               // This should result in a call to print.
-              return nativeLayer.whenCalled('print');
+              return nativeLayer.whenCalled('print').then(
+                  /**
+                   * @param {{destination: !print_preview.Destination,
+                   *          printTicketStore: !print_preview.PrintTicketStore,
+                   *          cloudPrintInterface: print_preview
+                   *                                  .CloudPrintInterface,
+                   *          documentInfo: print_preview.DocumentInfo}} args
+                   *      The arguments that print() was called with.
+                   */
+                  function(args) {
+                    // Sanity check some printing argument values.
+                    var printTicketStore = args.printTicketStore;
+                    expectEquals(barDevice.printerId, args.destination.id);
+                    expectEquals(
+                        getDefaultOrientation(barDevice) == 'LANDSCAPE',
+                        printTicketStore.landscape.getValue());
+                    expectEquals(1, printTicketStore.copies.getValueAsNumber());
+                    var mediaDefault = getDefaultMediaSize(barDevice);
+                    expectEquals(
+                        mediaDefault.width_microns,
+                        printTicketStore.mediaSize.getValue().width_microns);
+                    expectEquals(
+                        mediaDefault.height_microns,
+                        printTicketStore.mediaSize.getValue().height_microns);
+                  });
             });
       });
     });
