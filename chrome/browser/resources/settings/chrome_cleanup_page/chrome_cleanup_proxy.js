@@ -4,60 +4,55 @@
 
 cr.define('settings', function() {
   /** @interface */
-  function ChromeCleanupProxy() {}
-
-  ChromeCleanupProxy.prototype = {
+  class ChromeCleanupProxy {
     /**
      * Registers the current ChromeCleanupHandler as an observer of
      * ChromeCleanerController events.
      */
-    registerChromeCleanerObserver: assertNotReached,
+    registerChromeCleanerObserver() {}
 
     /**
      * Starts a cleanup on the user's computer.
      */
-    startCleanup: assertNotReached,
+    startCleanup() {}
 
     /**
      * Restarts the user's computer.
      */
-    restartComputer: assertNotReached,
+    restartComputer() {}
 
     /**
      * Hides the Cleanup page from the settings menu.
      */
-    dismissCleanupPage: assertNotReached,
-  };
+    dismissCleanupPage() {}
+  }
 
   /**
    * @implements {settings.ChromeCleanupProxy}
-   * @constructor
    */
-  function ChromeCleanupProxyImpl() {}
+  class ChromeCleanupProxyImpl {
+    /** @override */
+    registerChromeCleanerObserver() {
+      chrome.send('registerChromeCleanerObserver');
+    }
+
+    /** @override */
+    startCleanup() {
+      chrome.send('startCleanup');
+    }
+
+    /** @override */
+    restartComputer() {
+      chrome.send('restartComputer');
+    }
+
+    /** @override */
+    dismissCleanupPage() {
+      chrome.send('dismissCleanupPage');
+    }
+  }
 
   cr.addSingletonGetter(ChromeCleanupProxyImpl);
-
-  ChromeCleanupProxyImpl.prototype = {
-    /** @override */
-    registerChromeCleanerObserver: function() {
-      chrome.send('registerChromeCleanerObserver');
-    },
-
-    /** @override */
-    startCleanup: function() {
-      chrome.send('startCleanup');
-    },
-
-    /** @override */
-    restartComputer: function() {
-      chrome.send('restartComputer');
-    },
-
-    /** @override */
-    dismissCleanupPage: function() {
-      chrome.send('dismissCleanupPage');
-    },
-  };
 
   return {
     ChromeCleanupProxy: ChromeCleanupProxy,

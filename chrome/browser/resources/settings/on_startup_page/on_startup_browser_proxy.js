@@ -7,26 +7,22 @@ var NtpExtension;
 
 cr.define('settings', function() {
   /** @interface */
-  function OnStartupBrowserProxy() {}
-
-  OnStartupBrowserProxy.prototype = {
+  class OnStartupBrowserProxy {
     /** @return {!Promise<?NtpExtension>} */
-    getNtpExtension: assertNotReached,
-  };
+    getNtpExtension() {}
+  }
 
   /**
-   * @constructor
    * @implements {settings.OnStartupBrowserProxy}
    */
-  function OnStartupBrowserProxyImpl() {}
-  cr.addSingletonGetter(OnStartupBrowserProxyImpl);
-
-  OnStartupBrowserProxyImpl.prototype = {
+  class OnStartupBrowserProxyImpl {
     /** @override */
-    getNtpExtension: function() {
+    getNtpExtension() {
       return cr.sendWithPromise('getNtpExtension');
-    },
-  };
+    }
+  }
+
+  cr.addSingletonGetter(OnStartupBrowserProxyImpl);
 
   return {
     OnStartupBrowserProxy: OnStartupBrowserProxy,

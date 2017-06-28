@@ -19,42 +19,38 @@ var DefaultBrowserInfo;
 
 cr.define('settings', function() {
   /** @interface */
-  function DefaultBrowserBrowserProxy() {}
-
-  DefaultBrowserBrowserProxy.prototype = {
+  class DefaultBrowserBrowserProxy {
     /**
      * Get the initial DefaultBrowserInfo and begin sending updates to
      * 'settings.updateDefaultBrowserState'.
      * @return {!Promise<DefaultBrowserInfo>}
      */
-    requestDefaultBrowserState: function() {},
+    requestDefaultBrowserState() {}
 
     /*
      * Try to set the current browser as the default browser. The new status of
      * the settings will be sent to 'settings.updateDefaultBrowserState'.
      */
-    setAsDefaultBrowser: function() {},
-  };
+    setAsDefaultBrowser() {}
+  }
 
   /**
-   * @constructor
    * @implements {settings.DefaultBrowserBrowserProxy}
    */
-  function DefaultBrowserBrowserProxyImpl() {}
-  cr.addSingletonGetter(DefaultBrowserBrowserProxyImpl);
-
-  DefaultBrowserBrowserProxyImpl.prototype = {
+  class DefaultBrowserBrowserProxyImpl {
     /** @override */
-    requestDefaultBrowserState: function() {
+    requestDefaultBrowserState() {
       return cr.sendWithPromise(
           'SettingsDefaultBrowser.requestDefaultBrowserState');
-    },
+    }
 
     /** @override */
-    setAsDefaultBrowser: function() {
+    setAsDefaultBrowser() {
       chrome.send('SettingsDefaultBrowser.setAsDefaultBrowser');
-    },
-  };
+    }
+  }
+
+  cr.addSingletonGetter(DefaultBrowserBrowserProxyImpl);
 
   return {
     DefaultBrowserBrowserProxy: DefaultBrowserBrowserProxy,

@@ -83,36 +83,33 @@ var CertificateType = {
 var CertificatesImportError;
 
 cr.define('settings', function() {
-
   /** @interface */
-  function CertificatesBrowserProxy() {}
-
-  CertificatesBrowserProxy.prototype = {
+  class CertificatesBrowserProxy {
     /**
      * Triggers 5 events in the following order
      * 1x 'certificates-model-ready' event.
      * 4x 'certificates-changed' event, one for each certificate category.
      */
-    refreshCertificates: function() {},
+    refreshCertificates() {}
 
     /** @param {string} id */
-    viewCertificate: function(id) {},
+    viewCertificate(id) {}
 
     /** @param {string} id */
-    exportCertificate: function(id) {},
+    exportCertificate(id) {}
 
     /**
      * @param {string} id
      * @return {!Promise} A promise resolved when the certificate has been
      *     deleted successfully or rejected with a CertificatesError.
      */
-    deleteCertificate: function(id) {},
+    deleteCertificate(id) {}
 
     /**
      * @param {string} id
      * @return {!Promise<!CaTrustInfo>}
      */
-    getCaCertificateTrust: function(id) {},
+    getCaCertificateTrust(id) {}
 
     /**
      * @param {string} id
@@ -121,9 +118,9 @@ cr.define('settings', function() {
      * @param {boolean} objSign
      * @return {!Promise}
      */
-    editCaCertificateTrust: function(id, ssl, email, objSign) {},
+    editCaCertificateTrust(id, ssl, email, objSign) {}
 
-    cancelImportExportCertificate: function() {},
+    cancelImportExportCertificate() {}
 
     /**
      * @param {string} id
@@ -133,13 +130,13 @@ cr.define('settings', function() {
      *     passed back via a call to
      *     exportPersonalCertificatePasswordSelected().
      */
-    exportPersonalCertificate: function(id) {},
+    exportPersonalCertificate(id) {}
 
     /**
      * @param {string} password
      * @return {!Promise}
      */
-    exportPersonalCertificatePasswordSelected: function(password) {},
+    exportPersonalCertificatePasswordSelected(password) {}
 
     /**
      * @param {boolean} useHardwareBacked
@@ -148,13 +145,13 @@ cr.define('settings', function() {
      *     the user, and the password should be passed back via a call to
      *     importPersonalCertificatePasswordSelected().
      */
-    importPersonalCertificate: function(useHardwareBacked) {},
+    importPersonalCertificate(useHardwareBacked) {}
 
     /**
      * @param {string} password
      * @return {!Promise}
      */
-    importPersonalCertificatePasswordSelected: function(password) {},
+    importPersonalCertificatePasswordSelected(password) {}
 
     /**
      * @return {!Promise} A promise firing once the user has selected
@@ -163,7 +160,7 @@ cr.define('settings', function() {
      *     trust levels, and that information should be passed back via a call
      *     to importCaCertificateTrustSelected().
      */
-    importCaCertificate: function() {},
+    importCaCertificate() {}
 
     /**
      * @param {boolean} ssl
@@ -174,100 +171,98 @@ cr.define('settings', function() {
      *     error occurred with either a CertificatesError or
      *     CertificatesImportError.
      */
-    importCaCertificateTrustSelected: function(ssl, email, objSign) {},
+    importCaCertificateTrustSelected(ssl, email, objSign) {}
 
     /**
      * @return {!Promise} A promise firing once the certificate has been
      *     imported. The promise is rejected if an error occurred, with either
      *     a CertificatesError or CertificatesImportError.
      */
-    importServerCertificate: function() {},
-  };
+    importServerCertificate() {}
+  }
 
   /**
-   * @constructor
    * @implements {settings.CertificatesBrowserProxy}
    */
-  function CertificatesBrowserProxyImpl() {}
+  class CertificatesBrowserProxyImpl {
+    /** @override */
+    refreshCertificates() {
+      chrome.send('refreshCertificates');
+    }
+
+    /** @override */
+    viewCertificate(id) {
+      chrome.send('viewCertificate', [id]);
+    }
+
+    /** @override */
+    exportCertificate(id) {
+      chrome.send('exportCertificate', [id]);
+    }
+
+    /** @override */
+    deleteCertificate(id) {
+      return cr.sendWithPromise('deleteCertificate', id);
+    }
+
+    /** @override */
+    exportPersonalCertificate(id) {
+      return cr.sendWithPromise('exportPersonalCertificate', id);
+    }
+
+    /** @override */
+    exportPersonalCertificatePasswordSelected(password) {
+      return cr.sendWithPromise(
+          'exportPersonalCertificatePasswordSelected', password);
+    }
+
+    /** @override */
+    importPersonalCertificate(useHardwareBacked) {
+      return cr.sendWithPromise('importPersonalCertificate', useHardwareBacked);
+    }
+
+    /** @override */
+    importPersonalCertificatePasswordSelected(password) {
+      return cr.sendWithPromise(
+          'importPersonalCertificatePasswordSelected', password);
+    }
+
+    /** @override */
+    getCaCertificateTrust(id) {
+      return cr.sendWithPromise('getCaCertificateTrust', id);
+    }
+
+    /** @override */
+    editCaCertificateTrust(id, ssl, email, objSign) {
+      return cr.sendWithPromise(
+          'editCaCertificateTrust', id, ssl, email, objSign);
+    }
+
+    /** @override */
+    importCaCertificateTrustSelected(ssl, email, objSign) {
+      return cr.sendWithPromise(
+          'importCaCertificateTrustSelected', ssl, email, objSign);
+    }
+
+    /** @override */
+    cancelImportExportCertificate() {
+      chrome.send('cancelImportExportCertificate');
+    }
+
+    /** @override */
+    importCaCertificate() {
+      return cr.sendWithPromise('importCaCertificate');
+    }
+
+    /** @override */
+    importServerCertificate() {
+      return cr.sendWithPromise('importServerCertificate');
+    }
+  }
+
   // The singleton instance_ is replaced with a test version of this wrapper
   // during testing.
   cr.addSingletonGetter(CertificatesBrowserProxyImpl);
-
-  CertificatesBrowserProxyImpl.prototype = {
-    /** @override */
-    refreshCertificates: function() {
-      chrome.send('refreshCertificates');
-    },
-
-    /** @override */
-    viewCertificate: function(id) {
-      chrome.send('viewCertificate', [id]);
-    },
-
-    /** @override */
-    exportCertificate: function(id) {
-      chrome.send('exportCertificate', [id]);
-    },
-
-    /** @override */
-    deleteCertificate: function(id) {
-      return cr.sendWithPromise('deleteCertificate', id);
-    },
-
-    /** @override */
-    exportPersonalCertificate: function(id) {
-      return cr.sendWithPromise('exportPersonalCertificate', id);
-    },
-
-    /** @override */
-    exportPersonalCertificatePasswordSelected: function(password) {
-      return cr.sendWithPromise(
-          'exportPersonalCertificatePasswordSelected', password);
-    },
-
-    /** @override */
-    importPersonalCertificate: function(useHardwareBacked) {
-      return cr.sendWithPromise('importPersonalCertificate', useHardwareBacked);
-    },
-
-    /** @override */
-    importPersonalCertificatePasswordSelected: function(password) {
-      return cr.sendWithPromise(
-          'importPersonalCertificatePasswordSelected', password);
-    },
-
-    /** @override */
-    getCaCertificateTrust: function(id) {
-      return cr.sendWithPromise('getCaCertificateTrust', id);
-    },
-
-    /** @override */
-    editCaCertificateTrust: function(id, ssl, email, objSign) {
-      return cr.sendWithPromise(
-          'editCaCertificateTrust', id, ssl, email, objSign);
-    },
-
-    /** @override */
-    importCaCertificateTrustSelected: function(ssl, email, objSign) {
-      return cr.sendWithPromise(
-          'importCaCertificateTrustSelected', ssl, email, objSign);
-    },
-
-    /** @override */
-    cancelImportExportCertificate: function() {
-      chrome.send('cancelImportExportCertificate');
-    },
-
-    /** @override */
-    importCaCertificate: function() {
-      return cr.sendWithPromise('importCaCertificate');
-    },
-
-    /** @override */
-    importServerCertificate: function() {
-      return cr.sendWithPromise('importServerCertificate');
-    },
-  };
 
   return {
     CertificatesBrowserProxy: CertificatesBrowserProxy,

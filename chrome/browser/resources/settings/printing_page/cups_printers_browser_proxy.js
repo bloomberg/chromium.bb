@@ -65,117 +65,111 @@ var QueryFailure;
 
 cr.define('settings', function() {
   /** @interface */
-  function CupsPrintersBrowserProxy() {}
-
-  CupsPrintersBrowserProxy.prototype = {
-
+  class CupsPrintersBrowserProxy {
     /**
      * @return {!Promise<!CupsPrintersList>}
      */
-    getCupsPrintersList: function() {},
+    getCupsPrintersList() {}
 
     /**
      * @param {string} printerId
      * @param {string} printerName
      */
-    updateCupsPrinter: function(printerId, printerName) {},
+    updateCupsPrinter(printerId, printerName) {}
 
     /**
      * @param {string} printerId
      * @param {string} printerName
      */
-    removeCupsPrinter: function(printerId, printerName) {},
+    removeCupsPrinter(printerId, printerName) {}
 
     /**
      * @return {!Promise<string>} The full path of the printer PPD file.
      */
-    getCupsPrinterPPDPath: function() {},
+    getCupsPrinterPPDPath() {}
 
     /**
      * @param {!CupsPrinterInfo} newPrinter
      */
-    addCupsPrinter: function(newPrinter) {},
+    addCupsPrinter(newPrinter) {}
 
-    startDiscoveringPrinters: function() {},
-
-    stopDiscoveringPrinters: function() {},
+    startDiscoveringPrinters() {}
+    stopDiscoveringPrinters() {}
 
     /**
      * @return {!Promise<!ManufacturersInfo>}
      */
-    getCupsPrinterManufacturersList: function() {},
+    getCupsPrinterManufacturersList() {}
 
     /**
      * @param {string} manufacturer
      * @return {!Promise<!ModelsInfo>}
      */
-    getCupsPrinterModelsList: function(manufacturer) {},
+    getCupsPrinterModelsList(manufacturer) {}
 
     /**
      * @param {!CupsPrinterInfo} newPrinter
      * @return {!Promise<!PrinterMakeModel>}
      */
-    getPrinterInfo: function(newPrinter) {},
-  };
+    getPrinterInfo(newPrinter) {}
+  }
 
   /**
-   * @constructor
    * @implements {settings.CupsPrintersBrowserProxy}
    */
-  function CupsPrintersBrowserProxyImpl() {}
-  cr.addSingletonGetter(CupsPrintersBrowserProxyImpl);
-
-  CupsPrintersBrowserProxyImpl.prototype = {
+  class CupsPrintersBrowserProxyImpl {
     /** @override */
-    getCupsPrintersList: function() {
+    getCupsPrintersList() {
       return cr.sendWithPromise('getCupsPrintersList');
-    },
+    }
 
     /** @override */
-    updateCupsPrinter: function(printerId, printerName) {
+    updateCupsPrinter(printerId, printerName) {
       chrome.send('updateCupsPrinter', [printerId, printerName]);
-    },
+    }
 
     /** @override */
-    removeCupsPrinter: function(printerId, printerName) {
+    removeCupsPrinter(printerId, printerName) {
       chrome.send('removeCupsPrinter', [printerId, printerName]);
-    },
+    }
 
     /** @override */
-    addCupsPrinter: function(newPrinter) {
+    addCupsPrinter(newPrinter) {
       chrome.send('addCupsPrinter', [newPrinter]);
-    },
+    }
 
     /** @override */
-    getCupsPrinterPPDPath: function() {
+    getCupsPrinterPPDPath() {
       return cr.sendWithPromise('selectPPDFile');
-    },
+    }
 
     /** @override */
-    startDiscoveringPrinters: function() {
+    startDiscoveringPrinters() {
       chrome.send('startDiscoveringPrinters');
-    },
+    }
 
     /** @override */
-    stopDiscoveringPrinters: function() {
+    stopDiscoveringPrinters() {
       chrome.send('stopDiscoveringPrinters');
-    },
+    }
 
     /** @override */
-    getCupsPrinterManufacturersList: function() {
+    getCupsPrinterManufacturersList() {
       return cr.sendWithPromise('getCupsPrinterManufacturersList');
-    },
+    }
 
     /** @override */
-    getCupsPrinterModelsList: function(manufacturer) {
+    getCupsPrinterModelsList(manufacturer) {
       return cr.sendWithPromise('getCupsPrinterModelsList', manufacturer);
-    },
+    }
 
     /** @override */
-    getPrinterInfo: function(newPrinter) {
+    getPrinterInfo(newPrinter) {
       return cr.sendWithPromise('getPrinterInfo', newPrinter);
-    },
-  };
+    }
+  }
+
+  cr.addSingletonGetter(CupsPrintersBrowserProxyImpl);
 
   return {
     CupsPrintersBrowserProxy: CupsPrintersBrowserProxy,

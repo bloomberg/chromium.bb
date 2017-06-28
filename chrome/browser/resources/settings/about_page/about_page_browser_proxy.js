@@ -130,35 +130,34 @@ cr.define('settings', function() {
   }
 
   /** @interface */
-  function AboutPageBrowserProxy() {}
-
-  AboutPageBrowserProxy.prototype = {
+  class AboutPageBrowserProxy {
     /**
      * Indicates to the browser that the page is ready.
      */
-    pageReady: function() {},
+    pageReady() {}
 
     /**
      * Request update status from the browser. It results in one or more
      * 'update-status-changed' WebUI events.
      */
-    refreshUpdateStatus: function() {},
+    refreshUpdateStatus() {}
 
     /** Opens the help page. */
-    openHelpPage: function() {},
+    openHelpPage() {}
 
     // <if expr="_google_chrome">
     /**
      * Opens the feedback dialog.
      */
-    openFeedbackDialog: function() {},
+    openFeedbackDialog() {}
+
     // </if>
 
     // <if expr="chromeos">
     /**
      * Checks for available update and applies if it exists.
      */
-    requestUpdate: function() {},
+    requestUpdate() {}
 
     /**
      * Checks for the update with specified version and size and applies over
@@ -170,101 +169,102 @@ cr.define('settings', function() {
      * @param {string} target_version
      * @param {string} target_size
      */
-    requestUpdateOverCellular: function(target_version, target_size) {},
+    requestUpdateOverCellular(target_version, target_size) {}
 
     /**
      * @param {!BrowserChannel} channel
      * @param {boolean} isPowerwashAllowed
      */
-    setChannel: function(channel, isPowerwashAllowed) {},
+    setChannel(channel, isPowerwashAllowed) {}
 
     /** @return {!Promise<!ChannelInfo>} */
-    getChannelInfo: function() {},
+    getChannelInfo() {}
 
     /** @return {!Promise<!VersionInfo>} */
-    getVersionInfo: function() {},
+    getVersionInfo() {}
 
     /** @return {!Promise<?RegulatoryInfo>} */
-    getRegulatoryInfo: function() {},
+    getRegulatoryInfo() {}
+
     // </if>
 
     // <if expr="_google_chrome and is_macosx">
     /**
      * Triggers setting up auto-updates for all users.
      */
-    promoteUpdater: function() {},
+    promoteUpdater() {}
     // </if>
-  };
+  }
 
   /**
    * @implements {settings.AboutPageBrowserProxy}
-   * @constructor
    */
-  function AboutPageBrowserProxyImpl() {}
-  cr.addSingletonGetter(AboutPageBrowserProxyImpl);
-
-  AboutPageBrowserProxyImpl.prototype = {
+  class AboutPageBrowserProxyImpl {
     /** @override */
-    pageReady: function() {
+    pageReady() {
       chrome.send('aboutPageReady');
-    },
+    }
 
     /** @override */
-    refreshUpdateStatus: function() {
+    refreshUpdateStatus() {
       chrome.send('refreshUpdateStatus');
-    },
+    }
 
     // <if expr="_google_chrome and is_macosx">
     /** @override */
-    promoteUpdater: function() {
+    promoteUpdater() {
       chrome.send('promoteUpdater');
-    },
+    }
+
     // </if>
 
     /** @override */
-    openHelpPage: function() {
+    openHelpPage() {
       chrome.send('openHelpPage');
-    },
+    }
 
     // <if expr="_google_chrome">
     /** @override */
-    openFeedbackDialog: function() {
+    openFeedbackDialog() {
       chrome.send('openFeedbackDialog');
-    },
+    }
+
     // </if>
 
     // <if expr="chromeos">
     /** @override */
-    requestUpdate: function() {
+    requestUpdate() {
       chrome.send('requestUpdate');
-    },
+    }
 
     /** @override */
-    requestUpdateOverCellular: function(target_version, target_size) {
+    requestUpdateOverCellular(target_version, target_size) {
       chrome.send('requestUpdateOverCellular', [target_version, target_size]);
-    },
+    }
 
     /** @override */
-    setChannel: function(channel, isPowerwashAllowed) {
+    setChannel(channel, isPowerwashAllowed) {
       chrome.send('setChannel', [channel, isPowerwashAllowed]);
-    },
+    }
 
     /** @override */
-    getChannelInfo: function() {
+    getChannelInfo() {
       return cr.sendWithPromise('getChannelInfo');
-    },
+    }
 
     /** @override */
-    getVersionInfo: function() {
+    getVersionInfo() {
       return cr.sendWithPromise('getVersionInfo');
-    },
+    }
 
     /** @override */
-    getRegulatoryInfo: function() {
+    getRegulatoryInfo() {
       return cr.sendWithPromise('getRegulatoryInfo');
     }
     // </if>
-  };
+  }
+
+  cr.addSingletonGetter(AboutPageBrowserProxyImpl);
 
   return {
     AboutPageBrowserProxy: AboutPageBrowserProxy,

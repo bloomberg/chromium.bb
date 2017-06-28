@@ -4,54 +4,50 @@
 
 cr.define('settings', function() {
   /** @interface */
-  function LifetimeBrowserProxy() {}
-
-  LifetimeBrowserProxy.prototype = {
+  class LifetimeBrowserProxy {
     // Triggers a browser restart.
-    restart: function() {},
+    restart() {}
 
     // Triggers a browser relaunch.
-    relaunch: function() {},
+    relaunch() {}
 
     // <if expr="chromeos">
     // First signs out current user and then performs a restart.
-    signOutAndRestart: function() {},
+    signOutAndRestart() {}
 
     // Triggers a factory reset.
-    factoryReset: function() {},
+    factoryReset() {}
     // </if>
-  };
+  }
 
   /**
-   * @constructor
    * @implements {settings.LifetimeBrowserProxy}
    */
-  function LifetimeBrowserProxyImpl() {}
-  cr.addSingletonGetter(LifetimeBrowserProxyImpl);
-
-  LifetimeBrowserProxyImpl.prototype = {
+  class LifetimeBrowserProxyImpl {
     /** @override */
-    restart: function() {
+    restart() {
       chrome.send('restart');
-    },
+    }
 
     /** @override */
-    relaunch: function() {
+    relaunch() {
       chrome.send('relaunch');
-    },
+    }
 
     // <if expr="chromeos">
     /** @override */
-    signOutAndRestart: function() {
+    signOutAndRestart() {
       chrome.send('signOutAndRestart');
-    },
+    }
 
     /** @override */
-    factoryReset: function() {
+    factoryReset() {
       chrome.send('factoryReset');
-    },
+    }
     // </if>
-  };
+  }
+
+  cr.addSingletonGetter(LifetimeBrowserProxyImpl);
 
   return {
     LifetimeBrowserProxy: LifetimeBrowserProxy,

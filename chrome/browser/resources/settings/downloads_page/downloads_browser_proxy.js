@@ -4,40 +4,33 @@
 
 cr.define('settings', function() {
   /** @interface */
-  function DownloadsBrowserProxy() {}
-
-  DownloadsBrowserProxy.prototype = {
-    initializeDownloads: assertNotReached,
-
-    selectDownloadLocation: assertNotReached,
-
-    resetAutoOpenFileTypes: assertNotReached,
-  };
+  class DownloadsBrowserProxy {
+    initializeDownloads() {}
+    selectDownloadLocation() {}
+    resetAutoOpenFileTypes() {}
+  }
 
   /**
    * @implements {settings.DownloadsBrowserProxy}
-   * @constructor
    */
-  function DownloadsBrowserProxyImpl() {}
+  class DownloadsBrowserProxyImpl {
+    /** @override */
+    initializeDownloads() {
+      chrome.send('initializeDownloads');
+    }
+
+    /** @override */
+    selectDownloadLocation() {
+      chrome.send('selectDownloadLocation');
+    }
+
+    /** @override */
+    resetAutoOpenFileTypes() {
+      chrome.send('resetAutoOpenFileTypes');
+    }
+  }
 
   cr.addSingletonGetter(DownloadsBrowserProxyImpl);
-
-  DownloadsBrowserProxyImpl.prototype = {
-    /** @override */
-    initializeDownloads: function() {
-      chrome.send('initializeDownloads');
-    },
-
-    /** @override */
-    selectDownloadLocation: function() {
-      chrome.send('selectDownloadLocation');
-    },
-
-    /** @override */
-    resetAutoOpenFileTypes: function() {
-      chrome.send('resetAutoOpenFileTypes');
-    },
-  };
 
   return {
     DownloadsBrowserProxy: DownloadsBrowserProxy,

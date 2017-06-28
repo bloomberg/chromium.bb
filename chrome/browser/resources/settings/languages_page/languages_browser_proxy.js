@@ -9,65 +9,63 @@
 
 cr.define('settings', function() {
   /** @interface */
-  function LanguagesBrowserProxy() {}
-
-  LanguagesBrowserProxy.prototype = {
+  class LanguagesBrowserProxy {
     // <if expr="chromeos or is_win">
     /**
      * Sets the prospective UI language to the chosen language. This won't
      * affect the actual UI language until a restart.
      * @param {string} languageCode
      */
-    setProspectiveUILanguage: function(languageCode) {},
+    setProspectiveUILanguage(languageCode) {}
 
     /** @return {!Promise<string>} */
-    getProspectiveUILanguage: function() {},
+    getProspectiveUILanguage() {}
+
     // </if>
 
     /** @return {!LanguageSettingsPrivate} */
-    getLanguageSettingsPrivate: function() {},
+    getLanguageSettingsPrivate() {}
 
     // <if expr="chromeos">
     /** @return {!InputMethodPrivate} */
-    getInputMethodPrivate: function() {},
+    getInputMethodPrivate() {}
     // </if>
-  };
+  }
 
   /**
-   * @constructor
    * @implements {settings.LanguagesBrowserProxy}
    */
-  function LanguagesBrowserProxyImpl() {}
-  // The singleton instance_ is replaced with a test version of this wrapper
-  // during testing.
-  cr.addSingletonGetter(LanguagesBrowserProxyImpl);
-
-  LanguagesBrowserProxyImpl.prototype = {
+  class LanguagesBrowserProxyImpl {
     // <if expr="chromeos or is_win">
     /** @override */
-    setProspectiveUILanguage: function(languageCode) {
+    setProspectiveUILanguage(languageCode) {
       chrome.send('setProspectiveUILanguage', [languageCode]);
-    },
+    }
 
     /** @override */
-    getProspectiveUILanguage: function() {
+    getProspectiveUILanguage() {
       return cr.sendWithPromise('getProspectiveUILanguage');
-    },
+    }
+
     // </if>
 
     /** @override */
-    getLanguageSettingsPrivate: function() {
+    getLanguageSettingsPrivate() {
       return /** @type {!LanguageSettingsPrivate} */ (
           chrome.languageSettingsPrivate);
-    },
+    }
 
     // <if expr="chromeos">
     /** @override */
-    getInputMethodPrivate: function() {
+    getInputMethodPrivate() {
       return /** @type {!InputMethodPrivate} */ (chrome.inputMethodPrivate);
-    },
+    }
     // </if>
-  };
+  }
+
+  // The singleton instance_ is replaced with a test version of this wrapper
+  // during testing.
+  cr.addSingletonGetter(LanguagesBrowserProxyImpl);
 
   return {
     LanguagesBrowserProxy: LanguagesBrowserProxy,
