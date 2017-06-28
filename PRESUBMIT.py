@@ -1423,24 +1423,6 @@ def _CheckForAnonymousVariables(input_api, output_api):
   return []
 
 
-def _CheckCygwinShell(input_api, output_api):
-  source_file_filter = lambda x: input_api.FilterSourceFile(
-      x, white_list=(r'.+\.(gyp|gypi)$',))
-  cygwin_shell = []
-
-  for f in input_api.AffectedSourceFiles(source_file_filter):
-    for linenum, line in f.ChangedContents():
-      if 'msvs_cygwin_shell' in line:
-        cygwin_shell.append(f.LocalPath())
-        break
-
-  if cygwin_shell:
-    return [output_api.PresubmitError(
-      'These files should not use msvs_cygwin_shell (the default is 0):',
-      items=cygwin_shell)]
-  return []
-
-
 def _CheckUserActionUpdate(input_api, output_api):
   """Checks if any new user action has been added."""
   if any('actions.xml' == input_api.os_path.basename(f) for f in
@@ -2278,7 +2260,6 @@ def _CommonChecks(input_api, output_api):
           source_file_filter=lambda x: x.LocalPath().endswith('.grd')))
   results.extend(_CheckSpamLogging(input_api, output_api))
   results.extend(_CheckForAnonymousVariables(input_api, output_api))
-  results.extend(_CheckCygwinShell(input_api, output_api))
   results.extend(_CheckUserActionUpdate(input_api, output_api))
   results.extend(_CheckNoDeprecatedCss(input_api, output_api))
   results.extend(_CheckNoDeprecatedJs(input_api, output_api))
