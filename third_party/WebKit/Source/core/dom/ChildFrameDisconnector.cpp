@@ -4,8 +4,8 @@
 
 #include "core/dom/ChildFrameDisconnector.h"
 
-#include "core/dom/shadow/ElementShadow.h"
-#include "core/dom/shadow/ShadowRoot.h"
+#include "core/dom/ElementShadow.h"
+#include "core/dom/ShadowRoot.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "platform/wtf/Assertions.h"
 

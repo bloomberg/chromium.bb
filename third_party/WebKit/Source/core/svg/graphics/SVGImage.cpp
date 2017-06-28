@@ -29,9 +29,9 @@
 
 #include "core/animation/DocumentAnimations.h"
 #include "core/animation/DocumentTimeline.h"
+#include "core/dom/FlatTreeTraversal.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/TaskRunnerHelper.h"
-#include "core/dom/shadow/FlatTreeTraversal.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
 #include "core/frame/LocalFrameView.h"

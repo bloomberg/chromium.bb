@@ -33,8 +33,8 @@
 
 #include "core/CoreExport.h"
 #include "core/css/CSSSelectorList.h"
-#include "core/dom/shadow/DistributedNodes.h"
-#include "core/dom/shadow/ShadowRoot.h"
+#include "core/dom/DistributedNodes.h"
+#include "core/dom/ShadowRoot.h"
 #include "core/html/HTMLElement.h"
 
 namespace blink {

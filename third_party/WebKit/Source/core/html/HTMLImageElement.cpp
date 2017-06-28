@@ -33,7 +33,7 @@
 #include "core/dom/Attribute.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/NodeTraversal.h"
-#include "core/dom/shadow/ShadowRoot.h"
+#include "core/dom/ShadowRoot.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/html/FormAssociated.h"

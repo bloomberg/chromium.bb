@@ -26,9 +26,9 @@
 #include "core/HTMLNames.h"
 #include "core/css/MediaList.h"
 #include "core/dom/Document.h"
+#include "core/dom/ShadowRoot.h"
 #include "core/dom/StyleEngine.h"
 #include "core/dom/TaskRunnerHelper.h"
-#include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/Event.h"
 
 namespace blink {

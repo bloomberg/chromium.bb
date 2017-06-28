@@ -5,7 +5,7 @@
 #include "core/html/shadow/MediaRemotingElements.h"
 
 #include "core/dom/ClientRect.h"
-#include "core/dom/shadow/ShadowRoot.h"
+#include "core/dom/ShadowRoot.h"
 #include "core/events/MouseEvent.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/input/EventHandler.h"

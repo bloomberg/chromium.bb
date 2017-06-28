@@ -6,7 +6,7 @@
 
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/css/resolver/StyleResolver.h"
-#include "core/dom/shadow/ShadowRootInit.h"
+#include "core/dom/ShadowRootInit.h"
 #include "core/editing/EditingTestBase.h"
 
 namespace blink {

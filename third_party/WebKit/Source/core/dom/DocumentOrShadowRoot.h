@@ -7,7 +7,7 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/Fullscreen.h"
-#include "core/dom/shadow/ShadowRoot.h"
+#include "core/dom/ShadowRoot.h"
 #include "core/frame/UseCounter.h"
 
 namespace blink {

@@ -28,7 +28,7 @@
 
 #include "modules/accessibility/AXSlider.h"
 
-#include "core/dom/shadow/ShadowRoot.h"
+#include "core/dom/ShadowRoot.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/layout/LayoutObject.h"

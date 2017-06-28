@@ -31,8 +31,8 @@
 #include "core/html/forms/MultipleFieldsTemporalInputTypeView.h"
 
 #include "core/CSSValueKeywords.h"
+#include "core/dom/ShadowRoot.h"
 #include "core/dom/StyleChangeReason.h"
-#include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/events/ScopedEventQueue.h"
 #include "core/html/HTMLDataListElement.h"

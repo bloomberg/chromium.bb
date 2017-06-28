@@ -31,9 +31,9 @@
 #include "core/dom/VisitedLinkState.h"
 
 #include "core/HTMLNames.h"
+#include "core/dom/ElementShadow.h"
 #include "core/dom/ElementTraversal.h"
-#include "core/dom/shadow/ElementShadow.h"
-#include "core/dom/shadow/ShadowRoot.h"
+#include "core/dom/ShadowRoot.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/svg/SVGURIReference.h"
 #include "public/platform/Platform.h"

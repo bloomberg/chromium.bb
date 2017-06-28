@@ -5,8 +5,8 @@
 #include "core/input/PointerEventManager.h"
 
 #include "core/dom/ElementTraversal.h"
+#include "core/dom/FlatTreeTraversal.h"
 #include "core/dom/UserGestureIndicator.h"
-#include "core/dom/shadow/FlatTreeTraversal.h"
 #include "core/events/MouseEvent.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/LocalFrameView.h"

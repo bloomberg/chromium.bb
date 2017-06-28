@@ -7,7 +7,7 @@
 #include "bindings/core/v8/StringOrDictionary.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
-#include "core/dom/shadow/ShadowRoot.h"
+#include "core/dom/ShadowRoot.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

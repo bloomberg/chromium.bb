@@ -25,7 +25,7 @@
 #include "core/HTMLNames.h"
 #include "core/InputTypeNames.h"
 #include "core/dom/Document.h"
-#include "core/dom/shadow/ElementShadow.h"
+#include "core/dom/ElementShadow.h"
 #include "core/editing/FrameSelection.h"
 #include "core/fileapi/FileList.h"
 #include "core/frame/LocalFrame.h"

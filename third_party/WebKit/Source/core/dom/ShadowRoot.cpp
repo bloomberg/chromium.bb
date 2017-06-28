@@ -24,19 +24,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/shadow/ShadowRoot.h"
+#include "core/dom/ShadowRoot.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/css/StyleSheetList.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/css/resolver/StyleSharingDepthScope.h"
+#include "core/dom/ElementShadow.h"
 #include "core/dom/ElementTraversal.h"
+#include "core/dom/InsertionPoint.h"
+#include "core/dom/ShadowRootRareDataV0.h"
+#include "core/dom/SlotAssignment.h"
 #include "core/dom/StyleEngine.h"
 #include "core/dom/Text.h"
-#include "core/dom/shadow/ElementShadow.h"
-#include "core/dom/shadow/InsertionPoint.h"
-#include "core/dom/shadow/ShadowRootRareDataV0.h"
-#include "core/dom/shadow/SlotAssignment.h"
 #include "core/editing/serializers/Serialization.h"
 #include "core/html/HTMLShadowElement.h"
 #include "core/html/HTMLSlotElement.h"
@@ -204,9 +204,10 @@ void ShadowRoot::AttachLayoutTree(AttachContext& context) {
 }
 
 void ShadowRoot::DetachLayoutTree(const AttachContext& context) {
-  if (context.clear_invalidation)
+  if (context.clear_invalidation) {
     GetDocument().GetStyleEngine().GetStyleInvalidator().ClearInvalidation(
         *this);
+  }
   DocumentFragment::DetachLayoutTree(context);
 }
 
@@ -244,9 +245,10 @@ void ShadowRoot::RemovedFrom(ContainerNode* insertion_point) {
         root->RemoveChildShadowRoot();
       registered_with_parent_shadow_root_ = false;
     }
-    if (NeedsStyleInvalidation())
+    if (NeedsStyleInvalidation()) {
       GetDocument().GetStyleEngine().GetStyleInvalidator().ClearInvalidation(
           *this);
+    }
   }
 
   DocumentFragment::RemovedFrom(insertion_point);
@@ -255,12 +257,13 @@ void ShadowRoot::RemovedFrom(ContainerNode* insertion_point) {
 void ShadowRoot::ChildrenChanged(const ChildrenChange& change) {
   ContainerNode::ChildrenChanged(change);
 
-  if (change.IsChildElementChange())
+  if (change.IsChildElementChange()) {
     CheckForSiblingStyleChanges(
         change.type == kElementRemoved ? kSiblingElementRemoved
                                        : kSiblingElementInserted,
         ToElement(change.sibling_changed), change.sibling_before_change,
         change.sibling_after_change);
+  }
 
   if (InsertionPoint* point = ShadowInsertionPointOfYoungerShadowRoot()) {
     if (ShadowRoot* root = point->ContainingShadowRoot())

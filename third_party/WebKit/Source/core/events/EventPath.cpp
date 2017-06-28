@@ -28,10 +28,10 @@
 
 #include "core/EventNames.h"
 #include "core/dom/Document.h"
+#include "core/dom/InsertionPoint.h"
+#include "core/dom/ShadowRoot.h"
 #include "core/dom/Touch.h"
 #include "core/dom/TouchList.h"
-#include "core/dom/shadow/InsertionPoint.h"
-#include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/TouchEvent.h"
 #include "core/events/TouchEventContext.h"
 #include "core/html/HTMLSlotElement.h"

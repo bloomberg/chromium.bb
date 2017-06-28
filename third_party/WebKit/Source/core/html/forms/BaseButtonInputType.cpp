@@ -32,8 +32,8 @@
 #include "core/html/forms/BaseButtonInputType.h"
 
 #include "core/HTMLNames.h"
+#include "core/dom/ShadowRoot.h"
 #include "core/dom/Text.h"
-#include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"

@@ -26,9 +26,9 @@
 #define NodeComputedStyle_h
 
 #include "core/dom/Element.h"
+#include "core/dom/InsertionPoint.h"
 #include "core/dom/LayoutTreeBuilderTraversal.h"
 #include "core/dom/Node.h"
-#include "core/dom/shadow/InsertionPoint.h"
 #include "core/html/HTMLOptGroupElement.h"
 #include "core/layout/LayoutObject.h"
 

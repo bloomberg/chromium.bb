@@ -33,7 +33,7 @@
 
 #include "core/CoreExport.h"
 #include "core/css/CSSSelectorList.h"
-#include "core/dom/shadow/InsertionPoint.h"
+#include "core/dom/InsertionPoint.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
