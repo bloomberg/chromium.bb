@@ -63,7 +63,7 @@ var prefsControlled = {
   exceptions: {
     plugins: [
       {
-        embeddingOrigin: 'http://foo-block.com',
+        embeddingOrigin: '',
         origin: 'http://foo-block.com',
         setting: 'block',
         source: 'policy',
