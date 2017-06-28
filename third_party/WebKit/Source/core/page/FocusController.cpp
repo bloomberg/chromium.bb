@@ -47,7 +47,6 @@
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLAreaElement.h"
-#include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLPlugInElement.h"
 #include "core/html/HTMLShadowElement.h"
@@ -55,7 +54,6 @@
 #include "core/html/TextControlElement.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/HitTestResult.h"
-#include "core/layout/LayoutObject.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/FocusChangedObserver.h"
 #include "core/page/FrameTree.h"
@@ -1066,51 +1064,6 @@ Element* FocusController::FindFocusableElement(WebFocusType type,
   DCHECK(type == kWebFocusTypeForward || type == kWebFocusTypeBackward);
   ScopedFocusNavigation scope = ScopedFocusNavigation::CreateFor(element);
   return FindFocusableElementAcrossFocusScopes(type, scope);
-}
-
-Element* FocusController::NextFocusableElementInForm(Element* element,
-                                                     WebFocusType focus_type) {
-  element->GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
-  if (!element->IsHTMLElement())
-    return nullptr;
-
-  if (!element->IsFormControlElement() &&
-      !ToHTMLElement(element)->isContentEditableForBinding())
-    return nullptr;
-
-  HTMLFormElement* form_owner = nullptr;
-  if (ToHTMLElement(element)->isContentEditableForBinding())
-    form_owner = Traversal<HTMLFormElement>::FirstAncestor(*element);
-  else
-    form_owner = ToHTMLFormControlElement(element)->formOwner();
-
-  if (!form_owner)
-    return nullptr;
-
-  Element* next_element = element;
-  for (next_element = FindFocusableElement(focus_type, *next_element);
-       next_element;
-       next_element = FindFocusableElement(focus_type, *next_element)) {
-    if (!next_element->IsHTMLElement())
-      continue;
-    if (ToHTMLElement(next_element)->isContentEditableForBinding() &&
-        next_element->IsDescendantOf(form_owner))
-      return next_element;
-    if (!next_element->IsFormControlElement())
-      continue;
-    HTMLFormControlElement* form_element =
-        ToHTMLFormControlElement(next_element);
-    if (form_element->formOwner() != form_owner ||
-        form_element->IsDisabledOrReadOnly())
-      continue;
-    LayoutObject* layout = next_element->GetLayoutObject();
-    if (layout && layout->IsTextControl()) {
-      // TODO(ajith.v) Extend it for select elements, radio buttons and check
-      // boxes
-      return next_element;
-    }
-  }
-  return nullptr;
 }
 
 Element* FocusController::FindFocusableElementInShadowHost(

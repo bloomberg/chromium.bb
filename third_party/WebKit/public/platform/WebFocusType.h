@@ -33,9 +33,6 @@
 
 namespace blink {
 
-// A Java counterpart will be generated for this enum.
-// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.blink_public.web
-// GENERATED_JAVA_PREFIX_TO_STRIP: WebFocusType
 enum WebFocusType {
   // Element::focus(), etc.
   kWebFocusTypeNone = 0,
