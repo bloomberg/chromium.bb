@@ -20,14 +20,13 @@ namespace password_manager {
 // Use this class to represent the versioned evolution of a SQLite table
 // structure and generate creating and migrating statements for it.
 //
-// Two values are currently hard-coded, because they are the same in the
-// current use-cases:
-// * The table name is hard-coded as "logins".
+// One value is currently hard-coded, because it is the same in the current
+// use-cases:
 // * The index is built for column "signon_realm" which is expected to exist.
 //
 // Usage example:
 //
-// SQLTableBuilder builder;
+// SQLTableBuilder builder("logins");
 //
 // // First describe a couple of versions:
 // builder.AddColumn("name", "VARCHAR");
@@ -49,8 +48,8 @@ namespace password_manager {
 // builder.CreateTable(db);
 class SQLTableBuilder {
  public:
-  // Create the builder for "logins".
-  SQLTableBuilder();
+  // Create the builder for an arbitrary table name.
+  explicit SQLTableBuilder(const std::string& table_name);
 
   ~SQLTableBuilder();
 
@@ -81,12 +80,12 @@ class SQLTableBuilder {
   unsigned SealVersion();
 
   // Assuming that the database connected through |db| contains a table called
-  // "logins" in a state described by version |old_version|, migrates it to
+  // |table_name_| in a state described by version |old_version|, migrates it to
   // the current version, which must be sealed. Returns true on success.
   bool MigrateFrom(unsigned old_version, sql::Connection* db);
 
-  // If |db| connects to a database where table "logins" already exists,
-  // this is a no-op and returns true. Otherwise, "logins" is created in a
+  // If |db| connects to a database where table |table_name_| already exists,
+  // this is a no-op and returns true. Otherwise, |table_name_| is created in a
   // state described by the current version known to the builder. The current
   // version must be sealed. Returns true on success.
   bool CreateTable(sql::Connection* db);
@@ -115,7 +114,7 @@ class SQLTableBuilder {
       std::numeric_limits<unsigned>::max();
 
   // Assuming that the database connected through |db| contains a table called
-  // "logins" in a state described by version |old_version|, migrates it to
+  // |table_name_| in a state described by version |old_version|, migrates it to
   // version |old_version + 1|. The current version known to the builder must be
   // at least |old_version + 1| and sealed. Returns true on success.
   bool MigrateToNextFrom(unsigned old_version, sql::Connection* db);
@@ -140,6 +139,9 @@ class SQLTableBuilder {
   // The "UNIQUE" part of an SQL CREATE TABLE constraint. This value is
   // computed dring sealing the first version (0).
   std::string unique_constraint_;
+
+  // The name of the table.
+  const std::string table_name_;
 
   DISALLOW_COPY_AND_ASSIGN(SQLTableBuilder);
 };

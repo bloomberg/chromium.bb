@@ -567,7 +567,7 @@ bool LoginDatabase::Init() {
     return false;
   }
 
-  SQLTableBuilder builder;
+  SQLTableBuilder builder("logins");
   InitializeBuilder(&builder);
   InitializeStatementStrings(builder);
 

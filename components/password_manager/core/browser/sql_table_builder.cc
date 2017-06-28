@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/numerics/safe_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "sql/connection.h"
 #include "sql/transaction.h"
 
@@ -44,7 +45,8 @@ struct SQLTableBuilder::Column {
   bool gets_previous_data;
 };
 
-SQLTableBuilder::SQLTableBuilder() = default;
+SQLTableBuilder::SQLTableBuilder(const std::string& table_name)
+    : table_name_(table_name) {}
 
 SQLTableBuilder::~SQLTableBuilder() = default;
 
@@ -140,7 +142,7 @@ bool SQLTableBuilder::CreateTable(sql::Connection* db) {
   DCHECK(IsVersionLastAndSealed(sealed_version_));
   DCHECK(!unique_constraint_.empty());
 
-  if (db->DoesTableExist("logins"))
+  if (db->DoesTableExist(table_name_.c_str()))
     return true;
 
   std::string names;  // Names and types of the current columns.
@@ -151,10 +153,14 @@ bool SQLTableBuilder::CreateTable(sql::Connection* db) {
 
   sql::Transaction transaction(db);
   return transaction.Begin() &&
+         db->Execute(base::StringPrintf("CREATE TABLE %s (%s, %s)",
+                                        table_name_.c_str(), names.c_str(),
+                                        unique_constraint_.c_str())
+                         .c_str()) &&
          db->Execute(
-             ("CREATE TABLE logins (" + names + ", " + unique_constraint_ + ")")
+             base::StringPrintf("CREATE INDEX %s_signon ON %s (signon_realm)",
+                                table_name_.c_str(), table_name_.c_str())
                  .c_str()) &&
-         db->Execute("CREATE INDEX logins_signon ON logins (signon_realm)") &&
          transaction.Commit();
 }
 
@@ -256,32 +262,48 @@ bool SQLTableBuilder::MigrateToNextFrom(unsigned old_version,
 
     // Foreign key constraints are not enabled for the login database, so no
     // PRAGMA foreign_keys=off needed.
+    const std::string temp_table_name = "temp_" + table_name_;
+
     sql::Transaction transaction(db);
-    if (!transaction.Begin() ||
-        !db->Execute(("CREATE TABLE temp_logins (" + new_names + ", " +
-                      unique_constraint_ + ")")
-                         .c_str()) ||
-        !db->Execute(("INSERT OR REPLACE INTO temp_logins SELECT " + old_names +
-                      " FROM logins")
-                         .c_str()) ||
-        !db->Execute("DROP TABLE logins") ||
-        !db->Execute("ALTER TABLE temp_logins RENAME TO logins") ||
-        !db->Execute("CREATE INDEX logins_signon ON logins (signon_realm)") ||
-        !transaction.Commit()) {
+    if (!(transaction.Begin() &&
+          db->Execute(base::StringPrintf(
+                          "CREATE TABLE %s (%s, %s)", temp_table_name.c_str(),
+                          new_names.c_str(), unique_constraint_.c_str())
+                          .c_str()) &&
+          db->Execute(
+              base::StringPrintf("INSERT OR REPLACE INTO %s SELECT %s FROM %s",
+                                 temp_table_name.c_str(), old_names.c_str(),
+                                 table_name_.c_str())
+                  .c_str()) &&
+          db->Execute(base::StringPrintf("DROP TABLE %s", table_name_.c_str())
+                          .c_str()) &&
+          db->Execute(base::StringPrintf("ALTER TABLE %s RENAME TO %s",
+                                         temp_table_name.c_str(),
+                                         table_name_.c_str())
+                          .c_str()) &&
+          db->Execute(
+              base::StringPrintf("CREATE INDEX %s_signon ON %s (signon_realm)",
+                                 table_name_.c_str(), table_name_.c_str())
+                  .c_str()) &&
+          transaction.Commit())) {
       return false;
     }
   }
 
   if (!added_names.empty()) {
     sql::Transaction transaction(db);
-    if (!transaction.Begin())
+    if (!(transaction.Begin() &&
+          std::all_of(added_names.begin(), added_names.end(),
+                      [this, &db](const std::string& name) {
+                        return db->Execute(
+                            base::StringPrintf("ALTER TABLE %s ADD COLUMN %s",
+                                               table_name_.c_str(),
+                                               name.c_str())
+                                .c_str());
+                      }) &&
+          transaction.Commit())) {
       return false;
-    for (const std::string& name : added_names) {
-      if (!db->Execute(("ALTER TABLE logins ADD COLUMN " + name).c_str()))
-        return false;
     }
-    if (!transaction.Commit())
-      return false;
   }
 
   return true;
