@@ -67,13 +67,6 @@ void WebViewTranslateClient::ShowTranslateUI(
     const std::string& target_language,
     translate::TranslateErrors::Type error_type,
     bool triggered_from_menu) {
-  translate_manager_->GetLanguageState().SetTranslateEnabled(true);
-
-  if (step == translate::TRANSLATE_STEP_BEFORE_TRANSLATE &&
-      !translate_manager_->GetLanguageState().HasLanguageChanged()) {
-    return;
-  }
-
   [translation_controller_ updateTranslateStep:step
                                 sourceLanguage:source_language
                                 targetLanguage:target_language
