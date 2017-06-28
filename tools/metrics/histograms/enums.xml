@@ -28662,6 +28662,12 @@ from previous Chrome versions.
   <int value="14" label="URL not valid for reputation computing"/>
 </enum>
 
+<enum name="PasswordProtectionSyncAccountType">
+  <int value="0" label="Not signed in"/>
+  <int value="1" label="@gmail.com or @googlemail.com"/>
+  <int value="2" label="G Suite account"/>
+</enum>
+
 <enum name="PasswordProtectionVerdict">
   <int value="0" label="Verdict not specified"/>
   <int value="1" label="Safe"/>

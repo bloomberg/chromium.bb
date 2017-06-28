@@ -6,11 +6,24 @@
 #include "base/memory/ref_counted.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
+#include "chrome/browser/signin/account_fetcher_service_factory.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
+#include "chrome/browser/signin/chrome_signin_client_factory.h"
+#include "chrome/browser/signin/fake_account_fetcher_service_builder.h"
+#include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
+#include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/test_signin_client_builder.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/password_protection/password_protection_request.h"
+#include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/fake_account_fetcher_service.h"
+#include "components/signin/core/browser/signin_manager.h"
+#include "components/signin/core/browser/signin_manager_base.h"
 #include "components/variations/variations_params_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -19,8 +32,22 @@
 namespace safe_browsing {
 
 namespace {
+
 const char kPhishingURL[] = "http://phishing.com";
+const char kTestAccountID[] = "account_id";
+const char kTestEmail[] = "foo@example.com";
+
+std::unique_ptr<KeyedService> SigninManagerBuild(
+    content::BrowserContext* context) {
+  Profile* profile = static_cast<Profile*>(context);
+  std::unique_ptr<SigninManagerBase> service(new SigninManagerBase(
+      ChromeSigninClientFactory::GetInstance()->GetForProfile(profile),
+      AccountTrackerServiceFactory::GetForProfile(profile)));
+  service->Initialize(NULL);
+  return std::move(service);
 }
+
+}  // namespace
 
 class MockSafeBrowsingUIManager : public SafeBrowsingUIManager {
  public:
@@ -110,6 +137,19 @@ class ChromePasswordProtectionServiceTest
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
+  content::BrowserContext* CreateBrowserContext() override {
+    TestingProfile::Builder builder;
+    builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
+                              BuildFakeProfileOAuth2TokenService);
+    builder.AddTestingFactory(ChromeSigninClientFactory::GetInstance(),
+                              signin::BuildTestSigninClient);
+    builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
+                              SigninManagerBuild);
+    builder.AddTestingFactory(AccountFetcherServiceFactory::GetInstance(),
+                              FakeAccountFetcherServiceBuilder::BuildForTests);
+    return builder.Build().release();
+  }
+
   // Sets up Finch trial feature parameters.
   void SetFeatureParams(const base::Feature& feature,
                         const std::string& trial_name,
@@ -147,6 +187,19 @@ class ChromePasswordProtectionServiceTest
       PasswordProtectionRequest* request,
       std::unique_ptr<LoginReputationClientResponse> response) {
     service_->RequestFinished(request, false, std::move(response));
+  }
+
+  void SetUpSyncAccount(const std::string& hosted_domain) {
+    FakeAccountFetcherService* account_fetcher_service =
+        static_cast<FakeAccountFetcherService*>(
+            AccountFetcherServiceFactory::GetForProfile(profile()));
+    AccountTrackerService* account_tracker_service =
+        AccountTrackerServiceFactory::GetForProfile(profile());
+    account_fetcher_service->FakeUserInfoFetchSuccess(
+        account_tracker_service->PickAccountIdForAccount(kTestAccountID,
+                                                         kTestEmail),
+        kTestEmail, kTestAccountID, hosted_domain, "full_name", "given_name",
+        "locale", "http://picture.example.com/picture.jpg");
   }
 
  protected:
@@ -441,4 +494,16 @@ TEST_F(ChromePasswordProtectionServiceTest, NoInterstitialOnOtherVerdicts) {
   RequestFinished(request_.get(), std::move(verdict_));
 }
 
+TEST_F(ChromePasswordProtectionServiceTest, VerifyGetSyncAccountType) {
+  SigninManagerBase* signin_manager = static_cast<SigninManagerBase*>(
+      SigninManagerFactory::GetForProfile(profile()));
+  signin_manager->SetAuthenticatedAccountInfo(kTestAccountID, kTestEmail);
+  SetUpSyncAccount(std::string(AccountTrackerService::kNoHostedDomainFound));
+  EXPECT_EQ(LoginReputationClientRequest::PasswordReuseEvent::GMAIL,
+            service_->GetSyncAccountType());
+
+  SetUpSyncAccount("example.edu");
+  EXPECT_EQ(LoginReputationClientRequest::PasswordReuseEvent::GSUITE,
+            service_->GetSyncAccountType());
+}
 }  // namespace safe_browsing

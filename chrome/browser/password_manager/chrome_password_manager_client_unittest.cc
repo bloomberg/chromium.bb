@@ -91,6 +91,8 @@ class MockPasswordProtectionService
                void(WebContents*, const GURL&, const std::string&, bool));
   MOCK_METHOD3(ShowPhishingInterstitial,
                void(const GURL&, const std::string&, content::WebContents*));
+  MOCK_METHOD0(GetSyncAccountType,
+               safe_browsing::PasswordProtectionService::SyncAccountType());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockPasswordProtectionService);

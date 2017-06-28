@@ -54,6 +54,8 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
                                 const std::string& token,
                                 content::WebContents* web_contents) override;
 
+  PasswordProtectionService::SyncAccountType GetSyncAccountType() override;
+
   FRIEND_TEST_ALL_PREFIXES(
       ChromePasswordProtectionServiceTest,
       VerifyFinchControlForLowReputationPingSBEROnlyNoIncognito);
@@ -65,6 +67,8 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   FRIEND_TEST_ALL_PREFIXES(
       ChromePasswordProtectionServiceTest,
       VerifyFinchControlForLowReputationPingAllButNoIncognito);
+  FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
+                           VerifyGetSyncAccountType);
 
  private:
   friend class MockChromePasswordProtectionService;

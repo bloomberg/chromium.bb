@@ -118,6 +118,11 @@ class TestPasswordProtectionService : public PasswordProtectionService {
 
   bool IsHistorySyncEnabled() override { return false; }
 
+  LoginReputationClientRequest::PasswordReuseEvent::SyncAccountType
+  GetSyncAccountType() override {
+    return LoginReputationClientRequest::PasswordReuseEvent::NOT_SIGNED_IN;
+  }
+
   LoginReputationClientResponse* latest_response() {
     return latest_response_.get();
   }

@@ -50,6 +50,9 @@ extern const char kPasswordEntryRequestOutcomeHistogramName[];
 class PasswordProtectionService : public history::HistoryServiceObserver {
  public:
   using TriggerType = LoginReputationClientRequest::TriggerType;
+  using SyncAccountType =
+      LoginReputationClientRequest::PasswordReuseEvent::SyncAccountType;
+
   // The outcome of the request. These values are used for UMA.
   // DO NOT CHANGE THE ORDERING OF THESE VALUES.
   enum RequestOutcome {
@@ -191,6 +194,10 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   virtual void ShowPhishingInterstitial(const GURL& phishing_url,
                                         const std::string& token,
                                         content::WebContents* web_contents) = 0;
+
+  // Gets the type of sync account associated with current profile or
+  // |NOT_SIGNED_IN|.
+  virtual SyncAccountType GetSyncAccountType() = 0;
 
   void CheckCsdWhitelistOnIOThread(const GURL& url, bool* check_result);
 

@@ -216,6 +216,19 @@ message LoginReputationClientRequest {
 
     // Whether the reused password is used for Chrome signin.
     optional bool is_chrome_signin_password = 3;
+
+    // Sync account type. Only set if |is_chrome_signin_password| is true.
+    enum SyncAccountType {
+      // Not a sign-in user.
+      NOT_SIGNED_IN = 0;
+
+      // User signed in with @gmail.com, or @googlemail.com account.
+      GMAIL = 1;
+
+      // User signed in with a G Suite account.
+      GSUITE = 2;
+    }
+    optional SyncAccountType sync_account_type = 4;
   }
 
   optional PasswordReuseEvent password_reuse_event = 4;
