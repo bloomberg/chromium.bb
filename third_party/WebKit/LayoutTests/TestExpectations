@@ -1689,7 +1689,9 @@ crbug.com/600248 external/wpt/web-animations/timing-model/animations/set-the-ani
 
 crbug.com/611658 [ Win7 ] fast/forms/text/text-font-height-mismatch.html [ Failure ]
 crbug.com/611658 [ Win ] fast/text/emphasis-combined-text.html [ Failure ]
-crbug.com/611658 [ Win7 ] fast/writing-mode/english-lr-text.html [ Failure ]
+
+# Reenable when 737620 is rebaselined
+#crbug.com/611658 [ Win7 ] fast/writing-mode/english-lr-text.html [ Failure ]
 
 crbug.com/605059 [ Retina ] fast/text/international/rtl-negative-letter-spacing.html [ Failure ]
 
@@ -1892,6 +1894,10 @@ crbug.com/723826 http/tests/security/w3c/cross-origin-objects.html [ Failure Pas
 crbug.com/723826 virtual/mojo-loading/http/tests/security/w3c/cross-origin-objects.html [ Failure Pass ]
 
 crbug.com/724251 virtual/threaded/animations/svg-attribute-interpolation/svg-startOffset-interpolation.html [ Failure Pass ]
+
+crbug.com/737620 fast/text/stroking-decorations.html [ NeedsManualRebaseline ]
+crbug.com/737620 fast/writing-mode/english-lr-text.html [ NeedsManualRebaseline ]
+crbug.com/737620 paint/invalidation/shadow-multiple.html [ NeedsManualRebaseline ]
 
 crbug.com/736050 external/wpt/IndexedDB/idbcursor_advance_index.htm [ Pass Failure ]
 crbug.com/736050 external/wpt/IndexedDB/idbcursor-continue-exception-order.htm [ Pass Failure ]
