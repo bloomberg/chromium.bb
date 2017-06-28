@@ -46,6 +46,7 @@ MockRenderProcessHost::MockRenderProcessHost(BrowserContext* browser_context)
       deletion_callback_called_(false),
       is_for_guests_only_(false),
       is_process_backgrounded_(false),
+      is_unused_(true),
       worker_ref_count_(0),
       weak_ptr_factory_(this) {
   // Child process security operations can't be unit tested unless we add
@@ -356,6 +357,14 @@ void MockRenderProcessHost::SetIsNeverSuitableForReuse() {
 
 bool MockRenderProcessHost::MayReuseHost() {
   return true;
+}
+
+bool MockRenderProcessHost::IsUnused() {
+  return is_unused_;
+}
+
+void MockRenderProcessHost::SetIsUsed() {
+  is_unused_ = false;
 }
 
 void MockRenderProcessHost::FilterURL(bool empty_allowed, GURL* url) {

@@ -124,7 +124,7 @@ RenderProcessHost* SiteInstanceImpl::GetProcess() {
     GetContentClient()->browser()->SiteInstanceGotProcess(this);
 
     if (has_site_)
-      LockToOrigin();
+      LockToOriginIfNeeded();
   }
   DCHECK(process_);
 
@@ -161,7 +161,7 @@ void SiteInstanceImpl::SetSite(const GURL& url) {
   }
 
   if (process_) {
-    LockToOrigin();
+    LockToOriginIfNeeded();
 
     // Ensure the process is registered for this site if necessary.
     if (should_use_process_per_site) {
@@ -209,6 +209,15 @@ bool SiteInstanceImpl::HasWrongProcessForURL(const GURL& url) {
   // If the URL to navigate to can be associated with any site instance,
   // we want to keep it in the same process.
   if (IsRendererDebugURL(url))
+    return false;
+
+  // Any process can host an about:blank URL.  This check avoids a process
+  // transfer for browser-initiated navigations to about:blank in a dedicated
+  // process; without it, IsSuitableHost would consider this process unsuitable
+  // for about:blank when it compares origin locks.  Renderer-initiated
+  // navigations will handle about:blank navigations elsewhere and leave them
+  // in the source SiteInstance, along with about:srcdoc and data:.
+  if (url == url::kAboutBlankURL)
     return false;
 
   // If the site URL is an extension (e.g., for hosted apps or WebUI) but the
@@ -402,6 +411,38 @@ bool SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
   return false;
 }
 
+// static
+bool SiteInstanceImpl::ShouldLockToOrigin(BrowserContext* browser_context,
+                                          GURL site_url) {
+  if (!DoesSiteRequireDedicatedProcess(browser_context, site_url))
+    return false;
+
+  // Guest processes cannot be locked to their site because guests always have
+  // a fixed SiteInstance. The site of GURLs a guest loads doesn't match that
+  // SiteInstance. So we skip locking the guest process to the site.
+  // TODO(ncarter): Remove this exclusion once we can make origin lock per
+  // RenderFrame routing id.
+  if (site_url.SchemeIs(content::kGuestScheme))
+    return false;
+
+  // TODO(creis, nick) https://crbug.com/510588 Chrome UI pages use the same
+  // site (chrome://chrome), so they can't be locked because the site being
+  // loaded doesn't match the SiteInstance.
+  if (site_url.SchemeIs(content::kChromeUIScheme))
+    return false;
+
+  // TODO(creis, nick): Until we can handle sites with effective URLs at the
+  // call sites of ChildProcessSecurityPolicy::CanAccessDataForOrigin, we
+  // must give the embedder a chance to exempt some sites to avoid process
+  // kills.
+  if (!GetContentClient()->browser()->ShouldLockToOrigin(browser_context,
+                                                         site_url)) {
+    return false;
+  }
+
+  return true;
+}
+
 void SiteInstanceImpl::RenderProcessHostDestroyed(RenderProcessHost* host) {
   DCHECK_EQ(process_, host);
   process_->RemoveObserver(this);
@@ -422,34 +463,26 @@ void SiteInstanceImpl::RenderProcessExited(RenderProcessHost* host,
     observer.RenderProcessGone(this);
 }
 
-void SiteInstanceImpl::LockToOrigin() {
+void SiteInstanceImpl::LockToOriginIfNeeded() {
+  DCHECK(HasSite());
+
+  // From now on, this process should be considered "tainted" for future
+  // process reuse decisions:
+  // (1) If |site_| required a dedicated process, this SiteInstance's process
+  //     can only host URLs for the same site.
+  // (2) Even if |site_| does not require a dedicated process, this
+  //     SiteInstance's process still cannot be reused to host other sites
+  //     requiring dedicated sites in the future.
+  // We can get here either when we commit a URL into a SiteInstance that does
+  // not yet have a site, or when we create a process for a SiteInstance with a
+  // preassigned site.
+  process_->SetIsUsed();
+
   // TODO(nick): When all sites are isolated, this operation provides strong
   // protection. If only some sites are isolated, we need additional logic to
   // prevent the non-isolated sites from requesting resources for isolated
   // sites. https://crbug.com/509125
-  if (RequiresDedicatedProcess()) {
-    // Guest processes cannot be locked to its site because guests always have
-    // a fixed SiteInstance. The site of GURLs a guest loads doesn't match that
-    // SiteInstance. So we skip locking the guest process to the site.
-    // TODO(ncarter): Remove this exclusion once we can make origin lock per
-    // RenderFrame routing id.
-    if (site_.SchemeIs(content::kGuestScheme))
-      return;
-
-    // TODO(creis, nick) https://crbug.com/510588 Chrome UI pages use the same
-    // site (chrome://chrome), so they can't be locked because the site being
-    // loaded doesn't match the SiteInstance.
-    if (site_.SchemeIs(content::kChromeUIScheme))
-      return;
-
-    // TODO(creis, nick): Until we can handle sites with effective URLs at the
-    // call sites of ChildProcessSecurityPolicy::CanAccessDataForOrigin, we
-    // must give the embedder a chance to exempt some sites to avoid process
-    // kills.
-    if (!GetContentClient()->browser()->ShouldLockToOrigin(
-            browsing_instance_->browser_context(), site_))
-      return;
-
+  if (ShouldLockToOrigin(GetBrowserContext(), site_)) {
     ChildProcessSecurityPolicyImpl* policy =
         ChildProcessSecurityPolicyImpl::GetInstance();
     policy->LockToOrigin(process_->GetID(), site_);

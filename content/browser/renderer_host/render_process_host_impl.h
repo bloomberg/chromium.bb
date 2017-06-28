@@ -193,6 +193,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   void SetIsNeverSuitableForReuse() override;
   bool MayReuseHost() override;
+  bool IsUnused() override;
+  void SetIsUsed() override;
 
   mojom::RouteProvider* GetRemoteRouteProvider();
 
@@ -619,6 +621,11 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Indicates whether this RenderProcessHost is exclusively hosting guest
   // RenderFrames.
   bool is_for_guests_only_;
+
+  // Indicates whether this RenderProcessHost is unused, meaning that it has
+  // not committed any web content, and it has not been given to a SiteInstance
+  // that has a site assigned.
+  bool is_unused_;
 
   // Prevents the class from being added as a GpuDataManagerImpl observer more
   // than once.

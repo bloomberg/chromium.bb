@@ -268,6 +268,20 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
     origin_lock_ = gurl;
   }
 
+  ChildProcessSecurityPolicyImpl::CheckOriginLockResult CheckOriginLock(
+      const GURL& gurl) {
+    if (origin_lock_.is_empty())
+      return ChildProcessSecurityPolicyImpl::CheckOriginLockResult::NO_LOCK;
+
+    if (origin_lock_ == gurl) {
+      return ChildProcessSecurityPolicyImpl::CheckOriginLockResult::
+          HAS_EQUAL_LOCK;
+    }
+
+    return ChildProcessSecurityPolicyImpl::CheckOriginLockResult::
+        HAS_WRONG_LOCK;
+  }
+
   bool has_web_ui_bindings() const {
     return enabled_bindings_ & BINDINGS_POLICY_WEB_UI;
   }
@@ -1023,6 +1037,16 @@ void ChildProcessSecurityPolicyImpl::LockToOrigin(int child_id,
   SecurityStateMap::iterator state = security_state_.find(child_id);
   DCHECK(state != security_state_.end());
   state->second->LockToOrigin(gurl);
+}
+
+ChildProcessSecurityPolicyImpl::CheckOriginLockResult
+ChildProcessSecurityPolicyImpl::CheckOriginLock(int child_id,
+                                                const GURL& site_url) {
+  base::AutoLock lock(lock_);
+  SecurityStateMap::iterator state = security_state_.find(child_id);
+  if (state == security_state_.end())
+    return ChildProcessSecurityPolicyImpl::CheckOriginLockResult::NO_LOCK;
+  return state->second->CheckOriginLock(site_url);
 }
 
 void ChildProcessSecurityPolicyImpl::GrantPermissionsForFileSystem(

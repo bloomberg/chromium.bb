@@ -151,6 +151,36 @@ TEST_F(RenderProcessHostUnitTest, ReuseCommittedSite) {
   EXPECT_EQ(subframe->GetProcess(), site_instance->GetProcess());
 }
 
+// Check that only new processes that haven't yet hosted any web content are
+// allowed to be reused to host a site requiring a dedicated process.
+TEST_F(RenderProcessHostUnitTest, IsUnused) {
+  const GURL kUrl1("http://foo.com");
+
+  // A process for a SiteInstance that has no site should be able to host any
+  // site that requires a dedicated process.
+  EXPECT_FALSE(main_test_rfh()->GetSiteInstance()->HasSite());
+  EXPECT_TRUE(main_test_rfh()->GetProcess()->IsUnused());
+  {
+    scoped_refptr<SiteInstanceImpl> site_instance =
+        SiteInstanceImpl::Create(browser_context());
+    EXPECT_FALSE(site_instance->HasSite());
+    EXPECT_TRUE(site_instance->GetProcess()->IsUnused());
+  }
+
+  // Navigation should mark the process as unable to become a dedicated process
+  // for arbitrary sites.
+  NavigateAndCommit(kUrl1);
+  EXPECT_FALSE(main_test_rfh()->GetProcess()->IsUnused());
+
+  // A process for a SiteInstance with a preassigned site should be considered
+  // "used" from the point the process is created via GetProcess().
+  {
+    scoped_refptr<SiteInstanceImpl> site_instance =
+        SiteInstanceImpl::CreateForURL(browser_context(), kUrl1);
+    EXPECT_FALSE(site_instance->GetProcess()->IsUnused());
+  }
+}
+
 // Tests that RenderProcessHost will not consider reusing a process that has
 // committed an error page.
 TEST_F(RenderProcessHostUnitTest, DoNotReuseError) {

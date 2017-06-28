@@ -149,6 +149,19 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   static bool DoesSiteRequireDedicatedProcess(BrowserContext* browser_context,
                                               const GURL& url);
 
+  // Returns true if a process for |site_url| should be locked to just that
+  // site.  Returning true here also implies that |site_url| requires a
+  // dedicated process.  However, the converse does not hold: this might still
+  // return false for certain special cases where an origin lock can't be
+  // applied even when |site_url| requires a dedicated process (e.g., with
+  // --site-per-process).  Examples of those cases include <webview> guests,
+  // WebUI, or extensions where a process is currently allowed to be reused for
+  // different extensions.  Most of these special cases should eventually be
+  // removed, and this function should become equivalent to
+  // DoesSiteRequireDedicatedProcess().
+  static bool ShouldLockToOrigin(BrowserContext* browser_context,
+                                 GURL site_url);
+
  private:
   friend class BrowsingInstance;
   friend class SiteInstanceTestBrowserClient;
@@ -167,7 +180,7 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
                            int exit_code) override;
 
   // Used to restrict a process' origin access rights.
-  void LockToOrigin();
+  void LockToOriginIfNeeded();
 
   // This gets the render process to use for default subframe site instances.
   RenderProcessHost* GetDefaultSubframeProcessHost(

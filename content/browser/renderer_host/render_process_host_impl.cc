@@ -938,6 +938,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       sudden_termination_allowed_(true),
       ignore_input_events_(false),
       is_for_guests_only_(is_for_guests_only),
+      is_unused_(true),
       gpu_observer_registered_(false),
       delayed_cleanup_needed_(false),
       within_process_died_observer_(false),
@@ -1804,6 +1805,14 @@ bool RenderProcessHostImpl::MayReuseHost() {
     return false;
 
   return GetContentClient()->browser()->MayReuseHost(this);
+}
+
+bool RenderProcessHostImpl::IsUnused() {
+  return is_unused_;
+}
+
+void RenderProcessHostImpl::SetIsUsed() {
+  is_unused_ = false;
 }
 
 mojom::RouteProvider* RenderProcessHostImpl::GetRemoteRouteProvider() {
@@ -2910,11 +2919,26 @@ bool RenderProcessHostImpl::IsSuitableHost(RenderProcessHost* host,
   if (!host->InSameStoragePartition(dest_partition))
     return false;
 
-  // TODO(nick): Consult the SiteIsolationPolicy here. https://crbug.com/513036
-  if (ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
-          host->GetID()) !=
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  if (policy->HasWebUIBindings(host->GetID()) !=
       WebUIControllerFactoryRegistry::GetInstance()->UseWebUIBindingsForURL(
           browser_context, site_url)) {
+    return false;
+  }
+
+  // Sites requiring dedicated processes can only reuse a compatible process.
+  auto lock_state = policy->CheckOriginLock(host->GetID(), site_url);
+  if (lock_state !=
+      ChildProcessSecurityPolicyImpl::CheckOriginLockResult::NO_LOCK) {
+    // If the process is already dedicated to a site, only allow the destination
+    // URL to reuse this process if the URL has the same site.
+    return lock_state == ChildProcessSecurityPolicyImpl::CheckOriginLockResult::
+                             HAS_EQUAL_LOCK;
+  } else if (!host->IsUnused() &&
+             SiteInstanceImpl::ShouldLockToOrigin(browser_context, site_url)) {
+    // Otherwise, if this process has been used to host any other content, it
+    // cannot be reused if the destination site indeed requires a dedicated
+    // process and can be locked to just that site.
     return false;
   }
 
@@ -2962,19 +2986,8 @@ RenderProcessHost* RenderProcessHost::FromID(int render_process_id) {
 bool RenderProcessHost::ShouldTryToUseExistingProcessHost(
     BrowserContext* browser_context,
     const GURL& url) {
-  // This needs to be checked first to ensure that --single-process
-  // and --site-per-process can be used together.
   if (run_renderer_in_process())
     return true;
-
-  // If --site-per-process is enabled, do not try to reuse renderer processes
-  // when over the limit.
-  // TODO(nick): This is overly conservative and isn't launchable. Move this
-  // logic into IsSuitableHost, and check |url| against the URL the process is
-  // dedicated to. This will allow pages from the same site to share, and will
-  // also allow non-isolated sites to share processes. https://crbug.com/513036
-  if (SiteIsolationPolicy::UseDedicatedProcessesForAllSites())
-    return false;
 
   // NOTE: Sometimes it's necessary to create more render processes than
   //       GetMaxRendererProcessCount(), for instance when we want to create
@@ -3050,12 +3063,12 @@ RenderProcessHost* RenderProcessHostImpl::GetProcessHostForSite(
   SiteProcessMap* map = GetSiteProcessMapForBrowserContext(browser_context);
 
   // See if we have an existing process with appropriate bindings for this site.
-  // If not, the caller should create a new process and register it.
-  std::string site =
-      SiteInstance::GetSiteForURL(browser_context, url).possibly_invalid_spec();
-  RenderProcessHost* host = map->FindProcess(site);
+  // If not, the caller should create a new process and register it.  Note that
+  // IsSuitableHost expects a site URL rather than the full |url|.
+  GURL site_url = SiteInstance::GetSiteForURL(browser_context, url);
+  RenderProcessHost* host = map->FindProcess(site_url.possibly_invalid_spec());
   if (host && (!host->MayReuseHost() ||
-               !IsSuitableHost(host, browser_context, url))) {
+               !IsSuitableHost(host, browser_context, site_url))) {
     // The registered process does not have an appropriate set of bindings for
     // the url.  Remove it from the map so we can register a better one.
     RecordAction(

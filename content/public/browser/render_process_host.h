@@ -364,6 +364,20 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual void SetIsNeverSuitableForReuse() = 0;
   virtual bool MayReuseHost() = 0;
 
+  // Indicates whether this RenderProcessHost is "unused".  This starts out as
+  // true for new processes and becomes false after one of the following:
+  // (1) This process commits any page.
+  // (2) This process is given to a SiteInstance that already has a site
+  //     assigned.
+  // Note that a process hosting ServiceWorkers will be implicitly handled by
+  // (2) during ServiceWorker initialization, and SharedWorkers will be handled
+  // by (1) since a page needs to commit before it can create a SharedWorker.
+  //
+  // While a process is unused, it is still suitable to host a URL that
+  // requires a dedicated process.
+  virtual bool IsUnused() = 0;
+  virtual void SetIsUsed() = 0;
+
   // Returns the current number of active views in this process.  Excludes
   // any RenderViewHosts that are swapped out.
   size_t GetActiveViewCount();
