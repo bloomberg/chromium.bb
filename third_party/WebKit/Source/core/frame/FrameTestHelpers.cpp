@@ -175,7 +175,7 @@ WebLocalFrameBase* CreateProvisional(WebRemoteFrame& old_frame,
   WebLocalFrameBase* frame =
       ToWebLocalFrameBase(WebLocalFrame::CreateProvisional(
           client, client->GetInterfaceProviderForTesting(), nullptr, &old_frame,
-          WebSandboxFlags::kNone));
+          WebSandboxFlags::kNone, WebParsedFeaturePolicy()));
   client->Bind(frame, std::move(owned_client));
   // Create a local root, if necessary.
   std::unique_ptr<TestWebWidgetClient> owned_widget_client;

@@ -187,13 +187,23 @@ bool FrameTree::AddFrame(FrameTreeNode* parent,
   if (parent->current_frame_host()->GetProcess()->GetID() != process_id)
     return false;
 
-  // AddChild is what creates the RenderFrameHost.
-  FrameTreeNode* added_node = parent->AddChild(
-      base::WrapUnique(new FrameTreeNode(
-          this, parent->navigator(), render_frame_delegate_,
-          render_widget_delegate_, manager_delegate_, parent, scope, frame_name,
-          frame_unique_name, frame_owner_properties)),
-      process_id, new_routing_id);
+  std::unique_ptr<FrameTreeNode> new_node = base::WrapUnique(new FrameTreeNode(
+      this, parent->navigator(), render_frame_delegate_,
+      render_widget_delegate_, manager_delegate_, parent, scope, frame_name,
+      frame_unique_name, frame_owner_properties));
+
+  // Set sandbox flags and container policy and make them effective immediately,
+  // since initial sandbox flags and feature policy should apply to the initial
+  // empty document in the frame. This needs to happen before the call to
+  // AddChild so that the effective policy is sent to any newly-created
+  // RenderFrameProxy objects when the RenderFrameHost is created.
+  new_node->SetPendingSandboxFlags(sandbox_flags);
+  new_node->SetPendingContainerPolicy(container_policy);
+  new_node->CommitPendingFramePolicy();
+
+  // Add the new node to the FrameTree, creating the RenderFrameHost.
+  FrameTreeNode* added_node =
+      parent->AddChild(std::move(new_node), process_id, new_routing_id);
 
   // The last committed NavigationEntry may have a FrameNavigationEntry with the
   // same |frame_unique_name|, since we don't remove FrameNavigationEntries if
@@ -203,13 +213,6 @@ bool FrameTree::AddFrame(FrameTreeNode* parent,
       parent->navigator()->GetController()->GetLastCommittedEntry());
   if (last_committed_entry)
     last_committed_entry->ClearStaleFrameEntriesForNewFrame(added_node);
-
-  // Set sandbox flags and container policy and make them effective immediately,
-  // since initial sandbox flags and feature policy should apply to the initial
-  // empty document in the frame.
-  added_node->SetPendingSandboxFlags(sandbox_flags);
-  added_node->SetPendingContainerPolicy(container_policy);
-  added_node->CommitPendingFramePolicy();
 
   // Now that the new node is part of the FrameTree and has a RenderFrameHost,
   // we can announce the creation of the initial RenderFrame which already

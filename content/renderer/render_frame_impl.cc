@@ -1072,7 +1072,8 @@ void RenderFrameImpl::CreateFrame(
     web_frame = blink::WebLocalFrame::CreateProvisional(
         render_frame, render_frame->blink_interface_provider_.get(),
         render_frame->blink_interface_registry_.get(), proxy->web_frame(),
-        replicated_state.sandbox_flags);
+        replicated_state.sandbox_flags,
+        FeaturePolicyHeaderToWeb(replicated_state.container_policy));
   }
   CHECK(parent_routing_id != MSG_ROUTING_NONE || !web_frame->Parent());
 
