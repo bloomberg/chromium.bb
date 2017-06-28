@@ -476,6 +476,7 @@ generate_jni("cronet_tests_jni_headers") {
   testonly = true
   sources = [
     "test/javatests/src/org/chromium/net/CronetUrlRequestContextTest.java",
+    "test/javatests/src/org/chromium/net/ExperimentalOptionsTest.java",
     "test/src/org/chromium/net/CronetTestUtil.java",
     "test/src/org/chromium/net/MockCertVerifier.java",
     "test/src/org/chromium/net/MockUrlRequestJobFactory.java",
@@ -501,6 +502,8 @@ shared_library("cronet_tests") {
     "test/cronet_test_util.h",
     "test/cronet_url_request_context_config_test.cc",
     "test/cronet_url_request_context_config_test.h",
+    "test/experimental_options_test.cc",
+    "test/experimental_options_test.h",
     "test/mock_cert_verifier.cc",
     "test/mock_cert_verifier.h",
     "test/mock_url_request_job_factory.cc",

@@ -73,6 +73,12 @@ const char kStaleDnsMaxStaleUses[] = "max_stale_uses";
 // Name of boolean to allow stale DNS results from other networks to be used on
 // the current network.
 const char kStaleDnsAllowOtherNetwork[] = "allow_other_network";
+// Name of boolean to enable persisting the DNS cache to disk.
+const char kStaleDnsPersist[] = "persist_to_disk";
+// Name of integer minimum time in milliseconds between writes to disk for DNS
+// cache persistence. Default value is one minute. Only relevant if
+// "persist_to_disk" is true.
+const char kStaleDnsPersistTimer[] = "persist_delay_ms";
 
 // Rules to override DNS resolution. Intended for testing.
 // See explanation of format in net/dns/mapped_host_resolver.h.
@@ -292,6 +298,12 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
                                        &allow_other_network)) {
           stale_dns_options.allow_other_network = allow_other_network;
         }
+        bool persist;
+        if (stale_dns_args->GetBoolean(kStaleDnsPersist, &persist))
+          enable_host_cache_persistence = persist;
+        int persist_timer;
+        if (stale_dns_args->GetInteger(kStaleDnsPersistTimer, &persist_timer))
+          host_cache_persistence_delay_ms = persist_timer;
       }
     } else if (it.key() == kHostResolverRulesFieldTrialName) {
       const base::DictionaryValue* host_resolver_rules_args = nullptr;

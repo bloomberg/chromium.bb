@@ -10,16 +10,21 @@ import org.json.JSONObject;
 
 import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
+import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.test.util.Feature;
+import org.chromium.net.impl.CronetUrlRequestContext;
+import org.chromium.net.test.EmbeddedTestServer;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URL;
 
 /**
  * Tests for experimental options.
  */
+@JNINamespace("cronet")
 public class ExperimentalOptionsTest extends CronetTestBase {
     private static final String TAG = ExperimentalOptionsTest.class.getSimpleName();
     private ExperimentalCronetEngine.Builder mBuilder;
@@ -135,4 +140,62 @@ public class ExperimentalOptionsTest extends CronetTestBase {
         }
         return false;
     }
+
+    @MediumTest
+    @Feature({"Cronet"})
+    @OnlyRunNativeCronet
+    // Tests that basic Cronet functionality works when host cache persistence is enabled, and that
+    // persistence works.
+    public void testHostCachePersistence() throws Exception {
+        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartServer(getContext());
+
+        String realUrl = testServer.getURL("/echo?status=200");
+        URL javaUrl = new URL(realUrl);
+        String realHost = javaUrl.getHost();
+        int realPort = javaUrl.getPort();
+        String testHost = "host-cache-test-host";
+        String testUrl = new URL("http", testHost, realPort, javaUrl.getPath()).toString();
+
+        mBuilder.setStoragePath(getTestStorage(getContext()));
+
+        // Set a short delay so the pref gets written quickly.
+        JSONObject staleDns = new JSONObject()
+                                      .put("enable", true)
+                                      .put("delay_ms", 0)
+                                      .put("allow_other_network", true)
+                                      .put("persist_to_disk", true)
+                                      .put("persist_delay_ms", 0);
+        JSONObject experimentalOptions = new JSONObject().put("StaleDNS", staleDns);
+        mBuilder.setExperimentalOptions(experimentalOptions.toString());
+        CronetUrlRequestContext context = (CronetUrlRequestContext) mBuilder.build();
+
+        // Create a HostCache entry for "host-cache-test-host".
+        nativeWriteToHostCache(context.getUrlRequestContextAdapter(), realHost);
+
+        // Do a request for the test URL to make sure it's cached.
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        UrlRequest.Builder builder =
+                context.newUrlRequestBuilder(testUrl, callback, callback.getExecutor());
+        UrlRequest urlRequest = builder.build();
+        urlRequest.start();
+        callback.blockForDone();
+        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
+
+        // Shut down the context, persisting contents to disk, and build a new one.
+        context.shutdown();
+        context = (CronetUrlRequestContext) mBuilder.build();
+
+        // Use the test URL without creating a new cache entry first. It should use the persisted
+        // one.
+        callback = new TestUrlRequestCallback();
+        builder = context.newUrlRequestBuilder(testUrl, callback, callback.getExecutor());
+        urlRequest = builder.build();
+        urlRequest.start();
+        callback.blockForDone();
+        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
+    }
+
+    // Sets a host cache entry with hostname "host-cache-test-host" and an AddressList containing
+    // the provided address.
+    private static native void nativeWriteToHostCache(long adapter, String address);
 }
