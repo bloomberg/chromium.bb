@@ -531,16 +531,20 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableNetworkService)) {
-    mojom::NetworkServicePtr network_service;
-    ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
-        mojom::kNetworkServiceName, &network_service);
+    static mojom::NetworkServicePtr* g_network_service =
+        new mojom::NetworkServicePtr;
+    if (!g_network_service->is_bound()) {
+      ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
+          mojom::kNetworkServiceName, g_network_service);
+    }
     mojom::NetworkContextParamsPtr context_params =
         mojom::NetworkContextParams::New();
     // TODO: fill this
     // context_params->cache_dir =
     // context_params->cookie_path =
-    network_service->CreateNetworkContext(
-        MakeRequest(&partition->network_context_), std::move(context_params));
+    (*g_network_service)
+        ->CreateNetworkContext(MakeRequest(&partition->network_context_),
+                               std::move(context_params));
 
     scoped_refptr<ChromeBlobStorageContext> blob_context =
         ChromeBlobStorageContext::GetFor(context);
