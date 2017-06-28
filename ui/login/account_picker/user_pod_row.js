@@ -1775,15 +1775,10 @@ cr.define('login', function() {
         }
       }
 
-      // this.classList is used for selecting the appropriate dialog.
-      if (total_count)
-        this.classList.remove('has-no-stats');
-
       var is_synced_user = this.user.emailAddress !== "";
       // Write total number if all statistics are loaded.
       if (num_stats_loaded === Object.keys(stats_elements).length) {
         if (!total_count) {
-          this.classList.add('has-no-stats');
           var message = loadTimeData.getString(
               is_synced_user ? 'removeUserWarningTextSyncNoStats' :
                                'removeUserWarningTextNonSyncNoStats');
@@ -2553,8 +2548,6 @@ cr.define('login', function() {
       this.classList.toggle('legacy-supervised', isLegacySupervisedUser);
       this.classList.toggle('child', isChildUser);
       this.classList.toggle('synced', isSyncedUser);
-      this.classList.toggle('has-no-stats',
-          !isProfileLoaded && !this.user.statistics.length);
 
       if (this.isAuthTypeUserClick)
         this.passwordLabelElement.textContent = this.authValue;
