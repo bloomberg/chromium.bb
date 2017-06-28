@@ -280,38 +280,6 @@ TEST_P(PrePaintTreeWalkTest, ClearSubsequenceCachingClipChangePosFixed) {
   EXPECT_TRUE(child_paint_layer->NeedsRepaint());
 }
 
-TEST_P(PrePaintTreeWalkTest, ClipRects) {
-  SetBodyInnerHTML(
-      "<div id='parent' style='isolation: isolate'>"
-      "  <div id='child' style='position: relative'>"
-      "    <div id='grandchild' style='isolation: isolate'>"
-      "      <div style='position: relative'></div>"
-      "    </div>"
-      "  </div>"
-      "</div>");
-
-  auto* parent = GetLayoutObjectByElementId("parent");
-  auto* child = GetLayoutObjectByElementId("child");
-  auto* grandchild = GetLayoutObjectByElementId("grandchild");
-
-  EXPECT_TRUE(
-      parent->GetMutableForPainting().FirstFragment()->PreviousClipRects());
-  EXPECT_FALSE(child->PaintProperties());
-  EXPECT_TRUE(
-      grandchild->GetMutableForPainting().FirstFragment()->PreviousClipRects());
-
-  PrePaintTreeWalk::ClearPreviousClipRectsForTesting(*grandchild);
-  GetDocument().View()->UpdateAllLifecyclePhases();
-  // Still no rects, because the walk early-outed at the LayoutView.
-  EXPECT_FALSE(
-      grandchild->GetMutableForPainting().FirstFragment()->PreviousClipRects());
-
-  grandchild->SetNeedsPaintPropertyUpdate();
-  GetDocument().View()->UpdateAllLifecyclePhases();
-  EXPECT_TRUE(
-      grandchild->GetMutableForPainting().FirstFragment()->PreviousClipRects());
-}
-
 TEST_P(PrePaintTreeWalkTest, VisualRectClipForceSubtree) {
   SetBodyInnerHTML(
       "<style>"

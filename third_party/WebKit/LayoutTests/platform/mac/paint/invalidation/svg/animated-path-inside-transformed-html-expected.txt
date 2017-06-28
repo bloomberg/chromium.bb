@@ -74,6 +74,10 @@
     {
       "object": "LayoutSVGImage image id='image'",
       "reason": "full"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "appeared"
     }
   ]
 }

@@ -1982,6 +1982,22 @@
     {
       "object": "LayoutSVGPath line",
       "reason": "geometry"
+    },
+    {
+      "object": "LayoutSVGContainer g",
+      "reason": "appeared"
+    },
+    {
+      "object": "LayoutSVGContainer g",
+      "reason": "appeared"
+    },
+    {
+      "object": "LayoutSVGContainer g",
+      "reason": "appeared"
+    },
+    {
+      "object": "LayoutSVGContainer g id='windowTitlebarGroupminimalWindow'",
+      "reason": "appeared"
     }
   ]
 }
