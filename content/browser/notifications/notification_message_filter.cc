@@ -190,7 +190,10 @@ void NotificationMessageFilter::OnShowPersistentNotification(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (GetPermissionForOriginOnIO(origin) !=
       blink::mojom::PermissionStatus::GRANTED) {
-    bad_message::ReceivedBadMessage(this, bad_message::NMF_NO_PERMISSION_SHOW);
+    // We can't assume that the renderer is compromised at this point because
+    // it's possible for the user to revoke an origin's permission between the
+    // time where a website requests the notification to be shown and the call
+    // arriving in the message filter.
     return;
   }
 
@@ -338,7 +341,6 @@ void NotificationMessageFilter::OnClosePersistentNotification(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (GetPermissionForOriginOnIO(origin) !=
       blink::mojom::PermissionStatus::GRANTED) {
-    bad_message::ReceivedBadMessage(this, bad_message::NMF_NO_PERMISSION_CLOSE);
     return;
   }
 
@@ -390,11 +392,12 @@ bool NotificationMessageFilter::VerifyNotificationPermissionGranted(
   blink::mojom::PermissionStatus permission_status =
       service->CheckPermissionOnUIThread(browser_context_, origin, process_id_);
 
-  if (permission_status == blink::mojom::PermissionStatus::GRANTED)
-    return true;
+  // We can't assume that the renderer is compromised at this point because
+  // it's possible for the user to revoke an origin's permission between the
+  // time where a website requests the notification to be shown and the call
+  // arriving in the message filter.
 
-  bad_message::ReceivedBadMessage(this, bad_message::NMF_NO_PERMISSION_VERIFY);
-  return false;
+  return permission_status == blink::mojom::PermissionStatus::GRANTED;
 }
 
 NotificationIdGenerator* NotificationMessageFilter::GetNotificationIdGenerator()
