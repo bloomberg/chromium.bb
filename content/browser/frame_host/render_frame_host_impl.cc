@@ -454,6 +454,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
       pending_web_ui_type_(WebUI::kNoWebUI),
       should_reuse_web_ui_(false),
       has_selection_(false),
+      is_audible_(false),
       last_navigation_previews_state_(PREVIEWS_UNSPECIFIED),
       frame_host_interface_broker_binding_(this),
       frame_host_associated_binding_(this),
@@ -1012,6 +1013,9 @@ void RenderFrameHostImpl::RenderProcessGone(SiteInstanceImpl* site_instance) {
   // Any future UpdateState or UpdateTitle messages from this or a recreated
   // process should be ignored until the next commit.
   set_nav_entry_id(0);
+
+  if (is_audible_)
+    GetProcess()->OnAudioStreamRemoved();
 }
 
 void RenderFrameHostImpl::ReportContentSecurityPolicyViolation(
@@ -1197,6 +1201,16 @@ void RenderFrameHostImpl::Init() {
         pendinging_navigate_->second);
     pendinging_navigate_.reset();
   }
+}
+
+void RenderFrameHostImpl::OnAudibleStateChanged(bool is_audible) {
+  if (is_audible_ == is_audible)
+    return;
+  if (is_audible)
+    GetProcess()->OnAudioStreamAdded();
+  else
+    GetProcess()->OnAudioStreamRemoved();
+  is_audible_ = is_audible;
 }
 
 void RenderFrameHostImpl::OnDidAddMessageToConsole(

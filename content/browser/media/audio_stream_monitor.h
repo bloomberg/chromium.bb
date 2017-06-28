@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/callback_forward.h"
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/default_tick_clock.h"
@@ -111,12 +112,15 @@ class CONTENT_EXPORT AudioStreamMonitor {
   // Starts polling the stream for audio stream power levels using |callback|.
   void StartMonitoringStreamOnUIThread(
       int render_process_id,
+      int render_frame_id,
       int stream_id,
       const ReadPowerAndClipCallback& callback);
 
   // Stops polling the stream, discarding the internal copy of the |callback|
   // provided in the call to StartMonitoringStream().
-  void StopMonitoringStreamOnUIThread(int render_process_id, int stream_id);
+  void StopMonitoringStreamOnUIThread(int render_process_id,
+                                      int render_frame_id,
+                                      int stream_id);
 
   // Called by |poll_timer_| to sample the power levels from each of the streams
   // playing in the tab.
@@ -146,8 +150,15 @@ class CONTENT_EXPORT AudioStreamMonitor {
 
   // The callbacks to read power levels for each stream.  Only playing (i.e.,
   // not paused) streams will have an entry in this map.
-  using StreamID = std::pair<int, int>;
-  using StreamPollCallbackMap = std::map<StreamID, ReadPowerAndClipCallback>;
+  struct CONTENT_EXPORT StreamID {
+    int render_process_id;
+    int render_frame_id;
+    int stream_id;
+    bool operator<(const StreamID& other) const;
+    bool operator==(const StreamID& other) const;
+  };
+  using StreamPollCallbackMap =
+      base::flat_map<StreamID, ReadPowerAndClipCallback>;
   StreamPollCallbackMap poll_callbacks_;
 
   // Records the last time at which sound was audible from any stream.

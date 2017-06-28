@@ -248,6 +248,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // after they are blocked in RenderWidgetHelper::CreateNewWindow.
   void Init();
 
+  // Returns true if the frame recently plays an audio.
+  bool is_audible() const { return is_audible_; }
+  void OnAudibleStateChanged(bool is_audible);
+
   int routing_id() const { return routing_id_; }
 
   // Called when this frame has added a child. This is a continuation of an IPC
@@ -1187,6 +1191,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // If true, then the RenderFrame has selected text.
   bool has_selection_;
+
+  // If true, then this RenderFrame has one or more audio streams with audible
+  // signal. If false, all audio streams are currently silent (or there are no
+  // audio streams).
+  bool is_audible_;
 
   // PlzNavigate: The Previews state of the last navigation. This is used during
   // history navigation of subframes to ensure that subframes navigate with the
