@@ -19,6 +19,7 @@ class AppListMainView;
 class AppListView;
 class AppListViewDelegate;
 class CustomLauncherPageBackgroundView;
+class ExpandArrowView;
 class IndicatorChipView;
 class SearchResultTileItemView;
 class SuggestionsContainerView;
@@ -79,6 +80,7 @@ class APP_LIST_EXPORT StartPageView : public AppListPage {
   IndicatorChipView* indicator_ = nullptr;  // Owned by views hierarchy.
   SuggestionsContainerView*
       suggestions_container_;  // Owned by views hierarchy.
+  ExpandArrowView* expand_arrow_view_ = nullptr;  // Owned by views hierarchy.
 
   const bool is_fullscreen_app_list_enabled_;
 
