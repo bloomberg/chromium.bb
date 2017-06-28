@@ -491,21 +491,6 @@
       }
     ]
   },
-  "Win Builder": {
-    "additional_compile_targets": [
-      "all"
-    ]
-  },
-  "Win Builder (dbg)": {
-    "additional_compile_targets": [
-      "all"
-    ]
-  },
-  "Win x64 Builder (dbg)": {
-    "additional_compile_targets": [
-      "all"
-    ]
-  },
   "Win x64 GN": {
     "additional_compile_targets": [
       "base_unittests"
