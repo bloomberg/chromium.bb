@@ -77,6 +77,7 @@
 #include "sql/statement.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
+#include "url/url_canon.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -107,6 +108,7 @@ const char kMalwareDelayedLoadsPage[] =
     "/safe_browsing/malware_delayed_loads.html";
 const char kMalwareIFrame[] = "/safe_browsing/malware_iframe.html";
 const char kMalwareImg[] = "/safe_browsing/malware_image.png";
+const char kMalwareWebSocketPage[] = "/safe_browsing/malware_websocket.html";
 const char kNeverCompletesPath[] = "/never_completes";
 const char kPrefetchMalwarePage[] = "/safe_browsing/prefetch_malware.html";
 
@@ -1480,6 +1482,62 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, StartAndStop) {
   EXPECT_FALSE(csd_service->enabled());
 }
 
+IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, MalwareWebSocketBlocked) {
+  // This test currently only passes when the network service is enabled.
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kEnableNetworkService)) {
+    return;
+  }
+  GURL main_url = embedded_test_server()->GetURL(kMalwareWebSocketPage);
+  // This constructs the URL with the same logic as malware_websocket.html.
+  GURL resolved = main_url.Resolve("/safe_browsing/malware-ws");
+  GURL::Replacements replace_scheme;
+  replace_scheme.SetScheme("ws", url::Component(0, strlen("ws")));
+  GURL websocket_url = resolved.ReplaceComponents(replace_scheme);
+
+  // Add the WebSocket url as malware.
+  SBFullHashResult uws_full_hash;
+  GenUrlFullHashResult(websocket_url, MALWARE, &uws_full_hash);
+  SetupResponseForUrl(websocket_url, uws_full_hash);
+
+  // Brute force method for waiting for the interstitial to be displayed.
+  content::WindowedNotificationObserver load_stop_observer(
+      content::NOTIFICATION_ALL,
+      base::Bind(
+          [](SafeBrowsingServiceTest* self,
+             const content::NotificationSource& source,
+             const content::NotificationDetails& details) {
+            return self->ShowingInterstitialPage();
+          },
+          base::Unretained(this)));
+
+  EXPECT_CALL(observer_, OnSafeBrowsingHit(IsUnsafeResourceFor(websocket_url)));
+  ui_test_utils::NavigateToURL(browser(), main_url);
+
+  // If the interstitial fails to be displayed, the test will hang here.
+  load_stop_observer.Wait();
+
+  EXPECT_TRUE(ShowingInterstitialPage());
+  EXPECT_TRUE(got_hit_report());
+}
+
+IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, UnknownWebSocketNotBlocked) {
+  GURL main_url = embedded_test_server()->GetURL(kMalwareWebSocketPage);
+
+  auto expected_title = base::ASCIIToUTF16("COMPLETED");
+  content::TitleWatcher title_watcher(
+      browser()->tab_strip_model()->GetActiveWebContents(), expected_title);
+
+  // Load the parent page without marking the WebSocket as malware.
+  ui_test_utils::NavigateToURL(browser(), main_url);
+
+  // Wait for the WebSocket connection attempt to complete.
+  auto new_title = title_watcher.WaitAndGetTitle();
+  EXPECT_EQ(expected_title, new_title);
+  EXPECT_FALSE(ShowingInterstitialPage());
+  EXPECT_FALSE(got_hit_report());
+}
+
 class SafeBrowsingServiceShutdownTest : public SafeBrowsingServiceTest {
  public:
   void TearDown() override {
@@ -2192,6 +2250,67 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, CheckBrowseUrl) {
     client->CheckBrowseUrl(bad_url);
     EXPECT_EQ(SB_THREAT_TYPE_URL_MALWARE, client->GetThreatType());
   }
+}
+
+// This is almost identical to
+// SafeBrowsingServiceTest.MalwareWebSocketBlocked. That test will be deleted
+// when the old database backend stops being used.
+IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, MalwareWebSocketBlocked) {
+  // This test currently only passes when the network service is enabled.
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kEnableNetworkService)) {
+    return;
+  }
+  GURL main_url = embedded_test_server()->GetURL(kMalwareWebSocketPage);
+  // This constructs the URL with the same logic as malware_websocket.html.
+  GURL resolved = main_url.Resolve("/safe_browsing/malware-ws");
+  GURL::Replacements replace_scheme;
+  replace_scheme.SetScheme("ws", url::Component(0, strlen("ws")));
+  GURL websocket_url = resolved.ReplaceComponents(replace_scheme);
+
+  MarkUrlForMalwareUnexpired(websocket_url);
+
+  // Brute force method for waiting for the interstitial to be displayed.
+  content::WindowedNotificationObserver load_stop_observer(
+      content::NOTIFICATION_ALL,
+      base::Bind(
+          [](SafeBrowsingServiceTest* self,
+             const content::NotificationSource& source,
+             const content::NotificationDetails& details) {
+            return self->ShowingInterstitialPage();
+          },
+          base::Unretained(this)));
+
+  EXPECT_CALL(observer_, OnSafeBrowsingHit(IsUnsafeResourceFor(websocket_url)));
+  ui_test_utils::NavigateToURL(browser(), main_url);
+
+  // If the interstitial fails to be displayed, the test will hang here.
+  load_stop_observer.Wait();
+
+  EXPECT_TRUE(ShowingInterstitialPage());
+  EXPECT_TRUE(got_hit_report());
+  EXPECT_EQ(websocket_url, hit_report().malicious_url);
+  EXPECT_EQ(main_url, hit_report().page_url);
+  EXPECT_TRUE(hit_report().is_subresource);
+}
+
+// Identical to SafeBrowsingServiceTest.UnknownWebSocketNotBlocked. Uses the
+// V4 database backend.
+IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, UnknownWebSocketNotBlocked) {
+  GURL main_url = embedded_test_server()->GetURL(kMalwareWebSocketPage);
+
+  auto expected_title = base::ASCIIToUTF16("COMPLETED");
+  content::TitleWatcher title_watcher(
+      browser()->tab_strip_model()->GetActiveWebContents(), expected_title);
+
+  // Load the parent page without marking the WebSocket as malware.
+  ui_test_utils::NavigateToURL(browser(), main_url);
+
+  // Wait for the WebSocket connection attempt to complete.
+  auto new_title = title_watcher.WaitAndGetTitle();
+  EXPECT_EQ(expected_title, new_title);
+  EXPECT_FALSE(ShowingInterstitialPage());
+  EXPECT_FALSE(got_hit_report());
 }
 
 #if defined(GOOGLE_CHROME_BUILD)

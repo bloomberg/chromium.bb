@@ -182,6 +182,8 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       blink::WebMediaPlayer* web_media_player) override;
   std::unique_ptr<blink::WebImageCaptureFrameGrabber>
   CreateImageCaptureFrameGrabber() override;
+  std::unique_ptr<blink::WebSocketHandshakeThrottle>
+  CreateWebSocketHandshakeThrottle() override;
   std::unique_ptr<blink::WebGraphicsContext3DProvider>
   CreateOffscreenGraphicsContext3DProvider(
       const blink::Platform::ContextAttributes& attributes,

@@ -9,6 +9,7 @@
 #include "third_party/WebKit/public/platform/WebAudioDevice.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamCenter.h"
 #include "third_party/WebKit/public/platform/WebRTCPeerConnectionHandler.h"
+#include "third_party/WebKit/public/platform/WebSocketHandshakeThrottle.h"
 #include "third_party/WebKit/public/platform/WebSpeechSynthesizer.h"
 #include "third_party/WebKit/public/platform/modules/webmidi/WebMIDIAccessor.h"
 #include "ui/gfx/icc_profile.h"
@@ -83,6 +84,11 @@ blink::WebClipboard* ContentRendererClient::OverrideWebClipboard() {
 }
 
 blink::WebThemeEngine* ContentRendererClient::OverrideThemeEngine() {
+  return nullptr;
+}
+
+std::unique_ptr<blink::WebSocketHandshakeThrottle>
+ContentRendererClient::CreateWebSocketHandshakeThrottle() {
   return nullptr;
 }
 

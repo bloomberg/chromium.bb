@@ -153,6 +153,8 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
       const content::RenderFrame* render_frame,
       blink::WebPageVisibilityState* override_state) override;
   bool IsExternalPepperPlugin(const std::string& module_name) override;
+  std::unique_ptr<blink::WebSocketHandshakeThrottle>
+  CreateWebSocketHandshakeThrottle() override;
   std::unique_ptr<blink::WebSpeechSynthesizer> OverrideSpeechSynthesizer(
       blink::WebSpeechSynthesizerClient* client) override;
   bool ShouldReportDetailedMessageForSource(
@@ -220,6 +222,10 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
 
   static GURL GetNaClContentHandlerURL(const std::string& actual_mime_type,
                                        const content::WebPluginInfo& plugin);
+
+  // Returns |true| if we should use the SafeBrowsing mojo service. Initialises
+  // |safe_browsing_| on the first call as a side-effect.
+  bool UsingSafeBrowsingMojoService();
 
   // Time at which this object was created. This is very close to the time at
   // which the RendererMain function was entered.

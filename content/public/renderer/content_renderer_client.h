@@ -47,12 +47,13 @@ class WebPlugin;
 class WebPrescientNetworking;
 class WebRTCPeerConnectionHandler;
 class WebRTCPeerConnectionHandlerClient;
+class WebSocketHandshakeThrottle;
 class WebSpeechSynthesizer;
 class WebSpeechSynthesizerClient;
 class WebThemeEngine;
 class WebURL;
-class WebURLResponse;
 class WebURLRequest;
+class WebURLResponse;
 struct WebPluginParams;
 struct WebURLError;
 }  // namespace blink
@@ -174,6 +175,11 @@ class CONTENT_EXPORT ContentRendererClient {
   // Allows the embedder to override the WebThemeEngine used. If it returns NULL
   // the content layer will provide an engine.
   virtual blink::WebThemeEngine* OverrideThemeEngine();
+
+  // Allows the embedder to provide a WebSocketHandshakeThrottle. If it returns
+  // NULL then none will be used.
+  virtual std::unique_ptr<blink::WebSocketHandshakeThrottle>
+  CreateWebSocketHandshakeThrottle();
 
   // Allows the embedder to override the WebSpeechSynthesizer used.
   // If it returns NULL the content layer will provide an engine.

@@ -78,6 +78,7 @@
 #include "components/password_manager/content/renderer/credential_manager_client.h"
 #include "components/pdf/renderer/pepper_pdf_host.h"
 #include "components/safe_browsing/renderer/threat_dom_details.h"
+#include "components/safe_browsing/renderer/websocket_sb_handshake_throttle.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/spellcheck/spellcheck_build_features.h"
 #include "components/startup_metric_utils/common/startup_metric.mojom.h"
@@ -1206,12 +1207,7 @@ bool ChromeContentRendererClient::WillSendRequest(
     const blink::WebURL& url,
     std::vector<std::unique_ptr<content::URLLoaderThrottle>>* throttles,
     GURL* new_url) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableNetworkService)) {
-    if (!safe_browsing_) {
-      RenderThread::Get()->GetConnector()->BindInterface(
-          content::mojom::kBrowserServiceName, &safe_browsing_);
-    }
+  if (UsingSafeBrowsingMojoService()) {
     RenderFrame* render_frame = content::RenderFrame::FromWebFrame(frame);
     throttles->push_back(
         base::MakeUnique<safe_browsing::RendererURLLoaderThrottle>(
@@ -1310,6 +1306,14 @@ bool ChromeContentRendererClient::IsExtensionOrSharedModuleWhitelisted(
       whitelist);
 }
 #endif
+
+std::unique_ptr<blink::WebSocketHandshakeThrottle>
+ChromeContentRendererClient::CreateWebSocketHandshakeThrottle() {
+  if (!UsingSafeBrowsingMojoService())
+    return nullptr;
+  return base::MakeUnique<safe_browsing::WebSocketSBHandshakeThrottle>(
+      safe_browsing_.get());
+}
 
 std::unique_ptr<blink::WebSpeechSynthesizer>
 ChromeContentRendererClient::OverrideSpeechSynthesizer(
@@ -1599,4 +1603,16 @@ std::unique_ptr<base::TaskScheduler::InitParams>
 ChromeContentRendererClient::GetTaskSchedulerInitParams() {
   return task_scheduler_util::
       GetRendererTaskSchedulerInitParamsFromCommandLine();
+}
+
+bool ChromeContentRendererClient::UsingSafeBrowsingMojoService() {
+  if (safe_browsing_)
+    return true;
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableNetworkService)) {
+    return false;
+  }
+  RenderThread::Get()->GetConnector()->BindInterface(
+      content::mojom::kBrowserServiceName, &safe_browsing_);
+  return true;
 }
