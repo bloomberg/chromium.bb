@@ -1266,7 +1266,8 @@ void IndexedDBDatabase::Put(
 leveldb::Status IndexedDBDatabase::PutOperation(
     std::unique_ptr<PutOperationParams> params,
     IndexedDBTransaction* transaction) {
-  IDB_TRACE1("IndexedDBDatabase::PutOperation", "txn.id", transaction->id());
+  IDB_TRACE2("IndexedDBDatabase::PutOperation", "txn.id", transaction->id(),
+             "size", params->value.SizeEstimate());
   DCHECK_NE(transaction->mode(), blink::kWebIDBTransactionModeReadOnly);
   bool key_was_generated = false;
   leveldb::Status s = leveldb::Status::OK();

@@ -42,7 +42,8 @@ class MODULES_EXPORT IDBOpenDBRequest final : public IDBRequest {
   static IDBOpenDBRequest* Create(ScriptState*,
                                   IDBDatabaseCallbacks*,
                                   int64_t transaction_id,
-                                  int64_t version);
+                                  int64_t version,
+                                  IDBRequest::AsyncTraceState metrics);
   ~IDBOpenDBRequest() override;
   DECLARE_VIRTUAL_TRACE();
 
@@ -76,7 +77,8 @@ class MODULES_EXPORT IDBOpenDBRequest final : public IDBRequest {
   IDBOpenDBRequest(ScriptState*,
                    IDBDatabaseCallbacks*,
                    int64_t transaction_id,
-                   int64_t version);
+                   int64_t version,
+                   IDBRequest::AsyncTraceState metrics);
 
   Member<IDBDatabaseCallbacks> database_callbacks_;
   const int64_t transaction_id_;

@@ -66,7 +66,8 @@ static bool IsContextValid(ExecutionContext* context) {
 IDBRequest* IDBFactory::GetDatabaseNames(ScriptState* script_state,
                                          ExceptionState& exception_state) {
   IDB_TRACE("IDBFactory::getDatabaseNamesRequestSetup");
-  IDBRequest::AsyncTraceState metrics("IDBFactory::getDatabaseNames", this);
+  IDBRequest::AsyncTraceState metrics("IDBFactory::getDatabaseNames", this,
+                                      ++next_tracing_id_);
   IDBRequest* request = IDBRequest::Create(script_state, IDBAny::CreateNull(),
                                            nullptr, std::move(metrics));
   // TODO(jsbell): Used only by inspector; remove unneeded checks/exceptions?
@@ -99,7 +100,6 @@ IDBOpenDBRequest* IDBFactory::open(ScriptState* script_state,
                                    const String& name,
                                    unsigned long long version,
                                    ExceptionState& exception_state) {
-  IDB_TRACE("IDBFactory::open");
   if (!version) {
     exception_state.ThrowTypeError("The version provided must not be 0.");
     return nullptr;
@@ -111,6 +111,9 @@ IDBOpenDBRequest* IDBFactory::OpenInternal(ScriptState* script_state,
                                            const String& name,
                                            int64_t version,
                                            ExceptionState& exception_state) {
+  IDB_TRACE1("IDBFactory::open", "name", name.Utf8());
+  IDBRequest::AsyncTraceState metrics("IDBFactory::open", this,
+                                      ++next_tracing_id_);
   IDBDatabase::RecordApiCallsHistogram(kIDBOpenCall);
   DCHECK(version >= 1 || version == IDBDatabaseMetadata::kNoVersion);
   if (!IsContextValid(ExecutionContext::From(script_state)))
@@ -125,8 +128,9 @@ IDBOpenDBRequest* IDBFactory::OpenInternal(ScriptState* script_state,
 
   IDBDatabaseCallbacks* database_callbacks = IDBDatabaseCallbacks::Create();
   int64_t transaction_id = IDBDatabase::NextTransactionId();
-  IDBOpenDBRequest* request = IDBOpenDBRequest::Create(
-      script_state, database_callbacks, transaction_id, version);
+  IDBOpenDBRequest* request =
+      IDBOpenDBRequest::Create(script_state, database_callbacks, transaction_id,
+                               version, std::move(metrics));
 
   if (!IndexedDBClient::From(ExecutionContext::From(script_state))
            ->AllowIndexedDB(ExecutionContext::From(script_state), name)) {
@@ -146,7 +150,6 @@ IDBOpenDBRequest* IDBFactory::OpenInternal(ScriptState* script_state,
 IDBOpenDBRequest* IDBFactory::open(ScriptState* script_state,
                                    const String& name,
                                    ExceptionState& exception_state) {
-  IDB_TRACE("IDBFactory::open");
   return OpenInternal(script_state, name, IDBDatabaseMetadata::kNoVersion,
                       exception_state);
 }
@@ -172,7 +175,9 @@ IDBOpenDBRequest* IDBFactory::DeleteDatabaseInternal(
     const String& name,
     ExceptionState& exception_state,
     bool force_close) {
-  IDB_TRACE("IDBFactory::deleteDatabase");
+  IDB_TRACE1("IDBFactory::deleteDatabase", "name", name.Utf8());
+  IDBRequest::AsyncTraceState metrics("IDBFactory::deleteDatabase", this,
+                                      ++next_tracing_id_);
   IDBDatabase::RecordApiCallsHistogram(kIDBDeleteDatabaseCall);
   if (!IsContextValid(ExecutionContext::From(script_state)))
     return nullptr;
@@ -185,7 +190,8 @@ IDBOpenDBRequest* IDBFactory::DeleteDatabaseInternal(
   }
 
   IDBOpenDBRequest* request = IDBOpenDBRequest::Create(
-      script_state, nullptr, 0, IDBDatabaseMetadata::kDefaultVersion);
+      script_state, nullptr, 0, IDBDatabaseMetadata::kDefaultVersion,
+      std::move(metrics));
 
   if (!IndexedDBClient::From(ExecutionContext::From(script_state))
            ->AllowIndexedDB(ExecutionContext::From(script_state), name)) {

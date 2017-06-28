@@ -219,6 +219,8 @@ class MODULES_EXPORT IDBObjectStore final
   // after a transaction is finished, and can be cleared.
   IDBIndexMap index_map_;
 
+  int64_t next_tracing_id_ = 0;
+
 #if DCHECK_IS_ON()
   bool clear_index_cache_called_ = false;
 #endif  // DCHECK_IS_ON()

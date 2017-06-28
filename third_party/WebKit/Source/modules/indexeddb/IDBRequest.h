@@ -73,7 +73,7 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   class AsyncTraceState {
    public:
     AsyncTraceState() {}
-    AsyncTraceState(const char* tracing_name, void*);
+    AsyncTraceState(const char* tracing_name, void*, size_t sub_id);
     ~AsyncTraceState();
     AsyncTraceState(AsyncTraceState&& other) {
       this->tracing_name_ = other.tracing_name_;
@@ -92,7 +92,7 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
 
    private:
     const char* tracing_name_ = nullptr;
-    void* id_;
+    const void* id_;
 
     DISALLOW_COPY_AND_ASSIGN(AsyncTraceState);
   };
@@ -282,6 +282,8 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   // registered against it.
   v8::Isolate* isolate_;
 
+  AsyncTraceState metrics_;
+
  private:
   // Calls EnqueueResponse().
   friend class IDBRequestQueueItem;
@@ -309,8 +311,6 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   Member<IDBAny> source_;
   Member<IDBAny> result_;
   Member<DOMException> error_;
-
-  AsyncTraceState metrics_;
 
   bool has_pending_activity_ = true;
   HeapVector<Member<Event>> enqueued_events_;
