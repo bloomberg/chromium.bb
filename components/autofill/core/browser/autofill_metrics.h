@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/strings/string_piece_forward.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_profile.h"
@@ -19,6 +18,7 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/autofill/core/common/signatures_util.h"
 #include "components/ukm/public/ukm_recorder.h"
 
 namespace internal {
@@ -69,6 +69,19 @@ extern const char kUKMIsEmptyMetricName[];
 // |UkmEntry| for |AutofillFormSubmittedState|.
 extern const char kUKMFormSubmittedEntryName[];
 extern const char kUKMAutofillFormSubmittedStateMetricName[];
+
+// |UkmEntry| for capturing field fill status and type prediction quality.
+extern const char kUKMFieldTypeEntryName[];
+extern const char kUKMFieldFillStatusEntryName[];
+extern const char kUKMFormSignatureMetricName[];
+extern const char kUKMFieldSignatureMetricName[];
+extern const char kUKMValidationEventMetricName[];
+extern const char kUKMPredictionSourceMetricName[];
+extern const char kUKMPredictedTypeMetricName[];
+extern const char kUKMActualTypeMetricName[];
+extern const char kUKMWasSuggestionShownMetricName[];
+extern const char kUKMWasPreviouslyAutofilledMetricName[];
+
 }  // namespace internal
 
 namespace autofill {
@@ -411,6 +424,14 @@ class AutofillMetrics {
     NUM_FIELD_TYPE_QUALITY_METRICS
   };
 
+  enum QualityMetricPredictionSource {
+    PREDICTION_SOURCE_UNKNOWN,    // Not used. The prediction source is unknown.
+    PREDICTION_SOURCE_HEURISTIC,  // Local heuristic field-type prediction.
+    PREDICTION_SOURCE_SERVER,     // Crowd-sourced server field type prediction.
+    PREDICTION_SOURCE_OVERALL,    // Overall field-type prediction seen by user.
+    NUM_QUALITY_METRIC_SOURCES
+  };
+
   enum QualityMetricType {
     TYPE_SUBMISSION = 0,      // Logged based on user's submitted data.
     TYPE_NO_SUBMISSION,       // Logged based on user's entered data.
@@ -697,6 +718,9 @@ class AutofillMetrics {
    public:
     explicit FormInteractionsUkmLogger(ukm::UkmRecorder* ukm_recorder);
 
+    bool has_pinned_timestamp() const { return !pinned_timestamp_.is_null(); }
+    void set_pinned_timestamp(base::TimeTicks t) { pinned_timestamp_ = t; }
+
     const GURL& url() const { return url_; }
 
     void OnFormsParsed(const GURL& url);
@@ -707,6 +731,15 @@ class AutofillMetrics {
     void LogSelectedMaskedServerCard();
     void LogDidFillSuggestion(int record_type);
     void LogTextFieldDidChange(const AutofillField& field);
+    void LogFieldFillStatus(const FormStructure& form,
+                            const AutofillField& field,
+                            QualityMetricType metric_type);
+    void LogFieldType(FormSignature form_signature,
+                      FieldSignature field_signature,
+                      QualityMetricPredictionSource prediction_source,
+                      QualityMetricType metric_type,
+                      ServerFieldType predicted_type,
+                      ServerFieldType actual_type);
     void LogFormSubmitted(AutofillFormSubmittedState state);
 
     // We initialize |url_| with the form's URL when we log the first form
@@ -723,6 +756,20 @@ class AutofillMetrics {
     ukm::SourceId source_id_ = -1;
     GURL url_;
     base::TimeTicks form_parsed_timestamp_;
+    base::TimeTicks pinned_timestamp_;
+  };
+
+  // Utility class to pin the timestamp used by the FormInteractionsUkmLogger
+  // while an instance of this class is in scope. Pinned timestamps cannot be
+  // nested.
+  class UkmTimestampPin {
+   public:
+    UkmTimestampPin(FormInteractionsUkmLogger* logger);
+    ~UkmTimestampPin();
+
+   private:
+    FormInteractionsUkmLogger* const logger_;
+    DISALLOW_IMPLICIT_CONSTRUCTORS(UkmTimestampPin);
   };
 
   // |upload_decision_metrics| is a bitmask of |CardUploadDecisionMetric|.
@@ -749,16 +796,19 @@ class AutofillMetrics {
   static void LogDeveloperEngagementMetric(DeveloperEngagementMetric metric);
 
   static void LogHeuristicPredictionQualityMetrics(
-      const ServerFieldTypeSet& possible_types,
-      ServerFieldType predicted_type,
+      FormInteractionsUkmLogger* form_interactions_ukm_logger,
+      const FormStructure& form,
+      const AutofillField& field,
       QualityMetricType metric_type);
   static void LogServerPredictionQualityMetrics(
-      const ServerFieldTypeSet& possible_types,
-      ServerFieldType predicted_type,
+      FormInteractionsUkmLogger* form_interactions_ukm_logger,
+      const FormStructure& form,
+      const AutofillField& field,
       QualityMetricType metric_type);
   static void LogOverallPredictionQualityMetrics(
-      const ServerFieldTypeSet& possible_types,
-      ServerFieldType predicted_type,
+      FormInteractionsUkmLogger* form_interactions_ukm_logger,
+      const FormStructure& form,
+      const AutofillField& field,
       QualityMetricType metric_type);
 
   static void LogServerQueryMetric(ServerQueryMetric metric);
