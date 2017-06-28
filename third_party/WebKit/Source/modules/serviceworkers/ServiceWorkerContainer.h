@@ -56,7 +56,7 @@ class WebServiceWorkerProvider;
 class MODULES_EXPORT ServiceWorkerContainer final
     : public EventTargetWithInlineData,
       public ContextLifecycleObserver,
-      public WebServiceWorkerProviderClient {
+      NON_EXPORTED_BASE(public WebServiceWorkerProviderClient) {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerContainer);
 

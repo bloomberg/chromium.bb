@@ -44,7 +44,7 @@ class WebString;
 
 // This class is the interface for embedders to talk to
 // ServiceWorkerContainer.
-class BLINK_PLATFORM_EXPORT WebServiceWorkerProviderClient {
+class WebServiceWorkerProviderClient {
  public:
   virtual ~WebServiceWorkerProviderClient() {}
 
