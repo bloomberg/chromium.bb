@@ -317,6 +317,31 @@ promise_test(t => {
   }, 'UseCounter on ServiceWorkerGlobalScope - an updated worker should not ' +
      'take over a previous counter');
 
+promise_test(t => {
+    const kFetchEventIsReload = 2032;  // from WebFeature.h
+    const kUrl = 'resources/use-isReload-worker.js';
+    const kScope = 'resources/usecounter-window.html?isReload';
+    let win;
+    return service_worker_unregister_and_register(t, kUrl, kScope)
+      .then(registration => {
+          add_result_callback(() => {
+              if (win) {
+                win.close();
+              }
+              registration.unregister();
+            });
+          return wait_for_state(t, registration.installing, 'activated');
+        })
+      .then(() => { return openWindow(kScope); })
+      .then(newWindow => {
+          win = newWindow;
+          return observeUseCounter(win, kFetchEventIsReload);
+        })
+      .then(() => {
+          assert_true(isUseCounted(win, kFetchEventIsReload));
+        });
+  }, 'FetchEvent.isReload is counted');
+
 // TODO(nhiroki): Test a case where ServiceWorker controls SharedWorker that is
 // connected from multiple windows. In such a case, API use on ServiceWorker
 // should be propagated to all connecting windows via SharedWorker.

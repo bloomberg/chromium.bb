@@ -28,7 +28,15 @@ class ServiceWorkerRegistrationHandleReference;
 struct ServiceWorkerProviderContextDeleter;
 class ThreadSafeSender;
 
-// An instance of this class holds information related to Document/Worker.
+// ServiceWorkerProviderContext has different roles depending on if it's for a
+// "controllee" (a Document or Worker execution context), or a "controller" (a
+// service worker execution context). The roles are described below.
+//
+// WebServiceWorkerProviderImpl has a ServiceWorkerProviderContext.  Because
+// WebServiceWorkerProviderImpl is used for both controllees and controllers,
+// this class allows WebServiceWorkerProviderImpl to implement different
+// behaviors for controllees vs controllers.
+//
 // Created and destructed on the main thread. Unless otherwise noted, all
 // methods are called on the main thread. The lifetime of this class is equals
 // to the corresponding ServiceWorkerNetworkProvider.
@@ -82,6 +90,7 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   int provider_id() const { return provider_id_; }
 
   ServiceWorkerHandleReference* controller();
+  void CountFeature(uint32_t feature);
   const std::set<uint32_t>& used_features() const { return used_features_; }
 
  private:
@@ -107,6 +116,7 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
 
   std::unique_ptr<Delegate> delegate_;
 
+  // Only used for controllee contexts.
   std::set<uint32_t> used_features_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerProviderContext);

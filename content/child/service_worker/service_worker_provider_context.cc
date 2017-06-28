@@ -212,6 +212,13 @@ ServiceWorkerHandleReference* ServiceWorkerProviderContext::controller() {
   return delegate_->controller();
 }
 
+void ServiceWorkerProviderContext::CountFeature(uint32_t feature) {
+  // ServiceWorkerProviderContext keeps track of features in order to propagate
+  // it to WebServiceWorkerProviderClient, which actually records the
+  // UseCounter.
+  used_features_.insert(feature);
+}
+
 void ServiceWorkerProviderContext::DestructOnMainThread() const {
   if (!main_thread_task_runner_->RunsTasksInCurrentSequence() &&
       main_thread_task_runner_->DeleteSoon(FROM_HERE, this)) {

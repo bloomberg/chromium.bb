@@ -1,5 +1,7 @@
 <!DOCTYPE html>
 <title>Service Worker: UseCounter</title>
 <script>
-window.opener.postMessage('LOADED', '*');
+window.addEventListener('load', e => {
+  window.opener.postMessage('LOADED', '*');
+});
 </script>
