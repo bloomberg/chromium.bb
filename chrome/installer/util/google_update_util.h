@@ -7,13 +7,6 @@
 
 namespace google_update {
 
-// If user-level Google Update is absent, calls the system-level
-// GoogleUpdateSetup.exe to install it, and waits until it finishes.
-// Returns true if already installed, installed successfully, or
-// if Google Update is not present at system-level.
-// Returns false if the installation fails.
-bool EnsureUserLevelGoogleUpdatePresent();
-
 // Tell Google Update that an uninstall has taken place.  This gives it a chance
 // to uninstall itself straight away if no more products are installed on the
 // system rather than waiting for the next time the scheduled task runs.
