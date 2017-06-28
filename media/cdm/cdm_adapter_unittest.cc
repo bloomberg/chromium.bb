@@ -152,14 +152,12 @@ class CdmAdapterTest : public testing::Test {
     if (expected_result == SUCCESS) {
       EXPECT_CALL(cdm_client_,
                   OnSessionKeysChangeCalled(session_id, new_key_expected));
+      EXPECT_CALL(cdm_client_,
+                  OnSessionExpirationUpdate(session_id, IsNullTime()));
     } else {
       EXPECT_CALL(cdm_client_, OnSessionKeysChangeCalled(_, _)).Times(0);
+      EXPECT_CALL(cdm_client_, OnSessionExpirationUpdate(_, _)).Times(0);
     }
-
-    // ClearKeyCdm always call OnSessionExpirationUpdate() for testing purpose.
-    EXPECT_CALL(cdm_client_,
-                OnSessionExpirationUpdate(session_id, IsNullTime()))
-        .Times(1);
 
     adapter_->UpdateSession(session_id,
                             std::vector<uint8_t>(key.begin(), key.end()),

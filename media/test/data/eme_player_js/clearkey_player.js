@@ -21,10 +21,11 @@ ClearKeyPlayer.prototype.registerEventListeners = function() {
 ClearKeyPlayer.prototype.onMessage = function(message) {
   Utils.timeLog('MediaKeySession onMessage', message);
 
-  var mediaKeySession = message.target;
-  var keyId = Utils.extractFirstLicenseKeyId(message.message);
-  var key = Utils.getDefaultKey(this.testConfig.forceInvalidResponse);
-  var jwkSet = Utils.createJWKData(keyId, key);
+  const mediaKeySession = message.target;
+  const keyId = Utils.extractFirstLicenseKeyId(message.message);
+  const key = Utils.getDefaultKey(this.testConfig.forceInvalidResponse);
+  const jwkSet = Utils.createJWKData(keyId, key);
+  const keySystem = this.testConfig.keySystem;
 
   // Number of milliseconds in 100 years, which is approximately
   // 100 * 365 * 24 * 60 * 60 * 1000.
@@ -40,7 +41,7 @@ ClearKeyPlayer.prototype.onMessage = function(message) {
     // - For other EXTERNAL_CLEARKEY variants, expiration is explicitly set to
     //   NaN.
     var expiration = mediaKeySession.expiration;
-    if (this.testConfig.keySystem == EXTERNAL_CLEARKEY_RENEWAL) {
+    if (keySystem == EXTERNAL_CLEARKEY_RENEWAL) {
       if (isNaN(expiration) || expiration != ECK_RENEWAL_EXPIRATION) {
         Utils.timeLog('Unexpected expiration: ', expiration);
         Utils.failTest(error, EME_UPDATE_FAILED);

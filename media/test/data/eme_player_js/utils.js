@@ -42,24 +42,24 @@ Utils.convertToUint8Array = function(msg) {
   return new Uint8Array(msg);
 };
 
+// Encodes data (Uint8Array) into base64url string. There is no '=' padding,
+// and the characters '-' and '_' must be used instead of '+' and '/',
+// respectively.
+Utils.base64urlEncode = function(data) {
+  var result = btoa(String.fromCharCode.apply(null, data));
+  return result.replace(/=+$/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+};
+
 Utils.createJWKData = function(keyId, key) {
   // JWK routines copied from third_party/WebKit/LayoutTests/media/
   //   encrypted-media/encrypted-media-utils.js
 
-  // Encodes data (Uint8Array) into base64url string. There is no '=' padding,
-  // and the characters '-' and '_' must be used instead of '+' and '/',
-  // respectively.
-  function base64urlEncode(data) {
-    var result = btoa(String.fromCharCode.apply(null, data));
-    return result.replace(/=+$/g, '').replace(/\+/g, "-").replace(/\//g, "_");
-  }
-
   // Creates a JWK from raw key ID and key.
   function createJWK(keyId, key) {
     var jwk = '{"kty":"oct","alg":"A128KW","kid":"';
-    jwk += base64urlEncode(keyId);
+    jwk += Utils.base64urlEncode(Utils.convertToUint8Array(keyId));
     jwk += '","k":"';
-    jwk += base64urlEncode(key);
+    jwk += Utils.base64urlEncode(Utils.convertToUint8Array(key));
     jwk += '"}';
     return jwk;
   }
@@ -77,6 +77,13 @@ Utils.createJWKData = function(keyId, key) {
   }
 
   return Utils.convertToUint8Array(createJWKSet(createJWK(keyId, key)));
+};
+
+Utils.createKeyIdsInitializationData = function(keyId) {
+  var initData = '{"kids":["';
+  initData += Utils.base64urlEncode(Utils.convertToUint8Array(keyId));
+  initData += '"]}';
+  return Utils.convertToUint8Array(initData);
 };
 
 Utils.extractFirstLicenseKeyId = function(message) {
@@ -97,7 +104,7 @@ Utils.extractFirstLicenseKeyId = function(message) {
     // Not valid JSON, so return message untouched as Uint8Array.
     return Utils.convertToUint8Array(message);
   }
-}
+};
 
 Utils.documentLog = function(log, success, time) {
   if (!docLogs)
@@ -268,4 +275,48 @@ Utils.timeLog = function(/**/) {
     logString += ' ' + arguments[i];
   }
   console.log(logString);
+};
+
+// Convert an event into a promise. When |event| is fired on |object|,
+// call |func| to handle the event and either resolve or reject the promise.
+Utils.waitForEvent = function(object, event, func) {
+  return new Promise(function(resolve, reject) {
+    object.addEventListener(event, function listener(e) {
+      object.removeEventListener(event, listener);
+      func(e, resolve, reject);
+    });
+  });
+};
+
+// Create a loadable session and return the session ID of it as a promise.
+Utils.createSessionToLoad = function(mediaKeys, request) {
+  // Create a persistent session and on the message event initialize it
+  // with key ID |KEY_ID| and key |KEY|. Then close the session, and resolve
+  // the promise providing the session ID.
+  const keySession = mediaKeys.createSession('persistent-license');
+  var promise =
+      Utils.waitForEvent(keySession, 'message', function(e, resolve, reject) {
+        const session = e.target;
+        return session.update(Utils.createJWKData(KEY_ID, KEY))
+            .then(function(result) {
+              Utils.timeLog(
+                  'Persistent session ' + session.sessionId + ' created');
+              return session.close();
+            })
+            .then(function(result) {
+              // Make sure the session is properly closed before continuing on.
+              return session.closed;
+            })
+            .then(function(result) {
+              Utils.timeLog(
+                  'Persistent session ' + session.sessionId +
+                  ' saved and closed');
+              resolve(session.sessionId);
+            });
+      });
+  return keySession
+      .generateRequest('keyids', Utils.createKeyIdsInitializationData(KEY_ID))
+      .then(function() {
+        return promise;
+      });
 };

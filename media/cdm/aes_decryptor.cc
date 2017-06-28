@@ -9,10 +9,12 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/time/time.h"
 #include "crypto/encryptor.h"
 #include "crypto/symmetric_key.h"
 #include "media/base/audio_decoder_config.h"
@@ -301,10 +303,8 @@ void AesDecryptor::CreateSessionAndGenerateRequest(
     const std::vector<uint8_t>& init_data,
     std::unique_ptr<NewSessionCdmPromise> promise) {
   std::string session_id = GenerateSessionId();
-  open_sessions_.insert(session_id);
-
-  // For now, the AesDecryptor does not care about |session_type|.
-  // TODO(jrummell): Validate |session_type|.
+  bool session_added = CreateSession(session_id, session_type);
+  DCHECK(session_added) << "Failed to add new session " << session_id;
 
   std::vector<uint8_t> message;
   std::vector<std::vector<uint8_t>> keys;
@@ -358,8 +358,10 @@ void AesDecryptor::CreateSessionAndGenerateRequest(
 void AesDecryptor::LoadSession(CdmSessionType session_type,
                                const std::string& session_id,
                                std::unique_ptr<NewSessionCdmPromise> promise) {
-  // TODO(xhwang): Change this to NOTREACHED() when blink checks for key systems
-  // that do not support loadSession. See http://crbug.com/342481
+  // LoadSession() is not supported directly, as there is no way to persist
+  // the session state. Should not be called as blink should not allow
+  // persistent sessions for ClearKey.
+  NOTREACHED();
   promise->reject(CdmPromise::NOT_SUPPORTED_ERROR, 0,
                   "LoadSession() is not supported.");
 }
@@ -379,45 +381,65 @@ void AesDecryptor::UpdateSession(const std::string& session_id,
     return;
   }
 
-  std::string key_string(response.begin(), response.end());
+  bool key_added = false;
+  std::string error_message;
+  if (!UpdateSessionWithJWK(session_id,
+                            std::string(response.begin(), response.end()),
+                            &key_added, &error_message)) {
+    promise->reject(CdmPromise::INVALID_ACCESS_ERROR, 0, error_message);
+    return;
+  }
+
+  FinishUpdate(session_id, key_added, std::move(promise));
+}
+
+bool AesDecryptor::UpdateSessionWithJWK(const std::string& session_id,
+                                        const std::string& json_web_key_set,
+                                        bool* key_added,
+                                        std::string* error_message) {
+  auto open_session = open_sessions_.find(session_id);
+  DCHECK(open_session != open_sessions_.end());
+  CdmSessionType session_type = open_session->second;
 
   KeyIdAndKeyPairs keys;
-  CdmSessionType session_type = CdmSessionType::TEMPORARY_SESSION;
-  if (!ExtractKeysFromJWKSet(key_string, &keys, &session_type)) {
-    promise->reject(CdmPromise::INVALID_ACCESS_ERROR, 0,
-                    "Response is not a valid JSON Web Key Set.");
-    return;
+  if (!ExtractKeysFromJWKSet(json_web_key_set, &keys, &session_type)) {
+    error_message->assign("Invalid JSON Web Key Set.");
+    return false;
   }
 
   // Make sure that at least one key was extracted.
   if (keys.empty()) {
-    promise->reject(CdmPromise::INVALID_ACCESS_ERROR, 0,
-                    "Response does not contain any keys.");
-    return;
+    error_message->assign("JSON Web Key Set does not contain any keys.");
+    return false;
   }
 
-  bool key_added = false;
+  bool local_key_added = false;
   for (KeyIdAndKeyPairs::iterator it = keys.begin(); it != keys.end(); ++it) {
     if (it->second.length() !=
         static_cast<size_t>(DecryptConfig::kDecryptionKeySize)) {
       DVLOG(1) << "Invalid key length: " << it->second.length();
-      promise->reject(CdmPromise::INVALID_ACCESS_ERROR, 0,
-                      "Invalid key length.");
-      return;
+      error_message->assign("Invalid key length.");
+      return false;
     }
 
     // If this key_id doesn't currently exist in this session,
     // a new key is added.
     if (!HasKey(session_id, it->first))
-      key_added = true;
+      local_key_added = true;
 
     if (!AddDecryptionKey(session_id, it->first, it->second)) {
-      promise->reject(CdmPromise::INVALID_ACCESS_ERROR, 0,
-                      "Unable to add key.");
-      return;
+      error_message->assign("Unable to add key.");
+      return false;
     }
   }
 
+  *key_added = local_key_added;
+  return true;
+}
+
+void AesDecryptor::FinishUpdate(const std::string& session_id,
+                                bool key_added,
+                                std::unique_ptr<SimpleCdmPromise> promise) {
   {
     base::AutoLock auto_lock(new_key_cb_lock_);
 
@@ -447,7 +469,7 @@ void AesDecryptor::CloseSession(const std::string& session_id,
   //
   // close() is called from a MediaKeySession object, so it is unlikely that
   // this method will be called with a previously unseen |session_id|.
-  std::set<std::string>::iterator it = open_sessions_.find(session_id);
+  auto it = open_sessions_.find(session_id);
   if (it == open_sessions_.end()) {
     promise->resolve();
     return;
@@ -469,7 +491,7 @@ void AesDecryptor::CloseSession(const std::string& session_id,
 // Runs the parallel steps from https://w3c.github.io/encrypted-media/#remove.
 void AesDecryptor::RemoveSession(const std::string& session_id,
                                  std::unique_ptr<SimpleCdmPromise> promise) {
-  std::set<std::string>::iterator it = open_sessions_.find(session_id);
+  auto it = open_sessions_.find(session_id);
   if (it == open_sessions_.end()) {
     // Session doesn't exist. Since this should only be called if the session
     // existed at one time, this must mean the session has been closed.
@@ -496,7 +518,18 @@ void AesDecryptor::RemoveSession(const std::string& session_id,
   //           "temporary"
   //              Continue with the following steps.
   //           "persistent-license"
-  //              (Not supported, so no need to do anything.)
+  //              Let message be a message containing or reflecting the record
+  //              of license destruction.
+  std::vector<uint8_t> message;
+  if (it->second != CdmSessionType::TEMPORARY_SESSION) {
+    // The license release message is specified in the spec:
+    // https://w3c.github.io/encrypted-media/#clear-key-release-format.
+    KeyIdList key_ids;
+    key_ids.reserve(keys_info.size());
+    for (const auto& key_info : keys_info)
+      key_ids.push_back(key_info->key_id);
+    CreateKeyIdsInitData(key_ids, &message);
+  }
 
   // 4.5. Queue a task to run the following steps:
   // 4.5.1 Run the Update Key Statuses algorithm on the session, providing
@@ -512,8 +545,9 @@ void AesDecryptor::RemoveSession(const std::string& session_id,
   // 4.5.4 Let message type be "license-release".
   // 4.5.5 If message is not null, run the Queue a "message" Event algorithm
   //       on the session, providing message type and message.
-  // (Not needed as message is only set for persistent licenses, and they're
-  //  not supported here.)
+  if (!message.empty())
+    session_message_cb_.Run(session_id, CdmMessageType::LICENSE_RELEASE,
+                            message);
 
   // 4.5.6. Resolve promise.
   promise->resolve();
@@ -615,6 +649,33 @@ void AesDecryptor::DeinitializeDecoder(StreamType stream_type) {
   // AesDecryptor does not support audio/video decoding, but since this can be
   // called any time after InitializeAudioDecoder/InitializeVideoDecoder,
   // nothing to be done here.
+}
+
+bool AesDecryptor::CreateSession(const std::string& session_id,
+                                 CdmSessionType session_type) {
+  auto it = open_sessions_.find(session_id);
+  if (it != open_sessions_.end())
+    return false;
+
+  auto result = open_sessions_.emplace(session_id, session_type);
+  return result.second;
+}
+
+std::string AesDecryptor::GetSessionStateAsJWK(const std::string& session_id) {
+  // Create the list of all available keys for this session.
+  KeyIdAndKeyPairs keys;
+  {
+    base::AutoLock auto_lock(key_map_lock_);
+    for (const auto& item : key_map_) {
+      if (item.second->Contains(session_id)) {
+        std::string key_id = item.first;
+        // |key| is the value used to create the decryption key.
+        std::string key = item.second->LatestDecryptionKey()->secret();
+        keys.push_back(std::make_pair(key_id, key));
+      }
+    }
+  }
+  return GenerateJWKSet(keys, CdmSessionType::PERSISTENT_LICENSE_SESSION);
 }
 
 bool AesDecryptor::AddDecryptionKey(const std::string& session_id,
