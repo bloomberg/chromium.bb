@@ -8,8 +8,8 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -82,7 +82,9 @@ class MockHostResolverProc : public net::HostResolverProc {
 class StaleHostResolverTest : public testing::Test {
  protected:
   StaleHostResolverTest()
-      : mock_proc_(new MockHostResolverProc()),
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::IO),
+        mock_proc_(new MockHostResolverProc()),
         resolver_(nullptr),
         resolve_pending_(false),
         resolve_complete_(false) {}
@@ -257,7 +259,8 @@ class StaleHostResolverTest : public testing::Test {
 
  private:
   // Needed for HostResolver to run HostResolverProc callbacks.
-  base::MessageLoopForIO message_loop_for_io_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+
   scoped_refptr<MockHostResolverProc> mock_proc_;
 
   net::HostResolver* resolver_;
@@ -441,8 +444,7 @@ TEST_F(StaleHostResolverTest, StaleUsability) {
   }
 }
 
-// Test is flaky. See https://crbug.com/737326.
-TEST_F(StaleHostResolverTest, DISABLED_CreatedByContext) {
+TEST_F(StaleHostResolverTest, CreatedByContext) {
   URLRequestContextConfig config(
       // Enable QUIC.
       true,
