@@ -112,12 +112,6 @@ class CORE_EXPORT NGInlineItemsBuilder {
 
   void AppendForcedBreak(const ComputedStyle*, LayoutObject*);
 
-  // Because newlines may be removed depends on following characters, newlines
-  // at the end of input string is not added to |text_| but instead
-  // |has_pending_newline_| flag is set.
-  // This function determines whether to add the newline or ignore.
-  void ProcessPendingNewline(const String&, const ComputedStyle*);
-
   void RemoveTrailingCollapsibleSpaceIfExists();
   void RemoveTrailingCollapsibleSpace(unsigned);
   void RemoveTrailingCollapsibleNewlineIfNeeded(const String&,
