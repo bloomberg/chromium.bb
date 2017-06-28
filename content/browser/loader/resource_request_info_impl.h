@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/supports_user_data.h"
+#include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/loader/resource_requester_info.h"
 #include "content/common/resource_request_body_impl.h"
 #include "content/common/url_loader.mojom.h"
@@ -200,6 +201,8 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
     on_transfer_ = on_transfer;
   }
 
+  void SetBlobHandles(BlobHandles blob_handles);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,
                            DeletedFilterDetached);
@@ -238,6 +241,9 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   scoped_refptr<ResourceRequestBodyImpl> body_;
   bool initiated_in_secure_context_;
   std::unique_ptr<NavigationUIData> navigation_ui_data_;
+
+  // Keeps upload body blobs alive for the duration of the request.
+  BlobHandles blob_handles_;
 
   // This callback is set by MojoAsyncResourceHandler to update its mojo binding
   // and remote endpoint. This callback will be removed once PlzNavigate is

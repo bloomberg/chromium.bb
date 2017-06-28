@@ -15,6 +15,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/supports_user_data.h"
 #include "base/task_runner.h"
 #include "base/task_scheduler/post_task.h"
 #include "content/browser/resource_context_impl.h"
@@ -24,7 +25,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_features.h"
 #include "storage/browser/blob/blob_data_builder.h"
-#include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_memory_controller.h"
 #include "storage/browser/blob/blob_registry_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
@@ -210,8 +210,11 @@ storage::BlobStorageContext* GetBlobStorageContext(
   return blob_storage_context->context();
 }
 
-bool AttachRequestBodyBlobDataHandles(ResourceRequestBodyImpl* body,
-                                      ResourceContext* resource_context) {
+bool GetBodyBlobDataHandles(ResourceRequestBodyImpl* body,
+                            ResourceContext* resource_context,
+                            BlobHandles* blob_handles) {
+  blob_handles->clear();
+
   storage::BlobStorageContext* blob_context = GetBlobStorageContext(
       GetChromeBlobStorageContextForResourceContext(resource_context));
 
@@ -224,10 +227,7 @@ bool AttachRequestBodyBlobDataHandles(ResourceRequestBodyImpl* body,
         blob_context->GetBlobDataFromUUID(element.blob_uuid());
     if (!handle)
       return false;
-    // Ensure the blob and any attached shareable files survive until
-    // upload completion. The |body| takes ownership of |handle|.
-    const void* key = handle.get();
-    body->SetUserData(key, std::move(handle));
+    blob_handles->push_back(std::move(handle));
   }
   return true;
 }

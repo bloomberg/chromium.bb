@@ -365,4 +365,8 @@ void ResourceRequestInfoImpl::ResetBody() {
   body_ = nullptr;
 }
 
+void ResourceRequestInfoImpl::SetBlobHandles(BlobHandles blob_handles) {
+  blob_handles_ = std::move(blob_handles);
+}
+
 }  // namespace content

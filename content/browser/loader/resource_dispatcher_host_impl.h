@@ -26,6 +26,7 @@
 #include "base/observer_list.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
+#include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/loader/global_routing_id.h"
 #include "content/browser/loader/resource_loader_delegate.h"
 #include "content/common/content_export.h"
@@ -593,6 +594,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       const net::HttpRequestHeaders& headers,
       mojom::URLLoaderAssociatedRequest mojo_request,
       mojom::URLLoaderClientPtr url_loader_client,
+      BlobHandles blob_handles,
       HeaderInterceptorResult interceptor_result);
 
   // Creates a ResourceHandler to be used by BeginRequest() for normal resource

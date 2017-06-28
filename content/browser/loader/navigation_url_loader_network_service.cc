@@ -125,8 +125,8 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
                                            : RESOURCE_TYPE_SUB_FRAME;
 
     if (resource_request_->request_body) {
-      AttachRequestBodyBlobDataHandles(resource_request_->request_body.get(),
-                                       resource_context_);
+      GetBodyBlobDataHandles(resource_request_->request_body.get(),
+                             resource_context_, &blob_handles_);
     }
 
     // Requests to WebUI scheme won't get redirected to/from other schemes
@@ -297,12 +297,14 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
 
   std::unique_ptr<ThrottlingURLLoader> url_loader_;
 
-  // This is referenced only on the UI thread.
-  base::WeakPtr<NavigationURLLoaderNetworkService> owner_;
+  BlobHandles blob_handles_;
 
   // Currently used by the AppCache loader to pass its factory to the
   // renderer which enables it to handle subresources.
   mojom::URLLoaderFactoryPtrInfo subresource_url_loader_factory_ptr_info_;
+
+  // This is referenced only on the UI thread.
+  base::WeakPtr<NavigationURLLoaderNetworkService> owner_;
 
   DISALLOW_COPY_AND_ASSIGN(URLLoaderRequestController);
 };
