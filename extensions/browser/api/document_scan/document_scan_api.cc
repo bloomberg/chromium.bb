@@ -5,6 +5,7 @@
 #include "extensions/browser/api/document_scan/document_scan_api.h"
 
 #include "base/stl_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_system.h"
 
@@ -23,14 +24,13 @@ namespace extensions {
 namespace api {
 
 DocumentScanScanFunction::DocumentScanScanFunction()
-    : document_scan_interface_(DocumentScanInterface::CreateInstance()) {
-}
+    : document_scan_interface_(DocumentScanInterface::CreateInstance()) {}
 
-DocumentScanScanFunction::~DocumentScanScanFunction() {
-}
+DocumentScanScanFunction::~DocumentScanScanFunction() {}
 
 bool DocumentScanScanFunction::Prepare() {
-  set_work_thread_id(BrowserThread::FILE);
+  set_work_task_runner(base::CreateSequencedTaskRunnerWithTraits(
+      {base::MayBlock(), base::TaskPriority::BACKGROUND}));
   params_ = document_scan::Scan::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
   return true;
