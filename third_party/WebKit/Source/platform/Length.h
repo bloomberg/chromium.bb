@@ -23,15 +23,9 @@
 #ifndef Length_h
 #define Length_h
 
-#include <cstring>
+#include "platform/LayoutUnit.h"
 #include "platform/PlatformExport.h"
-#include "platform/animation/AnimationUtilities.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/MathExtras.h"
-#include "platform/wtf/Vector.h"
 
 namespace blink {
 
@@ -270,14 +264,7 @@ class PLATFORM_EXPORT Length {
     if (from.IsZero() && IsZero())
       return *this;
 
-    LengthType result_type = GetType();
-    if (IsZero())
-      result_type = from.GetType();
-
-    float blended_value = blink::Blend(from.Value(), Value(), progress);
-    if (range == kValueRangeNonNegative)
-      blended_value = clampTo<float>(blended_value, 0);
-    return Length(blended_value, result_type);
+    return BlendSameTypes(from, progress, range);
   }
 
   float GetFloatValue() const {
@@ -297,6 +284,8 @@ class PLATFORM_EXPORT Length {
   }
 
   Length BlendMixedTypes(const Length& from, double progress, ValueRange) const;
+
+  Length BlendSameTypes(const Length& from, double progress, ValueRange) const;
 
   int CalculationHandle() const {
     DCHECK(IsCalculated());

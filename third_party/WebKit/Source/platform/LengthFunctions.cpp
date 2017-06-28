@@ -26,6 +26,8 @@
 #include "platform/LayoutUnit.h"
 #include "platform/LengthPoint.h"
 #include "platform/LengthSize.h"
+#include "platform/geometry/FloatPoint.h"
+#include "platform/geometry/FloatSize.h"
 
 namespace blink {
 

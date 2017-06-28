@@ -21,6 +21,8 @@
 
 #include "platform/transforms/TranslateTransformOperation.h"
 
+#include "platform/animation/AnimationUtilities.h"
+
 namespace blink {
 
 PassRefPtr<TransformOperation> TranslateTransformOperation::Blend(
