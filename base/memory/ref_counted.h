@@ -179,7 +179,7 @@ class BASE_EXPORT RefCountedThreadSafeBase {
 #endif
   }
 
-  mutable AtomicRefCount ref_count_ = 0;
+  mutable AtomicRefCount ref_count_{0};
 #if DCHECK_IS_ON()
   mutable bool needs_adopt_ref_ = false;
   mutable bool in_dtor_ = false;

@@ -10,7 +10,7 @@ namespace base {
 namespace {
 
 #if DCHECK_IS_ON()
-AtomicRefCount g_cross_thread_ref_count_access_allow_count = 0;
+AtomicRefCount g_cross_thread_ref_count_access_allow_count(0);
 #endif
 
 }  // namespace

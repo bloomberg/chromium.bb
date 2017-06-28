@@ -982,6 +982,11 @@ config("default_warnings") {
       # TODO(brucedawson): fix warnings, crbug.com/554200
       "/wd4312",
 
+      # C4324 warns when padding is added to fulfill alignas requirements,
+      # but can trigger in benign cases that are difficult to individually
+      # suppress.
+      "/wd4324",
+
       # C4351: new behavior: elements of array 'array' will be default
       #        initialized
       # This is a silly "warning" that basically just alerts you that the
