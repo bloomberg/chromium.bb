@@ -171,6 +171,40 @@ public class WebApkUtilsTest {
         Assert.assertNull(hostBrowser);
     }
 
+    /**
+     * Tests that {@link WebApkUtils#getHostBrowserPackageName(Context)} doesn't return the current
+     * host browser which is cached in the {@link WebApkUtils#sHostPackage} and uninstalled.
+     */
+    @Test
+    public void testDoesNotReturnTheCurrentHostBrowserAfterUninstall() {
+        String currentHostBrowser = BROWSER_INSTALLED_SUPPORTING_WEBAPKS;
+        mockInstallBrowsers(ANOTHER_BROWSER_INSTALLED_SUPPORTING_WEBAPKS);
+        setHostBrowserInMetadata(null);
+        setHostBrowserInSharedPreferences(currentHostBrowser);
+
+        String hostBrowser = WebApkUtils.getHostBrowserPackageName(mContext);
+        Assert.assertEquals(currentHostBrowser, hostBrowser);
+
+        uninstallBrowser(currentHostBrowser);
+        hostBrowser = WebApkUtils.getHostBrowserPackageName(mContext);
+        Assert.assertNotEquals(currentHostBrowser, hostBrowser);
+    }
+
+    /**
+     * Uninstall a browser. Note: this function only works for uninstalling the non default browser.
+     */
+    private void uninstallBrowser(String packageName) {
+        Intent intent = null;
+        try {
+            intent = Intent.parseUri("http://", Intent.URI_INTENT_SCHEME);
+        } catch (Exception e) {
+            Assert.fail();
+            return;
+        }
+        mPackageManager.removeResolveInfosForIntent(intent, packageName);
+        mPackageManager.removePackage(packageName);
+    }
+
     private static ResolveInfo newResolveInfo(String packageName) {
         ActivityInfo activityInfo = new ActivityInfo();
         activityInfo.packageName = packageName;

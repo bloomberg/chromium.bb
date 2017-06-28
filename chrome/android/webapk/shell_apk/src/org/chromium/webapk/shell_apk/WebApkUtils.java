@@ -38,11 +38,7 @@ public class WebApkUtils {
             Arrays.asList("com.google.android.apps.chrome", "com.android.chrome", "com.chrome.beta",
                     "com.chrome.dev", "com.chrome.canary"));
 
-    /**
-     * Caches the package name of the host browser. {@link sHostPackage} might refer to a browser
-     * which has been uninstalled. A notification can keep the WebAPK process alive after the host
-     * browser has been uninstalled.
-     */
+    /** Caches the package name of the host browser. */
     private static String sHostPackage;
 
     /** For testing only. */
@@ -81,7 +77,7 @@ public class WebApkUtils {
      * @return The package name. Returns null on an error.
      */
     public static String getHostBrowserPackageName(Context context) {
-        if (sHostPackage == null) {
+        if (sHostPackage == null || !isInstalled(context.getPackageManager(), sHostPackage)) {
             sHostPackage = getHostBrowserPackageNameInternal(context);
             if (sHostPackage != null) {
                 writeHostBrowserToSharedPref(context, sHostPackage);
@@ -89,6 +85,18 @@ public class WebApkUtils {
         }
 
         return sHostPackage;
+    }
+
+    /** Returns whether the application is installed. */
+    private static boolean isInstalled(PackageManager packageManager, String packageName) {
+        if (TextUtils.isEmpty(packageName)) return false;
+
+        try {
+            packageManager.getApplicationInfo(packageName, 0);
+        } catch (PackageManager.NameNotFoundException e) {
+            return false;
+        }
+        return true;
     }
 
     /** Returns the <meta-data> value in the Android Manifest for {@link key}. */
