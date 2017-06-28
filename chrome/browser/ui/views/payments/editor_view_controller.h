@@ -115,16 +115,21 @@ class EditorViewController : public PaymentRequestSheetController,
   // default focus within the custom view. |valid| should be set to the initial
   // validity state of the custom view. If a custom view requires model
   // validation, it should be tracked in |text_fields_| or |comboboxes_| (e.g.,
-  // by using CreateComboboxForField).
+  // by using CreateComboboxForField). |error_message| should be set to the
+  // error message for the whole custom view, if applicable. It's possible this
+  // message will only be shown in certain circumstances by the
+  // EditorViewController.
   virtual std::unique_ptr<views::View> CreateCustomFieldView(
       autofill::ServerFieldType type,
       views::View** focusable_field,
-      bool* valid);
+      bool* valid,
+      base::string16* error_message);
   // Create an extra view to go to the right of the field with |type|, which
   // can either be a textfield, combobox, or custom view.
   virtual std::unique_ptr<views::View> CreateExtraViewForField(
       autofill::ServerFieldType type);
-
+  // Returns whether the editor is editing an existing item.
+  virtual bool IsEditingExistingItem() = 0;
   // Returns the field definitions used to build the UI.
   virtual std::vector<EditorField> GetFieldDefinitions() = 0;
   virtual base::string16 GetInitialValueForType(
@@ -160,9 +165,12 @@ class EditorViewController : public PaymentRequestSheetController,
   views::View* GetFirstFocusedView() override;
 
   // Will create a combobox according to the |field| definition. Will also keep
-  // track of this field to populate the edited model on save.
+  // track of this field to populate the edited model on save. Fills
+  // |error_message| with an error message about this field's data, if
+  // appropriate.
   std::unique_ptr<ValidatingCombobox> CreateComboboxForField(
-      const EditorField& field);
+      const EditorField& field,
+      base::string16* error_message);
 
  private:
   // views::TextfieldController:
@@ -186,6 +194,9 @@ class EditorViewController : public PaymentRequestSheetController,
   // Returns the widest column width of across all extra views of a certain
   // |size| type.
   int ComputeWidestExtraViewWidth(EditorField::LengthHint size);
+
+  void AddOrUpdateErrorMessageForField(autofill::ServerFieldType type,
+                                       const base::string16& error_message);
 
   // Used to remember the association between the input field UI element and the
   // original field definition. The ValidatingTextfield* and ValidatingCombobox*

@@ -80,17 +80,25 @@ class ExpirationDateValidationDelegate : public ValidationDelegate {
         app_locale_(app_locale),
         initially_valid_(initially_valid) {}
 
-  bool IsValidTextfield(views::Textfield* textfield) override {
+  bool IsValidTextfield(views::Textfield* textfield,
+                        base::string16* error_message) override {
     NOTREACHED();
     return true;
   }
 
-  bool IsValidCombobox(views::Combobox* combobox) override {
+  bool IsValidCombobox(views::Combobox* combobox,
+                       base::string16* error_message) override {
     // View will have no parent if it's not been attached yet. Use initial
     // validity state.
     views::View* view_parent = combobox->parent();
-    if (!view_parent)
+    if (!view_parent) {
+      *error_message =
+          initially_valid_
+              ? base::string16()
+              : l10n_util::GetStringUTF16(
+                    IDS_PAYMENTS_VALIDATION_INVALID_CREDIT_CARD_EXPIRED);
       return initially_valid_;
+    }
 
     // Get the combined date from the month and year dropdowns.
     views::Combobox* month_combobox = static_cast<views::Combobox*>(
@@ -109,6 +117,10 @@ class ExpirationDateValidationDelegate : public ValidationDelegate {
     month_combobox->SetInvalid(is_expired);
     year_combobox->SetInvalid(is_expired);
 
+    *error_message =
+        is_expired ? l10n_util::GetStringUTF16(
+                         IDS_PAYMENTS_VALIDATION_INVALID_CREDIT_CARD_EXPIRED)
+                   : base::string16();
     return !is_expired;
   }
 
@@ -119,12 +131,10 @@ class ExpirationDateValidationDelegate : public ValidationDelegate {
   }
 
   bool ComboboxValueChanged(views::Combobox* combobox) override {
-    bool is_valid = IsValidCombobox(combobox);
+    base::string16 error_message;
+    bool is_valid = IsValidCombobox(combobox, &error_message);
     controller_->DisplayErrorMessageForField(
-        autofill::CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR,
-        is_valid ? base::string16()
-                 : l10n_util::GetStringUTF16(
-                       IDS_PAYMENTS_VALIDATION_INVALID_CREDIT_CARD_EXPIRED));
+        autofill::CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR, error_message);
     return is_valid;
   }
 
@@ -235,7 +245,8 @@ std::unique_ptr<views::View>
 CreditCardEditorViewController::CreateCustomFieldView(
     autofill::ServerFieldType type,
     views::View** focusable_field,
-    bool* valid) {
+    bool* valid,
+    base::string16* error_message) {
   DCHECK_EQ(type, autofill::CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR);
 
   std::unique_ptr<views::View> view = base::MakeUnique<views::View>();
@@ -268,7 +279,7 @@ CreditCardEditorViewController::CreateCustomFieldView(
         EditorField::LengthHint::HINT_SHORT,
         /*required=*/true, EditorField::ControlType::COMBOBOX};
     std::unique_ptr<ValidatingCombobox> month_combobox =
-        CreateComboboxForField(tmp_month);
+        CreateComboboxForField(tmp_month, error_message);
     *focusable_field = month_combobox.get();
     combobox_layout->AddView(month_combobox.release(), 1, 1,
                              views::GridLayout::FILL, views::GridLayout::FILL,
@@ -280,7 +291,7 @@ CreditCardEditorViewController::CreateCustomFieldView(
         EditorField::LengthHint::HINT_SHORT,
         /*required=*/true, EditorField::ControlType::COMBOBOX};
     std::unique_ptr<ValidatingCombobox> year_combobox =
-        CreateComboboxForField(tmp_year);
+        CreateComboboxForField(tmp_year, error_message);
     combobox_layout->AddView(year_combobox.release(), 1, 1,
                              views::GridLayout::FILL, views::GridLayout::FILL,
                              0, kInputFieldHeight);
@@ -314,6 +325,10 @@ CreditCardEditorViewController::CreateExtraViewForField(
   add_button->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   button_view->AddChildView(add_button.release());
   return button_view;
+}
+
+bool CreditCardEditorViewController::IsEditingExistingItem() {
+  return !!credit_card_to_edit_;
 }
 
 std::vector<EditorField> CreditCardEditorViewController::GetFieldDefinitions() {
@@ -612,13 +627,14 @@ CreditCardEditorViewController::CreditCardValidationDelegate::Format(
 }
 
 bool CreditCardEditorViewController::CreditCardValidationDelegate::
-    IsValidTextfield(views::Textfield* textfield) {
-  return ValidateValue(textfield->text(), nullptr);
+    IsValidTextfield(views::Textfield* textfield,
+                     base::string16* error_message) {
+  return ValidateValue(textfield->text(), error_message);
 }
 
 bool CreditCardEditorViewController::CreditCardValidationDelegate::
-    IsValidCombobox(views::Combobox* combobox) {
-  return ValidateCombobox(combobox, nullptr);
+    IsValidCombobox(views::Combobox* combobox, base::string16* error_message) {
+  return ValidateCombobox(combobox, error_message);
 }
 
 bool CreditCardEditorViewController::CreditCardValidationDelegate::

@@ -48,7 +48,8 @@ void ValidatingCombobox::OnComboboxModelChanged(
 }
 
 bool ValidatingCombobox::IsValid() {
-  return delegate_->IsValidCombobox(this);
+  base::string16 unused;
+  return delegate_->IsValidCombobox(this, &unused);
 }
 
 void ValidatingCombobox::Validate() {
