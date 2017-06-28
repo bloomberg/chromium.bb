@@ -1136,4 +1136,8 @@
     "label": "//third_party/WebKit/Source/platform/wtf:wtf_unittests",
     "type": "console_test_launcher",
   },
+  "zucchini_unittests": {
+    "label": "//zucchini:zucchini_unittests",
+    "type": "console_test_launcher",
+  },
 }
