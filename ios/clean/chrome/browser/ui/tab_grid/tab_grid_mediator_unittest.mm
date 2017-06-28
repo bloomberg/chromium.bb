@@ -5,6 +5,7 @@
 #import "ios/clean/chrome/browser/ui/tab_grid/tab_grid_mediator.h"
 
 #include "base/memory/ptr_util.h"
+#import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #include "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
@@ -37,6 +38,7 @@ class TabGridMediatorTest : public PlatformTest {
 
   void InsertWebStateAt(int index) {
     auto web_state = base::MakeUnique<web::TestWebState>();
+    TabIdTabHelper::CreateForWebState(web_state.get());
     web_state_list_->InsertWebState(index, std::move(web_state));
   }
 

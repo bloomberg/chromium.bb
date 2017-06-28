@@ -9,5 +9,6 @@
 #endif
 
 @implementation TabCollectionItem
+@synthesize tabID = _tabID;
 @synthesize title = _title;
 @end
