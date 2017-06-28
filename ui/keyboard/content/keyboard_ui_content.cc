@@ -209,11 +209,7 @@ void KeyboardUIContent::UpdateInsetsForWindow(aura::Window* window) {
 
 aura::Window* KeyboardUIContent::GetKeyboardWindow() {
   if (!keyboard_contents_) {
-    content::BrowserContext* context = browser_context();
-    keyboard_contents_.reset(content::WebContents::Create(
-        content::WebContents::CreateParams(context,
-            content::SiteInstance::CreateForURL(context,
-                                                GetVirtualKeyboardUrl()))));
+    keyboard_contents_.reset(CreateWebContents());
     keyboard_contents_->SetDelegate(new KeyboardContentsDelegate(this));
     SetupWebContents(keyboard_contents_.get());
     LoadContents(GetVirtualKeyboardUrl());
@@ -301,20 +297,16 @@ void KeyboardUIContent::SetupWebContents(content::WebContents* contents) {
 void KeyboardUIContent::OnWindowBoundsChanged(aura::Window* window,
                                               const gfx::Rect& old_bounds,
                                               const gfx::Rect& new_bounds) {
-  if (!shadow_) {
-    shadow_.reset(new wm::Shadow());
-    shadow_->Init(wm::ShadowElevation::LARGE);
-    shadow_->layer()->SetVisible(true);
-    DCHECK(keyboard_contents_->GetNativeView()->parent());
-    keyboard_contents_->GetNativeView()->parent()->layer()->Add(
-        shadow_->layer());
-  }
-
-  shadow_->SetContentBounds(new_bounds);
+  SetShadowAroundKeyboard();
 }
 
 void KeyboardUIContent::OnWindowDestroyed(aura::Window* window) {
   window->RemoveObserver(this);
+}
+
+void KeyboardUIContent::OnWindowParentChanged(aura::Window* window,
+                                              aura::Window* parent) {
+  SetShadowAroundKeyboard();
 }
 
 const aura::Window* KeyboardUIContent::GetKeyboardRootWindow() const {
@@ -322,6 +314,13 @@ const aura::Window* KeyboardUIContent::GetKeyboardRootWindow() const {
     return nullptr;
   }
   return keyboard_contents_->GetNativeView()->GetRootWindow();
+}
+
+content::WebContents* KeyboardUIContent::CreateWebContents() {
+  content::BrowserContext* context = browser_context();
+  return content::WebContents::Create(content::WebContents::CreateParams(
+      context,
+      content::SiteInstance::CreateForURL(context, GetVirtualKeyboardUrl())));
 }
 
 void KeyboardUIContent::LoadContents(const GURL& url) {
@@ -355,6 +354,21 @@ void KeyboardUIContent::AddBoundsChangedObserver(aura::Window* window) {
   aura::Window* target_window = window ? window->GetToplevelWindow() : nullptr;
   if (target_window)
     window_bounds_observer_->AddObservedWindow(target_window);
+}
+
+void KeyboardUIContent::SetShadowAroundKeyboard() {
+  aura::Window* contents_window = keyboard_contents_->GetNativeView();
+  if (!contents_window->parent())
+    return;
+
+  if (!shadow_) {
+    shadow_.reset(new wm::Shadow());
+    shadow_->Init(wm::ShadowElevation::LARGE);
+    shadow_->layer()->SetVisible(true);
+    contents_window->parent()->layer()->Add(shadow_->layer());
+  }
+
+  shadow_->SetContentBounds(contents_window->bounds());
 }
 
 }  // namespace keyboard
