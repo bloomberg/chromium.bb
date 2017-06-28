@@ -235,7 +235,8 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
       constraintEqualToAnchor:self.centerYAnchor
                      constant:kContainerOriginYOffset]
       .active = YES;
-  _signinPromoViewMediator = [[SigninPromoViewMediator alloc] init];
+  _signinPromoViewMediator =
+      [[SigninPromoViewMediator alloc] initWithBrowserState:_browserState];
   _signinPromoViewMediator.accessPoint =
       signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS;
   _signinPromoView.delegate = _signinPromoViewMediator;

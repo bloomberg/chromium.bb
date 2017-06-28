@@ -14,6 +14,18 @@
 @class SigninPromoViewConfigurator;
 @protocol SigninPromoViewConsumer;
 
+namespace ios {
+class ChromeBrowserState;
+
+// Enums to choose which histograms is used to record the user actions.
+enum class SigninPromoViewHistograms {
+  // No histograms.
+  None,
+  // Histograms: MobileSignInPromo.BookmarkManager.*.
+  Bookmarks,
+};
+}  // namespace ios
+
 // Class that monitors the available identities and creates
 // SigninPromoViewConfigurator. This class makes the link between the model and
 // the view. The consumer will receive notification if default identity is
@@ -30,7 +42,33 @@
 // Access point used to send user action metrics.
 @property(nonatomic) signin_metrics::AccessPoint accessPoint;
 
+// Preference key to count how many time the sign-in promo view is seen. The
+// value should point to static storage.
+@property(nonatomic) const char* displayedCountPreferenceKey;
+// Preference key, set to true when the sign-in promo view is seen too much. The
+// value should point to static storage.
+@property(nonatomic) const char* alreadySeenSigninViewPreferenceKey;
+// Histograms to use for the user actions.
+@property(nonatomic) ios::SigninPromoViewHistograms histograms;
+
+// See -[SigninPromoViewMediator initWithBrowserState:].
+- (instancetype)init NS_UNAVAILABLE;
+
+// Initialises with browser state.
+- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
+    NS_DESIGNATED_INITIALIZER;
+
 - (SigninPromoViewConfigurator*)createConfigurator;
+
+// Increments the "shown" counter used for histograms. Called when the signin
+// promo view is visible
+- (void)signinPromoViewVisible;
+
+// Called when the sign-in promo view is hidden.
+- (void)signinPromoViewHidden;
+
+// Called when the sign-in promo view is dismissed.
+- (void)signinPromoViewDismissed;
 
 @end
 

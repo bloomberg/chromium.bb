@@ -330,7 +330,8 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
       _hasRecordedSigninImpression = YES;
     }
     if (experimental_flags::IsSigninPromoEnabled()) {
-      _signinPromoViewMediator = [[SigninPromoViewMediator alloc] init];
+      _signinPromoViewMediator =
+          [[SigninPromoViewMediator alloc] initWithBrowserState:_browserState];
       _signinPromoViewMediator.consumer = self;
     }
     [model addItem:[self signInTextItem]

@@ -822,7 +822,8 @@ enum CellType {
       break;
     case CELL_OTHER_DEVICES_SIGNIN_PROMO: {
       if (!_signinPromoViewMediator) {
-        _signinPromoViewMediator = [[SigninPromoViewMediator alloc] init];
+        _signinPromoViewMediator = [[SigninPromoViewMediator alloc]
+            initWithBrowserState:_browserState];
         _signinPromoViewMediator.consumer = self;
         _signinPromoViewMediator.accessPoint =
             signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS;

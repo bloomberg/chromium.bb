@@ -22,6 +22,9 @@ class GURL;
 namespace bookmarks {
 class BookmarkNode;
 }  // namespace bookmarks
+namespace user_prefs {
+class PrefRegistrySyncable;
+}  // namespace user_prefs
 
 @protocol BookmarkCollectionViewDelegate<NSObject>
 
@@ -88,6 +91,9 @@ class BookmarkNode;
 @interface BookmarkCollectionView
     : UIView<BookmarkHomePrimaryView, BookmarkModelBridgeObserver>
 
+// Registers the feature preferences.
++ (void)registerBrowserStatePrefs:(user_prefs::PrefRegistrySyncable*)registry;
+
 // Designated initializer.
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
                                frame:(CGRect)frame;
@@ -106,6 +112,12 @@ class BookmarkNode;
 @property(nonatomic, assign, readonly) ios::ChromeBrowserState* browserState;
 @property(nonatomic, weak) id<BookmarkCollectionViewDelegate> delegate;
 @property(nonatomic, assign, readonly) const bookmarks::BookmarkNode* folder;
+
+// Called when the bookmark view becomes visible.
+- (void)wasShown;
+
+// Called when the bookmark view becomes hidden.
+- (void)wasHidden;
 
 #pragma mark - Editing
 

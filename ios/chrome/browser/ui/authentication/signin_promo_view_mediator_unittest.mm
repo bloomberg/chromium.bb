@@ -26,7 +26,7 @@ class SigninPromoViewMediatorTest : public PlatformTest {
  protected:
   void SetUp() override {
     consumer_ = OCMStrictProtocolMock(@protocol(SigninPromoViewConsumer));
-    mediator_ = [[SigninPromoViewMediator alloc] init];
+    mediator_ = [[SigninPromoViewMediator alloc] initWithBrowserState:nil];
     mediator_.consumer = consumer_;
 
     signin_promo_view_ = OCMStrictClassMock([SigninPromoView class]);
