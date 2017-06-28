@@ -15152,7 +15152,8 @@
             "winky-release",
             "wizpig-release",
             "wolf-release",
-            "zako-release"
+            "zako-release",
+            "zoombini-release"
         ],
         "sync_chrome": false
     },
@@ -29792,6 +29793,79 @@
         "overlays": "both",
         "useflags": [
             "chrome_internal"
+        ]
+    },
+    "zoombini-chromium-pfq": {
+        "_template": "chromium_pfq",
+        "boards": [
+            "zoombini"
+        ],
+        "buildslave_type": "baremetal",
+        "important": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "zoombini-compile-only-pre-cq": {
+        "_template": "compile_only_pre_cq",
+        "boards": [
+            "zoombini"
+        ]
+    },
+    "zoombini-full": {
+        "_template": "full",
+        "boards": [
+            "zoombini"
+        ],
+        "buildslave_type": "baremetal",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "zoombini-no-vmtest-pre-cq": {
+        "_template": "no_vmtest_pre_cq",
+        "boards": [
+            "zoombini"
+        ]
+    },
+    "zoombini-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "zoombini"
+        ],
+        "important": false,
+        "vm_tests": []
+    },
+    "zoombini-pre-cq": {
+        "_template": "pre_cq",
+        "boards": [
+            "zoombini"
+        ],
+        "buildslave_type": "baremetal"
+    },
+    "zoombini-release": {
+        "_template": "release",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "zoombini"
+        ],
+        "buildslave_type": "baremetal"
+    },
+    "zoombini-tot-chromium-pfq-informational": {
+        "_template": "chromium_pfq_informational",
+        "boards": [
+            "zoombini"
+        ],
+        "buildslave_type": "baremetal",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "zoombini-unittest-stress": {
+        "_template": "unittest_stress",
+        "boards": [
+            "zoombini"
         ]
     }
 }

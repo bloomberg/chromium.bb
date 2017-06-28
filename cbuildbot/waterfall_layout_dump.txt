@@ -238,6 +238,7 @@ wolf-release (gce_beefy)
 wolf-tot-paladin (gce_beefy)
 wooten-paladin (gce_beefy)
 zako-release (gce_beefy)
+zoombini-release (baremetal)
 
 == chromeos.infra ==
 config-updater (gce_wimpy)
@@ -992,4 +993,8 @@ zako-no-vmtest-pre-cq (gce_beefy)
 zako-payloads (gce_beefy)
 zako-pre-cq (baremetal)
 zako-unittest-stress (gce_beefy)
+zoombini-compile-only-pre-cq (gce_beefy)
+zoombini-no-vmtest-pre-cq (gce_beefy)
+zoombini-pre-cq (baremetal)
+zoombini-unittest-stress (gce_beefy)
 
