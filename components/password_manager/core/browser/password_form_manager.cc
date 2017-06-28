@@ -377,7 +377,6 @@ void PasswordFormManager::ProvisionallySave(
   }
   submitted_form_ = std::move(mutable_submitted_form);
   other_possible_username_action_ = action;
-  does_look_like_signup_form_ = credentials.does_look_like_signup_form;
 
   if (form_fetcher_->GetState() == FormFetcher::State::NOT_WAITING)
     CreatePendingCredentials();
@@ -1302,7 +1301,7 @@ void PasswordFormManager::SendVotesOnSave() {
   // to see if they are valid account creation forms.
   if (pending_credentials_.times_used == 0) {
     autofill::ServerFieldType password_type = autofill::PASSWORD;
-    if (does_look_like_signup_form_)
+    if (submitted_form_->does_look_like_signup_form)
       password_type = autofill::PROBABLY_ACCOUNT_CREATION_PASSWORD;
     UploadPasswordVote(pending_credentials_, password_type, std::string());
     if (username_correction_vote_) {
