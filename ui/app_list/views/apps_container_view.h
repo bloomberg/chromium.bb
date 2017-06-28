@@ -27,14 +27,14 @@ class AppListFolderView;
 class AppListMainView;
 class AppListModel;
 class FolderBackgroundView;
+class IndicatorChipView;
 
 // AppsContainerView contains a root level AppsGridView to render the root level
 // app items, and a AppListFolderView to render the app items inside the
 // active folder. Only one if them is visible to user at any time.
 class AppsContainerView : public AppListPage, public TopIconAnimationObserver {
  public:
-  AppsContainerView(AppListMainView* app_list_main_view,
-                    AppListModel* model);
+  AppsContainerView(AppListMainView* app_list_main_view, AppListModel* model);
   ~AppsContainerView() override;
 
   // Shows the active folder content specified by |folder_item|.
@@ -79,7 +79,7 @@ class AppsContainerView : public AppListPage, public TopIconAnimationObserver {
 
   AppsGridView* apps_grid_view() { return apps_grid_view_; }
   FolderBackgroundView* folder_background_view() {
-     return folder_background_view_;
+    return folder_background_view_;
   }
   AppListFolderView* app_list_folder_view() { return app_list_folder_view_; }
 
@@ -101,26 +101,30 @@ class AppsContainerView : public AppListPage, public TopIconAnimationObserver {
 
   // Creates the transitional views for animating the top items in the folder
   // when opening or closing a folder.
-  void CreateViewsForFolderTopItemsAnimation(
-      AppListFolderItem* active_folder, bool open_folder);
+  void CreateViewsForFolderTopItemsAnimation(AppListFolderItem* active_folder,
+                                             bool open_folder);
 
   void PrepareToShowApps(AppListFolderItem* folder_item);
 
-  AppsGridView* apps_grid_view_;                  // Owned by views hierarchy.
-  AppListFolderView* app_list_folder_view_;       // Owned by views hierarchy.
-  FolderBackgroundView* folder_background_view_;  // Owned by views hierarchy.
-  ShowState show_state_;
+  // The views below are owned by views hierarchy.
+  IndicatorChipView* all_apps_indicator_ = nullptr;
+  AppsGridView* apps_grid_view_ = nullptr;
+  AppListFolderView* app_list_folder_view_ = nullptr;
+  FolderBackgroundView* folder_background_view_ = nullptr;
+
+  ShowState show_state_ = SHOW_NONE;
 
   // The transitional views for animating the top items in folder
   // when opening or closing a folder.
   std::vector<views::View*> top_icon_views_;
 
-  size_t top_icon_animation_pending_count_;
+  size_t top_icon_animation_pending_count_ = 0u;
+
+  const bool is_fullscreen_app_list_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(AppsContainerView);
 };
 
 }  // namespace app_list
-
 
 #endif  // UI_APP_LIST_VIEWS_APPS_CONTAINER_VIEW_H_

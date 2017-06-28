@@ -318,8 +318,9 @@ void ContentsView::UpdateSearchBox(double progress,
                          gfx::Tween::LinearIntValueBetween(
                              progress, original_shadow.y(), target_shadow.y()));
     search_box->SetShadow(gfx::ShadowValue(
-        offset, gfx::Tween::LinearIntValueBetween(
-                    progress, original_shadow.blur(), target_shadow.blur()),
+        offset,
+        gfx::Tween::LinearIntValueBetween(progress, original_shadow.blur(),
+                                          target_shadow.blur()),
         gfx::Tween::ColorValueBetween(progress, original_shadow.color(),
                                       target_shadow.color())));
   }
@@ -366,10 +367,19 @@ int ContentsView::AddLauncherPage(AppListPage* view,
 }
 
 gfx::Rect ContentsView::GetDefaultSearchBoxBounds() const {
-  gfx::Rect search_box_bounds(0, 0, GetDefaultContentsSize().width(),
-                              GetSearchBoxView()->GetPreferredSize().height());
-  search_box_bounds.set_y(kSearchBoxPadding);
-  search_box_bounds.Inset(kSearchBoxPadding, 0);
+  gfx::Rect search_box_bounds;
+  if (is_fullscreen_app_list_enabled_) {
+    search_box_bounds.set_size(GetSearchBoxView()->GetPreferredSize());
+    search_box_bounds.Offset(
+        (GetDefaultContentsSize().width() - search_box_bounds.width()) / 2, 0);
+    search_box_bounds.set_y(kSearchBoxTopPadding);
+  } else {
+    search_box_bounds =
+        gfx::Rect(0, 0, GetDefaultContentsSize().width(),
+                  GetSearchBoxView()->GetPreferredSize().height());
+    search_box_bounds.set_y(kSearchBoxPadding);
+    search_box_bounds.Inset(kSearchBoxPadding, 0);
+  }
   return search_box_bounds;
 }
 
@@ -380,7 +390,10 @@ gfx::Rect ContentsView::GetSearchBoxBoundsForState(
 }
 
 gfx::Rect ContentsView::GetDefaultContentsBounds() const {
-  gfx::Rect bounds(gfx::Point(0, GetDefaultSearchBoxBounds().bottom()),
+  gfx::Rect bounds(gfx::Point(0, GetDefaultSearchBoxBounds().bottom() +
+                                     (is_fullscreen_app_list_enabled_
+                                          ? kSearchBoxBottomPadding
+                                          : 0)),
                    GetDefaultContentsSize());
   return bounds;
 }
@@ -474,8 +487,7 @@ const char* ContentsView::GetClassName() const {
   return "ContentsView";
 }
 
-void ContentsView::TotalPagesChanged() {
-}
+void ContentsView::TotalPagesChanged() {}
 
 void ContentsView::SelectedPageChanged(int old_selected, int new_selected) {
   if (old_selected >= 0)
@@ -485,8 +497,7 @@ void ContentsView::SelectedPageChanged(int old_selected, int new_selected) {
     app_list_pages_[new_selected]->OnShown();
 }
 
-void ContentsView::TransitionStarted() {
-}
+void ContentsView::TransitionStarted() {}
 
 void ContentsView::TransitionChanged() {
   UpdatePageBounds();

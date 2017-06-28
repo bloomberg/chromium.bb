@@ -90,7 +90,9 @@ const gfx::Tween::Type kFolderFadeOutTweenType = gfx::Tween::FAST_OUT_LINEAR_IN;
 
 // Preferred number of columns and rows in apps grid.
 const int kPreferredCols = 6;
+const int kPreferredColsFullscreen = 5;
 const int kPreferredRows = 4;
+const int kPreferredRowsFullscreen = 5;
 const int kGridIconDimension = 48;
 
 // The preferred app badge icon size.
@@ -122,6 +124,8 @@ const int kAppsGridPadding = 24;
 
 // The padding around the outside of the search box (top and sides).
 const int kSearchBoxPadding = 16;
+const int kSearchBoxTopPadding = 24;
+const int kSearchBoxBottomPadding = 21;
 
 // Max items allowed in a folder.
 size_t kMaxFolderItems = 16;
