@@ -7,6 +7,7 @@
 #include "base/android/build_info.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "media/audio/android/audio_manager_android.h"
@@ -38,8 +39,14 @@ OpenSLESOutputStream::OpenSLESOutputStream(AudioManagerAndroid* manager,
       muted_(false),
       volume_(1.0),
       samples_per_second_(params.sample_rate()),
-      have_float_output_(base::android::BuildInfo::GetInstance()->sdk_int() >=
-                         base::android::SDK_VERSION_LOLLIPOP),
+      have_float_output_(
+          base::android::BuildInfo::GetInstance()->sdk_int() >=
+              base::android::SDK_VERSION_LOLLIPOP &&
+          // See http://crbug.com/737188; still shipping Lollipop in 2017, so no
+          // idea if later phones will be glitch free; thus blacklist all.
+          !base::EqualsCaseInsensitiveASCII(
+              base::android::BuildInfo::GetInstance()->manufacturer(),
+              "vivo")),
       bytes_per_frame_(have_float_output_ ? params.channels() * sizeof(float)
                                           : params.GetBytesPerFrame()),
       buffer_size_bytes_(have_float_output_
