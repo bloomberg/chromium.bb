@@ -22,7 +22,6 @@
 #include "ash/system/tray/tri_view.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/accessibility/ax_node_data.h"
-#include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
@@ -37,8 +36,6 @@
 #include "ui/views/painter.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
-
-using chromeos::input_method::InputMethodManager;
 
 namespace ash {
 namespace {
@@ -296,14 +293,14 @@ void ImeListView::PrependKeyboardStatusRow() {
 }
 
 void ImeListView::HandleViewClicked(views::View* view) {
+  ImeController* ime_controller = Shell::Get()->ime_controller();
   std::map<views::View*, std::string>::const_iterator ime = ime_map_.find(view);
   if (ime != ime_map_.end()) {
     Shell::Get()->metrics()->RecordUserMetricsAction(
         UMA_STATUS_AREA_IME_SWITCH_MODE);
     std::string ime_id = ime->second;
     last_selected_item_id_ = ime_id;
-    InputMethodManager::Get()->GetActiveIMEState()->ChangeInputMethod(
-        ime_id, false /* show_message */);
+    ime_controller->SwitchImeById(ime_id, false /* show_message */);
     UMA_HISTOGRAM_ENUMERATION("InputMethod.ImeSwitch", ImeSwitchType::kTray,
                               ImeSwitchType::kCount);
 
@@ -314,7 +311,7 @@ void ImeListView::HandleViewClicked(views::View* view) {
       return;
     const std::string key = property->second;
     last_selected_item_id_ = key;
-    InputMethodManager::Get()->ActivateInputMethodMenuItem(key);
+    ime_controller->ActivateImeMenuItem(key);
   }
 
   if (!should_focus_ime_after_selection_with_keyboard_ ||

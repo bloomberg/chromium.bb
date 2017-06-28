@@ -37,8 +37,8 @@ class ImeControllerClient
   // ash::mojom::ImeControllerClient:
   void SwitchToNextIme() override;
   void SwitchToPreviousIme() override;
-  void SwitchImeById(const std::string& id) override;
-  void ActivateImeProperty(const std::string& key) override;
+  void SwitchImeById(const std::string& id, bool show_message) override;
+  void ActivateImeMenuItem(const std::string& key) override;
 
   // chromeos::input_method::InputMethodManager::Observer:
   void InputMethodChanged(chromeos::input_method::InputMethodManager* manager,

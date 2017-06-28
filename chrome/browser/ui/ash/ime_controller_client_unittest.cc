@@ -63,6 +63,7 @@ class TestInputMethodManager : public MockInputMethodManager {
                            bool show_message) override {
       ++change_input_method_count_;
       current_ime_id_ = input_method_id;
+      last_show_message_ = show_message;
     }
     std::unique_ptr<std::vector<InputMethodDescriptor>> GetActiveInputMethods()
         const override {
@@ -94,6 +95,7 @@ class TestInputMethodManager : public MockInputMethodManager {
     int next_input_method_count_ = 0;
     int previous_input_method_count_ = 0;
     int change_input_method_count_ = 0;
+    bool last_show_message_ = false;
 
    protected:
     friend base::RefCounted<InputMethodManager::State>;
@@ -118,6 +120,10 @@ class TestInputMethodManager : public MockInputMethodManager {
   void RemoveImeMenuObserver(ImeMenuObserver* observer) override {
     ++remove_menu_observer_count_;
   }
+  void ActivateInputMethodMenuItem(const std::string& key) override {
+    last_activate_menu_item_key_ = key;
+  }
+
   InputMethodUtil* GetInputMethodUtil() override { return &util_; }
   scoped_refptr<InputMethodManager::State> GetActiveIMEState() override {
     return state_;
@@ -128,6 +134,7 @@ class TestInputMethodManager : public MockInputMethodManager {
   int remove_observer_count_ = 0;
   int add_menu_observer_count_ = 0;
   int remove_menu_observer_count_ = 0;
+  std::string last_activate_menu_item_key_;
   FakeInputMethodDelegate delegate_;
   InputMethodUtil util_;
 
@@ -297,9 +304,21 @@ TEST_F(ImeControllerClientTest, SwitchToPreviousIme) {
 
 TEST_F(ImeControllerClientTest, SwitchImeById) {
   ImeControllerClient client(&input_method_manager_);
-  client.SwitchImeById("ime2");
+  client.SwitchImeById("id2", true /* show_message */);
   EXPECT_EQ(1, input_method_manager_.state_->change_input_method_count_);
-  EXPECT_EQ("ime2", input_method_manager_.state_->current_ime_id_);
+  EXPECT_EQ("id2", input_method_manager_.state_->current_ime_id_);
+  EXPECT_TRUE(input_method_manager_.state_->last_show_message_);
+
+  client.SwitchImeById("id1", false /* show_message */);
+  EXPECT_EQ(2, input_method_manager_.state_->change_input_method_count_);
+  EXPECT_EQ("id1", input_method_manager_.state_->current_ime_id_);
+  EXPECT_FALSE(input_method_manager_.state_->last_show_message_);
+}
+
+TEST_F(ImeControllerClientTest, ActivateImeMenuItem) {
+  ImeControllerClient client(&input_method_manager_);
+  client.ActivateImeMenuItem("key1");
+  EXPECT_EQ("key1", input_method_manager_.last_activate_menu_item_key_);
 }
 
 }  // namespace

@@ -41,11 +41,11 @@ interface ImeControllerClient {
   // Switches to an input method by |id|. Does nothing if the input method is
   // not installed. The ID is usually the output of a call like
   // chromeos::extension_ime_util::GetInputMethodIDByEngineID("xkb:jp::jpn"),
-  // see that function for details.
-  SwitchImeById(string id);
+  // see that function for details. Shows a bubble with the input method short
+  // name when |show_message| is true.
+  SwitchImeById(string id, bool show_message);
 
-  // Activates an input method property. These are settings that are provided by
-  // IME extensions that appear in the IME menu. Does nothing if the |key| does
-  // not exist.
-  ActivateImeProperty(string key);
+  // Activates an input method menu item. The |key| must be a value from the
+  // ImeMenuItems provided via RefreshIme. Does nothing if the |key| is invalid.
+  ActivateImeMenuItem(string key);
 };

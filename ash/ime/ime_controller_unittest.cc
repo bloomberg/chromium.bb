@@ -74,16 +74,18 @@ class TestImeControllerClient : public mojom::ImeControllerClient {
   // mojom::ImeControllerClient:
   void SwitchToNextIme() override { ++next_ime_count_; }
   void SwitchToPreviousIme() override { ++previous_ime_count_; }
-  void SwitchImeById(const std::string& id) override {
+  void SwitchImeById(const std::string& id, bool show_message) override {
     ++switch_ime_count_;
     last_switch_ime_id_ = id;
+    last_show_message_ = show_message;
   }
-  void ActivateImeProperty(const std::string& key) override {}
+  void ActivateImeMenuItem(const std::string& key) override {}
 
   int next_ime_count_ = 0;
   int previous_ime_count_ = 0;
   int switch_ime_count_ = 0;
   std::string last_switch_ime_id_;
+  bool last_show_message_ = false;
 
  private:
   mojo::Binding<mojom::ImeControllerClient> binding_;
@@ -175,6 +177,9 @@ TEST_F(ImeControllerTest, SwitchIme) {
   controller->SwitchToPreviousIme();
   EXPECT_EQ(0, client.previous_ime_count_);
 
+  controller->SwitchImeById("ime1", true /* show_message */);
+  EXPECT_EQ(0, client.switch_ime_count_);
+
   // After setting the client the requests are forwarded.
   controller->SetClient(client.CreateInterfacePtr());
   controller->SwitchToNextIme();
@@ -184,6 +189,18 @@ TEST_F(ImeControllerTest, SwitchIme) {
   controller->SwitchToPreviousIme();
   controller->FlushMojoForTesting();
   EXPECT_EQ(1, client.previous_ime_count_);
+
+  controller->SwitchImeById("ime1", true /* show_message */);
+  controller->FlushMojoForTesting();
+  EXPECT_EQ(1, client.switch_ime_count_);
+  EXPECT_EQ("ime1", client.last_switch_ime_id_);
+  EXPECT_TRUE(client.last_show_message_);
+
+  controller->SwitchImeById("ime2", false /* show_message */);
+  controller->FlushMojoForTesting();
+  EXPECT_EQ(2, client.switch_ime_count_);
+  EXPECT_EQ("ime2", client.last_switch_ime_id_);
+  EXPECT_FALSE(client.last_show_message_);
 }
 
 TEST_F(ImeControllerTest, SwitchImeWithAccelerator) {

@@ -43,6 +43,17 @@ void ImeController::SwitchToPreviousIme() {
     client_->SwitchToPreviousIme();
 }
 
+void ImeController::SwitchImeById(const std::string& ime_id,
+                                  bool show_message) {
+  if (client_)
+    client_->SwitchImeById(ime_id, show_message);
+}
+
+void ImeController::ActivateImeMenuItem(const std::string& key) {
+  if (client_)
+    client_->ActivateImeMenuItem(key);
+}
+
 bool ImeController::CanSwitchImeWithAccelerator(
     const ui::Accelerator& accelerator) const {
   // If none of the input methods associated with |accelerator| are active, we
@@ -67,7 +78,7 @@ void ImeController::SwitchImeWithAccelerator(
     ++it;
   if (it == candidate_ids.end())
     it = candidate_ids.begin();
-  client_->SwitchImeById(*it);
+  client_->SwitchImeById(*it, true /* show_message */);
 }
 
 // mojom::ImeController:

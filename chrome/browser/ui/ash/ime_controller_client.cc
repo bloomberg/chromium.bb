@@ -88,15 +88,16 @@ void ImeControllerClient::SwitchToPreviousIme() {
     state->SwitchToPreviousInputMethod();
 }
 
-void ImeControllerClient::SwitchImeById(const std::string& id) {
+void ImeControllerClient::SwitchImeById(const std::string& id,
+                                        bool show_message) {
   InputMethodManager::State* state =
       input_method_manager_->GetActiveIMEState().get();
   if (state)
-    state->ChangeInputMethod(id, true /* show_message */);
+    state->ChangeInputMethod(id, show_message);
 }
 
-void ImeControllerClient::ActivateImeProperty(const std::string& key) {
-  NOTIMPLEMENTED();
+void ImeControllerClient::ActivateImeMenuItem(const std::string& key) {
+  input_method_manager_->ActivateInputMethodMenuItem(key);
 }
 
 // chromeos::input_method::InputMethodManager::Observer:
