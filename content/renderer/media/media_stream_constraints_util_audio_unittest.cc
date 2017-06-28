@@ -326,10 +326,12 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, Unconstrained) {
 // echo cancellation constraints, which are not mapped 1:1 to output audio
 // processing properties).
 TEST_P(MediaStreamConstraintsUtilAudioTest, SingleBoolConstraint) {
-  const AudioSettingsBoolMembers kMainSettings = {
-      &AudioCaptureSettings::hotword_enabled,
-      &AudioCaptureSettings::disable_local_echo,
-      &AudioCaptureSettings::render_to_associated_sink};
+  // TODO(crbug.com/736309): Use braced initialization instead of push_back once
+  // clang has been fixed.
+  AudioSettingsBoolMembers kMainSettings;
+  kMainSettings.push_back(&AudioCaptureSettings::hotword_enabled);
+  kMainSettings.push_back(&AudioCaptureSettings::disable_local_echo);
+  kMainSettings.push_back(&AudioCaptureSettings::render_to_associated_sink);
 
   const std::vector<
       blink::BooleanConstraint blink::WebMediaTrackConstraintSet::*>
