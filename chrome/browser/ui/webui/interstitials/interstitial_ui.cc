@@ -137,8 +137,9 @@ SSLBlockingPage* CreateSSLBlockingPage(content::WebContents* web_contents) {
   if (net::GetValueForKeyInQuery(web_contents->GetURL(),
                                  "url",
                                  &url_param)) {
-    if (GURL(url_param).is_valid())
+    if (GURL(url_param).is_valid()) {
       request_url = GURL(url_param);
+    }
   }
   std::string overridable_param;
   if (net::GetValueForKeyInQuery(web_contents->GetURL(),
@@ -151,6 +152,12 @@ SSLBlockingPage* CreateSSLBlockingPage(content::WebContents* web_contents) {
                                  "strict_enforcement",
                                  &strict_enforcement_param)) {
     strict_enforcement = strict_enforcement_param == "1";
+  }
+  std::string type_param;
+  if (net::GetValueForKeyInQuery(web_contents->GetURL(), "type", &type_param)) {
+    if (type_param == "hpkp_failure") {
+      cert_error = net::ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN;
+    }
   }
   net::SSLInfo ssl_info;
   ssl_info.cert = ssl_info.unverified_cert = CreateFakeCert();
@@ -224,8 +231,9 @@ safe_browsing::SafeBrowsingBlockingPage* CreateSafeBrowsingBlockingPage(
   if (net::GetValueForKeyInQuery(web_contents->GetURL(),
                                  "url",
                                  &url_param)) {
-    if (GURL(url_param).is_valid())
+    if (GURL(url_param).is_valid()) {
       request_url = GURL(url_param);
+    }
   }
   GURL main_frame_url(request_url);
   // TODO(mattm): add flag to change main_frame_url or add dedicated flag to
