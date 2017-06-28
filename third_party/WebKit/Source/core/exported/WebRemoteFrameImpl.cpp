@@ -145,11 +145,6 @@ bool WebRemoteFrameImpl::IsViewSourceModeEnabled() const {
   return false;
 }
 
-void WebRemoteFrameImpl::SetReferrerForRequest(WebURLRequest&,
-                                               const WebURL& referrer) {
-  NOTREACHED();
-}
-
 WebAssociatedURLLoader* WebRemoteFrameImpl::CreateAssociatedURLLoader(
     const WebAssociatedURLLoaderOptions&) {
   NOTREACHED();

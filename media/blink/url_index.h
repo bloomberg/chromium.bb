@@ -18,7 +18,7 @@
 #include "media/blink/lru.h"
 #include "media/blink/media_blink_export.h"
 #include "media/blink/multibuffer.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "url/gurl.h"
 
 namespace media {
@@ -140,7 +140,7 @@ class MEDIA_BLINK_EXPORT UrlData : public base::RefCounted<UrlData> {
   virtual ResourceMultiBuffer* multibuffer();
 
   // Accessor
-  blink::WebFrame* frame() const { return frame_; }
+  blink::WebLocalFrame* frame() const { return frame_; }
 
   void AddBytesRead(int64_t b) { bytes_read_from_cache_ += b; }
   int64_t BytesReadFromCache() { return bytes_read_from_cache_; }
@@ -206,7 +206,7 @@ class MEDIA_BLINK_EXPORT UrlData : public base::RefCounted<UrlData> {
   ResourceMultiBuffer multibuffer_;
   std::vector<RedirectCB> redirect_callbacks_;
 
-  blink::WebFrame* frame_;
+  blink::WebLocalFrame* frame_;
 
   base::ThreadChecker thread_checker_;
   DISALLOW_COPY_AND_ASSIGN(UrlData);
@@ -215,8 +215,8 @@ class MEDIA_BLINK_EXPORT UrlData : public base::RefCounted<UrlData> {
 // The UrlIndex lets you look up UrlData instances by url.
 class MEDIA_BLINK_EXPORT UrlIndex {
  public:
-  explicit UrlIndex(blink::WebFrame*);
-  UrlIndex(blink::WebFrame*, int block_shift);
+  explicit UrlIndex(blink::WebLocalFrame*);
+  UrlIndex(blink::WebLocalFrame*, int block_shift);
   virtual ~UrlIndex();
 
   // Look up an UrlData in the index and return it. If none is found,
@@ -242,7 +242,7 @@ class MEDIA_BLINK_EXPORT UrlIndex {
   // TODO(hubbe): Add etag support.
   scoped_refptr<UrlData> TryInsert(const scoped_refptr<UrlData>& url_data);
 
-  blink::WebFrame* frame() const { return frame_; }
+  blink::WebLocalFrame* frame() const { return frame_; }
   int block_shift() const { return block_shift_; }
 
  private:
@@ -255,7 +255,7 @@ class MEDIA_BLINK_EXPORT UrlIndex {
                                             UrlData::CORSMode cors_mode);
 
   std::map<UrlData::KeyType, scoped_refptr<UrlData>> by_url_;
-  blink::WebFrame* frame_;
+  blink::WebLocalFrame* frame_;
   scoped_refptr<MultiBuffer::GlobalLRU> lru_;
 
   // log2 of block size in multibuffer cache. Defaults to kBlockSizeShift.

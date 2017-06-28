@@ -43,7 +43,6 @@ class CORE_EXPORT WebRemoteFrameImpl final
   void StopLoading() override;
   void EnableViewSourceMode(bool enable) override;
   bool IsViewSourceModeEnabled() const override;
-  void SetReferrerForRequest(WebURLRequest&, const WebURL& referrer) override;
   WebAssociatedURLLoader* CreateAssociatedURLLoader(
       const WebAssociatedURLLoaderOptions&) override;
   unsigned UnloadListenerCount() const override;

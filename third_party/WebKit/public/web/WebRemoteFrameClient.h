@@ -13,6 +13,7 @@
 namespace blink {
 enum class WebClientRedirectPolicy;
 enum class WebFrameLoadType;
+class WebURLRequest;
 struct WebRect;
 
 class WebRemoteFrameClient {
