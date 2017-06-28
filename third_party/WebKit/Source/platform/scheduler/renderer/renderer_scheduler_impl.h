@@ -101,6 +101,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
       InputEventState event_state) override;
   void DidHandleInputEventOnMainThread(const WebInputEvent& web_input_event,
                                        WebInputEventResult result) override;
+  base::TimeDelta MostRecentExpectedQueueingTime() override;
   void DidAnimateForInputOnCompositorThread() override;
   void SetRendererHidden(bool hidden) override;
   void SetRendererBackgrounded(bool backgrounded) override;
@@ -483,6 +484,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
     base::TimeTicks estimated_next_frame_begin;
     base::TimeTicks current_task_start_time;
     base::TimeTicks uma_last_queueing_time_report_window_start_time;
+    base::TimeDelta most_recent_expected_queueing_time;
     base::TimeDelta compositor_frame_interval;
     base::TimeDelta longest_jank_free_task_duration;
     base::Optional<base::TimeTicks> last_audio_state_change;

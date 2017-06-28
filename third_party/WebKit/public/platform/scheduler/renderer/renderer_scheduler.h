@@ -109,6 +109,10 @@ class BLINK_PLATFORM_EXPORT RendererScheduler : public ChildScheduler {
       const WebInputEvent& web_input_event,
       WebInputEventResult result) = 0;
 
+  // Returns the most recently reported expected queueing time, computed over
+  // the past 1 second window.
+  virtual base::TimeDelta MostRecentExpectedQueueingTime() = 0;
+
   // Tells the scheduler that the system is displaying an input animation (e.g.
   // a fling). Called by the compositor (impl) thread.
   virtual void DidAnimateForInputOnCompositorThread() = 0;

@@ -75,6 +75,67 @@ void AddLatencyInfoComponentIds(LatencyInfo* latency,
   }
 }
 
+void RecordEQTAccuracy(base::TimeDelta queueing_time,
+                       base::TimeDelta expected_queueing_time) {
+  float expected_queueing_time_ms = expected_queueing_time.InMillisecondsF();
+
+  if (expected_queueing_time_ms < 10) {
+    UMA_HISTOGRAM_TIMES(
+        "RendererScheduler."
+        "QueueingDurationWhenExpectedQueueingTime_LessThan.10ms",
+        queueing_time);
+  }
+
+  if (expected_queueing_time_ms < 150) {
+    UMA_HISTOGRAM_TIMES(
+        "RendererScheduler."
+        "QueueingDurationWhenExpectedQueueingTime_LessThan.150ms",
+        queueing_time);
+  }
+
+  if (expected_queueing_time_ms < 300) {
+    UMA_HISTOGRAM_TIMES(
+        "RendererScheduler."
+        "QueueingDurationWhenExpectedQueueingTime_LessThan.300ms",
+        queueing_time);
+  }
+
+  if (expected_queueing_time_ms < 450) {
+    UMA_HISTOGRAM_TIMES(
+        "RendererScheduler."
+        "QueueingDurationWhenExpectedQueueingTime_LessThan.450ms",
+        queueing_time);
+  }
+
+  if (expected_queueing_time_ms > 10) {
+    UMA_HISTOGRAM_TIMES(
+        "RendererScheduler."
+        "QueueingDurationWhenExpectedQueueingTime_GreaterThan.10ms",
+        queueing_time);
+  }
+
+  if (expected_queueing_time_ms > 150) {
+    UMA_HISTOGRAM_TIMES(
+        "RendererScheduler."
+        "QueueingDurationWhenExpectedQueueingTime_GreaterThan.150ms",
+        queueing_time);
+  }
+
+  if (expected_queueing_time_ms > 300) {
+    UMA_HISTOGRAM_TIMES(
+        "RendererScheduler."
+        "QueueingDurationWhenExpectedQueueingTime_GreaterThan.300ms",
+        queueing_time);
+  }
+
+  if (expected_queueing_time_ms > 450) {
+    UMA_HISTOGRAM_TIMES(
+        "RendererScheduler."
+        "QueueingDurationWhenExpectedQueueingTime_GreaterThan.450ms",
+        queueing_time);
+  }
+}
+
 }  // namespace
 
 RenderWidgetHostLatencyTracker::RenderWidgetHostLatencyTracker()
@@ -167,6 +228,10 @@ void RenderWidgetHostLatencyTracker::ComputeInputLatencyHistograms(
       UMA_HISTOGRAM_INPUT_LATENCY_MILLISECONDS(
           "Event.Latency.QueueingTime." + event_name + default_action_status,
           rwh_component, main_component);
+
+      RecordEQTAccuracy(
+          main_component.last_event_time - rwh_component.first_event_time,
+          latency.expected_queueing_time_on_dispatch());
     }
   }
 

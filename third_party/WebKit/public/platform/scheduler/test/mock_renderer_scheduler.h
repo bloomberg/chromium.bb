@@ -41,6 +41,7 @@ class MockRendererScheduler : public RendererScheduler {
                void(const WebInputEvent&, InputEventState));
   MOCK_METHOD2(DidHandleInputEventOnMainThread,
                void(const WebInputEvent&, WebInputEventResult));
+  MOCK_METHOD0(MostRecentExpectedQueueingTime, base::TimeDelta());
   MOCK_METHOD0(DidAnimateForInputOnCompositorThread, void());
   MOCK_METHOD1(SetRendererHidden, void(bool));
   MOCK_METHOD1(SetRendererBackgrounded, void(bool));

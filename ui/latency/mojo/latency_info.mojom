@@ -118,4 +118,5 @@ struct LatencyInfo {
   bool began;
   bool terminated;
   SourceEventType source_event_type;
+  mojo.common.mojom.TimeDelta expected_queueing_time_on_dispatch;
 };

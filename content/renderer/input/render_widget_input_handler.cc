@@ -247,6 +247,14 @@ void RenderWidgetInputHandler::HandleInputEvent(
 
   std::unique_ptr<cc::SwapPromiseMonitor> latency_info_swap_promise_monitor;
   ui::LatencyInfo swap_latency_info(latency_info);
+
+  if (RenderThreadImpl::current()) {
+    swap_latency_info.set_expected_queueing_time_on_dispatch(
+        RenderThreadImpl::current()
+            ->GetRendererScheduler()
+            ->MostRecentExpectedQueueingTime());
+  }
+
   swap_latency_info.AddLatencyNumber(
       ui::LatencyComponentType::INPUT_EVENT_LATENCY_RENDERER_MAIN_COMPONENT, 0,
       0);
