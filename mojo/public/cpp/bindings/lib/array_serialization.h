@@ -278,7 +278,8 @@ struct ArraySerializer<
         BelongsTo<typename MojomType::Element,
                   MojomTypeCategory::ASSOCIATED_INTERFACE |
                       MojomTypeCategory::ASSOCIATED_INTERFACE_REQUEST |
-                      MojomTypeCategory::HANDLE | MojomTypeCategory::INTERFACE |
+                      MojomTypeCategory::HANDLE |
+                      MojomTypeCategory::INTERFACE |
                       MojomTypeCategory::INTERFACE_REQUEST>::value>::type> {
   using UserType = typename std::remove_const<MaybeConstUserType>::type;
   using Data = typename MojomTypeTraits<MojomType>::Data;
@@ -288,10 +289,14 @@ struct ArraySerializer<
   static size_t GetSerializedSize(UserTypeIterator* input,
                                   SerializationContext* context) {
     size_t element_count = input->GetSize();
-    for (size_t i = 0; i < element_count; ++i) {
-      typename UserTypeIterator::GetNextResult next = input->GetNext();
-      size_t size = PrepareToSerialize<Element>(next, context);
-      DCHECK_EQ(size, 0u);
+    if (BelongsTo<Element,
+                  MojomTypeCategory::ASSOCIATED_INTERFACE |
+                      MojomTypeCategory::ASSOCIATED_INTERFACE_REQUEST>::value) {
+      for (size_t i = 0; i < element_count; ++i) {
+        typename UserTypeIterator::GetNextResult next = input->GetNext();
+        size_t size = PrepareToSerialize<Element>(next, context);
+        DCHECK_EQ(size, 0u);
+      }
     }
     return sizeof(Data) + Align(element_count * sizeof(typename Data::Element));
   }
@@ -504,9 +509,7 @@ struct Serializer<ArrayDataView<Element>, MaybeConstUserType> {
 
   static size_t PrepareToSerialize(MaybeConstUserType& input,
                                    SerializationContext* context) {
-    const bool is_null = CallIsNullIfExists<Traits>(input);
-    context->null_states.container().push_back(is_null);
-    if (is_null)
+    if (CallIsNullIfExists<Traits>(input))
       return 0;
     ArrayIterator<Traits, MaybeConstUserType> iterator(input);
     return Impl::GetSerializedSize(&iterator, context);
@@ -517,7 +520,7 @@ struct Serializer<ArrayDataView<Element>, MaybeConstUserType> {
                         Data** output,
                         const ContainerValidateParams* validate_params,
                         SerializationContext* context) {
-    if (!context->IsNextFieldNull()) {
+    if (!CallIsNullIfExists<Traits>(input)) {
       MOJO_INTERNAL_DLOG_SERIALIZATION_WARNING(
           validate_params->expected_num_elements != 0 &&
               Traits::GetSize(input) != validate_params->expected_num_elements,

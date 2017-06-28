@@ -161,8 +161,7 @@ bool {{proxy_name}}::{{method.name}}(
   mojo::Message message(
       {{message_name}},
       mojo::Message::kFlagIsSync | mojo::Message::kFlagExpectsResponse,
-      size, serialization_context.associated_endpoint_count,
-      serialization_context.handles.mutable_handles());
+      size, serialization_context.associated_endpoint_count);
   {{build_message(params_struct, "param_%s", params_description,
                   "&serialization_context", "&message")}}
 
@@ -189,8 +188,7 @@ void {{proxy_name}}::{{method.name}}(
   constexpr uint32_t kFlags = 0;
 {%- endif %}
   mojo::Message message({{message_name}}, kFlags, size,
-                        serialization_context.associated_endpoint_count,
-                        serialization_context.handles.mutable_handles());
+                        serialization_context.associated_endpoint_count);
   {{build_message(params_struct, "in_%s", params_description,
                   "&serialization_context", "&message")}}
 
@@ -272,8 +270,7 @@ void {{class_name}}_{{method.name}}_ProxyToResponder::Run(
   uint32_t flags = (is_sync_ ? mojo::Message::kFlagIsSync : 0) |
                    mojo::Message::kFlagIsResponse;
   mojo::Message message({{message_name}}, flags, size,
-                        serialization_context.associated_endpoint_count,
-                        serialization_context.handles.mutable_handles());
+                        serialization_context.associated_endpoint_count);
   {{build_message(response_params_struct, "in_%s", params_description,
                   "&serialization_context", "&message")}}
   message.set_request_id(request_id_);
