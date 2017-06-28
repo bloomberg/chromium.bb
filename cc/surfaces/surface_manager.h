@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
-#include <list>
 #include <memory>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -67,12 +67,15 @@ class CC_SURFACES_EXPORT SurfaceManager {
 
   void RequestSurfaceResolution(Surface* pending_surface);
 
-  std::unique_ptr<Surface> CreateSurface(
+  // Creates a Surface for the given CompositorFrameSinkSupport. The surface
+  // will be destroyed when DestroySurface is called, all of its destruction
+  // dependencies are satisfied, and it is not reachable from the root surface.
+  Surface* CreateSurface(
       base::WeakPtr<CompositorFrameSinkSupport> compositor_frame_sink_support,
       const SurfaceInfo& surface_info);
 
   // Destroy the Surface once a set of sequence numbers has been satisfied.
-  void DestroySurface(std::unique_ptr<Surface> surface);
+  void DestroySurface(const SurfaceId& surface_id);
 
   // Called when a surface has been added to the aggregated CompositorFrame
   // and will notify observers with SurfaceObserver::OnSurfaceWillDraw.
@@ -261,9 +264,8 @@ class CC_SURFACES_EXPORT SurfaceManager {
   // |surface_id| that were added before |surface_id| will also be removed.
   void RemoveTemporaryReference(const SurfaceId& surface_id, bool remove_range);
 
-  // Called when a surface is destroyed and it needs to be removed from the
-  // surface map.
-  void UnregisterSurface(const SurfaceId& surface_id);
+  // Removes the surface from the surface map and destroys it.
+  void DestroySurfaceInternal(const SurfaceId& surface_id);
 
 #if DCHECK_IS_ON()
   // Recursively prints surface references starting at |surface_id| to |str|.
@@ -272,20 +274,19 @@ class CC_SURFACES_EXPORT SurfaceManager {
                                      std::stringstream* str);
 #endif
 
+  // Returns true if |surface_id| is in the garbage collector's queue.
+  bool IsMarkedForDestruction(const SurfaceId& surface_id);
+
   // Use reference or sequence based lifetime management.
   LifetimeType lifetime_type_;
 
   FrameSinkManager framesink_manager_;
 
-  using SurfaceMap = std::unordered_map<SurfaceId, Surface*, SurfaceIdHash>;
-  SurfaceMap surface_map_;
+  base::flat_map<SurfaceId, std::unique_ptr<Surface>> surface_map_;
   base::ObserverList<SurfaceObserver> observer_list_;
   base::ThreadChecker thread_checker_;
 
-  // List of surfaces to be destroyed, along with what sequences they're still
-  // waiting on.
-  using SurfaceDestroyList = std::list<std::unique_ptr<Surface>>;
-  SurfaceDestroyList surfaces_to_destroy_;
+  base::flat_set<SurfaceId> surfaces_to_destroy_;
 
   // Set of SurfaceSequences that have been satisfied by a frame but not yet
   // waited on.

@@ -77,9 +77,11 @@ void CompositorFrameSinkSupport::SetBeginFrameSource(
 }
 
 void CompositorFrameSinkSupport::EvictCurrentSurface() {
-  if (!current_surface_)
+  if (!current_surface_id_.is_valid())
     return;
-  DestroyCurrentSurface();
+  SurfaceId to_destroy_surface_id = current_surface_id_;
+  current_surface_id_ = SurfaceId();
+  surface_manager_->DestroySurface(to_destroy_surface_id);
 }
 
 void CompositorFrameSinkSupport::SetNeedsBeginFrame(bool needs_begin_frame) {
@@ -96,8 +98,9 @@ void CompositorFrameSinkSupport::DidNotProduceFrame(const BeginFrameAck& ack) {
   // |has_damage| is not transmitted, but false by default.
   DCHECK(!ack.has_damage);
 
-  if (current_surface_)
-    surface_manager_->SurfaceModified(current_surface_->surface_id(), ack);
+  if (current_surface_id_.is_valid())
+    surface_manager_->SurfaceModified(current_surface_id_, ack);
+
   if (begin_frame_source_)
     begin_frame_source_->DidFinishFrame(this);
 }
@@ -127,12 +130,12 @@ bool CompositorFrameSinkSupport::SubmitCompositorFrame(
     }
   }
 
-  std::unique_ptr<Surface> surface;
-  bool create_new_surface =
-      (!current_surface_ ||
-       local_surface_id != current_surface_->surface_id().local_surface_id());
-  if (!create_new_surface) {
-    surface = std::move(current_surface_);
+  Surface* prev_surface =
+      surface_manager_->GetSurfaceForId(current_surface_id_);
+  Surface* current_surface = nullptr;
+  if (prev_surface &&
+      local_surface_id == current_surface_id_.local_surface_id()) {
+    current_surface = prev_surface;
   } else {
     SurfaceId surface_id(frame_sink_id_, local_surface_id);
     gfx::Size frame_size = frame.render_pass_list.back()->output_rect.size();
@@ -142,8 +145,7 @@ bool CompositorFrameSinkSupport::SubmitCompositorFrame(
     if (!surface_info.is_valid()) {
       TRACE_EVENT_INSTANT0("cc", "Invalid SurfaceInfo",
                            TRACE_EVENT_SCOPE_THREAD);
-      if (current_surface_)
-        DestroyCurrentSurface();
+      EvictCurrentSurface();
       ReturnedResourceArray resources;
       TransferableResource::ReturnResources(frame.resource_list, &resources);
       ReturnResources(resources);
@@ -151,12 +153,13 @@ bool CompositorFrameSinkSupport::SubmitCompositorFrame(
       return true;
     }
 
-    surface = CreateSurface(surface_info);
-    surface_manager_->SurfaceDamageExpected(surface->surface_id(),
+    current_surface = CreateSurface(surface_info);
+    current_surface_id_ = SurfaceId(frame_sink_id_, local_surface_id);
+    surface_manager_->SurfaceDamageExpected(current_surface->surface_id(),
                                             last_begin_frame_args_);
   }
 
-  bool result = surface->QueueFrame(
+  bool result = current_surface->QueueFrame(
       std::move(frame),
       base::Bind(&CompositorFrameSinkSupport::DidReceiveCompositorFrameAck,
                  weak_factory_.GetWeakPtr()),
@@ -164,15 +167,14 @@ bool CompositorFrameSinkSupport::SubmitCompositorFrame(
                           weak_factory_.GetWeakPtr()));
 
   if (!result) {
-    surface_manager_->DestroySurface(std::move(surface));
+    EvictCurrentSurface();
     return false;
   }
 
-  if (current_surface_) {
-    surface->SetPreviousFrameSurface(current_surface_.get());
-    DestroyCurrentSurface();
+  if (prev_surface && prev_surface != current_surface) {
+    current_surface->SetPreviousFrameSurface(prev_surface);
+    surface_manager_->DestroySurface(prev_surface->surface_id());
   }
-  current_surface_ = std::move(surface);
 
   if (begin_frame_source_)
     begin_frame_source_->DidFinishFrame(this);
@@ -288,9 +290,8 @@ void CompositorFrameSinkSupport::Init(SurfaceManager* surface_manager) {
 
 void CompositorFrameSinkSupport::OnBeginFrame(const BeginFrameArgs& args) {
   UpdateNeedsBeginFramesInternal();
-  if (current_surface_) {
-    surface_manager_->SurfaceDamageExpected(current_surface_->surface_id(),
-                                            args);
+  if (current_surface_id_.is_valid()) {
+    surface_manager_->SurfaceDamageExpected(current_surface_id_, args);
   }
   last_begin_frame_args_ = args;
   if (client_)
@@ -342,28 +343,29 @@ void CompositorFrameSinkSupport::UpdateNeedsBeginFramesInternal() {
     begin_frame_source_->RemoveObserver(this);
 }
 
-std::unique_ptr<Surface> CompositorFrameSinkSupport::CreateSurface(
+Surface* CompositorFrameSinkSupport::CreateSurface(
     const SurfaceInfo& surface_info) {
   seen_first_frame_activation_ = false;
   return surface_manager_->CreateSurface(weak_factory_.GetWeakPtr(),
                                          surface_info);
 }
 
-void CompositorFrameSinkSupport::DestroyCurrentSurface() {
-  surface_manager_->DestroySurface(std::move(current_surface_));
-}
-
 void CompositorFrameSinkSupport::RequestCopyOfSurface(
     std::unique_ptr<CopyOutputRequest> copy_request) {
-  if (!current_surface_)
+  if (!current_surface_id_.is_valid())
     return;
-
-  DCHECK(current_surface_->compositor_frame_sink_support().get() == this);
-  current_surface_->RequestCopyOfOutput(std::move(copy_request));
+  Surface* current_surface =
+      surface_manager_->GetSurfaceForId(current_surface_id_);
+  DCHECK_EQ(this, current_surface->compositor_frame_sink_support().get());
+  current_surface->RequestCopyOfOutput(std::move(copy_request));
   BeginFrameAck ack;
   ack.has_damage = true;
-  if (current_surface_->HasActiveFrame())
-    surface_manager_->SurfaceModified(current_surface_->surface_id(), ack);
+  if (current_surface->HasActiveFrame())
+    surface_manager_->SurfaceModified(current_surface->surface_id(), ack);
+}
+
+Surface* CompositorFrameSinkSupport::GetCurrentSurfaceForTesting() {
+  return surface_manager_->GetSurfaceForId(current_surface_id_);
 }
 
 }  // namespace cc
