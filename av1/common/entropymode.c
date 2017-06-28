@@ -1310,8 +1310,8 @@ static const aom_prob
 const aom_tree_index av1_motion_mode_tree[TREE_SIZE(MOTION_MODES)] = {
   -SIMPLE_TRANSLATION, -OBMC_CAUSAL
 };
-static const aom_prob default_motion_mode_prob[BLOCK_SIZES][MOTION_MODES - 1] =
-    {
+static const aom_cdf_prob
+    default_motion_mode_prob[BLOCK_SIZES][MOTION_MODES - 1] = {
 #if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
       { 255 }, { 255 }, { 255 },
 #endif
@@ -1343,6 +1343,34 @@ static const aom_prob default_motion_mode_prob[BLOCK_SIZES][MOTION_MODES - 1] =
 #endif  // CONFIG_EXT_PARTITION
     };
 #endif
+#if CONFIG_EC_ADAPT
+static const aom_cdf_prob
+    default_motion_mode_cdf[BLOCK_SIZES][CDF_SIZE(MOTION_MODES)] = {
+#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
+      { AOM_ICDF(255 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(255 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(255 * 128), AOM_ICDF(32768), 0 },
+#endif
+      { AOM_ICDF(255 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(255 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(255 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(151 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(153 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(144 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(178 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(165 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(160 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(207 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(195 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(168 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(244 * 128), AOM_ICDF(32768), 0 },
+#if CONFIG_EXT_PARTITION
+      { AOM_ICDF(252 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(252 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(252 * 128), AOM_ICDF(32768), 0 },
+#endif  // CONFIG_EXT_PARTITION
+    };
+#endif  // CONFIG_EC_ADAPT
 
 #elif !CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
 
@@ -1362,6 +1390,35 @@ static const aom_prob default_motion_mode_prob[BLOCK_SIZES][MOTION_MODES - 1] =
 #endif  // CONFIG_EXT_PARTITION
     };
 
+#if CONFIG_EC_ADAPT
+static const aom_cdf_prob
+    default_motion_mode_cdf[BLOCK_SIZES][CDF_SIZE(MOTION_MODES)] = {
+#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
+      { AOM_ICDF(255 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(255 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(255 * 128), AOM_ICDF(32768), 0 },
+#endif
+      { AOM_ICDF(255 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(255 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(255 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(151 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(153 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(144 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(178 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(165 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(160 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(207 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(195 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(168 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(244 * 128), AOM_ICDF(32768), 0 },
+#if CONFIG_EXT_PARTITION
+      { AOM_ICDF(252 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(252 * 128), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(252 * 128), AOM_ICDF(32768), 0 },
+#endif  // CONFIG_EXT_PARTITION
+    };
+#endif  // CONFIG_EC_ADAPT
+
 #elif CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
 
 const aom_tree_index av1_motion_mode_tree[TREE_SIZE(MOTION_MODES)] = {
@@ -1379,6 +1436,35 @@ static const aom_prob default_motion_mode_prob[BLOCK_SIZES][MOTION_MODES - 1] =
       { 252, 200 }, { 252, 200 }, { 252, 200 },
 #endif  // CONFIG_EXT_PARTITION
     };
+
+#if CONFIG_EC_ADAPT
+static const aom_cdf_prob
+    default_motion_mode_cdf[BLOCK_SIZES][CDF_SIZE(MOTION_MODES)] = {
+#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
+      { AOM_ICDF(32640), AOM_ICDF(32740), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(32640), AOM_ICDF(32740), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(32640), AOM_ICDF(32740), AOM_ICDF(32768), 0 },
+#endif
+      { AOM_ICDF(32640), AOM_ICDF(32740), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(32640), AOM_ICDF(32740), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(32640), AOM_ICDF(32740), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(19328), AOM_ICDF(29828), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(19584), AOM_ICDF(29884), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(18432), AOM_ICDF(29632), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(22784), AOM_ICDF(30584), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(21120), AOM_ICDF(30220), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(20480), AOM_ICDF(30080), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(26496), AOM_ICDF(31396), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(24960), AOM_ICDF(31060), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(21504), AOM_ICDF(30304), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(31232), AOM_ICDF(32432), AOM_ICDF(32768), 0 },
+#if CONFIG_EXT_PARTITION
+      { AOM_ICDF(32256), AOM_ICDF(32656), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(32256), AOM_ICDF(32656), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(32256), AOM_ICDF(32656), AOM_ICDF(32768), 0 },
+#endif
+    };
+#endif  // !CONFIG_EC_ADAPT
 
 // Probability for the case that only 1 additional motion mode is allowed
 static const aom_prob default_obmc_prob[BLOCK_SIZES] = {
@@ -4930,6 +5016,9 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->motion_mode_prob, default_motion_mode_prob);
 #if CONFIG_NCOBMC_ADAPT_WEIGHT && CONFIG_MOTION_VAR
   av1_copy(fc->ncobmc_mode_prob, default_ncobmc_mode_prob);
+#endif
+#if CONFIG_EC_ADAPT
+  av1_copy(fc->motion_mode_cdf, default_motion_mode_cdf);
 #endif
 #if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
   av1_copy(fc->obmc_prob, default_obmc_prob);

@@ -116,7 +116,9 @@ static struct av1_token compound_type_encodings[COMPOUND_TYPES];
 #endif  // CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
 #endif  // CONFIG_EXT_INTER
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
+#if !CONFIG_EC_ADAPT
 static struct av1_token motion_mode_encodings[MOTION_MODES];
+#endif
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
 static struct av1_token ncobmc_mode_encodings[MAX_NCOBMC_MODES];
 #endif
@@ -172,7 +174,9 @@ void av1_encode_token_init(void) {
 #endif  // CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
 #endif  // CONFIG_EXT_INTER
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
+#if !CONFIG_EC_ADAPT
   av1_tokens_from_tree(motion_mode_encodings, av1_motion_mode_tree);
+#endif
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
   av1_tokens_from_tree(ncobmc_mode_encodings, av1_ncobmc_mode_tree);
 #endif
@@ -351,8 +355,7 @@ static void encode_unsigned_max(struct aom_write_bit_buffer *wb, int data,
   aom_wb_write_literal(wb, data, get_unsigned_bits(max));
 }
 
-#if !CONFIG_EC_ADAPT || \
-    (CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION || CONFIG_EXT_INTER)
+#if !CONFIG_EC_ADAPT || CONFIG_NCOBMC_ADAPT_WEIGHT || CONFIG_COMPOUND_SINGLEREF
 static void prob_diff_update(const aom_tree_index *tree,
                              aom_prob probs[/*n - 1*/],
                              const unsigned int counts[/* n */], int n,
@@ -612,7 +615,7 @@ static void write_is_inter(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 static void write_motion_mode(const AV1_COMMON *cm, MACROBLOCKD *xd,
                               const MODE_INFO *mi, aom_writer *w) {
   const MB_MODE_INFO *mbmi = &mi->mbmi;
-#if !CONFIG_NEW_MULTISYMBOL
+#if !CONFIG_EC_ADAPT
   (void)xd;
 #endif
 
@@ -642,9 +645,15 @@ static void write_motion_mode(const AV1_COMMON *cm, MACROBLOCKD *xd,
 #endif
   } else {
 #endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
-    av1_write_token(w, av1_motion_mode_tree,
-                    cm->fc->motion_mode_prob[mbmi->sb_type],
-                    &motion_mode_encodings[mbmi->motion_mode]);
+#if CONFIG_EC_ADAPT
+    aom_write_symbol(w, mbmi->motion_mode,
+                     xd->tile_ctx->motion_mode_cdf[mbmi->sb_type],
+                     MOTION_MODES);
+#else
+  av1_write_token(w, av1_motion_mode_tree,
+                  cm->fc->motion_mode_prob[mbmi->sb_type],
+                  &motion_mode_encodings[mbmi->motion_mode]);
+#endif
 #if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
   }
 #endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
@@ -5022,6 +5031,11 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
 #else
   const int probwt = 1;
 #endif
+#if CONFIG_EC_ADAPT
+  (void)probwt;
+  (void)i;
+  (void)fc;
+#endif
 
 #if CONFIG_ANS
   int header_size;
@@ -5193,9 +5207,11 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
 #endif  // CONFIG_EXT_INTER
 
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
+#if !CONFIG_EC_ADAPT
     for (i = BLOCK_8X8; i < BLOCK_SIZES; ++i)
       prob_diff_update(av1_motion_mode_tree, fc->motion_mode_prob[i],
                        counts->motion_mode[i], MOTION_MODES, probwt, header_bc);
+#endif
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
     for (i = ADAPT_OVERLAP_BLOCK_8X8; i < ADAPT_OVERLAP_BLOCKS; ++i) {
       prob_diff_update(av1_ncobmc_mode_tree, fc->ncobmc_mode_prob[i],
@@ -5204,10 +5220,11 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
     }
 #endif
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
+
 #if !CONFIG_EC_ADAPT
     if (cm->interp_filter == SWITCHABLE)
       update_switchable_interp_probs(cm, header_bc, counts);
-#endif
+#endif  // !CONFIG_EC_ADAPT
 
 #if !CONFIG_NEW_MULTISYMBOL
     for (i = 0; i < INTRA_INTER_CONTEXTS; i++)

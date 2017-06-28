@@ -322,6 +322,10 @@ static void read_drl_idx(FRAME_CONTEXT *ec_ctx, MACROBLOCKD *xd,
 static MOTION_MODE read_motion_mode(AV1_COMMON *cm, MACROBLOCKD *xd,
                                     MODE_INFO *mi, aom_reader *r) {
   MB_MODE_INFO *mbmi = &mi->mbmi;
+#if CONFIG_NEW_MULTISYMBOL
+  (void)cm;
+#endif
+
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
   const MOTION_MODE last_motion_mode_allowed =
       motion_mode_allowed_wrapper(0,
@@ -352,9 +356,15 @@ static MOTION_MODE read_motion_mode(AV1_COMMON *cm, MACROBLOCKD *xd,
     return (MOTION_MODE)(SIMPLE_TRANSLATION + motion_mode);
   } else {
 #endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
+#if CONFIG_EC_ADAPT
     motion_mode =
-        aom_read_tree(r, av1_motion_mode_tree,
-                      cm->fc->motion_mode_prob[mbmi->sb_type], ACCT_STR);
+        aom_read_symbol(r, xd->tile_ctx->motion_mode_cdf[mbmi->sb_type],
+                        MOTION_MODES, ACCT_STR);
+#else
+  motion_mode =
+      aom_read_tree(r, av1_motion_mode_tree,
+                    cm->fc->motion_mode_prob[mbmi->sb_type], ACCT_STR);
+#endif
     if (counts) ++counts->motion_mode[mbmi->sb_type][motion_mode];
     return (MOTION_MODE)(SIMPLE_TRANSLATION + motion_mode);
 #if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION

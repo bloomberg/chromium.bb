@@ -5004,8 +5004,7 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
   FRAME_CONTEXT *const fc = cm->fc;
   aom_reader r;
   int i;
-#if !CONFIG_EC_ADAPT || \
-    (CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION || CONFIG_EXT_INTER)
+#if !CONFIG_EC_ADAPT
   int j;
 #endif
 
@@ -5183,12 +5182,14 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 #endif  // !CONFIG_EC_ADAPT && (CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE)
 #endif  // CONFIG_EXT_INTER
 
+#if !CONFIG_EC_ADAPT
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
     for (i = BLOCK_8X8; i < BLOCK_SIZES; ++i) {
       for (j = 0; j < MOTION_MODES - 1; ++j)
         av1_diff_update_prob(&r, &fc->motion_mode_prob[i][j], ACCT_STR);
     }
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
+#endif  // !CONFIG_EC_ADAPT
 
 #if CONFIG_NCOBMC_ADAPT_WEIGHT && CONFIG_MOTION_VAR
     for (i = 0; i < ADAPT_OVERLAP_BLOCKS; ++i) {
@@ -5199,7 +5200,7 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 
 #if !CONFIG_EC_ADAPT
     if (cm->interp_filter == SWITCHABLE) read_switchable_interp_probs(fc, &r);
-#endif
+#endif  // !CONFIG_EC_ADAPT
 #if !CONFIG_NEW_MULTISYMBOL
     for (i = 0; i < INTRA_INTER_CONTEXTS; i++)
       av1_diff_update_prob(&r, &fc->intra_inter_prob[i], ACCT_STR);
