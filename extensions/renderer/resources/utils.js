@@ -3,10 +3,7 @@
 // found in the LICENSE file.
 
 var nativeDeepCopy = requireNative('utils').deepCopy;
-var schemaRegistry = requireNative('schema_registry');
-var CHECK = requireNative('logging').CHECK;
 var DCHECK = requireNative('logging').DCHECK;
-var WARNING = requireNative('logging').WARNING;
 
 /**
  * An object forEach. Calls |f| with each (key, value) pair of |obj|, using
@@ -41,26 +38,6 @@ function lookup(array_of_dictionaries, field, value) {
     throw new Error("Failed lookup of field '" + field + "' with value '" +
                     value + "'");
   }
-}
-
-function loadTypeSchema(typeName, defaultSchema) {
-  var parts = $String.split(typeName, '.');
-  if (parts.length == 1) {
-    if (defaultSchema == null) {
-      WARNING('Trying to reference "' + typeName + '" ' +
-              'with neither namespace nor default schema.');
-      return null;
-    }
-    var types = defaultSchema.types;
-  } else {
-    var schemaName = $Array.join($Array.slice(parts, 0, parts.length - 1), '.');
-    var types = schemaRegistry.GetSchema(schemaName).types;
-  }
-  for (var i = 0; i < types.length; ++i) {
-    if (types[i].id == typeName)
-      return types[i];
-  }
-  return null;
 }
 
 /**
@@ -230,7 +207,6 @@ function promise(func) {
 }
 
 exports.$set('forEach', forEach);
-exports.$set('loadTypeSchema', loadTypeSchema);
 exports.$set('lookup', lookup);
 exports.$set('defineProperty', defineProperty);
 exports.$set('expose', expose);

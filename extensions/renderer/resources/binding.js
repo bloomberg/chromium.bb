@@ -9,12 +9,12 @@ var forEach = require('utils').forEach;
 var GetAvailability = requireNative('v8_context').GetAvailability;
 var exceptionHandler = require('uncaught_exception_handler');
 var lastError = require('lastError');
+var loadTypeSchema = require('json_schema').loadTypeSchema;
 var logActivity = requireNative('activityLogger');
 var logging = requireNative('logging');
 var process = requireNative('process');
 var schemaRegistry = requireNative('schema_registry');
 var schemaUtils = require('schemaUtils');
-var utils = require('utils');
 var sendRequestHandler = require('sendRequest');
 
 var contextType = process.GetContextType();
@@ -510,7 +510,7 @@ Binding.prototype = {
             value = value === 'true';
           } else if (propertyDef['$ref']) {
             var ref = propertyDef['$ref'];
-            var type = utils.loadTypeSchema(propertyDef['$ref'], schema);
+            var type = loadTypeSchema(propertyDef['$ref'], schema);
             logging.CHECK(type, 'Schema for $ref type ' + ref + ' not found');
             var constructor = createCustomType(type);
             var args = value;

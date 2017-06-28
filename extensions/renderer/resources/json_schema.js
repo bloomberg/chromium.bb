@@ -40,9 +40,30 @@
 
 var utils = require('utils');
 var loggingNative = requireNative('logging');
-var getObjectType = requireNative('schema_registry').GetObjectType;
+var schemaRegistry = requireNative('schema_registry');
 var CHECK = loggingNative.CHECK;
 var DCHECK = loggingNative.DCHECK;
+var WARNING = loggingNative.WARNING;
+
+function loadTypeSchema(typeName, defaultSchema) {
+  var parts = $String.split(typeName, '.');
+  if (parts.length == 1) {
+    if (defaultSchema == null) {
+      WARNING('Trying to reference "' + typeName + '" ' +
+              'with neither namespace nor default schema.');
+      return null;
+    }
+    var types = defaultSchema.types;
+  } else {
+    var schemaName = $Array.join($Array.slice(parts, 0, parts.length - 1), '.');
+    var types = schemaRegistry.GetSchema(schemaName).types;
+  }
+  for (var i = 0; i < types.length; ++i) {
+    if (types[i].id == typeName)
+      return types[i];
+  }
+  return null;
+}
 
 function isInstanceOfClass(instance, className) {
   while ((instance = instance.__proto__)) {
@@ -139,7 +160,7 @@ utils.defineProperty(JSONSchemaValidator, 'getType', function(value) {
   // C++.
   var s = typeof value;
   if (s === 'object')
-    return value === null ? 'null' : getObjectType(value);
+    return value === null ? 'null' : schemaRegistry.GetObjectType(value);
   if (s === 'number')
     return value % 1 === 0 ? 'integer' : 'number';
   return s;
@@ -190,7 +211,7 @@ JSONSchemaValidator.prototype.getAllTypesForSchema = function(schema) {
 
 JSONSchemaValidator.prototype.getOrAddType = function(typeName) {
   if (!this.types[typeName])
-    this.types[typeName] = utils.loadTypeSchema(typeName);
+    this.types[typeName] = loadTypeSchema(typeName);
   return this.types[typeName];
 };
 
@@ -525,3 +546,4 @@ JSONSchemaValidator.prototype.resetErrors = function() {
 };
 
 exports.$set('JSONSchemaValidator', JSONSchemaValidator);
+exports.$set('loadTypeSchema', loadTypeSchema);
