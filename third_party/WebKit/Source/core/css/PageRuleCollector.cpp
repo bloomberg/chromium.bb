@@ -30,10 +30,10 @@
 
 #include "core/css/PageRuleCollector.h"
 
+#include <algorithm>
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
-#include "core/css/resolver/StyleResolverState.h"
-#include <algorithm>
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 
