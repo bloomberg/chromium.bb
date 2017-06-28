@@ -230,6 +230,7 @@ class VrShell : public device::GvrDelegate,
   bool is_capturing_audio_ = false;
   bool is_capturing_video_ = false;
   bool is_capturing_screen_ = false;
+  bool is_bluetooth_connected_ = false;
 
   // Are we currently providing a gamepad factory to the gamepad manager?
   bool gvr_gamepad_source_active_ = false;

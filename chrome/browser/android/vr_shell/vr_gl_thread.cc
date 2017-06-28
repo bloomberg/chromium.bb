@@ -225,6 +225,12 @@ void VrGLThread::SetScreenCapturingIndicator(bool enabled) {
                             weak_scene_manager_, enabled));
 }
 
+void VrGLThread::SetBluetoothConnectedIndicator(bool enabled) {
+  task_runner()->PostTask(
+      FROM_HERE, base::Bind(&UiSceneManager::SetBluetoothConnectedIndicator,
+                            weak_scene_manager_, enabled));
+}
+
 void VrGLThread::SetIsExiting() {
   WaitUntilThreadStarted();
   task_runner()->PostTask(FROM_HERE, base::Bind(&UiSceneManager::SetIsExiting,
