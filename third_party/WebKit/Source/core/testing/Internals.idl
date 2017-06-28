@@ -246,9 +246,6 @@ enum EffectiveConnectionType {
 
     sequence<DOMString> getReferencedFilePaths();
 
-    [RaisesException] void startStoringCompositedLayerDebugInfo(Document document);
-    [RaisesException] void stopStoringCompositedLayerDebugInfo(Document document);
-
     // These functions both reset the tracked repaint rects. They are intended to be used in the following order:
     //  startTrackingRepaints(), repaintRectsAsText(), stopTrackingRepaints().
     [RaisesException] void startTrackingRepaints(Document document);

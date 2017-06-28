@@ -400,9 +400,6 @@ class Internals final : public GarbageCollected<Internals>,
 
   Vector<String> getReferencedFilePaths() const;
 
-  void startStoringCompositedLayerDebugInfo(Document*, ExceptionState&);
-  void stopStoringCompositedLayerDebugInfo(Document*, ExceptionState&);
-
   void startTrackingRepaints(Document*, ExceptionState&);
   void stopTrackingRepaints(Document*, ExceptionState&);
   void updateLayoutIgnorePendingStylesheetsAndRunPostLayoutTasks(

@@ -417,12 +417,7 @@ void PaintArtifactCompositor::CollectPendingLayers(
 
 void PaintArtifactCompositor::Update(
     const PaintArtifact& paint_artifact,
-    bool store_debug_info,
     CompositorElementIdSet& composited_element_ids) {
-#ifndef NDEBUG
-  store_debug_info = true;
-#endif
-
   DCHECK(root_layer_);
 
   // The tree will be null after detaching and this update can be ignored.
@@ -457,6 +452,12 @@ void PaintArtifactCompositor::Update(
 
   Vector<std::unique_ptr<ContentLayerClientImpl>> new_content_layer_clients;
   new_content_layer_clients.ReserveCapacity(pending_layers.size());
+
+  bool store_debug_info = false;
+#ifndef NDEBUG
+  store_debug_info = true;
+#endif
+
   for (const PendingLayer& pending_layer : pending_layers) {
     gfx::Vector2dF layer_offset;
     scoped_refptr<cc::Layer> layer = CompositedLayerForPendingLayer(
