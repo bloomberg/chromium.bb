@@ -202,7 +202,6 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   void SetLoader(ResourceLoader*);
   ResourceLoader* Loader() const { return loader_.Get(); }
 
-  virtual bool IsImage() const { return false; }
   bool ShouldBlockLoadEvent() const;
   bool IsLoadEventBlockingResourceType() const;
 
