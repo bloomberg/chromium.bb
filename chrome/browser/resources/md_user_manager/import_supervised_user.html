@@ -1,5 +1,6 @@
 <link rel="import" href="/shared_styles.html">
-<link rel="import" href="/user_manager_dialog.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
@@ -9,7 +10,7 @@
 
 <dom-module id="import-supervised-user">
   <template>
-    <style include="shared-styles iron-flex iron-flex-alignment iron-positioning">
+    <style include="shared-styles cr-shared-style iron-flex iron-flex-alignment iron-positioning">
       :host {
         --item-height: 52px;
         --items-container-max-height: calc(var(--item-height) * 4);
@@ -60,7 +61,7 @@
         flex-shrink: 0;
       }
     </style>
-    <user-manager-dialog id="dialog">
+    <dialog is="cr-dialog" id="dialog">
       <div class="title">$i18n{supervisedUserImportTitle}</div>
       <div class="body">
         <div id="message">$i18n{supervisedUserImportText}</div>
@@ -76,17 +77,17 @@
           </template>
         </paper-listbox>
       </div>
-      <div class="footer horizontal end-justified layout">
-        <paper-button id="cancel" class="action secondary" dialog-dismiss>
+      <div class="button-container">
+        <paper-button id="cancel" class="cancel-button" on-tap="onCancelTap_">
           $i18n{cancel}
         </paper-button>
-        <paper-button id="import" class="action primary"
+        <paper-button id="import" class="action-button"
             on-tap="onImportTap_"
             disabled="[[isImportDisabled_(supervisedUserIndex_)]]">
           $i18n{supervisedUserImportOk}
         </paper-button>
       </div>
-    </user-manager-dialog>
+    </dialog>
   </template>
   <script src="import_supervised_user.js"></script>
 </dom-module>

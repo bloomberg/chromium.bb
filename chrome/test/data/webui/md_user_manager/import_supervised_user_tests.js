@@ -32,13 +32,13 @@ cr.define('user_manager.import_supervised_user_tests', function() {
 
       test('Dialog does not show if no signed-in user is provided', function() {
         // The dialog is initially not visible.
-        assertFalse(importElement.$.dialog.opened);
+        assertFalse(importElement.$.dialog.open);
 
         importElement.show(undefined, []);
         Polymer.dom.flush();
 
         // The dialog is still not visible.
-        assertFalse(importElement.$.dialog.opened);
+        assertFalse(importElement.$.dialog.open);
       });
 
       test('Can import supervised user', function() {
@@ -61,20 +61,20 @@ cr.define('user_manager.import_supervised_user_tests', function() {
                 event.detail.supervisedUser.name == 'supervised user 2') {
               Polymer.dom.flush();
               // The dialog is no longer visible.
-              assertFalse(importElement.$.dialog.opened);
+              assertFalse(importElement.$.dialog.open);
 
               resolve();
             }
           });
 
           // The dialog is initially not visible.
-          assertFalse(importElement.$.dialog.opened);
+          assertFalse(importElement.$.dialog.open);
 
           importElement.show(signedInUser, supervisedUsers);
           Polymer.dom.flush();
 
           // The dialog becomes visible.
-          assertTrue(importElement.$.dialog.opened);
+          assertTrue(importElement.$.dialog.open);
 
           // The correct message is displayed.
           assertEquals(loadTimeData.getString('supervisedUserImportText'),

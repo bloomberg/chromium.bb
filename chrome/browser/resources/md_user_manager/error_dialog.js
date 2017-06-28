@@ -24,7 +24,7 @@ Polymer({
    */
   show: function(message) {
     this.message_ = message;
-    this.$.dialog.open();
+    this.$.dialog.showModal();
   }
 });
 })();
