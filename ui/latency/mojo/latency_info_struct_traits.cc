@@ -310,6 +310,12 @@ StructTraits<ui::mojom::LatencyInfoDataView,
 }
 
 // static
+base::TimeDelta StructTraits<ui::mojom::LatencyInfoDataView, ui::LatencyInfo>::
+    expected_queueing_time_on_dispatch(const ui::LatencyInfo& info) {
+  return info.expected_queueing_time_on_dispatch();
+}
+
+// static
 bool StructTraits<ui::mojom::LatencyInfoDataView, ui::LatencyInfo>::Read(
     ui::mojom::LatencyInfoDataView data,
     ui::LatencyInfo* out) {
@@ -334,7 +340,9 @@ bool StructTraits<ui::mojom::LatencyInfoDataView, ui::LatencyInfo>::Read(
   out->began_ = data.began();
   out->terminated_ = data.terminated();
   out->source_event_type_ = MojoSourceEventTypeToUI(data.source_event_type());
-  return true;
+
+  return data.ReadExpectedQueueingTimeOnDispatch(
+      &out->expected_queueing_time_on_dispatch_);
 }
 
 }  // namespace mojo

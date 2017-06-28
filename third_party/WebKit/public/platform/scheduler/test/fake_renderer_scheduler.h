@@ -36,6 +36,7 @@ class FakeRendererScheduler : public RendererScheduler {
       InputEventState event_state) override;
   void DidHandleInputEventOnMainThread(const WebInputEvent& web_input_event,
                                        WebInputEventResult result) override;
+  base::TimeDelta MostRecentExpectedQueueingTime() override;
   void DidAnimateForInputOnCompositorThread() override;
   void SetRendererHidden(bool hidden) override;
   void SetRendererBackgrounded(bool backgrounded) override;

@@ -850,6 +850,10 @@ void RendererSchedulerImpl::DidHandleInputEventOnMainThread(
   }
 }
 
+base::TimeDelta RendererSchedulerImpl::MostRecentExpectedQueueingTime() {
+  return GetMainThreadOnly().most_recent_expected_queueing_time;
+}
+
 bool RendererSchedulerImpl::IsHighPriorityWorkAnticipated() {
   helper_.CheckOnValidThread();
   if (helper_.IsShutdown())
@@ -2029,6 +2033,8 @@ void RendererSchedulerImpl::RemoveTaskTimeObserver(
 void RendererSchedulerImpl::OnQueueingTimeForWindowEstimated(
     base::TimeDelta queueing_time,
     base::TimeTicks window_start_time) {
+  GetMainThreadOnly().most_recent_expected_queueing_time = queueing_time;
+
   if (GetMainThreadOnly().has_navigated) {
     if (GetMainThreadOnly().max_queueing_time < queueing_time) {
       if (!GetMainThreadOnly().max_queueing_time_metric) {

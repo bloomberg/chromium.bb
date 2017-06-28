@@ -17393,17 +17393,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Time between sending a keyboard event to the renderer main thread and when
     the renderer begins to process that event, for events which were not
     preventDefaulted. Only recorded for key presses.
+
+    Team: input-dev@chromium.org.
   </summary>
 </histogram>
 
 <histogram name="Event.Latency.QueueingTime.KeyPressDefaultPrevented"
     units="ms">
   <owner>tdresser@chromium.org</owner>
-  <owner>input-dev@chromium.org</owner>
   <summary>
     Time between sending a keyboard event to the renderer main thread and when
     the renderer begins to process that event, for events which were
     preventDefaulted. Only recorded for key presses.
+
+    Team: input-dev@chromium.org.
   </summary>
 </histogram>
 
@@ -61395,6 +61398,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="RendererScheduler.QueueingDurationWhenExpectedQueueingTime"
+    units="ms">
+  <owner>tdresser@chromium.org</owner>
+  <summary>
+    Time between sending an event to the renderer main thread and when the
+    renderer begins to process that event, for events which were dispatched when
+    the expected queueing time was past some threshold.
+
+    Team: input-dev@chromium.org.
+  </summary>
+</histogram>
+
 <histogram name="RendererScheduler.TaskDurationPerQueueType"
     enum="RendererSchedulerTaskQueueType" units="ms">
   <obsolete>
@@ -89466,6 +89481,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="WatcherQueryEndSession"/>
   <suffix name="WM_ENDSESSION"/>
   <affected-histogram name="Stability.ExitFunnel"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="ExpectedQueueingDurationThreshold" separator="_">
+  <suffix name="GreaterThan.10ms"
+      label="Expected Queueing Time greater than 10ms."/>
+  <suffix name="GreaterThan.150ms"
+      label="Expected Queueing Time greater than 150ms."/>
+  <suffix name="GreaterThan.300ms"
+      label="Expected Queueing Time greater than 300ms."/>
+  <suffix name="GreaterThan.450ms"
+      label="Expected Queueing Time greater than 450ms."/>
+  <suffix name="LessThan.10ms" label="Expected Queueing Time less than 10ms."/>
+  <suffix name="LessThan.150ms"
+      label="Expected Queueing Time less than 150ms."/>
+  <suffix name="LessThan.300ms"
+      label="Expected Queueing Time less than 300ms."/>
+  <suffix name="LessThan.450ms"
+      label="Expected Queueing Time less than 450ms."/>
+  <affected-histogram
+      name="RendererScheduler.QueueingDurationWhenExpectedQueueingTime"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ExtensionFunctionExecutionTime" separator=".">

@@ -66,6 +66,10 @@ void FakeRendererScheduler::DidHandleInputEventOnMainThread(
     const blink::WebInputEvent& web_input_event,
     WebInputEventResult result) {}
 
+base::TimeDelta FakeRendererScheduler::MostRecentExpectedQueueingTime() {
+  return base::TimeDelta();
+}
+
 void FakeRendererScheduler::DidAnimateForInputOnCompositorThread() {}
 
 bool FakeRendererScheduler::IsHighPriorityWorkAnticipated() {
