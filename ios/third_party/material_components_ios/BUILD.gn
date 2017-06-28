@@ -194,7 +194,7 @@ source_set("material_components_ios") {
     "src/components/private/Overlay/src/MDCOverlayObserver.h",
     "src/components/private/Overlay/src/MDCOverlayObserver.m",
     "src/components/private/Overlay/src/MDCOverlayTransitioning.h",
-    "src/components/private/Overlay/src/MaterialOverlays.h",
+    "src/components/private/Overlay/src/MaterialOverlay.h",
     "src/components/private/Overlay/src/private/MDCOverlayAnimationObserver.h",
     "src/components/private/Overlay/src/private/MDCOverlayAnimationObserver.m",
     "src/components/private/Overlay/src/private/MDCOverlayObserverOverlay.h",
