@@ -251,7 +251,7 @@ net::URLRequestContextGetter* HeadlessBrowserContextImpl::CreateRequestContext(
               content::BrowserThread::IO),
           protocol_handlers, context_options_->TakeProtocolHandlers(),
           std::move(request_interceptors), context_options_.get(),
-          browser_->browser_main_parts()->net_log()));
+          browser_->browser_main_parts()->net_log(), this));
   resource_context_->set_url_request_context_getter(url_request_context_getter);
   return url_request_context_getter.get();
 }
@@ -332,18 +332,29 @@ const std::string& HeadlessBrowserContextImpl::Id() const {
 }
 
 void HeadlessBrowserContextImpl::AddObserver(Observer* obs) {
+  base::AutoLock lock(observers_lock_);
   observers_.AddObserver(obs);
 }
 
 void HeadlessBrowserContextImpl::RemoveObserver(Observer* obs) {
+  base::AutoLock lock(observers_lock_);
   observers_.RemoveObserver(obs);
 }
 
 void HeadlessBrowserContextImpl::NotifyChildContentsCreated(
     HeadlessWebContentsImpl* parent,
     HeadlessWebContentsImpl* child) {
+  base::AutoLock lock(observers_lock_);
   for (auto& observer : observers_)
     observer.OnChildContentsCreated(parent, child);
+}
+
+void HeadlessBrowserContextImpl::NotifyUrlRequestFailed(
+    net::URLRequest* request,
+    int net_error) {
+  base::AutoLock lock(observers_lock_);
+  for (auto& observer : observers_)
+    observer.UrlRequestFailed(request, net_error);
 }
 
 HeadlessBrowserContext::Builder::Builder(HeadlessBrowserImpl* browser)

@@ -4,6 +4,7 @@
 
 #include "headless/lib/browser/headless_network_delegate.h"
 
+#include "headless/lib/browser/headless_browser_context_impl.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
 
@@ -18,7 +19,10 @@ const char kDevToolsEmulateNetworkConditionsClientId[] =
     "X-DevTools-Emulate-Network-Conditions-Client-Id";
 }  // namespace
 
-HeadlessNetworkDelegate::HeadlessNetworkDelegate() {}
+HeadlessNetworkDelegate::HeadlessNetworkDelegate(
+    HeadlessBrowserContextImpl* headless_browser_context)
+    : headless_browser_context_(headless_browser_context) {}
+
 HeadlessNetworkDelegate::~HeadlessNetworkDelegate() {}
 
 int HeadlessNetworkDelegate::OnBeforeURLRequest(
@@ -57,7 +61,10 @@ void HeadlessNetworkDelegate::OnResponseStarted(net::URLRequest* request,
 
 void HeadlessNetworkDelegate::OnCompleted(net::URLRequest* request,
                                           bool started,
-                                          int net_error) {}
+                                          int net_error) {
+  if (net_error != net::OK)
+    headless_browser_context_->NotifyUrlRequestFailed(request, net_error);
+}
 
 void HeadlessNetworkDelegate::OnURLRequestDestroyed(net::URLRequest* request) {}
 

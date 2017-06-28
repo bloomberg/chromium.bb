@@ -27,6 +27,7 @@ class ProxyConfigService;
 
 namespace headless {
 class HeadlessBrowserContextOptions;
+class HeadlessBrowserContextImpl;
 
 class HeadlessURLRequestContextGetter : public net::URLRequestContextGetter {
  public:
@@ -36,7 +37,8 @@ class HeadlessURLRequestContextGetter : public net::URLRequestContextGetter {
       ProtocolHandlerMap context_protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors,
       HeadlessBrowserContextOptions* options,
-      net::NetLog* net_log);
+      net::NetLog* net_log,
+      HeadlessBrowserContextImpl* headless_browser_context);
 
   // net::URLRequestContextGetter implementation:
   net::URLRequestContext* GetURLRequestContext() override;
@@ -65,7 +67,8 @@ class HeadlessURLRequestContextGetter : public net::URLRequestContextGetter {
   std::unique_ptr<net::URLRequestContext> url_request_context_;
   content::ProtocolHandlerMap protocol_handlers_;
   content::URLRequestInterceptorScopedVector request_interceptors_;
-  net::NetLog* net_log_;  // Not owned.
+  net::NetLog* net_log_;                                  // Not owned.
+  HeadlessBrowserContextImpl* headless_browser_context_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessURLRequestContextGetter);
 };

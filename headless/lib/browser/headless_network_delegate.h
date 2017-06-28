@@ -10,12 +10,14 @@
 #include "net/base/network_delegate_impl.h"
 
 namespace headless {
+class HeadlessBrowserContextImpl;
 
 // We use the HeadlessNetworkDelegate to remove DevTools request headers before
-// requests are actually fetched.
+// requests are actually fetched and for reporting failed network requests.
 class HeadlessNetworkDelegate : public net::NetworkDelegateImpl {
  public:
-  HeadlessNetworkDelegate();
+  explicit HeadlessNetworkDelegate(
+      HeadlessBrowserContextImpl* headless_browser_context);
   ~HeadlessNetworkDelegate() override;
 
  private:
@@ -66,6 +68,8 @@ class HeadlessNetworkDelegate : public net::NetworkDelegateImpl {
   bool OnCanAccessFile(const net::URLRequest& request,
                        const base::FilePath& original_path,
                        const base::FilePath& absolute_path) const override;
+
+  HeadlessBrowserContextImpl* headless_browser_context_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessNetworkDelegate);
 };
