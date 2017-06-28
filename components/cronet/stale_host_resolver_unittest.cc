@@ -441,7 +441,8 @@ TEST_F(StaleHostResolverTest, StaleUsability) {
   }
 }
 
-TEST_F(StaleHostResolverTest, CreatedByContext) {
+// Test is flaky. See https://crbug.com/737326.
+TEST_F(StaleHostResolverTest, DISABLED_CreatedByContext) {
   URLRequestContextConfig config(
       // Enable QUIC.
       true,

@@ -19,7 +19,8 @@
 
 namespace cronet {
 
-TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
+// Test is flaky. See https://crbug.com/737326.
+TEST(URLRequestContextConfigTest, DISABLED_TestExperimentalOptionParsing) {
   URLRequestContextConfig config(
       // Enable QUIC.
       true,
@@ -110,7 +111,8 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
                          info, &addresses, net::NetLogWithSource()));
 }
 
-TEST(URLRequestContextConfigTest, SetQuicConnectionMigrationOptions) {
+// Test is flaky. See https://crbug.com/737326.
+TEST(URLRequestContextConfigTest, DISABLED_SetQuicConnectionMigrationOptions) {
   URLRequestContextConfig config(
       // Enable QUIC.
       true,
