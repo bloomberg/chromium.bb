@@ -4,8 +4,7 @@
 
 #include "chrome/browser/predictors/autocomplete_action_predictor_table.h"
 
-#include <cstddef>
-#include <utility>
+#include <stddef.h>
 
 #include "base/guid.h"
 #include "base/logging.h"
@@ -79,7 +78,7 @@ AutocompleteActionPredictorTable::Row::Row(const Row& row)
 
 
 void AutocompleteActionPredictorTable::GetRow(const Row::Id& id, Row* row) {
-  DCHECK(GetTaskRunner()->RunsTasksInCurrentSequence());
+  CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::DB));
   if (CantAccessDatabase())
     return;
 
@@ -94,7 +93,7 @@ void AutocompleteActionPredictorTable::GetRow(const Row::Id& id, Row* row) {
 }
 
 void AutocompleteActionPredictorTable::GetAllRows(Rows* row_buffer) {
-  DCHECK(GetTaskRunner()->RunsTasksInCurrentSequence());
+  CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::DB));
   if (CantAccessDatabase())
     return;
 
@@ -113,7 +112,7 @@ void AutocompleteActionPredictorTable::GetAllRows(Rows* row_buffer) {
 
 void AutocompleteActionPredictorTable::AddRow(
     const AutocompleteActionPredictorTable::Row& row) {
-  DCHECK(GetTaskRunner()->RunsTasksInCurrentSequence());
+  CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::DB));
   if (CantAccessDatabase())
     return;
 
@@ -122,7 +121,7 @@ void AutocompleteActionPredictorTable::AddRow(
 
 void AutocompleteActionPredictorTable::UpdateRow(
     const AutocompleteActionPredictorTable::Row& row) {
-  DCHECK(GetTaskRunner()->RunsTasksInCurrentSequence());
+  CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::DB));
   if (CantAccessDatabase())
     return;
 
@@ -132,7 +131,7 @@ void AutocompleteActionPredictorTable::UpdateRow(
 void AutocompleteActionPredictorTable::AddAndUpdateRows(
     const Rows& rows_to_add,
     const Rows& rows_to_update) {
-  DCHECK(GetTaskRunner()->RunsTasksInCurrentSequence());
+  CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::DB));
   if (CantAccessDatabase())
     return;
 
@@ -180,7 +179,7 @@ void AutocompleteActionPredictorTable::AddAndUpdateRows(
 
 void AutocompleteActionPredictorTable::DeleteRows(
     const std::vector<Row::Id>& id_list) {
-  DCHECK(GetTaskRunner()->RunsTasksInCurrentSequence());
+  CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::DB));
   if (CantAccessDatabase())
     return;
 
@@ -207,7 +206,7 @@ void AutocompleteActionPredictorTable::DeleteRows(
 }
 
 void AutocompleteActionPredictorTable::DeleteAllRows() {
-  DCHECK(GetTaskRunner()->RunsTasksInCurrentSequence());
+  CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::DB));
   if (CantAccessDatabase())
     return;
 
@@ -220,14 +219,15 @@ void AutocompleteActionPredictorTable::DeleteAllRows() {
   statement.Run();
 }
 
-AutocompleteActionPredictorTable::AutocompleteActionPredictorTable(
-    scoped_refptr<base::SequencedTaskRunner> db_task_runner)
-    : PredictorTableBase(std::move(db_task_runner)) {}
+AutocompleteActionPredictorTable::AutocompleteActionPredictorTable()
+    : PredictorTableBase() {
+}
 
-AutocompleteActionPredictorTable::~AutocompleteActionPredictorTable() = default;
+AutocompleteActionPredictorTable::~AutocompleteActionPredictorTable() {
+}
 
 void AutocompleteActionPredictorTable::CreateTableIfNonExistent() {
-  DCHECK(GetTaskRunner()->RunsTasksInCurrentSequence());
+  CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::DB));
   if (CantAccessDatabase())
     return;
 
@@ -246,7 +246,7 @@ void AutocompleteActionPredictorTable::CreateTableIfNonExistent() {
 }
 
 void AutocompleteActionPredictorTable::LogDatabaseStats()  {
-  DCHECK(GetTaskRunner()->RunsTasksInCurrentSequence());
+  CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::DB));
   if (CantAccessDatabase())
     return;
 
