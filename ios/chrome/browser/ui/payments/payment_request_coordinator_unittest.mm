@@ -135,9 +135,9 @@ TEST_F(PaymentRequestCoordinatorTest, StartAndStop) {
   EXPECT_EQ(nil, base_view_controller.presentedViewController);
 }
 
-// Tests that calling the card unmasking delegate method which notifies the
-// coordinator about successful unmasking of a credit card invokes the
-// appropriate coordinator delegate method with the expected information.
+// Tests that calling the FullCardRequesterConsumer delegate method which
+// notifies the coordinator about successful unmasking of a credit card invokes
+// the appropriate coordinator delegate method with the expected information.
 TEST_F(PaymentRequestCoordinatorTest, FullCardRequestDidSucceed) {
   UIViewController* base_view_controller = [[UIViewController alloc] init];
   ScopedKeyWindow scoped_key_window_;

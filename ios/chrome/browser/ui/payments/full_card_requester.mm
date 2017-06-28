@@ -5,10 +5,8 @@
 #include "ios/chrome/browser/ui/payments/full_card_requester.h"
 
 #include "components/autofill/core/browser/autofill_manager.h"
-#include "components/autofill/core/browser/ui/card_unmask_prompt_controller_impl.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/ui/autofill/card_unmask_prompt_view_bridge.h"
-#include "ios/chrome/browser/ui/payments/payment_request_coordinator.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -44,10 +42,10 @@ class PRCardUnmaskPromptViewBridge
 
 }  // namespace
 
-FullCardRequester::FullCardRequester(PaymentRequestCoordinator* owner,
+FullCardRequester::FullCardRequester(id<FullCardRequesterConsumer> consumer,
                                      UIViewController* base_view_controller,
                                      ios::ChromeBrowserState* browser_state)
-    : owner_(owner),
+    : consumer_(consumer),
       base_view_controller_(base_view_controller),
       unmask_controller_(browser_state->GetPrefs(),
                          browser_state->IsOffTheRecord()) {}
@@ -65,8 +63,8 @@ void FullCardRequester::GetFullCard(
 void FullCardRequester::OnFullCardRequestSucceeded(
     const autofill::CreditCard& card,
     const base::string16& verificationCode) {
-  [owner_ fullCardRequestDidSucceedWithCard:card
-                           verificationCode:verificationCode];
+  [consumer_ fullCardRequestDidSucceedWithCard:card
+                              verificationCode:verificationCode];
 }
 
 void FullCardRequester::OnFullCardRequestFailed() {
