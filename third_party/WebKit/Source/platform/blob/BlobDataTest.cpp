@@ -148,6 +148,7 @@ class MojoBlobTestPlatform : public TestingPlatformSupport {
 struct ExpectedElement {
   DataElementPtr element;
   String blob_uuid;
+  Vector<uint8_t> large_data;
 
   static ExpectedElement EmbeddedBytes(Vector<uint8_t> embedded_data) {
     uint64_t size = embedded_data.size();
@@ -155,9 +156,11 @@ struct ExpectedElement {
         DataElementBytes::New(size, std::move(embedded_data), nullptr))};
   }
 
-  static ExpectedElement LargeBytes(uint64_t size) {
-    return ExpectedElement{DataElement::NewBytes(
-        DataElementBytes::New(size, WTF::nullopt, nullptr))};
+  static ExpectedElement LargeBytes(Vector<uint8_t> data) {
+    uint64_t size = data.size();
+    return ExpectedElement{DataElement::NewBytes(DataElementBytes::New(
+                               size, WTF::nullopt, nullptr)),
+                           String(), std::move(data)};
   }
 
   static ExpectedElement File(const String& path,
@@ -252,6 +255,21 @@ class BlobDataHandleTest : public testing::Test {
         EXPECT_EQ(expected->get_bytes()->length, actual->get_bytes()->length);
         EXPECT_EQ(expected->get_bytes()->embedded_data,
                   actual->get_bytes()->embedded_data);
+
+        base::RunLoop loop;
+        Vector<uint8_t> received_bytes;
+        actual->get_bytes()->data->RequestAsReply(base::Bind(
+            [](base::Closure quit_closure, Vector<uint8_t>* bytes_out,
+               const Vector<uint8_t>& bytes) {
+              *bytes_out = bytes;
+              quit_closure.Run();
+            },
+            loop.QuitClosure(), &received_bytes));
+        loop.Run();
+        if (expected->get_bytes()->embedded_data)
+          EXPECT_EQ(expected->get_bytes()->embedded_data, received_bytes);
+        else
+          EXPECT_EQ(expected_elements[i].large_data, received_bytes);
       } else if (expected->is_file()) {
         ASSERT_TRUE(actual->is_file());
         EXPECT_EQ(expected->get_file()->path, actual->get_file()->path);
@@ -377,8 +395,7 @@ TEST_F(BlobDataHandleTest, CreateFromLargeBytes) {
   data->AppendBytes(large_test_data_.data(), large_test_data_.size());
 
   Vector<ExpectedElement> expected_elements;
-  expected_elements.push_back(
-      ExpectedElement::LargeBytes(large_test_data_.size()));
+  expected_elements.push_back(ExpectedElement::LargeBytes(large_test_data_));
 
   TestCreateBlob(std::move(data), std::move(expected_elements));
 }
@@ -405,9 +422,12 @@ TEST_F(BlobDataHandleTest, CreateFromMergedLargeAndSmallBytes) {
   data->AppendBytes(small_test_data_.data(), small_test_data_.size());
   EXPECT_EQ(2u, data->Items().size());
 
+  Vector<uint8_t> expected_data = large_test_data_;
+  expected_data.AppendVector(small_test_data_);
+
   Vector<ExpectedElement> expected_elements;
-  expected_elements.push_back(ExpectedElement::LargeBytes(
-      large_test_data_.size() + small_test_data_.size()));
+  expected_elements.push_back(
+      ExpectedElement::LargeBytes(std::move(expected_data)));
 
   TestCreateBlob(std::move(data), std::move(expected_elements));
 }
@@ -418,9 +438,12 @@ TEST_F(BlobDataHandleTest, CreateFromMergedSmallAndLargeBytes) {
   data->AppendBytes(large_test_data_.data(), large_test_data_.size());
   EXPECT_EQ(2u, data->Items().size());
 
+  Vector<uint8_t> expected_data = small_test_data_;
+  expected_data.AppendVector(large_test_data_);
+
   Vector<ExpectedElement> expected_elements;
-  expected_elements.push_back(ExpectedElement::LargeBytes(
-      large_test_data_.size() + small_test_data_.size()));
+  expected_elements.push_back(
+      ExpectedElement::LargeBytes(std::move(expected_data)));
 
   TestCreateBlob(std::move(data), std::move(expected_elements));
 }
@@ -490,8 +513,7 @@ TEST_F(BlobDataHandleTest, CreateFromBlobsAndBytes) {
   expected_elements.push_back(
       ExpectedElement::EmbeddedBytes(std::move(expected_data)));
   expected_elements.push_back(ExpectedElement::Blob(test_blob_uuid_, 0, 10));
-  expected_elements.push_back(
-      ExpectedElement::LargeBytes(large_test_data_.size()));
+  expected_elements.push_back(ExpectedElement::LargeBytes(large_test_data_));
 
   TestCreateBlob(std::move(data), std::move(expected_elements));
 }
@@ -503,8 +525,7 @@ TEST_F(BlobDataHandleTest, CreateFromSmallBytesAfterLargeBytes) {
   data->AppendBytes(small_test_data_.data(), small_test_data_.size());
 
   Vector<ExpectedElement> expected_elements;
-  expected_elements.push_back(
-      ExpectedElement::LargeBytes(large_test_data_.size()));
+  expected_elements.push_back(ExpectedElement::LargeBytes(large_test_data_));
   expected_elements.push_back(ExpectedElement::Blob(test_blob_uuid_, 0, 10));
   expected_elements.push_back(ExpectedElement::EmbeddedBytes(small_test_data_));
 
@@ -513,16 +534,17 @@ TEST_F(BlobDataHandleTest, CreateFromSmallBytesAfterLargeBytes) {
 
 TEST_F(BlobDataHandleTest, CreateFromManyMergedBytes) {
   std::unique_ptr<BlobData> data = BlobData::Create();
-  uint64_t merged_size = 0;
-  while (merged_size <= DataElementBytes::kMaximumEmbeddedDataSize) {
+  Vector<uint8_t> merged_data;
+  while (merged_data.size() <= DataElementBytes::kMaximumEmbeddedDataSize) {
     data->AppendBytes(medium_test_data_.data(), medium_test_data_.size());
-    merged_size += medium_test_data_.size();
+    merged_data.AppendVector(medium_test_data_);
   }
   data->AppendBlob(test_blob_, 0, 10);
   data->AppendBytes(medium_test_data_.data(), medium_test_data_.size());
 
   Vector<ExpectedElement> expected_elements;
-  expected_elements.push_back(ExpectedElement::LargeBytes(merged_size));
+  expected_elements.push_back(
+      ExpectedElement::LargeBytes(std::move(merged_data)));
   expected_elements.push_back(ExpectedElement::Blob(test_blob_uuid_, 0, 10));
   expected_elements.push_back(
       ExpectedElement::EmbeddedBytes(medium_test_data_));

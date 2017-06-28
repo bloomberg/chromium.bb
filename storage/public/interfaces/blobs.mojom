@@ -68,7 +68,30 @@ struct DataElementBytes {
 // Interface through which the blob registry can request data when it is ready
 // for it.
 interface BytesProvider {
-  // TODO(mek): Define methods.
+  // Requests all the data provided by this provider as an array in the reply.
+  // The size of this array must match the length attribute of the
+  // DataElementBytes struct this provider was associated with.
+  // If this method is called, it is called exactly once, and none of the other
+  // methods will be called.
+  RequestAsReply() => (array<uint8> data);
+
+  // Requests all the data provided by this provider to be transfered on a data
+  // pipe. The amount of data transfered should match the length attribute of
+  // the DataElementBytes struct this provider was associated with.
+  // If this method is called, it is called exactly once, and none of the other
+  // methods will be called.
+  RequestAsStream(handle<data_pipe_producer> pipe);
+
+  // Requests the provider to write a slice of the data provided by this
+  // provider to the given file at the given offset. When the data is written
+  // the callback should be invoked with the new modification time of the file.
+  // If this method is called, it can be called multiple times, but none of the
+  // other methods will be called.
+  // If writing for whatever reason fails, the callback is called without a
+  // modification time.
+  RequestAsFile(uint64 source_offset, uint64 source_size,
+                mojo.common.mojom.File file, uint64 file_offset)
+      => (mojo.common.mojom.Time? time_file_modified);
 };
 
 // A reference to a slice of a file on disk.
