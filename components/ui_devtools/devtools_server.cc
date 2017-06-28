@@ -65,6 +65,10 @@ UiDevToolsServer::UiDevToolsServer(
 }
 
 UiDevToolsServer::~UiDevToolsServer() {
+  if (io_thread_task_runner_)
+    io_thread_task_runner_->DeleteSoon(FROM_HERE, server_.release());
+  if (thread_ && thread_->IsRunning())
+    thread_->Stop();
   devtools_server_ = nullptr;
 }
 
