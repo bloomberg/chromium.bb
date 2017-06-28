@@ -4,12 +4,13 @@
 
 #include "media/base/video_frame_pool.h"
 
-#include <list>
+#include <deque>
 
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
+#include "base/time/default_tick_clock.h"
 
 namespace media {
 
@@ -18,7 +19,8 @@ class VideoFramePool::PoolImpl
  public:
   PoolImpl();
 
-  // See VideoFramePool::CreateFrame() for usage.
+  // See VideoFramePool::CreateFrame() for usage. Attempts to keep |frames_| in
+  // LRU order by always pulling from the back of |frames_|.
   scoped_refptr<VideoFrame> CreateFrame(VideoPixelFormat format,
                                         const gfx::Size& coded_size,
                                         const gfx::Rect& visible_rect,
@@ -30,25 +32,41 @@ class VideoFramePool::PoolImpl
   // |frames_|.
   void Shutdown();
 
-  size_t GetPoolSizeForTesting() const { return frames_.size(); }
+  size_t get_pool_size_for_testing() const { return frames_.size(); }
+
+  void set_tick_clock_for_testing(base::TickClock* tick_clock) {
+    tick_clock_ = tick_clock;
+  }
 
  private:
   friend class base::RefCountedThreadSafe<VideoFramePool::PoolImpl>;
   ~PoolImpl();
 
-  // Called when the frame wrapper gets destroyed.
-  // |frame| is the actual frame that was wrapped and is placed
-  // in |frames_| by this function so it can be reused.
-  void FrameReleased(const scoped_refptr<VideoFrame>& frame);
+  // Called when the frame wrapper gets destroyed. |frame| is the actual frame
+  // that was wrapped and is placed in |frames_| by this function so it can be
+  // reused. This will attempt to expire frames that haven't been used in some
+  // time. It relies on |frames_| being in LRU order with the front being the
+  // least recently used entry.
+  void FrameReleased(scoped_refptr<VideoFrame> frame);
 
   base::Lock lock_;
-  bool is_shutdown_;
-  std::list<scoped_refptr<VideoFrame> > frames_;
+  bool is_shutdown_ = false;
+
+  struct FrameEntry {
+    base::TimeTicks last_use_time;
+    scoped_refptr<VideoFrame> frame;
+  };
+
+  std::deque<FrameEntry> frames_;
+
+  // |tick_clock_| is always &|default_tick_clock_| outside of testing.
+  base::DefaultTickClock default_tick_clock_;
+  base::TickClock* tick_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(PoolImpl);
 };
 
-VideoFramePool::PoolImpl::PoolImpl() : is_shutdown_(false) {}
+VideoFramePool::PoolImpl::PoolImpl() : tick_clock_(&default_tick_clock_) {}
 
 VideoFramePool::PoolImpl::~PoolImpl() {
   DCHECK(is_shutdown_);
@@ -64,22 +82,22 @@ scoped_refptr<VideoFrame> VideoFramePool::PoolImpl::CreateFrame(
   DCHECK(!is_shutdown_);
 
   scoped_refptr<VideoFrame> frame;
-  while (!frame.get() && !frames_.empty()) {
-      scoped_refptr<VideoFrame> pool_frame = frames_.front();
-      frames_.pop_front();
+  while (!frame && !frames_.empty()) {
+    scoped_refptr<VideoFrame> pool_frame = std::move(frames_.back().frame);
+    frames_.pop_back();
 
-      if (pool_frame->format() == format &&
-          pool_frame->coded_size() == coded_size &&
-          pool_frame->visible_rect() == visible_rect &&
-          pool_frame->natural_size() == natural_size) {
-        frame = pool_frame;
-        frame->set_timestamp(timestamp);
-        frame->metadata()->Clear();
-        break;
-      }
+    if (pool_frame->format() == format &&
+        pool_frame->coded_size() == coded_size &&
+        pool_frame->visible_rect() == visible_rect &&
+        pool_frame->natural_size() == natural_size) {
+      frame = pool_frame;
+      frame->set_timestamp(timestamp);
+      frame->metadata()->Clear();
+      break;
+    }
   }
 
-  if (!frame.get()) {
+  if (!frame) {
     frame = VideoFrame::CreateZeroInitializedFrame(
         format, coded_size, visible_rect, natural_size, timestamp);
     // This can happen if the arguments are not valid.
@@ -91,8 +109,8 @@ scoped_refptr<VideoFrame> VideoFramePool::PoolImpl::CreateFrame(
 
   scoped_refptr<VideoFrame> wrapped_frame = VideoFrame::WrapVideoFrame(
       frame, frame->format(), frame->visible_rect(), frame->natural_size());
-  wrapped_frame->AddDestructionObserver(
-      base::Bind(&VideoFramePool::PoolImpl::FrameReleased, this, frame));
+  wrapped_frame->AddDestructionObserver(base::Bind(
+      &VideoFramePool::PoolImpl::FrameReleased, this, std::move(frame)));
   return wrapped_frame;
 }
 
@@ -102,17 +120,28 @@ void VideoFramePool::PoolImpl::Shutdown() {
   frames_.clear();
 }
 
-void VideoFramePool::PoolImpl::FrameReleased(
-    const scoped_refptr<VideoFrame>& frame) {
+void VideoFramePool::PoolImpl::FrameReleased(scoped_refptr<VideoFrame> frame) {
   base::AutoLock auto_lock(lock_);
   if (is_shutdown_)
     return;
 
-  frames_.push_back(frame);
+  const base::TimeTicks now = tick_clock_->NowTicks();
+  frames_.push_back({now, std::move(frame)});
+
+  // After this loop, |stale_index| is the index of the oldest non-stale frame.
+  // Such an index must exist because |frame| is never stale.
+  int stale_index = -1;
+  constexpr base::TimeDelta kStaleFrameLimit = base::TimeDelta::FromSeconds(10);
+  while (now - frames_[++stale_index].last_use_time > kStaleFrameLimit) {
+    // Last frame should never be included since we just added it.
+    DCHECK_LE(static_cast<size_t>(stale_index), frames_.size());
+  }
+
+  if (stale_index)
+    frames_.erase(frames_.begin(), frames_.begin() + stale_index);
 }
 
-VideoFramePool::VideoFramePool() : pool_(new PoolImpl()) {
-}
+VideoFramePool::VideoFramePool() : pool_(new PoolImpl()) {}
 
 VideoFramePool::~VideoFramePool() {
   pool_->Shutdown();
@@ -129,7 +158,11 @@ scoped_refptr<VideoFrame> VideoFramePool::CreateFrame(
 }
 
 size_t VideoFramePool::GetPoolSizeForTesting() const {
-  return pool_->GetPoolSizeForTesting();
+  return pool_->get_pool_size_for_testing();
+}
+
+void VideoFramePool::SetTickClockForTesting(base::TickClock* tick_clock) {
+  pool_->set_tick_clock_for_testing(tick_clock);
 }
 
 }  // namespace media

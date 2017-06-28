@@ -14,6 +14,8 @@ class MockGpuMemoryBufferVideoFramePool : public GpuMemoryBufferVideoFramePool {
  public:
   MockGpuMemoryBufferVideoFramePool(std::vector<base::Closure>* frame_ready_cbs)
       : frame_ready_cbs_(frame_ready_cbs) {}
+  ~MockGpuMemoryBufferVideoFramePool() override {}
+
   void MaybeCreateHardwareFrame(const scoped_refptr<VideoFrame>& video_frame,
                                 const FrameReadyCB& frame_ready_cb) override;
 

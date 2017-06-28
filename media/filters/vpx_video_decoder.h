@@ -20,6 +20,7 @@ struct vpx_image;
 
 namespace base {
 class SingleThreadTaskRunner;
+class TickClock;
 }
 
 namespace media {
@@ -46,6 +47,12 @@ class MEDIA_EXPORT VpxVideoDecoder : public VideoDecoder {
   void Decode(const scoped_refptr<DecoderBuffer>& buffer,
               const DecodeCB& decode_cb) override;
   void Reset(const base::Closure& closure) override;
+
+  // Returns the number of frames in the pool for testing purposes.
+  size_t GetPoolSizeForTesting() const;
+
+  // Allows injection of a base::SimpleTestClock for testing.
+  void SetTickClockForTesting(base::TickClock* tick_clock);
 
  private:
   enum DecoderState {

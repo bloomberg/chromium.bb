@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <memory>
 
+#include "base/test/simple_test_tick_clock.h"
 #include "media/base/video_frame_pool.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -13,7 +14,12 @@ namespace media {
 
 class VideoFramePoolTest : public ::testing::Test {
  public:
-  VideoFramePoolTest() : pool_(new VideoFramePool()) {}
+  VideoFramePoolTest() : pool_(new VideoFramePool()) {
+    // Seed test clock with some dummy non-zero value to avoid confusion with
+    // empty base::TimeTicks values.
+    test_clock_.Advance(base::TimeDelta::FromSeconds(1234));
+    pool_->SetTickClockForTesting(&test_clock_);
+  }
 
   scoped_refptr<VideoFrame> CreateFrame(VideoPixelFormat format,
                                         int timestamp_ms) {
@@ -40,6 +46,7 @@ class VideoFramePoolTest : public ::testing::Test {
   }
 
  protected:
+  base::SimpleTestTickClock test_clock_;
   std::unique_ptr<VideoFramePool> pool_;
 };
 
@@ -90,6 +97,23 @@ TEST_F(VideoFramePoolTest, FrameValidAfterPoolDestruction) {
   // use-after-free if the storage was actually removed by pool destruction.
   memset(frame->data(VideoFrame::kYPlane), 0xff,
          frame->rows(VideoFrame::kYPlane) * frame->stride(VideoFrame::kYPlane));
+}
+
+TEST_F(VideoFramePoolTest, StaleFramesAreExpired) {
+  scoped_refptr<VideoFrame> frame_1 = CreateFrame(PIXEL_FORMAT_YV12, 10);
+  scoped_refptr<VideoFrame> frame_2 = CreateFrame(PIXEL_FORMAT_YV12, 10);
+  EXPECT_NE(frame_1.get(), frame_2.get());
+  CheckPoolSize(0u);
+
+  // Drop frame and verify that resources are still available for reuse.
+  frame_1 = nullptr;
+  CheckPoolSize(1u);
+
+  // Advance clock far enough to hit stale timer; ensure only frame_1 has its
+  // resources released.
+  test_clock_.Advance(base::TimeDelta::FromMinutes(1));
+  frame_2 = nullptr;
+  CheckPoolSize(1u);
 }
 
 }  // namespace media
