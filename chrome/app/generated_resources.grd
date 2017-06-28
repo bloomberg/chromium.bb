@@ -4983,7 +4983,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_PREVIEWS_INFOBAR_TIMESTAMP_HOURS" desc="The desciption stating how old a preview version of a page is in hours. This is shown on the infobar notifying the user that a preview page has been shown.">
          Updated <ph name="HOURS">$1<ex>4</ex></ph>hrs ago
-      </message>      
+      </message>
       <message name="IDS_PREVIEWS_INFOBAR_TIMESTAMP_UPDATED_NOW" desc="The desciption stating that a preview version of a page was just updated. This is shown on the infobar notifying the user that a preview page has been shown.">
          Updated just now
       </message>
@@ -6467,11 +6467,8 @@ I don't think this site should be blocked!
         <message name="IDS_CHROME_CLEANUP_WEBUI_TITLE_RESTART" desc="A status message, appearing on the Chrome Cleanup web page, that the cleanup of unwanted software initiated by the user was performed but isn't finished. User must take additional action to finish the cleanup. 'Restart' is imperative. Short for 'To finish removing harmful software...'">
           To finish removing harmful software, restart your computer
         </message>
-        <message name="IDS_CHROME_CLEANUP_LOGS_PERMISSION" desc="A checkbox label, appearing on both the Chrome Cleanup dialog and web page, asking the user for permission to send some system information to Google in order to help with detection of harmful software. The word 'settings' refers to the user's operating system settings. The word 'applications' refers to any software that is installed or runs on the user's computer.">
-          Send information about your system and applications to Google to help detect harmful software
-        </message>
-        <message name="IDS_CHROME_CLEANUP_LOGS_PERMISSION_WITH_LINK" desc="A checkbox label, appearing on both the Chrome Cleanup dialog and web page, asking the user for permission to send some system information to Google in order to help with detection of harmful software. The word 'settings' refers to the user's operating system settings. The word 'applications' refers to any software that is installed or runs on the user's computer. The translation for this string should have the same meaning as IDS_CHROME_CLEANUP_LOGS_PERMISSION">
-          Send <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>information about your system and applications<ph name="END_LINK">&lt;/a&gt;</ph> to Google to help detect harmful software
+        <message name="IDS_CHROME_CLEANUP_LOGS_PERMISSION" desc="A checkbox label, appearing on both the Chrome Cleanup modal dialog and webui page, asking the user for permission to send details about the cleanup operation to Google.">
+          Report details to Google
         </message>
       </if>
 
