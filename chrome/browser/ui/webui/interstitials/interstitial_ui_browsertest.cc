@@ -52,6 +52,11 @@ IN_PROC_BROWSER_TEST_F(InterstitialUITest, SSLInterstitial) {
       "Privacy error");
 }
 
+IN_PROC_BROWSER_TEST_F(InterstitialUITest, SuperfishInterstitial) {
+  TestInterstitial(GURL("chrome://interstitials/superfish-ssl"),
+                   "Privacy error");
+}
+
 IN_PROC_BROWSER_TEST_F(InterstitialUITest, PinnedCertInterstitial) {
   TestInterstitial(GURL("chrome://interstitials/ssl?type=hpkp_failure"),
                    "Privacy error");
