@@ -1944,7 +1944,7 @@ def _HooksOsToLines(hooks_os):
   """Converts |hooks| list to list of lines for output."""
   s = ['hooks_os = {']
   for hook_os, os_hooks in hooks_os.iteritems():
-    s.append('  "%s": {' % hook_os)
+    s.append('  "%s": [' % hook_os)
     for dep, hook in os_hooks:
       s.extend([
           '    # %s' % dep.hierarchy(include_url=False),
@@ -1961,7 +1961,7 @@ def _HooksOsToLines(hooks_os):
           ['          "%s",' % arg for arg in hook.action] +
           ['      ]', '    },', '']
       )
-    s.extend(['  },', ''])
+    s.extend(['  ],', ''])
   s.extend(['}', ''])
   return s
 
