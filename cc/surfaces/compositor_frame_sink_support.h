@@ -43,7 +43,6 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
 
   const FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
 
-  Surface* current_surface_for_testing() { return current_surface_.get(); }
   SurfaceManager* surface_manager() { return surface_manager_; }
   bool needs_sync_points() { return needs_sync_points_; }
 
@@ -67,6 +66,8 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
   void UnrefResources(const ReturnedResourceArray& resources);
 
   void OnSurfaceActivated(Surface* surface);
+
+  Surface* GetCurrentSurfaceForTesting();
 
  protected:
   CompositorFrameSinkSupport(CompositorFrameSinkSupportClient* client,
@@ -99,14 +100,14 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
   void OnBeginFrameSourcePausedChanged(bool paused) override;
 
   void UpdateNeedsBeginFramesInternal();
-  std::unique_ptr<Surface> CreateSurface(const SurfaceInfo& surface_info);
-  void DestroyCurrentSurface();
+  Surface* CreateSurface(const SurfaceInfo& surface_info);
 
   CompositorFrameSinkSupportClient* const client_;
 
   SurfaceManager* surface_manager_ = nullptr;
 
   const FrameSinkId frame_sink_id_;
+  SurfaceId current_surface_id_;
 
   // If this contains a value then a surface reference from the top-level root
   // to SurfaceId(frame_sink_id_, referenced_local_surface_id_.value()) was
@@ -115,7 +116,6 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
 
   SurfaceResourceHolder surface_resource_holder_;
 
-  std::unique_ptr<Surface> current_surface_;
   // Counts the number of CompositorFrames that have been submitted and have not
   // yet received an ACK.
   int ack_pending_count_ = 0;

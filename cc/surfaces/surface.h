@@ -127,9 +127,6 @@ class CC_SURFACES_EXPORT Surface {
     return HasActiveFrame() && active_frame_data_->draw_callback;
   }
 
-  bool destroyed() const { return destroyed_; }
-  void set_destroyed(bool destroyed) { destroyed_ = destroyed; }
-
  private:
   struct FrameData {
     FrameData(CompositorFrame&& frame,
@@ -172,7 +169,6 @@ class CC_SURFACES_EXPORT Surface {
   base::Optional<FrameData> active_frame_data_;
   int frame_index_;
   bool closed_ = false;
-  bool destroyed_;
   std::vector<SurfaceSequence> destruction_dependencies_;
 
   base::flat_set<SurfaceId> blocking_surfaces_;

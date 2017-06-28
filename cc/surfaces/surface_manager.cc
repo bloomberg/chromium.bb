@@ -44,20 +44,9 @@ SurfaceManager::SurfaceManager(LifetimeType lifetime_type)
 }
 
 SurfaceManager::~SurfaceManager() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  // Remove all temporary references on shutdown.
-  temporary_references_.clear();
-  temporary_reference_ranges_.clear();
-
-  GarbageCollectSurfaces();
-
-  for (SurfaceDestroyList::iterator it = surfaces_to_destroy_.begin();
-       it != surfaces_to_destroy_.end();
-       ++it) {
-    UnregisterSurface((*it)->surface_id());
-  }
-  surfaces_to_destroy_.clear();
+  // All CompositorFrameSinkSupports and their surfaces are supposed to be
+  // destroyed before SurfaceManager.
+  DCHECK_EQ(surfaces_to_destroy_.size(), surface_map_.size());
 }
 
 #if DCHECK_IS_ON()
@@ -82,7 +71,7 @@ void SurfaceManager::RequestSurfaceResolution(Surface* pending_surface) {
     dependency_tracker_->RequestSurfaceResolution(pending_surface);
 }
 
-std::unique_ptr<Surface> SurfaceManager::CreateSurface(
+Surface* SurfaceManager::CreateSurface(
     base::WeakPtr<CompositorFrameSinkSupport> compositor_frame_sink_support,
     const SurfaceInfo& surface_info) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -93,42 +82,30 @@ std::unique_ptr<Surface> SurfaceManager::CreateSurface(
 
   // If no surface with this SurfaceId exists, simply create the surface and
   // return.
-  auto surface_iter = surface_map_.find(surface_info.id());
-  if (surface_iter == surface_map_.end()) {
-    auto surface =
+  auto it = surface_map_.find(surface_info.id());
+  if (it == surface_map_.end()) {
+    surface_map_[surface_info.id()] =
         base::MakeUnique<Surface>(surface_info, compositor_frame_sink_support);
-    surface_map_[surface->surface_id()] = surface.get();
-    return surface;
+    return surface_map_[surface_info.id()].get();
   }
 
-  // If a surface with this SurfaceId exists and it's not marked as destroyed,
-  // we should not receive a request to create a new surface with the same
-  // SurfaceId.
-  DCHECK(surface_iter->second->destroyed());
-
-  // If a surface with this SurfaceId exists and it's marked as destroyed,
-  // it means it's in the garbage collector's queue. We simply take it out of
-  // the queue and reuse it.
-  auto it =
-      std::find_if(surfaces_to_destroy_.begin(), surfaces_to_destroy_.end(),
-                   [&surface_info](const std::unique_ptr<Surface>& surface) {
-                     return surface->surface_id() == surface_info.id();
-                   });
-  DCHECK(it != surfaces_to_destroy_.end());
-  std::unique_ptr<Surface> surface = std::move(*it);
-  surfaces_to_destroy_.erase(it);
-  surface->set_destroyed(false);
+  // If a surface with this SurfaceId exists, it must be marked as destroyed.
+  // Otherwise, we wouldn't receive a request to reuse the same SurfaceId.
+  // Remove the surface out of the garbage collector's queue and reuse it.
+  Surface* surface = it->second.get();
+  DCHECK(IsMarkedForDestruction(surface_info.id()));
+  surfaces_to_destroy_.erase(surface_info.id());
   DCHECK_EQ(compositor_frame_sink_support.get(),
             surface->compositor_frame_sink_support().get());
   return surface;
 }
 
-void SurfaceManager::DestroySurface(std::unique_ptr<Surface> surface) {
+void SurfaceManager::DestroySurface(const SurfaceId& surface_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  surface->set_destroyed(true);
+  DCHECK(surface_map_.count(surface_id));
   for (auto& observer : observer_list_)
-    observer.OnSurfaceDestroyed(surface->surface_id());
-  surfaces_to_destroy_.push_back(std::move(surface));
+    observer.OnSurfaceDestroyed(surface_id);
+  surfaces_to_destroy_.insert(surface_id);
   GarbageCollectSurfaces();
 }
 
@@ -243,15 +220,13 @@ void SurfaceManager::GarbageCollectSurfaces() {
                                         ? GetLiveSurfacesForReferences()
                                         : GetLiveSurfacesForSequences();
 
-  std::vector<std::unique_ptr<Surface>> surfaces_to_delete;
+  std::vector<SurfaceId> surfaces_to_delete;
 
   // Delete all destroyed and unreachable surfaces.
   for (auto iter = surfaces_to_destroy_.begin();
        iter != surfaces_to_destroy_.end();) {
-    SurfaceId surface_id = (*iter)->surface_id();
-    if (reachable_surfaces.count(surface_id) == 0) {
-      UnregisterSurface(surface_id);
-      surfaces_to_delete.push_back(std::move(*iter));
+    if (reachable_surfaces.count(*iter) == 0) {
+      surfaces_to_delete.push_back(*iter);
       iter = surfaces_to_destroy_.erase(iter);
     } else {
       ++iter;
@@ -259,7 +234,8 @@ void SurfaceManager::GarbageCollectSurfaces() {
   }
 
   // ~Surface() draw callback could modify |surfaces_to_destroy_|.
-  surfaces_to_delete.clear();
+  for (const SurfaceId& surface_id : surfaces_to_delete)
+    DestroySurfaceInternal(surface_id);
 }
 
 SurfaceManager::SurfaceIdSet SurfaceManager::GetLiveSurfacesForReferences() {
@@ -303,11 +279,12 @@ SurfaceManager::SurfaceIdSet SurfaceManager::GetLiveSurfacesForSequences() {
   // their destruction dependencies satisfied.
   for (auto& map_entry : surface_map_) {
     const SurfaceId& surface_id = map_entry.first;
-    Surface* surface = map_entry.second;
+    Surface* surface = map_entry.second.get();
     surface->SatisfyDestructionDependencies(&satisfied_sequences_,
                                   framesink_manager_.GetValidFrameSinkIds());
 
-    if (!surface->destroyed() || surface->GetDestructionDependencyCount() > 0) {
+    if (!IsMarkedForDestruction(surface_id) ||
+        surface->GetDestructionDependencyCount() > 0) {
       live_surfaces_set.insert(surface_id);
       live_surfaces.push_back(surface_id);
     }
@@ -316,7 +293,7 @@ SurfaceManager::SurfaceIdSet SurfaceManager::GetLiveSurfacesForSequences() {
   // Mark all surfaces reachable from live surfaces by adding them to
   // live_surfaces and live_surfaces_set.
   for (size_t i = 0; i < live_surfaces.size(); i++) {
-    Surface* surf = surface_map_[live_surfaces[i]];
+    Surface* surf = surface_map_[live_surfaces[i]].get();
     DCHECK(surf);
 
     const auto& children = GetSurfacesReferencedByParent(surf->surface_id());
@@ -470,10 +447,10 @@ void SurfaceManager::UnregisterFrameSinkHierarchy(
 
 Surface* SurfaceManager::GetSurfaceForId(const SurfaceId& surface_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  SurfaceMap::iterator it = surface_map_.find(surface_id);
+  auto it = surface_map_.find(surface_id);
   if (it == surface_map_.end())
     return nullptr;
-  return it->second;
+  return it->second.get();
 }
 
 bool SurfaceManager::SurfaceModified(const SurfaceId& surface_id,
@@ -531,10 +508,15 @@ void SurfaceManager::SurfaceDamageExpected(const SurfaceId& surface_id,
     observer.OnSurfaceDamageExpected(surface_id, args);
 }
 
-void SurfaceManager::UnregisterSurface(const SurfaceId& surface_id) {
+void SurfaceManager::DestroySurfaceInternal(const SurfaceId& surface_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  SurfaceMap::iterator it = surface_map_.find(surface_id);
+  auto it = surface_map_.find(surface_id);
   DCHECK(it != surface_map_.end());
+  // Make sure that the surface is removed from the map before being actually
+  // destroyed. An ack could be sent during the destruction of a surface which
+  // could trigger a synchronous frame submission to a half-destroyed surface
+  // and that's not desirable.
+  std::unique_ptr<Surface> doomed = std::move(it->second);
   surface_map_.erase(it);
   RemoveAllSurfaceReferences(surface_id);
 }
@@ -549,7 +531,7 @@ void SurfaceManager::SurfaceReferencesToStringImpl(const SurfaceId& surface_id,
   Surface* surface = GetSurfaceForId(surface_id);
   if (surface) {
     *str << surface->surface_id().ToString();
-    *str << (surface->destroyed() ? " destroyed" : " live");
+    *str << (IsMarkedForDestruction(surface_id) ? " destroyed" : " live");
 
     if (surface->HasPendingFrame()) {
       // This provides the surface size from the root render pass.
@@ -575,5 +557,9 @@ void SurfaceManager::SurfaceReferencesToStringImpl(const SurfaceId& surface_id,
     SurfaceReferencesToStringImpl(child_id, indent + "  ", str);
 }
 #endif  // DCHECK_IS_ON()
+
+bool SurfaceManager::IsMarkedForDestruction(const SurfaceId& surface_id) {
+  return surfaces_to_destroy_.count(surface_id) != 0;
+}
 
 }  // namespace cc

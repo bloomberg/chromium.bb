@@ -29,8 +29,7 @@ Surface::Surface(
       previous_frame_surface_id_(surface_info.id()),
       compositor_frame_sink_support_(std::move(compositor_frame_sink_support)),
       surface_manager_(compositor_frame_sink_support_->surface_manager()),
-      frame_index_(kFrameIndexStart),
-      destroyed_(false) {}
+      frame_index_(kFrameIndexStart) {}
 
 Surface::~Surface() {
   ClearCopyRequests();

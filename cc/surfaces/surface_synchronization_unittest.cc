@@ -76,27 +76,27 @@ class SurfaceSynchronizationTest : public testing::Test {
 
   CompositorFrameSinkSupport& display_support() { return *supports_[0]; }
   Surface* display_surface() {
-    return display_support().current_surface_for_testing();
+    return display_support().GetCurrentSurfaceForTesting();
   }
 
   CompositorFrameSinkSupport& parent_support() { return *supports_[1]; }
   Surface* parent_surface() {
-    return parent_support().current_surface_for_testing();
+    return parent_support().GetCurrentSurfaceForTesting();
   }
 
   CompositorFrameSinkSupport& child_support1() { return *supports_[2]; }
   Surface* child_surface1() {
-    return child_support1().current_surface_for_testing();
+    return child_support1().GetCurrentSurfaceForTesting();
   }
 
   CompositorFrameSinkSupport& child_support2() { return *supports_[3]; }
   Surface* child_surface2() {
-    return child_support2().current_surface_for_testing();
+    return child_support2().GetCurrentSurfaceForTesting();
   }
 
   CompositorFrameSinkSupport& support(int index) { return *supports_[index]; }
   Surface* surface(int index) {
-    return support(index).current_surface_for_testing();
+    return support(index).GetCurrentSurfaceForTesting();
   }
 
   SurfaceManager& surface_manager() { return surface_manager_; }
@@ -175,6 +175,10 @@ class SurfaceSynchronizationTest : public testing::Test {
     supports_.clear();
 
     surface_observer_.Reset();
+  }
+
+  bool IsMarkedForDestruction(const SurfaceId& surface_id) {
+    return surface_manager_.IsMarkedForDestruction(surface_id);
   }
 
  protected:
@@ -1041,7 +1045,7 @@ TEST_F(SurfaceSynchronizationTest, SurfaceResurrection) {
   child_support1().EvictCurrentSurface();
   surface = surface_manager().GetSurfaceForId(child_id);
   EXPECT_NE(nullptr, surface);
-  EXPECT_TRUE(surface->destroyed());
+  EXPECT_TRUE(IsMarkedForDestruction(child_id));
 
   // Child submits another frame to the same local surface id that is marked
   // destroyed.
@@ -1052,7 +1056,7 @@ TEST_F(SurfaceSynchronizationTest, SurfaceResurrection) {
   // used again.
   Surface* surface2 = surface_manager().GetSurfaceForId(child_id);
   EXPECT_EQ(surface, surface2);
-  EXPECT_FALSE(surface2->destroyed());
+  EXPECT_FALSE(IsMarkedForDestruction(child_id));
 }
 
 // Verifies that if a LocalSurfaceId belonged to a surface that doesn't exist
