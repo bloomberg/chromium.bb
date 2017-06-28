@@ -299,7 +299,7 @@ DEFINE_TRACE(DocumentTimeline) {
   visitor->Trace(timing_);
   visitor->Trace(animations_needing_update_);
   visitor->Trace(animations_);
-  SuperAnimationTimeline::Trace(visitor);
+  AnimationTimeline::Trace(visitor);
 }
 
 }  // namespace blink

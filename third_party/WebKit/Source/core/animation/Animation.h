@@ -75,7 +75,7 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
     kFinished
   };
 
-  static Animation* Create(AnimationEffectReadOnly*, SuperAnimationTimeline*);
+  static Animation* Create(AnimationEffectReadOnly*, AnimationTimeline*);
 
   // Web Animations API IDL constructors.
   static Animation* Create(ExecutionContext*,
@@ -83,7 +83,7 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
                            ExceptionState&);
   static Animation* Create(ExecutionContext*,
                            AnimationEffectReadOnly*,
-                           SuperAnimationTimeline*,
+                           AnimationTimeline*,
                            ExceptionState&);
 
   ~Animation();
@@ -139,8 +139,8 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
 
   double playbackRate() const;
   void setPlaybackRate(double);
-  SuperAnimationTimeline* timeline() {
-    return static_cast<SuperAnimationTimeline*>(timeline_);
+  AnimationTimeline* timeline() {
+    return static_cast<AnimationTimeline*>(timeline_);
   }
   const DocumentTimeline* TimelineInternal() const { return timeline_; }
   DocumentTimeline* TimelineInternal() { return timeline_; }
