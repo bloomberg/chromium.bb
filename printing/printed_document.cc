@@ -239,9 +239,10 @@ void PrintedDocument::DebugDumpData(
     const base::FilePath::StringType& extension) {
   if (g_debug_dump_info.Get().empty())
     return;
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::TaskPriority::BACKGROUND, base::MayBlock()},
-      base::BindOnce(&DebugDumpDataTask, name(), extension, data));
+  base::PostTaskWithTraits(FROM_HERE,
+                           {base::TaskPriority::BACKGROUND, base::MayBlock()},
+                           base::BindOnce(&DebugDumpDataTask, name(), extension,
+                                          base::RetainedRef(data)));
 }
 
 PrintedDocument::Mutable::Mutable(PrintedPagesSource* source)
