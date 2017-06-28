@@ -498,6 +498,10 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
       // noticeable that the app widow in background is not actionable.
       $('background').classList.toggle(
           'dimmed-background', state == LOCK_SCREEN_APPS_STATE.BACKGROUND);
+
+      if (state === LOCK_SCREEN_APPS_STATE.FOREGROUND)
+        $('pod-row').clearFocusedPod();
+
     },
 
     /**
