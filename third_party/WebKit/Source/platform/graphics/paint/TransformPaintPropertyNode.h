@@ -92,6 +92,7 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
         compositor_element_id == compositor_element_id_)
       return parent_changed;
 
+    SetChanged();
     matrix_ = matrix;
     origin_ = origin;
     flattens_inherited_transform_ = flattens_inherited_transform;

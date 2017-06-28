@@ -12,14 +12,14 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutSVGEllipse circle",
+          "object": "LayoutSVGRoot svg",
           "rect": [47, 111, 324, 324],
-          "reason": "SVG resource change"
+          "reason": "paint property change"
         },
         {
-          "object": "LayoutSVGEllipse circle",
-          "rect": [8, 154, 170, 238],
-          "reason": "SVG resource change"
+          "object": "LayoutSVGRoot svg",
+          "rect": [8, 154, 102, 238],
+          "reason": "paint property change"
         }
       ]
     }

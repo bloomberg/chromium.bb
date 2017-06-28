@@ -24,7 +24,7 @@
         {
           "object": "LayoutSVGContainer use",
           "rect": [180, 120, 20, 20],
-          "reason": "chunk reordered"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutSVGRect rect",
@@ -34,7 +34,7 @@
         {
           "object": "LayoutSVGContainer use",
           "rect": [80, 120, 20, 20],
-          "reason": "chunk reordered"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutSVGRect rect",

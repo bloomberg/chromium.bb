@@ -18,8 +18,13 @@
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV class='back'",
+          "rect": [93, 125, 180, 100],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='back'",
           "rect": [93, 75, 180, 100],
-          "reason": "subtree"
+          "reason": "paint property change"
         },
         {
           "object": "VerticalScrollbar",

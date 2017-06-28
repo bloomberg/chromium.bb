@@ -514,6 +514,15 @@ void PaintArtifactCompositor::Update(
   host->property_trees()->ResetCachedData();
 
   g_s_property_tree_sequence_number++;
+
+  for (const auto& chunk : paint_artifact.PaintChunks()) {
+    chunk.properties.property_tree_state.ClearChangedToRoot();
+    // TODO(wangxianzhu): This will be unnecessary if we don't call
+    // PaintArtifactCompositor::Update() when paint artifact is unchanged.
+    chunk.client_is_just_created = false;
+    chunk.raster_invalidation_rects.clear();
+    chunk.raster_invalidation_tracking.clear();
+  }
 }
 
 #ifndef NDEBUG

@@ -240,8 +240,70 @@ TEST_F(ContentLayerClientImplTest, RasterInvalidationUncacheableChunks) {
 }
 
 TEST_F(ContentLayerClientImplTest, RasterInvalidationPaintPropertyChange) {
-  // TODO(wangxianzhu): Add this test when implmenting raster invalidation on
-  // paint property change.
+  ContentLayerClientImpl c;
+  CHUNKS(chunks, Chunk(0), Chunk(1), Chunk(2));
+  FloatRoundedRect clip_rect(-100000, -100000, 200000, 200000);
+  RefPtr<ClipPaintPropertyNode> clip0 = ClipPaintPropertyNode::Create(
+      ClipPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(),
+      clip_rect);
+  RefPtr<ClipPaintPropertyNode> clip2 = ClipPaintPropertyNode::Create(
+      clip0, TransformPaintPropertyNode::Root(), clip_rect);
+
+  PropertyTreeState layer_state(TransformPaintPropertyNode::Root(), clip0.Get(),
+                                EffectPaintPropertyNode::Root());
+  chunks_array[0].properties = PaintChunkProperties(layer_state);
+  chunks_array[1].properties = PaintChunkProperties(layer_state);
+  chunks_array[2].properties = PaintChunkProperties(
+      PropertyTreeState(TransformPaintPropertyNode::Root(), clip2.Get(),
+                        EffectPaintPropertyNode::Root()));
+
+  c.SetTracksRasterInvalidations(true);
+  c.UpdateCcPictureLayer(PaintArtifact(), kDefaultLayerBounds, chunks,
+                         layer_state, false);
+  EXPECT_TRUE(TrackedRasterInvalidations(c).IsEmpty());
+
+  // Change both clip0 and clip2.
+  CHUNKS(new_chunks, Chunk(0), Chunk(1), Chunk(2));
+  FloatRoundedRect new_clip_rect(-200000, -200000, 400000, 400000);
+  clip0->Update(clip0->Parent(), clip0->LocalTransformSpace(), new_clip_rect);
+  clip2->Update(clip2->Parent(), clip2->LocalTransformSpace(), new_clip_rect);
+  new_chunks_array[0].properties = chunks[0]->properties;
+  new_chunks_array[1].properties = chunks[1]->properties;
+  new_chunks_array[2].properties = chunks[2]->properties;
+
+  c.UpdateCcPictureLayer(PaintArtifact(), kDefaultLayerBounds, new_chunks,
+                         layer_state, false);
+  const auto& invalidations = TrackedRasterInvalidations(c);
+  ASSERT_EQ(1u, invalidations.size());
+  // Property change in the layer state should not trigger raster invalidation.
+  // |clip2| change should trigger raster invalidation.
+  ExpectChunkInvalidation(invalidations, 0, *new_chunks[2],
+                          PaintInvalidationReason::kPaintProperty);
+  c.SetTracksRasterInvalidations(false);
+  clip2->ClearChangedToRoot();
+
+  // Change chunk1's properties to use a different property tree state.
+  CHUNKS(new_chunks1, Chunk(0), Chunk(1), Chunk(2));
+  new_chunks1_array[0].properties = chunks[0]->properties;
+  new_chunks1_array[1].properties = chunks[2]->properties;
+  new_chunks1_array[2].properties = chunks[2]->properties;
+
+  c.SetTracksRasterInvalidations(true);
+  c.UpdateCcPictureLayer(PaintArtifact(), kDefaultLayerBounds, new_chunks1,
+                         layer_state, false);
+  const auto& invalidations1 = TrackedRasterInvalidations(c);
+  ASSERT_EQ(1u, invalidations1.size());
+  ExpectChunkInvalidation(invalidations1, 0, *new_chunks1[1],
+                          PaintInvalidationReason::kPaintProperty);
+  c.SetTracksRasterInvalidations(false);
+
+  // Change of layer state invalidates the whole layer.
+  c.SetTracksRasterInvalidations(true);
+  c.UpdateCcPictureLayer(PaintArtifact(), kDefaultLayerBounds, new_chunks1,
+                         DefaultPropertyTreeState(), false);
+  const auto& invalidations2 = TrackedRasterInvalidations(c);
+  ASSERT_EQ(1u, invalidations2.size());
+  EXPECT_EQ(PaintInvalidationReason::kFullLayer, invalidations2[0].reason);
 }
 
 }  // namespace blink

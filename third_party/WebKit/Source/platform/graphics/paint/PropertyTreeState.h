@@ -15,9 +15,7 @@
 namespace blink {
 
 // A complete set of paint properties including those that are inherited from
-// other objects.  RefPtrs are used to guard against use-after-free bugs and
-// DCHECKs ensure PropertyTreeState never retains the last reference to a
-// property tree node.
+// other objects.  RefPtrs are used to guard against use-after-free bugs.
 class PLATFORM_EXPORT PropertyTreeState {
   USING_FAST_MALLOC(PropertyTreeState);
 
@@ -25,16 +23,11 @@ class PLATFORM_EXPORT PropertyTreeState {
   PropertyTreeState(const TransformPaintPropertyNode* transform,
                     const ClipPaintPropertyNode* clip,
                     const EffectPaintPropertyNode* effect)
-      : transform_(transform), clip_(clip), effect_(effect) {
-    DCHECK(!transform_ || !transform_->HasOneRef());
-    DCHECK(!clip_ || !clip_->HasOneRef());
-    DCHECK(!effect_ || !effect_->HasOneRef());
-  }
+      : transform_(transform), clip_(clip), effect_(effect) {}
 
   bool HasDirectCompositingReasons() const;
 
   const TransformPaintPropertyNode* Transform() const {
-    DCHECK(!transform_ || !transform_->HasOneRef());
     return transform_.Get();
   }
   void SetTransform(RefPtr<const TransformPaintPropertyNode> node) {
@@ -42,7 +35,6 @@ class PLATFORM_EXPORT PropertyTreeState {
   }
 
   const ClipPaintPropertyNode* Clip() const {
-    DCHECK(!clip_ || !clip_->HasOneRef());
     return clip_.Get();
   }
   void SetClip(RefPtr<const ClipPaintPropertyNode> node) {
@@ -50,7 +42,6 @@ class PLATFORM_EXPORT PropertyTreeState {
   }
 
   const EffectPaintPropertyNode* Effect() const {
-    DCHECK(!effect_ || !effect_->HasOneRef());
     return effect_.Get();
   }
   void SetEffect(RefPtr<const EffectPaintPropertyNode> node) {
@@ -108,6 +99,19 @@ class PLATFORM_EXPORT PropertyTreeState {
   // DCHECK(iterator.next()->innermostNode() == Transform);
   // DCHECK(iterator.next()->innermostNode() == None);
   InnermostNode GetInnermostNode() const;
+
+  // See PaintPropertyNode::Changed().
+  bool Changed(const PropertyTreeState& relative_to_state) const {
+    return Transform()->Changed(*relative_to_state.Transform()) ||
+           Clip()->Changed(*relative_to_state.Clip()) ||
+           Effect()->Changed(*relative_to_state.Effect());
+  }
+
+  void ClearChangedToRoot() const {
+    Transform()->ClearChangedToRoot();
+    Clip()->ClearChangedToRoot();
+    Effect()->ClearChangedToRoot();
+  }
 
 #if DCHECK_IS_ON()
   // Dumps the tree from this state up to the root as a string.

@@ -69,6 +69,7 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
         paint_offset == paint_offset_)
       return parent_changed;
 
+    SetChanged();
     local_transform_space_ = std::move(local_transform_space);
     output_clip_ = std::move(output_clip);
     color_filter_ = color_filter;
