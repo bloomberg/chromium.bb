@@ -22336,6 +22336,7 @@ from previous Chrome versions.
   <int value="-1212273428" label="enable-experimental-app-list"/>
   <int value="-1212167260" label="disable-app-window-cycling"/>
   <int value="-1208501269" label="AutofillScanThemeDialog:enabled"/>
+  <int value="-1206698676" label="MacV2Sandbox:disabled"/>
   <int value="-1206337150"
       label="OmniboxUIExperimentHideSuggestionUrlScheme:disabled"/>
   <int value="-1203955801" label="enable-password-change-support:disabled"/>
@@ -23181,6 +23182,7 @@ from previous Chrome versions.
   <int value="1785093465" label="enable-document-passive-event-listeners"/>
   <int value="1786229999" label="disable-md-downloads"/>
   <int value="1786386775" label="TranslateCompactUI:disabled"/>
+  <int value="1789517771" label="MacV2Sandbox:enabled"/>
   <int value="1803465156" label="enable-zero-suggest-most-visited"/>
   <int value="1809940714" label="SpeculativeLaunchServiceWorker:disabled"/>
   <int value="1812368073" label="enable-new-app-list-mixer"/>
