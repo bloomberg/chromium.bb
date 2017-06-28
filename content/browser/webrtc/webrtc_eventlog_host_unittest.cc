@@ -8,14 +8,16 @@
 
 #include "base/files/file.h"
 #include "base/files/file_util.h"
-#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/common/media/peer_connection_tracker_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_WIN)
@@ -60,12 +62,12 @@ class WebRtcEventlogHostTest : public testing::Test {
     EXPECT_TRUE(base::DeleteFile(base_file_, false));
     EXPECT_FALSE(base::PathExists(base_file_));
     EXPECT_TRUE(event_log_host_.StartWebRTCEventLog(base_file_));
-    base::RunLoop().RunUntilIdle();
+    RunAllBlockingPoolTasksUntilIdle();
   }
 
   void StopLogging() {
     EXPECT_TRUE(event_log_host_.StopWebRTCEventLog());
-    base::RunLoop().RunUntilIdle();
+    RunAllBlockingPoolTasksUntilIdle();
   }
 
   void ValidateStartIPCMessageAndCloseFile(const IPC::Message* msg,
