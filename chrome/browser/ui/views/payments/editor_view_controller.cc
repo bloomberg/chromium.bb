@@ -361,6 +361,7 @@ views::View* EditorViewController::CreateInputField(views::GridLayout* layout,
       field.required ? field.label + base::ASCIIToUTF16("*") : field.label);
 
   label->SetMultiLine(true);
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   layout->AddView(label.release());
 
   views::View* focusable_field = nullptr;

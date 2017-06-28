@@ -62,6 +62,7 @@ void ErrorMessageViewController::FillContentView(views::View* content_view) {
   label->SetEnabledColor(label->GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_AlertSeverityHigh));
   label->SetMultiLine(true);
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   content_view->AddChildView(label.release());
 }
