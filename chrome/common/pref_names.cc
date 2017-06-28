@@ -57,6 +57,12 @@ extern const char kArcCompatibleFilesystemChosen[] =
 // A preference that indicates that user accepted Assistant Value Prop.
 const char kArcVoiceInteractionValuePropAccepted[] =
     "arc.voice_interaction_value_prop.accepted";
+// A preference that indicates the user has enabled voice interaction services.
+const char kVoiceInteractionEnabled[] = "settings.voice_interaction.enabled";
+// A preference that indicates the user has enabled providing context to
+// voice interaction services.
+const char kVoiceInteractionContextEnabled[] =
+    "settings.voice_interaction.context.enabled";
 #endif
 
 // A bool pref that keeps whether the child status for this profile was already
