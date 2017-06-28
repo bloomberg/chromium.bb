@@ -204,12 +204,10 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'CreditCardTests', function() {
 
     test('verifyCreditCardCount', function() {
       var section = self.createAutofillSection_([], []);
-      assertTrue(!!section);
 
       var creditCardList = section.$.creditCardList;
       assertTrue(!!creditCardList);
-      // +1 for the template element.
-      assertEquals(1, creditCardList.children.length);
+      assertEquals(0, creditCardList.querySelectorAll('.list-item').length);
 
       assertFalse(section.$.noCreditCardsLabel.hidden);
       assertTrue(section.$.creditCardsHeading.hidden);
@@ -227,11 +225,10 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'CreditCardTests', function() {
 
       var section = self.createAutofillSection_([], creditCards);
 
-      assertTrue(!!section);
       var creditCardList = section.$.creditCardList;
       assertTrue(!!creditCardList);
-      // +1 for the template element.
-      assertEquals(creditCards.length + 1, creditCardList.children.length);
+      assertEquals(creditCards.length,
+          creditCardList.querySelectorAll('.list-item').length);
 
       assertTrue(section.$.noCreditCardsLabel.hidden);
       assertFalse(section.$.creditCardsHeading.hidden);
@@ -433,6 +430,86 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'CreditCardTests', function() {
         MockInteractions.tap(creditCardDialog.$.cancelButton);
       });
     });
+
+    test('verifyLocalCreditCardMenu', function() {
+      var creditCard = FakeDataMaker.creditCardEntry();
+
+      // When credit card is local, |isCached| will be undefined.
+      creditCard.metadata.isLocal = true;
+      creditCard.metadata.isCached = undefined;
+
+      var section = self.createAutofillSection_([], [creditCard]);
+      var creditCardList = section.$.creditCardList;
+      assertTrue(!!creditCardList);
+      assertEquals(1, creditCardList.querySelectorAll('.list-item').length);
+      var row = creditCardList.children[0];
+
+      // Local credit cards will show the overflow menu.
+      assertFalse(!!row.querySelector('#remoteCreditCardLink'));
+      var menuButton = row.querySelector('#creditCardMenu');
+      assertTrue(!!menuButton);
+
+      menuButton.click();
+      Polymer.dom.flush();
+
+      var menu = section.$.creditCardSharedMenu;
+
+      // Menu should have 2 options.
+      assertFalse(menu.querySelector('#menuEditCreditCard').hidden);
+      assertFalse(menu.querySelector('#menuRemoveCreditCard').hidden);
+      assertTrue(menu.querySelector('#menuClearCreditCard').hidden);
+
+      menu.close();
+      Polymer.dom.flush();
+    });
+
+    test('verifyCachedCreditCardMenu', function() {
+      var creditCard = FakeDataMaker.creditCardEntry();
+
+      creditCard.metadata.isLocal = false;
+      creditCard.metadata.isCached = true;
+
+      var section = self.createAutofillSection_([], [creditCard]);
+      var creditCardList = section.$.creditCardList;
+      assertTrue(!!creditCardList);
+      assertEquals(1, creditCardList.querySelectorAll('.list-item').length);
+      var row = creditCardList.children[0];
+
+      // Cached remote CCs will show overflow menu.
+      assertFalse(!!row.querySelector('#remoteCreditCardLink'));
+      var menuButton = row.querySelector('#creditCardMenu');
+      assertTrue(!!menuButton);
+
+      menuButton.click();
+      Polymer.dom.flush();
+
+      var menu = section.$.creditCardSharedMenu;
+
+      // Menu should have 2 options.
+      assertFalse(menu.querySelector('#menuEditCreditCard').hidden);
+      assertTrue(menu.querySelector('#menuRemoveCreditCard').hidden);
+      assertFalse(menu.querySelector('#menuClearCreditCard').hidden);
+
+      menu.close();
+      Polymer.dom.flush();
+    });
+
+    test('verifyNotCachedCreditCardMenu', function() {
+      var creditCard = FakeDataMaker.creditCardEntry();
+
+      creditCard.metadata.isLocal = false;
+      creditCard.metadata.isCached = false;
+
+      var section = self.createAutofillSection_([], [creditCard]);
+      var creditCardList = section.$.creditCardList;
+      assertTrue(!!creditCardList);
+      assertEquals(1, creditCardList.querySelectorAll('.list-item').length);
+      var row = creditCardList.children[0];
+
+      // No overflow menu when not cached.
+      assertTrue(!!row.querySelector('#remoteCreditCardLink'));
+      assertFalse(!!row.querySelector('#creditCardMenu'));
+    });
   });
 
   mocha.run();
@@ -454,7 +531,6 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'AddressTests', function() {
 
     test('verifyNoAddresses', function() {
       var section = self.createAutofillSection_([], []);
-      assertTrue(!!section);
 
       var addressList = section.$.addressList;
       assertTrue(!!addressList);
@@ -475,11 +551,10 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'AddressTests', function() {
 
       var section = self.createAutofillSection_(addresses, []);
 
-      assertTrue(!!section);
       var addressList = section.$.addressList;
       assertTrue(!!addressList);
-      // +1 for the template element.
-      assertEquals(addresses.length + 1, addressList.children.length);
+      assertEquals(addresses.length,
+          addressList.querySelectorAll('.list-item').length);
 
       assertTrue(section.$.noAddressesLabel.hidden);
     });
@@ -512,7 +587,7 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'AddressTests', function() {
       var addressList = section.$.addressList;
       var row = addressList.children[0];
       assertTrue(!!row);
-      var menuButton = row.querySelector('#addressMenu')
+      var menuButton = row.querySelector('#addressMenu');
       assertTrue(!!menuButton);
       var outlinkButton = row.querySelector('button.icon-external');
       assertFalse(!!outlinkButton);
@@ -525,7 +600,7 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'AddressTests', function() {
       var addressList = section.$.addressList;
       var row = addressList.children[0];
       assertTrue(!!row);
-      var menuButton = row.querySelector('#addressMenu')
+      var menuButton = row.querySelector('#addressMenu');
       assertFalse(!!menuButton);
       var outlinkButton = row.querySelector('button.icon-external');
       assertTrue(!!outlinkButton);
