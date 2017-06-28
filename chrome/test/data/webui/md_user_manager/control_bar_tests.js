@@ -82,6 +82,9 @@ cr.define('user_manager.control_bar_tests', function() {
 
       teardown(function(done) {
         controlBarElement.remove();
+        if (errorDialogElement.$.dialog.open)
+          errorDialogElement.$.dialog.close();
+
         // Allow asynchronous tasks to finish.
         setTimeout(done);
       });
@@ -95,7 +98,7 @@ cr.define('user_manager.control_bar_tests', function() {
           Polymer.dom.flush();
 
           // The dialog is visible.
-          assertTrue(errorDialogElement.$.dialog.opened);
+          assertTrue(errorDialogElement.$.dialog.open);
         });
       });
 
@@ -108,7 +111,7 @@ cr.define('user_manager.control_bar_tests', function() {
           Polymer.dom.flush();
 
           // The error dialog is visible.
-          assertTrue(errorDialogElement.$.dialog.opened);
+          assertTrue(errorDialogElement.$.dialog.open);
         });
       });
 
