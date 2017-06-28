@@ -31,11 +31,8 @@ constexpr int kSelectedButtonRadius = 4;
 constexpr int kInkDropRadius = 8;
 // The padding on top/bottom side of each button.
 constexpr int kButtonPadding = 12;
-// The padding of a list of buttons as a button strip.
-constexpr int kButtonStripPadding = 24;
 constexpr int kMaxButtonRadius = 8;
-constexpr int kPreferredButtonStripWidth =
-    kMaxButtonRadius * 2 + kButtonStripPadding * 2;
+constexpr int kPreferredButtonStripWidth = kMaxButtonRadius * 2;
 
 // The selected button color.
 constexpr SkColor kSelectedButtonColor = SK_ColorWHITE;
@@ -171,8 +168,7 @@ PageSwitcherButton* GetButtonByIndex(views::View* buttons, int index) {
 PageSwitcherVertical::PageSwitcherVertical(PaginationModel* model)
     : model_(model), buttons_(new views::View) {
   buttons_->SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kVertical,
-      gfx::Insets(kButtonStripPadding, kButtonStripPadding), kButtonPadding));
+      views::BoxLayout::kVertical, gfx::Insets(), kButtonPadding));
 
   AddChildView(buttons_);
 

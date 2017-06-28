@@ -204,11 +204,10 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // The page that was showing before ShowSearchResults(true) was invoked.
   int page_before_search_;
 
-  // Whether the fullscreen app list feature is active.
-  const bool is_fullscreen_app_list_enabled_;
-
   // Manages the pagination for the launcher pages.
   PaginationModel pagination_model_;
+
+  const bool is_fullscreen_app_list_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentsView);
 };

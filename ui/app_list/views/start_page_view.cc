@@ -46,10 +46,8 @@ namespace app_list {
 namespace {
 
 // Layout constants.
-constexpr int kSearchBoxTopPadding = 24;
 constexpr int kInstantContainerSpacing = 24;
 constexpr int kSearchBoxAndTilesSpacing = 35;
-constexpr int kSearchBoxAndIndicatorSpacing = 21;
 constexpr int kStartPageSearchBoxWidth = 480;
 constexpr int kStartPageSearchBoxWidthFullscreen = 544;
 
@@ -147,7 +145,7 @@ void StartPageView::InitInstantContainer() {
       views::BoxLayout::kVertical, gfx::Insets(), kInstantContainerSpacing);
   if (is_fullscreen_app_list_enabled_) {
     instant_layout_manager->set_inside_border_insets(
-        gfx::Insets(kSearchBoxTopPadding, 0, kSearchBoxAndIndicatorSpacing, 0));
+        gfx::Insets(kSearchBoxTopPadding, 0, kSearchBoxBottomPadding, 0));
   } else {
     instant_layout_manager->set_inside_border_insets(
         gfx::Insets(0, 0, kSearchBoxAndTilesSpacing, 0));

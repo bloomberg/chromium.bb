@@ -70,7 +70,9 @@ APP_LIST_EXPORT extern const gfx::Tween::Type kFolderFadeInTweenType;
 APP_LIST_EXPORT extern const gfx::Tween::Type kFolderFadeOutTweenType;
 
 APP_LIST_EXPORT extern const int kPreferredCols;
+APP_LIST_EXPORT extern const int kPreferredColsFullscreen;
 APP_LIST_EXPORT extern const int kPreferredRows;
+APP_LIST_EXPORT extern const int kPreferredRowsFullscreen;
 APP_LIST_EXPORT extern const int kGridIconDimension;
 
 APP_LIST_EXPORT extern const int kAppBadgeIconSize;
@@ -92,6 +94,8 @@ APP_LIST_EXPORT extern const int kReorderDroppingCircleRadius;
 
 APP_LIST_EXPORT extern const int kAppsGridPadding;
 APP_LIST_EXPORT extern const int kSearchBoxPadding;
+APP_LIST_EXPORT extern const int kSearchBoxTopPadding;
+APP_LIST_EXPORT extern const int kSearchBoxBottomPadding;
 
 APP_LIST_EXPORT extern size_t kMaxFolderItems;
 APP_LIST_EXPORT extern const size_t kNumFolderTopItems;

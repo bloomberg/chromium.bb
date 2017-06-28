@@ -9,6 +9,7 @@
 
 #include "base/command_line.h"
 #include "ui/app_list/app_list_constants.h"
+#include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_folder_item.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/views/app_list_folder_view.h"
@@ -16,15 +17,35 @@
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/apps_grid_view.h"
 #include "ui/app_list/views/folder_background_view.h"
+#include "ui/app_list/views/indicator_chip_view.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event.h"
+#include "ui/strings/grit/ui_strings.h"
 
 namespace app_list {
 
+namespace {
+
+// Layout constants.
+constexpr int kAllAppsIndicatorExtraPadding = 2;
+
+}  // namespace
+
 AppsContainerView::AppsContainerView(AppListMainView* app_list_main_view,
                                      AppListModel* model)
-    : show_state_(SHOW_NONE), top_icon_animation_pending_count_(0) {
+    : is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()) {
+  if (is_fullscreen_app_list_enabled_) {
+    all_apps_indicator_ = new IndicatorChipView(
+        l10n_util::GetStringUTF16(IDS_ALL_APPS_INDICATOR));
+    AddChildView(all_apps_indicator_);
+  }
   apps_grid_view_ = new AppsGridView(app_list_main_view);
-  apps_grid_view_->SetLayout(kPreferredCols, kPreferredRows);
+  if (is_fullscreen_app_list_enabled_) {
+    apps_grid_view_->SetLayout(kPreferredColsFullscreen,
+                               kPreferredRowsFullscreen);
+  } else {
+    apps_grid_view_->SetLayout(kPreferredCols, kPreferredRows);
+  }
   AddChildView(apps_grid_view_);
 
   folder_background_view_ = new FolderBackgroundView();
@@ -41,8 +62,7 @@ AppsContainerView::AppsContainerView(AppListMainView* app_list_main_view,
   SetShowState(SHOW_APPS, false);
 }
 
-AppsContainerView::~AppsContainerView() {
-}
+AppsContainerView::~AppsContainerView() = default;
 
 void AppsContainerView::ShowActiveFolder(AppListFolderItem* folder_item) {
   // Prevent new animations from starting if there are currently animations
@@ -113,6 +133,16 @@ void AppsContainerView::Layout() {
 
   switch (show_state_) {
     case SHOW_APPS:
+      if (all_apps_indicator_) {
+        gfx::Rect indicator_rect(rect);
+        const gfx::Size indicator_size =
+            all_apps_indicator_->GetPreferredSize();
+        indicator_rect.Inset(
+            (indicator_rect.width() - indicator_size.width()) / 2, 0);
+        all_apps_indicator_->SetBoundsRect(indicator_rect);
+        rect.Inset(0, indicator_size.height() + kAllAppsIndicatorExtraPadding,
+                   0, 0);
+      }
       apps_grid_view_->SetBoundsRect(rect);
       break;
     case SHOW_ACTIVE_FOLDER:
