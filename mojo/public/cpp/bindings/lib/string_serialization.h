@@ -24,7 +24,9 @@ struct Serializer<StringDataView, MaybeConstUserType> {
 
   static size_t PrepareToSerialize(MaybeConstUserType& input,
                                    SerializationContext* context) {
-    if (CallIsNullIfExists<Traits>(input))
+    const bool is_null = CallIsNullIfExists<Traits>(input);
+    context->null_states.container().push_back(is_null);
+    if (is_null)
       return 0;
 
     void* custom_context = CustomContextHelper<Traits>::SetUp(input, context);
@@ -36,7 +38,7 @@ struct Serializer<StringDataView, MaybeConstUserType> {
                         Buffer* buffer,
                         String_Data** output,
                         SerializationContext* context) {
-    if (CallIsNullIfExists<Traits>(input)) {
+    if (context->IsNextFieldNull()) {
       *output = nullptr;
       return;
     }

@@ -238,8 +238,6 @@ struct StructTraits<gfx::mojom::NativePixmapPlaneDataView,
 template <>
 struct StructTraits<gfx::mojom::NativePixmapHandleDataView,
                     gfx::NativePixmapHandle> {
-  using PixmapHandleFdList = std::vector<mojo::ScopedHandle>;
-
   static void* SetUpContext(const gfx::NativePixmapHandle& handle);
   static void TearDownContext(const gfx::NativePixmapHandle& handle,
                               void* context);
@@ -252,8 +250,9 @@ struct StructTraits<gfx::mojom::NativePixmapHandleDataView,
     return true;
 #endif
   }
-  static PixmapHandleFdList fds(const gfx::NativePixmapHandle& pixmap_handle,
-                                void* context);
+  static std::vector<mojo::ScopedHandle>& fds(
+      const gfx::NativePixmapHandle& pixmap_handle,
+      void* context);
 
   static const std::vector<gfx::NativePixmapPlane>& planes(
       const gfx::NativePixmapHandle& pixmap_handle) {
