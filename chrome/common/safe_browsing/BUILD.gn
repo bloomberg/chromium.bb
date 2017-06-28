@@ -42,6 +42,7 @@ source_set("safe_browsing") {
       "protobuf_message_read_macros.h",
       "protobuf_message_size_macros.h",
       "protobuf_message_write_macros.h",
+      "safe_archive_analyzer_param_traits.h",
       "zip_analyzer.cc",
       "zip_analyzer.h",
     ]
