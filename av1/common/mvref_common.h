@@ -389,8 +389,14 @@ void av1_update_mv_context(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 #endif  // CONFIG_EXT_INTER
 
 #if CONFIG_WARPED_MOTION
+#if WARPED_MOTION_SORT_SAMPLES
+int sortSamples(int *pts_mv, MV *mv, int *pts, int *pts_inref, int len);
+int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
+                int *pts, int *pts_inref, int *pts_mv);
+#else
 int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
                 int *pts, int *pts_inref);
+#endif  // WARPED_MOTION_SORT_SAMPLES
 #endif  // CONFIG_WARPED_MOTION
 
 #if CONFIG_INTRABC
