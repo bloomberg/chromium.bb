@@ -11,11 +11,16 @@
 #include "platform/loader/fetch/IntegrityMetadata.h"
 #include "platform/loader/fetch/RawResource.h"
 #include "platform/loader/fetch/Resource.h"
+#include "platform/loader/fetch/ResourceFetcher.h"
+#include "platform/loader/fetch/ResourceLoader.h"
+#include "platform/loader/fetch/ResourceResponse.h"
+#include "platform/loader/testing/MockFetchContext.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/dtoa/utils.h"
+#include "platform/wtf/text/StringBuilder.h"
 #include "platform/wtf/text/WTFString.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -65,6 +70,8 @@ class SubresourceIntegrityTest : public ::testing::Test {
   virtual void SetUp() {
     document = Document::Create();
     script_element = HTMLScriptElement::Create(*document, true);
+    context =
+        MockFetchContext::Create(MockFetchContext::kShouldLoadNewResource);
   }
 
   void ExpectAlgorithm(const String& text, HashAlgorithm expected_algorithm) {
@@ -192,6 +199,7 @@ class SubresourceIntegrityTest : public ::testing::Test {
                               const TestCase test,
                               Expectation expectation) {
     document->UpdateSecurityOrigin(SecurityOrigin::Create(test.origin));
+    context->SetSecurityOrigin(SecurityOrigin::Create(test.origin));
     script_element->setAttribute(HTMLNames::integrityAttr, integrity);
 
     EXPECT_EQ(expectation == kIntegritySuccess,
@@ -205,16 +213,29 @@ class SubresourceIntegrityTest : public ::testing::Test {
   Resource* CreateTestResource(const KURL& url,
                                const KURL* allow_origin_url,
                                ServiceWorkerMode service_worker_mode) {
+    ResourceFetcher* fetcher =
+        ResourceFetcher::Create(context, context->GetTaskRunner());
+    Resource* resource = RawResource::CreateForTest(url, Resource::kRaw);
+    ResourceLoader* loader = ResourceLoader::Create(fetcher, resource);
+
+    ResourceRequest request;
+    request.SetURL(url);
+
     ResourceResponse response;
-    response.SetURL(url);
     response.SetHTTPStatusCode(200);
+    response.SetURL(url);
 
     if (allow_origin_url) {
+      request.SetFetchRequestMode(WebURLRequest::kFetchRequestModeCORS);
+      resource->MutableOptions().cors_handling_by_resource_fetcher =
+          kEnableCORSHandlingByResourceFetcher;
       response.SetHTTPHeaderField(
           "access-control-allow-origin",
           SecurityOrigin::Create(*allow_origin_url)->ToAtomicString());
       response.SetHTTPHeaderField("access-control-allow-credentials", "true");
     }
+
+    resource->SetResourceRequest(request);
 
     if (service_worker_mode != kNoServiceWorker) {
       response.SetWasFetchedViaServiceWorker(true);
@@ -228,9 +249,11 @@ class SubresourceIntegrityTest : public ::testing::Test {
       }
     }
 
-    Resource* resource =
-        RawResource::CreateForTest(response.Url(), Resource::kRaw);
-    resource->SetResponse(response);
+    StringBuilder cors_error_msg;
+    CORSStatus cors_status =
+        loader->DetermineCORSStatus(response, cors_error_msg);
+    resource->SetCORSStatus(cors_status);
+
     return resource;
   }
 
@@ -238,6 +261,7 @@ class SubresourceIntegrityTest : public ::testing::Test {
   KURL insec_url;
 
   Persistent<Document> document;
+  Persistent<MockFetchContext> context;
   Persistent<HTMLScriptElement> script_element;
 };
 

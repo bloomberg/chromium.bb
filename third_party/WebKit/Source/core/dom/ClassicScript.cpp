@@ -106,8 +106,7 @@ void ClassicScript::RunScript(LocalFrame* frame,
   } else {
     CHECK(GetScriptSourceCode().GetResource());
     access_control_status =
-        GetScriptSourceCode().GetResource()->CalculateAccessControlStatus(
-            security_origin);
+        GetScriptSourceCode().GetResource()->CalculateAccessControlStatus();
   }
 
   frame->GetScriptController().ExecuteScriptInMainWorld(GetScriptSourceCode(),
