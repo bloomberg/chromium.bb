@@ -62,12 +62,17 @@
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/network_time/network_time_test_utils.h"
 #include "components/network_time/network_time_tracker.h"
+#include "components/policy/core/browser/browser_policy_connector.h"
+#include "components/policy/core/common/mock_configuration_policy_provider.h"
+#include "components/policy/core/common/policy_map.h"
+#include "components/policy/policy_constants.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/security_interstitials/core/controller_client.h"
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "components/security_state/core/security_state.h"
 #include "components/security_state/core/switches.h"
+#include "components/ssl_config/ssl_config_prefs.h"
 #include "components/ssl_errors/error_classification.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/variations/variations_associated_data.h"
@@ -317,6 +322,14 @@ net::HashValue GetSPKIHash(net::X509Certificate* cert) {
   return sha256;
 }
 
+net::SpawnedTestServer::SSLOptions GetOCSPSSLOptions(
+    net::SpawnedTestServer::SSLOptions::OCSPStatus ocsp_status) {
+  net::SpawnedTestServer::SSLOptions ssl_options(
+      net::SpawnedTestServer::SSLOptions::CERT_AUTO);
+  ssl_options.ocsp_status = ocsp_status;
+  return ssl_options;
+}
+
 }  // namespace
 
 class SSLUITest : public InProcessBrowserTest {
@@ -325,6 +338,14 @@ class SSLUITest : public InProcessBrowserTest {
       : https_server_(net::EmbeddedTestServer::TYPE_HTTPS),
         https_server_expired_(net::EmbeddedTestServer::TYPE_HTTPS),
         https_server_mismatched_(net::EmbeddedTestServer::TYPE_HTTPS),
+        https_server_ocsp_ok_(
+            net::SpawnedTestServer::TYPE_HTTPS,
+            GetOCSPSSLOptions(net::SpawnedTestServer::SSLOptions::OCSP_OK),
+            base::FilePath(kDocRoot)),
+        https_server_ocsp_revoked_(
+            net::SpawnedTestServer::TYPE_HTTPS,
+            GetOCSPSSLOptions(net::SpawnedTestServer::SSLOptions::OCSP_REVOKED),
+            base::FilePath(kDocRoot)),
         wss_server_expired_(net::SpawnedTestServer::TYPE_WSS,
                             SSLOptions(SSLOptions::CERT_EXPIRED),
                             net::GetWebSocketTestDataDirectory()),
@@ -356,6 +377,11 @@ class SSLUITest : public InProcessBrowserTest {
   }
 
   void SetUp() override {
+    EXPECT_CALL(policy_provider_, IsInitializationComplete(testing::_))
+        .WillRepeatedly(testing::Return(true));
+    policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
+        &policy_provider_);
+
     InProcessBrowserTest::SetUp();
     SSLErrorHandler::ResetConfigForTesting();
   }
@@ -663,9 +689,32 @@ class SSLUITest : public InProcessBrowserTest {
     }
   }
 
+  void UpdateChromePolicy(const policy::PolicyMap& policies) {
+    policy_provider_.UpdateChromePolicy(policies);
+    DCHECK(base::MessageLoop::current());
+    base::RunLoop loop;
+    loop.RunUntilIdle();
+  }
+
+  void EnableRevocationChecking() {
+    policy::PolicyMap policy_map;
+    policy_map.Set(policy::key::kEnableOnlineRevocationChecks,
+                   policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_MACHINE,
+                   policy::POLICY_SOURCE_CLOUD,
+                   base::MakeUnique<base::Value>(true), nullptr);
+    UpdateChromePolicy(policy_map);
+
+    EXPECT_TRUE(g_browser_process->local_state()->GetBoolean(
+        ssl_config::prefs::kCertRevocationCheckingEnabled));
+    EXPECT_TRUE(g_browser_process->local_state()->IsManagedPreference(
+        ssl_config::prefs::kCertRevocationCheckingEnabled));
+  }
+
   net::EmbeddedTestServer https_server_;
   net::EmbeddedTestServer https_server_expired_;
   net::EmbeddedTestServer https_server_mismatched_;
+  net::SpawnedTestServer https_server_ocsp_ok_;
+  net::SpawnedTestServer https_server_ocsp_revoked_;
   net::SpawnedTestServer wss_server_expired_;
   net::SpawnedTestServer wss_server_mismatched_;
 
@@ -701,6 +750,8 @@ class SSLUITest : public InProcessBrowserTest {
 
  private:
   typedef net::SpawnedTestServer::SSLOptions SSLOptions;
+
+  policy::MockConfigurationPolicyProvider policy_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLUITest);
 };
@@ -1234,6 +1285,42 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndGoForward) {
   EXPECT_FALSE(tab->GetController().CanGoForward());
   NavigationEntry* entry4 = tab->GetController().GetActiveEntry();
   EXPECT_TRUE(entry2 == entry4);
+}
+
+// Visits a page with revocation checking enabled and a valid OCSP response.
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSOCSPOk) {
+  EnableRevocationChecking();
+
+  ASSERT_TRUE(https_server_ocsp_ok_.Start());
+
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_ocsp_ok_.GetURL("/ssl/google.html"));
+
+  CheckAuthenticatedState(browser()->tab_strip_model()->GetActiveWebContents(),
+                          AuthState::NONE);
+
+  content::NavigationEntry* entry = browser()
+                                        ->tab_strip_model()
+                                        ->GetActiveWebContents()
+                                        ->GetController()
+                                        .GetActiveEntry();
+  ASSERT_TRUE(entry);
+  EXPECT_TRUE(entry->GetSSL().cert_status &
+              net::CERT_STATUS_REV_CHECKING_ENABLED);
+}
+
+// Visits a page with revocation checking enabled and a revoked OCSP response.
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSOCSPRevoked) {
+  EnableRevocationChecking();
+
+  ASSERT_TRUE(https_server_ocsp_revoked_.Start());
+
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_ocsp_revoked_.GetURL("/ssl/google.html"));
+
+  CheckAuthenticationBrokenState(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      net::CERT_STATUS_REVOKED, AuthState::SHOWING_INTERSTITIAL);
 }
 
 // Visit a HTTP page which request WSS connection to a server providing invalid
