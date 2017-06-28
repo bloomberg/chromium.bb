@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/task_scheduler/post_task.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
@@ -51,9 +50,11 @@ void SetDefaultScopedPtrValue(std::unique_ptr<T>& ptr, const T& value) {
 
 }  // namespace
 
-SerialAsyncApiFunction::SerialAsyncApiFunction() : manager_(NULL) {}
+SerialAsyncApiFunction::SerialAsyncApiFunction() : manager_(NULL) {
+}
 
-SerialAsyncApiFunction::~SerialAsyncApiFunction() {}
+SerialAsyncApiFunction::~SerialAsyncApiFunction() {
+}
 
 bool SerialAsyncApiFunction::PrePrepare() {
   manager_ = ApiResourceManager<SerialConnection>::Get(browser_context());
@@ -74,16 +75,16 @@ void SerialAsyncApiFunction::RemoveSerialConnection(int api_resource_id) {
   manager_->Remove(extension_->id(), api_resource_id);
 }
 
-SerialGetDevicesFunction::SerialGetDevicesFunction() {}
+SerialGetDevicesFunction::SerialGetDevicesFunction() {
+}
 
 bool SerialGetDevicesFunction::Prepare() {
-  set_work_task_runner(base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::BACKGROUND}));
+  set_work_thread_id(BrowserThread::FILE);
   return true;
 }
 
 void SerialGetDevicesFunction::Work() {
-  DCHECK(work_task_runner()->RunsTasksInCurrentSequence());
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   std::unique_ptr<device::SerialDeviceEnumerator> enumerator =
       device::SerialDeviceEnumerator::Create();
@@ -92,9 +93,11 @@ void SerialGetDevicesFunction::Work() {
       mojo::ConvertTo<std::vector<serial::DeviceInfo>>(devices));
 }
 
-SerialConnectFunction::SerialConnectFunction() {}
+SerialConnectFunction::SerialConnectFunction() {
+}
 
-SerialConnectFunction::~SerialConnectFunction() {}
+SerialConnectFunction::~SerialConnectFunction() {
+}
 
 bool SerialConnectFunction::Prepare() {
   params_ = serial::Connect::Params::Create(*args_);
@@ -141,7 +144,8 @@ void SerialConnectFunction::OnConnected(bool success) {
   }
 
   BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+      BrowserThread::IO,
+      FROM_HERE,
       base::Bind(&SerialConnectFunction::FinishConnect, this));
 }
 
@@ -170,9 +174,11 @@ SerialConnection* SerialConnectFunction::CreateSerialConnection(
   return new SerialConnection(port, extension_id);
 }
 
-SerialUpdateFunction::SerialUpdateFunction() {}
+SerialUpdateFunction::SerialUpdateFunction() {
+}
 
-SerialUpdateFunction::~SerialUpdateFunction() {}
+SerialUpdateFunction::~SerialUpdateFunction() {
+}
 
 bool SerialUpdateFunction::Prepare() {
   params_ = serial::Update::Params::Create(*args_);
@@ -191,9 +197,11 @@ void SerialUpdateFunction::Work() {
   results_ = serial::Update::Results::Create(success);
 }
 
-SerialDisconnectFunction::SerialDisconnectFunction() {}
+SerialDisconnectFunction::SerialDisconnectFunction() {
+}
 
-SerialDisconnectFunction::~SerialDisconnectFunction() {}
+SerialDisconnectFunction::~SerialDisconnectFunction() {
+}
 
 bool SerialDisconnectFunction::Prepare() {
   params_ = serial::Disconnect::Params::Create(*args_);
@@ -212,9 +220,11 @@ void SerialDisconnectFunction::Work() {
   results_ = serial::Disconnect::Results::Create(true);
 }
 
-SerialSendFunction::SerialSendFunction() {}
+SerialSendFunction::SerialSendFunction() {
+}
 
-SerialSendFunction::~SerialSendFunction() {}
+SerialSendFunction::~SerialSendFunction() {
+}
 
 bool SerialSendFunction::Prepare() {
   params_ = serial::Send::Params::Create(*args_);
@@ -247,9 +257,11 @@ void SerialSendFunction::OnSendComplete(int bytes_sent,
   AsyncWorkCompleted();
 }
 
-SerialFlushFunction::SerialFlushFunction() {}
+SerialFlushFunction::SerialFlushFunction() {
+}
 
-SerialFlushFunction::~SerialFlushFunction() {}
+SerialFlushFunction::~SerialFlushFunction() {
+}
 
 bool SerialFlushFunction::Prepare() {
   params_ = serial::Flush::Params::Create(*args_);
@@ -268,9 +280,11 @@ void SerialFlushFunction::Work() {
   results_ = serial::Flush::Results::Create(success);
 }
 
-SerialSetPausedFunction::SerialSetPausedFunction() {}
+SerialSetPausedFunction::SerialSetPausedFunction() {
+}
 
-SerialSetPausedFunction::~SerialSetPausedFunction() {}
+SerialSetPausedFunction::~SerialSetPausedFunction() {
+}
 
 bool SerialSetPausedFunction::Prepare() {
   params_ = serial::SetPaused::Params::Create(*args_);
@@ -299,9 +313,11 @@ void SerialSetPausedFunction::Work() {
   results_ = serial::SetPaused::Results::Create();
 }
 
-SerialGetInfoFunction::SerialGetInfoFunction() {}
+SerialGetInfoFunction::SerialGetInfoFunction() {
+}
 
-SerialGetInfoFunction::~SerialGetInfoFunction() {}
+SerialGetInfoFunction::~SerialGetInfoFunction() {
+}
 
 bool SerialGetInfoFunction::Prepare() {
   params_ = serial::GetInfo::Params::Create(*args_);
@@ -323,9 +339,11 @@ void SerialGetInfoFunction::Work() {
   results_ = serial::GetInfo::Results::Create(info);
 }
 
-SerialGetConnectionsFunction::SerialGetConnectionsFunction() {}
+SerialGetConnectionsFunction::SerialGetConnectionsFunction() {
+}
 
-SerialGetConnectionsFunction::~SerialGetConnectionsFunction() {}
+SerialGetConnectionsFunction::~SerialGetConnectionsFunction() {
+}
 
 bool SerialGetConnectionsFunction::Prepare() {
   return true;
@@ -337,7 +355,8 @@ void SerialGetConnectionsFunction::Work() {
       manager_->GetResourceIds(extension_->id());
   if (connection_ids) {
     for (base::hash_set<int>::const_iterator it = connection_ids->begin();
-         it != connection_ids->end(); ++it) {
+         it != connection_ids->end();
+         ++it) {
       int connection_id = *it;
       SerialConnection* connection = GetSerialConnection(connection_id);
       if (connection) {
@@ -351,9 +370,11 @@ void SerialGetConnectionsFunction::Work() {
   results_ = serial::GetConnections::Results::Create(infos);
 }
 
-SerialGetControlSignalsFunction::SerialGetControlSignalsFunction() {}
+SerialGetControlSignalsFunction::SerialGetControlSignalsFunction() {
+}
 
-SerialGetControlSignalsFunction::~SerialGetControlSignalsFunction() {}
+SerialGetControlSignalsFunction::~SerialGetControlSignalsFunction() {
+}
 
 bool SerialGetControlSignalsFunction::Prepare() {
   params_ = serial::GetControlSignals::Params::Create(*args_);
@@ -378,9 +399,11 @@ void SerialGetControlSignalsFunction::Work() {
   results_ = serial::GetControlSignals::Results::Create(signals);
 }
 
-SerialSetControlSignalsFunction::SerialSetControlSignalsFunction() {}
+SerialSetControlSignalsFunction::SerialSetControlSignalsFunction() {
+}
 
-SerialSetControlSignalsFunction::~SerialSetControlSignalsFunction() {}
+SerialSetControlSignalsFunction::~SerialSetControlSignalsFunction() {
+}
 
 bool SerialSetControlSignalsFunction::Prepare() {
   params_ = serial::SetControlSignals::Params::Create(*args_);
@@ -400,9 +423,11 @@ void SerialSetControlSignalsFunction::Work() {
   results_ = serial::SetControlSignals::Results::Create(success);
 }
 
-SerialSetBreakFunction::SerialSetBreakFunction() {}
+SerialSetBreakFunction::SerialSetBreakFunction() {
+}
 
-SerialSetBreakFunction::~SerialSetBreakFunction() {}
+SerialSetBreakFunction::~SerialSetBreakFunction() {
+}
 
 bool SerialSetBreakFunction::Prepare() {
   params_ = serial::SetBreak::Params::Create(*args_);
@@ -421,9 +446,11 @@ void SerialSetBreakFunction::Work() {
   results_ = serial::SetBreak::Results::Create(success);
 }
 
-SerialClearBreakFunction::SerialClearBreakFunction() {}
+SerialClearBreakFunction::SerialClearBreakFunction() {
+}
 
-SerialClearBreakFunction::~SerialClearBreakFunction() {}
+SerialClearBreakFunction::~SerialClearBreakFunction() {
+}
 
 bool SerialClearBreakFunction::Prepare() {
   params_ = serial::ClearBreak::Params::Create(*args_);

@@ -5,8 +5,7 @@
 #ifndef EXTENSIONS_BROWSER_API_ASYNC_API_FUNCTION_H_
 #define EXTENSIONS_BROWSER_API_ASYNC_API_FUNCTION_H_
 
-#include "base/memory/ref_counted.h"
-#include "base/sequenced_task_runner.h"
+#include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_function.h"
 
 namespace extensions {
@@ -26,11 +25,11 @@ class AsyncApiFunction : public AsyncExtensionFunction {
   // thread.
   virtual bool Prepare() = 0;
 
-  // Do actual work. Guaranteed to happen on the task runner specified in
-  // |work_task_runner_| if non-null; or on the IO thread otherwise.
+  // Do actual work. Guaranteed to happen on the thread specified in
+  // work_thread_id_.
   virtual void Work();
 
-  // Start the asynchronous work. Guraranteed to happen on work thread.
+  // Start the asynchronous work. Guraranteed to happen on requested thread.
   virtual void AsyncWorkStart();
 
   // Notify AsyncIOApiFunction that the work is completed
@@ -43,12 +42,9 @@ class AsyncApiFunction : public AsyncExtensionFunction {
   bool RunAsync() override;
 
  protected:
-  scoped_refptr<base::SequencedTaskRunner> work_task_runner() const {
-    return work_task_runner_;
-  }
-  void set_work_task_runner(
-      scoped_refptr<base::SequencedTaskRunner> work_task_runner) {
-    work_task_runner_ = work_task_runner;
+  content::BrowserThread::ID work_thread_id() const { return work_thread_id_; }
+  void set_work_thread_id(content::BrowserThread::ID work_thread_id) {
+    work_thread_id_ = work_thread_id;
   }
 
  private:
@@ -56,8 +52,8 @@ class AsyncApiFunction : public AsyncExtensionFunction {
   void RespondOnUIThread();
 
   // If you don't want your Work() method to happen on the IO thread, then set
-  // this to the SequenceTaskRunner you do want to use, preferably in Prepare().
-  scoped_refptr<base::SequencedTaskRunner> work_task_runner_;
+  // this to the thread that you do want, preferably in Prepare().
+  content::BrowserThread::ID work_thread_id_;
 };
 
 }  // namespace extensions
