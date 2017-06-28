@@ -86,7 +86,11 @@ public class WebappActivity extends FullScreenActivity {
     public WebappActivity() {
         mWebappInfo = createWebappInfo(null);
         mDirectoryManager = new WebappDirectoryManager();
-        mSplashController = new WebappSplashScreenController();
+        mSplashController = createWebappSplashScreenController();
+    }
+
+    protected WebappSplashScreenController createWebappSplashScreenController() {
+        return new WebappSplashScreenController();
     }
 
     @Override
