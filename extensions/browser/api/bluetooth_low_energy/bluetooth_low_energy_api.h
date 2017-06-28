@@ -438,6 +438,7 @@ class BluetoothLowEnergyAdvertisementFunction
   int AddAdvertisement(BluetoothApiAdvertisement* advertisement);
   BluetoothApiAdvertisement* GetAdvertisement(int advertisement_id);
   void RemoveAdvertisement(int advertisement_id);
+  const base::hash_set<int>* GetAdvertisementIds();
 
   // ExtensionFunction override.
   bool RunAsync() override;
@@ -483,6 +484,23 @@ class BluetoothLowEnergyUnregisterAdvertisementFunction
   void SuccessCallback(int advertisement_id);
   void ErrorCallback(int advertisement_id,
                      device::BluetoothAdvertisement::ErrorCode status);
+};
+
+class BluetoothLowEnergyResetAdvertisingFunction
+    : public BluetoothLowEnergyAdvertisementFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("bluetoothLowEnergy.resetAdvertising",
+                             BLUETOOTHLOWENERGY_RESETADVERTISING);
+
+ protected:
+  ~BluetoothLowEnergyResetAdvertisingFunction() override {}
+
+  // BluetoothLowEnergyExtensionFunctionDeprecated override.
+  bool DoWork() override;
+
+ private:
+  void SuccessCallback();
+  void ErrorCallback(device::BluetoothAdvertisement::ErrorCode status);
 };
 
 class BluetoothLowEnergySetAdvertisingIntervalFunction

@@ -40,6 +40,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdvertisement
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
     ERROR_INVALID_ADVERTISEMENT_INTERVAL,  // Advertisement interval specified
                                            // is out of valid range.
+    ERROR_RESET_ADVERTISING,               // Error while resetting advertising.
 #endif
     INVALID_ADVERTISEMENT_ERROR_CODE
   };

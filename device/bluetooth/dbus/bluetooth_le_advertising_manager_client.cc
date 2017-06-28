@@ -133,6 +133,24 @@ class BluetoothAdvertisementManagerClientImpl
                    weak_ptr_factory_.GetWeakPtr(), error_callback));
   }
 
+  void ResetAdvertising(const dbus::ObjectPath& manager_object_path,
+                        const base::Closure& callback,
+                        const ErrorCallback& error_callback) override {
+    dbus::MethodCall method_call(
+        bluetooth_advertising_manager::kBluetoothAdvertisingManagerInterface,
+        bluetooth_advertising_manager::kResetAdvertising);
+
+    DCHECK(object_manager_);
+    dbus::ObjectProxy* object_proxy =
+        object_manager_->GetObjectProxy(manager_object_path);
+    object_proxy->CallMethodWithErrorCallback(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&BluetoothAdvertisementManagerClientImpl::OnSuccess,
+                   weak_ptr_factory_.GetWeakPtr(), callback),
+        base::Bind(&BluetoothAdvertisementManagerClientImpl::OnError,
+                   weak_ptr_factory_.GetWeakPtr(), error_callback));
+  }
+
  protected:
   void Init(dbus::Bus* bus) override {
     DCHECK(bus);

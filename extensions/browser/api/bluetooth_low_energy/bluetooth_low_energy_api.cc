@@ -1089,8 +1089,29 @@ void BluetoothLowEnergyAdvertisementFunction::RemoveAdvertisement(
   advertisements_manager_->Remove(extension_id(), advertisement_id);
 }
 
+const base::hash_set<int>*
+BluetoothLowEnergyAdvertisementFunction::GetAdvertisementIds() {
+  return advertisements_manager_->GetResourceIds(extension_id());
+}
+
 bool BluetoothLowEnergyAdvertisementFunction::RunAsync() {
   Initialize();
+
+  // Check permission in the manifest.
+  if (!BluetoothManifestData::CheckPeripheralPermitted(extension())) {
+    SetError(kErrorPermissionDenied);
+    return false;
+  }
+
+  // For advertisement API to be available the app has to be either auto
+  // launched in Kiosk Mode or the enable-ble-advertisement-in-apps
+  // should be set.
+  if (!(IsAutoLaunchedKioskApp(extension()->id()) ||
+        IsPeripheralFlagEnabled())) {
+    SetError(kErrorPermissionDenied);
+    return false;
+  }
+
   return BluetoothLowEnergyExtensionFunctionDeprecated::RunAsync();
 }
 
@@ -1103,23 +1124,6 @@ void BluetoothLowEnergyAdvertisementFunction::Initialize() {
 
 bool BluetoothLowEnergyRegisterAdvertisementFunction::DoWork() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  // Check permissions in manifest.
-  if (!BluetoothManifestData::CheckPeripheralPermitted(extension())) {
-    error_ = kErrorPermissionDenied;
-    SendResponse(false);
-    return false;
-  }
-
-  // For this API to be available the app has to be either auto
-  // launched in Kiosk Mode or the enable-ble-advertisement-in-apps
-  // should be set.
-  if (!(IsAutoLaunchedKioskApp(extension()->id()) ||
-        IsPeripheralFlagEnabled())) {
-    error_ = kErrorPermissionDenied;
-    SendResponse(false);
-    return false;
-  }
 
   BluetoothLowEnergyEventRouter* event_router =
       GetEventRouter(browser_context());
@@ -1199,23 +1203,6 @@ void BluetoothLowEnergyRegisterAdvertisementFunction::ErrorCallback(
 bool BluetoothLowEnergyUnregisterAdvertisementFunction::DoWork() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // Check permission in the manifest.
-  if (!BluetoothManifestData::CheckPeripheralPermitted(extension())) {
-    error_ = kErrorPermissionDenied;
-    SendResponse(false);
-    return false;
-  }
-
-  // For this API to be available the app has to be either auto
-  // launched in Kiosk Mode or the enable-ble-advertisement-in-apps
-  // should be set.
-  if (!(IsAutoLaunchedKioskApp(extension()->id()) ||
-        IsPeripheralFlagEnabled())) {
-    error_ = kErrorPermissionDenied;
-    SendResponse(false);
-    return false;
-  }
-
   BluetoothLowEnergyEventRouter* event_router =
       GetEventRouter(browser_context());
 
@@ -1264,6 +1251,54 @@ void BluetoothLowEnergyUnregisterAdvertisementFunction::ErrorCallback(
     default:
       SetError(kErrorOperationFailed);
   }
+  SendResponse(false);
+}
+
+// ResetAdvertising:
+
+bool BluetoothLowEnergyResetAdvertisingFunction::DoWork() {
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  BluetoothLowEnergyEventRouter* event_router =
+      GetEventRouter(browser_context());
+
+  // If the adapter is not initialized, there is nothing to reset.
+  if (!event_router->HasAdapter()) {
+    SendResponse(true);
+    return true;
+  }
+
+  const base::hash_set<int>* advertisement_ids = GetAdvertisementIds();
+  if (!advertisement_ids || advertisement_ids->empty()) {
+    SendResponse(true);
+    return true;
+  }
+
+  // Copy the hash set, as RemoveAdvertisement can change advertisement_ids
+  // while we are iterating over it.
+  base::hash_set<int> advertisement_ids_tmp = *advertisement_ids;
+  for (int advertisement_id : advertisement_ids_tmp) {
+    RemoveAdvertisement(advertisement_id);
+  }
+
+  event_router->adapter()->ResetAdvertising(
+      base::Bind(&BluetoothLowEnergyResetAdvertisingFunction::SuccessCallback,
+                 this),
+      base::Bind(&BluetoothLowEnergyResetAdvertisingFunction::ErrorCallback,
+                 this));
+#endif
+
+  return true;
+}
+
+void BluetoothLowEnergyResetAdvertisingFunction::SuccessCallback() {
+  SendResponse(true);
+}
+
+void BluetoothLowEnergyResetAdvertisingFunction::ErrorCallback(
+    device::BluetoothAdvertisement::ErrorCode status) {
+  error_ = kErrorOperationFailed;
   SendResponse(false);
 }
 

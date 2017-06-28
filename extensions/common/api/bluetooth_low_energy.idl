@@ -470,6 +470,11 @@ namespace bluetoothLowEnergy {
     static void unregisterAdvertisement(long advertisementId,
         ResultCallback callback);
 
+    // Resets advertising on the current device. It will unregister and
+    // stop all existing advertisements.
+    // |callback|: Called once the advertisements are reset.
+    static void resetAdvertising(ResultCallback callback);
+
     // Set's the interval betweeen two consecutive advertisements. Note:
     // This is a best effort. The actual interval may vary non-trivially
     // from the requested intervals. On some hardware, there is a minimum

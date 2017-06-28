@@ -76,6 +76,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLEAdvertisingManagerClient
       const base::Closure& callback,
       const ErrorCallback& error_callback) = 0;
 
+  // Resets advertising.
+  virtual void ResetAdvertising(const dbus::ObjectPath& manager_object_path,
+                                const base::Closure& callback,
+                                const ErrorCallback& error_callback) = 0;
+
   // Creates the instance.
   static BluetoothLEAdvertisingManagerClient* Create();
 
