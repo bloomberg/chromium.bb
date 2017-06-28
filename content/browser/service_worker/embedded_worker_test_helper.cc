@@ -610,7 +610,8 @@ void EmbeddedWorkerTestHelper::SimulateWorkerStarted(int embedded_worker_id) {
   EmbeddedWorkerInstance* worker = registry()->GetWorker(embedded_worker_id);
   ASSERT_TRUE(worker);
   ASSERT_TRUE(embedded_worker_id_instance_host_ptr_map_[embedded_worker_id]);
-  embedded_worker_id_instance_host_ptr_map_[embedded_worker_id]->OnStarted();
+  embedded_worker_id_instance_host_ptr_map_[embedded_worker_id]->OnStarted(
+      mojom::EmbeddedWorkerStartTiming::New());
   base::RunLoop().RunUntilIdle();
 }
 

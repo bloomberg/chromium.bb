@@ -1239,7 +1239,11 @@ void ServiceWorkerContextClient::SendWorkerStarted() {
   TRACE_EVENT_ASYNC_END0("ServiceWorker",
                          "ServiceWorkerContextClient::StartingWorkerContext",
                          this);
-  (*instance_host_)->OnStarted();
+  mojom::EmbeddedWorkerStartTimingPtr timing =
+      mojom::EmbeddedWorkerStartTiming::New();
+  timing->start_worker_received_time = start_worker_received_time_;
+  timing->blink_initialized_time = blink_initialized_time_;
+  (*instance_host_)->OnStarted(std::move(timing));
 }
 
 void ServiceWorkerContextClient::SetRegistrationInServiceWorkerGlobalScope(

@@ -233,7 +233,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   // Fires the callback passed to Start().
   void OnScriptEvaluated(bool success) override;
   // Changes the internal worker status from STARTING to RUNNING.
-  void OnStarted() override;
+  void OnStarted(mojom::EmbeddedWorkerStartTimingPtr start_timing) override;
   // Resets the embedded worker instance to the initial state. This will change
   // the internal status from STARTING or RUNNING to STOPPED.
   void OnStopped() override;

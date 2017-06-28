@@ -280,6 +280,13 @@ class EmbeddedWorkerInstance::StartTask {
     // TODO(nhiroki): Reconsider this bizarre layering.
   }
 
+  void set_start_worker_sent_time(base::TimeTicks time) {
+    start_worker_sent_time_ = time;
+  }
+  base::TimeTicks start_worker_sent_time() const {
+    return start_worker_sent_time_;
+  }
+
   void Start(std::unique_ptr<EmbeddedWorkerStartParams> params,
              const StatusCallback& callback) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -417,6 +424,7 @@ class EmbeddedWorkerInstance::StartTask {
   // Used for UMA.
   bool is_installed_;
   bool started_during_browser_startup_;
+  base::TimeTicks start_worker_sent_time_;
 
   base::WeakPtrFactory<StartTask> weak_factory_;
 
@@ -452,6 +460,7 @@ void EmbeddedWorkerInstance::Start(
 
   DCHECK(!params->pause_after_download || !params->is_installed);
   DCHECK_NE(kInvalidServiceWorkerVersionId, params->service_worker_version_id);
+
   step_time_ = base::TimeTicks::Now();
   status_ = EmbeddedWorkerStatus::STARTING;
   starting_phase_ = ALLOCATING_PROCESS;
@@ -594,15 +603,12 @@ ServiceWorkerStatusCode EmbeddedWorkerInstance::SendStartWorker(
   mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo host_ptr_info;
   instance_host_binding_.Bind(mojo::MakeRequest(&host_ptr_info));
 
-  DCHECK(pending_dispatcher_request_.is_pending());
+  inflight_start_task_->set_start_worker_sent_time(base::TimeTicks::Now());
   client_->StartWorker(*params, std::move(pending_dispatcher_request_),
                        std::move(host_ptr_info));
   registry_->BindWorkerToProcess(process_id(), embedded_worker_id());
   OnStartWorkerMessageSent();
-  // Once the start worker message is received, renderer side will prepare a
-  // shadow page for getting worker script.
-  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ServiceWorker", "PREPARING_SCRIPT_LOAD",
-                                    this);
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ServiceWorker", "SENT_START_WORKER", this);
   return SERVICE_WORKER_OK;
 }
 
@@ -676,10 +682,7 @@ void EmbeddedWorkerInstance::OnScriptLoaded() {
 }
 
 void EmbeddedWorkerInstance::OnURLJobCreatedForMainScript() {
-  // Indicates that the shadow page has been created in renderer side and starts
-  // to get the worker script.
-  TRACE_EVENT_NESTABLE_ASYNC_END0("ServiceWorker", "PREPARING_SCRIPT_LOAD",
-                                  this);
+  TRACE_EVENT_NESTABLE_ASYNC_END0("ServiceWorker", "SENT_START_WORKER", this);
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ServiceWorker", "SCRIPT_LOADING", this);
   if (!inflight_start_task_)
     return;
@@ -778,12 +781,19 @@ void EmbeddedWorkerInstance::OnScriptEvaluated(bool success) {
   // |this| may be destroyed by the callback.
 }
 
-void EmbeddedWorkerInstance::OnStarted() {
+void EmbeddedWorkerInstance::OnStarted(
+    mojom::EmbeddedWorkerStartTimingPtr start_timing) {
   if (!registry_->OnWorkerStarted(process_id(), embedded_worker_id_))
     return;
   // Stop is requested before OnStarted is sent back from the worker.
   if (status_ == EmbeddedWorkerStatus::STOPPING)
     return;
+
+  if (inflight_start_task_->is_installed()) {
+    ServiceWorkerMetrics::RecordEmbeddedWorkerStartTiming(
+        std::move(start_timing), inflight_start_task_->start_worker_sent_time(),
+        start_situation_);
+  }
 
   TRACE_EVENT_NESTABLE_ASYNC_END0("ServiceWorker", "WAITING_FOR_START_COMPLETE",
                                   this);

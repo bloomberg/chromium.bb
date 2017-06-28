@@ -15736,6 +15736,27 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="EmbeddedWorkerInstance.Start.StartMessageLatency" units="ms">
+  <owner>falken@chromium.org</owner>
+  <summary>
+    The time between the browser sending a &quot;start a service worker&quot;
+    message to the renderer, and the renderer receiving it. This may include
+    renderer startup time. Only recorded if the high-resolution system clock was
+    used and deemed consistent across proceses, and the time was non-negative
+    (see EmbeddedWorkerInstance.Start.StartMessageLatency.Type). Only recorded
+    for installed workers. Recorded upon successful startup.
+  </summary>
+</histogram>
+
+<histogram name="EmbeddedWorkerInstance.Start.StartMessageLatency.Type"
+    enum="CrossProcessTimeDelta">
+  <owner>falken@chromium.org</owner>
+  <summary>
+    See EmbeddedWorkerInstance.Start.StartMessageLatency. Describes the outcome
+    of taking the measurement and whether StartMessageLatency was recorded.
+  </summary>
+</histogram>
+
 <histogram name="EmbeddedWorkerInstance.Start.TimeToEvaluateScript" units="ms">
   <owner>falken@chromium.org</owner>
   <summary>
@@ -15792,6 +15813,32 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     The round-trip time between asking the renderer process to start a worker
     and receiving the corresponding resource request. Only recorded for
     installed workers.
+  </summary>
+</histogram>
+
+<histogram name="EmbeddedWorkerInstance.Start.WaitedForRendererSetup"
+    enum="BooleanWaited">
+  <owner>falken@chromium.org</owner>
+  <summary>
+    Indicates if Blink was not initialized by the time the browser sent a
+    &quot;start a service worker&quot; message to the renderer. If this is true,
+    receiving the message had to wait until after Blink initialization finished.
+    Blink initialization is considered the time RenderThreadImpl::Init sets up
+    the Mojo interface for receiving the &quot;start a service worker&quot;
+    message. Only recorded for installed workers. Recorded upon successful
+    startup.
+  </summary>
+</histogram>
+
+<histogram name="EmbeddedWorkerInstance.Start.WaitedForRendererSetup.Time"
+    units="ms">
+  <owner>falken@chromium.org</owner>
+  <summary>
+    Recorded when EmbeddedWorkerInstance.Start.WaitedForRendererSetup is true.
+    The time between when the &quot;start a service worker&quot; was sent by the
+    browser, and Blink initialization finishing. The start time is recorded by
+    the browser process, and the end time by the renderer process, so process
+    clock skew could possibly affect the result.
   </summary>
 </histogram>
 
@@ -95513,6 +95560,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram_suffixes>
 
 <histogram_suffixes name="ServiceWorker.StartSituation" separator="_">
+  <affected-histogram name="EmbeddedWorkerInstance.Start.StartMessageLatency"/>
   <suffix name="DuringStartup"
       label="The worker started up during browser startup."/>
   <suffix name="NewProcess"

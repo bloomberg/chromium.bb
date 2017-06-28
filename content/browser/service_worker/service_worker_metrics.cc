@@ -790,6 +790,52 @@ void ServiceWorkerMetrics::RecordTimeToEvaluateScript(
                                     duration);
 }
 
+void ServiceWorkerMetrics::RecordStartMessageLatencyType(
+    CrossProcessTimeDelta type) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "EmbeddedWorkerInstance.Start.StartMessageLatency.Type", type,
+      CrossProcessTimeDelta::NUM_TYPES);
+}
+
+void ServiceWorkerMetrics::RecordWaitedForRendererSetup(bool waited) {
+  UMA_HISTOGRAM_BOOLEAN("EmbeddedWorkerInstance.Start.WaitedForRendererSetup",
+                        waited);
+}
+
+void ServiceWorkerMetrics::RecordEmbeddedWorkerStartTiming(
+    mojom::EmbeddedWorkerStartTimingPtr start_timing,
+    base::TimeTicks start_worker_sent_time,
+    StartSituation situation) {
+  if (!base::TimeTicks::IsHighResolution() ||
+      !base::TimeTicks::IsConsistentAcrossProcesses()) {
+    RecordStartMessageLatencyType(CrossProcessTimeDelta::INACCURATE_CLOCK);
+    return;
+  }
+  if (start_timing->start_worker_received_time < start_worker_sent_time) {
+    RecordStartMessageLatencyType(CrossProcessTimeDelta::NEGATIVE);
+    return;
+  }
+
+  RecordStartMessageLatencyType(CrossProcessTimeDelta::NORMAL);
+
+  const base::TimeDelta start_worker_message_latency =
+      start_timing->start_worker_received_time - start_worker_sent_time;
+  UMA_HISTOGRAM_MEDIUM_TIMES("EmbeddedWorkerInstance.Start.StartMessageLatency",
+                             start_worker_message_latency);
+  RecordSuffixedMediumTimeHistogram(
+      "EmbeddedWorkerInstance.Start.StartMessageLatency",
+      StartSituationToSuffix(situation), start_worker_message_latency);
+
+  if (start_worker_sent_time < start_timing->blink_initialized_time) {
+    RecordWaitedForRendererSetup(true);
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "EmbeddedWorkerInstance.Start.WaitedForRendererSetup.Time",
+        (start_timing->blink_initialized_time - start_worker_sent_time));
+  } else {
+    RecordWaitedForRendererSetup(false);
+  }
+}
+
 const char* ServiceWorkerMetrics::LoadSourceToString(LoadSource source) {
   switch (source) {
     case LoadSource::NETWORK:
