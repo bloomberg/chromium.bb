@@ -447,8 +447,8 @@ void Surface::Commit() {
   if (current_begin_frame_ack_.sequence_number !=
       cc::BeginFrameArgs::kInvalidFrameNumber) {
     if (!current_begin_frame_ack_.has_damage) {
-      layer_tree_frame_sink_holder_->GetLayerTreeFrameSink()
-          ->DidNotProduceFrame(current_begin_frame_ack_);
+      layer_tree_frame_sink_holder_->frame_sink()->DidNotProduceFrame(
+          current_begin_frame_ack_);
     }
     current_begin_frame_ack_.sequence_number =
         cc::BeginFrameArgs::kInvalidFrameNumber;
@@ -744,7 +744,8 @@ void Surface::BufferAttachment::Reset(base::WeakPtr<Buffer> buffer) {
 void Surface::UpdateResource(bool client_usage) {
   if (current_buffer_.buffer() &&
       current_buffer_.buffer()->ProduceTransferableResource(
-          layer_tree_frame_sink_holder_.get(), next_resource_id_++,
+          layer_tree_frame_sink_holder_.get(),
+          layer_tree_frame_sink_holder_->AllocateResourceId(),
           state_.only_visible_on_secure_output, client_usage,
           &current_resource_)) {
     current_resource_has_alpha_ =
@@ -859,7 +860,7 @@ void Surface::UpdateSurface(bool full_damage) {
   }
 
   frame.render_pass_list.push_back(std::move(render_pass));
-  layer_tree_frame_sink_holder_->GetLayerTreeFrameSink()->SubmitCompositorFrame(
+  layer_tree_frame_sink_holder_->frame_sink()->SubmitCompositorFrame(
       std::move(frame));
 }
 

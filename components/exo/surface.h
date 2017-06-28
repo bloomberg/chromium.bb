@@ -304,9 +304,6 @@ class Surface : public ui::ContextFactoryObserver,
 
   std::unique_ptr<LayerTreeFrameSinkHolder> layer_tree_frame_sink_holder_;
 
-  // The next resource id the buffer will be attached to.
-  int next_resource_id_ = 1;
-
   // The damage region to schedule paint for when Commit() is called.
   SkRegion pending_damage_;
 
