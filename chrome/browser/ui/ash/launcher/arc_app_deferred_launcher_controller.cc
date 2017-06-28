@@ -179,8 +179,9 @@ void ArcAppDeferredLauncherController::UpdateApps() {
 
 void ArcAppDeferredLauncherController::RegisterNextUpdate() {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&ArcAppDeferredLauncherController::UpdateApps,
-                            weak_ptr_factory_.GetWeakPtr()),
+      FROM_HERE,
+      base::BindOnce(&ArcAppDeferredLauncherController::UpdateApps,
+                     weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(kUpdateIconIntervalMs));
 }
 

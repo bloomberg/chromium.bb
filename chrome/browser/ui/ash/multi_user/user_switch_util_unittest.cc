@@ -73,7 +73,7 @@ class TrySwitchingUserTest : public ash::test::AshTestBase {
   // checked) and the action the user will choose.
   void SwitchUser(ActionType action) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&CloseMessageBox, action));
+        FROM_HERE, base::BindOnce(&CloseMessageBox, action));
     TrySwitchingActiveUser(base::Bind(&TrySwitchingUserTest::SwitchCallback,
                                       base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
