@@ -15,6 +15,10 @@
 
 namespace blink {
 
+template <typename OffsetMappingBuilder>
+class NGInlineItemsBuilderTemplate;
+
+class EmptyOffsetMappingBuilder;
 class LayoutBlockFlow;
 class LayoutNGBlockFlow;
 class LayoutObject;
@@ -22,7 +26,8 @@ struct MinMaxContentSize;
 class NGConstraintSpace;
 class NGInlineItem;
 class NGInlineItemRange;
-class NGInlineItemsBuilder;
+using NGInlineItemsBuilder =
+    NGInlineItemsBuilderTemplate<EmptyOffsetMappingBuilder>;
 class NGLayoutResult;
 
 // Represents an anonymous block box to be laid out, that contains consecutive
