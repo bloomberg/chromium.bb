@@ -4,6 +4,11 @@
 
 #import "ios/clean/chrome/browser/ui/tab_collection/tab_collection_tab_cell.h"
 
+#import "ios/chrome/browser/ui/tab_switcher/tab_switcher_button.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#include "ios/chrome/grit/ios_theme_resources.h"
+#import "ios/clean/chrome/browser/ui/tab_collection/tab_collection_item.h"
+
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
@@ -14,7 +19,17 @@ const CGFloat kSelectedBorderCornerRadius = 8.0f;
 const CGFloat kSelectedBorderWidth = 4.0f;
 }
 
+@interface TabCollectionTabCell ()
+@property(nonatomic, strong) UILabel* titleLabel;
+@property(nonatomic, strong) UIImageView* favicon;
+@property(nonatomic, strong) TabSwitcherButton* snapshotButton;
+@end
+
 @implementation TabCollectionTabCell
+@synthesize item = _item;
+@dynamic titleLabel;
+@dynamic favicon;
+@dynamic snapshotButton;
 
 - (instancetype)initWithFrame:(CGRect)frame {
   if ((self = [super initWithFrame:frame])) {
@@ -22,6 +37,20 @@ const CGFloat kSelectedBorderWidth = 4.0f;
   }
   return self;
 }
+
+#pragma mark - Properties
+
+- (void)setItem:(TabCollectionItem*)item {
+  DCHECK(item);
+  _item = item;
+  self.titleLabel.text = item.title;
+  self.snapshotButton.accessibilityIdentifier =
+      [NSString stringWithFormat:@"%@_button", item.title];
+  self.contentView.accessibilityLabel = item.title;
+  self.favicon.image = NativeImage(IDR_IOS_OMNIBOX_HTTP);
+}
+
+#pragma mark - Private
 
 - (void)setupSelectedBackgroundView {
   self.selectedBackgroundView = [[UIView alloc] init];

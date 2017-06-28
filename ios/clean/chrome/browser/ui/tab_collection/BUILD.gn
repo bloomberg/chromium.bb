@@ -28,6 +28,8 @@ source_set("tab_collection_ui") {
   ]
   deps = [
     "//base",
+    "//ios/chrome/app/theme:theme_grit",
+    "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/tab_switcher",
     "//ios/clean/chrome/browser/ui/commands",
   ]

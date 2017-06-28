@@ -47,12 +47,6 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight();
 // The delegate needs to be set before calling this method.
 - (void)setAppearanceForTab:(Tab*)tab cellSize:(CGSize)cellSize;
 
-// PLACEHOLDER: Sets the cell's appearance using information in |title| and
-// |favicon|.
-- (void)setAppearanceForTabTitle:(NSString*)title
-                         favicon:(UIImage*)favicon
-                        cellSize:(CGSize)cellSize;
-
 // Sets the cell's appearance depending on |type|.
 - (void)setSessionType:(TabSwitcherSessionType)type;
 
