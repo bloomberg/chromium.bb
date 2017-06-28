@@ -14,6 +14,9 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_layout.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_delegate.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_utils.h"
+#import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -39,17 +42,24 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
 // Left and right margins for the content inset of the collection view.
 @property(nonatomic, assign) CGFloat cardStyleMargin;
 
+// The overscroll actions controller managing accelerators over the toolbar.
+@property(nonatomic, strong)
+    OverscrollActionsController* overscrollActionsController;
 @end
 
 @implementation ContentSuggestionsViewController
 
 @synthesize suggestionCommandHandler = _suggestionCommandHandler;
 @synthesize headerCommandHandler = _headerCommandHandler;
+@synthesize suggestionsDelegate = _suggestionsDelegate;
 @synthesize collectionUpdater = _collectionUpdater;
 @synthesize cardStyleMargin = _cardStyleMargin;
+@synthesize overscrollActionsController = _overscrollActionsController;
+@synthesize overscrollDelegate = _overscrollDelegate;
+@synthesize scrolledToTop = _scrolledToTop;
 @dynamic collectionViewModel;
 
-#pragma mark - Public
+#pragma mark - Lifecycle
 
 - (instancetype)initWithStyle:(CollectionViewControllerStyle)style
                    dataSource:(id<ContentSuggestionsDataSource>)dataSource {
@@ -61,6 +71,12 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
   }
   return self;
 }
+
+- (void)dealloc {
+  [self.overscrollActionsController invalidate];
+}
+
+#pragma mark - Public
 
 - (void)dismissEntryAtIndexPath:(NSIndexPath*)indexPath {
   if (!indexPath || ![self.collectionViewModel hasItemAtIndexPath:indexPath]) {
@@ -159,6 +175,14 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
                   action:@selector(handleLongPress:)];
   longPressRecognizer.numberOfTouchesRequired = 1;
   [self.collectionView addGestureRecognizer:longPressRecognizer];
+
+  if (!IsIPadIdiom()) {
+    self.overscrollActionsController = [[OverscrollActionsController alloc]
+        initWithScrollView:self.collectionView];
+    [self.overscrollActionsController
+        setStyle:OverscrollStyle::NTP_NON_INCOGNITO];
+    self.overscrollActionsController.delegate = self.overscrollDelegate;
+  }
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size
@@ -367,7 +391,41 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
 
 - (void)scrollViewDidScroll:(UIScrollView*)scrollView {
   [super scrollViewDidScroll:scrollView];
+  [self.overscrollActionsController scrollViewDidScroll:scrollView];
   [self.headerCommandHandler updateFakeOmniboxForScrollView:scrollView];
+}
+
+- (void)scrollViewWillBeginDragging:(UIScrollView*)scrollView {
+  [self.overscrollActionsController scrollViewWillBeginDragging:scrollView];
+}
+
+- (void)scrollViewDidEndDragging:(UIScrollView*)scrollView
+                  willDecelerate:(BOOL)decelerate {
+  [super scrollViewDidEndDragging:scrollView willDecelerate:decelerate];
+  [self.overscrollActionsController scrollViewDidEndDragging:scrollView
+                                              willDecelerate:decelerate];
+}
+
+- (void)scrollViewWillEndDragging:(UIScrollView*)scrollView
+                     withVelocity:(CGPoint)velocity
+              targetContentOffset:(inout CGPoint*)targetContentOffset {
+  [super scrollViewWillEndDragging:scrollView
+                      withVelocity:velocity
+               targetContentOffset:targetContentOffset];
+  [self.overscrollActionsController
+      scrollViewWillEndDragging:scrollView
+                   withVelocity:velocity
+            targetContentOffset:targetContentOffset];
+
+  if (IsIPadIdiom() || [self.suggestionsDelegate isOmniboxFocused])
+    return;
+
+  [ContentSuggestionsViewControllerUtils
+      viewControllerWillEndDragging:self
+                        withYOffset:scrollView.contentOffset.y
+                      pinnedYOffset:[self.suggestionsDelegate pinnedOffsetY]
+                     draggingUpward:velocity.y > 0
+                targetContentOffset:targetContentOffset];
 }
 
 #pragma mark - Private

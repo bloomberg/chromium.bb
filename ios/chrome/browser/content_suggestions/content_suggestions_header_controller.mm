@@ -119,6 +119,10 @@ const CGFloat kHintLabelSidePadding = 12;
                                 forOffset:offset];
 }
 
+- (UIView*)toolBarView {
+  return self.headerView.toolBarView;
+}
+
 #pragma mark - ContentSuggestionsHeaderProvider
 
 - (UIView*)headerForWidth:(CGFloat)width {

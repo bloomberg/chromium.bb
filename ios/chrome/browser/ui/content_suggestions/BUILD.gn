@@ -15,6 +15,9 @@ source_set("content_suggestions") {
     "content_suggestions_layout.mm",
     "content_suggestions_view_controller.h",
     "content_suggestions_view_controller.mm",
+    "content_suggestions_view_controller_delegate.h",
+    "content_suggestions_view_controller_utils.h",
+    "content_suggestions_view_controller_utils.mm",
   ]
   deps = [
     ":content_suggestions_util",
@@ -27,6 +30,7 @@ source_set("content_suggestions") {
     "//ios/chrome/browser/ui/content_suggestions/identifier",
     "//ios/chrome/browser/ui/favicon:favicon_ui",
     "//ios/chrome/browser/ui/ntp:ntp_header",
+    "//ios/chrome/browser/ui/overscroll_actions",
     "//ui/base",
   ]
   public_deps = [
@@ -60,6 +64,7 @@ source_set("unit_tests") {
   sources = [
     "content_suggestions_collection_updater_unittest.mm",
     "content_suggestions_collection_utils_unittest.mm",
+    "content_suggestions_view_controller_utils_unittest.mm",
   ]
   deps = [
     ":content_suggestions",
