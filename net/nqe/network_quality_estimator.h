@@ -609,15 +609,15 @@ class NET_EXPORT NetworkQualityEstimator
   // |effective_connection_type_recomputation_interval_| ago).
   EffectiveConnectionType effective_connection_type_;
 
-  // Last known value of the wireless signal strength. Set to INT32_MIN if
-  // unavailable. |signal_strength_dbm_| is reset to INT32_MIN on connection
-  // change events.
-  int32_t signal_strength_dbm_;
+  // Last known value of the wireless signal strength level. If the signal
+  // strength level is available, the value is set to between 0 and 4, both
+  // inclusive. If the value is unavailable, |signal_strength_| has null value.
+  base::Optional<int32_t> signal_strength_;
 
-  // Minimum and maximum signal strength (in dBm) observed since last connection
+  // Minimum and maximum signal strength level observed since last connection
   // change. Updated on connection change and main frame requests.
-  int32_t min_signal_strength_since_connection_change_;
-  int32_t max_signal_strength_since_connection_change_;
+  base::Optional<int32_t> min_signal_strength_since_connection_change_;
+  base::Optional<int32_t> max_signal_strength_since_connection_change_;
 
   // Stores the qualities of different networks.
   std::unique_ptr<nqe::internal::NetworkQualityStore> network_quality_store_;

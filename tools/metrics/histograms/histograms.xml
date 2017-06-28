@@ -46311,7 +46311,33 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NQE.CellularSignalStrength.LevelAvailable"
+    enum="BooleanAvailable">
+  <owner>tbansal@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    Whether the signal strength for the cellular network was available or not.
+    Recorded right before a connection change event. Recorded only on cellular
+    connections on Android platform.
+  </summary>
+</histogram>
+
+<histogram name="NQE.CellularSignalStrength.LevelDifference"
+    units="Signal Strength Level">
+  <owner>tbansal@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    Difference between the minimum and the maximum received signal strength
+    since the last connection change event. Recorded only on cellular
+    connections on Android platform when the cellular signal strength was
+    available. Recorded right before a connection change event.
+  </summary>
+</histogram>
+
 <histogram name="NQE.CellularSignalStrengthAvailable" enum="BooleanAvailable">
+  <obsolete>
+    Replaced by NQE.CellularSignalStrength.LevelAvailable in June 2017.
+  </obsolete>
   <owner>tbansal@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
   <summary>
@@ -46322,6 +46348,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NQE.CellularSignalStrengthDifference" units="dBm">
+  <obsolete>
+    Replaced by NQE.CellularSignalStrength.LevelDifference in June 2017.
+  </obsolete>
   <owner>tbansal@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
   <summary>
