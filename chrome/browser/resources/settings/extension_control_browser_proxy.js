@@ -4,36 +4,32 @@
 
 cr.define('settings', function() {
   /** @interface */
-  function ExtensionControlBrowserProxy() {}
-
-  ExtensionControlBrowserProxy.prototype = {
+  class ExtensionControlBrowserProxy {
     // TODO(dbeam): should be be returning !Promise<boolean> to indicate whether
     // it succeeded?
     /** @param {string} extensionId */
-    disableExtension: assertNotReached,
+    disableExtension(extensionId) {}
 
     /** @param {string} extensionId */
-    manageExtension: assertNotReached,
-  };
+    manageExtension(extensionId) {}
+  }
 
   /**
    * @implements {settings.ExtensionControlBrowserProxy}
-   * @constructor
    */
-  function ExtensionControlBrowserProxyImpl() {}
-  cr.addSingletonGetter(ExtensionControlBrowserProxyImpl);
-
-  ExtensionControlBrowserProxyImpl.prototype = {
+  class ExtensionControlBrowserProxyImpl {
     /** @override */
-    disableExtension: function(extensionId) {
+    disableExtension(extensionId) {
       chrome.send('disableExtension', [extensionId]);
-    },
+    }
 
     /** @override */
-    manageExtension: function(extensionId) {
+    manageExtension(extensionId) {
       window.open('chrome://extensions?id=' + extensionId);
-    },
-  };
+    }
+  }
+
+  cr.addSingletonGetter(ExtensionControlBrowserProxyImpl);
 
   return {
     ExtensionControlBrowserProxy: ExtensionControlBrowserProxy,

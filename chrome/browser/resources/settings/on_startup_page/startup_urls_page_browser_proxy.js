@@ -14,25 +14,22 @@ var StartupPageInfo;
 
 cr.define('settings', function() {
   /** @interface */
-  function StartupUrlsPageBrowserProxy() {}
-
-  StartupUrlsPageBrowserProxy.prototype = {
-    loadStartupPages: assertNotReached,
-
-    useCurrentPages: assertNotReached,
+  class StartupUrlsPageBrowserProxy {
+    loadStartupPages() {}
+    useCurrentPages() {}
 
     /**
      * @param {string} url
      * @return {!Promise<boolean>} Whether the URL is valid.
      */
-    validateStartupPage: assertNotReached,
+    validateStartupPage(url) {}
 
     /**
      * @param {string} url
      * @return {!Promise<boolean>} Whether the URL was actually added, or
      *     ignored because it was invalid.
      */
-    addStartupPage: assertNotReached,
+    addStartupPage(url) {}
 
     /**
      * @param {number} modelIndex
@@ -40,51 +37,48 @@ cr.define('settings', function() {
      * @return {!Promise<boolean>} Whether the URL was actually edited, or
      *     ignored because it was invalid.
      */
-    editStartupPage: assertNotReached,
+    editStartupPage(modelIndex, url) {}
 
     /** @param {number} index */
-    removeStartupPage: assertNotReached,
-  };
+    removeStartupPage(index) {}
+  }
 
   /**
    * @implements {settings.StartupUrlsPageBrowserProxy}
-   * @constructor
    */
-  function StartupUrlsPageBrowserProxyImpl() {}
+  class StartupUrlsPageBrowserProxyImpl {
+    /** @override */
+    loadStartupPages() {
+      chrome.send('onStartupPrefsPageLoad');
+    }
+
+    /** @override */
+    useCurrentPages() {
+      chrome.send('setStartupPagesToCurrentPages');
+    }
+
+    /** @override */
+    validateStartupPage(url) {
+      return cr.sendWithPromise('validateStartupPage', url);
+    }
+
+    /** @override */
+    addStartupPage(url) {
+      return cr.sendWithPromise('addStartupPage', url);
+    }
+
+    /** @override */
+    editStartupPage(modelIndex, url) {
+      return cr.sendWithPromise('editStartupPage', modelIndex, url);
+    }
+
+    /** @override */
+    removeStartupPage(index) {
+      chrome.send('removeStartupPage', [index]);
+    }
+  }
 
   cr.addSingletonGetter(StartupUrlsPageBrowserProxyImpl);
-
-  StartupUrlsPageBrowserProxyImpl.prototype = {
-    /** @override */
-    loadStartupPages: function() {
-      chrome.send('onStartupPrefsPageLoad');
-    },
-
-    /** @override */
-    useCurrentPages: function() {
-      chrome.send('setStartupPagesToCurrentPages');
-    },
-
-    /** @override */
-    validateStartupPage: function(url) {
-      return cr.sendWithPromise('validateStartupPage', url);
-    },
-
-    /** @override */
-    addStartupPage: function(url) {
-      return cr.sendWithPromise('addStartupPage', url);
-    },
-
-    /** @override */
-    editStartupPage: function(modelIndex, url) {
-      return cr.sendWithPromise('editStartupPage', modelIndex, url);
-    },
-
-    /** @override */
-    removeStartupPage: function(index) {
-      chrome.send('removeStartupPage', [index]);
-    },
-  };
 
   return {
     StartupUrlsPageBrowserProxy: StartupUrlsPageBrowserProxy,

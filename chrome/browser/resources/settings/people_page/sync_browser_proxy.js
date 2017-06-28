@@ -105,138 +105,138 @@ settings.PageStatus = {
 
 cr.define('settings', function() {
   /** @interface */
-  function SyncBrowserProxy() {}
-
-  SyncBrowserProxy.prototype = {
+  class SyncBrowserProxy {
     // <if expr="not chromeos">
     /**
      * Starts the signin process for the user. Does nothing if the user is
      * already signed in.
      */
-    startSignIn: function() {},
+    startSignIn() {}
 
     /**
      * Signs out the signed-in user.
      * @param {boolean} deleteProfile
      */
-    signOut: function(deleteProfile) {},
+    signOut(deleteProfile) {}
 
     /**
      * Opens the multi-profile user manager.
      */
-    manageOtherPeople: function() {},
+    manageOtherPeople() {}
+
     // </if>
 
     // <if expr="chromeos">
     /**
      * Signs the user out.
      */
-    attemptUserExit: function() {},
+    attemptUserExit() {}
+
     // </if>
 
     /**
      * Gets the current sync status.
      * @return {!Promise<!settings.SyncStatus>}
      */
-    getSyncStatus: function() {},
+    getSyncStatus() {}
 
     /**
      * Function to invoke when the sync page has been navigated to. This
      * registers the UI as the "active" sync UI so that if the user tries to
      * open another sync UI, this one will be shown instead.
      */
-    didNavigateToSyncPage: function() {},
+    didNavigateToSyncPage() {}
 
     /**
      * Function to invoke when leaving the sync page so that the C++ layer can
      * be notified that the sync UI is no longer open.
      */
-    didNavigateAwayFromSyncPage: function() {},
+    didNavigateAwayFromSyncPage() {}
 
     /**
      * Sets which types of data to sync.
      * @param {!settings.SyncPrefs} syncPrefs
      * @return {!Promise<!settings.PageStatus>}
      */
-    setSyncDatatypes: function(syncPrefs) {},
+    setSyncDatatypes(syncPrefs) {}
 
     /**
      * Sets the sync encryption options.
      * @param {!settings.SyncPrefs} syncPrefs
      * @return {!Promise<!settings.PageStatus>}
      */
-    setSyncEncryption: function(syncPrefs) {},
+    setSyncEncryption(syncPrefs) {}
 
     /**
      * Opens the Google Activity Controls url in a new tab.
      */
-    openActivityControlsUrl: function() {},
-  };
+    openActivityControlsUrl() {}
+  }
 
   /**
-   * @constructor
    * @implements {settings.SyncBrowserProxy}
    */
-  function SyncBrowserProxyImpl() {}
-  cr.addSingletonGetter(SyncBrowserProxyImpl);
-
-  SyncBrowserProxyImpl.prototype = {
+  class SyncBrowserProxyImpl {
     // <if expr="not chromeos">
     /** @override */
-    startSignIn: function() {
+    startSignIn() {
       chrome.send('SyncSetupStartSignIn');
-    },
+    }
 
     /** @override */
-    signOut: function(deleteProfile) {
+    signOut(deleteProfile) {
       chrome.send('SyncSetupStopSyncing', [deleteProfile]);
-    },
+    }
 
     /** @override */
-    manageOtherPeople: function() {
+    manageOtherPeople() {
       chrome.send('SyncSetupManageOtherPeople');
-    },
+    }
+
     // </if>
     // <if expr="chromeos">
     /** @override */
-    attemptUserExit: function() {
+    attemptUserExit() {
       return chrome.send('AttemptUserExit');
-    },
+    }
+
     // </if>
 
     /** @override */
-    getSyncStatus: function() {
+    getSyncStatus() {
       return cr.sendWithPromise('SyncSetupGetSyncStatus');
-    },
+    }
 
     /** @override */
-    didNavigateToSyncPage: function() {
+    didNavigateToSyncPage() {
       chrome.send('SyncSetupShowSetupUI');
-    },
+    }
 
     /** @override */
-    didNavigateAwayFromSyncPage: function() {
+    didNavigateAwayFromSyncPage() {
       chrome.send('SyncSetupDidClosePage');
-    },
+    }
 
     /** @override */
-    setSyncDatatypes: function(syncPrefs) {
+    setSyncDatatypes(syncPrefs) {
       return cr.sendWithPromise(
           'SyncSetupSetDatatypes', JSON.stringify(syncPrefs));
-    },
+    }
 
     /** @override */
-    setSyncEncryption: function(syncPrefs) {
+    setSyncEncryption(syncPrefs) {
       return cr.sendWithPromise(
           'SyncSetupSetEncryption', JSON.stringify(syncPrefs));
-    },
+    }
 
     /** @override */
-    openActivityControlsUrl: function() {
+    openActivityControlsUrl() {
       chrome.metricsPrivate.recordUserAction(
           'Signin_AccountSettings_GoogleActivityControlsClicked');
     }
-  };
+  }
+
+  cr.addSingletonGetter(SyncBrowserProxyImpl);
 
   return {
     SyncBrowserProxy: SyncBrowserProxy,

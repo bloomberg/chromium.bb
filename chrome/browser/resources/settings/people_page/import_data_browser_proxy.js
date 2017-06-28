@@ -36,53 +36,49 @@ settings.ImportDataStatus = {
 
 cr.define('settings', function() {
   /** @interface */
-  function ImportDataBrowserProxy() {}
-
-  ImportDataBrowserProxy.prototype = {
+  class ImportDataBrowserProxy {
     /**
      * Returns the source profiles available for importing from other browsers.
      * @return {!Promise<!Array<!settings.BrowserProfile>>}
      */
-    initializeImportDialog: function() {},
+    initializeImportDialog() {}
 
     /**
      * Starts importing data for the specificed source browser profile. The C++
      * responds with the 'import-data-status-changed' WebUIListener event.
      * @param {number} sourceBrowserProfileIndex
      */
-    importData: function(sourceBrowserProfileIndex) {},
+    importData(sourceBrowserProfileIndex) {}
 
     /**
      * Prompts the user to choose a bookmarks file to import bookmarks from.
      */
-    importFromBookmarksFile: function() {},
-  };
+    importFromBookmarksFile() {}
+  }
 
   /**
-   * @constructor
    * @implements {settings.ImportDataBrowserProxy}
    */
-  function ImportDataBrowserProxyImpl() {}
+  class ImportDataBrowserProxyImpl {
+    /** @override */
+    initializeImportDialog() {
+      return cr.sendWithPromise('initializeImportDialog');
+    }
+
+    /** @override */
+    importData(sourceBrowserProfileIndex) {
+      chrome.send('importData', [sourceBrowserProfileIndex]);
+    }
+
+    /** @override */
+    importFromBookmarksFile() {
+      chrome.send('importFromBookmarksFile');
+    }
+  }
+
   // The singleton instance_ is replaced with a test version of this wrapper
   // during testing.
   cr.addSingletonGetter(ImportDataBrowserProxyImpl);
-
-  ImportDataBrowserProxyImpl.prototype = {
-    /** @override */
-    initializeImportDialog: function() {
-      return cr.sendWithPromise('initializeImportDialog');
-    },
-
-    /** @override */
-    importData: function(sourceBrowserProfileIndex) {
-      chrome.send('importData', [sourceBrowserProfileIndex]);
-    },
-
-    /** @override */
-    importFromBookmarksFile: function() {
-      chrome.send('importFromBookmarksFile');
-    },
-  };
 
   return {
     ImportDataBrowserProxy: ImportDataBrowserProxy,

@@ -9,66 +9,65 @@ var MetricsReporting;
 
 cr.define('settings', function() {
   /** @interface */
-  function PrivacyPageBrowserProxy() {}
-
-  PrivacyPageBrowserProxy.prototype = {
+  class PrivacyPageBrowserProxy {
     // <if expr="_google_chrome and not chromeos">
     /** @return {!Promise<!MetricsReporting>} */
-    getMetricsReporting: assertNotReached,
+    getMetricsReporting() {}
 
     /** @param {boolean} enabled */
-    setMetricsReportingEnabled: assertNotReached,
+    setMetricsReportingEnabled(enabled) {}
+
     // </if>
 
     // <if expr="is_win or is_macosx">
     /** Invokes the native certificate manager (used by win and mac). */
-    showManageSSLCertificates: function() {},
+    showManageSSLCertificates() {}
+
     // </if>
 
     /** @return {!Promise<boolean>} */
-    getSafeBrowsingExtendedReporting: assertNotReached,
+    getSafeBrowsingExtendedReporting() {}
 
     /** @param {boolean} enabled */
-    setSafeBrowsingExtendedReportingEnabled: assertNotReached,
-  };
+    setSafeBrowsingExtendedReportingEnabled(enabled) {}
+  }
 
   /**
-   * @constructor
    * @implements {settings.PrivacyPageBrowserProxy}
    */
-  function PrivacyPageBrowserProxyImpl() {}
-  cr.addSingletonGetter(PrivacyPageBrowserProxyImpl);
-
-  PrivacyPageBrowserProxyImpl.prototype = {
+  class PrivacyPageBrowserProxyImpl {
     // <if expr="_google_chrome and not chromeos">
     /** @override */
-    getMetricsReporting: function() {
+    getMetricsReporting() {
       return cr.sendWithPromise('getMetricsReporting');
-    },
+    }
 
     /** @override */
-    setMetricsReportingEnabled: function(enabled) {
+    setMetricsReportingEnabled(enabled) {
       chrome.send('setMetricsReportingEnabled', [enabled]);
-    },
+    }
+
     // </if>
 
     /** @override */
-    getSafeBrowsingExtendedReporting: function() {
+    getSafeBrowsingExtendedReporting() {
       return cr.sendWithPromise('getSafeBrowsingExtendedReporting');
-    },
+    }
 
     /** @override */
-    setSafeBrowsingExtendedReportingEnabled: function(enabled) {
+    setSafeBrowsingExtendedReportingEnabled(enabled) {
       chrome.send('setSafeBrowsingExtendedReportingEnabled', [enabled]);
-    },
+    }
 
     // <if expr="is_win or is_macosx">
     /** @override */
-    showManageSSLCertificates: function() {
+    showManageSSLCertificates() {
       chrome.send('showManageSSLCertificates');
-    },
+    }
     // </if>
-  };
+  }
+
+  cr.addSingletonGetter(PrivacyPageBrowserProxyImpl);
 
   return {
     PrivacyPageBrowserProxy: PrivacyPageBrowserProxy,

@@ -4,90 +4,89 @@
 
 cr.define('settings', function() {
   /** @interface */
-  function AppearanceBrowserProxy() {}
-
-  AppearanceBrowserProxy.prototype = {
+  class AppearanceBrowserProxy {
     /** @return {!Promise<number>} */
-    getDefaultZoom: assertNotReached,
+    getDefaultZoom() {}
 
     /**
      * @param {string} themeId
      * @return {!Promise<!chrome.management.ExtensionInfo>} Theme info.
      */
-    getThemeInfo: assertNotReached,
+    getThemeInfo(themeId) {}
 
     /** @return {boolean} Whether the current profile is supervised. */
-    isSupervised: assertNotReached,
+    isSupervised() {}
 
     // <if expr="chromeos">
-    openWallpaperManager: assertNotReached,
+    openWallpaperManager() {}
+
     // </if>
 
-    useDefaultTheme: assertNotReached,
+    useDefaultTheme() {}
 
     // <if expr="is_linux and not chromeos">
-    useSystemTheme: assertNotReached,
+    useSystemTheme() {}
+
     // </if>
 
     /**
      * @param {string} url The url of which to check validity.
      * @return {!Promise<boolean>}
      */
-    validateStartupPage: assertNotReached,
-  };
+    validateStartupPage(url) {}
+  }
 
   /**
    * @implements {settings.AppearanceBrowserProxy}
-   * @constructor
    */
-  function AppearanceBrowserProxyImpl() {}
-
-  cr.addSingletonGetter(AppearanceBrowserProxyImpl);
-
-  AppearanceBrowserProxyImpl.prototype = {
+  class AppearanceBrowserProxyImpl {
     /** @override */
-    getDefaultZoom: function() {
+    getDefaultZoom() {
       return new Promise(function(resolve) {
         chrome.settingsPrivate.getDefaultZoom(resolve);
       });
-    },
+    }
 
     /** @override */
-    getThemeInfo: function(themeId) {
+    getThemeInfo(themeId) {
       return new Promise(function(resolve) {
         chrome.management.get(themeId, resolve);
       });
-    },
+    }
 
     /** @override */
-    isSupervised: function() {
+    isSupervised() {
       return loadTimeData.getBoolean('isSupervised');
-    },
+    }
 
     // <if expr="chromeos">
     /** @override */
-    openWallpaperManager: function() {
+    openWallpaperManager() {
       chrome.send('openWallpaperManager');
-    },
+    }
+
     // </if>
 
     /** @override */
-    useDefaultTheme: function() {
+    useDefaultTheme() {
       chrome.send('useDefaultTheme');
-    },
+    }
 
     // <if expr="is_linux and not chromeos">
     /** @override */
-    useSystemTheme: function() {
+    useSystemTheme() {
       chrome.send('useSystemTheme');
-    },
+    }
+
     // </if>
 
     /** @override */
-    validateStartupPage: function(url) {
+    validateStartupPage(url) {
       return cr.sendWithPromise('validateStartupPage', url);
-    },
-  };
+    }
+  }
+
+  cr.addSingletonGetter(AppearanceBrowserProxyImpl);
 
   return {
     AppearanceBrowserProxy: AppearanceBrowserProxy,

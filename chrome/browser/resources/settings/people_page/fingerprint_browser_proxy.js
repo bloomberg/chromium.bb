@@ -52,112 +52,106 @@ settings.FingerprintInfo;
 
 cr.define('settings', function() {
   /** @interface */
-  function FingerprintBrowserProxy() {}
-
-  FingerprintBrowserProxy.prototype = {
+  class FingerprintBrowserProxy {
     /**
      * @return {!Promise<!settings.FingerprintInfo>}
      */
-    getFingerprintsList: function() {},
+    getFingerprintsList() {}
 
     /**
      * @return {!Promise<number>}
      */
-    getNumFingerprints: function() {},
+    getNumFingerprints() {}
 
-    startEnroll: function() {},
-
-    cancelCurrentEnroll: function() {},
+    startEnroll() {}
+    cancelCurrentEnroll() {}
 
     /**
      * @param {number} index
      * @return {!Promise<string>}
      */
-    getEnrollmentLabel: function(index) {},
+    getEnrollmentLabel(index) {}
 
     /**
      * @param {number} index
      * @return {!Promise<boolean>}
      */
-    removeEnrollment: function(index) {},
+    removeEnrollment(index) {}
 
     /**
      * @param {number} index
      * @param {string} newLabel
      * @return {!Promise<boolean>}
      */
-    changeEnrollmentLabel: function(index, newLabel) {},
+    changeEnrollmentLabel(index, newLabel) {}
 
-    startAuthentication: function() {},
-
-    endCurrentAuthentication: function() {},
+    startAuthentication() {}
+    endCurrentAuthentication() {}
 
     /**
      * TODO(sammiequon): Temporary function to let the handler know when a
      * completed scan has been sent via click on the setup fingerprint dialog.
      * Remove this when real scans are implemented.
      */
-    fakeScanComplete: function() {},
-  };
+    fakeScanComplete() {}
+  }
 
   /**
-   * @constructor
    * @implements {settings.FingerprintBrowserProxy}
    */
-  function FingerprintBrowserProxyImpl() {}
-  cr.addSingletonGetter(FingerprintBrowserProxyImpl);
-
-  FingerprintBrowserProxyImpl.prototype = {
+  class FingerprintBrowserProxyImpl {
     /** @override */
-    getFingerprintsList: function() {
+    getFingerprintsList() {
       return cr.sendWithPromise('getFingerprintsList');
-    },
+    }
 
     /** @override */
-    getNumFingerprints: function() {
+    getNumFingerprints() {
       return cr.sendWithPromise('getNumFingerprints');
-    },
+    }
 
     /** @override */
-    startEnroll: function() {
+    startEnroll() {
       chrome.send('startEnroll');
-    },
+    }
 
     /** @override */
-    cancelCurrentEnroll: function() {
+    cancelCurrentEnroll() {
       chrome.send('cancelCurrentEnroll');
-    },
+    }
 
     /** @override */
-    getEnrollmentLabel: function(index) {
+    getEnrollmentLabel(index) {
       return cr.sendWithPromise('getEnrollmentLabel');
-    },
+    }
 
     /** @override */
-    removeEnrollment: function(index) {
+    removeEnrollment(index) {
       return cr.sendWithPromise('removeEnrollment', index);
-    },
+    }
 
     /** @override */
-    changeEnrollmentLabel: function(index, newLabel) {
+    changeEnrollmentLabel(index, newLabel) {
       return cr.sendWithPromise('changeEnrollmentLabel', index, newLabel);
-    },
+    }
 
     /** @override */
-    startAuthentication: function() {
+    startAuthentication() {
       chrome.send('startAuthentication');
-    },
+    }
 
     /** @override */
-    endCurrentAuthentication: function() {
+    endCurrentAuthentication() {
       chrome.send('endCurrentAuthentication');
-    },
+    }
 
     /** @override */
-    fakeScanComplete: function() {
+    fakeScanComplete() {
       chrome.send('fakeScanComplete');
-    },
-  };
+    }
+  }
+
+  cr.addSingletonGetter(FingerprintBrowserProxyImpl);
 
   return {
     FingerprintBrowserProxy: FingerprintBrowserProxy,

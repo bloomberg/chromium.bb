@@ -10,72 +10,68 @@ cr.exportPath('settings');
 
 cr.define('settings', function() {
   /** @interface */
-  function EasyUnlockBrowserProxy() {}
-
-  EasyUnlockBrowserProxy.prototype = {
+  class EasyUnlockBrowserProxy {
     /**
      * Returns a true promise if Easy Unlock is already enabled on the device.
      * @return {!Promise<boolean>}
      */
-    getEnabledStatus: function() {},
+    getEnabledStatus() {}
 
     /**
      * Starts the Easy Unlock setup flow.
      */
-    startTurnOnFlow: function() {},
+    startTurnOnFlow() {}
 
     /**
      * Returns the Easy Unlock turn off flow status.
      * @return {!Promise<string>}
      */
-    getTurnOffFlowStatus: function() {},
+    getTurnOffFlowStatus() {}
 
     /**
      * Begins the Easy Unlock turn off flow.
      */
-    startTurnOffFlow: function() {},
+    startTurnOffFlow() {}
 
     /**
      * Cancels any in-progress Easy Unlock turn-off flows.
      */
-    cancelTurnOffFlow: function() {},
-  };
+    cancelTurnOffFlow() {}
+  }
 
   /**
-   * @constructor
    * @implements {settings.EasyUnlockBrowserProxy}
    */
-  function EasyUnlockBrowserProxyImpl() {}
+  class EasyUnlockBrowserProxyImpl {
+    /** @override */
+    getEnabledStatus() {
+      return cr.sendWithPromise('easyUnlockGetEnabledStatus');
+    }
+
+    /** @override */
+    startTurnOnFlow() {
+      chrome.send('easyUnlockStartTurnOnFlow');
+    }
+
+    /** @override */
+    getTurnOffFlowStatus() {
+      return cr.sendWithPromise('easyUnlockGetTurnOffFlowStatus');
+    }
+
+    /** @override */
+    startTurnOffFlow() {
+      chrome.send('easyUnlockStartTurnOffFlow');
+    }
+
+    /** @override */
+    cancelTurnOffFlow() {
+      chrome.send('easyUnlockCancelTurnOffFlow');
+    }
+  }
+
   // The singleton instance_ is replaced with a test version of this wrapper
   // during testing.
   cr.addSingletonGetter(EasyUnlockBrowserProxyImpl);
-
-  EasyUnlockBrowserProxyImpl.prototype = {
-    /** @override */
-    getEnabledStatus: function() {
-      return cr.sendWithPromise('easyUnlockGetEnabledStatus');
-    },
-
-    /** @override */
-    startTurnOnFlow: function() {
-      chrome.send('easyUnlockStartTurnOnFlow');
-    },
-
-    /** @override */
-    getTurnOffFlowStatus: function() {
-      return cr.sendWithPromise('easyUnlockGetTurnOffFlowStatus');
-    },
-
-    /** @override */
-    startTurnOffFlow: function() {
-      chrome.send('easyUnlockStartTurnOffFlow');
-    },
-
-    /** @override */
-    cancelTurnOffFlow: function() {
-      chrome.send('easyUnlockCancelTurnOffFlow');
-    },
-  };
 
   return {
     EasyUnlockBrowserProxy: EasyUnlockBrowserProxy,

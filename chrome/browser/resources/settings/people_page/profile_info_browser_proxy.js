@@ -20,51 +20,47 @@ settings.ProfileInfo;
 
 cr.define('settings', function() {
   /** @interface */
-  function ProfileInfoBrowserProxy() {}
-
-  ProfileInfoBrowserProxy.prototype = {
+  class ProfileInfoBrowserProxy {
     /**
      * Returns a Promise for the profile info.
      * @return {!Promise<!settings.ProfileInfo>}
      */
-    getProfileInfo: function() {},
+    getProfileInfo() {}
 
     /**
      * Requests the profile stats count. The result is returned by the
      * 'profile-stats-count-ready' WebUI listener event.
      */
-    getProfileStatsCount: function() {},
+    getProfileStatsCount() {}
 
     /**
      * Returns a Promise that's true if the profile manages supervised users.
      * @return {!Promise<boolean>}
      */
-    getProfileManagesSupervisedUsers: function() {},
-  };
+    getProfileManagesSupervisedUsers() {}
+  }
 
   /**
-   * @constructor
    * @implements {ProfileInfoBrowserProxy}
    */
-  function ProfileInfoBrowserProxyImpl() {}
-  cr.addSingletonGetter(ProfileInfoBrowserProxyImpl);
-
-  ProfileInfoBrowserProxyImpl.prototype = {
+  class ProfileInfoBrowserProxyImpl {
     /** @override */
-    getProfileInfo: function() {
+    getProfileInfo() {
       return cr.sendWithPromise('getProfileInfo');
-    },
+    }
 
     /** @override */
-    getProfileStatsCount: function() {
+    getProfileStatsCount() {
       chrome.send('getProfileStatsCount');
-    },
+    }
 
     /** @override */
-    getProfileManagesSupervisedUsers: function() {
+    getProfileManagesSupervisedUsers() {
       return cr.sendWithPromise('getProfileManagesSupervisedUsers');
-    },
-  };
+    }
+  }
+
+  cr.addSingletonGetter(ProfileInfoBrowserProxyImpl);
 
   return {
     ProfileInfoBrowserProxyImpl: ProfileInfoBrowserProxyImpl,
