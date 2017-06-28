@@ -5,11 +5,11 @@
 #include "content/browser/renderer_host/input/touch_selection_controller_client_child_frame.h"
 
 #include "content/browser/frame_host/render_widget_host_view_child_frame.h"
-#include "content/browser/renderer_host/input/touch_selection_controller_client_manager.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/touch_selection_controller_client_manager.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/strings/grit/ui_strings.h"

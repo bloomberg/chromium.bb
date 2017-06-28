@@ -10,8 +10,8 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
-#include "content/browser/renderer_host/input/touch_selection_controller_client_manager.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/touch_selection_controller_client_manager.h"
 #include "ui/touch_selection/touch_selection_controller.h"
 #include "ui/touch_selection/touch_selection_menu_runner.h"
 
