@@ -8,6 +8,7 @@
 #include "core/CoreExport.h"
 #include "core/layout/ng/inline/empty_offset_mapping_builder.h"
 #include "core/layout/ng/inline/ng_inline_node.h"
+#include "core/layout/ng/inline/ng_offset_mapping_builder.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/StringBuilder.h"
@@ -28,8 +29,12 @@ class NGInlineItem;
 // By calling EnterInline/ExitInline, it inserts bidirectional control
 // characters as defined in:
 // https://drafts.csswg.org/css-writing-modes-3/#bidi-control-codes-injection-table
-// TODO(xiaochengh): Utilize the passed-in OffsetMappingBuilder to construct
-// the whitespace-collapsed offset mapping.
+//
+// NGInlineItemsBuilder may optionally take an NGOffsetMappingBuilder template
+// parameter to construct the white-space collapsed offset mapping, which maps
+// offsets in the concatenation of all appended strings and characters to
+// offsets in |text_|.
+// See https://goo.gl/CJbxky for more details about offset mapping.
 template <typename OffsetMappingBuilder>
 class CORE_TEMPLATE_CLASS_EXPORT NGInlineItemsBuilderTemplate {
   STACK_ALLOCATED();
@@ -87,9 +92,12 @@ class CORE_TEMPLATE_CLASS_EXPORT NGInlineItemsBuilderTemplate {
   void EnterInline(LayoutObject*);
   void ExitInline(LayoutObject*);
 
+  OffsetMappingBuilder& GetOffsetMappingBuilder() { return mapping_builder_; }
+
  private:
   Vector<NGInlineItem>* items_;
   StringBuilder text_;
+  OffsetMappingBuilder mapping_builder_;
 
   typedef struct OnExitNode {
     LayoutObject* node;
@@ -129,9 +137,13 @@ class CORE_TEMPLATE_CLASS_EXPORT NGInlineItemsBuilderTemplate {
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT
     NGInlineItemsBuilderTemplate<EmptyOffsetMappingBuilder>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT
+    NGInlineItemsBuilderTemplate<NGOffsetMappingBuilder>;
 
 using NGInlineItemsBuilder =
     NGInlineItemsBuilderTemplate<EmptyOffsetMappingBuilder>;
+using NGInlineItemsBuilderForOffsetMapping =
+    NGInlineItemsBuilderTemplate<NGOffsetMappingBuilder>;
 
 }  // namespace blink
 

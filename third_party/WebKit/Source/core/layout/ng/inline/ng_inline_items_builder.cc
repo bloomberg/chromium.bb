@@ -6,6 +6,7 @@
 
 #include "core/layout/LayoutObject.h"
 #include "core/layout/ng/inline/ng_inline_node.h"
+#include "core/layout/ng/inline/ng_offset_mapping_builder.h"
 #include "core/style/ComputedStyle.h"
 
 namespace blink {
@@ -162,8 +163,12 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::
         return;
       }
 
-      if (last_collapsible_space_ == CollapsibleSpace::kNone)
+      if (last_collapsible_space_ == CollapsibleSpace::kNone) {
         text_.Append(kSpaceCharacter);
+        mapping_builder_.AppendIdentityMapping(1);
+      } else {
+        mapping_builder_.AppendCollapsedMapping(1);
+      }
       last_collapsible_space_ = CollapsibleSpace::kNewline;
       i++;
       continue;
@@ -173,6 +178,9 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::
       if (last_collapsible_space_ == CollapsibleSpace::kNone) {
         text_.Append(kSpaceCharacter);
         last_collapsible_space_ = CollapsibleSpace::kSpace;
+        mapping_builder_.AppendIdentityMapping(1);
+      } else {
+        mapping_builder_.AppendCollapsedMapping(1);
       }
       i++;
       continue;
@@ -187,6 +195,7 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::
     if (end_of_non_space == kNotFound)
       end_of_non_space = string.length();
     text_.Append(string, i, end_of_non_space - i);
+    mapping_builder_.AppendIdentityMapping(end_of_non_space - i);
     i = end_of_non_space;
     last_collapsible_space_ = CollapsibleSpace::kNone;
   }
@@ -217,6 +226,7 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::
       end = string.length();
     unsigned start_offset = text_.length();
     text_.Append(string, start, end - start);
+    mapping_builder_.AppendIdentityMapping(end - start);
     AppendItem(items_, NGInlineItem::kText, start_offset, text_.length(), style,
                layout_object);
     start = end;
@@ -268,6 +278,7 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::Append(
   DCHECK_NE(character, kZeroWidthSpaceCharacter);
 
   text_.Append(character);
+  mapping_builder_.AppendIdentityMapping(1);
   unsigned end_offset = text_.length();
   AppendItem(items_, type, end_offset - 1, end_offset, style, layout_object);
   last_collapsible_space_ = CollapsibleSpace::kNone;
@@ -278,6 +289,7 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendOpaque(
     NGInlineItem::NGInlineItemType type,
     UChar character) {
   text_.Append(character);
+  mapping_builder_.AppendIdentityMapping(1);
   unsigned end_offset = text_.length();
   AppendItem(items_, type, end_offset - 1, end_offset, nullptr, nullptr);
 }
@@ -348,6 +360,7 @@ void NGInlineItemsBuilderTemplate<
 
   text_.erase(index);
   last_collapsible_space_ = CollapsibleSpace::kNone;
+  mapping_builder_.CollapseTrailingSpace(text_.length() - index);
 
   // Adjust items if the removed space is already included.
   for (unsigned i = items_->size(); i > 0;) {
@@ -482,5 +495,7 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::Exit(
 
 template class CORE_TEMPLATE_EXPORT
     NGInlineItemsBuilderTemplate<EmptyOffsetMappingBuilder>;
+template class CORE_TEMPLATE_EXPORT
+    NGInlineItemsBuilderTemplate<NGOffsetMappingBuilder>;
 
 }  // namespace blink
