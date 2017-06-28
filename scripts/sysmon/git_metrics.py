@@ -104,9 +104,9 @@ class _GitMetricCollector(object):
 
   def _collect_unstaged_changes_metric(self):
     added, deleted = self._gitrepo.get_unstaged_changes()
-    self._timestamp_metric.set(
+    self._unstaged_changes_metric.set(
         added, fields=dict(change_type='added', **self._fields))
-    self._timestamp_metric.set(
+    self._unstaged_changes_metric.set(
         deleted, fields=dict(change_type='deleted', **self._fields))
 
 
