@@ -467,8 +467,10 @@ void HTMLElement::ParseAttribute(const AttributeModificationParams& params) {
   } else if (params.name == inertAttr) {
     UseCounter::Count(GetDocument(), WebFeature::kInertAttribute);
     UpdateDistribution();
-    GetDocument().GetFrame()->SetIsInert(GetDocument().LocalOwner() &&
-                                         GetDocument().LocalOwner()->IsInert());
+    if (GetDocument().GetFrame()) {
+      GetDocument().GetFrame()->SetIsInert(
+          GetDocument().LocalOwner() && GetDocument().LocalOwner()->IsInert());
+    }
   } else if (params.name == nonceAttr) {
     if (params.new_value != g_empty_atom)
       setNonce(params.new_value);
