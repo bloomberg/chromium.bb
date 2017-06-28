@@ -194,7 +194,8 @@ bool UsbChooserContext::IsValidObject(const base::DictionaryValue& object) {
          object.HasKey(kSerialNumberKey);
 }
 
-void UsbChooserContext::OnDeviceRemoved(scoped_refptr<UsbDevice> device) {
+void UsbChooserContext::OnDeviceRemovedCleanup(
+    scoped_refptr<UsbDevice> device) {
   for (auto& map_entry : ephemeral_devices_)
     map_entry.second.erase(device->guid());
 }
