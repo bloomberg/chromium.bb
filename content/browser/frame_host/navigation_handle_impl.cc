@@ -592,7 +592,8 @@ void NavigationHandleImpl::WillStartRequest(
     return;
   }
 
-  RegisterNavigationThrottles();
+  if (!IsRendererDebugURL(url_))
+    RegisterNavigationThrottles();
 
   if (IsBrowserSideNavigationEnabled())
     navigation_ui_data_ = GetDelegate()->GetNavigationUIData(this);

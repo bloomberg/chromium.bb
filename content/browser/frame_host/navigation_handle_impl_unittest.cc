@@ -2,15 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/macros.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
+#include "base/macros.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/common/request_context_type.h"
+#include "content/public/common/url_constants.h"
+#include "content/test/test_content_browser_client.h"
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_web_contents.h"
 
 namespace content {
+
+using ThrottleInsertionCallback =
+    base::RepeatingCallback<std::vector<std::unique_ptr<NavigationThrottle>>(
+        NavigationHandle*)>;
+
+class ThrottleInserterContentBrowserClient : public TestContentBrowserClient {
+ public:
+  ThrottleInserterContentBrowserClient(
+      const ThrottleInsertionCallback& callback)
+      : throttle_insertion_callback_(callback) {}
+
+  std::vector<std::unique_ptr<NavigationThrottle>> CreateThrottlesForNavigation(
+      NavigationHandle* navigation_handle) override {
+    return throttle_insertion_callback_.Run(navigation_handle);
+  }
+
+ private:
+  ThrottleInsertionCallback throttle_insertion_callback_;
+};
 
 // Test version of a NavigationThrottle. It will always return the current
 // NavigationThrottle::ThrottleCheckResult |result_|, It also monitors the
@@ -196,6 +217,61 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
   bool was_callback_called_;
   NavigationThrottle::ThrottleCheckResult callback_result_;
 };
+
+// Test harness that automatically inserts a navigation throttle via the content
+// browser client.
+class NavigationHandleImplThrottleInsertionTest
+    : public RenderViewHostImplTestHarness {
+ public:
+  NavigationHandleImplThrottleInsertionTest() : old_browser_client_(nullptr) {}
+
+  void SetUp() override {
+    RenderViewHostImplTestHarness::SetUp();
+    contents()->GetMainFrame()->InitializeRenderFrameIfNeeded();
+    test_browser_client_ =
+        base::MakeUnique<ThrottleInserterContentBrowserClient>(
+            base::Bind(&NavigationHandleImplThrottleInsertionTest::GetThrottles,
+                       base::Unretained(this)));
+    old_browser_client_ =
+        SetBrowserClientForTesting(test_browser_client_.get());
+  }
+
+  void TearDown() override {
+    SetBrowserClientForTesting(old_browser_client_);
+    RenderViewHostImplTestHarness::TearDown();
+  }
+
+  size_t throttles_inserted() const { return throttles_inserted_; }
+
+ private:
+  std::vector<std::unique_ptr<NavigationThrottle>> GetThrottles(
+      NavigationHandle* handle) {
+    auto throttle = base::MakeUnique<TestNavigationThrottle>(
+        handle, NavigationThrottle::ThrottleCheckResult::PROCEED);
+    std::vector<std::unique_ptr<NavigationThrottle>> vec;
+    throttles_inserted_++;
+    vec.push_back(std::move(throttle));
+    return vec;
+  }
+
+  std::unique_ptr<ThrottleInserterContentBrowserClient> test_browser_client_;
+  ContentBrowserClient* old_browser_client_ = nullptr;
+
+  size_t throttles_inserted_ = 0u;
+
+  DISALLOW_COPY_AND_ASSIGN(NavigationHandleImplThrottleInsertionTest);
+};
+
+// Do not insert throttles that correspond to RendererDebugURLs. This aligns
+// throttle insertion with WebContentsObserver callbacks.
+TEST_F(NavigationHandleImplThrottleInsertionTest,
+       RendererDebugURL_DoNotInsert) {
+  NavigateAndCommit(GURL("https://example.test/"));
+  EXPECT_EQ(1u, throttles_inserted());
+
+  NavigateAndCommit(GURL(kChromeUICrashURL));
+  EXPECT_EQ(1u, throttles_inserted());
+}
 
 // Checks that the request_context_type is properly set.
 // Note: can be extended to cover more internal members.

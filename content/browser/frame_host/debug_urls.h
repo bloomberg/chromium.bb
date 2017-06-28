@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_FRAME_HOST_DEBUG_URLS_H_
 #define CONTENT_BROWSER_FRAME_HOST_DEBUG_URLS_H_
 
+#include "content/common/content_export.h"
 #include "ui/base/page_transition_types.h"
 
 class GURL;
@@ -19,7 +20,7 @@ bool HandleDebugURL(const GURL& url, ui::PageTransition transition);
 // renderer process, such as one that crashes or hangs the renderer, or a
 // javascript: URL that operates on the current page in the renderer.  Such URLs
 // do not represent actual navigations and can be loaded in any SiteInstance.
-bool IsRendererDebugURL(const GURL& url);
+CONTENT_EXPORT bool IsRendererDebugURL(const GURL& url);
 
 }  // namespace content
 
