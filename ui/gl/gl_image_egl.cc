@@ -32,7 +32,7 @@ bool GLImageEGL::Initialize(EGLenum target,
   egl_image_ = eglCreateImageKHR(GLSurfaceEGL::GetHardwareDisplay(),
                                  EGL_NO_CONTEXT, target, buffer, attrs);
   if (egl_image_ == EGL_NO_IMAGE_KHR) {
-    DLOG(ERROR) << "Error creating EGLImage: " << ui::GetLastEGLErrorString();
+    LOG(ERROR) << "Error creating EGLImage: " << ui::GetLastEGLErrorString();
     return false;
   }
 
