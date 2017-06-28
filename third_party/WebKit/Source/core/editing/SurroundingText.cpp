@@ -76,8 +76,17 @@ void SurroundingText::Initialize(const Position& start_position,
       end_position,
       Position::LastPositionInNode(*root_element).ParentAnchoredEquivalent(),
       TextIteratorBehavior::Builder().SetStopsOnFormControls(true).Build());
+  // FIXME: why do we stop going trough the text if we were not able to select
+  // something on the right?
   if (!forward_iterator.AtEnd())
     forward_iterator.Advance(max_length - half_max_length);
+
+  EphemeralRange forward_range = forward_iterator.Range();
+  if (forward_range.IsNull() ||
+      !Range::Create(*document, end_position, forward_range.StartPosition())
+           ->GetText()
+           .length())
+    return;
 
   // Same as with the forward range but with the backward range. The range
   // starts at the document's or input element's start and ends at the selection
@@ -96,7 +105,7 @@ void SurroundingText::Initialize(const Position& start_position,
   end_offset_in_content_ = TextIterator::RangeLength(
       backwards_iterator.EndPosition(), end_position, behavior);
   content_range_ = Range::Create(*document, backwards_iterator.EndPosition(),
-                                 forward_iterator.StartPosition());
+                                 forward_range.StartPosition());
   DCHECK(content_range_);
 }
 
