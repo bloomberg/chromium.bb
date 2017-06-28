@@ -15,11 +15,11 @@
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/window_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
-#include "ui/wm/core/window_util.h"
 
 namespace ash {
 
@@ -69,7 +69,7 @@ bool OverviewButtonTray::PerformAction(const ui::Event& event) {
       // current window), if it exists.
       if (mru_window_list.size() > 1) {
         AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr);
-        ::wm::ActivateWindow(mru_window_list[1]);
+        wm::GetWindowState(mru_window_list[1])->Activate();
         return true;
       }
     }
