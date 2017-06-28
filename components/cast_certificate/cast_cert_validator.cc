@@ -158,15 +158,48 @@ bool GetCommonNameFromSubject(const net::der::Input& subject_tlv,
   return false;
 }
 
+// Cast device certificates use the policy 1.3.6.1.4.1.11129.2.5.2 to indicate
+// it is *restricted* to an audio-only device whereas the absence of a policy
+// means it is unrestricted.
+//
+// This is somewhat different than RFC 5280's notion of policies, so policies
+// are checked separately outside of path building.
+//
+// See the unit-tests VerifyCastDeviceCertTest.Policies* for some
+// concrete examples of how this works.
+void DetermineDeviceCertificatePolicy(
+    const net::CertPathBuilder::ResultPath* result_path,
+    CastDeviceCertPolicy* policy) {
+  // Iterate over all the certificates, including the root certificate. If any
+  // certificate contains the audio-only policy, the whole chain is considered
+  // constrained to audio-only device certificates.
+  //
+  // Policy mappings are not accounted for. The expectation is that top-level
+  // intermediates issued with audio-only will have no mappings. If subsequent
+  // certificates in the chain do, it won't matter as the chain is already
+  // restricted to being audio-only.
+  bool audio_only = false;
+  for (const auto& cert : result_path->path.certs) {
+    if (cert->has_policy_oids()) {
+      const std::vector<net::der::Input>& policies = cert->policy_oids();
+      if (std::find(policies.begin(), policies.end(), AudioOnlyPolicyOid()) !=
+          policies.end()) {
+        audio_only = true;
+        break;
+      }
+    }
+  }
+
+  *policy = audio_only ? CastDeviceCertPolicy::AUDIO_ONLY
+                       : CastDeviceCertPolicy::NONE;
+}
+
 // Checks properties on the target certificate.
 //
 //   * The Key Usage must include Digital Signature
-//   * May have the policy 1.3.6.1.4.1.11129.2.5.2 to indicate it
-//     is an audio-only device.
 WARN_UNUSED_RESULT bool CheckTargetCertificate(
     const net::ParsedCertificate* cert,
-    std::unique_ptr<CertVerificationContext>* context,
-    CastDeviceCertPolicy* policy) {
+    std::unique_ptr<CertVerificationContext>* context) {
   // Get the Key Usage extension.
   if (!cert->has_key_usage())
     return false;
@@ -174,22 +207,6 @@ WARN_UNUSED_RESULT bool CheckTargetCertificate(
   // Ensure Key Usage contains digitalSignature.
   if (!cert->key_usage().AssertsBit(net::KEY_USAGE_BIT_DIGITAL_SIGNATURE))
     return false;
-
-  // Check for an optional audio-only policy extension.
-  //
-  // TODO(eroman): Use |user_constrained_policy_set| that was output from
-  // verification instead. (Checking just the leaf certificate's policy
-  // assertion doesn't take into account policy restrictions on intermediates,
-  // policy constraints/inhibits, or policy re-mappings).
-  *policy = CastDeviceCertPolicy::NONE;
-  if (cert->has_policy_oids()) {
-    const std::vector<net::der::Input>& policies = cert->policy_oids();
-    // Look for an audio-only policy. Disregard any other policy found.
-    if (std::find(policies.begin(), policies.end(), AudioOnlyPolicyOid()) !=
-        policies.end()) {
-      *policy = CastDeviceCertPolicy::AUDIO_ONLY;
-    }
-  }
 
   // Get the Common Name for the certificate.
   std::string common_name;
@@ -281,9 +298,13 @@ bool VerifyDeviceCertUsingCustomTrustStore(
     return false;
   }
 
-  // Check properties of the leaf certificate (key usage, policy), and construct
-  // a CertVerificationContext that uses its public key.
-  if (!CheckTargetCertificate(target_cert.get(), context, policy))
+  // Determine whether this device certificate is restricted to audio-only.
+  DetermineDeviceCertificatePolicy(result.GetBestValidPath(), policy);
+
+  // Check properties of the leaf certificate not already verified by path
+  // building (key usage), and construct a CertVerificationContext that uses
+  // its public key.
+  if (!CheckTargetCertificate(target_cert.get(), context))
     return false;
 
   // Check if a CRL is available.
