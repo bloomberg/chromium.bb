@@ -5,8 +5,7 @@
 // https://w3c.github.io/web-animations/#the-animationtimeline-interface
 
 [
-    RuntimeEnabled=WebAnimationsAPI,
-    ImplementedAs=SuperAnimationTimeline
+    RuntimeEnabled=WebAnimationsAPI
 ] interface AnimationTimeline {
     readonly attribute double? currentTime;
 };

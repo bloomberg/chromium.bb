@@ -34,8 +34,8 @@
 #include <memory>
 #include "core/CoreExport.h"
 #include "core/animation/AnimationEffectReadOnly.h"
+#include "core/animation/AnimationTimeline.h"
 #include "core/animation/EffectModel.h"
-#include "core/animation/SuperAnimationTimeline.h"
 #include "core/dom/Element.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "platform/Timer.h"
@@ -53,7 +53,7 @@ class Document;
 
 // DocumentTimeline is constructed and owned by Document, and tied to its
 // lifecycle.
-class CORE_EXPORT DocumentTimeline : public SuperAnimationTimeline {
+class CORE_EXPORT DocumentTimeline : public AnimationTimeline {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -162,7 +162,7 @@ class CORE_EXPORT DocumentTimeline : public SuperAnimationTimeline {
 };
 
 DEFINE_TYPE_CASTS(DocumentTimeline,
-                  SuperAnimationTimeline,
+                  AnimationTimeline,
                   timeline,
                   timeline->IsDocumentTimeline(),
                   timeline.IsDocumentTimeline());

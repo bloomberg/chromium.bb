@@ -30,10 +30,10 @@
 
 #include "core/animation/Animation.h"
 
+#include "core/animation/AnimationTimeline.h"
 #include "core/animation/CompositorPendingAnimations.h"
 #include "core/animation/DocumentTimeline.h"
 #include "core/animation/KeyframeEffectReadOnly.h"
-#include "core/animation/SuperAnimationTimeline.h"
 #include "core/animation/css/CSSAnimations.h"
 #include "core/dom/DOMNodeIds.h"
 #include "core/dom/Document.h"
@@ -68,7 +68,7 @@ static unsigned NextSequenceNumber() {
 }
 
 Animation* Animation::Create(AnimationEffectReadOnly* effect,
-                             SuperAnimationTimeline* timeline) {
+                             AnimationTimeline* timeline) {
   if (!timeline || !timeline->IsDocumentTimeline()) {
     // FIXME: Support creating animations without a timeline.
     NOTREACHED();
@@ -99,7 +99,7 @@ Animation* Animation::Create(ExecutionContext* execution_context,
 
 Animation* Animation::Create(ExecutionContext* execution_context,
                              AnimationEffectReadOnly* effect,
-                             SuperAnimationTimeline* timeline,
+                             AnimationTimeline* timeline,
                              ExceptionState& exception_state) {
   DCHECK(RuntimeEnabledFeatures::WebAnimationsAPIEnabled());
 
