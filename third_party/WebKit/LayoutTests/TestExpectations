@@ -2936,6 +2936,7 @@ crbug.com/736548 [ Mac ] css2.1/t040304-c64-uri-00-a-g.html [ Failure Pass ]
 crbug.com/v8/6504 fast/js/mozilla/strict/B.1.2.html [ NeedsManualRebaseline ]
 
 crbug.com/v8/6529 inspector/console/console-dir.html [ NeedsManualRebaseline ]
+crbug.com/v8/6529 inspector/console/console-format.html [ NeedsManualRebaseline ]
 
 # These tests are failing on Mac-10.12 when using an Intel GPU.
 crbug.com/736177 [ Mac ] css2.1/t1202-counter-04-b.html [ Failure Pass ]
