@@ -87,6 +87,9 @@ class EncryptionMigrationScreenHandler : public EncryptionMigrationScreenView,
   // Creates authorization key for MountEx method using |user_context_|.
   cryptohome::KeyDefinition GetAuthKey();
 
+  // True if the session is in ARC kiosk mode.
+  bool IsArcKiosk() const;
+
   // Handlers for cryptohome API callbacks.
   void OnMigrationProgress(cryptohome::DircryptoMigrationStatus status,
                            uint64_t current,

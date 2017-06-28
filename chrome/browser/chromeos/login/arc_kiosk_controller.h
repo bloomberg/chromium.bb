@@ -50,6 +50,8 @@ class ArcKioskController : public LoginPerformer::Delegate,
   void WhiteListCheckFailed(const std::string& email) override;
   void PolicyLoadFailed() override;
   void SetAuthFlowOffline(bool offline) override;
+  void OnOldEncryptionDetected(const UserContext& user_context,
+                               bool has_incomplete_migration) override;
 
   // UserSessionManagerDelegate implementation:
   void OnProfilePrepared(Profile* profile, bool browser_launched) override;
