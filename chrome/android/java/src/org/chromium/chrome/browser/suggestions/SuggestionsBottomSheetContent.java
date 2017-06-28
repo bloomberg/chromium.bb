@@ -13,17 +13,13 @@ import android.view.View;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
-import org.chromium.base.DiscardableReferencePool;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.NativePageHost;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.ContextMenuManager.TouchEnabledDelegate;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
-import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
-import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -43,9 +39,6 @@ import java.util.Locale;
  * Provides content to be displayed inside of the Home tab of bottom sheet.
  */
 public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetContent {
-    private static SuggestionsSource sSuggestionsSourceForTesting;
-    private static SuggestionsEventReporter sEventReporterForTesting;
-
     private final View mView;
     private final FadingShadowView mShadowView;
     private final SuggestionsRecyclerView mRecyclerView;
@@ -56,13 +49,15 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
 
     public SuggestionsBottomSheetContent(final ChromeActivity activity, final BottomSheet sheet,
             TabModelSelector tabModelSelector, SnackbarManager snackbarManager) {
+        SuggestionsDependencyFactory depsFactory = SuggestionsDependencyFactory.getInstance();
         Profile profile = Profile.getLastUsedProfile();
         SuggestionsNavigationDelegate navigationDelegate =
                 new SuggestionsNavigationDelegateImpl(activity, profile, sheet, tabModelSelector);
         mTileGroupDelegate = new TileGroupDelegateImpl(
                 activity, profile, tabModelSelector, navigationDelegate, snackbarManager);
-        mSuggestionsUiDelegate = createSuggestionsDelegate(
-                profile, navigationDelegate, sheet, activity.getReferencePool());
+        mSuggestionsUiDelegate = new SuggestionsUiDelegateImpl(
+                depsFactory.createSuggestionSource(profile), depsFactory.createEventReporter(),
+                navigationDelegate, profile, sheet, activity.getReferencePool());
 
         mView = LayoutInflater.from(activity).inflate(
                 R.layout.suggestions_bottom_sheet_content, null);
@@ -203,40 +198,5 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
                         Toast.makeText(mRecyclerView.getContext(), text, Toast.LENGTH_SHORT).show();
                     }
                 });
-    }
-
-    public static void setSuggestionsSourceForTesting(SuggestionsSource suggestionsSource) {
-        sSuggestionsSourceForTesting = suggestionsSource;
-    }
-
-    public static void setEventReporterForTesting(SuggestionsEventReporter eventReporter) {
-        sEventReporterForTesting = eventReporter;
-    }
-
-    private static SuggestionsUiDelegateImpl createSuggestionsDelegate(Profile profile,
-            SuggestionsNavigationDelegate navigationDelegate, NativePageHost host,
-            DiscardableReferencePool referencePool) {
-        SnippetsBridge snippetsBridge = null;
-        SuggestionsSource suggestionsSource;
-        SuggestionsEventReporter eventReporter;
-
-        if (sSuggestionsSourceForTesting == null) {
-            snippetsBridge = new SnippetsBridge(profile);
-            suggestionsSource = snippetsBridge;
-        } else {
-            suggestionsSource = sSuggestionsSourceForTesting;
-        }
-
-        if (sEventReporterForTesting == null) {
-            eventReporter = new SuggestionsEventReporterBridge();
-        } else {
-            eventReporter = sEventReporterForTesting;
-        }
-
-        SuggestionsUiDelegateImpl delegate = new SuggestionsUiDelegateImpl(
-                suggestionsSource, eventReporter, navigationDelegate, profile, host, referencePool);
-        if (snippetsBridge != null) delegate.addDestructionObserver(snippetsBridge);
-
-        return delegate;
     }
 }

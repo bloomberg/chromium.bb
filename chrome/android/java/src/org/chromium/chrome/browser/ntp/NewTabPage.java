@@ -34,13 +34,12 @@ import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareT
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.metrics.StartupMetrics;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
-import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
+import org.chromium.chrome.browser.suggestions.SuggestionsDependencyFactory;
 import org.chromium.chrome.browser.suggestions.SuggestionsEventReporter;
-import org.chromium.chrome.browser.suggestions.SuggestionsEventReporterBridge;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetrics;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegateImpl;
@@ -76,8 +75,6 @@ public class NewTabPage
     // Key for the scroll position data that may be stored in a navigation entry.
     private static final String NAVIGATION_ENTRY_SCROLL_POSITION_KEY = "NewTabPageScrollPosition";
 
-    private static SuggestionsSource sSuggestionsSourceForTests;
-
     private final Tab mTab;
     private final TabModelSelector mTabModelSelector;
 
@@ -92,7 +89,6 @@ public class NewTabPage
     private boolean mSearchProviderHasLogo;
 
     private FakeboxDelegate mFakeboxDelegate;
-    private SnippetsBridge mSnippetsBridge;
 
     // The timestamp at which the constructor was called.
     private final long mConstructedTimeNs;
@@ -170,11 +166,6 @@ public class NewTabPage
         return ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_OFFLINE_PAGES_FEATURE_NAME);
     }
 
-    @VisibleForTesting
-    public static void setSuggestionsSourceForTests(SuggestionsSource suggestionsSource) {
-        sSuggestionsSourceForTests = suggestionsSource;
-    }
-
     private class NewTabPageManagerImpl
             extends SuggestionsUiDelegateImpl implements NewTabPageManager {
         public NewTabPageManagerImpl(SuggestionsSource suggestionsSource,
@@ -235,12 +226,6 @@ public class NewTabPage
                     mFakeboxDelegate.requestUrlFocusFromFakebox(pastedText);
                 }
             }
-        }
-
-        @Override
-        public SuggestionsSource getSuggestionsSource() {
-            if (sSuggestionsSourceForTests != null) return sSuggestionsSourceForTests;
-            return mSnippetsBridge;
         }
 
         @Override
@@ -318,13 +303,14 @@ public class NewTabPage
         mTabModelSelector = tabModelSelector;
         Profile profile = mTab.getProfile();
 
-        mSnippetsBridge = new SnippetsBridge(profile);
-        SuggestionsEventReporter eventReporter = new SuggestionsEventReporterBridge();
+        SuggestionsDependencyFactory depsFactory = SuggestionsDependencyFactory.getInstance();
+        SuggestionsSource suggestionsSource = depsFactory.createSuggestionSource(profile);
+        SuggestionsEventReporter eventReporter = depsFactory.createEventReporter();
 
         SuggestionsNavigationDelegateImpl navigationDelegate =
                 new SuggestionsNavigationDelegateImpl(
                         activity, profile, nativePageHost, tabModelSelector);
-        mNewTabPageManager = new NewTabPageManagerImpl(mSnippetsBridge, eventReporter,
+        mNewTabPageManager = new NewTabPageManagerImpl(suggestionsSource, eventReporter,
                 navigationDelegate, profile, nativePageHost, activity.getReferencePool());
         mTileGroupDelegate = new NewTabPageTileGroupDelegate(
                 activity, profile, tabModelSelector, navigationDelegate);
@@ -556,10 +542,6 @@ public class NewTabPage
                 .isAttachedToWindow(getView()) : "Destroy called before removed from window";
         if (mIsLoaded && !mTab.isHidden()) recordNTPHidden();
 
-        if (mSnippetsBridge != null) {
-            mSnippetsBridge.onDestroy();
-            mSnippetsBridge = null;
-        }
         mNewTabPageManager.onDestroy();
         mTileGroupDelegate.destroy();
         TemplateUrlService.getInstance().removeObserver(this);
