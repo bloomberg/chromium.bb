@@ -19,6 +19,7 @@
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/form_structure.h"
+#include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/ukm/public/ukm_entry_builder.h"
 
@@ -49,6 +50,18 @@ const char kUKMIsEmptyMetricName[] = "IsEmpty";
 const char kUKMFormSubmittedEntryName[] = "Autofill.AutofillFormSubmitted";
 const char kUKMAutofillFormSubmittedStateMetricName[] =
     "AutofillFormSubmittedState";
+// |UkmEntry| for capturing field type prediction quality.
+const char kUKMFieldTypeEntryName[] = "Autofill.FieldTypeValidation";
+const char kUKMFieldFillStatusEntryName[] = "Autofill.FieldFillStatus";
+const char kUKMFormSignatureMetricName[] = "FormSignature";
+const char kUKMFieldSignatureMetricName[] = "FieldSignature";
+const char kUKMValidationEventMetricName[] = "ValidationEvent";
+const char kUKMPredictionSourceMetricName[] = "PredictionSource";
+const char kUKMPredictedTypeMetricName[] = "PredictedType";
+const char kUKMActualTypeMetricName[] = "ActualType";
+const char kUKMWasSuggestionShownMetricName[] = "WasSuggestionShown";
+const char kUKMWasPreviouslyAutofilledMetricName[] = "WasPreviouslyAutofilled";
+
 }  // namespace internal
 
 namespace autofill {
@@ -277,6 +290,23 @@ void LogUMAHistogramLongTimes(const std::string& name,
   histogram->AddTime(duration);
 }
 
+const char* GetQualityMetricPredictionSource(
+    AutofillMetrics::QualityMetricPredictionSource source) {
+  switch (source) {
+    default:
+    case AutofillMetrics::PREDICTION_SOURCE_UNKNOWN:
+      NOTREACHED();
+      return "Unknown";
+
+    case AutofillMetrics::PREDICTION_SOURCE_HEURISTIC:
+      return "Heuristic";
+    case AutofillMetrics::PREDICTION_SOURCE_SERVER:
+      return "Server";
+    case AutofillMetrics::PREDICTION_SOURCE_OVERALL:
+      return "Overall";
+  }
+}
+
 const char* GetQualityMetricTypeSuffix(
     AutofillMetrics::QualityMetricType metric_type) {
   switch (metric_type) {
@@ -339,23 +369,32 @@ ServerFieldType GetActualFieldType(const ServerFieldTypeSet& possible_types,
 }
 
 // Logs field type prediction quality metrics.  The primary histogram name is
-// constructed based on |source| The field-specific histogram name also factors
-// possible and predicted field types (|possible_types| and |predicted_type|,
-// respectively). May log a suffixed version of the metric depending on
-// |metric_type|.
+// constructed based on |prediction_source| The field-specific histogram names
+// also incorporates the possible and predicted types for |field|. A suffix may
+// be appended to the metric name, depending on |metric_type|.
 void LogPredictionQualityMetrics(
-    const base::StringPiece& source,
-    const ServerFieldTypeSet& possible_types,
+    AutofillMetrics::QualityMetricPredictionSource prediction_source,
     ServerFieldType predicted_type,
+    AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger,
+    const FormStructure& form,
+    const AutofillField& field,
     AutofillMetrics::QualityMetricType metric_type) {
   // Generate histogram names.
-  const char* const suffix = GetQualityMetricTypeSuffix(metric_type);
+  const char* source = GetQualityMetricPredictionSource(prediction_source);
+  const char* suffix = GetQualityMetricTypeSuffix(metric_type);
   std::string raw_data_histogram =
       base::JoinString({"Autofill.FieldPrediction.", source, suffix}, "");
   std::string aggregate_histogram = base::JoinString(
       {"Autofill.FieldPredictionQuality.Aggregate.", source, suffix}, "");
   std::string type_specific_histogram = base::JoinString(
       {"Autofill.FieldPredictionQuality.ByFieldType.", source, suffix}, "");
+
+  const ServerFieldTypeSet& possible_types =
+      metric_type == AutofillMetrics::TYPE_AUTOCOMPLETE_BASED
+          ? ServerFieldTypeSet{AutofillType(field.html_type(),
+                                            field.html_mode())
+                                   .GetStorableType()}
+          : field.possible_types();
 
   // Get the best type classification we can for the field.
   ServerFieldType actual_type =
@@ -368,6 +407,10 @@ void LogPredictionQualityMetrics(
   DCHECK_LE(actual_type, UINT16_MAX);
   UMA_HISTOGRAM_SPARSE_SLOWLY(raw_data_histogram,
                               (predicted_type << 16) | actual_type);
+
+  form_interactions_ukm_logger->LogFieldType(
+      form.form_signature(), field.GetFieldSignature(), prediction_source,
+      metric_type, predicted_type, actual_type);
 
   // NO_SERVER_DATA is the equivalent of predicting UNKNOWN.
   if (predicted_type == NO_SERVER_DATA)
@@ -664,27 +707,35 @@ void AutofillMetrics::LogDeveloperEngagementMetric(
 }
 
 void AutofillMetrics::LogHeuristicPredictionQualityMetrics(
-    const ServerFieldTypeSet& possible_types,
-    ServerFieldType predicted_type,
-    AutofillMetrics::QualityMetricType metric_type) {
-  LogPredictionQualityMetrics("Heuristic", possible_types, predicted_type,
-                              metric_type);
+    FormInteractionsUkmLogger* form_interactions_ukm_logger,
+    const FormStructure& form,
+    const AutofillField& field,
+    QualityMetricType metric_type) {
+  LogPredictionQualityMetrics(
+      PREDICTION_SOURCE_HEURISTIC,
+      AutofillType(field.heuristic_type()).GetStorableType(),
+      form_interactions_ukm_logger, form, field, metric_type);
 }
 
 void AutofillMetrics::LogServerPredictionQualityMetrics(
-    const ServerFieldTypeSet& possible_types,
-    ServerFieldType predicted_type,
-    AutofillMetrics::QualityMetricType metric_type) {
-  LogPredictionQualityMetrics("Server", possible_types, predicted_type,
-                              metric_type);
+    FormInteractionsUkmLogger* form_interactions_ukm_logger,
+    const FormStructure& form,
+    const AutofillField& field,
+    QualityMetricType metric_type) {
+  LogPredictionQualityMetrics(
+      PREDICTION_SOURCE_SERVER,
+      AutofillType(field.server_type()).GetStorableType(),
+      form_interactions_ukm_logger, form, field, metric_type);
 }
 
 void AutofillMetrics::LogOverallPredictionQualityMetrics(
-    const ServerFieldTypeSet& possible_types,
-    ServerFieldType predicted_type,
-    AutofillMetrics::QualityMetricType metric_type) {
-  LogPredictionQualityMetrics("Overall", possible_types, predicted_type,
-                              metric_type);
+    FormInteractionsUkmLogger* form_interactions_ukm_logger,
+    const FormStructure& form,
+    const AutofillField& field,
+    QualityMetricType metric_type) {
+  LogPredictionQualityMetrics(
+      PREDICTION_SOURCE_OVERALL, field.Type().GetStorableType(),
+      form_interactions_ukm_logger, form, field, metric_type);
 }
 
 // static
@@ -1324,6 +1375,65 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogTextFieldDidChange(
                      MillisecondsSinceFormParsed());
 }
 
+void AutofillMetrics::FormInteractionsUkmLogger::LogFieldFillStatus(
+    const FormStructure& form,
+    const AutofillField& field,
+    QualityMetricType metric_type) {
+  if (!CanLog())
+    return;
+
+  if (source_id_ == -1)
+    GetNewSourceID();
+
+  std::unique_ptr<ukm::UkmEntryBuilder> builder =
+      ukm_recorder_->GetEntryBuilder(source_id_,
+                                     internal::kUKMFieldFillStatusEntryName);
+  builder->AddMetric(internal::kUKMMillisecondsSinceFormParsedMetricName,
+                     MillisecondsSinceFormParsed());
+  builder->AddMetric(internal::kUKMFormSignatureMetricName,
+                     static_cast<int64_t>(form.form_signature()));
+  builder->AddMetric(internal::kUKMFieldSignatureMetricName,
+                     static_cast<int64_t>(field.GetFieldSignature()));
+  builder->AddMetric(internal::kUKMValidationEventMetricName,
+                     static_cast<int64_t>(metric_type));
+  builder->AddMetric(internal::kUKMIsAutofilledMetricName,
+                     static_cast<int64_t>(field.is_autofilled));
+  builder->AddMetric(internal::kUKMWasPreviouslyAutofilledMetricName,
+                     static_cast<int64_t>(field.previously_autofilled()));
+}
+
+void AutofillMetrics::FormInteractionsUkmLogger::LogFieldType(
+    FormSignature form_signature,
+    FieldSignature field_signature,
+    QualityMetricPredictionSource prediction_source,
+    QualityMetricType metric_type,
+    ServerFieldType predicted_type,
+    ServerFieldType actual_type) {
+  if (!CanLog())
+    return;
+
+  if (source_id_ == -1)
+    GetNewSourceID();
+
+  std::unique_ptr<ukm::UkmEntryBuilder> builder =
+      ukm_recorder_->GetEntryBuilder(source_id_,
+                                     internal::kUKMFieldTypeEntryName);
+  builder->AddMetric(internal::kUKMMillisecondsSinceFormParsedMetricName,
+                     MillisecondsSinceFormParsed());
+  builder->AddMetric(internal::kUKMFormSignatureMetricName,
+                     static_cast<int64_t>(form_signature));
+  builder->AddMetric(internal::kUKMFieldSignatureMetricName,
+                     static_cast<int64_t>(field_signature));
+  builder->AddMetric(internal::kUKMValidationEventMetricName,
+                     static_cast<int64_t>(metric_type));
+  builder->AddMetric(internal::kUKMPredictionSourceMetricName,
+                     static_cast<int64_t>(prediction_source));
+  builder->AddMetric(internal::kUKMPredictedTypeMetricName,
+                     static_cast<int64_t>(predicted_type));
+  builder->AddMetric(internal::kUKMActualTypeMetricName,
+                     static_cast<int64_t>(actual_type));
+}
+
 void AutofillMetrics::FormInteractionsUkmLogger::LogFormSubmitted(
     AutofillFormSubmittedState state) {
   if (!CanLog())
@@ -1361,12 +1471,28 @@ int64_t
 AutofillMetrics::FormInteractionsUkmLogger::MillisecondsSinceFormParsed()
     const {
   DCHECK(!form_parsed_timestamp_.is_null());
-  return (base::TimeTicks::Now() - form_parsed_timestamp_).InMilliseconds();
+  // Use the pinned timestamp as the current time if it's set.
+  base::TimeTicks now =
+      pinned_timestamp_.is_null() ? base::TimeTicks::Now() : pinned_timestamp_;
+  return (now - form_parsed_timestamp_).InMilliseconds();
 }
 
 void AutofillMetrics::FormInteractionsUkmLogger::GetNewSourceID() {
   source_id_ = ukm_recorder_->GetNewSourceID();
   ukm_recorder_->UpdateSourceURL(source_id_, url_);
+}
+
+AutofillMetrics::UkmTimestampPin::UkmTimestampPin(
+    FormInteractionsUkmLogger* logger)
+    : logger_(logger) {
+  DCHECK(logger_);
+  DCHECK(!logger_->has_pinned_timestamp());
+  logger_->set_pinned_timestamp(base::TimeTicks::Now());
+}
+
+AutofillMetrics::UkmTimestampPin::~UkmTimestampPin() {
+  DCHECK(logger_->has_pinned_timestamp());
+  logger_->set_pinned_timestamp(base::TimeTicks());
 }
 
 }  // namespace autofill

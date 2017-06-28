@@ -696,6 +696,9 @@ void FormStructure::LogQualityMetrics(
     AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger,
     bool did_show_suggestions,
     bool observed_submission) const {
+  // Use the same timestamp on UKM Metrics generated within this method's scope.
+  AutofillMetrics::UkmTimestampPin timestamp_pin(form_interactions_ukm_logger);
+
   size_t num_detected_field_types = 0;
   size_t num_edited_autofilled_fields = 0;
   bool did_autofill_all_possible_fields = true;
@@ -710,40 +713,31 @@ void FormStructure::LogQualityMetrics(
   for (size_t i = 0; i < field_count(); ++i) {
     auto* const field = this->field(i);
 
-    // No further logging for password fields.  Those are primarily related to a
-    // different feature code path, and so make more sense to track outside of
-    // this metric.
-    if (field->form_control_type == "password")
-      continue;
-
     if (IsUPIVirtualPaymentAddress(field->value)) {
       AutofillMetrics::LogUserHappinessMetric(
           AutofillMetrics::USER_DID_ENTER_UPI_VPA);
     }
+
+    form_interactions_ukm_logger->LogFieldFillStatus(*this, *field,
+                                                     metric_type);
+
+    AutofillMetrics::LogHeuristicPredictionQualityMetrics(
+        form_interactions_ukm_logger, *this, *field, metric_type);
+    AutofillMetrics::LogServerPredictionQualityMetrics(
+        form_interactions_ukm_logger, *this, *field, metric_type);
+    AutofillMetrics::LogOverallPredictionQualityMetrics(
+        form_interactions_ukm_logger, *this, *field, metric_type);
     // We count fields that were autofilled but later modified, regardless of
     // whether the data now in the field is recognized.
     if (field->previously_autofilled())
       num_edited_autofilled_fields++;
 
-    // Aliases for the field types predicted by heuristics, server and overall.
-    ServerFieldType heuristic_type =
-        AutofillType(field->heuristic_type()).GetStorableType();
-    ServerFieldType server_type =
-        AutofillType(field->server_type()).GetStorableType();
-    ServerFieldType predicted_type = field->Type().GetStorableType();
-
     const ServerFieldTypeSet& field_types = field->possible_types();
     DCHECK(!field_types.empty());
-
-    AutofillMetrics::LogHeuristicPredictionQualityMetrics(
-        field_types, heuristic_type, metric_type);
-    AutofillMetrics::LogServerPredictionQualityMetrics(field_types, server_type,
-                                                       metric_type);
-    AutofillMetrics::LogOverallPredictionQualityMetrics(
-        field_types, predicted_type, metric_type);
-
-    if (field_types.count(EMPTY_TYPE) || field_types.count(UNKNOWN_TYPE))
+    if (field_types.count(EMPTY_TYPE) || field_types.count(UNKNOWN_TYPE)) {
+      DCHECK_EQ(field_types.size(), 1u);
       continue;
+    }
 
     ++num_detected_field_types;
     if (field->is_autofilled)
@@ -813,21 +807,18 @@ void FormStructure::LogQualityMetrics(
   }
 }
 
-void FormStructure::LogQualityMetricsBasedOnAutocomplete() const {
+void FormStructure::LogQualityMetricsBasedOnAutocomplete(
+    AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger)
+    const {
   const AutofillMetrics::QualityMetricType metric_type =
       AutofillMetrics::TYPE_AUTOCOMPLETE_BASED;
   for (const auto& field : fields_) {
     if (field->html_type() != HTML_TYPE_UNSPECIFIED &&
         field->html_type() != HTML_TYPE_UNRECOGNIZED) {
-      // The type inferred by the autocomplete attribute.
-      ServerFieldTypeSet actual_field_type_set{
-          AutofillType(field->html_type(), field->html_mode())
-              .GetStorableType()};
-
       AutofillMetrics::LogHeuristicPredictionQualityMetrics(
-          actual_field_type_set, field->heuristic_type(), metric_type);
+          form_interactions_ukm_logger, *this, *field, metric_type);
       AutofillMetrics::LogServerPredictionQualityMetrics(
-          actual_field_type_set, field->server_type(), metric_type);
+          form_interactions_ukm_logger, *this, *field, metric_type);
     }
   }
 }

@@ -1016,8 +1016,10 @@ void AutofillManager::OnLoadedServerPredictions(
 
   // Will log quality metrics for each FormStructure based on the presence of
   // autocomplete attributes, if available.
-  for (FormStructure* cur_form : queried_forms)
-    cur_form->LogQualityMetricsBasedOnAutocomplete();
+  for (FormStructure* cur_form : queried_forms) {
+    cur_form->LogQualityMetricsBasedOnAutocomplete(
+        form_interactions_ukm_logger_.get());
+  }
 
   // Forward form structures to the password generation manager to detect
   // account creation forms.
