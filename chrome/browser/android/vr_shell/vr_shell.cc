@@ -615,6 +615,7 @@ void VrShell::PollMediaAccessFlag() {
   int num_tabs_capturing_audio = 0;
   int num_tabs_capturing_video = 0;
   int num_tabs_capturing_screen = 0;
+  int num_tabs_bluetooth_connected = 0;
   scoped_refptr<MediaStreamCaptureIndicator> indicator =
       MediaCaptureDevicesDispatcher::GetInstance()
           ->GetMediaStreamCaptureIndicator();
@@ -639,11 +640,14 @@ void VrShell::PollMediaAccessFlag() {
       num_tabs_capturing_video++;
     if (indicator->IsBeingMirrored(web_contents))
       num_tabs_capturing_screen++;
+    if (web_contents->IsConnectedToBluetoothDevice())
+      num_tabs_bluetooth_connected++;
   }
 
   bool is_capturing_audio = num_tabs_capturing_audio > 0;
   bool is_capturing_video = num_tabs_capturing_video > 0;
   bool is_capturing_screen = num_tabs_capturing_screen > 0;
+  bool is_bluetooth_connected = num_tabs_bluetooth_connected > 0;
   if (is_capturing_audio != is_capturing_audio_) {
     ui_->SetAudioCapturingIndicator(is_capturing_audio);
     is_capturing_audio_ = is_capturing_audio;
@@ -655,6 +659,10 @@ void VrShell::PollMediaAccessFlag() {
   if (is_capturing_screen != is_capturing_screen_) {
     ui_->SetScreenCapturingIndicator(is_capturing_screen);
     is_capturing_screen_ = is_capturing_screen;
+  }
+  if (is_bluetooth_connected != is_bluetooth_connected_) {
+    ui_->SetBluetoothConnectedIndicator(is_bluetooth_connected);
+    is_bluetooth_connected_ = is_bluetooth_connected;
   }
 }
 
