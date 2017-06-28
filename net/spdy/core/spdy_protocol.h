@@ -408,6 +408,7 @@ class SPDY_EXPORT_PRIVATE SpdyFrameIR {
   virtual void Visit(SpdyFrameVisitor* visitor) const = 0;
   virtual SpdyFrameType frame_type() const = 0;
   SpdyStreamId stream_id() const { return stream_id_; }
+  virtual bool fin() const;
 
   // Returns the number of bytes of flow control window that would be consumed
   // by this frame if written to the wire.
@@ -428,7 +429,7 @@ class SPDY_EXPORT_PRIVATE SpdyFrameIR {
 class SPDY_EXPORT_PRIVATE SpdyFrameWithFinIR : public SpdyFrameIR {
  public:
   ~SpdyFrameWithFinIR() override {}
-  bool fin() const { return fin_; }
+  bool fin() const override;
   void set_fin(bool fin) { fin_ = fin; }
 
  protected:
