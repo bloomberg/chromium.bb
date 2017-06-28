@@ -55,8 +55,6 @@ class CORE_EXPORT FontResource final : public Resource {
   void AllClientsAndObserversRemoved() override;
   void StartLoadLimitTimers();
 
-  void SetCORSFailed() override { cors_failed_ = true; }
-  bool IsCORSFailed() const { return cors_failed_; }
   String OtsParsingMessage() const { return ots_parsing_message_; }
 
   PassRefPtr<FontCustomPlatformData> GetCustomFontData();

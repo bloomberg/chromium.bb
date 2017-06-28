@@ -42,6 +42,14 @@ class MockFetchContext : public FetchContext {
   void SetLoadComplete(bool complete) { complete_ = complete; }
   long long GetTransferSize() const { return transfer_size_; }
 
+  SecurityOrigin* GetSecurityOrigin() const override {
+    return security_origin_.Get();
+  }
+
+  void SetSecurityOrigin(RefPtr<SecurityOrigin> security_origin) {
+    security_origin_ = security_origin;
+  }
+
   // FetchContext:
   bool AllowImage(bool images_enabled, const KURL&) const override {
     return true;
@@ -88,11 +96,13 @@ class MockFetchContext : public FetchContext {
       : load_policy_(load_policy),
         runner_(task_runner ? std::move(task_runner)
                             : AdoptRef(new scheduler::FakeWebTaskRunner)),
+        security_origin_(SecurityOrigin::CreateUnique()),
         complete_(false),
         transfer_size_(-1) {}
 
   enum LoadPolicy load_policy_;
   RefPtr<WebTaskRunner> runner_;
+  RefPtr<SecurityOrigin> security_origin_;
   bool complete_;
   long long transfer_size_;
 };

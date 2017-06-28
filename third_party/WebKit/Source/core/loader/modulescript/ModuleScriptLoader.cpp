@@ -206,8 +206,7 @@ void ModuleScriptLoader::NotifyFinished(Resource*) {
   String source_text = GetResource()->SourceText();
 
   AccessControlStatus access_control_status =
-      GetResource()->CalculateAccessControlStatus(
-          modulator_->GetSecurityOrigin());
+      GetResource()->CalculateAccessControlStatus();
 
   // Step 9. Let module script be the result of creating a module script given
   // source text, module map settings object, response's url, cryptographic

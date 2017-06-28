@@ -423,33 +423,6 @@ AtomicString Resource::HttpContentType() const {
   return GetResponse().HttpContentType();
 }
 
-bool Resource::PassesAccessControlCheck(
-    const SecurityOrigin* security_origin) const {
-  CrossOriginAccessControl::AccessStatus status =
-      CrossOriginAccessControl::CheckAccess(
-          GetResponse(), LastResourceRequest().GetFetchCredentialsMode(),
-          security_origin);
-
-  return status == CrossOriginAccessControl::kAccessAllowed;
-}
-
-bool Resource::IsEligibleForIntegrityCheck(
-    SecurityOrigin* security_origin) const {
-  // Service workers do separate CORS checks. We need to check for opaque
-  // responses even if the response would otherwise be same origin.
-  if (GetResponse().WasFetchedViaServiceWorker()) {
-    return GetResponse().ServiceWorkerResponseType() !=
-           kWebServiceWorkerResponseTypeOpaque;
-  }
-
-  // Same origin, no CORS checks needed:
-  if (security_origin->CanRequest(GetResourceRequest().Url()))
-    return true;
-
-  // Perform standard CORS check:
-  return PassesAccessControlCheck(security_origin);
-}
-
 void Resource::SetIntegrityDisposition(
     ResourceIntegrityDisposition disposition) {
   DCHECK_NE(disposition, ResourceIntegrityDisposition::kNotChecked);

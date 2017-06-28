@@ -107,18 +107,11 @@ bool ScriptResource::MimeTypeAllowedByNosniff(
              response.HttpContentType());
 }
 
-AccessControlStatus ScriptResource::CalculateAccessControlStatus(
-    const SecurityOrigin* security_origin) const {
-  if (GetResponse().WasFetchedViaServiceWorker()) {
-    if (GetResponse().ServiceWorkerResponseType() ==
-        kWebServiceWorkerResponseTypeOpaque) {
-      return kOpaqueResource;
-    }
+AccessControlStatus ScriptResource::CalculateAccessControlStatus() const {
+  if (GetCORSStatus() == CORSStatus::kServiceWorkerOpaque)
+    return kOpaqueResource;
 
-    return kSharableCrossOrigin;
-  }
-
-  if (PassesAccessControlCheck(security_origin))
+  if (IsSameOriginOrCORSSuccessful())
     return kSharableCrossOrigin;
 
   return kNotSharableCrossOrigin;

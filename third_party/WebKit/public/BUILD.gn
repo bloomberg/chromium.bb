@@ -107,6 +107,7 @@ source_set("test_headers") {
 source_set("blink_headers") {
   sources = [
     "platform/BlameContext.h",
+    "platform/CORSStatus.h",
     "platform/FilePathConversion.h",
     "platform/InterfaceProvider.h",
     "platform/InterfaceRegistry.h",

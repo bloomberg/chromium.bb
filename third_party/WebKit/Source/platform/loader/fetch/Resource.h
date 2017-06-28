@@ -47,6 +47,7 @@
 #include "platform/wtf/text/AtomicString.h"
 #include "platform/wtf/text/TextEncoding.h"
 #include "platform/wtf/text/WTFString.h"
+#include "public/platform/CORSStatus.h"
 #include "public/platform/WebDataConsumerHandle.h"
 
 namespace blink {
@@ -110,7 +111,6 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   virtual WTF::TextEncoding Encoding() const { return WTF::TextEncoding(); }
   virtual void AppendData(const char*, size_t);
   virtual void FinishAsError(const ResourceError&);
-  virtual void SetCORSFailed() {}
 
   void SetNeedsSynchronousCacheHit(bool needs_synchronous_cache_hit) {
     needs_synchronous_cache_hit_ = needs_synchronous_cache_hit;
@@ -211,8 +211,6 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   virtual void Finish(double finish_time);
   void Finish() { Finish(0.0); }
 
-  bool PassesAccessControlCheck(const SecurityOrigin*) const;
-
   virtual RefPtr<const SharedBuffer> ResourceBuffer() const { return data_; }
   void SetResourceBuffer(RefPtr<SharedBuffer>);
 
@@ -270,8 +268,6 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   bool HasCacheControlNoStoreHeader() const;
   bool MustReloadDueToVaryHeader(const ResourceRequest& new_request) const;
 
-  bool IsEligibleForIntegrityCheck(SecurityOrigin*) const;
-
   void SetIntegrityMetadata(const IntegrityMetadataSet& metadata) {
     integrity_metadata_ = metadata;
   }
@@ -286,6 +282,14 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   bool MustRefetchDueToIntegrityMetadata(const FetchParameters&) const;
 
   bool IsAlive() const { return is_alive_; }
+
+  CORSStatus GetCORSStatus() const { return cors_status_; }
+
+  bool IsSameOriginOrCORSSuccessful() const {
+    return cors_status_ == CORSStatus::kSameOrigin ||
+           cors_status_ == CORSStatus::kSuccessful ||
+           cors_status_ == CORSStatus::kServiceWorkerSuccessful;
+  }
 
   void SetCacheIdentifier(const String& cache_identifier) {
     cache_identifier_ = cache_identifier;
@@ -420,6 +424,10 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   virtual void SetEncoding(const String&) {}
 
  private:
+  // To allow access to SetCORSStatus
+  friend class ResourceLoader;
+  friend class SubresourceIntegrityTest;
+
   class CachedMetadataHandlerImpl;
   class ServiceWorkerResponseCachedMetadataHandler;
 
@@ -432,12 +440,17 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   String ReasonNotDeletable() const;
 
+  void SetCORSStatus(const CORSStatus cors_status) {
+    cors_status_ = cors_status;
+  }
+
   // MemoryCoordinatorClient overrides:
   void OnPurgeMemory() override;
 
   PreloadResult preload_result_;
   Type type_;
   ResourceStatus status_;
+  CORSStatus cors_status_;
 
   Member<CachedMetadataHandlerImpl> cache_handler_;
   RefPtr<SecurityOrigin> fetcher_security_origin_;

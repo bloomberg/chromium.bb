@@ -125,7 +125,7 @@ void RemoteFontFaceSource::NotifyFinished(Resource* unused_resource) {
                                    ? FontLoadHistograms::kFromDiskCache
                                    : FontLoadHistograms::kFromNetwork);
   histograms_.RecordRemoteFont(font_.Get(), is_intervention_triggered_);
-  histograms_.FontLoaded(font_->IsCORSFailed(),
+  histograms_.FontLoaded(!font_->IsSameOriginOrCORSSuccessful(),
                          font_->GetStatus() == ResourceStatus::kLoadError,
                          is_intervention_triggered_);
 
@@ -336,7 +336,8 @@ void RemoteFontFaceSource::FontLoadHistograms::RecordRemoteFont(
     RecordLoadTimeHistogram(font, duration, is_intervention_triggered);
 
     enum { kCORSFail, kCORSSuccess, kCORSEnumMax };
-    int cors_value = font->IsCORSFailed() ? kCORSFail : kCORSSuccess;
+    int cors_value =
+        font->IsSameOriginOrCORSSuccessful() ? kCORSSuccess : kCORSFail;
     DEFINE_STATIC_LOCAL(EnumerationHistogram, cors_histogram,
                         ("WebFont.CORSSuccess", kCORSEnumMax));
     cors_histogram.Count(cors_value);
