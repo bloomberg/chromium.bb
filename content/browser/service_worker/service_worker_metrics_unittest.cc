@@ -64,6 +64,7 @@ void ExpectNoNavPreloadWorkerStartOccurredUMA(
 
 }  // namespace
 
+using CrossProcessTimeDelta = ServiceWorkerMetrics::CrossProcessTimeDelta;
 using StartSituation = ServiceWorkerMetrics::StartSituation;
 using WorkerPreparationType = ServiceWorkerMetrics::WorkerPreparationType;
 
@@ -333,6 +334,108 @@ TEST(ServiceWorkerMetricsTest, NavigationPreloadResponse_BrowserStartup) {
   histogram_tester.ExpectUniqueSample(
       "ServiceWorker.NavPreload.WorkerPreparationType_MainFrame",
       static_cast<int>(WorkerPreparationType::START_DURING_STARTUP), 1);
+}
+
+TEST(ServiceWorkerMetricsTest, EmbeddedWorkerStartTiming) {
+  base::TimeTicks start_worker_sent_time = base::TimeTicks::Now();
+  const base::TimeDelta latency = base::TimeDelta::FromMilliseconds(33);
+  auto start_timing = mojom::EmbeddedWorkerStartTiming::New();
+  start_timing->blink_initialized_time = start_worker_sent_time;
+  start_timing->start_worker_received_time = start_worker_sent_time + latency;
+  StartSituation start_situation = StartSituation::EXISTING_PROCESS;
+  base::HistogramTester histogram_tester;
+
+  ServiceWorkerMetrics::RecordEmbeddedWorkerStartTiming(
+      std::move(start_timing), start_worker_sent_time, start_situation);
+  histogram_tester.ExpectUniqueSample(
+      "EmbeddedWorkerInstance.Start.StartMessageLatency.Type",
+      static_cast<int>(CrossProcessTimeDelta::NORMAL), 1);
+  histogram_tester.ExpectTimeBucketCount(
+      "EmbeddedWorkerInstance.Start.StartMessageLatency", latency, 1);
+  histogram_tester.ExpectTimeBucketCount(
+      "EmbeddedWorkerInstance.Start.StartMessageLatency_ExistingProcess",
+      latency, 1);
+  histogram_tester.ExpectUniqueSample(
+      "EmbeddedWorkerInstance.Start.WaitedForRendererSetup", false, 1);
+  histogram_tester.ExpectTotalCount(
+      "EmbeddedWorkerInstance.Start.WaitedForRendererSetup.Time", 0);
+}
+
+TEST(ServiceWorkerMetricsTest, EmbeddedWorkerStartTiming_BrowserStartup) {
+  base::TimeTicks start_worker_sent_time = base::TimeTicks::Now();
+  const base::TimeDelta latency = base::TimeDelta::FromMilliseconds(66);
+  auto start_timing = mojom::EmbeddedWorkerStartTiming::New();
+  start_timing->blink_initialized_time = start_worker_sent_time;
+  start_timing->start_worker_received_time = start_worker_sent_time + latency;
+  StartSituation start_situation = StartSituation::DURING_STARTUP;
+  base::HistogramTester histogram_tester;
+
+  ServiceWorkerMetrics::RecordEmbeddedWorkerStartTiming(
+      std::move(start_timing), start_worker_sent_time, start_situation);
+  histogram_tester.ExpectUniqueSample(
+      "EmbeddedWorkerInstance.Start.StartMessageLatency.Type",
+      static_cast<int>(CrossProcessTimeDelta::NORMAL), 1);
+  histogram_tester.ExpectTimeBucketCount(
+      "EmbeddedWorkerInstance.Start.StartMessageLatency", latency, 1);
+  histogram_tester.ExpectTimeBucketCount(
+      "EmbeddedWorkerInstance.Start.StartMessageLatency_DuringStartup", latency,
+      1);
+  histogram_tester.ExpectUniqueSample(
+      "EmbeddedWorkerInstance.Start.WaitedForRendererSetup", false, 1);
+  histogram_tester.ExpectTotalCount(
+      "EmbeddedWorkerInstance.Start.WaitedForRendererSetup.Time", 0);
+}
+
+TEST(ServiceWorkerMetricsTest, EmbeddedWorkerStartTiming_WaitForRenderer) {
+  base::TimeTicks start_worker_sent_time = base::TimeTicks::Now();
+  const base::TimeDelta latency = base::TimeDelta::FromMilliseconds(777);
+  const base::TimeDelta renderer_setup = base::TimeDelta::FromMilliseconds(333);
+  auto start_timing = mojom::EmbeddedWorkerStartTiming::New();
+  start_timing->blink_initialized_time =
+      start_worker_sent_time + renderer_setup;
+  start_timing->start_worker_received_time = start_worker_sent_time + latency;
+  StartSituation start_situation = StartSituation::NEW_PROCESS;
+  base::HistogramTester histogram_tester;
+
+  ServiceWorkerMetrics::RecordEmbeddedWorkerStartTiming(
+      std::move(start_timing), start_worker_sent_time, start_situation);
+  histogram_tester.ExpectUniqueSample(
+      "EmbeddedWorkerInstance.Start.StartMessageLatency.Type",
+      static_cast<int>(CrossProcessTimeDelta::NORMAL), 1);
+  histogram_tester.ExpectTimeBucketCount(
+      "EmbeddedWorkerInstance.Start.StartMessageLatency", latency, 1);
+  histogram_tester.ExpectTimeBucketCount(
+      "EmbeddedWorkerInstance.Start.StartMessageLatency_NewProcess", latency,
+      1);
+  histogram_tester.ExpectUniqueSample(
+      "EmbeddedWorkerInstance.Start.WaitedForRendererSetup", true, 1);
+  histogram_tester.ExpectTimeBucketCount(
+      "EmbeddedWorkerInstance.Start.WaitedForRendererSetup.Time",
+      renderer_setup, 1);
+}
+
+TEST(ServiceWorkerMetricsTest, EmbeddedWorkerStartTiming_NegativeLatency) {
+  base::TimeTicks start_worker_sent_time = base::TimeTicks::Now();
+  const base::TimeDelta latency = base::TimeDelta::FromMilliseconds(777);
+  auto start_timing = mojom::EmbeddedWorkerStartTiming::New();
+  start_timing->blink_initialized_time = start_worker_sent_time;
+  start_timing->start_worker_received_time = start_worker_sent_time - latency;
+  StartSituation start_situation = StartSituation::EXISTING_PROCESS;
+  base::HistogramTester histogram_tester;
+
+  ServiceWorkerMetrics::RecordEmbeddedWorkerStartTiming(
+      std::move(start_timing), start_worker_sent_time, start_situation);
+  histogram_tester.ExpectUniqueSample(
+      "EmbeddedWorkerInstance.Start.StartMessageLatency.Type",
+      static_cast<int>(CrossProcessTimeDelta::NEGATIVE), 1);
+  histogram_tester.ExpectTotalCount(
+      "EmbeddedWorkerInstance.Start.StartMessageLatency", 0);
+  histogram_tester.ExpectTotalCount(
+      "EmbeddedWorkerInstance.Start.StartMessageLatency_ExistingProcess", 0);
+  histogram_tester.ExpectTotalCount(
+      "EmbeddedWorkerInstance.Start.WaitedForRendererSetup", 0);
+  histogram_tester.ExpectTotalCount(
+      "EmbeddedWorkerInstance.Start.WaitedForRendererSetup.Time", 0);
 }
 
 }  // namespace content

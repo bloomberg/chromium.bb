@@ -33,7 +33,8 @@ class ServiceWorkerContextClient;
 class EmbeddedWorkerInstanceClientImpl
     : public mojom::EmbeddedWorkerInstanceClient {
  public:
-  static void Create(const service_manager::BindSourceInfo& source_info,
+  static void Create(base::TimeTicks blink_initialized_time,
+                     const service_manager::BindSourceInfo& source_info,
                      mojom::EmbeddedWorkerInstanceClientRequest request);
 
   ~EmbeddedWorkerInstanceClientImpl() override;
@@ -93,6 +94,9 @@ class EmbeddedWorkerInstanceClientImpl
 
   // nullptr means the worker is not running.
   std::unique_ptr<WorkerWrapper> wrapper_;
+
+  // For UMA.
+  base::TimeTicks blink_initialized_time_;
 
   DISALLOW_COPY_AND_ASSIGN(EmbeddedWorkerInstanceClientImpl);
 };

@@ -63,8 +63,10 @@ class ThreadSafeSender;
 class EmbeddedWorkerInstanceClientImpl;
 class WebWorkerFetchContext;
 
-// This class provides access to/from an ServiceWorker's WorkerGlobalScope.
-// Unless otherwise noted, all methods are called on the worker thread.
+// ServiceWorkerContextClient is a "client" of a service worker execution
+// context.  This class enables communication between the embedder and Blink's
+// ServiceWorker's WorkerGlobalScope. Unless otherwise noted, all methods are
+// called on the worker thread.
 class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
                                    public mojom::ServiceWorkerEventDispatcher {
  public:
@@ -89,6 +91,15 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       std::unique_ptr<EmbeddedWorkerInstanceClientImpl> embedded_worker_client);
   ~ServiceWorkerContextClient() override;
+
+  // Called on the main thread.
+  void set_blink_initialized_time(base::TimeTicks blink_initialized_time) {
+    blink_initialized_time_ = blink_initialized_time;
+  }
+  void set_start_worker_received_time(
+      base::TimeTicks start_worker_received_time) {
+    start_worker_received_time_ = start_worker_received_time;
+  }
 
   void OnMessageReceived(int thread_id,
                          int embedded_worker_id,
@@ -366,6 +377,9 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
   // Initialized on the worker thread in workerContextStarted and
   // destructed on the worker thread in willDestroyWorkerContext.
   std::unique_ptr<WorkerContextData> context_;
+
+  base::TimeTicks blink_initialized_time_;
+  base::TimeTicks start_worker_received_time_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerContextClient);
 };

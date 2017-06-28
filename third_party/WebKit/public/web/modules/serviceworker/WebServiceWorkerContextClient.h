@@ -54,10 +54,12 @@ class WebServiceWorkerProvider;
 class WebServiceWorkerResponse;
 class WebString;
 
-// This interface is implemented by the client. It is supposed to be created
-// on the main thread and then passed on to the worker thread by a newly
-// created WorkerGlobalScope. Unless otherwise noted, all methods of this class
-// are called on the worker thread.
+// WebServiceWorkerContextClient is a "client" of a service worker execution
+// context. This interface is implemented by the embedder and allows the
+// embedder to communicate with the service worker execution context.  It is
+// supposed to be created on the main thread and then passed on to the worker
+// thread by a newly created WorkerGlobalScope. Unless otherwise noted, all
+// methods of this class are called on the worker thread.
 class WebServiceWorkerContextClient {
  public:
   virtual ~WebServiceWorkerContextClient() {}
