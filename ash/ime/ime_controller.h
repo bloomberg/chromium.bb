@@ -42,9 +42,14 @@ class ASH_EXPORT ImeController
   // Binds the mojo interface to this object.
   void BindRequest(mojom::ImeControllerRequest request);
 
+  // Returns true if switching to next/previous IME is allowed.
   bool CanSwitchIme() const;
+
+  // Wrappers for mojom::ImeControllerClient methods.
   void SwitchToNextIme();
   void SwitchToPreviousIme();
+  void SwitchImeById(const std::string& ime_id, bool show_message);
+  void ActivateImeMenuItem(const std::string& key);
 
   // Returns true if the switch is allowed and the keystroke should be
   // consumed.
