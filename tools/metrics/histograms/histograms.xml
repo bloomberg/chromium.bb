@@ -28999,6 +28999,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Duration in milliseconds of HTML5 media (when known).</summary>
 </histogram>
 
+<histogram name="Media.DXVAVDA.ErrorLine">
+  <owner>jbauman@chromium.org</owner>
+  <owner>sandersd@chromium.org</owner>
+  <summary>
+    Whenever an error is logged from the DXVAVDA, this records the line in
+    dxva_video_decode_accelerator.cc where the failure occurred.
+  </summary>
+</histogram>
+
 <histogram name="Media.EME.CdmFileIO.FileSizeKBOnError" units="KB">
   <owner>xhwang@chromium.org</owner>
   <summary>
