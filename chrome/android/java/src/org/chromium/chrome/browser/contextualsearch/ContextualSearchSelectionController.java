@@ -70,10 +70,6 @@ public class ContextualSearchSelectionController {
     // When the last tap gesture happened.
     private long mTapTimeNanoseconds;
 
-    // Tracks whether a Context Menu has just been shown and the UX has been dismissed.
-    // The selection may be unreliable until the next reset.  See crbug.com/628436.
-    private boolean mIsContextMenuShown;
-
     private class ContextualSearchGestureStateListener extends GestureStateListener {
         @Override
         public void onScrollStarted(int scrollOffsetY, int scrollExtentY) {
@@ -125,12 +121,10 @@ public class ContextualSearchSelectionController {
 
     /**
      * Notifies that a Context Menu has been shown.
-     * Future controller events may be unreliable until the next reset.
      */
     void onContextMenuShown() {
         // Hide the UX.
         mHandler.handleSelectionDismissal();
-        mIsContextMenuShown = true;
     }
 
     /**
@@ -252,11 +246,9 @@ public class ContextualSearchSelectionController {
         boolean shouldHandleSelection = false;
         switch (eventType) {
             case SelectionEventType.SELECTION_HANDLES_SHOWN:
-                if (!mIsContextMenuShown) {
-                    mWasTapGestureDetected = false;
-                    mSelectionType = SelectionType.LONG_PRESS;
-                    shouldHandleSelection = true;
-                }
+                mWasTapGestureDetected = false;
+                mSelectionType = SelectionType.LONG_PRESS;
+                shouldHandleSelection = true;
                 break;
             case SelectionEventType.SELECTION_HANDLES_CLEARED:
                 mHandler.handleSelectionDismissal();
@@ -301,7 +293,6 @@ public class ContextualSearchSelectionController {
         resetSelectionStates();
         mLastTapState = null;
         mLastScrollTimeNs = 0;
-        mIsContextMenuShown = false;
         mTapTimeNanoseconds = 0;
         mDidExpandSelection = false;
     }
