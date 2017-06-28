@@ -6,6 +6,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "gpu/command_buffer/client/gles2_interface_stub.h"
@@ -19,10 +20,9 @@ namespace media {
 namespace {
 class TestGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
  public:
-  unsigned gen_textures = 0u;
   void GenTextures(GLsizei n, GLuint* textures) override {
     DCHECK_EQ(1, n);
-    *textures = ++gen_textures;
+    *textures = ++gen_textures_count_;
   }
 
   void ShallowFlushCHROMIUM() override {
@@ -59,10 +59,20 @@ class TestGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
     *reinterpret_cast<unsigned*>(mailbox) = ++mailbox_;
   }
 
+  void DeleteTextures(GLsizei n, const GLuint* textures) override {
+    ++deleted_textures_;
+    DCHECK_LE(deleted_textures_, gen_textures_count_);
+  }
+
+  unsigned gen_textures_count() const { return gen_textures_count_; }
+  unsigned deleted_textures_count() const { return deleted_textures_; }
+
  private:
   uint64_t next_fence_sync_ = 1u;
   uint64_t flushed_fence_sync_ = 0u;
   unsigned mailbox_ = 0u;
+  unsigned gen_textures_count_ = 0u;
+  unsigned deleted_textures_ = 0u;
 };
 
 }  // unnamed namespace
@@ -71,6 +81,10 @@ class GpuMemoryBufferVideoFramePoolTest : public ::testing::Test {
  public:
   GpuMemoryBufferVideoFramePoolTest() {}
   void SetUp() override {
+    // Seed test clock with some dummy non-zero value to avoid confusion with
+    // empty base::TimeTicks values.
+    test_clock_.Advance(base::TimeDelta::FromSeconds(1234));
+
     gles2_.reset(new TestGLES2Interface);
     media_task_runner_ = make_scoped_refptr(new base::TestSimpleTaskRunner);
     copy_task_runner_ = make_scoped_refptr(new base::TestSimpleTaskRunner);
@@ -81,6 +95,7 @@ class GpuMemoryBufferVideoFramePoolTest : public ::testing::Test {
     gpu_memory_buffer_pool_.reset(new GpuMemoryBufferVideoFramePool(
         media_task_runner_, copy_task_runner_.get(),
         mock_gpu_factories_.get()));
+    gpu_memory_buffer_pool_->SetTickClockForTesting(&test_clock_);
   }
 
   void TearDown() override {
@@ -123,6 +138,7 @@ class GpuMemoryBufferVideoFramePoolTest : public ::testing::Test {
   }
 
  protected:
+  base::SimpleTestTickClock test_clock_;
   std::unique_ptr<MockGpuVideoAcceleratorFactories> mock_gpu_factories_;
   std::unique_ptr<GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool_;
   scoped_refptr<base::TestSimpleTaskRunner> media_task_runner_;
@@ -160,7 +176,7 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateOneHardwareFrame) {
   RunUntilIdle();
 
   EXPECT_NE(software_frame.get(), frame.get());
-  EXPECT_EQ(3u, gles2_->gen_textures);
+  EXPECT_EQ(3u, gles2_->gen_textures_count());
 }
 
 TEST_F(GpuMemoryBufferVideoFramePoolTest, ReuseFirstResource) {
@@ -173,7 +189,7 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, ReuseFirstResource) {
   EXPECT_NE(software_frame.get(), frame.get());
   gpu::Mailbox mailbox = frame->mailbox_holder(0).mailbox;
   const gpu::SyncToken sync_token = frame->mailbox_holder(0).sync_token;
-  EXPECT_EQ(3u, gles2_->gen_textures);
+  EXPECT_EQ(3u, gles2_->gen_textures_count());
 
   scoped_refptr<VideoFrame> frame2;
   gpu_memory_buffer_pool_->MaybeCreateHardwareFrame(
@@ -182,7 +198,7 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, ReuseFirstResource) {
 
   EXPECT_NE(software_frame.get(), frame2.get());
   EXPECT_NE(mailbox, frame2->mailbox_holder(0).mailbox);
-  EXPECT_EQ(6u, gles2_->gen_textures);
+  EXPECT_EQ(6u, gles2_->gen_textures_count());
 
   frame = nullptr;
   frame2 = nullptr;
@@ -193,7 +209,7 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, ReuseFirstResource) {
   RunUntilIdle();
 
   EXPECT_NE(software_frame.get(), frame.get());
-  EXPECT_EQ(6u, gles2_->gen_textures);
+  EXPECT_EQ(6u, gles2_->gen_textures_count());
   EXPECT_EQ(frame->mailbox_holder(0).mailbox, mailbox);
   EXPECT_NE(frame->mailbox_holder(0).sync_token, sync_token);
 }
@@ -205,7 +221,7 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, DropResourceWhenSizeIsDifferent) {
       base::Bind(MaybeCreateHardwareFrameCallback, &frame));
   RunUntilIdle();
 
-  EXPECT_EQ(3u, gles2_->gen_textures);
+  EXPECT_EQ(3u, gles2_->gen_textures_count());
 
   frame = nullptr;
   RunUntilIdle();
@@ -213,7 +229,7 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, DropResourceWhenSizeIsDifferent) {
       CreateTestYUVVideoFrame(4),
       base::Bind(MaybeCreateHardwareFrameCallback, &frame));
   RunUntilIdle();
-  EXPECT_EQ(6u, gles2_->gen_textures);
+  EXPECT_EQ(6u, gles2_->gen_textures_count());
 }
 
 TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateOneHardwareUYUVFrame) {
@@ -227,7 +243,7 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateOneHardwareUYUVFrame) {
   RunUntilIdle();
 
   EXPECT_NE(software_frame.get(), frame.get());
-  EXPECT_EQ(1u, gles2_->gen_textures);
+  EXPECT_EQ(1u, gles2_->gen_textures_count());
   EXPECT_TRUE(frame->metadata()->IsTrue(
       media::VideoFrameMetadata::READ_LOCK_FENCES_ENABLED));
 }
@@ -243,7 +259,7 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateOneHardwareNV12Frame) {
   RunUntilIdle();
 
   EXPECT_NE(software_frame.get(), frame.get());
-  EXPECT_EQ(1u, gles2_->gen_textures);
+  EXPECT_EQ(1u, gles2_->gen_textures_count());
   EXPECT_TRUE(frame->metadata()->IsTrue(
       media::VideoFrameMetadata::READ_LOCK_FENCES_ENABLED));
 }
@@ -259,7 +275,7 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateOneHardwareNV12Frame2) {
   RunUntilIdle();
 
   EXPECT_NE(software_frame.get(), frame.get());
-  EXPECT_EQ(2u, gles2_->gen_textures);
+  EXPECT_EQ(2u, gles2_->gen_textures_count());
   EXPECT_TRUE(frame->metadata()->IsTrue(
       media::VideoFrameMetadata::READ_LOCK_FENCES_ENABLED));
 }
@@ -277,7 +293,75 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateGpuMemoryBufferFail) {
   RunUntilIdle();
 
   EXPECT_NE(software_frame.get(), frame.get());
-  EXPECT_EQ(3u, gles2_->gen_textures);
+  EXPECT_EQ(3u, gles2_->gen_textures_count());
+}
+
+TEST_F(GpuMemoryBufferVideoFramePoolTest, ShutdownReleasesUnusedResources) {
+  scoped_refptr<VideoFrame> software_frame = CreateTestYUVVideoFrame(10);
+  scoped_refptr<VideoFrame> frame_1;
+  gpu_memory_buffer_pool_->MaybeCreateHardwareFrame(
+      software_frame, base::Bind(MaybeCreateHardwareFrameCallback, &frame_1));
+
+  RunUntilIdle();
+  EXPECT_NE(software_frame.get(), frame_1.get());
+
+  scoped_refptr<VideoFrame> frame_2;
+  gpu_memory_buffer_pool_->MaybeCreateHardwareFrame(
+      software_frame, base::Bind(MaybeCreateHardwareFrameCallback, &frame_2));
+  RunUntilIdle();
+  EXPECT_NE(software_frame.get(), frame_2.get());
+  EXPECT_NE(frame_1.get(), frame_2.get());
+
+  EXPECT_EQ(6u, gles2_->gen_textures_count());
+  EXPECT_EQ(0u, gles2_->deleted_textures_count());
+
+  // Drop frame and verify that resources are still available for reuse.
+  frame_1 = nullptr;
+  RunUntilIdle();
+  EXPECT_EQ(6u, gles2_->gen_textures_count());
+  EXPECT_EQ(0u, gles2_->deleted_textures_count());
+
+  // While still holding onto the second frame, destruct the frame pool and
+  // verify that the inner pool releases the resources for the first frame.
+  gpu_memory_buffer_pool_.reset();
+  RunUntilIdle();
+
+  EXPECT_EQ(6u, gles2_->gen_textures_count());
+  EXPECT_EQ(3u, gles2_->deleted_textures_count());
+}
+
+TEST_F(GpuMemoryBufferVideoFramePoolTest, StaleFramesAreExpired) {
+  scoped_refptr<VideoFrame> software_frame = CreateTestYUVVideoFrame(10);
+  scoped_refptr<VideoFrame> frame_1;
+  gpu_memory_buffer_pool_->MaybeCreateHardwareFrame(
+      software_frame, base::Bind(MaybeCreateHardwareFrameCallback, &frame_1));
+
+  RunUntilIdle();
+  EXPECT_NE(software_frame.get(), frame_1.get());
+
+  scoped_refptr<VideoFrame> frame_2;
+  gpu_memory_buffer_pool_->MaybeCreateHardwareFrame(
+      software_frame, base::Bind(MaybeCreateHardwareFrameCallback, &frame_2));
+  RunUntilIdle();
+  EXPECT_NE(software_frame.get(), frame_2.get());
+  EXPECT_NE(frame_1.get(), frame_2.get());
+
+  EXPECT_EQ(6u, gles2_->gen_textures_count());
+  EXPECT_EQ(0u, gles2_->deleted_textures_count());
+
+  // Drop frame and verify that resources are still available for reuse.
+  frame_1 = nullptr;
+  RunUntilIdle();
+  EXPECT_EQ(6u, gles2_->gen_textures_count());
+  EXPECT_EQ(0u, gles2_->deleted_textures_count());
+
+  // Advance clock far enough to hit stale timer; ensure only frame_1 has its
+  // resources released.
+  test_clock_.Advance(base::TimeDelta::FromMinutes(1));
+  frame_2 = nullptr;
+  RunUntilIdle();
+  EXPECT_EQ(6u, gles2_->gen_textures_count());
+  EXPECT_EQ(3u, gles2_->deleted_textures_count());
 }
 
 }  // namespace media

@@ -11,6 +11,10 @@
 #include "media/base/media_export.h"
 #include "media/base/video_frame.h"
 
+namespace base {
+class TickClock;
+}
+
 namespace media {
 
 // Simple VideoFrame pool used to avoid unnecessarily allocating and destroying
@@ -37,11 +41,14 @@ class MEDIA_EXPORT VideoFramePool {
                                         const gfx::Size& natural_size,
                                         base::TimeDelta timestamp);
 
-protected:
+ protected:
   friend class VideoFramePoolTest;
 
   // Returns the number of frames in the pool for testing purposes.
   size_t GetPoolSizeForTesting() const;
+
+  // Allows injection of a base::SimpleTestClock for testing.
+  void SetTickClockForTesting(base::TickClock* tick_clock);
 
  private:
   class PoolImpl;

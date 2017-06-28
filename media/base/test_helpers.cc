@@ -146,8 +146,8 @@ VideoDecoderConfig TestVideoConfig::Invalid() {
 }
 
 // static
-VideoDecoderConfig TestVideoConfig::Normal() {
-  return GetTestConfig(kCodecVP8, kNormalSize, false);
+VideoDecoderConfig TestVideoConfig::Normal(VideoCodec codec) {
+  return GetTestConfig(codec, kNormalSize, false);
 }
 
 // static
@@ -161,8 +161,8 @@ VideoDecoderConfig TestVideoConfig::NormalEncrypted() {
 }
 
 // static
-VideoDecoderConfig TestVideoConfig::Large() {
-  return GetTestConfig(kCodecVP8, kLargeSize, false);
+VideoDecoderConfig TestVideoConfig::Large(VideoCodec codec) {
+  return GetTestConfig(codec, kLargeSize, false);
 }
 
 // static

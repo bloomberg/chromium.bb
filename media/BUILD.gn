@@ -583,6 +583,10 @@ source_set("unit_tests") {
     }
   }
 
+  if (media_use_libvpx) {
+    sources += [ "filters/vpx_video_decoder_unittest.cc" ]
+  }
+
   if (current_cpu != "arm" && is_chromeos) {
     sources += [ "filters/h264_bitstream_buffer_unittest.cc" ]
   }

@@ -12,6 +12,7 @@
 
 namespace base {
 class SingleThreadTaskRunner;
+class TickClock;
 }
 
 namespace media {
@@ -52,6 +53,9 @@ class MEDIA_EXPORT GpuMemoryBufferVideoFramePool {
   virtual void MaybeCreateHardwareFrame(
       const scoped_refptr<VideoFrame>& video_frame,
       const FrameReadyCB& frame_ready_cb);
+
+  // Allows injection of a base::SimpleTestClock for testing.
+  void SetTickClockForTesting(base::TickClock* tick_clock);
 
  private:
   class PoolImpl;

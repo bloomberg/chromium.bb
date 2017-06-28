@@ -85,12 +85,12 @@ class TestVideoConfig {
   // Returns a configuration that is invalid.
   static VideoDecoderConfig Invalid();
 
-  static VideoDecoderConfig Normal();
+  static VideoDecoderConfig Normal(VideoCodec codec = kCodecVP8);
   static VideoDecoderConfig NormalH264();
   static VideoDecoderConfig NormalEncrypted();
 
   // Returns a configuration that is larger in dimensions than Normal().
-  static VideoDecoderConfig Large();
+  static VideoDecoderConfig Large(VideoCodec codec = kCodecVP8);
   static VideoDecoderConfig LargeEncrypted();
 
   // Returns coded size for Normal and Large config.

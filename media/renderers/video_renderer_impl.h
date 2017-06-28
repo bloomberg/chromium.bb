@@ -219,6 +219,8 @@ class MEDIA_EXPORT VideoRendererImpl
   std::unique_ptr<VideoFrameStream> video_frame_stream_;
 
   // Pool of GpuMemoryBuffers and resources used to create hardware frames.
+  // Ensure this is destructed after |algorithm_| for optimal memory release
+  // when a frames are still held by the compositor.
   std::unique_ptr<GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool_;
 
   MediaLog* media_log_;
@@ -288,7 +290,9 @@ class MEDIA_EXPORT VideoRendererImpl
   std::unique_ptr<base::TickClock> tick_clock_;
 
   // Algorithm for selecting which frame to render; manages frames and all
-  // timing related information.
+  // timing related information. Ensure this is destructed before
+  // |gpu_memory_buffer_pool_| for optimal memory release when a frames are
+  // still held by the compositor.
   std::unique_ptr<VideoRendererAlgorithm> algorithm_;
 
   // Indicates that Render() was called with |background_rendering| set to true,
