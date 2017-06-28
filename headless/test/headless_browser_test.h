@@ -125,8 +125,8 @@ class HeadlessAsyncDevTooledBrowserTest : public HeadlessBrowserTest,
   // the map returned is empty.
   virtual ProtocolHandlerMap GetProtocolHandlers();
 
-  // Whether to allow TabSockets when creating |web_contents_|.
-  virtual bool GetAllowTabSockets();
+  // The TabSocket type to request when creating |web_contents_|.
+  virtual HeadlessWebContents::Builder::TabSocketType GetTabSocketType();
 
   // Selects between creating the TabSocket only in an isolated world or the
   // main world.

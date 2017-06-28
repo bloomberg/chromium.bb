@@ -6,8 +6,9 @@ module headless;
 
 interface TabSocket {
   // Send a message from the Tab to C++ embedder.
-  SendMessageToEmbedder(string message, int32 v8_execution_context_id);
+  SendMessageToEmbedder(string message);
 
-  // To send a message to the tab use
-  // HeadlessRenderFrameController::SendMessageToTabSocket.
+  // Waits for the next message to sent from the embedder C++ to the tab.
+  // NB this is non-blocking.
+  AwaitNextMessageFromEmbedder() => (string message);
 };
