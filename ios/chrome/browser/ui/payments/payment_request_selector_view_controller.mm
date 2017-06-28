@@ -261,23 +261,25 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   switch (item.type) {
     case ItemTypeSelectableItem: {
-      // Update the currently selected cell, if any.
-      if (self.dataSource.selectedItemIndex != NSUIntegerMax) {
-        DCHECK(self.dataSource.selectedItemIndex <
-               [[self.dataSource selectableItems] count]);
-        CollectionViewItem<PaymentsIsSelectable>* oldSelectedItem =
-            [[self.dataSource selectableItems]
-                objectAtIndex:self.dataSource.selectedItemIndex];
-        oldSelectedItem.accessoryType = MDCCollectionViewCellAccessoryNone;
-        [self reconfigureCellsForItems:@[ oldSelectedItem ]];
-      }
-
-      // Update the newly selected cell.
       CollectionViewItem<PaymentsIsSelectable>* newSelectedItem =
           reinterpret_cast<CollectionViewItem<PaymentsIsSelectable>*>(item);
-      newSelectedItem.accessoryType = MDCCollectionViewCellAccessoryCheckmark;
-      [self reconfigureCellsForItems:@[ newSelectedItem ]];
-
+      // Update the currently selected and the newly selected cells only if the
+      // newly selected cell corresponds to a complete item and can be selected.
+      if (newSelectedItem.isComplete) {
+        // Update the currently selected cell, if any.
+        if (self.dataSource.selectedItemIndex != NSUIntegerMax) {
+          DCHECK(self.dataSource.selectedItemIndex <
+                 [[self.dataSource selectableItems] count]);
+          CollectionViewItem<PaymentsIsSelectable>* oldSelectedItem =
+              [[self.dataSource selectableItems]
+                  objectAtIndex:self.dataSource.selectedItemIndex];
+          oldSelectedItem.accessoryType = MDCCollectionViewCellAccessoryNone;
+          [self reconfigureCellsForItems:@[ oldSelectedItem ]];
+        }
+        // Update the newly selected cell.
+        newSelectedItem.accessoryType = MDCCollectionViewCellAccessoryCheckmark;
+        [self reconfigureCellsForItems:@[ newSelectedItem ]];
+      }
       // Notify the delegate of the selection.
       NSUInteger index =
           [self.collectionViewModel indexInItemTypeForIndexPath:indexPath];
