@@ -883,7 +883,7 @@ crbug.com/487281 [ Mac ] fast/forms/select/menulist-narrow-width.html [ Failure 
 
 crbug.com/543110 [ Mac ] fast/text/international/text-shaping-arabic.html [ Failure ]
 
-crbug.com/731731 inspector-protocol/layers/paint-profiler-load-empty.html [ Failure Pass ]
+crbug.com/731731 inspector-protocol/layers/paint-profiler-load-empty.js [ Failure Pass ]
 
 crbug.com/734744 http/tests/inspector/indexeddb/resources-panel.html [ Pass Failure Timeout ]
 crbug.com/734744 virtual/mojo-loading/http/tests/inspector/indexeddb/resources-panel.html [ Pass Failure Timeout ]

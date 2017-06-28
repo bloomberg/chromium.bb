@@ -1,0 +1,52 @@
+<html>
+<head>
+<script>
+function addCompositedLayer() {
+  var element = document.createElement("div");
+  element.className = "composited";
+  element.id = "last-element";
+  document.body.appendChild(element);
+}
+</script>
+<style type="text/css">
+div {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.regular {
+  width: 100px;
+  height: 100px;
+  background-color: black;
+}
+
+.composited {
+  top: 25px;
+  left: 25px;
+  width: 50px;
+  height: 50px;
+  background-color: blue;
+  transform: translateZ(0);
+}
+
+.offset {
+  left: 200px;
+  transform: translateZ(0);
+}
+</style>
+</head>
+<body>
+
+<div class="regular"></div>
+
+<div class="composited">
+  <div class="composited"></div>
+</div>
+
+<div class="regular offset">
+  <div class="composited"></div>
+</div>
+
+</body>
+</html>

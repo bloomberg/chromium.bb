@@ -16434,7 +16434,7 @@ crbug.com/591099 inspector-protocol/heap-profiler/heap-snapshot-with-event-liste
 crbug.com/591099 inspector-protocol/heap-profiler/sampling-heap-profiler.html [ Failure ]
 crbug.com/591099 inspector-protocol/heap-profiler/take-heap-snapshot.html [ Failure ]
 crbug.com/591099 inspector-protocol/input/dispatchKeyEvent-focus.js [ Failure ]
-crbug.com/591099 inspector-protocol/layers/paint-profiler.html [ Failure ]
+crbug.com/591099 inspector-protocol/layers/paint-profiler.js [ Failure ]
 crbug.com/591099 inspector-protocol/layout-fonts/languages-emoji-rare-glyphs.html [ Failure ]
 crbug.com/591099 inspector-protocol/network/resource-type.js [ Crash Failure ]
 crbug.com/591099 inspector-protocol/network/websocket-initiator.js [ Failure ]
