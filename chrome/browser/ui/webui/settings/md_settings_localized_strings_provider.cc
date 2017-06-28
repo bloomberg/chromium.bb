@@ -43,6 +43,7 @@
 #include "chrome/browser/ui/webui/chromeos/network_element_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/chromeos/ui_account_tweaks.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/arc/arc_util.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/display/display_switches.h"
@@ -302,7 +303,9 @@ void AddAccountUITweaksStrings(content::WebUIDataSource* html_source,
 
 void AddAndroidAppStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
-      {"androidAppsPageTitle", IDS_SETTINGS_ANDROID_APPS_TITLE},
+      {"androidAppsPageTitle", arc::IsPlayStoreAvailable()
+                                   ? IDS_SETTINGS_ANDROID_APPS_TITLE
+                                   : IDS_SETTINGS_ANDROID_SETTINGS_TITLE},
       {"androidAppsPageLabel", IDS_SETTINGS_ANDROID_APPS_LABEL},
       {"androidAppsEnable", IDS_SETTINGS_ANDROID_APPS_ENABLE},
       {"androidAppsManageApps", IDS_SETTINGS_ANDROID_APPS_MANAGE_APPS},
