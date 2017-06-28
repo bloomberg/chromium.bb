@@ -409,7 +409,7 @@ ScriptValue IDBCursor::source(ScriptState* script_state) const {
 
 void IDBCursor::SetValueReady(IDBKey* key,
                               IDBKey* primary_key,
-                              PassRefPtr<IDBValue> value) {
+                              RefPtr<IDBValue> value) {
   key_ = key;
   key_dirty_ = true;
 

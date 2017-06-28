@@ -10,7 +10,6 @@
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBKeyPath.h"
 #include "platform/SharedBuffer.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefPtr.h"
 #include "public/platform/WebVector.h"
 
@@ -23,14 +22,12 @@ struct WebIDBValue;
 
 class MODULES_EXPORT IDBValue final : public RefCounted<IDBValue> {
  public:
-  static PassRefPtr<IDBValue> Create();
-  static PassRefPtr<IDBValue> Create(const WebIDBValue&, v8::Isolate*);
-  static PassRefPtr<IDBValue> Create(const IDBValue*,
-                                     IDBKey*,
-                                     const IDBKeyPath&);
+  static RefPtr<IDBValue> Create();
+  static RefPtr<IDBValue> Create(const WebIDBValue&, v8::Isolate*);
+  static RefPtr<IDBValue> Create(const IDBValue*, IDBKey*, const IDBKeyPath&);
   // Used by IDBValueUnwrapper and its tests.
-  static PassRefPtr<IDBValue> Create(
-      PassRefPtr<SharedBuffer> unwrapped_data,
+  static RefPtr<IDBValue> Create(
+      RefPtr<SharedBuffer> unwrapped_data,
       std::unique_ptr<Vector<RefPtr<BlobDataHandle>>>,
       std::unique_ptr<Vector<WebBlobInfo>>,
       const IDBKey*,

@@ -4,12 +4,15 @@
 
 #include "modules/indexeddb/IDBRequestQueueItem.h"
 
+#include <memory>
+
 #include "core/dom/DOMException.h"
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBRequest.h"
 #include "modules/indexeddb/IDBRequestLoader.h"
 #include "modules/indexeddb/IDBValue.h"
 #include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/RefPtr.h"
 #include "public/platform/modules/indexeddb/WebIDBCursor.h"
 
 namespace blink {
@@ -70,7 +73,7 @@ IDBRequestQueueItem::IDBRequestQueueItem(
 
 IDBRequestQueueItem::IDBRequestQueueItem(
     IDBRequest* request,
-    PassRefPtr<IDBValue> value,
+    RefPtr<IDBValue> value,
     bool attach_loader,
     std::unique_ptr<WTF::Closure> on_result_load_complete)
     : request_(request),
@@ -106,7 +109,7 @@ IDBRequestQueueItem::IDBRequestQueueItem(
     IDBRequest* request,
     IDBKey* key,
     IDBKey* primary_key,
-    PassRefPtr<IDBValue> value,
+    RefPtr<IDBValue> value,
     bool attach_loader,
     std::unique_ptr<WTF::Closure> on_result_load_complete)
     : request_(request),
@@ -128,7 +131,7 @@ IDBRequestQueueItem::IDBRequestQueueItem(
     std::unique_ptr<WebIDBCursor> cursor,
     IDBKey* key,
     IDBKey* primary_key,
-    PassRefPtr<IDBValue> value,
+    RefPtr<IDBValue> value,
     bool attach_loader,
     std::unique_ptr<WTF::Closure> on_result_load_complete)
     : request_(request),

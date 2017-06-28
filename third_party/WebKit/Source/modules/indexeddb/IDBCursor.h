@@ -33,7 +33,6 @@
 #include "modules/indexeddb/IndexedDB.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/wtf/Compiler.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefPtr.h"
 #include "public/platform/modules/indexeddb/WebIDBCursor.h"
 #include "public/platform/modules/indexeddb/WebIDBTypes.h"
@@ -94,7 +93,7 @@ class IDBCursor : public GarbageCollectedFinalized<IDBCursor>,
   void PostSuccessHandlerCallback();
   bool IsDeleted() const;
   void Close();
-  void SetValueReady(IDBKey*, IDBKey* primary_key, PassRefPtr<IDBValue>);
+  void SetValueReady(IDBKey*, IDBKey* primary_key, RefPtr<IDBValue>);
   IDBKey* IdbPrimaryKey() const { return primary_key_; }
   virtual bool IsKeyCursor() const { return true; }
   virtual bool IsCursorWithValue() const { return false; }
