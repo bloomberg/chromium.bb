@@ -361,7 +361,8 @@ NativeExtensionBindingsSystem::NativeExtensionBindingsSystem(
                      base::Unretained(this)),
           base::Bind(&NativeExtensionBindingsSystem::OnEventListenerChanged,
                      base::Unretained(this)),
-          APILastError(base::Bind(&GetRuntime), base::Bind(&AddConsoleError))),
+          APILastError(base::Bind(&GetLastErrorParents),
+                       base::Bind(&AddConsoleError))),
       weak_factory_(this) {
   api_system_.RegisterCustomType("storage.StorageArea",
                                  base::Bind(&StorageArea::CreateStorageArea));
@@ -577,8 +578,15 @@ v8::Local<v8::Object> NativeExtensionBindingsSystem::GetAPIHelper(
   return root_binding;
 }
 
-v8::Local<v8::Object> NativeExtensionBindingsSystem::GetRuntime(
-    v8::Local<v8::Context> context) {
+v8::Local<v8::Object> NativeExtensionBindingsSystem::GetLastErrorParents(
+    v8::Local<v8::Context> context,
+    v8::Local<v8::Object>* secondary_parent) {
+  if (secondary_parent &&
+      IsAPIFeatureAvailable(context, "extension.lastError")) {
+    *secondary_parent = GetAPIHelper(
+        context, gin::StringToSymbol(context->GetIsolate(), "extension"));
+  }
+
   return GetAPIHelper(context,
                       gin::StringToSymbol(context->GetIsolate(), "runtime"));
 }

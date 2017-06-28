@@ -5,6 +5,7 @@
 #include "extensions/renderer/bindings/api_last_error.h"
 
 #include "gin/converter.h"
+#include "gin/data_object_builder.h"
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
@@ -132,9 +133,92 @@ void APILastError::SetError(v8::Local<v8::Context> context,
   v8::TryCatch try_catch(isolate);
   try_catch.SetVerbose(true);
 
-  v8::Local<v8::Object> parent = get_parent_.Run(context);
+  v8::Local<v8::Object> secondary_parent;
+  v8::Local<v8::Object> parent = get_parent_.Run(context, &secondary_parent);
+
+  SetErrorOnPrimaryParent(context, parent, error);
+  SetErrorOnSecondaryParent(context, secondary_parent, error);
+}
+
+void APILastError::ClearError(v8::Local<v8::Context> context,
+                              bool report_if_unchecked) {
+  v8::Isolate* isolate = context->GetIsolate();
+  v8::HandleScope handle_scope(isolate);
+
+  v8::Local<v8::Object> parent;
+  v8::Local<v8::Object> secondary_parent;
+  LastErrorObject* last_error = nullptr;
+  v8::Local<v8::String> key;
+  v8::Local<v8::Private> private_key;
+  {
+    // See comment in SetError().
+    v8::TryCatch try_catch(isolate);
+    try_catch.SetVerbose(true);
+
+    parent = get_parent_.Run(context, &secondary_parent);
+    if (parent.IsEmpty())
+      return;
+    key = gin::StringToSymbol(isolate, kLastErrorProperty);
+    private_key = v8::Private::ForApi(isolate, key);
+    v8::Local<v8::Value> error;
+    // Access through GetPrivate() so that we don't trigger accessed().
+    if (!parent->GetPrivate(context, private_key).ToLocal(&error) ||
+        !gin::Converter<LastErrorObject*>::FromV8(context->GetIsolate(), error,
+                                                  &last_error)) {
+      return;
+    }
+  }
+
+  if (report_if_unchecked && !last_error->accessed()) {
+    add_console_error_.Run(
+        context, "Unchecked runtime.lastError: " + last_error->error());
+  }
+
+  // See comment in SetError().
+  v8::TryCatch try_catch(isolate);
+  try_catch.SetVerbose(true);
+
+  v8::Maybe<bool> delete_private = parent->DeletePrivate(context, private_key);
+  if (!delete_private.IsJust() || !delete_private.FromJust()) {
+    NOTREACHED();
+    return;
+  }
+  // These Delete()s can fail, but there's nothing to do if it does (the
+  // exception will be caught by the TryCatch above).
+  ignore_result(parent->Delete(context, key));
+  if (!secondary_parent.IsEmpty())
+    ignore_result(secondary_parent->Delete(context, key));
+}
+
+bool APILastError::HasError(v8::Local<v8::Context> context) {
+  v8::Isolate* isolate = context->GetIsolate();
+  v8::HandleScope handle_scope(isolate);
+
+  // See comment in SetError().
+  v8::TryCatch try_catch(isolate);
+  try_catch.SetVerbose(true);
+
+  v8::Local<v8::Object> parent = get_parent_.Run(context, nullptr);
+  if (parent.IsEmpty())
+    return false;
+  v8::Local<v8::Value> error;
+  v8::Local<v8::Private> key = v8::Private::ForApi(
+      isolate, gin::StringToSymbol(isolate, kLastErrorProperty));
+  // Access through GetPrivate() so we don't trigger accessed().
+  if (!parent->GetPrivate(context, key).ToLocal(&error))
+    return false;
+
+  LastErrorObject* last_error = nullptr;
+  return gin::Converter<LastErrorObject*>::FromV8(context->GetIsolate(), error,
+                                                  &last_error);
+}
+
+void APILastError::SetErrorOnPrimaryParent(v8::Local<v8::Context> context,
+                                           v8::Local<v8::Object> parent,
+                                           const std::string& error) {
   if (parent.IsEmpty())
     return;
+  v8::Isolate* isolate = context->GetIsolate();
   v8::Local<v8::String> key = gin::StringToSymbol(isolate, kLastErrorProperty);
   v8::Local<v8::Value> v8_error;
   // Two notes: this Get() is visible to external script, and this will actually
@@ -168,82 +252,31 @@ void APILastError::SetError(v8::Local<v8::Context> context,
       return;
     }
     DCHECK(!last_error.IsEmpty());
-    // This Set() can fail, but there's nothing to do if it does (the exception
-    // will be caught by the TryCatch above).
+    // This SetAccessor() can fail, but there's nothing to do if it does (the
+    // exception will be caught by the TryCatch in SetError()).
     ignore_result(parent->SetAccessor(context, key, &LastErrorGetter,
                                       &LastErrorSetter, last_error));
   }
 }
 
-void APILastError::ClearError(v8::Local<v8::Context> context,
-                              bool report_if_unchecked) {
-  v8::Isolate* isolate = context->GetIsolate();
-  v8::HandleScope handle_scope(isolate);
-
-  v8::Local<v8::Object> parent;
-  LastErrorObject* last_error = nullptr;
-  v8::Local<v8::String> key;
-  v8::Local<v8::Private> private_key;
-  {
-    // See comment in SetError().
-    v8::TryCatch try_catch(isolate);
-    try_catch.SetVerbose(true);
-
-    parent = get_parent_.Run(context);
-    if (parent.IsEmpty())
-      return;
-    key = gin::StringToSymbol(isolate, kLastErrorProperty);
-    private_key = v8::Private::ForApi(isolate, key);
-    v8::Local<v8::Value> error;
-    // Access through GetPrivate() so that we don't trigger accessed().
-    if (!parent->GetPrivate(context, private_key).ToLocal(&error))
-      return;
-    if (!gin::Converter<LastErrorObject*>::FromV8(context->GetIsolate(), error,
-                                                  &last_error)) {
-      return;
-    }
-  }
-
-  if (report_if_unchecked && !last_error->accessed()) {
-    add_console_error_.Run(
-        context, "Unchecked runtime.lastError: " + last_error->error());
-  }
-
-  // See comment in SetError().
-  v8::TryCatch try_catch(isolate);
-  try_catch.SetVerbose(true);
-
-  v8::Maybe<bool> delete_private = parent->DeletePrivate(context, private_key);
-  if (!delete_private.IsJust() || !delete_private.FromJust()) {
-    NOTREACHED();
+void APILastError::SetErrorOnSecondaryParent(
+    v8::Local<v8::Context> context,
+    v8::Local<v8::Object> secondary_parent,
+    const std::string& error) {
+  if (secondary_parent.IsEmpty())
     return;
-  }
-  // This Delete() can fail, but there's nothing to do if it does (the exception
-  // will be caught by the TryCatch above).
-  ignore_result(parent->Delete(context, key));
-}
 
-bool APILastError::HasError(v8::Local<v8::Context> context) {
+  // For the secondary parent, simply set chrome.extension.lastError to
+  // {message: <error>}.
+  // TODO(devlin): Gather metrics on how frequently this is checked. It'd be
+  // nice to get rid of it.
   v8::Isolate* isolate = context->GetIsolate();
-  v8::HandleScope handle_scope(isolate);
-
-  // See comment in SetError().
-  v8::TryCatch try_catch(isolate);
-  try_catch.SetVerbose(true);
-
-  v8::Local<v8::Object> parent = get_parent_.Run(context);
-  if (parent.IsEmpty())
-    return false;
-  v8::Local<v8::Value> error;
-  v8::Local<v8::Private> key = v8::Private::ForApi(
-      isolate, gin::StringToSymbol(isolate, kLastErrorProperty));
-  // Access through GetPrivate() so we don't trigger accessed().
-  if (!parent->GetPrivate(context, key).ToLocal(&error))
-    return false;
-
-  LastErrorObject* last_error = nullptr;
-  return gin::Converter<LastErrorObject*>::FromV8(context->GetIsolate(), error,
-                                                  &last_error);
+  v8::Local<v8::String> key = gin::StringToSymbol(isolate, kLastErrorProperty);
+  // This CreateDataProperty() can fail, but there's nothing to do if it does
+  // (the exception will be caught by the TryCatch in SetError()).
+  ignore_result(secondary_parent->CreateDataProperty(
+      context, key,
+      gin::DataObjectBuilder(isolate).Set("message", error).Build()));
 }
 
 }  // namespace extensions

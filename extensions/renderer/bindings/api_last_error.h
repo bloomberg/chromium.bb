@@ -18,9 +18,14 @@ namespace extensions {
 class APILastError {
  public:
   // Returns the object the 'lastError' property should be exposed on for the
-  // given context.
-  using GetParent =
-      base::Callback<v8::Local<v8::Object>(v8::Local<v8::Context>)>;
+  // given context. Also allows for the population of a |secondary_parent|; if
+  // populated, this object will also have a lastError property, but it will be
+  // a simple object without getters/setters. This is to accommodate the
+  // legacy chrome.extension.lastError property.
+  // Note: |secondary_parent| may be null.
+  using GetParent = base::Callback<v8::Local<v8::Object>(
+      v8::Local<v8::Context>,
+      v8::Local<v8::Object>* secondary_parent)>;
   // Adds an error message to the context's console.
   using AddConsoleError =
       base::Callback<void(v8::Local<v8::Context>, const std::string& error)>;
@@ -41,6 +46,18 @@ class APILastError {
   bool HasError(v8::Local<v8::Context> context);
 
  private:
+  // Sets the lastError property on the primary parent object (in practice, this
+  // is chrome.runtime.lastError);
+  void SetErrorOnPrimaryParent(v8::Local<v8::Context> context,
+                               v8::Local<v8::Object> parent,
+                               const std::string& error);
+
+  // Sets the lastError property on the secondary parent object (in practice,
+  // this is chrome.extension.lastError).
+  void SetErrorOnSecondaryParent(v8::Local<v8::Context> context,
+                                 v8::Local<v8::Object> parent,
+                                 const std::string& error);
+
   GetParent get_parent_;
 
   AddConsoleError add_console_error_;

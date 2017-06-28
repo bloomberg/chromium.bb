@@ -45,10 +45,13 @@ class APIBindingsSystemTest : public APIBindingTest {
   // subclasses to return their own specifications.
   virtual std::vector<FakeSpec> GetAPIs();
 
-  // Returns the object to be used as the parent for the `lastError`. The
-  // default returns an empty JS object (assumes no last errors will be set).
+  // Returns the object to be used as the parent for the `lastError`, and,
+  // optionally, the secondary parent. The default returns an empty JS object
+  // and does not populate |secondary_parent| (assumes no last errors will be
+  // set).
   virtual v8::Local<v8::Object> GetLastErrorParent(
-      v8::Local<v8::Context> context);
+      v8::Local<v8::Context> context,
+      v8::Local<v8::Object>* secondary_parent);
 
   // Returns the DictionaryValue representing the schema with the given API
   // name.

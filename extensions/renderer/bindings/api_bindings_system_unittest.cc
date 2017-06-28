@@ -144,7 +144,8 @@ std::vector<APIBindingsSystemTest::FakeSpec> APIBindingsSystemTest::GetAPIs() {
 }
 
 v8::Local<v8::Object> APIBindingsSystemTest::GetLastErrorParent(
-    v8::Local<v8::Context> context) {
+    v8::Local<v8::Context> context,
+    v8::Local<v8::Object>* secondary_parent) {
   return v8::Local<v8::Object>();
 }
 
