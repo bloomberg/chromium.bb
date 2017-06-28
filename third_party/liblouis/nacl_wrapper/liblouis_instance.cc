@@ -109,6 +109,7 @@ static const char kErrorKey[] = "error";
 static const char kTableNamesKey[] = "table_names";
 static const char kSuccessKey[] = "success";
 static const char kTextKey[] = "text";
+static const char kFormTypeMapKey[] = "form_type_map";
 static const char kCellsKey[] = "cells";
 static const char kCursorPositionKey[] = "cursor_position";
 static const char kTextToBrailleKey[] = "text_to_braille";
@@ -237,6 +238,7 @@ void LibLouisInstance::HandleTranslate(const Json::Value& message,
   Json::Value table_names = message[kTableNamesKey];
   Json::Value text = message[kTextKey];
   Json::Value cursor_position = message[kCursorPositionKey];
+  Json::Value form_type_map = message[kFormTypeMapKey];
   if (!table_names.isString()) {
     PostError("expected table_names to be a string", message_id);
     return;
@@ -246,12 +248,23 @@ void LibLouisInstance::HandleTranslate(const Json::Value& message,
   } else if (!cursor_position.isNull() && !cursor_position.isIntegral()) {
     PostError("expected cursor_position to be null or integral", message_id);
     return;
+  } else if (!form_type_map.isArray()) {
+    PostError("expected form_type_map to be an array", message_id);
+    return;
   }
   TranslationParams params;
   params.table_names = table_names.asString();
   params.text = text.asString();
   params.cursor_position = cursor_position.isIntegral() ?
       cursor_position.asInt() : -1;
+  for (size_t i = 0; i < form_type_map.size(); ++i) {
+    Json::Value val = form_type_map[i];
+    if (!val.isIntegral()) {
+      PostError("expected form_type_map to be an integral array", message_id);
+      return;
+    }
+    params.form_type_map.push_back(val.asInt());
+  }
   PostWorkToBackground(cc_factory_.NewCallback(
       &LibLouisInstance::TranslateInBackground,
       params, message_id));

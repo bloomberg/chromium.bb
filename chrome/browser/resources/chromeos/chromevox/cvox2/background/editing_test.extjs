@@ -246,13 +246,13 @@ TEST_F('EditingTest', 'RichTextMoveByLine', function() {
           .expectSpeech('\n')
           .expectBraille('\n')
           .call(moveByLine)
-          .expectSpeech('This is a test of rich text')
+          .expectSpeech('This is a ', 'test', 'Link', ' of rich text')
           .expectBraille('This is a test of rich text')
           .call(moveByLine)
           .expectSpeech('\n')
           .expectBraille('\n')
           .call(moveByLine)
-          .expectSpeech('hello')
+          .expectSpeech('hello', 'Heading 2')
           .expectBraille('hello')
           .replay();
     });

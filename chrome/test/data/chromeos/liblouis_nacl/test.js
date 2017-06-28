@@ -71,7 +71,8 @@ loadLibrary(function() {
   },
 
   function testTranslateString() {
-    rpc('Translate', { 'table_names': TABLE_NAME, 'text': TEXT},
+    rpc('Translate', { 'table_names': TABLE_NAME, 'text': TEXT,
+            form_type_map: []},
         pass(expectSuccessReply(function(reply) {
           chrome.test.assertEq(CELLS, reply['cells']);
         })));
@@ -82,7 +83,8 @@ loadLibrary(function() {
   // letter 'T' should be translated to 3 cells in US English grade 2
   // braille (dots 56, 6, 2345).
   function testTranslateGrade2SingleCapital() {
-    rpc('Translate', { 'table_names': CONTRACTED_TABLE_NAME, 'text': 'T'},
+    rpc('Translate', { 'table_names': CONTRACTED_TABLE_NAME, 'text': 'T',
+                       form_type_map: []},
         pass(expectSuccessReply(function(reply) {
           chrome.test.assertEq('30201e', reply['cells']);
         })));

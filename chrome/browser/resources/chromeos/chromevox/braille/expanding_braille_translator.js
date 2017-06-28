@@ -96,9 +96,17 @@ cvox.ExpandingBrailleTranslator.prototype.translate = function(
   var extraCellsPositions = extraCellsSpans.map(function(span) {
     return text.getSpanStart(span);
   });
+  var formTypeMap = new Array(text.length).fill(0);
+  text.getSpansInstanceOf(cvox.BrailleTextStyleSpan).forEach(function(span) {
+    var start = text.getSpanStart(span);
+    var end = text.getSpanEnd(span);
+    for (var i = start; i < end; i++)
+      formTypeMap[i] |= span.formType;
+  });
+
   if (expandRanges.length == 0 && extraCellsSpans.length == 0) {
     this.defaultTranslator_.translate(
-        text.toString(),
+        text.toString(), formTypeMap,
         cvox.ExpandingBrailleTranslator.nullParamsToEmptyAdapter_(
             text.length, callback));
     return;
@@ -180,6 +188,7 @@ cvox.ExpandingBrailleTranslator.prototype.translate = function(
     chunksToTranslate.forEach(function(chunk) {
       chunk.translator.translate(
           text.toString().substring(chunk.start, chunk.end),
+          formTypeMap.slice(chunk.start, chunk.end),
           cvox.ExpandingBrailleTranslator.nullParamsToEmptyAdapter_(
               chunk.end - chunk.start, goog.partial(chunkTranslated, chunk)));
     });
