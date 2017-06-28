@@ -6,10 +6,10 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/invalidate_type.h"
-#include "content/public/browser/render_frame_host.h"
 
 namespace content {
 
@@ -29,13 +29,6 @@ AudioStreamMonitor* StartStopMonitoringHelper(ActionType action_type,
   if (!render_process_host)
     return nullptr;
 
-  // TODO(dalecurtis, maxmorin): We should really only be sending these when the
-  // streams are audible or we don't have power level monitoring.
-  if (action_type == ActionType::STARTING)
-    render_process_host->OnAudioStreamAdded();
-  else
-    render_process_host->OnAudioStreamRemoved();
-
   WebContentsImpl* const web_contents =
       static_cast<WebContentsImpl*>(WebContents::FromRenderFrameHost(
           RenderFrameHost::FromID(render_process_id, render_frame_id)));
@@ -43,6 +36,18 @@ AudioStreamMonitor* StartStopMonitoringHelper(ActionType action_type,
 }
 
 }  // namespace
+
+bool AudioStreamMonitor::StreamID::operator<(const StreamID& other) const {
+  return std::tie(render_process_id, render_frame_id, stream_id) <
+         std::tie(other.render_process_id, other.render_frame_id,
+                  other.stream_id);
+}
+
+bool AudioStreamMonitor::StreamID::operator==(const StreamID& other) const {
+  return std::tie(render_process_id, render_frame_id, stream_id) ==
+         std::tie(other.render_process_id, other.render_frame_id,
+                  other.stream_id);
+}
 
 AudioStreamMonitor::AudioStreamMonitor(WebContents* contents)
     : web_contents_(contents),
@@ -72,9 +77,8 @@ void AudioStreamMonitor::RenderProcessGone(int render_process_id) {
   // reused. During this period StartStopMonitoringHelper() will be unable to
   // lookup the WebContents using the now-dead |render_frame_id|. We must thus
   // have this secondary mechanism for clearing stale callbacks.
-
   for (auto it = poll_callbacks_.begin(); it != poll_callbacks_.end();) {
-    if (it->first.first == render_process_id) {
+    if (it->first.render_process_id == render_process_id) {
       it = poll_callbacks_.erase(it);
       OnStreamRemoved();
     } else {
@@ -122,8 +126,8 @@ void AudioStreamMonitor::StartMonitoringHelper(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (AudioStreamMonitor* monitor = StartStopMonitoringHelper(
           ActionType::STARTING, render_process_id, render_frame_id)) {
-    monitor->StartMonitoringStreamOnUIThread(render_process_id, stream_id,
-                                             read_power_callback);
+    monitor->StartMonitoringStreamOnUIThread(render_process_id, render_frame_id,
+                                             stream_id, read_power_callback);
   }
 }
 
@@ -134,34 +138,58 @@ void AudioStreamMonitor::StopMonitoringHelper(int render_process_id,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (AudioStreamMonitor* monitor = StartStopMonitoringHelper(
           ActionType::STOPPING, render_process_id, render_frame_id)) {
-    monitor->StopMonitoringStreamOnUIThread(render_process_id, stream_id);
+    monitor->StopMonitoringStreamOnUIThread(render_process_id, render_frame_id,
+                                            stream_id);
   }
 }
 
 void AudioStreamMonitor::StartMonitoringStreamOnUIThread(
     int render_process_id,
+    int render_frame_id,
     int stream_id,
     const ReadPowerAndClipCallback& read_power_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!read_power_callback.is_null());
 
-  const StreamID qualified_id(render_process_id, stream_id);
+  const StreamID qualified_id = {render_process_id, render_frame_id, stream_id};
   DCHECK(poll_callbacks_.find(qualified_id) == poll_callbacks_.end());
 
   poll_callbacks_[qualified_id] = read_power_callback;
+
+  // Sends audible signal to RenderFrameHost when there is no power level
+  // monitoring, otherwise sends the signal when the stream becomes audible.
+  if (!power_level_monitoring_available()) {
+    if (auto* render_frame_host = static_cast<RenderFrameHostImpl*>(
+            RenderFrameHost::FromID(render_process_id, render_frame_id))) {
+      render_frame_host->OnAudibleStateChanged(true);
+    }
+  }
+
   OnStreamAdded();
 }
 
 void AudioStreamMonitor::StopMonitoringStreamOnUIThread(int render_process_id,
+                                                        int render_frame_id,
                                                         int stream_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // In the event of render process death, these may have already been cleared.
-  auto it = poll_callbacks_.find(StreamID(render_process_id, stream_id));
+  auto it = poll_callbacks_.find(
+      StreamID{render_process_id, render_frame_id, stream_id});
   if (it == poll_callbacks_.end())
     return;
 
   poll_callbacks_.erase(it);
+
+  // Sends non-audible signal to RenderFrameHost when there is no power level
+  // monitoring, otherwise sends the signal when the stream becomes non-audible.
+  if (!power_level_monitoring_available()) {
+    if (auto* render_frame_host = static_cast<RenderFrameHostImpl*>(
+            RenderFrameHost::FromID(render_process_id, render_frame_id))) {
+      render_frame_host->OnAudibleStateChanged(false);
+    }
+  }
+
   OnStreamRemoved();
 }
 
@@ -169,21 +197,40 @@ void AudioStreamMonitor::Poll() {
   bool was_audible = is_audible_;
   is_audible_ = false;
 
-  for (StreamPollCallbackMap::const_iterator it = poll_callbacks_.begin();
-       it != poll_callbacks_.end();
-       ++it) {
+  // Record whether or not a RenderFrameHost is audible.
+  base::flat_map<RenderFrameHostImpl*, bool> audible_frame_map;
+  audible_frame_map.reserve(poll_callbacks_.size());
+  for (auto& kv : poll_callbacks_) {
     // TODO(miu): A new UI for delivering specific power level and clipping
     // information is still in the works.  For now, we throw away all
     // information except for "is it audible?"
-    const float power_dbfs = it->second.Run().first;
+    const float power_dbfs = kv.second.Run().first;
     const float kSilenceThresholdDBFS = -72.24719896f;
 
-    if (power_dbfs >= kSilenceThresholdDBFS) {
+    const bool is_stream_audible = power_dbfs >= kSilenceThresholdDBFS;
+    if (!is_audible_ && is_stream_audible) {
       last_blurt_time_ = clock_->NowTicks();
       is_audible_ = true;
       MaybeToggle();
-      break;  // No need to poll remaining streams.
     }
+
+    // Record whether or not the RenderFrame is audible. A RenderFrame is
+    // audible when it has at least one audio stream that is audible.
+    auto* render_frame_host_impl =
+        static_cast<RenderFrameHostImpl*>(RenderFrameHost::FromID(
+            kv.first.render_process_id, kv.first.render_frame_id));
+    // This may be nullptr in tests.
+    if (!render_frame_host_impl)
+      continue;
+    audible_frame_map[render_frame_host_impl] |= is_stream_audible;
+  }
+
+  // Update RenderFrameHost audible state only when state changed.
+  for (auto& kv : audible_frame_map) {
+    auto* render_frame_host_impl = kv.first;
+    bool is_frame_audible = kv.second;
+    if (is_frame_audible != render_frame_host_impl->is_audible())
+      render_frame_host_impl->OnAudibleStateChanged(is_frame_audible);
   }
 
   if (is_audible_ != was_audible)
