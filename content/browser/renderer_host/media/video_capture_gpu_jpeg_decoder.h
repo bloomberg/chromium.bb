@@ -19,6 +19,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
+#include "gpu/config/gpu_info.h"
 #include "media/capture/video/video_capture_jpeg_decoder.h"
 #include "media/video/jpeg_decode_accelerator.h"
 
@@ -66,6 +67,15 @@ class CONTENT_EXPORT VideoCaptureGpuJpegDecoder
                    media::JpegDecodeAccelerator::Error error) override;
 
  private:
+  static void RequestGPUInfoOnIOThread(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      base::WeakPtr<VideoCaptureGpuJpegDecoder> weak_this);
+
+  static void DidReceiveGPUInfoOnIOThread(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      base::WeakPtr<VideoCaptureGpuJpegDecoder> weak_this,
+      const gpu::GPUInfo& gpu_info);
+
   // Initialization helper, to establish GPU channel.
   static void EstablishGpuChannelOnUIThread(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
