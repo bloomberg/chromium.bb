@@ -60,13 +60,17 @@ class LargeIconService;
 - (favicon::LargeIconService*)largeIconService;
 
 // Asynchronously gets the favicon for |URL| with size |size| and calls
-// imageCallback if the favicon is valid or fallbackCallback if there is valid
-// fallback data.
+// |imageCallback| with the |favicon| image if it's valid, or |fallbackCallback|
+// if there is valid fallback data with the |textColor| and |backgroundColor|
+// for the fallback icon to use. |isDefaultColor| is true if a default color
+// should be used instead of |backgroundColor|.
 - (void)getFaviconForURL:(GURL)URL
                     size:(CGFloat)size
                 useCache:(BOOL)useCache
-           imageCallback:(void (^)(UIImage*))imageCallback
-        fallbackCallback:(void (^)(UIColor*, UIColor*, BOOL))fallbackCallback;
+           imageCallback:(void (^)(UIImage* favicon))imageCallback
+        fallbackCallback:(void (^)(UIColor* textColor,
+                                   UIColor* backgroundColor,
+                                   BOOL isDefaultColor))fallbackCallback;
 
 @end
 
