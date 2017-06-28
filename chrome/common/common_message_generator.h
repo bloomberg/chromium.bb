@@ -4,7 +4,6 @@
 
 // Multiply-included file, hence no include guard.
 
-#include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/common_param_traits_macros.h"
 #include "chrome/common/mac/app_shim_messages.h"
 #include "chrome/common/prerender_messages.h"
@@ -33,4 +32,8 @@
 
 #if BUILDFLAG(ENABLE_WEBRTC)
 #include "chrome/common/media/webrtc_logging_messages.h"
+#endif
+
+#if defined(FULL_SAFE_BROWSING)
+#include "chrome/common/safe_browsing/safe_archive_analyzer_param_traits.h"
 #endif

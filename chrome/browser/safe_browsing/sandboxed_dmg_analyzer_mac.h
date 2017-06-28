@@ -10,7 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/common/safe_archive_analyzer.mojom.h"
+#include "chrome/common/safe_browsing/safe_archive_analyzer.mojom.h"
 #include "content/public/browser/utility_process_mojo_client.h"
 
 namespace safe_browsing {
