@@ -16,7 +16,6 @@
 #include "base/values.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "net/cert/ct_serialization.h"
 #include "net/cert/signed_certificate_timestamp_and_status.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
@@ -111,75 +110,123 @@ net::ct::SignedCertificateTimestamp::Origin SCTOriginStringToOrigin(
     const std::string& origin_string) {
   if (origin_string == "embedded")
     return net::ct::SignedCertificateTimestamp::SCT_EMBEDDED;
-  if (origin_string == "tls-extension")
+  if (origin_string == "from-tls-extension")
     return net::ct::SignedCertificateTimestamp::SCT_FROM_TLS_EXTENSION;
-  if (origin_string == "ocsp")
+  if (origin_string == "from-ocsp-response")
     return net::ct::SignedCertificateTimestamp::SCT_FROM_OCSP_RESPONSE;
   NOTREACHED();
   return net::ct::SignedCertificateTimestamp::SCT_EMBEDDED;
 }
 
-// Checks that an SCT |sct| appears with status |status| in |report_list|, a
-// list of SCTs from an Expect-CT report.
-::testing::AssertionResult FindSCTInReportList(
-    const scoped_refptr<net::ct::SignedCertificateTimestamp>& expected_sct,
-    net::ct::SCTVerifyStatus expected_status,
+// Checks that an SCT |sct| appears (with the format determined by
+// |status|) in |report_list|, a list of SCTs from an Expect CT
+// report. |status| determines the format in that only certain fields
+// are reported for certain verify statuses; SCTs from unknown logs
+// contain very little information, for example, to avoid compromising
+// privacy.
+void FindSCTInReportList(
+    const scoped_refptr<net::ct::SignedCertificateTimestamp>& sct,
+    net::ct::SCTVerifyStatus status,
     const base::ListValue& report_list) {
-  std::string expected_serialized_sct;
-  net::ct::EncodeSignedCertificateTimestamp(expected_sct,
-                                            &expected_serialized_sct);
-
-  for (size_t i = 0; i < report_list.GetSize(); i++) {
+  bool found = false;
+  for (size_t i = 0; !found && i < report_list.GetSize(); i++) {
     const base::DictionaryValue* report_sct;
-    if (!report_list.GetDictionary(i, &report_sct)) {
-      return ::testing::AssertionFailure()
-             << "Failed to get dictionary value from report SCT list";
-    }
+    ASSERT_TRUE(report_list.GetDictionary(i, &report_sct));
 
-    std::string serialized_sct;
-    EXPECT_TRUE(report_sct->GetString("serialized_sct", &serialized_sct));
-    std::string decoded_serialized_sct;
-    EXPECT_TRUE(base::Base64Decode(serialized_sct, &decoded_serialized_sct));
-    if (decoded_serialized_sct != expected_serialized_sct)
-      continue;
+    std::string origin;
+    ASSERT_TRUE(report_sct->GetString("origin", &origin));
 
-    std::string source;
-    EXPECT_TRUE(report_sct->GetString("source", &source));
-    EXPECT_EQ(expected_sct->origin, SCTOriginStringToOrigin(source));
-
-    std::string report_status;
-    EXPECT_TRUE(report_sct->GetString("status", &report_status));
-    switch (expected_status) {
+    switch (status) {
       case net::ct::SCT_STATUS_LOG_UNKNOWN:
-        EXPECT_EQ("unknown", report_status);
+        // SCTs from unknown logs only have an origin.
+        EXPECT_FALSE(report_sct->HasKey("sct"));
+        EXPECT_FALSE(report_sct->HasKey("id"));
+        if (SCTOriginStringToOrigin(origin) == sct->origin)
+          found = true;
         break;
+
       case net::ct::SCT_STATUS_INVALID_SIGNATURE:
       case net::ct::SCT_STATUS_INVALID_TIMESTAMP: {
-        EXPECT_EQ("invalid", report_status);
+        // Invalid SCTs have a log id and an origin and nothing else.
+        EXPECT_FALSE(report_sct->HasKey("sct"));
+        std::string id_base64;
+        ASSERT_TRUE(report_sct->GetString("id", &id_base64));
+        std::string id;
+        ASSERT_TRUE(base::Base64Decode(id_base64, &id));
+        if (SCTOriginStringToOrigin(origin) == sct->origin && id == sct->log_id)
+          found = true;
         break;
       }
+
       case net::ct::SCT_STATUS_OK: {
-        EXPECT_EQ("valid", report_status);
+        // Valid SCTs have the full SCT.
+        const base::DictionaryValue* report_sct_object;
+        ASSERT_TRUE(report_sct->GetDictionary("sct", &report_sct_object));
+        int version;
+        ASSERT_TRUE(report_sct_object->GetInteger("sct_version", &version));
+        std::string id_base64;
+        ASSERT_TRUE(report_sct_object->GetString("id", &id_base64));
+        std::string id;
+        ASSERT_TRUE(base::Base64Decode(id_base64, &id));
+        std::string extensions_base64;
+        ASSERT_TRUE(
+            report_sct_object->GetString("extensions", &extensions_base64));
+        std::string extensions;
+        ASSERT_TRUE(base::Base64Decode(extensions_base64, &extensions));
+        std::string signature_data_base64;
+        ASSERT_TRUE(
+            report_sct_object->GetString("signature", &signature_data_base64));
+        std::string signature_data;
+        ASSERT_TRUE(base::Base64Decode(signature_data_base64, &signature_data));
+
+        if (version == sct->version &&
+            SCTOriginStringToOrigin(origin) == sct->origin &&
+            id == sct->log_id && extensions == sct->extensions &&
+            signature_data == sct->signature.signature_data) {
+          found = true;
+        }
         break;
       }
-      case net::ct::SCT_STATUS_NONE:
+      default:
         NOTREACHED();
     }
-    return ::testing::AssertionSuccess();
   }
-
-  return ::testing::AssertionFailure() << "Failed to find SCT in report list";
+  EXPECT_TRUE(found);
 }
 
 // Checks that all |expected_scts| appears in the given lists of SCTs
 // from an Expect CT report.
 void CheckReportSCTs(
     const net::SignedCertificateTimestampAndStatusList& expected_scts,
-    const base::ListValue& scts) {
-  EXPECT_EQ(expected_scts.size(), scts.GetSize());
+    const base::ListValue& unknown_scts,
+    const base::ListValue& invalid_scts,
+    const base::ListValue& valid_scts) {
+  EXPECT_EQ(
+      expected_scts.size(),
+      unknown_scts.GetSize() + invalid_scts.GetSize() + valid_scts.GetSize());
   for (const auto& expected_sct : expected_scts) {
-    ASSERT_TRUE(
-        FindSCTInReportList(expected_sct.sct, expected_sct.status, scts));
+    switch (expected_sct.status) {
+      case net::ct::SCT_STATUS_LOG_UNKNOWN:
+        ASSERT_NO_FATAL_FAILURE(FindSCTInReportList(
+            expected_sct.sct, net::ct::SCT_STATUS_LOG_UNKNOWN, unknown_scts));
+        break;
+      case net::ct::SCT_STATUS_INVALID_SIGNATURE:
+        ASSERT_NO_FATAL_FAILURE(FindSCTInReportList(
+            expected_sct.sct, net::ct::SCT_STATUS_INVALID_SIGNATURE,
+            invalid_scts));
+        break;
+      case net::ct::SCT_STATUS_INVALID_TIMESTAMP:
+        ASSERT_NO_FATAL_FAILURE(FindSCTInReportList(
+            expected_sct.sct, net::ct::SCT_STATUS_INVALID_TIMESTAMP,
+            invalid_scts));
+        break;
+      case net::ct::SCT_STATUS_OK:
+        ASSERT_NO_FATAL_FAILURE(FindSCTInReportList(
+            expected_sct.sct, net::ct::SCT_STATUS_OK, valid_scts));
+        break;
+      default:
+        NOTREACHED();
+    }
   }
 }
 
@@ -195,12 +242,8 @@ void CheckExpectCTReport(const std::string& serialized_report,
   ASSERT_TRUE(value);
   ASSERT_TRUE(value->IsType(base::Value::Type::DICTIONARY));
 
-  base::DictionaryValue* outer_report_dict;
-  ASSERT_TRUE(value->GetAsDictionary(&outer_report_dict));
-
   base::DictionaryValue* report_dict;
-  ASSERT_TRUE(
-      outer_report_dict->GetDictionary("expect-ct-report", &report_dict));
+  ASSERT_TRUE(value->GetAsDictionary(&report_dict));
 
   std::string report_hostname;
   EXPECT_TRUE(report_dict->GetString("hostname", &report_hostname));
@@ -226,11 +269,16 @@ void CheckExpectCTReport(const std::string& serialized_report,
   ASSERT_NO_FATAL_FAILURE(CheckReportCertificateChain(
       ssl_info.cert, *report_validated_certificate_chain));
 
-  const base::ListValue* report_scts = nullptr;
-  ASSERT_TRUE(report_dict->GetList("scts", &report_scts));
+  const base::ListValue* report_unknown_scts = nullptr;
+  ASSERT_TRUE(report_dict->GetList("unknown-scts", &report_unknown_scts));
+  const base::ListValue* report_invalid_scts = nullptr;
+  ASSERT_TRUE(report_dict->GetList("invalid-scts", &report_invalid_scts));
+  const base::ListValue* report_valid_scts = nullptr;
+  ASSERT_TRUE(report_dict->GetList("valid-scts", &report_valid_scts));
 
-  ASSERT_NO_FATAL_FAILURE(
-      CheckReportSCTs(ssl_info.signed_certificate_timestamps, *report_scts));
+  ASSERT_NO_FATAL_FAILURE(CheckReportSCTs(
+      ssl_info.signed_certificate_timestamps, *report_unknown_scts,
+      *report_invalid_scts, *report_valid_scts));
 }
 
 // A test network delegate that allows the user to specify a callback to
@@ -409,47 +457,38 @@ TEST(ChromeExpectCTReporterTest, SendReport) {
   // Append a variety of SCTs: two of each possible status, with a
   // mixture of different origins.
 
-  // The particular value of the log ID doesn't matter; it just has to be the
-  // correct length.
-  const char kTestLogId[] = {0xdf, 0x1c, 0x2e, 0xc1, 0x15, 0x00, 0x94, 0x52,
-                             0x47, 0xa9, 0x61, 0x68, 0x32, 0x5d, 0xdc, 0x5c,
-                             0x79, 0x59, 0xe8, 0xf7, 0xc6, 0xd3, 0x88, 0xfc,
-                             0x00, 0x2e, 0x0b, 0xbd, 0x3f, 0x74, 0xd7, 0x01};
-  const std::string log_id(kTestLogId, sizeof(kTestLogId));
-  // The values of the extensions and signature data don't matter
-  // either. However, each SCT has to be unique for the test expectation to be
-  // checked properly in CheckExpectCTReport(), so each SCT has a unique
-  // extensions value to make sure the serialized SCTs are unique.
   MakeTestSCTAndStatus(net::ct::SignedCertificateTimestamp::SCT_EMBEDDED,
-                       log_id, "extensions1", "signature1", now,
+                       "unknown_log_id1", "extensions1", "signature1", now,
                        net::ct::SCT_STATUS_LOG_UNKNOWN,
                        &ssl_info.signed_certificate_timestamps);
   MakeTestSCTAndStatus(net::ct::SignedCertificateTimestamp::SCT_EMBEDDED,
-                       log_id, "extensions2", "signature2", now,
+                       "unknown_log_id2", "extensions2", "signature2", now,
                        net::ct::SCT_STATUS_LOG_UNKNOWN,
                        &ssl_info.signed_certificate_timestamps);
 
   MakeTestSCTAndStatus(
-      net::ct::SignedCertificateTimestamp::SCT_FROM_TLS_EXTENSION, log_id,
-      "extensions3", "signature1", now, net::ct::SCT_STATUS_INVALID_TIMESTAMP,
+      net::ct::SignedCertificateTimestamp::SCT_FROM_TLS_EXTENSION,
+      "invalid_log_id1", "extensions1", "signature1", now,
+      net::ct::SCT_STATUS_INVALID_TIMESTAMP,
       &ssl_info.signed_certificate_timestamps);
 
   MakeTestSCTAndStatus(
-      net::ct::SignedCertificateTimestamp::SCT_FROM_TLS_EXTENSION, log_id,
-      "extensions4", "signature1", now, net::ct::SCT_STATUS_INVALID_SIGNATURE,
+      net::ct::SignedCertificateTimestamp::SCT_FROM_TLS_EXTENSION,
+      "invalid_log_id1", "extensions1", "signature1", now,
+      net::ct::SCT_STATUS_INVALID_SIGNATURE,
       &ssl_info.signed_certificate_timestamps);
 
   MakeTestSCTAndStatus(net::ct::SignedCertificateTimestamp::SCT_EMBEDDED,
-                       log_id, "extensions5", "signature2", now,
+                       "invalid_log_id2", "extensions2", "signature2", now,
                        net::ct::SCT_STATUS_INVALID_SIGNATURE,
                        &ssl_info.signed_certificate_timestamps);
 
   MakeTestSCTAndStatus(
-      net::ct::SignedCertificateTimestamp::SCT_FROM_OCSP_RESPONSE, log_id,
-      "extensions6", "signature1", now, net::ct::SCT_STATUS_OK,
+      net::ct::SignedCertificateTimestamp::SCT_FROM_OCSP_RESPONSE,
+      "valid_log_id1", "extensions1", "signature1", now, net::ct::SCT_STATUS_OK,
       &ssl_info.signed_certificate_timestamps);
   MakeTestSCTAndStatus(net::ct::SignedCertificateTimestamp::SCT_EMBEDDED,
-                       log_id, "extensions7", "signature2", now,
+                       "valid_log_id2", "extensions2", "signature2", now,
                        net::ct::SCT_STATUS_OK,
                        &ssl_info.signed_certificate_timestamps);
 
