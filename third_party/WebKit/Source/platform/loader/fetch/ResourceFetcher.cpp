@@ -311,7 +311,8 @@ bool ResourceFetcher::ResourceNeedsLoad(Resource* resource,
   // preload.
   if (resource->GetType() == Resource::kFont && !params.IsLinkPreload())
     return false;
-  if (resource->IsImage() && ShouldDeferImageLoad(resource->Url()))
+  if (resource->GetType() == Resource::kImage &&
+      ShouldDeferImageLoad(resource->Url()))
     return false;
   return policy != kUse || resource->StillNeedsLoad();
 }
@@ -952,6 +953,7 @@ bool ResourceFetcher::IsReusableAlsoForPreloading(const FetchParameters& params,
                                                   Resource* existing_resource,
                                                   bool is_static_data) const {
   const ResourceRequest& request = params.GetResourceRequest();
+
   // Do not load from cache if images are not enabled. There are two general
   // cases:
   //
@@ -966,7 +968,7 @@ bool ResourceFetcher::IsReusableAlsoForPreloading(const FetchParameters& params,
   // but not m_autoLoadImages, in order to allow for this differing behavior.
   //
   // TODO(japhet): Can we get rid of one of these settings?
-  if (existing_resource->IsImage() &&
+  if (existing_resource->GetType() == Resource::kImage &&
       !Context().AllowImage(images_enabled_, existing_resource->Url())) {
     return false;
   }
@@ -1556,7 +1558,8 @@ void ResourceFetcher::UpdateAllImageResourcePriorities() {
       "ResourceLoadPriorityOptimizer::updateAllImageResourcePriorities");
   for (const auto& document_resource : document_resources_) {
     Resource* resource = document_resource.value.Get();
-    if (!resource || !resource->IsImage() || !resource->IsLoading())
+    if (!resource || resource->GetType() != Resource::kImage ||
+        !resource->IsLoading())
       continue;
 
     ResourcePriority resource_priority = resource->PriorityFromObservers();

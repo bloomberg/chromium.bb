@@ -94,8 +94,6 @@ class CORE_EXPORT ImageResource final
   // For compatibility, images keep loading even if there are HTTP errors.
   bool ShouldIgnoreHTTPStatusCodeErrors() const override { return true; }
 
-  bool IsImage() const override { return true; }
-
   // MultipartImageResourceParser::Client
   void OnePartInMultipartReceived(const ResourceResponse&) final;
   void MultipartDataReceived(const char*, size_t) final;
