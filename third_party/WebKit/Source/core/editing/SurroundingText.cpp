@@ -37,6 +37,7 @@
 #include "core/editing/Position.h"
 #include "core/editing/iterators/BackwardsCharacterIterator.h"
 #include "core/editing/iterators/CharacterIterator.h"
+#include "core/html/HTMLFormControlElement.h"
 
 namespace blink {
 
@@ -72,21 +73,20 @@ void SurroundingText::Initialize(const Position& start_position,
   Element* const root_element =
       root_editable ? root_editable : document->documentElement();
 
+  // Do not create surrounding text if start or end position is within a
+  // control.
+  if (HTMLFormControlElement::EnclosingFormControlElement(
+          start_position.ComputeContainerNode()) ||
+      HTMLFormControlElement::EnclosingFormControlElement(
+          end_position.ComputeContainerNode()))
+    return;
+
   CharacterIterator forward_iterator(
       end_position,
       Position::LastPositionInNode(*root_element).ParentAnchoredEquivalent(),
       TextIteratorBehavior::Builder().SetStopsOnFormControls(true).Build());
-  // FIXME: why do we stop going trough the text if we were not able to select
-  // something on the right?
   if (!forward_iterator.AtEnd())
     forward_iterator.Advance(max_length - half_max_length);
-
-  EphemeralRange forward_range = forward_iterator.Range();
-  if (forward_range.IsNull() ||
-      !Range::Create(*document, end_position, forward_range.StartPosition())
-           ->GetText()
-           .length())
-    return;
 
   // Same as with the forward range but with the backward range. The range
   // starts at the document's or input element's start and ends at the selection
@@ -105,7 +105,7 @@ void SurroundingText::Initialize(const Position& start_position,
   end_offset_in_content_ = TextIterator::RangeLength(
       backwards_iterator.EndPosition(), end_position, behavior);
   content_range_ = Range::Create(*document, backwards_iterator.EndPosition(),
-                                 forward_range.StartPosition());
+                                 forward_iterator.StartPosition());
   DCHECK(content_range_);
 }
 
