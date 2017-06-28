@@ -1519,9 +1519,13 @@ class TestGitCl(TestCase):
       '1hashPerLine\n'),
     ]
 
-    ref_suffix = '%wip'
     if notify:
-      ref_suffix = '%ready'
+      ref_suffix = '%ready,notify=ALL'
+    else:
+      if not issue:
+        ref_suffix = '%wip'
+      else:
+        ref_suffix = '%notify=NONE'
 
     if title:
       ref_suffix += ',m=' + title

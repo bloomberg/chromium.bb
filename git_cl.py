@@ -3016,10 +3016,17 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     # https://gerrit-review.googlesource.com/Documentation/user-upload.html
     refspec_opts = []
 
+    # By default, new changes are started in WIP mode, and subsequent patchsets
+    # don't send email. At any time, passing --send-mail will mark the change
+    # ready and send email for that particular patch.
     if options.send_mail:
       refspec_opts.append('ready')
+      refspec_opts.append('notify=ALL')
     else:
-      refspec_opts.append('wip')
+      if not self.GetIssue():
+        refspec_opts.append('wip')
+      else:
+        refspec_opts.append('notify=NONE')
 
     # TODO(tandrii): options.message should be posted as a comment
     # if --send-email is set on non-initial upload as Rietveld used to do it.
