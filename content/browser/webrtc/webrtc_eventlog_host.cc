@@ -9,6 +9,9 @@
 
 #include "base/files/file_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
+#include "base/threading/thread_restrictions.h"
 #include "content/browser/webrtc/webrtc_internals.h"
 #include "content/common/media/peer_connection_tracker_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -47,7 +50,7 @@ IPC::PlatformFileForTransit CreateFileForProcess(
     const base::FilePath& base_path,
     int render_process_id,
     int connection_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  base::ThreadRestrictions::AssertIOAllowed();
   base::FilePath file_path =
       GetWebRtcEventLogPath(base_path, render_process_id, connection_id);
   base::File event_log_file(
@@ -133,8 +136,8 @@ bool WebRTCEventLogHost::StartEventLogForPeerConnection(
     int peer_connection_local_id) {
   if (number_active_log_files_ < kMaxNumberLogFiles) {
     ++number_active_log_files_;
-    BrowserThread::PostTaskAndReplyWithResult(
-        BrowserThread::FILE, FROM_HERE,
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
         base::Bind(&CreateFileForProcess, base_file_path_, render_process_id_,
                    peer_connection_local_id),
         base::Bind(&WebRTCEventLogHost::SendEventLogFileToRenderer,
