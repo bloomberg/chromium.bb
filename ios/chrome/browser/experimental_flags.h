@@ -112,6 +112,9 @@ bool IsKeyboardAccessoryViewWithCameraSearchEnabled();
 // Whether the WKBackForwardList based navigation manager is enabled.
 bool IsSlimNavigationManagerEnabled();
 
+// Whether the 3rd party keyboard omnibox workaround is enabled.
+bool IsThirdPartyKeyboardWorkaroundEnabled();
+
 }  // namespace experimental_flags
 
 #endif  // IOS_CHROME_BROWSER_EXPERIMENTAL_FLAGS_H_

@@ -286,6 +286,15 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
   if ([defaults boolForKey:@"RequestMobileSiteDisabled"])
     command_line->AppendSwitch(switches::kDisableRequestMobileSite);
 
+  // Populate command line flag for 3rd party keyboard omnibox workaround.
+  NSString* enableThirdPartyKeyboardWorkaround =
+      [defaults stringForKey:@"EnableThirdPartyKeyboardWorkaround"];
+  if ([enableThirdPartyKeyboardWorkaround isEqualToString:@"Enabled"]) {
+    command_line->AppendSwitch(switches::kEnableThirdPartyKeyboardWorkaround);
+  } else if ([enableThirdPartyKeyboardWorkaround isEqualToString:@"Disabled"]) {
+    command_line->AppendSwitch(switches::kDisableThirdPartyKeyboardWorkaround);
+  }
+
   ios::GetChromeBrowserProvider()->AppendSwitchesFromExperimentalSettings(
       defaults, command_line);
 }
