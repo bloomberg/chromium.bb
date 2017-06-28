@@ -32,8 +32,6 @@
 #include "modules/indexeddb/IDBAny.h"
 #include "modules/indexeddb/IDBRequest.h"
 #include "modules/indexeddb/IDBVersionChangeEventInit.h"
-#include "platform/wtf/PassRefPtr.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/modules/indexeddb/WebIDBTypes.h"
 

@@ -28,7 +28,6 @@
 
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "public/platform/WebVector.h"
 
 #include <unordered_map>

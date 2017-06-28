@@ -5,13 +5,12 @@
 #ifndef IDBRequestLoader_h
 #define IDBRequestLoader_h
 
+#include <memory>
+
 #include "core/fileapi/FileReaderLoaderClient.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
-
-#include <memory>
 
 namespace blink {
 

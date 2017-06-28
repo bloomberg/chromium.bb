@@ -46,7 +46,7 @@
 #include "modules/indexeddb/MockWebIDBDatabase.h"
 #include "platform/SharedBuffer.h"
 #include "platform/bindings/ScriptState.h"
-#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/dtoa/utils.h"
 #include "public/platform/Platform.h"
@@ -123,7 +123,7 @@ RefPtr<IDBValue> CreateIDBValue(v8::Isolate* isolate,
   IDBKeyPath key_path(String("primaryKey"));
 
   RefPtr<IDBValue> idb_value = IDBValue::Create(
-      wrapped_marker_buffer, std::move(blob_data_handles),
+      std::move(wrapped_marker_buffer), std::move(blob_data_handles),
       WTF::MakeUnique<Vector<WebBlobInfo>>(blob_infos), key, key_path);
 
   DCHECK_EQ(create_wrapped_value,

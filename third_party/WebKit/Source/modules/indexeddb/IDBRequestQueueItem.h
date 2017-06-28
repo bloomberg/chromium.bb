@@ -5,13 +5,12 @@
 #ifndef IDBRequestQueueItem_h
 #define IDBRequestQueueItem_h
 
+#include <memory>
+
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
-
-#include <memory>
 
 namespace blink {
 
@@ -59,7 +58,7 @@ class IDBRequestQueueItem {
                       IDBKey*,
                       std::unique_ptr<WTF::Closure> on_result_load_complete);
   IDBRequestQueueItem(IDBRequest*,
-                      PassRefPtr<IDBValue>,
+                      RefPtr<IDBValue>,
                       bool attach_loader,
                       std::unique_ptr<WTF::Closure> on_load_complete);
   IDBRequestQueueItem(IDBRequest*,
@@ -69,14 +68,14 @@ class IDBRequestQueueItem {
   IDBRequestQueueItem(IDBRequest*,
                       IDBKey*,
                       IDBKey* primary_key,
-                      PassRefPtr<IDBValue>,
+                      RefPtr<IDBValue>,
                       bool attach_loader,
                       std::unique_ptr<WTF::Closure> on_result_load_complete);
   IDBRequestQueueItem(IDBRequest*,
                       std::unique_ptr<WebIDBCursor>,
                       IDBKey*,
                       IDBKey* primary_key,
-                      PassRefPtr<IDBValue>,
+                      RefPtr<IDBValue>,
                       bool attach_loader,
                       std::unique_ptr<WTF::Closure> on_result_load_complete);
   ~IDBRequestQueueItem();

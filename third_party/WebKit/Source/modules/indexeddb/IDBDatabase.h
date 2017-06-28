@@ -26,6 +26,8 @@
 #ifndef IDBDatabase_h
 #define IDBDatabase_h
 
+#include <memory>
+
 #include "bindings/modules/v8/StringOrStringSequence.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/DOMStringList.h"
@@ -42,11 +44,8 @@
 #include "platform/bindings/ActiveScriptWrappable.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefPtr.h"
 #include "public/platform/modules/indexeddb/WebIDBDatabase.h"
-
-#include <memory>
 
 namespace blink {
 

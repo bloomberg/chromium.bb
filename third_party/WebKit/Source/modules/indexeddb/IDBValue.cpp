@@ -7,6 +7,7 @@
 #include "bindings/core/v8/serialization/SerializedScriptValue.h"
 #include "platform/blob/BlobData.h"
 #include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/RefPtr.h"
 #include "public/platform/WebBlobInfo.h"
 #include "public/platform/modules/indexeddb/WebIDBValue.h"
 #include "v8/include/v8.h"
@@ -76,23 +77,23 @@ IDBValue::~IDBValue() {
     isolate_->AdjustAmountOfExternalAllocatedMemory(-external_allocated_size_);
 }
 
-PassRefPtr<IDBValue> IDBValue::Create() {
+RefPtr<IDBValue> IDBValue::Create() {
   return AdoptRef(new IDBValue());
 }
 
-PassRefPtr<IDBValue> IDBValue::Create(const WebIDBValue& value,
-                                      v8::Isolate* isolate) {
+RefPtr<IDBValue> IDBValue::Create(const WebIDBValue& value,
+                                  v8::Isolate* isolate) {
   return AdoptRef(new IDBValue(value, isolate));
 }
 
-PassRefPtr<IDBValue> IDBValue::Create(const IDBValue* value,
-                                      IDBKey* primary_key,
-                                      const IDBKeyPath& key_path) {
+RefPtr<IDBValue> IDBValue::Create(const IDBValue* value,
+                                  IDBKey* primary_key,
+                                  const IDBKeyPath& key_path) {
   return AdoptRef(new IDBValue(value, primary_key, key_path));
 }
 
-PassRefPtr<IDBValue> IDBValue::Create(
-    PassRefPtr<SharedBuffer> unwrapped_data,
+RefPtr<IDBValue> IDBValue::Create(
+    RefPtr<SharedBuffer> unwrapped_data,
     std::unique_ptr<Vector<RefPtr<BlobDataHandle>>> blob_data,
     std::unique_ptr<Vector<WebBlobInfo>> blob_info,
     const IDBKey* primary_key,
