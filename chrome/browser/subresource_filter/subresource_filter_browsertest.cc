@@ -549,7 +549,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, SubFrameActivation) {
   std::ostringstream message_filter;
-  message_filter << kDisallowSubframeConsoleMessage << "*";
+  message_filter << kDisallowSubframeConsoleMessagePrefix << "*";
   content::ConsoleObserverDelegate console_observer(web_contents(),
                                                     message_filter.str());
   web_contents()->SetDelegate(&console_observer);
@@ -571,14 +571,14 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, SubFrameActivation) {
 
   // Console message for subframe blocking should be displayed.
   std::ostringstream result;
-  result << kDisallowSubframeConsoleMessage << "*included_script.js*";
+  result << kDisallowSubframeConsoleMessagePrefix << "*included_script.js*";
   EXPECT_TRUE(base::MatchPattern(console_observer.message(), result.str()));
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
                        ActivationDisabled_NoConsoleMessage) {
   std::ostringstream message_filter;
-  message_filter << kDisallowSubframeConsoleMessage << "*";
+  message_filter << kDisallowSubframeConsoleMessageSuffix << "*";
   content::ConsoleObserverDelegate console_observer(web_contents(),
                                                     message_filter.str());
   web_contents()->SetDelegate(&console_observer);
@@ -603,7 +603,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
                        ActivationDryRun_NoConsoleMessage) {
   std::ostringstream message_filter;
-  message_filter << kDisallowSubframeConsoleMessage << "*";
+  message_filter << kDisallowSubframeConsoleMessageSuffix << "*";
   content::ConsoleObserverDelegate console_observer(web_contents(),
                                                     message_filter.str());
   web_contents()->SetDelegate(&console_observer);
