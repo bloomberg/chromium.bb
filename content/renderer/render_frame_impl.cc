@@ -4343,18 +4343,6 @@ void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
     }
   }
 
-  // TODO: generalize how non-network schemes are sent to the renderer and used.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableNetworkService)) {
-    if (request.Url().ProtocolIs(url::kBlobScheme)) {
-      extra_data->set_url_loader_factory_override(
-          RenderThreadImpl::current()->GetBlobURLLoaderFactory());
-    }
-  }
-
-  if (!extra_data->url_loader_factory_override())
-    extra_data->set_url_loader_factory_override(url_loader_factory_.get());
-
   // TODO(kinuko, yzshen): We need to set up throttles for some worker cases
   // that don't go through here.
   extra_data->set_url_loader_throttles(std::move(throttles));
@@ -6714,8 +6702,22 @@ blink::WebPageVisibilityState RenderFrameImpl::VisibilityState() const {
 std::unique_ptr<blink::WebURLLoader> RenderFrameImpl::CreateURLLoader(
     const blink::WebURLRequest& request,
     base::SingleThreadTaskRunner* task_runner) {
-  // TODO(yhirano): Stop using Platform::CreateURLLoader() here.
-  return blink::Platform::Current()->CreateURLLoader(request, task_runner);
+  ChildThreadImpl* child_thread = ChildThreadImpl::current();
+  const bool network_service_enabled =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableNetworkService);
+  if (network_service_enabled && child_thread) {
+    mojom::URLLoaderFactory* factory = url_loader_factory_.get();
+
+    if (request.Url().ProtocolIs(url::kBlobScheme))
+      factory = RenderThreadImpl::current()->GetBlobURLLoaderFactory();
+
+    return base::MakeUnique<WebURLLoaderImpl>(
+        child_thread->resource_dispatcher(), task_runner, factory);
+  }
+
+  return RenderThreadImpl::current()->blink_platform_impl()->CreateURLLoader(
+      request, task_runner);
 }
 
 void RenderFrameImpl::DraggableRegionsChanged() {
