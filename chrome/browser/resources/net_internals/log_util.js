@@ -166,20 +166,29 @@ log_util = (function() {
       }
     }
 
-    // Make sure the loaded log contained an export date. If not we will
-    // synthesize one. This can legitimately happen for dump files created
-    // via command line flag, or for older dump formats (before Chrome 17).
+    // Determine the export date for the loaded log.
+    //
+    // Dumps created from chrome://net-internals (Chrome 17 - Chrome 59) will
+    // have this set in constants.clientInfo.numericDate.
+    //
+    // However more recent dumping mechanisms (chrome://net-export/ and
+    // --log-net-log) write the constants object directly to a file when the
+    // dump is *started* so lack this ability.
+    //
+    // In this case, we will synthesize this field by looking at the timestamp
+    // of the last event logged. In practice this works fine since there tend
+    // to be lots of events logged.
+    //
+    // TODO(eroman): Fix the log format / writers to avoid this problem. Dumps
+    // *should* contain the time when capturing started, and when capturing
+    // ended.
     if (typeof logDump.constants.clientInfo.numericDate != 'number') {
-      errorString += 'The log file is missing clientInfo.numericDate.\n';
-
       if (validEvents.length > 0) {
-        errorString +=
-            'Synthesizing export date as time of last event captured.\n';
         var lastEvent = validEvents[validEvents.length - 1];
         ClientInfo.numericDate =
             timeutil.convertTimeTicksToDate(lastEvent.time).getTime();
       } else {
-        errorString += 'Can\'t guess export date!\n';
+        errorString += 'Can\'t guess export date as there are no events.\n';
         ClientInfo.numericDate = 0;
       }
     }
