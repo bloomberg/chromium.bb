@@ -77,7 +77,7 @@ def _CommonChecks(input_api, output_api):
         maxlen=800, license_header=license_header))
     results.extend(_CheckForNonBlinkVariantMojomIncludes(input_api, output_api))
     results.extend(_CheckTestExpectations(input_api, output_api))
-    results.extend(_CheckChromiumPlatformMacros(input_api, output_api))
+    results.extend(_CheckWtfOsMacros(input_api, output_api))
     results.extend(_CheckWatchlist(input_api, output_api))
     return results
 
@@ -131,16 +131,15 @@ def _CheckStyle(input_api, output_api):
     return results
 
 
-def _CheckChromiumPlatformMacros(input_api, output_api, source_file_filter=None):
-    """Ensures that Blink code uses WTF's platform macros instead of
-    Chromium's. Using the latter has resulted in at least one subtle
-    build breakage."""
-    os_macro_re = input_api.re.compile(r'^\s*#(el)?if.*\bOS_')
+def _CheckWtfOsMacros(input_api, output_api):
+    """Ensures that Blink code uses no WTF's OS macros."""
+    os_macro_re = input_api.re.compile(r'^\s*#(el)?if.*\bOS\(')
     errors = input_api.canned_checks._FindNewViolationsOfRule(
         lambda _, x: not os_macro_re.search(x),
-        input_api, source_file_filter)
-    errors = ['Found use of Chromium OS_* macro in %s. '
-        'Use WTF platform macros instead.' % violation for violation in errors]
+        input_api, None)
+    errors = ['Found deprecated OS() macro in %s. Include build/build_config.h '
+              'and use defined(OS_*) instead.'
+              % violation for violation in errors]
     if errors:
         return [output_api.PresubmitPromptWarning('\n'.join(errors))]
     return []
