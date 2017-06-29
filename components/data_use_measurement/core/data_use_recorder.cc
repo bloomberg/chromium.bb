@@ -17,6 +17,16 @@ bool DataUseRecorder::IsDataUseComplete() {
   return pending_url_requests_.empty();
 }
 
+void DataUseRecorder::GetPendingURLRequests(
+    std::vector<net::URLRequest*>* requests) const {
+  // Reference to |pending_url_requests_| could be returned instead of copying
+  // to a vector. But that leads to issues when the caller calls other member
+  // functions that modify/erase the same map, while iterating.
+  requests->reserve(pending_url_requests_.size());
+  for (const auto& request : pending_url_requests_)
+    requests->push_back(request.first);
+}
+
 void DataUseRecorder::AddPendingURLRequest(net::URLRequest* request) {
   pending_url_requests_.emplace(std::piecewise_construct,
                                 std::forward_as_tuple(request),
@@ -27,8 +37,8 @@ void DataUseRecorder::OnUrlRequestDestroyed(net::URLRequest* request) {
   pending_url_requests_.erase(request);
 }
 
-void DataUseRecorder::MovePendingURLRequest(DataUseRecorder* other,
-                                            net::URLRequest* request) {
+void DataUseRecorder::MovePendingURLRequestTo(DataUseRecorder* other,
+                                              net::URLRequest* request) {
   auto request_it = pending_url_requests_.find(request);
   DCHECK(request_it != pending_url_requests_.end());
   DCHECK(other->pending_url_requests_.find(request) ==

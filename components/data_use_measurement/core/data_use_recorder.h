@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/supports_user_data.h"
@@ -42,10 +43,7 @@ class DataUseRecorder {
 
   // Returns the actual data used by the entity being tracked.
   DataUse& data_use() { return data_use_; }
-  const std::map<net::URLRequest*, URLRequestDataUse>& pending_url_requests()
-      const {
-    return pending_url_requests_;
-  }
+
   const net::URLRequest* main_url_request() const { return main_url_request_; }
 
   void set_main_url_request(const net::URLRequest* request) {
@@ -66,13 +64,19 @@ class DataUseRecorder {
   // by the entity tracked by this recorder. For example,
   bool IsDataUseComplete();
 
+  // Populate the pending requests to |requests|.
+  // Reference to the map is not returned since other member functions that
+  // modify/erase could be called while iterating.
+  void GetPendingURLRequests(std::vector<net::URLRequest*>* requests) const;
+
   // Adds |request| to the list of pending URLRequests that ascribe data use to
   // this recorder.
   void AddPendingURLRequest(net::URLRequest* request);
 
   // Moves pending |request| from |this| recorder to |other| recorder, and
   // updates the data use for the recorders.
-  void MovePendingURLRequest(DataUseRecorder* other, net::URLRequest* request);
+  void MovePendingURLRequestTo(DataUseRecorder* other,
+                               net::URLRequest* request);
 
   // Clears the list of pending URLRequests that ascribe data use to this
   // recorder.
