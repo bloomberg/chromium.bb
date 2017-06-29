@@ -23,7 +23,7 @@ namespace {
 
 Browser* GetBrowser() {
   chrome::ScopedTabbedBrowserDisplayer browser_displayer(
-      ProfileManager::GetActiveUserProfile());
+      ProfileManager::GetLastUsedProfileAllowedByPolicy());
   DCHECK(browser_displayer.browser());
   return browser_displayer.browser();
 }
