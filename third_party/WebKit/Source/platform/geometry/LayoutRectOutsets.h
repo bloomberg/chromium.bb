@@ -35,7 +35,6 @@
 #include "platform/PlatformExport.h"
 #include "platform/geometry/FloatRectOutsets.h"
 #include "platform/geometry/IntRectOutsets.h"
-#include "platform/text/TextDirection.h"
 #include "platform/text/WritingMode.h"
 #include "platform/wtf/Allocator.h"
 
@@ -84,29 +83,16 @@ class PLATFORM_EXPORT LayoutRectOutsets {
   void SetBottom(LayoutUnit value) { bottom_ = value; }
   void SetLeft(LayoutUnit value) { left_ = value; }
 
-  LayoutUnit LogicalTop(WritingMode) const;
-  LayoutUnit LogicalBottom(WritingMode) const;
-  LayoutUnit LogicalLeft(WritingMode) const;
-  LayoutUnit LogicalRight(WritingMode) const;
-
-  // Produces a new LayoutRectOutsets whose |top| is the |logicalTop| of this
-  // one, and so on.
-  LayoutRectOutsets LogicalOutsets(WritingMode) const;
+  // Produces a new LayoutRectOutsets in line orientation
+  // (https://www.w3.org/TR/css-writing-modes-3/#line-orientation), whose
+  // - |top| is the logical 'over',
+  // - |right| is the logical 'line right',
+  // - |bottom| is the logical 'under',
+  // - |left| is the logical 'line left'.
+  LayoutRectOutsets LineOrientationOutsets(WritingMode) const;
 
   // The same as |logicalOutsets|, but also adjusting for flipped lines.
-  LayoutRectOutsets LogicalOutsetsWithFlippedLines(WritingMode) const;
-
-  LayoutUnit Before(WritingMode) const;
-  LayoutUnit After(WritingMode) const;
-  LayoutUnit Start(WritingMode, TextDirection) const;
-  LayoutUnit end(WritingMode, TextDirection) const;
-  LayoutUnit Over(WritingMode) const;
-  LayoutUnit Under(WritingMode) const;
-
-  void SetBefore(WritingMode, LayoutUnit);
-  void SetAfter(WritingMode, LayoutUnit);
-  void SetStart(WritingMode, TextDirection, LayoutUnit);
-  void SetEnd(WritingMode, TextDirection, LayoutUnit);
+  LayoutRectOutsets LineOrientationOutsetsWithFlippedLines(WritingMode) const;
 
   bool operator==(const LayoutRectOutsets other) const {
     return Top() == other.Top() && Right() == other.Right() &&

@@ -9,28 +9,31 @@
 namespace blink {
 namespace {
 
-TEST(LayoutRectOutsetsTest, LogicalOutsets_Horizontal) {
+TEST(LayoutRectOutsetsTest, LineOrientationOutsets_Horizontal) {
   LayoutRectOutsets outsets(1, 2, 3, 4);
   EXPECT_EQ(LayoutRectOutsets(1, 2, 3, 4),
-            outsets.LogicalOutsets(WritingMode::kHorizontalTb));
+            outsets.LineOrientationOutsets(WritingMode::kHorizontalTb));
 }
 
-TEST(LayoutRectOutsetsTest, LogicalOutsets_Vertical) {
+TEST(LayoutRectOutsetsTest, LineOrientationOutsets_Vertical) {
   LayoutRectOutsets outsets(1, 2, 3, 4);
   EXPECT_EQ(LayoutRectOutsets(4, 3, 2, 1),
-            outsets.LogicalOutsets(WritingMode::kVerticalLr));
+            outsets.LineOrientationOutsets(WritingMode::kVerticalLr));
   EXPECT_EQ(LayoutRectOutsets(4, 3, 2, 1),
-            outsets.LogicalOutsets(WritingMode::kVerticalRl));
+            outsets.LineOrientationOutsets(WritingMode::kVerticalRl));
 }
 
-TEST(LayoutRectOutsetsTest, LogicalOutsetsWithFlippedLines) {
+TEST(LayoutRectOutsetsTest, LineOrientationOutsetsWithFlippedLines) {
   LayoutRectOutsets outsets(1, 2, 3, 4);
   EXPECT_EQ(LayoutRectOutsets(1, 2, 3, 4),
-            outsets.LogicalOutsetsWithFlippedLines(WritingMode::kHorizontalTb));
-  EXPECT_EQ(LayoutRectOutsets(2, 3, 4, 1),
-            outsets.LogicalOutsetsWithFlippedLines(WritingMode::kVerticalLr));
-  EXPECT_EQ(LayoutRectOutsets(4, 3, 2, 1),
-            outsets.LogicalOutsetsWithFlippedLines(WritingMode::kVerticalRl));
+            outsets.LineOrientationOutsetsWithFlippedLines(
+                WritingMode::kHorizontalTb));
+  EXPECT_EQ(
+      LayoutRectOutsets(2, 3, 4, 1),
+      outsets.LineOrientationOutsetsWithFlippedLines(WritingMode::kVerticalLr));
+  EXPECT_EQ(
+      LayoutRectOutsets(4, 3, 2, 1),
+      outsets.LineOrientationOutsetsWithFlippedLines(WritingMode::kVerticalRl));
 }
 
 }  // namespace

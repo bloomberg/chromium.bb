@@ -35,149 +35,19 @@
 
 namespace blink {
 
-LayoutUnit LayoutRectOutsets::LogicalTop(WritingMode writing_mode) const {
-  return IsHorizontalWritingMode(writing_mode) ? top_ : left_;
-}
-
-LayoutUnit LayoutRectOutsets::LogicalBottom(WritingMode writing_mode) const {
-  return IsHorizontalWritingMode(writing_mode) ? bottom_ : right_;
-}
-
-LayoutUnit LayoutRectOutsets::LogicalLeft(WritingMode writing_mode) const {
-  return IsHorizontalWritingMode(writing_mode) ? left_ : top_;
-}
-
-LayoutUnit LayoutRectOutsets::LogicalRight(WritingMode writing_mode) const {
-  return IsHorizontalWritingMode(writing_mode) ? right_ : bottom_;
-}
-
-LayoutRectOutsets LayoutRectOutsets::LogicalOutsets(
+LayoutRectOutsets LayoutRectOutsets::LineOrientationOutsets(
     WritingMode writing_mode) const {
   if (!IsHorizontalWritingMode(writing_mode))
     return LayoutRectOutsets(left_, bottom_, right_, top_);
   return *this;
 }
 
-LayoutRectOutsets LayoutRectOutsets::LogicalOutsetsWithFlippedLines(
+LayoutRectOutsets LayoutRectOutsets::LineOrientationOutsetsWithFlippedLines(
     WritingMode writing_mode) const {
-  LayoutRectOutsets outsets = LogicalOutsets(writing_mode);
+  LayoutRectOutsets outsets = LineOrientationOutsets(writing_mode);
   if (IsFlippedLinesWritingMode(writing_mode))
     std::swap(outsets.top_, outsets.bottom_);
   return outsets;
-}
-
-LayoutUnit LayoutRectOutsets::Before(WritingMode writing_mode) const {
-  switch (writing_mode) {
-    case WritingMode::kHorizontalTb:
-      return top_;
-    case WritingMode::kVerticalLr:
-      return left_;
-    case WritingMode::kVerticalRl:
-      return right_;
-  }
-  NOTREACHED();
-  return top_;
-}
-
-LayoutUnit LayoutRectOutsets::After(WritingMode writing_mode) const {
-  switch (writing_mode) {
-    case WritingMode::kHorizontalTb:
-      return bottom_;
-    case WritingMode::kVerticalLr:
-      return right_;
-    case WritingMode::kVerticalRl:
-      return left_;
-  }
-  NOTREACHED();
-  return bottom_;
-}
-
-LayoutUnit LayoutRectOutsets::Start(WritingMode writing_mode,
-                                    TextDirection direction) const {
-  if (IsHorizontalWritingMode(writing_mode))
-    return IsLtr(direction) ? left_ : right_;
-  return IsLtr(direction) ? top_ : bottom_;
-}
-
-LayoutUnit LayoutRectOutsets::end(WritingMode writing_mode,
-                                  TextDirection direction) const {
-  if (IsHorizontalWritingMode(writing_mode))
-    return IsLtr(direction) ? right_ : left_;
-  return IsLtr(direction) ? bottom_ : top_;
-}
-
-LayoutUnit LayoutRectOutsets::Over(WritingMode writing_mode) const {
-  return IsHorizontalWritingMode(writing_mode) ? top_ : right_;
-}
-
-LayoutUnit LayoutRectOutsets::Under(WritingMode writing_mode) const {
-  return IsHorizontalWritingMode(writing_mode) ? bottom_ : left_;
-}
-
-void LayoutRectOutsets::SetBefore(WritingMode writing_mode, LayoutUnit value) {
-  switch (writing_mode) {
-    case WritingMode::kHorizontalTb:
-      top_ = value;
-      break;
-    case WritingMode::kVerticalLr:
-      left_ = value;
-      break;
-    case WritingMode::kVerticalRl:
-      right_ = value;
-      break;
-    default:
-      NOTREACHED();
-      top_ = value;
-  }
-}
-
-void LayoutRectOutsets::SetAfter(WritingMode writing_mode, LayoutUnit value) {
-  switch (writing_mode) {
-    case WritingMode::kHorizontalTb:
-      bottom_ = value;
-      break;
-    case WritingMode::kVerticalLr:
-      right_ = value;
-      break;
-    case WritingMode::kVerticalRl:
-      left_ = value;
-      break;
-    default:
-      NOTREACHED();
-      bottom_ = value;
-  }
-}
-
-void LayoutRectOutsets::SetStart(WritingMode writing_mode,
-                                 TextDirection direction,
-                                 LayoutUnit value) {
-  if (IsHorizontalWritingMode(writing_mode)) {
-    if (IsLtr(direction))
-      left_ = value;
-    else
-      right_ = value;
-  } else {
-    if (IsLtr(direction))
-      top_ = value;
-    else
-      bottom_ = value;
-  }
-}
-
-void LayoutRectOutsets::SetEnd(WritingMode writing_mode,
-                               TextDirection direction,
-                               LayoutUnit value) {
-  if (IsHorizontalWritingMode(writing_mode)) {
-    if (IsLtr(direction))
-      right_ = value;
-    else
-      left_ = value;
-  } else {
-    if (IsLtr(direction))
-      bottom_ = value;
-    else
-      top_ = value;
-  }
 }
 
 }  // namespace blink
