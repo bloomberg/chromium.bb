@@ -50,6 +50,7 @@ constexpr char kKeyCommunicationDbFS[] = "dbfs.communication";
 constexpr char kKeyVolumeMap[] = "volume_map";
 constexpr char kKeyLevel[] = "level";
 constexpr char kKeyDb[] = "db";
+constexpr char kKeyDefaultVolume[] = "default_volume";
 
 struct LevelToDb {
   float level;
@@ -204,6 +205,26 @@ class VolumeControlInternal : public AlsaVolumeControl::Delegate {
       for (auto type : types) {
         if (old_stored_dict->GetDouble(ContentTypeToDbFSKey(type), &volume)) {
           stored_values_.SetDouble(ContentTypeToDbFSKey(type), volume);
+        }
+      }
+    } else {
+      // If saved_volumes does not exist, use per device default if it exists.
+      auto cast_audio_config = DeserializeJsonFromFile(
+          base::FilePath(PostProcessingPipelineParser::GetFilePath()));
+      const base::DictionaryValue* cast_audio_dict;
+      if (cast_audio_config &&
+          cast_audio_config->GetAsDictionary(&cast_audio_dict)) {
+        const base::DictionaryValue* default_volume_dict;
+        if (cast_audio_dict && cast_audio_dict->GetDictionary(
+                                   kKeyDefaultVolume, &default_volume_dict)) {
+          for (auto type : types) {
+            if (default_volume_dict->GetDouble(ContentTypeToDbFSKey(type),
+                                               &volume)) {
+              stored_values_.SetDouble(ContentTypeToDbFSKey(type), volume);
+              LOG(INFO) << "Setting default volume for "
+                        << ContentTypeToDbFSKey(type) << " to " << volume;
+            }
+          }
         }
       }
     }
