@@ -34,7 +34,6 @@
 #include "cc/surfaces/surface_manager.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
-#include "components/viz/host/host_frame_sink_manager.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/compositor_switches.h"
@@ -201,13 +200,12 @@ Compositor::~Compositor() {
 
   context_factory_->RemoveCompositor(this);
   if (context_factory_private_) {
-    auto* manager = context_factory_private_->GetHostFrameSinkManager();
+    auto* manager = context_factory_private_->GetSurfaceManager();
     for (auto& client : child_frame_sinks_) {
       DCHECK(client.is_valid());
       manager->UnregisterFrameSinkHierarchy(frame_sink_id_, client);
     }
-    context_factory_private_->GetSurfaceManager()->InvalidateFrameSinkId(
-        frame_sink_id_);
+    manager->InvalidateFrameSinkId(frame_sink_id_);
   }
 }
 
@@ -218,8 +216,8 @@ bool Compositor::IsForSubframe() {
 void Compositor::AddFrameSink(const cc::FrameSinkId& frame_sink_id) {
   if (!context_factory_private_)
     return;
-  context_factory_private_->GetHostFrameSinkManager()
-      ->RegisterFrameSinkHierarchy(frame_sink_id_, frame_sink_id);
+  context_factory_private_->GetSurfaceManager()->RegisterFrameSinkHierarchy(
+      frame_sink_id_, frame_sink_id);
   child_frame_sinks_.insert(frame_sink_id);
 }
 
@@ -229,8 +227,8 @@ void Compositor::RemoveFrameSink(const cc::FrameSinkId& frame_sink_id) {
   auto it = child_frame_sinks_.find(frame_sink_id);
   DCHECK(it != child_frame_sinks_.end());
   DCHECK(it->is_valid());
-  context_factory_private_->GetHostFrameSinkManager()
-      ->UnregisterFrameSinkHierarchy(frame_sink_id_, *it);
+  context_factory_private_->GetSurfaceManager()->UnregisterFrameSinkHierarchy(
+      frame_sink_id_, *it);
   child_frame_sinks_.erase(it);
 }
 
