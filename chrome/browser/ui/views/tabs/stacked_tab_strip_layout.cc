@@ -171,8 +171,13 @@ void StackedTabStripLayout::AddTab(int index, int add_types, int start_x) {
     ResetToIdealState();
     return;
   }
-  int active_x = (index + 1 == tab_count()) ?
+
+  int active_x = ideal_x(active_index());
+  if (add_types & kAddTypeActive) {
+    active_x = (index + 1 == tab_count()) ?
       width_ - size_.width() : ideal_x(index + 1);
+  }
+
   SetIdealBoundsAt(active_index(), ConstrainActiveX(active_x));
   LayoutByTabOffsetAfter(active_index());
   LayoutByTabOffsetBefore(active_index());
@@ -336,24 +341,27 @@ void StackedTabStripLayout::MakeVisible(int index) {
   if (index <= active_index() || !requires_stacking() || !IsStacked(index))
     return;
 
-  int ideal_delta = width_for_count(index - active_index()) - overlap_;
+  const int ideal_delta = width_for_count(index - active_index()) - overlap_;
   if (ideal_x(index) - ideal_x(active_index()) == ideal_delta)
     return;
 
-  // First push active index as far to the left as it'll go.
-  int active_x = std::max(GetMinX(active_index()),
-                          std::min(ideal_x(index) - ideal_delta,
-                                   ideal_x(active_index())));
+  // Move the active tab to the left so that all tabs between the active tab
+  // and |index| (inclusive) can be made visible.
+  const int active_x = std::max(GetMinX(active_index()),
+                                std::min(ideal_x(index) - ideal_delta,
+                                         ideal_x(active_index())));
   SetIdealBoundsAt(active_index(), active_x);
-  LayoutUsingCurrentBefore(active_index());
-  LayoutUsingCurrentAfter(active_index());
+  LayoutByTabOffsetBefore(active_index());
+  LayoutByTabOffsetAfter(active_index());
   AdjustStackedTabs();
+
   if (ideal_x(index) - ideal_x(active_index()) == ideal_delta)
     return;
 
   // If we get here active_index() is left aligned. Push |index| as far to
-  // the right as possible.
-  int x = std::min(GetMaxX(index), active_x + ideal_delta);
+  // the right as possible, forming a stack immediately to the right of the
+  // active tab if necessary.
+  const int x = std::min(GetMaxX(index), active_x + ideal_delta);
   SetIdealBoundsAt(index, x);
   LayoutByTabOffsetAfter(index);
   for (int next_x = x, i = index - 1; i > active_index(); --i) {
