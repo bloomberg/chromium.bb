@@ -472,12 +472,13 @@ VISIT_PROTO_FIELDS(const sync_pb::FaviconTrackingSpecifics& proto) {
   VISIT(is_bookmarked);
 }
 
-VISIT_PROTO_FIELDS(const sync_pb::FieldTrial::FieldTrialPair& proto) {
+VISIT_PROTO_FIELDS(
+    const sync_pb::UserEventSpecifics::FieldTrial::FieldTrialPair& proto) {
   VISIT(name_id);
   VISIT(group_id);
 }
 
-VISIT_PROTO_FIELDS(const sync_pb::FieldTrial& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::UserEventSpecifics::FieldTrial& proto) {
   VISIT_REP(field_trial_pairs);
 }
 
@@ -540,12 +541,14 @@ VISIT_PROTO_FIELDS(const sync_pb::KeystoreEncryptionFlags& proto) {
   VISIT(enabled);
 }
 
-VISIT_PROTO_FIELDS(const sync_pb::LanguageDetection::Language& proto) {
+VISIT_PROTO_FIELDS(
+    const sync_pb::UserEventSpecifics::LanguageDetection::Language& proto) {
   VISIT(language_code);
   VISIT(is_reliable);
 }
 
-VISIT_PROTO_FIELDS(const sync_pb::LanguageDetection& proto) {
+VISIT_PROTO_FIELDS(
+    const sync_pb::UserEventSpecifics::LanguageDetection& proto) {
   VISIT_REP(detected_languages);
   VISIT(adopted_language_code);
 }
@@ -848,7 +851,7 @@ VISIT_PROTO_FIELDS(const sync_pb::TimeRangeDirective& proto) {
   VISIT(end_time_usec);
 }
 
-VISIT_PROTO_FIELDS(const sync_pb::Translation& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::UserEventSpecifics::Translation& proto) {
   VISIT(from_language_code);
   VISIT(to_language_code);
   VISIT_ENUM(interaction);

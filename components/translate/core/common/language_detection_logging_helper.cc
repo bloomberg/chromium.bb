@@ -23,7 +23,7 @@ std::unique_ptr<sync_pb::UserEventSpecifics> ConstructLanguageDetectionEvent(
   // navigations is determined.
   specifics->set_navigation_id(navigation_id);
 
-  sync_pb::LanguageDetection lang_detection;
+  sync_pb::UserEventSpecifics::LanguageDetection lang_detection;
   auto* const lang = lang_detection.add_detected_languages();
   lang->set_language_code(details.cld_language);
   lang->set_is_reliable(details.is_cld_reliable);

@@ -19,7 +19,7 @@ TEST(LanguageDetectionLoggingHelperTest, ConstructUserEventSpecifics) {
   details.is_cld_reliable = false;
   details.adopted_language = "ja";
   // Expected language detection.
-  sync_pb::LanguageDetection lang_detection;
+  sync_pb::UserEventSpecifics::LanguageDetection lang_detection;
   auto* const lang = lang_detection.add_detected_languages();
   lang->set_language_code(details.cld_language);
   lang->set_is_reliable(details.is_cld_reliable);
@@ -41,7 +41,7 @@ TEST(LanguageDetectionLoggingHelperTest, DontSetAdoptedLanguage) {
   details.is_cld_reliable = true;
   details.adopted_language = "en";
   // Expected language detection.
-  sync_pb::LanguageDetection lang_detection;
+  sync_pb::UserEventSpecifics::LanguageDetection lang_detection;
   auto* const lang = lang_detection.add_detected_languages();
   lang->set_language_code(details.cld_language);
   lang->set_is_reliable(details.is_cld_reliable);

@@ -9,6 +9,8 @@
 #include "components/metrics/proto/translate_event.pb.h"
 #include "components/sync/protocol/user_event_specifics.pb.h"
 
+using Translation = sync_pb::UserEventSpecifics::Translation;
+
 namespace translate {
 namespace {
 using metrics::TranslateEventProto;
@@ -27,7 +29,7 @@ bool ConstructTranslateEvent(const int64_t navigation_id,
   translation->set_to_language_code(translate_event.target_language());
   switch (translate_event.event_type()) {
     case TranslateEventProto::UNKNOWN:
-      translation->set_interaction(sync_pb::Translation::UNKNOWN);
+      translation->set_interaction(Translation::UNKNOWN);
       break;
     case TranslateEventProto::USER_ACCEPT:
       if (translate_event.has_modified_source_language() ||
@@ -43,30 +45,28 @@ bool ConstructTranslateEvent(const int64_t navigation_id,
           translation->set_to_language_code(
               translate_event.modified_target_language());
         }
-        translation->set_interaction(sync_pb::Translation::MANUAL);
+        translation->set_interaction(Translation::MANUAL);
       } else {
-        translation->set_interaction(sync_pb::Translation::ACCEPT);
+        translation->set_interaction(Translation::ACCEPT);
       }
       break;
     case TranslateEventProto::USER_DECLINE:
-      translation->set_interaction(sync_pb::Translation::DECLINE);
+      translation->set_interaction(Translation::DECLINE);
       break;
     case TranslateEventProto::USER_IGNORE:
-      translation->set_interaction(sync_pb::Translation::IGNORED);
+      translation->set_interaction(Translation::IGNORED);
       break;
     case TranslateEventProto::USER_DISMISS:
-      translation->set_interaction(sync_pb::Translation::DISMISSED);
+      translation->set_interaction(Translation::DISMISSED);
       break;
     case TranslateEventProto::USER_REVERT:
-      translation->set_interaction(sync_pb::Translation::TRANSLATION_REVERTED);
+      translation->set_interaction(Translation::TRANSLATION_REVERTED);
       break;
     case TranslateEventProto::AUTO_TRANSLATION_BY_PREF:
-      translation->set_interaction(
-          sync_pb::Translation::AUTO_TRANSLATION_BY_PREF);
+      translation->set_interaction(Translation::AUTO_TRANSLATION_BY_PREF);
       break;
     case TranslateEventProto::AUTO_TRANSLATION_BY_LINK:
-      translation->set_interaction(
-          sync_pb::Translation::AUTO_TRANSLATION_BY_LINK);
+      translation->set_interaction(Translation::AUTO_TRANSLATION_BY_LINK);
       break;
     default:  // We don't care about other events.
       return false;
