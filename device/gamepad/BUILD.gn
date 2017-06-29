@@ -72,10 +72,12 @@ component("gamepad") {
     cflags = [ "/wd4267" ]  # conversion from 'size_t' (64 bit) to 'type'(32 bit).
   }
 
-  if (is_linux && use_udev) {
-    deps += [ "//device/udev_linux" ]
-  } else if (!is_win && !is_mac && !is_android) {
-    sources -= [ "gamepad_platform_data_fetcher_linux.cc" ]
+  if (is_linux) {
+    if (use_udev) {
+      deps += [ "//device/udev_linux" ]
+    } else {
+      sources -= [ "gamepad_platform_data_fetcher_linux.cc" ]
+    }
   }
 
   if (is_android) {
