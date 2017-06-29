@@ -333,14 +333,42 @@ promise_test(t => {
           return wait_for_state(t, registration.installing, 'activated');
         })
       .then(() => { return openWindow(kScope); })
-      .then(newWindow => {
-          win = newWindow;
+      .then(new_window => {
+          win = new_window;
           return observeUseCounter(win, kFetchEventIsReload);
         })
       .then(() => {
           assert_true(isUseCounted(win, kFetchEventIsReload));
         });
   }, 'FetchEvent.isReload is counted');
+
+promise_test(t => {
+    const kServiceWorkerFrameType = 2033;  // from WebFeature.h
+    const kUrl = 'resources/feature-worker.js';
+    const kScope = 'resources/usecounter-window.html?frameType';
+    let worker;
+    let win;
+    return service_worker_unregister_and_register(t, kUrl, kScope)
+      .then(registration => {
+          add_result_callback(() => {
+              if (win) {
+                win.close();
+              }
+              registration.unregister();
+            });
+          worker = registration.installing;
+          return wait_for_state(t, worker, 'activated');
+        })
+      .then(() => { return openWindow(kScope); })
+      .then(new_window => {
+          win = new_window;
+          worker.postMessage('use-frameType');
+          return observeUseCounter(win, kServiceWorkerFrameType);
+        })
+      .then(() => {
+          assert_true(isUseCounted(win, kServiceWorkerFrameType));
+        });
+  }, 'Client.frameType is counted');
 
 // TODO(nhiroki): Test a case where ServiceWorker controls SharedWorker that is
 // connected from multiple windows. In such a case, API use on ServiceWorker
