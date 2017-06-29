@@ -16,7 +16,7 @@ constexpr base::TimeDelta kMinimumElapsedWatchTime =
     base::TimeDelta::FromSeconds(limits::kMinimumElapsedWatchTimeSecs);
 
 // The minimum width and height of videos to report watch time metrics for.
-constexpr gfx::Size kMinimumVideoSize = gfx::Size(200, 200);
+constexpr gfx::Size kMinimumVideoSize = gfx::Size(200, 140);
 
 static bool IsOnBatteryPower() {
   if (base::PowerMonitor* pm = base::PowerMonitor::Get())
