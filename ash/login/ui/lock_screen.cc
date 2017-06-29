@@ -67,8 +67,7 @@ void LockScreen::Show() {
   window->set_data_dispatcher(std::move(data_dispatcher));
   window->Show();
 
-  // TODO(jdufault): Use correct blur amount.
-  window->GetLayer()->SetBackgroundBlur(20);
+  instance_->ToggleBlur();
 }
 
 void LockScreen::Destroy() {
@@ -76,6 +75,15 @@ void LockScreen::Destroy() {
   window_->Close();
   delete instance_;
   instance_ = nullptr;
+}
+
+void LockScreen::ToggleBlur() {
+  if (instance_->window_->GetLayer()->background_blur() == 0) {
+    // TODO(jdufault): Use correct blur amount.
+    instance_->window_->GetLayer()->SetBackgroundBlur(20);
+  } else {
+    instance_->window_->GetLayer()->SetBackgroundBlur(0);
+  }
 }
 
 void LockScreen::SetPinEnabledForUser(const AccountId& account_id,

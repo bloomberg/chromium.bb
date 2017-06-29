@@ -27,6 +27,9 @@ class LockScreen {
   // Destroys an existing lock screen instance.
   void Destroy();
 
+  // Enables/disables background blur.
+  void ToggleBlur();
+
   // Enable or disable PIN for the given user.
   void SetPinEnabledForUser(const AccountId& account_id, bool is_enabled);
 
