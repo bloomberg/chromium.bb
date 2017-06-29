@@ -142,6 +142,58 @@ FAIL link.referrerPolicy: IDL set to "strict-origin-when-cross-origin" assert_eq
 PASS link.referrerPolicy: 3 tests
 FAIL link.referrerPolicy: IDL set to "STRICT-ORIGIN-WHEN-CROSS-ORIGIN" assert_equals: IDL get expected "strict-origin-when-cross-origin" but got ""
 PASS link.referrerPolicy: 5 tests
+FAIL link.workerType: typeof IDL attribute assert_equals: expected "string" but got "undefined"
+FAIL link.workerType: IDL get with DOM attribute unset assert_equals: expected (string) "classic" but got (undefined) undefined
+FAIL link.workerType: setAttribute() to "" assert_equals: IDL get expected (string) "" but got (undefined) undefined
+FAIL link.workerType: setAttribute() to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " assert_equals: IDL get expected (string) "" but got (undefined) undefined
+FAIL link.workerType: setAttribute() to undefined assert_equals: IDL get expected (string) "" but got (undefined) undefined
+FAIL link.workerType: setAttribute() to 7 assert_equals: IDL get expected (string) "" but got (undefined) undefined
+FAIL link.workerType: setAttribute() to 1.5 assert_equals: IDL get expected (string) "" but got (undefined) undefined
+FAIL link.workerType: setAttribute() to true assert_equals: IDL get expected (string) "" but got (undefined) undefined
+FAIL link.workerType: setAttribute() to false assert_equals: IDL get expected (string) "" but got (undefined) undefined
+FAIL link.workerType: setAttribute() to object "[object Object]" assert_equals: IDL get expected (string) "" but got (undefined) undefined
+FAIL link.workerType: setAttribute() to NaN assert_equals: IDL get expected (string) "" but got (undefined) undefined
+FAIL link.workerType: setAttribute() to Infinity assert_equals: IDL get expected (string) "" but got (undefined) undefined
+FAIL link.workerType: setAttribute() to -Infinity assert_equals: IDL get expected (string) "" but got (undefined) undefined
+FAIL link.workerType: setAttribute() to "\0" assert_equals: IDL get expected (string) "" but got (undefined) undefined
+FAIL link.workerType: setAttribute() to null assert_equals: IDL get expected (string) "" but got (undefined) undefined
+FAIL link.workerType: setAttribute() to object "test-toString" assert_equals: IDL get expected (string) "" but got (undefined) undefined
+FAIL link.workerType: setAttribute() to object "test-valueOf" assert_equals: IDL get expected (string) "" but got (undefined) undefined
+FAIL link.workerType: setAttribute() to "classic" assert_equals: IDL get expected (string) "classic" but got (undefined) undefined
+FAIL link.workerType: setAttribute() to "xclassic" assert_equals: IDL get expected (string) "" but got (undefined) undefined
+FAIL link.workerType: setAttribute() to "classic\0" assert_equals: IDL get expected (string) "" but got (undefined) undefined
+FAIL link.workerType: setAttribute() to "lassic" assert_equals: IDL get expected (string) "" but got (undefined) undefined
+FAIL link.workerType: setAttribute() to "CLASSIC" assert_equals: IDL get expected (string) "classic" but got (undefined) undefined
+FAIL link.workerType: setAttribute() to "module" assert_equals: IDL get expected (string) "module" but got (undefined) undefined
+FAIL link.workerType: setAttribute() to "xmodule" assert_equals: IDL get expected (string) "" but got (undefined) undefined
+FAIL link.workerType: setAttribute() to "module\0" assert_equals: IDL get expected (string) "" but got (undefined) undefined
+FAIL link.workerType: setAttribute() to "odule" assert_equals: IDL get expected (string) "" but got (undefined) undefined
+FAIL link.workerType: setAttribute() to "MODULE" assert_equals: IDL get expected (string) "module" but got (undefined) undefined
+FAIL link.workerType: IDL set to "" assert_equals: getAttribute() expected "" but got "MODULE"
+FAIL link.workerType: IDL set to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " assert_equals: getAttribute() expected " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " but got "MODULE"
+FAIL link.workerType: IDL set to undefined assert_equals: getAttribute() expected "undefined" but got "MODULE"
+FAIL link.workerType: IDL set to 7 assert_equals: getAttribute() expected "7" but got "MODULE"
+FAIL link.workerType: IDL set to 1.5 assert_equals: getAttribute() expected "1.5" but got "MODULE"
+FAIL link.workerType: IDL set to true assert_equals: getAttribute() expected "true" but got "MODULE"
+FAIL link.workerType: IDL set to false assert_equals: getAttribute() expected "false" but got "MODULE"
+FAIL link.workerType: IDL set to object "[object Object]" assert_equals: getAttribute() expected "[object Object]" but got "MODULE"
+FAIL link.workerType: IDL set to NaN assert_equals: getAttribute() expected "NaN" but got "MODULE"
+FAIL link.workerType: IDL set to Infinity assert_equals: getAttribute() expected "Infinity" but got "MODULE"
+FAIL link.workerType: IDL set to -Infinity assert_equals: getAttribute() expected "-Infinity" but got "MODULE"
+FAIL link.workerType: IDL set to "\0" assert_equals: getAttribute() expected "\0" but got "MODULE"
+FAIL link.workerType: IDL set to null assert_equals: IDL get expected (string) "" but got (object) null
+FAIL link.workerType: IDL set to object "test-toString" assert_equals: getAttribute() expected "test-toString" but got "MODULE"
+FAIL link.workerType: IDL set to object "test-valueOf" assert_equals: getAttribute() expected "test-valueOf" but got "MODULE"
+FAIL link.workerType: IDL set to "classic" assert_equals: getAttribute() expected "classic" but got "MODULE"
+FAIL link.workerType: IDL set to "xclassic" assert_equals: getAttribute() expected "xclassic" but got "MODULE"
+FAIL link.workerType: IDL set to "classic\0" assert_equals: getAttribute() expected "classic\0" but got "MODULE"
+FAIL link.workerType: IDL set to "lassic" assert_equals: getAttribute() expected "lassic" but got "MODULE"
+FAIL link.workerType: IDL set to "CLASSIC" assert_equals: getAttribute() expected "CLASSIC" but got "MODULE"
+FAIL link.workerType: IDL set to "module" assert_equals: getAttribute() expected "module" but got "MODULE"
+FAIL link.workerType: IDL set to "xmodule" assert_equals: getAttribute() expected "xmodule" but got "MODULE"
+FAIL link.workerType: IDL set to "module\0" assert_equals: getAttribute() expected "module\0" but got "MODULE"
+FAIL link.workerType: IDL set to "odule" assert_equals: getAttribute() expected "odule" but got "MODULE"
+FAIL link.workerType: IDL set to "MODULE" assert_equals: IDL get expected "module" but got "MODULE"
 PASS link.charset: 32 tests
 PASS link.rev: 32 tests
 PASS link.target: 32 tests

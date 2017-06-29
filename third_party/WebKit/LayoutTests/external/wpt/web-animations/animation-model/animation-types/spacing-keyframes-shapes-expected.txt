@@ -1,9 +1,0 @@
-This is a testharness.js-based test.
-FAIL Test falling back to distribute spacing when using different basic shapes anim.effect.getKeyframes is not a function
-FAIL Test falling back to distribute spacing when using different reference boxes anim.effect.getKeyframes is not a function
-FAIL Test spacing on circle anim.effect.getKeyframes is not a function
-FAIL Test spacing on ellipse anim.effect.getKeyframes is not a function
-FAIL Test spacing on polygon anim.effect.getKeyframes is not a function
-FAIL Test spacing on inset anim.effect.getKeyframes is not a function
-Harness: the test ran to completion.
-
