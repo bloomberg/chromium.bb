@@ -39,7 +39,7 @@ TEST_F(NGInlineLayoutAlgorithmTest, BreakToken) {
   // Perform 1st Layout.
   LayoutNGBlockFlow* block_flow =
       ToLayoutNGBlockFlow(GetLayoutObjectByElementId("container"));
-  NGInlineNode inline_node(block_flow, block_flow->FirstChild());
+  NGInlineNode inline_node(block_flow);
   RefPtr<NGConstraintSpace> constraint_space =
       NGConstraintSpaceBuilder(NGWritingMode::kHorizontalTopBottom)
           .SetAvailableSize({LayoutUnit(50), LayoutUnit(20)})
@@ -96,7 +96,7 @@ TEST_F(NGInlineLayoutAlgorithmTest, MAYBE_VerticalAlignBottomReplaced) {
   )HTML");
   LayoutNGBlockFlow* block_flow =
       ToLayoutNGBlockFlow(GetLayoutObjectByElementId("container"));
-  NGInlineNode inline_node(block_flow, block_flow->FirstChild());
+  NGInlineNode inline_node(block_flow);
   RefPtr<NGConstraintSpace> space =
       NGConstraintSpace::CreateFromLayoutObject(*block_flow);
   RefPtr<NGLayoutResult> layout_result = inline_node.Layout(space.Get());

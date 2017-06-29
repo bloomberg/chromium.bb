@@ -35,9 +35,6 @@ struct CORE_EXPORT NGInlineNodeData {
   // Calling NGInlineNode::NextSibling will trigger this.
   LayoutBox* next_sibling_;
 
-  // start_inline_ must always be reset within the constructor of NGInlineNode.
-  LayoutObject* start_inline_;
-
   unsigned is_bidi_enabled_ : 1;
   unsigned base_direction_ : 1;  // TextDirection
 };

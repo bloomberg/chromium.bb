@@ -20,7 +20,7 @@ class NGLineBreakerTest : public NGBaseLayoutAlgorithmTest {
 
     LayoutNGBlockFlow* block_flow =
         ToLayoutNGBlockFlow(GetLayoutObjectByElementId("container"));
-    return NGInlineNode(block_flow, block_flow->FirstChild());
+    return NGInlineNode(block_flow);
   }
 
   // Break lines using the specified available width.

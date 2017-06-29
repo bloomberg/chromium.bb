@@ -34,7 +34,7 @@ class NGLayoutResult;
 // inline nodes and their descendants.
 class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
  public:
-  NGInlineNode(LayoutNGBlockFlow*, LayoutObject*);
+  NGInlineNode(LayoutNGBlockFlow*);
 
   LayoutBlockFlow* GetLayoutBlockFlow() const {
     return ToLayoutBlockFlow(box_);
@@ -80,10 +80,8 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   void PrepareLayout();
   bool IsPrepareLayoutFinished() const { return !Text().IsNull(); }
 
-  void CollectInlines(LayoutObject* start, LayoutBlockFlow*);
-  LayoutObject* CollectInlines(LayoutObject* start,
-                               LayoutBlockFlow*,
-                               NGInlineItemsBuilder*);
+  void CollectInlines(LayoutBlockFlow*);
+  LayoutObject* CollectInlines(LayoutBlockFlow*, NGInlineItemsBuilder*);
   void SegmentText();
   void ShapeText();
 
