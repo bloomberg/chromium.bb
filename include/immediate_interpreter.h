@@ -435,8 +435,8 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // changed recently.
   bool ZoomFingersAreConsistent(const HardwareStateBuffer& state_buffer) const;
 
-  // Returns true if the finger that is closer to the bottom edge is moving
-  // towards the center.
+  // Returns true if the given finger is moving sufficiently upwards to be
+  // considered the bottom finger of an inward pinch.
   bool InwardPinch(const HardwareStateBuffer& state_buffer,
                    const FingerState& fs) const;
 
@@ -690,8 +690,9 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // Previous value of current_gesture_type_
   GestureType prev_gesture_type_;
 
-  // Cache for distance between fingers at start of pinch gesture
-  float two_finger_start_distance_sq_;
+  // Cache for distance between fingers at previous pinch gesture event, or
+  // start of pinch detection
+  float pinch_prev_distance_sq_;
 
   HardwareStateBuffer state_buffer_;
   ScrollEventBuffer scroll_buffer_;
@@ -699,13 +700,19 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   FingerMetrics* finger_metrics_;
   std::unique_ptr<FingerMetrics> test_finger_metrics_;
 
+  // There are three pinch guess states before locking:
+  //   pinch_guess_start_ == -1: No definite guess made about pinch
+  //   pinch_guess_start_ > 0:
+  //     pinch_guess_ == true:  Guess there is a pinch
+  //     pinch_guess_ == false: Guess there is no pinch
+
   // When guessing a pinch gesture. Do we guess pinch (true) or no-pinch?
   bool pinch_guess_;
   // Time when pinch guess was made. -1 if no guess has been made yet.
   stime_t pinch_guess_start_;
   // True when the pinch decision has been locked.
   bool pinch_locked_;
-  // Pinch status
+  // Pinch status: GESTURES_ZOOM_START, _UPDATE, or _END
   unsigned pinch_status_;
 
   // Keeps track of if there was a finger seen during a physical click
@@ -884,8 +891,9 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   DoubleProperty no_pinch_guess_ratio_;
   // Ratio between finger movement that certainly indicates not-a-pinch gesture
   DoubleProperty no_pinch_certain_ratio_;
-  // Movement [mm] that is considered as noise during pinch detection
-  DoubleProperty pinch_noise_level_;
+  // Sum of squares of movement [mm] that is considered as noise during pinch
+  // detection
+  DoubleProperty pinch_noise_level_sq_;
   // Minimal distance [mm] fingers have to move to indicate a pinch gesture.
   DoubleProperty pinch_guess_min_movement_;
   // Minimal distance [mm] a thumb have to move to do a pinch gesture.
@@ -905,8 +913,15 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // Minimum movement in opposite directions that two fingers must have
   // before we call it a consistent move for pinch.
   DoubleProperty pinch_guess_min_consistent_movement_;
+  // Minimum movement ratio between fingers before we call it a consistent move
+  // for a pinch.
+  DoubleProperty pinch_guess_consistent_mov_ratio_;
   // Minimum number of touch events needed to start a pinch zoom
   IntProperty pinch_zoom_min_events_;
+  // If a pinch is determined quickly we use the original landing position to
+  // determing original pinch width. But if they landed too long ago we use the
+  // pinch width at detection. Inverse of time in seconds.
+  DoubleProperty pinch_initial_scale_time_inv_;
   // Temporary flag to turn pinch on/off while we tune it.
   BoolProperty pinch_enable_;
 
