@@ -339,7 +339,7 @@ void PrivetNotificationService::StartLister() {
   device_lister_.reset(
       new PrivetDeviceListerImpl(service_discovery_client_.get(), this));
   device_lister_->Start();
-  device_lister_->DiscoverNewDevices(false);
+  device_lister_->DiscoverNewDevices();
 
   std::unique_ptr<PrivetHTTPAsynchronousFactory> http_factory(
       PrivetHTTPAsynchronousFactory::CreateInstance(

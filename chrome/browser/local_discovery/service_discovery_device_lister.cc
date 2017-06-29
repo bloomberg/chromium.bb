@@ -40,9 +40,9 @@ void ServiceDiscoveryDeviceLister::Start() {
   CreateServiceWatcher();
 }
 
-void ServiceDiscoveryDeviceLister::DiscoverNewDevices(bool force_update) {
+void ServiceDiscoveryDeviceLister::DiscoverNewDevices() {
   VLOG(1) << "DiscoverNewDevices: service_type: " << service_type_;
-  service_watcher_->DiscoverNewServices(force_update);
+  service_watcher_->DiscoverNewServices();
 }
 
 void ServiceDiscoveryDeviceLister::OnServiceUpdated(

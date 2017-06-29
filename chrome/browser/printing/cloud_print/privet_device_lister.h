@@ -28,7 +28,7 @@ class PrivetDeviceLister {
   // Start the PrivetServiceLister.
   virtual void Start() = 0;
 
-  virtual void DiscoverNewDevices(bool force_update) = 0;
+  virtual void DiscoverNewDevices() = 0;
 };
 
 }  // namespace cloud_print

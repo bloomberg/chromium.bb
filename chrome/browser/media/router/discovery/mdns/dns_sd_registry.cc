@@ -87,11 +87,11 @@ bool DnsSdRegistry::ServiceTypeData::RemoveService(
 }
 
 void DnsSdRegistry::ServiceTypeData::ForceDiscovery() {
-  lister_->Discover(false);
+  lister_->Discover();
 }
 
 bool DnsSdRegistry::ServiceTypeData::ClearServices() {
-  lister_->Discover(false);
+  lister_->Discover();
 
   if (service_list_.empty())
     return false;
@@ -170,7 +170,7 @@ void DnsSdRegistry::RegisterDnsSdListener(const std::string& service_type) {
   std::unique_ptr<DnsSdDeviceLister> dns_sd_device_lister(
       CreateDnsSdDeviceLister(this, service_type,
                               service_discovery_client_.get()));
-  dns_sd_device_lister->Discover(false);
+  dns_sd_device_lister->Discover();
   service_data_map_[service_type] =
       base::MakeUnique<ServiceTypeData>(std::move(dns_sd_device_lister));
   DispatchApiEvent(service_type);

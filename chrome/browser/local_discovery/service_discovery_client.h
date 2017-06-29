@@ -63,7 +63,7 @@ class ServiceWatcher {
   virtual void Start() = 0;
 
   // Probe for services of this type.
-  virtual void DiscoverNewServices(bool force_update) = 0;
+  virtual void DiscoverNewServices() = 0;
 
   virtual void SetActivelyRefreshServices(bool actively_refresh_services) = 0;
 

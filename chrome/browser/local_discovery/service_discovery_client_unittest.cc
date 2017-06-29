@@ -266,7 +266,7 @@ TEST_F(ServiceDiscoveryTest, DiscoverNewServices) {
 
   EXPECT_CALL(socket_factory_, OnSendTo(_)).Times(2);
 
-  watcher->DiscoverNewServices(false);
+  watcher->DiscoverNewServices();
 
   EXPECT_CALL(socket_factory_, OnSendTo(_)).Times(2);
 
@@ -275,7 +275,6 @@ TEST_F(ServiceDiscoveryTest, DiscoverNewServices) {
 
 TEST_F(ServiceDiscoveryTest, ReadCachedServices) {
   socket_factory_.SimulateReceive(kSamplePacketPTR, sizeof(kSamplePacketPTR));
-
   StrictMock<MockServiceWatcherClient> delegate;
 
   std::unique_ptr<ServiceWatcher> watcher(

@@ -43,7 +43,7 @@ PrivetLocalPrinterLister::~PrivetLocalPrinterLister() {
 
 void PrivetLocalPrinterLister::Start() {
   privet_lister_->Start();
-  privet_lister_->DiscoverNewDevices(false);
+  privet_lister_->DiscoverNewDevices();
 }
 
 void PrivetLocalPrinterLister::Stop() {

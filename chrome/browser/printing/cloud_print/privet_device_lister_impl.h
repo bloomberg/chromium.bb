@@ -27,7 +27,7 @@ class PrivetDeviceListerImpl
 
   // PrivetDeviceLister:
   void Start() override;
-  void DiscoverNewDevices(bool force_update) override;
+  void DiscoverNewDevices() override;
 
  protected:
   // ServiceDiscoveryDeviceLister:

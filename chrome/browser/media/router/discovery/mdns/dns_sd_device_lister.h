@@ -28,7 +28,7 @@ class DnsSdDeviceLister
       const std::string& service_type);
   virtual ~DnsSdDeviceLister();
 
-  virtual void Discover(bool force_update);
+  virtual void Discover();
 
  protected:
   void OnDeviceChanged(

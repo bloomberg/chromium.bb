@@ -35,14 +35,14 @@ DnsSdDeviceLister::DnsSdDeviceLister(
 
 DnsSdDeviceLister::~DnsSdDeviceLister() {}
 
-void DnsSdDeviceLister::Discover(bool force_update) {
+void DnsSdDeviceLister::Discover() {
   if (!started_) {
     device_lister_.Start();
     started_ = true;
     VLOG(1) << "Started device lister for service type "
             << device_lister_.service_type();
   }
-  device_lister_.DiscoverNewDevices(force_update);
+  device_lister_.DiscoverNewDevices();
   VLOG(1) << "Discovery new devices for service type "
           << device_lister_.service_type();
 }
@@ -70,7 +70,7 @@ void DnsSdDeviceLister::OnDeviceCacheFlushed() {
   VLOG(1) << "OnDeviceCacheFlushed: "
           << "service_type: " << device_lister_.service_type();
   delegate_->ServicesFlushed(device_lister_.service_type());
-  device_lister_.DiscoverNewDevices(false);
+  device_lister_.DiscoverNewDevices();
 }
 
 }  // namespace media_router

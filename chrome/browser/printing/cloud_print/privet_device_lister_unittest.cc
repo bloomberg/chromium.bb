@@ -50,7 +50,7 @@ class MockServiceWatcher : public ServiceWatcher {
     mock_delegate_->ServiceWatcherStarted(service_type_, this);
   }
 
-  MOCK_METHOD1(DiscoverNewServices, void(bool force_update));
+  MOCK_METHOD0(DiscoverNewServices, void());
 
   MOCK_METHOD1(SetActivelyRefreshServices, void(
       bool actively_refresh_services));
@@ -296,8 +296,8 @@ TEST_F(PrivetDeviceListerTest, DiscoverNewDevices) {
   privet_lister.Start();
   testing::Mock::VerifyAndClear(&mock_delegate_);
 
-  EXPECT_CALL(*service_watcher, DiscoverNewServices(false));
-  privet_lister.DiscoverNewDevices(false);
+  EXPECT_CALL(*service_watcher, DiscoverNewServices());
+  privet_lister.DiscoverNewDevices();
 }
 
 
