@@ -87249,11 +87249,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="WinJumplist.OnFaviconDataAvailableDuration" units="ms">
+  <obsolete>
+    Obsolete 06/22/2017 as it's no longer needed.
+  </obsolete>
   <owner>chengx@chromium.org</owner>
   <summary>Time spent in OnFaviconDataAvailable().</summary>
 </histogram>
 
 <histogram name="WinJumplist.StartLoadingFaviconDuration" units="ms">
+  <obsolete>
+    Obsolete 06/22/2017 as it's no longer needed.
+  </obsolete>
   <owner>chengx@chromium.org</owner>
   <summary>Time spent in StartLoadingFavicon().</summary>
 </histogram>
