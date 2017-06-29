@@ -192,7 +192,7 @@ class ScopedInterfaceEndpointHandle::State
       group_controller_ = std::move(group_controller);
 
       if (!association_event_handler_.is_null()) {
-        if (runner_->RunsTasksOnCurrentThread()) {
+        if (runner_->RunsTasksInCurrentSequence()) {
           handler = std::move(association_event_handler_);
           runner_ = nullptr;
         } else {
@@ -228,7 +228,7 @@ class ScopedInterfaceEndpointHandle::State
       peer_state_ = nullptr;
 
       if (!association_event_handler_.is_null()) {
-        if (runner_->RunsTasksOnCurrentThread()) {
+        if (runner_->RunsTasksInCurrentSequence()) {
           handler = std::move(association_event_handler_);
           runner_ = nullptr;
         } else {

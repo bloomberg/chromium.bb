@@ -145,7 +145,7 @@ class AssociatedInterfaceTest : public testing::Test {
 
   // Okay to call from any thread.
   void QuitRunLoop(base::RunLoop* run_loop) {
-    if (main_runner_->RunsTasksOnCurrentThread()) {
+    if (main_runner_->RunsTasksInCurrentSequence()) {
       run_loop->Quit();
     } else {
       main_runner_->PostTask(
@@ -255,7 +255,7 @@ class TestSender {
   void SetUp(IntegerSenderAssociatedPtrInfo ptr_info,
              TestSender* next_sender,
              int32_t max_value_to_send) {
-    CHECK(task_runner()->RunsTasksOnCurrentThread());
+    CHECK(task_runner()->RunsTasksInCurrentSequence());
 
     ptr_.Bind(std::move(ptr_info));
     next_sender_ = next_sender ? next_sender : this;
@@ -263,7 +263,7 @@ class TestSender {
   }
 
   void Send(int32_t value) {
-    CHECK(task_runner()->RunsTasksOnCurrentThread());
+    CHECK(task_runner()->RunsTasksInCurrentSequence());
 
     if (value > max_value_to_send_)
       return;
@@ -276,7 +276,7 @@ class TestSender {
   }
 
   void TearDown() {
-    CHECK(task_runner()->RunsTasksOnCurrentThread());
+    CHECK(task_runner()->RunsTasksInCurrentSequence());
 
     ptr_.reset();
   }
@@ -301,7 +301,7 @@ class TestReceiver {
              AssociatedInterfaceRequest<IntegerSender> request1,
              size_t expected_calls,
              const base::Closure& notify_finish) {
-    CHECK(task_runner()->RunsTasksOnCurrentThread());
+    CHECK(task_runner()->RunsTasksInCurrentSequence());
 
     impl0_.reset(new IntegerSenderImpl(std::move(request0)));
     impl0_->set_notify_send_method_called(
@@ -315,7 +315,7 @@ class TestReceiver {
   }
 
   void TearDown() {
-    CHECK(task_runner()->RunsTasksOnCurrentThread());
+    CHECK(task_runner()->RunsTasksInCurrentSequence());
 
     impl0_.reset();
     impl1_.reset();

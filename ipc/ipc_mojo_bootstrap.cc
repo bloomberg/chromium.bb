@@ -358,7 +358,7 @@ class ChannelAssociatedGroupController
       controller_->lock_.AssertAcquired();
       DCHECK(!client_);
       DCHECK(!closed_);
-      DCHECK(runner->RunsTasksOnCurrentThread());
+      DCHECK(runner->RunsTasksInCurrentSequence());
 
       task_runner_ = std::move(runner);
       client_ = client;
@@ -367,7 +367,7 @@ class ChannelAssociatedGroupController
     void DetachClient() {
       controller_->lock_.AssertAcquired();
       DCHECK(client_);
-      DCHECK(task_runner_->RunsTasksOnCurrentThread());
+      DCHECK(task_runner_->RunsTasksInCurrentSequence());
       DCHECK(!closed_);
 
       task_runner_ = nullptr;
@@ -401,20 +401,20 @@ class ChannelAssociatedGroupController
 
     // mojo::InterfaceEndpointController:
     bool SendMessage(mojo::Message* message) override {
-      DCHECK(task_runner_->RunsTasksOnCurrentThread());
+      DCHECK(task_runner_->RunsTasksInCurrentSequence());
       message->set_interface_id(id_);
       return controller_->SendMessage(message);
     }
 
     void AllowWokenUpBySyncWatchOnSameThread() override {
-      DCHECK(task_runner_->RunsTasksOnCurrentThread());
+      DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
       EnsureSyncWatcherExists();
       sync_watcher_->AllowWokenUpBySyncWatchOnSameThread();
     }
 
     bool SyncWatch(const bool* should_stop) override {
-      DCHECK(task_runner_->RunsTasksOnCurrentThread());
+      DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
       // It's not legal to make sync calls from the master endpoint's thread,
       // and in fact they must only happen from the proxy task runner.
@@ -437,7 +437,7 @@ class ChannelAssociatedGroupController
     }
 
     void OnSyncMessageEventReady() {
-      DCHECK(task_runner_->RunsTasksOnCurrentThread());
+      DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
       scoped_refptr<Endpoint> keepalive(this);
       scoped_refptr<AssociatedGroupController> controller_keepalive(
@@ -484,7 +484,7 @@ class ChannelAssociatedGroupController
     }
 
     void EnsureSyncWatcherExists() {
-      DCHECK(task_runner_->RunsTasksOnCurrentThread());
+      DCHECK(task_runner_->RunsTasksInCurrentSequence());
       if (sync_watcher_)
         return;
 
@@ -627,7 +627,7 @@ class ChannelAssociatedGroupController
   void NotifyEndpointOfError(Endpoint* endpoint, bool force_async) {
     lock_.AssertAcquired();
     DCHECK(endpoint->task_runner() && endpoint->client());
-    if (endpoint->task_runner()->RunsTasksOnCurrentThread() && !force_async) {
+    if (endpoint->task_runner()->RunsTasksInCurrentSequence() && !force_async) {
       mojo::InterfaceEndpointClient* client = endpoint->client();
       base::Optional<mojo::DisconnectReason> reason(
           endpoint->disconnect_reason());
@@ -652,7 +652,7 @@ class ChannelAssociatedGroupController
     if (!endpoint->client())
       return;
 
-    DCHECK(endpoint->task_runner()->RunsTasksOnCurrentThread());
+    DCHECK(endpoint->task_runner()->RunsTasksInCurrentSequence());
     NotifyEndpointOfError(endpoint, false /* force_async */);
   }
 
@@ -710,7 +710,7 @@ class ChannelAssociatedGroupController
       return true;
 
     mojo::InterfaceEndpointClient* client = endpoint->client();
-    if (!client || !endpoint->task_runner()->RunsTasksOnCurrentThread()) {
+    if (!client || !endpoint->task_runner()->RunsTasksInCurrentSequence()) {
       // No client has been bound yet or the client runs tasks on another
       // thread. We assume the other thread must always be the one on which
       // |proxy_task_runner_| runs tasks, since that's the only valid scenario.
@@ -766,7 +766,7 @@ class ChannelAssociatedGroupController
     if (!client)
       return;
 
-    DCHECK(endpoint->task_runner()->RunsTasksOnCurrentThread());
+    DCHECK(endpoint->task_runner()->RunsTasksInCurrentSequence());
 
     // Sync messages should never make their way to this method.
     DCHECK(!message.has_flag(mojo::Message::kFlagIsSync));
@@ -795,7 +795,7 @@ class ChannelAssociatedGroupController
     if (!client)
       return;
 
-    DCHECK(endpoint->task_runner()->RunsTasksOnCurrentThread());
+    DCHECK(endpoint->task_runner()->RunsTasksInCurrentSequence());
     MessageWrapper message_wrapper = endpoint->PopSyncMessage(message_id);
 
     // The message must have already been dequeued by the endpoint waking up
