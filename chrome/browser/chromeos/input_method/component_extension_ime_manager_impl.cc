@@ -15,6 +15,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -22,7 +23,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/browser_resources.h"
-#include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_pref_value_map.h"
 #include "extensions/browser/extension_pref_value_map_factory.h"
 #include "extensions/browser/extension_system.h"
@@ -148,13 +148,10 @@ void ComponentExtensionIMEManagerImpl::Load(Profile* profile,
   // and InputMethodEngine creation, so that the virtual keyboard web content
   // url won't be override by IME component extensions.
   base::FilePath* copied_file_path = new base::FilePath(file_path);
-  content::BrowserThread::PostTaskAndReplyWithResult(
-      content::BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&CheckFilePath,
-                 base::Unretained(copied_file_path)),
-      base::Bind(&OnFilePathChecked,
-                 base::Unretained(profile),
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      base::Bind(&CheckFilePath, base::Unretained(copied_file_path)),
+      base::Bind(&OnFilePathChecked, base::Unretained(profile),
                  base::Owned(new std::string(extension_id)),
                  base::Owned(new std::string(manifest)),
                  base::Owned(copied_file_path)));
