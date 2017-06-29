@@ -131,20 +131,27 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
   std::unique_ptr<WebStateListObserverBridge> _webStateListObserver;
 
   // What's new promo.
-  std::unique_ptr<NotificationPromoWhatsNew> _notification_promo;
+  std::unique_ptr<NotificationPromoWhatsNew> _notificationPromo;
 
   // Used to cancel tasks for the LargeIconService.
   base::CancelableTaskTracker _cancelable_task_tracker;
+
+  // Consumer to handle google landing update notifications.
+  base::WeakNSProtocol<id<GoogleLandingConsumer>> _consumer;
+
+  // Dispatcher for this mediator.
+  base::WeakNSProtocol<id<ChromeExecuteCommand, UrlLoader>> _dispatcher;
 }
 
 // Consumer to handle google landing update notifications.
-@property(nonatomic) id<GoogleLandingConsumer> consumer;
+@property(nonatomic, assign, readonly) id<GoogleLandingConsumer> consumer;
 
 // The WebStateList that is being observed by this mediator.
-@property(nonatomic, assign) WebStateList* webStateList;
+@property(nonatomic, assign, readonly) WebStateList* webStateList;
 
 // The dispatcher for this mediator.
-@property(nonatomic, assign) id<ChromeExecuteCommand, UrlLoader> dispatcher;
+@property(nonatomic, assign, readonly) id<ChromeExecuteCommand, UrlLoader>
+    dispatcher;
 
 // Perform initial setup.
 - (void)setUp;
@@ -153,8 +160,6 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 
 @implementation GoogleLandingMediator
 
-@synthesize consumer = _consumer;
-@synthesize dispatcher = _dispatcher;
 @synthesize webStateList = _webStateList;
 
 - (instancetype)initWithConsumer:(id<GoogleLandingConsumer>)consumer
@@ -163,9 +168,9 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
                     webStateList:(WebStateList*)webStateList {
   self = [super init];
   if (self) {
-    _consumer = consumer;
+    _consumer.reset(consumer);
     _browserState = browserState;
-    _dispatcher = dispatcher;
+    _dispatcher.reset(dispatcher);
     _webStateList = webStateList;
 
     _webStateListObserver = base::MakeUnique<WebStateListObserverBridge>(self);
@@ -179,20 +184,21 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 - (void)shutdown {
   _webStateList->RemoveObserver(_webStateListObserver.get());
   [[NSNotificationCenter defaultCenter] removeObserver:self.consumer];
+  _observer.reset();
 }
 
 - (void)setUp {
-  [_consumer setVoiceSearchIsEnabled:ios::GetChromeBrowserProvider()
-                                         ->GetVoiceSearchProvider()
-                                         ->IsVoiceSearchEnabled()];
-  [_consumer
+  [self.consumer setVoiceSearchIsEnabled:ios::GetChromeBrowserProvider()
+                                             ->GetVoiceSearchProvider()
+                                             ->IsVoiceSearchEnabled()];
+  [self.consumer
       setMaximumMostVisitedSitesShown:[GoogleLandingMediator maxSitesShown]];
-  [_consumer setTabCount:self.webStateList->count()];
+  [self.consumer setTabCount:self.webStateList->count()];
   web::WebState* webState = _webStateList->GetActiveWebState();
   if (webState) {
     web::NavigationManager* nav = webState->GetNavigationManager();
-    [_consumer setCanGoForward:nav->CanGoForward()];
-    [_consumer setCanGoBack:nav->CanGoBack()];
+    [self.consumer setCanGoForward:nav->CanGoForward()];
+    [self.consumer setCanGoBack:nav->CanGoBack()];
   }
 
   // Set up template URL service to listen for default search engine changes.
@@ -203,7 +209,7 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
   _templateURLService->Load();
   _doodleController.reset(ios::GetChromeBrowserProvider()->CreateLogoVendor(
       _browserState, self.dispatcher));
-  [_consumer setLogoVendor:_doodleController];
+  [self.consumer setLogoVendor:_doodleController];
   [self updateShowLogo];
 
   // Set up most visited sites.  This call may have the side effect of
@@ -219,24 +225,24 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
   // Set up notifications;
   NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
   [defaultCenter
-      addObserver:_consumer
+      addObserver:self.consumer
          selector:@selector(locationBarBecomesFirstResponder)
              name:ios_internal::kLocationBarBecomesFirstResponderNotification
            object:nil];
   [defaultCenter
-      addObserver:_consumer
+      addObserver:self.consumer
          selector:@selector(locationBarResignsFirstResponder)
              name:ios_internal::kLocationBarResignsFirstResponderNotification
            object:nil];
 
   // Set up what's new.
-  _notification_promo.reset(
+  _notificationPromo.reset(
       new NotificationPromoWhatsNew(GetApplicationContext()->GetLocalState()));
-  _notification_promo->Init();
-  [_consumer setPromoText:[base::SysUTF8ToNSString(
-                              _notification_promo->promo_text()) copy]];
-  [_consumer setPromoIcon:_notification_promo->icon()];
-  [_consumer setPromoCanShow:_notification_promo->CanShow()];
+  _notificationPromo->Init();
+  [self.consumer setPromoText:[base::SysUTF8ToNSString(
+                                  _notificationPromo->promo_text()) copy]];
+  [self.consumer setPromoIcon:_notificationPromo->icon()];
+  [self.consumer setPromoCanShow:_notificationPromo->CanShow()];
 }
 
 - (void)updateShowLogo {
@@ -414,28 +420,28 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 }
 
 - (void)promoViewed {
-  DCHECK(_notification_promo);
-  _notification_promo->HandleViewed();
-  [self.consumer setPromoCanShow:_notification_promo->CanShow()];
+  DCHECK(_notificationPromo);
+  _notificationPromo->HandleViewed();
+  [self.consumer setPromoCanShow:_notificationPromo->CanShow()];
 }
 
 - (void)promoTapped {
-  DCHECK(_notification_promo);
-  _notification_promo->HandleClosed();
-  [self.consumer setPromoCanShow:_notification_promo->CanShow()];
+  DCHECK(_notificationPromo);
+  _notificationPromo->HandleClosed();
+  [self.consumer setPromoCanShow:_notificationPromo->CanShow()];
 
-  if (_notification_promo->IsURLPromo()) {
-    [self.dispatcher webPageOrderedOpen:_notification_promo->url()
+  if (_notificationPromo->IsURLPromo()) {
+    [self.dispatcher webPageOrderedOpen:_notificationPromo->url()
                                referrer:web::Referrer()
                            inBackground:NO
                                appendTo:kCurrentTab];
     return;
   }
 
-  if (_notification_promo->IsChromeCommand()) {
+  if (_notificationPromo->IsChromeCommand()) {
     base::scoped_nsobject<GenericChromeCommand> command(
         [[GenericChromeCommand alloc]
-            initWithTag:_notification_promo->command_id()]);
+            initWithTag:_notificationPromo->command_id()]);
     [self.dispatcher chromeExecuteCommand:command];
     return;
   }
@@ -466,6 +472,16 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
       break;
     }
   }
+}
+
+#pragma mark - Properties
+
+- (id<GoogleLandingConsumer>)consumer {
+  return _consumer.get();
+}
+
+- (id<ChromeExecuteCommand, UrlLoader>)dispatcher {
+  return _dispatcher.get();
 }
 
 @end
