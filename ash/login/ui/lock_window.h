@@ -18,11 +18,13 @@ class Widget;
 
 namespace ash {
 
+enum class Config;
+
 // Shows the widget for the lock screen.
 class ASH_EXPORT LockWindow : public views::Widget,
                               public views::WidgetDelegate {
  public:
-  LockWindow();
+  explicit LockWindow(ash::Config config);
   ~LockWindow() override;
 
   LoginDataDispatcher* data_dispatcher() const {
