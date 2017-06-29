@@ -283,10 +283,19 @@ void ExternalBeginFrameSource::AddObserver(BeginFrameObserver* obs) {
     client_->OnNeedsBeginFrames(true);
 
   // Send a MISSED begin frame if necessary.
-  BeginFrameArgs missed_args = GetMissedBeginFrameArgs(obs);
-  if (missed_args.IsValid()) {
-    DCHECK_EQ(BeginFrameArgs::MISSED, missed_args.type);
-    obs->OnBeginFrame(missed_args);
+  if (last_begin_frame_args_.IsValid()) {
+    const BeginFrameArgs& last_args = obs->LastUsedBeginFrameArgs();
+    if (!last_args.IsValid() ||
+        (last_begin_frame_args_.frame_time > last_args.frame_time)) {
+      DCHECK(
+          (last_begin_frame_args_.source_id != last_args.source_id) ||
+          (last_begin_frame_args_.sequence_number > last_args.sequence_number))
+          << "current " << last_begin_frame_args_.AsValue()->ToString()
+          << ", last " << last_args.AsValue()->ToString();
+      BeginFrameArgs missed_args = last_begin_frame_args_;
+      missed_args.type = BeginFrameArgs::MISSED;
+      obs->OnBeginFrame(missed_args);
+    }
   }
 }
 
@@ -295,8 +304,10 @@ void ExternalBeginFrameSource::RemoveObserver(BeginFrameObserver* obs) {
   DCHECK(observers_.find(obs) != observers_.end());
 
   observers_.erase(obs);
-  if (observers_.empty())
+  if (observers_.empty()) {
+    last_begin_frame_args_ = BeginFrameArgs();
     client_->OnNeedsBeginFrames(false);
+  }
 }
 
 bool ExternalBeginFrameSource::IsThrottled() const {
@@ -328,26 +339,6 @@ void ExternalBeginFrameSource::OnBeginFrame(const BeginFrameArgs& args) {
       obs->OnBeginFrame(args);
     }
   }
-}
-
-BeginFrameArgs ExternalBeginFrameSource::GetMissedBeginFrameArgs(
-    BeginFrameObserver* obs) {
-  if (!last_begin_frame_args_.IsValid())
-    return BeginFrameArgs();
-
-  const BeginFrameArgs& last_args = obs->LastUsedBeginFrameArgs();
-  if (last_args.IsValid() &&
-      last_begin_frame_args_.frame_time <= last_args.frame_time) {
-    return BeginFrameArgs();
-  }
-
-  DCHECK((last_begin_frame_args_.source_id != last_args.source_id) ||
-         (last_begin_frame_args_.sequence_number > last_args.sequence_number))
-      << "current " << last_begin_frame_args_.AsValue()->ToString() << ", last "
-      << last_args.AsValue()->ToString();
-  BeginFrameArgs missed_args = last_begin_frame_args_;
-  missed_args.type = BeginFrameArgs::MISSED;
-  return missed_args;
 }
 
 }  // namespace cc
