@@ -25522,6 +25522,13 @@ from previous Chrome versions.
   <int value="8" label="chrome"/>
   <int value="9" label="blob"/>
   <int value="10" label="filesystem"/>
+  <int value="11" label="chrome-native"/>
+  <int value="12" label="chrome-search"/>
+  <int value="13" label="chrome-distiller"/>
+  <int value="14" label="chrome-devtools"/>
+  <int value="15" label="chrome-extension"/>
+  <int value="16" label="view-source"/>
+  <int value="17" label="externalfile"/>
 </enum>
 
 <enum name="NavigationWasServedFromCache">
