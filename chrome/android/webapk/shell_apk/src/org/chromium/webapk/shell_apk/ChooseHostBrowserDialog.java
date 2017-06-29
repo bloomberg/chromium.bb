@@ -81,10 +81,10 @@ public class ChooseHostBrowserDialog {
      * @param context The current Context.
      * @param listener The listener for the dialog.
      * @param infos The list of ResolvedInfos of the browsers that are shown on the dialog.
-     * @param url URL of the WebAPK for which the dialog is shown.
+     * @param appName The name of the WebAPK for which the dialog is shown.
      */
-    public static void show(
-            Context context, final DialogListener listener, List<ResolveInfo> infos, String url) {
+    public static void show(Context context, final DialogListener listener, List<ResolveInfo> infos,
+            String appName) {
         final List<BrowserItem> browserItems =
                 getBrowserInfosForHostBrowserSelection(context.getPackageManager(), infos);
 
@@ -94,13 +94,13 @@ public class ChooseHostBrowserDialog {
         View view = LayoutInflater.from(context).inflate(R.layout.choose_host_browser_dialog, null);
         TextView desc = (TextView) view.findViewById(R.id.desc);
         ListView browserList = (ListView) view.findViewById(R.id.browser_list);
-        desc.setText(context.getString(R.string.choose_host_browser, url));
-        browserList.setAdapter(new BrowserArrayAdapter(context, browserItems, url));
+        desc.setText(R.string.choose_host_browser);
+        browserList.setAdapter(new BrowserArrayAdapter(context, browserItems));
 
         // The context theme wrapper is needed for pre-L.
         AlertDialog.Builder builder = new AlertDialog.Builder(
                 new ContextThemeWrapper(context, android.R.style.Theme_DeviceDefault_Light_Dialog));
-        builder.setTitle(context.getString(R.string.choose_host_browser_dialog_title, url))
+        builder.setTitle(context.getString(R.string.choose_host_browser_dialog_title, appName))
                 .setView(view)
                 .setNegativeButton(R.string.choose_host_browser_dialog_quit,
                         new DialogInterface.OnClickListener() {
@@ -156,13 +156,11 @@ public class ChooseHostBrowserDialog {
     private static class BrowserArrayAdapter extends ArrayAdapter<BrowserItem> {
         private List<BrowserItem> mBrowsers;
         private Context mContext;
-        private String mUrl;
 
-        public BrowserArrayAdapter(Context context, List<BrowserItem> browsers, String url) {
+        public BrowserArrayAdapter(Context context, List<BrowserItem> browsers) {
             super(context, R.layout.host_browser_list_item, browsers);
             mContext = context;
             mBrowsers = browsers;
-            mUrl = url;
         }
 
         @Override
@@ -182,7 +180,7 @@ public class ChooseHostBrowserDialog {
                 name.setTextColor(Color.BLACK);
             } else {
                 name.setText(mContext.getString(R.string.host_browser_item_not_supporting_webapks,
-                        item.getApplicationName(), mUrl));
+                        item.getApplicationName()));
                 name.setSingleLine(false);
                 name.setTextColor(Color.LTGRAY);
             }
