@@ -490,6 +490,12 @@ void CacheStorageCache::BatchDidGetUsageAndQuota(
       &CacheStorageCache::BatchDidOneOperation, weak_ptr_factory_.GetWeakPtr(),
       barrier_closure, callback_copy);
 
+  // Operations may synchronously invoke |callback| which could release the
+  // last reference to this instance. Hold a handle for the duration of this
+  // loop. (Asynchronous tasks scheduled by the operations use weak ptrs which
+  // will no-op automatically.)
+  std::unique_ptr<CacheStorageCacheHandle> handle = CreateCacheHandle();
+
   for (const auto& operation : operations) {
     switch (operation.operation_type) {
       case CACHE_STORAGE_CACHE_OPERATION_TYPE_PUT:
