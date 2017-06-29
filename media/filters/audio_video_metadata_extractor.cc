@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/base/audio_video_metadata_extractor.h"
+#include "media/filters/audio_video_metadata_extractor.h"
 
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
@@ -21,7 +21,8 @@ void OnError(bool* succeeded) {
 }
 
 // Returns true if the |tag| matches |expected_key|.
-bool ExtractString(AVDictionaryEntry* tag, const char* expected_key,
+bool ExtractString(AVDictionaryEntry* tag,
+                   const char* expected_key,
                    std::string* destination) {
   if (!base::LowerCaseEqualsASCII(std::string(tag->key), expected_key))
     return false;
@@ -33,7 +34,8 @@ bool ExtractString(AVDictionaryEntry* tag, const char* expected_key,
 }
 
 // Returns true if the |tag| matches |expected_key|.
-bool ExtractInt(AVDictionaryEntry* tag, const char* expected_key,
+bool ExtractInt(AVDictionaryEntry* tag,
+                const char* expected_key,
                 int* destination) {
   if (!base::LowerCaseEqualsASCII(std::string(tag->key), expected_key))
     return false;
@@ -66,11 +68,9 @@ AudioVideoMetadataExtractor::AudioVideoMetadataExtractor()
       height_(-1),
       disc_(-1),
       rotation_(-1),
-      track_(-1) {
-}
+      track_(-1) {}
 
-AudioVideoMetadataExtractor::~AudioVideoMetadataExtractor() {
-}
+AudioVideoMetadataExtractor::~AudioVideoMetadataExtractor() {}
 
 bool AudioVideoMetadataExtractor::Extract(DataSource* source,
                                           bool extract_attached_images) {
@@ -234,8 +234,8 @@ AudioVideoMetadataExtractor::attached_images_bytes() const {
   return attached_images_bytes_;
 }
 
-void AudioVideoMetadataExtractor::ExtractDictionary(
-    AVDictionary* metadata, TagDictionary* raw_tags) {
+void AudioVideoMetadataExtractor::ExtractDictionary(AVDictionary* metadata,
+                                                    TagDictionary* raw_tags) {
   if (!metadata)
     return;
 
@@ -245,19 +245,32 @@ void AudioVideoMetadataExtractor::ExtractDictionary(
     if (raw_tags->find(tag->key) == raw_tags->end())
       (*raw_tags)[tag->key] = tag->value;
 
-    if (ExtractInt(tag, "rotate", &rotation_)) continue;
-    if (ExtractString(tag, "album", &album_)) continue;
-    if (ExtractString(tag, "artist", &artist_)) continue;
-    if (ExtractString(tag, "comment", &comment_)) continue;
-    if (ExtractString(tag, "copyright", &copyright_)) continue;
-    if (ExtractString(tag, "date", &date_)) continue;
-    if (ExtractInt(tag, "disc", &disc_)) continue;
-    if (ExtractString(tag, "encoder", &encoder_)) continue;
-    if (ExtractString(tag, "encoded_by", &encoded_by_)) continue;
-    if (ExtractString(tag, "genre", &genre_)) continue;
-    if (ExtractString(tag, "language", &language_)) continue;
-    if (ExtractString(tag, "title", &title_)) continue;
-    if (ExtractInt(tag, "track", &track_)) continue;
+    if (ExtractInt(tag, "rotate", &rotation_))
+      continue;
+    if (ExtractString(tag, "album", &album_))
+      continue;
+    if (ExtractString(tag, "artist", &artist_))
+      continue;
+    if (ExtractString(tag, "comment", &comment_))
+      continue;
+    if (ExtractString(tag, "copyright", &copyright_))
+      continue;
+    if (ExtractString(tag, "date", &date_))
+      continue;
+    if (ExtractInt(tag, "disc", &disc_))
+      continue;
+    if (ExtractString(tag, "encoder", &encoder_))
+      continue;
+    if (ExtractString(tag, "encoded_by", &encoded_by_))
+      continue;
+    if (ExtractString(tag, "genre", &genre_))
+      continue;
+    if (ExtractString(tag, "language", &language_))
+      continue;
+    if (ExtractString(tag, "title", &title_))
+      continue;
+    if (ExtractInt(tag, "track", &track_))
+      continue;
   }
 }
 
