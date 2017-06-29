@@ -25,7 +25,7 @@ class HostCachePersistenceManagerTest : public testing::Test {
 
   void MakePersistenceManager(base::TimeDelta delay) {
     persistence_manager_ = base::MakeUnique<HostCachePersistenceManager>(
-        cache_.get(), pref_service_.get(), kPrefName, delay);
+        cache_.get(), pref_service_.get(), kPrefName, delay, nullptr);
   }
 
   // Sets an entry in the HostCache in order to trigger a pref write. The
