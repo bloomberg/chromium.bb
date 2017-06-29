@@ -1457,7 +1457,8 @@ void FrameLoader::StartLoad(FrameLoadRequest& frame_load_request,
     provisional_document_loader_->SetItemForHistoryNavigation(history_item);
   }
 
-  frame_->FrameScheduler()->DidStartProvisionalLoad();
+  DCHECK(!frame_load_request.GetResourceRequest().IsSameDocumentNavigation());
+  frame_->FrameScheduler()->DidStartProvisionalLoad(frame_->IsMainFrame());
 
   // TODO(ananta):
   // We should get rid of the dependency on the DocumentLoader in consumers of

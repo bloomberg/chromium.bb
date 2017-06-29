@@ -195,6 +195,10 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   // state.
   void OnAudioStateChanged();
 
+  // Tells the scheduler that a provisional load has committed. Must be called
+  // from the main thread.
+  void DidStartProvisionalLoad(bool is_main_frame);
+
   // Tells the scheduler that a provisional load has committed. The scheduler
   // may reset the task cost estimators and the UserModel. Must be called from
   // the main thread.

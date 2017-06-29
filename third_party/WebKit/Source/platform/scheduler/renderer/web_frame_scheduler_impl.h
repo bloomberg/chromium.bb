@@ -53,7 +53,7 @@ class WebFrameSchedulerImpl : public WebFrameScheduler {
   RefPtr<WebTaskRunner> UnthrottledButBlockableTaskRunner() override;
   WebViewScheduler* GetWebViewScheduler() override;
   void WillNavigateBackForwardSoon() override;
-  void DidStartProvisionalLoad() override;
+  void DidStartProvisionalLoad(bool is_main_frame) override;
   void DidFailProvisionalLoad() override;
   void DidCommitProvisionalLoad(bool is_web_history_inert_commit,
                                 bool is_reload,
