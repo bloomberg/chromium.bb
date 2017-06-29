@@ -410,7 +410,7 @@ class Storage(object):
   def __init__(self, storage_api):
     self._storage_api = storage_api
     self._use_zip = isolated_format.is_namespace_with_compression(
-        storage_api.namespace)
+        storage_api.namespace) and not storage_api.internal_compression
     self._hash_algo = isolated_format.get_hash_algo(storage_api.namespace)
     self._cpu_thread_pool = None
     self._net_thread_pool = None

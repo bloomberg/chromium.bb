@@ -123,6 +123,15 @@ class StorageApi(object):
     """
     raise NotImplementedError()
 
+  @property
+  def internal_compression(self):
+    """True if this class doesn't require external compression.
+
+    If true, callers should not compress items, even if the namespace indicates
+    otherwise. Compression will be performed by the StorageApi class.
+    """
+    return False
+
   def fetch(self, digest, offset=0):
     """Fetches an object and yields its content.
 
@@ -527,12 +536,14 @@ class IsolateServerGrpc(StorageApi):
     self._num_pushes = 0
     self._already_exists = 0
 
-    # Make sure grpc was successfully imported
-    assert grpc
-    assert bytestream_pb2
     # Proxies only support the default-gzip namespace for now.
     # TODO(aludwin): support other namespaces if necessary
     assert namespace == 'default-gzip'
+    self._namespace = namespace
+
+    # Make sure grpc was successfully imported
+    assert grpc
+    assert bytestream_pb2
 
     proxy = os.environ.get('ISOLATED_GRPC_PROXY', '')
     roots = os.environ.get('ISOLATED_GRPC_PROXY_TLS_ROOTS')
@@ -583,11 +594,12 @@ class IsolateServerGrpc(StorageApi):
 
   @property
   def namespace(self):
-    # This is used to determine if the data is compressed, but gRPC proxies
-    # don't have concepts of 'namespaces' and natively compress all messages
-    # before transmission. So return an unlikely-to-be-used name so that
-    # isolateserver doesn't try to compress anything.
-    return 'grpc-proxy'
+    return self._namespace
+
+  @property
+  def internal_compression(self):
+    # gRPC natively compresses all messages before transmission.
+    return True
 
   def fetch(self, digest, offset=0):
     # The gRPC APIs only work with an offset of 0
