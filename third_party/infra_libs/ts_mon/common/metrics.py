@@ -356,9 +356,9 @@ class CounterMetric(NumericMetric):
 
   def __init__(self, name, description, field_spec, start_time=None,
                units=None):
+    self._start_time = start_time
     super(CounterMetric, self).__init__(
         name, description, field_spec, units=units)
-    self._start_time = start_time
 
   def _populate_value(self, data, value):
     data.int64_value = value
@@ -403,9 +403,9 @@ class CumulativeMetric(NumericMetric):
 
   def __init__(self, name, description, field_spec, start_time=None,
                units=None):
+    self._start_time = start_time
     super(CumulativeMetric, self).__init__(
         name, description, field_spec, units=units)
-    self._start_time = start_time
 
   def _populate_value(self, data, value):
     data.double_value = value
@@ -450,8 +450,6 @@ class _DistributionMetricBase(Metric):
 
   def __init__(self, name, description, field_spec, is_cumulative=True,
                bucketer=None, start_time=None, units=None):
-    super(_DistributionMetricBase, self).__init__(
-        name, description, field_spec, units=units)
     self._start_time = start_time
 
     if bucketer is None:
@@ -459,6 +457,8 @@ class _DistributionMetricBase(Metric):
 
     self._is_cumulative = is_cumulative
     self.bucketer = bucketer
+    super(_DistributionMetricBase, self).__init__(
+        name, description, field_spec, units=units)
 
   def _populate_value(self, metric, value):
     pb = metric.distribution_value
