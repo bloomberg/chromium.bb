@@ -1373,6 +1373,10 @@ class GitVCS(VersionControlSystem):
     self.renames = {}
 
   def GetGUID(self):
+    remote, retcode = RunShellWithReturnCode(
+        "git config remote.origin.url".split())
+    if not retcode:
+      return remote.strip()
     revlist = RunShell("git rev-list --parents HEAD".split()).splitlines()
     # M-A: Return the 1st root hash, there could be multiple when a
     # subtree is merged. In that case, more analysis would need to
