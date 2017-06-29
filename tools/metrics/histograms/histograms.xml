@@ -46515,6 +46515,37 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NQE.BDPComputationKbps.OnECTComputation" units="Kbps">
+  <owner>devdeepray@chromium.org</owner>
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    The value of the downstream throughput used to compute the bandwidth delay
+    product. The 80th percentile throughput observation is used to calculate the
+    bandwidth delay product. This gets recorded everytime the BDP is computed.
+  </summary>
+</histogram>
+
+<histogram name="NQE.BDPComputationTransportRTT.OnECTComputation" units="ms">
+  <owner>devdeepray@chromium.org</owner>
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    The value of the TransportRTT used to compute the bandwidth delay product.
+    The 20th percentile TransportRTT observation is used to calculate the
+    bandwidth delay product. This gets recorded everytime the BDP is computed.
+  </summary>
+</histogram>
+
+<histogram name="NQE.BDPKbits.OnECTComputation" units="kbits">
+  <owner>devdeepray@chromium.org</owner>
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    An estimate of the bandwidth delay product which is computed on main-frame
+    requests. It is calculated using the 80th percentile throughput and 20th
+    percentile TransportRTT values whenever |ComputeEffectiveConnectionType| is
+    called and the throughput and TransportRTT estimates are available.
+  </summary>
+</histogram>
+
 <histogram name="NQE.CachedNetworkQualityAvailable" enum="BooleanAvailable">
   <owner>tbansal@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
