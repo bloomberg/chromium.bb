@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -336,10 +337,8 @@ TEST_F(AutocompleteActionPredictorTest, DeleteOldIdsFromCaches) {
   for (std::vector<AutocompleteActionPredictorTable::Row::Id>::iterator it =
        all_ids.begin();
        it != all_ids.end(); ++it) {
-    bool in_expected =
-        (std::find(expected.begin(), expected.end(), *it) != expected.end());
-    bool in_list =
-        (std::find(id_list.begin(), id_list.end(), *it) != id_list.end());
+    bool in_expected = base::ContainsValue(expected, *it);
+    bool in_list = base::ContainsValue(id_list, *it);
     EXPECT_EQ(in_expected, in_list);
   }
 }

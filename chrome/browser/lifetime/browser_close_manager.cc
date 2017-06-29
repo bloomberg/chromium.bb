@@ -4,10 +4,10 @@
 
 #include "chrome/browser/lifetime/browser_close_manager.h"
 
-#include <algorithm>
 #include <iterator>
 #include <vector>
 
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/browser_process.h"
@@ -180,9 +180,7 @@ void BrowserCloseManager::CloseBrowsers() {
         delete browser->tab_strip_model()->GetWebContentsAt(0);
       browser->window()->DestroyBrowser();
       // Destroying the browser should have removed it from the browser list.
-      DCHECK(BrowserList::GetInstance()->end() ==
-             std::find(BrowserList::GetInstance()->begin(),
-                       BrowserList::GetInstance()->end(), browser));
+      DCHECK(!base::ContainsValue(*BrowserList::GetInstance(), browser));
     }
   }
 

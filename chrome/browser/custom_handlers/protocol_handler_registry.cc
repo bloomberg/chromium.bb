@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile_io_data.h"
@@ -476,8 +477,7 @@ bool ProtocolHandlerRegistry::IsRegistered(
   if (!handlers) {
     return false;
   }
-  return std::find(handlers->begin(), handlers->end(), handler) !=
-      handlers->end();
+  return base::ContainsValue(*handlers, handler);
 }
 
 bool ProtocolHandlerRegistry::IsRegisteredByUser(
@@ -863,7 +863,7 @@ bool ProtocolHandlerRegistry::HandlerExists(const ProtocolHandler& handler,
 
 bool ProtocolHandlerRegistry::HandlerExists(const ProtocolHandler& handler,
                                             const ProtocolHandlerList& list) {
-  return std::find(list.begin(), list.end(), handler) != list.end();
+  return base::ContainsValue(list, handler);
 }
 
 void ProtocolHandlerRegistry::EraseHandler(const ProtocolHandler& handler,

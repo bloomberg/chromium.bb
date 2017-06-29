@@ -16,6 +16,7 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/rand_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -388,8 +389,7 @@ class InternalAuthGenerationService : public base::ThreadChecker {
       int idx = static_cast<int>(used_ticks_.size()) -
           static_cast<int>(current_tick - tick + 1);
       if (idx < 0 || used_ticks_[idx] != tick) {
-        DCHECK(used_ticks_.end() ==
-            std::find(used_ticks_.begin(), used_ticks_.end(), tick));
+        DCHECK(!base::ContainsValue(used_ticks_, tick));
         return tick;
       }
     }
