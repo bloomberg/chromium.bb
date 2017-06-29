@@ -156,4 +156,5 @@ header {
   width: 100%;
   text-overflow: clip;
   overflow-x: auto;
+  white-space: pre-wrap;
 }
