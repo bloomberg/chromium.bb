@@ -174,9 +174,10 @@ void WindowEventDispatcher::DispatchGestureEvent(
 
 DispatchDetails WindowEventDispatcher::DispatchMouseExitAtPoint(
     Window* window,
-    const gfx::Point& point) {
+    const gfx::Point& point,
+    int event_flags) {
   ui::MouseEvent event(ui::ET_MOUSE_EXITED, point, point, ui::EventTimeForNow(),
-                       ui::EF_NONE, ui::EF_NONE);
+                       event_flags, ui::EF_NONE);
   return DispatchMouseEnterOrExit(window, event, ui::ET_MOUSE_EXITED);
 }
 
