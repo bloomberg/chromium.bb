@@ -9,8 +9,9 @@
 
 namespace vr_shell {
 
-ExclusiveScreenToast::ExclusiveScreenToast(int preferred_width)
-    : SimpleTexturedElement(preferred_width) {}
+ExclusiveScreenToast::ExclusiveScreenToast(int preferred_width,
+                                           const base::TimeDelta& timeout)
+    : TransientSimpleTexturedElement(preferred_width, timeout) {}
 
 ExclusiveScreenToast::~ExclusiveScreenToast() = default;
 

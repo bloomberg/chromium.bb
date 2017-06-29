@@ -16,6 +16,7 @@
 #include "chrome/browser/android/vr_shell/textures/splash_screen_icon_texture.h"
 #include "chrome/browser/android/vr_shell/textures/ui_texture.h"
 #include "chrome/browser/android/vr_shell/ui_elements/textured_element.h"
+#include "chrome/browser/android/vr_shell/ui_elements/transience_manager.h"
 
 namespace vr_shell {
 
@@ -39,10 +40,29 @@ class SimpleTexturedElement : public TexturedElement {
   DISALLOW_COPY_AND_ASSIGN(SimpleTexturedElement);
 };
 
+template <class T>
+class TransientSimpleTexturedElement : public SimpleTexturedElement<T> {
+ public:
+  TransientSimpleTexturedElement(int maximum_width,
+                                 const base::TimeDelta& timeout)
+      : SimpleTexturedElement<T>(maximum_width), transience_(this, timeout) {}
+
+  ~TransientSimpleTexturedElement() override {}
+
+  void SetEnabled(bool enabled) override { transience_.SetEnabled(enabled); }
+
+  TransienceManager* transience() { return &transience_; }
+
+ private:
+  TransienceManager transience_;
+
+  DISALLOW_COPY_AND_ASSIGN(TransientSimpleTexturedElement);
+};
+
 typedef SimpleTexturedElement<ExitWarningTexture> ExitWarning;
 typedef SimpleTexturedElement<InsecureContentPermanentTexture>
     PermanentSecurityWarning;
-typedef SimpleTexturedElement<InsecureContentTransientTexture>
+typedef TransientSimpleTexturedElement<InsecureContentTransientTexture>
     TransientSecurityWarning;
 typedef SimpleTexturedElement<SplashScreenIconTexture> SplashScreenIcon;
 

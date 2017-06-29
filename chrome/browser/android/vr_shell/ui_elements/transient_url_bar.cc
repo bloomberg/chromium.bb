@@ -11,14 +11,20 @@ namespace vr_shell {
 
 TransientUrlBar::TransientUrlBar(
     int preferred_width,
+    const base::TimeDelta& timeout,
     const base::Callback<void(UiUnsupportedMode)>& failure_callback)
     : TexturedElement(preferred_width),
-      texture_(base::MakeUnique<UrlBarTexture>(true, failure_callback)) {}
+      texture_(base::MakeUnique<UrlBarTexture>(true, failure_callback)),
+      transience_(this, timeout) {}
 
 TransientUrlBar::~TransientUrlBar() = default;
 
 UiTexture* TransientUrlBar::GetTexture() const {
   return texture_.get();
+}
+
+void TransientUrlBar::SetEnabled(bool enabled) {
+  transience_.SetEnabled(enabled);
 }
 
 void TransientUrlBar::SetToolbarState(const ToolbarState& state) {
