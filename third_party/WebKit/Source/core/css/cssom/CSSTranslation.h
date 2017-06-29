@@ -5,7 +5,10 @@
 #ifndef CSSTranslation_h
 #define CSSTranslation_h
 
+#include "core/css/CSSPrimitiveValue.h"
+#include "core/css/cssom/CSSStyleValue.h"
 #include "core/css/cssom/CSSTransformComponent.h"
+#include "core/css/cssom/CSSUnitValue.h"
 
 namespace blink {
 
@@ -41,14 +44,17 @@ class CORE_EXPORT CSSTranslation final : public CSSTransformComponent {
   CSSNumericValue* x() const { return x_; }
   CSSNumericValue* y() const { return y_; }
   CSSNumericValue* z() const { return z_; }
+  void setX(CSSNumericValue* x, ExceptionState&);
+  void setY(CSSNumericValue* y, ExceptionState&);
+  void setZ(CSSNumericValue* z, ExceptionState&);
 
   // Internal methods - from CSSTransformComponent.
-  TransformComponentType GetType() const override {
+  TransformComponentType GetType() const final {
     return Is2D() ? kTranslationType : kTranslation3DType;
   }
   // TODO: Implement AsMatrix for CSSTranslation.
-  DOMMatrix* AsMatrix() const override { return nullptr; }
-  CSSFunctionValue* ToCSSValue() const override;
+  DOMMatrix* AsMatrix() const final { return nullptr; }
+  CSSFunctionValue* ToCSSValue() const final;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
     visitor->Trace(x_);

@@ -811,6 +811,9 @@ interface CSSTranslation : CSSTransformComponent
     getter y
     getter z
     method constructor
+    setter x
+    setter y
+    setter z
 interface CSSURLImageValue : CSSImageValue
     attribute @@toStringTag
     getter url
