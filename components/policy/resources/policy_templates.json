@@ -1355,7 +1355,7 @@
           'id': 17,
           'caption': '''Allow users to show passwords in Password Manager (deprecated)''',
           'tags': [],
-          'desc': '''The associated setting was used before reauthentication on viewing passwords was introduced. Since then, the setting and hence this policy had no effect on the behavior of Chrome. The current behavior of Chrome is now the same as if the the policy was set to disable showing passwords in clear text in the password manager settings page. That means that the settings page contains just a placeholder, and only upon the user clicking "Show" (and reauthenticating, if applicable) Chrome shows the password. Original description of the policy follows below.
+          'desc': '''The associated setting was used before reauthentication on viewing passwords was introduced. Since then, the setting and hence this policy had no effect on the behavior of Chrome. The current behavior of Chrome is now the same as if the policy was set to disable showing passwords in clear text in the password manager settings page. That means that the settings page contains just a placeholder, and only upon the user clicking "Show" (and reauthenticating, if applicable) Chrome shows the password. Original description of the policy follows below.
 
           Controls whether the user may show passwords in clear text in the password manager.
 
@@ -8502,7 +8502,7 @@
       'id': 298,
       'caption': '''Maximize the first browser window on first run''',
       'tags': [],
-      'desc': '''If this policy is set to true, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will unconditionally maximize the the first window shown on first run.
+      'desc': '''If this policy is set to true, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will unconditionally maximize the first window shown on first run.
       If this policy is set to false or not configured, the decision whether to maximize the first window shown will be based on the screen size.''',
     },
     {
@@ -9248,7 +9248,7 @@
 
       If this setting is not configured then users are able to turn Google Location Service on and off in the Android Settings app.
 
-      Note that this policy value may be overriden by the <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME">DefaultGeolocationSetting</ph> policy, when the latter is set to <ph name="BLOCK_GEOLOCATION_SETTING">BlockGeolocation</ph>.
+      Note that this policy value may be overridden by the <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME">DefaultGeolocationSetting</ph> policy, when the latter is set to <ph name="BLOCK_GEOLOCATION_SETTING">BlockGeolocation</ph>.
 
       This policy is applicable only to the users that are able to run Android apps.''',
     },
