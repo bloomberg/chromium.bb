@@ -286,7 +286,7 @@ class TestExpectationLine(object):
     _configuration_tokens_list = [
         'Mac', 'Mac10.9', 'Mac10.10', 'Mac10.11', 'Retina', 'Mac10.12',
         'Win', 'Win7', 'Win10',
-        'Linux', 'Trusty',
+        'Linux',
         'Android',
         'Release',
         'Debug',
