@@ -33,11 +33,15 @@ class ProcessStatsSender final {
                      std::initializer_list<ProcessStatsAgent*> agents);
 
   ~ProcessStatsSender();
+
+  base::TimeDelta interval() const;
+
  private:
   void ReportUsage();
 
   protocol::ProcessStatsStub* const host_stats_stub_;
   std::vector<ProcessStatsAgent*> agents_;
+  const base::TimeDelta interval_;
   base::RepeatingTimer timer_;
   const base::ThreadChecker thread_checker_;
 };

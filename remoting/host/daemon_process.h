@@ -17,11 +17,14 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/process/process.h"
+#include "base/time/time.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_handle.h"
 #include "remoting/host/config_watcher.h"
+#include "remoting/host/current_process_stats_agent.h"
 #include "remoting/host/host_status_monitor.h"
 #include "remoting/host/worker_process_ipc_delegate.h"
+#include "remoting/protocol/process_stats_stub.h"
 
 struct SerializedTransportRoute;
 
@@ -35,6 +38,7 @@ class AutoThreadTaskRunner;
 class DesktopSession;
 class HostEventLogger;
 class HostStatusObserver;
+class ProcessStatsSender;
 class ScreenResolution;
 
 // This class implements core of the daemon process. It manages the networking
@@ -43,7 +47,8 @@ class ScreenResolution;
 class DaemonProcess
     : public ConfigWatcher::Delegate,
       public HostStatusMonitor,
-      public WorkerProcessIpcDelegate {
+      public WorkerProcessIpcDelegate,
+      public protocol::ProcessStatsStub {
  public:
   typedef std::list<DesktopSession*> DesktopSessionList;
 
@@ -70,6 +75,7 @@ class DaemonProcess
   void OnChannelConnected(int32_t peer_pid) override;
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnPermanentError(int exit_code) override;
+  void OnWorkerProcessStopped() override;
 
   // Sends an IPC message to the network process. The message will be dropped
   // unless the network process is connected over the IPC channel.
@@ -158,6 +164,17 @@ class DaemonProcess
   // Deletes all desktop sessions.
   void DeleteAllDesktopSessions();
 
+  // Starts to report process statistic data to network process. If |interval|
+  // is less then or equal to 0, a default non-zero value will be used.
+  void StartProcessStatsReport(base::TimeDelta interval);
+
+  // Stops sending process statistic data to network process.
+  void StopProcessStatsReport();
+
+  // ProcessStatsStub implementation.
+  void OnProcessStats(
+      const protocol::AggregatedProcessResourceUsage& usage) override;
+
   // Task runner on which public methods of this class must be called.
   scoped_refptr<AutoThreadTaskRunner> caller_task_runner_;
 
@@ -183,6 +200,20 @@ class DaemonProcess
 
   // Writes host status updates to the system event log.
   std::unique_ptr<HostEventLogger> host_event_logger_;
+
+  // Reports process statistic data to network process.
+  std::unique_ptr<ProcessStatsSender> stats_sender_;
+
+  // The number of StartProcessStatsReport requests received.
+  // Daemon and Network processes manages multiple desktop sessions. Some of
+  // them may request for process statistic reports. So the resource usage of
+  // daemon process and network process will be merged to each desktop session.
+  //
+  // As long as at least process statistic reports is enabled for one desktop
+  // session, daemon process should continually send the reports.
+  int process_stats_request_count_ = 0;
+
+  CurrentProcessStatsAgent current_process_stats_;
 
   base::WeakPtrFactory<DaemonProcess> weak_factory_;
 

@@ -604,6 +604,8 @@ void DesktopSessionWin::OnPermanentError(int exit_code) {
   TerminateSession();
 }
 
+void DesktopSessionWin::OnWorkerProcessStopped() {}
+
 void DesktopSessionWin::OnSessionAttached(uint32_t session_id) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
   DCHECK(!launcher_);

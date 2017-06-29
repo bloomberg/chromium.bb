@@ -29,6 +29,9 @@ class WorkerProcessIpcDelegate {
 
   // Notifies that a permanent error was encountered.
   virtual void OnPermanentError(int exit_code) = 0;
+
+  // Notifies that the worker process stops for any reason.
+  virtual void OnWorkerProcessStopped() = 0;
 };
 
 }  // namespace remoting
