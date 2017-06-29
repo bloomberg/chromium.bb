@@ -1660,6 +1660,7 @@ DEFINE_TRACE(LocalDOMWindow) {
   visitor->Trace(navigator_);
   visitor->Trace(media_);
   visitor->Trace(custom_elements_);
+  visitor->Trace(modulator_);
   visitor->Trace(external_);
   visitor->Trace(application_cache_);
   visitor->Trace(event_queue_);
