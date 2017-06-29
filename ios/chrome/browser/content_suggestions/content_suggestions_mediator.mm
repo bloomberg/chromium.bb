@@ -257,6 +257,13 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
         known_suggestion_ids.insert(identifier.IDInSection);
       }
 
+      if (known_suggestion_ids.size() == 0) {
+        // No elements in the section, reloads everything to have suggestions
+        // for the next NTP. Fetch() do not store the new data.
+        self.contentService->ReloadSuggestions();
+        return;
+      }
+
       __weak ContentSuggestionsMediator* weakSelf = self;
       ntp_snippets::FetchDoneCallback serviceCallback = base::Bind(
           &BindWrapper,
