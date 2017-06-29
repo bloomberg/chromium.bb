@@ -113,8 +113,11 @@ void JourneyLogger::SetCompleted() {
 }
 
 void JourneyLogger::SetAborted(AbortReason reason) {
-  base::UmaHistogramEnumeration("PaymentRequest.CheckoutFunnel.Aborted", reason,
-                                ABORT_REASON_MAX);
+  // Don't log abort reasons if the Payment Request was not shown to the user.
+  if (was_show_called_) {
+    base::UmaHistogramEnumeration("PaymentRequest.CheckoutFunnel.Aborted",
+                                  reason, ABORT_REASON_MAX);
+  }
 
   if (reason == ABORT_REASON_ABORTED_BY_USER ||
       reason == ABORT_REASON_USER_NAVIGATION)
