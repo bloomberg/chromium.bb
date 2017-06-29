@@ -201,6 +201,11 @@ void JourneyLogger::RecordPaymentMethodMetric() {
 }
 
 void JourneyLogger::RecordRequestedInformationMetrics() {
+  if (!was_show_called_) {
+    return;
+  }
+
+  DCHECK(requested_information_ != REQUESTED_INFORMATION_MAX);
   UMA_HISTOGRAM_ENUMERATION("PaymentRequest.RequestedInformation",
                             requested_information_, REQUESTED_INFORMATION_MAX);
 }
