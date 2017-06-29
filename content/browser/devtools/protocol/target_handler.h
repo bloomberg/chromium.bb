@@ -78,6 +78,7 @@ class TargetHandler : public DevToolsDomainHandler,
                              const std::string& type,
                              bool waiting_for_debugger);
   void TargetCreatedInternal(DevToolsAgentHost* host);
+  void TargetInfoChangedInternal(DevToolsAgentHost* host);
   void TargetDestroyedInternal(DevToolsAgentHost* host);
   bool AttachToTargetInternal(DevToolsAgentHost* host,
                               bool waiting_for_debugger);
