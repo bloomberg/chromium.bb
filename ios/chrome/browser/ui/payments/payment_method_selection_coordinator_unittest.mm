@@ -123,14 +123,12 @@ TEST_F(PaymentRequestPaymentMethodSelectionCoordinatorTest,
   PaymentRequestSelectorViewController* view_controller =
       base::mac::ObjCCastStrict<PaymentRequestSelectorViewController>(
           navigation_controller.visibleViewController);
-  [coordinator paymentRequestSelectorViewController:view_controller
-                               didSelectItemAtIndex:0];
+  EXPECT_TRUE([coordinator paymentRequestSelectorViewController:view_controller
+                                           didSelectItemAtIndex:0]);
   // Wait for the coordinator delegate to be notified.
   base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(0.5));
-  [coordinator paymentRequestSelectorViewController:view_controller
-                               didSelectItemAtIndex:1];
-  // Wait for the coordinator delegate to be notified.
-  base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(0.5));
+  EXPECT_FALSE([coordinator paymentRequestSelectorViewController:view_controller
+                                            didSelectItemAtIndex:1]);
 
   EXPECT_OCMOCK_VERIFY(delegate);
 }

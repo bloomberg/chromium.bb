@@ -85,7 +85,7 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
 
 #pragma mark - PaymentRequestSelectorViewControllerDelegate
 
-- (void)paymentRequestSelectorViewController:
+- (BOOL)paymentRequestSelectorViewController:
             (PaymentRequestSelectorViewController*)controller
                         didSelectItemAtIndex:(NSUInteger)index {
   // Update the data source with the selection.
@@ -94,6 +94,7 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
   DCHECK(index < self.paymentRequest->shipping_options().size());
   [self delayedNotifyDelegateOfSelection:self.paymentRequest
                                              ->shipping_options()[index]];
+  return YES;
 }
 
 - (void)paymentRequestSelectorViewControllerDidFinish:

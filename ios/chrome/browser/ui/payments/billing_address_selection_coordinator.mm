@@ -83,7 +83,7 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
 
 #pragma mark - PaymentRequestSelectorViewControllerDelegate
 
-- (void)paymentRequestSelectorViewController:
+- (BOOL)paymentRequestSelectorViewController:
             (PaymentRequestSelectorViewController*)controller
                         didSelectItemAtIndex:(NSUInteger)index {
   CollectionViewItem<PaymentsIsSelectable>* selectedItem =
@@ -99,8 +99,10 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
     // Update the data source with the selection.
     self.mediator.selectedItemIndex = index;
     [self delayedNotifyDelegateOfSelection:billingProfile];
+    return YES;
   } else {
     [self startAddressEditCoordinatorWithAddress:billingProfile];
+    return NO;
   }
 }
 
@@ -135,13 +137,20 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
   // Update the data source with the new data.
   [self.mediator loadItems];
 
+  const std::vector<autofill::AutofillProfile*>& billingProfiles =
+      self.paymentRequest->billing_profiles();
+  const auto position =
+      std::find(billingProfiles.begin(), billingProfiles.end(), address);
+  DCHECK(position != billingProfiles.end());
+
+  // Mark the edited item as complete meaning all required information has been
+  // filled out.
+  CollectionViewItem<PaymentsIsSelectable>* editedItem =
+      self.mediator.selectableItems[position - billingProfiles.begin()];
+  editedItem.complete = YES;
+
   if (![self.viewController isEditing]) {
     // Update the data source with the selection.
-    const std::vector<autofill::AutofillProfile*>& billingProfiles =
-        self.paymentRequest->billing_profiles();
-    const auto position =
-        std::find(billingProfiles.begin(), billingProfiles.end(), address);
-    DCHECK(position != billingProfiles.end());
     self.mediator.selectedItemIndex = position - billingProfiles.begin();
   }
 
@@ -150,12 +159,6 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
 
   [self.addressEditCoordinator stop];
   self.addressEditCoordinator = nil;
-
-  // Mark the item as complete meaning all required information has been
-  // filled out.
-  CollectionViewItem<PaymentsIsSelectable>* selectedItem =
-      self.mediator.selectableItems[self.mediator.selectedItemIndex];
-  selectedItem.complete = YES;
 
   if (![self.viewController isEditing]) {
     // Inform |self.delegate| that |address| has been selected.
