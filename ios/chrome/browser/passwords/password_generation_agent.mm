@@ -8,6 +8,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_block.h"
+#include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/password_generator.h"
@@ -41,11 +42,6 @@ const int kGeneratedPasswordLength = 20;
 // The minimum number of text fields that a form needs to be considered as
 // an account creation form.
 const size_t kMinimumTextFieldsForAccountCreation = 3;
-
-// Returns true if |urls| contains |url|.
-bool VectorContainsURL(const std::vector<GURL>& urls, const GURL& url) {
-  return std::find(urls.begin(), urls.end(), url) != urls.end();
-}
 
 // Returns whether |field| should be considered a text field. Implementation
 // mirrors that of password_controller.js.
@@ -292,7 +288,7 @@ passwordManagerDriver:(password_manager::PasswordManagerDriver*)driver
   // password manager, wait.
   GURL origin = _possibleAccountCreationForm->origin;
   if (!experimental_flags::UseOnlyLocalHeuristicsForPasswordGeneration()) {
-    if (!VectorContainsURL(_allowedGenerationFormOrigins, origin))
+    if (!base::ContainsValue(_allowedGenerationFormOrigins, origin))
       return;
   }
 

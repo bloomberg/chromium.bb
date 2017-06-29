@@ -8,6 +8,7 @@
 
 #include "base/containers/adapters.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
@@ -289,9 +290,7 @@ void PaymentRequest::PopulateCreditCardCache() {
     std::string spec_issuer_network =
         autofill::data_util::GetPaymentRequestData(credit_card->network())
             .basic_card_issuer_network;
-    if (std::find(supported_card_networks_.begin(),
-                  supported_card_networks_.end(),
-                  spec_issuer_network) != supported_card_networks_.end()) {
+    if (base::ContainsValue(supported_card_networks_, spec_issuer_network)) {
       credit_card_cache_.push_back(
           base::MakeUnique<autofill::CreditCard>(*credit_card));
     }
