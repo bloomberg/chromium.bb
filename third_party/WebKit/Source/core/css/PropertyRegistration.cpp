@@ -71,8 +71,7 @@ static bool ComputationallyIndependent(const CSSValue& value) {
     return true;
   }
 
-  // TODO(timloh): Images and transform-function values can also contain
-  // lengths.
+  // TODO(timloh): Images values can also contain lengths.
 
   return true;
 }

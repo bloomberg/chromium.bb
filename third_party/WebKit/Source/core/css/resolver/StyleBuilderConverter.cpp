@@ -1440,8 +1440,18 @@ PassRefPtr<BasicShape> StyleBuilderConverter::ConvertOffsetPath(
 static const CSSValue& ComputeRegisteredPropertyValue(
     const CSSToLengthConversionData& css_to_length_conversion_data,
     const CSSValue& value) {
-  // TODO(timloh): Images and transform-function values can also contain
-  // lengths.
+  // TODO(timloh): Images values can also contain lengths.
+  if (value.IsFunctionValue()) {
+    const CSSFunctionValue& function_value = ToCSSFunctionValue(value);
+    CSSFunctionValue* new_function =
+        CSSFunctionValue::Create(function_value.FunctionType());
+    for (const CSSValue* inner_value : ToCSSValueList(value)) {
+      new_function->Append(ComputeRegisteredPropertyValue(
+          css_to_length_conversion_data, *inner_value));
+    }
+    return *new_function;
+  }
+
   if (value.IsValueList()) {
     CSSValueList* new_list = CSSValueList::CreateSpaceSeparated();
     for (const CSSValue* inner_value : ToCSSValueList(value)) {
