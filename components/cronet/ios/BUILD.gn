@@ -294,20 +294,20 @@ if (additional_toolchains == [] || current_toolchain == default_toolchain) {
   action("generate_license") {
     _license_path = "$_package_dir/LICENSE"
 
-    script = "//components/cronet/tools/cronet_licenses.py"
+    script = "//tools/licenses.py"
     inputs = [
       "//build/util/LASTCHANGE",
-      "//buildtools/$host_os/gn",
     ]
     outputs = [
       _license_path,
     ]
     args = [
-      "license",
+      "license_file",
       rebase_path(_license_path, root_build_dir),
-      "--gn",
-      "--gn-path",
-      rebase_path("//buildtools/$host_os/gn", root_build_dir),
+      "--gn-target",
+      "//components/cronet/ios:cronet_framework",
+      "--gn-out-dir",
+      ".",
     ]
   }
 
