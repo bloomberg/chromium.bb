@@ -59,6 +59,7 @@
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoadRequest.h"
+#include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/page/PrintContext.h"
 #include "core/page/ScopedPageSuspender.h"
@@ -80,6 +81,7 @@
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCoalescedInputEvent.h"
+#include "public/platform/WebCursorInfo.h"
 #include "public/platform/WebDisplayMode.h"
 #include "public/platform/WebDragData.h"
 #include "public/platform/WebDragOperation.h"
@@ -2574,6 +2576,66 @@ TEST_P(WebViewTest, KeyDownScrollsHandled) {
             web_view->HandleInputEvent(WebCoalescedInputEvent(key_event)));
   key_event.SetType(WebInputEvent::kKeyUp);
   web_view->HandleInputEvent(WebCoalescedInputEvent(key_event));
+}
+
+class MiddleClickAutoscrollWebWidgetClient
+    : public FrameTestHelpers::TestWebWidgetClient {
+ public:
+  // WebWidgetClient methods
+
+  void DidChangeCursor(const WebCursorInfo& cursor) override {
+    last_cursor_type_ = cursor.type;
+  }
+
+  int GetLastCursorType() const { return last_cursor_type_; }
+
+ private:
+  int last_cursor_type_ = 0;
+};
+
+TEST_P(WebViewTest, MiddleClickAutoscrollCursor) {
+  MiddleClickAutoscrollWebWidgetClient client;
+  RuntimeEnabledFeatures::SetMiddleClickAutoscrollEnabled(true);
+  RegisterMockedHttpURLLoad("content-width-1000.html");
+
+  WebViewBase* web_view = web_view_helper_.InitializeAndLoad(
+      base_url_ + "content-width-1000.html", nullptr, nullptr, &client);
+  web_view->Resize(WebSize(100, 100));
+  web_view->UpdateAllLifecyclePhases();
+  RunPendingTasks();
+
+  WebMouseEvent mouse_event(WebInputEvent::kMouseDown,
+                            WebInputEvent::kNoModifiers,
+                            WebInputEvent::kTimeStampForTesting);
+  mouse_event.button = WebMouseEvent::Button::kMiddle;
+  mouse_event.SetPositionInWidget(1, 1);
+  mouse_event.click_count = 1;
+
+  // Start middle-click autoscroll.
+  web_view->HandleInputEvent(WebCoalescedInputEvent(mouse_event));
+  mouse_event.SetType(WebInputEvent::kMouseUp);
+  web_view->HandleInputEvent(WebCoalescedInputEvent(mouse_event));
+
+  EXPECT_EQ(MiddlePanningCursor().GetType(), client.GetLastCursorType());
+
+  LocalFrame* local_frame =
+      ToWebLocalFrameBase(web_view->MainFrame())->GetFrame();
+
+  // Even if a plugin tries to change the cursor type, that should be ignored
+  // during middle-click autoscroll.
+  web_view->GetChromeClient().SetCursorForPlugin(WebCursorInfo(PointerCursor()),
+                                                 local_frame);
+  EXPECT_EQ(MiddlePanningCursor().GetType(), client.GetLastCursorType());
+
+  // End middle-click autoscroll.
+  mouse_event.SetType(WebInputEvent::kMouseDown);
+  web_view->HandleInputEvent(WebCoalescedInputEvent(mouse_event));
+  mouse_event.SetType(WebInputEvent::kMouseUp);
+  web_view->HandleInputEvent(WebCoalescedInputEvent(mouse_event));
+
+  web_view->GetChromeClient().SetCursorForPlugin(WebCursorInfo(IBeamCursor()),
+                                                 local_frame);
+  EXPECT_EQ(IBeamCursor().GetType(), client.GetLastCursorType());
 }
 
 static void ConfigueCompositingWebView(WebSettings* settings) {

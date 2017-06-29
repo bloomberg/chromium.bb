@@ -238,7 +238,9 @@ void AutoscrollController::HandleMouseMoveForMiddleClickAutoscroll(
     last_velocity_ = velocity;
     if (middle_click_mode_ == kMiddleClickInitial)
       middle_click_mode_ = kMiddleClickHolding;
+    page_->GetChromeClient().SetCursorOverridden(false);
     view->SetCursor(MiddleClickAutoscrollCursor(velocity));
+    page_->GetChromeClient().SetCursorOverridden(true);
     page_->GetChromeClient().AutoscrollFling(velocity, frame);
   }
 }
@@ -265,6 +267,7 @@ void AutoscrollController::StopMiddleClickAutoscroll(LocalFrame* frame) {
 
   page_->GetChromeClient().AutoscrollEnd(frame);
   autoscroll_type_ = kNoAutoscroll;
+  page_->GetChromeClient().SetCursorOverridden(false);
   frame->LocalFrameRoot().GetEventHandler().ScheduleCursorUpdate();
 }
 
@@ -289,8 +292,10 @@ void AutoscrollController::StartMiddleClickAutoscroll(
   UseCounter::Count(frame, WebFeature::kMiddleClickAutoscrollStart);
 
   last_velocity_ = FloatSize();
+
   if (LocalFrameView* view = frame->View())
     view->SetCursor(MiddleClickAutoscrollCursor(last_velocity_));
+  page_->GetChromeClient().SetCursorOverridden(true);
   page_->GetChromeClient().AutoscrollStart(
       position.ScaledBy(1 / frame->DevicePixelRatio()), frame);
 }
