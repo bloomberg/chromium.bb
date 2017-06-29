@@ -47,7 +47,7 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
   bool needs_sync_points() { return needs_sync_points_; }
 
   // SurfaceResourceHolderClient implementation.
-  void ReturnResources(const ReturnedResourceArray& resources) override;
+  void ReturnResources(const std::vector<ReturnedResource>& resources) override;
 
   // FrameSinkManagerClient implementation.
   void SetBeginFrameSource(BeginFrameSource* begin_frame_source) override;
@@ -61,9 +61,9 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
   void ClaimTemporaryReference(const SurfaceId& surface_id);
 
   // TODO(staraz): Move the following 3 methods to private.
-  void ReceiveFromChild(const TransferableResourceArray& resources);
-  void RefResources(const TransferableResourceArray& resources);
-  void UnrefResources(const ReturnedResourceArray& resources);
+  void ReceiveFromChild(const std::vector<TransferableResource>& resources);
+  void RefResources(const std::vector<TransferableResource>& resources);
+  void UnrefResources(const std::vector<ReturnedResource>& resources);
 
   void OnSurfaceActivated(Surface* surface);
 
@@ -119,7 +119,7 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
   // Counts the number of CompositorFrames that have been submitted and have not
   // yet received an ACK.
   int ack_pending_count_ = 0;
-  ReturnedResourceArray surface_returned_resources_;
+  std::vector<ReturnedResource> surface_returned_resources_;
 
   // The begin frame source being observered. Null if none.
   BeginFrameSource* begin_frame_source_ = nullptr;

@@ -36,12 +36,13 @@ ReturnedResource TransferableResource::ToReturnedResource() const {
 }
 
 // static
-void TransferableResource::ReturnResources(
-    const TransferableResourceArray& input,
-    ReturnedResourceArray* output) {
-  for (TransferableResourceArray::const_iterator it = input.begin();
-       it != input.end(); ++it)
-    output->push_back(it->ToReturnedResource());
+std::vector<ReturnedResource> TransferableResource::ReturnResources(
+    const std::vector<TransferableResource>& input) {
+  std::vector<ReturnedResource> out;
+  out.reserve(input.size());
+  for (const auto& r : input)
+    out.push_back(r.ToReturnedResource());
+  return out;
 }
 
 }  // namespace cc

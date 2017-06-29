@@ -26,7 +26,7 @@ class CompositorFrameConsumer {
     ~ReturnedResources();
 
     uint32_t layer_tree_frame_sink_id;
-    cc::ReturnedResourceArray resources;
+    std::vector<cc::ReturnedResource> resources;
   };
   using ReturnedResourcesMap =
       std::map<CompositorID, ReturnedResources, CompositorIDComparator>;

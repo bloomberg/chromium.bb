@@ -428,7 +428,7 @@ void OffscreenCanvasFrameDispatcherImpl::DispatchFrame(
 }
 
 void OffscreenCanvasFrameDispatcherImpl::DidReceiveCompositorFrameAck(
-    const cc::ReturnedResourceArray& resources) {
+    const WTF::Vector<cc::ReturnedResource>& resources) {
   ReclaimResources(resources);
   pending_compositor_frames_--;
   DCHECK_GE(pending_compositor_frames_, 0);
@@ -489,7 +489,7 @@ OffscreenCanvasFrameDispatcherImpl::FrameResource::~FrameResource() {
 }
 
 void OffscreenCanvasFrameDispatcherImpl::ReclaimResources(
-    const cc::ReturnedResourceArray& resources) {
+    const WTF::Vector<cc::ReturnedResource>& resources) {
   for (const auto& resource : resources) {
     auto it = resources_.find(resource.id);
 

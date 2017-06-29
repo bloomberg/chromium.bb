@@ -18,11 +18,7 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace cc {
-
 struct ReturnedResource;
-typedef std::vector<ReturnedResource> ReturnedResourceArray;
-struct TransferableResource;
-typedef std::vector<TransferableResource> TransferableResourceArray;
 
 struct CC_EXPORT TransferableResource {
   TransferableResource();
@@ -30,8 +26,8 @@ struct CC_EXPORT TransferableResource {
   ~TransferableResource();
 
   ReturnedResource ToReturnedResource() const;
-  static void ReturnResources(const TransferableResourceArray& input,
-                              ReturnedResourceArray* output);
+  static std::vector<ReturnedResource> ReturnResources(
+      const std::vector<TransferableResource>& input);
 
   ResourceId id;
   // Refer to ResourceProvider::Resource for the meaning of the following data.

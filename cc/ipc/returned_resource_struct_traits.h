@@ -40,20 +40,6 @@ struct StructTraits<cc::mojom::ReturnedResourceDataView, cc::ReturnedResource> {
   }
 };
 
-template <>
-struct StructTraits<cc::mojom::ReturnedResourceArrayDataView,
-                    cc::ReturnedResourceArray> {
-  static const cc::ReturnedResourceArray& returned_resources(
-      const cc::ReturnedResourceArray& resource_array) {
-    return resource_array;
-  }
-
-  static bool Read(cc::mojom::ReturnedResourceArrayDataView data,
-                   cc::ReturnedResourceArray* out) {
-    return data.ReadReturnedResources(out);
-  }
-};
-
 }  // namespace mojo
 
 #endif  // CC_IPC_RETURNED_RESOURCE_STRUCT_TRAITS_H_

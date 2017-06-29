@@ -26,7 +26,7 @@ CompositorFrame MakeEmptyCompositorFrame();
 CompositorFrame MakeCompositorFrame(
     std::vector<SurfaceId> activation_dependencies,
     std::vector<SurfaceId> referenced_surfaces,
-    TransferableResourceArray resource_list);
+    std::vector<TransferableResource> resource_list);
 
 }  // namespace test
 }  // namespace cc

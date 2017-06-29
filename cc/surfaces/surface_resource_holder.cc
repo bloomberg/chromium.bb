@@ -21,7 +21,7 @@ void SurfaceResourceHolder::Reset() {
 }
 
 void SurfaceResourceHolder::ReceiveFromChild(
-    const TransferableResourceArray& resources) {
+    const std::vector<TransferableResource>& resources) {
   for (const auto& resource : resources) {
     ResourceRefs& ref = resource_id_info_map_[resource.id];
     ref.refs_holding_resource_alive++;
@@ -30,10 +30,9 @@ void SurfaceResourceHolder::ReceiveFromChild(
 }
 
 void SurfaceResourceHolder::RefResources(
-    const TransferableResourceArray& resources) {
-  for (TransferableResourceArray::const_iterator it = resources.begin();
-       it != resources.end();
-       ++it) {
+    const std::vector<TransferableResource>& resources) {
+  for (std::vector<TransferableResource>::const_iterator it = resources.begin();
+       it != resources.end(); ++it) {
     ResourceIdInfoMap::iterator count_it = resource_id_info_map_.find(it->id);
     DCHECK(count_it != resource_id_info_map_.end());
     count_it->second.refs_holding_resource_alive++;
@@ -41,12 +40,11 @@ void SurfaceResourceHolder::RefResources(
 }
 
 void SurfaceResourceHolder::UnrefResources(
-    const ReturnedResourceArray& resources) {
-  ReturnedResourceArray resources_available_to_return;
+    const std::vector<ReturnedResource>& resources) {
+  std::vector<ReturnedResource> resources_available_to_return;
 
-  for (ReturnedResourceArray::const_iterator it = resources.begin();
-       it != resources.end();
-       ++it) {
+  for (std::vector<ReturnedResource>::const_iterator it = resources.begin();
+       it != resources.end(); ++it) {
     unsigned id = it->id;
     ResourceIdInfoMap::iterator count_it = resource_id_info_map_.find(id);
     if (count_it == resource_id_info_map_.end())

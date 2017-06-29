@@ -176,7 +176,7 @@ void HardwareRenderer::DestroySurface() {
 }
 
 void HardwareRenderer::DidReceiveCompositorFrameAck(
-    const cc::ReturnedResourceArray& resources) {
+    const std::vector<cc::ReturnedResource>& resources) {
   ReturnResourcesToCompositor(resources, compositor_id_,
                               last_submitted_layer_tree_frame_sink_id_);
 }
@@ -186,7 +186,7 @@ void HardwareRenderer::OnBeginFrame(const cc::BeginFrameArgs& args) {
 }
 
 void HardwareRenderer::ReclaimResources(
-    const cc::ReturnedResourceArray& resources) {
+    const std::vector<cc::ReturnedResource>& resources) {
   ReturnResourcesToCompositor(resources, compositor_id_,
                               last_submitted_layer_tree_frame_sink_id_);
 }
@@ -237,9 +237,9 @@ void HardwareRenderer::ReturnChildFrame(
   if (!child_frame || !child_frame->frame)
     return;
 
-  cc::ReturnedResourceArray resources_to_return;
-  cc::TransferableResource::ReturnResources(child_frame->frame->resource_list,
-                                            &resources_to_return);
+  std::vector<cc::ReturnedResource> resources_to_return =
+      cc::TransferableResource::ReturnResources(
+          child_frame->frame->resource_list);
 
   // The child frame's compositor id is not necessarily same as
   // compositor_id_.
@@ -248,7 +248,7 @@ void HardwareRenderer::ReturnChildFrame(
 }
 
 void HardwareRenderer::ReturnResourcesToCompositor(
-    const cc::ReturnedResourceArray& resources,
+    const std::vector<cc::ReturnedResource>& resources,
     const CompositorID& compositor_id,
     uint32_t layer_tree_frame_sink_id) {
   if (layer_tree_frame_sink_id != last_committed_layer_tree_frame_sink_id_)

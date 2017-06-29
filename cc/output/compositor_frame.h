@@ -31,7 +31,7 @@ class CC_EXPORT CompositorFrame {
   CompositorFrame& operator=(CompositorFrame&& other);
 
   CompositorFrameMetadata metadata;
-  TransferableResourceArray resource_list;
+  std::vector<TransferableResource> resource_list;
   // This list is in the order that each RenderPass will be drawn. The last one
   // is the "root" RenderPass that all others are directly or indirectly drawn
   // into.

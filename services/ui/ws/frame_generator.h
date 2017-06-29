@@ -44,9 +44,10 @@ class FrameGenerator : public cc::mojom::CompositorFrameSinkClient {
  private:
   // cc::mojom::CompositorFrameSinkClient implementation:
   void DidReceiveCompositorFrameAck(
-      const cc::ReturnedResourceArray& resources) override;
+      const std::vector<cc::ReturnedResource>& resources) override;
   void OnBeginFrame(const cc::BeginFrameArgs& args) override;
-  void ReclaimResources(const cc::ReturnedResourceArray& resources) override;
+  void ReclaimResources(
+      const std::vector<cc::ReturnedResource>& resources) override;
 
   // Generates the CompositorFrame.
   cc::CompositorFrame GenerateCompositorFrame();

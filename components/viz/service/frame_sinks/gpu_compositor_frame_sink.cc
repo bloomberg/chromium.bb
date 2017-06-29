@@ -58,7 +58,7 @@ void GpuCompositorFrameSink::DidNotProduceFrame(
 }
 
 void GpuCompositorFrameSink::DidReceiveCompositorFrameAck(
-    const cc::ReturnedResourceArray& resources) {
+    const std::vector<cc::ReturnedResource>& resources) {
   if (client_)
     client_->DidReceiveCompositorFrameAck(resources);
 }
@@ -79,7 +79,7 @@ void GpuCompositorFrameSink::OnBeginFrame(const cc::BeginFrameArgs& args) {
 }
 
 void GpuCompositorFrameSink::ReclaimResources(
-    const cc::ReturnedResourceArray& resources) {
+    const std::vector<cc::ReturnedResource>& resources) {
   if (client_)
     client_->ReclaimResources(resources);
 }

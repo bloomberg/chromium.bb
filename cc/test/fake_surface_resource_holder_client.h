@@ -15,15 +15,15 @@ class FakeSurfaceResourceHolderClient : public SurfaceResourceHolderClient {
   ~FakeSurfaceResourceHolderClient() override;
 
   // SurfaceResourceHolderClient implementation.
-  void ReturnResources(const ReturnedResourceArray& resources) override;
+  void ReturnResources(const std::vector<ReturnedResource>& resources) override;
 
   void clear_returned_resources() { returned_resources_.clear(); }
-  const ReturnedResourceArray& returned_resources() {
+  const std::vector<ReturnedResource>& returned_resources() {
     return returned_resources_;
   }
 
  private:
-  ReturnedResourceArray returned_resources_;
+  std::vector<ReturnedResource> returned_resources_;
 };
 
 }  // namespace cc

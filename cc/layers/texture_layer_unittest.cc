@@ -1066,7 +1066,7 @@ TEST_F(TextureLayerImplWithMailboxTest, TestCallbackOnInUseResource) {
   // Transfer some resources to the parent.
   ResourceProvider::ResourceIdArray resource_ids_to_transfer;
   resource_ids_to_transfer.push_back(id);
-  TransferableResourceArray list;
+  std::vector<TransferableResource> list;
   provider->PrepareSendToParent(resource_ids_to_transfer, &list);
   EXPECT_TRUE(provider->InUseByConsumer(id));
   EXPECT_CALL(test_data_.mock_callback_, ReleaseImpl(_, _, _, _)).Times(0);
@@ -1074,8 +1074,8 @@ TEST_F(TextureLayerImplWithMailboxTest, TestCallbackOnInUseResource) {
   Mock::VerifyAndClearExpectations(&test_data_.mock_callback_);
   EXPECT_CALL(test_data_.mock_callback_,
               ReleaseImpl(test_data_.mailbox_name1_, _, false, _)).Times(1);
-  ReturnedResourceArray returned;
-  TransferableResource::ReturnResources(list, &returned);
+  std::vector<ReturnedResource> returned =
+      TransferableResource::ReturnResources(list);
   provider->ReceiveReturnsFromParent(returned);
 }
 

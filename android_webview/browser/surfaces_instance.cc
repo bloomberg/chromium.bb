@@ -199,7 +199,7 @@ void SurfacesInstance::SetSolidColorRootFrame() {
 }
 
 void SurfacesInstance::DidReceiveCompositorFrameAck(
-    const cc::ReturnedResourceArray& resources) {
+    const std::vector<cc::ReturnedResource>& resources) {
   ReclaimResources(resources);
 }
 
@@ -210,7 +210,7 @@ void SurfacesInstance::WillDrawSurface(
     const gfx::Rect& damage_rect) {}
 
 void SurfacesInstance::ReclaimResources(
-    const cc::ReturnedResourceArray& resources) {
+    const std::vector<cc::ReturnedResource>& resources) {
   // Root surface should have no resources to return.
   CHECK(resources.empty());
 }

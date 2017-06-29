@@ -26,9 +26,9 @@ class CC_SURFACES_EXPORT SurfaceResourceHolder {
   ~SurfaceResourceHolder();
 
   void Reset();
-  void ReceiveFromChild(const TransferableResourceArray& resources);
-  void RefResources(const TransferableResourceArray& resources);
-  void UnrefResources(const ReturnedResourceArray& resources);
+  void ReceiveFromChild(const std::vector<TransferableResource>& resources);
+  void RefResources(const std::vector<TransferableResource>& resources);
+  void UnrefResources(const std::vector<ReturnedResource>& resources);
 
  private:
   SurfaceResourceHolderClient* client_;

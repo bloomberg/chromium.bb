@@ -192,8 +192,9 @@ class CC_EXPORT ResourceProvider
   // mailboxes and serializing meta-data into TransferableResources.
   // Resources are not removed from the ResourceProvider, but are marked as
   // "in use".
-  void PrepareSendToParent(const ResourceIdArray& resource_ids,
-                           TransferableResourceArray* transferable_resources);
+  void PrepareSendToParent(
+      const ResourceIdArray& resource_ids,
+      std::vector<TransferableResource>* transferable_resources);
 
   // Receives resources from a child, moving them from mailboxes. Resource IDs
   // passed are in the child namespace, and will be translated to the parent
@@ -205,7 +206,8 @@ class CC_EXPORT ResourceProvider
   // NOTE: if the sync_token is set on any TransferableResource, this will
   // wait on it.
   void ReceiveFromChild(
-      int child, const TransferableResourceArray& transferable_resources);
+      int child,
+      const std::vector<TransferableResource>& transferable_resources);
 
   // Once a set of resources have been received, they may or may not be used.
   // This declares what set of resources are currently in use from the child,
@@ -218,7 +220,7 @@ class CC_EXPORT ResourceProvider
   // NOTE: if the sync_token is set on any TransferableResource, this will
   // wait on it.
   void ReceiveReturnsFromParent(
-      const ReturnedResourceArray& transferable_resources);
+      const std::vector<ReturnedResource>& transferable_resources);
 
 #if defined(OS_ANDROID)
   // Send an overlay promotion hint to all resources that requested it via

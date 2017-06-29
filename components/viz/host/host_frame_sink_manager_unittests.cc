@@ -42,9 +42,10 @@ class StubCompositorFrameSinkClient
  private:
   // cc::mojom::CompositorFrameSinkClient:
   void DidReceiveCompositorFrameAck(
-      const cc::ReturnedResourceArray& resources) override {}
+      const std::vector<cc::ReturnedResource>& resources) override {}
   void OnBeginFrame(const cc::BeginFrameArgs& begin_frame_args) override {}
-  void ReclaimResources(const cc::ReturnedResourceArray& resources) override {}
+  void ReclaimResources(
+      const std::vector<cc::ReturnedResource>& resources) override {}
 
   mojo::Binding<cc::mojom::CompositorFrameSinkClient> binding_;
 

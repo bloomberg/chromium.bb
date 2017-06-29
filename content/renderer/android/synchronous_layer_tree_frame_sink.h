@@ -97,9 +97,10 @@ class SynchronousLayerTreeFrameSink
 
   // CompositorFrameSinkSupportClient implementation.
   void DidReceiveCompositorFrameAck(
-      const cc::ReturnedResourceArray& resources) override;
+      const std::vector<cc::ReturnedResource>& resources) override;
   void OnBeginFrame(const cc::BeginFrameArgs& args) override;
-  void ReclaimResources(const cc::ReturnedResourceArray& resources) override;
+  void ReclaimResources(
+      const std::vector<cc::ReturnedResource>& resources) override;
   void WillDrawSurface(const cc::LocalSurfaceId& local_surface_id,
                        const gfx::Rect& damage_rect) override;
 
@@ -119,7 +120,7 @@ class SynchronousLayerTreeFrameSink
   // IPC handlers.
   void SetMemoryPolicy(size_t bytes_limit);
   void OnReclaimResources(uint32_t layer_tree_frame_sink_id,
-                          const cc::ReturnedResourceArray& resources);
+                          const std::vector<cc::ReturnedResource>& resources);
 
   const int routing_id_;
   const uint32_t layer_tree_frame_sink_id_;

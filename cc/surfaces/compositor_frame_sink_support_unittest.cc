@@ -62,13 +62,14 @@ class FakeCompositorFrameSinkSupportClient
   ~FakeCompositorFrameSinkSupportClient() override = default;
 
   void DidReceiveCompositorFrameAck(
-      const ReturnedResourceArray& resources) override {
+      const std::vector<ReturnedResource>& resources) override {
     InsertResources(resources);
   }
 
   void OnBeginFrame(const BeginFrameArgs& args) override {}
 
-  void ReclaimResources(const ReturnedResourceArray& resources) override {
+  void ReclaimResources(
+      const std::vector<ReturnedResource>& resources) override {
     InsertResources(resources);
   }
 
@@ -76,17 +77,17 @@ class FakeCompositorFrameSinkSupportClient
                        const gfx::Rect& damage_rect) override {}
 
   void clear_returned_resources() { returned_resources_.clear(); }
-  const ReturnedResourceArray& returned_resources() {
+  const std::vector<ReturnedResource>& returned_resources() {
     return returned_resources_;
   }
 
  private:
-  void InsertResources(const ReturnedResourceArray& resources) {
+  void InsertResources(const std::vector<ReturnedResource>& resources) {
     returned_resources_.insert(returned_resources_.end(), resources.begin(),
                                resources.end());
   }
 
-  ReturnedResourceArray returned_resources_;
+  std::vector<ReturnedResource> returned_resources_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeCompositorFrameSinkSupportClient);
 };
@@ -131,7 +132,7 @@ class CompositorFrameSinkSupportTest : public testing::Test {
   void UnrefResources(ResourceId* ids_to_unref,
                       int* counts_to_unref,
                       size_t num_ids_to_unref) {
-    ReturnedResourceArray unref_array;
+    std::vector<ReturnedResource> unref_array;
     for (size_t i = 0; i < num_ids_to_unref; ++i) {
       ReturnedResource resource;
       resource.sync_token = consumer_sync_token_;
@@ -146,7 +147,7 @@ class CompositorFrameSinkSupportTest : public testing::Test {
                                            int* expected_returned_counts,
                                            size_t expected_resources,
                                            gpu::SyncToken expected_sync_token) {
-    const ReturnedResourceArray& actual_resources =
+    const std::vector<ReturnedResource>& actual_resources =
         fake_support_client_.returned_resources();
     ASSERT_EQ(expected_resources, actual_resources.size());
     for (size_t i = 0; i < expected_resources; ++i) {
@@ -290,7 +291,7 @@ TEST_F(CompositorFrameSinkSupportTest, ResourceReusedBeforeReturn) {
   // Now it should be returned.
   // We don't care how many entries are in the returned array for 7, so long as
   // the total returned count matches the submitted count.
-  const ReturnedResourceArray& returned =
+  const std::vector<ReturnedResource>& returned =
       fake_support_client_.returned_resources();
   size_t return_count = 0;
   for (size_t i = 0; i < returned.size(); ++i) {
@@ -519,7 +520,8 @@ TEST_F(CompositorFrameSinkSupportTest, EvictCurrentSurface) {
             local_surface_id);
   local_surface_id_ = LocalSurfaceId();
 
-  ReturnedResourceArray returned_resources = {resource.ToReturnedResource()};
+  std::vector<ReturnedResource> returned_resources = {
+      resource.ToReturnedResource()};
   EXPECT_TRUE(manager_.GetSurfaceForId(id));
   EXPECT_CALL(mock_client, DidReceiveCompositorFrameAck(returned_resources))
       .Times(1);
@@ -552,7 +554,8 @@ TEST_F(CompositorFrameSinkSupportTest,
   surface->AddDestructionDependency(
       SurfaceSequence(kYetAnotherArbitraryFrameSinkId, 4));
 
-  ReturnedResourceArray returned_resource = {resource.ToReturnedResource()};
+  std::vector<ReturnedResource> returned_resource = {
+      resource.ToReturnedResource()};
 
   EXPECT_TRUE(manager_.GetSurfaceForId(surface_id));
   EXPECT_CALL(mock_client, DidReceiveCompositorFrameAck(returned_resource))
@@ -589,7 +592,7 @@ TEST_F(CompositorFrameSinkSupportTest,
   surface->AddDestructionDependency(
       SurfaceSequence(kYetAnotherArbitraryFrameSinkId, 4));
 
-  ReturnedResourceArray returned_resources;
+  std::vector<ReturnedResource> returned_resources;
   EXPECT_TRUE(manager_.GetSurfaceForId(surface_id));
   support->EvictCurrentSurface();
   EXPECT_TRUE(manager_.GetSurfaceForId(surface_id));

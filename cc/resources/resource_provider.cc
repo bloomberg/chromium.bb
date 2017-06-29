@@ -1476,8 +1476,9 @@ const ResourceProvider::ResourceIdMap& ResourceProvider::GetChildToParentMap(
   return it->second.child_to_parent_map;
 }
 
-void ResourceProvider::PrepareSendToParent(const ResourceIdArray& resource_ids,
-                                           TransferableResourceArray* list) {
+void ResourceProvider::PrepareSendToParent(
+    const ResourceIdArray& resource_ids,
+    std::vector<TransferableResource>* list) {
   DCHECK(thread_checker_.CalledOnValidThread());
   GLES2Interface* gl = ContextGL();
 
@@ -1566,12 +1567,12 @@ void ResourceProvider::PrepareSendToParent(const ResourceIdArray& resource_ids,
 
 void ResourceProvider::ReceiveFromChild(
     int child,
-    const TransferableResourceArray& resources) {
+    const std::vector<TransferableResource>& resources) {
   DCHECK(thread_checker_.CalledOnValidThread());
   GLES2Interface* gl = ContextGL();
   Child& child_info = children_.find(child)->second;
   DCHECK(!child_info.marked_for_deletion);
-  for (TransferableResourceArray::const_iterator it = resources.begin();
+  for (std::vector<TransferableResource>::const_iterator it = resources.begin();
        it != resources.end(); ++it) {
     ResourceIdMap::iterator resource_in_map_it =
         child_info.child_to_parent_map.find(it->id);
@@ -1585,7 +1586,7 @@ void ResourceProvider::ReceiveFromChild(
     if ((!it->is_software && !gl) ||
         (it->is_software && !shared_bitmap_manager_)) {
       TRACE_EVENT0("cc", "ResourceProvider::ReceiveFromChild dropping invalid");
-      ReturnedResourceArray to_return;
+      std::vector<ReturnedResource> to_return;
       to_return.push_back(it->ToReturnedResource());
       child_info.return_callback.Run(to_return,
                                      blocking_main_thread_task_runner_);
@@ -1649,7 +1650,7 @@ void ResourceProvider::DeclareUsedResourcesFromChild(
 }
 
 void ResourceProvider::ReceiveReturnsFromParent(
-    const ReturnedResourceArray& resources) {
+    const std::vector<ReturnedResource>& resources) {
   DCHECK(thread_checker_.CalledOnValidThread());
   GLES2Interface* gl = ContextGL();
 
@@ -1822,7 +1823,7 @@ void ResourceProvider::DeleteAndReturnUnusedResourcesToChild(
   if (unused.empty() && !child_info->marked_for_deletion)
     return;
 
-  ReturnedResourceArray to_return;
+  std::vector<ReturnedResource> to_return;
   to_return.reserve(unused.size());
   std::vector<ReturnedResource*> need_synchronization_resources;
   std::vector<GLbyte*> unverified_sync_tokens;

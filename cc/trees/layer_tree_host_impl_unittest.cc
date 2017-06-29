@@ -8448,7 +8448,7 @@ TEST_F(CompositorFrameMetadataTest, CompositorFrameAckCountsAsSwapComplete) {
     host_impl_->DrawLayers(&frame);
     host_impl_->DidDrawAllLayers(frame);
   }
-  host_impl_->ReclaimResources(ReturnedResourceArray());
+  host_impl_->ReclaimResources(std::vector<ReturnedResource>());
   host_impl_->DidReceiveCompositorFrameAck();
   EXPECT_EQ(acks_received_, 1);
 }

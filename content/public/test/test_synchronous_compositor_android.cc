@@ -43,7 +43,7 @@ TestSynchronousCompositor::DemandDrawHwAsync(
 
 void TestSynchronousCompositor::ReturnResources(
     uint32_t layer_tree_frame_sink_id,
-    const cc::ReturnedResourceArray& resources) {
+    const std::vector<cc::ReturnedResource>& resources) {
   ReturnedResources returned_resources;
   returned_resources.layer_tree_frame_sink_id = layer_tree_frame_sink_id;
   returned_resources.resources = resources;

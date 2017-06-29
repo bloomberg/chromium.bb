@@ -40,7 +40,8 @@ class LayerTreeFrameSinkHolder : public cc::LayerTreeFrameSinkClient,
 
   // Overridden from cc::LayerTreeFrameSinkClient:
   void SetBeginFrameSource(cc::BeginFrameSource* source) override;
-  void ReclaimResources(const cc::ReturnedResourceArray& resources) override;
+  void ReclaimResources(
+      const std::vector<cc::ReturnedResource>& resources) override;
   void SetTreeActivationCallback(const base::Closure& callback) override {}
   void DidReceiveCompositorFrameAck() override;
   void DidLoseLayerTreeFrameSink() override {}

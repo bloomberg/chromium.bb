@@ -314,7 +314,7 @@ void SynchronousCompositorHost::SendZeroMemory() {
 
 void SynchronousCompositorHost::ReturnResources(
     uint32_t layer_tree_frame_sink_id,
-    const cc::ReturnedResourceArray& resources) {
+    const std::vector<cc::ReturnedResource>& resources) {
   DCHECK(!resources.empty());
   sender_->Send(new SyncCompositorMsg_ReclaimResources(
       routing_id_, layer_tree_frame_sink_id, resources));

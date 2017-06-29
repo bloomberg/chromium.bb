@@ -73,7 +73,7 @@ void FakeLayerTreeFrameSink::DidReceiveCompositorFrameAck() {
 void FakeLayerTreeFrameSink::ReturnResourcesHeldByParent() {
   if (last_sent_frame_) {
     // Return the last frame's resources immediately.
-    ReturnedResourceArray resources;
+    std::vector<ReturnedResource> resources;
     for (const auto& resource : resources_held_by_parent_)
       resources.push_back(resource.ToReturnedResource());
     resources_held_by_parent_.clear();

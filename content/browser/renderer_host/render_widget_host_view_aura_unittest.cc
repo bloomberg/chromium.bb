@@ -472,7 +472,7 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
     return GetDelegatedFrameHost()->ReleasedFrontLockActiveForTesting();
   }
 
-  void ReclaimResources(const cc::ReturnedResourceArray& resources) {
+  void ReclaimResources(const std::vector<cc::ReturnedResource>& resources) {
     GetDelegatedFrameHost()->ReclaimResources(resources);
   }
 
@@ -2377,7 +2377,7 @@ TEST_F(RenderWidgetHostViewAuraTest, ReturnedResources) {
   sink_->ClearMessages();
 
   // Accumulate some returned resources. This should trigger an IPC.
-  cc::ReturnedResourceArray resources;
+  std::vector<cc::ReturnedResource> resources;
   cc::ReturnedResource resource;
   resource.id = 1;
   resources.push_back(resource);

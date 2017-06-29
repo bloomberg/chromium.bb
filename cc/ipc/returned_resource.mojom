@@ -13,7 +13,3 @@ struct ReturnedResource {
   int32 count;
   bool lost;
 };
-
-struct ReturnedResourceArray {
-  array<ReturnedResource> returned_resources;
-};

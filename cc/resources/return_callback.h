@@ -11,7 +11,7 @@
 namespace cc {
 class BlockingTaskRunner;
 
-typedef base::Callback<void(const ReturnedResourceArray&,
+typedef base::Callback<void(const std::vector<ReturnedResource>&,
                             BlockingTaskRunner* main_thread_task_runner)>
     ReturnCallback;
 

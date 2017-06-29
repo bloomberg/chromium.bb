@@ -66,14 +66,14 @@ void FrameGenerator::Bind(
 }
 
 void FrameGenerator::ReclaimResources(
-    const cc::ReturnedResourceArray& resources) {
+    const std::vector<cc::ReturnedResource>& resources) {
   // Nothing to do here because FrameGenerator CompositorFrames don't reference
   // any resources.
   DCHECK(resources.empty());
 }
 
 void FrameGenerator::DidReceiveCompositorFrameAck(
-    const cc::ReturnedResourceArray& resources) {}
+    const std::vector<cc::ReturnedResource>& resources) {}
 
 void FrameGenerator::OnBeginFrame(const cc::BeginFrameArgs& begin_frame_args) {
   DCHECK(compositor_frame_sink_);
