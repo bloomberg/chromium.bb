@@ -183,6 +183,7 @@ class TabManager : public TabStripModelObserver {
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, FastShutdownSingleTabProcess);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
                            GetUnsortedTabStatsIsInVisibleWindow);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, HistogramsSessionRestoreSwitchToTab);
 
   // Information about a Browser.
   struct BrowserInfo {
@@ -320,6 +321,10 @@ class TabManager : public TabStripModelObserver {
 
   void OnSessionRestoreStartedLoadingTabs();
   void OnSessionRestoreFinishedLoadingTabs();
+
+  // Records UMA histograms for the tab state when switching to a different tab
+  // during session restore.
+  void RecordSwitchToTab(content::WebContents* contents) const;
 
   // Timer to periodically update the stats of the renderers.
   base::RepeatingTimer update_timer_;

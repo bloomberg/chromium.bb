@@ -77886,6 +77886,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="TabManager.SessionRestore.SwitchToTab" enum="TabLoadingState">
+  <owner>fmeawad@chromium.org</owner>
+  <summary>
+    The loading state of a tab at the time the user switched to it during a
+    session restore. The metric is only recorded when a tab is switched to from
+    another tab within the same tabstrip. As a result, there are two cases where
+    tabs are not included. The first case is when the initial forground tab is
+    shown, since it was not switched to from another tab. The second case is
+    when switching between different windows, either between two tabs in
+    different browser windows, or when switching to a different application and
+    switching back to the browser. The metric is only recorded when session
+    restore is actively loading tabs, which ends when either all tabs have been
+    loaded and their pages rendered, or tab loading needs to be deferred in
+    cases where the system is under memory pressure.
+  </summary>
+</histogram>
+
 <histogram name="Tabs.CountAtResume" units="tabs">
   <owner>lliabraa@chromium.org</owner>
   <summary>
