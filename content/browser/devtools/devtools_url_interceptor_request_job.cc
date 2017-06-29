@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/devtools/protocol/network_handler.h"
 #include "content/browser/devtools/protocol/page.h"
+#include "content/browser/loader/resource_request_info_impl.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/io_buffer.h"
 #include "net/base/upload_bytes_element_reader.h"
@@ -673,6 +674,38 @@ DevToolsURLInterceptorRequestJob::SubRequest::SubRequest(
       devtools_interceptor_request_job_),
   request_->set_method(request_details.method);
   request_->SetExtraRequestHeaders(request_details.extra_request_headers);
+
+  // Mimic the ResourceRequestInfoImpl of the original request.
+  const ResourceRequestInfoImpl* resource_request_info =
+      static_cast<const ResourceRequestInfoImpl*>(
+          ResourceRequestInfo::ForRequest(
+              devtools_interceptor_request_job->request()));
+  ResourceRequestInfoImpl* extra_data = new ResourceRequestInfoImpl(
+      resource_request_info->requester_info(),
+      resource_request_info->GetRouteID(),
+      resource_request_info->GetFrameTreeNodeId(),
+      resource_request_info->GetOriginPID(),
+      resource_request_info->GetRequestID(),
+      resource_request_info->GetRenderFrameID(),
+      resource_request_info->IsMainFrame(),
+      resource_request_info->ParentIsMainFrame(),
+      resource_request_info->GetResourceType(),
+      resource_request_info->GetPageTransition(),
+      resource_request_info->should_replace_current_entry(),
+      resource_request_info->IsDownload(), resource_request_info->is_stream(),
+      resource_request_info->allow_download(),
+      resource_request_info->HasUserGesture(),
+      resource_request_info->is_load_timing_enabled(),
+      resource_request_info->is_upload_progress_enabled(),
+      resource_request_info->do_not_prompt_for_login(),
+      resource_request_info->GetReferrerPolicy(),
+      resource_request_info->GetVisibilityState(),
+      resource_request_info->GetContext(),
+      resource_request_info->ShouldReportRawHeaders(),
+      resource_request_info->IsAsync(),
+      resource_request_info->GetPreviewsState(), resource_request_info->body(),
+      resource_request_info->initiated_in_secure_context());
+  extra_data->AssociateWithRequest(request_.get());
 
   if (request_details.post_data)
     request_->set_upload(std::move(request_details.post_data));

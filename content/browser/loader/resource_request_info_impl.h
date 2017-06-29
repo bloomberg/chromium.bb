@@ -115,7 +115,9 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   // request).
   int frame_tree_node_id() const { return frame_tree_node_id_; }
 
-  ResourceRequesterInfo* requester_info() { return requester_info_.get(); }
+  ResourceRequesterInfo* requester_info() const {
+    return requester_info_.get();
+  }
 
   // Updates the data associated with this request after it is is transferred
   // to a new renderer process.  Not all data will change during a transfer.
