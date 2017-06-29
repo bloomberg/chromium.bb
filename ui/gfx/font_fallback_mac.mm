@@ -40,6 +40,7 @@ bool FontsEqual(CTFontRef lhs, CTFontRef rhs) {
 }  // namespace
 
 std::vector<Font> GetFallbackFonts(const Font& font) {
+  DCHECK(font.GetNativeFont());
   // On Mac "There is a system default cascade list (which is polymorphic, based
   // on the user's language setting and current font)" - CoreText Programming
   // Guide.
@@ -51,6 +52,8 @@ std::vector<Font> GetFallbackFonts(const Font& font) {
           static_cast<CTFontRef>(font.GetNativeFont()), languages_cf));
 
   std::vector<Font> fallback_fonts;
+  if (!cascade_list)
+    return fallback_fonts;  // This should only happen for an invalid |font|.
 
   const CFIndex fallback_count = CFArrayGetCount(cascade_list);
   for (CFIndex i = 0; i < fallback_count; ++i) {

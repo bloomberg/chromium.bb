@@ -87,8 +87,7 @@ int GetFontStyleFromNSFont(NSFont* font) {
 
 // Returns the Font weight for |font|.
 Font::Weight GetFontWeightFromNSFont(NSFont* font) {
-  if (!font)
-    return Font::Weight::INVALID;
+  DCHECK(font);
 
   // Map CoreText weights in a manner similar to ct_weight_to_fontstyle() from
   // SkFontHost_mac.cpp, but adjust for MEDIUM so that the San Francisco's
@@ -174,6 +173,11 @@ NSFont* NSFontWithSpec(const std::string& font_name,
   return [NSFont fontWithDescriptor:descriptor size:font_size];
 }
 
+// Returns |font| or a default font if |font| is nil.
+NSFont* ValidateFont(NSFont* font) {
+  return font ? font : [NSFont systemFontOfSize:[NSFont systemFontSize]];
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -188,7 +192,9 @@ PlatformFontMac::PlatformFontMac(NativeFont native_font)
                       base::SysNSStringToUTF8([native_font familyName]),
                       [native_font pointSize],
                       GetFontStyleFromNSFont(native_font),
-                      GetFontWeightFromNSFont(native_font)) {}
+                      GetFontWeightFromNSFont(native_font)) {
+  DCHECK(native_font);  // Null should not be passed to this constructor.
+}
 
 PlatformFontMac::PlatformFontMac(const std::string& font_name, int font_size)
     : PlatformFontMac(font_name,
@@ -256,7 +262,7 @@ int PlatformFontMac::GetCapHeight() {
 }
 
 int PlatformFontMac::GetExpectedTextWidth(int length) {
-  if (!average_width_ && native_font_) {
+  if (!average_width_) {
     // -[NSFont boundingRectForGlyph:] seems to always return the largest
     // bounding rect that could be needed, which produces very wide expected
     // widths for strings. Instead, compute the actual width of a string
@@ -319,7 +325,7 @@ PlatformFontMac::PlatformFontMac(NativeFont font,
                                  int font_size,
                                  int font_style,
                                  Font::Weight font_weight)
-    : native_font_([font retain]),
+    : native_font_([ValidateFont(font) retain]),
       font_name_(font_name),
       font_size_(font_size),
       font_style_(font_style),
@@ -332,15 +338,7 @@ PlatformFontMac::~PlatformFontMac() {
 
 void PlatformFontMac::CalculateMetricsAndInitRenderParams() {
   NSFont* font = native_font_.get();
-  if (!font) {
-    // This object was constructed from a font name that doesn't correspond to
-    // an actual font. Don't waste time working out metrics.
-    height_ = 0;
-    ascent_ = 0;
-    cap_height_ = 0;
-    return;
-  }
-
+  DCHECK(font);
   ascent_ = ceil([font ascender]);
   cap_height_ = ceil([font capHeight]);
 
@@ -371,7 +369,7 @@ PlatformFont* PlatformFont::CreateDefault() {
 
 // static
 PlatformFont* PlatformFont::CreateFromNativeFont(NativeFont native_font) {
-  return new PlatformFontMac(native_font);
+  return new PlatformFontMac(ValidateFont(native_font));
 }
 
 // static

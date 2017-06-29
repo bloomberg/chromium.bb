@@ -4532,11 +4532,6 @@ TEST_P(RenderTextHarfBuzzTest, GetSubstringBoundsMultiline) {
 // Tests that RenderText doesn't crash even if it's passed an invalid font. Test
 // for crbug.com/668058.
 TEST_P(RenderTextTest, InvalidFont) {
-// TODO(crbug.com/699820): This crashes with RenderTextHarfBuzz on Mac.
-#if defined(OS_MACOSX)
-  if (GetParam() == RENDER_TEXT_HARFBUZZ)
-    return;
-#endif
   const std::string font_name = "invalid_font";
   const int kFontSize = 13;
   RenderText* render_text = GetRenderText();
