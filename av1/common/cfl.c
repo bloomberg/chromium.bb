@@ -300,6 +300,13 @@ void cfl_compute_parameters(MACROBLOCKD *const xd, TX_SIZE tx_size) {
   cfl->uv_height =
       max_intra_block_height(xd, plane_bsize, AOM_PLANE_U, tx_size);
 
+#if CONFIG_DEBUG
+  if (mbmi->sb_type >= BLOCK_8X8) {
+    assert(cfl->y_width <= cfl->uv_width << cfl->subsampling_x);
+    assert(cfl->y_height <= cfl->uv_height << cfl->subsampling_y);
+  }
+#endif
+
   // Compute block-level DC_PRED for both chromatic planes.
   // DC_PRED replaces beta in the linear model.
   cfl_dc_pred(xd, plane_bsize);
