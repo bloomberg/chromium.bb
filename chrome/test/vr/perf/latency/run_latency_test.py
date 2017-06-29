@@ -13,85 +13,15 @@ latency test.
 # Must be first import in order to add parent directory to system path.
 import latency_test_config
 import android_webvr_latency_test
+import vr_test_arg_parser
 
-import argparse
-import logging
-import os
 import sys
-
-DEFAULT_ADB_PATH = os.path.realpath('../../third_party/android_tools/sdk/'
-                                    'platform-tools/adb')
-# TODO(bsheedy): See about adding tool via DEPS instead of relying on it
-# existing on the bot already.
-DEFAULT_MOTOPHO_PATH = os.path.join(os.path.expanduser('~'), 'motopho/Motopho')
-DEFAULT_NUM_SAMPLES = 10
-DEFAULT_RESULTS_FILE = 'results-chart.json'
-DEFAULT_VRCORE_VERSION_FILE = 'vrcore_version.txt'
-
-
-def GetParsedArgs():
-  """Parses the command line arguments passed to the script.
-
-  Fails if any unknown arguments are present.
-
-  Returns:
-    An object containing all known, parsed arguments.
-  """
-  parser = argparse.ArgumentParser()
-  parser.add_argument('--adb-path',
-                      type=os.path.realpath,
-                      help='The absolute path to adb',
-                      default=DEFAULT_ADB_PATH)
-  parser.add_argument('--motopho-path',
-                      type=os.path.realpath,
-                      help='The absolute path to the directory with Motopho '
-                           'scripts',
-                      default=DEFAULT_MOTOPHO_PATH)
-  parser.add_argument('--output-dir',
-                      type=os.path.realpath,
-                      help='The directory where the script\'s output files '
-                           'will be saved')
-  parser.add_argument('--platform',
-                      help='The platform the test is being run on, either '
-                           '"android" or "windows"')
-  parser.add_argument('--results-file',
-                      default=DEFAULT_RESULTS_FILE,
-                      help='The name of the JSON file the results will be '
-                           'saved to')
-  parser.add_argument('--num-samples',
-                      default=DEFAULT_NUM_SAMPLES,
-                      type=int,
-                      help='The number of times to run the test before '
-                           'the results are averaged')
-  parser.add_argument('--url',
-                      action='append',
-                      default=[],
-                      dest='urls',
-                      help='The URL of a flicker app to use. Defaults to a '
-                           'set of URLs with various CPU and GPU loads')
-  parser.add_argument('-v', '--verbose',
-                      dest='verbose_count', default=0, action='count',
-                      help='Verbose level (multiple times for more)')
-  (args, unknown_args) = parser.parse_known_args()
-  SetLogLevel(args.verbose_count)
-  if unknown_args:
-    parser.error('Received unknown arguments: %s' % ' '.join(unknown_args))
-  return args
-
-
-def SetLogLevel(verbose_count):
-  """Sets the log level based on the command line arguments."""
-  log_level = logging.WARNING
-  if verbose_count == 1:
-    log_level = logging.INFO
-  elif verbose_count >= 2:
-    log_level = logging.DEBUG
-  logger = logging.getLogger()
-  logger.setLevel(log_level)
 
 
 def main():
-  args = GetParsedArgs()
+  parser = vr_test_arg_parser.VrTestArgParser()
+  parser.AddLatencyOptions()
+  args = parser.ParseArgumentsAndSetLogLevel()
   latency_test = None
   if args.platform == 'android':
     latency_test = android_webvr_latency_test.AndroidWebVrLatencyTest(args)
