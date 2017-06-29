@@ -505,10 +505,6 @@ void JumpList::StartLoadingFavicon() {
       GURL(icon_urls_.front().first),
       base::Bind(&JumpList::OnFaviconDataAvailable, base::Unretained(this)),
       &cancelable_task_tracker_);
-
-  // TODO(chengx): Remove the UMA histogram after fixing http://crbug.com/717236
-  UMA_HISTOGRAM_TIMES("WinJumplist.StartLoadingFaviconDuration",
-                      timer.Elapsed());
 }
 
 void JumpList::OnFaviconDataAvailable(
@@ -532,10 +528,6 @@ void JumpList::OnFaviconDataAvailable(
     }
     icon_urls_.pop_front();
   }
-
-  // TODO(chengx): Remove the UMA histogram after fixing http://crbug.com/717236
-  UMA_HISTOGRAM_TIMES("WinJumplist.OnFaviconDataAvailableDuration",
-                      timer.Elapsed());
 
   // Check whether we need to load more favicons.
   StartLoadingFavicon();
