@@ -264,6 +264,7 @@ suite('<bookmarks-command-manager>', function() {
   test('cannot edit unmodifiable nodes', function() {
     // Cannot edit root folders.
     var items = new Set(['1']);
+    store.data.selection.items = items;
     assertFalse(commandManager.canExecute(Command.EDIT, items));
     assertFalse(commandManager.canExecute(Command.DELETE, items));
 
@@ -273,6 +274,14 @@ suite('<bookmarks-command-manager>', function() {
     items = new Set(['12']);
     assertFalse(commandManager.canExecute(Command.EDIT, items));
     assertFalse(commandManager.canExecute(Command.DELETE, items));
+
+    commandManager.openCommandMenuAtPosition(0, 0);
+    var commandItem = {};
+    commandManager.root.querySelectorAll('.dropdown-item').forEach(element => {
+      commandItem[element.getAttribute('command')] = element;
+    });
+    MockInteractions.tap(commandItem[Command.EDIT]);
+    commandManager.assertLastCommand(null);
   });
 });
 
