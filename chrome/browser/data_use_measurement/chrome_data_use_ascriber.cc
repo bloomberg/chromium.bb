@@ -379,9 +379,11 @@ void ChromeDataUseAscriber::DidFinishMainFrameNavigation(
   NotifyPageLoadCommit(old_frame_entry);
 
   if (is_same_page_navigation) {
-    for (auto& request : entry->pending_url_requests()) {
-      AscribeRecorderWithRequest(request.first, old_frame_entry);
-      old_frame_entry->MovePendingURLRequest(&(*entry), request.first);
+    std::vector<net::URLRequest*> pending_url_requests;
+    entry->GetPendingURLRequests(&pending_url_requests);
+    for (net::URLRequest* request : pending_url_requests) {
+      AscribeRecorderWithRequest(request, old_frame_entry);
+      entry->MovePendingURLRequestTo(&(*old_frame_entry), request);
     }
     data_use_recorders_.erase(entry);
   } else {
