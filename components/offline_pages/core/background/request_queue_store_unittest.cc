@@ -34,6 +34,7 @@ const GURL kUrl2("http://another-example.com");
 const ClientId kClientId("bookmark", "1234");
 const ClientId kClientId2("async", "5678");
 const bool kUserRequested = true;
+const std::string kRequestOrigin = "abc.xyz";
 
 enum class LastResult {
   RESULT_NONE,
@@ -84,6 +85,53 @@ void BuildTestStoreWithSchemaFromM57(const base::FilePath& file) {
   ASSERT_TRUE(connection.DoesTableExist(REQUEST_QUEUE_TABLE_NAME));
   ASSERT_FALSE(
       connection.DoesColumnExist(REQUEST_QUEUE_TABLE_NAME, "original_url"));
+}
+
+void BuildTestStoreWithSchemaFromM58(const base::FilePath& file) {
+  sql::Connection connection;
+  ASSERT_TRUE(
+      connection.Open(file.Append(FILE_PATH_LITERAL("RequestQueue.db"))));
+  ASSERT_TRUE(connection.is_open());
+  ASSERT_TRUE(connection.BeginTransaction());
+  ASSERT_TRUE(
+      connection.Execute("CREATE TABLE " REQUEST_QUEUE_TABLE_NAME
+                         " (request_id INTEGER PRIMARY KEY NOT NULL,"
+                         " creation_time INTEGER NOT NULL,"
+                         " activation_time INTEGER NOT NULL DEFAULT 0,"
+                         " last_attempt_time INTEGER NOT NULL DEFAULT 0,"
+                         " started_attempt_count INTEGER NOT NULL,"
+                         " completed_attempt_count INTEGER NOT NULL,"
+                         " state INTEGER NOT NULL DEFAULT 0,"
+                         " url VARCHAR NOT NULL,"
+                         " client_namespace VARCHAR NOT NULL,"
+                         " client_id VARCHAR NOT NULL,"
+                         " original_url VARCHAR NOT NULL"
+                         ")"));
+
+  ASSERT_TRUE(connection.CommitTransaction());
+  sql::Statement statement(connection.GetUniqueStatement(
+      "INSERT OR IGNORE INTO " REQUEST_QUEUE_TABLE_NAME
+      " (request_id, creation_time, activation_time,"
+      " last_attempt_time, started_attempt_count, completed_attempt_count,"
+      " state, url, client_namespace, client_id, original_url)"
+      " VALUES "
+      " (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
+
+  statement.BindInt64(0, kRequestId);
+  statement.BindInt64(1, 0);
+  statement.BindInt64(2, 0);
+  statement.BindInt64(3, 0);
+  statement.BindInt64(4, 0);
+  statement.BindInt64(5, 0);
+  statement.BindInt64(6, 0);
+  statement.BindString(7, kUrl.spec());
+  statement.BindString(8, kClientId.name_space);
+  statement.BindString(9, kClientId.id);
+  statement.BindString(10, kUrl2.spec());
+  ASSERT_TRUE(statement.Run());
+  ASSERT_TRUE(connection.DoesTableExist(REQUEST_QUEUE_TABLE_NAME));
+  ASSERT_FALSE(
+      connection.DoesColumnExist(REQUEST_QUEUE_TABLE_NAME, "request_origin"));
 }
 
 }  // namespace
@@ -233,8 +281,11 @@ class RequestQueueStoreSQLFactory : public RequestQueueStoreFactory {
 
   RequestQueueStore* BuildStoreWithOldSchema(const base::FilePath& path,
                                              int version) override {
-    EXPECT_EQ(57, version);
-    BuildTestStoreWithSchemaFromM57(path);
+    if (version == 57) {
+      BuildTestStoreWithSchemaFromM57(path);
+    } else if (version == 58) {
+      BuildTestStoreWithSchemaFromM58(path);
+    }
 
     RequestQueueStore* store =
         new RequestQueueStoreSQL(base::ThreadTaskRunnerHandle::Get(), path);
@@ -293,6 +344,24 @@ TYPED_TEST(RequestQueueStoreTest, UpgradeFromVersion57Store) {
   EXPECT_EQ(kRequestId, this->last_requests()[0]->request_id());
   EXPECT_EQ(kUrl, this->last_requests()[0]->url());
   EXPECT_EQ(GURL(), this->last_requests()[0]->original_url());
+}
+
+TYPED_TEST(RequestQueueStoreTest, UpgradeFromVersion58Store) {
+  std::unique_ptr<RequestQueueStore> store(this->BuildStoreWithOldSchema(58));
+  // In-memory store does not support upgrading.
+  if (!store)
+    return;
+  this->InitializeStore(store.get());
+
+  store->GetRequests(base::Bind(&RequestQueueStoreTestBase::GetRequestsDone,
+                                base::Unretained(this)));
+  this->PumpLoop();
+  ASSERT_EQ(LastResult::RESULT_TRUE, this->last_result());
+  ASSERT_EQ(1u, this->last_requests().size());
+  EXPECT_EQ(kRequestId, this->last_requests()[0]->request_id());
+  EXPECT_EQ(kUrl, this->last_requests()[0]->url());
+  EXPECT_EQ(kUrl2, this->last_requests()[0]->original_url());
+  EXPECT_EQ("", this->last_requests()[0]->request_origin());
 }
 
 TYPED_TEST(RequestQueueStoreTest, GetRequestsEmpty) {
@@ -432,6 +501,7 @@ TYPED_TEST(RequestQueueStoreTest, UpdateRequest) {
   SavePageRequest updated_request(kRequestId, kUrl, kClientId,
                                   new_creation_time, kUserRequested);
   updated_request.set_original_url(kUrl2);
+  updated_request.set_request_origin(kRequestOrigin);
   // Try to update a non-existing request.
   SavePageRequest updated_request2(kRequestId2, kUrl, kClientId,
                                    new_creation_time, kUserRequested);
