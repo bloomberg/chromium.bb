@@ -2950,6 +2950,8 @@ crbug.com/v8/6504 fast/js/mozilla/strict/B.1.2.html [ NeedsManualRebaseline ]
 crbug.com/v8/6529 inspector/console/console-dir.html [ NeedsManualRebaseline ]
 crbug.com/v8/6529 inspector/console/console-format.html [ NeedsManualRebaseline ]
 
+crbug.com/737959 http/tests/misc/video-poster-image-load-outlives-gc-without-crashing.html [ Failure Pass Crash ]
+
 # These tests are failing on Mac-10.12 when using an Intel GPU.
 crbug.com/736177 [ Mac ] css2.1/t1202-counter-04-b.html [ Failure Pass ]
 crbug.com/736177 [ Mac ] css2.1/t1202-counters-04-b.html [ Failure Pass ]
