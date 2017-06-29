@@ -993,32 +993,13 @@ void HttpServerPropertiesManager::UpdatePrefsFromCacheOnNetworkSequence(
                  base::Passed(&quic_server_info_map), completion));
 }
 
-// A local or temporary data structure to hold |supports_spdy|, SpdySettings,
-// AlternativeServiceInfoVector, and SupportsQuic preferences for a server. This
-// is used only in UpdatePrefsOnPrefThread.
+// A local or temporary data structure to hold preferences for a server.
+// This is used only in UpdatePrefsOnPrefThread.
 struct ServerPref {
-  ServerPref()
-      : supports_spdy(false),
-        settings_map(nullptr),
-        alternative_service_info_vector(nullptr),
-        supports_quic(nullptr),
-        server_network_stats(nullptr) {}
-  ServerPref(
-      bool supports_spdy,
-      const SettingsMap* settings_map,
-      const AlternativeServiceInfoVector* alternative_service_info_vector,
-      const SupportsQuic* supports_quic,
-      const ServerNetworkStats* server_network_stats)
-      : supports_spdy(supports_spdy),
-        settings_map(settings_map),
-        alternative_service_info_vector(alternative_service_info_vector),
-        supports_quic(supports_quic),
-        server_network_stats(server_network_stats) {}
-  bool supports_spdy;
-  const SettingsMap* settings_map;
-  const AlternativeServiceInfoVector* alternative_service_info_vector;
-  const SupportsQuic* supports_quic;
-  const ServerNetworkStats* server_network_stats;
+  bool supports_spdy = false;
+  const AlternativeServiceInfoVector* alternative_service_info_vector = nullptr;
+  const SupportsQuic* supports_quic = nullptr;
+  const ServerNetworkStats* server_network_stats = nullptr;
 };
 
 // All maps and lists are in MRU order.

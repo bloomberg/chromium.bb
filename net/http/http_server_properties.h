@@ -249,9 +249,8 @@ extern const char kAlternativeServiceHeader[];
 
 // The interface for setting/retrieving the HTTP server properties.
 // Currently, this class manages servers':
-// * SPDY support (based on NPN results).
-// * alternative service support.
-// * SPDY Settings (like CWND ID field).
+// * HTTP/2 support;
+// * Alternative Service support;
 // * QUIC data (like ServerNetworkStats and QuicServerInfo).
 //
 // Embedders must ensure that HttpServerProperites is completely initialized
