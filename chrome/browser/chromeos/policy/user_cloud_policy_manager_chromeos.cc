@@ -349,6 +349,15 @@ void UserCloudPolicyManagerChromeOS::GetChromePolicy(PolicyMap* policy_map) {
 }
 
 void UserCloudPolicyManagerChromeOS::FetchPolicyOAuthToken() {
+  // By-pass token fetching for test.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kDisableGaiaServices)) {
+    OnOAuth2PolicyTokenFetched(
+        "fake_policy_token",
+        GoogleServiceAuthError(GoogleServiceAuthError::NONE));
+    return;
+  }
+
   const std::string& refresh_token = chromeos::UserSessionManager::GetInstance()
                                          ->user_context()
                                          .GetRefreshToken();
