@@ -8,7 +8,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/timer/timer.h"
 #include "base/values.h"
 #include "chrome/browser/android/vr_shell/color_scheme.h"
 #include "chrome/browser/android/vr_shell/ui_elements/simple_textured_element.h"
@@ -18,6 +17,7 @@
 
 namespace vr_shell {
 
+class ExclusiveScreenToast;
 class LoadingIndicator;
 class TransientUrlBar;
 class UiBrowserInterface;
@@ -62,11 +62,6 @@ class UiSceneManager {
   void OnExitPromptPrimaryButtonClickedForTesting();
 
  private:
-  enum ToastState {
-    UNCHANGED = 0,
-    SET_FOR_WEB_VR,
-    SET_FOR_FULLSCREEN,
-  };
   void CreateScreenDimmer();
   void CreateSecurityWarnings();
   void CreateSystemIndicators();
@@ -81,14 +76,10 @@ class UiSceneManager {
 
   void ConfigureScene();
   void ConfigureSecurityWarnings();
-  void ConfigureTransientUrlBar();
-  void ConfigureIndicators();
   void ConfigureExclusiveScreenToast();
+  void ConfigureIndicators();
   void UpdateBackgroundColor();
   void CloseExitPrompt();
-  void OnSecurityWarningTimer();
-  void OnTransientUrlBarTimer();
-  void OnExclusiveScreenToastTimer();
   void OnBackButtonClicked();
   void OnSecurityIconClicked();
   void OnExitPromptPrimaryButtonClicked();
@@ -105,8 +96,8 @@ class UiSceneManager {
 
   // UI element pointers (not owned by the scene manager).
   UiElement* permanent_security_warning_ = nullptr;
-  UiElement* transient_security_warning_ = nullptr;
-  UiElement* exclusive_screen_toast_ = nullptr;
+  TransientSecurityWarning* transient_security_warning_ = nullptr;
+  ExclusiveScreenToast* exclusive_screen_toast_ = nullptr;
   UiElement* exit_prompt_ = nullptr;
   UiElement* exit_prompt_backplane_ = nullptr;
   UiElement* exit_warning_ = nullptr;
@@ -130,6 +121,7 @@ class UiSceneManager {
   bool in_cct_;
   bool web_vr_mode_;
   bool web_vr_show_toast_ = false;
+  bool web_vr_autopresentation_ = false;
   bool web_vr_autopresentation_expected_ = false;
   bool secure_origin_ = false;
   bool fullscreen_ = false;
@@ -139,17 +131,12 @@ class UiSceneManager {
   bool screen_capturing_ = false;
   bool location_access_ = false;
   bool bluetooth_connected_ = false;
-  ToastState toast_state_ = UNCHANGED;
 
   int next_available_id_ = 1;
 
   std::vector<UiElement*> content_elements_;
   std::vector<UiElement*> background_elements_;
   std::vector<UiElement*> control_elements_;
-
-  base::OneShotTimer security_warning_timer_;
-  base::OneShotTimer transient_url_bar_timer_;
-  base::OneShotTimer exclusive_screen_toast_timer_;
 
   base::WeakPtrFactory<UiSceneManager> weak_ptr_factory_;
 

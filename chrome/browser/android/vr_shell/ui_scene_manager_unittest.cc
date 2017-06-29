@@ -163,7 +163,7 @@ TEST_F(UiSceneManagerTest, WebVrTransientWarningTimesOut) {
   EXPECT_FALSE(IsVisible(kWebVrTransientHttpSecurityWarning));
 }
 
-TEST_F(UiSceneManagerTest, ToastVisibility) {
+TEST_F(UiSceneManagerTest, ToastStateTransitions) {
   // Tests toast not showing when directly entering VR though WebVR
   // presentation.
   MakeManager(kNotInCct, kInWebVr);
@@ -188,7 +188,27 @@ TEST_F(UiSceneManagerTest, ToastVisibility) {
   EXPECT_FALSE(IsVisible(kExclusiveScreenToast));
 
   manager_->SetWebVrMode(false, true);
+  EXPECT_FALSE(IsVisible(kExclusiveScreenToast));
+}
+
+TEST_F(UiSceneManagerTest, ToastTransience) {
+  base::ScopedMockTimeMessageLoopTaskRunner task_runner_;
+
+  MakeManager(kNotInCct, kNotInWebVr);
+  EXPECT_FALSE(IsVisible(kExclusiveScreenToast));
+
+  manager_->SetFullscreen(true);
   EXPECT_TRUE(IsVisible(kExclusiveScreenToast));
+  task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(IsVisible(kExclusiveScreenToast));
+
+  manager_->SetWebVrMode(true, true);
+  EXPECT_TRUE(IsVisible(kExclusiveScreenToast));
+  task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(IsVisible(kExclusiveScreenToast));
+
+  manager_->SetWebVrMode(false, false);
+  EXPECT_FALSE(IsVisible(kExclusiveScreenToast));
 }
 
 TEST_F(UiSceneManagerTest, CloseButtonVisibleInCctFullscreen) {
@@ -277,8 +297,9 @@ TEST_F(UiSceneManagerTest, UiUpdatesForIncognito) {
 }
 
 TEST_F(UiSceneManagerTest, WebVrAutopresented) {
-  MakeAutoPresentedManager();
+  base::ScopedMockTimeMessageLoopTaskRunner task_runner_;
 
+  MakeAutoPresentedManager();
   manager_->SetWebVrSecureOrigin(true);
 
   // Initially, we should only show the splash screen.
@@ -287,9 +308,12 @@ TEST_F(UiSceneManagerTest, WebVrAutopresented) {
 
   // Enter WebVR with autopresentation.
   manager_->SetWebVrMode(true, false);
-
   VerifyElementsVisible("Autopresented",
                         std::set<UiElementDebugId>{kTransientUrlBar});
+
+  // Make sure the transient URL bar times out.
+  task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(IsVisible(kTransientUrlBar));
 }
 
 TEST_F(UiSceneManagerTest, UiUpdatesForFullscreenChanges) {

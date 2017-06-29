@@ -138,6 +138,7 @@ UiSceneManager::UiSceneManager(UiBrowserInterface* browser,
       scene_(scene),
       in_cct_(in_cct),
       web_vr_mode_(in_web_vr),
+      web_vr_autopresentation_(web_vr_autopresentation_expected),
       web_vr_autopresentation_expected_(web_vr_autopresentation_expected),
       weak_ptr_factory_(this) {
   CreateSplashScreen();
@@ -153,7 +154,6 @@ UiSceneManager::UiSceneManager(UiBrowserInterface* browser,
   CreateToasts();
 
   ConfigureScene();
-  ConfigureSecurityWarnings();
 }
 
 UiSceneManager::~UiSceneManager() {}
@@ -193,7 +193,10 @@ void UiSceneManager::CreateSecurityWarnings() {
   permanent_security_warning_ = element.get();
   scene_->AddUiElement(std::move(element));
 
-  element = base::MakeUnique<TransientSecurityWarning>(1024);
+  auto transient_warning = base::MakeUnique<TransientSecurityWarning>(
+      1024, base::TimeDelta::FromSeconds(kWarningTimeoutSeconds));
+  transient_security_warning_ = transient_warning.get();
+  element = std::move(transient_warning);
   element->set_debug_id(kWebVrTransientHttpSecurityWarning);
   element->set_id(AllocateId());
   element->set_fill(vr_shell::Fill::NONE);
@@ -203,7 +206,6 @@ void UiSceneManager::CreateSecurityWarnings() {
   element->set_visible(false);
   element->set_hit_testable(false);
   element->set_lock_to_fov(true);
-  transient_security_warning_ = element.get();
   scene_->AddUiElement(std::move(element));
 
   element = base::MakeUnique<ExitWarning>(1024);
@@ -369,7 +371,7 @@ void UiSceneManager::CreateUrlBar() {
 
 void UiSceneManager::CreateTransientUrlBar() {
   auto url_bar = base::MakeUnique<TransientUrlBar>(
-      512,
+      512, base::TimeDelta::FromSeconds(kTransientUrlBarTimeoutSeconds),
       base::Bind(&UiSceneManager::OnUnsupportedMode, base::Unretained(this)));
   url_bar->set_debug_id(kTransientUrlBar);
   url_bar->set_id(AllocateId());
@@ -433,8 +435,8 @@ void UiSceneManager::CreateExitPrompt() {
 }
 
 void UiSceneManager::CreateToasts() {
-  std::unique_ptr<UiElement> element =
-      base::MakeUnique<ExclusiveScreenToast>(512);
+  auto element = base::MakeUnique<ExclusiveScreenToast>(
+      512, base::TimeDelta::FromSeconds(kToastTimeoutSeconds));
   element->set_debug_id(kExclusiveScreenToast);
   element->set_id(AllocateId());
   element->set_fill(vr_shell::Fill::NONE);
@@ -453,22 +455,28 @@ void UiSceneManager::SetWebVrMode(bool web_vr, bool show_toast) {
   if (web_vr_mode_ == web_vr && web_vr_show_toast_ == show_toast) {
     return;
   }
+
   web_vr_mode_ = web_vr;
-  ConfigureTransientUrlBar();
-  scene_->set_showing_splash_screen(false);
   web_vr_autopresentation_expected_ = false;
   web_vr_show_toast_ = show_toast;
-  toast_state_ = SET_FOR_WEB_VR;
+  if (!web_vr_mode_)
+    web_vr_autopresentation_ = false;
+  scene_->set_showing_splash_screen(false);
   ConfigureScene();
-  ConfigureSecurityWarnings();
-  ConfigureExclusiveScreenToast();
+
+  // Because we may be transitioning from and to fullscreen, where the toast is
+  // also shown, explicitly kick or end visibility here.
+  if (web_vr) {
+    exclusive_screen_toast_->transience()->KickVisibilityIfEnabled();
+  } else {
+    exclusive_screen_toast_->transience()->EndVisibilityIfEnabled();
+  }
 }
 
 void UiSceneManager::ConfigureScene() {
   // Splash screen.
   scene_->set_showing_splash_screen(web_vr_autopresentation_expected_);
-  splash_screen_icon_->SetEnabled(!web_vr_mode_ &&
-                                  web_vr_autopresentation_expected_);
+  splash_screen_icon_->SetEnabled(web_vr_autopresentation_expected_);
 
   // Exit warning.
   exit_warning_->SetEnabled(scene_->is_exiting());
@@ -531,12 +539,11 @@ void UiSceneManager::ConfigureScene() {
                                 -kBackgroundDistanceMultiplier);
   UpdateBackgroundColor();
 
-  // Configure other subsystems here as well. Ultimately, it would be nice if we
-  // could configure all elements through ConfigureScene(), as the exact
-  // conditions that control each element are getting complicated. More systems
-  // should move in here, such that a single method call can update the entire
-  // scene. The drawback is slightly more overhead for individual scene
-  // reconfigurations.
+  transient_url_bar_->SetEnabled(web_vr_autopresentation_ &&
+                                 !scene_->showing_splash_screen());
+
+  ConfigureExclusiveScreenToast();
+  ConfigureSecurityWarnings();
   ConfigureIndicators();
 }
 
@@ -581,6 +588,8 @@ void UiSceneManager::SetBluetoothConnectedIndicator(bool enabled) {
 }
 
 void UiSceneManager::SetWebVrSecureOrigin(bool secure) {
+  if (secure_origin_ == secure)
+    return;
   secure_origin_ = secure;
   ConfigureSecurityWarnings();
 }
@@ -611,22 +620,13 @@ void UiSceneManager::SetFullscreen(bool fullscreen) {
   if (fullscreen_ == fullscreen)
     return;
   fullscreen_ = fullscreen;
-  toast_state_ = SET_FOR_FULLSCREEN;
   ConfigureScene();
-  ConfigureExclusiveScreenToast();
 }
 
 void UiSceneManager::ConfigureSecurityWarnings() {
   bool enabled = web_vr_mode_ && !secure_origin_;
-  permanent_security_warning_->set_visible(enabled);
-  transient_security_warning_->set_visible(enabled);
-  if (enabled) {
-    security_warning_timer_.Start(
-        FROM_HERE, base::TimeDelta::FromSeconds(kWarningTimeoutSeconds), this,
-        &UiSceneManager::OnSecurityWarningTimer);
-  } else {
-    security_warning_timer_.Stop();
-  }
+  permanent_security_warning_->SetEnabled(enabled);
+  transient_security_warning_->SetEnabled(enabled);
 }
 
 void UiSceneManager::ConfigureIndicators() {
@@ -663,17 +663,9 @@ void UiSceneManager::ConfigureIndicators() {
 }
 
 void UiSceneManager::ConfigureExclusiveScreenToast() {
-  bool toast_visible = false;
-  switch (toast_state_) {
-    case SET_FOR_WEB_VR:
-      toast_visible = web_vr_show_toast_;
-      break;
-    case SET_FOR_FULLSCREEN:
-      toast_visible = fullscreen_;
-      break;
-    case UNCHANGED:
-      return;
-  }
+  exclusive_screen_toast_->SetEnabled((fullscreen_ && !web_vr_mode_) ||
+                                      (web_vr_mode_ && web_vr_show_toast_));
+
   if (fullscreen_ && !web_vr_mode_) {
     // Do not set size again. The size might have been changed by the backing
     // texture size in UpdateElementSize.
@@ -697,39 +689,6 @@ void UiSceneManager::ConfigureExclusiveScreenToast() {
         gfx::Quaternion(gfx::Vector3dF(1, 0, 0), kWebVrAngleRadians));
     exclusive_screen_toast_->set_lock_to_fov(true);
   }
-  exclusive_screen_toast_->set_visible(toast_visible);
-  if (toast_visible) {
-    exclusive_screen_toast_timer_.Start(
-        FROM_HERE, base::TimeDelta::FromSeconds(kToastTimeoutSeconds), this,
-        &UiSceneManager::OnExclusiveScreenToastTimer);
-  } else {
-    exclusive_screen_toast_timer_.Stop();
-  }
-  toast_state_ = UNCHANGED;
-}
-
-void UiSceneManager::OnSecurityWarningTimer() {
-  transient_security_warning_->set_visible(false);
-}
-
-void UiSceneManager::ConfigureTransientUrlBar() {
-  bool enabled = web_vr_mode_ && web_vr_autopresentation_expected_;
-  transient_url_bar_->set_visible(enabled);
-  if (enabled) {
-    transient_url_bar_timer_.Start(
-        FROM_HERE, base::TimeDelta::FromSeconds(kTransientUrlBarTimeoutSeconds),
-        this, &UiSceneManager::OnTransientUrlBarTimer);
-  } else {
-    transient_url_bar_timer_.Stop();
-  }
-}
-
-void UiSceneManager::OnTransientUrlBarTimer() {
-  transient_url_bar_->set_visible(false);
-}
-
-void UiSceneManager::OnExclusiveScreenToastTimer() {
-  exclusive_screen_toast_->set_visible(false);
 }
 
 void UiSceneManager::OnBackButtonClicked() {
