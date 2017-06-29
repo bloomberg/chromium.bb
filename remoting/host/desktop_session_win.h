@@ -92,6 +92,7 @@ class DesktopSessionWin
   void OnChannelConnected(int32_t peer_pid) override;
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnPermanentError(int exit_code) override;
+  void OnWorkerProcessStopped() override;
 
   // WtsTerminalObserver implementation.
   void OnSessionAttached(uint32_t session_id) override;

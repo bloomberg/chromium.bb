@@ -68,6 +68,7 @@ class MockIpcDelegate : public WorkerProcessIpcDelegate {
   MOCK_METHOD1(OnChannelConnected, void(int32_t));
   MOCK_METHOD1(OnMessageReceived, bool(const IPC::Message&));
   MOCK_METHOD1(OnPermanentError, void(int));
+  MOCK_METHOD0(OnWorkerProcessStopped, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockIpcDelegate);
@@ -394,6 +395,8 @@ TEST_F(WorkerProcessLauncherTest, Start) {
       .Times(0);
   EXPECT_CALL(server_listener_, OnPermanentError(_))
       .Times(0);
+  EXPECT_CALL(server_listener_, OnWorkerProcessStopped())
+      .Times(0);
 
   StartWorker();
   StopWorker();
@@ -413,6 +416,8 @@ TEST_F(WorkerProcessLauncherTest, StartAndConnect) {
       .WillOnce(InvokeWithoutArgs(this,
                                   &WorkerProcessLauncherTest::StopWorker));
   EXPECT_CALL(server_listener_, OnPermanentError(_))
+      .Times(0);
+  EXPECT_CALL(server_listener_, OnWorkerProcessStopped())
       .Times(0);
 
   StartWorker();
@@ -438,6 +443,8 @@ TEST_F(WorkerProcessLauncherTest, Restart) {
 
   EXPECT_CALL(server_listener_, OnPermanentError(_))
       .Times(0);
+  EXPECT_CALL(server_listener_, OnWorkerProcessStopped())
+      .Times(1);
 
   StartWorker();
   base::RunLoop().Run();
@@ -461,6 +468,8 @@ TEST_F(WorkerProcessLauncherTest, DropIpcChannel) {
 
   EXPECT_CALL(server_listener_, OnPermanentError(_))
       .Times(0);
+  EXPECT_CALL(server_listener_, OnWorkerProcessStopped())
+      .Times(1);
 
   StartWorker();
   base::RunLoop().Run();
@@ -484,6 +493,8 @@ TEST_F(WorkerProcessLauncherTest, PermanentError) {
       .Times(1)
       .WillOnce(InvokeWithoutArgs(this,
                                   &WorkerProcessLauncherTest::StopWorker));
+  EXPECT_CALL(server_listener_, OnWorkerProcessStopped())
+      .Times(1);
 
   StartWorker();
   base::RunLoop().Run();
@@ -509,6 +520,8 @@ TEST_F(WorkerProcessLauncherTest, Crash) {
           &WorkerProcessLauncherTest::TerminateWorker,
           base::Unretained(this),
           EXCEPTION_BREAKPOINT)));
+  EXPECT_CALL(server_listener_, OnWorkerProcessStopped())
+      .Times(1);
 
   StartWorker();
   base::RunLoop().Run();
@@ -534,6 +547,8 @@ TEST_F(WorkerProcessLauncherTest, CrashAnyway) {
       .Times(1)
       .WillOnce(InvokeWithoutArgs(
           this, &WorkerProcessLauncherTest::SendFakeMessageToLauncher));
+  EXPECT_CALL(server_listener_, OnWorkerProcessStopped())
+      .Times(1);
 
   StartWorker();
   base::RunLoop().Run();

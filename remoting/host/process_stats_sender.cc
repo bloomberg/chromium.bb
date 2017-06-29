@@ -19,6 +19,7 @@ ProcessStatsSender::ProcessStatsSender(
     std::initializer_list<ProcessStatsAgent*> agents)
     : host_stats_stub_(host_stats_stub),
       agents_(agents),
+      interval_(interval),
       thread_checker_() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(host_stats_stub_);
@@ -31,6 +32,10 @@ ProcessStatsSender::ProcessStatsSender(
 ProcessStatsSender::~ProcessStatsSender() {
   DCHECK(thread_checker_.CalledOnValidThread());
   timer_.Stop();
+}
+
+base::TimeDelta ProcessStatsSender::interval() const {
+  return interval_;
 }
 
 void ProcessStatsSender::ReportUsage() {

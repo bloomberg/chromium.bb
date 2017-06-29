@@ -252,6 +252,8 @@ void WorkerProcessLauncher::StopWorker() {
   if (stopping())
     return;
 
+  ipc_handler_->OnWorkerProcessStopped();
+
   // Stop trying to restart the worker process if it exited due to
   // misconfiguration.
   if (kMinPermanentErrorExitCode <= exit_code_ &&
