@@ -1334,8 +1334,6 @@ source_set("browser") {
     "screen_orientation/screen_orientation_provider.h",
     "service_manager/common_browser_interfaces.cc",
     "service_manager/common_browser_interfaces.h",
-    "service_manager/merge_dictionary.cc",
-    "service_manager/merge_dictionary.h",
     "service_manager/service_manager_context.cc",
     "service_manager/service_manager_context.h",
     "service_worker/embedded_worker_instance.cc",

@@ -2,12 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/service_manager/merge_dictionary.h"
+#include "services/service_manager/embedder/manifest_utils.h"
 
 #include "base/memory/ptr_util.h"
 
-namespace content {
+namespace service_manager {
 
+namespace {
+
+// Similar to base::DictionaryValue::MergeDictionary(), except concatenates
+// ListValue contents.
+// This is explicitly not part of base::DictionaryValue at brettw's request.
 void MergeDictionary(base::DictionaryValue* target,
                      const base::DictionaryValue* source) {
   for (base::DictionaryValue::Iterator it(*source); !it.IsAtEnd();
@@ -17,9 +22,8 @@ void MergeDictionary(base::DictionaryValue* target,
     if (merge_value->IsType(base::Value::Type::DICTIONARY)) {
       base::DictionaryValue* sub_dict;
       if (target->GetDictionaryWithoutPathExpansion(it.key(), &sub_dict)) {
-        MergeDictionary(
-            sub_dict,
-            static_cast<const base::DictionaryValue*>(merge_value));
+        MergeDictionary(sub_dict,
+                        static_cast<const base::DictionaryValue*>(merge_value));
         continue;
       }
     }
@@ -43,4 +47,19 @@ void MergeDictionary(base::DictionaryValue* target,
   }
 }
 
-}  // namespace content
+}  // namespace
+
+void MergeManifestWithOverlay(base::Value* manifest, base::Value* overlay) {
+  if (!overlay)
+    return;
+
+  base::DictionaryValue* manifest_dictionary = nullptr;
+  bool result = manifest->GetAsDictionary(&manifest_dictionary);
+  DCHECK(result);
+  base::DictionaryValue* overlay_dictionary = nullptr;
+  result = overlay->GetAsDictionary(&overlay_dictionary);
+  DCHECK(result);
+  MergeDictionary(manifest_dictionary, overlay_dictionary);
+}
+
+}  // namespace service_manager

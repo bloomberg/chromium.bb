@@ -1301,7 +1301,6 @@ test("content_unittests") {
     "../browser/renderer_host/text_input_client_mac_unittest.mm",
     "../browser/resolve_proxy_msg_helper_unittest.cc",
     "../browser/screen_orientation/screen_orientation_provider_unittest.cc",
-    "../browser/service_manager/merge_dictionary_unittest.cc",
     "../browser/service_worker/embedded_worker_instance_unittest.cc",
     "../browser/service_worker/foreign_fetch_request_handler_unittest.cc",
     "../browser/service_worker/link_header_support_unittest.cc",
