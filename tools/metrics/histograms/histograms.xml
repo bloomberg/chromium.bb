@@ -41401,6 +41401,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.SSLVersionInterferenceDetails_TLS13Experiment"
+    enum="SSLVersionInterferenceDetails">
+  <owner>davidben@chromium.org</owner>
+  <owner>svaldez@chromium.org</owner>
+  <summary>
+    For each detected SSL version interference against a server in the initial
+    TLS 1.3 deployment, details on how the initial connection failed.
+  </summary>
+</histogram>
+
 <histogram name="Net.SSLVersionInterferenceError" enum="NetErrorCodes">
   <owner>davidben@chromium.org</owner>
   <summary>

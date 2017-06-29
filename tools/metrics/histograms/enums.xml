@@ -35116,6 +35116,17 @@ from previous Chrome versions.
   <int value="2054" label="rsa_pss_sha512"/>
 </enum>
 
+<enum name="SSLVersionInterferenceDetails">
+  <int value="0" label="Other"/>
+  <int value="1" label="Connection closed"/>
+  <int value="2" label="Connection reset"/>
+  <int value="3" label="access_denied alert"/>
+  <int value="4" label="bad_record_mac alert"/>
+  <int value="5" label="application data instead of handshake"/>
+  <int value="6" label="Version or cipher negotiation failed"/>
+  <int value="7" label="Protocol error"/>
+</enum>
+
 <enum name="StarsLaunchLocation">
   <int value="0" label="All Items"/>
   <int value="1" label="Uncategorized"/>
