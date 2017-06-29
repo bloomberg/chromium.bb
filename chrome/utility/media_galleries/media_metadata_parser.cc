@@ -11,8 +11,8 @@
 #include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread.h"
-#include "media/base/audio_video_metadata_extractor.h"
 #include "media/base/data_source.h"
+#include "media/filters/audio_video_metadata_extractor.h"
 #include "net/base/mime_sniffer.h"
 
 namespace MediaGalleries = extensions::api::media_galleries;

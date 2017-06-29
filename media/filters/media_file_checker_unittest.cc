@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/base/media_file_checker.h"
+#include "media/filters/media_file_checker.h"
 
 #include <utility>
 

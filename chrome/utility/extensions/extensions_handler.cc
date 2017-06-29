@@ -24,7 +24,7 @@
 #include "ui/base/ui_base_switches.h"
 
 #if !defined(MEDIA_DISABLE_FFMPEG)
-#include "media/base/media_file_checker.h"
+#include "media/filters/media_file_checker.h"
 #endif
 
 #if defined(OS_WIN)

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/base/media_file_checker.h"
+#include "media/filters/media_file_checker.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -28,8 +28,7 @@ static void OnError(bool* called) {
 
 MediaFileChecker::MediaFileChecker(base::File file) : file_(std::move(file)) {}
 
-MediaFileChecker::~MediaFileChecker() {
-}
+MediaFileChecker::~MediaFileChecker() {}
 
 bool MediaFileChecker::Start(base::TimeDelta check_time) {
   media::FileDataSource source(std::move(file_));
@@ -69,7 +68,8 @@ bool MediaFileChecker::Start(base::TimeDelta check_time) {
   std::unique_ptr<AVFrame, media::ScopedPtrAVFreeFrame> frame(av_frame_alloc());
   int result = 0;
 
-  const base::TimeTicks deadline = base::TimeTicks::Now() +
+  const base::TimeTicks deadline =
+      base::TimeTicks::Now() +
       std::min(check_time,
                base::TimeDelta::FromSeconds(kMaxCheckTimeInSeconds));
   do {
