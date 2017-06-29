@@ -27,7 +27,6 @@
 #include "chrome/browser/sessions/session_restore_observer.h"
 #include "chrome/browser/ui/browser_tab_strip_tracker.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
-#include "ui/gfx/geometry/rect.h"
 
 class BrowserList;
 class GURL;
@@ -190,7 +189,6 @@ class TabManager : public TabStripModelObserver {
     TabStripModel* tab_strip_model;
     bool window_is_active;
     bool window_is_minimized;
-    gfx::Rect window_bounds;
     bool browser_is_app;
   };
 
@@ -244,15 +242,8 @@ class TabManager : public TabStripModelObserver {
   // Returns the number of tabs open in all browser instances.
   int GetTabCount() const;
 
-  // Adds all the stats of the tabs in |tab_strip_model| into |stats_list|.
-  // |window_is_visible| indicates whether |tab_strip_model| lives in a window
-  // which is visible to the user. |window_is_active| indicates whether
-  // |tab_strip_model| lives in the currently active window. |browser_is_app|
-  // indicates whether |tab_strip_model| is in a Browser running an app.
-  void AddTabStats(const TabStripModel* tab_strip_model,
-                   bool window_is_visible,
-                   bool window_is_active,
-                   bool browser_is_app,
+  // Adds all the stats of the tabs in |browser_info| into |stats_list|.
+  void AddTabStats(const BrowserInfo& browser_info,
                    TabStatsList* stats_list) const;
 
   // Callback for when |update_timer_| fires. Takes care of executing the tasks

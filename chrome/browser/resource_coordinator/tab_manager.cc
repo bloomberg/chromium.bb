@@ -8,13 +8,11 @@
 
 #include <algorithm>
 #include <set>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "base/macros.h"
 #include "base/memory/memory_pressure_monitor.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
@@ -96,31 +94,6 @@ int FindWebContentsById(const TabStripModel* model,
 
   return -1;
 }
-
-class BoundsList {
- public:
-  BoundsList() = default;
-
-  // Returns false if a previously inserted gfx::Rect covers |bounds|.
-  // Otherwise, returns true and adds |bounds| to the list.
-  //
-  // TODO(fdoray): Handle the case where no previously inserted gfx::Rect covers
-  // |bounds| by itself but the union of all previously inserted gfx::Rects
-  // covers |bounds|.
-  bool AddBoundsIfNotCoveredByPreviousBounds(const gfx::Rect& bounds) {
-    for (const gfx::Rect& previous_bounds : bounds_list_) {
-      if (previous_bounds.Contains(bounds))
-        return false;
-    }
-    bounds_list_.push_back(bounds);
-    return true;
-  }
-
- private:
-  std::vector<gfx::Rect> bounds_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(BoundsList);
-};
 
 }  // namespace
 
@@ -391,19 +364,8 @@ TabStatsList TabManager::GetUnsortedTabStats() const {
 
   TabStatsList stats_list;
   stats_list.reserve(32);  // 99% of users have < 30 tabs open.
-  BoundsList bounds_list;
-
-  // GetBrowserInfoList() returns a list sorted in z-order from top to bottom.
-  // This is important for the visibility calculations below.
-  for (const BrowserInfo& browser_info : GetBrowserInfoList()) {
-    const bool window_is_visible =
-        !browser_info.window_is_minimized &&
-        bounds_list.AddBoundsIfNotCoveredByPreviousBounds(
-            browser_info.window_bounds);
-    AddTabStats(browser_info.tab_strip_model, window_is_visible,
-                browser_info.window_is_active, browser_info.browser_is_app,
-                &stats_list);
-  }
+  for (const BrowserInfo& browser_info : GetBrowserInfoList())
+    AddTabStats(browser_info, &stats_list);
 
   return stats_list;
 }
@@ -632,21 +594,23 @@ int TabManager::GetTabCount() const {
   return tab_count;
 }
 
-void TabManager::AddTabStats(const TabStripModel* tab_strip_model,
-                             bool window_is_visible,
-                             bool window_is_active,
-                             bool browser_is_app,
+void TabManager::AddTabStats(const BrowserInfo& browser_info,
                              TabStatsList* stats_list) const {
+  TabStripModel* tab_strip_model = browser_info.tab_strip_model;
   for (int i = 0; i < tab_strip_model->count(); i++) {
     WebContents* contents = tab_strip_model->GetWebContentsAt(i);
     if (!contents->IsCrashed()) {
       TabStats stats;
-      stats.is_app = browser_is_app;
+      stats.is_app = browser_info.browser_is_app;
       stats.is_internal_page = IsInternalPage(contents->GetLastCommittedURL());
       stats.is_media = IsMediaTab(contents);
       stats.is_pinned = tab_strip_model->IsTabPinned(i);
-      stats.is_selected = window_is_active && tab_strip_model->IsTabSelected(i);
-      stats.is_in_visible_window = window_is_visible;
+      stats.is_selected =
+          browser_info.window_is_active && tab_strip_model->IsTabSelected(i);
+      // Only consider the window non-visible if it is minimized. The consumer
+      // of the constructed TabStatsList may update this after performing more
+      // advanced window visibility checks.
+      stats.is_in_visible_window = !browser_info.window_is_minimized;
       stats.is_discarded = GetWebContentsData(contents)->IsDiscarded();
       stats.has_form_entry =
           contents->GetPageImportanceSignals().had_form_interaction;
@@ -935,7 +899,6 @@ std::vector<TabManager::BrowserInfo> TabManager::GetBrowserInfoList() const {
     browser_info.tab_strip_model = browser->tab_strip_model();
     browser_info.window_is_active = browser->window()->IsActive();
     browser_info.window_is_minimized = browser->window()->IsMinimized();
-    browser_info.window_bounds = browser->window()->GetBounds();
     browser_info.browser_is_app = browser->is_app();
     browser_info_list.push_back(browser_info);
   }
