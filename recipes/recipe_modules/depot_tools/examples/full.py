@@ -11,6 +11,8 @@ DEPS = [
 
 
 def RunSteps(api):
+  api.step('root', ['ls', api.depot_tools.root])
+
   api.step(
       'download_from_google_storage',
       ['ls', api.depot_tools.download_from_google_storage_path])

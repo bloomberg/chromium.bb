@@ -1,4 +1,5 @@
 DEPS = [
+  'depot_tools',
   'gclient',
   'recipe_engine/context',
   'recipe_engine/json',

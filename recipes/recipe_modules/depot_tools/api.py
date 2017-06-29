@@ -14,6 +14,11 @@ class DepotToolsApi(recipe_api.RecipeApi):
     return self.package_repo_resource('upload_to_google_storage.py')
 
   @property
+  def root(self):
+    """Returns (Path): The "depot_tools" root directory."""
+    return self.package_repo_resource()
+
+  @property
   def cros_path(self):
     return self.package_repo_resource('cros')
 

@@ -2,6 +2,13 @@
   {
     "cmd": [
       "ls",
+      "RECIPE_PACKAGE_REPO[depot_tools]"
+    ],
+    "name": "root"
+  },
+  {
+    "cmd": [
+      "ls",
       "RECIPE_PACKAGE_REPO[depot_tools]/download_from_google_storage.py"
     ],
     "name": "download_from_google_storage"
