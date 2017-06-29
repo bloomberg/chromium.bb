@@ -588,13 +588,22 @@ def main(argv):
 
   host = os.uname()[4]
   if host != 'x86_64':
-    parser.error(
+    cros_build_lib.Die(
         "cros_sdk is currently only supported on x86_64; you're running"
         " %s.  Please find a x86_64 machine." % (host,))
 
   _ReportMissing(osutils.FindMissingBinaries(NEEDED_TOOLS))
   if options.proxy_sim:
     _ReportMissing(osutils.FindMissingBinaries(PROXY_NEEDED_TOOLS))
+
+  if (sdk_latest_version == '<unknown>' or
+      bootstrap_latest_version == '<unknown>'):
+    cros_build_lib.Die(
+        'No SDK version was found. '
+        'Are you in a Chromium source tree instead of Chromium OS?\n\n'
+        'Please change to a directory inside your Chromium OS source tree\n'
+        'and retry.  If you need to setup a Chromium OS source tree, see\n'
+        '  http://www.chromium.org/chromium-os/developer-guide')
 
   _ReExecuteIfNeeded([sys.argv[0]] + argv)
   if options.ns_pid:
