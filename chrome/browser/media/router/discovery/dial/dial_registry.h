@@ -12,7 +12,6 @@
 #include <string>
 #include <vector>
 
-#include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
@@ -100,8 +99,7 @@ class DialRegistry : public DialService::Observer,
   std::unique_ptr<DialService> dial_;
 
  private:
-  using DeviceByIdMap =
-      base::hash_map<std::string, std::unique_ptr<DialDeviceData>>;
+  using DeviceByIdMap = std::map<std::string, std::unique_ptr<DialDeviceData>>;
   using DeviceByLabelMap = std::map<std::string, DialDeviceData*>;
 
   friend class MockDialRegistry;

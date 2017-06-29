@@ -10,7 +10,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/containers/hash_tables.h"
+#include "base/containers/flat_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -126,10 +126,10 @@ class TabManagerDelegate : public wm::ActivationChangeObserver,
   typedef std::pair<int, base::ProcessHandle> ProcessInfo;
 
   // Cache OOM scores in memory.
-  typedef base::hash_map<base::ProcessHandle, int> ProcessScoreMap;
+  typedef base::flat_map<base::ProcessHandle, int> ProcessScoreMap;
 
   // A map from an ARC process name to a monotonic timestamp when it's killed.
-  typedef base::hash_map<std::string, base::TimeTicks> KilledArcProcessesMap;
+  typedef base::flat_map<std::string, base::TimeTicks> KilledArcProcessesMap;
 
   // Get the list of candidates to kill, sorted by descending importance.
   static std::vector<Candidate> GetSortedCandidates(

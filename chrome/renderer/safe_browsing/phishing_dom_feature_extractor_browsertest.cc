@@ -5,6 +5,7 @@
 #include "chrome/renderer/safe_browsing/phishing_dom_feature_extractor.h"
 
 #include <memory>
+#include <unordered_map>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -50,7 +51,7 @@ class TestPhishingDOMFeatureExtractor : public PhishingDOMFeatureExtractor {
   void SetDocumentDomain(std::string domain) { base_domain_ = domain; }
 
   void SetURLToFrameDomainCheckingMap(
-      const base::hash_map<std::string, std::string>& checking_map) {
+      const std::unordered_map<std::string, std::string>& checking_map) {
     url_to_frame_domain_map_ = checking_map;
   }
 
@@ -122,7 +123,7 @@ class TestPhishingDOMFeatureExtractor : public PhishingDOMFeatureExtractor {
   // If html contains multiple frame/iframe, we track domain of each frame by
   // using this map, where keys are the urls mentioned in the html content,
   // values are the domains of the corresponding frames.
-  base::hash_map<std::string, std::string> url_to_frame_domain_map_;
+  std::unordered_map<std::string, std::string> url_to_frame_domain_map_;
 };
 
 class TestChromeContentRendererClient : public ChromeContentRendererClient {
@@ -154,7 +155,8 @@ class PhishingDOMFeatureExtractorTest : public ChromeRenderViewTest {
   void ExtractFeaturesAcrossFrames(
       const std::string& html_content,
       FeatureMap* features,
-      const base::hash_map<std::string, std::string>& url_frame_domain_map) {
+      const std::unordered_map<std::string, std::string>&
+          url_frame_domain_map) {
     extractor_->SetURLToFrameDomainCheckingMap(url_frame_domain_map);
     LoadHTML(html_content.c_str());
 
@@ -376,7 +378,7 @@ TEST_F(PhishingDOMFeatureExtractorTest, SubFrames) {
   EXPECT_CALL(clock_, Now()).WillRepeatedly(Return(base::TimeTicks::Now()));
 
   const char urlprefix[] = "data:text/html;charset=utf-8,";
-  base::hash_map<std::string, std::string> url_iframe_map;
+  std::unordered_map<std::string, std::string> url_iframe_map;
   std::string iframe1_nested_html(
       "<html><body><input type=password>"
       "<a href=\"https://host3.com/submit\">link</a>"

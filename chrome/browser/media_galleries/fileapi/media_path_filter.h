@@ -7,10 +7,10 @@
 
 #include <stddef.h>
 
+#include <map>
 #include <string>
 #include <vector>
 
-#include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/sequence_checker.h"
@@ -45,7 +45,7 @@ class MediaPathFilter {
 
   // Key: .extension
   // Value: MediaGalleryFileType, but stored as an int to allow "|="
-  typedef base::hash_map<base::FilePath::StringType, int> MediaFileExtensionMap;
+  using MediaFileExtensionMap = std::map<base::FilePath::StringType, int>;
 
   void EnsureInitialized();
 

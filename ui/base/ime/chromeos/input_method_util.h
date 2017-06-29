@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "base/containers/hash_tables.h"
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/threading/thread_checker.h"
@@ -206,8 +206,8 @@ class UI_BASE_IME_EXPORT InputMethodUtil {
   LanguageCodeToIdsMap language_code_to_ids_;
   InputMethodIdToDescriptorMap id_to_descriptor_;
 
-  typedef base::hash_map<std::string, int> HashType;
-  HashType english_to_resource_id_;
+  using EnglishToIDMap = base::flat_map<std::string, int>;
+  EnglishToIDMap english_to_resource_id_;
 
   InputMethodDelegate* delegate_;
 

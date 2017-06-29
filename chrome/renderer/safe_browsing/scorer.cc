@@ -7,6 +7,7 @@
 #include <math.h>
 
 #include <memory>
+#include <unordered_map>
 
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -114,11 +115,11 @@ size_t Scorer::shingle_size() const {
 
 double Scorer::ComputeRuleScore(const ClientSideModel::Rule& rule,
                                 const FeatureMap& features) const {
-  const base::hash_map<std::string, double>& feature_map = features.features();
+  const std::unordered_map<std::string, double>& feature_map =
+      features.features();
   double rule_score = 1.0;
   for (int i = 0; i < rule.feature_size(); ++i) {
-    base::hash_map<std::string, double>::const_iterator it = feature_map.find(
-        model_.hashes(rule.feature(i)));
+    const auto it = feature_map.find(model_.hashes(rule.feature(i)));
     if (it == feature_map.end() || it->second == 0.0) {
       // If the feature of the rule does not exist in the given feature map the
       // feature weight is considered to be zero.  If the feature weight is zero

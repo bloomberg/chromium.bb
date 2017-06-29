@@ -297,9 +297,7 @@ void MTPDeviceDelegateImplMac::GetFileInfoImpl(
     base::File::Info* file_info,
     base::File::Error* error) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  base::hash_map<base::FilePath::StringType,
-                 base::File::Info>::const_iterator i =
-      file_info_.find(file_path.value());
+  auto i = file_info_.find(file_path.value());
   if (i == file_info_.end()) {
     *error = base::File::FILE_ERROR_NOT_FOUND;
     return;

@@ -270,7 +270,7 @@ class ThreatDetailsTest : public ChromeRenderViewHostTestHarness {
     ASSERT_EQ(expected_pb.resources_size(), report_pb.resources_size());
     // Put the actual resources in a map, then iterate over the expected
     // resources, making sure each exists and is equal.
-    base::hash_map<int, const ClientSafeBrowsingReportRequest::Resource*>
+    std::map<int, const ClientSafeBrowsingReportRequest::Resource*>
         actual_resource_map;
     for (const ClientSafeBrowsingReportRequest::Resource& resource :
          report_pb.resources()) {
@@ -290,7 +290,7 @@ class ThreatDetailsTest : public ChromeRenderViewHostTestHarness {
     ASSERT_EQ(expected_pb.dom_size(), report_pb.dom_size());
     // Put the actual elements in a map, then iterate over the expected
     // elements, making sure each exists and is equal.
-    base::hash_map<int, const HTMLElement*> actual_dom_map;
+    std::map<int, const HTMLElement*> actual_dom_map;
     for (const HTMLElement& element : report_pb.dom()) {
       actual_dom_map[element.id()] = &element;
     }
@@ -352,7 +352,7 @@ class ThreatDetailsTest : public ChromeRenderViewHostTestHarness {
     EXPECT_THAT(element.child_ids(),
                 UnorderedPointwise(Eq(), expected.child_ids()));
     ASSERT_EQ(expected.attribute_size(), element.attribute_size());
-    base::hash_map<std::string, std::string> actual_attributes_map;
+    std::map<std::string, std::string> actual_attributes_map;
     for (const HTMLElement::Attribute& attribute : element.attribute()) {
       actual_attributes_map[attribute.name()] = attribute.value();
     }

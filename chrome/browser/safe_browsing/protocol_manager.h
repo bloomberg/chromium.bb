@@ -334,8 +334,8 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate {
   // All chunk requests that need to be made.
   std::deque<ChunkUrl> chunk_request_urls_;
 
-  base::hash_map<const net::URLFetcher*,
-                 std::pair<std::unique_ptr<net::URLFetcher>, FullHashDetails>>
+  std::map<const net::URLFetcher*,
+           std::pair<std::unique_ptr<net::URLFetcher>, FullHashDetails>>
       hash_requests_;
 
   // True if the service has been given an add/sub chunk but it hasn't been

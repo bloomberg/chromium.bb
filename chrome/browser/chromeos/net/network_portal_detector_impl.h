@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_CHROMEOS_NET_NETWORK_PORTAL_DETECTOR_IMPL_H_
 #define CHROME_BROWSER_CHROMEOS_NET_NETWORK_PORTAL_DETECTOR_IMPL_H_
 
+#include <map>
 #include <memory>
 #include <string>
 
 #include "base/cancelable_callback.h"
 #include "base/compiler_specific.h"
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -75,7 +75,7 @@ class NetworkPortalDetectorImpl : public NetworkPortalDetector,
   friend class NetworkPortalDetectorImplTest;
   friend class NetworkPortalDetectorImplBrowserTest;
 
-  using CaptivePortalStateMap = base::hash_map<std::string, CaptivePortalState>;
+  using CaptivePortalStateMap = std::map<std::string, CaptivePortalState>;
 
   enum State {
     // No portal check is running.

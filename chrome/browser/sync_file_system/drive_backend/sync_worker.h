@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -110,7 +111,7 @@ class SyncWorker : public SyncWorkerInterface,
     APP_STATUS_UNINSTALLED,
   };
 
-  typedef base::hash_map<std::string, AppStatus> AppStatusMap;
+  using AppStatusMap = std::unordered_map<std::string, AppStatus>;
 
   void DoDisableApp(const std::string& app_id,
                     const SyncStatusCallback& callback);

@@ -5,10 +5,10 @@
 #ifndef CHROME_RENDERER_TTS_DISPATCHER_H_
 #define CHROME_RENDERER_TTS_DISPATCHER_H_
 
+#include <map>
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "content/public/renderer/render_thread_observer.h"
 #include "third_party/WebKit/public/platform/WebSpeechSynthesizer.h"
@@ -68,7 +68,7 @@ class TtsDispatcher
   static int next_utterance_id_;
 
   // Map from id to utterance objects.
-  base::hash_map<int, blink::WebSpeechSynthesisUtterance> utterance_id_map_;
+  std::map<int, blink::WebSpeechSynthesisUtterance> utterance_id_map_;
 
   DISALLOW_COPY_AND_ASSIGN(TtsDispatcher);
 };

@@ -91,17 +91,15 @@ base::string16 FontFamilyCache::FetchAndCacheFont(const char* script,
 void FontFamilyCache::OnPrefsChanged(const std::string& pref_name) {
   const size_t delimiter_length = 1;
   const char delimiter = '.';
-  for (FontFamilyMap::iterator it = font_family_map_.begin();
-       it != font_family_map_.end();
-       ++it) {
-    const char* map_name = it->first;
+  for (auto& it : font_family_map_) {
+    const char* map_name = it.first;
     size_t map_name_length = strlen(map_name);
 
     // If the map name doesn't match, move on.
     if (pref_name.compare(0, map_name_length, map_name) != 0)
       continue;
 
-    ScriptFontMap& map = it->second;
+    ScriptFontMap& map = it.second;
     for (ScriptFontMap::iterator it2 = map.begin(); it2 != map.end(); ++it2) {
       const char* script = it2->first;
       size_t script_length = strlen(script);

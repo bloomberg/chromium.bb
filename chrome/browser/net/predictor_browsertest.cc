@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <map>
 #include <memory>
 #include <set>
 
@@ -255,7 +256,7 @@ class ConnectionListener
   // This lock protects all the members below, which each are used on both the
   // IO and UI thread. Members declared after the lock are protected by it.
   mutable base::Lock lock_;
-  typedef base::hash_map<uint16_t, SocketStatus> SocketContainer;
+  typedef std::map<uint16_t, SocketStatus> SocketContainer;
   SocketContainer sockets_;
 
   // If |num_accepted_connections_needed_| is non zero, then the object is
