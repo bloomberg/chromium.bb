@@ -9,7 +9,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/android/vr_shell/textures/render_text_wrapper.h"
+#include "chrome/browser/android/vr_shell/toolbar_state.h"
 #include "components/security_state/core/security_state.h"
+#include "components/toolbar/vector_icons.h"
 #include "components/url_formatter/url_formatter.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -44,7 +46,11 @@ class TestUrlBarTexture : public UrlBarTexture {
 
   void DrawURL(const GURL& gurl) {
     unsupported_mode_ = UiUnsupportedMode::kCount;
-    SetURL(gurl);
+    ToolbarState state(gurl, SecurityLevel::HTTP_SHOW_WARNING,
+                       &toolbar::kHttpsInvalidIcon,
+                       base::UTF8ToUTF16("Not secure"), true);
+    ASSERT_TRUE(state.should_display_url);
+    SetToolbarState(state);
     sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(
         texture_size_.width(), texture_size_.height());
     DrawAndLayout(surface->getCanvas(), texture_size_);
@@ -277,6 +283,12 @@ TEST(UrlBarTexture, LongPathsDoNotRequireElisionAndAreSupported) {
       "thereisnopossiblewaythatthishostnamecouldbecontainedinthelimitedspacetha"
       "tweareaffordedtousitsreallynotsomethingweshouldconsiderorplanfororpinour"
       "hopesonlestwegetdisappointedorsad.com"));
+  EXPECT_EQ(UiUnsupportedMode::kCount, texture.unsupported_mode());
+}
+
+TEST(UrlBarTexture, EmptyURL) {
+  TestUrlBarTexture texture;
+  texture.DrawURL(GURL());
   EXPECT_EQ(UiUnsupportedMode::kCount, texture.unsupported_mode());
 }
 

@@ -7,10 +7,11 @@
 
 #include "components/security_state/core/security_state.h"
 
-class GURL;
 class SkBitmap;
 
 namespace vr_shell {
+
+struct ToolbarState;
 
 // This class manages the communication of browser state from VR shell to the
 // HTML UI. State information is asynchronous and unidirectional.
@@ -27,10 +28,8 @@ class UiInterface {
   virtual ~UiInterface() {}
 
   virtual void SetWebVrMode(bool enabled, bool show_toast) = 0;
-  virtual void SetURL(const GURL& url) = 0;
   virtual void SetFullscreen(bool enabled) = 0;
-  virtual void SetSecurityInfo(security_state::SecurityLevel level,
-                               bool fails_malware_check) = 0;
+  virtual void SetToolbarState(const ToolbarState& state) = 0;
   virtual void SetIncognito(bool enabled) = 0;
   virtual void SetWebVrSecureOrigin(bool secure) = 0;
   virtual void SetLoading(bool loading) = 0;

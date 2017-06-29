@@ -38,10 +38,9 @@ class UiSceneManager {
 
   void SetFullscreen(bool fullscreen);
   void SetIncognito(bool incognito);
-  void SetURL(const GURL& gurl);
+  void SetToolbarState(const ToolbarState& state);
   void SetWebVrSecureOrigin(bool secure);
   void SetWebVrMode(bool web_vr, bool show_toast);
-  void SetSecurityInfo(security_state::SecurityLevel level, bool malware);
   void SetLoading(bool loading);
   void SetLoadProgress(float progress);
   void SetIsExiting();

@@ -12,6 +12,8 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/android/vr_shell/textures/ui_texture.h"
+#include "chrome/browser/android/vr_shell/toolbar_state.h"
+#include "chrome/browser/android/vr_shell/ui_interface.h"
 #include "chrome/browser/android/vr_shell/ui_unsupported_mode.h"
 #include "components/security_state/core/security_state.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -41,9 +43,8 @@ class UrlBarTexture : public UiTexture {
   gfx::Size GetPreferredTextureSize(int width) const override;
   gfx::SizeF GetDrawnSize() const override;
 
-  void SetURL(const GURL& gurl);
+  void SetToolbarState(const ToolbarState& state);
   void SetHistoryButtonsEnabled(bool can_go_back);
-  void SetSecurityInfo(security_state::SecurityLevel level, bool malware);
 
   bool HitsBackButton(const gfx::PointF& position) const;
   bool HitsUrlBar(const gfx::PointF& position) const;
@@ -76,10 +77,7 @@ class UrlBarTexture : public UiTexture {
   bool back_pressed_ = false;
   bool can_go_back_ = false;
 
-  GURL gurl_;
-  security_state::SecurityLevel security_level_ =
-      security_state::SecurityLevel::NONE;
-  bool malware_ = false;
+  ToolbarState state_;
 
   GURL last_drawn_gurl_;
   bool has_back_button_ = true;

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "chrome/browser/android/vr_shell/toolbar_state.h"
 #include "chrome/browser/android/vr_shell/ui_interface.h"
 #include "chrome/browser/android/vr_shell/ui_scene.h"
 #include "chrome/browser/android/vr_shell/ui_scene_manager.h"
@@ -179,18 +180,11 @@ void VrGLThread::SetLoading(bool loading) {
                                                 weak_scene_manager_, loading));
 }
 
-void VrGLThread::SetSecurityInfo(security_state::SecurityLevel level,
-                                 bool malware) {
+void VrGLThread::SetToolbarState(const ToolbarState& state) {
   WaitUntilThreadStarted();
-  task_runner()->PostTask(FROM_HERE,
-                          base::Bind(&UiSceneManager::SetSecurityInfo,
-                                     weak_scene_manager_, level, malware));
-}
-
-void VrGLThread::SetURL(const GURL& gurl) {
-  WaitUntilThreadStarted();
-  task_runner()->PostTask(FROM_HERE, base::Bind(&UiSceneManager::SetURL,
-                                                weak_scene_manager_, gurl));
+  task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&UiSceneManager::SetToolbarState, weak_scene_manager_, state));
 }
 
 void VrGLThread::SetWebVrMode(bool enabled, bool show_toast) {

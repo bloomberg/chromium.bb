@@ -18,6 +18,7 @@
 namespace vr_shell {
 
 class UrlBarTexture;
+struct ToolbarState;
 
 class UrlBar : public TexturedElement {
  public:
@@ -38,8 +39,7 @@ class UrlBar : public TexturedElement {
   void SetEnabled(bool enabled) override;
 
   void SetHistoryButtonsEnabled(bool can_go_back);
-  void SetURL(const GURL& gurl);
-  void SetSecurityInfo(security_state::SecurityLevel level, bool malware);
+  void SetToolbarState(const ToolbarState& state);
 
  private:
   void UpdateTexture() override;

@@ -770,15 +770,9 @@ void UiSceneManager::OnExitPromptSecondaryButtonClicked() {
   OnUnsupportedMode(UiUnsupportedMode::kUnhandledPageInfo);
 }
 
-void UiSceneManager::SetURL(const GURL& gurl) {
-  url_bar_->SetURL(gurl);
-  transient_url_bar_->SetURL(gurl);
-}
-
-void UiSceneManager::SetSecurityInfo(security_state::SecurityLevel level,
-                                     bool malware) {
-  url_bar_->SetSecurityInfo(level, malware);
-  transient_url_bar_->SetSecurityInfo(level, malware);
+void UiSceneManager::SetToolbarState(const ToolbarState& state) {
+  url_bar_->SetToolbarState(state);
+  transient_url_bar_->SetToolbarState(state);
 }
 
 void UiSceneManager::SetLoading(bool loading) {
