@@ -80,9 +80,6 @@ class SystemLogsFetcher {
   // AddResponse().
   void OnFetched(const std::string& source_name, SystemLogsResponse* response);
 
-  // Anonymizes the response data.
-  void Scrub(SystemLogsResponse* response);
-
   // Merges the |response| it receives into response_. When all the data sources
   // have responded, it deletes their objects and returns the response to the
   // callback_. After this it deletes this instance of the object.
