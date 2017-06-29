@@ -2311,6 +2311,11 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
     project = settings.GetProject()
     if project:
       upload_args.extend(['--project', project])
+    else:
+      print()
+      print('WARNING: Uploading without a project specified. Please ensure '
+            'your repo\'s codereview.settings has a "PROJECT: foo" line.')
+      print()
 
     try:
       upload_args = ['upload'] + upload_args + args
