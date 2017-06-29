@@ -132,3 +132,13 @@ message ActiveDirectoryUserStatus {
   optional ErrorType last_auth_error = 4;
   // Next ID to use: 5
 }
+
+// Message sent to Chromium by authpolicy service as a response to a successful
+// GetUserKerberosFiles call.
+message KerberosFiles {
+  // Kerberos credential cache.
+  optional bytes krb5cc = 1;
+  // Kerberos configuration file.
+  optional bytes krb5conf = 2;
+  // Next ID to use: 3
+}

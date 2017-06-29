@@ -7,15 +7,34 @@
 
 namespace authpolicy {
 
+// General
 const char kAuthPolicyInterface[] = "org.chromium.AuthPolicy";
 const char kAuthPolicyServicePath[] = "/org/chromium/AuthPolicy";
 const char kAuthPolicyServiceName[] = "org.chromium.AuthPolicy";
+
+// TODO(ljusten): Remove old naming style once Chrome uses the new style.
+
+// Old naming style (please don't use).
+
 // Methods
 const char kAuthPolicyAuthenticateUser[] = "AuthenticateUser";
 const char kAuthPolicyGetUserStatus[] = "GetUserStatus";
 const char kAuthPolicyJoinADDomain[] = "JoinADDomain";
 const char kAuthPolicyRefreshUserPolicy[] = "RefreshUserPolicy";
 const char kAuthPolicyRefreshDevicePolicy[] = "RefreshDevicePolicy";
+
+// New naming style.
+
+// Methods
+const char kAuthenticateUserMethod[] = "AuthenticateUser";
+const char kGetUserStatusMethod[] = "GetUserStatus";
+const char kGetUserKerberosFilesMethod[] = "GetUserKerberosFiles";
+const char kJoinADDomainMethod[] = "JoinADDomain";
+const char kRefreshUserPolicyMethod[] = "RefreshUserPolicy";
+const char kRefreshDevicePolicyMethod[] = "RefreshDevicePolicy";
+
+// Signals
+const char kUserKerberosFilesChangedSignal[] = "UserKerberosFilesChanged";
 
 } // namespace authpolicy
 
