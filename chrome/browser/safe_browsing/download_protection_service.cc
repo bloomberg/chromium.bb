@@ -30,6 +30,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -1678,9 +1679,11 @@ DownloadProtectionService::DownloadProtectionService(
       enabled_(false),
       binary_feature_extractor_(new BinaryFeatureExtractor()),
       download_request_timeout_ms_(kDownloadRequestTimeoutMs),
-      feedback_service_(
-          new DownloadFeedbackService(request_context_getter_.get(),
-                                      BrowserThread::GetBlockingPool())),
+      feedback_service_(new DownloadFeedbackService(
+          request_context_getter_.get(),
+          base::CreateSequencedTaskRunnerWithTraits(
+              {base::MayBlock(), base::TaskPriority::BACKGROUND})
+              .get())),
       whitelist_sample_rate_(kWhitelistDownloadSampleRate) {
   if (sb_service) {
     ui_manager_ = sb_service->ui_manager();
