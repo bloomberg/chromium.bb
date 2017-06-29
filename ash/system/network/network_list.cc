@@ -318,16 +318,6 @@ void NetworkListView::UpdateNetworkList() {
   NetworkStateHandler::NetworkStateList network_list;
   handler->GetVisibleNetworkList(&network_list);
   UpdateNetworks(network_list);
-
-  // Add Tether networks.
-  NetworkStateHandler::NetworkStateList tether_network_list;
-  handler->GetVisibleNetworkListByType(NetworkTypePattern::Tether(),
-                                       &tether_network_list);
-  for (const auto* tether_network : tether_network_list) {
-    network_list_.push_back(
-        base::MakeUnique<NetworkInfo>(tether_network->guid()));
-  }
-
   UpdateNetworkIcons();
   UpdateNetworkListInternal();
 }
@@ -355,12 +345,6 @@ void NetworkListView::UpdateNetworks(
   for (const auto* network : networks) {
     if (!NetworkTypePattern::NonVirtual().MatchesType(network->type()))
       continue;
-
-    // Do not add Wi-Fi networks that are associated with a Tether network.
-    if (NetworkTypePattern::WiFi().MatchesType(network->type()) &&
-        !network->tether_guid().empty())
-      continue;
-
     network_list_.push_back(base::MakeUnique<NetworkInfo>(network->guid()));
   }
 }
