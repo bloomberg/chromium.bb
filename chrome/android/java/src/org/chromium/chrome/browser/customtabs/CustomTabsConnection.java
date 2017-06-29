@@ -826,8 +826,12 @@ public class CustomTabsConnection {
     boolean notifyNavigationEvent(CustomTabsSessionToken session, int navigationEvent) {
         CustomTabsCallback callback = mClientManager.getCallbackForSession(session);
         if (callback == null) return false;
+        // SystemClock.uptimeMillis() is used here as it (as of June 2017) uses the same system call
+        // as all the native side of Chrome, and this is the same clock used for page load metrics.
+        Bundle extras = new Bundle();
+        extras.putLong("timestampUptimeMillis", SystemClock.uptimeMillis());
         try {
-            callback.onNavigationEvent(navigationEvent, null);
+            callback.onNavigationEvent(navigationEvent, extras);
         } catch (Exception e) {
             // Catching all exceptions is really bad, but we need it here,
             // because Android exposes us to client bugs by throwing a variety
@@ -863,6 +867,10 @@ public class CustomTabsConnection {
             mNativeTickOffsetUs = nativeNowUs - javaNowUs;
         }
 
+        // SystemClock.uptimeMillis() is used here as it (as of June 2017) uses the same system call
+        // as all the native side of Chrome, that is clock_gettime(CLOCK_MONOTONIC). Meaning that
+        // the offset relative to navigationStart is to be compared with a
+        // SystemClock.uptimeMillis() value.
         Bundle args = new Bundle();
         args.putLong(PageLoadMetrics.NAVIGATION_START,
                 (navigationStartTick - mNativeTickOffsetUs) / 1000);
