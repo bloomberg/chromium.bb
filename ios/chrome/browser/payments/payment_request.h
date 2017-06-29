@@ -5,6 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_PAYMENTS_PAYMENT_REQUEST_H_
 #define IOS_CHROME_BROWSER_PAYMENTS_PAYMENT_REQUEST_H_
 
+#include <map>
 #include <memory>
 #include <set>
 #include <string>
@@ -29,6 +30,10 @@ class AddressNormalizerImpl;
 class CurrencyFormatter;
 }  // namespace payments
 
+namespace ios {
+class ChromeBrowserState;
+}  // namepsace ios
+
 // A protocol implementd by any UI classes that the PaymentRequest object
 // needs to communicate with in order to perform certain actions such as
 // initiating UI to request full card details for payment.
@@ -48,6 +53,7 @@ class PaymentRequest : public payments::PaymentOptionsProvider,
  public:
   // |personal_data_manager| should not be null and should outlive this object.
   PaymentRequest(const web::PaymentRequest& web_payment_request,
+                 ios::ChromeBrowserState* browser_state_,
                  autofill::PersonalDataManager* personal_data_manager,
                  id<PaymentRequestUIDelegate> payment_request_ui_delegate);
   ~PaymentRequest() override;
@@ -149,6 +155,11 @@ class PaymentRequest : public payments::PaymentOptionsProvider,
     return basic_card_specified_networks_;
   }
 
+  const std::map<std::string, std::set<std::string>>& stringified_method_data()
+      const {
+    return stringified_method_data_;
+  }
+
   // Adds |credit_card| to the list of cached credit cards, updates the list of
   // available credit cards, and returns a reference to the cached copy of
   // |credit_card|.
@@ -218,6 +229,9 @@ class PaymentRequest : public payments::PaymentOptionsProvider,
   web::PaymentRequest web_payment_request_;
 
   // Never null and outlives this object.
+  ios::ChromeBrowserState* browser_state_;
+
+  // Never null and outlives this object.
   autofill::PersonalDataManager* personal_data_manager_;
 
   // The PaymentRequestUIDelegate as provided by the UI object that originally
@@ -258,6 +272,10 @@ class PaymentRequest : public payments::PaymentOptionsProvider,
   // been specified as part of the "basic-card" supported method. Callers should
   // use |supported_card_networks_| for merchant support checks.
   std::set<std::string> basic_card_specified_networks_;
+
+  // A mapping of the payment method names to the corresponding JSON-stringified
+  // payment method specific data.
+  std::map<std::string, std::set<std::string>> stringified_method_data_;
 
   // A vector of pointers to the shipping options in |web_payment_request_|.
   std::vector<web::PaymentShippingOption*> shipping_options_;

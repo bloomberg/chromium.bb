@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/payments/payment_request_manager.h"
 
+#include <string>
+
 #include "base/ios/block_types.h"
 #include "base/ios/ios_util.h"
 #import "base/mac/bind_objc_block.h"
@@ -20,6 +22,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
 #include "components/payments/core/address_normalization_manager.h"
+#include "components/payments/core/can_make_payment_query.h"
 #include "components/payments/core/payment_address.h"
 #include "components/payments/core/payment_request_base_delegate.h"
 #include "components/payments/core/payment_request_data_util.h"
@@ -27,6 +30,7 @@
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/autofill/validation_rules_storage_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/payments/ios_can_make_payment_query_factory.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #include "ios/chrome/browser/procedural_block_types.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
@@ -404,7 +408,7 @@ struct PendingPaymentResponse {
   }
 
   _paymentRequest = base::MakeUnique<PaymentRequest>(
-      webPaymentRequest, _personalDataManager, self);
+      webPaymentRequest, _browserState, _personalDataManager, self);
 
   return YES;
 }
@@ -475,15 +479,39 @@ struct PendingPaymentResponse {
 
 - (BOOL)handleCanMakePayment:(const base::DictionaryValue&)message {
   if (![self createPaymentRequestFromMessage:message]) {
-    return NO;
+    // TODO(crbug.com/602666): Reject the promise with an error of
+    // "InvalidStateError" type.
+    [_paymentRequestJsManager
+        rejectCanMakePaymentPromiseWithErrorMessage:@"Invalid state error"
+                                  completionHandler:nil];
+    return YES;
   }
 
-  // TODO(crbug.com/602666): reject the promise if quota (TBD) was exceeded.
+  if (_paymentRequest->IsIncognito()) {
+    [_paymentRequestJsManager resolveCanMakePaymentPromiseWithValue:YES
+                                                  completionHandler:nil];
+    return YES;
+  }
 
-  [_paymentRequestJsManager
-      resolveCanMakePaymentPromiseWithValue:_paymentRequest->CanMakePayment()
-                          completionHandler:nil];
+  BOOL canMakePayment = _paymentRequest->CanMakePayment();
 
+  payments::CanMakePaymentQuery* canMakePaymentQuery =
+      IOSCanMakePaymentQueryFactory::GetInstance()->GetForBrowserState(
+          _browserState);
+  DCHECK(canMakePaymentQuery);
+  if (canMakePaymentQuery->CanQuery(
+          [self webState]->GetLastCommittedURL().GetOrigin(),
+          _paymentRequest->stringified_method_data())) {
+    [_paymentRequestJsManager
+        resolveCanMakePaymentPromiseWithValue:canMakePayment
+                            completionHandler:nil];
+    // TODO(crbug.com/602666): Warn on console if origin is localhost or file.
+  } else {
+    [_paymentRequestJsManager
+        rejectCanMakePaymentPromiseWithErrorMessage:
+            @"Not allowed to check whether can make payment"
+                                  completionHandler:nil];
+  }
   return YES;
 }
 

@@ -21,6 +21,7 @@
 #include "components/payments/core/payment_request_data_util.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autofill/validation_rules_storage_factory.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/payments/payment_request_util.h"
 #include "ios/web/public/payments/payment_request.h"
 #include "third_party/libaddressinput/chromium/chrome_metadata_source.h"
@@ -48,9 +49,11 @@ std::unique_ptr<::i18n::addressinput::Storage> GetAddressInputStorage() {
 
 PaymentRequest::PaymentRequest(
     const web::PaymentRequest& web_payment_request,
+    ios::ChromeBrowserState* browser_state,
     autofill::PersonalDataManager* personal_data_manager,
     id<PaymentRequestUIDelegate> payment_request_ui_delegate)
     : web_payment_request_(web_payment_request),
+      browser_state_(browser_state),
       personal_data_manager_(personal_data_manager),
       payment_request_ui_delegate_(payment_request_ui_delegate),
       address_normalizer_(new payments::AddressNormalizerImpl(
@@ -109,8 +112,7 @@ const std::string& PaymentRequest::GetApplicationLocale() const {
 }
 
 bool PaymentRequest::IsIncognito() const {
-  NOTREACHED() << "Implementation is never used";
-  return false;
+  return browser_state_->IsOffTheRecord();
 }
 
 bool PaymentRequest::IsSslCertificateValid() {
@@ -273,6 +275,13 @@ bool PaymentRequest::CanMakePayment() const {
 }
 
 void PaymentRequest::PopulateCreditCardCache() {
+  for (const payments::PaymentMethodData& method_data_entry :
+       web_payment_request_.method_data) {
+    for (const std::string& method : method_data_entry.supported_methods) {
+      stringified_method_data_[method].insert(method_data_entry.data);
+    }
+  }
+
   // TODO(crbug.com/709036): Validate method data.
   payments::data_util::ParseBasicCardSupportedNetworks(
       web_payment_request_.method_data, &supported_card_networks_,
