@@ -197,7 +197,8 @@ void GLContextEGL::Destroy() {
 }
 
 bool GLContextEGL::MakeCurrent(GLSurface* surface) {
-  DCHECK(context_);
+  // TODO(sunnyps): Revert to DCHECK after crbug.com/724999 is fixed.
+  CHECK(context_);
   if (IsCurrent(surface))
       return true;
 
@@ -253,14 +254,16 @@ void GLContextEGL::ReleaseCurrent(GLSurface* surface) {
 }
 
 bool GLContextEGL::IsCurrent(GLSurface* surface) {
-  DCHECK(context_);
+  // TODO(sunnyps): Revert to DCHECK after crbug.com/724999 is fixed.
+  CHECK(context_);
 
   bool native_context_is_current = context_ == eglGetCurrentContext();
 
   // If our context is current then our notion of which GLContext is
   // current must be correct. On the other hand, third-party code
   // using OpenGL might change the current context.
-  DCHECK(!native_context_is_current || (GetRealCurrent() == this));
+  // TODO(sunnyps): Revert to DCHECK after crbug.com/724999 is fixed.
+  CHECK(!native_context_is_current || (GetRealCurrent() == this));
 
   if (!native_context_is_current)
     return false;
