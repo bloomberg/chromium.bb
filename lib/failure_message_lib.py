@@ -264,55 +264,33 @@ class CompoundFailureMessage(StageFailureMessage):
     """
     return not bool(self.inner_failures)
 
-  def HasFailureType(self, exception_type):
-    """Check whether any of the inner failures matches the exception type.
+  def HasExceptionCategories(self, exception_categories):
+    """Check whether any of the inner failures matches the exception categories.
 
     Args:
-      exception_type: The class name (string) of the origin exception.
-
-    Returns:
-      True if any of the inner failures matches exception_type; else, False.
-    """
-    return any(x.exception_type == exception_type for x in self.inner_failures)
-
-  def MatchesFailureType(self, exception_type):
-    """Check whether all of the inner failures match the exception type.
-
-    Args:
-      exception_type: The class name (string) of the origin exception.
-
-    Returns:
-      True if all of the inner failures match exception_type; else, False.
-    """
-    return (not self.HasEmptyList() and
-            all(x.exception_type == exception_type
-                for x in self.inner_failures))
-
-  def HasExceptionCategory(self, exception_category):
-    """Check whether any of the inner failures matches the exception category.
-
-    Args:
-      exception_category: The category of the origin exception (one of
+      exception_categories: A set of exception categories (members of
         constants.EXCEPTION_CATEGORY_ALL_CATEGORIES).
 
     Returns:
-      True if any of the inner failures matches exception_category; else, False.
+      True if any of the inner failures matches a memeber in
+      exception_categories; else, False.
     """
-    return any(x.exception_category == exception_category
+    return any(x.exception_category in exception_categories
                for x in self.inner_failures)
 
-  def MatchesExceptionCategory(self, exception_category):
-    """Check whether all of the inner failures matches the exception category.
+  def MatchesExceptionCategories(self, exception_categories):
+    """Check whether all of the inner failures matches the exception categories.
 
     Args:
-      exception_category: The category of the origin exception (one of
+      exception_categories: A set of exception categories (members of
         constants.EXCEPTION_CATEGORY_ALL_CATEGORIES).
 
     Returns:
-      True if all of the inner failures match exception_category; else, False.
+      True if all of the inner failures match a memeber in
+      exception_categories; else, False.
     """
     return (not self.HasEmptyList() and
-            all(x.exception_category == exception_category
+            all(x.exception_category in exception_categories
                 for x in self.inner_failures))
 
 

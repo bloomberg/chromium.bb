@@ -285,27 +285,6 @@ class TestFindSuspects(patch_unittest.MockPatchBase):
 
     return messages
 
-  def testMatchesExceptionCategory(self):
-    """Test MatchesExceptionCategory."""
-    messages = self._GetMessages(lab_fail=1)
-    messages.append(None)
-    self.assertFalse(
-        triage_lib.CalculateSuspects._MatchesExceptionCategory(
-            messages, constants.EXCEPTION_CATEGORY_LAB))
-    self.assertTrue(
-        triage_lib.CalculateSuspects._MatchesExceptionCategory(
-            messages, constants.EXCEPTION_CATEGORY_LAB, strict=False))
-    self.assertFalse(
-        triage_lib.CalculateSuspects._MatchesExceptionCategory(
-            messages, constants.EXCEPTION_CATEGORY_INFRA, strict=False))
-
-  def testMatchesExceptionCategoryWithEmptyMessages(self):
-    """Test MatchesExceptionCategoryWithEmptyMessages."""
-    messages = self._GetMessages()
-    self.assertFalse(
-        triage_lib.CalculateSuspects._MatchesExceptionCategory(
-            messages, constants.EXCEPTION_CATEGORY_LAB))
-
   def testMatchesExceptionCategories(self):
     """Test MatchesExceptionCategories."""
     messages = self._GetMessages(lab_fail=1, infra_fail=1)
@@ -319,8 +298,8 @@ class TestFindSuspects(patch_unittest.MockPatchBase):
     self.assertTrue(
         triage_lib.CalculateSuspects._MatchesExceptionCategories(
             messages,
-            [constants.EXCEPTION_CATEGORY_INFRA,
-             constants.EXCEPTION_CATEGORY_LAB],
+            {constants.EXCEPTION_CATEGORY_INFRA,
+             constants.EXCEPTION_CATEGORY_LAB},
             strict=False))
 
   def testMatchesExceptionCategoriesWithEmptyMessages(self):
@@ -328,7 +307,7 @@ class TestFindSuspects(patch_unittest.MockPatchBase):
     messages = self._GetMessages()
     self.assertFalse(
         triage_lib.CalculateSuspects._MatchesExceptionCategories(
-            messages, [constants.EXCEPTION_CATEGORY_LAB]))
+            messages, {constants.EXCEPTION_CATEGORY_LAB}))
 
   def testOnlyLabFailures(self):
     """Tests the OnlyLabFailures function."""

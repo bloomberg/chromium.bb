@@ -815,7 +815,8 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
     msgs = self._GetFailedMessages(failing)
     # Filter out None messages because we cannot analyze them.
     return [x for x in msgs if x and
-            x.HasFailureType(failures_lib.InfrastructureFailure)]
+            x.HasExceptionCategories({constants.EXCEPTION_CATEGORY_INFRA,
+                                      constants.EXCEPTION_CATEGORY_LAB})]
 
   def SendInfraAlertIfNeeded(self, failing, inflight, no_stat, self_destructed):
     """Send infra alerts if needed.

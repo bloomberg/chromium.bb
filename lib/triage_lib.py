@@ -410,26 +410,6 @@ class CalculateSuspects(object):
     return [x for x in changes if x.project in constants.INFRA_PROJECTS]
 
   @classmethod
-  def _MatchesExceptionCategory(cls, messages, exception_category, strict=True):
-    """Returns True if all failure messages are in the exception_category.
-
-    Args:
-      messages: A list of build_failure_message.BuildFailureMessage or NoneType
-        objects from the failed slaves.
-      exception_category: The exception category to match, must be one of
-        constants.EXCEPTION_CATEGORY_ALL_CATEGORIES.
-      strict: If False, treat NoneType message as a match.
-
-    Returns:
-      When |messages| is empty, return False; When |strict| is True and
-      |messages| contains None objects, return False; When not all message in
-      |messages| matches |exception_category|, return False; Else, return True.
-    """
-    return (messages and (not strict or all(messages)) and
-            all(x.MatchesExceptionCategory(exception_category)
-                for x in messages if x))
-
-  @classmethod
   def _MatchesExceptionCategories(cls, messages, exception_categories,
                                   strict=True):
     """Returns True if all failure messages are in the exception_categories.
@@ -437,15 +417,13 @@ class CalculateSuspects(object):
     Args:
       messages: A list of build_failure_message.BuildFailureMessage or NoneType
         objects from the failed slaves.
-      exception_categories: A list of exception categories to match, every item
-        must be one of constants.EXCEPTION_CATEGORY_ALL_CATEGORIES.
+      exception_categories: A set of exception categories (members of
+         constants.EXCEPTION_CATEGORY_ALL_CATEGORIES).
       strict: If False, treat NoneType message as a match.
 
     Returns:
-      When |messages| is empty, return False; When |strict| is True and
-      |messages| contains None objects, return False; When not all message in
-      |messages| matches one category on |exception_categories|, return False;
-      Else, return True.
+      Returns True if all the messages matches exception_categories (when strict
+      is off, None message is considered as a match).
     """
     if not messages:
       return False
@@ -453,12 +431,8 @@ class CalculateSuspects(object):
     if strict and not all(messages):
       return False
 
-    for x in messages:
-      if (x is not None and
-          not any(x.MatchesExceptionCategory(c) for c in exception_categories)):
-        return False
-
-    return True
+    return (all(x.MatchesExceptionCategories(exception_categories)
+                for x in messages if x))
 
   @classmethod
   def OnlyLabFailures(cls, messages, no_stat):
@@ -474,8 +448,8 @@ class CalculateSuspects(object):
       True if the build failed purely due to lab failures.
     """
     # If any builder failed prematuely, lab failure was not the only cause.
-    return (not no_stat and cls._MatchesExceptionCategory(
-        messages, constants.EXCEPTION_CATEGORY_LAB))
+    return (not no_stat and cls._MatchesExceptionCategories(
+        messages, {constants.EXCEPTION_CATEGORY_LAB}))
 
   @classmethod
   def OnlyInfraFailures(cls, messages, no_stat):
@@ -496,7 +470,7 @@ class CalculateSuspects(object):
     # infra failures.
     return ((not messages and no_stat) or cls._MatchesExceptionCategories(
         messages,
-        [constants.EXCEPTION_CATEGORY_INFRA, constants.EXCEPTION_CATEGORY_LAB],
+        {constants.EXCEPTION_CATEGORY_INFRA, constants.EXCEPTION_CATEGORY_LAB},
         strict=False))
 
   @classmethod

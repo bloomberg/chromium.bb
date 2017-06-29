@@ -65,84 +65,44 @@ class BuildFailureMessage(object):
       failing_stages = set(x.stage_prefix_name for x in self.failure_messages)
     return failing_stages
 
-  def MatchesExceptionCategory(self, exception_category):
-    """Check if all of the failure_messages match the exception_category.
+  def MatchesExceptionCategories(self, exception_categories):
+    """Check if all of the failure_messages match the exception_categories.
 
     Args:
-      exception_category: The category of the origin exception (one of
+      exception_categories: A set of exception categories (members of
         constants.EXCEPTION_CATEGORY_ALL_CATEGORIES).
 
     Returns:
-      True if all of the failure_messages match the exception_category; else,
-      False.
+      True if all of the failure_messages match a member in
+      exception_categories; else, False.
     """
     for failure in self.failure_messages:
-      if failure.exception_category != exception_category:
+      if failure.exception_category not in exception_categories:
         if (isinstance(failure, failure_message_lib.CompoundFailureMessage) and
-            failure.MatchesExceptionCategory(exception_category)):
+            failure.MatchesExceptionCategories(exception_categories)):
           continue
         else:
           return False
 
     return True
 
-  def HasExceptionCategory(self, exception_category):
-    """Check if any of the failure_messages match the exception_category.
+  def HasExceptionCategories(self, exception_categories):
+    """Check if any of the failure_messages match the exception_categories.
 
     Args:
-      exception_category: The category of the origin exception (one of
+      exception_categories: A set of exception categories (members of
         constants.EXCEPTION_CATEGORY_ALL_CATEGORIES).
 
     Returns:
-      True if any of the failure_messages match the exception_category; else,
-      False.
+      True if any of the failure_messages match a member in
+      exception_categories; else, False.
     """
     for failure in self.failure_messages:
-      if failure.exception_category == exception_category:
+      if failure.exception_category in exception_categories:
         return True
 
       if (isinstance(failure, failure_message_lib.CompoundFailureMessage) and
-          failure.HasExceptionCategory(exception_category)):
-        return True
-
-    return False
-
-  def MatchesFailureType(self, exception_type):
-    """Check if all of the failure_messages match the exception_type.
-
-    Args:
-      exception_type: The class name (string) of the origin exception.
-
-    Returns:
-      True if all the failure_messages match the exception_type; else,
-      False.
-    """
-    for failure in self.failure_messages:
-      if failure.exception_type != exception_type:
-        if (isinstance(failure, failure_message_lib.CompoundFailureMessage) and
-            failure.MatchesFailureType(exception_type)):
-          continue
-        else:
-          return False
-
-    return True
-
-  def HasFailureType(self, exception_type):
-    """Check if any of the failure_messages match the exception_type.
-
-    Args:
-      exception_type: The class name (string) of the origin exception.
-
-    Returns:
-      True if any of the failure_messages match the exception_type; else,
-      False.
-    """
-    for failure in self.failure_messages:
-      if failure.exception_type == exception_type:
-        return True
-
-      if (isinstance(failure, failure_message_lib.CompoundFailureMessage) and
-          failure.HasExceptionCategory(exception_type)):
+          failure.HasExceptionCategories(exception_categories)):
         return True
 
     return False

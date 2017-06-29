@@ -268,38 +268,42 @@ class CompoundFailureMessageTests(cros_test_lib.TestCase):
         FailureMessageHelper.GetPackageBuildFailureMessage())
     self.assertFalse(failure_message.HasEmptyList())
 
-  def testHasExceptionCategory(self):
-    """Test HasExceptionCategory."""
+  def testHasExceptionCategories(self):
+    """Test HasExceptionCategories."""
     failure_message = FailureMessageHelper.GetCompoundFailureMessage()
-    self.assertFalse(failure_message.HasExceptionCategory(
-        constants.EXCEPTION_CATEGORY_BUILD))
+    self.assertFalse(failure_message.HasExceptionCategories(
+        {constants.EXCEPTION_CATEGORY_BUILD}))
 
     failure_message.inner_failures.append(
         FailureMessageHelper.GetPackageBuildFailureMessage())
-    self.assertTrue(failure_message.HasExceptionCategory(
-        constants.EXCEPTION_CATEGORY_BUILD))
-    self.assertFalse(failure_message.HasExceptionCategory(
-        constants.EXCEPTION_CATEGORY_LAB))
+    self.assertTrue(failure_message.HasExceptionCategories(
+        {constants.EXCEPTION_CATEGORY_BUILD}))
+    self.assertFalse(failure_message.HasExceptionCategories(
+        {constants.EXCEPTION_CATEGORY_LAB}))
+    self.assertTrue(failure_message.HasExceptionCategories(
+        {constants.EXCEPTION_CATEGORY_BUILD, constants.EXCEPTION_CATEGORY_LAB}))
 
-  def testMatchesExceptionCategory(self):
-    """Test MatchesExceptionCategory."""
+  def testMatchesExceptionCategories(self):
+    """Test MatchesExceptionCategories."""
     failure_message = FailureMessageHelper.GetCompoundFailureMessage()
-    self.assertFalse(failure_message.MatchesExceptionCategory(
-        constants.EXCEPTION_CATEGORY_BUILD))
+    self.assertFalse(failure_message.MatchesExceptionCategories(
+        {constants.EXCEPTION_CATEGORY_BUILD}))
 
     failure_message.inner_failures.append(
         FailureMessageHelper.GetPackageBuildFailureMessage())
-    self.assertTrue(failure_message.MatchesExceptionCategory(
-        constants.EXCEPTION_CATEGORY_BUILD))
-    self.assertFalse(failure_message.MatchesExceptionCategory(
-        constants.EXCEPTION_CATEGORY_LAB))
+    self.assertTrue(failure_message.MatchesExceptionCategories(
+        {constants.EXCEPTION_CATEGORY_BUILD}))
+    self.assertFalse(failure_message.MatchesExceptionCategories(
+        {constants.EXCEPTION_CATEGORY_LAB}))
+    self.assertTrue(failure_message.MatchesExceptionCategories(
+        {constants.EXCEPTION_CATEGORY_BUILD, constants.EXCEPTION_CATEGORY_LAB}))
 
     failure_message.inner_failures.append(
         FailureMessageHelper.GetStageFailureMessage())
-    self.assertFalse(failure_message.MatchesExceptionCategory(
-        constants.EXCEPTION_CATEGORY_BUILD))
-    self.assertFalse(failure_message.MatchesExceptionCategory(
-        constants.EXCEPTION_CATEGORY_LAB))
+    self.assertFalse(failure_message.MatchesExceptionCategories(
+        {constants.EXCEPTION_CATEGORY_BUILD}))
+    self.assertFalse(failure_message.MatchesExceptionCategories(
+        {constants.EXCEPTION_CATEGORY_LAB}))
 
 
 class FailureMessageManagerTests(cros_test_lib.TestCase):

@@ -641,7 +641,10 @@ class ReportStage(generic_stages.BuilderStage,
     """Send alerts on Pre-CQ infra failures."""
     msg = self.GetBuildFailureMessage()
     pre_cq = self._run.config.pre_cq
-    if pre_cq and msg.HasFailureType(failures_lib.InfrastructureFailure):
+    if (pre_cq and
+        msg.HasExceptionCategories(
+            {constants.EXCEPTION_CATEGORY_INFRA,
+             constants.EXCEPTION_CATEGORY_LAB})):
       name = self._run.config.name
       title = 'pre-cq infra failures'
       body = ['%s failed on %s' % (name, cros_build_lib.GetHostName()),

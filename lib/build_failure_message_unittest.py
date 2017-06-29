@@ -51,25 +51,25 @@ class BuildFailureMessageTests(patch_unittest.MockPatchBase):
 
     self.assertItemsEqual(failing_stages, ['Paygen', 'InitSDK', 'BuildImage'])
 
-  def testMatchesExceptionCategoryOnMixedFailuresReturnsFalse(self):
-    """Test MatchesExceptionCategory on mixed failures returns False."""
+  def testMatchesExceptionCategoriesOnMixedFailuresReturnsFalse(self):
+    """Test MatchesExceptionCategories on mixed failures returns False."""
     build_failure = self._GetBuildFailureMessageWithMixedMsgs()
 
-    self.assertFalse(build_failure.MatchesExceptionCategory(
-        constants.EXCEPTION_CATEGORY_BUILD))
+    self.assertFalse(build_failure.MatchesExceptionCategories(
+        {constants.EXCEPTION_CATEGORY_BUILD}))
 
-  def testMatchesExceptionCategoryOnBuildFailuresReturnsTrue(self):
-    """Test MatchesExceptionCategory on build failures returns True."""
+  def testMatchesExceptionCategoriesOnBuildFailuresReturnsTrue(self):
+    """Test MatchesExceptionCategories on build failures returns True."""
     failure_messages = [failure_message_helper.GetBuildScriptFailureMessage(),
                         failure_message_helper.GetPackageBuildFailureMessage()]
     build_failure = self.ConstructBuildFailureMessage(
         failure_messages=failure_messages)
 
-    self.assertTrue(build_failure.MatchesExceptionCategory(
-        constants.EXCEPTION_CATEGORY_BUILD))
+    self.assertTrue(build_failure.MatchesExceptionCategories(
+        {constants.EXCEPTION_CATEGORY_BUILD}))
 
-  def testMatchesExceptionCategoryOnCompoundFailuresReturnsTrue(self):
-    """Test MatchesExceptionCategory on CompoundFailures returns True."""
+  def testMatchesExceptionCategoriesOnCompoundFailuresReturnsTrue(self):
+    """Test MatchesExceptionCategories on CompoundFailures returns True."""
     f_1 = failure_message_helper.GetBuildScriptFailureMessage(
         failure_id=1, outer_failure_id=3)
     f_2 = failure_message_helper.GetPackageBuildFailureMessage(
@@ -81,11 +81,11 @@ class BuildFailureMessageTests(patch_unittest.MockPatchBase):
     build_failure = self.ConstructBuildFailureMessage(
         failure_messages=failures)
 
-    self.assertTrue(build_failure.MatchesExceptionCategory(
-        constants.EXCEPTION_CATEGORY_BUILD))
+    self.assertTrue(build_failure.MatchesExceptionCategories(
+        {constants.EXCEPTION_CATEGORY_BUILD}))
 
-  def testMatchesExceptionCategoryOnCompoundFailuresReturnsFalse(self):
-    """Test MatchesExceptionCategory on CompoundFailures returns False."""
+  def testMatchesExceptionCategoriesOnCompoundFailuresReturnsFalse(self):
+    """Test MatchesExceptionCategories on CompoundFailures returns False."""
     f_1 = failure_message_helper.GetStageFailureMessage(
         failure_id=1, outer_failure_id=3)
     f_2 = failure_message_helper.GetPackageBuildFailureMessage(
@@ -97,24 +97,24 @@ class BuildFailureMessageTests(patch_unittest.MockPatchBase):
     build_failure = self.ConstructBuildFailureMessage(
         failure_messages=failures)
 
-    self.assertFalse(build_failure.MatchesExceptionCategory(
-        constants.EXCEPTION_CATEGORY_BUILD))
+    self.assertFalse(build_failure.MatchesExceptionCategories(
+        {constants.EXCEPTION_CATEGORY_BUILD}))
 
-  def testHasExceptionCategoryOnMixedFailures(self):
-    """Test HasExceptionCategory on mixed failures."""
+  def testHasExceptionCategoriesOnMixedFailures(self):
+    """Test HasExceptionCategories on mixed failures."""
     build_failure = self._GetBuildFailureMessageWithMixedMsgs()
 
-    self.assertTrue(build_failure.HasExceptionCategory(
-        constants.EXCEPTION_CATEGORY_BUILD))
-    self.assertTrue(build_failure.HasExceptionCategory(
-        constants.EXCEPTION_CATEGORY_UNKNOWN))
-    self.assertFalse(build_failure.HasExceptionCategory(
-        constants.EXCEPTION_CATEGORY_INFRA))
-    self.assertFalse(build_failure.HasExceptionCategory(
-        constants.EXCEPTION_CATEGORY_LAB))
+    self.assertTrue(build_failure.HasExceptionCategories(
+        {constants.EXCEPTION_CATEGORY_BUILD}))
+    self.assertTrue(build_failure.HasExceptionCategories(
+        {constants.EXCEPTION_CATEGORY_UNKNOWN}))
+    self.assertFalse(build_failure.HasExceptionCategories(
+        {constants.EXCEPTION_CATEGORY_INFRA}))
+    self.assertFalse(build_failure.HasExceptionCategories(
+        {constants.EXCEPTION_CATEGORY_LAB}))
 
-  def testHasExceptionCategoryOnCompoundFailures(self):
-    """Test HasExceptionCategory on CompoundFailures."""
+  def tesHasExceptionCategoriesOnCompoundFailures(self):
+    """Test HasExceptionCategories on CompoundFailures."""
     f_1 = failure_message_helper.GetBuildScriptFailureMessage(
         failure_id=1, outer_failure_id=3)
     f_2 = failure_message_helper.GetPackageBuildFailureMessage(
@@ -125,57 +125,14 @@ class BuildFailureMessageTests(patch_unittest.MockPatchBase):
     build_failure = self.ConstructBuildFailureMessage(
         failure_messages=failures)
 
-    self.assertTrue(build_failure.HasExceptionCategory(
-        constants.EXCEPTION_CATEGORY_BUILD))
-    self.assertTrue(build_failure.HasExceptionCategory(
-        constants.EXCEPTION_CATEGORY_UNKNOWN))
-    self.assertFalse(build_failure.HasExceptionCategory(
-        constants.EXCEPTION_CATEGORY_INFRA))
-    self.assertFalse(build_failure.HasExceptionCategory(
-        constants.EXCEPTION_CATEGORY_LAB))
-
-  def testMatchesFailureTypeOnMixedMsgs(self):
-    """Test MatchesFailureType on mixed messages."""
-    build_failure = self._GetBuildFailureMessageWithMixedMsgs()
-
-    self.assertFalse(build_failure.MatchesFailureType(
-        'BuildScriptFailure'))
-    self.assertFalse(build_failure.MatchesFailureType(
-        'PackageBuildFailure'))
-
-  def testMatchesFailureTypeOnSingleTypeMsgs(self):
-    """Test MatchesFailureType on single type messages."""
-    f_1 = failure_message_helper.GetBuildScriptFailureMessage(
-        failure_id=1, outer_failure_id=3)
-    f_2 = failure_message_helper.GetBuildScriptFailureMessage(
-        failure_id=2, outer_failure_id=3)
-    f_3 = failure_message_helper.GetStageFailureMessage(failure_id=3)
-    failures = (failure_message_lib.FailureMessageManager.ReconstructMessages(
-        [f_1, f_2, f_3]))
-    build_failure = self.ConstructBuildFailureMessage(
-        failure_messages=failures)
-
-    self.assertTrue(build_failure.MatchesFailureType(
-        'BuildScriptFailure'))
-    self.assertFalse(build_failure.MatchesFailureType(
-        'PackageBuildFailure'))
-    self.assertTrue(build_failure.HasFailureType(
-        'StepFailure'))
-    self.assertFalse(build_failure.HasFailureType(
-        'BackgroundFailure'))
-
-  def testHasFailureTypeOnMixedMsgs(self):
-    """Test HasFailureType on mixed messages."""
-    build_failure = self._GetBuildFailureMessageWithMixedMsgs()
-
-    self.assertTrue(build_failure.HasFailureType(
-        'BuildScriptFailure'))
-    self.assertTrue(build_failure.HasFailureType(
-        'PackageBuildFailure'))
-    self.assertTrue(build_failure.HasFailureType(
-        'StepFailure'))
-    self.assertFalse(build_failure.HasFailureType(
-        'BackgroundFailure'))
+    self.assertTrue(build_failure.HasExceptionCategories(
+        {constants.EXCEPTION_CATEGORY_BUILD}))
+    self.assertTrue(build_failure.HasExceptionCategories(
+        {constants.EXCEPTION_CATEGORY_UNKNOWN}))
+    self.assertFalse(build_failure.HasExceptionCategories(
+        {constants.EXCEPTION_CATEGORY_INFRA}))
+    self.assertFalse(build_failure.HasExceptionCategories(
+        {constants.EXCEPTION_CATEGORY_LAB}))
 
   def _GetMockChanges(self):
     mock_change_1 = self.MockPatch(

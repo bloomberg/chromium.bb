@@ -532,10 +532,10 @@ class BuilderStageGetBuildFailureMessage(AbstractStageTestCase):
     stage = self.ConstructStage()
     message = stage.GetBuildFailureMessageFromCIDB(build_id, db)
 
-    self.assertFalse(message.MatchesExceptionCategory(
-        constants.EXCEPTION_CATEGORY_LAB))
-    self.assertTrue(message.MatchesExceptionCategory(
-        constants.EXCEPTION_CATEGORY_BUILD))
+    self.assertFalse(message.MatchesExceptionCategories(
+        {constants.EXCEPTION_CATEGORY_LAB}))
+    self.assertTrue(message.MatchesExceptionCategories(
+        {constants.EXCEPTION_CATEGORY_BUILD}))
 
   def testGetBuildFailureMessageFromResults(self):
     """Test GetBuildFailureMessageFromResults."""
