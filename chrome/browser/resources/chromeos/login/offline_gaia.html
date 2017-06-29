@@ -2,6 +2,8 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/animations/slide-from-left-animation.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/animations/slide-from-right-animation.html">
@@ -9,7 +11,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/animations/slide-right-animation.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animated-pages.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-dialog/paper-dialog.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 
 <!--
@@ -45,6 +47,7 @@
   <link rel="stylesheet" href="offline_gaia.css">
 
   <template>
+    <style include="cr-shared-style"></style>
     <neon-animated-pages id="animatedPages" class="fit" attr-for-selected="id"
         entry-animation="slide-from-right-animation"
         exit-animation="slide-to-left-animation"
@@ -93,14 +96,14 @@
       </neon-animatable>
     </neon-animated-pages>
 
-    <paper-dialog id="forgotPasswordDlg" no-cancel-on-outside-click
-        on-iron-overlay-closed="onDialogOverlayClosed_">
-      <p i18n-content="offlineLoginForgotPasswordDlg"></p>
-      <div class="buttons">
-        <gaia-button type="dialog" dialog-confirm autofocus
-            i18n-content="offlineLoginCloseBtn">
-        </gaia-button>
+    <dialog is="cr-dialog" id="forgotPasswordDlg"
+        on-close="onDialogOverlayClosed_">
+      <div class="body" i18n-content="offlineLoginForgotPasswordDlg"></div>
+      <div class="button-container">
+        <paper-button autofocus on-tap="onForgotPasswordCloseTap_"
+            i18n-content="offlineLoginCloseBtn" class="action-button">
+        </paper-button>
       </div>
-    </paper-dialog>
+    </dialog>
   </template>
 </dom-module>
