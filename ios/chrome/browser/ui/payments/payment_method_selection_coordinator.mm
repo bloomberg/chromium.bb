@@ -80,7 +80,7 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
 
 #pragma mark - PaymentRequestSelectorViewControllerDelegate
 
-- (void)paymentRequestSelectorViewController:
+- (BOOL)paymentRequestSelectorViewController:
             (PaymentRequestSelectorViewController*)controller
                         didSelectItemAtIndex:(NSUInteger)index {
   DCHECK(index < self.paymentRequest->credit_cards().size());
@@ -94,8 +94,10 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
     // Update the data source with the selection.
     self.mediator.selectedItemIndex = index;
     [self delayedNotifyDelegateOfSelection:creditCard];
+    return YES;
   } else {
     [self startCreditCardEditCoordinatorWithCreditCard:creditCard];
+    return NO;
   }
 }
 
@@ -131,13 +133,19 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
   // Update the data source with the new data.
   [self.mediator loadItems];
 
+  const std::vector<autofill::CreditCard*>& creditCards =
+      self.paymentRequest->credit_cards();
+  auto position = std::find(creditCards.begin(), creditCards.end(), creditCard);
+  DCHECK(position != creditCards.end());
+
+  // Mark the edited item as complete meaning all required information has been
+  // filled out.
+  CollectionViewItem<PaymentsIsSelectable>* editedItem =
+      self.mediator.selectableItems[position - creditCards.begin()];
+  editedItem.complete = YES;
+
   if (![self.viewController isEditing]) {
     // Update the data source with the selection.
-    const std::vector<autofill::CreditCard*>& creditCards =
-        self.paymentRequest->credit_cards();
-    auto position =
-        std::find(creditCards.begin(), creditCards.end(), creditCard);
-    DCHECK(position != creditCards.end());
     self.mediator.selectedItemIndex = position - creditCards.begin();
   }
 

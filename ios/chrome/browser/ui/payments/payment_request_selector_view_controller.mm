@@ -248,7 +248,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     // Notify the delegate of the selection.
     NSUInteger index =
         [self.collectionViewModel indexInItemTypeForIndexPath:indexPath];
-    DCHECK(index < [[self.dataSource selectableItems] count]);
+    DCHECK_LT(index, [[self.dataSource selectableItems] count]);
     if ([self.delegate
             respondsToSelector:@selector
             (paymentRequestSelectorViewController:didSelectItemAtIndexForEditing
@@ -261,31 +261,30 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   switch (item.type) {
     case ItemTypeSelectableItem: {
-      CollectionViewItem<PaymentsIsSelectable>* newSelectedItem =
-          reinterpret_cast<CollectionViewItem<PaymentsIsSelectable>*>(item);
-      // Update the currently selected and the newly selected cells only if the
-      // newly selected cell corresponds to a complete item and can be selected.
-      if (newSelectedItem.isComplete) {
+      NSUInteger currentlySelectedItemIndex = self.dataSource.selectedItemIndex;
+      // Notify the delegate of the selection. Update the currently selected and
+      // the newly selected cells only if the selection can actually be made.
+      NSUInteger index =
+          [self.collectionViewModel indexInItemTypeForIndexPath:indexPath];
+      DCHECK_LT(index, [[self.dataSource selectableItems] count]);
+      if ([self.delegate paymentRequestSelectorViewController:self
+                                         didSelectItemAtIndex:index]) {
         // Update the currently selected cell, if any.
-        if (self.dataSource.selectedItemIndex != NSUIntegerMax) {
-          DCHECK(self.dataSource.selectedItemIndex <
+        if (currentlySelectedItemIndex != NSUIntegerMax) {
+          DCHECK(currentlySelectedItemIndex <
                  [[self.dataSource selectableItems] count]);
           CollectionViewItem<PaymentsIsSelectable>* oldSelectedItem =
               [[self.dataSource selectableItems]
-                  objectAtIndex:self.dataSource.selectedItemIndex];
+                  objectAtIndex:currentlySelectedItemIndex];
           oldSelectedItem.accessoryType = MDCCollectionViewCellAccessoryNone;
           [self reconfigureCellsForItems:@[ oldSelectedItem ]];
         }
         // Update the newly selected cell.
+        CollectionViewItem<PaymentsIsSelectable>* newSelectedItem =
+            reinterpret_cast<CollectionViewItem<PaymentsIsSelectable>*>(item);
         newSelectedItem.accessoryType = MDCCollectionViewCellAccessoryCheckmark;
         [self reconfigureCellsForItems:@[ newSelectedItem ]];
       }
-      // Notify the delegate of the selection.
-      NSUInteger index =
-          [self.collectionViewModel indexInItemTypeForIndexPath:indexPath];
-      DCHECK(index < [[self.dataSource selectableItems] count]);
-      [self.delegate paymentRequestSelectorViewController:self
-                                     didSelectItemAtIndex:index];
       break;
     }
     case ItemTypeAddItem: {

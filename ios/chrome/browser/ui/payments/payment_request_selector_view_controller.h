@@ -16,7 +16,8 @@
 @protocol PaymentRequestSelectorViewControllerDelegate<NSObject>
 
 // Notifies the delegate that the user has selected an item at the given index.
-- (void)paymentRequestSelectorViewController:
+// Returns whether the selection can actually be made.
+- (BOOL)paymentRequestSelectorViewController:
             (PaymentRequestSelectorViewController*)controller
                         didSelectItemAtIndex:(NSUInteger)index;
 
