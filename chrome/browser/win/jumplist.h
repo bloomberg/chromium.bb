@@ -71,22 +71,26 @@ class JumpList : public sessions::TabRestoreServiceObserver,
   using UrlAndLinkItem = std::pair<std::string, scoped_refptr<ShellLinkItem>>;
   using URLIconCache = base::flat_map<std::string, base::FilePath>;
 
-  // Holds results of the RunUpdateJumpList run.
-  struct UpdateResults {
-    UpdateResults();
-    ~UpdateResults();
+  // Holds results of a RunUpdateJumpList run.
+  // In-out params:
+  //   |most_visited_icons|, |recently_closed_icons|
+  // Out params:
+  //   |update_success|, |update_timeout|
+  struct UpdateTransaction {
+    UpdateTransaction();
+    ~UpdateTransaction();
 
     // Icon file paths of the most visited links, indexed by tab url.
     // Holding a copy of most_visited_icons_ initially, it's updated by the
     // JumpList update run. If the update run succeeds, it overwrites
     // most_visited_icons_.
-    URLIconCache most_visited_icons_in_update;
+    URLIconCache most_visited_icons;
 
-    // icon file paths of the recently closed links, indexed by tab url.
+    // Icon file paths of the recently closed links, indexed by tab url.
     // Holding a copy of recently_closed_icons_ initially, it's updated by the
     // JumpList update run. If the update run succeeds, it overwrites
     // recently_closed_icons_.
-    URLIconCache recently_closed_icons_in_update;
+    URLIconCache recently_closed_icons;
 
     // A flag indicating if a JumpList update run is successful.
     bool update_success = false;
@@ -161,10 +165,12 @@ class JumpList : public sessions::TabRestoreServiceObserver,
   // folders.
   void PostRunUpdate();
 
-  // Callback for RunUpdateJumpList that notifies when it finishes running.
-  // Updates certain JumpList member variables and/or triggers a new JumpList
-  // update based on |update_results|.
-  void OnRunUpdateCompletion(std::unique_ptr<UpdateResults> update_results);
+  // Handles the completion of an update by incorporating its results in
+  // |update_transaction| back into this instance. Additionally, a new update is
+  // triggered as needed to process notifications that arrived while the
+  // now-completed update was running.
+  void OnRunUpdateCompletion(
+      std::unique_ptr<UpdateTransaction> update_transaction);
 
   // Cancels a pending JumpList update.
   void CancelPendingUpdate();
@@ -174,42 +180,58 @@ class JumpList : public sessions::TabRestoreServiceObserver,
   // the |profile_| is destroyed.
   void Terminate();
 
-  // Updates the application JumpList, which consists of 1) create new icon
-  // files; 2) delete obsolete icon files; 3) notify the OS.
-  // Note that any timeout error along the way results in the old JumpList being
-  // left as-is, while any non-timeout error results in the old JumpList being
-  // left as-is, but without icon files.
+  // Updates the application JumpList, which consists of 1) create a new
+  // JumpList along with any icons that are not in the cache; 2) notify the OS;
+  // 3) delete obsolete icon files. Any error along the way results in the old
+  // JumpList being left as-is.
   static void RunUpdateJumpList(
       const base::string16& app_id,
       const base::FilePath& profile_dir,
       const ShellLinkItemList& most_visited_pages,
       const ShellLinkItemList& recently_closed_pages,
-      bool most_visited_pages_have_updates,
-      bool recently_closed_pages_have_updates,
+      bool most_visited_should_update,
+      bool recently_closed_should_update,
       IncognitoModePrefs::Availability incognito_availability,
-      UpdateResults* update_results);
+      UpdateTransaction* update_transaction);
 
-  // Updates icon files for |page_list| in |icon_dir|, which consists of
-  // 1) creating at most |slot_limit| new icons which are not in |icon_cache|;
-  // 2) deleting old icons which are not in |icon_cache|.
-  // Returns the number of new icon files created.
+  // Creates a new JumpList along with any icons that are not in the cache,
+  // and notifies the OS.
+  static void CreateNewJumpListAndNotifyOS(
+      const base::string16& app_id,
+      const base::FilePath& most_visited_icon_dir,
+      const base::FilePath& recently_closed_icon_dir,
+      const ShellLinkItemList& most_visited_pages,
+      const ShellLinkItemList& recently_closed_pages,
+      bool most_visited_should_update,
+      bool recently_closed_should_update,
+      IncognitoModePrefs::Availability incognito_availability,
+      UpdateTransaction* update_transaction);
+
+  // Updates icon files for |item_list| in |icon_dir|, which consists of
+  // 1) If certain safe conditions are not met, clean the folder at |icon_dir|.
+  // If folder cleaning fails, skip step 2. Besides, clear |icon_cur| and
+  // |icon_next|.
+  // 2) Create at most |max_items| icon files which are not in |icon_cur| for
+  // the asynchrounously loaded icons stored in |item_list|.
   static int UpdateIconFiles(const base::FilePath& icon_dir,
-                             const ShellLinkItemList& page_list,
-                             size_t slot_limit,
-                             URLIconCache* icon_cache);
+                             const ShellLinkItemList& item_list,
+                             size_t max_items,
+                             URLIconCache* icon_cur,
+                             URLIconCache* icon_next);
 
   // In |icon_dir|, creates at most |max_items| icon files which are not in
-  // |icon_cache| for the asynchrounously loaded icons stored in |item_list|.
-  // |icon_cache| is also updated for newly created icons.
-  // Returns the number of new icon files created.
+  // |icon_cur| for the asynchrounously loaded icons stored in |item_list|.
+  // |icon_next| is updated based on the reusable icons and the newly created
+  // icons. Returns the number of new icon files created.
   static int CreateIconFiles(const base::FilePath& icon_dir,
                              const ShellLinkItemList& item_list,
                              size_t max_items,
-                             URLIconCache* icon_cache);
+                             const URLIconCache& icon_cur,
+                             URLIconCache* icon_next);
 
-  // Deletes icon files in |icon_dir| which are not in |icon_cache| anymore.
+  // Deletes icon files in |icon_dir| which are not in |icon_cache|.
   static void DeleteIconFiles(const base::FilePath& icon_dir,
-                              URLIconCache* icon_cache);
+                              const URLIconCache& icons_cache);
 
   // Tracks FaviconService tasks.
   base::CancelableTaskTracker cancelable_task_tracker_;
