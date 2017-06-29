@@ -17,7 +17,7 @@ struct StructTraits<cc::mojom::CompositorFrameDataView, cc::CompositorFrame> {
     return input.metadata;
   }
 
-  static const cc::TransferableResourceArray& resources(
+  static const std::vector<cc::TransferableResource>& resources(
       const cc::CompositorFrame& input) {
     return input.resource_list;
   }

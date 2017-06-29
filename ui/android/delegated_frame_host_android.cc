@@ -170,7 +170,7 @@ void DelegatedFrameHostAndroid::DetachFromCompositor() {
 }
 
 void DelegatedFrameHostAndroid::DidReceiveCompositorFrameAck(
-    const cc::ReturnedResourceArray& resources) {
+    const std::vector<cc::ReturnedResource>& resources) {
   client_->ReclaimResources(resources);
   client_->DidReceiveCompositorFrameAck();
 }
@@ -180,7 +180,7 @@ void DelegatedFrameHostAndroid::OnBeginFrame(const cc::BeginFrameArgs& args) {
 }
 
 void DelegatedFrameHostAndroid::ReclaimResources(
-    const cc::ReturnedResourceArray& resources) {
+    const std::vector<cc::ReturnedResource>& resources) {
   client_->ReclaimResources(resources);
 }
 

@@ -124,7 +124,7 @@ SurfaceAggregator::ClipData SurfaceAggregator::CalculateClipRect(
 
 static void UnrefHelper(
     base::WeakPtr<CompositorFrameSinkSupport> compositor_frame_sink_support,
-    const ReturnedResourceArray& resources,
+    const std::vector<ReturnedResource>& resources,
     BlockingTaskRunner* main_thread_task_runner) {
   if (compositor_frame_sink_support)
     compositor_frame_sink_support->UnrefResources(resources);

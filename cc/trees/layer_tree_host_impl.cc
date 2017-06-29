@@ -1530,7 +1530,7 @@ void LayerTreeHostImpl::DidReceiveCompositorFrameAck() {
 }
 
 void LayerTreeHostImpl::ReclaimResources(
-    const ReturnedResourceArray& resources) {
+    const std::vector<ReturnedResource>& resources) {
   // TODO(piman): We may need to do some validation on this ack before
   // processing it.
   if (!resource_provider_)

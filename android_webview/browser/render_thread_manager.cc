@@ -265,7 +265,7 @@ RenderThreadManager::ReturnedResources::ReturnedResources()
 RenderThreadManager::ReturnedResources::~ReturnedResources() {}
 
 void RenderThreadManager::InsertReturnedResourcesOnRT(
-    const cc::ReturnedResourceArray& resources,
+    const std::vector<cc::ReturnedResource>& resources,
     const CompositorID& compositor_id,
     uint32_t layer_tree_frame_sink_id) {
   base::AutoLock lock(lock_);

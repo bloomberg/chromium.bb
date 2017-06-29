@@ -51,16 +51,18 @@ class HardwareRenderer : public cc::CompositorFrameSinkSupportClient {
  private:
   // cc::CompositorFrameSinkSupportClient implementation.
   void DidReceiveCompositorFrameAck(
-      const cc::ReturnedResourceArray& resources) override;
+      const std::vector<cc::ReturnedResource>& resources) override;
   void OnBeginFrame(const cc::BeginFrameArgs& args) override;
-  void ReclaimResources(const cc::ReturnedResourceArray& resources) override;
+  void ReclaimResources(
+      const std::vector<cc::ReturnedResource>& resources) override;
   void WillDrawSurface(const cc::LocalSurfaceId& local_surface_id,
                        const gfx::Rect& damage_rect) override;
 
   void ReturnChildFrame(std::unique_ptr<ChildFrame> child_frame);
-  void ReturnResourcesToCompositor(const cc::ReturnedResourceArray& resources,
-                                   const CompositorID& compositor_id,
-                                   uint32_t layer_tree_frame_sink_id);
+  void ReturnResourcesToCompositor(
+      const std::vector<cc::ReturnedResource>& resources,
+      const CompositorID& compositor_id,
+      uint32_t layer_tree_frame_sink_id);
 
   void AllocateSurface();
   void DestroySurface();

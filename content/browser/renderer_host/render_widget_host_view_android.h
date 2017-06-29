@@ -228,7 +228,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // DelegatedFrameHostAndroid::Client implementation.
   void SetBeginFrameSource(cc::BeginFrameSource* begin_frame_source) override;
   void DidReceiveCompositorFrameAck() override;
-  void ReclaimResources(const cc::ReturnedResourceArray& resources) override;
+  void ReclaimResources(
+      const std::vector<cc::ReturnedResource>& resources) override;
 
   // cc::BeginFrameObserver implementation.
   void OnBeginFrame(const cc::BeginFrameArgs& args) override;
@@ -393,7 +394,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // Manages the Compositor Frames received from the renderer.
   std::unique_ptr<ui::DelegatedFrameHostAndroid> delegated_frame_host_;
 
-  cc::ReturnedResourceArray surface_returned_resources_;
+  std::vector<cc::ReturnedResource> surface_returned_resources_;
 
   // The most recent surface size that was pushed to the surface layer.
   gfx::Size current_surface_size_;

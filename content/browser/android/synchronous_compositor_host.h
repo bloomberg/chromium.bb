@@ -54,8 +54,9 @@ class SynchronousCompositorHost : public SynchronousCompositor {
       const gfx::Rect& viewport_rect_for_tile_priority,
       const gfx::Transform& transform_for_tile_priority) override;
   bool DemandDrawSw(SkCanvas* canvas) override;
-  void ReturnResources(uint32_t layer_tree_frame_sink_id,
-                       const cc::ReturnedResourceArray& resources) override;
+  void ReturnResources(
+      uint32_t layer_tree_frame_sink_id,
+      const std::vector<cc::ReturnedResource>& resources) override;
   void SetMemoryPolicy(size_t bytes_limit) override;
   void DidChangeRootLayerScrollOffset(
       const gfx::ScrollOffset& root_offset) override;

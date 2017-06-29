@@ -63,7 +63,7 @@ void LayerTreeFrameSinkHolder::SetBeginFrameSource(
 }
 
 void LayerTreeFrameSinkHolder::ReclaimResources(
-    const cc::ReturnedResourceArray& resources) {
+    const std::vector<cc::ReturnedResource>& resources) {
   for (auto& resource : resources) {
     auto it = release_callbacks_.find(resource.id);
     DCHECK(it != release_callbacks_.end());

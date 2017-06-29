@@ -53,7 +53,7 @@ TEST_F(BufferTest, ReleaseCallback) {
   returned_resource.id = resource.id;
   returned_resource.sync_token = resource.mailbox_holder.sync_token;
   returned_resource.lost = false;
-  cc::ReturnedResourceArray resources = {returned_resource};
+  std::vector<cc::ReturnedResource> resources = {returned_resource};
   layer_tree_frame_sink_holder->ReclaimResources(resources);
 
   RunAllPendingInMessageLoop();
@@ -98,7 +98,7 @@ TEST_F(BufferTest, IsLost) {
   returned_resource.id = resource_id;
   returned_resource.sync_token = gpu::SyncToken();
   returned_resource.lost = is_lost;
-  cc::ReturnedResourceArray resources = {returned_resource};
+  std::vector<cc::ReturnedResource> resources = {returned_resource};
   layer_tree_frame_sink_holder->ReclaimResources(resources);
   RunAllPendingInMessageLoop();
 
@@ -115,7 +115,7 @@ TEST_F(BufferTest, IsLost) {
   returned_resource2.id = resource_id;
   returned_resource2.sync_token = gpu::SyncToken();
   returned_resource2.lost = false;
-  cc::ReturnedResourceArray resources2 = {returned_resource2};
+  std::vector<cc::ReturnedResource> resources2 = {returned_resource2};
   layer_tree_frame_sink_holder->ReclaimResources(resources2);
   RunAllPendingInMessageLoop();
 }

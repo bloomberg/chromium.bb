@@ -373,7 +373,8 @@ class CC_EXPORT LayerTreeHostImpl
       const gfx::Transform& transform) override;
   void DidLoseLayerTreeFrameSink() override;
   void DidReceiveCompositorFrameAck() override;
-  void ReclaimResources(const ReturnedResourceArray& resources) override;
+  void ReclaimResources(
+      const std::vector<ReturnedResource>& resources) override;
   void SetMemoryPolicy(const ManagedMemoryPolicy& policy) override;
   void SetTreeActivationCallback(const base::Closure& callback) override;
   void OnDraw(const gfx::Transform& transform,

@@ -15,7 +15,8 @@ class CC_SURFACES_EXPORT SurfaceResourceHolderClient {
 
   // ReturnResources gets called when the display compositor is done using the
   // resources so that the client can use them.
-  virtual void ReturnResources(const ReturnedResourceArray& resources) = 0;
+  virtual void ReturnResources(
+      const std::vector<ReturnedResource>& resources) = 0;
 };
 
 }  // namespace cc

@@ -173,9 +173,10 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
 
   // cc::CompositorFrameSinkSupportClient implementation.
   void DidReceiveCompositorFrameAck(
-      const cc::ReturnedResourceArray& resources) override;
+      const std::vector<cc::ReturnedResource>& resources) override;
   void OnBeginFrame(const cc::BeginFrameArgs& args) override;
-  void ReclaimResources(const cc::ReturnedResourceArray& resources) override;
+  void ReclaimResources(
+      const std::vector<cc::ReturnedResource>& resources) override;
   void WillDrawSurface(const cc::LocalSurfaceId& id,
                        const gfx::Rect& damage_rect) override {}
 

@@ -40,8 +40,6 @@ class NinePatchLayer;
 class SolidColorLayer;
 class SurfaceLayer;
 class TextureLayer;
-struct ReturnedResource;
-typedef std::vector<ReturnedResource> ReturnedResourceArray;
 }
 
 namespace ui {

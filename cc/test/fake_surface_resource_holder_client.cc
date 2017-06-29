@@ -11,7 +11,7 @@ FakeSurfaceResourceHolderClient::FakeSurfaceResourceHolderClient() = default;
 FakeSurfaceResourceHolderClient::~FakeSurfaceResourceHolderClient() = default;
 
 void FakeSurfaceResourceHolderClient::ReturnResources(
-    const ReturnedResourceArray& resources) {
+    const std::vector<ReturnedResource>& resources) {
   returned_resources_.insert(returned_resources_.end(), resources.begin(),
                              resources.end());
 }

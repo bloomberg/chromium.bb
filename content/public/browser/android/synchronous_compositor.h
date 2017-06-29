@@ -93,8 +93,9 @@ class CONTENT_EXPORT SynchronousCompositor {
 
   // For delegated rendering, return resources from parent compositor to this.
   // Note that all resources must be returned before ReleaseHwDraw.
-  virtual void ReturnResources(uint32_t layer_tree_frame_sink_id,
-                               const cc::ReturnedResourceArray& resources) = 0;
+  virtual void ReturnResources(
+      uint32_t layer_tree_frame_sink_id,
+      const std::vector<cc::ReturnedResource>& resources) = 0;
 
   // "On demand" SW draw, into the supplied canvas (observing the transform
   // and clip set there-in).

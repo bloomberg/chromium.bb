@@ -36,7 +36,7 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
     virtual void SetBeginFrameSource(
         cc::BeginFrameSource* begin_frame_source) = 0;
     virtual void DidReceiveCompositorFrameAck() = 0;
-    virtual void ReclaimResources(const cc::ReturnedResourceArray&) = 0;
+    virtual void ReclaimResources(const std::vector<cc::ReturnedResource>&) = 0;
   };
 
   DelegatedFrameHostAndroid(ViewAndroid* view,
@@ -75,9 +75,10 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
  private:
   // cc::CompositorFrameSinkSupportClient implementation.
   void DidReceiveCompositorFrameAck(
-      const cc::ReturnedResourceArray& resources) override;
+      const std::vector<cc::ReturnedResource>& resources) override;
   void OnBeginFrame(const cc::BeginFrameArgs& args) override;
-  void ReclaimResources(const cc::ReturnedResourceArray& resources) override;
+  void ReclaimResources(
+      const std::vector<cc::ReturnedResource>& resources) override;
   void WillDrawSurface(const cc::LocalSurfaceId& local_surface_id,
                        const gfx::Rect& damage_rect) override;
 

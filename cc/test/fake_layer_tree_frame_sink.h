@@ -71,7 +71,7 @@ class FakeLayerTreeFrameSink : public LayerTreeFrameSink {
 
   LayerTreeFrameSinkClient* client() { return client_; }
 
-  const TransferableResourceArray& resources_held_by_parent() {
+  const std::vector<TransferableResource>& resources_held_by_parent() {
     return resources_held_by_parent_;
   }
 
@@ -89,7 +89,7 @@ class FakeLayerTreeFrameSink : public LayerTreeFrameSink {
 
   std::unique_ptr<CompositorFrame> last_sent_frame_;
   size_t num_sent_frames_ = 0;
-  TransferableResourceArray resources_held_by_parent_;
+  std::vector<TransferableResource> resources_held_by_parent_;
   gfx::Rect last_swap_rect_;
 
  private:

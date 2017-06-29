@@ -48,13 +48,13 @@ interface CompositorFrameSinkClient {
   // TODO(fsamuel): This method ought not be necessary with unified BeginFrame.
   // However, there's a fair amount of cleanup and refactoring necessary to get
   // rid of it.
-  DidReceiveCompositorFrameAck(ReturnedResourceArray resources);
+  DidReceiveCompositorFrameAck(array<ReturnedResource> resources);
 
   // Notification for the client to generate a CompositorFrame.
   OnBeginFrame(BeginFrameArgs args);
 
   // Returns resources sent to SubmitCompositorFrame to be reused or freed.
-  ReclaimResources(ReturnedResourceArray resources);
+  ReclaimResources(array<ReturnedResource> resources);
 };
 
 // CompositorFrameSinkPrivate connects the host process to viz and allows the

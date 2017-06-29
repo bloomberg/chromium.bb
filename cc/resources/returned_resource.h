@@ -50,8 +50,6 @@ struct CC_EXPORT ReturnedResource {
   bool lost;
 };
 
-typedef std::vector<ReturnedResource> ReturnedResourceArray;
-
 }  // namespace cc
 
 #endif  // CC_RESOURCES_RETURNED_RESOURCE_H_

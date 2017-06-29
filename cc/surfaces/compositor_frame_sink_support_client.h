@@ -27,13 +27,14 @@ class CompositorFrameSinkSupportClient {
   // However, there's a fair amount of cleanup and refactoring necessary to get
   // rid of it.
   virtual void DidReceiveCompositorFrameAck(
-      const ReturnedResourceArray& resources) = 0;
+      const std::vector<ReturnedResource>& resources) = 0;
 
   // Notification for the client to generate a CompositorFrame.
   virtual void OnBeginFrame(const BeginFrameArgs& args) = 0;
 
   // Returns resources sent to SubmitCompositorFrame to be reused or freed.
-  virtual void ReclaimResources(const ReturnedResourceArray& resources) = 0;
+  virtual void ReclaimResources(
+      const std::vector<ReturnedResource>& resources) = 0;
 
   // Called when surface is being scheduled for a draw.
   virtual void WillDrawSurface(const LocalSurfaceId& local_surface_id,

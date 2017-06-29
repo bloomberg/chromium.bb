@@ -315,14 +315,14 @@ void BrowserViewRenderer::ReturnUnusedResource(
   if (!child_frame.get() || !child_frame->frame.get())
     return;
 
-  cc::ReturnedResourceArray resources;
-  cc::TransferableResource::ReturnResources(child_frame->frame->resource_list,
-                                            &resources);
+  std::vector<cc::ReturnedResource> resources =
+      cc::TransferableResource::ReturnResources(
+          child_frame->frame->resource_list);
   content::SynchronousCompositor* compositor =
       FindCompositor(child_frame->compositor_id);
   if (compositor && !resources.empty())
     compositor->ReturnResources(child_frame->layer_tree_frame_sink_id,
-                                resources);
+                                std::move(resources));
 }
 
 void BrowserViewRenderer::ReturnResourceFromParent(
@@ -332,7 +332,7 @@ void BrowserViewRenderer::ReturnResourceFromParent(
   for (auto& pair : returned_resource_map) {
     CompositorID compositor_id = pair.first;
     content::SynchronousCompositor* compositor = FindCompositor(compositor_id);
-    cc::ReturnedResourceArray resources;
+    std::vector<cc::ReturnedResource> resources;
     resources.swap(pair.second.resources);
 
     if (compositor && !resources.empty()) {

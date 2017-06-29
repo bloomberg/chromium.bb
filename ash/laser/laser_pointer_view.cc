@@ -201,7 +201,8 @@ class LaserLayerTreeFrameSinkHolder : public cc::LayerTreeFrameSinkClient {
 
   // Overridden from cc::LayerTreeFrameSinkClient:
   void SetBeginFrameSource(cc::BeginFrameSource* source) override {}
-  void ReclaimResources(const cc::ReturnedResourceArray& resources) override {
+  void ReclaimResources(
+      const std::vector<cc::ReturnedResource>& resources) override {
     if (view_)
       view_->ReclaimResources(resources);
   }
@@ -421,7 +422,7 @@ void LaserPointerView::DidReceiveCompositorFrameAck() {
 }
 
 void LaserPointerView::ReclaimResources(
-    const cc::ReturnedResourceArray& resources) {
+    const std::vector<cc::ReturnedResource>& resources) {
   DCHECK_EQ(resources.size(), 1u);
 
   auto it = resources_.find(resources.front().id);

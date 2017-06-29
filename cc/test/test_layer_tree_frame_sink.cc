@@ -175,7 +175,7 @@ void TestLayerTreeFrameSink::DidNotProduceFrame(const BeginFrameAck& ack) {
 }
 
 void TestLayerTreeFrameSink::DidReceiveCompositorFrameAck(
-    const ReturnedResourceArray& resources) {
+    const std::vector<ReturnedResource>& resources) {
   ReclaimResources(resources);
   // In synchronous mode, we manually send acks and this method should not be
   // used.
@@ -189,7 +189,7 @@ void TestLayerTreeFrameSink::OnBeginFrame(const BeginFrameArgs& args) {
 }
 
 void TestLayerTreeFrameSink::ReclaimResources(
-    const ReturnedResourceArray& resources) {
+    const std::vector<ReturnedResource>& resources) {
   client_->ReclaimResources(resources);
 }
 

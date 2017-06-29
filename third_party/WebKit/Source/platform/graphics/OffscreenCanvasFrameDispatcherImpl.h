@@ -44,9 +44,10 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final
 
   // cc::mojom::blink::CompositorFrameSinkClient implementation.
   void DidReceiveCompositorFrameAck(
-      const cc::ReturnedResourceArray& resources) final;
+      const WTF::Vector<cc::ReturnedResource>& resources) final;
   void OnBeginFrame(const cc::BeginFrameArgs&) final;
-  void ReclaimResources(const cc::ReturnedResourceArray& resources) final;
+  void ReclaimResources(
+      const WTF::Vector<cc::ReturnedResource>& resources) final;
 
   // This enum is used in histogram, so it should be append-only.
   enum OffscreenCanvasCommitType {

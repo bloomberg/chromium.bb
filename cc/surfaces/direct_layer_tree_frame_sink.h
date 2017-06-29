@@ -63,9 +63,10 @@ class CC_SURFACES_EXPORT DirectLayerTreeFrameSink
  private:
   // CompositorFrameSinkSupportClient implementation:
   void DidReceiveCompositorFrameAck(
-      const ReturnedResourceArray& resources) override;
+      const std::vector<ReturnedResource>& resources) override;
   void OnBeginFrame(const BeginFrameArgs& args) override;
-  void ReclaimResources(const ReturnedResourceArray& resources) override;
+  void ReclaimResources(
+      const std::vector<ReturnedResource>& resources) override;
   void WillDrawSurface(const LocalSurfaceId& local_surface_id,
                        const gfx::Rect& damage_rect) override;
 

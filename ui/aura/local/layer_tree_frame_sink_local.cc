@@ -92,7 +92,7 @@ void LayerTreeFrameSinkLocal::DidNotProduceFrame(const cc::BeginFrameAck& ack) {
 }
 
 void LayerTreeFrameSinkLocal::DidReceiveCompositorFrameAck(
-    const cc::ReturnedResourceArray& resources) {
+    const std::vector<cc::ReturnedResource>& resources) {
   DCHECK(thread_checker_);
   DCHECK(thread_checker_->CalledOnValidThread());
   if (!client_)
@@ -109,7 +109,7 @@ void LayerTreeFrameSinkLocal::OnBeginFrame(const cc::BeginFrameArgs& args) {
 }
 
 void LayerTreeFrameSinkLocal::ReclaimResources(
-    const cc::ReturnedResourceArray& resources) {
+    const std::vector<cc::ReturnedResource>& resources) {
   DCHECK(thread_checker_);
   DCHECK(thread_checker_->CalledOnValidThread());
   if (!client_)
