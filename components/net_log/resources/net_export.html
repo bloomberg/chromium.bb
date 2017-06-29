@@ -127,7 +127,25 @@
         </if>
 
         <if expr="not(is_ios or is_android)">
-        Attach the log file to your bug report, and you are done!
+        <p>Attach the log file to your bug report, and you are done!</p>
+
+        <p>
+          If the file is too big, it can be compressed or truncated.
+          <a href="#" id="toobig-read-more-link">Read more...</a>
+        </p>
+
+        <div id="toobig-read-more">
+          <ul>
+            <li>Compressing the log file before attaching is a good idea.</li>
+            <li>If the log file is still too big, you can try capturing again,
+              but over a shorter period of time</li>
+            <li>Existing log files can be shrunk using
+              <a
+                href="https://chromium.googlesource.com/chromium/src/+/master/net/tools/truncate_net_log.py"
+                target="_blank">
+                net/tools/truncate_net_log.py</a>.</li>
+          </ul>
+        </div>
         </if>
       </div>
 
