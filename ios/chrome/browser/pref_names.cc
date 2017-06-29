@@ -69,6 +69,11 @@ const char kIosBookmarkPromoAlreadySeen[] = "ios.bookmark.promo_already_seen";
 const char kIosBookmarkSigninPromoDisplayedCount[] =
     "ios.bookmark.signin_promo_displayed_count";
 
+// Integer to represent the number of time the sign-in promo has been displayed
+// in the settings view.
+const char kIosSettingsSigninPromoDisplayedCount[] =
+    "ios.settings.signin_promo_displayed_count";
+
 // Whether the user has enabled the Physical Web feature to surface URLs
 // broadcast by nearby devices.
 const char kIosPhysicalWebEnabled[] = "ios.physical_web_enabled";
