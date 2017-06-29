@@ -7,6 +7,8 @@ import("//ios/web/js_compile.gni")
 source_set("payments") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "ios_can_make_payment_query_factory.cc",
+    "ios_can_make_payment_query_factory.h",
     "payment_request.h",
     "payment_request.mm",
     "payment_request_util.h",
@@ -15,10 +17,12 @@ source_set("payments") {
   deps = [
     "//base",
     "//components/autofill/core/browser",
+    "//components/keyed_service/ios",
     "//components/payments/core",
     "//components/strings:components_strings_grit",
     "//ios/chrome/browser",
     "//ios/chrome/browser/autofill",
+    "//ios/chrome/browser/browser_state",
     "//ios/web",
     "//ui/base",
   ]

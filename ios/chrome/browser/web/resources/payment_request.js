@@ -304,7 +304,7 @@ var SerializedPaymentResponse;
   /**
    * Rejects the pending PaymentRequest.
    * @param {string} message An error message explaining why the Promise is
-   * being rejected.
+   *     being rejected.
    */
   __gCrWeb['paymentRequestManager'].rejectRequestPromise = function(message) {
     if (!__gCrWeb['paymentRequestManager'].requestPromiseResolver) {
