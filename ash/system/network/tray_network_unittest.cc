@@ -5,6 +5,8 @@
 #include "ash/system/network/tray_network.h"
 
 #include "ash/login_status.h"
+#include "ash/public/cpp/config.h"
+#include "ash/shell.h"
 #include "ash/system/network/network_list.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_test_api.h"
@@ -31,15 +33,21 @@ class TrayNetworkTest : public test::AshTestBase {
     // Initializing NetworkHandler before ash is more like production.
     chromeos::NetworkHandler::Initialize();
     test::AshTestBase::SetUp();
-    chromeos::NetworkHandler::Get()->InitializePrefServices(&profile_prefs_,
-                                                            &local_state_);
+    // Mash doesn't do this yet, so don't do it in tests either.
+    // http://crbug.com/718072
+    if (Shell::GetAshConfig() != Config::MASH) {
+      chromeos::NetworkHandler::Get()->InitializePrefServices(&profile_prefs_,
+                                                              &local_state_);
+    }
     // Networking stubs may have asynchronous initialization.
     RunAllPendingInMessageLoop();
   }
 
   void TearDown() override {
     // This roughly matches production shutdown order.
-    chromeos::NetworkHandler::Get()->ShutdownPrefServices();
+    if (Shell::GetAshConfig() != Config::MASH) {
+      chromeos::NetworkHandler::Get()->ShutdownPrefServices();
+    }
     test::AshTestBase::TearDown();
     chromeos::NetworkHandler::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
