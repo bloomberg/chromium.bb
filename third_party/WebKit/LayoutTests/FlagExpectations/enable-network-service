@@ -409,6 +409,7 @@ Bug(none) external/wpt/html/semantics/forms/form-submission-0/getactionurl.html 
 Bug(none) external/wpt/html/semantics/forms/form-submission-0/submit-entity-body.html [ Failure Timeout ]
 Bug(none) external/wpt/html/semantics/forms/the-legend-element/legend-form.html [ Failure Timeout ]
 Bug(none) external/wpt/html/semantics/scripting-1/the-script-element/async_003.htm [ Failure Timeout ]
+Bug(none) external/wpt/html/semantics/scripting-1/the-script-element/module/credentials.sub.html [ Failure Timeout ]
 Bug(none) external/wpt/html/semantics/scripting-1/the-script-element/script-crossorigin-network.html [ Failure Timeout ]
 Bug(none) external/wpt/html/webappapis/idle-callbacks/callback-suspended.html [ Failure Timeout ]
 Bug(none) external/wpt/html/webappapis/scripting/events/messageevent-constructor.https.html [ Failure Timeout ]
