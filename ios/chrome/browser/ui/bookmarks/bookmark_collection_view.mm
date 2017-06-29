@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/mac/bind_objc_block.h"
 #include "base/mac/foundation_util.h"
+#include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_model_observer.h"
@@ -468,9 +469,7 @@ const NSTimeInterval kShowEmptyBookmarksBackgroundRefreshDelay = 1.0;
   }
 
   // A subfolder's children changed. Reload that cell.
-  std::vector<const BookmarkNode*>::iterator it =
-      std::find(_subFolders.begin(), _subFolders.end(), bookmarkNode);
-  if (it != _subFolders.end()) {
+  if (base::ContainsValue(_subFolders, bookmarkNode)) {
     // TODO(crbug.com/603661): Ideally, we would only reload the relevant index
     // path. However, calling reloadItemsAtIndexPaths:(0,0) immediately after
     // reloadData results in a exception: NSInternalInconsistencyException

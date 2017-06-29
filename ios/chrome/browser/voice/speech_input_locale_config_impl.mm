@@ -9,6 +9,7 @@
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/voice/speech_input_locale_match_config.h"
@@ -83,9 +84,7 @@ SpeechInputLocaleConfigImpl::GetTextToSpeechLanguages() const {
 bool SpeechInputLocaleConfigImpl::IsTextToSpeechEnabledForCode(
     const std::string& locale_code) const {
   std::string language = GetLanguageComponentForLocaleCode(locale_code);
-  auto found_language = std::find(text_to_speech_languages_.begin(),
-                                  text_to_speech_languages_.end(), language);
-  return found_language != text_to_speech_languages_.end();
+  return base::ContainsValue(text_to_speech_languages_, language);
 }
 
 SpeechInputLocale SpeechInputLocaleConfigImpl::GetMatchingLocale(

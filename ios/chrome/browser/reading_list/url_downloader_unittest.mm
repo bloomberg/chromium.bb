@@ -10,6 +10,7 @@
 #import "base/mac/bind_objc_block.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #import "base/test/ios/wait_util.h"
 #include "components/reading_list/core/offline_url_utils.h"
 #include "ios/chrome/browser/chrome_paths.h"
@@ -168,9 +169,7 @@ TEST_F(URLDownloaderTest, SingleDownload) {
   downloader_->DownloadOfflineURL(url);
 
   WaitUntilCondition(^bool {
-    return std::find(downloader_->downloaded_files_.begin(),
-                     downloader_->downloaded_files_.end(),
-                     url) != downloader_->downloaded_files_.end();
+    return base::ContainsValue(downloader_->downloaded_files_, url);
   });
 
   ASSERT_TRUE(downloader_->CheckExistenceOfOfflineURLPagePath(url));
@@ -189,9 +188,7 @@ TEST_F(URLDownloaderTest, SingleDownloadRedirect) {
   downloader_->DownloadOfflineURL(url);
 
   WaitUntilCondition(^bool {
-    return std::find(downloader_->downloaded_files_.begin(),
-                     downloader_->downloaded_files_.end(),
-                     url) != downloader_->downloaded_files_.end();
+    return base::ContainsValue(downloader_->downloaded_files_, url);
   });
 
   EXPECT_TRUE(downloader_->CheckExistenceOfOfflineURLPagePath(url));
@@ -229,14 +226,10 @@ TEST_F(URLDownloaderTest, DownloadAndRemove) {
   downloader_->FakeEndWorking();
 
   WaitUntilCondition(^bool {
-    return std::find(downloader_->removed_files_.begin(),
-                     downloader_->removed_files_.end(),
-                     url) != downloader_->removed_files_.end();
+    return base::ContainsValue(downloader_->removed_files_, url);
   });
 
-  ASSERT_TRUE(std::find(downloader_->downloaded_files_.begin(),
-                        downloader_->downloaded_files_.end(),
-                        url) == downloader_->downloaded_files_.end());
+  ASSERT_TRUE(!base::ContainsValue(downloader_->downloaded_files_, url));
   ASSERT_EQ(1ul, downloader_->downloaded_files_.size());
   ASSERT_EQ(1ul, downloader_->removed_files_.size());
   ASSERT_FALSE(downloader_->CheckExistenceOfOfflineURLPagePath(url));
@@ -253,17 +246,11 @@ TEST_F(URLDownloaderTest, DownloadAndRemoveAndRedownload) {
   downloader_->FakeEndWorking();
 
   WaitUntilCondition(^bool {
-    return std::find(downloader_->removed_files_.begin(),
-                     downloader_->removed_files_.end(),
-                     url) != downloader_->removed_files_.end();
+    return base::ContainsValue(downloader_->removed_files_, url);
   });
 
-  ASSERT_TRUE(std::find(downloader_->downloaded_files_.begin(),
-                        downloader_->downloaded_files_.end(),
-                        url) != downloader_->downloaded_files_.end());
-  ASSERT_TRUE(std::find(downloader_->removed_files_.begin(),
-                        downloader_->removed_files_.end(),
-                        url) != downloader_->removed_files_.end());
+  ASSERT_TRUE(base::ContainsValue(downloader_->downloaded_files_, url));
+  ASSERT_TRUE(base::ContainsValue(downloader_->removed_files_, url));
   ASSERT_TRUE(downloader_->CheckExistenceOfOfflineURLPagePath(url));
 }
 
