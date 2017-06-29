@@ -4,10 +4,15 @@
 
 #include "components/metrics/persistent_system_profile.h"
 
+#include <set>
+
 #include "base/atomicops.h"
+#include "base/bits.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/persistent_memory_allocator.h"
+#include "base/pickle.h"
 #include "base/stl_util.h"
+#include "components/variations/active_field_trials.h"
 
 namespace metrics {
 
@@ -36,8 +41,8 @@ static_assert(sizeof(RecordHeader) == sizeof(base::subtle::Atomic32),
 // for the record header and rounds up to the next multiple of the record-header
 // size.
 size_t CalculateRecordSize(size_t data_amount) {
-  return (data_amount + sizeof(RecordHeader) + sizeof(RecordHeader) - 1) &
-         ~(sizeof(RecordHeader) - 1);
+  return base::bits::Align(data_amount + sizeof(RecordHeader),
+                           sizeof(RecordHeader));
 }
 
 }  // namespace
@@ -82,9 +87,8 @@ void PersistentSystemProfile::RecordAllocator::Reset() {
   end_offset_ = 0;
 }
 
-bool PersistentSystemProfile::RecordAllocator::Write(
-    RecordType type,
-    const std::string& record) {
+bool PersistentSystemProfile::RecordAllocator::Write(RecordType type,
+                                                     base::StringPiece record) {
   const char* data = record.data();
   size_t remaining_size = record.size();
 
@@ -169,28 +173,29 @@ bool PersistentSystemProfile::RecordAllocator::AddSegment(size_t min_size) {
   return true;
 }
 
-bool PersistentSystemProfile::RecordAllocator::WriteData(
-    RecordType type,
-    const char** data,
-    size_t* remaining_size) {
+bool PersistentSystemProfile::RecordAllocator::WriteData(RecordType type,
+                                                         const char** data,
+                                                         size_t* data_size) {
   char* block =
       allocator_->GetAsArray<char>(alloc_reference_, kTypeIdSystemProfile,
                                    base::PersistentMemoryAllocator::kSizeAny);
   if (!block)
     return false;  // It's bad if there is no accessible block.
 
-  size_t write_size = std::min(*remaining_size, kMaxRecordSize);
-  write_size =
-      std::min(write_size, alloc_size_ - end_offset_ - sizeof(RecordHeader));
+  const size_t max_write_size = std::min(
+      kMaxRecordSize, alloc_size_ - end_offset_ - sizeof(RecordHeader));
+  const size_t write_size = std::min(*data_size, max_write_size);
+  const size_t record_size = CalculateRecordSize(write_size);
+  DCHECK_LT(write_size, record_size);
 
   // Write the data and the record header.
   RecordHeader header;
   header.as_atomic = 0;
   header.as_parts.type = type;
   header.as_parts.amount = write_size;
-  header.as_parts.continued = (write_size < *remaining_size);
+  header.as_parts.continued = (write_size < *data_size);
   size_t offset = end_offset_;
-  end_offset_ += CalculateRecordSize(write_size);
+  end_offset_ += record_size;
   DCHECK_GE(alloc_size_, end_offset_);
   if (end_offset_ < alloc_size_) {
     // An empty record header has to be next before this one gets written.
@@ -198,13 +203,14 @@ bool PersistentSystemProfile::RecordAllocator::WriteData(
         reinterpret_cast<base::subtle::Atomic32*>(block + end_offset_), 0);
   }
   memcpy(block + offset + sizeof(header), *data, write_size);
-  base::subtle::Release_Store(reinterpret_cast<base::subtle::Atomic32*>(block),
-                              header.as_atomic);
+  base::subtle::Release_Store(
+      reinterpret_cast<base::subtle::Atomic32*>(block + offset),
+      header.as_atomic);
 
   // Account for what was stored and prepare for follow-on records with any
   // remaining data.
   *data += write_size;
-  *remaining_size -= write_size;
+  *data_size -= write_size;
 
   return true;
 }
@@ -239,15 +245,14 @@ bool PersistentSystemProfile::RecordAllocator::ReadData(
     return false;
   }
   size_t read_size = header.as_parts.amount;
-  if (read_size < sizeof(header) ||
-      end_offset_ + sizeof(header) + read_size > alloc_size_) {
+  if (end_offset_ + sizeof(header) + read_size > alloc_size_) {
     NOTREACHED();  // Invalid header amount.
     *type = kUnusedSpace;
     return true;  // Don't try again.
   }
 
   // Append the record data to the output string.
-  record->append(block + sizeof(header), read_size);
+  record->append(block + end_offset_ + sizeof(header), read_size);
   end_offset_ += CalculateRecordSize(read_size);
   DCHECK_GE(alloc_size_, end_offset_);
 
@@ -292,8 +297,10 @@ void PersistentSystemProfile::SetSystemProfile(
     // Don't overwrite a complete profile with an incomplete one.
     if (!complete && allocator.has_complete_profile())
       continue;
-    // A full system profile always starts fresh.
-    allocator.Reset();
+    // A full system profile always starts fresh. Incomplete keeps existing
+    // records for merging.
+    if (complete)
+      allocator.Reset();
     // Write out the serialized profile.
     allocator.Write(kSystemProfileProto, serialized_profile);
     // Indicate if this is a complete profile.
@@ -319,6 +326,21 @@ void PersistentSystemProfile::SetSystemProfile(
   SetSystemProfile(serialized_profile, complete);
 }
 
+void PersistentSystemProfile::AddFieldTrial(base::StringPiece trial,
+                                            base::StringPiece group) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(!trial.empty());
+  DCHECK(!group.empty());
+
+  base::Pickle pickler;
+  if (!pickler.WriteString(trial) || !pickler.WriteString(group))
+    return;
+
+  WriteToAll(kFieldTrialInfo,
+             base::StringPiece(static_cast<const char*>(pickler.data()),
+                               pickler.size()));
+}
+
 // static
 bool PersistentSystemProfile::HasSystemProfile(
     const base::PersistentMemoryAllocator& memory_allocator) {
@@ -334,12 +356,76 @@ bool PersistentSystemProfile::GetSystemProfile(
 
   RecordType type;
   std::string record;
-  if (!records.Read(&type, &record))
-    return false;
-  if (type != kSystemProfileProto)
+  do {
+    if (!records.Read(&type, &record))
+      return false;
+  } while (type != kSystemProfileProto);
+
+  if (!system_profile->ParseFromString(record))
     return false;
 
-  return system_profile->ParseFromString(record);
+  MergeUpdateRecords(memory_allocator, system_profile);
+  return true;
+}
+
+// static
+void PersistentSystemProfile::MergeUpdateRecords(
+    const base::PersistentMemoryAllocator& memory_allocator,
+    SystemProfileProto* system_profile) {
+  const RecordAllocator records(&memory_allocator);
+
+  RecordType type;
+  std::string record;
+  std::set<uint32_t> known_field_trial_ids;
+
+  // This is done separate from the code that gets the profile because it
+  // compartmentalizes the code and makes it possible to reuse this section
+  // should it be needed to merge "update" records into a new "complete"
+  // system profile that somehow didn't get all the updates.
+  while (records.Read(&type, &record)) {
+    switch (type) {
+      case kUnusedSpace:
+        // These should never be returned.
+        NOTREACHED();
+        break;
+
+      case kSystemProfileProto:
+        // Profile was passed in; ignore this one.
+        break;
+
+      case kFieldTrialInfo: {
+        // Get the set of known trial IDs so duplicates don't get added.
+        if (known_field_trial_ids.empty()) {
+          for (int i = 0; i < system_profile->field_trial_size(); ++i) {
+            known_field_trial_ids.insert(
+                system_profile->field_trial(i).name_id());
+          }
+        }
+
+        base::Pickle pickler(record.data(), record.size());
+        base::PickleIterator iter(pickler);
+        base::StringPiece trial;
+        base::StringPiece group;
+        if (iter.ReadStringPiece(&trial) && iter.ReadStringPiece(&group)) {
+          variations::ActiveGroupId field_ids =
+              variations::MakeActiveGroupId(trial, group);
+          if (!base::ContainsKey(known_field_trial_ids, field_ids.name)) {
+            SystemProfileProto::FieldTrial* field_trial =
+                system_profile->add_field_trial();
+            field_trial->set_name_id(field_ids.name);
+            field_trial->set_group_id(field_ids.group);
+            known_field_trial_ids.insert(field_ids.name);
+          }
+        }
+      } break;
+    }
+  }
+}
+
+void PersistentSystemProfile::WriteToAll(RecordType type,
+                                         base::StringPiece record) {
+  for (auto& allocator : allocators_)
+    allocator.Write(type, record);
 }
 
 GlobalPersistentSystemProfile* GlobalPersistentSystemProfile::GetInstance() {

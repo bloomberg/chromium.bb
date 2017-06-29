@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/persistent_memory_allocator.h"
 #include "base/rand_util.h"
+#include "components/variations/metrics_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace metrics {
@@ -132,6 +133,39 @@ TEST_F(PersistentSystemProfileTest, ProfileStorage) {
   EXPECT_EQ(456U, proto2.field_trial(0).group_id());
   EXPECT_EQ(78U, proto2.field_trial(1).name_id());
   EXPECT_EQ(90U, proto2.field_trial(1).group_id());
+}
+
+TEST_F(PersistentSystemProfileTest, ProfileExtensions) {
+  persistent_profile()->AddFieldTrial("sna", "foo");
+
+  SystemProfileProto fetched;
+  ASSERT_FALSE(
+      PersistentSystemProfile::GetSystemProfile(*memory_allocator(), &fetched));
+
+  SystemProfileProto proto;
+  SystemProfileProto::FieldTrial* trial = proto.add_field_trial();
+  trial->set_name_id(123);
+  trial->set_group_id(456);
+
+  persistent_profile()->SetSystemProfile(proto, false);
+  ASSERT_TRUE(
+      PersistentSystemProfile::GetSystemProfile(*memory_allocator(), &fetched));
+  ASSERT_EQ(2, fetched.field_trial_size());
+  EXPECT_EQ(123U, fetched.field_trial(0).name_id());
+  EXPECT_EQ(456U, fetched.field_trial(0).group_id());
+  EXPECT_EQ(metrics::HashName("sna"), fetched.field_trial(1).name_id());
+  EXPECT_EQ(metrics::HashName("foo"), fetched.field_trial(1).group_id());
+
+  persistent_profile()->AddFieldTrial("foo", "bar");
+  ASSERT_TRUE(
+      PersistentSystemProfile::GetSystemProfile(*memory_allocator(), &fetched));
+  ASSERT_EQ(3, fetched.field_trial_size());
+  EXPECT_EQ(123U, fetched.field_trial(0).name_id());
+  EXPECT_EQ(456U, fetched.field_trial(0).group_id());
+  EXPECT_EQ(metrics::HashName("sna"), fetched.field_trial(1).name_id());
+  EXPECT_EQ(metrics::HashName("foo"), fetched.field_trial(1).group_id());
+  EXPECT_EQ(metrics::HashName("foo"), fetched.field_trial(2).name_id());
+  EXPECT_EQ(metrics::HashName("bar"), fetched.field_trial(2).group_id());
 }
 
 }  // namespace metrics

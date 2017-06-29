@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/metrics/field_trial.h"
+#include "base/strings/string_piece.h"
 
 namespace variations {
 
@@ -21,8 +22,8 @@ struct ActiveGroupId {
 };
 
 // Returns an ActiveGroupId struct for the given trial and group names.
-ActiveGroupId MakeActiveGroupId(const std::string& trial_name,
-                                const std::string& group_name);
+ActiveGroupId MakeActiveGroupId(base::StringPiece trial_name,
+                                base::StringPiece group_name);
 
 // We need to supply a Compare class for templates since ActiveGroupId is a
 // user-defined type.
