@@ -5,10 +5,9 @@
 #ifndef CHROME_BROWSER_LOCAL_DISCOVERY_SERVICE_DISCOVERY_CLIENT_MDNS_H_
 #define CHROME_BROWSER_LOCAL_DISCOVERY_SERVICE_DISCOVERY_CLIENT_MDNS_H_
 
-#include <set>
+#include <memory>
 #include <string>
 
-#include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "chrome/browser/local_discovery/service_discovery_client.h"
@@ -18,16 +17,17 @@
 
 namespace local_discovery {
 
-// Implementation of ServiceDiscoverySharedClient with front-end of UI thread
-// and networking code on IO thread.
+// Implementation of ServiceDiscoverySharedClient with the front-end on the
+// UI thread and the networking code on the IO thread.
 class ServiceDiscoveryClientMdns
     : public ServiceDiscoverySharedClient,
       public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
   class Proxy;
+
   ServiceDiscoveryClientMdns();
 
-  // ServiceDiscoveryClient implementation.
+  // ServiceDiscoveryClient:
   std::unique_ptr<ServiceWatcher> CreateServiceWatcher(
       const std::string& service_type,
       const ServiceWatcher::UpdatedCallback& callback) override;
@@ -39,7 +39,7 @@ class ServiceDiscoveryClientMdns
       net::AddressFamily address_family,
       const LocalDomainResolver::IPAddressCallback& callback) override;
 
-  // net::NetworkChangeNotifier::NetworkChangeObserver implementation.
+  // net::NetworkChangeNotifier::NetworkChangeObserver:
   void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
 
@@ -66,11 +66,10 @@ class ServiceDiscoveryClientMdns
   std::unique_ptr<ServiceDiscoveryClient> client_;
 
   // Counter of restart attempts we have made after network change.
-  int restart_attempts_;
+  int restart_attempts_ = 0;
 
-  // If false delay tasks until initialization is posted to |mdns_runner_|
-  // thread.
-  bool need_dalay_mdns_tasks_;
+  // If false, delay tasks until initialization is posted to |mdns_runner_|.
+  bool need_delay_mdns_tasks_ = true;
 
   base::WeakPtrFactory<ServiceDiscoveryClientMdns> weak_ptr_factory_;
 

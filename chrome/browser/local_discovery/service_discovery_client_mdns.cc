@@ -6,12 +6,12 @@
 
 #include <stddef.h>
 
-#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -32,7 +32,7 @@ using content::BrowserThread;
 // Handles interaction of client code on UI thread end net code on mdns thread.
 class ServiceDiscoveryClientMdns::Proxy {
  public:
-  typedef base::WeakPtr<Proxy> WeakPtr;
+  using WeakPtr = base::WeakPtr<Proxy>;
 
   explicit Proxy(ServiceDiscoveryClientMdns* client)
       : client_(client),
@@ -54,10 +54,10 @@ class ServiceDiscoveryClientMdns::Proxy {
 
   // Notifies proxies that new mDNS instance is ready.
   virtual void OnNewMdnsReady() {
-    DCHECK(!client_->need_dalay_mdns_tasks_);
+    DCHECK(!client_->need_delay_mdns_tasks_);
     if (IsValid()) {
-      for (size_t i = 0; i < delayed_tasks_.size(); ++i)
-        client_->mdns_runner_->PostTask(FROM_HERE, delayed_tasks_[i]);
+      for (const auto& task : delayed_tasks_)
+        client_->mdns_runner_->PostTask(FROM_HERE, task);
     }
     delayed_tasks_.clear();
   }
@@ -72,11 +72,12 @@ class ServiceDiscoveryClientMdns::Proxy {
  protected:
   void PostToMdnsThread(const base::Closure& task) {
     DCHECK(IsValid());
-    // The first task on IO thread for each |mdns_| instance must be |InitMdns|.
-    // |OnInterfaceListReady| could be delayed by |GetMDnsInterfacesToBind|
-    // running on FILE thread, so |PostToMdnsThread| could be called to post
-    // task for |mdns_| that is not initialized yet.
-    if (!client_->need_dalay_mdns_tasks_) {
+    // The first task on the IO thread for each |mdns_| instance must be
+    // InitMdns(). OnInterfaceListReady() could be delayed by
+    // GetMDnsInterfacesToBind() running on a background task runner, so
+    // PostToMdnsThread() could be called to post task for |mdns_| that is not
+    // initialized yet.
+    if (!client_->need_delay_mdns_tasks_) {
       client_->mdns_runner_->PostTask(FROM_HERE, task);
       return;
     }
@@ -108,6 +109,7 @@ class ServiceDiscoveryClientMdns::Proxy {
   // Delayed |mdns_runner_| tasks.
   std::vector<base::Closure> delayed_tasks_;
   base::WeakPtrFactory<Proxy> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(Proxy);
 };
 
@@ -116,7 +118,7 @@ namespace {
 const int kMaxRestartAttempts = 10;
 const int kRestartDelayOnNetworkChangeSeconds = 3;
 
-typedef base::Callback<void(bool)> MdnsInitCallback;
+using MdnsInitCallback = base::Callback<void(bool)>;
 
 class SocketFactory : public net::MDnsSocketFactory {
  public:
@@ -152,7 +154,7 @@ void InitMdns(const MdnsInitCallback& on_initialized,
 template<class T>
 class ProxyBase : public ServiceDiscoveryClientMdns::Proxy, public T {
  public:
-  typedef ProxyBase<T> Base;
+  using Base = ProxyBase<T>;
 
   explicit ProxyBase(ServiceDiscoveryClientMdns* client)
       : Proxy(client) {
@@ -181,6 +183,7 @@ class ProxyBase : public ServiceDiscoveryClientMdns::Proxy, public T {
 
  private:
   std::unique_ptr<T> implementation_;
+
   DISALLOW_COPY_AND_ASSIGN(ProxyBase);
 };
 
@@ -242,6 +245,7 @@ class ServiceWatcherProxy : public ProxyBase<ServiceWatcher> {
   }
   std::string service_type_;
   ServiceWatcher::UpdatedCallback callback_;
+
   DISALLOW_COPY_AND_ASSIGN(ServiceWatcherProxy);
 };
 
@@ -281,6 +285,7 @@ class ServiceResolverProxy : public ProxyBase<ServiceResolver> {
   }
 
   std::string service_name_;
+
   DISALLOW_COPY_AND_ASSIGN(ServiceResolverProxy);
 };
 
@@ -328,7 +333,7 @@ class LocalDomainResolverProxy : public ProxyBase<LocalDomainResolver> {
 ServiceDiscoveryClientMdns::ServiceDiscoveryClientMdns()
     : mdns_runner_(BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)),
       restart_attempts_(0),
-      need_dalay_mdns_tasks_(true),
+      need_delay_mdns_tasks_(true),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
@@ -340,8 +345,9 @@ ServiceDiscoveryClientMdns::CreateServiceWatcher(
     const std::string& service_type,
     const ServiceWatcher::UpdatedCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return std::unique_ptr<ServiceWatcher>(
-      new ServiceWatcherProxy(this, service_type, callback));
+  auto watcher =
+      base::MakeUnique<ServiceWatcherProxy>(this, service_type, callback);
+  return std::move(watcher);
 }
 
 std::unique_ptr<ServiceResolver>
@@ -349,8 +355,9 @@ ServiceDiscoveryClientMdns::CreateServiceResolver(
     const std::string& service_name,
     const ServiceResolver::ResolveCompleteCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return std::unique_ptr<ServiceResolver>(
-      new ServiceResolverProxy(this, service_name, callback));
+  auto resolver =
+      base::MakeUnique<ServiceResolverProxy>(this, service_name, callback);
+  return std::move(resolver);
 }
 
 std::unique_ptr<LocalDomainResolver>
@@ -359,8 +366,9 @@ ServiceDiscoveryClientMdns::CreateLocalDomainResolver(
     net::AddressFamily address_family,
     const LocalDomainResolver::IPAddressCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return std::unique_ptr<LocalDomainResolver>(
-      new LocalDomainResolverProxy(this, domain, address_family, callback));
+  auto resolver = base::MakeUnique<LocalDomainResolverProxy>(
+      this, domain, address_family, callback);
+  return std::move(resolver);
 }
 
 ServiceDiscoveryClientMdns::~ServiceDiscoveryClientMdns() {
@@ -380,16 +388,17 @@ void ServiceDiscoveryClientMdns::OnNetworkChanged(
 void ServiceDiscoveryClientMdns::ScheduleStartNewClient() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   OnBeforeMdnsDestroy();
-  if (restart_attempts_ < kMaxRestartAttempts) {
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE,
-        base::BindOnce(&ServiceDiscoveryClientMdns::StartNewClient,
-                       weak_ptr_factory_.GetWeakPtr()),
-        base::TimeDelta::FromSeconds(kRestartDelayOnNetworkChangeSeconds *
-                                     (1 << restart_attempts_)));
-  } else {
+  if (restart_attempts_ >= kMaxRestartAttempts) {
     ReportSuccess();
+    return;
   }
+
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&ServiceDiscoveryClientMdns::StartNewClient,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::TimeDelta::FromSeconds(kRestartDelayOnNetworkChangeSeconds *
+                                   (1 << restart_attempts_)));
 }
 
 void ServiceDiscoveryClientMdns::StartNewClient() {
@@ -397,7 +406,7 @@ void ServiceDiscoveryClientMdns::StartNewClient() {
   ++restart_attempts_;
   DestroyMdns();
   mdns_ = net::MDnsClient::CreateDefault();
-  client_.reset(new ServiceDiscoveryClientImpl(mdns_.get()));
+  client_ = base::MakeUnique<ServiceDiscoveryClientImpl>(mdns_.get());
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::FILE,
       FROM_HERE,
@@ -425,7 +434,7 @@ void ServiceDiscoveryClientMdns::OnMdnsInitialized(bool success) {
   ReportSuccess();
 
   // Initialization is done, no need to delay tasks.
-  need_dalay_mdns_tasks_ = false;
+  need_delay_mdns_tasks_ = false;
   for (Proxy& observer : proxies_)
     observer.OnNewMdnsReady();
 }
@@ -437,7 +446,7 @@ void ServiceDiscoveryClientMdns::ReportSuccess() {
 }
 
 void ServiceDiscoveryClientMdns::OnBeforeMdnsDestroy() {
-  need_dalay_mdns_tasks_ = true;
+  need_delay_mdns_tasks_ = true;
   weak_ptr_factory_.InvalidateWeakPtrs();
   for (Proxy& observer : proxies_)
     observer.OnMdnsDestroy();
@@ -445,8 +454,8 @@ void ServiceDiscoveryClientMdns::OnBeforeMdnsDestroy() {
 
 void ServiceDiscoveryClientMdns::DestroyMdns() {
   OnBeforeMdnsDestroy();
-  // After calling |Proxy::OnMdnsDestroy| all references to client_ and mdns_
-  // should be destroyed.
+  // After calling Proxy::OnMdnsDestroy(), all references to |client_| and
+  // |mdns_| should be destroyed.
   if (client_)
     mdns_runner_->DeleteSoon(FROM_HERE, client_.release());
   if (mdns_)
