@@ -24,7 +24,11 @@ interface ExtensionUnpacker {
   // kDecodedImagesFilename and kDecodedMessageCatalogsFilename in |path|.
   // If Unpack() fails for any reason, |error| contains a user-displayable
   // explanation of what went wrong.
-  Unpack(mojo.common.mojom.FilePath path,
+  // |channel| and |type| are needed to initialize the global state of the
+  // extension system, which is needed while creating the Extension object.
+  Unpack(FeatureChannel channel,
+         FeatureSessionType type,
+         mojo.common.mojom.FilePath path,
          string extension_id,
          ManifestLocation location,
          int32 creation_flags)
@@ -34,3 +38,9 @@ interface ExtensionUnpacker {
 
 [Native]
 enum ManifestLocation;
+
+[Native]
+enum FeatureChannel;
+
+[Native]
+enum FeatureSessionType;

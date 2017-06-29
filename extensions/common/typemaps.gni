@@ -3,6 +3,6 @@
 # found in the LICENSE file.
 
 typemaps = [
-  "//extensions/common/manifest_location.typemap",
+  "//extensions/common/extension_unpacker.typemap",
   "//extensions/common/manifest_parser.typemap",
 ]

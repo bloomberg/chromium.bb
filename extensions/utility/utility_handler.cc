@@ -11,6 +11,8 @@
 #include "extensions/common/extension_l10n_util.h"
 #include "extensions/common/extension_unpacker.mojom.h"
 #include "extensions/common/extensions_client.h"
+#include "extensions/common/features/feature_channel.h"
+#include "extensions/common/features/feature_session_type.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_parser.mojom.h"
 #include "extensions/common/update_manifest.h"
@@ -51,7 +53,9 @@ class ExtensionUnpackerImpl : public extensions::mojom::ExtensionUnpacker {
     }
   }
 
-  void Unpack(const base::FilePath& path,
+  void Unpack(version_info::Channel channel,
+              extensions::FeatureSessionType type,
+              const base::FilePath& path,
               const std::string& extension_id,
               Manifest::Location location,
               int32_t creation_flags,
@@ -61,6 +65,10 @@ class ExtensionUnpackerImpl : public extensions::mojom::ExtensionUnpacker {
     DCHECK(ExtensionsClient::Get());
 
     content::UtilityThread::Get()->EnsureBlinkInitialized();
+
+    // Initialize extension system global state.
+    SetCurrentChannel(channel);
+    SetCurrentFeatureSessionType(type);
 
     Unpacker unpacker(path.DirName(), path, extension_id, location,
                       creation_flags);
