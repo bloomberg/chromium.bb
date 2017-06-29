@@ -33,9 +33,10 @@
 /* HAVE() - specific system features (headers, functions or similar) that are
  * present or not */
 #define HAVE(WTF_FEATURE) (defined HAVE_##WTF_FEATURE && HAVE_##WTF_FEATURE)
-/* OS() - underlying operating system; only to be used for mandated low-level
-   services like
-   virtual memory, not to choose a GUI toolkit */
+
+// OS() - underlying operating system; only to be used for mandated low-level
+// services like virtual memory, not to choose a GUI toolkit
+// This macro is deprecated.  Use defined(OS_FOO).  See crbug.com/737403.
 #define OS(WTF_FEATURE) (defined OS_##WTF_FEATURE && OS_##WTF_FEATURE)
 
 /* ==== Policy decision macros: these define policy choices for a particular
@@ -48,10 +49,9 @@
 #define ENABLE(WTF_FEATURE) \
   (defined ENABLE_##WTF_FEATURE && ENABLE_##WTF_FEATURE)
 
-/* There is an assumption in the project that either OS(WIN) or OS(POSIX) is
- * set. */
-#if !OS(WIN) && !OS(POSIX)
-#error Either OS(WIN) or OS(POSIX) needs to be set.
+// There is an assumption in the project that either OS_WIN or OS_POSIX is set.
+#if !defined(OS_WIN) && !defined(OS_POSIX)
+#error Either OS_WIN or OS_POSIX needs to be set.
 #endif
 
 #endif  // WTF_build_config_h
