@@ -24,15 +24,14 @@ AccessToken = collections.namedtuple('AccessToken', [
 
 
 class TokenError(Exception):
-  """Raised by TokenProvider if the token can't be created.
+  """Raised by TokenProvider if the token can't be created (fatal error).
 
   See TokenProvider docs for more info.
   """
 
-  def __init__(self, code, msg, fatal=False):
+  def __init__(self, code, msg):
     super(TokenError, self).__init__(msg)
     self.code = code
-    self.fatal = fatal
 
 
 class RPCError(Exception):
@@ -60,9 +59,9 @@ class TokenProvider(object):
     low-level or transient errors.
 
     Can also raise TokenError. It will be converted to GetOAuthToken reply with
-    non-zero error_code. It will also optionally be cached, so that the provider
-    would never be called again for the same set of scopes. This is appropriate
-    for high-level or fatal errors.
+    non-zero error_code. It will also be cached, so that the provider would
+    never be called again for the same set of scopes. This is appropriate for
+    high-level fatal errors.
 
     Returns AccessToken on success.
     """
@@ -251,11 +250,10 @@ class LocalAuthServer(object):
       except TokenError as exc:
         tok_or_err = exc
       # Cache the token or fatal errors (to avoid useless retry later).
-      if isinstance(tok_or_err, AccessToken) or tok_or_err.fatal:
-        with self._lock:
-          if not self._server:
-            raise RPCError(503, 'Stopped already.')
-          self._cache[cache_key] = tok_or_err
+      with self._lock:
+        if not self._server:
+          raise RPCError(503, 'Stopped already.')
+        self._cache[cache_key] = tok_or_err
 
     # Done.
     if isinstance(tok_or_err, AccessToken):

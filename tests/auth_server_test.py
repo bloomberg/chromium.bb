@@ -116,34 +116,22 @@ class LocalAuthServerTest(auto_stub.TestCase):
       self.assertEqual([('acc_1', ('A', 'B', 'C'))], calls)
 
   def test_handles_token_errors(self):
-    fatal = False
-    code = 123
+    calls = []
     def token_gen(_account_id, _scopes):
-      raise auth_server.TokenError(code, 'error message', fatal=fatal)
+      calls.append(1)
+      raise auth_server.TokenError(123, 'error message')
 
     with local_auth_server(token_gen, 'acc_1'):
       self.assertEqual(
           {u'error_code': 123, u'error_message': u'error message'},
           call_rpc('acc_1', ['B', 'B', 'A', 'C']))
+      self.assertEqual(1, len(calls))
 
-      # Non-fatal errors aren't cached.
-      code = 456
+      # Errors are cached. Same error is returned.
       self.assertEqual(
-          {u'error_code': 456, u'error_message': u'error message'},
+          {u'error_code': 123, u'error_message': u'error message'},
           call_rpc('acc_1', ['B', 'B', 'A', 'C']))
-
-      # Fatal errors are cached.
-      fatal = True
-      code = 789
-      self.assertEqual(
-          {u'error_code': 789, u'error_message': u'error message'},
-          call_rpc('acc_1', ['B', 'B', 'A', 'C']))
-
-      # Same cached error.
-      code = 111
-      self.assertEqual(
-          {u'error_code': 789, u'error_message': u'error message'},
-          call_rpc('acc_1', ['B', 'B', 'A', 'C']))
+      self.assertEqual(1, len(calls))
 
   def test_http_level_errors(self):
     def token_gen(_account_id, _scopes):
