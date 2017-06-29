@@ -367,8 +367,8 @@ PassRefPtr<DOMWrapperWorld> ScriptController::CreateNewInspectorIsolatedWorld(
   if (!world)
     return nullptr;
   if (!world_name.IsEmpty()) {
-    DOMWrapperWorld::SetIsolatedWorldHumanReadableName(world->GetWorldId(),
-                                                       world_name);
+    DOMWrapperWorld::SetNonMainWorldHumanReadableName(world->GetWorldId(),
+                                                      world_name);
   }
   // Make sure the execution context exists.
   WindowProxy(*world);

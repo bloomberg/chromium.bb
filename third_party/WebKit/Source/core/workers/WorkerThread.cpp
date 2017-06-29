@@ -490,7 +490,8 @@ void WorkerThread::InitializeOnWorkerThread(
 
     // TODO(nhiroki): Handle a case where the script controller fails to
     // initialize the context.
-    if (GlobalScope()->ScriptController()->InitializeContextIfNeeded()) {
+    if (GlobalScope()->ScriptController()->InitializeContextIfNeeded(
+            String())) {
       worker_reporting_proxy_.DidInitializeWorkerContext();
       v8::HandleScope handle_scope(GetIsolate());
       Platform::Current()->WorkerContextCreated(

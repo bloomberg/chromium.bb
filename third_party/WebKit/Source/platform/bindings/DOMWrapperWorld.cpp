@@ -56,6 +56,10 @@ static bool IsIsolatedWorldId(int world_id) {
   return DOMWrapperWorld::kMainWorldId < world_id &&
          world_id < DOMWrapperWorld::kIsolatedWorldIdLimit;
 }
+
+static bool IsMainWorldId(int world_id) {
+  return world_id == DOMWrapperWorld::kMainWorldId;
+}
 #endif
 
 PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::Create(v8::Isolate* isolate,
@@ -196,16 +200,16 @@ static IsolatedWorldHumanReadableNameMap& IsolatedWorldHumanReadableNames() {
   return map;
 }
 
-String DOMWrapperWorld::IsolatedWorldHumanReadableName() {
-  DCHECK(this->IsIsolatedWorld());
+String DOMWrapperWorld::NonMainWorldHumanReadableName() {
+  DCHECK(!this->IsMainWorld());
   return IsolatedWorldHumanReadableNames().at(GetWorldId());
 }
 
-void DOMWrapperWorld::SetIsolatedWorldHumanReadableName(
+void DOMWrapperWorld::SetNonMainWorldHumanReadableName(
     int world_id,
     const String& human_readable_name) {
 #if DCHECK_IS_ON()
-  DCHECK(IsIsolatedWorldId(world_id));
+  DCHECK(!IsMainWorldId(world_id));
 #endif
   IsolatedWorldHumanReadableNames().Set(world_id, human_readable_name);
 }

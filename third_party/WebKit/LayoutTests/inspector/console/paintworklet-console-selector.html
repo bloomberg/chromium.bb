@@ -1,0 +1,39 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
+<script src="../../http/tests/inspector/debugger-test.js"></script>
+
+<script id="code" type="text/worklet">
+  registerPaint('foo', class { paint() { } });
+</script>
+<script>
+function setup() {
+  var blob = new Blob([code.textContent], {type: 'text/javascript'});
+  return paintWorklet.addModule(URL.createObjectURL(blob));
+}
+
+async function test()
+{
+  await new Promise(f => InspectorTest.startDebuggerTest(f, true));
+  await InspectorTest.evaluateInPageAsync('setup()');
+
+  var consoleView = Console.ConsoleView.instance();
+  var selector = consoleView._consoleContextSelector;
+  InspectorTest.addResult('Console context selector:');
+  for (var executionContext of selector._items) {
+    var selected = UI.context.flavor(SDK.ExecutionContext) === executionContext;
+    var text = '____'.repeat(selector._depthFor(executionContext)) + selector.titleFor(executionContext);
+    var disabled = !selector.isItemSelectable(executionContext);
+    InspectorTest.addResult(`${selected ? '*' : ' '} ${text} ${disabled ? '[disabled]' : ''}`);
+  }
+
+  InspectorTest.completeDebuggerTest();
+}
+</script>
+</head>
+<body onload="runTest()">
+<p> Tests console execution context selector for paintworklet.
+</p>
+</body>
+</html>

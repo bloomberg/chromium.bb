@@ -150,9 +150,8 @@ void MainThreadDebugger::ContextCreated(ScriptState* script_state,
   aux_data_builder.Append(IdentifiersFactory::FrameId(frame));
   aux_data_builder.Append("\"}");
   String aux_data = aux_data_builder.ToString();
-  String human_readable_name = world.IsIsolatedWorld()
-                                   ? world.IsolatedWorldHumanReadableName()
-                                   : String();
+  String human_readable_name =
+      !world.IsMainWorld() ? world.NonMainWorldHumanReadableName() : String();
   String origin_string = origin ? origin->ToRawString() : String();
   v8_inspector::V8ContextInfo context_info(
       script_state->GetContext(), ContextGroupId(frame),
