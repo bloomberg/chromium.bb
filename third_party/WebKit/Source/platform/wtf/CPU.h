@@ -53,9 +53,6 @@
 #endif
 
 /* CPU(ARM) - ARM, any version*/
-#define WTF_ARM_ARCH_AT_LEAST(N) \
-  (CPU(ARM) && defined(WTF_ARM_ARCH_VERSION) && WTF_ARM_ARCH_VERSION >= N)
-
 #if defined(arm) || defined(__arm__) || defined(ARM) || defined(_ARM_)
 #define WTF_CPU_ARM 1
 
@@ -67,71 +64,6 @@
 #define WTF_CPU_MIDDLE_ENDIAN 1
 
 #endif
-
-/* Set WTF_ARM_ARCH_VERSION */
-#if defined(__ARM_ARCH_4__) || defined(__ARM_ARCH_4T__) || \
-    defined(__MARM_ARMV4__)
-#define WTF_ARM_ARCH_VERSION 4
-
-#elif defined(__ARM_ARCH_5__) || defined(__ARM_ARCH_5T__) || \
-    defined(__MARM_ARMV5__)
-#define WTF_ARM_ARCH_VERSION 5
-
-#elif defined(__ARM_ARCH_5E__) || defined(__ARM_ARCH_5TE__) || \
-    defined(__ARM_ARCH_5TEJ__)
-#define WTF_ARM_ARCH_VERSION 5
-
-#elif defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_6J__) ||  \
-    defined(__ARM_ARCH_6K__) || defined(__ARM_ARCH_6Z__) ||   \
-    defined(__ARM_ARCH_6ZK__) || defined(__ARM_ARCH_6T2__) || \
-    defined(__ARMV6__)
-#define WTF_ARM_ARCH_VERSION 6
-
-#elif defined(__ARM_ARCH_7A__) || defined(__ARM_ARCH_7R__) || \
-    defined(__ARM_ARCH_7S__)
-#define WTF_ARM_ARCH_VERSION 7
-
-/* MSVC sets _M_ARM */
-#elif defined(_M_ARM)
-#define WTF_ARM_ARCH_VERSION _M_ARM
-#else
-#define WTF_ARM_ARCH_VERSION 0
-
-#endif
-
-/* Set WTF_THUMB_ARCH_VERSION */
-#if defined(__ARM_ARCH_4T__)
-#define WTF_THUMB_ARCH_VERSION 1
-
-#elif defined(__ARM_ARCH_5T__) || defined(__ARM_ARCH_5TE__) || \
-    defined(__ARM_ARCH_5TEJ__)
-#define WTF_THUMB_ARCH_VERSION 2
-
-#elif defined(__ARM_ARCH_6J__) || defined(__ARM_ARCH_6K__) || \
-    defined(__ARM_ARCH_6Z__) || defined(__ARM_ARCH_6ZK__) ||  \
-    defined(__ARM_ARCH_6M__)
-#define WTF_THUMB_ARCH_VERSION 3
-
-#elif defined(__ARM_ARCH_6T2__) || defined(__ARM_ARCH_7__) || \
-    defined(__ARM_ARCH_7A__) || defined(__ARM_ARCH_7M__) ||   \
-    defined(__ARM_ARCH_7R__) || defined(__ARM_ARCH_7S__)
-#define WTF_THUMB_ARCH_VERSION 4
-
-#else
-#define WTF_THUMB_ARCH_VERSION 0
-#endif
-
-/* CPU(ARM_THUMB2) - Thumb2 instruction set is available */
-#if !defined(WTF_CPU_ARM_THUMB2)
-#if defined(thumb2) || defined(__thumb2__) || \
-    ((defined(__thumb) || defined(__thumb__)) && WTF_THUMB_ARCH_VERSION == 4)
-#define WTF_CPU_ARM_THUMB2 1
-#elif WTF_ARM_ARCH_AT_LEAST(4)
-#define WTF_CPU_ARM_THUMB2 0
-#else
-#error "Unsupported ARM architecture"
-#endif
-#endif /* !defined(WTF_CPU_ARM_THUMB2) */
 
 #if defined(__ARM_NEON__) && !defined(WTF_CPU_ARM_NEON)
 #define WTF_CPU_ARM_NEON 1
