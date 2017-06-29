@@ -5,6 +5,8 @@
 #include "components/sync/test/fake_server/unique_client_entity.h"
 
 #include "base/guid.h"
+#include "base/rand_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/test/fake_server/permanent_entity.h"
@@ -51,15 +53,23 @@ UniqueClientEntity::~UniqueClientEntity() {}
 // static
 std::unique_ptr<FakeServerEntity> UniqueClientEntity::Create(
     const sync_pb::SyncEntity& client_entity) {
-  CHECK(client_entity.has_client_defined_unique_tag())
-      << "A UniqueClientEntity must have a client-defined unique tag.";
   ModelType model_type =
       syncer::GetModelTypeFromSpecifics(client_entity.specifics());
-  string id = EffectiveIdForClientTaggedEntity(client_entity);
+  CHECK_NE(client_entity.has_client_defined_unique_tag(),
+           syncer::CommitOnlyTypes().Has(model_type))
+      << "A UniqueClientEntity should have a client-defined unique tag iff it "
+         "is not a CommitOnly type.";
+  // Without model type specific logic for each CommitOnly type, we cannot infer
+  // a reasonable tag from the specifics. We need uniqueness for how the server
+  // holds onto all objects, so simply make a new tag from a random  number.
+  string effective_tag = client_entity.has_client_defined_unique_tag()
+                             ? client_entity.client_defined_unique_tag()
+                             : base::Uint64ToString(base::RandUint64());
+  string id = FakeServerEntity::CreateId(model_type, effective_tag);
   return std::unique_ptr<FakeServerEntity>(new UniqueClientEntity(
-      id, client_entity.client_defined_unique_tag(), model_type,
-      client_entity.version(), client_entity.name(), client_entity.specifics(),
-      client_entity.ctime(), client_entity.mtime()));
+      id, effective_tag, model_type, client_entity.version(),
+      client_entity.name(), client_entity.specifics(), client_entity.ctime(),
+      client_entity.mtime()));
 }
 
 // static
@@ -72,14 +82,6 @@ std::unique_ptr<FakeServerEntity> UniqueClientEntity::CreateForInjection(
   return std::unique_ptr<FakeServerEntity>(new UniqueClientEntity(
       id, client_defined_unique_tag, model_type, kUnusedVersion, name,
       entity_specifics, kDefaultTime, kDefaultTime));
-}
-
-// static
-std::string UniqueClientEntity::EffectiveIdForClientTaggedEntity(
-    const sync_pb::SyncEntity& entity) {
-  return FakeServerEntity::CreateId(
-      syncer::GetModelTypeFromSpecifics(entity.specifics()),
-      entity.client_defined_unique_tag());
 }
 
 bool UniqueClientEntity::RequiresParentId() const {

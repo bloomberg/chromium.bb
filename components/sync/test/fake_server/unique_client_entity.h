@@ -48,10 +48,6 @@ class UniqueClientEntity : public FakeServerEntity {
       const std::string& name,
       const sync_pb::EntitySpecifics& entity_specifics);
 
-  // Derives an ID from a unique client tagged entity.
-  static std::string EffectiveIdForClientTaggedEntity(
-      const sync_pb::SyncEntity& entity);
-
   // FakeServerEntity implementation.
   bool RequiresParentId() const override;
   std::string GetParentId() const override;
