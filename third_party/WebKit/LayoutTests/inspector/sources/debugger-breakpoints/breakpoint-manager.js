@@ -42,7 +42,7 @@ InspectorTest.initializeDefaultMappingOnTarget = function(target)
     var defaultMapping = {
         rawLocationToUILocation: function(rawLocation)
         {
-            return InspectorTest.uiSourceCodes[rawLocation.scriptId].uiLocation(rawLocation.lineNumber, 0);
+            return null;
         },
 
         uiLocationToRawLocation: function(uiSourceCode, lineNumber)
@@ -103,7 +103,9 @@ InspectorTest.DebuggerModelMock = class extends SDK.SDKModel {
     {
         var script = new SDK.Script(this, scriptId, url);
         this._scripts[scriptId] = script;
-        this._debuggerWorkspaceBinding._debuggerModelToData.get(this)._parsedScriptSource({data: script});
+        var modelData = this._debuggerWorkspaceBinding._debuggerModelToData.get(this);
+        modelData._defaultMapping._parsedScriptSource({data: script});
+        modelData._resourceMapping._parsedScriptSource({data: script});
     }
 
     _scriptForURL(url)
@@ -227,14 +229,6 @@ InspectorTest.addScript = function(target, breakpointManager, url)
 {
     target.debuggerModel._addScript(url, url);
     InspectorTest.addResult("  Adding script: " + url);
-    var uiSourceCodes = breakpointManager._workspace.uiSourceCodesForProjectType(Workspace.projectTypes.Debugger);
-    for (var i = 0; i < uiSourceCodes.length; ++i) {
-        var uiSourceCode = uiSourceCodes[i];
-        if (uiSourceCode.url() === url) {
-            InspectorTest.uiSourceCodes[url] = uiSourceCode;
-            return uiSourceCode;
-        }
-    }
 }
 
 InspectorTest.addUISourceCode = function(target, breakpointManager, url, doNotSetSourceMapping, doNotAddScript)
