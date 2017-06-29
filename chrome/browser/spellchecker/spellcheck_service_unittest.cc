@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/supports_user_data.h"
@@ -43,8 +44,7 @@ struct TestCase {
     for (const auto& language : languages) {
       dictionary.language = language;
       dictionary.used_for_spellcheck =
-          std::find(used_for_spellcheck.begin(), used_for_spellcheck.end(),
-                    language) != used_for_spellcheck.end();
+          base::ContainsValue(used_for_spellcheck, language);
       expected_dictionaries.push_back(dictionary);
     }
   }

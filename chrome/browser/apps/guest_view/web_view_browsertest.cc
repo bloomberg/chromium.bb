@@ -16,6 +16,7 @@
 #include "base/process/process.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -1730,9 +1731,8 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, InterstitialPageRouteEvents) {
 
   std::vector<content::RenderWidgetHostView*> hosts =
       content::GetInputEventRouterRenderWidgetHostViews(outer_web_contents);
-  EXPECT_TRUE(std::find(hosts.begin(), hosts.end(),
-                        interstitial_page->GetMainFrame()->GetView()) !=
-              hosts.end());
+  EXPECT_TRUE(
+      base::ContainsValue(hosts, interstitial_page->GetMainFrame()->GetView()));
 }
 
 // Test makes sure that interstitial pages will receive input events and can be

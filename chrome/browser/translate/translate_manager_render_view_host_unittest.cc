@@ -4,7 +4,6 @@
 
 #include <stddef.h>
 
-#include <algorithm>
 #include <memory>
 #include <set>
 #include <tuple>
@@ -14,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -608,9 +608,7 @@ TEST_F(TranslateManagerRenderViewHostTest, FetchLanguagesFromTranslateServer) {
     const std::string& lang = server_languages[i];
     if (lang == "xx")
       continue;
-    EXPECT_NE(current_supported_languages.end(),
-              std::find(current_supported_languages.begin(),
-                        current_supported_languages.end(), lang))
+    EXPECT_TRUE(base::ContainsValue(current_supported_languages, lang))
         << "lang=" << lang;
   }
 }

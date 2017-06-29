@@ -7,6 +7,7 @@
 #include <set>
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/supports_user_data.h"
 #include "base/synchronization/waitable_event.h"
@@ -346,8 +347,7 @@ void SpellcheckService::OnAcceptLanguagesChanged() {
   std::vector<std::string> filtered_dictionaries;
 
   for (const auto& dictionary : dictionaries) {
-    if (std::find(accept_languages.begin(), accept_languages.end(),
-                  dictionary) != accept_languages.end()) {
+    if (base::ContainsValue(accept_languages, dictionary)) {
       filtered_dictionaries.push_back(dictionary);
     }
   }

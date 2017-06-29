@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
@@ -75,8 +76,7 @@ class MediaStreamDevicesControllerTest
     size_t TotalRequestCount() { return last_requests_.size(); }
 
     bool WasRequested(ContentSettingsType type) {
-      return std::find(last_requests_.begin(), last_requests_.end(), type) !=
-             last_requests_.end();
+      return base::ContainsValue(last_requests_, type);
     }
 
     void Reset() { last_requests_.clear(); }

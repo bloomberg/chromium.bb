@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -330,8 +331,7 @@ void TabSpecificContentSettings::OnContentBlockedWithDetail(
 #endif
 
   if (type == CONTENT_SETTINGS_TYPE_PLUGINS && !details.empty() &&
-      std::find(blocked_plugin_names_.begin(), blocked_plugin_names_.end(),
-                details) == blocked_plugin_names_.end()) {
+      !base::ContainsValue(blocked_plugin_names_, details)) {
     blocked_plugin_names_.push_back(details);
   }
 
