@@ -46,9 +46,10 @@
 #include "cc/surfaces/frame_sink_id_allocator.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
+#include "components/viz/common/gl_helper.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/display_compositor/compositor_overlay_candidate_validator_android.h"
-#include "components/viz/service/display_compositor/host_shared_bitmap_manager.h"
+#include "components/viz/service/display_compositor/server_shared_bitmap_manager.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
@@ -797,7 +798,7 @@ void CompositorImpl::InitializeDisplay(
   renderer_settings.enable_color_correct_rendering =
       base::FeatureList::IsEnabled(features::kColorCorrectRendering);
   display_.reset(new cc::Display(
-      viz::HostSharedBitmapManager::current(),
+      viz::ServerSharedBitmapManager::current(),
       BrowserGpuMemoryBufferManager::current(), renderer_settings,
       frame_sink_id_, std::move(display_output_surface), std::move(scheduler),
       base::MakeUnique<cc::TextureMailboxDeleter>(task_runner)));
@@ -810,7 +811,7 @@ void CompositorImpl::InitializeDisplay(
           : base::MakeUnique<cc::DirectLayerTreeFrameSink>(
                 frame_sink_id_, manager, display_.get(), context_provider,
                 nullptr, BrowserGpuMemoryBufferManager::current(),
-                viz::HostSharedBitmapManager::current());
+                viz::ServerSharedBitmapManager::current());
 
   display_->SetVisible(true);
   display_->Resize(size_);

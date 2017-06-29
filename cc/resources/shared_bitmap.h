@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/hash.h"
 #include "base/macros.h"
 #include "base/trace_event/memory_allocator_dump.h"
 #include "cc/cc_export.h"
@@ -19,7 +20,13 @@ class SharedMemoryHandle;
 }
 
 namespace cc {
-typedef gpu::Mailbox SharedBitmapId;
+using SharedBitmapId = gpu::Mailbox;
+
+struct SharedBitmapIdHash {
+  size_t operator()(const SharedBitmapId& id) const {
+    return base::Hash(reinterpret_cast<const char*>(id.name), sizeof(id.name));
+  }
+};
 
 CC_EXPORT base::trace_event::MemoryAllocatorDumpGuid
 GetSharedBitmapGUIDForTracing(const SharedBitmapId& bitmap_id);

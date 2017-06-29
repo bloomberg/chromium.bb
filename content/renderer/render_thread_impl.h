@@ -107,13 +107,16 @@ class GpuVideoAcceleratorFactories;
 }
 
 namespace ui {
-class ChildSharedBitmapManager;
 class ContextProviderCommandBuffer;
 class Gpu;
 }
 
 namespace v8 {
 class Extension;
+}
+
+namespace viz {
+class ClientSharedBitmapManager;
 }
 
 namespace content {
@@ -365,7 +368,7 @@ class CONTENT_EXPORT RenderThreadImpl
     return vc_manager_.get();
   }
 
-  ui::ChildSharedBitmapManager* shared_bitmap_manager() const {
+  viz::ClientSharedBitmapManager* shared_bitmap_manager() const {
     DCHECK(shared_bitmap_manager_);
     return shared_bitmap_manager_.get();
   }
@@ -655,7 +658,7 @@ class CONTENT_EXPORT RenderThreadImpl
   // Used on the render thread.
   std::unique_ptr<VideoCaptureImplManager> vc_manager_;
 
-  std::unique_ptr<ui::ChildSharedBitmapManager> shared_bitmap_manager_;
+  std::unique_ptr<viz::ClientSharedBitmapManager> shared_bitmap_manager_;
 
   // The count of RenderWidgets running through this thread.
   int widget_count_;

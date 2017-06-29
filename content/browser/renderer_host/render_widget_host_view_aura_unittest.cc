@@ -34,7 +34,8 @@
 #include "cc/test/fake_external_begin_frame_source.h"
 #include "cc/test/fake_surface_observer.h"
 #include "components/viz/common/gl_helper.h"
-#include "components/viz/service/display_compositor/host_shared_bitmap_manager.h"
+#include "components/viz/service/display_compositor/server_shared_bitmap_manager.h"
+#include "components/viz/service/display_compositor/shared_bitmap_allocation_notifier_impl.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/compositor/test/no_transport_image_transport_factory.h"
 #include "content/browser/frame_host/render_widget_host_view_guest.h"
@@ -3046,7 +3047,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFrames) {
   gfx::Rect view_rect(100, 100);
   gfx::Size frame_size = view_rect.size();
   DCHECK_EQ(0u,
-            viz::HostSharedBitmapManager::current()->AllocatedBitmapCount());
+            viz::ServerSharedBitmapManager::current()->AllocatedBitmapCount());
 
   std::unique_ptr<RenderWidgetHostImpl* []> hosts(
       new RenderWidgetHostImpl*[renderer_count]);
@@ -3185,12 +3186,12 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFrames) {
   int handles_per_frame = 5;
   FrameEvictionManager::GetInstance()->set_max_handles(handles_per_frame * 2);
 
-  viz::HostSharedBitmapManagerClient bitmap_client(
-      viz::HostSharedBitmapManager::current());
+  viz::SharedBitmapAllocationNotifierImpl notifier(
+      viz::ServerSharedBitmapManager::current());
 
   for (size_t i = 0; i < (renderer_count - 1) * handles_per_frame; i++) {
-    bitmap_client.ChildAllocatedSharedBitmap(1, base::SharedMemoryHandle(),
-                                             cc::SharedBitmap::GenerateId());
+    notifier.ChildAllocatedSharedBitmap(1, base::SharedMemoryHandle(),
+                                        cc::SharedBitmap::GenerateId());
   }
 
   // Hiding this last bitmap should evict all but two frames.
@@ -3220,7 +3221,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithLocking) {
   gfx::Rect view_rect(100, 100);
   gfx::Size frame_size = view_rect.size();
   DCHECK_EQ(0u,
-            viz::HostSharedBitmapManager::current()->AllocatedBitmapCount());
+            viz::ServerSharedBitmapManager::current()->AllocatedBitmapCount());
 
   std::unique_ptr<RenderWidgetHostImpl* []> hosts(
       new RenderWidgetHostImpl*[renderer_count]);
@@ -3293,7 +3294,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithMemoryPressure) {
   gfx::Rect view_rect(100, 100);
   gfx::Size frame_size = view_rect.size();
   DCHECK_EQ(0u,
-            viz::HostSharedBitmapManager::current()->AllocatedBitmapCount());
+            viz::ServerSharedBitmapManager::current()->AllocatedBitmapCount());
 
   std::unique_ptr<RenderWidgetHostImpl* []> hosts(
       new RenderWidgetHostImpl*[renderer_count]);
