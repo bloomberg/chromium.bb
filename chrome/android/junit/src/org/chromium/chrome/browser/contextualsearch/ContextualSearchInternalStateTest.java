@@ -74,6 +74,11 @@ public class ContextualSearchInternalStateTest {
             stubForWorkOnState(InternalState.WAITING_FOR_POSSIBLE_TAP_NEAR_PREVIOUS);
         }
 
+        @Override
+        public void waitForPossibleTapOnTapSelection() {
+            stubForWorkOnState(InternalState.WAITING_FOR_POSSIBLE_TAP_ON_TAP_SELECTION);
+        }
+
         boolean didResolve() {
             return mDidResolve;
         }

@@ -94,6 +94,10 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
     // timer).
     private static final int TAP_NEAR_PREVIOUS_DETECTION_DELAY_MS = 100;
 
+    // How long to wait for a Tap to be converted to a Long-press gesture when the user taps on
+    // an existing tap-selection.
+    private static final int TAP_ON_TAP_SELECTION_DELAY_MS = 100;
+
     private static final int NANOSECONDS_IN_A_MILLISECOND = 1000000;
 
     private final ObserverList<ContextualSearchObserver> mObservers =
@@ -1517,6 +1521,26 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
                                 InternalState.WAITING_FOR_POSSIBLE_TAP_NEAR_PREVIOUS);
                     }
                 }, TAP_NEAR_PREVIOUS_DETECTION_DELAY_MS);
+            }
+
+            /**
+             * Waits for possible Tap gesture that's on a previously established tap-selection.
+             * If the current Tap was on the previous tap-selection then this selection will become
+             * a Long-press selection and we'll recognize that gesture and start processing it.
+             * If that doesn't happen within our time window (which is the common case) then we'll
+             * advance to the next state in normal Tap processing.
+             */
+            @Override
+            public void waitForPossibleTapOnTapSelection() {
+                mInternalStateController.notifyStartingWorkOn(
+                        InternalState.WAITING_FOR_POSSIBLE_TAP_ON_TAP_SELECTION);
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        mInternalStateController.notifyFinishedWorkOn(
+                                InternalState.WAITING_FOR_POSSIBLE_TAP_ON_TAP_SELECTION);
+                    }
+                }, TAP_ON_TAP_SELECTION_DELAY_MS);
             }
 
             /** Starts a Resolve request to our server for the best Search Term. */

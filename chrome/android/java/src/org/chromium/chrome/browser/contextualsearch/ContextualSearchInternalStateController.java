@@ -72,6 +72,11 @@ class ContextualSearchInternalStateController {
         /** This starts a sequence of states needed to get to the SHOWING_TAP_SEARCH resting state.
          */
         TAP_RECOGNIZED,
+        /** Waits to see if the Tap was on a previous tap-selection, which will show the selection
+         * manipulation pins and be subsumed by a LONG_PRESS_RECOGNIZED.  If that doesn't happen
+         * within the waiting period we'll advance.
+         */
+        WAITING_FOR_POSSIBLE_TAP_ON_TAP_SELECTION,
         /** Gathers text surrounding the selection. */
         GATHERING_SURROUNDINGS,
         /** Decides if the gesture should trigger the UX or be suppressed. */
@@ -233,6 +238,9 @@ class ContextualSearchInternalStateController {
                 break;
             case TAP_RECOGNIZED:
                 break;
+            case WAITING_FOR_POSSIBLE_TAP_ON_TAP_SELECTION:
+                mStateHandler.waitForPossibleTapOnTapSelection();
+                break;
             case GATHERING_SURROUNDINGS:
                 mStateHandler.gatherSurroundingText();
                 break;
@@ -293,12 +301,14 @@ class ContextualSearchInternalStateController {
                 reset(StateChangeReason.BASE_PAGE_TAP);
                 break;
             case TAP_RECOGNIZED:
-                if (mPreviousState == InternalState.SHOWING_TAP_SEARCH) {
-                    // This is a second-tap on a Tap-selection.
-                    // We'll soon recognize a Long-press and show the edit pins, so nothing needed.
+                if (mPreviousState != null && mPreviousState != InternalState.IDLE) {
+                    transitionTo(InternalState.WAITING_FOR_POSSIBLE_TAP_ON_TAP_SELECTION);
                 } else {
                     transitionTo(InternalState.GATHERING_SURROUNDINGS);
                 }
+                break;
+            case WAITING_FOR_POSSIBLE_TAP_ON_TAP_SELECTION:
+                transitionTo(InternalState.GATHERING_SURROUNDINGS);
                 break;
             case GATHERING_SURROUNDINGS:
                 // We gather surroundings for both Tap and Long-press in order to notify icing.
