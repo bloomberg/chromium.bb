@@ -88,7 +88,8 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
     public boolean loadNativeLibrary(Context hostContext) {
         String processType =
                 CommandLine.getInstance().getSwitchValue(ContentSwitches.SWITCH_PROCESS_TYPE);
-        if (ContentSwitches.SWITCH_RENDERER_PROCESS.equals(processType)) {
+        // Enable selective JNI registration when the process is not the browser process.
+        if (processType != null) {
             JNIUtils.enableSelectiveJniRegistration();
         }
 
