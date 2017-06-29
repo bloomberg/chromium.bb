@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/metrics/user_metrics_recorder.h"
+#include "ash/public/cpp/config.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -437,13 +438,15 @@ NetworkListView::UpdateNetworkListEntries() {
   const bool using_vpn =
       !!NetworkHandler::Get()->network_state_handler()->ConnectedNetworkByType(
           NetworkTypePattern::VPN());
-  // TODO(jamescook): Eliminate the null check by creating UIProxyConfigService
-  // under mash. This will require the mojo pref service to work with prefs in
-  // Local State. http://crbug.com/718072
-  const bool using_proxy = NetworkHandler::Get()->ui_proxy_config_service() &&
-                           NetworkHandler::Get()
-                               ->ui_proxy_config_service()
-                               ->HasDefaultNetworkProxyConfigured();
+  bool using_proxy = false;
+  // TODO(jamescook): Create UIProxyConfigService under mash. This will require
+  // the mojo pref service to work with prefs in Local State.
+  // http://crbug.com/718072
+  if (Shell::GetAshConfig() != Config::MASH) {
+    using_proxy = NetworkHandler::Get()
+                      ->ui_proxy_config_service()
+                      ->HasDefaultNetworkProxyConfigured();
+  }
   if (using_vpn || using_proxy) {
     if (!connection_warning_)
       connection_warning_ = CreateConnectionWarning();
