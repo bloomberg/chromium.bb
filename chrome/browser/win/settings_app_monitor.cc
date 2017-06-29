@@ -800,7 +800,7 @@ SettingsAppMonitor::SettingsAppMonitor(Delegate* delegate)
 }
 
 SettingsAppMonitor::~SettingsAppMonitor() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // context_ is still valid when the caller destroys the instance before the
   // callback(s) have fired. In this case, delete the context on the automation
@@ -813,32 +813,32 @@ SettingsAppMonitor::~SettingsAppMonitor() {
 }
 
 void SettingsAppMonitor::OnInitialized(HRESULT result) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   delegate_->OnInitialized(result);
 }
 
 void SettingsAppMonitor::OnAppFocused() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   delegate_->OnAppFocused();
 }
 
 void SettingsAppMonitor::OnChooserInvoked() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   delegate_->OnChooserInvoked();
 }
 
 void SettingsAppMonitor::OnBrowserChosen(const base::string16& browser_name) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   delegate_->OnBrowserChosen(browser_name);
 }
 
 void SettingsAppMonitor::OnPromoFocused() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   delegate_->OnPromoFocused();
 }
 
 void SettingsAppMonitor::OnPromoChoiceMade(bool accept_promo) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   delegate_->OnPromoChoiceMade(accept_promo);
 }
 
