@@ -6514,10 +6514,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="BlueZ.ReasonOfDisconnection" enum="BlueZReasonOfDisconnection">
   <owner>mcchou@chromium.org</owner>
   <summary>
-    This is specific to Chrome OS.
-    Records the reason of Bluetooth disconnection between the local device and
-    the remote Bluetooth device. This helps us better understand the initiator
-    of disconnection request.
+    This is specific to Chrome OS. Records the reason of Bluetooth disconnection
+    between the local device and the remote Bluetooth device. This helps us
+    better understand the initiator of disconnection request.
   </summary>
 </histogram>
 
@@ -6525,102 +6524,95 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     enum="BlueZResultOfAdvertisementRegistration">
   <owner>mcchou@chromium.org</owner>
   <summary>
-    This is specific to Chrome OS.
-    Records the outcomes of advertisement registration. This helps us better
-    understand the persentage of successful advertisements against failures and
-    the causes of failures.
+    This is specific to Chrome OS. Records the outcomes of advertisement
+    registration. This helps us better understand the persentage of successful
+    advertisements against failures and the causes of failures.
   </summary>
 </histogram>
 
 <histogram name="BlueZ.ResultOfConnection" enum="BlueZResultOfConnection">
   <owner>mcchou@chromium.org</owner>
   <summary>
-    This is specific to Chrome OS.
-    Records the outcomes of connection requests to remote devices. This helps us
-    better understand the persentage of successful connections against failures
-    and the causes of failures.
+    This is specific to Chrome OS. Records the outcomes of connection requests
+    to remote devices. This helps us better understand the persentage of
+    successful connections against failures and the causes of failures.
   </summary>
 </histogram>
 
 <histogram name="BlueZ.ResultOfPairing" enum="BlueZResultOfPairing">
   <owner>mcchou@chromium.org</owner>
   <summary>
-    This is specific to Chrome OS.
-    Records the outcomes of pairing with remote devices. This helps us better
-    understand the persentage of successful pairing against failures and the
-    causes of failures.
+    This is specific to Chrome OS. Records the outcomes of pairing with remote
+    devices. This helps us better understand the persentage of successful
+    pairing against failures and the causes of failures.
   </summary>
 </histogram>
 
 <histogram name="BlueZ.TimeLengthOfAdvertisement" units="seconds">
   <owner>mcchou@chromium.org</owner>
   <summary>
-    This is specific to Chrome OS.
-    Records the duration when the local device is performing Bluetooth
-    advertisment and discoverable as a Bluetooth Low Energy device by other
-    devices. This helps us better understand the amount of successful
-    advertisment sessions and the duration.
+    This is specific to Chrome OS. Records the duration when the local device is
+    performing Bluetooth advertisment and discoverable as a Bluetooth Low Energy
+    device by other devices. This helps us better understand the amount of
+    successful advertisment sessions and the duration.
   </summary>
 </histogram>
 
 <histogram name="BlueZ.TimeLengthOfDiscoverable" units="seconds">
   <owner>mcchou@chromium.org</owner>
   <summary>
-    This is specific to Chrome OS.
-    Records the duration when the local device is discoverable by other devices
-    as a Bluetooth classic device. This helps us better understand the amount of
-    requests to expose the local device as a Bluetooth classic device and the
-    duration.
+    This is specific to Chrome OS. Records the duration when the local device is
+    discoverable by other devices as a Bluetooth classic device. This helps us
+    better understand the amount of requests to expose the local device as a
+    Bluetooth classic device and the duration.
   </summary>
 </histogram>
 
 <histogram name="BlueZ.TimeLengthOfDiscovering" units="seconds">
   <owner>mcchou@chromium.org</owner>
   <summary>
-    This is specific to Chrome OS.
-    Records the duration for the local device to perform device discovery. This
-    helps us better understand the amount of device discovery request and the
-    duration for users to find the target device.
+    This is specific to Chrome OS. Records the duration for the local device to
+    perform device discovery. This helps us better understand the amount of
+    device discovery request and the duration for users to find the target
+    device.
   </summary>
 </histogram>
 
 <histogram name="BlueZ.TimeLengthOfPairing" units="seconds">
   <owner>mcchou@chromium.org</owner>
   <summary>
-    This is specific to Chrome OS.
-    Records the duration taken to finish a successful pairing between the local
-    device and a remote Bluetooth device. This helps us better understand the
-    latency of completing Bluetooth pairing.
+    This is specific to Chrome OS. Records the duration taken to finish a
+    successful pairing between the local device and a remote Bluetooth device.
+    This helps us better understand the latency of completing Bluetooth pairing.
   </summary>
 </histogram>
 
 <histogram name="BlueZ.TimeLengthOfSetupConnection" units="seconds">
   <owner>mcchou@chromium.org</owner>
   <summary>
-    This is specific to Chrome OS.
-    Records the duration taken to finish a successful connection between the
-    local device and a remote Bluetooth device. This helps us better understand
-    the latency of connecting to a Bluetooth device.
+    This is specific to Chrome OS. Records the duration taken to finish a
+    successful connection between the local device and a remote Bluetooth
+    device. This helps us better understand the latency of connecting to a
+    Bluetooth device.
   </summary>
 </histogram>
 
 <histogram name="BlueZ.TypeOfDiscovery" enum="BlueZTypeOfDiscovery">
   <owner>mcchou@chromium.org</owner>
   <summary>
-    This is specific to Chrome OS.
-    Records the types of device discovery performed by the local device. This
-    helps us better understand the most common type of device discovery
-    performed.
+    This is specific to Chrome OS. Records the types of device discovery
+    performed by the local device. This helps us better understand the most
+    common type of device discovery performed.
   </summary>
 </histogram>
 
 <histogram name="BlueZ.TypeOfFoundDevice" enum="BlueZTypeOfFoundDevice">
   <owner>mcchou@chromium.org</owner>
   <summary>
-    This is specific to Chrome OS.
-    Records the types of discovered devices in terms of Bluetooth classic,
-    Bluetooth low energy and Dual-mode supports. This helps us better understand
-    the persentage of Bluetooth devices in terms of type.
+    This is specific to Chrome OS. Records the types of discovered devices in
+    terms of Bluetooth classic, Bluetooth low energy and Dual-mode supports.
+    This helps us better understand the persentage of Bluetooth devices in terms
+    of type.
   </summary>
 </histogram>
 
