@@ -153,8 +153,7 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
                                        image_channel='special-channel')
 
     self.images = self._GetBuildImages(self.foo_build)
-    (self.basic_image, self.premp_image,
-     self.npo_image, self.premp_npo_image) = self.images
+    self.basic_image, self.premp_image = self.images
 
     self.test_image = self._GetBuildTestImage(self.foo_build)
 
@@ -168,18 +167,10 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
     # NPOs should have image_version incremented, but it doesn't matter for our
     # testing.
     basic_image = gspaths.Image(key='mp-v2', **build)
-    npo_image = gspaths.Image(key='mp-v2',
-                              image_channel='nplusone-channel',
-                              image_version=build.version,
-                              **build)
     premp_image = gspaths.Image(key='premp', **build)
-    premp_npo_image = gspaths.Image(key='premp',
-                                    image_channel='nplusone-channel',
-                                    image_version=build.version,
-                                    **build)
 
     # Code in several places depends on the order.
-    return [basic_image, premp_image, npo_image, premp_npo_image]
+    return [basic_image, premp_image]
 
   def testGetFlagURI(self):
     """Validate the helper method to create flag URIs for our current build."""
@@ -199,22 +190,18 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
     self.assertEqual(paygen_build_lib._FilterForMp([]), [])
     self.assertEqual(paygen_build_lib._FilterForPremp([]), [])
     self.assertEqual(paygen_build_lib._FilterForBasic([]), [])
-    self.assertEqual(paygen_build_lib._FilterForNpo([]), [])
 
     # prev_image lets us test with an 'mp' key, instead of an 'mp-v2' key.
     images = list(self.images) + [self.special_image, self.prev_image]
 
     self.assertEqual(paygen_build_lib._FilterForMp(images),
-                     [self.basic_image, self.npo_image, self.prev_image])
+                     [self.basic_image, self.prev_image])
 
     self.assertEqual(paygen_build_lib._FilterForPremp(images),
-                     [self.premp_image, self.premp_npo_image])
+                     [self.premp_image])
 
     self.assertEqual(paygen_build_lib._FilterForBasic(images),
                      [self.basic_image, self.premp_image, self.prev_image])
-
-    self.assertEqual(paygen_build_lib._FilterForNpo(images),
-                     [self.npo_image, self.premp_npo_image])
 
   def testValidateExpectedBuildImages(self):
     """Test a function that validates expected images are found on a build."""
@@ -224,30 +211,22 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
     paygen._ValidateExpectedBuildImages(self.foo_build, (self.basic_image,))
 
     # Test with basic mp and mp npo images.
-    paygen._ValidateExpectedBuildImages(self.foo_build, (self.basic_image,
-                                                         self.npo_image))
+    paygen._ValidateExpectedBuildImages(self.foo_build, (self.basic_image,))
     # Test with basic mp and premp images.
     paygen._ValidateExpectedBuildImages(self.foo_build, (self.basic_image,
                                                          self.premp_image))
 
     # Test with basic mp and premp images.
     paygen._ValidateExpectedBuildImages(self.foo_build, (self.basic_image,
-                                                         self.premp_image,
-                                                         self.npo_image))
+                                                         self.premp_image))
 
     # Test with 4 different images.
     paygen._ValidateExpectedBuildImages(self.foo_build, (self.basic_image,
-                                                         self.premp_image,
-                                                         self.npo_image,
-                                                         self.premp_npo_image))
+                                                         self.premp_image))
 
     # No images isn't valid.
     with self.assertRaises(paygen_build_lib.ImageMissing):
       paygen._ValidateExpectedBuildImages(self.foo_build, [])
-
-    # NPO image only isn't valid.
-    with self.assertRaises(paygen_build_lib.ImageMissing):
-      paygen._ValidateExpectedBuildImages(self.foo_build, (self.npo_image,))
 
     # More than one of the same type of image should trigger BuildCorrupt
     with self.assertRaises(paygen_build_lib.BuildCorrupt):
@@ -258,7 +237,6 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
     with self.assertRaises(paygen_build_lib.BuildCorrupt):
       paygen._ValidateExpectedBuildImages(self.foo_build,
                                           (self.basic_image,
-                                           self.npo_image,
                                            self.special_image))
 
   def testDiscoverImages(self):
@@ -270,10 +248,7 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
         uri_base, 'chromeos_1.2.3_foo-board_recovery_foo-channel_mp-v3.bin')
     uri_premp = os.path.join(
         uri_base, 'chromeos_1.2.3_foo-board_recovery_foo-channel_premp.bin')
-    uri_npo = os.path.join(
-        uri_base,
-        'chromeos_1.2.4_foo-board_recovery_nplusone-channel_mp-v3.bin')
-    file_list_result = [uri_basic, uri_premp, uri_npo]
+    file_list_result = [uri_basic, uri_premp]
 
     base_image_params = {'channel': 'foo-channel',
                          'board': 'foo-board',
@@ -283,10 +258,7 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
                                    **base_image_params)
     expected_premp = gspaths.Image(key='premp', uri=uri_premp,
                                    **base_image_params)
-    expected_npo = gspaths.Image(key='mp-v3', image_channel='nplusone-channel',
-                                 image_version='1.2.4', uri=uri_npo,
-                                 **base_image_params)
-    expected_result = [expected_basic, expected_premp, expected_npo]
+    expected_result = [expected_basic, expected_premp]
 
     self._TestDiscoverArtifacts(
         os.path.join(uri_base, 'chromeos_*_foo-board_*_*_*.bin'),
@@ -531,9 +503,7 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
     self.assertItemsEqual(
         paygen._DiscoverRequiredFullPayloads(self.images + [self.test_image]),
         [gspaths.Payload(tgt_image=self.basic_image),
-         gspaths.Payload(tgt_image=self.npo_image),
          gspaths.Payload(tgt_image=self.premp_image),
-         gspaths.Payload(tgt_image=self.premp_npo_image),
          gspaths.Payload(tgt_image=self.test_image)])
 
   def testDiscoverRequiredFromPreviousDeltas(self):
@@ -657,11 +627,7 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
 
     expected = [gspaths.Payload(tgt_image=self.basic_image, uri=output_uri,
                                 labels=['full']),
-                gspaths.Payload(tgt_image=self.npo_image, uri=output_uri,
-                                labels=['full']),
                 gspaths.Payload(tgt_image=self.premp_image, uri=output_uri,
-                                labels=['full']),
-                gspaths.Payload(tgt_image=self.premp_npo_image, uri=output_uri,
                                 labels=['full']),
 
                 gspaths.Payload(tgt_image=nmo_images[0], uri=output_uri,
@@ -789,11 +755,7 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
     expected = [
         gspaths.Payload(tgt_image=self.basic_image, uri=output_uri,
                         labels=['full']),
-        gspaths.Payload(tgt_image=self.npo_image, uri=output_uri,
-                        labels=['full']),
         gspaths.Payload(tgt_image=self.premp_image, uri=output_uri,
-                        labels=['full']),
-        gspaths.Payload(tgt_image=self.premp_npo_image, uri=output_uri,
                         labels=['full']),
         # FSI Deltas
         gspaths.Payload(tgt_image=self.basic_image,
@@ -887,11 +849,7 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
     expected = [
         gspaths.Payload(tgt_image=self.basic_image, uri=output_uri,
                         labels=['full']),
-        gspaths.Payload(tgt_image=self.npo_image, uri=output_uri,
-                        labels=['full']),
         gspaths.Payload(tgt_image=self.premp_image, uri=output_uri,
-                        labels=['full']),
-        gspaths.Payload(tgt_image=self.premp_npo_image, uri=output_uri,
                         labels=['full']),
         # FSI Deltas
         gspaths.Payload(tgt_image=self.basic_image,
@@ -975,9 +933,9 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
         dry_run=test_dry_run,
         run_parallel=run_parallel)
 
-    basic_payload = gspaths.Payload(tgt_image=self.npo_image,
+    basic_payload = gspaths.Payload(tgt_image=self.basic_image,
                                     src_image=self.basic_image)
-    premp_payload = gspaths.Payload(tgt_image=self.premp_npo_image,
+    premp_payload = gspaths.Payload(tgt_image=self.premp_image,
                                     src_image=self.premp_image)
 
     self.mox.StubOutWithMock(parallel, 'RunTasksInProcessPool')
@@ -1016,7 +974,7 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
   def testGeneratePayloadInProcess(self):
     """Make sure the _GenerateSinglePayload calls into paygen_payload_lib."""
 
-    basic_payload = gspaths.Payload(tgt_image=self.npo_image,
+    basic_payload = gspaths.Payload(tgt_image=self.basic_image,
                                     src_image=self.basic_image)
 
     self.mox.StubOutWithMock(paygen_payload_lib, 'CreateAndUploadPayload')
@@ -1413,7 +1371,7 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
     control_dir = self.tempdir
     control_file_name = self.tempfile
 
-    payload = gspaths.Payload(tgt_image=self.npo_image,
+    payload = gspaths.Payload(tgt_image=self.basic_image,
                               src_image=self.basic_image)
 
     site_config = config_lib_unittest.MockSiteConfig()
@@ -1620,8 +1578,7 @@ class PaygenBuildLibTest_ImageTypes(BasePaygenBuildLibTest):
                                    board='foo-board',
                                    version='1.2.3')
     self.images = self._GetBuildImages(self.foo_build)
-    (self.basic_image, self.premp_image,
-     self.npo_image, self.premp_npo_image) = self.images
+    self.basic_image, self.premp_image = self.images
 
   def _GetBuildImages(self, build):
     """Create basic_image, npo_image, premp_image, premp_npo_image.
@@ -1633,18 +1590,10 @@ class PaygenBuildLibTest_ImageTypes(BasePaygenBuildLibTest):
     # NPOs should have image_version incremented, but it doesn't matter for our
     # testing.
     basic_image = gspaths.Image(image_type='base', key='mp-v2', **build)
-    npo_image = gspaths.Image(key='mp-v2',
-                              image_channel='nplusone-channel',
-                              image_version=build.version,
-                              **build)
     premp_image = gspaths.Image(image_type='base', key='premp', **build)
-    premp_npo_image = gspaths.Image(key='premp',
-                                    image_channel='nplusone-channel',
-                                    image_version=build.version,
-                                    **build)
 
     # Code in several places depends on the order.
-    return [basic_image, premp_image, npo_image, premp_npo_image]
+    return [basic_image, premp_image]
 
   def testImageTypeFilter(self):
     """Test filtering based on image types."""
@@ -1664,10 +1613,7 @@ class PaygenBuildLibTest_ImageTypes(BasePaygenBuildLibTest):
         uri_base, 'chromeos_1.2.3_foo-board_base_foo-channel_mp-v3.bin')
     uri_premp = os.path.join(
         uri_base, 'chromeos_1.2.3_foo-board_base_foo-channel_premp.bin')
-    uri_npo = os.path.join(
-        uri_base,
-        'chromeos_1.2.4_foo-board_recovery_nplusone-channel_mp-v3.bin')
-    file_list_result = [uri_basic, uri_premp, uri_npo]
+    file_list_result = [uri_basic, uri_premp]
 
     base_image_params = {'channel': 'foo-channel',
                          'board': 'foo-board',
@@ -1681,11 +1627,7 @@ class PaygenBuildLibTest_ImageTypes(BasePaygenBuildLibTest):
                                    image_type='base',
                                    uri=uri_premp,
                                    **base_image_params)
-    expected_npo = gspaths.Image(key='mp-v3',
-                                 image_channel='nplusone-channel',
-                                 image_version='1.2.4', uri=uri_npo,
-                                 **base_image_params)
-    expected_result = [expected_npo, expected_basic, expected_premp]
+    expected_result = [expected_basic, expected_premp]
 
     self._TestDiscoverArtifacts(
         os.path.join(uri_base, 'chromeos_*_foo-board_*_*_*.bin'),
@@ -1788,11 +1730,7 @@ class PaygenBuildLibTest_ImageTypes(BasePaygenBuildLibTest):
     expected = [
         gspaths.Payload(tgt_image=self.basic_image, uri=output_uri,
                         labels=['full']),
-        gspaths.Payload(tgt_image=self.npo_image, uri=output_uri,
-                        labels=['full']),
         gspaths.Payload(tgt_image=self.premp_image, uri=output_uri,
-                        labels=['full']),
-        gspaths.Payload(tgt_image=self.premp_npo_image, uri=output_uri,
                         labels=['full']),
 
         gspaths.Payload(tgt_image=nmo_images[0], uri=output_uri,

@@ -205,21 +205,6 @@ def _FilterForBasic(artifacts):
   return [i for i in _FilterForImages(artifacts) if i.image_channel is None]
 
 
-def _FilterForNpo(artifacts):
-  """Return the NPO images in a list of artifacts.
-
-  Return the N Plus One images in the given list.
-
-  Args:
-    artifacts: The list of artifacts to filter.
-
-  Returns:
-    List of NPO images.
-  """
-  return [i for i in _FilterForImages(artifacts)
-          if i.image_channel == 'nplusone-channel']
-
-
 def _FilterForUnsignedImageArchives(artifacts):
   """Return only instances of UnsignedImageArchive from a list of artifacts."""
   return filter(gspaths.IsUnsignedImageArchive, artifacts)
@@ -501,7 +486,6 @@ class _PaygenBuild(object):
     """
     premp_basic = _FilterForBasic(_FilterForPremp(images))
     mp_basic = _FilterForBasic(_FilterForMp(images))
-    npo = _FilterForNpo(images)
 
     # Make sure there is no more than one of each of our basic types.
     for i in (premp_basic, mp_basic):
@@ -510,7 +494,7 @@ class _PaygenBuild(object):
         raise BuildCorrupt(msg)
 
     # Make sure there were no unexpected types of images.
-    if len(images) != len(premp_basic + mp_basic + npo):
+    if len(images) != len(premp_basic + mp_basic):
       msg = '%s has unexpected unfiltered images: %s' % (build, images)
       raise BuildCorrupt(msg)
 

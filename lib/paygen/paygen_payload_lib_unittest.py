@@ -56,16 +56,6 @@ class PaygenPayloadLibTest(cros_test_lib.MoxTempDirTestCase):
         uri=('gs://chromeos-releases-test/dev-channel/x86-alex/4171.0.0/'
              'chromeos_4171.0.0_x86-alex_recovery_dev-channel_mp-v3.bin'))
 
-    self.new_nplusone_image = gspaths.Image(
-        channel='dev-channel',
-        board='x86-alex',
-        version='4171.0.0',
-        key='mp-v3',
-        image_channel='nplusone-channel',
-        image_version='4171.0.1',
-        uri=('gs://chromeos-releases-test/dev-channel/x86-alex/4171.0.0/'
-             'chromeos_4171.0.1_x86-alex_recovery_nplusone-channel_mp-v3.bin'))
-
     self.old_test_image = gspaths.UnsignedImageArchive(
         channel='dev-channel',
         board='x86-alex',
@@ -87,10 +77,6 @@ class PaygenPayloadLibTest(cros_test_lib.MoxTempDirTestCase):
     self.delta_payload = gspaths.Payload(tgt_image=self.new_image,
                                          src_image=self.old_image,
                                          uri='gs://delta_new_old/boo')
-
-    self.nplusone_payload = gspaths.Payload(tgt_image=self.new_nplusone_image,
-                                            src_image=self.new_image,
-                                            uri='gs://delta_npo_new/boo')
 
     self.full_test_payload = gspaths.Payload(tgt_image=self.old_test_image,
                                              src_image=None,
@@ -647,15 +633,6 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
         'chromeos_1620.0.0-4171.0.0_x86-alex_dev-channel_delta_mp-v3.bin-'
         'abc123.signed')
 
-    # Test an N Plus One Delta Payload
-    result = paygen_payload_lib.DefaultPayloadUri(self.nplusone_payload,
-                                                  random_str='abc123')
-    self.assertEqual(
-        result,
-        'gs://chromeos-releases/dev-channel/x86-alex/4171.0.0/payloads/'
-        'chromeos_4171.0.0-4171.0.1_x86-alex_nplusone-channel_delta_mp-v3.bin-'
-        'abc123.signed')
-
     # Test changing channel, board, and keys
     src_image = gspaths.Image(
         channel='dev-channel',
@@ -752,7 +729,5 @@ class PaygenPayloadLibEndToEndTest(PaygenPayloadLibTest):
 
   @cros_test_lib.NetworkTest()
   def testEndToEndIntegrationDelta(self):
-    """Integration test to generate a delta payload for new_image -> NPO."""
-    self._EndToEndIntegrationTest(self.new_nplusone_image,
-                                  self.new_image,
-                                  sign=False)
+    """Integration test to generate a delta payload for N -> N."""
+    self._EndToEndIntegrationTest(self.new_image, self.new_image, sign=False)
