@@ -21,7 +21,6 @@
 #include "content/browser/child_process_launcher.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/service_manager/common_browser_interfaces.h"
-#include "content/browser/service_manager/merge_dictionary.h"
 #include "content/browser/wake_lock/wake_lock_context_host.h"
 #include "content/common/service_manager/service_manager_connection_impl.h"
 #include "content/grit/content_resources.h"
@@ -47,6 +46,7 @@
 #include "services/resource_coordinator/public/interfaces/service_constants.mojom.h"
 #include "services/resource_coordinator/resource_coordinator_service.h"
 #include "services/service_manager/connect_params.h"
+#include "services/service_manager/embedder/manifest_utils.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/interfaces/service.mojom.h"
@@ -129,15 +129,9 @@ class BuiltinManifestProvider : public catalog::ManifestProvider {
 
     std::unique_ptr<base::Value> overlay_value =
         GetContentClient()->browser()->GetServiceManifestOverlay(name);
-    if (overlay_value) {
-      base::DictionaryValue* manifest_dictionary = nullptr;
-      bool result = manifest_value->GetAsDictionary(&manifest_dictionary);
-      DCHECK(result);
-      base::DictionaryValue* overlay_dictionary = nullptr;
-      result = overlay_value->GetAsDictionary(&overlay_dictionary);
-      DCHECK(result);
-      MergeDictionary(manifest_dictionary, overlay_dictionary);
-    }
+
+    service_manager::MergeManifestWithOverlay(manifest_value.get(),
+                                              overlay_value.get());
 
     base::Optional<catalog::RequiredFileMap> required_files =
         catalog::RetrieveRequiredFiles(*manifest_value);

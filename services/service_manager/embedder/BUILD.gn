@@ -12,6 +12,8 @@ component("embedder") {
     "main.h",
     "main_delegate.cc",
     "main_delegate.h",
+    "manifest_utils.cc",
+    "manifest_utils.h",
     "process_type.h",
     "service_manager_embedder_export.h",
     "set_process_title.cc",
@@ -51,4 +53,18 @@ component("embedder") {
   ]
 
   defines = [ "SERVICE_MANAGER_EMBEDDER_IMPL" ]
+}
+
+source_set("unittests") {
+  testonly = true
+
+  sources = [
+    "manifest_utils_unittest.cc",
+  ]
+
+  deps = [
+    ":embedder",
+    "//base",
+    "//testing/gtest",
+  ]
 }
