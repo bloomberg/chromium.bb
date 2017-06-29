@@ -10,6 +10,8 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TracedValue.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Optional.h"
 #include "platform/wtf/Time.h"
@@ -37,6 +39,8 @@ class PLATFORM_EXPORT RuntimeCallCounter {
     time_ = TimeDelta();
     count_ = 0;
   }
+
+  void Dump(TracedValue&);
 
  private:
   RuntimeCallCounter() {}
@@ -219,6 +223,11 @@ class PLATFORM_EXPORT RuntimeCallStats {
   // Reset all the counters.
   void Reset();
 
+  void Dump(TracedValue&);
+
+  bool InUse() const { return in_use_; }
+  void SetInUse(bool in_use) { in_use_ = in_use; }
+
   RuntimeCallCounter* GetCounter(CounterId id) {
     return &(counters_[static_cast<uint16_t>(id)]);
   }
@@ -230,6 +239,7 @@ class PLATFORM_EXPORT RuntimeCallStats {
 
  private:
   RuntimeCallTimer* current_timer_ = nullptr;
+  bool in_use_ = false;
   RuntimeCallCounter counters_[static_cast<int>(CounterId::kNumberOfCounters)];
   static const int number_of_counters_ =
       static_cast<int>(CounterId::kNumberOfCounters);
@@ -250,6 +260,38 @@ class PLATFORM_EXPORT RuntimeCallTimerScope {
  private:
   RuntimeCallStats* call_stats_;
   RuntimeCallTimer timer_;
+};
+
+class PLATFORM_EXPORT RuntimeCallStatsScopedTracer {
+ public:
+  RuntimeCallStatsScopedTracer(v8::Isolate* isolate) {
+    bool category_group_enabled;
+    TRACE_EVENT_CATEGORY_GROUP_ENABLED(s_category_group_,
+                                       &category_group_enabled);
+    if (LIKELY(!category_group_enabled ||
+               !RuntimeEnabledFeatures::BlinkRuntimeCallStatsEnabled()))
+      return;
+
+    RuntimeCallStats* stats = RuntimeCallStats::From(isolate);
+    if (!stats->InUse()) {
+      stats_ = stats;
+      AddBeginTraceEvent();
+    }
+  }
+
+  ~RuntimeCallStatsScopedTracer() {
+    if (stats_)
+      AddEndTraceEvent();
+  }
+
+ private:
+  void AddBeginTraceEvent();
+  void AddEndTraceEvent();
+
+  static const char* const s_category_group_;
+  static const char* const s_name_;
+
+  RuntimeCallStats* stats_ = nullptr;
 };
 
 }  // namespace blink
