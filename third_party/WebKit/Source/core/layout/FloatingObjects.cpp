@@ -31,6 +31,7 @@
 #include "core/layout/LayoutView.h"
 #include "core/layout/api/LineLayoutBlockFlow.h"
 #include "core/layout/shapes/ShapeOutsideInfo.h"
+#include "core/paint/PaintLayer.h"
 #include "platform/wtf/PtrUtil.h"
 
 namespace blink {
@@ -96,6 +97,15 @@ std::unique_ptr<FloatingObject> FloatingObject::Create(
   new_obj->SetShouldPaint(!layout_object->HasSelfPaintingLayer());
 
   new_obj->SetIsDescendant(true);
+
+  // We set SelfPaintingStatusChanged in case we get to the next compositing
+  // update and still haven't decided who should paint the float. If we've
+  // decided that the current float owner can paint it that step is unnecessary,
+  // so we can clear it now.
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+      new_obj->ShouldPaint() && layout_object->Layer() &&
+      layout_object->Layer()->SelfPaintingStatusChanged())
+    layout_object->Layer()->ClearSelfPaintingStatusChanged();
 
   return new_obj;
 }

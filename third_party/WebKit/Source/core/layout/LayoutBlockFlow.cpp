@@ -4163,23 +4163,21 @@ void LayoutBlockFlow::UpdateAncestorShouldPaintFloatingObject(
       break;
 
     FloatingObject& floating_object = **it;
-    // This repeats the logic in addOverhangingFloats() about shouldPaint
-    // flag:
-    // - The nearest enclosing block in which the float doesn't overhang
-    //   paints the float;
-    // - Or even if the float overhangs, if the ancestor block has
-    //   self-painting layer, it paints the float.
-    LayoutBlockFlow* parent_block =
-        ToLayoutBlockFlow(floating_object.GetLayoutObject()->Parent());
-    bool is_overhanging_float =
-        parent_block && parent_block->IsOverhangingFloat(floating_object);
-    bool should_paint =
-        !float_box_is_self_painting_layer &&
-        (ancestor_block->HasSelfPaintingLayer() || !is_overhanging_float);
-    floating_object.SetShouldPaint(should_paint);
-
-    if (floating_object.ShouldPaint())
-      return;
+    if (!float_box_is_self_painting_layer) {
+      // This repeats the logic in addOverhangingFloats() about shouldPaint
+      // flag:
+      // - The nearest enclosing block in which the float doesn't overhang
+      //   paints the float;
+      // - Or even if the float overhangs, if the ancestor block has
+      //   self-painting layer, it paints the float.
+      if (ancestor_block->HasSelfPaintingLayer() ||
+          !ancestor_block->IsOverhangingFloat(floating_object)) {
+        floating_object.SetShouldPaint(true);
+        return;
+      }
+    } else {
+      floating_object.SetShouldPaint(false);
+    }
   }
 }
 
