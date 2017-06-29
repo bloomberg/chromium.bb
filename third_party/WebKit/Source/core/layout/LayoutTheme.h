@@ -26,23 +26,22 @@
 #include "core/CSSValueKeywords.h"
 #include "core/CoreExport.h"
 #include "platform/ThemeTypes.h"
-#include "platform/fonts/Font.h"
-#include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontTraits.h"
 #include "platform/graphics/Color.h"
 #include "platform/scroll/ScrollTypes.h"
-#include "platform/text/PlatformLocale.h"
-#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/Forward.h"
 #include "platform/wtf/RefCounted.h"
-#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 
 class ComputedStyle;
 class Element;
 class FileList;
+class Font;
+class FontDescription;
 class HTMLInputElement;
 class LayoutObject;
+class Locale;
 class PlatformChromeClient;
 class Theme;
 class ThemePainter;
@@ -80,9 +79,9 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   // platform adjust the default CSS rules in html.css, quirks.css or
   // mediaControls.css.
   virtual String ExtraDefaultStyleSheet();
-  virtual String ExtraQuirksStyleSheet() { return String(); }
-  virtual String ExtraMediaControlsStyleSheet() { return String(); }
-  virtual String ExtraFullscreenStyleSheet() { return String(); }
+  virtual String ExtraQuirksStyleSheet();
+  virtual String ExtraMediaControlsStyleSheet();
+  virtual String ExtraFullscreenStyleSheet();
 
   // A method to obtain the baseline position for a "leaf" control. This will
   // only be used if a baseline position cannot be determined by examining child
