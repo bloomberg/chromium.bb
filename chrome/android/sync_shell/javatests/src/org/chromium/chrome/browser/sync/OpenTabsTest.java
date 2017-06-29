@@ -84,9 +84,12 @@ public class OpenTabsTest extends SyncTestBase {
         mSessionTagCounter = 0;
     }
 
+    /*
     // Test syncing an open tab from client to server.
     @LargeTest
     @Feature({"Sync"})
+    */
+    @FlakyTest(message = "https://crbug.com/592437")
     public void testUploadOpenTab() throws Exception {
         loadUrl(URL);
         waitForLocalTabsForClient(mClientName, URL);
