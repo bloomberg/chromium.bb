@@ -24,45 +24,7 @@ WTF::Optional<T> OptionalMax(const WTF::Optional<T>& value1,
   return value2;
 }
 
-bool IsOutOfFlowPositioned(const EPosition& position) {
-  return position == EPosition::kAbsolute || position == EPosition::kFixed;
-}
-
 }  // namespace
-
-bool IsNewFormattingContextForBlockLevelChild(const ComputedStyle& parent_style,
-                                              const NGLayoutInputNode& node) {
-  // TODO(layout-dev): This doesn't capture a few cases which can't be computed
-  // directly from style yet:
-  //  - The child is a <fieldset>.
-  //  - "column-span: all" is set on the child (requires knowledge that we are
-  //    in a multi-col formatting context).
-  //    (https://drafts.csswg.org/css-multicol-1/#valdef-column-span-all)
-
-  if (node.IsInline())
-    return false;
-
-  const ComputedStyle& style = node.Style();
-  if (style.IsFloating() || IsOutOfFlowPositioned(style.GetPosition()))
-    return true;
-
-  if (style.SpecifiesColumns() || style.ContainsPaint() ||
-      style.ContainsLayout())
-    return true;
-
-  if (!style.IsOverflowVisible())
-    return true;
-
-  EDisplay display = style.Display();
-  if (display == EDisplay::kGrid || display == EDisplay::kFlex ||
-      display == EDisplay::kWebkitBox)
-    return true;
-
-  if (parent_style.GetWritingMode() != style.GetWritingMode())
-    return true;
-
-  return false;
-}
 
 WTF::Optional<LayoutUnit> GetClearanceOffset(
     const std::shared_ptr<NGExclusions>& exclusions,

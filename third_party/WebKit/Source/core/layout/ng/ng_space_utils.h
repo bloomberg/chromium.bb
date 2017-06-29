@@ -14,18 +14,7 @@ namespace blink {
 
 class ComputedStyle;
 struct NGExclusions;
-class NGLayoutInputNode;
 struct NGLogicalOffset;
-
-// Whether an in-flow child creates a new formatting context.
-//
-// This will *NOT* check the following cases:
-//  - The child is a inline-level, e.g. "display: inline-block".
-//  - The child establishes a new formatting context, but should be a child of
-//    another layout algorithm, e.g. "display: table-caption" or flex-item.
-CORE_EXPORT bool IsNewFormattingContextForBlockLevelChild(
-    const ComputedStyle& parent_style,
-    const NGLayoutInputNode& node);
 
 // Gets the clearance offset based on the provided {@code clear_type} and list
 // of exclusions that represent left/right float.
