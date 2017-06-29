@@ -45,6 +45,10 @@ def create_argument_parser():
         default=False,
         action='store_true',
         help='Skip running reference tests (only run unit tests).')
+    argument_parser.add_argument('--suppress-diff',
+        default=False,
+        action='store_true',
+        help='Suppress diff for reference tests.')
     return argument_parser
 
 
@@ -77,7 +81,8 @@ def main(argv):
     if args.skip_reference_tests:
         return 0
 
-    return run_bindings_tests(args.reset_results, args.verbose)
+    return run_bindings_tests(
+        args.reset_results, args.verbose, args.suppress_diff)
 
 
 if __name__ == '__main__':
