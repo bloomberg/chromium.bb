@@ -1316,7 +1316,10 @@ bool QuicFramer::ProcessStopWaitingFrame(QuicDataReader* reader,
     set_detailed_error("Unable to read least unacked delta.");
     return false;
   }
-  DCHECK_GE(header.packet_number, least_unacked_delta);
+  if (header.packet_number < least_unacked_delta) {
+    set_detailed_error("Invalid unacked delta.");
+    return false;
+  }
   stop_waiting->least_unacked = header.packet_number - least_unacked_delta;
 
   return true;
