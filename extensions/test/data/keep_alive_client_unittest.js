@@ -18,8 +18,8 @@ var shouldSucceed;
 // simple signature.
 var binding = require('binding').Binding.create('serial');
 binding.registerCustomHook(function(bindingsAPI) {
-  bindingsAPI.apiFunctions.setHandleRequestWithPromise('getDevices',
-      function() {
+  utils.handleRequestWithPromiseDoNotUse(bindingsAPI.apiFunctions,
+                                         'serial', 'getDevices', function() {
     if (shouldSucceed)
       return Promise.resolve([]);
     else

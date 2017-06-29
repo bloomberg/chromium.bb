@@ -70,36 +70,6 @@ APIFunctions.prototype.setHandleRequest =
     });
 };
 
-APIFunctions.prototype.setHandleRequestWithPromise =
-    function(apiName, customizedFunction) {
-  var prefix = this.namespace;
-  return this.setHook_(apiName, 'handleRequest', function() {
-      var name = prefix + '.' + apiName;
-      logActivity.LogAPICall(extensionId, name, $Array.slice(arguments));
-      var stack = exceptionHandler.getExtensionStackTrace();
-      var callback = arguments[arguments.length - 1];
-      var args = $Array.slice(arguments, 0, arguments.length - 1);
-      var keepAlivePromise = requireAsync('keep_alive').then(function(module) {
-        return module.createKeepAlive();
-      });
-      $Function.apply(customizedFunction, this, args).then(function(result) {
-        if (callback) {
-          exceptionHandler.safeCallbackApply(name, {'stack': stack}, callback,
-                                             [result]);
-        }
-      }).catch(function(error) {
-        if (callback) {
-          var message = exceptionHandler.safeErrorToString(error, true);
-          lastError.run(name, message, stack, callback);
-        }
-      }).then(function() {
-        keepAlivePromise.then(function(keepAlive) {
-          keepAlive.close();
-        });
-      });
-    });
-};
-
 APIFunctions.prototype.setUpdateArgumentsPostValidate =
     function(apiName, customizedFunction) {
   return this.setHook_(
