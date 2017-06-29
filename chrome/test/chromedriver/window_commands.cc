@@ -366,6 +366,14 @@ Status ExecuteSwitchToFrame(Session* session,
   base::ListValue args;
   const base::DictionaryValue* id_dict;
   if (id->GetAsDictionary(&id_dict)) {
+    std::string element_id;
+    if (!id_dict->GetString("ELEMENT", &element_id))
+      return Status(kUnknownError, "missing 'ELEMENT'");
+    bool is_displayed = false;
+    Status status = IsElementDisplayed(
+          session, web_view, element_id, true, &is_displayed);
+    if (status.IsError())
+      return status;
     script = "function(elem) { return elem; }";
     args.Append(id_dict->CreateDeepCopy());
   } else {

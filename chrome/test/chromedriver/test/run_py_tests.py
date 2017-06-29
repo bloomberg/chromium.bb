@@ -489,6 +489,18 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self._driver.ExecuteScript('parent.postMessage("remove", "*");')
     self.assertTrue(self._driver.ExecuteScript('return window.top == window'))
 
+  def testSwitchToStaleFrame(self):
+    self._driver.ExecuteScript(
+        'var frame = document.createElement("iframe");'
+        'frame.id="id";'
+        'frame.name="name";'
+        'document.body.appendChild(frame);')
+    element = self._driver.FindElement("id", "id")
+    self._driver.SwitchToFrame(element)
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
+    with self.assertRaises(chromedriver.StaleElementReference):
+      self._driver.SwitchToFrame(element)
+
   def testGetTitle(self):
     script = 'document.title = "title"; return 1;'
     self.assertEquals(1, self._driver.ExecuteScript(script))
