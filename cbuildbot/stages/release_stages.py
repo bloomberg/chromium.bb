@@ -381,7 +381,7 @@ class PaygenStage(generic_stages.BoardSpecificBuilderStage):
     except  paygen_build_lib.BoardNotConfigured:
       raise PaygenNoPaygenConfigForBoard(
           'Golden Eye (%s) has no entry for board %s. Get a TPM to fix.' %
-          (paygen_build_lib.BOARDS_URI, board))
+          (paygen_build_lib.PAYGEN_URI, board))
 
     # Default to False, set to True if it's a canary type build
     skip_duts_check = False

@@ -342,6 +342,11 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
 
       stage.PerformStage()
 
+      # Verify that we validate with the board name in release name space.
+      self.assertEqual(
+          self.validateMock.call_args_list,
+          [mock.call('x86-alex-he')])
+
       # Verify that we queue up work
       self.assertEqual(
           queue.put.call_args_list,
@@ -492,10 +497,6 @@ class PaygenBuildStageTest(generic_stages_unittest.AbstractStageTestCase,
   def setUp(self):
     self._Prepare()
 
-    # This method fetches a file from GS, mock it out.
-    # self.validateMock = self.PatchObject(
-    #     paygen_build_lib, 'ValidateBoardConfig')
-
   # pylint: disable=arguments-differ
   def ConstructStage(self):
     return release_stages.PaygenBuildStage(
@@ -523,10 +524,6 @@ class PaygenTestStageTest(generic_stages_unittest.AbstractStageTestCase,
 
   def setUp(self):
     self._Prepare()
-
-    # This method fetches a file from GS, mock it out.
-    # self.validateMock = self.PatchObject(
-    #     paygen_build_lib, 'ValidateBoardConfig')
 
   # pylint: disable=arguments-differ
   def ConstructStage(self):
