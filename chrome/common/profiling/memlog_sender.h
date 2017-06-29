@@ -5,6 +5,8 @@
 #ifndef CHROME_COMMON_PROFILING_MEMLOG_SENDER_H_
 #define CHROME_COMMON_PROFILING_MEMLOG_SENDER_H_
 
+#include <string>
+
 namespace base {
 
 class CommandLine;
@@ -14,6 +16,8 @@ class CommandLine;
 namespace profiling {
 
 void InitMemlogSenderIfNecessary(const base::CommandLine& cmdline);
+
+void StartMemlogSender(const std::string& pipe_id);
 
 }  // namespace profiling
 

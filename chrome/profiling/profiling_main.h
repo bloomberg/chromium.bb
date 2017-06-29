@@ -11,6 +11,7 @@ class CommandLine;
 
 namespace profiling {
 
+// Main function for the profiling process type.
 int ProfilingMain(const base::CommandLine& cmdline);
 
 }  // namespace profiling

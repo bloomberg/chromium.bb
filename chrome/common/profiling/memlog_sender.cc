@@ -5,6 +5,7 @@
 #include "chrome/common/profiling/memlog_sender.h"
 
 #include "base/command_line.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/profiling/memlog_allocator_shim.h"
 #include "chrome/common/profiling/memlog_sender_pipe.h"
@@ -13,12 +14,13 @@
 namespace profiling {
 
 void InitMemlogSenderIfNecessary(const base::CommandLine& cmdline) {
-  base::CommandLine::StringType pipe_id =
-      cmdline.GetSwitchValueNative(switches::kMemlogPipe);
-  if (pipe_id.empty())
-    return;  // No pipe, don't run.
+  std::string pipe_id = cmdline.GetSwitchValueASCII(switches::kMemlogPipe);
+  if (!pipe_id.empty())
+    StartMemlogSender(pipe_id);
+}
 
-  static MemlogSenderPipe pipe(pipe_id);
+void StartMemlogSender(const std::string& pipe_id) {
+  static MemlogSenderPipe pipe(base::UTF8ToUTF16(pipe_id));
   pipe.Connect();
 
   StreamHeader header;
