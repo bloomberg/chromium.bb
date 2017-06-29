@@ -126,6 +126,8 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   [BookmarkInteractionController registerBrowserStatePrefs:registry];
   [BookmarkPromoController registerBrowserStatePrefs:registry];
   [HandoffManager registerBrowserStatePrefs:registry];
+  registry->RegisterIntegerPref(prefs::kIosSettingsSigninPromoDisplayedCount,
+                                0);
 
   registry->RegisterBooleanPref(prefs::kDataSaverEnabled, false);
   registry->RegisterBooleanPref(
