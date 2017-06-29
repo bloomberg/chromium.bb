@@ -286,6 +286,14 @@ void NinjaBuildWriter::WriteAllPools() {
     }
   }
 
+  for (const Target* target : default_toolchain_targets_) {
+    if (target->output_type() == Target::ACTION) {
+      const LabelPtrPair<Pool>& pool = target->action_values().pool();
+      if (pool.ptr)
+        used_pools.insert(pool.ptr);
+    }
+  }
+
   // Write pools sorted by their name, to make output deterministic.
   std::vector<const Pool*> sorted_pools(used_pools.begin(), used_pools.end());
   auto pool_name = [this](const Pool* pool) {

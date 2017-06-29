@@ -96,7 +96,7 @@
     *   [code_signing_sources: [file list] Sources for code signing step.](#code_signing_sources)
     *   [complete_static_lib: [boolean] Links all deps into a static library.](#complete_static_lib)
     *   [configs: [label list] Configs applying to this target or config.](#configs)
-    *   [console: [boolean] Run this action in the console pool.](#console)
+    *   [console: [label] Console pool object.](#console)
     *   [data: [file list] Runtime data file dependencies.](#data)
     *   [data_deps: [label list] Non-linked dependencies.](#data_deps)
     *   [defines: [string list] C preprocessor defines.](#defines)
@@ -112,6 +112,7 @@
     *   [output_name: [string] Name for the output file other than the default.](#output_name)
     *   [output_prefix_override: [boolean] Don't use prefix for output name.](#output_prefix_override)
     *   [outputs: [file list] Output files for actions and copy targets.](#outputs)
+    *   [pool: [string] Label of the pool used by the action.](#pool)
     *   [precompiled_header: [string] Header file to precompile.](#precompiled_header)
     *   [precompiled_header_type: [string] "gcc" or "msvc".](#precompiled_header_type)
     *   [precompiled_source: [file name] Source file to precompile.](#precompiled_source)
@@ -2711,6 +2712,7 @@
     Other tools:
       "stamp": Tool for creating stamp files
       "copy": Tool to copy files.
+      "action": Defaults for actions
 
     Platform specific tools:
       "copy_bundle_data": [iOS, OS X] Tool to copy files in a bundle.
@@ -2721,7 +2723,7 @@
 
 ```
     command  [string with substitutions]
-        Valid for: all tools (required)
+        Valid for: all tools except "action" (required)
 
         The command to run.
 
@@ -2821,6 +2823,7 @@
           ]
 
     pool [label, optional]
+        Valid for: all tools (optional)
 
         Label of the pool to use for the tool. Pools are used to limit the
         number of tasks that can execute concurrently during the build.
@@ -2891,13 +2894,13 @@
           restat = true
 
     rspfile  [string with substitutions]
-        Valid for: all tools (optional)
+        Valid for: all tools except "action" (optional)
 
         Name of the response file. If empty, no response file will be
         used. See "rspfile_content".
 
     rspfile_content  [string with substitutions]
-        Valid for: all tools (required when "rspfile" is specified)
+        Valid for: all tools except "action" (required when "rspfile" is used)
 
         The contents to be written to the response file. This may include all
         or part of the command to send to the tool which allows you to get
@@ -4304,15 +4307,13 @@
     }
   }
 ```
-### <a name="console"></a>**console**: Run this action in the console pool.
+### <a name="console"></a>**console**: Console pool objects.
 
 ```
-  Boolean. Defaults to false.
-
-  Actions marked "console = true" will be run in the built-in ninja "console"
-  pool. They will have access to real stdin and stdout, and output will not be
-  buffered by ninja. This can be useful for long-running actions with progress
-  logs, or actions that require user input.
+  Console pool is a special pool object that uses the built-in ninja "console"
+  pool. Target using this pool will have access to real stdin and stdout, and
+  output will not be buffered by ninja. This can be useful for long-running
+  actions with progress logs, or actions that require user input.
 
   Only one console pool target can run at any one time in Ninja. Refer to the
   Ninja documentation on the console pool for more info.
@@ -4321,8 +4322,10 @@
 #### **Example**
 
 ```
-  action("long_action_with_progress_logs") {
-    console = true
+  action("my_action") {
+    ...
+    pool = console
+    ...
   }
 ```
 ### <a name="data"></a>**data**: Runtime data file dependencies.
@@ -4869,6 +4872,21 @@
   action
     Action targets (excluding action_foreach) must list literal output file(s)
     with no source expansions. See "gn help action".
+```
+### <a name="pool"></a>**pool**: Label of the pool used by the action.
+
+```
+  A fully-qualified label representing the pool that will be used for the
+  action. Pools are defined using the pool() {...} declaration.
+```
+
+#### **Example**
+
+```
+  action("action") {
+    pool = "//build:custom_pool"
+    ...
+  }
 ```
 ### <a name="precompiled_header"></a>**precompiled_header**: [string] Header file to precompile.
 

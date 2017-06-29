@@ -47,6 +47,7 @@ class Toolchain : public Item {
     TYPE_COPY,
     TYPE_COPY_BUNDLE_DATA,
     TYPE_COMPILE_XCASSETS,
+    TYPE_ACTION,
 
     TYPE_NUMTYPES  // Must be last.
   };
@@ -65,6 +66,7 @@ class Toolchain : public Item {
   static const char* kToolCopy;
   static const char* kToolCopyBundleData;
   static const char* kToolCompileXCAssets;
+  static const char* kToolAction;
 
   // The Settings of an Item is always the context in which the Item was
   // defined. For a toolchain this is confusing because this is NOT the
