@@ -17,9 +17,11 @@ namespace vr_shell {
 
 namespace {
 
-constexpr float kBorderFactor = 0.045;
-constexpr float kFontSizeFactor = 0.048;
-constexpr float kTextWidthFactor = 1.0 - 3 * kBorderFactor;
+constexpr float kHeight = 0.064;
+constexpr float kWidthHeightRatio = 16.0;
+constexpr float kFontHeight = 0.024;
+constexpr float kWidthPadding = 0.02;
+constexpr float kCornerRadius = 0.004;
 
 }  // namespace
 
@@ -33,29 +35,32 @@ void ExclusiveScreenToastTexture::Draw(SkCanvas* sk_canvas,
   gfx::Canvas gfx_canvas(&paint_canvas, 1.0f);
   gfx::Canvas* canvas = &gfx_canvas;
 
-  size_.set_width(texture_size.width());
+  size_.set_height(texture_size.height());
   SkPaint paint;
+  float meter_to_pixel_ratio = texture_size.height() / kHeight;
 
   paint.setColor(color_scheme().exclusive_screen_toast_background);
   auto text = l10n_util::GetStringUTF16(IDS_PRESS_APP_TO_EXIT);
   gfx::FontList fonts;
-  GetFontList(size_.width() * kFontSizeFactor, text, &fonts);
-  gfx::Rect text_size(size_.width() * kTextWidthFactor, 0);
+  int pixel_font_size = meter_to_pixel_ratio * kFontHeight;
+  GetFontList(pixel_font_size, text, &fonts);
+  gfx::Rect text_size(0, pixel_font_size);
 
   std::vector<std::unique_ptr<gfx::RenderText>> lines = PrepareDrawStringRect(
       text, fonts, color_scheme().exclusive_screen_toast_foreground, &text_size,
-      kTextAlignmentCenter, kWrappingBehaviorWrap);
+      kTextAlignmentNone, kWrappingBehaviorNoWrap);
 
-  DCHECK_LE(text_size.height(),
-            static_cast<int>((1.0 - 2 * kBorderFactor) * size_.width()));
-  size_.set_height(size_.width() * 2 * kBorderFactor + text_size.height());
-  float radius = size_.width() * kBorderFactor;
+  int pixel_padding = meter_to_pixel_ratio * kWidthPadding;
+  size_.set_width(2 * pixel_padding + text_size.width());
+  DCHECK_LE(size_.width(), texture_size.width());
+  int corner_radius = meter_to_pixel_ratio * kCornerRadius;
   sk_canvas->drawRoundRect(SkRect::MakeWH(size_.width(), size_.height()),
-                           radius, radius, paint);
+                           corner_radius, corner_radius, paint);
 
   canvas->Save();
-  canvas->Translate(gfx::Vector2d(size_.width() * kBorderFactor,
-                                  size_.width() * kBorderFactor));
+  canvas->Translate(
+      gfx::Vector2d(meter_to_pixel_ratio * kWidthPadding,
+                    (kHeight - kFontHeight) / 2 * meter_to_pixel_ratio));
   for (auto& render_text : lines)
     render_text->Draw(canvas);
   canvas->Restore();
@@ -63,7 +68,7 @@ void ExclusiveScreenToastTexture::Draw(SkCanvas* sk_canvas,
 
 gfx::Size ExclusiveScreenToastTexture::GetPreferredTextureSize(
     int maximum_width) const {
-  return gfx::Size(maximum_width, maximum_width);
+  return gfx::Size(maximum_width, maximum_width / kWidthHeightRatio);
 }
 
 gfx::SizeF ExclusiveScreenToastTexture::GetDrawnSize() const {

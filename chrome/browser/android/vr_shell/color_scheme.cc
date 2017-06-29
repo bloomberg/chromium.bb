@@ -40,10 +40,8 @@ void InitializeColorSchemes() {
       normal_scheme.exit_warning_foreground;
   normal_scheme.transient_warning_background =
       normal_scheme.exit_warning_background;
-  normal_scheme.exclusive_screen_toast_foreground =
-      normal_scheme.exit_warning_foreground;
-  normal_scheme.exclusive_screen_toast_background =
-      normal_scheme.exit_warning_background;
+  normal_scheme.exclusive_screen_toast_foreground = 0xCCFFFFFF;
+  normal_scheme.exclusive_screen_toast_background = 0xCC2F2F2F;
 
   normal_scheme.permanent_warning_foreground = 0xFF444444;
   normal_scheme.permanent_warning_background = SK_ColorWHITE;

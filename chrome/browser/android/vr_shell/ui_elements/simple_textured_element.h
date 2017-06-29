@@ -30,8 +30,10 @@ class SimpleTexturedElement : public TexturedElement {
   ~SimpleTexturedElement() override {}
   T* GetDerivedTexture() { return texture_.get(); }
 
- private:
+ protected:
   UiTexture* GetTexture() const override { return texture_.get(); }
+
+ private:
   std::unique_ptr<T> texture_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleTexturedElement);
@@ -42,7 +44,6 @@ typedef SimpleTexturedElement<InsecureContentPermanentTexture>
     PermanentSecurityWarning;
 typedef SimpleTexturedElement<InsecureContentTransientTexture>
     TransientSecurityWarning;
-typedef SimpleTexturedElement<ExclusiveScreenToastTexture> ExclusiveScreenToast;
 typedef SimpleTexturedElement<SplashScreenIconTexture> SplashScreenIcon;
 
 }  // namespace vr_shell
