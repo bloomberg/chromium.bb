@@ -2454,8 +2454,17 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
   if (!widgetHost)
     return;
 
+  int32_t targetWidgetProcessId = widgetHost->GetProcess()->GetID();
+  int32_t targetWidgetRoutingId = widgetHost->GetRoutingID();
   TextInputClientMac::GetInstance()->GetStringFromRange(
       widgetHost, range, ^(NSAttributedString* string, NSPoint baselinePoint) {
+        if (!content::RenderWidgetHost::FromID(targetWidgetProcessId,
+                                               targetWidgetRoutingId)) {
+          // By the time we get here |widgetHost| might have been destroyed.
+          // (See https://crbug.com/737032).
+          return;
+        }
+
         if (auto* rwhv = widgetHost->GetView()) {
           gfx::Point pointInRootView = rwhv->TransformPointToRootCoordSpace(
               gfx::Point(baselinePoint.x, baselinePoint.y));
@@ -2485,9 +2494,18 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
   if (!widgetHost)
     return;
 
+  int32_t targetWidgetProcessId = widgetHost->GetProcess()->GetID();
+  int32_t targetWidgetRoutingId = widgetHost->GetRoutingID();
   TextInputClientMac::GetInstance()->GetStringAtPoint(
       widgetHost, transformedPoint,
       ^(NSAttributedString* string, NSPoint baselinePoint) {
+        if (!content::RenderWidgetHost::FromID(targetWidgetProcessId,
+                                               targetWidgetRoutingId)) {
+          // By the time we get here |widgetHost| might have been destroyed.
+          // (See https://crbug.com/737032).
+          return;
+        }
+
         if (auto* rwhv = widgetHost->GetView()) {
           gfx::Point pointInRootView = rwhv->TransformPointToRootCoordSpace(
               gfx::Point(baselinePoint.x, baselinePoint.y));

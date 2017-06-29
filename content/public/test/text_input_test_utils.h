@@ -88,6 +88,10 @@ void SendImeSetCompositionTextToWidget(
     int selection_start,
     int selection_end);
 
+// Immediately destroys the RenderWidgetHost corresponding to the local root
+// which is identified by the given process ID and RenderFrameHost routing ID.
+bool DestroyRenderWidgetHost(int32_t process_id, int32_t local_root_routing_id);
+
 // This class provides the necessary API for accessing the state of and also
 // observing the TextInputManager for WebContents.
 class TextInputManagerTester {
@@ -236,6 +240,11 @@ class TestTextInputClientMessageFilter : public BrowserMessageFilter {
   // BrowserMessageFilter overrides.
   bool OnMessageReceived(const IPC::Message& message) override;
 
+  // Sets a callback for the string for range IPC arriving from the renderer.
+  // The callback is invoked before that of TextInputClientMac and is handled on
+  // UI thread.
+  void SetStringForRangeCallback(const base::Closure& callback);
+
   RenderProcessHost* process() const { return host_; }
   std::string string_from_range() { return string_from_range_; }
 
@@ -244,6 +253,7 @@ class TestTextInputClientMessageFilter : public BrowserMessageFilter {
   RenderProcessHost* const host_;
   std::string string_from_range_;
   bool received_string_from_range_;
+  base::Closure string_for_range_callback_;
   scoped_refptr<MessageLoopRunner> message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(TestTextInputClientMessageFilter);

@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/ui/browser.h"
@@ -15,6 +16,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
@@ -1250,8 +1252,13 @@ class WindowCountObserver {
 // class provides that for testing.
 class TestBrowserClient : public ChromeContentBrowserClient {
  public:
-  TestBrowserClient() {}
-  ~TestBrowserClient() override {}
+  TestBrowserClient() {
+    old_client_ = content::SetBrowserClientForTesting(this);
+  }
+
+  ~TestBrowserClient() override {
+    content::SetBrowserClientForTesting(old_client_);
+  }
 
   // ContentBrowserClient overrides.
   void RenderProcessWillLaunch(
@@ -1275,6 +1282,7 @@ class TestBrowserClient : public ChromeContentBrowserClient {
   }
 
  private:
+  content::ContentBrowserClient* old_client_ = nullptr;
   std::vector<scoped_refptr<content::TestTextInputClientMessageFilter>>
       filters_;
 
@@ -1294,8 +1302,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
   // been initialized with the original ContentBrowserClient and the new
   // TestBrowserClient, respectively.
   TestBrowserClient browser_client;
-  content::ContentBrowserClient* old_browser_client =
-      content::SetBrowserClientForTesting(&browser_client);
 
   content::WebContents* new_contents =
       content::WebContents::Create(content::WebContents::CreateParams(
@@ -1368,9 +1374,144 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
   // Closing this WebContents while we still hold on to our TestBrowserClient.
   EXPECT_TRUE(browser()->tab_strip_model()->CloseWebContentsAt(
       1, TabStripModel::CLOSE_USER_GESTURE));
+}
 
-  // For the cleanup of the original WebContents in tab index 0.
-  content::SetBrowserClientForTesting(old_browser_client);
+// This test verifies that when a word lookup result comes from the renderer
+// after the target RenderWidgetHost has been deleted, the browser will not
+// crash. This test covers the case where the target RenderWidgetHost is that of
+// an OOPIF.
+IN_PROC_BROWSER_TEST_F(
+    SitePerProcessTextInputManagerTest,
+    DoNotCrashBrowserInWordLookUpForDestroyedWidget_ChildFrame) {
+  TestBrowserClient browser_client;
+
+  content::WebContents* new_contents =
+      content::WebContents::Create(content::WebContents::CreateParams(
+          active_contents()->GetBrowserContext(), nullptr));
+  browser()->tab_strip_model()->InsertWebContentsAt(1, new_contents,
+                                                    TabStripModel::ADD_ACTIVE);
+  EXPECT_EQ(active_contents(), new_contents);
+
+  // Simple page with 1 cross origin (out-of-process) <iframe>.
+  CreateIframePage("a(b)");
+
+  content::RenderFrameHost* child_frame = GetFrame(IndexVector{0});
+  // Now add an <input> field and select its text.
+  AddInputFieldToFrame(child_frame, "text", "four", true);
+  EXPECT_TRUE(ExecuteScript(child_frame,
+                            "window.focus();"
+                            "document.querySelector('input').focus();"
+                            "document.querySelector('input').select();"));
+
+  content::RenderWidgetHostView* child_view = child_frame->GetView();
+  scoped_refptr<content::TestTextInputClientMessageFilter>
+      child_message_filter =
+          browser_client.GetTextInputClientMessageFilterForProcess(
+              child_view->GetRenderWidgetHost()->GetProcess());
+  DCHECK(child_message_filter);
+
+  // We need to wait for test scenario to complete before leaving this block.
+  base::RunLoop test_complete_waiter;
+
+  // Destroy the RenderWidgetHost from the browser side right after the
+  // dictionary IPC is received. The destruction is post tasked to UI thread.
+  int32_t child_process_id =
+      child_view->GetRenderWidgetHost()->GetProcess()->GetID();
+  int32_t child_frame_routing_id = child_frame->GetRoutingID();
+  child_message_filter->SetStringForRangeCallback(base::Bind(
+      [](int32_t process_id, int32_t routing_id,
+         const base::Closure& callback_on_io) {
+        // This runs before TextInputClientMac gets to handle the IPC. Then,
+        // by the time TextInputClientMac calls back into UI to show the
+        // dictionary, the target RWH is already destroyed which will be a
+        // close enough repro for the crash in https://crbug.com/737032.
+        ASSERT_TRUE(content::DestroyRenderWidgetHost(process_id, routing_id));
+
+        // Quit the run loop on IO to make sure the message handler of
+        // TextInputClientMac has successfully run on UI thread.
+        content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
+                                         callback_on_io);
+      },
+      child_process_id, child_frame_routing_id,
+      test_complete_waiter.QuitClosure()));
+
+  content::RenderWidgetHostView* page_rwhv =
+      content::WebContents::FromRenderFrameHost(child_frame)
+          ->GetRenderWidgetHostView();
+
+  // The dictionary request to be made will be routed to the focused frame.
+  ASSERT_EQ(child_frame, new_contents->GetFocusedFrame());
+
+  // Request for the dictionary lookup and intercept the word on its way back.
+  // The request is always on the tab's view which is a RenderWidgetHostViewMac.
+  content::AskForLookUpDictionaryForRange(page_rwhv, gfx::Range(0, 4));
+
+  test_complete_waiter.Run();
+}
+
+// This test verifies that when a word lookup result comes from the renderer
+// after the target RenderWidgetHost has been deleted, the browser will not
+// crash. This test covers the case where the target RenderWidgetHost is that of
+// the main frame (no OOPIFs on page).
+IN_PROC_BROWSER_TEST_F(
+    SitePerProcessTextInputManagerTest,
+    DoNotCrashBrowserInWordLookUpForDestroyedWidget_MainFrame) {
+  TestBrowserClient browser_client;
+
+  content::WebContents* new_contents =
+      content::WebContents::Create(content::WebContents::CreateParams(
+          active_contents()->GetBrowserContext(), nullptr));
+  browser()->tab_strip_model()->InsertWebContentsAt(1, new_contents,
+                                                    TabStripModel::ADD_ACTIVE);
+  EXPECT_EQ(active_contents(), new_contents);
+
+  // Simple page with no <iframe>s.
+  CreateIframePage("a()");
+
+  content::RenderFrameHost* main_frame = GetFrame(IndexVector{});
+  // Now add an <input> field and select its text.
+  AddInputFieldToFrame(main_frame, "text", "four", true);
+  EXPECT_TRUE(ExecuteScript(main_frame,
+                            "document.querySelector('input').focus();"
+                            "document.querySelector('input').select();"));
+
+  content::RenderWidgetHostView* page_rwhv = main_frame->GetView();
+  scoped_refptr<content::TestTextInputClientMessageFilter> message_filter =
+      browser_client.GetTextInputClientMessageFilterForProcess(
+          page_rwhv->GetRenderWidgetHost()->GetProcess());
+  DCHECK(message_filter);
+
+  // We need to wait for test scenario to complete before leaving this block.
+  base::RunLoop test_complete_waiter;
+
+  // Destroy the RenderWidgetHost from the browser side right after the
+  // dictionary IPC is received. The destruction is post tasked to UI thread.
+  int32_t main_frame_process_id =
+      page_rwhv->GetRenderWidgetHost()->GetProcess()->GetID();
+  int32_t main_frame_routing_id = main_frame->GetRoutingID();
+  message_filter->SetStringForRangeCallback(base::Bind(
+      [](int32_t process_id, int32_t routing_id,
+         const base::Closure& callback_on_io) {
+        // This runs before TextInputClientMac gets to handle the IPC. Then,
+        // by the time TextInputClientMac calls back into UI to show the
+        // dictionary, the target RWH is already destroyed which will be a
+        // close enough repro for the crash in https://crbug.com/737032.
+        ASSERT_TRUE(content::DestroyRenderWidgetHost(process_id, routing_id));
+
+        // Quit the run loop on IO to make sure the message handler of
+        // TextInputClientMac has successfully run on UI thread.
+        content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
+                                         callback_on_io);
+      },
+      main_frame_process_id, main_frame_routing_id,
+      test_complete_waiter.QuitClosure()));
+
+  // Request for the dictionary lookup and intercept the word on its way back.
+  // The request is always on the tab's view which is a RenderWidgetHostViewMac.
+  content::AskForLookUpDictionaryForRange(page_rwhv, gfx::Range(0, 4));
+
+  test_complete_waiter.Run();
 }
 #endif  //  defined(MAC_OSX)
+
 #endif  // !defined(OS_ANDROID)
