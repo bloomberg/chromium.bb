@@ -23,7 +23,6 @@ enum FilteringBehaviorReason {
 int GetBlockMessageID(
     supervised_user_error_page::FilteringBehaviorReason reason,
     bool is_child_account,
-    bool is_deprecated,
     bool single_parent);
 
 std::string BuildHtml(bool allow_access_requests,

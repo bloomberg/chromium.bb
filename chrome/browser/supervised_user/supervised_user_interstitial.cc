@@ -258,12 +258,9 @@ void SupervisedUserInterstitial::CommandReceived(const std::string& command) {
 
   if (command == "\"feedback\"") {
     bool is_child_account = profile_->IsChild();
-    bool is_deprecated =
-        base::FeatureList::IsEnabled(features::kSupervisedUserCreation);
     base::string16 reason =
         l10n_util::GetStringUTF16(supervised_user_error_page::GetBlockMessageID(
-            reason_, is_child_account, is_deprecated,
-            second_custodian.empty()));
+            reason_, is_child_account, second_custodian.empty()));
     std::string message = l10n_util::GetStringFUTF8(
         IDS_BLOCK_INTERSTITIAL_DEFAULT_FEEDBACK_TEXT, reason);
 #if defined(OS_ANDROID)

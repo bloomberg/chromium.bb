@@ -18,7 +18,6 @@ namespace supervised_user_error_page {
 struct BlockMessageIDTestParameter {
   FilteringBehaviorReason reason;
   bool is_child_account;
-  bool is_deprecated;
   bool single_parent;
   int expected_result;
 };
@@ -30,36 +29,24 @@ TEST_P(SupervisedUserErrorPageTest_GetBlockMessageID, GetBlockMessageID) {
   BlockMessageIDTestParameter param = GetParam();
   EXPECT_EQ(param.expected_result,
             GetBlockMessageID(param.reason, param.is_child_account,
-                              param.is_deprecated, param.single_parent))
+                              param.single_parent))
       << "reason = " << param.reason
       << " is_child_account = " << param.is_child_account
       << " single parent = " << param.single_parent;
 }
 
 BlockMessageIDTestParameter block_message_id_test_params[] = {
-    {DEFAULT, false, false, false, IDS_SUPERVISED_USER_BLOCK_MESSAGE_DEFAULT},
-    {DEFAULT, false, false, true, IDS_SUPERVISED_USER_BLOCK_MESSAGE_DEFAULT},
-    {DEFAULT, false, true, false,
-     IDS_BLOCK_INTERSTITIAL_MESSAGE_SUPERVISED_USERS_DEPRECATED},
-    {DEFAULT, false, true, true,
-     IDS_BLOCK_INTERSTITIAL_MESSAGE_SUPERVISED_USERS_DEPRECATED},
-    {DEFAULT, true, false, true, IDS_CHILD_BLOCK_MESSAGE_DEFAULT_SINGLE_PARENT},
-    {DEFAULT, true, false, false, IDS_CHILD_BLOCK_MESSAGE_DEFAULT_MULTI_PARENT},
+    {DEFAULT, false, false, IDS_SUPERVISED_USER_BLOCK_MESSAGE_DEFAULT},
+    {DEFAULT, false, true, IDS_SUPERVISED_USER_BLOCK_MESSAGE_DEFAULT},
+    {DEFAULT, true, true, IDS_CHILD_BLOCK_MESSAGE_DEFAULT_SINGLE_PARENT},
+    {DEFAULT, true, false, IDS_CHILD_BLOCK_MESSAGE_DEFAULT_MULTI_PARENT},
     // SafeSites is not enabled for supervised users.
-    {ASYNC_CHECKER, true, false, true,
-     IDS_SUPERVISED_USER_BLOCK_MESSAGE_SAFE_SITES},
-    {ASYNC_CHECKER, true, false, false,
-     IDS_SUPERVISED_USER_BLOCK_MESSAGE_SAFE_SITES},
-    {MANUAL, false, false, false, IDS_SUPERVISED_USER_BLOCK_MESSAGE_MANUAL},
-    {MANUAL, false, false, true, IDS_SUPERVISED_USER_BLOCK_MESSAGE_MANUAL},
-    {MANUAL, false, true, false,
-     IDS_BLOCK_INTERSTITIAL_MESSAGE_SUPERVISED_USERS_DEPRECATED},
-    {MANUAL, false, true, true,
-     IDS_BLOCK_INTERSTITIAL_MESSAGE_SUPERVISED_USERS_DEPRECATED},
-    {MANUAL, true, false, true, IDS_CHILD_BLOCK_MESSAGE_MANUAL_SINGLE_PARENT},
-    {MANUAL, true, false, false, IDS_CHILD_BLOCK_MESSAGE_MANUAL_MULTI_PARENT},
-    // |is_child_account| and |is_deprecated| are mutually exclusive, so skip
-    // test cases where both are true.
+    {ASYNC_CHECKER, true, true, IDS_SUPERVISED_USER_BLOCK_MESSAGE_SAFE_SITES},
+    {ASYNC_CHECKER, true, false, IDS_SUPERVISED_USER_BLOCK_MESSAGE_SAFE_SITES},
+    {MANUAL, false, false, IDS_SUPERVISED_USER_BLOCK_MESSAGE_MANUAL},
+    {MANUAL, false, true, IDS_SUPERVISED_USER_BLOCK_MESSAGE_MANUAL},
+    {MANUAL, true, true, IDS_CHILD_BLOCK_MESSAGE_MANUAL_SINGLE_PARENT},
+    {MANUAL, true, false, IDS_CHILD_BLOCK_MESSAGE_MANUAL_MULTI_PARENT},
 };
 
 INSTANTIATE_TEST_CASE_P(GetBlockMessageIDParameterized,
@@ -206,6 +193,8 @@ BuildHtmlTestParameter build_html_test_parameter[] = {
      "custodian2_email", true, false, DEFAULT, true},
     {false, "url1", "url2", "custodian", "custodian_email", "custodian2",
      "custodian2_email", true, false, DEFAULT, true},
+    {false, "url1", "url2", "custodian", "custodian_email", "custodian2",
+     "custodian2_email", false, true, DEFAULT, true},
     {true, "url1", "url2", "custodian", "custodian_email", "custodian2",
      "custodian2_email", false, false, DEFAULT, true},
     {true, "url1", "url2", "custodian", "custodian_email", "custodian2",

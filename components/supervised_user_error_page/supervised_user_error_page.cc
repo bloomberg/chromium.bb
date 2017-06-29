@@ -39,14 +39,7 @@ std::string BuildAvatarImageUrl(const std::string& url, int size) {
 
 int GetBlockMessageID(FilteringBehaviorReason reason,
                       bool is_child_account,
-                      bool is_deprecated,
                       bool single_parent) {
-  if (is_deprecated) {
-    // The deprecation message is specific to Supervised Users.
-    DCHECK(!is_child_account);
-    return IDS_BLOCK_INTERSTITIAL_MESSAGE_SUPERVISED_USERS_DEPRECATED;
-  }
-
   switch (reason) {
     case DEFAULT:
       if (!is_child_account)
@@ -121,14 +114,18 @@ std::string BuildHtml(bool allow_access_requests,
   } else {
     block_header = l10n_util::GetStringUTF16(
         IDS_BLOCK_INTERSTITIAL_HEADER_ACCESS_REQUESTS_DISABLED);
-    // If access requests are disabled, there is no block message.
+
+    if (is_deprecated) {
+      DCHECK(!is_child_account);
+      block_message = l10n_util::GetStringUTF16(
+          IDS_BLOCK_INTERSTITIAL_MESSAGE_SUPERVISED_USERS_DEPRECATED);
+    }
   }
   strings.SetString("blockPageHeader", block_header);
   strings.SetString("blockPageMessage", block_message);
-  strings.SetString(
-      "blockReasonMessage",
-      l10n_util::GetStringUTF16(GetBlockMessageID(
-          reason, is_child_account, is_deprecated, second_custodian.empty())));
+  strings.SetString("blockReasonMessage",
+                    l10n_util::GetStringUTF16(GetBlockMessageID(
+                        reason, is_child_account, second_custodian.empty())));
   strings.SetString("blockReasonHeader", l10n_util::GetStringUTF16(
                                              IDS_SUPERVISED_USER_BLOCK_HEADER));
   bool show_feedback = ReasonIsAutomatic(reason);
