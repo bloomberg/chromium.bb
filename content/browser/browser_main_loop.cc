@@ -54,7 +54,7 @@
 #include "components/tracing/common/trace_to_console.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "components/viz/host/host_frame_sink_manager.h"
-#include "components/viz/service/display_compositor/host_shared_bitmap_manager.h"
+#include "components/viz/service/display_compositor/server_shared_bitmap_manager.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -781,8 +781,8 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
   tracing::ProcessMetricsMemoryDumpProvider::RegisterForProcess(
       base::kNullProcessId);
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      viz::HostSharedBitmapManager::current(), "viz::HostSharedBitmapManager",
-      nullptr);
+      viz::ServerSharedBitmapManager::current(),
+      "viz::ServerSharedBitmapManager", nullptr);
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       skia::SkiaMemoryDumpProvider::GetInstance(), "Skia", nullptr);
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(

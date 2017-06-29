@@ -56,6 +56,7 @@
 #include "components/metrics/public/interfaces/single_sample_metrics.mojom.h"
 #include "components/metrics/single_sample_metrics.h"
 #include "components/viz/client/client_layer_tree_frame_sink.h"
+#include "components/viz/client/client_shared_bitmap_manager.h"
 #include "components/viz/client/local_surface_id_provider.h"
 #include "content/child/appcache/appcache_dispatcher.h"
 #include "content/child/appcache/appcache_frontend_impl.h"
@@ -152,7 +153,6 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "services/ui/public/cpp/bitmap/child_shared_bitmap_manager.h"
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "skia/ext/event_tracer_impl.h"
@@ -670,13 +670,14 @@ void RenderThreadImpl::Init(
       IsRunningInMash() ? ui::mojom::kServiceName : mojom::kBrowserServiceName,
       GetIOTaskRunner());
 
-  cc::mojom::SharedBitmapManagerAssociatedPtr shared_bitmap_manager_ptr;
-  render_message_filter()->GetSharedBitmapManager(
-      mojo::MakeRequest(&shared_bitmap_manager_ptr));
-  shared_bitmap_manager_.reset(new ui::ChildSharedBitmapManager(
-      cc::mojom::ThreadSafeSharedBitmapManagerAssociatedPtr::Create(
-          shared_bitmap_manager_ptr.PassInterface(),
-          GetChannel()->ipc_task_runner_refptr())));
+  cc::mojom::SharedBitmapAllocationNotifierAssociatedPtr
+      shared_bitmap_allocation_notifier_ptr;
+  render_message_filter()->GetSharedBitmapAllocationNotifier(
+      mojo::MakeRequest(&shared_bitmap_allocation_notifier_ptr));
+  shared_bitmap_manager_ = base::MakeUnique<viz::ClientSharedBitmapManager>(
+      cc::mojom::ThreadSafeSharedBitmapAllocationNotifierAssociatedPtr::Create(
+          shared_bitmap_allocation_notifier_ptr.PassInterface(),
+          GetChannel()->ipc_task_runner_refptr()));
 
   InitializeWebKit(resource_task_queue);
 

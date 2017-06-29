@@ -33,7 +33,7 @@
 #include "components/viz/common/gl_helper.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/display_compositor/compositor_overlay_candidate_validator.h"
-#include "components/viz/service/display_compositor/host_shared_bitmap_manager.h"
+#include "components/viz/service/display_compositor/server_shared_bitmap_manager.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/compositor/browser_compositor_output_surface.h"
 #include "content/browser/compositor/gpu_browser_compositor_output_surface.h"
@@ -603,7 +603,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
 
   // The Display owns and uses the |display_output_surface| created above.
   data->display = base::MakeUnique<cc::Display>(
-      viz::HostSharedBitmapManager::current(), GetGpuMemoryBufferManager(),
+      viz::ServerSharedBitmapManager::current(), GetGpuMemoryBufferManager(),
       renderer_settings_, compositor->frame_sink_id(),
       std::move(display_output_surface), std::move(scheduler),
       base::MakeUnique<cc::TextureMailboxDeleter>(
@@ -629,7 +629,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
                 compositor->frame_sink_id(), GetSurfaceManager(),
                 data->display.get(), context_provider,
                 shared_worker_context_provider_, GetGpuMemoryBufferManager(),
-                viz::HostSharedBitmapManager::current());
+                viz::ServerSharedBitmapManager::current());
   data->display->Resize(compositor->size());
   data->display->SetOutputIsSecure(data->output_is_secure);
   compositor->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));

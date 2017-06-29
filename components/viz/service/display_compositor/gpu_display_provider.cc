@@ -16,8 +16,8 @@
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/display_scheduler.h"
 #include "components/viz/service/display_compositor/display_output_surface.h"
-#include "components/viz/service/display_compositor/host_shared_bitmap_manager.h"
 #include "components/viz/service/display_compositor/in_process_gpu_memory_buffer_manager.h"
+#include "components/viz/service/display_compositor/server_shared_bitmap_manager.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/service/image_factory.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
@@ -100,7 +100,7 @@ std::unique_ptr<cc::Display> GpuDisplayProvider::CreateDisplay(
   *begin_frame_source = std::move(synthetic_begin_frame_source);
 
   return base::MakeUnique<cc::Display>(
-      HostSharedBitmapManager::current(), gpu_memory_buffer_manager_.get(),
+      ServerSharedBitmapManager::current(), gpu_memory_buffer_manager_.get(),
       settings, frame_sink_id, std::move(display_output_surface),
       std::move(scheduler),
       base::MakeUnique<cc::TextureMailboxDeleter>(task_runner_.get()));
