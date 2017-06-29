@@ -55,6 +55,7 @@ class ChromeRenderFrameObserver
   void RequestThumbnailForContextNode(
       int32_t thumbnail_min_area_pixels,
       const gfx::Size& thumbnail_max_size_pixels,
+      chrome::mojom::ImageFormat image_format,
       const RequestThumbnailForContextNodeCallback& callback) override;
 
   // Mojo handlers.

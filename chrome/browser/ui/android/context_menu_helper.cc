@@ -224,7 +224,7 @@ void ContextMenuHelper::RetrieveImageInternal(
   // until there's either a connection error or a response.
   auto* thumbnail_capturer_proxy = thumbnail_capturer.get();
   thumbnail_capturer_proxy->RequestThumbnailForContextNode(
-      0, gfx::Size(max_dimen_px, max_dimen_px),
+      0, gfx::Size(max_dimen_px, max_dimen_px), chrome::mojom::ImageFormat::PNG,
       base::Bind(retrieve_callback, base::Passed(&thumbnail_capturer),
                  base::android::ScopedJavaGlobalRef<jobject>(env, jcallback)));
 }

@@ -740,7 +740,7 @@ IN_PROC_BROWSER_TEST_F(SearchByImageBrowserTest, ImageSearchWithCorruptImage) {
   base::RunLoop run_loop;
   bool response_received = false;
   thumbnail_capturer->RequestThumbnailForContextNode(
-      0, gfx::Size(2048, 2048),
+      0, gfx::Size(2048, 2048), chrome::mojom::ImageFormat::JPEG,
       base::Bind(callback, &response_received, run_loop.QuitClosure()));
   run_loop.Run();
 
