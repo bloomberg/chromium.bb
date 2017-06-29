@@ -53,12 +53,17 @@
 namespace blink {
 
 ResourceLoader* ResourceLoader::Create(ResourceFetcher* fetcher,
+                                       ResourceLoadScheduler* scheduler,
                                        Resource* resource) {
-  return new ResourceLoader(fetcher, resource);
+  return new ResourceLoader(fetcher, scheduler, resource);
 }
 
-ResourceLoader::ResourceLoader(ResourceFetcher* fetcher, Resource* resource)
-    : fetcher_(fetcher),
+ResourceLoader::ResourceLoader(ResourceFetcher* fetcher,
+                               ResourceLoadScheduler* scheduler,
+                               Resource* resource)
+    : scheduler_client_id_(ResourceLoadScheduler::kInvalidClientId),
+      fetcher_(fetcher),
+      scheduler_(scheduler),
       resource_(resource),
       is_cache_aware_loading_activated_(false) {
   DCHECK(resource_);
@@ -71,10 +76,32 @@ ResourceLoader::~ResourceLoader() {}
 
 DEFINE_TRACE(ResourceLoader) {
   visitor->Trace(fetcher_);
+  visitor->Trace(scheduler_);
   visitor->Trace(resource_);
+  ResourceLoadSchedulerClient::Trace(visitor);
 }
 
-void ResourceLoader::Start(const ResourceRequest& request) {
+void ResourceLoader::Start() {
+  const ResourceRequest& request = resource_->GetResourceRequest();
+  ActivateCacheAwareLoadingIfNeeded(request);
+  // Synchronous requests should not work with a throttling. Also, tentatively
+  // disables throttling for fetch requests that could keep on holding an active
+  // connection until data is read by JavaScript.
+  ResourceLoadScheduler::ThrottleOption option =
+      (resource_->Options().synchronous_policy == kRequestSynchronously ||
+       request.GetRequestContext() == WebURLRequest::kRequestContextFetch)
+          ? ResourceLoadScheduler::ThrottleOption::kCanNotBeThrottled
+          : ResourceLoadScheduler::ThrottleOption::kCanBeThrottled;
+  DCHECK_EQ(ResourceLoadScheduler::kInvalidClientId, scheduler_client_id_);
+  scheduler_->Request(this, option, &scheduler_client_id_);
+}
+
+void ResourceLoader::Run() {
+  StartWith(resource_->GetResourceRequest());
+}
+
+void ResourceLoader::StartWith(const ResourceRequest& request) {
+  DCHECK_NE(ResourceLoadScheduler::kInvalidClientId, scheduler_client_id_);
   DCHECK(!loader_);
 
   if (resource_->Options().synchronous_policy == kRequestSynchronously &&
@@ -83,7 +110,7 @@ void ResourceLoader::Start(const ResourceRequest& request) {
     return;
   }
 
-  loader_ = fetcher_->Context().CreateURLLoader(request);
+  loader_ = Context().CreateURLLoader(request);
   DCHECK(loader_);
   loader_->SetDefersLoading(Context().DefersLoading());
 
@@ -106,12 +133,19 @@ void ResourceLoader::Start(const ResourceRequest& request) {
     loader_->LoadAsynchronously(WrappedResourceRequest(request), this);
 }
 
+void ResourceLoader::Release(ResourceLoadScheduler::ReleaseOption option) {
+  DCHECK_NE(ResourceLoadScheduler::kInvalidClientId, scheduler_client_id_);
+  bool released = scheduler_->Release(scheduler_client_id_, option);
+  DCHECK(released);
+  scheduler_client_id_ = ResourceLoadScheduler::kInvalidClientId;
+}
+
 void ResourceLoader::Restart(const ResourceRequest& request) {
   CHECK_EQ(resource_->Options().synchronous_policy, kRequestAsynchronously);
 
   keepalive_.Clear();
   loader_.reset();
-  Start(request);
+  StartWith(request);
 }
 
 void ResourceLoader::SetDefersLoading(bool defers) {
@@ -498,6 +532,7 @@ void ResourceLoader::DidFinishLoading(double finish_time,
   resource_->SetDecodedBodyLength(decoded_body_length);
 
   keepalive_.Clear();
+  Release(ResourceLoadScheduler::ReleaseOption::kReleaseAndSchedule);
   loader_.reset();
 
   network_instrumentation::EndResourceLoad(
@@ -528,6 +563,7 @@ void ResourceLoader::HandleError(const ResourceError& error) {
   }
 
   keepalive_.Clear();
+  Release(ResourceLoadScheduler::ReleaseOption::kReleaseAndSchedule);
   loader_.reset();
 
   network_instrumentation::EndResourceLoad(
@@ -581,6 +617,13 @@ void ResourceLoader::RequestSynchronously(const ResourceRequest& request) {
 
 void ResourceLoader::Dispose() {
   loader_ = nullptr;
+
+  // Release() should be called to release |scheduler_client_id_| beforehand in
+  // DidFinishLoading() or DidFail(), but when a timer to call Cancel() is
+  // ignored due to GC, this case happens. We just release here because we can
+  // not schedule another request safely. See crbug.com/675947.
+  if (scheduler_client_id_ != ResourceLoadScheduler::kInvalidClientId)
+    Release(ResourceLoadScheduler::ReleaseOption::kReleaseOnly);
 }
 
 void ResourceLoader::ActivateCacheAwareLoadingIfNeeded(

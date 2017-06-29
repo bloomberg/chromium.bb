@@ -12,6 +12,7 @@
 #include "platform/loader/fetch/RawResource.h"
 #include "platform/loader/fetch/Resource.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
+#include "platform/loader/fetch/ResourceLoadScheduler.h"
 #include "platform/loader/fetch/ResourceLoader.h"
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/loader/testing/MockFetchContext.h"
@@ -215,8 +216,10 @@ class SubresourceIntegrityTest : public ::testing::Test {
                                ServiceWorkerMode service_worker_mode) {
     ResourceFetcher* fetcher =
         ResourceFetcher::Create(context, context->GetTaskRunner());
+    ResourceLoadScheduler* scheduler = ResourceLoadScheduler::Create();
     Resource* resource = RawResource::CreateForTest(url, Resource::kRaw);
-    ResourceLoader* loader = ResourceLoader::Create(fetcher, resource);
+    ResourceLoader* loader =
+        ResourceLoader::Create(fetcher, scheduler, resource);
 
     ResourceRequest request;
     request.SetURL(url);
