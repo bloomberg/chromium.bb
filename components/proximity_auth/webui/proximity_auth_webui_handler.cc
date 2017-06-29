@@ -539,14 +539,15 @@ ProximityAuthWebUIHandler::ExternalDeviceInfoToDictionary(
   // the corresponding local device data (e.g. connection status and remote
   // status updates).
   std::string public_key = device_info.public_key();
+  std::vector<cryptauth::ExternalDeviceInfo> unlock_keys =
+      device_manager->GetUnlockKeys();
   auto iterator = std::find_if(
-      device_manager->GetUnlockKeys().begin(),
-      device_manager->GetUnlockKeys().end(),
+      unlock_keys.begin(), unlock_keys.end(),
       [&public_key](const cryptauth::ExternalDeviceInfo& unlock_key) {
         return unlock_key.public_key() == public_key;
       });
 
-  if (iterator == device_manager->GetUnlockKeys().end() ||
+  if (iterator == unlock_keys.end() ||
       selected_remote_device_.public_key != device_info.public_key())
     return dictionary;
 
