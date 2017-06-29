@@ -8,13 +8,15 @@ namespace blink {
 
 NGLayoutResult::NGLayoutResult(
     PassRefPtr<NGPhysicalFragment> physical_fragment,
-    Vector<NGBlockNode>& out_of_flow_descendants,
-    Vector<NGStaticPosition> out_of_flow_positions,
-    Vector<RefPtr<NGUnpositionedFloat>>& unpositioned_floats)
+    Vector<NGOutOfFlowPositionedDescendant> oof_positioned_descendants,
+    Vector<RefPtr<NGUnpositionedFloat>>& unpositioned_floats,
+    const WTF::Optional<NGLogicalOffset> bfc_offset,
+    const NGMarginStrut end_margin_strut)
     : physical_fragment_(std::move(physical_fragment)),
-      out_of_flow_descendants_(out_of_flow_descendants),
-      out_of_flow_positions_(out_of_flow_positions) {
+      bfc_offset_(bfc_offset),
+      end_margin_strut_(end_margin_strut) {
   unpositioned_floats_.swap(unpositioned_floats);
+  oof_positioned_descendants_.swap(oof_positioned_descendants);
 }
 
 }  // namespace blink

@@ -407,15 +407,12 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase3) {
   // Margins are collapsed with the result 200 = std::max(20, 200)
   // The fragment size 258 == body's margin 8 + child's height 50 + 200
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(800), LayoutUnit(258)), fragment->Size());
-  EXPECT_EQ(NGMarginStrut({LayoutUnit(200)}),
-            container_fragment->EndMarginStrut());
 
   // height == fixed
   run_test(Length(50, kFixed));
   // Margins are not collapsed, so fragment still has margins == 20.
   // The fragment size 78 == body's margin 8 + child's height 50 + 20
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(800), LayoutUnit(78)), fragment->Size());
-  EXPECT_EQ(NGMarginStrut(), container_fragment->EndMarginStrut());
 }
 
 // Verifies that 2 adjoining margins are not collapsed if there is padding or

@@ -201,10 +201,10 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
       container_builder_.AddOutOfFlowDescendant(
           // Absolute positioning blockifies the box's display type.
           // https://drafts.csswg.org/css-display/#transformations
-          NGBlockNode(ToLayoutBox(item.GetLayoutObject())),
-          NGStaticPosition::Create(ConstraintSpace().WritingMode(),
-                                   ConstraintSpace().Direction(),
-                                   NGPhysicalOffset()));
+          {NGBlockNode(ToLayoutBox(item.GetLayoutObject())),
+           NGStaticPosition::Create(ConstraintSpace().WritingMode(),
+                                    ConstraintSpace().Direction(),
+                                    NGPhysicalOffset())});
       continue;
     } else {
       continue;

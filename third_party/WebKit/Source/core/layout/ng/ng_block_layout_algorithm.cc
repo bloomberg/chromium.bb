@@ -450,17 +450,19 @@ NGPreviousInflowPosition NGBlockLayoutAlgorithm::FinishChildLayout(
   if (child.CreatesNewFormattingContext())
     child_bfc_offset = PositionNewFc(child, previous_inflow_position, fragment,
                                      child_data, child_space);
-  else if (fragment.BfcOffset())
-    child_bfc_offset = PositionWithBfcOffset(fragment);
+  else if (layout_result->BfcOffset())
+    child_bfc_offset =
+        PositionWithBfcOffset(layout_result->BfcOffset().value());
   else if (container_builder_.BfcOffset())
-    child_bfc_offset = PositionWithParentBfc(child_space, child_data, fragment);
+    child_bfc_offset =
+        PositionWithParentBfc(child_space, child_data, *layout_result);
   else
     DCHECK(!fragment.BlockSize());
 
   NGLogicalOffset logical_offset =
       CalculateLogicalOffset(child_data.margins, child_bfc_offset);
 
-  NGMarginStrut margin_strut = fragment.EndMarginStrut();
+  NGMarginStrut margin_strut = layout_result->EndMarginStrut();
   margin_strut.Append(child_data.margins.block_end);
 
   // Only modify content_size_ if the fragment's BlockSize is not empty. This is
@@ -485,9 +487,9 @@ NGPreviousInflowPosition NGBlockLayoutAlgorithm::FinishChildLayout(
   LayoutUnit logical_block_offset;
 
   if (child_bfc_offset) {
-    // TODO(crbug.com/716930): I think the fragment.BfcOffset() condition here
-    // can be removed once we've removed inline splitting.
-    if (fragment.BlockSize() || fragment.BfcOffset()) {
+    // TODO(crbug.com/716930): I think the layout_result->BfcOffset() condition
+    // here can be removed once we've removed inline splitting.
+    if (fragment.BlockSize() || layout_result->BfcOffset()) {
       child_end_bfc_block_offset =
           child_bfc_offset.value().block_offset + fragment.BlockSize();
       logical_block_offset = logical_offset.block_offset + fragment.BlockSize();
@@ -568,23 +570,23 @@ NGLogicalOffset NGBlockLayoutAlgorithm::PositionNewFc(
 }
 
 NGLogicalOffset NGBlockLayoutAlgorithm::PositionWithBfcOffset(
-    const NGBoxFragment& fragment) {
-  DCHECK(fragment.BfcOffset());
-  LayoutUnit bfc_block_offset = fragment.BfcOffset().value().block_offset;
+    const NGLogicalOffset& bfc_offset) {
+  LayoutUnit bfc_block_offset = bfc_offset.block_offset;
   MaybeUpdateFragmentBfcOffset(ConstraintSpace(), bfc_block_offset,
                                &container_builder_);
   PositionPendingFloats(bfc_block_offset, &container_builder_,
                         MutableConstraintSpace());
-  return fragment.BfcOffset().value();
+  return bfc_offset;
 }
 
 NGLogicalOffset NGBlockLayoutAlgorithm::PositionWithParentBfc(
     const NGConstraintSpace& space,
     const NGInflowChildData& child_data,
-    const NGBoxFragment& fragment) {
+    const NGLayoutResult& layout_result) {
   // The child must be an in-flow zero-block-size fragment, use its end margin
   // strut for positioning.
-  DCHECK(!fragment.BfcOffset());
+  NGFragment fragment(ConstraintSpace().WritingMode(),
+                      layout_result.PhysicalFragment().Get());
   DCHECK_EQ(fragment.BlockSize(), LayoutUnit());
 
   NGLogicalOffset child_bfc_offset = {
@@ -592,7 +594,7 @@ NGLogicalOffset NGBlockLayoutAlgorithm::PositionWithParentBfc(
           border_scrollbar_padding_.inline_start +
           child_data.margins.inline_start,
       child_data.bfc_offset_estimate.block_offset +
-          fragment.EndMarginStrut().Sum()};
+          layout_result.EndMarginStrut().Sum()};
 
   AdjustToClearance(space.ClearanceOffset(), &child_bfc_offset);
   PositionPendingFloatsFromOffset(
