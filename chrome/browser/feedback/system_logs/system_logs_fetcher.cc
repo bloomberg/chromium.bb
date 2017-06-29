@@ -15,6 +15,29 @@ using content::BrowserThread;
 
 namespace system_logs {
 
+namespace {
+
+// List of keys in the SystemLogsResponse map whose corresponding values will
+// not be anonymized.
+constexpr const char* const kWhitelistedKeysOfUUIDs[] = {
+    "CHROMEOS_BOARD_APPID",
+    "CHROMEOS_CANARY_APPID",
+    "CHROMEOS_RELEASE_APPID",
+    "CLIENT_ID",
+};
+
+// Returns true if the given |key| is anonymizer-whitelisted and whose
+// corresponding value should not be anonymized.
+bool IsKeyWhitelisted(const std::string& key) {
+  for (auto* const whitelisted_key : kWhitelistedKeysOfUUIDs) {
+    if (key == whitelisted_key)
+      return true;
+  }
+  return false;
+}
+
+}  // namespace
+
 SystemLogsSource::SystemLogsSource(const std::string& source_name)
     : source_name_(source_name) {}
 
@@ -56,8 +79,10 @@ void SystemLogsFetcher::OnFetched(const std::string& source_name,
   VLOG(1) << "Received SystemLogSource: " << source_name;
 
   if (anonymizer_) {
-    for (auto& element : *response)
-      element.second = anonymizer_->Anonymize(element.second);
+    for (auto& element : *response) {
+      if (!IsKeyWhitelisted(element.first))
+        element.second = anonymizer_->Anonymize(element.second);
+    }
   }
   AddResponse(source_name, response);
 }
