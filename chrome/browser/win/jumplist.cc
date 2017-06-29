@@ -194,9 +194,9 @@ base::FilePath GenerateJumplistIconDirName(
 
 }  // namespace
 
-JumpList::UpdateResults::UpdateResults() {}
+JumpList::UpdateTransaction::UpdateTransaction() {}
 
-JumpList::UpdateResults::~UpdateResults() {}
+JumpList::UpdateTransaction::~UpdateTransaction() {}
 
 // static
 bool JumpList::Enabled() {
@@ -306,6 +306,8 @@ void JumpList::OnIncognitoAvailabilityChanged() {
 }
 
 void JumpList::InitializeTimerForUpdate() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (timer_.IsRunning()) {
     timer_.Reset();
   } else {
@@ -317,6 +319,7 @@ void JumpList::InitializeTimerForUpdate() {
 
 void JumpList::OnDelayTimer() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!update_in_progress_);
 
   if (updates_to_skip_ > 0) {
     --updates_to_skip_;
@@ -340,6 +343,7 @@ void JumpList::OnDelayTimer() {
 
 void JumpList::ProcessTopSitesNotification() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!update_in_progress_);
 
   // Opening the first tab in one session triggers a TopSite history sync.
   // Delay this sync till the first tab is closed to allow the "recently closed"
@@ -362,6 +366,7 @@ void JumpList::ProcessTopSitesNotification() {
 
 void JumpList::ProcessTabRestoreServiceNotification() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!update_in_progress_);
 
   // Create a list of ShellLinkItems from the "Recently Closed" pages.
   // As noted above, we create a ShellLinkItem objects with the following
@@ -549,51 +554,53 @@ void JumpList::PostRunUpdate() {
   IncognitoModePrefs::Availability incognito_availability =
       IncognitoModePrefs::GetAvailability(profile_->GetPrefs());
 
-  // Make local copies of JumpList member variables and use them for an update.
-  ShellLinkItemList local_most_visited_pages = most_visited_pages_;
-  ShellLinkItemList local_recently_closed_pages = recently_closed_pages_;
+  auto update_transaction = base::MakeUnique<UpdateTransaction>();
+  if (most_visited_should_update_)
+    update_transaction->most_visited_icons = std::move(most_visited_icons_);
+  if (recently_closed_should_update_) {
+    update_transaction->recently_closed_icons =
+        std::move(recently_closed_icons_);
+  }
 
-  bool most_visited_should_update = most_visited_should_update_;
-  bool recently_closed_should_update = recently_closed_should_update_;
-
-  auto update_results = base::MakeUnique<UpdateResults>();
-  update_results->most_visited_icons_in_update = most_visited_icons_;
-  update_results->recently_closed_icons_in_update = recently_closed_icons_;
-
-  // Parameter evaluation order is unspecified in C++. Ensure the pointer value
-  // is obtained before base::Passed() is called.
-  auto* update_results_raw = update_results.get();
+  // Parameter evaluation order is unspecified in C++. Do the first bind and
+  // then move it into PostTaskAndReply to ensure the pointer value is obtained
+  // before base::Passed() is called.
+  auto run_update =
+      base::Bind(&JumpList::RunUpdateJumpList, app_id_, profile_dir,
+                 most_visited_pages_, recently_closed_pages_,
+                 most_visited_should_update_, recently_closed_should_update_,
+                 incognito_availability, update_transaction.get());
 
   // Post a task to update the JumpList, which consists of 1) create new icons,
-  // 2) delete old icons, 3) notify the OS.
+  // 2) notify the OS, 3) delete old icons.
   if (!update_jumplist_task_runner_->PostTaskAndReply(
-          FROM_HERE,
-          base::Bind(&JumpList::RunUpdateJumpList, app_id_, profile_dir,
-                     local_most_visited_pages, local_recently_closed_pages,
-                     most_visited_should_update, recently_closed_should_update,
-                     incognito_availability, update_results_raw),
+          FROM_HERE, std::move(run_update),
           base::Bind(&JumpList::OnRunUpdateCompletion,
                      weak_ptr_factory_.GetWeakPtr(),
-                     base::Passed(std::move(update_results))))) {
-    OnRunUpdateCompletion(base::MakeUnique<UpdateResults>());
+                     base::Passed(std::move(update_transaction))))) {
+    OnRunUpdateCompletion(base::MakeUnique<UpdateTransaction>());
   }
 }
 
 void JumpList::OnRunUpdateCompletion(
-    std::unique_ptr<UpdateResults> update_results) {
+    std::unique_ptr<UpdateTransaction> update_transaction) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Update JumpList member variables based on the results from the update run
   // just finished.
-  if (update_results->update_timeout)
+  if (update_transaction->update_timeout)
     updates_to_skip_ = kUpdatesToSkipUnderHeavyLoad;
 
-  if (update_results->update_success) {
-    most_visited_icons_.swap(update_results->most_visited_icons_in_update);
-    recently_closed_icons_.swap(
-        update_results->recently_closed_icons_in_update);
-    most_visited_should_update_ = false;
-    recently_closed_should_update_ = false;
+  if (update_transaction->update_success) {
+    if (most_visited_should_update_) {
+      most_visited_icons_ = std::move(update_transaction->most_visited_icons);
+      most_visited_should_update_ = false;
+    }
+    if (recently_closed_should_update_) {
+      recently_closed_icons_ =
+          std::move(update_transaction->recently_closed_icons);
+      recently_closed_should_update_ = false;
+    }
   }
 
   update_in_progress_ = false;
@@ -663,11 +670,46 @@ void JumpList::RunUpdateJumpList(
     bool most_visited_should_update,
     bool recently_closed_should_update,
     IncognitoModePrefs::Availability incognito_availability,
-    UpdateResults* update_results) {
+    UpdateTransaction* update_transaction) {
   if (!JumpListUpdater::IsEnabled())
     return;
 
-  DCHECK(update_results);
+  DCHECK(update_transaction);
+
+  base::FilePath most_visited_icon_dir = GenerateJumplistIconDirName(
+      profile_dir, FILE_PATH_LITERAL("MostVisited"));
+  base::FilePath recently_closed_icon_dir = GenerateJumplistIconDirName(
+      profile_dir, FILE_PATH_LITERAL("RecentClosed"));
+
+  CreateNewJumpListAndNotifyOS(
+      app_id, most_visited_icon_dir, recently_closed_icon_dir,
+      most_visited_pages, recently_closed_pages, most_visited_should_update,
+      recently_closed_should_update, incognito_availability,
+      update_transaction);
+
+  // Delete any obsolete icon files.
+  if (most_visited_should_update) {
+    DeleteIconFiles(most_visited_icon_dir,
+                    update_transaction->most_visited_icons);
+  }
+  if (recently_closed_should_update) {
+    DeleteIconFiles(recently_closed_icon_dir,
+                    update_transaction->recently_closed_icons);
+  }
+}
+
+// static
+void JumpList::CreateNewJumpListAndNotifyOS(
+    const base::string16& app_id,
+    const base::FilePath& most_visited_icon_dir,
+    const base::FilePath& recently_closed_icon_dir,
+    const ShellLinkItemList& most_visited_pages,
+    const ShellLinkItemList& recently_closed_pages,
+    bool most_visited_should_update,
+    bool recently_closed_should_update,
+    IncognitoModePrefs::Availability incognito_availability,
+    UpdateTransaction* update_transaction) {
+  DCHECK(update_transaction);
 
   JumpListUpdater jumplist_updater(app_id);
 
@@ -678,34 +720,31 @@ void JumpList::RunUpdateJumpList(
 
   // Discard this JumpList update if JumpListUpdater::BeginUpdate takes longer
   // than the maximum allowed time, as it's very likely the following update
-  // steps will also take a long time. As we've not updated the icons on the
-  // disk, discarding this update wont't affect the current JumpList used by OS.
+  // steps will also take a long time.
   if (begin_update_timer.Elapsed() >= kTimeOutForJumplistBeginUpdate) {
-    update_results->update_timeout = true;
+    update_transaction->update_timeout = true;
     return;
   }
 
   // Record the desired number of icons created in this JumpList update.
   int icons_created = 0;
 
+  URLIconCache most_visited_icons_next;
+  URLIconCache recently_closed_icons_next;
+
   // Update the icons for "Most Visisted" category of the JumpList if needed.
   if (most_visited_should_update) {
-    base::FilePath icon_dir_most_visited = GenerateJumplistIconDirName(
-        profile_dir, FILE_PATH_LITERAL("MostVisited"));
-
     icons_created += UpdateIconFiles(
-        icon_dir_most_visited, most_visited_pages, kMostVisitedItems,
-        &update_results->most_visited_icons_in_update);
+        most_visited_icon_dir, most_visited_pages, kMostVisitedItems,
+        &update_transaction->most_visited_icons, &most_visited_icons_next);
   }
 
   // Update the icons for "Recently Closed" category of the JumpList if needed.
   if (recently_closed_should_update) {
-    base::FilePath icon_dir_recent_closed = GenerateJumplistIconDirName(
-        profile_dir, FILE_PATH_LITERAL("RecentClosed"));
-
     icons_created += UpdateIconFiles(
-        icon_dir_recent_closed, recently_closed_pages, kRecentlyClosedItems,
-        &update_results->recently_closed_icons_in_update);
+        recently_closed_icon_dir, recently_closed_pages, kRecentlyClosedItems,
+        &update_transaction->recently_closed_icons,
+        &recently_closed_icons_next);
   }
 
   // TODO(chengx): Remove the UMA histogram after fixing http://crbug.com/40407.
@@ -732,16 +771,12 @@ void JumpList::RunUpdateJumpList(
     return;
   }
 
-  // If JumpListUpdater::AddCustomCategory or JumpListUpdater::CommitUpdate
-  // takes longer than the maximum allowed time, skip the next
-  // |kUpdatesToSkipUnderHeavyLoad| updates. This update should be finished
-  // because we've already updated the icons on the disk. If discarding this
-  // update from here, some items in the current JumpList may not have icons
-  // as they've been delete from the disk. In this case, the background color of
-  // the JumpList panel is used instead, which doesn't look nice.
-
-  if (add_custom_category_timer.Elapsed() >= kTimeOutForAddCustomCategory)
-    update_results->update_timeout = true;
+  // If AddCustomCategory takes longer than the maximum allowed time, abort the
+  // current update and skip the next |kUpdatesToSkipUnderHeavyLoad| updates.
+  if (add_custom_category_timer.Elapsed() >= kTimeOutForAddCustomCategory) {
+    update_transaction->update_timeout = true;
+    return;
+  }
 
   // Update the "Tasks" category of the JumpList.
   if (!UpdateTaskCategory(&jumplist_updater, incognito_availability))
@@ -750,81 +785,98 @@ void JumpList::RunUpdateJumpList(
   base::ElapsedTimer commit_update_timer;
 
   // Commit this transaction and send the updated JumpList to Windows.
-  if (jumplist_updater.CommitUpdate())
-    update_results->update_success = true;
+  bool commit_success = jumplist_updater.CommitUpdate();
 
+  // If CommitUpdate call takes longer than the maximum allowed time, skip the
+  // next |kUpdatesToSkipUnderHeavyLoad| updates.
   if (commit_update_timer.Elapsed() >= kTimeOutForJumplistCommitUpdate)
-    update_results->update_timeout = true;
+    update_transaction->update_timeout = true;
+
+  if (commit_success) {
+    update_transaction->update_success = true;
+
+    // The move assignments below ensure update_transaction always has the icons
+    // to keep.
+    if (most_visited_should_update) {
+      update_transaction->most_visited_icons =
+          std::move(most_visited_icons_next);
+    }
+    if (recently_closed_should_update) {
+      update_transaction->recently_closed_icons =
+          std::move(recently_closed_icons_next);
+    }
+  }
 }
 
 // static
 int JumpList::UpdateIconFiles(const base::FilePath& icon_dir,
-                              const ShellLinkItemList& page_list,
-                              size_t slot_limit,
-                              URLIconCache* icon_cache) {
-  int icons_created = 0;
+                              const ShellLinkItemList& item_list,
+                              size_t max_items,
+                              URLIconCache* icon_cur,
+                              URLIconCache* icon_next) {
+  DCHECK(icon_cur);
+  DCHECK(icon_next);
 
-  // Clear the JumpList icon folder at |icon_dir| and the cache when
-  // 1) |icon_cache| is empty. This happens when "Most visited" or "Recently
+  // Clear the JumpList icon folder at |icon_dir| and the caches when
+  // 1) |icon_cur| is empty. This happens when "Most visited" or "Recently
   //    closed" category updates for the 1st time after Chrome is launched.
   // 2) The number of icons in |icon_dir| has exceeded the limit.
-  if (icon_cache->empty() || FilesExceedLimitInDir(icon_dir, slot_limit * 2)) {
+  if (icon_cur->empty() || FilesExceedLimitInDir(icon_dir, max_items * 2)) {
     DeleteDirectoryContentAndLogRuntime(icon_dir, kFileDeleteLimit);
-    icon_cache->clear();
+    icon_cur->clear();
+    icon_next->clear();
     // Create new icons only when the directory exists and is empty.
-    if (base::CreateDirectory(icon_dir) && base::IsDirectoryEmpty(icon_dir))
-      icons_created +=
-          CreateIconFiles(icon_dir, page_list, slot_limit, icon_cache);
-  } else if (base::CreateDirectory(icon_dir)) {
-    icons_created +=
-        CreateIconFiles(icon_dir, page_list, slot_limit, icon_cache);
-    DeleteIconFiles(icon_dir, icon_cache);
+    if (!base::CreateDirectory(icon_dir) || !base::IsDirectoryEmpty(icon_dir))
+      return 0;
+  } else if (!base::CreateDirectory(icon_dir)) {
+    return 0;
   }
 
-  return icons_created;
+  return CreateIconFiles(icon_dir, item_list, max_items, *icon_cur, icon_next);
 }
 
 // static
 int JumpList::CreateIconFiles(const base::FilePath& icon_dir,
                               const ShellLinkItemList& item_list,
                               size_t max_items,
-                              URLIconCache* icon_cache) {
+                              const URLIconCache& icon_cur,
+                              URLIconCache* icon_next) {
+  DCHECK(icon_next);
+
   // TODO(chengx): Remove the UMA histogram after fixing http://crbug.com/40407.
   SCOPED_UMA_HISTOGRAM_TIMER("WinJumplist.CreateIconFilesDuration");
 
   int icons_created = 0;
 
   // Reuse icons for urls that already present in the current JumpList.
-  URLIconCache updated_map;
   for (ShellLinkItemList::const_iterator iter = item_list.begin();
        iter != item_list.end() && max_items > 0; ++iter, --max_items) {
     ShellLinkItem* item = iter->get();
-    auto cache_iter = icon_cache->find(item->url());
-    if (cache_iter != icon_cache->end()) {
+    auto cache_iter = icon_cur.find(item->url());
+    if (cache_iter != icon_cur.end()) {
       item->set_icon(cache_iter->second.value(), 0);
-      updated_map[item->url()] = cache_iter->second;
+      (*icon_next)[item->url()] = cache_iter->second;
     } else {
       base::FilePath icon_path;
       if (CreateIconFile(item->icon_image(), icon_dir, &icon_path)) {
         ++icons_created;
         item->set_icon(icon_path.value(), 0);
-        updated_map[item->url()] = icon_path;
+        (*icon_next)[item->url()] = icon_path;
       }
     }
   }
-  icon_cache->swap(updated_map);
 
   return icons_created;
 }
 
 // static
 void JumpList::DeleteIconFiles(const base::FilePath& icon_dir,
-                               URLIconCache* icon_cache) {
+                               const URLIconCache& icons_cache) {
   // Put all cached icon file paths into a set.
   base::flat_set<base::FilePath> cached_files;
-  cached_files.reserve(icon_cache->size());
+  cached_files.reserve(icons_cache.size());
 
-  for (const auto& url_path_pair : *icon_cache)
+  for (const auto& url_path_pair : icons_cache)
     cached_files.insert(url_path_pair.second);
 
   DeleteNonCachedFiles(icon_dir, cached_files);
