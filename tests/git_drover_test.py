@@ -63,7 +63,7 @@ class GitDroverTest(auto_stub.TestCase):
     self.UPLOAD_COMMANDS = [
         (['git', 'reset', '--hard'], self._target_repo),
         (['git', 'log', '-1', '--format=%ae'], self._target_repo),
-        (['git', 'cl', 'upload', '--tbrs', 'author@domain.org'],
+        (['git', 'cl', 'upload', '--send-mail', '--tbrs', 'author@domain.org'],
          self._target_repo),
     ]
     self.LAND_COMMAND = [

@@ -277,7 +277,7 @@ class _Drover(object):
     self._run_git_command(['reset', '--hard'])
 
     author = self._run_git_command(['log', '-1', '--format=%ae']).strip()
-    self._run_git_command(['cl', 'upload', '--tbrs', author],
+    self._run_git_command(['cl', 'upload', '--send-mail', '--tbrs', author],
                           error_message='Upload failed',
                           interactive=True)
 
