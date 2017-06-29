@@ -21827,6 +21827,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Extensions.UpdateFrequencyCommandLineFlagIsUsed"
+    enum="BooleanPresent">
+  <owner>catmullings@chromium.org</owner>
+  <summary>
+    Logs whether or not the extensions-update-frequency command line flag is
+    used. Recorded at profile creation if extensions autoupdate is enabled.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.UpdateOnLoad">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
