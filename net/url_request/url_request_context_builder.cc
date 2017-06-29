@@ -38,8 +38,6 @@
 #include "net/net_features.h"
 #include "net/nqe/network_quality_estimator.h"
 #include "net/quic/chromium/quic_stream_factory.h"
-#include "net/reporting/reporting_policy.h"
-#include "net/reporting/reporting_service.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/default_channel_id_store.h"
 #include "net/ssl/ssl_config_service_defaults.h"
@@ -61,6 +59,11 @@
 #include "net/ftp/ftp_network_layer.h"             // nogncheck
 #include "net/url_request/ftp_protocol_handler.h"  // nogncheck
 #endif
+
+#if BUILDFLAG(ENABLE_REPORTING)
+#include "net/reporting/reporting_policy.h"
+#include "net/reporting/reporting_service.h"
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 
 namespace net {
 
@@ -146,9 +149,11 @@ class ContainerURLRequestContext final : public URLRequestContext {
   ContainerURLRequestContext() : storage_(this) {}
 
   ~ContainerURLRequestContext() override {
+#if BUILDFLAG(ENABLE_REPORTING)
     // Destroy the ReportingService before the rest of the URLRequestContext, so
     // it cancels any pending requests it may have.
     storage_.set_reporting_service(nullptr);
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 
     // Shut down the ProxyService, as it may have pending URLRequests using this
     // context. Since this cancels requests, it's not safe to subclass this, as
@@ -258,10 +263,12 @@ void URLRequestContextBuilder::SetCertVerifier(
   cert_verifier_ = std::move(cert_verifier);
 }
 
+#if BUILDFLAG(ENABLE_REPORTING)
 void URLRequestContextBuilder::set_reporting_policy(
     std::unique_ptr<net::ReportingPolicy> reporting_policy) {
   reporting_policy_ = std::move(reporting_policy);
 }
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 
 void URLRequestContextBuilder::SetInterceptors(
     std::vector<std::unique_ptr<URLRequestInterceptor>>
@@ -509,10 +516,12 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   }
   storage->set_job_factory(std::move(top_job_factory));
 
+#if BUILDFLAG(ENABLE_REPORTING)
   if (reporting_policy_) {
     storage->set_reporting_service(
         ReportingService::Create(*reporting_policy_, context.get()));
   }
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 
   return std::move(context);
 }
