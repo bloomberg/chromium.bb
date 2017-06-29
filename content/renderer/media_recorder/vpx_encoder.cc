@@ -70,7 +70,7 @@ void VpxEncoder::EncodeOnEncodingTaskRunner(scoped_refptr<VideoFrame> frame,
   DCHECK(encoding_task_runner_->BelongsToCurrentThread());
 
   const gfx::Size frame_size = frame->visible_rect().size();
-  const base::TimeDelta duration = EstimateFrameDuration(frame);
+  base::TimeDelta duration = EstimateFrameDuration(frame);
   const media::WebmMuxer::VideoParameters video_params(frame);
 
   if (!IsInitialized(codec_config_) ||
@@ -79,6 +79,8 @@ void VpxEncoder::EncodeOnEncodingTaskRunner(scoped_refptr<VideoFrame> frame,
   }
 
   const bool frame_has_alpha = frame->format() == media::PIXEL_FORMAT_YV12A;
+  // Split the duration between two encoder instances if alpha is encoded.
+  duration = frame_has_alpha ? duration / 2 : duration;
   if (frame_has_alpha && (!IsInitialized(alpha_codec_config_) ||
                           gfx::Size(alpha_codec_config_.g_w,
                                     alpha_codec_config_.g_h) != frame_size)) {

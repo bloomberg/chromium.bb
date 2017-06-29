@@ -116,11 +116,16 @@ class CONTENT_EXPORT VideoTrackRecorder
 
    protected:
     friend class base::RefCountedThreadSafe<Encoder>;
+    friend class VideoTrackRecorderTest;
+
     virtual ~Encoder();
 
     virtual void EncodeOnEncodingTaskRunner(
         scoped_refptr<media::VideoFrame> frame,
         base::TimeTicks capture_timestamp) = 0;
+
+    // Called when the frame reference is released after encode.
+    void FrameReleased(const scoped_refptr<media::VideoFrame>& frame);
 
     // Used to shutdown properly on the same thread we were created.
     const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
@@ -143,6 +148,9 @@ class CONTENT_EXPORT VideoTrackRecorder
 
     // Target bitrate for video encoding. If 0, a standard bitrate is used.
     const int32_t bits_per_second_;
+
+    // Number of frames that we keep the reference alive for encode.
+    uint32_t num_frames_in_encode_;
 
     // Used to retrieve incoming opaque VideoFrames (i.e. VideoFrames backed by
     // textures). Created on-demand on |main_task_runner_|.
