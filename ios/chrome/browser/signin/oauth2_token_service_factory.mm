@@ -17,6 +17,10 @@
 #include "ios/chrome/browser/signin/signin_client_factory.h"
 #include "ios/chrome/browser/signin/signin_error_controller_factory.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 OAuth2TokenServiceFactory::OAuth2TokenServiceFactory()
     : BrowserStateKeyedServiceFactory(
           "ProfileOAuth2TokenService",

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("signin") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "about_signin_internals_factory.cc",
     "about_signin_internals_factory.h",

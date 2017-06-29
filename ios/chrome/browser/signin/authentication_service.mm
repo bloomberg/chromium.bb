@@ -37,6 +37,10 @@
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 // Enum describing the different sync states per login methods.
@@ -119,20 +123,20 @@ void AuthenticationService::Initialize() {
   OnApplicationEnterForeground();
 
   NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
-  foreground_observer_.reset(
-      [[center addObserverForName:UIApplicationWillEnterForegroundNotification
-                           object:nil
-                            queue:nil
-                       usingBlock:^(NSNotification* notification) {
-                         OnApplicationEnterForeground();
-                       }] retain]);
-  background_observer_.reset(
-      [[center addObserverForName:UIApplicationDidEnterBackgroundNotification
-                           object:nil
-                            queue:nil
-                       usingBlock:^(NSNotification* notification) {
-                         OnApplicationEnterBackground();
-                       }] retain]);
+  foreground_observer_.reset([center
+      addObserverForName:UIApplicationWillEnterForegroundNotification
+                  object:nil
+                   queue:nil
+              usingBlock:^(NSNotification* notification) {
+                OnApplicationEnterForeground();
+              }]);
+  background_observer_.reset([center
+      addObserverForName:UIApplicationDidEnterBackgroundNotification
+                  object:nil
+                   queue:nil
+              usingBlock:^(NSNotification* notification) {
+                OnApplicationEnterBackground();
+              }]);
 
   identity_service_observer_.Add(
       ios::GetChromeBrowserProvider()->GetChromeIdentityService());
@@ -490,7 +494,7 @@ bool AuthenticationService::HandleMDMNotification(ChromeIdentity* identity,
   };
   if (identity_service->HandleMDMNotification(identity, user_info, callback)) {
     cached_mdm_infos_[ChromeIdentityToAccountID(browser_state_, identity)]
-        .reset([user_info retain]);
+        .reset(user_info);
     return true;
   }
   return false;
