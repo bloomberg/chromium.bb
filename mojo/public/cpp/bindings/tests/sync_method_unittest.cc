@@ -266,7 +266,7 @@ class TestSyncServiceSequence {
         ping_called_(false) {}
 
   void SetUp(InterfaceRequest<Interface> request) {
-    CHECK(task_runner()->RunsTasksOnCurrentThread());
+    CHECK(task_runner()->RunsTasksInCurrentSequence());
     impl_.reset(new ImplTypeFor<Interface>(std::move(request)));
     impl_->set_ping_handler(
         [this](const typename Interface::PingCallback& callback) {
@@ -279,7 +279,7 @@ class TestSyncServiceSequence {
   }
 
   void TearDown() {
-    CHECK(task_runner()->RunsTasksOnCurrentThread());
+    CHECK(task_runner()->RunsTasksInCurrentSequence());
     impl_.reset();
   }
 

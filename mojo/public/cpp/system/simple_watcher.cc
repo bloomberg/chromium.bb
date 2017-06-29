@@ -132,7 +132,7 @@ SimpleWatcher::SimpleWatcher(const tracked_objects::Location& from_here,
       weak_factory_(this) {
   MojoResult rv = CreateWatcher(&Context::CallNotify, &watcher_handle_);
   DCHECK_EQ(MOJO_RESULT_OK, rv);
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 }
 
 SimpleWatcher::~SimpleWatcher() {

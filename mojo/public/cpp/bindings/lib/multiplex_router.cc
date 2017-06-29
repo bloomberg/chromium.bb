@@ -86,7 +86,7 @@ class MultiplexRouter::InterfaceEndpoint
     router_->AssertLockAcquired();
     DCHECK(!client_);
     DCHECK(!closed_);
-    DCHECK(runner->RunsTasksOnCurrentThread());
+    DCHECK(runner->RunsTasksInCurrentSequence());
 
     task_runner_ = std::move(runner);
     client_ = client;
@@ -97,7 +97,7 @@ class MultiplexRouter::InterfaceEndpoint
   void DetachClient() {
     router_->AssertLockAcquired();
     DCHECK(client_);
-    DCHECK(task_runner_->RunsTasksOnCurrentThread());
+    DCHECK(task_runner_->RunsTasksInCurrentSequence());
     DCHECK(!closed_);
 
     task_runner_ = nullptr;
@@ -129,20 +129,20 @@ class MultiplexRouter::InterfaceEndpoint
   // AttachClient() call. They are called outside of the router's lock.
 
   bool SendMessage(Message* message) override {
-    DCHECK(task_runner_->RunsTasksOnCurrentThread());
+    DCHECK(task_runner_->RunsTasksInCurrentSequence());
     message->set_interface_id(id_);
     return router_->connector_.Accept(message);
   }
 
   void AllowWokenUpBySyncWatchOnSameThread() override {
-    DCHECK(task_runner_->RunsTasksOnCurrentThread());
+    DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
     EnsureSyncWatcherExists();
     sync_watcher_->AllowWokenUpBySyncWatchOnSameThread();
   }
 
   bool SyncWatch(const bool* should_stop) override {
-    DCHECK(task_runner_->RunsTasksOnCurrentThread());
+    DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
     EnsureSyncWatcherExists();
     return sync_watcher_->SyncWatch(should_stop);
@@ -161,7 +161,7 @@ class MultiplexRouter::InterfaceEndpoint
   }
 
   void OnSyncEventSignaled() {
-    DCHECK(task_runner_->RunsTasksOnCurrentThread());
+    DCHECK(task_runner_->RunsTasksInCurrentSequence());
     scoped_refptr<MultiplexRouter> router_protector(router_);
 
     MayAutoLock locker(&router_->lock_);
@@ -183,7 +183,7 @@ class MultiplexRouter::InterfaceEndpoint
   }
 
   void EnsureSyncWatcherExists() {
-    DCHECK(task_runner_->RunsTasksOnCurrentThread());
+    DCHECK(task_runner_->RunsTasksInCurrentSequence());
     if (sync_watcher_)
       return;
 
@@ -337,7 +337,7 @@ MultiplexRouter::MultiplexRouter(
       encountered_error_(false),
       paused_(false),
       testing_mode_(false) {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   if (config == MULTI_INTERFACE)
     lock_.emplace();
@@ -519,7 +519,7 @@ void MultiplexRouter::DetachEndpointClient(
 }
 
 void MultiplexRouter::RaiseError() {
-  if (task_runner_->RunsTasksOnCurrentThread()) {
+  if (task_runner_->RunsTasksInCurrentSequence()) {
     connector_.RaiseError();
   } else {
     task_runner_->PostTask(FROM_HERE,
@@ -772,7 +772,7 @@ bool MultiplexRouter::ProcessNotifyErrorTask(
     ClientCallBehavior client_call_behavior,
     base::SequencedTaskRunner* current_task_runner) {
   DCHECK(!current_task_runner ||
-         current_task_runner->RunsTasksOnCurrentThread());
+         current_task_runner->RunsTasksInCurrentSequence());
   DCHECK(!paused_);
 
   AssertLockAcquired();
@@ -786,7 +786,7 @@ bool MultiplexRouter::ProcessNotifyErrorTask(
     return false;
   }
 
-  DCHECK(endpoint->task_runner()->RunsTasksOnCurrentThread());
+  DCHECK(endpoint->task_runner()->RunsTasksInCurrentSequence());
 
   InterfaceEndpointClient* client = endpoint->client();
   base::Optional<DisconnectReason> disconnect_reason(
@@ -809,7 +809,7 @@ bool MultiplexRouter::ProcessIncomingMessage(
     ClientCallBehavior client_call_behavior,
     base::SequencedTaskRunner* current_task_runner) {
   DCHECK(!current_task_runner ||
-         current_task_runner->RunsTasksOnCurrentThread());
+         current_task_runner->RunsTasksInCurrentSequence());
   DCHECK(!paused_);
   DCHECK(message);
   AssertLockAcquired();
@@ -850,7 +850,7 @@ bool MultiplexRouter::ProcessIncomingMessage(
   bool can_direct_call;
   if (message->has_flag(Message::kFlagIsSync)) {
     can_direct_call = client_call_behavior != NO_DIRECT_CLIENT_CALLS &&
-                      endpoint->task_runner()->RunsTasksOnCurrentThread();
+                      endpoint->task_runner()->RunsTasksInCurrentSequence();
   } else {
     can_direct_call = client_call_behavior == ALLOW_DIRECT_CLIENT_CALLS &&
                       endpoint->task_runner() == current_task_runner;
@@ -861,7 +861,7 @@ bool MultiplexRouter::ProcessIncomingMessage(
     return false;
   }
 
-  DCHECK(endpoint->task_runner()->RunsTasksOnCurrentThread());
+  DCHECK(endpoint->task_runner()->RunsTasksInCurrentSequence());
 
   InterfaceEndpointClient* client = endpoint->client();
   bool result = false;
