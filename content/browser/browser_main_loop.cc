@@ -579,7 +579,7 @@ void BrowserMainLoop::EarlyInitialization() {
   if (parts_)
     parts_->PreEarlyInitialization();
 
-#if defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_CHROMEOS)
   // We use quite a few file descriptors for our IPC as well as disk the disk
   // cache,and the default limit on the Mac is low (256), so bump it up.
 
@@ -588,7 +588,7 @@ void BrowserMainLoop::EarlyInitialization() {
   // users can easily hit this limit with many open tabs. Bump up the limit to
   // an arbitrarily high number. See https://crbug.com/539567
   base::SetFdLimit(8192);
-#endif  // defined(OS_MACOSX) || defined(OS_LINUX)
+#endif  // defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)
   net::EnsureWinsockInit();
