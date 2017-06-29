@@ -1880,6 +1880,8 @@ def _GNSettingsToLines(gn_args_file, gn_args):
 
 def _DepsToLines(deps):
   """Converts |deps| dict to list of lines for output."""
+  if not deps:
+    return []
   s = ['deps = {']
   for name, dep in sorted(deps.iteritems()):
     condition_part = (['    "condition": "%s",' % dep.condition]
@@ -1898,6 +1900,8 @@ def _DepsToLines(deps):
 
 def _DepsOsToLines(deps_os):
   """Converts |deps_os| dict to list of lines for output."""
+  if not deps_os:
+    return []
   s = ['deps_os = {']
   for dep_os, os_deps in sorted(deps_os.iteritems()):
     s.append('  "%s": {' % dep_os)
@@ -1919,6 +1923,8 @@ def _DepsOsToLines(deps_os):
 
 def _HooksToLines(name, hooks):
   """Converts |hooks| list to list of lines for output."""
+  if not hooks:
+    return []
   s = ['%s = [' % name]
   for dep, hook in hooks:
     s.extend([
@@ -1942,6 +1948,8 @@ def _HooksToLines(name, hooks):
 
 def _HooksOsToLines(hooks_os):
   """Converts |hooks| list to list of lines for output."""
+  if not hooks_os:
+    return []
   s = ['hooks_os = {']
   for hook_os, os_hooks in hooks_os.iteritems():
     s.append('  "%s": [' % hook_os)
