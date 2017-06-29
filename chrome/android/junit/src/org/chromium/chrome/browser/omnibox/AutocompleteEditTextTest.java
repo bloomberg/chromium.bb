@@ -81,13 +81,14 @@ public class AutocompleteEditTextTest {
         MockitoAnnotations.initMocks(this);
         mContext = RuntimeEnvironment.application;
         mEmbedder = spy(new AutocompleteEmbedder());
-        mAutocomplete = spy(new TestAutocompleteEditText(mEmbedder, mContext, null));
+        mAutocomplete = new TestAutocompleteEditText(mEmbedder, mContext, null);
         assertNotNull(mAutocomplete);
         // Note: this cannot catch the first {@link
         // AutocompleteEditText#onAutocompleteTextStateChanged(boolean)}, which is caused
         // by View constructor's call to setText().
         mInOrder = inOrder(mEmbedder);
-        mAutocomplete.onCreateInputConnection(new EditorInfo());
+        assertTrue(mAutocomplete.requestFocus());
+        assertNotNull(mAutocomplete.onCreateInputConnection(new EditorInfo()));
         mInputConnection = mAutocomplete.getInputConnection();
         assertNotNull(mInputConnection);
         mInOrder.verifyNoMoreInteractions();
