@@ -131,27 +131,47 @@ ShellPortMash::CreateTouchTransformDelegate() {
 }
 
 void ShellPortMash::LockCursor() {
-  window_manager_->window_manager_client()->LockCursor();
+  // When we are running in mus, we need to keep track of state not just in the
+  // window server, but also locally in ash because ash treats the cursor
+  // manager as the canonical state for now. NativeCursorManagerAsh will keep
+  // this state, while also forwarding it to the window manager for us.
+  if (GetAshConfig() == Config::MUS)
+    Shell::Get()->cursor_manager()->LockCursor();
+  else
+    window_manager_->window_manager_client()->LockCursor();
 }
 
 void ShellPortMash::UnlockCursor() {
-  window_manager_->window_manager_client()->UnlockCursor();
+  if (GetAshConfig() == Config::MUS)
+    Shell::Get()->cursor_manager()->UnlockCursor();
+  else
+    window_manager_->window_manager_client()->UnlockCursor();
 }
 
 void ShellPortMash::ShowCursor() {
-  window_manager_->window_manager_client()->SetCursorVisible(true);
+  if (GetAshConfig() == Config::MUS)
+    Shell::Get()->cursor_manager()->ShowCursor();
+  else
+    window_manager_->window_manager_client()->SetCursorVisible(true);
 }
 
 void ShellPortMash::HideCursor() {
-  window_manager_->window_manager_client()->SetCursorVisible(false);
+  if (GetAshConfig() == Config::MUS)
+    Shell::Get()->cursor_manager()->HideCursor();
+  else
+    window_manager_->window_manager_client()->SetCursorVisible(false);
 }
 
 void ShellPortMash::SetCursorSize(ui::CursorSize cursor_size) {
-  window_manager_->window_manager_client()->SetCursorSize(cursor_size);
+  if (GetAshConfig() == Config::MUS)
+    Shell::Get()->cursor_manager()->SetCursorSize(cursor_size);
+  else
+    window_manager_->window_manager_client()->SetCursorSize(cursor_size);
 }
 
 void ShellPortMash::SetGlobalOverrideCursor(
     base::Optional<ui::CursorData> cursor) {
+  DCHECK(mash_state_);
   window_manager_->window_manager_client()->SetGlobalOverrideCursor(
       std::move(cursor));
 }

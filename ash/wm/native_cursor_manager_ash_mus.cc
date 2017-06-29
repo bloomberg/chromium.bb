@@ -7,8 +7,8 @@
 #include "ash/display/cursor_window_controller.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ui/aura/env.h"
+#include "ui/aura/mus/window_manager_delegate.h"
 #include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
@@ -42,7 +42,7 @@ void SetCursorOnAllRootWindows(gfx::NativeCursor cursor) {
   // As the window manager, tell mus to use |mojo_cursor| everywhere. We do
   // this instead of trying to set per-window because otherwise we run into the
   // event targeting issue.
-  ShellPort::Get()->SetGlobalOverrideCursor(mojo_cursor);
+  Shell::window_manager_client()->SetGlobalOverrideCursor(mojo_cursor);
 
   // Make sure the local state is set properly, so that local queries show that
   // we set the cursor.
@@ -57,10 +57,7 @@ void SetCursorOnAllRootWindows(gfx::NativeCursor cursor) {
 
 void NotifyCursorVisibilityChange(bool visible) {
   // Communicate the cursor visibility state to the mus server.
-  if (visible)
-    ShellPort::Get()->ShowCursor();
-  else
-    ShellPort::Get()->HideCursor();
+  Shell::window_manager_client()->SetCursorVisible(visible);
 
   // Communicate the cursor visibility change to our local root window objects.
   aura::Window::Windows root_windows = Shell::Get()->GetAllRootWindows();
@@ -184,7 +181,7 @@ void NativeCursorManagerAshMus::SetCursorSize(
     ::wm::NativeCursorManagerDelegate* delegate) {
   delegate->CommitCursorSize(cursor_size);
 
-  ShellPort::Get()->SetCursorSize(cursor_size);
+  Shell::window_manager_client()->SetCursorSize(cursor_size);
 
   Shell::Get()
       ->window_tree_host_manager()
