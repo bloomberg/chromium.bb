@@ -375,8 +375,10 @@ AutocompleteMatch ZeroSuggestProvider::NavigationToMatch(
   match.destination_url = navigation.url();
 
   // Zero suggest results should always omit protocols and never appear bold.
-  match.contents = AutocompleteMatch::FormatUrlForSuggestionDisplay(
-      navigation.url(), true /* trim_scheme */, nullptr);
+  auto format_types = AutocompleteMatch::GetFormatTypes(true);
+  match.contents = url_formatter::FormatUrl(navigation.url(), format_types,
+                                            net::UnescapeRule::SPACES, nullptr,
+                                            nullptr, nullptr);
   match.fill_into_edit +=
       AutocompleteInput::FormattedStringWithEquivalentMeaning(
           navigation.url(), match.contents, client()->GetSchemeClassifier());

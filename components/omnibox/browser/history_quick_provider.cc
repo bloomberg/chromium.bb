@@ -201,9 +201,11 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
       false, base::UTF8ToUTF16(info.url().spec()));
 
   base::OffsetAdjuster::Adjustments adjustments;
-  match.contents =
-      AutocompleteMatch::FormatUrlForSuggestionDisplayWithAdjustments(
-          info.url(), !history_match.match_in_scheme, &adjustments);
+  auto format_types =
+      AutocompleteMatch::GetFormatTypes(!history_match.match_in_scheme);
+  match.contents = url_formatter::FormatUrlWithAdjustments(
+      info.url(), format_types, net::UnescapeRule::SPACES, nullptr, nullptr,
+      &adjustments);
   match.fill_into_edit =
       AutocompleteInput::FormattedStringWithEquivalentMeaning(
           info.url(), match.contents, client()->GetSchemeClassifier());

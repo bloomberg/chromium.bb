@@ -361,6 +361,7 @@ const FormatUrlType kFormatUrlOmitAll =
     kFormatUrlOmitUsernamePassword | kFormatUrlOmitHTTP |
     kFormatUrlOmitTrailingSlashOnBareHostname;
 const FormatUrlType kFormatUrlExperimentalElideAfterHost = 1 << 3;
+const FormatUrlType kFormatUrlExperimentalOmitHTTPS = 1 << 4;
 
 base::string16 FormatUrl(const GURL& url,
                          FormatUrlTypes format_types,
@@ -432,22 +433,10 @@ base::string16 FormatUrlWithAdjustments(
   const url::Parsed& parsed = url.parsed_for_possibly_invalid_spec();
 
   // Scheme & separators.  These are ASCII.
+  const size_t scheme_size = static_cast<size_t>(parsed.CountCharactersBefore(
+      url::Parsed::USERNAME, true /* include_delimiter */));
   base::string16 url_string;
-  url_string.insert(
-      url_string.end(), spec.begin(),
-      spec.begin() + parsed.CountCharactersBefore(url::Parsed::USERNAME, true));
-  const char kHTTP[] = "http://";
-  const char kFTP[] = "ftp.";
-  // url_formatter::FixupURL() treats "ftp.foo.com" as ftp://ftp.foo.com.  This
-  // means that if we trim "http://" off a URL whose host starts with "ftp." and
-  // the user inputs this into any field subject to fixup (which is basically
-  // all input fields), the meaning would be changed.  (In fact, often the
-  // formatted URL is directly pre-filled into an input field.)  For this reason
-  // we avoid stripping "http://" in this case.
-  bool omit_http =
-      (format_types & kFormatUrlOmitHTTP) &&
-      base::EqualsASCII(url_string, kHTTP) &&
-      !base::StartsWith(url.host(), kFTP, base::CompareCase::SENSITIVE);
+  url_string.insert(url_string.end(), spec.begin(), spec.begin() + scheme_size);
   new_parsed->scheme = parsed.scheme;
 
   // Username & password.
@@ -558,20 +547,32 @@ base::string16 FormatUrlWithAdjustments(
                              &url_string, &new_parsed->ref, adjustments);
   }
 
-  // If we need to strip out http do it after the fact.
-  if (omit_http && base::StartsWith(url_string, base::ASCIIToUTF16(kHTTP),
-                                    base::CompareCase::SENSITIVE)) {
-    const size_t kHTTPSize = arraysize(kHTTP) - 1;
-    url_string = url_string.substr(kHTTPSize);
+  // url_formatter::FixupURL() treats "ftp.foo.com" as ftp://ftp.foo.com.  This
+  // means that if we trim the scheme off a URL whose host starts with "ftp."
+  // and the user inputs this into any field subject to fixup (which is
+  // basically all input fields), the meaning would be changed.  (In fact, often
+  // the formatted URL is directly pre-filled into an input field.)  For this
+  // reason we avoid stripping schemes in this case.
+  const char kFTP[] = "ftp.";
+  bool strip_scheme =
+      !base::StartsWith(url.host(), kFTP, base::CompareCase::SENSITIVE) &&
+      (((format_types & kFormatUrlOmitHTTP) &&
+        url.SchemeIs(url::kHttpScheme)) ||
+       ((format_types & kFormatUrlExperimentalOmitHTTPS) &&
+        url.SchemeIs(url::kHttpsScheme)));
+
+  // If we need to strip out schemes do it after the fact.
+  if (strip_scheme) {
+    url_string.erase(0, scheme_size);
     // Because offsets in the |adjustments| are already calculated with respect
     // to the string with the http:// prefix in it, those offsets remain correct
     // after stripping the prefix.  The only thing necessary is to add an
     // adjustment to reflect the stripped prefix.
     adjustments->insert(adjustments->begin(),
-                        base::OffsetAdjuster::Adjustment(0, kHTTPSize, 0));
+                        base::OffsetAdjuster::Adjustment(0, scheme_size, 0));
 
     if (prefix_end)
-      *prefix_end -= kHTTPSize;
+      *prefix_end -= scheme_size;
 
     // Adjust new_parsed.
     DCHECK(new_parsed->scheme.is_valid());

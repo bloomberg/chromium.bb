@@ -571,9 +571,10 @@ AutocompleteMatch HistoryURLProvider::SuggestExactInput(
     // Trim off "http://" if the user didn't type it.
     DCHECK(!trim_http ||
            !AutocompleteInput::HasHTTPScheme(input.text()));
-    base::string16 display_string(
-        AutocompleteMatch::FormatUrlForSuggestionDisplay(
-            destination_url, false /* trim_scheme */, nullptr));
+    auto format_types = AutocompleteMatch::GetFormatTypes(false);
+    base::string16 display_string(url_formatter::FormatUrl(
+        destination_url, format_types, net::UnescapeRule::SPACES, nullptr,
+        nullptr, nullptr));
     const size_t offset = trim_http ? TrimHttpPrefix(&display_string) : 0;
     match.fill_into_edit =
         AutocompleteInput::FormattedStringWithEquivalentMeaning(
@@ -1141,15 +1142,16 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
   DCHECK(match.destination_url.is_valid());
   size_t inline_autocomplete_offset =
       history_match.input_location + params.input.text().length();
-  const url_formatter::FormatUrlTypes format_types =
-      url_formatter::kFormatUrlOmitAll &
-      ~((params.trim_http && !history_match.match_in_scheme)
-            ? 0
-            : url_formatter::kFormatUrlOmitHTTP);
+
+  auto format_types = AutocompleteMatch::GetFormatTypes(
+      params.trim_http && !history_match.match_in_scheme);
+  // Never omit HTTPS from fill_into_edit lest it be misinterpreted.
+  auto fill_into_edit_format_types =
+      format_types & ~url_formatter::kFormatUrlExperimentalOmitHTTPS;
   match.fill_into_edit =
       AutocompleteInput::FormattedStringWithEquivalentMeaning(
           info.url(),
-          url_formatter::FormatUrl(info.url(), format_types,
+          url_formatter::FormatUrl(info.url(), fill_into_edit_format_types,
                                    net::UnescapeRule::SPACES, nullptr, nullptr,
                                    &inline_autocomplete_offset),
           client()->GetSchemeClassifier());
@@ -1173,9 +1175,9 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
        (inline_autocomplete_offset >= match.fill_into_edit.length()));
 
   size_t match_start = history_match.input_location;
-  match.contents = AutocompleteMatch::FormatUrlForSuggestionDisplay(
-      info.url(), params.trim_http && !history_match.match_in_scheme,
-      &match_start);
+  match.contents = url_formatter::FormatUrl(info.url(), format_types,
+                                            net::UnescapeRule::SPACES, nullptr,
+                                            nullptr, &match_start);
   if ((match_start != base::string16::npos) && autocomplete_offset_valid &&
       (inline_autocomplete_offset != match_start)) {
     DCHECK(inline_autocomplete_offset > match_start);
