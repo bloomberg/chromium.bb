@@ -20,6 +20,7 @@
 #include "base/sequenced_task_runner.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr_info.h"
+#include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/connection_error_callback.h"
 #include "mojo/public/cpp/bindings/interface_endpoint_client.h"
 #include "mojo/public/cpp/bindings/interface_id.h"
@@ -29,77 +30,17 @@
 namespace mojo {
 namespace internal {
 
-template <typename Interface>
-class AssociatedInterfacePtrState {
+class MOJO_CPP_BINDINGS_EXPORT AssociatedInterfacePtrStateBase {
  public:
-  AssociatedInterfacePtrState() : version_(0u) {}
-
-  ~AssociatedInterfacePtrState() {
-    endpoint_client_.reset();
-    proxy_.reset();
-  }
-
-  Interface* instance() {
-    // This will be null if the object is not bound.
-    return proxy_.get();
-  }
+  AssociatedInterfacePtrStateBase();
+  ~AssociatedInterfacePtrStateBase();
 
   uint32_t version() const { return version_; }
 
-  void QueryVersion(const base::Callback<void(uint32_t)>& callback) {
-    // It is safe to capture |this| because the callback won't be run after this
-    // object goes away.
-    endpoint_client_->QueryVersion(
-        base::Bind(&AssociatedInterfacePtrState::OnQueryVersion,
-                   base::Unretained(this), callback));
-  }
-
-  void RequireVersion(uint32_t version) {
-    if (version <= version_)
-      return;
-
-    version_ = version;
-    endpoint_client_->RequireVersion(version);
-  }
-
-  void FlushForTesting() { endpoint_client_->FlushForTesting(); }
-
-  void CloseWithReason(uint32_t custom_reason, const std::string& description) {
-    endpoint_client_->CloseWithReason(custom_reason, description);
-  }
-
-  void Swap(AssociatedInterfacePtrState* other) {
-    using std::swap;
-    swap(other->endpoint_client_, endpoint_client_);
-    swap(other->proxy_, proxy_);
-    swap(other->version_, version_);
-  }
-
-  void Bind(AssociatedInterfacePtrInfo<Interface> info,
-            scoped_refptr<base::SequencedTaskRunner> runner) {
-    DCHECK(!endpoint_client_);
-    DCHECK(!proxy_);
-    DCHECK_EQ(0u, version_);
-    DCHECK(info.is_valid());
-
-    version_ = info.version();
-    // The version is only queried from the client so the value passed here
-    // will not be used.
-    endpoint_client_.reset(new InterfaceEndpointClient(
-        info.PassHandle(), nullptr,
-        base::WrapUnique(new typename Interface::ResponseValidator_()), false,
-        std::move(runner), 0u));
-    proxy_.reset(new Proxy(endpoint_client_.get()));
-  }
-
-  // After this method is called, the object is in an invalid state and
-  // shouldn't be reused.
-  AssociatedInterfacePtrInfo<Interface> PassInterface() {
-    ScopedInterfaceEndpointHandle handle = endpoint_client_->PassHandle();
-    endpoint_client_.reset();
-    proxy_.reset();
-    return AssociatedInterfacePtrInfo<Interface>(std::move(handle), version_);
-  }
+  void QueryVersion(const base::Callback<void(uint32_t)>& callback);
+  void RequireVersion(uint32_t version);
+  void FlushForTesting();
+  void CloseWithReason(uint32_t custom_reason, const std::string& description);
 
   bool is_bound() const { return !!endpoint_client_; }
 
@@ -135,19 +76,62 @@ class AssociatedInterfacePtrState {
     endpoint_client_->AcceptWithResponder(&message, std::move(responder));
   }
 
+ protected:
+  void Swap(AssociatedInterfacePtrStateBase* other);
+  void Bind(ScopedInterfaceEndpointHandle handle,
+            uint32_t version,
+            std::unique_ptr<MessageReceiver> validator,
+            scoped_refptr<base::SequencedTaskRunner> runner);
+  ScopedInterfaceEndpointHandle PassHandle();
+
+  InterfaceEndpointClient* endpoint_client() { return endpoint_client_.get(); }
+
+ private:
+  void OnQueryVersion(const base::Callback<void(uint32_t)>& callback,
+                      uint32_t version);
+
+  std::unique_ptr<InterfaceEndpointClient> endpoint_client_;
+  uint32_t version_ = 0;
+};
+
+template <typename Interface>
+class AssociatedInterfacePtrState : public AssociatedInterfacePtrStateBase {
+ public:
+  AssociatedInterfacePtrState() {}
+  ~AssociatedInterfacePtrState() = default;
+
+  Interface* instance() {
+    // This will be null if the object is not bound.
+    return proxy_.get();
+  }
+
+  void Swap(AssociatedInterfacePtrState* other) {
+    AssociatedInterfacePtrStateBase::Swap(other);
+    std::swap(other->proxy_, proxy_);
+  }
+
+  void Bind(AssociatedInterfacePtrInfo<Interface> info,
+            scoped_refptr<base::SequencedTaskRunner> runner) {
+    DCHECK(!proxy_);
+    AssociatedInterfacePtrStateBase::Bind(
+        info.PassHandle(), info.version(),
+        base::MakeUnique<typename Interface::ResponseValidator_>(),
+        std::move(runner));
+    proxy_.reset(new Proxy(endpoint_client()));
+  }
+
+  // After this method is called, the object is in an invalid state and
+  // shouldn't be reused.
+  AssociatedInterfacePtrInfo<Interface> PassInterface() {
+    AssociatedInterfacePtrInfo<Interface> info(PassHandle(), version());
+    proxy_.reset();
+    return info;
+  }
+
  private:
   using Proxy = typename Interface::Proxy_;
 
-  void OnQueryVersion(const base::Callback<void(uint32_t)>& callback,
-                      uint32_t version) {
-    version_ = version;
-    callback.Run(version);
-  }
-
-  std::unique_ptr<InterfaceEndpointClient> endpoint_client_;
   std::unique_ptr<Proxy> proxy_;
-
-  uint32_t version_;
 
   DISALLOW_COPY_AND_ASSIGN(AssociatedInterfacePtrState);
 };

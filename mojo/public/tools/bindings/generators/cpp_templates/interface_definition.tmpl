@@ -7,9 +7,7 @@
 
 {%- macro alloc_params(struct, params, message, description) %}
   mojo::internal::SerializationContext serialization_context;
-  serialization_context.handles.Swap(({{message}})->mutable_handles());
-  serialization_context.associated_endpoint_handles.swap(
-      *({{message}})->mutable_associated_endpoint_handles());
+  serialization_context.TakeHandlesFromMessage({{message}});
   bool success = true;
 {%-   for param in struct.packed.packed_fields_in_ordinal_order %}
   {{param.field.kind|cpp_wrapper_type}} p_{{param.field.name}}{};
@@ -37,7 +35,6 @@ std::move(p_{{param.name}})
   {{struct_macros.serialize(struct, struct_display_name, input_pattern,
                             "params", "(%s)->payload_buffer()"|format(message),
                             serialization_context)}}
-  ({{serialization_context}})->AttachHandlesToMessage({{message}});
 {%- endmacro %}
 
 {#--- Begin #}
@@ -158,11 +155,11 @@ bool {{proxy_name}}::{{method.name}}(
   mojo::internal::SerializationContext serialization_context;
   {{struct_macros.get_serialized_size(params_struct, "param_%s",
                                       "&serialization_context")}}
-  mojo::Message message(
+  mojo::Message message;
+  serialization_context.PrepareMessage(
       {{message_name}},
-      mojo::Message::kFlagIsSync | mojo::Message::kFlagExpectsResponse,
-      size, serialization_context.associated_endpoint_count,
-      serialization_context.handles.mutable_handles());
+      mojo::Message::kFlagIsSync | mojo::Message::kFlagExpectsResponse, size,
+      &message);
   {{build_message(params_struct, "param_%s", params_description,
                   "&serialization_context", "&message")}}
 
@@ -188,9 +185,9 @@ void {{proxy_name}}::{{method.name}}(
 {%- else %}
   constexpr uint32_t kFlags = 0;
 {%- endif %}
-  mojo::Message message({{message_name}}, kFlags, size,
-                        serialization_context.associated_endpoint_count,
-                        serialization_context.handles.mutable_handles());
+  mojo::Message message;
+  serialization_context.PrepareMessage({{message_name}}, kFlags, size,
+                                       &message);
   {{build_message(params_struct, "in_%s", params_description,
                   "&serialization_context", "&message")}}
 
@@ -271,9 +268,8 @@ void {{class_name}}_{{method.name}}_ProxyToResponder::Run(
                                       "&serialization_context")}}
   uint32_t flags = (is_sync_ ? mojo::Message::kFlagIsSync : 0) |
                    mojo::Message::kFlagIsResponse;
-  mojo::Message message({{message_name}}, flags, size,
-                        serialization_context.associated_endpoint_count,
-                        serialization_context.handles.mutable_handles());
+  mojo::Message message;
+  serialization_context.PrepareMessage({{message_name}}, flags, size, &message);
   {{build_message(response_params_struct, "in_%s", params_description,
                   "&serialization_context", "&message")}}
   message.set_request_id(request_id_);

@@ -98,7 +98,7 @@ struct Serializer<MapDataView<Key, Value>, MaybeConstUserType> {
   static size_t PrepareToSerialize(MaybeConstUserType& input,
                                    SerializationContext* context) {
     const bool is_null = CallIsNullIfExists<Traits>(input);
-    context->null_states.container().push_back(is_null);
+    context->PushNextNullState(is_null);
     if (is_null)
       return 0;
 

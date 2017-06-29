@@ -74,7 +74,7 @@
 {%-     set input_field = "in_%s"|format(name) if input_may_be_temp
                                                else original_input_field %}
 {%-     if input_may_be_temp %}
-{%-       if kind|is_associated_kind or kind|is_object_kind %}
+{%-       if kind|is_object_kind %}
   decltype({{original_input_field}}) in_{{name}} = {{original_input_field}};
 {%-       else %}
   // Dummy input value. The serialized value is already stored in the
