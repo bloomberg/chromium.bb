@@ -4,10 +4,12 @@
 
 #include "chrome/browser/chromeos/login/screens/voice_interaction_value_prop_screen.h"
 
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/screens/voice_interaction_value_prop_screen_view.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/app_list/arc/arc_pai_starter.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 
@@ -40,6 +42,13 @@ void VoiceInteractionValuePropScreen::Show() {
     return;
 
   view_->Show();
+
+  arc::ArcPaiStarter* pai_starter =
+      arc::ArcSessionManager::Get()->pai_starter();
+  if (pai_starter)
+    pai_starter->AcquireLock();
+  else
+    DLOG(ERROR) << "There is no PAI starter.";
 }
 
 void VoiceInteractionValuePropScreen::Hide() {
@@ -64,10 +73,16 @@ void VoiceInteractionValuePropScreen::OnUserAction(
 }
 
 void VoiceInteractionValuePropScreen::OnNoThanksPressed() {
+  arc::ArcPaiStarter* pai_starter =
+      arc::ArcSessionManager::Get()->pai_starter();
+  if (pai_starter)
+    pai_starter->ReleaseLock();
   Finish(ScreenExitCode::VOICE_INTERACTION_VALUE_PROP_SKIPPED);
 }
 
 void VoiceInteractionValuePropScreen::OnContinuePressed() {
+  // Note! Release lock for PAI will be called at
+  // ArcVoiceInteractionArcHomeService::OnVoiceInteractionOobeSetupComplete.
   ProfileManager::GetActiveUserProfile()->GetPrefs()->SetBoolean(
       prefs::kArcVoiceInteractionValuePropAccepted, true);
   Finish(ScreenExitCode::VOICE_INTERACTION_VALUE_PROP_ACCEPTED);

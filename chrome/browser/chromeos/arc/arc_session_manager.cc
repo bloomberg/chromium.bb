@@ -33,6 +33,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_launcher.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
+#include "chrome/browser/ui/app_list/arc/arc_pai_starter.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/common/pref_names.h"
@@ -602,6 +603,11 @@ void ArcSessionManager::RequestEnableImpl() {
     if (!start_arc_directly && !g_disable_ui_for_testing)
       arc::ShowArcMigrationGuideNotification(profile_);
     return;
+  }
+
+  if (!pai_starter_ && !profile_->GetPrefs()->GetBoolean(prefs::kArcSignedIn) &&
+      IsPlayStoreAvailable()) {
+    pai_starter_ = base::MakeUnique<ArcPaiStarter>(profile_);
   }
 
   if (start_arc_directly) {

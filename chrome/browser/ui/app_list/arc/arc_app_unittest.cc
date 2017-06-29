@@ -18,6 +18,7 @@
 #include "base/stl_util.h"
 #include "base/task_runner_util.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -35,6 +36,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/arc/arc_default_app_list.h"
 #include "chrome/browser/ui/app_list/arc/arc_package_syncable_service_factory.h"
+#include "chrome/browser/ui/app_list/arc/arc_pai_starter.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 #include "chrome/common/pref_names.h"
@@ -539,6 +541,17 @@ class ArcPlayStoreAppTest : public ArcDefaulAppTest {
     ExtensionService* extension_service =
         extensions::ExtensionSystem::Get(profile_.get())->extension_service();
     extension_service->AddExtension(arc_support_host_.get());
+  }
+
+  void SendPlayStoreApp() {
+    arc::mojom::AppInfo app;
+    app.name = "Play Store";
+    app.package_name = arc::kPlayStorePackage;
+    app.activity = arc::kPlayStoreActivity;
+    app.sticky = GetParam() != ArcState::ARC_PERSISTENT_WITHOUT_PLAY_STORE;
+
+    app_instance()->RefreshAppList();
+    app_instance()->SendRefreshAppList({app});
   }
 
  private:
@@ -1146,16 +1159,7 @@ TEST_P(ArcPlayStoreAppTest, PlayStore) {
     EXPECT_FALSE(app_info);
   }
 
-  arc::mojom::AppInfo app;
-  std::vector<arc::mojom::AppInfo> apps;
-  app.name = "Play Store";
-  app.package_name = arc::kPlayStorePackage;
-  app.activity = arc::kPlayStoreActivity;
-  app.sticky = GetParam() != ArcState::ARC_PERSISTENT_WITHOUT_PLAY_STORE;
-  apps.push_back(app);
-
-  app_instance()->RefreshAppList();
-  app_instance()->SendRefreshAppList(apps);
+  SendPlayStoreApp();
 
   app_info = prefs->GetApp(arc::kPlayStoreAppId);
   ASSERT_TRUE(app_info);
@@ -1173,6 +1177,48 @@ TEST_P(ArcPlayStoreAppTest, PlayStore) {
 
   arc::LaunchApp(profile(), arc::kPlayStoreAppId, ui::EF_NONE);
   EXPECT_TRUE(arc::IsArcPlayStoreEnabledForProfile(profile()));
+}
+
+TEST_P(ArcPlayStoreAppTest, PaiStarter) {
+  ASSERT_TRUE(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
+  ASSERT_TRUE(prefs);
+
+  arc::ArcPaiStarter starter1(profile_.get());
+  arc::ArcPaiStarter starter2(profile_.get());
+  EXPECT_FALSE(starter1.started());
+  EXPECT_FALSE(starter2.started());
+  EXPECT_EQ(app_instance()->start_pai_request_count(), 0);
+
+  arc::ArcSessionManager* session_manager = arc::ArcSessionManager::Get();
+  ASSERT_TRUE(session_manager);
+
+  // PAI starter is not expected for ARC without the Play Store.
+  if (GetParam() == ArcState::ARC_PERSISTENT_WITHOUT_PLAY_STORE) {
+    EXPECT_FALSE(session_manager->pai_starter());
+    return;
+  }
+
+  ASSERT_TRUE(session_manager->pai_starter());
+  EXPECT_FALSE(session_manager->pai_starter()->started());
+
+  starter2.AcquireLock();
+
+  SendPlayStoreApp();
+
+  EXPECT_TRUE(starter1.started());
+  EXPECT_FALSE(starter2.started());
+  EXPECT_TRUE(session_manager->pai_starter()->started());
+  EXPECT_EQ(app_instance()->start_pai_request_count(), 2);
+
+  starter2.ReleaseLock();
+  EXPECT_TRUE(starter2.started());
+  EXPECT_EQ(app_instance()->start_pai_request_count(), 3);
+
+  arc::ArcPaiStarter starter3(profile_.get());
+  EXPECT_TRUE(starter3.started());
+  EXPECT_EQ(app_instance()->start_pai_request_count(), 4);
 }
 
 // Test that icon is correctly extracted for shelf group.
