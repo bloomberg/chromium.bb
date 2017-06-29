@@ -60,6 +60,7 @@ class MESSAGE_CENTER_EXPORT MessageView
   virtual void UpdateControlButtonsVisibility() = 0;
 
   void OnCloseButtonPressed();
+  void OnSettingsButtonPressed();
 
   // views::View
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;

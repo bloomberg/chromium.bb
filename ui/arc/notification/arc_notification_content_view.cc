@@ -14,21 +14,16 @@
 #include "ui/arc/notification/arc_notification_surface.h"
 #include "ui/arc/notification/arc_notification_view.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/events/event_handler.h"
-#include "ui/gfx/animation/linear_animation.h"
-#include "ui/gfx/animation/tween.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/transform.h"
 #include "ui/message_center/message_center_style.h"
+#include "ui/message_center/views/notification_control_buttons_view.h"
 #include "ui/message_center/views/toast_contents_view.h"
 #include "ui/strings/grit/ui_strings.h"
-#include "ui/views/background.h"
 #include "ui/views/focus/focus_manager.h"
-#include "ui/views/layout/box_layout.h"
-#include "ui/views/painter.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_util.h"
@@ -36,10 +31,6 @@
 namespace arc {
 
 namespace {
-
-// This value should be the same as the duration of reveal animation of
-// the settings view of an Android notification.
-constexpr int kBackgroundColorChangeDuration = 360;
 
 SkColor GetControlButtonBackgroundColor(
     const mojom::ArcNotificationShownContents& shown_contents) {
@@ -191,14 +182,14 @@ class ArcNotificationContentView::ContentViewDelegate
       : owner_(owner) {}
 
   bool IsCloseButtonFocused() const override {
-    if (!owner_->close_button_)
+    if (!owner_->control_buttons_view_)
       return false;
-    return owner_->close_button_->HasFocus();
+    return owner_->control_buttons_view_->IsCloseButtonFocused();
   }
 
   void RequestFocusOnCloseButton() override {
-    if (owner_->close_button_)
-      owner_->close_button_->RequestFocus();
+    if (owner_->control_buttons_view_)
+      owner_->control_buttons_view_->RequestFocusOnCloseButton();
     owner_->UpdateControlButtonsVisibility();
   }
 
@@ -216,28 +207,6 @@ class ArcNotificationContentView::ContentViewDelegate
 
   DISALLOW_COPY_AND_ASSIGN(ContentViewDelegate);
 };
-
-ArcNotificationContentView::ControlButton::ControlButton(
-    ArcNotificationContentView* owner)
-    : message_center::PaddedButton(owner), owner_(owner) {
-  if (owner_->item_) {
-    SetBackground(views::CreateSolidBackground(
-        GetControlButtonBackgroundColor(owner_->item_->GetShownContents())));
-  } else {
-    SetBackground(views::CreateSolidBackground(
-        message_center::kControlButtonBackgroundColor));
-  }
-}
-
-void ArcNotificationContentView::ControlButton::OnFocus() {
-  message_center::PaddedButton::OnFocus();
-  owner_->UpdateControlButtonsVisibility();
-}
-
-void ArcNotificationContentView::ControlButton::OnBlur() {
-  message_center::PaddedButton::OnBlur();
-  owner_->UpdateControlButtonsVisibility();
-}
 
 // static, for ArcNotificationContentView::GetClassName().
 const char ArcNotificationContentView::kViewClassName[] =
@@ -291,35 +260,6 @@ ArcNotificationContentView::CreateContentViewDelegate() {
       this);
 }
 
-void ArcNotificationContentView::CreateCloseButton() {
-  DCHECK(control_buttons_view_);
-  DCHECK(item_);
-
-  close_button_ = base::MakeUnique<ControlButton>(this);
-  close_button_->SetImage(views::CustomButton::STATE_NORMAL,
-                          message_center::GetCloseIcon());
-  close_button_->SetAccessibleName(l10n_util::GetStringUTF16(
-      IDS_MESSAGE_CENTER_CLOSE_NOTIFICATION_BUTTON_ACCESSIBLE_NAME));
-  close_button_->SetTooltipText(l10n_util::GetStringUTF16(
-      IDS_MESSAGE_CENTER_CLOSE_NOTIFICATION_BUTTON_TOOLTIP));
-  close_button_->set_owned_by_client();
-  control_buttons_view_->AddChildView(close_button_.get());
-}
-
-void ArcNotificationContentView::CreateSettingsButton() {
-  DCHECK(control_buttons_view_);
-  DCHECK(item_);
-
-  settings_button_ = new ControlButton(this);
-  settings_button_->SetImage(views::CustomButton::STATE_NORMAL,
-                             message_center::GetSettingsIcon());
-  settings_button_->SetAccessibleName(l10n_util::GetStringUTF16(
-      IDS_MESSAGE_NOTIFICATION_SETTINGS_BUTTON_ACCESSIBLE_NAME));
-  settings_button_->SetTooltipText(l10n_util::GetStringUTF16(
-      IDS_MESSAGE_NOTIFICATION_SETTINGS_BUTTON_ACCESSIBLE_NAME));
-  control_buttons_view_->AddChildView(settings_button_);
-}
-
 void ArcNotificationContentView::MaybeCreateFloatingControlButtons() {
   // Floating close button is a transient child of |surface_| and also part
   // of the hosting widget's focus chain. It could only be created when both
@@ -328,16 +268,24 @@ void ArcNotificationContentView::MaybeCreateFloatingControlButtons() {
   if (!surface_ || !GetWidget() || !item_)
     return;
 
+  DCHECK(!control_buttons_view_);
+  DCHECK(!floating_control_buttons_widget_);
+
+  CHECK_EQ(ArcNotificationView::kViewClassName, parent()->GetClassName());
+  auto* notification_view = static_cast<ArcNotificationView*>(parent());
+
   // Creates the control_buttons_view_, which collects all control buttons into
   // a horizontal box.
-  control_buttons_view_ = new views::View();
-  control_buttons_view_->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kHorizontal));
+  control_buttons_view_ =
+      new message_center::NotificationControlButtonsView(notification_view);
+  control_buttons_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
+  control_buttons_view_->layer()->SetFillsBoundsOpaquely(false);
 
-  if (item_->IsOpeningSettingsSupported())
-    CreateSettingsButton();
-  if (!item_->GetPinned())
-    CreateCloseButton();
+  control_buttons_view_->SetBackgroundColor(
+      GetControlButtonBackgroundColor(item_->GetShownContents()));
+  control_buttons_view_->ShowSettingsButton(
+      item_->IsOpeningSettingsSupported());
+  control_buttons_view_->ShowCloseButton(!item_->GetPinned());
 
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
@@ -363,8 +311,6 @@ void ArcNotificationContentView::SetSurface(ArcNotificationSurface* surface) {
   // Reset |floating_control_buttons_widget_| when |surface_| is changed.
   floating_control_buttons_widget_.reset();
   control_buttons_view_ = nullptr;
-  settings_button_ = nullptr;
-  close_button_.reset();
 
   if (surface_ && surface_->GetWindow()) {
     surface_->GetWindow()->RemoveObserver(this);
@@ -406,12 +352,15 @@ void ArcNotificationContentView::UpdatePreferredSize() {
 }
 
 void ArcNotificationContentView::UpdateControlButtonsVisibility() {
-  if (!floating_control_buttons_widget_)
+  if (!control_buttons_view_)
     return;
 
+  DCHECK(floating_control_buttons_widget_);
+
   const bool target_visiblity =
-      IsMouseHovered() || (close_button_ && close_button_->HasFocus()) ||
-      (settings_button_ && settings_button_->HasFocus());
+      IsMouseHovered() || (control_buttons_view_->IsCloseButtonFocused()) ||
+      (control_buttons_view_->IsSettingsButtonFocused());
+
   if (target_visiblity == floating_control_buttons_widget_->IsVisible())
     return;
 
@@ -429,14 +378,8 @@ void ArcNotificationContentView::UpdatePinnedState() {
   if (!control_buttons_view_)
     return;
 
-  if (item_->GetPinned() && close_button_) {
-    control_buttons_view_->RemoveChildView(close_button_.get());
-    close_button_.reset();
-    Layout();
-  } else if (!item_->GetPinned() && !close_button_) {
-    CreateCloseButton();
-    Layout();
-  }
+  control_buttons_view_->ShowCloseButton(!item_->GetPinned());
+  Layout();
 }
 
 void ArcNotificationContentView::UpdateSnapshot() {
@@ -470,30 +413,6 @@ void ArcNotificationContentView::AttachSurface() {
 
   // (Re-)create the floating buttons after |surface_| is attached to a widget.
   MaybeCreateFloatingControlButtons();
-}
-
-void ArcNotificationContentView::StartControlButtonsColorAnimation() {
-  if (control_button_color_animation_)
-    control_button_color_animation_->End();
-  control_button_color_animation_.reset(new gfx::LinearAnimation(this));
-  control_button_color_animation_->SetDuration(kBackgroundColorChangeDuration);
-  control_button_color_animation_->Start();
-}
-
-bool ArcNotificationContentView::ShouldUpdateControlButtonsColor() const {
-  // Don't update the control button color when we are about to be destroyed.
-  if (!item_)
-    return false;
-
-  if (settings_button_ &&
-      settings_button_->background()->get_color() !=
-          GetControlButtonBackgroundColor(item_->GetShownContents()))
-    return true;
-  if (close_button_ &&
-      close_button_->background()->get_color() !=
-          GetControlButtonBackgroundColor(item_->GetShownContents()))
-    return true;
-  return false;
 }
 
 void ArcNotificationContentView::UpdateAccessibleName() {
@@ -555,27 +474,21 @@ void ArcNotificationContentView::Layout() {
   // be positioned without the need to consider the transform.
   surface_->GetContentWindow()->SetTransform(transform);
 
-  if (!floating_control_buttons_widget_)
-    return;
+  if (control_buttons_view_) {
+    DCHECK(floating_control_buttons_widget_);
+    gfx::Rect control_buttons_bounds(contents_bounds);
+    int buttons_width = control_buttons_view_->GetPreferredSize().width();
+    int buttons_height = control_buttons_view_->GetPreferredSize().height();
 
-  gfx::Rect control_buttons_bounds(contents_bounds);
-  int buttons_width = 0;
-  int buttons_height = 0;
-  if (close_button_) {
-    buttons_width += close_button_->GetPreferredSize().width();
-    buttons_height = close_button_->GetPreferredSize().height();
+    control_buttons_bounds.set_x(control_buttons_bounds.right() -
+                                 buttons_width -
+                                 message_center::kControlButtonPadding);
+    control_buttons_bounds.set_y(control_buttons_bounds.y() +
+                                 message_center::kControlButtonPadding);
+    control_buttons_bounds.set_width(buttons_width);
+    control_buttons_bounds.set_height(buttons_height);
+    floating_control_buttons_widget_->SetBounds(control_buttons_bounds);
   }
-  if (settings_button_) {
-    buttons_width += settings_button_->GetPreferredSize().width();
-    buttons_height = settings_button_->GetPreferredSize().height();
-  }
-  control_buttons_bounds.set_x(control_buttons_bounds.right() - buttons_width -
-                               message_center::kControlButtonPadding);
-  control_buttons_bounds.set_y(control_buttons_bounds.y() +
-                               message_center::kControlButtonPadding);
-  control_buttons_bounds.set_width(buttons_width);
-  control_buttons_bounds.set_height(buttons_height);
-  floating_control_buttons_widget_->SetBounds(control_buttons_bounds);
 
   UpdateControlButtonsVisibility();
 
@@ -656,17 +569,6 @@ void ArcNotificationContentView::GetAccessibleNodeData(
   node_data->SetName(accessible_name_);
 }
 
-void ArcNotificationContentView::ButtonPressed(views::Button* sender,
-                                               const ui::Event& event) {
-  if (item_ && !item_->GetPinned() && sender == close_button_.get()) {
-    CHECK_EQ(ArcNotificationView::kViewClassName, parent()->GetClassName());
-    static_cast<ArcNotificationView*>(parent())->OnCloseButtonPressed();
-  }
-  if (item_ && settings_button_ && sender == settings_button_) {
-    item_->OpenSettings();
-  }
-}
-
 void ArcNotificationContentView::OnWindowBoundsChanged(
     aura::Window* window,
     const gfx::Rect& old_bounds,
@@ -695,8 +597,11 @@ void ArcNotificationContentView::OnItemUpdated() {
   UpdateAccessibleName();
   UpdatePinnedState();
   UpdateSnapshot();
-  if (ShouldUpdateControlButtonsColor())
-    StartControlButtonsColorAnimation();
+  if (control_buttons_view_) {
+    DCHECK(floating_control_buttons_widget_);
+    control_buttons_view_->SetBackgroundColor(
+        GetControlButtonBackgroundColor(item_->GetShownContents()));
+  }
 }
 
 void ArcNotificationContentView::OnNotificationSurfaceAdded(
@@ -713,37 +618,6 @@ void ArcNotificationContentView::OnNotificationSurfaceRemoved(
     return;
 
   SetSurface(nullptr);
-}
-
-void ArcNotificationContentView::AnimationEnded(
-    const gfx::Animation* animation) {
-  DCHECK_EQ(animation, control_button_color_animation_.get());
-  control_button_color_animation_.reset();
-}
-
-void ArcNotificationContentView::AnimationProgressed(
-    const gfx::Animation* animation) {
-  DCHECK_EQ(animation, control_button_color_animation_.get());
-
-  if (item_) {
-    const SkColor target =
-        GetControlButtonBackgroundColor(item_->GetShownContents());
-    const SkColor start =
-        target == message_center::kControlButtonBackgroundColor
-            ? SK_ColorTRANSPARENT
-            : message_center::kControlButtonBackgroundColor;
-    const SkColor current_color = gfx::Tween::ColorValueBetween(
-        animation->GetCurrentValue(), start, target);
-    if (settings_button_) {
-      settings_button_->SetBackground(
-          views::CreateSolidBackground(current_color));
-      settings_button_->SchedulePaint();
-    }
-    if (close_button_) {
-      close_button_->SetBackground(views::CreateSolidBackground(current_color));
-      close_button_->SchedulePaint();
-    }
-  }
 }
 
 }  // namespace arc

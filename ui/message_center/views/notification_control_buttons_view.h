@@ -1,0 +1,85 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "base/macros.h"
+#include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/animation/animation_delegate.h"
+#include "ui/message_center/message_center_export.h"
+#include "ui/views/controls/button/button.h"
+#include "ui/views/view.h"
+
+namespace ui {
+class Event;
+}
+
+namespace gfx {
+class LinearAnimation;
+}
+
+namespace message_center {
+
+class MessageView;
+class PaddedButton;
+
+class MESSAGE_CENTER_EXPORT NotificationControlButtonsView
+    : public views::View,
+      public views::ButtonListener,
+      public gfx::AnimationDelegate {
+ public:
+  // String to be returned by GetClassName() method.
+  static const char kViewClassName[];
+
+  explicit NotificationControlButtonsView(MessageView* message_view);
+  ~NotificationControlButtonsView() override;
+
+  // Change the visibility of the close button. True to show, false to hide.
+  void ShowCloseButton(bool show);
+  // Change the visibility of the settings button. True to show, false to hide.
+  void ShowSettingsButton(bool show);
+
+  // Set the background color of the view.
+  void SetBackgroundColor(const SkColor& target_bgcolor);
+
+  // Request the focus on the close button.
+  void RequestFocusOnCloseButton();
+
+  // Return the focus status of the close button. True if the focus is on the
+  // close button, false otherwise.
+  bool IsCloseButtonFocused() const;
+  // Return the focus status of the settings button. True if the focus is on the
+  // close button, false otherwise.
+  bool IsSettingsButtonFocused() const;
+
+  message_center::PaddedButton* close_button_for_testing() const {
+    return close_button_;
+  }
+  message_center::PaddedButton* settings_button_for_testing() const {
+    return settings_button_;
+  }
+
+  // views::View
+  const char* GetClassName() const override;
+
+  // views::ButtonListener
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
+  // gfx::AnimationDelegate
+  void AnimationEnded(const gfx::Animation* animation) override;
+  void AnimationProgressed(const gfx::Animation* animation) override;
+  void AnimationCanceled(const gfx::Animation* animation) override;
+
+ private:
+  MessageView* message_view_;
+
+  message_center::PaddedButton* close_button_ = nullptr;
+  message_center::PaddedButton* settings_button_ = nullptr;
+
+  std::unique_ptr<gfx::LinearAnimation> bgcolor_animation_;
+  SkColor bgcolor_origin_;
+  SkColor bgcolor_target_;
+
+  DISALLOW_COPY_AND_ASSIGN(NotificationControlButtonsView);
+};
+
+}  // namespace message_center

@@ -235,6 +235,10 @@ void MessageView::OnCloseButtonPressed() {
   controller_->RemoveNotification(notification_id_, true);  // By user.
 }
 
+void MessageView::OnSettingsButtonPressed() {
+  controller_->ClickOnSettingsButton(notification_id_);
+}
+
 void MessageView::SetDrawBackgroundAsActive(bool active) {
   background_view_->background()->
       SetNativeControlColor(active ? kHoveredButtonBackgroundColor :

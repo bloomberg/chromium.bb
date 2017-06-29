@@ -388,7 +388,7 @@ void NotificationView::ButtonPressed(views::Button* sender,
   }
 
   if (sender == settings_button_view_) {
-    controller()->ClickOnSettingsButton(id);
+    OnSettingsButtonPressed();
     return;
   }
 
