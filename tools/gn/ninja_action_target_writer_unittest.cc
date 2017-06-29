@@ -8,6 +8,7 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "tools/gn/ninja_action_target_writer.h"
+#include "tools/gn/pool.h"
 #include "tools/gn/substitution_list.h"
 #include "tools/gn/target.h"
 #include "tools/gn/test_with_scope.h"
@@ -87,7 +88,10 @@ TEST(NinjaActionTargetWriter, ActionNoSourcesConsole) {
 
   target.action_values().outputs() =
       SubstitutionList::MakeForTest("//out/Debug/foo.out");
-  target.action_values().set_console(true);
+
+  Pool pool(setup.settings(), Label(SourceDir("//foo/"), "pool"));
+  pool.set_console(true);
+  target.action_values().set_pool(LabelPtrPair<Pool>(&pool));
 
   target.SetToolchain(setup.toolchain());
   ASSERT_TRUE(target.OnResolved(&err));
