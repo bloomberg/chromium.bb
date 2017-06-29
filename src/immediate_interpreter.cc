@@ -1021,9 +1021,9 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg,
       move_report_distance_(prop_reg, "Move Report Distance", 0.35),
       change_timeout_(prop_reg, "Change Timeout", 0.04),
       evaluation_timeout_(prop_reg, "Evaluation Timeout", 0.15),
-      pinch_evaluation_timeout_(prop_reg, "Pinch Evaluation Timeout", 0.3),
+      pinch_evaluation_timeout_(prop_reg, "Pinch Evaluation Timeout", 0.1),
       thumb_pinch_evaluation_timeout_(prop_reg,
-                                      "Thumb Pinch Evaluation Timeout", 0.5),
+                                      "Thumb Pinch Evaluation Timeout", 0.25),
       thumb_pinch_min_movement_(prop_reg,
                                 "Thumb Pinch Minimum Movement", 0.8),
       slow_pinch_guess_ratio_threshold_(prop_reg,
@@ -1032,7 +1032,7 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg,
       thumb_slow_pinch_similarity_ratio_(prop_reg,
                                          "Thumb Slow Pinch Similarity Ratio",
                                          5),
-      thumb_pinch_delay_factor_(prop_reg, "Thumb Pinch Delay Factor", 3.0),
+      thumb_pinch_delay_factor_(prop_reg, "Thumb Pinch Delay Factor", 9.0),
       minimum_movement_direction_detection_(prop_reg,
           "Minimum Movement Direction Detection", 0.003),
       damp_scroll_min_movement_factor_(prop_reg,
@@ -1105,18 +1105,23 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg,
       tapping_finger_min_separation_(prop_reg, "Tap Min Separation", 10.0),
       no_pinch_guess_ratio_(prop_reg, "No-Pinch Guess Ratio", 0.9),
       no_pinch_certain_ratio_(prop_reg, "No-Pinch Certain Ratio", 2.0),
-      pinch_noise_level_(prop_reg, "Pinch Noise Level", 1.0),
+      pinch_noise_level_sq_(prop_reg, "Pinch Noise Level Squared", 2.0),
       pinch_guess_min_movement_(prop_reg, "Pinch Guess Minimum Movement", 2.0),
       pinch_thumb_min_movement_(prop_reg,
                                 "Pinch Thumb Minimum Movement", 1.41),
       pinch_certain_min_movement_(prop_reg,
                                   "Pinch Certain Minimum Movement", 8.0),
-      inward_pinch_min_angle_(prop_reg, "Inward Pinch Minimum Angle", 0.6),
+      inward_pinch_min_angle_(prop_reg, "Inward Pinch Minimum Angle", 0.3),
       pinch_zoom_max_angle_(prop_reg, "Pinch Zoom Maximum Angle", -0.4),
       scroll_min_angle_(prop_reg, "Scroll Minimum Angle", -0.2),
       pinch_guess_min_consistent_movement_(prop_reg,
           "Pinch Guess Minimum Consistent Movement", 0.7),
-      pinch_zoom_min_events_(prop_reg, "Pinch Zoom Minimum Events", 7),
+      pinch_guess_consistent_mov_ratio_(prop_reg,
+          "Pinch Guess Consistent Movement Ratio", 0.4),
+      pinch_zoom_min_events_(prop_reg, "Pinch Zoom Minimum Events", 3),
+      pinch_initial_scale_time_inv_(prop_reg,
+                                    "Pinch Initial Scale Time Inverse",
+                                    3.33),
       pinch_enable_(prop_reg, "Pinch Enable", 0),
       right_click_start_time_diff_(prop_reg,
                                    "Right Click Start Time Diff Thresh",
@@ -1593,7 +1598,7 @@ void ImmediateInterpreter::UpdateThumbState(const HardwareState& hwstate) {
     if (MapContainsKey(thumb_, fs.tracking_id)) {
       // Beyond the evaluation period. Stick to being thumbs.
       if (thumb_eval_timer_[fs.tracking_id] <= 0.0) {
-        if (!pinch_enable_.val_)
+        if (!pinch_enable_.val_ || hwstate.finger_cnt == 1)
           continue;
         bool slow_pinch_guess =
             dist_sq * min_dt * min_dt / (thumb_speed_sq_thresh * dt * dt) >
@@ -1962,7 +1967,7 @@ bool ImmediateInterpreter::UpdatePinchState(
     // perform reset to "don't know" state
     pinch_guess_start_ = -1.0f;
     pinch_locked_ = false;
-    two_finger_start_distance_sq_ = -1.0f;
+    pinch_prev_distance_sq_ = -1.0f;
     return false;
   }
 
@@ -1995,6 +2000,9 @@ bool ImmediateInterpreter::UpdatePinchState(
     return false;
   }
 
+  if (pinch_prev_distance_sq_ < 0)
+    pinch_prev_distance_sq_ = TwoFingerDistanceSq(hwstate);
+
   // Pinch gesture detection
   //
   // The pinch gesture detection will try to make a guess about whether a pinch
@@ -2006,8 +2014,8 @@ bool ImmediateInterpreter::UpdatePinchState(
   // * Strong movement of both fingers in opposite directions indicates
   //   that a pinch IS performed.
 
-  Point delta1 = FingerTraveledVector(*finger1, true, true);
-  Point delta2 = FingerTraveledVector(*finger2, true, true);
+  Point delta1 = FingerTraveledVector(*finger1, false, true);
+  Point delta2 = FingerTraveledVector(*finger2, false, true);
 
   // dot product. dot < 0 if fingers move away from each other.
   float dot = delta1.x_ * delta2.x_ + delta1.y_ * delta2.y_;
@@ -2015,38 +2023,57 @@ bool ImmediateInterpreter::UpdatePinchState(
   float d1sq = delta1.x_ * delta1.x_ + delta1.y_ * delta1.y_;
   float d2sq = delta2.x_ * delta2.x_ + delta2.y_ * delta2.y_;
 
-  // true if movement is not strong enough to be distinguished from noise.
-  bool movement_below_noise = (d1sq + d2sq < 2.0 * pinch_noise_level_.val_);
+  // True if movement is not strong enough to be distinguished from noise.
+  // This is not equivalent to a comparison of unsquared values, but seems to
+  // work well in practice.
+  bool movement_below_noise = (d1sq + d2sq < pinch_noise_level_sq_.val_);
 
   // guesses if a pinch is being performed or not.
-  double guess_min_mov = pinch_guess_min_movement_.val_;
-  guess_min_mov *= guess_min_mov;
-  bool no_pinch_guess = (d1sq > guess_min_mov) ^ (d2sq > guess_min_mov) ||
-                        dot > 0;
-  bool pinch_guess = ((d1sq > guess_min_mov || d2sq > guess_min_mov) &&
-                      dot < 0);
-  bool pinch_consistent = false;
-  // TODO: the threshold should change by time.
-  if (ZoomFingersAreConsistent(state_buffer_) &&
-      d1sq > pinch_guess_min_consistent_movement_.val_ &&
-      d2sq > pinch_guess_min_consistent_movement_.val_) {
-    pinch_guess = true;
-    no_pinch_guess = false;
-    pinch_guess_ = true;
-    pinch_guess_start_ = hwstate.timestamp;
-    pinch_consistent = true;
+  double guess_min_mov_sq = pinch_guess_min_movement_.val_;
+  guess_min_mov_sq *= guess_min_mov_sq;
+  bool guess_no = (d1sq > guess_min_mov_sq) ^ (d2sq > guess_min_mov_sq) ||
+                  dot > 0;
+  bool guess_yes = ((d1sq > guess_min_mov_sq || d2sq > guess_min_mov_sq) &&
+                    dot < 0);
+  bool pinch_certain = false;
+
+  // true if the lower finger is in the dampened zone
+  bool in_dampened_zone = origin_positions_[finger2->tracking_id].y_ >
+                          hwprops_->bottom - bottom_zone_size_.val_;
+
+  float lo_dsq;
+  float hi_dsq;
+  if (d1sq < d2sq) {
+    lo_dsq = d1sq;
+    hi_dsq = d2sq;
+  } else {
+    lo_dsq = d2sq;
+    hi_dsq = d1sq;
+  }
+  bool bad_mov_ratio = lo_dsq <= hi_dsq *
+                                 pinch_guess_consistent_mov_ratio_.val_ *
+                                 pinch_guess_consistent_mov_ratio_.val_;
+
+  float consistent_min_mov_sq = pinch_guess_min_consistent_movement_.val_;
+  consistent_min_mov_sq *= consistent_min_mov_sq;
+
+  if (!bad_mov_ratio &&
+      !in_dampened_zone &&
+      d1sq > consistent_min_mov_sq &&
+      d2sq > consistent_min_mov_sq &&
+      ZoomFingersAreConsistent(state_buffer_)) {
+    guess_yes = true;
+    guess_no = false;
+    pinch_certain = true;
   }
 
-  bool extra_vector_check = !InwardPinch(state_buffer_, *finger2);
- // Thumb is in dampened zone: Only allow inward pinch
-  if (origin_positions_[finger2->tracking_id].y_ >
-          hwprops_->bottom - bottom_zone_size_.val_ &&
+  // Thumb is in dampened zone: Only allow inward pinch
+  if (in_dampened_zone &&
       (d2sq < pinch_thumb_min_movement_.val_ * pinch_thumb_min_movement_.val_ ||
-       extra_vector_check)) {
-    pinch_guess = false;
-    no_pinch_guess = true;
-    pinch_guess_start_ = -1.0;
-    pinch_consistent = false;
+       !InwardPinch(state_buffer_, *finger2))) {
+    guess_yes = false;
+    guess_no = true;
+    pinch_certain = false;
   }
 
   // do state transitions and final decision
@@ -2055,15 +2082,11 @@ bool ImmediateInterpreter::UpdatePinchState(
 
     // Determine guess.
     if (!movement_below_noise) {
-      if (no_pinch_guess && !pinch_guess) {
+      if (guess_no && !guess_yes) {
         pinch_guess_ = false;
         pinch_guess_start_ = hwstate.timestamp;
       }
-      if (pinch_guess && !no_pinch_guess) {
-        // Calculate start distance between fingers and cache value
-        if (two_finger_start_distance_sq_ < 0) {
-          two_finger_start_distance_sq_ = TwoFingerDistanceSq(hwstate);
-        }
+      if (guess_yes && !guess_no) {
         pinch_guess_ = true;
         pinch_guess_start_ = hwstate.timestamp;
       }
@@ -2082,27 +2105,32 @@ bool ImmediateInterpreter::UpdatePinchState(
     }
 
     // Go back to "Don't Know"-state if guess is no longer valid
-    if (pinch_guess_ != pinch_guess ||
-        pinch_guess_ == no_pinch_guess ||
+    if (pinch_guess_ != guess_yes ||
+        pinch_guess_ == guess_no ||
         movement_below_noise) {
-      pinch_consistent = false;
       pinch_guess_start_ = -1.0f;
       return false;
     }
 
     // certain decisions if pinch is being performed or not
-    double cert_min_mov = pinch_certain_min_movement_.val_;
-    cert_min_mov *= cert_min_mov;
-    bool no_pinch_certain = false;
-    bool pinch_certain = d1sq > cert_min_mov && d2sq > cert_min_mov && dot < 0;
+    double cert_min_mov_sq = pinch_certain_min_movement_.val_;
+    cert_min_mov_sq *= cert_min_mov_sq;
+    pinch_certain |= (d1sq > cert_min_mov_sq &&
+                      d2sq > cert_min_mov_sq) &&
+                     dot < 0;
+    bool no_pinch_certain = (d1sq > cert_min_mov_sq ||
+                             d2sq > cert_min_mov_sq) &&
+                            dot > 0;
+    pinch_guess_ |= pinch_certain;
+    pinch_guess_ &= !no_pinch_certain;
 
     // guessed for long enough or certain decision was made: lock
-    if (hwstate.timestamp - pinch_guess_start_ > 0.1 ||
-        (pinch_certain && pinch_guess_) ||
-        (no_pinch_certain && !pinch_guess_) || pinch_consistent) {
+    if ((hwstate.timestamp - pinch_guess_start_ >
+         pinch_evaluation_timeout_.val_) ||
+        pinch_certain ||
+        no_pinch_certain) {
       pinch_status_ = GESTURES_ZOOM_START;
       pinch_locked_ = true;
-      two_finger_start_distance_sq_ = TwoFingerDistanceSq(hwstate);
       return pinch_guess_;
     }
   }
@@ -3222,15 +3250,28 @@ void ImmediateInterpreter::FillResultGesture(
       } else {
         float current_dist_sq = TwoSpecificFingerDistanceSq(hwstate, fingers);
         if (current_dist_sq < 0) {
-          current_dist_sq = two_finger_start_distance_sq_;
+          current_dist_sq = pinch_prev_distance_sq_;
         }
         result_ = Gesture(kGesturePinch, changed_time_, hwstate.timestamp,
-                          sqrt(current_dist_sq / two_finger_start_distance_sq_),
+                          sqrt(current_dist_sq / pinch_prev_distance_sq_),
                           GESTURES_ZOOM_UPDATE);
-        two_finger_start_distance_sq_ = current_dist_sq;
+        pinch_prev_distance_sq_ = current_dist_sq;
       }
-      if (pinch_status_ == GESTURES_ZOOM_START)
+      if (pinch_status_ == GESTURES_ZOOM_START) {
         pinch_status_ = GESTURES_ZOOM_UPDATE;
+        // If there is a slow pinch, it may take a little while to detect it,
+        // allowing the fingers to travel a significant distance, and causing an
+        // inappropriately large scale in a single frame, followed by slow
+        // scaling. Here we reduce the initial scale factor depending on how
+        // quickly we detected the pinch.
+        float current_dist_sq = TwoSpecificFingerDistanceSq(hwstate, fingers);
+        float pinch_slowness_ratio = (hwstate.timestamp - changed_time_) *
+                                     pinch_initial_scale_time_inv_.val_;
+        pinch_slowness_ratio = fmin(1.0, pinch_slowness_ratio);
+        pinch_prev_distance_sq_ =
+            (pinch_slowness_ratio * current_dist_sq) +
+            ((1 - pinch_slowness_ratio) * pinch_prev_distance_sq_);
+      }
       break;
     }
     default:

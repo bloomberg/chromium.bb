@@ -1347,6 +1347,9 @@ TEST(ImmediateInterpreterTest, AmbiguousPalmCoScrollTest) {
     kGestureTypeScroll,
     kGestureTypeScroll
   };
+  if (ii.pinch_enable_.val_)
+    // Movement delay is longer when pinch is enabled
+    expected_gs[2] = kGestureTypeNull;
 
   ASSERT_EQ(arraysize(expected_gs), arraysize(hardware_state));
 

@@ -17,6 +17,7 @@ PalmClassifyingFilterInterpreter::PalmClassifyingFilterInterpreter(
     : FilterInterpreter(NULL, next, tracer, false),
       palm_pressure_(prop_reg, "Palm Pressure", 200.0),
       palm_width_(prop_reg, "Palm Width", 21.2),
+      multi_palm_width_(prop_reg, "Multiple Palm Width", 75.0),
       fat_finger_pressure_ratio_(prop_reg, "Fat Finger Pressure Ratio", 1.4),
       fat_finger_width_ratio_(prop_reg, "Fat Finger Width Ratio", 1.3),
       fat_finger_min_dist_(prop_reg, "Fat Finger Min Move Distance", 15.0),
@@ -174,11 +175,17 @@ void PalmClassifyingFilterInterpreter::UpdatePalmState(
       fingers_not_in_edge_.insert(fs.tracking_id);
     // Mark anything over the palm thresh as a palm
     if (fs.pressure >= palm_pressure_.val_ ||
-        fs.touch_major >= palm_width_.val_) {
+        fs.touch_major >= multi_palm_width_.val_) {
       palm_.insert(fs.tracking_id);
       pointing_.erase(fs.tracking_id);
       continue;
     }
+  }
+
+  if (hwstate.finger_cnt == 1 &&
+      hwstate.fingers[0].touch_major >= palm_width_.val_) {
+    palm_.insert(hwstate.fingers[0].tracking_id);
+    pointing_.erase(hwstate.fingers[0].tracking_id);
   }
 
   const float kPalmStationaryDistSq =

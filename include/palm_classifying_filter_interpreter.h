@@ -120,6 +120,9 @@ class PalmClassifyingFilterInterpreter : public FilterInterpreter {
   DoubleProperty palm_pressure_;
   // Maximum width_major above which a finger is considered a palm
   DoubleProperty palm_width_;
+  // Maximum width_major above which a finger is considered a palm if there are
+  // other contacts
+  DoubleProperty multi_palm_width_;
   // If a finger was previously classified as palm, but its lifetime max
   // pressure is less than palm_pressure_ * fat_finger_pressure_ratio_,
   // lifetime max width is less than palm_width_ * fat_finger_width_ratio_,
