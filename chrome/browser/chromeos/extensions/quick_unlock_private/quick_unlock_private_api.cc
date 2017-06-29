@@ -8,6 +8,9 @@
 #include "base/stl_util.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
+#include "chrome/browser/chromeos/login/supervised/supervised_user_authentication.h"
+#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
+#include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/login/auth/extended_authenticator.h"
@@ -327,10 +330,19 @@ ExtensionFunction::ResponseAction QuickUnlockPrivateSetModesFunction::Run() {
     }
   }
 
-  user_manager::User* user = chromeos::ProfileHelper::Get()->GetUserByProfile(
-      chrome_details_.GetProfile());
+  const user_manager::User* const user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(
+          chrome_details_.GetProfile());
   chromeos::UserContext user_context(user->GetAccountId());
   user_context.SetKey(chromeos::Key(params_->account_password));
+
+  // Alter |user_context| if the user is supervised.
+  if (user->GetType() == user_manager::USER_TYPE_SUPERVISED) {
+    user_context = chromeos::ChromeUserManager::Get()
+                       ->GetSupervisedUserManager()
+                       ->GetAuthentication()
+                       ->TransformKey(user_context);
+  }
 
   // Lazily allocate the authenticator. We do this here, instead of in the ctor,
   // so that tests can install a fake.
