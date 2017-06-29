@@ -2,12 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <set>
+#include <vector>
+
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/lazy_instance.h"
+#include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/test/test_suite.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/env_chromium.h"
@@ -24,6 +29,7 @@ using leveldb::Status;
 using leveldb::WritableFile;
 using leveldb::WriteOptions;
 using leveldb_env::ChromiumEnv;
+using leveldb_env::DBTracker;
 using leveldb_env::MethodID;
 
 TEST(ErrorEncoding, OnlyAMethod) {
@@ -188,6 +194,135 @@ TEST(ChromiumEnv, TestWriteBufferSize) {
 
   // Check for very large disk size (catch overflow).
   EXPECT_EQ(size_t(4 * MB), leveldb_env::WriteBufferSize(100 * MB * MB));
+}
+
+class ChromiumEnvDBTrackerTest : public ::testing::Test {
+ protected:
+  void SetUp() override {
+    testing::Test::SetUp();
+    ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
+  }
+
+  const base::FilePath& temp_path() const { return scoped_temp_dir_.GetPath(); }
+
+  using VisitedDBSet = std::set<DBTracker::TrackedDB*>;
+
+  static VisitedDBSet VisitDatabases() {
+    VisitedDBSet visited;
+    auto db_visitor = [&](DBTracker::TrackedDB* db) {
+      ASSERT_TRUE(visited.insert(db).second)
+          << "Database " << std::hex << db << " visited for the second time";
+    };
+    DBTracker::GetInstance()->VisitDatabases(db_visitor);
+    return visited;
+  }
+
+  using LiveDBSet = std::vector<std::unique_ptr<DBTracker::TrackedDB>>;
+
+  void AssertEqualSets(const LiveDBSet& live_dbs,
+                       const VisitedDBSet& visited_dbs) {
+    for (const auto& live_db : live_dbs) {
+      ASSERT_EQ(1u, visited_dbs.count(live_db.get()))
+          << "Database " << std::hex << live_db.get() << " was not visited";
+    }
+    ASSERT_EQ(live_dbs.size(), visited_dbs.size())
+        << "Extra databases were visited";
+  }
+
+ private:
+  base::ScopedTempDir scoped_temp_dir_;
+};
+
+TEST_F(ChromiumEnvDBTrackerTest, OpenDatabase) {
+  struct KeyValue {
+    const char* key;
+    const char* value;
+  };
+  constexpr KeyValue db_data[] = {
+      {"banana", "yellow"}, {"sky", "blue"}, {"enthusiasm", ""},
+  };
+
+  // Open a new database using DBTracker::Open, write some data.
+  Options options;
+  options.create_if_missing = true;
+  std::string name = temp_path().AsUTF8Unsafe();
+  DBTracker::TrackedDB* tracked_db;
+  Status status =
+      DBTracker::GetInstance()->OpenDatabase(options, name, &tracked_db);
+  ASSERT_TRUE(status.ok()) << status.ToString();
+  for (const auto& kv : db_data) {
+    status = tracked_db->Put(WriteOptions(), kv.key, kv.value);
+    ASSERT_TRUE(status.ok()) << status.ToString();
+  }
+
+  // Close the database.
+  delete tracked_db;
+
+  // Open the database again with DB::Open, and check the data.
+  options.create_if_missing = false;
+  leveldb::DB* plain_db = nullptr;
+  status = leveldb::DB::Open(options, name, &plain_db);
+  ASSERT_TRUE(status.ok()) << status.ToString();
+  for (const auto& kv : db_data) {
+    std::string value;
+    status = plain_db->Get(ReadOptions(), kv.key, &value);
+    ASSERT_TRUE(status.ok()) << status.ToString();
+    ASSERT_EQ(value, kv.value);
+  }
+  delete plain_db;
+}
+
+TEST_F(ChromiumEnvDBTrackerTest, TrackedDBInfo) {
+  Options options;
+  options.create_if_missing = true;
+  std::string name = temp_path().AsUTF8Unsafe();
+  DBTracker::TrackedDB* db;
+  Status status = DBTracker::GetInstance()->OpenDatabase(options, name, &db);
+  ASSERT_TRUE(status.ok()) << status.ToString();
+
+  // Check that |db| reports info that was used to open it.
+  ASSERT_EQ(name, db->name());
+
+  delete db;
+}
+
+TEST_F(ChromiumEnvDBTrackerTest, VisitDatabases) {
+  LiveDBSet live_dbs;
+
+  // Open several databases.
+  for (const char* tag : {"poets", "movies", "recipes", "novels"}) {
+    Options options;
+    options.create_if_missing = true;
+    std::string name = temp_path().AppendASCII(tag).AsUTF8Unsafe();
+    DBTracker::TrackedDB* db;
+    Status status = DBTracker::GetInstance()->OpenDatabase(options, name, &db);
+    ASSERT_TRUE(status.ok()) << status.ToString();
+    live_dbs.emplace_back(db);
+  }
+
+  // Check that all live databases are visited.
+  AssertEqualSets(live_dbs, VisitDatabases());
+
+  // Close couple of a databases.
+  live_dbs.erase(live_dbs.begin());
+  live_dbs.erase(live_dbs.begin() + 1);
+
+  // Check that only remaining live databases are visited.
+  AssertEqualSets(live_dbs, VisitDatabases());
+}
+
+TEST_F(ChromiumEnvDBTrackerTest, OpenDBTracking) {
+  Options options;
+  options.create_if_missing = true;
+  std::unique_ptr<leveldb::DB> db;
+  auto status = leveldb_env::OpenDB(options, temp_path().AsUTF8Unsafe(), &db);
+  ASSERT_TRUE(status.ok()) << status.ToString();
+
+  auto visited_dbs = VisitDatabases();
+
+  // Databases returned by OpenDB() should be tracked.
+  ASSERT_EQ(1u, visited_dbs.size());
+  ASSERT_EQ(db.get(), *visited_dbs.begin());
 }
 
 int main(int argc, char** argv) { return base::TestSuite(argc, argv).Run(); }

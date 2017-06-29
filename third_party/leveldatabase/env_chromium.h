@@ -6,13 +6,18 @@
 #define THIRD_PARTY_LEVELDATABASE_ENV_CHROMIUM_H_
 
 #include <deque>
+#include <functional>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
+#include "base/containers/linked_list.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
+#include "leveldb/db.h"
 #include "leveldb/env.h"
 #include "port/port_chromium.h"
 #include "util/mutexlock.h"
@@ -229,6 +234,61 @@ class ChromiumEnv : public leveldb::Env,
   BGQueue queue_;
   LockTable locks_;
 };
+
+// Tracks databases open via OpenDatabase() method and exposes them to
+// memory-infra. The class is thread safe.
+class DBTracker {
+ public:
+  // DBTracker singleton instance.
+  static DBTracker* GetInstance();
+
+  // Provides extra information about a tracked database.
+  class TrackedDB : public leveldb::DB {
+   public:
+    // Name that OpenDatabase() was called with.
+    virtual const std::string& name() const = 0;
+  };
+
+  // Opens a database and starts tracking it. As long as the opened database
+  // is alive (i.e. its instance is not destroyed) the database is exposed to
+  // memory-infra and is enumerated by VisitDatabases() method.
+  leveldb::Status OpenDatabase(const leveldb::Options& options,
+                               const std::string& name,
+                               TrackedDB** dbptr);
+
+  using DatabaseVisitor = std::function<void(TrackedDB*)>;
+
+  // Calls |visitor| for each live database. The database is live from the
+  // point it was returned from OpenDatabase() and up until its instance is
+  // destroyed.
+  // The databases may be visited in an arbitrary order.
+  // This function takes a lock, preventing any database from being opened or
+  // destroyed (but doesn't lock the databases themselves).
+  void VisitDatabases(const DatabaseVisitor& visitor);
+
+ private:
+  class TrackedDBImpl;
+  class MemoryDumpProvider;
+
+  DBTracker();
+  ~DBTracker();
+
+  void DatabaseOpened(TrackedDBImpl* database);
+  void DatabaseDestroyed(TrackedDBImpl* database);
+
+  std::unique_ptr<MemoryDumpProvider> mdp_;
+
+  base::Lock databases_lock_;
+  base::LinkedList<TrackedDBImpl> databases_;
+
+  DISALLOW_COPY_AND_ASSIGN(DBTracker);
+};
+
+// Opens a database and exposes it to Chrome's tracing (see DBTracker for
+// details). Note that |dbptr| is touched only when function succeeds.
+leveldb::Status OpenDB(const leveldb::Options& options,
+                       const std::string& name,
+                       std::unique_ptr<leveldb::DB>* dbptr);
 
 }  // namespace leveldb_env
 
