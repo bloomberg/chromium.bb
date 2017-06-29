@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/strings/string_piece.h"
 #include "base/threading/thread_checker.h"
 #include "components/metrics/proto/system_profile.pb.h"
 
@@ -38,6 +39,9 @@ class PersistentSystemProfile {
   void SetSystemProfile(const std::string& serialized_profile, bool complete);
   void SetSystemProfile(const SystemProfileProto& profile, bool complete);
 
+  // Records the existence of a field trial.
+  void AddFieldTrial(base::StringPiece trial, base::StringPiece group);
+
   // Tests if a persistent memory allocator contains an system profile.
   static bool HasSystemProfile(
       const base::PersistentMemoryAllocator& memory_allocator);
@@ -55,6 +59,7 @@ class PersistentSystemProfile {
   enum RecordType : uint8_t {
     kUnusedSpace = 0,  // The default value for empty memory.
     kSystemProfileProto,
+    kFieldTrialInfo,
   };
 
   // A class for managing record allocations inside a persistent memory segment.
@@ -70,7 +75,7 @@ class PersistentSystemProfile {
     // These methods manage writing records to the allocator. Do not mix these
     // with "read" calls; it's one or the other.
     void Reset();
-    bool Write(RecordType type, const std::string& record);
+    bool Write(RecordType type, base::StringPiece record);
 
     // Read a record from the allocator. Do not mix this with "write" calls;
     // it's one or the other.
@@ -92,7 +97,7 @@ class PersistentSystemProfile {
 
     // Writes data to the current position, updating the passed values past
     // the amount written. Returns false in case of an error.
-    bool WriteData(RecordType type, const char** data, size_t* remaining_size);
+    bool WriteData(RecordType type, const char** data, size_t* data_size);
 
     // Reads data from the current position, updating the passed string
     // in-place. |type| must be initialized to kUnusedSpace and |record| must
@@ -113,6 +118,14 @@ class PersistentSystemProfile {
 
     // Copy and assign are allowed for easy use with STL containers.
   };
+
+  // Write a record to all registered allocators.
+  void WriteToAll(RecordType type, base::StringPiece record);
+
+  // Merges all "update" records into a system profile.
+  static void MergeUpdateRecords(
+      const base::PersistentMemoryAllocator& memory_allocator,
+      SystemProfileProto* system_profile);
 
   // The list of registered persistent allocators, described by RecordAllocator
   // instances.

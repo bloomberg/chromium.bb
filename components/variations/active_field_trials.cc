@@ -40,8 +40,8 @@ void AppendActiveGroupIdsAsStrings(
 
 }  // namespace
 
-ActiveGroupId MakeActiveGroupId(const std::string& trial_name,
-                                const std::string& group_name) {
+ActiveGroupId MakeActiveGroupId(base::StringPiece trial_name,
+                                base::StringPiece group_name) {
   ActiveGroupId id;
   id.name = metrics::HashName(trial_name);
   id.group = metrics::HashName(group_name);
