@@ -50,8 +50,10 @@ class AndroidVrPerfTest(vr_perf_test.VrPerfTest):
 
     # Force WebVR support, remove open tabs, and don't have first run
     # experience.
-    self._SetChromeCommandLineFlags(['--enable-webvr', '--no-restore-state',
-                                     '--disable-fre'])
+    flags = ['--enable-webvr', '--no-restore-state', '--disable-fre']
+    if self._args.additional_flags:
+      flags.extend(self._args.additional_flags.split(' '))
+    self._SetChromeCommandLineFlags(flags)
     # Wake up the device and sleep, otherwise WebGL can crash on startup.
     self._Adb(['shell', 'input', 'keyevent', 'KEYCODE_WAKEUP'])
     time.sleep(1)
