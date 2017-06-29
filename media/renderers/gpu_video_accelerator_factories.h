@@ -96,6 +96,7 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
                               uint32_t texture_target) = 0;
   virtual void DeleteTexture(uint32_t texture_id) = 0;
   virtual gpu::SyncToken CreateSyncToken() = 0;
+  virtual void ShallowFlushCHROMIUM() = 0;
 
   virtual void WaitSyncToken(const gpu::SyncToken& sync_token) = 0;
 

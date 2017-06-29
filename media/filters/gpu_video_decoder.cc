@@ -387,6 +387,7 @@ void GpuVideoDecoder::DestroyPictureBuffers(PictureBufferMap* buffers) {
     for (uint32_t id : kv.second.client_texture_ids())
       factories_->DeleteTexture(id);
   }
+  factories_->ShallowFlushCHROMIUM();
 
   buffers->clear();
 }
@@ -719,6 +720,9 @@ void GpuVideoDecoder::ReleaseMailbox(
   // because GpuVideoDecoder was destructed.
   for (uint32_t id : ids)
     factories->DeleteTexture(id);
+
+  // Flush the delete(s) to the server, to avoid crbug.com/737992 .
+  factories->ShallowFlushCHROMIUM();
 }
 
 void GpuVideoDecoder::ReusePictureBuffer(int64_t picture_buffer_id) {
