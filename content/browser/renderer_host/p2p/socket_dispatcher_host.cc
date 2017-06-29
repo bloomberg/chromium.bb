@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/renderer_host/p2p/socket_host.h"
 #include "content/common/p2p_messages.h"
@@ -119,8 +120,9 @@ P2PSocketDispatcherHost::P2PSocketDispatcherHost(
       url_context_(url_context),
       monitoring_networks_(false),
       dump_incoming_rtp_packet_(false),
-      dump_outgoing_rtp_packet_(false) {
-}
+      dump_outgoing_rtp_packet_(false),
+      network_list_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE})) {}
 
 void P2PSocketDispatcherHost::OnChannelClosing() {
   // Since the IPC sender is gone, close pending connections.
@@ -159,9 +161,8 @@ bool P2PSocketDispatcherHost::OnMessageReceived(const IPC::Message& message) {
 
 void P2PSocketDispatcherHost::OnIPAddressChanged() {
   // Notify the renderer about changes to list of network interfaces.
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE, base::Bind(
-          &P2PSocketDispatcherHost::DoGetNetworkList, this));
+  network_list_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&P2PSocketDispatcherHost::DoGetNetworkList, this));
 }
 
 void P2PSocketDispatcherHost::StartRtpDump(
@@ -215,9 +216,8 @@ void P2PSocketDispatcherHost::OnStartNetworkNotifications() {
     monitoring_networks_ = true;
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE, base::Bind(
-          &P2PSocketDispatcherHost::DoGetNetworkList, this));
+  network_list_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&P2PSocketDispatcherHost::DoGetNetworkList, this));
 }
 
 void P2PSocketDispatcherHost::OnStopNetworkNotifications() {
@@ -367,7 +367,7 @@ net::IPAddress P2PSocketDispatcherHost::GetDefaultLocalAddress(int family) {
   DCHECK(family == AF_INET || family == AF_INET6);
 
   // Creation and connection of a UDP socket might be janky.
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  DCHECK(network_list_task_runner_->RunsTasksInCurrentSequence());
 
   std::unique_ptr<net::DatagramClientSocket> socket(
       net::ClientSocketFactory::GetDefaultFactory()->CreateDatagramClientSocket(
