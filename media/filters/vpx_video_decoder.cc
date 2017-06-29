@@ -52,6 +52,8 @@ extern "C" {
 
 namespace media {
 
+constexpr base::TimeDelta kStaleFrameLimit = base::TimeDelta::FromSeconds(10);
+
 // High resolution VP9 decodes can block the main task runner for too long,
 // preventing demuxing, audio decoding, and other control activities.  In those
 // cases share a thread per process for higher resolution decodes.
@@ -396,8 +398,6 @@ void VpxVideoDecoder::MemoryPool::OnVideoFrameDestroyed(
 
   base::EraseIf(
       frame_buffers_, [now](const std::unique_ptr<VP9FrameBuffer>& buf) {
-        constexpr base::TimeDelta kStaleFrameLimit =
-            base::TimeDelta::FromSeconds(10);
         return !buf->ref_cnt && now - buf->last_use_time > kStaleFrameLimit;
       });
 }
