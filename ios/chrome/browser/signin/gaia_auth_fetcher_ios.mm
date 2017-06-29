@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
 #include "base/mac/scoped_block.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/signin/gaia_auth_fetcher_ios_private.h"
 #include "ios/web/public/browser_state.h"
@@ -20,6 +19,10 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/url_request_status.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -81,8 +84,8 @@ NSString* const kReadResponseTemplate =
 NSURLRequest* GetRequest(const std::string& body,
                          const std::string& headers,
                          const GURL& url) {
-  base::scoped_nsobject<NSMutableURLRequest> request(
-      [[NSMutableURLRequest alloc] initWithURL:net::NSURLWithGURL(url)]);
+  NSMutableURLRequest* request =
+      [[NSMutableURLRequest alloc] initWithURL:net::NSURLWithGURL(url)];
   net::HttpRequestHeaders request_headers;
   request_headers.AddHeadersFromString(headers);
   for (net::HttpRequestHeaders::Iterator it(request_headers); it.GetNext();) {
@@ -98,7 +101,7 @@ NSURLRequest* GetRequest(const std::string& body,
     [request setValue:@"application/x-www-form-urlencoded"
         forHTTPHeaderField:@"Content-Type"];
   }
-  return request.autorelease();
+  return request;
 }
 
 // Escapes and quotes |value| and converts the result to an NSString.
@@ -281,7 +284,7 @@ WKWebView* GaiaAuthFetcherIOSBridge::GetWKWebView() {
     return nil;
   }
   if (!web_view_) {
-    web_view_.reset([BuildWKWebView() retain]);
+    web_view_.reset(BuildWKWebView());
     navigation_delegate_.reset(
         [[GaiaAuthFetcherNavigationDelegate alloc] initWithBridge:this]);
     [web_view_ setNavigationDelegate:navigation_delegate_];

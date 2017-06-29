@@ -14,6 +14,10 @@
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #import "ios/chrome/browser/ui/commands/clear_browsing_data_command.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 const int kRemoveAllDataMask = ~0;
 }
@@ -49,11 +53,10 @@ void BrowserStateDataRemover::RemoveBrowserStateData(ProceduralBlock callback) {
   DCHECK(!callback_);
   callback_.reset([callback copy]);
 
-  base::scoped_nsobject<ClearBrowsingDataCommand> command(
-      [[ClearBrowsingDataCommand alloc]
-          initWithBrowserState:browser_state_
-                          mask:kRemoveAllDataMask
-                    timePeriod:browsing_data::TimePeriod::ALL_TIME]);
+  ClearBrowsingDataCommand* command = [[ClearBrowsingDataCommand alloc]
+      initWithBrowserState:browser_state_
+                      mask:kRemoveAllDataMask
+                timePeriod:browsing_data::TimePeriod::ALL_TIME];
 
   UIWindow* mainWindow = [[UIApplication sharedApplication] keyWindow];
   DCHECK(mainWindow);
