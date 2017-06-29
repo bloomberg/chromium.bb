@@ -351,8 +351,12 @@ void GaiaScreenHandler::LoadGaiaWithVersion(
     params.SetString("gaiaUrl", eafe_url);
     params.SetString("gaiaPath", eafe_path);
   }
+
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kCrosGaiaApiV1)) {
+    params.SetString("chromeOSApiVersion", "1");
+  } else if (use_easy_bootstrap_) {
+    // Easy bootstrap is not v2-compatible
     params.SetString("chromeOSApiVersion", "1");
   }
 
