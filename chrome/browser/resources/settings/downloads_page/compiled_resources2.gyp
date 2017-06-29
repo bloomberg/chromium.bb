@@ -18,7 +18,7 @@
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:util',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:web_ui_listener_behavior',
-        '../settings_ui/compiled_resources2.gyp:settings_ui_types',
+        '../compiled_resources2.gyp:page_visibility',
         'downloads_browser_proxy',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],

@@ -13,7 +13,7 @@
         '../compiled_resources2.gyp:route',
         '../compiled_resources2.gyp:search_settings',
         '../settings_page/compiled_resources2.gyp:main_page_behavior',
-        '../settings_ui/compiled_resources2.gyp:settings_ui_types',
+        '../compiled_resources2.gyp:page_visibility',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },

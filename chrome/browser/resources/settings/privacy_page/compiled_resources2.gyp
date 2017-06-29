@@ -22,7 +22,7 @@
         '../compiled_resources2.gyp:route',
         '../controls/compiled_resources2.gyp:settings_toggle_button',
         '../settings_page/compiled_resources2.gyp:settings_animated_pages',
-        '../settings_ui/compiled_resources2.gyp:settings_ui_types',
+        '../compiled_resources2.gyp:page_visibility',
         '../site_settings/compiled_resources2.gyp:constants',
         '../site_settings/compiled_resources2.gyp:site_data_details_subpage',
         'privacy_page_browser_proxy',
