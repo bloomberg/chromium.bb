@@ -21,6 +21,7 @@
 #include "base/values.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/android/vr_shell/android_ui_gesture_target.h"
+#include "chrome/browser/android/vr_shell/toolbar_helper.h"
 #include "chrome/browser/android/vr_shell/ui_interface.h"
 #include "chrome/browser/android/vr_shell/ui_scene_manager.h"
 #include "chrome/browser/android/vr_shell/vr_compositor.h"
@@ -117,6 +118,7 @@ VrShell::VrShell(JNIEnv* env,
       for_web_vr, web_vr_autopresentation_expected, in_cct,
       reprojected_rendering_, HasDaydreamSupport(env));
   ui_ = gl_thread_.get();
+  toolbar_ = base::MakeUnique<ToolbarHelper>(ui_, this);
 
   base::Thread::Options options(base::MessageLoop::TYPE_DEFAULT, 0);
   options.priority = base::ThreadPriority::DISPLAY;
@@ -163,8 +165,8 @@ void VrShell::SwapContents(
     return;
   }
   input_manager_ = base::MakeUnique<VrInputManager>(web_contents_);
-  vr_web_contents_observer_ =
-      base::MakeUnique<VrWebContentsObserver>(web_contents_, ui_, this);
+  vr_web_contents_observer_ = base::MakeUnique<VrWebContentsObserver>(
+      web_contents_, this, ui_, toolbar_.get());
   // TODO(billorr): Make VrMetricsHelper tab-aware and able to track multiple
   // tabs. crbug.com/684661
   metrics_helper_ = base::MakeUnique<VrMetricsHelper>(web_contents_);
@@ -173,14 +175,13 @@ void VrShell::SwapContents(
 }
 
 void VrShell::SetUiState() {
+  toolbar_->Update();
+
   if (!web_contents_) {
-    // TODO(mthiesse): Properly handle native page URLs.
-    ui_->SetURL(GURL());
     ui_->SetLoading(false);
     ui_->SetFullscreen(false);
     ui_->SetIncognito(false);
   } else {
-    ui_->SetURL(web_contents_->GetVisibleURL());
     ui_->SetLoading(web_contents_->IsLoading());
     ui_->SetFullscreen(web_contents_->IsFullscreen());
     ui_->SetIncognito(web_contents_->GetBrowserContext()->IsOffTheRecord());
@@ -712,6 +713,10 @@ void VrShell::RegisterCardboardGamepadDataFetcher(
 
 bool VrShell::HasDaydreamSupport(JNIEnv* env) {
   return Java_VrShellImpl_hasDaydreamSupport(env, j_vr_shell_.obj());
+}
+
+content::WebContents* VrShell::GetActiveWebContents() const {
+  return web_contents_;
 }
 
 // ----------------------------------------------------------------------------

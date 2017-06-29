@@ -16,8 +16,6 @@
 #include "chrome/browser/android/vr_shell/ui_interface.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
 
-class GURL;
-
 namespace vr_shell {
 
 class UiScene;
@@ -75,9 +73,7 @@ class VrGLThread : public base::Thread,
   void SetHistoryButtonsEnabled(bool can_go_back, bool can_go_forward) override;
   void SetLoadProgress(float progress) override;
   void SetLoading(bool loading) override;
-  void SetSecurityInfo(security_state::SecurityLevel level,
-                       bool malware) override;
-  void SetURL(const GURL& gurl) override;
+  void SetToolbarState(const ToolbarState& state) override;
   void SetWebVrMode(bool enabled, bool show_toast) override;
   void SetWebVrSecureOrigin(bool secure) override;
   void SetVideoCapturingIndicator(bool enabled) override;

@@ -21,15 +21,8 @@ UiTexture* TransientUrlBar::GetTexture() const {
   return texture_.get();
 }
 
-void TransientUrlBar::SetURL(const GURL& gurl) {
-  texture_->SetURL(gurl);
-  UpdateTexture();
-}
-
-void TransientUrlBar::SetSecurityInfo(security_state::SecurityLevel level,
-                                      bool malware) {
-  texture_->SetSecurityInfo(level, malware);
-  UpdateTexture();
+void TransientUrlBar::SetToolbarState(const ToolbarState& state) {
+  texture_->SetToolbarState(state);
 }
 
 }  // namespace vr_shell

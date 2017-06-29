@@ -88,18 +88,13 @@ void UrlBar::SetEnabled(bool enabled) {
   set_visible(enabled);
 }
 
-void UrlBar::SetURL(const GURL& gurl) {
-  texture_->SetURL(gurl);
+void UrlBar::SetToolbarState(const ToolbarState& state) {
+  texture_->SetToolbarState(state);
 }
 
 void UrlBar::SetHistoryButtonsEnabled(bool can_go_back) {
   can_go_back_ = can_go_back;
   texture_->SetHistoryButtonsEnabled(can_go_back_);
-}
-
-void UrlBar::SetSecurityInfo(security_state::SecurityLevel level,
-                             bool malware) {
-  texture_->SetSecurityInfo(level, malware);
 }
 
 void UrlBar::OnStateUpdated(const gfx::PointF& position) {

@@ -21,7 +21,7 @@
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/vector_icon_types.h"
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_IOS)
 #include "components/toolbar/vector_icons.h"  // nogncheck
 #include "ui/vector_icons/vector_icons.h"     // nogncheck
 #endif
@@ -73,7 +73,7 @@ security_state::SecurityLevel ToolbarModelImpl::GetSecurityLevel(
 }
 
 const gfx::VectorIcon& ToolbarModelImpl::GetVectorIcon() const {
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_IOS)
   auto* const icon_override = delegate_->GetVectorIconOverride();
   if (icon_override)
     return *icon_override;

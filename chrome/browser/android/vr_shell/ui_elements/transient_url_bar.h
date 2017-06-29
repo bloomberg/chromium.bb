@@ -18,6 +18,7 @@
 namespace vr_shell {
 
 class UrlBarTexture;
+struct ToolbarState;
 
 // The non-interactive URL bar that shows for some time when WebVR content is
 // autopresented.
@@ -28,8 +29,7 @@ class TransientUrlBar : public TexturedElement {
       const base::Callback<void(UiUnsupportedMode)>& failure_callback);
   ~TransientUrlBar() override;
 
-  void SetURL(const GURL& gurl);
-  void SetSecurityInfo(security_state::SecurityLevel level, bool malware);
+  void SetToolbarState(const ToolbarState& state);
 
  private:
   UiTexture* GetTexture() const override;

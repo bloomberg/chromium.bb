@@ -17,6 +17,7 @@
 #include "chrome/browser/android/vr_shell/ui_interface.h"
 #include "chrome/browser/android/vr_shell/ui_unsupported_mode.h"
 #include "chrome/browser/android/vr_shell/vr_controller_model.h"
+#include "chrome/browser/ui/toolbar/chrome_toolbar_model_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "device/vr/android/gvr/cardboard_gamepad_data_provider.h"
 #include "device/vr/android/gvr/gvr_delegate.h"
@@ -39,6 +40,7 @@ class WindowAndroid;
 namespace vr_shell {
 
 class AndroidUiGestureTarget;
+class ToolbarHelper;
 class UiInterface;
 class VrCompositor;
 class VrGLThread;
@@ -62,7 +64,8 @@ class VrMetricsHelper;
 // must only be used on the UI thread.
 class VrShell : public device::GvrDelegate,
                 device::GvrGamepadDataProvider,
-                device::CardboardGamepadDataProvider {
+                device::CardboardGamepadDataProvider,
+                public ChromeToolbarModelDelegate {
  public:
   VrShell(JNIEnv* env,
           jobject obj,
@@ -175,6 +178,9 @@ class VrShell : public device::GvrDelegate,
   void RegisterCardboardGamepadDataFetcher(
       device::CardboardGamepadDataFetcher*) override;
 
+  // ChromeToolbarModelDelegate implementation.
+  content::WebContents* GetActiveWebContents() const override;
+
  private:
   ~VrShell() override;
   void WaitForGlThread();
@@ -221,8 +227,10 @@ class VrShell : public device::GvrDelegate,
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   std::unique_ptr<VrGLThread> gl_thread_;
   bool thread_started_ = false;
-  UiInterface* ui_;
   bool reprojected_rendering_;
+
+  UiInterface* ui_;
+  std::unique_ptr<ToolbarHelper> toolbar_;
 
   jobject content_surface_ = nullptr;
   bool taken_surface_ = false;

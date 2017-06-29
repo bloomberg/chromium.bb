@@ -16,13 +16,15 @@ namespace vr_shell {
 
 class UiInterface;
 class VrShell;
+class ToolbarHelper;
 
 class CONTENT_EXPORT VrWebContentsObserver
     : public content::WebContentsObserver {
  public:
   VrWebContentsObserver(content::WebContents* web_contents,
+                        VrShell* vr_shell,
                         UiInterface* ui_interface,
-                        VrShell* vr_shell);
+                        ToolbarHelper* toolbar);
   ~VrWebContentsObserver() override;
 
   void SetUiInterface(UiInterface* ui_interface);
@@ -47,9 +49,10 @@ class CONTENT_EXPORT VrWebContentsObserver
   void RenderViewHostChanged(content::RenderViewHost* old_host,
                              content::RenderViewHost* new_host) override;
 
-  // This class does not own the UI interface.
-  UiInterface* ui_interface_;
+  // This class does not own these pointers.
   VrShell* vr_shell_;
+  UiInterface* ui_interface_;
+  ToolbarHelper* toolbar_;
 
   DISALLOW_COPY_AND_ASSIGN(VrWebContentsObserver);
 };
