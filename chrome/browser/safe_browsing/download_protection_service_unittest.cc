@@ -26,7 +26,7 @@
 #include "base/sha1.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/task_scheduler.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/safe_browsing/download_feedback_service.h"
@@ -355,7 +355,7 @@ class DownloadProtectionServiceTest : public testing::Test {
 
   // Flushes any pending tasks in the message loops of all threads.
   void FlushThreadMessageLoops() {
-    BrowserThread::GetBlockingPool()->FlushForTesting();
+    base::TaskScheduler::GetInstance()->FlushForTesting();
     FlushMessageLoop(BrowserThread::IO);
     FlushMessageLoop(BrowserThread::FILE);
     RunLoop().RunUntilIdle();
