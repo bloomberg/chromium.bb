@@ -13,13 +13,10 @@
 #include "ui/arc/notification/arc_notification_item.h"
 #include "ui/arc/notification/arc_notification_surface_manager.h"
 #include "ui/aura/window_observer.h"
-#include "ui/gfx/animation/animation_delegate.h"
-#include "ui/message_center/views/padded_button.h"
-#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/native/native_view_host.h"
 
-namespace gfx {
-class LinearAnimation;
+namespace message_center {
+class NotificationControlButtonsView;
 }
 
 namespace ui {
@@ -39,11 +36,9 @@ class ArcNotificationSurface;
 // content in itself. This is implemented as a child of ArcNotificationView.
 class ArcNotificationContentView
     : public views::NativeViewHost,
-      public views::ButtonListener,
       public aura::WindowObserver,
       public ArcNotificationItem::Observer,
-      public ArcNotificationSurfaceManager::Observer,
-      public gfx::AnimationDelegate {
+      public ArcNotificationSurfaceManager::Observer {
  public:
   static const char kViewClassName[];
 
@@ -64,21 +59,6 @@ class ArcNotificationContentView
   class SettingsButton;
   class SlideHelper;
 
-  // A image button class used for the settings button and the close button.
-  // We can't use forward declaration for this class due to std::unique_ptr<>
-  // requires size of this class.
-  class ControlButton : public message_center::PaddedButton {
-   public:
-    explicit ControlButton(ArcNotificationContentView* owner);
-    void OnFocus() override;
-    void OnBlur() override;
-
-   private:
-    ArcNotificationContentView* const owner_;
-
-    DISALLOW_COPY_AND_ASSIGN(ControlButton);
-  };
-
   void CreateCloseButton();
   void CreateSettingsButton();
   void MaybeCreateFloatingControlButtons();
@@ -89,8 +69,6 @@ class ArcNotificationContentView
   void UpdateSnapshot();
   void AttachSurface();
   void ActivateToast();
-  void StartControlButtonsColorAnimation();
-  bool ShouldUpdateControlButtonsColor() const;
   void UpdateAccessibleName();
 
   // views::NativeViewHost
@@ -106,9 +84,6 @@ class ArcNotificationContentView
   bool HandleAccessibleAction(const ui::AXActionData& action) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
-  // views::ButtonListener
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
   // aura::WindowObserver
   void OnWindowBoundsChanged(aura::Window* window,
                              const gfx::Rect& old_bounds,
@@ -122,10 +97,6 @@ class ArcNotificationContentView
   // ArcNotificationSurfaceManager::Observer:
   void OnNotificationSurfaceAdded(ArcNotificationSurface* surface) override;
   void OnNotificationSurfaceRemoved(ArcNotificationSurface* surface) override;
-
-  // AnimationDelegate
-  void AnimationEnded(const gfx::Animation* animation) override;
-  void AnimationProgressed(const gfx::Animation* animation) override;
 
   // If |item_| is null, we may be about to be destroyed. In this case,
   // we have to be careful about what we do.
@@ -151,14 +122,11 @@ class ArcNotificationContentView
   // it.
   std::unique_ptr<views::Widget> floating_control_buttons_widget_;
 
-  views::View* control_buttons_view_ = nullptr;
-  std::unique_ptr<ControlButton> close_button_;
-  ControlButton* settings_button_ = nullptr;
+  message_center::NotificationControlButtonsView* control_buttons_view_ =
+      nullptr;
 
   // Protects from call loops between Layout and OnWindowBoundsChanged.
   bool in_layout_ = false;
-
-  std::unique_ptr<gfx::LinearAnimation> control_button_color_animation_;
 
   base::string16 accessible_name_;
 

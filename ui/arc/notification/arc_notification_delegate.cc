@@ -45,4 +45,10 @@ void ArcNotificationDelegate::Click() {
   item_->Click();
 }
 
+bool ArcNotificationDelegate::SettingsClick() {
+  DCHECK(item_);
+  item_->OpenSettings();
+  return true;
+}
+
 }  // namespace arc

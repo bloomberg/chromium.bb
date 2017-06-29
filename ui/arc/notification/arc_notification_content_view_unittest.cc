@@ -19,7 +19,8 @@
 #include "ui/message_center/notification.h"
 #include "ui/message_center/views/message_center_controller.h"
 #include "ui/message_center/views/message_view_factory.h"
-#include "ui/views/controls/button/image_button.h"
+#include "ui/message_center/views/notification_control_buttons_view.h"
+#include "ui/message_center/views/padded_button.h"
 #include "ui/views/test/views_test_base.h"
 
 namespace arc {
@@ -241,10 +242,12 @@ class ArcNotificationContentViewTest : public views::ViewsTestBase {
 
   void PressCloseButton() {
     DummyEvent dummy_event;
-    views::ImageButton* close_button =
-        GetArcNotificationContentView()->close_button_.get();
+    auto* control_buttons_view =
+        GetArcNotificationContentView()->control_buttons_view_;
+    message_center::PaddedButton* close_button =
+        control_buttons_view->close_button_for_testing();
     ASSERT_NE(nullptr, close_button);
-    GetArcNotificationContentView()->ButtonPressed(close_button, dummy_event);
+    control_buttons_view->ButtonPressed(close_button, dummy_event);
   }
 
   void CreateAndShowNotificationView(
