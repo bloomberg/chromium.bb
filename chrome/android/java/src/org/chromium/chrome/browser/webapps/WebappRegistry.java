@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit;
  * after it is created.
  *
  * This class is not a comprehensive list of installed web apps because it is impossible to know
- * when the user removes a web app from the home screen. The WebappDataStorage.wasLaunchedRecently()
+ * when the user removes a web app from the home screen. The WebappDataStorage.wasUsedRecently()
  * heuristic attempts to compensate for this.
  */
 public class WebappRegistry {

@@ -82850,6 +82850,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebApk.LaunchInterval" units="ms">
+  <owner>hanxi@chromium.org</owner>
+  <owner>pkotwicz@chromium.org</owner>
+  <owner>yfriedman@chromium.org</owner>
+  <summary>
+    Records the amount of time since the user last launched the WebAPK from the
+    homescreen. Not recorded on first launch.
+  </summary>
+</histogram>
+
 <histogram name="WebApk.OpenFromMenu" enum="WebApkOpenResult">
   <owner>hanxi@chromium.org</owner>
   <owner>pkotwicz@chromium.org</owner>

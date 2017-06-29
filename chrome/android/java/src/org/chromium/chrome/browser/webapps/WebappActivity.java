@@ -366,9 +366,22 @@ public class WebappActivity extends FullScreenActivity {
         // app is not directly launched from the home screen, as this interferes
         // with the heuristic.
         if (mWebappInfo.isLaunchedFromHomescreen()) {
+            boolean previouslyLaunched = storage.hasBeenLaunched();
+            long previousUsageTimestamp = storage.getLastUsedTime();
+            storage.setHasBeenLaunched();
             storage.updateLastUsedTime();
+            onUpdatedLastUsedTime(storage, previouslyLaunched, previousUsageTimestamp);
         }
     }
+
+    /**
+     * Called after updating the last used time in {@link WebappDataStorage}.
+     * @param previouslyLaunched Whether the webapp has been previously launched from the home
+     *     screen.
+     * @param previousUsageTimestamp The previous time that the webapp was used.
+     */
+    protected void onUpdatedLastUsedTime(
+            WebappDataStorage storage, boolean previouslyLaunched, long previousUsageTimestamp) {}
 
     private void updateUrlBar() {
         Tab tab = getActivityTab();

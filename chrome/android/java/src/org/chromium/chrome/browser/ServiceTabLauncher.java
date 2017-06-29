@@ -105,7 +105,7 @@ public class ServiceTabLauncher {
         // - The WebappDataStorage hasn't been opened recently enough.
         // OR
         // - The WebappDataStorage corresponds to a WebAPK (and WebAPKs are disabled).
-        if (storage == null || !storage.wasLaunchedRecently()
+        if (storage == null || !storage.wasUsedRecently()
                 || storage.getWebApkPackageName() != null) {
             LoadUrlParams loadUrlParams = new LoadUrlParams(url, PageTransition.LINK);
             loadUrlParams.setPostData(postData);

@@ -272,6 +272,14 @@ public class WebApkActivity extends WebappActivity {
         maybeShowDisclosure(storage);
     }
 
+    @Override
+    protected void onUpdatedLastUsedTime(
+            WebappDataStorage storage, boolean previouslyLaunched, long previousUsageTimestamp) {
+        if (previouslyLaunched) {
+            WebApkUma.recordLaunchInterval(storage.getLastUsedTime() - previousUsageTimestamp);
+        }
+    }
+
     /**
      * If we're showing a WebApk that's not with an expected package, it must be an
      * "Unbound WebApk" (crbug.com/714735) so show a notification that it's running in Chrome.

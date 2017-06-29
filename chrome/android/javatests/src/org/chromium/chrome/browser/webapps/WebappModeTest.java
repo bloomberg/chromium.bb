@@ -24,11 +24,13 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.chrome.browser.tab.Tab;
@@ -265,6 +267,28 @@ public class WebappModeTest {
                 return isWebappActivityReady(ApplicationStatus.getLastTrackedFocusedActivity());
             }
         });
+    }
+
+    /** Test that on first launch {@link WebappDataStorage#hasBeenLaunched()} is set. */
+    @Test
+    @MediumTest
+    @Feature({"Webapps"})
+    public void testSetsHasBeenLaunchedOnFirstLaunch() throws Exception {
+        WebappDataStorage storage = WebappRegistry.getInstance().getWebappDataStorage(WEBAPP_1_ID);
+        Assert.assertFalse(storage.hasBeenLaunched());
+
+        startWebappActivity(WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON);
+
+        // Use a longer timeout because the DeferredStartupHandler is called after the page has
+        // finished loading.
+        CriteriaHelper.pollUiThread(new Criteria("Deferred startup never completed") {
+            @Override
+            public boolean isSatisfied() {
+                return DeferredStartupHandler.getInstance().isDeferredStartupCompleteForApp();
+            }
+        }, ScalableTimeout.scaleTimeout(5000), CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+
+        Assert.assertTrue(storage.hasBeenLaunched());
     }
 
     /**

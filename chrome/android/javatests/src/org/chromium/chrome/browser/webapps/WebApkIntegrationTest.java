@@ -9,21 +9,25 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
+import org.chromium.content.browser.test.NativeLibraryTestRule;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -37,6 +41,9 @@ public class WebApkIntegrationTest {
     @Rule
     public final ChromeActivityTestRule<WebApkActivity> mActivityTestRule =
             new ChromeActivityTestRule<>(WebApkActivity.class);
+
+    @Rule
+    public final NativeLibraryTestRule mNativeLibraryTestRule = new NativeLibraryTestRule();
 
     @Rule
     public final TopActivityListener activityListener = new TopActivityListener();
@@ -80,6 +87,14 @@ public class WebApkIntegrationTest {
         });
     }
 
+    /** Register WebAPK with WebappDataStorage */
+    private WebappDataStorage registerWithStorage(final String webappId) throws Exception {
+        TestFetchStorageCallback callback = new TestFetchStorageCallback();
+        WebappRegistry.getInstance().register(webappId, callback);
+        callback.waitForCallback(0);
+        return WebappRegistry.getInstance().getWebappDataStorage(webappId);
+    }
+
     @Before
     public void setUp() throws Exception {
         mTestServer = EmbeddedTestServer.createAndStartServer(
@@ -118,5 +133,59 @@ public class WebApkIntegrationTest {
                         && activity.getActivityTab().getUrl().startsWith("https://www.google.");
             }
         });
+    }
+
+    /**
+     * Test that on first launch:
+     * - the "WebApk.LaunchInterval" histogram is not recorded (because there is no prevous launch
+     *   to compute the interval from).
+     * - the "last used" time is updated (to compute future "launch intervals").
+     */
+    @Test
+    @LargeTest
+    @Feature({"WebApk"})
+    public void testLaunchIntervalHistogramNotRecordedOnFirstLaunch() throws Exception {
+        final String histogramName = "WebApk.LaunchInterval";
+        final String packageName = "org.chromium.webapk.test";
+        startWebApkActivity(packageName, mTestServer.getURL("/chrome/test/data/android/test.html"));
+
+        CriteriaHelper.pollUiThread(new Criteria("Deferred startup never completed") {
+            @Override
+            public boolean isSatisfied() {
+                return DeferredStartupHandler.getInstance().isDeferredStartupCompleteForApp();
+            }
+        });
+        Assert.assertEquals(0, RecordHistogram.getHistogramTotalCountForTesting(histogramName));
+        WebappDataStorage storage = WebappRegistry.getInstance().getWebappDataStorage(
+                WebApkConstants.WEBAPK_ID_PREFIX + packageName);
+        Assert.assertNotEquals(WebappDataStorage.TIMESTAMP_INVALID, storage.getLastUsedTime());
+    }
+
+    /** Test that the "WebApk.LaunchInterval" histogram is recorded on susbequent launches. */
+    @Test
+    @LargeTest
+    @Feature({"WebApk"})
+    public void testLaunchIntervalHistogramRecordedOnSecondLaunch() throws Exception {
+        mNativeLibraryTestRule.loadNativeLibraryNoBrowserProcess();
+
+        final String histogramName = "WebApk.LaunchInterval";
+        final String packageName = "org.chromium.webapk.test";
+
+        WebappDataStorage storage =
+                registerWithStorage(WebApkConstants.WEBAPK_ID_PREFIX + packageName);
+        storage.setHasBeenLaunched();
+        storage.updateLastUsedTime();
+        Assert.assertEquals(0, RecordHistogram.getHistogramTotalCountForTesting(histogramName));
+
+        startWebApkActivity(packageName, mTestServer.getURL("/chrome/test/data/android/test.html"));
+
+        CriteriaHelper.pollUiThread(new Criteria("Deferred startup never completed") {
+            @Override
+            public boolean isSatisfied() {
+                return DeferredStartupHandler.getInstance().isDeferredStartupCompleteForApp();
+            }
+        });
+
+        Assert.assertEquals(1, RecordHistogram.getHistogramTotalCountForTesting(histogramName));
     }
 }
