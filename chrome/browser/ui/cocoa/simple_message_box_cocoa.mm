@@ -19,26 +19,21 @@
 
 namespace chrome {
 
-namespace {
-
-MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
-                                const base::string16& title,
-                                const base::string16& message,
-                                const base::string16& checkbox_text,
-                                MessageBoxType type) {
+MessageBoxResult ShowMessageBoxCocoa(const base::string16& message,
+                                     MessageBoxType type,
+                                     const base::string16& checkbox_text) {
   startup_metric_utils::SetNonBrowserUIDisplayed();
   if (internal::g_should_skip_message_box_for_test)
     return MESSAGE_BOX_RESULT_YES;
 
-  // Ignore the title; it's the window title on other platforms and ignorable.
   NSAlert* alert = [[[NSAlert alloc] init] autorelease];
   [alert setMessageText:base::SysUTF16ToNSString(message)];
   [alert setAlertStyle:NSWarningAlertStyle];
   if (type == MESSAGE_BOX_TYPE_QUESTION) {
-    [alert addButtonWithTitle:
-        l10n_util::GetNSString(IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL)];
-    [alert addButtonWithTitle:
-        l10n_util::GetNSString(IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL)];
+    [alert addButtonWithTitle:l10n_util::GetNSString(
+                                  IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL)];
+    [alert addButtonWithTitle:l10n_util::GetNSString(
+                                  IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL)];
   } else {
     [alert addButtonWithTitle:l10n_util::GetNSString(IDS_OK)];
   }
@@ -60,38 +55,6 @@ MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
     return MESSAGE_BOX_RESULT_YES;
 
   return MESSAGE_BOX_RESULT_NO;
-}
-
-}  // namespace
-
-void ShowWarningMessageBox(gfx::NativeWindow parent,
-                           const base::string16& title,
-                           const base::string16& message) {
-  ShowMessageBox(parent, title, message, base::string16(),
-                 MESSAGE_BOX_TYPE_WARNING);
-}
-
-void ShowWarningMessageBoxWithCheckbox(
-    gfx::NativeWindow parent,
-    const base::string16& title,
-    const base::string16& message,
-    const base::string16& checkbox_text,
-    base::OnceCallback<void(bool checked)> callback) {
-  ShowMessageBox(parent, title, message, checkbox_text,
-                 MESSAGE_BOX_TYPE_WARNING);
-  std::move(callback).Run(false);
-}
-
-MessageBoxResult ShowQuestionMessageBox(gfx::NativeWindow parent,
-                                        const base::string16& title,
-                                        const base::string16& message) {
-  return ShowMessageBox(parent, title, message, base::string16(),
-                        MESSAGE_BOX_TYPE_QUESTION);
-}
-
-bool CloseMessageBoxForTest(bool accept) {
-  NOTIMPLEMENTED();
-  return false;
 }
 
 }  // namespace chrome
