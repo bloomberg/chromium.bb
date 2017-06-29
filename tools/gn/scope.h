@@ -206,6 +206,7 @@ class Scope {
   // Marks the given identifier as (un)used in the current scope.
   void MarkUsed(const base::StringPiece& ident);
   void MarkAllUsed();
+  void MarkAllUsed(const std::set<std::string>& excluded_values);
   void MarkUnused(const base::StringPiece& ident);
 
   // Checks to see if the scope has a var set that hasn't been used. This is
