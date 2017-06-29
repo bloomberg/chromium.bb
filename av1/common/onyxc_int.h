@@ -323,7 +323,7 @@ typedef struct AV1Common {
 
   struct loopfilter lf;
   struct segmentation seg;
-
+  int all_lossless;
   int frame_parallel_decode;  // frame-based threading.
 
 #if CONFIG_EXT_TX
@@ -1083,6 +1083,22 @@ static INLINE void set_sb_size(AV1_COMMON *const cm, BLOCK_SIZE sb_size) {
 #else
   cm->mib_size_log2 = mi_width_log2_lookup[cm->sb_size];
 #endif
+}
+
+static INLINE int all_lossless(const AV1_COMMON *cm, const MACROBLOCKD *xd) {
+  int i;
+  int all_lossless = 1;
+  if (cm->seg.enabled) {
+    for (i = 0; i < MAX_SEGMENTS; ++i) {
+      if (!xd->lossless[i]) {
+        all_lossless = 0;
+        break;
+      }
+    }
+  } else {
+    all_lossless = xd->lossless[0];
+  }
+  return all_lossless;
 }
 
 #ifdef __cplusplus

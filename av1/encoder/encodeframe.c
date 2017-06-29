@@ -4521,20 +4521,8 @@ static MV_REFERENCE_FRAME get_frame_type(const AV1_COMP *cpi) {
     return LAST_FRAME;
 }
 
-static TX_MODE select_tx_mode(const AV1_COMP *cpi, MACROBLOCKD *const xd) {
-  int i, all_lossless = 1;
-
-  if (cpi->common.seg.enabled) {
-    for (i = 0; i < MAX_SEGMENTS; ++i) {
-      if (!xd->lossless[i]) {
-        all_lossless = 0;
-        break;
-      }
-    }
-  } else {
-    all_lossless = xd->lossless[0];
-  }
-  if (all_lossless) return ONLY_4X4;
+static TX_MODE select_tx_mode(const AV1_COMP *cpi) {
+  if (cpi->common.all_lossless) return ONLY_4X4;
   if (cpi->sf.tx_size_search_method == USE_LARGESTALL)
     return ALLOW_32X32 + CONFIG_TX64X64;
   else if (cpi->sf.tx_size_search_method == USE_FULL_RD ||
@@ -5004,10 +4992,10 @@ static void encode_frame_internal(AV1_COMP *cpi) {
                       cm->uv_dc_delta_q == 0 && cm->uv_ac_delta_q == 0;
     xd->qindex[i] = qindex;
   }
-
+  cm->all_lossless = all_lossless(cm, xd);
   if (!cm->seg.enabled && xd->lossless[0]) x->optimize = 0;
 
-  cm->tx_mode = select_tx_mode(cpi, xd);
+  cm->tx_mode = select_tx_mode(cpi);
 
 #if CONFIG_DELTA_Q
   // Fix delta q resolution for the moment
