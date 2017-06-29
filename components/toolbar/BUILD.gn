@@ -2,8 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
 import("//build/config/ui.gni")
+import("//device/vr/features/features.gni")
 import("//ui/vector_icons/vector_icons.gni")
+
+buildflag_header("build_features") {
+  header = "features.h"
+  flags = [ "ENABLE_VR=$enable_vr" ]
+}
 
 aggregate_vector_icons("toolbar_vector_icons") {
   icon_directory = "vector_icons"
@@ -36,6 +43,7 @@ static_library("vector_icons") {
 
 static_library("toolbar") {
   sources = [
+    "features.h",
     "toolbar_model.h",
     "toolbar_model_delegate.h",
     "toolbar_model_impl.cc",
@@ -49,6 +57,7 @@ static_library("toolbar") {
   ]
 
   deps = [
+    ":build_features",
     "//components/google/core/browser",
     "//components/prefs",
     "//components/resources",
@@ -59,7 +68,7 @@ static_library("toolbar") {
     "//ui/gfx",
   ]
 
-  if (!is_ios) {
+  if ((!is_android || enable_vr) && !is_ios) {
     deps += [ ":vector_icons" ]
   }
 }
