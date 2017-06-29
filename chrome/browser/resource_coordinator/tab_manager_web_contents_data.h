@@ -29,11 +29,13 @@ namespace resource_coordinator {
 // occurs in the main frame, which happens if the user navigates to a new page
 // and the WebContents is reused.
 //
+// These values are used in the TabManager.SessionRestore.SwitchToTab UMA.
+//
 // TODO(shaseley): *switch to the new done signal (network and cpu quiescence)
 // when available.
 //
-// TODO(shaseley): This will become an UMA histogram once the TabManager is
-// aware of session restore begin/end and background tab loading begin/end.
+// These values are written to logs.  New enum values can be added, but existing
+// enums must never be renumbered or deleted and reused.
 enum TabLoadingState {
   TAB_IS_NOT_LOADING = 0,
   TAB_IS_LOADING = 1,
@@ -129,6 +131,7 @@ class TabManager::WebContentsData
   // Needed to access tab_data_.
   FRIEND_TEST_ALL_PREFIXES(TabManagerWebContentsDataTest, CopyState);
   FRIEND_TEST_ALL_PREFIXES(TabManagerWebContentsDataTest, TabLoadingState);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, HistogramsSessionRestoreSwitchToTab);
 
   struct Data {
     Data();

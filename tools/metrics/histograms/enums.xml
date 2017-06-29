@@ -35976,6 +35976,12 @@ from previous Chrome versions.
       label="Discarded a tab playing audio (included in the previous one)"/>
 </enum>
 
+<enum name="TabLoadingState">
+  <int value="0" label="Tab is not loading"/>
+  <int value="1" label="Tab is loading"/>
+  <int value="2" label="Tab is loaded"/>
+</enum>
+
 <enum name="TabRendererCrashStatus">
   <int value="0" label="Shown in foreground app"/>
   <int value="1" label="Hidden in foreground app"/>

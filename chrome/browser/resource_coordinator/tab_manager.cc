@@ -793,6 +793,9 @@ void TabManager::ActiveTabChanged(content::WebContents* old_contents,
     // Re-setting time-to-purge every time a tab becomes inactive.
     GetWebContentsData(old_contents)
         ->set_time_to_purge(GetTimeToPurge(min_time_to_purge_));
+    // Only record switch-to-tab metrics when a switch happens, i.e.
+    // |old_contents| is set.
+    RecordSwitchToTab(new_contents);
   }
 }
 
@@ -904,6 +907,14 @@ std::vector<TabManager::BrowserInfo> TabManager::GetBrowserInfoList() const {
   }
 
   return browser_info_list;
+}
+
+void TabManager::RecordSwitchToTab(content::WebContents* contents) const {
+  if (is_session_restore_loading_tabs_) {
+    UMA_HISTOGRAM_ENUMERATION("TabManager.SessionRestore.SwitchToTab",
+                              GetWebContentsData(contents)->tab_loading_state(),
+                              TAB_LOADING_STATE_MAX);
+  }
 }
 
 }  // namespace resource_coordinator
