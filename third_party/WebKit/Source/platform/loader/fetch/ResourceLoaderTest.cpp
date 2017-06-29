@@ -4,6 +4,7 @@
 
 #include "platform/loader/fetch/RawResource.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
+#include "platform/loader/fetch/ResourceLoadScheduler.h"
 #include "platform/loader/fetch/ResourceLoader.h"
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/loader/testing/MockFetchContext.h"
@@ -89,6 +90,8 @@ TEST_F(ResourceLoaderTest, DetermineCORSStatus) {
        CORSStatus::kServiceWorkerOpaque},
   };
 
+  ResourceLoadScheduler* scheduler = ResourceLoadScheduler::Create();
+
   for (const auto& test : cases) {
     SCOPED_TRACE(
         ::testing::Message()
@@ -110,7 +113,8 @@ TEST_F(ResourceLoaderTest, DetermineCORSStatus) {
 
     Resource* resource =
         RawResource::CreateForTest(test.target, test.resource_type);
-    ResourceLoader* loader = ResourceLoader::Create(fetcher, resource);
+    ResourceLoader* loader =
+        ResourceLoader::Create(fetcher, scheduler, resource);
 
     ResourceRequest request;
     request.SetURL(test.target);
