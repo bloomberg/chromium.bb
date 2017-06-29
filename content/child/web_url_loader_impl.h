@@ -16,6 +16,10 @@
 #include "third_party/WebKit/public/platform/WebURLLoader.h"
 #include "url/gurl.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace content {
 
 class ResourceDispatcher;
@@ -48,9 +52,8 @@ struct CONTENT_EXPORT StreamOverrideParameters {
 class CONTENT_EXPORT WebURLLoaderImpl
     : public NON_EXPORTED_BASE(blink::WebURLLoader) {
  public:
-
-  // Takes ownership of |web_task_runner|.
   WebURLLoaderImpl(ResourceDispatcher* resource_dispatcher,
+                   scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                    mojom::URLLoaderFactory* url_loader_factory);
   ~WebURLLoaderImpl() override;
 
@@ -76,9 +79,6 @@ class CONTENT_EXPORT WebURLLoaderImpl
   void SetDefersLoading(bool value) override;
   void DidChangePriority(blink::WebURLRequest::Priority new_priority,
                          int intra_priority_value) override;
-  void SetLoadingTaskRunner(
-      base::SingleThreadTaskRunner* loading_task_runner) override;
-
  private:
   class Context;
   class RequestPeerImpl;

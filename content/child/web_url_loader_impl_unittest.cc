@@ -129,7 +129,9 @@ class TestResourceDispatcher : public ResourceDispatcher {
 class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
  public:
   TestWebURLLoaderClient(ResourceDispatcher* dispatcher)
-      : loader_(new WebURLLoaderImpl(dispatcher, nullptr)),
+      : loader_(new WebURLLoaderImpl(dispatcher,
+                                     base::ThreadTaskRunnerHandle::Get(),
+                                     nullptr)),
         delete_on_receive_redirect_(false),
         delete_on_receive_response_(false),
         delete_on_receive_data_(false),
