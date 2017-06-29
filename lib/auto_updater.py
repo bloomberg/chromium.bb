@@ -1147,12 +1147,14 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
     """Post-check for stateful update for CrOS host."""
     logging.debug('Start post check for stateful update...')
     self.device.Reboot(timeout_sec=self.REBOOT_TIMEOUT)
-    for folder in self.REMOTE_STATEFUL_PATH_TO_CHECK:
-      test_file_path = os.path.join(folder, self.REMOTE_STATEFUL_TEST_FILENAME)
-      # If stateful update succeeds, these test files should not exist.
-      if self.device.IfFileExists(test_file_path,
-                                  **self._cmd_kwargs_omit_error):
-        raise StatefulUpdateError('failed to post-check stateful update.')
+    if self._clobber_stateful:
+      for folder in self.REMOTE_STATEFUL_PATH_TO_CHECK:
+        test_file_path = os.path.join(folder,
+                                      self.REMOTE_STATEFUL_TEST_FILENAME)
+        # If stateful update succeeds, these test files should not exist.
+        if self.device.IfFileExists(test_file_path,
+                                    **self._cmd_kwargs_omit_error):
+          raise StatefulUpdateError('failed to post-check stateful update.')
 
   def PreSetupRootfsUpdate(self):
     """Pre-setup for rootfs update for CrOS host."""
@@ -1247,7 +1249,7 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
                           self.update_version,
                           self._GetReleaseVersion()))
 
-    if self.payload_filename:
+    if self.payload_filename and not self._clobber_stateful:
       logging.debug('Doing one final update check to get post update hostlog.')
       self.PostRebootUpdateCheck()
 
