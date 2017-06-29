@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/macros.h"
+#include "url/gurl.h"
 
-class GURL;
 class PrefService;
 
 namespace security_interstitials {
@@ -89,15 +89,23 @@ class ControllerClient {
 
   virtual void OpenUrlInCurrentTab(const GURL& url) = 0;
 
+  virtual void OpenUrlInNewForegroundTab(const GURL& url) = 0;
+
   virtual PrefService* GetPrefService() = 0;
 
   virtual const std::string& GetApplicationLocale() const = 0;
+
+  GURL GetBaseHelpCenterUrl() const;
+
+  void SetBaseHelpCenterUrlForTesting(const GURL& test_url);
 
  protected:
   virtual const std::string GetExtendedReportingPrefName() const = 0;
 
  private:
   std::unique_ptr<MetricsHelper> metrics_helper_;
+  // Link to the help center.
+  GURL help_center_url_;
 
   DISALLOW_COPY_AND_ASSIGN(ControllerClient);
 };

@@ -65,7 +65,7 @@ void SuperfishErrorUI::HandleCommand(SecurityInterstitialCommands command) {
   if (command == CMD_OPEN_HELP_CENTER) {
     controller()->metrics_helper()->RecordUserInteraction(
         security_interstitials::MetricsHelper::SHOW_LEARN_MORE);
-    controller()->OpenUrlInCurrentTab(GURL(kHelpURL));
+    controller()->OpenUrlInNewForegroundTab(GURL(kHelpURL));
     return;
   }
   SSLErrorUI::HandleCommand(command);

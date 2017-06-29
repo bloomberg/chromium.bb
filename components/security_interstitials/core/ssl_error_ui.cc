@@ -15,8 +15,8 @@
 namespace security_interstitials {
 namespace {
 
-// URL for help page.
-const char kHelpURL[] = "https://support.google.com/chrome/answer/6098869";
+// Path to the relevant help center page.
+const char kHelpPath[] = "answer/6098869";
 
 bool IsMasked(int options, SSLErrorUI::SSLErrorOptionsMask mask) {
   return ((options & mask) != 0);
@@ -190,7 +190,8 @@ void SSLErrorUI::HandleCommand(SecurityInterstitialCommands command) {
     case CMD_OPEN_HELP_CENTER:
       controller_->metrics_helper()->RecordUserInteraction(
           security_interstitials::MetricsHelper::SHOW_LEARN_MORE);
-      controller_->OpenUrlInCurrentTab(GURL(kHelpURL));
+      controller_->OpenUrlInNewForegroundTab(
+          controller_->GetBaseHelpCenterUrl().Resolve(kHelpPath));
       break;
     case CMD_RELOAD:
       controller_->metrics_helper()->RecordUserInteraction(

@@ -79,6 +79,14 @@ void SecurityInterstitialControllerClient::OpenUrlInCurrentTab(
   web_contents_->OpenURL(params);
 }
 
+void SecurityInterstitialControllerClient::OpenUrlInNewForegroundTab(
+    const GURL& url) {
+  content::OpenURLParams params(url, Referrer(),
+                                WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                                ui::PAGE_TRANSITION_LINK, false);
+  web_contents_->OpenURL(params);
+}
+
 const std::string&
 SecurityInterstitialControllerClient::GetApplicationLocale() const {
   return app_locale_;

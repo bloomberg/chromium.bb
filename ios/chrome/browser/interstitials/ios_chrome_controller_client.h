@@ -42,6 +42,7 @@ class IOSChromeControllerClient
   void Proceed() override;
   void Reload() override;
   void OpenUrlInCurrentTab(const GURL& url) override;
+  void OpenUrlInNewForegroundTab(const GURL& url) override;
   const std::string& GetApplicationLocale() const override;
   PrefService* GetPrefService() override;
   const std::string GetExtendedReportingPrefName() const override;

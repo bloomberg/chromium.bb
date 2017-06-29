@@ -65,7 +65,7 @@ class SecurityInterstitialPage : public content::InterstitialPageDelegate {
   content::WebContents* web_contents() const;
   GURL request_url() const;
 
-  SecurityInterstitialControllerClient* controller();
+  SecurityInterstitialControllerClient* controller() const;
 
   // Update metrics when the interstitial is closed.
   void UpdateMetricsAfterSecurityInterstitial();
