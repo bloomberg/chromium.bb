@@ -132,6 +132,7 @@ class NET_EXPORT NetworkQualityEstimator
   base::Optional<base::TimeDelta> GetHttpRTT() const override;
   base::Optional<base::TimeDelta> GetTransportRTT() const override;
   base::Optional<int32_t> GetDownstreamThroughputKbps() const override;
+  base::Optional<int32_t> GetBandwidthDelayProductKbits() const override;
   void AddRTTAndThroughputEstimatesObserver(
       RTTAndThroughputEstimatesObserver* observer) override;
   void RemoveRTTAndThroughputEstimatesObserver(
@@ -358,6 +359,7 @@ class NET_EXPORT NetworkQualityEstimator
                            OnPrefsReadWithReadingDisabled);
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest,
                            ForceEffectiveConnectionTypeThroughFieldTrial);
+  FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest, TestBDPComputation);
 
   // Value of round trip time observations is in base::TimeDelta.
   typedef nqe::internal::Observation<base::TimeDelta> RttObservation;
@@ -496,6 +498,11 @@ class NET_EXPORT NetworkQualityEstimator
   // connection type.
   bool UseTransportRTT() const;
 
+  // Computes the bandwidth delay product in kilobits. The computed value is
+  // stored in |bandwidth_delay_product_kbits_| and can be accessed using
+  // |GetBandwidthDelayProductKbits|.
+  void ComputeBandwidthDelayProduct();
+
   // Forces computation of effective connection type, and notifies observers
   // if there is a change in its value.
   void ComputeEffectiveConnectionType();
@@ -602,6 +609,9 @@ class NET_EXPORT NetworkQualityEstimator
 
   // Current estimate of the network quality.
   nqe::internal::NetworkQuality network_quality_;
+
+  // Current estimate of the bandwidth delay product (BDP) in kilobits.
+  base::Optional<int32_t> bandwidth_delay_product_kbits_;
 
   // Current effective connection type. It is updated on connection change
   // events. It is also updated every time there is network traffic (provided
