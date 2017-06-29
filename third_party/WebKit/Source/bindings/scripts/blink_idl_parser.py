@@ -106,10 +106,6 @@ class BlinkIDLParser(IDLParser):
                                        optimize=optimize)
         self.lexer = lexer
         self.tokens = lexer.KnownTokens()
-        # Using SLR (instead of LALR) generates the table faster,
-        # but produces the same output. This is ok b/c Web IDL (and Blink IDL)
-        # is an SLR grammar (as is often the case for simple LL(1) grammars).
-        #
         # Optimized mode substantially decreases startup time (by disabling
         # error checking), and also allows use of Python's optimized mode.
         # See: Using Python's Optimized Mode
@@ -120,7 +116,6 @@ class BlinkIDLParser(IDLParser):
         # See: CHANGES, Version 3.2
         # http://ply.googlecode.com/svn/trunk/CHANGES
         self.yaccobj = yacc.yacc(module=self,
-                                 method='SLR',
                                  debug=debug,
                                  optimize=optimize,
                                  write_tables=write_tables,
