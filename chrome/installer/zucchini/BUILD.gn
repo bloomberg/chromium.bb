@@ -25,9 +25,14 @@ if (is_win) {
 }
 
 test("zucchini_unittests") {
-  sources = []
+  sources = [
+    "buffer_view_unittest.cc",
+  ]
 
   deps = [
+    "//base",
     "//base/test:run_all_unittests",
+    "//base/test:test_support",
+    "//testing/gtest",
   ]
 }
