@@ -210,11 +210,10 @@ class ServiceWatcherProxy : public ProxyBase<ServiceWatcher> {
     }
   }
 
-  void DiscoverNewServices(bool force_update) override {
+  void DiscoverNewServices() override {
     if (implementation()) {
       PostToMdnsThread(base::Bind(&ServiceWatcher::DiscoverNewServices,
-                                  base::Unretained(implementation()),
-                                  force_update));
+                                  base::Unretained(implementation())));
     }
   }
 

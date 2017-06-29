@@ -74,7 +74,7 @@ ServiceTypePrinter::ServiceTypePrinter(ServiceDiscoveryClient* client,
 
 void ServiceTypePrinter::Start() {
   watcher_->Start();
-  watcher_->DiscoverNewServices(false);
+  watcher_->DiscoverNewServices();
 }
 
 ServiceTypePrinter::~ServiceTypePrinter() {

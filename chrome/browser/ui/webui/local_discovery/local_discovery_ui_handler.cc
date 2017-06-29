@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/local_discovery/local_discovery_ui_handler.h"
 
+#include <memory>
 #include <set>
 #include <utility>
 
@@ -173,7 +174,7 @@ void LocalDiscoveryUIHandler::HandleStart(const base::ListValue* args) {
   }
 
   privet_lister_->Start();
-  privet_lister_->DiscoverNewDevices(false);
+  privet_lister_->DiscoverNewDevices();
 
 #if defined(CLOUD_PRINT_CONNECTOR_UI_AVAILABLE)
   StartCloudPrintConnector();
@@ -380,7 +381,7 @@ void LocalDiscoveryUIHandler::DeviceRemoved(const std::string& name) {
 void LocalDiscoveryUIHandler::DeviceCacheFlushed() {
   web_ui()->CallJavascriptFunctionUnsafe(
       "local_discovery.onDeviceCacheFlushed");
-  privet_lister_->DiscoverNewDevices(false);
+  privet_lister_->DiscoverNewDevices();
 }
 
 void LocalDiscoveryUIHandler::OnDeviceListReady(
@@ -416,7 +417,7 @@ void LocalDiscoveryUIHandler::SendRegisterDone(
     const std::string& service_name) {
   // HACK(noamsml): Generate network traffic so the Windows firewall doesn't
   // block the printer's announcement.
-  privet_lister_->DiscoverNewDevices(false);
+  privet_lister_->DiscoverNewDevices();
 
   DeviceDescriptionMap::iterator it = device_descriptions_.find(service_name);
 

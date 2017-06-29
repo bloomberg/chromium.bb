@@ -7,6 +7,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/single_thread_task_runner.h"
@@ -104,7 +105,7 @@ class CastDeviceProvider::DeviceListerDelegate
     device_lister_.reset(new ServiceDiscoveryDeviceLister(
         this, service_discovery_client_.get(), kCastServiceType));
     device_lister_->Start();
-    device_lister_->DiscoverNewDevices(true);
+    device_lister_->DiscoverNewDevices();
   }
 
   // ServiceDiscoveryDeviceLister::Delegate implementation:

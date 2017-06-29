@@ -271,7 +271,7 @@ void ServiceWatcherImplMac::Start() {
   started_ = true;
 }
 
-void ServiceWatcherImplMac::DiscoverNewServices(bool force_update) {
+void ServiceWatcherImplMac::DiscoverNewServices() {
   DCHECK(started_);
   VLOG(1) << "ServiceWatcherImplMac::DiscoverNewServices";
   container_->DiscoverNewServices();

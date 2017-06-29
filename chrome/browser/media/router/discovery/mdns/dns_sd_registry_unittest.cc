@@ -15,7 +15,7 @@ class MockDnsSdDeviceLister : public DnsSdDeviceLister {
   MockDnsSdDeviceLister() : DnsSdDeviceLister(NULL, NULL, "") {}
   ~MockDnsSdDeviceLister() override {}
 
-  MOCK_METHOD1(Discover, void(bool force_update));
+  MOCK_METHOD0(Discover, void());
 };
 
 class TestDnsSdRegistry : public DnsSdRegistry {
@@ -116,8 +116,8 @@ TEST_F(DnsSdRegistryTest, ForceDiscovery) {
   EXPECT_EQ(1, registry_->GetServiceListenerCount(service_type1));
   EXPECT_EQ(1, registry_->GetServiceListenerCount(service_type2));
 
-  EXPECT_CALL(*registry_->GetLister(service_type1), Discover(false));
-  EXPECT_CALL(*registry_->GetLister(service_type2), Discover(false));
+  EXPECT_CALL(*registry_->GetLister(service_type1), Discover());
+  EXPECT_CALL(*registry_->GetLister(service_type2), Discover());
   registry_->ForceDiscovery();
 }
 

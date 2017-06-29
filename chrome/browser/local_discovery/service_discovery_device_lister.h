@@ -33,7 +33,7 @@ class ServiceDiscoveryDeviceLister {
   virtual ~ServiceDiscoveryDeviceLister();
 
   void Start();
-  void DiscoverNewDevices(bool force_update);
+  void DiscoverNewDevices();
 
   const std::string& service_type() const { return service_type_; }
 

@@ -61,7 +61,7 @@ class ServiceWatcherImpl : public ServiceWatcher,
   // ServiceWatcher implementation:
   void Start() override;
 
-  void DiscoverNewServices(bool force_update) override;
+  void DiscoverNewServices() override;
 
   void SetActivelyRefreshServices(bool actively_refresh_services) override;
 
@@ -130,7 +130,6 @@ class ServiceWatcherImpl : public ServiceWatcher,
   void AddSRV(const std::string& service);
   bool CreateTransaction(bool active,
                          bool alert_existing_services,
-                         bool force_refresh,
                          std::unique_ptr<net::MDnsTransaction>* transaction);
 
   void DeferUpdate(ServiceWatcher::UpdateType update_type,
@@ -140,7 +139,7 @@ class ServiceWatcherImpl : public ServiceWatcher,
 
   void ScheduleQuery(int timeout_seconds);
 
-  void SendQuery(int next_timeout_seconds, bool force_update);
+  void SendQuery(int next_timeout_seconds);
 
   const std::string service_type_;
   ServiceListenersMap services_;

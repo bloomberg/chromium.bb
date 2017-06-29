@@ -24,8 +24,8 @@ void PrivetDeviceListerImpl::Start() {
   device_lister_.Start();
 }
 
-void PrivetDeviceListerImpl::DiscoverNewDevices(bool force_update) {
-  device_lister_.DiscoverNewDevices(force_update);
+void PrivetDeviceListerImpl::DiscoverNewDevices() {
+  device_lister_.DiscoverNewDevices();
 }
 
 void PrivetDeviceListerImpl::OnDeviceChanged(
