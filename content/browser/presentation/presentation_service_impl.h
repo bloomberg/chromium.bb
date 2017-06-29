@@ -103,6 +103,8 @@ class CONTENT_EXPORT PresentationServiceImpl
                            MaxPendingReconnectPresentationRequests);
   FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest,
                            ReceiverPresentationServiceDelegate);
+  FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest,
+                           ReceiverDelegateOnSubFrame);
 
   // Maximum number of pending ReconnectPresentation requests at any given time.
   static const int kMaxQueuedRequests = 10;
@@ -277,6 +279,9 @@ class CONTENT_EXPORT PresentationServiceImpl
   // ID of the RenderFrameHost this object is associated with.
   int render_process_id_;
   int render_frame_id_;
+
+  // If current frame is top level frame.
+  bool is_main_frame_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<PresentationServiceImpl> weak_factory_;

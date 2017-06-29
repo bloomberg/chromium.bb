@@ -644,14 +644,13 @@ TEST_F(PresentationServiceImplTest, SetPresentationConnection) {
 }
 
 TEST_F(PresentationServiceImplTest, ReceiverPresentationServiceDelegate) {
-  MockReceiverPresentationServiceDelegate mock_receiver_delegate;
-  EXPECT_CALL(mock_receiver_delegate, AddObserver(_, _, _)).Times(1);
+  EXPECT_CALL(mock_receiver_delegate_, AddObserver(_, _, _)).Times(1);
 
   PresentationServiceImpl service_impl(main_rfh(), contents(), nullptr,
-                                       &mock_receiver_delegate);
+                                       &mock_receiver_delegate_);
 
   ReceiverConnectionAvailableCallback callback;
-  EXPECT_CALL(mock_receiver_delegate,
+  EXPECT_CALL(mock_receiver_delegate_,
               RegisterReceiverConnectionAvailableCallback(_))
       .WillOnce(SaveArg<0>(&callback));
 
@@ -677,7 +676,32 @@ TEST_F(PresentationServiceImplTest, ReceiverPresentationServiceDelegate) {
                mojo::MakeRequest(&receiver_connection));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_CALL(mock_receiver_delegate, RemoveObserver(_, _)).Times(1);
+  EXPECT_CALL(mock_receiver_delegate_, RemoveObserver(_, _)).Times(1);
+}
+
+TEST_F(PresentationServiceImplTest, ReceiverDelegateOnSubFrame) {
+  EXPECT_CALL(mock_receiver_delegate_, AddObserver(_, _, _)).Times(1);
+
+  PresentationServiceImpl service_impl(main_rfh(), contents(), nullptr,
+                                       &mock_receiver_delegate_);
+  service_impl.is_main_frame_ = false;
+
+  ReceiverConnectionAvailableCallback callback;
+  EXPECT_CALL(mock_receiver_delegate_,
+              RegisterReceiverConnectionAvailableCallback(_))
+      .Times(0);
+
+  blink::mojom::PresentationServiceClientPtr client_ptr;
+  client_binding_.reset(
+      new mojo::Binding<blink::mojom::PresentationServiceClient>(
+          &mock_client_, mojo::MakeRequest(&client_ptr)));
+  service_impl.controller_delegate_ = nullptr;
+  service_impl.SetClient(std::move(client_ptr));
+
+  EXPECT_CALL(mock_receiver_delegate_, Reset(_, _)).Times(0);
+  service_impl.Reset();
+
+  EXPECT_CALL(mock_receiver_delegate_, RemoveObserver(_, _)).Times(1);
 }
 
 }  // namespace content

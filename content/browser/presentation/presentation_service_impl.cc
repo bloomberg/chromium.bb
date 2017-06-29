@@ -59,8 +59,10 @@ PresentationServiceImpl::PresentationServiceImpl(
 
   render_process_id_ = render_frame_host->GetProcess()->GetID();
   render_frame_id_ = render_frame_host->GetRoutingID();
-  DVLOG(2) << "PresentationServiceImpl: "
-           << render_process_id_ << ", " << render_frame_id_;
+  is_main_frame_ = !render_frame_host->GetParent();
+
+  DVLOG(2) << "PresentationServiceImpl: " << render_process_id_ << ", "
+           << render_frame_id_ << " is main frame: " << is_main_frame_;
 
   if (auto* delegate = GetPresentationServiceDelegate())
     delegate->AddObserver(render_process_id_, render_frame_id_, this);
@@ -114,7 +116,7 @@ void PresentationServiceImpl::SetClient(
   // TODO(imcheng): Set ErrorHandler to listen for errors.
   client_ = std::move(client);
 
-  if (receiver_delegate_) {
+  if (receiver_delegate_ && is_main_frame_) {
     receiver_delegate_->RegisterReceiverConnectionAvailableCallback(
         base::Bind(&PresentationServiceImpl::OnReceiverConnectionAvailable,
                    weak_factory_.GetWeakPtr()));
@@ -428,8 +430,11 @@ void PresentationServiceImpl::WebContentsDestroyed() {
 void PresentationServiceImpl::Reset() {
   DVLOG(2) << "PresentationServiceImpl::Reset";
 
-  if (auto* delegate = GetPresentationServiceDelegate())
-    delegate->Reset(render_process_id_, render_frame_id_);
+  if (controller_delegate_)
+    controller_delegate_->Reset(render_process_id_, render_frame_id_);
+
+  if (receiver_delegate_ && is_main_frame_)
+    receiver_delegate_->Reset(render_process_id_, render_frame_id_);
 
   default_presentation_urls_.clear();
 
