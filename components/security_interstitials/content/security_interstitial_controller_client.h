@@ -45,6 +45,7 @@ class SecurityInterstitialControllerClient
   void Proceed() override;
   void Reload() override;
   void OpenUrlInCurrentTab(const GURL& url) override;
+  void OpenUrlInNewForegroundTab(const GURL& url) override;
   PrefService* GetPrefService() override;
   const std::string& GetApplicationLocale() const override;
   bool CanLaunchDateAndTimeSettings() override;

@@ -43,6 +43,7 @@
 #include "components/safe_browsing_db/test_database_manager.h"
 #include "components/safe_browsing_db/util.h"
 #include "components/safe_browsing_db/v4_protocol_manager_util.h"
+#include "components/security_interstitials/content/security_interstitial_controller_client.h"
 #include "components/security_interstitials/core/controller_client.h"
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "components/security_interstitials/core/urls.h"
@@ -58,6 +59,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/mock_cert_verifier.h"
@@ -732,6 +734,28 @@ class SafeBrowsingBlockingPageBrowserTest
         ->hit_report_sent();
   }
 
+  // Helper method for LearnMore test below. Implemented as a test fixture
+  // method instead of in the test below because the whole test fixture class
+  // is friended by SafeBrowsingBlockingPage.
+  void MockHelpCenterUrl(InterstitialPage* interstitial_page) {
+    ASSERT_TRUE(https_server_.Start());
+    scoped_refptr<net::X509Certificate> cert(https_server_.GetCertificate());
+    net::CertVerifyResult verify_result;
+    verify_result.is_issued_by_known_root = true;
+    verify_result.verified_cert = cert;
+    verify_result.cert_status = 0;
+    mock_cert_verifier()->AddResultForCert(cert.get(), verify_result, net::OK);
+
+    SafeBrowsingBlockingPage* sb_interstitial =
+        static_cast<SafeBrowsingBlockingPage*>(
+            interstitial_page->GetDelegateForTesting());
+    security_interstitials::SecurityInterstitialControllerClient* client =
+        sb_interstitial->controller();
+
+    client->SetBaseHelpCenterUrlForTesting(
+        https_server_.GetURL("/title1.html"));
+  }
+
  protected:
   TestThreatDetailsFactory details_factory_;
 
@@ -798,12 +822,35 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, DontProceed) {
 IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, VisitWhitePaper) {
   SetupWarningAndNavigate(browser());
 
-  EXPECT_EQ(VISIBLE, GetVisibility("whitepaper-link"));
-  EXPECT_TRUE(ClickAndWaitForDetach("whitepaper-link"));
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+  WebContents* interstitial_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(interstitial_tab);
 
-  AssertNoInterstitial(false);  // Assert the interstitial is gone
-  EXPECT_EQ(GetWhitePaperUrl(),
-            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+  EXPECT_EQ(VISIBLE, GetVisibility("whitepaper-link"));
+  content::TestNavigationObserver nav_observer(nullptr);
+  nav_observer.StartWatchingNewWebContents();
+  EXPECT_TRUE(Click("whitepaper-link"));
+
+  nav_observer.Wait();
+
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+  EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
+
+  // Assert the interstitial is not present in the foreground tab.
+  AssertNoInterstitial(false);
+
+  // Foreground tab displays the help center.
+  WebContents* new_tab = browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(new_tab);
+  EXPECT_EQ(GetWhitePaperUrl(), new_tab->GetURL());
+
+  // Interstitial should still display in the background tab.
+  browser()->tab_strip_model()->ActivateTabAt(0, true);
+  EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
+  EXPECT_EQ(interstitial_tab,
+            browser()->tab_strip_model()->GetActiveWebContents());
+  EXPECT_TRUE(YesInterstitial());
 }
 
 IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, Proceed) {
@@ -1112,17 +1159,35 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, LearnMore) {
   SetupWarningAndNavigate(browser());
-  EXPECT_TRUE(ClickAndWaitForDetach("learn-more-link"));
-  AssertNoInterstitial(false);  // Assert the interstitial is gone
 
-  // We are in the help page.
-  EXPECT_EQ(
-      GURL("https://support.google.com/chrome/answer/99020").GetWithEmptyPath(),
-      browser()
-          ->tab_strip_model()
-          ->GetActiveWebContents()
-          ->GetURL()
-          .GetWithEmptyPath());
+  WebContents* interstitial_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(interstitial_tab);
+
+  MockHelpCenterUrl(interstitial_tab->GetInterstitialPage());
+
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+
+  content::TestNavigationObserver nav_observer(nullptr);
+  nav_observer.StartWatchingNewWebContents();
+  SendCommand(security_interstitials::CMD_OPEN_HELP_CENTER);
+  nav_observer.Wait();
+
+  // A new tab has been opened.
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+
+  // Interstitial does not display in the foreground tab.
+  EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
+  WebContents* new_tab = browser()->tab_strip_model()->GetWebContentsAt(1);
+  ASSERT_TRUE(new_tab);
+  EXPECT_FALSE(new_tab->ShowingInterstitialPage());
+
+  // Interstitial still displays in the background tab.
+  browser()->tab_strip_model()->ActivateTabAt(0, true);
+  EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
+  EXPECT_EQ(interstitial_tab,
+            browser()->tab_strip_model()->GetActiveWebContents());
+  EXPECT_TRUE(YesInterstitial());
 }
 
 IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,

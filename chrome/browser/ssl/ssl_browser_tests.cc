@@ -68,6 +68,7 @@
 #include "components/policy/policy_constants.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "components/security_interstitials/content/security_interstitial_controller_client.h"
 #include "components/security_interstitials/core/controller_client.h"
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "components/security_state/core/security_state.h"
@@ -140,6 +141,7 @@ using content::NavigationController;
 using content::NavigationEntry;
 using content::SSLStatus;
 using content::WebContents;
+using security_interstitials::SecurityInterstitialControllerClient;
 using web_modal::WebContentsModalDialogManager;
 
 const base::FilePath::CharType kDocRoot[] =
@@ -708,6 +710,14 @@ class SSLUITest : public InProcessBrowserTest {
         ssl_config::prefs::kCertRevocationCheckingEnabled));
     EXPECT_TRUE(g_browser_process->local_state()->IsManagedPreference(
         ssl_config::prefs::kCertRevocationCheckingEnabled));
+  }
+
+  // Helper function for TestInterstitialLinksOpenInNewTab. Implemented as a
+  // test fixture method because the whole test fixture class is friended by
+  // SSLBlockingPage.
+  security_interstitials::SecurityInterstitialControllerClient*
+  GetControllerClientFromInterstitialPage(SSLBlockingPage* ssl_interstitial) {
+    return ssl_interstitial->controller();
   }
 
   net::EmbeddedTestServer https_server_;
@@ -3013,7 +3023,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestInterstitialJavaScriptProceeds) {
   content::RenderViewHost* interstitial_rvh =
       interstitial_page->GetMainFrame()->GetRenderViewHost();
   int result = -1;
-  std::string javascript =
+  const std::string javascript =
       base::StringPrintf("window.domAutomationController.send(%d);",
                          security_interstitials::CMD_PROCEED);
   ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
@@ -3048,7 +3058,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestInterstitialJavaScriptGoesBack) {
   content::RenderViewHost* interstitial_rvh =
       interstitial_page->GetMainFrame()->GetRenderViewHost();
   int result = -1;
-  std::string javascript =
+  const std::string javascript =
       base::StringPrintf("window.domAutomationController.send(%d);",
                          security_interstitials::CMD_DONT_PROCEED);
   ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
@@ -3059,8 +3069,65 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestInterstitialJavaScriptGoesBack) {
   EXPECT_EQ("about:blank", tab->GetVisibleURL().spec());
 }
 
+// Verifies that links in the interstitial open in a new tab.
+// https://crbug.com/717616
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestInterstitialLinksOpenInNewTab) {
+  ASSERT_TRUE(https_server_.Start());
+  ASSERT_TRUE(https_server_expired_.Start());
+
+  WebContents* interstitial_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_expired_.GetURL("/ssl/google.html"));
+  content::WaitForInterstitialAttach(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  InterstitialPage* interstitial_page = interstitial_tab->GetInterstitialPage();
+  ASSERT_TRUE(
+      content::WaitForRenderFrameReady(interstitial_page->GetMainFrame()));
+  CheckAuthenticationBrokenState(interstitial_tab,
+                                 net::CERT_STATUS_DATE_INVALID,
+                                 AuthState::SHOWING_INTERSTITIAL);
+  ASSERT_EQ(SSLBlockingPage::kTypeForTesting,
+            interstitial_page->GetDelegateForTesting()->GetTypeForTesting());
+
+  content::TestNavigationObserver nav_observer(nullptr);
+  nav_observer.StartWatchingNewWebContents();
+
+  SSLBlockingPage* ssl_interstitial =
+      static_cast<SSLBlockingPage*>(interstitial_page->GetDelegateForTesting());
+  security_interstitials::SecurityInterstitialControllerClient* client =
+      GetControllerClientFromInterstitialPage(ssl_interstitial);
+
+  // Mock out the help center URL so that our test will hit the test server
+  // instead of a real server.
+  // NOTE: The CMD_OPEN_HELP_CENTER code in
+  // components/security_interstitials/core/ssl_error_ui.cc ends up appending
+  // a path to whatever URL is passed to it. Since that path doesn't exist on
+  // our test server, this results in a 404. This is expected behavior, and
+  // things are still working as expected so long as the test passes!
+  const GURL mock_help_center_url = https_server_.GetURL("/title1.html");
+  client->SetBaseHelpCenterUrlForTesting(mock_help_center_url);
+
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+
+  int result = -1;
+  const std::string javascript =
+      base::StringPrintf("window.domAutomationController.send(%d);",
+                         security_interstitials::CMD_OPEN_HELP_CENTER);
+  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
+      interstitial_page->GetMainFrame(), javascript, &result));
+  EXPECT_EQ(security_interstitials::CMD_OPEN_HELP_CENTER, result);
+
+  nav_observer.Wait();
+
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+  WebContents* new_tab = browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(new_tab);
+  EXPECT_EQ(mock_help_center_url.host(), new_tab->GetURL().host());
+}
+
 // Verifies that switching tabs, while showing interstitial page, will not
-// affect the visibility of the interestitial.
+// affect the visibility of the interstitial.
 // https://crbug.com/381439
 IN_PROC_BROWSER_TEST_F(SSLUITest, InterstitialNotAffectedByHideShow) {
   ASSERT_TRUE(https_server_expired_.Start());

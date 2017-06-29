@@ -12,7 +12,6 @@
 #include "components/security_interstitials/core/urls.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "url/gurl.h"
 
 namespace security_interstitials {
 
@@ -22,10 +21,12 @@ const char kOptInLink[] = "optInLink";
 const char kPrivacyLinkHtml[] =
     "<a id=\"privacy-link\" href=\"#\" onclick=\"sendCommand(%d); "
     "return false;\" onmousedown=\"return false;\">%s</a>";
+const char kHelpCenterUrl[] = "https://support.google.com/chrome/";
 
 ControllerClient::ControllerClient(
     std::unique_ptr<MetricsHelper> metrics_helper)
-    : metrics_helper_(std::move(metrics_helper)) {}
+    : metrics_helper_(std::move(metrics_helper)),
+      help_center_url_(kHelpCenterUrl) {}
 
 ControllerClient::~ControllerClient() {}
 
@@ -45,7 +46,7 @@ void ControllerClient::OpenExtendedReportingPrivacyPolicy() {
   GURL privacy_url(kSafeBrowsingPrivacyPolicyUrl);
   privacy_url =
       google_util::AppendGoogleLocaleParam(privacy_url, GetApplicationLocale());
-  OpenUrlInCurrentTab(privacy_url);
+  OpenUrlInNewForegroundTab(privacy_url);
 }
 
 void ControllerClient::OpenExtendedReportingWhitepaper() {
@@ -53,7 +54,15 @@ void ControllerClient::OpenExtendedReportingWhitepaper() {
   GURL whitepaper_url(kSafeBrowsingWhitePaperUrl);
   whitepaper_url = google_util::AppendGoogleLocaleParam(whitepaper_url,
                                                         GetApplicationLocale());
-  OpenUrlInCurrentTab(whitepaper_url);
+  OpenUrlInNewForegroundTab(whitepaper_url);
+}
+
+GURL ControllerClient::GetBaseHelpCenterUrl() const {
+  return help_center_url_;
+}
+
+void ControllerClient::SetBaseHelpCenterUrlForTesting(const GURL& test_url) {
+  help_center_url_ = test_url;
 }
 
 }  // namespace security_interstitials

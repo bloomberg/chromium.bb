@@ -88,7 +88,8 @@ void SecurityInterstitialPage::Show() {
   AfterShow();
 }
 
-SecurityInterstitialControllerClient* SecurityInterstitialPage::controller() {
+SecurityInterstitialControllerClient* SecurityInterstitialPage::controller()
+    const {
   return controller_.get();
 }
 
