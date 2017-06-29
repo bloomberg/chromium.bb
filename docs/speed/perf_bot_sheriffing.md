@@ -11,6 +11,9 @@ waterfall up and running, and triaging performance test failures and flakes.
 *   [Handle Test Failures](#Handle-Test-Failures)
 *   [Follow up on failures](#Follow-up-on-failures)
 
+## Table of Contents
+[TOC]
+
 ## Understanding the Waterfall State
 
 **[Sheriff-O-Matic](https://sheriff-o-matic.appspot.com/chromium.perf)** is (as of
@@ -62,16 +65,72 @@ Please also check the recent
 **[perf-sheriffs@chromium.org](https://groups.google.com/a/chromium.org/forum/#!forum/perf-sheriffs)**
 postings for important announcements about bot turndowns and other known issues.
 
+## Swarming
+As of Q2 2017 all desktop and android bots have been moved to the swarming.
+There is now one machine on the chromium.perf waterfall for each desktop
+configuration that is triggering test tasks on 5 corresponding swarming bots.
+All of our swarming bots exist in the [chrome-perf swarming pool](https://chromium-swarm.appspot.com/botlist?c=id&c=os&c=task&c=status&f=pool%3AChrome-perf&l=100&s=id%3Aasc)
+
+Some things have probably changed about sheriffing since we migrated from
+buildbot. Here's a partial list:
+1.  Buildbot status pages
+    *   Every test that is run now has 2-3 recipe steps on the buildbot status
+        page associated with it
+        1.  '[trigger] <test_name>' step (you can mostly ignore this)
+        2.  '<test_name>' This is the test that was run on the swarming bot,
+            'shard #0' link on the step takes you to the swarming task page
+        3.  '<test_name> Dashboard Upload' This is the upload of the perf tests
+            results to the perf dashboard.  This will not be present if the test
+            was disabled.
+    *   We now run most benchmark tests even if they are disabled, but disabled
+        tests will always return success and you can ignore them.  You can
+        identify these by the 'DISABLED_BENCHMARK' link under the step and the
+        fact that they don’t have an upload step after them.
+        *  Some tests aren't run, if it's possible for us to tell that it would
+           just be disabled. Right now, we don't trigger "mobile" benchmarks for
+           desktop bots.
+2.  Debugging Expiring Jobs on the waterfall
+    *   You can tell a job is expiring in one of two ways:
+        1.  Click on the 'shard #0' link of the failed test and you will see
+            EXPIRED on the swarming task page
+        2.  If there is a 'no_results_exc' and an 'invalid_results_exc' link on
+            the buildbot failing test step with the dashboard upload step
+            failing (Note: this could be an EXPIRED job or a TIMEOUT.  An
+            Expired job means the task never got scheduled within the 5 hour
+            swarming timeout and TIMEOUT means it started running but couldn’t
+            finish before the 5 hour swarming timeout)
+    *   You can quickly see what bots the jobs are expiring/timing out on with
+        the ‘Bot id’ annotation on the failing test step
+    *   Troubleshooting why they are expiring
+        1.  Bot might be down, check the chrome-perf pool for that bot-id and
+            file a ticket with go/bugatrooper if the bot is down. [Example bot
+            page](https://chromium-swarm.appspot.com/bot?id=build73-b1--device1&sort_stats=total%3Adesc)
+            *   Can also identify a down bot through [viceroy](https://viceroy.corp.google.com/chrome_infra/Machines/per_machine)
+                Search for a bot id and if the graph stops it tells you the bot
+                is down
+        2.  Otherwise check the bots swarming page task list for each bot that
+            has failing jobs and examine what might be going on  (good [video](https://youtu.be/gRa0LvICthk)
+            from maruel@ on the swarming ui and how to filter and search bot
+            task lists.  For example you can filter on bot-id and name to
+            examine the last n runs of a test).
+            *   A test might be timing out on a bot that is causing subsequent
+                tests to expire even though they would pass normally but never
+                get scheduled due to that timing out test.  Debug the timing out
+                test.
+            *   A test might be taking a longer time than normal but still
+                passing, but the extra execution time causes other unrelated
+                tests to fail.  Examine the last passing run to the first
+                failing run and see if you can see a test that is taking a
+                significantly longer time and debug that issue. If you need help
+                with this, martiniss@ can get some useful data.
+
+
 ## Handle Device and Bot Failures
 
 ### Offline Buildslaves
 
-Some build configurations, in particular the perf builders and trybots, have
-multiple machines attached. If one or more of the machines go down, there are
-still other machines running, so the console or waterfall view will still show
-green, but those configs will run at reduced throughput. At least once during
-your shift, you should check the lists of buildslaves and ensure they're all
-running.
+At least once during your shift, you should check the lists of buildslaves and
+ensure they're all running.
 
 *   [chromium.perf buildslaves](https://build.chromium.org/p/chromium.perf/buildslaves)
 *   [tryserver.chromium.perf buildslaves](https://build.chromium.org/p/tryserver.chromium.perf/buildslaves)
@@ -107,26 +166,19 @@ which step is failing, and paste any relevant info from the logs into the bug. A
 
 ### Android Device failures
 
-There are three types of device failures:
+Android device failures will mainly manifest by turning a bunch of steps on a
+builder purple. Failures of this type are expected to be purple. This will
+manifest itself as a string of tests failing, all with the same device id.
+Sheriff-o-matic will try to do this grouping for you, and it will make an entry
+in sheriff-o-matic with a title like `bot affinity build123-b1 is broken on
+chromium.perf/Linux Perf, affecting 10 tests`.
 
-1.  A device is blacklisted in the `device_status` step. Device failures of this
-    type are expected to be purple. You can look at the buildbot status page to
-    see how many devices were listed as online during this step. You should
-    always see 7 devices online. If you see fewer than 7 devices online, there
-    is a problem in the lab.
-2.  A device is passing `device_status` but still in poor health. The
-    symptom of this is that all the tests are failing on it. You can see that on
-    the buildbot status page by looking at the `Device Affinity`. If all tests
-    with the same device affinity number are failing, it's probably a device
-    failure.
-3.  A device has completely disappeared from `device_status` step. You should
-    always see 7 total devices on a bot in one of three statuses: online,
-    misisng, or blacklisted. If you see fewer than 7 devices it means there is
-    a problem with the known devices persistent file and the device is
-    unreachable via adb. This usually means the known devices file was cleared
-    while a device was unreachable. A bug should be filed saying that there is a
-    missing device. Going through previous logs will usually yield a device ID
-    for the missing device.
+These issues are usually automatically handled by the labs team.
+If you are a Googler, you can see a list of tickets [here](https://gutsv3.corp.google.com/#adhoc/core.requester%3A%22chrome-infra-prod-borg%22%20AND%20Android%20Devices/0)
+which have been auto-filed by Chrome Infra. These are filed twice a day, and
+usually get attention from people in the lab, who can fix these bugs quickly.
+Check this list to see if a device is on there. If it isn't, then follow the
+instructions below to file a ticket with the labs team.
 
 For these types of failures, please file a bug with
 [this template](https://bugs.chromium.org/p/chromium/issues/entry?components=Infra%3ELabs&labels=Pri-1,Performance-Sheriff-BotHealth,OS-Android&comment=Link+to+buildbot+status+page:&summary=Device+offline+on+chromium.perf)
@@ -139,7 +191,6 @@ If you need help triaging, here are the common labels you should use:
 *   **Infra-Troopers** adds the bug to the trooper queue. This is for high
     priority issues, like a build breakage. Please add a comment explaining what
     you want the trooper to do.
-
 
 Here are the common components you should also use:
 
@@ -278,124 +329,6 @@ be investigated. When a test fails:
     Click link under _"stack tool with logcat dump"_ to see symbolized Android
     crashes.
 
-## Swarming Bots
-As of Q4 2016 all desktop bots have been moved to the swarming pool with a goal
-of moving all android bots to swarming in early 2017.  There is now one machine
-on the chromium.perf waterfall for each desktop configuration that is triggering
-test tasks on 5 corresponding swarming bots.  All of our swarming bots exists in
-the [chrome-perf swarming pool](https://chromium-swarm.appspot.com/botlist?c=id&c=os&c=task&c=status&f=pool%3AChrome-perf&l=100&s=id%3Aasc)
-
-1.  Buildbot status page FYIs
-    *   Every test that is run now has 2-3 recipe steps on the buildbot status
-        page associated with it
-        1.  '[trigger] <test_name>' step (you can mostly ignore this)
-        2.  '<test_name>' This is the test that was run on the swarming bot,
-            'shard #0' link on the step takes you to the swarming task page
-        3.  '<test_name> Dashboard Upload' This is the upload of the perf tests
-            results to the perf dashboard.  This will not be present if the test
-            was disabled.
-    *   We now run all benchmark tests even if they are disabled, but disabled
-        tests will always return success and you can ignore them.  You can
-        identify these by the 'DISABLED_BENCHMARK' link under the step and the
-        fact that they don’t have an upload step after them
-2.  Debugging Expiring Jobs on the waterfall
-    *   You can tell a job is expiring in one of two ways:
-        1.  Click on the 'shard #0' link of the failed test and you will see
-            EXPIRED on the swarming task page
-        2.  If there is a 'no_results_exc' and an 'invalid_results_exc' link on
-            the buildbot failing test step with the dashboard upload step
-            failing (Note: this could be an EXPIRED job or a TIMEOUT.  An
-            Expired job means the task never got scheduled within the 5 hour
-            swarming timeout and TIMEOUT means it started running but couldn’t
-            finish before the 5 hour swarming timeout)
-    *   You can quickly see what bots the jobs are expiring/timing out on with
-        the ‘Bot id’ annotation on the failing test step
-    *   Troubleshooting why they are expiring
-        1.  Bot might be down, check the chrome-perf pool for that bot-id and
-            file a ticket with go/bugatrooper if the bot is down.
-            *   Can also identify a down bot through [viceroy](https://viceroy.corp.google.com/chrome_infra/Machines/per_machine)
-                Search for a bot id and if the graph stops it tells you the bot
-                is down
-        2.  Otherwise check the bots swarming page task list for each bot that
-            has failing jobs and examine what might be going on  (good [video](https://youtu.be/gRa0LvICthk)
-            from maruel@ on the swarming ui and how to filter and search bot
-            task lists.  For example you can filter on bot-id and name to
-            examine the last n runs of a test).
-            *   A test might be timing out on a bot that is causing subsequent
-                tests to expire even though they would pass normally but never
-                get scheduled due to that timing out test.  Debug the timing out
-                test.
-            *   A test might be taking a longer time than normal but still
-                passing, but the extra execution time causes other unrelated
-                tests to fail.  Examine the last passing run to the first
-                failing run and see if you can see a test that is taking a
-                significantly longer time and debug that issue.
-3.  Reproducing swarming task runs
-    *   Reproduce on local machine using same inputs as bot
-        1.  Note that the local machines spec must roughly match that of the
-            swarming bot
-        2.  See 'Reproducing the task locally' on swarming task page
-        3.  First run the command under
-            'Download input files into directory foo'
-        4.  cd into foo/out/Release if those downloaded inputs
-        5.  Execute test from this directory.  Command you are looking for
-            should be at the top of the logs, you just need to update the
-            `--isolated-script-test-output=/b/s/w/ioFB73Qz/output.json` and
-            `--isolated-script-test-chartjson-output=/b/s/w/ioFB73Qz/chartjson-output.json`
-            flags to be a local path
-        6.  Example with tmp as locally created dir:
-            `/usr/bin/python ../../testing/scripts/run_telemetry_benchmark_as_googletest.py ../../tools/perf/run_benchmark speedometer -v --upload-results --output-format=chartjson --browser=release --isolated-script-test-output=tmp/output.json --isolated-script-test-chartjson-output=tmp/chartjson-output.json`
-    *   ssh into swarming bot and run test on that machine
-        1.  NOTE: this should be a last resort since it will cause a fifth of
-            the benchmarks to continuously fail on the waterfall
-        2   First you need to decommission the swarming bot so other jobs don’t
-            interfere, file a ticket with go/bugatrooper
-        3.  See [remote access to bots](https://sites.google.com/a/google.com/chrome-infrastructure/golo/remote-access?pli=1)
-            on how to ssh into the bot and then run the test.
-            Rough overview for build161-m1
-            *   prodaccess --chromegolo_ssh
-            *   Ssh build161-m1.golo
-            *   Password is in valentine
-                "Chrome Golo, Perf, GPU bots - chrome-bot"
-            *   File a bug to reboot the machine to get it online in the
-                swarming pool again
-4. Running local changes on swarming bot
-    *   Using sunspider as example benchmark since it is a quick one
-    *   First, run test locally to make sure there is no issue with the binary
-        or the script running the test on the swarming bot.  Make sure dir foo
-        exists:
-        `python testing/scripts/run_telemetry_benchmark_as_googletest.py tools/perf/run_benchmark sunspider -v --output-format=chartjson --upload-results --browser=reference --output-trace-tag=_ref --isolated-script-test-output=foo/output.json --isolated-script-test-chartjson-output=foo/chart-output.json`
-    *   Build any dependencies needed in isolate:
-        1.  ninja -C out/Release chrome/test:telemetry_perf_tests
-        2.  This target should be enough if you are running a benchmark,
-            otherwise build any targets that they say are missing when building
-            the isolate in step #2.
-        3.   Make sure [compiler proxy is running](https://sites.google.com/a/google.com/goma/how-to-use-goma/how-to-use-goma-for-chrome-team?pli=1)
-            *   ./goma_ctl.py ensure_start from goma directory
-    *   Build the isolate
-        1. `python tools/mb/mb.py isolate //out/Release -m chromium.perf -b "Linux Builder" telemetry_perf_tests`
-            *   -m is the master
-            *   -b is the builder name from mb_config.pyl that corresponds to
-                the platform you are running this command on
-            *   telemetry_perf_tests is the isolate name
-            *   Might run into internal source deps when building the isolate,
-                depending on the isolate.  Might need to update the entry in
-                mb_config.pyl for this builder to not be an official built so
-                src/internal isn’t required
-    *   Archive and create the isolate hash
-        1.  `python tools/swarming_client/isolate.py archive -I isolateserver.appspot.com -i out/Release/telemetry_perf_tests.isolate -s out/Release/telemetry_perf_tests.isolated`
-    *   Run the test with the has from step #3
-        1.  Run hash locally
-            *   Note output paths are local
-            *   `./tools/swarming_client/run_isolated.py -I https://isolateserver.appspot.com -s <insert_hash_here> -- sunspider -v --upload-results --output-format=chartjson --browser=reference --output-trace-tag=_ref --isolated-script-test-output=/usr/local/google/home/eyaich/projects/chromium/src/tmp/output.json`
-        2.  Trigger on swarming bot
-            *   Note paths are using swarming output dir environment variable
-                ISOLATED_OUTDIR and dimensions are based on the bot and os you
-                are triggering the job on
-            *   `python tools/swarming_client/swarming.py trigger -v --isolate-server isolateserver.appspot.com -S chromium-swarm.appspot.com -d id build150-m1 -d pool Chrome-perf -d os Linux -s <insert_hash_here> -- sunspider -v --upload-results --output-format=chartjson --browser=reference --output-trace-tag=_ref -isolated-script-test-output='${ISOLATED_OUTDIR}/output.json' --isolated-script-test-chartjson-output='${ISOLATED_OUTDIR}/chart-output.json'`
-            *   All args after the '--' are for the swarming task and not for
-                the trigger command.  The output dirs must be in quotes when
-                triggering on swarming bot
 
 ### Disabling Telemetry Tests
 
@@ -478,6 +411,77 @@ There is also a weekly debrief that you should see on your calendar titled
 **Weekly Speed Sheriff Retrospective**. For this meeting you should prepare
 any highlights or lowlights from your sheriffing shift as well as any other
 feedback you may have that could improve future sheriffing shifts.
+
+
+## Miscellaneous
+
+###  Reproducing swarming task runs
+*   Reproduce on local machine using same inputs as bot
+    1.  Note that the local machines spec must roughly match that of the
+        swarming bot
+    2.  See 'Reproducing the task locally' on swarming task page
+    3.  First run the command under
+        'Download input files into directory foo'
+    4.  cd into foo/out/Release of those downloaded inputs
+    5.  Execute test from this directory.  Command you are looking for
+        should be at the top of the logs, you just need to update the
+        `--isolated-script-test-output=/b/s/w/ioFB73Qz/output.json` and
+        `--isolated-script-test-chartjson-output=/b/s/w/ioFB73Qz/chartjson-output.json`
+        flags to be a local path
+    6.  Example with tmp as locally created dir:
+        `/usr/bin/python ../../testing/scripts/run_telemetry_benchmark_as_googletest.py ../../tools/perf/run_benchmark speedometer -v --upload-results --output-format=chartjson --browser=release --isolated-script-test-output=tmp/output.json --isolated-script-test-chartjson-output=tmp/chartjson-output.json`
+*   ssh into swarming bot and run test on that machine
+    1.  NOTE: this should be a last resort since it will cause a fifth of
+        the benchmarks to continuously fail on the waterfall. Notify to
+        nednguyen@ or sullivan@ if you are going to do this.
+    2   First you need to decommission the swarming bot so other jobs don’t
+        interfere, file a ticket with go/bugatrooper
+    3.  See [remote access to bots](https://sites.google.com/a/google.com/chrome-infrastructure/golo/remote-access?pli=1)
+        on how to ssh into the bot and then run the test.
+        Rough overview for build161-m1
+        *   prodaccess --chromegolo_ssh
+        *   Ssh build161-m1.golo
+        *   Password is in valentine
+            "Chrome Golo, Perf, GPU bots - chrome-bot"
+        *   File a bug to reboot the machine to get it online in the
+            swarming pool again
+* Running local changes on swarming bot
+    *   Using sunspider as example benchmark since it is a quick one
+    *   First, run test locally to make sure there is no issue with the binary
+        or the script running the test on the swarming bot.  Make sure dir foo
+        exists:
+        `python testing/scripts/run_telemetry_benchmark_as_googletest.py tools/perf/run_benchmark sunspider -v --output-format=chartjson --upload-results --browser=reference --output-trace-tag=_ref --isolated-script-test-output=foo/output.json --isolated-script-test-chartjson-output=foo/chart-output.json`
+    *   Build any dependencies needed in isolate:
+        1.  ninja -C out/Release chrome/test:telemetry_perf_tests
+        2.  This target should be enough if you are running a benchmark,
+            otherwise build any targets that they say are missing when building
+            the isolate in step #2.
+        3.   Make sure [compiler proxy is running](https://sites.google.com/a/google.com/goma/how-to-use-goma/how-to-use-goma-for-chrome-team?pli=1)
+            *   ./goma_ctl.py ensure_start from goma directory
+    *   Build the isolate
+        1. `python tools/mb/mb.py isolate //out/Release -m chromium.perf -b "Linux Builder" telemetry_perf_tests`
+            *   -m is the master
+            *   -b is the builder name from mb_config.pyl that corresponds to
+                the platform you are running this command on
+            *   telemetry_perf_tests is the isolate name
+            *   Might run into internal source deps when building the isolate,
+                depending on the isolate.  Might need to update the entry in
+                mb_config.pyl for this builder to not be an official built so
+                src/internal isn’t required
+    *   Archive and create the isolate hash
+        1.  `python tools/swarming_client/isolate.py archive -I isolateserver.appspot.com -i out/Release/telemetry_perf_tests.isolate -s out/Release/telemetry_perf_tests.isolated`
+    *   Run the test with the has from step #3
+        1.  Run hash locally
+            *   Note output paths are local
+            *   `./tools/swarming_client/run_isolated.py -I https://isolateserver.appspot.com -s <insert_hash_here> -- sunspider -v --upload-results --output-format=chartjson --browser=reference --output-trace-tag=_ref --isolated-script-test-output=/usr/local/google/home/eyaich/projects/chromium/src/tmp/output.json`
+        2.  Trigger on swarming bot
+            *   Note paths are using swarming output dir environment variable
+                ISOLATED_OUTDIR and dimensions are based on the bot and os you
+                are triggering the job on
+            *   `python tools/swarming_client/swarming.py trigger -v --isolate-server isolateserver.appspot.com -S chromium-swarm.appspot.com -d id build150-m1 -d pool Chrome-perf -d os Linux -s <insert_hash_here> -- sunspider -v --upload-results --output-format=chartjson --browser=reference --output-trace-tag=_ref -isolated-script-test-output='${ISOLATED_OUTDIR}/output.json' --isolated-script-test-chartjson-output='${ISOLATED_OUTDIR}/chart-output.json'`
+            *   All args after the '--' are for the swarming task and not for
+                the trigger command.  The output dirs must be in quotes when
+                triggering on swarming bot
 
 <!-- Unresolved issues:
 1. Do perf sheriffs watch the bisect waterfall?
