@@ -12,6 +12,7 @@
 #include "components/version_info/version_info.h"
 #import "ios/chrome/app/main_controller.h"
 #include "ios/chrome/browser/chrome_switches.h"
+#include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
@@ -111,12 +112,31 @@ id<GREYMatcher> DialogCancelButton() {
       grey_accessibilityTrait(UIAccessibilityTraitStaticText), nil);
 }
 
-// Opens the QR Scanner view using a command.
-// TODO(crbug.com/629776): Replace the command call with a UI action.
-void ShowQRScannerWithCommand() {
-  GenericChromeCommand* command =
-      [[GenericChromeCommand alloc] initWithTag:IDC_SHOW_QR_SCANNER];
-  chrome_test_util::RunCommandWithActiveViewController(command);
+// Opens the QR Scanner view.
+void ShowQRScanner() {
+  // TODO(crbug.com/738106): only show the QR Scanner via the Keyboard Accessory
+  // View.
+  if (experimental_flags::IsKeyboardAccessoryViewWithCameraSearchEnabled()) {
+    // Tap the omnibox to get the keyboard accessory view to show up.
+    id<GREYMatcher> locationbarButton = grey_allOf(
+        grey_accessibilityLabel(l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT)),
+        grey_minimumVisiblePercent(0.2), nil);
+    [[EarlGrey selectElementWithMatcher:locationbarButton]
+        assertWithMatcher:grey_text(@"Search or type URL")];
+    [[EarlGrey selectElementWithMatcher:locationbarButton]
+        performAction:grey_tap()];
+
+    // Tap the QR Code scanner button in the keyboard accessory view.
+    id<GREYMatcher> matcher =
+        grey_allOf(grey_accessibilityLabel(@"QR code Search"),
+                   grey_kindOfClass([UIButton class]), nil);
+
+    [[EarlGrey selectElementWithMatcher:matcher] performAction:grey_tap()];
+  } else {
+    GenericChromeCommand* command =
+        [[GenericChromeCommand alloc] initWithTag:IDC_SHOW_QR_SCANNER];
+    chrome_test_util::RunCommandWithActiveViewController(command);
+  }
 }
 
 // Taps the |button|.
@@ -251,7 +271,7 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
   [self assertModalOfClass:[UIAlertController class] isNotPresentedBy:bvc];
 
   [self addCameraControllerInitializationExpectations:mock];
-  ShowQRScannerWithCommand();
+  ShowQRScanner();
   [self waitForModalOfClass:[QRScannerViewController class] toAppearAbove:bvc];
   [self assertQRScannerUIIsVisibleWithTorch:NO];
   [self assertModalOfClass:[UIAlertController class]
@@ -632,7 +652,7 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
                 AVAuthorizationStatusDenied];
   [self swizzleCameraController:cameraControllerMock];
 
-  ShowQRScannerWithCommand();
+  ShowQRScanner();
   [self assertModalOfClass:[QRScannerViewController class]
           isNotPresentedBy:bvc];
   [self waitForModalOfClass:[UIAlertController class] toAppearAbove:bvc];

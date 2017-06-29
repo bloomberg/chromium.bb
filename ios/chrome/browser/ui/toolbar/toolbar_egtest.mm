@@ -471,4 +471,40 @@ void SelectNewTabPagePanel(NewTabPage::PanelIdentifier panel_type) {
 
   SelectNewTabPagePanel(NewTabPage::kMostVisitedPanel);
 }
+
+// Tests typing in the omnibox using the keyboard accessory view.
+- (void)testToolbarOmniboxKeyboardAccessoryView {
+  // Select the omnibox to get the keyboard up.
+  id<GREYMatcher> locationbarButton = grey_allOf(
+      grey_accessibilityLabel(l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT)),
+      grey_minimumVisiblePercent(0.2), nil);
+  [[EarlGrey selectElementWithMatcher:locationbarButton]
+      assertWithMatcher:grey_text(@"Search or type URL")];
+  [[EarlGrey selectElementWithMatcher:locationbarButton]
+      performAction:grey_tap()];
+
+  // Tap the "/" keyboard accessory button.
+  id<GREYMatcher> slashButtonMatcher = grey_allOf(
+      grey_accessibilityLabel(@"/"), grey_kindOfClass([UIButton class]), nil);
+
+  [[EarlGrey selectElementWithMatcher:slashButtonMatcher]
+      performAction:grey_tap()];
+
+  // Tap the ".com" keyboard accessory button.
+  id<GREYMatcher> dotComButtonMatcher =
+      grey_allOf(grey_accessibilityLabel(@".com"),
+                 grey_kindOfClass([UIButton class]), nil);
+
+  [[EarlGrey selectElementWithMatcher:dotComButtonMatcher]
+      performAction:grey_tap()];
+
+  // Verify that the omnibox contains "/.com"
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(grey_accessibilityLabel(@"/.com"),
+                                          grey_kindOfClass(
+                                              [OmniboxPopupMaterialRow class]),
+                                          nil)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
 @end
