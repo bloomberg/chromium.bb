@@ -45,6 +45,7 @@
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/jpeg_codec.h"
+#include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "url/gurl.h"
 
@@ -71,6 +72,10 @@ static const char kTranslateCaptureText[] = "Translate.CaptureText";
 // For a page that auto-refreshes, we still show the bubble, if
 // the refresh delay is less than this value (in seconds).
 static const double kLocationChangeIntervalInSeconds = 10;
+
+// For the context menu, we want to keep transparency as is instead of
+// replacing transparent pixels with black ones
+static const bool kDiscardTransparencyForContextMenu = false;
 
 namespace {
 
@@ -194,6 +199,7 @@ void ChromeRenderFrameObserver::RequestReloadImageForContextNode() {
 void ChromeRenderFrameObserver::RequestThumbnailForContextNode(
     int32_t thumbnail_min_area_pixels,
     const gfx::Size& thumbnail_max_size_pixels,
+    chrome::mojom::ImageFormat image_format,
     const RequestThumbnailForContextNodeCallback& callback) {
   WebNode context_node = render_frame()->GetWebFrame()->ContextMenuNode();
   SkBitmap thumbnail;
@@ -219,8 +225,19 @@ void ChromeRenderFrameObserver::RequestThumbnailForContextNode(
   std::vector<uint8_t> thumbnail_data;
   constexpr int kDefaultQuality = 90;
   std::vector<unsigned char> data;
-  if (gfx::JPEGCodec::Encode(bitmap, kDefaultQuality, &data)) {
-    thumbnail_data.swap(data);
+
+  switch (image_format) {
+    case chrome::mojom::ImageFormat::PNG:
+      if (gfx::PNGCodec::EncodeBGRASkBitmap(
+              bitmap, kDiscardTransparencyForContextMenu, &data)) {
+        thumbnail_data.swap(data);
+        break;
+      }
+    case chrome::mojom::ImageFormat::JPEG:
+      if (gfx::JPEGCodec::Encode(bitmap, kDefaultQuality, &data)) {
+        thumbnail_data.swap(data);
+        break;
+      }
   }
 
   callback.Run(thumbnail_data, original_size);

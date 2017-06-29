@@ -119,6 +119,7 @@ void CoreTabHelper::SearchByImageInNewTab(
   thumbnail_capturer_proxy->RequestThumbnailForContextNode(
       kImageSearchThumbnailMinSize,
       gfx::Size(kImageSearchThumbnailMaxWidth, kImageSearchThumbnailMaxHeight),
+      chrome::mojom::ImageFormat::JPEG,
       base::Bind(&CoreTabHelper::DoSearchByImageInNewTab,
                  weak_factory_.GetWeakPtr(), base::Passed(&thumbnail_capturer),
                  src_url));
