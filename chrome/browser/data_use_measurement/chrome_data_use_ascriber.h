@@ -6,13 +6,12 @@
 #define CHROME_BROWSER_DATA_USE_MEASUREMENT_CHROME_DATA_USE_ASCRIBER_H_
 
 #include <list>
+#include <map>
 #include <memory>
 #include <string>
 #include <tuple>
-#include <unordered_map>
 #include <utility>
 
-#include "base/containers/hash_tables.h"
 #include "base/hash.h"
 #include "base/macros.h"
 #include "base/supports_user_data.h"
@@ -119,13 +118,6 @@ class ChromeDataUseAscriber : public DataUseAscriber {
   typedef std::list<ChromeDataUseRecorder> DataUseRecorderList;
   typedef DataUseRecorderList::iterator DataUseRecorderEntry;
 
-  struct GlobalRequestIDHash {
-   public:
-    std::size_t operator()(const content::GlobalRequestID& x) const {
-      return base::HashInts(x.child_id, x.request_id);
-    }
-  };
-
   class DataUseRecorderEntryAsUserData : public base::SupportsUserData::Data {
    public:
     explicit DataUseRecorderEntryAsUserData(DataUseRecorderEntry entry);
@@ -192,20 +184,17 @@ class ChromeDataUseAscriber : public DataUseAscriber {
   // Map from RenderFrameHost to the MainRenderFrameEntry which contains all
   // details of the main frame. New entry is added on main render frame creation
   // and removed on its deletion.
-  base::hash_map<RenderFrameHostID, MainRenderFrameEntry>
+  std::map<RenderFrameHostID, MainRenderFrameEntry>
       main_render_frame_entry_map_;
 
   // Maps subframe IDs to the mainframe ID, so the mainframe lifetime can have
   // ownership over the lifetime of entries in |data_use_recorders_|. Mainframes
   // are mapped to themselves.
-  base::hash_map<RenderFrameHostID, RenderFrameHostID>
-      subframe_to_mainframe_map_;
+  std::map<RenderFrameHostID, RenderFrameHostID> subframe_to_mainframe_map_;
 
   // Map from pending navigations to the DataUseRecorderEntry in
   // |data_use_recorders_| that the navigation ascribes data use to.
-  std::unordered_map<content::GlobalRequestID,
-                     DataUseRecorderEntry,
-                     GlobalRequestIDHash>
+  std::map<content::GlobalRequestID, DataUseRecorderEntry>
       pending_navigation_data_use_map_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeDataUseAscriber);

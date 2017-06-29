@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_NET_NETWORK_PORTAL_DETECTOR_TEST_IMPL_H_
 #define CHROME_BROWSER_CHROMEOS_NET_NETWORK_PORTAL_DETECTOR_TEST_IMPL_H_
 
+#include <map>
 #include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
@@ -44,8 +44,8 @@ class NetworkPortalDetectorTestImpl : public NetworkPortalDetector {
   }
 
  private:
-  typedef std::string NetworkId;
-  typedef base::hash_map<NetworkId, CaptivePortalState> CaptivePortalStateMap;
+  using NetworkId = std::string;
+  using CaptivePortalStateMap = std::map<NetworkId, CaptivePortalState>;
 
   base::ObserverList<Observer> observers_;
   std::unique_ptr<NetworkState> default_network_;

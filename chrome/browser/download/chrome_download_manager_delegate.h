@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/containers/hash_tables.h"
+#include "base/containers/flat_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -181,8 +181,9 @@ class ChromeDownloadManagerDelegate
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // Maps from pending extension installations to DownloadItem IDs.
-  typedef base::hash_map<extensions::CrxInstaller*,
-      content::DownloadOpenDelayedCallback> CrxInstallerMap;
+  typedef base::flat_map<extensions::CrxInstaller*,
+                         content::DownloadOpenDelayedCallback>
+      CrxInstallerMap;
   CrxInstallerMap crx_installers_;
 #endif
 

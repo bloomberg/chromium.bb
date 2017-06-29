@@ -12,7 +12,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/containers/hash_tables.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -156,8 +155,7 @@ class MTPDeviceDelegateImplMac : public MTPDeviceAsyncDelegate {
   std::unique_ptr<DeviceListener> camera_interface_;
 
   // Stores a map from filename to file metadata received from the camera.
-  base::hash_map<base::FilePath::StringType,
-                 base::File::Info> file_info_;
+  std::map<base::FilePath::StringType, base::File::Info> file_info_;
 
   // List of filenames received from the camera.
   std::vector<base::FilePath> file_paths_;

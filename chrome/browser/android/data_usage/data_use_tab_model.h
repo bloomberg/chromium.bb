@@ -7,13 +7,13 @@
 
 #include <stddef.h>
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/callback_forward.h"
-#include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -239,7 +239,7 @@ class DataUseTabModel {
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest,
                            MatchingRuleFetchOnControlAppInstall);
 
-  typedef base::hash_map<SessionID::id_type, TabDataUseEntry> TabEntryMap;
+  using TabEntryMap = std::map<SessionID::id_type, TabDataUseEntry>;
 
   // Gets the current label of a tab, and the new label if a navigation event
   // occurs in the tab. |tab_id| is the source tab of the generated event,

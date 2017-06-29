@@ -104,8 +104,8 @@ void ExpectEquivalent(const std::map<Key, Value>& left,
 }
 
 template <typename Key, typename Value>
-void ExpectEquivalent(const base::hash_map<Key, Value>& left,
-                      const base::hash_map<Key, Value>& right) {
+void ExpectEquivalent(const std::unordered_map<Key, Value>& left,
+                      const std::unordered_map<Key, Value>& right) {
   // Convert from a hash container to an ordered container for comparison.
   ExpectEquivalentMaps(std::map<Key, Value>(left.begin(), left.end()),
                        std::map<Key, Value>(right.begin(), right.end()));
@@ -136,8 +136,8 @@ void ExpectEquivalent(const std::set<Value, Comparator>& left,
 }
 
 template <typename Value>
-void ExpectEquivalent(const base::hash_set<Value>& left,
-                      const base::hash_set<Value>& right) {
+void ExpectEquivalent(const std::unordered_set<Value>& left,
+                      const std::unordered_set<Value>& right) {
   // Convert from a hash container to an ordered container for comparison.
   return ExpectEquivalentSets(std::set<Value>(left.begin(), left.end()),
                               std::set<Value>(right.begin(), right.end()));

@@ -378,13 +378,23 @@ InputMethodUtil::InputMethodUtil(InputMethodDelegate* delegate)
   ResetInputMethods(default_input_methods);
 
   // Initialize a map from English string to Chrome string resource ID as well.
+  // Since this array is write-once, initialize a flat map in one step with a
+  // given vector storage.
+  //
+  // TODO(brettw) this could be optimized further to binary search in the
+  // static data, avoiding this up-front cost.
+  std::vector<EnglishToIDMap::value_type> map_storage;
+  map_storage.reserve(kEnglishToResourceIdArraySize);
   for (size_t i = 0; i < kEnglishToResourceIdArraySize; ++i) {
     const EnglishToResouceId& map_entry = kEnglishToResourceIdArray[i];
-    const bool result = english_to_resource_id_.insert(std::make_pair(
-        map_entry.english_string_from_ibus, map_entry.resource_id)).second;
-    DCHECK(result) << "Duplicated string is found: "
-                   << map_entry.english_string_from_ibus;
+    map_storage.emplace_back(map_entry.english_string_from_ibus,
+                             map_entry.resource_id);
   }
+
+  english_to_resource_id_ =
+      EnglishToIDMap(std::move(map_storage), base::KEEP_FIRST_OF_DUPES);
+  DCHECK(english_to_resource_id_.size() == kEnglishToResourceIdArraySize)
+      << "Duplicate string is found";
 }
 
 InputMethodUtil::~InputMethodUtil() {}
@@ -413,7 +423,7 @@ bool InputMethodUtil::TranslateStringInternal(
   // to get the translated string.
   std::string key_string = extension_ime_util::MaybeGetLegacyXkbId(
       english_string);
-  HashType::const_iterator iter = english_to_resource_id_.find(key_string);
+  auto iter = english_to_resource_id_.find(key_string);
 
   if (iter == english_to_resource_id_.end()) {
     // TODO(yusukes): Write Autotest which checks if all display names and all

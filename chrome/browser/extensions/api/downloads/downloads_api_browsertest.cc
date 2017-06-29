@@ -1258,9 +1258,9 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
             items[1]->GetTargetFilePath().value());
   // The order of results when orderBy is empty is unspecified. When there are
   // no sorters, DownloadQuery does not call sort(), so the order of the results
-  // depends on the order of the items in base::hash_map<uint32_t,...>
-  // DownloadManagerImpl::downloads_, which is unspecified and differs between
-  // libc++ and libstdc++. http://crbug.com/365334
+  // depends on the order of the items in DownloadManagerImpl::downloads_,
+  // which is unspecified and differs between libc++ and libstdc++.
+  // http://crbug.com/365334
 }
 
 // Test the |danger| option for search().

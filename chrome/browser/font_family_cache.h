@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_FONT_FAMILY_CACHE_H_
 #define CHROME_BROWSER_FONT_FAMILY_CACHE_H_
 
-#include "base/containers/hash_tables.h"
+#include <unordered_map>
+
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
@@ -23,7 +24,7 @@ FORWARD_DECLARE_TEST(FontFamilyCacheTest, Caching);
 // Caches font family preferences associated with a PrefService. This class
 // relies on the assumption that each concatenation of map_name + '.' + script
 // is a unique string. It also relies on the assumption that the (const char*)
-// keys used in both inner and outer hash_maps are compile time constants.
+// keys used in both inner and outer maps are compile time constants.
 class FontFamilyCache : public base::SupportsUserData::Data,
                         public content::NotificationObserver {
  public:
@@ -49,11 +50,11 @@ class FontFamilyCache : public base::SupportsUserData::Data,
 
   // Map from script to font.
   // Key comparison uses pointer equality.
-  typedef base::hash_map<const char*, base::string16> ScriptFontMap;
+  using ScriptFontMap = std::unordered_map<const char*, base::string16>;
 
   // Map from font family to ScriptFontMap.
   // Key comparison uses pointer equality.
-  typedef base::hash_map<const char*, ScriptFontMap> FontFamilyMap;
+  using FontFamilyMap = std::unordered_map<const char*, ScriptFontMap>;
 
   // Checks the cache for the font. If not present, fetches the font and stores
   // the result in the cache.
@@ -63,7 +64,7 @@ class FontFamilyCache : public base::SupportsUserData::Data,
   // of std::string.
   // |script| and |map_name| must be compile time constants. Two behaviors rely
   // on this: key comparison uses pointer equality, and keys must outlive the
-  // hash_maps.
+  // maps.
   base::string16 FetchAndCacheFont(const char* script, const char* map_name);
 
   // Called when font family preferences changed.

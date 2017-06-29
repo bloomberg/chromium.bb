@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_writer.h"
@@ -362,49 +363,69 @@ IconLoader::IconSize IconLoaderSizeFromPixelSize(int pixel_size) {
   }
 }
 
-typedef base::hash_map<std::string, DownloadQuery::FilterType> FilterTypeMap;
-
-void InitFilterTypeMap(FilterTypeMap* filter_types_ptr) {
-  FilterTypeMap& filter_types = *filter_types_ptr;
-  filter_types[kBytesReceivedKey] = DownloadQuery::FILTER_BYTES_RECEIVED;
-  filter_types[kExistsKey] = DownloadQuery::FILTER_EXISTS;
-  filter_types[kFilenameKey] = DownloadQuery::FILTER_FILENAME;
-  filter_types[kFilenameRegexKey] = DownloadQuery::FILTER_FILENAME_REGEX;
-  filter_types[kMimeKey] = DownloadQuery::FILTER_MIME;
-  filter_types[kPausedKey] = DownloadQuery::FILTER_PAUSED;
-  filter_types[kQueryKey] = DownloadQuery::FILTER_QUERY;
-  filter_types[kEndedAfterKey] = DownloadQuery::FILTER_ENDED_AFTER;
-  filter_types[kEndedBeforeKey] = DownloadQuery::FILTER_ENDED_BEFORE;
-  filter_types[kEndTimeKey] = DownloadQuery::FILTER_END_TIME;
-  filter_types[kStartedAfterKey] = DownloadQuery::FILTER_STARTED_AFTER;
-  filter_types[kStartedBeforeKey] = DownloadQuery::FILTER_STARTED_BEFORE;
-  filter_types[kStartTimeKey] = DownloadQuery::FILTER_START_TIME;
-  filter_types[kTotalBytesKey] = DownloadQuery::FILTER_TOTAL_BYTES;
-  filter_types[kTotalBytesGreaterKey] =
-    DownloadQuery::FILTER_TOTAL_BYTES_GREATER;
-  filter_types[kTotalBytesLessKey] = DownloadQuery::FILTER_TOTAL_BYTES_LESS;
-  filter_types[kUrlKey] = DownloadQuery::FILTER_ORIGINAL_URL;
-  filter_types[kUrlRegexKey] = DownloadQuery::FILTER_ORIGINAL_URL_REGEX;
-  filter_types[kFinalUrlKey] = DownloadQuery::FILTER_URL;
-  filter_types[kFinalUrlRegexKey] = DownloadQuery::FILTER_URL_REGEX;
+using FilterTypeMap = base::flat_map<std::string, DownloadQuery::FilterType>;
+void AppendFilter(const char* name,
+                  DownloadQuery::FilterType type,
+                  std::vector<FilterTypeMap::value_type>* v) {
+  v->emplace_back(name, type);
 }
 
-typedef base::hash_map<std::string, DownloadQuery::SortType> SortTypeMap;
+void InitFilterTypeMap(FilterTypeMap* filter_types_ptr) {
+  // Initialize the map in one shot by storing to a vector and assigning.
+  std::vector<FilterTypeMap::value_type> v;
+
+  AppendFilter(kBytesReceivedKey, DownloadQuery::FILTER_BYTES_RECEIVED, &v);
+
+  AppendFilter(kBytesReceivedKey, DownloadQuery::FILTER_BYTES_RECEIVED, &v);
+  AppendFilter(kExistsKey, DownloadQuery::FILTER_EXISTS, &v);
+  AppendFilter(kFilenameKey, DownloadQuery::FILTER_FILENAME, &v);
+  AppendFilter(kFilenameRegexKey, DownloadQuery::FILTER_FILENAME_REGEX, &v);
+  AppendFilter(kMimeKey, DownloadQuery::FILTER_MIME, &v);
+  AppendFilter(kPausedKey, DownloadQuery::FILTER_PAUSED, &v);
+  AppendFilter(kQueryKey, DownloadQuery::FILTER_QUERY, &v);
+  AppendFilter(kEndedAfterKey, DownloadQuery::FILTER_ENDED_AFTER, &v);
+  AppendFilter(kEndedBeforeKey, DownloadQuery::FILTER_ENDED_BEFORE, &v);
+  AppendFilter(kEndTimeKey, DownloadQuery::FILTER_END_TIME, &v);
+  AppendFilter(kStartedAfterKey, DownloadQuery::FILTER_STARTED_AFTER, &v);
+  AppendFilter(kStartedBeforeKey, DownloadQuery::FILTER_STARTED_BEFORE, &v);
+  AppendFilter(kStartTimeKey, DownloadQuery::FILTER_START_TIME, &v);
+  AppendFilter(kTotalBytesKey, DownloadQuery::FILTER_TOTAL_BYTES, &v);
+  AppendFilter(kTotalBytesGreaterKey, DownloadQuery::FILTER_TOTAL_BYTES_GREATER,
+               &v);
+  AppendFilter(kTotalBytesLessKey, DownloadQuery::FILTER_TOTAL_BYTES_LESS, &v);
+  AppendFilter(kUrlKey, DownloadQuery::FILTER_ORIGINAL_URL, &v);
+  AppendFilter(kUrlRegexKey, DownloadQuery::FILTER_ORIGINAL_URL_REGEX, &v);
+  AppendFilter(kFinalUrlKey, DownloadQuery::FILTER_URL, &v);
+  AppendFilter(kFinalUrlRegexKey, DownloadQuery::FILTER_URL_REGEX, &v);
+
+  *filter_types_ptr = FilterTypeMap(std::move(v), base::KEEP_FIRST_OF_DUPES);
+}
+
+using SortTypeMap = base::flat_map<std::string, DownloadQuery::SortType>;
+void AppendFilter(const char* name,
+                  DownloadQuery::SortType type,
+                  std::vector<SortTypeMap::value_type>* v) {
+  v->emplace_back(name, type);
+}
 
 void InitSortTypeMap(SortTypeMap* sorter_types_ptr) {
-  SortTypeMap& sorter_types = *sorter_types_ptr;
-  sorter_types[kBytesReceivedKey] = DownloadQuery::SORT_BYTES_RECEIVED;
-  sorter_types[kDangerKey] = DownloadQuery::SORT_DANGER;
-  sorter_types[kEndTimeKey] = DownloadQuery::SORT_END_TIME;
-  sorter_types[kExistsKey] = DownloadQuery::SORT_EXISTS;
-  sorter_types[kFilenameKey] = DownloadQuery::SORT_FILENAME;
-  sorter_types[kMimeKey] = DownloadQuery::SORT_MIME;
-  sorter_types[kPausedKey] = DownloadQuery::SORT_PAUSED;
-  sorter_types[kStartTimeKey] = DownloadQuery::SORT_START_TIME;
-  sorter_types[kStateKey] = DownloadQuery::SORT_STATE;
-  sorter_types[kTotalBytesKey] = DownloadQuery::SORT_TOTAL_BYTES;
-  sorter_types[kUrlKey] = DownloadQuery::SORT_ORIGINAL_URL;
-  sorter_types[kFinalUrlKey] = DownloadQuery::SORT_URL;
+  // Initialize the map in one shot by storing to a vector and assigning.
+  std::vector<SortTypeMap::value_type> v;
+
+  AppendFilter(kBytesReceivedKey, DownloadQuery::SORT_BYTES_RECEIVED, &v);
+  AppendFilter(kDangerKey, DownloadQuery::SORT_DANGER, &v);
+  AppendFilter(kEndTimeKey, DownloadQuery::SORT_END_TIME, &v);
+  AppendFilter(kExistsKey, DownloadQuery::SORT_EXISTS, &v);
+  AppendFilter(kFilenameKey, DownloadQuery::SORT_FILENAME, &v);
+  AppendFilter(kMimeKey, DownloadQuery::SORT_MIME, &v);
+  AppendFilter(kPausedKey, DownloadQuery::SORT_PAUSED, &v);
+  AppendFilter(kStartTimeKey, DownloadQuery::SORT_START_TIME, &v);
+  AppendFilter(kStateKey, DownloadQuery::SORT_STATE, &v);
+  AppendFilter(kTotalBytesKey, DownloadQuery::SORT_TOTAL_BYTES, &v);
+  AppendFilter(kUrlKey, DownloadQuery::SORT_ORIGINAL_URL, &v);
+  AppendFilter(kFinalUrlKey, DownloadQuery::SORT_URL, &v);
+
+  *sorter_types_ptr = SortTypeMap(std::move(v), base::KEEP_FIRST_OF_DUPES);
 }
 
 bool IsNotTemporaryDownloadFilter(const DownloadItem& download_item) {

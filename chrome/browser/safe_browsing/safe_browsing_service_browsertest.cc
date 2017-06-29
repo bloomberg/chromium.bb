@@ -8,6 +8,8 @@
 
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 
+#include <map>
+#include <set>
 #include <utility>
 
 #include "base/bind.h"
@@ -303,13 +305,11 @@ class TestSafeBrowsingDatabase : public SafeBrowsingDatabase {
                    std::vector<SBPrefix>* prefix_hits) {
     bool hit = false;
     for (const GURL& url : urls) {
-      base::hash_map<std::string, Hits>::const_iterator badurls_it =
-          badurls_.find(url.spec());
-
+      const auto badurls_it = badurls_.find(url.spec());
       if (badurls_it == badurls_.end())
         continue;
 
-      std::vector<int> list_ids_for_url = badurls_it->second.list_ids;
+      const std::vector<int>& list_ids_for_url = badurls_it->second.list_ids;
       if (base::ContainsValue(list_ids_for_url, list_id0) ||
           base::ContainsValue(list_ids_for_url, list_id1)) {
         prefix_hits->insert(prefix_hits->end(),
@@ -349,9 +349,9 @@ class TestSafeBrowsingDatabase : public SafeBrowsingDatabase {
     return hit;
   }
 
-  base::hash_map<std::string, Hits> badurls_;
-  base::hash_set<std::pair<int, SBPrefix>> bad_prefixes_;
-  base::hash_map<std::string, GURL> urls_by_hash_;
+  std::map<std::string, Hits> badurls_;
+  std::set<std::pair<int, SBPrefix>> bad_prefixes_;
+  std::map<std::string, GURL> urls_by_hash_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSafeBrowsingDatabase);
 };
@@ -396,7 +396,7 @@ class TestProtocolManager : public SafeBrowsingProtocolManager {
 
   // This function is called when there is a prefix hit in local safebrowsing
   // database and safebrowsing service issues a get hash request to backends.
-  // We return a result from the prefilled full_hashes_ hash_map to simulate
+  // We return a result from the prefilled full_hashes_ map to simulate
   // server's response. At the same time, latency is added to simulate real
   // life network issues.
   void GetFullHash(const std::vector<SBPrefix>& prefixes,

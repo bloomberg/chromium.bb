@@ -8,7 +8,7 @@
 
 #include <utility>
 
-#include "base/containers/hash_tables.h"
+#include "base/containers/flat_map.h"
 #include "base/lazy_instance.h"
 #include "build/build_config.h"
 #include "chrome/grit/theme_resources_map.h"
@@ -21,30 +21,39 @@
 
 namespace {
 
-// A wrapper class that holds a hash_map between resource strings and resource
+// A wrapper class that holds a map between resource strings and resource
 // ids.  This is done so we can use base::LazyInstance which takes care of
-// thread safety in initializing the hash_map for us.
+// thread safety in initializing the map for us.
 class ThemeMap {
  public:
-  typedef base::hash_map<std::string, int> StringIntMap;
+  typedef base::flat_map<std::string, int> StringIntMap;
 
   ThemeMap() {
+    // Construct in one-shot from a moved vector.
+    std::vector<StringIntMap::value_type> storage;
+
     for (size_t i = 0; i < kComponentsScaledResourcesSize; ++i) {
-      id_map_[kComponentsScaledResources[i].name] =
-          kComponentsScaledResources[i].value;
+      storage.emplace_back(kComponentsScaledResources[i].name,
+                           kComponentsScaledResources[i].value);
     }
-    for (size_t i = 0; i < kThemeResourcesSize; ++i)
-      id_map_[kThemeResources[i].name] = kThemeResources[i].value;
-    for (size_t i = 0; i < kUiResourcesSize; ++i)
-      id_map_[kUiResources[i].name] = kUiResources[i].value;
+    for (size_t i = 0; i < kThemeResourcesSize; ++i) {
+      storage.emplace_back(kThemeResources[i].name, kThemeResources[i].value);
+    }
+    for (size_t i = 0; i < kUiResourcesSize; ++i) {
+      storage.emplace_back(kUiResources[i].name, kUiResources[i].value);
+    }
 #if defined(OS_CHROMEOS)
-    for (size_t i = 0; i < kUiChromeosResourcesSize; ++i)
-      id_map_[kUiChromeosResources[i].name] = kUiChromeosResources[i].value;
+    for (size_t i = 0; i < kUiChromeosResourcesSize; ++i) {
+      storage.emplace_back(kUiChromeosResources[i].name,
+                           kUiChromeosResources[i].value);
+    }
 #endif
+
+    id_map_ = StringIntMap(std::move(storage), base::KEEP_FIRST_OF_DUPES);
   }
 
   int GetId(const std::string& resource_name) {
-    StringIntMap::const_iterator it = id_map_.find(resource_name);
+    auto it = id_map_.find(resource_name);
     if (it == id_map_.end())
       return -1;
     return it->second;

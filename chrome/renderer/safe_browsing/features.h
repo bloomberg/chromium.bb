@@ -27,8 +27,8 @@
 
 #include <stddef.h>
 #include <string>
+#include <unordered_map>
 
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 
 namespace safe_browsing {
@@ -52,7 +52,7 @@ class FeatureMap {
   bool AddRealFeature(const std::string& name, double value);
 
   // Provides read-only access to the current set of features.
-  const base::hash_map<std::string, double>& features() const {
+  const std::unordered_map<std::string, double>& features() const {
     return features_;
   }
 
@@ -65,7 +65,7 @@ class FeatureMap {
   static const size_t kMaxFeatureMapSize;
 
  private:
-  base::hash_map<std::string, double> features_;
+  std::unordered_map<std::string, double> features_;
 
   DISALLOW_COPY_AND_ASSIGN(FeatureMap);
 };

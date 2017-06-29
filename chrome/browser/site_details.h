@@ -7,7 +7,8 @@
 
 #include <stdint.h>
 
-#include "base/containers/hash_tables.h"
+#include <map>
+
 #include "base/macros.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/site_instance.h"
@@ -23,7 +24,7 @@ struct ScenarioBrowsingInstanceInfo {
   std::set<GURL> sites;
 };
 using ScenarioBrowsingInstanceMap =
-    base::hash_map<int32_t, ScenarioBrowsingInstanceInfo>;
+    std::map<int32_t, ScenarioBrowsingInstanceInfo>;
 
 // Collects metrics about an actual browsing instance in the current session.
 struct BrowsingInstanceInfo {
@@ -35,7 +36,7 @@ struct BrowsingInstanceInfo {
   int proxy_count = 0;
 };
 using BrowsingInstanceMap =
-    base::hash_map<content::SiteInstance*, BrowsingInstanceInfo>;
+    std::map<content::SiteInstance*, BrowsingInstanceInfo>;
 
 // This enum represents various alternative process model policies that we want
 // to evaluate. We'll estimate the process cost of each scenario.
@@ -80,8 +81,7 @@ struct SiteData {
 };
 
 // Maps a BrowserContext to information about the sites it contains.
-typedef base::hash_map<content::BrowserContext*, SiteData>
-    BrowserContextSiteDataMap;
+typedef std::map<content::BrowserContext*, SiteData> BrowserContextSiteDataMap;
 
 class SiteDetails {
  public:

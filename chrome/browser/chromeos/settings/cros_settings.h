@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_CHROMEOS_SETTINGS_CROS_SETTINGS_H_
 #define CHROME_BROWSER_CHROMEOS_SETTINGS_CROS_SETTINGS_H_
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/callback_list.h"
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -131,7 +131,7 @@ class CrosSettings {
 
   // A map from settings names to a list of observers. Observers get fired in
   // the order they are added.
-  base::hash_map<std::string, std::unique_ptr<base::CallbackList<void(void)>>>
+  std::map<std::string, std::unique_ptr<base::CallbackList<void(void)>>>
       settings_observers_;
 
   SEQUENCE_CHECKER(sequence_checker_);

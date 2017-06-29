@@ -10,7 +10,6 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
@@ -431,7 +430,7 @@ class WizardController : public BaseScreenDelegate,
   std::unique_ptr<pairing_chromeos::HostPairingController> remora_controller_;
 
   // Maps screen names to last time of their shows.
-  base::hash_map<std::string, base::Time> screen_show_times_;
+  std::map<std::string, base::Time> screen_show_times_;
 
   // Tests check result of timezone resolve.
   bool timezone_resolved_ = false;

@@ -7,6 +7,7 @@
 // "goback" or "proceed" commands and verifies they work.
 
 #include <algorithm>
+#include <map>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -158,7 +159,7 @@ class FakeSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
  private:
   ~FakeSafeBrowsingDatabaseManager() override {}
 
-  base::hash_map<std::string, SBThreatType> badurls;
+  std::map<std::string, SBThreatType> badurls;
   DISALLOW_COPY_AND_ASSIGN(FakeSafeBrowsingDatabaseManager);
 };
 

@@ -6,8 +6,9 @@
 
 #include <stddef.h>
 
+#include <map>
+
 #include "base/bind.h"
-#include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/android/history_report/delta_file_commons.h"
@@ -27,7 +28,7 @@ using bookmarks::BookmarkModel;
 namespace {
 static bool g_is_debug = false;
 
-typedef base::hash_map<std::string, BookmarkModel::URLAndTitle*> BookmarkMap;
+using BookmarkMap = std::map<std::string, BookmarkModel::URLAndTitle*>;
 
 struct Context {
   history::HistoryService* history_service;

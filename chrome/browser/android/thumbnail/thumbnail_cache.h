@@ -8,11 +8,11 @@
 #include <stddef.h>
 
 #include <list>
+#include <map>
 #include <set>
 #include <string>
 
 #include "base/bind.h"
-#include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
@@ -90,8 +90,8 @@ class ThumbnailCache : ThumbnailDelegate {
     GURL url_;
   };
 
-  typedef ScopedPtrExpiringCache<TabId, Thumbnail> ExpiringThumbnailCache;
-  typedef base::hash_map<TabId, ThumbnailMetaData> ThumbnailMetaDataMap;
+  using ExpiringThumbnailCache = ScopedPtrExpiringCache<TabId, Thumbnail>;
+  using ThumbnailMetaDataMap = std::map<TabId, ThumbnailMetaData>;
 
   void RemoveFromDisk(TabId tab_id);
   static void RemoveFromDiskTask(TabId tab_id);

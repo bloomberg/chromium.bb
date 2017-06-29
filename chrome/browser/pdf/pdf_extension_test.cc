@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include <map>
 #include <vector>
 
 #include "base/base_paths.h"
@@ -607,7 +608,7 @@ static std::string DumpPdfAccessibilityTree(const ui::AXTreeUpdate& ax_tree) {
   // Create a string representation of the tree starting with the embedded
   // object.
   std::string ax_tree_dump;
-  base::hash_map<int32_t, int> id_to_indentation;
+  std::map<int32_t, int> id_to_indentation;
   bool found_embedded_object = false;
   for (auto& node : ax_tree.nodes) {
     if (node.role == ui::AX_ROLE_EMBEDDED_OBJECT)

@@ -137,7 +137,7 @@ void MaybePopulateImportantInfoForReason(
     const GURL& origin,
     std::set<GURL>* visited_origins,
     ImportantReason reason,
-    base::hash_map<std::string, ImportantDomainInfo>* output) {
+    std::map<std::string, ImportantDomainInfo>* output) {
   if (!origin.is_valid() || !visited_origins->insert(origin).second)
     return;
   std::string registerable_domain =
@@ -227,7 +227,7 @@ void PopulateInfoMapWithSiteEngagement(
     Profile* profile,
     blink::mojom::EngagementLevel minimum_engagement,
     std::map<GURL, double>* engagement_map,
-    base::hash_map<std::string, ImportantDomainInfo>* output) {
+    std::map<std::string, ImportantDomainInfo>* output) {
   SiteEngagementService* service = SiteEngagementService::Get(profile);
   *engagement_map = service->GetScoreMap();
   // We can have multiple origins for a single domain, so we record the one
@@ -254,7 +254,7 @@ void PopulateInfoMapWithContentTypeAllowed(
     Profile* profile,
     ContentSettingsType content_type,
     ImportantReason reason,
-    base::hash_map<std::string, ImportantDomainInfo>* output) {
+    std::map<std::string, ImportantDomainInfo>* output) {
   // Grab our content settings list.
   ContentSettingsForOneType content_settings_list;
   HostContentSettingsMapFactory::GetForProfile(profile)->GetSettingsForOneType(
@@ -274,7 +274,7 @@ void PopulateInfoMapWithContentTypeAllowed(
 void PopulateInfoMapWithBookmarks(
     Profile* profile,
     const std::map<GURL, double>& engagement_map,
-    base::hash_map<std::string, ImportantDomainInfo>* output) {
+    std::map<std::string, ImportantDomainInfo>* output) {
   SiteEngagementService* service = SiteEngagementService::Get(profile);
   BookmarkModel* model =
       BookmarkModelFactory::GetForBrowserContextIfExists(profile);
@@ -321,7 +321,7 @@ void PopulateInfoMapWithBookmarks(
 
 void PopulateInfoMapWithHomeScreen(
     Profile* profile,
-    base::hash_map<std::string, ImportantDomainInfo>* output) {
+    std::map<std::string, ImportantDomainInfo>* output) {
   ContentSettingsForOneType content_settings_list;
   HostContentSettingsMapFactory::GetForProfile(profile)->GetSettingsForOneType(
       CONTENT_SETTINGS_TYPE_APP_BANNER, content_settings::ResourceIdentifier(),
@@ -370,7 +370,7 @@ void ImportantSitesUtil::RegisterProfilePrefs(
 std::vector<ImportantDomainInfo>
 ImportantSitesUtil::GetImportantRegisterableDomains(Profile* profile,
                                                     size_t max_results) {
-  base::hash_map<std::string, ImportantDomainInfo> important_info;
+  std::map<std::string, ImportantDomainInfo> important_info;
   std::map<GURL, double> engagement_map;
 
   PopulateInfoMapWithSiteEngagement(

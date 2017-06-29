@@ -18,7 +18,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -166,7 +165,7 @@ class LocalSafeBrowsingDatabaseManager
                            ServiceStopWithPendingChecks);
 
   typedef std::vector<SafeBrowsingCheck*> GetHashRequestors;
-  typedef base::hash_map<SBPrefix, GetHashRequestors> GetHashRequests;
+  typedef std::map<SBPrefix, GetHashRequestors> GetHashRequests;
 
   // Clients that we've queued up for checking later once the database is ready.
   struct QueuedCheck {

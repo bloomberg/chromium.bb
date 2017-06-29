@@ -86,8 +86,7 @@ void TtsDispatcher::Cancel() {
 }
 
 WebSpeechSynthesisUtterance TtsDispatcher::FindUtterance(int utterance_id) {
-  base::hash_map<int, WebSpeechSynthesisUtterance>::const_iterator iter =
-      utterance_id_map_.find(utterance_id);
+  const auto iter = utterance_id_map_.find(utterance_id);
   if (iter == utterance_id_map_.end())
     return WebSpeechSynthesisUtterance();
   return iter->second;
