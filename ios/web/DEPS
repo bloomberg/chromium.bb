@@ -5,7 +5,8 @@ include_rules = [
   "+ios/web",
   "+mojo/public",
   "+net",
-  "+services/service_manager/public",
+  "+services/catalog",
+  "+services/service_manager",
   "+ui",
 
   # For tests.

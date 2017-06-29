@@ -8,23 +8,30 @@ component("embedder") {
     "embedded_service_info.h",
     "embedded_service_runner.cc",
     "embedded_service_runner.h",
-    "main.cc",
-    "main.h",
-    "main_delegate.cc",
-    "main_delegate.h",
     "manifest_utils.cc",
     "manifest_utils.h",
-    "process_type.h",
-    "service_manager_embedder_export.h",
-    "set_process_title.cc",
-    "set_process_title.h",
-    "set_process_title_linux.cc",
-    "set_process_title_linux.h",
-    "shared_file_util.cc",
-    "shared_file_util.h",
-    "switches.cc",
-    "switches.h",
   ]
+
+  # iOS embeds the Service Manager but does not use service_manager::Main() (and
+  # cannot use or even build it as-is).
+  if (!is_ios) {
+    sources += [
+      "main.cc",
+      "main.h",
+      "main_delegate.cc",
+      "main_delegate.h",
+      "process_type.h",
+      "service_manager_embedder_export.h",
+      "set_process_title.cc",
+      "set_process_title.h",
+      "set_process_title_linux.cc",
+      "set_process_title_linux.h",
+      "shared_file_util.cc",
+      "shared_file_util.h",
+      "switches.cc",
+      "switches.h",
+    ]
+  }
 
   if (is_mac) {
     sources += [
@@ -37,20 +44,29 @@ component("embedder") {
 
   deps = [
     "//base:base_static",
-    "//base/allocator:features",
-    "//components/tracing:startup_tracing",
-    "//ui/base",
   ]
 
   public_deps = [
     "//base",
-    "//mojo/edk/system",
-    "//services/service_manager/background:lib",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/cpp/standalone_service",
-    "//services/service_manager/runner:init",
-    "//services/service_manager/runner/common",
   ]
+
+  if (!is_ios) {
+    # deps of ServiceManager::Main and related functionality.
+    deps += [
+      "//base/allocator:features",
+      "//components/tracing:startup_tracing",
+      "//ui/base",
+    ]
+
+    public_deps += [
+      "//mojo/edk/system",
+      "//services/service_manager/background:lib",
+      "//services/service_manager/public/cpp/standalone_service",
+      "//services/service_manager/runner:init",
+      "//services/service_manager/runner/common",
+    ]
+  }
 
   defines = [ "SERVICE_MANAGER_EMBEDDER_IMPL" ]
 }

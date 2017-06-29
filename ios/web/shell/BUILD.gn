@@ -4,6 +4,8 @@
 
 import("//build/config/ios/rules.gni")
 import("//ios/build/config.gni")
+import("//services/service_manager/public/service_manifest.gni")
+import("//tools/grit/grit_rule.gni")
 import("//tools/grit/repack.gni")
 
 ios_app_bundle("ios_web_shell") {
@@ -35,13 +37,43 @@ bundle_data("shell_bundle_data") {
   ]
 }
 
+service_manifest("shell_packaged_services_manifest_overlay") {
+  source = "web_shell_packaged_services_manifest_overlay.json"
+  packaged_services = [ "//services/test/echo:manifest" ]
+}
+
+service_manifest("shell_browser_manifest_overlay") {
+  source = "web_shell_browser_manifest_overlay.json"
+}
+
+grit("resources") {
+  visibility = [ ":*" ]
+  source = "shell_resources.grd"
+  grit_flags = [
+    "-E",
+    "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+  ]
+  outputs = [
+    "grit/shell_resources.h",
+    "shell_resources.pak",
+  ]
+  deps = [
+    ":shell_browser_manifest_overlay",
+    ":shell_packaged_services_manifest_overlay",
+  ]
+}
+
 repack("packed_resources") {
   visibility = [ ":shell" ]
   sources = [
     "$root_gen_dir/ios/web/ios_web_resources.pak",
+    "$root_gen_dir/ios/web/shell/shell_resources.pak",
   ]
   deps = [
     "//ios/web:resources",
+  ]
+  public_deps = [
+    ":resources",
   ]
   output = "$target_gen_dir/web_shell_resources.pak"
   copy_data_to_bundle = true
@@ -78,6 +110,8 @@ source_set("shell") {
     "//ios/web/public/app",
     "//net",
     "//net:extras",
+    "//services/test/echo:lib",
+    "//services/test/echo/public/interfaces",
     "//ui/base",
   ]
 

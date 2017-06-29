@@ -722,8 +722,6 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
                         appState:self.appState];
   _launchOptions = nil;
 
-  mojo::edk::Init();
-
   if (!_startupParameters) {
     // The startup parameters may create new tabs or navigations. If the restore
     // infobar is displayed now, it may be dismissed immediately and the user
