@@ -255,9 +255,13 @@ HRESULT GetJobByteCount(IBackgroundCopyJob* job,
   return S_OK;
 }
 
-HRESULT GetJobDescription(IBackgroundCopyJob* job, const base::string16* name) {
+HRESULT GetJobDescription(IBackgroundCopyJob* job, base::string16* name) {
   ScopedCoMem<base::char16> description;
-  return job->GetDescription(&description);
+  const HRESULT hr = job->GetDescription(&description);
+  if (FAILED(hr))
+    return hr;
+  *name = description.get();
+  return S_OK;
 }
 
 // Returns the job error code in |error_code| if the job is in the transient
