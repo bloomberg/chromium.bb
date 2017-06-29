@@ -248,25 +248,8 @@ void OmniboxViewMac::ResetTabState(WebContents* web_contents) {
 
 void OmniboxViewMac::Update() {
   if (model()->UpdatePermanentText()) {
-    const bool was_select_all = IsSelectAll();
-    NSTextView* text_view =
-        base::mac::ObjCCastStrict<NSTextView>([field_ currentEditor]);
-    const bool was_reversed =
-        [text_view selectionAffinity] == NSSelectionAffinityUpstream;
-
     // Restore everything to the baseline look.
     RevertAll();
-
-    // Only select all when we have focus.  If we don't have focus, selecting
-    // all is unnecessary since the selection will change on regaining focus,
-    // and can in fact cause artifacts, e.g. if the user is on the NTP and
-    // clicks a link to navigate, causing |was_select_all| to be vacuously true
-    // for the empty omnibox, and we then select all here, leading to the
-    // trailing portion of a long URL being scrolled into view.  We could try
-    // and address cases like this, but it seems better to just not muck with
-    // things when the omnibox isn't focused to begin with.
-    if (was_select_all && model()->has_focus())
-      SelectAll(was_reversed);
   } else {
     // TODO(shess): This corresponds to _win and _gtk, except those
     // guard it with a test for whether the security level changed.

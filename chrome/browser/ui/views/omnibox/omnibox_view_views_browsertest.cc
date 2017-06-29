@@ -286,7 +286,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, SelectAllOnTabToFocus) {
   // RevertAll after navigation to invalidate the selection range saved on blur.
   omnibox_view->RevertAll();
   EXPECT_FALSE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
-  EXPECT_FALSE(omnibox_view->IsSelectAll());
+  EXPECT_TRUE(omnibox_view->IsSelectAll());
 
   // Pressing tab to focus the omnibox should select all text.
   while (!ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX)) {

@@ -111,14 +111,14 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, Basic) {
 
   EXPECT_FALSE(location_bar->GetDestinationURL().is_valid());
   EXPECT_EQ(base::UTF8ToUTF16(url::kAboutBlankURL), omnibox_view->GetText());
-  EXPECT_FALSE(omnibox_view->IsSelectAll());
+  EXPECT_TRUE(omnibox_view->IsSelectAll());
 
   omnibox_view->SetUserText(base::ASCIIToUTF16("chrome"));
   location_bar->Revert();
 
   EXPECT_FALSE(location_bar->GetDestinationURL().is_valid());
   EXPECT_EQ(base::UTF8ToUTF16(url::kAboutBlankURL), omnibox_view->GetText());
-  EXPECT_FALSE(omnibox_view->IsSelectAll());
+  EXPECT_TRUE(omnibox_view->IsSelectAll());
 }
 
 // Autocomplete test is flaky on ChromeOS.
@@ -163,7 +163,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, MAYBE_Autocomplete) {
     location_bar->Revert();
     EXPECT_FALSE(location_bar->GetDestinationURL().is_valid());
     EXPECT_EQ(base::UTF8ToUTF16(url::kAboutBlankURL), omnibox_view->GetText());
-    EXPECT_FALSE(omnibox_view->IsSelectAll());
+    EXPECT_TRUE(omnibox_view->IsSelectAll());
     const AutocompleteResult& result = autocomplete_controller->result();
     EXPECT_TRUE(result.empty()) << AutocompleteResultAsString(result);
   }
