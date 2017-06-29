@@ -1077,6 +1077,10 @@ bool DataReductionProxyConfig::ShouldAcceptServerPreview(
     return false;
   }
 
+  // AlwaysOn skips blacklist or disabled checks.
+  if (params::IsLoFiAlwaysOnViaFlags())
+    return true;
+
   if (IsBlackListedOrDisabled(request, previews_decider,
                               previews::PreviewsType::LITE_PAGE)) {
     return false;
@@ -1107,13 +1111,14 @@ bool DataReductionProxyConfig::ShouldEnableLoFiInternal(
     return false;
   }
 
+  // AlwaysOn skips blacklist or disabled checks.
+  if (params::IsLoFiAlwaysOnViaFlags())
+    return true;
+
   if (IsBlackListedOrDisabled(request, previews_decider,
                               previews::PreviewsType::LOFI)) {
     return false;
   }
-
-  if (params::IsLoFiAlwaysOnViaFlags())
-    return true;
 
   if (params::IsLoFiCellularOnlyViaFlags()) {
     return net::NetworkChangeNotifier::IsConnectionCellular(connection_type_);
@@ -1140,13 +1145,14 @@ bool DataReductionProxyConfig::ShouldEnableLitePagesInternal(
   DCHECK(!base::FeatureList::IsEnabled(
       features::kDataReductionProxyDecidesTransform));
 
+  // AlwaysOn skips blacklist or disabled checks.
+  if (params::IsLoFiAlwaysOnViaFlags() && params::AreLitePagesEnabledViaFlags())
+    return true;
+
   if (IsBlackListedOrDisabled(request, previews_decider,
                               previews::PreviewsType::LITE_PAGE)) {
     return false;
   }
-
-  if (params::IsLoFiAlwaysOnViaFlags() && params::AreLitePagesEnabledViaFlags())
-    return true;
 
   if (params::IsLoFiCellularOnlyViaFlags() &&
       params::AreLitePagesEnabledViaFlags()) {
