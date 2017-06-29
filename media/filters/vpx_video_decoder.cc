@@ -387,7 +387,7 @@ void VpxVideoDecoder::MemoryPool::OnVideoFrameDestroyed(
   --frame_buffer->ref_cnt;
 
   if (in_shutdown_) {
-    DCHECK(!frame_buffer->ref_cnt);
+    // If we're in shutdown we can be sure that libvpx has been destroyed.
     EraseUnusedResources();
     return;
   }
