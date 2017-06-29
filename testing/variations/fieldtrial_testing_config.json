@@ -3144,6 +3144,24 @@
                     "enable_features": [
                         "TranslateCompactUI"
                     ]
+                },
+                {
+                    "name": "CompactUIAndRanker",
+                    "enable_features": [
+                        "TranslateCompactUI",
+                        "TranslateRankerEnforcement",
+                        "TranslateRankerQuery"
+                    ]
+                },
+                {
+                    "name": "RankerOnly",
+                    "enable_features": [
+                        "TranslateRankerEnforcement",
+                        "TranslateRankerQuery"
+                    ],
+                    "disable_features": [
+                        "TranslateCompactUI"
+                    ]
                 }
             ]
         }
@@ -3151,7 +3169,6 @@
     "TranslateRankerModel": [
         {
             "platforms": [
-                "android",
                 "chromeos",
                 "ios",
                 "linux",
