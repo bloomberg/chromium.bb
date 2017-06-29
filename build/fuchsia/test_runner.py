@@ -215,6 +215,8 @@ def main():
                       help='GTest repeat value to use')
   parser.add_argument('--test-launcher-filter-file',
                       help='Pass filter file through to target process')
+  parser.add_argument('--test_launcher_summary_output'
+                      help='Currently ignored for 2-sided roll.')
   args = parser.parse_args()
 
   bootfs = BuildBootfs(args.output_directory, args.runtime_deps_path,
