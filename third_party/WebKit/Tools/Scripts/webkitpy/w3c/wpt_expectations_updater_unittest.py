@@ -323,10 +323,10 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         expectations_path = '/test.checkout/LayoutTests/NeverFixTests'
         host.filesystem.write_text_file(
             expectations_path,
-            'crbug.com/111 [ Trusty ] external/wpt/test.html [ WontFix ]\n')
+            'crbug.com/111 [ Linux ] external/wpt/test.html [ WontFix ]\n')
         host.filesystem.write_text_file('/test.checkout/LayoutTests/external/wpt/test.html', '')
         updater = WPTExpectationsUpdater(host)
-        self.assertEqual(updater.skipped_specifiers('external/wpt/test.html'), ['Trusty'])
+        self.assertEqual(updater.skipped_specifiers('external/wpt/test.html'), ['Precise', 'Trusty'])
 
     def test_simplify_specifiers(self):
         macros = {
