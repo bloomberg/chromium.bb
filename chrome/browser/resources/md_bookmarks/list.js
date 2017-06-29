@@ -46,6 +46,7 @@ Polymer({
 
   listeners: {
     'click': 'deselectItems_',
+    'open-item-menu': 'onOpenItemMenu_',
   },
 
   attached: function() {
@@ -129,6 +130,19 @@ Polymer({
    */
   getIndexForItemElement_: function(el) {
     return this.$.bookmarksCard.modelForElement(el).index;
+  },
+
+  /**
+   * @param {Event} e
+   * @private
+   */
+  onOpenItemMenu_: function(e) {
+    var index = this.displayedIds_.indexOf(
+        /** @type {BookmarksItemElement} */ (e.path[0]).itemId);
+    var list = this.$.bookmarksCard;
+    // If the item is not visible, scroll to it before rendering the menu.
+    if (index < list.firstVisibleIndex || index > list.lastVisibleIndex)
+      list.scrollToIndex(index);
   },
 
   /**
