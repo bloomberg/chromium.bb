@@ -39,6 +39,12 @@ extern "C" {
 #define BO_USE_RENDERSCRIPT		(1ull << 16)
 #define BO_USE_TEXTURE			(1ull << 17)
 
+/* Read-Write permissions for drv_bo_map() flags */
+#define BO_TRANSFER_NONE 0
+#define BO_TRANSFER_READ (1 << 0)
+#define BO_TRANSFER_WRITE (1 << 1)
+#define BO_TRANSFER_READ_WRITE (BO_TRANSFER_READ | BO_TRANSFER_WRITE)
+
 /* This is our extension to <drm_fourcc.h>.  We need to make sure we don't step
  * on the namespace of already defined formats, which can be done by using invalid
  * fourcc codes.

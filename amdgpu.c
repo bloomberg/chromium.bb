@@ -400,7 +400,7 @@ static int amdgpu_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint
 	return ret;
 }
 
-static void *amdgpu_bo_map(struct bo *bo, struct map_info *data, size_t plane)
+static void *amdgpu_bo_map(struct bo *bo, struct map_info *data, size_t plane, int prot)
 {
 	int ret;
 	union drm_amdgpu_gem_mmap gem_map;
@@ -415,8 +415,7 @@ static void *amdgpu_bo_map(struct bo *bo, struct map_info *data, size_t plane)
 	}
 	data->length = bo->total_size;
 
-	return mmap(0, bo->total_size, PROT_READ | PROT_WRITE, MAP_SHARED, bo->drv->fd,
-		    gem_map.out.addr_ptr);
+	return mmap(0, bo->total_size, prot, MAP_SHARED, bo->drv->fd, gem_map.out.addr_ptr);
 }
 
 static uint32_t amdgpu_resolve_format(uint32_t format, uint64_t usage)

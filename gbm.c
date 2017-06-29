@@ -233,7 +233,10 @@ PUBLIC void *gbm_bo_map(struct gbm_bo *bo, uint32_t x, uint32_t y, uint32_t widt
 		return NULL;
 
 	*stride = gbm_bo_get_plane_stride(bo, plane);
-	return drv_bo_map(bo->bo, x, y, width, height, 0, (struct map_info **)map_data, plane);
+	uint32_t drv_flags = flags & GBM_BO_TRANSFER_READ ? BO_TRANSFER_READ : BO_TRANSFER_NONE;
+	drv_flags |= flags & GBM_BO_TRANSFER_WRITE ? BO_TRANSFER_WRITE : BO_TRANSFER_NONE;
+	return drv_bo_map(bo->bo, x, y, width, height, drv_flags, (struct map_info **)map_data,
+			  plane);
 }
 
 PUBLIC void gbm_bo_unmap(struct gbm_bo *bo, void *map_data)

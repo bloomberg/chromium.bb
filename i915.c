@@ -372,7 +372,7 @@ static int i915_bo_import(struct bo *bo, struct drv_import_fd_data *data)
 	return 0;
 }
 
-static void *i915_bo_map(struct bo *bo, struct map_info *data, size_t plane)
+static void *i915_bo_map(struct bo *bo, struct map_info *data, size_t plane, int prot)
 {
 	int ret;
 	void *addr;
@@ -410,9 +410,7 @@ static void *i915_bo_map(struct bo *bo, struct map_info *data, size_t plane)
 			return MAP_FAILED;
 		}
 
-		addr = mmap(0, bo->total_size, PROT_READ | PROT_WRITE, MAP_SHARED, bo->drv->fd,
-			    gem_map.offset);
-
+		addr = mmap(0, bo->total_size, prot, MAP_SHARED, bo->drv->fd, gem_map.offset);
 		set_domain.read_domains = I915_GEM_DOMAIN_GTT;
 		set_domain.write_domain = I915_GEM_DOMAIN_GTT;
 	}

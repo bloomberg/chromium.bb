@@ -44,6 +44,7 @@ enum tegra_map_type {
 struct tegra_private_map_data {
 	void *tiled;
 	void *untiled;
+	int prot;
 };
 
 static const uint32_t render_target_formats[] = { DRM_FORMAT_ARGB8888, DRM_FORMAT_XRGB8888 };
@@ -102,7 +103,7 @@ static void compute_layout_linear(int width, int height, int format, uint32_t *s
 
 static void transfer_tile(struct bo *bo, uint8_t *tiled, uint8_t *untiled, enum tegra_map_type type,
 			  uint32_t bytes_per_pixel, uint32_t gob_top, uint32_t gob_left,
-			  uint32_t gob_size_pixels)
+			  uint32_t gob_size_pixels, uint8_t *tiled_last)
 {
 	uint8_t *tmp;
 	uint32_t x, y, k;
@@ -115,7 +116,15 @@ static void transfer_tile(struct bo *bo, uint8_t *tiled, uint8_t *untiled, enum 
 		x = gob_left + (((k >> 3) & 8) | ((k >> 1) & 4) | (k & 3));
 		y = gob_top + ((k >> 7 << 3) | ((k >> 3) & 6) | ((k >> 2) & 1));
 
-		tmp = untiled + (y * bo->strides[0]) + (x * bytes_per_pixel);
+		if (tiled >= tiled_last)
+			return;
+
+		if (x >= bo->width || y >= bo->height) {
+			tiled += bytes_per_pixel;
+			continue;
+		}
+
+		tmp = untiled + y * bo->strides[0] + x * bytes_per_pixel;
 
 		if (type == TEGRA_READ_TILED_BUFFER)
 			memcpy(tmp, tiled, bytes_per_pixel);
@@ -133,7 +142,7 @@ static void transfer_tiled_memory(struct bo *bo, uint8_t *tiled, uint8_t *untile
 	uint32_t gob_width, gob_height, gob_size_bytes, gob_size_pixels, gob_count_x, gob_count_y,
 	    gob_top, gob_left;
 	uint32_t i, j, offset;
-	uint8_t *tmp;
+	uint8_t *tmp, *tiled_last;
 	uint32_t bytes_per_pixel = drv_stride_from_format(bo->format, 1, 0);
 
 	/*
@@ -152,6 +161,8 @@ static void transfer_tiled_memory(struct bo *bo, uint8_t *tiled, uint8_t *untile
 	gob_count_x = DIV_ROUND_UP(bo->strides[0], NV_BLOCKLINEAR_GOB_WIDTH);
 	gob_count_y = DIV_ROUND_UP(bo->height, gob_height);
 
+	tiled_last = tiled + bo->total_size;
+
 	offset = 0;
 	for (j = 0; j < gob_count_y; j++) {
 		gob_top = j * gob_height;
@@ -160,7 +171,7 @@ static void transfer_tiled_memory(struct bo *bo, uint8_t *tiled, uint8_t *untile
 			gob_left = i * gob_width;
 
 			transfer_tile(bo, tmp, untiled, type, bytes_per_pixel, gob_top, gob_left,
-				      gob_size_pixels);
+				      gob_size_pixels, tiled_last);
 
 			offset += gob_size_bytes;
 		}
@@ -254,7 +265,7 @@ static int tegra_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint3
 	return 0;
 }
 
-static void *tegra_bo_map(struct bo *bo, struct map_info *data, size_t plane)
+static void *tegra_bo_map(struct bo *bo, struct map_info *data, size_t plane, int prot)
 {
 	int ret;
 	struct drm_tegra_gem_mmap gem_map;
@@ -269,14 +280,13 @@ static void *tegra_bo_map(struct bo *bo, struct map_info *data, size_t plane)
 		return MAP_FAILED;
 	}
 
-	void *addr = mmap(0, bo->total_size, PROT_READ | PROT_WRITE, MAP_SHARED, bo->drv->fd,
-			  gem_map.offset);
-
+	void *addr = mmap(0, bo->total_size, prot, MAP_SHARED, bo->drv->fd, gem_map.offset);
 	data->length = bo->total_size;
 	if ((bo->tiling & 0xFF) == NV_MEM_KIND_C32_2CRA && addr != MAP_FAILED) {
 		priv = calloc(1, sizeof(*priv));
 		priv->untiled = calloc(1, bo->total_size);
 		priv->tiled = addr;
+		priv->prot = prot;
 		data->priv = priv;
 		transfer_tiled_memory(bo, priv->tiled, priv->untiled, TEGRA_READ_TILED_BUFFER);
 		addr = priv->untiled;
@@ -289,7 +299,9 @@ static int tegra_bo_unmap(struct bo *bo, struct map_info *data)
 {
 	if (data->priv) {
 		struct tegra_private_map_data *priv = data->priv;
-		transfer_tiled_memory(bo, priv->tiled, priv->untiled, TEGRA_WRITE_TILED_BUFFER);
+		if (priv->prot & PROT_WRITE)
+			transfer_tiled_memory(bo, priv->tiled, priv->untiled,
+					      TEGRA_WRITE_TILED_BUFFER);
 		data->addr = priv->tiled;
 		free(priv->untiled);
 		free(priv);

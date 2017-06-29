@@ -61,7 +61,7 @@ int32_t cros_gralloc_buffer::lock(uint64_t flags, uint8_t *addr[DRV_MAX_PLANES])
 			vaddr = lock_data_[0]->addr;
 		} else {
 			vaddr = drv_bo_map(bo_, 0, 0, drv_bo_get_width(bo_), drv_bo_get_height(bo_),
-					   0, &lock_data_[0], 0);
+					   BO_TRANSFER_READ_WRITE, &lock_data_[0], 0);
 		}
 
 		if (vaddr == MAP_FAILED) {

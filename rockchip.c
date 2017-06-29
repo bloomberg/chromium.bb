@@ -225,7 +225,7 @@ static int rockchip_bo_create(struct bo *bo, uint32_t width, uint32_t height, ui
 						 ARRAY_SIZE(modifiers));
 }
 
-static void *rockchip_bo_map(struct bo *bo, struct map_info *data, size_t plane)
+static void *rockchip_bo_map(struct bo *bo, struct map_info *data, size_t plane, int prot)
 {
 	int ret;
 	struct drm_rockchip_gem_map_off gem_map;
@@ -246,8 +246,7 @@ static void *rockchip_bo_map(struct bo *bo, struct map_info *data, size_t plane)
 
 	data->length = bo->total_size;
 
-	return mmap(0, bo->total_size, PROT_READ | PROT_WRITE, MAP_SHARED, bo->drv->fd,
-		    gem_map.offset);
+	return mmap(0, bo->total_size, prot, MAP_SHARED, bo->drv->fd, gem_map.offset);
 }
 
 static uint32_t rockchip_resolve_format(uint32_t format, uint64_t usage)

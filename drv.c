@@ -348,11 +348,13 @@ void *drv_bo_map(struct bo *bo, uint32_t x, uint32_t y, uint32_t width, uint32_t
 	uint8_t *addr;
 	size_t offset;
 	struct map_info *data;
+	int prot;
 
 	assert(width > 0);
 	assert(height > 0);
 	assert(x + width <= drv_bo_get_width(bo));
 	assert(y + height <= drv_bo_get_height(bo));
+	assert(BO_TRANSFER_READ_WRITE & flags);
 
 	pthread_mutex_lock(&bo->drv->driver_lock);
 
@@ -363,7 +365,8 @@ void *drv_bo_map(struct bo *bo, uint32_t x, uint32_t y, uint32_t width, uint32_t
 	}
 
 	data = calloc(1, sizeof(*data));
-	addr = bo->drv->backend->bo_map(bo, data, plane);
+	prot = BO_TRANSFER_WRITE & flags ? PROT_WRITE | PROT_READ : PROT_READ;
+	addr = bo->drv->backend->bo_map(bo, data, plane, prot);
 	if (addr == MAP_FAILED) {
 		*map_data = NULL;
 		free(data);

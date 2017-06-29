@@ -73,7 +73,7 @@ struct backend {
 					uint32_t format, const uint64_t *modifiers, uint32_t count);
 	int (*bo_destroy)(struct bo *bo);
 	int (*bo_import)(struct bo *bo, struct drv_import_fd_data *data);
-	void *(*bo_map)(struct bo *bo, struct map_info *data, size_t plane);
+	void *(*bo_map)(struct bo *bo, struct map_info *data, size_t plane, int prot);
 	int (*bo_unmap)(struct bo *bo, struct map_info *data);
 	uint32_t (*resolve_format)(uint32_t format, uint64_t usage);
 	struct combinations combos;
