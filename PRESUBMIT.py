@@ -2089,6 +2089,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckPatchFiles(input_api, output_api))
   results.extend(_CheckHardcodedGoogleHostsInLowerLayers(input_api, output_api))
   results.extend(_CheckNoAbbreviationInPngFileName(input_api, output_api))
+  results.extend(_CheckBuildConfigMacrosWithoutInclude(input_api, output_api))
   results.extend(_CheckForInvalidOSMacros(input_api, output_api))
   results.extend(_CheckForInvalidIfDefinedMacros(input_api, output_api))
   results.extend(_CheckFlakyTestUsage(input_api, output_api))
@@ -2130,6 +2131,51 @@ def _CheckPatchFiles(input_api, output_api):
         "Don't commit .rej and .orig files.", problems)]
   else:
     return []
+
+
+def _CheckBuildConfigMacrosWithoutInclude(input_api, output_api):
+  macro_re = input_api.re.compile(
+      r'^\s*#(el)?if.*\bdefined\(((OS_|COMPILER_|ARCH_CPU_|WCHAR_T_IS_)[^)]*)')
+  include_re = input_api.re.compile(
+      r'^#include\s+"build/build_config.h"', input_api.re.MULTILINE)
+  extension_re = input_api.re.compile(r'\.[a-z]+$')
+  errors = []
+  for f in input_api.AffectedFiles():
+    if not f.LocalPath().endswith(('.h', '.c', '.cc', '.cpp', '.m', '.mm')):
+      continue
+    found_line_number = None
+    found_macro = None
+    for line_num, line in f.ChangedContents():
+      match = macro_re.search(line)
+      if match:
+        found_line_number = line_num
+        found_macro = match.group(2)
+        break
+    if not found_line_number:
+      continue
+
+    found_include = False
+    for line in f.NewContents():
+      if include_re.search(line):
+        found_include = True
+        break
+    if found_include:
+      continue
+
+    if not f.LocalPath().endswith('.h'):
+      primary_header_path = extension_re.sub('.h', f.AbsoluteLocalPath())
+      try:
+        content = input_api.ReadFile(primary_header_path, 'r')
+        if include_re.search(content):
+          continue
+      except IOError:
+        pass
+    errors.append('%s:%d %s macro is used without including build/'
+                  'build_config.h.'
+                  % (f.LocalPath(), found_line_number, found_macro))
+  if errors:
+    return [output_api.PresubmitPromptWarning('\n'.join(errors))]
+  return []
 
 
 def _DidYouMeanOSMacro(bad_macro):
