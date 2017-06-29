@@ -61,4 +61,7 @@ To import a new snapshot of wayland-protocols:
     wayland-scanner code < unstable/stylus-tools/stylus-tools-unstable-v1.xml > protocol/stylus-tools-protocol.c
     wayland-scanner server-header < unstable/stylus-tools/stylus-tools-unstable-v1.xml > include/protocol/stylus-tools-unstable-v1-server-protocol.h
     wayland-scanner client-header < unstable/stylus-tools/stylus-tools-unstable-v1.xml > include/protocol/stylus-tools-unstable-v1-client-protocol.h
+    wayland-scanner code < unstable/keyboard/keyboard-extension-unstable-v1.xml > protocol/keyboard-extension-protocol.c
+    wayland-scanner server-header < unstable/keyboard/keyboard-extension-unstable-v1.xml > include/protocol/keyboard-extension-unstable-v1-server-protocol.h
+    wayland-scanner client-header < unstable/keyboard/keyboard-extension-unstable-v1.xml > include/protocol/keyboard-extension-unstable-v1-client-protocol.h
 - Update this README to reflect the new version number.
