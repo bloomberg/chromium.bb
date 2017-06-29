@@ -200,8 +200,7 @@ TEST_F(StatusBubbleMacTest, SetURL) {
   bubble_->SetURL(GURL("bad url"));
   EXPECT_FALSE(IsVisible());
   bubble_->SetURL(GURL("http://"));
-  EXPECT_TRUE(IsVisible());
-  EXPECT_NSEQ(@"http:", GetURLText());
+  EXPECT_FALSE(IsVisible());
   bubble_->SetURL(GURL("about:blank"));
   EXPECT_TRUE(IsVisible());
   EXPECT_NSEQ(@"about:blank", GetURLText());

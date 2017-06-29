@@ -16,6 +16,7 @@
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "components/search_engines/template_url.h"
+#include "components/url_formatter/url_formatter.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
@@ -208,23 +209,10 @@ struct AutocompleteMatch {
                                  TemplateURLService* template_url_service,
                                  const base::string16& keyword);
 
-  // These are convenience functions for formatting a URL into an abridged form
-  // for display within the Omnibox suggestions dropdown.
-  //
-  // The results are explicitly for non-security surfaces. Do not use the
-  // results for anything other than the Omnibox dropdown.
-  static base::string16 FormatUrlForSuggestionDisplay(
-      const GURL& url,
-      bool trim_scheme,
-      size_t* offset_for_adjustment);
-  static base::string16 FormatUrlForSuggestionDisplayWithOffsets(
-      const GURL& url,
-      bool trim_scheme,
-      std::vector<size_t>* offsets_for_adjustment);
-  static base::string16 FormatUrlForSuggestionDisplayWithAdjustments(
-      const GURL& url,
-      bool trim_scheme,
-      base::OffsetAdjuster::Adjustments* adjustments);
+  // Gets the formatting flags used for display of suggestions. This method
+  // encapsulates the return of experimental flags too, so any URLs displayed
+  // as an Omnibox suggestion should use this method.
+  static url_formatter::FormatUrlTypes GetFormatTypes(bool trim_scheme);
 
   // Computes the stripped destination URL (via GURLToStrippedGURL()) and
   // stores the result in |stripped_destination_url|.  |input| is used for the

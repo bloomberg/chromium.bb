@@ -59,6 +59,10 @@ extern const FormatUrlType kFormatUrlOmitAll;
 // kFormatUrlOmitAll.
 extern const FormatUrlType kFormatUrlExperimentalElideAfterHost;
 
+// If the scheme is 'https://', it's removed. Experimental and not in
+// kFormatUrlOmitAll.
+extern const FormatUrlType kFormatUrlExperimentalOmitHTTPS;
+
 // Creates a string representation of |url|. The IDN host name is turned to
 // Unicode if the Unicode representation is deemed safe. |format_type| is a
 // bitmask of FormatUrlTypes, see it for details. |unescape_rules| defines how

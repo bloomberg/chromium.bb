@@ -85,8 +85,9 @@ AutocompleteMatch TitledUrlMatchToAutocompleteMatch(
   // |offsets|, compute how everything is transformed, then remove it from the
   // end.
   offsets.push_back(inline_autocomplete_offset);
-  match.contents = AutocompleteMatch::FormatUrlForSuggestionDisplayWithOffsets(
-      url, trim_http, &offsets);
+  auto format_types = AutocompleteMatch::GetFormatTypes(trim_http);
+  match.contents = url_formatter::FormatUrlWithOffsets(
+      url, format_types, net::UnescapeRule::SPACES, nullptr, nullptr, &offsets);
   inline_autocomplete_offset = offsets.back();
   offsets.pop_back();
   TitledUrlMatch::MatchPositions new_url_match_positions =

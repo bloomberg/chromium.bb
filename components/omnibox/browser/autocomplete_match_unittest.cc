@@ -115,55 +115,44 @@ TEST(AutocompleteMatchTest, FormatUrlForSuggestionDisplay) {
   struct FormatUrlTestData {
     const std::string url;
     bool trim_scheme;
-    size_t offset_for_adjustment;
     const std::string expected_result;
-    size_t expected_adjusted_offset;
 
     void Validate() {
       SCOPED_TRACE(testing::Message()
                    << " url= " << url << " trim_scheme=" << trim_scheme
-                   << " offset_for_adjustment=" << offset_for_adjustment
-                   << " expected_result=" << expected_result
-                   << " expected_adjusted_offset=" << expected_adjusted_offset);
-
-      size_t offset_result = offset_for_adjustment;
-      base::string16 result = AutocompleteMatch::FormatUrlForSuggestionDisplay(
-          GURL(url), trim_scheme, &offset_result);
-
-      EXPECT_EQ(expected_result, base::UTF16ToASCII(result));
-      EXPECT_EQ(expected_adjusted_offset, offset_result);
+                   << " expected_result=" << expected_result);
+      auto format_types = AutocompleteMatch::GetFormatTypes(trim_scheme);
+      EXPECT_EQ(expected_result,
+                base::UTF16ToASCII(url_formatter::FormatUrl(
+                    GURL(url), format_types, net::UnescapeRule::SPACES, nullptr,
+                    nullptr, nullptr)));
     };
   };
 
+  // Sanity check that the trim_strings parameter works.
   FormatUrlTestData normal_cases[] = {
-      {"http://google.com", true, 9, "google.com", 2},
-      {"https://google.com", true, 9, "https://google.com", 9},
-      {"http://google.com", false, 9, "http://google.com", 9},
-      {"https://google.com", false, 9, "https://google.com", 9},
+      {"http://google.com", true, "google.com"},
+      {"https://google.com", true, "https://google.com"},
+      {"http://google.com", false, "http://google.com"},
+      {"https://google.com", false, "https://google.com"},
   };
-  for (size_t i = 0; i < arraysize(normal_cases); ++i) {
-    normal_cases[i].Validate();
-  }
+  for (FormatUrlTestData& test_case : normal_cases)
+    test_case.Validate();
 
+  // Test the hide-scheme feature flag.
   std::unique_ptr<base::test::ScopedFeatureList> feature_list(
       new base::test::ScopedFeatureList);
   feature_list->InitAndEnableFeature(
       omnibox::kUIExperimentHideSuggestionUrlScheme);
 
   FormatUrlTestData omit_scheme_cases[] = {
-      {"http://google.com", true, 9, "google.com", 2},
-      {"https://google.com", true, 9, "google.com", 1},
-      {"https://username:password@google.com", true, 9, "google.com",
-       base::string16::npos},
-      {"https://username:password@google.com", true, 29, "google.com", 3},
-      {"http://google.com", false, 9, "http://google.com", 9},
-      {"https://google.com", false, 9, "https://google.com", 9},
-      {"http://username:password@google.com", false, 9, "http://google.com",
-       base::string16::npos},
+      {"http://google.com", true, "google.com"},
+      {"https://google.com", true, "google.com"},
+      {"http://google.com", false, "http://google.com"},
+      {"https://google.com", false, "https://google.com"},
   };
-  for (size_t i = 0; i < arraysize(omit_scheme_cases); ++i) {
-    omit_scheme_cases[i].Validate();
-  }
+  for (FormatUrlTestData& test_case : omit_scheme_cases)
+    test_case.Validate();
 }
 
 TEST(AutocompleteMatchTest, SupportsDeletion) {

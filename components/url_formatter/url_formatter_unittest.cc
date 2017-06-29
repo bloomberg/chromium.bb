@@ -825,11 +825,14 @@ TEST(UrlFormatterTest, FormatUrl) {
       // Disabled: the resultant URL becomes "...user%253A:%2540passwd...".
 
       // -------- omit http: --------
-      {"omit http with user name", "http://user@example.com/foo",
-       kFormatUrlOmitAll, net::UnescapeRule::NORMAL, L"example.com/foo", 0},
-
       {"omit http", "http://www.google.com/", kFormatUrlOmitHTTP,
        net::UnescapeRule::NORMAL, L"www.google.com/", 0},
+
+      {"omit http on bare scheme", "http://", kFormatUrlOmitAll,
+       net::UnescapeRule::NORMAL, L"", 0},
+
+      {"omit http with user name", "http://user@example.com/foo",
+       kFormatUrlOmitAll, net::UnescapeRule::NORMAL, L"example.com/foo", 0},
 
       {"omit http with https", "https://www.google.com/", kFormatUrlOmitHTTP,
        net::UnescapeRule::NORMAL, L"https://www.google.com/", 8},
@@ -913,6 +916,24 @@ TEST(UrlFormatterTest, FormatUrl) {
        "http://google.com////???####",
        kFormatUrlOmitAll | kFormatUrlExperimentalElideAfterHost,
        net::UnescapeRule::NORMAL, L"google.com/\x2026\x0000", 0},
+
+      // -------- omit https --------
+      {"omit https", "https://www.google.com/", kFormatUrlExperimentalOmitHTTPS,
+       net::UnescapeRule::NORMAL, L"www.google.com/", 0},
+      {"omit https but do not omit http", "http://www.google.com/",
+       kFormatUrlExperimentalOmitHTTPS, net::UnescapeRule::NORMAL,
+       L"http://www.google.com/", 7},
+      {"omit https, username, and password",
+       "https://user:password@example.com/foo",
+       kFormatUrlOmitAll | kFormatUrlExperimentalOmitHTTPS,
+       net::UnescapeRule::NORMAL, L"example.com/foo", 0},
+      {"omit https, but preserve user name and password",
+       "https://user:password@example.com/foo", kFormatUrlExperimentalOmitHTTPS,
+       net::UnescapeRule::NORMAL, L"user:password@example.com/foo", 14},
+      {"omit https should not affect hosts starting with ftp.",
+       "https://ftp.google.com/",
+       kFormatUrlOmitHTTP | kFormatUrlExperimentalOmitHTTPS,
+       net::UnescapeRule::NORMAL, L"https://ftp.google.com/", 8},
   };
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
@@ -1277,6 +1298,21 @@ TEST(UrlFormatterTest, FormatUrlWithOffsets) {
   CheckAdjustedOffsets("http://foo.com//??###",
                        kFormatUrlOmitAll | kFormatUrlExperimentalElideAfterHost,
                        net::UnescapeRule::NORMAL, elide_after_host_offsets);
+
+  const size_t omit_https_offsets[] = {
+      0, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, 0,  1,  2, 3,
+      4, 5,     6,     7,     8,     9,     10,    11,    12, 13, 14};
+  CheckAdjustedOffsets("https://www.google.com/",
+                       kFormatUrlExperimentalOmitHTTPS,
+                       net::UnescapeRule::NORMAL, omit_https_offsets);
+
+  const size_t omit_https_with_auth_offsets[] = {
+      0,     kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, 0,
+      kNpos, kNpos, kNpos, 0,     1,     2,     3,     4,     5,
+      6,     7,     8,     9,     10,    11,    12,    13,    14};
+  CheckAdjustedOffsets("https://u:p@www.google.com/",
+                       kFormatUrlOmitAll | kFormatUrlExperimentalOmitHTTPS,
+                       net::UnescapeRule::NORMAL, omit_https_with_auth_offsets);
 }
 
 }  // namespace
