@@ -853,8 +853,8 @@ TEST_F(DataReductionProxyConfigTest, LoFiOn) {
       },
       {
           // Lo-Fi is enabled through command line switch, but opted out. LoFi
-          // should not be used.
-          true, false, std::string(), false, false, 0,
+          // should be used.
+          true, false, std::string(), false, true, 0,
           0,  // not in enabled field trial, UMA is not recorded
           true,
       },
@@ -942,8 +942,8 @@ TEST_F(DataReductionProxyConfigTest, LoFiOn) {
       },
       {
           // Lo-Fi is enabled through command line switch, but opted out. LoFi
-          // should not be used.
-          true, true, std::string(), false, false, 0,
+          // should be used.
+          true, true, std::string(), false, true, 0,
           0,  // not in enabled field trial, UMA is not recorded
           true,
       },
@@ -1574,6 +1574,12 @@ TEST_F(DataReductionProxyConfigTest, ShouldAcceptServerPreview) {
   EXPECT_TRUE(config()->ShouldAcceptServerPreview(*request.get(),
                                                   *previews_decider.get()));
 
+  // Verify PreviewsDecider check.
+  previews_decider = base::MakeUnique<TestPreviewsDecider>(true);
+  EXPECT_TRUE(config()->ShouldAcceptServerPreview(*request.get(),
+                                                  *previews_decider.get()));
+  previews_decider = base::MakeUnique<TestPreviewsDecider>(false);
+
   // Verify false for Cellular Only flag and WIFI connection.
   base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
@@ -1590,8 +1596,8 @@ TEST_F(DataReductionProxyConfigTest, ShouldAcceptServerPreview) {
   EXPECT_TRUE(config()->ShouldAcceptServerPreview(*request.get(),
                                                   *previews_decider.get()));
 
-  // Verify PreviewsDecider check.
   {
+    // Verfiy true for always on.
     base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kDataReductionProxyLoFi,
@@ -1599,9 +1605,6 @@ TEST_F(DataReductionProxyConfigTest, ShouldAcceptServerPreview) {
     base::FieldTrialList field_trial_list(nullptr);
     base::FieldTrialList::CreateFieldTrial(
         "DataReductionProxyPreviewsBlackListTransition", "Enabled");
-    EXPECT_FALSE(config()->ShouldAcceptServerPreview(*request.get(),
-                                                     *previews_decider.get()));
-    previews_decider = base::MakeUnique<TestPreviewsDecider>(true);
     EXPECT_TRUE(config()->ShouldAcceptServerPreview(*request.get(),
                                                     *previews_decider.get()));
   }
