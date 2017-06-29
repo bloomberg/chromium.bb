@@ -19,10 +19,12 @@ namespace printing {
 const char kHash[] = "ABCDEF123456";
 const char kName[] = "Chrome Super Printer";
 const char kDescription[] = "first star on the left";
-const char kMake[] = "Chrome";
-const char kModel[] = "Inktastic Laser Magic";
 const char kUri[] = "ipp://printy.domain.co:555/ipp/print";
 const char kUUID[] = "UUID-UUID-UUID";
+
+const char kMake[] = "Chrome";
+const char kModel[] = "Inktastic Laser Magic";
+const char kMakeAndModel[] = "Chrome Inktastic Laser Magic";
 
 const base::Time kTimestamp = base::Time::FromInternalValue(445566);
 
@@ -118,12 +120,45 @@ TEST(PrinterTranslatorTest, RecommendedPrinterToPrinter) {
   EXPECT_EQ(kDescription, printer->description());
   EXPECT_EQ(kMake, printer->manufacturer());
   EXPECT_EQ(kModel, printer->model());
+  EXPECT_EQ(kMakeAndModel, printer->make_and_model());
   EXPECT_EQ(kUri, printer->uri());
   EXPECT_EQ(kUUID, printer->uuid());
   EXPECT_EQ(kTimestamp, printer->last_updated());
 
   EXPECT_EQ(kEffectiveMakeAndModel,
             printer->ppd_reference().effective_make_and_model);
+}
+
+TEST(PrinterTranslatorTest, RecommendedPrinterToPrinterBlankManufacturer) {
+  base::DictionaryValue preference;
+  preference.SetString("id", kHash);
+  preference.SetString("display_name", kName);
+  preference.SetString("model", kModel);
+  preference.SetString("uri", kUri);
+  preference.SetString("ppd_resource.effective_model", kEffectiveMakeAndModel);
+
+  std::unique_ptr<Printer> printer =
+      RecommendedPrinterToPrinter(preference, kTimestamp);
+  EXPECT_TRUE(printer);
+
+  EXPECT_EQ(kModel, printer->model());
+  EXPECT_EQ(kModel, printer->make_and_model());
+}
+
+TEST(PrinterTranslatorTest, RecommendedPrinterToPrinterBlankModel) {
+  base::DictionaryValue preference;
+  preference.SetString("id", kHash);
+  preference.SetString("display_name", kName);
+  preference.SetString("manufacturer", kMake);
+  preference.SetString("uri", kUri);
+  preference.SetString("ppd_resource.effective_model", kEffectiveMakeAndModel);
+
+  std::unique_ptr<Printer> printer =
+      RecommendedPrinterToPrinter(preference, kTimestamp);
+  EXPECT_TRUE(printer);
+
+  EXPECT_EQ(kMake, printer->manufacturer());
+  EXPECT_EQ(kMake, printer->make_and_model());
 }
 
 }  // namespace printing

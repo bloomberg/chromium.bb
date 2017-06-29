@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
@@ -18,6 +19,7 @@ constexpr char kDisplayName[] = "Best Printer Ever";
 constexpr char kDescription[] = "The green one";
 constexpr char kManufacturer[] = "Manufacturer";
 constexpr char kModel[] = "MODEL";
+constexpr char kMakeAndModel[] = "Manufacturer MODEL";
 constexpr char kUri[] = "ipps://notaprinter.chromium.org/ipp/print";
 constexpr char kUuid[] = "UUIDUUIDUUID";
 const base::Time kUpdateTime = base::Time::FromInternalValue(22114455660000);
@@ -35,8 +37,7 @@ TEST(SpecificsTranslationTest, SpecificsToPrinter) {
   specifics.set_id(kId);
   specifics.set_display_name(kDisplayName);
   specifics.set_description(kDescription);
-  specifics.set_manufacturer(kManufacturer);
-  specifics.set_model(kModel);
+  specifics.set_make_and_model(kMakeAndModel);
   specifics.set_uri(kUri);
   specifics.set_uuid(kUuid);
   specifics.set_updated_timestamp(kUpdateTime.ToJavaTime());
@@ -49,8 +50,7 @@ TEST(SpecificsTranslationTest, SpecificsToPrinter) {
   EXPECT_EQ(kId, result->id());
   EXPECT_EQ(kDisplayName, result->display_name());
   EXPECT_EQ(kDescription, result->description());
-  EXPECT_EQ(kManufacturer, result->manufacturer());
-  EXPECT_EQ(kModel, result->model());
+  EXPECT_EQ(kMakeAndModel, result->make_and_model());
   EXPECT_EQ(kUri, result->uri());
   EXPECT_EQ(kUuid, result->uuid());
   EXPECT_EQ(kUpdateTime, result->last_updated());
@@ -65,8 +65,7 @@ TEST(SpecificsTranslationTest, PrinterToSpecifics) {
   printer.set_id(kId);
   printer.set_display_name(kDisplayName);
   printer.set_description(kDescription);
-  printer.set_manufacturer(kManufacturer);
-  printer.set_model(kModel);
+  printer.set_make_and_model(kMakeAndModel);
   printer.set_uri(kUri);
   printer.set_uuid(kUuid);
 
@@ -79,8 +78,7 @@ TEST(SpecificsTranslationTest, PrinterToSpecifics) {
   EXPECT_EQ(kId, result->id());
   EXPECT_EQ(kDisplayName, result->display_name());
   EXPECT_EQ(kDescription, result->description());
-  EXPECT_EQ(kManufacturer, result->manufacturer());
-  EXPECT_EQ(kModel, result->model());
+  EXPECT_EQ(kMakeAndModel, result->make_and_model());
   EXPECT_EQ(kUri, result->uri());
   EXPECT_EQ(kUuid, result->uuid());
 
@@ -95,6 +93,7 @@ TEST(SpecificsTranslationTest, SpecificsToPrinterRoundTrip) {
   printer.set_description(kDescription);
   printer.set_manufacturer(kManufacturer);
   printer.set_model(kModel);
+  printer.set_make_and_model(kMakeAndModel);
   printer.set_uri(kUri);
   printer.set_uuid(kUuid);
 
@@ -110,6 +109,7 @@ TEST(SpecificsTranslationTest, SpecificsToPrinterRoundTrip) {
   EXPECT_EQ(kDescription, result->description());
   EXPECT_EQ(kManufacturer, result->manufacturer());
   EXPECT_EQ(kModel, result->model());
+  EXPECT_EQ(kMakeAndModel, result->make_and_model());
   EXPECT_EQ(kUri, result->uri());
   EXPECT_EQ(kUuid, result->uuid());
 
@@ -121,10 +121,16 @@ TEST(SpecificsTranslationTest, MergePrinterToSpecifics) {
   sync_pb::PrinterSpecifics original;
   original.set_id(kId);
   original.mutable_ppd_reference()->set_autoconf(true);
+  original.set_manufacturer(kManufacturer);
+  original.set_model(kModel);
+  // make_and_model not set
 
   Printer printer(kId);
   printer.mutable_ppd_reference()->effective_make_and_model =
       kEffectiveMakeAndModel;
+  printer.set_make_and_model(kMakeAndModel);
+  // manufacturer not set
+  // model not set
 
   MergePrinterToSpecifics(printer, &original);
 
@@ -134,6 +140,11 @@ TEST(SpecificsTranslationTest, MergePrinterToSpecifics) {
 
   // Verify that autoconf is cleared.
   EXPECT_FALSE(original.ppd_reference().autoconf());
+
+  // Verify that both make_and_model and the old fields are retained.
+  EXPECT_EQ(kMakeAndModel, original.make_and_model());
+  EXPECT_EQ(kManufacturer, original.manufacturer());
+  EXPECT_EQ(kModel, original.model());
 }
 
 // Tests that the autoconf value overrides other PpdReference fields.
@@ -165,6 +176,51 @@ TEST(SpecificsTranslationTest, UserSuppliedOverrides) {
   EXPECT_FALSE(printer->ppd_reference().autoconf);
   EXPECT_FALSE(printer->ppd_reference().user_supplied_ppd_url.empty());
   EXPECT_TRUE(printer->ppd_reference().effective_make_and_model.empty());
+}
+
+TEST(SpecificsTranslationTest, OldProtoExpectedValues) {
+  sync_pb::PrinterSpecifics original;
+  original.set_id(kId);
+  original.set_manufacturer(kManufacturer);
+  original.set_model(kModel);
+
+  auto printer = SpecificsToPrinter(original);
+
+  // make_and_model should be computed
+  EXPECT_EQ(kMakeAndModel, printer->make_and_model());
+
+  // Ensure that manufacturer and model are still populated
+  EXPECT_EQ(kManufacturer, printer->manufacturer());
+  EXPECT_EQ(kModel, printer->model());
+}
+
+TEST(SpecificsTranslationTest, OldProtoDuplicateManufacturer) {
+  const std::string make = "IO";
+  const std::string model = "IO Radar 2000";
+
+  sync_pb::PrinterSpecifics original;
+  original.set_id(kId);
+  original.set_manufacturer(make);
+  original.set_model(model);
+
+  auto printer = SpecificsToPrinter(original);
+
+  EXPECT_EQ("IO Radar 2000", printer->make_and_model());
+}
+
+TEST(SpecificsTranslationTest, MakeAndModelPreferred) {
+  const std::string make = "UN";
+  const std::string model = "EXPECTED";
+
+  sync_pb::PrinterSpecifics original;
+  original.set_id(kId);
+  original.set_manufacturer(make);
+  original.set_model(model);
+  original.set_make_and_model(kMakeAndModel);
+
+  auto printer = SpecificsToPrinter(original);
+
+  EXPECT_EQ(kMakeAndModel, printer->make_and_model());
 }
 
 }  // namespace printing

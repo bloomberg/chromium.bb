@@ -681,6 +681,7 @@ VISIT_PROTO_FIELDS(const sync_pb::PrinterSpecifics& proto) {
   VISIT(uri);
   VISIT(uuid);
   VISIT(ppd_reference);
+  VISIT(make_and_model);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::PriorityPreferenceSpecifics& proto) {
