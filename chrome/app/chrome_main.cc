@@ -9,6 +9,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_main_delegate.h"
+#include "chrome/browser/profiling_host/profiling_process_host.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/features.h"
 #include "content/public/app/content_main.h"
@@ -108,12 +109,19 @@ int ChromeMain(int argc, const char** argv) {
 #endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 
 #if BUILDFLAG(ENABLE_OOP_HEAP_PROFILING)
-#if !defined(OS_WIN) || defined(CHROME_MULTIPLE_DLL_BROWSER)
+#if !defined(OS_WIN) || defined(COMPONENT_BUILD) || \
+    defined(CHROME_MULTIPLE_DLL_BROWSER)
   // The profiling server is only compiled into the browser process. On Windows,
-  // it should be called only for CHROME_MULTIPLE_DLL_BROWSER.
+  // non-component builds, browser code is only used for
+  // CHROME_MULTIPLE_DLL_BROWSER.
   if (command_line->HasSwitch(switches::kMemlog))
-    return profiling::ProfilingMain(*command_line);
+    profiling::ProfilingProcessHost::EnsureStarted();
 #endif
+  // The profiling process. This is a child process type implemented at the
+  // Chrome layer rather than the content layer (like the other child procs.).
+  if (command_line->GetSwitchValueASCII(switches::kProcessType) ==
+      switches::kProfiling)
+    return profiling::ProfilingMain(*command_line);
   profiling::InitMemlogSenderIfNecessary(*command_line);
 #endif  // ENABLE_OOP_HEAP_PROFILING
 
