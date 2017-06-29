@@ -866,11 +866,18 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, BasicTextOperations) {
 
   // Check if RevertAll() resets the text and preserves the cursor position.
   omnibox_view->RevertAll();
-  EXPECT_FALSE(omnibox_view->IsSelectAll());
+  EXPECT_TRUE(omnibox_view->IsSelectAll());
   EXPECT_EQ(old_text, omnibox_view->GetText());
   omnibox_view->GetSelectionBounds(&start, &end);
-  EXPECT_EQ(3U, start);
-  EXPECT_EQ(3U, end);
+#if defined(OS_MACOSX)
+  // Cocoa doesn't choose a direction until the user interacts with it,
+  // so it will have a default direction here.
+  std::swap(start, end);
+#endif
+  // When |Revert()| calls |SelectAll()|, it requests a reverse selection
+  // so that the start of a long URL is in view.
+  EXPECT_EQ(11U, start);
+  EXPECT_EQ(0U, end);
 
   // Check that reverting clamps the cursor to the bounds of the new text.
   // Move the cursor to the end.
@@ -886,8 +893,11 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, BasicTextOperations) {
   omnibox_view->RevertAll();
   // Cursor should be no further than original text.
   omnibox_view->GetSelectionBounds(&start, &end);
+#if defined(OS_MACOSX)
+  std::swap(start, end);
+#endif
   EXPECT_EQ(11U, start);
-  EXPECT_EQ(11U, end);
+  EXPECT_EQ(0U, end);
 }
 
 // Make sure the cursor position doesn't get set past the last character of
@@ -1956,13 +1966,13 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, SelectAllStaysAfterUpdate) {
   test_toolbar_model->set_text(url_a);
   omnibox_view->Update();
   EXPECT_EQ(url_a, omnibox_view->GetText());
-  EXPECT_FALSE(omnibox_view->IsSelectAll());
+  EXPECT_TRUE(omnibox_view->IsSelectAll());
 
   // Test behavior of the "reversed" attribute of OmniboxView::SelectAll().
   test_toolbar_model->set_text(ASCIIToUTF16("AB"));
   omnibox_view->Update();
   // Should be at the end already. Shift+Left to select "reversed".
-  EXPECT_EQ(0u, GetSelectionSize(omnibox_view));
+  EXPECT_EQ(2u, GetSelectionSize(omnibox_view));
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_LEFT, ui::EF_SHIFT_DOWN));
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_LEFT, ui::EF_SHIFT_DOWN));
   EXPECT_EQ(2u, GetSelectionSize(omnibox_view));
@@ -1989,6 +1999,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, SelectAllStaysAfterUpdate) {
   omnibox_view->Update();
   EXPECT_EQ(2u, GetSelectionSize(omnibox_view));
 
+  // Force a forwards select-all because Cocoa will anyways.
+  omnibox_view->SelectAll(false);
   // Now Shift+Right should do nothing, and Shift+Left should reduce.
   // At the end, so Shift+Right should do nothing.
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_RIGHT, ui::EF_SHIFT_DOWN));
