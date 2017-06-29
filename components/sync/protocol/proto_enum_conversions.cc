@@ -294,19 +294,22 @@ const char* ProtoEnumToString(sync_pb::TabNavigation::PasswordState state) {
   return "";
 }
 
-const char* ProtoEnumToString(sync_pb::Translation::Interaction interaction) {
-  ASSERT_ENUM_BOUNDS(sync_pb::Translation, Interaction, UNKNOWN,
-                     AUTO_TRANSLATION_BY_LINK);
+const char* ProtoEnumToString(
+    sync_pb::UserEventSpecifics::Translation::Interaction interaction) {
+  ASSERT_ENUM_BOUNDS(sync_pb::UserEventSpecifics::Translation, Interaction,
+                     UNKNOWN, AUTO_TRANSLATION_BY_LINK);
   switch (interaction) {
-    ENUM_CASE(sync_pb::Translation, UNKNOWN);
-    ENUM_CASE(sync_pb::Translation, ACCEPT);
-    ENUM_CASE(sync_pb::Translation, DECLINE);
-    ENUM_CASE(sync_pb::Translation, IGNORED);
-    ENUM_CASE(sync_pb::Translation, DISMISSED);
-    ENUM_CASE(sync_pb::Translation, MANUAL);
-    ENUM_CASE(sync_pb::Translation, TRANSLATION_REVERTED);
-    ENUM_CASE(sync_pb::Translation, AUTO_TRANSLATION_BY_PREF);
-    ENUM_CASE(sync_pb::Translation, AUTO_TRANSLATION_BY_LINK);
+    ENUM_CASE(sync_pb::UserEventSpecifics::Translation, UNKNOWN);
+    ENUM_CASE(sync_pb::UserEventSpecifics::Translation, ACCEPT);
+    ENUM_CASE(sync_pb::UserEventSpecifics::Translation, DECLINE);
+    ENUM_CASE(sync_pb::UserEventSpecifics::Translation, IGNORED);
+    ENUM_CASE(sync_pb::UserEventSpecifics::Translation, DISMISSED);
+    ENUM_CASE(sync_pb::UserEventSpecifics::Translation, MANUAL);
+    ENUM_CASE(sync_pb::UserEventSpecifics::Translation, TRANSLATION_REVERTED);
+    ENUM_CASE(sync_pb::UserEventSpecifics::Translation,
+              AUTO_TRANSLATION_BY_PREF);
+    ENUM_CASE(sync_pb::UserEventSpecifics::Translation,
+              AUTO_TRANSLATION_BY_LINK);
   }
   NOTREACHED();
   return "";

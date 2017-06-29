@@ -12,7 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using metrics::TranslateEventProto;
-using sync_pb::Translation;
+using Translation = sync_pb::UserEventSpecifics::Translation;
 
 void EqualTranslationProto(const Translation& first,
                            const Translation& second) {
