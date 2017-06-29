@@ -42,6 +42,7 @@
     *   [get_target_outputs: [file list] Get the list of outputs from a target.](#get_target_outputs)
     *   [getenv: Get an environment variable.](#getenv)
     *   [import: Import a file into the current scope.](#import)
+    *   [not_needed: Mark variables from scope as not needed.](#not_needed)
     *   [pool: Defines a pool object.](#pool)
     *   [print: Prints to the console.](#print)
     *   [process_file_template: Do template expansion over a list of files.](#process_file_template)
@@ -2136,6 +2137,25 @@
 
   # Looks in the current directory.
   import("my_vars.gni")
+```
+### <a name="not_needed"></a>**not_needed**: Mark variables from scope as not needed.
+
+```
+  not_needed(variable_list_or_star, variable_to_ignore_list = [])
+  not_needed(from_scope, variable_list_or_star,
+             variable_to_ignore_list = [])
+
+  Mark the variables in the current or given scope as not needed, which means
+  you will not get an error about unused variables for these.
+```
+
+#### **Example**
+
+```
+  not_needed("*", [ "config" ])
+  not_needed([ "data_deps", "deps" ])
+  not_needed(invoker, "*", [ "config" ])
+  not_needed(invoker, [ "data_deps", "deps" ])
 ```
 ### <a name="pool"></a>**pool**: Defines a pool object.
 
