@@ -228,6 +228,7 @@ if (CONFIG_AV1_DECODER)
                    $<TARGET_OBJECTS:aom_decoder_app_util>)
     target_link_libraries(analyzer ${AOM_LIB_LINK_TYPE} ${wxWidgets_LIBRARIES})
     set(AOM_APP_TARGETS ${AOM_APP_TARGETS} analyzer)
+    set(AOM_DECODER_EXAMPLE_TARGETS ${AOM_DECODER_EXAMPLE_TARGETS} analyzer)
   endif ()
 
   add_executable(decode_to_md5

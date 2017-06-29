@@ -54,7 +54,7 @@ if (CONFIG_AV1_DECODER)
   if (CONFIG_ANALYZER)
     set(AOM_DOXYGEN_EXAMPLE_SOURCES
         ${AOM_DOXYGEN_EXAMPLE_SOURCES}
-        "${AOM_ROOT}examples/analyzer.cc")
+        "${AOM_ROOT}/examples/analyzer.cc")
 
     set(AOM_DOXYGEN_EXAMPLE_DESCRIPTIONS
         ${AOM_DOXYGEN_EXAMPLE_DESCRIPTIONS}
