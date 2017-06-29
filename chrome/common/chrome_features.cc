@@ -121,6 +121,9 @@ const base::Feature kCaptureThumbnailOnLoadFinished{
 const base::Feature kCheckInstallabilityForBannerOnLoad{
     "CheckInstallabilityForBannerOnLoad", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kClickToOpenPDFPlaceholder{
+    "ClickToOpenPDFPlaceholder", base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if defined(OS_ANDROID)
 // Experiment to make Geolocation permissions in the omnibox and the default
 // search engine's search page consistent.
