@@ -258,6 +258,18 @@ String LayoutTheme::ExtraDefaultStyleSheet() {
   return g_empty_string;
 }
 
+String LayoutTheme::ExtraQuirksStyleSheet() {
+  return String();
+}
+
+String LayoutTheme::ExtraMediaControlsStyleSheet() {
+  return String();
+}
+
+String LayoutTheme::ExtraFullscreenStyleSheet() {
+  return String();
+}
+
 static String FormatChromiumMediaControlsTime(float time,
                                               float duration,
                                               bool include_separator) {
