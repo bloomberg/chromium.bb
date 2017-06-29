@@ -280,6 +280,34 @@ public class SafeBrowsingTest extends AwTestBase {
         });
     }
 
+    private void loadPathAndWaitForInterstitial(final String path) throws Exception {
+        int interstitialCount =
+                mWebContentsObserver.getAttachedInterstitialPageHelper().getCallCount();
+        final String responseUrl = mTestServer.getURL(path);
+        loadUrlAsync(mAwContents, responseUrl);
+        mWebContentsObserver.getAttachedInterstitialPageHelper().waitForCallback(interstitialCount);
+    }
+
+    private void assertTargetPageHasLoaded(int pageColor) throws Exception {
+        waitForVisualStateCallback(mAwContents);
+        assertEquals("Target page should be visible", pageColor,
+                GraphicsTestUtils.getPixelColorAtCenterOfView(mAwContents, mContainerView));
+    }
+
+    private void assertGreenPageNotShowing() throws Exception {
+        assertTrue("Original page should not be showing",
+                GREEN_PAGE_BACKGROUND_COLOR
+                        != GraphicsTestUtils.getPixelColorAtCenterOfView(
+                                   mAwContents, mContainerView));
+    }
+
+    private void assertTargetPageNotShowing(int pageColor) throws Exception {
+        assertTrue("Target page should not be showing",
+                pageColor
+                        != GraphicsTestUtils.getPixelColorAtCenterOfView(
+                                   mAwContents, mContainerView));
+    }
+
     @SmallTest
     @Feature({"AndroidWebView"})
     @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
@@ -287,9 +315,7 @@ public class SafeBrowsingTest extends AwTestBase {
         loadGreenPage();
         final String responseUrl = mTestServer.getURL(SAFE_HTML_PATH);
         loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), responseUrl);
-        waitForVisualStateCallback(mAwContents);
-        assertEquals("Target page should be visible", SAFE_PAGE_BACKGROUND_COLOR,
-                GraphicsTestUtils.getPixelColorAtCenterOfView(mAwContents, mContainerView));
+        assertTargetPageHasLoaded(SAFE_PAGE_BACKGROUND_COLOR);
     }
 
     @SmallTest
@@ -301,9 +327,7 @@ public class SafeBrowsingTest extends AwTestBase {
         loadGreenPage();
         final String responseUrl = mTestServer.getURL(UNWANTED_SOFTWARE_HTML_PATH);
         loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), responseUrl);
-        waitForVisualStateCallback(mAwContents);
-        assertEquals("Target page should be visible", UNWANTED_SOFTWARE_PAGE_BACKGROUND_COLOR,
-                GraphicsTestUtils.getPixelColorAtCenterOfView(mAwContents, mContainerView));
+        assertTargetPageHasLoaded(UNWANTED_SOFTWARE_PAGE_BACKGROUND_COLOR);
     }
 
     @SmallTest
@@ -311,18 +335,9 @@ public class SafeBrowsingTest extends AwTestBase {
     @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
     public void testSafeBrowsingBlocksPhishingPages() throws Throwable {
         loadGreenPage();
-        int count = mWebContentsObserver.getAttachedInterstitialPageHelper().getCallCount();
-        final String responseUrl = mTestServer.getURL(PHISHING_HTML_PATH);
-        loadUrlAsync(mAwContents, responseUrl);
-        mWebContentsObserver.getAttachedInterstitialPageHelper().waitForCallback(count);
-        assertTrue("Original page should not be showing",
-                GREEN_PAGE_BACKGROUND_COLOR
-                        != GraphicsTestUtils.getPixelColorAtCenterOfView(
-                                   mAwContents, mContainerView));
-        assertTrue("Target page should not be visible",
-                PHISHING_PAGE_BACKGROUND_COLOR
-                        != GraphicsTestUtils.getPixelColorAtCenterOfView(
-                                   mAwContents, mContainerView));
+        loadPathAndWaitForInterstitial(PHISHING_HTML_PATH);
+        assertGreenPageNotShowing();
+        assertTargetPageNotShowing(PHISHING_PAGE_BACKGROUND_COLOR);
         // Assume that we are rendering the interstitial, since we see neither the previous page nor
         // the target page
     }
@@ -332,18 +347,9 @@ public class SafeBrowsingTest extends AwTestBase {
     @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
     public void testSafeBrowsingShowsInterstitialForMainFrame() throws Throwable {
         loadGreenPage();
-        int count = mWebContentsObserver.getAttachedInterstitialPageHelper().getCallCount();
-        final String responseUrl = mTestServer.getURL(MALWARE_HTML_PATH);
-        loadUrlAsync(mAwContents, responseUrl);
-        mWebContentsObserver.getAttachedInterstitialPageHelper().waitForCallback(count);
-        assertTrue("Original page should not be showing",
-                GREEN_PAGE_BACKGROUND_COLOR
-                        != GraphicsTestUtils.getPixelColorAtCenterOfView(
-                                   mAwContents, mContainerView));
-        assertTrue("Target page should not be visible",
-                MALWARE_PAGE_BACKGROUND_COLOR
-                        != GraphicsTestUtils.getPixelColorAtCenterOfView(
-                                   mAwContents, mContainerView));
+        loadPathAndWaitForInterstitial(MALWARE_HTML_PATH);
+        assertGreenPageNotShowing();
+        assertTargetPageNotShowing(MALWARE_PAGE_BACKGROUND_COLOR);
         // Assume that we are rendering the interstitial, since we see neither the previous page nor
         // the target page
     }
@@ -353,18 +359,9 @@ public class SafeBrowsingTest extends AwTestBase {
     @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
     public void testSafeBrowsingShowsInterstitialForSubresource() throws Throwable {
         loadGreenPage();
-        int count = mWebContentsObserver.getAttachedInterstitialPageHelper().getCallCount();
-        final String responseUrl = mTestServer.getURL(IFRAME_HTML_PATH);
-        loadUrlAsync(mAwContents, responseUrl);
-        mWebContentsObserver.getAttachedInterstitialPageHelper().waitForCallback(count);
-        assertTrue("Original page should not be showing",
-                GREEN_PAGE_BACKGROUND_COLOR
-                        != GraphicsTestUtils.getPixelColorAtCenterOfView(
-                                   mAwContents, mContainerView));
-        assertTrue("Target page should not be visible",
-                IFRAME_EMBEDDER_BACKGROUND_COLOR
-                        != GraphicsTestUtils.getPixelColorAtCenterOfView(
-                                   mAwContents, mContainerView));
+        loadPathAndWaitForInterstitial(IFRAME_HTML_PATH);
+        assertGreenPageNotShowing();
+        assertTargetPageNotShowing(IFRAME_EMBEDDER_BACKGROUND_COLOR);
         // Assume that we are rendering the interstitial, since we see neither the previous page nor
         // the target page
     }
@@ -373,52 +370,36 @@ public class SafeBrowsingTest extends AwTestBase {
     @Feature({"AndroidWebView"})
     @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
     public void testSafeBrowsingProceedThroughInterstitialForMainFrame() throws Throwable {
-        int interstitialCount =
-                mWebContentsObserver.getAttachedInterstitialPageHelper().getCallCount();
-        int pageFinishedCount =
-                mContentsClient.getOnPageFinishedHelper().getCallCount();
-        final String responseUrl = mTestServer.getURL(MALWARE_HTML_PATH);
-        loadUrlAsync(mAwContents, responseUrl);
-        mWebContentsObserver.getAttachedInterstitialPageHelper().waitForCallback(interstitialCount);
+        int pageFinishedCount = mContentsClient.getOnPageFinishedHelper().getCallCount();
+        loadPathAndWaitForInterstitial(MALWARE_HTML_PATH);
         proceedThroughInterstitial();
         mContentsClient.getOnPageFinishedHelper().waitForCallback(pageFinishedCount);
-        waitForVisualStateCallback(mAwContents);
-        assertEquals("Target page should be visible", MALWARE_PAGE_BACKGROUND_COLOR,
-                GraphicsTestUtils.getPixelColorAtCenterOfView(mAwContents, mContainerView));
+        assertTargetPageHasLoaded(MALWARE_PAGE_BACKGROUND_COLOR);
     }
 
     @SmallTest
     @Feature({"AndroidWebView"})
     @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
     public void testSafeBrowsingCanProceedThroughInterstitialForSubresource() throws Throwable {
-        int interstitialCount =
-                mWebContentsObserver.getAttachedInterstitialPageHelper().getCallCount();
         int pageFinishedCount = mContentsClient.getOnPageFinishedHelper().getCallCount();
-        final String responseUrl = mTestServer.getURL(IFRAME_HTML_PATH);
-        loadUrlAsync(mAwContents, responseUrl);
-        mWebContentsObserver.getAttachedInterstitialPageHelper().waitForCallback(interstitialCount);
+        loadPathAndWaitForInterstitial(IFRAME_HTML_PATH);
         proceedThroughInterstitial();
         mContentsClient.getOnPageFinishedHelper().waitForCallback(pageFinishedCount);
-        waitForVisualStateCallback(mAwContents);
-        assertEquals("Target page should be visible", IFRAME_EMBEDDER_BACKGROUND_COLOR,
-                GraphicsTestUtils.getPixelColorAtCenterOfView(mAwContents, mContainerView));
+        assertTargetPageHasLoaded(IFRAME_EMBEDDER_BACKGROUND_COLOR);
     }
 
     @SmallTest
     @Feature({"AndroidWebView"})
     @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
     public void testSafeBrowsingDontProceedCausesNetworkErrorForMainFrame() throws Throwable {
-        int interstitialCount =
-                mWebContentsObserver.getAttachedInterstitialPageHelper().getCallCount();
-        final String responseUrl = mTestServer.getURL(MALWARE_HTML_PATH);
-        loadUrlAsync(mAwContents, responseUrl);
-        mWebContentsObserver.getAttachedInterstitialPageHelper().waitForCallback(interstitialCount);
+        loadPathAndWaitForInterstitial(MALWARE_HTML_PATH);
         OnReceivedError2Helper errorHelper = mContentsClient.getOnReceivedError2Helper();
         int errorCount = errorHelper.getCallCount();
         dontProceedThroughInterstitial();
         errorHelper.waitForCallback(errorCount);
         assertEquals(
                 ErrorCodeConversionHelper.ERROR_UNSAFE_RESOURCE, errorHelper.getError().errorCode);
+        final String responseUrl = mTestServer.getURL(MALWARE_HTML_PATH);
         assertEquals("Network error is for the malicious page", responseUrl,
                 errorHelper.getRequest().url);
     }
@@ -427,11 +408,7 @@ public class SafeBrowsingTest extends AwTestBase {
     @Feature({"AndroidWebView"})
     @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
     public void testSafeBrowsingDontProceedCausesNetworkErrorForSubresource() throws Throwable {
-        int interstitialCount =
-                mWebContentsObserver.getAttachedInterstitialPageHelper().getCallCount();
-        final String responseUrl = mTestServer.getURL(IFRAME_HTML_PATH);
-        loadUrlAsync(mAwContents, responseUrl);
-        mWebContentsObserver.getAttachedInterstitialPageHelper().waitForCallback(interstitialCount);
+        loadPathAndWaitForInterstitial(IFRAME_HTML_PATH);
         OnReceivedError2Helper errorHelper = mContentsClient.getOnReceivedError2Helper();
         int errorCount = errorHelper.getCallCount();
         dontProceedThroughInterstitial();
@@ -449,11 +426,7 @@ public class SafeBrowsingTest extends AwTestBase {
     public void testSafeBrowsingDontProceedNavigatesBackForMainFrame() throws Throwable {
         loadGreenPage();
         final String originalTitle = getTitleOnUiThread(mAwContents);
-        int interstitialCount =
-                mWebContentsObserver.getAttachedInterstitialPageHelper().getCallCount();
-        final String responseUrl = mTestServer.getURL(MALWARE_HTML_PATH);
-        loadUrlAsync(mAwContents, responseUrl);
-        mWebContentsObserver.getAttachedInterstitialPageHelper().waitForCallback(interstitialCount);
+        loadPathAndWaitForInterstitial(MALWARE_HTML_PATH);
         waitForInterstitialToChangeTitle();
         dontProceedThroughInterstitial();
 
@@ -474,9 +447,7 @@ public class SafeBrowsingTest extends AwTestBase {
 
         final String responseUrl = mTestServer.getURL(MALWARE_HTML_PATH);
         loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), responseUrl);
-        waitForVisualStateCallback(mAwContents);
-        assertEquals("Target page should be visible", MALWARE_PAGE_BACKGROUND_COLOR,
-                GraphicsTestUtils.getPixelColorAtCenterOfView(mAwContents, mContainerView));
+        assertTargetPageHasLoaded(MALWARE_PAGE_BACKGROUND_COLOR);
     }
 
     @SmallTest
@@ -484,24 +455,14 @@ public class SafeBrowsingTest extends AwTestBase {
     public void testSafeBrowsingCanBeEnabledPerWebview() throws Throwable {
         final String responseUrl = mTestServer.getURL(MALWARE_HTML_PATH);
         loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), responseUrl);
-        waitForVisualStateCallback(mAwContents);
-        assertEquals("Target page should be visible", MALWARE_PAGE_BACKGROUND_COLOR,
-                GraphicsTestUtils.getPixelColorAtCenterOfView(mAwContents, mContainerView));
+        assertTargetPageHasLoaded(MALWARE_PAGE_BACKGROUND_COLOR);
 
         getAwSettingsOnUiThread(mAwContents).setSafeBrowsingEnabled(true);
 
         loadGreenPage();
-        int count = mWebContentsObserver.getAttachedInterstitialPageHelper().getCallCount();
-        loadUrlAsync(mAwContents, responseUrl);
-        mWebContentsObserver.getAttachedInterstitialPageHelper().waitForCallback(count);
-        assertTrue("Original page should not be showing",
-                GREEN_PAGE_BACKGROUND_COLOR
-                        != GraphicsTestUtils.getPixelColorAtCenterOfView(
-                                   mAwContents, mContainerView));
-        assertTrue("Target page should not be visible",
-                MALWARE_PAGE_BACKGROUND_COLOR
-                        != GraphicsTestUtils.getPixelColorAtCenterOfView(
-                                   mAwContents, mContainerView));
+        loadPathAndWaitForInterstitial(MALWARE_HTML_PATH);
+        assertGreenPageNotShowing();
+        assertTargetPageNotShowing(MALWARE_PAGE_BACKGROUND_COLOR);
     }
 
     @SmallTest
@@ -527,18 +488,9 @@ public class SafeBrowsingTest extends AwTestBase {
     public void testSafeBrowsingShowsQuietInterstitialForOddSizedViews() throws Throwable {
         mAwContents.setCanShowBigInterstitial(false);
         loadGreenPage();
-        int count = mWebContentsObserver.getAttachedInterstitialPageHelper().getCallCount();
-        final String responseUrl = mTestServer.getURL(MALWARE_HTML_PATH);
-        loadUrlAsync(mAwContents, responseUrl);
-        mWebContentsObserver.getAttachedInterstitialPageHelper().waitForCallback(count);
-        assertTrue("Original page should not be showing",
-                GREEN_PAGE_BACKGROUND_COLOR
-                        != GraphicsTestUtils.getPixelColorAtCenterOfView(
-                                   mAwContents, mContainerView));
-        assertTrue("Target page should not be visible",
-                MALWARE_PAGE_BACKGROUND_COLOR
-                        != GraphicsTestUtils.getPixelColorAtCenterOfView(
-                                   mAwContents, mContainerView));
+        loadPathAndWaitForInterstitial(MALWARE_HTML_PATH);
+        assertGreenPageNotShowing();
+        assertTargetPageNotShowing(MALWARE_PAGE_BACKGROUND_COLOR);
     }
 
     @SmallTest
@@ -547,18 +499,9 @@ public class SafeBrowsingTest extends AwTestBase {
     public void testSafeBrowsingCanShowQuietPhishingInterstitial() throws Throwable {
         mAwContents.setCanShowBigInterstitial(false);
         loadGreenPage();
-        int count = mWebContentsObserver.getAttachedInterstitialPageHelper().getCallCount();
-        final String responseUrl = mTestServer.getURL(PHISHING_HTML_PATH);
-        loadUrlAsync(mAwContents, responseUrl);
-        mWebContentsObserver.getAttachedInterstitialPageHelper().waitForCallback(count);
-        assertTrue("Original page should not be showing",
-                GREEN_PAGE_BACKGROUND_COLOR
-                        != GraphicsTestUtils.getPixelColorAtCenterOfView(
-                                   mAwContents, mContainerView));
-        assertTrue("Target page should not be visible",
-                PHISHING_PAGE_BACKGROUND_COLOR
-                        != GraphicsTestUtils.getPixelColorAtCenterOfView(
-                                   mAwContents, mContainerView));
+        loadPathAndWaitForInterstitial(PHISHING_HTML_PATH);
+        assertGreenPageNotShowing();
+        assertTargetPageNotShowing(PHISHING_PAGE_BACKGROUND_COLOR);
     }
 
     @SmallTest
@@ -566,16 +509,10 @@ public class SafeBrowsingTest extends AwTestBase {
     @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
     public void testSafeBrowsingProceedQuietInterstitial() throws Throwable {
         mAwContents.setCanShowBigInterstitial(false);
-        int interstitialCount =
-                mWebContentsObserver.getAttachedInterstitialPageHelper().getCallCount();
         int pageFinishedCount = mContentsClient.getOnPageFinishedHelper().getCallCount();
-        final String responseUrl = mTestServer.getURL(PHISHING_HTML_PATH);
-        loadUrlAsync(mAwContents, responseUrl);
-        mWebContentsObserver.getAttachedInterstitialPageHelper().waitForCallback(interstitialCount);
+        loadPathAndWaitForInterstitial(PHISHING_HTML_PATH);
         proceedThroughInterstitial();
         mContentsClient.getOnPageFinishedHelper().waitForCallback(pageFinishedCount);
-        waitForVisualStateCallback(mAwContents);
-        assertEquals("Target page should be visible", PHISHING_PAGE_BACKGROUND_COLOR,
-                GraphicsTestUtils.getPixelColorAtCenterOfView(mAwContents, mContainerView));
+        assertTargetPageHasLoaded(PHISHING_PAGE_BACKGROUND_COLOR);
     }
 }
