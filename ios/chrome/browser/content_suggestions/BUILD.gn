@@ -5,6 +5,9 @@
 source_set("content_suggestions") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "content_suggestions_alert_commands.h",
+    "content_suggestions_alert_factory.h",
+    "content_suggestions_alert_factory.mm",
     "content_suggestions_category_wrapper.h",
     "content_suggestions_category_wrapper.mm",
     "content_suggestions_coordinator.h",
@@ -72,4 +75,28 @@ source_set("unit_tests") {
     "//testing/gtest",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("eg_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "content_suggestions_alert_egtest.mm",
+  ]
+  deps = [
+    ":content_suggestions",
+    "//base",
+    "//base/test:test_support",
+    "//ios/chrome/app/strings",
+    "//ios/chrome/browser/ui/alert_coordinator",
+    "//ios/chrome/browser/ui/alert_coordinator",
+    "//ios/chrome/browser/ui/collection_view/cells",
+    "//ios/chrome/browser/ui/util",
+    "//ios/chrome/test/earl_grey:test_support",
+    "//ui/strings",
+  ]
+  libs = [
+    "UIKit.framework",
+    "XCTest.framework",
+  ]
 }
