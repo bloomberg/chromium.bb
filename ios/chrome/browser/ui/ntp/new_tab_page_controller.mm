@@ -599,6 +599,7 @@ enum {
     }
     view = panelController.view;
     [self.homePanel setDelegate:self];
+    [self.ntpView.tabBar setShadowAlpha:[self.homePanel alphaForBottomShadow]];
   } else if (item.identifier == NewTabPage::kOpenTabsPanel) {
     if (!_openTabsController)
       _openTabsController =
@@ -716,8 +717,10 @@ enum {
   [self.homePanel setScrollsToTop:(_currentController == self.homePanel)];
   [_openTabsController
       setScrollsToTop:(_currentController == _openTabsController)];
-  [self.ntpView.tabBar
-      setShadowAlpha:[_currentController alphaForBottomShadow]];
+  if (oldController) {
+    [self.ntpView.tabBar
+        setShadowAlpha:[_currentController alphaForBottomShadow]];
+  }
 
   if (oldController != _currentController) {
     [_currentController wasShown];
