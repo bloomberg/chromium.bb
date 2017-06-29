@@ -190,7 +190,7 @@ class IdlCompilerOptions(object):
         self.target_component = target_component
 
 
-def bindings_tests(output_directory, verbose):
+def bindings_tests(output_directory, verbose, suppress_diff):
     executive = Executive()
 
     def list_files(directory):
@@ -239,7 +239,8 @@ def bindings_tests(output_directory, verbose):
             # cmp is much faster than diff, and usual case is "no difference",
             # so only run diff if cmp detects a difference
             print 'FAIL: %s' % reference_basename
-            print diff(reference_filename, output_filename)
+            if not suppress_diff:
+                print diff(reference_filename, output_filename)
             return False
 
         if verbose:
@@ -360,11 +361,11 @@ def bindings_tests(output_directory, verbose):
     return 1
 
 
-def run_bindings_tests(reset_results, verbose):
+def run_bindings_tests(reset_results, verbose, suppress_diff):
     # Generate output into the reference directory if resetting results, or
     # a temp directory if not.
     if reset_results:
         print 'Resetting results'
-        return bindings_tests(REFERENCE_DIRECTORY, verbose)
+        return bindings_tests(REFERENCE_DIRECTORY, verbose, suppress_diff)
     with TemporaryDirectory() as temp_dir:
-        return bindings_tests(temp_dir, verbose)
+        return bindings_tests(temp_dir, verbose, suppress_diff)
