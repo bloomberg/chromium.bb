@@ -1256,7 +1256,7 @@ message CheckDeviceLicenseResponse {
 //     * ping
 //     * policy
 //     * register
-//     * status
+//     * status_upload
 //     * unregister
 //     * remote_commands
 //     * attribute_update_permission

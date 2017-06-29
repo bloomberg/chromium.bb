@@ -380,7 +380,7 @@ message DeviceLocalAccountsProto {
   // network configuration will be offered. Otherwise (policy is omitted or set
   // to false), only an error message is displayed.
   // Note: If enable_auto_login_bailout policy above is set to false and this
-  // policy is omitted or  set to false, there are chances that the device might
+  // policy is omitted or set to false, there are chances that the device might
   // become totally unusable when there is no Internet access and has to go
   // through the recovery process.
   // If the device is offline at startup then the network configuration screen
