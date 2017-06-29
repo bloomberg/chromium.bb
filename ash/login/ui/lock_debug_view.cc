@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "ash/login/ui/lock_contents_view.h"
+#include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_data_dispatcher.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/views/controls/button/md_text_button.h"
@@ -149,6 +150,9 @@ LockDebugView::LockDebugView(LoginDataDispatcher* data_dispatcher)
   debug_->SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal));
   AddChildView(debug_);
 
+  toggle_blur_ = views::MdTextButton::Create(this, base::ASCIIToUTF16("Blur"));
+  debug_->AddChildView(WrapViewForPreferredSize(toggle_blur_));
+
   add_user_ = views::MdTextButton::Create(this, base::ASCIIToUTF16("Add"));
   debug_->AddChildView(WrapViewForPreferredSize(add_user_));
 
@@ -174,6 +178,12 @@ void LockDebugView::Layout() {
 
 void LockDebugView::ButtonPressed(views::Button* sender,
                                   const ui::Event& event) {
+  // Enable or disable wallpaper blur.
+  if (sender == toggle_blur_) {
+    LockScreen::Get()->ToggleBlur();
+    return;
+  }
+
   // Add or remove a user.
   if (sender == add_user_ || sender == remove_user_) {
     if (sender == add_user_)
@@ -185,6 +195,7 @@ void LockDebugView::ButtonPressed(views::Button* sender,
     debug_data_dispatcher_->SetUserCount(num_users_);
     RebuildDebugUserColumn();
     Layout();
+    return;
   }
 
   // Enable or disable PIN.

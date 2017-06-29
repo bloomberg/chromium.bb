@@ -38,6 +38,7 @@ class LockDebugView : public views::View, public views::ButtonListener {
   LockContentsView* lock_;
 
   views::View* debug_;
+  views::View* toggle_blur_;
   views::View* add_user_;
   views::View* remove_user_;
 
