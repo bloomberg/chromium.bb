@@ -6,4 +6,3 @@
 
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/guest_view/extensions_guest_view_messages.h"
-#include "extensions/common/manifest_location_param_traits.h"

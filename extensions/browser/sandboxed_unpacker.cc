@@ -31,6 +31,8 @@
 #include "extensions/common/extension_unpacker.mojom.h"
 #include "extensions/common/extension_utility_types.h"
 #include "extensions/common/extensions_client.h"
+#include "extensions/common/features/feature_channel.h"
+#include "extensions/common/features/feature_session_type.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
@@ -422,7 +424,8 @@ void SandboxedUnpacker::Unpack(const base::FilePath& directory) {
   DCHECK(directory.DirName() == temp_dir_.GetPath());
 
   utility_process_mojo_client_->service()->Unpack(
-      directory, extension_id_, location_, creation_flags_,
+      GetCurrentChannel(), GetCurrentFeatureSessionType(), directory,
+      extension_id_, location_, creation_flags_,
       base::Bind(&SandboxedUnpacker::UnpackDone, this));
 }
 
