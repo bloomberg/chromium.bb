@@ -10,10 +10,6 @@
 #include "ash/login/ui/lock_screen.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/session_controller.mojom.h"
-#include "ash/shell.h"
-#include "ash/wm/window_state.h"
-#include "ash/wm/window_util.h"
-#include "ash/wm/wm_event.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
@@ -519,26 +515,13 @@ void ScreenLocker::Show() {
     return;
   }
 
-  // Manipulating active window state directly does not work in mash so skip it
-  // for mash. http://crbug.com/714677 tracks work to add the support for mash.
-  if (!ash_util::IsRunningInMash()) {
-    // If the active window is fullscreen, exit fullscreen to avoid the web page
-    // or app mimicking the lock screen. Do not exit fullscreen if the shelf is
-    // visible while in fullscreen because the shelf makes it harder for a web
-    // page or app to mimick the lock screen.
-    ash::wm::WindowState* active_window_state = ash::wm::GetActiveWindowState();
-    if (active_window_state && active_window_state->IsFullscreen() &&
-        active_window_state->hide_shelf_when_fullscreen()) {
-      const ash::wm::WMEvent event(ash::wm::WM_EVENT_TOGGLE_FULLSCREEN);
-      active_window_state->OnWMEvent(&event);
-    }
-  }
-
   if (!screen_locker_) {
-    ScreenLocker* locker =
-        new ScreenLocker(user_manager::UserManager::Get()->GetUnlockUsers());
-    VLOG(1) << "Created ScreenLocker " << locker;
-    locker->Init();
+    SessionControllerClient::Get()->PrepareForLock(base::Bind([]() {
+      ScreenLocker* locker =
+          new ScreenLocker(user_manager::UserManager::Get()->GetUnlockUsers());
+      VLOG(1) << "Created ScreenLocker " << locker;
+      locker->Init();
+    }));
   } else {
     VLOG(1) << "ScreenLocker " << screen_locker_ << " already exists; "
             << " calling session manager's HandleLockScreenShown D-Bus method";

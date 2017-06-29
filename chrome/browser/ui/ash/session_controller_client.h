@@ -48,6 +48,9 @@ class SessionControllerClient
 
   static SessionControllerClient* Get();
 
+  // Calls SessionController to prepare locking ash.
+  void PrepareForLock(base::OnceClosure callback);
+
   // Calls SessionController to start locking ash. |callback| will be invoked
   // to indicate whether the lock is successful. If |locked| is true, the post
   // lock animation is finished and ash is fully locked. Otherwise, the lock

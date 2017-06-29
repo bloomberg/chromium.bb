@@ -12,6 +12,9 @@
 #include "ash/shell.h"
 #include "ash/system/power/power_event_observer.h"
 #include "ash/wm/lock_state_controller.h"
+#include "ash/wm/window_state.h"
+#include "ash/wm/window_util.h"
+#include "ash/wm/wm_event.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -246,6 +249,21 @@ void SessionController::SetUserSessionOrder(
 
     UpdateLoginStatus();
   }
+}
+
+void SessionController::PrepareForLock(PrepareForLockCallback callback) {
+  // If the active window is fullscreen, exit fullscreen to avoid the web page
+  // or app mimicking the lock screen. Do not exit fullscreen if the shelf is
+  // visible while in fullscreen because the shelf makes it harder for a web
+  // page or app to mimick the lock screen.
+  wm::WindowState* active_window_state = wm::GetActiveWindowState();
+  if (active_window_state && active_window_state->IsFullscreen() &&
+      active_window_state->hide_shelf_when_fullscreen()) {
+    const wm::WMEvent event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
+    active_window_state->OnWMEvent(&event);
+  }
+
+  std::move(callback).Run();
 }
 
 void SessionController::StartLock(StartLockCallback callback) {

@@ -61,7 +61,7 @@ void LockScreen::Show() {
   }
   data_dispatcher->NotifyUsers(users);
 
-  auto* window = instance_->window_ = new LockWindow();
+  auto* window = instance_->window_ = new LockWindow(Shell::GetAshConfig());
   window->SetBounds(display::Screen::GetScreen()->GetPrimaryDisplay().bounds());
   window->SetContentsView(contents);
   window->set_data_dispatcher(std::move(data_dispatcher));
