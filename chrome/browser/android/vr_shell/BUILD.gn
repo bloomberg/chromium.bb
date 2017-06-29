@@ -59,6 +59,8 @@ static_library("vr_common") {
     "ui_browser_interface.h",
     "ui_elements/button.cc",
     "ui_elements/button.h",
+    "ui_elements/exclusive_screen_toast.cc",
+    "ui_elements/exclusive_screen_toast.h",
     "ui_elements/exit_prompt.cc",
     "ui_elements/exit_prompt.h",
     "ui_elements/exit_prompt_backplane.cc",

@@ -10,6 +10,7 @@
 #include "chrome/browser/android/vr_shell/textures/ui_texture.h"
 #include "chrome/browser/android/vr_shell/ui_browser_interface.h"
 #include "chrome/browser/android/vr_shell/ui_elements/button.h"
+#include "chrome/browser/android/vr_shell/ui_elements/exclusive_screen_toast.h"
 #include "chrome/browser/android/vr_shell/ui_elements/exit_prompt.h"
 #include "chrome/browser/android/vr_shell/ui_elements/exit_prompt_backplane.h"
 #include "chrome/browser/android/vr_shell/ui_elements/loading_indicator.h"
@@ -80,9 +81,14 @@ static constexpr float kTransientUrlBarVerticalOffset =
     -0.2 * kTransientUrlBarDistance;
 static constexpr int kTransientUrlBarTimeoutSeconds = 6;
 
-static constexpr float kToastDistance = 1.4;
-static constexpr float kToastWidth = 0.512 * kToastDistance;
-static constexpr float kToastHeight = 0.16 * kToastDistance;
+static constexpr float kWebVrToastDistance = 1.0;
+static constexpr float kFullscreenToastDistance = kFullscreenDistance;
+static constexpr float kToastWidthDMM = 0.512;
+static constexpr float kToastHeightDMM = 0.064;
+static constexpr float kToastOffsetDMM = 0.004;
+// When changing the value here, make sure it doesn't collide with
+// kWarningAngleRadians.
+static constexpr float kWebVrAngleRadians = 9.88 * M_PI / 180.0;
 static constexpr int kToastTimeoutSeconds = kTransientUrlBarTimeoutSeconds;
 
 static constexpr float kSplashScreenDistance = 1;
@@ -432,11 +438,9 @@ void UiSceneManager::CreateToasts() {
   element->set_debug_id(kExclusiveScreenToast);
   element->set_id(AllocateId());
   element->set_fill(vr_shell::Fill::NONE);
-  element->set_size({kToastWidth, kToastHeight, 1});
-  element->set_translation({0, 0, -kToastDistance});
+  element->set_size({kToastWidthDMM, kToastHeightDMM, 1});
   element->set_visible(false);
   element->set_hit_testable(false);
-  element->set_lock_to_fov(true);
   exclusive_screen_toast_ = element.get();
   scene_->AddUiElement(std::move(element));
 }
@@ -669,6 +673,29 @@ void UiSceneManager::ConfigureExclusiveScreenToast() {
       break;
     case UNCHANGED:
       return;
+  }
+  if (fullscreen_ && !web_vr_mode_) {
+    // Do not set size again. The size might have been changed by the backing
+    // texture size in UpdateElementSize.
+    exclusive_screen_toast_->set_scale(
+        {kFullscreenToastDistance, kFullscreenToastDistance, 1});
+    exclusive_screen_toast_->set_translation(
+        {0,
+         kFullscreenVerticalOffset + kFullscreenHeight / 2 +
+             (kToastOffsetDMM + kToastHeightDMM) * kFullscreenToastDistance,
+         -kFullscreenToastDistance});
+    exclusive_screen_toast_->set_rotation(
+        gfx::Quaternion(gfx::Vector3dF(1, 0, 0), 0.0));
+    exclusive_screen_toast_->set_lock_to_fov(false);
+  } else if (web_vr_mode_ && web_vr_show_toast_) {
+    exclusive_screen_toast_->set_scale(
+        {kWebVrToastDistance, kWebVrToastDistance, 1});
+    exclusive_screen_toast_->set_translation(
+        gfx::Vector3dF(0, kWebVrToastDistance * sin(kWebVrAngleRadians),
+                       -kWebVrToastDistance * cos(kWebVrAngleRadians)));
+    exclusive_screen_toast_->set_rotation(
+        gfx::Quaternion(gfx::Vector3dF(1, 0, 0), kWebVrAngleRadians));
+    exclusive_screen_toast_->set_lock_to_fov(true);
   }
   exclusive_screen_toast_->set_visible(toast_visible);
   if (toast_visible) {
