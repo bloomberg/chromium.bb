@@ -45,8 +45,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeUsername,
   ItemTypeCopyUsername,
   ItemTypePassword,
-  ItemTypeShowHide,
   ItemTypeCopyPassword,
+  ItemTypeShowHide,
   ItemTypeDelete,
 };
 
@@ -174,11 +174,9 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule
   [model addItem:_passwordItem
       toSectionWithIdentifier:SectionIdentifierPassword];
 
-  // TODO(crbug.com/159166): Change the style of the buttons once there are
-  // final mocks.
-  [model addItem:[self showHidePasswordButtonItem]
-      toSectionWithIdentifier:SectionIdentifierPassword];
   [model addItem:[self passwordCopyButtonItem]
+      toSectionWithIdentifier:SectionIdentifierPassword];
+  [model addItem:[self showHidePasswordButtonItem]
       toSectionWithIdentifier:SectionIdentifierPassword];
 
   [model addSectionWithIdentifier:SectionIdentifierDelete];
