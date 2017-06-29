@@ -80,8 +80,8 @@ const int kCopyUsernameButtonItem = 1;
 
 const int kPasswordSection = 2;
 const int kPasswordItem = 0;
-const int kShowHideButtonItem = 1;
-const int kCopyPasswordButtonItem = 2;
+const int kCopyPasswordButtonItem = 1;
+const int kShowHideButtonItem = 2;
 
 const int kDeleteSection = 3;
 const int kDeleteButtonItem = 0;
@@ -155,10 +155,10 @@ TEST_F(PasswordDetailsCollectionViewControllerTest, TestInitialization) {
       GetCollectionViewItem(kPasswordSection, kPasswordItem);
   EXPECT_NSEQ(kPassword, passwordItem.text);
   EXPECT_FALSE(passwordItem.showingText);
-  CheckTextCellTitleWithId(IDS_IOS_SETTINGS_PASSWORD_SHOW_BUTTON,
-                           kPasswordSection, kShowHideButtonItem);
   CheckTextCellTitleWithId(IDS_IOS_SETTINGS_PASSWORD_COPY_BUTTON,
                            kPasswordSection, kCopyPasswordButtonItem);
+  CheckTextCellTitleWithId(IDS_IOS_SETTINGS_PASSWORD_SHOW_BUTTON,
+                           kPasswordSection, kShowHideButtonItem);
   // Delete section
   EXPECT_EQ(1, NumberOfItemsInSection(kDeleteSection));
   CheckTextCellTitleWithId(IDS_IOS_SETTINGS_PASSWORD_DELETE_BUTTON,
