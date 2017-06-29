@@ -16,12 +16,12 @@
 #include "base/supports_user_data.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/loader/resource_requester_info.h"
-#include "content/common/resource_request_body_impl.h"
 #include "content/common/url_loader.mojom.h"
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/referrer.h"
+#include "content/public/common/resource_request_body.h"
 #include "content/public/common/resource_type.h"
 #include "net/base/load_states.h"
 
@@ -73,7 +73,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
       bool report_raw_headers,
       bool is_async,
       PreviewsState previews_state,
-      const scoped_refptr<ResourceRequestBodyImpl> body,
+      const scoped_refptr<ResourceRequestBody> body,
       bool initiated_in_secure_context);
   ~ResourceRequestInfoImpl() override;
 
@@ -184,7 +184,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
     do_not_prompt_for_login_ = do_not_prompt;
   }
 
-  const scoped_refptr<ResourceRequestBodyImpl>& body() const { return body_; }
+  const scoped_refptr<ResourceRequestBody>& body() const { return body_; }
   void ResetBody();
 
   bool initiated_in_secure_context() const {
@@ -240,7 +240,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   bool report_raw_headers_;
   bool is_async_;
   PreviewsState previews_state_;
-  scoped_refptr<ResourceRequestBodyImpl> body_;
+  scoped_refptr<ResourceRequestBody> body_;
   bool initiated_in_secure_context_;
   std::unique_ptr<NavigationUIData> navigation_ui_data_;
 

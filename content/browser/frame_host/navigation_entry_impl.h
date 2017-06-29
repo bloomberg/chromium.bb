@@ -19,7 +19,6 @@
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/frame_message_enums.h"
-#include "content/common/resource_request_body_impl.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_entry.h"
@@ -28,9 +27,10 @@
 #include "content/public/browser/ssl_status.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/previews_state.h"
+#include "content/public/common/resource_request_body.h"
 
 namespace content {
-class ResourceRequestBodyImpl;
+class ResourceRequestBody;
 struct CommonNavigationParams;
 struct RequestNavigationParams;
 struct StartNavigationParams;
@@ -178,7 +178,7 @@ class CONTENT_EXPORT NavigationEntryImpl
   // NavigationEntry.
   CommonNavigationParams ConstructCommonNavigationParams(
       const FrameNavigationEntry& frame_entry,
-      const scoped_refptr<ResourceRequestBodyImpl>& post_body,
+      const scoped_refptr<ResourceRequestBody>& post_body,
       const GURL& dest_url,
       const Referrer& dest_referrer,
       FrameMsg_Navigate_Type::Value navigation_type,
@@ -456,7 +456,7 @@ class CONTENT_EXPORT NavigationEntryImpl
   // If the post request succeeds, this field is cleared since the same
   // information is stored in PageState. It is also only shallow copied with
   // compiler provided copy constructor.  Cleared in |ResetForCommit|.
-  scoped_refptr<ResourceRequestBodyImpl> post_data_;
+  scoped_refptr<ResourceRequestBody> post_data_;
 
   // This is also a transient member (i.e. is not persisted with session
   // restore). The screenshot of a page is taken when navigating away from the

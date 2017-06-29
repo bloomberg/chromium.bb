@@ -38,7 +38,7 @@ class BlobStorageContext;
 namespace content {
 
 class MessagePort;
-class ResourceRequestBodyImpl;
+class ResourceRequestBody;
 class ServiceWorkerContextCore;
 class ServiceWorkerDispatcherHost;
 class ServiceWorkerRequestHandler;
@@ -212,7 +212,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       RequestContextType request_context_type,
       RequestContextFrameType frame_type,
       base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
-      scoped_refptr<ResourceRequestBodyImpl> body,
+      scoped_refptr<ResourceRequestBody> body,
       bool skip_service_worker);
 
   // Used to get a ServiceWorkerObjectInfo to send to the renderer. Finds an

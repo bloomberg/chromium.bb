@@ -26,7 +26,6 @@
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/appcache_interfaces.h"
-#include "content/common/resource_request_body_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -41,6 +40,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/common/request_context_type.h"
+#include "content/public/common/resource_request_body.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
@@ -200,13 +200,13 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
     PreviewsState previews_state,
     bool is_same_document_history_load,
     bool is_history_navigation_in_new_child,
-    const scoped_refptr<ResourceRequestBodyImpl>& post_body,
+    const scoped_refptr<ResourceRequestBody>& post_body,
     const base::TimeTicks& navigation_start,
     NavigationControllerImpl* controller) {
   // A form submission happens either because the navigation is a
   // renderer-initiated form submission that took the OpenURL path or a
   // back/forward/reload navigation the does a form resubmission.
-  scoped_refptr<ResourceRequestBodyImpl> request_body;
+  scoped_refptr<ResourceRequestBody> request_body;
   if (post_body) {
     // Standard form submission from the renderer.
     request_body = post_body;

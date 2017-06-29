@@ -10,9 +10,9 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/site_instance_impl.h"
-#include "content/common/resource_request_body_impl.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/referrer.h"
+#include "content/public/common/resource_request_body.h"
 
 namespace content {
 
@@ -132,7 +132,7 @@ class CONTENT_EXPORT FrameNavigationEntry
 
   // The data sent during a POST navigation. Returns nullptr if the navigation
   // is not a POST.
-  scoped_refptr<ResourceRequestBodyImpl> GetPostData() const;
+  scoped_refptr<ResourceRequestBody> GetPostData() const;
 
  private:
   friend class base::RefCounted<FrameNavigationEntry>;

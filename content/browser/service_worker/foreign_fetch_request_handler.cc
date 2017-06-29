@@ -14,7 +14,6 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_response_info.h"
 #include "content/browser/service_worker/service_worker_url_request_job.h"
-#include "content/common/resource_request_body_impl.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/content_browser_client.h"
@@ -22,6 +21,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/origin_trial_policy.h"
+#include "content/public/common/resource_request_body.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_interceptor.h"
 #include "storage/browser/blob/blob_storage_context.h"
@@ -79,7 +79,7 @@ void ForeignFetchRequestHandler::InitializeHandler(
     ResourceType resource_type,
     RequestContextType request_context_type,
     RequestContextFrameType frame_type,
-    scoped_refptr<ResourceRequestBodyImpl> body,
+    scoped_refptr<ResourceRequestBody> body,
     bool initiated_in_secure_context) {
   if (!IsForeignFetchEnabled())
     return;
@@ -204,7 +204,7 @@ ForeignFetchRequestHandler::ForeignFetchRequestHandler(
     ResourceType resource_type,
     RequestContextType request_context_type,
     RequestContextFrameType frame_type,
-    scoped_refptr<ResourceRequestBodyImpl> body,
+    scoped_refptr<ResourceRequestBody> body,
     const base::Optional<base::TimeDelta>& timeout)
     : context_(context),
       blob_storage_context_(blob_storage_context),

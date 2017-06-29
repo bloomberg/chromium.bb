@@ -75,7 +75,6 @@
 #include "content/common/net/url_request_service_worker_data.h"
 #include "content/common/resource_messages.h"
 #include "content/common/resource_request.h"
-#include "content/common/resource_request_body_impl.h"
 #include "content/common/resource_request_completion_status.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/common/view_messages.h"
@@ -91,6 +90,7 @@
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/resource_request_body.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_start.h"
 #include "net/base/auth.h"
@@ -2116,7 +2116,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
       GetChromeBlobStorageContextForResourceContext(resource_context));
 
   // Resolve elements from request_body and prepare upload data.
-  ResourceRequestBodyImpl* body = info.common_params.post_data.get();
+  ResourceRequestBody* body = info.common_params.post_data.get();
   BlobHandles blob_handles;
   if (body) {
     if (!GetBodyBlobDataHandles(body, resource_context, &blob_handles)) {

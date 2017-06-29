@@ -12,12 +12,12 @@
 #include "base/optional.h"
 #include "content/common/content_export.h"
 #include "content/common/navigation_params.h"
-#include "content/common/resource_request_body_impl.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/appcache_info.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/request_context_frame_type.h"
 #include "content/public/common/request_context_type.h"
+#include "content/public/common/resource_request_body.h"
 #include "content/public/common/resource_type.h"
 #include "net/base/request_priority.h"
 #include "third_party/WebKit/public/platform/WebMixedContentContextType.h"
@@ -128,7 +128,7 @@ struct CONTENT_EXPORT ResourceRequest {
       REQUEST_CONTEXT_FRAME_TYPE_AUXILIARY;
 
   // Optional resource request body (may be null).
-  scoped_refptr<ResourceRequestBodyImpl> request_body;
+  scoped_refptr<ResourceRequestBody> request_body;
 
   // If true, then the response body will be downloaded to a file and the path
   // to that file will be provided in ResponseInfo::download_file_path.

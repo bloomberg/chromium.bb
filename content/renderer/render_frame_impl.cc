@@ -5874,7 +5874,7 @@ void RenderFrameImpl::OnSelectPopupMenuItems(
 void RenderFrameImpl::OpenURL(
     const GURL& url,
     bool uses_post,
-    const scoped_refptr<ResourceRequestBodyImpl>& resource_request_body,
+    const scoped_refptr<ResourceRequestBody>& resource_request_body,
     const std::string& extra_headers,
     const Referrer& referrer,
     WebNavigationPolicy policy,

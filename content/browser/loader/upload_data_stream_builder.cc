@@ -16,7 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "content/browser/fileapi/upload_file_system_file_element_reader.h"
-#include "content/common/resource_request_body_impl.h"
+#include "content/public/common/resource_request_body.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_file_element_reader.h"
@@ -37,46 +37,46 @@ namespace content {
 namespace {
 
 // A subclass of net::UploadBytesElementReader which owns
-// ResourceRequestBodyImpl.
+// ResourceRequestBody.
 class BytesElementReader : public net::UploadBytesElementReader {
  public:
-  BytesElementReader(ResourceRequestBodyImpl* resource_request_body,
-                     const ResourceRequestBodyImpl::Element& element)
+  BytesElementReader(ResourceRequestBody* resource_request_body,
+                     const ResourceRequestBody::Element& element)
       : net::UploadBytesElementReader(element.bytes(), element.length()),
         resource_request_body_(resource_request_body) {
-    DCHECK_EQ(ResourceRequestBodyImpl::Element::TYPE_BYTES, element.type());
+    DCHECK_EQ(ResourceRequestBody::Element::TYPE_BYTES, element.type());
   }
 
   ~BytesElementReader() override {}
 
  private:
-  scoped_refptr<ResourceRequestBodyImpl> resource_request_body_;
+  scoped_refptr<ResourceRequestBody> resource_request_body_;
 
   DISALLOW_COPY_AND_ASSIGN(BytesElementReader);
 };
 
 // A subclass of net::UploadFileElementReader which owns
-// ResourceRequestBodyImpl.
+// ResourceRequestBody.
 // This class is necessary to ensure the BlobData and any attached shareable
 // files survive until upload completion.
 class FileElementReader : public net::UploadFileElementReader {
  public:
-  FileElementReader(ResourceRequestBodyImpl* resource_request_body,
+  FileElementReader(ResourceRequestBody* resource_request_body,
                     base::TaskRunner* task_runner,
-                    const ResourceRequestBodyImpl::Element& element)
+                    const ResourceRequestBody::Element& element)
       : net::UploadFileElementReader(task_runner,
                                      element.path(),
                                      element.offset(),
                                      element.length(),
                                      element.expected_modification_time()),
         resource_request_body_(resource_request_body) {
-    DCHECK_EQ(ResourceRequestBodyImpl::Element::TYPE_FILE, element.type());
+    DCHECK_EQ(ResourceRequestBody::Element::TYPE_FILE, element.type());
   }
 
   ~FileElementReader() override {}
 
  private:
-  scoped_refptr<ResourceRequestBodyImpl> resource_request_body_;
+  scoped_refptr<ResourceRequestBody> resource_request_body_;
 
   DISALLOW_COPY_AND_ASSIGN(FileElementReader);
 };
@@ -84,22 +84,22 @@ class FileElementReader : public net::UploadFileElementReader {
 }  // namespace
 
 std::unique_ptr<net::UploadDataStream> UploadDataStreamBuilder::Build(
-    ResourceRequestBodyImpl* body,
+    ResourceRequestBody* body,
     storage::BlobStorageContext* blob_context,
     storage::FileSystemContext* file_system_context,
     base::SingleThreadTaskRunner* file_task_runner) {
   std::vector<std::unique_ptr<net::UploadElementReader>> element_readers;
   for (const auto& element : *body->elements()) {
     switch (element.type()) {
-      case ResourceRequestBodyImpl::Element::TYPE_BYTES:
+      case ResourceRequestBody::Element::TYPE_BYTES:
         element_readers.push_back(
             base::MakeUnique<BytesElementReader>(body, element));
         break;
-      case ResourceRequestBodyImpl::Element::TYPE_FILE:
+      case ResourceRequestBody::Element::TYPE_FILE:
         element_readers.push_back(base::MakeUnique<FileElementReader>(
             body, file_task_runner, element));
         break;
-      case ResourceRequestBodyImpl::Element::TYPE_FILE_FILESYSTEM:
+      case ResourceRequestBody::Element::TYPE_FILE_FILESYSTEM:
         // If |body| contains any filesystem URLs, the caller should have
         // supplied a FileSystemContext.
         DCHECK(file_system_context);
@@ -108,7 +108,7 @@ std::unique_ptr<net::UploadDataStream> UploadDataStreamBuilder::Build(
                 file_system_context, element.filesystem_url(), element.offset(),
                 element.length(), element.expected_modification_time()));
         break;
-      case ResourceRequestBodyImpl::Element::TYPE_BLOB: {
+      case ResourceRequestBody::Element::TYPE_BLOB: {
         DCHECK_EQ(std::numeric_limits<uint64_t>::max(), element.length());
         DCHECK_EQ(0ul, element.offset());
         std::unique_ptr<storage::BlobDataHandle> handle =
@@ -118,9 +118,9 @@ std::unique_ptr<net::UploadDataStream> UploadDataStreamBuilder::Build(
                 std::move(handle), file_system_context, file_task_runner));
         break;
       }
-      case ResourceRequestBodyImpl::Element::TYPE_DISK_CACHE_ENTRY:
-      case ResourceRequestBodyImpl::Element::TYPE_BYTES_DESCRIPTION:
-      case ResourceRequestBodyImpl::Element::TYPE_UNKNOWN:
+      case ResourceRequestBody::Element::TYPE_DISK_CACHE_ENTRY:
+      case ResourceRequestBody::Element::TYPE_BYTES_DESCRIPTION:
+      case ResourceRequestBody::Element::TYPE_UNKNOWN:
         NOTREACHED();
         break;
     }

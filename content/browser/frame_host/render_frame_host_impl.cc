@@ -3712,7 +3712,7 @@ void RenderFrameHostImpl::GrantFileAccessFromPageState(const PageState& state) {
 }
 
 void RenderFrameHostImpl::GrantFileAccessFromResourceRequestBody(
-    const ResourceRequestBodyImpl& body) {
+    const ResourceRequestBody& body) {
   GrantFileAccess(GetProcess()->GetID(), body.GetReferencedFiles());
 }
 

@@ -148,7 +148,7 @@ class RenderFrameObserver;
 class RenderViewImpl;
 class RenderWidget;
 class RenderWidgetFullscreenPepper;
-class ResourceRequestBodyImpl;
+class ResourceRequestBody;
 class ScreenOrientationDispatcher;
 class SharedWorkerRepository;
 class UserMediaClientImpl;
@@ -970,16 +970,15 @@ class CONTENT_EXPORT RenderFrameImpl
   // |is_history_navigation_in_new_child| is true, the browser process should
   // look for a matching FrameNavigationEntry in the last committed entry to use
   // instead of |url|.
-  void OpenURL(
-      const GURL& url,
-      bool uses_post,
-      const scoped_refptr<ResourceRequestBodyImpl>& resource_request_body,
-      const std::string& extra_headers,
-      const Referrer& referrer,
-      blink::WebNavigationPolicy policy,
-      bool should_replace_current_entry,
-      bool is_history_navigation_in_new_child,
-      blink::WebTriggeringEventInfo triggering_event_info);
+  void OpenURL(const GURL& url,
+               bool uses_post,
+               const scoped_refptr<ResourceRequestBody>& resource_request_body,
+               const std::string& extra_headers,
+               const Referrer& referrer,
+               blink::WebNavigationPolicy policy,
+               bool should_replace_current_entry,
+               bool is_history_navigation_in_new_child,
+               blink::WebTriggeringEventInfo triggering_event_info);
 
   // Performs a navigation in the frame. This provides a unified function for
   // the current code path and the browser-side navigation path (in

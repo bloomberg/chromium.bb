@@ -13,6 +13,7 @@
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/browser_side_navigation_policy.h"
+#include "content/public/common/resource_request_body.h"
 #include "content/test/test_navigation_url_loader.h"
 #include "content/test/test_render_frame_host.h"
 #include "net/base/load_flags.h"
@@ -145,7 +146,7 @@ void NavigationSimulator::Start() {
         std::vector<GURL>(), base::TimeTicks::Now()));
     DCHECK_EQ(handle_, render_frame_host_->navigation_handle());
     handle_->WillStartRequest(
-        "GET", scoped_refptr<content::ResourceRequestBodyImpl>(), referrer_,
+        "GET", scoped_refptr<content::ResourceRequestBody>(), referrer_,
         true /* user_gesture */, transition_, false /* is_external_protocol */,
         REQUEST_CONTEXT_TYPE_LOCATION,
         blink::WebMixedContentContextType::kNotMixedContent,

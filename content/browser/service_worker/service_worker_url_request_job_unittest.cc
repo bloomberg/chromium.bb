@@ -31,7 +31,6 @@
 #include "content/browser/service_worker/service_worker_response_info.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/service_worker/service_worker_version.h"
-#include "content/common/resource_request_body_impl.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
@@ -39,6 +38,7 @@
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/request_context_frame_type.h"
 #include "content/public/common/request_context_type.h"
+#include "content/public/common/resource_request_body.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_context.h"
@@ -110,7 +110,7 @@ class MockHttpProtocolHandler
         FETCH_CREDENTIALS_MODE_OMIT, FetchRedirectMode::FOLLOW_MODE,
         resource_type_, REQUEST_CONTEXT_TYPE_HYPERLINK,
         REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
-        scoped_refptr<ResourceRequestBodyImpl>(), ServiceWorkerFetchType::FETCH,
+        scoped_refptr<ResourceRequestBody>(), ServiceWorkerFetchType::FETCH,
         custom_timeout_, delegate_);
     if (simulate_navigation_preload_) {
       job_->set_simulate_navigation_preload_for_test();

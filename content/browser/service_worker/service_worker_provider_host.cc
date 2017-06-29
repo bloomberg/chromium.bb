@@ -19,7 +19,6 @@
 #include "content/browser/service_worker/service_worker_handle.h"
 #include "content/browser/service_worker/service_worker_registration_handle.h"
 #include "content/browser/service_worker/service_worker_version.h"
-#include "content/common/resource_request_body_impl.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
@@ -29,6 +28,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
+#include "content/public/common/resource_request_body.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "net/base/url_util.h"
 
@@ -443,7 +443,7 @@ ServiceWorkerProviderHost::CreateRequestHandler(
     RequestContextType request_context_type,
     RequestContextFrameType frame_type,
     base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
-    scoped_refptr<ResourceRequestBodyImpl> body,
+    scoped_refptr<ResourceRequestBody> body,
     bool skip_service_worker) {
   // |skip_service_worker| is meant to apply to requests that could be handled
   // by a service worker, as opposed to requests for the service worker script

@@ -16,7 +16,6 @@
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_url_request_job.h"
-#include "content/common/resource_request_body_impl.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/resource_context.h"
@@ -24,6 +23,7 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/origin_util.h"
+#include "content/public/common/resource_request_body.h"
 #include "ipc/ipc_message.h"
 #include "net/base/url_util.h"
 #include "net/url_request/url_request.h"
@@ -70,7 +70,7 @@ void ServiceWorkerRequestHandler::InitializeForNavigation(
     RequestContextType request_context_type,
     RequestContextFrameType frame_type,
     bool is_parent_frame_secure,
-    scoped_refptr<ResourceRequestBodyImpl> body,
+    scoped_refptr<ResourceRequestBody> body,
     const base::Callback<WebContents*(void)>& web_contents_getter) {
   CHECK(IsBrowserSideNavigationEnabled());
 
@@ -127,7 +127,7 @@ ServiceWorkerRequestHandler::InitializeForNavigationNetworkService(
     RequestContextType request_context_type,
     RequestContextFrameType frame_type,
     bool is_parent_frame_secure,
-    scoped_refptr<ResourceRequestBodyImpl> body,
+    scoped_refptr<ResourceRequestBody> body,
     const base::Callback<WebContents*(void)>& web_contents_getter) {
   DCHECK(IsBrowserSideNavigationEnabled() &&
          base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -182,7 +182,7 @@ void ServiceWorkerRequestHandler::InitializeHandler(
     ResourceType resource_type,
     RequestContextType request_context_type,
     RequestContextFrameType frame_type,
-    scoped_refptr<ResourceRequestBodyImpl> body) {
+    scoped_refptr<ResourceRequestBody> body) {
   // Create the handler even for insecure HTTP since it's used in the
   // case of redirect to HTTPS.
   if (!request->url().SchemeIsHTTPOrHTTPS() &&

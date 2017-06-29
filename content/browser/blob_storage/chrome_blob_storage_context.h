@@ -34,7 +34,7 @@ namespace content {
 class BlobHandle;
 class BrowserContext;
 struct ChromeBlobStorageContextDeleter;
-class ResourceRequestBodyImpl;
+class ResourceRequestBody;
 class ResourceContext;
 
 // A context class that keeps track of BlobStorageController used by the chrome.
@@ -103,7 +103,7 @@ using BlobHandles = std::vector<std::unique_ptr<storage::BlobDataHandle>>;
 // Attempts to create a vector of BlobDataHandles that ensure any blob data
 // associated with |body| isn't cleaned up until the handles are destroyed.
 // Returns false on failure. This is used for POST and PUT requests.
-bool GetBodyBlobDataHandles(ResourceRequestBodyImpl* body,
+bool GetBodyBlobDataHandles(ResourceRequestBody* body,
                             ResourceContext* resource_context,
                             BlobHandles* blob_handles);
 

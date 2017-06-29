@@ -866,8 +866,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // |body|.  It is important that the ResourceRequestBody has been validated
   // upon receipt from the renderer process to prevent it from forging access to
   // files without the user's consent.
-  void GrantFileAccessFromResourceRequestBody(
-      const ResourceRequestBodyImpl& body);
+  void GrantFileAccessFromResourceRequestBody(const ResourceRequestBody& body);
 
   void UpdatePermissionsForNavigation(
       const CommonNavigationParams& common_params,

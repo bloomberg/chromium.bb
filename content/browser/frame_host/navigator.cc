@@ -5,7 +5,6 @@
 #include "content/browser/frame_host/navigator.h"
 
 #include "base/time/time.h"
-#include "content/common/resource_request_body_impl.h"
 #include "content/public/browser/stream_handle.h"
 
 namespace content {

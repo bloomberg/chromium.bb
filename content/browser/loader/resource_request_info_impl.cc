@@ -150,7 +150,7 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
     bool report_raw_headers,
     bool is_async,
     PreviewsState previews_state,
-    const scoped_refptr<ResourceRequestBodyImpl> body,
+    const scoped_refptr<ResourceRequestBody> body,
     bool initiated_in_secure_context)
     : detachable_handler_(NULL),
       requester_info_(std::move(requester_info)),

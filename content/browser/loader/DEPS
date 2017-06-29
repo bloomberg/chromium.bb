@@ -127,7 +127,6 @@ specific_include_rules = {
     "+content/browser/loader/throttling_resource_handler.h",
     "+content/browser/loader/wake_lock_resource_throttle.h",
     "+content/common/resource_request_body.h",
-    "+content/common/resource_request_body_impl.h",
     "+content/common/url_loader.mojom.h",
     "+content/public/browser/global_request_id.h",
     "+content/public/browser/resource_dispatcher_host.h",
@@ -135,6 +134,7 @@ specific_include_rules = {
     "+content/public/browser/resource_request_info.h",
     "+content/public/browser/resource_throttle.h",
     "+content/public/common/previews_state.h",
+    "+content/public/common/resource_request_body.h",
 
     # TODO: These all have to be removed.
     "+content/browser/appcache/appcache_interceptor.h",
@@ -230,12 +230,12 @@ specific_include_rules = {
     "+content/browser/loader/resource_request_info_impl.h",
     "+content/browser/loader/resource_requester_info.h",
     "+content/common/content_export.h",
-    "+content/common/resource_request_body_impl.h",
     "+content/common/url_loader.mojom.h",
     "+content/public/browser/global_request_id.h",
     "+content/public/browser/resource_request_info.h",
     "+content/public/common/previews_state.h",
     "+content/public/common/referrer.h",
+    "+content/public/common/resource_request_body.h",
     "+content/public/common/resource_type.h",
 
     # TODO: these all have to be removed.
