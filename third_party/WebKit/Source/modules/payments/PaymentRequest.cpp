@@ -21,6 +21,7 @@
 #include "core/events/EventQueue.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/FrameOwner.h"
+#include "core/frame/Settings.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ConsoleTypes.h"
@@ -811,6 +812,14 @@ ScriptPromise PaymentRequest::show(ScriptState* script_state) {
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(kInvalidStateError,
                                            "Cannot show the payment request"));
+  }
+
+  // VR mode uses popup suppression setting to disable html select element,
+  // date pickers, etc.
+  if (GetFrame()->GetDocument()->GetSettings()->GetPagePopupsSuppressed()) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state,
+        DOMException::Create(kInvalidStateError, "Page popups are suppressed"));
   }
 
   payment_provider_->Show();
