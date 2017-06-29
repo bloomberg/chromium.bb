@@ -284,6 +284,7 @@ public class AndroidSyncSettingsTest extends InstrumentationTestCase {
 
     @SmallTest
     @Feature({"Sync"})
+    @DisabledTest(message = "crbug.com/737862")
     public void testSyncSettingsCaching() throws InterruptedException {
         // Turn on syncability.
         mSyncContentResolverDelegate.setMasterSyncAutomatically(true);
