@@ -143,36 +143,11 @@ class SystemHealthMobileMemoryExpectations(expectations.StoryExpectations):
 # Should only include browse:*:* stories.
 class V8BrowsingDesktopExpecations(expectations.StoryExpectations):
   def SetExpectations(self):
-    self.DisableStory('browse:media:imgur',
-                      [expectations.ALL_LINUX, expectations.ALL_WIN],
-                      'crbug.com/673775')
-    self.DisableStory('browse:media:pinterest',
-                      [expectations.ALL_LINUX],
-                      'crbug.com/735173')
-    self.DisableStory('browse:media:youtube',
-                      [expectations.ALL_LINUX],
-                      'crbug.com/735173')
-    self.DisableStory('browse:news:cnn',
-                      [expectations.ALL_DESKTOP],
-                      'crbug.com/735173')
-    self.DisableStory('browse:news:flipboard',
-                      [expectations.ALL_DESKTOP],
-                      'crbug.com/735173')
     self.DisableStory('browse:news:hackernews',
-                      [expectations.ALL_DESKTOP],
-                      'crbug.com/735173')
-    self.DisableStory('browse:news:nytimes',
-                      [expectations.ALL_LINUX, expectations.ALL_WIN],
-                      'crbug.com/735173')
-    self.DisableStory('browse:news:reddit',
-                      [expectations.ALL_LINUX, expectations.ALL_WIN],
-                      'crbug.com/735173')
-    self.DisableStory('browse:search:google',
-                      [expectations.ALL_LINUX, expectations.ALL_WIN],
-                      'crbug.com/735173')
-    self.DisableStory('browse:search:google_india',
-                      [expectations.ALL_LINUX],
-                      'crbug.com/735173')
+                      [expectations.ALL_WIN, expectations.ALL_MAC],
+                      'crbug.com/676336')
+    self.DisableStory('browse:search:google', [expectations.ALL_WIN],
+                      'crbug.com/673775')
     self.DisableStory('browse:tools:maps', [expectations.ALL],
                       'crbug.com/712694')
     self.DisableStory('browse:tools:earth', [expectations.ALL],
@@ -180,12 +155,8 @@ class V8BrowsingDesktopExpecations(expectations.StoryExpectations):
     self.DisableStory('browse:tech:discourse_infinite_scroll',
                       [expectations.ALL_WIN, expectations.ALL_LINUX],
                       'crbug.com/728152')
-    self.DisableStory('browse:social:facebook_infinite_scroll',
-                      [expectations.ALL_LINUX],
-                      'crbug.com/735173')
-    self.DisableStory('browse:social:twitter',
-                      [expectations.ALL_LINUX],
-                      'crbug.com/735173')
+    self.DisableStory('browse:news:cnn',
+                      [expectations.ALL_MAC], 'crbug.com/728576')
     self.DisableStory('browse:social:twitter_infinite_scroll',
                       [expectations.ALL], 'crbug.com/728464')
     self.DisableStory('browse:media:flickr_infinite_scroll',
