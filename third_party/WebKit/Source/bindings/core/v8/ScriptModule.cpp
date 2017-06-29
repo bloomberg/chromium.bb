@@ -12,6 +12,25 @@
 
 namespace blink {
 
+const char* ScriptModuleStateToString(ScriptModuleState state) {
+  switch (state) {
+    case ScriptModuleState::kUninstantiated:
+      return "uninstantiated";
+    case ScriptModuleState::kInstantiating:
+      return "instatinating";
+    case ScriptModuleState::kInstantiated:
+      return "instantiated";
+    case ScriptModuleState::kEvaluating:
+      return "evaluating";
+    case ScriptModuleState::kEvaluated:
+      return "evaluated";
+    case ScriptModuleState::kErrored:
+      return "errored";
+  }
+  NOTREACHED();
+  return "";
+}
+
 ScriptModule::ScriptModule() {
   // We ensure module-related code is not executed without the flag.
   // https://crbug.com/715376
@@ -149,6 +168,13 @@ Vector<TextPosition> ScriptModule::ModuleRequestPositions(
                      OrdinalNumber::FromZeroBasedInt(v8_loc.GetColumnNumber()));
   }
   return ret;
+}
+
+ScriptModuleState ScriptModule::Status(ScriptState* script_state) {
+  DCHECK(!IsNull());
+
+  v8::Local<v8::Module> module = module_->NewLocal(script_state->GetIsolate());
+  return module->GetStatus();
 }
 
 v8::MaybeLocal<v8::Module> ScriptModule::ResolveModuleCallback(

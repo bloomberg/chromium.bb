@@ -84,6 +84,8 @@ TEST(ScriptModuleTest, compileSuccess) {
       kSharableCrossOrigin, TextPosition::MinimumPosition(),
       ASSERT_NO_EXCEPTION);
   ASSERT_FALSE(module.IsNull());
+  EXPECT_EQ(ScriptModuleState::kUninstantiated,
+            module.Status(scope.GetScriptState()));
 }
 
 TEST(ScriptModuleTest, compileFail) {
@@ -201,6 +203,12 @@ TEST(ScriptModuleTest, instantiateWithDeps) {
   ASSERT_FALSE(module.IsNull());
   ScriptValue exception = module.Instantiate(scope.GetScriptState());
   ASSERT_TRUE(exception.IsEmpty());
+  EXPECT_EQ(ScriptModuleState::kInstantiated,
+            module_a.Status(scope.GetScriptState()));
+  EXPECT_EQ(ScriptModuleState::kInstantiated,
+            module_b.Status(scope.GetScriptState()));
+  EXPECT_EQ(ScriptModuleState::kInstantiated,
+            module.Status(scope.GetScriptState()));
 
   ASSERT_EQ(2u, resolver->ResolveCount());
   EXPECT_EQ("a", resolver->Specifiers()[0]);
@@ -228,6 +236,8 @@ TEST(ScriptModuleTest, Evaluate) {
                                        ScriptSourceCode("window.foo"));
   ASSERT_TRUE(value->IsString());
   EXPECT_EQ("bar", ToCoreString(v8::Local<v8::String>::Cast(value)));
+  EXPECT_EQ(ScriptModuleState::kEvaluated,
+            module.Status(scope.GetScriptState()));
 }
 
 }  // namespace
