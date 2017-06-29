@@ -58,6 +58,7 @@ public class ContextualSearchSelectionController {
     private ContextualSearchTapState mLastTapState;
     private boolean mIsWaitingForInvalidTapDetection;
     private boolean mShouldHandleSelectionModification;
+    // Whether the selection was automatically expanded due to an adjustment (e.g. Resolve).
     private boolean mDidExpandSelection;
 
     // Position of the selection.
@@ -249,6 +250,8 @@ public class ContextualSearchSelectionController {
                 mWasTapGestureDetected = false;
                 mSelectionType = SelectionType.LONG_PRESS;
                 shouldHandleSelection = true;
+                ContentViewCore baseContentView = getBaseContentView();
+                if (baseContentView != null) mSelectedText = baseContentView.getSelectedText();
                 break;
             case SelectionEventType.SELECTION_HANDLES_CLEARED:
                 mHandler.handleSelectionDismissal();
@@ -261,15 +264,10 @@ public class ContextualSearchSelectionController {
         }
 
         if (shouldHandleSelection) {
-            ContentViewCore baseContentView = getBaseContentView();
-            if (baseContentView != null) {
-                String selection = baseContentView.getSelectedText();
-                if (selection != null) {
-                    mX = posXPix;
-                    mY = posYPix;
-                    mSelectedText = selection;
-                    handleSelection(selection, SelectionType.LONG_PRESS);
-                }
+            if (mSelectedText != null) {
+                mX = posXPix;
+                mY = posYPix;
+                handleSelection(mSelectedText, SelectionType.LONG_PRESS);
             }
         }
     }
@@ -401,10 +399,7 @@ public class ContextualSearchSelectionController {
         Tab currentTab = mActivity.getActivityTab();
         if (currentTab == null) return null;
 
-        ContentViewCore contentViewCore = currentTab.getContentViewCore();
-        if (contentViewCore == null) return null;
-
-        return contentViewCore.getWebContents();
+        return currentTab.getWebContents();
     }
 
     /**
