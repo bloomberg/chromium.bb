@@ -206,6 +206,7 @@ void InspectorWorkerAgent::ConnectToProxy(WorkerInspectorProxy* proxy,
                                       .setType("worker")
                                       .setTitle(proxy->Url())
                                       .setUrl(proxy->Url())
+                                      .setAttached(true)
                                       .build(),
                                   waiting_for_debugger);
 }

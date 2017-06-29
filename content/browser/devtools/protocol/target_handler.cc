@@ -89,6 +89,7 @@ std::unique_ptr<Target::TargetInfo> CreateInfo(DevToolsAgentHost* host) {
       .SetTitle(host->GetTitle())
       .SetUrl(host->GetURL().spec())
       .SetType(host->GetType())
+      .SetAttached(host->IsAttached())
       .Build();
 }
 
@@ -213,8 +214,13 @@ void TargetHandler::TargetCreatedInternal(DevToolsAgentHost* host) {
   reported_hosts_[host->GetId()] = host;
 }
 
-void TargetHandler::TargetDestroyedInternal(
-    DevToolsAgentHost* host) {
+void TargetHandler::TargetInfoChangedInternal(DevToolsAgentHost* host) {
+  if (reported_hosts_.find(host->GetId()) == reported_hosts_.end())
+    return;
+  frontend_->TargetInfoChanged(CreateInfo(host));
+}
+
+void TargetHandler::TargetDestroyedInternal(DevToolsAgentHost* host) {
   auto it = reported_hosts_.find(host->GetId());
   if (it == reported_hosts_.end())
     return;
@@ -419,8 +425,6 @@ bool TargetHandler::ShouldForceDevToolsAgentHostCreation() {
 }
 
 void TargetHandler::DevToolsAgentHostCreated(DevToolsAgentHost* agent_host) {
-  if (agent_host->GetType() == "node" && agent_host->IsAttached())
-    return;
   // If we start discovering late, all existing agent hosts will be reported,
   // but we could have already attached to some.
   TargetCreatedInternal(agent_host);
@@ -432,19 +436,11 @@ void TargetHandler::DevToolsAgentHostDestroyed(DevToolsAgentHost* agent_host) {
 }
 
 void TargetHandler::DevToolsAgentHostAttached(DevToolsAgentHost* host) {
-  if (host->GetType() == "node" &&
-      reported_hosts_.find(host->GetId()) != reported_hosts_.end() &&
-      attached_hosts_.find(host->GetId()) == attached_hosts_.end()) {
-    TargetDestroyedInternal(host);
-  }
+  TargetInfoChangedInternal(host);
 }
 
 void TargetHandler::DevToolsAgentHostDetached(DevToolsAgentHost* host) {
-  if (host->GetType() == "node" &&
-      reported_hosts_.find(host->GetId()) == reported_hosts_.end() &&
-      attached_hosts_.find(host->GetId()) == attached_hosts_.end()) {
-    TargetCreatedInternal(host);
-  }
+  TargetInfoChangedInternal(host);
 }
 
 // -------- ServiceWorkerDevToolsManager::Observer ----------

@@ -1611,6 +1611,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, TargetDiscovery) {
   std::set<std::string> ids;
   std::unique_ptr<base::DictionaryValue> command_params;
   std::unique_ptr<base::DictionaryValue> params;
+  bool is_attached;
 
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL first_url = embedded_test_server()->GetURL("/devtools/navigation.html");
@@ -1621,22 +1622,28 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, TargetDiscovery) {
   NavigateToURLBlockUntilNavigationsComplete(second, second_url, 1);
 
   Attach();
+  int attached_count = 0;
   command_params.reset(new base::DictionaryValue());
   command_params->SetBoolean("discover", true);
   SendCommand("Target.setDiscoverTargets", std::move(command_params), true);
   params = WaitForNotification("Target.targetCreated", true);
   EXPECT_TRUE(params->GetString("targetInfo.type", &temp));
   EXPECT_EQ("page", temp);
+  EXPECT_TRUE(params->GetBoolean("targetInfo.attached", &is_attached));
+  attached_count += is_attached ? 1 : 0;
   EXPECT_TRUE(params->GetString("targetInfo.targetId", &temp));
   EXPECT_TRUE(ids.find(temp) == ids.end());
   ids.insert(temp);
   params = WaitForNotification("Target.targetCreated", true);
   EXPECT_TRUE(params->GetString("targetInfo.type", &temp));
   EXPECT_EQ("page", temp);
+  EXPECT_TRUE(params->GetBoolean("targetInfo.attached", &is_attached));
+  attached_count += is_attached ? 1 : 0;
   EXPECT_TRUE(params->GetString("targetInfo.targetId", &temp));
   EXPECT_TRUE(ids.find(temp) == ids.end());
   ids.insert(temp);
   EXPECT_TRUE(notifications_.empty());
+  EXPECT_EQ(1, attached_count);
 
   GURL third_url = embedded_test_server()->GetURL("/devtools/navigation.html");
   Shell* third = CreateBrowser();
@@ -1646,6 +1653,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, TargetDiscovery) {
   EXPECT_EQ("page", temp);
   EXPECT_TRUE(params->GetString("targetInfo.targetId", &temp));
   EXPECT_TRUE(ids.find(temp) == ids.end());
+  EXPECT_TRUE(params->GetBoolean("targetInfo.attached", &is_attached));
+  EXPECT_FALSE(is_attached);
   std::string attached_id = temp;
   ids.insert(temp);
   EXPECT_TRUE(notifications_.empty());
@@ -1661,6 +1670,11 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, TargetDiscovery) {
   command_params.reset(new base::DictionaryValue());
   command_params->SetString("targetId", attached_id);
   SendCommand("Target.attachToTarget", std::move(command_params), true);
+  params = WaitForNotification("Target.targetInfoChanged", true);
+  EXPECT_TRUE(params->GetString("targetInfo.targetId", &temp));
+  EXPECT_EQ(attached_id, temp);
+  EXPECT_TRUE(params->GetBoolean("targetInfo.attached", &is_attached));
+  EXPECT_TRUE(is_attached);
   params = WaitForNotification("Target.attachedToTarget", true);
   EXPECT_TRUE(params->GetString("targetInfo.targetId", &temp));
   EXPECT_EQ(attached_id, temp);
