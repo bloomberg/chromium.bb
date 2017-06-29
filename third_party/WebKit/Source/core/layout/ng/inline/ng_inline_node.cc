@@ -165,15 +165,12 @@ unsigned PlaceInlineBoxChildren(
 
 }  // namespace
 
-NGInlineNode::NGInlineNode(LayoutNGBlockFlow* block, LayoutObject* start_inline)
+NGInlineNode::NGInlineNode(LayoutNGBlockFlow* block)
     : NGLayoutInputNode(block) {
-  DCHECK(start_inline);
   DCHECK(block);
   block->SetLayoutNGInline(true);
-  if (!block->HasNGInlineNodeData()) {
+  if (!block->HasNGInlineNodeData())
     block->ResetNGInlineNodeData();
-  }
-  MutableData().start_inline_ = start_inline;
 }
 
 NGInlineItemRange NGInlineNode::Items(unsigned start, unsigned end) {
@@ -181,9 +178,7 @@ NGInlineItemRange NGInlineNode::Items(unsigned start, unsigned end) {
 }
 
 void NGInlineNode::InvalidatePrepareLayout() {
-  LayoutObject* start_inline = Data().start_inline_;
   ToLayoutNGBlockFlow(GetLayoutBlockFlow())->ResetNGInlineNodeData();
-  MutableData().start_inline_ = start_inline;
   MutableData().text_content_ = String();
   MutableData().items_.clear();
 }
@@ -191,7 +186,7 @@ void NGInlineNode::InvalidatePrepareLayout() {
 void NGInlineNode::PrepareLayout() {
   // Scan list of siblings collecting all in-flow non-atomic inlines. A single
   // NGInlineNode represent a collection of adjacent non-atomic inlines.
-  CollectInlines(Data().start_inline_, GetLayoutBlockFlow());
+  CollectInlines(GetLayoutBlockFlow());
   SegmentText();
   ShapeText();
 }
@@ -200,12 +195,12 @@ void NGInlineNode::PrepareLayout() {
 // NGInlineNode object. Collects LayoutText items, merging them up into the
 // parent LayoutInline where possible, and joining all text content in a single
 // string to allow bidi resolution and shaping of the entire block.
-void NGInlineNode::CollectInlines(LayoutObject* start, LayoutBlockFlow* block) {
+void NGInlineNode::CollectInlines(LayoutBlockFlow* block) {
   DCHECK(Data().text_content_.IsNull());
   DCHECK(Data().items_.IsEmpty());
   NGInlineItemsBuilder builder(&MutableData().items_);
   builder.EnterBlock(block->Style());
-  LayoutObject* next_sibling = CollectInlines(start, block, &builder);
+  LayoutObject* next_sibling = CollectInlines(block, &builder);
   builder.ExitBlock();
 
   MutableData().text_content_ = builder.ToString();
@@ -216,10 +211,9 @@ void NGInlineNode::CollectInlines(LayoutObject* start, LayoutBlockFlow* block) {
       !(Data().text_content_.Is8Bit() && !builder.HasBidiControls());
 }
 
-LayoutObject* NGInlineNode::CollectInlines(LayoutObject* start,
-                                           LayoutBlockFlow* block,
+LayoutObject* NGInlineNode::CollectInlines(LayoutBlockFlow* block,
                                            NGInlineItemsBuilder* builder) {
-  LayoutObject* node = start;
+  LayoutObject* node = block->FirstChild();
   while (node) {
     if (node->IsText()) {
       builder->SetIsSVGText(node->IsSVGInlineText());

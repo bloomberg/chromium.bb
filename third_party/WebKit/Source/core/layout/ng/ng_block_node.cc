@@ -198,17 +198,8 @@ MinMaxContentSize NGBlockNode::ComputeMinMaxContentSize() {
 NGLayoutInputNode NGBlockNode::NextSibling() const {
   LayoutObject* next_sibling = box_->NextSibling();
   if (next_sibling) {
-    if (next_sibling->IsInline()) {
-      // As long as we traverse LayoutObject tree, this should not happen.
-      // See ShouldHandleByInlineContext() for more context.
-      // Also this leads to incorrect layout because we create two
-      // NGLayoutInputNode for one LayoutBlockFlow.
-      NOTREACHED();
-      LayoutNGBlockFlow* block_flow = ToLayoutNGBlockFlow(GetLayoutObject());
-      return NGInlineNode(block_flow, next_sibling);
-    } else {
-      return NGBlockNode(ToLayoutBox(next_sibling));
-    }
+    DCHECK(!next_sibling->IsInline());
+    return NGBlockNode(ToLayoutBox(next_sibling));
   }
   return nullptr;
 }
@@ -218,7 +209,7 @@ NGLayoutInputNode NGBlockNode::FirstChild() {
   if (child) {
     if (box_->ChildrenInline()) {
       LayoutNGBlockFlow* block_flow = ToLayoutNGBlockFlow(GetLayoutObject());
-      return NGInlineNode(block_flow, child);
+      return NGInlineNode(block_flow);
     } else {
       return NGBlockNode(ToLayoutBox(child));
     }
