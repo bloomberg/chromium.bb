@@ -65,6 +65,12 @@ bool DictionaryToPrinter(const DictionaryValue& value, Printer* printer) {
   if (value.GetString(kModel, &model))
     printer->set_model(model);
 
+  std::string make_and_model = manufacturer;
+  if (!manufacturer.empty() && !model.empty())
+    make_and_model.append(" ");
+  make_and_model.append(model);
+  printer->set_make_and_model(make_and_model);
+
   std::string uuid;
   if (value.GetString(kUUID, &uuid))
     printer->set_uuid(uuid);

@@ -87,13 +87,22 @@ class CHROMEOS_EXPORT Printer {
     description_ = description;
   }
 
+  // Returns the |manufacturer| of the printer.
+  // DEPRECATED(skau@chromium.org): Use make_and_model() instead.
   const std::string& manufacturer() const { return manufacturer_; }
   void set_manufacturer(const std::string& manufacturer) {
     manufacturer_ = manufacturer;
   }
 
+  // Returns the |model| of the printer.
+  // DEPRECATED(skau@chromium.org): Use make_and_model() instead.
   const std::string& model() const { return model_; }
   void set_model(const std::string& model) { model_ = model; }
+
+  const std::string& make_and_model() const { return make_and_model_; }
+  void set_make_and_model(const std::string& make_and_model) {
+    make_and_model_ = make_and_model;
+  }
 
   const std::string& uri() const { return uri_; }
   void set_uri(const std::string& uri) { uri_ = uri; }
@@ -130,10 +139,18 @@ class CHROMEOS_EXPORT Printer {
   std::string description_;
 
   // The manufacturer of the printer, e.g. HP
+  // DEPRECATED(skau@chromium.org): Migrating to make_and_model.  This is kept
+  // for backward compatibility until migration is complete.
   std::string manufacturer_;
 
   // The model of the printer, e.g. OfficeJet 415
+  // DEPRECATED(skau@chromium.org): Migrating to make_and_model.  This is kept
+  // for backward compatibility until migration is complete.
   std::string model_;
+
+  // The manufactuer and model of the printer in one string. e.g. HP OfficeJet
+  // 415.
+  std::string make_and_model_;
 
   // The full path for the printer. Suitable for configuration in CUPS.
   // Contains protocol, hostname, port, and queue.
