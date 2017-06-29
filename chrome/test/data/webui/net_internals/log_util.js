@@ -126,9 +126,7 @@ GetNetLogFileContentsAndLoadLogTask.prototype = {
     assertEquals('string', typeof logDumpText);
     expectTrue(SourceTracker.getInstance().getPrivacyStripping());
 
-    var expectedResult = 'The log file is missing clientInfo.numericDate.\n' +
-        'Synthesizing export date as time of last event captured.\n' +
-        'Log loaded.';
+    var expectedResult = 'Log loaded.';
 
     if (this.truncate_) {
       expectedResult =
