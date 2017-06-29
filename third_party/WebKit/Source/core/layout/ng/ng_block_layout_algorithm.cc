@@ -297,6 +297,19 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
                                     end_margin_strut.Sum());
     end_margin_strut = NGMarginStrut();
   }
+
+  // If the current layout is a new formatting context, we need to encapsulate
+  // all of our floats.
+  if (ConstraintSpace().IsNewFormattingContext()) {
+    // We can use the BFC coordinates, as we are a new formatting context.
+    DCHECK_EQ(container_builder_.BfcOffset().value(), NGLogicalOffset());
+
+    WTF::Optional<LayoutUnit> float_end_offset =
+        GetClearanceOffset(ConstraintSpace().Exclusions(), EClear::kBoth);
+    if (float_end_offset)
+      content_size_ = std::max(content_size_, float_end_offset.value());
+  }
+
   content_size_ += border_scrollbar_padding_.block_end;
 
   // Recompute the block-axis size now that we know our content size.
