@@ -34,7 +34,7 @@ class BlobStorageContext;
 namespace content {
 
 class ResourceContext;
-class ResourceRequestBodyImpl;
+class ResourceRequestBody;
 class ServiceWorkerContextCore;
 class ServiceWorkerContextWrapper;
 class ServiceWorkerNavigationHandleCore;
@@ -59,7 +59,7 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
       RequestContextType request_context_type,
       RequestContextFrameType frame_type,
       bool is_parent_frame_secure,
-      scoped_refptr<ResourceRequestBodyImpl> body,
+      scoped_refptr<ResourceRequestBody> body,
       const base::Callback<WebContents*(void)>& web_contents_getter);
 
   // PlzNavigate and --enable-network-service.
@@ -76,7 +76,7 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
       RequestContextType request_context_type,
       RequestContextFrameType frame_type,
       bool is_parent_frame_secure,
-      scoped_refptr<ResourceRequestBodyImpl> body,
+      scoped_refptr<ResourceRequestBody> body,
       const base::Callback<WebContents*(void)>& web_contents_getter);
 
   // Attaches a newly created handler if the given |request| needs to
@@ -98,7 +98,7 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
       ResourceType resource_type,
       RequestContextType request_context_type,
       RequestContextFrameType frame_type,
-      scoped_refptr<ResourceRequestBodyImpl> body);
+      scoped_refptr<ResourceRequestBody> body);
 
   // Returns the handler attached to |request|. This may return NULL
   // if no handler is attached.

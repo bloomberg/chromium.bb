@@ -33,7 +33,6 @@
 #include "content/browser/service_worker/service_worker_fetch_dispatcher.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_response_info.h"
-#include "content/common/resource_request_body_impl.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/blob_handle.h"
@@ -41,6 +40,7 @@
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/common/referrer.h"
+#include "content/public/common/resource_request_body.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
@@ -157,10 +157,9 @@ class ServiceWorkerURLRequestJob::FileSizeResolver {
     callback_ = callback;
 
     std::vector<base::FilePath> file_paths;
-    for (ResourceRequestBodyImpl::Element& element :
-         *body_->elements_mutable()) {
-      if (element.type() == ResourceRequestBodyImpl::Element::TYPE_FILE &&
-          element.length() == ResourceRequestBodyImpl::Element::kUnknownSize) {
+    for (ResourceRequestBody::Element& element : *body_->elements_mutable()) {
+      if (element.type() == ResourceRequestBody::Element::TYPE_FILE &&
+          element.length() == ResourceRequestBody::Element::kUnknownSize) {
         file_elements_.push_back(&element);
         file_paths.push_back(element.path());
       }
@@ -187,7 +186,7 @@ class ServiceWorkerURLRequestJob::FileSizeResolver {
       DCHECK_EQ(sizes.size(), file_elements_.size());
       size_t num_elements = file_elements_.size();
       for (size_t i = 0; i < num_elements; i++) {
-        ResourceRequestBodyImpl::Element* element = file_elements_[i];
+        ResourceRequestBody::Element* element = file_elements_[i];
         element->SetToFilePathRange(element->path(), element->offset(),
                                     base::checked_cast<uint64_t>(sizes[i]),
                                     element->expected_modification_time());
@@ -207,8 +206,8 @@ class ServiceWorkerURLRequestJob::FileSizeResolver {
   // Owns and must outlive |this|.
   ServiceWorkerURLRequestJob* owner_;
 
-  scoped_refptr<ResourceRequestBodyImpl> body_;
-  std::vector<ResourceRequestBodyImpl::Element*> file_elements_;
+  scoped_refptr<ResourceRequestBody> body_;
+  std::vector<ResourceRequestBody::Element*> file_elements_;
   base::Callback<void(bool)> callback_;
   Phase phase_ = Phase::INITIAL;
   base::WeakPtrFactory<FileSizeResolver> weak_factory_;
@@ -319,7 +318,7 @@ ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
     ResourceType resource_type,
     RequestContextType request_context_type,
     RequestContextFrameType frame_type,
-    scoped_refptr<ResourceRequestBodyImpl> body,
+    scoped_refptr<ResourceRequestBody> body,
     ServiceWorkerFetchType fetch_type,
     const base::Optional<base::TimeDelta>& timeout,
     Delegate* delegate)
@@ -594,7 +593,7 @@ void ServiceWorkerURLRequestJob::CreateRequestBodyBlob(std::string* blob_uuid,
                                                        uint64_t* blob_size) {
   DCHECK(HasRequestBody());
   storage::BlobDataBuilder blob_builder(base::GenerateGUID());
-  for (const ResourceRequestBodyImpl::Element& element : (*body_->elements())) {
+  for (const ResourceRequestBody::Element& element : (*body_->elements())) {
     blob_builder.AppendIPCDataElement(element);
   }
 

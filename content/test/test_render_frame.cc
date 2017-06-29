@@ -9,7 +9,6 @@
 #include "content/child/web_url_loader_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/common/navigation_params.h"
-#include "content/common/resource_request_body_impl.h"
 #include "content/public/common/associated_interface_provider.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/resource_response.h"

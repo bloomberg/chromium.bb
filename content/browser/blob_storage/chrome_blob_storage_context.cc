@@ -19,11 +19,11 @@
 #include "base/task_runner.h"
 #include "base/task_scheduler/post_task.h"
 #include "content/browser/resource_context_impl.h"
-#include "content/common/resource_request_body_impl.h"
 #include "content/public/browser/blob_handle.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/resource_request_body.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_memory_controller.h"
 #include "storage/browser/blob/blob_registry_impl.h"
@@ -210,7 +210,7 @@ storage::BlobStorageContext* GetBlobStorageContext(
   return blob_storage_context->context();
 }
 
-bool GetBodyBlobDataHandles(ResourceRequestBodyImpl* body,
+bool GetBodyBlobDataHandles(ResourceRequestBody* body,
                             ResourceContext* resource_context,
                             BlobHandles* blob_handles) {
   blob_handles->clear();
@@ -220,8 +220,8 @@ bool GetBodyBlobDataHandles(ResourceRequestBodyImpl* body,
 
   DCHECK(blob_context);
   for (size_t i = 0; i < body->elements()->size(); ++i) {
-    const ResourceRequestBodyImpl::Element& element = (*body->elements())[i];
-    if (element.type() != ResourceRequestBodyImpl::Element::TYPE_BLOB)
+    const ResourceRequestBody::Element& element = (*body->elements())[i];
+    if (element.type() != ResourceRequestBody::Element::TYPE_BLOB)
       continue;
     std::unique_ptr<storage::BlobDataHandle> handle =
         blob_context->GetBlobDataFromUUID(element.blob_uuid());

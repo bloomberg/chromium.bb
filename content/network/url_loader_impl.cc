@@ -73,75 +73,75 @@ void PopulateResourceResponse(net::URLRequest* request,
 }
 
 // A subclass of net::UploadBytesElementReader which owns
-// ResourceRequestBodyImpl.
+// ResourceRequestBody.
 class BytesElementReader : public net::UploadBytesElementReader {
  public:
-  BytesElementReader(ResourceRequestBodyImpl* resource_request_body,
-                     const ResourceRequestBodyImpl::Element& element)
+  BytesElementReader(ResourceRequestBody* resource_request_body,
+                     const ResourceRequestBody::Element& element)
       : net::UploadBytesElementReader(element.bytes(), element.length()),
         resource_request_body_(resource_request_body) {
-    DCHECK_EQ(ResourceRequestBodyImpl::Element::TYPE_BYTES, element.type());
+    DCHECK_EQ(ResourceRequestBody::Element::TYPE_BYTES, element.type());
   }
 
   ~BytesElementReader() override {}
 
  private:
-  scoped_refptr<ResourceRequestBodyImpl> resource_request_body_;
+  scoped_refptr<ResourceRequestBody> resource_request_body_;
 
   DISALLOW_COPY_AND_ASSIGN(BytesElementReader);
 };
 
 // A subclass of net::UploadFileElementReader which owns
-// ResourceRequestBodyImpl.
+// ResourceRequestBody.
 // This class is necessary to ensure the BlobData and any attached shareable
 // files survive until upload completion.
 class FileElementReader : public net::UploadFileElementReader {
  public:
-  FileElementReader(ResourceRequestBodyImpl* resource_request_body,
+  FileElementReader(ResourceRequestBody* resource_request_body,
                     base::TaskRunner* task_runner,
-                    const ResourceRequestBodyImpl::Element& element)
+                    const ResourceRequestBody::Element& element)
       : net::UploadFileElementReader(task_runner,
                                      element.path(),
                                      element.offset(),
                                      element.length(),
                                      element.expected_modification_time()),
         resource_request_body_(resource_request_body) {
-    DCHECK_EQ(ResourceRequestBodyImpl::Element::TYPE_FILE, element.type());
+    DCHECK_EQ(ResourceRequestBody::Element::TYPE_FILE, element.type());
   }
 
   ~FileElementReader() override {}
 
  private:
-  scoped_refptr<ResourceRequestBodyImpl> resource_request_body_;
+  scoped_refptr<ResourceRequestBody> resource_request_body_;
 
   DISALLOW_COPY_AND_ASSIGN(FileElementReader);
 };
 
 // TODO: copied from content/browser/loader/upload_data_stream_builder.cc.
 std::unique_ptr<net::UploadDataStream> CreateUploadDataStream(
-    ResourceRequestBodyImpl* body,
+    ResourceRequestBody* body,
     base::SequencedTaskRunner* file_task_runner) {
   std::vector<std::unique_ptr<net::UploadElementReader>> element_readers;
   for (const auto& element : *body->elements()) {
     switch (element.type()) {
-      case ResourceRequestBodyImpl::Element::TYPE_BYTES:
+      case ResourceRequestBody::Element::TYPE_BYTES:
         element_readers.push_back(
             base::MakeUnique<BytesElementReader>(body, element));
         break;
-      case ResourceRequestBodyImpl::Element::TYPE_FILE:
+      case ResourceRequestBody::Element::TYPE_FILE:
         element_readers.push_back(base::MakeUnique<FileElementReader>(
             body, file_task_runner, element));
         break;
-      case ResourceRequestBodyImpl::Element::TYPE_FILE_FILESYSTEM:
+      case ResourceRequestBody::Element::TYPE_FILE_FILESYSTEM:
         NOTIMPLEMENTED();
         break;
-      case ResourceRequestBodyImpl::Element::TYPE_BLOB: {
+      case ResourceRequestBody::Element::TYPE_BLOB: {
         NOTIMPLEMENTED();
         break;
       }
-      case ResourceRequestBodyImpl::Element::TYPE_DISK_CACHE_ENTRY:
-      case ResourceRequestBodyImpl::Element::TYPE_BYTES_DESCRIPTION:
-      case ResourceRequestBodyImpl::Element::TYPE_UNKNOWN:
+      case ResourceRequestBody::Element::TYPE_DISK_CACHE_ENTRY:
+      case ResourceRequestBody::Element::TYPE_BYTES_DESCRIPTION:
+      case ResourceRequestBody::Element::TYPE_UNKNOWN:
         NOTREACHED();
         break;
     }

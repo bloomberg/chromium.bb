@@ -28,7 +28,7 @@ class FrameNavigationEntry;
 class FrameTreeNode;
 class NavigationRequest;
 class RenderFrameHostImpl;
-class ResourceRequestBodyImpl;
+class ResourceRequestBody;
 struct BeginNavigationParams;
 struct CommonNavigationParams;
 
@@ -118,7 +118,7 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       RenderFrameHostImpl* render_frame_host,
       const GURL& url,
       bool uses_post,
-      const scoped_refptr<ResourceRequestBodyImpl>& body,
+      const scoped_refptr<ResourceRequestBody>& body,
       const std::string& extra_headers,
       const Referrer& referrer,
       WindowOpenDisposition disposition,
@@ -141,7 +141,7 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       const GlobalRequestID& transferred_global_request_id,
       bool should_replace_current_entry,
       const std::string& method,
-      scoped_refptr<ResourceRequestBodyImpl> post_body,
+      scoped_refptr<ResourceRequestBody> post_body,
       const std::string& extra_headers) {}
 
   // PlzNavigate

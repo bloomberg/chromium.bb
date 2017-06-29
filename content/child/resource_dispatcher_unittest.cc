@@ -32,6 +32,7 @@
 #include "content/public/child/resource_dispatcher_delegate.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/request_context_frame_type.h"
+#include "content/public/common/resource_request_body.h"
 #include "content/public/common/resource_response.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
@@ -223,7 +224,7 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
   ResourceDispatcher* dispatcher() { return dispatcher_.get(); }
 
   int StartAsync(std::unique_ptr<ResourceRequest> request,
-                 ResourceRequestBodyImpl* request_body,
+                 ResourceRequestBody* request_body,
                  TestRequestPeer::Context* peer_context) {
     std::unique_ptr<TestRequestPeer> peer(
         new TestRequestPeer(dispatcher(), peer_context));

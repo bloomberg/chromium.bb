@@ -19,7 +19,6 @@
 #include "content/common/content_constants_internal.h"
 #include "content/common/navigation_params.h"
 #include "content/common/page_state_serialization.h"
-#include "content/common/resource_request_body_impl.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/public/browser/reload_type.h"
 #include "content/public/common/browser_side_navigation_policy.h"
@@ -490,7 +489,7 @@ int64_t NavigationEntryImpl::GetPostID() const {
 
 void NavigationEntryImpl::SetPostData(
     const scoped_refptr<ResourceRequestBody>& data) {
-  post_data_ = static_cast<ResourceRequestBodyImpl*>(data.get());
+  post_data_ = static_cast<ResourceRequestBody*>(data.get());
 }
 
 scoped_refptr<ResourceRequestBody> NavigationEntryImpl::GetPostData() const {
@@ -657,7 +656,7 @@ std::unique_ptr<NavigationEntryImpl> NavigationEntryImpl::CloneAndReplace(
 
 CommonNavigationParams NavigationEntryImpl::ConstructCommonNavigationParams(
     const FrameNavigationEntry& frame_entry,
-    const scoped_refptr<ResourceRequestBodyImpl>& post_body,
+    const scoped_refptr<ResourceRequestBody>& post_body,
     const GURL& dest_url,
     const Referrer& dest_referrer,
     FrameMsg_Navigate_Type::Value navigation_type,

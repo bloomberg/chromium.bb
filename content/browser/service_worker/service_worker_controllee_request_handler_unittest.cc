@@ -18,12 +18,12 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/service_worker/service_worker_url_request_job.h"
-#include "content/common/resource_request_body_impl.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/common/request_context_frame_type.h"
 #include "content/public/common/request_context_type.h"
+#include "content/public/common/resource_request_body.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -66,7 +66,7 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
               type,
               REQUEST_CONTEXT_TYPE_HYPERLINK,
               REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
-              scoped_refptr<ResourceRequestBodyImpl>())),
+              scoped_refptr<ResourceRequestBody>())),
           job_(nullptr) {}
 
     ServiceWorkerURLRequestJob* MaybeCreateJob() {

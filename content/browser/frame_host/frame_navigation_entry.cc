@@ -97,8 +97,7 @@ void FrameNavigationEntry::SetPageState(const PageState& page_state) {
   document_sequence_number_ = exploded_state.top.document_sequence_number;
 }
 
-scoped_refptr<ResourceRequestBodyImpl> FrameNavigationEntry::GetPostData()
-    const {
+scoped_refptr<ResourceRequestBody> FrameNavigationEntry::GetPostData() const {
   if (method_ != "POST")
     return nullptr;
 

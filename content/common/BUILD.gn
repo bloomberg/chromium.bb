@@ -282,8 +282,6 @@ source_set("common") {
     "resource_messages.h",
     "resource_request.cc",
     "resource_request.h",
-    "resource_request_body_impl.cc",
-    "resource_request_body_impl.h",
     "resource_request_completion_status.cc",
     "resource_request_completion_status.h",
     "sandbox_init_mac.cc",
