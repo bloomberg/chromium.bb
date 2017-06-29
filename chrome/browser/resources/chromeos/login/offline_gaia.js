@@ -58,12 +58,14 @@ Polymer((function() {
     },
 
     onForgotPasswordClicked_: function() {
-      this.$.forgotPasswordDlg.fitInto = this;
       this.disabled = true;
       this.fire('dialogShown');
-      this.$.forgotPasswordDlg.open();
+      this.$.forgotPasswordDlg.showModal();
       this.$.passwordCard.classList.add('full-disabled');
-      this.$.forgotPasswordDlg.focus();
+    },
+
+    onForgotPasswordCloseTap_: function() {
+      this.$.forgotPasswordDlg.close();
     },
 
     onDialogOverlayClosed_: function() {

@@ -30,7 +30,8 @@ Polymer({
   },
 
   reset: function() {
-    this.$.cancelConfirmDlg.close();
+    if (this.$.cancelConfirmDlg.open)
+      this.$.cancelConfirmDlg.close();
     this.disabled = false;
     this.$.navigation.closeVisible = true;
     if (this.$.animatedPages.selected != 0)
@@ -54,11 +55,15 @@ Polymer({
 
   onClose_: function() {
     this.disabled = true;
-    this.$.cancelConfirmDlg.fitInto = this;
-    this.$.cancelConfirmDlg.open();
+    this.$.cancelConfirmDlg.showModal();
   },
 
-  onConfirmCancel_: function() {
+  onCancelNo_: function() {
+    this.$.cancelConfirmDlg.close();
+  },
+
+  onCancelYes_: function() {
+    this.$.cancelConfirmDlg.close();
     this.fire('cancel');
   },
 
