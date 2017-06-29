@@ -3,8 +3,5 @@ FAIL Test setting target before constructing the associated animation assert_equ
 FAIL Test setting target from null to a valid target assert_equals: Value at 50% progress after setting new target expected "50px" but got "10px"
 FAIL Test setting target from a valid target to null assert_equals: Value after clearing the target expected "10px" but got "50px"
 FAIL Test setting target from a valid target to another target assert_equals: Value of 1st element (currently not targeted) after changing the effect target expected "10px" but got "50px"
-FAIL Test falling back to distribute spacing mode after setting null target anim.effect.getKeyframes is not a function
-FAIL Test falling back to distribute spacing mode if there is no context element effect.getKeyframes is not a function
-FAIL Test paced spacing mode after setting a new target anim.effect.getKeyframes is not a function
 Harness: the test ran to completion.
 

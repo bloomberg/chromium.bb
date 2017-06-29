@@ -45,7 +45,7 @@ FAIL easing and offset are ignored on iterable objects. effect.getKeyframes is n
 FAIL Custom iterator with multiple properties specified. effect.getKeyframes is not a function
 FAIL Custom iterator with offset specified. effect.getKeyframes is not a function
 PASS Custom iterator with non object keyframe should throw. 
-FAIL Custom iterator with value list in keyframe should give bizarre string representation of list. effect.getKeyframes is not a function
+FAIL Custom iterator with value list in keyframe should not contain invalid property value pair of list. effect.getKeyframes is not a function
 FAIL Only enumerable properties on keyframes are considered anim.effect.getKeyframes is not a function
 FAIL Only properties defined directly on keyframes are considered anim.effect.getKeyframes is not a function
 FAIL Only enumerable properties on property indexed keyframes are considered anim.effect.getKeyframes is not a function
