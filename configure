@@ -330,6 +330,7 @@ EXPERIMENT_LIST="
     sbl_symbol
     ncobmc_adapt_weight
     bgsprite
+    var_tx_no_tx_mode
 "
 CONFIG_LIST="
     dependency_tracking
@@ -562,6 +563,10 @@ post_process_cmdline() {
       log_echo "ext_tile not compatible with reference_buffer, so"
       log_echo "disabling reference_buffer"
       disable_feature reference_buffer
+    fi
+    if enabled var_tx_no_tx_mode && ! enabled var_tx; then
+      log_echo "var_tx_no_tx_mode requires var_tx, so disabling var_tx_no_tx_mode"
+      disable_feature var_tx_no_tx_mode
     fi
     if enabled ext_tile; then
       log_echo "ext_tile not compatible with tile_groups, so"

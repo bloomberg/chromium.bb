@@ -237,6 +237,12 @@ if (CONFIG_ANALYZER)
   endif ()
 endif ()
 
+if (CONFIG_VAR_TX_NO_TX_MODE AND NOT CONFIG_VAR_TX)
+   message(WARNING
+     "--- CONFIG_VAR_TX_NO_TX_MODE requires CONFIG_VAR_TX, disabling.")
+   set(CONFIG_VAR_TX_NO_TX_MODE 0)
+endif()
+
 if (NOT MSVC)
   aom_push_var(CMAKE_REQUIRED_LIBRARIES "m")
   aom_check_c_compiles("fenv_check"
