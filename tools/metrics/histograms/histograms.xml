@@ -29734,7 +29734,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Media.Midi.ResultOnShutdown" enum="MidiResult">
   <owner>toyoshim@chromium.org</owner>
-  <summary>The final status of MidiManager on browser shutdown.</summary>
+  <summary>
+    The final status of MidiManager on destruction. This can monitor unexpected
+    failures on initializing platform dependent MIDI stuff.
+  </summary>
 </histogram>
 
 <histogram name="Media.Midi.SendReceiveUsage" enum="MidiSendReceiveUsage">
@@ -29754,7 +29757,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Media.Midi.Usage" enum="MidiUsage">
   <owner>toyoshim@chromium.org</owner>
-  <summary>MidiManager usages to understand the API use case.</summary>
+  <summary>
+    The MidiManager instance use count, but this is not intended to understand
+    the real API usage because this can be counted by feature scanning scripts
+    that are often used for footprinting. You may want to track SendReceiveUsage
+    to monitor only instances that actually send or receive MIDI messages.
+  </summary>
 </histogram>
 
 <histogram name="Media.MSE.AudioCodec" enum="MSECodec">
