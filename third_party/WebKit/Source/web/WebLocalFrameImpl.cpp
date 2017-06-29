@@ -681,8 +681,8 @@ void WebLocalFrameImpl::SetIsolatedWorldHumanReadableName(
     int world_id,
     const WebString& human_readable_name) {
   DCHECK(GetFrame());
-  DOMWrapperWorld::SetIsolatedWorldHumanReadableName(world_id,
-                                                     human_readable_name);
+  DOMWrapperWorld::SetNonMainWorldHumanReadableName(world_id,
+                                                    human_readable_name);
 }
 
 void WebLocalFrameImpl::AddMessageToConsole(const WebConsoleMessage& message) {

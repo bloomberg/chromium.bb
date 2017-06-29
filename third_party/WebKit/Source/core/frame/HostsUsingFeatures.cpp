@@ -55,9 +55,10 @@ void HostsUsingFeatures::CountHostOrIsolatedWorldHumanReadableName(
     document->HostsUsingFeaturesValue().Count(feature);
     return;
   }
-  if (Page* page = document->GetPage())
+  if (Page* page = document->GetPage()) {
     page->GetHostsUsingFeatures().CountName(
-        feature, script_state->World().IsolatedWorldHumanReadableName());
+        feature, script_state->World().NonMainWorldHumanReadableName());
+  }
 }
 
 void HostsUsingFeatures::Value::Count(Feature feature) {
