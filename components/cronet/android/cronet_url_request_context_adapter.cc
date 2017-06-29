@@ -664,7 +664,11 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
     if (config->enable_host_cache_persistence) {
       registry->RegisterListPref(kHostCachePref);
     }
-    pref_service_ = factory.Create(registry.get());
+
+    {
+      SCOPED_UMA_HISTOGRAM_TIMER("Net.Cronet.PrefsInitTime");
+      pref_service_ = factory.Create(registry.get());
+    }
 
     // Set up the HttpServerPropertiesManager.
     std::unique_ptr<net::HttpServerPropertiesManager>
@@ -728,7 +732,8 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
         base::MakeUnique<HostCachePersistenceManager>(
             host_cache, pref_service_.get(), kHostCachePref,
             base::TimeDelta::FromMilliseconds(
-                config->host_cache_persistence_delay_ms));
+                config->host_cache_persistence_delay_ms),
+            g_net_log.Get().net_log());
   }
 
   context_->set_check_cleartext_permitted(true);

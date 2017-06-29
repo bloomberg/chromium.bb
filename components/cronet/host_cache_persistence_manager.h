@@ -15,8 +15,13 @@
 #include "base/timer/timer.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "net/dns/host_cache.h"
+#include "net/log/net_log_with_source.h"
 
 class PrefService;
+
+namespace net {
+class NetLog;
+}
 
 namespace cronet {
 // Handles the interaction between HostCache and prefs for persistence.
@@ -40,7 +45,8 @@ class HostCachePersistenceManager : public net::HostCache::PersistenceDelegate {
   HostCachePersistenceManager(net::HostCache* cache,
                               PrefService* pref_service,
                               std::string pref_name,
-                              base::TimeDelta delay);
+                              base::TimeDelta delay,
+                              net::NetLog* net_log);
   virtual ~HostCachePersistenceManager();
 
   // net::HostCache::PersistenceDelegate implementation
@@ -61,6 +67,8 @@ class HostCachePersistenceManager : public net::HostCache::PersistenceDelegate {
 
   const base::TimeDelta delay_;
   base::OneShotTimer timer_;
+
+  const net::NetLogWithSource net_log_;
 
   SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<HostCachePersistenceManager> weak_factory_;

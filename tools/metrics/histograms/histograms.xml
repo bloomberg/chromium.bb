@@ -13101,6 +13101,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="DNS.HostCache.RestoreSize" units="entries">
+  <owner>mgersh@chromium.org</owner>
+  <summary>
+    Number of HostCache entries persisted to disk, measured at restore time.
+  </summary>
+</histogram>
+
+<histogram name="DNS.HostCache.RestoreSuccess" enum="BooleanSuccess">
+  <owner>mgersh@chromium.org</owner>
+  <summary>
+    Whether the persisted HostCache entries were restored successfully.
+  </summary>
+</histogram>
+
 <histogram name="DNS.HostCache.Set" enum="DNS.HostCache.SetOutcome">
   <owner>mgersh@chromium.org</owner>
   <summary>The outcome of setting a DNS entry in the host cache.</summary>
@@ -36132,6 +36146,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>rch@chromium.org</owner>
   <summary>
     Measures time spent to serialize the net::CachingCertVerifier's cache.
+  </summary>
+</histogram>
+
+<histogram name="Net.Cronet.PrefsInitTime" units="ms">
+  <owner>mgersh@chromium.org</owner>
+  <summary>
+    Measures time spent creating the Cronet PrefService, including loading the
+    prefs from disk synchronously.
   </summary>
 </histogram>
 
