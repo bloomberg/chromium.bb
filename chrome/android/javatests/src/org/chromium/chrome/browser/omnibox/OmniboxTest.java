@@ -87,6 +87,13 @@ public class OmniboxTest {
         });
     }
 
+    private static final OnSuggestionsReceivedListener sEmptySuggestionListener =
+            new OnSuggestionsReceivedListener() {
+                @Override
+                public void onSuggestionsReceived(
+                        List<OmniboxSuggestion> suggestions, String inlineAutocompleteText) {}
+            };
+
     /**
      * Sanity check of Omnibox.  The problem in http://b/5021723 would
      * cause this to fail (hang or crash).
@@ -168,8 +175,8 @@ public class OmniboxTest {
             }
         });
 
-        final TestAutocompleteController controller = new TestAutocompleteController(
-                locationBar, null, null);
+        final TestAutocompleteController controller = new TestAutocompleteController(locationBar,
+                sEmptySuggestionListener, new HashMap<String, List<SuggestionsResult>>());
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -208,17 +215,8 @@ public class OmniboxTest {
         final ImageButton deleteButton =
                 (ImageButton) mActivityTestRule.getActivity().findViewById(R.id.delete_button);
 
-        final OnSuggestionsReceivedListener emptySuggestionListener =
-                new OnSuggestionsReceivedListener() {
-                    @Override
-                    public void onSuggestionsReceived(
-                            List<OmniboxSuggestion> suggestions, String inlineAutocompleteText) {
-                    }
-                };
-
-        final TestAutocompleteController controller = new TestAutocompleteController(
-                locationBar, emptySuggestionListener,
-                new HashMap<String, List<SuggestionsResult>>());
+        final TestAutocompleteController controller = new TestAutocompleteController(locationBar,
+                sEmptySuggestionListener, new HashMap<String, List<SuggestionsResult>>());
 
         OmniboxTestUtils.toggleUrlBarFocus(urlBar, true);
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -260,17 +258,8 @@ public class OmniboxTest {
                 (LocationBarLayout) mActivityTestRule.getActivity().findViewById(R.id.location_bar);
         final UrlBar urlBar = (UrlBar) mActivityTestRule.getActivity().findViewById(R.id.url_bar);
 
-        final OnSuggestionsReceivedListener emptySuggestionListener =
-                new OnSuggestionsReceivedListener() {
-                    @Override
-                    public void onSuggestionsReceived(List<OmniboxSuggestion> suggestions,
-                            String inlineAutocompleteText) {
-                    }
-                };
-
-        final TestAutocompleteController controller = new TestAutocompleteController(
-                locationBar, emptySuggestionListener,
-                new HashMap<String, List<SuggestionsResult>>());
+        final TestAutocompleteController controller = new TestAutocompleteController(locationBar,
+                sEmptySuggestionListener, new HashMap<String, List<SuggestionsResult>>());
 
         OmniboxTestUtils.toggleUrlBarFocus(urlBar, true);
 

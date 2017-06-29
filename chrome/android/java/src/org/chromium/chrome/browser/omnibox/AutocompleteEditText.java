@@ -33,9 +33,9 @@ public class AutocompleteEditText
 
     private final AccessibilityManager mAccessibilityManager;
 
-    // This contains most of the logic. Lazily initialized in ensureModel() because View constructor
-    // may call its methods, so always call ensureModel() before accessing it.
     private AutocompleteEditTextModelBase mModel;
+    private boolean mIgnoreTextChangesForAutocomplete = true;
+    private boolean mLastEditWasPaste;
 
     /**
      * Whether default TextView scrolling should be disabled because autocomplete has been added.
@@ -52,9 +52,18 @@ public class AutocompleteEditText
     }
 
     private void ensureModel() {
-        // Lazy initialization here to ensure that model methods get called even in View's
-        // constructor.
-        if (mModel == null) mModel = new AutocompleteEditTextModel(this);
+        if (mModel == null) {
+            mModel = new AutocompleteEditTextModel(this);
+            // Feed initial values.
+            mModel.setIgnoreTextChangeFromAutocomplete(true);
+            mModel.onFocusChanged(hasFocus());
+            mModel.onSetText(getText());
+            mModel.onTextChanged(getText(), 0, 0, getText().length());
+            mModel.onSelectionChanged(getSelectionStart(), getSelectionEnd());
+            if (mLastEditWasPaste) mModel.onPaste();
+            mModel.setIgnoreTextChangeFromAutocomplete(false);
+            mModel.setIgnoreTextChangeFromAutocomplete(mIgnoreTextChangesForAutocomplete);
+        }
     }
 
     /**
@@ -64,28 +73,28 @@ public class AutocompleteEditText
      *                           triggered.
      */
     public void setIgnoreTextChangesForAutocomplete(boolean ignoreAutocomplete) {
-        ensureModel();
-        mModel.setIgnoreTextChangeFromAutocomplete(ignoreAutocomplete);
+        mIgnoreTextChangesForAutocomplete = ignoreAutocomplete;
+        if (mModel != null) mModel.setIgnoreTextChangeFromAutocomplete(ignoreAutocomplete);
     }
 
     /**
      * @return The user text without the autocomplete text.
      */
     public String getTextWithoutAutocomplete() {
-        ensureModel();
+        if (mModel == null) return "";
         return mModel.getTextWithoutAutocomplete();
     }
 
     /** @return Text that includes autocomplete. */
     public String getTextWithAutocomplete() {
-        ensureModel();
+        if (mModel == null) return "";
         return mModel.getTextWithAutocomplete();
     }
 
     /** @return Whether any autocomplete information is specified on the current text. */
     @VisibleForTesting
     public boolean hasAutocomplete() {
-        ensureModel();
+        if (mModel == null) return false;
         return mModel.hasAutocomplete();
     }
 
@@ -96,21 +105,19 @@ public class AutocompleteEditText
      * @return Whether we want to be showing inline autocomplete results.
      */
     public boolean shouldAutocomplete() {
-        ensureModel();
+        if (mModel == null) return false;
         return mModel.shouldAutocomplete();
     }
 
     @Override
     protected void onSelectionChanged(int selStart, int selEnd) {
-        ensureModel();
-        mModel.onSelectionChanged(selStart, selEnd);
+        if (mModel != null) mModel.onSelectionChanged(selStart, selEnd);
         super.onSelectionChanged(selStart, selEnd);
     }
 
     @Override
     protected void onFocusChanged(boolean focused, int direction, Rect previouslyFocusedRect) {
-        ensureModel();
-        mModel.onFocusChanged(focused);
+        if (mModel != null) mModel.onFocusChanged(focused);
         super.onFocusChanged(focused, direction, previouslyFocusedRect);
     }
 
@@ -136,8 +143,8 @@ public class AutocompleteEditText
 
     /** Call this when text is pasted. */
     public void onPaste() {
-        ensureModel();
-        mModel.onPaste();
+        mLastEditWasPaste = true;
+        if (mModel != null) mModel.onPaste();
     }
 
     /**
@@ -149,8 +156,7 @@ public class AutocompleteEditText
     public void setAutocompleteText(CharSequence userText, CharSequence inlineAutocompleteText) {
         boolean emptyAutocomplete = TextUtils.isEmpty(inlineAutocompleteText);
         if (!emptyAutocomplete) mDisableTextScrollingFromAutocomplete = true;
-        ensureModel();
-        mModel.setAutocompleteText(userText, inlineAutocompleteText);
+        if (mModel != null) mModel.setAutocompleteText(userText, inlineAutocompleteText);
     }
 
     /**
@@ -158,15 +164,15 @@ public class AutocompleteEditText
      * currently displayed.
      */
     public int getAutocompleteLength() {
-        ensureModel();
+        if (mModel == null) return 0;
         return mModel.getAutocompleteText().length();
     }
 
     @Override
     protected void onTextChanged(CharSequence text, int start, int lengthBefore, int lengthAfter) {
         super.onTextChanged(text, start, lengthBefore, lengthAfter);
-        ensureModel();
-        mModel.onTextChanged(text, start, lengthBefore, lengthAfter);
+        mLastEditWasPaste = false;
+        if (mModel != null) mModel.onTextChanged(text, start, lengthBefore, lengthAfter);
     }
 
     @Override
@@ -187,14 +193,12 @@ public class AutocompleteEditText
                 StrictMode.setThreadPolicy(oldPolicy);
             }
         }
-        ensureModel();
-        mModel.onSetText(text);
+        if (mModel != null) mModel.onSetText(text);
     }
 
     @Override
     public void sendAccessibilityEventUnchecked(AccessibilityEvent event) {
-        ensureModel();
-        if (mModel.shouldIgnoreTextChangeFromAutocomplete()) {
+        if (mIgnoreTextChangesForAutocomplete) {
             if (event.getEventType() == AccessibilityEvent.TYPE_VIEW_TEXT_SELECTION_CHANGED
                     || event.getEventType() == AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED) {
                 if (DEBUG) Log.i(TAG, "Ignoring accessibility event from autocomplete.");
@@ -218,7 +222,7 @@ public class AutocompleteEditText
 
     @VisibleForTesting
     public InputConnection getInputConnection() {
-        ensureModel();
+        if (mModel == null) return null;
         return mModel.getInputConnection();
     }
 
@@ -234,6 +238,11 @@ public class AutocompleteEditText
 
     @VisibleForTesting
     public InputConnection createInputConnection(InputConnection target) {
+        // Initially, target is null until View gets the focus.
+        if (target == null && mModel == null) {
+            if (DEBUG) Log.i(TAG, "createInputConnection - ignoring null target.");
+            return null;
+        }
         ensureModel();
         InputConnection retVal = mModel.onCreateInputConnection(target);
         if (mIgnoreImeForTest) return null;
@@ -249,9 +258,8 @@ public class AutocompleteEditText
     /**
      * @return Whether the current UrlBar input has been pasted from the clipboard.
      */
-    public boolean isPastedText() {
-        ensureModel();
-        return mModel.isPastedText();
+    public boolean wasLastEditPaste() {
+        return mLastEditWasPaste;
     }
 
     @Override

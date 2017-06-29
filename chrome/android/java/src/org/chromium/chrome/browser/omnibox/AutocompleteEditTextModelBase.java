@@ -92,11 +92,6 @@ public interface AutocompleteEditTextModelBase {
     void onPaste();
 
     /**
-     * @return Whether or not the user just pasted text.
-     */
-    boolean isPastedText();
-
-    /**
      * @return The whole text including both user text and autocomplete text.
      */
     String getTextWithAutocomplete();
@@ -117,9 +112,6 @@ public interface AutocompleteEditTextModelBase {
      * @param ignore Whether text changes should be ignored and no auto complete.
      */
     void setIgnoreTextChangeFromAutocomplete(boolean ignore);
-
-    /** @return Whether we should ignore text change from autocomplete. */
-    boolean shouldIgnoreTextChangeFromAutocomplete();
 
     /**
      * Autocompletes the text and selects the text that was not entered by the user. Using append()

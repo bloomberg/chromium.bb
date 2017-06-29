@@ -35,9 +35,10 @@ public class AutocompleteEditTextModel implements AutocompleteEditTextModelBase 
     private boolean mIgnoreTextChangeFromAutocomplete = true;
 
     private boolean mLastEditWasDelete;
-    private boolean mIsPastedText;
+    private boolean mLastEditWasPaste;
 
     public AutocompleteEditTextModel(AutocompleteEditTextModel.Delegate delegate) {
+        if (DEBUG) Log.i(TAG, "constructor");
         mDelegate = delegate;
         mAutocompleteSpan = new AutocompleteSpan();
     }
@@ -92,7 +93,7 @@ public class AutocompleteEditTextModel implements AutocompleteEditTextModelBase 
     public boolean shouldAutocomplete() {
         if (mLastEditWasDelete) return false;
         Editable text = mDelegate.getText();
-        return isCursorAtEndOfTypedText() && !isPastedText() && mBatchEditNestCount == 0
+        return isCursorAtEndOfTypedText() && !mLastEditWasPaste && mBatchEditNestCount == 0
                 && BaseInputConnection.getComposingSpanEnd(text)
                 == BaseInputConnection.getComposingSpanStart(text);
     }
@@ -251,7 +252,7 @@ public class AutocompleteEditTextModel implements AutocompleteEditTextModelBase 
         } else {
             mTextDeletedInBatchMode = textDeleted;
         }
-        mIsPastedText = false;
+        mLastEditWasPaste = false;
     }
 
     @Override
@@ -432,19 +433,9 @@ public class AutocompleteEditTextModel implements AutocompleteEditTextModelBase 
     }
 
     @Override
-    public boolean shouldIgnoreTextChangeFromAutocomplete() {
-        return mIgnoreTextChangeFromAutocomplete;
-    }
-
-    @Override
     public void onPaste() {
         if (DEBUG) Log.i(TAG, "onPaste");
-        mIsPastedText = true;
-    }
-
-    @Override
-    public boolean isPastedText() {
-        return mIsPastedText;
+        mLastEditWasPaste = true;
     }
 
     /**
