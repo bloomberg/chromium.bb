@@ -370,20 +370,19 @@ string FakeServer::CommitEntity(
   }
 
   std::unique_ptr<FakeServerEntity> entity;
+  syncer::ModelType type = GetModelType(client_entity);
   if (client_entity.deleted()) {
     entity = TombstoneEntity::Create(client_entity.id_string(),
                                      client_entity.client_defined_unique_tag());
     DeleteChildren(client_entity.id_string());
-  } else if (GetModelType(client_entity) == syncer::NIGORI) {
+  } else if (type == syncer::NIGORI) {
     // NIGORI is the only permanent item type that should be updated by the
     // client.
     EntityMap::const_iterator iter = entities_.find(client_entity.id_string());
     CHECK(iter != entities_.end());
     entity = PermanentEntity::CreateUpdatedNigoriEntity(client_entity,
                                                         *iter->second);
-  } else if (client_entity.has_client_defined_unique_tag()) {
-    entity = UniqueClientEntity::Create(client_entity);
-  } else {
+  } else if (type == syncer::BOOKMARKS) {
     // TODO(pvalenzuela): Validate entity's parent ID.
     EntityMap::const_iterator iter = entities_.find(client_entity.id_string());
     if (iter != entities_.end()) {
@@ -392,12 +391,8 @@ string FakeServer::CommitEntity(
     } else {
       entity = BookmarkEntity::CreateNew(client_entity, parent_id, client_guid);
     }
-  }
-
-  if (!entity) {
-    // TODO(pvalenzuela): Add logging so that it is easier to determine why
-    // creation failed.
-    return string();
+  } else {
+    entity = UniqueClientEntity::Create(client_entity);
   }
 
   const std::string id = entity->id();

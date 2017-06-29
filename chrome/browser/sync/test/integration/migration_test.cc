@@ -112,6 +112,9 @@ class MigrationTest : public SyncTest  {
     // that it be migrated.
     preferred_data_types.Remove(syncer::ARC_PACKAGE);
 
+    // Doesn't make sense to migrate commit only types.
+    preferred_data_types.RemoveAll(syncer::CommitOnlyTypes());
+
     // Make sure all clients have the same preferred data types.
     for (int i = 1; i < num_clients(); ++i) {
       const syncer::ModelTypeSet other_preferred_data_types =

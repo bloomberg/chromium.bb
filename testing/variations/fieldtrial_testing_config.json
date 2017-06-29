@@ -3091,6 +3091,25 @@
             ]
         }
     ],
+    "SyncUserEvents": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SyncUserEvents"
+                    ]
+                }
+            ]
+        }
+    ],
     "TLS13Negotiation": [
         {
             "platforms": [
