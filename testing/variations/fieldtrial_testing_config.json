@@ -3433,6 +3433,9 @@
             "experiments": [
                 {
                     "name": "Enabled",
+                    "params": {
+                        "play_install": "true"
+                    },
                     "enable_features": [
                         "ImprovedA2HS"
                     ]
