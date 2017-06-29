@@ -49,12 +49,9 @@ Polymer({
     },
 
     /**
-     * Dictionary defining page visibility.
-     * This is only set when in guest mode. All pages are visible when not set
-     * because polymer only notifies after a property is set.
      * @private {!GuestModePageVisibility}
      */
-    pageVisibility_: Object,
+    pageVisibility_: {type: Object, value: settings.pageVisibility},
 
     /** @private */
     showAndroidApps_: Boolean,
@@ -128,37 +125,6 @@ Polymer({
       vpnNameTemplate: loadTimeData.getString('vpnNameTemplate'),
     };
     // </if>
-
-    if (loadTimeData.getBoolean('isGuest')) {
-      this.pageVisibility_ = {
-        passwordsAndForms: false,
-        people: false,
-        onStartup: false,
-        reset: false,
-        // <if expr="not chromeos">
-        appearance: false,
-        defaultBrowser: false,
-        advancedSettings: false,
-        // </if>
-        // <if expr="chromeos">
-        appearance: {
-          setWallpaper: false,
-          setTheme: false,
-          homeButton: false,
-          bookmarksBar: false,
-          pageZoom: false,
-        },
-        advancedSettings: true,
-        privacy: {
-          searchPrediction: false,
-          networkPrediction: false,
-        },
-        downloads: {
-          googleDrive: false,
-        },
-        // </if>
-      };
-    }
 
     this.showAndroidApps_ = loadTimeData.valueExists('androidAppsVisible') &&
         loadTimeData.getBoolean('androidAppsVisible');

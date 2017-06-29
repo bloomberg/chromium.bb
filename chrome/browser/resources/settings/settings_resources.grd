@@ -861,6 +861,13 @@
       <structure name="IDR_SETTINGS_CLOUD_PRINTING_PAGE_JS"
                  file="printing_page/cloud_printers.js"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_PAGE_VISIBILITY_HTML"
+                 file="page_visibility.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_PAGE_VISIBILITY_JS"
+                 file="page_visibility.js"
+                 type="chrome_html"
+                 preprocess="true" />
       <structure name="IDR_SETTINGS_PDF_DOCUMENTS_HTML"
                  file="site_settings/pdf_documents.html"
                  type="chrome_html" />

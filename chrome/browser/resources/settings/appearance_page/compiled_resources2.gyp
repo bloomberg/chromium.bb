@@ -38,7 +38,7 @@
         '../compiled_resources2.gyp:route',
         '../controls/compiled_resources2.gyp:settings_dropdown_menu',
         '../settings_page/compiled_resources2.gyp:settings_animated_pages',
-        '../settings_ui/compiled_resources2.gyp:settings_ui_types',
+        '../compiled_resources2.gyp:page_visibility',
         'appearance_browser_proxy',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
