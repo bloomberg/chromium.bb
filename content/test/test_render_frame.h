@@ -54,6 +54,10 @@ class TestRenderFrame : public RenderFrameImpl {
   blink::WebNavigationPolicy DecidePolicyForNavigation(
       const blink::WebFrameClient::NavigationPolicyInfo& info) override;
 
+  std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
+      const blink::WebURLRequest& request,
+      base::SingleThreadTaskRunner* task_runner) override;
+
   mojom::FrameHostAssociatedPtr GetFrameHost() override;
 
  private:
