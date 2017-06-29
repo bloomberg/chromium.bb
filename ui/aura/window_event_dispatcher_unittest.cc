@@ -1205,6 +1205,9 @@ TEST_P(WindowEventDispatcherTest, DispatchMouseExitWhenCursorHidden) {
   int translated_y = mouse_location.y() - window_origin.y();
   gfx::Point translated_point(translated_x, translated_y);
   EXPECT_EQ(recorder.mouse_location(0).ToString(), translated_point.ToString());
+
+  // Verify the mouse exit with ui::EF_CURSOR_HIDE flags.
+  EXPECT_TRUE(recorder.mouse_event_flags()[0] & ui::EF_CURSOR_HIDE);
   root_window()->RemovePreTargetHandler(&recorder);
 }
 

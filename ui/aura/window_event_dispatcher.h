@@ -75,11 +75,13 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   void DispatchCancelModeEvent();
 
   // Dispatches a ui::ET_MOUSE_EXITED event at |point| to the |target|
-  // If the |target| is NULL, we will dispatch the event to the root-window
+  // If the |target| is NULL, we will dispatch the event to the root-window.
+  // |event_flags| will be set on the dispatched exit event.
   // TODO(beng): needed only for WTH::OnCursorVisibilityChanged().
-  ui::EventDispatchDetails DispatchMouseExitAtPoint(Window* target,
-                                                    const gfx::Point& point)
-      WARN_UNUSED_RESULT;
+  ui::EventDispatchDetails DispatchMouseExitAtPoint(
+      Window* target,
+      const gfx::Point& point,
+      int event_flags = ui::EF_NONE) WARN_UNUSED_RESULT;
 
   // Gesture Recognition -------------------------------------------------------
 
