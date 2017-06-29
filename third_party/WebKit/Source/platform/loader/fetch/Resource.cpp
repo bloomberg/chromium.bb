@@ -877,22 +877,20 @@ bool Resource::CanReuse(const FetchParameters& params) const {
       options_.cors_handling_by_resource_fetcher ==
       kDisableCORSHandlingByResourceFetcher;
 
-  bool new_is_with_cors_mode =
-      new_request.GetFetchRequestMode() == WebURLRequest::kFetchRequestModeCORS;
-  bool existing_was_with_cors_mode = resource_request_.GetFetchRequestMode() ==
-                                     WebURLRequest::kFetchRequestModeCORS;
+  auto new_mode = new_request.GetFetchRequestMode();
+  auto existing_mode = resource_request_.GetFetchRequestMode();
 
   if (new_is_with_fetcher_cors_suppressed) {
     if (existing_was_with_fetcher_cors_suppressed)
       return true;
 
-    return !existing_was_with_cors_mode;
+    return existing_mode != WebURLRequest::kFetchRequestModeCORS;
   }
 
   if (existing_was_with_fetcher_cors_suppressed)
-    return !new_is_with_cors_mode;
+    return new_mode != WebURLRequest::kFetchRequestModeCORS;
 
-  return new_is_with_cors_mode == existing_was_with_cors_mode;
+  return existing_mode == new_mode;
 }
 
 void Resource::Prune() {
