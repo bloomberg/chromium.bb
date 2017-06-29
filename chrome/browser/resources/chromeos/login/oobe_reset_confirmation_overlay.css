@@ -8,17 +8,19 @@
 
 .reset-popup {
   background: white;
+  border-radius: 2px;
   box-shadow: 0 0 16px rgba(0, 0, 0, .12), 0 16px 16px rgba(0, 0, 0, .24);
   min-height: 158px;
   position: relative;
   width: 512px;
+  z-index: 10;
 }
 
 .reset-popup h1 {
-  -webkit-margin-after: 0;
-  -webkit-margin-before: 0;
   color: var(--google-grey-900);
   font: 15px Roboto, sans-serif;
+  margin-bottom: 0;
+  margin-top: 0;
   padding: 16px 20px;
 }
 
@@ -31,8 +33,8 @@
 
 oobe-text-button {
   -webkit-margin-end: 16px;
-  -webkit-margin-after: 16px;
   color: #5a5a5a;
+  margin-bottom: 16px;
 }
 
 #cancelButton {
