@@ -1,6 +1,12 @@
 # These tests currently fail when they run with --site-per-process.
 # See https://crbug.com/477150.
 
+# https://crbug.com/393285: Text-autosizing doesn't support OOPIFs.
+# https://crbug.com/667551: Pixel dumps don't support OOPIFs.
+# Both of the bugs above need to be fixed, before enabling the tests below.
+crbug.com/393285 http/tests/text-autosizing/narrow-iframe.html [ Failure ]
+crbug.com/393285 http/tests/text-autosizing/wide-iframe.html [ Failure ]
+
 # https://crbug.com/710098: Tests failing because of r462933.
 crbug.com/710098 http/tests/security/document-all.html [ Failure ]
 crbug.com/710098 http/tests/security/window-named-proto.html [ Failure ]
