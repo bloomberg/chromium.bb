@@ -54,9 +54,9 @@ NET_IO_FILE_CHUNK = 16 * 1024
 DOWNLOAD_READ_TIMEOUT = 60
 
 
-# A class to use to communicate with the server by default. Can be changed by
-# 'set_storage_api_class'. Default is IsolateServer.
-_storage_api_cls = None
+# Stores the gRPC proxy address. Must be set if the storage API class is
+# IsolateServerGrpc (call 'set_grpc_proxy').
+_grpc_proxy = None
 
 
 class Item(object):
@@ -527,7 +527,7 @@ class IsolateServerGrpc(StorageApi):
   while fetching.
   """
 
-  def __init__(self, server, namespace):
+  def __init__(self, server, namespace, proxy):
     super(IsolateServerGrpc, self).__init__()
     logging.info('Using gRPC for Isolate')
     self._server = server
@@ -545,9 +545,8 @@ class IsolateServerGrpc(StorageApi):
     assert grpc
     assert bytestream_pb2
 
-    proxy = os.environ.get('ISOLATED_GRPC_PROXY', '')
-    roots = os.environ.get('ISOLATED_GRPC_PROXY_TLS_ROOTS')
-    overd = os.environ.get('ISOLATED_GRPC_PROXY_TLS_OVERRIDE')
+    roots = os.environ.get('ISOLATE_GRPC_PROXY_TLS_ROOTS')
+    overd = os.environ.get('ISOLATE_GRPC_PROXY_TLS_OVERRIDE')
 
     # The "proxy" envvar must be of the form:
     # http[s]://<server>[:port][/prefix]
@@ -700,12 +699,11 @@ class IsolateServerGrpc(StorageApi):
     return missing_items
 
 
-def set_storage_api_class(cls):
-  """Replaces StorageApi implementation used by default."""
-  global _storage_api_cls
-  assert _storage_api_cls is None
-  assert issubclass(cls, StorageApi)
-  _storage_api_cls = cls
+def set_grpc_proxy(proxy):
+  """Sets the StorageApi to use the specified proxy."""
+  global _grpc_proxy
+  assert _grpc_proxy is None
+  _grpc_proxy = proxy
 
 
 def get_storage_api(url, namespace):
@@ -724,5 +722,6 @@ def get_storage_api(url, namespace):
   Returns:
     Instance of StorageApi subclass.
   """
-  cls = _storage_api_cls or IsolateServer
-  return cls(url, namespace)
+  if _grpc_proxy is not None:
+    return IsolateServerGrpc(url, namespace, _grpc_proxy)
+  return IsolateServer(url, namespace)

@@ -59,9 +59,9 @@ def raiseError(code):
 
 class IsolateStorageTest(auto_stub.TestCase):
   def get_server(self):
-    os.environ['ISOLATED_GRPC_PROXY'] = 'https://luci.com/client/bob'
     return isolate_storage.IsolateServerGrpc('https://luci.appspot.com',
-                                             'default-gzip')
+                                             'default-gzip',
+                                             'https://luci.com/client/bob')
 
   def testFetchHappySimple(self):
     """Fetch: if we get a few chunks with the right offset, everything works"""
