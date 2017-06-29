@@ -61,6 +61,10 @@ class CORE_EXPORT ScriptModule final {
   Vector<TextPosition> ModuleRequestPositions(ScriptState*);
   ScriptModuleState Status(ScriptState*);
 
+  // Returns record's [[ErrorCompletion]] field's [[Value]].
+  // Should only be used via ModulatorImpl::GetError()
+  v8::Local<v8::Value> ErrorCompletion(ScriptState*);
+
   bool IsHashTableDeletedValue() const {
     return module_.IsHashTableDeletedValue();
   }

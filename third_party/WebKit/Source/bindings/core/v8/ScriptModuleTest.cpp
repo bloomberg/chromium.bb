@@ -215,6 +215,47 @@ TEST(ScriptModuleTest, instantiateWithDeps) {
   EXPECT_EQ("b", resolver->Specifiers()[1]);
 }
 
+TEST(ScriptModuleTest, instantiateError) {
+  V8TestingScope scope;
+
+  auto modulator = new ScriptModuleTestModulator();
+  auto resolver = modulator->GetTestScriptModuleResolver();
+
+  Modulator::SetModulator(scope.GetScriptState(), modulator);
+
+  ScriptModule module_failure = ScriptModule::Compile(
+      scope.GetIsolate(), "nonexistent_function()", "failure.js",
+      kSharableCrossOrigin, TextPosition::MinimumPosition(),
+      ASSERT_NO_EXCEPTION);
+  ASSERT_FALSE(module_failure.IsNull());
+  module_failure.Instantiate(scope.GetScriptState());
+  ASSERT_EQ(ScriptModuleState::kInstantiated,
+            module_failure.Status(scope.GetScriptState()));
+  module_failure.Evaluate(scope.GetScriptState());
+  ASSERT_EQ(ScriptModuleState::kErrored,
+            module_failure.Status(scope.GetScriptState()));
+  v8::Local<v8::Value> error =
+      module_failure.ErrorCompletion(scope.GetScriptState());
+
+  resolver->PushScriptModule(module_failure);
+
+  ScriptModule module = ScriptModule::Compile(
+      scope.GetIsolate(), "import 'failure'; export const c = 123;", "c.js",
+      kSharableCrossOrigin, TextPosition::MinimumPosition(),
+      scope.GetExceptionState());
+  ASSERT_FALSE(module.IsNull());
+  ScriptValue exception = module.Instantiate(scope.GetScriptState());
+  EXPECT_FALSE(exception.IsEmpty());
+  ASSERT_EQ(ScriptModuleState::kErrored, module.Status(scope.GetScriptState()));
+  v8::Local<v8::Value> error2 = module.ErrorCompletion(scope.GetScriptState());
+
+  EXPECT_EQ(error, error2);
+  EXPECT_EQ(error, exception.V8Value());
+
+  ASSERT_EQ(1u, resolver->ResolveCount());
+  EXPECT_EQ("failure", resolver->Specifiers()[0]);
+}
+
 TEST(ScriptModuleTest, Evaluate) {
   V8TestingScope scope;
 

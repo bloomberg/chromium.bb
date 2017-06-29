@@ -177,6 +177,14 @@ ScriptModuleState ScriptModule::Status(ScriptState* script_state) {
   return module->GetStatus();
 }
 
+v8::Local<v8::Value> ScriptModule::ErrorCompletion(ScriptState* script_state) {
+  DCHECK(!IsNull());
+  DCHECK_EQ(ScriptModuleState::kErrored, Status(script_state));
+
+  v8::Local<v8::Module> module = module_->NewLocal(script_state->GetIsolate());
+  return module->GetException();
+}
+
 v8::MaybeLocal<v8::Module> ScriptModule::ResolveModuleCallback(
     v8::Local<v8::Context> context,
     v8::Local<v8::String> specifier,
