@@ -85,7 +85,7 @@ message CastLogsProto {
       optional string chrome_browser_version = 4;
 
       // Platform of sender device.
-      // Next tag: 7
+      // Next tag: 8
       enum Platform {
         // Any platform other then cases below.
         PLATFORM_OTHER = 0;
@@ -96,6 +96,9 @@ message CastLogsProto {
         PLATFORM_OSX = 4;
         PLATFORM_CHROMEOS = 5;
         PLATFORM_LINUX = 6;
+
+        // The sender is Cast device - including itself.
+        PLATFORM_CAST = 7;
       }
       optional Platform platform = 5;
 
@@ -108,6 +111,8 @@ message CastLogsProto {
         CONNECTION_TYPE_UNKNOWN = 0;
         CONNECTION_TYPE_LOCAL = 1;
         CONNECTION_TYPE_RELAY = 2;
+        // A connection created by receiver itself internally.
+        CONNECTION_TYPE_INTERNAL = 3;
       }
       optional ConnectionType transport_connection_type = 7;
 
