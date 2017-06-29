@@ -8,10 +8,12 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
+#include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/printing/cups_print_job.h"
 #include "chrome/browser/chromeos/printing/cups_print_job_manager.h"
 #include "chrome/browser/chromeos/printing/printers_manager.h"
@@ -30,6 +32,28 @@ struct QueryResult {
 
   bool success;
   std::vector<::printing::QueueStatus> queues;
+};
+
+// A wrapper around the CUPS connection to ensure that it's always accessed on
+// the same sequence.
+class CupsWrapper {
+ public:
+  CupsWrapper();
+  ~CupsWrapper();
+
+  // Query CUPS for the current jobs for the given |printer_ids|.  Writes result
+  // to |result|.
+  void QueryCups(const std::vector<std::string>& printer_ids,
+                 QueryResult* result);
+
+  // Cancel the print job on the blocking thread.
+  void CancelJobImpl(const std::string& printer_id, const int job_id);
+
+ private:
+  ::printing::CupsConnection cups_connection_;
+  SEQUENCE_CHECKER(sequence_checker_);
+
+  DISALLOW_COPY_AND_ASSIGN(CupsWrapper);
 };
 
 class CupsPrintJobManagerImpl : public CupsPrintJobManager,
@@ -65,20 +89,11 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
   // to UpdateJobs.
   void PostQuery();
 
-  // Updates the state of a print job based on |printer_status| and |job|.
-  // Returns true if observers need to be notified of an update.
-  bool UpdatePrintJob(const ::printing::PrinterStatus& printer_status,
-                      const ::printing::CupsJob& job,
-                      CupsPrintJob* print_job);
-
   // Process jobs from CUPS and perform notifications.
-  void UpdateJobs(const QueryResult& results);
+  void UpdateJobs(std::unique_ptr<QueryResult> results);
 
   // Mark remaining jobs as errors and remove active jobs.
   void PurgeJobs();
-
-  // Cancel the print job on the blocking thread.
-  void CancelJobImpl(const std::string& printer_id, const int job_id);
 
   // Notify observers that a state update has occured for |job|.
   void NotifyJobStateUpdate(CupsPrintJob* job);
@@ -92,8 +107,10 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
   // Records the number of consecutive times the GetJobs query has failed.
   int retry_count_ = 0;
 
-  ::printing::CupsConnection cups_connection_;
   content::NotificationRegistrar registrar_;
+  // Task runner for queries to CUPS.
+  scoped_refptr<base::SequencedTaskRunner> query_runner_;
+  std::unique_ptr<CupsWrapper, base::OnTaskRunnerDeleter> cups_wrapper_;
   base::WeakPtrFactory<CupsPrintJobManagerImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CupsPrintJobManagerImpl);
