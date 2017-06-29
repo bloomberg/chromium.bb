@@ -396,5 +396,125 @@ TEST_F('MaterialBookmarksFocusTest', 'All', function() {
     });
   });
 
+  suite('DialogFocusManager', function() {
+    var list;
+    var store;
+    var items;
+    var commandManager;
+    var dialogFocusManager;
+
+    function waitForClose(el) {
+      return new Promise(function(resolve) {
+        listenOnce(el, 'close', function(e) {
+          resolve();
+        })
+      });
+    }
+
+    function keydown(el, key) {
+      MockInteractions.keyDownOn(el, '', '', key);
+    }
+
+    setup(function() {
+      store = new bookmarks.TestStore({
+        nodes: testTree(createFolder(
+            '1',
+            [
+              createItem('2'),
+              createItem('3'),
+              createItem('4'),
+              createItem('5'),
+              createItem('6'),
+              createFolder('7', []),
+            ])),
+        selectedFolder: '1',
+      });
+      store.setReducersEnabled(true);
+      store.replaceSingleton();
+
+      list = document.createElement('bookmarks-list');
+      list.style.height = '100%';
+      list.style.width = '100%';
+      list.style.position = 'absolute';
+      replaceBody(list);
+      Polymer.dom.flush();
+      items = list.root.querySelectorAll('bookmarks-item');
+
+      commandManager = new TestCommandManager();
+      document.body.appendChild(commandManager);
+
+      dialogFocusManager = new bookmarks.DialogFocusManager();
+      bookmarks.DialogFocusManager.instance_ = dialogFocusManager;
+    });
+
+    test('restores focus on dialog dismissal', function() {
+      var focusedItem = items[0];
+      focusedItem.focus();
+      assertEquals(focusedItem, dialogFocusManager.getFocusedElement_());
+
+      commandManager.openCommandMenuAtPosition(0, 0);
+      var dropdown = commandManager.$.dropdown.getIfExists();
+
+      assertTrue(dropdown.open);
+      assertNotEquals(focusedItem, dialogFocusManager.getFocusedElement_());
+
+      keydown(dropdown, 'Escape');
+      assertFalse(dropdown.open);
+
+      return waitForClose(dropdown).then(() => {
+        assertEquals(focusedItem, dialogFocusManager.getFocusedElement_());
+      });
+    });
+
+    test('restores focus after stacked dialogs', function() {
+      var focusedItem = items[0];
+      focusedItem.focus();
+      assertEquals(focusedItem, dialogFocusManager.getFocusedElement_());
+
+      commandManager.openCommandMenuAtPosition(0, 0);
+      var dropdown = commandManager.$.dropdown.getIfExists();
+      dropdown.close();
+      assertNotEquals(focusedItem, dialogFocusManager.getFocusedElement_());
+
+      var editDialog = commandManager.$.editDialog.get();
+      editDialog.showEditDialog(store.data.nodes['2']);
+
+      return waitForClose(dropdown).then(() => {
+        editDialog.onCancelButtonTap_();
+        assertNotEquals(focusedItem, dialogFocusManager.getFocusedElement_());
+
+        return waitForClose(editDialog);
+      }).then(() => {
+        assertEquals(focusedItem, dialogFocusManager.getFocusedElement_());
+      });
+    });
+
+    test('restores focus after multiple shows of same dialog', function() {
+      var focusedItem = items[0];
+      focusedItem.focus();
+      assertEquals(focusedItem, dialogFocusManager.getFocusedElement_());
+
+      commandManager.openCommandMenuAtPosition(0, 0);
+      assertNotEquals(focusedItem, dialogFocusManager.getFocusedElement_());
+      var dropdown = commandManager.$.dropdown.getIfExists();
+      dropdown.close();
+
+      focusedItem = items[3];
+      focusedItem.focus();
+      commandManager.openCommandMenuAtPosition(0, 0);
+
+      return waitForClose(dropdown).then(() => {
+        assertTrue(dropdown.open);
+        dropdown.close();
+        assertNotEquals(
+            focusedItem, dialogFocusManager.getFocusedElement_());
+
+        return waitForClose(dropdown);
+      }).then(() => {
+        assertEquals(focusedItem, dialogFocusManager.getFocusedElement_());
+      });
+    });
+  });
+
   mocha.run();
 });

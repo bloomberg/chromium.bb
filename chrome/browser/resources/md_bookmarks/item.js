@@ -67,6 +67,7 @@ Polymer({
    */
   onContextMenu_: function(e) {
     e.preventDefault();
+    this.focus();
     if (!this.isSelectedItem_)
       this.selectThisItem_();
 
