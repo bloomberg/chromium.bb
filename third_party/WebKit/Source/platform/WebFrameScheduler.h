@@ -132,7 +132,7 @@ class WebFrameScheduler {
 
   // Tells the scheduler that a provisional load has started, virtual time may
   // be paused. Must be called from the main thread.
-  virtual void DidStartProvisionalLoad() {}
+  virtual void DidStartProvisionalLoad(bool is_main_frame) {}
 
   // Tells the scheduler that a provisional load has failed, virtual time may be
   // unpaused. Must be called from the main thread.
