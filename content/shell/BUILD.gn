@@ -222,7 +222,6 @@ static_library("content_shell_lib") {
     "//base/third_party/dynamic_annotations",
     "//cc",
     "//components/cdm/renderer",
-    "//components/crash/content/app:app_breakpad_mac_win_to_be_deleted",
     "//components/keyed_service/content",
     "//components/network_session_configurator/common",
     "//components/plugins/renderer",
@@ -280,6 +279,11 @@ static_library("content_shell_lib") {
     "//v8",
   ]
 
+  if (!is_fuchsia) {
+    deps +=
+        [ "//components/crash/content/app:app_breakpad_mac_win_to_be_deleted" ]
+  }
+
   # Annoyingly, this target and layouttest_support have circular includes.
   allow_circular_includes_from = [ "//content/test:layouttest_support" ]
 
@@ -327,7 +331,7 @@ static_library("content_shell_lib") {
     ]
   }
 
-  if (is_posix && !is_mac) {
+  if (is_posix && !is_mac && !is_fuchsia) {
     deps += [
       "//components/crash/content/app",
       "//components/crash/content/browser",
