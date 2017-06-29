@@ -10,6 +10,7 @@ static_library("navigation_metrics") {
 
   deps = [
     "//base",
+    "//components/dom_distiller/core:core",
     "//url",
   ]
 }
