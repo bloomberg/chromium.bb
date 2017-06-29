@@ -103,8 +103,10 @@ class StackedTabStripLayout {
   // Resets to an ideal layout state.
   void ResetToIdealState();
 
-  // Makes |index| visible. This is used when a new tab is added that isn't
-  // active.
+  // Makes all tabs between the active tab and |index| (inclusive) visible. If
+  // this is not possible, then |index| is made visible and a stack forms
+  // immediately to the right of the active tab. This is used when a new tab is
+  // added that isn't active.
   void MakeVisible(int index);
 
   // Returns the x-coordinate for the active tab constrained by the current tab

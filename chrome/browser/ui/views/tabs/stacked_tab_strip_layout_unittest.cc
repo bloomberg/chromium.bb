@@ -322,15 +322,38 @@ TEST_F(StackedTabStripLayoutTest, AddTab) {
     bool add_active;
     bool add_pinned;
   } test_data[] = {
-    // Adding a background tab test cases.
     { { 0, 300, 100, 10, 2, 0, 1, "0 90 180 198 200", "0 16 106 196 198 200"},
       3, false, false },
+
+    // If the active tab is in its leftmost position and it is not possible
+    // for all of the tabs between the active tab and the newly-added tab
+    // (inclusive) to be shown, then a stack should form to the right of
+    // the active tab.
+    { { 0, 284, 100, 10, 2, 0, 2, "0 2 4 94 184", "0 2 4 6 94 184"},
+      5, false, false },
     { { 0, 300, 100, 10, 2, 0, 1, "0 90 180 198 200", "0 2 4 20 110 200"},
       5, false, false },
+
     { { 0, 300, 100, 10, 2, 0, 1, "0 90 180 198 200", "0 90 180 196 198 200"},
       2, false, false },
-    { { 0, 300, 100, 10, 2, 0, 1, "0 90 180 198 200", "0 2 4 94 184 200"},
-      0, false, false },
+
+    // Add to the end of the tab strip. All tabs between the active tab and the
+    // newly-added tab (inclusive) should be fully visible (indices 3-5 in the
+    // resulting tab strip) and tabs to the left of the active tab should be
+    // stacked at the left side of the tab strip rather than immediately to the
+    // left of the active tab.
+    { { 0, 300, 100, 10, 2, 0, 3, "0 90 180 198 200", "0 2 4 20 110 200"},
+      5, false, false },
+
+    // If it is possible for all of the tabs between the active tab and the
+    // newly-added tab (inclusive) to be fully visible without changing the
+    // position of the active tab, then do not do so.
+    { { 0, 378, 100, 10, 2, 0, 2, "0 2 4 94 184 274 276 278",
+                                  "0 2 4 94 184 272 274 276 278"},
+      3, false, false },
+    { { 0, 378, 100, 10, 2, 0, 2, "0 2 4 94 184 274 276 278",
+                                  "0 2 4 94 184 272 274 276 278"},
+      4, false, false },
 
     { { 4, 200, 100, 10, 2, 1, 2, "0 4 10 100", "0 0 8 10 100"},
       1, false, true },
