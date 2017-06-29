@@ -13,7 +13,6 @@
 #include "ios/web/app/web_main_loop.h"
 #include "ios/web/public/url_schemes.h"
 #import "ios/web/public/web_client.h"
-#include "mojo/edk/embedder/embedder.h"
 #include "ui/base/ui_base_paths.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -52,8 +51,6 @@ class WebMainRunnerImpl : public WebMainRunner {
       delegate_->BasicStartupComplete();
     }
     completed_basic_startup_ = true;
-
-    mojo::edk::Init();
 
     // TODO(rohitrao): Should we instead require that all embedders call
     // SetWebClient()?
