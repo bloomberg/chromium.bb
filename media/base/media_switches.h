@@ -119,6 +119,7 @@ MEDIA_EXPORT extern const base::Feature kUseAndroidOverlay;
 MEDIA_EXPORT extern const base::Feature kUseNewMediaCache;
 MEDIA_EXPORT extern const base::Feature kVideoBlitColorAccuracy;
 MEDIA_EXPORT extern const base::Feature kVideoColorManagement;
+MEDIA_EXPORT extern const base::Feature kUseSurfaceLayerForVideo;
 MEDIA_EXPORT extern const base::Feature kMediaEngagement;
 
 #if defined(OS_ANDROID)
