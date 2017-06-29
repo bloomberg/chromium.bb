@@ -5816,7 +5816,7 @@
         "active_waterfall": "chromiumos",
         "archive_build_debug": true,
         "boards": [
-            "x86-generic",
+            "lumpy",
             "arm-generic",
             "amd64-generic"
         ],
