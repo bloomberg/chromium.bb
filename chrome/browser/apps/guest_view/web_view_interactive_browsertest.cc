@@ -1747,7 +1747,8 @@ IN_PROC_BROWSER_TEST_P(WebViewImeInteractiveTest,
 #else
 #define MAYBE_CompositionRangeUpdates CompositionRangeUpdates
 #endif
-IN_PROC_BROWSER_TEST_P(WebViewImeInteractiveTest, CompositionRangeUpdates) {
+IN_PROC_BROWSER_TEST_P(WebViewImeInteractiveTest,
+                       MAYBE_CompositionRangeUpdates) {
   ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
   LoadAndLaunchPlatformApp("web_view/ime", "WebViewImeTest.Launched");
   ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(GetPlatformAppWindow()));
