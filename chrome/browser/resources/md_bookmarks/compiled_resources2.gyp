@@ -47,6 +47,7 @@
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
         '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:command',
         '<(EXTERNS_GYP):bookmark_manager_private',
+        'dialog_focus_manager',
         'edit_dialog',
         'store_client',
         'toast_manager'
@@ -56,6 +57,14 @@
     {
       'target_name': 'constants',
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi']
+    },
+    {
+      'target_name': 'dialog_focus_manager',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+        'mouse_focus_behavior',
+      ],
+      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
       'target_name': 'dnd_manager',
@@ -77,6 +86,7 @@
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
         '<(EXTERNS_GYP):chrome_extensions',
+        'dialog_focus_manager',
         'types',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi']

@@ -109,11 +109,15 @@ cr.define('bookmarks', function() {
      */
     openCommandMenuAtPosition: function(x, y, items) {
       this.menuIds_ = items || this.getState().selection.items;
+
       var dropdown =
           /** @type {!CrActionMenuElement} */ (this.$.dropdown.get());
       // Ensure that the menu is fully rendered before trying to position it.
       Polymer.dom.flush();
-      dropdown.showAtPosition({top: y, left: x});
+      bookmarks.DialogFocusManager.getInstance().showDialog(
+          dropdown, function() {
+            dropdown.showAtPosition({top: y, left: x});
+          });
     },
 
     /**
@@ -123,11 +127,15 @@ cr.define('bookmarks', function() {
      */
     openCommandMenuAtElement: function(target) {
       this.menuIds_ = this.getState().selection.items;
+
       var dropdown =
           /** @type {!CrActionMenuElement} */ (this.$.dropdown.get());
       // Ensure that the menu is fully rendered before trying to position it.
       Polymer.dom.flush();
-      dropdown.showAt(target);
+      bookmarks.DialogFocusManager.getInstance().showDialog(
+          dropdown, function() {
+            dropdown.showAt(target);
+          });
     },
 
     closeCommandMenu: function() {
@@ -384,7 +392,9 @@ cr.define('bookmarks', function() {
       var dialog = this.$.openDialog.get();
       dialog.querySelector('.body').textContent =
           loadTimeData.getStringF('openDialogBody', urls.length);
-      dialog.showModal();
+
+      bookmarks.DialogFocusManager.getInstance().showDialog(
+          this.$.openDialog.get());
     },
 
     /**

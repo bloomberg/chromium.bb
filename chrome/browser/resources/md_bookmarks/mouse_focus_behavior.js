@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 cr.define('bookmarks', function() {
+  /** @const */
+  var MOUSE_FOCUS_CLASS = 'mouse-focus';
+
   /**
    * Behavior which adds the 'mouse-focus' class to a target element when it
    * gains focus from the mouse, allowing the outline to be hidden without
@@ -16,12 +19,14 @@ cr.define('bookmarks', function() {
 
       var target = this.getFocusTarget();
       target.addEventListener('mousedown', this.boundOnMousedown_);
+      target.addEventListener('contextmenu', this.boundOnMousedown_);
       target.addEventListener('blur', this.boundClearMouseFocus_);
     },
 
     detached: function() {
       var target = this.getFocusTarget();
       target.removeEventListener('mousedown', this.boundOnMousedown_);
+      target.removeEventListener('contextmenu', this.boundOnMousedown_);
       target.removeEventListener('blur', this.boundClearMouseFocus_);
     },
 
@@ -37,12 +42,25 @@ cr.define('bookmarks', function() {
 
     /** Reset the focus state when focus leaves the target element. */
     clearMouseFocus: function() {
-      this.getFocusTarget().classList.remove('mouse-focus');
+      this.getFocusTarget().classList.remove(MOUSE_FOCUS_CLASS);
     },
 
     /** @private */
     onMousedown_: function() {
-      this.getFocusTarget().classList.add('mouse-focus');
+      this.addMouseFocusClass(this.getFocusTarget());
+    },
+
+    /**
+     * @param {HTMLElement} element
+     * @return {boolean}
+     */
+    isMouseFocused: function(element) {
+      return element.classList.contains(MOUSE_FOCUS_CLASS);
+    },
+
+    /** @param {HTMLElement} element */
+    addMouseFocusClass: function(element) {
+      element.classList.add(MOUSE_FOCUS_CLASS);
     },
   };
 
