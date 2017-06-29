@@ -99,7 +99,7 @@ void HTMLObjectElement::ParseAttribute(
   if (name == formAttr) {
     FormAttributeChanged();
   } else if (name == typeAttr) {
-    service_type_ = params.new_value.DeprecatedLower();
+    service_type_ = params.new_value.LowerASCII();
     size_t pos = service_type_.Find(";");
     if (pos != kNotFound)
       service_type_ = service_type_.Left(pos);
