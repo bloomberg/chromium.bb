@@ -2490,6 +2490,27 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
   ASSERT_TRUE(origin_two.ShutdownAndWaitUntilComplete());
 }
 
+// Test that the suggested filename for data: URLs works.
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeDataUrl) {
+  net::EmbeddedTestServer server;
+  ASSERT_TRUE(server.InitializeAndListen());
+
+  GURL url = server.GetURL(std::string(
+      "/download-attribute.html?target=data:application/octet-stream, ..."));
+  server.ServeFilesFromDirectory(GetTestFilePath("download", ""));
+  server.StartAcceptingConnections();
+
+  NavigateToURLAndWaitForDownload(shell(), url, DownloadItem::COMPLETE);
+
+  std::vector<DownloadItem*> downloads;
+  DownloadManagerForShell(shell())->GetAllDownloads(&downloads);
+  ASSERT_EQ(1u, downloads.size());
+
+  EXPECT_EQ(FILE_PATH_LITERAL("suggested-filename"),
+            downloads[0]->GetTargetFilePath().BaseName().value());
+  ASSERT_TRUE(server.ShutdownAndWaitUntilComplete());
+}
+
 // A request for a non-existent resource should still result in a DownloadItem
 // that's created in an interrupted state.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeServerError) {
