@@ -52,6 +52,7 @@ using ::i18n::addressinput::UNEXPECTED_FIELD;
 using ::i18n::addressinput::UNKNOWN_VALUE;
 using ::i18n::addressinput::USES_P_O_BOX;
 
+// This class should always succeed in getting the rules.
 class AddressValidatorTest : public testing::Test, LoadRulesListener {
  protected:
   AddressValidatorTest()
@@ -60,6 +61,10 @@ class AddressValidatorTest : public testing::Test, LoadRulesListener {
             std::unique_ptr<Storage>(new NullStorage),
             this)) {
     validator_->LoadRules("US");
+  }
+
+  void set_expected_status(AddressValidator::Status expected_status) {
+    expected_status_ = expected_status;
   }
 
   virtual ~AddressValidatorTest() {}
@@ -75,8 +80,10 @@ class AddressValidatorTest : public testing::Test, LoadRulesListener {
     FieldProblemMap dummy;
     AddressValidator::Status status =
         validator_->ValidateAddress(address_data, NULL, &dummy);
-    ASSERT_EQ(success, status == AddressValidator::SUCCESS);
+    ASSERT_EQ(expected_status_, status);
   }
+
+  AddressValidator::Status expected_status_ = AddressValidator::SUCCESS;
 
   DISALLOW_COPY_AND_ASSIGN(AddressValidatorTest);
 };
@@ -122,8 +129,10 @@ TEST_F(AddressValidatorTest, SubKeysLoaded) {
   ASSERT_EQ(sub_keys[0], first_state);
 }
 
-TEST_F(AddressValidatorTest, SubKeysNotLoaded) {
-  const std::string country_code = "ZZ";
+TEST_F(AddressValidatorTest, SubKeysNotExist) {
+  const std::string country_code = "OZ";
+
+  set_expected_status(AddressValidator::RULES_UNAVAILABLE);
 
   validator_->LoadRules(country_code);
   std::vector<std::string> sub_keys =
@@ -747,7 +756,7 @@ TEST_F(AddressValidatorTest, ValidateRequiredFieldsWithoutRules) {
 }
 
 TEST_F(AddressValidatorTest,
-       DoNotValidateRequiredFieldsWithoutRulesWhenErorrIsFiltered) {
+       DoNotValidateRequiredFieldsWithoutRulesWhenErrorIsFiltered) {
   // Do not load the rules for JP.
   AddressData address;
   address.region_code = "JP";
