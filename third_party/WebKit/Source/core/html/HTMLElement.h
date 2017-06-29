@@ -25,6 +25,7 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/Element.h"
+#include "platform/text/TextDirection.h"
 
 namespace blink {
 

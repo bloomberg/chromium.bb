@@ -822,11 +822,6 @@ static LayoutUnit ComputeMargin(const LayoutInline* layout_object,
   return LayoutUnit();
 }
 
-LayoutRectOutsets LayoutInline::MarginBoxOutsets() const {
-  return LayoutRectOutsets(MarginTop(), MarginRight(), MarginBottom(),
-                           MarginLeft());
-}
-
 LayoutUnit LayoutInline::MarginLeft() const {
   return ComputeMargin(this, Style()->MarginLeft());
 }
@@ -841,34 +836,6 @@ LayoutUnit LayoutInline::MarginTop() const {
 
 LayoutUnit LayoutInline::MarginBottom() const {
   return ComputeMargin(this, Style()->MarginBottom());
-}
-
-LayoutUnit LayoutInline::MarginStart(const ComputedStyle* other_style) const {
-  return ComputeMargin(this, StyleRef().MarginStartUsing(
-                                 other_style ? *other_style : StyleRef()));
-}
-
-LayoutUnit LayoutInline::MarginEnd(const ComputedStyle* other_style) const {
-  return ComputeMargin(
-      this, StyleRef().MarginEndUsing(other_style ? *other_style : StyleRef()));
-}
-
-LayoutUnit LayoutInline::MarginBefore(const ComputedStyle* other_style) const {
-  return ComputeMargin(this, StyleRef().MarginBeforeUsing(
-                                 other_style ? *other_style : StyleRef()));
-}
-
-LayoutUnit LayoutInline::MarginAfter(const ComputedStyle* other_style) const {
-  return ComputeMargin(this, StyleRef().MarginAfterUsing(
-                                 other_style ? *other_style : StyleRef()));
-}
-
-LayoutUnit LayoutInline::MarginOver() const {
-  return ComputeMargin(this, Style()->MarginOver());
-}
-
-LayoutUnit LayoutInline::MarginUnder() const {
-  return ComputeMargin(this, Style()->MarginUnder());
 }
 
 bool LayoutInline::NodeAtPoint(HitTestResult& result,

@@ -595,9 +595,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
                            bool make_visible_in_visual_viewport = true,
                            ScrollBehavior = kScrollBehaviorAuto);
 
-  LayoutRectOutsets MarginBoxOutsets() const override {
-    return margin_box_outsets_;
-  }
+  LayoutRectOutsets MarginBoxOutsets() const { return margin_box_outsets_; }
   LayoutUnit MarginTop() const override { return margin_box_outsets_.Top(); }
   LayoutUnit MarginBottom() const override {
     return margin_box_outsets_.Bottom();
@@ -615,66 +613,21 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     margin_box_outsets_.SetRight(margin);
   }
 
-  LayoutUnit MarginLogicalLeft() const {
-    return margin_box_outsets_.LogicalLeft(Style()->GetWritingMode());
-  }
-  LayoutUnit MarginLogicalRight() const {
-    return margin_box_outsets_.LogicalRight(Style()->GetWritingMode());
-  }
-
-  LayoutUnit MarginBefore(
-      const ComputedStyle* override_style = nullptr) const final {
-    return margin_box_outsets_.Before(
-        (override_style ? override_style : Style())->GetWritingMode());
-  }
-  LayoutUnit MarginAfter(
-      const ComputedStyle* override_style = nullptr) const final {
-    return margin_box_outsets_.After(
-        (override_style ? override_style : Style())->GetWritingMode());
-  }
-  LayoutUnit MarginStart(
-      const ComputedStyle* override_style = nullptr) const final {
-    const ComputedStyle* style_to_use =
-        override_style ? override_style : Style();
-    return margin_box_outsets_.Start(style_to_use->GetWritingMode(),
-                                     style_to_use->Direction());
-  }
-  LayoutUnit MarginEnd(
-      const ComputedStyle* override_style = nullptr) const final {
-    const ComputedStyle* style_to_use =
-        override_style ? override_style : Style();
-    return margin_box_outsets_.end(style_to_use->GetWritingMode(),
-                                   style_to_use->Direction());
-  }
-  LayoutUnit MarginOver() const final {
-    return margin_box_outsets_.Over(Style()->GetWritingMode());
-  }
-  LayoutUnit MarginUnder() const final {
-    return margin_box_outsets_.Under(Style()->GetWritingMode());
-  }
   void SetMarginBefore(LayoutUnit value,
                        const ComputedStyle* override_style = nullptr) {
-    margin_box_outsets_.SetBefore(
-        (override_style ? override_style : Style())->GetWritingMode(), value);
+    LogicalMarginToPhysicalSetter(override_style).SetBefore(value);
   }
   void SetMarginAfter(LayoutUnit value,
                       const ComputedStyle* override_style = nullptr) {
-    margin_box_outsets_.SetAfter(
-        (override_style ? override_style : Style())->GetWritingMode(), value);
+    LogicalMarginToPhysicalSetter(override_style).SetAfter(value);
   }
   void SetMarginStart(LayoutUnit value,
                       const ComputedStyle* override_style = nullptr) {
-    const ComputedStyle* style_to_use =
-        override_style ? override_style : Style();
-    margin_box_outsets_.SetStart(style_to_use->GetWritingMode(),
-                                 style_to_use->Direction(), value);
+    LogicalMarginToPhysicalSetter(override_style).SetStart(value);
   }
   void SetMarginEnd(LayoutUnit value,
                     const ComputedStyle* override_style = nullptr) {
-    const ComputedStyle* style_to_use =
-        override_style ? override_style : Style();
-    margin_box_outsets_.SetEnd(style_to_use->GetWritingMode(),
-                               style_to_use->Direction(), value);
+    LogicalMarginToPhysicalSetter(override_style).SetEnd(value);
   }
 
   // The following functions are used to implement collapsing margins.
@@ -1679,6 +1632,15 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   std::unique_ptr<BoxOverflowModel> overflow_;
 
  private:
+  LogicalToPhysicalSetter<LayoutUnit, LayoutBox> LogicalMarginToPhysicalSetter(
+      const ComputedStyle* override_style) {
+    const auto& style = override_style ? *override_style : StyleRef();
+    return LogicalToPhysicalSetter<LayoutUnit, LayoutBox>(
+        style.GetWritingMode(), style.Direction(), *this,
+        &LayoutBox::SetMarginTop, &LayoutBox::SetMarginRight,
+        &LayoutBox::SetMarginBottom, &LayoutBox::SetMarginLeft);
+  }
+
   // The inline box containing this LayoutBox, for atomic inline elements.
   InlineBox* inline_box_wrapper_;
 
