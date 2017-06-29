@@ -373,27 +373,10 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
     if (_viewLoaded) {
       [_doodleHeightConstraint
           setConstant:content_suggestions::doodleHeight(self.logoIsShowing)];
-
-      // Adjust the height of |_headerView| to fit its content which may have
-      // been shifted due to the visibility of the doodle.
-      CGRect headerFrame = [_headerView frame];
-      headerFrame.size.height = content_suggestions::heightForLogoHeader(
-          self.logoIsShowing, self.promoCanShow);
-      [_headerView setFrame:headerFrame];
-
-      // Adjust vertical positioning of |_promoHeaderView|.
-      CGFloat omniboxHeaderHeight =
-          [self collectionView:_mostVisitedView
-                                       layout:[_mostVisitedView
-                                                  collectionViewLayout]
-              referenceSizeForHeaderInSection:0]
-              .height;
-      CGRect whatsNewFrame = [_promoHeaderView frame];
-      whatsNewFrame.origin.y = omniboxHeaderHeight;
-      [_promoHeaderView setFrame:whatsNewFrame];
     }
     if (IsIPadIdiom())
       [_searchTapTarget setHidden:!self.logoIsShowing];
+    [[_mostVisitedView collectionViewLayout] invalidateLayout];
   }
 }
 
