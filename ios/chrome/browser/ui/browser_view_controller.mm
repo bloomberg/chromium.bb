@@ -3254,6 +3254,13 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
       NSData* data, const image_fetcher::RequestMetadata& metadata) {
     DCHECK(data);
 
+    if ([data length] == 0) {
+      [self displayPrivacyErrorAlertOnMainQueue:
+                l10n_util::GetNSString(
+                    IDS_IOS_SAVE_IMAGE_NO_INTERNET_CONNECTION)];
+      return;
+    }
+
     base::FilePath::StringType extension;
 
     bool extensionSuccess =
