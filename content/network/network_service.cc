@@ -55,11 +55,44 @@ class NetworkService::MojoNetLog : public net::NetLog {
 NetworkService::NetworkService(
     std::unique_ptr<service_manager::BinderRegistry> registry)
     : net_log_(new MojoNetLog), registry_(std::move(registry)), binding_(this) {
-  registry_->AddInterface<mojom::NetworkService>(
-      base::Bind(&NetworkService::Create, base::Unretained(this)));
+  // |registry_| may be nullptr in tests.
+  if (registry_) {
+    registry_->AddInterface<mojom::NetworkService>(
+        base::Bind(&NetworkService::Create, base::Unretained(this)));
+  }
 }
 
-NetworkService::~NetworkService() = default;
+NetworkService::~NetworkService() {
+  // Call each Network and ask it to release its net::URLRequestContext, as they
+  // may have references to shared objects owned by the NetworkService. The
+  // NetworkContexts deregister themselves in Cleanup(), so have to be careful.
+  while (!network_contexts_.empty())
+    (*network_contexts_.begin())->Cleanup();
+}
+
+std::unique_ptr<NetworkService> NetworkService::CreateForTesting() {
+  return base::WrapUnique(new NetworkService());
+}
+
+void NetworkService::RegisterNetworkContext(NetworkContext* network_context) {
+  DCHECK_EQ(0u, network_contexts_.count(network_context));
+  network_contexts_.insert(network_context);
+}
+
+void NetworkService::DeregisterNetworkContext(NetworkContext* network_context) {
+  DCHECK_EQ(1u, network_contexts_.count(network_context));
+  network_contexts_.erase(network_context);
+}
+
+void NetworkService::CreateNetworkContext(
+    mojom::NetworkContextRequest request,
+    mojom::NetworkContextParamsPtr params) {
+  // The NetworkContext will destroy itself on connection error, or when the
+  // service is destroyed.
+  new NetworkContext(this, std::move(request), std::move(params));
+}
+
+NetworkService::NetworkService() : NetworkService(nullptr) {}
 
 void NetworkService::OnBindInterface(
     const service_manager::BindSourceInfo& source_info,
@@ -73,14 +106,6 @@ void NetworkService::Create(const service_manager::BindSourceInfo& source_info,
                             mojom::NetworkServiceRequest request) {
   DCHECK(!binding_.is_bound());
   binding_.Bind(std::move(request));
-}
-
-void NetworkService::CreateNetworkContext(
-    mojom::NetworkContextRequest request,
-    mojom::NetworkContextParamsPtr params) {
-  mojo::MakeStrongBinding(
-      base::MakeUnique<NetworkContext>(std::move(request), std::move(params)),
-      std::move(request));
 }
 
 }  // namespace content
