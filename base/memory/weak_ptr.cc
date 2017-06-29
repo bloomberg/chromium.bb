@@ -71,14 +71,12 @@ void WeakReferenceOwner::Invalidate() {
   flag_ = WeakReference::Flag::NullFlag();
 }
 
-WeakPtrBase::WeakPtrBase() {
-}
+WeakPtrBase::WeakPtrBase() : ptr_(0) {}
 
-WeakPtrBase::~WeakPtrBase() {
-}
+WeakPtrBase::~WeakPtrBase() {}
 
-WeakPtrBase::WeakPtrBase(const WeakReference& ref) : ref_(ref) {
-}
+WeakPtrBase::WeakPtrBase(const WeakReference& ref, uintptr_t ptr)
+    : ref_(ref), ptr_(ptr) {}
 
 WeakPtrFactoryBase::WeakPtrFactoryBase(uintptr_t ptr) : ptr_(ptr) {}
 

@@ -200,9 +200,13 @@ class BASE_EXPORT WeakPtrBase {
   WeakPtrBase& operator=(WeakPtrBase&& other) = default;
 
  protected:
-  explicit WeakPtrBase(const WeakReference& ref);
+  WeakPtrBase(const WeakReference& ref, uintptr_t ptr);
 
   WeakReference ref_;
+
+  // This pointer is only valid when ref_.is_valid() is true.  Otherwise, its
+  // value is undefined (as opposed to nullptr).
+  uintptr_t ptr_;
 };
 
 // This class provides a common implementation of common functions that would
@@ -230,7 +234,8 @@ class SupportsWeakPtrBase {
   static WeakPtr<Derived> AsWeakPtrImpl(
       Derived* t, const SupportsWeakPtr<Base>&) {
     WeakPtr<Base> ptr = t->Base::AsWeakPtr();
-    return WeakPtr<Derived>(ptr.ref_, static_cast<Derived*>(ptr.ptr_));
+    return WeakPtr<Derived>(
+        ptr.ref_, static_cast<Derived*>(reinterpret_cast<Base*>(ptr.ptr_)));
   }
 };
 
@@ -254,25 +259,32 @@ template <typename T> class WeakPtrFactory;
 template <typename T>
 class WeakPtr : public internal::WeakPtrBase {
  public:
-  WeakPtr() : ptr_(nullptr) {}
+  WeakPtr() {}
 
-  WeakPtr(std::nullptr_t) : ptr_(nullptr) {}
+  WeakPtr(std::nullptr_t) {}
 
   // Allow conversion from U to T provided U "is a" T. Note that this
   // is separate from the (implicit) copy and move constructors.
   template <typename U>
-  WeakPtr(const WeakPtr<U>& other) : WeakPtrBase(other), ptr_(other.ptr_) {
+  WeakPtr(const WeakPtr<U>& other) : WeakPtrBase(other) {
+    // Need to cast from U* to T* to do pointer adjustment in case of multiple
+    // inheritance. This also enforces the "U is a T" rule.
+    T* t = reinterpret_cast<U*>(other.ptr_);
+    ptr_ = reinterpret_cast<uintptr_t>(t);
   }
   template <typename U>
-  WeakPtr(WeakPtr<U>&& other)
-      : WeakPtrBase(std::move(other)), ptr_(other.ptr_) {}
+  WeakPtr(WeakPtr<U>&& other) : WeakPtrBase(std::move(other)) {
+    // Need to cast from U* to T* to do pointer adjustment in case of multiple
+    // inheritance. This also enforces the "U is a T" rule.
+    T* t = reinterpret_cast<U*>(other.ptr_);
+    ptr_ = reinterpret_cast<uintptr_t>(t);
+  }
 
   T* get() const {
     // Intentionally bitwise and; see command on Flag::IsValid(). This provides
     // a fast way of conditionally retrieving the pointer, and conveniently sets
     // EFLAGS for any null-check performed by the caller.
-    return reinterpret_cast<T*>(ref_.is_valid() &
-                                reinterpret_cast<uintptr_t>(ptr_));
+    return reinterpret_cast<T*>(ref_.is_valid() & ptr_);
   }
 
   T& operator*() const {
@@ -286,7 +298,7 @@ class WeakPtr : public internal::WeakPtrBase {
 
   void reset() {
     ref_ = internal::WeakReference();
-    ptr_ = nullptr;
+    ptr_ = 0;
   }
 
   // Allow conditionals to test validity, e.g. if (weak_ptr) {...};
@@ -299,13 +311,7 @@ class WeakPtr : public internal::WeakPtrBase {
   friend class WeakPtrFactory<T>;
 
   WeakPtr(const internal::WeakReference& ref, T* ptr)
-      : WeakPtrBase(ref),
-        ptr_(ptr) {
-  }
-
-  // This pointer is only valid when ref_.is_valid() is true.  Otherwise, its
-  // value is undefined (as opposed to nullptr).
-  T* ptr_;
+      : WeakPtrBase(ref, reinterpret_cast<uintptr_t>(ptr)) {}
 };
 
 // Allow callers to compare WeakPtrs against nullptr to test validity.
