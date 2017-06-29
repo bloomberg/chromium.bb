@@ -12,6 +12,7 @@ import org.json.JSONObject;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.sync.ModelType;
@@ -61,9 +62,12 @@ public class TypedUrlsTest extends SyncTestBase {
         assertServerTypedUrlCountWithName(0, URL);
     }
 
+    /*
     // Test syncing a typed URL from client to server.
     @LargeTest
     @Feature({"Sync"})
+    */
+    @FlakyTest(message = "https://crbug.com/592437")
     public void testUploadTypedUrl() {
         loadUrlByTyping(URL);
         waitForClientTypedUrlCount(1);
