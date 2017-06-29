@@ -243,6 +243,16 @@ void RendererGpuVideoAcceleratorFactories::WaitSyncToken(
   gles2->ShallowFlushCHROMIUM();
 }
 
+void RendererGpuVideoAcceleratorFactories::ShallowFlushCHROMIUM() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  if (CheckContextLost())
+    return;
+
+  cc::ContextProvider::ScopedContextLock lock(context_provider_);
+  gpu::gles2::GLES2Interface* gles2 = lock.ContextGL();
+  gles2->ShallowFlushCHROMIUM();
+}
+
 std::unique_ptr<gfx::GpuMemoryBuffer>
 RendererGpuVideoAcceleratorFactories::CreateGpuMemoryBuffer(
     const gfx::Size& size,
