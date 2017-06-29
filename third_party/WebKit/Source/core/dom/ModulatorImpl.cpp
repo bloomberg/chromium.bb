@@ -149,9 +149,23 @@ ScriptValue ModulatorImpl::InstantiateModule(ScriptModule script_module) {
 }
 
 ScriptValue ModulatorImpl::GetError(const ModuleScript* module_script) {
+  DCHECK(module_script);
   ScriptState::Scope scope(script_state_.Get());
-  return ScriptValue(script_state_.Get(), module_script->CreateErrorInternal(
-                                              script_state_->GetIsolate()));
+  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-error
+  // "When a module script is errored, ..." [spec text]
+
+  // "we say that its error is either its pre-instantiation error, when its
+  // module record is null, ..." [spec text]
+  ScriptModule record = module_script->Record();
+  if (record.IsNull()) {
+    return ScriptValue(script_state_.Get(), module_script->CreateErrorInternal(
+                                                script_state_->GetIsolate()));
+  }
+
+  // "or its module record's [[ErrorCompletion]] field's [[Value]] field,
+  // otherwise." [spec text]
+  return ScriptValue(script_state_.Get(),
+                     record.ErrorCompletion(script_state_.Get()));
 }
 
 Vector<Modulator::ModuleRequest> ModulatorImpl::ModuleRequestsFromScriptModule(
