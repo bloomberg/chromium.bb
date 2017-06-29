@@ -4,6 +4,7 @@
 
 import("//ios/build/config.gni")
 import("//ios/web/js_compile.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 import("//tools/grit/grit_rule.gni")
 
@@ -17,6 +18,7 @@ group("all_tests") {
 
 source_set("web_arc") {
   public_deps = [
+    ":service_names",
     "//net",
   ]
 
@@ -33,7 +35,12 @@ source_set("web_arc") {
     "//ios/third_party/blink:html_tokenizer",
     "//mojo/public/cpp/system",
     "//mojo/public/js",
+    "//services/catalog/public/cpp",
+    "//services/service_manager",
+    "//services/service_manager/embedder",
     "//services/service_manager/public/cpp",
+    "//services/service_manager/runner/common",
+    "//services/service_manager/runner/host:lib",
     "//ui/base",
     "//ui/gfx",
     "//ui/gfx/geometry",
@@ -132,6 +139,7 @@ source_set("web_arc") {
     "public/referrer_util.h",
     "public/security_style.h",
     "public/serializable_user_data_manager.h",
+    "public/service_manager_connection.h",
     "public/ssl_status.cc",
     "public/ssl_status.h",
     "public/url_data_source_ios.h",
@@ -183,6 +191,10 @@ source_set("web_arc") {
     "public/webui/web_ui_ios_controller_factory.h",
     "public/webui/web_ui_ios_message_handler.cc",
     "public/webui/web_ui_ios_message_handler.h",
+    "service_manager_connection_impl.cc",
+    "service_manager_connection_impl.h",
+    "service_manager_context.h",
+    "service_manager_context.mm",
     "url_scheme_util.mm",
     "url_util.cc",
     "web_kit_constants.cc",
@@ -256,6 +268,12 @@ source_set("web_arc") {
   libs = [ "WebKit.framework" ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+mojom("service_names") {
+  sources = [
+    "public/service_names.mojom",
+  ]
 }
 
 source_set("web") {
@@ -463,6 +481,7 @@ source_set("ios_web_general_unittests") {
     "browser_state_unittest.cc",
     "history_state_util_unittest.mm",
     "payments/payment_request_unittest.cc",
+    "service_manager_connection_impl_unittest.cc",
     "test/web_test_unittest.mm",
     "url_scheme_util_unittest.mm",
     "url_util_unittest.cc",
@@ -876,6 +895,8 @@ grit("resources") {
     "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
   ]
   deps = [
+    "//ios/web/public/app:browser_manifest",
+    "//ios/web/public/app:packaged_services_manifest",
     "//mojo/public/js:new_bindings",
   ]
 }

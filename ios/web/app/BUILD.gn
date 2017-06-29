@@ -19,6 +19,7 @@ source_set("app") {
     "//base:i18n",
     "//crypto",
     "//ios/web",
+    "//mojo/edk/system",
     "//net",
     "//ui/base",
     "//ui/gfx",

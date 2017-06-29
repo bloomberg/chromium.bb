@@ -3,5 +3,6 @@ include_rules = [
   "-ios/web",
   "+ios/web/public",
   "+ios/web/shell",
+  "+services/test/echo",
 ]
 
