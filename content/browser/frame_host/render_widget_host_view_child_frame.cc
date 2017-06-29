@@ -18,7 +18,6 @@
 #include "cc/surfaces/compositor_frame_sink_support.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_manager.h"
-#include "components/viz/host/host_frame_sink_manager.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/compositor/surface_utils.h"
@@ -107,8 +106,8 @@ void RenderWidgetHostViewChildFrame::SetCrossProcessFrameConnector(
   if (frame_connector_) {
     if (parent_frame_sink_id_.is_valid() &&
         !service_manager::ServiceManagerIsRemote()) {
-      GetHostFrameSinkManager()->UnregisterFrameSinkHierarchy(
-          parent_frame_sink_id_, frame_sink_id_);
+      GetSurfaceManager()->UnregisterFrameSinkHierarchy(parent_frame_sink_id_,
+                                                        frame_sink_id_);
     }
     parent_frame_sink_id_ = cc::FrameSinkId();
     local_surface_id_ = cc::LocalSurfaceId();
@@ -125,8 +124,8 @@ void RenderWidgetHostViewChildFrame::SetCrossProcessFrameConnector(
       parent_frame_sink_id_ = parent_view->GetFrameSinkId();
       DCHECK(parent_frame_sink_id_.is_valid());
       if (!service_manager::ServiceManagerIsRemote()) {
-        GetHostFrameSinkManager()->RegisterFrameSinkHierarchy(
-            parent_frame_sink_id_, frame_sink_id_);
+        GetSurfaceManager()->RegisterFrameSinkHierarchy(parent_frame_sink_id_,
+                                                        frame_sink_id_);
       }
     }
 
@@ -806,7 +805,7 @@ bool RenderWidgetHostViewChildFrame::IsChildFrameForTesting() const {
 
 cc::SurfaceId RenderWidgetHostViewChildFrame::SurfaceIdForTesting() const {
   return cc::SurfaceId(frame_sink_id_, local_surface_id_);
-}
+};
 
 void RenderWidgetHostViewChildFrame::CreateCompositorFrameSinkSupport() {
   if (service_manager::ServiceManagerIsRemote())
@@ -820,8 +819,8 @@ void RenderWidgetHostViewChildFrame::CreateCompositorFrameSinkSupport() {
       this, GetSurfaceManager(), frame_sink_id_, is_root,
       handles_frame_sink_id_invalidation, needs_sync_points);
   if (parent_frame_sink_id_.is_valid()) {
-    GetHostFrameSinkManager()->RegisterFrameSinkHierarchy(parent_frame_sink_id_,
-                                                          frame_sink_id_);
+    GetSurfaceManager()->RegisterFrameSinkHierarchy(parent_frame_sink_id_,
+                                                    frame_sink_id_);
   }
   if (host_->needs_begin_frames())
     support_->SetNeedsBeginFrame(true);
@@ -831,8 +830,8 @@ void RenderWidgetHostViewChildFrame::ResetCompositorFrameSinkSupport() {
   if (!support_)
     return;
   if (parent_frame_sink_id_.is_valid()) {
-    GetHostFrameSinkManager()->UnregisterFrameSinkHierarchy(
-        parent_frame_sink_id_, frame_sink_id_);
+    GetSurfaceManager()->UnregisterFrameSinkHierarchy(parent_frame_sink_id_,
+                                                      frame_sink_id_);
   }
   support_.reset();
 }

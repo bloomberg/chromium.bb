@@ -169,7 +169,7 @@ cc::SurfaceManager* GetSurfaceManager() {
   return CompositorImpl::GetSurfaceManager();
 #else
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  if (!factory)
+  if (factory == NULL)
     return nullptr;
   return factory->GetContextFactoryPrivate()->GetSurfaceManager();
 #endif
@@ -179,10 +179,7 @@ viz::HostFrameSinkManager* GetHostFrameSinkManager() {
 #if defined(OS_ANDROID)
   return CompositorImpl::GetHostFrameSinkManager();
 #else
-  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  if (!factory)
-    return nullptr;
-  return factory->GetContextFactoryPrivate()->GetHostFrameSinkManager();
+  return BrowserMainLoop::GetInstance()->host_frame_sink_manager();
 #endif
 }
 
