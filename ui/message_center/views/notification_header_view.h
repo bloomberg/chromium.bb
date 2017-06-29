@@ -34,6 +34,12 @@ class NotificationHeaderView : public views::CustomButton {
   bool IsCloseButtonEnabled();
   bool IsCloseButtonFocused();
 
+  // CustomButton override:
+  std::unique_ptr<views::InkDrop> CreateInkDrop() override;
+  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
+  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
+      const override;
+
   views::ImageButton* expand_button() { return expand_button_; }
   views::ImageButton* settings_button() { return settings_button_; }
   views::ImageButton* close_button() { return close_button_; }
