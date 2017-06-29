@@ -98,6 +98,13 @@ DesktopAutomationHandler.VMIN_VALUE_CHANGE_DELAY_MS = 500;
  */
 DesktopAutomationHandler.announceActions = false;
 
+/**
+ * The url of the keyboard.
+ * @const {string}
+ */
+DesktopAutomationHandler.KEYBOARD_URL =
+    'chrome-extension://jkghodnilhceideoidjikpgommlajknk/inputview.html';
+
 DesktopAutomationHandler.prototype = {
   __proto__: BaseAutomationHandler.prototype,
 
@@ -423,9 +430,13 @@ DesktopAutomationHandler.prototype = {
     while (voxTarget && voxTarget.parent && voxTarget.parent.state.editable)
       voxTarget = voxTarget.parent;
 
-    // It is possible that ChromeVox has range over some other node
-    // when a text field is focused.
-    if (!target.state.focused || target != voxTarget)
+    // It is possible that ChromeVox has range over some other node when a text
+    // field is focused. Only allow this when focus is on a desktop node or
+    // ChromeVox is over the keyboard.
+    if (!target.state.focused ||
+        (target != voxTarget && target.root.role != RoleType.DESKTOP &&
+         voxTarget.root.url.indexOf(DesktopAutomationHandler.KEYBOARD_URL) !=
+             0))
       return;
 
     this.createTextEditHandlerIfNeeded_(target);
