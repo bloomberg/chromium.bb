@@ -94,7 +94,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
                                 const NGConstraintSpace& child_space);
 
   // Positions the fragment that knows its BFC offset.
-  NGLogicalOffset PositionWithBfcOffset(const NGBoxFragment&);
+  NGLogicalOffset PositionWithBfcOffset(const NGLogicalOffset& bfc_offset);
 
   // Positions using the parent BFC offset.
   // Fragment doesn't know its offset but we can still calculate its BFC
@@ -105,7 +105,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   //     <div id="empty-div" style="margins: 1px"></div>
   NGLogicalOffset PositionWithParentBfc(const NGConstraintSpace&,
                                         const NGInflowChildData& child_data,
-                                        const NGBoxFragment&);
+                                        const NGLayoutResult&);
 
   NGLogicalOffset PositionLegacy(const NGConstraintSpace& child_space,
                                  const NGInflowChildData& child_data);

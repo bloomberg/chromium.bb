@@ -65,35 +65,28 @@ NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
 }
 
 void NGOutOfFlowLayoutPart::Run() {
-  Vector<NGBlockNode> out_of_flow_candidates;
-  Vector<NGStaticPosition> out_of_flow_candidate_positions;
+  Vector<NGOutOfFlowPositionedDescendant> descendant_candidates;
   container_builder_->GetAndClearOutOfFlowDescendantCandidates(
-      &out_of_flow_candidates, &out_of_flow_candidate_positions);
+      &descendant_candidates);
 
-  while (out_of_flow_candidates.size() > 0) {
-    size_t position_index = 0;
-
-    for (auto& descendant : out_of_flow_candidates) {
-      NGStaticPosition static_position =
-          out_of_flow_candidate_positions[position_index++];
-
+  while (descendant_candidates.size() > 0) {
+    for (auto& candidate : descendant_candidates) {
       if (IsContainingBlockForAbsoluteDescendant(container_style_,
-                                                 descendant.Style())) {
+                                                 candidate.node.Style())) {
         NGLogicalOffset offset;
-        RefPtr<NGLayoutResult> result =
-            LayoutDescendant(descendant, static_position, &offset);
+        RefPtr<NGLayoutResult> result = LayoutDescendant(
+            candidate.node, candidate.static_position, &offset);
         // TODO(atotic) Need to adjust size of overflow rect per spec.
         container_builder_->AddChild(std::move(result), offset);
       } else {
-        container_builder_->AddOutOfFlowDescendant(descendant, static_position);
+        container_builder_->AddOutOfFlowDescendant(candidate);
       }
     }
     // Sweep any descendants that might have been added.
     // This happens when an absolute container has a fixed child.
-    out_of_flow_candidates.clear();
-    out_of_flow_candidate_positions.clear();
+    descendant_candidates.clear();
     container_builder_->GetAndClearOutOfFlowDescendantCandidates(
-        &out_of_flow_candidates, &out_of_flow_candidate_positions);
+        &descendant_candidates);
   }
 }
 
@@ -101,6 +94,8 @@ RefPtr<NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
     NGBlockNode descendant,
     NGStaticPosition static_position,
     NGLogicalOffset* offset) {
+  DCHECK(descendant);
+
   // Adjust the static_position origin. The static_position coordinate origin is
   // relative to the container's border box, ng_absolute_utils expects it to be
   // relative to the container's padding box.

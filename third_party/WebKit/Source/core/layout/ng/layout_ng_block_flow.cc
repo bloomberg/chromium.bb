@@ -41,9 +41,9 @@ void LayoutNGBlockFlow::UpdateBlockLayout(bool relayout_children) {
     SetLogicalTop(computed_values.position_);
   }
 
-  for (NGBlockNode descendant : result->OutOfFlowDescendants())
-    descendant.UseOldOutOfFlowPositioning();
-
+  for (NGOutOfFlowPositionedDescendant descendant :
+       result->OutOfFlowPositionedDescendants())
+    descendant.node.UseOldOutOfFlowPositioning();
 }
 
 NGInlineNodeData& LayoutNGBlockFlow::GetNGInlineNodeData() const {

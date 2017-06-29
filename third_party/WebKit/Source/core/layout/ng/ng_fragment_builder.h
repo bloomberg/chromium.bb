@@ -9,6 +9,7 @@
 #include "core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "core/layout/ng/ng_break_token.h"
 #include "core/layout/ng/ng_constraint_space.h"
+#include "core/layout/ng/ng_out_of_flow_positioned_descendant.h"
 #include "core/layout/ng/ng_physical_fragment.h"
 #include "core/layout/ng/ng_positioned_float.h"
 #include "core/layout/ng/ng_unpositioned_float.h"
@@ -76,13 +77,13 @@ class CORE_EXPORT NGFragmentBuilder final {
   // NGOutOfFlowLayoutPart(container_style, builder).Run();
   //
   // See layout part for builder interaction.
-  NGFragmentBuilder& AddOutOfFlowChildCandidate(NGBlockNode, NGLogicalOffset);
+  NGFragmentBuilder& AddOutOfFlowChildCandidate(NGBlockNode,
+                                                const NGLogicalOffset&);
 
-  void GetAndClearOutOfFlowDescendantCandidates(Vector<NGBlockNode>*,
-                                                Vector<NGStaticPosition>*);
+  void GetAndClearOutOfFlowDescendantCandidates(
+      Vector<NGOutOfFlowPositionedDescendant>* descendant_candidates);
 
-  NGFragmentBuilder& AddOutOfFlowDescendant(NGBlockNode,
-                                            const NGStaticPosition&);
+  NGFragmentBuilder& AddOutOfFlowDescendant(NGOutOfFlowPositionedDescendant);
 
   // Sets how much of the block size we've used so far for this box.
   //
@@ -135,22 +136,24 @@ class CORE_EXPORT NGFragmentBuilder final {
   }
 
  private:
-  // Out-of-flow descendant placement information.
-  // The generated fragment must compute NGStaticPosition for all
-  // out-of-flow descendants.
-  // The resulting NGStaticPosition gets derived from:
-  // 1. The offset of fragment's child.
-  // 2. The static position of descendant wrt child.
+  // An out-of-flow positioned-candidate is a temporary data structure used
+  // within the NGFragmentBuilder.
   //
-  // A child can be:
-  // 1. A descendant itself. In this case, descendant position is (0,0).
-  // 2. A fragment containing a descendant.
+  // A positioned-candidate can be:
+  // 1. A direct out-of-flow positioned child. The child_offset is (0,0).
+  // 2. A fragment containing an out-of-flow positioned-descendant. The
+  //    child_offset in this case is the containing fragment's offset.
   //
-  // child_offset is stored as NGLogicalOffset because physical offset cannot
-  // be computed until we know fragment's size.
-  struct OutOfFlowPlacement {
+  // The child_offset is stored as a NGLogicalOffset as the physical offset
+  // cannot be computed until we know the current fragment's size.
+  //
+  // When returning the positioned-candidates (from
+  // GetAndClearOutOfFlowDescendantCandidates), the NGFragmentBuilder will
+  // convert the positioned-candidate to a positioned-descendant using the
+  // physical size the fragment builder.
+  struct NGOutOfFlowPositionedCandidate {
+    NGOutOfFlowPositionedDescendant descendant;
     NGLogicalOffset child_offset;
-    NGStaticPosition descendant_position;
   };
 
   NGPhysicalFragment::NGFragmentType type_;
@@ -172,11 +175,8 @@ class CORE_EXPORT NGFragmentBuilder final {
   Vector<RefPtr<NGBreakToken>> child_break_tokens_;
   RefPtr<NGBreakToken> last_inline_break_token_;
 
-  Vector<NGBlockNode> out_of_flow_descendant_candidates_;
-  Vector<OutOfFlowPlacement> out_of_flow_candidate_placements_;
-
-  Vector<NGBlockNode> out_of_flow_descendants_;
-  Vector<NGStaticPosition> out_of_flow_positions_;
+  Vector<NGOutOfFlowPositionedCandidate> oof_positioned_candidates_;
+  Vector<NGOutOfFlowPositionedDescendant> oof_positioned_descendants_;
 
   // Floats that need to be positioned by the next in-flow fragment that can
   // determine its block position in space.

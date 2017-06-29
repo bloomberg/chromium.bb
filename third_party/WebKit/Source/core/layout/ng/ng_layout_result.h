@@ -8,6 +8,7 @@
 #include "core/CoreExport.h"
 #include "core/layout/ng/geometry/ng_static_position.h"
 #include "core/layout/ng/ng_block_node.h"
+#include "core/layout/ng/ng_out_of_flow_positioned_descendant.h"
 #include "core/layout/ng/ng_physical_fragment.h"
 #include "core/layout/ng/ng_unpositioned_float.h"
 #include "platform/LayoutUnit.h"
@@ -32,12 +33,9 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     return physical_fragment_;
   }
 
-  const Vector<NGBlockNode>& OutOfFlowDescendants() const {
-    return out_of_flow_descendants_;
-  }
-
-  const Vector<NGStaticPosition>& OutOfFlowPositions() const {
-    return out_of_flow_positions_;
+  const Vector<NGOutOfFlowPositionedDescendant> OutOfFlowPositionedDescendants()
+      const {
+    return oof_positioned_descendants_;
   }
 
   // List of floats that need to be positioned by the next in-flow child that
@@ -52,18 +50,28 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     return unpositioned_floats_;
   }
 
+  const WTF::Optional<NGLogicalOffset>& BfcOffset() const {
+    return bfc_offset_;
+  }
+
+  const NGMarginStrut EndMarginStrut() const { return end_margin_strut_; }
+
  private:
   friend class NGFragmentBuilder;
 
   NGLayoutResult(PassRefPtr<NGPhysicalFragment> physical_fragment,
-                 Vector<NGBlockNode>& out_of_flow_descendants,
-                 Vector<NGStaticPosition> out_of_flow_positions,
-                 Vector<RefPtr<NGUnpositionedFloat>>& unpositioned_floats);
+                 Vector<NGOutOfFlowPositionedDescendant>
+                     out_of_flow_positioned_descendants,
+                 Vector<RefPtr<NGUnpositionedFloat>>& unpositioned_floats,
+                 const WTF::Optional<NGLogicalOffset> bfc_offset,
+                 const NGMarginStrut end_margin_strut);
 
   RefPtr<NGPhysicalFragment> physical_fragment_;
-  Vector<NGBlockNode> out_of_flow_descendants_;
-  Vector<NGStaticPosition> out_of_flow_positions_;
   Vector<RefPtr<NGUnpositionedFloat>> unpositioned_floats_;
+
+  Vector<NGOutOfFlowPositionedDescendant> oof_positioned_descendants_;
+  const WTF::Optional<NGLogicalOffset> bfc_offset_;
+  const NGMarginStrut end_margin_strut_;
 };
 
 }  // namespace blink

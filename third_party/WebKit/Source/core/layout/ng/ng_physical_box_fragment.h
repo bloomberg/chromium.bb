@@ -22,8 +22,6 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
                         NGPhysicalSize overflow,
                         Vector<RefPtr<NGPhysicalFragment>>& children,
                         Vector<NGPositionedFloat>& positioned_floats,
-                        const WTF::Optional<NGLogicalOffset>& bfc_offset,
-                        const NGMarginStrut& end_margin_strut,
                         unsigned,  // NGBorderEdges::Physical
                         RefPtr<NGBreakToken> break_token = nullptr);
 
@@ -41,18 +39,10 @@ class CORE_EXPORT NGPhysicalBoxFragment final : public NGPhysicalFragment {
     return positioned_floats_;
   }
 
-  const WTF::Optional<NGLogicalOffset>& BfcOffset() const {
-    return bfc_offset_;
-  }
-
-  const NGMarginStrut& EndMarginStrut() const { return end_margin_strut_; }
-
  private:
   NGPhysicalSize overflow_;
   Vector<RefPtr<NGPhysicalFragment>> children_;
   Vector<NGPositionedFloat> positioned_floats_;
-  const WTF::Optional<NGLogicalOffset> bfc_offset_;
-  const NGMarginStrut end_margin_strut_;
 };
 
 DEFINE_TYPE_CASTS(NGPhysicalBoxFragment,

@@ -22,10 +22,6 @@ class CORE_EXPORT NGBoxFragment final : public NGFragment {
 
   // Returns the total size, including the contents outside of the border-box.
   NGLogicalSize OverflowSize() const;
-
-  const WTF::Optional<NGLogicalOffset>& BfcOffset() const;
-
-  const NGMarginStrut& EndMarginStrut() const;
 };
 
 DEFINE_TYPE_CASTS(NGBoxFragment,

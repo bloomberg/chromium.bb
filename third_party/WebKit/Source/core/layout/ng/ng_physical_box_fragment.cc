@@ -14,8 +14,6 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
     NGPhysicalSize overflow,
     Vector<RefPtr<NGPhysicalFragment>>& children,
     Vector<NGPositionedFloat>& positioned_floats,
-    const WTF::Optional<NGLogicalOffset>& bfc_offset,
-    const NGMarginStrut& end_margin_strut,
     unsigned border_edges,  // NGBorderEdges::Physical
     RefPtr<NGBreakToken> break_token)
     : NGPhysicalFragment(layout_object,
@@ -23,9 +21,7 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
                          kFragmentBox,
                          std::move(break_token)),
       overflow_(overflow),
-      positioned_floats_(positioned_floats),
-      bfc_offset_(bfc_offset),
-      end_margin_strut_(end_margin_strut) {
+      positioned_floats_(positioned_floats) {
   children_.swap(children);
   border_edge_ = border_edges;
 }

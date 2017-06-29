@@ -20,6 +20,10 @@ class CORE_EXPORT NGFragment {
   STACK_ALLOCATED();
 
  public:
+  NGFragment(NGWritingMode writing_mode,
+             const NGPhysicalFragment* physical_fragment)
+      : physical_fragment_(physical_fragment), writing_mode_(writing_mode) {}
+
   NGWritingMode WritingMode() const {
     return static_cast<NGWritingMode>(writing_mode_);
   }
@@ -39,10 +43,6 @@ class CORE_EXPORT NGFragment {
   NGPhysicalFragment::NGFragmentType Type() const;
 
  protected:
-  NGFragment(NGWritingMode writing_mode,
-             const NGPhysicalFragment* physical_fragment)
-      : physical_fragment_(physical_fragment), writing_mode_(writing_mode) {}
-
   const NGPhysicalFragment* physical_fragment_;
 
   unsigned writing_mode_ : 3;
