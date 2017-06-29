@@ -1166,6 +1166,17 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
                              base::Time::Now().ToInternalValue());
     }
 
+#if defined(OS_MACOSX) || defined(OS_LINUX)
+    // Create directory for user-level Native Messaging manifest files. This
+    // makes it less likely that the directory will be created by third-party
+    // software with incorrect owner or permission. See crbug.com/725513 .
+    base::FilePath user_native_messaging_dir;
+    CHECK(PathService::Get(chrome::DIR_USER_NATIVE_MESSAGING,
+                           &user_native_messaging_dir));
+    if (!base::PathExists(user_native_messaging_dir))
+      base::CreateDirectory(user_native_messaging_dir);
+#endif  // defined(OS_MACOSX) || defined(OS_LINUX)
+
     if (!master_prefs_->suppress_default_browser_prompt_for_version.empty()) {
       local_state_->SetString(
           prefs::kBrowserSuppressDefaultBrowserPrompt,
