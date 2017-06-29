@@ -35,6 +35,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Range.h"
 #include "core/dom/Text.h"
+#include "core/editing/EditingTestBase.h"
 #include "core/editing/EphemeralRange.h"
 #include "core/html/HTMLElement.h"
 #include "core/testing/DummyPageHolder.h"
@@ -44,12 +45,8 @@
 
 namespace blink {
 
-class DocumentMarkerControllerTest : public ::testing::Test {
+class DocumentMarkerControllerTest : public EditingTestBase {
  protected:
-  DocumentMarkerControllerTest()
-      : dummy_page_holder_(DummyPageHolder::Create(IntSize(800, 600))) {}
-
-  Document& GetDocument() const { return dummy_page_holder_->GetDocument(); }
   DocumentMarkerController& MarkerController() const {
     return GetDocument().Markers();
   }
@@ -57,10 +54,6 @@ class DocumentMarkerControllerTest : public ::testing::Test {
   Text* CreateTextNode(const char*);
   void MarkNodeContents(Node*);
   void MarkNodeContentsTextMatch(Node*);
-  void SetBodyInnerHTML(const char*);
-
- private:
-  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
 };
 
 Text* DocumentMarkerControllerTest::CreateTextNode(const char* text_contents) {
@@ -84,12 +77,8 @@ void DocumentMarkerControllerTest::MarkNodeContentsTextMatch(Node* node) {
                                         TextMatchMarker::MatchStatus::kActive);
 }
 
-void DocumentMarkerControllerTest::SetBodyInnerHTML(const char* body_content) {
-  GetDocument().body()->setInnerHTML(String::FromUTF8(body_content));
-}
-
 TEST_F(DocumentMarkerControllerTest, DidMoveToNewDocument) {
-  SetBodyInnerHTML("<b><i>foo</i></b>");
+  SetBodyContent("<b><i>foo</i></b>");
   Element* parent = ToElement(GetDocument().body()->firstChild()->firstChild());
   MarkNodeContents(parent);
   EXPECT_EQ(1u, MarkerController().Markers().size());
@@ -103,7 +92,7 @@ TEST_F(DocumentMarkerControllerTest, DidMoveToNewDocument) {
 }
 
 TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByNormalize) {
-  SetBodyInnerHTML("<b><i>foo</i></b>");
+  SetBodyContent("<b><i>foo</i></b>");
   {
     Element* parent =
         ToElement(GetDocument().body()->firstChild()->firstChild());
@@ -118,7 +107,7 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByNormalize) {
 }
 
 TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByRemoveChildren) {
-  SetBodyInnerHTML("<b><i>foo</i></b>");
+  SetBodyContent("<b><i>foo</i></b>");
   Element* parent = ToElement(GetDocument().body()->firstChild()->firstChild());
   MarkNodeContents(parent);
   EXPECT_EQ(1u, MarkerController().Markers().size());
@@ -129,7 +118,7 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByRemoveChildren) {
 }
 
 TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedByRemoveMarked) {
-  SetBodyInnerHTML("<b><i>foo</i></b>");
+  SetBodyContent("<b><i>foo</i></b>");
   {
     Element* parent =
         ToElement(GetDocument().body()->firstChild()->firstChild());
@@ -143,7 +132,7 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedByRemoveMarked) {
 }
 
 TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByRemoveAncestor) {
-  SetBodyInnerHTML("<b><i>foo</i></b>");
+  SetBodyContent("<b><i>foo</i></b>");
   {
     Element* parent =
         ToElement(GetDocument().body()->firstChild()->firstChild());
@@ -157,7 +146,7 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByRemoveAncestor) {
 }
 
 TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByRemoveParent) {
-  SetBodyInnerHTML("<b><i>foo</i></b>");
+  SetBodyContent("<b><i>foo</i></b>");
   {
     Element* parent =
         ToElement(GetDocument().body()->firstChild()->firstChild());
@@ -171,7 +160,7 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByRemoveParent) {
 }
 
 TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByReplaceChild) {
-  SetBodyInnerHTML("<b><i>foo</i></b>");
+  SetBodyContent("<b><i>foo</i></b>");
   {
     Element* parent =
         ToElement(GetDocument().body()->firstChild()->firstChild());
@@ -185,13 +174,13 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByReplaceChild) {
 }
 
 TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedBySetInnerHTML) {
-  SetBodyInnerHTML("<b><i>foo</i></b>");
+  SetBodyContent("<b><i>foo</i></b>");
   {
     Element* parent =
         ToElement(GetDocument().body()->firstChild()->firstChild());
     MarkNodeContents(parent);
     EXPECT_EQ(1u, MarkerController().Markers().size());
-    SetBodyInnerHTML("");
+    SetBodyContent("");
   }
   // No more reference to marked node.
   ThreadState::Current()->CollectAllGarbage();
@@ -199,7 +188,7 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedBySetInnerHTML) {
 }
 
 TEST_F(DocumentMarkerControllerTest, UpdateRenderedRects) {
-  SetBodyInnerHTML("<div style='margin: 100px'>foo</div>");
+  SetBodyContent("<div style='margin: 100px'>foo</div>");
   Element* div = ToElement(GetDocument().body()->firstChild());
   MarkNodeContentsTextMatch(div);
   Vector<IntRect> rendered_rects =
@@ -215,9 +204,8 @@ TEST_F(DocumentMarkerControllerTest, UpdateRenderedRects) {
 }
 
 TEST_F(DocumentMarkerControllerTest, CompositionMarkersNotMerged) {
-  SetBodyInnerHTML("<div style='margin: 100px'>foo</div>");
+  SetBodyContent("<div style='margin: 100px'>foo</div>");
   Node* text = GetDocument().body()->firstChild()->firstChild();
-  GetDocument().UpdateStyleAndLayout();
   MarkerController().AddCompositionMarker(
       EphemeralRange(Position(text, 0), Position(text, 1)), Color::kBlack,
       StyleableMarker::Thickness::kThin, Color::kBlack);
@@ -229,8 +217,7 @@ TEST_F(DocumentMarkerControllerTest, CompositionMarkersNotMerged) {
 }
 
 TEST_F(DocumentMarkerControllerTest, SetMarkerActiveTest) {
-  SetBodyInnerHTML("<b>foo</b>");
-  GetDocument().UpdateStyleAndLayout();
+  SetBodyContent("<b>foo</b>");
   Element* b_element = ToElement(GetDocument().body()->firstChild());
   EphemeralRange ephemeral_range = EphemeralRange::RangeOfContents(*b_element);
   Position start_b_element =
@@ -248,8 +235,7 @@ TEST_F(DocumentMarkerControllerTest, SetMarkerActiveTest) {
 }
 
 TEST_F(DocumentMarkerControllerTest, RemoveStartOfMarker) {
-  SetBodyInnerHTML("<b>abc</b>");
-  GetDocument().UpdateStyleAndLayout();
+  SetBodyContent("<b>abc</b>");
   Node* b_element = GetDocument().body()->firstChild();
   Node* text = b_element->firstChild();
 
@@ -268,8 +254,7 @@ TEST_F(DocumentMarkerControllerTest, RemoveStartOfMarker) {
 }
 
 TEST_F(DocumentMarkerControllerTest, RemoveMiddleOfMarker) {
-  SetBodyInnerHTML("<b>abc</b>");
-  GetDocument().UpdateStyleAndLayout();
+  SetBodyContent("<b>abc</b>");
   Node* b_element = GetDocument().body()->firstChild();
   Node* text = b_element->firstChild();
 
@@ -288,8 +273,7 @@ TEST_F(DocumentMarkerControllerTest, RemoveMiddleOfMarker) {
 }
 
 TEST_F(DocumentMarkerControllerTest, RemoveEndOfMarker) {
-  SetBodyInnerHTML("<b>abc</b>");
-  GetDocument().UpdateStyleAndLayout();
+  SetBodyContent("<b>abc</b>");
   Node* b_element = GetDocument().body()->firstChild();
   Node* text = b_element->firstChild();
 
@@ -308,8 +292,7 @@ TEST_F(DocumentMarkerControllerTest, RemoveEndOfMarker) {
 }
 
 TEST_F(DocumentMarkerControllerTest, RemoveSpellingMarkersUnderWords) {
-  SetBodyInnerHTML("<div contenteditable>foo</div>");
-  GetDocument().UpdateStyleAndLayout();
+  SetBodyContent("<div contenteditable>foo</div>");
   Element* div = GetDocument().QuerySelector("div");
   Node* text = div->firstChild();
 
