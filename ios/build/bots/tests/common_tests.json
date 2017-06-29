@@ -1,37 +1,19 @@
 {
   "tests": [
     {
-      "app": "base_unittests"
-    },
-    {
       "app": "boringssl_crypto_tests"
     },
     {
       "app": "boringssl_ssl_tests"
     },
     {
-      "app": "components_unittests"
-    },
-    {
       "app": "crypto_unittests"
-    },
-    {
-      "app": "gfx_unittests"
     },
     {
       "app": "google_apis_unittests"
     },
     {
-      "app": "ios_chrome_unittests"
-    },
-    {
       "app": "ios_net_unittests"
-    },
-    {
-      "app": "ios_web_inttests"
-    },
-    {
-      "app": "ios_web_unittests"
     },
     {
       "app": "net_unittests"
@@ -40,13 +22,7 @@
       "app": "services_unittests"
     },
     {
-      "app": "skia_unittests"
-    },
-    {
       "app": "sql_unittests"
-    },
-    {
-      "app": "ui_base_unittests"
     },
     {
       "app": "url_unittests"
