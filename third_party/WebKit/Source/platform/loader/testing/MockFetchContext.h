@@ -86,10 +86,8 @@ class MockFetchContext : public FetchContext {
   std::unique_ptr<WebURLLoader> CreateURLLoader(
       const ResourceRequest& request) override {
     WrappedResourceRequest wrapped(request);
-    auto loader = Platform::Current()->CreateURLLoader(
+    return Platform::Current()->CreateURLLoader(
         wrapped, runner_->ToSingleThreadTaskRunner());
-    loader->SetLoadingTaskRunner(runner_.Get());
-    return loader;
   }
 
   RefPtr<WebTaskRunner> GetTaskRunner() { return runner_; }

@@ -29,7 +29,9 @@ class WebWorkerFetchContext {
 
   // Returns a new WebURLLoader instance which is associated with the worker
   // thread.
-  virtual std::unique_ptr<WebURLLoader> CreateURLLoader() = 0;
+  virtual std::unique_ptr<WebURLLoader> CreateURLLoader(
+      const WebURLRequest&,
+      base::SingleThreadTaskRunner*) = 0;
 
   // Called when a request is about to be sent out to modify the request to
   // handle the request correctly in the loading stack later. (Example: service

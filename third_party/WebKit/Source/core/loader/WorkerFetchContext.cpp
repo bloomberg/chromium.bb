@@ -209,10 +209,10 @@ SecurityOrigin* WorkerFetchContext::GetSecurityOrigin() const {
 }
 
 std::unique_ptr<WebURLLoader> WorkerFetchContext::CreateURLLoader(
-    const ResourceRequest&) {
-  auto loader = web_context_->CreateURLLoader();
-  loader->SetLoadingTaskRunner(loading_task_runner_.Get());
-  return loader;
+    const ResourceRequest& request) {
+  WrappedResourceRequest wrapped(request);
+  return web_context_->CreateURLLoader(
+      wrapped, loading_task_runner_->ToSingleThreadTaskRunner());
 }
 
 bool WorkerFetchContext::IsControlledByServiceWorker() const {

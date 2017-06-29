@@ -35,14 +35,9 @@
 #include "WebURLRequest.h"
 #include <stdint.h>
 
-namespace base {
-class SingleThreadTaskRunner;
-}  // namespace base
-
 namespace blink {
 
 class WebData;
-class WebTaskRunner;
 class WebURLLoaderClient;
 class WebURLResponse;
 struct WebURLError;
@@ -83,12 +78,6 @@ class WebURLLoader {
                                  int intra_priority_value) {
     DidChangePriority(new_priority);
   }
-
-  // Sets the task runner for which any loading tasks should be posted on.
-  // Use WebTaskRunner version when it's called from core or module directory,
-  // since we don't directly expose base to them.
-  BLINK_PLATFORM_EXPORT void SetLoadingTaskRunner(WebTaskRunner*);
-  virtual void SetLoadingTaskRunner(base::SingleThreadTaskRunner*) = 0;
 };
 
 }  // namespace blink
