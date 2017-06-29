@@ -19,6 +19,10 @@ enum MessageBoxResult {
 
   // User chose YES or OK. If there's a checkbox, then the checkbox was checked.
   MESSAGE_BOX_RESULT_YES = 1,
+
+  // Message box was displayed asynchronously and is pending a real result,
+  // which will be delivered via callback.
+  MESSAGE_BOX_RESULT_DEFERRED = 2,
 };
 
 enum MessageBoxType {
