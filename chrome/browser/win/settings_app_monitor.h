@@ -10,10 +10,10 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/thread.h"
-#include "base/threading/thread_checker.h"
 
 namespace shell_integration {
 namespace win {
@@ -65,7 +65,7 @@ class SettingsAppMonitor {
   void OnPromoFocused();
   void OnPromoChoiceMade(bool accept_promo);
 
-  base::ThreadChecker thread_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
   Delegate* delegate_;
 
   // A thread in the COM MTA in which automation calls are made.
