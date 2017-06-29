@@ -1565,6 +1565,7 @@ enum class WebFeature : uint32_t {
   kMIDIOutputSend = 2030,
   kMIDIMessageEvent = 2031,
   kFetchEventIsReload = 2032,
+  kServiceWorkerClientFrameType = 2033,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

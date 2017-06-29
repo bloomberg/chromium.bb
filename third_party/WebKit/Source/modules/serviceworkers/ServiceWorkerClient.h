@@ -37,7 +37,7 @@ class MODULES_EXPORT ServiceWorkerClient
   // Client.idl
   String url() const { return url_; }
   String type() const;
-  String frameType() const;
+  String frameType(ScriptState*) const;
   String id() const { return uuid_; }
   void postMessage(ScriptState*,
                    PassRefPtr<SerializedScriptValue> message,

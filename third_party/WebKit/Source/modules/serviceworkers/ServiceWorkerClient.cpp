@@ -10,9 +10,11 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/serialization/SerializedScriptValue.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/frame/UseCounter.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/wtf/RefPtr.h"
+#include "public/platform/WebFeature.h"
 #include "public/platform/WebString.h"
 
 namespace blink {
@@ -67,7 +69,9 @@ String ServiceWorkerClient::type() const {
   return String();
 }
 
-String ServiceWorkerClient::frameType() const {
+String ServiceWorkerClient::frameType(ScriptState* script_state) const {
+  UseCounter::Count(ExecutionContext::From(script_state),
+                    WebFeature::kServiceWorkerClientFrameType);
   switch (frame_type_) {
     case WebURLRequest::kFrameTypeAuxiliary:
       return "auxiliary";

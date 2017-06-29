@@ -2757,14 +2757,14 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2" label="Unknown"/>
 </enum>
 
-<enum name="BlueZReasonOfDisconnection" type="int">
+<enum name="BlueZReasonOfDisconnection">
   <int value="1" label="Disconnected by local host"/>
   <int value="2" label="Disconnected by remote device"/>
   <int value="3" label="Supervision timeout"/>
   <int value="4" label="Unknown"/>
 </enum>
 
-<enum name="BlueZResultOfAdvertisementRegistration" type="int">
+<enum name="BlueZResultOfAdvertisementRegistration">
   <int value="1" label="Success"/>
   <int value="2" label="LE unsupported"/>
   <int value="3" label="LE disabled"/>
@@ -2777,7 +2777,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="10" label="Unknown"/>
 </enum>
 
-<enum name="BlueZResultOfConnection" type="int">
+<enum name="BlueZResultOfConnection">
   <int value="1" label="Success LE"/>
   <int value="2" label="Success BR/EDR"/>
   <int value="3" label="Already connected LE"/>
@@ -2793,7 +2793,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="13" label="Unknown"/>
 </enum>
 
-<enum name="BlueZResultOfPairing" type="int">
+<enum name="BlueZResultOfPairing">
   <int value="1" label="Success"/>
   <int value="2" label="Adapter not powered"/>
   <int value="3" label="Already paired"/>
@@ -2808,19 +2808,19 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="12" label="Unknown"/>
 </enum>
 
-<enum name="BlueZTypeOfDiscovery" type="int">
+<enum name="BlueZTypeOfDiscovery">
   <int value="1" label="BR/EDR"/>
   <int value="2" label="LE"/>
   <int value="3" label="DUAL"/>
 </enum>
 
-<enum name="BlueZTypeOfFoundDevice" type="int">
+<enum name="BlueZTypeOfFoundDevice">
   <int value="1" label="BR/EDR"/>
   <int value="2" label="LE with public address"/>
   <int value="3" label="LE with random address"/>
 </enum>
 
-<enum name="BookmarkLaunchLocation" type="int">
+<enum name="BookmarkLaunchLocation">
   <int value="0" label="Attached bookmark bar"/>
   <int value="1" label="Detached (floating) bookmark bar"/>
   <int value="2" label="Bookmark bar subfolder"/>
@@ -15624,6 +15624,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2030" label="MIDIOutputSend"/>
   <int value="2031" label="MIDIMessageEvent"/>
   <int value="2032" label="FetchEventIsReload"/>
+  <int value="2033" label="ServiceWorkerClientFrameType"/>
 </enum>
 
 <enum name="FeedbackSource">
