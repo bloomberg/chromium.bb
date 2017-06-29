@@ -1769,6 +1769,13 @@ crbug.com/626703 [ Mac ] external/wpt/web-animations/interfaces/AnimationTimelin
 
 crbug.com/698077 inspector/sources/debugger/debug-inlined-scripts.html [ NeedsManualRebaseline ]
 
+crbug.com/738149 svg/dynamic-updates/SVGFEDropShadowElement-dom-shadow-color-attr.html [ NeedsManualRebaseline ]
+crbug.com/738149 svg/dynamic-updates/SVGFEDropShadowElement-dom-shadow-opacity-attr.html [ NeedsManualRebaseline ]
+crbug.com/738149 svg/dynamic-updates/SVGFEDropShadowElement-svgdom-shadow-color-prop.html [ NeedsManualRebaseline ]
+crbug.com/738149 svg/dynamic-updates/SVGFEDropShadowElement-svgdom-shadow-opacity-prop.html [ NeedsManualRebaseline ]
+crbug.com/738149 svg/filters/feBlend-all-modes.html [ NeedsManualRebaseline ]
+crbug.com/738149 svg/filters/feDropShadow.svg [ NeedsManualRebaseline ]
+
 # Working on getting the CSP tests going:
 crbug.com/694525 external/wpt/content-security-policy/blink-contrib [ Skip ]
 crbug.com/694525 external/wpt/content-security-policy/blink-contrib-2 [ Skip ]
