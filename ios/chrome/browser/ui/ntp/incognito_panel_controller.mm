@@ -116,8 +116,7 @@ const int kLinkColor = 0x03A9F4;
     [learnMore setTranslatesAutoresizingMaskIntoConstraints:NO];
     [learnMore setTitle:l10n_util::GetNSString(IDS_NEW_TAB_OTR_LEARN_MORE_LINK)
                forState:UIControlStateNormal];
-    [learnMore setTitleColor:UIColorFromRGB(kLinkColor)
-                    forState:UIControlStateNormal];
+    [learnMore setCustomTitleColor:UIColorFromRGB(kLinkColor)];
     UIFont* buttonFont = [[MDCTypography fontLoader] boldFontOfSize:14];
     [[learnMore titleLabel] setFont:buttonFont];
     [learnMore addTarget:self
