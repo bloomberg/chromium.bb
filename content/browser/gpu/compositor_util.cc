@@ -285,6 +285,10 @@ bool IsMainFrameBeforeActivationEnabled() {
 
 bool IsCheckerImagingEnabled() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          cc::switches::kDisableCheckerImaging))
+    return false;
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           cc::switches::kEnableCheckerImaging))
     return true;
 
