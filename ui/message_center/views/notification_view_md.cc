@@ -27,6 +27,7 @@
 #include "ui/message_center/views/padded_button.h"
 #include "ui/message_center/views/proportional_image_view.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/label_button.h"
@@ -49,6 +50,8 @@ constexpr gfx::Insets kContentRowPadding(4, 12, 12, 12);
 constexpr gfx::Insets kActionsRowPadding(8, 8, 8, 8);
 constexpr int kActionsRowHorizontalSpacing = 8;
 constexpr gfx::Insets kImageContainerPadding(0, 12, 12, 12);
+constexpr gfx::Insets kActionButtonPadding(0, 12, 0, 12);
+constexpr gfx::Size kActionButtonMinSize(88, 32);
 
 // Foreground of small icon image.
 constexpr SkColor kSmallImageBackgroundColor = SK_ColorWHITE;
@@ -56,6 +59,14 @@ constexpr SkColor kSmallImageBackgroundColor = SK_ColorWHITE;
 const SkColor kSmallImageColor = SkColorSetRGB(0x43, 0x43, 0x43);
 // Background of inline actions area.
 const SkColor kActionsRowBackgroundColor = SkColorSetRGB(0xee, 0xee, 0xee);
+// Base ink drop color of action buttons.
+const SkColor kActionButtonInkDropBaseColor = SkColorSetRGB(0x0, 0x0, 0x0);
+// Ripple ink drop opacity of action buttons.
+const float kActionButtonInkDropRippleVisibleOpacity = 0.08f;
+// Highlight (hover) ink drop opacity of action buttons.
+const float kActionButtonInkDropHighlightVisibleOpacity = 0.08f;
+// Text color of action button.
+const SkColor kActionButtonTextColor = SkColorSetRGB(0x33, 0x67, 0xD6);
 
 // Max number of lines for message_view_.
 constexpr int kMaxLinesForMessageView = 1;
@@ -259,6 +270,46 @@ void CompactTitleMessageView::OnPaint(gfx::Canvas* canvas) {
   message_view_->SetText(message);
 
   views::View::OnPaint(canvas);
+}
+
+// NotificationButtonMD ////////////////////////////////////////////////////////
+
+// This class is needed in addition to LabelButton mainly becuase we want to set
+// visible_opacity of InkDropHighlight.
+class NotificationButtonMD : public views::LabelButton {
+ public:
+  NotificationButtonMD(views::ButtonListener* listener,
+                       const base::string16& text);
+  ~NotificationButtonMD() override;
+
+  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
+      const override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NotificationButtonMD);
+};
+
+NotificationButtonMD::NotificationButtonMD(views::ButtonListener* listener,
+                                           const base::string16& text)
+    : views::LabelButton(listener, text, views::style::CONTEXT_BUTTON_MD) {
+  SetInkDropMode(views::LabelButton::InkDropMode::ON);
+  set_has_ink_drop_action_on_click(true);
+  set_ink_drop_base_color(kActionButtonInkDropBaseColor);
+  set_ink_drop_visible_opacity(kActionButtonInkDropRippleVisibleOpacity);
+  SetEnabledTextColors(kActionButtonTextColor);
+  SetBorder(views::CreateEmptyBorder(kActionButtonPadding));
+  SetMinSize(kActionButtonMinSize);
+  SetFocusForPlatform();
+}
+
+NotificationButtonMD::~NotificationButtonMD() = default;
+
+std::unique_ptr<views::InkDropHighlight>
+NotificationButtonMD::CreateInkDropHighlight() const {
+  std::unique_ptr<views::InkDropHighlight> highlight =
+      views::LabelButton::CreateInkDropHighlight();
+  highlight->set_visible_opacity(kActionButtonInkDropHighlightVisibleOpacity);
+  return highlight;
 }
 
 }  // anonymous namespace
@@ -680,9 +731,8 @@ void NotificationViewMD::CreateOrUpdateActionButtonViews(
   for (size_t i = 0; i < buttons.size(); ++i) {
     ButtonInfo button_info = buttons[i];
     if (new_buttons) {
-      views::LabelButton* button = new views::LabelButton(
-          this, button_info.title, views::style::CONTEXT_BUTTON_MD);
-      button->SetFocusForPlatform();
+      NotificationButtonMD* button =
+          new NotificationButtonMD(this, button_info.title);
       action_buttons_.push_back(button);
       actions_row_->AddChildView(button);
     } else {
