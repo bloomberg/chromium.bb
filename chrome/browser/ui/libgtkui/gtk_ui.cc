@@ -321,7 +321,11 @@ float GetRawDeviceScaleFactor() {
   gint scale = gdk_screen_get_monitor_scale_factor(
       screen, gdk_screen_get_primary_monitor(screen));
   gdouble resolution = gdk_screen_get_resolution(screen);
-  return resolution <= 0 ? scale : resolution * scale / kDefaultDPI;
+  const float scale_factor =
+      resolution <= 0 ? scale : resolution * scale / kDefaultDPI;
+  // Blacklist scaling factors <120% (crbug.com/484400) and round
+  // to 1 decimal to prevent rendering problems (crbug.com/485183).
+  return scale_factor < 1.2f ? 1.0f : roundf(scale_factor * 10) / 10;
 }
 
 views::LinuxUI::NonClientMiddleClickAction GetDefaultMiddleClickAction() {
@@ -1037,10 +1041,7 @@ void GtkUi::UpdateDeviceScaleFactor() {
   // Note: Linux chrome currently does not support dynamic DPI
   // changes.  This is to allow flags to override the DPI settings
   // during startup.
-  float scale = GetRawDeviceScaleFactor();
-  // Blacklist scaling factors <120% (crbug.com/484400) and round
-  // to 1 decimal to prevent rendering problems (crbug.com/485183).
-  device_scale_factor_ = scale < 1.2f ? 1.0f : roundf(scale * 10) / 10;
+  device_scale_factor_ = GetRawDeviceScaleFactor();
   UpdateDefaultFont();
 }
 
