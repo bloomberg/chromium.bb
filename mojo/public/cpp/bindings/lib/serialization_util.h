@@ -21,7 +21,7 @@ namespace internal {
 template <typename T>
 struct HasIsNullMethod {
   template <typename U>
-  static char Test(decltype(U::IsNull)*);
+  static char Test(decltype(U::IsNull) *);
   template <typename U>
   static int Test(...);
   static const bool value = sizeof(Test<T>(0)) == sizeof(char);
@@ -48,7 +48,7 @@ bool CallIsNullIfExists(const UserType& input) {
 template <typename T>
 struct HasSetToNullMethod {
   template <typename U>
-  static char Test(decltype(U::SetToNull)*);
+  static char Test(decltype(U::SetToNull) *);
   template <typename U>
   static int Test(...);
   static const bool value = sizeof(Test<T>(0)) == sizeof(char);
@@ -80,7 +80,7 @@ bool CallSetToNullIfExists(UserType* output) {
 template <typename T>
 struct HasSetUpContextMethod {
   template <typename U>
-  static char Test(decltype(U::SetUpContext)*);
+  static char Test(decltype(U::SetUpContext) *);
   template <typename U>
   static int Test(...);
   static const bool value = sizeof(Test<T>(0)) == sizeof(char);
@@ -98,16 +98,12 @@ struct CustomContextHelper<Traits, true> {
   template <typename MaybeConstUserType>
   static void* SetUp(MaybeConstUserType& input, SerializationContext* context) {
     void* custom_context = Traits::SetUpContext(input);
-    if (!context->custom_contexts)
-      context->custom_contexts.reset(new std::queue<void*>());
-    context->custom_contexts->push(custom_context);
+    context->PushCustomContext(custom_context);
     return custom_context;
   }
 
   static void* GetNext(SerializationContext* context) {
-    void* custom_context = context->custom_contexts->front();
-    context->custom_contexts->pop();
-    return custom_context;
+    return context->ConsumeNextCustomContext();
   }
 
   template <typename MaybeConstUserType>
@@ -148,7 +144,8 @@ ReturnType CallWithContext(ReturnType (*f)(ParamType),
 template <typename T, typename MaybeConstUserType>
 struct HasGetBeginMethod {
   template <typename U>
-  static char Test(decltype(U::GetBegin(std::declval<MaybeConstUserType&>()))*);
+  static char Test(
+      decltype(U::GetBegin(std::declval<MaybeConstUserType&>())) *);
   template <typename U>
   static int Test(...);
   static const bool value = sizeof(Test<T>(0)) == sizeof(char);
@@ -179,7 +176,7 @@ size_t CallGetBeginIfExists(MaybeConstUserType& input) {
 template <typename T, typename MaybeConstUserType>
 struct HasGetDataMethod {
   template <typename U>
-  static char Test(decltype(U::GetData(std::declval<MaybeConstUserType&>()))*);
+  static char Test(decltype(U::GetData(std::declval<MaybeConstUserType&>())) *);
   template <typename U>
   static int Test(...);
   static const bool value = sizeof(Test<T>(0)) == sizeof(char);

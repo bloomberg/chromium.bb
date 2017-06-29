@@ -1204,7 +1204,7 @@ TEST(UnionTest, HandleInUnionSerialization) {
   internal::HandleUnion_Data* data = nullptr;
   mojo::internal::Serialize<HandleUnionDataView>(handle, &buf, &data, false,
                                                  &context);
-  EXPECT_EQ(1U, context.handles.size());
+  EXPECT_EQ(1U, context.handles()->size());
 
   HandleUnionPtr handle2(HandleUnion::New());
   mojo::internal::Deserialize<HandleUnionDataView>(data, &handle2, &context);
@@ -1337,7 +1337,7 @@ TEST(UnionTest, InterfaceInUnionSerialization) {
   internal::HandleUnion_Data* data = nullptr;
   mojo::internal::Serialize<HandleUnionDataView>(handle, &buf, &data, false,
                                                  &context);
-  EXPECT_EQ(1U, context.handles.size());
+  EXPECT_EQ(1U, context.handles()->size());
 
   HandleUnionPtr handle2(HandleUnion::New());
   mojo::internal::Deserialize<HandleUnionDataView>(data, &handle2, &context);

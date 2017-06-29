@@ -13,7 +13,7 @@ struct Serializer<{{data_view}}, MaybeConstUserType> {
                                    SerializationContext* context) {
     size_t size = inlined ? 0 : sizeof({{data_type}});
     const bool is_null = CallIsNullIfExists<Traits>(input);
-    context->null_states.container().push_back(is_null);
+    context->PushNextNullState(is_null);
     if (is_null)
       return size;
 
