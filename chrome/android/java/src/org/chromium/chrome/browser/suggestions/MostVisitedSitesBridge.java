@@ -6,10 +6,10 @@ package org.chromium.chrome.browser.suggestions;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.JNIAdditionalImport;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 
 /**
  * Methods to bridge into native history to provide most recent urls, titles and thumbnails.
@@ -28,7 +28,7 @@ public class MostVisitedSitesBridge
         mNativeMostVisitedSitesBridge = nativeInit(profile);
         // The first tile replaces the home page button (only) in Chrome Home. To support that,
         // provide information about the home page.
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME)) {
+        if (FeatureUtilities.isChromeHomeEnabled()) {
             nativeSetHomePageClient(mNativeMostVisitedSitesBridge, new HomePageClient() {
                 @Override
                 public boolean isHomePageEnabled() {

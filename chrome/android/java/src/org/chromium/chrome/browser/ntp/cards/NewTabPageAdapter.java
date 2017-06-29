@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.suggestions.SuggestionsRecyclerView;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.chrome.browser.suggestions.TileGrid;
 import org.chromium.chrome.browser.suggestions.TileGroup;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 
 import java.util.List;
@@ -182,7 +183,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
 
     /** Resets suggestions, pulling the current state as known by the backend. */
     public void refreshSuggestions() {
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME)) {
+        if (FeatureUtilities.isChromeHomeEnabled()) {
             mSections.synchroniseWithSource();
         } else {
             mSections.refreshSuggestions();

@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.ntp.cards;
 
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
 import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
@@ -17,6 +16,7 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.suggestions.DestructionObserver;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -189,7 +189,7 @@ public class SectionList
 
     @Override
     public boolean isResetAllowed() {
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME)) return false;
+        if (!FeatureUtilities.isChromeHomeEnabled()) return false;
 
         // TODO(dgn): Also check if the bottom sheet is closed and how long since it has been closed
         // or opened, so that we don't refresh content while the user still cares about it.
