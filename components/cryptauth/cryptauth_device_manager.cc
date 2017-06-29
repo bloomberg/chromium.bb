@@ -297,6 +297,14 @@ bool DictionaryToUnlockKey(const base::DictionaryValue& dictionary,
   return true;
 }
 
+std::unique_ptr<SyncSchedulerImpl> CreateSyncScheduler(
+    SyncScheduler::Delegate* delegate) {
+  return base::MakeUnique<SyncSchedulerImpl>(
+      delegate, base::TimeDelta::FromHours(kRefreshPeriodHours),
+      base::TimeDelta::FromMinutes(kDeviceSyncBaseRecoveryPeriodMinutes),
+      kDeviceSyncMaxJitterRatio, "CryptAuth DeviceSync");
+}
+
 }  // namespace
 
 CryptAuthDeviceManager::CryptAuthDeviceManager(
@@ -308,6 +316,7 @@ CryptAuthDeviceManager::CryptAuthDeviceManager(
       client_factory_(std::move(client_factory)),
       gcm_manager_(gcm_manager),
       pref_service_(pref_service),
+      scheduler_(CreateSyncScheduler(this)),
       weak_ptr_factory_(this) {
   UpdateUnlockKeysFromPrefs();
 }
@@ -349,7 +358,6 @@ void CryptAuthDeviceManager::Start() {
           prefs::kCryptAuthDeviceSyncIsRecoveringFromFailure) ||
       last_successful_sync.is_null();
 
-  scheduler_ = CreateSyncScheduler();
   scheduler_->Start(elapsed_time_since_last_sync,
                     is_recovering_from_failure
                         ? SyncScheduler::Strategy::AGGRESSIVE_RECOVERY
@@ -472,13 +480,6 @@ void CryptAuthDeviceManager::OnGetMyDevicesFailure(const std::string& error) {
   sync_request_.reset();
   for (auto& observer : observers_)
     observer.OnSyncFinished(SyncResult::FAILURE, DeviceChangeResult::UNCHANGED);
-}
-
-std::unique_ptr<SyncScheduler> CryptAuthDeviceManager::CreateSyncScheduler() {
-  return base::MakeUnique<SyncSchedulerImpl>(
-      this, base::TimeDelta::FromHours(kRefreshPeriodHours),
-      base::TimeDelta::FromMinutes(kDeviceSyncBaseRecoveryPeriodMinutes),
-      kDeviceSyncMaxJitterRatio, "CryptAuth DeviceSync");
 }
 
 void CryptAuthDeviceManager::OnResyncMessage() {

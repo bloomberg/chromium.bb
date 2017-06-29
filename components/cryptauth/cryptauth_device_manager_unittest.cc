@@ -297,14 +297,11 @@ class TestCryptAuthDeviceManager : public CryptAuthDeviceManager {
                                gcm_manager,
                                pref_service),
         scoped_sync_scheduler_(new NiceMock<MockSyncScheduler>()),
-        weak_sync_scheduler_factory_(scoped_sync_scheduler_.get()) {}
+        weak_sync_scheduler_factory_(scoped_sync_scheduler_) {
+    SetSyncSchedulerForTest(base::WrapUnique(scoped_sync_scheduler_));
+  }
 
   ~TestCryptAuthDeviceManager() override {}
-
-  std::unique_ptr<SyncScheduler> CreateSyncScheduler() override {
-    EXPECT_TRUE(scoped_sync_scheduler_);
-    return std::move(scoped_sync_scheduler_);
-  }
 
   base::WeakPtr<MockSyncScheduler> GetSyncScheduler() {
     return weak_sync_scheduler_factory_.GetWeakPtr();
@@ -312,8 +309,8 @@ class TestCryptAuthDeviceManager : public CryptAuthDeviceManager {
 
  private:
   // Ownership is passed to |CryptAuthDeviceManager| super class when
-  // |CreateSyncScheduler()| is called.
-  std::unique_ptr<MockSyncScheduler> scoped_sync_scheduler_;
+  // SetSyncSchedulerForTest() is called.
+  MockSyncScheduler* scoped_sync_scheduler_;
 
   // Stores the pointer of |scoped_sync_scheduler_| after ownership is passed to
   // the super class.

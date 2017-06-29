@@ -119,8 +119,9 @@ class CryptAuthDeviceManager : public SyncScheduler::Delegate,
   // use this constructor outside of tests.
   CryptAuthDeviceManager();
 
-  // Creates a new SyncScheduler instance. Exposed for testing.
-  virtual std::unique_ptr<SyncScheduler> CreateSyncScheduler();
+  void SetSyncSchedulerForTest(std::unique_ptr<SyncScheduler> sync_scheduler) {
+    scheduler_ = std::move(sync_scheduler);
+  }
 
  private:
   // CryptAuthGCMManager::Observer:
