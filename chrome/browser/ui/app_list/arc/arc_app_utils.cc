@@ -386,6 +386,13 @@ void ShowTalkBackSettings() {
                                         kIntentHelperClassName, "{}");
 }
 
+void StartPaiFlow() {
+  arc::mojom::AppInstance* app_instance = GET_APP_INSTANCE(StartPaiFlow);
+  if (!app_instance)
+    return;
+  app_instance->StartPaiFlow();
+}
+
 bool CanHandleResolution(content::BrowserContext* context,
                          const std::string& app_id,
                          const gfx::Rect& rect,

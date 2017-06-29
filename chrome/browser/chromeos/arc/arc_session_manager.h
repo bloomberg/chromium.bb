@@ -29,6 +29,7 @@ namespace arc {
 
 class ArcAndroidManagementChecker;
 class ArcAuthContext;
+class ArcPaiStarter;
 class ArcTermsOfServiceNegotiator;
 enum class ProvisioningResult : int;
 
@@ -226,6 +227,10 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   // Returns true if ARC requested to start.
   bool enable_requested() const { return enable_requested_; }
 
+  // Returns PAI starter that is used to start Play Auto Install flow. It is
+  // available only on initial start.
+  ArcPaiStarter* pai_starter() { return pai_starter_.get(); }
+
   // Injectors for testing.
   void SetArcSessionRunnerForTesting(
       std::unique_ptr<ArcSessionRunner> arc_session_runner);
@@ -342,6 +347,7 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   std::unique_ptr<ArcAndroidManagementChecker> android_management_checker_;
 
   std::unique_ptr<ScopedOptInFlowTracker> scoped_opt_in_tracker_;
+  std::unique_ptr<ArcPaiStarter> pai_starter_;
 
   // The time when the sign in process started.
   base::Time sign_in_start_time_;

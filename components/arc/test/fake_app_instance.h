@@ -116,6 +116,7 @@ class FakeAppInstance : public mojom::AppInstance {
       const std::string& query,
       int32_t max_results,
       const GetRecentAndSuggestedAppsFromPlayStoreCallback& callback) override;
+  void StartPaiFlow() override;
 
   // Methods to reply messages.
   void SendRefreshAppList(const std::vector<mojom::AppInfo>& apps);
@@ -152,6 +153,8 @@ class FakeAppInstance : public mojom::AppInstance {
 
   int refresh_app_list_count() const { return refresh_app_list_count_; }
 
+  int start_pai_request_count() const { return start_pai_request_count_; }
+
   const std::vector<std::unique_ptr<Request>>& launch_requests() const {
     return launch_requests_;
   }
@@ -175,6 +178,8 @@ class FakeAppInstance : public mojom::AppInstance {
   mojom::AppHost* app_host_;
   // Number of RefreshAppList calls.
   int refresh_app_list_count_ = 0;
+  // Number of requests to start PAI flows.
+  int start_pai_request_count_ = 0;
   // Keeps information about launch requests.
   std::vector<std::unique_ptr<Request>> launch_requests_;
   // Keeps information about launch intents.

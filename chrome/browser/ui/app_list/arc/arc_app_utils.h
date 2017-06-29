@@ -119,8 +119,11 @@ void SetTaskActive(int task_id);
 // Closes the task.
 void CloseTask(int task_id);
 
-// Open TalkBack settings window.
+// Opens TalkBack settings window.
 void ShowTalkBackSettings();
+
+// Starts Play Auto Install flow.
+void StartPaiFlow();
 
 // Tests if the application can use the given target resolution.
 // The callback will receive the information once known.
