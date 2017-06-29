@@ -220,9 +220,21 @@ public class CustomTabsConnection {
      * @param The return value for the logged call.
      */
     void logCall(String name, Object result) {
-        if (mLogRequests) {
-            Log.w(TAG, "%s = %b, Calling UID = %d", name, result, Binder.getCallingUid());
-        }
+        if (!mLogRequests) return;
+        Log.w(TAG, "%s = %b, Calling UID = %d", name, result, Binder.getCallingUid());
+    }
+
+    /**
+     * If service requests logging is enabled, logs a callback.
+     *
+     * No rate-limiting, can be spammy if the app is misbehaved.
+     *
+     * @param name Callback name to log.
+     * @param args arguments of the callback.
+     */
+    void logCallback(String name, Object args) {
+        if (!mLogRequests) return;
+        Log.w(TAG, "%s args = %s", name, args);
     }
 
     public boolean newSession(CustomTabsSessionToken session) {
@@ -407,7 +419,7 @@ public class CustomTabsConnection {
         try {
             TraceEvent.begin("CustomTabsConnection.mayLaunchUrl");
             boolean success = mayLaunchUrlInternal(session, url, extras, otherLikelyBundles);
-            logCall("mayLaunchUrl()", success);
+            logCall("mayLaunchUrl(" + url + ")", success);
             return success;
         } finally {
             TraceEvent.end("CustomTabsConnection.mayLaunchUrl");
@@ -499,6 +511,7 @@ public class CustomTabsConnection {
                 result = false;
             }
         }
+        logCall("updateVisuals()", result);
         return result;
     }
 
@@ -821,6 +834,7 @@ public class CustomTabsConnection {
             // of exceptions. See crbug.com/517023.
             return false;
         }
+        logCallback("onNavigationEvent()", navigationEvent);
         return true;
     }
 
@@ -858,6 +872,17 @@ public class CustomTabsConnection {
         } catch (Exception e) {
             // Pokemon exception handling, see above and crbug.com/517023.
             return false;
+        }
+        if (mLogRequests) { // Don't always build the args.
+            // Pseudo-JSON (trailing comma).
+            StringBuilder argsStringBuilder = new StringBuilder("{");
+            for (String key : args.keySet()) {
+                argsStringBuilder.append("\"").append(key).append("\": \"").append(args.get(key));
+                argsStringBuilder.append("\", ");
+            }
+            argsStringBuilder.append("}");
+            logCallback("extraCallback(" + PAGE_LOAD_METRICS_CALLBACK + ")",
+                    argsStringBuilder.toString());
         }
         return true;
     }
