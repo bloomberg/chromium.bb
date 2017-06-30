@@ -63,9 +63,9 @@ String NavigatorDoNotTrack::doNotTrack(Navigator& navigator) {
 
 String NavigatorDoNotTrack::doNotTrack() {
   LocalFrame* frame = GetSupplementable()->GetFrame();
-  if (!frame || !frame->Loader().Client())
+  if (!frame || !frame->Client())
     return String();
-  return frame->Loader().Client()->DoNotTrackValue();
+  return frame->Client()->DoNotTrackValue();
 }
 
 }  // namespace blink

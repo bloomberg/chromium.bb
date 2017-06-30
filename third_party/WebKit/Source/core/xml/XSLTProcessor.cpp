@@ -84,7 +84,7 @@ Document* XSLTProcessor::CreateDocumentFromSource(
     old_document->Shutdown();
     // Re-create the LocalFrameView if needed.
     if (has_view)
-      frame->Loader().Client()->TransitionToCommittedForNewPage();
+      frame->Client()->TransitionToCommittedForNewPage();
     result = frame->DomWindow()->InstallNewDocument(source_mime_type, init,
                                                     force_xhtml);
 

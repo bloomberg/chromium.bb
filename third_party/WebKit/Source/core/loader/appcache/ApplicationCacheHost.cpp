@@ -97,7 +97,7 @@ void ApplicationCacheHost::WillStartLoadingMainResource(
 
   DCHECK(document_loader_->GetFrame());
   LocalFrame& frame = *document_loader_->GetFrame();
-  host_ = frame.Loader().Client()->CreateApplicationCacheHost(this);
+  host_ = frame.Client()->CreateApplicationCacheHost(this);
   if (!host_)
     return;
 

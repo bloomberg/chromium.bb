@@ -37,7 +37,6 @@
 #include "core/frame/UseCounter.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/DocumentLoader.h"
-#include "core/loader/FrameLoader.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/network/NetworkUtils.h"
 #include "platform/weborigin/SchemeRegistry.h"
@@ -326,7 +325,7 @@ bool MixedContentChecker::ShouldBlockFetch(
   Settings* settings = mixed_frame->GetSettings();
   // Use the current local frame's client; the embedder doesn't distinguish
   // mixed content signals from different frames on the same page.
-  LocalFrameClient* client = frame->Loader().Client();
+  LocalFrameClient* client = frame->Client();
   ContentSettingsClient* content_settings_client =
       frame->GetContentSettingsClient();
   SecurityOrigin* security_origin =
@@ -509,7 +508,7 @@ bool MixedContentChecker::IsMixedFormAction(
 
   // Use the current local frame's client; the embedder doesn't distinguish
   // mixed content signals from different frames on the same page.
-  frame->Loader().Client()->DidContainInsecureFormAction();
+  frame->Client()->DidContainInsecureFormAction();
 
   if (reporting_policy == SecurityViolationReportingPolicy::kReport) {
     String message = String::Format(
@@ -573,7 +572,7 @@ void MixedContentChecker::HandleCertificateError(
 
   // Use the current local frame's client; the embedder doesn't distinguish
   // mixed content signals from different frames on the same page.
-  LocalFrameClient* client = frame->Loader().Client();
+  LocalFrameClient* client = frame->Client();
   bool strict_mixed_content_checking_for_plugin =
       effective_frame->GetSettings() &&
       effective_frame->GetSettings()->GetStrictMixedContentCheckingForPlugin();

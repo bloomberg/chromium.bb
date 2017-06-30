@@ -295,7 +295,7 @@ class ScheduledPageBlock final : public ScheduledNavigation {
   }
 
   void Fire(LocalFrame* frame) override {
-    frame->Loader().Client()->LoadErrorPage(reason_);
+    frame->Client()->LoadErrorPage(reason_);
   }
 
  private:

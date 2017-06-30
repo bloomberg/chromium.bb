@@ -233,11 +233,8 @@ void HTMLPlugInElement::RequestPluginCreationWithoutLayoutObjectIfPossible() {
     return;
 
   if (!GetDocument().GetFrame() ||
-      !GetDocument()
-           .GetFrame()
-           ->Loader()
-           .Client()
-           ->CanCreatePluginWithoutRenderer(service_type_))
+      !GetDocument().GetFrame()->Client()->CanCreatePluginWithoutRenderer(
+          service_type_))
     return;
 
   if (GetLayoutObject() && GetLayoutObject()->IsLayoutEmbeddedContent())
@@ -247,11 +244,8 @@ void HTMLPlugInElement::RequestPluginCreationWithoutLayoutObjectIfPossible() {
 }
 
 void HTMLPlugInElement::CreatePluginWithoutLayoutObject() {
-  DCHECK(GetDocument()
-             .GetFrame()
-             ->Loader()
-             .Client()
-             ->CanCreatePluginWithoutRenderer(service_type_));
+  DCHECK(GetDocument().GetFrame()->Client()->CanCreatePluginWithoutRenderer(
+      service_type_));
 
   KURL url;
   // CSP can block src-less objects.

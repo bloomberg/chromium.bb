@@ -32,7 +32,6 @@
 
 #include "core/frame/FrameTestHelpers.h"
 #include "core/frame/WebLocalFrameBase.h"
-#include "core/loader/FrameLoader.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/text/CString.h"
 #include "platform/wtf/text/WTFString.h"
@@ -86,7 +85,7 @@ class LocalFrameClientImplTest : public ::testing::Test {
   Document& GetDocument() { return *MainFrame()->GetFrame()->GetDocument(); }
   MockWebFrameClient& WebFrameClient() { return web_frame_client_; }
   LocalFrameClient& GetLocalFrameClient() {
-    return *ToLocalFrameClientImpl(MainFrame()->GetFrame()->Loader().Client());
+    return *ToLocalFrameClientImpl(MainFrame()->GetFrame()->Client());
   }
 
  private:

@@ -23,11 +23,7 @@ void LinkManifest::Process() {
   if (!owner_ || !owner_->GetDocument().GetFrame())
     return;
 
-  owner_->GetDocument()
-      .GetFrame()
-      ->Loader()
-      .Client()
-      ->DispatchDidChangeManifest();
+  owner_->GetDocument().GetFrame()->Client()->DispatchDidChangeManifest();
 }
 
 bool LinkManifest::HasLoaded() const {
