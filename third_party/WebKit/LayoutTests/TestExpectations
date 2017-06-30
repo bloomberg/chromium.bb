@@ -2775,9 +2775,6 @@ crbug.com/73609 virtual/mojo-loading/http/tests/media/video-play-stall.html [ Pa
 # Sheriff failures 2017-02-27
 crbug.com/696407 [ Linux ] external/wpt/html/browsers/history/the-location-interface/location-protocol-setter-with-colon.sub.html [ Failure Pass ]
 
-crbug.com/697342 http/tests/push_messaging/permission-state-granted-in-document.html [ Pass Failure ]
-crbug.com/697342 virtual/mojo-loading/http/tests/push_messaging/permission-state-granted-in-document.html [ Pass Failure ]
-
 crbug.com/698520 external/wpt/preload/fetch-destination.https.html [ Failure Pass ]
 
 # Sheriff failures 2017-03-10

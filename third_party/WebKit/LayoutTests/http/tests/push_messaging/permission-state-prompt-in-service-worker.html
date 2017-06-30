@@ -2,9 +2,11 @@
 <html>
 <head>
 <title>
-   Push API: permissionState when called in service worker resolves with prompt when no permission is set
+   Push API: permissionState when called in service worker resolves with prompt when no permission
+   is set
 </title>
 <link rel="manifest" href="resources/push_manifest.json">
+<script src="../resources/permissions-helper.js"></script>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script src="../serviceworker/resources/test-helpers.js"></script>
@@ -13,28 +15,31 @@
 <body>
 <script>
 // This test uses the test runner. If running manually, clear permissions before running this test.
-async_test(function(test) {
-    if (window.testRunner)
-        testRunner.setPermission('push-messaging', 'prompt', location.origin, location.origin);
+async_test(test => {
+    const script = 'resources/instrumentation-service-worker.js';
+    const scope = 'resources/scope/' + location.pathname;
 
-    var script = 'resources/instrumentation-service-worker.js';
-    var scope = 'resources/scope/' + location.pathname;
+    PermissionsHelper.setPermission('push-messaging', 'prompt')
+        .then(() => getActiveServiceWorkerWithMessagePort(test, script, scope))
+        .then(workerInfo => {
+            workerInfo.port.postMessage({ command: 'permissionState',
+                                          options: { userVisibleOnly: true } });
 
-    getActiveServiceWorkerWithMessagePort(test, script, scope).then(function(workerInfo) {
-        workerInfo.port.postMessage({command: 'permissionState', options: {userVisibleOnly: true}});
+            workerInfo.port.addEventListener('message', event => {
+                if (typeof event.data != 'object' || !event.data.command)
+                    assert_unreached('Invalid message from the service worker');
 
-        workerInfo.port.addEventListener('message', function(event) {
-            if (typeof event.data != 'object' || !event.data.command)
-                assert_unreached('Invalid message from the service worker');
+                assert_equals(event.data.command, 'permissionState');
+                assert_true(
+                    event.data.success,
+                    'permissionState should succeed. Error message: ' + event.data.errorMessage);
 
-            assert_equals(event.data.command, 'permissionState');
-            assert_true(event.data.success,
-                        'permissionState should succeed. Error message: ' + event.data.errorMessage);
-            assert_equals(event.data.permission, 'prompt');
+                assert_equals(event.data.permission, 'prompt');
 
-            test.done();
-        });
-    }).catch(unreached_rejection(test));
+                test.done();
+            });
+        })
+        .catch(unreached_rejection(test));
 }, 'permissionState when called in service worker resolves with prompt when no permission is set');
 </script>
 </body>

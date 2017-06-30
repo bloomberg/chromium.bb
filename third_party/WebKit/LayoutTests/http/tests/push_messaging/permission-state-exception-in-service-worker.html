@@ -1,8 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Push API: permissionState when called in service worker fails with NotSupportedError if userVisibleOnly is not used</title>
+<title>
+  Push API: permissionState when called in service worker fails with NotSupportedError if
+  userVisibleOnly is not used
+</title>
 <link rel="manifest" href="resources/push_manifest.json">
+<script src="../resources/permissions-helper.js"></script>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script src="../serviceworker/resources/test-helpers.js"></script>
@@ -11,23 +15,24 @@
 <body>
 <script>
 // This test uses the test runner. If running manually, clear permissions before running this test.
-async_test(function(test) {
-    if (window.testRunner)
-        testRunner.setPermission('push-messaging', 'prompt', location.origin, location.origin);
+async_test(test => {
+    const script = 'resources/instrumentation-service-worker.js';
+    const scope = 'resources/scope/' + location.pathname;
 
-    var script = 'resources/instrumentation-service-worker.js';
-    var scope = 'resources/scope/' + location.pathname;
-
-    getActiveServiceWorkerWithMessagePort(test, script, scope).then(function(workerInfo) {
-        workerInfo.port.postMessage({command: 'permissionState'});
-        workerInfo.port.addEventListener('message', function(event) {
-            assert_equals(event.data.errorMessage,
-                         'Push subscriptions that don\'t enable userVisibleOnly are not supported.');
-            test.done();
-        });
-
-    }).catch(unreached_rejection(test));
-}, 'Push API: permissionState when called in service worker fails with NotSupportedError if userVisibleOnly is not used');
+    PermissionsHelper.setPermission('push-messaging', 'prompt')
+        .then(() => getActiveServiceWorkerWithMessagePort(test, script, scope))
+        .then(workerInfo => {
+            workerInfo.port.postMessage({command: 'permissionState'});
+            workerInfo.port.addEventListener('message', event => {
+                assert_equals(
+                    event.data.errorMessage,
+                    'Push subscriptions that don\'t enable userVisibleOnly are not supported.');
+                test.done();
+            });
+        })
+        .catch(unreached_rejection(test));
+}, 'Push API: permissionState when called in service worker fails with NotSupportedError if ' +
+       'userVisibleOnly is not used');
 </script>
 </body>
 </html>
