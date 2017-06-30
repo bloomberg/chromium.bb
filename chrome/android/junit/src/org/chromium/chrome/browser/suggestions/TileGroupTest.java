@@ -197,10 +197,11 @@ public class TileGroupTest {
 
     @Test
     public void testRenderTileView() {
-        TileGroup tileGroup =
-                new TileGroup(RuntimeEnvironment.application, mock(SuggestionsUiDelegate.class),
-                        mock(ContextMenuManager.class), mTileGroupDelegate, mTileGroupObserver,
-                        mock(OfflinePageBridge.class), TILE_TITLE_LINES);
+        SuggestionsUiDelegate uiDelegate = mock(SuggestionsUiDelegate.class);
+        when(uiDelegate.getImageFetcher()).thenReturn(mock(ImageFetcher.class));
+        TileGroup tileGroup = new TileGroup(RuntimeEnvironment.application, uiDelegate,
+                mock(ContextMenuManager.class), mTileGroupDelegate, mTileGroupObserver,
+                mock(OfflinePageBridge.class), TILE_TITLE_LINES);
         tileGroup.startObserving(MAX_TILES_TO_FETCH);
         ViewGroup layout = new FrameLayout(RuntimeEnvironment.application, null);
 
@@ -216,10 +217,11 @@ public class TileGroupTest {
 
     @Test
     public void testRenderTileViewWithDuplicatedUrl() {
-        TileGroup tileGroup =
-                new TileGroup(RuntimeEnvironment.application, mock(SuggestionsUiDelegate.class),
-                        mock(ContextMenuManager.class), mTileGroupDelegate, mTileGroupObserver,
-                        mock(OfflinePageBridge.class), TILE_TITLE_LINES);
+        SuggestionsUiDelegate uiDelegate = mock(SuggestionsUiDelegate.class);
+        when(uiDelegate.getImageFetcher()).thenReturn(mock(ImageFetcher.class));
+        TileGroup tileGroup = new TileGroup(RuntimeEnvironment.application, uiDelegate,
+                mock(ContextMenuManager.class), mTileGroupDelegate, mTileGroupObserver,
+                mock(OfflinePageBridge.class), TILE_TITLE_LINES);
         tileGroup.startObserving(MAX_TILES_TO_FETCH);
         ViewGroup layout = new FrameLayout(RuntimeEnvironment.application, null);
 
@@ -235,10 +237,11 @@ public class TileGroupTest {
 
     @Test
     public void testRenderTileViewReplacing() {
-        TileGroup tileGroup =
-                new TileGroup(RuntimeEnvironment.application, mock(SuggestionsUiDelegate.class),
-                        mock(ContextMenuManager.class), mTileGroupDelegate, mTileGroupObserver,
-                        mock(OfflinePageBridge.class), TILE_TITLE_LINES);
+        SuggestionsUiDelegate uiDelegate = mock(SuggestionsUiDelegate.class);
+        when(uiDelegate.getImageFetcher()).thenReturn(mock(ImageFetcher.class));
+        TileGroup tileGroup = new TileGroup(RuntimeEnvironment.application, uiDelegate,
+                mock(ContextMenuManager.class), mTileGroupDelegate, mTileGroupObserver,
+                mock(OfflinePageBridge.class), TILE_TITLE_LINES);
         tileGroup.startObserving(MAX_TILES_TO_FETCH);
         notifyTileUrlsAvailable(URLS);
 
@@ -290,6 +293,7 @@ public class TileGroupTest {
     @Test
     public void testIconLoading() {
         SuggestionsUiDelegate uiDelegate = mock(SuggestionsUiDelegate.class);
+        when(uiDelegate.getImageFetcher()).thenReturn(mock(ImageFetcher.class));
         TileGroup tileGroup = new TileGroup(RuntimeEnvironment.application, uiDelegate,
                 mock(ContextMenuManager.class), mTileGroupDelegate, mTileGroupObserver,
                 mock(OfflinePageBridge.class), TILE_TITLE_LINES);
@@ -304,7 +308,8 @@ public class TileGroupTest {
         verify(mTileGroupObserver).onLoadTaskAdded();
 
         ArgumentCaptor<LargeIconCallback> captor = ArgumentCaptor.forClass(LargeIconCallback.class);
-        verify(uiDelegate).getLargeIconForUrl(any(String.class), anyInt(), captor.capture());
+        verify(uiDelegate.getImageFetcher())
+                .makeLargeIconRequest(any(String.class), anyInt(), captor.capture());
         for (LargeIconCallback cb : captor.getAllValues()) {
             cb.onLargeIconAvailable(mock(Bitmap.class), Color.BLACK, /* isColorDefault = */ false);
         }
@@ -316,6 +321,7 @@ public class TileGroupTest {
     @Test
     public void testIconLoadingNoTask() {
         SuggestionsUiDelegate uiDelegate = mock(SuggestionsUiDelegate.class);
+        when(uiDelegate.getImageFetcher()).thenReturn(mock(ImageFetcher.class));
         TileGroup tileGroup = new TileGroup(RuntimeEnvironment.application, uiDelegate,
                 mock(ContextMenuManager.class), mTileGroupDelegate, mTileGroupObserver,
                 mock(OfflinePageBridge.class), TILE_TITLE_LINES);
@@ -330,7 +336,8 @@ public class TileGroupTest {
         verify(mTileGroupObserver, never()).onLoadTaskAdded();
 
         ArgumentCaptor<LargeIconCallback> captor = ArgumentCaptor.forClass(LargeIconCallback.class);
-        verify(uiDelegate).getLargeIconForUrl(any(String.class), anyInt(), captor.capture());
+        verify(uiDelegate.getImageFetcher())
+                .makeLargeIconRequest(any(String.class), anyInt(), captor.capture());
         for (LargeIconCallback cb : captor.getAllValues()) {
             cb.onLargeIconAvailable(mock(Bitmap.class), Color.BLACK, /* isColorDefault = */ false);
         }
@@ -342,6 +349,7 @@ public class TileGroupTest {
     @Test
     public void testIconLoadingWhenTileNotRegistered() {
         SuggestionsUiDelegate uiDelegate = mock(SuggestionsUiDelegate.class);
+        when(uiDelegate.getImageFetcher()).thenReturn(mock(ImageFetcher.class));
         TileGroup tileGroup = new TileGroup(RuntimeEnvironment.application, uiDelegate,
                 mock(ContextMenuManager.class), mTileGroupDelegate, mTileGroupObserver,
                 mock(OfflinePageBridge.class), TILE_TITLE_LINES);
@@ -354,7 +362,8 @@ public class TileGroupTest {
         verify(mTileGroupObserver).onLoadTaskAdded();
 
         ArgumentCaptor<LargeIconCallback> captor = ArgumentCaptor.forClass(LargeIconCallback.class);
-        verify(uiDelegate).getLargeIconForUrl(any(String.class), anyInt(), captor.capture());
+        verify(uiDelegate.getImageFetcher())
+                .makeLargeIconRequest(any(String.class), anyInt(), captor.capture());
         captor.getValue().onLargeIconAvailable(mock(Bitmap.class), Color.BLACK, false);
 
         verify(mTileGroupObserver).onLoadTaskCompleted();

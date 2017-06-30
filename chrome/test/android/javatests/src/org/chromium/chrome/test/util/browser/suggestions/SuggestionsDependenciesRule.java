@@ -8,6 +8,8 @@ import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.chrome.browser.download.ui.ThumbnailProvider;
+import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -52,6 +54,8 @@ public class SuggestionsDependenciesRule extends TestWatcher {
         public MostVisitedSites mostVisitedSites;
         public LargeIconBridge largeIconBridge;
         public SuggestionsEventReporter eventReporter;
+        public ThumbnailProvider thumbnailProvider;
+        public FaviconHelper faviconHelper;
 
         @Override
         public SuggestionsSource createSuggestionSource(Profile profile) {
@@ -75,6 +79,18 @@ public class SuggestionsDependenciesRule extends TestWatcher {
         public LargeIconBridge createLargeIconBridge(Profile profile) {
             if (largeIconBridge != null) return largeIconBridge;
             return new LargeIconBridge(profile);
+        }
+
+        @Override
+        public ThumbnailProvider createThumbnailProvider() {
+            if (thumbnailProvider != null) return thumbnailProvider;
+            return super.createThumbnailProvider();
+        }
+
+        @Override
+        public FaviconHelper createFaviconHelper() {
+            if (faviconHelper != null) return faviconHelper;
+            return super.createFaviconHelper();
         }
     }
 }
