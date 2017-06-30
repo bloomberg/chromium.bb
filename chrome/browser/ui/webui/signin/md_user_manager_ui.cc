@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "chrome/browser/ui/webui/signin/user_manager_screen_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/features.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -67,6 +69,9 @@ content::WebUIDataSource* MDUserManagerUI::CreateUIDataSource(
   source->AddBoolean("profileShortcutsEnabled",
                      ProfileShortcutManager::IsFeatureEnabled());
   source->AddBoolean("isForceSigninEnabled", signin::IsForceSigninEnabled());
+  source->AddBoolean(
+      "isSupervisedUserCreationEnabled",
+      base::FeatureList::IsEnabled(features::kSupervisedUserCreation));
 
   source->SetJsonPath("strings.js");
 

@@ -154,7 +154,7 @@
           hidden="[[!isProfileShortcutsEnabled_]]">
         $i18n{createDesktopShortcutLabel}
       </paper-checkbox>
-      <template is="dom-if" if="[[!isForceSigninEnabled_]]">
+      <template is="dom-if" if="[[isSupervisedUserCreationEnabled_]]">
         <paper-checkbox id="makeSupervisedCheckbox" checked="{{isSupervised_}}">
           $i18n{manageProfilesSupervisedSignedInLabel}
         </paper-checkbox>
