@@ -147,8 +147,6 @@ source_set("common") {
     "frame_owner_properties.h",
     "frame_replication_state.cc",
     "frame_replication_state.h",
-    "generic_shared_memory_id_generator.cc",
-    "generic_shared_memory_id_generator.h",
     "gin_java_bridge_messages.h",
     "in_process_child_thread_params.cc",
     "in_process_child_thread_params.h",

@@ -17,13 +17,10 @@
 #include "build/build_config.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/common/child_process_host_impl.h"
-#include "content/common/generic_shared_memory_id_generator.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
-#include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/ipc/client/gpu_memory_buffer_impl.h"
 #include "gpu/ipc/client/gpu_memory_buffer_impl_shared_memory.h"
-#include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/gpu_memory_buffer_tracing.h"
 #include "ui/gl/gl_switches.h"
@@ -262,8 +259,7 @@ void BrowserGpuMemoryBufferManager::HandleCreateGpuMemoryBufferOnIO(
     CreateGpuMemoryBufferRequest* request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  gfx::GpuMemoryBufferId new_id = content::GetNextGenericSharedMemoryId();
-
+  gfx::GpuMemoryBufferId new_id(next_gpu_memory_id_++);
   // Use service side allocation for native configurations.
   if (IsNativeGpuMemoryBufferConfiguration(request->format, request->usage)) {
     // Note: Unretained is safe as this is only used for synchronous allocation

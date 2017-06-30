@@ -123,6 +123,7 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
   const gpu::GpuMemoryBufferConfigurationSet native_configurations_;
   const int gpu_client_id_;
   const uint64_t gpu_client_tracing_id_;
+  int next_gpu_memory_id_ = 1;
 
   // Stores info about buffers for all clients. This should only be accessed
   // on the IO thread.
