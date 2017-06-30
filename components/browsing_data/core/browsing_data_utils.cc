@@ -91,22 +91,6 @@ void RecordTimePeriodChange(TimePeriod period) {
   }
 }
 
-void RecordDeletionFromTab(ClearBrowsingDataTab tab) {
-  UMA_HISTOGRAM_ENUMERATION("History.ClearBrowsingData.UserDeletedFromTab", tab,
-                            browsing_data::ClearBrowsingDataTab::NUM_TYPES);
-  switch (tab) {
-    case ClearBrowsingDataTab::BASIC:
-      base::RecordAction(base::UserMetricsAction("ClearBrowsingData_BasicTab"));
-      break;
-    case ClearBrowsingDataTab::ADVANCED:
-      base::RecordAction(
-          base::UserMetricsAction("ClearBrowsingData_AdvancedTab"));
-      break;
-    case ClearBrowsingDataTab::NUM_TYPES:
-      NOTREACHED();
-  }
-}
-
 base::string16 GetCounterTextFromResult(
     const BrowsingDataCounter::Result* result) {
   base::string16 text;
