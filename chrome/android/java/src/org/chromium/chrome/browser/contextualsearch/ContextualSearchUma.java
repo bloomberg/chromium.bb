@@ -844,6 +844,21 @@ public class ContextualSearchUma {
     }
 
     /**
+     * Log whether results were seen due to a Tap on what we've recognized as a probable entity.
+     * @param wasSearchContentViewSeen If the panel was opened.
+     * @param isWordAnEntity Whether this tap was on a word that's an entity.
+     */
+    public static void logTapOnEntitySeen(
+            boolean wasSearchContentViewSeen, boolean isWordAnEntity) {
+        if (isWordAnEntity) {
+            // We just record CTR of probable entity words.
+            RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchEntitySeen",
+                    wasSearchContentViewSeen ? RESULTS_SEEN : RESULTS_NOT_SEEN,
+                    RESULTS_SEEN_BOUNDARY);
+        }
+    }
+
+    /**
      * Logs whether results were seen and whether any tap suppression heuristics were satisfied.
      * @param wasSearchContentViewSeen If the panel was opened.
      * @param wasAnySuppressionHeuristicSatisfied Whether any of the implemented suppression

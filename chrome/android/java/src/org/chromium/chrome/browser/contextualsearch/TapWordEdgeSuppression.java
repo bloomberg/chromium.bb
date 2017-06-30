@@ -60,15 +60,15 @@ class TapWordEdgeSuppression extends ContextualSearchHeuristic {
      */
     private boolean isTapNearWordEdge(ContextualSearchContext contextualSearchContext) {
         // If setup failed, don't suppress.
-        String tappedWord = contextualSearchContext.getTappedWord();
-        int tapOffset = contextualSearchContext.getTappedWordOffset();
-        if (TextUtils.isEmpty(tappedWord) || tapOffset == INVALID_OFFSET) return false;
+        String wordTapped = contextualSearchContext.getWordTapped();
+        int tapOffset = contextualSearchContext.getTapOffsetWithinTappedWord();
+        if (TextUtils.isEmpty(wordTapped) || tapOffset == INVALID_OFFSET) return false;
 
         // If the word is long enough, suppress if the tap was near one end or the other.
-        boolean isInStartEdge = (double) tapOffset / tappedWord.length() < MIN_WORD_START_RATIO;
-        boolean isInEndEdge = (double) (tappedWord.length() - tapOffset) / tappedWord.length()
+        boolean isInStartEdge = (double) tapOffset / wordTapped.length() < MIN_WORD_START_RATIO;
+        boolean isInEndEdge = (double) (wordTapped.length() - tapOffset) / wordTapped.length()
                 < MIN_WORD_END_RATIO;
-        if (tappedWord.length() >= MIN_WORD_LENGTH && (isInStartEdge || isInEndEdge)) return true;
+        if (wordTapped.length() >= MIN_WORD_LENGTH && (isInStartEdge || isInEndEdge)) return true;
 
         return false;
     }

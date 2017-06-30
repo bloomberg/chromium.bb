@@ -69,7 +69,7 @@ class TapWordLengthSuppression extends ContextualSearchHeuristic {
     private boolean isTapOnWordLongerThan(
             int maxWordLength, ContextualSearchContext contextualSearchContext) {
         // If setup failed, don't suppress.
-        String tappedWord = contextualSearchContext.getTappedWord();
-        return !TextUtils.isEmpty(tappedWord) && tappedWord.length() > maxWordLength;
+        String wordTapped = contextualSearchContext.getWordTapped();
+        return !TextUtils.isEmpty(wordTapped) && wordTapped.length() > maxWordLength;
     }
 }
