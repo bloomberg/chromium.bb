@@ -16,6 +16,8 @@
 #include "components/reading_list/core/reading_list_model.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/content_suggestions/content_suggestions_alert_commands.h"
+#import "ios/chrome/browser/content_suggestions/content_suggestions_alert_factory.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_header_controller.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_mediator.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
@@ -23,7 +25,7 @@
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory.h"
 #include "ios/chrome/browser/ntp_tiles/ios_most_visited_sites_factory.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
-#import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
+#import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
@@ -52,6 +54,7 @@
 #endif
 
 @interface ContentSuggestionsCoordinator ()<
+    ContentSuggestionsAlertCommands,
     ContentSuggestionsCommands,
     ContentSuggestionsHeaderCommands,
     ContentSuggestionsViewControllerDelegate,
@@ -70,13 +73,6 @@
 
 // |YES| if the fakebox header should be animated on scroll.
 @property(nonatomic, assign) BOOL animateHeader;
-
-// Opens the |URL| in a new tab |incognito| or not.
-- (void)openNewTabWithURL:(const GURL&)URL incognito:(BOOL)incognito;
-// Dismisses the |article|, removing it from the content service, and dismisses
-// the item at |indexPath| in the view controller.
-- (void)dismissArticle:(ContentSuggestionsItem*)article
-           atIndexPath:(NSIndexPath*)indexPath;
 
 @end
 
@@ -169,8 +165,6 @@
                  referrer:web::Referrer()
                transition:ui::PAGE_TRANSITION_AUTO_BOOKMARK
         rendererInitiated:NO];
-
-  [self stop];
 }
 
 - (void)openMostVisitedItem:(CollectionViewItem*)item
@@ -184,85 +178,17 @@
                  referrer:web::Referrer()
                transition:ui::PAGE_TRANSITION_AUTO_BOOKMARK
         rendererInitiated:NO];
-
-  [self stop];
 }
 
 - (void)displayContextMenuForArticle:(CollectionViewItem*)item
                              atPoint:(CGPoint)touchLocation
                          atIndexPath:(NSIndexPath*)indexPath {
-  ContentSuggestionsItem* articleItem =
-      base::mac::ObjCCastStrict<ContentSuggestionsItem>(item);
-  self.alertCoordinator = [[ActionSheetCoordinator alloc]
-      initWithBaseViewController:self.suggestionsViewController
-                           title:nil
-                         message:nil
-                            rect:CGRectMake(touchLocation.x, touchLocation.y, 0,
-                                            0)
-                            view:self.suggestionsViewController.collectionView];
-
-  __weak ContentSuggestionsCoordinator* weakSelf = self;
-  GURL articleURL = articleItem.URL;
-  NSString* articleTitle = articleItem.title;
-  __weak ContentSuggestionsItem* weakArticle = articleItem;
-
-  NSString* openInNewTabTitle =
-      l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB);
-  [self.alertCoordinator
-      addItemWithTitle:openInNewTabTitle
-                action:^{
-                  // TODO(crbug.com/691979): Add metrics.
-                  [weakSelf openNewTabWithURL:articleURL incognito:NO];
-                }
-                 style:UIAlertActionStyleDefault];
-
-  NSString* openInNewTabIncognitoTitle =
-      l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWINCOGNITOTAB);
-  [self.alertCoordinator
-      addItemWithTitle:openInNewTabIncognitoTitle
-                action:^{
-                  // TODO(crbug.com/691979): Add metrics.
-                  [weakSelf openNewTabWithURL:articleURL incognito:YES];
-                }
-                 style:UIAlertActionStyleDefault];
-
-  NSString* readLaterTitle =
-      l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_ADDTOREADINGLIST);
-  [self.alertCoordinator
-      addItemWithTitle:readLaterTitle
-                action:^{
-                  ContentSuggestionsCoordinator* strongSelf = weakSelf;
-                  if (!strongSelf)
-                    return;
-
-                  base::RecordAction(
-                      base::UserMetricsAction("MobileReadingListAdd"));
-                  // TODO(crbug.com/691979): Add metrics.
-
-                  ReadingListModel* readingModel =
-                      ReadingListModelFactory::GetForBrowserState(
-                          strongSelf.browserState);
-                  readingModel->AddEntry(articleURL,
-                                         base::SysNSStringToUTF8(articleTitle),
-                                         reading_list::ADDED_VIA_CURRENT_APP);
-                }
-                 style:UIAlertActionStyleDefault];
-
-  NSString* deleteTitle =
-      l10n_util::GetNSString(IDS_IOS_CONTENT_SUGGESTIONS_REMOVE);
-  [self.alertCoordinator addItemWithTitle:deleteTitle
-                                   action:^{
-                                     // TODO(crbug.com/691979): Add metrics.
-                                     [weakSelf dismissArticle:weakArticle
-                                                  atIndexPath:indexPath];
-                                   }
-                                    style:UIAlertActionStyleDestructive];
-
-  [self.alertCoordinator addItemWithTitle:l10n_util::GetNSString(IDS_APP_CANCEL)
-                                   action:^{
-                                     // TODO(crbug.com/691979): Add metrics.
-                                   }
-                                    style:UIAlertActionStyleCancel];
+  self.alertCoordinator = [ContentSuggestionsAlertFactory
+      alertCoordinatorForSuggestionItem:item
+                       onViewController:self.suggestionsViewController
+                                atPoint:touchLocation
+                            atIndexPath:indexPath
+                         commandHandler:self];
 
   [self.alertCoordinator start];
 }
@@ -270,68 +196,12 @@
 - (void)displayContextMenuForMostVisitedItem:(CollectionViewItem*)item
                                      atPoint:(CGPoint)touchLocation
                                  atIndexPath:(NSIndexPath*)indexPath {
-  ContentSuggestionsMostVisitedItem* mostVisitedItem =
-      base::mac::ObjCCastStrict<ContentSuggestionsMostVisitedItem>(item);
-  self.alertCoordinator = [[ActionSheetCoordinator alloc]
-      initWithBaseViewController:self.suggestionsViewController
-                           title:nil
-                         message:nil
-                            rect:CGRectMake(touchLocation.x, touchLocation.y, 0,
-                                            0)
-                            view:self.suggestionsViewController.collectionView];
-
-  __weak ContentSuggestionsCoordinator* weakSelf = self;
-  __weak ContentSuggestionsMostVisitedItem* weakItem = mostVisitedItem;
-
-  [self.alertCoordinator
-      addItemWithTitle:l10n_util::GetNSStringWithFixup(
-                           IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB)
-                action:^{
-                  ContentSuggestionsCoordinator* strongSelf = weakSelf;
-                  ContentSuggestionsMostVisitedItem* strongItem = weakItem;
-                  if (!strongSelf || !strongItem)
-                    return;
-                  [strongSelf logMostVisitedOpening:strongItem
-                                            atIndex:indexPath.item];
-                  [strongSelf openNewTabWithURL:strongItem.URL incognito:NO];
-                }
-                 style:UIAlertActionStyleDefault];
-
-  if (!self.browserState->IsOffTheRecord()) {
-    [self.alertCoordinator
-        addItemWithTitle:l10n_util::GetNSStringWithFixup(
-                             IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWINCOGNITOTAB)
-                  action:^{
-                    ContentSuggestionsCoordinator* strongSelf = weakSelf;
-                    ContentSuggestionsMostVisitedItem* strongItem = weakItem;
-                    if (!strongSelf || !strongItem)
-                      return;
-                    [strongSelf logMostVisitedOpening:strongItem
-                                              atIndex:indexPath.item];
-                    [strongSelf openNewTabWithURL:strongItem.URL incognito:YES];
-                  }
-                   style:UIAlertActionStyleDefault];
-  }
-
-  [self.alertCoordinator
-      addItemWithTitle:l10n_util::GetNSStringWithFixup(
-                           IDS_IOS_CONTENT_SUGGESTIONS_REMOVE)
-                action:^{
-                  ContentSuggestionsCoordinator* strongSelf = weakSelf;
-                  ContentSuggestionsMostVisitedItem* strongItem = weakItem;
-                  if (!strongSelf || !strongItem)
-                    return;
-                  base::RecordAction(
-                      base::UserMetricsAction("MostVisited_UrlBlacklisted"));
-                  [strongSelf.contentSuggestionsMediator
-                      blacklistMostVisitedURL:strongItem.URL];
-                  [strongSelf showMostVisitedUndoForURL:strongItem.URL];
-                }
-                 style:UIAlertActionStyleDestructive];
-
-  [self.alertCoordinator addItemWithTitle:l10n_util::GetNSString(IDS_APP_CANCEL)
-                                   action:nil
-                                    style:UIAlertActionStyleCancel];
+  self.alertCoordinator = [ContentSuggestionsAlertFactory
+      alertCoordinatorForMostVisitedItem:item
+                        onViewController:self.suggestionsViewController
+                                 atPoint:touchLocation
+                             atIndexPath:indexPath
+                          commandHandler:self];
 
   [self.alertCoordinator start];
 }
@@ -362,6 +232,54 @@
     return;
   }
   NOTREACHED();
+}
+
+#pragma mark - ContentSuggestionsAlertCommands
+
+- (void)openNewTabWithSuggestionsItem:(CollectionViewItem*)item
+                            incognito:(BOOL)incognito {
+  ContentSuggestionsItem* suggestionsItem =
+      base::mac::ObjCCastStrict<ContentSuggestionsItem>(item);
+  [self openNewTabWithURL:suggestionsItem.URL incognito:incognito];
+}
+
+- (void)addItemToReadingList:(CollectionViewItem*)item {
+  ContentSuggestionsItem* suggestionsItem =
+      base::mac::ObjCCastStrict<ContentSuggestionsItem>(item);
+  base::RecordAction(base::UserMetricsAction("MobileReadingListAdd"));
+  ReadingListModel* readingModel =
+      ReadingListModelFactory::GetForBrowserState(self.browserState);
+  readingModel->AddEntry(suggestionsItem.URL,
+                         base::SysNSStringToUTF8(suggestionsItem.title),
+                         reading_list::ADDED_VIA_CURRENT_APP);
+}
+
+- (void)dismissSuggestion:(CollectionViewItem*)item
+              atIndexPath:(NSIndexPath*)indexPath {
+  ContentSuggestionsItem* suggestionsItem =
+      base::mac::ObjCCastStrict<ContentSuggestionsItem>(item);
+
+  // TODO(crbug.com/691979): Add metrics.
+  [self.contentSuggestionsMediator
+      dismissSuggestion:suggestionsItem.suggestionIdentifier];
+  [self.suggestionsViewController dismissEntryAtIndexPath:indexPath];
+}
+
+- (void)openNewTabWithMostVisitedItem:(CollectionViewItem*)item
+                            incognito:(BOOL)incognito
+                              atIndex:(NSInteger)index {
+  ContentSuggestionsMostVisitedItem* mostVisitedItem =
+      base::mac::ObjCCastStrict<ContentSuggestionsMostVisitedItem>(item);
+  [self logMostVisitedOpening:mostVisitedItem atIndex:index];
+  [self openNewTabWithURL:mostVisitedItem.URL incognito:incognito];
+}
+
+- (void)removeMostVisited:(CollectionViewItem*)item {
+  ContentSuggestionsMostVisitedItem* mostVisitedItem =
+      base::mac::ObjCCastStrict<ContentSuggestionsMostVisitedItem>(item);
+  base::RecordAction(base::UserMetricsAction("MostVisited_UrlBlacklisted"));
+  [self.contentSuggestionsMediator blacklistMostVisitedURL:mostVisitedItem.URL];
+  [self showMostVisitedUndoForURL:mostVisitedItem.URL];
 }
 
 #pragma mark - ContentSuggestionsHeaderCommands
@@ -491,6 +409,7 @@
 
 #pragma mark - Private
 
+// Opens the |URL| in a new tab |incognito| or not.
 - (void)openNewTabWithURL:(const GURL&)URL incognito:(BOOL)incognito {
   // TODO(crbug.com/691979): Add metrics.
 
@@ -499,19 +418,6 @@
                          inIncognito:incognito
                         inBackground:NO
                             appendTo:kCurrentTab];
-
-  [self stop];
-}
-
-- (void)dismissArticle:(ContentSuggestionsItem*)article
-           atIndexPath:(NSIndexPath*)indexPath {
-  if (!article)
-    return;
-
-  // TODO(crbug.com/691979): Add metrics.
-  [self.contentSuggestionsMediator
-      dismissSuggestion:article.suggestionIdentifier];
-  [self.suggestionsViewController dismissEntryAtIndexPath:indexPath];
 }
 
 // Logs a histogram due to a Most Visited item being opened.
