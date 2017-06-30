@@ -74,8 +74,14 @@ NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetMarginStrut(
 }
 
 NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetBfcOffset(
-    const NGLogicalOffset& offset) {
-  bfc_offset_ = offset;
+    const NGLogicalOffset& bfc_offset) {
+  bfc_offset_ = bfc_offset;
+  return *this;
+}
+
+NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetFloatsBfcOffset(
+    const WTF::Optional<NGLogicalOffset>& floats_bfc_offset) {
+  floats_bfc_offset_ = floats_bfc_offset;
   return *this;
 }
 
@@ -188,6 +194,13 @@ RefPtr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
   NGMarginStrut margin_strut = is_new_fc_ ? NGMarginStrut() : margin_strut_;
   WTF::Optional<LayoutUnit> clearance_offset =
       is_new_fc_ ? WTF::nullopt : clearance_offset_;
+  WTF::Optional<NGLogicalOffset> floats_bfc_offset =
+      is_new_fc_ ? WTF::nullopt : floats_bfc_offset_;
+
+  // The inline_offsets of the bfc_offset and floats_bfc_offset should match.
+  if (floats_bfc_offset)
+    DCHECK_EQ(bfc_offset.inline_offset,
+              floats_bfc_offset.value().inline_offset);
 
   if (is_in_parallel_flow) {
     return AdoptRef(new NGConstraintSpace(
@@ -199,7 +212,7 @@ RefPtr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
         is_inline_direction_triggers_scrollbar_,
         is_block_direction_triggers_scrollbar_,
         static_cast<NGFragmentationType>(fragmentation_type_), is_new_fc_,
-        is_anonymous_, margin_strut, bfc_offset, exclusions,
+        is_anonymous_, margin_strut, bfc_offset, floats_bfc_offset, exclusions,
         unpositioned_floats_, clearance_offset));
   }
   return AdoptRef(new NGConstraintSpace(
@@ -210,8 +223,8 @@ RefPtr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
       is_block_direction_triggers_scrollbar_,
       is_inline_direction_triggers_scrollbar_,
       static_cast<NGFragmentationType>(fragmentation_type_), is_new_fc_,
-      is_anonymous_, margin_strut, bfc_offset, exclusions, unpositioned_floats_,
-      clearance_offset));
+      is_anonymous_, margin_strut, bfc_offset, floats_bfc_offset, exclusions,
+      unpositioned_floats_, clearance_offset));
 }
 
 }  // namespace blink

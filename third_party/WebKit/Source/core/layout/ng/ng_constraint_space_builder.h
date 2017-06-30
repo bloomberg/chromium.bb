@@ -53,7 +53,9 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
 
   NGConstraintSpaceBuilder& SetMarginStrut(const NGMarginStrut& margin_strut);
 
-  NGConstraintSpaceBuilder& SetBfcOffset(const NGLogicalOffset& offset);
+  NGConstraintSpaceBuilder& SetBfcOffset(const NGLogicalOffset& bfc_offset);
+  NGConstraintSpaceBuilder& SetFloatsBfcOffset(
+      const WTF::Optional<NGLogicalOffset>& floats_bfc_offset);
 
   NGConstraintSpaceBuilder& SetClearanceOffset(
       const WTF::Optional<LayoutUnit>& clearance_offset);
@@ -89,6 +91,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
 
   NGMarginStrut margin_strut_;
   NGLogicalOffset bfc_offset_;
+  WTF::Optional<NGLogicalOffset> floats_bfc_offset_;
   std::shared_ptr<NGExclusions> exclusions_;
   WTF::Optional<LayoutUnit> clearance_offset_;
   Vector<RefPtr<NGUnpositionedFloat>> unpositioned_floats_;
