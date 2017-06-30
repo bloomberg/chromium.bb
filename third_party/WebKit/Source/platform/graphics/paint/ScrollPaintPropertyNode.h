@@ -76,12 +76,11 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
     return true;
   }
 
-  // The area that contains the scrolled content. For typical scrolling cases,
-  // this is the size of the clipped overflow.
+  // Size of the container area that the contents scrolls in, not including
+  // non-overlay scrollbars. Overlay scrollbars do not affect these bounds.
   const IntSize& ContainerBounds() const { return container_bounds_; }
 
-  // The bounds of the content that is scrolled within
-  // |container_bounds|.
+  // Size of the content that is scrolled within the container bounds.
   const IntSize& Bounds() const { return bounds_; }
 
   bool UserScrollableHorizontal() const { return user_scrollable_horizontal_; }

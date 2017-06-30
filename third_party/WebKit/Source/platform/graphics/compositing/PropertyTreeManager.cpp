@@ -250,7 +250,7 @@ int PropertyTreeManager::EnsureCompositorScrollNode(
   cc::ScrollNode& compositor_node = *GetScrollTree().Node(id);
   compositor_node.scrollable = true;
 
-  compositor_node.scroll_clip_layer_bounds = scroll_node->ContainerBounds();
+  compositor_node.container_bounds = scroll_node->ContainerBounds();
   compositor_node.bounds = scroll_node->Bounds();
   compositor_node.user_scrollable_horizontal =
       scroll_node->UserScrollableHorizontal();

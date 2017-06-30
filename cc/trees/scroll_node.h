@@ -37,12 +37,11 @@ struct CC_EXPORT ScrollNode {
 
   Region non_fast_scrollable_region;
 
-  // Size of the clipped area, not including non-overlay scrollbars. Overlay
-  // scrollbars do not affect the clipped area.
-  // TODO(pdr): Rename this to scroll_container_bounds.
-  gfx::Size scroll_clip_layer_bounds;
+  // Size of the container area that the contents scrolls in, not including
+  // non-overlay scrollbars. Overlay scrollbars do not affect these bounds.
+  gfx::Size container_bounds;
 
-  // Bounds of the overflow scrolling area.
+  // Size of the content that is scrolled within the container bounds.
   gfx::Size bounds;
 
   // This is used for subtrees that should not be scrolled independently. For
