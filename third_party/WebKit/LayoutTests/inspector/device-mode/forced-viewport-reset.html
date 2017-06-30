@@ -1,7 +1,7 @@
 <html>
 <head>
 
-<script src="../../http/tests/inspector-protocol/resources/inspector-protocol-test.js"></script>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
 
 <style>
 html {
@@ -36,19 +36,20 @@ body {
 <script>
 function test()
 {
-    InspectorTest.sendCommand("Runtime.evaluate", { "expression": "testRunner.dumpAsTextWithPixelResults();"} );
-
-    InspectorTest.sendCommand("Emulation.forceViewport", { "x": 200, "y": 9000, "scale": 2.0 }, overrideActive);
+    InspectorTest.evaluateInPage("testRunner.dumpAsTextWithPixelResults();", () => {
+        InspectorTest.EmulationAgent.invoke_forceViewport({x: 200, y: 9000, scale: 2.0}).then(overrideActive);
+    });
 
     function overrideActive()
     {
-        InspectorTest.sendCommand("Emulation.resetViewport", {}, overrideCleared);
+        InspectorTest.EmulationAgent.invoke_resetViewport({}).then(overrideCleared);
     }
     
     function overrideCleared()
     {
         // Complete the test without closing the inspector, so that the override stays active for the picture.
-        InspectorTest.sendCommand("Runtime.evaluate", { "expression": "testRunner.notifyDone();"} );
+        InspectorTest.flushResults();
+        InspectorTest.evaluateInPage("testRunner.notifyDone();");
     }
 }
 </script>

@@ -1,0 +1,63 @@
+<html>
+<head>
+
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+
+<style>
+html {
+    overflow: hidden;
+}
+
+body {
+    margin: 0;
+    min-height: 1000px;
+    overflow: hidden;
+}
+
+#long {
+    height: 2000px;
+    width: 100px;
+    background-color: green;
+}
+</style>
+
+<script>
+function dump()
+{
+  return {
+      w: window.innerWidth,
+      h: window.innerHeight,
+      l: document.documentElement.scrollLeft,
+      t: document.documentElement.scrollTop
+  };
+}
+
+function test()
+{
+    InspectorTest.EmulationAgent.invoke_forceViewport({x: 200, y: 200, scale: 2.0 }).then(overrideActive);
+
+    function overrideActive()
+    {
+        InspectorTest.RuntimeAgent.invoke_evaluate({expression: 'dump()', returnByValue: true}).then(gotResult);
+    }
+
+    function gotResult(result)
+    {
+        var values = result.result.value;
+        InspectorTest.addResult("innerWidth = " + values.w);
+        InspectorTest.addResult("innerHeight = " + values.h);
+        InspectorTest.addResult("scrollLeft = " + values.l);
+        InspectorTest.addResult("scrollTop = " + values.t);
+        InspectorTest.completeTest();
+    }
+}
+</script>
+
+</head>
+<body onload="runTest()">
+<p>
+Tests that a forced viewport does not change metrics that are observable by the page.
+</p>
+<div id="long"></div>
+</body>
+</html>
