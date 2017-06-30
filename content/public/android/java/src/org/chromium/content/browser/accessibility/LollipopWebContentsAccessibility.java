@@ -41,9 +41,6 @@ public class LollipopWebContentsAccessibility extends KitKatWebContentsAccessibi
         super(context, containerView, webContents, renderCoordinates, shouldFocusOnPageLoad);
 
         // Cache the system language and set up a listener for when it changes.
-        // TODO(dmazzoni): the try/catch is because this fails in AndroidWebView
-        // sometimes. Is there a different context we can use or is this just not
-        // always possible depending on the app permissions?  http://crbug.com/732933
         try {
             IntentFilter filter = new IntentFilter(Intent.ACTION_LOCALE_CHANGED);
             context.registerReceiver(new BroadcastReceiver() {
@@ -53,6 +50,8 @@ public class LollipopWebContentsAccessibility extends KitKatWebContentsAccessibi
                 }
             }, filter);
         } catch (ReceiverCallNotAllowedException e) {
+            // WebView may be running inside a BroadcastReceiver, in which case registerReceiver is
+            // not allowed.
         }
         mSystemLanguageTag = Locale.getDefault().toLanguageTag();
     }
