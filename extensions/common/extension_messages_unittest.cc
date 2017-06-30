@@ -34,6 +34,16 @@ void CompareExtension(const Extension& extension1,
               *(second_tab_permissions.at(tab_permissions.first)))
         << tab_permissions.first;
   }
+  EXPECT_EQ(extension1.permissions_data()->policy_blocked_hosts(),
+            extension2.permissions_data()->policy_blocked_hosts());
+  EXPECT_EQ(extension1.permissions_data()->policy_allowed_hosts(),
+            extension2.permissions_data()->policy_allowed_hosts());
+}
+
+void AddPattern(const std::string& pattern, URLPatternSet* extent) {
+  URLPattern parsed(URLPattern::SCHEME_ALL);
+  parsed.Parse(pattern, URLPattern::ALLOW_WILDCARD_FOR_EFFECTIVE_TLD);
+  extent->AddPattern(parsed);
 }
 
 }  // namespace
@@ -62,6 +72,12 @@ TEST(ExtensionMessageTypesTest, TestLoadedParams) {
   extension->permissions_data()->UpdateTabSpecificPermissions(
       1, PermissionSet(tab_permissions, ManifestPermissionSet(),
                        URLPatternSet(), URLPatternSet()));
+  URLPatternSet runtime_blocked_hosts;
+  AddPattern("*://*.example.*/*", &runtime_blocked_hosts);
+  URLPatternSet runtime_allowed_hosts;
+  AddPattern("*://good.example.com/*", &runtime_allowed_hosts);
+  extension->permissions_data()->SetPolicyHostRestrictions(
+      runtime_blocked_hosts, runtime_allowed_hosts);
 
   ExtensionMsg_Loaded_Params params_in(extension.get(), true);
   EXPECT_EQ(extension->id(), params_in.id);
