@@ -27,6 +27,7 @@ shared_library("libcast_shell_android") {
   deps = [
     ":platform_jni_loader",
     "//base",
+    "//chromecast:cast_shell_jni_registration",
     "//chromecast:cast_shell_lib",
     "//chromecast:chromecast_features",
     "//chromecast/app",
