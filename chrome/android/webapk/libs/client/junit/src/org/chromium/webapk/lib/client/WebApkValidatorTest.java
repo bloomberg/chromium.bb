@@ -32,8 +32,6 @@ import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.chromium.testing.local.TestDir;
 
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
 
 /** Unit tests for {@link org.chromium.webapk.lib.client.WebApkValidator}. */
 @RunWith(LocalRobolectricTestRunner.class)
@@ -140,64 +138,145 @@ public class WebApkValidatorTest {
     }
 
     /**
-     * Tests {@link WebApkValidator.findWebApkPackage} returns the WebAPK package name if one of the
-     * ResolveInfos corresponds to a WebAPK and the WebAPK is valid.
+     * Tests {@link WebApkValidator.canWebApkHandleUrl()} returns true if the
+     * WebAPK can handle the given URL and the WebAPK is valid.
      */
     @Test
-    public void testFindWebApkPackageReturnsPackageForValidWebApk() throws NameNotFoundException {
-        List<ResolveInfo> infos = new ArrayList<ResolveInfo>();
-        infos.add(newResolveInfo(WEBAPK_PACKAGE_NAME));
+    public void testCanWebApkHandleUrlReturnsTrueIfTheURLCanBeHandled() {
+        try {
+            Intent intent = Intent.parseUri(URL_OF_WEBAPK, Intent.URI_INTENT_SCHEME);
+            intent.addCategory(Intent.CATEGORY_BROWSABLE);
+            intent.setPackage(WEBAPK_PACKAGE_NAME);
+
+            mPackageManager.addResolveInfoForIntent(intent, newResolveInfo(WEBAPK_PACKAGE_NAME));
+            mPackageManager.addPackage(newPackageInfoWithBrowserSignature(
+                    WEBAPK_PACKAGE_NAME, new Signature(EXPECTED_SIGNATURE)));
+
+            assertTrue(WebApkValidator.canWebApkHandleUrl(
+                    RuntimeEnvironment.application, WEBAPK_PACKAGE_NAME, URL_OF_WEBAPK));
+        } catch (URISyntaxException e) {
+            Assert.fail("URI is invalid.");
+        }
+    }
+
+    /**
+     * Tests {@link WebApkValidator.canWebApkHandleUrl()} returns false if the given APK package
+     * name is not signed with the WebAPK signature.
+     */
+    @Test
+    public void testCanWebApkHandleUrlReturnsFalseIfWebApkIsNotValid() {
+        try {
+            Intent intent = Intent.parseUri(URL_OF_WEBAPK, Intent.URI_INTENT_SCHEME);
+            intent.addCategory(Intent.CATEGORY_BROWSABLE);
+            intent.setPackage(WEBAPK_PACKAGE_NAME);
+
+            mPackageManager.addResolveInfoForIntent(intent, newResolveInfo(WEBAPK_PACKAGE_NAME));
+            mPackageManager.addPackage(newPackageInfoWithBrowserSignature(
+                    WEBAPK_PACKAGE_NAME, new Signature(SIGNATURE_1)));
+
+            assertFalse(WebApkValidator.canWebApkHandleUrl(
+                    RuntimeEnvironment.application, WEBAPK_PACKAGE_NAME, URL_OF_WEBAPK));
+        } catch (URISyntaxException e) {
+            Assert.fail("URI is invalid.");
+        }
+    }
+
+    /**
+     * Tests {@link WebApkValidator.canWebApkHandleUrl()} returns false for a non-browsable WebAPK.
+     */
+    @Test
+    public void testCanWebApkHandleUrlReturnsFalseForNonBrowsableIntent() {
+        try {
+            Intent intent = Intent.parseUri(URL_OF_WEBAPK, Intent.URI_INTENT_SCHEME);
+            intent.setPackage(WEBAPK_PACKAGE_NAME);
+
+            mPackageManager.addResolveInfoForIntent(intent, newResolveInfo(WEBAPK_PACKAGE_NAME));
+            mPackageManager.addPackage(newPackageInfoWithBrowserSignature(
+                    WEBAPK_PACKAGE_NAME, new Signature(EXPECTED_SIGNATURE)));
+
+            assertFalse(WebApkValidator.canWebApkHandleUrl(
+                    RuntimeEnvironment.application, WEBAPK_PACKAGE_NAME, URL_OF_WEBAPK));
+        } catch (URISyntaxException e) {
+            Assert.fail("URI is invalid.");
+        }
+    }
+
+    /**
+     * Tests {@link WebApkValidator.canWebApkHandleUrl()} returns false if the specific WebAPK does
+     * not handle the given URL.
+     */
+    @Test
+    public void testCanWebApkHandleUrlReturnsFalseWhenNoWebApkHandlesTheURL() {
+        try {
+            Intent intent = Intent.parseUri(URL_OF_WEBAPK, Intent.URI_INTENT_SCHEME);
+            intent.addCategory(Intent.CATEGORY_BROWSABLE);
+            intent.setPackage(WEBAPK_PACKAGE_NAME);
+
+            mPackageManager.addResolveInfoForIntent(intent, newResolveInfo(WEBAPK_PACKAGE_NAME));
+            mPackageManager.addPackage(newPackageInfoWithBrowserSignature(
+                    WEBAPK_PACKAGE_NAME, new Signature(EXPECTED_SIGNATURE)));
+
+            assertFalse(WebApkValidator.canWebApkHandleUrl(
+                    RuntimeEnvironment.application, WEBAPK_PACKAGE_NAME, URL_WITHOUT_WEBAPK));
+        } catch (URISyntaxException e) {
+            Assert.fail("URI is invalid.");
+        }
+    }
+
+    /**
+     * Tests {@link WebApkValidator.isValidWebApk} returns true if a package name corresponds to a
+     * WebAPK and the WebAPK is valid.
+     */
+    @Test
+    public void testIsValidWebApkReturnsTrueForValidWebApk() throws NameNotFoundException {
         mPackageManager.addPackage(newPackageInfoWithBrowserSignature(
                 WEBAPK_PACKAGE_NAME, new Signature(EXPECTED_SIGNATURE)));
 
-        assertEquals(WEBAPK_PACKAGE_NAME,
-                WebApkValidator.findWebApkPackage(RuntimeEnvironment.application, infos));
+        assertTrue(
+                WebApkValidator.isValidWebApk(RuntimeEnvironment.application, WEBAPK_PACKAGE_NAME));
     }
 
     /**
-     * Tests {@link WebApkValidator.findWebApkPackage} returns null if null if the package
-     * name is invalid.
+     * Tests {@link WebApkValidator.isValidWebApk} returns false if the package
+     * name is not valid for WebApks (and isn't comment-signed).
      */
     @Test
-    public void testFindWebApkPackageReturnsNullForInvalidPackageName() {
-        List<ResolveInfo> infos = new ArrayList<ResolveInfo>();
-        infos.add(newResolveInfo(INVALID_WEBAPK_PACKAGE_NAME));
+    public void testIsValidWebApkFalseForInvalidPackageName() {
         mPackageManager.addPackage(newPackageInfoWithBrowserSignature(
                 INVALID_WEBAPK_PACKAGE_NAME, new Signature(EXPECTED_SIGNATURE)));
 
-        assertNull(WebApkValidator.findWebApkPackage(RuntimeEnvironment.application, infos));
+        assertFalse(WebApkValidator.isValidWebApk(
+                RuntimeEnvironment.application, INVALID_WEBAPK_PACKAGE_NAME));
     }
 
     /**
-     * Tests {@link WebApkValidator.findWebApkPackage} returns null if a WebAPK has more than 2
+     * Tests {@link WebApkValidator.isValidWebApk} returns false if a WebAPK has more than 2
      * signatures, even if the second one matches the expected signature.
      */
     @Test
-    public void testFindWebApkPackageReturnsNullForMoreThanTwoSignatures()
+    public void testIsValidWebApkReturnsFalseForMoreThanTwoSignatures()
             throws NameNotFoundException {
-        List<ResolveInfo> infos = new ArrayList<ResolveInfo>();
-        infos.add(newResolveInfo(WEBAPK_PACKAGE_NAME));
         Signature[] signatures = new Signature[] {new Signature(SIGNATURE_1),
                 new Signature(EXPECTED_SIGNATURE), new Signature(SIGNATURE_2)};
         mPackageManager.addPackage(newPackageInfo(WEBAPK_PACKAGE_NAME, signatures, null));
 
-        assertNull(WebApkValidator.findWebApkPackage(RuntimeEnvironment.application, infos));
+        assertFalse(
+                WebApkValidator.isValidWebApk(RuntimeEnvironment.application, WEBAPK_PACKAGE_NAME));
     }
 
     /**
-     * Tests {@link WebApkValidator.findWebApkPackage} returns null if a WebAPK has multiple
+     * Tests {@link WebApkValidator.isValidWebApk} returns false if a WebAPK has multiple
      * signatures but none of the signatures match the expected signature.
      */
     @Test
-    public void testFindWebApkPackageReturnsNullForWebApkWithMultipleSignaturesWithoutAnyMatched()
+    public void testIsValidWebApkReturnsFalseForWebApkWithMultipleSignaturesWithoutAnyMatched()
             throws NameNotFoundException {
-        List<ResolveInfo> infos = new ArrayList<ResolveInfo>();
-        infos.add(newResolveInfo(WEBAPK_PACKAGE_NAME));
         Signature signatures[] =
                 new Signature[] {new Signature(SIGNATURE_1), new Signature(SIGNATURE_2)};
         mPackageManager.addPackage(newPackageInfo(WEBAPK_PACKAGE_NAME, signatures, null));
 
-        assertNull(WebApkValidator.findWebApkPackage(RuntimeEnvironment.application, infos));
+        assertFalse(
+                WebApkValidator.isValidWebApk(RuntimeEnvironment.application, WEBAPK_PACKAGE_NAME));
     }
 
     /**

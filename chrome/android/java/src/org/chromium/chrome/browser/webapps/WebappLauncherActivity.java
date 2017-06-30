@@ -251,7 +251,7 @@ public class WebappLauncherActivity extends Activity {
         String url = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_URL);
         if (TextUtils.isEmpty(url)) return false;
 
-        if (!webApkPackage.equals(WebApkValidator.queryWebApkPackage(this, url))) {
+        if (!WebApkValidator.canWebApkHandleUrl(this, webApkPackage, url)) {
             Log.d(TAG, "%s is not within scope of %s WebAPK", url, webApkPackage);
             return false;
         }
