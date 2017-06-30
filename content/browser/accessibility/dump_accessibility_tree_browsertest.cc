@@ -1405,8 +1405,9 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("modal-dialog-opened.html"));
 }
 
+// http://crbug.com/738497
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-                       AccessibilityModalDialogInIframeClosed) {
+                       DISABLED_AccessibilityModalDialogInIframeClosed) {
   RunHtmlTest(FILE_PATH_LITERAL("modal-dialog-in-iframe-closed.html"));
 }
 
