@@ -144,7 +144,8 @@
                     "Initializer": 33,
                     "Finalizer": 34,
                     "SubgroupSize": 35,
-                    "SubgroupsPerWorkgroup": 36
+                    "SubgroupsPerWorkgroup": 36,
+                    "PostDepthCoverage": 4446
                 }
             },
             {
@@ -421,6 +422,7 @@
                     "InputAttachmentIndex": 43,
                     "Alignment": 44,
                     "MaxByteOffset": 45,
+                    "ExplicitInterpAMD": 4999,
                     "OverrideCoverageNV": 5248,
                     "PassthroughNV": 5250,
                     "ViewportRelativeNV": 5252,
@@ -483,6 +485,13 @@
                     "DrawIndex": 4426,
                     "DeviceIndex": 4438,
                     "ViewIndex": 4440,
+                    "BaryCoordNoPerspAMD": 4992,
+                    "BaryCoordNoPerspCentroidAMD": 4993,
+                    "BaryCoordNoPerspSampleAMD": 4994,
+                    "BaryCoordSmoothAMD": 4995,
+                    "BaryCoordSmoothCentroidAMD": 4996,
+                    "BaryCoordSmoothSampleAMD": 4997,
+                    "BaryCoordPullModelAMD": 4998,
                     "ViewportMaskNV": 5253,
                     "SecondaryPositionNV": 5257,
                     "SecondaryViewportMaskNV": 5258,
@@ -665,6 +674,9 @@
                     "MultiView": 4439,
                     "VariablePointersStorageBuffer": 4441,
                     "VariablePointers": 4442,
+                    "AtomicStorageOps": 4445,
+                    "SampleMaskPostDepthCoverage": 4447,
+                    "ImageGatherBiasLodAMD": 5009,
                     "SampleMaskOverrideCoverageNV": 5249,
                     "GeometryShaderPassthroughNV": 5251,
                     "ShaderViewportIndexLayerNV": 5254,
@@ -987,7 +999,15 @@
                     "OpSubgroupAllKHR": 4428,
                     "OpSubgroupAnyKHR": 4429,
                     "OpSubgroupAllEqualKHR": 4430,
-                    "OpSubgroupReadInvocationKHR": 4432
+                    "OpSubgroupReadInvocationKHR": 4432,
+                    "OpGroupIAddNonUniformAMD": 5000,
+                    "OpGroupFAddNonUniformAMD": 5001,
+                    "OpGroupFMinNonUniformAMD": 5002,
+                    "OpGroupUMinNonUniformAMD": 5003,
+                    "OpGroupSMinNonUniformAMD": 5004,
+                    "OpGroupFMaxNonUniformAMD": 5005,
+                    "OpGroupUMaxNonUniformAMD": 5006,
+                    "OpGroupSMaxNonUniformAMD": 5007
                 }
             }
         ]
