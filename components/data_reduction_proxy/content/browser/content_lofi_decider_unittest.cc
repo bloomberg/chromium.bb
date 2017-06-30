@@ -771,11 +771,11 @@ TEST_F(ContentLoFiDeciderTest, VideoDirectiveDoesNotOverride) {
   std::unique_ptr<net::URLRequest> request =
       CreateRequestByType(content::RESOURCE_TYPE_MEDIA, false, true);
   net::HttpRequestHeaders headers;
-  headers.SetHeader(chrome_proxy_accept_transform_header(), "foo");
+  headers.SetHeader(chrome_proxy_accept_transform_header(), "empty-image");
   NotifyBeforeSendHeaders(&headers, request.get(), true);
   std::string header_value;
   headers.GetHeader(chrome_proxy_accept_transform_header(), &header_value);
-  EXPECT_EQ("foo", header_value);
+  EXPECT_EQ("empty-image", header_value);
 }
 
 TEST_F(ContentLoFiDeciderTest, IsSlowPagePreviewRequested) {

@@ -54,6 +54,17 @@ using base::FieldTrialList;
 
 namespace {
 
+// Values of the UMA DataReductionProxy.Protocol.NotAcceptingTransform histogram
+// defined in metrics/histograms/histograms.xml. This enum must remain
+// synchronized with DataReductionProxyProtocolNotAcceptingTransformReason in
+// tools/metrics/histograms/enums.xml.
+enum NotAcceptingTransformReason {
+  NOT_ACCEPTING_TRANSFORM_DISABLED = 0,
+  NOT_ACCEPTING_TRANSFORM_BLACKLISTED = 1,
+  NOT_ACCEPTING_TRANSFORM_CELLULAR_ONLY = 2,
+  NOT_ACCEPTING_TRANSFORM_REASON_BOUNDARY
+};
+
 // Values of the UMA DataReductionProxy.NetworkChangeEvents histograms.
 // This enum must remain synchronized with the enum of the same
 // name in metrics/histograms/histograms.xml.
@@ -1073,7 +1084,11 @@ bool DataReductionProxyConfig::ShouldAcceptServerPreview(
   // For the transition to server-driven previews decisions, we will
   // use existing Lo-Fi flags for disabling and cellular-only mode.
   // TODO(dougarnett): Refactor flag names as part of bug 725645.
-  if (params::IsLoFiDisabledViaFlags()) {
+  if (params::IsLoFiDisabledViaFlags() || lofi_off()) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "DataReductionProxy.Protocol.NotAcceptingTransform",
+        NOT_ACCEPTING_TRANSFORM_DISABLED,
+        NOT_ACCEPTING_TRANSFORM_REASON_BOUNDARY);
     return false;
   }
 
@@ -1083,11 +1098,20 @@ bool DataReductionProxyConfig::ShouldAcceptServerPreview(
 
   if (IsBlackListedOrDisabled(request, previews_decider,
                               previews::PreviewsType::LITE_PAGE)) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "DataReductionProxy.Protocol.NotAcceptingTransform",
+        NOT_ACCEPTING_TRANSFORM_BLACKLISTED,
+        NOT_ACCEPTING_TRANSFORM_REASON_BOUNDARY);
     return false;
   }
 
-  if (params::IsLoFiCellularOnlyViaFlags()) {
-    return net::NetworkChangeNotifier::IsConnectionCellular(connection_type_);
+  if (params::IsLoFiCellularOnlyViaFlags() &&
+      !net::NetworkChangeNotifier::IsConnectionCellular(connection_type_)) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "DataReductionProxy.Protocol.NotAcceptingTransform",
+        NOT_ACCEPTING_TRANSFORM_CELLULAR_ONLY,
+        NOT_ACCEPTING_TRANSFORM_REASON_BOUNDARY);
+    return false;
   }
 
   return true;

@@ -1544,7 +1544,11 @@ TEST_F(DataReductionProxyConfigTest, ShouldAcceptServerPreview) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
       features::kDataReductionProxyDecidesTransform);
+  base::FieldTrialList field_trial_list(nullptr);
+  base::FieldTrialList::CreateFieldTrial(
+      "DataReductionProxyPreviewsBlackListTransition", "Enabled");
 
+  base::HistogramTester histogram_tester;
   net::TestURLRequestContext context_;
   net::TestDelegate delegate_;
   std::unique_ptr<net::URLRequest> request = context_.CreateRequest(
@@ -1552,7 +1556,7 @@ TEST_F(DataReductionProxyConfigTest, ShouldAcceptServerPreview) {
   request->SetLoadFlags(request->load_flags() |
                         net::LOAD_MAIN_FRAME_DEPRECATED);
   std::unique_ptr<TestPreviewsDecider> previews_decider =
-      base::MakeUnique<TestPreviewsDecider>(false);
+      base::MakeUnique<TestPreviewsDecider>(true);
 
   // Verify true for no flags.
   EXPECT_TRUE(config()->ShouldAcceptServerPreview(*request.get(),
@@ -1565,6 +1569,9 @@ TEST_F(DataReductionProxyConfigTest, ShouldAcceptServerPreview) {
       switches::kDataReductionProxyLoFiValueDisabled);
   EXPECT_FALSE(config()->ShouldAcceptServerPreview(*request.get(),
                                                    *previews_decider.get()));
+  histogram_tester.ExpectBucketCount(
+      "DataReductionProxy.Protocol.NotAcceptingTransform",
+      0 /* NOT_ACCEPTING_TRANSFORM_DISABLED */, 1);
 
   // Verify true for Slow Connection flag.
   base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
@@ -1573,12 +1580,6 @@ TEST_F(DataReductionProxyConfigTest, ShouldAcceptServerPreview) {
       switches::kDataReductionProxyLoFiValueSlowConnectionsOnly);
   EXPECT_TRUE(config()->ShouldAcceptServerPreview(*request.get(),
                                                   *previews_decider.get()));
-
-  // Verify PreviewsDecider check.
-  previews_decider = base::MakeUnique<TestPreviewsDecider>(true);
-  EXPECT_TRUE(config()->ShouldAcceptServerPreview(*request.get(),
-                                                  *previews_decider.get()));
-  previews_decider = base::MakeUnique<TestPreviewsDecider>(false);
 
   // Verify false for Cellular Only flag and WIFI connection.
   base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
@@ -1589,6 +1590,9 @@ TEST_F(DataReductionProxyConfigTest, ShouldAcceptServerPreview) {
       net::NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI);
   EXPECT_FALSE(config()->ShouldAcceptServerPreview(*request.get(),
                                                    *previews_decider.get()));
+  histogram_tester.ExpectBucketCount(
+      "DataReductionProxy.Protocol.NotAcceptingTransform",
+      2 /* NOT_ACCEPTING_TRANSFORM_CELLULAR_ONLY */, 1);
 
   // Verify true for Cellular Only flag and 3G connection.
   config()->SetConnectionTypeForTesting(
@@ -1596,18 +1600,22 @@ TEST_F(DataReductionProxyConfigTest, ShouldAcceptServerPreview) {
   EXPECT_TRUE(config()->ShouldAcceptServerPreview(*request.get(),
                                                   *previews_decider.get()));
 
-  {
-    // Verfiy true for always on.
-    base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kDataReductionProxyLoFi,
-        switches::kDataReductionProxyLoFiValueAlwaysOn);
-    base::FieldTrialList field_trial_list(nullptr);
-    base::FieldTrialList::CreateFieldTrial(
-        "DataReductionProxyPreviewsBlackListTransition", "Enabled");
-    EXPECT_TRUE(config()->ShouldAcceptServerPreview(*request.get(),
-                                                    *previews_decider.get()));
-  }
+  // Verify PreviewsDecider check.
+  previews_decider = base::MakeUnique<TestPreviewsDecider>(false);
+  EXPECT_FALSE(config()->ShouldAcceptServerPreview(*request.get(),
+                                                   *previews_decider.get()));
+  histogram_tester.ExpectBucketCount(
+      "DataReductionProxy.Protocol.NotAcceptingTransform",
+      1 /* NOT_ACCEPTING_TRANSFORM_BLACKLISTED */, 1);
+  previews_decider = base::MakeUnique<TestPreviewsDecider>(true);
+
+  // Verfiy true for always on.
+  base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kDataReductionProxyLoFi,
+      switches::kDataReductionProxyLoFiValueAlwaysOn);
+  EXPECT_TRUE(config()->ShouldAcceptServerPreview(*request.get(),
+                                                  *previews_decider.get()));
 }
 
 }  // namespace data_reduction_proxy

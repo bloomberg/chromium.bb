@@ -11083,6 +11083,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="DataReductionProxy.Protocol.AcceptTransform"
+    enum="DataReductionProxyProtocolAcceptTransformEvent">
+  <owner>dougarnett@chromium.org</owner>
+  <summary>
+    Records the sending of accepted transform headers to the data reduction
+    proxy and also receiving transforms and policies from the data reduction
+    proxy. Recorded on a per page request basis and possibly on a per image
+    subresource request basis for empty-image transforms.
+  </summary>
+</histogram>
+
+<histogram name="DataReductionProxy.Protocol.NotAcceptingTransform"
+    enum="DataReductionProxyProtocolNotAcceptingTransformReason">
+  <owner>dougarnett@chromium.org</owner>
+  <summary>
+    Records the reason that a page request is not accepting proxy server
+    transforms. Recorded on a per page request basis.
+  </summary>
+</histogram>
+
 <histogram name="DataReductionProxy.ProxyPrefMigrationResult"
     enum="DataReductionProxyProxyPrefMigrationResult">
   <owner>sclittle@chromium.org</owner>
@@ -22133,7 +22153,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Records the source that requested showing the feedback app.</summary>
 </histogram>
 
-<histogram name="FileBrowser.ChangeDirectory.RootType" enum="FileManagerRootType">
+<histogram name="FileBrowser.ChangeDirectory.RootType"
+    enum="FileManagerRootType">
   <owner>yamaguchi@chromium.com</owner>
   <summary>
     Chrome OS File Browser: Counts the number of directory-changed events,
@@ -47870,14 +47891,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>dimich@chromium.org</owner>
   <summary>
     Enum-based buckets reflect the number of days the Chrome was used in each
-    specific way:
-    - Not used at all during whole day.
-    - Started, but failed to successfully navigate.
-    - Only navigated to offline pages locally saved on the device.
-    - Only navigated online.
-    - Navigated to both online and offline pages.
-    This data is accumulated locally and reported when connection is likely to
-    succeed (usually after successful online navigation).
+    specific way: - Not used at all during whole day. - Started, but failed to
+    successfully navigate. - Only navigated to offline pages locally saved on
+    the device. - Only navigated online. - Navigated to both online and offline
+    pages. This data is accumulated locally and reported when connection is
+    likely to succeed (usually after successful online navigation).
   </summary>
 </histogram>
 
