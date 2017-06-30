@@ -7,6 +7,7 @@
       'target_name': 'cr_elements_resources',
       'type': 'none',
       'dependencies': [
+        'chromeos/change_picture/compiled_resources2.gyp:*',
         'chromeos/network/compiled_resources2.gyp:*',
         'cr_action_menu/compiled_resources2.gyp:*',
         'cr_dialog/compiled_resources2.gyp:*',

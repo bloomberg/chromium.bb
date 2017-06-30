@@ -310,7 +310,7 @@ Polymer({
       case 'space':
         if (this.selectedItem_.dataset.type ==
             ChangePictureSelectionTypes.CAMERA) {
-          var /** SettingsCameraElement */ camera = this.$.camera;
+          var /** CrCameraElement */ camera = this.$.camera;
           camera.takePhoto();
         } else if (
             this.selectedItem_.dataset.type ==
@@ -337,13 +337,25 @@ Polymer({
   },
 
   /**
-   * Handle photo captured event, which contains the data URL of the image.
    * @param {!{detail: !{photoDataUrl: string}}} event
-   * containing a data URL.
+   * @private
    */
   onPhotoTaken_: function(event) {
     this.browserProxy_.photoTaken(event.detail.photoDataUrl);
     this.$.container.focus();
+    announceAccessibleMessage(
+        loadTimeData.getString('photoCaptureAccessibleText'));
+  },
+
+  /**
+   * @param {!{detail: boolean}} event
+   * @private
+   */
+  onPhotoFlipped_: function(event) {
+    var flipped = event.detail;
+    var flipMessageId = flipped ? 'photoFlippedAccessibleText' :
+                                  'photoFlippedBackAccessibleText';
+    announceAccessibleMessage(loadTimeData.getString(flipMessageId));
   },
 
   /**

@@ -1,11 +1,11 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 /**
  * @fileoverview
- * 'settings-camera' is the Polymer control used to take a picture from the
- * user webcam to use as a ChromeOS profile picture.
+ * 'cr-camera' is a Polymer element used to take a picture from the
+ * user webcam to use as a Chrome OS profile picture.
  */
 (function() {
 
@@ -16,7 +16,7 @@
 var CAPTURE_SIZE = {height: 480, width: 480};
 
 Polymer({
-  is: 'settings-camera',
+  is: 'cr-camera',
 
   properties: {
     /**
@@ -28,6 +28,10 @@ Polymer({
       observer: 'cameraActiveChanged_',
       value: false,
     },
+
+    /** Strings provided by host */
+    flipPhotoLabel: String,
+    takePhotoLabel: String,
 
     /**
      * True when the camera is actually streaming video. May be false even when
@@ -54,13 +58,19 @@ Polymer({
     this.$.cameraVideo.addEventListener('canplay', function() {
       this.cameraOnline_ = true;
     }.bind(this));
+    if (this.cameraActive)
+      this.startCamera_();
+  },
+
+  /** @override */
+  detached: function() {
+    this.stopCamera_();
   },
 
   /**
-   * Performs photo capture from the live camera stream. 'phototaken' event
-   * will be fired as soon as captured photo is available, with 'dataURL'
-   * property containing the photo encoded as a data URL.
-   * @private
+   * Performs photo capture from the live camera stream. A 'photo-taken' event
+   * will be fired as soon as captured photo is available, with the
+   * 'photoDataURL' property containing the photo encoded as a data URL.
    */
   takePhoto: function() {
     if (!this.cameraOnline_)
@@ -75,16 +85,10 @@ Polymer({
 
     var photoDataUrl = this.isFlipped_ ? this.flipFrame_(canvas) :
                                          canvas.toDataURL('image/png');
-    this.fire('phototaken', {photoDataUrl: photoDataUrl});
-
-    announceAccessibleMessage(
-        loadTimeData.getString('photoCaptureAccessibleText'));
+    this.fire('photo-taken', {photoDataUrl: photoDataUrl});
   },
 
-  /**
-   * Observer for the cameraActive property.
-   * @private
-   */
+  /** @private */
   cameraActiveChanged_: function() {
     if (this.cameraActive)
       this.startCamera_();
@@ -119,7 +123,7 @@ Polymer({
   },
 
   /**
-   * Stops camera capture, if it's currently cameraActive.
+   * Stops camera capture, if it's currently active.
    * @private
    */
   stopCamera_: function() {
@@ -149,10 +153,7 @@ Polymer({
   onTapFlipPhoto_: function() {
     this.isFlipped_ = !this.isFlipped_;
     this.$.userImageStreamCrop.classList.toggle('flip-x', this.isFlipped_);
-
-    var flipMessageId = this.isFlipped_ ? 'photoFlippedAccessibleText' :
-                                          'photoFlippedBackAccessibleText';
-    announceAccessibleMessage(loadTimeData.getString(flipMessageId));
+    this.fire('photo-flipped', this.isFlipped_);
   },
 
   /**
