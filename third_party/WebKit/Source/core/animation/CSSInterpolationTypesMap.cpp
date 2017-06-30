@@ -10,6 +10,7 @@
 #include "core/animation/CSSBorderImageLengthBoxInterpolationType.h"
 #include "core/animation/CSSClipInterpolationType.h"
 #include "core/animation/CSSColorInterpolationType.h"
+#include "core/animation/CSSDefaultInterpolationType.h"
 #include "core/animation/CSSFilterListInterpolationType.h"
 #include "core/animation/CSSFontSizeInterpolationType.h"
 #include "core/animation/CSSFontVariationSettingsInterpolationType.h"
@@ -36,7 +37,6 @@
 #include "core/animation/CSSTransformInterpolationType.h"
 #include "core/animation/CSSTransformOriginInterpolationType.h"
 #include "core/animation/CSSTranslateInterpolationType.h"
-#include "core/animation/CSSValueInterpolationType.h"
 #include "core/animation/CSSVisibilityInterpolationType.h"
 #include "core/css/CSSPropertyMetadata.h"
 #include "core/css/CSSSyntaxDescriptor.h"
@@ -321,7 +321,7 @@ const InterpolationTypes& CSSInterpolationTypesMap::Get(
   }
 
   applicable_types->push_back(
-      WTF::MakeUnique<CSSValueInterpolationType>(used_property));
+      WTF::MakeUnique<CSSDefaultInterpolationType>(used_property));
 
   auto add_result =
       applicable_types_map.insert(property, std::move(applicable_types));
@@ -390,14 +390,14 @@ CSSInterpolationTypesMap::CreateInterpolationTypesForCSSSyntax(
       case CSSSyntaxType::kTokenStream:
       case CSSSyntaxType::kUrl:
         // No interpolation behaviour defined, uses the
-        // CSSValueInterpolationType added below.
+        // CSSDefaultInterpolationType added below.
         break;
       default:
         NOTREACHED();
         break;
     }
   }
-  result.push_back(WTF::MakeUnique<CSSValueInterpolationType>(property));
+  result.push_back(WTF::MakeUnique<CSSDefaultInterpolationType>(property));
   return result;
 }
 

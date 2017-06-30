@@ -4,9 +4,6 @@
 
 #include "core/css/CSSSyntaxDescriptor.h"
 
-#include "core/animation/CSSColorInterpolationType.h"
-#include "core/animation/CSSLengthInterpolationType.h"
-#include "core/animation/CSSValueInterpolationType.h"
 #include "core/css/CSSCustomPropertyDeclaration.h"
 #include "core/css/CSSURIValue.h"
 #include "core/css/CSSValueList.h"

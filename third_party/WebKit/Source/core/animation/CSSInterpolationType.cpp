@@ -101,6 +101,7 @@ CSSInterpolationType::CSSInterpolationType(
     PropertyHandle property,
     const PropertyRegistration* registration)
     : InterpolationType(property), registration_(registration) {
+  DCHECK(!GetProperty().IsCSSCustomProperty() || registration);
   DCHECK(!isShorthandProperty(CssProperty()));
 }
 
@@ -165,50 +166,25 @@ InterpolationValue CSSInterpolationType::MaybeConvertCustomPropertyDeclaration(
     const CSSCustomPropertyDeclaration& declaration,
     const StyleResolverState& state,
     ConversionCheckers& conversion_checkers) const {
-  InterpolationValue result = MaybeConvertCustomPropertyDeclarationInternal(
-      declaration, state, conversion_checkers);
-  if (result) {
-    return result;
-  }
-
-  // TODO(alancutter): Make explicit and assert in code that this falls back to
-  // the default CSSValueInterpolationType handler.
-  // This might involve making the "catch-all" InterpolationType explicit
-  // e.g. add bool InterpolationType::isCatchAll().
-  return MaybeConvertValue(declaration, &state, conversion_checkers);
-}
-
-InterpolationValue
-CSSInterpolationType::MaybeConvertCustomPropertyDeclarationInternal(
-    const CSSCustomPropertyDeclaration& declaration,
-    const StyleResolverState& state,
-    ConversionCheckers& conversion_checkers) const {
   const AtomicString& name = declaration.GetName();
   DCHECK_EQ(GetProperty().CustomPropertyName(), name);
 
   if (!declaration.Value()) {
-    // Unregistered custom properties inherit:
-    // https://www.w3.org/TR/css-variables-1/#defining-variables
-    bool is_inherited_property =
-        registration_ ? registration_->Inherits() : true;
+    bool is_inherited_property = Registration().Inherits();
     DCHECK(declaration.IsInitial(is_inherited_property) ||
            declaration.IsInherit(is_inherited_property));
 
-    if (!registration_) {
-      return nullptr;
-    }
-
     const CSSValue* value = nullptr;
     if (declaration.IsInitial(is_inherited_property)) {
-      value = registration_->Initial();
+      value = Registration().Initial();
     } else {
       value = state.ParentStyle()->GetRegisteredVariable(name,
                                                          is_inherited_property);
       if (!value) {
-        value = registration_->Initial();
+        value = Registration().Initial();
       }
       conversion_checkers.push_back(InheritedCustomPropertyChecker::Create(
-          name, is_inherited_property, value, registration_->Initial()));
+          name, is_inherited_property, value, Registration().Initial()));
     }
     if (!value) {
       return nullptr;
@@ -223,19 +199,16 @@ CSSInterpolationType::MaybeConvertCustomPropertyDeclarationInternal(
     // property value application with the CSSVariableResolver to apply them in
     // the appropriate order defined by the chain of var() dependencies.
     // All CSSInterpolationTypes should fail convertion here except for
-    // CSSValueInterpolationType.
+    // CSSDefaultInterpolationType.
     return nullptr;
   }
 
-  if (registration_) {
-    const CSSValue* parsed_value =
-        declaration.Value()->ParseForSyntax(registration_->Syntax());
-    if (parsed_value) {
-      return MaybeConvertValue(*parsed_value, &state, conversion_checkers);
-    }
+  const CSSValue* parsed_value =
+      declaration.Value()->ParseForSyntax(Registration().Syntax());
+  if (!parsed_value) {
+    return nullptr;
   }
-
-  return nullptr;
+  return MaybeConvertValue(*parsed_value, &state, conversion_checkers);
 }
 
 InterpolationValue CSSInterpolationType::MaybeConvertUnderlyingValue(
@@ -248,13 +221,10 @@ InterpolationValue CSSInterpolationType::MaybeConvertUnderlyingValue(
 
   const PropertyHandle property = GetProperty();
   const AtomicString& name = property.CustomPropertyName();
-  if (!registration_) {
-    return nullptr;
-  }
   const CSSValue* underlying_value =
-      style.GetRegisteredVariable(name, registration_->Inherits());
+      style.GetRegisteredVariable(name, Registration().Inherits());
   if (!underlying_value) {
-    underlying_value = registration_->Initial();
+    underlying_value = Registration().Initial();
   }
   if (!underlying_value) {
     return nullptr;
@@ -287,10 +257,7 @@ void CSSInterpolationType::ApplyCustomPropertyValue(
 
   const CSSValue* css_value =
       CreateCSSValue(interpolable_value, non_interpolable_value, state);
-  if (css_value->IsCustomPropertyDeclaration()) {
-    StyleBuilder::ApplyProperty(CssProperty(), state, *css_value);
-    return;
-  }
+  DCHECK(!css_value->IsCustomPropertyDeclaration());
 
   // TODO(alancutter): Defer tokenization of the CSSValue until it is needed.
   String string_value = css_value->CssText();
@@ -302,8 +269,7 @@ void CSSInterpolationType::ApplyCustomPropertyValue(
   ComputedStyle& style = *state.Style();
   const PropertyHandle property = GetProperty();
   const AtomicString& property_name = property.CustomPropertyName();
-  DCHECK(registration_);
-  if (registration_->Inherits()) {
+  if (Registration().Inherits()) {
     style.SetResolvedInheritedVariable(property_name, std::move(variable_data),
                                        css_value);
   } else {
