@@ -85,7 +85,7 @@ public class NewTabPageRecyclerViewTest {
     // We currently mix the fake and the snippets bridge, resulting in crashes with unregistered
     // categories.
     @CategoryInt
-    private static final int TEST_CATEGORY = KnownCategories.BOOKMARKS;
+    private static final int TEST_CATEGORY = KnownCategories.ARTICLES;
 
     private Tab mTab;
     private NewTabPage mNtp;

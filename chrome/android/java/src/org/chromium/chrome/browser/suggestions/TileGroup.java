@@ -250,7 +250,7 @@ public class TileGroup implements MostVisitedSites.Observer {
 
         LargeIconCallback iconCallback =
                 new LargeIconCallbackImpl(siteUrl, /* trackLoadTask = */ false);
-        mUiDelegate.getLargeIconForUrl(siteUrl, mMinIconSize, iconCallback);
+        mUiDelegate.getImageFetcher().makeLargeIconRequest(siteUrl, mMinIconSize, iconCallback);
     }
 
     /**
@@ -338,7 +338,8 @@ public class TileGroup implements MostVisitedSites.Observer {
 
     private void loadWhitelistIcon(final Tile tile, final LargeIconCallback iconCallback) {
         if (tile.getWhitelistIconPath().isEmpty()) {
-            mUiDelegate.getLargeIconForUrl(tile.getUrl(), mMinIconSize, iconCallback);
+            mUiDelegate.getImageFetcher().makeLargeIconRequest(
+                    tile.getUrl(), mMinIconSize, iconCallback);
             return;
         }
 
@@ -355,7 +356,8 @@ public class TileGroup implements MostVisitedSites.Observer {
             @Override
             protected void onPostExecute(Bitmap icon) {
                 if (icon == null) {
-                    mUiDelegate.getLargeIconForUrl(tile.getUrl(), mMinIconSize, iconCallback);
+                    mUiDelegate.getImageFetcher().makeLargeIconRequest(
+                            tile.getUrl(), mMinIconSize, iconCallback);
                 } else {
                     iconCallback.onLargeIconAvailable(icon, Color.BLACK, false);
                 }

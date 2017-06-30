@@ -6,6 +6,9 @@ package org.chromium.chrome.browser.suggestions;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.download.ui.ThumbnailProvider;
+import org.chromium.chrome.browser.download.ui.ThumbnailProviderImpl;
+import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
@@ -48,5 +51,13 @@ public class SuggestionsDependencyFactory {
 
     public LargeIconBridge createLargeIconBridge(Profile profile) {
         return new LargeIconBridge(profile);
+    }
+
+    public ThumbnailProvider createThumbnailProvider() {
+        return new ThumbnailProviderImpl();
+    }
+
+    public FaviconHelper createFaviconHelper() {
+        return new FaviconHelper();
     }
 }

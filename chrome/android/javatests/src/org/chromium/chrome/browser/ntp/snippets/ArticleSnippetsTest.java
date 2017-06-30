@@ -21,6 +21,7 @@ import org.junit.Test;
 import org.junit.rules.ExternalResource;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.Callback;
 import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
@@ -34,9 +35,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
 import org.chromium.chrome.browser.download.ui.ThumbnailProvider;
 import org.chromium.chrome.browser.download.ui.ThumbnailProvider.ThumbnailRequest;
-import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
-import org.chromium.chrome.browser.favicon.FaviconHelper.IconAvailabilityCallback;
-import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
+import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.ContextMenuManager.TouchEnabledDelegate;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
@@ -45,6 +44,7 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.ContentSuggestionsAdditionalAction;
 import org.chromium.chrome.browser.suggestions.DestructionObserver;
+import org.chromium.chrome.browser.suggestions.ImageFetcher;
 import org.chromium.chrome.browser.suggestions.SuggestionsEventReporter;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
@@ -58,6 +58,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.RenderTestRule;
 import org.chromium.chrome.test.util.browser.suggestions.DummySuggestionsEventReporter;
 import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
+import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -72,6 +73,9 @@ import java.util.Locale;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
 public class ArticleSnippetsTest {
+    @Rule
+    public SuggestionsDependenciesRule mSuggestionsDeps = new SuggestionsDependenciesRule();
+
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
             new ChromeActivityTestRule<>(ChromeActivity.class);
@@ -142,7 +146,7 @@ public class ArticleSnippetsTest {
         mRenderTestRule.render(mRecyclerView.getChildAt(first), "short_snippet");
         mRenderTestRule.render(mRecyclerView.getChildAt(first + 1), "long_snippet");
 
-        int firstOfSecondCategory = first + 1 /* card 2 */ + 1 /* header */ + 1 /* card 3*/;
+        int firstOfSecondCategory = first + 1 /* card 2 */ + 1 /* header */ + 1 /* card 3 */;
 
         mRenderTestRule.render(mRecyclerView.getChildAt(firstOfSecondCategory), "minimal_snippet");
         mRenderTestRule.render(mRecyclerView, "snippets");
@@ -304,9 +308,11 @@ public class ArticleSnippetsTest {
     @Before
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityOnBlankPage();
-        mUiDelegate = new MockUiDelegate();
         mThumbnailProvider = new MockThumbnailProvider();
         mSnippetsSource = new FakeSuggestionsSource();
+        mSuggestionsDeps.getFactory().thumbnailProvider = mThumbnailProvider;
+        mSuggestionsDeps.getFactory().suggestionsSource = mSnippetsSource;
+        mUiDelegate = new MockUiDelegate();
         Bitmap favicon = BitmapFactory.decodeResource(
                 mActivityTestRule.getActivity().getResources(), R.drawable.star_green);
         mSnippetsSource.setDefaultFavicon(favicon);
@@ -349,38 +355,11 @@ public class ArticleSnippetsTest {
      * A SuggestionsUiDelegate to initialize our Adapter.
      */
     private class MockUiDelegate implements SuggestionsUiDelegate {
-        private SuggestionsEventReporter mSuggestionsEventReporter =
+        private final SuggestionsEventReporter mSuggestionsEventReporter =
                 new DummySuggestionsEventReporter();
-        private SuggestionsRanker mSuggestionsRanker = new SuggestionsRanker();
+        private final SuggestionsRanker mSuggestionsRanker = new SuggestionsRanker();
         private final DiscardableReferencePool mReferencePool = new DiscardableReferencePool();
-
-        @Override
-        public void getLocalFaviconImageForURL(
-                final String url, int size, final FaviconImageCallback faviconCallback) {
-            // Run the callback asynchronously incase the caller made that assumption.
-            ThreadUtils.postOnUiThread(new Runnable(){
-                @Override
-                public void run() {
-                    // Return an arbitrary drawable.
-                    faviconCallback.onFaviconAvailable(
-                            BitmapFactory.decodeResource(
-                                    mActivityTestRule.getActivity().getResources(),
-                                    R.drawable.star_green),
-                            url);
-                }
-            });
-        }
-
-        @Override
-        public void getLargeIconForUrl(String url, int size, LargeIconCallback callback) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void ensureIconIsAvailable(String pageUrl, String iconUrl, boolean isLargeIcon,
-                boolean isTemporary, IconAvailabilityCallback callback) {
-            throw new UnsupportedOperationException();
-        }
+        private final ImageFetcher mImageFetcher = new MockImageFetcher(mSnippetsSource);
 
         @Override
         public SuggestionsSource getSuggestionsSource() {
@@ -416,8 +395,45 @@ public class ArticleSnippetsTest {
         }
 
         @Override
-        public ThumbnailProvider getThumbnailProvider() {
-            return mThumbnailProvider;
+        public ImageFetcher getImageFetcher() {
+            return mImageFetcher;
+        }
+    }
+
+    private class MockImageFetcher extends ImageFetcher {
+        public MockImageFetcher(SuggestionsSource suggestionsSource) {
+            super(suggestionsSource, null, null);
+        }
+
+        @Override
+        public void makeFaviconRequest(SnippetArticle suggestion, final int faviconSizePx,
+                final Callback<Bitmap> faviconCallback) {
+            // Run the callback asynchronously in case the caller made that assumption.
+            ThreadUtils.postOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    // Return an arbitrary drawable.
+                    faviconCallback.onResult(BitmapFactory.decodeResource(
+                            mActivityTestRule.getActivity().getResources(), R.drawable.star_green));
+                }
+            });
+        }
+
+        @Override
+        public void makeLargeIconRequest(final String url, final int largeIconSizePx,
+                final LargeIconBridge.LargeIconCallback callback) {
+            // Run the callback asynchronously in case the caller made that assumption.
+            ThreadUtils.postOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    // Return an arbitrary drawable.
+                    callback.onLargeIconAvailable(
+                            BitmapFactory.decodeResource(
+                                    mActivityTestRule.getActivity().getResources(),
+                                    R.drawable.star_green),
+                            largeIconSizePx, true);
+                }
+            });
         }
     }
 

@@ -21,13 +21,22 @@ import java.util.Locale;
 public final class ContentSuggestionsTestUtils {
     private ContentSuggestionsTestUtils() {}
 
+    public static SnippetArticle createDummySuggestion(
+            @CategoryInt int category, String suffix, boolean isVideoSuggestion) {
+        return new SnippetArticle(category, "https://site.com/url" + suffix, "title" + suffix,
+                "pub" + suffix, "txt" + suffix, "https://site.com/url" + suffix, 0, 0, 0,
+                isVideoSuggestion);
+    }
+
+    public static SnippetArticle createDummySuggestion(@CategoryInt int category) {
+        return createDummySuggestion(category, "", false);
+    }
+
     public static List<SnippetArticle> createDummySuggestions(
-            int count, @CategoryInt int category, String prefix) {
+            int count, @CategoryInt int category, String suffix) {
         List<SnippetArticle> suggestions = new ArrayList<>();
         for (int index = 0; index < count; index++) {
-            suggestions.add(new SnippetArticle(category, "https://site.com/url" + prefix + index,
-                    prefix + "title" + index, "pub" + index, "txt" + index,
-                    "https://site.com/url" + index, 0, 0, 0, false));
+            suggestions.add(createDummySuggestion(category, suffix + index, false));
         }
         return suggestions;
     }
