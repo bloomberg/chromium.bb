@@ -249,10 +249,15 @@ void EventBindings::AttachEvent(const std::string& event_name) {
 
   const int worker_thread_id = content::WorkerThread::GetCurrentId();
   const std::string& extension_id = context()->GetExtensionID();
+  const bool is_service_worker_context =
+      context()->context_type() == Feature::SERVICE_WORKER_CONTEXT;
   IPC::Sender* sender = GetIPCSender();
   if (IncrementEventListenerCount(context(), event_name) == 1) {
     sender->Send(new ExtensionHostMsg_AddListener(
-        extension_id, context()->url(), event_name, worker_thread_id));
+        extension_id,
+        is_service_worker_context ? context()->service_worker_scope()
+                                  : context()->url(),
+        event_name, worker_thread_id));
   }
 
   // This is called the first time the page has added a listener. Since
@@ -262,8 +267,13 @@ void EventBindings::AttachEvent(const std::string& event_name) {
       ExtensionFrameHelper::IsContextForEventPage(context()) ||
       context()->context_type() == Feature::SERVICE_WORKER_CONTEXT;
   if (is_lazy_context) {
-    sender->Send(new ExtensionHostMsg_AddLazyListener(extension_id, event_name,
-                                                      worker_thread_id));
+    if (is_service_worker_context) {
+      sender->Send(new ExtensionHostMsg_AddLazyServiceWorkerListener(
+          extension_id, event_name, context()->service_worker_scope()));
+    } else {
+      sender->Send(
+          new ExtensionHostMsg_AddLazyListener(extension_id, event_name));
+    }
   }
 }
 
@@ -280,12 +290,16 @@ void EventBindings::DetachEvent(const std::string& event_name, bool is_manual) {
   attached_event_names_.erase(event_name);
 
   int worker_thread_id = content::WorkerThread::GetCurrentId();
+  const bool is_service_worker_context = worker_thread_id != kNonWorkerThreadId;
   IPC::Sender* sender = GetIPCSender();
   const std::string& extension_id = context()->GetExtensionID();
 
   if (DecrementEventListenerCount(context(), event_name) == 0) {
     sender->Send(new ExtensionHostMsg_RemoveListener(
-        extension_id, context()->url(), event_name, worker_thread_id));
+        extension_id,
+        is_service_worker_context ? context()->service_worker_scope()
+                                  : context()->url(),
+        event_name, worker_thread_id));
   }
 
   // DetachEvent is called when the last listener for the context is
@@ -297,8 +311,13 @@ void EventBindings::DetachEvent(const std::string& event_name, bool is_manual) {
         ExtensionFrameHelper::IsContextForEventPage(context()) ||
         context()->context_type() == Feature::SERVICE_WORKER_CONTEXT;
     if (is_lazy_context) {
-      sender->Send(new ExtensionHostMsg_RemoveLazyListener(
-          extension_id, event_name, worker_thread_id));
+      if (is_service_worker_context) {
+        sender->Send(new ExtensionHostMsg_RemoveLazyServiceWorkerListener(
+            extension_id, event_name, context()->service_worker_scope()));
+      } else {
+        sender->Send(
+            new ExtensionHostMsg_RemoveLazyListener(extension_id, event_name));
+      }
     }
   }
 }

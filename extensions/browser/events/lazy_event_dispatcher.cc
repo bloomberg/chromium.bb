@@ -11,6 +11,7 @@
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/browser/lazy_context_id.h"
+#include "extensions/browser/service_worker_task_queue.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
 
 using content::BrowserContext;
@@ -34,11 +35,27 @@ void LazyEventDispatcher::DispatchToEventPage(
   DispatchToLazyContext(&dispatch_context, listener_filter);
 }
 
+void LazyEventDispatcher::DispatchToServiceWorker(
+    const ExtensionId& extension_id,
+    const GURL& service_worker_scope,
+    const base::DictionaryValue* listener_filter) {
+  LazyContextId dispatch_context(browser_context_, extension_id,
+                                 service_worker_scope);
+  DispatchToLazyContext(&dispatch_context, listener_filter);
+}
+
 bool LazyEventDispatcher::HasAlreadyDispatched(
     BrowserContext* context,
     const EventListener* listener) const {
-  auto dispatch_context =
-      base::MakeUnique<LazyContextId>(context, listener->extension_id());
+  std::unique_ptr<LazyContextId> dispatch_context;
+  if (listener->is_for_service_worker()) {
+    dispatch_context = base::MakeUnique<LazyContextId>(
+        context, listener->extension_id(), listener->listener_url());
+  } else {
+    dispatch_context =
+        base::MakeUnique<LazyContextId>(context, listener->extension_id());
+  }
+
   return HasAlreadyDispatchedImpl(dispatch_context.get());
 }
 
@@ -79,7 +96,7 @@ bool LazyEventDispatcher::QueueEventDispatch(
   if (HasAlreadyDispatchedImpl(dispatch_context))
     return false;
 
-  LazyBackgroundTaskQueue* queue = dispatch_context->GetTaskQueue();
+  LazyContextTaskQueue* queue = dispatch_context->GetTaskQueue();
   if (!queue->ShouldEnqueueTask(dispatch_context->browser_context(),
                                 extension)) {
     return false;
@@ -102,15 +119,20 @@ bool LazyEventDispatcher::QueueEventDispatch(
     dispatched_event->will_dispatch_callback.Reset();
   }
 
-  queue->AddPendingTask(dispatch_context->browser_context(),
-                        dispatch_context->extension_id(),
-                        base::Bind(dispatch_function_, dispatched_event));
+  queue->AddPendingTaskToDispatchEvent(
+      dispatch_context, base::Bind(dispatch_function_, dispatched_event));
 
   return true;
 }
 
 bool LazyEventDispatcher::HasAlreadyDispatchedImpl(
     const LazyContextId* dispatch_context) const {
+  if (dispatch_context->is_for_service_worker()) {
+    ServiceWorkerDispatchIdentifier dispatch_id(
+        dispatch_context->browser_context(),
+        dispatch_context->service_worker_scope());
+    return base::ContainsKey(dispatched_ids_for_service_worker_, dispatch_id);
+  }
   DCHECK(dispatch_context->is_for_event_page());
   EventPageDispatchIdentifier dispatch_id(dispatch_context->browser_context(),
                                           dispatch_context->extension_id());
@@ -119,6 +141,12 @@ bool LazyEventDispatcher::HasAlreadyDispatchedImpl(
 
 void LazyEventDispatcher::RecordAlreadyDispatched(
     LazyContextId* dispatch_context) {
+  if (dispatch_context->is_for_service_worker()) {
+    dispatched_ids_for_service_worker_.insert(
+        std::make_pair(dispatch_context->browser_context(),
+                       dispatch_context->service_worker_scope()));
+    return;
+  }
   DCHECK(dispatch_context->is_for_event_page());
   dispatched_ids_for_event_page_.insert(std::make_pair(
       dispatch_context->browser_context(), dispatch_context->extension_id()));

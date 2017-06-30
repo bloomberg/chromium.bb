@@ -187,11 +187,13 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   void DidInitializeServiceWorkerContextOnWorkerThread(
       v8::Local<v8::Context> context,
       int64_t service_worker_version_id,
-      const GURL& url) override;
+      const GURL& service_worker_scope,
+      const GURL& script_url) override;
   void WillDestroyServiceWorkerContextOnWorkerThread(
       v8::Local<v8::Context> context,
       int64_t service_worker_version_id,
-      const GURL& url) override;
+      const GURL& service_worker_scope,
+      const GURL& script_url) override;
   bool ShouldEnforceWebRTCRoutingPreferences() override;
   GURL OverrideFlashEmbedWithHTML(const GURL& url) override;
   std::unique_ptr<base::TaskScheduler::InitParams> GetTaskSchedulerInitParams()

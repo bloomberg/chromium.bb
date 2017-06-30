@@ -149,11 +149,16 @@ class ScriptContext : public RequestSender::Source {
   //  - It might let us remove the about:blank resolving?
   const GURL& url() const { return url_; }
 
+  const GURL& service_worker_scope() const;
+
   // Sets the URL of this ScriptContext. Usually this will automatically be set
   // on construction, unless this isn't constructed with enough information to
   // determine the URL (e.g. frame was null).
   // TODO(kalman): Make this a constructor parameter (as an origin).
   void set_url(const GURL& url) { url_ = url; }
+  void set_service_worker_scope(const GURL& scope) {
+    service_worker_scope_ = scope;
+  }
 
   // Returns whether the API |api| or any part of the API could be available in
   // this context without taking into account the context's extension.
@@ -268,6 +273,8 @@ class ScriptContext : public RequestSender::Source {
   v8::Isolate* isolate_;
 
   GURL url_;
+
+  GURL service_worker_scope_;
 
   std::unique_ptr<Runner> runner_;
 

@@ -13,20 +13,26 @@ class BrowserContext;
 }
 
 namespace extensions {
-class LazyBackgroundTaskQueue;
+class LazyContextTaskQueue;
 
 class LazyContextId {
  public:
   enum class Type {
     kEventPage,
+    kServiceWorker,
   };
 
   // An event page (lazy background) context.
   LazyContextId(content::BrowserContext* context,
                 const ExtensionId& extension_id);
-  // TODO(lazyboy): Service worker context.
+
+  // An extension service worker context.
+  LazyContextId(content::BrowserContext* context,
+                const ExtensionId& extension_id,
+                const GURL& service_worker_scope);
 
   bool is_for_event_page() const { return type_ == Type::kEventPage; }
+  bool is_for_service_worker() const { return type_ == Type::kServiceWorker; }
 
   content::BrowserContext* browser_context() const { return context_; }
   void set_browser_context(content::BrowserContext* context) {
@@ -35,13 +41,18 @@ class LazyContextId {
 
   const ExtensionId& extension_id() const { return extension_id_; }
 
-  // TODO(lazyboy): Use a generic interface to support service workers.
-  LazyBackgroundTaskQueue* GetTaskQueue();
+  const GURL& service_worker_scope() const {
+    DCHECK(is_for_service_worker());
+    return service_worker_scope_;
+  }
+
+  LazyContextTaskQueue* GetTaskQueue();
 
  private:
   const Type type_;
   content::BrowserContext* context_;
   const ExtensionId extension_id_;
+  const GURL service_worker_scope_;
 
   DISALLOW_COPY_AND_ASSIGN(LazyContextId);
 };

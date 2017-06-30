@@ -82,6 +82,41 @@ void SkipWaitingWorkerOnIO(
   registration->ActivateWaitingVersionWhenReady();
 }
 
+void DidStartWorker(
+    scoped_refptr<ServiceWorkerVersion> version,
+    ServiceWorkerContext::StartActiveWorkerCallback info_callback) {
+  EmbeddedWorkerInstance* instance = version->embedded_worker();
+  std::move(info_callback).Run(instance->process_id(), instance->thread_id());
+}
+
+void DidFailStartWorker(base::OnceClosure error_callback,
+                        ServiceWorkerStatusCode code) {
+  std::move(error_callback).Run();
+}
+
+void FoundReadyRegistrationForStartActiveWorker(
+    ServiceWorkerContext::StartActiveWorkerCallback info_callback,
+    base::OnceClosure failure_callback,
+    ServiceWorkerStatusCode service_worker_status,
+    scoped_refptr<ServiceWorkerRegistration> service_worker_registration) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (service_worker_status == SERVICE_WORKER_OK) {
+    // Note: There might be a remote possibility that
+    // |service_worker_registration|'s active version might change between here
+    // and DidStartWorker, so bind |active_version| to RunAfterStartWorker.
+    scoped_refptr<ServiceWorkerVersion> active_version =
+        service_worker_registration->active_version();
+    DCHECK(active_version.get());
+    active_version->RunAfterStartWorker(
+        ServiceWorkerMetrics::EventType::EXTERNAL_REQUEST,
+        base::Bind(&DidStartWorker, active_version,
+                   base::Passed(&info_callback)),
+        base::Bind(&DidFailStartWorker, base::Passed(&failure_callback)));
+  } else {
+    std::move(failure_callback).Run();
+  }
+}
+
 }  // namespace
 
 void ServiceWorkerContext::AddExcludedHeadersForFetchEvent(
@@ -839,6 +874,17 @@ bool ServiceWorkerContextWrapper::FinishedExternalRequest(
   if (!version)
     return false;
   return version->FinishExternalRequest(request_uuid);
+}
+
+void ServiceWorkerContextWrapper::StartActiveWorkerForPattern(
+    const GURL& pattern,
+    StartActiveWorkerCallback info_callback,
+    base::OnceClosure failure_callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  FindReadyRegistrationForPattern(
+      pattern, base::Bind(&FoundReadyRegistrationForStartActiveWorker,
+                          base::Passed(&info_callback),
+                          base::Passed(&failure_callback)));
 }
 
 void ServiceWorkerContextWrapper::DidDeleteAndStartOver(

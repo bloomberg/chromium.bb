@@ -691,7 +691,7 @@ IPC_MESSAGE_CONTROL2(ExtensionHostMsg_RequestForIOThread,
 // Notify the browser that the given extension added a listener to an event.
 IPC_MESSAGE_CONTROL4(ExtensionHostMsg_AddListener,
                      std::string /* extension_id */,
-                     GURL /* listener_url */,
+                     GURL /* listener_or_worker_scope_url */,
                      std::string /* name */,
                      int /* worker_thread_id */)
 
@@ -699,23 +699,35 @@ IPC_MESSAGE_CONTROL4(ExtensionHostMsg_AddListener,
 // event.
 IPC_MESSAGE_CONTROL4(ExtensionHostMsg_RemoveListener,
                      std::string /* extension_id */,
-                     GURL /* listener_url */,
+                     GURL /* listener_or_worker_scope_url */,
                      std::string /* name */,
                      int /* worker_thread_id */)
 
 // Notify the browser that the given extension added a listener to an event from
 // a lazy background page.
-IPC_MESSAGE_CONTROL3(ExtensionHostMsg_AddLazyListener,
+IPC_MESSAGE_CONTROL2(ExtensionHostMsg_AddLazyListener,
                      std::string /* extension_id */,
-                     std::string /* name */,
-                     int /* worker_thread_id */)
+                     std::string /* name */)
 
 // Notify the browser that the given extension is no longer interested in
 // receiving the given event from a lazy background page.
-IPC_MESSAGE_CONTROL3(ExtensionHostMsg_RemoveLazyListener,
+IPC_MESSAGE_CONTROL2(ExtensionHostMsg_RemoveLazyListener,
+                     std::string /* extension_id */,
+                     std::string /* event_name */)
+
+// Notify the browser that the given extension added a listener to an event from
+// an extension service worker.
+IPC_MESSAGE_CONTROL3(ExtensionHostMsg_AddLazyServiceWorkerListener,
                      std::string /* extension_id */,
                      std::string /* name */,
-                     int /* worker_thread_id */)
+                     GURL /* service_worker_scope */)
+
+// Notify the browser that the given extension is no longer interested in
+// receiving the given event from an extension service worker.
+IPC_MESSAGE_CONTROL3(ExtensionHostMsg_RemoveLazyServiceWorkerListener,
+                     std::string /* extension_id */,
+                     std::string /* name */,
+                     GURL /* service_worker_scope */)
 
 // Notify the browser that the given extension added a listener to instances of
 // the named event that satisfy the filter.

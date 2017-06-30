@@ -30,7 +30,7 @@ std::unique_ptr<EventListener> EventListener::ForExtension(
     content::RenderProcessHost* process,
     std::unique_ptr<base::DictionaryValue> filter) {
   return base::WrapUnique(new EventListener(event_name, extension_id, GURL(),
-                                            process, kNonWorkerThreadId,
+                                            process, false, kNonWorkerThreadId,
                                             std::move(filter)));
 }
 
@@ -46,18 +46,19 @@ std::unique_ptr<EventListener> EventListener::ForURL(
   // we dispatched events to processes more intelligently this could be avoided.
   return base::WrapUnique(new EventListener(
       event_name, ExtensionId(), url::Origin(listener_url).GetURL(), process,
-      kNonWorkerThreadId, std::move(filter)));
+      false, kNonWorkerThreadId, std::move(filter)));
 }
 
 std::unique_ptr<EventListener> EventListener::ForExtensionServiceWorker(
     const std::string& event_name,
     const std::string& extension_id,
     content::RenderProcessHost* process,
+    const GURL& service_worker_scope,
     int worker_thread_id,
     std::unique_ptr<base::DictionaryValue> filter) {
-  return base::WrapUnique(new EventListener(event_name, extension_id, GURL(),
-                                            process, worker_thread_id,
-                                            std::move(filter)));
+  return base::WrapUnique(
+      new EventListener(event_name, extension_id, service_worker_scope, process,
+                        true, worker_thread_id, std::move(filter)));
 }
 
 EventListener::~EventListener() {}
@@ -69,6 +70,7 @@ bool EventListener::Equals(const EventListener* other) const {
   return event_name_ == other->event_name_ &&
          extension_id_ == other->extension_id_ &&
          listener_url_ == other->listener_url_ && process_ == other->process_ &&
+         is_for_service_worker_ == other->is_for_service_worker_ &&
          worker_thread_id_ == other->worker_thread_id_ &&
          ((!!filter_.get()) == (!!other->filter_.get())) &&
          (!filter_.get() || filter_->Equals(other->filter_.get()));
@@ -78,17 +80,13 @@ std::unique_ptr<EventListener> EventListener::Copy() const {
   std::unique_ptr<DictionaryValue> filter_copy;
   if (filter_)
     filter_copy = filter_->CreateDeepCopy();
-  return base::WrapUnique(
-      new EventListener(event_name_, extension_id_, listener_url_, process_,
-                        worker_thread_id_, std::move(filter_copy)));
+  return base::WrapUnique(new EventListener(
+      event_name_, extension_id_, listener_url_, process_,
+      is_for_service_worker_, worker_thread_id_, std::move(filter_copy)));
 }
 
 bool EventListener::IsLazy() const {
   return !process_;
-}
-
-bool EventListener::IsForServiceWorker() const {
-  return worker_thread_id_ != kNonWorkerThreadId;
 }
 
 void EventListener::MakeLazy() {
@@ -104,12 +102,14 @@ EventListener::EventListener(const std::string& event_name,
                              const std::string& extension_id,
                              const GURL& listener_url,
                              content::RenderProcessHost* process,
+                             bool is_for_service_worker,
                              int worker_thread_id,
                              std::unique_ptr<DictionaryValue> filter)
     : event_name_(event_name),
       extension_id_(extension_id),
       listener_url_(listener_url),
       process_(process),
+      is_for_service_worker_(is_for_service_worker),
       worker_thread_id_(worker_thread_id),
       filter_(std::move(filter)),
       matcher_id_(-1) {}

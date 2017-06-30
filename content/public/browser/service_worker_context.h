@@ -58,6 +58,9 @@ class ServiceWorkerContext {
   using StartServiceWorkerForNavigationHintCallback =
       base::Callback<void(StartServiceWorkerForNavigationHintResult result)>;
 
+  using StartActiveWorkerCallback =
+      base::OnceCallback<void(int process_id, int thread_id)>;
+
   // Registers the header name which should not be passed to the ServiceWorker.
   // Must be called from the IO thread.
   CONTENT_EXPORT static void AddExcludedHeadersForFetchEvent(
@@ -106,6 +109,15 @@ class ServiceWorkerContext {
                                        const std::string& request_uuid) = 0;
   virtual bool FinishedExternalRequest(int64_t service_worker_version_id,
                                        const std::string& request_uuid) = 0;
+
+  // Starts the active worker of the registration whose scope is |pattern|.
+  // |info_callback| is passed the worker's render process id and thread id.
+  //
+  // Must be called on IO thread.
+  virtual void StartActiveWorkerForPattern(
+      const GURL& pattern,
+      StartActiveWorkerCallback info_callback,
+      base::OnceClosure failure_callback) = 0;
 
   // Equivalent to calling navigator.serviceWorker.unregister(pattern) from a
   // renderer, except that |pattern| is an absolute URL instead of relative to

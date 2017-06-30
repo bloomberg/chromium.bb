@@ -23,6 +23,7 @@
 #include "extensions/browser/events/lazy_event_dispatch_util.h"
 #include "extensions/browser/extension_event_histogram_value.h"
 #include "extensions/browser/extension_registry_observer.h"
+#include "extensions/browser/lazy_context_task_queue.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/event_filtering_info.h"
 #include "ipc/ipc_sender.h"
@@ -37,7 +38,6 @@ class RenderProcessHost;
 
 namespace extensions {
 class Extension;
-class ExtensionHost;
 class ExtensionPrefs;
 class ExtensionRegistry;
 
@@ -125,6 +125,7 @@ class EventRouter : public KeyedService,
   void AddServiceWorkerEventListener(const std::string& event_name,
                                      content::RenderProcessHost* process,
                                      const ExtensionId& extension_id,
+                                     const GURL& service_worker_scope,
                                      int worker_thread_id);
   void RemoveEventListener(const std::string& event_name,
                            content::RenderProcessHost* process,
@@ -132,6 +133,7 @@ class EventRouter : public KeyedService,
   void RemoveServiceWorkerEventListener(const std::string& event_name,
                                         content::RenderProcessHost* process,
                                         const ExtensionId& extension_id,
+                                        const GURL& service_worker_scope,
                                         int worker_thread_id);
 
   // Add or remove a URL as an event listener for |event_name|.
@@ -164,10 +166,10 @@ class EventRouter : public KeyedService,
   // workers.
   void AddLazyServiceWorkerEventListener(const std::string& event_name,
                                          const ExtensionId& extension_id,
-                                         int worker_thread_id);
+                                         const GURL& service_worker_scope);
   void RemoveLazyServiceWorkerEventListener(const std::string& event_name,
                                             const ExtensionId& extension_id,
-                                            int worker_thread_id);
+                                            const GURL& service_worker_scope);
 
   // If |add_lazy_listener| is true also add the lazy version of this listener.
   void AddFilteredEventListener(const std::string& event_name,
@@ -268,12 +270,10 @@ class EventRouter : public KeyedService,
                            const Extension* extension,
                            UnloadedExtensionReason reason) override;
 
-  void AddLazyEventListenerImpl(const std::string& event_name,
-                                const ExtensionId& extension_id,
-                                int worker_thread_id);
-  void RemoveLazyEventListenerImpl(const std::string& event_name,
-                                   const ExtensionId& extension_id,
-                                   int worker_thread_id);
+  void AddLazyEventListenerImpl(std::unique_ptr<EventListener> listener,
+                                RegisteredEventType type);
+  void RemoveLazyEventListenerImpl(std::unique_ptr<EventListener> listener,
+                                   RegisteredEventType type);
 
   // Shared by all event dispatch methods. If |restrict_to_extension_id| is
   // empty, the event is broadcast.  An event that just came off the pending
@@ -321,8 +321,9 @@ class EventRouter : public KeyedService,
       events::HistogramValue histogram_value,
       const std::string& event_name);
 
-  void DispatchPendingEvent(const linked_ptr<Event>& event,
-                            ExtensionHost* host);
+  void DispatchPendingEvent(
+      const linked_ptr<Event>& event,
+      std::unique_ptr<LazyContextTaskQueue::ContextInfo> params);
 
   // Implementation of EventListenerMap::Delegate.
   void OnListenerAdded(const EventListener* listener) override;

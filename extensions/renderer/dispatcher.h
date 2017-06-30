@@ -95,7 +95,8 @@ class Dispatcher : public content::RenderThreadObserver,
   void DidInitializeServiceWorkerContextOnWorkerThread(
       v8::Local<v8::Context> v8_context,
       int64_t service_worker_version_id,
-      const GURL& url);
+      const GURL& service_worker_scope,
+      const GURL& script_url);
 
   void WillReleaseScriptContext(blink::WebLocalFrame* frame,
                                 const v8::Local<v8::Context>& context,
@@ -105,7 +106,8 @@ class Dispatcher : public content::RenderThreadObserver,
   static void WillDestroyServiceWorkerContextOnWorkerThread(
       v8::Local<v8::Context> v8_context,
       int64_t service_worker_version_id,
-      const GURL& url);
+      const GURL& service_worker_scope,
+      const GURL& script_url);
 
   // This method is not allowed to run JavaScript code in the frame.
   void DidCreateDocumentElement(blink::WebLocalFrame* frame);

@@ -16,6 +16,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/lazy_background_task_queue_factory.h"
+#include "extensions/browser/lazy_context_id.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_map.h"
@@ -24,6 +25,23 @@
 #include "extensions/common/view_type.h"
 
 namespace extensions {
+
+namespace {
+
+// Adapts a LazyBackgroundTaskQueue pending task callback to
+// LazyContextTaskQueue's callback.
+void PendingTaskAdapter(const LazyContextTaskQueue::PendingTask& original_task,
+                        ExtensionHost* host) {
+  if (!host) {
+    original_task.Run(nullptr);
+  } else {
+    original_task.Run(base::MakeUnique<LazyContextTaskQueue::ContextInfo>(
+        host->extension()->id(), host->render_process_host(),
+        kNonWorkerThreadId, host->GetURL()));
+  }
+}
+
+}  // namespace
 
 LazyBackgroundTaskQueue::LazyBackgroundTaskQueue(
     content::BrowserContext* browser_context)
@@ -64,6 +82,13 @@ bool LazyBackgroundTaskQueue::ShouldEnqueueTask(
   }
 
   return false;
+}
+
+void LazyBackgroundTaskQueue::AddPendingTaskToDispatchEvent(
+    LazyContextId* context_id,
+    const LazyContextTaskQueue::PendingTask& task) {
+  AddPendingTask(context_id->browser_context(), context_id->extension_id(),
+                 base::Bind(&PendingTaskAdapter, task));
 }
 
 void LazyBackgroundTaskQueue::AddPendingTask(

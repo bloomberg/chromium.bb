@@ -254,6 +254,11 @@ std::string ScriptContext::GetEffectiveContextTypeDescription() const {
   return GetContextTypeDescriptionString(effective_context_type_);
 }
 
+const GURL& ScriptContext::service_worker_scope() const {
+  DCHECK_EQ(Feature::SERVICE_WORKER_CONTEXT, context_type());
+  return service_worker_scope_;
+}
+
 bool ScriptContext::IsAnyFeatureAvailableToContext(
     const Feature& api,
     CheckAliasStatus check_alias) {
