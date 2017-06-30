@@ -137,7 +137,7 @@ class NGInlineNodeTest : public RenderingTest {
 TEST_F(NGInlineNodeTest, CollectInlinesText) {
   SetupHtml("t", "<div id=t>Hello <span>inline</span> world.</div>");
   NGInlineNodeForTest node = CreateInlineNode();
-  node.CollectInlines(layout_block_flow_);
+  node.CollectInlines();
   Vector<NGInlineItem>& items = node.Items();
   TEST_ITEM_TYPE_OFFSET(items[0], kText, 0u, 6u);
   TEST_ITEM_TYPE_OFFSET(items[1], kOpenTag, 6u, 6u);
@@ -150,7 +150,7 @@ TEST_F(NGInlineNodeTest, CollectInlinesText) {
 TEST_F(NGInlineNodeTest, CollectInlinesBR) {
   SetupHtml("t", u"<div id=t>Hello<br>World</div>");
   NGInlineNodeForTest node = CreateInlineNode();
-  node.CollectInlines(layout_block_flow_);
+  node.CollectInlines();
   EXPECT_EQ("Hello\nWorld", node.Text());
   Vector<NGInlineItem>& items = node.Items();
   TEST_ITEM_TYPE_OFFSET(items[0], kText, 0u, 5u);
@@ -162,7 +162,7 @@ TEST_F(NGInlineNodeTest, CollectInlinesBR) {
 TEST_F(NGInlineNodeTest, CollectInlinesRtlText) {
   SetupHtml("t", u"<div id=t dir=rtl>\u05E2 <span>\u05E2</span> \u05E2</div>");
   NGInlineNodeForTest node = CreateInlineNode();
-  node.CollectInlines(layout_block_flow_);
+  node.CollectInlines();
   EXPECT_TRUE(node.IsBidiEnabled());
   node.SegmentText();
   EXPECT_TRUE(node.IsBidiEnabled());
@@ -178,7 +178,7 @@ TEST_F(NGInlineNodeTest, CollectInlinesRtlText) {
 TEST_F(NGInlineNodeTest, CollectInlinesMixedText) {
   SetupHtml("t", u"<div id=t>Hello, \u05E2 <span>\u05E2</span></div>");
   NGInlineNodeForTest node = CreateInlineNode();
-  node.CollectInlines(layout_block_flow_);
+  node.CollectInlines();
   EXPECT_TRUE(node.IsBidiEnabled());
   node.SegmentText();
   EXPECT_TRUE(node.IsBidiEnabled());
@@ -194,7 +194,7 @@ TEST_F(NGInlineNodeTest, CollectInlinesMixedText) {
 TEST_F(NGInlineNodeTest, CollectInlinesMixedTextEndWithON) {
   SetupHtml("t", u"<div id=t>Hello, \u05E2 <span>\u05E2!</span></div>");
   NGInlineNodeForTest node = CreateInlineNode();
-  node.CollectInlines(layout_block_flow_);
+  node.CollectInlines();
   EXPECT_TRUE(node.IsBidiEnabled());
   node.SegmentText();
   EXPECT_TRUE(node.IsBidiEnabled());
