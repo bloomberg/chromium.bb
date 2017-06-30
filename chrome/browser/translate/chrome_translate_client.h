@@ -121,6 +121,10 @@ class ChromeTranslateClient
                            LanguageEventShouldRecord);
   FRIEND_TEST_ALL_PREFIXES(ChromeTranslateClientTest,
                            LanguageEventShouldNotRecord);
+  FRIEND_TEST_ALL_PREFIXES(ChromeTranslateClientTest,
+                           TranslationEventShouldRecord);
+  FRIEND_TEST_ALL_PREFIXES(ChromeTranslateClientTest,
+                           TranslationEventShouldNotRecord);
 
   // content::WebContentsObserver implementation.
   void WebContentsDestroyed() override;
