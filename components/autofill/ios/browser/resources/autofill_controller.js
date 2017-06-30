@@ -805,10 +805,17 @@ function extractFormsAndFormElements_(frame, minimumRequiredFields, forms) {
     }
   }
 
-  // Recursively invoke for all frames/iframes.
-  var frames = frame.frames;
+  // Recursively invoke for all iframes.
+  var frames = doc.getElementsByTagName("iframe");
   for (var i = 0; i < frames.length; i++) {
-    extractFormsAndFormElements_(frames[i], minimumRequiredFields, forms);
+    // Check frame origin using only information available to the current frame
+    // (i.e. frames[i].src) to avoid triggering a SecurityError. Skip frames
+    // from different origin since we can't access the DOM elements to autofill.
+    if (!frames[i].src ||
+        __gCrWeb.common.isSameOrigin(frame.location.href, frames[i].src)) {
+      extractFormsAndFormElements_(
+        frames[i].contentWindow, minimumRequiredFields, forms);
+    }
   }
 };
 
