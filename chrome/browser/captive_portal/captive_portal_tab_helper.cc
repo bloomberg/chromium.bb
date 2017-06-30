@@ -95,6 +95,12 @@ void CaptivePortalTabHelper::DidRedirectNavigation(
 void CaptivePortalTabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // TODO(clamy): Remove this when we understand the root cause behind
+  // crbug.com/704892.
+  if (navigation_handle_ && !navigation_handle_->IsInMainFrame())
+    base::debug::DumpWithoutCrashing();
+
   // Exclude subframe navigations.
   if (!navigation_handle->IsInMainFrame())
     return;

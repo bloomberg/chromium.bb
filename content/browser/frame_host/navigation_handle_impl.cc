@@ -6,6 +6,7 @@
 
 #include <iterator>
 
+#include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
@@ -123,6 +124,7 @@ NavigationHandleImpl::NavigationHandleImpl(
       is_form_submission_(is_form_submission),
       expected_render_process_host_id_(ChildProcessHost::kInvalidUniqueID),
       weak_factory_(this) {
+  is_in_constructor = true;
   TRACE_EVENT_ASYNC_BEGIN2("navigation", "NavigationHandle", this,
                            "frame_tree_node",
                            frame_tree_node_->frame_tree_node_id(), "url",
@@ -176,9 +178,15 @@ NavigationHandleImpl::NavigationHandleImpl(
     TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
                                  "Same document");
   }
+  is_in_constructor = false;
 }
 
 NavigationHandleImpl::~NavigationHandleImpl() {
+  // TODO(arthursonzogni): Remove this when we understand the root cause behind
+  // crbug.com/704892.
+  if (is_in_constructor)
+    base::debug::DumpWithoutCrashing();
+
   // Inform the RenderProcessHost to no longer expect a navigation.
   if (expected_render_process_host_id_ != ChildProcessHost::kInvalidUniqueID) {
     RenderProcessHost* process =
@@ -620,6 +628,11 @@ void NavigationHandleImpl::WillRedirectRequest(
   TRACE_EVENT_ASYNC_STEP_INTO1("navigation", "NavigationHandle", this,
                                "WillRedirectRequest", "url",
                                new_url.possibly_invalid_spec());
+
+  // TODO(arthursonzogni): Remove this when we understand the root cause behind
+  // crbug.com/704892 and crbug.com/736658
+  if (IsRendererDebugURL(new_url))
+    base::debug::DumpWithoutCrashing();
 
   // Update the navigation parameters.
   url_ = new_url;
