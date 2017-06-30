@@ -97,14 +97,6 @@ const gfx::SelectionBehavior kMoveParagraphSelectionBehavior =
 // Default placeholder text color.
 const SkColor kDefaultPlaceholderTextColor = SK_ColorLTGRAY;
 
-void ConvertRectToScreen(const View* src, gfx::Rect* r) {
-  DCHECK(src);
-
-  gfx::Point new_origin = r->origin();
-  View::ConvertPointToScreen(src, &new_origin);
-  r->set_origin(new_origin);
-}
-
 // Get the default command for a given key |event|.
 ui::TextEditCommand GetCommandForKeyEvent(const ui::KeyEvent& event) {
   if (event.type() != ui::ET_KEY_PRESSED || event.IsUnicodeKeyCode())

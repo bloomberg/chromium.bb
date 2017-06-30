@@ -18,14 +18,6 @@ namespace {
 
 const int64_t kTimeBeforeClearingMS = 1000;
 
-void ConvertRectToScreen(const views::View* src, gfx::Rect* r) {
-  DCHECK(src);
-
-  gfx::Point new_origin = r->origin();
-  views::View::ConvertPointToScreen(src, &new_origin);
-  r->set_origin(new_origin);
-}
-
 }  // namespace
 
 PrefixSelector::PrefixSelector(PrefixDelegate* delegate, View* host_view)
@@ -81,7 +73,7 @@ gfx::Rect PrefixSelector::GetCaretBounds() const {
   gfx::Rect rect(host_view_->GetVisibleBounds().origin(), gfx::Size());
   // TextInputClient::GetCaretBounds is expected to return a value in screen
   // coordinates.
-  ConvertRectToScreen(host_view_, &rect);
+  views::View::ConvertRectToScreen(host_view_, &rect);
   return rect;
 }
 

@@ -801,6 +801,16 @@ void View::ConvertPointFromScreen(const View* dst, gfx::Point* p) {
   ConvertPointFromWidget(dst, p);
 }
 
+// static
+void View::ConvertRectToScreen(const View* src, gfx::Rect* rect) {
+  DCHECK(src);
+  DCHECK(rect);
+
+  gfx::Point new_origin = rect->origin();
+  views::View::ConvertPointToScreen(src, &new_origin);
+  rect->set_origin(new_origin);
+}
+
 gfx::Rect View::ConvertRectToParent(const gfx::Rect& rect) const {
   gfx::RectF x_rect = gfx::RectF(rect);
   GetTransform().TransformRect(&x_rect);
