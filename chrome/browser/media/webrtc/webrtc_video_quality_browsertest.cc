@@ -97,8 +97,8 @@ static const struct VideoQualityTestConfig {
 // * ffmpeg 0.11.1 or compatible version (see http://www.ffmpeg.org)
 //
 // The test runs several custom binaries - rgba_to_i420 converter and
-// frame_analyzer. Both tools can be found under third_party/webrtc/tools. The
-// test also runs a stand alone Python implementation of a WebSocket server
+// frame_analyzer. Both tools can be found under third_party/webrtc/rtc_tools.
+// The test also runs a stand alone Python implementation of a WebSocket server
 // (pywebsocket) and a barcode_decoder script.
 class WebRtcVideoQualityBrowserTest : public WebRtcTestBase,
     public testing::WithParamInterface<VideoQualityTestConfig> {
@@ -194,7 +194,7 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase,
     base::FilePath path_to_analyzer = base::MakeAbsoluteFilePath(
         GetBrowserDir().Append(kFrameAnalyzerExecutable));
     base::FilePath path_to_compare_script = GetSourceDir().Append(
-        FILE_PATH_LITERAL("third_party/webrtc/tools/compare_videos.py"));
+        FILE_PATH_LITERAL("third_party/webrtc/rtc_tools/compare_videos.py"));
 
     if (!base::PathExists(path_to_analyzer)) {
       LOG(ERROR) << "Missing frame analyzer: should be in "
