@@ -56,6 +56,7 @@ import org.chromium.chrome.browser.widget.FadingBackgroundView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController.ContentType;
 import org.chromium.chrome.browser.widget.textbubble.ViewAnchoredTextBubble;
 import org.chromium.content.browser.BrowserStartupController;
+import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.UiUtils;
 
@@ -959,6 +960,7 @@ public class BottomSheet
         if (mIsSheetOpen) return;
 
         mIsSheetOpen = true;
+        dismissSelectedText();
         for (BottomSheetObserver o : mObservers) o.onSheetOpened();
         announceForAccessibility(getResources().getString(R.string.bottom_sheet_opened));
         mActivity.addViewObscuringAllTabs(this);
@@ -1101,6 +1103,18 @@ public class BottomSheet
 
         setTranslationY(mContainerHeight - offset);
         sendOffsetChangeEvents();
+    }
+
+    /**
+     * Deselects any text in the active tab's web contents and dismisses the text controls.
+     */
+    private void dismissSelectedText() {
+        Tab activeTab = getActiveTab();
+        if (activeTab == null) return;
+
+        ContentViewCore contentViewCore = activeTab.getContentViewCore();
+        if (contentViewCore == null) return;
+        contentViewCore.clearSelection();
     }
 
     /**
