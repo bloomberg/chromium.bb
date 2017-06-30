@@ -20,6 +20,12 @@ bool AudioDeviceDescription::IsDefaultDevice(const std::string& device_id) {
 }
 
 // static
+bool AudioDeviceDescription::IsLoopbackDevice(const std::string& device_id) {
+  return device_id.compare(kLoopbackInputDeviceId) == 0 ||
+         device_id.compare(kLoopbackWithMuteDeviceId) == 0;
+}
+
+// static
 bool AudioDeviceDescription::UseSessionIdToSelectDevice(
     int session_id,
     const std::string& device_id) {

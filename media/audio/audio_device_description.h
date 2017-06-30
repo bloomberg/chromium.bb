@@ -38,6 +38,9 @@ struct MEDIA_EXPORT AudioDeviceDescription {
   // Returns true if |device_id| represents the default device.
   static bool IsDefaultDevice(const std::string& device_id);
 
+  // Returns true if |device_id| represents a loopback audio capture device.
+  static bool IsLoopbackDevice(const std::string& device_id);
+
   // If |device_id| is not empty, |session_id| should be ignored and the output
   // device should be selected basing on |device_id|.
   // If |device_id| is empty and |session_id| is nonzero, output device
