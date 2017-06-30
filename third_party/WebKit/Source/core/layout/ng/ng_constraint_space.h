@@ -94,6 +94,7 @@ class CORE_EXPORT NGConstraintSpace final
   // grid). These flags represented whether a layout needs to produce a
   // fragment that satisfies a fixed constraint in the inline and block
   // direction respectively.
+  //
   // If these flags are true, the AvailableSize() is interpreted as the fixed
   // border-box size of this box in the respective dimension.
   bool IsFixedSizeInline() const { return is_fixed_size_inline_; }
@@ -116,7 +117,35 @@ class CORE_EXPORT NGConstraintSpace final
 
   NGMarginStrut MarginStrut() const { return margin_strut_; }
 
+  // The BfcOffset is where the MarginStrut is placed within the block
+  // formatting context.
+  //
+  // The current layout or a descendant layout may "resolve" the BFC offset,
+  // i.e. decide where the current fragment should be placed within the BFC.
+  //
+  // This is done by:
+  //   bfc_block_offset =
+  //     space.BfcOffset().block_offset + space.MarginStrut().Sum();
+  //
+  // The BFC offset can get "resolved" in many circumstances (including, but
+  // not limited to):
+  //   - block_start border or padding in the current layout.
+  //   - Text content, atomic inlines, (see NGLineBreaker).
+  //   - The current layout having a block_size.
   NGLogicalOffset BfcOffset() const { return bfc_offset_; }
+
+  // If present, and the current layout hasn't resolved its BFC offset yet (see
+  // BfcOffset), the layout should position all of its unpositioned floats at
+  // this offset.
+  //
+  // This value should be propogated to child layouts if the current layout
+  // hasn't resolved its BFC offset yet.
+  //
+  // This value is calculated *after* an initial pass of the tree, this value
+  // should only be present during the second pass.
+  WTF::Optional<NGLogicalOffset> FloatsBfcOffset() const {
+    return floats_bfc_offset_;
+  }
 
   Vector<RefPtr<NGUnpositionedFloat>>& UnpositionedFloats() {
     return unpositioned_floats_;
@@ -150,6 +179,7 @@ class CORE_EXPORT NGConstraintSpace final
                     bool is_anonymous,
                     const NGMarginStrut& margin_strut,
                     const NGLogicalOffset& bfc_offset,
+                    const WTF::Optional<NGLogicalOffset>& floats_bfc_offset,
                     const std::shared_ptr<NGExclusions>& exclusions,
                     Vector<RefPtr<NGUnpositionedFloat>>& unpositioned_floats,
                     const WTF::Optional<LayoutUnit>& clearance_offset);
@@ -185,6 +215,8 @@ class CORE_EXPORT NGConstraintSpace final
 
   NGMarginStrut margin_strut_;
   NGLogicalOffset bfc_offset_;
+  WTF::Optional<NGLogicalOffset> floats_bfc_offset_;
+
   const std::shared_ptr<NGExclusions> exclusions_;
   WTF::Optional<LayoutUnit> clearance_offset_;
   Vector<RefPtr<NGUnpositionedFloat>> unpositioned_floats_;

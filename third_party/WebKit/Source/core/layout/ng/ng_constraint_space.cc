@@ -27,6 +27,7 @@ NGConstraintSpace::NGConstraintSpace(
     bool is_anonymous,
     const NGMarginStrut& margin_strut,
     const NGLogicalOffset& bfc_offset,
+    const WTF::Optional<NGLogicalOffset>& floats_bfc_offset,
     const std::shared_ptr<NGExclusions>& exclusions,
     Vector<RefPtr<NGUnpositionedFloat>>& unpositioned_floats,
     const WTF::Optional<LayoutUnit>& clearance_offset)
@@ -48,6 +49,7 @@ NGConstraintSpace::NGConstraintSpace(
       direction_(static_cast<unsigned>(direction)),
       margin_strut_(margin_strut),
       bfc_offset_(bfc_offset),
+      floats_bfc_offset_(floats_bfc_offset),
       exclusions_(exclusions),
       clearance_offset_(clearance_offset) {
   unpositioned_floats_.swap(unpositioned_floats);
@@ -165,6 +167,7 @@ bool NGConstraintSpace::operator==(const NGConstraintSpace& other) const {
          direction_ == other.direction_ &&
          margin_strut_ == other.margin_strut_ &&
          bfc_offset_ == other.bfc_offset_ &&
+         floats_bfc_offset_ == other.floats_bfc_offset_ &&
          clearance_offset_ == other.clearance_offset_;
 }
 
