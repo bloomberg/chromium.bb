@@ -7136,6 +7136,25 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="3" label="Enabled from second screen"/>
 </enum>
 
+<enum name="DataReductionProxyProtocolAcceptTransformEvent">
+  <int value="0" label="Lite page requested"/>
+  <int value="1" label="Lite page transform received"/>
+  <int value="2" label="Empty image page policy directive received"/>
+  <int value="3" label="Empty image requested"/>
+  <int value="4" label="Empty image transform received"/>
+  <int value="5" label="Compressed-video requested"/>
+</enum>
+
+<enum name="DataReductionProxyProtocolNotAcceptingTransformReason">
+  <int value="0"
+      label="Not accepting proxy transforms, transforms disabled on client"/>
+  <int value="1"
+      label="Not accepting proxy transforms, page blacklisted on client"/>
+  <int value="2"
+      label="Not accepting proxy transforms, not on cellular in cellular-only
+             mode"/>
+</enum>
+
 <enum name="DataReductionProxyProxyPrefMigrationResult">
   <int value="0" label="Proxy pref not cleared"/>
   <int value="1" label="Empty proxy pref was cleared"/>

@@ -11,6 +11,8 @@
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
+#include "net/http/http_request_headers.h"
+#include "net/http/http_response_headers.h"
 #include "net/proxy/proxy_service.h"
 
 class GURL;
@@ -20,6 +22,15 @@ class HttpResponseHeaders;
 }  // namespace net
 
 namespace data_reduction_proxy {
+
+// Transform directives that may be parsed out of http headers.
+enum TransformDirective {
+  TRANSFORM_NONE,
+  TRANSFORM_LITE_PAGE,
+  TRANSFORM_EMPTY_IMAGE,
+  TRANSFORM_COMPRESSED_VIDEO,
+  TRANSFORM_PAGE_POLICIES_EMPTY_IMAGE,
+};
 
 // Values of the UMA DataReductionProxy.BypassType{Primary|Fallback} and
 // DataReductionProxy.BlockType{Primary|Fallback} histograms. This enum must
@@ -116,6 +127,18 @@ const char* if_heavy_qualifier();
 // Returns true if the Chrome-Proxy-Content-Transform response header indicates
 // that an empty image has been provided.
 bool IsEmptyImagePreview(const net::HttpResponseHeaders& headers);
+
+// Retrieves the accepted transform type, if any, from |headers|.
+TransformDirective ParseRequestTransform(
+    const net::HttpRequestHeaders& headers);
+
+// Retrieves the transform directive (whether applied or a page policy), if any,
+// from |headers|.
+// Note if the response headers contains both an applied content transform and
+// a page policies directive, only the applied content transform type will
+// be returned.
+TransformDirective ParseResponseTransform(
+    const net::HttpResponseHeaders& headers);
 
 // Returns true if the provided value of the Chrome-Proxy-Content-Transform
 // response header that is provided in |content_transform_value| indicates that

@@ -43,6 +43,20 @@ namespace data_reduction_proxy {
 
 namespace {
 
+// Values of the UMA DataReductionProxy.Protocol.AcceptTransform histogram
+// defined in metrics/histograms/histograms.xml. This enum must remain
+// synchronized with DataReductionProxyProtocolAcceptTransformEvent in
+// tools/metrics/histograms/enums.xml.
+enum AcceptTransformEvent {
+  LITE_PAGE_REQUESTED = 0,
+  LITE_PAGE_TRANSFORM_RECEIVED = 1,
+  EMPTY_IMAGE_POLICY_DIRECTIVE_RECEIVED = 2,
+  EMPTY_IMAGE_REQUESTED = 3,
+  EMPTY_IMAGE_TRANSFORM_RECEIVED = 4,
+  COMPRESSED_VIDEO_REQUESTED = 5,
+  ACCEPT_TRANSFORM_EVENT_BOUNDARY
+};
+
 // Records the occurrence of |sample| in |name| histogram. UMA macros are not
 // used because the |name| is not static.
 void RecordNewContentLengthHistogram(const std::string& name, int64_t sample) {
@@ -163,6 +177,56 @@ void RecordContentLengthHistograms(bool lofi_low_header_added,
     return;
   UMA_HISTOGRAM_COUNTS_1M("Net.HttpContentLengthCacheable24Hours",
                           received_content_length);
+}
+
+void RecordAcceptTransformEvent(AcceptTransformEvent event) {
+  UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.Protocol.AcceptTransform",
+                            event, ACCEPT_TRANSFORM_EVENT_BOUNDARY);
+}
+
+void RecordAcceptTransformSentUMA(
+    const net::HttpRequestHeaders& request_headers) {
+  switch (ParseRequestTransform(request_headers)) {
+    case TRANSFORM_LITE_PAGE:
+      RecordAcceptTransformEvent(LITE_PAGE_REQUESTED);
+      break;
+    case TRANSFORM_EMPTY_IMAGE:
+      RecordAcceptTransformEvent(EMPTY_IMAGE_REQUESTED);
+      break;
+    case TRANSFORM_COMPRESSED_VIDEO:
+      RecordAcceptTransformEvent(COMPRESSED_VIDEO_REQUESTED);
+      break;
+    case TRANSFORM_NONE:
+      break;
+    case TRANSFORM_PAGE_POLICIES_EMPTY_IMAGE:
+      NOTREACHED();
+      break;
+  }
+}
+
+void RecordAcceptTransformReceivedUMA(const net::URLRequest& request) {
+  net::HttpResponseHeaders* response_headers = request.response_headers();
+  if (!response_headers) {
+    return;
+  }
+
+  switch (ParseResponseTransform(*response_headers)) {
+    case TRANSFORM_LITE_PAGE:
+      RecordAcceptTransformEvent(LITE_PAGE_TRANSFORM_RECEIVED);
+      break;
+    case TRANSFORM_PAGE_POLICIES_EMPTY_IMAGE:
+      RecordAcceptTransformEvent(EMPTY_IMAGE_POLICY_DIRECTIVE_RECEIVED);
+      break;
+    case TRANSFORM_EMPTY_IMAGE:
+      RecordAcceptTransformEvent(EMPTY_IMAGE_TRANSFORM_RECEIVED);
+      break;
+    case TRANSFORM_NONE:
+      break;
+    case TRANSFORM_COMPRESSED_VIDEO:
+      // Compressed video response would instead be a redirect to resource.
+      NOTREACHED();
+      break;
+  }
 }
 
 // Verifies that the chrome proxy related request headers are set correctly.
@@ -373,6 +437,7 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
   data_reduction_proxy_request_options_->AddRequestHeader(headers, page_id);
 
   VerifyHttpRequestHeaders(true, *headers);
+  RecordAcceptTransformSentUMA(*headers);
 }
 
 void DataReductionProxyNetworkDelegate::OnBeforeRedirectInternal(
@@ -456,6 +521,7 @@ void DataReductionProxyNetworkDelegate::OnCompletedInternal(
   CalculateAndRecordDataUsage(*request, request_type);
 
   RecordContentLength(*request, request_type, original_content_length);
+  RecordAcceptTransformReceivedUMA(*request);
 }
 
 void DataReductionProxyNetworkDelegate::OnHeadersReceivedInternal(
