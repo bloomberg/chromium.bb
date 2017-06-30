@@ -98,6 +98,9 @@ message MountRequest {
   // Performs a public mount, which is used for a Kiosk session. Credentials are
   // not needed in the request; they are synthesized by cryptohomed from id.
   optional bool public_mount = 5;
+  // If set to true, mounts the vault to a temporary location. The mount is not
+  // exposed to the usual locations (/home/user, /home/root).
+  optional bool hidden_mount = 6;
 }
 
 // A BaseReply type is used for all cryptohomed responses. A shared base class

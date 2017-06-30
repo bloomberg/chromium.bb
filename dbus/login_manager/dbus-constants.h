@@ -21,6 +21,8 @@ const char kSessionManagerStorePolicyForUser[] = "StorePolicyForUser";
 const char kSessionManagerStoreUnsignedPolicyForUser[] =
     "StoreUnsignedPolicyForUser";
 const char kSessionManagerRetrievePolicyForUser[] = "RetrievePolicyForUser";
+const char kSessionManagerRetrievePolicyForUserWithoutSession[] =
+    "RetrievePolicyForUserWithoutSession";
 const char kSessionManagerStoreDeviceLocalAccountPolicy[] =
     "StoreDeviceLocalAccountPolicy";
 const char kSessionManagerRetrieveDeviceLocalAccountPolicy[] =
