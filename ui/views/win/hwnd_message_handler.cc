@@ -21,8 +21,14 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "base/win/scoped_comptr.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/windows_version.h"
+#include "ui/accessibility/platform/ax_platform_node_win.h"
+#include "ui/accessibility/platform/ax_system_caret_win.h"
+#include "ui/base/ime/input_method.h"
+#include "ui/base/ime/text_input_client.h"
+#include "ui/base/ime/text_input_type.h"
 #include "ui/base/view_prop.h"
 #include "ui/base/win/internal_constants.h"
 #include "ui/base/win/lock_state.h"
@@ -362,6 +368,8 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate)
       weak_factory_(this) {}
 
 HWNDMessageHandler::~HWNDMessageHandler() {
+  DCHECK(delegate_->GetHWNDMessageDelegateInputMethod());
+  delegate_->GetHWNDMessageDelegateInputMethod()->RemoveObserver(this);
   delegate_ = NULL;
   // Prevent calls back into this class via WNDPROC now that we've been
   // destroyed.
@@ -395,6 +403,8 @@ void HWNDMessageHandler::Init(HWND parent, const gfx::Rect& bounds) {
   prop_window_target_.reset(new ui::ViewProp(hwnd(),
                             ui::WindowEventTarget::kWin32InputEventTarget,
                             static_cast<ui::WindowEventTarget*>(this)));
+  DCHECK(delegate_->GetHWNDMessageDelegateInputMethod());
+  delegate_->GetHWNDMessageDelegateInputMethod()->AddObserver(this);
 
   // Direct Manipulation is enabled on Windows 10+. The CreateInstance function
   // returns NULL if Direct Manipulation is not available.
@@ -948,6 +958,46 @@ LRESULT HWNDMessageHandler::OnWndProc(UINT message,
                                reinterpret_cast<HWND>(l_param));
   return result;
 }
+
+void HWNDMessageHandler::OnTextInputTypeChanged(
+    const ui::TextInputClient* client) {
+  if (!client || client->GetTextInputType() == ui::TEXT_INPUT_TYPE_NONE) {
+    DestroyAXSystemCaret();
+    return;
+  }
+
+  OnCaretBoundsChanged(client);
+}
+
+void HWNDMessageHandler::OnFocus() {}
+
+void HWNDMessageHandler::OnBlur() {}
+
+void HWNDMessageHandler::OnCaretBoundsChanged(
+    const ui::TextInputClient* client) {
+  if (!client || client->GetTextInputType() == ui::TEXT_INPUT_TYPE_NONE)
+    return;
+
+  if (!ax_system_caret_)
+    ax_system_caret_ = std::make_unique<ui::AXSystemCaretWin>(hwnd());
+
+  const gfx::Rect dip_caret_bounds(client->GetCaretBounds());
+  gfx::Rect caret_bounds =
+      display::win::ScreenWin::DIPToScreenRect(hwnd(), dip_caret_bounds);
+  // Collapse any selection.
+  caret_bounds.set_width(1);
+  ax_system_caret_->MoveCaretTo(caret_bounds);
+}
+
+void HWNDMessageHandler::OnTextInputStateChanged(
+    const ui::TextInputClient* client) {}
+
+void HWNDMessageHandler::OnInputMethodDestroyed(
+    const ui::InputMethod* input_method) {
+  DestroyAXSystemCaret();
+}
+
+void HWNDMessageHandler::OnShowImeIfNeeded() {}
 
 LRESULT HWNDMessageHandler::HandleMouseMessage(unsigned int message,
                                                WPARAM w_param,
@@ -1533,10 +1583,14 @@ LRESULT HWNDMessageHandler::OnGetObject(UINT message,
     // Retrieve MSAA dispatch object for the root view.
     base::win::ScopedComPtr<IAccessible> root(
         delegate_->GetNativeViewAccessible());
-
-    // Create a reference that MSAA will marshall to the client.
     reference_result = LresultFromObject(IID_IAccessible, w_param,
         static_cast<IAccessible*>(root.Detach()));
+  } else if (::GetFocus() == hwnd() && ax_system_caret_ &&
+             static_cast<DWORD>(OBJID_CARET) == obj_id) {
+    base::win::ScopedComPtr<IAccessible> ax_system_caret_accessible =
+        ax_system_caret_->GetCaret();
+    reference_result = LresultFromObject(IID_IAccessible, w_param,
+                                         ax_system_caret_accessible.Detach());
   }
 
   return reference_result;
@@ -2180,6 +2234,7 @@ void HWNDMessageHandler::OnSysCommand(UINT notification_code,
         (notification_code & sc_mask) == SC_MAXIMIZE ||
         (notification_code & sc_mask) == SC_RESTORE) {
       delegate_->ResetWindowControls();
+      DestroyAXSystemCaret();
     } else if ((notification_code & sc_mask) == SC_MOVE ||
                (notification_code & sc_mask) == SC_SIZE) {
       if (!IsVisible()) {
@@ -2188,6 +2243,7 @@ void HWNDMessageHandler::OnSysCommand(UINT notification_code,
         SetWindowLong(hwnd(), GWL_STYLE,
                       GetWindowLong(hwnd(), GWL_STYLE) | WS_VISIBLE);
       }
+      DestroyAXSystemCaret();
     }
   }
 
@@ -3000,6 +3056,10 @@ void HWNDMessageHandler::OnBackgroundFullscreen() {
   shrunk_rect.set_height(shrunk_rect.height() - 1);
   background_fullscreen_hack_ = true;
   SetBoundsInternal(shrunk_rect, false);
+}
+
+void HWNDMessageHandler::DestroyAXSystemCaret() {
+  ax_system_caret_ = nullptr;
 }
 
 }  // namespace views

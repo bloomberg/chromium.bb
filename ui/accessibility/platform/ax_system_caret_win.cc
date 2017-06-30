@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/accessibility/platform/ax_fake_caret_win.h"
+#include "ui/accessibility/platform/ax_system_caret_win.h"
 
 #include <windows.h>
 
@@ -15,22 +15,24 @@
 
 namespace ui {
 
-AXFakeCaretWin::AXFakeCaretWin(gfx::AcceleratedWidget event_target)
+AXSystemCaretWin::AXSystemCaretWin(gfx::AcceleratedWidget event_target)
     : event_target_(event_target) {
   caret_ = static_cast<AXPlatformNodeWin*>(AXPlatformNodeWin::Create(this));
   data_.id = GetNextAXPlatformNodeUniqueId();
   data_.role = AX_ROLE_CARET;
+  // |get_accState| should return 0 which means that the caret is visible.
   data_.state = 0;
-  data_.SetName(L"caret");
+  // According to MSDN, "Edit" should be the name of the caret object.
+  data_.SetName(L"Edit");
   data_.offset_container_id = -1;
 }
 
-AXFakeCaretWin::~AXFakeCaretWin() {
+AXSystemCaretWin::~AXSystemCaretWin() {
   caret_->Destroy();
   caret_ = nullptr;
 }
 
-base::win::ScopedComPtr<IAccessible> AXFakeCaretWin::GetCaret() const {
+base::win::ScopedComPtr<IAccessible> AXSystemCaretWin::GetCaret() const {
   base::win::ScopedComPtr<IAccessible> caret_accessible;
   HRESULT hr = caret_->QueryInterface(
       IID_IAccessible,
@@ -39,7 +41,7 @@ base::win::ScopedComPtr<IAccessible> AXFakeCaretWin::GetCaret() const {
   return caret_accessible;
 }
 
-void AXFakeCaretWin::MoveCaretTo(const gfx::Rect& bounds) {
+void AXSystemCaretWin::MoveCaretTo(const gfx::Rect& bounds) {
   if (bounds.IsEmpty())
     return;
   data_.location = gfx::RectF(bounds);
@@ -49,20 +51,20 @@ void AXFakeCaretWin::MoveCaretTo(const gfx::Rect& bounds) {
   }
 }
 
-const AXNodeData& AXFakeCaretWin::GetData() const {
+const AXNodeData& AXSystemCaretWin::GetData() const {
   return data_;
 }
 
-const ui::AXTreeData& AXFakeCaretWin::GetTreeData() const {
+const ui::AXTreeData& AXSystemCaretWin::GetTreeData() const {
   CR_DEFINE_STATIC_LOCAL(ui::AXTreeData, empty_data, ());
   return empty_data;
 }
 
-gfx::NativeWindow AXFakeCaretWin::GetTopLevelWidget() {
+gfx::NativeWindow AXSystemCaretWin::GetTopLevelWidget() {
   return nullptr;
 }
 
-gfx::NativeViewAccessible AXFakeCaretWin::GetParent() {
+gfx::NativeViewAccessible AXSystemCaretWin::GetParent() {
   if (!event_target_)
     return nullptr;
 
@@ -75,37 +77,39 @@ gfx::NativeViewAccessible AXFakeCaretWin::GetParent() {
   return nullptr;
 }
 
-int AXFakeCaretWin::GetChildCount() {
+int AXSystemCaretWin::GetChildCount() {
   return 0;
 }
 
-gfx::NativeViewAccessible AXFakeCaretWin::ChildAtIndex(int index) {
+gfx::NativeViewAccessible AXSystemCaretWin::ChildAtIndex(int index) {
   return nullptr;
 }
 
-gfx::Rect AXFakeCaretWin::GetScreenBoundsRect() const {
+gfx::Rect AXSystemCaretWin::GetScreenBoundsRect() const {
   gfx::Rect bounds = ToEnclosingRect(data_.location);
   return bounds;
 }
 
-gfx::NativeViewAccessible AXFakeCaretWin::HitTestSync(int x, int y) {
+gfx::NativeViewAccessible AXSystemCaretWin::HitTestSync(int x, int y) {
   return nullptr;
 }
 
-gfx::NativeViewAccessible AXFakeCaretWin::GetFocus() {
+gfx::NativeViewAccessible AXSystemCaretWin::GetFocus() {
   return nullptr;
 }
 
-gfx::AcceleratedWidget AXFakeCaretWin::GetTargetForNativeAccessibilityEvent() {
+gfx::AcceleratedWidget
+AXSystemCaretWin::GetTargetForNativeAccessibilityEvent() {
   return event_target_;
 }
 
-bool AXFakeCaretWin::AccessibilityPerformAction(const ui::AXActionData& data) {
+bool AXSystemCaretWin::AccessibilityPerformAction(
+    const ui::AXActionData& data) {
   return false;
 }
 
-bool AXFakeCaretWin::ShouldIgnoreHoveredStateForTesting() {
-  return true;
+bool AXSystemCaretWin::ShouldIgnoreHoveredStateForTesting() {
+  return false;
 }
 
 }  // namespace ui
