@@ -122,6 +122,12 @@ public class ChooseHostBrowserDialog {
             }
         });
 
+        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialogInterface) {
+                listener.onQuit();
+            }
+        });
         dialog.show();
     };
 

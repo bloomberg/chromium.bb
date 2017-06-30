@@ -66,6 +66,12 @@ public class InstallHostBrowserDialog {
                         });
 
         AlertDialog dialog = builder.create();
+        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialogInterface) {
+                listener.onConfirmQuit();
+            }
+        });
         dialog.show();
     };
 }
