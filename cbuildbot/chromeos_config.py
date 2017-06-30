@@ -2242,6 +2242,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'guado',
       'kip',
       'lakitu',
+      'lakitu-gpu',
       'leon',
       'link',
       'lumpy',
@@ -2286,7 +2287,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'eve',
       'hana',
       'kevin',
-      'lakitu-gpu', # crbug.com/732942
       'lakitu-st',
       'quawks',
       'reef',
