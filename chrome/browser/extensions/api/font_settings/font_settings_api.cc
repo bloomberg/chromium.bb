@@ -284,7 +284,7 @@ ExtensionFunction::ResponseAction FontSettingsSetFontFunction::Run() {
 
 bool FontSettingsGetFontListFunction::RunAsync() {
   content::GetFontListAsync(
-      Bind(&FontSettingsGetFontListFunction::FontListHasLoaded, this));
+      BindOnce(&FontSettingsGetFontListFunction::FontListHasLoaded, this));
   return true;
 }
 

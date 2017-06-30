@@ -135,7 +135,8 @@ void PageCaptureSaveAsMHTMLFunction::ResolvePermissionRequest(
   if (allowed_permissions.ContainsID(APIPermission::kPageCapture)) {
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
-        base::Bind(&PageCaptureSaveAsMHTMLFunction::CreateTemporaryFile, this));
+        base::BindOnce(&PageCaptureSaveAsMHTMLFunction::CreateTemporaryFile,
+                       this));
   } else {
     ReturnFailure(kUserDenied);
   }

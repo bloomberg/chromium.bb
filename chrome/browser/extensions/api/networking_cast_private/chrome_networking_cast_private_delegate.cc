@@ -120,10 +120,11 @@ void CredentialsGetterCompleted(
     const std::string& error) {
   if (!error.empty()) {
     content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                     base::Bind(failure_callback, error));
+                                     base::BindOnce(failure_callback, error));
   } else {
-    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                     base::Bind(success_callback, key_data));
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::BindOnce(success_callback, key_data));
   }
 }
 

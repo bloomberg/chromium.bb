@@ -29,8 +29,8 @@ class ImageWriterUtilityClient::RemovableStorageWriterClientImpl
     DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
 
     binding_.set_connection_error_handler(
-        base::Bind(&ImageWriterUtilityClient::UtilityProcessError,
-                   image_writer_utility_client_));
+        base::BindOnce(&ImageWriterUtilityClient::UtilityProcessError,
+                       image_writer_utility_client_));
   }
 
   ~RemovableStorageWriterClientImpl() override = default;

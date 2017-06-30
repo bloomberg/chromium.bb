@@ -126,9 +126,9 @@ bool IdentityGetAuthTokenFunction::RunAsync() {
   // From here on out, results must be returned asynchronously.
   StartAsyncRun();
 
-  GetIdentityManager()->GetPrimaryAccountInfo(
-      base::Bind(&IdentityGetAuthTokenFunction::OnReceivedPrimaryAccountInfo,
-                 this, scopes, gaia_id));
+  GetIdentityManager()->GetPrimaryAccountInfo(base::BindOnce(
+      &IdentityGetAuthTokenFunction::OnReceivedPrimaryAccountInfo, this, scopes,
+      gaia_id));
 
   return true;
 }
@@ -154,7 +154,7 @@ void IdentityGetAuthTokenFunction::OnReceivedPrimaryAccountInfo(
     // Get the AccountInfo for the account that the extension wishes to use.
     identity_manager_->GetAccountInfoFromGaiaId(
         extension_gaia_id,
-        base::Bind(
+        base::BindOnce(
             &IdentityGetAuthTokenFunction::OnReceivedExtensionAccountInfo, this,
             false /* not primary account */, scopes));
     return;
@@ -641,8 +641,8 @@ void IdentityGetAuthTokenFunction::StartLoginAccessTokenRequest() {
 
   GetIdentityManager()->GetAccessToken(
       token_key_->account_id, ::identity::ScopeSet(), "extensions_identity_api",
-      base::Bind(&IdentityGetAuthTokenFunction::OnGetAccessTokenComplete,
-                 base::Unretained(this)));
+      base::BindOnce(&IdentityGetAuthTokenFunction::OnGetAccessTokenComplete,
+                     base::Unretained(this)));
 }
 
 void IdentityGetAuthTokenFunction::StartGaiaRequest(

@@ -68,7 +68,7 @@ class TestSingleLogSource : public SingleLogSource {
     // log sources actually work. Instead, simulate the asynchronous operation
     // of a SingleLogSource by invoking the callback separately.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, base::Owned(result_map)));
+        FROM_HERE, base::BindOnce(callback, base::Owned(result_map)));
   }
 
   // Instantiates a new instance of this class. Does not retain ownership. Used

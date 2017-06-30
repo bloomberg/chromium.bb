@@ -240,7 +240,7 @@ void CookiesGetFunction::GetCookieOnIOThread() {
       store_browser_context_->GetURLRequestContext()->cookie_store();
   cookies_helpers::GetCookieListFromStore(
       cookie_store, url_,
-      base::Bind(&CookiesGetFunction::GetCookieCallback, this));
+      base::BindOnce(&CookiesGetFunction::GetCookieCallback, this));
 }
 
 void CookiesGetFunction::GetCookieCallback(const net::CookieList& cookie_list) {
@@ -311,7 +311,7 @@ void CookiesGetAllFunction::GetAllCookiesOnIOThread() {
       store_browser_context_->GetURLRequestContext()->cookie_store();
   cookies_helpers::GetCookieListFromStore(
       cookie_store, url_,
-      base::Bind(&CookiesGetAllFunction::GetAllCookiesCallback, this));
+      base::BindOnce(&CookiesGetAllFunction::GetAllCookiesCallback, this));
 }
 
 void CookiesGetAllFunction::GetAllCookiesCallback(
@@ -414,7 +414,7 @@ void CookiesSetFunction::SetCookieOnIOThread() {
                                             : false,
       same_site,
       net::COOKIE_PRIORITY_DEFAULT,
-      base::Bind(&CookiesSetFunction::PullCookie, this));
+      base::BindOnce(&CookiesSetFunction::PullCookie, this));
   // clang-format on
 }
 
@@ -425,7 +425,7 @@ void CookiesSetFunction::PullCookie(bool set_cookie_result) {
   success_ = set_cookie_result;
   cookies_helpers::GetCookieListFromStore(
       cookie_store, url_,
-      base::Bind(&CookiesSetFunction::PullCookieCallback, this));
+      base::BindOnce(&CookiesSetFunction::PullCookieCallback, this));
 }
 
 void CookiesSetFunction::PullCookieCallback(
@@ -504,7 +504,7 @@ void CookiesRemoveFunction::RemoveCookieOnIOThread() {
       store_browser_context_->GetURLRequestContext()->cookie_store();
   cookie_store->DeleteCookieAsync(
       url_, parsed_args_->details.name,
-      base::Bind(&CookiesRemoveFunction::RemoveCookieCallback, this));
+      base::BindOnce(&CookiesRemoveFunction::RemoveCookieCallback, this));
 }
 
 void CookiesRemoveFunction::RemoveCookieCallback() {

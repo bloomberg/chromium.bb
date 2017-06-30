@@ -36,7 +36,7 @@ ExtensionFunction::ResponseAction IdentityGetProfileUserInfoFunction::Run() {
       ->BindInterface(identity::mojom::kServiceName,
                       mojo::MakeRequest(&identity_manager_));
 
-  identity_manager_->GetPrimaryAccountInfo(base::Bind(
+  identity_manager_->GetPrimaryAccountInfo(base::BindOnce(
       &IdentityGetProfileUserInfoFunction::OnReceivedPrimaryAccountInfo, this));
 
   return RespondLater();

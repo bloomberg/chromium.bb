@@ -91,10 +91,10 @@ class PlatformKeysTest : public ExtensionApiTest {
       base::RunLoop loop;
       content::BrowserThread::PostTask(
           content::BrowserThread::IO, FROM_HERE,
-          base::Bind(&PlatformKeysTest::SetUpTestSystemSlotOnIO,
-                     base::Unretained(this),
-                     browser()->profile()->GetResourceContext(),
-                     loop.QuitClosure()));
+          base::BindOnce(&PlatformKeysTest::SetUpTestSystemSlotOnIO,
+                         base::Unretained(this),
+                         browser()->profile()->GetResourceContext(),
+                         loop.QuitClosure()));
       loop.Run();
     }
 
@@ -122,8 +122,8 @@ class PlatformKeysTest : public ExtensionApiTest {
     base::RunLoop loop;
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&PlatformKeysTest::TearDownTestSystemSlotOnIO,
-                   base::Unretained(this), loop.QuitClosure()));
+        base::BindOnce(&PlatformKeysTest::TearDownTestSystemSlotOnIO,
+                       base::Unretained(this), loop.QuitClosure()));
     loop.Run();
   }
 

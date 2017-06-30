@@ -94,7 +94,7 @@ void ConsentProvider::RequestConsent(
   if (extension.location() == Manifest::COMPONENT &&
       delegate_->IsWhitelistedComponent(extension)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, CONSENT_GRANTED));
+        FROM_HERE, base::BindOnce(callback, CONSENT_GRANTED));
     return;
   }
 
@@ -103,7 +103,7 @@ void ConsentProvider::RequestConsent(
   if (delegate_->IsAutoLaunched(extension)) {
     delegate_->ShowNotification(extension, volume, writable);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, CONSENT_GRANTED));
+        FROM_HERE, base::BindOnce(callback, CONSENT_GRANTED));
     return;
   }
 
@@ -168,7 +168,7 @@ void ConsentProviderDelegate::ShowDialog(
 
   if (!web_contents) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, ui::DIALOG_BUTTON_NONE));
+        FROM_HERE, base::BindOnce(callback, ui::DIALOG_BUTTON_NONE));
     return;
   }
 
@@ -177,14 +177,14 @@ void ConsentProviderDelegate::ShowDialog(
   if (g_auto_dialog_button_for_test != ui::DIALOG_BUTTON_NONE) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(callback, g_auto_dialog_button_for_test /* result */));
+        base::BindOnce(callback, g_auto_dialog_button_for_test /* result */));
     return;
   }
 
   // If the volume is gone, then cancel the dialog.
   if (!volume.get()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, ui::DIALOG_BUTTON_CANCEL));
+        FROM_HERE, base::BindOnce(callback, ui::DIALOG_BUTTON_CANCEL));
     return;
   }
 

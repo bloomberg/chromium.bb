@@ -181,9 +181,9 @@ void WebrtcAudioPrivateGetSinksFunction::
     GetOutputDeviceDescriptionsOnIOThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   media::AudioSystem::Get()->GetDeviceDescriptions(
-      base::Bind(&WebrtcAudioPrivateGetSinksFunction::
-                     ReceiveOutputDeviceDescriptionsOnIOThread,
-                 this),
+      base::BindOnce(&WebrtcAudioPrivateGetSinksFunction::
+                         ReceiveOutputDeviceDescriptionsOnIOThread,
+                     this),
       false);
 }
 
@@ -237,9 +237,9 @@ void WebrtcAudioPrivateGetAssociatedSinkFunction::
     GetInputDeviceDescriptionsOnIOThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   media::AudioSystem::Get()->GetDeviceDescriptions(
-      base::Bind(&WebrtcAudioPrivateGetAssociatedSinkFunction::
-                     ReceiveInputDeviceDescriptionsOnIOThread,
-                 this),
+      base::BindOnce(&WebrtcAudioPrivateGetAssociatedSinkFunction::
+                         ReceiveInputDeviceDescriptionsOnIOThread,
+                     this),
       true);
 }
 
@@ -268,7 +268,7 @@ void WebrtcAudioPrivateGetAssociatedSinkFunction::
   }
   media::AudioSystem::Get()->GetAssociatedOutputDeviceID(
       raw_source_id,
-      base::Bind(
+      base::BindOnce(
           &WebrtcAudioPrivateGetAssociatedSinkFunction::CalculateHMACOnIOThread,
           this));
 }
