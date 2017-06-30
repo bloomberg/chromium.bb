@@ -123,7 +123,7 @@ bool ExtensionSpecialStoragePolicy::HasSessionOnlyOrigins() {
   ContentSettingsForOneType entries;
   cookie_settings_->GetCookieSettings(&entries);
   for (size_t i = 0; i < entries.size(); ++i) {
-    if (entries[i].setting == CONTENT_SETTING_SESSION_ONLY)
+    if (entries[i].GetContentSetting() == CONTENT_SETTING_SESSION_ONLY)
       return true;
   }
   return false;

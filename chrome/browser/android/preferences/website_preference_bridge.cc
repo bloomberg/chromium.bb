@@ -140,7 +140,7 @@ void GetOrigins(JNIEnv* env,
 
   // Now add all origins that have a non-default setting to the list.
   for (const auto& settings_it : all_settings) {
-    if (settings_it.setting == default_content_setting)
+    if (settings_it.GetContentSetting() == default_content_setting)
       continue;
     if (managedOnly &&
         HostContentSettingsMap::GetProviderTypeFromSource(settings_it.source) !=

@@ -838,7 +838,7 @@ void ContentSettingsHandler::UpdateGeolocationExceptionsView() {
       continue;
     }
     all_patterns_settings[std::make_pair(i->primary_pattern, i->source)]
-        [i->secondary_pattern] = i->setting;
+                         [i->secondary_pattern] = i->GetContentSetting();
   }
 
   base::ListValue exceptions;
@@ -909,11 +909,9 @@ void ContentSettingsHandler::UpdateNotificationExceptionsView() {
       continue;
     }
 
-    exceptions.Append(
-        GetNotificationExceptionForPage(i->primary_pattern,
-                                        i->secondary_pattern,
-                                        i->setting,
-                                        i->source));
+    exceptions.Append(GetNotificationExceptionForPage(
+        i->primary_pattern, i->secondary_pattern, i->GetContentSetting(),
+        i->source));
   }
 
   base::Value type_string(site_settings::ContentSettingsTypeToGroupName(

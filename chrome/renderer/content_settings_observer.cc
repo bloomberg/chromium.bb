@@ -6,6 +6,7 @@
 
 #include "chrome/common/render_messages.h"
 #include "chrome/common/ssl_insecure_content.h"
+#include "components/content_settings/core/common/content_settings.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/render_frame.h"
@@ -71,14 +72,14 @@ ContentSetting GetContentSettingFromRules(
   if (rules.size() == 1) {
     DCHECK(rules[0].primary_pattern == ContentSettingsPattern::Wildcard());
     DCHECK(rules[0].secondary_pattern == ContentSettingsPattern::Wildcard());
-    return rules[0].setting;
+    return rules[0].GetContentSetting();
   }
   const GURL& primary_url = GetOriginOrURL(frame);
   const GURL& secondary_gurl = secondary_url;
   for (it = rules.begin(); it != rules.end(); ++it) {
     if (it->primary_pattern.Matches(primary_url) &&
         it->secondary_pattern.Matches(secondary_gurl)) {
-      return it->setting;
+      return it->GetContentSetting();
     }
   }
   NOTREACHED();

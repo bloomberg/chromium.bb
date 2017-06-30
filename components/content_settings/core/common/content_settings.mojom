@@ -4,6 +4,8 @@
 
 module content_settings.mojom;
 
+import "mojo/common/values.mojom";
+
 // This mirrors the C++ type in content_settings_pattern.h.
 struct PatternParts {
   // Lowercase string of the URL scheme to match. This string is empty if the
@@ -59,7 +61,7 @@ enum ContentSetting {
 struct ContentSettingPatternSource {
   ContentSettingsPattern primary_pattern;
   ContentSettingsPattern secondary_pattern;
-  ContentSetting setting;
+  mojo.common.mojom.Value setting_value;
   string source;
   bool incognito;
 };

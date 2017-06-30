@@ -88,7 +88,8 @@ bool StructTraits<content_settings::mojom::ContentSettingPatternSourceDataView,
   out->incognito = data.incognito();
   return data.ReadPrimaryPattern(&out->primary_pattern) &&
          data.ReadSecondaryPattern(&out->secondary_pattern) &&
-         data.ReadSetting(&out->setting) && data.ReadSource(&out->source);
+         data.ReadSettingValue(&out->setting_value) &&
+         data.ReadSource(&out->source);
 }
 
 // static
