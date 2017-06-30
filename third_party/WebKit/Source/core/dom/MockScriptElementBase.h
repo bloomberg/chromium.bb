@@ -35,7 +35,6 @@ class MockScriptElementBase
   MOCK_CONST_METHOD0(TypeAttributeValue, String());
 
   MOCK_METHOD0(TextFromChildren, String());
-  MOCK_CONST_METHOD0(TextContent, String());
   MOCK_CONST_METHOD0(HasSourceAttribute, bool());
   MOCK_CONST_METHOD0(IsConnected, bool());
   MOCK_CONST_METHOD0(HasChildren, bool());

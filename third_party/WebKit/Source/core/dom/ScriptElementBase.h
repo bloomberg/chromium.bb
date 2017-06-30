@@ -54,7 +54,6 @@ class CORE_EXPORT ScriptElementBase : public GarbageCollectedMixin {
   virtual String TypeAttributeValue() const = 0;
 
   virtual String TextFromChildren() = 0;
-  virtual String TextContent() const = 0;
   virtual bool HasSourceAttribute() const = 0;
   virtual bool IsConnected() const = 0;
   virtual bool HasChildren() const = 0;

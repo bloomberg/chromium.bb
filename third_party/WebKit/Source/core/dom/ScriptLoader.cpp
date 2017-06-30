@@ -460,19 +460,14 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   //      run these substeps:"
   if (!element_->HasSourceAttribute()) {
     // 22.1. "Let source text be the value of the text IDL attribute."
-    // This step is done later:
-    // - in ScriptLoader::pendingScript() (Step 23, 6th Clause),
-    //   as Element::textFromChildren() in ScriptLoader::scriptContent(),
-    // - in HTMLParserScriptRunner::processScriptElementInternal()
+    // This step is done later as ScriptElementBase::TextFromChildren():
+    // - in ScriptLoader::PrepareScript() (Step 23, 6th Clause),
+    // - in HTMLParserScriptRunner::ProcessScriptElementInternal()
     //   (Duplicated code of Step 23, 6th Clause),
-    //   as Element::textContent(),
-    // - in XMLDocumentParser::endElementNs() (Step 23, 5th Clause),
-    //   as Element::textFromChildren() in ScriptLoader::scriptContent(),
-    // - PendingScript::getSource() (Indirectly used via
-    //   HTMLParserScriptRunner::processScriptElementInternal(),
-    //   Step 23, 5th Clause),
-    //   as Element::textContent().
-    // TODO(hiroshige): Make them merged or consistent.
+    // - in XMLDocumentParser::EndElementNs() (Step 23, 5th Clause), or
+    // - in PendingScript::GetSource() (Indirectly used via
+    //   HTMLParserScriptRunner::ProcessScriptElementInternal(),
+    //   Step 23, 5th Clause).
 
     // 22.2. "Switch on the script's type:"
     switch (GetScriptType()) {
@@ -496,8 +491,8 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
         Modulator* modulator = Modulator::From(
             ToScriptStateForMainWorld(context_document->GetFrame()));
         ModuleScript* module_script = ModuleScript::Create(
-            ScriptContent(), modulator, base_url, nonce, parser_state,
-            credentials_mode, kSharableCrossOrigin, position);
+            element_->TextFromChildren(), modulator, base_url, nonce,
+            parser_state, credentials_mode, kSharableCrossOrigin, position);
 
         // 3. "If this returns null, set the script's script to null and abort
         //     these substeps; the script is ready."
@@ -682,7 +677,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
                         : KURL();
 
   switch (ExecuteScript(ClassicScript::Create(
-      ScriptSourceCode(ScriptContent(), script_url, position)))) {
+      ScriptSourceCode(element_->TextFromChildren(), script_url, position)))) {
     case ExecuteScriptResult::kShouldFireLoadEvent:
       // The load event is not fired because this is an inline script.
       return true;
@@ -1004,10 +999,6 @@ bool ScriptLoader::IsScriptForEventSupported() const {
   //     then abort these steps at this point. The script is not executed.
   return DeprecatedEqualIgnoringCase(event_attribute, "onload") ||
          DeprecatedEqualIgnoringCase(event_attribute, "onload()");
-}
-
-String ScriptLoader::ScriptContent() const {
-  return element_->TextFromChildren();
 }
 
 }  // namespace blink

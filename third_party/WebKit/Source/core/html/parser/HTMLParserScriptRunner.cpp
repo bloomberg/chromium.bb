@@ -659,7 +659,7 @@ void HTMLParserScriptRunner::ProcessScriptElementInternal(
         if (parser_blocking_script_)
           parser_blocking_script_->Dispose();
         parser_blocking_script_ = nullptr;
-        ScriptSourceCode source_code(script->textContent(),
+        ScriptSourceCode source_code(element->TextFromChildren(),
                                      DocumentURLForScriptExecution(document_),
                                      script_start_position);
         switch (DoExecuteScript(element, ClassicScript::Create(source_code),

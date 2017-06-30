@@ -117,10 +117,6 @@ String SVGScriptElement::TextFromChildren() {
   return Element::TextFromChildren();
 }
 
-String SVGScriptElement::TextContent() const {
-  return Node::textContent();
-}
-
 bool SVGScriptElement::HasSourceAttribute() const {
   return href()->IsSpecified();
 }

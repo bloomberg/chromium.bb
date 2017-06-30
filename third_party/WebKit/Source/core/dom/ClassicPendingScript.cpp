@@ -183,7 +183,7 @@ ClassicScript* ClassicPendingScript::GetSource(const KURL& document_url,
   }
 
   return ClassicScript::Create(ScriptSourceCode(
-      GetElement()->TextContent(), document_url, StartingPosition()));
+      GetElement()->TextFromChildren(), document_url, StartingPosition()));
 }
 
 void ClassicPendingScript::SetStreamer(ScriptStreamer* streamer) {
