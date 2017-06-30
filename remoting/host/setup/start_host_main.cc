@@ -31,7 +31,7 @@
 #endif  // defined(OS_POSIX)
 
 #if defined(OS_WIN)
-#include "remoting/host/win/elevation_helpers.h"
+#include "base/process/process_info.h"
 #endif  // defined(OS_WIN)
 
 namespace remoting {
@@ -151,7 +151,7 @@ int StartHostMain(int argc, char** argv) {
 #if defined(OS_WIN)
   // The tool must be run elevated on Windows so the host has access to the
   // directories used to store the configuration JSON files.
-  if (!remoting::IsProcessElevated()) {
+  if (!base::IsCurrentProcessElevated()) {
     fprintf(stderr, "Error: %s must be run as an elevated process.", argv[0]);
     return 1;
   }

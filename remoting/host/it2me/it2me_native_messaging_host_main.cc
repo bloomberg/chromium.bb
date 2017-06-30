@@ -40,10 +40,29 @@
 #include <commctrl.h>
 
 #include "remoting/host/switches.h"
-#include "remoting/host/win/elevation_helpers.h"
 #endif  // defined(OS_WIN)
 
 namespace remoting {
+
+namespace {
+
+#if defined(OS_WIN) && defined(OFFICIAL_BUILD)
+bool CurrentProcessHasUiAccess() {
+  HANDLE process_token;
+  OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &process_token);
+
+  DWORD size;
+  DWORD uiaccess_value = 0;
+  if (!GetTokenInformation(process_token, TokenUIAccess, &uiaccess_value,
+                           sizeof(uiaccess_value), &size)) {
+    PLOG(ERROR) << "GetTokenInformation() failed";
+  }
+  CloseHandle(process_token);
+  return uiaccess_value != 0;
+}
+#endif  // defined(OS_WIN) && defined(OFFICIAL_BUILD)
+
+}  // namespace
 
 // Creates a It2MeNativeMessagingHost instance, attaches it to stdin/stdout and
 // runs the message loop until It2MeNativeMessagingHost signals shutdown.
