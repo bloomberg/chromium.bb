@@ -325,4 +325,20 @@ AutomationUtil.getText = function(node) {
   return node.name || '';
 };
 
+/**
+ * Gets the root of editable node.
+ * @param {!AutomationNode} node
+ * @return {!AutomationNode|undefined}
+ */
+AutomationUtil.getEditableRoot = function(node) {
+  var testNode = node;
+  var rootEditable;
+  do {
+    if (testNode.state.editable && testNode.state.focused)
+      rootEditable = testNode;
+    testNode = testNode.parent;
+  } while (testNode);
+  return rootEditable;
+};
+
 });  // goog.scope

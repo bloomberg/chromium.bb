@@ -481,19 +481,10 @@ AutomationRichEditableText.prototype = {
  * @return {editing.TextEditHandler}
  */
 editing.TextEditHandler.createForNode = function(node) {
-  var rootFocusedEditable = null;
-  var testNode = node;
+  if (!node.state.editable)
+    throw new Error('Expected editable node.');
 
-  do {
-    if (testNode.state[StateType.FOCUSED] && testNode.state[StateType.EDITABLE])
-      rootFocusedEditable = testNode;
-    testNode = testNode.parent;
-  } while (testNode);
-
-  if (rootFocusedEditable)
-    return new TextFieldTextEditHandler(rootFocusedEditable);
-
-  return null;
+  return new TextFieldTextEditHandler(node);
 };
 
 /**
