@@ -33,6 +33,7 @@
 
 #include <stdint.h>
 #include "base/trace_event/memory_allocator_dump.h"
+#include "build/build_config.h"
 #include "platform/PlatformExport.h"
 #include "platform/heap/BlinkGC.h"
 #include "platform/heap/GCInfo.h"
@@ -181,7 +182,7 @@ class PLATFORM_EXPORT HeapObjectHeader {
     static_assert(
         sizeof(HeapObjectHeader) <= kAllocationGranularity,
         "size of HeapObjectHeader must be smaller than allocationGranularity");
-#if CPU(64BIT)
+#if defined(ARCH_CPU_64_BITS)
     static_assert(sizeof(HeapObjectHeader) == 8,
                   "sizeof(HeapObjectHeader) must be 8 bytes");
     magic_ = GetMagic();
@@ -249,7 +250,7 @@ class PLATFORM_EXPORT HeapObjectHeader {
   static const uint32_t kZappedMagic = 0xDEAD4321;
 
  protected:
-#if DCHECK_IS_ON() && CPU(64BIT)
+#if DCHECK_IS_ON() && defined(ARCH_CPU_64_BITS)
   // Zap |m_magic| with a new magic number that means there was once an object
   // allocated here, but it was freed because nobody marked it during GC.
   void ZapMagic();
@@ -258,7 +259,7 @@ class PLATFORM_EXPORT HeapObjectHeader {
  private:
   void CheckHeader() const;
 
-#if CPU(64BIT)
+#if defined(ARCH_CPU_64_BITS)
   // Returns a random value.
   //
   // The implementation gets its randomness from the locations of 2 independent
@@ -269,7 +270,7 @@ class PLATFORM_EXPORT HeapObjectHeader {
   // arbitrary infoleak bug (used twice).
   uint32_t GetMagic() const;
   uint32_t magic_;
-#endif  // CPU(64BIT)
+#endif  // defined(ARCH_CPU_64_BITS)
 
   uint32_t encoded_;
 };
@@ -279,7 +280,7 @@ class FreeListEntry final : public HeapObjectHeader {
   NO_SANITIZE_ADDRESS
   explicit FreeListEntry(size_t size)
       : HeapObjectHeader(size, kGcInfoIndexForFreeListHeader), next_(nullptr) {
-#if DCHECK_IS_ON() && CPU(64BIT)
+#if DCHECK_IS_ON() && defined(ARCH_CPU_64_BITS)
     DCHECK_GE(size, sizeof(HeapObjectHeader));
     ZapMagic();
 #endif
@@ -867,7 +868,7 @@ NO_SANITIZE_ADDRESS inline size_t HeapObjectHeader::size() const {
 }
 
 NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::IsValid() const {
-#if CPU(64BIT)
+#if defined(ARCH_CPU_64_BITS)
   return GetMagic() == magic_;
 #else
   return true;
@@ -875,7 +876,7 @@ NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::IsValid() const {
 }
 
 NO_SANITIZE_ADDRESS inline void HeapObjectHeader::CheckHeader() const {
-#if CPU(64BIT)
+#if defined(ARCH_CPU_64_BITS)
   DCHECK(IsValid());
 #endif
 }
@@ -912,7 +913,7 @@ inline void HeapObjectHeader::CheckFromPayload(const void* payload) {
   (void)FromPayload(payload);
 }
 
-#if CPU(64BIT)
+#if defined(ARCH_CPU_64_BITS)
 ALWAYS_INLINE uint32_t RotateLeft16(uint32_t x) {
 #if COMPILER(MSVC)
   return _lrotr(x, 16);
@@ -943,12 +944,12 @@ inline uint32_t HeapObjectHeader::GetMagic() const {
 #error OS not supported
 #endif
 
-#if CPU(64BIT)
+#if defined(ARCH_CPU_64_BITS)
   static_assert(sizeof(uintptr_t) == sizeof(uint64_t),
                 "uintptr_t is not uint64_t");
   const uint32_t random = static_cast<uint32_t>(
       (random1 & 0x0FFFFULL) | ((random2 >> 32) & 0x0FFFF0000ULL));
-#elif CPU(32BIT)
+#elif defined(ARCH_CPU_32_BITS)
   // Although we don't use heap metadata canaries on 32-bit due to memory
   // pressure, keep this code around just in case we do, someday.
   static_assert(sizeof(uintptr_t) == sizeof(uint32_t),
@@ -964,7 +965,7 @@ inline uint32_t HeapObjectHeader::GetMagic() const {
 
   return random;
 }
-#endif  // CPU(64BIT)
+#endif  // defined(ARCH_CPU_64_BITS)
 
 NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::IsWrapperHeaderMarked()
     const {

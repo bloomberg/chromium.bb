@@ -72,20 +72,6 @@ ALWAYS_INLINE uint16_t Bswap16(uint16_t x) {
 
 #endif
 
-#if CPU(64BIT)
-
-ALWAYS_INLINE size_t Bswapuintptrt(size_t x) {
-  return Bswap64(x);
-}
-
-#else
-
-ALWAYS_INLINE size_t Bswapuintptrt(size_t x) {
-  return Bswap32(x);
-}
-
-#endif
-
 }  // namespace WTF
 
 #endif  // WTF_ByteSwap_h
