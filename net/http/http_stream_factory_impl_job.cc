@@ -1216,7 +1216,8 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
 
   base::WeakPtr<SpdySession> spdy_session =
       session_->spdy_session_pool()->CreateAvailableSessionFromSocket(
-          spdy_session_key_, std::move(connection_), net_log_, using_ssl_);
+          spdy_session_key_, std::move(connection_), net_log_,
+          /* is_secure = */ true);
 
   if (!spdy_session->HasAcceptableTransportSecurity()) {
     spdy_session->CloseSessionOnError(
