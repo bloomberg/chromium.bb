@@ -119,12 +119,6 @@ static const int plane_rd_mult[REF_TYPES][PLANE_TYPES] = {
 #endif
 };
 
-#define UPDATE_RD_COST()                      \
-  {                                           \
-    rd_cost0 = RDCOST(rdmult, rate0, error0); \
-    rd_cost1 = RDCOST(rdmult, rate1, error1); \
-  }
-
 static INLINE unsigned int get_token_bit_costs(
     unsigned int token_costs[2][COEFF_CONTEXTS][ENTROPY_TOKENS], int skip_eob,
     int ctx, int token) {
