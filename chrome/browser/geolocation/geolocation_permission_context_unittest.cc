@@ -557,20 +557,26 @@ TEST_P(GeolocationPermissionContextTests, GeolocationEnabledDisabled) {
   GURL requesting_frame("https://www.example.com/geolocation");
   NavigateAndCommit(requesting_frame);
   RequestManagerDocumentLoadCompleted();
+  base::HistogramTester histograms;
   MockLocationSettings::SetLocationStatus(true /* android */,
                                           true /* system */);
   EXPECT_FALSE(HasActivePrompt());
   RequestGeolocationPermission(
       web_contents(), RequestID(0), requesting_frame, true);
   EXPECT_TRUE(HasActivePrompt());
+  histograms.ExpectTotalCount("Permissions.Action.Geolocation", 0);
 
   Reload();
+  histograms.ExpectUniqueSample("Permissions.Action.Geolocation",
+                                static_cast<int>(PermissionAction::IGNORED), 1);
   MockLocationSettings::SetLocationStatus(false /* android */,
                                           true /* system */);
   MockLocationSettings::SetCanPromptForAndroidPermission(false);
   EXPECT_FALSE(HasActivePrompt());
   RequestGeolocationPermission(
       web_contents(), RequestID(0), requesting_frame, true);
+  histograms.ExpectUniqueSample("Permissions.Action.Geolocation",
+                                static_cast<int>(PermissionAction::IGNORED), 1);
   EXPECT_FALSE(HasActivePrompt());
 }
 

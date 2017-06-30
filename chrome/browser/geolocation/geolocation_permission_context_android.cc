@@ -149,10 +149,9 @@ void GeolocationPermissionContextAndroid::RequestPermission(
     const BrowserPermissionCallback& callback) {
   if (!IsLocationAccessPossible(web_contents, requesting_frame_origin,
                                 user_gesture)) {
-    PermissionDecided(id, requesting_frame_origin,
-                      web_contents->GetLastCommittedURL().GetOrigin(),
-                      user_gesture, callback, false /* persist */,
-                      CONTENT_SETTING_BLOCK);
+    NotifyPermissionSet(id, requesting_frame_origin,
+                        web_contents->GetLastCommittedURL().GetOrigin(),
+                        callback, false /* persist */, CONTENT_SETTING_BLOCK);
     return;
   }
 
