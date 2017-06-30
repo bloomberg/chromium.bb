@@ -70,9 +70,12 @@ class NotificationsTest : public InProcessBrowserTest {
   content::WebContents* GetActiveWebContents(Browser* browser);
 
  protected:
-  void EnablePermissionsEmbargo();
-  void EnableFullscreenNotifications();
-  void DisableFullscreenNotifications();
+  void EnablePermissionsEmbargo(
+      base::test::ScopedFeatureList* scoped_feature_list);
+  void EnableFullscreenNotifications(
+      base::test::ScopedFeatureList* scoped_feature_list);
+  void DisableFullscreenNotifications(
+      base::test::ScopedFeatureList* scoped_feature_list);
 
  private:
   std::string RequestAndRespondToPermission(
