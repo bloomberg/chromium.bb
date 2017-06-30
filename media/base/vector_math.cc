@@ -15,7 +15,9 @@
 #include <xmmintrin.h>
 // Don't use custom SSE versions where the auto-vectorized C version performs
 // better, which is anywhere clang is used.
-#if !defined(__clang__)
+// TODO(pcc): Linux currently uses ThinLTO which has broken auto-vectorization
+// in clang, so use our intrinsic version for now. http://crbug.com/738085
+#if !defined(__clang__) || defined(OS_LINUX)
 #define FMAC_FUNC FMAC_SSE
 #define FMUL_FUNC FMUL_SSE
 #else
