@@ -737,6 +737,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('deqp/functional/gles3/texturespecification/' +
         'random_teximage2d_2d.html',
         ['linux', 'amd', 'intel'], bug=618447)
+    self.Fail('conformance2/renderbuffers/' +
+        'multisampled-depth-renderbuffer-initialization.html',
+        ['linux', 'amd', 'intel'], bug=738244) # WebGL 2.0.1
     self.Fail('conformance2/rendering/clipping-wide-points.html',
         ['linux', 'amd', 'intel'], bug=662644) # WebGL 2.0.1
 
