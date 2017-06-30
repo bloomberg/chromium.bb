@@ -32,8 +32,8 @@
 #include "cc/surfaces/surface_manager.h"
 #include "components/viz/common/gl_helper.h"
 #include "components/viz/host/host_frame_sink_manager.h"
-#include "components/viz/service/display_compositor/compositor_overlay_candidate_validator.h"
-#include "components/viz/service/display_compositor/server_shared_bitmap_manager.h"
+#include "components/viz/service/display_embedder/compositor_overlay_candidate_validator.h"
+#include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/compositor/browser_compositor_output_surface.h"
 #include "content/browser/compositor/gpu_browser_compositor_output_surface.h"
@@ -74,11 +74,11 @@
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
-#include "components/viz/service/display_compositor/compositor_overlay_candidate_validator_win.h"
+#include "components/viz/service/display_embedder/compositor_overlay_candidate_validator_win.h"
 #include "content/browser/compositor/software_output_device_win.h"
 #include "ui/gfx/win/rendering_window_manager.h"
 #elif defined(USE_OZONE)
-#include "components/viz/service/display_compositor/compositor_overlay_candidate_validator_ozone.h"
+#include "components/viz/service/display_embedder/compositor_overlay_candidate_validator_ozone.h"
 #include "content/browser/compositor/software_output_device_ozone.h"
 #include "ui/ozone/public/overlay_candidates_ozone.h"
 #include "ui/ozone/public/overlay_manager_ozone.h"
@@ -87,7 +87,7 @@
 #elif defined(USE_X11)
 #include "content/browser/compositor/software_output_device_x11.h"
 #elif defined(OS_MACOSX)
-#include "components/viz/service/display_compositor/compositor_overlay_candidate_validator_mac.h"
+#include "components/viz/service/display_embedder/compositor_overlay_candidate_validator_mac.h"
 #include "content/browser/compositor/gpu_output_surface_mac.h"
 #include "content/browser/compositor/software_output_device_mac.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
@@ -95,7 +95,7 @@
 #include "ui/base/cocoa/remote_layer_api.h"
 #include "ui/base/ui_base_switches.h"
 #elif defined(OS_ANDROID)
-#include "components/viz/service/display_compositor/compositor_overlay_candidate_validator_android.h"
+#include "components/viz/service/display_embedder/compositor_overlay_candidate_validator_android.h"
 #endif
 #if !defined(GPU_SURFACE_HANDLE_IS_ACCELERATED_WINDOW)
 #include "gpu/ipc/common/gpu_surface_tracker.h"

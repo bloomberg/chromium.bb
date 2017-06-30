@@ -3,7 +3,6 @@ include_rules = [
   # See comment in content/DEPS for which components are allowed.
   "+components/discardable_memory/common",
   "+components/discardable_memory/service",
-  "+components/display_compositor",
   "+components/filesystem",
   "+components/leveldb",
   "+components/link_header_util",

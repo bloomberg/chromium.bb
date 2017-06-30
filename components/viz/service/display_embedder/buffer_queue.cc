@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/viz/service/display_compositor/buffer_queue.h"
+#include "components/viz/service/display_embedder/buffer_queue.h"
 
 #include "base/containers/adapters.h"
 #include "base/memory/ptr_util.h"

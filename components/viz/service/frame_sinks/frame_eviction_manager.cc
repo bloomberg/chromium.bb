@@ -15,7 +15,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/sys_info.h"
 #include "build/build_config.h"
-#include "components/viz/service/display_compositor/server_shared_bitmap_manager.h"
+#include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 
 namespace viz {
 namespace {

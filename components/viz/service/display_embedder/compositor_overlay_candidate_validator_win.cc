@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/viz/service/display_compositor/compositor_overlay_candidate_validator_win.h"
+#include "components/viz/service/display_embedder/compositor_overlay_candidate_validator_win.h"
 
 #include "cc/output/overlay_processor.h"
 

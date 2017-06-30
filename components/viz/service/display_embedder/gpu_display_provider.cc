@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/viz/service/display_compositor/gpu_display_provider.h"
+#include "components/viz/service/display_embedder/gpu_display_provider.h"
 
 #include <utility>
 
@@ -15,16 +15,16 @@
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/display_scheduler.h"
-#include "components/viz/service/display_compositor/display_output_surface.h"
-#include "components/viz/service/display_compositor/in_process_gpu_memory_buffer_manager.h"
-#include "components/viz/service/display_compositor/server_shared_bitmap_manager.h"
+#include "components/viz/service/display_embedder/display_output_surface.h"
+#include "components/viz/service/display_embedder/in_process_gpu_memory_buffer_manager.h"
+#include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/service/image_factory.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 
 #if defined(USE_OZONE)
-#include "components/viz/service/display_compositor/display_output_surface_ozone.h"
+#include "components/viz/service/display_embedder/display_output_surface_ozone.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #endif
 

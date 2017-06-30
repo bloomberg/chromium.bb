@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_COMPOSITOR_BUFFER_QUEUE_H_
-#define COMPONENTS_VIZ_SERVICE_DISPLAY_COMPOSITOR_BUFFER_QUEUE_H_
+#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_BUFFER_QUEUE_H_
+#define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_BUFFER_QUEUE_H_
 
 #include <stddef.h>
 
@@ -30,7 +30,7 @@ class GpuMemoryBufferManager;
 namespace gles2 {
 class GLES2Interface;
 }
-}
+}  // namespace gpu
 
 namespace viz {
 
@@ -133,4 +133,4 @@ class VIZ_SERVICE_EXPORT BufferQueue {
 
 }  // namespace viz
 
-#endif  // COMPONENTS_VIZ_SERVICE_DISPLAY_COMPOSITOR_BUFFER_QUEUE_H_
+#endif  // COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_BUFFER_QUEUE_H_

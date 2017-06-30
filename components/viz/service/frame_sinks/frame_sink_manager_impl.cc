@@ -12,7 +12,7 @@
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/surface_dependency_tracker.h"
-#include "components/viz/service/display_compositor/display_provider.h"
+#include "components/viz/service/display_embedder/display_provider.h"
 #include "components/viz/service/frame_sinks/gpu_compositor_frame_sink.h"
 #include "components/viz/service/frame_sinks/gpu_root_compositor_frame_sink.h"
 

@@ -9,20 +9,20 @@ config("viz_service_implementation") {
 
 component("service") {
   sources = [
-    "display_compositor/buffer_queue.cc",
-    "display_compositor/buffer_queue.h",
-    "display_compositor/compositor_overlay_candidate_validator.h",
-    "display_compositor/display_output_surface.cc",
-    "display_compositor/display_output_surface.h",
-    "display_compositor/display_provider.h",
-    "display_compositor/gpu_display_provider.cc",
-    "display_compositor/gpu_display_provider.h",
-    "display_compositor/in_process_gpu_memory_buffer_manager.cc",
-    "display_compositor/in_process_gpu_memory_buffer_manager.h",
-    "display_compositor/server_shared_bitmap_manager.cc",
-    "display_compositor/server_shared_bitmap_manager.h",
-    "display_compositor/shared_bitmap_allocation_notifier_impl.cc",
-    "display_compositor/shared_bitmap_allocation_notifier_impl.h",
+    "display_embedder/buffer_queue.cc",
+    "display_embedder/buffer_queue.h",
+    "display_embedder/compositor_overlay_candidate_validator.h",
+    "display_embedder/display_output_surface.cc",
+    "display_embedder/display_output_surface.h",
+    "display_embedder/display_provider.h",
+    "display_embedder/gpu_display_provider.cc",
+    "display_embedder/gpu_display_provider.h",
+    "display_embedder/in_process_gpu_memory_buffer_manager.cc",
+    "display_embedder/in_process_gpu_memory_buffer_manager.h",
+    "display_embedder/server_shared_bitmap_manager.cc",
+    "display_embedder/server_shared_bitmap_manager.h",
+    "display_embedder/shared_bitmap_allocation_notifier_impl.cc",
+    "display_embedder/shared_bitmap_allocation_notifier_impl.h",
     "frame_sinks/frame_eviction_manager.cc",
     "frame_sinks/frame_eviction_manager.h",
     "frame_sinks/frame_evictor.cc",
@@ -62,24 +62,24 @@ component("service") {
 
   if (is_mac) {
     sources += [
-      "display_compositor/compositor_overlay_candidate_validator_mac.h",
-      "display_compositor/compositor_overlay_candidate_validator_mac.mm",
+      "display_embedder/compositor_overlay_candidate_validator_mac.h",
+      "display_embedder/compositor_overlay_candidate_validator_mac.mm",
     ]
   }
 
   if (is_android) {
     sources += [
-      "display_compositor/compositor_overlay_candidate_validator_android.cc",
-      "display_compositor/compositor_overlay_candidate_validator_android.h",
+      "display_embedder/compositor_overlay_candidate_validator_android.cc",
+      "display_embedder/compositor_overlay_candidate_validator_android.h",
     ]
   }
 
   if (use_ozone) {
     sources += [
-      "display_compositor/compositor_overlay_candidate_validator_ozone.cc",
-      "display_compositor/compositor_overlay_candidate_validator_ozone.h",
-      "display_compositor/display_output_surface_ozone.cc",
-      "display_compositor/display_output_surface_ozone.h",
+      "display_embedder/compositor_overlay_candidate_validator_ozone.cc",
+      "display_embedder/compositor_overlay_candidate_validator_ozone.h",
+      "display_embedder/display_output_surface_ozone.cc",
+      "display_embedder/display_output_surface_ozone.h",
     ]
 
     public_deps += [ "//ui/ozone" ]
@@ -87,8 +87,8 @@ component("service") {
 
   if (is_win) {
     sources += [
-      "display_compositor/compositor_overlay_candidate_validator_win.cc",
-      "display_compositor/compositor_overlay_candidate_validator_win.h",
+      "display_embedder/compositor_overlay_candidate_validator_win.cc",
+      "display_embedder/compositor_overlay_candidate_validator_win.h",
     ]
   }
 }
@@ -97,12 +97,12 @@ component("service") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "display_compositor/buffer_queue_unittest.cc",
-    "display_compositor/server_shared_bitmap_manager_unittest.cc",
+    "display_embedder/buffer_queue_unittest.cc",
+    "display_embedder/server_shared_bitmap_manager_unittest.cc",
   ]
 
   if (!use_aura && !is_mac) {
-    sources -= [ "display_compositor/buffer_queue_unittest.cc" ]
+    sources -= [ "display_embedder/buffer_queue_unittest.cc" ]
   }
 
   configs += [

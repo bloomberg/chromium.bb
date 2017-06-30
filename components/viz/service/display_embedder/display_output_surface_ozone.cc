@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/viz/service/display_compositor/display_output_surface_ozone.h"
+#include "components/viz/service/display_embedder/display_output_surface_ozone.h"
 
 #include <utility>
 
@@ -12,7 +12,7 @@
 #include "cc/output/output_surface_client.h"
 #include "cc/output/output_surface_frame.h"
 #include "cc/scheduler/begin_frame_source.h"
-#include "components/viz/service/display_compositor/buffer_queue.h"
+#include "components/viz/service/display_embedder/buffer_queue.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "ui/display/types/display_snapshot.h"
