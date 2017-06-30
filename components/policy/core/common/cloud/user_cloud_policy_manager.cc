@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/debug/crash_logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
@@ -56,6 +57,16 @@ void UserCloudPolicyManager::Connect(
     PrefService* local_state,
     scoped_refptr<net::URLRequestContextGetter> request_context,
     std::unique_ptr<CloudPolicyClient> client) {
+  // TODO(emaxx): Remove the crash key after the crashes tracked at
+  // https://crbug.com/685996 are fixed.
+  if (core()->client()) {
+    base::debug::SetCrashKeyToStackTrace(
+        "user-cloud-policy-manager-connect-trace", connect_callstack_);
+  } else {
+    connect_callstack_ = base::debug::StackTrace();
+  }
+  CHECK(!core()->client());
+
   CreateComponentCloudPolicyService(
       dm_protocol::kChromeExtensionPolicyType, component_policy_cache_path_,
       request_context, client.get(), schema_registry());

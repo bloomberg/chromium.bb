@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/debug/crash_logging.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -26,6 +27,7 @@
 #include "chrome/browser/chromeos/policy/wildcard_login_checker.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/common/chrome_content_client.h"
+#include "chrome/common/crash_keys.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
 #include "components/policy/core/common/cloud/cloud_policy_refresh_scheduler.h"
@@ -135,6 +137,17 @@ void UserCloudPolicyManagerChromeOS::Connect(
     scoped_refptr<net::URLRequestContextGetter> system_request_context) {
   DCHECK(device_management_service);
   DCHECK(local_state);
+
+  // TODO(emaxx): Remove the crash key after the crashes tracked at
+  // https://crbug.com/685996 are fixed.
+  if (core()->client()) {
+    base::debug::SetCrashKeyToStackTrace(
+        crash_keys::kUserCloudPolicyManagerConnectTrace, connect_callstack_);
+  } else {
+    connect_callstack_ = base::debug::StackTrace();
+  }
+  CHECK(!core()->client());
+
   local_state_ = local_state;
   // Note: |system_request_context| can be null for tests.
   // Use the system request context here instead of a context derived
