@@ -137,7 +137,7 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
 
   static ArcSessionManager* Get();
 
-  // Exposed here for unit_tests validation.
+  // Returns true if OOBE flow is active currently.
   static bool IsOobeOptInActive();
 
   // It is called from chrome/browser/prefs/browser_prefs.cc.
@@ -352,6 +352,11 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   std::unique_ptr<ArcAppLauncher> playstore_launcher_;
   bool reenable_arc_ = false;
   bool provisioning_reported_ = false;
+  // In case ARC is started from OOBE |oobe_start_|, set to true. This flag is
+  // used to remember |IsOobeOptInActive| state when ARC start request was made.
+  // |IsOobeOptInActive| will be changed by the time when |oobe_start_| is
+  // checked to prevent the Play Store auto-launch.
+  bool oobe_start_ = false;
   base::OneShotTimer arc_sign_in_timer_;
 
   std::unique_ptr<ArcSupportHost> support_host_;
