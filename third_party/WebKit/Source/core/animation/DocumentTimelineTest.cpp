@@ -62,7 +62,7 @@ class AnimationDocumentTimelineTest : public ::testing::Test {
     document->GetAnimationClock().ResetTimeForTesting();
     element = Element::Create(QualifiedName::Null(), document.Get());
     platform_timing = new MockPlatformTiming;
-    timeline = DocumentTimeline::Create(document.Get(), platform_timing);
+    timeline = DocumentTimeline::Create(document.Get(), 0.0, platform_timing);
     timeline->ResetForTesting();
     ASSERT_EQ(0, timeline->CurrentTimeInternal());
   }
@@ -162,6 +162,33 @@ TEST_F(AnimationDocumentTimelineTest, PlaybackRateNormal) {
   EXPECT_FALSE(is_null);
 }
 
+TEST_F(AnimationDocumentTimelineTest, PlaybackRateNormalWithOriginTime) {
+  double origin_time_in_ms = -1000000.0;
+  timeline = DocumentTimeline::Create(document.Get(), origin_time_in_ms,
+                                      platform_timing);
+  timeline->ResetForTesting();
+
+  bool is_null;
+
+  EXPECT_EQ(1.0, timeline->PlaybackRate());
+  EXPECT_EQ(-1000, timeline->ZeroTime());
+  EXPECT_EQ(1000, timeline->CurrentTimeInternal());
+  EXPECT_EQ(1000, timeline->CurrentTimeInternal(is_null));
+  EXPECT_FALSE(is_null);
+
+  document->GetAnimationClock().UpdateTime(100);
+  EXPECT_EQ(-1000, timeline->ZeroTime());
+  EXPECT_EQ(1100, timeline->CurrentTimeInternal());
+  EXPECT_EQ(1100, timeline->CurrentTimeInternal(is_null));
+  EXPECT_FALSE(is_null);
+
+  document->GetAnimationClock().UpdateTime(200);
+  EXPECT_EQ(-1000, timeline->ZeroTime());
+  EXPECT_EQ(1200, timeline->CurrentTimeInternal());
+  EXPECT_EQ(1200, timeline->CurrentTimeInternal(is_null));
+  EXPECT_FALSE(is_null);
+}
+
 TEST_F(AnimationDocumentTimelineTest, PlaybackRatePause) {
   bool is_null;
 
@@ -184,6 +211,46 @@ TEST_F(AnimationDocumentTimelineTest, PlaybackRatePause) {
   EXPECT_EQ(100, timeline->ZeroTime());
   EXPECT_EQ(300, timeline->CurrentTimeInternal());
   EXPECT_EQ(300, timeline->CurrentTimeInternal(is_null));
+
+  EXPECT_FALSE(is_null);
+}
+
+TEST_F(AnimationDocumentTimelineTest, PlaybackRatePauseWithOriginTime) {
+  bool is_null;
+
+  double origin_time_in_ms = -1000000.0;
+  timeline = DocumentTimeline::Create(document.Get(), origin_time_in_ms,
+                                      platform_timing);
+  timeline->ResetForTesting();
+
+  EXPECT_EQ(-1000, timeline->ZeroTime());
+  EXPECT_EQ(1000, timeline->CurrentTimeInternal());
+  EXPECT_EQ(1000, timeline->CurrentTimeInternal(is_null));
+  EXPECT_FALSE(is_null);
+
+  document->GetAnimationClock().UpdateTime(100);
+  EXPECT_EQ(-1000, timeline->ZeroTime());
+  EXPECT_EQ(1100, timeline->CurrentTimeInternal());
+  EXPECT_EQ(1100, timeline->CurrentTimeInternal(is_null));
+  EXPECT_FALSE(is_null);
+
+  timeline->SetPlaybackRate(0.0);
+  EXPECT_EQ(0.0, timeline->PlaybackRate());
+  document->GetAnimationClock().UpdateTime(200);
+  EXPECT_EQ(1100, timeline->ZeroTime());
+  EXPECT_EQ(1100, timeline->CurrentTimeInternal());
+  EXPECT_EQ(1100, timeline->CurrentTimeInternal(is_null));
+
+  timeline->SetPlaybackRate(1.0);
+  EXPECT_EQ(1.0, timeline->PlaybackRate());
+  EXPECT_EQ(-900, timeline->ZeroTime());
+  EXPECT_EQ(1100, timeline->CurrentTimeInternal());
+  EXPECT_EQ(1100, timeline->CurrentTimeInternal(is_null));
+
+  document->GetAnimationClock().UpdateTime(400);
+  EXPECT_EQ(-900, timeline->ZeroTime());
+  EXPECT_EQ(1300, timeline->CurrentTimeInternal());
+  EXPECT_EQ(1300, timeline->CurrentTimeInternal(is_null));
 
   EXPECT_FALSE(is_null);
 }
@@ -236,6 +303,45 @@ TEST_F(AnimationDocumentTimelineTest, PlaybackRateFast) {
   EXPECT_EQ(-200, timeline->ZeroTime());
   EXPECT_EQ(600, timeline->CurrentTimeInternal());
   EXPECT_EQ(600, timeline->CurrentTimeInternal(is_null));
+
+  EXPECT_FALSE(is_null);
+}
+
+TEST_F(AnimationDocumentTimelineTest, PlaybackRateFastWithOriginTime) {
+  bool is_null;
+
+  double origin_time_in_ms = -1000000.0;
+  timeline = DocumentTimeline::Create(document.Get(), origin_time_in_ms,
+                                      platform_timing);
+  timeline->ResetForTesting();
+
+  document->GetAnimationClock().UpdateTime(100);
+  EXPECT_EQ(-1000, timeline->ZeroTime());
+  EXPECT_EQ(1100, timeline->CurrentTimeInternal());
+  EXPECT_EQ(1100, timeline->CurrentTimeInternal(is_null));
+  EXPECT_FALSE(is_null);
+
+  timeline->SetPlaybackRate(2.0);
+  EXPECT_EQ(2.0, timeline->PlaybackRate());
+  EXPECT_EQ(-450, timeline->ZeroTime());
+  EXPECT_EQ(1100, timeline->CurrentTimeInternal());
+  EXPECT_EQ(1100, timeline->CurrentTimeInternal(is_null));
+
+  document->GetAnimationClock().UpdateTime(300);
+  EXPECT_EQ(-450, timeline->ZeroTime());
+  EXPECT_EQ(1500, timeline->CurrentTimeInternal());
+  EXPECT_EQ(1500, timeline->CurrentTimeInternal(is_null));
+
+  timeline->SetPlaybackRate(1.0);
+  EXPECT_EQ(1.0, timeline->PlaybackRate());
+  EXPECT_EQ(-1200, timeline->ZeroTime());
+  EXPECT_EQ(1500, timeline->CurrentTimeInternal());
+  EXPECT_EQ(1500, timeline->CurrentTimeInternal(is_null));
+
+  document->GetAnimationClock().UpdateTime(400);
+  EXPECT_EQ(-1200, timeline->ZeroTime());
+  EXPECT_EQ(1600, timeline->CurrentTimeInternal());
+  EXPECT_EQ(1600, timeline->CurrentTimeInternal(is_null));
 
   EXPECT_FALSE(is_null);
 }

@@ -50,6 +50,7 @@ namespace blink {
 class Animation;
 class AnimationEffectReadOnly;
 class Document;
+class DocumentTimelineOptions;
 
 // DocumentTimeline is constructed and owned by Document, and tied to its
 // lifecycle.
@@ -66,7 +67,13 @@ class CORE_EXPORT DocumentTimeline : public AnimationTimeline {
     DEFINE_INLINE_VIRTUAL_TRACE() {}
   };
 
-  static DocumentTimeline* Create(Document*, PlatformTiming* = nullptr);
+  static DocumentTimeline* Create(Document*,
+                                  double origin_time_in_milliseconds = 0.0,
+                                  PlatformTiming* = nullptr);
+
+  // Web Animations API IDL constructor
+  static DocumentTimeline* Create(ExecutionContext*,
+                                  const DocumentTimelineOptions&);
 
   virtual ~DocumentTimeline() {}
 
@@ -112,11 +119,13 @@ class CORE_EXPORT DocumentTimeline : public AnimationTimeline {
 
   DECLARE_VIRTUAL_TRACE();
 
- protected:
-  DocumentTimeline(Document*, PlatformTiming*);
-
  private:
+  DocumentTimeline(Document*,
+                   double origin_time_in_milliseconds,
+                   PlatformTiming*);
+
   Member<Document> document_;
+  double origin_time_;
   double zero_time_;
   bool zero_time_initialized_;
   unsigned outdated_animation_count_;
