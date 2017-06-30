@@ -42,34 +42,39 @@
                 android:id="@+id/new_tab_incognito_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:fontFamily="sans-serif-light"
                 android:text="@string/new_tab_otr_title"
                 android:textColor="@color/incognito_header" />
 
             <TextView
                 android:id="@+id/new_tab_incognito_subtitle"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:fontFamily="sans-serif-light"
                 android:text="@string/new_tab_otr_subtitle"
                 android:textColor="@color/incognito_header"
                 android:lineSpacingExtra="6sp" />
 
-            <TextView
-                android:id="@+id/new_tab_incognito_features"
-                android:layout_width="match_parent"
+            <LinearLayout
+                android:id="@+id/new_tab_incognito_bulletpoints_container"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:singleLine="false"
-                android:textColor="@color/incognito_text"
-                android:lineSpacingExtra="6sp" />
+                android:orientation="horizontal"
+                android:gravity="start">
 
-            <TextView
-                android:id="@+id/new_tab_incognito_warning"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:singleLine="false"
-                android:textColor="@color/incognito_text"
-                android:lineSpacingExtra="6sp" />
+              <TextView
+                  android:id="@+id/new_tab_incognito_features"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:textColor="@color/incognito_text"
+                  android:lineSpacingExtra="6sp" />
+
+              <TextView
+                  android:id="@+id/new_tab_incognito_warning"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:textColor="@color/incognito_text"
+                  android:lineSpacingExtra="6sp" />
+
+            </LinearLayout>
 
             <TextView
                 android:id="@+id/learn_more"
