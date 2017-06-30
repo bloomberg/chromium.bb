@@ -306,6 +306,9 @@ void StyleEngine::MediaQueryAffectingValueChanged() {
 void StyleEngine::UpdateActiveStyleSheetsInImport(
     StyleEngine& master_engine,
     DocumentStyleSheetCollector& parent_collector) {
+  if (!RuntimeEnabledFeatures::HTMLImportsStyleApplicationEnabled())
+    return;
+
   DCHECK(!IsMaster());
   HeapVector<Member<StyleSheet>> sheets_for_list;
   ImportedDocumentStyleSheetCollector subcollector(parent_collector,
