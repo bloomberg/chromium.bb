@@ -354,8 +354,7 @@ void TabManagerDelegate::LowMemoryKill(const TabStatsList& tab_list) {
   }
   // If the list of ARC processes is not available, call LowMemoryKillImpl
   // synchronously with an empty list of apps.
-  std::vector<arc::ArcProcess> dummy_apps;
-  LowMemoryKillImpl(tab_list, dummy_apps);
+  LowMemoryKillImpl(tab_list, std::vector<arc::ArcProcess>());
 }
 
 int TabManagerDelegate::GetCachedOomScore(ProcessHandle process_handle) {
@@ -548,7 +547,7 @@ chromeos::DebugDaemonClient* TabManagerDelegate::GetDebugDaemonClient() {
 
 void TabManagerDelegate::LowMemoryKillImpl(
     const TabStatsList& tab_list,
-    const std::vector<arc::ArcProcess>& arc_processes) {
+    std::vector<arc::ArcProcess> arc_processes) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   VLOG(2) << "LowMemoryKillImpl";
 
@@ -631,7 +630,7 @@ void TabManagerDelegate::LowMemoryKillImpl(
 
 void TabManagerDelegate::AdjustOomPrioritiesImpl(
     const TabStatsList& tab_list,
-    const std::vector<arc::ArcProcess>& arc_processes) {
+    std::vector<arc::ArcProcess> arc_processes) {
   std::vector<TabManagerDelegate::Candidate> candidates;
   std::vector<TabManagerDelegate::Candidate> apps_non_killable;
 

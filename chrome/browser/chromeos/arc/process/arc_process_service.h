@@ -50,7 +50,7 @@ class ArcProcessService
       public InstanceHolder<mojom::ProcessInstance>::Observer {
  public:
   using RequestProcessListCallback =
-      base::Callback<void(const std::vector<ArcProcess>&)>;
+      base::Callback<void(std::vector<ArcProcess>)>;
 
   explicit ArcProcessService(ArcBridgeService* bridge_service);
   ~ArcProcessService() override;

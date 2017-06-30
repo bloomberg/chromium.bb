@@ -50,8 +50,8 @@ class ArcProcessTaskProvider : public TaskProvider {
 
   void UpdateProcessList(ArcTaskMap* pid_to_task,
                          const std::vector<arc::ArcProcess>& processes);
-  void OnUpdateAppProcessList(const std::vector<arc::ArcProcess>& processes);
-  void OnUpdateSystemProcessList(const std::vector<arc::ArcProcess>& processes);
+  void OnUpdateAppProcessList(std::vector<arc::ArcProcess> processes);
+  void OnUpdateSystemProcessList(std::vector<arc::ArcProcess> processes);
 
   // task_manager::TaskProvider:
   void StartUpdating() override;
