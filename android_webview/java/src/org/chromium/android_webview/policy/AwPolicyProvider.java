@@ -25,13 +25,16 @@ public class AwPolicyProvider extends AppRestrictionsProvider {
 
     @Override
     public void notifySettingsAvailable(Bundle newAppRestrictions) {
-        Bundle filteredRestrictions = new Bundle();
+        Bundle filteredRestrictions = null;
+        if (newAppRestrictions != null) {
+            filteredRestrictions = new Bundle();
 
-        for (String key : newAppRestrictions.keySet()) {
-            if (!key.startsWith(POLICY_PREFIX)) continue;
+            for (String key : newAppRestrictions.keySet()) {
+                if (!key.startsWith(POLICY_PREFIX)) continue;
 
-            filteredRestrictions.putSerializable(
-                    key.substring(POLICY_PREFIX.length()), newAppRestrictions.getSerializable(key));
+                filteredRestrictions.putSerializable(key.substring(POLICY_PREFIX.length()),
+                        newAppRestrictions.getSerializable(key));
+            }
         }
         super.notifySettingsAvailable(filteredRestrictions);
     }
