@@ -5025,9 +5025,11 @@ void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
 #endif  // CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
 #endif  // CONFIG_EXT_INTER
 
+#if !CONFIG_EC_ADAPT
   for (i = 0; i < BLOCK_SIZE_GROUPS; i++)
     aom_tree_merge_probs(av1_intra_mode_tree, pre_fc->y_mode_prob[i],
                          counts->y_mode[i], fc->y_mode_prob[i]);
+#endif
 
   if (cm->interp_filter == SWITCHABLE) {
     for (i = 0; i < SWITCHABLE_FILTER_CONTEXTS; i++)
@@ -5112,9 +5114,11 @@ void av1_adapt_intra_frame_probs(AV1_COMMON *cm) {
                          counts->seg.tree_total, fc->seg.tree_probs);
   }
 
+#if !CONFIG_EC_ADAPT
   for (i = 0; i < INTRA_MODES; ++i)
     aom_tree_merge_probs(av1_intra_mode_tree, pre_fc->uv_mode_prob[i],
                          counts->uv_mode[i], fc->uv_mode_prob[i]);
+#endif
 
 #if CONFIG_EXT_PARTITION_TYPES
   for (i = 0; i < PARTITION_PLOFFSET; ++i)
