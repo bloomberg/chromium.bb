@@ -25,6 +25,7 @@ const char kSetting[] = "setting";
 const char kOrigin[] = "origin";
 const char kDisplayName[] = "displayName";
 const char kOriginForFavicon[] = "originForFavicon";
+const char kExtensionProviderId[] = "extension";
 const char kPolicyProviderId[] = "policy";
 const char kSource[] = "source";
 const char kIncognito[] = "incognito";

@@ -14,12 +14,12 @@ Polymer({
 
   properties: {
     /**
-     * The site that this widget is showing details for.
-     * @type {SiteException}
+     * The origin that this widget is showing details for.
+     * @private
      */
-    site: {
-      type: Object,
-      observer: 'onSiteChanged_',
+    origin: {
+      type: String,
+      observer: 'onOriginChanged_',
     },
 
     /**
@@ -59,21 +59,36 @@ Polymer({
     var site = settings.getQueryParameters().get('site');
     if (!site)
       return;
-    this.browserProxy.getSiteDetails(site).then(function(siteInfo) {
-      this.site = this.expandSiteException(siteInfo);
-    }.bind(this));
+    this.origin = site;
   },
 
   /**
    * Handler for when the origin changes.
    * @private
    */
-  onSiteChanged_: function() {
-    // origin may be initially undefined if the user follows a direct
-    // link (URL) to this page.
-    var origin = this.site.origin;
-    if (origin !== undefined)
-      this.$.usageApi.fetchUsageTotal(this.toUrl(origin).hostname);
+  onOriginChanged_: function() {
+    this.$.usageApi.fetchUsageTotal(this.toUrl(this.origin).hostname);
+
+    var siteDetailsPermissions =
+        /** @type{!NodeList<!SiteDetailsPermissionElement>} */
+        (this.root.querySelectorAll('site-details-permission'));
+    var categoryList =
+        /** @type{!Array<!string>} */ (
+            Array.prototype.map.call(siteDetailsPermissions, function(element) {
+              return element.category;
+            }));
+
+    this.browserProxy.getOriginPermissions(this.origin, categoryList)
+        .then(function(exceptionList) {
+          exceptionList.forEach(function(exception, i) {
+            // |exceptionList| should be in the same order as |categoryList|,
+            // which is in the same order as |siteDetailsPermissions|.
+            var element = /** @type{!SiteDetailsPermissionElement} */ (
+                siteDetailsPermissions[i]);
+            element.site = /** @type{!SiteException} */ (
+                element.expandSiteException(exception));
+          });
+        });
   },
 
   /** @private */
@@ -89,8 +104,7 @@ Polymer({
   onConfirmClearStorage_: function(e) {
     e.preventDefault();
     this.confirmationDeleteMsg_ = loadTimeData.getStringF(
-        'siteSettingsSiteRemoveConfirmation',
-        this.toUrl(this.site.origin).href);
+        'siteSettingsSiteRemoveConfirmation', this.toUrl(this.origin).href);
     this.$.confirmDeleteDialog.showModal();
   },
 
@@ -99,8 +113,7 @@ Polymer({
    * @private
    */
   onClearStorage_: function() {
-    this.$.usageApi.clearUsage(
-        this.toUrl(this.site.origin).href, this.storageType_);
+    this.$.usageApi.clearUsage(this.toUrl(this.origin).href, this.storageType_);
   },
 
   /**
@@ -109,7 +122,7 @@ Polymer({
    * @private
    */
   onUsageDeleted_: function(event) {
-    if (event.detail.origin == this.toUrl(this.site.origin).href) {
+    if (event.detail.origin == this.toUrl(this.origin).href) {
       this.storedData_ = '';
       this.navigateBackIfNoData_();
     }
@@ -120,9 +133,8 @@ Polymer({
    * @private
    */
   onClearAndReset_: function() {
-    Array.prototype.forEach.call(
-        this.root.querySelectorAll('site-details-permission'),
-        function(element) {
+    this.root.querySelectorAll('site-details-permission')
+        .forEach(function(element) {
           element.resetPermission();
         });
 

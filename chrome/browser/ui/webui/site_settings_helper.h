@@ -45,6 +45,7 @@ extern const char kSetting[];
 extern const char kOrigin[];
 extern const char kDisplayName[];
 extern const char kOriginForFavicon[];
+extern const char kExtensionProviderId[];
 extern const char kPolicyProviderId[];
 extern const char kSource[];
 extern const char kIncognito[];

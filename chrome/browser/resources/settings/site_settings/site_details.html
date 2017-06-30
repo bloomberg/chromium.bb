@@ -39,9 +39,10 @@
 
     <div class="settings-box first">
       <div class="favicon-image"
-          style$="[[computeSiteIcon(site.origin)]]">
+          style$="[[computeSiteIcon(origin)]]">
       </div>
-      <div class="middle">[[site.displayName]]</div>
+      <!-- TODO(patricialor): This should show the origin's display name. -->
+      <div class="middle">[[origin]]</div>
     </div>
     <template is="dom-if" if="[[storedData_]]">
       <div id="usage">
@@ -63,55 +64,52 @@
     </div>
     <div class="list-frame">
       <site-details-permission category="{{ContentSettingsTypes.COOKIES}}"
-          icon="settings:cookie" id="cookies" label="$i18n{siteSettingsCookies}"
-          site="[[site]]">
+          icon="settings:cookie" id="cookies"
+          label="$i18n{siteSettingsCookies}">
       </site-details-permission>
       <site-details-permission category="{{ContentSettingsTypes.GEOLOCATION}}"
           icon="settings:location-on" id="geolocation"
-          label="$i18n{siteSettingsLocation}" site="[[site]]">
+          label="$i18n{siteSettingsLocation}">
       </site-details-permission>
       <site-details-permission category="{{ContentSettingsTypes.CAMERA}}"
           icon="settings:videocam" id="camera"
-          label="$i18n{siteSettingsCamera}" site="[[site]]">
+          label="$i18n{siteSettingsCamera}">
       </site-details-permission>
       <site-details-permission category="{{ContentSettingsTypes.MIC}}"
           icon="settings:mic" id="mic"
-          label="$i18n{siteSettingsMic}" site="[[site]]">
+          label="$i18n{siteSettingsMic}">
       </site-details-permission>
       <site-details-permission category="{{ContentSettingsTypes.NOTIFICATIONS}}"
           icon="settings:notifications" id="notifications"
-          label="$i18n{siteSettingsNotifications}" site="[[site]]">
+          label="$i18n{siteSettingsNotifications}">
       </site-details-permission>
       <site-details-permission category="{{ContentSettingsTypes.JAVASCRIPT}}"
           icon="settings:code" id="javascript"
-          label="$i18n{siteSettingsJavascript}" site="[[site]]">
+          label="$i18n{siteSettingsJavascript}">
       </site-details-permission>
       <site-details-permission category="{{ContentSettingsTypes.PLUGINS}}"
-          icon="cr:extension" id="plugins" label="$i18n{siteSettingsFlash}"
-          site="[[site]]">
+          icon="cr:extension" id="plugins" label="$i18n{siteSettingsFlash}">
       </site-details-permission>
       <site-details-permission category="{{ContentSettingsTypes.IMAGES}}"
-          icon="settings:photo" id="images" label="$i18n{siteSettingsImages}"
-          site="[[site]]">
+          icon="settings:photo" id="images" label="$i18n{siteSettingsImages}">
       </site-details-permission>
       <site-details-permission category="{{ContentSettingsTypes.POPUPS}}"
-          icon="cr:open-in-new" id="popups" label="$i18n{siteSettingsPopups}"
-          site="[[site]]">
+          icon="cr:open-in-new" id="popups" label="$i18n{siteSettingsPopups}">
       </site-details-permission>
       <site-details-permission
           category="{{ContentSettingsTypes.BACKGROUND_SYNC}}"
           icon="settings:sync" id="backgroundSync"
-          label="$i18n{siteSettingsBackgroundSync}" site="[[site]]">
+          label="$i18n{siteSettingsBackgroundSync}">
       </site-details-permission>
       <site-details-permission
           category="{{ContentSettingsTypes.AUTOMATIC_DOWNLOADS}}"
           icon="cr:file-download" id="automaticDownloads"
-          label="$i18n{siteSettingsAutomaticDownloads}" site="[[site]]">
+          label="$i18n{siteSettingsAutomaticDownloads}">
       </site-details-permission>
       <site-details-permission
           category="{{ContentSettingsTypes.UNSANDBOXED_PLUGINS}}"
           icon="cr:extension" id="unsandboxedPlugins"
-          label="$i18n{siteSettingsUnsandboxedPlugins}" site="[[site]]">
+          label="$i18n{siteSettingsUnsandboxedPlugins}">
       </site-details-permission>
 
       <div class="list-item">

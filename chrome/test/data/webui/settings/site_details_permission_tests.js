@@ -92,19 +92,15 @@ suite('SiteDetailsPermission', function() {
       embeddingOrigin: '',
     };
 
-    return browserProxy.whenCalled('getExceptionList')
-        .then(function() {
-          assertFalse(testElement.$.details.hidden);
+    assertFalse(testElement.$.details.hidden);
 
-          var header = testElement.$.details.querySelector('#permissionHeader');
-          assertEquals(
-              'Camera', header.innerText.trim(),
-              'Widget should be labelled correctly');
+    var header = testElement.$.details.querySelector('#permissionHeader');
+    assertEquals(
+        'Camera', header.innerText.trim(),
+        'Widget should be labelled correctly');
 
-          // Flip the permission and validate that prefs stay in sync.
-          return validatePermissionFlipWorks(
-              origin, settings.PermissionValues.ALLOW);
-        })
+    // Flip the permission and validate that prefs stay in sync.
+    return validatePermissionFlipWorks(origin, settings.PermissionValues.ALLOW)
         .then(function() {
           return validatePermissionFlipWorks(
               origin, settings.PermissionValues.BLOCK);
@@ -125,20 +121,17 @@ suite('SiteDetailsPermission', function() {
       embeddingOrigin: '',
     };
 
-    return browserProxy.whenCalled('getExceptionList')
-        .then(function() {
-          assertFalse(testElement.$.details.hidden);
+    assertFalse(testElement.$.details.hidden);
 
-          var header = testElement.$.details.querySelector('#permissionHeader');
-          assertEquals(
-              'Cookies', header.innerText.trim(),
-              'Widget should be labelled correctly');
+    var header = testElement.$.details.querySelector('#permissionHeader');
+    assertEquals(
+        'Cookies', header.innerText.trim(),
+        'Widget should be labelled correctly');
 
-          return validatePermissionFlipWorks(
-              origin, settings.PermissionValues.SESSION_ONLY);
-        })
+    // Flip the permission and validate that prefs stay in sync.
+    return validatePermissionFlipWorks(
+               origin, settings.PermissionValues.SESSION_ONLY)
         .then(function() {
-          // Flip the permission and validate that prefs stay in sync.
           return validatePermissionFlipWorks(
               origin, settings.PermissionValues.ALLOW);
         })
