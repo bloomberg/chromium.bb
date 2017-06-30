@@ -21,9 +21,6 @@ remoting_ios_app_source_dir = get_path_info("./", "abspath")
 #   entitlements_path:
 #     string, path of the .entitlements file
 #
-#   remoting_source_set:
-#     (deprecated, use deps instead) The source set to be compiled
-#
 #   deps:
 #     string array, deps to be compiled. E.g. source sets, launch screen, icons.
 #
@@ -33,12 +30,7 @@ remoting_ios_app_source_dir = get_path_info("./", "abspath")
 template("ios_remoting_app_tmpl") {
   info_plist_target_name = "${target_name}_tweak_info_plist"
   tweak_info_plist(info_plist_target_name) {
-    # TODO(yuweih): Remove the check once downstream is updated.
-    if (defined(invoker.info_plist_path)) {
-      info_plist = invoker.info_plist_path
-    } else {
-      info_plist = "//remoting/ios/app/resources/Info.plist"
-    }
+    info_plist = invoker.info_plist_path
     args = [ "--platform=ios" ]
   }
 
@@ -85,21 +77,7 @@ template("ios_remoting_app_tmpl") {
       "SystemConfiguration.framework",
     ]
 
-    # TODO(yuweih): Remove the check and remoting_source_set once downstream
-    # uses deps.
-    if (defined(invoker.deps)) {
-      deps = invoker.deps
-    } else {
-      deps = [
-        "//base",
-        "//remoting/ios/app/resources:launchscreen_assets",
-        "//remoting/ios/app/resources:remoting_icons",
-      ]
-    }
-
-    if (defined(invoker.remoting_source_set)) {
-      deps += [ invoker.remoting_source_set ]
-    }
+    deps = invoker.deps
 
     bundle_deps = [ ":$launchscreen_storyboard_target_name" ]
   }
