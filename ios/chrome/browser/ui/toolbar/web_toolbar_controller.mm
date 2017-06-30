@@ -335,6 +335,9 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
 - (void)loadURLForQuery:(NSString*)query;
 // Lazily instantiate the keyboard accessory view.
 - (UIView*)keyboardAccessoryView;
+// Configures the KeyboardAccessoryView and InputAssistantItem associated with
+// the omnibox.
+- (void)configureAssistiveKeyboardViews;
 - (void)preloadVoiceSearch:(id)sender;
 // Calculates the CGRect to use for the omnibox's frame. Also sets the frames
 // of some buttons and |_webToolbar|.
@@ -612,8 +615,7 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
     [self.view addSubview:_determinateProgressView];
   }
 
-  // Attach the spacebar view to the omnibox.
-  [_omniBox setInputAccessoryView:[self keyboardAccessoryView]];
+  [self configureAssistiveKeyboardViews];
 
   // Add the handler to preload voice search when the voice search button is
   // tapped, but only if voice search is enabled.
@@ -880,7 +882,7 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
     // Update keyboard accessory views.
     auto mode = _keyboardAccessoryView.mode;
     _keyboardAccessoryView = nil;
-    [_omniBox setInputAccessoryView:[self keyboardAccessoryView]];
+    [self configureAssistiveKeyboardViews];
     _keyboardAccessoryView.mode = mode;
     if ([_omniBox isFirstResponder]) {
       [_omniBox reloadInputViews];
@@ -1873,6 +1875,16 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
         initWithAccessoryView:_keyboardAccessoryView];
   }
   return _keyboardAccessoryView;
+}
+
+- (void)configureAssistiveKeyboardViews {
+  if (experimental_flags::IsKeyboardAccessoryViewWithCameraSearchEnabled()) {
+    // The InputAssistantItems are disabled when the new Keyboard Accessory View
+    // is enabled.
+    _omniBox.inputAssistantItem.leadingBarButtonGroups = @[];
+    _omniBox.inputAssistantItem.trailingBarButtonGroups = @[];
+  }
+  [_omniBox setInputAccessoryView:[self keyboardAccessoryView]];
 }
 
 - (void)preloadVoiceSearch:(id)sender {
