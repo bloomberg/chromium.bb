@@ -13,6 +13,7 @@ unstable_protocols =								\
 	unstable/xdg-foreign/xdg-foreign-unstable-v1.xml			\
 	unstable/idle-inhibit/idle-inhibit-unstable-v1.xml			\
 	unstable/xwayland-keyboard-grab/xwayland-keyboard-grab-unstable-v1.xml	\
+	unstable/keyboard-shortcuts-inhibit/keyboard-shortcuts-inhibit-unstable-v1.xml \
 	$(NULL)
 
 stable_protocols =								\
