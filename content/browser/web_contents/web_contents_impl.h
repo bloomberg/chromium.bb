@@ -469,6 +469,7 @@ class CONTENT_EXPORT WebContentsImpl
 #elif defined(OS_MACOSX)
   void SetAllowOtherViews(bool allow) override;
   bool GetAllowOtherViews() override;
+  bool CompletedFirstVisuallyNonEmptyPaint() const override;
 #endif
 
   // Implementation of PageNavigator.
