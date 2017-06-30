@@ -38,7 +38,6 @@
 /* ==== CPU() - the target CPU architecture ==== */
 
 /* This defines CPU(BIG_ENDIAN) or nothing, as appropriate. */
-/* This defines CPU(32BIT) or CPU(64BIT), as appropriate. */
 
 /* CPU(X86) - i386 / x86 32-bit */
 #if defined(__i386__) || defined(i386) || defined(_M_IX86) || \
@@ -49,7 +48,6 @@
 /* CPU(X86_64) - AMD64 / Intel64 / x86_64 64-bit */
 #if defined(__x86_64__) || defined(_M_X64)
 #define WTF_CPU_X86_64 1
-#define WTF_CPU_64BIT 1
 #endif
 
 /* CPU(ARM) - ARM, any version*/
@@ -74,13 +72,11 @@
 /* CPU(ARM64) - AArch64 64-bit */
 #if defined(__aarch64__)
 #define WTF_CPU_ARM64 1
-#define WTF_CPU_64BIT 1
 #endif
 
 /* CPU(MIPS), CPU(MIPS64) */
 #if defined(__mips__) && (__mips == 64)
 #define WTF_CPU_MIPS64 1
-#define WTF_CPU_64BIT 1
 #elif defined(__mips__)
 #define WTF_CPU_MIPS 1
 #endif
@@ -88,10 +84,6 @@
 #if defined(__mips_msa) && defined(__mips_isa_rev) && (__mips_isa_rev >= 5)
 // All MSA intrinsics usage can be disabled by this macro.
 #define HAVE_MIPS_MSA_INTRINSICS 1
-#endif
-
-#if !defined(WTF_CPU_64BIT)
-#define WTF_CPU_32BIT 1
 #endif
 
 #endif /* WTF_CPU_h */

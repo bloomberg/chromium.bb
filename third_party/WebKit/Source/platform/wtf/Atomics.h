@@ -30,6 +30,7 @@
 #ifndef Atomics_h
 #define Atomics_h
 
+#include "build/build_config.h"
 #include "platform/wtf/AddressSanitizer.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/CPU.h"
@@ -176,7 +177,7 @@ ALWAYS_INLINE void AtomicSetOneToZero(int volatile* ptr) {
 #if defined(THREAD_SANITIZER)
 // The definitions below assume an LP64 data model. This is fine because
 // TSan is only supported on x86_64 Linux.
-#if CPU(64BIT) && OS(LINUX)
+#if defined(ARCH_CPU_64_BITS) && defined(OS_LINUX)
 ALWAYS_INLINE void ReleaseStore(volatile int* ptr, int value) {
   __tsan_atomic32_store(ptr, value, __tsan_memory_order_release);
 }
@@ -289,7 +290,7 @@ ALWAYS_INLINE void ReleaseStore(volatile unsigned long* ptr,
   MEMORY_BARRIER();
   *ptr = value;
 }
-#if CPU(64BIT)
+#if defined(ARCH_CPU_64_BITS)
 ALWAYS_INLINE void ReleaseStore(volatile unsigned long long* ptr,
                                 unsigned long long value) {
   MEMORY_BARRIER();
@@ -321,7 +322,7 @@ ALWAYS_INLINE unsigned long AcquireLoad(volatile const unsigned long* ptr) {
   MEMORY_BARRIER();
   return value;
 }
-#if CPU(64BIT)
+#if defined(ARCH_CPU_64_BITS)
 ALWAYS_INLINE unsigned long long AcquireLoad(
     volatile const unsigned long long* ptr) {
   unsigned long long value = *ptr;

@@ -36,14 +36,14 @@
 #define WTF_BitwiseOperations_h
 
 #include "base/bits.h"
-#include "platform/wtf/CPU.h"
+#include "build/build_config.h"
 
 namespace WTF {
 
 using base::bits::CountLeadingZeroBits32;
 using base::bits::CountLeadingZeroBitsSizeT;
 
-#if CPU(64BIT)
+#if defined(ARCH_CPU_64_BITS)
 using base::bits::CountLeadingZeroBits64;
 #endif
 
