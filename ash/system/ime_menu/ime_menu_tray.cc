@@ -176,11 +176,13 @@ class ImeTitleView : public views::View, public views::ButtonListener {
 // The view that contains buttons shown on the bottom of IME menu.
 class ImeButtonsView : public views::View, public views::ButtonListener {
  public:
-  explicit ImeButtonsView(ImeMenuTray* ime_menu_tray)
-      : ime_menu_tray_(ime_menu_tray) {
+  ImeButtonsView(ImeMenuTray* ime_menu_tray,
+                 bool show_emoji,
+                 bool show_handwriting,
+                 bool show_voice) {
     DCHECK(ime_menu_tray_);
 
-    Init();
+    Init(show_emoji, show_handwriting, show_voice);
   }
 
   ~ImeButtonsView() override {}
@@ -214,7 +216,7 @@ class ImeButtonsView : public views::View, public views::ButtonListener {
   }
 
  private:
-  void Init() {
+  void Init(bool show_emoji, bool show_handwriting, bool show_voice) {
     auto* box_layout = new views::BoxLayout(views::BoxLayout::kHorizontal);
     box_layout->set_minimum_cross_axis_size(kTrayPopupItemMinHeight);
     SetLayoutManager(box_layout);
@@ -225,20 +227,26 @@ class ImeButtonsView : public views::View, public views::ButtonListener {
                     kMenuExtraMarginFromLeftEdge)));
 
     const int right_border = 1;
-    emoji_button_ =
-        CreateImeMenuButton(this, kImeMenuEmoticonIcon,
-                            IDS_ASH_STATUS_TRAY_IME_EMOJI, right_border);
-    AddChildView(emoji_button_);
+    if (show_emoji) {
+      emoji_button_ =
+          CreateImeMenuButton(this, kImeMenuEmoticonIcon,
+                              IDS_ASH_STATUS_TRAY_IME_EMOJI, right_border);
+      AddChildView(emoji_button_);
+    }
 
-    handwriting_button_ =
-        CreateImeMenuButton(this, kImeMenuWriteIcon,
-                            IDS_ASH_STATUS_TRAY_IME_HANDWRITING, right_border);
-    AddChildView(handwriting_button_);
+    if (show_handwriting) {
+      handwriting_button_ = CreateImeMenuButton(
+          this, kImeMenuWriteIcon, IDS_ASH_STATUS_TRAY_IME_HANDWRITING,
+          right_border);
+      AddChildView(handwriting_button_);
+    }
 
-    voice_button_ =
-        CreateImeMenuButton(this, kImeMenuMicrophoneIcon,
-                            IDS_ASH_STATUS_TRAY_IME_VOICE, right_border);
-    AddChildView(voice_button_);
+    if (show_voice) {
+      voice_button_ =
+          CreateImeMenuButton(this, kImeMenuMicrophoneIcon,
+                              IDS_ASH_STATUS_TRAY_IME_VOICE, right_border);
+      AddChildView(voice_button_);
+    }
 
     settings_button_ = CreateImeMenuButton(this, kSystemMenuSettingsIcon,
                                            IDS_ASH_STATUS_TRAY_IME_SETTINGS, 0);
@@ -286,6 +294,9 @@ ImeMenuTray::ImeMenuTray(Shelf* shelf)
       force_show_keyboard_(false),
       keyboard_suppressed_(false),
       show_bubble_after_keyboard_hidden_(false),
+      emoji_enabled_(false),
+      handwriting_enabled_(false),
+      voice_enabled_(false),
       weak_ptr_factory_(this) {
   DCHECK(ime_controller_);
   SetInkDropMode(InkDropMode::ON);
@@ -336,8 +347,8 @@ void ImeMenuTray::ShowImeMenuBubbleInternal() {
   bubble_view->set_anchor_view_insets(GetBubbleAnchorInsets());
 
   // Add a title item with a separator on the top of the IME menu.
-  bubble_view->AddChildView(
-      new ImeTitleView(!ShouldShowEmojiHandwritingVoiceButtons()));
+  bool show_bottom_buttons = ShouldShowBottomButtons();
+  bubble_view->AddChildView(new ImeTitleView(!show_bottom_buttons));
 
   // Adds IME list to the bubble.
   ime_list_view_ = new ImeMenuListView(nullptr);
@@ -345,8 +356,10 @@ void ImeMenuTray::ShowImeMenuBubbleInternal() {
                        ImeListView::SHOW_SINGLE_IME);
   bubble_view->AddChildView(ime_list_view_);
 
-  if (ShouldShowEmojiHandwritingVoiceButtons())
-    bubble_view->AddChildView(new ImeButtonsView(this));
+  if (show_bottom_buttons) {
+    bubble_view->AddChildView(new ImeButtonsView(
+        this, emoji_enabled_, handwriting_enabled_, voice_enabled_));
+  }
 
   bubble_.reset(new TrayBubbleWrapper(this, bubble_view));
   SetIsActive(true);
@@ -404,16 +417,31 @@ void ImeMenuTray::ShowKeyboardWithKeyset(const std::string& keyset) {
   }
 }
 
-bool ImeMenuTray::ShouldShowEmojiHandwritingVoiceButtons() const {
+bool ImeMenuTray::ShouldShowBottomButtons() {
   // Emoji, handwriting and voice input is not supported for these cases:
   // 1) features::kEHVInputOnImeMenu is not enabled.
   // 2) third party IME extensions.
   // 3) login/lock screen.
   // 4) password input client.
-  return InputMethodManager::Get() &&
-         InputMethodManager::Get()->IsEmojiHandwritingVoiceOnImeMenuEnabled() &&
-         !ime_controller_->current_ime().third_party &&
-         !IsInLoginOrLockScreen() && !IsInPasswordInputContext();
+  InputMethodManager* input_method_manager = InputMethodManager::Get();
+  bool should_show_buttom_buttoms =
+      input_method_manager &&
+      input_method_manager->IsEmojiHandwritingVoiceOnImeMenuEnabled() &&
+      !ime_controller_->current_ime().third_party && !IsInLoginOrLockScreen() &&
+      !IsInPasswordInputContext();
+
+  if (!should_show_buttom_buttoms) {
+    emoji_enabled_ = handwriting_enabled_ = voice_enabled_ = false;
+    return false;
+  }
+
+  emoji_enabled_ = input_method_manager->GetImeMenuFeatureEnabled(
+      InputMethodManager::FEATURE_EMOJI);
+  handwriting_enabled_ = input_method_manager->GetImeMenuFeatureEnabled(
+      InputMethodManager::FEATURE_HANDWRITING);
+  voice_enabled_ = input_method_manager->GetImeMenuFeatureEnabled(
+      InputMethodManager::FEATURE_VOICE);
+  return emoji_enabled_ || handwriting_enabled_ || voice_enabled_;
 }
 
 bool ImeMenuTray::ShouldShowKeyboardToggle() const {

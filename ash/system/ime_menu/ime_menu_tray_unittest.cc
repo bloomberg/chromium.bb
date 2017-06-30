@@ -24,6 +24,8 @@
 #include "ui/views/controls/label.h"
 
 using base::UTF8ToUTF16;
+using chromeos::input_method::InputMethodManager;
+using chromeos::input_method::MockInputMethodManager;
 
 namespace ash {
 namespace {
@@ -61,6 +63,15 @@ class ImeMenuTrayTest : public test::AshTestBase {
 
   // Returns true if the IME menu bubble has been shown.
   bool IsBubbleShown() { return GetTray()->IsImeMenuBubbleShown(); }
+
+  // Returns true if emoji palatte is enabled for the current keyboard.
+  bool IsEmojiEnabled() { return GetTray()->emoji_enabled_; }
+
+  // Returns true if handwirting input is enabled for the current keyboard.
+  bool IsHandwritingEnabled() { return GetTray()->handwriting_enabled_; }
+
+  // Returns true if voice input is enabled for the current keyboard.
+  bool IsVoiceEnabled() { return GetTray()->voice_enabled_; }
 
   // Verifies the IME menu list has been updated with the right IME list.
   void ExpectValidImeList(const std::vector<mojom::ImeInfo>& expected_imes,
@@ -299,22 +310,72 @@ TEST_F(ImeMenuTrayTest, ForceToShowEmojiKeyset) {
   EXPECT_FALSE(accessibility_delegate->IsVirtualKeyboardEnabled());
 }
 
-TEST_F(ImeMenuTrayTest, ShowEmojiHandwritingVoiceButtons) {
+TEST_F(ImeMenuTrayTest, ShouldShowBottomButtons) {
   FocusInInputContext(ui::TEXT_INPUT_TYPE_TEXT);
-  EXPECT_FALSE(GetTray()->ShouldShowEmojiHandwritingVoiceButtons());
+  EXPECT_FALSE(GetTray()->ShouldShowBottomButtons());
+  EXPECT_FALSE(IsEmojiEnabled());
+  EXPECT_FALSE(IsHandwritingEnabled());
+  EXPECT_FALSE(IsVoiceEnabled());
 
-  chromeos::input_method::InputMethodManager* input_method_manager =
-      chromeos::input_method::InputMethodManager::Get();
+  InputMethodManager* input_method_manager = InputMethodManager::Get();
   EXPECT_FALSE(input_method_manager);
-  chromeos::input_method::InputMethodManager::Initialize(
-      new chromeos::input_method::MockInputMethodManager);
-  input_method_manager = chromeos::input_method::InputMethodManager::Get();
+  InputMethodManager::Initialize(new MockInputMethodManager);
+  input_method_manager = InputMethodManager::Get();
   EXPECT_TRUE(input_method_manager &&
               input_method_manager->IsEmojiHandwritingVoiceOnImeMenuEnabled());
-  EXPECT_TRUE(GetTray()->ShouldShowEmojiHandwritingVoiceButtons());
+  EXPECT_TRUE(input_method_manager->GetImeMenuFeatureEnabled(
+      InputMethodManager::FEATURE_EMOJI));
+  EXPECT_TRUE(input_method_manager->GetImeMenuFeatureEnabled(
+      InputMethodManager::FEATURE_HANDWRITING));
+  EXPECT_TRUE(input_method_manager->GetImeMenuFeatureEnabled(
+      InputMethodManager::FEATURE_VOICE));
+  EXPECT_TRUE(GetTray()->ShouldShowBottomButtons());
+  EXPECT_TRUE(IsEmojiEnabled());
+  EXPECT_TRUE(IsHandwritingEnabled());
+  EXPECT_TRUE(IsVoiceEnabled());
 
   FocusInInputContext(ui::TEXT_INPUT_TYPE_PASSWORD);
-  EXPECT_FALSE(GetTray()->ShouldShowEmojiHandwritingVoiceButtons());
+  EXPECT_FALSE(GetTray()->ShouldShowBottomButtons());
+  EXPECT_FALSE(IsEmojiEnabled());
+  EXPECT_FALSE(IsHandwritingEnabled());
+  EXPECT_FALSE(IsVoiceEnabled());
+}
+
+TEST_F(ImeMenuTrayTest, ShouldShowBottomButtonsSeperate) {
+  FocusInInputContext(ui::TEXT_INPUT_TYPE_TEXT);
+  InputMethodManager* input_method_manager = InputMethodManager::Get();
+  InputMethodManager::Initialize(new MockInputMethodManager);
+  input_method_manager = InputMethodManager::Get();
+  EXPECT_TRUE(input_method_manager &&
+              input_method_manager->IsEmojiHandwritingVoiceOnImeMenuEnabled());
+
+  // Sets emoji disabled.
+  input_method_manager->SetImeMenuFeatureEnabled(
+      InputMethodManager::FEATURE_EMOJI, false);
+  EXPECT_FALSE(input_method_manager->GetImeMenuFeatureEnabled(
+      InputMethodManager::FEATURE_EMOJI));
+  EXPECT_TRUE(GetTray()->ShouldShowBottomButtons());
+  EXPECT_FALSE(IsEmojiEnabled());
+  EXPECT_TRUE(IsHandwritingEnabled());
+  EXPECT_TRUE(IsVoiceEnabled());
+
+  // Sets emoji enabled, but voice and handwriting disabled.
+  input_method_manager->SetImeMenuFeatureEnabled(
+      InputMethodManager::FEATURE_EMOJI, true);
+  input_method_manager->SetImeMenuFeatureEnabled(
+      InputMethodManager::FEATURE_VOICE, false);
+  input_method_manager->SetImeMenuFeatureEnabled(
+      InputMethodManager::FEATURE_HANDWRITING, false);
+  EXPECT_TRUE(input_method_manager->GetImeMenuFeatureEnabled(
+      InputMethodManager::FEATURE_EMOJI));
+  EXPECT_FALSE(input_method_manager->GetImeMenuFeatureEnabled(
+      InputMethodManager::FEATURE_VOICE));
+  EXPECT_FALSE(input_method_manager->GetImeMenuFeatureEnabled(
+      InputMethodManager::FEATURE_HANDWRITING));
+  EXPECT_TRUE(GetTray()->ShouldShowBottomButtons());
+  EXPECT_TRUE(IsEmojiEnabled());
+  EXPECT_FALSE(IsHandwritingEnabled());
+  EXPECT_FALSE(IsVoiceEnabled());
 }
 
 }  // namespace ash

@@ -1506,5 +1506,43 @@ TEST_F(InputMethodManagerImplTest, IntegrationWithAsh) {
   EXPECT_EQ(ImeIdFromEngineId(ids[1]), ime_controller.current_ime_id_);
 }
 
+TEST_F(InputMethodManagerImplTest, SetFeaturesDisabled) {
+  // All features are enabled by default.
+  EXPECT_TRUE(
+      manager_->GetImeMenuFeatureEnabled(InputMethodManager::FEATURE_ALL));
+  EXPECT_TRUE(
+      manager_->GetImeMenuFeatureEnabled(InputMethodManager::FEATURE_EMOJI));
+  EXPECT_TRUE(manager_->GetImeMenuFeatureEnabled(
+      InputMethodManager::FEATURE_HANDWRITING));
+  EXPECT_TRUE(
+      manager_->GetImeMenuFeatureEnabled(InputMethodManager::FEATURE_VOICE));
+
+  // Sets emoji disabled and then enabled.
+  manager_->SetImeMenuFeatureEnabled(InputMethodManager::FEATURE_EMOJI, false);
+  EXPECT_FALSE(
+      manager_->GetImeMenuFeatureEnabled(InputMethodManager::FEATURE_EMOJI));
+  manager_->SetImeMenuFeatureEnabled(InputMethodManager::FEATURE_EMOJI, true);
+  EXPECT_TRUE(
+      manager_->GetImeMenuFeatureEnabled(InputMethodManager::FEATURE_EMOJI));
+
+  // Sets voice disabled and then enabled.
+  manager_->SetImeMenuFeatureEnabled(InputMethodManager::FEATURE_VOICE, false);
+  EXPECT_FALSE(
+      manager_->GetImeMenuFeatureEnabled(InputMethodManager::FEATURE_VOICE));
+  manager_->SetImeMenuFeatureEnabled(InputMethodManager::FEATURE_VOICE, true);
+  EXPECT_TRUE(
+      manager_->GetImeMenuFeatureEnabled(InputMethodManager::FEATURE_VOICE));
+
+  // Sets handwriting disabled and then enabled.
+  manager_->SetImeMenuFeatureEnabled(InputMethodManager::FEATURE_HANDWRITING,
+                                     false);
+  EXPECT_FALSE(manager_->GetImeMenuFeatureEnabled(
+      InputMethodManager::FEATURE_HANDWRITING));
+  manager_->SetImeMenuFeatureEnabled(InputMethodManager::FEATURE_HANDWRITING,
+                                     true);
+  EXPECT_TRUE(manager_->GetImeMenuFeatureEnabled(
+      InputMethodManager::FEATURE_HANDWRITING));
+}
+
 }  // namespace input_method
 }  // namespace chromeos

@@ -10,6 +10,11 @@
 #include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_private_api.h"
 #include "extensions/common/api/virtual_keyboard.h"
 
+#if defined(OS_CHROMEOS)
+#include "ui/base/ime/chromeos/input_method_manager.h"
+using chromeos::input_method::InputMethodManager;
+#endif
+
 namespace extensions {
 
 VirtualKeyboardRestrictFeaturesFunction::
@@ -32,6 +37,18 @@ VirtualKeyboardRestrictFeaturesFunction::Run() {
   VirtualKeyboardAPI* api =
       BrowserContextKeyedAPIFactory<VirtualKeyboardAPI>::Get(browser_context());
   api->delegate()->SetKeyboardRestricted(!features_enabled);
+
+#if defined(OS_CHROMEOS)
+  InputMethodManager* input_method_manager = InputMethodManager::Get();
+  if (input_method_manager) {
+    input_method_manager->SetImeMenuFeatureEnabled(
+        InputMethodManager::FEATURE_VOICE,
+        params->restrictions.voice_input_enabled);
+    input_method_manager->SetImeMenuFeatureEnabled(
+        InputMethodManager::FEATURE_HANDWRITING,
+        params->restrictions.handwriting_enabled);
+  }
+#endif
   return RespondNow(NoArguments());
 }
 

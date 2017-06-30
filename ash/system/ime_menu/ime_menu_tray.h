@@ -52,7 +52,7 @@ class ASH_EXPORT ImeMenuTray : public TrayBackgroundView,
   // Returns true if the menu should show emoji, handwriting and voice buttons
   // on the bottom. Otherwise, the menu will show a 'Customize...' bottom row
   // for non-MD UI, and a Settings button in the title row for MD.
-  bool ShouldShowEmojiHandwritingVoiceButtons() const;
+  bool ShouldShowBottomButtons();
 
   // Returns whether the virtual keyboard toggle should be shown in shown in the
   // opt-in IME menu.
@@ -112,6 +112,9 @@ class ASH_EXPORT ImeMenuTray : public TrayBackgroundView,
   bool force_show_keyboard_;
   bool keyboard_suppressed_;
   bool show_bubble_after_keyboard_hidden_;
+  bool emoji_enabled_;
+  bool handwriting_enabled_;
+  bool voice_enabled_;
 
   base::WeakPtrFactory<ImeMenuTray> weak_ptr_factory_;
 
