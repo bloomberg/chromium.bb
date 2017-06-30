@@ -15,3 +15,8 @@
   font-size: 15px;
   width: 384px;
 }
+
+oobe-dialog gaia-input-form {
+  margin: 44px 64px 0 64px;
+  width: 640px;
+}
