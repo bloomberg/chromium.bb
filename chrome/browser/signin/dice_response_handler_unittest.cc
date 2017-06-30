@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "components/signin/core/browser/test_signin_client.h"
@@ -68,7 +69,12 @@ class DiceResponseHandlerTest : public testing::Test {
         signin_client_(&pref_service_),
         token_service_(base::MakeUnique<FakeOAuth2TokenServiceDelegate>(
             request_context_getter_.get())),
+        signin_manager_(&signin_client_,
+                        &token_service_,
+                        &account_tracker_service_,
+                        nullptr),
         dice_response_handler_(&signin_client_,
+                               &signin_manager_,
                                &token_service_,
                                &account_tracker_service_) {
     loop_.SetTaskRunner(task_runner_);
@@ -77,6 +83,7 @@ class DiceResponseHandlerTest : public testing::Test {
         base::CommandLine::ForCurrentProcess());
     signin_client_.SetURLRequestContext(request_context_getter_.get());
     AccountTrackerService::RegisterPrefs(pref_service_.registry());
+    SigninManager::RegisterProfilePrefs(pref_service_.registry());
     account_tracker_service_.Initialize(&signin_client_);
   }
 
@@ -85,10 +92,16 @@ class DiceResponseHandlerTest : public testing::Test {
   DiceResponseParams MakeDiceParams(DiceAction action) {
     DiceResponseParams dice_params;
     dice_params.user_intention = action;
-    dice_params.gaia_id = kGaiaID;
-    dice_params.email = kEmail;
-    dice_params.session_index = kSessionIndex;
-    dice_params.authorization_code = kAuthorizationCode;
+    if (action == DiceAction::SIGNIN) {
+      dice_params.signin_info.gaia_id = kGaiaID;
+      dice_params.signin_info.email = kEmail;
+      dice_params.signin_info.session_index = kSessionIndex;
+      dice_params.signin_info.authorization_code = kAuthorizationCode;
+    } else if (action == DiceAction::SIGNOUT) {
+      dice_params.signout_info.gaia_id.push_back(kGaiaID);
+      dice_params.signout_info.email.push_back(kEmail);
+      dice_params.signout_info.session_index.push_back(kSessionIndex);
+    }
     return dice_params;
   }
 
@@ -99,13 +112,15 @@ class DiceResponseHandlerTest : public testing::Test {
   DiceTestSigninClient signin_client_;
   ProfileOAuth2TokenService token_service_;
   AccountTrackerService account_tracker_service_;
+  FakeSigninManager signin_manager_;
   DiceResponseHandler dice_response_handler_;
 };
 
 // Checks that a SIGNIN action triggers a token exchange request.
 TEST_F(DiceResponseHandlerTest, Signin) {
   DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNIN);
-  ASSERT_FALSE(token_service_.RefreshTokenIsAvailable(dice_params.gaia_id));
+  ASSERT_FALSE(
+      token_service_.RefreshTokenIsAvailable(dice_params.signin_info.gaia_id));
   dice_response_handler_.ProcessDiceHeader(dice_params);
   // Check that a GaiaAuthFetcher has been created.
   ASSERT_THAT(signin_client_.consumer_, testing::NotNull());
@@ -113,13 +128,15 @@ TEST_F(DiceResponseHandlerTest, Signin) {
   signin_client_.consumer_->OnClientOAuthSuccess(
       GaiaAuthConsumer::ClientOAuthResult("refresh_token", "access_token", 10));
   // Check that the token has been inserted in the token service.
-  EXPECT_TRUE(token_service_.RefreshTokenIsAvailable(dice_params.gaia_id));
+  EXPECT_TRUE(
+      token_service_.RefreshTokenIsAvailable(dice_params.signin_info.gaia_id));
 }
 
 // Checks that a GaiaAuthFetcher failure is handled correctly.
 TEST_F(DiceResponseHandlerTest, SigninFailure) {
   DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNIN);
-  ASSERT_FALSE(token_service_.RefreshTokenIsAvailable(dice_params.gaia_id));
+  ASSERT_FALSE(
+      token_service_.RefreshTokenIsAvailable(dice_params.signin_info.gaia_id));
   dice_response_handler_.ProcessDiceHeader(dice_params);
   // Check that a GaiaAuthFetcher has been created.
   ASSERT_THAT(signin_client_.consumer_, testing::NotNull());
@@ -131,14 +148,16 @@ TEST_F(DiceResponseHandlerTest, SigninFailure) {
   EXPECT_EQ(
       0u, dice_response_handler_.GetPendingDiceTokenFetchersCountForTesting());
   // Check that the token has not been inserted in the token service.
-  EXPECT_FALSE(token_service_.RefreshTokenIsAvailable(dice_params.gaia_id));
+  EXPECT_FALSE(
+      token_service_.RefreshTokenIsAvailable(dice_params.signin_info.gaia_id));
 }
 
 // Checks that a second token for the same account is not requested when a
 // request is already in flight.
 TEST_F(DiceResponseHandlerTest, SigninRepeatedWithSameAccount) {
   DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNIN);
-  ASSERT_FALSE(token_service_.RefreshTokenIsAvailable(dice_params.gaia_id));
+  ASSERT_FALSE(
+      token_service_.RefreshTokenIsAvailable(dice_params.signin_info.gaia_id));
   dice_response_handler_.ProcessDiceHeader(dice_params);
   // Check that a GaiaAuthFetcher has been created.
   GaiaAuthConsumer* consumer = signin_client_.consumer_;
@@ -152,17 +171,20 @@ TEST_F(DiceResponseHandlerTest, SigninRepeatedWithSameAccount) {
   consumer->OnClientOAuthSuccess(
       GaiaAuthConsumer::ClientOAuthResult("refresh_token", "access_token", 10));
   // Check that the token has been inserted in the token service.
-  EXPECT_TRUE(token_service_.RefreshTokenIsAvailable(dice_params.gaia_id));
+  EXPECT_TRUE(
+      token_service_.RefreshTokenIsAvailable(dice_params.signin_info.gaia_id));
 }
 
 // Checks that two SIGNIN requests can happen concurrently.
 TEST_F(DiceResponseHandlerTest, SigninWithTwoAccounts) {
   DiceResponseParams dice_params_1 = MakeDiceParams(DiceAction::SIGNIN);
   DiceResponseParams dice_params_2 = MakeDiceParams(DiceAction::SIGNIN);
-  dice_params_2.email = "other_email";
-  dice_params_2.gaia_id = "other_gaia_id";
-  ASSERT_FALSE(token_service_.RefreshTokenIsAvailable(dice_params_1.gaia_id));
-  ASSERT_FALSE(token_service_.RefreshTokenIsAvailable(dice_params_2.gaia_id));
+  dice_params_2.signin_info.email = "other_email";
+  dice_params_2.signin_info.gaia_id = "other_gaia_id";
+  ASSERT_FALSE(token_service_.RefreshTokenIsAvailable(
+      dice_params_1.signin_info.gaia_id));
+  ASSERT_FALSE(token_service_.RefreshTokenIsAvailable(
+      dice_params_2.signin_info.gaia_id));
   // Start first request.
   dice_response_handler_.ProcessDiceHeader(dice_params_1);
   // Check that a GaiaAuthFetcher has been created.
@@ -177,17 +199,20 @@ TEST_F(DiceResponseHandlerTest, SigninWithTwoAccounts) {
   consumer_1->OnClientOAuthSuccess(
       GaiaAuthConsumer::ClientOAuthResult("refresh_token", "access_token", 10));
   // Check that the token has been inserted in the token service.
-  EXPECT_TRUE(token_service_.RefreshTokenIsAvailable(dice_params_1.gaia_id));
+  EXPECT_TRUE(token_service_.RefreshTokenIsAvailable(
+      dice_params_1.signin_info.gaia_id));
   // Simulate GaiaAuthFetcher success for the second request.
   consumer_2->OnClientOAuthSuccess(
       GaiaAuthConsumer::ClientOAuthResult("refresh_token", "access_token", 10));
   // Check that the token has been inserted in the token service.
-  EXPECT_TRUE(token_service_.RefreshTokenIsAvailable(dice_params_2.gaia_id));
+  EXPECT_TRUE(token_service_.RefreshTokenIsAvailable(
+      dice_params_2.signin_info.gaia_id));
 }
 
 TEST_F(DiceResponseHandlerTest, Timeout) {
   DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNIN);
-  ASSERT_FALSE(token_service_.RefreshTokenIsAvailable(dice_params.gaia_id));
+  ASSERT_FALSE(
+      token_service_.RefreshTokenIsAvailable(dice_params.signin_info.gaia_id));
   dice_response_handler_.ProcessDiceHeader(dice_params);
   // Check that a GaiaAuthFetcher has been created.
   ASSERT_THAT(signin_client_.consumer_, testing::NotNull());
@@ -199,7 +224,75 @@ TEST_F(DiceResponseHandlerTest, Timeout) {
   EXPECT_EQ(
       0u, dice_response_handler_.GetPendingDiceTokenFetchersCountForTesting());
   // Check that the token has not been inserted in the token service.
-  EXPECT_FALSE(token_service_.RefreshTokenIsAvailable(dice_params.gaia_id));
+  EXPECT_FALSE(
+      token_service_.RefreshTokenIsAvailable(dice_params.signin_info.gaia_id));
+}
+
+TEST_F(DiceResponseHandlerTest, SignoutMainAccount) {
+  const char kSecondaryGaiaID[] = "secondary_account";
+  DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNOUT);
+  // User is signed in to Chrome, and has some refresh token for a secondary
+  // account.
+  signin_manager_.SignIn(dice_params.signout_info.gaia_id[0],
+                         dice_params.signout_info.email[0], "password");
+  token_service_.UpdateCredentials(dice_params.signout_info.gaia_id[0],
+                                   "token1");
+  token_service_.UpdateCredentials(kSecondaryGaiaID, "token2");
+  EXPECT_TRUE(token_service_.RefreshTokenIsAvailable(
+      dice_params.signout_info.gaia_id[0]));
+  EXPECT_TRUE(token_service_.RefreshTokenIsAvailable(kSecondaryGaiaID));
+  EXPECT_TRUE(signin_manager_.IsAuthenticated());
+  // Receive signout response for the main account.
+  dice_response_handler_.ProcessDiceHeader(dice_params);
+  // User is signed out and all tokens are cleared.
+  EXPECT_FALSE(token_service_.RefreshTokenIsAvailable(
+      dice_params.signout_info.gaia_id[0]));
+  EXPECT_FALSE(token_service_.RefreshTokenIsAvailable(kSecondaryGaiaID));
+  EXPECT_FALSE(signin_manager_.IsAuthenticated());
+}
+
+TEST_F(DiceResponseHandlerTest, SignoutSecondaryAccount) {
+  const char kMainGaiaID[] = "main_account";
+  DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNOUT);
+  // User is signed in to Chrome, and has some refresh token for a secondary
+  // account.
+  signin_manager_.SignIn(kMainGaiaID, "user", "password");
+  token_service_.UpdateCredentials(kMainGaiaID, "token2");
+  token_service_.UpdateCredentials(dice_params.signout_info.gaia_id[0],
+                                   "token1");
+  EXPECT_TRUE(token_service_.RefreshTokenIsAvailable(
+      dice_params.signout_info.gaia_id[0]));
+  EXPECT_TRUE(token_service_.RefreshTokenIsAvailable(kMainGaiaID));
+  EXPECT_TRUE(signin_manager_.IsAuthenticated());
+  // Receive signout response for the secondary account.
+  dice_response_handler_.ProcessDiceHeader(dice_params);
+  // Only the token corresponding the the Dice parameter has been removed, and
+  // the user is still signed in.
+  EXPECT_FALSE(token_service_.RefreshTokenIsAvailable(
+      dice_params.signout_info.gaia_id[0]));
+  EXPECT_TRUE(token_service_.RefreshTokenIsAvailable(kMainGaiaID));
+  EXPECT_TRUE(signin_manager_.IsAuthenticated());
+}
+
+TEST_F(DiceResponseHandlerTest, SignoutWebOnly) {
+  const char kSecondaryGaiaID[] = "secondary_account";
+  DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNOUT);
+  // User is NOT signed in to Chrome, and has some refresh tokens for two
+  // accounts.
+  token_service_.UpdateCredentials(dice_params.signout_info.gaia_id[0],
+                                   "refresh_token");
+  token_service_.UpdateCredentials(kSecondaryGaiaID, "refresh_token");
+  EXPECT_TRUE(token_service_.RefreshTokenIsAvailable(
+      dice_params.signout_info.gaia_id[0]));
+  EXPECT_TRUE(token_service_.RefreshTokenIsAvailable(kSecondaryGaiaID));
+  EXPECT_FALSE(signin_manager_.IsAuthenticated());
+  // Receive signout response.
+  dice_response_handler_.ProcessDiceHeader(dice_params);
+  // Only the token corresponding the the Dice parameter has been removed.
+  EXPECT_FALSE(token_service_.RefreshTokenIsAvailable(
+      dice_params.signout_info.gaia_id[0]));
+  EXPECT_TRUE(token_service_.RefreshTokenIsAvailable(kSecondaryGaiaID));
+  EXPECT_FALSE(signin_manager_.IsAuthenticated());
 }
 
 // Tests that the DiceResponseHandler is created for a normal profile but not

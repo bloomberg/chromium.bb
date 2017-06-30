@@ -66,6 +66,8 @@ class FakeSigninManager : public SigninManager {
 
   // Username specified in StartSignInWithRefreshToken() call.
   std::string username_;
+
+  ProfileOAuth2TokenService* token_service_;
 };
 
 #endif  // !defined (OS_CHROMEOS)
