@@ -78,7 +78,7 @@ class SubresourceFilterContentSettingsManagerTest : public testing::Test {
     for (const auto& it : host_settings) {
       // Need GURL conversion to get rid of unnecessary default ports.
       if (GURL(it.primary_pattern.ToString()) == url_with_empty_path)
-        return it.setting;
+        return it.GetContentSetting();
     }
     return CONTENT_SETTING_DEFAULT;
   }

@@ -15,6 +15,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/content_settings.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "ui/message_center/message_center.h"
@@ -268,10 +269,12 @@ void NotificationsTest::GetPrefsByContentSetting(
                                                            settings);
   for (ContentSettingsForOneType::iterator it = settings->begin();
        it != settings->end();) {
-    if (it->setting != setting || it->source.compare("preference") != 0)
+    if (it->GetContentSetting() != setting ||
+        it->source.compare("preference") != 0) {
       it = settings->erase(it);
-    else
+    } else {
       ++it;
+    }
   }
 }
 

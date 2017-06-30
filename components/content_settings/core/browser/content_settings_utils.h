@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_CONTENT_SETTINGS_CORE_BROWSER_CONTENT_SETTINGS_UTILS_H_
 #define COMPONENTS_CONTENT_SETTINGS_CORE_BROWSER_CONTENT_SETTINGS_UTILS_H_
 
-#include <memory>
 #include <string>
 #include <utility>
 
@@ -13,10 +12,6 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-
-namespace base {
-class Value;
-}
 
 class HostContentSettingsMap;
 
@@ -58,24 +53,11 @@ std::string ContentSettingToString(ContentSetting setting);
 // Returns true if |name| specifies a valid content setting, false otherwise.
 bool ContentSettingFromString(const std::string& name, ContentSetting* setting);
 
-// Converts |Value| to |ContentSetting|.
-ContentSetting ValueToContentSetting(const base::Value* value);
-
-// Converts a |Value| to a |ContentSetting|. Returns true if |value| encodes
-// a valid content setting, false otherwise. Note that |CONTENT_SETTING_DEFAULT|
-// is encoded as a NULL value, so it is not allowed as an integer value.
-bool ParseContentSettingValue(const base::Value* value,
-                              ContentSetting* setting);
-
 PatternPair ParsePatternString(const std::string& pattern_str);
 
 std::string CreatePatternString(
     const ContentSettingsPattern& item_pattern,
     const ContentSettingsPattern& top_level_frame_pattern);
-
-// Returns a |base::Value*| representation of |setting| if |setting| is
-// a valid content setting. Otherwise, returns a nullptr.
-std::unique_ptr<base::Value> ContentSettingToValue(ContentSetting setting);
 
 // Populates |rules| with content setting rules for content types that are
 // handled by the renderer.

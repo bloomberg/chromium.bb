@@ -7,9 +7,12 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
+#include "base/memory/ptr_util.h"
+#include "base/values.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 
@@ -43,14 +46,19 @@ int ContentSettingTypeToHistogramValue(ContentSettingsType content_setting,
 struct ContentSettingPatternSource {
   ContentSettingPatternSource(const ContentSettingsPattern& primary_pattern,
                               const ContentSettingsPattern& secondary_patttern,
-                              ContentSetting setting,
+                              std::unique_ptr<base::Value> setting_value,
                               const std::string& source,
                               bool incognito);
   ContentSettingPatternSource(const ContentSettingPatternSource& other);
   ContentSettingPatternSource();
+  ContentSettingPatternSource& operator=(
+      const ContentSettingPatternSource& other);
+  ~ContentSettingPatternSource();
+  ContentSetting GetContentSetting() const;
+
   ContentSettingsPattern primary_pattern;
   ContentSettingsPattern secondary_pattern;
-  ContentSetting setting;
+  std::unique_ptr<base::Value> setting_value;
   std::string source;
   bool incognito;
 };

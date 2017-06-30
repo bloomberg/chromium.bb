@@ -1697,12 +1697,12 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveContentSettings) {
   EXPECT_EQ(ContentSettingsPattern::FromURLNoWildcard(kOrigin1),
             host_settings[0].primary_pattern)
       << host_settings[0].primary_pattern.ToString();
-  EXPECT_EQ(CONTENT_SETTING_ALLOW, host_settings[0].setting);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW, host_settings[0].GetContentSetting());
   // And the wildcard.
   EXPECT_EQ(ContentSettingsPattern::Wildcard(),
             host_settings[1].primary_pattern)
       << host_settings[1].primary_pattern.ToString();
-  EXPECT_EQ(CONTENT_SETTING_ASK, host_settings[1].setting);
+  EXPECT_EQ(CONTENT_SETTING_ASK, host_settings[1].GetContentSetting());
 
   // There should also only be one setting for origin3
   map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string(),
@@ -1711,12 +1711,12 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveContentSettings) {
   EXPECT_EQ(ContentSettingsPattern::FromURLNoWildcard(kOrigin3),
             host_settings[0].primary_pattern)
       << host_settings[0].primary_pattern.ToString();
-  EXPECT_EQ(CONTENT_SETTING_ALLOW, host_settings[0].setting);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW, host_settings[0].GetContentSetting());
   // And the wildcard.
   EXPECT_EQ(ContentSettingsPattern::Wildcard(),
             host_settings[1].primary_pattern)
       << host_settings[1].primary_pattern.ToString();
-  EXPECT_EQ(CONTENT_SETTING_ASK, host_settings[1].setting);
+  EXPECT_EQ(CONTENT_SETTING_ASK, host_settings[1].GetContentSetting());
 
   BlockUntilOriginDataRemoved(
       base::Time(), base::Time::Max(),
@@ -1730,7 +1730,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveContentSettings) {
   EXPECT_EQ(ContentSettingsPattern::Wildcard(),
             host_settings[0].primary_pattern)
       << host_settings[0].primary_pattern.ToString();
-  EXPECT_EQ(CONTENT_SETTING_ASK, host_settings[0].setting);
+  EXPECT_EQ(CONTENT_SETTING_ASK, host_settings[0].GetContentSetting());
 
   map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string(),
                              &host_settings);
@@ -1738,7 +1738,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveContentSettings) {
   EXPECT_EQ(ContentSettingsPattern::Wildcard(),
             host_settings[0].primary_pattern)
       << host_settings[0].primary_pattern.ToString();
-  EXPECT_EQ(CONTENT_SETTING_ASK, host_settings[0].setting);
+  EXPECT_EQ(CONTENT_SETTING_ASK, host_settings[0].GetContentSetting());
 }
 
 TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveDurablePermission) {
@@ -1777,13 +1777,13 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveDurablePermission) {
   EXPECT_EQ(ContentSettingsPattern::FromURLNoWildcard(kOrigin1),
             host_settings[0].primary_pattern)
       << host_settings[0].primary_pattern.ToString();
-  EXPECT_EQ(CONTENT_SETTING_ALLOW, host_settings[0].setting);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW, host_settings[0].GetContentSetting());
 
   // And our wildcard.
   EXPECT_EQ(ContentSettingsPattern::Wildcard(),
             host_settings[1].primary_pattern)
       << host_settings[1].primary_pattern.ToString();
-  EXPECT_EQ(CONTENT_SETTING_ASK, host_settings[1].setting);
+  EXPECT_EQ(CONTENT_SETTING_ASK, host_settings[1].GetContentSetting());
 }
 
 TEST_F(ChromeBrowsingDataRemoverDelegateTest,

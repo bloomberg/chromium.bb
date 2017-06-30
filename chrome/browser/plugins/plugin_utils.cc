@@ -9,6 +9,7 @@
 #include "chrome/common/plugin_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/content_settings/core/common/content_settings_utils.h"
 #include "content/public/common/webplugininfo.h"
 #include "url/gurl.h"
 #include "url/origin.h"

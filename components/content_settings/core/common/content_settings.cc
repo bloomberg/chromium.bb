@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
+#include "components/content_settings/core/common/content_settings_utils.h"
 
 ContentSetting IntToContentSetting(int content_setting) {
   return ((content_setting < 0) ||
@@ -78,21 +79,38 @@ int ContentSettingTypeToHistogramValue(ContentSettingsType content_setting,
 ContentSettingPatternSource::ContentSettingPatternSource(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
-    ContentSetting setting,
+    std::unique_ptr<base::Value> setting_value,
     const std::string& source,
     bool incognito)
     : primary_pattern(primary_pattern),
       secondary_pattern(secondary_pattern),
-      setting(setting),
+      setting_value(std::move(setting_value)),
       source(source),
       incognito(incognito) {}
 
-ContentSettingPatternSource::ContentSettingPatternSource()
-    : setting(CONTENT_SETTING_DEFAULT), incognito(false) {
-}
+ContentSettingPatternSource::ContentSettingPatternSource() : incognito(false) {}
 
 ContentSettingPatternSource::ContentSettingPatternSource(
-    const ContentSettingPatternSource& other) = default;
+    const ContentSettingPatternSource& other) {
+  *this = other;
+}
+
+ContentSettingPatternSource& ContentSettingPatternSource::operator=(
+    const ContentSettingPatternSource& other) {
+  primary_pattern = other.primary_pattern;
+  secondary_pattern = other.secondary_pattern;
+  if (other.setting_value)
+    setting_value = base::MakeUnique<base::Value>(*(other.setting_value));
+  source = other.source;
+  incognito = other.incognito;
+  return *this;
+}
+
+ContentSettingPatternSource::~ContentSettingPatternSource() {}
+
+ContentSetting ContentSettingPatternSource::GetContentSetting() const {
+  return content_settings::ValueToContentSetting(setting_value.get());
+}
 
 RendererContentSettingRules::RendererContentSettingRules() {}
 

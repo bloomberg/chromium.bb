@@ -13,6 +13,7 @@
 #include "chrome/browser/supervised_user/supervised_user_settings_service.h"
 #include "components/content_settings/core/browser/content_settings_rule.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
+#include "components/content_settings/core/common/content_settings_utils.h"
 #include "components/prefs/testing_pref_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

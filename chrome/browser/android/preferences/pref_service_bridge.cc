@@ -193,7 +193,8 @@ static void GetContentSettingsExceptions(JNIEnv* env,
     Java_PrefServiceBridge_addContentSettingExceptionToList(
         env, list, content_settings_type,
         ConvertUTF8ToJavaString(env, entries[i].primary_pattern.ToString()),
-        entries[i].setting, ConvertUTF8ToJavaString(env, entries[i].source));
+        entries[i].GetContentSetting(),
+        ConvertUTF8ToJavaString(env, entries[i].source));
   }
 }
 

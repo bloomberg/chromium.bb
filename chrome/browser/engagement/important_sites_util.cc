@@ -264,7 +264,7 @@ void PopulateInfoMapWithContentTypeAllowed(
   // wildcard patterns.
   std::set<GURL> content_origins;
   for (const ContentSettingPatternSource& site : content_settings_list) {
-    if (site.setting != CONTENT_SETTING_ALLOW)
+    if (site.GetContentSetting() != CONTENT_SETTING_ALLOW)
       continue;
     MaybePopulateImportantInfoForReason(GURL(site.primary_pattern.ToString()),
                                         &content_origins, reason, output);
