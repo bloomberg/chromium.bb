@@ -27,6 +27,7 @@
 #define CSSTimingFunctionValue_h
 
 #include "core/css/CSSValue.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/animation/TimingFunction.h"
 #include "platform/wtf/PassRefPtr.h"
 
@@ -124,7 +125,9 @@ class CSSFramesTimingFunctionValue : public CSSValue {
 
  private:
   CSSFramesTimingFunctionValue(int frames)
-      : CSSValue(kFramesTimingFunctionClass), frames_(frames) {}
+      : CSSValue(kFramesTimingFunctionClass), frames_(frames) {
+    DCHECK(RuntimeEnabledFeatures::FramesTimingFunctionEnabled());
+  }
 
   int frames_;
 };
