@@ -387,8 +387,8 @@ public class TileGroup implements MostVisitedSites.Observer {
         }
 
         if (countChanged) mObserver.onTileCountChanged();
-        if (isInitialLoad) mObserver.onLoadTaskCompleted();
         mObserver.onTileDataChanged();
+        if (isInitialLoad) mObserver.onLoadTaskCompleted();
     }
 
     /** @return A tile matching the provided URL, or {@code null} if none is found. */
@@ -412,32 +412,33 @@ public class TileGroup implements MostVisitedSites.Observer {
         @Override
         public void onLargeIconAvailable(
                 @Nullable Bitmap icon, int fallbackColor, boolean isFallbackColorDefault) {
-            if (mTrackLoadTask) mObserver.onLoadTaskCompleted();
-
             Tile tile = getTile(mUrl);
-            if (tile == null) return; // The tile might have been removed.
+            if (tile != null) { // The tile might have been removed.
+                if (icon == null) {
+                    mIconGenerator.setBackgroundColor(fallbackColor);
+                    icon = mIconGenerator.generateIconForUrl(mUrl);
+                    tile.setIcon(new BitmapDrawable(mContext.getResources(), icon));
+                    tile.setType(isFallbackColorDefault ? TileVisualType.ICON_DEFAULT
+                                                        : TileVisualType.ICON_COLOR);
+                } else {
+                    RoundedBitmapDrawable roundedIcon =
+                            RoundedBitmapDrawableFactory.create(mContext.getResources(), icon);
+                    int cornerRadius = Math.round(ICON_CORNER_RADIUS_DP
+                            * mContext.getResources().getDisplayMetrics().density * icon.getWidth()
+                            / mDesiredIconSize);
+                    roundedIcon.setCornerRadius(cornerRadius);
+                    roundedIcon.setAntiAlias(true);
+                    roundedIcon.setFilterBitmap(true);
 
-            if (icon == null) {
-                mIconGenerator.setBackgroundColor(fallbackColor);
-                icon = mIconGenerator.generateIconForUrl(mUrl);
-                tile.setIcon(new BitmapDrawable(mContext.getResources(), icon));
-                tile.setType(isFallbackColorDefault ? TileVisualType.ICON_DEFAULT
-                                                    : TileVisualType.ICON_COLOR);
-            } else {
-                RoundedBitmapDrawable roundedIcon =
-                        RoundedBitmapDrawableFactory.create(mContext.getResources(), icon);
-                int cornerRadius = Math.round(ICON_CORNER_RADIUS_DP
-                        * mContext.getResources().getDisplayMetrics().density * icon.getWidth()
-                        / mDesiredIconSize);
-                roundedIcon.setCornerRadius(cornerRadius);
-                roundedIcon.setAntiAlias(true);
-                roundedIcon.setFilterBitmap(true);
+                    tile.setIcon(roundedIcon);
+                    tile.setType(TileVisualType.ICON_REAL);
+                }
 
-                tile.setIcon(roundedIcon);
-                tile.setType(TileVisualType.ICON_REAL);
+                mObserver.onTileIconChanged(tile);
             }
 
-            mObserver.onTileIconChanged(tile);
+            // This call needs to be made after the tiles are completely initialised, for UMA.
+            if (mTrackLoadTask) mObserver.onLoadTaskCompleted();
         }
     }
 
