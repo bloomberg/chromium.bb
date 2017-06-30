@@ -10,9 +10,11 @@
 #include "net/net_features.h"
 
 #if defined(OS_WIN)
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/timer/elapsed_timer.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/firewall_manager_win.h"
@@ -78,8 +80,9 @@ scoped_refptr<ServiceDiscoverySharedClient>
   static bool is_firewall_state_reported = false;
   if (!is_firewall_state_reported) {
     is_firewall_state_reported = true;
-    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                            base::Bind(&ReportFirewallStats));
+    auto task_runner = base::CreateCOMSTATaskRunnerWithTraits(
+        {base::TaskPriority::BACKGROUND, base::MayBlock()});
+    task_runner->PostTask(FROM_HERE, base::BindOnce(&ReportFirewallStats));
   }
 #endif  // defined(OS_WIN)
 
