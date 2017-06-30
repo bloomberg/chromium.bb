@@ -95,6 +95,7 @@
 #include "content/browser/media/midi_host.h"
 #include "content/browser/memory/memory_coordinator_impl.h"
 #include "content/browser/mime_registry_impl.h"
+#include "content/browser/net/reporting_service_proxy.h"
 #include "content/browser/notifications/notification_message_filter.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/browser/payments/payment_manager.h"
@@ -1684,6 +1685,9 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
         base::Bind(&WorkerURLLoaderFactoryProviderImpl::Create, GetID(),
                    resource_message_filter_, service_worker_context));
   }
+
+  registry->AddInterface(
+      base::Bind(&CreateReportingServiceProxy, storage_partition_impl_));
 
   // This is to support usage of WebSockets in cases in which there is no
   // associated RenderFrame (e.g., Shared Workers).

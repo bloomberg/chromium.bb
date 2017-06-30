@@ -736,6 +736,7 @@ mojom("mojo_bindings") {
     "platform/modules/webauth/authenticator.mojom",
     "platform/modules/websockets/websocket.mojom",
     "platform/referrer.mojom",
+    "platform/reporting.mojom",
     "platform/site_engagement.mojom",
     "web/console_message.mojom",
     "web/window_features.mojom",

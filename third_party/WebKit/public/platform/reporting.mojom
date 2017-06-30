@@ -1,0 +1,27 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module content.mojom;
+
+import "mojo/common/values.mojom";
+import "url/mojo/url.mojom";
+
+interface ReportingServiceProxy {
+  // Attempts to queue a report using the Reporting API.
+  //
+  // |url| is the URL that generated the report.
+  //
+  // |group| is the endpoint group that should receive the report. This should
+  // be configured for the feature using Reporting by the site that generated
+  // the report.
+  //
+  // |type| is the type of report (for example, "csp" or "hpkp"). This should be
+  // set to a fixed value by the feature using Reporting.
+  //
+  // |body| is the body. It can be any valid Value.
+  QueueReport(url.mojom.Url url,
+              string group,
+              string type,
+              mojo.common.mojom.Value body);
+};
