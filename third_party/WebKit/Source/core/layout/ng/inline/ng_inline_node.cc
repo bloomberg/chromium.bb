@@ -186,34 +186,37 @@ void NGInlineNode::InvalidatePrepareLayout() {
 void NGInlineNode::PrepareLayout() {
   // Scan list of siblings collecting all in-flow non-atomic inlines. A single
   // NGInlineNode represent a collection of adjacent non-atomic inlines.
-  CollectInlines(GetLayoutBlockFlow());
+  CollectInlines();
   SegmentText();
   ShapeText();
 }
+
+// TODO(xiaochengh): Remove this forward declaration, and move the function body
+// to the anonymous namespace.
+static LayoutBox* CollectInlinesInternal(LayoutBlockFlow*,
+                                         NGInlineItemsBuilder*);
 
 // Depth-first-scan of all LayoutInline and LayoutText nodes that make up this
 // NGInlineNode object. Collects LayoutText items, merging them up into the
 // parent LayoutInline where possible, and joining all text content in a single
 // string to allow bidi resolution and shaping of the entire block.
-void NGInlineNode::CollectInlines(LayoutBlockFlow* block) {
+void NGInlineNode::CollectInlines() {
   DCHECK(Data().text_content_.IsNull());
   DCHECK(Data().items_.IsEmpty());
   NGInlineItemsBuilder builder(&MutableData().items_);
-  builder.EnterBlock(block->Style());
-  LayoutObject* next_sibling = CollectInlines(block, &builder);
-  builder.ExitBlock();
-
+  MutableData().next_sibling_ =
+      CollectInlinesInternal(GetLayoutBlockFlow(), &builder);
   MutableData().text_content_ = builder.ToString();
-  DCHECK(!next_sibling || !next_sibling->IsInline());
-  MutableData().next_sibling_ = ToLayoutBox(next_sibling);
   MutableData().is_bidi_enabled_ =
       !Data().text_content_.IsEmpty() &&
       !(Data().text_content_.Is8Bit() && !builder.HasBidiControls());
 }
 
-LayoutObject* NGInlineNode::CollectInlines(LayoutBlockFlow* block,
-                                           NGInlineItemsBuilder* builder) {
+static LayoutBox* CollectInlinesInternal(LayoutBlockFlow* block,
+                                         NGInlineItemsBuilder* builder) {
+  builder->EnterBlock(block->Style());
   LayoutObject* node = block->FirstChild();
+  LayoutBox* next_box = nullptr;
   while (node) {
     if (node->IsText()) {
       builder->SetIsSVGText(node->IsSVGInlineText());
@@ -237,7 +240,8 @@ LayoutObject* NGInlineNode::CollectInlines(LayoutBlockFlow* block,
 
     } else if (!node->IsInline()) {
       // A block box found. End inline and transit to block layout.
-      return node;
+      next_box = ToLayoutBox(node);
+      break;
 
     } else {
       builder->EnterInline(node);
@@ -262,14 +266,18 @@ LayoutObject* NGInlineNode::CollectInlines(LayoutBlockFlow* block,
         break;
       }
       node = node->Parent();
-      if (node == block)
-        return nullptr;
+      if (node == block) {
+        // Set |node| to |nullptr| to break out of the outer loop.
+        node = nullptr;
+        break;
+      }
       DCHECK(node->IsInline());
       builder->ExitInline(node);
       node->ClearNeedsLayout();
     }
   }
-  return nullptr;
+  builder->ExitBlock();
+  return next_box;
 }
 
 void NGInlineNode::SegmentText() {

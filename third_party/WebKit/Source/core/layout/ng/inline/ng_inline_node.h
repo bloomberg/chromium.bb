@@ -21,7 +21,6 @@ class NGInlineItemsBuilderTemplate;
 class EmptyOffsetMappingBuilder;
 class LayoutBlockFlow;
 class LayoutNGBlockFlow;
-class LayoutObject;
 struct MinMaxContentSize;
 class NGConstraintSpace;
 class NGInlineItem;
@@ -80,8 +79,7 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   void PrepareLayout();
   bool IsPrepareLayoutFinished() const { return !Text().IsNull(); }
 
-  void CollectInlines(LayoutBlockFlow*);
-  LayoutObject* CollectInlines(LayoutBlockFlow*, NGInlineItemsBuilder*);
+  void CollectInlines();
   void SegmentText();
   void ShapeText();
 
