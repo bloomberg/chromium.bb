@@ -43,7 +43,6 @@
 #include "core/html/FormData.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorTraceEvents.h"
-#include "core/loader/FrameLoader.h"
 #include "core/loader/MixedContentChecker.h"
 #include "core/page/Page.h"
 #include "core/probe/CoreProbes.h"
@@ -248,7 +247,7 @@ PingLoaderImpl::PingLoaderImpl(LocalFrame* frame,
                                     AtomicString("content-type"), content_type))
     cors_enabled_ = false;
 
-  frame->Loader().Client()->DidDispatchPingLoader(request.Url());
+  frame->Client()->DidDispatchPingLoader(request.Url());
 
   FetchContext& fetch_context = frame->GetDocument()->Fetcher()->Context();
 
@@ -488,7 +487,7 @@ bool SendBeaconCommon(LocalFrame* frame,
   Resource* resource =
       RawResource::Fetch(params, frame->GetDocument()->Fetcher());
   if (resource && resource->GetStatus() != ResourceStatus::kLoadError) {
-    frame->Loader().Client()->DidDispatchPingLoader(request.Url());
+    frame->Client()->DidDispatchPingLoader(request.Url());
     return true;
   }
 

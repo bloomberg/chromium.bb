@@ -46,7 +46,6 @@
 #include "core/imagebitmap/ImageBitmap.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/layout/LayoutBox.h"
-#include "core/loader/FrameLoader.h"
 #include "core/origin_trials/OriginTrials.h"
 #include "core/probe/CoreProbes.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -7442,8 +7441,7 @@ void WebGLRenderingContextBase::MaybeRestoreContext(TimerBase*) {
 
     Settings* settings = frame->GetSettings();
 
-    if (!frame->Loader().Client()->AllowWebGL(settings &&
-                                              settings->GetWebGLEnabled()))
+    if (!frame->Client()->AllowWebGL(settings && settings->GetWebGLEnabled()))
       return;
   }
 

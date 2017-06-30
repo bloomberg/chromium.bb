@@ -145,12 +145,11 @@ LinkResource* HTMLLinkElement::LinkResourceToProcess() {
       link_ = LinkManifest::Create(this);
     } else if (rel_attribute_.IsServiceWorker() &&
                OriginTrials::linkServiceWorkerEnabled(GetExecutionContext())) {
-      if (GetDocument().GetFrame())
-        link_ = GetDocument()
-                    .GetFrame()
-                    ->Loader()
-                    .Client()
-                    ->CreateServiceWorkerLinkResource(this);
+      if (GetDocument().GetFrame()) {
+        link_ =
+            GetDocument().GetFrame()->Client()->CreateServiceWorkerLinkResource(
+                this);
+      }
     } else {
       LinkStyle* link = LinkStyle::Create(this);
       if (FastHasAttribute(disabledAttr)) {

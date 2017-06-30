@@ -489,11 +489,7 @@ void HTMLMetaElement::Process() {
           ViewportDescription::kMobileOptimizedMeta);
     else if (DeprecatedEqualIgnoringCase(name_value, "theme-color") &&
              GetDocument().GetFrame())
-      GetDocument()
-          .GetFrame()
-          ->Loader()
-          .Client()
-          ->DispatchDidChangeThemeColor();
+      GetDocument().GetFrame()->Client()->DispatchDidChangeThemeColor();
   }
 
   // Get the document to process the tag, but only if we're actually part of DOM

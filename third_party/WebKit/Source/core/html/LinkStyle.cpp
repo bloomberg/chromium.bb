@@ -386,9 +386,8 @@ void LinkStyle::Process() {
       return;
     if (!GetDocument().GetContentSecurityPolicy()->AllowImageFromSource(href))
       return;
-    if (GetDocument().GetFrame() &&
-        GetDocument().GetFrame()->Loader().Client()) {
-      GetDocument().GetFrame()->Loader().Client()->DispatchDidChangeIcons(
+    if (GetDocument().GetFrame() && GetDocument().GetFrame()->Client()) {
+      GetDocument().GetFrame()->Client()->DispatchDidChangeIcons(
           owner_->RelAttribute().GetIconType());
     }
   }

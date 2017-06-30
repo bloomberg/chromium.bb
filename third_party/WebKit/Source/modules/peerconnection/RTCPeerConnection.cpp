@@ -52,7 +52,6 @@
 #include "core/frame/LocalFrameClient.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/VoidCallback.h"
-#include "core/loader/FrameLoader.h"
 #include "modules/crypto/CryptoResultImpl.h"
 #include "modules/mediastream/MediaConstraintsImpl.h"
 #include "modules/mediastream/MediaStreamEvent.h"
@@ -516,10 +515,8 @@ RTCPeerConnection::RTCPeerConnection(ExecutionContext* context,
     return;
   }
 
-  document->GetFrame()
-      ->Loader()
-      .Client()
-      ->DispatchWillStartUsingPeerConnectionHandler(peer_handler_.get());
+  document->GetFrame()->Client()->DispatchWillStartUsingPeerConnectionHandler(
+      peer_handler_.get());
 
   if (!peer_handler_->Initialize(configuration, constraints)) {
     closed_ = true;
