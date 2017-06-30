@@ -123,6 +123,18 @@ Polymer({
       value: function() {
         return loadTimeData.getBoolean('isForceSigninEnabled');
       },
+    },
+
+    /**
+     * True if Supervised User creation is enabled.
+     * @private {boolean}
+     */
+    isSupervisedUserCreationEnabled_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('isSupervisedUserCreationEnabled') &&
+            !loadTimeData.getBoolean('isForceSigninEnabled');
+      },
     }
   },
 
