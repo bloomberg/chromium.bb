@@ -321,7 +321,7 @@ void NetExportMessageHandler::StartNetLog(const base::FilePath& path) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   file_writer_->StartNetLog(
-      base::FilePath(), capture_mode_,
+      path, capture_mode_,
       base::CommandLine::ForCurrentProcess()->GetCommandLineString(),
       chrome::GetChannelString(), GetURLRequestContexts());
 }
