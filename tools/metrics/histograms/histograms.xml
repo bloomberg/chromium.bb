@@ -81264,6 +81264,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="UserManager.ProfileEverInitializedMigrationCompleted"
+    enum="BooleanCompleted">
+  <owner>atwilson@chromium.org</owner>
+  <summary>
+    Whether the profile_ever_initialized() user attribute migration has
+    completed for the current user.
+  </summary>
+</histogram>
+
 <histogram name="UserSessionManager.RestoreOnCrash.AccountIdValid"
     enum="BooleanValid">
   <owner>msarda@chromium.org</owner>
