@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "components/autofill/core/browser/credit_card.h"
 #include "components/payments/core/payment_options_provider.h"
 #include "components/payments/core/payment_request_base_delegate.h"
 #include "components/payments/core/payments_profile_comparator.h"
@@ -19,7 +20,6 @@
 
 namespace autofill {
 class AutofillProfile;
-class CreditCard;
 class PersonalDataManager;
 class RegionDataLoader;
 }  // namespace autofill
@@ -160,6 +160,11 @@ class PaymentRequest : public payments::PaymentOptionsProvider,
     return stringified_method_data_;
   }
 
+  const std::set<autofill::CreditCard::CardType>& supported_card_types_set()
+      const {
+    return supported_card_types_set_;
+  }
+
   // Adds |credit_card| to the list of cached credit cards, updates the list of
   // available credit cards, and returns a reference to the cached copy of
   // |credit_card|.
@@ -276,6 +281,9 @@ class PaymentRequest : public payments::PaymentOptionsProvider,
   // A mapping of the payment method names to the corresponding JSON-stringified
   // payment method specific data.
   std::map<std::string, std::set<std::string>> stringified_method_data_;
+
+  // The set of supported card types (e.g., credit, debit, prepaid).
+  std::set<autofill::CreditCard::CardType> supported_card_types_set_;
 
   // A vector of pointers to the shipping options in |web_payment_request_|.
   std::vector<web::PaymentShippingOption*> shipping_options_;

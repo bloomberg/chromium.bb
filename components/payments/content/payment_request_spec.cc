@@ -186,29 +186,19 @@ void PaymentRequestSpec::PopulateValidatedMethodData(
          method_data_entry->supported_types) {
       autofill::CreditCard::CardType card_type = GetBasicCardType(type);
       method_data.supported_types.insert(card_type);
-      supported_card_types_set_.insert(card_type);
     }
 
     method_data_vector.push_back(std::move(method_data));
   }
 
-  // TODO(rouslan): Parse card types (credit, debit, prepaid) in data_util, so
-  // iOS can use it as well. http://crbug.com/602665
   data_util::ParseBasicCardSupportedNetworks(method_data_vector,
                                              &supported_card_networks_,
                                              &basic_card_specified_networks_);
   supported_card_networks_set_.insert(supported_card_networks_.begin(),
                                       supported_card_networks_.end());
 
-  // Omitting the card types means all 3 card types are supported.
-  if (supported_card_types_set_.empty()) {
-    supported_card_types_set_.insert(autofill::CreditCard::CARD_TYPE_CREDIT);
-    supported_card_types_set_.insert(autofill::CreditCard::CARD_TYPE_DEBIT);
-    supported_card_types_set_.insert(autofill::CreditCard::CARD_TYPE_PREPAID);
-  }
-
-  // Let the user decide whether an unknown card type should be used.
-  supported_card_types_set_.insert(autofill::CreditCard::CARD_TYPE_UNKNOWN);
+  data_util::ParseSupportedCardTypes(method_data_vector,
+                                     &supported_card_types_set_);
 }
 
 void PaymentRequestSpec::UpdateSelectedShippingOption(bool after_update) {
