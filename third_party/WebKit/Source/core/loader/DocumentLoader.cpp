@@ -1110,8 +1110,14 @@ void DocumentLoader::InstallNewDocument(
   // FeaturePolicy is reset in the browser process on commit, so this needs to
   // be initialized and replicated to the browser process after commit messages
   // are sent in didCommitNavigation().
+  // Feature-Policy header is currently disabled while the details of the policy
+  // syntax are being worked out. Unless the Feature Policy experimental
+  // features flag is enabled, then ignore any header received.
+  // TODO(iclelland): Re-enable once the syntax is finalized. (crbug.com/737643)
   document->SetFeaturePolicy(
-      response_.HttpHeaderField(HTTPNames::Feature_Policy));
+      RuntimeEnabledFeatures::FeaturePolicyExperimentalFeaturesEnabled()
+          ? response_.HttpHeaderField(HTTPNames::Feature_Policy)
+          : g_empty_string);
 
   GetFrameLoader().DispatchDidClearDocumentOfWindowObject();
 }

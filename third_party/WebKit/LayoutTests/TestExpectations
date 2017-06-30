@@ -2838,6 +2838,18 @@ crbug.com/723086 virtual/off-main-thread-fetch/external/wpt/service-workers/serv
 crbug.com/718155 payments/payment-request-in-iframe.html [ Failure ]
 crbug.com/718155 payments/payment-request-in-iframe-nested-not-allowed.html [ Failure ]
 
+# Feature Policy Header parsing is disabled in M60 - https://crbug.com/737643
+crbug.com/737643 external/wpt/payment-request/payment-allowed-by-feature-policy.https.sub.html [ Failure ]
+crbug.com/737643 external/wpt/payment-request/payment-disabled-by-feature-policy.https.sub.html [ Failure ]
+crbug.com/737643 external/wpt/webusb/usb-allowed-by-feature-policy.https.sub.html [ Failure ]
+crbug.com/737643 external/wpt/webusb/usb-disabled-by-feature-policy.https.sub.html [ Failure ]
+crbug.com/737643 http/tests/feature-policy/payment-disabled.php [ Failure ]
+crbug.com/737643 http/tests/feature-policy/payment-enabledforall.php [ Failure ]
+crbug.com/737643 virtual/feature-policy/http/tests/feature-policy/payment-disabled.php [ Failure ]
+crbug.com/737643 virtual/feature-policy/http/tests/feature-policy/payment-enabledforall.php [ Failure ]
+crbug.com/737643 virtual/mojo-loading/http/tests/feature-policy/payment-disabled.php [ Failure ]
+crbug.com/737643 virtual/mojo-loading/http/tests/feature-policy/payment-enabledforall.php [ Failure ]
+
 # Layout Tests on Swarming (Windows) - https://crbug.com/717347
 crbug.com/724392 [ Win ] fast/css/font-family-case-insensitive.html [ Failure Pass Timeout ]
 crbug.com/713094 [ Win ] fast/css/fontfaceset-check-platform-fonts.html [ Failure Pass ]
