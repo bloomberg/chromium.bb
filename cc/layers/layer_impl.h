@@ -296,8 +296,8 @@ class CC_EXPORT LayerImpl {
   gfx::Vector2dF ScrollBy(const gfx::Vector2dF& scroll);
 
   // Marks this layer as being scrollable and needing an associated scroll node.
-  // The scroll node's bounds and scroll_clip_layer_bounds will be kept in sync
-  // with this layer.
+  // The scroll node's bounds and container_bounds will be kept in sync with
+  // this layer.
   void SetScrollable(const gfx::Size& bounds);
   gfx::Size scroll_container_bounds() const { return scroll_container_bounds_; }
   bool scrollable() const { return scrollable_; }

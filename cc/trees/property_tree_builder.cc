@@ -1042,7 +1042,7 @@ void AddScrollNodeIfNeeded(
     }
 
     node.bounds = layer->bounds();
-    node.scroll_clip_layer_bounds = layer->scroll_container_bounds();
+    node.container_bounds = layer->scroll_container_bounds();
     node.offset_to_transform_parent = layer->offset_to_transform_parent();
     node.should_flatten = layer->should_flatten_transform_from_property_tree();
     node.user_scrollable_horizontal = UserScrollableHorizontal(layer);

@@ -214,8 +214,7 @@ void LayerTreeImpl::UpdateScrollbarGeometries() {
     gfx::ScrollOffset current_offset =
         scroll_tree.current_scroll_offset(scrolling_element_id);
     gfx::SizeF scrolling_size(scroll_node->bounds);
-    gfx::SizeF bounds_size(
-        scroll_tree.scroll_clip_layer_bounds(scroll_node->id));
+    gfx::SizeF bounds_size(scroll_tree.container_bounds(scroll_node->id));
 
     bool is_viewport_scrollbar = scroll_node->scrolls_inner_viewport ||
                                  scroll_node->scrolls_outer_viewport;
@@ -223,7 +222,7 @@ void LayerTreeImpl::UpdateScrollbarGeometries() {
       if (scroll_node->scrolls_inner_viewport) {
         // Add offset and bounds contribution of outer viewport.
         current_offset += OuterViewportScrollLayer()->CurrentScrollOffset();
-        gfx::SizeF outer_viewport_bounds(scroll_tree.scroll_clip_layer_bounds(
+        gfx::SizeF outer_viewport_bounds(scroll_tree.container_bounds(
             OuterViewportScrollLayer()->scroll_tree_index()));
         bounds_size.SetToMin(outer_viewport_bounds);
 
@@ -234,7 +233,7 @@ void LayerTreeImpl::UpdateScrollbarGeometries() {
       } else {
         // Add offset and bounds contribution of inner viewport.
         current_offset += InnerViewportScrollLayer()->CurrentScrollOffset();
-        gfx::SizeF inner_viewport_bounds(scroll_tree.scroll_clip_layer_bounds(
+        gfx::SizeF inner_viewport_bounds(scroll_tree.container_bounds(
             InnerViewportScrollLayer()->scroll_tree_index()));
         bounds_size.SetToMin(inner_viewport_bounds);
       }

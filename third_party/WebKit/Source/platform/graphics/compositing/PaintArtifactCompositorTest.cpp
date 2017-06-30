@@ -749,7 +749,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, OneScrollNode) {
   // Node #0 reserved for null; #1 for root render surface.
   ASSERT_EQ(3u, scroll_tree.size());
   const cc::ScrollNode& scroll_node = *scroll_tree.Node(2);
-  EXPECT_EQ(gfx::Size(11, 13), scroll_node.scroll_clip_layer_bounds);
+  EXPECT_EQ(gfx::Size(11, 13), scroll_node.container_bounds);
   EXPECT_EQ(gfx::Size(27, 31), scroll_node.bounds);
   EXPECT_TRUE(scroll_node.user_scrollable_horizontal);
   EXPECT_FALSE(scroll_node.user_scrollable_vertical);
@@ -865,7 +865,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, NestedScrollNodes) {
   // Node #0 reserved for null; #1 for root render surface.
   ASSERT_EQ(3u, scroll_tree.size());
   const cc::ScrollNode& scroll_node = *scroll_tree.Node(2);
-  EXPECT_EQ(gfx::Size(2, 3), scroll_node.scroll_clip_layer_bounds);
+  EXPECT_EQ(gfx::Size(2, 3), scroll_node.container_bounds);
   EXPECT_EQ(gfx::Size(5, 7), scroll_node.bounds);
   EXPECT_FALSE(scroll_node.user_scrollable_horizontal);
   EXPECT_TRUE(scroll_node.user_scrollable_vertical);

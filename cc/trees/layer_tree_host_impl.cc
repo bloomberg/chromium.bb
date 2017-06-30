@@ -2894,8 +2894,9 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
         (settings_.is_layer_tree_for_subframe ||
          (!scrolling_node->scrolls_outer_viewport &&
           !scrolling_node->scrolls_inner_viewport))) {
-      int size = scrolling_node->scroll_clip_layer_bounds.GetCheckedArea()
-                     .ValueOrDefault(std::numeric_limits<int>::max());
+      const auto& container_bounds = scrolling_node->container_bounds;
+      int size = container_bounds.GetCheckedArea().ValueOrDefault(
+          std::numeric_limits<int>::max());
       DCHECK_GT(size, 0);
       if (IsWheelBasedScroll(type)) {
         UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Scroll.ScrollerSize.OnScroll_Wheel",

@@ -826,7 +826,7 @@ void Layer::SetScrollable(const gfx::Size& bounds) {
   auto& scroll_tree = layer_tree_host_->property_trees()->scroll_tree;
   auto* scroll_node = scroll_tree.Node(scroll_tree_index_);
   if (was_scrollable && scroll_node)
-    scroll_node->scroll_clip_layer_bounds = inputs_.scroll_container_bounds;
+    scroll_node->container_bounds = inputs_.scroll_container_bounds;
   else
     SetPropertyTreesNeedRebuild();
 

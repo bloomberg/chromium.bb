@@ -10090,7 +10090,7 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   scroll_parent2.scrollable = true;
   scroll_parent2.main_thread_scrolling_reasons =
       parent2->main_thread_scrolling_reasons();
-  scroll_parent2.scroll_clip_layer_bounds = root1->bounds();
+  scroll_parent2.container_bounds = root1->bounds();
   scroll_parent2.bounds = parent2->bounds();
   scroll_parent2.max_scroll_offset_affected_by_page_scale = true;
   scroll_parent2.scrolls_inner_viewport = true;
@@ -10117,7 +10117,7 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   scroll_child7.owning_layer_id = child7->id();
   scroll_child7.element_id = child7->element_id();
   scroll_child7.scrollable = true;
-  scroll_child7.scroll_clip_layer_bounds = parent3->bounds();
+  scroll_child7.container_bounds = parent3->bounds();
   scroll_child7.bounds = child7->bounds();
   scroll_child7.user_scrollable_horizontal = true;
   scroll_child7.user_scrollable_vertical = true;
@@ -10130,7 +10130,7 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   scroll_grand_child11.owning_layer_id = grand_child11->id();
   scroll_grand_child11.element_id = grand_child11->element_id();
   scroll_grand_child11.scrollable = true;
-  scroll_grand_child11.scroll_clip_layer_bounds = child8->bounds();
+  scroll_grand_child11.container_bounds = child8->bounds();
   scroll_grand_child11.user_scrollable_horizontal = true;
   scroll_grand_child11.user_scrollable_vertical = true;
   scroll_grand_child11.transform_id = grand_child11->transform_tree_index();

@@ -376,8 +376,7 @@ gfx::Vector2dF StickyPositionOffset(TransformTree* tree, TransformNode* node) {
 
   gfx::RectF clip(
       scroll_position,
-      gfx::SizeF(property_trees.scroll_tree.scroll_clip_layer_bounds(
-          scroll_node->id)));
+      gfx::SizeF(property_trees.scroll_tree.container_bounds(scroll_node->id)));
 
   gfx::Vector2dF ancestor_sticky_box_offset;
   if (sticky_data->nearest_node_shifting_sticky_box !=
@@ -1251,7 +1250,7 @@ gfx::ScrollOffset ScrollTree::MaxScrollOffset(int scroll_node_id) const {
   scaled_scroll_bounds.SetSize(std::floor(scaled_scroll_bounds.width()),
                                std::floor(scaled_scroll_bounds.height()));
 
-  gfx::Size clip_layer_bounds = scroll_clip_layer_bounds(scroll_node->id);
+  gfx::Size clip_layer_bounds = container_bounds(scroll_node->id);
 
   gfx::ScrollOffset max_offset(
       scaled_scroll_bounds.width() - clip_layer_bounds.width(),
@@ -1278,25 +1277,23 @@ void ScrollTree::OnScrollOffsetAnimated(ElementId id,
   layer_tree_impl->DidAnimateScrollOffset();
 }
 
-gfx::Size ScrollTree::scroll_clip_layer_bounds(int scroll_node_id) const {
+gfx::Size ScrollTree::container_bounds(int scroll_node_id) const {
   const ScrollNode* scroll_node = Node(scroll_node_id);
-  gfx::Size scroll_clip_layer_bounds = scroll_node->scroll_clip_layer_bounds;
+  gfx::Size container_bounds = scroll_node->container_bounds;
 
-  gfx::Vector2dF scroll_clip_layer_bounds_delta;
+  gfx::Vector2dF container_bounds_delta;
   if (scroll_node->scrolls_inner_viewport) {
-    scroll_clip_layer_bounds_delta.Add(
+    container_bounds_delta.Add(
         property_trees()->inner_viewport_container_bounds_delta());
   } else if (scroll_node->scrolls_outer_viewport) {
-    scroll_clip_layer_bounds_delta.Add(
+    container_bounds_delta.Add(
         property_trees()->outer_viewport_container_bounds_delta());
   }
 
-  gfx::Vector2d delta = gfx::ToCeiledVector2d(scroll_clip_layer_bounds_delta);
-  scroll_clip_layer_bounds.SetSize(
-      scroll_clip_layer_bounds.width() + delta.x(),
-      scroll_clip_layer_bounds.height() + delta.y());
+  gfx::Vector2d delta = gfx::ToCeiledVector2d(container_bounds_delta);
+  container_bounds.Enlarge(delta.x(), delta.y());
 
-  return scroll_clip_layer_bounds;
+  return container_bounds;
 }
 
 ScrollNode* ScrollTree::CurrentlyScrollingNode() {
