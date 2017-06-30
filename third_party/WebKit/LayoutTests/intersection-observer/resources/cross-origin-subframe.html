@@ -31,12 +31,7 @@ function entryToJson(entry) {
 }
 
 function coordinatesToClientRectJson(top, right, bottom, left) {
-  return {
-    top: top,
-    right: right,
-    bottom: bottom,
-    left: left
-  };
+  return [left, right, top, bottom];
 }
 
 // Note that we never use RAF in this code, because this frame might get render-throttled.
@@ -53,7 +48,7 @@ function step0() {
   entries = entries.concat(observer.takeRecords());
   nextStep = step1;
   var expected = [{
-    boundingClientRect: coordinatesToClientRectJson(8, 208, 108, 308),
+    boundingClientRect: coordinatesToClientRectJson(208, 108, 308, 8),
     intersectionRect: coordinatesToClientRectJson(0, 0, 0, 0),
     rootBounds: "null",
     target: target.id
