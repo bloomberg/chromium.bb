@@ -12,7 +12,7 @@
  */
 
 /** @const */ var HOURS_PER_DAY = 24;
-/** @const */ var MIN_KNOBS_DISTANCE_MINUTES = 30;
+/** @const */ var MIN_KNOBS_DISTANCE_MINUTES = 60;
 /** @const */ var OFFSET_MINUTES_6PM = 18 * 60;
 /** @const */ var TOTAL_MINUTES_PER_DAY = 24 * 60;
 
@@ -350,7 +350,9 @@ Polymer({
     var endLabel = this.$.endLabel;
     var distance = Math.abs(
         parseFloat(startLabel.style.left) - parseFloat(endLabel.style.left));
-    if (distance <= startLabel.offsetWidth) {
+    // Both knobs have the same width, but the one being dragged is scaled up by
+    // 125%.
+    if (distance <= (1.25 * startLabel.offsetWidth)) {
       // Shift the end label up so that it doesn't overlap with the start label.
       endLabel.classList.add('end-label-overlap');
     } else {
@@ -389,14 +391,14 @@ Polymer({
     if (otherValue > value &&
         ((otherValue - value) < MIN_KNOBS_DISTANCE_MINUTES)) {
       // We are incrementing the minutes offset moving towards the other knob.
-      // We have a minimum 30 minutes overlap threshold. Move this knob to the
+      // We have a minimum 60 minutes overlap threshold. Move this knob to the
       // other side of the other knob.
       //
       // Was:
-      // ------ (+) --- 29 MIN --- + ------->>
+      // ------ (+) --- 59 MIN --- + ------->>
       //
       // Now:
-      // ------ + --- 30 MIN --- (+) ------->>
+      // ------ + --- 60 MIN --- (+) ------->>
       //
       // (+) ==> Knob being moved.
       value = otherValue + MIN_KNOBS_DISTANCE_MINUTES;
@@ -421,14 +423,14 @@ Polymer({
     if (value > otherValue &&
         ((value - otherValue) < MIN_KNOBS_DISTANCE_MINUTES)) {
       // We are decrementing the minutes offset moving towards the other knob.
-      // We have a minimum 30 minutes overlap threshold. Move this knob to the
+      // We have a minimum 60 minutes overlap threshold. Move this knob to the
       // other side of the other knob.
       //
       // Was:
-      // <<------ + --- 29 MIN --- (+) -------
+      // <<------ + --- 59 MIN --- (+) -------
       //
       // Now:
-      // <<------ (+) --- 30 MIN --- + ------
+      // <<------ (+) --- 60 MIN --- + ------
       //
       // (+) ==> Knob being moved.
       value = otherValue - MIN_KNOBS_DISTANCE_MINUTES;

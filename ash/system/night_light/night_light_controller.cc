@@ -30,11 +30,13 @@ constexpr float kDefaultColorTemperature = 0.5f;
 
 // The duration of the temperature change animation for
 // AnimationDurationType::kShort.
-constexpr int kManualAnimationDurationSec = 2;
+constexpr base::TimeDelta kManualAnimationDuration =
+    base::TimeDelta::FromSeconds(1);
 
 // The duration of the temperature change animation for
 // AnimationDurationType::kLong.
-constexpr int kAutomaticAnimationDurationSec = 20;
+constexpr base::TimeDelta kAutomaticAnimationDuration =
+    base::TimeDelta::FromSeconds(20);
 
 class NightLightControllerDelegateImpl : public NightLightController::Delegate {
  public:
@@ -259,12 +261,10 @@ void NightLightController::SetDelegateForTesting(
 }
 
 void NightLightController::RefreshLayersTemperature() {
-  ApplyColorTemperatureToLayers(
-      GetEnabled() ? GetColorTemperature() : 0.0f,
-      base::TimeDelta::FromSeconds(animation_duration_ ==
-                                           AnimationDuration::kShort
-                                       ? kManualAnimationDurationSec
-                                       : kAutomaticAnimationDurationSec));
+  ApplyColorTemperatureToLayers(GetEnabled() ? GetColorTemperature() : 0.0f,
+                                animation_duration_ == AnimationDuration::kShort
+                                    ? kManualAnimationDuration
+                                    : kAutomaticAnimationDuration);
 
   // Reset the animation type back to manual to consume any automatically set
   // animations.

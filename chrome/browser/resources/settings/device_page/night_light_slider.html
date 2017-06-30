@@ -54,8 +54,12 @@
         z-index: 3;
       }
 
+      .knob-inner:focus {
+        outline: none;
+      }
+
       .expanded-knob {
-        transform: scale(1.5);
+        transform: scale(1.25);
         z-index: 3;
       }
 
@@ -74,7 +78,7 @@
       }
 
       #labelContainer {
-        height: 2em;
+        height: 1.75em;
       }
 
       .label {
@@ -87,6 +91,7 @@
         margin-left: -2.5em;
         position: absolute;
         text-align: center;
+        transition: margin-top 200ms cubic-bezier(0, 0, 0.2, 1);
         vertical-align: middle;
         width: 5em;
       }
