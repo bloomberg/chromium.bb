@@ -40,7 +40,6 @@ FileError OpenCacheFileForWrite(
 GetFileForSavingOperation::GetFileForSavingOperation(
     EventLogger* logger,
     base::SequencedTaskRunner* blocking_task_runner,
-    base::SingleThreadTaskRunner* file_task_runner,
     OperationDelegate* delegate,
     JobScheduler* scheduler,
     internal::ResourceMetadata* metadata,
@@ -55,13 +54,12 @@ GetFileForSavingOperation::GetFileForSavingOperation(
                                                 metadata,
                                                 cache,
                                                 temporary_file_directory)),
-      file_write_watcher_(new internal::FileWriteWatcher(file_task_runner)),
+      file_write_watcher_(new internal::FileWriteWatcher(blocking_task_runner)),
       blocking_task_runner_(blocking_task_runner),
       delegate_(delegate),
       metadata_(metadata),
       cache_(cache),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 GetFileForSavingOperation::~GetFileForSavingOperation() {
 }

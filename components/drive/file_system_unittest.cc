@@ -33,7 +33,6 @@
 #include "components/drive/service/fake_drive_service.h"
 #include "components/drive/service/test_util.h"
 #include "components/prefs/testing_pref_service.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/test_util.h"
@@ -146,12 +145,10 @@ class FileSystemTest : public testing::Test {
 
     const base::FilePath temp_file_dir = temp_dir_.GetPath().AppendASCII("tmp");
     ASSERT_TRUE(base::CreateDirectory(temp_file_dir));
-    file_task_runner_ = content::BrowserThread::GetTaskRunnerForThread(
-        content::BrowserThread::FILE);
     file_system_.reset(new FileSystem(
         pref_service_.get(), logger_.get(), cache_.get(), scheduler_.get(),
         resource_metadata_.get(), base::ThreadTaskRunnerHandle::Get().get(),
-        file_task_runner_.get(), temp_file_dir));
+        temp_file_dir));
     file_system_->AddObserver(mock_directory_observer_.get());
 
     // Disable delaying so that the sync starts immediately.
@@ -331,7 +328,6 @@ class FileSystemTest : public testing::Test {
   std::unique_ptr<internal::FileCache, test_util::DestroyHelperForTests> cache_;
   std::unique_ptr<internal::ResourceMetadata, test_util::DestroyHelperForTests>
       resource_metadata_;
-  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
   std::unique_ptr<FileSystem> file_system_;
 };
 

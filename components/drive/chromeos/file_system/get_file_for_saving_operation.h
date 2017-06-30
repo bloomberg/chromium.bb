@@ -18,7 +18,6 @@ namespace base {
 class FilePath;
 class ScopedClosureRunner;
 class SequencedTaskRunner;
-class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace drive {
@@ -47,7 +46,6 @@ class GetFileForSavingOperation {
  public:
   GetFileForSavingOperation(EventLogger* logger,
                             base::SequencedTaskRunner* blocking_task_runner,
-                            base::SingleThreadTaskRunner* file_task_runner,
                             OperationDelegate* delegate,
                             JobScheduler* scheduler,
                             internal::ResourceMetadata* metadata,

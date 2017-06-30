@@ -19,7 +19,6 @@
 #include "components/drive/file_system/operation_test_base.h"
 #include "components/drive/file_write_watcher.h"
 #include "components/drive/job_scheduler.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "google_apis/drive/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -66,18 +65,14 @@ class GetFileForSavingOperationTest : public OperationTestBase {
   void SetUp() override {
     OperationTestBase::SetUp();
 
-    file_task_runner_ = content::BrowserThread::GetTaskRunnerForThread(
-        content::BrowserThread::FILE);
-
     operation_.reset(new GetFileForSavingOperation(
-        logger(), blocking_task_runner(), file_task_runner_.get(), &delegate_,
-        scheduler(), metadata(), cache(), temp_dir()));
+        logger(), blocking_task_runner(), &delegate_, scheduler(), metadata(),
+        cache(), temp_dir()));
     operation_->file_write_watcher_for_testing()->DisableDelayForTesting();
   }
 
   TestDelegate delegate_;
   std::unique_ptr<GetFileForSavingOperation> operation_;
-  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
 };
 
 TEST_F(GetFileForSavingOperationTest, GetFileForSaving_Exist) {
