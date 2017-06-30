@@ -198,6 +198,8 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
 
   void SendVSync(base::TimeDelta time, GetVSyncCallback callback);
 
+  void closePresentationBindings();
+
   // samplerExternalOES texture data for main content image.
   int content_texture_id_ = 0;
   // samplerExternalOES texture data for WebVR content image.

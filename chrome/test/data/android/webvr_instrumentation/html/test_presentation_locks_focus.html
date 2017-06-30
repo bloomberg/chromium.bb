@@ -23,7 +23,7 @@ focus, that the presenting frame still receives input.
       };
       window.onblur = function() {
         onAnimationFrameCallback = function() {
-          if (rafCount = 3) {
+          if (rafCount == 3) {
             t.done();
           }
           rafCount++;

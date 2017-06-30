@@ -236,21 +236,7 @@ VrShellGl::VrShellGl(GlBrowserInterface* browser,
 
 VrShellGl::~VrShellGl() {
   vsync_task_.Cancel();
-  // TODO(mthiesse): Can we omit the Close() here? Concern is that if
-  // both ends of the connection ever live in the same process for
-  // some reason, we could receive another VSync request in response
-  // to the closing message in the destructor but fail to respond to
-  // the callback.
-  binding_.Close();
-  if (!callback_.is_null()) {
-    // When this VSync provider is going away we have to respond to pending
-    // callbacks, so instead of providing a VSync, tell the requester to try
-    // again. A VSyncProvider is guaranteed to exist, so the request in response
-    // to this message will go through some other VSyncProvider.
-    base::ResetAndReturn(&callback_)
-        .Run(nullptr, base::TimeDelta(), -1,
-             device::mojom::VRPresentationProvider::VSyncStatus::CLOSING);
-  }
+  closePresentationBindings();
 }
 
 void VrShellGl::Initialize() {
@@ -407,8 +393,8 @@ void VrShellGl::SubmitFrame(int16_t frame_index,
 void VrShellGl::ConnectPresentingService(
     device::mojom::VRSubmitFrameClientPtrInfo submit_client_info,
     device::mojom::VRPresentationProviderRequest request) {
+  closePresentationBindings();
   submit_client_.Bind(std::move(submit_client_info));
-  binding_.Close();
   binding_.Bind(std::move(request));
 }
 
@@ -1490,7 +1476,7 @@ void VrShellGl::SetWebVrMode(bool enabled) {
   }
 
   if (!enabled) {
-    submit_client_.reset();
+    closePresentationBindings();
   }
 }
 
@@ -1528,6 +1514,7 @@ void VrShellGl::OnVSync() {
   // Don't send VSyncs until we have a timebase/interval.
   if (vsync_interval_.is_zero())
     return;
+
   target = now + vsync_interval_;
   int64_t intervals = (target - vsync_timebase_) / vsync_interval_;
   target = vsync_timebase_ + intervals * vsync_interval_;
@@ -1554,7 +1541,7 @@ void VrShellGl::GetVSync(GetVSyncCallback callback) {
     if (!callback_.is_null()) {
       mojo::ReportBadMessage(
           "Requested VSync before waiting for response to previous request.");
-      binding_.Close();
+      closePresentationBindings();
       return;
     }
     callback_ = std::move(callback);
@@ -1638,6 +1625,19 @@ void VrShellGl::CreateVRDisplayInfo(
       device::GvrDelegate::CreateVRDisplayInfo(gvr_api_.get(),
                                                webvr_surface_size_, device_id);
   browser_->RunVRDisplayInfoCallback(callback, &info);
+}
+
+void VrShellGl::closePresentationBindings() {
+  submit_client_.reset();
+  if (!callback_.is_null()) {
+    // When this Presentation provider is going away we have to respond to
+    // pending callbacks, so instead of providing a VSync, tell the requester
+    // the connection is closing.
+    base::ResetAndReturn(&callback_)
+        .Run(nullptr, base::TimeDelta(), -1,
+             device::mojom::VRPresentationProvider::VSyncStatus::CLOSING);
+  }
+  binding_.Close();
 }
 
 }  // namespace vr_shell
