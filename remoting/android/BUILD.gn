@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//base/android/jni_generator/jni_exception_list.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 import("//remoting/android/client_java_tmpl.gni")
@@ -18,6 +19,12 @@ generate_jni("jni_headers") {
     "java/src/org/chromium/chromoting/jni/TouchEventData.java",
   ]
   jni_package = "remoting"
+}
+
+generate_jni_registration("remoting_jni_registration") {
+  target = ":remoting_apk"
+  output = "$root_gen_dir/remoting/client/${target_name}.h"
+  exception_files = jni_exception_files
 }
 
 _raw_resources_base_dir = "$target_gen_dir/credits_resources_raw/res"

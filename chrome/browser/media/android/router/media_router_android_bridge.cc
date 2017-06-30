@@ -29,7 +29,6 @@ MediaRouterAndroidBridge::~MediaRouterAndroidBridge() = default;
 // static
 bool MediaRouterAndroidBridge::Register(JNIEnv* env) {
   bool ret = RegisterNativesImpl(env);
-  DCHECK(g_ChromeMediaRouter_clazz);
   return ret;
 }
 
