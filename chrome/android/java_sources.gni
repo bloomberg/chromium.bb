@@ -1819,6 +1819,20 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/widget/selection/SelectionDelegateTest.java",
 ]
 
+sync_shell_test_java_sources = [
+  "sync_shell/javatests/src/org/chromium/chrome/browser/sync/AutofillTest.java",
+  "sync_shell/javatests/src/org/chromium/chrome/browser/sync/BookmarksTest.java",
+  "sync_shell/javatests/src/org/chromium/chrome/browser/sync/FakeServerHelper.java",
+  "sync_shell/javatests/src/org/chromium/chrome/browser/sync/FirstRunTest.java",
+  "sync_shell/javatests/src/org/chromium/chrome/browser/sync/GmsCoreSyncListenerTest.java",
+  "sync_shell/javatests/src/org/chromium/chrome/browser/sync/OpenTabsTest.java",
+  "sync_shell/javatests/src/org/chromium/chrome/browser/sync/SyncCustomizationFragmentTest.java",
+  "sync_shell/javatests/src/org/chromium/chrome/browser/sync/SyncTest.java",
+  "sync_shell/javatests/src/org/chromium/chrome/browser/sync/SyncTestBase.java",
+  "sync_shell/javatests/src/org/chromium/chrome/browser/sync/TypedUrlsTest.java",
+  "sync_shell/javatests/src/org/chromium/chrome/browser/sync/ui/PassphraseTypeDialogFragmentTest.java",
+]
+
 # Only used for testing, should not be shipped to end users.
 if (enable_offline_pages_harness) {
   chrome_java_sources += [ "java/src/org/chromium/chrome/browser/offlinepages/evaluation/OfflinePageEvaluationBridge.java" ]
