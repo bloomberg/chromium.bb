@@ -40,11 +40,13 @@ std::unique_ptr<webrtc::DesktopFrame> ConvertYuvToRgb(
   auto yuv_to_rgb_function = (pixel_format == FrameConsumer::FORMAT_BGRA)
                                  ? &libyuv::I420ToARGB
                                  : &libyuv::I420ToABGR;
-  yuv_to_rgb_function(yuv_frame->DataY(), yuv_frame->StrideY(),
-                      yuv_frame->DataU(), yuv_frame->StrideU(),
-                      yuv_frame->DataV(), yuv_frame->StrideV(),
+  rtc::scoped_refptr<const webrtc::I420BufferInterface> i420_frame =
+      yuv_frame->ToI420();
+  yuv_to_rgb_function(i420_frame->DataY(), i420_frame->StrideY(),
+                      i420_frame->DataU(), i420_frame->StrideU(),
+                      i420_frame->DataV(), i420_frame->StrideV(),
                       rgb_frame->data(), rgb_frame->stride(),
-                      yuv_frame->width(), yuv_frame->height());
+                      i420_frame->width(), i420_frame->height());
 
   rgb_frame->mutable_updated_region()->AddRect(
       webrtc::DesktopRect::MakeSize(rgb_frame->size()));
