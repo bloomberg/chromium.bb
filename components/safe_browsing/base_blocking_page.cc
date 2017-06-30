@@ -362,4 +362,14 @@ void BaseBlockingPage::set_sb_error_ui(
   sb_error_ui_ = std::move(sb_error_ui);
 }
 
+// static
+bool BaseBlockingPage::ShouldReportThreatDetails(SBThreatType threat_type) {
+  return threat_type == SB_THREAT_TYPE_URL_PHISHING ||
+         threat_type == SB_THREAT_TYPE_URL_MALWARE ||
+         threat_type == SB_THREAT_TYPE_URL_UNWANTED ||
+         threat_type == SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING ||
+         threat_type == SB_THREAT_TYPE_URL_CLIENT_SIDE_MALWARE ||
+         threat_type == SB_THREAT_TYPE_URL_PASSWORD_PROTECTION_PHISHING;
+}
+
 }  // namespace safe_browsing

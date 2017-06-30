@@ -40,6 +40,18 @@ class AwSafeBrowsingBlockingPage : public safe_browsing::BaseBlockingPage {
           controller_client,
       const BaseSafeBrowsingErrorUI::SBErrorDisplayOptions& display_options,
       ErrorUiType errorUiType);
+
+  // Called when the interstitial is going away. If there is a
+  // pending threat details object, we look at the user's
+  // preferences, and if the option to send threat details is
+  // enabled, the report is scheduled to be sent on the |ui_manager_|.
+  void FinishThreatDetails(const base::TimeDelta& delay,
+                           bool did_proceed,
+                           int num_visits) override;
+
+  // Whether ThreatDetails collection is in progress as part of this
+  // interstitial.
+  bool threat_details_in_progress_;
 };
 
 }  // namespace android_webview

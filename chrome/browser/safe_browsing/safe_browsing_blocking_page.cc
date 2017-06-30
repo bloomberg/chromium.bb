@@ -143,16 +143,6 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
   }
 }
 
-bool SafeBrowsingBlockingPage::ShouldReportThreatDetails(
-    SBThreatType threat_type) {
-  return threat_type == SB_THREAT_TYPE_URL_PHISHING ||
-         threat_type == SB_THREAT_TYPE_URL_MALWARE ||
-         threat_type == SB_THREAT_TYPE_URL_UNWANTED ||
-         threat_type == SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING ||
-         threat_type == SB_THREAT_TYPE_URL_CLIENT_SIDE_MALWARE ||
-         threat_type == SB_THREAT_TYPE_URL_PASSWORD_PROTECTION_PHISHING;
-}
-
 SafeBrowsingBlockingPage::~SafeBrowsingBlockingPage() {
 }
 

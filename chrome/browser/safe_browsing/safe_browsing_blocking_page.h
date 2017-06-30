@@ -77,9 +77,6 @@ class SafeBrowsingBlockingPage : public BaseBlockingPage {
   void OverrideRendererPrefs(content::RendererPreferences* prefs) override;
   content::InterstitialPageDelegate::TypeID GetTypeForTesting() const override;
 
-  // Checks the threat type to decide if we should report ThreatDetails.
-  static bool ShouldReportThreatDetails(SBThreatType threat_type);
-
  protected:
   friend class SafeBrowsingBlockingPageFactoryImpl;
   friend class SafeBrowsingBlockingPageTest;
