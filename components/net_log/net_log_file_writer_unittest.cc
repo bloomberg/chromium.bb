@@ -257,12 +257,9 @@ class NetLogFileWriterTest : public ::testing::Test {
   NetLogFileWriterTest()
       : net_log_(base::FilePath(),
                  net::NetLogCaptureMode::Default(),
-                 base::CommandLine::ForCurrentProcess()->GetCommandLineString(),
+                 base::CommandLine::StringType(),
                  kChannelString),
-        net_log_file_writer_(
-            &net_log_,
-            base::CommandLine::ForCurrentProcess()->GetCommandLineString(),
-            kChannelString),
+        net_log_file_writer_(&net_log_),
         file_thread_("NetLogFileWriter file thread"),
         net_thread_("NetLogFileWriter net thread") {}
 
@@ -337,7 +334,8 @@ class NetLogFileWriterTest : public ::testing::Test {
       const std::string& expected_capture_mode_string,
       const URLRequestContextGetterList& context_getters) {
     net_log_file_writer_.StartNetLog(custom_log_path, capture_mode,
-                                     context_getters);
+                                     base::CommandLine::StringType(),
+                                     kChannelString, context_getters);
     std::unique_ptr<base::DictionaryValue> state =
         test_state_observer_.WaitForNewState();
     ::testing::AssertionResult result =
@@ -503,14 +501,17 @@ TEST_F(NetLogFileWriterTest, StartAndStopWithAllCaptureModes) {
     // Calling StartNetLog() again should be a no-op. Try doing StartNetLog()
     // with various capture modes; they should all be ignored and result in no
     // state change.
-    net_log_file_writer_.StartNetLog(base::FilePath(), capture_modes[i],
-                                     URLRequestContextGetterList());
-    net_log_file_writer_.StartNetLog(base::FilePath(),
-                                     capture_modes[(i + 1) % 3],
-                                     URLRequestContextGetterList());
-    net_log_file_writer_.StartNetLog(base::FilePath(),
-                                     capture_modes[(i + 2) % 3],
-                                     URLRequestContextGetterList());
+    net_log_file_writer_.StartNetLog(
+        base::FilePath(), capture_modes[i], base::CommandLine::StringType(),
+        kChannelString, URLRequestContextGetterList());
+    net_log_file_writer_.StartNetLog(
+        base::FilePath(), capture_modes[(i + 1) % 3],
+        base::CommandLine::StringType(), kChannelString,
+        URLRequestContextGetterList());
+    net_log_file_writer_.StartNetLog(
+        base::FilePath(), capture_modes[(i + 2) % 3],
+        base::CommandLine::StringType(), kChannelString,
+        URLRequestContextGetterList());
 
     // StopNetLog(), should result in state change. The capture mode should
     // match that of the first StartNetLog() call (called by
@@ -748,9 +749,10 @@ TEST_F(NetLogFileWriterTest, ReceiveStartWhileInitializing) {
   // process from completing, so this ensures that StartNetLog() is received
   // before |net_log_file_writer_| finishes initialization, which means this
   // should be a no-op.
-  net_log_file_writer_.StartNetLog(base::FilePath(),
-                                   net::NetLogCaptureMode::Default(),
-                                   URLRequestContextGetterList());
+  net_log_file_writer_.StartNetLog(
+      base::FilePath(), net::NetLogCaptureMode::Default(),
+      base::CommandLine::StringType(), kChannelString,
+      URLRequestContextGetterList());
 
   // Now run the main message loop. Make sure StartNetLog() was ignored by
   // checking that the next two states are "initializing" followed by
@@ -779,9 +781,10 @@ TEST_F(NetLogFileWriterTest, ReceiveStartWhileStoppingLog) {
   // from completing, so this ensures StartNetLog() is received before
   // |net_log_file_writer_| finishes stopping, which means this should be a
   // no-op.
-  net_log_file_writer_.StartNetLog(base::FilePath(),
-                                   net::NetLogCaptureMode::Default(),
-                                   URLRequestContextGetterList());
+  net_log_file_writer_.StartNetLog(
+      base::FilePath(), net::NetLogCaptureMode::Default(),
+      base::CommandLine::StringType(), kChannelString,
+      URLRequestContextGetterList());
 
   // Now run the main message loop. Make sure the last StartNetLog() was
   // ignored by checking that the next two states are "stopping-log" followed by

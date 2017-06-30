@@ -105,6 +105,8 @@ class NetLogFileWriter {
   // thread.
   void StartNetLog(const base::FilePath& log_path,
                    net::NetLogCaptureMode capture_mode,
+                   const base::CommandLine::StringType& command_line_string,
+                   const std::string& channel_string,
                    const URLRequestContextGetterList& context_getters);
 
   // Stops collecting NetLog data into the file. It is a no-op if
@@ -149,9 +151,7 @@ class NetLogFileWriter {
  protected:
   // Constructs a NetLogFileWriter. Only one instance is created in browser
   // process.
-  NetLogFileWriter(ChromeNetLog* chrome_net_log,
-                   const base::CommandLine::StringType& command_line_string,
-                   const std::string& channel_string);
+  explicit NetLogFileWriter(ChromeNetLog* chrome_net_log);
 
  private:
   friend class ChromeNetLog;
@@ -227,9 +227,6 @@ class NetLogFileWriter {
 
   // List of StateObservers to notify on state changes.
   base::ObserverList<StateObserver, true> state_observer_list_;
-
-  const base::CommandLine::StringType command_line_string_;
-  const std::string channel_string_;
 
   // Used by unit tests to override the default log base directory retrieved
   // during initialization. This getter is initialized to base::GetTempDir().

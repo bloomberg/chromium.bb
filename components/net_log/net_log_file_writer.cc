@@ -109,17 +109,12 @@ base::FilePath GetPathWithAllPermissions(const base::FilePath& path) {
 
 }  // namespace
 
-NetLogFileWriter::NetLogFileWriter(
-    ChromeNetLog* chrome_net_log,
-    const base::CommandLine::StringType& command_line_string,
-    const std::string& channel_string)
+NetLogFileWriter::NetLogFileWriter(ChromeNetLog* chrome_net_log)
     : state_(STATE_UNINITIALIZED),
       log_exists_(false),
       log_capture_mode_known_(false),
       log_capture_mode_(net::NetLogCaptureMode::Default()),
       chrome_net_log_(chrome_net_log),
-      command_line_string_(command_line_string),
-      channel_string_(channel_string),
       default_log_base_dir_getter_(base::Bind(&base::GetTempDir)),
       weak_ptr_factory_(this) {}
 
@@ -169,6 +164,8 @@ void NetLogFileWriter::Initialize(
 void NetLogFileWriter::StartNetLog(
     const base::FilePath& log_path,
     net::NetLogCaptureMode capture_mode,
+    const base::CommandLine::StringType& command_line_string,
+    const std::string& channel_string,
     const URLRequestContextGetterList& context_getters) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(file_task_runner_);
@@ -186,7 +183,7 @@ void NetLogFileWriter::StartNetLog(
   NotifyStateObserversAsync();
 
   std::unique_ptr<base::Value> constants(
-      ChromeNetLog::GetConstants(command_line_string_, channel_string_));
+      ChromeNetLog::GetConstants(command_line_string, channel_string));
   // Instantiate a FileNetLogObserver in unbounded mode.
   file_net_log_observer_ = net::FileNetLogObserver::CreateUnbounded(
       file_task_runner_, log_path_, std::move(constants));

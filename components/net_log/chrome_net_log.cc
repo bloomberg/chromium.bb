@@ -29,8 +29,7 @@ ChromeNetLog::ChromeNetLog(
     net::NetLogCaptureMode log_file_mode,
     const base::CommandLine::StringType& command_line_string,
     const std::string& channel_string)
-    : net_log_file_writer_(
-          new NetLogFileWriter(this, command_line_string, channel_string)) {
+    : net_log_file_writer_(new NetLogFileWriter(this)) {
   if (!log_file.empty()) {
     // Much like logging.h, bypass threading restrictions by using fopen
     // directly.  Have to write on a thread that's shutdown to handle events on
@@ -71,6 +70,12 @@ ChromeNetLog::~ChromeNetLog() {
     write_to_file_observer_->StopObserving(nullptr);
   if (trace_net_log_observer_)
     trace_net_log_observer_->StopWatchForTraceStart();
+}
+
+NetLogFileWriter* ChromeNetLog::net_log_file_writer() {
+  if (!net_log_file_writer_)
+    net_log_file_writer_ = base::WrapUnique(new NetLogFileWriter(this));
+  return net_log_file_writer_.get();
 }
 
 // static
