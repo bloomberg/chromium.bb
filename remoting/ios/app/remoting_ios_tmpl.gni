@@ -15,11 +15,17 @@ remoting_ios_app_source_dir = get_path_info("./", "abspath")
 #   output_name:
 #     string, the filename of the generated .app folder
 #
+#   info_plist_path:
+#     string, path of the Info.plist template
+#
 #   entitlements_path:
-#     string, ath of the .entitlements file
+#     string, path of the .entitlements file
 #
 #   remoting_source_set:
-#     The source set to be compiled
+#     (deprecated, use deps instead) The source set to be compiled
+#
+#   deps:
+#     string array, deps to be compiled. E.g. source sets, launch screen, icons.
 #
 #   bundle_id:
 #     (optional) string, the bundle_id. If this is not set, it will come from
@@ -27,7 +33,12 @@ remoting_ios_app_source_dir = get_path_info("./", "abspath")
 template("ios_remoting_app_tmpl") {
   info_plist_target_name = "${target_name}_tweak_info_plist"
   tweak_info_plist(info_plist_target_name) {
-    info_plist = "//remoting/ios/app/resources/Info.plist"
+    # TODO(yuweih): Remove the check once downstream is updated.
+    if (defined(invoker.info_plist_path)) {
+      info_plist = invoker.info_plist_path
+    } else {
+      info_plist = "//remoting/ios/app/resources/Info.plist"
+    }
     args = [ "--platform=ios" ]
   }
 
@@ -74,15 +85,21 @@ template("ios_remoting_app_tmpl") {
       "SystemConfiguration.framework",
     ]
 
-    deps = [
-      "//base",
-      "//remoting/ios/app/resources:assets",
-      "//remoting/ios/app/resources:launchscreen_assets",
-      "//remoting/ios/app/resources:remoting_icons",
-      "//remoting/ios/display",
-    ]
+    # TODO(yuweih): Remove the check and remoting_source_set once downstream
+    # uses deps.
+    if (defined(invoker.deps)) {
+      deps = invoker.deps
+    } else {
+      deps = [
+        "//base",
+        "//remoting/ios/app/resources:launchscreen_assets",
+        "//remoting/ios/app/resources:remoting_icons",
+      ]
+    }
 
-    deps += [ invoker.remoting_source_set ]
+    if (defined(invoker.remoting_source_set)) {
+      deps += [ invoker.remoting_source_set ]
+    }
 
     bundle_deps = [ ":$launchscreen_storyboard_target_name" ]
   }
