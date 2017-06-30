@@ -1832,6 +1832,33 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
+                       ServiceWorkerDatabaseDeletionUnsubscribes) {
+  std::string script_result;
+
+  ASSERT_NO_FATAL_FAILURE(SubscribeSuccessfully());
+
+  LoadTestPage();  // Reload to become controlled.
+  ASSERT_TRUE(RunScript("isControlled()", &script_result));
+  ASSERT_EQ("true - is controlled", script_result);
+
+  // Pretend as if the Service Worker database went away, and wait for callback
+  // to complete.
+  base::RunLoop run_loop;
+  push_service()->SetServiceWorkerDatabaseWipedCallbackForTesting(
+      run_loop.QuitClosure());
+  push_service()->DidDeleteServiceWorkerDatabase();
+  run_loop.Run();
+
+  // This should have unregistered the push subscription.
+  histogram_tester_.ExpectUniqueSample(
+      "PushMessaging.UnregistrationReason",
+      content::PUSH_UNREGISTRATION_REASON_SERVICE_WORKER_DATABASE_WIPED, 1);
+
+  // There should not be any subscriptions left.
+  EXPECT_EQ(PushMessagingAppIdentifier::GetCount(GetBrowser()->profile()), 0u);
+}
+
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
                        InvalidGetSubscriptionUnsubscribes) {
   std::string script_result;
 

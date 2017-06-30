@@ -161,4 +161,8 @@ void LayoutTestPushMessagingService::DidDeleteServiceWorkerRegistration(
   }
 }
 
+void LayoutTestPushMessagingService::DidDeleteServiceWorkerDatabase() {
+  subscribed_service_worker_registration_ = kInvalidServiceWorkerRegistrationId;
+}
+
 }  // namespace content
