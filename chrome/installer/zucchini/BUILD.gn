@@ -5,6 +5,20 @@
 import("//chrome/process_version_rc_template.gni")
 import("//testing/test.gni")
 
+static_library("zucchini_lib") {
+  sources = [
+    "buffer_view.h",
+    "disassembler.cc",
+    "disassembler.h",
+    "image_utils.h",
+    "typed_value.h",
+  ]
+
+  deps = [
+    "//base",
+  ]
+}
+
 executable("zucchini") {
   sources = [
     "zucchini_main.cc",
@@ -27,9 +41,11 @@ if (is_win) {
 test("zucchini_unittests") {
   sources = [
     "buffer_view_unittest.cc",
+    "typed_value_unittest.cc",
   ]
 
   deps = [
+    ":zucchini_lib",
     "//base",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
