@@ -499,15 +499,6 @@
 				 IS_GEMINILAKE(devid) || \
 				 IS_COFFEELAKE(devid))
 
-#define IS_9XX(dev)		(IS_GEN3(dev) || \
-				 IS_GEN4(dev) || \
-				 IS_GEN5(dev) || \
-				 IS_GEN6(dev) || \
-				 IS_GEN7(dev) || \
-				 IS_GEN8(dev) || \
-				 IS_GEN9(dev) || \
-				 IS_GEN10(dev))
-
 #define IS_CNL_Y(devid)		((devid) == PCI_CHIP_CANNONLAKE_Y_GT2_0 || \
 				 (devid) == PCI_CHIP_CANNONLAKE_Y_GT2_1 || \
 				 (devid) == PCI_CHIP_CANNONLAKE_Y_GT2_2 || \
@@ -524,5 +515,14 @@
 				 IS_CNL_Y(devid))
 
 #define IS_GEN10(devid)		(IS_CANNONLAKE(devid))
+
+#define IS_9XX(dev)		(IS_GEN3(dev) || \
+				 IS_GEN4(dev) || \
+				 IS_GEN5(dev) || \
+				 IS_GEN6(dev) || \
+				 IS_GEN7(dev) || \
+				 IS_GEN8(dev) || \
+				 IS_GEN9(dev) || \
+				 IS_GEN10(dev))
 
 #endif /* _INTEL_CHIPSET_H */
