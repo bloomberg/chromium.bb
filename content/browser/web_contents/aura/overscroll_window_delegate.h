@@ -52,6 +52,9 @@ class CONTENT_EXPORT OverscrollWindowDelegate
   // The current overscroll mode.
   OverscrollMode overscroll_mode_;
 
+  // The current overscroll source.
+  OverscrollSource overscroll_source_;
+
   // The latest delta_x scroll update.
   float delta_x_;
 

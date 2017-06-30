@@ -11,15 +11,12 @@
 
 namespace {
 
-float g_horiz_threshold_complete = 0.25f;
-float g_vert_threshold_complete = 0.20f;
+const float kHorizThresholdComplete = 0.25f;
+const float kVertThresholdComplete = 0.20f;
 
-float g_horiz_threshold_start_touchscreen = 50.f;
-float g_horiz_threshold_start_touchpad = 50.f;
-float g_vert_threshold_start = 0.f;
-
-float g_horiz_resist_after = 30.f;
-float g_vert_resist_after = 30.f;
+const float kHorizThresholdStartTouchscreen = 50.f;
+const float kHorizThresholdStartTouchpad = 50.f;
+const float kVertThresholdStart = 0.f;
 
 float GetHorizontalStartThresholdMultiplier() {
   base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
@@ -44,34 +41,27 @@ namespace content {
 float GetOverscrollConfig(OverscrollConfig config) {
   switch (config) {
     case OVERSCROLL_CONFIG_HORIZ_THRESHOLD_COMPLETE:
-      return g_horiz_threshold_complete;
+      return kHorizThresholdComplete;
 
     case OVERSCROLL_CONFIG_VERT_THRESHOLD_COMPLETE:
-      return g_vert_threshold_complete;
+      return kVertThresholdComplete;
 
     case OVERSCROLL_CONFIG_HORIZ_THRESHOLD_START_TOUCHSCREEN:
       static const float horiz_threshold_start_touchscreen =
           GetHorizontalStartThresholdMultiplier() *
-          g_horiz_threshold_start_touchscreen;
+          kHorizThresholdStartTouchscreen;
       return horiz_threshold_start_touchscreen;
 
     case OVERSCROLL_CONFIG_HORIZ_THRESHOLD_START_TOUCHPAD:
       static const float horiz_threshold_start_touchpad =
           GetHorizontalStartThresholdMultiplier() *
-          g_horiz_threshold_start_touchpad;
+          kHorizThresholdStartTouchpad;
       return horiz_threshold_start_touchpad;
 
     case OVERSCROLL_CONFIG_VERT_THRESHOLD_START:
-      return g_vert_threshold_start;
-
-    case OVERSCROLL_CONFIG_HORIZ_RESIST_AFTER:
-      return g_horiz_resist_after;
-
-    case OVERSCROLL_CONFIG_VERT_RESIST_AFTER:
-      return g_vert_resist_after;
+      return kVertThresholdStart;
 
     case OVERSCROLL_CONFIG_NONE:
-    case OVERSCROLL_CONFIG_COUNT:
       NOTREACHED();
   }
 

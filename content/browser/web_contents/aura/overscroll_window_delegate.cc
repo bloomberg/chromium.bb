@@ -40,6 +40,7 @@ void OverscrollWindowDelegate::StartOverscroll(OverscrollSource source) {
     overscroll_mode_ = OVERSCROLL_EAST;
   else
     overscroll_mode_ = OVERSCROLL_WEST;
+  overscroll_source_ = source;
   delegate_->OnOverscrollModeChange(old_mode, overscroll_mode_, source);
 }
 
@@ -49,13 +50,16 @@ void OverscrollWindowDelegate::ResetOverscroll() {
   delegate_->OnOverscrollModeChange(overscroll_mode_, OVERSCROLL_NONE,
                                     OverscrollSource::NONE);
   overscroll_mode_ = OVERSCROLL_NONE;
+  overscroll_source_ = OverscrollSource::NONE;
   delta_x_ = 0;
 }
 
 void OverscrollWindowDelegate::CompleteOrResetOverscroll() {
   if (overscroll_mode_ == OVERSCROLL_NONE)
     return;
-  int width = delegate_->GetVisibleBounds().width();
+  int width = overscroll_source_ == OverscrollSource::TOUCHPAD
+                  ? delegate_->GetDisplaySize().width()
+                  : delegate_->GetVisibleSize().width();
   float ratio = (fabs(delta_x_)) / width;
   if (ratio < complete_threshold_ratio_) {
     ResetOverscroll();

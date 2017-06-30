@@ -120,23 +120,26 @@ class OverscrollController {
   bool ShouldProcessEvent(const blink::WebInputEvent& event);
 
   // The current state of overscroll gesture.
-  OverscrollMode overscroll_mode_;
+  OverscrollMode overscroll_mode_ = OVERSCROLL_NONE;
+
+  // Source of the current overscroll gesture.
+  OverscrollSource overscroll_source_ = OverscrollSource::NONE;
 
   // Used to keep track of the scrolling state.
   // If scrolling starts, and some scroll events are consumed at the beginning
   // of the scroll (i.e. some content on the web-page was scrolled), then do not
   // process any of the subsequent scroll events for generating overscroll
   // gestures.
-  ScrollState scroll_state_;
+  ScrollState scroll_state_ = STATE_UNKNOWN;
 
   // The amount of overscroll in progress. These values are invalid when
   // |overscroll_mode_| is set to OVERSCROLL_NONE.
-  float overscroll_delta_x_;
-  float overscroll_delta_y_;
+  float overscroll_delta_x_ = 0.f;
+  float overscroll_delta_y_ = 0.f;
 
   // The delegate that receives the overscroll updates. The delegate is not
   // owned by this controller.
-  OverscrollControllerDelegate* delegate_;
+  OverscrollControllerDelegate* delegate_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(OverscrollController);
 };
