@@ -45,7 +45,7 @@
 #include <cmath>
 #include <cstdlib>
 
-#if CPU(X86_64)
+#if defined(ARCH_CPU_X86_64)
 #include <emmintrin.h>
 #endif
 
@@ -150,7 +150,7 @@ static double Determinant4x4(const TransformationMatrix::Matrix4& m) {
          d1 * Determinant3x3(a2, a3, a4, b2, b3, b4, c2, c3, c4);
 }
 
-#if !CPU(ARM64) && !HAVE(MIPS_MSA_INTRINSICS)
+#if !defined(ARCH_CPU_ARM64) && !HAVE(MIPS_MSA_INTRINSICS)
 // adjoint( original_matrix, inverse_matrix )
 //
 //   calculate the adjoint of a 4x4 matrix
@@ -225,7 +225,7 @@ static bool Inverse(const TransformationMatrix::Matrix4& matrix,
   if (fabs(det) < kSmallNumber)
     return false;
 
-#if CPU(ARM64)
+#if defined(ARCH_CPU_ARM64)
   double rdet = 1 / det;
   const double* mat = &(matrix[0][0]);
   double* pr = &(result[0][0]);
@@ -1280,7 +1280,7 @@ TransformationMatrix& TransformationMatrix::Zoom(double zoom_factor) {
 // blink_platform_unittests, therefore the ARM64 branch is not tested by CQ.
 TransformationMatrix& TransformationMatrix::Multiply(
     const TransformationMatrix& mat) {
-#if CPU(ARM64)
+#if defined(ARCH_CPU_ARM64)
   double* left_matrix = &(matrix_[0][0]);
   const double* right_matrix = &(mat.matrix_[0][0]);
   asm volatile(

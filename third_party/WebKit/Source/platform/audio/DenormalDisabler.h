@@ -27,8 +27,8 @@
 #define DenormalDisabler_h
 
 #include <float.h>
+#include "build/build_config.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/CPU.h"
 #include "platform/wtf/MathExtras.h"
 
 namespace blink {
@@ -42,12 +42,12 @@ namespace blink {
 #define HAVE_DENORMAL 1
 #endif
 
-#if COMPILER(GCC) && (CPU(X86) || CPU(X86_64))
+#if COMPILER(GCC) && defined(ARCH_CPU_X86_FAMILY)
 // X86 chips can flush denormals
 #define HAVE_DENORMAL 1
 #endif
 
-#if CPU(ARM) || CPU(ARM64)
+#if defined(ARCH_CPU_ARM_FAMILY)
 #define HAVE_DENORMAL 1
 #endif
 
@@ -66,7 +66,7 @@ class DenormalDisabler {
  private:
   unsigned saved_csr_;
 
-#if COMPILER(GCC) && (CPU(X86) || CPU(X86_64))
+#if COMPILER(GCC) && defined(ARCH_CPU_X86_FAMILY)
   inline void DisableDenormals() {
     saved_csr_ = GetCSR();
     SetCSR(saved_csr_ | 0x8040);
@@ -99,7 +99,7 @@ class DenormalDisabler {
     unsigned unused;
     _controlfp_s(&unused, saved_csr_, _MCW_DN);
   }
-#elif CPU(ARM) || CPU(ARM64)
+#elif defined(ARCH_CPU_ARM_FAMILY)
   inline void DisableDenormals() {
     saved_csr_ = GetStatusWord();
     // Bit 24 is the flush-to-zero mode control bit. Setting it to 1 flushes
@@ -111,7 +111,7 @@ class DenormalDisabler {
 
   inline int GetStatusWord() {
     int result;
-#if CPU(ARM64)
+#if defined(ARCH_CPU_ARM64)
     asm volatile("mrs %x[result], FPCR" : [result] "=r"(result));
 #else
     asm volatile("vmrs %[result], FPSCR" : [result] "=r"(result));
@@ -120,7 +120,7 @@ class DenormalDisabler {
   }
 
   inline void SetStatusWord(int a) {
-#if CPU(ARM64)
+#if defined(ARCH_CPU_ARM64)
     asm volatile("msr FPCR, %x[src]" : : [src] "r"(a));
 #else
     asm volatile("vmsr FPSCR, %[src]" : : [src] "r"(a));

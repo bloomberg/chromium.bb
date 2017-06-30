@@ -29,7 +29,7 @@
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/text/Unicode.h"
 
-#if OS(MACOSX) && (CPU(X86) || CPU(X86_64))
+#if defined(OS_MACOSX) && defined(ARCH_CPU_X86_FAMILY)
 #include <emmintrin.h>
 #endif
 
@@ -111,7 +111,7 @@ inline bool CharactersAreAllASCII(const CharacterType* characters,
 inline void CopyLCharsFromUCharSource(LChar* destination,
                                       const UChar* source,
                                       size_t length) {
-#if OS(MACOSX) && (CPU(X86) || CPU(X86_64))
+#if defined(OS_MACOSX) && defined(ARCH_CPU_X86_FAMILY)
   const uintptr_t kMemoryAccessSize =
       16;  // Memory accesses on 16 byte (128 bit) alignment
   const uintptr_t kMemoryAccessMask = kMemoryAccessSize - 1;

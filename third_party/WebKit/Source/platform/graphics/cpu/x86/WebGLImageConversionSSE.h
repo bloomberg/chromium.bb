@@ -5,8 +5,9 @@
 #ifndef WebGLImageConversionSSE_h
 #define WebGLImageConversionSSE_h
 
-#if CPU(X86) || CPU(X86_64)
+#include "build/build_config.h"
 
+#if defined(ARCH_CPU_X86_FAMILY)
 #include <emmintrin.h>
 
 namespace blink {
@@ -194,6 +195,6 @@ ALWAYS_INLINE void PackOneRowOfRGBA8LittleToRGBA8(const uint8_t* source,
 }  // namespace SIMD
 }  // namespace blink
 
-#endif  // CPU(X86) || CPU(X86_64)
+#endif  // ARCH_CPU_X86_FAMILY
 
 #endif  // WebGLImageConversionSSE_h
