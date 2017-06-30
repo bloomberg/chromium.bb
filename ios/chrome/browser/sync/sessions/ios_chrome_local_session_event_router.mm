@@ -111,7 +111,7 @@ void IOSChromeLocalSessionEventRouter::OnWebStateChange(
 void IOSChromeLocalSessionEventRouter::OnFaviconsChanged(
     const std::set<GURL>& page_urls,
     const GURL& icon_url) {
-  if (handler_)
+  if (handler_ && !page_urls.empty())
     handler_->OnFaviconsChanged(page_urls, icon_url);
 }
 
