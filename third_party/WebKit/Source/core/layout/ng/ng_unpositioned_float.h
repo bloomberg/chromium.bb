@@ -24,14 +24,14 @@ struct CORE_EXPORT NGUnpositionedFloat
  public:
   static RefPtr<NGUnpositionedFloat> Create(NGLogicalSize available_size,
                                             NGLogicalSize percentage_size,
-                                            NGLogicalOffset origin_offset,
-                                            NGLogicalOffset from_offset,
+                                            LayoutUnit origin_bfc_inline_offset,
+                                            LayoutUnit bfc_inline_offset,
                                             NGBoxStrut margins,
                                             NGBlockNode node,
                                             NGBlockBreakToken* token) {
-    return AdoptRef(new NGUnpositionedFloat(margins, available_size,
-                                            percentage_size, origin_offset,
-                                            from_offset, node, token));
+    return AdoptRef(new NGUnpositionedFloat(
+        margins, available_size, percentage_size, origin_bfc_inline_offset,
+        bfc_inline_offset, node, token));
   }
 
   NGBlockNode node;
@@ -42,42 +42,13 @@ struct CORE_EXPORT NGUnpositionedFloat
   NGLogicalSize available_size;
   NGLogicalSize percentage_size;
 
-  // To correctly position a float we need 2 offsets:
-  // - origin_offset which represents the layout point for this float.
-  // - from_offset which represents the point from where we need to calculate
-  //   the relative logical offset for this float.
-  // Layout details:
-  // At the time when this float is created only *inline* offsets are known.
-  // Block offset will be set when we are about to place this float, i.e. when
-  // we resolved MarginStrut, adjusted the offset to clearance line etc.
-  NGLogicalOffset origin_offset;
-  NGLogicalOffset from_offset;
+  // This is the BFC inline-offset for where we begin searching for layout
+  // opportunities for this float.
+  LayoutUnit origin_bfc_inline_offset;
 
-  // To correctly **paint** a float we need to know the BFC offset of the
-  // container to which we are attaching this float. It's used to calculate
-  // {@code paint_offset}.
-  // In most situations {@code paint_offset} equals to float's logical
-  // offset except the cases where a float needs to be re-attached to a non-zero
-  // height parent.
-  //
-  // Example:
-  //   <body>
-  //     <p style="height: 60px">Example</p>
-  //     <div id="zero-height-div"><float></div>
-  //
-  // Here the float's logical offset is 0 relative to its #zero-height-div
-  // parent. Because of the "zero height" div this float is re-attached to the
-  // 1st non-empty parent => body. To paint this float correctly we provide the
-  // modified {@code paint_offset} which is relative to the float's new
-  // parent.
-  // I.e. for our example {@code paint_offset.top} ==
-  //                      #zero-height-div's BFC offset
-  //                      - body's BFC offset + float's logical offset
-  //
-  // For code safety reasons {@code parent_bfc_block_offset} is Optional here
-  // because the block's offset can be only determined before the actual float's
-  // placement event.
-  WTF::Optional<LayoutUnit> parent_bfc_block_offset;
+  // This is the BFC inline-offset for the float's parent. This is used for
+  // calculating the offset between the float and its parent.
+  LayoutUnit bfc_inline_offset;
 
   // The margins are relative to the writing mode of the block formatting
   // context. They are stored for convinence and could be recomputed with other
@@ -96,16 +67,16 @@ struct CORE_EXPORT NGUnpositionedFloat
   NGUnpositionedFloat(const NGBoxStrut& margins,
                       const NGLogicalSize& available_size,
                       const NGLogicalSize& percentage_size,
-                      const NGLogicalOffset& origin_offset,
-                      const NGLogicalOffset& from_offset,
+                      LayoutUnit origin_bfc_inline_offset,
+                      LayoutUnit bfc_inline_offset,
                       NGBlockNode node,
                       NGBlockBreakToken* token)
       : node(node),
         token(token),
         available_size(available_size),
         percentage_size(percentage_size),
-        origin_offset(origin_offset),
-        from_offset(from_offset),
+        origin_bfc_inline_offset(origin_bfc_inline_offset),
+        bfc_inline_offset(bfc_inline_offset),
         margins(margins) {}
 };
 

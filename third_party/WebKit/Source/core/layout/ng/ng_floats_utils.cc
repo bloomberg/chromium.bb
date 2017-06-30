@@ -35,11 +35,12 @@ NGLogicalOffset AdjustToTopEdgeAlignmentRule(const NGConstraintSpace& space,
 }
 
 NGLayoutOpportunity FindLayoutOpportunityForFloat(
+    const NGLogicalOffset& origin_offset,
     const NGConstraintSpace& space,
     const NGUnpositionedFloat& unpositioned_float,
     LayoutUnit inline_size) {
   NGLogicalOffset adjusted_origin_point =
-      AdjustToTopEdgeAlignmentRule(space, unpositioned_float.origin_offset);
+      AdjustToTopEdgeAlignmentRule(space, origin_offset);
   WTF::Optional<LayoutUnit> clearance_offset =
       GetClearanceOffset(space.Exclusions(), unpositioned_float.ClearType());
 
@@ -55,6 +56,7 @@ NGLayoutOpportunity FindLayoutOpportunityForFloat(
 NGLogicalOffset CalculateLogicalOffsetForOpportunity(
     const NGLayoutOpportunity& opportunity,
     const LayoutUnit float_offset,
+    const LayoutUnit parent_bfc_block_offset,
     const NGUnpositionedFloat* unpositioned_float) {
   DCHECK(unpositioned_float);
   auto margins = unpositioned_float->margins;
@@ -67,7 +69,8 @@ NGLogicalOffset CalculateLogicalOffsetForOpportunity(
   // Adjust to float: right offset if needed.
   result.inline_offset += float_offset;
 
-  result -= unpositioned_float->from_offset;
+  result -= {unpositioned_float->bfc_inline_offset, parent_bfc_block_offset};
+
   return result;
 }
 
@@ -94,17 +97,16 @@ NGLogicalOffset CalculateFloatingObjectPaintOffset(
     const NGConstraintSpace& new_parent_space,
     const NGLogicalOffset& float_logical_offset,
     const NGUnpositionedFloat& unpositioned_float) {
-  LayoutUnit inline_offset = unpositioned_float.from_offset.inline_offset -
+  LayoutUnit inline_offset = unpositioned_float.bfc_inline_offset -
                              new_parent_space.BfcOffset().inline_offset +
                              float_logical_offset.inline_offset;
-  DCHECK(unpositioned_float.parent_bfc_block_offset);
-  LayoutUnit block_offset = unpositioned_float.from_offset.block_offset -
-                            unpositioned_float.parent_bfc_block_offset.value() +
-                            float_logical_offset.block_offset;
+  LayoutUnit block_offset = float_logical_offset.block_offset;
   return {inline_offset, block_offset};
 }
 
+// TODO(ikilpatrick): origin_block_offset looks wrong for fragmentation here.
 WTF::Optional<LayoutUnit> CalculateFragmentationOffset(
+    const LayoutUnit origin_block_offset,
     const NGUnpositionedFloat& unpositioned_float,
     const NGConstraintSpace& parent_space) {
   const ComputedStyle& style = unpositioned_float.node.Style();
@@ -112,8 +114,7 @@ WTF::Optional<LayoutUnit> CalculateFragmentationOffset(
          parent_space.WritingMode());
 
   if (parent_space.HasBlockFragmentation()) {
-    return parent_space.FragmentainerSpaceAvailable() -
-           unpositioned_float.origin_offset.block_offset;
+    return parent_space.FragmentainerSpaceAvailable() - origin_block_offset;
   }
 
   return WTF::nullopt;
@@ -198,15 +199,20 @@ LayoutUnit ComputeInlineSizeForUnpositionedFloat(
       .InlineSize();
 }
 
-NGPositionedFloat PositionFloat(NGUnpositionedFloat* unpositioned_float,
+NGPositionedFloat PositionFloat(LayoutUnit origin_block_offset,
+                                LayoutUnit parent_bfc_block_offset,
+                                NGUnpositionedFloat* unpositioned_float,
                                 NGConstraintSpace* new_parent_space) {
   DCHECK(unpositioned_float);
   LayoutUnit inline_size = ComputeInlineSizeForUnpositionedFloat(
       new_parent_space, unpositioned_float);
 
+  NGLogicalOffset origin_offset = {unpositioned_float->origin_bfc_inline_offset,
+                                   origin_block_offset};
+
   // Find a layout opportunity that will fit our float.
   NGLayoutOpportunity opportunity = FindLayoutOpportunityForFloat(
-      *new_parent_space, *unpositioned_float, inline_size);
+      origin_offset, *new_parent_space, *unpositioned_float, inline_size);
 
 #if DCHECK_IS_ON()
   bool is_same_writing_mode =
@@ -228,7 +234,8 @@ NGPositionedFloat PositionFloat(NGUnpositionedFloat* unpositioned_float,
     DCHECK(is_same_writing_mode);
 #endif
     WTF::Optional<LayoutUnit> fragmentation_offset =
-        CalculateFragmentationOffset(*unpositioned_float, *new_parent_space);
+        CalculateFragmentationOffset(origin_block_offset, *unpositioned_float,
+                                     *new_parent_space);
 
     RefPtr<NGConstraintSpace> space = CreateConstraintSpaceForFloat(
         *unpositioned_float, new_parent_space, fragmentation_offset);
@@ -268,7 +275,7 @@ NGPositionedFloat PositionFloat(NGUnpositionedFloat* unpositioned_float,
   new_parent_space->AddExclusion(exclusion);
 
   NGLogicalOffset logical_offset = CalculateLogicalOffsetForOpportunity(
-      opportunity, float_offset, unpositioned_float);
+      opportunity, float_offset, parent_bfc_block_offset, unpositioned_float);
   NGLogicalOffset paint_offset = CalculateFloatingObjectPaintOffset(
       *new_parent_space, logical_offset, *unpositioned_float);
 
@@ -278,18 +285,16 @@ NGPositionedFloat PositionFloat(NGUnpositionedFloat* unpositioned_float,
 
 const Vector<NGPositionedFloat> PositionFloats(
     LayoutUnit origin_block_offset,
-    LayoutUnit from_block_offset,
-    LayoutUnit parent_bfc_offset,
+    LayoutUnit parent_bfc_block_offset,
     const Vector<RefPtr<NGUnpositionedFloat>>& unpositioned_floats,
     NGConstraintSpace* space) {
   Vector<NGPositionedFloat> positioned_floats;
   positioned_floats.ReserveCapacity(unpositioned_floats.size());
 
   for (auto& unpositioned_float : unpositioned_floats) {
-    unpositioned_float->origin_offset.block_offset = origin_block_offset;
-    unpositioned_float->from_offset.block_offset = from_block_offset;
-    unpositioned_float->parent_bfc_block_offset = parent_bfc_offset;
-    positioned_floats.push_back(PositionFloat(unpositioned_float.Get(), space));
+    positioned_floats.push_back(PositionFloat(origin_block_offset,
+                                              parent_bfc_block_offset,
+                                              unpositioned_float.Get(), space));
   }
 
   return positioned_floats;

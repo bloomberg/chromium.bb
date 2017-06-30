@@ -23,13 +23,15 @@ ComputeInlineSizeForUnpositionedFloat(NGConstraintSpace* parent_space,
 // Positions {@code unpositioned_float} into {@code new_parent_space}.
 // @returns A positioned float.
 CORE_EXPORT NGPositionedFloat
-PositionFloat(NGUnpositionedFloat*, NGConstraintSpace* new_parent_space);
+PositionFloat(LayoutUnit origin_block_offset,
+              LayoutUnit parent_bfc_block_offset,
+              NGUnpositionedFloat*,
+              NGConstraintSpace* new_parent_space);
 
 // Positions the list of {@code unpositioned_floats}. Adds them as exclusions to
 // {@code space}.
 CORE_EXPORT const Vector<NGPositionedFloat> PositionFloats(
     LayoutUnit origin_block_offset,
-    LayoutUnit from_block_offset,
     LayoutUnit container_block_offset,
     const Vector<RefPtr<NGUnpositionedFloat>>& unpositioned_floats,
     NGConstraintSpace* space);
