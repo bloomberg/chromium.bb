@@ -58,8 +58,6 @@ class CORE_EXPORT ScriptSourceCode final {
   ~ScriptSourceCode();
   DECLARE_TRACE();
 
-  bool IsEmpty() const { return source_.IsEmpty(); }
-
   // The null value represents a missing script, created by the nullary
   // constructor, and differs from the empty script.
   bool IsNull() const { return source_.IsNull(); }

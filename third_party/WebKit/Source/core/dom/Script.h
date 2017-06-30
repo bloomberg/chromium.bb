@@ -27,9 +27,6 @@ class CORE_EXPORT Script : public GarbageCollectedFinalized<Script> {
 
   virtual ScriptType GetScriptType() const = 0;
 
-  // Used to skip execution of the script if it is empty.
-  virtual bool IsEmpty() const = 0;
-
   // Returns false if the script should not be run due to MIME type check.
   virtual bool CheckMIMETypeBeforeRunScript(Document* context_document,
                                             const SecurityOrigin*) const = 0;

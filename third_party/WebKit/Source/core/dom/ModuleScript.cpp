@@ -227,10 +227,6 @@ DEFINE_TRACE_WRAPPERS(ModuleScript) {
   visitor->TraceWrappers(preinstantiation_error_);
 }
 
-bool ModuleScript::IsEmpty() const {
-  return false;
-}
-
 bool ModuleScript::CheckMIMETypeBeforeRunScript(Document* context_document,
                                                 const SecurityOrigin*) const {
   // We don't check MIME type here because we check the MIME type in
