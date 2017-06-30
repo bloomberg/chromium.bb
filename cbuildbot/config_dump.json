@@ -15155,6 +15155,7 @@
             "lumpy-release",
             "mccloud-release",
             "monroe-release",
+            "nefario-release",
             "newbie-release",
             "ninja-release",
             "novato-release",
@@ -15882,6 +15883,81 @@
         "overlays": "both",
         "useflags": [
             "chrome_internal"
+        ]
+    },
+    "nefario-chromium-pfq": {
+        "_template": "chromium_pfq",
+        "boards": [
+            "nefario"
+        ],
+        "important": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "nefario-compile-only-pre-cq": {
+        "_template": "compile_only_pre_cq",
+        "boards": [
+            "nefario"
+        ]
+    },
+    "nefario-full": {
+        "_template": "full",
+        "boards": [
+            "nefario"
+        ],
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "nefario-no-vmtest-pre-cq": {
+        "_template": "no_vmtest_pre_cq",
+        "boards": [
+            "nefario"
+        ]
+    },
+    "nefario-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "nefario"
+        ],
+        "important": false,
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "nefario-pre-cq": {
+        "_template": "pre_cq",
+        "boards": [
+            "nefario"
+        ],
+        "vm_tests": []
+    },
+    "nefario-release": {
+        "_template": "release",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "nefario"
+        ],
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "nefario-tot-chromium-pfq-informational": {
+        "_template": "chromium_pfq_informational",
+        "boards": [
+            "nefario"
+        ],
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "nefario-unittest-stress": {
+        "_template": "unittest_stress",
+        "boards": [
+            "nefario"
         ]
     },
     "newbie-chrome-pfq": {
@@ -20407,7 +20483,7 @@
         ],
         "models": [
             "pyro",
-            "nasher",
+            "reef",
             "sand",
             "snappy"
         ],
