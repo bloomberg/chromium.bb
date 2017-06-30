@@ -72,13 +72,22 @@ TEST(ChromePaths, DefaultUserDataDir) {
   base::FilePath home_dir;
   PathService::Get(base::DIR_HOME, &home_dir);
 
+  std::string expected_branding;
+#if defined(GOOGLE_CHROME_BUILD)
+  // TODO(skobes): Test channel suffixes with $CHROME_VERSION_EXTRA.
+  expected_branding = "google-chrome";
+#else
+  expected_branding = "chromium";
+#endif
+
   base::FilePath user_data_dir;
   GetDefaultUserDataDirectory(&user_data_dir);
-  EXPECT_EQ(home_dir.Append(".config/chromium").value(), user_data_dir.value());
+  EXPECT_EQ(home_dir.Append(".config/" + expected_branding).value(),
+            user_data_dir.value());
 
   env->SetVar("CHROME_CONFIG_HOME", "/foo/bar");
   GetDefaultUserDataDirectory(&user_data_dir);
-  EXPECT_EQ("/foo/bar/chromium", user_data_dir.value());
+  EXPECT_EQ("/foo/bar/" + expected_branding, user_data_dir.value());
 
   // TODO(skobes): It would be nice to test $CHROME_USER_DATA_DIR here too, but
   // it's handled by ChromeMainDelegate instead of GetDefaultUserDataDirectory.
