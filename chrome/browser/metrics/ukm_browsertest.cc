@@ -62,7 +62,7 @@ class UkmBrowserTest : public SyncTest {
 };
 
 // Make sure that UKM is disabled while an incognito window is open.
-IN_PROC_BROWSER_TEST_F(UkmBrowserTest, IncognitoCheck) {
+IN_PROC_BROWSER_TEST_F(UkmBrowserTest, DISABLED_IncognitoCheck) {
   // Enable metrics recording and update MetricsServicesManager.
   bool metrics_enabled = true;
   ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(
