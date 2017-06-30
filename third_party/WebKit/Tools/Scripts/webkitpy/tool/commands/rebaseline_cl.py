@@ -8,7 +8,7 @@ import json
 import logging
 import optparse
 
-from webkitpy.common.net.git_cl import GitCL
+from webkitpy.common.net.git_cl import GitCL, TryJobStatus
 from webkitpy.common.path_finder import PathFinder
 from webkitpy.tool.commands.rebaseline import AbstractParallelRebaselineCommand
 from webkitpy.tool.commands.rebaseline import TestBaselineSet
@@ -183,12 +183,20 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
             jobs: A dict mapping Build objects to TryJobStatus objects.
 
         Returns:
-            A dict mapping Build to LayoutTestResults, or None if any results
-            were not available.
+            A dict mapping Build to LayoutTestResults for all completed jobs.
         """
         buildbot = self._tool.buildbot
         results = {}
-        for build, _ in jobs.iteritems():
+        for build, status in jobs.iteritems():
+            if status == TryJobStatus('COMPLETED', 'SUCCESS'):
+                # Builds with passing try jobs are mapped to None, to indicate
+                # that there are no baselines to download.
+                results[build] = None
+                continue
+            if status != TryJobStatus('COMPLETED', 'FAILURE'):
+                # Only completed failed builds will contain actual failed
+                # layout tests to download baselines for.
+                continue
             results_url = buildbot.results_url(build.builder_name, build.build_number)
             layout_test_results = buildbot.fetch_results(build)
             if layout_test_results is None:
@@ -246,10 +254,22 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
             finder.path_from_chromium_base()) + '/'
 
     def _tests_to_rebaseline(self, build, layout_test_results):
-        """Fetches a list of tests that should be rebaselined for some build."""
+        """Fetches a list of tests that should be rebaselined for some build.
+
+        Args:
+            build: A Build instance.
+            layout_test_results: A LayoutTestResults instance or None.
+
+        Returns:
+            A sorted list of tests to rebaseline for this build.
+        """
+        if layout_test_results is None:
+            return []
+
         unexpected_results = layout_test_results.didnt_run_as_expected_results()
-        tests = sorted(r.test_name() for r in unexpected_results
-                       if r.is_missing_baseline() or r.has_mismatch_result())
+        tests = sorted(
+            r.test_name() for r in unexpected_results
+            if r.is_missing_baseline() or r.has_mismatch_result())
 
         new_failures = self._fetch_tests_with_new_failures(build)
         if new_failures is None:
