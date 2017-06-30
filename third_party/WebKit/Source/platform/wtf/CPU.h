@@ -37,8 +37,6 @@
 
 /* ==== CPU() - the target CPU architecture ==== */
 
-/* This defines CPU(BIG_ENDIAN) or nothing, as appropriate. */
-
 /* CPU(X86) - i386 / x86 32-bit */
 #if defined(__i386__) || defined(i386) || defined(_M_IX86) || \
     defined(_X86_) || defined(__THW_INTEL)
@@ -54,13 +52,9 @@
 #if defined(arm) || defined(__arm__) || defined(ARM) || defined(_ARM_)
 #define WTF_CPU_ARM 1
 
-#if defined(__ARMEB__)
-#define WTF_CPU_BIG_ENDIAN 1
-
-#elif !defined(__ARM_EABI__) && !defined(__EABI__) && !defined(__VFP_FP__) && \
-    !defined(_WIN32_WCE) && !defined(ANDROID)
+#if !defined(__ARMEB__) && !defined(__ARM_EABI__) && !defined(__EABI__) && \
+    !defined(__VFP_FP__) && !defined(_WIN32_WCE) && !defined(ANDROID)
 #error Chromium does not support middle endian architecture
-
 #endif
 
 #if defined(__ARM_NEON__) && !defined(WTF_CPU_ARM_NEON)
