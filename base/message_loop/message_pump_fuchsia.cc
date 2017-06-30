@@ -169,12 +169,13 @@ void MessagePumpFuchsia::Run(Delegate* delegate) {
         controller->watcher_->OnFileCanWriteWithoutBlocking(controller->fd_);
         if (!controller_was_destroyed)
           controller->watcher_->OnFileCanReadWithoutBlocking(controller->fd_);
-        if (!controller_was_destroyed)
-          controller->was_destroyed_ = nullptr;
       } else if (events & MXIO_EVT_WRITABLE) {
         controller->watcher_->OnFileCanWriteWithoutBlocking(controller->fd_);
       } else if (events & MXIO_EVT_READABLE) {
         controller->watcher_->OnFileCanReadWithoutBlocking(controller->fd_);
+      }
+      if (!controller_was_destroyed) {
+        controller->was_destroyed_ = nullptr;
       }
       if (!controller_was_destroyed && controller->persistent_) {
         controller->WaitBegin();
