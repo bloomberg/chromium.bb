@@ -33,7 +33,9 @@ class AwPrintingMessageFilter : public content::BrowserMessageFilter {
   void OnAllocateTempFileForPrinting(int render_frame_id,
                                      base::FileDescriptor* temp_file_fd,
                                      int* sequence_number);
-  void OnTempFileForPrintingWritten(int render_frame_id, int sequence_number);
+  void OnTempFileForPrintingWritten(int render_frame_id,
+                                    int sequence_number,
+                                    int page_count);
 
   const int render_process_id_;
 

@@ -68,7 +68,7 @@ void AwPdfExporter::ExportToPdf(JNIEnv* env,
       base::Bind(&AwPdfExporter::DidExportPdf, base::Unretained(this)));
 
   if (!print_manager->PrintNow())
-    DidExportPdf(fd, false);
+    DidExportPdf(fd, 0);
 }
 
 namespace {
@@ -113,12 +113,12 @@ void AwPdfExporter::InitPdfSettings(JNIEnv* env,
   settings.set_should_print_backgrounds(true);
 }
 
-void AwPdfExporter::DidExportPdf(int fd, bool success) {
+void AwPdfExporter::DidExportPdf(int fd, int page_count) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return;
-  Java_AwPdfExporter_didExportPdf(env, obj, success);
+  Java_AwPdfExporter_didExportPdf(env, obj, page_count);
 }
 
 bool RegisterAwPdfExporter(JNIEnv* env) {

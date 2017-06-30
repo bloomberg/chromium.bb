@@ -76,8 +76,8 @@ bool PrintWebViewHelper::PrintPagesNative(blink::WebLocalFrame* frame,
     return false;
 
   // Tell the browser we've finished writing the file.
-  Send(new PrintHostMsg_TempFileForPrintingWritten(routing_id(),
-                                                   sequence_number));
+  Send(new PrintHostMsg_TempFileForPrintingWritten(
+      routing_id(), sequence_number, printed_pages.size()));
   return true;
 #else
   PrintHostMsg_DidPrintPage_Params printed_page_params;

@@ -60,7 +60,9 @@ class PrintingMessageFilter : public content::BrowserMessageFilter {
   void OnAllocateTempFileForPrinting(int render_frame_id,
                                      base::FileDescriptor* temp_file_fd,
                                      int* sequence_number);
-  void OnTempFileForPrintingWritten(int render_frame_id, int sequence_number);
+  void OnTempFileForPrintingWritten(int render_frame_id,
+                                    int sequence_number,
+                                    int page_count);
 
   // Updates the file descriptor for the PrintViewManagerBasic of a given
   // |render_frame_id|.
