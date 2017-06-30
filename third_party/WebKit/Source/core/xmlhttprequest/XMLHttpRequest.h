@@ -206,7 +206,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
 
   void EndLoading();
 
-  // Returns the MIME type part of m_mimeTypeOverride if present and
+  // Returns the MIME type part of mime_type_override_ if present and
   // successfully parsed, or returns one of the "Content-Type" header value
   // of the received response.
   //
@@ -218,6 +218,9 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   // The same as finalResponseMIMEType() but fallbacks to "text/xml" if
   // finalResponseMIMEType() returns an empty string.
   AtomicString FinalResponseMIMETypeWithFallback() const;
+  // Returns the "final charset" defined in
+  // https://xhr.spec.whatwg.org/#final-charset.
+  String FinalResponseCharset() const;
   bool ResponseIsXML() const;
   bool ResponseIsHTML() const;
 
@@ -300,7 +303,6 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   State state_;
 
   ResourceResponse response_;
-  String final_response_charset_;
 
   std::unique_ptr<TextResourceDecoder> decoder_;
 

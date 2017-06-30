@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL XMLHttpRequest: overrideMimeType() in HEADERS RECEIVED state, enforcing Shift-JIS encoding assert_equals: overrideMimeType() in HEADERS RECEIVED state set encoding expected "テスト" but got "\ufffde\ufffdX\ufffdg"
-Harness: the test ran to completion.
-
