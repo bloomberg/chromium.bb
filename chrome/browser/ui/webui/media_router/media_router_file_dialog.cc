@@ -7,10 +7,12 @@
 #include "base/bind.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/task_scheduler/post_task.h"
+#include "chrome/browser/media/router/media_router_metrics.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/media_router/issue.h"
 #include "chrome/grit/generated_resources.h"
+#include "media/base/container_names.h"
 #include "media/base/mime_util.h"
 #include "net/base/filename_util.h"
 #include "net/base/mime_util.h"
@@ -143,6 +145,20 @@ base::string16 MediaRouterFileDialog::GetLastSelectedFileName() {
                                     : base::string16();
 }
 
+void MediaRouterFileDialog::MaybeReportLastSelectedFileInformation() {
+  if (selected_file_.has_value()) {
+    cancelable_task_tracker_.PostTask(
+        task_runner_.get(), FROM_HERE,
+        base::BindOnce(&MediaRouterFileDialog::ReportFileFormat,
+                       base::Unretained(this), selected_file_->local_path));
+
+    // TODO(paezagon): Report file media length.
+  } else {
+    VLOG(1) << "MediaRouterFileDialog did not report file information; no file "
+               "to report.";
+  }
+}
+
 void MediaRouterFileDialog::OpenFileDialog(Browser* browser) {
   const base::FilePath directory =
       file_system_delegate_->GetLastSelectedDirectory(browser);
@@ -152,6 +168,21 @@ void MediaRouterFileDialog::OpenFileDialog(Browser* browser) {
 
   file_system_delegate_->OpenFileDialog(this, browser, directory,
                                         &file_type_info);
+}
+
+void MediaRouterFileDialog::ReportFileFormat(const base::FilePath& filename) {
+  // Windows implementation of ReadFile fails if file smaller than desired size,
+  // so use file length if file less than 8192 bytes (http://crbug.com/243885).
+  char buffer[8192];
+  int read_size = sizeof(buffer);
+  int64_t actual_size;
+  if (base::GetFileSize(filename, &actual_size) && actual_size < read_size)
+    read_size = actual_size;
+  int read = base::ReadFile(filename, buffer, read_size);
+
+  MediaRouterMetrics::RecordMediaRouterFileFormat(
+      media::container_names::DetermineContainer(
+          reinterpret_cast<const uint8_t*>(buffer), read));
 }
 
 void MediaRouterFileDialog::FileSelected(const base::FilePath& path,
@@ -166,10 +197,10 @@ void MediaRouterFileDialog::FileSelectedWithExtraInfo(
     void* params) {
   cancelable_task_tracker_.PostTaskAndReplyWithResult(
       task_runner_.get(), FROM_HERE,
-      base::Bind(&MediaRouterFileDialog::ValidateFile, base::Unretained(this),
-                 file_info),
-      base::Bind(&MediaRouterFileDialog::OnValidationResults,
-                 base::Unretained(this), file_info));
+      base::BindOnce(&MediaRouterFileDialog::ValidateFile,
+                     base::Unretained(this), file_info),
+      base::BindOnce(&MediaRouterFileDialog::OnValidationResults,
+                     base::Unretained(this), file_info));
 }
 
 void MediaRouterFileDialog::OnValidationResults(

@@ -296,6 +296,9 @@ class MediaRouterUI
   // Logs a UMA stat for the source that was cast if the result is successful.
   void MaybeReportCastingSource(MediaCastMode cast_mode,
                                 const RouteRequestResult& result);
+  // Sends a request to the file dialog to log UMA stats for the file that was
+  // cast if the result is successful.
+  void MaybeReportFileInformation(const RouteRequestResult& result);
 
   // Closes the dialog after receiving a route response when using
   // |create_session_request_|. This prevents the dialog from trying to use the

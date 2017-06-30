@@ -27,6 +27,8 @@ const char MediaRouterMetrics::kHistogramIconClickLocation[] =
     "MediaRouter.Icon.Click.Location";
 const char MediaRouterMetrics::kHistogramMediaRouterCastingSource[] =
     "MediaRouter.Source.CastingSource";
+const char MediaRouterMetrics::kHistogramMediaRouterFileFormat[] =
+    "MediaRouter.Source.FileFormat";
 const char MediaRouterMetrics::kHistogramRouteCreationOutcome[] =
     "MediaRouter.Route.CreationOutcome";
 const char MediaRouterMetrics::kHistogramUiDialogPaint[] =
@@ -81,6 +83,12 @@ void MediaRouterMetrics::RecordRouteCreationOutcome(
 // static
 void MediaRouterMetrics::RecordMediaRouterCastingSource(MediaCastMode source) {
   UMA_HISTOGRAM_SPARSE_SLOWLY(kHistogramMediaRouterCastingSource, source);
+}
+
+void MediaRouterMetrics::RecordMediaRouterFileFormat(
+    const media::container_names::MediaContainerName format) {
+  UMA_HISTOGRAM_ENUMERATION(kHistogramMediaRouterFileFormat, format,
+                            media::container_names::CONTAINER_MAX);
 }
 
 void MediaRouterMetrics::RecordDialDeviceCounts(size_t available_device_count,
