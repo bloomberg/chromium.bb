@@ -31,25 +31,13 @@
 
 #include "core/loader/PingLoader.h"
 
-#include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/DOMArrayBufferView.h"
 #include "core/dom/Document.h"
-#include "core/dom/SecurityContext.h"
 #include "core/fileapi/File.h"
-#include "core/frame/FrameConsole.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/FormData.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "core/inspector/InspectorTraceEvents.h"
-#include "core/loader/MixedContentChecker.h"
-#include "core/page/Page.h"
-#include "core/probe/CoreProbes.h"
-#include "platform/WebFrameScheduler.h"
-#include "platform/exported/WrappedResourceRequest.h"
-#include "platform/exported/WrappedResourceResponse.h"
-#include "platform/loader/fetch/CrossOriginAccessControl.h"
 #include "platform/loader/fetch/FetchContext.h"
 #include "platform/loader/fetch/FetchInitiatorTypeNames.h"
 #include "platform/loader/fetch/FetchUtils.h"
@@ -58,8 +46,6 @@
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/loader/fetch/ResourceRequest.h"
-#include "platform/loader/fetch/ResourceResponse.h"
-#include "platform/loader/fetch/UniqueIdentifier.h"
 #include "platform/network/EncodedFormData.h"
 #include "platform/network/ParsedContentType.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -67,10 +53,7 @@
 #include "platform/wtf/Compiler.h"
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/PtrUtil.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebURLLoader.h"
 #include "public/platform/WebURLRequest.h"
-#include "public/platform/WebURLResponse.h"
 
 namespace blink {
 
@@ -188,256 +171,6 @@ class BeaconFormData final : public Beacon {
   AtomicString content_type_;
 };
 
-class PingLoaderImpl : public GarbageCollectedFinalized<PingLoaderImpl>,
-                       public ContextClient,
-                       private WebURLLoaderClient {
-  USING_GARBAGE_COLLECTED_MIXIN(PingLoaderImpl);
-  WTF_MAKE_NONCOPYABLE(PingLoaderImpl);
-
- public:
-  PingLoaderImpl(LocalFrame*, ResourceRequest&, const AtomicString&);
-  ~PingLoaderImpl() override;
-
-  DECLARE_VIRTUAL_TRACE();
-
- private:
-  void Dispose();
-
-  // WebURLLoaderClient
-  bool WillFollowRedirect(WebURLRequest&, const WebURLResponse&) override;
-  void DidReceiveResponse(const WebURLResponse&) final;
-  void DidReceiveData(const char*, int) final;
-  void DidFinishLoading(double,
-                        int64_t encoded_data_length,
-                        int64_t encoded_body_length,
-                        int64_t decoded_body_length) final;
-  void DidFail(const WebURLError&,
-               int64_t encoded_data_length,
-               int64_t encoded_body_length,
-               int64_t decoded_body_length) final;
-
-  void Timeout(TimerBase*);
-
-  void DidFailLoading(LocalFrame*);
-
-  std::unique_ptr<WebURLLoader> loader_;
-  Timer<PingLoaderImpl> timeout_;
-  String url_;
-  unsigned long identifier_;
-  SelfKeepAlive<PingLoaderImpl> keep_alive_;
-  AtomicString initiator_;
-
-  RefPtr<SecurityOrigin> origin_;
-  bool cors_enabled_;
-};
-
-PingLoaderImpl::PingLoaderImpl(LocalFrame* frame,
-                               ResourceRequest& request,
-                               const AtomicString& initiator)
-    : ContextClient(frame),
-      timeout_(this, &PingLoaderImpl::Timeout),
-      url_(request.Url()),
-      identifier_(CreateUniqueIdentifier()),
-      keep_alive_(this),
-      initiator_(initiator),
-      origin_(frame->GetDocument()->GetSecurityOrigin()),
-      cors_enabled_(true) {
-  const AtomicString content_type = request.HttpContentType();
-  if (!content_type.IsNull() && FetchUtils::IsCORSSafelistedHeader(
-                                    AtomicString("content-type"), content_type))
-    cors_enabled_ = false;
-
-  frame->Client()->DidDispatchPingLoader(request.Url());
-
-  FetchContext& fetch_context = frame->GetDocument()->Fetcher()->Context();
-
-  fetch_context.PrepareRequest(request,
-                               FetchContext::RedirectType::kNotForRedirect);
-  fetch_context.RecordLoadingActivity(identifier_, request, Resource::kImage,
-                                      initiator);
-
-  FetchInitiatorInfo initiator_info;
-  initiator_info.name = initiator;
-  fetch_context.DispatchWillSendRequest(identifier_, request,
-                                        ResourceResponse(), initiator_info);
-
-  // Make sure the scheduler doesn't wait for the ping.
-  if (frame->FrameScheduler())
-    frame->FrameScheduler()->DidStopLoading(identifier_);
-
-  loader_ = fetch_context.CreateURLLoader(request);
-  DCHECK(loader_);
-
-  WrappedResourceRequest wrapped_request(request);
-
-  bool allow_stored_credentials = false;
-  switch (request.GetFetchCredentialsMode()) {
-    case WebURLRequest::kFetchCredentialsModeOmit:
-      NOTREACHED();
-      break;
-    case WebURLRequest::kFetchCredentialsModeSameOrigin:
-      allow_stored_credentials =
-          frame->GetDocument()->GetSecurityOrigin()->CanRequestNoSuborigin(
-              request.Url());
-      break;
-    case WebURLRequest::kFetchCredentialsModeInclude:
-      allow_stored_credentials = true;
-      break;
-    case WebURLRequest::kFetchCredentialsModePassword:
-      NOTREACHED();
-      break;
-  }
-  request.SetAllowStoredCredentials(allow_stored_credentials);
-
-  loader_->LoadAsynchronously(wrapped_request, this);
-
-  // If the server never responds, FrameLoader won't be able to cancel this load
-  // and we'll sit here waiting forever. Set a very generous timeout, just in
-  // case.
-  timeout_.StartOneShot(60000, BLINK_FROM_HERE);
-}
-
-PingLoaderImpl::~PingLoaderImpl() {
-  DCHECK(!loader_);
-}
-
-void PingLoaderImpl::Dispose() {
-  if (loader_) {
-    loader_->Cancel();
-    loader_ = nullptr;
-  }
-  timeout_.Stop();
-  keep_alive_.Clear();
-}
-
-bool PingLoaderImpl::WillFollowRedirect(
-    WebURLRequest& passed_new_request,
-    const WebURLResponse& passed_redirect_response) {
-  if (cors_enabled_) {
-    DCHECK(passed_new_request.AllowStoredCredentials());
-
-    ResourceRequest& new_request(passed_new_request.ToMutableResourceRequest());
-    const ResourceResponse& redirect_response(
-        passed_redirect_response.ToResourceResponse());
-
-    DCHECK(!new_request.IsNull());
-    DCHECK(!redirect_response.IsNull());
-
-    String error_description;
-    ResourceLoaderOptions options;
-    // TODO(tyoshino): Save updated data in options.security_origin and pass it
-    // on the next time.
-    if (!CrossOriginAccessControl::HandleRedirect(
-            origin_, new_request, redirect_response,
-            passed_new_request.GetFetchCredentialsMode(), options,
-            error_description)) {
-      if (GetFrame()) {
-        if (GetFrame()->GetDocument()) {
-          GetFrame()->GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
-              kJSMessageSource, kErrorMessageLevel, error_description));
-        }
-      }
-      // Cancel the load and self destruct.
-      Dispose();
-
-      return false;
-    }
-  }
-  // FIXME: http://crbug.com/427429 is needed to correctly propagate updates of
-  // Origin: following this successful redirect.
-
-  if (GetFrame() && GetFrame()->GetDocument()) {
-    FetchInitiatorInfo initiator_info;
-    initiator_info.name = initiator_;
-    FetchContext& fetch_context =
-        GetFrame()->GetDocument()->Fetcher()->Context();
-    fetch_context.PrepareRequest(passed_new_request.ToMutableResourceRequest(),
-                                 FetchContext::RedirectType::kForRedirect);
-    fetch_context.DispatchWillSendRequest(
-        identifier_, passed_new_request.ToMutableResourceRequest(),
-        passed_redirect_response.ToResourceResponse(), initiator_info);
-  }
-
-  return true;
-}
-
-void PingLoaderImpl::DidReceiveResponse(const WebURLResponse& response) {
-  if (GetFrame()) {
-    const ResourceResponse& resource_response = response.ToResourceResponse();
-    probe::didReceiveResourceResponse(GetFrame(), identifier_, 0,
-                                      resource_response, 0);
-    DidFailLoading(GetFrame());
-  }
-  Dispose();
-}
-
-void PingLoaderImpl::DidReceiveData(const char*, int data_length) {
-  if (GetFrame())
-    DidFailLoading(GetFrame());
-  Dispose();
-}
-
-void PingLoaderImpl::DidFinishLoading(double,
-                                      int64_t encoded_data_length,
-                                      int64_t encoded_body_length,
-                                      int64_t decoded_body_length) {
-  if (GetFrame())
-    DidFailLoading(GetFrame());
-  Dispose();
-}
-
-void PingLoaderImpl::DidFail(const WebURLError& resource_error,
-                             int64_t encoded_data_length,
-                             int64_t encoded_body_length,
-                             int64_t decoded_body_length) {
-  if (GetFrame())
-    DidFailLoading(GetFrame());
-  Dispose();
-}
-
-void PingLoaderImpl::Timeout(TimerBase*) {
-  if (GetFrame())
-    DidFailLoading(GetFrame());
-  Dispose();
-}
-
-void PingLoaderImpl::DidFailLoading(LocalFrame* frame) {
-  probe::didFailLoading(frame, identifier_,
-                        ResourceError::CancelledError(url_));
-  frame->Console().DidFailLoading(identifier_,
-                                  ResourceError::CancelledError(url_));
-}
-
-DEFINE_TRACE(PingLoaderImpl) {
-  ContextClient::Trace(visitor);
-}
-
-void FinishPingRequestInitialization(
-    ResourceRequest& request,
-    LocalFrame* frame,
-    WebURLRequest::RequestContext request_context) {
-  request.SetRequestContext(request_context);
-  FetchContext& fetch_context = frame->GetDocument()->Fetcher()->Context();
-  fetch_context.AddAdditionalRequestHeaders(request, kFetchSubresource);
-  // TODO(tyoshino): Call populateResourceRequest() if appropriate.
-  fetch_context.SetFirstPartyCookieAndRequestorOrigin(request);
-}
-
-bool SendPingCommon(LocalFrame* frame,
-                    ResourceRequest& request,
-                    const AtomicString& initiator) {
-  request.SetKeepalive(true);
-  if (MixedContentChecker::ShouldBlockFetch(frame, request, request.Url()))
-    return false;
-
-  // The loader keeps itself alive until it receives a response and disposes
-  // itself.
-  PingLoaderImpl* loader = new PingLoaderImpl(frame, request, initiator);
-  DCHECK(loader);
-
-  return true;
-}
-
 // Decide if a beacon with the given size is allowed to go ahead
 // given some overall allowance limit.
 bool AllowBeaconWithSize(int allowance, unsigned long long size) {
@@ -499,10 +232,17 @@ bool SendBeaconCommon(LocalFrame* frame,
 void PingLoader::LoadImage(LocalFrame* frame, const KURL& url) {
   ResourceRequest request(url);
   request.SetHTTPHeaderField(HTTPNames::Cache_Control, "max-age=0");
-  FinishPingRequestInitialization(request, frame,
-                                  WebURLRequest::kRequestContextPing);
+  request.SetKeepalive(true);
+  request.SetRequestContext(WebURLRequest::kRequestContextPing);
+  FetchParameters params(request);
+  params.MutableOptions().initiator_info.name = FetchInitiatorTypeNames::ping;
+  // TODO(mkwst): Reevaluate this.
+  params.SetContentSecurityCheck(kDoNotCheckContentSecurityPolicy);
 
-  SendPingCommon(frame, request, FetchInitiatorTypeNames::ping);
+  Resource* resource =
+      RawResource::Fetch(params, frame->GetDocument()->Fetcher());
+  if (resource && resource->GetStatus() != ResourceStatus::kLoadError)
+    frame->Client()->DidDispatchPingLoader(request.Url());
 }
 
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/links.html#hyperlink-auditing
@@ -512,27 +252,13 @@ void PingLoader::SendLinkAuditPing(LocalFrame* frame,
   if (!ping_url.ProtocolIsInHTTPFamily())
     return;
 
-  if (ContentSecurityPolicy* policy =
-          frame->GetSecurityContext()->GetContentSecurityPolicy()) {
-    if (!policy->AllowConnectToSource(ping_url))
-      return;
-  }
-
   ResourceRequest request(ping_url);
   request.SetHTTPMethod(HTTPNames::POST);
   request.SetHTTPContentType("text/ping");
   request.SetHTTPBody(EncodedFormData::Create("PING"));
   request.SetHTTPHeaderField(HTTPNames::Cache_Control, "max-age=0");
-  FinishPingRequestInitialization(request, frame,
-                                  WebURLRequest::kRequestContextPing);
-
-  // addAdditionalRequestHeaders() will have added a referrer for same origin
-  // requests, but the spec omits the referrer.
-  request.ClearHTTPReferrer();
-
   request.SetHTTPHeaderField(HTTPNames::Ping_To,
                              AtomicString(destination_url.GetString()));
-
   RefPtr<SecurityOrigin> ping_origin = SecurityOrigin::Create(ping_url);
   if (ProtocolIs(frame->GetDocument()->Url().GetString(), "http") ||
       frame->GetDocument()->GetSecurityOrigin()->CanAccess(ping_origin.Get())) {
@@ -541,7 +267,17 @@ void PingLoader::SendLinkAuditPing(LocalFrame* frame,
         AtomicString(frame->GetDocument()->Url().GetString()));
   }
 
-  SendPingCommon(frame, request, FetchInitiatorTypeNames::ping);
+  request.SetKeepalive(true);
+  request.SetHTTPReferrer(
+      Referrer(Referrer::NoReferrer(), kReferrerPolicyNever));
+  request.SetRequestContext(WebURLRequest::kRequestContextPing);
+  FetchParameters params(request);
+  params.MutableOptions().initiator_info.name = FetchInitiatorTypeNames::ping;
+
+  Resource* resource =
+      RawResource::Fetch(params, frame->GetDocument()->Fetcher());
+  if (resource && resource->GetStatus() != ResourceStatus::kLoadError)
+    frame->Client()->DidDispatchPingLoader(request.Url());
 }
 
 void PingLoader::SendViolationReport(LocalFrame* frame,
@@ -561,10 +297,18 @@ void PingLoader::SendViolationReport(LocalFrame* frame,
   request.SetHTTPBody(std::move(report));
   request.SetFetchCredentialsMode(
       WebURLRequest::kFetchCredentialsModeSameOrigin);
-  FinishPingRequestInitialization(request, frame,
-                                  WebURLRequest::kRequestContextCSPReport);
+  request.SetRequestContext(WebURLRequest::kRequestContextCSPReport);
+  request.SetFetchRedirectMode(WebURLRequest::kFetchRedirectModeError);
+  FetchParameters params(request);
+  params.MutableOptions().initiator_info.name =
+      FetchInitiatorTypeNames::violationreport;
+  params.MutableOptions().security_origin =
+      frame->GetDocument()->GetSecurityOrigin();
 
-  SendPingCommon(frame, request, FetchInitiatorTypeNames::violationreport);
+  Resource* resource =
+      RawResource::Fetch(params, frame->GetDocument()->Fetcher());
+  if (resource && resource->GetStatus() != ResourceStatus::kLoadError)
+    frame->Client()->DidDispatchPingLoader(request.Url());
 }
 
 bool PingLoader::SendBeacon(LocalFrame* frame,

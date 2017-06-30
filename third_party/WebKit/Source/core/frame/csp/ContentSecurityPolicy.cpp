@@ -824,6 +824,7 @@ bool ContentSecurityPolicy::AllowRequest(
     case WebURLRequest::kRequestContextBeacon:
     case WebURLRequest::kRequestContextEventSource:
     case WebURLRequest::kRequestContextFetch:
+    case WebURLRequest::kRequestContextPing:
     case WebURLRequest::kRequestContextXMLHttpRequest:
     case WebURLRequest::kRequestContextSubresource:
       return AllowConnectToSource(url, redirect_status, reporting_policy,
@@ -869,7 +870,6 @@ bool ContentSecurityPolicy::AllowRequest(
     case WebURLRequest::kRequestContextHyperlink:
     case WebURLRequest::kRequestContextInternal:
     case WebURLRequest::kRequestContextLocation:
-    case WebURLRequest::kRequestContextPing:
     case WebURLRequest::kRequestContextPlugin:
     case WebURLRequest::kRequestContextPrefetch:
     case WebURLRequest::kRequestContextUnspecified:
