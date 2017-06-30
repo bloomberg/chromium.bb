@@ -38765,6 +38765,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.ProxyService.GetProxyUsingScriptResult"
     enum="NetErrorCodes">
+  <obsolete>
+    Deprecated as of Chrome 61.
+  </obsolete>
   <owner>eroman@chromium.org</owner>
   <summary>
     The network error code of resolving a URL by forwarding the request to the
@@ -38774,6 +38777,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.ProxyService.GetProxyUsingScriptTime"
     units="100s of microseconds">
+  <obsolete>
+    Deprecated as of Chrome 61.
+  </obsolete>
   <owner>eroman@chromium.org</owner>
   <summary>
     The time taken to resolve a URL by forwarding the request to the proxy
@@ -38784,6 +38790,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.ProxyService.ResolvedUsingScript" enum="Boolean">
+  <obsolete>
+    Deprecated as of Chrome 61.
+  </obsolete>
   <owner>eroman@chromium.org</owner>
   <summary>
     Whether proxy resolution occured by forwarding the request to the proxy
@@ -38799,6 +38808,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.ProxyService.ResolveProxyTime"
     units="100s of microseconds">
+  <obsolete>
+    Deprecated as of Chrome 61.
+  </obsolete>
   <owner>eroman@chromium.org</owner>
   <summary>
     The total time taken to resolve a URL. This includes PAC script execution,
@@ -38808,6 +38820,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.ProxyService.ScriptTerminated" enum="BooleanTerminated">
+  <obsolete>
+    Deprecated as of Chrome 61.
+  </obsolete>
   <owner>eroman@chromium.org</owner>
   <summary>
     Whether a proxy resolution resulted in the PAC script terminating
@@ -38819,6 +38834,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.ProxyService.ScriptTerminatedOnInit"
     enum="BooleanTerminated">
+  <obsolete>
+    Deprecated as of Chrome 61.
+  </obsolete>
   <owner>eroman@chromium.org</owner>
   <summary>
     Whether the creation of a new proxy resolver resulted in the PAC script
