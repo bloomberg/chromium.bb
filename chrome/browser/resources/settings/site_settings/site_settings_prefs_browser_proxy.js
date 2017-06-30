@@ -19,7 +19,7 @@ var ContentSettingProvider = {
 };
 
 /**
- * The site exception information passed form the C++ handler.
+ * The site exception information passed from the C++ handler.
  * See also: SiteException.
  * @typedef {{embeddingOrigin: string,
  *            incognito: boolean,
@@ -126,13 +126,6 @@ cr.define('settings', function() {
     getExceptionList(contentType) {}
 
     /**
-     * Gets the exception details for a particular site.
-     * @param {string} site The name of the site.
-     * @return {!Promise<!RawSiteException>}
-     */
-    getSiteDetails(site) {}
-
-    /**
      * Resets the category permission for a given origin (expressed as primary
      *    and secondary patterns).
      * @param {string} primaryPattern The origin to change (primary pattern).
@@ -144,6 +137,17 @@ cr.define('settings', function() {
      */
     resetCategoryPermissionForOrigin(
         primaryPattern, secondaryPattern, contentType, incognito) {}
+
+    /**
+     * Gets a list of category permissions for a given origin. Note that this
+     * may be different to the results retrieved by getExceptionList(), since it
+     * combines different sources of data to get a permission's value.
+     * @param {string} origin The origin to look up permissions for.
+     * @param {!Array<string>} contentTypes A list of categories to retrieve
+     *     the ContentSetting for.
+     * @return {!Promise<!NodeList<!RawSiteException>>}
+     */
+    getOriginPermissions(origin, contentTypes) {}
 
     /**
      * Sets the category permission for a given origin (expressed as primary
@@ -308,16 +312,16 @@ cr.define('settings', function() {
     }
 
     /** @override */
-    getSiteDetails(site) {
-      return cr.sendWithPromise('getSiteDetails', site);
-    }
-
-    /** @override */
     resetCategoryPermissionForOrigin(
         primaryPattern, secondaryPattern, contentType, incognito) {
       chrome.send(
           'resetCategoryPermissionForOrigin',
           [primaryPattern, secondaryPattern, contentType, incognito]);
+    }
+
+    /** @override */
+    getOriginPermissions(origin, contentTypes) {
+      return cr.sendWithPromise('getOriginPermissions', origin, contentTypes);
     }
 
     /** @override */

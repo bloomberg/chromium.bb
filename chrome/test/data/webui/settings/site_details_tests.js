@@ -36,7 +36,7 @@ suite('SiteDetails', function() {
           embeddingOrigin: 'https://foo-allow.com:443',
           origin: 'https://foo-allow.com:443',
           setting: 'allow',
-          source: 'preference',
+          source: 'extension',
         },
       ],
       cookies: [
@@ -51,8 +51,8 @@ suite('SiteDetails', function() {
         {
           embeddingOrigin: 'https://foo-allow.com:443',
           origin: 'https://foo-allow.com:443',
-          setting: 'allow',
-          source: 'preference',
+          setting: 'block',
+          source: 'policy',
         },
       ],
       images: [
@@ -141,15 +141,28 @@ suite('SiteDetails', function() {
     Polymer.dom(parent).appendChild(api);
 
     browserProxy.setPrefs(prefs);
-    testElement.site = {
-      origin: 'https://foo-allow.com:443',
-      displayName: 'https://foo-allow.com:443',
-      embeddingOrigin: '',
-    };
+    testElement.origin = 'https://foo-allow.com:443';
 
     Polymer.dom.flush();
 
-    // expect usage to be rendered
+    // Expect usage to be rendered.
     assertTrue(!!testElement.$$('#usage'));
+  });
+
+  test('correct pref settings are shown', function() {
+    browserProxy.setPrefs(prefs);
+    testElement.origin = 'https://foo-allow.com:443';
+
+    return browserProxy.whenCalled('getOriginPermissions').then(function() {
+      testElement.root.querySelectorAll('site-details-permission')
+          .forEach(function(siteDetailsPermission) {
+            // Verify settings match the values specified in |prefs|.
+            var setting = 'allow';
+            if (siteDetailsPermission.site.category == 'location')
+              setting = 'block';
+            assertEquals(setting, siteDetailsPermission.site.setting);
+            assertEquals(setting, siteDetailsPermission.$.permission.value);
+          });
+    });
   });
 });

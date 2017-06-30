@@ -85,6 +85,7 @@ var TestSiteSettingsPrefsBrowserProxy = function() {
     'getCookieDetails',
     'getDefaultValueForContentType',
     'getExceptionList',
+    'getOriginPermissions',
     'isPatternValid',
     'observeProtocolHandlers',
     'observeProtocolHandlersEnabledState',
@@ -310,6 +311,53 @@ TestSiteSettingsPrefsBrowserProxy.prototype = {
     this.methodCalled('resetCategoryPermissionForOrigin',
         [primaryPattern, secondaryPattern, contentType, incognito]);
     return Promise.resolve();
+  },
+
+  /** @override */
+  getOriginPermissions: function(origin, contentTypes) {
+    this.methodCalled('getOriginPermissions', [origin, contentTypes]);
+
+    var exceptionList = [];
+    contentTypes.forEach(function(contentType) {
+      // Convert |contentType| to its corresponding pref name, if different.
+      if (contentType == settings.ContentSettingsTypes.GEOLOCATION) {
+        contentType = 'geolocation';
+      } else if (contentType == settings.ContentSettingsTypes.CAMERA) {
+        contentType = 'camera';
+      } else if (contentType == settings.ContentSettingsTypes.MIC) {
+        contentType = 'mic';
+      } else if (contentType == settings.ContentSettingsTypes.BACKGROUND_SYNC) {
+        contentType = 'background_sync';
+      } else if (
+          contentType == settings.ContentSettingsTypes.AUTOMATIC_DOWNLOADS) {
+        contentType = 'auto_downloads';
+      } else if (
+          contentType == settings.ContentSettingsTypes.UNSANDBOXED_PLUGINS) {
+        contentType = 'unsandboxed_plugins';
+      }
+
+      var setting = undefined;
+      this.prefs_.exceptions[contentType].some(function(originPrefs) {
+        if (originPrefs.origin == origin) {
+          setting = originPrefs.setting;
+          return true;
+        }
+      });
+      assert(
+          settings !== undefined,
+          'There was no exception set for origin: ' + origin +
+              ' and contentType: ' + contentType);
+
+      exceptionList.push({
+        embeddingOrigin: '',
+        incognito: false,
+        origin: origin,
+        displayName: '',
+        setting: setting,
+        source: undefined
+      })
+    }, this);
+    return Promise.resolve(exceptionList);
   },
 
   /** @override */
