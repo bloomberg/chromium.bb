@@ -132,12 +132,16 @@ source_set("browser") {
       "cast_content_window_linux.h",
       "cast_memory_pressure_monitor.cc",
       "cast_memory_pressure_monitor.h",
+      "memory_pressure_controller_impl.cc",
+      "memory_pressure_controller_impl.h",
       "metrics/external_metrics.cc",
       "metrics/external_metrics.h",
     ]
 
     deps += [
+      "//chromecast/common:interfaces",
       "//components/metrics:serialization",
+      "//mojo/public/cpp/bindings",
       "//third_party/fontconfig",
       "//ui/aura",
     ]

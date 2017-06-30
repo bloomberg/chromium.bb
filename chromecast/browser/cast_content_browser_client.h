@@ -38,6 +38,7 @@ class X509Certificate;
 namespace chromecast {
 class CastService;
 class CastWindowManager;
+class MemoryPressureControllerImpl;
 
 namespace media {
 class MediaCapsImpl;
@@ -200,6 +201,10 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
 
   // A static cache to hold crash_handlers for each process_type
   std::map<std::string, breakpad::CrashHandlerHostLinux*> crash_handlers_;
+
+  // Notify renderers of memory pressure (Android renderers register directly
+  // with OS for this).
+  std::unique_ptr<MemoryPressureControllerImpl> memory_pressure_controller_;
 #endif  // !defined(OS_ANDROID)
 
   // Created by CastContentBrowserClient but owned by BrowserMainLoop.

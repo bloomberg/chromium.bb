@@ -9,6 +9,7 @@ include_rules = [
   "+media/base",
   "+media/media_features.h",
   "+media/renderers",
+  "+mojo/public",
   "+services/service_manager/public",
   "+third_party/WebKit/public/platform",
   "+third_party/WebKit/public/web",
