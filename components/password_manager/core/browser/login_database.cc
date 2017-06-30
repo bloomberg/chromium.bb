@@ -361,6 +361,7 @@ void InitializeBuilder(SQLTableBuilder* builder) {
   builder->AddColumn("date_created", "INTEGER NOT NULL");
   builder->AddColumn("blacklisted_by_user", "INTEGER NOT NULL");
   builder->AddColumn("scheme", "INTEGER NOT NULL");
+  builder->AddIndex("logins_signon", {"signon_realm"});
   builder->SealVersion();
   unsigned version = builder->SealVersion();
   DCHECK_EQ(1u, version);
