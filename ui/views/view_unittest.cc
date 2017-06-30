@@ -2998,8 +2998,11 @@ TEST_F(ViewTest, ConversionsToFromScreen) {
   t.Scale(0.5, 0.5);
   child->SetTransform(t);
 
+  gfx::Size size(10, 10);
   gfx::Point point_in_screen(100, 90);
   gfx::Point point_in_child(80, 60);
+  gfx::Rect rect_in_screen(point_in_screen, size);
+  gfx::Rect rect_in_child(point_in_child, size);
 
   gfx::Point point = point_in_screen;
   View::ConvertPointFromScreen(child, &point);
@@ -3007,6 +3010,9 @@ TEST_F(ViewTest, ConversionsToFromScreen) {
 
   View::ConvertPointToScreen(child, &point);
   EXPECT_EQ(point_in_screen.ToString(), point.ToString());
+
+  View::ConvertRectToScreen(child, &rect_in_child);
+  EXPECT_EQ(rect_in_screen.ToString(), rect_in_child.ToString());
 }
 
 // Tests conversion methods for rectangles.
