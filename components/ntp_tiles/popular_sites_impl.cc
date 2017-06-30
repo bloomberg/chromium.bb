@@ -145,7 +145,7 @@ void SetDefaultResourceForSite(int index,
 
 // Creates the list of popular sites based on a snapshot available for mobile.
 std::unique_ptr<base::ListValue> DefaultPopularSites() {
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID)
   return base::MakeUnique<base::ListValue>();
 #else
   if (!base::FeatureList::IsEnabled(kPopularSitesBakedInContentFeature)) {
