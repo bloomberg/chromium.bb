@@ -598,6 +598,8 @@ test("headless_browsertests") {
   ]
 
   data = [
+    "lib/dom_tree_extraction_expected_nodes.txt",
+    "lib/dom_tree_extraction_expected_styles.txt",
     "$root_out_dir/headless_lib.pak",
     "//net/tools/testserver/",
     "//third_party/pyftpdlib/",
