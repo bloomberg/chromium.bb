@@ -1,14 +1,12 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/html/util.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner.html">
-<link rel="import" href="../icons.html">
-<link rel="import" href="../settings_shared_css.html">
 
-<dom-module id="settings-camera">
+<dom-module id="cr-camera">
   <template>
-    <style include="settings-shared">
+    <style include="cr-shared-style">
       #perspectiveBox {
         height: 228px;
         perspective: 600px;
@@ -50,6 +48,7 @@
       }
 
       #flipPhoto {
+        background-image: url(camera_flip_icon.svg);
         float: right;
       }
 
@@ -59,6 +58,7 @@
 
       #takePhoto {
         background-color: var(--paper-green-500);
+        background-image: url(camera_alt_icon.svg);
         border-radius: 50%;
         display: block;
         margin: 0 auto 0 auto;
@@ -73,15 +73,15 @@
       </div>
       <div id="cameraControls">
         <button is="paper-icon-button-light" id="flipPhoto" tabindex="2"
-            title="$i18n{flipPhoto}" on-tap="onTapFlipPhoto_"
-            disabled="[[!cameraOnline_]]" class="icon-flip">
+            title="[[flipPhotoLabel]]" on-tap="onTapFlipPhoto_"
+            disabled="[[!cameraOnline_]]">
         </button>
         <button is="paper-icon-button-light" id="takePhoto" tabindex="1"
-            title="$i18n{takePhoto}" on-tap="takePhoto"
-            disabled="[[!cameraOnline_]]" class="icon-camera-alt">
+            title="[[takePhotoLabel]]" on-tap="takePhoto"
+            disabled="[[!cameraOnline_]]">
         </button>
       </div>
     </div>
   </template>
-  <script src="camera.js"></script>
+  <script src="cr_camera.js"></script>
 </dom-module>

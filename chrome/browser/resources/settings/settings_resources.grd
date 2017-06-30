@@ -1242,14 +1242,6 @@
         <structure name="IDR_SETTINGS_TETHER_CONNECTION_DIALOG_JS"
                    file="internet_page/tether_connection_dialog.js"
                    type="chrome_html" />
-        <structure name="IDR_SETTINGS_PEOPLE_PAGE_CAMERA_HTML"
-                   file="people_page/camera.html"
-                   type="chrome_html"
-                   preprocess="true"
-                   allowexternalscript="true" />
-        <structure name="IDR_SETTINGS_PEOPLE_PAGE_CAMERA_JS"
-                   file="people_page/camera.js"
-                   type="chrome_html" />
         <structure name="IDR_SETTINGS_PEOPLE_PAGE_CHANGE_PICTURE_HTML"
                    file="people_page/change_picture.html"
                    type="chrome_html"

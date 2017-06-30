@@ -82,7 +82,7 @@ cr.define('settings_people_page_change_picture', function() {
     suite('ChangePictureTests', function() {
       var changePicture = null;
       var browserProxy = null;
-      var settingsCamera = null;
+      var crCamera = null;
       var discardControlBar = null;
 
       suiteSetup(function() {
@@ -98,8 +98,8 @@ cr.define('settings_people_page_change_picture', function() {
         changePicture = document.createElement('settings-change-picture');
         document.body.appendChild(changePicture);
 
-        settingsCamera = changePicture.$$('settings-camera');
-        assertTrue(!!settingsCamera);
+        crCamera = changePicture.$$('cr-camera');
+        assertTrue(!!crCamera);
         discardControlBar = changePicture.$.discardControlBar;
         assertTrue(!!discardControlBar);
 
@@ -121,26 +121,26 @@ cr.define('settings_people_page_change_picture', function() {
         Polymer.dom.flush();
 
         expectTrue(cameraIcon.hidden);
-        expectFalse(settingsCamera.cameraActive);
+        expectFalse(crCamera.cameraActive);
 
         cr.webUIListenerCallback('camera-presence-changed', true);
         Polymer.dom.flush();
 
         expectFalse(cameraIcon.hidden);
-        expectFalse(settingsCamera.cameraActive);
+        expectFalse(crCamera.cameraActive);
 
         MockInteractions.tap(cameraIcon);
 
         Polymer.dom.flush();
         expectFalse(cameraIcon.hidden);
-        expectTrue(settingsCamera.cameraActive);
+        expectTrue(crCamera.cameraActive);
         expectEquals(ChangePictureSelectionTypes.CAMERA,
                      changePicture.selectedItem_.dataset.type);
         expectTrue(discardControlBar.hidden);
 
         // Ensure that the camera is deactivated if user navigates away.
         changePicture.currentRouteChanged(settings.Route.BASIC);
-        expectFalse(settingsCamera.cameraActive);
+        expectFalse(crCamera.cameraActive);
       });
 
       test('ChangePictureProfileImage', function() {
@@ -155,7 +155,7 @@ cr.define('settings_people_page_change_picture', function() {
 
           expectEquals(ChangePictureSelectionTypes.PROFILE,
                        changePicture.selectedItem_.dataset.type);
-          expectFalse(settingsCamera.cameraActive);
+          expectFalse(crCamera.cameraActive);
           expectTrue(discardControlBar.hidden);
 
           // Ensure that the selection is restored after navigating away and
@@ -181,7 +181,7 @@ cr.define('settings_people_page_change_picture', function() {
         expectEquals(ChangePictureSelectionTypes.OLD,
                      changePicture.selectedItem_.dataset.type);
         expectFalse(oldImage.hidden);
-        expectFalse(settingsCamera.cameraActive);
+        expectFalse(crCamera.cameraActive);
         expectFalse(discardControlBar.hidden);
       });
 
@@ -199,7 +199,7 @@ cr.define('settings_people_page_change_picture', function() {
               expectEquals(ChangePictureSelectionTypes.DEFAULT,
                            changePicture.selectedItem_.dataset.type);
               expectEquals(firstDefaultImage, changePicture.selectedItem_);
-              expectFalse(settingsCamera.cameraActive);
+              expectFalse(crCamera.cameraActive);
               expectTrue(discardControlBar.hidden);
 
               // Now verify that arrow keys actually select the new image.

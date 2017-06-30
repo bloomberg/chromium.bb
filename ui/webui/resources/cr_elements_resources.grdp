@@ -42,6 +42,12 @@
              file="../../webui/resources/cr_elements/cr_lazy_render/cr_lazy_render.js"
              type="chrome_html" />
   <if expr="chromeos">
+    <structure name="IDR_CR_ELEMENTS_CHROMEOS_CHANGE_PICTURE_CR_CAMERA_HTML"
+               file="../../webui/resources/cr_elements/chromeos/change_picture/cr_camera.html"
+               type="chrome_html" />
+    <structure name="IDR_CR_ELEMENTS_CHROMEOS_CHANGE_PICTURE_CR__CAMERA_JS"
+               file="../../webui/resources/cr_elements/chromeos/change_picture/cr_camera.js"
+               type="chrome_html" />
     <structure name="IDR_CR_ELEMENTS_CHROMEOS_CR_NETWORK_ICON_HTML"
                file="../../webui/resources/cr_elements/chromeos/network/cr_network_icon.html"
                type="chrome_html" />
