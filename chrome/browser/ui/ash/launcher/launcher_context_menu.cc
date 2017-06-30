@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
@@ -14,7 +13,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wallpaper/wallpaper_delegate.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
-#include "build/build_config.h"
+#include "base/metrics/user_metrics.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/fullscreen.h"
 #include "chrome/browser/profiles/profile.h"
@@ -125,13 +124,12 @@ void LauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
         // TODO(simonhong): Use ShelfItemDelegate::Close().
         controller_->Close(item_.id);
       }
-      ash::Shell::Get()->metrics()->RecordUserMetricsAction(
-          ash::UMA_CLOSE_THROUGH_CONTEXT_MENU);
+      base::RecordAction(base::UserMetricsAction("CloseFromContextMenu"));
       if (ash::Shell::Get()
               ->maximize_mode_controller()
               ->IsMaximizeModeWindowManagerEnabled()) {
-        ash::Shell::Get()->metrics()->RecordUserMetricsAction(
-            ash::UMA_TABLET_WINDOW_CLOSE_THROUGH_CONTXT_MENU);
+        base::RecordAction(
+            base::UserMetricsAction("Tablet_WindowCloseFromContextMenu"));
       }
       break;
     case MENU_PIN:

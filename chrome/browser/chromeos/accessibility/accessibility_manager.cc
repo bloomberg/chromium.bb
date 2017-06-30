@@ -14,7 +14,6 @@
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/autoclick/mus/public/interfaces/autoclick.mojom.h"
 #include "ash/high_contrast/high_contrast_controller.h"
-#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -474,9 +473,6 @@ void AccessibilityManager::EnableSpokenFeedback(
     ash::AccessibilityNotificationVisibility notify) {
   if (!profile_)
     return;
-  ash::Shell::Get()->metrics()->RecordUserMetricsAction(
-      enabled ? ash::UMA_STATUS_AREA_ENABLE_SPOKEN_FEEDBACK
-              : ash::UMA_STATUS_AREA_DISABLE_SPOKEN_FEEDBACK);
 
   spoken_feedback_notification_ = notify;
 
