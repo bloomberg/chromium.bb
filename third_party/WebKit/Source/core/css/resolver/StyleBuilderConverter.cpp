@@ -812,7 +812,7 @@ void StyleBuilderConverter::ConvertOrderedNamedGridLinesMapToNamedGridLinesMap(
   }
 
   for (auto& named_grid_line : named_grid_lines) {
-    Vector<size_t> grid_line_indexes = named_grid_line.value;
+    Vector<size_t>& grid_line_indexes = named_grid_line.value;
     std::sort(grid_line_indexes.begin(), grid_line_indexes.end());
   }
 }
