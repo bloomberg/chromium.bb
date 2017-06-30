@@ -455,8 +455,12 @@
 #pragma mark - NewTabPagePanelProtocol
 
 - (CGFloat)alphaForBottomShadow {
-  // TODO(crbug.com/700375): implement this.
-  return 0;
+  UICollectionView* collection = self.suggestionsViewController.collectionView;
+
+  CGFloat pixelsBelowFrame =
+      collection.contentSize.height - CGRectGetMaxY(collection.bounds);
+  CGFloat alpha = pixelsBelowFrame / kNewTabPageDistanceToFadeShadow;
+  return MIN(MAX(alpha, 0), 1);
 }
 
 - (UIView*)view {
