@@ -281,10 +281,7 @@ void PasswordManager::ProvisionallySavePassword(
   metrics_util::LogShouldBlockPasswordForSameOriginButDifferentScheme(
       should_block);
   if (should_block) {
-    if (logger)
-      logger->LogSuccessiveOrigins(
-          Logger::STRING_BLOCK_PASSWORD_SAME_ORIGIN_INSECURE_SCHEME,
-          main_frame_url_.GetOrigin(), form.origin.GetOrigin());
+    RecordFailure(SAVING_ON_HTTP_AFTER_HTTPS, form.origin, logger.get());
     return;
   }
 
@@ -442,6 +439,11 @@ void PasswordManager::RecordFailure(ProvisionalSaveFailure failure,
         break;
       case SYNC_CREDENTIAL:
         logger->LogMessage(Logger::STRING_SYNC_CREDENTIAL);
+        break;
+      case SAVING_ON_HTTP_AFTER_HTTPS:
+        logger->LogSuccessiveOrigins(
+            Logger::STRING_BLOCK_PASSWORD_SAME_ORIGIN_INSECURE_SCHEME,
+            main_frame_url_.GetOrigin(), form_origin.GetOrigin());
         break;
       case MAX_FAILURE_VALUE:
         NOTREACHED();

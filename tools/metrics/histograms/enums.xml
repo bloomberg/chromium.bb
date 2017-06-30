@@ -30583,6 +30583,7 @@ from previous Chrome versions.
   <int value="5" label="INVALID_FORM"/>
   <int value="6" label="AUTOCOMPLETE_OFF"/>
   <int value="7" label="SYNC_CREDENTIALS"/>
+  <int value="8" label="SAVING_ON_HTTP_AFTER_HTTPS"/>
 </enum>
 
 <enum name="ProxyStatus">
