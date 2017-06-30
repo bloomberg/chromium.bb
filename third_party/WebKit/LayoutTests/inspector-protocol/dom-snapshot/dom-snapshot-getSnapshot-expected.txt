@@ -85,7 +85,7 @@ Tests DOMSnapshot.getSnapshot method.
       "childNodeIndexes": [
         10,
         11,
-        58
+        61
       ],
       "attributes": [
         {
@@ -117,7 +117,9 @@ Tests DOMSnapshot.getSnapshot method.
         33,
         47,
         48,
-        57
+        57,
+        58,
+        60
       ],
       "attributes": [
         {
@@ -558,8 +560,39 @@ Tests DOMSnapshot.getSnapshot method.
     {
       "nodeType": 3,
       "nodeName": "#text",
-      "nodeValue": "\n",
+      "nodeValue": "\n  ",
       "backendNodeId": "<number>"
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "A",
+      "nodeValue": "",
+      "backendNodeId": "<number>",
+      "childNodeIndexes": [
+        59
+      ],
+      "attributes": [
+        {
+          "name": "href",
+          "value": "https://www.google.com/"
+        }
+      ],
+      "layoutNodeIndex": 29,
+      "isClickable": true
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "Click ME!",
+      "backendNodeId": "<number>",
+      "layoutNodeIndex": 30
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n",
+      "backendNodeId": "<number>",
+      "layoutNodeIndex": 31
     },
     {
       "nodeType": 3,
@@ -584,7 +617,7 @@ Tests DOMSnapshot.getSnapshot method.
         "x": 0,
         "y": 0,
         "width": 785,
-        "height": 911
+        "height": 935
       },
       "styleIndex": 0
     },
@@ -594,7 +627,7 @@ Tests DOMSnapshot.getSnapshot method.
         "x": 8,
         "y": 8,
         "width": 769,
-        "height": 882
+        "height": 919
       },
       "styleIndex": 1
     },
@@ -604,7 +637,7 @@ Tests DOMSnapshot.getSnapshot method.
         "x": 8,
         "y": 8,
         "width": 769,
-        "height": 882
+        "height": 919
       },
       "styleIndex": 1
     },
@@ -1270,6 +1303,50 @@ Tests DOMSnapshot.getSnapshot method.
         }
       ],
       "styleIndex": 16
+    },
+    {
+      "domNodeIndex": 58,
+      "boundingBox": {
+        "x": 8,
+        "y": 910,
+        "width": 144,
+        "height": 17
+      },
+      "styleIndex": 17
+    },
+    {
+      "domNodeIndex": 59,
+      "boundingBox": {
+        "x": 8,
+        "y": 910,
+        "width": 144,
+        "height": 17
+      },
+      "layoutText": "Click ME!",
+      "inlineTextNodes": [
+        {
+          "boundingBox": {
+            "x": 8,
+            "y": 910.875,
+            "width": 144,
+            "height": 16
+          },
+          "startCharacterIndex": 0,
+          "numCharacters": 9
+        }
+      ],
+      "styleIndex": 17
+    },
+    {
+      "domNodeIndex": 60,
+      "boundingBox": {
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0
+      },
+      "layoutText": "\n",
+      "styleIndex": 3
     }
   ],
   "computedStyles": [
@@ -1281,11 +1358,11 @@ Tests DOMSnapshot.getSnapshot method.
         },
         {
           "name": "transform-origin",
-          "value": "392.5px 455.438px"
+          "value": "392.5px 467.438px"
         },
         {
           "name": "height",
-          "value": "910.875px"
+          "value": "934.875px"
         },
         {
           "name": "width",
@@ -1313,11 +1390,11 @@ Tests DOMSnapshot.getSnapshot method.
         },
         {
           "name": "transform-origin",
-          "value": "384.5px 440.719px"
+          "value": "384.5px 459.438px"
         },
         {
           "name": "height",
-          "value": "881.438px"
+          "value": "918.875px"
         },
         {
           "name": "width",
@@ -1814,6 +1891,38 @@ Tests DOMSnapshot.getSnapshot method.
         {
           "name": "color",
           "value": "rgb(255, 0, 0)"
+        }
+      ]
+    },
+    {
+      "properties": [
+        {
+          "name": "transform",
+          "value": "none"
+        },
+        {
+          "name": "transform-origin",
+          "value": "0px 0px"
+        },
+        {
+          "name": "height",
+          "value": "auto"
+        },
+        {
+          "name": "width",
+          "value": "auto"
+        },
+        {
+          "name": "display",
+          "value": "inline"
+        },
+        {
+          "name": "outline-color",
+          "value": "rgb(0, 0, 238)"
+        },
+        {
+          "name": "color",
+          "value": "rgb(0, 0, 238)"
         }
       ]
     }

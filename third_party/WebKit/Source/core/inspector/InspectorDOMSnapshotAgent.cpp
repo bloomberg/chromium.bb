@@ -166,6 +166,9 @@ int InspectorDOMSnapshotAgent::VisitNode(Node* node) {
   if (layoutNodeIndex != -1)
     value->setLayoutNodeIndex(layoutNodeIndex);
 
+  if (node->WillRespondToMouseClickEvents())
+    value->setIsClickable(true);
+
   if (node->IsElementNode()) {
     Element* element = ToElement(node);
     value->setAttributes(BuildArrayForElementAttributes(element));
