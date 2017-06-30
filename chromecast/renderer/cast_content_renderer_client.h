@@ -17,6 +17,7 @@ class PrescientNetworkingDispatcher;
 }  // namespace network_hints
 
 namespace chromecast {
+class MemoryPressureObserverImpl;
 namespace media {
 class MediaCapsObserverImpl;
 class SupportedCodecProfileLevelsMemo;
@@ -59,6 +60,9 @@ class CastContentRendererClient : public content::ContentRendererClient {
       prescient_networking_dispatcher_;
   std::unique_ptr<media::MediaCapsObserverImpl> media_caps_observer_;
   std::unique_ptr<media::SupportedCodecProfileLevelsMemo> supported_profiles_;
+#if !defined(OS_ANDROID)
+  std::unique_ptr<MemoryPressureObserverImpl> memory_pressure_observer_;
+#endif
 
   const bool allow_hidden_media_playback_;
 

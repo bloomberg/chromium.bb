@@ -38,4 +38,16 @@ source_set("renderer") {
     "//media",
     "//services/service_manager/public/cpp",
   ]
+
+  if (!is_android) {
+    sources += [
+      "memory_pressure_observer_impl.cc",
+      "memory_pressure_observer_impl.h",
+    ]
+
+    deps += [
+      "//chromecast/common:interfaces",
+      "//mojo/public/cpp/bindings",
+    ]
+  }
 }

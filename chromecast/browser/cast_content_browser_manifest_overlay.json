@@ -5,7 +5,8 @@
     "service_manager:connector": {
       "provides": {
         "renderer": [
-          "chromecast::media::mojom::MediaCaps"
+          "chromecast::media::mojom::MediaCaps",
+          "chromecast::mojom::MemoryPressureController"
         ]
       }
     }

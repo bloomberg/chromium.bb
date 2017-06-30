@@ -35,6 +35,8 @@
 
 #if defined(OS_ANDROID)
 #include "media/base/android/media_codec_util.h"
+#else
+#include "chromecast/renderer/memory_pressure_observer_impl.h"
 #endif  // OS_ANDROID
 
 namespace chromecast {
@@ -79,6 +81,17 @@ void CastContentRendererClient::RenderThreadStarted() {
   media_caps_observer_.reset(
       new media::MediaCapsObserverImpl(&proxy, supported_profiles_.get()));
   media_caps->AddObserver(std::move(proxy));
+
+#if !defined(OS_ANDROID)
+  // Register to observe memory pressure changes
+  mojom::MemoryPressureControllerPtr memory_pressure_controller;
+  thread->GetConnector()->BindInterface(content::mojom::kBrowserServiceName,
+                                        &memory_pressure_controller);
+  mojom::MemoryPressureObserverPtr memory_pressure_proxy;
+  memory_pressure_observer_.reset(
+      new MemoryPressureObserverImpl(&memory_pressure_proxy));
+  memory_pressure_controller->AddObserver(std::move(memory_pressure_proxy));
+#endif
 
   prescient_networking_dispatcher_.reset(
       new network_hints::PrescientNetworkingDispatcher());

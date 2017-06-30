@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//mojo/public/tools/bindings/mojom.gni")
+
 source_set("common") {
   sources = [
     "cast_content_client.cc",
@@ -21,4 +23,12 @@ source_set("common") {
     "//ui/gfx",
     "//url:url",
   ]
+}
+
+if (!is_android) {
+  mojom("interfaces") {
+    sources = [
+      "memory_pressure.mojom",
+    ]
+  }
 }
