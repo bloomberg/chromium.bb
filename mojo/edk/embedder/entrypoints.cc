@@ -84,9 +84,10 @@ MojoResult MojoGetSerializedMessageContentsImpl(
                                               handles, num_handles, flags);
 }
 
-MojoResult MojoReleaseMessageContextImpl(MojoMessageHandle message,
-                                         uintptr_t* context) {
-  return g_core->ReleaseMessageContext(message, context);
+MojoResult MojoGetMessageContextImpl(MojoMessageHandle message,
+                                     uintptr_t* context,
+                                     MojoGetMessageContextFlags flags) {
+  return g_core->GetMessageContext(message, context, flags);
 }
 
 MojoResult MojoCreateMessagePipeImpl(
@@ -262,7 +263,7 @@ MojoSystemThunks MakeSystemThunks() {
                                     MojoDestroyMessageImpl,
                                     MojoSerializeMessageImpl,
                                     MojoGetSerializedMessageContentsImpl,
-                                    MojoReleaseMessageContextImpl,
+                                    MojoGetMessageContextImpl,
                                     MojoWrapPlatformHandleImpl,
                                     MojoUnwrapPlatformHandleImpl,
                                     MojoWrapPlatformSharedBufferHandleImpl,
