@@ -186,6 +186,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/features/features.h"
+#include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_interface.h"
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -526,6 +527,14 @@ void CreateMemoryCoordinatorHandle(
     mojom::MemoryCoordinatorHandleRequest request) {
   MemoryCoordinatorImpl::GetInstance()->CreateHandle(render_process_id,
                                                      std::move(request));
+}
+
+void CreateResourceCoordinatorProcessInterface(
+    RenderProcessHostImpl* render_process_host,
+    const service_manager::BindSourceInfo& source_info,
+    resource_coordinator::mojom::CoordinationUnitRequest request) {
+  render_process_host->GetProcessResourceCoordinator()->service()->AddBinding(
+      std::move(request));
 }
 
 // Forwards service requests to Service Manager since the renderer cannot launch
@@ -1661,6 +1670,11 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 
   registry->AddInterface(
       base::Bind(&metrics::CreateSingleSampleMetricsProvider));
+
+  if (base::FeatureList::IsEnabled(features::kGlobalResourceCoordinator)) {
+    registry->AddInterface(base::Bind(
+        &CreateResourceCoordinatorProcessInterface, base::Unretained(this)));
+  }
 
   if (base::FeatureList::IsEnabled(features::kOffMainThreadFetch)) {
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context(
