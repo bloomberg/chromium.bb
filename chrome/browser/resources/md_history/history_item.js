@@ -133,6 +133,9 @@ cr.define('md_history', function() {
     /** @private {?HistoryFocusRow} */
     row_: null,
 
+    /** @private {boolean} */
+    mouseDown_: false,
+
     /** @override */
     attached: function() {
       Polymer.RenderStatus.afterNextRender(this, function() {
@@ -156,6 +159,12 @@ cr.define('md_history', function() {
      * @private
      */
     onFocus_: function() {
+      // Don't change the focus while the mouse is down, as it prevents text
+      // selection. Not changing focus here is acceptable because the checkbox
+      // will be focused in onItemClick_() anyway.
+      if (this.mouseDown_)
+        return;
+
       if (this.lastFocused)
         this.row_.getEquivalentElement(this.lastFocused).focus();
       else
@@ -210,6 +219,10 @@ cr.define('md_history', function() {
      * @private
      */
     onItemMousedown_: function(e) {
+      this.mouseDown_ = true;
+      listenOnce(document, 'mouseup', function() {
+        this.mouseDown_ = false;
+      }.bind(this));
       // Prevent shift clicking a checkbox from selecting text.
       if (e.shiftKey)
         e.preventDefault();
