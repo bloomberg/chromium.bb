@@ -901,6 +901,7 @@ def parse_args():
   parse.add_option('--gerrit_no_reset', action='store_true',
                    help='Bypass calling reset after applying a gerrit ref.')
   parse.add_option('--specs', help='Gcilent spec.')
+  parse.add_option('--spec-path', help='Path to a Gcilent spec file.')
   parse.add_option('--revision_mapping_file',
                    help=('Path to a json file of the form '
                          '{"property_name": "path/to/repo/"}'))
@@ -937,6 +938,12 @@ def parse_args():
       help='Disable validation of .gclient and DEPS syntax.')
 
   options, args = parse.parse_args()
+
+  if options.spec_path:
+    if options.specs:
+      parse.error('At most one of --spec-path and --specs may be specified.')
+    with open(options.spec_path, 'r') as fd:
+      options.specs = fd.read()
 
   if not options.git_cache_dir:
     parse.error('--git-cache-dir is required')

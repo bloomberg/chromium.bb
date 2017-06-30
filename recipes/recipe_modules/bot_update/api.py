@@ -173,7 +173,8 @@ class BotUpdateApi(recipe_api.RecipeApi):
 
     flags = [
         # What do we want to check out (spec/root/rev/reverse_rev_map).
-        ['--spec', self.m.gclient.config_to_pythonish(cfg)],
+        ['--spec-path', self.m.raw_io.input(
+            self.m.gclient.config_to_pythonish(cfg))],
         ['--patch_root', root],
         ['--revision_mapping_file', self.m.json.input(reverse_rev_map)],
         ['--git-cache-dir', cfg.cache_dir],
