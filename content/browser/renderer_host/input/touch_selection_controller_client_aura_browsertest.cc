@@ -14,6 +14,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/browser/renderer_host/render_widget_host_view_event_handler.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/overscroll_configuration.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -652,24 +653,31 @@ IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAuraTest,
   selection_controller_client()->InitWaitForSelectionEvent(
       ui::SELECTION_HANDLES_CLEARED);
 
+  float event_x = 10.f;
+  const float event_y = 10.f;
   ui::GestureEventDetails scroll_begin_details(ui::ET_GESTURE_SCROLL_BEGIN);
   scroll_begin_details.set_device_type(
       ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
-  ui::GestureEvent scroll_begin(10, 10, 0, ui::EventTimeForNow(),
+  ui::GestureEvent scroll_begin(event_x, event_y, 0, ui::EventTimeForNow(),
                                 scroll_begin_details);
   rwhva->OnGestureEvent(&scroll_begin);
 
+  const int window_width = rwhva->GetNativeView()->bounds().width();
+  const float overscroll_threshold =
+      GetOverscrollConfig(OVERSCROLL_CONFIG_HORIZ_THRESHOLD_START_TOUCHSCREEN);
+  const float scroll_amount = window_width * overscroll_threshold + 1;
+  event_x += scroll_amount;
   ui::GestureEventDetails scroll_update_details(ui::ET_GESTURE_SCROLL_UPDATE,
-                                                200, 0);
+                                                scroll_amount, 0);
   scroll_update_details.set_device_type(
       ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
-  ui::GestureEvent scroll_update(210, 10, 0, ui::EventTimeForNow(),
+  ui::GestureEvent scroll_update(event_x, event_y, 0, ui::EventTimeForNow(),
                                  scroll_update_details);
   rwhva->OnGestureEvent(&scroll_update);
 
   ui::GestureEventDetails scroll_end_details(ui::ET_GESTURE_SCROLL_END);
   scroll_end_details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
-  ui::GestureEvent scroll_end(210, 10, 0, ui::EventTimeForNow(),
+  ui::GestureEvent scroll_end(event_x, event_y, 0, ui::EventTimeForNow(),
                               scroll_end_details);
   rwhva->OnGestureEvent(&scroll_end);
 

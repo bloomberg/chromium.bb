@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/common/content_export.h"
-#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace content {
 
@@ -20,9 +20,12 @@ class CONTENT_EXPORT OverscrollControllerDelegate {
   OverscrollControllerDelegate() {}
   virtual ~OverscrollControllerDelegate() {}
 
-  // Get the bounds of the view corresponding to the delegate. Overscroll-ending
-  // events will only be processed if the visible bounds are non-empty.
-  virtual gfx::Rect GetVisibleBounds() const = 0;
+  // Get the size of the view corresponding to the delegate.
+  virtual gfx::Size GetVisibleSize() const = 0;
+
+  // Get the size of the display containing the view corresponding to the
+  // delegate.
+  virtual gfx::Size GetDisplaySize() const = 0;
 
   // This is called for each update in the overscroll amount. Returns true if
   // the delegate consumed the event.

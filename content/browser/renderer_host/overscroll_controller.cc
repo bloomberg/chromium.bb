@@ -31,15 +31,9 @@ bool IsGestureEventFromTouchpad(const blink::WebInputEvent& event) {
 
 namespace content {
 
-OverscrollController::OverscrollController()
-    : overscroll_mode_(OVERSCROLL_NONE),
-      scroll_state_(STATE_UNKNOWN),
-      overscroll_delta_x_(0.f),
-      overscroll_delta_y_(0.f),
-      delegate_(NULL) {}
+OverscrollController::OverscrollController() {}
 
-OverscrollController::~OverscrollController() {
-}
+OverscrollController::~OverscrollController() {}
 
 bool OverscrollController::ShouldProcessEvent(
     const blink::WebInputEvent& event) {
@@ -182,6 +176,7 @@ void OverscrollController::DiscardingGestureEvent(
 
 void OverscrollController::Reset() {
   overscroll_mode_ = OVERSCROLL_NONE;
+  overscroll_source_ = OverscrollSource::NONE;
   overscroll_delta_x_ = overscroll_delta_y_ = 0.f;
   scroll_state_ = STATE_UNKNOWN;
 }
@@ -208,14 +203,11 @@ bool OverscrollController::DispatchEventCompletesAction (
   // from the touchpad since it is sent based on a timeout not
   // when the user has stopped interacting.
   if (event.GetType() == blink::WebInputEvent::kGestureScrollEnd &&
-      IsGestureEventFromTouchpad(event))
+      IsGestureEventFromTouchpad(event)) {
     return false;
+  }
 
   if (!delegate_)
-    return false;
-
-  gfx::Rect bounds = delegate_->GetVisibleBounds();
-  if (bounds.IsEmpty())
     return false;
 
   if (event.GetType() == blink::WebInputEvent::kGestureFlingStart) {
@@ -244,13 +236,19 @@ bool OverscrollController::DispatchEventCompletesAction (
     }
   }
 
+  const gfx::Size size = overscroll_source_ == OverscrollSource::TOUCHPAD
+                             ? delegate_->GetDisplaySize()
+                             : delegate_->GetVisibleSize();
+  if (size.IsEmpty())
+    return false;
+
   float ratio, threshold;
   if (overscroll_mode_ == OVERSCROLL_WEST ||
       overscroll_mode_ == OVERSCROLL_EAST) {
-    ratio = fabs(overscroll_delta_x_) / bounds.width();
+    ratio = fabs(overscroll_delta_x_) / size.width();
     threshold = GetOverscrollConfig(OVERSCROLL_CONFIG_HORIZ_THRESHOLD_COMPLETE);
   } else {
-    ratio = fabs(overscroll_delta_y_) / bounds.height();
+    ratio = fabs(overscroll_delta_y_) / size.height();
     threshold = GetOverscrollConfig(OVERSCROLL_CONFIG_VERT_THRESHOLD_COMPLETE);
   }
 
@@ -422,6 +420,7 @@ void OverscrollController::CompleteAction() {
   if (delegate_)
     delegate_->OnOverscrollComplete(overscroll_mode_);
   overscroll_mode_ = OVERSCROLL_NONE;
+  overscroll_source_ = OverscrollSource::NONE;
   overscroll_delta_x_ = overscroll_delta_y_ = 0.f;
 }
 
@@ -435,6 +434,7 @@ void OverscrollController::SetOverscrollMode(OverscrollMode mode,
 
   OverscrollMode old_mode = overscroll_mode_;
   overscroll_mode_ = mode;
+  overscroll_source_ = source;
   if (overscroll_mode_ == OVERSCROLL_NONE)
     overscroll_delta_x_ = overscroll_delta_y_ = 0.f;
   else
