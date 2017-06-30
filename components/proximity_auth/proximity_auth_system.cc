@@ -4,12 +4,14 @@
 
 #include "components/proximity_auth/proximity_auth_system.h"
 
+#include "base/command_line.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "components/proximity_auth/proximity_auth_client.h"
 #include "components/proximity_auth/proximity_auth_pref_manager.h"
 #include "components/proximity_auth/remote_device_life_cycle_impl.h"
+#include "components/proximity_auth/switches.h"
 #include "components/proximity_auth/unlock_manager_impl.h"
 
 namespace proximity_auth {
@@ -191,6 +193,10 @@ void ProximityAuthSystem::OnFocusedUserChanged(const AccountId& account_id) {
 }
 
 bool ProximityAuthSystem::ShouldForcePassword() {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          proximity_auth::switches::kEnableForcePasswordReauth))
+    return false;
+
   // TODO(tengs): We need to properly propagate the last login time to the login
   // screen.
   if (screenlock_type_ == ScreenlockType::SIGN_IN)

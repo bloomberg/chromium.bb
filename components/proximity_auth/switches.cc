@@ -15,6 +15,10 @@ const char kEnableBluetoothLowEnergyDiscovery[] =
 extern const char kEnableChromeOSLogin[] =
     "enable-proximity-auth-chromeos-login";
 
+// Enables forcing the user to reauth with their password after X hours (e.g.
+// 20) without password entry.
+const char kEnableForcePasswordReauth[] = "force-password-reauth";
+
 // Enables close proximity detection. This allows the user to set a setting to
 // require very close proximity between the remote device and the local device
 // in order to unlock the local device, which trades off convenience for
