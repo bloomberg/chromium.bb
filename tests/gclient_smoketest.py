@@ -581,6 +581,10 @@ class GClientSmokeGIT(GClientSmokeBase):
     self.assertEqual([
         'gclient_gn_args_file = "src/gclient.args"',
         'gclient_gn_args = [\'DummyVariable\']',
+        'allowed_hosts = [',
+        '  "git://127.0.0.1:20000/git/",',
+        ']',
+        '',
         'deps = {',
         '  # src -> src/repo2 -> foo/bar',
         '  "foo/bar": {',

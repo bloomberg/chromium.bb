@@ -461,6 +461,9 @@ vars = {
 }
 gclient_gn_args_file = 'src/gclient.args'
 gclient_gn_args = ['DummyVariable']
+allowed_hosts = [
+  '%(git_base)s',
+]
 deps = {
   'src/repo2': {
     'url': '%(git_base)srepo_2@%(hash)s',
