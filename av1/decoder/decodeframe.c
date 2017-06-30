@@ -5225,10 +5225,12 @@ static void debug_check_frame_counts(const AV1_COMMON *const cm) {
   av1_zero(zero_counts);
   assert(cm->refresh_frame_context != REFRESH_FRAME_CONTEXT_BACKWARD ||
          cm->error_resilient_mode);
+#if !CONFIG_EC_ADAPT || CONFIG_ENTROPY_STATS
   assert(!memcmp(cm->counts.y_mode, zero_counts.y_mode,
                  sizeof(cm->counts.y_mode)));
   assert(!memcmp(cm->counts.uv_mode, zero_counts.uv_mode,
                  sizeof(cm->counts.uv_mode)));
+#endif
   assert(!memcmp(cm->counts.partition, zero_counts.partition,
                  sizeof(cm->counts.partition)));
   assert(!memcmp(cm->counts.coef, zero_counts.coef, sizeof(cm->counts.coef)));

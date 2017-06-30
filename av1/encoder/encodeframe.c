@@ -5441,12 +5441,20 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
                             const MODE_INFO *left_mi, const int intraonly,
                             const int mi_row, const int mi_col) {
   const MB_MODE_INFO *const mbmi = &mi->mbmi;
+#if !CONFIG_EC_ADAPT || CONFIG_ENTROPY_STATS
   const PREDICTION_MODE y_mode = mbmi->mode;
   const PREDICTION_MODE uv_mode = mbmi->uv_mode;
+#else
+  (void)counts;
+  (void)above_mi;
+  (void)left_mi;
+  (void)intraonly;
+#endif  // !CONFIG_EC_ADAPT || CONFIG_ENTROPY_STATS
   const BLOCK_SIZE bsize = mbmi->sb_type;
   const int unify_bsize = CONFIG_CB4X4;
 
   if (bsize < BLOCK_8X8 && !unify_bsize) {
+#if !CONFIG_EC_ADAPT || CONFIG_ENTROPY_STATS
     int idx, idy;
     const int num_4x4_w = num_4x4_blocks_wide_lookup[bsize];
     const int num_4x4_h = num_4x4_blocks_high_lookup[bsize];
@@ -5462,7 +5470,9 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
           ++counts->y_mode[0][bmode];
         }
       }
+#endif  // !CONFIG_EC_ADAPT || CONFIG_ENTROPY_STATS
   } else {
+#if !CONFIG_EC_ADAPT || CONFIG_ENTROPY_STATS
     if (intraonly) {
       const PREDICTION_MODE above = av1_above_block_mode(mi, above_mi, 0);
       const PREDICTION_MODE left = av1_left_block_mode(mi, left_mi, 0);
@@ -5470,6 +5480,7 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
     } else {
       ++counts->y_mode[size_group_lookup[bsize]][y_mode];
     }
+#endif  // !CONFIG_EC_ADAPT || CONFIG_ENTROPY_STATS
 #if CONFIG_FILTER_INTRA
     if (mbmi->mode == DC_PRED
 #if CONFIG_PALETTE
@@ -5515,7 +5526,9 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
   (void)mi_col;
   (void)xd;
 #endif
+#if !CONFIG_EC_ADAPT || CONFIG_ENTROPY_STATS
   ++counts->uv_mode[y_mode][uv_mode];
+#endif  // !CONFIG_EC_ADAPT || CONFIG_ENTROPY_STATS
 }
 
 #if CONFIG_VAR_TX

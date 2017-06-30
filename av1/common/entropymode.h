@@ -335,11 +335,13 @@ typedef struct frame_contexts {
 } FRAME_CONTEXT;
 
 typedef struct FRAME_COUNTS {
-  // Note: This structure should only contain 'unsigned int' fields, or
-  // aggregates built solely from 'unsigned int' fields/elements
+// Note: This structure should only contain 'unsigned int' fields, or
+// aggregates built solely from 'unsigned int' fields/elements
+#if !CONFIG_EC_ADAPT || CONFIG_ENTROPY_STATS
   unsigned int kf_y_mode[INTRA_MODES][INTRA_MODES][INTRA_MODES];
   unsigned int y_mode[BLOCK_SIZE_GROUPS][INTRA_MODES];
   unsigned int uv_mode[INTRA_MODES][INTRA_MODES];
+#endif  // !CONFIG_EC_ADAPT || CONFIG_ENTROPY_STATS
 #if CONFIG_EXT_PARTITION_TYPES
   unsigned int partition[PARTITION_CONTEXTS][EXT_PARTITION_TYPES];
 #else
