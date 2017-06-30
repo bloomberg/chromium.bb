@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/mac/bind_objc_block.h"
+#include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -50,12 +51,11 @@ class HttpProtocolHandlerCore;
 
 namespace {
 
-// Size of the buffer used to read the net::URLRequest.
-const int kIOBufferSize = 64 * 1024;
+// Minimum size of the buffer used to read the net::URLRequest.
+const int kIOBufferMinSize = 64 * 1024;
 
-// The maximum size of NSData that can be passed to the client 'didReceiveData'
-// callback. This value must always be greater or equal to |kIOBufferSize|.
-const int kClientMaxBufferSize = 4 * kIOBufferSize;
+// Maximum size of the buffer used to read the net::URLRequest.
+const int kIOBufferMaxSize = 16 * kIOBufferMinSize;  // 1MB
 
 // Global instance of the HTTPProtocolHandlerDelegate.
 net::HTTPProtocolHandlerDelegate* g_protocol_handler_delegate = nullptr;
@@ -189,12 +189,15 @@ class HttpProtocolHandlerCore
   void SSLErrorCallback(bool carryOn);
   void HostStateCallback(bool carryOn);
   void StartReading();
+  void AllocateReadBuffer(int last_read_data_size);
 
   base::ThreadChecker thread_checker_;
 
   // The NSURLProtocol client.
   id<CRNNetworkClientProtocol> client_;
-  scoped_refptr<IOBuffer> buffer_;
+  std::unique_ptr<char, base::FreeDeleter> read_buffer_;
+  int read_buffer_size_;
+  scoped_refptr<WrappedIOBuffer> read_buffer_wrapper_;
   base::scoped_nsobject<NSMutableURLRequest> request_;
   // Stream delegate to read the HTTPBodyStream.
   base::scoped_nsobject<CRWHTTPStreamDelegate> stream_delegate_;
@@ -212,7 +215,8 @@ class HttpProtocolHandlerCore
 
 HttpProtocolHandlerCore::HttpProtocolHandlerCore(NSURLRequest* request)
     : client_(nil),
-      buffer_(new IOBuffer(kIOBufferSize)),
+      read_buffer_size_(kIOBufferMinSize),
+      read_buffer_wrapper_(nullptr),
       net_request_(nullptr) {
   // The request will be accessed from another thread. It is safer to make a
   // copy to avoid conflicts.
@@ -222,6 +226,8 @@ HttpProtocolHandlerCore::HttpProtocolHandlerCore(NSURLRequest* request)
   // shallowly copies the request, and just retains the non-threadsafe NSURL.
   thread_checker_.DetachFromThread();
   request_.reset([request mutableCopy]);
+  // Will allocate read buffer with size |kIOBufferMinSize|.
+  AllocateReadBuffer(0);
   [request_ setURL:[NSURL URLWithString:[[request URL] absoluteString]]];
 }
 
@@ -251,14 +257,20 @@ void HttpProtocolHandlerCore::HandleStreamEvent(NSStream* stream,
         tracker_->StartRequest(net_request_);
       break;
     case NSStreamEventHasBytesAvailable: {
-      NSUInteger length;
-      DCHECK([stream isKindOfClass:[NSInputStream class]]);
-      length = [(NSInputStream*)stream read:(unsigned char*)buffer_->data()
-                                  maxLength:kIOBufferSize];
-      if (length) {
-        std::vector<char> owned_data(buffer_->data(), buffer_->data() + length);
+      NSInteger length;
+      // TODO(crbug.com/738025): Dynamically change the size of the read buffer
+      // to improve the read (POST) performance, see AllocateReadBuffer(), &
+      // avoid unnecessary data copy.
+      length = [base::mac::ObjCCastStrict<NSInputStream>(stream)
+               read:reinterpret_cast<unsigned char*>(read_buffer_.get())
+          maxLength:read_buffer_size_];
+      if (length > 0) {
+        std::vector<char> owned_data(read_buffer_.get(),
+                                     read_buffer_.get() + length);
         post_data_readers_.push_back(
             base::MakeUnique<UploadOwnedBytesElementReader>(&owned_data));
+      } else if (length < 0) {  // Error
+        StopRequestWithError(stream.streamError.code, ERR_FAILED);
       }
       break;
     }
@@ -498,7 +510,8 @@ void HttpProtocolHandlerCore::StartReading() {
   // using it and the object is not re-entrant.
   [client_ didReceiveResponse:response];
 
-  int bytes_read = net_request_->Read(buffer_.get(), kIOBufferSize);
+  int bytes_read =
+      net_request_->Read(read_buffer_wrapper_.get(), read_buffer_size_);
   if (bytes_read == net::ERR_IO_PENDING)
     return;
 
@@ -519,33 +532,25 @@ void HttpProtocolHandlerCore::OnReadCompleted(URLRequest* request,
     return;
 
   DCHECK_EQ(net_request_, request);
-  DCHECK_GE(kClientMaxBufferSize, kIOBufferSize);
 
-  // Read all we can from the socket and put it into data.
-  // TODO(droger): It may be possible to avoid some of the copies (using
-  // WrappedIOBuffer for example).
+  // Read data from the socket until no bytes left to read.
   uint64_t total_bytes_read = 0;
   while (bytes_read > 0) {
-    base::scoped_nsobject<NSMutableData> data(
-        [[NSMutableData alloc] initWithCapacity:bytes_read]);
-    // |bytes_read| should always be less or equal to |kClientMaxBufferSize|.
-    // This is ensured by the fact that the max read buffer size (i.e.
-    // |kIOBufferSize|) is always smaller or equal to |kClientMaxBufferSize|.
-    while (bytes_read > 0 &&
-           [data length] + bytes_read <= kClientMaxBufferSize) {
-      total_bytes_read += bytes_read;
-      [data appendBytes:buffer_->data() length:bytes_read];
-      bytes_read = request->Read(buffer_.get(), kIOBufferSize);
-    }
+    total_bytes_read += bytes_read;
+    // The NSData will take the ownership of |read_buffer_|.
+    NSData* data =
+        [NSData dataWithBytesNoCopy:read_buffer_.release() length:bytes_read];
+    // If the data is not encoded in UTF8, the NSString is nil.
+    DVLOG(3) << "To client:" << std::endl
+             << base::SysNSStringToUTF8([[NSString alloc]
+                    initWithData:data
+                        encoding:NSUTF8StringEncoding]);
+    // Pass the read data to the client.
+    [client_ didLoadData:data];
 
-    if ([data length] > 0) {
-      // If the data is not encoded in UTF8, the NSString is nil.
-      DVLOG(3) << "To client:" << std::endl
-               << base::SysNSStringToUTF8([[NSString alloc]
-                      initWithData:data
-                          encoding:NSUTF8StringEncoding]);
-      [client_ didLoadData:data];
-    }
+    // Allocate a new buffer and continue reading from the socket.
+    AllocateReadBuffer(bytes_read);
+    bytes_read = request->Read(read_buffer_wrapper_.get(), read_buffer_size_);
   }
 
   if (tracker_)
@@ -560,6 +565,22 @@ void HttpProtocolHandlerCore::OnReadCompleted(URLRequest* request,
     int error = bytes_read;
     StopRequestWithError(IOSErrorCode(error), error);
   }
+}
+
+void HttpProtocolHandlerCore::AllocateReadBuffer(int last_read_data_size) {
+  if (last_read_data_size == read_buffer_size_) {
+    // If the whole buffer was filled with data then increase the buffer size
+    // for the next read but don't exceed |kIOBufferMaxSize|.
+    read_buffer_size_ = std::min(read_buffer_size_ * 2, kIOBufferMaxSize);
+  } else if (read_buffer_size_ / 2 >= last_read_data_size) {
+    // If only a half or less of the buffer was filled with data then reduce
+    // the buffer size for the next read but not make it smaller than
+    // |kIOBufferMinSize|.
+    read_buffer_size_ = std::max(read_buffer_size_ / 2, kIOBufferMinSize);
+  }
+  read_buffer_.reset(static_cast<char*>(malloc(read_buffer_size_)));
+  read_buffer_wrapper_ =
+      new WrappedIOBuffer(static_cast<const char*>(read_buffer_.get()));
 }
 
 HttpProtocolHandlerCore::~HttpProtocolHandlerCore() {
