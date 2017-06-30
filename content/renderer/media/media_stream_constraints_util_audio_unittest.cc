@@ -773,7 +773,10 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, AdvancedCompatibleConstraints) {
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   CheckDeviceDefaults(result);
-  CheckBoolDefaults({&AudioCaptureSettings::render_to_associated_sink},
+  // TODO(crbug.com/736309): Fold this local when clang is fixed.
+  auto render_to_associated_sink =
+      &AudioCaptureSettings::render_to_associated_sink;
+  CheckBoolDefaults({render_to_associated_sink},
                     {&AudioProcessingProperties::goog_audio_mirroring}, result);
   CheckGeometryDefaults(result);
   EXPECT_TRUE(result.render_to_associated_sink());
@@ -794,7 +797,9 @@ TEST_P(MediaStreamConstraintsUtilAudioTest,
   EXPECT_TRUE(result.HasValue());
   CheckDeviceDefaults(result);
   EXPECT_FALSE(result.hotword_enabled());
-  CheckBoolDefaults({&AudioCaptureSettings::hotword_enabled},
+  // TODO(crbug.com/736309): Fold this local when clang is fixed.
+  auto hotword_enabled = &AudioCaptureSettings::hotword_enabled;
+  CheckBoolDefaults({hotword_enabled},
                     {&AudioProcessingProperties::goog_audio_mirroring,
                      &AudioProcessingProperties::goog_highpass_filter},
                     result);
@@ -814,7 +819,9 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, AdvancedConflictingLastConstraint) {
   auto result = SelectSettings();
   EXPECT_TRUE(result.HasValue());
   CheckDeviceDefaults(result);
-  CheckBoolDefaults({&AudioCaptureSettings::hotword_enabled},
+  // TODO(crbug.com/736309): Fold this local when clang is fixed.
+  auto hotword_enabled = &AudioCaptureSettings::hotword_enabled;
+  CheckBoolDefaults({hotword_enabled},
                     {&AudioProcessingProperties::goog_audio_mirroring,
                      &AudioProcessingProperties::goog_highpass_filter},
                     result);
