@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/debug/stack_trace.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -187,6 +188,11 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
   base::Time time_init_completed_;
   base::Time time_token_available_;
   base::Time time_client_registered_;
+
+  // Stack trace of the previous Connect() method call.
+  // TODO(emaxx): Remove after the crashes tracked at https://crbug.com/685996
+  // are fixed.
+  base::debug::StackTrace connect_callstack_;
 
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyManagerChromeOS);
 };

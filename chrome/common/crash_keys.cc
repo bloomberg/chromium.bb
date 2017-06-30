@@ -86,6 +86,9 @@ const char kViewCount[] = "view-count";
 
 const char kZeroEncodeDetails[] = "zero-encode-details";
 
+const char kUserCloudPolicyManagerConnectTrace[] =
+    "user-cloud-policy-manager-connect-trace";
+
 size_t RegisterChromeCrashKeys() {
   // The following keys may be chunked by the underlying crash logging system,
   // but ultimately constitute a single key-value pair.
@@ -221,6 +224,9 @@ size_t RegisterChromeCrashKeys() {
     {"engine_params", crash_keys::kMediumSize},
     {"engine1_params", crash_keys::kMediumSize},
     {"engine2_params", crash_keys::kMediumSize},
+
+    // Temporary for https://crbug.com/685996.
+    {kUserCloudPolicyManagerConnectTrace, kMediumSize},
   };
 
   // This dynamic set of keys is used for sets of key value pairs when gathering

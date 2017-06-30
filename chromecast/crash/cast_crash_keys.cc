@@ -88,6 +88,9 @@ size_t RegisterCastCrashKeys() {
       {"swdh_set_hosted_version_host_pid", ::crash_keys::kSmallSize},
       {"swdh_set_hosted_version_is_new_process", ::crash_keys::kSmallSize},
       {"swdh_set_hosted_version_restart_count", ::crash_keys::kSmallSize},
+
+      // Temporary for https://crbug.com/685996.
+      {"user-cloud-policy-manager-connect-trace", ::crash_keys::kMediumSize},
   };
 
   return base::debug::InitCrashKeys(fixed_keys, arraysize(fixed_keys),

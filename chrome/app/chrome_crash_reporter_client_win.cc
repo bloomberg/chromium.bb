@@ -171,15 +171,18 @@ size_t RegisterCrashKeysHelper() {
       {"postmessage_script_info", kLargeSize},
 
       // Temporary for https://crbug.com/668633.
-      {"swdh_set_hosted_version_worker_pid", crash_keys::kSmallSize},
-      {"swdh_set_hosted_version_host_pid", crash_keys::kSmallSize},
-      {"swdh_set_hosted_version_is_new_process", crash_keys::kSmallSize},
-      {"swdh_set_hosted_version_restart_count", crash_keys::kSmallSize},
+      {"swdh_set_hosted_version_worker_pid", kSmallSize},
+      {"swdh_set_hosted_version_host_pid", kSmallSize},
+      {"swdh_set_hosted_version_is_new_process", kSmallSize},
+      {"swdh_set_hosted_version_restart_count", kSmallSize},
 
       // Temporary for https://crbug.com/697745.
-      {"engine_params", crash_keys::kMediumSize},
-      {"engine1_params", crash_keys::kMediumSize},
-      {"engine2_params", crash_keys::kMediumSize},
+      {"engine_params", kMediumSize},
+      {"engine1_params", kMediumSize},
+      {"engine2_params", kMediumSize},
+
+      // Temporary for https://crbug.com/685996.
+      {"user-cloud-policy-manager-connect-trace", kMediumSize},
   };
 
   // This dynamic set of keys is used for sets of key value pairs when gathering

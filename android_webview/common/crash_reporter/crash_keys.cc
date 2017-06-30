@@ -126,6 +126,9 @@ size_t RegisterWebViewCrashKeys() {
       {"swdh_set_hosted_version_host_pid", kSmallSize},
       {"swdh_set_hosted_version_is_new_process", kSmallSize},
       {"swdh_set_hosted_version_restart_count", kSmallSize},
+
+      // Temporary for https://crbug.com/685996.
+      {"user-cloud-policy-manager-connect-trace", kMediumSize},
   };
 
   // This dynamic set of keys is used for sets of key value pairs when gathering
