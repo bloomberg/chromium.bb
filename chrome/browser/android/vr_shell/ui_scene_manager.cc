@@ -15,6 +15,7 @@
 #include "chrome/browser/android/vr_shell/ui_elements/exit_prompt_backplane.h"
 #include "chrome/browser/android/vr_shell/ui_elements/loading_indicator.h"
 #include "chrome/browser/android/vr_shell/ui_elements/screen_dimmer.h"
+#include "chrome/browser/android/vr_shell/ui_elements/splash_screen_icon.h"
 #include "chrome/browser/android/vr_shell/ui_elements/system_indicator.h"
 #include "chrome/browser/android/vr_shell/ui_elements/transient_url_bar.h"
 #include "chrome/browser/android/vr_shell/ui_elements/ui_element.h"
@@ -558,7 +559,7 @@ void UiSceneManager::UpdateBackgroundColor() {
 }
 
 void UiSceneManager::SetSplashScreenIcon(const SkBitmap& bitmap) {
-  splash_screen_icon_->GetDerivedTexture()->SetSplashScreenIconBitmap(bitmap);
+  splash_screen_icon_->SetSplashScreenIconBitmap(bitmap);
   ConfigureScene();
 }
 

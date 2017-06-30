@@ -13,7 +13,6 @@
 #include "chrome/browser/android/vr_shell/textures/exit_warning_texture.h"
 #include "chrome/browser/android/vr_shell/textures/insecure_content_permanent_texture.h"
 #include "chrome/browser/android/vr_shell/textures/insecure_content_transient_texture.h"
-#include "chrome/browser/android/vr_shell/textures/splash_screen_icon_texture.h"
 #include "chrome/browser/android/vr_shell/textures/ui_texture.h"
 #include "chrome/browser/android/vr_shell/ui_elements/textured_element.h"
 #include "chrome/browser/android/vr_shell/ui_elements/transience_manager.h"
@@ -64,7 +63,6 @@ typedef SimpleTexturedElement<InsecureContentPermanentTexture>
     PermanentSecurityWarning;
 typedef TransientSimpleTexturedElement<InsecureContentTransientTexture>
     TransientSecurityWarning;
-typedef SimpleTexturedElement<SplashScreenIconTexture> SplashScreenIcon;
 
 }  // namespace vr_shell
 
