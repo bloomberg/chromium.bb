@@ -146,4 +146,7 @@ void PageLoadMetricsObserverTestHarness::NavigateWithPageTransitionAndCommit(
   content::WebContentsTester::For(web_contents())->CommitPendingNavigation();
 }
 
+const char PageLoadMetricsObserverTestHarness::kResourceUrl[] =
+    "https://www.example.com/resource";
+
 }  // namespace page_load_metrics

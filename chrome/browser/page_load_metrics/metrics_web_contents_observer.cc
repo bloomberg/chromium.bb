@@ -274,6 +274,10 @@ void MetricsWebContentsObserver::OnRequestComplete(
     int64_t original_content_length,
     base::TimeTicks creation_time,
     int net_error) {
+  // Ignore non-HTTP(S) resources (blobs, data uris, etc).
+  if (!url.SchemeIsHTTPOrHTTPS())
+    return;
+
   PageLoadTracker* tracker =
       GetTrackerOrNullForRequest(request_id, resource_type, creation_time);
   if (tracker) {

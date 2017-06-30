@@ -210,7 +210,7 @@ TEST_F(SubresourceFilterMetricsObserverTest, Basic) {
 TEST_F(SubresourceFilterMetricsObserverTest, Subresources) {
   SimulateNavigateAndCommit(GURL(kDefaultTestUrlWithActivation));
 
-  SimulateLoadedResource({GURL(), net::HostPortPair(),
+  SimulateLoadedResource({GURL(kResourceUrl), net::HostPortPair(),
                           -1 /* frame_tree_node_id */, false /* was_cached */,
                           1024 * 40 /* raw_body_bytes */,
                           0 /* original_network_content_length */,
@@ -225,14 +225,14 @@ TEST_F(SubresourceFilterMetricsObserverTest, Subresources) {
       blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorSubresourceFilterMatch;
   SimulateTimingAndMetadataUpdate(timing, metadata);
 
-  SimulateLoadedResource({GURL(), net::HostPortPair(),
+  SimulateLoadedResource({GURL(kResourceUrl), net::HostPortPair(),
                           -1 /* frame_tree_node_id */, false /* was_cached */,
                           1024 * 20 /* raw_body_bytes */,
                           0 /* original_network_content_length */,
                           nullptr /* data_reduction_proxy_data */,
                           content::ResourceType::RESOURCE_TYPE_SCRIPT, 0});
 
-  SimulateLoadedResource({GURL(), net::HostPortPair(),
+  SimulateLoadedResource({GURL(kResourceUrl), net::HostPortPair(),
                           -1 /* frame_tree_node_id */, true /* was_cached */,
                           1024 * 10 /* raw_body_bytes */,
                           0 /* original_network_content_length */,
@@ -313,7 +313,7 @@ TEST_F(SubresourceFilterMetricsObserverTest, SubresourcesWithMedia) {
 
   SimulateMediaPlayed();
 
-  SimulateLoadedResource({GURL(), net::HostPortPair(),
+  SimulateLoadedResource({GURL(kResourceUrl), net::HostPortPair(),
                           -1 /* frame_tree_node_id */, false /* was_cached */,
                           1024 * 40 /* raw_body_bytes */,
                           0 /* original_network_content_length */,
@@ -328,14 +328,14 @@ TEST_F(SubresourceFilterMetricsObserverTest, SubresourcesWithMedia) {
       blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorSubresourceFilterMatch;
   SimulateTimingAndMetadataUpdate(timing, metadata);
 
-  SimulateLoadedResource({GURL(), net::HostPortPair(),
+  SimulateLoadedResource({GURL(kResourceUrl), net::HostPortPair(),
                           -1 /* frame_tree_node_id */, false /* was_cached */,
                           1024 * 20 /* raw_body_bytes */,
                           0 /* original_network_content_length */,
                           nullptr /* data_reduction_proxy_data */,
                           content::ResourceType::RESOURCE_TYPE_SCRIPT, 0});
 
-  SimulateLoadedResource({GURL(), net::HostPortPair(),
+  SimulateLoadedResource({GURL(kResourceUrl), net::HostPortPair(),
                           -1 /* frame_tree_node_id */, true /* was_cached */,
                           1024 * 10 /* raw_body_bytes */,
                           0 /* original_network_content_length */,
