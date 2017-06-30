@@ -11,6 +11,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -23,7 +26,6 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
-#include "content/public/browser/browser_thread.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
@@ -167,18 +169,20 @@ void ChromeOSMetricsProvider::OnDidCreateMetricsLog() {
 
 void ChromeOSMetricsProvider::InitTaskGetHardwareClass(
     const base::Closure& callback) {
-  // Run the (potentially expensive) task on the FILE thread to avoid blocking
+  // Run the (potentially expensive) task in the background to avoid blocking
   // the UI thread.
-  content::BrowserThread::PostTaskAndReply(
-      content::BrowserThread::FILE,
+  base::PostTaskWithTraitsAndReply(
       FROM_HERE,
-      base::Bind(&ChromeOSMetricsProvider::InitTaskGetHardwareClassOnFileThread,
-                 weak_ptr_factory_.GetWeakPtr()),
+      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      base::BindOnce(
+          &ChromeOSMetricsProvider::InitTaskGetHardwareClassOnBackgroundThread,
+          weak_ptr_factory_.GetWeakPtr()),
       callback);
 }
 
-void ChromeOSMetricsProvider::InitTaskGetHardwareClassOnFileThread() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+void ChromeOSMetricsProvider::InitTaskGetHardwareClassOnBackgroundThread() {
+  base::ThreadRestrictions::AssertWaitAllowed();
   chromeos::system::StatisticsProvider::GetInstance()->GetMachineStatistic(
       "hardware_class", &hardware_class_);
 }

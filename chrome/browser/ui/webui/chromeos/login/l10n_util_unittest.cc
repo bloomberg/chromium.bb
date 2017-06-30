@@ -8,14 +8,11 @@
 
 #include <utility>
 
-#include "base/at_exit.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/singleton.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
@@ -27,28 +24,6 @@
 namespace chromeos {
 
 namespace {
-
-class MachineStatisticsInitializer {
- public:
-  MachineStatisticsInitializer();
-
-  static MachineStatisticsInitializer* GetInstance();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MachineStatisticsInitializer);
-};
-
-MachineStatisticsInitializer::MachineStatisticsInitializer() {
-  base::MessageLoop loop;
-  chromeos::system::StatisticsProvider::GetInstance()
-      ->StartLoadingMachineStatistics(loop.task_runner(), false);
-  base::RunLoop().RunUntilIdle();
-}
-
-// static
-MachineStatisticsInitializer* MachineStatisticsInitializer::GetInstance() {
-  return base::Singleton<MachineStatisticsInitializer>::get();
-}
 
 void VerifyOnlyUILanguages(const base::ListValue& list) {
   for (size_t i = 0; i < list.GetSize(); ++i) {
@@ -80,34 +55,27 @@ class L10nUtilTest : public testing::Test {
   L10nUtilTest();
   ~L10nUtilTest() override;
 
-  // testing::Test:
-  void SetUp() override;
-  void TearDown() override;
-
   void SetInputMethods1();
   void SetInputMethods2();
 
  private:
-  base::ShadowingAtExitManager at_exit_manager_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   MockInputMethodManagerWithInputMethods* input_manager_;
 };
 
 L10nUtilTest::L10nUtilTest()
     : input_manager_(new MockInputMethodManagerWithInputMethods) {
-}
-
-L10nUtilTest::~L10nUtilTest() {
-}
-
-void L10nUtilTest::SetUp() {
   chromeos::input_method::InitializeForTesting(input_manager_);
   input_manager_->SetComponentExtensionIMEManager(
       base::MakeUnique<ComponentExtensionIMEManager>());
-  MachineStatisticsInitializer::GetInstance();  // Ignore result.
+
+  chromeos::system::StatisticsProvider::GetInstance()
+      ->StartLoadingMachineStatistics(false);
+  base::RunLoop().RunUntilIdle();
 }
 
-void L10nUtilTest::TearDown() {
+L10nUtilTest::~L10nUtilTest() {
   chromeos::input_method::Shutdown();
 }
 

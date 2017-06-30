@@ -23,6 +23,8 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/sys_info.h"
 #include "base/task_runner.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -208,9 +210,7 @@ bool HasOemPrefix(const std::string& name) {
 class StatisticsProviderImpl : public StatisticsProvider {
  public:
   // StatisticsProvider implementation:
-  void StartLoadingMachineStatistics(
-      const scoped_refptr<base::TaskRunner>& file_task_runner,
-      bool load_oem_manifest) override;
+  void StartLoadingMachineStatistics(bool load_oem_manifest) override;
   bool GetMachineStatistic(const std::string& name,
                            std::string* result) override;
   bool GetMachineFlag(const std::string& name, bool* result) override;
@@ -427,7 +427,6 @@ StatisticsProviderImpl::~StatisticsProviderImpl() {
 }
 
 void StatisticsProviderImpl::StartLoadingMachineStatistics(
-    const scoped_refptr<base::TaskRunner>& file_task_runner,
     bool load_oem_manifest) {
   CHECK(!load_statistics_started_);
   load_statistics_started_ = true;
@@ -435,11 +434,12 @@ void StatisticsProviderImpl::StartLoadingMachineStatistics(
   VLOG(1) << "Started loading statistics. Load OEM Manifest: "
           << load_oem_manifest;
 
-  file_task_runner->PostTask(
+  base::PostTaskWithTraits(
       FROM_HERE,
-      base::Bind(&StatisticsProviderImpl::LoadMachineStatistics,
-                 base::Unretained(this),
-                 load_oem_manifest));
+      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      base::BindOnce(&StatisticsProviderImpl::LoadMachineStatistics,
+                     base::Unretained(this), load_oem_manifest));
 }
 
 void StatisticsProviderImpl::LoadMachineStatistics(bool load_oem_manifest) {
