@@ -207,7 +207,7 @@ IntersectionObserver::IntersectionObserver(
 }
 
 void IntersectionObserver::ClearWeakMembers(Visitor* visitor) {
-  if (ThreadHeap::IsHeapObjectAlive(root()))
+  if (RootIsImplicit() || (root() && ThreadHeap::IsHeapObjectAlive(root())))
     return;
   DummyExceptionStateForTesting exception_state;
   disconnect(exception_state);
