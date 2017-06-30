@@ -58,7 +58,7 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
       CompositingReasons direct_compositing_reasons,
       const CompositorElementId& compositor_element_id,
       PassRefPtr<const ScrollPaintPropertyNode> parent_scroll,
-      const IntSize& clip,
+      const IntSize& scroll_container_bounds,
       const IntSize& bounds,
       bool user_scrollable_horizontal,
       bool user_scrollable_vertical,
@@ -70,9 +70,9 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
         std::move(parent), matrix, origin, flattens_inherited_transform,
         rendering_context_id, direct_compositing_reasons, compositor_element_id,
         ScrollPaintPropertyNode::Create(
-            std::move(parent_scroll), clip, bounds, user_scrollable_horizontal,
-            user_scrollable_vertical, main_thread_scrolling_reasons,
-            scroll_client)));
+            std::move(parent_scroll), scroll_container_bounds, bounds,
+            user_scrollable_horizontal, user_scrollable_vertical,
+            main_thread_scrolling_reasons, scroll_client)));
   }
 
   bool Update(
@@ -111,7 +111,7 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
       CompositingReasons direct_compositing_reasons,
       CompositorElementId compositor_element_id,
       PassRefPtr<const ScrollPaintPropertyNode> parent_scroll,
-      const IntSize& clip,
+      const IntSize& scroll_container_bounds,
       const IntSize& bounds,
       bool user_scrollable_horizontal,
       bool user_scrollable_vertical,
@@ -123,8 +123,9 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     DCHECK(scroll_);
     DCHECK(matrix.IsIdentityOr2DTranslation());
     changed |= scroll_->Update(
-        std::move(parent_scroll), clip, bounds, user_scrollable_horizontal,
-        user_scrollable_vertical, main_thread_scrolling_reasons, scroll_client);
+        std::move(parent_scroll), scroll_container_bounds, bounds,
+        user_scrollable_horizontal, user_scrollable_vertical,
+        main_thread_scrolling_reasons, scroll_client);
     return changed;
   }
 

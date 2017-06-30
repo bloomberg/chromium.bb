@@ -703,7 +703,7 @@ TEST_P(PaintPropertyTreeUpdateTest, ScrollBoundsChange) {
   auto* container = GetLayoutObjectByElementId("container");
   auto* scroll_node =
       container->PaintProperties()->ScrollTranslation()->ScrollNode();
-  EXPECT_EQ(IntSize(100, 100), scroll_node->Clip());
+  EXPECT_EQ(IntSize(100, 100), scroll_node->ContainerBounds());
   EXPECT_EQ(IntSize(200, 200), scroll_node->Bounds());
 
   GetDocument().getElementById("content")->setAttribute(
@@ -711,7 +711,7 @@ TEST_P(PaintPropertyTreeUpdateTest, ScrollBoundsChange) {
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(scroll_node,
             container->PaintProperties()->ScrollTranslation()->ScrollNode());
-  EXPECT_EQ(IntSize(100, 100), scroll_node->Clip());
+  EXPECT_EQ(IntSize(100, 100), scroll_node->ContainerBounds());
   EXPECT_EQ(IntSize(200, 300), scroll_node->Bounds());
 }
 
