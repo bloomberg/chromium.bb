@@ -5378,7 +5378,8 @@ static const MOVParseTableEntry mov_default_parse_table[] = {
 { MKTAG('a','l','a','c'), mov_read_alac }, /* alac specific atom */
 { MKTAG('a','v','c','C'), mov_read_glbl },
 { MKTAG('p','a','s','p'), mov_read_pasp },
-{ MKTAG('s','i','d','x'), mov_read_sidx },
+// Chromium: Repeated frames while seeking video. http://crbug.com/568336.
+// { MKTAG('s','i','d','x'), mov_read_sidx },
 { MKTAG('s','t','b','l'), mov_read_default },
 { MKTAG('s','t','c','o'), mov_read_stco },
 { MKTAG('s','t','p','s'), mov_read_stps },
@@ -6443,8 +6444,6 @@ static int mov_read_packet(AVFormatContext *s, AVPacket *pkt)
     return 0;
 }
 
-// Chromium: Repeated frames while seeking video. http://crbug.com/568336.
-#if 0
 static int mov_seek_fragment(AVFormatContext *s, AVStream *st, int64_t timestamp)
 {
     MOVContext *mov = s->priv_data;
@@ -6470,9 +6469,6 @@ static int mov_seek_fragment(AVFormatContext *s, AVStream *st, int64_t timestamp
 
     return 0;
 }
-#else
-#define mov_seek_fragment(a,b,c) 0
-#endif
 
 static int mov_seek_stream(AVFormatContext *s, AVStream *st, int64_t timestamp, int flags)
 {
