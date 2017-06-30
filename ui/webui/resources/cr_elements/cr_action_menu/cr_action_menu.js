@@ -6,14 +6,14 @@
  * @typedef {{
  *   top: number,
  *   left: number,
- *   width: (number| undefined),
- *   height: (number| undefined),
- *   anchorAlignmentX: (number| undefined),
- *   anchorAlignmentY: (number| undefined),
- *   minX: (number| undefined),
- *   minY: (number| undefined),
- *   maxX: (number| undefined),
- *   maxY: (number| undefined),
+ *   width: (number|undefined),
+ *   height: (number|undefined),
+ *   anchorAlignmentX: (number|undefined),
+ *   anchorAlignmentY: (number|undefined),
+ *   minX: (number|undefined),
+ *   minY: (number|undefined),
+ *   maxX: (number|undefined),
+ *   maxY: (number|undefined),
  * }}
  */
 var ShowConfig;
@@ -73,12 +73,12 @@ function getStartPointWithAnchor(
   return startPoint;
 }
 
-
 /**
  * @private
  * @return {!ShowConfig}
  */
 function getDefaultShowConfig() {
+  var doc = document.scrollingElement;
   return {
     top: 0,
     left: 0,
@@ -86,10 +86,10 @@ function getDefaultShowConfig() {
     width: 0,
     anchorAlignmentX: AnchorAlignment.AFTER_START,
     anchorAlignmentY: AnchorAlignment.AFTER_START,
-    minX: 0,
-    minY: 0,
-    maxX: window.innerWidth,
-    maxY: window.innerHeight,
+    minX: doc.scrollLeft,
+    minY: doc.scrollTop,
+    maxX: doc.scrollLeft + window.innerWidth,
+    maxY: doc.scrollTop + window.innerHeight,
   };
 }
 
@@ -242,19 +242,49 @@ Polymer({
   /**
    * Shows the menu anchored to the given element.
    * @param {!Element} anchorElement
+   * @param {ShowConfig=} opt_config
    */
-  showAt: function(anchorElement) {
+  showAt: function(anchorElement, opt_config) {
     this.anchorElement_ = anchorElement;
+    // Scroll the anchor element into view so that the bounding rect will be
+    // accurate for where the menu should be shown.
     this.anchorElement_.scrollIntoViewIfNeeded();
+
+    // Save the scroll position that ensures the anchor element is onscreen.
+    var doc = document.scrollingElement;
+    var scrollLeft = doc.scrollLeft;
+    var scrollTop = doc.scrollTop;
+
+    // Reset position so that layout isn't affected by the previous position,
+    // and so that the dialog is positioned at the top-start corner of the
+    // document.
+    this.resetStyle_();
+
+    // Show the dialog which will focus the top-start of the body. This makes
+    // the client rect calculation relative to the top-start of the body.
+    this.showModal();
+
     var rect = this.anchorElement_.getBoundingClientRect();
-    this.showAtPosition({
-      top: rect.top,
-      left: rect.left,
-      height: rect.height,
-      width: rect.width,
-      // Default to anchoring towards the left.
-      anchorAlignmentX: AnchorAlignment.BEFORE_END,
-    });
+    this.positionDialog_(/** @type {ShowConfig} */ (Object.assign(
+        {
+          top: rect.top,
+          left: rect.left,
+          height: rect.height,
+          width: rect.width,
+          // Default to anchoring towards the left.
+          anchorAlignmentX: AnchorAlignment.BEFORE_END,
+          minX: scrollLeft,
+          minY: scrollTop,
+          maxX: scrollLeft + window.innerWidth,
+          maxY: scrollTop + window.innerHeight,
+        },
+        opt_config)));
+
+    // Restore the scroll position.
+    doc.scrollTop = scrollTop;
+    doc.scrollLeft = scrollLeft;
+
+    this.addCloseListeners_();
   },
 
   /**
@@ -284,26 +314,30 @@ Polymer({
    * @param {!ShowConfig} config
    */
   showAtPosition: function(config) {
+    this.resetStyle_();
+    this.showModal();
+    this.positionDialog_(config);
+    this.addCloseListeners_();
+  },
+
+  /** @private */
+  resetStyle_: function() {
+    this.style.left = '';
+    this.style.right = '';
+    this.style.top = '0';
+  },
+
+  /**
+   * @param {!ShowConfig} config
+   * @private
+   */
+  positionDialog_: function(config) {
     var c = Object.assign(getDefaultShowConfig(), config);
 
     var top = c.top;
     var left = c.left;
     var bottom = top + c.height;
     var right = left + c.width;
-
-    this.boundClose_ = this.boundClose_ || function() {
-      if (this.open)
-        this.close();
-    }.bind(this);
-    window.addEventListener('resize', this.boundClose_);
-    window.addEventListener('popstate', this.boundClose_);
-
-    // Reset position to prevent previous values from affecting layout.
-    this.style.left = '';
-    this.style.right = '';
-    this.style.top = '';
-
-    this.showModal();
 
     // Flip the X anchor in RTL.
     var rtl = getComputedStyle(this).direction == 'rtl';
@@ -314,7 +348,7 @@ Polymer({
         left, right, this.offsetWidth, c.anchorAlignmentX, c.minX, c.maxX);
 
     if (rtl) {
-      var menuRight = window.innerWidth - menuLeft - this.offsetWidth;
+      var menuRight = document.body.scrollWidth - menuLeft - this.offsetWidth;
       this.style.right = menuRight + 'px';
     } else {
       this.style.left = menuLeft + 'px';
@@ -323,6 +357,18 @@ Polymer({
     var menuTop = getStartPointWithAnchor(
         top, bottom, this.offsetHeight, c.anchorAlignmentY, c.minY, c.maxY);
     this.style.top = menuTop + 'px';
+  },
+
+  /**
+   * @private
+   */
+  addCloseListeners_: function() {
+    this.boundClose_ = this.boundClose_ || function() {
+      if (this.open)
+        this.close();
+    }.bind(this);
+    window.addEventListener('resize', this.boundClose_);
+    window.addEventListener('popstate', this.boundClose_);
   },
 });
 })();

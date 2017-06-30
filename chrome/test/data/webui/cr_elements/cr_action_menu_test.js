@@ -268,5 +268,88 @@ suite('CrActionMenu', function() {
     assertEquals(140 - menuWidth, menu.offsetLeft);
     assertEquals('250px', menu.style.top);
     menu.close();
+    document.body.style.direction = 'ltr';
+  });
+
+  test('offscreen scroll positioning', function() {
+    var bodyHeight = 10000;
+    var bodyWidth = 20000;
+    var containerLeft = 5000;
+    var containerTop = 10000;
+    var containerWidth = 500;
+    var containerHeight = 500;
+    document.body.innerHTML = `
+      <style>
+        body {
+          height: ${bodyHeight}px;
+          width: ${bodyWidth}px;
+        }
+
+        #container {
+          overflow: auto;
+          position: absolute;
+          top: ${containerTop}px;
+          left: ${containerLeft}px;
+          height: ${containerHeight}px;
+          width: ${containerWidth}px;
+        }
+
+        #inner-container {
+          height: 1000px;
+          width: 1000px;
+        }
+      </style>
+      <div id="container">
+        <div id="inner-container">
+          <button id="dots">...</button>
+          <dialog is="cr-action-menu">
+            <button class="dropdown-item">Un</button>
+            <hr>
+            <button class="dropdown-item">Dos</button>
+            <button class="dropdown-item">Tres</button>
+          </dialog>
+        </div>
+      </div>
+    `;
+    menu = document.querySelector('dialog[is=cr-action-menu]');
+    var dots = document.querySelector('#dots');
+
+    // Show the menu, scrolling the body to the button.
+    menu.showAt(
+        dots,
+        {anchorAlignmentX: AnchorAlignment.AFTER_START});
+    assertEquals(`${containerLeft}px`, menu.style.left);
+    assertEquals(`${containerTop}px`, menu.style.top);
+    menu.close();
+
+    // Show the menu, scrolling the container to the button, and the body to the
+    // button.
+    document.body.scrollLeft = bodyWidth;
+    document.body.scrollTop = bodyHeight;
+
+    document.querySelector('#container').scrollLeft = containerLeft;
+    document.querySelector('#container').scrollTop = containerTop;
+
+    menu.showAt(dots, {anchorAlignmentX: AnchorAlignment.AFTER_START});
+    assertEquals(`${containerLeft}px`, menu.style.left);
+    assertEquals(`${containerTop}px`, menu.style.top);
+    menu.close();
+
+    // Show the menu for an already onscreen button. The anchor should be
+    // overridden so that no scrolling happens.
+    document.body.scrollLeft = 0;
+    document.body.scrollTop = 0;
+
+    var rect = dots.getBoundingClientRect();
+    document.body.scrollLeft = rect.right - document.body.clientWidth;
+    document.body.scrollTop = rect.bottom - document.body.clientHeight;
+
+    menu.showAt(dots, {anchorAlignmentX: AnchorAlignment.AFTER_START});
+    var menuWidth = menu.offsetWidth;
+    var menuHeight = menu.offsetHeight;
+    var buttonWidth = dots.offsetWidth;
+    var buttonHeight = dots.offsetHeight;
+    assertEquals(containerLeft - menuWidth + buttonWidth, menu.offsetLeft);
+    assertEquals(containerTop - menuHeight + buttonHeight, menu.offsetTop);
   });
 });
