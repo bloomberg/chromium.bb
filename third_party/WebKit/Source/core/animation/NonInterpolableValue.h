@@ -21,7 +21,7 @@ class NonInterpolableValue : public RefCounted<NonInterpolableValue> {
 
 // These macros provide safe downcasts of NonInterpolableValue subclasses with
 // debug assertions.
-// See CSSValueInterpolationType.cpp for example usage.
+// See CSSDefaultInterpolationType.cpp for example usage.
 #define DECLARE_NON_INTERPOLABLE_VALUE_TYPE() \
   static Type static_type_;                   \
   Type GetType() const final { return static_type_; }

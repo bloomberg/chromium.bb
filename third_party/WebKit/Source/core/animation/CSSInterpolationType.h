@@ -74,10 +74,6 @@ class CSSInterpolationType : public InterpolationType {
       const CSSCustomPropertyDeclaration&,
       const StyleResolverState&,
       ConversionCheckers&) const;
-  InterpolationValue MaybeConvertCustomPropertyDeclarationInternal(
-      const CSSCustomPropertyDeclaration&,
-      const StyleResolverState&,
-      ConversionCheckers&) const;
 
   virtual const CSSValue* CreateCSSValue(const InterpolableValue&,
                                          const NonInterpolableValue*,
@@ -87,6 +83,11 @@ class CSSInterpolationType : public InterpolationType {
     // const CSSValue&.
     NOTREACHED();
     return nullptr;
+  }
+
+  const PropertyRegistration& Registration() const {
+    DCHECK(GetProperty().IsCSSCustomProperty());
+    return *registration_;
   }
 
   void ApplyCustomPropertyValue(const InterpolableValue&,
