@@ -22,6 +22,10 @@
 #include "components/password_manager/core/browser/password_syncable_service.h"
 #include "components/password_manager/core/browser/statistics_table.h"
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS) && !defined(OS_CHROMEOS)
+#include "components/password_manager/core/browser/password_store_signin_notifier.h"
+#endif
+
 using autofill::PasswordForm;
 
 namespace password_manager {
@@ -314,6 +318,10 @@ void PasswordStore::ShutdownOnUIThread() {
   // The AffiliationService must be destroyed from the main thread.
   affiliated_match_helper_.reset();
   shutdown_called_ = true;
+#if !defined(OS_ANDROID) && !defined(OS_IOS) && !defined(OS_CHROMEOS)
+  if (notifier_)
+    notifier_->UnsubscribeFromSigninEvents();
+#endif
 }
 
 base::WeakPtr<syncer::SyncableService>
@@ -333,6 +341,7 @@ void PasswordStore::CheckReuse(const base::string16& input,
                           base::Passed(&check_reuse_request), input, domain));
 }
 
+#if !defined(OS_CHROMEOS)
 void PasswordStore::SaveSyncPasswordHash(const base::string16& password) {
   hash_password_manager_.SavePasswordHash(password);
   base::Optional<SyncPasswordData> sync_password_data =
@@ -345,6 +354,15 @@ void PasswordStore::ClearSyncPasswordHash() {
   hash_password_manager_.ClearSavedPasswordHash();
   ScheduleTask(base::Bind(&PasswordStore::ClearSyncPasswordHashImpl, this));
 }
+
+void PasswordStore::SetPasswordStoreSigninNotifier(
+    std::unique_ptr<PasswordStoreSigninNotifier> notifier) {
+  DCHECK(!notifier_);
+  DCHECK(notifier);
+  notifier_ = std::move(notifier);
+  notifier_->SubscribeToSigninEvents(this);
+}
+#endif
 #endif
 
 PasswordStore::~PasswordStore() {

@@ -43,6 +43,7 @@ namespace password_manager {
 
 class AffiliatedMatchHelper;
 class PasswordStoreConsumer;
+class PasswordStoreSigninNotifier;
 class PasswordSyncableService;
 struct InteractionsStats;
 
@@ -260,11 +261,17 @@ class PasswordStore : protected PasswordStoreSync,
                           const std::string& domain,
                           PasswordReuseDetectorConsumer* consumer);
 
+#if !defined(OS_CHROMEOS)
   // Saves a hash of |password| for password reuse checking.
-  void SaveSyncPasswordHash(const base::string16& password);
+  virtual void SaveSyncPasswordHash(const base::string16& password);
 
   // Clears the saved sync password hash.
-  void ClearSyncPasswordHash();
+  virtual void ClearSyncPasswordHash();
+
+  // Shouldn't be called more than once, |notifier| must be not nullptr.
+  void SetPasswordStoreSigninNotifier(
+      std::unique_ptr<PasswordStoreSigninNotifier> notifier);
+#endif
 #endif
 
  protected:
@@ -600,7 +607,11 @@ class PasswordStore : protected PasswordStoreSync,
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   std::unique_ptr<PasswordReuseDetector> reuse_detector_;
   HashPasswordManager hash_password_manager_;
+#if !defined(OS_CHROMEOS)
+  std::unique_ptr<PasswordStoreSigninNotifier> notifier_;
 #endif
+#endif
+
   bool is_propagating_password_changes_to_web_credentials_enabled_;
 
   bool shutdown_called_;
