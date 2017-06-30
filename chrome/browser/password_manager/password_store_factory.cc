@@ -17,6 +17,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
@@ -54,6 +55,11 @@
 #endif
 #include "chrome/browser/password_manager/native_backend_kwallet_x.h"
 #include "chrome/browser/password_manager/password_store_x.h"
+#endif
+
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#include "chrome/browser/password_manager/password_store_signin_notifier_impl.h"
 #endif
 
 using password_manager::PasswordStore;
@@ -119,6 +125,12 @@ PasswordStoreFactory::PasswordStoreFactory()
           "PasswordStore",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(WebDataServiceFactory::GetInstance());
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+  // TODO(crbug.com/715987). Remove when PasswordReuseDetector is decoupled
+  // from PasswordStore.
+  DependsOn(SigninManagerFactory::GetInstance());
+#endif
 }
 
 PasswordStoreFactory::~PasswordStoreFactory() {}
@@ -274,6 +286,14 @@ PasswordStoreFactory::BuildServiceInstanceFor(
   password_manager::DelayCleanObsoleteHttpDataForPasswordStoreAndPrefs(
       ps.get(), profile->GetPrefs(),
       make_scoped_refptr(profile->GetRequestContext()));
+
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+  std::unique_ptr<password_manager::PasswordStoreSigninNotifier> notifier =
+      base::MakeUnique<password_manager::PasswordStoreSigninNotifierImpl>(
+          profile);
+  ps->SetPasswordStoreSigninNotifier(std::move(notifier));
+#endif
 
   return ps;
 }

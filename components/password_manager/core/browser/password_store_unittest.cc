@@ -31,6 +31,7 @@
 #include "components/password_manager/core/browser/password_reuse_detector.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/browser/password_store_default.h"
+#include "components/password_manager/core/browser/password_store_signin_notifier.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -89,6 +90,12 @@ class MockPasswordStoreConsumer : public PasswordStoreConsumer {
       std::vector<std::unique_ptr<PasswordForm>> results) override {
     OnGetPasswordStoreResultsConstRef(results);
   }
+};
+
+class MockPasswordStoreSigninNotifier : public PasswordStoreSigninNotifier {
+ public:
+  MOCK_METHOD1(SubscribeToSigninEvents, void(PasswordStore* store));
+  MOCK_METHOD0(UnsubscribeFromSigninEvents, void());
 };
 
 class StartSyncFlareMock {
@@ -980,6 +987,7 @@ TEST_F(PasswordStoreTest, CheckPasswordReuse) {
   base::RunLoop().RunUntilIdle();
 }
 
+#if !defined(OS_CHROMEOS)
 TEST_F(PasswordStoreTest, SavingClearingSyncPassword) {
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
       base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
@@ -1010,6 +1018,27 @@ TEST_F(PasswordStoreTest, SavingClearingSyncPassword) {
   store->ShutdownOnUIThread();
   base::RunLoop().RunUntilIdle();
 }
+
+TEST_F(PasswordStoreTest, SubscriptionAndUnsubscriptionFromSignInEvents) {
+  scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
+      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
+      base::MakeUnique<LoginDatabase>(test_login_db_file_path())));
+
+  std::unique_ptr<MockPasswordStoreSigninNotifier> notifier =
+      base::MakeUnique<MockPasswordStoreSigninNotifier>();
+  MockPasswordStoreSigninNotifier* notifier_weak = notifier.get();
+
+  // Check that |store| is subscribed to sign-in events.
+  EXPECT_CALL(*notifier_weak, SubscribeToSigninEvents(store.get()));
+  store->SetPasswordStoreSigninNotifier(std::move(notifier));
+  testing::Mock::VerifyAndClearExpectations(store.get());
+
+  // Check that |store| is unsubscribed from sign-in events on shutdown.
+  EXPECT_CALL(*notifier_weak, UnsubscribeFromSigninEvents());
+  store->ShutdownOnUIThread();
+  base::RunLoop().RunUntilIdle();
+}
+#endif
 #endif
 
 }  // namespace password_manager
