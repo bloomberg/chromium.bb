@@ -37,6 +37,9 @@ const MojoPlatformHandleType kPlatformFileHandleType =
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 const MojoPlatformHandleType kPlatformSharedBufferHandleType =
     MOJO_PLATFORM_HANDLE_TYPE_MACH_PORT;
+#elif defined(OS_FUCHSIA)
+const MojoPlatformHandleType kPlatformSharedBufferHandleType =
+    MOJO_PLATFORM_HANDLE_TYPE_FUCHSIA_HANDLE;
 #else
 const MojoPlatformHandleType kPlatformSharedBufferHandleType =
     MOJO_PLATFORM_HANDLE_TYPE_FILE_DESCRIPTOR;

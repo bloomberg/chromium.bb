@@ -99,7 +99,7 @@ bool IsPeerAuthorized(PlatformHandle peer_handle) {
 //    - Mac: 2.21 s, 2.91 s, 2.98 s, 3.08 s, 3.59 s, 4.74 s
 
 // Flags to use with calling |send()| or |sendmsg()| (see above).
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_FUCHSIA)
 const int kSendFlags = 0;
 #else
 const int kSendFlags = MSG_NOSIGNAL;

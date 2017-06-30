@@ -122,16 +122,20 @@ MojoResult UnwrapSharedMemoryHandle(ScopedSharedBufferHandle handle,
   base::UnguessableToken guid =
       base::UnguessableToken::Deserialize(mojo_guid.high, mojo_guid.low);
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-  CHECK_EQ(platform_handle.type, MOJO_PLATFORM_HANDLE_TYPE_MACH_PORT);
+  DCHECK_EQ(platform_handle.type, MOJO_PLATFORM_HANDLE_TYPE_MACH_PORT);
   *memory_handle = base::SharedMemoryHandle(
       static_cast<mach_port_t>(platform_handle.value), num_bytes, guid);
+#elif defined(OS_FUCHSIA)
+  DCHECK_EQ(platform_handle.type, MOJO_PLATFORM_HANDLE_TYPE_FUCHSIA_HANDLE);
+  *memory_handle = base::SharedMemoryHandle(
+      static_cast<mx_handle_t>(platform_handle.value), num_bytes, guid);
 #elif defined(OS_POSIX)
-  CHECK_EQ(platform_handle.type, MOJO_PLATFORM_HANDLE_TYPE_FILE_DESCRIPTOR);
+  DCHECK_EQ(platform_handle.type, MOJO_PLATFORM_HANDLE_TYPE_FILE_DESCRIPTOR);
   *memory_handle = base::SharedMemoryHandle(
       base::FileDescriptor(static_cast<int>(platform_handle.value), false),
       num_bytes, guid);
 #elif defined(OS_WIN)
-  CHECK_EQ(platform_handle.type, MOJO_PLATFORM_HANDLE_TYPE_WINDOWS_HANDLE);
+  DCHECK_EQ(platform_handle.type, MOJO_PLATFORM_HANDLE_TYPE_WINDOWS_HANDLE);
   *memory_handle = base::SharedMemoryHandle(
       reinterpret_cast<HANDLE>(platform_handle.value), num_bytes, guid);
 #endif
