@@ -14,7 +14,7 @@
 
 namespace base {
 class FilePath;
-class SingleThreadTaskRunner;
+class SequencedTaskRunner;
 }  // namespace base
 
 namespace drive {
@@ -29,7 +29,7 @@ typedef base::Callback<void(bool)> StartWatchCallback;
 // without any special handling about Drive.
 class FileWriteWatcher {
  public:
-  explicit FileWriteWatcher(base::SingleThreadTaskRunner* file_task_runner);
+  explicit FileWriteWatcher(base::SequencedTaskRunner* blocking_task_runner);
   ~FileWriteWatcher();
 
   // Starts watching the modification to |path|. When it successfully started
