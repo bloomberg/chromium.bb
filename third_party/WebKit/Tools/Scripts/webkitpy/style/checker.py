@@ -415,6 +415,8 @@ class CheckerDispatcher(object):
         #        for this special case.
         basename = os.path.basename(file_path)
         if basename == 'TestExpectations':
+            # TODO(qyearsley): Replace hard-coded "TestExpectations" with a
+            # list of known "TestExpectations" files. Maybe shared with Port.
             return False
         for skipped_file in _SKIPPED_FILES_WITHOUT_WARNING:
             if self._should_skip_file_path(file_path, skipped_file):
@@ -440,14 +442,16 @@ class CheckerDispatcher(object):
             return FileType.JSON
         elif file_extension == _PYTHON_FILE_EXTENSION:
             return FileType.PYTHON
+        elif not file_extension and os.path.dirname(file_path).endswith(os.path.join('Tools', 'Scripts')):
+            # TODO(qyearsley): Update this when Blink is moved from third_party/WebKit.
+            return FileType.PYTHON
         elif file_extension in _XML_FILE_EXTENSIONS:
             return FileType.XML
         elif file_extension == _XCODEPROJ_FILE_EXTENSION:
             return FileType.XCODEPROJ
         elif file_extension == _PNG_FILE_EXTENSION:
             return FileType.PNG
-        elif ((not file_extension and os.path.join('Tools', 'Scripts') in file_path) or
-              file_extension in _TEXT_FILE_EXTENSIONS or os.path.basename(file_path) == 'TestExpectations'):
+        elif file_extension in _TEXT_FILE_EXTENSIONS or os.path.basename(file_path) == 'TestExpectations':
             return FileType.TEXT
         else:
             return FileType.NONE

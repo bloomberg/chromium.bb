@@ -432,6 +432,7 @@ class CheckerDispatcherDispatchTest(unittest.TestCase):
         paths = [
             "foo.py",
             "Tools/Scripts/modules/text_style.py",
+            os.path.join("Tools", "Scripts", "check-webkit-style"),
         ]
 
         for path in paths:
@@ -469,7 +470,6 @@ class CheckerDispatcherDispatchTest(unittest.TestCase):
             "foo.xhtml",
             "foo.y",
             os.path.join("Source", "WebCore", "inspector", "front-end", "Main.js"),
-            os.path.join("Tools", "Scripts", "check-webkit-style"),
         ]
 
         for path in paths:
