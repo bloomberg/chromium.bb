@@ -1,10 +1,9 @@
 <!doctype html>
-<html class="starting-up" i18n-values="dir:textdirection;
-                                       bookmarkbarattached:bookmarkbarattached;
-                                       lang:language">
+<html class="starting-up" dir="$i18n{textdirection}"
+    bookmarkbarattached="$i18n{bookmarkbarattached}" lang="$i18n{language}">
 <head>
 <meta charset="utf-8">
-<title i18n-content="title"></title>
+<title>$i18n{title}</title>
 <!-- Don't scale the viewport in either portrait or landscape mode.
      Note that this means apps will be reflowed when rotated (like iPad).
      If we wanted to maintain position we could remove 'maximum-scale' so
@@ -74,16 +73,16 @@ document.write('<link id="themecss" rel="stylesheet" ' +
         tabindex="2" hidden>›
     </button>
     <div id="attribution">
-      <span i18n-content="attributionintro"></span>
+      <span>$i18n{attributionintro}</span>
       <img id="attribution-img">
     </div>
   </div>
 
   <div id="app-launcher-promo" hidden>
-    <div class="apps-promo-text" i18n-content="appsPromoTitle"></div>
+    <div class="apps-promo-text">$i18n{appsPromoTitle}</div>
     <a href="https://chrome.google.com/webstore/launcher"
-       id="apps-promo-learn-more" class="apps-promo-learn-more"
-       i18n-content="learn_more">
+        id="apps-promo-learn-more" class="apps-promo-learn-more">
+      $i18n{learn_more}
     </a>
     <img src="app_launcher_promo.png">
     <button class="close-button custom-appearance"
@@ -103,15 +102,14 @@ document.write('<link id="themecss" rel="stylesheet" ' +
 
       <div id="footer-menu-container" class="menu-container">
         <a id="chrome-web-store-link">
-          <span id="chrome-web-store-title" i18n-content="webStoreTitleShort">
-          </span>
+          <span id="chrome-web-store-title">$i18n{webStoreTitleShort}</span>
         </a>
       </div>
 
       <div id="trash" class="trash">
         <span class="lid"></span>
         <span class="can"></span>
-        <span class="trash-text" i18n-content="appuninstall"></span>
+        <span class="trash-text">$i18n{appuninstall}</span>
       </div>
     </div>
   </div>
@@ -130,17 +128,17 @@ document.write('<link id="themecss" rel="stylesheet" ' +
 <!-- Login status bubble -->
 <div id="login-status-bubble-contents">
   <div id="login-status-message-container">
-    <span i18n-content="login_status_message"></span>
-    <a id="login-status-learn-more" i18n-content="learn_more"
-        i18n-values="href:login_status_url" target="_blank"></a>
+    <span>$i18n{login_status_message}</span>
+    <a id="login-status-learn-more" href="$i18nRaw{login_status_url}"
+        target="_blank">$i18n{learn_more}</a>
   </div>
   <div class="login-status-row">
     <div id="login-status-advanced-container">
-      <a is="action-link" id="login-status-advanced"
-          i18n-content="login_status_advanced"></a>
+      <a is="action-link" id="login-status-advanced">
+        $i18n{login_status_advanced}
+      </a>
     </div>
-    <button id="login-status-dismiss" i18n-content="login_status_dismiss">
-    </button>
+    <button id="login-status-dismiss">$i18n{login_status_dismiss}</button>
   </div>
 </div>
 
