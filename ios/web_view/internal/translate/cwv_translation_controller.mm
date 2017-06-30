@@ -11,7 +11,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_manager.h"
-#import "ios/web_view/internal/translate/cwv_language_detection_result_internal.h"
 #import "ios/web_view/internal/translate/cwv_translation_language_internal.h"
 #import "ios/web_view/internal/translate/web_view_translate_client.h"
 #import "ios/web_view/public/cwv_translation_controller_delegate.h"
@@ -97,36 +96,27 @@ const NSInteger CWVTranslationErrorScriptLoadError =
 
   switch (step) {
     case translate::TRANSLATE_STEP_BEFORE_TRANSLATE: {
-      NSArray* supportedLanguages = [self.supportedLanguagesByCode.allValues
-          sortedArrayUsingComparator:^NSComparisonResult(
-              CWVTranslationLanguage* languageA,
-              CWVTranslationLanguage* languageB) {
-            return [languageA.languageName compare:languageB.languageName];
-          }];
-      CWVLanguageDetectionResult* languageDetectionResult =
-          [[CWVLanguageDetectionResult alloc]
-                 initWithPageLanguage:source
-              suggestedTargetLanguage:target
-                   supportedLanguages:supportedLanguages];
       if ([_delegate respondsToSelector:@selector
-                     (translationController:didFinishLanguageDetectionWithResult
-                                              :error:)]) {
+                     (translationController:canOfferTranslationFromLanguage
+                                              :toLanguage:)]) {
         [_delegate translationController:self
-            didFinishLanguageDetectionWithResult:languageDetectionResult
-                                           error:error];
+            canOfferTranslationFromLanguage:source
+                                 toLanguage:target];
       }
       break;
     }
     case translate::TRANSLATE_STEP_TRANSLATING:
       if ([_delegate respondsToSelector:@selector
                      (translationController:didStartTranslationFromLanguage
-                                              :toLanguage:)]) {
+                                              :toLanguage:userInitiated:)]) {
         [_delegate translationController:self
             didStartTranslationFromLanguage:source
-                                 toLanguage:target];
+                                 toLanguage:target
+                              userInitiated:triggeredFromMenu];
       }
       break;
     case translate::TRANSLATE_STEP_AFTER_TRANSLATE:
+    case translate::TRANSLATE_STEP_TRANSLATE_ERROR:
       if ([_delegate respondsToSelector:@selector
                      (translationController:didFinishTranslationFromLanguage
                                               :toLanguage:error:)]) {
@@ -137,8 +127,7 @@ const NSInteger CWVTranslationErrorScriptLoadError =
       }
       break;
     case translate::TRANSLATE_STEP_NEVER_TRANSLATE:
-      break;
-    case translate::TRANSLATE_STEP_TRANSLATE_ERROR:
+      // Not supported.
       break;
   }
 }
@@ -146,13 +135,14 @@ const NSInteger CWVTranslationErrorScriptLoadError =
 #pragma mark - Public Methods
 
 - (void)translatePageFromLanguage:(CWVTranslationLanguage*)sourceLanguage
-                       toLanguage:(CWVTranslationLanguage*)targetLanguage {
+                       toLanguage:(CWVTranslationLanguage*)targetLanguage
+                    userInitiated:(BOOL)userInitiated {
   std::string sourceLanguageCode =
       base::SysNSStringToUTF8(sourceLanguage.languageCode);
   std::string targetLanguageCode =
       base::SysNSStringToUTF8(targetLanguage.languageCode);
   _translateClient->translate_manager()->TranslatePage(
-      sourceLanguageCode, targetLanguageCode, false);
+      sourceLanguageCode, targetLanguageCode, userInitiated);
 }
 
 - (void)revertTranslation {
@@ -234,6 +224,15 @@ const NSInteger CWVTranslationErrorScriptLoadError =
 }
 
 #pragma mark - Private Methods
+
+- (NSArray*)supportedLanguages {
+  return [self.supportedLanguagesByCode.allValues
+      sortedArrayUsingComparator:^NSComparisonResult(
+          CWVTranslationLanguage* languageA,
+          CWVTranslationLanguage* languageB) {
+        return [languageA.languageName compare:languageB.languageName];
+      }];
+}
 
 - (NSDictionary<NSString*, CWVTranslationLanguage*>*)supportedLanguagesByCode {
   if (!_supportedLanguagesByCode) {
