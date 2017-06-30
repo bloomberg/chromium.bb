@@ -18,6 +18,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/extension_registry_observer.h"
+#include "extensions/browser/lazy_context_task_queue.h"
 #include "extensions/common/extension_id.h"
 
 namespace content {
@@ -28,6 +29,7 @@ namespace extensions {
 class Extension;
 class ExtensionHost;
 class ExtensionRegistry;
+class LazyContextId;
 
 // This class maintains a queue of tasks that should execute when an
 // extension's lazy background page is loaded. It is also in charge of loading
@@ -36,6 +38,7 @@ class ExtensionRegistry;
 // It is the consumer's responsibility to use this class when appropriate, i.e.
 // only with extensions that have not-yet-loaded lazy background pages.
 class LazyBackgroundTaskQueue : public KeyedService,
+                                public LazyContextTaskQueue,
                                 public content::NotificationObserver,
                                 public ExtensionRegistryObserver {
  public:
@@ -53,7 +56,13 @@ class LazyBackgroundTaskQueue : public KeyedService,
   // extension has a lazy background page that is being suspended this method
   // cancels that suspension.
   bool ShouldEnqueueTask(content::BrowserContext* context,
-                         const Extension* extension);
+                         const Extension* extension) override;
+  // TODO(lazyboy): Find a better way to use AddPendingTask instead of this.
+  // Currently AddPendingTask has lots of consumers that depend on
+  // ExtensionHost.
+  void AddPendingTaskToDispatchEvent(
+      LazyContextId* context_id,
+      const LazyContextTaskQueue::PendingTask& task) override;
 
   // Adds a task to the queue for a given extension. If this is the first
   // task added for the extension, its lazy background page will be loaded.

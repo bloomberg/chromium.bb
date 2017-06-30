@@ -67,6 +67,7 @@ class EventListener {
       const std::string& event_name,
       const std::string& extension_id,
       content::RenderProcessHost* process,
+      const GURL& service_worker_scope,
       int worker_thread_id,
       std::unique_ptr<base::DictionaryValue> filter);
 
@@ -80,9 +81,9 @@ class EventListener {
   // or an extension service worker. This listener does not have |process_|.
   bool IsLazy() const;
 
-  // Returns true if this listener was registered for an extension service
-  // worker.
-  bool IsForServiceWorker() const;
+  // Returns true if this listener (lazy or not) was registered for an extension
+  // service worker.
+  bool is_for_service_worker() const { return is_for_service_worker_; }
 
   // Modifies this listener to be a lazy listener, clearing process references.
   void MakeLazy();
@@ -105,6 +106,7 @@ class EventListener {
                 const std::string& extension_id,
                 const GURL& listener_url,
                 content::RenderProcessHost* process,
+                bool is_for_service_worker,
                 int worker_thread_id,
                 std::unique_ptr<base::DictionaryValue> filter);
 
@@ -112,7 +114,15 @@ class EventListener {
   const std::string extension_id_;
   const GURL listener_url_;
   content::RenderProcessHost* process_;
+
+  const bool is_for_service_worker_ = false;
+
+  // If this listener is for a service worker (i.e.
+  // is_for_service_worker_ = true) and the worker is in running state, then
+  // this is the worker's thread id in the worker |process_|. For lazy service
+  // worker events, this will be kNonWorkerThreadId.
   const int worker_thread_id_;
+
   std::unique_ptr<base::DictionaryValue> filter_;
   EventFilter::MatcherID matcher_id_;  // -1 if unset.
 

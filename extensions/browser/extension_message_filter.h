@@ -61,11 +61,17 @@ class ExtensionMessageFilter : public content::BrowserMessageFilter {
                                  const std::string& event_name,
                                  int worker_thread_id);
   void OnExtensionAddLazyListener(const std::string& extension_id,
-                                  const std::string& event_name,
-                                  int worker_thread_id);
+                                  const std::string& event_name);
+  void OnExtensionAddLazyServiceWorkerListener(
+      const std::string& extension_id,
+      const std::string& event_name,
+      const GURL& service_worker_scope);
   void OnExtensionRemoveLazyListener(const std::string& extension_id,
-                                     const std::string& event_name,
-                                     int worker_thread_id);
+                                     const std::string& event_name);
+  void OnExtensionRemoveLazyServiceWorkerListener(
+      const std::string& extension_id,
+      const std::string& event_name,
+      const GURL& worker_scope_url);
   void OnExtensionAddFilteredListener(const std::string& extension_id,
                                       const std::string& event_name,
                                       const base::DictionaryValue& filter,

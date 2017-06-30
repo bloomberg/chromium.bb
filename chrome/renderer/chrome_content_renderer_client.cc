@@ -1504,22 +1504,24 @@ void ChromeContentRendererClient::
     DidInitializeServiceWorkerContextOnWorkerThread(
         v8::Local<v8::Context> context,
         int64_t service_worker_version_id,
-        const GURL& url) {
+        const GURL& service_worker_scope,
+        const GURL& script_url) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   ChromeExtensionsRendererClient::GetInstance()
       ->extension_dispatcher()
       ->DidInitializeServiceWorkerContextOnWorkerThread(
-          context, service_worker_version_id, url);
+          context, service_worker_version_id, service_worker_scope, script_url);
 #endif
 }
 
 void ChromeContentRendererClient::WillDestroyServiceWorkerContextOnWorkerThread(
     v8::Local<v8::Context> context,
     int64_t service_worker_version_id,
-    const GURL& url) {
+    const GURL& service_worker_scope,
+    const GURL& script_url) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   extensions::Dispatcher::WillDestroyServiceWorkerContextOnWorkerThread(
-      context, service_worker_version_id, url);
+      context, service_worker_version_id, service_worker_scope, script_url);
 #endif
 }
 

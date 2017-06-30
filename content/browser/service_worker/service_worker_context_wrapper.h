@@ -121,6 +121,9 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   void StartServiceWorkerForNavigationHint(
       const GURL& document_url,
       const StartServiceWorkerForNavigationHintCallback& callback) override;
+  void StartActiveWorkerForPattern(const GURL& pattern,
+                                   StartActiveWorkerCallback info_callback,
+                                   base::OnceClosure failure_callback) override;
 
   // These methods must only be called from the IO thread.
   ServiceWorkerRegistration* GetLiveRegistration(int64_t registration_id);

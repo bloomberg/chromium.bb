@@ -237,16 +237,16 @@ void SendEventListenersIPC(binding::EventListenersChanged changed,
       render_thread->Send(new ExtensionHostMsg_AddListener(
           extension_id, context->url(), event_name, worker_thread_id));
       if (lazy) {
-        render_thread->Send(new ExtensionHostMsg_AddLazyListener(
-            extension_id, event_name, worker_thread_id));
+        render_thread->Send(
+            new ExtensionHostMsg_AddLazyListener(extension_id, event_name));
       }
     } else {
       DCHECK_EQ(binding::EventListenersChanged::NO_LISTENERS, changed);
       render_thread->Send(new ExtensionHostMsg_RemoveListener(
           extension_id, context->url(), event_name, worker_thread_id));
       if (lazy && was_manual) {
-        render_thread->Send(new ExtensionHostMsg_RemoveLazyListener(
-            extension_id, event_name, worker_thread_id));
+        render_thread->Send(
+            new ExtensionHostMsg_RemoveLazyListener(extension_id, event_name));
       }
     }
   }
@@ -434,10 +434,11 @@ void Dispatcher::DidCreateScriptContext(
 void Dispatcher::DidInitializeServiceWorkerContextOnWorkerThread(
     v8::Local<v8::Context> v8_context,
     int64_t service_worker_version_id,
-    const GURL& url) {
+    const GURL& service_worker_scope,
+    const GURL& script_url) {
   const base::TimeTicks start_time = base::TimeTicks::Now();
 
-  if (!url.SchemeIs(kExtensionScheme)) {
+  if (!script_url.SchemeIs(kExtensionScheme)) {
     // Early-out if this isn't a chrome-extension:// scheme, because looking up
     // the extension registry is unnecessary if it's not. Checking this will
     // also skip over hosted apps, which is the desired behavior - hosted app
@@ -446,14 +447,14 @@ void Dispatcher::DidInitializeServiceWorkerContextOnWorkerThread(
   }
 
   const Extension* extension =
-      RendererExtensionRegistry::Get()->GetExtensionOrAppByURL(url);
+      RendererExtensionRegistry::Get()->GetExtensionOrAppByURL(script_url);
 
   if (!extension) {
     // TODO(kalman): This is no good. Instead we need to either:
     //
     // - Hold onto the v8::Context and create the ScriptContext and install
     //   our bindings when this extension is loaded.
-    // - Deal with there being an extension ID (url.host()) but no
+    // - Deal with there being an extension ID (script_url.host()) but no
     //   extension associated with it, then document that getBackgroundClient
     //   may fail if the extension hasn't loaded yet.
     //
@@ -475,7 +476,8 @@ void Dispatcher::DidInitializeServiceWorkerContextOnWorkerThread(
   ScriptContext* context = new ScriptContext(
       v8_context, nullptr, extension, Feature::SERVICE_WORKER_CONTEXT,
       extension, Feature::SERVICE_WORKER_CONTEXT);
-  context->set_url(url);
+  context->set_url(script_url);
+  context->set_service_worker_scope(service_worker_scope);
 
   if (ExtensionsClient::Get()->ExtensionAPIEnabledInExtensionServiceWorkers()) {
     WorkerThreadDispatcher::Get()->AddWorkerData(service_worker_version_id,
@@ -565,10 +567,11 @@ void Dispatcher::WillReleaseScriptContext(
 void Dispatcher::WillDestroyServiceWorkerContextOnWorkerThread(
     v8::Local<v8::Context> v8_context,
     int64_t service_worker_version_id,
-    const GURL& url) {
-  if (url.SchemeIs(kExtensionScheme)) {
+    const GURL& service_worker_scope,
+    const GURL& script_url) {
+  if (script_url.SchemeIs(kExtensionScheme)) {
     // See comment in DidInitializeServiceWorkerContextOnWorkerThread.
-    g_worker_script_context_set.Get().Remove(v8_context, url);
+    g_worker_script_context_set.Get().Remove(v8_context, script_url);
     // TODO(devlin): We're not calling
     // ExtensionBindingsSystem::WillReleaseScriptContext() here. This should be
     // fine, since the entire bindings system is being destroyed when we
