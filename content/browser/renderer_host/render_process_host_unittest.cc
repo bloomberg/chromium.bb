@@ -434,8 +434,9 @@ TEST_F(RenderProcessHostUnitTest, ReuseNavigationProcess) {
 }
 
 // Tests that RenderProcessHost reuse considers navigations correctly during
-// redirects.
-TEST_F(RenderProcessHostUnitTest, ReuseNavigationProcessRedirects) {
+// redirects in a renderer-initiated navigation.
+TEST_F(RenderProcessHostUnitTest,
+       ReuseNavigationProcessRedirectsRendererInitiated) {
   // This is only applicable to PlzNavigate.
   if (!IsBrowserSideNavigationEnabled())
     return;
@@ -468,9 +469,13 @@ TEST_F(RenderProcessHostUnitTest, ReuseNavigationProcessRedirects) {
       SiteInstanceImpl::ProcessReusePolicy::REUSE_PENDING_OR_COMMITTED_SITE);
   EXPECT_EQ(main_test_rfh()->GetProcess(), site_instance->GetProcess());
 
-  // Simulate a cross-site redirect. Getting RenderProcessHost with the
-  // REUSE_PENDING_OR_COMMITTED_SITE policy should not return the current
-  // process, whether for the old site or the new site.
+  // Simulate a cross-site redirect. Getting a RenderProcessHost with the
+  // REUSE_PENDING_OR_COMMITTED_SITE policy should return the current
+  // process for the new site since this is a renderer-intiated navigation which
+  // does not swap processes on cross-site redirects. However, getting a
+  // RenderProcessHost with the REUSE_PENDING_OR_COMMITTED_SITE policy should no
+  // longer return the current process for the initial site we were trying to
+  // navigate to.
   main_test_rfh()->SimulateRedirect(kRedirectUrl2);
   site_instance = SiteInstanceImpl::CreateForURL(browser_context(), kUrl);
   site_instance->set_process_reuse_policy(
@@ -480,10 +485,10 @@ TEST_F(RenderProcessHostUnitTest, ReuseNavigationProcessRedirects) {
       SiteInstanceImpl::CreateForURL(browser_context(), kRedirectUrl2);
   site_instance->set_process_reuse_policy(
       SiteInstanceImpl::ProcessReusePolicy::REUSE_PENDING_OR_COMMITTED_SITE);
-  EXPECT_NE(main_test_rfh()->GetProcess(), site_instance->GetProcess());
+  EXPECT_EQ(main_test_rfh()->GetProcess(), site_instance->GetProcess());
 
   // Once the navigation is ready to commit, Getting RenderProcessHost with the
-  // REUSE_PENDING_OR_COMMITTED_SITE policy should not return the current
+  // REUSE_PENDING_OR_COMMITTED_SITE policy should return the current
   // process for the final site, but not the initial one.
   main_test_rfh()->PrepareForCommit();
   site_instance = SiteInstanceImpl::CreateForURL(browser_context(), kUrl);
@@ -495,6 +500,87 @@ TEST_F(RenderProcessHostUnitTest, ReuseNavigationProcessRedirects) {
   site_instance->set_process_reuse_policy(
       SiteInstanceImpl::ProcessReusePolicy::REUSE_PENDING_OR_COMMITTED_SITE);
   EXPECT_EQ(main_test_rfh()->GetProcess(), site_instance->GetProcess());
+}
+
+// Tests that RenderProcessHost reuse considers navigations correctly during
+// redirects in a browser-initiated navigation.
+TEST_F(RenderProcessHostUnitTest,
+       ReuseNavigationProcessRedirectsBrowserInitiated) {
+  // This is only applicable to PlzNavigate.
+  if (!IsBrowserSideNavigationEnabled())
+    return;
+
+  const GURL kInitialUrl("http://google.com");
+  const GURL kUrl("http://foo.com");
+  const GURL kRedirectUrl1("http://foo.com/redirect");
+  const GURL kRedirectUrl2("http://bar.com");
+
+  NavigateAndCommit(kInitialUrl);
+
+  // At first, trying to get a RenderProcessHost with the
+  // REUSE_PENDING_OR_COMMITTED_SITE policy should return a new process.
+  scoped_refptr<SiteInstanceImpl> site_instance =
+      SiteInstanceImpl::CreateForURL(browser_context(), kUrl);
+  site_instance->set_process_reuse_policy(
+      SiteInstanceImpl::ProcessReusePolicy::REUSE_PENDING_OR_COMMITTED_SITE);
+  EXPECT_NE(main_test_rfh()->GetProcess(), site_instance->GetProcess());
+
+  // Start a navigation. Now getting RenderProcessHost with the
+  // REUSE_PENDING_OR_COMMITTED_SITE policy should return the speculative
+  // process.
+  contents()->GetController().LoadURL(kUrl, Referrer(),
+                                      ui::PAGE_TRANSITION_TYPED, std::string());
+  main_test_rfh()->SendBeforeUnloadACK(true);
+  int speculative_process_host_id =
+      contents()->GetPendingMainFrame()->GetProcess()->GetID();
+  site_instance = SiteInstanceImpl::CreateForURL(browser_context(), kUrl);
+  site_instance->set_process_reuse_policy(
+      SiteInstanceImpl::ProcessReusePolicy::REUSE_PENDING_OR_COMMITTED_SITE);
+  EXPECT_EQ(speculative_process_host_id, site_instance->GetProcess()->GetID());
+
+  // Simulate a same-site redirect. Getting RenderProcessHost with the
+  // REUSE_PENDING_OR_COMMITTED_SITE policy should return the speculative
+  // process.
+  main_test_rfh()->SimulateRedirect(kRedirectUrl1);
+  site_instance = SiteInstanceImpl::CreateForURL(browser_context(), kUrl);
+  site_instance->set_process_reuse_policy(
+      SiteInstanceImpl::ProcessReusePolicy::REUSE_PENDING_OR_COMMITTED_SITE);
+  EXPECT_EQ(speculative_process_host_id, site_instance->GetProcess()->GetID());
+
+  // Simulate a cross-site redirect. Getting a RenderProcessHost with the
+  // REUSE_PENDING_OR_COMMITTED_SITE policy should no longer return the
+  // speculative process: neither for the new site nor for the initial site we
+  // were trying to navigate to. It shouldn't return the current process either.
+  main_test_rfh()->SimulateRedirect(kRedirectUrl2);
+  site_instance = SiteInstanceImpl::CreateForURL(browser_context(), kUrl);
+  site_instance->set_process_reuse_policy(
+      SiteInstanceImpl::ProcessReusePolicy::REUSE_PENDING_OR_COMMITTED_SITE);
+  EXPECT_NE(main_test_rfh()->GetProcess(), site_instance->GetProcess());
+  EXPECT_NE(speculative_process_host_id, site_instance->GetProcess()->GetID());
+  site_instance =
+      SiteInstanceImpl::CreateForURL(browser_context(), kRedirectUrl2);
+  site_instance->set_process_reuse_policy(
+      SiteInstanceImpl::ProcessReusePolicy::REUSE_PENDING_OR_COMMITTED_SITE);
+  EXPECT_NE(main_test_rfh()->GetProcess(), site_instance->GetProcess());
+  EXPECT_NE(speculative_process_host_id, site_instance->GetProcess()->GetID());
+
+  // Once the navigation is ready to commit, Getting RenderProcessHost with the
+  // REUSE_PENDING_OR_COMMITTED_SITE policy should return the new speculative
+  // process for the final site, but not the initial one. The current process
+  // shouldn't be returned either.
+  main_test_rfh()->PrepareForCommit();
+  speculative_process_host_id =
+      contents()->GetPendingMainFrame()->GetProcess()->GetID();
+  site_instance = SiteInstanceImpl::CreateForURL(browser_context(), kUrl);
+  site_instance->set_process_reuse_policy(
+      SiteInstanceImpl::ProcessReusePolicy::REUSE_PENDING_OR_COMMITTED_SITE);
+  EXPECT_NE(main_test_rfh()->GetProcess(), site_instance->GetProcess());
+  EXPECT_NE(speculative_process_host_id, site_instance->GetProcess()->GetID());
+  site_instance =
+      SiteInstanceImpl::CreateForURL(browser_context(), kRedirectUrl2);
+  site_instance->set_process_reuse_policy(
+      SiteInstanceImpl::ProcessReusePolicy::REUSE_PENDING_OR_COMMITTED_SITE);
+  EXPECT_EQ(speculative_process_host_id, site_instance->GetProcess()->GetID());
 }
 
 class EffectiveURLContentBrowserClient : public ContentBrowserClient {

@@ -553,6 +553,25 @@ void NavigationRequest::OnRequestRedirected(
     }
   }
 
+  // Compute the SiteInstance to use for the redirect and pass its
+  // RenderProcessHost if it has a process. Keep a reference if it has a
+  // process, so that the SiteInstance and its associated process aren't deleted
+  // before the navigation is ready to commit.
+  scoped_refptr<SiteInstance> site_instance =
+      frame_tree_node_->render_manager()->GetSiteInstanceForNavigationRequest(
+          *this);
+  speculative_site_instance_ =
+      site_instance->HasProcess() ? site_instance : nullptr;
+
+  // Check what the process of the SiteInstance is. It will be passed to the
+  // NavigationHandle, and informed to expect a navigation to the redirected
+  // URL.
+  // Note: calling GetProcess on the SiteInstance can lead to the creation of a
+  // new process if it doesn't have one. In this case, it should only be called
+  // on a SiteInstance that already has a process.
+  RenderProcessHost* expected_process =
+      site_instance->HasProcess() ? site_instance->GetProcess() : nullptr;
+
   // It's safe to use base::Unretained because this NavigationRequest owns the
   // NavigationHandle where the callback will be stored.
   bool is_external_protocol =
@@ -560,7 +579,7 @@ void NavigationRequest::OnRequestRedirected(
   navigation_handle_->WillRedirectRequest(
       common_params_.url, common_params_.method, common_params_.referrer.url,
       is_external_protocol, response->head.headers,
-      response->head.connection_info,
+      response->head.connection_info, expected_process,
       base::Bind(&NavigationRequest::OnRedirectChecksComplete,
                  base::Unretained(this)));
 }

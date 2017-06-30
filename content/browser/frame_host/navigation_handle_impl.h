@@ -277,6 +277,11 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // |callback| will be called when all throttles check have completed. This
   // will allow the caller to cancel the navigation or let it proceed.
   // This will also inform the delegate that the request was redirected.
+  //
+  // PlzNavigate: |post_redirect_process| is the renderer process we expect to
+  // use to commit the navigation now that it has been redirected. It can be
+  // null if there is no live process that can be used. In that case, a suitable
+  // renderer process will be created at commit time.
   void WillRedirectRequest(
       const GURL& new_url,
       const std::string& new_method,
@@ -284,6 +289,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       bool new_is_external_protocol,
       scoped_refptr<net::HttpResponseHeaders> response_headers,
       net::HttpResponseInfo::ConnectionInfo connection_info,
+      RenderProcessHost* post_redirect_process,
       const ThrottleChecksFinishedCallback& callback);
 
   // Called when the URLRequest has delivered response headers and metadata.
@@ -430,9 +436,10 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   // Updates the destination site URL for this navigation. This is called on
   // redirects.
-  // PlzNavigate: When redirected cross-site, the speculative RenderProcessHost
-  // will stop expecting this navigation to commit.
-  void UpdateSiteURL();
+  // PlzNavigate: |post_redirect_process| is the renderer process that should
+  // handle the navigation following the redirect if it can be handled by an
+  // existing RenderProcessHost. Otherwise, it should be null.
+  void UpdateSiteURL(RenderProcessHost* post_redirect_process);
 
   // See NavigationHandle for a description of those member variables.
   GURL url_;

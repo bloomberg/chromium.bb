@@ -505,6 +505,15 @@ class CONTENT_EXPORT RenderFrameHostManager
   bool InitRenderView(RenderViewHostImpl* render_view_host,
     RenderFrameProxyHost* proxy);
 
+  // Returns the SiteInstance that should be used to host the navigation handled
+  // by |navigation_request|.
+  // Note: the SiteInstance returned by this function may not have an
+  // initialized RenderProcessHost. It will only be initialized when
+  // GetProcess() is called on the SiteInstance. In particular, calling this
+  // function will never lead to a process being created for the navigation.
+  scoped_refptr<SiteInstance> GetSiteInstanceForNavigationRequest(
+      const NavigationRequest& navigation_request);
+
  private:
   friend class NavigatorTestWithBrowserSideNavigation;
   friend class RenderFrameHostManagerTest;

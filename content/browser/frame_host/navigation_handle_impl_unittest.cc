@@ -156,7 +156,7 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
     // the NavigationHandleImplTest.
     test_handle_->WillRedirectRequest(
         GURL(), "GET", GURL(), false, scoped_refptr<net::HttpResponseHeaders>(),
-        net::HttpResponseInfo::CONNECTION_INFO_HTTP1_1,
+        net::HttpResponseInfo::CONNECTION_INFO_HTTP1_1, nullptr,
         base::Bind(&NavigationHandleImplTest::UpdateThrottleCheckResult,
                    base::Unretained(this)));
   }

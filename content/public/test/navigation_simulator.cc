@@ -207,7 +207,7 @@ void NavigationSimulator::Redirect(const GURL& new_url) {
     handle_->WillRedirectRequest(
         new_url, "GET", referrer_.url, false /* is_external_protocol */,
         scoped_refptr<net::HttpResponseHeaders>(),
-        net::HttpResponseInfo::ConnectionInfo(),
+        net::HttpResponseInfo::ConnectionInfo(), nullptr,
         base::Callback<void(NavigationThrottle::ThrottleCheckResult)>());
   }
 

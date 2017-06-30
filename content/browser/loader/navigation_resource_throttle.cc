@@ -134,7 +134,7 @@ void CheckWillRedirectRequestOnUIThread(
       ->FilterURL(false, &new_validated_url);
   navigation_handle->WillRedirectRequest(
       new_validated_url, new_method, new_referrer_url, new_is_external_protocol,
-      headers, connection_info,
+      headers, connection_info, nullptr,
       base::Bind(&SendCheckResultToIOThread, callback));
 }
 
