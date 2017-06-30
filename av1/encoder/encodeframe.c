@@ -1705,11 +1705,20 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
 #endif  // CONFIG_EXT_INTER
 
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
+#if CONFIG_NCOBMC_ADAPT_WEIGHT
+        const MOTION_MODE motion_allowed =
+            motion_mode_allowed_wrapper(0,
+#if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+                                        0, xd->global_motion,
+#endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+                                        mi);
+#else
         const MOTION_MODE motion_allowed = motion_mode_allowed(
 #if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
             0, xd->global_motion,
 #endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
             mi);
+#endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
 #if CONFIG_SUPERTX
         if (!supertx_enabled)
 #endif  // CONFIG_SUPERTX
@@ -1729,7 +1738,7 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
 #endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
 
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
-        if (ncobmc_mode_allowed(mbmi->sb_type) > NO_OVERLAP) {
+        if (motion_allowed == NCOBMC_ADAPT_WEIGHT) {
           ADAPT_OVERLAP_BLOCK ao_block =
               adapt_overlap_block_lookup[mbmi->sb_type];
           ++counts->ncobmc_mode[ao_block][mbmi->ncobmc_mode[0]];

@@ -1371,11 +1371,32 @@ static INLINE MOTION_MODE motion_mode_allowed(
 }
 
 #if CONFIG_NCOBMC_ADAPT_WEIGHT && CONFIG_MOTION_VAR
-static INLINE NCOBMC_MODE ncobmc_mode_allowed(BLOCK_SIZE block) {
-  if (block < BLOCK_8X8 || block > BLOCK_64X64)
+static INLINE NCOBMC_MODE ncobmc_mode_allowed_bsize(BLOCK_SIZE bsize) {
+  if (bsize < BLOCK_8X8 || bsize > BLOCK_64X64)
     return NO_OVERLAP;
   else
     return (NCOBMC_MODE)(MAX_NCOBMC_MODES - 1);
+}
+
+static INLINE MOTION_MODE
+motion_mode_allowed_wrapper(int for_mv_search,
+#if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+                            int block, const WarpedMotionParams *gm_params,
+#endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+                            const MODE_INFO *mi) {
+  const MB_MODE_INFO *mbmi = &mi->mbmi;
+  MOTION_MODE motion_mode_for_mv_search = motion_mode_allowed(
+#if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+      int block, const WarpedMotionParams *gm_params,
+#endif
+      mi);
+  int ncobmc_mode_allowed =
+      ncobmc_mode_allowed_bsize(mbmi->sb_type) && is_inter_mode(mbmi->mode);
+  if (for_mv_search)
+    return motion_mode_for_mv_search;
+  else
+    return ncobmc_mode_allowed ? NCOBMC_ADAPT_WEIGHT
+                               : motion_mode_for_mv_search;
 }
 #endif
 
@@ -1385,11 +1406,20 @@ static INLINE void assert_motion_mode_valid(MOTION_MODE mode,
                                             const WarpedMotionParams *gm_params,
 #endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
                                             const MODE_INFO *mi) {
+#if CONFIG_NCOBMC_ADAPT_WEIGHT
+  const MOTION_MODE last_motion_mode_allowed =
+      motion_mode_allowed_wrapper(0,
+#if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+                                  block, gm_params,
+#endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+                                  mi);
+#else
   const MOTION_MODE last_motion_mode_allowed = motion_mode_allowed(
 #if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
       block, gm_params,
 #endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
       mi);
+#endif
   // Check that the input mode is not illegal
   if (last_motion_mode_allowed < mode)
     assert(0 && "Illegal motion mode selected");

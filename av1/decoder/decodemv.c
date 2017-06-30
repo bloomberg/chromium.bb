@@ -315,11 +315,20 @@ static void read_drl_idx(FRAME_CONTEXT *ec_ctx, MACROBLOCKD *xd,
 static MOTION_MODE read_motion_mode(AV1_COMMON *cm, MACROBLOCKD *xd,
                                     MODE_INFO *mi, aom_reader *r) {
   MB_MODE_INFO *mbmi = &mi->mbmi;
+#if CONFIG_NCOBMC_ADAPT_WEIGHT
+  const MOTION_MODE last_motion_mode_allowed =
+      motion_mode_allowed_wrapper(0,
+#if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+                                  0, xd->global_motion,
+#endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+                                  mi);
+#else
   const MOTION_MODE last_motion_mode_allowed = motion_mode_allowed(
 #if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
       0, xd->global_motion,
 #endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
       mi);
+#endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
   int motion_mode;
   FRAME_COUNTS *counts = xd->counts;
 
@@ -346,11 +355,14 @@ static void read_ncobmc_mode(AV1_COMMON *cm, MACROBLOCKD *xd, MODE_INFO *mi,
                              NCOBMC_MODE ncobmc_mode[2], aom_reader *r) {
   MB_MODE_INFO *mbmi = &mi->mbmi;
   FRAME_COUNTS *counts = xd->counts;
+  MOTION_MODE last_motion_mode_allowed =
+      motion_mode_allowed_wrapper(0,
+#if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+                                  0, cm->global_motion,
+#endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
+                                  mi);
   ADAPT_OVERLAP_BLOCK ao_block = adapt_overlap_block_lookup[mbmi->sb_type];
-
-  if (ncobmc_mode_allowed(mbmi->sb_type) == NO_OVERLAP ||
-      ao_block == ADAPT_OVERLAP_BLOCK_INVALID)
-    return;
+  if (last_motion_mode_allowed < NCOBMC_ADAPT_WEIGHT) return;
 
   ncobmc_mode[0] = aom_read_tree(r, av1_ncobmc_mode_tree,
                                  cm->fc->ncobmc_mode_prob[ao_block], ACCT_STR);
