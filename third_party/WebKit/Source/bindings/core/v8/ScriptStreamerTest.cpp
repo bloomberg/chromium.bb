@@ -102,7 +102,11 @@ class ScriptStreamingTest : public ::testing::Test {
   Persistent<ClassicPendingScript> pending_script_;
 };
 
-class TestPendingScriptClient final : public PendingScriptClient {
+class TestPendingScriptClient final
+    : public GarbageCollectedFinalized<TestPendingScriptClient>,
+      public PendingScriptClient {
+  USING_GARBAGE_COLLECTED_MIXIN(TestPendingScriptClient);
+
  public:
   TestPendingScriptClient() : finished_(false) {}
   void PendingScriptFinished(PendingScript*) override { finished_ = true; }

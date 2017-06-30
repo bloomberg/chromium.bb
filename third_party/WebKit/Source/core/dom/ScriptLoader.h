@@ -46,8 +46,11 @@ class ScriptResource;
 class Modulator;
 class ModulePendingScriptTreeClient;
 
-class CORE_EXPORT ScriptLoader : public PendingScriptClient,
+class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
+                                 public PendingScriptClient,
                                  public TraceWrapperBase {
+  USING_GARBAGE_COLLECTED_MIXIN(ScriptLoader);
+
  public:
   static ScriptLoader* Create(ScriptElementBase* element,
                               bool created_by_parser,

@@ -50,8 +50,11 @@ class HTMLParserScriptRunnerHost;
 // executing it when required.
 //
 // An HTMLParserScriptRunner is owned by its host, an HTMLDocumentParser.
-class HTMLParserScriptRunner final : public PendingScriptClient {
+class HTMLParserScriptRunner final
+    : public GarbageCollectedFinalized<HTMLParserScriptRunner>,
+      public PendingScriptClient {
   WTF_MAKE_NONCOPYABLE(HTMLParserScriptRunner);
+  USING_GARBAGE_COLLECTED_MIXIN(HTMLParserScriptRunner);
 
  public:
   static HTMLParserScriptRunner* Create(HTMLParserReentryPermit* reentry_permit,

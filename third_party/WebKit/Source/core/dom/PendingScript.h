@@ -41,8 +41,7 @@ namespace blink {
 class Document;
 class PendingScript;
 
-class CORE_EXPORT PendingScriptClient
-    : public GarbageCollectedFinalized<PendingScriptClient> {
+class CORE_EXPORT PendingScriptClient : public GarbageCollectedMixin {
  public:
   virtual ~PendingScriptClient() {}
 
