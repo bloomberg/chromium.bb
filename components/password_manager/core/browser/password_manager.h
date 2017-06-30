@@ -199,6 +199,7 @@ class PasswordManager : public LoginModel {
     FORM_BLACKLISTED,
     INVALID_FORM,
     SYNC_CREDENTIAL,
+    SAVING_ON_HTTP_AFTER_HTTPS,
     MAX_FAILURE_VALUE
   };
 
