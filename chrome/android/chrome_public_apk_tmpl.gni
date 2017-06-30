@@ -40,6 +40,15 @@ default_chrome_public_jinja_variables = [
 template("chrome_public_apk_tmpl") {
   android_apk(target_name) {
     forward_variables_from(invoker, "*")
+    exclude_xxxhdpi = true
+
+    # Whitelist rationale in https://crbug.com/691733.
+    xxxhdpi_whitelist = [
+      "*shadow*",  # Combination of gradient & transparency cause pixelation.
+      "*.9.*",  # Most nine-patches contain shadows.
+      "*ic_file_download_white*",  # Bottom edge seems misaligned.
+      "*ic_lock.*",  # Bottom edge seems misaligned.
+    ]
     _native_lib_file =
         rebase_path("$root_gen_dir/CHROME_VERSION.json", root_out_dir)
     native_lib_version_arg = "@FileArg($_native_lib_file:full-quoted)"
