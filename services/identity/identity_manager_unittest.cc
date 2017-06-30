@@ -89,6 +89,13 @@ class IdentityManagerTest : public service_manager::test::ServiceTest {
     account_tracker_.Initialize(&signin_client_);
   }
 
+  void TearDown() override {
+    // Shut down the SigninManager so that the IdentityManager doesn't end up
+    // outliving it.
+    signin_manager_.Shutdown();
+    ServiceTest::TearDown();
+  }
+
   void OnReceivedPrimaryAccountInfo(
       base::Closure quit_closure,
       const base::Optional<AccountInfo>& account_info,
@@ -150,6 +157,19 @@ class IdentityManagerTest : public service_manager::test::ServiceTest {
 
   DISALLOW_COPY_AND_ASSIGN(IdentityManagerTest);
 };
+
+// Tests that the Identity Manager destroys itself on SigninManager shutdown.
+TEST_F(IdentityManagerTest, SigninManagerShutdown) {
+  base::RunLoop run_loop;
+  identity_manager_.set_connection_error_handler(run_loop.QuitClosure());
+
+  // Ensure that the IdentityManager instance has actually been created before
+  // invoking SigninManagerBase::Shutdown(), since otherwise this test will
+  // spin forever.
+  identity_manager_.FlushForTesting();
+  signin_manager()->Shutdown();
+  run_loop.Run();
+}
 
 // Check that the primary account info is null if not signed in.
 TEST_F(IdentityManagerTest, GetPrimaryAccountInfoNotSignedIn) {
