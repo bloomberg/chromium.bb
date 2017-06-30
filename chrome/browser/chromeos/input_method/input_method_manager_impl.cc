@@ -859,7 +859,8 @@ InputMethodManagerImpl::InputMethodManagerImpl(
       util_(delegate_.get()),
       component_extension_ime_manager_(new ComponentExtensionIMEManager()),
       enable_extension_loading_(enable_extension_loading),
-      is_ime_menu_activated_(false) {
+      is_ime_menu_activated_(false),
+      features_enabled_state_(InputMethodManager::FEATURE_ALL) {
   if (IsRunningAsSystemCompositor()) {
 #if defined(USE_OZONE)
     keyboard_ = base::MakeUnique<ImeKeyboardMus>(
@@ -1273,6 +1274,19 @@ void InputMethodManagerImpl::OverrideKeyboardUrlRef(const std::string& keyset) {
 
 bool InputMethodManagerImpl::IsEmojiHandwritingVoiceOnImeMenuEnabled() {
   return base::FeatureList::IsEnabled(features::kEHVInputOnImeMenu);
+}
+
+void InputMethodManagerImpl::SetImeMenuFeatureEnabled(ImeMenuFeature feature,
+                                                      bool enabled) {
+  if (enabled)
+    features_enabled_state_ |= feature;
+  else
+    features_enabled_state_ &= ~feature;
+}
+
+bool InputMethodManagerImpl::GetImeMenuFeatureEnabled(
+    ImeMenuFeature feature) const {
+  return features_enabled_state_ & feature;
 }
 
 }  // namespace input_method

@@ -99,7 +99,8 @@ MockInputMethodManager::State::GetAllowedInputMethods() {
 
 MockInputMethodManager::State::~State() {}
 
-MockInputMethodManager::MockInputMethodManager() {}
+MockInputMethodManager::MockInputMethodManager()
+    : features_enabled_state_(InputMethodManager::FEATURE_ALL) {}
 
 MockInputMethodManager::~MockInputMethodManager() {}
 
@@ -188,6 +189,19 @@ void MockInputMethodManager::OverrideKeyboardUrlRef(const std::string& keyset) {
 
 bool MockInputMethodManager::IsEmojiHandwritingVoiceOnImeMenuEnabled() {
   return true;
+}
+
+void MockInputMethodManager::SetImeMenuFeatureEnabled(ImeMenuFeature feature,
+                                                      bool enabled) {
+  if (enabled)
+    features_enabled_state_ |= feature;
+  else
+    features_enabled_state_ &= ~feature;
+}
+
+bool MockInputMethodManager::GetImeMenuFeatureEnabled(
+    ImeMenuFeature feature) const {
+  return features_enabled_state_ & feature;
 }
 
 }  // namespace input_method

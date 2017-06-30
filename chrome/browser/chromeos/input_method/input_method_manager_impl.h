@@ -105,7 +105,6 @@ class InputMethodManagerImpl : public InputMethodManager,
     InputMethodDescriptor GetCurrentInputMethod() const override;
     bool ReplaceEnabledInputMethods(
         const std::vector<std::string>& new_active_input_method_ids) override;
-
     bool SetAllowedInputMethods(
         const std::vector<std::string>& new_allowed_input_method_ids) override;
     const std::vector<std::string>& GetAllowedInputMethods() override;
@@ -183,6 +182,8 @@ class InputMethodManagerImpl : public InputMethodManager,
   void MaybeNotifyImeMenuActivationChanged() override;
   void OverrideKeyboardUrlRef(const std::string& keyset) override;
   bool IsEmojiHandwritingVoiceOnImeMenuEnabled() override;
+  void SetImeMenuFeatureEnabled(ImeMenuFeature feature, bool enabled) override;
+  bool GetImeMenuFeatureEnabled(ImeMenuFeature feature) const override;
 
   // chromeos::UserAddingScreen:
   void OnUserAddingStarted() override;
@@ -298,6 +299,9 @@ class InputMethodManagerImpl : public InputMethodManager,
 
   // Whether the expanded IME menu is activated.
   bool is_ime_menu_activated_;
+
+  // The enabled state of keyboard features.
+  uint32_t features_enabled_state_;
 
   // The engine map from extension_id to an engine.
   typedef std::map<std::string, ui::IMEEngineHandlerInterface*> EngineMap;

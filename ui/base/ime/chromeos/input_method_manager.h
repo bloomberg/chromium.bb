@@ -64,6 +64,13 @@ class UI_BASE_IME_EXPORT InputMethodManager {
     std::vector<MenuItem> children;
   };
 
+  enum ImeMenuFeature {
+    FEATURE_EMOJI = 1 << 0,
+    FEATURE_HANDWRITING = 1 << 1,
+    FEATURE_VOICE = 1 << 2,
+    FEATURE_ALL = ~0,
+  };
+
   class Observer {
    public:
     virtual ~Observer() {}
@@ -306,6 +313,13 @@ class UI_BASE_IME_EXPORT InputMethodManager {
   // Returns whether the extra inputs: emoji, handwriting and voice inputs on
   // opt-in IME menu has been enabled.
   virtual bool IsEmojiHandwritingVoiceOnImeMenuEnabled() = 0;
+
+  // Enables or disables some advanced features, e.g. handwiring, voices input.
+  virtual void SetImeMenuFeatureEnabled(ImeMenuFeature feature,
+                                        bool enabled) = 0;
+
+  // Returns the true if the given feature is enabled.
+  virtual bool GetImeMenuFeatureEnabled(ImeMenuFeature feature) const = 0;
 };
 
 }  // namespace input_method
