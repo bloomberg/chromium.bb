@@ -69,6 +69,15 @@
   return color;
 }
 
++ (UIColor*)buttonBackgroundColor {
+  static UIColor* color;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    color = [UIColor colorWithRed:0.11f green:0.55f blue:0.95f alpha:1.f];
+  });
+  return color;
+}
+
 + (UIColor*)buttonTextColor {
   return UIColor.whiteColor;
 }
