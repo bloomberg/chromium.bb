@@ -203,8 +203,9 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
       MojoHandle* handles,
       uint32_t* num_handles,
       MojoGetSerializedMessageContentsFlags flags);
-  MojoResult ReleaseMessageContext(MojoMessageHandle message_handle,
-                                   uintptr_t* context);
+  MojoResult GetMessageContext(MojoMessageHandle message_handle,
+                               uintptr_t* context,
+                               MojoGetMessageContextFlags flags);
   MojoResult GetProperty(MojoPropertyType type, void* value);
 
   // These methods correspond to the API functions defined in

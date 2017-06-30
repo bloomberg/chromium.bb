@@ -209,7 +209,9 @@ TEST_F(CoreTest, MessagePipe) {
   ASSERT_EQ(MOJO_RESULT_OK,
             core()->ReadMessage(h[0], &message, MOJO_READ_MESSAGE_FLAG_NONE));
   uintptr_t context;
-  ASSERT_EQ(MOJO_RESULT_OK, core()->ReleaseMessageContext(message, &context));
+  ASSERT_EQ(MOJO_RESULT_OK,
+            core()->GetMessageContext(message, &context,
+                                      MOJO_GET_MESSAGE_CONTEXT_FLAG_RELEASE));
   ASSERT_EQ(kTestMessageContext, context);
   ASSERT_EQ(MOJO_RESULT_OK, core()->DestroyMessage(message));
 
@@ -290,7 +292,8 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing1) {
                                                 MOJO_READ_MESSAGE_FLAG_NONE));
   uintptr_t context;
   ASSERT_EQ(MOJO_RESULT_OK,
-            core()->ReleaseMessageContext(message_handle, &context));
+            core()->GetMessageContext(message_handle, &context,
+                                      MOJO_GET_MESSAGE_CONTEXT_FLAG_RELEASE));
   ASSERT_EQ(kTestMessageContext, context);
   ASSERT_EQ(MOJO_RESULT_OK, MojoDestroyMessage(message_handle));
 

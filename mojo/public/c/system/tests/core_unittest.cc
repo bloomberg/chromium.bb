@@ -119,7 +119,9 @@ TEST(CoreTest, BasicMessagePipe) {
   EXPECT_EQ(MOJO_RESULT_OK,
             MojoReadMessage(h0, &message, MOJO_READ_MESSAGE_FLAG_NONE));
   uintptr_t context;
-  EXPECT_EQ(MOJO_RESULT_OK, MojoReleaseMessageContext(message, &context));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoGetMessageContext(message, &context,
+                                  MOJO_GET_MESSAGE_CONTEXT_FLAG_RELEASE));
   EXPECT_EQ(MOJO_RESULT_OK, MojoDestroyMessage(message));
   EXPECT_EQ(kTestMessageContext, context);
 

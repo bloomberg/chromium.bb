@@ -202,10 +202,11 @@ MojoResult MojoGetSerializedMessageContents(
                                                handles, num_handles, flags);
 }
 
-MojoResult MojoReleaseMessageContext(MojoMessageHandle message,
-                                     uintptr_t* context) {
-  assert(g_thunks.ReleaseMessageContext);
-  return g_thunks.ReleaseMessageContext(message, context);
+MojoResult MojoGetMessageContext(MojoMessageHandle message,
+                                 uintptr_t* context,
+                                 MojoGetMessageContextFlags flags) {
+  assert(g_thunks.GetMessageContext);
+  return g_thunks.GetMessageContext(message, context, flags);
 }
 
 MojoResult MojoWrapPlatformHandle(

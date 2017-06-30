@@ -76,8 +76,24 @@ const MojoReadMessageFlags MOJO_READ_MESSAGE_FLAG_NONE = 0;
 #define MOJO_READ_MESSAGE_FLAG_NONE ((MojoReadMessageFlags)0)
 #endif
 
+// |MojoGetMessageContextFlags|: Used to specify different options for
+// |MojoGetMessageContext|.
+//   |MOJO_GET_MESSAGE_CONTEXT_FLAG_NONE| - No flags; default mode.
+//   |MOJO_GET_MESSAGE_CONTEXT_FLAG_RELEASE| - Causes the message object to
+//       release its reference to its own context before returning.
+
+typedef uint32_t MojoGetMessageContextFlags;
+
+#ifdef __cplusplus
+const MojoGetMessageContextFlags MOJO_GET_MESSAGE_CONTEXT_FLAG_NONE = 0;
+const MojoGetMessageContextFlags MOJO_GET_MESSAGE_CONTEXT_FLAG_RELEASE = 1;
+#else
+#define MOJO_GET_MESSAGE_CONTEXT_FLAG_NONE ((MojoGetMessageContextFlags)0)
+#define MOJO_GET_MESSAGE_CONTEXT_FLAG_RELEASE ((MojoGetMessageContextFlags)1)
+#endif
+
 // |MojoGetSerializedMessageContentsFlags|: Used to specify different options
-// |MojoGetSerializedMessageContents()|.
+// for |MojoGetSerializedMessageContents()|.
 //   |MOJO_GET_SERIALIZED_MESSAGE_CONTENTS_FLAG_NONE| - No flags; default mode.
 
 typedef uint32_t MojoGetSerializedMessageContentsFlags;
@@ -327,7 +343,7 @@ MOJO_SYSTEM_EXPORT MojoResult MojoSerializeMessage(MojoMessageHandle message);
 //       not a valid message handle.
 //   |MOJO_RESULT_FAILED_PRECONDITION| if |message| is not a serialized message.
 //       The caller may either use |MojoSerializeMessage()| and try again, or
-//       use |MojoReleaseMessageContext()| to extract the message's unserialized
+//       use |MojoGetMessageContext()| to extract the message's unserialized
 //       context.
 //   |MOJO_RESULT_NOT_FOUND| if the message's serialized contents have already
 //       been extracted (or have failed to be extracted) by a previous call to
@@ -349,8 +365,11 @@ MojoGetSerializedMessageContents(MojoMessageHandle message,
                                  uint32_t* num_handles,
                                  MojoGetSerializedMessageContentsFlags flags);
 
-// Detaches the user-provided context from a message and returns it to the
+// Extracts the user-provided context from a message and returns it to the
 // caller. This can only succeed if the message is not in a serialized form.
+//
+// |flags|: Flags to alter the behavior of this call. See
+//     |MojoGetMessageContextFlags| for details.
 //
 // Returns:
 //   |MOJO_RESULT_OK| if |message| was a valid message object which has not yet
@@ -362,7 +381,9 @@ MojoGetSerializedMessageContents(MojoMessageHandle message,
 //       and |MojoGetSerializedMessageContents()| should be called instead.
 //   |MOJO_RESULT_INVALID_ARGUMENT| if |message| is not a valid message object.
 MOJO_SYSTEM_EXPORT MojoResult
-MojoReleaseMessageContext(MojoMessageHandle message, uintptr_t* context);
+MojoGetMessageContext(MojoMessageHandle message,
+                      uintptr_t* context,
+                      MojoGetMessageContextFlags flags);
 
 // Notifies the system that a bad message was received on a message pipe,
 // according to whatever criteria the caller chooses. This ultimately tries to

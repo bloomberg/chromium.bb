@@ -98,8 +98,9 @@ struct MojoSystemThunks {
       MojoHandle* handles,
       uint32_t* num_handles,
       MojoGetSerializedMessageContentsFlags flags);
-  MojoResult (*ReleaseMessageContext)(MojoMessageHandle message,
-                                      uintptr_t* context);
+  MojoResult (*GetMessageContext)(MojoMessageHandle message,
+                                  uintptr_t* context,
+                                  MojoGetMessageContextFlags flags);
   MojoResult (*WrapPlatformHandle)(
       const struct MojoPlatformHandle* platform_handle,
       MojoHandle* mojo_handle);

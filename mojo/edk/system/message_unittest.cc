@@ -45,7 +45,8 @@ class TestMessageBase {
     MojoMessageHandle handle = MOJO_HANDLE_INVALID;
     std::swap(handle, *message_handle);
     uintptr_t context;
-    MojoResult rv = MojoReleaseMessageContext(handle, &context);
+    MojoResult rv = MojoGetMessageContext(
+        handle, &context, MOJO_GET_MESSAGE_CONTEXT_FLAG_RELEASE);
     DCHECK_EQ(MOJO_RESULT_OK, rv);
     MojoDestroyMessage(handle);
     return base::WrapUnique(reinterpret_cast<T*>(context));
@@ -385,7 +386,8 @@ TEST_F(MessageTest, ReadSerializedMessageAsMessageWithContext) {
             MojoReadMessage(b, &message_handle, MOJO_READ_MESSAGE_FLAG_NONE));
   uintptr_t context;
   EXPECT_EQ(MOJO_RESULT_NOT_FOUND,
-            MojoReleaseMessageContext(message_handle, &context));
+            MojoGetMessageContext(message_handle, &context,
+                                  MOJO_GET_MESSAGE_CONTEXT_FLAG_RELEASE));
   MojoClose(a);
   MojoClose(b);
 }

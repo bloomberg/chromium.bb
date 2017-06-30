@@ -546,8 +546,9 @@ MojoResult Core::GetSerializedMessageContents(
       UserMessageImpl::ExtractBadHandlePolicy::kAbort, handles);
 }
 
-MojoResult Core::ReleaseMessageContext(MojoMessageHandle message_handle,
-                                       uintptr_t* context) {
+MojoResult Core::GetMessageContext(MojoMessageHandle message_handle,
+                                   uintptr_t* context,
+                                   MojoGetMessageContextFlags flags) {
   if (!message_handle)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
@@ -556,7 +557,10 @@ MojoResult Core::ReleaseMessageContext(MojoMessageHandle message_handle,
   if (!message->HasContext())
     return MOJO_RESULT_NOT_FOUND;
 
-  *context = message->ReleaseContext();
+  if (flags & MOJO_GET_MESSAGE_CONTEXT_FLAG_RELEASE)
+    *context = message->ReleaseContext();
+  else
+    *context = message->context();
   return MOJO_RESULT_OK;
 }
 
