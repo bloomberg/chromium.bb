@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
@@ -119,7 +120,9 @@ void RunCreateSnapshotFileCallback(
 
   scoped_refptr<storage::ShareableFileReference> file_reference =
       storage::ShareableFileReference::GetOrCreate(storage::ScopedFile(
-          local_path, scope_out_policy, BrowserThread::GetBlockingPool()));
+          local_path, scope_out_policy,
+          base::CreateSequencedTaskRunnerWithTraits(
+              {base::MayBlock(), base::TaskPriority::USER_BLOCKING})));
   callback.Run(error, file_info, local_path, file_reference);
 }
 
