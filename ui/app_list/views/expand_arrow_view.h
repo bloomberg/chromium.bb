@@ -28,6 +28,12 @@ class ExpandArrowView : public views::CustomButton,
   ExpandArrowView(ContentsView* contents_view, AppListView* app_list_view);
   ~ExpandArrowView() override;
 
+  bool selected() { return selected_; }
+  void SetSelected(bool selected);
+
+  // Overridden from views::CustomButton:
+  void PaintButtonContents(gfx::Canvas* canvas) override;
+
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
@@ -47,6 +53,8 @@ class ExpandArrowView : public views::CustomButton,
   AppListView* const app_list_view_;  // Owned by the views hierarchy.
 
   views::ImageView* icon_;
+
+  bool selected_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ExpandArrowView);
 };
