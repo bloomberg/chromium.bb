@@ -14,6 +14,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -35,6 +36,7 @@ public class WebVrTabTest {
      */
     @Test
     @MediumTest
+    @FlakyTest(message = "crbug.com/738148")
     public void testPoseDataUnfocusedTab() throws InterruptedException {
         mVrTestRule.loadUrlAndAwaitInitialization(
                 VrTestRule.getHtmlTestFile("test_pose_data_unfocused_tab"), PAGE_LOAD_TIMEOUT_S);
