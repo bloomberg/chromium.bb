@@ -280,10 +280,10 @@ bool ContentSettingsContentSettingGetResourceIdentifiersFunction::RunAsync() {
     return true;
   }
 
-  PluginService::GetInstance()->GetPlugins(
-      base::Bind(&ContentSettingsContentSettingGetResourceIdentifiersFunction::
-                 OnGotPlugins,
-                 this));
+  PluginService::GetInstance()->GetPlugins(base::BindOnce(
+      &ContentSettingsContentSettingGetResourceIdentifiersFunction::
+          OnGotPlugins,
+      this));
   return true;
 }
 

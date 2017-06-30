@@ -40,14 +40,16 @@ class ImageWriterFakeImageBurnerClient
                  const std::string& to_path,
                  const ErrorCallback& error_callback) override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(burn_progress_update_handler_, to_path, 0, 100));
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(burn_progress_update_handler_, to_path, 50, 100));
+        FROM_HERE,
+        base::BindOnce(burn_progress_update_handler_, to_path, 0, 100));
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(burn_progress_update_handler_, to_path, 100, 100));
+        base::BindOnce(burn_progress_update_handler_, to_path, 50, 100));
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(burn_finished_handler_, to_path, true, ""));
+        FROM_HERE,
+        base::BindOnce(burn_progress_update_handler_, to_path, 100, 100));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(burn_finished_handler_, to_path, true, ""));
   }
 
  private:
@@ -71,7 +73,7 @@ void FakeDiskMountManager::UnmountDeviceRecursively(
     const std::string& device_path,
     const UnmountDeviceRecursivelyCallbackType& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::Bind(callback, true));
+                                                base::BindOnce(callback, true));
 }
 #endif
 

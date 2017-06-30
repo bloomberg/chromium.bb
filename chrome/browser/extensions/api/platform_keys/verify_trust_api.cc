@@ -112,8 +112,8 @@ void VerifyTrustAPI::Verify(std::unique_ptr<Params> params,
 
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&IOPart::Verify, base::Unretained(io_part_.get()),
-                 base::Passed(&params), extension_id, finish_callback));
+      base::BindOnce(&IOPart::Verify, base::Unretained(io_part_.get()),
+                     base::Passed(&params), extension_id, finish_callback));
 }
 
 void VerifyTrustAPI::OnExtensionUnloaded(
@@ -122,8 +122,8 @@ void VerifyTrustAPI::OnExtensionUnloaded(
     UnloadedExtensionReason reason) {
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&IOPart::OnExtensionUnloaded, base::Unretained(io_part_.get()),
-                 extension->id()));
+      base::BindOnce(&IOPart::OnExtensionUnloaded,
+                     base::Unretained(io_part_.get()), extension->id()));
 }
 
 void VerifyTrustAPI::FinishedVerificationOnUI(const VerifyCallback& ui_callback,
@@ -142,7 +142,7 @@ void VerifyTrustAPI::CallBackOnUI(const VerifyCallback& ui_callback,
                                   int cert_status) {
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(ui_callback, error, return_value, cert_status));
+      base::BindOnce(ui_callback, error, return_value, cert_status));
 }
 
 VerifyTrustAPI::IOPart::~IOPart() {

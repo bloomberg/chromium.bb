@@ -310,11 +310,9 @@ class EnterprisePlatformKeysTest
     if (GetParam().system_token_ == SYSTEM_TOKEN_EXISTS) {
       base::RunLoop loop;
       content::BrowserThread::PostTask(
-          content::BrowserThread::IO,
-          FROM_HERE,
-          base::Bind(&EnterprisePlatformKeysTest::SetUpTestSystemSlotOnIO,
-                     base::Unretained(this),
-                     loop.QuitClosure()));
+          content::BrowserThread::IO, FROM_HERE,
+          base::BindOnce(&EnterprisePlatformKeysTest::SetUpTestSystemSlotOnIO,
+                         base::Unretained(this), loop.QuitClosure()));
       loop.Run();
     }
 
@@ -331,11 +329,10 @@ class EnterprisePlatformKeysTest
     if (GetParam().system_token_ == SYSTEM_TOKEN_EXISTS) {
       base::RunLoop loop;
       content::BrowserThread::PostTask(
-          content::BrowserThread::IO,
-          FROM_HERE,
-          base::Bind(&EnterprisePlatformKeysTest::TearDownTestSystemSlotOnIO,
-                     base::Unretained(this),
-                     loop.QuitClosure()));
+          content::BrowserThread::IO, FROM_HERE,
+          base::BindOnce(
+              &EnterprisePlatformKeysTest::TearDownTestSystemSlotOnIO,
+              base::Unretained(this), loop.QuitClosure()));
       loop.Run();
     }
     EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
@@ -439,9 +436,8 @@ IN_PROC_BROWSER_TEST_P(EnterprisePlatformKeysTest, Basic) {
   // Enable the URLRequestMock, which is required for force-installing the
   // test extension through policy.
   content::BrowserThread::PostTask(
-     content::BrowserThread::IO,
-     FROM_HERE,
-     base::Bind(chrome_browser_net::SetUrlRequestMocksEnabled, true));
+      content::BrowserThread::IO, FROM_HERE,
+      base::BindOnce(chrome_browser_net::SetUrlRequestMocksEnabled, true));
 
   {
    base::RunLoop loop;

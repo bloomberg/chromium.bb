@@ -64,7 +64,7 @@ class FakeBoolDBusMethod {
 
   void operator()(const chromeos::BoolDBusMethodCallback& callback) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, status_, value_));
+        FROM_HERE, base::BindOnce(callback, status_, value_));
   }
 
  private:
@@ -78,7 +78,7 @@ void RegisterKeyCallbackTrue(
     const std::string& key_name,
     const cryptohome::AsyncMethodCaller::Callback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, true, cryptohome::MOUNT_ERROR_NONE));
+      FROM_HERE, base::BindOnce(callback, true, cryptohome::MOUNT_ERROR_NONE));
 }
 
 void RegisterKeyCallbackFalse(
@@ -87,7 +87,7 @@ void RegisterKeyCallbackFalse(
     const std::string& key_name,
     const cryptohome::AsyncMethodCaller::Callback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, false, cryptohome::MOUNT_ERROR_NONE));
+      FROM_HERE, base::BindOnce(callback, false, cryptohome::MOUNT_ERROR_NONE));
 }
 
 void SignChallengeCallbackTrue(
@@ -100,7 +100,7 @@ void SignChallengeCallbackTrue(
     const std::string& challenge,
     const cryptohome::AsyncMethodCaller::DataCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, true, "response"));
+      FROM_HERE, base::BindOnce(callback, true, "response"));
 }
 
 void SignChallengeCallbackFalse(
@@ -113,7 +113,7 @@ void SignChallengeCallbackFalse(
     const std::string& challenge,
     const cryptohome::AsyncMethodCaller::DataCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, false, ""));
+      FROM_HERE, base::BindOnce(callback, false, ""));
 }
 
 void GetCertificateCallbackTrue(
@@ -124,7 +124,7 @@ void GetCertificateCallbackTrue(
     const chromeos::attestation::AttestationFlow::CertificateCallback&
         callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, true, "certificate"));
+      FROM_HERE, base::BindOnce(callback, true, "certificate"));
 }
 
 void GetCertificateCallbackFalse(
@@ -135,7 +135,7 @@ void GetCertificateCallbackFalse(
     const chromeos::attestation::AttestationFlow::CertificateCallback&
         callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, false, ""));
+      FROM_HERE, base::BindOnce(callback, false, ""));
 }
 
 class EPKChallengeKeyTestBase : public BrowserWithTestWindowTest {

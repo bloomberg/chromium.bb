@@ -83,8 +83,8 @@ void ChromeVirtualKeyboardDelegate::GetKeyboardConfig(
     OnKeyboardSettingsCallback on_settings_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   media::AudioSystem::Get()->HasInputDevices(
-      base::Bind(&ChromeVirtualKeyboardDelegate::OnHasInputDevices, weak_this_,
-                 std::move(on_settings_callback)));
+      base::BindOnce(&ChromeVirtualKeyboardDelegate::OnHasInputDevices,
+                     weak_this_, std::move(on_settings_callback)));
 }
 
 bool ChromeVirtualKeyboardDelegate::HideKeyboard() {

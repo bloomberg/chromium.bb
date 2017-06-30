@@ -22,9 +22,8 @@ namespace {
 
 void ClearImageBurner() {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(BrowserThread::UI,
-                            FROM_HERE,
-                            base::Bind(&ClearImageBurner));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::BindOnce(&ClearImageBurner));
     return;
   }
 
@@ -43,9 +42,8 @@ void Operation::Write(const base::Closure& continuation) {
   AddCleanUpFunction(base::Bind(&ClearImageBurner));
 
   BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&Operation::UnmountVolumes, this, continuation));
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&Operation::UnmountVolumes, this, continuation));
 }
 
 void Operation::VerifyWrite(const base::Closure& continuation) {
