@@ -298,6 +298,10 @@
 	  surface is constrained, the gravity is 'bottom' and the anchor is
 	  'bottom', change the gravity to 'top' and the anchor to 'top'.
 
+	  The adjusted position is calculated given the original anchor
+	  rectangle and offset, but with the new flipped anchor and gravity
+	  values.
+
 	  If the adjusted position also ends up being constrained, the resulting
 	  position of the flip_y adjustment will be the one before the
 	  adjustment.
