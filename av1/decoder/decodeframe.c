@@ -5090,7 +5090,9 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 #endif  // !CONFIG_EC_ADAPT
 
   if (frame_is_intra_only(cm)) {
+#if !CONFIG_EC_ADAPT
     av1_copy(cm->kf_y_prob, av1_kf_y_mode_prob);
+#endif
     av1_copy(cm->fc->kf_y_cdf, av1_kf_y_mode_cdf);
 #if !CONFIG_EC_ADAPT
     int k;

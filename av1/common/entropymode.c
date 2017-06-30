@@ -293,6 +293,7 @@ const aom_prob default_coeff_lps[TX_SIZES][PLANE_TYPES][LEVEL_CONTEXTS] = {
 };
 #endif  // CONFIG_LV_MAP
 
+#if !CONFIG_EC_ADAPT
 #if CONFIG_ALT_INTRA
 #if CONFIG_SMOOTH_HV
 const aom_prob av1_kf_y_mode_prob[INTRA_MODES][INTRA_MODES][INTRA_MODES - 1] = {
@@ -889,6 +890,7 @@ static const aom_prob default_uv_probs[INTRA_MODES][INTRA_MODES - 1] = {
 };
 
 #endif  // CONFIG_ALT_INTRA
+#endif  // !CONFIG_EC_ADAPT
 
 #if CONFIG_EXT_PARTITION_TYPES
 static const aom_prob
@@ -4676,8 +4678,10 @@ const aom_cdf_prob
     };
 
 static void init_mode_probs(FRAME_CONTEXT *fc) {
+#if !CONFIG_EC_ADAPT
   av1_copy(fc->uv_mode_prob, default_uv_probs);
   av1_copy(fc->y_mode_prob, default_if_y_probs);
+#endif
   av1_copy(fc->switchable_interp_prob, default_switchable_interp_prob);
   av1_copy(fc->partition_prob, default_partition_probs);
   av1_copy(fc->intra_inter_prob, default_intra_inter_p);
@@ -4815,9 +4819,11 @@ void av1_set_mode_cdfs(struct AV1Common *cm) {
                     cm->fc->seg.tree_cdf);
   }
 
+#if !CONFIG_EC_ADAPT
   for (i = 0; i < INTRA_MODES; ++i)
     av1_tree_to_cdf(av1_intra_mode_tree, fc->uv_mode_prob[i],
                     fc->uv_mode_cdf[i]);
+#endif
 #if CONFIG_EXT_PARTITION_TYPES
   for (i = 0; i < PARTITION_PLOFFSET; ++i)
     av1_tree_to_cdf(av1_partition_tree, fc->partition_prob[i],
@@ -4850,17 +4856,21 @@ void av1_set_mode_cdfs(struct AV1Common *cm) {
                     fc->partition_cdf[i]);
 #endif
 
+#if !CONFIG_EC_ADAPT
   for (i = 0; i < INTRA_MODES; ++i)
     for (j = 0; j < INTRA_MODES; ++j)
       av1_tree_to_cdf(av1_intra_mode_tree, cm->kf_y_prob[i][j],
                       cm->fc->kf_y_cdf[i][j]);
+#endif
 
   for (j = 0; j < SWITCHABLE_FILTER_CONTEXTS; ++j)
     av1_tree_to_cdf(av1_switchable_interp_tree, fc->switchable_interp_prob[j],
                     fc->switchable_interp_cdf[j]);
 
+#if !CONFIG_EC_ADAPT
   for (i = 0; i < BLOCK_SIZE_GROUPS; ++i)
     av1_tree_to_cdf(av1_intra_mode_tree, fc->y_mode_prob[i], fc->y_mode_cdf[i]);
+#endif
 
 #if CONFIG_EXT_TX
   int s;

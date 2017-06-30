@@ -473,11 +473,13 @@ typedef struct FRAME_COUNTS {
 #endif  // CONFIG_FILTER_INTRA
 } FRAME_COUNTS;
 
+#if !CONFIG_EC_ADAPT
 // Default probabilities for signaling Intra mode for Y plane -- used only for
 // intra-only frames. ('default_if_y_probs' is used for inter frames).
 // Contexts used: Intra mode (Y plane) of 'above' and 'left' blocks.
 extern const aom_prob av1_kf_y_mode_prob[INTRA_MODES][INTRA_MODES]
                                         [INTRA_MODES - 1];
+#endif
 // CDF version of 'av1_kf_y_mode_prob'.
 extern const aom_cdf_prob av1_kf_y_mode_cdf[INTRA_MODES][INTRA_MODES]
                                            [CDF_SIZE(INTRA_MODES)];
