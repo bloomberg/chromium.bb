@@ -27,5 +27,4 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (28,14) size 238x26
             text run at (28,14) width 238: "This is some linked text"
         LayoutText {#text} at (0,0) size 0x0
-        LayoutText {#text} at (0,0) size 0x0
 caret: position 1 of child 0 {#text} of child 1 {DIV} of body

@@ -31,7 +31,6 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (158,1) size 162x19
             text run at (158,1) width 162: "drop me into the text field"
         LayoutText {#text} at (0,0) size 0x0
-        LayoutText {#text} at (0,0) size 0x0
 layer at (8,100) size 784x2 clip at (0,0) size 0x0
   LayoutBlockFlow {HR} at (0,92) size 784x2 [border: (1px inset #EEEEEE)]
 layer at (10,113) size 150x16

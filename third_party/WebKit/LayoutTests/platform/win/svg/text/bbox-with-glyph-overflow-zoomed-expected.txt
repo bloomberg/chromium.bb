@@ -50,4 +50,3 @@ layer at (0,0) size 800x251
         LayoutSVGRect {rect} at (17.77,28.34) size 70.55x27.22 [stroke={[type=SOLID] [color=#008000]}] [fill={[type=SOLID] [color=#00000000]}] [x=17.77] [y=28.34] [width=70.55] [height=27.22]
         LayoutSVGRect {rect} at (20,61.13) size 32.77x17.77 [stroke={[type=SOLID] [color=#008000]}] [fill={[type=SOLID] [color=#00000000]}] [x=20.00] [y=61.13] [width=32.77] [height=17.77]
       LayoutText {#text} at (0,0) size 0x0
-      LayoutText {#text} at (0,0) size 0x0

@@ -8,7 +8,6 @@ layer at (0,0) size 800x600
           text run at (0,0) width 507: "This tests for a bug where the first newline entered into a text area would be lost."
       LayoutBlockFlow (anonymous) at (0,36) size 784x36
         LayoutText {#text} at (0,0) size 0x0
-        LayoutText {#text} at (0,0) size 0x0
 layer at (8,44) size 179x36 clip at (9,45) size 177x34
   LayoutTextControl {TEXTAREA} at (0,0) size 179x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     LayoutBlockFlow {DIV} at (3,3) size 175x32

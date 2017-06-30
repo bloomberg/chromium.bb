@@ -13,8 +13,6 @@ layer at (0,0) size 800x464
           text run at (0,0) width 71: "Test Image"
       LayoutBlockFlow (anonymous) at (0,242) size 784x206
         LayoutText {#text} at (0,0) size 0x0
-        LayoutText {#text} at (0,0) size 0x0
-        LayoutText {#text} at (0,0) size 0x0
 layer at (8,26) size 202x202
   LayoutHTMLCanvas {CANVAS} at (0,0) size 202x202 [border: (1px solid #999999)]
 layer at (8,250) size 202x202

@@ -17,7 +17,6 @@ layer at (0,0) size 800x600
             LayoutBlockFlow {DIV} at (0,0) size 105x13
             LayoutBlockFlow {DIV} at (106,1) size 11x11
         LayoutText {#text} at (0,0) size 0x0
-        LayoutText {#text} at (0,0) size 0x0
 layer at (12,45) size 105x13
   LayoutBlockFlow {DIV} at (0,0) size 105x13
 layer at (141,45) size 105x13

@@ -106,10 +106,6 @@
     {
       "object": "LayoutText #text",
       "reason": "geometry"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "geometry"
     }
   ]
 }

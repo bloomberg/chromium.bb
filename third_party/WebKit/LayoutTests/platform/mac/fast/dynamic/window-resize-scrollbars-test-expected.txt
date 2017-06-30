@@ -5,4 +5,3 @@ layer at (0,0) size 768x568
     LayoutBlockFlow {BODY} at (8,8) size 752x560
       LayoutText {#text} at (0,0) size 495x18
         text run at (0,0) width 495: "This window should not have scroll bars. If it has scroll bars, try to use them."
-      LayoutText {#text} at (0,0) size 0x0

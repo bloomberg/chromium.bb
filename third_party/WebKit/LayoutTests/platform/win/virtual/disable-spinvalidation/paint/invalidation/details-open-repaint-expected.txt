@@ -61,10 +61,6 @@
     {
       "object": "LayoutText #text",
       "reason": "appeared"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "appeared"
     }
   ]
 }

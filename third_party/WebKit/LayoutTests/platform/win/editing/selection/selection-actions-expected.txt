@@ -32,6 +32,5 @@ layer at (0,0) size 800x600
       LayoutBR {BR} at (61,135) size 0x0
       LayoutText {#text} at (0,140) size 118x19
         text run at (0,140) width 118: "This is a paragraph."
-      LayoutText {#text} at (0,0) size 0x0
 selection start: position 11 of child 2 {#text} of body
 selection end:   position 1 of child 7 {BR} of body

@@ -375,6 +375,8 @@ blink_core_sources("dom") {
     "VisitedLinkState.cpp",
     "VisitedLinkState.h",
     "WeakIdentifierMap.h",
+    "WhitespaceAttacher.cpp",
+    "WhitespaceAttacher.h",
     "XMLDocument.cpp",
     "XMLDocument.h",
     "custom/CEReactionsScope.cpp",

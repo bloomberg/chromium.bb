@@ -17,7 +17,6 @@ layer at (0,0) size 800x600
           text run at (371,90) width 4: " "
         LayoutBR {BR} at (0,0) size 0x0
         LayoutText {#text} at (0,0) size 0x0
-        LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {DIV} at (0,174) size 784x32
 layer at (8,42) size 371x32 clip at (9,43) size 369x30
   LayoutTextControl {TEXTAREA} at (0,0) size 371x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]

@@ -1048,23 +1048,6 @@ void Node::DetachLayoutTree(const AttachContext& context) {
   ClearChildNeedsStyleInvalidation();
 }
 
-void Node::ReattachWhitespaceSiblingsIfNeeded(Text* start) {
-  ScriptForbiddenScope forbid_script_during_raw_iteration;
-  for (Node* sibling = start; sibling; sibling = sibling->nextSibling()) {
-    if (sibling->IsTextNode() && ToText(sibling)->ContainsOnlyWhitespace()) {
-      bool had_layout_object = !!sibling->GetLayoutObject();
-      ToText(sibling)->ReattachLayoutTreeIfNeeded();
-      // If sibling's layout object status didn't change we don't need to
-      // continue checking other siblings since their layout object status won't
-      // change either.
-      if (!!sibling->GetLayoutObject() == had_layout_object)
-        return;
-    } else if (sibling->GetLayoutObject()) {
-      return;
-    }
-  }
-}
-
 const ComputedStyle* Node::VirtualEnsureComputedStyle(
     PseudoId pseudo_element_specifier) {
   return ParentOrShadowHostNode()

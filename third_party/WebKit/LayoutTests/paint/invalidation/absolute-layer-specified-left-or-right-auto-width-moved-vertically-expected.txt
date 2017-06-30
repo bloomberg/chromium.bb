@@ -1,2 +1,2 @@
-There should be no repaint when the divs are moved vertically. Left Right
+There should be no repaint when the divs are moved vertically. LeftRight
 SUCCESS

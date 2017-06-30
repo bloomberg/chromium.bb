@@ -10,8 +10,6 @@ layer at (0,0) size 800x600
       LayoutBlockFlow (anonymous) at (0,70) size 784x100
       LayoutBlockFlow (anonymous) at (0,170) size 784x0
         LayoutText {#text} at (0,0) size 0x0
-        LayoutText {#text} at (0,0) size 0x0
-        LayoutText {#text} at (0,0) size 0x0
 layer at (8,78) size 100x100
   LayoutBlockFlow {DIV} at (0,0) size 100x100
     LayoutText {#text} at (0,0) size 0x0
@@ -24,4 +22,3 @@ layer at (8,78) size 100x50 transparent
   LayoutBlockFlow {SPAN} at (0,0) size 100x50 [bgcolor=#008000]
 layer at (8,178) size 0x0 transparent
   LayoutInline {SPAN} at (0,0) size 0x0
-    LayoutText {#text} at (0,0) size 0x0

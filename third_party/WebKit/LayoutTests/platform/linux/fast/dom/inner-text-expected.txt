@@ -8,4 +8,3 @@ layer at (0,0) size 800x600
           LayoutInline {SPAN} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 221x19
         text run at (0,0) width 221: " This text should only appear once."
-      LayoutText {#text} at (0,0) size 0x0

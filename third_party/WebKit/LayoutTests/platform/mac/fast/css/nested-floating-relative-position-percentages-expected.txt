@@ -9,9 +9,6 @@ layer at (0,0) size 800x600
 layer at (400,26) size 630x420 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutBlockFlow (relative positioned) (floating) {DIV} at (0,18) size 630x420
     LayoutBR {BR} at (630,0) size 0x18
-    LayoutText {#text} at (0,0) size 0x0
-    LayoutText {#text} at (0,0) size 0x0
-    LayoutText {#text} at (0,0) size 0x0
 layer at (90,31) size 200x200
   LayoutBlockFlow (relative positioned) (floating) {DIV} at (5,5) size 200x200 [bgcolor=#000000]
     LayoutImage {IMG} at (0,0) size 200x200

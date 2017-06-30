@@ -36,6 +36,5 @@ layer at (0,0) size 800x40
               text run at (0,0) width 16: "4"
       LayoutText {#text} at (80,8) size 16x16
         text run at (80,8) width 16: "b"
-      LayoutText {#text} at (0,0) size 0x0
 selection start: position 1 of child 2 {#text} of body
 selection end:   position 1 of child 4 {#text} of body

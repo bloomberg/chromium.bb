@@ -1252,6 +1252,7 @@ source_set("unit_tests") {
     "dom/TreeScopeTest.cpp",
     "dom/URLSearchParamsTest.cpp",
     "dom/UserGestureIndicatorTest.cpp",
+    "dom/WhitespaceAttacherTest.cpp",
     "dom/custom/CustomElementDefinitionTest.cpp",
     "dom/custom/CustomElementDescriptorTest.cpp",
     "dom/custom/CustomElementReactionQueueTest.cpp",

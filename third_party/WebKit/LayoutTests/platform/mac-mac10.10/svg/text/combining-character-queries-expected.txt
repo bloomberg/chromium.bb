@@ -503,5 +503,3 @@ layer at (0,0) size 800x520
             chunk 1 text run 1 at (359.72,350.00) startOffset 0 endOffset 1 width 49.07 RTL: "\x{FDB0}"
             chunk 1 text run 1 at (408.79,350.00) startOffset 0 endOffset 2 width 15.76: "i\x{333}"
       LayoutText {#text} at (0,0) size 0x0
-      LayoutText {#text} at (0,0) size 0x0
-      LayoutText {#text} at (0,0) size 0x0

@@ -17,7 +17,6 @@ layer at (0,0) size 800x187
       LayoutInline {h1} at (0,0) size 0x0
         LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0
-      LayoutText {#text} at (0,0) size 0x0
       LayoutInline {p} at (0,0) size 495x18
         LayoutInline {font} at (0,0) size 495x18
           LayoutText {#text} at (0,0) size 495x18

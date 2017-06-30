@@ -12,7 +12,6 @@ layer at (0,0) size 800x303
         LayoutSVGRoot {svg} at (0,0) size 200x200
           LayoutSVGEllipse {circle} at (0,0) size 100x100 [fill={[type=SOLID] [color=#008000]}] [cx=50.00] [cy=50.00] [r=50.00]
         LayoutText {#text} at (0,0) size 0x0
-        LayoutText {#text} at (0,0) size 0x0
 layer at (10,19) size 379x16
   LayoutBlockFlow {div} at (2,3) size 379x16
     LayoutText {#text} at (0,0) size 136x16

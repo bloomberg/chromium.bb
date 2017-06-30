@@ -12,7 +12,6 @@ layer at (0,0) size 800x178
       LayoutBlockFlow (anonymous) at (0,72) size 784x82
         LayoutTextControl {INPUT} at (0,0) size 504x82 [color=#FFFFFF] [bgcolor=#000000] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (0,0) size 0x0
-        LayoutText {#text} at (0,0) size 0x0
 layer at (20,100) size 480x58
   LayoutBlockFlow {DIV} at (12,12) size 480x58
 caret: position 0 of child 0 {DIV} of {#document-fragment} of child 5 {INPUT} of body

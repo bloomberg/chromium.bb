@@ -8,9 +8,6 @@ layer at (0,0) size 800x376
       LayoutBR {BR} at (351,339) size 1x13
       LayoutText {#text} at (0,352) size 223x13
         text run at (0,352) width 223: "The image of Tux should fill the entire red square."
-      LayoutText {#text} at (0,0) size 0x0
-      LayoutText {#text} at (0,0) size 0x0
-      LayoutText {#text} at (0,0) size 0x0
 layer at (6,6) size 349x349
   LayoutEmbeddedObject {OBJECT} at (0,0) size 348.59x348.59 [border: (0.69px solid #FF0000)]
     layer at (0,0) size 347x347

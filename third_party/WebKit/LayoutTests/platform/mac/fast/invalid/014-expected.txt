@@ -7,7 +7,6 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 612x18
           text run at (0,0) width 289: "Random tests of some bizarre combinations. "
           text run at (288,0) width 324: "H2 should allow a form inside it, but p should not."
-        LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {FORM} at (0,18) size 784x18
         LayoutMenuList {SELECT} at (0,0) size 39x18 [bgcolor=#F8F8F8]
           LayoutBlockFlow (anonymous) at (0,0) size 39x18

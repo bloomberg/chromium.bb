@@ -1,2 +1,2 @@
-There should be no repaint when the divs are moved. A B
+There should be no repaint when the divs are moved. AB
 SUCCESS

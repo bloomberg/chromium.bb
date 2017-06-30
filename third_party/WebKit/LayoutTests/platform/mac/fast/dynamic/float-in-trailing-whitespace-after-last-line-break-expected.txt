@@ -23,7 +23,6 @@ layer at (0,0) size 800x600
           LayoutBR {BR} at (262,14) size 1x0
           LayoutBR {BR} at (0,18) size 0x18
           LayoutBlockFlow (floating) {DIV} at (0,36) size 100x100 [bgcolor=#008000]
-          LayoutText {#text} at (0,0) size 0x0
         LayoutBlockFlow {DIV} at (0,36) size 150x36
           LayoutText {#text} at (100,0) size 47x36
             text run at (100,0) width 47: "a green"

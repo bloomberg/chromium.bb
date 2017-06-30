@@ -16,4 +16,3 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 0x0
         LayoutImage {IMG} at (0,0) size 128x128
         LayoutText {#text} at (0,0) size 0x0
-        LayoutText {#text} at (0,0) size 0x0

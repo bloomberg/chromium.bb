@@ -40,6 +40,7 @@
 #include "core/dom/StaticNodeList.h"
 #include "core/dom/StyleChangeReason.h"
 #include "core/dom/StyleEngine.h"
+#include "core/dom/WhitespaceAttacher.h"
 #include "core/events/MutationEvent.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLCollection.h"
@@ -1454,16 +1455,15 @@ void ContainerNode::RecalcDescendantStyles(StyleRecalcChange change) {
   }
 }
 
-void ContainerNode::RebuildLayoutTreeForChild(Node* child,
-                                              Text*& next_text_sibling) {
-  bool rebuild_child =
-      child->NeedsReattachLayoutTree() || child->ChildNeedsReattachLayoutTree();
-
+void ContainerNode::RebuildLayoutTreeForChild(
+    Node* child,
+    WhitespaceAttacher& whitespace_attacher) {
   if (child->IsTextNode()) {
     Text* text_node = ToText(child);
-    if (rebuild_child)
-      text_node->RebuildTextLayoutTree(next_text_sibling);
-    next_text_sibling = text_node;
+    if (child->NeedsReattachLayoutTree())
+      text_node->RebuildTextLayoutTree(whitespace_attacher);
+    else
+      whitespace_attacher.DidVisitText(text_node);
     return;
   }
 
@@ -1471,20 +1471,24 @@ void ContainerNode::RebuildLayoutTreeForChild(Node* child,
     return;
 
   Element* element = ToElement(child);
-  if (rebuild_child)
-    element->RebuildLayoutTree(next_text_sibling);
-  if (element->GetLayoutObject())
-    next_text_sibling = nullptr;
+  if (element->NeedsRebuildLayoutTree(whitespace_attacher))
+    element->RebuildLayoutTree(whitespace_attacher);
+  else
+    whitespace_attacher.DidVisitElement(element);
 }
 
-void ContainerNode::RebuildChildrenLayoutTrees(Text*& next_text_sibling) {
+void ContainerNode::RebuildChildrenLayoutTrees(
+    WhitespaceAttacher& whitespace_attacher) {
   DCHECK(!NeedsReattachLayoutTree());
 
   if (IsActiveSlotOrActiveInsertionPoint()) {
-    if (isHTMLSlotElement(this))
-      toHTMLSlotElement(this)->RebuildDistributedChildrenLayoutTrees();
-    else
-      ToInsertionPoint(this)->RebuildDistributedChildrenLayoutTrees();
+    if (isHTMLSlotElement(this)) {
+      toHTMLSlotElement(this)->RebuildDistributedChildrenLayoutTrees(
+          whitespace_attacher);
+    } else {
+      ToInsertionPoint(this)->RebuildDistributedChildrenLayoutTrees(
+          whitespace_attacher);
+    }
   }
 
   // This loop is deliberately backwards because we use insertBefore in the
@@ -1493,7 +1497,7 @@ void ContainerNode::RebuildChildrenLayoutTrees(Text*& next_text_sibling) {
   // and work our way back means in the common case, we'll find the insertion
   // point in O(1) time.  See crbug.com/288225
   for (Node* child = lastChild(); child; child = child->previousSibling())
-    RebuildLayoutTreeForChild(child, next_text_sibling);
+    RebuildLayoutTreeForChild(child, whitespace_attacher);
 
   // This is done in ContainerNode::AttachLayoutTree but will never be cleared
   // if we don't enter ContainerNode::AttachLayoutTree so we do it here.

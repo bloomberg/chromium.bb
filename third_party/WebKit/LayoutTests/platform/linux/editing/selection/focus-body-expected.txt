@@ -7,5 +7,4 @@ layer at (0,0) size 800x600
       LayoutText {#text} at (0,0) size 437x19
         text run at (0,0) width 219: "This test focuses an editable body. "
         text run at (218,0) width 219: "Its contents should not be selected."
-      LayoutText {#text} at (0,0) size 0x0
 caret: position 0 of child 0 {#text} of body

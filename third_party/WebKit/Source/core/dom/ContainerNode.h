@@ -42,6 +42,7 @@ class HTMLCollection;
 class NameNodeList;
 using StaticElementList = StaticNodeTypeList<Element>;
 class RadioNodeList;
+class WhitespaceAttacher;
 
 enum DynamicRestyleFlags {
   kChildrenOrSiblingsAffectedByFocus = 1 << 0,
@@ -260,8 +261,8 @@ class CORE_EXPORT ContainerNode : public Node {
                                    Node* node_before_change,
                                    Node* node_after_change);
   void RecalcDescendantStyles(StyleRecalcChange);
-  void RebuildChildrenLayoutTrees(Text*& next_text_sibling);
-  void RebuildLayoutTreeForChild(Node* child, Text*& next_text_sibling);
+  void RebuildChildrenLayoutTrees(WhitespaceAttacher&);
+  void RebuildLayoutTreeForChild(Node* child, WhitespaceAttacher&);
 
   bool ChildrenSupportStyleSharing() const { return !HasRestyleFlags(); }
 

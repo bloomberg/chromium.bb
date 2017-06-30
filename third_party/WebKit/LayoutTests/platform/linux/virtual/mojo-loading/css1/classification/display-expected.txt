@@ -56,7 +56,6 @@ layer at (0,0) size 785x873 backgroundClip at (0,0) size 785x600 clip at (0,0) s
       LayoutBlockFlow {P} at (0,371) size 769x20
         LayoutText {#text} at (0,0) size 247x19
           text run at (0,0) width 247: "There should be no text after the colon:"
-        LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,407) size 769x60
         LayoutBlockFlow (anonymous) at (0,0) size 769x20
           LayoutText {#text} at (0,0) size 112x19
@@ -117,7 +116,6 @@ layer at (0,0) size 785x873 backgroundClip at (0,0) size 785x600 clip at (0,0) s
               LayoutBlockFlow {P} at (4,228) size 747x20
                 LayoutText {#text} at (0,0) size 247x19
                   text run at (0,0) width 247: "There should be no text after the colon:"
-                LayoutText {#text} at (0,0) size 0x0
               LayoutBlockFlow {P} at (4,264) size 747x60
                 LayoutBlockFlow (anonymous) at (0,0) size 747x20
                   LayoutText {#text} at (0,0) size 112x19

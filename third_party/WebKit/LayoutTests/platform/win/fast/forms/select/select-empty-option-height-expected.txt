@@ -8,4 +8,3 @@ layer at (0,0) size 800x600
           LayoutText (anonymous) at (0,0) size 4x16
             text run at (0,0) width 4: " "
       LayoutText {#text} at (0,0) size 0x0
-      LayoutText {#text} at (0,0) size 0x0

@@ -51,7 +51,6 @@ layer at (278,10) size 130x40
     LayoutText {#text} at (0,0) size 107x39
       text run at (0,0) width 107: "3 green box with"
       text run at (0,20) width 57: "word ok:"
-    LayoutText {#text} at (0,0) size 0x0
 hidden layer at (278,50) size 130x34
   LayoutBlockFlow (positioned) {DIV} at (0,40) size 130x34 [border: (2px solid #FF0000)]
     LayoutBlockFlow {DIV} at (2,2) size 126x24 [border: (2px solid #008000)]
@@ -62,7 +61,6 @@ layer at (412,10) size 130x40
     LayoutText {#text} at (0,0) size 107x39
       text run at (0,0) width 107: "4 green box with"
       text run at (0,20) width 57: "word ok:"
-    LayoutText {#text} at (0,0) size 0x0
 hidden layer at (412,50) size 130x34
   LayoutBlockFlow (positioned) {DIV} at (0,40) size 130x34 [border: (2px solid #FF0000)]
 layer at (414,52) size 126x30
@@ -74,7 +72,6 @@ layer at (546,10) size 130x40
     LayoutText {#text} at (0,0) size 107x39
       text run at (0,0) width 107: "5 green box with"
       text run at (0,20) width 57: "word ok:"
-    LayoutText {#text} at (0,0) size 0x0
 hidden layer at (546,50) size 130x34
   LayoutBlockFlow (positioned) {DIV} at (0,40) size 130x34 [border: (2px solid #FF0000)]
     LayoutBlockFlow {DIV} at (2,2) size 126x28 [border: (2px solid #FF0000)]
@@ -86,7 +83,6 @@ layer at (10,114) size 130x40
     LayoutText {#text} at (0,0) size 107x39
       text run at (0,0) width 107: "6 green box with"
       text run at (0,20) width 57: "word ok:"
-    LayoutText {#text} at (0,0) size 0x0
 hidden layer at (10,154) size 130x34
   LayoutBlockFlow (positioned) {DIV} at (0,40) size 130x34 [border: (2px solid #FF0000)]
 hidden layer at (12,156) size 126x30
@@ -99,7 +95,6 @@ layer at (144,114) size 130x40
     LayoutText {#text} at (0,0) size 107x39
       text run at (0,0) width 107: "7 green box with"
       text run at (0,20) width 57: "word ok:"
-    LayoutText {#text} at (0,0) size 0x0
 hidden layer at (144,154) size 130x34
   LayoutBlockFlow (positioned) {DIV} at (0,40) size 130x34 [border: (2px solid #FF0000)]
 hidden layer at (146,156) size 126x30
@@ -113,7 +108,6 @@ layer at (278,114) size 130x40
     LayoutText {#text} at (0,0) size 122x39
       text run at (0,0) width 122: "8 double green box"
       text run at (0,20) width 89: "with word ok:"
-    LayoutText {#text} at (0,0) size 0x0
 layer at (278,154) size 130x34
   LayoutBlockFlow (positioned) {DIV} at (0,40) size 130x34 [border: (2px solid #008000)]
 hidden layer at (280,156) size 126x30
@@ -127,7 +121,6 @@ layer at (412,114) size 130x40
     LayoutText {#text} at (0,0) size 107x39
       text run at (0,0) width 107: "9 green box with"
       text run at (0,20) width 57: "word ok:"
-    LayoutText {#text} at (0,0) size 0x0
 hidden layer at (412,154) size 130x34
   LayoutBlockFlow (positioned) {DIV} at (0,40) size 130x34 [border: (2px solid #FF0000)]
 hidden layer at (414,156) size 126x30
@@ -140,7 +133,6 @@ layer at (546,114) size 130x20
   LayoutBlockFlow (relative positioned) {DIV} at (2,2) size 130x20
     LayoutText {#text} at (0,0) size 87x19
       text run at (0,0) width 87: "10 green box:"
-    LayoutText {#text} at (0,0) size 0x0
 hidden layer at (546,134) size 130x34
   LayoutBlockFlow (positioned) {DIV} at (0,20) size 130x34 [border: (2px solid #FF0000)]
 layer at (548,136) size 126x30
@@ -154,7 +146,6 @@ layer at (10,218) size 130x40
     LayoutText {#text} at (0,0) size 115x39
       text run at (0,0) width 115: "11 green box with"
       text run at (0,20) width 57: "word ok:"
-    LayoutText {#text} at (0,0) size 0x0
 hidden layer at (10,258) size 130x34
   LayoutBlockFlow (positioned) {DIV} at (0,40) size 130x34 [border: (2px solid #FF0000)]
     LayoutBlockFlow {DIV} at (2,2) size 126x28 [border: (2px solid #FF0000)]
@@ -166,7 +157,6 @@ layer at (144,218) size 130x40
     LayoutText {#text} at (0,0) size 115x39
       text run at (0,0) width 115: "12 green box with"
       text run at (0,20) width 57: "word ok:"
-    LayoutText {#text} at (0,0) size 0x0
 hidden layer at (144,258) size 130x34
   LayoutBlockFlow (positioned) {DIV} at (0,40) size 130x34 [border: (2px solid #FF0000)]
     LayoutBlockFlow {DIV} at (2,2) size 126x28 [border: (2px solid #FF0000)]
@@ -177,7 +167,6 @@ layer at (278,218) size 130x20
   LayoutBlockFlow (relative positioned) {DIV} at (2,2) size 130x20
     LayoutText {#text} at (0,0) size 87x19
       text run at (0,0) width 87: "13 green box:"
-    LayoutText {#text} at (0,0) size 0x0
 hidden layer at (278,238) size 130x34
   LayoutBlockFlow (positioned) {DIV} at (0,20) size 130x34 [border: (2px solid #FF0000)]
     LayoutBlockFlow {DIV} at (2,2) size 126x28 [border: (2px solid #008000)]
@@ -189,7 +178,6 @@ layer at (412,218) size 130x40
     LayoutText {#text} at (0,0) size 115x39
       text run at (0,0) width 115: "14 green box with"
       text run at (0,20) width 57: "word ok:"
-    LayoutText {#text} at (0,0) size 0x0
 hidden layer at (412,258) size 130x30
   LayoutBlockFlow (positioned) {DIV} at (0,40) size 130x30
     LayoutBlockFlow {DIV} at (0,0) size 130x24 [border: (2px solid #008000)]
@@ -200,7 +188,6 @@ layer at (546,218) size 130x40
     LayoutText {#text} at (0,0) size 115x39
       text run at (0,0) width 115: "15 green box with"
       text run at (0,20) width 57: "word ok:"
-    LayoutText {#text} at (0,0) size 0x0
 hidden layer at (546,258) size 130x30
   LayoutBlockFlow (positioned) {DIV} at (0,40) size 130x30
 layer at (546,258) size 130x30
@@ -212,7 +199,6 @@ layer at (10,322) size 130x40
     LayoutText {#text} at (0,0) size 115x39
       text run at (0,0) width 115: "16 green box with"
       text run at (0,20) width 57: "word ok:"
-    LayoutText {#text} at (0,0) size 0x0
 hidden layer at (10,362) size 130x34
   LayoutBlockFlow (positioned) {DIV} at (0,40) size 130x34 [border: (2px solid #FF0000)]
     LayoutBlockFlow {DIV} at (2,2) size 126x52 [border: (2px solid #FF0000)]
@@ -227,7 +213,6 @@ layer at (144,322) size 130x40
     LayoutText {#text} at (0,0) size 115x39
       text run at (0,0) width 115: "17 green box with"
       text run at (0,20) width 57: "word ok:"
-    LayoutText {#text} at (0,0) size 0x0
 hidden layer at (144,362) size 130x34
   LayoutBlockFlow (positioned) {DIV} at (0,40) size 130x34 [border: (2px solid #FF0000)]
     LayoutBlockFlow {DIV} at (2,2) size 126x52 [border: (2px solid #FF0000)]
@@ -242,7 +227,6 @@ layer at (278,322) size 130x40
     LayoutText {#text} at (0,0) size 115x39
       text run at (0,0) width 115: "18 green box with"
       text run at (0,20) width 57: "word ok:"
-    LayoutText {#text} at (0,0) size 0x0
 hidden layer at (278,362) size 130x34
   LayoutBlockFlow (positioned) {DIV} at (0,40) size 130x34 [border: (2px solid #FF0000)]
     LayoutBlockFlow {DIV} at (2,2) size 126x52 [border: (2px solid #FF0000)]
@@ -257,7 +241,6 @@ layer at (412,322) size 130x40
     LayoutText {#text} at (0,0) size 115x39
       text run at (0,0) width 115: "19 green box with"
       text run at (0,20) width 57: "word ok:"
-    LayoutText {#text} at (0,0) size 0x0
 hidden layer at (412,362) size 130x34
   LayoutBlockFlow (positioned) {DIV} at (0,40) size 130x34 [border: (2px solid #FF0000)]
     LayoutBlockFlow {DIV} at (2,2) size 126x28 [border: (2px solid #FF0000)]
@@ -272,7 +255,6 @@ layer at (546,322) size 130x20
   LayoutBlockFlow (relative positioned) {DIV} at (2,2) size 130x20
     LayoutText {#text} at (0,0) size 87x19
       text run at (0,0) width 87: "20 green box:"
-    LayoutText {#text} at (0,0) size 0x0
 hidden layer at (546,342) size 130x34
   LayoutBlockFlow (positioned) {DIV} at (0,20) size 130x34 [border: (2px solid #FF0000)]
     LayoutBlockFlow {DIV} at (2,2) size 126x52 [border: (2px solid #008000)]
@@ -287,7 +269,6 @@ layer at (10,426) size 130x40
     LayoutText {#text} at (0,0) size 124x39
       text run at (0,0) width 124: "21 two green boxes"
       text run at (0,20) width 89: "with word ok:"
-    LayoutText {#text} at (0,0) size 0x0
 hidden layer at (10,466) size 130x34
   LayoutBlockFlow (positioned) {DIV} at (0,40) size 130x34 [border: (2px solid #FF0000)]
     LayoutBlockFlow {DIV} at (2,2) size 126x28 [border: (2px solid #FF0000)]
@@ -303,7 +284,6 @@ layer at (144,426) size 130x40
     LayoutText {#text} at (0,0) size 115x39
       text run at (0,0) width 115: "22 green box with"
       text run at (0,20) width 57: "word ok:"
-    LayoutText {#text} at (0,0) size 0x0
 hidden layer at (144,466) size 130x34
   LayoutBlockFlow (positioned) {DIV} at (0,40) size 130x34 [border: (2px solid #FF0000)]
 layer at (146,468) size 126x30
@@ -315,7 +295,6 @@ layer at (278,426) size 130x40
     LayoutText {#text} at (0,0) size 115x39
       text run at (0,0) width 115: "23 green box with"
       text run at (0,20) width 57: "word ok:"
-    LayoutText {#text} at (0,0) size 0x0
 hidden layer at (278,466) size 130x34
   LayoutBlockFlow (positioned) zI: 1 {DIV} at (0,40) size 130x34 [border: (2px solid #FF0000)]
 hidden layer at (280,468) size 126x30

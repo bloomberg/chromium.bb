@@ -7,7 +7,6 @@ layer at (0,0) size 800x38
         text run at (0,1) width 297: "This tests if the caret position is aligned correctly. "
       LayoutTextControl {INPUT} at (296.95,0) size 205x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
       LayoutText {#text} at (0,0) size 0x0
-      LayoutText {#text} at (0,0) size 0x0
 layer at (308,11) size 200x16
   LayoutBlockFlow {DIV} at (3,3) size 200x16
 caret: position 0 of child 0 {DIV} of {#document-fragment} of child 1 {INPUT} of body
