@@ -708,17 +708,6 @@ group("All") {
   ]
 }
 
-# TODO(GYP_GONE): This target exists for compatibility with GYP for the
-# builders that specify targets in the recipes directly.
-# Ideally it should not exist, and the builders should be specifying
-# more specific targets (or 'All') via the source-side
-# //testing/buildbot/*.json files. We should simply delete this target
-# and update any recipes that are using it.
-group("chromium_builder_tests") {
-  testonly = true
-  deps = []
-}
-
 # TODO(GYP_GONE): Figure out if we really need this target or if there's
 # some better way to specify things.
 if (is_win) {
