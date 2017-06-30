@@ -128,3 +128,6 @@
 
 # TaskScheduler is racy, causing bot instability: https://crbug.com/735701.
 -*TaskScheduler*
+
+# Flaky on waterfall bot, https://crbug.com/738275
+-MessageLoopForIOOnMainThread/FileDescriptorWatcherTest.*
