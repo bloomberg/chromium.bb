@@ -75,6 +75,7 @@ bool MessageAttachmentSet::AddAttachment(
     case MessageAttachment::Type::MOJO_HANDLE:
     case MessageAttachment::Type::WIN_HANDLE:
     case MessageAttachment::Type::MACH_PORT:
+    case MessageAttachment::Type::FUCHSIA_HANDLE:
       attachments_.push_back(attachment);
       *index = attachments_.size() - 1;
       return true;

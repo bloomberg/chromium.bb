@@ -241,7 +241,7 @@ bool PlatformSharedBuffer::InitFromPlatformHandle(
     ScopedPlatformHandle platform_handle) {
   DCHECK(!shared_memory_);
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_FUCHSIA)
   base::SharedMemoryHandle handle(platform_handle.release().handle, num_bytes_,
                                   guid);
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
@@ -266,12 +266,12 @@ bool PlatformSharedBuffer::InitFromPlatformHandlePair(
   return false;
 #else  // defined(OS_MACOSX)
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_FUCHSIA)
   base::SharedMemoryHandle handle(rw_platform_handle.release().handle,
                                   num_bytes_, guid);
   base::SharedMemoryHandle ro_handle(ro_platform_handle.release().handle,
                                      num_bytes_, guid);
-#else   // defined(OS_WIN)
+#else  // defined(OS_WIN) || defined(OS_FUCHSIA)
   base::SharedMemoryHandle handle(
       base::FileDescriptor(rw_platform_handle.release().handle, false),
       num_bytes_, guid);

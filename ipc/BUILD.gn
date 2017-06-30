@@ -104,6 +104,15 @@ component("ipc") {
     ]
   }
 
+  if (is_fuchsia) {
+    sources += [
+      "handle_attachment_fuchsia.cc",
+      "handle_attachment_fuchsia.h",
+      "handle_fuchsia.cc",
+      "handle_fuchsia.h",
+    ]
+  }
+
   defines = [ "IPC_IMPLEMENTATION" ]
 
   public_deps = [
