@@ -21,6 +21,14 @@ namespace content {
 
 namespace {
 
+// If an outgoing active worker has no controllees or the waiting worker called
+// skipWaiting(), it is given |kMaxLameDuckTime| time to finish its requests
+// before it is removed. If the waiting worker called skipWaiting() more than
+// this time ago, or the outgoing worker has had no controllees for a continuous
+// period of time exceeding this time, the outgoing worker will be removed even
+// if it has ongoing requests.
+constexpr base::TimeDelta kMaxLameDuckTime = base::TimeDelta::FromMinutes(5);
+
 ServiceWorkerVersionInfo GetVersionInfo(ServiceWorkerVersion* version) {
   if (!version)
     return ServiceWorkerVersionInfo();
@@ -185,8 +193,12 @@ void ServiceWorkerRegistration::UnsetVersionInternal(
 void ServiceWorkerRegistration::ActivateWaitingVersionWhenReady() {
   DCHECK(waiting_version());
   should_activate_when_ready_ = true;
-  if (IsReadyToActivate())
+  if (IsReadyToActivate()) {
     ActivateWaitingVersion(false /* delay */);
+    return;
+  }
+
+  StartLameDuckTimerIfNeeded();
 }
 
 void ServiceWorkerRegistration::ClaimClients() {
@@ -255,6 +267,8 @@ void ServiceWorkerRegistration::OnNoControllees(ServiceWorkerVersion* version) {
     Clear();
   else if (IsReadyToActivate())
     ActivateWaitingVersion(true /* delay */);
+  else
+    StartLameDuckTimerIfNeeded();
 }
 
 void ServiceWorkerRegistration::OnNoWork(ServiceWorkerVersion* version) {
@@ -270,14 +284,51 @@ bool ServiceWorkerRegistration::IsReadyToActivate() const {
     return false;
 
   DCHECK(waiting_version());
+  const ServiceWorkerVersion* waiting = waiting_version();
   const ServiceWorkerVersion* active = active_version();
-  if (!active)
-    return true;
-  if (!active->HasWork() &&
-      (!active->HasControllee() || waiting_version()->skip_waiting())) {
+  if (!active) {
     return true;
   }
+  if (IsLameDuckActiveVersion()) {
+    return !active->HasWork() ||
+           waiting->TimeSinceSkipWaiting() > kMaxLameDuckTime ||
+           active->TimeSinceNoControllees() > kMaxLameDuckTime;
+  }
   return false;
+}
+
+bool ServiceWorkerRegistration::IsLameDuckActiveVersion() const {
+  if (!waiting_version() || !active_version())
+    return false;
+  return waiting_version()->skip_waiting() ||
+         !active_version()->HasControllee();
+}
+
+void ServiceWorkerRegistration::StartLameDuckTimerIfNeeded() {
+  if (!IsLameDuckActiveVersion() || lame_duck_timer_.IsRunning()) {
+    return;
+  }
+
+  lame_duck_timer_.Start(
+      FROM_HERE, kMaxLameDuckTime,
+      base::Bind(&ServiceWorkerRegistration::RemoveLameDuckIfNeeded,
+                 Unretained(this) /* OK because |this| owns the timer */));
+}
+
+void ServiceWorkerRegistration::RemoveLameDuckIfNeeded() {
+  if (!should_activate_when_ready_) {
+    lame_duck_timer_.Stop();
+    return;
+  }
+
+  if (IsReadyToActivate()) {
+    ActivateWaitingVersion(false /* delay */);
+    return;
+  }
+
+  if (!IsLameDuckActiveVersion()) {
+    lame_duck_timer_.Stop();
+  }
 }
 
 void ServiceWorkerRegistration::ActivateWaitingVersion(bool delay) {
@@ -285,6 +336,8 @@ void ServiceWorkerRegistration::ActivateWaitingVersion(bool delay) {
   DCHECK(context_);
   DCHECK(IsReadyToActivate());
   should_activate_when_ready_ = false;
+  lame_duck_timer_.Stop();
+
   scoped_refptr<ServiceWorkerVersion> activating_version = waiting_version();
   scoped_refptr<ServiceWorkerVersion> exiting_version = active_version();
 
