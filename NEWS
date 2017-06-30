@@ -16,10 +16,12 @@ issues]].
 ** Braille table improvements
 - Fix the character definition for the exclamation mark in the Spanish
   tables thanks to Simon Aittamaa.
+- New table for Croatian grade 1 Braille thanks to Zlatko Sobočan.
 ** License changes
 ** Backwards incompatible changes
 ** New, renamed or removed tables
 *** New
+- hr-g1.ctb
 *** Renamed
 *** Removed
 * Noteworthy changes in release 3.2.0 (2017-06-06)
