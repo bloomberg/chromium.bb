@@ -63,9 +63,6 @@
 
 #define ENC_MISMATCH_DEBUG 0
 
-static struct av1_token intra_mode_encodings[INTRA_MODES];
-static struct av1_token switchable_interp_encodings[SWITCHABLE_FILTERS];
-static struct av1_token partition_encodings[PARTITION_TYPES];
 #if CONFIG_EXT_INTER
 static const struct av1_token
     inter_compound_mode_encodings[INTER_COMPOUND_MODES] = {
@@ -148,9 +145,6 @@ void av1_encode_token_init(void) {
 #else
   av1_tokens_from_tree(ext_tx_encodings, av1_ext_tx_tree);
 #endif  // CONFIG_EXT_TX
-  av1_tokens_from_tree(intra_mode_encodings, av1_intra_mode_tree);
-  av1_tokens_from_tree(switchable_interp_encodings, av1_switchable_interp_tree);
-  av1_tokens_from_tree(partition_encodings, av1_partition_tree);
 
 #if CONFIG_PALETTE
   av1_tokens_from_tree(palette_size_encodings, av1_palette_size_tree);
