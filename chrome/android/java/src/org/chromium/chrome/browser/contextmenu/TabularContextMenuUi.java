@@ -294,7 +294,6 @@ public class TabularContextMenuUi implements ContextMenuUi, AdapterView.OnItemCl
      * @param topContentOffsetPx y content offset from the top.
      */
     public void setTopContentOffsetY(float topContentOffsetPx) {
-        assert mContextMenuDialog != null;
         mTopContentOffsetPx = topContentOffsetPx;
     }
 }
