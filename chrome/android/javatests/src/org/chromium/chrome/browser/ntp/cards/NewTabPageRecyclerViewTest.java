@@ -98,7 +98,7 @@ public class NewTabPageRecyclerViewTest {
     public void setUp() throws Exception {
         mTestServer = EmbeddedTestServer.createAndStartServer(
                 InstrumentationRegistry.getInstrumentation().getContext());
-        mSiteSuggestionUrls = new String[] {mTestServer.getURL(TEST_PAGE)};
+        mSiteSuggestionUrls = mTestServer.getURLs(TEST_PAGE);
 
         mMostVisitedSites = new FakeMostVisitedSites();
         mMostVisitedSites.setTileSuggestions(FAKE_MOST_VISITED_TITLES, mSiteSuggestionUrls,

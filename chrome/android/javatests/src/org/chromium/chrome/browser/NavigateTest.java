@@ -177,11 +177,9 @@ public class NavigateTest {
     @MediumTest
     @Feature({"Navigation"})
     public void testNavigateMany() throws Exception {
-        final String[] urls = {
-                mTestServer.getURL("/chrome/test/data/android/navigate/one.html"),
-                mTestServer.getURL("/chrome/test/data/android/navigate/two.html"),
-                mTestServer.getURL("/chrome/test/data/android/navigate/three.html")
-        };
+        final String[] urls = mTestServer.getURLs("/chrome/test/data/android/navigate/one.html",
+                "/chrome/test/data/android/navigate/two.html",
+                "/chrome/test/data/android/navigate/three.html");
         final String[] titles = {"One", "Two", "Three"};
         final int repeats = 3;
 
