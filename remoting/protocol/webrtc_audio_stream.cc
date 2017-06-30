@@ -13,7 +13,7 @@
 #include "remoting/protocol/webrtc_transport.h"
 #include "third_party/webrtc/api/mediastreaminterface.h"
 #include "third_party/webrtc/api/peerconnectioninterface.h"
-#include "third_party/webrtc/base/refcount.h"
+#include "third_party/webrtc/rtc_base/refcount.h"
 
 namespace remoting {
 namespace protocol {

@@ -10,7 +10,7 @@
 
 #include "third_party/libjingle_xmpp/task_runner/task.h"
 #include "third_party/libjingle_xmpp/task_runner/taskrunner.h"
-#include "third_party/webrtc/base/checks.h"
+#include "third_party/webrtc/rtc_base/checks.h"
 
 namespace rtc {
 
@@ -149,7 +149,7 @@ void Task::Abort(bool nowake) {
     blocked_ = true;
     error_ = true;
 
-    // "done_" is set before calling "Stop()" to ensure that this code 
+    // "done_" is set before calling "Stop()" to ensure that this code
     // doesn't execute more than once (recursively) for the same task.
     Stop();
 #if RTC_DCHECK_IS_ON

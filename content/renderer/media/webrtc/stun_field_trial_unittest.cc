@@ -5,7 +5,7 @@
 #include "content/renderer/media/webrtc/stun_field_trial.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/webrtc/base/socketaddress.h"
+#include "third_party/webrtc/rtc_base/socketaddress.h"
 
 namespace content {
 

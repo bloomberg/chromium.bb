@@ -48,7 +48,7 @@ static_library("webrtc") {
     # https://codereview.chromium.org/2022833002/ is landed. The target should
     # be removed entirely if possible.
     "//third_party/libjingle_xmpp:rtc_task_runner",
-    "//third_party/webrtc/base:rtc_base_approved",
+    "//third_party/webrtc/rtc_base:rtc_base_approved",
   ]
   deps = [
     "//third_party/webrtc/p2p:rtc_p2p",

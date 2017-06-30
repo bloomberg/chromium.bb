@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_WEBRTC_OVERRIDES_WEBRTC_BASE_DIAGNOSTIC_LOGGING_H_
-#define THIRD_PARTY_WEBRTC_OVERRIDES_WEBRTC_BASE_DIAGNOSTIC_LOGGING_H_
+#ifndef THIRD_PARTY_WEBRTC_OVERRIDES_WEBRTC_RTC_BASE_DIAGNOSTIC_LOGGING_H_
+#define THIRD_PARTY_WEBRTC_OVERRIDES_WEBRTC_RTC_BASE_DIAGNOSTIC_LOGGING_H_
 
 #include <sstream>
 #include <string>
 
-#include "third_party/webrtc/base/checks.h"
-#include "third_party/webrtc/base/scoped_ref_ptr.h"
+#include "third_party/webrtc/rtc_base/checks.h"
+#include "third_party/webrtc/rtc_base/scoped_ref_ptr.h"
 
 namespace rtc {
 
@@ -150,4 +150,4 @@ void SetExtraLoggingInit(
 
 }  // namespace rtc
 
-#endif  // THIRD_PARTY_WEBRTC_OVERRIDES_WEBRTC_BASE_DIAGNOSTIC_LOGGING_H_
+#endif  // THIRD_PARTY_WEBRTC_OVERRIDES_WEBRTC_RTC_BASE_DIAGNOSTIC_LOGGING_H_

@@ -17,7 +17,7 @@ source_set("ui") {
 
   public_deps = [
     "//remoting/proto",
-    "//third_party/webrtc/base:rtc_base_approved",
+    "//third_party/webrtc/rtc_base:rtc_base_approved",
   ]
 }
 
@@ -33,7 +33,7 @@ source_set("ui_manipulation") {
 
   public_deps = [
     "//remoting/proto",
-    "//third_party/webrtc/base:rtc_base_approved",
+    "//third_party/webrtc/rtc_base:rtc_base_approved",
   ]
 }
 

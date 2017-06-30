@@ -20,7 +20,7 @@
 #include "third_party/libjingle_xmpp/xmllite/xmlconstants.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlparser.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlprinter.h"
-#include "third_party/webrtc/base/checks.h"
+#include "third_party/webrtc/rtc_base/checks.h"
 
 namespace buzz {
 

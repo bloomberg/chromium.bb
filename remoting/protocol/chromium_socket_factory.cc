@@ -21,10 +21,10 @@
 #include "net/log/net_log_source.h"
 #include "net/socket/udp_server_socket.h"
 #include "remoting/protocol/socket_util.h"
-#include "third_party/webrtc/base/asyncpacketsocket.h"
-#include "third_party/webrtc/base/nethelpers.h"
-#include "third_party/webrtc/base/socket.h"
 #include "third_party/webrtc/media/base/rtputils.h"
+#include "third_party/webrtc/rtc_base/asyncpacketsocket.h"
+#include "third_party/webrtc/rtc_base/nethelpers.h"
+#include "third_party/webrtc/rtc_base/socket.h"
 
 namespace remoting {
 namespace protocol {

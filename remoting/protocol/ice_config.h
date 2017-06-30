@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/time/time.h"
-#include "third_party/webrtc/base/socketaddress.h"
 #include "third_party/webrtc/p2p/base/portallocator.h"
+#include "third_party/webrtc/rtc_base/socketaddress.h"
 
 namespace base {
 class DictionaryValue;

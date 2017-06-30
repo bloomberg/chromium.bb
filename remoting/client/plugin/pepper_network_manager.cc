@@ -14,7 +14,7 @@
 #include "ppapi/cpp/net_address.h"
 #include "ppapi/cpp/network_list.h"
 #include "remoting/client/plugin/pepper_util.h"
-#include "third_party/webrtc/base/socketaddress.h"
+#include "third_party/webrtc/rtc_base/socketaddress.h"
 
 namespace remoting {
 

@@ -16,7 +16,7 @@
 #include "remoting/protocol/message_reader.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/webrtc/base/byteorder.h"
+#include "third_party/webrtc/rtc_base/byteorder.h"
 
 using testing::_;
 using testing::DoAll;

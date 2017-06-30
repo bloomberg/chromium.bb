@@ -31,7 +31,7 @@
 #include "media/renderers/gpu_video_accelerator_factories.h"
 #include "media/video/video_encode_accelerator.h"
 #include "third_party/libyuv/include/libyuv.h"
-#include "third_party/webrtc/base/timeutils.h"
+#include "third_party/webrtc/rtc_base/timeutils.h"
 
 namespace content {
 

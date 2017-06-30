@@ -10,7 +10,7 @@
 #include "base/sys_byteorder.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/net_address.h"
-#include "third_party/webrtc/base/socketaddress.h"
+#include "third_party/webrtc/rtc_base/socketaddress.h"
 
 namespace remoting {
 

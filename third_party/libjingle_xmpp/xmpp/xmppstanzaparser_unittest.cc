@@ -13,7 +13,7 @@
 #include <string>
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 #include "third_party/libjingle_xmpp/xmpp/xmppstanzaparser.h"
-#include "third_party/webrtc/base/gunit.h"
+#include "third_party/webrtc/rtc_base/gunit.h"
 
 using buzz::QName;
 using buzz::XmlElement;

@@ -14,9 +14,9 @@
 #include "base/values.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
-#include "third_party/webrtc/base/byteorder.h"
-#include "third_party/webrtc/base/socketaddress.h"
 #include "third_party/webrtc/p2p/base/candidate.h"
+#include "third_party/webrtc/rtc_base/byteorder.h"
+#include "third_party/webrtc/rtc_base/socketaddress.h"
 
 namespace jingle_glue {
 

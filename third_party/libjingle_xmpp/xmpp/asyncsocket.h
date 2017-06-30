@@ -13,7 +13,7 @@
 
 #include <string>
 
-#include "third_party/webrtc/base/sigslot.h"
+#include "third_party/webrtc/rtc_base/sigslot.h"
 
 namespace rtc {
   class SocketAddress;

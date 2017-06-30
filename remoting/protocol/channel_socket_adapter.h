@@ -12,9 +12,6 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "remoting/protocol/p2p_datagram_socket.h"
-#include "third_party/webrtc/base/asyncpacketsocket.h"
-#include "third_party/webrtc/base/sigslot.h"
-#include "third_party/webrtc/base/socketaddress.h"
 // TODO(zhihuang):Replace #include by forward declaration once proper
 // inheritance is defined for cricket::IceTransportInternal and
 // cricket::P2PTransportChannel.
@@ -23,6 +20,9 @@
 // inheritance is defined for rtc::PacketTransportInterface and
 // cricket::TransportChannel.
 #include "third_party/webrtc/p2p/base/packettransportinterface.h"
+#include "third_party/webrtc/rtc_base/asyncpacketsocket.h"
+#include "third_party/webrtc/rtc_base/sigslot.h"
+#include "third_party/webrtc/rtc_base/socketaddress.h"
 
 namespace remoting {
 namespace protocol {

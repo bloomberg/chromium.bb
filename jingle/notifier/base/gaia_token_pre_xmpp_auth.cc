@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "third_party/libjingle_xmpp/xmpp/constants.h"
 #include "third_party/libjingle_xmpp/xmpp/saslcookiemechanism.h"
-#include "webrtc/base/socketaddress.h"
+#include "webrtc/rtc_base/socketaddress.h"
 
 namespace notifier {
 

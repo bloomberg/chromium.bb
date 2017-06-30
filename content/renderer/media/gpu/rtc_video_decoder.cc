@@ -19,9 +19,9 @@
 #include "media/renderers/gpu_video_accelerator_factories.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/webrtc/api/video/video_frame.h"
-#include "third_party/webrtc/base/bind.h"
-#include "third_party/webrtc/base/refcount.h"
 #include "third_party/webrtc/modules/video_coding/codecs/h264/include/h264.h"
+#include "third_party/webrtc/rtc_base/bind.h"
+#include "third_party/webrtc/rtc_base/refcount.h"
 
 #if defined(OS_WIN)
 #include "base/command_line.h"

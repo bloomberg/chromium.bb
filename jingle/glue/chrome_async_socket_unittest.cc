@@ -28,9 +28,9 @@
 #include "net/ssl/ssl_config_service.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/webrtc/base/ipaddress.h"
-#include "third_party/webrtc/base/sigslot.h"
-#include "third_party/webrtc/base/socketaddress.h"
+#include "third_party/webrtc/rtc_base/ipaddress.h"
+#include "third_party/webrtc/rtc_base/sigslot.h"
+#include "third_party/webrtc/rtc_base/socketaddress.h"
 
 namespace jingle_glue {
 

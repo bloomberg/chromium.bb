@@ -12,7 +12,7 @@
 #include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/network_monitor.h"
 #include "ppapi/utility/completion_callback_factory.h"
-#include "third_party/webrtc/base/network.h"
+#include "third_party/webrtc/rtc_base/network.h"
 
 namespace pp {
 class NetworkList;

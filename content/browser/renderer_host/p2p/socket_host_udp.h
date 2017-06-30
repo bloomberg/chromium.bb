@@ -24,7 +24,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/socket/diff_serv_code_point.h"
 #include "net/socket/udp_server_socket.h"
-#include "third_party/webrtc/base/asyncpacketsocket.h"
+#include "third_party/webrtc/rtc_base/asyncpacketsocket.h"
 
 namespace content {
 

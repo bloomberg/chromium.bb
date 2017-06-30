@@ -16,8 +16,8 @@
 #include <vector>
 
 #include "third_party/libjingle_xmpp/task_runner/taskparent.h"
-#include "third_party/webrtc/base/checks.h"
-#include "third_party/webrtc/base/sigslot.h"
+#include "third_party/webrtc/rtc_base/checks.h"
+#include "third_party/webrtc/rtc_base/sigslot.h"
 
 namespace rtc {
 class Task;
