@@ -14,6 +14,7 @@ import android.support.graphics.drawable.VectorDrawableCompat;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.animation.Animation;
 import android.view.animation.ScaleAnimation;
 import android.widget.ImageView;
@@ -176,6 +177,19 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
             animation.setFillAfter(true); // Keep the results of the animation.
             mIconView.startAnimation(animation);
         }
+    }
+
+    @Override
+    public void onInitializeAccessibilityNodeInfo(AccessibilityNodeInfo info) {
+        super.onInitializeAccessibilityNodeInfo(info);
+
+        if (!isPictureTile()) return;
+
+        info.setCheckable(true);
+        info.setChecked(isChecked());
+        CharSequence text = mBitmapDetails.getFilenameWithoutExtension() + " "
+                + mBitmapDetails.getLastModifiedString();
+        info.setText(text);
     }
 
     /**
