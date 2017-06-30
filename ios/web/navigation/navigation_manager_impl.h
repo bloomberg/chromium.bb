@@ -132,11 +132,19 @@ class NavigationManagerImpl : public NavigationManager {
   // NavigationManagerImpl.
   friend SessionStorageBuilder;
 
+  // TODO(crbug.com/738020): Remove legacy code and merge
+  // WKBasedNavigationManager into this class after the navigation experiment.
+
   // Identical to GetItemAtIndex() but returns the underlying NavigationItemImpl
   // instead of the public NavigationItem interface. This is used by
   // SessionStorageBuilder to persist session state.
   virtual NavigationItemImpl* GetNavigationItemImplAtIndex(
       size_t index) const = 0;
+
+  // Checks whether or not two URL are an in-page navigation (differing only
+  // in the fragment).
+  static bool AreUrlsFragmentChangeNavigation(const GURL& existing_url,
+                                              const GURL& new_url);
 };
 
 }  // namespace web

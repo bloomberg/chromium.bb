@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import "ios/web/test/fakes/test_navigation_manager_delegate.h"
+#import "ios/web/web_state/ui/crw_web_view_navigation_proxy.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -21,6 +22,10 @@ void TestNavigationManagerDelegate::OnNavigationItemCommitted(
     const LoadCommittedDetails& load_details) {}
 WebState* TestNavigationManagerDelegate::GetWebState() {
   return nullptr;
+}
+id<CRWWebViewNavigationProxy>
+TestNavigationManagerDelegate::GetWebViewNavigationProxy() const {
+  return nil;
 }
 
 }  // namespace web

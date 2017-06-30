@@ -18,6 +18,7 @@
 #import "ios/web/navigation/legacy_navigation_manager_impl.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/session_storage_builder.h"
+#import "ios/web/navigation/wk_based_navigation_manager_impl.h"
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/crw_session_storage.h"
 #import "ios/web/public/java_script_dialog_presenter.h"
@@ -37,6 +38,7 @@
 #import "ios/web/web_state/session_certificate_policy_cache_impl.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/ui/crw_web_controller_container_view.h"
+#import "ios/web/web_state/ui/crw_web_view_navigation_proxy.h"
 #include "ios/web/webui/web_ui_ios_controller_factory_registry.h"
 #include "ios/web/webui/web_ui_ios_impl.h"
 #include "net/http/http_response_headers.h"
@@ -80,12 +82,16 @@ WebStateImpl::WebStateImpl(const CreateParams& params,
       created_with_opener_(params.created_with_opener),
       weak_factory_(this) {
   // Create or deserialize the NavigationManager.
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    navigation_manager_ = base::MakeUnique<WKBasedNavigationManagerImpl>();
+  } else {
+    navigation_manager_ = base::MakeUnique<LegacyNavigationManagerImpl>();
+  }
+
   if (session_storage) {
     SessionStorageBuilder session_storage_builder;
     session_storage_builder.ExtractSessionState(this, session_storage);
   } else {
-    navigation_manager_ = base::WrapUnique<NavigationManagerImpl>(
-        new LegacyNavigationManagerImpl);
     certificate_policy_cache_ =
         base::MakeUnique<SessionCertificatePolicyCacheImpl>();
   }
@@ -735,6 +741,10 @@ void WebStateImpl::OnNavigationItemCommitted(
 
 WebState* WebStateImpl::GetWebState() {
   return this;
+}
+
+id<CRWWebViewNavigationProxy> WebStateImpl::GetWebViewNavigationProxy() const {
+  return [web_controller_ webViewNavigationProxy];
 }
 
 }  // namespace web
