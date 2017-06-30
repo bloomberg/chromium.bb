@@ -90,7 +90,7 @@ do_package() {
   fi
 
   # Use find-requires script to make sure the dependencies are complete
-  # (especially libc versions).
+  # (especially libc and libstdc++ versions).
   DETECTED_DEPENDS="$(echo "${BUILDDIR}/chrome" | /usr/lib/rpm/find-requires)"
 
   # Compare the expected dependency list to the generated list.
@@ -127,6 +127,8 @@ do_package() {
   # libssl3.so, force the dependency on libssl3 to ensure the NSS version is
   # 3.28 or later, since libssl3 should always be packaged with libnss3.
   #
+  # libstdc++.so.6 is for C++11 support.
+  #
   # wget is for uploading crash reports with Breakpad.
   #
   # xdg-utils is still optional in LSB 4.0.
@@ -147,6 +149,7 @@ do_package() {
   DEPENDS="lsb >= 4.0, \
   libnss3.so(NSS_3.22)${PKG_ARCH}, \
   libssl3.so(NSS_3.28)${PKG_ARCH}, \
+  libstdc++.so.6(GLIBCXX_3.4.18)${PKG_ARCH}, \
   wget, \
   xdg-utils, \
   zlib, \
