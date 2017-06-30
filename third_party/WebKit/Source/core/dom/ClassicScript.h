@@ -28,7 +28,6 @@ class CORE_EXPORT ClassicScript final : public Script {
       : script_source_code_(script_source_code) {}
 
   ScriptType GetScriptType() const override { return ScriptType::kClassic; }
-  bool IsEmpty() const override;
   bool CheckMIMETypeBeforeRunScript(Document* context_document,
                                     const SecurityOrigin*) const override;
   void RunScript(LocalFrame*, const SecurityOrigin*) const override;

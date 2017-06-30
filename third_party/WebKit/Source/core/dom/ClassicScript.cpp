@@ -50,10 +50,6 @@ DEFINE_TRACE(ClassicScript) {
   visitor->Trace(script_source_code_);
 }
 
-bool ClassicScript::IsEmpty() const {
-  return GetScriptSourceCode().IsEmpty();
-}
-
 bool ClassicScript::CheckMIMETypeBeforeRunScript(
     Document* context_document,
     const SecurityOrigin* security_origin) const {

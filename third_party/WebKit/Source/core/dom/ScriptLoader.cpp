@@ -819,9 +819,6 @@ bool ScriptLoader::DoExecuteScript(const Script* script) {
   DCHECK(already_started_);
   CHECK_EQ(script->GetScriptType(), GetScriptType());
 
-  if (script->IsEmpty())
-    return true;
-
   Document* element_document = &(element_->GetDocument());
   Document* context_document = element_document->ContextDocument();
   if (!context_document)
