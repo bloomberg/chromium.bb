@@ -37,6 +37,7 @@ size_t RegisterCastCrashKeys() {
       {gpu::crash_keys::kGPUDriverVersion, ::crash_keys::kSmallSize},
       {gpu::crash_keys::kGPUPixelShaderVersion, ::crash_keys::kSmallSize},
       {gpu::crash_keys::kGPUVertexShaderVersion, ::crash_keys::kSmallSize},
+      {gpu::crash_keys::kGPUGLContextIsVirtual, ::crash_keys::kSmallSize},
 
       // content/:
       {"bad_message_reason", ::crash_keys::kSmallSize},

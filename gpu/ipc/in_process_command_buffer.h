@@ -305,6 +305,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   // Members accessed on the gpu thread (possibly with the exception of
   // creation):
   bool waiting_for_sync_point_ = false;
+  bool use_virtualized_gl_context_ = false;
 
   scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner_;
   std::unique_ptr<TransferBufferManager> transfer_buffer_manager_;

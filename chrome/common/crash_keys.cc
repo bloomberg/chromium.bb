@@ -127,6 +127,7 @@ size_t RegisterChromeCrashKeys() {
     {gpu::crash_keys::kGPUVendor, kSmallSize},
     {gpu::crash_keys::kGPURenderer, kSmallSize},
 #endif
+    {gpu::crash_keys::kGPUGLContextIsVirtual, kSmallSize},
 
     // content/:
     {"bad_message_reason", kSmallSize},

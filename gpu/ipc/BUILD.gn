@@ -38,6 +38,7 @@ target(link_target_type, "command_buffer_sources") {
     "//gpu/command_buffer/common:common_sources",
     "//gpu/command_buffer/service:service_sources",
     "//gpu/config:config_sources",
+    "//gpu/config:crash_keys",
     "//gpu/ipc/client:ipc_client_sources",
     "//gpu/ipc/service:ipc_service_sources",
     "//ui/gfx",
