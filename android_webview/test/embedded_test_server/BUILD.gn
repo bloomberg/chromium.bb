@@ -57,6 +57,8 @@ shared_library("aw_net_java_test_native_support") {
     ":aw_java_test_native_support",
     "//net:test_support",
   ]
+  configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
+  configs += [ "//build/config/android:hide_all_but_jni" ]
 }
 
 android_apk("aw_net_test_support_apk") {

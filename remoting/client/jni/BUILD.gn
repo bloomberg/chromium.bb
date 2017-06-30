@@ -19,6 +19,7 @@ group("jni") {
 shared_library("remoting_client_jni") {
   deps = [
     "//remoting/android:jni_headers",
+    "//remoting/android:remoting_jni_registration",
     "//remoting/base",
     "//remoting/client",
     "//remoting/client/display",
