@@ -681,13 +681,22 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
                         ? element_document.Url()
                         : KURL();
 
-  if (!ExecuteScript(ClassicScript::Create(
-          ScriptSourceCode(ScriptContent(), script_url, position)))) {
-    DispatchErrorEvent();
-    return false;
+  switch (ExecuteScript(ClassicScript::Create(
+      ScriptSourceCode(ScriptContent(), script_url, position)))) {
+    case ExecuteScriptResult::kShouldFireLoadEvent:
+      // The load event is not fired because this is an inline script.
+      return true;
+
+    case ExecuteScriptResult::kShouldFireErrorEvent:
+      DispatchErrorEvent();
+      return false;
+
+    case ExecuteScriptResult::kShouldFireNone:
+      return true;
   }
 
-  return true;
+  NOTREACHED();
+  return false;
 }
 
 bool ScriptLoader::FetchClassicScript(
@@ -793,9 +802,10 @@ PendingScript* ScriptLoader::CreatePendingScript() {
   return nullptr;
 }
 
-bool ScriptLoader::ExecuteScript(const Script* script) {
+ScriptLoader::ExecuteScriptResult ScriptLoader::ExecuteScript(
+    const Script* script) {
   double script_exec_start_time = MonotonicallyIncreasingTime();
-  bool result = DoExecuteScript(script);
+  ExecuteScriptResult result = DoExecuteScript(script);
 
   // NOTE: we do not check m_willBeParserExecuted here, since
   // m_willBeParserExecuted is false for inline scripts, and we want to
@@ -815,18 +825,19 @@ bool ScriptLoader::ExecuteScript(const Script* script) {
 // i.e. load/error events are dispatched by the caller.
 // Steps 3--7 are implemented here in doExecuteScript().
 // TODO(hiroshige): Move event dispatching code to doExecuteScript().
-bool ScriptLoader::DoExecuteScript(const Script* script) {
+ScriptLoader::ExecuteScriptResult ScriptLoader::DoExecuteScript(
+    const Script* script) {
   DCHECK(already_started_);
   CHECK_EQ(script->GetScriptType(), GetScriptType());
 
   Document* element_document = &(element_->GetDocument());
   Document* context_document = element_document->ContextDocument();
   if (!context_document)
-    return true;
+    return ExecuteScriptResult::kShouldFireNone;
 
   LocalFrame* frame = context_document->GetFrame();
   if (!frame)
-    return true;
+    return ExecuteScriptResult::kShouldFireNone;
 
   if (!is_external_script_) {
     const ContentSecurityPolicy* csp =
@@ -840,14 +851,14 @@ bool ScriptLoader::DoExecuteScript(const Script* script) {
     if (!should_bypass_main_world_csp &&
         !element_->AllowInlineScriptForCSP(nonce, start_line_number_,
                                            script->InlineSourceTextForCSP())) {
-      return false;
+      return ExecuteScriptResult::kShouldFireErrorEvent;
     }
   }
 
   if (is_external_script_) {
     if (!script->CheckMIMETypeBeforeRunScript(
             context_document, element_->GetDocument().GetSecurityOrigin()))
-      return false;
+      return ExecuteScriptResult::kShouldFireErrorEvent;
   }
 
   const bool is_imported_script = context_document != element_document;
@@ -892,7 +903,7 @@ bool ScriptLoader::DoExecuteScript(const Script* script) {
   //     to old script element."
   context_document->PopCurrentScript(current_script);
 
-  return true;
+  return ExecuteScriptResult::kShouldFireLoadEvent;
 
   // 7. "Decrement the ignore-destructive-writes counter of neutralized doc,
   //     if it was incremented in the earlier step."
@@ -910,10 +921,16 @@ void ScriptLoader::Execute() {
   if (error_occurred) {
     DispatchErrorEvent();
   } else if (!wasCanceled) {
-    if (ExecuteScript(script))
-      DispatchLoadEvent();
-    else
-      DispatchErrorEvent();
+    switch (ExecuteScript(script)) {
+      case ExecuteScriptResult::kShouldFireLoadEvent:
+        DispatchLoadEvent();
+        break;
+      case ExecuteScriptResult::kShouldFireErrorEvent:
+        DispatchErrorEvent();
+        break;
+      case ExecuteScriptResult::kShouldFireNone:
+        break;
+    }
   }
   resource_ = nullptr;
   module_tree_client_ = nullptr;

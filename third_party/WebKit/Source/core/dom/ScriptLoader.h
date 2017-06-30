@@ -84,8 +84,12 @@ class CORE_EXPORT ScriptLoader : public PendingScriptClient,
   // FetchClassicScript()/FetchModuleScriptTree().
   PendingScript* CreatePendingScript();
 
-  // Returns false if and only if execution was blocked.
-  bool ExecuteScript(const Script*);
+  enum class ExecuteScriptResult {
+    kShouldFireErrorEvent,
+    kShouldFireLoadEvent,
+    kShouldFireNone
+  };
+  WARN_UNUSED_RESULT ExecuteScriptResult ExecuteScript(const Script*);
   virtual void Execute();
 
   // XML parser calls these
@@ -163,7 +167,7 @@ class CORE_EXPORT ScriptLoader : public PendingScriptClient,
                              ParserDisposition,
                              WebURLRequest::FetchCredentialsMode);
 
-  bool DoExecuteScript(const Script*);
+  ExecuteScriptResult DoExecuteScript(const Script*);
 
   // Clears the connection to the PendingScript.
   void DetachPendingScript();
