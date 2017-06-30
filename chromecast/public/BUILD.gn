@@ -37,4 +37,10 @@ if (is_android) {
       "avsettings.h",
     ]
   }
+
+  java_cpp_enum("java_enums_volume_control") {
+    sources = [
+      "volume_control.h",
+    ]
+  }
 }

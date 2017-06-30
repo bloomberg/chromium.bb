@@ -13,6 +13,7 @@
 
 #if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
 #include "chromecast/media/cma/backend/android/audio_sink_android_audiotrack_impl.h"
+#include "chromecast/media/cma/backend/android/volume_control_android.h"
 #endif
 
 namespace chromecast {
@@ -27,6 +28,7 @@ static base::android::RegistrationMethod kMethods[] = {
 #if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
     {"AudioSinkAudioTrackImpl",
      media::AudioSinkAndroidAudioTrackImpl::RegisterJni},
+    {"VolumeControlAndroid", media::VolumeControlAndroid::RegisterJni},
 #endif
 };
 
