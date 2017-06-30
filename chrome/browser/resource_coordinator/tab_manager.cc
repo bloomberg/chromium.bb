@@ -95,6 +95,15 @@ int FindWebContentsById(const TabStripModel* model,
   return -1;
 }
 
+void ReloadWebContentsIfDiscarded(WebContents* contents,
+                                  TabManager::WebContentsData* contents_data) {
+  if (contents_data->IsDiscarded()) {
+    contents->GetController().SetNeedsReload();
+    contents->GetController().LoadIfNecessary();
+    contents_data->SetDiscardState(false);
+  }
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -132,7 +141,7 @@ TabManager::TabManager()
 #if !defined(OS_CHROMEOS)
       minimum_protection_time_(base::TimeDelta::FromMinutes(10)),
 #endif
-      browser_tab_strip_tracker_(this, nullptr, nullptr),
+      browser_tab_strip_tracker_(this, nullptr, this),
       test_tick_clock_(nullptr),
       is_session_restore_loading_tabs_(false),
       weak_ptr_factory_(this) {
@@ -253,9 +262,17 @@ bool TabManager::IsTabDiscarded(content::WebContents* contents) const {
   return GetWebContentsData(contents)->IsDiscarded();
 }
 
-bool TabManager::CanDiscardTab(int64_t target_web_contents_id) const {
+bool TabManager::CanDiscardTab(const TabStats& tab_stats) const {
+#if defined(OS_CHROMEOS)
+  if (tab_stats.is_active && tab_stats.is_in_visible_window)
+    return false;
+#else
+  if (tab_stats.is_active)
+    return false;
+#endif  // defined(OS_CHROMEOS)
+
   TabStripModel* model;
-  int idx = FindTabStripModelById(target_web_contents_id, &model);
+  const int idx = FindTabStripModelById(tab_stats.tab_contents_id, &model);
 
   if (idx == -1)
     return false;
@@ -364,8 +381,10 @@ TabStatsList TabManager::GetUnsortedTabStats() const {
 
   TabStatsList stats_list;
   stats_list.reserve(32);  // 99% of users have < 30 tabs open.
-  for (const BrowserInfo& browser_info : GetBrowserInfoList())
-    AddTabStats(browser_info, &stats_list);
+  for (const BrowserInfo& browser_info : GetBrowserInfoList()) {
+    const bool window_is_active = stats_list.empty();
+    AddTabStats(browser_info, window_is_active, &stats_list);
+  }
 
   return stats_list;
 }
@@ -419,11 +438,7 @@ bool TabManager::CanSuspendBackgroundedRenderer(int render_process_id) const {
 // static
 bool TabManager::CompareTabStats(const TabStats& first,
                                  const TabStats& second) {
-  // Being currently selected is most important to protect.
-  if (first.is_selected != second.is_selected)
-    return first.is_selected;
-
-  // Non auto-discardable tabs are more important to protect.
+  // Portect non auto-discardable tabs.
   if (first.is_auto_discardable != second.is_auto_discardable)
     return !first.is_auto_discardable;
 
@@ -595,6 +610,7 @@ int TabManager::GetTabCount() const {
 }
 
 void TabManager::AddTabStats(const BrowserInfo& browser_info,
+                             bool window_is_active,
                              TabStatsList* stats_list) const {
   TabStripModel* tab_strip_model = browser_info.tab_strip_model;
   for (int i = 0; i < tab_strip_model->count(); i++) {
@@ -605,8 +621,8 @@ void TabManager::AddTabStats(const BrowserInfo& browser_info,
       stats.is_internal_page = IsInternalPage(contents->GetLastCommittedURL());
       stats.is_media = IsMediaTab(contents);
       stats.is_pinned = tab_strip_model->IsTabPinned(i);
-      stats.is_selected =
-          browser_info.window_is_active && tab_strip_model->IsTabSelected(i);
+      stats.is_active = tab_strip_model->active_index() == i;
+      stats.is_in_active_window = window_is_active;
       // Only consider the window non-visible if it is minimized. The consumer
       // of the constructed TabStatsList may update this after performing more
       // advanced window visibility checks.
@@ -695,10 +711,6 @@ void TabManager::PurgeBackgroundedTabsIfNeeded() {
 }
 
 WebContents* TabManager::DiscardWebContentsAt(int index, TabStripModel* model) {
-  // Can't discard active index.
-  if (model->active_index() == index)
-    return nullptr;
-
   WebContents* old_contents = model->GetWebContentsAt(index);
 
   // Can't discard tabs that are already discarded.
@@ -717,8 +729,19 @@ WebContents* TabManager::DiscardWebContentsAt(int index, TabStripModel* model) {
       WebContents::Create(WebContents::CreateParams(model->profile()));
   // Copy over the state from the navigation controller to preserve the
   // back/forward history and to continue to display the correct title/favicon.
+  //
+  // Set |needs_reload| to false so that the tab is not automatically reloaded
+  // when activated (otherwise, there would be an immediate reload when the
+  // active tab in a non-visible window is discarded). TabManager will
+  // explicitly reload the tab when it becomes the active tab in an active
+  // window (ReloadWebContentsIfDiscarded).
+  //
+  // Note: It is important that |needs_reload| is false even when the discarded
+  // tab is not active. Otherwise, it would get reloaded by
+  // WebContentsImpl::WasShown() and by ReloadWebContentsIfDiscarded() when
+  // activated.
   null_contents->GetController().CopyStateFrom(old_contents->GetController(),
-                                               /* needs_reload */ true);
+                                               /* needs_reload */ false);
 
   // Make sure to persist the last active time property.
   null_contents->SetLastActiveTime(old_contents->GetLastActiveTime());
@@ -783,9 +806,6 @@ void TabManager::ActiveTabChanged(content::WebContents* old_contents,
                                   content::WebContents* new_contents,
                                   int index,
                                   int reason) {
-  GetWebContentsData(new_contents)->SetDiscardState(false);
-  // When ActiveTabChanged, |new_contents| purged state changes to be false.
-  GetWebContentsData(new_contents)->set_is_purged(false);
   // If |old_contents| is set, that tab has switched from being active to
   // inactive, so record the time of that transition.
   if (old_contents) {
@@ -796,6 +816,15 @@ void TabManager::ActiveTabChanged(content::WebContents* old_contents,
     // Only record switch-to-tab metrics when a switch happens, i.e.
     // |old_contents| is set.
     RecordSwitchToTab(new_contents);
+  }
+
+  // An active tab is not purged.
+  GetWebContentsData(new_contents)->set_is_purged(false);
+
+  // Reload |web_contents| if it is in an active browser and discarded.
+  if (IsActiveWebContentsInActiveBrowser(new_contents)) {
+    ReloadWebContentsIfDiscarded(new_contents,
+                                 GetWebContentsData(new_contents));
   }
 }
 
@@ -814,6 +843,14 @@ void TabManager::TabInsertedAt(TabStripModel* tab_strip_model,
   // Re-setting time-to-purge every time a tab becomes inactive.
   GetWebContentsData(contents)->set_time_to_purge(
       GetTimeToPurge(min_time_to_purge_));
+}
+
+void TabManager::OnBrowserSetLastActive(Browser* browser) {
+  // Reload the active tab in |browser| if it is discarded.
+  content::WebContents* contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  if (contents)
+    ReloadWebContentsIfDiscarded(contents, GetWebContentsData(contents));
 }
 
 bool TabManager::IsMediaTab(WebContents* contents) const {
@@ -859,9 +896,8 @@ content::WebContents* TabManager::DiscardTabImpl() {
   // Loop until a non-discarded tab to kill is found.
   for (TabStatsList::const_reverse_iterator stats_rit = stats.rbegin();
        stats_rit != stats.rend(); ++stats_rit) {
-    int64_t least_important_tab_id = stats_rit->tab_contents_id;
-    if (CanDiscardTab(least_important_tab_id)) {
-      WebContents* new_contents = DiscardTabById(least_important_tab_id);
+    if (CanDiscardTab(*stats_rit)) {
+      WebContents* new_contents = DiscardTabById(stats_rit->tab_contents_id);
       if (new_contents)
         return new_contents;
     }
@@ -886,6 +922,15 @@ bool TabManager::CanOnlyDiscardOnce() const {
 #endif
 }
 
+bool TabManager::IsActiveWebContentsInActiveBrowser(
+    content::WebContents* contents) const {
+  auto browser_info_list = GetBrowserInfoList();
+  if (browser_info_list.empty())
+    return false;
+  return browser_info_list.front().tab_strip_model->GetActiveWebContents() ==
+         contents;
+}
+
 std::vector<TabManager::BrowserInfo> TabManager::GetBrowserInfoList() const {
   if (!test_browser_info_list_.empty())
     return test_browser_info_list_;
@@ -900,7 +945,6 @@ std::vector<TabManager::BrowserInfo> TabManager::GetBrowserInfoList() const {
 
     BrowserInfo browser_info;
     browser_info.tab_strip_model = browser->tab_strip_model();
-    browser_info.window_is_active = browser->window()->IsActive();
     browser_info.window_is_minimized = browser->window()->IsMinimized();
     browser_info.browser_is_app = browser->is_app();
     browser_info_list.push_back(browser_info);

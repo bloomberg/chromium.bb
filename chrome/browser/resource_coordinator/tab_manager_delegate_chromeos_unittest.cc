@@ -101,7 +101,8 @@ TEST_F(TabManagerDelegateTest, CandidatesSortedWithFocusedAppAndTab) {
   TabStats tab1;
   tab1.tab_contents_id = 100;
   tab1.is_pinned = true;
-  tab1.is_selected = true;
+  tab1.is_in_active_window = true;
+  tab1.is_active = true;
   const TabStatsList tab_list = {tab1};
 
   const std::vector<TabManagerDelegate::Candidate> candidates =
@@ -156,8 +157,8 @@ class MockTabManagerDelegate : public TabManagerDelegate {
     return true;
   }
 
-  bool KillTab(int64_t tab_id) override {
-    killed_tabs_.push_back(tab_id);
+  bool KillTab(const TabStats& tab_stats) override {
+    killed_tabs_.push_back(tab_stats.tab_contents_id);
     return true;
   }
 
