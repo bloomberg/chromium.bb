@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/values.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -456,8 +457,13 @@ bool IsUsingSAML(const AccountId& account_id) {
 
 bool WasProfileEverInitialized(const AccountId& account_id) {
   bool profile_ever_initialized;
-  if (GetBooleanPref(account_id, kProfileEverInitialized,
-                     &profile_ever_initialized))
+  const bool pref_set = GetBooleanPref(account_id, kProfileEverInitialized,
+                                       &profile_ever_initialized);
+  // TODO(atwilson): Remove migration code below once this UMA stat reports
+  // that migration is completed - crbug.com/736760.
+  UMA_HISTOGRAM_BOOLEAN("UserManager.ProfileEverInitializedMigrationCompleted",
+                        pref_set);
+  if (pref_set)
     return profile_ever_initialized;
 
   // Sessions created before we started setting the session_initialized flag
