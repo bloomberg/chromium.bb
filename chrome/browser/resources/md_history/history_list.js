@@ -112,6 +112,7 @@ Polymer({
       if (this.historyData_)
         this.splice('historyData_', 0, this.historyData_.length);
       this.fire('unselect-all');
+      this.scrollTop = 0;
     }
 
     if (this.historyData_) {
