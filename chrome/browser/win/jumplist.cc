@@ -663,9 +663,6 @@ void JumpList::RunUpdateJumpList(
     bool recently_closed_should_update,
     IncognitoModePrefs::Availability incognito_availability,
     UpdateTransaction* update_transaction) {
-  if (!JumpListUpdater::IsEnabled())
-    return;
-
   DCHECK(update_transaction);
 
   base::FilePath most_visited_icon_dir = GenerateJumplistIconDirName(
