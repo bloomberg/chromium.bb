@@ -322,8 +322,12 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
                                              inline_text_box_.LogicalHeight()));
 
   int length = inline_text_box_.Len();
-  StringView string = StringView(inline_text_box_.GetLineLayoutItem().GetText(),
-                                 inline_text_box_.Start(), length);
+  const String& layout_item_string =
+      inline_text_box_.GetLineLayoutItem().GetText();
+  // TODO(szager): Figure out why this CHECK sometimes fails, it shouldn't.
+  CHECK(inline_text_box_.Start() + length <= layout_item_string.length());
+  StringView string =
+      StringView(layout_item_string, inline_text_box_.Start(), length);
   int maximum_length = inline_text_box_.GetLineLayoutItem().TextLength() -
                        inline_text_box_.Start();
 
