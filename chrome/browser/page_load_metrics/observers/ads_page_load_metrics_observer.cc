@@ -175,14 +175,6 @@ void AdsPageLoadMetricsObserver::OnComplete(
 
 void AdsPageLoadMetricsObserver::ProcessLoadedResource(
     const page_load_metrics::ExtraRequestCompleteInfo& extra_request_info) {
-  if (!extra_request_info.url.SchemeIsHTTPOrHTTPS()) {
-    // Data uris should be accounted for in the generating resource, not
-    // here. Blobs for PlzNavigate shouldn't be counted as the http resource
-    // was already counted. Blobs for other things like CacheStorage or
-    // IndexedDB are also ignored for now, as they're not normal HTTP loads.
-    return;
-  }
-
   const auto& id_and_data =
       ad_frames_data_.find(extra_request_info.frame_tree_node_id);
   if (id_and_data == ad_frames_data_.end()) {

@@ -27,6 +27,9 @@ class PageLoadMetricsObserverTestHarness
     : public ChromeRenderViewHostTestHarness,
       public test::WeakMockTimerProvider {
  public:
+  // Sample URL for resource loads.
+  static const char kResourceUrl[];
+
   PageLoadMetricsObserverTestHarness();
   ~PageLoadMetricsObserverTestHarness() override;
 
