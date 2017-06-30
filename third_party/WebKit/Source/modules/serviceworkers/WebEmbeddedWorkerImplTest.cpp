@@ -5,6 +5,7 @@
 #include "public/web/WebEmbeddedWorker.h"
 
 #include <memory>
+#include "platform/WaitableEvent.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/wtf/PtrUtil.h"
@@ -24,7 +25,7 @@ namespace {
 
 class MockServiceWorkerContextClient : public WebServiceWorkerContextClient {
  public:
-  MockServiceWorkerContextClient() : has_associated_registration_(true) {}
+  MockServiceWorkerContextClient() {}
   ~MockServiceWorkerContextClient() override {}
   MOCK_METHOD0(WorkerReadyForInspection, void());
   MOCK_METHOD0(WorkerContextFailedToStart, void());
@@ -95,8 +96,13 @@ class MockServiceWorkerContextClient : public WebServiceWorkerContextClient {
     NOTREACHED();
   }
 
+  void WorkerContextDestroyed() override { termination_event_.Signal(); }
+
+  void WaitUntilThreadTermination() { termination_event_.Wait(); }
+
  private:
-  bool has_associated_registration_;
+  bool has_associated_registration_ = true;
+  WaitableEvent termination_event_;
 };
 
 class WebEmbeddedWorkerImplTest : public ::testing::Test {
@@ -276,6 +282,11 @@ TEST_F(WebEmbeddedWorkerImplTest, MAYBE_DontPauseAfterDownload) {
       .WillOnce(::testing::Return(nullptr));
   Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
   ::testing::Mock::VerifyAndClearExpectations(mock_client_);
+
+  // Terminate the running worker thread.
+  EXPECT_CALL(*mock_client_, WorkerContextFailedToStart()).Times(0);
+  worker_->TerminateWorkerContext();
+  mock_client_->WaitUntilThreadTermination();
 }
 
 // The running worker is detected as a memory leak. crbug.com/586897
@@ -309,6 +320,11 @@ TEST_F(WebEmbeddedWorkerImplTest, MAYBE_PauseAfterDownload) {
       .WillOnce(::testing::Return(nullptr));
   worker_->ResumeAfterDownload();
   ::testing::Mock::VerifyAndClearExpectations(mock_client_);
+
+  // Terminate the running worker thread.
+  EXPECT_CALL(*mock_client_, WorkerContextFailedToStart()).Times(0);
+  worker_->TerminateWorkerContext();
+  mock_client_->WaitUntilThreadTermination();
 }
 
 }  // namespace blink
