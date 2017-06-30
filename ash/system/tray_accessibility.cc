@@ -9,7 +9,6 @@
 
 #include "ash/accessibility_delegate.h"
 #include "ash/accessibility_types.h"
-#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
@@ -24,6 +23,7 @@
 #include "ash/system/tray/tray_item_more.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tri_view.h"
+#include "base/metrics/user_metrics.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -232,73 +232,73 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
 
 void AccessibilityDetailedView::HandleViewClicked(views::View* view) {
   AccessibilityDelegate* delegate = Shell::Get()->accessibility_delegate();
-  UserMetricsAction user_action;
+  using base::RecordAction;
+  using base::UserMetricsAction;
   if (view == spoken_feedback_view_) {
-    user_action = delegate->IsSpokenFeedbackEnabled()
-                      ? UMA_STATUS_AREA_DISABLE_SPOKEN_FEEDBACK
-                      : UMA_STATUS_AREA_ENABLE_SPOKEN_FEEDBACK;
+    RecordAction(delegate->IsSpokenFeedbackEnabled()
+                     ? UserMetricsAction("StatusArea_SpokenFeedbackDisabled")
+                     : UserMetricsAction("StatusArea_SpokenFeedbackEnabled"));
     delegate->ToggleSpokenFeedback(A11Y_NOTIFICATION_NONE);
   } else if (view == high_contrast_view_) {
-    user_action = delegate->IsHighContrastEnabled()
-                      ? UMA_STATUS_AREA_DISABLE_HIGH_CONTRAST
-                      : UMA_STATUS_AREA_ENABLE_HIGH_CONTRAST;
+    RecordAction(delegate->IsHighContrastEnabled()
+                     ? UserMetricsAction("StatusArea_HighContrastDisabled")
+                     : UserMetricsAction("StatusArea_HighContrastEnabled"));
     delegate->ToggleHighContrast();
   } else if (view == screen_magnifier_view_) {
-    user_action = delegate->IsMagnifierEnabled()
-                      ? UMA_STATUS_AREA_DISABLE_MAGNIFIER
-                      : UMA_STATUS_AREA_ENABLE_MAGNIFIER;
+    RecordAction(delegate->IsMagnifierEnabled()
+                     ? UserMetricsAction("StatusArea_MagnifierDisabled")
+                     : UserMetricsAction("StatusArea_MagnifierEnabled"));
     delegate->SetMagnifierEnabled(!delegate->IsMagnifierEnabled());
   } else if (large_cursor_view_ && view == large_cursor_view_) {
-    user_action = delegate->IsLargeCursorEnabled()
-                      ? UMA_STATUS_AREA_DISABLE_LARGE_CURSOR
-                      : UMA_STATUS_AREA_ENABLE_LARGE_CURSOR;
+    RecordAction(delegate->IsLargeCursorEnabled()
+                     ? UserMetricsAction("StatusArea_LargeCursorDisabled")
+                     : UserMetricsAction("StatusArea_LargeCursorEnabled"));
     delegate->SetLargeCursorEnabled(!delegate->IsLargeCursorEnabled());
   } else if (autoclick_view_ && view == autoclick_view_) {
-    user_action = delegate->IsAutoclickEnabled()
-                      ? UMA_STATUS_AREA_DISABLE_AUTO_CLICK
-                      : UMA_STATUS_AREA_ENABLE_AUTO_CLICK;
+    RecordAction(delegate->IsAutoclickEnabled()
+                     ? UserMetricsAction("StatusArea_AutoClickDisabled")
+                     : UserMetricsAction("StatusArea_AutoClickEnabled"));
     delegate->SetAutoclickEnabled(!delegate->IsAutoclickEnabled());
   } else if (virtual_keyboard_view_ && view == virtual_keyboard_view_) {
-    user_action = delegate->IsVirtualKeyboardEnabled()
-                      ? UMA_STATUS_AREA_DISABLE_VIRTUAL_KEYBOARD
-                      : UMA_STATUS_AREA_ENABLE_VIRTUAL_KEYBOARD;
+    RecordAction(delegate->IsVirtualKeyboardEnabled()
+                     ? UserMetricsAction("StatusArea_VirtualKeyboardDisabled")
+                     : UserMetricsAction("StatusArea_VirtualKeyboardEnabled"));
     delegate->SetVirtualKeyboardEnabled(!delegate->IsVirtualKeyboardEnabled());
   } else if (caret_highlight_view_ && view == caret_highlight_view_) {
-    user_action = delegate->IsCaretHighlightEnabled()
-                      ? UMA_STATUS_AREA_DISABLE_CARET_HIGHLIGHT
-                      : UMA_STATUS_AREA_ENABLE_CARET_HIGHLIGHT;
+    RecordAction(delegate->IsCaretHighlightEnabled()
+                     ? UserMetricsAction("StatusArea_CaretHighlightDisabled")
+                     : UserMetricsAction("StatusArea_CaretHighlightEnabled"));
     delegate->SetCaretHighlightEnabled(!delegate->IsCaretHighlightEnabled());
   } else if (mono_audio_view_ && view == mono_audio_view_) {
-    user_action = delegate->IsMonoAudioEnabled()
-                      ? UMA_STATUS_AREA_DISABLE_MONO_AUDIO
-                      : UMA_STATUS_AREA_ENABLE_MONO_AUDIO;
+    RecordAction(delegate->IsMonoAudioEnabled()
+                     ? UserMetricsAction("StatusArea_MonoAudioDisabled")
+                     : UserMetricsAction("StatusArea_MonoAudioEnabled"));
     delegate->SetMonoAudioEnabled(!delegate->IsMonoAudioEnabled());
   } else if (highlight_mouse_cursor_view_ &&
              view == highlight_mouse_cursor_view_) {
-    user_action = delegate->IsCursorHighlightEnabled()
-                      ? UMA_STATUS_AREA_DISABLE_HIGHLIGHT_MOUSE_CURSOR
-                      : UMA_STATUS_AREA_ENABLE_HIGHLIGHT_MOUSE_CURSOR;
+    RecordAction(
+        delegate->IsCursorHighlightEnabled()
+            ? UserMetricsAction("StatusArea_HighlightMouseCursorDisabled")
+            : UserMetricsAction("StatusArea_HighlightMouseCursorEnabled"));
     delegate->SetCursorHighlightEnabled(!delegate->IsCursorHighlightEnabled());
   } else if (highlight_keyboard_focus_view_ &&
              view == highlight_keyboard_focus_view_) {
-    user_action = delegate->IsFocusHighlightEnabled()
-                      ? UMA_STATUS_AREA_DISABLE_HIGHLIGHT_KEYBOARD_FOCUS
-                      : UMA_STATUS_AREA_ENABLE_HIGHLIGHT_KEYBOARD_FOCUS;
+    RecordAction(
+        delegate->IsFocusHighlightEnabled()
+            ? UserMetricsAction("StatusArea_HighlightKeyboardFocusDisabled")
+            : UserMetricsAction("StatusArea_HighlightKeyboardFocusEnabled"));
     delegate->SetFocusHighlightEnabled(!delegate->IsFocusHighlightEnabled());
   } else if (sticky_keys_view_ && view == sticky_keys_view_) {
-    user_action = delegate->IsStickyKeysEnabled()
-                      ? UMA_STATUS_AREA_DISABLE_STICKY_KEYS
-                      : UMA_STATUS_AREA_ENABLE_STICKY_KEYS;
+    RecordAction(delegate->IsStickyKeysEnabled()
+                     ? UserMetricsAction("StatusArea_StickyKeysDisabled")
+                     : UserMetricsAction("StatusArea_StickyKeysEnabled"));
     delegate->SetStickyKeysEnabled(!delegate->IsStickyKeysEnabled());
   } else if (tap_dragging_view_ && view == tap_dragging_view_) {
-    user_action = delegate->IsTapDraggingEnabled()
-                      ? UMA_STATUS_AREA_DISABLE_TAP_DRAGGING
-                      : UMA_STATUS_AREA_ENABLE_TAP_DRAGGING;
+    RecordAction(delegate->IsTapDraggingEnabled()
+                     ? UserMetricsAction("StatusArea_TapDraggingDisabled")
+                     : UserMetricsAction("StatusArea_TapDraggingEnabled"));
     delegate->SetTapDraggingEnabled(!delegate->IsTapDraggingEnabled());
-  } else {
-    return;
   }
-  Shell::Get()->metrics()->RecordUserMetricsAction(user_action);
 }
 
 void AccessibilityDetailedView::HandleButtonPressed(views::Button* sender,
