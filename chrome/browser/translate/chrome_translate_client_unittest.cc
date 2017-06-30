@@ -5,6 +5,8 @@
 #include "chrome/browser/translate/chrome_translate_client.h"
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
@@ -13,6 +15,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/user_event_service_factory.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "components/metrics/proto/translate_event.pb.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/user_events/fake_user_event_service.h"
 #include "components/translate/core/common/language_detection_details.h"
@@ -25,6 +28,17 @@ std::unique_ptr<KeyedService> BuildFakeUserEventService(
   return base::MakeUnique<syncer::FakeUserEventService>();
 }
 
+metrics::TranslateEventProto BuildTranslateEventProto(
+    const std::string& from,
+    const std::string& to,
+    const metrics::TranslateEventProto::EventType type) {
+  metrics::TranslateEventProto event;
+  event.set_source_language(from);
+  event.set_target_language(to);
+  event.set_event_type(type);
+  return event;
+}
+
 class ChromeTranslateClientTest : public ChromeRenderViewHostTestHarness {
  public:
   void SetUp() override {
@@ -34,8 +48,10 @@ class ChromeTranslateClientTest : public ChromeRenderViewHostTestHarness {
             ->SetTestingFactoryAndUse(browser_context(),
                                       &BuildFakeUserEventService));
     scoped_feature_list_ = base::MakeUnique<base::test::ScopedFeatureList>();
-    scoped_feature_list_->InitAndEnableFeature(
-        switches::kSyncUserLanguageDetectionEvents);
+    scoped_feature_list_->InitWithFeatures(
+        {switches::kSyncUserLanguageDetectionEvents,
+         switches::kSyncUserTranslationEvents},
+        {});
   }
 
   void TearDown() override { ChromeRenderViewHostTestHarness::TearDown(); }
@@ -51,7 +67,7 @@ class ChromeTranslateClientTest : public ChromeRenderViewHostTestHarness {
 };
 
 TEST_F(ChromeTranslateClientTest, LanguageEventShouldRecord) {
-  GURL url("http://yahoo.com");
+  const GURL url("http://yahoo.com");
   NavigateAndCommit(url);
   ChromeTranslateClient client(web_contents());
   translate::LanguageDetectionDetails details;
@@ -63,7 +79,7 @@ TEST_F(ChromeTranslateClientTest, LanguageEventShouldRecord) {
 }
 
 TEST_F(ChromeTranslateClientTest, LanguageEventShouldNotRecord) {
-  GURL url("about://blank");
+  const GURL url("about://blank");
   NavigateAndCommit(url);
   ChromeTranslateClient client(web_contents());
   translate::LanguageDetectionDetails details;
@@ -71,5 +87,37 @@ TEST_F(ChromeTranslateClientTest, LanguageEventShouldNotRecord) {
   details.is_cld_reliable = true;
   details.adopted_language = "en";
   client.OnLanguageDetermined(details);
+  EXPECT_EQ(0u, GetUserEventService()->GetRecordedUserEvents().size());
+}
+
+TEST_F(ChromeTranslateClientTest, TranslationEventShouldRecord) {
+  const GURL url("http://yahoo.com");
+  NavigateAndCommit(url);
+  ChromeTranslateClient client(web_contents());
+  // An event we care about.
+  const metrics::TranslateEventProto& event_proto = BuildTranslateEventProto(
+      "ja", "en", metrics::TranslateEventProto::USER_ACCEPT);
+  client.RecordTranslateEvent(event_proto);
+  EXPECT_EQ(1ul, GetUserEventService()->GetRecordedUserEvents().size());
+
+  sync_pb::UserEventSpecifics::Translation expected_translation_event;
+  expected_translation_event.set_from_language_code("ja");
+  expected_translation_event.set_to_language_code("en");
+  expected_translation_event.set_interaction(
+      sync_pb::UserEventSpecifics::Translation::ACCEPT);
+  const auto& result_translation_event =
+      GetUserEventService()->GetRecordedUserEvents()[0].translation_event();
+  EXPECT_EQ(expected_translation_event.SerializeAsString(),
+            result_translation_event.SerializeAsString());
+}
+
+TEST_F(ChromeTranslateClientTest, TranslationEventShouldNotRecord) {
+  const GURL url("http://yahoo.com");
+  NavigateAndCommit(url);
+  ChromeTranslateClient client(web_contents());
+  // An event we don't care about.
+  const metrics::TranslateEventProto& event_proto = BuildTranslateEventProto(
+      "ja", "en", metrics::TranslateEventProto::UNSUPPORTED_URL);
+  client.RecordTranslateEvent(event_proto);
   EXPECT_EQ(0u, GetUserEventService()->GetRecordedUserEvents().size());
 }
