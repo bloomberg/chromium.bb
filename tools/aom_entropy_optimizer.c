@@ -28,6 +28,64 @@
 #include "./aom_config.h"
 #include "av1/common/entropymode.h"
 
+#if CONFIG_EC_ADAPT
+#if CONFIG_ALT_INTRA
+#if CONFIG_SMOOTH_HV
+const aom_tree_index av1_intra_mode_tree[TREE_SIZE(INTRA_MODES)] = {
+  -DC_PRED,
+  2, /* 0 = DC_NODE */
+  -TM_PRED,
+  4, /* 1 = TM_NODE */
+  -V_PRED,
+  6, /* 2 = V_NODE */
+  8,
+  12, /* 3 = COM_NODE */
+  -H_PRED,
+  10, /* 4 = H_NODE */
+  -D135_PRED,
+  -D117_PRED, /* 5 = D135_NODE */
+  -D45_PRED,
+  14, /* 6 = D45_NODE */
+  -D63_PRED,
+  16, /* 7 = D63_NODE */
+  -D153_PRED,
+  18, /* 8 = D153_NODE */
+  -D207_PRED,
+  20, /* 9 = D207_NODE */
+  -SMOOTH_PRED,
+  22, /* 10 = SMOOTH_NODE */
+  -SMOOTH_V_PRED,
+  -SMOOTH_H_PRED /* 11 = SMOOTH_V_NODE */
+};
+#else
+const aom_tree_index av1_intra_mode_tree[TREE_SIZE(INTRA_MODES)] = {
+  -DC_PRED,   2,            /* 0 = DC_NODE */
+  -TM_PRED,   4,            /* 1 = TM_NODE */
+  -V_PRED,    6,            /* 2 = V_NODE */
+  8,          12,           /* 3 = COM_NODE */
+  -H_PRED,    10,           /* 4 = H_NODE */
+  -D135_PRED, -D117_PRED,   /* 5 = D135_NODE */
+  -D45_PRED,  14,           /* 6 = D45_NODE */
+  -D63_PRED,  16,           /* 7 = D63_NODE */
+  -D153_PRED, 18,           /* 8 = D153_NODE */
+  -D207_PRED, -SMOOTH_PRED, /* 9 = D207_NODE */
+};
+#endif  // CONFIG_SMOOTH_HV
+#else
+const aom_tree_index av1_intra_mode_tree[TREE_SIZE(INTRA_MODES)] = {
+  -DC_PRED,   2,          /* 0 = DC_NODE */
+  -TM_PRED,   4,          /* 1 = TM_NODE */
+  -V_PRED,    6,          /* 2 = V_NODE */
+  8,          12,         /* 3 = COM_NODE */
+  -H_PRED,    10,         /* 4 = H_NODE */
+  -D135_PRED, -D117_PRED, /* 5 = D135_NODE */
+  -D45_PRED,  14,         /* 6 = D45_NODE */
+  -D63_PRED,  16,         /* 7 = D63_NODE */
+  -D153_PRED, -D207_PRED  /* 8 = D153_NODE */
+};
+#endif  // CONFIG_ALT_INTRA
+#endif
+
 #define SPACES_PER_TAB 2
 
 typedef unsigned int aom_count_type;

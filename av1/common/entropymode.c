@@ -1255,8 +1255,10 @@ static const aom_cdf_prob default_delta_lf_cdf[CDF_SIZE(DELTA_LF_PROBS + 1)] = {
 };
 #endif
 #endif
+#if !CONFIG_EC_ADAPT
 int av1_intra_mode_ind[INTRA_MODES];
 int av1_intra_mode_inv[INTRA_MODES];
+#endif
 #if CONFIG_EXT_TX
 int av1_ext_tx_intra_ind[EXT_TX_SETS_INTRA][TX_TYPES];
 int av1_ext_tx_intra_inv[EXT_TX_SETS_INTRA][TX_TYPES];
@@ -1264,6 +1266,26 @@ int av1_ext_tx_inter_ind[EXT_TX_SETS_INTER][TX_TYPES];
 int av1_ext_tx_inter_inv[EXT_TX_SETS_INTER][TX_TYPES];
 #endif
 
+#if CONFIG_EC_ADAPT
+#if CONFIG_ALT_INTRA
+#if CONFIG_SMOOTH_HV
+const int av1_intra_mode_ind[INTRA_MODES] = { 0, 2, 3,  6,  4,  5, 8,
+                                              9, 7, 10, 11, 12, 1 };
+const int av1_intra_mode_inv[INTRA_MODES] = { 0, 12, 1, 2, 4,  5, 3,
+                                              8, 6,  7, 9, 10, 11 };
+#else
+const int av1_intra_mode_ind[INTRA_MODES] = {
+  0, 2, 3, 6, 4, 5, 8, 9, 7, 10, 1
+};
+const int av1_intra_mode_inv[INTRA_MODES] = {
+  0, 10, 1, 2, 4, 5, 3, 8, 6, 7, 9
+};
+#endif  // CONFIG_SMOOTH_HV
+#else
+const int av1_intra_mode_ind[INTRA_MODES] = { 0, 2, 3, 6, 4, 5, 8, 9, 7, 1 };
+const int av1_intra_mode_inv[INTRA_MODES] = { 0, 9, 1, 2, 4, 5, 3, 8, 6, 7 }
+#endif  // CONFIG_ALT_INTRA
+#else
 #if CONFIG_ALT_INTRA
 #if CONFIG_SMOOTH_HV
 const aom_tree_index av1_intra_mode_tree[TREE_SIZE(INTRA_MODES)] = {
@@ -1319,6 +1341,7 @@ const aom_tree_index av1_intra_mode_tree[TREE_SIZE(INTRA_MODES)] = {
   -D153_PRED, -D207_PRED  /* 8 = D153_NODE */
 };
 #endif  // CONFIG_ALT_INTRA
+#endif  // !CONFIG_EC_ADAPT
 
 #if CONFIG_EXT_INTER
 /* clang-format off */
