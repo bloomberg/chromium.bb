@@ -4,13 +4,16 @@
 
 #import "ios/chrome/browser/ui/dialogs/dialog_presenter.h"
 
+#include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
+#include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -95,6 +98,43 @@ TEST_F(DialogPresenterTest, SimpleTest) {
                                 completionHandler:nil];
   EXPECT_EQ(1U, delegate().presentedWebStates.size());
   EXPECT_EQ(&webState, delegate().presentedWebStates.front());
+}
+
+// Test that javascript dialogs are presented with a different title when they
+// are presented from a URL with a different origin to the webstate origin.
+TEST_F(DialogPresenterTest, IFrameTest) {
+  DialogPresenterTestWebState web_state;
+  GURL foo_url = GURL("http://foo.com");
+  GURL bar_url = GURL("http://bar.com");
+
+  web_state.SetCurrentURL(foo_url);
+  [presenter() runJavaScriptAlertPanelWithMessage:@""
+                                       requestURL:foo_url
+                                         webState:&web_state
+                                completionHandler:nil];
+
+  // Ensure alerts from the same domain have a correct title.
+  NSString* same_origin_title =
+      [presenter() presentedDialogCoordinator].alertController.title;
+  NSString* hostname = base::SysUTF8ToNSString(foo_url.host());
+  NSString* expected_title = l10n_util::GetNSStringF(
+      IDS_JAVASCRIPT_MESSAGEBOX_TITLE, base::SysNSStringToUTF16(hostname));
+  EXPECT_NSEQ(expected_title, same_origin_title);
+
+  [presenter() cancelAllDialogs];
+
+  // Ensure that alerts from an embedded iframe with a different domain have
+  // a title and it's different to the same-origin title.
+  web_state.SetCurrentURL(bar_url);
+  [presenter() runJavaScriptAlertPanelWithMessage:@""
+                                       requestURL:foo_url
+                                         webState:&web_state
+                                completionHandler:nil];
+  NSString* different_origin_title =
+      [presenter() presentedDialogCoordinator].alertController.title;
+  expected_title = l10n_util::GetNSString(
+      IDS_JAVASCRIPT_MESSAGEBOX_TITLE_NONSTANDARD_URL_IFRAME);
+  EXPECT_NSEQ(expected_title, different_origin_title);
 }
 
 // Tests that multiple JavaScript dialogs are queued

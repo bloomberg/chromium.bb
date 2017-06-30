@@ -77,9 +77,6 @@ class WebState;
 // view controller.
 - (void)tryToPresent;
 
-// Create an title for the alert base on the URL.
-+ (NSString*)localizedTitleForJavaScriptAlertFromPage:(const GURL&)pageURL;
-
 @end
 
 @interface DialogPresenter (ExposedForTesting)
