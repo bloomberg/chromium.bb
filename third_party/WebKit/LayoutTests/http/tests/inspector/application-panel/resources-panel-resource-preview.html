@@ -1,0 +1,82 @@
+<html>
+<head>
+<script>
+function parse(val) {
+    // This is here for the JSON file imported via the script tag below
+}
+</script>
+<script src="../inspector-test.js"></script>
+<script src="../resources-test.js"></script>
+<script src="../console-test.js"></script>
+<script src="../resources/json-value.js"></script>
+<script src="../indexeddb/indexeddb-test.js"></script>
+<script>
+
+async function test()
+{
+
+    function dump(node, prefix)
+    {
+        for (var child of node.children()) {
+            InspectorTest.addResult(prefix + child.listItemElement.textContent + (child.selected ? " (selected)" : ""));
+            dump(child, prefix + '  ');
+        }
+    }
+
+    function dumpCurrentState(label) {
+        var types = new Map([
+            [SourceFrame.ResourceSourceFrame, 'source'],
+            [SourceFrame.ImageView, 'image'],
+            [SourceFrame.JSONView, 'json']
+        ]);
+
+        var view = UI.panels.resources;
+        InspectorTest.addResult(label);
+        dump(view._sidebar._sidebarTree.rootElement(), '');
+        var visibleView = view.visibleView;
+        if (visibleView instanceof UI.SearchableView)
+            visibleView = visibleView.children()[0];
+        var typeLabel = 'unknown';
+        for (var type of types) {
+            if (!(visibleView instanceof type[0]))
+                continue;
+            typeLabel = type[1];
+            break;
+        }
+        console.log('visible view: ' + typeLabel);
+    }
+
+    async function revealResourceWithDisplayName(name) {
+        var target = SDK.targetManager.mainTarget();
+        var model = target.model(SDK.ResourceTreeModel);
+        var resource = null;
+        for (var r of model.mainFrame.resources()) {
+            if (r.displayName !== name)
+                continue
+            resource = r;
+            break;
+        }
+
+        if (!r) {
+            InspectorTest.addResult(name + ' was not found');
+            return;
+        }
+        await Common.Revealer.revealPromise(r);
+        dumpCurrentState('Revealed ' + name + ':');
+    }
+
+    UI.viewManager.showView('resources');
+    dumpCurrentState('Initial state:');
+    await revealResourceWithDisplayName('json-value.js');
+    await revealResourceWithDisplayName('image.png');
+    await revealResourceWithDisplayName('resources-panel-resource-preview.html');
+
+    InspectorTest.completeTest();
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests Application Panel preview for resources of different types.</p>
+<img src="../resources/image.png">
+</body>
+</html>
