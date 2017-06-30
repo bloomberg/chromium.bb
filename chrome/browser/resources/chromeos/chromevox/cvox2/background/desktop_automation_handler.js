@@ -66,9 +66,8 @@ DesktopAutomationHandler = function(node) {
   this.addListener_(
       EventType.SCROLL_POSITION_CHANGED, this.onScrollPositionChanged);
   this.addListener_(EventType.SELECTION, this.onSelection);
-  this.addListener_(EventType.TEXT_CHANGED, this.onTextChanged);
-  this.addListener_(
-      EventType.TEXT_SELECTION_CHANGED, this.onTextSelectionChanged);
+  this.addListener_(EventType.TEXT_CHANGED, this.onEditableChanged_);
+  this.addListener_(EventType.TEXT_SELECTION_CHANGED, this.onEditableChanged_);
   this.addListener_(EventType.VALUE_CHANGED, this.onValueChanged);
 
   AutomationObjectConstructorInstaller.init(node, function() {
@@ -267,10 +266,11 @@ DesktopAutomationHandler.prototype = {
       // data might require editable text updates. Further note that children
       // change events can and do come after text/text selection changes.
       var rootEditable = evt.target;
-      while (rootEditable.parent && rootEditable.parent.state.richlyEditable)
-        rootEditable = rootEditable.parent;
-      this.onEditableChanged_(new CustomAutomationEvent(
-          EventType.TEXT_CHANGED, rootEditable, evt.eventFrom));
+      rootEditable = AutomationUtil.getEditableRoot(rootEditable);
+      if (rootEditable) {
+        this.onEditableChanged_(new CustomAutomationEvent(
+            EventType.TEXT_CHANGED, rootEditable, evt.eventFrom));
+      }
       return;
     }
 
@@ -388,58 +388,19 @@ DesktopAutomationHandler.prototype = {
   },
 
   /**
-   * Provides all feedback once a text changed event fires.
-   * @param {!AutomationEvent} evt
-   */
-  onTextChanged: function(evt) {
-    if (evt.target.state.editable)
-      this.onEditableChanged_(evt);
-  },
-
-  /**
-   * Provides all feedback once a text selection changed event fires.
-   * @param {!AutomationEvent} evt
-   */
-  onTextSelectionChanged: function(evt) {
-    if (evt.target.state.editable)
-      this.onEditableChanged_(evt);
-  },
-
-  /**
    * Provides all feedback once a change event in a text field fires.
    * @param {!AutomationEvent} evt
    * @private
    */
   onEditableChanged_: function(evt) {
-    var topRoot = AutomationUtil.getTopLevelRoot(evt.target);
-    if (!evt.target.state.focused ||
-        (topRoot && topRoot.parent && !topRoot.parent.state.focused))
-      return;
-
     if (!ChromeVoxState.instance.currentRange) {
       this.onEventDefault(evt);
       ChromeVoxState.instance.setCurrentRange(
           cursors.Range.fromNode(evt.target));
     }
 
-    // Re-target the node to the root of the editable.
-    var target = evt.target;
-    while (target.parent && target.parent.state.editable)
-      target = target.parent;
-    var voxTarget = ChromeVoxState.instance.currentRange.start.node;
-    while (voxTarget && voxTarget.parent && voxTarget.parent.state.editable)
-      voxTarget = voxTarget.parent;
-
-    // It is possible that ChromeVox has range over some other node when a text
-    // field is focused. Only allow this when focus is on a desktop node or
-    // ChromeVox is over the keyboard.
-    if (!target.state.focused ||
-        (target != voxTarget && target.root.role != RoleType.DESKTOP &&
-         voxTarget.root.url.indexOf(DesktopAutomationHandler.KEYBOARD_URL) !=
-             0))
+    if (!this.createTextEditHandlerIfNeeded_(evt.target))
       return;
-
-    this.createTextEditHandlerIfNeeded_(target);
 
     // Sync the ChromeVox range to the editable, if a selection exists.
     var anchorObject = evt.target.root.anchorObject;
@@ -454,11 +415,7 @@ DesktopAutomationHandler.prototype = {
       // Sync ChromeVox range with selection.
       ChromeVoxState.instance.setCurrentRange(selectedRange);
     }
-
-    // TODO(plundblad): This can currently be null for contenteditables.
-    // Clean up when it can't.
-    if (this.textEditHandler_)
-      this.textEditHandler_.onEvent(evt);
+    this.textEditHandler_.onEvent(evt);
   },
 
   /**
@@ -562,11 +519,37 @@ DesktopAutomationHandler.prototype = {
   /**
    * Create an editable text handler for the given node if needed.
    * @param {!AutomationNode} node
+   * @return {boolean} True if the handler exists (created/already present).
    */
   createTextEditHandlerIfNeeded_: function(node) {
-    if (!this.textEditHandler_ || this.textEditHandler_.node !== node) {
-      this.textEditHandler_ = editing.TextEditHandler.createForNode(node);
+    if (!node.state.editable)
+      return false;
+
+    var topRoot = AutomationUtil.getTopLevelRoot(node);
+    if (topRoot && topRoot.parent && !topRoot.parent.state.focused)
+      return false;
+
+    // Re-target the node to the root of the editable.
+    var target = node;
+    target = AutomationUtil.getEditableRoot(target);
+    var voxTarget = ChromeVoxState.instance.currentRange.start.node;
+    voxTarget = AutomationUtil.getEditableRoot(voxTarget) || voxTarget;
+
+    // It is possible that ChromeVox has range over some other node when a text
+    // field is focused. Only allow this when focus is on a desktop node or
+    // ChromeVox is over the keyboard.
+    if (!target || !voxTarget ||
+        (target != voxTarget && target.root.role != RoleType.DESKTOP &&
+         voxTarget.root.role != RoleType.DESKTOP &&
+         voxTarget.root.url.indexOf(DesktopAutomationHandler.KEYBOARD_URL) !=
+             0))
+      return false;
+
+    if (!this.textEditHandler_ || this.textEditHandler_.node !== target) {
+      this.textEditHandler_ = editing.TextEditHandler.createForNode(target);
     }
+
+    return !!this.textEditHandler_;
   },
 
   /**
