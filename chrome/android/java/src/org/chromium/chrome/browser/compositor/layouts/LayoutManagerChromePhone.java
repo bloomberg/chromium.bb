@@ -127,7 +127,7 @@ public class LayoutManagerChromePhone extends LayoutManagerChrome {
             // smoothly.
             getActiveLayout().onTabCreating(sourceId);
         } else if (animationsEnabled()) {
-            if (!FeatureUtilities.isChromeHomeEnabled()) {
+            if (!FeatureUtilities.isChromeHomeEnabled() || !overviewVisible()) {
                 if (getActiveLayout() != null && getActiveLayout().isHiding()) {
                     setNextLayout(mSimpleAnimationLayout);
                     // The method Layout#doneHiding() will automatically show the next layout.
