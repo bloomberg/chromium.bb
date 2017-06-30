@@ -21,16 +21,8 @@ SettingsBasicPageBrowserTest.prototype = {
   ]),
 };
 
-// Times out on debug builders because the Settings page can take several
-// seconds to load in a Release build and several times that in a Debug build.
-// See https://crbug.com/558434.
-GEN('#if !defined(NDEBUG)');
-GEN('#define MAYBE_Load DISABLED_Load');
-GEN('#else');
-GEN('#define MAYBE_Load Load');
-GEN('#endif');
-
-TEST_F('SettingsBasicPageBrowserTest', 'MAYBE_Load', function() {
+// http://crbug/738146
+TEST_F('SettingsBasicPageBrowserTest', 'DISABLED_Load', function() {
   // Assign |self| to |this| instead of binding since 'this' in suite()
   // and test() will be a Mocha 'Suite' or 'Test' instance.
   var self = this;
