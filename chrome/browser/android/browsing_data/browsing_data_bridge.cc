@@ -81,13 +81,6 @@ static void ClearBrowsingData(
   std::vector<int> data_types_vector;
   base::android::JavaIntArrayToIntVector(env, data_types, &data_types_vector);
 
-  if (base::FeatureList::IsEnabled(features::kTabsInCbd)) {
-    int tab = GetOriginalProfile()->GetPrefs()->GetInteger(
-        browsing_data::prefs::kLastClearBrowsingDataTab);
-    browsing_data::RecordDeletionFromTab(
-        static_cast<browsing_data::ClearBrowsingDataTab>(tab));
-  }
-
   int remove_mask = 0;
   for (const int data_type : data_types_vector) {
     switch (static_cast<browsing_data::BrowsingDataType>(data_type)) {

@@ -306,12 +306,18 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
     }
 
     /**
+     * Notify subclasses that browsing data is about to be cleared.
+     */
+    protected void onClearBrowsingData() {}
+
+    /**
      * Requests the browsing data corresponding to the given dialog options to be deleted.
      * @param options The dialog options whose corresponding data should be deleted.
      */
     private final void clearBrowsingData(EnumSet<DialogOption> options,
             @Nullable String[] blacklistedDomains, @Nullable int[] blacklistedDomainReasons,
             @Nullable String[] ignoredDomains, @Nullable int[] ignoredDomainReasons) {
+        onClearBrowsingData();
         showProgressDialog();
 
         RecordHistogram.recordMediumTimesHistogram("History.ClearBrowsingData.TimeSpentInDialog",

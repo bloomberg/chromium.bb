@@ -54,9 +54,6 @@ void RecordDeletionForPeriod(TimePeriod time_period);
 // Records the UMA action of a change of the clear browsing data time period.
 void RecordTimePeriodChange(TimePeriod period);
 
-// Records the UMA action and histogram of a data deletion from |tab|.
-void RecordDeletionFromTab(ClearBrowsingDataTab tab);
-
 // Constructs the text to be displayed by a counter from the given |result|.
 // Currently this can only be used for counters for which the Result is
 // defined in components/browsing_data/core/counters.
