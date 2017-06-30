@@ -50,7 +50,7 @@
 
 #define SNAPPY_MAJOR 1
 #define SNAPPY_MINOR 1
-#define SNAPPY_PATCHLEVEL 4
+#define SNAPPY_PATCHLEVEL 5
 #define SNAPPY_VERSION \
     ((SNAPPY_MAJOR << 16) | (SNAPPY_MINOR << 8) | SNAPPY_PATCHLEVEL)
 
@@ -86,7 +86,7 @@ typedef std::string string;
   void operator=(const TypeName&)
 #endif
 
-#if 0
+#if !1
 // Windows does not have an iovec type, yet the concept is universally useful.
 // It is simple to define it ourselves, so we put it inside our own namespace.
 struct iovec {
