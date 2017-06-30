@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/chrome_build.gni")
+import("//build/config/ios/imageset.gni")
 import("//build/config/ios/rules.gni")
 import("//build/config/locales.gni")
 import("//ios/chrome/app/resources/ios_chrome_repack.gni")
@@ -106,16 +107,28 @@ bundle_data("quick_action_icons") {
   ]
 }
 
-bundle_data("launchscreen_assets") {
+imageset("launchscreen_app_logo") {
   sources = [
-    "launchscreen_images.xcassets/Contents.json",
     "launchscreen_images.xcassets/launchscreen_app_logo.imageset/Contents.json",
     "launchscreen_images.xcassets/launchscreen_app_logo.imageset/launchscreen_app_logo.png",
+    "launchscreen_images.xcassets/launchscreen_app_logo.imageset/launchscreen_app_logo@2x.png",
+    "launchscreen_images.xcassets/launchscreen_app_logo.imageset/launchscreen_app_logo@3x.png",
+  ]
+}
+
+imageset("launchscreen_brand_name") {
+  sources = [
     "launchscreen_images.xcassets/launchscreen_brand_name.imageset/Contents.json",
     "launchscreen_images.xcassets/launchscreen_brand_name.imageset/launchscreen_brand_name.png",
+    "launchscreen_images.xcassets/launchscreen_brand_name.imageset/launchscreen_brand_name@2x.png",
+    "launchscreen_images.xcassets/launchscreen_brand_name.imageset/launchscreen_brand_name@3x.png",
   ]
-  outputs = [
-    "{{bundle_resources_dir}}/{{source_file_part}}",
+}
+
+group("launchscreen_assets") {
+  public_deps = [
+    ":launchscreen_app_logo",
+    ":launchscreen_brand_name",
   ]
 }
 

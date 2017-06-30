@@ -2,30 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-bundle_data("assets") {
-  sources = [
-    "resources/activity_services_print.xcassets/Contents.json",
-    "resources/activity_services_print.xcassets/activity_services_print.imageset/Contents.json",
-    "resources/activity_services_print.xcassets/activity_services_print.imageset/activity_services_print-60@2x.png",
-    "resources/activity_services_print.xcassets/activity_services_print.imageset/activity_services_print-60@3x.png",
-    "resources/activity_services_print.xcassets/activity_services_print.imageset/activity_services_print-76.png",
-    "resources/activity_services_print.xcassets/activity_services_print.imageset/activity_services_print-76@2x.png",
-  ]
-  outputs = [
-    "{{bundle_resources_dir}}/{{source_file_part}}",
-  ]
-}
-
-bundle_data("resources") {
-  sources = [
-    "resources/activity_services_reading_list.png",
-    "resources/activity_services_reading_list@2x.png",
-    "resources/activity_services_reading_list@3x.png",
-  ]
-  outputs = [
-    "{{bundle_resources_dir}}/{{source_file_part}}",
-  ]
-}
+import("//build/config/ios/imageset.gni")
 
 source_set("activity_services") {
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -51,7 +28,7 @@ source_set("activity_services") {
     "share_to_data_builder.mm",
   ]
   deps = [
-    ":assets",
+    ":activity_services_print",
     ":resources",
     "//base",
     "//ios/chrome/app/strings",
@@ -114,4 +91,25 @@ source_set("eg_tests") {
     "//ui/base",
   ]
   libs = [ "XCTest.framework" ]
+}
+
+imageset("activity_services_print") {
+  sources = [
+    "resources/activity_services_print.xcassets/activity_services_print.imageset/Contents.json",
+    "resources/activity_services_print.xcassets/activity_services_print.imageset/activity_services_print-60@2x.png",
+    "resources/activity_services_print.xcassets/activity_services_print.imageset/activity_services_print-60@3x.png",
+    "resources/activity_services_print.xcassets/activity_services_print.imageset/activity_services_print-76.png",
+    "resources/activity_services_print.xcassets/activity_services_print.imageset/activity_services_print-76@2x.png",
+  ]
+}
+
+bundle_data("resources") {
+  sources = [
+    "resources/activity_services_reading_list.png",
+    "resources/activity_services_reading_list@2x.png",
+    "resources/activity_services_reading_list@3x.png",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/{{source_file_part}}",
+  ]
 }

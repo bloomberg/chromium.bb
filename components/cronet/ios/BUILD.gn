@@ -269,7 +269,7 @@ template("ios_static_framework") {
   }
 
   action(_target_name) {
-    script = "//components/cronet/tools/dummy.py"
+    script = "//build/config/ios/dummy.py"
     outputs = [
       "$root_out_dir/Static/$_output_name",
     ]
