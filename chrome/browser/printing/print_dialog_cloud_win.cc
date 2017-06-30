@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -107,7 +108,6 @@ void CreatePrintDialog(content::BrowserContext* browser_context,
 
 scoped_refptr<base::RefCountedMemory> ReadFile(
     const base::FilePath& path_to_file) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
   scoped_refptr<base::RefCountedMemory> data;
   int64_t file_size = 0;
   if (base::GetFileSize(path_to_file, &file_size) && file_size != 0) {
@@ -130,11 +130,11 @@ void CreatePrintDialogForFile(content::BrowserContext* browser_context,
                               const base::string16& print_ticket,
                               const std::string& file_type) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  content::BrowserThread::PostTaskAndReplyWithResult(
-      content::BrowserThread::FILE, FROM_HERE,
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::Bind(&ReadFile, path_to_file),
-      base::Bind(&CreatePrintDialog, browser_context,
-                 print_job_title, print_ticket, file_type));
+      base::Bind(&CreatePrintDialog, browser_context, print_job_title,
+                 print_ticket, file_type));
 }
 
 }  // namespace
