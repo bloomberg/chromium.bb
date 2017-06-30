@@ -153,7 +153,7 @@ ProcessType TabManagerDelegate::Candidate::GetProcessTypeInternal() const {
     return ProcessType::BACKGROUND_APP;
   }
   if (tab()) {
-    if (tab()->is_selected)
+    if (tab()->is_active && tab()->is_in_active_window)
       return ProcessType::FOCUSED_TAB;
     return ProcessType::BACKGROUND_TAB;
   }
@@ -536,10 +536,10 @@ bool TabManagerDelegate::KillArcProcess(const int nspid) {
   return true;
 }
 
-bool TabManagerDelegate::KillTab(int64_t tab_id) {
+bool TabManagerDelegate::KillTab(const TabStats& tab_stats) {
   // Check |tab_manager_| is alive before taking tabs into consideration.
-  return tab_manager_ && tab_manager_->CanDiscardTab(tab_id) &&
-         tab_manager_->DiscardTabById(tab_id);
+  return tab_manager_ && tab_manager_->CanDiscardTab(tab_stats) &&
+         tab_manager_->DiscardTabById(tab_stats.tab_contents_id);
 }
 
 chromeos::DebugDaemonClient* TabManagerDelegate::GetDebugDaemonClient() {
@@ -608,13 +608,12 @@ void TabManagerDelegate::LowMemoryKillImpl(
         MEMORY_LOG(ERROR) << "Failed to kill " << it->app()->process_name();
       }
     } else if (it->tab()) {
-      int64_t tab_id = it->tab()->tab_contents_id;
       // The estimation is problematic since multiple tabs may share the same
       // process, while the calculation counts memory used by the whole process.
       // So |estimated_memory_freed_kb| is an over-estimation.
       int estimated_memory_freed_kb =
           mem_stat_->EstimatedMemoryFreedKB(it->tab()->renderer_handle);
-      if (KillTab(tab_id)) {
+      if (KillTab(*it->tab())) {
         target_memory_to_free_kb -= estimated_memory_freed_kb;
         memory::MemoryKillsMonitor::LogLowMemoryKill("TAB",
                                                      estimated_memory_freed_kb);
