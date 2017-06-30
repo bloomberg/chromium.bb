@@ -223,9 +223,7 @@ void IOSChromeMetricsServiceClient::Initialize() {
 
   {
     auto drive_metrics_provider =
-        base::MakeUnique<metrics::DriveMetricsProvider>(
-            web::WebThread::GetTaskRunnerForThread(web::WebThread::FILE),
-            ios::FILE_LOCAL_STATE);
+        base::MakeUnique<metrics::DriveMetricsProvider>(ios::FILE_LOCAL_STATE);
     drive_metrics_provider_ = drive_metrics_provider.get();
     metrics_service_->RegisterMetricsProvider(
         std::move(drive_metrics_provider));

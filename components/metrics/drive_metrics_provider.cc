@@ -12,17 +12,15 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
-#include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 
 namespace metrics {
 
-DriveMetricsProvider::DriveMetricsProvider(
-    scoped_refptr<base::SequencedTaskRunner> file_thread,
-    int local_state_path_key)
-    : file_thread_(file_thread),
-      local_state_path_key_(local_state_path_key),
-      weak_ptr_factory_(this) {}
+DriveMetricsProvider::DriveMetricsProvider(int local_state_path_key)
+    : local_state_path_key_(local_state_path_key), weak_ptr_factory_(this) {}
 
 DriveMetricsProvider::~DriveMetricsProvider() {}
 
@@ -35,9 +33,11 @@ void DriveMetricsProvider::ProvideSystemProfileMetrics(
 }
 
 void DriveMetricsProvider::GetDriveMetrics(const base::Closure& done_callback) {
-  base::PostTaskAndReplyWithResult(
-      file_thread_.get(), FROM_HERE,
-      base::Bind(&DriveMetricsProvider::GetDriveMetricsOnFileThread,
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      base::Bind(&DriveMetricsProvider::GetDriveMetricsOnBackgroundThread,
                  local_state_path_key_),
       base::Bind(&DriveMetricsProvider::GotDriveMetrics,
                  weak_ptr_factory_.GetWeakPtr(), done_callback));
@@ -48,7 +48,10 @@ DriveMetricsProvider::SeekPenaltyResponse::SeekPenaltyResponse()
 
 // static
 DriveMetricsProvider::DriveMetrics
-DriveMetricsProvider::GetDriveMetricsOnFileThread(int local_state_path_key) {
+DriveMetricsProvider::GetDriveMetricsOnBackgroundThread(
+    int local_state_path_key) {
+  base::ThreadRestrictions::AssertIOAllowed();
+
   DriveMetricsProvider::DriveMetrics metrics;
   QuerySeekPenalty(base::FILE_EXE, &metrics.app_drive);
   QuerySeekPenalty(local_state_path_key, &metrics.user_data_drive);
@@ -82,7 +85,7 @@ void DriveMetricsProvider::QuerySeekPenalty(
 void DriveMetricsProvider::GotDriveMetrics(
     const base::Closure& done_callback,
     const DriveMetricsProvider::DriveMetrics& metrics) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   metrics_ = metrics;
   done_callback.Run();
 }
