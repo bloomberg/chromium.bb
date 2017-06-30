@@ -86,7 +86,7 @@ cr.define('md_history', function() {
       // from the history backend, as well as fields computed by history-list.
       item: {
         type: Object,
-        observer: 'showIcon_',
+        observer: 'itemChanged_',
       },
 
       selected: {
@@ -303,8 +303,9 @@ cr.define('md_history', function() {
      * Set the favicon image, based on the URL of the history item.
      * @private
      */
-    showIcon_: function() {
+    itemChanged_: function() {
       this.$.icon.style.backgroundImage = cr.icon.getFavicon(this.item.url);
+      this.listen(this.$['time-accessed'], 'mouseover', 'addTimeTitle_');
     },
 
     /**
