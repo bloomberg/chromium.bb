@@ -60,5 +60,5 @@ NavigationUma.prototype.exportRootType_ = function(entry, name) {
  * @param {!FileEntry} entry the new directory
  */
 NavigationUma.prototype.onDirectoryChanged = function(entry) {
-  this.exportRootType_(entry, 'FileBrowser.ChangeDirectory.RootType');
+  this.exportRootType_(entry, 'ChangeDirectory.RootType');
 };
