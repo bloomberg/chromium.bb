@@ -140,7 +140,7 @@ all other OS specific variables will be false.
         Voice Search
       </message>
       <message name="IDS_IOS_SCAN_QR_CODE" desc="Label in the widget extension for the action to launch the app and open the qr code scanner. [Length: 30em]">
-        Scan QR/Bar Code
+        Scan QR Code
       </message>
       <message name="IDS_IOS_NO_COPIED_LINK_TITLE" desc="Label in the widget extension for the title of the copied link section when there is no copied link.">
         No Copied Link
