@@ -21,10 +21,6 @@ class ChromeVisibilityObserver : public chrome::BrowserListObserver {
   // by tests.
   virtual void SendVisibilityChangeEvent(bool active, base::TimeDelta time_ago);
 
-  // chrome::BrowserListObserver:
-  // In protected section for test.
-  void OnBrowserRemoved(Browser* browser) override;
-
  private:
   // Cancels visibility change in case when the browser becomes visible after a
   // short gap.
@@ -33,6 +29,7 @@ class ChromeVisibilityObserver : public chrome::BrowserListObserver {
   // chrome::BrowserListObserver:
   void OnBrowserSetLastActive(Browser* browser) override;
   void OnBrowserNoLongerActive(Browser* browser) override;
+  void OnBrowserRemoved(Browser* browser) override;
 
   // Sets |visibility_gap_timeout_| based on variation params.
   void InitVisibilityGapTimeout();

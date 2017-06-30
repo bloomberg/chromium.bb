@@ -205,21 +205,6 @@ void BrowserFrame::SchedulePaintInRect(const gfx::Rect& rect) {
   }
 }
 
-void BrowserFrame::OnNativeWidgetActivationChanged(bool active) {
-  if (active) {
-    // When running under remote desktop, if the remote desktop client is not
-    // active on the users desktop, then none of the windows contained in the
-    // remote desktop will be activated.  However, NativeWidget::Activate() will
-    // still bring this browser window to the foreground.  We explicitly set
-    // ourselves as the last active browser window to ensure that we get treated
-    // as such by the rest of Chrome.
-    BrowserList::SetLastActive(browser_view_->browser());
-  } else {
-    BrowserList::NotifyBrowserNoLongerActive(browser_view_->browser());
-  }
-  Widget::OnNativeWidgetActivationChanged(active);
-}
-
 void BrowserFrame::OnNativeWidgetWorkspaceChanged() {
   chrome::SaveWindowWorkspace(browser_view_->browser(), GetWorkspace());
 #if !defined(OS_CHROMEOS) && defined(USE_X11)
