@@ -9,11 +9,10 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/test/history_service_test_util.h"
 #include "components/omnibox/browser/shortcuts_constants.h"
@@ -60,8 +59,7 @@ class ShortcutsBackendTest : public testing::Test,
   TemplateURLService* GetTemplateURLService();
 
  private:
-  base::MessageLoop message_loop_;
-  base::Thread db_thread_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::ScopedTempDir profile_dir_;
   std::unique_ptr<TemplateURLService> template_url_service_;
   std::unique_ptr<history::HistoryService> history_service_;
@@ -75,9 +73,7 @@ class ShortcutsBackendTest : public testing::Test,
 };
 
 ShortcutsBackendTest::ShortcutsBackendTest()
-    : db_thread_("Test DB thread"),
-      load_notified_(false),
-      changed_notified_(false) {}
+    : load_notified_(false), changed_notified_(false) {}
 
 ShortcutsDatabase::Shortcut::MatchCore
 ShortcutsBackendTest::MatchCoreForTesting(const std::string& url,
@@ -116,25 +112,22 @@ void ShortcutsBackendTest::SetUp() {
         history::CreateHistoryService(profile_dir_.GetPath(), true);
   ASSERT_TRUE(history_service_);
 
-  db_thread_.Start();
   base::FilePath shortcuts_database_path =
       profile_dir_.GetPath().Append(kShortcutsDatabaseName);
   backend_ = new ShortcutsBackend(
       template_url_service_.get(), base::MakeUnique<SearchTermsData>(),
-      history_service_.get(), db_thread_.task_runner(), shortcuts_database_path,
-      false);
+      history_service_.get(), shortcuts_database_path, false);
   ASSERT_TRUE(backend_.get());
   backend_->AddObserver(this);
 }
 
 void ShortcutsBackendTest::TearDown() {
   backend_->RemoveObserver(this);
-  db_thread_.Stop();
+  scoped_task_environment_.RunUntilIdle();
 }
 
 void ShortcutsBackendTest::OnShortcutsLoaded() {
   load_notified_ = true;
-  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 void ShortcutsBackendTest::OnShortcutsChanged() {
@@ -146,7 +139,7 @@ void ShortcutsBackendTest::InitBackend() {
   ASSERT_FALSE(load_notified_);
   ASSERT_FALSE(backend_->initialized());
   backend_->Init();
-  base::RunLoop().Run();
+  scoped_task_environment_.RunUntilIdle();
   EXPECT_TRUE(load_notified_);
   EXPECT_TRUE(backend_->initialized());
 }

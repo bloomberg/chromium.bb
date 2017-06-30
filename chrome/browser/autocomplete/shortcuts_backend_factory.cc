@@ -15,7 +15,6 @@
 #include "components/omnibox/browser/shortcuts_backend.h"
 #include "components/omnibox/browser/shortcuts_constants.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/browser/browser_thread.h"
 #include "extensions/features/features.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -97,8 +96,6 @@ scoped_refptr<ShortcutsBackend> ShortcutsBackendFactory::CreateShortcutsBackend(
       base::MakeUnique<UIThreadSearchTermsData>(profile),
       HistoryServiceFactory::GetForProfile(profile,
                                            ServiceAccessType::EXPLICIT_ACCESS),
-      content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::DB),
       profile->GetPath().Append(kShortcutsDatabaseName), suppress_db));
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   auto extensions_manager =
