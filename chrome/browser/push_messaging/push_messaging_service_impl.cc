@@ -172,7 +172,7 @@ PushMessagingServiceImpl::~PushMessagingServiceImpl() = default;
 
 void PushMessagingServiceImpl::IncreasePushSubscriptionCount(int add,
                                                              bool is_pending) {
-  DCHECK(add > 0);
+  DCHECK_GT(add, 0);
   if (push_subscription_count_ + pending_push_subscription_count_ == 0) {
     GetGCMDriver()->AddAppHandler(kPushMessagingAppIdentifierPrefix, this);
   }
@@ -192,13 +192,13 @@ void PushMessagingServiceImpl::IncreasePushSubscriptionCount(int add,
 
 void PushMessagingServiceImpl::DecreasePushSubscriptionCount(int subtract,
                                                              bool was_pending) {
-  DCHECK(subtract > 0);
+  DCHECK_GT(subtract, 0);
   if (was_pending) {
     pending_push_subscription_count_ -= subtract;
-    DCHECK(pending_push_subscription_count_ >= 0);
+    DCHECK_GE(pending_push_subscription_count_, 0);
   } else {
     push_subscription_count_ -= subtract;
-    DCHECK(push_subscription_count_ >= 0);
+    DCHECK_GE(push_subscription_count_, 0);
   }
   if (push_subscription_count_ + pending_push_subscription_count_ == 0) {
     GetGCMDriver()->RemoveAppHandler(kPushMessagingAppIdentifierPrefix);
