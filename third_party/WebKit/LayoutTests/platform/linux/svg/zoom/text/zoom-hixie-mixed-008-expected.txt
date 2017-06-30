@@ -15,6 +15,3 @@ layer at (0,0) size 800x488
               LayoutText {#text} at (114,1) size 172x81
                 text run at (114,1) width 172: "TEST"
         LayoutText {#text} at (0,0) size 0x0
-        LayoutText {#text} at (0,0) size 0x0
-        LayoutText {#text} at (0,0) size 0x0
-        LayoutText {#text} at (0,0) size 0x0

@@ -9,5 +9,4 @@ layer at (0,0) size 800x411
           LayoutSVGInlineText {#text} at (99.50,35) size 201x19
             chunk 1 (middle anchor) text run 1 at (99.50,50.00) startOffset 0 endOffset 34 width 201.00: "The circle should be in the middle"
       LayoutText {#text} at (0,0) size 0x0
-      LayoutText {#text} at (0,0) size 0x0
 caret: position 16 of child 0 {#text} of child 3 {text} of child 1 {svg} of body

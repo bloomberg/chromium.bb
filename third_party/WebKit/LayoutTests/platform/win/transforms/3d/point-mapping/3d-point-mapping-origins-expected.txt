@@ -15,7 +15,6 @@ layer at (0,0) size 785x600
         text run at (243,475) width 4: " "
       LayoutBlockFlow {DIV} at (267,268) size 202x202 [border: (1px solid #000000)]
       LayoutText {#text} at (0,0) size 0x0
-      LayoutText {#text} at (0,0) size 0x0
 layer at (30,500) size 483x180 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutBlockFlow (positioned) {DIV} at (30,500) size 482.81x180
     LayoutInline {SPAN} at (0,0) size 288x19 [color=#008000]

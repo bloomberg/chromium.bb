@@ -6,10 +6,6 @@ layer at (0,0) size 800x174
       LayoutText {#text} at (159,149) size 4x14
         text run at (159,149) width 4: " "
       LayoutText {#text} at (0,0) size 0x0
-      LayoutText {#text} at (0,0) size 0x0
-      LayoutText {#text} at (0,0) size 0x0
-      LayoutText {#text} at (0,0) size 0x0
-      LayoutText {#text} at (0,0) size 0x0
 layer at (6,6) size 160x160
   LayoutEmbeddedObject {OBJECT} at (0,0) size 159.67x159.67 [border: (1.38px dashed #800000)]
     layer at (0,0) size 153x153

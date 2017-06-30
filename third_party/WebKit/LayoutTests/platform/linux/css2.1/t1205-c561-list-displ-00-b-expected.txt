@@ -28,7 +28,6 @@ layer at (0,0) size 800x220
       LayoutBlockFlow {DIV} at (0,116) size 784x20 [color=#000080]
         LayoutText {#text} at (0,0) size 168x19
           text run at (0,0) width 168: "5. This should be line five."
-        LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {DIV} at (0,136) size 784x60 [color=#000080]
         LayoutBlockFlow (anonymous) at (0,0) size 784x20
           LayoutText {#text} at (0,0) size 162x19

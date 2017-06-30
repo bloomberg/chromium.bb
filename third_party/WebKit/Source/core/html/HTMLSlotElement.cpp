@@ -38,6 +38,7 @@
 #include "core/dom/SlotAssignment.h"
 #include "core/dom/StyleChangeReason.h"
 #include "core/dom/StyleEngine.h"
+#include "core/dom/WhitespaceAttacher.h"
 #include "core/events/Event.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/AssignedNodesOptions.h"
@@ -183,15 +184,15 @@ void HTMLSlotElement::DetachLayoutTree(const AttachContext& context) {
   HTMLElement::DetachLayoutTree(context);
 }
 
-void HTMLSlotElement::RebuildDistributedChildrenLayoutTrees() {
+void HTMLSlotElement::RebuildDistributedChildrenLayoutTrees(
+    WhitespaceAttacher& whitespace_attacher) {
   if (!SupportsDistribution())
     return;
-  Text* next_text_sibling = nullptr;
   // This loop traverses the nodes from right to left for the same reason as the
   // one described in ContainerNode::RebuildChildrenLayoutTrees().
   for (auto it = distributed_nodes_.rbegin(); it != distributed_nodes_.rend();
        ++it) {
-    RebuildLayoutTreeForChild(*it, next_text_sibling);
+    RebuildLayoutTreeForChild(*it, whitespace_attacher);
   }
 }
 

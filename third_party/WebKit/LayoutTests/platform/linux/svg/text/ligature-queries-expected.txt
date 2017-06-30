@@ -490,5 +490,3 @@ layer at (0,0) size 800x521
               chunk 1 text run 23 at (486.44,438.78) startOffset 22 endOffset 23 width 25.00: "f"
           LayoutSVGInlineText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0
-      LayoutText {#text} at (0,0) size 0x0
-      LayoutText {#text} at (0,0) size 0x0

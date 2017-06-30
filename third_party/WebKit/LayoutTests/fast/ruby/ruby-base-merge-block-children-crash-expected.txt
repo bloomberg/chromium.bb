@@ -14,5 +14,4 @@ layer at (0,0) size 800x32
               LayoutInline {SPAN} at (0,0) size 0x0
                 LayoutInline {SPAN} at (0,0) size 0x0
                   LayoutText {#text} at (0,0) size 0x0
-                  LayoutText {#text} at (0,0) size 0x0
             LayoutInline {I} at (0,0) size 0x0

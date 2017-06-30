@@ -39,6 +39,10 @@
       "reason": "disappeared"
     },
     {
+      "object": "LayoutText #text",
+      "reason": "disappeared"
+    },
+    {
       "object": "LayoutBlockFlow DIV",
       "reason": "geometry"
     },

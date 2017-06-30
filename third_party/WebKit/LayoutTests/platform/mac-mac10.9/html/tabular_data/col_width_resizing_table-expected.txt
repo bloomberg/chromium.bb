@@ -35,4 +35,3 @@ layer at (0,0) size 800x600
             LayoutText {#text} at (0,0) size 356x13
               text run at (0,0) width 356: "Click me to test manually. The first column should grow to 500px."
         LayoutText {#text} at (0,0) size 0x0
-        LayoutText {#text} at (0,0) size 0x0

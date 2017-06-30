@@ -15,8 +15,7 @@ layer at (0,0) size 800x600
         LayoutBR {BR} at (164,91) size 1x0
         LayoutText {#text} at (137,136) size 5x18
           text run at (137,136) width 5: " "
-        LayoutText {#text} at (0,0) size 0x0
-        LayoutBR {BR} at (0,0) size 0x0
+        LayoutBR {BR} at (141,150) size 1x0
         LayoutText {#text} at (0,154) size 217x18
           text run at (0,154) width 217: "dynamic insert of selected option:"
         LayoutBR {BR} at (216,168) size 1x0
@@ -42,8 +41,7 @@ layer at (0,0) size 800x600
               text run at (8,2) width 121: "this should be selected"
         LayoutText {#text} at (152,286) size 4x18
           text run at (152,286) width 4: " "
-        LayoutText {#text} at (0,0) size 0x0
-        LayoutBR {BR} at (0,0) size 0x0
+        LayoutBR {BR} at (156,300) size 0x0
         LayoutText {#text} at (0,305) size 217x18
           text run at (0,305) width 217: "dynamic insert of selected option:"
         LayoutBR {BR} at (216,319) size 1x0
@@ -56,7 +54,6 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 195x18
           text run at (0,0) width 195: "Display 'none' to 'inline-block'"
       LayoutBlockFlow (anonymous) at (0,391) size 784x59
-        LayoutText {#text} at (0,0) size 0x0
         LayoutText {#text} at (0,0) size 0x0
 layer at (8,26) size 137x59 clip at (9,27) size 124x57 scrollY 99.00 scrollHeight 199
   LayoutListBox {SELECT} at (0,18.25) size 137.41x58.75 [bgcolor=#FFFFFF] [border: (1px solid #999999)]

@@ -6,7 +6,6 @@ layer at (0,0) size 800x412
       LayoutBlockFlow {P} at (0,0) size 784x18
         LayoutText {#text} at (0,0) size 447x18
           text run at (0,0) width 447: "For each of pairs, the first one and the second one should be identical."
-        LayoutText {#text} at (0,0) size 0x0
       LayoutTable (floating) {TABLE} at (0,34) size 150x362
         LayoutTableSection {TBODY} at (0,0) size 150x362
           LayoutTableRow {TR} at (0,2) size 150x76

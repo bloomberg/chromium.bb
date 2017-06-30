@@ -69,6 +69,8 @@ class CORE_EXPORT LayoutTreeBuilderTraversal {
     int32_t limit = kTraverseAllSiblings;
     return PreviousLayoutSibling(node, limit);
   }
+  static Node* FirstLayoutChild(const Node&);
+
   static Node* PreviousSibling(const Node&);
   static Node* Previous(const Node&, const Node* stay_within);
   static Node* Next(const Node&, const Node* stay_within);

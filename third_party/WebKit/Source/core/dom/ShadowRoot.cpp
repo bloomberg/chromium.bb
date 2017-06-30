@@ -37,6 +37,7 @@
 #include "core/dom/SlotAssignment.h"
 #include "core/dom/StyleEngine.h"
 #include "core/dom/Text.h"
+#include "core/dom/WhitespaceAttacher.h"
 #include "core/editing/serializers/Serialization.h"
 #include "core/html/HTMLShadowElement.h"
 #include "core/html/HTMLSlotElement.h"
@@ -157,20 +158,21 @@ void ShadowRoot::RecalcStyle(StyleRecalcChange change) {
   ClearChildNeedsStyleRecalc();
 }
 
-void ShadowRoot::RebuildLayoutTree(Text*& next_text_sibling) {
+void ShadowRoot::RebuildLayoutTree(WhitespaceAttacher& whitespace_attacher) {
   if (!NeedsReattachLayoutTree() && !ChildNeedsReattachLayoutTree()) {
-    SkipRebuildLayoutTree(next_text_sibling);
+    SkipRebuildLayoutTree(whitespace_attacher);
     return;
   }
 
   StyleSharingDepthScope sharing_scope(*this);
 
   ClearNeedsReattachLayoutTree();
-  RebuildChildrenLayoutTrees(next_text_sibling);
+  RebuildChildrenLayoutTrees(whitespace_attacher);
   ClearChildNeedsReattachLayoutTree();
 }
 
-void ShadowRoot::SkipRebuildLayoutTree(Text*& next_text_sibling) const {
+void ShadowRoot::SkipRebuildLayoutTree(
+    WhitespaceAttacher& whitespace_attacher) const {
   // We call this method when neither this, nor our child nodes are marked
   // for re-attachment, but the host has been marked with
   // childNeedsReattachLayoutTree. That happens when ::before or ::after needs
@@ -187,12 +189,12 @@ void ShadowRoot::SkipRebuildLayoutTree(Text*& next_text_sibling) const {
   for (Node* sibling = firstChild(); sibling;
        sibling = sibling->nextSibling()) {
     if (sibling->IsTextNode()) {
-      next_text_sibling = ToText(sibling);
+      whitespace_attacher.DidVisitText(ToText(sibling));
       return;
     }
     LayoutObject* layout_object = sibling->GetLayoutObject();
     if (layout_object && !layout_object->IsFloatingOrOutOfFlowPositioned()) {
-      next_text_sibling = nullptr;
+      whitespace_attacher.DidVisitElement(ToElement(sibling));
       return;
     }
   }

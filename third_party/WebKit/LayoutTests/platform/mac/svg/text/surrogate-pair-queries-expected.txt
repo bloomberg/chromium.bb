@@ -336,5 +336,3 @@ layer at (0,0) size 800x520
           LayoutSVGInlineText {#text} at (357.33,318) size 92.66x40
             chunk 1 text run 1 at (357.34,350.00) startOffset 0 endOffset 7 width 92.66 RTL override: "\x{D83C}\x{DFB6}\x{D801}\x{DC37}\x{30C}\x{D83C}\x{DFB6}"
       LayoutText {#text} at (0,0) size 0x0
-      LayoutText {#text} at (0,0) size 0x0
-      LayoutText {#text} at (0,0) size 0x0

@@ -35,6 +35,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ElementData.h"
 #include "core/dom/SpaceSplitString.h"
+#include "core/dom/WhitespaceAttacher.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "public/platform/WebFocusType.h"
@@ -438,7 +439,14 @@ class CORE_EXPORT Element : public ContainerNode {
   virtual LayoutObject* CreateLayoutObject(const ComputedStyle&);
   virtual bool LayoutObjectIsNeeded(const ComputedStyle&);
   void RecalcStyle(StyleRecalcChange);
-  void RebuildLayoutTree(Text* next_text_sibling = nullptr);
+  bool NeedsRebuildLayoutTree(
+      const WhitespaceAttacher& whitespace_attacher) const {
+    return NeedsReattachLayoutTree() || ChildNeedsReattachLayoutTree() ||
+           IsActiveSlotOrActiveInsertionPoint() ||
+           (whitespace_attacher.LastTextNodeNeedsReattach() &&
+            HasDisplayContentsStyle());
+  }
+  void RebuildLayoutTree(WhitespaceAttacher&);
   void PseudoStateChanged(CSSSelector::PseudoType);
   void SetAnimationStyleChange(bool);
   void ClearAnimationStyleChange();
@@ -881,9 +889,8 @@ class CORE_EXPORT Element : public ContainerNode {
   PassRefPtr<ComputedStyle> PropagateInheritedProperties(StyleRecalcChange);
 
   StyleRecalcChange RecalcOwnStyle(StyleRecalcChange);
-  void RebuildPseudoElementLayoutTree(PseudoId,
-                                      Text* next_text_sibling = nullptr);
-  void RebuildShadowRootLayoutTree(Text*& next_text_sibling);
+  void RebuildPseudoElementLayoutTree(PseudoId, WhitespaceAttacher&);
+  void RebuildShadowRootLayoutTree(WhitespaceAttacher&);
   inline void CheckForEmptyStyleChange();
 
   void UpdatePseudoElement(PseudoId, StyleRecalcChange);

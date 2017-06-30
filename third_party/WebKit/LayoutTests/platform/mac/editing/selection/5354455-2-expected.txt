@@ -19,5 +19,4 @@ layer at (8,8) size 612x142
         text run at (562,18) width 37: "Right"
         text run at (0,36) width 589: "click on the empty space outside and to the right of the black border, the selection should be"
         text run at (0,54) width 60: "removed."
-      LayoutText {#text} at (0,0) size 0x0
 caret: position 0 of child 0 {#text} of child 1 {H1} of body

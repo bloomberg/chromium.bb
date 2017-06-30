@@ -16,17 +16,6 @@ layer at (0,0) size 800x249
             LayoutSVGRect {rect} at (0,0) size 0.50x0.50 [fill={[type=SOLID] [color=#000000]}] [x=0.00] [y=0.00] [width=0.50] [height=0.50]
             LayoutSVGRect {rect} at (0.50,0.50) size 0.50x0.50 [fill={[type=SOLID] [color=#000000]}] [x=0.50] [y=0.50] [width=0.50] [height=0.50]
       LayoutText {#text} at (0,0) size 0x0
-      LayoutText {#text} at (0,0) size 0x0
-      LayoutText {#text} at (0,0) size 0x0
-      LayoutText {#text} at (0,0) size 0x0
-      LayoutText {#text} at (0,0) size 0x0
-      LayoutText {#text} at (0,0) size 0x0
-      LayoutText {#text} at (0,0) size 0x0
-      LayoutText {#text} at (0,0) size 0x0
-      LayoutText {#text} at (0,0) size 0x0
-      LayoutText {#text} at (0,0) size 0x0
-      LayoutText {#text} at (0,0) size 0x0
-      LayoutText {#text} at (0,0) size 0x0
 layer at (0,0) size 415x415
   LayoutBlockFlow (positioned) {DIV} at (0,0) size 414.72x414.72 [bgcolor=#000000]
 layer at (0,0) size 207x207

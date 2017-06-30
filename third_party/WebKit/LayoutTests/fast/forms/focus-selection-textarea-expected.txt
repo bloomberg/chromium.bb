@@ -21,9 +21,7 @@ This test checks whether the selection is restored, cleared, or set to the full 
 7) , only the word "SUCCESS" should be selected:  
 8)  , only the word "SUCCESS" should be selected:
 
-
 9) Hit Ctrl-Option-I (or Alt-I on Windows), only the word "SUCCESS" should be selected:
-
 
 PASS successfullyParsed is true
 

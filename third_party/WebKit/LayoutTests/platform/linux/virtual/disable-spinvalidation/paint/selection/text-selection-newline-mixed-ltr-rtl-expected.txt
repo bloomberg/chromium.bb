@@ -12,6 +12,5 @@ layer at (0,0) size 800x136
             text run at (0,1) width 96: "text"
             text run at (96,1) width 93 RTL: "\x{645}\x{62A}\x{646}:"
         LayoutText {#text} at (0,0) size 0x0
-        LayoutText {#text} at (0,0) size 0x0
 selection start: position 5 of child 0 {#text} of child 2 {SPAN} of body
 selection end:   position 13 of child 0 {#text} of child 2 {SPAN} of body

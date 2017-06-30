@@ -18,5 +18,4 @@ layer at (0,0) size 800x600
       LayoutBlockFlow (anonymous) at (0,70) size 784x18
         LayoutText {#text} at (0,0) size 249x18
           text run at (0,0) width 249: "This text is outside the editable region."
-        LayoutText {#text} at (0,0) size 0x0
 caret: position 1 of child 0 {#text} of child 1 {SPAN} of child 3 {DIV} of body

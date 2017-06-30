@@ -40,7 +40,6 @@ layer at (0,0) size 800x600
             LayoutText (anonymous) at (8,2) size 163x13
               text run at (8,2) width 163: "This is should be left justified."
         LayoutText {#text} at (0,0) size 0x0
-        LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {DIV} at (0,128) size 784x18
         LayoutMenuList {SELECT} at (0,0) size 300x18 [bgcolor=#F8F8F8]
           LayoutBlockFlow (anonymous) at (0,0) size 300x18

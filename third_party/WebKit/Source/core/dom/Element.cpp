@@ -81,6 +81,7 @@
 #include "core/dom/StyleChangeReason.h"
 #include "core/dom/StyleEngine.h"
 #include "core/dom/Text.h"
+#include "core/dom/WhitespaceAttacher.h"
 #include "core/dom/custom/CustomElement.h"
 #include "core/dom/custom/CustomElementRegistry.h"
 #include "core/dom/custom/V0CustomElement.h"
@@ -2116,29 +2117,42 @@ StyleRecalcChange Element::RecalcOwnStyle(StyleRecalcChange change) {
   return local_change;
 }
 
-void Element::RebuildLayoutTree(Text* next_text_sibling) {
+void Element::RebuildLayoutTree(WhitespaceAttacher& whitespace_attacher) {
   DCHECK(InActiveDocument());
   DCHECK(parentNode());
 
   if (NeedsReattachLayoutTree()) {
     AttachContext reattach_context;
     reattach_context.resolved_style = GetNonAttachedStyle();
-    bool layout_object_will_change = NeedsAttach() || GetLayoutObject();
     ReattachLayoutTree(reattach_context);
-    if (layout_object_will_change || GetLayoutObject())
-      ReattachWhitespaceSiblingsIfNeeded(next_text_sibling);
     SetNonAttachedStyle(nullptr);
-  } else if (ChildNeedsReattachLayoutTree()) {
-    DCHECK(!NeedsReattachLayoutTree());
+    whitespace_attacher.DidReattachElement(this,
+                                           reattach_context.previous_in_flow);
+  } else {
     SelectorFilterParentScope filter_scope(*this);
     StyleSharingDepthScope sharing_scope(*this);
-    Text* next_text_sibling = nullptr;
-    RebuildPseudoElementLayoutTree(kPseudoIdAfter);
-    RebuildShadowRootLayoutTree(next_text_sibling);
-    RebuildChildrenLayoutTrees(next_text_sibling);
-    RebuildPseudoElementLayoutTree(kPseudoIdBefore, next_text_sibling);
-    RebuildPseudoElementLayoutTree(kPseudoIdBackdrop);
-    RebuildPseudoElementLayoutTree(kPseudoIdFirstLetter);
+    // We create a local WhitespaceAttacher when rebuilding children of an
+    // element with a LayoutObject since whitespace nodes do not rely on layout
+    // objects further up the tree. Also, if this Element's layout object is an
+    // out-of-flow box, in-flow children should not affect whitespace siblings
+    // of the out-of-flow box. However, if this element is a display:contents
+    // element. Continue using the passed in attacher as display:contents
+    // children may affect whitespace nodes further up the tree as they may be
+    // layout tree siblings.
+    WhitespaceAttacher local_attacher;
+    WhitespaceAttacher* child_attacher;
+    if (GetLayoutObject()) {
+      whitespace_attacher.DidVisitElement(this);
+      child_attacher = &local_attacher;
+    } else {
+      child_attacher = &whitespace_attacher;
+    }
+    RebuildPseudoElementLayoutTree(kPseudoIdAfter, *child_attacher);
+    RebuildShadowRootLayoutTree(*child_attacher);
+    RebuildChildrenLayoutTrees(*child_attacher);
+    RebuildPseudoElementLayoutTree(kPseudoIdBefore, *child_attacher);
+    RebuildPseudoElementLayoutTree(kPseudoIdBackdrop, *child_attacher);
+    RebuildPseudoElementLayoutTree(kPseudoIdFirstLetter, *child_attacher);
   }
   DCHECK(!NeedsStyleRecalc());
   DCHECK(!ChildNeedsStyleRecalc());
@@ -2146,25 +2160,22 @@ void Element::RebuildLayoutTree(Text* next_text_sibling) {
   DCHECK(!ChildNeedsReattachLayoutTree());
 }
 
-void Element::RebuildShadowRootLayoutTree(Text*& next_text_sibling) {
+void Element::RebuildShadowRootLayoutTree(
+    WhitespaceAttacher& whitespace_attacher) {
   for (ShadowRoot* root = YoungestShadowRoot(); root;
        root = root->OlderShadowRoot()) {
-    // TODO(rune@opera.com): nextTextSibling is not set correctly when we have
-    // slotted nodes (crbug.com/648931). Also, it may be incorrect when we have
-    // multiple shadow roots (for V0 shadow hosts).
-    root->RebuildLayoutTree(next_text_sibling);
+    root->RebuildLayoutTree(whitespace_attacher);
   }
 }
 
-void Element::RebuildPseudoElementLayoutTree(PseudoId pseudo_id,
-                                             Text* next_text_sibling) {
+void Element::RebuildPseudoElementLayoutTree(
+    PseudoId pseudo_id,
+    WhitespaceAttacher& whitespace_attacher) {
   if (PseudoElement* element = GetPseudoElement(pseudo_id)) {
     if (pseudo_id == kPseudoIdFirstLetter && UpdateFirstLetter(element))
       return;
-    if (element->NeedsReattachLayoutTree() ||
-        element->ChildNeedsReattachLayoutTree()) {
-      element->RebuildLayoutTree(next_text_sibling);
-    }
+    if (element->NeedsRebuildLayoutTree(whitespace_attacher))
+      element->RebuildLayoutTree(whitespace_attacher);
   } else {
     CreatePseudoElementIfNeeded(pseudo_id);
   }

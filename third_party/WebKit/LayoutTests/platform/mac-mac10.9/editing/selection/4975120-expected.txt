@@ -13,7 +13,6 @@ layer at (0,0) size 800x600
         LayoutTextControl {INPUT} at (0,0) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutBR {BR} at (123,14) size 0x0
         LayoutText {#text} at (0,0) size 0x0
-        LayoutText {#text} at (0,0) size 0x0
 layer at (11,81) size 117x13
   LayoutBlockFlow {DIV} at (3,3) size 117x13
     LayoutText {#text} at (0,0) size 18x13

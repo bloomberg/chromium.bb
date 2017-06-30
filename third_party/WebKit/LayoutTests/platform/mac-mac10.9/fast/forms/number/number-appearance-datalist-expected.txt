@@ -27,7 +27,6 @@ layer at (0,0) size 800x54
         LayoutFlexibleBox {DIV} at (3,2) size 117x15
           LayoutBlockFlow {DIV} at (0,1) size 89.28x13
       LayoutText {#text} at (0,0) size 0x0
-      LayoutText {#text} at (0,0) size 0x0
 layer at (11,11) size 89x13
   LayoutBlockFlow {DIV} at (0,0) size 89.28x13
 layer at (138,11) size 89x13

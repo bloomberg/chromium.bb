@@ -18,5 +18,4 @@ layer at (0,0) size 800x209
           LayoutText {#text} at (10,1) size 79x55
             text run at (10,1) width 79: "link"
         LayoutText {#text} at (0,0) size 0x0
-        LayoutText {#text} at (0,0) size 0x0
 caret: position 0 of child 0 {#text} of child 8 {A} of body

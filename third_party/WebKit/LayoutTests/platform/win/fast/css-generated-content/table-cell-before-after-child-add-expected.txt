@@ -22,4 +22,3 @@ layer at (0,0) size 800x600
       LayoutBlockFlow (anonymous) at (0,56) size 784x20
         LayoutText {#text} at (0,0) size 74x19
           text run at (0,0) width 74: "CONTENT"
-        LayoutText {#text} at (0,0) size 0x0

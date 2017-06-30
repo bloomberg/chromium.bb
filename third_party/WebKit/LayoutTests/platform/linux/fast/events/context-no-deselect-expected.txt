@@ -5,7 +5,6 @@ layer at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
       LayoutTextControl {INPUT} at (0,0) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
       LayoutText {#text} at (0,0) size 0x0
-      LayoutText {#text} at (0,0) size 0x0
 layer at (10,11) size 150x16
   LayoutBlockFlow {DIV} at (2,3) size 150x16
     LayoutText {#text} at (0,0) size 104x16

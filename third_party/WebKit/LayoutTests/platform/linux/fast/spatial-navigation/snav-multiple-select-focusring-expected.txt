@@ -4,7 +4,6 @@ layer at (0,0) size 800x87
   LayoutBlockFlow {HTML} at (0,0) size 800x87
     LayoutBlockFlow {BODY} at (8,8) size 784x71
       LayoutText {#text} at (0,0) size 0x0
-      LayoutText {#text} at (0,0) size 0x0
 layer at (8,8) size 372x70 clip at (9,9) size 355x68
   LayoutListBox {SELECT} at (0,0) size 371.77x70 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
     LayoutBlockFlow {OPTION} at (1,1) size 354.77x17 [color=#FFFFCC] [bgcolor=#0000FF]

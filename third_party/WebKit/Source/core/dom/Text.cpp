@@ -32,6 +32,7 @@
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/ShadowRoot.h"
+#include "core/dom/WhitespaceAttacher.h"
 #include "core/events/ScopedEventQueue.h"
 #include "core/layout/LayoutText.h"
 #include "core/layout/LayoutTextCombine.h"
@@ -257,7 +258,12 @@ static inline bool CanHaveWhitespaceChildren(const LayoutObject& parent) {
   return true;
 }
 
-bool Text::TextLayoutObjectIsNeeded(const ComputedStyle& style,
+static inline bool EndsWithWhitespace(const String& text) {
+  return text.length() && IsASCIISpace(text[text.length() - 1]);
+}
+
+bool Text::TextLayoutObjectIsNeeded(const AttachContext& context,
+                                    const ComputedStyle& style,
                                     const LayoutObject& parent) const {
   DCHECK(!GetDocument().ChildNeedsDistributionRecalc());
 
@@ -287,51 +293,19 @@ bool Text::TextLayoutObjectIsNeeded(const ComputedStyle& style,
   if (style.PreserveNewline())
     return true;
 
-  // Avoiding creation of a layoutObject for the text node is a non-essential
-  // memory optimization.  So to avoid blowing up on very wide DOMs, we limit
-  // the number of siblings to visit.
-  unsigned max_siblings_to_visit = 50;
-
-  const LayoutObject* prev =
-      LayoutTreeBuilderTraversal::PreviousSiblingLayoutObject(
-          *this, max_siblings_to_visit);
-  if (prev && prev->IsBR())  // <span><br/> <br/></span>
+  if (!context.use_previous_in_flow)
     return false;
 
-  if (parent.IsLayoutInline()) {
-    // <span><div/> <div/></span>
-    if (prev && !prev->IsInline() && !prev->IsFloatingOrOutOfFlowPositioned())
-      return false;
-  } else {
-    if (parent.IsLayoutBlock() && !parent.ChildrenInline() &&
-        (!prev || !prev->IsInline()))
-      return false;
+  if (!context.previous_in_flow)
+    return parent.IsLayoutInline();
 
-    LayoutObject* first = parent.SlowFirstChild();
-    for (; first && first->IsFloatingOrOutOfFlowPositioned() &&
-           max_siblings_to_visit;
-         first = first->NextSibling(), --max_siblings_to_visit) {
-    }
-    if (!first || first == GetLayoutObject() ||
-        LayoutTreeBuilderTraversal::NextSiblingLayoutObject(
-            *this, max_siblings_to_visit) == first) {
-      // If we're adding children to this flow our previous siblings are not in
-      // the layout tree yet so we cannot know if we will be the first child in
-      // the line and collapse away. We have to assume we need a layout object.
-      Node* first_child_node =
-          parent.GetNode()
-              ? LayoutTreeBuilderTraversal::FirstChild(*parent.GetNode())
-              : nullptr;
-      if (first && first == GetLayoutObject() && first_child_node &&
-          !first_child_node->GetLayoutObject())
-        return true;
-
-      // Whitespace at the start of a block just goes away.  Don't even
-      // make a layout object for this text.
-      return !first_child_node;
-    }
+  if (context.previous_in_flow->IsText()) {
+    return !EndsWithWhitespace(
+        ToLayoutText(context.previous_in_flow)->GetText());
   }
-  return true;
+
+  return context.previous_in_flow->IsInline() &&
+         !context.previous_in_flow->IsBR();
 }
 
 static bool IsSVGText(Text* text) {
@@ -358,7 +332,7 @@ void Text::AttachLayoutTree(AttachContext& context) {
 
   if (style_parent && parent_layout_object) {
     DCHECK(style_parent->GetComputedStyle());
-    if (TextLayoutObjectIsNeeded(*style_parent->GetComputedStyle(),
+    if (TextLayoutObjectIsNeeded(context, *style_parent->GetComputedStyle(),
                                  *parent_layout_object)) {
       LayoutTreeBuilderForText(*this, parent_layout_object,
                                style_parent->MutableComputedStyle())
@@ -368,7 +342,7 @@ void Text::AttachLayoutTree(AttachContext& context) {
   CharacterData::AttachLayoutTree(context);
 }
 
-void Text::ReattachLayoutTreeIfNeeded() {
+void Text::ReattachLayoutTreeIfNeeded(const AttachContext& context) {
   bool layout_object_is_needed = false;
   ContainerNode* style_parent = LayoutTreeBuilderTraversal::Parent(*this);
   LayoutObject* parent_layout_object =
@@ -376,7 +350,7 @@ void Text::ReattachLayoutTreeIfNeeded() {
   if (style_parent && parent_layout_object) {
     DCHECK(style_parent->GetComputedStyle());
     layout_object_is_needed = TextLayoutObjectIsNeeded(
-        *style_parent->GetComputedStyle(), *parent_layout_object);
+        context, *style_parent->GetComputedStyle(), *parent_layout_object);
   }
 
   if (layout_object_is_needed == !!GetLayoutObject())
@@ -411,14 +385,13 @@ void Text::RecalcTextStyle(StyleRecalcChange change) {
   }
 }
 
-void Text::RebuildTextLayoutTree(Text* next_text_sibling) {
+void Text::RebuildTextLayoutTree(WhitespaceAttacher& whitespace_attacher) {
   DCHECK(!ChildNeedsStyleRecalc());
   DCHECK(NeedsReattachLayoutTree());
   DCHECK(parentNode());
 
   ReattachLayoutTree();
-  if (GetLayoutObject())
-    ReattachWhitespaceSiblingsIfNeeded(next_text_sibling);
+  whitespace_attacher.DidReattachText(this);
   ClearNeedsReattachLayoutTree();
 }
 
@@ -442,7 +415,8 @@ static bool ShouldUpdateLayoutByReattaching(const Text& text_node,
   // |childNeedsDistributionRecalc|, but this code tries to figure out if we can
   // use an optimized code path that avoids reattach.
   if (!text_node.GetDocument().ChildNeedsDistributionRecalc() &&
-      !text_node.TextLayoutObjectIsNeeded(*text_layout_object->Style(),
+      !text_node.TextLayoutObjectIsNeeded(Node::AttachContext(),
+                                          *text_layout_object->Style(),
                                           *text_layout_object->Parent())) {
     return true;
   }

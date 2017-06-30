@@ -9,7 +9,7 @@
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [108, 8, 684, 100],
-          "reason": "geometry"
+          "reason": "style change"
         },
         {
           "object": "LayoutText #text",
@@ -34,8 +34,12 @@
       "reason": "disappeared"
     },
     {
+      "object": "LayoutText #text",
+      "reason": "disappeared"
+    },
+    {
       "object": "LayoutBlockFlow DIV",
-      "reason": "geometry"
+      "reason": "style change"
     }
   ]
 }

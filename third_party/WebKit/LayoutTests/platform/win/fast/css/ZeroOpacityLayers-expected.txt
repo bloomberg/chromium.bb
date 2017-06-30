@@ -11,7 +11,6 @@ layer at (30,30) size 160x160 transparent
   LayoutBlockFlow (positioned) {DIV} at (10,10) size 160x160 [bgcolor=#FF0000]
     LayoutText {#text} at (0,0) size 143x19
       text run at (0,0) width 143: "Should not see this text."
-    LayoutText {#text} at (0,0) size 0x0
 layer at (40,40) size 140x140
   LayoutBlockFlow (positioned) {DIV} at (10,10) size 140x140 [bgcolor=#FFFFFF]
     LayoutText {#text} at (0,0) size 113x39

@@ -23,7 +23,6 @@ layer at (0,0) size 800x450
         LayoutBlockFlow (floating) {P} at (21,21) size 150x58 [color=#FFFFFF] [bgcolor=#008080] [border: (3px solid #00FFFF)]
           LayoutText {#text} at (19,19) size 44x19
             text run at (19,19) width 44: "AAAA"
-        LayoutText {#text} at (0,0) size 0x0
         LayoutInline {SPAN} at (0,0) size 16x25 [color=#FFFFFF] [bgcolor=#800080] [border: (3px solid #FF00FF)]
           LayoutText {#text} at (491,21) size 10x19
             text run at (491,21) width 10: "B"

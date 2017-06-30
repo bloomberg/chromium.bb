@@ -304,6 +304,11 @@ Node* LayoutTreeBuilderTraversal::PreviousLayoutSibling(const Node& node,
   return nullptr;
 }
 
+Node* LayoutTreeBuilderTraversal::FirstLayoutChild(const Node& node) {
+  int32_t limit = kTraverseAllSiblings;
+  return NextLayoutSiblingInternal(PseudoAwareFirstChild(node), limit);
+}
+
 LayoutObject* LayoutTreeBuilderTraversal::NextSiblingLayoutObject(
     const Node& node,
     int32_t limit) {

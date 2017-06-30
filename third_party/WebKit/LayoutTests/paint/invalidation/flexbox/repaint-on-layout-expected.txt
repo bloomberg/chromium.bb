@@ -9,7 +9,7 @@
         {
           "object": "LayoutBlockFlow (floating) DIV class='state'",
           "rect": [712, 8, 80, 20],
-          "reason": "geometry"
+          "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow DIV id='badge'",
@@ -25,12 +25,12 @@
       "reason": "disappeared"
     },
     {
-      "object": "LayoutBlockFlow (floating) DIV class='state'",
-      "reason": "geometry"
+      "object": "LayoutText #text",
+      "reason": "disappeared"
     },
     {
-      "object": "LayoutText #text",
-      "reason": "geometry"
+      "object": "LayoutBlockFlow (floating) DIV class='state'",
+      "reason": "style change"
     }
   ]
 }

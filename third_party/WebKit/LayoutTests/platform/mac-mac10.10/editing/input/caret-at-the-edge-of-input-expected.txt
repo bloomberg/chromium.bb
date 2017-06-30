@@ -9,7 +9,6 @@ layer at (0,0) size 800x53
       LayoutBlockFlow (anonymous) at (0,18) size 784x19
         LayoutTextControl {INPUT} at (0,0) size 71x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (0,0) size 0x0
-        LayoutText {#text} at (0,0) size 0x0
 layer at (11,29) size 65x13 scrollX 36.00 scrollWidth 262
   LayoutBlockFlow {DIV} at (3,3) size 65x13
     LayoutText {#text} at (0,0) size 262x13
