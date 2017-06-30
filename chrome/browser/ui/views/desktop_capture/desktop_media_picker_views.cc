@@ -201,7 +201,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
   }
 
   // Focus on the first non-null media_list.
-  SwitchSourceType(0);
+  OnSourceTypeSwitched(0);
 
   // If |parent_web_contents| is set and it's not a background page then the
   // picker will be shown modal to the web contents. Otherwise the picker is
@@ -242,12 +242,12 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
 DesktopMediaPickerDialogView::~DesktopMediaPickerDialogView() {}
 
 void DesktopMediaPickerDialogView::TabSelectedAt(int index) {
-  SwitchSourceType(index);
+  OnSourceTypeSwitched(index);
   list_views_[index]->RequestFocus();
   GetDialogClientView()->UpdateDialogButtons();
 }
 
-void DesktopMediaPickerDialogView::SwitchSourceType(int index) {
+void DesktopMediaPickerDialogView::OnSourceTypeSwitched(int index) {
   // Set whether the checkbox is visible based on the source type.
   if (audio_share_checkbox_) {
     switch (source_types_[index]) {
@@ -364,6 +364,16 @@ void DesktopMediaPickerDialogView::OnSelectionChanged() {
 void DesktopMediaPickerDialogView::OnDoubleClick() {
   // This will call Accept() and close the dialog.
   GetDialogClientView()->AcceptWindow();
+}
+
+void DesktopMediaPickerDialogView::SelectTab(
+    content::DesktopMediaID::Type source_type) {
+  for (size_t i = 0; i < source_types_.size(); i++) {
+    if (source_types_[i] == source_type) {
+      pane_->SelectTabAt(i);
+      return;
+    }
+  }
 }
 
 void DesktopMediaPickerDialogView::OnMediaListRowsChanged() {
