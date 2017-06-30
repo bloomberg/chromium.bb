@@ -290,6 +290,38 @@ TEST_F(LayoutTableCellTest, BorderWidthsWithCollapsedBorders) {
   EXPECT_EQ(8u, cell2->CollapsedOuterBorderEnd());
   EXPECT_EQ(1u, cell2->CollapsedOuterBorderBefore());
   EXPECT_EQ(2u, cell2->CollapsedOuterBorderAfter());
+
+  ToElement(cell1->Table()->GetNode())
+      ->setAttribute(HTMLNames::styleAttr,
+                     "writing-mode: vertical-rl; direction: rtl");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  EXPECT_EQ(5, cell1->BorderLeft());
+  EXPECT_EQ(0, cell1->BorderRight());
+  EXPECT_EQ(8, cell1->BorderTop());
+  EXPECT_EQ(0, cell1->BorderBottom());
+  EXPECT_EQ(2, cell2->BorderLeft());
+  EXPECT_EQ(1, cell2->BorderRight());
+  EXPECT_EQ(8, cell2->BorderTop());
+  EXPECT_EQ(7, cell2->BorderBottom());
+
+  EXPECT_EQ(0u, cell1->CollapsedInnerBorderStart());
+  EXPECT_EQ(8u, cell1->CollapsedInnerBorderEnd());
+  EXPECT_EQ(0u, cell1->CollapsedInnerBorderBefore());
+  EXPECT_EQ(5u, cell1->CollapsedInnerBorderAfter());
+  EXPECT_EQ(7u, cell2->CollapsedInnerBorderStart());
+  EXPECT_EQ(8u, cell2->CollapsedInnerBorderEnd());
+  EXPECT_EQ(1u, cell2->CollapsedInnerBorderBefore());
+  EXPECT_EQ(2u, cell2->CollapsedInnerBorderAfter());
+
+  EXPECT_EQ(0u, cell1->CollapsedOuterBorderStart());
+  EXPECT_EQ(7u, cell1->CollapsedOuterBorderEnd());
+  EXPECT_EQ(0u, cell1->CollapsedOuterBorderBefore());
+  EXPECT_EQ(5u, cell1->CollapsedOuterBorderAfter());
+  EXPECT_EQ(8u, cell2->CollapsedOuterBorderStart());
+  EXPECT_EQ(7u, cell2->CollapsedOuterBorderEnd());
+  EXPECT_EQ(2u, cell2->CollapsedOuterBorderBefore());
+  EXPECT_EQ(1u, cell2->CollapsedOuterBorderAfter());
 }
 
 }  // namespace blink
