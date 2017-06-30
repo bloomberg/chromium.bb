@@ -713,6 +713,65 @@
       },
       {
         "args": [
+          "blob_storage.blob_storage",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=android-chromium"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "blob_storage.blob_storage",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "id": "build248-m4--device6",
+              "os": "Android",
+              "pool": "Chrome-perf-fyi"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
+          "blob_storage.blob_storage",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=reference",
+          "--output-trace-tag=_ref"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "blob_storage.blob_storage.reference",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "android_devices": "1",
+              "id": "build248-m4--device6",
+              "os": "Android",
+              "pool": "Chrome-perf-fyi"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": true,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
           "dromaeo.domcoreattr",
           "-v",
           "--upload-results",
