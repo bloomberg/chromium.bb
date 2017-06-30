@@ -3277,6 +3277,7 @@ test("unit_tests") {
     "../browser/shell_integration_win_unittest.cc",
     "../browser/signin/account_reconcilor_unittest.cc",
     "../browser/signin/chrome_signin_client_unittest.cc",
+    "../browser/signin/chrome_signin_helper_unittest.cc",
     "../browser/signin/chrome_signin_status_metrics_provider_delegate_unittest.cc",
     "../browser/signin/local_auth_unittest.cc",
     "../browser/signin/signin_manager_unittest.cc",
