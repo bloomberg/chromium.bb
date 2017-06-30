@@ -269,6 +269,12 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   // The type of SiteInstance associated with this navigation.
   AssociatedSiteInstanceType associated_site_instance_type_;
 
+  // Stores the SiteInstance created on redirects to check if there is an
+  // existing RenderProcessHost that can commit the navigation so that the
+  // renderer process is not deleted while the navigation is ongoing. If the
+  // SiteInstance was a brand new SiteInstance, it is not stored.
+  scoped_refptr<SiteInstance> speculative_site_instance_;
+
   // Whether the request may be transferred to a different process upon commit.
   // True for browser-initiated navigations and renderer-inititated navigations
   // started via the OpenURL path.

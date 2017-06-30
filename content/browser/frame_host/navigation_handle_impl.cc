@@ -463,7 +463,7 @@ NavigationHandleImpl::CallWillRedirectRequestForTesting(
   WillRedirectRequest(new_url, new_method_is_post ? "POST" : "GET",
                       new_referrer_url, new_is_external_protocol,
                       scoped_refptr<net::HttpResponseHeaders>(),
-                      net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN,
+                      net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN, nullptr,
                       base::Bind(&UpdateThrottleCheckResult, &result));
 
   // Reset the callback to ensure it will not be called later.
@@ -624,6 +624,7 @@ void NavigationHandleImpl::WillRedirectRequest(
     bool new_is_external_protocol,
     scoped_refptr<net::HttpResponseHeaders> response_headers,
     net::HttpResponseInfo::ConnectionInfo connection_info,
+    RenderProcessHost* post_redirect_process,
     const ThrottleChecksFinishedCallback& callback) {
   TRACE_EVENT_ASYNC_STEP_INTO1("navigation", "NavigationHandle", this,
                                "WillRedirectRequest", "url",
@@ -637,7 +638,7 @@ void NavigationHandleImpl::WillRedirectRequest(
   // Update the navigation parameters.
   url_ = new_url;
   method_ = new_method;
-  UpdateSiteURL();
+  UpdateSiteURL(post_redirect_process);
 
   if (!(transition_ & ui::PAGE_TRANSITION_CLIENT_REDIRECT)) {
     sanitized_referrer_.url = new_referrer_url;
@@ -1167,17 +1168,26 @@ bool NavigationHandleImpl::IsSelfReferentialURL() {
   return false;
 }
 
-void NavigationHandleImpl::UpdateSiteURL() {
+void NavigationHandleImpl::UpdateSiteURL(
+    RenderProcessHost* post_redirect_process) {
   GURL new_site_url = SiteInstance::GetSiteForURL(
       frame_tree_node_->navigator()->GetController()->GetBrowserContext(),
       url_);
-  if (new_site_url == site_url_)
+  int post_redirect_process_id = post_redirect_process
+                                     ? post_redirect_process->GetID()
+                                     : ChildProcessHost::kInvalidUniqueID;
+  if (new_site_url == site_url_ &&
+      post_redirect_process_id == expected_render_process_host_id_) {
     return;
+  }
 
-  // When redirecting cross-site, stop telling the speculative
-  // RenderProcessHost to expect a navigation commit.
+  // Stop expecting a navigation to the current site URL in the current expected
+  // process.
   SetExpectedProcess(nullptr);
+
+  // Update the site URL and the expected process.
   site_url_ = new_site_url;
+  SetExpectedProcess(post_redirect_process);
 }
 
 }  // namespace content

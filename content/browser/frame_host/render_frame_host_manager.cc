@@ -701,56 +701,19 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
     const NavigationRequest& request) {
   CHECK(IsBrowserSideNavigationEnabled());
 
-  SiteInstance* current_site_instance = render_frame_host_->GetSiteInstance();
-
-  SiteInstance* candidate_site_instance =
-      speculative_render_frame_host_
-          ? speculative_render_frame_host_->GetSiteInstance()
-          : nullptr;
-
-  bool was_server_redirect = request.navigation_handle() &&
-                             request.navigation_handle()->WasServerRedirect();
-
-  scoped_refptr<SiteInstance> dest_site_instance = GetSiteInstanceForNavigation(
-      request.common_params().url, request.source_site_instance(),
-      request.dest_site_instance(), candidate_site_instance,
-      request.common_params().transition,
-      request.restore_type() != RestoreType::NONE, request.is_view_source(),
-      was_server_redirect);
-
   // The appropriate RenderFrameHost to commit the navigation.
   RenderFrameHostImpl* navigation_rfh = nullptr;
 
-  // Reuse the current RenderFrameHost if its SiteInstance matches the
-  // navigation's.
-  bool no_renderer_swap = current_site_instance == dest_site_instance.get();
+  // First compute the SiteInstance to use for the navigation.
+  SiteInstance* current_site_instance = render_frame_host_->GetSiteInstance();
+  scoped_refptr<SiteInstance> dest_site_instance =
+      GetSiteInstanceForNavigationRequest(request);
 
-  if (frame_tree_node_->IsMainFrame()) {
-    // Renderer-initiated main frame navigations that may require a
-    // SiteInstance swap are sent to the browser via the OpenURL IPC and are
-    // afterwards treated as browser-initiated navigations. NavigationRequests
-    // marked as renderer-initiated are created by receiving a BeginNavigation
-    // IPC, and will then proceed in the same renderer. In site-per-process
-    // mode, it is possible for renderer-intiated navigations to be allowed to
-    // go cross-process. Check it first.
-    bool can_renderer_initiate_transfer =
-        render_frame_host_->IsRenderFrameLive() &&
-        ShouldMakeNetworkRequestForURL(request.common_params().url) &&
-        IsRendererTransferNeededForNavigation(render_frame_host_.get(),
-                                              request.common_params().url);
-
-    no_renderer_swap |=
-        !request.may_transfer() && !can_renderer_initiate_transfer;
-  } else {
-    // Subframe navigations will use the current renderer, unless specifically
-    // allowed to swap processes.
-    no_renderer_swap |= !CanSubframeSwapProcess(
-        request.common_params().url, request.source_site_instance(),
-        request.dest_site_instance(), was_server_redirect);
-  }
+  // The SiteInstance determines whether to switch RenderFrameHost or not.
+  bool use_current_rfh = current_site_instance == dest_site_instance;
 
   bool notify_webui_of_rf_creation = false;
-  if (no_renderer_swap) {
+  if (use_current_rfh) {
     // GetFrameHostForNavigation will be called more than once during a
     // navigation (currently twice, on request and when it's about to commit in
     // the renderer). In the follow up calls an existing pending WebUI should
@@ -1971,6 +1934,62 @@ bool RenderFrameHostManager::InitRenderView(
     proxy->set_render_frame_proxy_created(true);
 
   return created;
+}
+
+scoped_refptr<SiteInstance>
+RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
+    const NavigationRequest& request) {
+  // First, check if the navigation can switch SiteInstances. If not, the
+  // navigation should use the current SiteInstance.
+  SiteInstance* current_site_instance = render_frame_host_->GetSiteInstance();
+  bool no_renderer_swap_allowed = false;
+  bool was_server_redirect = request.navigation_handle() &&
+                             request.navigation_handle()->WasServerRedirect();
+
+  if (frame_tree_node_->IsMainFrame()) {
+    // Renderer-initiated main frame navigations that may require a
+    // SiteInstance swap are sent to the browser via the OpenURL IPC and are
+    // afterwards treated as browser-initiated navigations. NavigationRequests
+    // marked as renderer-initiated are created by receiving a BeginNavigation
+    // IPC, and will then proceed in the same renderer. In site-per-process
+    // mode, it is possible for renderer-intiated navigations to be allowed to
+    // go cross-process. Check it first.
+    bool can_renderer_initiate_transfer =
+        render_frame_host_->IsRenderFrameLive() &&
+        ShouldMakeNetworkRequestForURL(request.common_params().url) &&
+        IsRendererTransferNeededForNavigation(render_frame_host_.get(),
+                                              request.common_params().url);
+
+    no_renderer_swap_allowed |=
+        !request.may_transfer() && !can_renderer_initiate_transfer;
+  } else {
+    // Subframe navigations will use the current renderer, unless specifically
+    // allowed to swap processes.
+    no_renderer_swap_allowed |= !CanSubframeSwapProcess(
+        request.common_params().url, request.source_site_instance(),
+        request.dest_site_instance(), was_server_redirect);
+  }
+
+  if (no_renderer_swap_allowed)
+    return scoped_refptr<SiteInstance>(current_site_instance);
+
+  // If the navigation can swap SiteInstances, compute the SiteInstance it
+  // should use.
+  // TODO(clamy): We should also consider as a candidate SiteInstance the
+  // speculative SiteInstance that was computed on redirects.
+  SiteInstance* candidate_site_instance =
+      speculative_render_frame_host_
+          ? speculative_render_frame_host_->GetSiteInstance()
+          : nullptr;
+
+  scoped_refptr<SiteInstance> dest_site_instance = GetSiteInstanceForNavigation(
+      request.common_params().url, request.source_site_instance(),
+      request.dest_site_instance(), candidate_site_instance,
+      request.common_params().transition,
+      request.restore_type() != RestoreType::NONE, request.is_view_source(),
+      was_server_redirect);
+
+  return dest_site_instance;
 }
 
 bool RenderFrameHostManager::InitRenderFrame(
