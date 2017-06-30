@@ -165,13 +165,16 @@ DesktopWindowTreeHostX11::DesktopWindowTreeHostX11(
       has_pointer_focus_(false),
       modal_dialog_counter_(0),
       close_widget_factory_(this),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  display::Screen::GetScreen()->AddObserver(this);
+}
 
 DesktopWindowTreeHostX11::~DesktopWindowTreeHostX11() {
   window()->ClearProperty(kHostForRootWindow);
   wm::SetWindowMoveClient(window(), NULL);
   desktop_native_widget_aura_->OnDesktopWindowTreeHostDestroyed(this);
   DestroyDispatcher();
+  display::Screen::GetScreen()->RemoveObserver(this);
 }
 
 // static
@@ -1290,6 +1293,30 @@ void DesktopWindowTreeHostX11::OnCursorVisibilityChangedNative(bool show) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// DesktopWindowTreeHostX11, display::DisplayObserver implementation:
+
+void DesktopWindowTreeHostX11::OnDisplayAdded(
+    const display::Display& new_display) {}
+
+void DesktopWindowTreeHostX11::OnDisplayRemoved(
+    const display::Display& old_display) {}
+
+void DesktopWindowTreeHostX11::OnDisplayMetricsChanged(
+    const display::Display& display,
+    uint32_t changed_metrics) {
+  if ((changed_metrics & DISPLAY_METRIC_DEVICE_SCALE_FACTOR) &&
+      display::Screen::GetScreen()->GetDisplayNearestWindow(window()).id() ==
+          display.id()) {
+    // When the scale factor changes, also pretend that a resize
+    // occured so that the window layout will be refreshed and a
+    // compositor redraw will be scheduled.  This is weird, but works.
+    // TODO(thomasanderson): Figure out a more direct way of doing
+    // this.
+    RestartDelayedResizeTask();
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostX11, private:
 
 void DesktopWindowTreeHostX11::InitX11Window(
@@ -1996,13 +2023,8 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
       if (origin_changed)
         OnHostMovedInPixels(bounds_in_pixels_.origin());
 
-      if (size_changed) {
-        delayed_resize_task_.Reset(base::Bind(
-            &DesktopWindowTreeHostX11::DelayedResize,
-            close_widget_factory_.GetWeakPtr(), bounds_in_pixels.size()));
-        base::ThreadTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE, delayed_resize_task_.callback());
-      }
+      if (size_changed)
+        RestartDelayedResizeTask();
       break;
     }
     case GenericEvent: {
@@ -2273,6 +2295,14 @@ void DesktopWindowTreeHostX11::EnableEventListening() {
   DCHECK_GT(modal_dialog_counter_, 0UL);
   if (!--modal_dialog_counter_)
     targeter_for_modal_.reset();
+}
+
+void DesktopWindowTreeHostX11::RestartDelayedResizeTask() {
+  delayed_resize_task_.Reset(
+      base::Bind(&DesktopWindowTreeHostX11::DelayedResize,
+                 close_widget_factory_.GetWeakPtr(), bounds_in_pixels_.size()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, delayed_resize_task_.callback());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -18,12 +18,14 @@
 #include "ui/views/linux_ui/linux_ui.h"
 #include "ui/views/window/frame_buttons.h"
 
+typedef struct _GParamSpec GParamSpec;
 typedef struct _GtkStyle GtkStyle;
 typedef struct _GtkWidget GtkWidget;
 
 namespace libgtkui {
 class Gtk2KeyBindingsHandler;
 class GConfListener;
+class DeviceScaleFactorObserver;
 
 // Interface to GTK2 desktop features.
 //
@@ -97,6 +99,10 @@ class GtkUi : public views::LinuxUI {
   bool UnityIsRunning() override;
   NonClientMiddleClickAction GetNonClientMiddleClickAction() override;
   void NotifyWindowManagerStartupComplete() override;
+  void AddDeviceScaleFactorObserver(
+      views::DeviceScaleFactorObserver* observer) override;
+  void RemoveDeviceScaleFactorObserver(
+      views::DeviceScaleFactorObserver* observer) override;
 
   // ui::TextEditKeybindingDelegate:
   bool MatchEvent(const ui::Event& event,
@@ -109,6 +115,12 @@ class GtkUi : public views::LinuxUI {
  private:
   typedef std::map<int, SkColor> ColorMap;
   typedef std::map<int, color_utils::HSL> TintMap;
+
+  CHROMEG_CALLBACK_1(GtkUi,
+                     void,
+                     OnDeviceScaleFactorMaybeChanged,
+                     void*,
+                     GParamSpec*);
 
   // This method returns the colors webkit will use for the scrollbars. When no
   // colors are specified by the GTK+ theme, this function averages of the
@@ -129,9 +141,12 @@ class GtkUi : public views::LinuxUI {
   bool GetChromeStyleColor(const char* sytle_property,
                            SkColor* ret_color) const;
 
+  float GetRawDeviceScaleFactor();
+
   ui::NativeTheme* native_theme_;
 
-  // A GtkWindow object with the class "ChromeGtkFrame".
+  // On Gtk2, A GtkWindow object with the class "ChromeGtkFrame".  On
+  // Gtk3, a regular GtkWindow.
   GtkWidget* fake_window_;
 
   // Colors calculated by LoadGtkValues() that are given to the
@@ -171,7 +186,12 @@ class GtkUi : public views::LinuxUI {
   std::unique_ptr<Gtk2KeyBindingsHandler> key_bindings_handler_;
 
   // Objects to notify when the window frame button order changes.
-  base::ObserverList<views::WindowButtonOrderObserver> observer_list_;
+  base::ObserverList<views::WindowButtonOrderObserver>
+      window_button_order_observer_list_;
+
+  // Objects to notify when the device scale factor changes.
+  base::ObserverList<views::DeviceScaleFactorObserver>
+      device_scale_factor_observer_list_;
 
   // Whether we should lower the window on a middle click to the non client
   // area.
