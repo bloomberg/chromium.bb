@@ -123,8 +123,7 @@ void NotificationsTest::SetUpDefaultCommandLine(
 // Temporary change while the whole support class is changed to deal
 // with native notifications. crbug.com/714679
 #if BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
-  command_line->AppendSwitchASCII(switches::kDisableFeatures,
-                                  features::kNativeNotifications.name);
+  feature_list_.InitAndDisableFeature(features::kNativeNotifications);
 #endif  // BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
 }
 
@@ -301,34 +300,45 @@ content::WebContents* NotificationsTest::GetActiveWebContents(
   return browser->tab_strip_model()->GetActiveWebContents();
 }
 
-void NotificationsTest::EnablePermissionsEmbargo() {
-  feature_list_.InitWithFeatures({features::kBlockPromptsIfDismissedOften,
-                                  features::kBlockPromptsIfIgnoredOften},
-                                 {});
+void NotificationsTest::EnablePermissionsEmbargo(
+    base::test::ScopedFeatureList* scoped_feature_list) {
+#if BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
+  scoped_feature_list->InitWithFeatures(
+      {features::kBlockPromptsIfDismissedOften,
+       features::kBlockPromptsIfIgnoredOften},
+      {features::kNativeNotifications});
+#else
+  scoped_feature_list->InitWithFeatures(
+      {features::kBlockPromptsIfDismissedOften,
+       features::kBlockPromptsIfIgnoredOften},
+      {});
+#endif  //  BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
 }
 
-void NotificationsTest::EnableFullscreenNotifications() {
+void NotificationsTest::EnableFullscreenNotifications(
+    base::test::ScopedFeatureList* scoped_feature_list) {
 #if BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
-  feature_list_.InitWithFeatures(
+  scoped_feature_list->InitWithFeatures(
       {features::kPreferHtmlOverPlugins,
        features::kAllowFullscreenWebNotificationsFeature},
       {features::kNativeNotifications});
 #else
-  feature_list_.InitWithFeatures(
+  scoped_feature_list->InitWithFeatures(
       {features::kPreferHtmlOverPlugins,
        features::kAllowFullscreenWebNotificationsFeature},
       {});
 #endif  //  BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
 }
 
-void NotificationsTest::DisableFullscreenNotifications() {
+void NotificationsTest::DisableFullscreenNotifications(
+    base::test::ScopedFeatureList* scoped_feature_list) {
 #if BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
-  feature_list_.InitWithFeatures(
+  scoped_feature_list->InitWithFeatures(
       {features::kPreferHtmlOverPlugins},
       {features::kAllowFullscreenWebNotificationsFeature,
        features::kNativeNotifications});
 #else
-  feature_list_.InitWithFeatures(
+  scoped_feature_list->InitWithFeatures(
       {features::kPreferHtmlOverPlugins},
       {features::kAllowFullscreenWebNotificationsFeature});
 #endif  // BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
