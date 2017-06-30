@@ -578,7 +578,7 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
   for (auto it = savedForms_.begin(); it != savedForms_.end(); ++it) {
     if (**it == form) {
       savedForms_.erase(it);
-      return;
+      break;
     }
   }
   [self.navigationController popViewControllerAnimated:YES];

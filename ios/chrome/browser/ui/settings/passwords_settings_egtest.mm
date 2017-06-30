@@ -12,6 +12,7 @@
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #import "ios/chrome/browser/ui/settings/password_details_collection_view_controller_for_testing.h"
@@ -163,6 +164,16 @@ id<GREYMatcher> CopyPasswordButton() {
       grey_layout(@[ Below() ], SiteHeader()),
       grey_layout(@[ Below() ], UsernameHeader()),
       grey_layout(@[ Below() ], PasswordHeader()), nullptr);
+}
+
+// Matcher for the Copy site button in Password Details view.
+id<GREYMatcher> DeleteButton() {
+  return grey_allOf(grey_interactable(),
+                    ButtonWithAccessibilityLabel(l10n_util::GetNSString(
+                        IDS_IOS_SETTINGS_PASSWORD_DELETE_BUTTON)),
+                    grey_layout(@[ Below() ], SiteHeader()),
+                    grey_layout(@[ Below() ], UsernameHeader()),
+                    grey_layout(@[ Below() ], PasswordHeader()), nullptr);
 }
 
 }  // namespace
@@ -482,6 +493,48 @@ id<GREYMatcher> CopyPasswordButton() {
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 
   [self tapBackArrow];
+  [self tapBackArrow];
+  [self tapDone];
+  [self clearPasswordStore];
+}
+
+// Checks that deleting a password from password details view goes back to the
+// list-of-passwords view.
+- (void)testDeletion {
+  [self scopedEnablePasswordManagementAndViewingUI];
+
+  // Save form to be deleted later.
+  [self saveExamplePasswordForm];
+
+  [self openPasswordSettings];
+
+  [[EarlGrey selectElementWithMatcher:Entry(@"https://example.com, user")]
+      performAction:grey_tap()];
+
+  // Tap the Delete... button.
+  [[[EarlGrey selectElementWithMatcher:DeleteButton()]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
+                                                  kScrollAmount)
+      onElementWithMatcher:grey_accessibilityID(
+                               @"PasswordDetailsCollectionViewController")]
+      performAction:grey_tap()];
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+
+  // Check that the current view is now the list view, by locating the header
+  // of the list of passwords.
+  [[EarlGrey selectElementWithMatcher:
+                 grey_allOf(grey_accessibilityLabel(l10n_util::GetNSString(
+                                IDS_PASSWORD_MANAGER_SHOW_PASSWORDS_TAB_TITLE)),
+                            grey_accessibilityTrait(UIAccessibilityTraitHeader),
+                            nullptr)] assertWithMatcher:grey_notNil()];
+
+// TODO(crbug.com/159166): Fix the list update and enable the last check.
+#if 0
+  // Also verify that the removed password is no longer in the list.
+  [[EarlGrey selectElementWithMatcher:Entry(@"https://example.com, user")]
+      assertWithMatcher:grey_nil()];
+#endif
+
   [self tapBackArrow];
   [self tapDone];
   [self clearPasswordStore];
