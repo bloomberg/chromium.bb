@@ -947,7 +947,8 @@
       },
       {
         "args": [
-          "--use-gpu-in-tests"
+          "--use-gpu-in-tests",
+          "--no-xvfb"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
