@@ -216,10 +216,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_SUPPORT_LEGACY_TILED_BITMAPS
 #endif
 
-#ifndef SK_SUPPORT_LEGACY_2PTCONICAL_GRADIENT
-#define SK_SUPPORT_LEGACY_2PTCONICAL_GRADIENT
-#endif
-
 ///////////////////////// Imported from BUILD.gn and skia_common.gypi
 
 /* In some places Skia can use static initializers for global initialization,
