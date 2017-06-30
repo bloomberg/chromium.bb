@@ -210,6 +210,8 @@ def FilteredQuery(opts, query):
 
     ret.append(cl)
 
+  if opts.sort == 'unsorted':
+    return ret
   if opts.sort == 'number':
     key = lambda x: int(x[opts.sort])
   else:
@@ -505,7 +507,8 @@ Actions:"""
                       help=('Gerrit (on borg) instance to query (default: %s)' %
                             (site_config.params.EXTERNAL_GOB_INSTANCE)))
   parser.add_argument('--sort', default='number',
-                      help='Key to sort on (number, project)')
+                      help='Key to sort on (number, project); use "unsorted" '
+                           'to disable')
   parser.add_argument('--raw', default=False, action='store_true',
                       help='Return raw results (suitable for scripting)')
   parser.add_argument('--json', default=False, action='store_true',
