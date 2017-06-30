@@ -28,14 +28,23 @@ void WriteToHostCacheOnNetworkThread(jlong jcontext_adapter,
   net::URLRequestContext* context =
       TestUtil::GetURLRequestContext(jcontext_adapter);
   net::HostCache* cache = context->host_resolver()->GetHostCache();
-  net::HostCache::Key key("host-cache-test-host",
-                          net::ADDRESS_FAMILY_UNSPECIFIED, 0);
+  const std::string hostname = "host-cache-test-host";
+
+  // Create multiple keys to ensure the test works in a variety of network
+  // conditions.
+  net::HostCache::Key key1(hostname, net::ADDRESS_FAMILY_UNSPECIFIED, 0);
+  net::HostCache::Key key2(
+      hostname, net::ADDRESS_FAMILY_IPV4,
+      net::HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6);
+
   net::IPAddress address;
   CHECK(address.AssignFromIPLiteral(address_string));
   net::AddressList address_list =
       net::AddressList::CreateFromIPAddress(address, 0);
   net::HostCache::Entry entry(net::OK, address_list);
-  cache->Set(key, entry, base::TimeTicks::Now(),
+  cache->Set(key1, entry, base::TimeTicks::Now(),
+             base::TimeDelta::FromSeconds(1));
+  cache->Set(key2, entry, base::TimeTicks::Now(),
              base::TimeDelta::FromSeconds(1));
 }
 }  // namespace
