@@ -86,7 +86,9 @@ class BoxPainterBase {
 
   struct FillLayerInfo {
     STACK_ALLOCATED();
+    WTF_MAKE_NONCOPYABLE(FillLayerInfo);
 
+   public:
     FillLayerInfo(const Document&,
                   const ComputedStyle&,
                   bool has_overflow_clip,
@@ -129,7 +131,7 @@ class BoxPainterBase {
       bool include_logical_right_edge);
   static FloatRoundedRect RoundedBorderRectForClip(
       const ComputedStyle&,
-      const FillLayerInfo,
+      const FillLayerInfo&,
       const FillLayer&,
       const LayoutRect&,
       BackgroundBleedAvoidance,
