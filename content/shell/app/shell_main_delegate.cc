@@ -166,7 +166,6 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
     }
 #endif
     command_line.AppendSwitch(cc::switches::kEnableGpuBenchmarking);
-    command_line.AppendSwitch(switches::kProcessPerTab);
     command_line.AppendSwitch(switches::kEnableLogging);
     command_line.AppendSwitch(switches::kAllowFileAccessFromFiles);
     // only default to a software GL if the flag isn't already specified.
