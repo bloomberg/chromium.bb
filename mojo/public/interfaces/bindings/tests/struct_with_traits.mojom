@@ -81,3 +81,9 @@ interface TraitsTestService {
 
   EchoUnionWithTraits(UnionWithTraits u) => (UnionWithTraits passed);
 };
+
+// Test that specifying default value for a typemapped enum field works.
+struct EnumWithTraitsContainer {
+  EnumWithTraits f_field = EnumWithTraits.VALUE_1;
+};
+

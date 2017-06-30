@@ -10,6 +10,7 @@
 #include <functional>
 #include <type_traits>
 
+#include "mojo/public/cpp/bindings/enum_traits.h"
 #include "mojo/public/cpp/bindings/interface_id.h"
 #include "mojo/public/cpp/bindings/lib/template_util.h"
 #include "mojo/public/cpp/system/core.h"
@@ -329,6 +330,14 @@ struct EnumHashImpl {
     return std::hash<UnderlyingType>()(static_cast<UnderlyingType>(input));
   }
 };
+
+template <typename MojomType, typename T>
+T ConvertEnumValue(MojomType input) {
+  T output;
+  bool result = EnumTraits<MojomType, T>::FromMojom(input, &output);
+  DCHECK(result);
+  return output;
+}
 
 }  // namespace internal
 }  // namespace mojo
