@@ -22133,7 +22133,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Records the source that requested showing the feedback app.</summary>
 </histogram>
 
-<histogram name="FileBrowser.ChangeDirectory" enum="FileManagerRootType">
+<histogram name="FileBrowser.ChangeDirectory.RootType" enum="FileManagerRootType">
   <owner>yamaguchi@chromium.com</owner>
   <summary>
     Chrome OS File Browser: Counts the number of directory-changed events,
