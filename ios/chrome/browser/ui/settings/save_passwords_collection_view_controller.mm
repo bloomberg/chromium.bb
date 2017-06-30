@@ -581,6 +581,7 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
       break;
     }
   }
+  [self reloadData];
   [self.navigationController popViewControllerAnimated:YES];
 }
 

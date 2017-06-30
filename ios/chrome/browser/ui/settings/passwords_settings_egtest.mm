@@ -528,12 +528,10 @@ id<GREYMatcher> DeleteButton() {
                             grey_accessibilityTrait(UIAccessibilityTraitHeader),
                             nullptr)] assertWithMatcher:grey_notNil()];
 
-// TODO(crbug.com/159166): Fix the list update and enable the last check.
-#if 0
   // Also verify that the removed password is no longer in the list.
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
   [[EarlGrey selectElementWithMatcher:Entry(@"https://example.com, user")]
-      assertWithMatcher:grey_nil()];
-#endif
+      assertWithMatcher:grey_not(grey_sufficientlyVisible())];
 
   [self tapBackArrow];
   [self tapDone];
