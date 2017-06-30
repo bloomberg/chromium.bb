@@ -17,12 +17,11 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/sequenced_worker_pool_owner.h"
-#include "base/threading/thread.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/url_database.h"
 #include "components/history/core/test/history_service_test_util.h"
@@ -182,23 +181,18 @@ struct TestShortcutData shortcut_test_db[] = {
 class FakeAutocompleteProviderClient
     : public testing::NiceMock<MockAutocompleteProviderClient> {
  public:
-  FakeAutocompleteProviderClient()
-      : db_thread_("Test DB thread"), pool_owner_(3, "Background Pool") {
+  FakeAutocompleteProviderClient() : pool_owner_(3, "Background Pool") {
     set_template_url_service(base::MakeUnique<TemplateURLService>(nullptr, 0));
     if (history_dir_.CreateUniqueTempDir()) {
       history_service_ =
           history::CreateHistoryService(history_dir_.GetPath(), true);
     }
 
-    db_thread_.Start();
     shortcuts_backend_ = new ShortcutsBackend(
         GetTemplateURLService(), base::MakeUnique<SearchTermsData>(),
-        history_service_.get(), db_thread_.task_runner(), base::FilePath(),
-        true);
+        history_service_.get(), base::FilePath(), true);
     shortcuts_backend_->Init();
   }
-
-  ~FakeAutocompleteProviderClient() override { db_thread_.Stop(); }
 
   history::HistoryService* GetHistoryService() override {
     return history_service_.get();
@@ -213,7 +207,7 @@ class FakeAutocompleteProviderClient
   }
 
  private:
-  base::Thread db_thread_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::SequencedWorkerPoolOwner pool_owner_;
   base::ScopedTempDir history_dir_;
   std::unique_ptr<history::HistoryService> history_service_;
@@ -267,7 +261,6 @@ class ShortcutsProviderTest : public testing::Test {
                      const ShortcutsDatabase::Shortcut& shortcut,
                      int max_relevance);
 
-  base::MessageLoop message_loop_;
   std::unique_ptr<FakeAutocompleteProviderClient> client_;
   scoped_refptr<ShortcutsProvider> provider_;
 };
@@ -285,9 +278,6 @@ void ShortcutsProviderTest::SetUp() {
 }
 
 void ShortcutsProviderTest::TearDown() {
-  // Run all pending tasks or else some threads hold on to the message loop
-  // and prevent it from being deleted.
-  base::RunLoop().RunUntilIdle();
   provider_ = NULL;
 }
 

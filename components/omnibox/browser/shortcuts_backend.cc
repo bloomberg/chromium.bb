@@ -16,6 +16,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/omnibox/browser/autocomplete_input.h"
@@ -68,7 +69,6 @@ ShortcutsBackend::ShortcutsBackend(
     TemplateURLService* template_url_service,
     std::unique_ptr<SearchTermsData> search_terms_data,
     history::HistoryService* history_service,
-    scoped_refptr<base::SequencedTaskRunner> db_runner,
     base::FilePath database_path,
     bool suppress_db)
     : template_url_service_(template_url_service),
@@ -76,7 +76,9 @@ ShortcutsBackend::ShortcutsBackend(
       current_state_(NOT_INITIALIZED),
       history_service_observer_(this),
       main_runner_(base::ThreadTaskRunnerHandle::Get()),
-      db_runner_(db_runner),
+      db_runner_(base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
       no_db_access_(suppress_db) {
   if (!suppress_db)
     db_ = new ShortcutsDatabase(database_path);

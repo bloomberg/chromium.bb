@@ -17,7 +17,6 @@
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#include "ios/web/public/web_thread.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -34,7 +33,6 @@ scoped_refptr<ShortcutsBackend> CreateShortcutsBackend(
       base::MakeUnique<ios::UIThreadSearchTermsData>(browser_state),
       ios::HistoryServiceFactory::GetForBrowserState(
           browser_state, ServiceAccessType::EXPLICIT_ACCESS),
-      web::WebThread::GetTaskRunnerForThread(web::WebThread::DB),
       browser_state->GetStatePath().Append(kShortcutsDatabaseName),
       suppress_db));
   return shortcuts_backend->Init() ? shortcuts_backend : nullptr;

@@ -54,7 +54,6 @@ class ShortcutsBackend : public RefcountedKeyedService,
   ShortcutsBackend(TemplateURLService* template_url_service,
                    std::unique_ptr<SearchTermsData> search_terms_data,
                    history::HistoryService* history_service,
-                   scoped_refptr<base::SequencedTaskRunner> db_runner,
                    base::FilePath database_path,
                    bool suppress_db);
 
