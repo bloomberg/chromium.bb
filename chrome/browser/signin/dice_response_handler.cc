@@ -15,12 +15,15 @@
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_header_helper.h"
+#include "components/signin/core/browser/signin_manager.h"
+#include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -52,6 +55,7 @@ class DiceResponseHandlerFactory : public BrowserContextKeyedServiceFactory {
     DependsOn(AccountTrackerServiceFactory::GetInstance());
     DependsOn(ChromeSigninClientFactory::GetInstance());
     DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
+    DependsOn(SigninManagerFactory::GetInstance());
   }
 
   ~DiceResponseHandlerFactory() override {}
@@ -65,6 +69,7 @@ class DiceResponseHandlerFactory : public BrowserContextKeyedServiceFactory {
     Profile* profile = static_cast<Profile*>(context);
     return new DiceResponseHandler(
         ChromeSigninClientFactory::GetForProfile(profile),
+        SigninManagerFactory::GetForProfile(profile),
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
         AccountTrackerServiceFactory::GetForProfile(profile));
   }
@@ -137,12 +142,15 @@ DiceResponseHandler* DiceResponseHandler::GetForProfile(Profile* profile) {
 
 DiceResponseHandler::DiceResponseHandler(
     SigninClient* signin_client,
+    SigninManager* signin_manager,
     ProfileOAuth2TokenService* profile_oauth2_token_service,
     AccountTrackerService* account_tracker_service)
-    : signin_client_(signin_client),
+    : signin_manager_(signin_manager),
+      signin_client_(signin_client),
       token_service_(profile_oauth2_token_service),
       account_tracker_service_(account_tracker_service) {
   DCHECK(signin_client_);
+  DCHECK(signin_manager_);
   DCHECK(token_service_);
   DCHECK(account_tracker_service_);
 }
@@ -156,13 +164,19 @@ void DiceResponseHandler::ProcessDiceHeader(
 
   switch (dice_params.user_intention) {
     case signin::DiceAction::SIGNIN:
-      ProcessDiceSigninHeader(dice_params.gaia_id, dice_params.email,
-                              dice_params.authorization_code);
+      ProcessDiceSigninHeader(dice_params.signin_info.gaia_id,
+                              dice_params.signin_info.email,
+                              dice_params.signin_info.authorization_code);
       return;
-    case signin::DiceAction::SIGNOUT:
-    case signin::DiceAction::SINGLE_SESSION_SIGNOUT:
-      LOG(ERROR) << "Signout through Dice is not implemented.";
+    case signin::DiceAction::SIGNOUT: {
+      const signin::DiceResponseParams::SignoutInfo& signout_info =
+          dice_params.signout_info;
+      DCHECK_GT(signout_info.gaia_id.size(), 0u);
+      DCHECK_EQ(signout_info.gaia_id.size(), signout_info.email.size());
+      DCHECK_EQ(signout_info.gaia_id.size(), signout_info.session_index.size());
+      ProcessDiceSignoutHeader(signout_info.gaia_id, signout_info.email);
       return;
+    }
     case signin::DiceAction::NONE:
       NOTREACHED() << "Invalid Dice response parameters.";
       return;
@@ -195,6 +209,34 @@ void DiceResponseHandler::ProcessDiceSigninHeader(
       gaia_id, email, authorization_code, signin_client_, this));
 }
 
+void DiceResponseHandler::ProcessDiceSignoutHeader(
+    const std::vector<std::string>& gaia_ids,
+    const std::vector<std::string>& emails) {
+  DCHECK_EQ(gaia_ids.size(), emails.size());
+  // If one of the signed out accounts is the main Chrome account, then force a
+  // complete signout. Otherwise simply revoke the corresponding tokens.
+  std::string current_account = signin_manager_->GetAuthenticatedAccountId();
+  std::vector<std::string> signed_out_accounts;
+  for (unsigned int i = 0; i < gaia_ids.size(); ++i) {
+    std::string signed_out_account =
+        account_tracker_service_->PickAccountIdForAccount(gaia_ids[i],
+                                                          emails[i]);
+    if (signed_out_account == current_account) {
+      VLOG(1) << "[Dice] Signing out all accounts.";
+      signin_manager_->SignOut(signin_metrics::SERVER_FORCED_DISABLE,
+                               signin_metrics::SignoutDelete::IGNORE_METRIC);
+      return;
+    } else {
+      signed_out_accounts.push_back(signed_out_account);
+    }
+  }
+
+  for (const auto& account : signed_out_accounts) {
+    VLOG(1) << "[Dice]: Revoking token for account: " << account;
+    token_service_->RevokeCredentials(account);
+  }
+}
+
 void DiceResponseHandler::DeleteTokenFetcher(DiceTokenFetcher* token_fetcher) {
   for (auto it = token_fetchers_.begin(); it != token_fetchers_.end(); ++it) {
     if (it->get() == token_fetcher) {
@@ -212,7 +254,7 @@ void DiceResponseHandler::OnTokenExchangeSuccess(
     const GaiaAuthConsumer::ClientOAuthResult& result) {
   std::string account_id =
       account_tracker_service_->SeedAccountInfo(gaia_id, email);
-  VLOG(1) << "Dice OAuth success for account: " << account_id;
+  VLOG(1) << "[Dice] OAuth success for account: " << account_id;
   token_service_->UpdateCredentials(account_id, result.refresh_token);
   DeleteTokenFetcher(token_fetcher);
 }
@@ -221,6 +263,6 @@ void DiceResponseHandler::OnTokenExchangeFailure(
     DiceTokenFetcher* token_fetcher,
     const GoogleServiceAuthError& error) {
   // TODO(droger): Handle authentication errors.
-  VLOG(1) << "Dice OAuth failed with error: " << error.ToString();
+  VLOG(1) << "[Dice] OAuth failed with error: " << error.ToString();
   DeleteTokenFetcher(token_fetcher);
 }

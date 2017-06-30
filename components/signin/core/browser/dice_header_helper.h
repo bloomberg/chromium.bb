@@ -21,7 +21,12 @@ class DiceHeaderHelper : public SigninHeaderHelper {
 
   // Returns the parameters contained in the X-Chrome-ID-Consistency-Response
   // response header.
-  static DiceResponseParams BuildDiceResponseParams(
+  static DiceResponseParams BuildDiceSigninResponseParams(
+      const std::string& header_value);
+
+  // Returns the parameters contained in the Google-Accounts-SignOut response
+  // header.
+  static DiceResponseParams BuildDiceSignoutResponseParams(
       const std::string& header_value);
 
   // Returns the header value for Dice requests. Returns the empty string when

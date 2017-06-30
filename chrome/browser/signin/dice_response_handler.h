@@ -22,6 +22,7 @@ class AccountTrackerService;
 class GaiaAuthFetcher;
 class GoogleServiceAuthError;
 class SigninClient;
+class SigninManager;
 class ProfileOAuth2TokenService;
 class Profile;
 
@@ -36,6 +37,7 @@ class DiceResponseHandler : public KeyedService {
   static DiceResponseHandler* GetForProfile(Profile* profile);
 
   DiceResponseHandler(SigninClient* signin_client,
+                      SigninManager* signin_manager,
                       ProfileOAuth2TokenService* profile_oauth2_token_service,
                       AccountTrackerService* account_tracker_service);
   ~DiceResponseHandler() override;
@@ -90,6 +92,10 @@ class DiceResponseHandler : public KeyedService {
                                const std::string& email,
                                const std::string& authorization_code);
 
+  // Process the Dice signout action.
+  void ProcessDiceSignoutHeader(const std::vector<std::string>& gaia_ids,
+                                const std::vector<std::string>& emails);
+
   // Called after exchanging an OAuth 2.0 authorization code for a refresh token
   // after DiceAction::SIGNIN.
   void OnTokenExchangeSuccess(
@@ -100,6 +106,7 @@ class DiceResponseHandler : public KeyedService {
   void OnTokenExchangeFailure(DiceTokenFetcher* token_fetcher,
                               const GoogleServiceAuthError& error);
 
+  SigninManager* signin_manager_;
   SigninClient* signin_client_;
   ProfileOAuth2TokenService* token_service_;
   AccountTrackerService* account_tracker_service_;

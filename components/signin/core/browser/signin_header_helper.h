@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "components/signin/core/common/signin_features.h"
 #include "url/gurl.h"
@@ -50,7 +51,6 @@ enum class DiceAction {
   NONE,
   SIGNIN,                 // Sign in an account.
   SIGNOUT,                // Sign out of all sessions.
-  SINGLE_SESSION_SIGNOUT  // Sign out of a single session.
 };
 
 // Struct describing the parameters received in the manage account header.
@@ -73,27 +73,43 @@ struct ManageAccountsParams {
 
 // Struct describing the parameters received in the Dice response header.
 struct DiceResponseParams {
+  struct SigninInfo {
+    SigninInfo();
+    SigninInfo(const SigninInfo&);
+    ~SigninInfo();
+    // Gaia ID of the account signed in.
+    std::string gaia_id;
+    // Email of the account signed in.
+    std::string email;
+    // Session index for the account signed in.
+    int session_index;
+    // Authorization code to fetch a refresh token.
+    std::string authorization_code;
+  };
+
+  struct SignoutInfo {
+    SignoutInfo();
+    SignoutInfo(const SignoutInfo&);
+    ~SignoutInfo();
+    // Gaia IDs of the accounts signed out.
+    std::vector<std::string> gaia_id;
+    // Emails of the accounts signed out.
+    std::vector<std::string> email;
+    // Session indices for the accounts signed out.
+    std::vector<int> session_index;
+  };
+
   DiceResponseParams();
   ~DiceResponseParams();
   DiceResponseParams(const DiceResponseParams& other);
 
   DiceAction user_intention;
 
-  // Gaia ID of the account signed in or signed out (which may be a secondary
-  // account). When |user_intention| is SIGNOUT, this is the ID of the primary
-  // account.
-  std::string gaia_id;
+  // Populated when |user_intention| is SIGNIN.
+  SigninInfo signin_info;
 
-  // Email of the account signed in or signed out. When |user_intention| is
-  // SIGNOUT, this is the email of the primary account.
-  std::string email;
-
-  // Session index for the account signed in or signed out. When
-  // |user_intention| is SIGNOUT, this is 0.
-  int session_index;
-
-  // Optional. Must be set when |user_intention| is SIGNIN.
-  std::string authorization_code;
+  // Populated when |user_intention| is SIGNOUT.
+  SignoutInfo signout_info;
 };
 
 // Base class for managing the signin headers (Dice and Chrome-Connected).
@@ -116,7 +132,7 @@ class SigninHeaderHelper {
   virtual ~SigninHeaderHelper() {}
 
   // Dictionary of fields in a account consistency response header.
-  using ResponseHeaderDictionary = std::map<std::string, std::string>;
+  using ResponseHeaderDictionary = std::multimap<std::string, std::string>;
 
   // Parses the account consistency response header. Its expected format is
   // "key1=value1,key2=value2,...".
@@ -160,7 +176,15 @@ ManageAccountsParams BuildManageAccountsParams(const std::string& header_value);
 // response header.
 // Returns DiceAction::NONE in case of error (such as missing or malformed
 // parameters).
-DiceResponseParams BuildDiceResponseParams(const std::string& header_value);
+DiceResponseParams BuildDiceSigninResponseParams(
+    const std::string& header_value);
+
+// Returns the parameters contained in the Google-Accounts-SignOut response
+// header.
+// Returns DiceAction::NONE in case of error (such as missing or malformed
+// parameters).
+DiceResponseParams BuildDiceSignoutResponseParams(
+    const std::string& header_value);
 #endif
 
 }  // namespace signin

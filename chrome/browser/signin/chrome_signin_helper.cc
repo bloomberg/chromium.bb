@@ -43,6 +43,7 @@ const char kChromeManageAccountsHeader[] = "X-Chrome-Manage-Accounts";
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 const char kDiceResponseHeader[] = "X-Chrome-ID-Consistency-Response";
+const char kGoogleSignoutResponseHeader[] = "Google-Accounts-SignOut";
 #endif
 
 // Processes the mirror response header on the UI thread. Currently depending
@@ -212,12 +213,15 @@ void ProcessDiceResponseHeaderIfExists(
     return;
 
   std::string header_value;
-  if (!response_headers->GetNormalizedHeader(kDiceResponseHeader,
-                                             &header_value)) {
-    return;
+  DiceResponseParams params;
+  if (response_headers->GetNormalizedHeader(kDiceResponseHeader,
+                                            &header_value)) {
+    params = BuildDiceSigninResponseParams(header_value);
+  } else if (response_headers->GetNormalizedHeader(kGoogleSignoutResponseHeader,
+                                                   &header_value)) {
+    params = BuildDiceSignoutResponseParams(header_value);
   }
 
-  DiceResponseParams params = BuildDiceResponseParams(header_value);
   // If the request does not have a response header or if the header contains
   // garbage, then |user_intention| is set to |NONE|.
   if (params.user_intention == DiceAction::NONE)
@@ -282,15 +286,13 @@ void ProcessAccountConsistencyResponseHeaders(
     // show the profile avatar bubble so that user can complete signin/out
     // action the native UI.
     ProcessMirrorResponseHeaderIfExists(request, io_data, web_contents_getter);
-  } else {
-    // This is a redirect.
+  }
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-    // Process the Dice header: on sign-in, exchange the authorization code for
-    // a refresh token, on sign-out just follow the sign-out URL.
-    ProcessDiceResponseHeaderIfExists(request, io_data, web_contents_getter);
+  // Process the Dice header: on sign-in, exchange the authorization code for a
+  // refresh token, on sign-out just follow the sign-out URL.
+  ProcessDiceResponseHeaderIfExists(request, io_data, web_contents_getter);
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
-  }
 }
 
 }  // namespace signin
