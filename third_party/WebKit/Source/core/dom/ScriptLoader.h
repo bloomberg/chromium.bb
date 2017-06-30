@@ -78,8 +78,6 @@ class CORE_EXPORT ScriptLoader : public PendingScriptClient,
                          TextPosition::MinimumPosition(),
                      LegacyTypeSupport = kDisallowLegacyTypeInTypeAttribute);
 
-  String ScriptContent() const;
-
   // Creates a PendingScript for external script whose fetch is started in
   // FetchClassicScript()/FetchModuleScriptTree().
   PendingScript* CreatePendingScript();

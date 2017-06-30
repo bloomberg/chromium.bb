@@ -171,10 +171,6 @@ String HTMLScriptElement::TextFromChildren() {
   return Element::TextFromChildren();
 }
 
-String HTMLScriptElement::TextContent() const {
-  return Element::textContent();
-}
-
 bool HTMLScriptElement::AsyncAttributeValue() const {
   return FastHasAttribute(asyncAttr);
 }

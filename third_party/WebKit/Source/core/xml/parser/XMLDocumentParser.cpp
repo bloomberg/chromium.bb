@@ -1135,8 +1135,8 @@ void XMLDocumentParser::EndElementNs() {
     if (script_loader->ReadyToBeParserExecuted()) {
       // 5th Clause, Step 23 of https://html.spec.whatwg.org/#prepare-a-script
       switch (script_loader->ExecuteScript(ClassicScript::Create(
-          ScriptSourceCode(script_loader->ScriptContent(), GetDocument()->Url(),
-                           script_start_position_)))) {
+          ScriptSourceCode(script_element_base->TextFromChildren(),
+                           GetDocument()->Url(), script_start_position_)))) {
         case ScriptLoader::ExecuteScriptResult::kShouldFireErrorEvent:
           script_loader->DispatchErrorEvent();
           return;
