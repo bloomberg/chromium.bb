@@ -62,26 +62,38 @@ Otherwise, file a bug (TODO: [Make this template automatic](https://github.com/c
 >
 > Debugging size regressions is documented at:
 > https://chromium.googlesource.com/chromium/src/+/master/docs/speed/apk_size_regressions.md#Debugging-Apk-Size-Increase
+>
+> Based on the graph: **20kb of native code, 8kb of pngs.**
+>
+> _**Option 1:**_
+>
+> It looks to me that the size increase is expected.<br>
+> Feel free to close as "Won't Fix" unless you can see some way to reduce size.
+>
+> _**Option 2:**_
+>
+> It looks like this increase was probably unexpected or might be avoidable.<br>
+> Please have a look and either:
+>
+> 1. Close as "Won't Fix" with a short justification, or
+> 2. Land a revert / fix-up.
+>
+> _**Option 3:**_
+>
+> It's not clear to me whether or not this increase was expected.<br>
+> Please have a look and either:
+>
+> 1. Close as "Won't Fix" with a short justification, or
+> 2. Land a revert / fix-up.
 
-Optional, but encouraged: In a follow-up comment, provide some analysis:
+*If you went with **Option 2**, and the regression is > 50kb, add
+ReleaseBlock-Stable **M-6-** (next branch cut).*
 
-> Based on the graph: 20kb of native code, 8kb of pngs.
->
-> **Optional:**
->
-> It looks to me that the size increase is expected. Feel free to close as
-> "Won't Fix", unless you can see some way to reduce size.
->
-> **Optional:**
->
-> It looks like there is something that could be done to reduce the size
-> here. Adding ReleaseBlock-Stable.
+Once the initial bug is filed, add a follow-up comment with the output of:
 
-And if you really feel like it, run:
 ``` sh
 tools/binary_size/diagnose_bloat.py GIT_REV --cloud
 ```
- * Paste relevant output into the bug.
 
 # Debugging Apk Size Increase
 
