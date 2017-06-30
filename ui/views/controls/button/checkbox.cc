@@ -16,7 +16,6 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_ripple.h"
-#include "ui/views/animation/square_ink_drop_ripple.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/painter.h"
 #include "ui/views/resources/grit/views_resources.h"
@@ -146,23 +145,19 @@ std::unique_ptr<InkDrop> Checkbox::CreateInkDrop() {
   // Completely removes the highlight.
   std::unique_ptr<InkDropImpl> ink_drop = CreateDefaultInkDropImpl();
   ink_drop->SetShowHighlightOnHover(false);
-  ink_drop->SetAutoHighlightMode(views::InkDropImpl::AutoHighlightMode::NONE);
+  ink_drop->SetAutoHighlightMode(InkDropImpl::AutoHighlightMode::NONE);
   return ink_drop;
 }
 
 std::unique_ptr<InkDropRipple> Checkbox::CreateInkDropRipple() const {
   // The "small" size is 21dp, the large size is 1.33 * 21dp = 28dp.
-  const gfx::Size size(21, 21);
-  std::unique_ptr<InkDropRipple> ripple(new SquareInkDropRipple(
-      CalculateLargeInkDropSize(size), kInkDropLargeCornerRadius, size,
-      kInkDropSmallCornerRadius, image()->GetMirroredBounds().CenterPoint(),
-      GetInkDropBaseColor(), ink_drop_visible_opacity()));
-  return ripple;
+  return CreateDefaultInkDropRipple(image()->GetMirroredBounds().CenterPoint(),
+                                    gfx::Size(21, 21));
 }
 
 SkColor Checkbox::GetInkDropBaseColor() const {
   return GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_ButtonEnabledColor);
+      ui::NativeTheme::kColorId_LabelEnabledColor);
 }
 
 void Checkbox::PaintButtonContents(gfx::Canvas* canvas) {
@@ -187,7 +182,7 @@ gfx::ImageSkia Checkbox::GetImage(ButtonState for_state) const {
         // When not checked, the icon color matches the button text color.
         GetNativeTheme()->GetSystemColor(
             checked_ ? ui::NativeTheme::kColorId_FocusedBorderColor
-                     : ui::NativeTheme::kColorId_ButtonEnabledColor));
+                     : ui::NativeTheme::kColorId_LabelEnabledColor));
   }
 
   const size_t checked_index = checked_ ? 1 : 0;
