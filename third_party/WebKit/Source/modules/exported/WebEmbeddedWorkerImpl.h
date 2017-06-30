@@ -47,6 +47,7 @@ namespace blink {
 
 class ThreadableLoadingContext;
 class ServiceWorkerGlobalScopeProxy;
+class ServiceWorkerInstalledScriptsManager;
 class WebLocalFrameBase;
 class WebView;
 class WorkerInspectorProxy;
@@ -110,6 +111,11 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final
   WebEmbeddedWorkerStartData worker_start_data_;
 
   std::unique_ptr<WebServiceWorkerContextClient> worker_context_client_;
+
+  // This is valid until the worker thread is created. After the worker thread
+  // is created, this is passed to the worker thread.
+  std::unique_ptr<ServiceWorkerInstalledScriptsManager>
+      installed_scripts_manager_;
 
   // This is kept until startWorkerContext is called, and then passed on
   // to WorkerContext.

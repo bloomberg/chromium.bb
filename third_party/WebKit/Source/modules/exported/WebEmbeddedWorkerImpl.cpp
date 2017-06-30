@@ -54,11 +54,13 @@
 #include "modules/serviceworkers/ServiceWorkerContainerClient.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeProxy.h"
+#include "modules/serviceworkers/ServiceWorkerInstalledScriptsManager.h"
 #include "modules/serviceworkers/ServiceWorkerThread.h"
 #include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
 #include "platform/heap/Handle.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/loader/fetch/SubstituteData.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "platform/network/ContentSecurityPolicyResponseHeaders.h"
@@ -98,6 +100,8 @@ WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(
     std::unique_ptr<WebServiceWorkerContextClient> client,
     std::unique_ptr<WebContentSettingsClient> content_settings_client)
     : worker_context_client_(std::move(client)),
+      installed_scripts_manager_(
+          WTF::MakeUnique<ServiceWorkerInstalledScriptsManager>()),
       content_settings_client_(std::move(content_settings_client)),
       worker_inspector_proxy_(WorkerInspectorProxy::Create()),
       web_view_(nullptr),
@@ -329,6 +333,23 @@ void WebEmbeddedWorkerImpl::DidFinishDocumentLoad() {
   loading_shadow_page_ = false;
   main_frame_->DataSource()->SetServiceWorkerNetworkProvider(
       worker_context_client_->CreateServiceWorkerNetworkProvider());
+
+  // Kickstart the worker before loading the script when the script has been
+  // installed.
+  if (installed_scripts_manager_->IsScriptInstalled(
+          worker_start_data_.script_url)) {
+    // TODO(shimazu): Move WorkerScriptLoaded to the correct place which is
+    // after InstalledScriptsManager::GetScriptData() called at
+    // WorkerThread::InitializeOnWorkerThread().
+    worker_context_client_->WorkerScriptLoaded();
+    if (pause_after_download_state_ == kDoPauseAfterDownload) {
+      pause_after_download_state_ = kIsPausedAfterDownload;
+      return;
+    }
+    StartWorkerThread();
+    return;
+  }
+
   main_script_loader_ = WorkerScriptLoader::Create();
   main_script_loader_->LoadAsynchronously(
       *main_frame_->GetFrame()->GetDocument(), worker_start_data_.script_url,
@@ -430,42 +451,53 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
                                       std::move(web_worker_fetch_context));
   }
 
-  // We need to set the CSP to both the shadow page's document and the
-  // ServiceWorkerGlobalScope.
-  document->InitContentSecurityPolicy(
-      main_script_loader_->ReleaseContentSecurityPolicy());
-  if (!main_script_loader_->GetReferrerPolicy().IsNull()) {
-    document->ParseAndSetReferrerPolicy(
-        main_script_loader_->GetReferrerPolicy());
-  }
-
-  KURL script_url = main_script_loader_->Url();
   WorkerThreadStartMode start_mode =
       worker_inspector_proxy_->WorkerStartMode(document);
   std::unique_ptr<WorkerSettings> worker_settings =
       WTF::WrapUnique(new WorkerSettings(document->GetSettings()));
-
   WorkerV8Settings worker_v8_settings = WorkerV8Settings::Default();
   worker_v8_settings.v8_cache_options_ =
       static_cast<V8CacheOptions>(worker_start_data_.v8_cache_options);
 
-  std::unique_ptr<WorkerThreadStartupData> startup_data =
-      WorkerThreadStartupData::Create(
-          script_url, worker_start_data_.user_agent,
-          main_script_loader_->SourceText(),
-          main_script_loader_->ReleaseCachedMetadata(), start_mode,
-          document->GetContentSecurityPolicy()->Headers().get(),
-          main_script_loader_->GetReferrerPolicy(), starter_origin,
-          worker_clients, main_script_loader_->ResponseAddressSpace(),
-          main_script_loader_->OriginTrialTokens(), std::move(worker_settings),
-          worker_v8_settings);
-
-  main_script_loader_.Clear();
+  std::unique_ptr<WorkerThreadStartupData> startup_data;
+  // |main_script_loader_| isn't created if the InstalledScriptsManager had the
+  // script.
+  if (main_script_loader_) {
+    // We need to set the CSP to both the shadow page's document and the
+    // ServiceWorkerGlobalScope.
+    document->InitContentSecurityPolicy(
+        main_script_loader_->ReleaseContentSecurityPolicy());
+    if (!main_script_loader_->GetReferrerPolicy().IsNull()) {
+      document->ParseAndSetReferrerPolicy(
+          main_script_loader_->GetReferrerPolicy());
+    }
+    startup_data = WorkerThreadStartupData::Create(
+        worker_start_data_.script_url, worker_start_data_.user_agent,
+        main_script_loader_->SourceText(),
+        main_script_loader_->ReleaseCachedMetadata(), start_mode,
+        document->GetContentSecurityPolicy()->Headers().get(),
+        main_script_loader_->GetReferrerPolicy(), starter_origin,
+        worker_clients, main_script_loader_->ResponseAddressSpace(),
+        main_script_loader_->OriginTrialTokens(), std::move(worker_settings),
+        worker_v8_settings);
+    main_script_loader_.Clear();
+  } else {
+    // TODO(shimazu): Set ContentSecurityPolicy, ReferrerPolicy to |document|
+    // before evaluating the main script.
+    startup_data = WorkerThreadStartupData::Create(
+        worker_start_data_.script_url, worker_start_data_.user_agent,
+        "" /* SourceText */, nullptr /* CachedMetadata */, start_mode,
+        nullptr /* ContentSecurityPolicy */, "" /* ReferrerPolicy */,
+        starter_origin, worker_clients, worker_start_data_.address_space,
+        nullptr /* OriginTrialTokens */, std::move(worker_settings),
+        worker_v8_settings);
+  }
 
   worker_global_scope_proxy_ =
       ServiceWorkerGlobalScopeProxy::Create(*this, *worker_context_client_);
   worker_thread_ = WTF::MakeUnique<ServiceWorkerThread>(
-      ThreadableLoadingContext::Create(*document), *worker_global_scope_proxy_);
+      ThreadableLoadingContext::Create(*document), *worker_global_scope_proxy_,
+      std::move(installed_scripts_manager_));
 
   // We have a dummy document here for loading but it doesn't really represent
   // the document/frame of associated document(s) for this worker. Here we
@@ -475,7 +507,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
                         ParentFrameTaskRunners::Create(nullptr));
 
   worker_inspector_proxy_->WorkerThreadCreated(document, worker_thread_.get(),
-                                               script_url);
+                                               worker_start_data_.script_url);
 }
 
 }  // namespace blink
