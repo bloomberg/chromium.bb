@@ -262,7 +262,6 @@ void RemoteMediaPlayerBridge::OnRouteAvailabilityChanged(
 // static
 bool RemoteMediaPlayerBridge::RegisterRemoteMediaPlayerBridge(JNIEnv* env) {
   bool ret = RegisterNativesImpl(env);
-  DCHECK(g_RemoteMediaPlayerBridge_clazz);
   return ret;
 }
 

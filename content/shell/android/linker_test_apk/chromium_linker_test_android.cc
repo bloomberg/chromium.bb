@@ -9,6 +9,7 @@
 #include "content/public/app/content_main.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/shell/android/linker_test_apk/chromium_linker_test_linker_tests.h"
+#include "content/shell/android/linker_test_apk/linker_test_jni_registration.h"
 #include "content/shell/android/shell_jni_registrar.h"
 #include "content/shell/app/shell_main_delegate.h"
 
@@ -40,6 +41,11 @@ bool NativeInit() {
 JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
   base::android::InitVM(vm);
   JNIEnv* env = base::android::AttachCurrentThread();
+  if (!RegisterMainDexNatives(env) || !RegisterNonMainDexNatives(env)) {
+    return -1;
+  }
+  // TODO(agrieve): Delete this block, this is a no-op now.
+  // https://crbug.com/683256.
   if (!content::android::OnJNIOnLoadRegisterJNI(env) || !RegisterJNI(env) ||
       !NativeInit()) {
     return -1;

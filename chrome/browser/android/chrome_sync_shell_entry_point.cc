@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,7 @@
 #include "base/android/library_loader/library_loader_hooks.h"
 #include "base/bind.h"
 #include "chrome/app/android/chrome_jni_onload.h"
-#include "chrome/browser/android/chrome_jni_registration.h"
+#include "chrome/browser/android/chrome_sync_shell_jni_registration.h"
 
 namespace {
 
