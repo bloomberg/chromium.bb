@@ -14,10 +14,6 @@ namespace media {
 
 namespace {
 
-const int kUseDefaultFade = -1;
-const int kMediaDuckFadeMs = 150;
-const int kMediaUnduckFadeMs = 700;
-
 class AudioSinkManagerInstance : public AudioSinkManager {
  public:
   AudioSinkManagerInstance() {}
@@ -32,8 +28,13 @@ base::LazyInstance<AudioSinkManagerInstance>::DestructorAtExit
 
 }  // namespace
 
-float AudioSinkManager::VolumeInfo::GetEffectiveVolume() {
-  return std::min(volume, limit);
+float AudioSinkManager::VolumeInfo::GetLimiterMultiplier() {
+  // Goal: multiplier * volume = min(volume, limit).
+  if (volume == 0)
+    return 0.0f;
+  if (volume < limit)
+    return 1.0f;
+  return limit / volume;
 }
 
 // static
@@ -52,16 +53,7 @@ void AudioSinkManager::Add(AudioSinkAndroid* sink) {
             << " type=" << sink->GetContentTypeName();
 
   base::AutoLock lock(lock_);
-
-  auto type = sink->content_type();
-  if (sink->primary()) {
-    sink->SetContentTypeVolume(volume_info_[type].GetEffectiveVolume(),
-                               kUseDefaultFade);
-  } else {
-    sink->SetContentTypeVolume(volume_info_[type].volume, kUseDefaultFade);
-  }
-  sink->SetMuted(volume_info_[type].muted);
-
+  UpdateLimiterMultiplier(sink);
   sinks_.push_back(sink);
 }
 
@@ -81,62 +73,38 @@ void AudioSinkManager::Remove(AudioSinkAndroid* sink) {
   sinks_.erase(it);
 }
 
-void AudioSinkManager::SetVolume(AudioContentType type, float level) {
-  LOG(INFO) << __func__ << ": level=" << level
-            << " type=" << GetAudioContentTypeName(type);
-
+void AudioSinkManager::SetTypeVolume(AudioContentType type, float level) {
+  LOG(INFO) << __func__ << ": Set volume for " << GetAudioContentTypeName(type)
+            << " to level=" << level;
   base::AutoLock lock(lock_);
-
   volume_info_[type].volume = level;
-  float effective_volume = volume_info_[type].GetEffectiveVolume();
-  for (auto* sink : sinks_) {
-    if (sink->content_type() != type) {
-      continue;
-    }
-    if (sink->primary()) {
-      sink->SetContentTypeVolume(effective_volume, kUseDefaultFade);
-    } else {
-      // Volume limits don't apply to effects streams.
-      sink->SetContentTypeVolume(level, kUseDefaultFade);
-    }
-  }
-}
-
-void AudioSinkManager::SetMuted(AudioContentType type, bool muted) {
-  base::AutoLock lock(lock_);
-
-  LOG(INFO) << __func__ << ": muted=" << muted
-            << " type=" << GetAudioContentTypeName(type);
-
-  volume_info_[type].muted = muted;
-  for (auto* sink : sinks_) {
-    if (sink->content_type() == type) {
-      sink->SetMuted(muted);
-    }
-  }
+  // Since the type volume changed we need to reflect that in the limiter
+  // multipliers.
+  UpdateAllLimiterMultipliers(type);
 }
 
 void AudioSinkManager::SetOutputLimit(AudioContentType type, float limit) {
   LOG(INFO) << __func__ << ": limit=" << limit
             << " type=" << GetAudioContentTypeName(type);
-
   base::AutoLock lock(lock_);
-
   volume_info_[type].limit = limit;
-  float effective_volume = volume_info_[type].GetEffectiveVolume();
-  int fade_ms = kUseDefaultFade;
-  if (type == AudioContentType::kMedia) {
-    if (limit >= 1.0f) {  // Unducking.
-      fade_ms = kMediaUnduckFadeMs;
-    } else {
-      fade_ms = kMediaDuckFadeMs;
-    }
-  }
+  UpdateAllLimiterMultipliers(type);
+}
+
+void AudioSinkManager::UpdateAllLimiterMultipliers(AudioContentType type) {
   for (auto* sink : sinks_) {
+    if (sink->content_type() == type)
+      UpdateLimiterMultiplier(sink);
+  }
+}
+
+void AudioSinkManager::UpdateLimiterMultiplier(AudioSinkAndroid* sink) {
+  AudioContentType type = sink->content_type();
+  if (sink->primary()) {
+    sink->SetLimiterVolumeMultiplier(volume_info_[type].GetLimiterMultiplier());
+  } else {
     // Volume limits don't apply to effects streams.
-    if (sink->primary() && sink->content_type() == type) {
-      sink->SetContentTypeVolume(effective_volume, fade_ms);
-    }
+    sink->SetLimiterVolumeMultiplier(1.0f);
   }
 }
 

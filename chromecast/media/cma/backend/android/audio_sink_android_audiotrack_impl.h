@@ -54,10 +54,10 @@ class AudioSinkAndroidAudioTrackImpl : public AudioSinkAndroid {
   // AudioSinkAndroid implementation
   void WritePcm(scoped_refptr<DecoderBufferBase> data) override;
   void SetPaused(bool paused) override;
-  void SetVolumeMultiplier(float multiplier) override;
-  void SetContentTypeVolume(float volume, int fade_ms) override;
-  void SetMuted(bool muted) override;
+  void SetStreamVolumeMultiplier(float multiplier) override;
+  void SetLimiterVolumeMultiplier(float multiplier) override;
   float EffectiveVolume() const override;
+
   // Getters
   int input_samples_per_second() const override;
   bool primary() const override;
@@ -113,11 +113,7 @@ class AudioSinkAndroidAudioTrackImpl : public AudioSinkAndroid {
   const AudioContentType content_type_;
 
   float stream_volume_multiplier_;
-  float type_volume_multiplier_;
-  float mute_volume_multiplier_;
-  // TODO(ckuiper): Use this to configure the fading logic in Android's audio
-  // subsystem.
-  int fade_ms_;
+  float limiter_volume_multiplier_;
 
   // Java AudioSinkAudioTrackImpl instance.
   base::android::ScopedJavaGlobalRef<jobject> j_audio_sink_audiotrack_impl_;

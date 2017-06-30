@@ -117,7 +117,7 @@ bool AudioDecoderAndroid::Start(int64_t start_pts) {
   DCHECK(IsValidConfig(config_));
   sink_.Reset(this, config_.samples_per_second, backend_->Primary(),
               backend_->DeviceId(), backend_->ContentType());
-  sink_->SetVolumeMultiplier(volume_multiplier_);
+  sink_->SetStreamVolumeMultiplier(volume_multiplier_);
   // Create decoder_ if necessary. This can happen if Stop() was called, and
   // SetConfig() was not called since then.
   if (!decoder_) {
@@ -264,7 +264,7 @@ bool AudioDecoderAndroid::SetConfig(const AudioConfig& config) {
     // is updated.
     sink_.Reset(this, config.samples_per_second, backend_->Primary(),
                 backend_->DeviceId(), backend_->ContentType());
-    sink_->SetVolumeMultiplier(volume_multiplier_);
+    sink_->SetStreamVolumeMultiplier(volume_multiplier_);
     pending_output_frames_ = kNoPendingOutput;
   }
 
@@ -321,7 +321,7 @@ bool AudioDecoderAndroid::SetVolume(float multiplier) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   volume_multiplier_ = multiplier;
   if (sink_)
-    sink_->SetVolumeMultiplier(volume_multiplier_);
+    sink_->SetStreamVolumeMultiplier(volume_multiplier_);
   return true;
 }
 

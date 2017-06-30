@@ -70,20 +70,19 @@ class AudioSinkAndroid {
   // Pauses/unpauses this input.
   virtual void SetPaused(bool paused) = 0;
 
-  // Sets the volume multiplier for this input. If |multiplier| is outside the
+  // Sets the stream volume multiplier for this input. If |multiplier| is
+  // outside the range [0.0, 1.0], it is clamped to that range.
+  // The stream volume is not set by the volume controller but rather by the
+  // Cast app as an additional volume control on top of Android's.
+  virtual void SetStreamVolumeMultiplier(float multiplier) = 0;
+
+  // Sets the limiter multiplier for this input. If |multiplier| is outside the
   // range [0.0, 1.0], it is clamped to that range.
-  virtual void SetVolumeMultiplier(float multiplier) = 0;
+  // The limiter is used by the volume controller to achieve ducking.
+  virtual void SetLimiterVolumeMultiplier(float multiplier) = 0;
 
-  // Sets the multiplier based on this stream's content type. The resulting
-  // output volume should be the content type volume * the per-stream volume
-  // multiplier. If |fade_ms| is >= 0, the volume change should be faded over
-  // that many milliseconds; otherwise, the default fade time should be used.
-  virtual void SetContentTypeVolume(float multiplier, int fade_ms) = 0;
-
-  // Sets whether or not this stream should be muted.
-  virtual void SetMuted(bool muted) = 0;
-
-  // Returns the volume multiplier of the stream.
+  // Returns the volume multiplier of the stream, typically the product of
+  // stream multiplier and limiter multiplier.
   virtual float EffectiveVolume() const = 0;
 
   // Getters

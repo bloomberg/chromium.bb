@@ -56,9 +56,7 @@ AudioSinkAndroidAudioTrackImpl::AudioSinkAndroidAudioTrackImpl(
       device_id_(device_id),
       content_type_(content_type),
       stream_volume_multiplier_(1.0f),
-      type_volume_multiplier_(1.0f),
-      mute_volume_multiplier_(1.0f),
-      fade_ms_(kDefaultSlewTimeMs),
+      limiter_volume_multiplier_(1.0f),
       feeder_thread_("AudioTrack feeder thread"),
       feeder_task_runner_(nullptr),
       caller_task_runner_(base::ThreadTaskRunnerHandle::Get()),
@@ -80,7 +78,8 @@ AudioSinkAndroidAudioTrackImpl::AudioSinkAndroidAudioTrackImpl(
           reinterpret_cast<intptr_t>(this)));
   Java_AudioSinkAudioTrackImpl_init(
       base::android::AttachCurrentThread(), j_audio_sink_audiotrack_impl_,
-      input_samples_per_second_, kDirectBufferSize);
+      static_cast<int>(content_type_), input_samples_per_second_,
+      kDirectBufferSize);
   // Should be set now.
   DCHECK(direct_pcm_buffer_address_);
   DCHECK(direct_rendering_delay_address_);
@@ -354,47 +353,30 @@ void AudioSinkAndroidAudioTrackImpl::UpdateVolume() {
                                          EffectiveVolume());
 }
 
-void AudioSinkAndroidAudioTrackImpl::SetVolumeMultiplier(float multiplier) {
-  RUN_ON_FEEDER_THREAD(SetVolumeMultiplier, multiplier);
+void AudioSinkAndroidAudioTrackImpl::SetStreamVolumeMultiplier(
+    float multiplier) {
+  RUN_ON_FEEDER_THREAD(SetStreamVolumeMultiplier, multiplier);
 
   stream_volume_multiplier_ = std::max(0.0f, std::min(multiplier, 1.0f));
   LOG(INFO) << __func__ << "(" << this << "): device_id_=" << device_id_
-            << " stream_multiplier=" << stream_volume_multiplier_ << " ("
-            << multiplier << ")"
+            << " stream_multiplier=" << stream_volume_multiplier_
             << " effective=" << EffectiveVolume();
   UpdateVolume();
 }
 
-void AudioSinkAndroidAudioTrackImpl::SetContentTypeVolume(float multiplier,
-                                                          int fade_ms) {
-  RUN_ON_FEEDER_THREAD(SetContentTypeVolume, multiplier, fade_ms);
+void AudioSinkAndroidAudioTrackImpl::SetLimiterVolumeMultiplier(
+    float multiplier) {
+  RUN_ON_FEEDER_THREAD(SetLimiterVolumeMultiplier, multiplier);
 
-  type_volume_multiplier_ = std::max(0.0f, std::min(multiplier, 1.0f));
+  limiter_volume_multiplier_ = std::max(0.0f, std::min(multiplier, 1.0f));
   LOG(INFO) << __func__ << "(" << this << "): device_id_=" << device_id_
-            << " type_multiplier=" << type_volume_multiplier_ << " ("
-            << multiplier << ")"
-            << " effective=" << EffectiveVolume();
-  if (fade_ms < 0) {
-    fade_ms = kDefaultSlewTimeMs;
-  }
-  fade_ms_ = fade_ms;
-  LOG(INFO) << "Fade over " << fade_ms_ << " ms";
-  UpdateVolume();
-}
-
-void AudioSinkAndroidAudioTrackImpl::SetMuted(bool muted) {
-  RUN_ON_FEEDER_THREAD(SetMuted, muted);
-
-  mute_volume_multiplier_ = muted ? 0.0f : 1.0f;
-  LOG(INFO) << __func__ << "(" << this << "): device_id_=" << device_id_
-            << " mute_multiplier=" << mute_volume_multiplier_
+            << " limiter_multiplier=" << limiter_volume_multiplier_
             << " effective=" << EffectiveVolume();
   UpdateVolume();
 }
 
 float AudioSinkAndroidAudioTrackImpl::EffectiveVolume() const {
-  return stream_volume_multiplier_ * type_volume_multiplier_ *
-         mute_volume_multiplier_;
+  return stream_volume_multiplier_ * limiter_volume_multiplier_;
 }
 
 }  // namespace media

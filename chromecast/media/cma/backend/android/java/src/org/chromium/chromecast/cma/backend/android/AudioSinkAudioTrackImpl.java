@@ -11,6 +11,7 @@ import android.media.AudioTimestamp;
 import android.media.AudioTrack;
 import android.os.Build;
 import android.os.SystemClock;
+import android.util.SparseIntArray;
 
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
@@ -46,8 +47,16 @@ class AudioSinkAudioTrackImpl {
     private static final String TAG = "AudiotrackImpl";
     private static final int DEBUG_LEVEL = 0;
 
-    // hardcoded AudioTrack config parameters
-    private static final int STREAM_TYPE = AudioManager.STREAM_MUSIC;
+    // Mapping from Android's stream_type to Cast's AudioContentType (used for callback).
+    private static final SparseIntArray CAST_TYPE_TO_ANDROID_TYPE_MAP = new SparseIntArray(3) {
+        {
+            append(AudioContentType.MEDIA, AudioManager.STREAM_MUSIC);
+            append(AudioContentType.ALARM, AudioManager.STREAM_ALARM);
+            append(AudioContentType.COMMUNICATION, AudioManager.STREAM_SYSTEM);
+        }
+    };
+
+    // Hardcoded AudioTrack config parameters.
     private static final int CHANNEL_CONFIG = AudioFormat.CHANNEL_OUT_STEREO;
     private static final int AUDIO_FORMAT = AudioFormat.ENCODING_PCM_FLOAT;
     private static final int AUDIO_MODE = AudioTrack.MODE_STREAM;
@@ -118,7 +127,8 @@ class AudioSinkAudioTrackImpl {
      * the shared memory buffers.
      */
     @CalledByNative
-    private void init(int sampleRateInHz, int bytesPerBuffer) {
+    private void init(
+            @AudioContentType int castContentType, int sampleRateInHz, int bytesPerBuffer) {
         Log.i(TAG,
                 "Init:"
                         + " sampleRateInHz=" + sampleRateInHz
@@ -139,9 +149,10 @@ class AudioSinkAudioTrackImpl {
         // similar.
         int bufferSizeInBytes =
                 5 * AudioTrack.getMinBufferSize(mSampleRateInHz, CHANNEL_CONFIG, AUDIO_FORMAT);
-        Log.i(TAG, "Init: using an AudioTrack buffer_size=" + bufferSizeInBytes);
-
-        mAudioTrack = new AudioTrack(STREAM_TYPE, mSampleRateInHz, CHANNEL_CONFIG, AUDIO_FORMAT,
+        int streamType = CAST_TYPE_TO_ANDROID_TYPE_MAP.get(castContentType);
+        Log.i(TAG,
+                "Init: create an AudioTrack of size=" + bufferSizeInBytes + " type=" + streamType);
+        mAudioTrack = new AudioTrack(streamType, mSampleRateInHz, CHANNEL_CONFIG, AUDIO_FORMAT,
                 bufferSizeInBytes, AUDIO_MODE);
         mRefPointTStamp = new AudioTimestamp();
 
