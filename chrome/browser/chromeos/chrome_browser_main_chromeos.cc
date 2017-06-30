@@ -620,8 +620,6 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
   // will ensure that loading is aborted on early exit.
   bool load_oem_statistics = !StartupUtils::IsOobeCompleted();
   system::StatisticsProvider::GetInstance()->StartLoadingMachineStatistics(
-      content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::FILE),
       load_oem_statistics);
 
   base::FilePath downloads_directory;

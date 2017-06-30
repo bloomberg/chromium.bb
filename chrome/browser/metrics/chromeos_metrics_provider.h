@@ -66,8 +66,8 @@ class ChromeOSMetricsProvider : public metrics::MetricsProvider {
       metrics::ChromeUserMetricsExtension* uma_proto) override;
 
  private:
-  // Called on the FILE thread to load hardware class information.
-  void InitTaskGetHardwareClassOnFileThread();
+  // Called on a background thread to load hardware class information.
+  void InitTaskGetHardwareClassOnBackgroundThread();
 
   // Update the number of users logged into a multi-profile session.
   // If the number of users change while the log is open, the call invalidates

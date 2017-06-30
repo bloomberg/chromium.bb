@@ -22,9 +22,7 @@ class CHROMEOS_EXPORT FakeStatisticsProvider : public StatisticsProvider {
   ~FakeStatisticsProvider() override;
 
   // StatisticsProvider implementation:
-  void StartLoadingMachineStatistics(
-      const scoped_refptr<base::TaskRunner>& file_task_runner,
-      bool load_oem_manifest) override;
+  void StartLoadingMachineStatistics(bool load_oem_manifest) override;
   bool GetMachineStatistic(const std::string& name,
                            std::string* result) override;
   bool GetMachineFlag(const std::string& name, bool* result) override;

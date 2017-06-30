@@ -14,7 +14,6 @@ FakeStatisticsProvider::~FakeStatisticsProvider() {
 }
 
 void FakeStatisticsProvider::StartLoadingMachineStatistics(
-    const scoped_refptr<base::TaskRunner>& file_task_runner,
     bool load_oem_manifest) {
 }
 
