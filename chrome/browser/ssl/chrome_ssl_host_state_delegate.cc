@@ -431,7 +431,7 @@ void ChromeSSLHostStateDelegate::RevokeUserAllowExceptionsHard(
   scoped_refptr<net::URLRequestContextGetter> getter(
       profile_->GetRequestContext());
   getter->GetNetworkTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&CloseIdleConnections, getter));
+      FROM_HERE, base::BindOnce(&CloseIdleConnections, getter));
 }
 
 bool ChromeSSLHostStateDelegate::HasAllowException(

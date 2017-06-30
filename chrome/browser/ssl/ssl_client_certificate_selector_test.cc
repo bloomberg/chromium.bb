@@ -41,10 +41,9 @@ void SSLClientCertificateSelectorTestBase::SetUpOnMainThread() {
   url_request_context_getter_ = browser()->profile()->GetRequestContext();
 
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&SSLClientCertificateSelectorTestBase::SetUpOnIOThread,
-                 base::Unretained(this)));
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&SSLClientCertificateSelectorTestBase::SetUpOnIOThread,
+                     base::Unretained(this)));
 
   io_loop_finished_event_.Wait();
 
@@ -56,10 +55,9 @@ void SSLClientCertificateSelectorTestBase::SetUpOnMainThread() {
 // it to be destroyed while the Browser and its IO thread still exist.
 void SSLClientCertificateSelectorTestBase::TearDownOnMainThread() {
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&SSLClientCertificateSelectorTestBase::TearDownOnIOThread,
-                 base::Unretained(this)));
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&SSLClientCertificateSelectorTestBase::TearDownOnIOThread,
+                     base::Unretained(this)));
 
   io_loop_finished_event_.Wait();
 

@@ -838,8 +838,8 @@ class PKPModelClientTest : public SecurityStateTabHelperTest {
     url_request_context_getter_ = browser()->profile()->GetRequestContext();
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&PKPModelClientTest::SetUpOnIOThread,
-                   base::Unretained(this)));
+        base::BindOnce(&PKPModelClientTest::SetUpOnIOThread,
+                       base::Unretained(this)));
   }
 
   void SetUpOnIOThread() {
@@ -953,8 +953,8 @@ class SecurityStateLoadingTest : public SecurityStateTabHelperTest {
 
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&InstallLoadingInterceptor,
-                   embedded_test_server()->GetURL("/title1.html").host()));
+        base::BindOnce(&InstallLoadingInterceptor,
+                       embedded_test_server()->GetURL("/title1.html").host()));
   }
 
  private:
@@ -2088,7 +2088,7 @@ class BrowserTestNonsecureURLRequest : public InProcessBrowserTest {
     serve_file = serve_file.Append(FILE_PATH_LITERAL("title1.html"));
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&AddNonsecureUrlHandler, serve_file, cert_));
+        base::BindOnce(&AddNonsecureUrlHandler, serve_file, cert_));
   }
 
  private:
