@@ -9,6 +9,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "ash/shutdown_reason.h"
 #include "ash/system/audio/tray_audio.h"
 #include "ash/system/power/tablet_power_button_controller.h"
 #include "ash/system/tray/system_tray.h"
@@ -103,9 +104,9 @@ void PowerButtonController::OnPowerButtonEvent(
       if (session_controller->CanLockScreen() &&
           !session_controller->IsUserSessionBlocked() &&
           !lock_state_controller_->LockRequested()) {
-        lock_state_controller_->StartLockAnimationAndLockImmediately(false);
+        lock_state_controller_->StartLockAnimationAndLockImmediately();
       } else {
-        lock_state_controller_->RequestShutdown();
+        lock_state_controller_->RequestShutdown(ShutdownReason::POWER_BUTTON);
       }
     }
   } else {  // !has_legacy_power_button_
@@ -116,9 +117,11 @@ void PowerButtonController::OnPowerButtonEvent(
 
       if (session_controller->CanLockScreen() &&
           !session_controller->IsUserSessionBlocked()) {
-        lock_state_controller_->StartLockAnimation(true);
+        lock_state_controller_->StartLockThenShutdownAnimation(
+            ShutdownReason::POWER_BUTTON);
       } else {
-        lock_state_controller_->StartShutdownAnimation();
+        lock_state_controller_->StartShutdownAnimation(
+            ShutdownReason::POWER_BUTTON);
       }
     } else {  // Button is up.
       if (lock_state_controller_->CanCancelLockAnimation())
@@ -148,7 +151,7 @@ void PowerButtonController::OnLockButtonEvent(
     return;
 
   if (down)
-    lock_state_controller_->StartLockAnimation(false);
+    lock_state_controller_->StartLockAnimation();
   else
     lock_state_controller_->CancelLockAnimation();
 }

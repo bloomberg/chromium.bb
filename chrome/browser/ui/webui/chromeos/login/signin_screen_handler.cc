@@ -13,6 +13,7 @@
 #include "ash/public/interfaces/tray_action.mojom.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
+#include "ash/shutdown_reason.h"
 #include "ash/system/devicetype_utils.h"
 #include "ash/wm/lock_state_controller.h"
 #include "base/bind.h"
@@ -1184,7 +1185,8 @@ void SigninScreenHandler::HandleOfflineLogin(const base::ListValue* args) {
 }
 
 void SigninScreenHandler::HandleShutdownSystem() {
-  ash::Shell::Get()->lock_state_controller()->RequestShutdown();
+  ash::Shell::Get()->lock_state_controller()->RequestShutdown(
+      ash::ShutdownReason::LOGIN_SHUT_DOWN_BUTTON);
 }
 
 void SigninScreenHandler::HandleLoadWallpaper(const AccountId& account_id) {

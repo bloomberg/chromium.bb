@@ -13,6 +13,8 @@
 
 namespace ash {
 
+enum class ShutdownReason;
+
 // Handles actual device shutdown by making requests to powerd over D-Bus.
 // Caches the DeviceRebootOnShutdown device policy sent from Chrome over mojo.
 class ASH_EXPORT ShutdownController
@@ -26,7 +28,7 @@ class ASH_EXPORT ShutdownController
   // Shuts down or reboots based on the current DeviceRebootOnShutdown policy.
   // Does not trigger the shutdown fade-out animation. For animated shutdown
   // use ShellPort::RequestShutdown(). Virtual for testing.
-  virtual void ShutDownOrReboot();
+  virtual void ShutDownOrReboot(ShutdownReason reason);
 
   // Binds the mojom::ShutdownController interface request to this object.
   void BindRequest(mojom::ShutdownControllerRequest request);

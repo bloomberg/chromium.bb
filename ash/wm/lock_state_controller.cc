@@ -17,6 +17,7 @@
 #include "ash/shell_delegate.h"
 #include "ash/shell_port.h"
 #include "ash/shutdown_controller.h"
+#include "ash/shutdown_reason.h"
 #include "ash/wm/session_state_animator.h"
 #include "ash/wm/session_state_animator_impl.h"
 #include "base/bind.h"
@@ -87,24 +88,29 @@ LockStateController::~LockStateController() {
   Shell::GetPrimaryRootWindow()->GetHost()->RemoveObserver(this);
 }
 
-void LockStateController::StartLockAnimation(bool shutdown_after_lock) {
+void LockStateController::StartLockAnimation() {
   if (animating_lock_)
     return;
-  shutdown_after_lock_ = shutdown_after_lock;
   can_cancel_lock_animation_ = true;
 
   StartCancellablePreLockAnimation();
 }
 
-void LockStateController::StartShutdownAnimation() {
+void LockStateController::StartLockThenShutdownAnimation(
+    ShutdownReason shutdown_reason) {
+  shutdown_after_lock_ = true;
+  shutdown_reason_ = shutdown_reason;
+  StartLockAnimation();
+}
+
+void LockStateController::StartShutdownAnimation(ShutdownReason reason) {
+  shutdown_reason_ = reason;
   StartCancellableShutdownAnimation();
 }
 
-void LockStateController::StartLockAnimationAndLockImmediately(
-    bool shutdown_after_lock) {
+void LockStateController::StartLockAnimationAndLockImmediately() {
   if (animating_lock_)
     return;
-  shutdown_after_lock_ = shutdown_after_lock;
   StartImmediatePreLockAnimation(true /* request_lock_on_completion */);
 }
 
@@ -160,11 +166,12 @@ void LockStateController::OnStartingLock() {
   StartImmediatePreLockAnimation(false /* request_lock_on_completion */);
 }
 
-void LockStateController::RequestShutdown() {
+void LockStateController::RequestShutdown(ShutdownReason reason) {
   if (shutting_down_)
     return;
 
   shutting_down_ = true;
+  shutdown_reason_ = reason;
 
   ShellPort* port = ShellPort::Get();
   port->HideCursor();
@@ -301,10 +308,8 @@ void LockStateController::StartRealShutdownTimer(bool with_animation_time) {
 void LockStateController::OnRealPowerTimeout() {
   VLOG(1) << "OnRealPowerTimeout";
   DCHECK(shutting_down_);
-  Shell::Get()->metrics()->RecordUserMetricsAction(
-      UMA_ACCEL_SHUT_DOWN_POWER_BUTTON);
   // Shut down or reboot based on device policy.
-  shutdown_controller_->ShutDownOrReboot();
+  shutdown_controller_->ShutDownOrReboot(shutdown_reason_);
 }
 
 void LockStateController::StartCancellableShutdownAnimation() {

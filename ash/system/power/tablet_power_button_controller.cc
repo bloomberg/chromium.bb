@@ -9,6 +9,7 @@
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ash/shutdown_reason.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "base/command_line.h"
@@ -451,7 +452,7 @@ void TabletPowerButtonController::StartShutdownTimer() {
 }
 
 void TabletPowerButtonController::OnShutdownTimeout() {
-  controller_->StartShutdownAnimation();
+  controller_->StartShutdownAnimation(ShutdownReason::POWER_BUTTON);
 }
 
 void TabletPowerButtonController::LockScreenIfRequired() {
