@@ -3298,6 +3298,10 @@ const char kUiDevToolsDescription[] =
     "Enables inspection of native UI elements. For local inspection use "
     "chrome://inspect#other";
 
+const char kMultideviceName[] = "Enable multidevice features";
+const char kMultideviceDescription[] =
+    "Enables UI for controlling multidevice features.";
+
 #endif  // defined(OS_CHROMEOS)
 
 }  // namespace flag_descriptions
