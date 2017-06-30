@@ -13,7 +13,7 @@ namespace test {
 void DesktopScreenX11TestApi::UpdateDisplays() {
   DesktopScreenX11* screen =
       static_cast<DesktopScreenX11*>(display::Screen::GetScreen());
-  screen->ConfigureTimerFired();
+  screen->UpdateDisplays();
 }
 
 }  // namespace test

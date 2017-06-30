@@ -58,6 +58,7 @@
 #include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/label_button_border.h"
+#include "ui/views/linux_ui/device_scale_factor_observer.h"
 #include "ui/views/linux_ui/window_button_order_observer.h"
 #include "ui/views/resources/grit/views_resources.h"
 
@@ -313,21 +314,6 @@ gfx::FontRenderParams GetGtkFontRenderParams() {
   return params;
 }
 
-float GetRawDeviceScaleFactor() {
-  if (display::Display::HasForceDeviceScaleFactor())
-    return display::Display::GetForcedDeviceScaleFactor();
-
-  GdkScreen* screen = gdk_screen_get_default();
-  gint scale = gdk_screen_get_monitor_scale_factor(
-      screen, gdk_screen_get_primary_monitor(screen));
-  gdouble resolution = gdk_screen_get_resolution(screen);
-  const float scale_factor =
-      resolution <= 0 ? scale : resolution * scale / kDefaultDPI;
-  // Blacklist scaling factors <120% (crbug.com/484400) and round
-  // to 1 decimal to prevent rendering problems (crbug.com/485183).
-  return scale_factor < 1.2f ? 1.0f : roundf(scale_factor * 10) / 10;
-}
-
 views::LinuxUI::NonClientMiddleClickAction GetDefaultMiddleClickAction() {
   std::unique_ptr<base::Environment> env(base::Environment::Create());
   switch (base::nix::GetDesktopEnvironment(env.get())) {
@@ -416,19 +402,17 @@ GtkUi::GtkUi() : middle_click_action_(GetDefaultMiddleClickAction()) {
 #if GTK_MAJOR_VERSION == 2
   native_theme_ = NativeThemeGtk2::instance();
   fake_window_ = chrome_gtk_frame_new();
-  gtk_widget_realize(fake_window_);  // Is this necessary?
 #elif GTK_MAJOR_VERSION == 3
   native_theme_ = NativeThemeGtk3::instance();
-  (void)fake_window_;  // Silence the unused warning.
+  fake_window_ = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 #else
 #error "Unsupported GTK version"
 #endif
+  gtk_widget_realize(fake_window_);
 }
 
 GtkUi::~GtkUi() {
-#if GTK_MAJOR_VERSION == 2
   gtk_widget_destroy(fake_window_);
-#endif
 }
 
 void OnThemeChanged(GObject* obj, GParamSpec* param, GtkUi* gtkui) {
@@ -441,6 +425,17 @@ void GtkUi::Initialize() {
                          G_CALLBACK(OnThemeChanged), this);
   g_signal_connect_after(settings, "notify::gtk-icon-theme-name",
                          G_CALLBACK(OnThemeChanged), this);
+
+  GdkScreen* screen = gdk_screen_get_default();
+  // Listen for DPI changes.
+  g_signal_connect_after(screen, "notify::resolution",
+                         G_CALLBACK(OnDeviceScaleFactorMaybeChangedThunk),
+                         this);
+  // Listen for scale factor changes.  We would prefer to listen on
+  // |screen|, but there is no scale-factor property, so use an
+  // unmapped window instead.
+  g_signal_connect(fake_window_, "notify::scale-factor",
+                   G_CALLBACK(OnDeviceScaleFactorMaybeChangedThunk), this);
 
   LoadGtkValues();
 
@@ -703,12 +698,12 @@ void GtkUi::AddWindowButtonOrderObserver(
     observer->OnWindowButtonOrderingChange(leading_buttons_, trailing_buttons_);
   }
 
-  observer_list_.AddObserver(observer);
+  window_button_order_observer_list_.AddObserver(observer);
 }
 
 void GtkUi::RemoveWindowButtonOrderObserver(
     views::WindowButtonOrderObserver* observer) {
-  observer_list_.RemoveObserver(observer);
+  window_button_order_observer_list_.RemoveObserver(observer);
 }
 
 void GtkUi::SetWindowButtonOrdering(
@@ -717,8 +712,10 @@ void GtkUi::SetWindowButtonOrdering(
   leading_buttons_ = leading_buttons;
   trailing_buttons_ = trailing_buttons;
 
-  for (views::WindowButtonOrderObserver& observer : observer_list_)
+  for (views::WindowButtonOrderObserver& observer :
+       window_button_order_observer_list_) {
     observer.OnWindowButtonOrderingChange(leading_buttons_, trailing_buttons_);
+  }
 }
 
 void GtkUi::SetNonClientMiddleClickAction(NonClientMiddleClickAction action) {
@@ -770,6 +767,16 @@ void GtkUi::NotifyWindowManagerStartupComplete() {
   gdk_notify_startup_complete();
 }
 
+void GtkUi::AddDeviceScaleFactorObserver(
+    views::DeviceScaleFactorObserver* observer) {
+  device_scale_factor_observer_list_.AddObserver(observer);
+}
+
+void GtkUi::RemoveDeviceScaleFactorObserver(
+    views::DeviceScaleFactorObserver* observer) {
+  device_scale_factor_observer_list_.RemoveObserver(observer);
+}
+
 bool GtkUi::MatchEvent(const ui::Event& event,
                        std::vector<ui::TextEditCommandAuraLinux>* commands) {
   // Ensure that we have a keyboard handler.
@@ -777,6 +784,10 @@ bool GtkUi::MatchEvent(const ui::Event& event,
     key_bindings_handler_.reset(new Gtk2KeyBindingsHandler);
 
   return key_bindings_handler_->MatchEvent(event, commands);
+}
+
+void GtkUi::OnDeviceScaleFactorMaybeChanged(void*, GParamSpec*) {
+  UpdateDeviceScaleFactor();
 }
 
 void GtkUi::SetScrollbarColors() {
@@ -1037,11 +1048,29 @@ void GtkUi::ResetStyle() {
   native_theme_->NotifyObservers();
 }
 
+float GtkUi::GetRawDeviceScaleFactor() {
+  if (display::Display::HasForceDeviceScaleFactor())
+    return display::Display::GetForcedDeviceScaleFactor();
+
+  GdkScreen* screen = gdk_screen_get_default();
+  gint scale = gtk_widget_get_scale_factor(fake_window_);
+  gdouble resolution = gdk_screen_get_resolution(screen);
+  const float scale_factor =
+      resolution <= 0 ? scale : resolution * scale / kDefaultDPI;
+  // Blacklist scaling factors <120% (crbug.com/484400) and round
+  // to 1 decimal to prevent rendering problems (crbug.com/485183).
+  return scale_factor < 1.2f ? 1.0f : roundf(scale_factor * 10) / 10;
+}
+
 void GtkUi::UpdateDeviceScaleFactor() {
-  // Note: Linux chrome currently does not support dynamic DPI
-  // changes.  This is to allow flags to override the DPI settings
-  // during startup.
+  float old_device_scale_factor = device_scale_factor_;
   device_scale_factor_ = GetRawDeviceScaleFactor();
+  if (device_scale_factor_ != old_device_scale_factor) {
+    for (views::DeviceScaleFactorObserver& observer :
+         device_scale_factor_observer_list_) {
+      observer.OnDeviceScaleFactorChanged();
+    }
+  }
   UpdateDefaultFont();
 }
 

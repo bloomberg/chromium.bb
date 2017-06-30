@@ -11,6 +11,7 @@
 #undef RootWindow
 
 #include "base/logging.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -36,10 +37,6 @@
 #include "ui/views/widget/desktop_aura/x11_topmost_window_finder.h"
 
 namespace {
-
-// The delay to perform configuration after RRNotify.  See the comment
-// in |Dispatch()|.
-const int64_t kConfigureDelayMs = 500;
 
 double GetDeviceScaleFactor() {
   float device_scale_factor = 1.0f;
@@ -91,7 +88,10 @@ DesktopScreenX11::DesktopScreenX11()
       x_root_window_(DefaultRootWindow(xdisplay_)),
       has_xrandr_(false),
       xrandr_event_base_(0),
-      primary_display_index_(0) {
+      primary_display_index_(0),
+      weak_factory_(this) {
+  if (views::LinuxUI::instance())
+    views::LinuxUI::instance()->AddDeviceScaleFactorObserver(this);
   // We only support 1.3+. There were library changes before this and we should
   // use the new interface instead of the 1.2 one.
   int randr_version_major = 0;
@@ -120,6 +120,8 @@ DesktopScreenX11::DesktopScreenX11()
 }
 
 DesktopScreenX11::~DesktopScreenX11() {
+  if (views::LinuxUI::instance())
+    views::LinuxUI::instance()->AddDeviceScaleFactorObserver(this);
   if (has_xrandr_ && ui::PlatformEventSource::GetInstance())
     ui::PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
 }
@@ -247,18 +249,7 @@ uint32_t DesktopScreenX11::DispatchEvent(const ui::PlatformEvent& event) {
   } else if (event->type - xrandr_event_base_ == RRNotify ||
              (event->type == PropertyNotify &&
               event->xproperty.atom == gfx::GetAtom("_NET_WORKAREA"))) {
-    // There's some sort of observer dispatch going on here, but I don't think
-    // it's the screen's?
-    if (configure_timer_.get() && configure_timer_->IsRunning()) {
-      configure_timer_->Reset();
-    } else {
-      configure_timer_.reset(new base::OneShotTimer());
-      configure_timer_->Start(
-          FROM_HERE,
-          base::TimeDelta::FromMilliseconds(kConfigureDelayMs),
-          this,
-          &DesktopScreenX11::ConfigureTimerFired);
-    }
+    RestartDelayedConfigurationTask();
   } else {
     NOTREACHED();
   }
@@ -266,11 +257,15 @@ uint32_t DesktopScreenX11::DispatchEvent(const ui::PlatformEvent& event) {
   return ui::POST_DISPATCH_NONE;
 }
 
+void DesktopScreenX11::OnDeviceScaleFactorChanged() {
+  RestartDelayedConfigurationTask();
+}
+
 // static
 void DesktopScreenX11::UpdateDeviceScaleFactorForTest() {
   DesktopScreenX11* screen =
       static_cast<DesktopScreenX11*>(display::Screen::GetScreen());
-  screen->ConfigureTimerFired();
+  screen->UpdateDisplays();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -283,7 +278,11 @@ DesktopScreenX11::DesktopScreenX11(
       has_xrandr_(false),
       xrandr_event_base_(0),
       displays_(test_displays),
-      primary_display_index_(0) {}
+      primary_display_index_(0),
+      weak_factory_(this) {
+  if (views::LinuxUI::instance())
+    views::LinuxUI::instance()->AddDeviceScaleFactorObserver(this);
+}
 
 std::vector<display::Display> DesktopScreenX11::BuildDisplaysFromXRandRInfo() {
   std::vector<display::Display> displays;
@@ -390,7 +389,14 @@ std::vector<display::Display> DesktopScreenX11::BuildDisplaysFromXRandRInfo() {
   return displays;
 }
 
-void DesktopScreenX11::ConfigureTimerFired() {
+void DesktopScreenX11::RestartDelayedConfigurationTask() {
+  delayed_configuration_task_.Reset(base::Bind(
+      &DesktopScreenX11::UpdateDisplays, weak_factory_.GetWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, delayed_configuration_task_.callback());
+}
+
+void DesktopScreenX11::UpdateDisplays() {
   std::vector<display::Display> old_displays = displays_;
   SetDisplaysInternal(BuildDisplaysFromXRandRInfo());
   change_notifier_.NotifyDisplaysChanged(old_displays, displays_);

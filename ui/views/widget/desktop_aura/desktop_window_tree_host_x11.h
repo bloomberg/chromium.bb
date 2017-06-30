@@ -18,6 +18,7 @@
 #include "ui/aura/scoped_window_targeter.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/cursor/cursor_loader_x11.h"
+#include "ui/display/display_observer.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
@@ -44,7 +45,8 @@ class X11DesktopWindowMoveClient;
 class VIEWS_EXPORT DesktopWindowTreeHostX11
     : public DesktopWindowTreeHost,
       public aura::WindowTreeHost,
-      public ui::PlatformEventDispatcher {
+      public ui::PlatformEventDispatcher,
+      public display::DisplayObserver {
  public:
   DesktopWindowTreeHostX11(
       internal::NativeWidgetDelegate* native_widget_delegate,
@@ -169,6 +171,12 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
       const gfx::Point& location_in_pixels) override;
   void OnCursorVisibilityChangedNative(bool show) override;
 
+  // Overridden from display::DisplayObserver:
+  void OnDisplayAdded(const display::Display& new_display) override;
+  void OnDisplayRemoved(const display::Display& old_display) override;
+  void OnDisplayMetricsChanged(const display::Display& display,
+                               uint32_t changed_metrics) override;
+
  private:
   friend class DesktopWindowTreeHostX11HighDPITest;
   // Initializes our X11 surface to draw on. This method performs all
@@ -276,6 +284,10 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
 
   // Enables event listening after closing |dialog|.
   void EnableEventListening();
+
+  // Removes |delayed_resize_task_| from the task queue (if it's in
+  // the queue) and adds it back at the end of the queue.
+  void RestartDelayedResizeTask();
 
   // X11 things
   // The display and the native X window hosting the root window.
