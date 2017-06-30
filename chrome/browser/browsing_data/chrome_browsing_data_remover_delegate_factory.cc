@@ -24,7 +24,7 @@
 #include "extensions/features/features.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
+#include "chrome/browser/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/precache/precache_manager_factory.h"
 #endif
 
