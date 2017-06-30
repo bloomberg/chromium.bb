@@ -24,6 +24,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/url_constants.h"
 #include "components/grit/components_resources.h"
 #include "components/net_log/chrome_net_log.h"
@@ -110,6 +111,8 @@ class NetExportMessageHandler
 
   // Send NetLog data via email.
   static void SendEmail(const base::FilePath& file_to_send);
+
+  void StartNetLog(const base::FilePath& path);
 
   // Reveal |path| in the shell on desktop platforms.
   void ShowFileInShell(const base::FilePath& path);
@@ -222,8 +225,7 @@ void NetExportMessageHandler::OnStartNetLog(const base::ListValue* list) {
       net_log::NetLogFileWriter::CaptureModeFromString(capture_mode_string);
 
   if (UsingMobileUI()) {
-    file_writer_->StartNetLog(base::FilePath(), capture_mode_,
-                              GetURLRequestContexts());
+    StartNetLog(base::FilePath());
   } else {
     base::FilePath initial_dir = last_save_dir.Pointer()->empty() ?
         DownloadPrefs::FromBrowserContext(
@@ -280,7 +282,7 @@ void NetExportMessageHandler::FileSelected(const base::FilePath& path,
   DCHECK(select_file_dialog_);
   *last_save_dir.Pointer() = path.DirName();
 
-  file_writer_->StartNetLog(path, capture_mode_, GetURLRequestContexts());
+  StartNetLog(path);
 
   // IMPORTANT: resetting the dialog may lead to the deletion of |path|, so keep
   // this line last.
@@ -313,6 +315,15 @@ void NetExportMessageHandler::SendEmail(const base::FilePath& file_to_send) {
       base::UTF8ToUTF16(body), base::UTF8ToUTF16(title),
       base::UTF8ToUTF16(file_to_attach));
 #endif
+}
+
+void NetExportMessageHandler::StartNetLog(const base::FilePath& path) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  file_writer_->StartNetLog(
+      base::FilePath(), capture_mode_,
+      base::CommandLine::ForCurrentProcess()->GetCommandLineString(),
+      chrome::GetChannelString(), GetURLRequestContexts());
 }
 
 void NetExportMessageHandler::ShowFileInShell(const base::FilePath& path) {

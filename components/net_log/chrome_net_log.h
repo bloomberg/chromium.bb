@@ -30,6 +30,12 @@ class NetLogFileWriter;
 // as its observers.
 class ChromeNetLog : public net::NetLog {
  public:
+  // The parameters to the constructor are only used for command-line based
+  // NetLog writing (which starts immediately after construction).
+  //
+  // TODO(eroman): This would be clearer as a separate method to configure and
+  //               start this logging mode.
+  //
   // The log is saved to |log_file|.
   // |log_file_mode| is the mode used to log in |log_file|.
   // If |log_file| is empty, only a temporary log is created, and
@@ -40,7 +46,9 @@ class ChromeNetLog : public net::NetLog {
                const std::string& channel_string);
   ~ChromeNetLog() override;
 
-  NetLogFileWriter* net_log_file_writer() { return net_log_file_writer_.get(); }
+  // TODO(eroman): Rename this to something clearer. Perhaps
+  //               |net_export_file_writer()|.
+  NetLogFileWriter* net_log_file_writer();
 
   // Returns a Value containing constants needed to load a log file.
   // Safe to call on any thread.

@@ -23,6 +23,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/ui/show_mail_composer_util.h"
+#include "ios/chrome/common/channel_info.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/web/public/web_thread.h"
 #include "ios/web/public/web_ui_ios_data_source.h"
@@ -141,6 +142,8 @@ void NetExportMessageHandler::OnStartNetLog(const base::ListValue* list) {
       net_log::NetLogFileWriter::CaptureModeFromString(capture_mode_string);
   file_writer_->StartNetLog(
       base::FilePath(), capture_mode,
+      base::CommandLine::ForCurrentProcess()->GetCommandLineString(),
+      GetChannelString(),
       {GetApplicationContext()->GetSystemURLRequestContext()});
 }
 
