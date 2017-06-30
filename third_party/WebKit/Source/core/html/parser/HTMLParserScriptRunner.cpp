@@ -669,7 +669,7 @@ void HTMLParserScriptRunner::ProcessScriptElementInternal(
             break;
 
           case ScriptLoader::ExecuteScriptResult::kShouldFireErrorEvent:
-            // TODO(hiroshige): Dispatch an error event.
+            script_loader->DispatchErrorEvent();
             break;
 
           case ScriptLoader::ExecuteScriptResult::kShouldFireNone:
