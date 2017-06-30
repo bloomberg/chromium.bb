@@ -85,8 +85,6 @@ source_set("win") {
     "com_security.h",
     "default_audio_device_change_detector.cc",
     "default_audio_device_change_detector.h",
-    "elevation_helpers.cc",
-    "elevation_helpers.h",
     "launch_process_with_token.cc",
     "launch_process_with_token.h",
     "omaha.cc",

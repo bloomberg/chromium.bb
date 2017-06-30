@@ -39,9 +39,9 @@
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_WIN)
+#include "base/process/process_info.h"
 #include "base/win/registry.h"
 #include "remoting/host/pairing_registry_delegate_win.h"
-#include "remoting/host/win/elevation_helpers.h"
 #endif  // defined(OS_WIN)
 
 #if defined(USE_GLIB) && !defined(OS_CHROMEOS)
@@ -123,7 +123,7 @@ int Me2MeNativeMessagingHostMain(int argc, char** argv) {
   bool needs_elevation = false;
 
 #if defined(OS_WIN)
-  needs_elevation = !IsProcessElevated();
+  needs_elevation = !base::IsCurrentProcessElevated();
 
   if (command_line->HasSwitch(kElevateSwitchName)) {
     DCHECK(!needs_elevation);
