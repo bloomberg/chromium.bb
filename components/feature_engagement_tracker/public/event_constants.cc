@@ -11,6 +11,10 @@ namespace events {
 #if defined(OS_WIN) || defined(OS_LINUX)
 const char kNewTabOpened[] = "new_tab_opened";
 const char kOmniboxInteraction[] = "omnibox_used";
+
+const char kHistoryDeleted[] = "history_deleted";
+const char kIncognitoWindowOpened[] = "incognito_window_opened";
+
 const char kSessionTime[] = "session_time";
 #endif  // defined(OS_WIN) || defined(OS_LINUX)
 
