@@ -10,9 +10,11 @@
 #include "base/metrics/user_metrics.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/importer/importer_lock_dialog.h"
+#include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/base/material_design/material_design_controller.h"
 
 using base::UserMetricsAction;
 
@@ -20,6 +22,9 @@ namespace importer {
 
 void ShowImportLockDialog(gfx::NativeWindow parent,
                           const base::Callback<void(bool)>& callback) {
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial())
+    return chrome::ShowImportLockDialogViews(parent, callback);
+
   base::scoped_nsobject<NSAlert> lock_alert([[NSAlert alloc] init]);
   [lock_alert addButtonWithTitle:l10n_util::GetNSStringWithFixup(
       IDS_IMPORTER_LOCK_OK)];
