@@ -141,7 +141,7 @@ class TabManagerDelegate : public wm::ActivationChangeObserver,
 
   // Kills a process after getting all info of tabs and apps.
   void LowMemoryKillImpl(const TabStatsList& tab_list,
-                         const std::vector<arc::ArcProcess>& arc_processes);
+                         std::vector<arc::ArcProcess> arc_processes);
 
   // Public interface to adjust OOM scores.
   void AdjustOomPriorities(const TabStatsList& tab_list,
@@ -151,9 +151,8 @@ class TabManagerDelegate : public wm::ActivationChangeObserver,
   void AdjustFocusedTabScore(base::ProcessHandle pid);
 
   // Called by AdjustOomPriorities. Runs on the main thread.
-  void AdjustOomPrioritiesImpl(
-      const TabStatsList& tab_list,
-      const std::vector<arc::ArcProcess>& arc_processes);
+  void AdjustOomPrioritiesImpl(const TabStatsList& tab_list,
+                               std::vector<arc::ArcProcess> arc_processes);
 
   // Sets OOM score for processes in the range [|rbegin|, |rend|) to integers
   // distributed evenly in [|range_begin|, |range_end|).

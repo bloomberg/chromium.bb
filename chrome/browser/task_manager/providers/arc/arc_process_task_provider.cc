@@ -93,14 +93,14 @@ void ArcProcessTaskProvider::UpdateProcessList(
 }
 
 void ArcProcessTaskProvider::OnUpdateAppProcessList(
-    const std::vector<ArcProcess>& processes) {
+    std::vector<ArcProcess> processes) {
   TRACE_EVENT0("browser", "ArcProcessTaskProvider::OnUpdateAppProcessList");
   UpdateProcessList(&nspid_to_task_, processes);
   ScheduleNextAppRequest();
 }
 
 void ArcProcessTaskProvider::OnUpdateSystemProcessList(
-    const std::vector<ArcProcess>& processes) {
+    std::vector<ArcProcess> processes) {
   UpdateProcessList(&nspid_to_sys_task_, processes);
   ScheduleNextSystemRequest();
 }
