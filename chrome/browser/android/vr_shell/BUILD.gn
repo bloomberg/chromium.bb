@@ -74,6 +74,8 @@ static_library("vr_common") {
     "ui_elements/screen_dimmer.cc",
     "ui_elements/screen_dimmer.h",
     "ui_elements/simple_textured_element.h",
+    "ui_elements/splash_screen_icon.cc",
+    "ui_elements/splash_screen_icon.h",
     "ui_elements/system_indicator.cc",
     "ui_elements/system_indicator.h",
     "ui_elements/textured_element.cc",

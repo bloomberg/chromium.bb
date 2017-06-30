@@ -19,6 +19,7 @@ namespace vr_shell {
 
 class ExclusiveScreenToast;
 class LoadingIndicator;
+class SplashScreenIcon;
 class TransientUrlBar;
 class UiBrowserInterface;
 class UiElement;
