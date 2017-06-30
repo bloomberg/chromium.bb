@@ -394,6 +394,13 @@ const char kExtensionsOnChromeUrlsDescription[] =
     "Enables running extensions on chrome:// URLs, where extensions "
     "explicitly request this permission.";
 
+const char kExperimentalFullscreenExitUIName[] =
+    "Experimental fullscreen exit UI";
+
+const char kExperimentalFullscreenExitUIDescription[] =
+    "Displays experimental UI to allow mouse and touch input methods to exit "
+    "fullscreen mode.";
+
 const char kFastUnloadName[] = "Fast tab/window close";
 
 const char kFastUnloadDescription[] =

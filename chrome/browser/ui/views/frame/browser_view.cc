@@ -72,6 +72,7 @@
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/frame/web_contents_close_handler.h"
+#include "chrome/browser/ui/views/fullscreen_control/fullscreen_control_host.h"
 #include "chrome/browser/ui/views/ime/ime_warning_bubble_view.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
@@ -1645,6 +1646,19 @@ void BrowserView::NativeThemeUpdated(const ui::NativeTheme* theme) {
   chrome::MaybeShowInvertBubbleView(this);
 }
 
+FullscreenControlHost* BrowserView::GetFullscreenControlHost() {
+  if (!fullscreen_control_host_) {
+    // This is a do-nothing view that controls the z-order of the fullscreen
+    // control host. See DropdownBarHost::SetHostViewNative() for more details.
+    auto fullscreen_exit_host_view = base::MakeUnique<views::View>();
+    fullscreen_control_host_ = base::MakeUnique<FullscreenControlHost>(
+        this, fullscreen_exit_host_view.get());
+    AddChildView(fullscreen_exit_host_view.release());
+  }
+
+  return fullscreen_control_host_.get();
+}
+
 views::View* BrowserView::GetInitiallyFocusedView() {
   return nullptr;
 }
@@ -1951,9 +1965,25 @@ void BrowserView::OnGestureEvent(ui::GestureEvent* event) {
 
 void BrowserView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
-  if (!initialized_ && details.is_add && details.child == this && GetWidget()) {
+  if (details.child != this)
+    return;
+
+  // On removal, this class may not have a widget anymore, so go to the parent.
+  auto* widget = details.is_add ? GetWidget() : details.parent->GetWidget();
+  if (!widget)
+    return;
+
+  if (!initialized_ && details.is_add) {
     InitViews();
     initialized_ = true;
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableExperimentalFullscreenExitUI)) {
+      widget->GetNativeView()->AddPreTargetHandler(GetFullscreenControlHost());
+    }
+  } else if (fullscreen_control_host_) {
+    auto* native_view = widget->GetNativeView();
+    if (native_view)
+      native_view->RemovePreTargetHandler(fullscreen_control_host_.get());
   }
 }
 
@@ -2331,6 +2361,8 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
     // Hide the fullscreen bubble as soon as possible, since the mode toggle can
     // take enough time for the user to notice.
     exclusive_access_bubble_.reset();
+    if (fullscreen_control_host_)
+      fullscreen_control_host_->Hide(false);
   }
 
   // Toggle fullscreen mode.

@@ -3107,6 +3107,14 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kBrowserTouchBar)},
 #endif  // defined(OS_MACOSX)
 
+#if defined(TOOLKIT_VIEWS)
+    {"enable-experimental-fullscreen-exit-ui",
+     flag_descriptions::kExperimentalFullscreenExitUIName,
+     flag_descriptions::kExperimentalFullscreenExitUIDescription,
+     kOsWin | kOsLinux | kOsCrOS,
+     SINGLE_VALUE_TYPE(switches::kEnableExperimentalFullscreenExitUI)},
+#endif  // defined(TOOLKIT_VIEWS)
+
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms/enums.xml. See note in
     // enums.xml and don't forget to run AboutFlagsHistogramTest unit test.
