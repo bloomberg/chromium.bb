@@ -53,6 +53,7 @@ size_t RegisterWebViewCrashKeys() {
       {gpu::crash_keys::kGPUVertexShaderVersion, kSmallSize},
       {gpu::crash_keys::kGPUVendor, kSmallSize},
       {gpu::crash_keys::kGPURenderer, kSmallSize},
+      {gpu::crash_keys::kGPUGLContextIsVirtual, kSmallSize},
 
       // content/:
       {"bad_message_reason", kSmallSize},

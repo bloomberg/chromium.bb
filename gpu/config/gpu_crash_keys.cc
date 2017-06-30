@@ -20,6 +20,7 @@ const char kGPUGLVersion[] = "gpu-glver";
 const char kGPUVendor[] = "gpu-gl-vendor";
 const char kGPURenderer[] = "gpu-gl-renderer";
 #endif
+const char kGPUGLContextIsVirtual[] = "gpu-gl-context-is-virtual";
 
 }  // namespace crash_keys
 }  // namespace gpu

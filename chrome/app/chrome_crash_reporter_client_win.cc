@@ -111,6 +111,7 @@ size_t RegisterCrashKeysHelper() {
       {gpu::crash_keys::kGPUDriverVersion, kSmallSize},
       {gpu::crash_keys::kGPUPixelShaderVersion, kSmallSize},
       {gpu::crash_keys::kGPUVertexShaderVersion, kSmallSize},
+      {gpu::crash_keys::kGPUGLContextIsVirtual, kSmallSize},
 
       // browser/:
       {kThirdPartyModulesLoaded, kSmallSize},
