@@ -6,11 +6,13 @@
 
 #import "ios/chrome/browser/ui/payments/payment_method_selection_mediator.h"
 
+#include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/payments/core/strings_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #include "ios/chrome/browser/payments/payment_request_util.h"
@@ -64,7 +66,14 @@ using ::payment_request_util::GetBillingAddressLabelFromAutofillProfile;
 }
 
 - (CollectionViewItem*)headerItem {
-  return nil;
+  base::string16 headerText = payments::GetCardTypesAreAcceptedText(
+      _paymentRequest->supported_card_types_set());
+  if (headerText.empty())
+    return nil;
+
+  PaymentsTextItem* headerItem = [[PaymentsTextItem alloc] init];
+  headerItem.text = base::SysUTF16ToNSString(headerText);
+  return headerItem;
 }
 
 - (NSArray<CollectionViewItem*>*)selectableItems {

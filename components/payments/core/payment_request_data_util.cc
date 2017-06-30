@@ -4,6 +4,7 @@
 
 #include "components/payments/core/payment_request_data_util.h"
 
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -11,7 +12,6 @@
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
-#include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/validation.h"
@@ -152,6 +152,36 @@ void ParseBasicCardSupportedNetworks(
       }
     }
   }
+}
+
+void ParseSupportedCardTypes(
+    const std::vector<PaymentMethodData>& method_data,
+    std::set<autofill::CreditCard::CardType>* out_supported_card_types_set) {
+  DCHECK(out_supported_card_types_set->empty());
+
+  for (const PaymentMethodData& method_data_entry : method_data) {
+    // Ignore |supported_types| if |supported_methods| does not contain
+    // "basic_card".
+    if (!base::ContainsValue(method_data_entry.supported_methods, "basic-card"))
+      continue;
+
+    for (const autofill::CreditCard::CardType& card_type :
+         method_data_entry.supported_types) {
+      out_supported_card_types_set->insert(card_type);
+    }
+  }
+
+  // Omitting the card types means all 3 card types are supported.
+  if (out_supported_card_types_set->empty()) {
+    out_supported_card_types_set->insert(
+        autofill::CreditCard::CARD_TYPE_CREDIT);
+    out_supported_card_types_set->insert(autofill::CreditCard::CARD_TYPE_DEBIT);
+    out_supported_card_types_set->insert(
+        autofill::CreditCard::CARD_TYPE_PREPAID);
+  }
+
+  // Let the user decide whether an unknown card type should be used.
+  out_supported_card_types_set->insert(autofill::CreditCard::CARD_TYPE_UNKNOWN);
 }
 
 base::string16 GetFormattedPhoneNumberForDisplay(

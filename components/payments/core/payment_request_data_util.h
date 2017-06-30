@@ -10,10 +10,10 @@
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "components/autofill/core/browser/credit_card.h"
 
 namespace autofill {
 class AutofillProfile;
-class CreditCard;
 }  // namespace autofill
 
 namespace payments {
@@ -51,6 +51,14 @@ void ParseBasicCardSupportedNetworks(
     const std::vector<PaymentMethodData>& method_data,
     std::vector<std::string>* out_supported_networks,
     std::set<std::string>* out_basic_card_supported_networks);
+
+// Parses the supported card types (e.g., credit, debit, prepaid) from
+// supportedTypes. |out_supported_card_types_set| is expected to be empty. It
+// will always contain autofill::CreditCard::CARD_TYPE_UNKNOWN after the call.
+// Also, it gets filled with all of the card types if supportedTypes is empty.
+void ParseSupportedCardTypes(
+    const std::vector<PaymentMethodData>& method_data,
+    std::set<autofill::CreditCard::CardType>* out_supported_card_types_set);
 
 // Returns the phone number from the given |profile| formatted for display.
 base::string16 GetFormattedPhoneNumberForDisplay(

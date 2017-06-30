@@ -12,7 +12,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
-#include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/region_data_loader_impl.h"
 #include "components/autofill/core/browser/validation.h"
@@ -286,6 +285,9 @@ void PaymentRequest::PopulateCreditCardCache() {
   payments::data_util::ParseBasicCardSupportedNetworks(
       web_payment_request_.method_data, &supported_card_networks_,
       &basic_card_specified_networks_);
+
+  payments::data_util::ParseSupportedCardTypes(web_payment_request_.method_data,
+                                               &supported_card_types_set_);
 
   const std::vector<autofill::CreditCard*>& credit_cards_to_suggest =
       personal_data_manager_->GetCreditCardsToSuggest();

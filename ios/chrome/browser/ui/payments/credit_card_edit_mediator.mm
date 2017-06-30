@@ -11,6 +11,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #import "components/autofill/ios/browser/credit_card_util.h"
 #include "components/payments/core/payment_request_data_util.h"
+#include "components/payments/core/strings_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/payments/payment_request.h"
@@ -136,7 +137,8 @@ using ::payment_request_util::GetBillingAddressLabelFromAutofillProfile;
   AcceptedPaymentMethodsItem* acceptedMethodsItem =
       [[AcceptedPaymentMethodsItem alloc] init];
   acceptedMethodsItem.message =
-      l10n_util::GetNSString(IDS_PAYMENTS_ACCEPTED_CARDS_LABEL);
+      base::SysUTF16ToNSString(payments::GetAcceptedCardTypesText(
+          _paymentRequest->supported_card_types_set()));
   acceptedMethodsItem.methodTypeIcons = issuerNetworkIcons;
   return acceptedMethodsItem;
 }
