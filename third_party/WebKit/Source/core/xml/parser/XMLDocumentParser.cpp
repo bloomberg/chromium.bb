@@ -464,10 +464,16 @@ void XMLDocumentParser::NotifyFinished(Resource* unused_resource) {
               script_loader->WasCreatedDuringDocumentWrite());
     }
 
-    if (!script_loader->ExecuteScript(ClassicScript::Create(source_code)))
-      script_loader->DispatchErrorEvent();
-    else
-      script_loader->DispatchLoadEvent();
+    switch (script_loader->ExecuteScript(ClassicScript::Create(source_code))) {
+      case ScriptLoader::ExecuteScriptResult::kShouldFireErrorEvent:
+        script_loader->DispatchErrorEvent();
+        break;
+      case ScriptLoader::ExecuteScriptResult::kShouldFireLoadEvent:
+        script_loader->DispatchLoadEvent();
+        break;
+      case ScriptLoader::ExecuteScriptResult::kShouldFireNone:
+        break;
+    }
   }
 
   script_element_ = nullptr;
@@ -1127,13 +1133,22 @@ void XMLDocumentParser::EndElementNs() {
     // the libxml2 and Qt XMLDocumentParser implementations.
 
     if (script_loader->ReadyToBeParserExecuted()) {
-      if (!script_loader->ExecuteScript(ClassicScript::Create(ScriptSourceCode(
-              script_loader->ScriptContent(), GetDocument()->Url(),
-              script_start_position_)))) {
-        script_loader->DispatchErrorEvent();
-        return;
+      // 5th Clause, Step 23 of https://html.spec.whatwg.org/#prepare-a-script
+      switch (script_loader->ExecuteScript(ClassicScript::Create(
+          ScriptSourceCode(script_loader->ScriptContent(), GetDocument()->Url(),
+                           script_start_position_)))) {
+        case ScriptLoader::ExecuteScriptResult::kShouldFireErrorEvent:
+          script_loader->DispatchErrorEvent();
+          return;
+        case ScriptLoader::ExecuteScriptResult::kShouldFireLoadEvent:
+          // The load event is not fired because this is an inline script.
+          break;
+        case ScriptLoader::ExecuteScriptResult::kShouldFireNone:
+          break;
       }
     } else if (script_loader->WillBeParserExecuted()) {
+      // 1st/2nd Clauses, Step 23 of
+      // https://html.spec.whatwg.org/#prepare-a-script
       pending_script_ = script_loader->GetResource();
       DCHECK_EQ(parser_blocking_pending_script_load_start_time_, 0.0);
       parser_blocking_pending_script_load_start_time_ =

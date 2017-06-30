@@ -79,9 +79,10 @@ std::unique_ptr<TracedValue> GetTraceArgsForScriptElement(
   return value;
 }
 
-bool DoExecuteScript(ScriptElementBase* element,
-                     const Script* script,
-                     const TextPosition& text_position) {
+WARN_UNUSED_RESULT ScriptLoader::ExecuteScriptResult DoExecuteScript(
+    ScriptElementBase* element,
+    const Script* script,
+    const TextPosition& text_position) {
   ScriptLoader* script_loader = element->Loader();
   DCHECK(script_loader);
   TRACE_EVENT_WITH_FLOW1("blink", "HTMLParserScriptRunner ExecuteScript",
@@ -261,10 +262,15 @@ void HTMLParserScriptRunner::ExecutePendingScriptAndDispatchEvent(
                 MonotonicallyIncreasingTime() - script_parser_blocking_time,
                 script_loader->WasCreatedDuringDocumentWrite());
       }
-      if (!DoExecuteScript(element, script, script_start_position)) {
-        script_loader->DispatchErrorEvent();
-      } else {
-        element->DispatchLoadEvent();
+      switch (DoExecuteScript(element, script, script_start_position)) {
+        case ScriptLoader::ExecuteScriptResult::kShouldFireErrorEvent:
+          script_loader->DispatchErrorEvent();
+          break;
+        case ScriptLoader::ExecuteScriptResult::kShouldFireLoadEvent:
+          element->DispatchLoadEvent();
+          break;
+        case ScriptLoader::ExecuteScriptResult::kShouldFireNone:
+          break;
       }
     }
 
@@ -656,8 +662,19 @@ void HTMLParserScriptRunner::ProcessScriptElementInternal(
         ScriptSourceCode source_code(script->textContent(),
                                      DocumentURLForScriptExecution(document_),
                                      script_start_position);
-        DoExecuteScript(element, ClassicScript::Create(source_code),
-                        script_start_position);
+        switch (DoExecuteScript(element, ClassicScript::Create(source_code),
+                                script_start_position)) {
+          case ScriptLoader::ExecuteScriptResult::kShouldFireLoadEvent:
+            // The load event is not fired because this is an inline script.
+            break;
+
+          case ScriptLoader::ExecuteScriptResult::kShouldFireErrorEvent:
+            // TODO(hiroshige): Dispatch an error event.
+            break;
+
+          case ScriptLoader::ExecuteScriptResult::kShouldFireNone:
+            break;
+        }
       }
     } else {
       // 2nd Clause of Step 23.
