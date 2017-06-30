@@ -37,20 +37,7 @@
 
 /* ==== CPU() - the target CPU architecture ==== */
 
-/* CPU(X86) - i386 / x86 32-bit */
-#if defined(__i386__) || defined(i386) || defined(_M_IX86) || \
-    defined(_X86_) || defined(__THW_INTEL)
-#define WTF_CPU_X86 1
-#endif
-
-/* CPU(X86_64) - AMD64 / Intel64 / x86_64 64-bit */
-#if defined(__x86_64__) || defined(_M_X64)
-#define WTF_CPU_X86_64 1
-#endif
-
-/* CPU(ARM) - ARM, any version*/
 #if defined(arm) || defined(__arm__) || defined(ARM) || defined(_ARM_)
-#define WTF_CPU_ARM 1
 
 #if !defined(__ARMEB__) && !defined(__ARM_EABI__) && !defined(__EABI__) && \
     !defined(__VFP_FP__) && !defined(_WIN32_WCE) && !defined(ANDROID)
@@ -62,18 +49,6 @@
 #endif
 
 #endif /* ARM */
-
-/* CPU(ARM64) - AArch64 64-bit */
-#if defined(__aarch64__)
-#define WTF_CPU_ARM64 1
-#endif
-
-/* CPU(MIPS), CPU(MIPS64) */
-#if defined(__mips__) && (__mips == 64)
-#define WTF_CPU_MIPS64 1
-#elif defined(__mips__)
-#define WTF_CPU_MIPS 1
-#endif
 
 #if defined(__mips_msa) && defined(__mips_isa_rev) && (__mips_isa_rev >= 5)
 // All MSA intrinsics usage can be disabled by this macro.

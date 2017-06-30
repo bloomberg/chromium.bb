@@ -65,7 +65,7 @@ The below is a list of major libraries. For a complete list, look at
 * **Compile-time switch macros**
 
   [Compiler.h] (e.g. `COMPILER(GCC)`),
-  [CPU.h] (e.g. `CPU(X86_64)`),
+  [CPU.h] (e.g. `CPU(ARM_NEON)`),
   [build_config.h] (e.g. `OS(WIN)`)
 
 * **Miscellaneous**

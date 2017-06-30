@@ -28,14 +28,14 @@
 
 #include "platform/audio/DirectConvolver.h"
 
-#if OS(MACOSX)
+#include "build/build_config.h"
+#include "platform/audio/VectorMath.h"
+
+#if defined(OS_MACOSX)
 #include <Accelerate/Accelerate.h>
 #endif
 
-#include "platform/audio/VectorMath.h"
-#include "platform/wtf/CPU.h"
-
-#if (CPU(X86) || CPU(X86_64)) && !OS(MACOSX)
+#if defined(ARCH_CPU_X86_FAMILY) && !defined(OS_MACOSX)
 #include <emmintrin.h>
 #endif
 
@@ -73,17 +73,17 @@ void DirectConvolver::Process(AudioFloatArray* convolution_kernel,
   // Copy samples to 2nd half of input buffer.
   memcpy(input_p, source_p, sizeof(float) * frames_to_process);
 
-#if OS(MACOSX)
-#if CPU(X86)
+#if defined(OS_MACOSX)
+#if defined(ARCH_CPU_X86)
   conv(inputP - kernelSize + 1, 1, kernelP + kernelSize - 1, -1, destP, 1,
        framesToProcess, kernelSize);
 #else
   vDSP_conv(input_p - kernel_size + 1, 1, kernel_p + kernel_size - 1, -1,
             dest_p, 1, frames_to_process, kernel_size);
-#endif  // CPU(X86)
+#endif  // ARCH_CPU_X86
 #else
   size_t i = 0;
-#if CPU(X86) || CPU(X86_64)
+#if defined(ARCH_CPU_X86_FAMILY)
   // Convolution using SSE2. Currently only do this if both |kernelSize| and
   // |framesToProcess| are multiples of 4. If not, use the straightforward loop
   // below.
@@ -397,10 +397,10 @@ void DirectConvolver::Process(AudioFloatArray* convolution_kernel,
       }
       dest_p[i++] = sum;
     }
-#if CPU(X86) || CPU(X86_64)
+#if defined(ARCH_CPU_X86_FAMILY)
   }
 #endif
-#endif  // OS(MACOSX)
+#endif  // OS_MACOSX
 
   // Copy 2nd half of input buffer to 1st half.
   memcpy(buffer_.Data(), input_p, sizeof(float) * frames_to_process);

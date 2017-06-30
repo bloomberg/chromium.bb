@@ -443,7 +443,7 @@ void Unpack<WebGLImageConversion::kDataFormatBGRA8, uint8_t, uint8_t>(
   const uint32_t* source32 = reinterpret_cast_ptr<const uint32_t*>(source);
   uint32_t* destination32 = reinterpret_cast_ptr<uint32_t*>(destination);
 
-#if CPU(X86) || CPU(X86_64)
+#if defined(ARCH_CPU_X86_FAMILY)
   SIMD::UnpackOneRowOfBGRA8LittleToRGBA8(source32, destination32,
                                          pixels_per_row);
 #endif
@@ -471,7 +471,7 @@ void Unpack<WebGLImageConversion::kDataFormatRGBA5551, uint16_t, uint8_t>(
     const uint16_t* source,
     uint8_t* destination,
     unsigned pixels_per_row) {
-#if CPU(X86) || CPU(X86_64)
+#if defined(ARCH_CPU_X86_FAMILY)
   SIMD::UnpackOneRowOfRGBA5551LittleToRGBA8(source, destination,
                                             pixels_per_row);
 #endif
@@ -501,7 +501,7 @@ void Unpack<WebGLImageConversion::kDataFormatRGBA4444, uint16_t, uint8_t>(
     const uint16_t* source,
     uint8_t* destination,
     unsigned pixels_per_row) {
-#if CPU(X86) || CPU(X86_64)
+#if defined(ARCH_CPU_X86_FAMILY)
   SIMD::UnpackOneRowOfRGBA4444LittleToRGBA8(source, destination,
                                             pixels_per_row);
 #endif
@@ -717,7 +717,7 @@ void Pack<WebGLImageConversion::kDataFormatR8,
           uint8_t>(const uint8_t* source,
                    uint8_t* destination,
                    unsigned pixels_per_row) {
-#if CPU(X86) || CPU(X86_64)
+#if defined(ARCH_CPU_X86_FAMILY)
   SIMD::PackOneRowOfRGBA8LittleToR8(source, destination, pixels_per_row);
 #endif
 #if HAVE(MIPS_MSA_INTRINSICS)
@@ -774,7 +774,7 @@ void Pack<WebGLImageConversion::kDataFormatRA8,
           uint8_t>(const uint8_t* source,
                    uint8_t* destination,
                    unsigned pixels_per_row) {
-#if CPU(X86) || CPU(X86_64)
+#if defined(ARCH_CPU_X86_FAMILY)
   SIMD::PackOneRowOfRGBA8LittleToRA8(source, destination, pixels_per_row);
 #endif
 #if HAVE(MIPS_MSA_INTRINSICS)
@@ -886,7 +886,7 @@ void Pack<WebGLImageConversion::kDataFormatRGBA8,
           uint8_t>(const uint8_t* source,
                    uint8_t* destination,
                    unsigned pixels_per_row) {
-#if CPU(X86) || CPU(X86_64)
+#if defined(ARCH_CPU_X86_FAMILY)
   SIMD::PackOneRowOfRGBA8LittleToRGBA8(source, destination, pixels_per_row);
 #endif
 #if HAVE(MIPS_MSA_INTRINSICS)

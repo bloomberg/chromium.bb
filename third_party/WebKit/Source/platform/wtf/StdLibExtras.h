@@ -28,8 +28,8 @@
 
 #include <cstddef>
 #include "base/numerics/safe_conversions.h"
+#include "build/build_config.h"
 #include "platform/wtf/Assertions.h"
-#include "platform/wtf/CPU.h"
 #include "platform/wtf/LeakAnnotations.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/TypeTraits.h"
@@ -197,7 +197,7 @@ class StaticSingleton final {
  * - https://bugs.webkit.org/show_bug.cgi?id=38045
  * - http://gcc.gnu.org/bugzilla/show_bug.cgi?id=43976
  */
-#if CPU(ARM) && COMPILER(GCC)
+#if defined(ARCH_CPU_ARMEL) && COMPILER(GCC)
 template <typename Type>
 bool isPointerTypeAlignmentOkay(Type* ptr) {
   return !(reinterpret_cast<intptr_t>(ptr) % __alignof__(Type));

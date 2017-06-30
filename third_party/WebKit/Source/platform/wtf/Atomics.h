@@ -258,7 +258,7 @@ ALWAYS_INLINE float NoBarrierLoad(volatile const float* ptr) {
 
 #else  // defined(THREAD_SANITIZER)
 
-#if CPU(X86) || CPU(X86_64)
+#if defined(ARCH_CPU_X86_FAMILY)
 // Only compiler barrier is needed.
 #if COMPILER(MSVC)
 // Starting from Visual Studio 2005 compiler guarantees acquire and release

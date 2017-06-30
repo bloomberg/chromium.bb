@@ -29,12 +29,11 @@
 #include <string.h>  // for memcpy
 #include <memory>
 #include "SkMatrix44.h"
+#include "build/build_config.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatPoint3D.h"
 #include "platform/wtf/Alignment.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/CPU.h"
-#include "platform/wtf/Compiler.h"
 #include "platform/wtf/PtrUtil.h"
 
 namespace blink {
@@ -46,7 +45,7 @@ class FloatRect;
 class FloatQuad;
 class FloatBox;
 struct Rotation;
-#if CPU(X86_64)
+#if defined(ARCH_CPU_X86_64)
 #define TRANSFORMATION_MATRIX_USE_X86_64_SSE2
 #endif
 
