@@ -206,7 +206,7 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionAndScroll) {
             scroller_properties->OverflowClip()->LocalTransformSpace());
   const auto* scroll = scroller_properties->ScrollTranslation()->ScrollNode();
   EXPECT_EQ(FrameScroll(), scroll->Parent());
-  EXPECT_EQ(FloatSize(413, 317), scroll->Clip());
+  EXPECT_EQ(FloatSize(413, 317), scroll->ContainerBounds());
   EXPECT_EQ(FloatSize(660, 10200), scroll->Bounds());
   EXPECT_FALSE(scroll->UserScrollableHorizontal());
   EXPECT_TRUE(scroll->UserScrollableVertical());
@@ -2694,7 +2694,7 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowHiddenScrollProperties) {
   EXPECT_EQ(TransformationMatrix().Translate(0, -37),
             scroll_translation->Matrix());
   // This should match the overflow's dimensions.
-  EXPECT_EQ(IntSize(5, 3), overflow_hidden_scroll_node->Clip());
+  EXPECT_EQ(IntSize(5, 3), overflow_hidden_scroll_node->ContainerBounds());
   // The scrolling content's bounds should include both the overflow's
   // dimensions (5x3) and the 0x79 "forceScroll" object.
   EXPECT_EQ(IntSize(5, 79), overflow_hidden_scroll_node->Bounds());
@@ -2748,7 +2748,7 @@ TEST_P(PaintPropertyTreeBuilderTest, NestedScrollProperties) {
   EXPECT_TRUE(overflow_a_scroll_node->Parent()->IsRoot());
   EXPECT_EQ(TransformationMatrix().Translate(0, -37),
             scroll_a_translation->Matrix());
-  EXPECT_EQ(IntSize(5, 3), overflow_a_scroll_node->Clip());
+  EXPECT_EQ(IntSize(5, 3), overflow_a_scroll_node->ContainerBounds());
   // 107 is the forceScroll element plus the height of the overflow scroll child
   // (overflowB).
   EXPECT_EQ(IntSize(9, 107), overflow_a_scroll_node->Bounds());
@@ -2765,7 +2765,7 @@ TEST_P(PaintPropertyTreeBuilderTest, NestedScrollProperties) {
   EXPECT_EQ(overflow_a_scroll_node, overflow_b_scroll_node->Parent());
   EXPECT_EQ(TransformationMatrix().Translate(0, -41),
             scroll_b_translation->Matrix());
-  EXPECT_EQ(IntSize(9, 7), overflow_b_scroll_node->Clip());
+  EXPECT_EQ(IntSize(9, 7), overflow_b_scroll_node->ContainerBounds());
   EXPECT_EQ(IntSize(9, 100), overflow_b_scroll_node->Bounds());
   EXPECT_TRUE(overflow_b_scroll_node->UserScrollableHorizontal());
   EXPECT_TRUE(overflow_b_scroll_node->UserScrollableVertical());
@@ -2834,7 +2834,7 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionedScrollerIsNotNested) {
       overflow_scroll_properties->ScrollTranslation()->ScrollNode()->Parent());
   EXPECT_EQ(TransformationMatrix().Translate(0, -37),
             scroll_translation->Matrix());
-  EXPECT_EQ(IntSize(5, 3), overflow_scroll_node->Clip());
+  EXPECT_EQ(IntSize(5, 3), overflow_scroll_node->ContainerBounds());
   // The height should be 4000px because the (dom-order) overflow children are
   // positioned and do not contribute to the height. Only the 4000px
   // "forceScroll" height is present.
@@ -2850,7 +2850,7 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionedScrollerIsNotNested) {
   EXPECT_EQ(FrameScroll(), abspos_overflow_scroll_node->Parent());
   EXPECT_EQ(TransformationMatrix().Translate(0, -41),
             abspos_scroll_translation->Matrix());
-  EXPECT_EQ(IntSize(9, 7), abspos_overflow_scroll_node->Clip());
+  EXPECT_EQ(IntSize(9, 7), abspos_overflow_scroll_node->ContainerBounds());
   EXPECT_EQ(IntSize(9, 4000), abspos_overflow_scroll_node->Bounds());
 
   const ObjectPaintProperties* fixed_overflow_scroll_properties =
@@ -2863,7 +2863,7 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionedScrollerIsNotNested) {
   EXPECT_TRUE(fixed_overflow_scroll_node->Parent()->IsRoot());
   EXPECT_EQ(TransformationMatrix().Translate(0, -43),
             fixed_scroll_translation->Matrix());
-  EXPECT_EQ(IntSize(13, 11), fixed_overflow_scroll_node->Clip());
+  EXPECT_EQ(IntSize(13, 11), fixed_overflow_scroll_node->ContainerBounds());
   EXPECT_EQ(IntSize(13, 4000), fixed_overflow_scroll_node->Bounds());
 }
 
@@ -2917,7 +2917,7 @@ TEST_P(PaintPropertyTreeBuilderTest, NestedPositionedScrollProperties) {
   EXPECT_TRUE(overflow_a_scroll_node->Parent()->IsRoot());
   EXPECT_EQ(TransformationMatrix().Translate(0, -37),
             scroll_a_translation->Matrix());
-  EXPECT_EQ(IntSize(20, 20), overflow_a_scroll_node->Clip());
+  EXPECT_EQ(IntSize(20, 20), overflow_a_scroll_node->ContainerBounds());
   // 100 is the forceScroll element's height because the overflow child does not
   // contribute to the height.
   EXPECT_EQ(IntSize(20, 100), overflow_a_scroll_node->Bounds());
@@ -2934,7 +2934,7 @@ TEST_P(PaintPropertyTreeBuilderTest, NestedPositionedScrollProperties) {
   EXPECT_EQ(overflow_a_scroll_node, overflow_b_scroll_node->Parent());
   EXPECT_EQ(TransformationMatrix().Translate(0, -41),
             scroll_b_translation->Matrix());
-  EXPECT_EQ(IntSize(5, 3), overflow_b_scroll_node->Clip());
+  EXPECT_EQ(IntSize(5, 3), overflow_b_scroll_node->ContainerBounds());
   EXPECT_EQ(IntSize(5, 100), overflow_b_scroll_node->Bounds());
   EXPECT_TRUE(overflow_b_scroll_node->UserScrollableHorizontal());
   EXPECT_TRUE(overflow_b_scroll_node->UserScrollableVertical());

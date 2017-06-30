@@ -38,20 +38,20 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
 
   static PassRefPtr<ScrollPaintPropertyNode> Create(
       PassRefPtr<const ScrollPaintPropertyNode> parent,
-      const IntSize& clip,
+      const IntSize& container_bounds,
       const IntSize& bounds,
       bool user_scrollable_horizontal,
       bool user_scrollable_vertical,
       MainThreadScrollingReasons main_thread_scrolling_reasons,
       WebLayerScrollClient* scroll_client) {
     return AdoptRef(new ScrollPaintPropertyNode(
-        std::move(parent), clip, bounds, user_scrollable_horizontal,
+        std::move(parent), container_bounds, bounds, user_scrollable_horizontal,
         user_scrollable_vertical, main_thread_scrolling_reasons,
         scroll_client));
   }
 
   bool Update(PassRefPtr<const ScrollPaintPropertyNode> parent,
-              const IntSize& clip,
+              const IntSize& container_bounds,
               const IntSize& bounds,
               bool user_scrollable_horizontal,
               bool user_scrollable_vertical,
@@ -59,7 +59,7 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
               WebLayerScrollClient* scroll_client) {
     bool parent_changed = PaintPropertyNode::Update(std::move(parent));
 
-    if (clip == clip_ && bounds == bounds_ &&
+    if (container_bounds == container_bounds_ && bounds == bounds_ &&
         user_scrollable_horizontal == user_scrollable_horizontal_ &&
         user_scrollable_vertical == user_scrollable_vertical_ &&
         main_thread_scrolling_reasons == main_thread_scrolling_reasons_ &&
@@ -67,7 +67,7 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
       return parent_changed;
 
     SetChanged();
-    clip_ = clip;
+    container_bounds_ = container_bounds;
     bounds_ = bounds;
     user_scrollable_horizontal_ = user_scrollable_horizontal;
     user_scrollable_vertical_ = user_scrollable_vertical;
@@ -76,10 +76,12 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
     return true;
   }
 
-  // The clipped area that contains the scrolled content.
-  const IntSize& Clip() const { return clip_; }
+  // The area that contains the scrolled content. For typical scrolling cases,
+  // this is the size of the clipped overflow.
+  const IntSize& ContainerBounds() const { return container_bounds_; }
 
-  // The bounds of the content that is scrolled within |clip|.
+  // The bounds of the content that is scrolled within
+  // |container_bounds|.
   const IntSize& Bounds() const { return bounds_; }
 
   bool UserScrollableHorizontal() const { return user_scrollable_horizontal_; }
@@ -110,7 +112,7 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
   PassRefPtr<ScrollPaintPropertyNode> Clone() const {
     RefPtr<ScrollPaintPropertyNode> cloned =
         AdoptRef(new ScrollPaintPropertyNode(
-            Parent(), clip_, bounds_, user_scrollable_horizontal_,
+            Parent(), container_bounds_, bounds_, user_scrollable_horizontal_,
             user_scrollable_vertical_, main_thread_scrolling_reasons_,
             scroll_client_));
     return cloned;
@@ -119,7 +121,8 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
   // The equality operator is used by FindPropertiesNeedingUpdate.h for checking
   // if a scroll node has changed.
   bool operator==(const ScrollPaintPropertyNode& o) const {
-    return Parent() == o.Parent() && clip_ == o.clip_ && bounds_ == o.bounds_ &&
+    return Parent() == o.Parent() && container_bounds_ == o.container_bounds_ &&
+           bounds_ == o.bounds_ &&
            user_scrollable_horizontal_ == o.user_scrollable_horizontal_ &&
            user_scrollable_vertical_ == o.user_scrollable_vertical_ &&
            main_thread_scrolling_reasons_ == o.main_thread_scrolling_reasons_ &&
@@ -134,21 +137,21 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
  private:
   ScrollPaintPropertyNode(
       PassRefPtr<const ScrollPaintPropertyNode> parent,
-      IntSize clip,
+      IntSize container_bounds,
       IntSize bounds,
       bool user_scrollable_horizontal,
       bool user_scrollable_vertical,
       MainThreadScrollingReasons main_thread_scrolling_reasons,
       WebLayerScrollClient* scroll_client)
       : PaintPropertyNode(std::move(parent)),
-        clip_(clip),
+        container_bounds_(container_bounds),
         bounds_(bounds),
         user_scrollable_horizontal_(user_scrollable_horizontal),
         user_scrollable_vertical_(user_scrollable_vertical),
         main_thread_scrolling_reasons_(main_thread_scrolling_reasons),
         scroll_client_(scroll_client) {}
 
-  IntSize clip_;
+  IntSize container_bounds_;
   IntSize bounds_;
   bool user_scrollable_horizontal_ : 1;
   bool user_scrollable_vertical_ : 1;

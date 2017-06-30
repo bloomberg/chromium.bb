@@ -20,8 +20,8 @@ String ScrollPaintPropertyNode::ToString() const {
   StringBuilder text;
   text.Append("parent=");
   text.Append(String::Format("%p", Parent()));
-  text.Append(" clip=");
-  text.Append(clip_.ToString());
+  text.Append(" container_bounds=");
+  text.Append(container_bounds_.ToString());
   text.Append(" bounds=");
   text.Append(bounds_.ToString());
 
