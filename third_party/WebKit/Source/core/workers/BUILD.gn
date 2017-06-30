@@ -20,6 +20,7 @@ blink_core_sources("workers") {
     "InProcessWorkerMessagingProxy.h",
     "InProcessWorkerObjectProxy.cpp",
     "InProcessWorkerObjectProxy.h",
+    "InstalledScriptsManager.h",
     "MainThreadWorkletGlobalScope.cpp",
     "MainThreadWorkletGlobalScope.h",
     "ParentFrameTaskRunners.cpp",

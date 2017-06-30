@@ -48,6 +48,7 @@ namespace blink {
 
 class ConsoleMessageStorage;
 class InspectorTaskRunner;
+class InstalledScriptsManager;
 class InterfaceProvider;
 class WorkerBackingThread;
 class WorkerInspectorController;
@@ -177,6 +178,11 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   }
 
   InterfaceProvider* GetInterfaceProvider();
+
+  // For ServiceWorkerScriptStreaming. Returns nullptr otherwise.
+  virtual InstalledScriptsManager* GetInstalledScriptsManager() {
+    return nullptr;
+  }
 
  protected:
   WorkerThread(ThreadableLoadingContext*, WorkerReportingProxy&);

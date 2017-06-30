@@ -34,16 +34,20 @@
 #include "core/workers/WorkerBackingThread.h"
 #include "core/workers/WorkerThreadStartupData.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScope.h"
+#include "modules/serviceworkers/ServiceWorkerInstalledScriptsManager.h"
 #include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
 ServiceWorkerThread::ServiceWorkerThread(
     ThreadableLoadingContext* loading_context,
-    WorkerReportingProxy& worker_reporting_proxy)
+    WorkerReportingProxy& worker_reporting_proxy,
+    std::unique_ptr<ServiceWorkerInstalledScriptsManager>
+        installed_scripts_manager)
     : WorkerThread(loading_context, worker_reporting_proxy),
       worker_backing_thread_(
-          WorkerBackingThread::Create("ServiceWorker Thread")) {}
+          WorkerBackingThread::Create("ServiceWorker Thread")),
+      installed_scripts_manager_(std::move(installed_scripts_manager)) {}
 
 ServiceWorkerThread::~ServiceWorkerThread() {}
 
@@ -54,6 +58,10 @@ void ServiceWorkerThread::ClearWorkerBackingThread() {
 WorkerOrWorkletGlobalScope* ServiceWorkerThread::CreateWorkerGlobalScope(
     std::unique_ptr<WorkerThreadStartupData> startup_data) {
   return ServiceWorkerGlobalScope::Create(this, std::move(startup_data));
+}
+
+InstalledScriptsManager* ServiceWorkerThread::GetInstalledScriptsManager() {
+  return installed_scripts_manager_.get();
 }
 
 }  // namespace blink

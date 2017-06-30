@@ -67,6 +67,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
     // (installed scripts only)
     SCRIPT_READ_STARTED,
     SCRIPT_READ_FINISHED,
+    SCRIPT_STREAMING,
     // Add new values here.
     STARTING_PHASE_MAX_VALUE,
   };
@@ -220,7 +221,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
       std::unique_ptr<EmbeddedWorkerStartParams> params);
 
   // Called back from StartTask after a start worker message is sent.
-  void OnStartWorkerMessageSent();
+  void OnStartWorkerMessageSent(bool is_script_streaming);
 
   // Implements mojom::EmbeddedWorkerInstanceHost.
   // These functions all run on the IO thread.
