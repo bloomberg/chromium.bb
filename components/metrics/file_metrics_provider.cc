@@ -546,6 +546,26 @@ bool FileMetricsProvider::ProvideIndependentMetrics(
       RecordEmbeddedProfileResult(EMBEDDED_PROFILE_FOUND);
     } else {
       RecordEmbeddedProfileResult(EMBEDDED_PROFILE_DROPPED);
+
+      // TODO(bcwhite): Remove these once crbug/695880 is resolved.
+
+      int histogram_count = 0;
+      base::PersistentHistogramAllocator::Iterator histogram_iter(
+          source->allocator.get());
+      while (histogram_iter.GetNext()) {
+        ++histogram_count;
+      }
+      UMA_HISTOGRAM_COUNTS_10000(
+          "UMA.FileMetricsProvider.EmbeddedProfile.DroppedHistogramCount",
+          histogram_count);
+
+      base::File::Info info;
+      if (base::GetFileInfo(source->path, &info)) {
+        UMA_HISTOGRAM_CUSTOM_COUNTS(
+            "UMA.FileMetricsProvider.EmbeddedProfile.DroppedFileAge",
+            (base::Time::Now() - info.last_modified).InMinutes(), 1,
+            base::TimeDelta::FromDays(30).InMinutes(), 50);
+      }
     }
 
     // Regardless of whether this source was successfully recorded, it is never

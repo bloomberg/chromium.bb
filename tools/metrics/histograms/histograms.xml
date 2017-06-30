@@ -80045,6 +80045,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="UMA.FileMetricsProvider.EmbeddedProfile.DroppedFileAge"
+    units="minutes">
+  <owner>asvitkine@chromium.org</owner>
+  <owner>bcwhite@chromium.org</owner>
+  <summary>
+    Records the last-modified age of a file that was dropped for lack of an
+    embedded profile.
+  </summary>
+</histogram>
+
+<histogram name="UMA.FileMetricsProvider.EmbeddedProfile.DroppedHistogramCount">
+  <owner>asvitkine@chromium.org</owner>
+  <owner>bcwhite@chromium.org</owner>
+  <summary>
+    Records the number of histograms present in a file that was dropped for lack
+    of an embedded profile.
+  </summary>
+</histogram>
+
 <histogram name="UMA.FileMetricsProvider.EmbeddedProfileResult"
     enum="FileMetricsProviderEmbeddedProfileResult">
   <owner>asvitkine@chromium.org</owner>
