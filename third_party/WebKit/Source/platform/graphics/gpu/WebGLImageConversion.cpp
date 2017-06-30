@@ -5,6 +5,7 @@
 #include "platform/graphics/gpu/WebGLImageConversion.h"
 
 #include <memory>
+#include "build/build_config.h"
 #include "platform/graphics/ImageObserver.h"
 #include "platform/graphics/cpu/arm/WebGLImageConversionNEON.h"
 #include "platform/graphics/cpu/mips/WebGLImageConversionMSA.h"
@@ -452,7 +453,7 @@ void Unpack<WebGLImageConversion::kDataFormatBGRA8, uint8_t, uint8_t>(
 #endif
   for (unsigned i = 0; i < pixels_per_row; ++i) {
     uint32_t bgra = source32[i];
-#if CPU(BIG_ENDIAN)
+#if defined(ARCH_CPU_BIG_ENDIAN)
     uint32_t brMask = 0xff00ff00;
     uint32_t gaMask = 0x00ff00ff;
 #else

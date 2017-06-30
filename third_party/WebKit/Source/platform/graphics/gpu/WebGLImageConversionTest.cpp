@@ -4,6 +4,7 @@
 
 #include "platform/graphics/gpu/WebGLImageConversion.h"
 
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -74,7 +75,7 @@ TEST_F(WebGLImageConversionTest, convertBGRA8toRGBA8) {
   uint32_t source_data[9] = {0x12345678, 0x34567888, 0x12345678,
                              0x34567888, 0x12345678, 0x34567888,
                              0x12345678, 0x34567888, 0x12345678};
-#if CPU(BIG_ENDIAN)
+#if defined(ARCH_CPU_BIG_ENDIAN)
   uint32_t expectedData[9] = {0x56341278, 0x78563488, 0x56341278,
                               0x78563488, 0x56341278, 0x78563488,
                               0x56341278, 0x78563488, 0x56341278};

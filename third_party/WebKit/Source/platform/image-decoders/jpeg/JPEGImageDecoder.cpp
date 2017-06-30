@@ -38,6 +38,7 @@
 #include "platform/image-decoders/jpeg/JPEGImageDecoder.h"
 
 #include <memory>
+#include "build/build_config.h"
 #include "platform/instrumentation/PlatformInstrumentation.h"
 #include "platform/wtf/PtrUtil.h"
 
@@ -48,7 +49,7 @@ extern "C" {
 #include <setjmp.h>
 }
 
-#if CPU(BIG_ENDIAN)
+#if defined(ARCH_CPU_BIG_ENDIAN)
 #error Blink assumes a little-endian target.
 #endif
 

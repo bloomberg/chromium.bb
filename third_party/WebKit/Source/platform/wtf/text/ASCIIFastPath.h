@@ -22,11 +22,12 @@
 #ifndef ASCIIFastPath_h
 #define ASCIIFastPath_h
 
+#include <stdint.h>
+#include "build/build_config.h"
 #include "platform/wtf/Alignment.h"
 #include "platform/wtf/CPU.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/text/Unicode.h"
-#include <stdint.h>
 
 #if OS(MACOSX) && (CPU(X86) || CPU(X86_64))
 #include <emmintrin.h>
@@ -146,7 +147,8 @@ inline void CopyLCharsFromUCharSource(LChar* destination,
     DCHECK(!(source[i] & 0xff00));
     destination[i] = static_cast<LChar>(source[i]);
   }
-#elif COMPILER(GCC) && CPU(ARM_NEON) && !CPU(BIG_ENDIAN) && defined(NDEBUG)
+#elif COMPILER(GCC) && CPU(ARM_NEON) && !defined(ARCH_CPU_BIG_ENDIAN) && \
+    defined(NDEBUG)
   const LChar* const end = destination + length;
   const uintptr_t kMemoryAccessSize = 8;
 

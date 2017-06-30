@@ -31,6 +31,7 @@
 #ifndef WTF_ByteOrder_h
 #define WTF_ByteOrder_h
 
+#include "build/build_config.h"
 #include "platform/wtf/build_config.h"
 
 #if OS(POSIX)
@@ -40,9 +41,8 @@
 #if OS(WIN)
 
 #include "platform/wtf/ByteSwap.h"
-#include "platform/wtf/CPU.h"
 
-#if CPU(BIG_ENDIAN)
+#if defined(ARCH_CPU_BIG_ENDIAN)
 inline uint16_t ntohs(uint16_t x) {
   return x;
 }

@@ -28,9 +28,10 @@
 
 #include "platform/image-decoders/webp/WEBPImageDecoder.h"
 
+#include "build/build_config.h"
 #include "third_party/skia/include/core/SkData.h"
 
-#if CPU(BIG_ENDIAN)
+#if defined(ARCH_CPU_BIG_ENDIAN)
 #error Blink assumes a little-endian target.
 #endif
 
