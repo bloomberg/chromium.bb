@@ -1,0 +1,20 @@
+{% import 'fields/base.tmpl' as base %}
+{% from 'fields/field.tmpl' import getter_expression, setter_expression, decode %}
+
+{% macro decl_public_methods(field) %}
+static {{field.type_name}}* {{field.initial_method_name}}() {
+  return {{field.default_value}};
+}
+{{field.type_name}}* {{field.getter_method_name}}() const {
+  return {{decode(field, getter_expression(field))}}.Get();
+}
+
+void {{field.setter_method_name}}({{field.wrapper_pointer_name}}<{{field.type_name}}> v) {
+{% if field.group.parent %}
+  {{setter_expression(field)}} = std::move(v);
+{% else %}
+  {{field.name}} = std::move(v);
+{% endif %}
+}
+
+{%- endmacro %}

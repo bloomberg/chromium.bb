@@ -346,6 +346,10 @@ def _create_property_field(property_):
         type_name = property_['type_name']
         default_value = property_['default_value']
         size = 1 if type_name == 'bool' else None  # pack bools with 1 bit.
+    elif property_['field_template'] == 'pointer':
+        type_name = property_['type_name']
+        default_value = property_['default_value']
+        size = None
     else:
         assert property_['field_template'] in ('monotonic_flag',)
         type_name = 'bool'
@@ -353,8 +357,9 @@ def _create_property_field(property_):
         size = 1
 
     if property_['wrapper_pointer_name']:
-        assert property_['field_template'] == 'storage_only'
-        type_name = '{}<{}>'.format(property_['wrapper_pointer_name'], type_name)
+        assert property_['field_template'] in ['storage_only', 'pointer']
+        if property_['field_template'] == 'storage_only':
+            type_name = '{}<{}>'.format(property_['wrapper_pointer_name'], type_name)
 
     return Field(
         'property',
