@@ -1,0 +1,42 @@
+<html>
+<head>
+
+<style>
+html {
+    margin: 0;
+}
+</style>
+
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+
+<script>
+function test()
+{
+    InspectorTest.evaluateInPage("testRunner.dumpAsTextWithPixelResults();", () => {
+        InspectorTest.EmulationAgent.invoke_setDefaultBackgroundColorOverride({color: {r: 0x12, g: 0x34, b: 0x56, a: 1.0}}).then(backgroundColorSet);
+    });
+
+    function backgroundColorSet(messageObject) {
+      if (messageObject[Protocol.Error])
+          InspectorTest.log("FAIL: unexpected exception: " + messageObject[Protocol.Error]);
+      InspectorTest.EmulationAgent.invoke_setDefaultBackgroundColorOverride({}).then(backgroundColorCleared);
+    }
+
+    function backgroundColorCleared(messageObject) {
+      if (messageObject[Protocol.Error])
+          InspectorTest.log("FAIL: unexpected exception: " + messageObject[Protocol.Error]);
+
+      // Complete the test without closing the inspector, so that the override stays active for the picture.
+      InspectorTest.flushResults();
+      InspectorTest.evaluateInPage("testRunner.notifyDone();");
+    }
+}
+</script>
+
+</head>
+<body onload="runTest()">
+<p>
+Tests that resetting Emulation.setDefaultBackgroundColorOverride clears the background color override.
+</p>
+</body>
+</html>
