@@ -17,6 +17,10 @@ class FullscreenToolbarAnimationController;
 @class FullscreenToolbarVisibilityLockController;
 @class ImmersiveFullscreenController;
 
+namespace content {
+class WebContents;
+}
+
 // This enum class represents the appearance of the fullscreen toolbar, which
 // includes the tab strip and omnibox.
 enum class FullscreenToolbarStyle {
@@ -93,7 +97,8 @@ struct FullscreenToolbarLayout {
 - (void)cancelAnimationAndTimer;
 
 // Animates the toolbar dropping down to show changes to the tab strip.
-- (void)revealToolbarForTabStripChanges;
+- (void)revealToolbarForWebContents:(content::WebContents*)contents
+                       inForeground:(BOOL)inForeground;
 
 // Returns the fraction of the toolbar exposed at the top.
 // It returns 1.0 if the toolbar is fully shown and 0.0 if the toolbar is

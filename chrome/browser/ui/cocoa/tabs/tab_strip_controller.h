@@ -51,7 +51,8 @@ class WebContents;
 
 // Stripped down version of
 // TabStripModelObserverBridge:onTabInsertedInForeground.
-- (void)onTabInsertedInForeground:(BOOL)inForeground;
+- (void)onTabInsertedWithContents:(content::WebContents*)contents
+                     inForeground:(BOOL)inForeground;
 
 @end
 

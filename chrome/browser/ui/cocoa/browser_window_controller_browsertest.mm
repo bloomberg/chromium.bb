@@ -189,26 +189,28 @@ class ViewExposedChecker {
 @interface MockFullscreenToolbarController : FullscreenToolbarController
 
 // True if revealToolbarForTabStripChanges was called.
-@property(nonatomic, assign) BOOL isRevealingToolbarForTabstrip;
+@property(nonatomic, assign) BOOL isRevealingToolbar;
 
 // Sets isRevealingToolbarForTabstrip back to false.
 - (void)resetToolbarFlag;
 
 // Overridden to set isRevealingToolbarForTabstrip to true when it's called.
-- (void)revealToolbarForTabStripChanges;
+- (void)revealToolbarForWebContents:(content::WebContents*)contents
+                       inForeground:(BOOL)inForeground;
 
 @end
 
 @implementation MockFullscreenToolbarController
 
-@synthesize isRevealingToolbarForTabstrip = isRevealingToolbarForTabstrip_;
+@synthesize isRevealingToolbar = isRevealingToolbar_;
 
 - (void)resetToolbarFlag {
-  isRevealingToolbarForTabstrip_ = NO;
+  isRevealingToolbar_ = NO;
 }
 
-- (void)revealToolbarForTabStripChanges {
-  isRevealingToolbarForTabstrip_ = YES;
+- (void)revealToolbarForWebContents:(content::WebContents*)contents
+                       inForeground:(BOOL)inForeground {
+  isRevealingToolbar_ = YES;
 }
 
 @end
@@ -767,29 +769,29 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
   // Insert a non-NTP new tab in the foreground.
   AddTabAtIndex(0, GURL("http://google.com"), ui::PAGE_TRANSITION_LINK);
   ASSERT_FALSE([[controller() toolbarController] isLocationBarFocused]);
-  EXPECT_TRUE([fullscreenToolbarController isRevealingToolbarForTabstrip]);
+  EXPECT_TRUE([fullscreenToolbarController isRevealingToolbar]);
   [fullscreenToolbarController resetToolbarFlag];
 
   // Insert a new tab in the background.
   AddTabAtBackground(0, GURL("about:blank"));
-  EXPECT_TRUE([fullscreenToolbarController isRevealingToolbarForTabstrip]);
+  EXPECT_TRUE([fullscreenToolbarController isRevealingToolbar]);
   [fullscreenToolbarController resetToolbarFlag];
 
   // Insert a NTP new tab in the foreground.
   AddTabAtIndex(0, GURL("about:blank"), ui::PAGE_TRANSITION_LINK);
   ASSERT_TRUE([[controller() toolbarController] isLocationBarFocused]);
-  EXPECT_TRUE([fullscreenToolbarController isRevealingToolbarForTabstrip]);
+  EXPECT_TRUE([fullscreenToolbarController isRevealingToolbar]);
   [fullscreenToolbarController resetToolbarFlag];
 
   AddTabAtBackground(1, GURL("http://google.com"));
   ASSERT_TRUE([[controller() toolbarController] isLocationBarFocused]);
-  EXPECT_TRUE([fullscreenToolbarController isRevealingToolbarForTabstrip]);
+  EXPECT_TRUE([fullscreenToolbarController isRevealingToolbar]);
   [fullscreenToolbarController resetToolbarFlag];
 
   // Switch to a non-NTP tab.
   TabStripModel* model = browser()->tab_strip_model();
   model->ActivateTabAt(1, true);
   ASSERT_FALSE([[controller() toolbarController] isLocationBarFocused]);
-  EXPECT_TRUE([fullscreenToolbarController isRevealingToolbarForTabstrip]);
+  EXPECT_TRUE([fullscreenToolbarController isRevealingToolbar]);
   [fullscreenToolbarController resetToolbarFlag];
 }

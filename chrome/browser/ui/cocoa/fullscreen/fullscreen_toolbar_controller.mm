@@ -82,13 +82,15 @@ const CGFloat kShowFraction = 1.0;
   animationController_->StopAnimationAndTimer();
 }
 
-- (void)revealToolbarForTabStripChanges {
+- (void)revealToolbarForWebContents:(content::WebContents*)contents
+                       inForeground:(BOOL)inForeground {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableFullscreenToolbarReveal)) {
     return;
   }
 
-  animationController_->AnimateToolbarForTabstripChanges();
+  animationController_->AnimateToolbarForTabstripChanges(contents,
+                                                         inForeground);
 }
 
 - (CGFloat)toolbarFraction {

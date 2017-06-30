@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_animation_controller.h"
 
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_controller.h"
+#include "content/public/browser/web_contents.h"
 
 namespace {
 
@@ -25,7 +26,8 @@ const NSTimeInterval kTabStripChangesDelay = 750;
 
 FullscreenToolbarAnimationController::FullscreenToolbarAnimationController(
     FullscreenToolbarController* owner)
-    : owner_(owner),
+    : WebContentsObserver(nullptr),
+      owner_(owner),
       animation_(this),
       hide_toolbar_timer_(
           FROM_HERE,
@@ -40,6 +42,8 @@ FullscreenToolbarAnimationController::FullscreenToolbarAnimationController(
   animation_.SetTweenType(gfx::Tween::EASE_OUT);
 }
 
+FullscreenToolbarAnimationController::~FullscreenToolbarAnimationController() {}
+
 void FullscreenToolbarAnimationController::ToolbarDidUpdate() {
   animation_start_value_ = [owner_ toolbarFraction];
 }
@@ -49,17 +53,25 @@ void FullscreenToolbarAnimationController::StopAnimationAndTimer() {
   hide_toolbar_timer_.Stop();
 }
 
-void FullscreenToolbarAnimationController::AnimateToolbarForTabstripChanges() {
+void FullscreenToolbarAnimationController::AnimateToolbarForTabstripChanges(
+    content::WebContents* contents,
+    bool in_foreground) {
   // Don't kickstart the animation if the toolbar is already displayed.
   if ([owner_ mustShowFullscreenToolbar])
     return;
 
   if (animation_.IsShowing()) {
     hide_toolbar_timer_.Reset();
+    Observe(nullptr);
     return;
   }
 
   should_hide_toolbar_after_delay_ = true;
+  if (in_foreground && contents &&
+      !contents->CompletedFirstVisuallyNonEmptyPaint()) {
+    Observe(contents);
+  }
+
   AnimateToolbarIn();
 }
 
@@ -97,6 +109,14 @@ void FullscreenToolbarAnimationController::SetAnimationDuration(
 }
 
 //////////////////////////////////////////////////////////////////
+// FullscreenToolbarAnimationController::WebContentsObserver:
+
+void FullscreenToolbarAnimationController::DidFirstVisuallyNonEmptyPaint() {
+  StartHideTimerIfPossible();
+  Observe(nullptr);
+}
+
+//////////////////////////////////////////////////////////////////
 // FullscreenToolbarAnimationController::AnimationDelegate:
 
 void FullscreenToolbarAnimationController::AnimationProgressed(
@@ -106,7 +126,16 @@ void FullscreenToolbarAnimationController::AnimationProgressed(
 
 void FullscreenToolbarAnimationController::AnimationEnded(
     const gfx::Animation* animation) {
-  if (animation_.IsShowing() && should_hide_toolbar_after_delay_) {
+  if (!web_contents() && animation_.IsShowing())
+    StartHideTimerIfPossible();
+}
+
+//////////////////////////////////////////////////////////////////
+// FullscreenToolbarAnimationController, private:
+
+void FullscreenToolbarAnimationController::StartHideTimerIfPossible() {
+  DCHECK(animation_.IsShowing());
+  if (should_hide_toolbar_after_delay_) {
     hide_toolbar_timer_.Reset();
     should_hide_toolbar_after_delay_ = false;
   }
