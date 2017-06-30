@@ -31,6 +31,8 @@ class SearchResourceManager : public SpeechUIModelObserver {
   SearchBoxModel* search_box_;
   SpeechUIModel* speech_ui_;
 
+  const bool is_fullscreen_app_list_enabled_;
+
   DISALLOW_COPY_AND_ASSIGN(SearchResourceManager);
 };
 
