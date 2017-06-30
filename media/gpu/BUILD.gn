@@ -128,6 +128,7 @@ component("gpu") {
   defines = [ "MEDIA_GPU_IMPLEMENTATION" ]
 
   sources = [
+    "accelerated_video_decoder.h",
     "fake_jpeg_decode_accelerator.cc",
     "fake_jpeg_decode_accelerator.h",
     "fake_video_decode_accelerator.cc",
@@ -139,6 +140,10 @@ component("gpu") {
     "gpu_video_decode_accelerator_helpers.h",
     "gpu_video_encode_accelerator_factory.cc",
     "gpu_video_encode_accelerator_factory.h",
+    "h264_decoder.cc",
+    "h264_decoder.h",
+    "h264_dpb.cc",
+    "h264_dpb.h",
     "shared_memory_region.cc",
     "shared_memory_region.h",
   ]
@@ -242,15 +247,6 @@ component("gpu") {
     }
   }
 
-  if (is_chromeos || is_win) {
-    sources += [
-      "accelerated_video_decoder.h",
-      "h264_decoder.cc",
-      "h264_decoder.h",
-      "h264_dpb.cc",
-      "h264_dpb.h",
-    ]
-  }
   if (is_chromeos) {
     sources += [
       "vp8_decoder.cc",
@@ -562,6 +558,30 @@ if (is_chromeos) {
     if (use_ozone) {
       deps += [ "//ui/ozone" ]
     }
+  }
+}
+
+source_set("unit_tests") {
+  testonly = true
+  deps = [
+    "//base",
+    "//media/base:test_support",
+    "//media/gpu",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+  sources = [
+    "h264_decoder_unittest.cc",
+  ]
+
+  if (is_android) {
+    deps += [
+      # The test needs the java dependencies to add the java classes for their
+      # native counterparts to the test apk.
+      ":android_video_decode_accelerator_unittests",
+      "//media/base/android:media_java",
+      "//ui/android:ui_java",
+    ]
   }
 }
 
