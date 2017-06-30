@@ -59,12 +59,7 @@ checkout, for example), you can omit the `--nohooks` flag and `fetch`
 will automatically execute `gclient runhooks` at the end.
 
 When `fetch` completes, it will have created a hidden `.gclient` file and a
-directory called `src` in the working directory. The remaining instructions
-assume you have switched to the `src` directory:
-
-```shell
-$ cd src
-```
+directory called `src` in the working directory.
 
 ### Configure for building on Fuchsia
 
@@ -78,6 +73,11 @@ target_os = ['fuchsia']
 You will then need to re-run `gclient runhooks`. This makes sure the Fuchsia SDK
 is available in third\_party and keeps it up to date.
 
+The remaining instructions assume you have switched to the `src` directory:
+
+```shell
+$ cd src
+```
 
 ## Setting up the build
 
