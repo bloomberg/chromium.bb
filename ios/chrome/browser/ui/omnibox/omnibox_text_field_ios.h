@@ -9,22 +9,7 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/string16.h"
-
-@protocol OmniboxTextFieldDelegate<UITextFieldDelegate>
-
-@optional
-// Called when the OmniboxTextField performs a copy operation.  Returns YES if
-// the delegate handled the copy operation itself.  If the delegate returns NO,
-// the field must perform the copy.  Some platforms (iOS 4) do not expose an API
-// that allows the delegate to handle the copy.
-- (BOOL)onCopy;
-
-// Called before the OmniboxTextField performs a paste operation.
-- (void)willPaste;
-
-// Called when the backspace button is tapped in the OmniboxTextField.
-- (void)onDeleteBackward;
-@end
+#import "ios/chrome/browser/ui/omnibox/omnibox_text_field_delegate.h"
 
 // Enum type specifying the direction of fade animations.
 typedef enum {
