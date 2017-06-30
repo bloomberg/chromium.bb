@@ -774,3 +774,26 @@ loadable_module("osmesa") {
     ]
   }
 }
+
+if (is_linux) {
+  config("wayland_drm_protocol_config") {
+    include_dirs = [ "$generated_src_dir/egl/wayland/wayland-drm" ]
+  }
+
+  static_library("wayland_drm_protocol") {
+    sources = [
+      "$generated_src_dir/egl/wayland/wayland-drm/wayland-drm-client-protocol.h",
+      "$generated_src_dir/egl/wayland/wayland-drm/wayland-drm-protocol.c",
+      "$generated_src_dir/egl/wayland/wayland-drm/wayland-drm-server-protocol.h",
+    ]
+
+    deps = [
+      "//third_party/wayland:wayland_util",
+    ]
+
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
+
+    public_configs = [ ":wayland_drm_protocol_config" ]
+  }
+}
