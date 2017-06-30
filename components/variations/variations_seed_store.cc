@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_math.h"
-#include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -163,6 +162,9 @@ bool VariationsSeedStore::StoreSeedData(
     bool is_delta_compressed,
     bool is_gzip_compressed,
     VariationsSeed* parsed_seed) {
+  UMA_HISTOGRAM_BOOLEAN("Variations.StoreSeed.HasCountry",
+                        !country_code.empty());
+
   // If the data is gzip compressed, first uncompress it.
   std::string ungzipped_data;
   if (is_gzip_compressed) {
