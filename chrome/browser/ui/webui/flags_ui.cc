@@ -101,7 +101,6 @@ content::WebUIDataSource* CreateFlagsUIHTMLSource() {
   }
 #endif
 
-  source->SetJsonPath("strings.js");
   source->AddResourcePath(flags_ui::kFlagsJS, IDR_FLAGS_UI_FLAGS_JS);
   source->SetDefaultResource(IDR_FLAGS_UI_FLAGS_HTML);
   return source;
@@ -175,7 +174,7 @@ void FlagsDOMHandler::Init(flags_ui::FlagsStorage* flags_storage,
   access_ = access;
 
   if (experimental_features_requested_)
-    HandleRequestExperimentalFeatures(NULL);
+    HandleRequestExperimentalFeatures(nullptr);
 }
 
 void FlagsDOMHandler::HandleRequestExperimentalFeatures(
