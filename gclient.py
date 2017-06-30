@@ -827,12 +827,13 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     for dep in deps_to_add:
       if dep.verify_validity():
         self.add_dependency(dep)
-    for dep in (orig_deps_to_add or deps_to_add):
+    for dep in (orig_deps_to_add if orig_deps_to_add is not None
+                else deps_to_add):
       self.add_orig_dependency(dep)
     self._mark_as_parsed(
         [Hook.from_dict(h, variables=self._vars) for h in hooks],
         orig_hooks=[Hook.from_dict(h, variables=self._vars)
-                    for h in orig_hooks or hooks])
+                    for h in (orig_hooks if orig_hooks is not None else hooks)])
 
   def findDepsFromNotAllowedHosts(self):
     """Returns a list of depenecies from not allowed hosts.
