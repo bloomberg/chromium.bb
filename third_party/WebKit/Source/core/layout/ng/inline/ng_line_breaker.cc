@@ -417,8 +417,9 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item,
   RefPtr<NGUnpositionedFloat> unpositioned_float = NGUnpositionedFloat::Create(
       constraint_space_->AvailableSize(),
       constraint_space_->PercentageResolutionSize(),
-      constraint_space_->BfcOffset(), constraint_space_->BfcOffset(), margins,
-      node, /* break_token */ nullptr);
+      constraint_space_->BfcOffset().inline_offset,
+      constraint_space_->BfcOffset().inline_offset, margins, node,
+      /* break_token */ nullptr);
 
   LayoutUnit inline_size = ComputeInlineSizeForUnpositionedFloat(
       constraint_space_, unpositioned_float.Get());
@@ -438,14 +439,12 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item,
   } else {
     NGLogicalOffset container_bfc_offset =
         container_builder_->BfcOffset().value();
-    unpositioned_float->origin_offset = container_bfc_offset + content_offset_;
-    unpositioned_float->from_offset.block_offset =
-        container_bfc_offset.block_offset;
-    unpositioned_float->parent_bfc_block_offset =
-        container_bfc_offset.block_offset;
+    LayoutUnit origin_block_offset =
+        container_bfc_offset.block_offset + content_offset_.block_offset;
 
     container_builder_->AddPositionedFloat(
-        PositionFloat(unpositioned_float.Get(), constraint_space_));
+        PositionFloat(origin_block_offset, container_bfc_offset.block_offset,
+                      unpositioned_float.Get(), constraint_space_));
 
     // We need to recalculate the available_width as the float probably
     // consumed space on the line.

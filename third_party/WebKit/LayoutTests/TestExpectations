@@ -388,6 +388,12 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/margin-col
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/margin-collapse-clear-013.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/margin-collapse-clear-014.xht [ Failure ]
 
+# Regressions while changing zero-block-size float behaviour.
+crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floats-031.xht [ Failure ]
+crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floats-114.xht [ Failure ]
+crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floats-125.xht [ Failure ]
+crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/self-collapsing-block-with-float-descendants.html [ Failure ]
+
 ### virtual/layout_ng/external/wpt/css/CSS2/linebox
 
 # 1px glyph position diff at box boundary. Check if they need fix.

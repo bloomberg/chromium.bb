@@ -91,32 +91,21 @@ void MaybeUpdateFragmentBfcOffset(const NGConstraintSpace& space,
   }
 }
 
-void PositionPendingFloatsFromOffset(LayoutUnit origin_block_offset,
-                                     LayoutUnit from_block_offset,
-                                     NGFragmentBuilder* container_builder,
-                                     NGConstraintSpace* space) {
-  DCHECK(container_builder->BfcOffset())
-      << "Parent BFC offset should be known here";
-  const auto& unpositioned_floats = container_builder->UnpositionedFloats();
-  const auto positioned_floats =
-      PositionFloats(origin_block_offset, from_block_offset,
-                     container_builder->BfcOffset().value().block_offset,
-                     unpositioned_floats, space);
-  for (const auto& positioned_float : positioned_floats)
-    container_builder->AddPositionedFloat(positioned_float);
-
-  container_builder->MutableUnpositionedFloats().clear();
-}
-
 void PositionPendingFloats(LayoutUnit origin_block_offset,
                            NGFragmentBuilder* container_builder,
                            NGConstraintSpace* space) {
   DCHECK(container_builder->BfcOffset())
       << "Parent BFC offset should be known here";
-  LayoutUnit from_block_offset =
-      container_builder->BfcOffset().value().block_offset;
-  PositionPendingFloatsFromOffset(origin_block_offset, from_block_offset,
-                                  container_builder, space);
+
+  const auto& unpositioned_floats = container_builder->UnpositionedFloats();
+  const auto positioned_floats = PositionFloats(
+      origin_block_offset, container_builder->BfcOffset().value().block_offset,
+      unpositioned_floats, space);
+
+  for (const auto& positioned_float : positioned_floats)
+    container_builder->AddPositionedFloat(positioned_float);
+
+  container_builder->MutableUnpositionedFloats().clear();
 }
 
 NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(NGBlockNode node,
@@ -374,11 +363,13 @@ void NGBlockLayoutAlgorithm::HandleFloating(
   // Calculate margins in the BFC's writing mode.
   NGBoxStrut margins = CalculateMargins(child);
 
-  NGLogicalOffset origin_offset = constraint_space_->BfcOffset();
-  origin_offset.inline_offset += border_scrollbar_padding_.inline_start;
+  LayoutUnit origin_inline_offset =
+      constraint_space_->BfcOffset().inline_offset +
+      border_scrollbar_padding_.inline_start;
+
   RefPtr<NGUnpositionedFloat> unpositioned_float = NGUnpositionedFloat::Create(
-      child_available_size_, child_percentage_size_, origin_offset,
-      constraint_space_->BfcOffset(), margins, child, token);
+      child_available_size_, child_percentage_size_, origin_inline_offset,
+      constraint_space_->BfcOffset().inline_offset, margins, child, token);
   container_builder_.AddUnpositionedFloat(unpositioned_float);
 
   // If there is a break token for a float we must be resuming layout, we must
@@ -536,7 +527,6 @@ NGLogicalOffset NGBlockLayoutAlgorithm::PositionNewFc(
           .SetIsNewFormattingContext(false)
           .ToConstraintSpace(child_space.WritingMode());
   PositionFloats(child_bfc_offset_estimate, child_bfc_offset_estimate,
-                 child_bfc_offset_estimate,
                  container_builder_.UnpositionedFloats(), tmp_space.Get());
 
   NGLogicalOffset origin_offset = {ConstraintSpace().BfcOffset().inline_offset +
@@ -610,9 +600,8 @@ NGLogicalOffset NGBlockLayoutAlgorithm::PositionWithParentBfc(
           layout_result.EndMarginStrut().Sum()};
 
   AdjustToClearance(space.ClearanceOffset(), &child_bfc_offset);
-  PositionPendingFloatsFromOffset(
-      child_bfc_offset.block_offset, child_bfc_offset.block_offset,
-      &container_builder_, MutableConstraintSpace());
+  PositionPendingFloats(child_bfc_offset.block_offset, &container_builder_,
+                        MutableConstraintSpace());
   return child_bfc_offset;
 }
 
