@@ -49,27 +49,33 @@ String GetErrorMessage(const char* a, const char* b) {
 
 bool DOMMatrixReadOnly::ValidateAndFixup(DOMMatrixInit& other,
                                          ExceptionState& exception_state) {
-  if (other.hasA() && other.hasM11() && other.a() != other.m11()) {
+  if (other.hasA() && other.hasM11() && other.a() != other.m11() &&
+      !(std::isnan(other.a()) && std::isnan(other.m11()))) {
     exception_state.ThrowTypeError(GetErrorMessage("a", "m11"));
     return false;
   }
-  if (other.hasB() && other.hasM12() && other.b() != other.m12()) {
+  if (other.hasB() && other.hasM12() && other.b() != other.m12() &&
+      !(std::isnan(other.b()) && std::isnan(other.m12()))) {
     exception_state.ThrowTypeError(GetErrorMessage("b", "m12"));
     return false;
   }
-  if (other.hasC() && other.hasM21() && other.c() != other.m21()) {
+  if (other.hasC() && other.hasM21() && other.c() != other.m21() &&
+      !(std::isnan(other.c()) && std::isnan(other.m21()))) {
     exception_state.ThrowTypeError(GetErrorMessage("c", "m21"));
     return false;
   }
-  if (other.hasD() && other.hasM22() && other.d() != other.m22()) {
+  if (other.hasD() && other.hasM22() && other.d() != other.m22() &&
+      !(std::isnan(other.d()) && std::isnan(other.m22()))) {
     exception_state.ThrowTypeError(GetErrorMessage("d", "m22"));
     return false;
   }
-  if (other.hasE() && other.hasM41() && other.e() != other.m41()) {
+  if (other.hasE() && other.hasM41() && other.e() != other.m41() &&
+      !(std::isnan(other.e()) && std::isnan(other.m41()))) {
     exception_state.ThrowTypeError(GetErrorMessage("e", "m41"));
     return false;
   }
-  if (other.hasF() && other.hasM42() && other.f() != other.m42()) {
+  if (other.hasF() && other.hasM42() && other.f() != other.m42() &&
+      !(std::isnan(other.f()) && std::isnan(other.m42()))) {
     exception_state.ThrowTypeError(GetErrorMessage("f", "m42"));
     return false;
   }
