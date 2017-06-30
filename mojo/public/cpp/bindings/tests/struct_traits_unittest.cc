@@ -550,5 +550,10 @@ TEST_F(StructTraitsTest, EchoUnionWithTraits) {
   }
 }
 
+TEST_F(StructTraitsTest, DefaultValueOfEnumWithTraits) {
+  auto container = EnumWithTraitsContainer::New();
+  EXPECT_EQ(EnumWithTraitsImpl::CUSTOM_VALUE_1, container->f_field);
+}
+
 }  // namespace test
 }  // namespace mojo

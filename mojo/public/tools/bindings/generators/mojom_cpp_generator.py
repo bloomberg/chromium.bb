@@ -400,16 +400,22 @@ class Generator(generator.Generator):
   def _ConstantValue(self, constant):
     return self._ExpressionToText(constant.value, kind=constant.kind)
 
-  # TODO(yzshen): Revisit the default value feature. It was designed prior to
-  # custom type mapping.
   def _DefaultValue(self, field):
-    if field.default:
-      if mojom.IsStructKind(field.kind):
-        assert field.default == "default"
-        if not self._IsTypemappedKind(field.kind):
-          return "%s::New()" % self._GetNameForKind(field.kind)
-      return self._ExpressionToText(field.default, kind=field.kind)
-    return ""
+    if not field.default:
+      return ""
+
+    if mojom.IsStructKind(field.kind):
+      assert field.default == "default"
+      if self._IsTypemappedKind(field.kind):
+        return ""
+      return "%s::New()" % self._GetNameForKind(field.kind)
+
+    expression = self._ExpressionToText(field.default, kind=field.kind)
+    if mojom.IsEnumKind(field.kind) and self._IsTypemappedKind(field.kind):
+      expression = "mojo::internal::ConvertEnumValue<%s, %s>(%s)" % (
+          self._GetNameForKind(field.kind), self._GetCppWrapperType(field.kind),
+          expression)
+    return expression
 
   def _GetNameForKind(self, kind, internal=False, flatten_nested_kind=False,
                       add_same_module_namespaces=False):
