@@ -16,6 +16,7 @@ class Size;
 
 namespace ui {
 class Accelerator;
+class InputMethod;
 class KeyEvent;
 class MouseEvent;
 class TouchEvent;
@@ -33,6 +34,9 @@ enum class FrameMode {
 // notifications from the underlying HWND and service requests for data.
 class VIEWS_EXPORT HWNDMessageHandlerDelegate {
  public:
+  // Returns the input method currently used in this window.
+  virtual ui::InputMethod* GetHWNDMessageDelegateInputMethod() = 0;
+
   // True if the widget associated with this window has a non-client view.
   virtual bool HasNonClientView() const = 0;
 

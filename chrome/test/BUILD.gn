@@ -786,6 +786,10 @@ if (!is_android) {
       libs = [ "oleacc.lib" ]
     }
 
+    if (toolkit_views && is_win) {
+      sources += [ "//ui/views/accessibility/ax_system_caret_win_interactive_uitest.cc" ]
+    }
+
     if (is_mac) {
       data_deps += [
         "//chrome",
