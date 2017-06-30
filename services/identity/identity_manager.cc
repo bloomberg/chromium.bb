@@ -10,7 +10,6 @@
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace identity {
 
@@ -61,17 +60,24 @@ void IdentityManager::Create(mojom::IdentityManagerRequest request,
                              AccountTrackerService* account_tracker,
                              SigninManagerBase* signin_manager,
                              ProfileOAuth2TokenService* token_service) {
-  mojo::MakeStrongBinding(base::MakeUnique<IdentityManager>(
-                              account_tracker, signin_manager, token_service),
-                          std::move(request));
+  new IdentityManager(std::move(request), account_tracker, signin_manager,
+                      token_service);
 }
 
-IdentityManager::IdentityManager(AccountTrackerService* account_tracker,
+IdentityManager::IdentityManager(mojom::IdentityManagerRequest request,
+                                 AccountTrackerService* account_tracker,
                                  SigninManagerBase* signin_manager,
                                  ProfileOAuth2TokenService* token_service)
-    : account_tracker_(account_tracker),
+    : binding_(this, std::move(request)),
+      account_tracker_(account_tracker),
       signin_manager_(signin_manager),
-      token_service_(token_service) {}
+      token_service_(token_service) {
+  signin_manager_shutdown_subscription_ =
+      signin_manager_->RegisterOnShutdownCallback(base::Bind(
+          &IdentityManager::OnSigninManagerShutdown, base::Unretained(this)));
+  binding_.set_connection_error_handler(
+      base::Bind(&IdentityManager::OnConnectionError, base::Unretained(this)));
+}
 
 IdentityManager::~IdentityManager() {}
 
@@ -118,6 +124,14 @@ AccountState IdentityManager::GetStateOfAccount(
   account_state.has_refresh_token =
       token_service_->RefreshTokenIsAvailable(account_info.account_id);
   return account_state;
+}
+
+void IdentityManager::OnSigninManagerShutdown() {
+  delete this;
+}
+
+void IdentityManager::OnConnectionError() {
+  delete this;
 }
 
 }  // namespace identity

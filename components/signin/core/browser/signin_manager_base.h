@@ -26,6 +26,7 @@
 #include <memory>
 #include <string>
 
+#include "base/callback_list.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -132,6 +133,15 @@ class SigninManagerBase : public KeyedService {
   // Gives access to the SigninClient instance associated with this instance.
   SigninClient* signin_client() const { return client_; }
 
+  // Adds a callback that will be called when this instance is shut down.Not
+  // intended for general usage, but rather for usage only by the Identity
+  // Service implementation during the time period of conversion of Chrome to
+  // use the Identity Service.
+  std::unique_ptr<base::CallbackList<void()>::Subscription>
+  RegisterOnShutdownCallback(const base::Closure& cb) {
+    return on_shutdown_callback_list_.Add(cb);
+  }
+
  protected:
   AccountTrackerService* account_tracker_service() const {
     return account_tracker_service_;
@@ -168,6 +178,9 @@ class SigninManagerBase : public KeyedService {
   // The list of SigninDiagnosticObservers.
   base::ObserverList<signin_internals_util::SigninDiagnosticsObserver, true>
       signin_diagnostics_observers_;
+
+  // The list of callbacks notified on shutdown.
+  base::CallbackList<void()> on_shutdown_callback_list_;
 
   base::WeakPtrFactory<SigninManagerBase> weak_pointer_factory_;
 

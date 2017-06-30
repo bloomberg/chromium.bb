@@ -232,7 +232,9 @@ bool SigninManagerBase::AuthInProgress() const {
   return false;
 }
 
-void SigninManagerBase::Shutdown() {}
+void SigninManagerBase::Shutdown() {
+  on_shutdown_callback_list_.Notify();
+}
 
 void SigninManagerBase::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);
