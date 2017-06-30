@@ -73,6 +73,7 @@ import org.chromium.chrome.browser.suggestions.DestructionObserver;
 import org.chromium.chrome.browser.suggestions.SuggestionsEventReporter;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.suggestions.ContentSuggestionsTestUtils.CategoryInfoBuilder;
 import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
@@ -234,6 +235,10 @@ public class NewTabPageAdapterTest {
         MockitoAnnotations.initMocks(this);
 
         ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
+        // Make sure that isChromeHome() is current value set by the test, not the value saved in
+        // the shared preference.
+        // TODO(changwan): check if we can clear shared preferences for each test case.
+        FeatureUtilities.cacheChromeHomeEnabled();
 
         // Set empty variation params for the test.
         CardsVariationParameters.setTestVariationParams(new HashMap<String, String>());

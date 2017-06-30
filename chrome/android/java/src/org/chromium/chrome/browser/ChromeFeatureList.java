@@ -41,6 +41,7 @@ public abstract class ChromeFeatureList {
      * tests if test features have been set).
      */
     public static boolean isInitialized() {
+        if (sTestFeatures != null) return true;
         if (!LibraryLoader.isInitialized()) return false;
 
         // Even if the native library is loaded, the C++ FeatureList might not be initialized yet.
@@ -83,6 +84,7 @@ public abstract class ChromeFeatureList {
      *   the specified parameter does not exist.
      */
     public static String getFieldTrialParamByFeature(String featureName, String paramName) {
+        if (sTestFeatures != null) return "";
         assert isInitialized();
         return nativeGetFieldTrialParamByFeature(featureName, paramName);
     }
@@ -101,6 +103,7 @@ public abstract class ChromeFeatureList {
      */
     public static int getFieldTrialParamByFeatureAsInt(
             String featureName, String paramName, int defaultValue) {
+        if (sTestFeatures != null) return defaultValue;
         assert isInitialized();
         return nativeGetFieldTrialParamByFeatureAsInt(featureName, paramName, defaultValue);
     }
@@ -119,6 +122,7 @@ public abstract class ChromeFeatureList {
      */
     public static double getFieldTrialParamByFeatureAsDouble(
             String featureName, String paramName, double defaultValue) {
+        if (sTestFeatures != null) return defaultValue;
         assert isInitialized();
         return nativeGetFieldTrialParamByFeatureAsDouble(featureName, paramName, defaultValue);
     }
@@ -137,6 +141,7 @@ public abstract class ChromeFeatureList {
      */
     public static boolean getFieldTrialParamByFeatureAsBoolean(
             String featureName, String paramName, boolean defaultValue) {
+        if (sTestFeatures != null) return defaultValue;
         assert isInitialized();
         return nativeGetFieldTrialParamByFeatureAsBoolean(featureName, paramName, defaultValue);
     }
