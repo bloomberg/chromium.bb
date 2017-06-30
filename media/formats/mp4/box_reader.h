@@ -123,7 +123,8 @@ class MEDIA_EXPORT BoxReader : public BufferReader {
   //
   // |buf| is retained but not owned, and must outlive the BoxReader instance.
   static BoxReader* ReadConcatentatedBoxes(const uint8_t* buf,
-                                           const size_t buf_size);
+                                           const size_t buf_size,
+                                           MediaLog* media_log);
 
   // Returns true if |type| is recognized to be a top-level box, false
   // otherwise. This returns true for some boxes which we do not parse.

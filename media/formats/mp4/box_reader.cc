@@ -157,10 +157,9 @@ bool BoxReader::StartTopLevelBox(const uint8_t* buf,
 
 // static
 BoxReader* BoxReader::ReadConcatentatedBoxes(const uint8_t* buf,
-                                             const size_t buf_size) {
-  // TODO(wolenetz): Questionable MediaLog usage, http://crbug.com/712310
-  MediaLog media_log;
-  BoxReader* reader = new BoxReader(buf, buf_size, &media_log, true);
+                                             const size_t buf_size,
+                                             MediaLog* media_log) {
+  BoxReader* reader = new BoxReader(buf, buf_size, media_log, true);
 
   // Concatenated boxes are passed in without a wrapping parent box. Set
   // |box_size_| to the concatenated buffer length to mimic having already
