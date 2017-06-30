@@ -51,7 +51,7 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
       return true;
     }
 
-    var frames = win.frames;
+    var frames = getSameOriginFrames_(win);
     for (var i = 0; i < frames.length; i++) {
       if (hasPasswordField_(frames[i])) {
         return true;
@@ -59,6 +59,24 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
     }
 
     return false;
+  };
+
+  /**
+   * Returns the contentWindow of all iframes that are from the the same origin
+   * as the containing window.
+   * @param {Window} win The window in which to look for frames.
+   * @return {Array.<Window>} Array of the same-origin frames found.
+   */
+  var getSameOriginFrames_ = function(win) {
+    var frames = win.document.getElementsByTagName("iframe");
+    var result = [];
+    for (var i = 0; i < frames.length; i++) {
+      if (!frames[i].src ||
+          __gCrWeb.common.isSameOrigin(win.location.href, frames[i].src)) {
+        result.push(frames[i].contentWindow);
+      }
+    }
+    return result;
   };
 
   /**
@@ -196,7 +214,7 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
    */
   __gCrWeb['fillPasswordForm'] = function(formData, username, password,
                                           opt_normalizedOrigin) {
-    return __gCrWeb.fillPasswordFormWithData(
+    return fillPasswordFormWithData_(
         formData, username, password, window, opt_normalizedOrigin);
   };
 
@@ -239,21 +257,9 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
    * @param {string=} opt_normalizedOrigin The origin URL to compare to.
    * @return {boolean} Whether a form field has been filled.
    */
-  __gCrWeb.fillPasswordFormWithData =
-      function(formData, username, password, win, opt_normalizedOrigin) {
-    var doc = null;
-
-    try {
-      doc = win.document;
-    } catch(e) {
-    }
-
-    // If unable to read the 'document' property from a frame in a different
-    // origin, do nothing.
-    if (!doc) {
-      return false;
-    }
-
+  var fillPasswordFormWithData_ = function(
+      formData, username, password, win, opt_normalizedOrigin) {
+    var doc = win.document;
     var origin = formData['origin'];
     var normalizedOrigin = opt_normalizedOrigin ||
         __gCrWeb.common.removeQueryAndReferenceFromURL(win.location.href);
@@ -289,11 +295,11 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
       }
     });
 
-    // Recursively invoke for all frames/iframes.
-    var frames = win.frames;
+    // Recursively invoke for all iframes.
+    var frames = getSameOriginFrames_(win);
     for (var i = 0; i < frames.length; i++) {
-      if (__gCrWeb.fillPasswordFormWithData(
-              formData, username, password, frames[i], opt_normalizedOrigin)) {
+      if (fillPasswordFormWithData_(
+          formData, username, password, frames[i], opt_normalizedOrigin)) {
         filled = true;
       }
     }
@@ -390,8 +396,8 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
       }
     }
 
-    // Recursively invoke for all frames/iframes.
-    var frames = win.frames;
+    // Recursively invoke for all iframes.
+    var frames = getSameOriginFrames_(win);
     for (var i = 0; i < frames.length; i++) {
       __gCrWeb.getPasswordFormDataList(formDataList, frames[i]);
     }
