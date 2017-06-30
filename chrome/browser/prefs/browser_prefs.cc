@@ -146,6 +146,7 @@
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
 #include "chrome/browser/android/offline_pages/prefetch/prefetch_background_task.h"
+#include "chrome/browser/offline_pages/prefetch/offline_metrics_collector_impl.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -646,6 +647,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(kDistroDict);
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+  offline_pages::OfflineMetricsCollectorImpl::RegisterPrefs(registry);
   offline_pages::RegisterPrefetchBackgroundTaskPrefs(registry);
 #endif
 }

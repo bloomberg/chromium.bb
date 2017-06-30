@@ -26907,6 +26907,14 @@ from previous Chrome versions.
   <int value="3" label="Data parsing failed"/>
 </enum>
 
+<enum name="OfflinePagesOfflineUsage">
+  <int value="0" label="Not used"/>
+  <int value="1" label="Started, but no pages loaded successfully"/>
+  <int value="2" label="Offline pages loaded only"/>
+  <int value="3" label="Online pages loaded only"/>
+  <int value="4" label="Both offlilne and online pages loaded"/>
+</enum>
+
 <enum name="OfflinePagesRedirectResult">
   <obsolete>
     Deprecated 2016-08.

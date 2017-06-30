@@ -47866,6 +47866,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Number of offline pages the user has. Android only.</summary>
 </histogram>
 
+<histogram name="OfflinePages.OfflineUsage" enum="OfflinePagesOfflineUsage">
+  <owner>dimich@chromium.org</owner>
+  <summary>
+    Enum-based buckets reflect the number of days the Chrome was used in each
+    specific way:
+    - Not used at all during whole day.
+    - Started, but failed to successfully navigate.
+    - Only navigated to offline pages locally saved on the device.
+    - Only navigated online.
+    - Navigated to both online and offline pages.
+    This data is accumulated locally and reported when connection is likely to
+    succeed (usually after successful online navigation).
+  </summary>
+</histogram>
+
 <histogram name="OfflinePages.OnlineOnOpen" enum="Boolean">
   <obsolete>
     Deprecated 5/2016. Offline pages no longer depend on bookmarks UI.
