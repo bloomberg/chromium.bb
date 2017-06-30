@@ -160,8 +160,7 @@ public class WebApkUtils {
     /** Returns a list of ResolveInfo for all of the installed browsers. */
     public static List<ResolveInfo> getInstalledBrowserResolveInfos(PackageManager packageManager) {
         Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://"));
-        return packageManager.queryIntentActivities(
-                browserIntent, PackageManager.MATCH_DEFAULT_ONLY);
+        return packageManager.queryIntentActivities(browserIntent, PackageManager.MATCH_ALL);
     }
 
     /**
