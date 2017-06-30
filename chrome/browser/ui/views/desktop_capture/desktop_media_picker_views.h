@@ -40,6 +40,7 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView,
   // Called by DesktopMediaListView.
   void OnSelectionChanged();
   void OnDoubleClick();
+  void SelectTab(content::DesktopMediaID::Type source_type);
 
   // views::TabbedPaneListener overrides.
   void TabSelectedAt(int index) override;
@@ -67,7 +68,7 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView,
   views::TabbedPane* GetPaneForTesting() const;
 
  private:
-  void SwitchSourceType(int index);
+  void OnSourceTypeSwitched(int index);
 
   DesktopMediaPickerViews* parent_;
 

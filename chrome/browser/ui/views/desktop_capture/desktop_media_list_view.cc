@@ -203,6 +203,7 @@ void DesktopMediaListView::OnSourceAdded(DesktopMediaList* list, int index) {
   if (!autoselect_source.empty() &&
       base::ASCIIToUTF16(autoselect_source) == source.name) {
     // Select, then accept and close the dialog when we're done adding sources.
+    parent_->SelectTab(source.id.type);
     source_view->OnFocus();
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
