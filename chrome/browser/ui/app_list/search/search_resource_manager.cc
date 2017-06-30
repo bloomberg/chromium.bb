@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/app_list/search/search_resource_manager.h"
 
-#include "ash/system/devicetype_utils.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/app_list/start_page_service.h"
 #include "chrome/grit/generated_resources.h"
@@ -39,12 +38,13 @@ SearchResourceManager::SearchResourceManager(Profile* profile,
                                              SearchBoxModel* search_box,
                                              SpeechUIModel* speech_ui)
     : search_box_(search_box),
-      speech_ui_(speech_ui) {
+      speech_ui_(speech_ui),
+      is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()) {
   speech_ui_->AddObserver(this);
 
-  if (features::IsFullscreenAppListEnabled()) {
-    search_box_->SetAccessibleName(l10n_util::GetStringFUTF16(
-        IDS_SEARCH_BOX_HINT_FULLSCREEN, ash::GetChromeOSDeviceName()));
+  if (is_fullscreen_app_list_enabled_) {
+    search_box_->SetAccessibleName(
+        l10n_util::GetStringUTF16(IDS_SEARCH_BOX_HINT_FULLSCREEN));
   } else {
     search_box_->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_SEARCH_BOX_HINT));
@@ -58,9 +58,9 @@ SearchResourceManager::~SearchResourceManager() {
 
 void SearchResourceManager::OnSpeechRecognitionStateChanged(
     SpeechRecognitionState new_state) {
-  if (features::IsFullscreenAppListEnabled()) {
-    search_box_->SetHintText(l10n_util::GetStringFUTF16(
-        IDS_SEARCH_BOX_HINT_FULLSCREEN, ash::GetChromeOSDeviceName()));
+  if (is_fullscreen_app_list_enabled_) {
+    search_box_->SetHintText(
+        l10n_util::GetStringUTF16(IDS_SEARCH_BOX_HINT_FULLSCREEN));
   } else {
     search_box_->SetHintText(l10n_util::GetStringUTF16(
         (new_state == SPEECH_RECOGNITION_HOTWORD_LISTENING)
