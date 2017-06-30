@@ -106,6 +106,7 @@ extern const char kEnableCloudPrintProxy[];
 extern const char kEnableDeviceDiscoveryNotifications[];
 extern const char kEnableDevToolsExperiments[];
 extern const char kEnableDomainReliability[];
+extern const char kEnableExperimentalFullscreenExitUI[];
 extern const char kEnableExperimentalHotwordHardware[];
 extern const char kEnableExtensionActivityLogging[];
 extern const char kEnableExtensionActivityLogTesting[];

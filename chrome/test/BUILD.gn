@@ -625,6 +625,7 @@ if (!is_android) {
           "../browser/ui/views/find_bar_views_interactive_uitest.cc",
           "../browser/ui/views/frame/browser_view_focus_uitest.cc",
           "../browser/ui/views/frame/browser_view_interactive_uitest.cc",
+          "../browser/ui/views/fullscreen_control/fullscreen_control_view_interactive_uitest.cc",
           "../browser/ui/views/keyboard_access_browsertest.cc",
           "../browser/ui/views/location_bar/location_icon_view_interactive_uitest.cc",
           "../browser/ui/views/location_bar/star_view_browsertest.cc",
