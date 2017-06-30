@@ -82409,6 +82409,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Variations.StoreSeed.HasCountry" enum="Boolean">
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Records whether a country code was present when storing the variations seed.
+  </summary>
+</histogram>
+
 <histogram name="Variations.StoreSeed.Size" units="KiB">
   <owner>asvitkine@chromium.org</owner>
   <summary>
