@@ -66,8 +66,8 @@ const char* SchedulerStateMachine::BeginImplFrameDeadlineModeToString(
       return "BEGIN_IMPL_FRAME_DEADLINE_MODE_REGULAR";
     case BEGIN_IMPL_FRAME_DEADLINE_MODE_LATE:
       return "BEGIN_IMPL_FRAME_DEADLINE_MODE_LATE";
-    case BEGIN_IMPL_FRAME_DEADLINE_MODE_BLOCKED_ON_READY_TO_DRAW:
-      return "BEGIN_IMPL_FRAME_DEADLINE_MODE_BLOCKED_ON_READY_TO_DRAW";
+    case BEGIN_IMPL_FRAME_DEADLINE_MODE_BLOCKED:
+      return "BEGIN_IMPL_FRAME_DEADLINE_MODE_BLOCKED";
   }
   NOTREACHED();
   return "???";
@@ -222,7 +222,8 @@ void SchedulerStateMachine::AsValueInto(
                     pending_tree_is_ready_for_activation_);
   state->SetBoolean("active_tree_needs_first_draw",
                     active_tree_needs_first_draw_);
-  state->SetBoolean("wait_for_ready_to_draw", wait_for_ready_to_draw_);
+  state->SetBoolean("active_tree_is_ready_to_draw",
+                    active_tree_is_ready_to_draw_);
   state->SetBoolean("did_create_and_initialize_first_layer_tree_frame_sink",
                     did_create_and_initialize_first_layer_tree_frame_sink_);
   state->SetString("tree_priority", TreePriorityToString(tree_priority_));
@@ -347,9 +348,11 @@ bool SchedulerStateMachine::ShouldDraw() const {
   if (begin_impl_frame_state_ != BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE)
     return false;
 
-  // Wait for active tree to be rasterized before drawing in browser compositor.
-  if (wait_for_ready_to_draw_) {
-    DCHECK(settings_.commit_to_active_tree);
+  // Wait for ready to draw in full-pipeline mode or the browser compositor's
+  // commit-to-active-tree mode.
+  if ((settings_.wait_for_all_pipeline_stages_before_draw ||
+       settings_.commit_to_active_tree) &&
+      !active_tree_is_ready_to_draw_) {
     return false;
   }
 
@@ -728,7 +731,9 @@ void SchedulerStateMachine::WillCommit(bool commit_has_no_updates) {
     pending_tree_is_ready_for_activation_ = false;
     last_begin_frame_sequence_number_pending_tree_was_fresh_ =
         last_begin_frame_sequence_number_begin_main_frame_sent_;
-    wait_for_ready_to_draw_ = settings_.commit_to_active_tree;
+    // Wait for the new pending tree to become ready to draw, which may happen
+    // before or after activation.
+    active_tree_is_ready_to_draw_ = false;
   }
 
   // Update state related to forced draws.
@@ -1095,10 +1100,8 @@ SchedulerStateMachine::CurrentBeginImplFrameDeadlineMode() const {
   if (settings_.using_synchronous_renderer_compositor) {
     // No deadline for synchronous compositor.
     return BEGIN_IMPL_FRAME_DEADLINE_MODE_NONE;
-  } else if (wait_for_ready_to_draw_) {
-    // In browser compositor, wait for active tree to be rasterized.
-    DCHECK(settings_.commit_to_active_tree);
-    return BEGIN_IMPL_FRAME_DEADLINE_MODE_BLOCKED_ON_READY_TO_DRAW;
+  } else if (ShouldBlockDeadlineIndefinitely()) {
+    return BEGIN_IMPL_FRAME_DEADLINE_MODE_BLOCKED;
   } else if (ShouldTriggerBeginImplFrameDeadlineImmediately()) {
     return BEGIN_IMPL_FRAME_DEADLINE_MODE_IMMEDIATE;
   } else if (needs_redraw_) {
@@ -1123,6 +1126,11 @@ bool SchedulerStateMachine::ShouldTriggerBeginImplFrameDeadlineImmediately()
   if (IsDrawThrottled())
     return false;
 
+  // In full-pipe mode, we just gave all pipeline stages a chance to contribute.
+  // We shouldn't wait any longer in any case - even if there are no updates.
+  if (settings_.wait_for_all_pipeline_stages_before_draw)
+    return true;
+
   if (active_tree_needs_first_draw_)
     return true;
 
@@ -1144,6 +1152,33 @@ bool SchedulerStateMachine::ShouldTriggerBeginImplFrameDeadlineImmediately()
   return false;
 }
 
+bool SchedulerStateMachine::ShouldBlockDeadlineIndefinitely() const {
+  if (!settings_.wait_for_all_pipeline_stages_before_draw &&
+      !settings_.commit_to_active_tree) {
+    return false;
+  }
+
+  // Avoid blocking when invisible / frame sink lost / can't draw, i.e. when
+  // PendingDrawsShouldBeAborted is true.
+  if (PendingDrawsShouldBeAborted())
+    return false;
+
+  // Wait for all pipeline stages.
+  if (ShouldSendBeginMainFrame())
+    return true;
+
+  if (begin_main_frame_state_ != BEGIN_MAIN_FRAME_STATE_IDLE)
+    return true;
+
+  if (has_pending_tree_)
+    return true;
+
+  if (!active_tree_is_ready_to_draw_)
+    return true;
+
+  return false;
+}
+
 bool SchedulerStateMachine::IsDrawThrottled() const {
   return pending_submit_frames_ >= kMaxPendingSubmitFrames;
 }
@@ -1158,7 +1193,6 @@ void SchedulerStateMachine::SetVisible(bool visible) {
     main_thread_missed_last_deadline_ = false;
 
   did_prepare_tiles_ = false;
-  wait_for_ready_to_draw_ = false;
 }
 
 void SchedulerStateMachine::SetBeginFrameSourcePaused(bool paused) {
@@ -1288,7 +1322,6 @@ void SchedulerStateMachine::DidLoseLayerTreeFrameSink() {
     return;
   layer_tree_frame_sink_state_ = LAYER_TREE_FRAME_SINK_NONE;
   needs_redraw_ = false;
-  wait_for_ready_to_draw_ = false;
 }
 
 void SchedulerStateMachine::NotifyReadyToActivate() {
@@ -1297,7 +1330,7 @@ void SchedulerStateMachine::NotifyReadyToActivate() {
 }
 
 void SchedulerStateMachine::NotifyReadyToDraw() {
-  wait_for_ready_to_draw_ = false;
+  active_tree_is_ready_to_draw_ = true;
 }
 
 void SchedulerStateMachine::DidCreateAndInitializeLayerTreeFrameSink() {

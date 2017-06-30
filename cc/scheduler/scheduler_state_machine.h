@@ -74,7 +74,7 @@ class CC_EXPORT SchedulerStateMachine {
     BEGIN_IMPL_FRAME_DEADLINE_MODE_IMMEDIATE,
     BEGIN_IMPL_FRAME_DEADLINE_MODE_REGULAR,
     BEGIN_IMPL_FRAME_DEADLINE_MODE_LATE,
-    BEGIN_IMPL_FRAME_DEADLINE_MODE_BLOCKED_ON_READY_TO_DRAW,
+    BEGIN_IMPL_FRAME_DEADLINE_MODE_BLOCKED,
   };
   static const char* BeginImplFrameDeadlineModeToString(
       BeginImplFrameDeadlineMode mode);
@@ -315,6 +315,7 @@ class CC_EXPORT SchedulerStateMachine {
   bool CouldCreatePendingTree() const;
 
   bool ShouldTriggerBeginImplFrameDeadlineImmediately() const;
+  bool ShouldBlockDeadlineIndefinitely() const;
 
   // True if we need to force activations to make forward progress.
   // TODO(sunnyps): Rename this to ShouldAbortCurrentFrame or similar.
@@ -404,7 +405,7 @@ class CC_EXPORT SchedulerStateMachine {
   bool defer_commits_ = false;
   bool video_needs_begin_frames_ = false;
   bool last_commit_had_no_updates_ = false;
-  bool wait_for_ready_to_draw_ = false;
+  bool active_tree_is_ready_to_draw_ = true;
   bool did_draw_in_last_frame_ = false;
   bool did_submit_in_last_frame_ = false;
   bool needs_impl_side_invalidation_ = false;
