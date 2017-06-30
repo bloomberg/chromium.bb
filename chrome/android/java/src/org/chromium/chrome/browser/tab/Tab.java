@@ -2599,8 +2599,8 @@ public class Tab
     /**
      * @return Whether hiding browser controls is enabled or not.
      */
-    private boolean isHidingBrowserControlsEnabled() {
-        return mBrowserControlsVisibilityDelegate.isHidingBrowserControlsEnabled();
+    private boolean canAutoHideBrowserControls() {
+        return mBrowserControlsVisibilityDelegate.canAutoHideBrowserControls();
     }
 
     /**
@@ -2622,8 +2622,8 @@ public class Tab
     /**
      * @return Whether showing browser controls is enabled or not.
      */
-    public boolean isShowingBrowserControlsEnabled() {
-        return mBrowserControlsVisibilityDelegate.isShowingBrowserControlsEnabled();
+    public boolean canShowBrowserControls() {
+        return mBrowserControlsVisibilityDelegate.canShowBrowserControls();
     }
 
     /**
@@ -2633,9 +2633,9 @@ public class Tab
     @BrowserControlsState
     public int getBrowserControlsStateConstraints() {
         int constraints = BrowserControlsState.BOTH;
-        if (!isShowingBrowserControlsEnabled()) {
+        if (!canShowBrowserControls()) {
             constraints = BrowserControlsState.HIDDEN;
-        } else if (!isHidingBrowserControlsEnabled()) {
+        } else if (!canAutoHideBrowserControls()) {
             constraints = BrowserControlsState.SHOWN;
         }
         return constraints;

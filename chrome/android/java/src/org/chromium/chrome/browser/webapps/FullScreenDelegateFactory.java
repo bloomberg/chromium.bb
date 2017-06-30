@@ -27,8 +27,8 @@ public class FullScreenDelegateFactory extends TabDelegateFactory {
     public BrowserControlsVisibilityDelegate createBrowserControlsVisibilityDelegate(Tab tab) {
         return new TabStateBrowserControlsVisibilityDelegate(tab) {
             @Override
-            public boolean isHidingBrowserControlsEnabled() {
-                return !isShowingBrowserControlsEnabled();
+            public boolean canAutoHideBrowserControls() {
+                return false;
             }
         };
     }

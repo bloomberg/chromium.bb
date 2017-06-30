@@ -286,15 +286,15 @@ public class ChromeTabbedActivity
         }
 
         @Override
-        public boolean isShowingBrowserControlsEnabled() {
+        public boolean canShowBrowserControls() {
             if (VrShellDelegate.isInVr()) return false;
-            return super.isShowingBrowserControlsEnabled();
+            return super.canShowBrowserControls();
         }
 
         @Override
-        public boolean isHidingBrowserControlsEnabled() {
+        public boolean canAutoHideBrowserControls() {
             if (VrShellDelegate.isInVr()) return true;
-            return super.isHidingBrowserControlsEnabled();
+            return super.canAutoHideBrowserControls();
         }
     }
 
