@@ -2756,5 +2756,114 @@ TEST(SchedulerStateMachineTest,
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 }
 
+TEST(SchedulerStateMachineTest, TestFullPipelineMode) {
+  SchedulerSettings scheduler_settings;
+  scheduler_settings.wait_for_all_pipeline_stages_before_draw = true;
+  StateMachine state(scheduler_settings);
+  SET_UP_STATE(state)
+
+  // Start clean and set commit.
+  state.SetNeedsBeginMainFrame();
+
+  // Begin the frame.
+  state.OnBeginImplFrame(0, 10);
+  // Deadline immediately enters blocking mode, because we need a main frame.
+  EXPECT_EQ(SchedulerStateMachine::BEGIN_IMPL_FRAME_DEADLINE_MODE_BLOCKED,
+            state.CurrentBeginImplFrameDeadlineMode());
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
+  EXPECT_MAIN_FRAME_STATE(SchedulerStateMachine::BEGIN_MAIN_FRAME_STATE_SENT);
+  EXPECT_FALSE(state.NeedsCommit());
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  // We are blocking on the main frame.
+  EXPECT_EQ(SchedulerStateMachine::BEGIN_IMPL_FRAME_DEADLINE_MODE_BLOCKED,
+            state.CurrentBeginImplFrameDeadlineMode());
+
+  // Tell the scheduler the frame finished.
+  state.NotifyBeginMainFrameStarted();
+  state.NotifyReadyToCommit();
+  EXPECT_MAIN_FRAME_STATE(
+      SchedulerStateMachine::BEGIN_MAIN_FRAME_STATE_READY_TO_COMMIT);
+  // We are blocking on commit.
+  EXPECT_EQ(SchedulerStateMachine::BEGIN_IMPL_FRAME_DEADLINE_MODE_BLOCKED,
+            state.CurrentBeginImplFrameDeadlineMode());
+  // Commit.
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_COMMIT);
+  // We are blocking on activation.
+  EXPECT_EQ(SchedulerStateMachine::BEGIN_IMPL_FRAME_DEADLINE_MODE_BLOCKED,
+            state.CurrentBeginImplFrameDeadlineMode());
+
+  // Ready to activate, but not draw.
+  state.NotifyReadyToActivate();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  // We are blocking on ready to draw.
+  EXPECT_EQ(SchedulerStateMachine::BEGIN_IMPL_FRAME_DEADLINE_MODE_BLOCKED,
+            state.CurrentBeginImplFrameDeadlineMode());
+
+  // Ready to draw triggers immediate deadline.
+  state.NotifyReadyToDraw();
+  EXPECT_EQ(SchedulerStateMachine::BEGIN_IMPL_FRAME_DEADLINE_MODE_IMMEDIATE,
+            state.CurrentBeginImplFrameDeadlineMode());
+
+  state.OnBeginImplFrameDeadline();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE);
+  state.DidSubmitCompositorFrame();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  // In full-pipe mode, CompositorFrameAck should always arrive before any
+  // subsequent BeginFrame.
+  state.DidReceiveCompositorFrameAck();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+
+  // Request a redraw without main frame.
+  state.SetNeedsRedraw(true);
+
+  // Redraw should happen immediately since there is no pending tree and active
+  // tree is ready to draw.
+  state.OnBeginImplFrame(0, 11);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  EXPECT_EQ(SchedulerStateMachine::BEGIN_IMPL_FRAME_DEADLINE_MODE_IMMEDIATE,
+            state.CurrentBeginImplFrameDeadlineMode());
+
+  // Redraw on impl-side only.
+  state.OnBeginImplFrameDeadline();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  state.DidSubmitCompositorFrame();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  // In full-pipe mode, CompositorFrameAck should always arrive before any
+  // subsequent BeginFrame.
+  state.DidReceiveCompositorFrameAck();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+
+  // Request a redraw on active frame and a main frame.
+  state.SetNeedsRedraw(true);
+  state.SetNeedsBeginMainFrame();
+
+  state.OnBeginImplFrame(0, 12);
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  // Blocked on main frame.
+  EXPECT_EQ(SchedulerStateMachine::BEGIN_IMPL_FRAME_DEADLINE_MODE_BLOCKED,
+            state.CurrentBeginImplFrameDeadlineMode());
+
+  // Even with SMOOTHNESS_TAKES_PRIORITY, we don't prioritize impl thread and we
+  // should wait for main frame.
+  state.SetTreePrioritiesAndScrollState(
+      SMOOTHNESS_TAKES_PRIORITY,
+      ScrollHandlerState::SCROLL_DOES_NOT_AFFECT_SCROLL_HANDLER);
+  EXPECT_EQ(SchedulerStateMachine::BEGIN_IMPL_FRAME_DEADLINE_MODE_BLOCKED,
+            state.CurrentBeginImplFrameDeadlineMode());
+
+  // Abort commit and ensure that we don't block anymore.
+  state.NotifyBeginMainFrameStarted();
+  state.BeginMainFrameAborted(CommitEarlyOutReason::FINISHED_NO_UPDATES);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  EXPECT_MAIN_FRAME_STATE(SchedulerStateMachine::BEGIN_MAIN_FRAME_STATE_IDLE);
+  EXPECT_EQ(SchedulerStateMachine::BEGIN_IMPL_FRAME_DEADLINE_MODE_IMMEDIATE,
+            state.CurrentBeginImplFrameDeadlineMode());
+}
+
 }  // namespace
 }  // namespace cc
