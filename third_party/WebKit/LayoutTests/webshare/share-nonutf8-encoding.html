@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<meta charset="iso-8859-1">
+<meta charset="windows-1252">
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script src="../resources/mojo-helpers.js"></script>
@@ -7,9 +7,11 @@
 <script>
 
 // Exact same test as in share-success.html, with same expectations. This tests
-// that the page's encoding (ISO-8859-1) is ignored and Unicode characters are
+// that the page's encoding (Windows-1252) is ignored and Unicode characters are
 // always percent-encoded in UTF-8.
 share_test((t, webshare, mock) => {
+  assert_equals(document.characterSet, 'windows-1252');
+
   const title = 'f\xe1ncy \u5199\u4f5c \ud83d\ude31';
   const url = 'https://\u6d4b\u8bd5.example.com/\ud83d\udcc4';
   const url_ascii = 'https://xn--0zwm56d.example.com/%F0%9F%93%84';
