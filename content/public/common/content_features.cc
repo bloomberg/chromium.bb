@@ -318,6 +318,11 @@ const base::Feature kWebAssemblyStreaming{"WebAssemblyStreaming",
 const base::Feature kWebAssemblyTrapHandler{"WebAssemblyTrapHandler",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether the WebAuthentication API is enabled:
+// https://w3c.github.io/webauthn
+const base::Feature kWebAuth{"WebAuthentication",
+                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If WebGL Image Chromium is allowed, this feature controls whether it is
 // enabled.
 const base::Feature kWebGLImageChromium{"WebGLImageChromium",

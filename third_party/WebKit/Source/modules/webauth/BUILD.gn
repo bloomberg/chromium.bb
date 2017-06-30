@@ -14,9 +14,4 @@ blink_modules_sources("webauth") {
     "WebAuthentication.cpp",
     "WebAuthentication.h",
   ]
-
-  deps = [
-    "//components/webauth:authenticator_blink",
-    "//device/usb/public/interfaces:interfaces_blink",
-  ]
 }

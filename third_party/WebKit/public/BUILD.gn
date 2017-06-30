@@ -705,10 +705,7 @@ grit("image_resources") {
 }
 
 mojom("mojo_bindings") {
-  visibility = [
-    "//components/payments/content/*",
-    "//content/*",
-  ]
+  visibility = [ "//content/*" ]
   visibility_blink = [
     "//content/common:mojo_bindings_blink",
     "//third_party/WebKit/Source/platform",
@@ -736,6 +733,7 @@ mojom("mojo_bindings") {
     "platform/modules/sensitive_input_visibility/sensitive_input_visibility_service.mojom",
     "platform/modules/serviceworker/service_worker_event_status.mojom",
     "platform/modules/serviceworker/service_worker_stream_handle.mojom",
+    "platform/modules/webauth/authenticator.mojom",
     "platform/modules/websockets/websocket.mojom",
     "platform/referrer.mojom",
     "platform/site_engagement.mojom",

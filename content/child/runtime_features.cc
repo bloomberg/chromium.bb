@@ -391,6 +391,10 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   WebRuntimeFeatures::EnableLocationHardReload(
       base::FeatureList::IsEnabled(features::kLocationHardReload));
 
+  if (!base::FeatureList::IsEnabled(features::kWebAuth) &&
+      !enableExperimentalWebPlatformFeatures)
+    WebRuntimeFeatures::EnableWebAuth(false);
+
   // Enable explicitly enabled features, and then disable explicitly disabled
   // ones.
   if (command_line.HasSwitch(switches::kEnableBlinkFeatures)) {
