@@ -54,6 +54,17 @@ suite('<history-item> unit test', function() {
       assertEquals(item.$['checkbox'], item.root.activeElement);
     });
   });
+
+  test('title changes with item', function() {
+    var time = item.$['time-accessed'];
+    assertEquals('', time.title);
+
+    time.dispatchEvent(new CustomEvent('mouseover'));
+    var initialTitle = time.title;
+    item.item = TEST_HISTORY_RESULTS[5];
+    time.dispatchEvent(new CustomEvent('mouseover'));
+    assertNotEquals(initialTitle, time.title);
+  });
 });
 
 suite('<history-item> integration test', function() {
