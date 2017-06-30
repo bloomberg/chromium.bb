@@ -683,6 +683,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_BRIGHTNESS" desc="The accessible text for the brightness slider.">
         Brightness
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_KEYBOARD_BRIGHTNESS" desc="The accessible text for the keyboard brightness slider.">
+        Keyboard brightness
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_AUDIO" desc="The label used in audio detailed page bottom header of ash tray pop up.">
         Audio settings
       </message>

@@ -28,6 +28,7 @@
 #include "ash/system/display_scale/tray_scale.h"
 #include "ash/system/enterprise/tray_enterprise.h"
 #include "ash/system/ime/tray_ime_chromeos.h"
+#include "ash/system/keyboard_brightness/tray_keyboard_brightness.h"
 #include "ash/system/media_security/multi_profile_media_tray_item.h"
 #include "ash/system/network/tray_network.h"
 #include "ash/system/network/tray_vpn.h"
@@ -265,6 +266,7 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   tray_scale_ = new TrayScale(this);
   AddTrayItem(base::WrapUnique(tray_scale_));
   AddTrayItem(base::MakeUnique<TrayBrightness>(this));
+  AddTrayItem(base::MakeUnique<TrayKeyboardBrightness>(this));
   AddTrayItem(base::MakeUnique<TrayCapsLock>(this));
   if (NightLightController::IsFeatureEnabled()) {
     tray_night_light_ = new TrayNightLight(this);

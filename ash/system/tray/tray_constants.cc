@@ -47,6 +47,7 @@ const int kTrayPopupPaddingHorizontal = 18;
 const int kTrayPopupPaddingBetweenItems = 10;
 const int kTrayPopupButtonEndMargin = 10;
 const int kTrayPopupLabelHorizontalPadding = 4;
+const int kTrayPopupSliderHorizontalPadding = 16;
 const int kTrayPopupItemMinHeight = 48;
 const int kTrayPopupItemMinStartWidth = 48;
 const int kTrayPopupItemMinEndWidth =

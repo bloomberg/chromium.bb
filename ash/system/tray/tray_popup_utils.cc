@@ -235,7 +235,8 @@ views::ImageView* TrayPopupUtils::CreateMoreImageView() {
 
 views::Slider* TrayPopupUtils::CreateSlider(views::SliderListener* listener) {
   views::Slider* slider = new views::Slider(listener);
-  slider->SetBorder(views::CreateEmptyBorder(gfx::Insets(0, 16)));
+  slider->SetBorder(views::CreateEmptyBorder(
+      gfx::Insets(0, kTrayPopupSliderHorizontalPadding)));
   return slider;
 }
 
