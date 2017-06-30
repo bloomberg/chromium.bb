@@ -1,7 +1,0 @@
-This is a testharness.js-based test.
-FAIL An origin time of zero is used when none is supplied Illegal constructor
-FAIL A zero origin time produces a document timeline with a current time identical to the default document timeline Illegal constructor
-FAIL A positive origin time makes the document timeline's current time lag behind the default document timeline Illegal constructor
-FAIL A negative origin time makes the document timeline's current time run ahead of the default document timeline Illegal constructor
-Harness: the test ran to completion.
-

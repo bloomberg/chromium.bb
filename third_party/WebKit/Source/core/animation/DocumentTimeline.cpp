@@ -32,6 +32,7 @@
 
 #include <algorithm>
 #include "core/animation/AnimationClock.h"
+#include "core/animation/DocumentTimelineOptions.h"
 #include "core/animation/ElementAnimations.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrameView.h"
@@ -59,14 +60,24 @@ bool CompareAnimations(const Member<Animation>& left,
 const double DocumentTimeline::kMinimumDelay = 0.04;
 
 DocumentTimeline* DocumentTimeline::Create(Document* document,
+                                           double origin_time_in_milliseconds,
                                            PlatformTiming* timing) {
-  return new DocumentTimeline(document, timing);
+  return new DocumentTimeline(document, origin_time_in_milliseconds, timing);
 }
 
-DocumentTimeline::DocumentTimeline(Document* document, PlatformTiming* timing)
+DocumentTimeline* DocumentTimeline::Create(
+    ExecutionContext* execution_context,
+    const DocumentTimelineOptions& options) {
+  Document* document = ToDocument(execution_context);
+  return new DocumentTimeline(document, options.originTime(), nullptr);
+}
+
+DocumentTimeline::DocumentTimeline(Document* document,
+                                   double origin_time_in_milliseconds,
+                                   PlatformTiming* timing)
     : document_(document),
-      // 0 is used by unit tests which cannot initialize from the loader
-      zero_time_(0),
+      origin_time_(origin_time_in_milliseconds / 1000),
+      zero_time_(origin_time_),
       zero_time_initialized_(false),
       outdated_animation_count_(0),
       playback_rate_(1),
@@ -182,14 +193,15 @@ DEFINE_TRACE(DocumentTimeline::DocumentTimelineTiming) {
 
 double DocumentTimeline::ZeroTime() {
   if (!zero_time_initialized_ && document_ && document_->Loader()) {
-    zero_time_ = document_->Loader()->GetTiming().ReferenceMonotonicTime();
+    zero_time_ = document_->Loader()->GetTiming().ReferenceMonotonicTime() +
+                 origin_time_;
     zero_time_initialized_ = true;
   }
   return zero_time_;
 }
 
 void DocumentTimeline::ResetForTesting() {
-  zero_time_ = 0;
+  zero_time_ = origin_time_;
   zero_time_initialized_ = true;
   playback_rate_ = 1;
   last_current_time_internal_ = 0;
