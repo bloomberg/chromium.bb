@@ -83,10 +83,12 @@ void VrShellDelegate::SetPresentResult(JNIEnv* env,
                                        const JavaParamRef<jobject>& obj,
                                        jboolean success) {
   CHECK(!present_callback_.is_null());
-  if (success && !gvr_delegate_) {
-    // We have to wait until the GL thread is ready since we have to pass it
-    // the VRSubmitFrameClient.
-    pending_successful_present_request_ = true;
+  if (!gvr_delegate_) {
+    if (success) {
+      // We have to wait until the GL thread is ready since we have to pass it
+      // the VRSubmitFrameClient.
+      pending_successful_present_request_ = true;
+    }
     return;
   }
 
@@ -217,7 +219,7 @@ void VrShellDelegate::SetListeningForActivate(bool listening) {
 
 void VrShellDelegate::GetNextMagicWindowPose(
     device::mojom::VRDisplay::GetNextMagicWindowPoseCallback callback) {
-  if (!gvr_api_) {
+  if (!gvr_api_ || gvr_delegate_) {
     std::move(callback).Run(nullptr);
     return;
   }

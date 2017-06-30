@@ -183,9 +183,7 @@ void VRDisplay::RequestVSync() {
         doc->RequestAnimationFrame(new VRDisplayFrameRequestCallback(this));
     return;
   }
-
-  if (!pending_vrdisplay_raf_)
-    return;
+  DCHECK(vr_presentation_provider_.is_bound());
 
   // The logic here is a bit subtle. We get called from one of the following
   // four contexts:
@@ -495,7 +493,11 @@ void VRDisplay::BeginPresent() {
     Platform::Current()->RecordRapporURL("VR.WebVR.PresentSuccess",
                                          WebURL(doc->Url()));
   }
-
+  if (!FocusedOrPresenting() && display_blurred_) {
+    // Presentation doesn't care about focus, so if we're blurred because of
+    // focus, then unblur.
+    OnFocus();
+  }
   is_presenting_ = true;
   // Call RequestVSync to switch from the (internal) document rAF to the
   // VrPresentationProvider VSync.
@@ -965,11 +967,9 @@ bool VRDisplay::HasPendingActivity() const {
 
 void VRDisplay::FocusChanged() {
   DVLOG(1) << __FUNCTION__;
-  if (is_presenting_)
-    return;
   if (navigator_vr_->IsFocused()) {
     OnFocus();
-  } else {
+  } else if (!is_presenting_) {
     OnBlur();
   }
 }
