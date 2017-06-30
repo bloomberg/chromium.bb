@@ -86,8 +86,7 @@ eqasc2uni (const unsigned char *a, const widechar * b, const int len)
   return 1;
 }
 
-typedef struct
-{
+typedef struct CharsString {
   widechar length;
   widechar chars[MAXSTRING];
 } CharsString;
@@ -100,10 +99,9 @@ static TranslationTableHeader *table;
 static TranslationTableOffset tableSize;
 static TranslationTableOffset tableUsed;
 
-typedef struct
-{
-  void *next;
-  void *table;
+typedef struct ChainEntry {
+  struct ChainEntry *next;
+  TranslationTableHeader *table;
   int tableListLength;
   char tableList[1];
 } ChainEntry;
@@ -123,8 +121,7 @@ static const char *characterClassNames[] = {
   NULL
 };
 
-typedef struct CharacterClass
-{
+typedef struct CharacterClass {
   struct CharacterClass *next;
   TranslationTableCharacterAttributes attribute;
   widechar length;
@@ -447,7 +444,7 @@ allocateSpaceInTable (FileInfo * nested, TranslationTableOffset * offset,
   TranslationTableOffset size = tableUsed + spaceNeeded;
   if (size > tableSize)
     {
-      void *newTable;
+      TranslationTableHeader *newTable;
       size += (size / OFFSETSIZE);
       newTable = realloc (table, size);
       if (!newTable)
@@ -1710,8 +1707,7 @@ getCharacterClass (FileInfo * nested, const CharacterClass **class,
   return 0;
 }
 
-typedef struct RuleName
-{
+typedef struct RuleName {
   struct RuleName *next;
   TranslationTableOffset ruleOffset;
   widechar length;
@@ -3445,8 +3441,7 @@ compileUplow (FileInfo * nested,
 
 /*Functions for compiling hyphenation tables*/
 
-typedef struct			/*hyphenation dictionary: finite state machine */
-{
+typedef struct HyphenDict { /*hyphenation dictionary: finite state machine */
   int numStates;
   HyphenationState *states;
 } HyphenDict;
@@ -3454,15 +3449,13 @@ typedef struct			/*hyphenation dictionary: finite state machine */
 #define DEFAULTSTATE 0xffff
 #define HYPHENHASHSIZE 8191
 
-typedef struct
-{
-  void *next;
+typedef struct HyphenHashEntry {
+  struct HyphenHashEntry *next;
   CharsString *key;
   int val;
 } HyphenHashEntry;
 
-typedef struct
-{
+typedef struct HyphenHashTab {
   HyphenHashEntry *entries[HYPHENHASHSIZE];
 } HyphenHashTab;
 
@@ -5276,7 +5269,7 @@ includeFile (FileInfo * nested, CharsString * includedFile,
  * Compile source tables into a table in memory
  *
  */
-static void *
+static TranslationTableHeader *
 compileTranslationTable (const char *tableList,
 			 CharacterClass **characterClasses,
 			 TranslationTableCharacterAttributes *characterClassAttribute,
@@ -5345,7 +5338,7 @@ cleanup:
 	free (table);
       table = NULL;
     }
-  return (void *) table;
+  return table;
 }
 
 static ChainEntry *lastTrans = NULL;
@@ -5395,7 +5388,7 @@ lou_getTable (const char *tableList)
   int tableListLen;
   ChainEntry *currentEntry = NULL;
   ChainEntry *lastEntry = NULL;
-  void *newTable;
+  TranslationTableHeader *newTable;
   if (tableList == NULL || *tableList == 0)
     return NULL;
   errorCount = fileCount = 0;
