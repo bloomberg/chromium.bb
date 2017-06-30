@@ -48,7 +48,7 @@ extern "C" {
 #include <setjmp.h>
 }
 
-#if CPU(BIG_ENDIAN) || CPU(MIDDLE_ENDIAN)
+#if CPU(BIG_ENDIAN)
 #error Blink assumes a little-endian target.
 #endif
 
