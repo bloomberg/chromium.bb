@@ -126,6 +126,9 @@ void AudioSinkAndroidAudioTrackImpl::FinalizeOnFeederThread() {
     LOG(WARNING) << "j_audio_sink_audiotrack_impl_ is NULL";
     return;
   }
+
+  wait_for_eos_task_.Cancel();
+
   Java_AudioSinkAudioTrackImpl_close(base::android::AttachCurrentThread(),
                                      j_audio_sink_audiotrack_impl_);
   j_audio_sink_audiotrack_impl_.Reset();
@@ -166,9 +169,8 @@ void AudioSinkAndroidAudioTrackImpl::FeedData() {
 
   DCHECK(pending_data_);
   if (pending_data_->end_of_stream()) {
-    LOG(INFO) << __func__ << "(" << this << "): EOS!";
     state_ = kStateGotEos;
-    PostPcmCallback(sink_rendering_delay_);
+    ScheduleWaitForEosTask();
     return;
   }
 
@@ -215,6 +217,29 @@ void AudioSinkAndroidAudioTrackImpl::FeedData() {
 
   TrackRawMonotonicClockDeviation();
 
+  PostPcmCallback(sink_rendering_delay_);
+}
+
+void AudioSinkAndroidAudioTrackImpl::ScheduleWaitForEosTask() {
+  DCHECK(wait_for_eos_task_.IsCancelled());
+  DCHECK(state_ == kStateGotEos);
+
+  int64_t playout_time_left_us =
+      Java_AudioSinkAudioTrackImpl_prepareForShutdown(
+          base::android::AttachCurrentThread(), j_audio_sink_audiotrack_impl_);
+  LOG(INFO) << __func__ << "(" << this << "): Hit EOS, playout time left is "
+            << playout_time_left_us << "us";
+  wait_for_eos_task_.Reset(base::Bind(
+      &AudioSinkAndroidAudioTrackImpl::OnPlayoutDone, base::Unretained(this)));
+  base::TimeDelta delay =
+      base::TimeDelta::FromMicroseconds(playout_time_left_us);
+  feeder_task_runner_->PostDelayedTask(FROM_HERE, wait_for_eos_task_.callback(),
+                                       delay);
+}
+
+void AudioSinkAndroidAudioTrackImpl::OnPlayoutDone() {
+  DCHECK(feeder_task_runner_->BelongsToCurrentThread());
+  DCHECK(state_ == kStateGotEos);
   PostPcmCallback(sink_rendering_delay_);
 }
 

@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/android/jni_android.h"
+#include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -86,6 +87,9 @@ class AudioSinkAndroidAudioTrackImpl : public AudioSinkAndroid {
   void FeedData();
   void FeedDataContinue();
 
+  void ScheduleWaitForEosTask();
+  void OnPlayoutDone();
+
   // Reformats audio data from planar float into interleaved float for
   // AudioTrack. I.e.:
   // "LLLLLLLLLLLLLLLLRRRRRRRRRRRRRRRR" -> "LRLRLRLRLRLRLRLRLRLRLRLRLRLRLRLR".
@@ -125,6 +129,8 @@ class AudioSinkAndroidAudioTrackImpl : public AudioSinkAndroid {
   // is handled separately via FeedDataContinue().
   base::Thread feeder_thread_;
   scoped_refptr<base::SingleThreadTaskRunner> feeder_task_runner_;
+
+  base::CancelableClosure wait_for_eos_task_;
 
   const scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner_;
 
