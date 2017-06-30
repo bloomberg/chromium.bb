@@ -283,6 +283,27 @@ bool StartPageView::OnKeyPressed(const ui::KeyEvent& event) {
   const int forward_dir = base::i18n::IsRTL() ? -1 : 1;
   int selected_index = suggestions_container_->selected_index();
 
+  if (expand_arrow_view_ && expand_arrow_view_->selected()) {
+    if (expand_arrow_view_->OnKeyPressed(event)) {
+      expand_arrow_view_->SetSelected(false);
+      return true;
+    }
+
+    if (event.key_code() == ui::VKEY_RIGHT ||
+        (event.key_code() == ui::VKEY_TAB && !event.IsShiftDown())) {
+      expand_arrow_view_->SetSelected(false);
+      suggestions_container_->SetSelectedIndex(0);
+    } else if (event.key_code() == ui::VKEY_LEFT ||
+               event.key_code() == ui::VKEY_UP ||
+               (event.key_code() == ui::VKEY_TAB && event.IsShiftDown())) {
+      expand_arrow_view_->SetSelected(false);
+      suggestions_container_->SetSelectedIndex(
+          suggestions_container_->num_results() - 1);
+    }
+
+    return true;
+  }
+
   if (custom_launcher_page_background_->selected()) {
     selected_index = suggestions_container_->num_results();
     switch (event.key_code()) {
@@ -304,9 +325,13 @@ bool StartPageView::OnKeyPressed(const ui::KeyEvent& event) {
       dir = -forward_dir;
       break;
     case ui::VKEY_RIGHT:
-      // Don't go to the custom launcher page from the All apps tile.
-      if (selected_index != suggestions_container_->num_results() - 1)
+      // For non-fullscreen app list, don't go to the custom launcher page from
+      // the All apps tile. For fullscreen app list, allow this so that expand
+      // arrow is selected.
+      if (is_fullscreen_app_list_enabled_ ||
+          selected_index != suggestions_container_->num_results() - 1) {
         dir = forward_dir;
+      }
       break;
     case ui::VKEY_UP:
       // Up selects the first tile if the custom launcher is selected.
@@ -318,7 +343,8 @@ bool StartPageView::OnKeyPressed(const ui::KeyEvent& event) {
     case ui::VKEY_DOWN:
       // Down selects the first tile if nothing is selected.
       dir = 1;
-      // If something is selected, select the custom launcher page.
+      // If something is selected, for non-fullscreen app list, it selects the
+      // custom launcher page; for fullscreen app list, it selects expand arrow.
       if (suggestions_container_->IsValidSelectionIndex(selected_index))
         selected_index = suggestions_container_->num_results() - 1;
       break;
@@ -343,6 +369,13 @@ bool StartPageView::OnKeyPressed(const ui::KeyEvent& event) {
   if (suggestions_container_->IsValidSelectionIndex(selection_index)) {
     custom_launcher_page_background_->SetSelected(false);
     suggestions_container_->SetSelectedIndex(selection_index);
+    return true;
+  }
+
+  if (expand_arrow_view_ &&
+      selection_index == suggestions_container_->num_results()) {
+    expand_arrow_view_->SetSelected(true);
+    suggestions_container_->ClearSelectedIndex();
     return true;
   }
 
