@@ -453,7 +453,7 @@ WebThreadSafeData WebFrameSerializer::GenerateMHTMLHeader(
   MHTMLArchive::GenerateMHTMLHeader(boundary, document->title(),
                                     document->SuggestedMIMEType(),
                                     *buffer->MutableData());
-  return buffer;
+  return WebThreadSafeData(buffer);
 }
 
 WebThreadSafeData WebFrameSerializer::GenerateMHTMLParts(
@@ -516,7 +516,7 @@ WebThreadSafeData WebFrameSerializer::GenerateMHTMLParts(
                                       *output->MutableData());
     }
   }
-  return output;
+  return WebThreadSafeData(output);
 }
 
 bool WebFrameSerializer::Serialize(
