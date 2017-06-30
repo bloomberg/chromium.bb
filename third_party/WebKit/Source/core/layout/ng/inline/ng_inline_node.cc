@@ -163,57 +163,8 @@ unsigned PlaceInlineBoxChildren(
   return text_index;
 }
 
-}  // namespace
-
-NGInlineNode::NGInlineNode(LayoutNGBlockFlow* block)
-    : NGLayoutInputNode(block) {
-  DCHECK(block);
-  block->SetLayoutNGInline(true);
-  if (!block->HasNGInlineNodeData())
-    block->ResetNGInlineNodeData();
-}
-
-NGInlineItemRange NGInlineNode::Items(unsigned start, unsigned end) {
-  return NGInlineItemRange(&MutableData().items_, start, end);
-}
-
-void NGInlineNode::InvalidatePrepareLayout() {
-  ToLayoutNGBlockFlow(GetLayoutBlockFlow())->ResetNGInlineNodeData();
-  MutableData().text_content_ = String();
-  MutableData().items_.clear();
-}
-
-void NGInlineNode::PrepareLayout() {
-  // Scan list of siblings collecting all in-flow non-atomic inlines. A single
-  // NGInlineNode represent a collection of adjacent non-atomic inlines.
-  CollectInlines();
-  SegmentText();
-  ShapeText();
-}
-
-// TODO(xiaochengh): Remove this forward declaration, and move the function body
-// to the anonymous namespace.
-static LayoutBox* CollectInlinesInternal(LayoutBlockFlow*,
-                                         NGInlineItemsBuilder*);
-
-// Depth-first-scan of all LayoutInline and LayoutText nodes that make up this
-// NGInlineNode object. Collects LayoutText items, merging them up into the
-// parent LayoutInline where possible, and joining all text content in a single
-// string to allow bidi resolution and shaping of the entire block.
-void NGInlineNode::CollectInlines() {
-  DCHECK(Data().text_content_.IsNull());
-  DCHECK(Data().items_.IsEmpty());
-  NGInlineItemsBuilder builder(&MutableData().items_);
-  MutableData().next_sibling_ =
-      CollectInlinesInternal(GetLayoutBlockFlow(), &builder);
-  MutableData().text_content_ = builder.ToString();
-  MutableData().is_bidi_enabled_ =
-      !Data().text_content_.IsEmpty() &&
-      !(Data().text_content_.Is8Bit() && !builder.HasBidiControls());
-}
-
-static LayoutBox* CollectInlinesInternal(LayoutBlockFlow* block,
-                                         NGInlineItemsBuilder* builder) {
+LayoutBox* CollectInlinesInternal(LayoutBlockFlow* block,
+                                  NGInlineItemsBuilder* builder) {
   builder->EnterBlock(block->Style());
   LayoutObject* node = block->FirstChild();
   LayoutBox* next_box = nullptr;
@@ -278,6 +229,50 @@ static LayoutBox* CollectInlinesInternal(LayoutBlockFlow* block,
   }
   builder->ExitBlock();
   return next_box;
+}
+
+}  // namespace
+
+NGInlineNode::NGInlineNode(LayoutNGBlockFlow* block)
+    : NGLayoutInputNode(block) {
+  DCHECK(block);
+  block->SetLayoutNGInline(true);
+  if (!block->HasNGInlineNodeData())
+    block->ResetNGInlineNodeData();
+}
+
+NGInlineItemRange NGInlineNode::Items(unsigned start, unsigned end) {
+  return NGInlineItemRange(&MutableData().items_, start, end);
+}
+
+void NGInlineNode::InvalidatePrepareLayout() {
+  ToLayoutNGBlockFlow(GetLayoutBlockFlow())->ResetNGInlineNodeData();
+  MutableData().text_content_ = String();
+  MutableData().items_.clear();
+}
+
+void NGInlineNode::PrepareLayout() {
+  // Scan list of siblings collecting all in-flow non-atomic inlines. A single
+  // NGInlineNode represent a collection of adjacent non-atomic inlines.
+  CollectInlines();
+  SegmentText();
+  ShapeText();
+}
+
+// Depth-first-scan of all LayoutInline and LayoutText nodes that make up this
+// NGInlineNode object. Collects LayoutText items, merging them up into the
+// parent LayoutInline where possible, and joining all text content in a single
+// string to allow bidi resolution and shaping of the entire block.
+void NGInlineNode::CollectInlines() {
+  DCHECK(Data().text_content_.IsNull());
+  DCHECK(Data().items_.IsEmpty());
+  NGInlineItemsBuilder builder(&MutableData().items_);
+  MutableData().next_sibling_ =
+      CollectInlinesInternal(GetLayoutBlockFlow(), &builder);
+  MutableData().text_content_ = builder.ToString();
+  MutableData().is_bidi_enabled_ =
+      !Data().text_content_.IsEmpty() &&
+      !(Data().text_content_.Is8Bit() && !builder.HasBidiControls());
 }
 
 void NGInlineNode::SegmentText() {
