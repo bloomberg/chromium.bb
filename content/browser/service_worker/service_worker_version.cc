@@ -342,10 +342,15 @@ void ServiceWorkerVersion::SetStatus(Status status) {
          !(status == INSTALLED || status == ACTIVATING || status == ACTIVATED));
 
   status_ = status;
-  if (skip_waiting_ && status_ == ACTIVATED) {
-    for (int request_id : pending_skip_waiting_requests_)
-      DidSkipWaiting(request_id);
-    pending_skip_waiting_requests_.clear();
+  if (skip_waiting_) {
+    if (status == INSTALLED) {
+      RestartTick(&skip_waiting_time_);
+    } else if (status == ACTIVATED) {
+      ClearTick(&skip_waiting_time_);
+      for (int request_id : pending_skip_waiting_requests_)
+        DidSkipWaiting(request_id);
+      pending_skip_waiting_requests_.clear();
+    }
   }
 
   // OnVersionStateChanged() invokes updates of the status using state
@@ -654,6 +659,7 @@ void ServiceWorkerVersion::AddControllee(
   controllee_map_[uuid] = provider_host;
   // Keep the worker alive a bit longer right after a new controllee is added.
   RestartTick(&idle_time_);
+  ClearTick(&no_controllees_time_);
   for (auto& observer : listeners_)
     observer.OnControlleeAdded(this, provider_host);
 }
@@ -666,6 +672,7 @@ void ServiceWorkerVersion::RemoveControllee(
   for (auto& observer : listeners_)
     observer.OnControlleeRemoved(this, provider_host);
   if (!HasControllee()) {
+    RestartTick(&no_controllees_time_);
     for (auto& observer : listeners_)
       observer.OnNoControllees(this);
   }
@@ -1308,6 +1315,8 @@ void ServiceWorkerVersion::OnSkipWaiting(int request_id) {
       context_->GetLiveRegistration(registration_id_);
   if (!registration)
     return;
+  if (skip_waiting_time_.is_null())
+    RestartTick(&skip_waiting_time_);
   pending_skip_waiting_requests_.push_back(request_id);
   if (pending_skip_waiting_requests_.size() == 1)
     registration->ActivateWaitingVersionWhenReady();
