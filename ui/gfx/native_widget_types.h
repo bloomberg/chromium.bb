@@ -133,6 +133,12 @@ typedef void* NativeCursor;
 typedef ui::ViewAndroid* NativeView;
 typedef ui::WindowAndroid* NativeWindow;
 typedef jobject NativeEvent;
+#elif defined(OS_FUCHSIA)
+// TODO(fuchsia): Update when we have a plan for UI on Fuchsia.
+typedef void* NativeCursor;
+typedef void* NativeView;
+typedef void* NativeWindow;
+typedef void* NativeEvent;
 #else
 #error Unknown build environment.
 #endif
@@ -196,6 +202,10 @@ typedef ANativeWindow* AcceleratedWidget;
 constexpr AcceleratedWidget kNullAcceleratedWidget = 0;
 #elif defined(USE_OZONE)
 typedef int32_t AcceleratedWidget;
+constexpr AcceleratedWidget kNullAcceleratedWidget = 0;
+#elif defined(OS_FUCHSIA)
+// TODO(fuchsia): Update when we have a plan for UI on Fuchsia.
+typedef void* AcceleratedWidget;
 constexpr AcceleratedWidget kNullAcceleratedWidget = 0;
 #else
 #error unknown platform

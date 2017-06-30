@@ -57,9 +57,10 @@ SK_API std::unique_ptr<SkCanvas> CreatePlatformCanvasWithSharedSection(
 SK_API HDC GetNativeDrawingContext(SkCanvas* canvas);
 
 #elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || \
-      defined(__sun) || defined(ANDROID) || defined(__APPLE__)
-  // Construct a canvas from the given memory region. The memory is not cleared
-  // first. @data must be, at least, @height * StrideForWidth(@width) bytes.
+    defined(__sun) || defined(ANDROID) || defined(__APPLE__) ||             \
+    defined(__Fuchsia__)
+// Construct a canvas from the given memory region. The memory is not cleared
+// first. @data must be, at least, @height * StrideForWidth(@width) bytes.
 SK_API std::unique_ptr<SkCanvas> CreatePlatformCanvasWithPixels(
     int width,
     int height,
