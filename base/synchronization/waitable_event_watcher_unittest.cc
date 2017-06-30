@@ -35,12 +35,12 @@ void QuitWhenSignaled(WaitableEvent* event) {
 
 class DecrementCountContainer {
  public:
-  explicit DecrementCountContainer(int* counter) : counter_(counter) {
-  }
+  explicit DecrementCountContainer(int* counter) : counter_(counter) {}
   void OnWaitableEventSignaled(WaitableEvent* object) {
     // NOTE: |object| may be already deleted.
     --(*counter_);
   }
+
  private:
   int* counter_;
 };
@@ -121,6 +121,39 @@ TEST_P(WaitableEventWatcherTest, OutlivesMessageLoop) {
       watcher.StartWatching(&event, BindOnce(&QuitWhenSignaled));
     }
   }
+}
+
+TEST_P(WaitableEventWatcherTest, SignaledAtStart) {
+  MessageLoop message_loop(GetParam());
+
+  WaitableEvent event(WaitableEvent::ResetPolicy::MANUAL,
+                      WaitableEvent::InitialState::SIGNALED);
+
+  WaitableEventWatcher watcher;
+  watcher.StartWatching(&event, BindOnce(&QuitWhenSignaled));
+
+  RunLoop().Run();
+}
+
+TEST_P(WaitableEventWatcherTest, StartWatchingInCallback) {
+  MessageLoop message_loop(GetParam());
+
+  WaitableEvent event(WaitableEvent::ResetPolicy::MANUAL,
+                      WaitableEvent::InitialState::NOT_SIGNALED);
+
+  WaitableEventWatcher watcher;
+  watcher.StartWatching(
+      &event, BindOnce(
+                  [](WaitableEventWatcher* watcher, WaitableEvent* event) {
+                    // |event| is manual, so the second watcher will run
+                    // immediately.
+                    watcher->StartWatching(event, BindOnce(&QuitWhenSignaled));
+                  },
+                  &watcher));
+
+  event.Signal();
+
+  RunLoop().Run();
 }
 
 // To help detect errors around deleting WaitableEventWatcher, an additional
