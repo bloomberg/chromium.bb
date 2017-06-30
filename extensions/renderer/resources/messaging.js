@@ -88,7 +88,7 @@
       //
       // TODO(kalman/mpcomplete): it would be better to do the same validation
       // here that we do for runtime.sendMessage (and variants), i.e. throw an
-      // schema validation Error, but just maintain the old behaviour until
+      // schema validation Error, but just maintain the old behavior until
       // there's a good reason not to (http://crbug.com/263077).
       console.error('Illegal argument to Port.postMessage');
       return;
@@ -410,8 +410,9 @@
         sendResponseAndClearCallback();
       } else {
         lastError.set(
-            port.name, 'The message port closed before a reponse was received.',
-            null, chrome);
+            port.name,
+            'The message port closed before a response was received.', null,
+            chrome);
         try {
           sendResponseAndClearCallback();
         } finally {
