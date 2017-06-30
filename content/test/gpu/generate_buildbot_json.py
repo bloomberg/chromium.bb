@@ -1306,7 +1306,8 @@ COMMON_GTESTS = {
       # ANGLE test retries deliberately disabled to prevent flakiness.
       # http://crbug.com/669196
       '--test-launcher-retry-limit=0'
-    ]
+    ],
+    'linux_args': [ '--no-xvfb' ]
   },
   # Until the media-only tests are extracted from content_unittests,
   # and audio_unittests and content_unittests can be run on the commit
@@ -1358,7 +1359,8 @@ COMMON_GTESTS = {
         ],
       },
     ],
-    'desktop_args': ['--use-gpu-in-tests']
+    'desktop_args': ['--use-gpu-in-tests'],
+    'linux_args': [ '--no-xvfb' ]
   },
   # The gles2_conform_tests are closed-source and deliberately only run
   # on the FYI waterfall and the optional tryservers.

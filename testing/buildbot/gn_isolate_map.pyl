@@ -117,8 +117,7 @@
   },
   "angle_unittests": {
     "label": "//third_party/angle/src/tests:angle_unittests",
-    "type": "raw",
-    "args": [],
+    "type": "console_test_launcher",
   },
   "app_list_unittests": {
     "label": "//ui/app_list:app_list_unittests",
@@ -491,8 +490,7 @@
   },
   "gl_unittests": {
     "label": "//ui/gl:gl_unittests",
-    "type": "raw",
-    "args": [],
+    "type": "console_test_launcher",
   },
   "gl_unittests_ozone": {
     "label": "//ui/gl:gl_unittests_ozone",
