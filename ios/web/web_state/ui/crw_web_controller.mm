@@ -4788,15 +4788,24 @@ registerLoadRequestForURL:(const GURL&)requestURL
     [self setDocumentURL:webViewURL];
     [self webPageChanged];
 
-    web::NavigationContextImpl* context =
+    web::NavigationContextImpl* existingContext =
         [self contextForPendingNavigationWithURL:webViewURL];
-    // Same document navigation does not contain response headers.
-    net::HttpResponseHeaders* headers =
-        isSameDocumentNavigation ? nullptr
-                                 : _webStateImpl->GetHttpResponseHeaders();
-    context->SetResponseHeaders(headers);
-    context->SetIsSameDocument(isSameDocumentNavigation);
-    _webStateImpl->OnNavigationFinished(context);
+    if (!existingContext && isSameDocumentNavigation) {
+      // This is a renderer-initiated same-document navigation, which needs to
+      // be registered.
+      std::unique_ptr<web::NavigationContextImpl> newContext =
+          [self registerLoadRequestForURL:webViewURL];
+      newContext->SetIsSameDocument(true);
+      _webStateImpl->OnNavigationFinished(newContext.get());
+    } else {
+      // Same document navigation does not contain response headers.
+      net::HttpResponseHeaders* headers =
+          isSameDocumentNavigation ? nullptr
+                                   : _webStateImpl->GetHttpResponseHeaders();
+      existingContext->SetResponseHeaders(headers);
+      existingContext->SetIsSameDocument(isSameDocumentNavigation);
+      _webStateImpl->OnNavigationFinished(existingContext);
+    }
   }
 
   [self updateSSLStatusForCurrentNavigationItem];
