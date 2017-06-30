@@ -27,17 +27,22 @@ class MockChromeCleanerDialogController
     : public safe_browsing::ChromeCleanerDialogController {
  public:
   MOCK_METHOD0(DialogShown, void());
-  MOCK_METHOD0(Accept, void());
+  MOCK_METHOD1(Accept, void(bool));
   MOCK_METHOD0(Cancel, void());
   MOCK_METHOD0(Close, void());
-  MOCK_METHOD0(DetailsButtonClicked, void());
+  MOCK_METHOD1(DetailsButtonClicked, void(bool));
+  MOCK_METHOD1(SetLogsEnabled, void(bool));
+  MOCK_METHOD0(LogsEnabled, bool());
 };
 
 class ChromeCleanerDialogTest : public DialogBrowserTest {
  public:
   ChromeCleanerDialogTest()
       : mock_dialog_controller_(
-            base::MakeUnique<NiceMock<MockChromeCleanerDialogController>>()) {}
+            base::MakeUnique<NiceMock<MockChromeCleanerDialogController>>()) {
+    ON_CALL(*mock_dialog_controller_, LogsEnabled())
+        .WillByDefault(Return(true));
+  }
 
   void ShowDialog(const std::string& name) override {
     chrome::ShowChromeCleanerPrompt(browser(), mock_dialog_controller_.get());

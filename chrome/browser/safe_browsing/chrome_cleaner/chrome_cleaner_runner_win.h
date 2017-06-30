@@ -159,6 +159,9 @@ class ChromeCleanerRunnerTestDelegate {
   virtual base::Process LaunchTestProcess(
       const base::CommandLine& command_line,
       const base::LaunchOptions& launch_options) = 0;
+
+  virtual void OnCleanerProcessDone(
+      const ChromeCleanerRunner::ProcessStatus& process_status) = 0;
 };
 
 void SetChromeCleanerRunnerTestDelegateForTesting(

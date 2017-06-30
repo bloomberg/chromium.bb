@@ -115,6 +115,9 @@ class ChromeCleanerRunnerSimpleTest
     return base::Process();
   }
 
+  void OnCleanerProcessDone(
+      const ChromeCleanerRunner::ProcessStatus& process_status) override {}
+
   // IPC callbacks.
 
   void OnPromptUser(std::unique_ptr<std::set<base::FilePath>> files_to_delete,
@@ -235,6 +238,8 @@ class ChromeCleanerRunnerTest
     cleaner_process_options_.set_reboot_required(
         uws_found_state == UwsFoundState::kUwsFoundRebootRequired);
     cleaner_process_options_.set_crash_point(crash_point);
+    cleaner_process_options_.set_expected_user_response(
+        prompt_acceptance_to_send);
     prompt_acceptance_to_send_ = prompt_acceptance_to_send;
 
     SetChromeCleanerRunnerTestDelegateForTesting(this);
@@ -277,6 +282,9 @@ class ChromeCleanerRunnerTest
     EXPECT_TRUE(result.process.IsValid());
     return std::move(result.process);
   }
+
+  void OnCleanerProcessDone(
+      const ChromeCleanerRunner::ProcessStatus& process_status) override {}
 
   // IPC callbacks.
 
@@ -395,7 +403,9 @@ INSTANTIATE_TEST_CASE_P(
                MockChromeCleanerProcess::CrashPoint::kAfterConnection,
                MockChromeCleanerProcess::CrashPoint::kAfterRequestSent,
                MockChromeCleanerProcess::CrashPoint::kAfterResponseReceived),
-        Values(PromptAcceptance::DENIED, PromptAcceptance::ACCEPTED)));
+        Values(PromptAcceptance::DENIED,
+               PromptAcceptance::ACCEPTED_WITH_LOGS,
+               PromptAcceptance::ACCEPTED_WITHOUT_LOGS)));
 
 }  // namespace
 }  // namespace safe_browsing

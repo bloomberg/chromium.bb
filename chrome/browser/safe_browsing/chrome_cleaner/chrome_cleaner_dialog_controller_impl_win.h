@@ -27,10 +27,12 @@ class ChromeCleanerDialogControllerImpl
 
   // ChromeCleanerDialogController overrides.
   void DialogShown() override;
-  void Accept() override;
+  void Accept(bool logs_enabled) override;
   void Cancel() override;
   void Close() override;
-  void DetailsButtonClicked() override;
+  void DetailsButtonClicked(bool logs_enabled) override;
+  void SetLogsEnabled(bool logs_enabled) override;
+  bool LogsEnabled() override;
 
   // ChromeCleanerController::Observer overrides.
   void OnIdle(ChromeCleanerController::IdleReason idle_reason) override;

@@ -17,6 +17,11 @@ namespace safe_browsing {
 class ChromeCleanerDialogController;
 }
 
+namespace views {
+class Checkbox;
+class LabelButton;
+}  // namespace views
+
 // A modal dialog asking the user if they want to remove harmful software from
 // their computers by running the Chrome Cleanup tool.
 //
@@ -43,6 +48,7 @@ class ChromeCleanerDialog : public views::DialogDelegateView,
   base::string16 GetWindowTitle() const override;
 
   // views::DialogDelegate overrides.
+  views::View* CreateFootnoteView() override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   views::View* CreateExtraView() override;
   bool Accept() override;
@@ -60,6 +66,8 @@ class ChromeCleanerDialog : public views::DialogDelegateView,
   // The pointer will be set to nullptr once the controller has been notified of
   // user interaction since the controller can delete itself after that point.
   safe_browsing::ChromeCleanerDialogController* controller_;
+  views::LabelButton* details_button_;
+  views::Checkbox* logs_permission_checkbox_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeCleanerDialog);
 };

@@ -5,6 +5,7 @@
 #include "chrome/browser/safe_browsing/chrome_cleaner/mock_chrome_cleaner_process_win.h"
 
 #include <utility>
+#include <vector>
 
 #include "base/bind_helpers.h"
 #include "base/memory/ref_counted.h"
@@ -36,6 +37,7 @@ using ::chrome_cleaner::mojom::PromptAcceptance;
 constexpr char kCrashPointSwitch[] = "mock-crash-point";
 constexpr char kUwsFoundSwitch[] = "mock-uws-found";
 constexpr char kRebootRequiredSwitch[] = "mock-reboot-required";
+constexpr char kExpectedUserResponseSwitch[] = "mock-expected-user-response";
 
 }  // namespace
 
@@ -58,6 +60,21 @@ bool MockChromeCleanerProcess::Options::FromCommandLine(
     }
   }
 
+  if (command_line.HasSwitch(kExpectedUserResponseSwitch)) {
+    int expected_response_int = 0;
+    if (base::StringToInt(
+            command_line.GetSwitchValueASCII(kExpectedUserResponseSwitch),
+            &expected_response_int) &&
+        expected_response_int >= 0 &&
+        expected_response_int <
+            static_cast<int>(PromptAcceptance::NUM_VALUES)) {
+      options->set_expected_user_response(
+          static_cast<PromptAcceptance>(expected_response_int));
+    } else {
+      return false;
+    }
+  }
+
   return true;
 }
 
@@ -66,14 +83,15 @@ MockChromeCleanerProcess::Options::Options() = default;
 MockChromeCleanerProcess::Options::Options(const Options& other)
     : files_to_delete_(other.files_to_delete_),
       reboot_required_(other.reboot_required_),
-      crash_point_(other.crash_point_) {
-}
+      crash_point_(other.crash_point_),
+      expected_user_response_(other.expected_user_response_) {}
 
 MockChromeCleanerProcess::Options& MockChromeCleanerProcess::Options::operator=(
     const Options& other) {
   files_to_delete_ = other.files_to_delete_;
   reboot_required_ = other.reboot_required_;
   crash_point_ = other.crash_point_;
+  expected_user_response_ = other.expected_user_response_;
   return *this;
 }
 
@@ -90,6 +108,12 @@ void MockChromeCleanerProcess::Options::AddSwitchesToCommandLine(
   if (crash_point() != CrashPoint::kNone) {
     command_line->AppendSwitchASCII(
         kCrashPointSwitch, base::IntToString(static_cast<int>(crash_point())));
+  }
+
+  if (expected_user_response() != PromptAcceptance::UNSPECIFIED) {
+    command_line->AppendSwitchASCII(
+        kExpectedUserResponseSwitch,
+        base::IntToString(static_cast<int>(expected_user_response())));
   }
 }
 
@@ -114,7 +138,8 @@ int MockChromeCleanerProcess::Options::ExpectedExitCode(
   if (files_to_delete_.empty())
     return kNothingFoundExitCode;
 
-  if (received_prompt_acceptance == PromptAcceptance::ACCEPTED) {
+  if (received_prompt_acceptance == PromptAcceptance::ACCEPTED_WITH_LOGS ||
+      received_prompt_acceptance == PromptAcceptance::ACCEPTED_WITHOUT_LOGS) {
     return reboot_required() ? kRebootRequiredExitCode
                              : kRebootNotRequiredExitCode;
   }
@@ -181,6 +206,7 @@ int MockChromeCleanerProcess::Run() {
   run_loop.Run();
 
   EXPECT_NE(received_prompt_acceptance_, PromptAcceptance::UNSPECIFIED);
+  EXPECT_EQ(received_prompt_acceptance_, options_.expected_user_response());
   if (::testing::Test::HasFailure())
     return kInternalTestFailureExitCode;
   return options_.ExpectedExitCode(received_prompt_acceptance_);

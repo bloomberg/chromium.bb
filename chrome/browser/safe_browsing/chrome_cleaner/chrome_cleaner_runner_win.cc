@@ -223,6 +223,13 @@ void ChromeCleanerRunner::OnConnectionClosed() {
 }
 
 void ChromeCleanerRunner::OnProcessDone(ProcessStatus process_status) {
+  if (g_test_delegate) {
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&ChromeCleanerRunnerTestDelegate::OnCleanerProcessDone,
+                       base::Unretained(g_test_delegate), process_status));
+  }
+
   if (on_process_done_) {
     task_runner_->PostTask(
         FROM_HERE, base::BindOnce(std::move(on_process_done_), process_status));

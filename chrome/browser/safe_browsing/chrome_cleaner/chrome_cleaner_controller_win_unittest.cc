@@ -27,6 +27,7 @@
 #include "components/chrome_cleaner/public/constants/constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
@@ -34,6 +35,7 @@
 namespace safe_browsing {
 namespace {
 
+using ::chrome_cleaner::mojom::PromptAcceptance;
 using ::testing::Combine;
 using ::testing::DoAll;
 using ::testing::InvokeWithoutArgs;
@@ -47,6 +49,24 @@ using IdleReason = ChromeCleanerController::IdleReason;
 using State = ChromeCleanerController::State;
 using UserResponse = ChromeCleanerController::UserResponse;
 
+// Returns the PromptAcceptance value that ChromeCleanerController is supposed
+// to send to the Chrome Cleaner process when ReplyWithUserResponse() is
+// called with |user_response|.
+PromptAcceptance UserResponseToPromptAcceptance(UserResponse user_response) {
+  switch (user_response) {
+    case UserResponse::kAcceptedWithLogs:
+      return PromptAcceptance::ACCEPTED_WITH_LOGS;
+    case UserResponse::kAcceptedWithoutLogs:
+      return PromptAcceptance::ACCEPTED_WITHOUT_LOGS;
+    case UserResponse::kDenied:  // Fallthrough
+    case UserResponse::kDismissed:
+      return PromptAcceptance::DENIED;
+  }
+
+  NOTREACHED();
+  return PromptAcceptance::UNSPECIFIED;
+}
+
 class MockChromeCleanerControllerObserver
     : public ChromeCleanerController::Observer {
  public:
@@ -55,6 +75,8 @@ class MockChromeCleanerControllerObserver
   MOCK_METHOD1(OnInfected, void(const std::set<base::FilePath>&));
   MOCK_METHOD1(OnCleaning, void(const std::set<base::FilePath>&));
   MOCK_METHOD0(OnRebootRequired, void());
+  MOCK_METHOD0(OnRebootFailed, void());
+  MOCK_METHOD1(OnLogsEnabledChanged, void(bool));
 };
 
 enum class MetricsStatus {
@@ -95,6 +117,7 @@ class ChromeCleanerControllerSimpleTest
     scout_enabled_ = scout_status == ScoutStatus::kEnabled;
 
     SetChromeCleanerRunnerTestDelegateForTesting(this);
+    ChromeCleanerController::ResetInstanceForTesting();
     ChromeCleanerController::GetInstance()->SetDelegateForTesting(this);
     scoped_feature_list_.InitAndEnableFeature(kInBrowserCleanerUIFeature);
   }
@@ -139,6 +162,9 @@ class ChromeCleanerControllerSimpleTest
     // Return an invalid process.
     return base::Process();
   }
+
+  void OnCleanerProcessDone(
+      const ChromeCleanerRunner::ProcessStatus& process_status) override {}
 
  protected:
   // We need this because we need UI and IO threads during tests. The thread
@@ -233,7 +259,12 @@ class ChromeCleanerControllerTest
     cleaner_process_options_.set_reboot_required(
         uws_found_status_ == UwsFoundStatus::kUwsFoundRebootRequired);
     cleaner_process_options_.set_crash_point(crash_point_);
+    cleaner_process_options_.set_expected_user_response(
+        uws_found_status_ == UwsFoundStatus::kNoUwsFound
+            ? PromptAcceptance::DENIED
+            : UserResponseToPromptAcceptance(user_response_));
 
+    ChromeCleanerController::ResetInstanceForTesting();
     controller_ = ChromeCleanerController::GetInstance();
     ASSERT_TRUE(controller_);
 
@@ -243,9 +274,6 @@ class ChromeCleanerControllerTest
   }
 
   void TearDown() override {
-    if (controller_->state() == State::kRebootRequired)
-      controller_->DismissRebootForTesting();
-
     controller_->SetDelegateForTesting(nullptr);
     SetChromeCleanerRunnerTestDelegateForTesting(nullptr);
   }
@@ -311,11 +339,17 @@ class ChromeCleanerControllerTest
     return std::move(result.process);
   }
 
+  void OnCleanerProcessDone(
+      const ChromeCleanerRunner::ProcessStatus& process_status) override {
+    cleaner_process_status_ = process_status;
+  }
+
   ChromeCleanerController::State ExpectedFinalState() {
     if (process_status_ == CleanerProcessStatus::kFetchSuccessValidProcess &&
         crash_point_ == CrashPoint::kNone &&
         uws_found_status_ == UwsFoundStatus::kUwsFoundRebootRequired &&
-        user_response_ == UserResponse::kAccepted) {
+        (user_response_ == UserResponse::kAcceptedWithLogs ||
+         user_response_ == UserResponse::kAcceptedWithoutLogs)) {
       return State::kRebootRequired;
     }
     return State::kIdle;
@@ -333,7 +367,8 @@ class ChromeCleanerControllerTest
   bool ExpectedOnCleaningCalled() {
     return ExpectedOnInfectedCalled() &&
            crash_point_ != CrashPoint::kAfterRequestSent &&
-           user_response_ == UserResponse::kAccepted;
+           (user_response_ == UserResponse::kAcceptedWithLogs ||
+            user_response_ == UserResponse::kAcceptedWithoutLogs);
   }
 
   bool ExpectedOnRebootRequiredCalled() {
@@ -348,14 +383,16 @@ class ChromeCleanerControllerTest
             crash_point_ == CrashPoint::kAfterResponseReceived) &&
            (uws_found_status_ == UwsFoundStatus::kUwsFoundNoRebootRequired ||
             uws_found_status_ == UwsFoundStatus::kUwsFoundRebootRequired) &&
-           user_response_ == UserResponse::kAccepted;
+           (user_response_ == UserResponse::kAcceptedWithLogs ||
+            user_response_ == UserResponse::kAcceptedWithoutLogs);
   }
 
   bool ExpectedToResetSettings() {
     return process_status_ == CleanerProcessStatus::kFetchSuccessValidProcess &&
            crash_point_ == CrashPoint::kNone &&
            uws_found_status_ == UwsFoundStatus::kUwsFoundNoRebootRequired &&
-           user_response_ == UserResponse::kAccepted;
+           (user_response_ == UserResponse::kAcceptedWithLogs ||
+            user_response_ == UserResponse::kAcceptedWithoutLogs);
   }
 
   ChromeCleanerController::IdleReason ExpectedIdleReason() {
@@ -377,7 +414,8 @@ class ChromeCleanerControllerTest
     }
 
     if (ExpectedOnInfectedCalled() &&
-        user_response_ == UserResponse::kAccepted &&
+        (user_response_ == UserResponse::kAcceptedWithLogs ||
+         user_response_ == UserResponse::kAcceptedWithoutLogs) &&
         crash_point_ == CrashPoint::kAfterResponseReceived) {
       return IdleReason::kCleaningFailed;
     }
@@ -401,6 +439,7 @@ class ChromeCleanerControllerTest
 
   StrictMock<MockChromeCleanerControllerObserver> mock_observer_;
   ChromeCleanerController* controller_;
+  ChromeCleanerRunner::ProcessStatus cleaner_process_status_;
 
   std::vector<Profile*> profiles_tagged_;
   std::vector<Profile*> profiles_to_reset_if_tagged_;
@@ -469,6 +508,10 @@ TEST_P(ChromeCleanerControllerTest, WithMockCleanerProcess) {
                           controller_->ReplyWithUserResponse(profile1,
                                                              user_response_);
                         })));
+    // Since logs upload is enabled by default, OnLogsEnabledChanged() will be
+    // called only if the user response is kAcceptedWithoutLogs.
+    if (user_response_ == UserResponse::kAcceptedWithoutLogs)
+      EXPECT_CALL(mock_observer_, OnLogsEnabledChanged(false));
   }
 
   if (ExpectedOnCleaningCalled()) {
@@ -487,7 +530,12 @@ TEST_P(ChromeCleanerControllerTest, WithMockCleanerProcess) {
   // never stop.
   ASSERT_TRUE(ExpectedOnIdleCalled() || ExpectedOnRebootRequiredCalled());
   run_loop.Run();
+  // Also ensure that we wait until the mock cleaner process has finished and
+  // that all tasks that posted by ChromeCleanerRunner have run.
+  content::RunAllBlockingPoolTasksUntilIdle();
 
+  EXPECT_NE(cleaner_process_status_.exit_code,
+            MockChromeCleanerProcess::kInternalTestFailureExitCode);
   EXPECT_EQ(controller_->state(), ExpectedFinalState());
   EXPECT_EQ(!files_to_delete_on_infected.empty(), ExpectedUwsFound());
   EXPECT_EQ(!files_to_delete_on_cleaning.empty(),
@@ -529,7 +577,8 @@ INSTANTIATE_TEST_CASE_P(
             Values(UwsFoundStatus::kNoUwsFound,
                    UwsFoundStatus::kUwsFoundRebootRequired,
                    UwsFoundStatus::kUwsFoundNoRebootRequired),
-            Values(UserResponse::kAccepted,
+            Values(UserResponse::kAcceptedWithLogs,
+                   UserResponse::kAcceptedWithoutLogs,
                    UserResponse::kDenied,
                    UserResponse::kDismissed)));
 
