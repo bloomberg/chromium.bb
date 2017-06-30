@@ -83,6 +83,10 @@ class ContentSettingBubbleViewsBridge {
   DISALLOW_IMPLICIT_CONSTRUCTORS(ContentSettingBubbleViewsBridge);
 };
 
+// Shows the import lock dialog.
+void ShowImportLockDialogViews(gfx::NativeWindow parent,
+                               const base::Callback<void(bool)>& callback);
+
 }  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_COCOA_BROWSER_DIALOGS_VIEWS_MAC_H_

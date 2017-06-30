@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view.h"
 #include "chrome/browser/ui/views/content_setting_bubble_contents.h"
+#include "chrome/browser/ui/views/importer/import_lock_dialog_view.h"
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
 #include "chrome/browser/ui/views/task_manager_view.h"
@@ -118,6 +119,11 @@ void ContentSettingBubbleViewsBridge::Show(gfx::NativeView parent_view,
 
 void ShowUpdateChromeDialogViews(gfx::NativeWindow parent) {
   UpdateRecommendedMessageBox::Show(parent);
+}
+
+void ShowImportLockDialogViews(gfx::NativeWindow parent,
+                               const base::Callback<void(bool)>& callback) {
+  return ImportLockDialogView::Show(parent, callback);
 }
 
 }  // namespace chrome
