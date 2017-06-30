@@ -323,7 +323,6 @@ template("ios_info_plist") {
     }
     extra_substitutions += [
       "IOS_BUNDLE_ID_PREFIX=$ios_app_bundle_id_prefix",
-      "IOS_DEPLOYMENT_TARGET=$ios_deployment_target",
       "IOS_PLATFORM_BUILD=$ios_platform_build",
       "IOS_PLATFORM_NAME=$ios_sdk_name",
       "IOS_PLATFORM_VERSION=$ios_sdk_version",
