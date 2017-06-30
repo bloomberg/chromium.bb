@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/mojo-helpers.js"></script>
+<script src="resources/mock-share-service.js"></script>
+<base href="https://www.example.com/some/path.html">
+<script>
+
+share_test((t, webshare, mock) => {
+  const url = 'foo';
+  mock.pushShareResult('', '', 'https://www.example.com/some/foo', webshare.ShareError.OK);
+  return callWithKeyDown(() => navigator.share({url: url}));
+}, 'successful share with a URL relative to document base URL');
+
+</script>

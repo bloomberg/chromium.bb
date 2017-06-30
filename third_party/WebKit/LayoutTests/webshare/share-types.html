@@ -6,7 +6,7 @@
 <script>
 
 function getAbsoluteUrl(url) {
-  return new URL(url, location).toString();
+  return new URL(url, document.baseURI).toString();
 }
 
 share_test((t, webshare, mock) => {
@@ -20,8 +20,11 @@ share_test((t, webshare, mock) => {
 }, 'share of null (expect treated as empty dictionary)');
 
 share_test((t, webshare, mock) => {
-  mock.pushShareResult('384957', '[object Object]', '', webshare.ShareError.OK);
-  return callWithKeyDown(() => navigator.share({title: 384957, text: {}}));
+  mock.pushShareResult('true', 'the object', getAbsoluteUrl('384957'), webshare.ShareError.OK);
+
+  const objectWithToString = {toString() { return 'the object'; }};
+  return callWithKeyDown(() => navigator.share(
+        {title: true, text: objectWithToString, url: 384957}));
 }, 'share of types other than string (expect implicitly converted to string)');
 
 share_test((t, webshare, mock) => {

@@ -66,10 +66,14 @@ function share_test(func, name, properties) {
 
 // Copied from resources/bluetooth/bluetooth-helpers.js.
 function callWithKeyDown(functionCalledOnKeyPress) {
-  return new Promise(resolve => {
+  return new Promise((resolve, reject) => {
     function onKeyPress() {
       document.removeEventListener('keypress', onKeyPress, false);
-      resolve(functionCalledOnKeyPress());
+      try {
+        resolve(functionCalledOnKeyPress());
+      } catch (e) {
+        reject(e);
+      }
     }
     document.addEventListener('keypress', onKeyPress, false);
 

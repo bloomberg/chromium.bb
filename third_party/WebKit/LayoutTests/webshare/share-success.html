@@ -6,7 +6,7 @@
 <script>
 
 function getAbsoluteUrl(url) {
-  return new URL(url, location).toString();
+  return new URL(url, document.baseURI).toString();
 }
 
 share_test((t, webshare, mock) => {
@@ -14,7 +14,8 @@ share_test((t, webshare, mock) => {
   mock.pushShareResult('the title', 'the message', getAbsoluteUrl(url),
                        webshare.ShareError.OK);
   return callWithKeyDown(() => navigator.share(
-        {title: 'the title', text: 'the message', url: url}));
+        {title: 'the title', text: 'the message', url: url})).then(
+        result => assert_equals(result, undefined));
 }, 'successful share');
 
 share_test((t, webshare, mock) => {
@@ -42,7 +43,7 @@ share_test((t, webshare, mock) => {
 
 share_test((t, webshare, mock) => {
   const url = '';
-  mock.pushShareResult('', '', getAbsoluteUrl(url), webshare.ShareError.OK);
+  mock.pushShareResult('', '', document.baseURI, webshare.ShareError.OK);
   return callWithKeyDown(() => navigator.share({url: url}));
 }, 'successful share with an empty URL');
 
