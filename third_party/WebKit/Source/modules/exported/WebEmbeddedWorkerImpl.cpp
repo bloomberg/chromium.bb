@@ -114,11 +114,8 @@ WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(
 }
 
 WebEmbeddedWorkerImpl::~WebEmbeddedWorkerImpl() {
-  // Prevent onScriptLoaderFinished from deleting 'this'.
-  asked_to_terminate_ = true;
-
-  if (worker_thread_)
-    worker_thread_->TerminateAndWait();
+  // TerminateWorkerContext() must be called before the destructor.
+  DCHECK(asked_to_terminate_);
 
   DCHECK(RunningWorkerInstances().Contains(this));
   RunningWorkerInstances().erase(this);
@@ -395,9 +392,7 @@ void WebEmbeddedWorkerImpl::OnScriptLoaderFinished() {
   // loading code.
   if (!worker_context_client_->HasAssociatedRegistration() ||
       main_script_loader_->Failed()) {
-    main_script_loader_.Clear();
-    // This deletes 'this'.
-    worker_context_client_->WorkerContextFailedToStart();
+    TerminateWorkerContext();
     return;
   }
   worker_context_client_->WorkerScriptLoaded();
