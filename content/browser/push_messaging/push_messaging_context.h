@@ -30,6 +30,7 @@ class PushMessagingContext : public ServiceWorkerContextCoreObserver,
   // ServiceWorkerContextCoreObserver methods
   void OnRegistrationDeleted(int64_t registration_id,
                              const GURL& pattern) override;
+  void OnStorageWiped() override;
 
  private:
   friend class base::RefCounted<PushMessagingContext>;

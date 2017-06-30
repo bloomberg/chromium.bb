@@ -54,6 +54,7 @@ class LayoutTestPushMessagingService : public PushMessagingService {
   void DidDeleteServiceWorkerRegistration(
       const GURL& origin,
       int64_t service_worker_registration_id) override;
+  void DidDeleteServiceWorkerDatabase() override;
 
  private:
   int64_t subscribed_service_worker_registration_;

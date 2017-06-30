@@ -105,6 +105,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   void DidDeleteServiceWorkerRegistration(
       const GURL& origin,
       int64_t service_worker_registration_id) override;
+  void DidDeleteServiceWorkerDatabase() override;
 
   // content_settings::Observer implementation.
   void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
@@ -130,6 +131,8 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   void SetContentSettingChangedCallbackForTesting(
       const base::Closure& callback);
   void SetServiceWorkerUnregisteredCallbackForTesting(
+      const base::Closure& callback);
+  void SetServiceWorkerDatabaseWipedCallbackForTesting(
       const base::Closure& callback);
 
  private:
@@ -271,6 +274,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   base::Closure unsubscribe_callback_for_testing_;
   base::Closure content_setting_changed_callback_for_testing_;
   base::Closure service_worker_unregistered_callback_for_testing_;
+  base::Closure service_worker_database_wiped_callback_for_testing_;
 
   PushMessagingNotificationManager notification_manager_;
 

@@ -30914,6 +30914,7 @@ from previous Chrome versions.
   <int value="7" label="Service Worker unregistered"/>
   <int value="8" label="subscribe() storage corrupt"/>
   <int value="9" label="getSubscription() storage corrupt"/>
+  <int value="10" label="Service Worker database got wiped"/>
 </enum>
 
 <enum name="PushUnregistrationStatus">

@@ -31,10 +31,18 @@ void PushMessagingContext::OnRegistrationDeleted(int64_t registration_id,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   PushMessagingService* push_service =
       browser_context_->GetPushMessagingService();
-  if (push_service != nullptr) {
+  if (push_service) {
     push_service->DidDeleteServiceWorkerRegistration(pattern.GetOrigin(),
                                                      registration_id);
   }
+}
+
+void PushMessagingContext::OnStorageWiped() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  PushMessagingService* push_service =
+      browser_context_->GetPushMessagingService();
+  if (push_service)
+    push_service->DidDeleteServiceWorkerDatabase();
 }
 
 }  // namespace content

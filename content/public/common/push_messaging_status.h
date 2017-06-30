@@ -110,13 +110,16 @@ enum PushUnregistrationReason {
   // Website called getSubscription API and the stored subscription was corrupt.
   PUSH_UNREGISTRATION_REASON_GET_SUBSCRIPTION_STORAGE_CORRUPT = 9,
 
+  // The Service Worker database got wiped, most likely due to corruption.
+  PUSH_UNREGISTRATION_REASON_SERVICE_WORKER_DATABASE_WIPED = 10,
+
   // NOTE: Do not renumber these as that would confuse interpretation of
   // previously logged data. When making changes, also update the enum list
   // in tools/metrics/histograms/histograms.xml to keep it in sync, and
   // update PUSH_UNREGISTRATION_REASON_LAST below.
 
   PUSH_UNREGISTRATION_REASON_LAST =
-      PUSH_UNREGISTRATION_REASON_GET_SUBSCRIPTION_STORAGE_CORRUPT
+      PUSH_UNREGISTRATION_REASON_SERVICE_WORKER_DATABASE_WIPED
 };
 
 // Push unregistration success/error codes for internal use & reporting in UMA.

@@ -104,6 +104,10 @@ class CONTENT_EXPORT PushMessagingService {
       const GURL& origin,
       int64_t service_worker_registration_id) = 0;
 
+  // Unsubscribes all existing push subscriptions because the Service Worker
+  // database has been deleted.
+  virtual void DidDeleteServiceWorkerDatabase() = 0;
+
  protected:
   static void GetSenderId(BrowserContext* browser_context,
                           const GURL& origin,
