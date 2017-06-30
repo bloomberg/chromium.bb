@@ -1442,6 +1442,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"instant-tethering", flag_descriptions::kTetherName,
      flag_descriptions::kTetherDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kInstantTethering)},
+    {"multidevice", flag_descriptions::kMultideviceName,
+     flag_descriptions::kMultideviceDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kMultidevice)},
 #endif  // OS_CHROMEOS
     {
         "disable-accelerated-video-decode",

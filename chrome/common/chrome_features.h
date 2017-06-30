@@ -129,6 +129,10 @@ extern const base::Feature kModalPermissionPrompts;
 extern const base::Feature kModuleDatabase;
 #endif
 
+#if defined(OS_CHROMEOS)
+extern const base::Feature kMultidevice;
+#endif
+
 #if BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
 extern const base::Feature kNativeNotifications;
 #endif
