@@ -19,13 +19,9 @@ class FocusClient;
 }
 }
 
-namespace ui {
-class InputMethod;
-}  // namespace ui
-
 namespace wm {
 class ScopedTooltipDisabler;
-}  // namespace wm
+}
 
 namespace views {
 class DesktopDragDropClientWin;
@@ -139,7 +135,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   void OnWindowHidingAnimationCompleted() override;
 
   // Overridden from HWNDMessageHandlerDelegate:
-  ui::InputMethod* GetHWNDMessageDelegateInputMethod() override;
   bool HasNonClientView() const override;
   FrameMode GetFrameMode() const override;
   bool HasFrame() const override;
