@@ -351,7 +351,7 @@ BoxPainterBase::FillLayerInfo::FillLayerInfo(
 
 FloatRoundedRect BoxPainterBase::RoundedBorderRectForClip(
     const ComputedStyle& style,
-    const BoxPainterBase::FillLayerInfo info,
+    const BoxPainterBase::FillLayerInfo& info,
     const FillLayer& bg_layer,
     const LayoutRect& rect,
     BackgroundBleedAvoidance bleed_avoidance,
