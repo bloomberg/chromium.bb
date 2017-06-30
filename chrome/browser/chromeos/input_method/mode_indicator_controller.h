@@ -9,12 +9,14 @@
 
 #include "base/macros.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/chromeos/ime/mode_indicator_view.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/widget/widget_observer.h"
 
 namespace chromeos {
 namespace input_method {
 
+// Publicly visible for testing.
 class ModeIndicatorObserverInterface : public views::WidgetObserver {
  public:
   ModeIndicatorObserverInterface() {}
@@ -26,10 +28,9 @@ class ModeIndicatorObserverInterface : public views::WidgetObserver {
 
 // ModeIndicatorController is the controller of ModeIndicatiorDelegateView
 // on the MVC model.
-class ModeIndicatorController
-    : public InputMethodManager::Observer {
+class ModeIndicatorController : public InputMethodManager::Observer,
+                                public ui::ime::ModeIndicatorView::Delegate {
  public:
-  // This class takes the ownership of |mi_widget|.
   explicit ModeIndicatorController(InputMethodManager* imm);
   ~ModeIndicatorController() override;
 
@@ -44,13 +45,15 @@ class ModeIndicatorController
   // ownership of the observer object.
   static void SetModeIndicatorObserverForTesting(
       ModeIndicatorObserverInterface* observer);
-  static ModeIndicatorObserverInterface* GetModeIndicatorObserverForTesting();
 
  private:
   // InputMethodManager::Observer implementation.
   void InputMethodChanged(InputMethodManager* manager,
                           Profile* profile,
                           bool show_message) override;
+
+  // ui::ime::ModeIndicatorView::Delegate:
+  void InitWidgetContainer(views::Widget::InitParams* params) override;
 
   // Show the mode inidicator with the current ime's short name if all
   // the conditions are cleared.

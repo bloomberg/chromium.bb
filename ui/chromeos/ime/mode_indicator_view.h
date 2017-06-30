@@ -10,21 +10,30 @@
 #include "base/timer/timer.h"
 #include "ui/chromeos/ui_chromeos_export.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/native_widget_types.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
+#include "ui/views/widget/widget.h"
 
 namespace views {
 class Label;
-class Widget;
 }  // namespace views
 
 namespace ui {
 namespace ime {
 
+// A small bubble that shows the short name of the current IME (e.g. "DV" for
+// Dvorak) after switching IMEs with an accelerator (e.g. Ctrl-Space).
 class UI_CHROMEOS_EXPORT ModeIndicatorView
     : public views::BubbleDialogDelegateView {
  public:
-  ModeIndicatorView(gfx::NativeView parent,
+  class Delegate {
+   public:
+    virtual ~Delegate() = default;
+
+    // Configures the InitParams to place the bubble in the right container.
+    virtual void InitWidgetContainer(views::Widget::InitParams* params) = 0;
+  };
+
+  ModeIndicatorView(Delegate* delegate,
                     const gfx::Rect& cursor_bounds,
                     const base::string16& label);
   ~ModeIndicatorView() override;
@@ -33,6 +42,8 @@ class UI_CHROMEOS_EXPORT ModeIndicatorView
   void ShowAndFadeOut();
 
   // views::BubbleDialogDelegateView override:
+  void OnBeforeBubbleWidgetInit(views::Widget::InitParams* params,
+                                views::Widget* widget) const override;
   gfx::Size CalculatePreferredSize() const override;
   const char* GetClassName() const override;
   int GetDialogButtons() const override;
@@ -44,6 +55,7 @@ class UI_CHROMEOS_EXPORT ModeIndicatorView
       views::Widget* widget) override;
 
  private:
+  Delegate* delegate_;
   gfx::Rect cursor_bounds_;
   views::Label* label_view_;
   base::OneShotTimer timer_;
