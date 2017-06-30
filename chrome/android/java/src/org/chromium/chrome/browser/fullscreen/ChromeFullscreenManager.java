@@ -149,7 +149,7 @@ public class ChromeFullscreenManager
                     public void run() {
                         if (getTab() != null) {
                             getTab().updateFullscreenEnabledState();
-                        } else if (!mBrowserVisibilityDelegate.isHidingBrowserControlsEnabled()) {
+                        } else if (!mBrowserVisibilityDelegate.canAutoHideBrowserControls()) {
                             setPositionsForTabToNonFullscreen();
                         }
                     }
@@ -236,7 +236,7 @@ public class ChromeFullscreenManager
         if (tab != null && previousTab != getTab()) {
             mBrowserVisibilityDelegate.showControlsTransient();
         }
-        if (tab == null && !mBrowserVisibilityDelegate.isHidingBrowserControlsEnabled()) {
+        if (tab == null && !mBrowserVisibilityDelegate.canAutoHideBrowserControls()) {
             setPositionsForTabToNonFullscreen();
         }
     }
@@ -617,7 +617,7 @@ public class ChromeFullscreenManager
     @Override
     public void setPositionsForTabToNonFullscreen() {
         Tab tab = getTab();
-        if (tab == null || tab.isShowingBrowserControlsEnabled()) {
+        if (tab == null || tab.canShowBrowserControls()) {
             setPositionsForTab(0, 0, getTopControlsHeight());
         } else {
             setPositionsForTab(-getTopControlsHeight(), getBottomControlsHeight(), 0);
