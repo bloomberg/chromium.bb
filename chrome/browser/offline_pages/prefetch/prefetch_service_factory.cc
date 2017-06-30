@@ -48,6 +48,7 @@ PrefetchService* PrefetchServiceFactory::GetForBrowserContext(
 KeyedService* PrefetchServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
+  DCHECK(profile);
   auto prefetch_dispatcher = base::MakeUnique<PrefetchDispatcherImpl>();
   auto prefetch_gcm_app_handler = base::MakeUnique<PrefetchGCMAppHandler>(
       base::MakeUnique<PrefetchInstanceIDProxy>(kPrefetchingOfflinePagesAppId,
@@ -56,7 +57,7 @@ KeyedService* PrefetchServiceFactory::BuildServiceInstanceFor(
       base::MakeUnique<PrefetchNetworkRequestFactoryImpl>(
           profile->GetRequestContext(), chrome::GetChannel(), GetUserAgent());
   auto offline_metrics_collector =
-      base::MakeUnique<OfflineMetricsCollectorImpl>();
+      base::MakeUnique<OfflineMetricsCollectorImpl>(profile->GetPrefs());
   auto suggested_articles_observer =
       base::MakeUnique<SuggestedArticlesObserver>();
 

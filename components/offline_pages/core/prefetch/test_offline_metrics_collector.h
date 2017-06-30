@@ -7,12 +7,14 @@
 
 #include "components/offline_pages/core/prefetch/offline_metrics_collector.h"
 
+class PrefService;
+
 namespace offline_pages {
 
 // Testing metrics collector that does nothing.
 class TestOfflineMetricsCollector : public OfflineMetricsCollector {
  public:
-  TestOfflineMetricsCollector() = default;
+  explicit TestOfflineMetricsCollector(PrefService*) {}
   ~TestOfflineMetricsCollector() override = default;
 
   void OnAppStartupOrResume() override {}

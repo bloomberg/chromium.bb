@@ -2569,6 +2569,29 @@ const char kClipboardLastModifiedTime[] = "ui.clipboard.last_modified_time";
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
 const char kOfflinePrefetchBackoff[] = "offline_prefetch.backoff";
+
+// The following set of Prefs is used by OfflineMetricsCollectorImpl to
+// backup the current Chrome usage tracking state and accumulated counters
+// of days with specific Chrome usage.
+
+// The boolean flags indicating whether the specific activity was observed
+// in Chrome during the day that started at |kOfflineUsageTrackingDay|. These
+// are used to track usage of Chrome is used while offline and how various
+// offline features affect that.
+const char kOfflineUsageStartObserved[] = "offline_pages.start_observed";
+const char kOfflineUsageOnlineObserved[] = "offline_pages.online_observed";
+const char kOfflineUsageOfflineObserved[] = "offline_pages.offline_observed";
+// A time corresponding to a midnight that starts the day for which
+// OfflineMetricsCollector tracks the Chrome usage. Once current time passes
+// 24hrs from this point, the further tracking is attributed to the next day.
+const char kOfflineUsageTrackingDay[] = "offline_pages.tracking_day";
+// Accumulated counters of days with specified Chrome usage. When there is
+// likely a network connection, these counters are reported via UMA and reset.
+const char kOfflineUsageUnusedCount[] = "offline_pages.unused_count";
+const char kOfflineUsageStartedCount[] = "offline_pages.started_count";
+const char kOfflineUsageOfflineCount[] = "offline_pages.offline_count";
+const char kOfflineUsageOnlineCount[] = "offline_pages.online_count";
+const char kOfflineUsageMixedCount[] = "offline_pages.mixed_count";
 #endif
 
 }  // namespace prefs
