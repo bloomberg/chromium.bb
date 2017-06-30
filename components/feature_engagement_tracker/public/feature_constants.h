@@ -24,6 +24,7 @@ extern const base::Feature kIPHDataSaverDetailFeature;
 extern const base::Feature kIPHDataSaverPreviewFeature;
 extern const base::Feature kIPHDownloadHomeFeature;
 extern const base::Feature kIPHDownloadPageFeature;
+extern const base::Feature kIPHDownloadPageScreenshotFeature;
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN) || defined(OS_LINUX)

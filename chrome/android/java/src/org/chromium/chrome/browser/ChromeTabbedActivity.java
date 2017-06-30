@@ -41,6 +41,7 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.MemoryPressureListener;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryLoader;
@@ -67,6 +68,8 @@ import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.feature_engagement_tracker.FeatureEngagementTrackerFactory;
+import org.chromium.chrome.browser.feature_engagement_tracker.ScreenshotMonitor;
+import org.chromium.chrome.browser.feature_engagement_tracker.ScreenshotMonitorDelegate;
 import org.chromium.chrome.browser.firstrun.FirstRunActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
@@ -121,6 +124,7 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetMetrics;
 import org.chromium.chrome.browser.widget.emptybackground.EmptyBackgroundViewWrapper;
 import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
 import org.chromium.chrome.browser.widget.textbubble.ViewAnchoredTextBubble;
+import org.chromium.components.feature_engagement_tracker.EventConstants;
 import org.chromium.components.feature_engagement_tracker.FeatureConstants;
 import org.chromium.components.feature_engagement_tracker.FeatureEngagementTracker;
 import org.chromium.content.browser.ContentVideoView;
@@ -146,8 +150,8 @@ import java.util.concurrent.TimeUnit;
  * This is the main activity for ChromeMobile when not running in document mode.  All the tabs
  * are accessible via a chrome specific tab switching UI.
  */
-public class ChromeTabbedActivity extends ChromeActivity implements OverviewModeObserver {
-
+public class ChromeTabbedActivity
+        extends ChromeActivity implements OverviewModeObserver, ScreenshotMonitorDelegate {
     private static final int FIRST_RUN_EXPERIENCE_RESULT = 101;
 
     @Retention(RetentionPolicy.SOURCE)
@@ -228,6 +232,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     private TabModelSelectorImpl mTabModelSelectorImpl;
     private TabModelSelectorTabObserver mTabModelSelectorTabObserver;
     private TabModelSelectorTabModelObserver mTabModelObserver;
+
+    private ScreenshotMonitor mScreenshotMonitor;
 
     private boolean mUIInitialized;
 
@@ -584,6 +590,18 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         } else {
             SuggestionsEventReporterBridge.onColdStart();
         }
+
+        maybeStartMonitoringForScreenshots();
+    }
+
+    private void maybeStartMonitoringForScreenshots() {
+        // Part of the (more runtime-related) check to determine whether to trigger help UI is
+        // left until onScreenshotTaken() since it is less expensive to keep monitoring on and
+        // check when the help UI is accessed than it is to start/stop monitoring per tab change
+        // (e.g. tab switch or in overview mode).
+        if (DeviceFormFactor.isTablet()) return;
+
+        mScreenshotMonitor.startMonitoring();
     }
 
     @Override
@@ -593,6 +611,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
         mLocaleManager.setSnackbarManager(null);
         mLocaleManager.stopObservingPhoneChanges();
+
+        mScreenshotMonitor.stopMonitoring();
 
         super.onPauseWithNative();
     }
@@ -772,15 +792,17 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                 mLayoutManager.hideOverview(false);
             }
 
-            FeatureEngagementTracker tracker =
+            final FeatureEngagementTracker tracker =
                     FeatureEngagementTrackerFactory.getFeatureEngagementTrackerForProfile(
                             Profile.getLastUsedProfile());
             tracker.addOnInitializedCallback(new Callback<Boolean>() {
                 @Override
                 public void onResult(Boolean result) {
-                    showFeatureEngagementTextBubbleForDownloadHome();
+                    showFeatureEngagementTextBubbleForDownloadHome(tracker);
                 }
             });
+
+            mScreenshotMonitor = ScreenshotMonitor.create(ChromeTabbedActivity.this);
 
             mUIInitialized = true;
         } finally {
@@ -788,10 +810,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         }
     }
 
-    private void showFeatureEngagementTextBubbleForDownloadHome() {
-        final FeatureEngagementTracker tracker =
-                FeatureEngagementTrackerFactory.getFeatureEngagementTrackerForProfile(
-                        Profile.getLastUsedProfile());
+    private void showFeatureEngagementTextBubbleForDownloadHome(
+            final FeatureEngagementTracker tracker) {
         if (!tracker.shouldTriggerHelpUI(FeatureConstants.DOWNLOAD_HOME_FEATURE)) return;
 
         ViewAnchoredTextBubble textBubble = new ViewAnchoredTextBubble(this,
@@ -2200,5 +2220,46 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     @Override
     public boolean supportsFullscreenActivity() {
         return !VrShellDelegate.isInVr();
+    }
+
+    @Override
+    public void onScreenshotTaken() {
+        // Second part of the check to determine whether to trigger help UI
+        if (isInOverviewMode() || !DownloadUtils.isAllowedToDownloadPage(getActivityTab())) return;
+
+        FeatureEngagementTracker tracker =
+                FeatureEngagementTrackerFactory.getFeatureEngagementTrackerForProfile(
+                        Profile.getLastUsedProfile());
+        tracker.notifyEvent(EventConstants.SCREENSHOT_TAKEN_CHROME_IN_FOREGROUND);
+        maybeShowFeatureEngagementTextBubbleForDownloadPage(tracker);
+    }
+
+    private void maybeShowFeatureEngagementTextBubbleForDownloadPage(
+            final FeatureEngagementTracker tracker) {
+        if (!tracker.shouldTriggerHelpUI(FeatureConstants.DOWNLOAD_PAGE_SCREENSHOT_FEATURE)) return;
+
+        ViewAnchoredTextBubble textBubble =
+                new ViewAnchoredTextBubble(this, getToolbarManager().getMenuButton(),
+                        R.string.iph_download_page_for_offline_usage_text,
+                        R.string.iph_download_page_for_offline_usage_accessibility_text);
+        textBubble.setDismissOnTouchInteraction(true);
+        textBubble.addOnDismissListener(new OnDismissListener() {
+            @Override
+            public void onDismiss() {
+                ThreadUtils.postOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        tracker.dismissed(FeatureConstants.DOWNLOAD_PAGE_SCREENSHOT_FEATURE);
+                        getAppMenuHandler().setMenuHighlight(null);
+                    }
+                });
+            }
+        });
+        getAppMenuHandler().setMenuHighlight(R.id.offline_page_id);
+        int yInsetPx =
+                getResources().getDimensionPixelOffset(R.dimen.text_bubble_menu_anchor_y_inset);
+        textBubble.setInsetPx(0, FeatureUtilities.isChromeHomeEnabled() ? yInsetPx : 0, 0,
+                FeatureUtilities.isChromeHomeEnabled() ? 0 : yInsetPx);
+        textBubble.show();
     }
 }
