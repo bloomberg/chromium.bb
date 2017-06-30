@@ -80,13 +80,11 @@
                 android:id="@+id/learn_more"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="?attr/listChoiceBackgroundIndicator"
                 android:clickable="true"
                 android:focusable="true"
                 android:text="@string/learn_more"
                 android:textColor="@color/google_blue_300"
-                android:lineSpacingExtra="6sp"
-                style="@style/RobotoMediumStyle" />
+                android:lineSpacingExtra="6sp" />
 
         </LinearLayout>
 

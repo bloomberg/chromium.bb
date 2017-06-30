@@ -7,20 +7,26 @@ package org.chromium.chrome.browser.ntp;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.support.annotation.ColorRes;
 import android.support.annotation.IdRes;
 import android.support.annotation.StringRes;
 import android.text.Layout;
+import android.text.SpannableString;
+import android.text.TextPaint;
+import android.text.method.LinkMovementMethod;
 import android.text.style.BulletSpan;
 import android.text.style.ForegroundColorSpan;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 
 /**
@@ -38,14 +44,16 @@ public class IncognitoNewTabPageViewMD extends IncognitoNewTabPageView {
     private TextView mHeader;
     private TextView mSubtitle;
     private LinearLayout mBulletpointsContainer;
+    private TextView mLearnMore;
     private TextView[] mParagraphs;
 
     boolean mFirstLayout = true;
 
     private static final int BULLETPOINTS_HORIZONTAL_SPACING_DP = 40;
     private static final int CONTENT_WIDTH_DP = 600;
+    private static final int WIDE_LAYOUT_THRESHOLD_DP = 720;
 
-    static class IncognitoBulletSpan extends BulletSpan {
+    private static class IncognitoBulletSpan extends BulletSpan {
         public IncognitoBulletSpan() {
             super(0 /* gapWidth */);
         }
@@ -55,6 +63,27 @@ public class IncognitoNewTabPageViewMD extends IncognitoNewTabPageView {
                 int bottom, CharSequence text, int start, int end, boolean first, Layout l) {
             // Do not draw the standard bullet point. We will include the Unicode bullet point
             // symbol in the text instead.
+        }
+    }
+
+    private static class IncognitoClickableSpan extends NoUnderlineClickableSpan {
+        private final @ColorRes int mColor;
+        private final IncognitoNewTabPageManager mManager;
+
+        public IncognitoClickableSpan(Context context, IncognitoNewTabPageManager manager) {
+            mColor =
+                    ApiCompatibilityUtils.getColor(context.getResources(), R.color.google_blue_300);
+            mManager = manager;
+        }
+
+        @Override
+        public void onClick(View view) {
+            mManager.loadIncognitoLearnMore();
+        }
+
+        @Override
+        public void updateDrawState(TextPaint drawState) {
+            drawState.setColor(mColor);
         }
     }
 
@@ -87,11 +116,10 @@ public class IncognitoNewTabPageViewMD extends IncognitoNewTabPageView {
         mContainer = (LinearLayout) findViewById(R.id.new_tab_incognito_container);
         mHeader = (TextView) findViewById(R.id.new_tab_incognito_title);
         mSubtitle = (TextView) findViewById(R.id.new_tab_incognito_subtitle);
-        mParagraphs = new TextView[] {
-                mSubtitle, (TextView) findViewById(R.id.new_tab_incognito_features),
-                (TextView) findViewById(R.id.new_tab_incognito_warning),
-                (TextView) findViewById(R.id.learn_more),
-        };
+        mLearnMore = (TextView) findViewById(R.id.learn_more);
+        mParagraphs =
+                new TextView[] {mSubtitle, (TextView) findViewById(R.id.new_tab_incognito_features),
+                        (TextView) findViewById(R.id.new_tab_incognito_warning), mLearnMore};
         mBulletpointsContainer =
                 (LinearLayout) findViewById(R.id.new_tab_incognito_bulletpoints_container);
     }
@@ -107,6 +135,7 @@ public class IncognitoNewTabPageViewMD extends IncognitoNewTabPageView {
             adjustTypography();
             adjustIcon();
             adjustLayout();
+            adjustLearnMore();
             mFirstLayout = false;
         }
     }
@@ -177,7 +206,7 @@ public class IncognitoNewTabPageViewMD extends IncognitoNewTabPageView {
 
         boolean bulletpointsArrangedHorizontally;
 
-        if (mWidthDp <= 720) {
+        if (mWidthDp <= WIDE_LAYOUT_THRESHOLD_DP) {
             // Small padding.
             paddingHorizontalDp = mWidthDp <= 240 ? 24 : 32;
             paddingVerticalDp = mHeightDp <= 600 ? 32 : 72;
@@ -254,7 +283,7 @@ public class IncognitoNewTabPageViewMD extends IncognitoNewTabPageView {
         // resizes the icon view to 120dp x 120dp or smaller, therefore image quality is not lost.
 
         int sizeDp;
-        if (mWidthDp <= 720) {
+        if (mWidthDp <= WIDE_LAYOUT_THRESHOLD_DP) {
             sizeDp = (mWidthDp <= 240 || mHeightDp <= 480) ? 48 : 72;
         } else {
             sizeDp = mHeightDp <= 480 ? 72 : 120;
@@ -263,5 +292,34 @@ public class IncognitoNewTabPageViewMD extends IncognitoNewTabPageView {
         ImageView icon = (ImageView) findViewById(R.id.new_tab_incognito_icon);
         icon.getLayoutParams().width = dpToPx(sizeDp);
         icon.getLayoutParams().height = dpToPx(sizeDp);
+    }
+
+    /** Adjust the "Learn More" link. */
+    private void adjustLearnMore() {
+        final String subtitleText =
+                mContext.getResources().getString(R.string.new_tab_otr_subtitle);
+        boolean learnMoreInSubtitle = mWidthDp > WIDE_LAYOUT_THRESHOLD_DP;
+
+        mSubtitle.setClickable(learnMoreInSubtitle);
+        mLearnMore.setVisibility(learnMoreInSubtitle ? View.GONE : View.VISIBLE);
+
+        if (!learnMoreInSubtitle) {
+            // Revert to the original text.
+            mSubtitle.setText(subtitleText);
+            mSubtitle.setMovementMethod(null);
+            return;
+        }
+
+        // Concatenate the original text with a clickable "Learn more" link.
+        StringBuilder concatenatedText = new StringBuilder();
+        concatenatedText.append(subtitleText);
+        concatenatedText.append(" ");
+        concatenatedText.append(mContext.getResources().getString(R.string.learn_more));
+        SpannableString textWithLearnMoreLink = new SpannableString(concatenatedText.toString());
+
+        textWithLearnMoreLink.setSpan(new IncognitoClickableSpan(mContext, getManager()),
+                subtitleText.length() + 1, textWithLearnMoreLink.length(), 0 /* flags */);
+        mSubtitle.setText(textWithLearnMoreLink);
+        mSubtitle.setMovementMethod(LinkMovementMethod.getInstance());
     }
 }
