@@ -31,8 +31,9 @@ static const CGFloat kTopPadding = 6.f;
 
   [raisedButton setTitle:@"Email link and instructions"
                 forState:UIControlStateNormal];
-  [raisedButton setTitleColor:RemotingTheme.buttonTextColor
-                     forState:UIControlStateNormal];
+  raisedButton.customTitleColor = RemotingTheme.buttonTextColor;
+  [raisedButton setBackgroundColor:RemotingTheme.buttonBackgroundColor
+                          forState:UIControlStateNormal];
   [raisedButton sizeToFit];
   [raisedButton addTarget:self
                    action:@selector(didTapEmailInstructions:)
