@@ -4,6 +4,7 @@
 
 #include "components/proximity_auth/proximity_auth_system.h"
 
+#include "base/command_line.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -13,6 +14,7 @@
 #include "components/proximity_auth/logging/logging.h"
 #include "components/proximity_auth/mock_proximity_auth_client.h"
 #include "components/proximity_auth/proximity_auth_pref_manager.h"
+#include "components/proximity_auth/switches.h"
 #include "components/proximity_auth/unlock_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -427,6 +429,8 @@ TEST_F(ProximityAuthSystemTest, Suspend_RegisteredUserFocused) {
 }
 
 TEST_F(ProximityAuthSystemTest, ForcePasswordReauth) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      proximity_auth::switches::kEnableForcePasswordReauth);
   ON_CALL(*pref_manager_, GetLastPasswordEntryTimestampMs())
       .WillByDefault(Return(kTimestampAfterReauthMs));
   EXPECT_CALL(proximity_auth_client_,
