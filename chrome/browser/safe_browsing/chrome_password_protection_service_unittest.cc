@@ -11,6 +11,7 @@
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/fake_account_fetcher_service_builder.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
+#include "chrome/browser/signin/fake_signin_manager_builder.h"
 #include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -36,16 +37,6 @@ namespace {
 const char kPhishingURL[] = "http://phishing.com";
 const char kTestAccountID[] = "account_id";
 const char kTestEmail[] = "foo@example.com";
-
-std::unique_ptr<KeyedService> SigninManagerBuild(
-    content::BrowserContext* context) {
-  Profile* profile = static_cast<Profile*>(context);
-  std::unique_ptr<SigninManagerBase> service(new SigninManagerBase(
-      ChromeSigninClientFactory::GetInstance()->GetForProfile(profile),
-      AccountTrackerServiceFactory::GetForProfile(profile)));
-  service->Initialize(NULL);
-  return std::move(service);
-}
 
 }  // namespace
 
@@ -144,7 +135,7 @@ class ChromePasswordProtectionServiceTest
     builder.AddTestingFactory(ChromeSigninClientFactory::GetInstance(),
                               signin::BuildTestSigninClient);
     builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
-                              SigninManagerBuild);
+                              BuildFakeSigninManagerBase);
     builder.AddTestingFactory(AccountFetcherServiceFactory::GetInstance(),
                               FakeAccountFetcherServiceBuilder::BuildForTests);
     return builder.Build().release();
