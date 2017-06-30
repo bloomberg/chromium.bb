@@ -523,10 +523,19 @@ class PLATFORM_EXPORT RendererSchedulerImpl
     WakeUpBudgetPool* wake_up_budget_pool;                // Not owned.
     TaskDurationMetricReporter task_duration_reporter;
     TaskDurationMetricReporter foreground_task_duration_reporter;
+    TaskDurationMetricReporter foreground_first_minute_task_duration_reporter;
+    TaskDurationMetricReporter foreground_second_minute_task_duration_reporter;
+    TaskDurationMetricReporter foreground_third_minute_task_duration_reporter;
+    TaskDurationMetricReporter
+        foreground_after_third_minute_task_duration_reporter;
     TaskDurationMetricReporter background_task_duration_reporter;
     TaskDurationMetricReporter background_first_minute_task_duration_reporter;
+    TaskDurationMetricReporter background_second_minute_task_duration_reporter;
+    TaskDurationMetricReporter background_third_minute_task_duration_reporter;
+    TaskDurationMetricReporter background_fourth_minute_task_duration_reporter;
+    TaskDurationMetricReporter background_fifth_minute_task_duration_reporter;
     TaskDurationMetricReporter
-        background_after_first_minute_task_duration_reporter;
+        background_after_fifth_minute_task_duration_reporter;
     TaskDurationMetricReporter hidden_task_duration_reporter;
     TaskDurationMetricReporter visible_task_duration_reporter;
     TaskDurationMetricReporter hidden_music_task_duration_reporter;

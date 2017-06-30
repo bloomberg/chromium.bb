@@ -95242,18 +95242,42 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="Background"
       label="Time spend in tasks of a particular type when the renderer is in
              the background."/>
-  <suffix name="Foreground"
-      label="Time spent in tasks of a particular type when the renderer is in
-             the foreground. Please note that individual tabs in this
-             renderer can be backgrounded."/>
   <suffix name="Background.FirstMinute"
       label="Time spent in tasks of a particular type during the first minute
              after backgrounding the renderer. A large amount of loading
              tasks are expected during this period."/>
-  <suffix name="Background.AfterFirstMinute"
-      label="Time spent in tasks of a particular type starting from the first
+  <suffix name="Background.SecondMinute"
+      label="Time spent in tasks of a particular type during the second
+             minute after backgrounding the renderer."/>
+  <suffix name="Background.ThirdMinute"
+      label="Time spent in tasks of a particular type during the third minute
+             after backgrounding the renderer."/>
+  <suffix name="Background.FourthMinute"
+      label="Time spent in tasks of a particular type during the fourth
+             minute after backgrounding the renderer."/>
+  <suffix name="Background.FifthMinute"
+      label="Time spent in tasks of a particular type during the fifth minute
+             after backgrounding the renderer."/>
+  <suffix name="Background.AfterFifthMinute"
+      label="Time spent in tasks of a particular type starting from the sixth
              minute after backgrounding the renderer. The renderer is
              expected to be mostly idle during this period."/>
+  <suffix name="Foreground"
+      label="Time spent in tasks of a particular type when the renderer is in
+             the foreground. Please note that individual tabs in this
+             renderer can be backgrounded."/>
+  <suffix name="Foreground.FirstMinute"
+      label="Time spent in tasks of a particular type during the first minute
+             after foregrounding the renderer."/>
+  <suffix name="Foreground.SecondMinute"
+      label="Time spent in tasks of a particular type during the second
+             minute after foregrounding the renderer."/>
+  <suffix name="Foreground.ThirdMinute"
+      label="Time spent in tasks of a particular type during the third minute
+             after foregrounding the renderer."/>
+  <suffix name="Foreground.AfterThirdMinute"
+      label="Time spent in tasks of a particular type starting from the
+             fourth minute after foregrounding the renderer."/>
   <suffix name="Hidden"
       label="Time spent in tasks of a particular type when the renderer is
              hidden."/>
