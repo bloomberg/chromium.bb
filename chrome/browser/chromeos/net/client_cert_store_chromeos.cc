@@ -56,9 +56,9 @@ void ClientCertStoreChromeOS::GetClientCerts(
   // Caller is responsible for keeping the ClientCertStore alive until the
   // callback is run.
   base::Callback<void(net::ClientCertIdentityList)>
-      get_platform_certs_and_filter =
-          base::Bind(&ClientCertStoreChromeOS::GotAdditionalCerts,
-                     base::Unretained(this), &cert_request_info, callback);
+      get_platform_certs_and_filter = base::Bind(
+          &ClientCertStoreChromeOS::GotAdditionalCerts, base::Unretained(this),
+          base::Unretained(&cert_request_info), callback);
 
   base::Closure get_additional_certs_and_continue;
   if (cert_provider_) {
@@ -86,7 +86,8 @@ void ClientCertStoreChromeOS::GotAdditionalCerts(
           base::WorkerPool::GetTaskRunner(true /* task_is_slow */).get(),
           FROM_HERE,
           base::Bind(&ClientCertStoreChromeOS::GetAndFilterCertsOnWorkerThread,
-                     base::Unretained(this), password_delegate, request,
+                     base::Unretained(this), password_delegate,
+                     base::Unretained(request),
                      base::Passed(&additional_certs)),
           callback)) {
     return;
