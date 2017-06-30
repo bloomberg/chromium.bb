@@ -929,10 +929,10 @@ void av1_append_sub8x8_mvs_for_idx(const AV1_COMMON *cm, MACROBLOCKD *xd,
   assert(MAX_MV_REF_CANDIDATES == 2);
 
 #if CONFIG_GLOBAL_MOTION
-  zeromv.as_int =
-      gm_get_motion_vector(&cm->global_motion[ref], cm->allow_high_precision_mv,
-                           mi->mbmi.sb_type, mi_col, mi_row, block)
-          .as_int;
+  zeromv.as_int = gm_get_motion_vector(&cm->global_motion[rf[0]],
+                                       cm->allow_high_precision_mv,
+                                       mi->mbmi.sb_type, mi_col, mi_row, block)
+                      .as_int;
 #else
   zeromv.as_int = 0;
 #endif
