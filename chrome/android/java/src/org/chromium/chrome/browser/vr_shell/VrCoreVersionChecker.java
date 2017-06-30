@@ -12,8 +12,12 @@ public interface VrCoreVersionChecker {
     public static final String VR_CORE_PACKAGE_ID = "com.google.vr.vrcore";
 
     /**
-     * Returns the version of VrCore (if it is installed) and the compatibility of VrCore with
-     * Chrome.
+     * Returns the compatibility of VrCore with Chrome.
      */
-    VrCoreInfo getVrCoreInfo();
+    int getVrCoreCompatibility();
+
+    /**
+     * Returns a native VrCoreInfo object.
+     */
+    long makeNativeVrCoreInfo();
 }

@@ -24,7 +24,6 @@ public class VrCoreVersionCheckerImpl implements VrCoreVersionChecker {
 
     private static final String MIN_SDK_VERSION_PARAM_NAME = "min_sdk_version";
 
-    @Override
     public VrCoreInfo getVrCoreInfo() {
         // Supported Build version is determined by the webvr cardboard support feature.
         // Default is KITKAT unless specified via server side finch config.
@@ -59,5 +58,15 @@ public class VrCoreVersionCheckerImpl implements VrCoreVersionChecker {
             }
             return new VrCoreInfo(null, VrCoreCompatibility.VR_NOT_AVAILABLE);
         }
+    }
+
+    @Override
+    public int getVrCoreCompatibility() {
+        return getVrCoreInfo().compatibility;
+    }
+
+    @Override
+    public long makeNativeVrCoreInfo() {
+        return getVrCoreInfo().makeNativeVrCoreInfo();
     }
 }
