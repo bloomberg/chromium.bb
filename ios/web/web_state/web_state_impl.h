@@ -30,6 +30,7 @@
 @protocol CRWWebViewProxy;
 @class NSURLRequest;
 @class NSURLResponse;
+@protocol CRWWebViewNavigationProxy;
 
 namespace net {
 class HttpResponseHeaders;
@@ -269,6 +270,7 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   void UpdateHttpResponseHeaders(const GURL& url);
 
   WebState* GetWebState() override;
+  id<CRWWebViewNavigationProxy> GetWebViewNavigationProxy() const override;
 
  protected:
   void AddObserver(WebStateObserver* observer) override;

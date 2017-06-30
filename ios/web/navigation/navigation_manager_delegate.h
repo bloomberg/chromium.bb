@@ -9,6 +9,8 @@
 
 #import "ios/web/public/navigation_manager.h"
 
+@protocol CRWWebViewNavigationProxy;
+
 namespace web {
 
 struct LoadCommittedDetails;
@@ -42,6 +44,10 @@ class NavigationManagerDelegate {
 
   // Returns the WebState associated with this delegate.
   virtual WebState* GetWebState() = 0;
+
+  // Returns a CRWWebViewNavigationProxy protocol that can be used to access
+  // navigation related functions on the main WKWebView.
+  virtual id<CRWWebViewNavigationProxy> GetWebViewNavigationProxy() const = 0;
 };
 
 }  // namespace web

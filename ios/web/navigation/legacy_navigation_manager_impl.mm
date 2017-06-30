@@ -25,51 +25,7 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-
-// Checks whether or not two URL are an in-page navigation (differing only
-// in the fragment).
-bool AreURLsInPageNavigation(const GURL& existing_url, const GURL& new_url) {
-  if (existing_url == new_url || !new_url.has_ref())
-    return false;
-
-  return existing_url.EqualsIgnoringRef(new_url);
-}
-
-}  // anonymous namespace
-
 namespace web {
-
-NavigationManager::WebLoadParams::WebLoadParams(const GURL& url)
-    : url(url),
-      transition_type(ui::PAGE_TRANSITION_LINK),
-      user_agent_override_option(UserAgentOverrideOption::INHERIT),
-      is_renderer_initiated(false),
-      post_data(nil) {}
-
-NavigationManager::WebLoadParams::~WebLoadParams() {}
-
-NavigationManager::WebLoadParams::WebLoadParams(const WebLoadParams& other)
-    : url(other.url),
-      referrer(other.referrer),
-      transition_type(other.transition_type),
-      user_agent_override_option(other.user_agent_override_option),
-      is_renderer_initiated(other.is_renderer_initiated),
-      extra_headers([other.extra_headers copy]),
-      post_data([other.post_data copy]) {}
-
-NavigationManager::WebLoadParams& NavigationManager::WebLoadParams::operator=(
-    const WebLoadParams& other) {
-  url = other.url;
-  referrer = other.referrer;
-  is_renderer_initiated = other.is_renderer_initiated;
-  transition_type = other.transition_type;
-  user_agent_override_option = other.user_agent_override_option;
-  extra_headers.reset([other.extra_headers copy]);
-  post_data.reset([other.post_data copy]);
-
-  return *this;
-}
 
 LegacyNavigationManagerImpl::LegacyNavigationManagerImpl()
     : delegate_(nullptr), browser_state_(nullptr) {}
@@ -125,8 +81,8 @@ void LegacyNavigationManagerImpl::OnNavigationItemCommitted() {
   if (details.previous_item_index >= 0) {
     DCHECK([session_controller_ previousItem]);
     details.previous_url = [session_controller_ previousItem]->GetURL();
-    details.is_in_page =
-        AreURLsInPageNavigation(details.previous_url, details.item->GetURL());
+    details.is_in_page = AreUrlsFragmentChangeNavigation(
+        details.previous_url, details.item->GetURL());
   } else {
     details.previous_url = GURL();
     details.is_in_page = NO;

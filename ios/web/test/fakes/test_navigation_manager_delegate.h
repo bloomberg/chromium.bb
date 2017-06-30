@@ -7,6 +7,8 @@
 
 #import "ios/web/navigation/navigation_manager_delegate.h"
 
+@protocol CRWWebViewNavigationProxy;
+
 namespace web {
 
 class TestNavigationManagerDelegate : public NavigationManagerDelegate {
@@ -19,6 +21,7 @@ class TestNavigationManagerDelegate : public NavigationManagerDelegate {
   void OnNavigationItemCommitted(
       const LoadCommittedDetails& load_details) override;
   WebState* GetWebState() override;
+  id<CRWWebViewNavigationProxy> GetWebViewNavigationProxy() const override;
 };
 
 }  // namespace web

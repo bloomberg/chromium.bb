@@ -88,6 +88,7 @@
 #import "ios/web/web_state/ui/crw_swipe_recognizer_provider.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/ui/crw_web_controller_container_view.h"
+#import "ios/web/web_state/ui/crw_web_view_navigation_proxy.h"
 #import "ios/web/web_state/ui/crw_web_view_proxy_impl.h"
 #import "ios/web/web_state/ui/crw_wk_navigation_states.h"
 #import "ios/web/web_state/ui/crw_wk_script_message_router.h"
@@ -1423,6 +1424,12 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (id<CRWWebViewProxy>)webViewProxy {
   return _webViewProxy.get();
+}
+
+- (id<CRWWebViewNavigationProxy>)webViewNavigationProxy {
+  DCHECK(
+      [self.webView conformsToProtocol:@protocol(CRWWebViewNavigationProxy)]);
+  return static_cast<id<CRWWebViewNavigationProxy>>(self.webView);
 }
 
 - (UIView*)viewForPrinting {

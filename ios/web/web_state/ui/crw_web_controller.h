@@ -13,6 +13,7 @@
 #import "ios/web/public/web_state/ui/crw_web_delegate.h"
 #include "ios/web/public/web_state/url_verification_constants.h"
 #import "ios/web/web_state/ui/crw_touch_tracking_recognizer.h"
+#import "ios/web/web_state/ui/crw_web_view_navigation_proxy.h"
 
 namespace web {
 
@@ -73,6 +74,10 @@ class WebStateImpl;
 
 // The web view proxy associated with this controller.
 @property(nonatomic, readonly) id<CRWWebViewProxy> webViewProxy;
+
+// The web view navigation proxy associated with this controller.
+@property(nonatomic, readonly) id<CRWWebViewNavigationProxy>
+    webViewNavigationProxy;
 
 // The view that generates print data when printing. It is nil if printing
 // is not supported.

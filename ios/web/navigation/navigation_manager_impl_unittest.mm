@@ -9,9 +9,11 @@
 #import "ios/web/navigation/crw_session_controller+private_constructors.h"
 #import "ios/web/navigation/legacy_navigation_manager_impl.h"
 #import "ios/web/navigation/navigation_manager_delegate.h"
+#import "ios/web/navigation/wk_based_navigation_manager_impl.h"
 #include "ios/web/public/navigation_item.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
 #include "ios/web/test/test_url_constants.h"
+#import "ios/web/web_state/ui/crw_web_view_navigation_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "url/scheme_host_port.h"
@@ -42,34 +44,53 @@ bool UrlRewriter(GURL* url, BrowserState* browser_state) {
 class TestNavigationManagerDelegate : public NavigationManagerDelegate {
  public:
   bool reload_called() { return reload_called_; }
+  void SetSessionController(CRWSessionController* session_controller) {
+    session_controller_ = session_controller;
+  }
 
  private:
   // NavigationManagerDelegate overrides.
-  void GoToIndex(int index) override {}
+  void GoToIndex(int index) override {
+    [session_controller_ goToItemAtIndex:index discardNonCommittedItems:NO];
+  }
   void LoadURLWithParams(const NavigationManager::WebLoadParams&) override {}
   void Reload() override { reload_called_ = true; }
   void OnNavigationItemsPruned(size_t pruned_item_count) override {}
   void OnNavigationItemChanged() override {}
   void OnNavigationItemCommitted(const LoadCommittedDetails&) override {}
   WebState* GetWebState() override { return nullptr; }
+  id<CRWWebViewNavigationProxy> GetWebViewNavigationProxy() const override {
+    return nil;
+  }
 
   bool reload_called_ = false;
+  CRWSessionController* session_controller_;
 };
 }  // namespace
 
+// NavigationManagerTest is parameterized on this enum to test both the legacy
+// implementation of navigation manager and the experimental implementation.
+enum NavigationManagerChoice {
+  TEST_LEGACY_NAVIGATION_MANAGER,
+  TEST_WK_BASED_NAVIGATION_MANAGER,
+};
+
 // Programmatic test fixture for NavigationManagerImpl testing.
 // GetParam() chooses whether to run tests on LegacyNavigationManagerImpl or
-// (the soon-to-be-implemented) WKBasedNavigationManagerImpl.
+// WKBasedNavigationManagerImpl.
 // TODO(crbug.com/734150): cleanup the LegacyNavigationManagerImpl use case.
-class NavigationManagerTest : public PlatformTest,
-                              public ::testing::WithParamInterface<bool> {
+class NavigationManagerTest
+    : public PlatformTest,
+      public ::testing::WithParamInterface<NavigationManagerChoice> {
  protected:
   NavigationManagerTest() {
-    bool test_legacy_navigation_manager = GetParam();
-    if (test_legacy_navigation_manager) {
+    if (GetParam() == TEST_LEGACY_NAVIGATION_MANAGER) {
       manager_.reset(new LegacyNavigationManagerImpl);
+      controller_ =
+          [[CRWSessionController alloc] initWithBrowserState:&browser_state_];
+      delegate_.SetSessionController(session_controller());
     } else {
-      DCHECK(false) << "Not implemented.";
+      manager_.reset(new WKBasedNavigationManagerImpl);
     }
     // Setup rewriter.
     BrowserURLRewriter::GetInstance()->AddURLRewriter(UrlRewriter);
@@ -77,8 +98,6 @@ class NavigationManagerTest : public PlatformTest,
 
     manager_->SetDelegate(&delegate_);
     manager_->SetBrowserState(&browser_state_);
-    controller_ =
-        [[CRWSessionController alloc] initWithBrowserState:&browser_state_];
     manager_->SetSessionController(controller_);
   }
   CRWSessionController* session_controller() { return controller_; }
@@ -99,7 +118,6 @@ class NavigationManagerTest : public PlatformTest,
 TEST_P(NavigationManagerTest, EmptyManager) {
   EXPECT_EQ(0, navigation_manager()->GetItemCount());
   EXPECT_EQ(-1, navigation_manager()->GetLastCommittedItemIndex());
-  EXPECT_EQ(-1, navigation_manager()->GetLastCommittedItemIndex());
   EXPECT_FALSE(navigation_manager()->GetPendingItem());
   EXPECT_EQ(-1, navigation_manager()->GetPendingItemIndex());
   EXPECT_EQ(-1, navigation_manager()->GetIndexForOffset(0));
@@ -112,7 +130,7 @@ TEST_P(NavigationManagerTest, GetPendingItemIndexWithoutPendingEntry) {
       GURL("http://www.url.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
   EXPECT_EQ(-1, navigation_manager()->GetPendingItemIndex());
 }
 
@@ -123,7 +141,7 @@ TEST_P(NavigationManagerTest, GetPendingItemIndexWithPendingEntry) {
       GURL("http://www.url.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
@@ -138,15 +156,17 @@ TEST_P(NavigationManagerTest, GetPendingItemIndexWithIndexedPendingEntry) {
       GURL("http://www.url.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
 
   EXPECT_EQ(-1, navigation_manager()->GetPendingItemIndex());
-  [session_controller() setPendingItemIndex:0];
+  if (GetParam() == TEST_LEGACY_NAVIGATION_MANAGER) {
+    [session_controller() setPendingItemIndex:0];
+  }
   EXPECT_EQ(0, navigation_manager()->GetPendingItemIndex());
 }
 
@@ -160,7 +180,11 @@ TEST_P(NavigationManagerTest, CanGoBackWithoutCommitedItem) {
 // Tests that going back or negative offset is not possible if there is a
 // transient item, but not committed items.
 TEST_P(NavigationManagerTest, CanGoBackWithTransientItem) {
-  [session_controller() addTransientItemWithURL:GURL("http://www.url.com")];
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+  navigation_manager()->AddTransientItem(GURL("http://www.url.com"));
 
   EXPECT_FALSE(navigation_manager()->CanGoBack());
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(-1));
@@ -173,8 +197,8 @@ TEST_P(NavigationManagerTest, CanGoBackWithTransientItemAndCommittedItem) {
       GURL("http://www.url.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
-  [session_controller() commitPendingItem];
-  [session_controller() addTransientItemWithURL:GURL("http://www.url.com/0")];
+  navigation_manager()->CommitPendingItem();
+  navigation_manager()->AddTransientItem(GURL("http://www.url.com/0"));
 
   EXPECT_TRUE(navigation_manager()->CanGoBack());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(-1));
@@ -187,7 +211,7 @@ TEST_P(NavigationManagerTest, CanGoBackWithSingleCommitedItem) {
       GURL("http://www.url.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
 
   EXPECT_FALSE(navigation_manager()->CanGoBack());
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(-1));
@@ -199,30 +223,30 @@ TEST_P(NavigationManagerTest, CanGoBackWithMultipleCommitedItems) {
       GURL("http://www.url.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com/1"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
 
   EXPECT_TRUE(navigation_manager()->CanGoBack());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(-1));
 
-  [session_controller() goToItemAtIndex:1 discardNonCommittedItems:NO];
+  navigation_manager()->GoToIndex(1);
   EXPECT_TRUE(navigation_manager()->CanGoBack());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(-1));
 
-  [session_controller() goToItemAtIndex:0 discardNonCommittedItems:NO];
+  navigation_manager()->GoToIndex(0);
   EXPECT_FALSE(navigation_manager()->CanGoBack());
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(-1));
 
-  [session_controller() goToItemAtIndex:1 discardNonCommittedItems:NO];
+  navigation_manager()->GoToIndex(1);
   EXPECT_TRUE(navigation_manager()->CanGoBack());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(-1));
 }
@@ -241,7 +265,7 @@ TEST_P(NavigationManagerTest, CanGoForwardWithSingleCommitedItem) {
       GURL("http://www.url.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
 
   EXPECT_FALSE(navigation_manager()->CanGoForward());
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(1));
@@ -253,34 +277,34 @@ TEST_P(NavigationManagerTest, CanGoForwardWithMultipleCommitedEntries) {
       GURL("http://www.url.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com/1"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
 
   EXPECT_FALSE(navigation_manager()->CanGoForward());
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(1));
 
-  [session_controller() goToItemAtIndex:1 discardNonCommittedItems:NO];
+  navigation_manager()->GoToIndex(1);
   EXPECT_TRUE(navigation_manager()->CanGoForward());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(1));
 
-  [session_controller() goToItemAtIndex:0 discardNonCommittedItems:NO];
+  navigation_manager()->GoToIndex(0);
   EXPECT_TRUE(navigation_manager()->CanGoForward());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(1));
 
-  [session_controller() goToItemAtIndex:1 discardNonCommittedItems:NO];
+  navigation_manager()->GoToIndex(1);
   EXPECT_TRUE(navigation_manager()->CanGoForward());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(1));
 
-  [session_controller() goToItemAtIndex:2 discardNonCommittedItems:NO];
+  navigation_manager()->GoToIndex(2);
   EXPECT_FALSE(navigation_manager()->CanGoForward());
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(1));
 }
@@ -293,34 +317,34 @@ TEST_P(NavigationManagerTest, OffsetsWithoutPendingIndex) {
       GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_LINK,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com/redirect"), Referrer(),
       ui::PAGE_TRANSITION_CLIENT_REDIRECT,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com/1"), Referrer(), ui::PAGE_TRANSITION_LINK,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com/2"), Referrer(), ui::PAGE_TRANSITION_LINK,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com/redirect"), Referrer(),
       ui::PAGE_TRANSITION_CLIENT_REDIRECT,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
   ASSERT_EQ(5, navigation_manager()->GetItemCount());
   ASSERT_EQ(4, navigation_manager()->GetLastCommittedItemIndex());
 
   // Go to entry at index 1 and test API from that state.
-  [session_controller() goToItemAtIndex:1 discardNonCommittedItems:NO];
+  navigation_manager()->GoToIndex(1);
   ASSERT_EQ(1, navigation_manager()->GetLastCommittedItemIndex());
   ASSERT_EQ(-1, navigation_manager()->GetPendingItemIndex());
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(-1));
@@ -344,7 +368,7 @@ TEST_P(NavigationManagerTest, OffsetsWithoutPendingIndex) {
   EXPECT_EQ(1000000002, navigation_manager()->GetIndexForOffset(1000000000));
 
   // Go to entry at index 2 and test API from that state.
-  [session_controller() goToItemAtIndex:2 discardNonCommittedItems:NO];
+  navigation_manager()->GoToIndex(2);
   ASSERT_EQ(2, navigation_manager()->GetLastCommittedItemIndex());
   ASSERT_EQ(-1, navigation_manager()->GetPendingItemIndex());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(-1));
@@ -366,7 +390,7 @@ TEST_P(NavigationManagerTest, OffsetsWithoutPendingIndex) {
   EXPECT_EQ(1000000003, navigation_manager()->GetIndexForOffset(1000000000));
 
   // Go to entry at index 4 and test API from that state.
-  [session_controller() goToItemAtIndex:4 discardNonCommittedItems:NO];
+  navigation_manager()->GoToIndex(4);
   ASSERT_EQ(4, navigation_manager()->GetLastCommittedItemIndex());
   ASSERT_EQ(-1, navigation_manager()->GetPendingItemIndex());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(-1));
@@ -388,7 +412,7 @@ TEST_P(NavigationManagerTest, OffsetsWithoutPendingIndex) {
   EXPECT_EQ(1000000004, navigation_manager()->GetIndexForOffset(1000000000));
 
   // Test with existing transient entry.
-  [session_controller() addTransientItemWithURL:GURL("http://www.url.com")];
+  navigation_manager()->AddTransientItem(GURL("http://www.url.com"));
   ASSERT_EQ(5, navigation_manager()->GetItemCount());
   ASSERT_EQ(4, navigation_manager()->GetLastCommittedItemIndex());
   ASSERT_EQ(-1, navigation_manager()->GetPendingItemIndex());
@@ -413,10 +437,12 @@ TEST_P(NavigationManagerTest, OffsetsWithoutPendingIndex) {
   EXPECT_EQ(1000000004, navigation_manager()->GetIndexForOffset(1000000000));
 
   // Now test with pending item index.
-  [session_controller() discardNonCommittedItems];
+  navigation_manager()->DiscardNonCommittedItems();
 
   // Set pending index to 1 and test API from that state.
-  [session_controller() setPendingItemIndex:1];
+  if (GetParam() == TEST_LEGACY_NAVIGATION_MANAGER) {
+    [session_controller() setPendingItemIndex:1];
+  }
   ASSERT_EQ(4, navigation_manager()->GetLastCommittedItemIndex());
   ASSERT_EQ(1, navigation_manager()->GetPendingItemIndex());
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(-1));
@@ -440,7 +466,9 @@ TEST_P(NavigationManagerTest, OffsetsWithoutPendingIndex) {
   EXPECT_EQ(1000000002, navigation_manager()->GetIndexForOffset(1000000000));
 
   // Set pending index to 2 and test API from that state.
-  [session_controller() setPendingItemIndex:2];
+  if (GetParam() == TEST_LEGACY_NAVIGATION_MANAGER) {
+    [session_controller() setPendingItemIndex:2];
+  }
   ASSERT_EQ(4, navigation_manager()->GetLastCommittedItemIndex());
   ASSERT_EQ(2, navigation_manager()->GetPendingItemIndex());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(-1));
@@ -462,8 +490,10 @@ TEST_P(NavigationManagerTest, OffsetsWithoutPendingIndex) {
   EXPECT_EQ(1000000003, navigation_manager()->GetIndexForOffset(1000000000));
 
   // Set pending index to 4 and committed entry to 1 and test.
-  [session_controller() goToItemAtIndex:1 discardNonCommittedItems:NO];
-  [session_controller() setPendingItemIndex:4];
+  navigation_manager()->GoToIndex(1);
+  if (GetParam() == TEST_LEGACY_NAVIGATION_MANAGER) {
+    [session_controller() setPendingItemIndex:4];
+  }
   ASSERT_EQ(1, navigation_manager()->GetLastCommittedItemIndex());
   ASSERT_EQ(4, navigation_manager()->GetPendingItemIndex());
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(-1));
@@ -485,9 +515,11 @@ TEST_P(NavigationManagerTest, OffsetsWithoutPendingIndex) {
   EXPECT_EQ(1000000004, navigation_manager()->GetIndexForOffset(1000000000));
 
   // Test with existing transient entry in the end of the stack.
-  [session_controller() goToItemAtIndex:4 discardNonCommittedItems:NO];
-  [session_controller() setPendingItemIndex:-1];
-  [session_controller() addTransientItemWithURL:GURL("http://www.url.com")];
+  navigation_manager()->GoToIndex(4);
+  if (GetParam() == TEST_LEGACY_NAVIGATION_MANAGER) {
+    [session_controller() setPendingItemIndex:-1];
+  }
+  navigation_manager()->AddTransientItem(GURL("http://www.url.com"));
   ASSERT_EQ(5, navigation_manager()->GetItemCount());
   ASSERT_EQ(4, navigation_manager()->GetLastCommittedItemIndex());
   ASSERT_EQ(-1, navigation_manager()->GetPendingItemIndex());
@@ -522,19 +554,21 @@ TEST_P(NavigationManagerTest, OffsetsWithPendingTransientEntry) {
       GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_LINK,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com/1"), Referrer(), ui::PAGE_TRANSITION_LINK,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com/2"), Referrer(), ui::PAGE_TRANSITION_LINK,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
-  [session_controller() commitPendingItem];
-  [session_controller() addTransientItemWithURL:GURL("http://www.url.com/1")];
-  [session_controller() setPendingItemIndex:1];
+  navigation_manager()->CommitPendingItem();
+  navigation_manager()->AddTransientItem(GURL("http://www.url.com/1"));
+  if (GetParam() == TEST_LEGACY_NAVIGATION_MANAGER) {
+    [session_controller() setPendingItemIndex:1];
+  }
 
   ASSERT_EQ(3, navigation_manager()->GetItemCount());
   ASSERT_EQ(2, navigation_manager()->GetLastCommittedItemIndex());
@@ -544,8 +578,10 @@ TEST_P(NavigationManagerTest, OffsetsWithPendingTransientEntry) {
 
   // Now go forward to that middle transient item (pending index is 1,
   // current index is 0).
-  [session_controller() goToItemAtIndex:0 discardNonCommittedItems:NO];
-  [session_controller() setPendingItemIndex:1];
+  navigation_manager()->GoToIndex(0);
+  if (GetParam() == TEST_LEGACY_NAVIGATION_MANAGER) {
+    [session_controller() setPendingItemIndex:1];
+  }
   ASSERT_EQ(3, navigation_manager()->GetItemCount());
   ASSERT_EQ(0, navigation_manager()->GetLastCommittedItemIndex());
   ASSERT_EQ(1, navigation_manager()->GetPendingItemIndex());
@@ -718,7 +754,7 @@ TEST_P(NavigationManagerTest, AddPendingItemIfDiffernetURL) {
       existing_url, Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
   ASSERT_TRUE(navigation_manager()->GetLastCommittedItem());
   EXPECT_EQ(existing_url,
             navigation_manager()->GetLastCommittedItem()->GetURL());
@@ -742,7 +778,7 @@ TEST_P(NavigationManagerTest, NotAddSameUrlPendingItemIfNotFormSubmission) {
       existing_url, Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
   ASSERT_TRUE(navigation_manager()->GetLastCommittedItem());
   EXPECT_TRUE(ui::PageTransitionCoreTypeIs(
       navigation_manager()->GetLastCommittedItem()->GetTransitionType(),
@@ -767,7 +803,7 @@ TEST_P(NavigationManagerTest, AddSameUrlPendingItemIfFormSubmission) {
       existing_url, Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
   ASSERT_TRUE(navigation_manager()->GetLastCommittedItem());
   EXPECT_TRUE(ui::PageTransitionCoreTypeIs(
       navigation_manager()->GetLastCommittedItem()->GetTransitionType(),
@@ -797,7 +833,7 @@ TEST_P(NavigationManagerTest,
       existing_url, Referrer(), ui::PAGE_TRANSITION_FORM_SUBMIT,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
   ASSERT_TRUE(navigation_manager()->GetLastCommittedItem());
   EXPECT_FALSE(navigation_manager()->GetPendingItem());
   EXPECT_EQ(1, navigation_manager()->GetItemCount());
@@ -818,7 +854,7 @@ TEST_P(NavigationManagerTest, NotAddSameUrlPendingItemIfOverrideInherit) {
       existing_url, Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
   ASSERT_TRUE(navigation_manager()->GetLastCommittedItem());
   EXPECT_TRUE(ui::PageTransitionCoreTypeIs(
       navigation_manager()->GetLastCommittedItem()->GetTransitionType(),
@@ -841,7 +877,7 @@ TEST_P(NavigationManagerTest, AddSameUrlPendingItemIfOverrideDesktop) {
       existing_url, Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::MOBILE);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
   ASSERT_TRUE(navigation_manager()->GetLastCommittedItem());
   EXPECT_TRUE(ui::PageTransitionCoreTypeIs(
       navigation_manager()->GetLastCommittedItem()->GetTransitionType(),
@@ -870,7 +906,7 @@ TEST_P(NavigationManagerTest, AddSameUrlPendingItemIfOverrideMobile) {
       existing_url, Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::DESKTOP);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
   ASSERT_TRUE(navigation_manager()->GetLastCommittedItem());
   EXPECT_TRUE(ui::PageTransitionCoreTypeIs(
       navigation_manager()->GetLastCommittedItem()->GetTransitionType(),
@@ -897,7 +933,7 @@ TEST_P(NavigationManagerTest, OverrideUserAgentWithDesktop) {
       GURL("http://www.1.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::MOBILE);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
   NavigationItem* last_committed_item =
       navigation_manager()->GetLastCommittedItem();
   EXPECT_EQ(UserAgentType::MOBILE, last_committed_item->GetUserAgentType());
@@ -920,7 +956,7 @@ TEST_P(NavigationManagerTest, OverrideUserAgentWithMobile) {
       GURL("http://www.1.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
   NavigationItem* last_committed_item =
       navigation_manager()->GetLastCommittedItem();
   last_committed_item->SetUserAgentType(UserAgentType::DESKTOP);
@@ -942,7 +978,7 @@ TEST_P(NavigationManagerTest, OverrideUserAgentWithInheritAfterInherit) {
       GURL("http://www.1.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
   ASSERT_TRUE(navigation_manager()->GetLastCommittedItem());
   EXPECT_EQ(web::UserAgentType::MOBILE,
             navigation_manager()->GetLastCommittedItem()->GetUserAgentType());
@@ -951,7 +987,7 @@ TEST_P(NavigationManagerTest, OverrideUserAgentWithInheritAfterInherit) {
       GURL("http://www.2.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
   ASSERT_TRUE(navigation_manager()->GetLastCommittedItem());
   EXPECT_EQ(web::UserAgentType::MOBILE,
             navigation_manager()->GetLastCommittedItem()->GetUserAgentType());
@@ -964,7 +1000,7 @@ TEST_P(NavigationManagerTest, OverrideUserAgentWithInheritAfterMobile) {
       GURL("http://www.1.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::MOBILE);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
   ASSERT_TRUE(navigation_manager()->GetLastCommittedItem());
   EXPECT_EQ(web::UserAgentType::MOBILE,
             navigation_manager()->GetLastCommittedItem()->GetUserAgentType());
@@ -973,7 +1009,7 @@ TEST_P(NavigationManagerTest, OverrideUserAgentWithInheritAfterMobile) {
       GURL("http://www.2.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
   ASSERT_TRUE(navigation_manager()->GetLastCommittedItem());
   EXPECT_EQ(web::UserAgentType::MOBILE,
             navigation_manager()->GetLastCommittedItem()->GetUserAgentType());
@@ -986,7 +1022,7 @@ TEST_P(NavigationManagerTest, OverrideUserAgentWithInheritAfterDesktop) {
       GURL("http://www.1.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::DESKTOP);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
   ASSERT_TRUE(navigation_manager()->GetLastCommittedItem());
   EXPECT_EQ(web::UserAgentType::DESKTOP,
             navigation_manager()->GetLastCommittedItem()->GetUserAgentType());
@@ -995,7 +1031,7 @@ TEST_P(NavigationManagerTest, OverrideUserAgentWithInheritAfterDesktop) {
       GURL("http://www.2.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
   ASSERT_TRUE(navigation_manager()->GetLastCommittedItem());
   EXPECT_EQ(web::UserAgentType::DESKTOP,
             navigation_manager()->GetLastCommittedItem()->GetUserAgentType());
@@ -1014,14 +1050,14 @@ TEST_P(NavigationManagerTest, UserAgentTypePropagationPastNativeItems) {
       GURL("http://www.1.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
   web::NavigationItem* item1 = navigation_manager()->GetLastCommittedItem();
   ASSERT_EQ(web::UserAgentType::MOBILE, item1->GetUserAgentType());
   navigation_manager()->AddPendingItem(
       item1->GetURL().ReplaceComponents(native_scheme_replacement), Referrer(),
       ui::PAGE_TRANSITION_TYPED, web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
   web::NavigationItem* native_item1 =
       navigation_manager()->GetLastCommittedItem();
   ASSERT_EQ(web::UserAgentType::NONE, native_item1->GetUserAgentType());
@@ -1029,7 +1065,7 @@ TEST_P(NavigationManagerTest, UserAgentTypePropagationPastNativeItems) {
       GURL("http://www.2.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
   web::NavigationItem* item2 = navigation_manager()->GetLastCommittedItem();
 
   // Verify that |item1|'s UserAgentType is propagated to |item2|.
@@ -1043,7 +1079,7 @@ TEST_P(NavigationManagerTest, UserAgentTypePropagationPastNativeItems) {
       item2->GetURL().ReplaceComponents(native_scheme_replacement), Referrer(),
       ui::PAGE_TRANSITION_TYPED, web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
   web::NavigationItem* native_item2 =
       navigation_manager()->GetLastCommittedItem();
   ASSERT_EQ(web::UserAgentType::NONE, native_item2->GetUserAgentType());
@@ -1051,7 +1087,7 @@ TEST_P(NavigationManagerTest, UserAgentTypePropagationPastNativeItems) {
       GURL("http://www.3.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
   web::NavigationItem* item3 = navigation_manager()->GetLastCommittedItem();
 
   // Verify that |item2|'s UserAgentType is propagated to |item3|.
@@ -1155,14 +1191,14 @@ TEST_P(NavigationManagerTest, ReloadLastCommittedItemWithNormalType) {
       GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
 
   GURL url_before_reload = GURL("http://www.url.com/1");
   navigation_manager()->AddPendingItem(
       url_before_reload, Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
 
   navigation_manager()->Reload(web::ReloadType::NORMAL,
                                false /* check_for_repost */);
@@ -1182,22 +1218,22 @@ TEST_P(NavigationManagerTest,
       GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
 
   GURL url_before_reload = GURL("http://www.url.com/1");
   navigation_manager()->AddPendingItem(
       url_before_reload, Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
 
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com/2"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
 
-  [session_controller() goToItemAtIndex:1 discardNonCommittedItems:NO];
+  navigation_manager()->GoToIndex(1);
   EXPECT_EQ(1, navigation_manager()->GetLastCommittedItemIndex());
 
   navigation_manager()->Reload(web::ReloadType::NORMAL,
@@ -1277,7 +1313,7 @@ TEST_P(NavigationManagerTest, ReloadLastCommittedItemWithOriginalType) {
       GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
 
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com/1"), Referrer(), ui::PAGE_TRANSITION_TYPED,
@@ -1287,7 +1323,7 @@ TEST_P(NavigationManagerTest, ReloadLastCommittedItemWithOriginalType) {
   ASSERT_TRUE(navigation_manager()->GetPendingItem());
   navigation_manager()->GetPendingItem()->SetOriginalRequestURL(
       expected_original_url);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
 
   navigation_manager()->Reload(web::ReloadType::ORIGINAL_REQUEST_URL,
                                false /* check_for_repost */);
@@ -1307,7 +1343,7 @@ TEST_P(NavigationManagerTest,
       GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
 
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com/1"), Referrer(), ui::PAGE_TRANSITION_TYPED,
@@ -1317,15 +1353,15 @@ TEST_P(NavigationManagerTest,
   ASSERT_TRUE(navigation_manager()->GetPendingItem());
   navigation_manager()->GetPendingItem()->SetOriginalRequestURL(
       expected_original_url);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
 
   navigation_manager()->AddPendingItem(
       GURL("http://www.url.com/2"), Referrer(), ui::PAGE_TRANSITION_TYPED,
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
 
-  [session_controller() goToItemAtIndex:1 discardNonCommittedItems:NO];
+  navigation_manager()->GoToIndex(1);
   EXPECT_EQ(1, navigation_manager()->GetLastCommittedItemIndex());
 
   navigation_manager()->Reload(web::ReloadType::ORIGINAL_REQUEST_URL,
@@ -1349,7 +1385,7 @@ TEST_P(NavigationManagerTest, RewritingAppSpecificUrls) {
   EXPECT_EQ(url1, navigation_manager()->GetPendingItem()->GetURL());
 
   // URL should not be rewritten because last committed URL is not app-specific.
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
   GURL url2(url::SchemeHostPort(kSchemeToRewrite, "test2", 0).Serialize());
   navigation_manager()->AddPendingItem(
       url2, Referrer(), ui::PAGE_TRANSITION_LINK,
@@ -1368,7 +1404,7 @@ TEST_P(NavigationManagerTest, RewritingAppSpecificUrls) {
   EXPECT_EQ(rewritten_url3, navigation_manager()->GetPendingItem()->GetURL());
 
   // URL should be rewritten because last committed URL is app-specific.
-  [session_controller() commitPendingItem];
+  navigation_manager()->CommitPendingItem();
   GURL url4(url::SchemeHostPort(kSchemeToRewrite, "test4", 0).Serialize());
   navigation_manager()->AddPendingItem(
       url4, Referrer(), ui::PAGE_TRANSITION_LINK,
@@ -1406,6 +1442,6 @@ TEST_P(NavigationManagerTest, GetIndexOfItem) {
 INSTANTIATE_TEST_CASE_P(
     ProgrammaticNavigationManagerTest,
     NavigationManagerTest,
-    ::testing::Values(true /* test_legacy_navigation_manager */));
+    ::testing::Values(NavigationManagerChoice::TEST_LEGACY_NAVIGATION_MANAGER));
 
 }  // namespace web

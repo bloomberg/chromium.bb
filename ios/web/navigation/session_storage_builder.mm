@@ -90,9 +90,7 @@ void SessionStorageBuilder::ExtractSessionState(
           lastCommittedItemIndex:last_committed_item_index]);
   [session_controller setPreviousItemIndex:storage.previousItemIndex];
 
-  auto navigation_manager = base::MakeUnique<LegacyNavigationManagerImpl>();
-  navigation_manager->SetSessionController(session_controller);
-  web_state->navigation_manager_.reset(navigation_manager.release());
+  web_state->navigation_manager_->SetSessionController(session_controller);
 
   SessionCertificatePolicyCacheStorageBuilder cert_builder;
   std::unique_ptr<SessionCertificatePolicyCacheImpl> cert_policy_cache =
