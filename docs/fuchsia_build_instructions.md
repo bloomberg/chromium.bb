@@ -70,6 +70,9 @@ etc. if necessary.)
 target_os = ['fuchsia']
 ```
 
+Note that this should be added as a top-level statement in the `.gclient` file,
+not an entry inside the `solutions` dict.
+
 You will then need to re-run `gclient runhooks`. This makes sure the Fuchsia SDK
 is available in third\_party and keeps it up to date.
 
