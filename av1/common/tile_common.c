@@ -97,8 +97,16 @@ void av1_update_boundary_info(const struct AV1Common *cm,
       // Loop filtering operation is done based on the
       // loopfilter_across_tiles_enabled flag for both tile boundary and tile
       // group boundary.
+      // the tile boundary flag is updated only when
+      // loopfilter_across_tiles_enabled value is 0.
 
-      if (cm->tile_cols * cm->tile_rows > 1) {
+      int lpf_across_tiles_enabled = 1;
+
+#if CONFIG_LOOPFILTERING_ACROSS_TILES
+      lpf_across_tiles_enabled = cm->loop_filter_across_tiles_enabled;
+#endif
+
+      if ((cm->tile_cols * cm->tile_rows > 1) && (!lpf_across_tiles_enabled)) {
 #if CONFIG_DEPENDENT_HORZTILES
 #if CONFIG_TILE_GROUPS
         if (row == tile_info->mi_row_start &&
