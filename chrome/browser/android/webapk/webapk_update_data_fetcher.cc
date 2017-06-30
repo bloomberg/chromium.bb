@@ -121,7 +121,6 @@ void WebApkUpdateDataFetcher::FetchInstallableData() {
   params.check_installable = true;
   params.fetch_valid_primary_icon = true;
   params.fetch_valid_badge_icon = true;
-  InstallableManager::CreateForWebContents(web_contents());
   InstallableManager* installable_manager =
       InstallableManager::FromWebContents(web_contents());
   installable_manager->GetData(

@@ -17,6 +17,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "chrome/browser/installable/installable_manager.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -33,11 +34,9 @@
 #include "ui/gfx/image/image_unittest_util.h"
 #include "url/gurl.h"
 
-// TODO(zpeng): Effectively test scenarios where both timeout callback and
-// success callback are invoked. See crbug.com/697228.
-
 namespace {
 
+const char* kWebApplicationInfoTitle = "Meta Title";
 const char* kDefaultManifestUrl = "https://www.example.com/manifest.json";
 const char* kDefaultManifestName = "Default Name";
 const char* kDefaultManifestShortName = "Default Short Name";
@@ -49,20 +48,16 @@ const blink::WebDisplayMode kDefaultManifestDisplayMode =
 class MockWebContents : public content::TestWebContents {
  public:
   explicit MockWebContents(content::BrowserContext* browser_context)
-      : content::TestWebContents(browser_context) {}
+      : content::TestWebContents(browser_context),
+        should_image_time_out_(false),
+        should_manifest_time_out_(false) {}
 
-  ~MockWebContents() override {
-  }
+  ~MockWebContents() override {}
 
-  // Sets the manifest to be returned by GetManifest().
-  // |fetch_delay_ms| is the time in milliseconds that the simulated fetch of
-  // the web manifest should take.
   void SetManifest(const GURL& manifest_url,
-                   const content::Manifest& manifest,
-                   int fetch_delay_ms) {
+                   const content::Manifest& manifest) {
     manifest_url_ = manifest_url;
     manifest_ = manifest;
-    manifest_fetch_delay_ms_ = fetch_delay_ms;
   }
 
   int DownloadImage(const GURL& url,
@@ -70,28 +65,40 @@ class MockWebContents : public content::TestWebContents {
                     uint32_t max_bitmap_size,
                     bool bypass_cache,
                     const ImageDownloadCallback& callback) override {
+    if (should_image_time_out_)
+      return 0;
+
     const int kIconSizePx = 144;
     SkBitmap icon = gfx::test::CreateBitmap(kIconSizePx, kIconSizePx);
     std::vector<SkBitmap> icons(1u, icon);
     std::vector<gfx::Size> pixel_sizes(1u, gfx::Size(kIconSizePx, kIconSizePx));
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(callback, 0, net::HTTP_OK, url, icons, pixel_sizes));
+    content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
+        ->PostTask(FROM_HERE, base::Bind(callback, 0, net::HTTP_OK, url, icons,
+                                         pixel_sizes));
     return 0;
   }
 
   void GetManifest(const GetManifestCallback& callback) override {
-    content::BrowserThread::PostDelayedTask(
-        content::BrowserThread::UI, FROM_HERE,
-        base::Bind(callback, manifest_url_, manifest_),
-        base::TimeDelta::FromMilliseconds(manifest_fetch_delay_ms_));
+    if (should_manifest_time_out_)
+      return;
+
+    content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
+        ->PostTask(FROM_HERE, base::Bind(callback, manifest_url_, manifest_));
+  }
+
+  void SetShouldImageTimeOut(bool should_time_out) {
+    should_image_time_out_ = should_time_out;
+  }
+
+  void SetShouldManifestTimeOut(bool should_time_out) {
+    should_manifest_time_out_ = should_time_out;
   }
 
  private:
   GURL manifest_url_;
   content::Manifest manifest_;
-  int manifest_fetch_delay_ms_;
+  bool should_image_time_out_;
+  bool should_manifest_time_out_;
 
   DISALLOW_COPY_AND_ASSIGN(MockWebContents);
 };
@@ -118,12 +125,15 @@ class ObserverWaiter : public AddToHomescreenDataFetcher::Observer {
   }
 
   void OnDidDetermineWebApkCompatibility(bool is_webapk_compatible) override {
+    EXPECT_FALSE(title_available_);
     determined_webapk_compatibility_ = true;
     is_webapk_compatible_ = is_webapk_compatible;
   }
 
   void OnUserTitleAvailable(const base::string16& title) override {
+    EXPECT_FALSE(data_available_);
     title_available_ = true;
+    title_ = title;
   }
 
   SkBitmap FinalizeLauncherIconInBackground(const SkBitmap& icon,
@@ -136,11 +146,13 @@ class ObserverWaiter : public AddToHomescreenDataFetcher::Observer {
   void OnDataAvailable(const ShortcutInfo& info,
                        const SkBitmap& primary_icon,
                        const SkBitmap& badge_icon) override {
+    EXPECT_TRUE(title_available_);
     data_available_ = true;
     if (!quit_closure_.is_null())
       quit_closure_.Run();
   }
 
+  base::string16 title() const { return title_; }
   bool is_webapk_compatible() const { return is_webapk_compatible_; }
   bool determined_webapk_compatibility() const {
     return determined_webapk_compatibility_;
@@ -148,6 +160,7 @@ class ObserverWaiter : public AddToHomescreenDataFetcher::Observer {
   bool title_available() const { return title_available_; }
 
  private:
+  base::string16 title_;
   bool is_webapk_compatible_;
   bool determined_webapk_compatibility_;
   bool title_available_;
@@ -162,6 +175,10 @@ base::NullableString16 NullableStringFromUTF8(const std::string& value) {
   return base::NullableString16(base::UTF8ToUTF16(value), false);
 }
 
+content::Manifest BuildEmptyManifest() {
+  return content::Manifest();
+}
+
 // Builds WebAPK compatible content::Manifest.
 content::Manifest BuildDefaultManifest() {
   content::Manifest manifest;
@@ -169,6 +186,14 @@ content::Manifest BuildDefaultManifest() {
   manifest.short_name = NullableStringFromUTF8(kDefaultManifestShortName);
   manifest.start_url = GURL(kDefaultStartUrl);
   manifest.display = kDefaultManifestDisplayMode;
+
+  content::Manifest::Icon primary_icon;
+  primary_icon.type = base::ASCIIToUTF16("image/png");
+  primary_icon.sizes.push_back(gfx::Size(144, 144));
+  primary_icon.purpose.push_back(content::Manifest::Icon::IconPurpose::ANY);
+  primary_icon.src = GURL("https://www.google.com/image.png");
+  manifest.icons.push_back(primary_icon);
+
   return manifest;
 }
 
@@ -196,7 +221,9 @@ class AddToHomescreenDataFetcherTest : public ChromeRenderViewHostTestHarness {
     MockWebContents* mock_web_contents = new MockWebContents(browser_context());
     mock_web_contents->Init(content::WebContents::CreateParams(
         browser_context(), std::move(site_instance)));
+    InstallableManager::CreateForWebContents(mock_web_contents);
     SetContents(mock_web_contents);
+    NavigateAndCommit(GURL(kDefaultStartUrl));
   }
 
   void TearDown() override {
@@ -207,17 +234,28 @@ class AddToHomescreenDataFetcherTest : public ChromeRenderViewHostTestHarness {
   scoped_refptr<AddToHomescreenDataFetcher> BuildFetcher(
       bool check_webapk_compatible,
       AddToHomescreenDataFetcher::Observer* observer) {
-    return new AddToHomescreenDataFetcher(web_contents(), 1, 1, 1, 1, 1,
+    return new AddToHomescreenDataFetcher(web_contents(), 1, 1, 1, 1, 1, 500,
                                           check_webapk_compatible, observer);
   }
 
   // Set the manifest to be returned as a result of WebContents::GetManifest().
   void SetManifest(const GURL& manifest_url,
-                   const content::Manifest& manifest,
-                   int fetch_delay_ms) {
+                   const content::Manifest& manifest) {
     MockWebContents* mock_web_contents =
         static_cast<MockWebContents*>(web_contents());
-    mock_web_contents->SetManifest(manifest_url, manifest, fetch_delay_ms);
+    mock_web_contents->SetManifest(manifest_url, manifest);
+  }
+
+  void SetShouldImageTimeOut(bool should_time_out) {
+    MockWebContents* mock_web_contents =
+        static_cast<MockWebContents*>(web_contents());
+    mock_web_contents->SetShouldImageTimeOut(should_time_out);
+  }
+
+  void SetShouldManifestTimeOut(bool should_time_out) {
+    MockWebContents* mock_web_contents =
+        static_cast<MockWebContents*>(web_contents());
+    mock_web_contents->SetShouldManifestTimeOut(should_time_out);
   }
 
   // Registers service worker at |url|. Blocks till the service worker is
@@ -248,25 +286,6 @@ class AddToHomescreenDataFetcherTest : public ChromeRenderViewHostTestHarness {
   DISALLOW_COPY_AND_ASSIGN(AddToHomescreenDataFetcherTest);
 };
 
-// Checks that AddToHomescreenDataFetcher::Observer::OnUserTitleAvailable() is
-// called when the web manifest fetch times out. The add-to-homescreen dialog
-// makes the dialog's text field editable once OnUserTitleAvailable() is called.
-TEST_F(AddToHomescreenDataFetcherTest,
-    DISABLED_ManifestFetchTimesOutNoServiceWorker) {
-  SetManifest(GURL(kDefaultManifestUrl), BuildDefaultManifest(), 10000);
-
-  ObserverWaiter waiter;
-  scoped_refptr<AddToHomescreenDataFetcher> fetcher(
-      BuildFetcher(false, &waiter));
-  fetcher->OnDidGetWebApplicationInfo(WebApplicationInfo());
-  waiter.WaitForDataAvailable();
-
-  EXPECT_FALSE(waiter.determined_webapk_compatibility());
-  EXPECT_TRUE(waiter.title_available());
-
-  fetcher->set_weak_observer(nullptr);
-}
-
 // Class for tests which should be run with AddToHomescreenDataFetcher built
 // with both true and false values of |check_webapk_compatible|.
 class AddToHomescreenDataFetcherTestCommon
@@ -290,25 +309,49 @@ class AddToHomescreenDataFetcherTestCommon
   DISALLOW_COPY_AND_ASSIGN(AddToHomescreenDataFetcherTestCommon);
 };
 
-// Test that when the manifest provides Manifest::short_name but not
-// Manifest::name that Manifest::short_name is used as the name instead of
-// WebApplicationInfo::title.
-TEST_P(AddToHomescreenDataFetcherTestCommon,
-       ManifestShortNameClobbersWebApplicationName) {
+// Checks that AddToHomescreenDataFetcher::Observer::OnUserTitleAvailable() is
+// called when the web manifest returned is empty. The add-to-homescreen dialog
+// makes the dialog's text field editable once OnUserTitleAvailable() is called.
+TEST_P(AddToHomescreenDataFetcherTestCommon, EmptyManifest) {
   WebApplicationInfo web_application_info;
-  web_application_info.title = base::UTF8ToUTF16("Meta Title");
+  web_application_info.title = base::UTF8ToUTF16(kWebApplicationInfoTitle);
 
-  content::Manifest manifest(BuildDefaultManifest());
-  manifest.name = base::NullableString16();
-
-  RegisterServiceWorker(GURL(kDefaultStartUrl));
-  SetManifest(GURL(kDefaultManifestUrl), manifest, 0);
+  SetManifest(GURL(kDefaultManifestUrl), BuildEmptyManifest());
 
   ObserverWaiter waiter;
   scoped_refptr<AddToHomescreenDataFetcher> fetcher(BuildFetcher(&waiter));
   fetcher->OnDidGetWebApplicationInfo(web_application_info);
   waiter.WaitForDataAvailable();
 
+  EXPECT_EQ(check_webapk_compatibility(),
+            waiter.determined_webapk_compatibility());
+  EXPECT_FALSE(waiter.is_webapk_compatible());
+  EXPECT_TRUE(waiter.title_available());
+  EXPECT_TRUE(base::EqualsASCII(waiter.title(), kWebApplicationInfoTitle));
+
+  fetcher->set_weak_observer(nullptr);
+}
+
+// Test that when the manifest provides Manifest::short_name but not
+// Manifest::name that Manifest::short_name is used as the name instead of
+// WebApplicationInfo::title.
+TEST_P(AddToHomescreenDataFetcherTestCommon,
+       ManifestShortNameClobbersWebApplicationName) {
+  WebApplicationInfo web_application_info;
+  web_application_info.title = base::UTF8ToUTF16(kWebApplicationInfoTitle);
+
+  content::Manifest manifest(BuildDefaultManifest());
+  manifest.name = base::NullableString16();
+
+  RegisterServiceWorker(GURL(kDefaultStartUrl));
+  SetManifest(GURL(kDefaultManifestUrl), manifest);
+
+  ObserverWaiter waiter;
+  scoped_refptr<AddToHomescreenDataFetcher> fetcher(BuildFetcher(&waiter));
+  fetcher->OnDidGetWebApplicationInfo(web_application_info);
+  waiter.WaitForDataAvailable();
+
+  EXPECT_TRUE(base::EqualsASCII(waiter.title(), kDefaultManifestShortName));
   EXPECT_TRUE(base::EqualsASCII(fetcher->shortcut_info().name,
                                 kDefaultManifestShortName));
 
@@ -320,50 +363,107 @@ TEST_P(AddToHomescreenDataFetcherTestCommon,
 // - The page is not WebAPK compatible.
 // - WebApplicationInfo::title is used as the "name".
 TEST_P(AddToHomescreenDataFetcherTestCommon, ManifestNoNameNoShortName) {
-    const char* kWebApplicationInfoTitle = "Meta Title";
-    WebApplicationInfo web_application_info;
-    web_application_info.title = base::UTF8ToUTF16(kWebApplicationInfoTitle);
+  WebApplicationInfo web_application_info;
+  web_application_info.title = base::UTF8ToUTF16(kWebApplicationInfoTitle);
 
-    content::Manifest manifest(BuildDefaultManifest());
-    manifest.name = base::NullableString16();
-    manifest.short_name = base::NullableString16();
+  content::Manifest manifest(BuildDefaultManifest());
+  manifest.name = base::NullableString16();
+  manifest.short_name = base::NullableString16();
 
-    RegisterServiceWorker(GURL(kDefaultStartUrl));
-    SetManifest(GURL(kDefaultManifestUrl), manifest, 0);
+  RegisterServiceWorker(GURL(kDefaultStartUrl));
+  SetManifest(GURL(kDefaultManifestUrl), manifest);
 
-    ObserverWaiter waiter;
-    scoped_refptr<AddToHomescreenDataFetcher> fetcher(BuildFetcher(&waiter));
-    fetcher->OnDidGetWebApplicationInfo(web_application_info);
-    waiter.WaitForDataAvailable();
+  ObserverWaiter waiter;
+  scoped_refptr<AddToHomescreenDataFetcher> fetcher(BuildFetcher(&waiter));
+  fetcher->OnDidGetWebApplicationInfo(web_application_info);
+  waiter.WaitForDataAvailable();
 
-    EXPECT_FALSE(waiter.is_webapk_compatible());
-    EXPECT_TRUE(base::EqualsASCII(fetcher->shortcut_info().name,
-                                  kWebApplicationInfoTitle));
+  EXPECT_EQ(check_webapk_compatibility(),
+            waiter.determined_webapk_compatibility());
+  EXPECT_FALSE(waiter.is_webapk_compatible());
+  EXPECT_TRUE(base::EqualsASCII(waiter.title(), kWebApplicationInfoTitle));
+  EXPECT_TRUE(base::EqualsASCII(fetcher->shortcut_info().name,
+                                kWebApplicationInfoTitle));
 
-    fetcher->set_weak_observer(nullptr);
+  fetcher->set_weak_observer(nullptr);
 }
 
 // Checks that the AddToHomescreenDataFetcher::Observer callbacks are called
-// when a service worker is registered and the manifest fetch times out.
-TEST_P(AddToHomescreenDataFetcherTestCommon, DISABLED_ManifestFetchTimesOut) {
-    RegisterServiceWorker(GURL(kDefaultStartUrl));
-    SetManifest(GURL(kDefaultManifestUrl), BuildDefaultManifest(), 10000);
+// when the manifest fetch times out.
+TEST_P(AddToHomescreenDataFetcherTestCommon, ManifestFetchTimesOut) {
+  WebApplicationInfo web_application_info;
+  web_application_info.title = base::UTF8ToUTF16(kWebApplicationInfoTitle);
 
-    ObserverWaiter waiter;
-    scoped_refptr<AddToHomescreenDataFetcher> fetcher(BuildFetcher(&waiter));
-    fetcher->OnDidGetWebApplicationInfo(WebApplicationInfo());
-    waiter.WaitForDataAvailable();
+  RegisterServiceWorker(GURL(kDefaultStartUrl));
+  SetManifest(GURL(kDefaultManifestUrl), BuildDefaultManifest());
+  SetShouldManifestTimeOut(true);
+  SetShouldImageTimeOut(false);
 
-    if (check_webapk_compatibility()) {
-      EXPECT_TRUE(waiter.determined_webapk_compatibility());
-      EXPECT_FALSE(waiter.is_webapk_compatible());
-    } else {
-      EXPECT_FALSE(waiter.determined_webapk_compatibility());
-    }
-    // This callback enables the text field in the add-to-homescreen dialog.
-    EXPECT_TRUE(waiter.title_available());
+  ObserverWaiter waiter;
+  scoped_refptr<AddToHomescreenDataFetcher> fetcher(BuildFetcher(&waiter));
+  fetcher->OnDidGetWebApplicationInfo(web_application_info);
+  waiter.WaitForDataAvailable();
 
-    fetcher->set_weak_observer(nullptr);
+  EXPECT_EQ(check_webapk_compatibility(),
+            waiter.determined_webapk_compatibility());
+  EXPECT_FALSE(waiter.is_webapk_compatible());
+  EXPECT_TRUE(base::EqualsASCII(waiter.title(), kWebApplicationInfoTitle));
+  EXPECT_TRUE(waiter.title_available());
+
+  fetcher->set_weak_observer(nullptr);
+}
+
+// Checks that the AddToHomescreenDataFetcher::Observer callbacks are called
+// when the image fetch times out.
+TEST_P(AddToHomescreenDataFetcherTestCommon, ImageFetchTimesOut) {
+  WebApplicationInfo web_application_info;
+  web_application_info.title = base::UTF8ToUTF16(kWebApplicationInfoTitle);
+
+  RegisterServiceWorker(GURL(kDefaultStartUrl));
+  SetManifest(GURL(kDefaultManifestUrl), BuildDefaultManifest());
+  SetShouldManifestTimeOut(false);
+  SetShouldImageTimeOut(true);
+
+  ObserverWaiter waiter;
+  scoped_refptr<AddToHomescreenDataFetcher> fetcher(BuildFetcher(&waiter));
+  fetcher->OnDidGetWebApplicationInfo(web_application_info);
+  waiter.WaitForDataAvailable();
+
+  EXPECT_EQ(check_webapk_compatibility(),
+            waiter.determined_webapk_compatibility());
+  EXPECT_FALSE(waiter.is_webapk_compatible());
+  EXPECT_TRUE(waiter.title_available());
+  EXPECT_TRUE(base::EqualsASCII(waiter.title(), kWebApplicationInfoTitle));
+
+  fetcher->set_weak_observer(nullptr);
+}
+
+// Checks that the AddToHomescreenDataFetcher::Observer callbacks are called
+// when the service worker check times out.
+TEST_P(AddToHomescreenDataFetcherTestCommon, ServiceWorkerCheckTimesOut) {
+  WebApplicationInfo web_application_info;
+  web_application_info.title = base::UTF8ToUTF16(kWebApplicationInfoTitle);
+
+  // Not registering a service worker means we'll wait and time out for the
+  // worker.
+  SetManifest(GURL(kDefaultManifestUrl), BuildDefaultManifest());
+  SetShouldManifestTimeOut(false);
+  SetShouldImageTimeOut(false);
+
+  ObserverWaiter waiter;
+  scoped_refptr<AddToHomescreenDataFetcher> fetcher(BuildFetcher(&waiter));
+  fetcher->OnDidGetWebApplicationInfo(web_application_info);
+  waiter.WaitForDataAvailable();
+
+  EXPECT_EQ(check_webapk_compatibility(),
+            waiter.determined_webapk_compatibility());
+  EXPECT_FALSE(waiter.is_webapk_compatible());
+  EXPECT_TRUE(waiter.title_available());
+  EXPECT_TRUE(base::EqualsASCII(waiter.title(), kDefaultManifestShortName));
+  EXPECT_TRUE(base::EqualsASCII(fetcher->shortcut_info().user_title,
+                                kDefaultManifestShortName));
+
+  fetcher->set_weak_observer(nullptr);
 }
 
 INSTANTIATE_TEST_CASE_P(CheckWebApkCompatibility,

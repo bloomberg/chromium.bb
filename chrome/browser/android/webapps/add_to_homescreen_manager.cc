@@ -31,6 +31,14 @@
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 
+namespace {
+
+// The length of time to allow the add to homescreen data fetcher to run before
+// timing out and generating an icon.
+const int kDataTimeoutInMilliseconds = 4000;
+
+}  // namespace
+
 jlong InitializeAndStart(JNIEnv* env,
                          const JavaParamRef<jobject>& obj,
                          const JavaParamRef<jobject>& java_web_contents) {
@@ -94,7 +102,7 @@ void AddToHomescreenManager::Start(content::WebContents* web_contents) {
       ShortcutHelper::GetMinimumHomescreenIconSizeInPx(),
       ShortcutHelper::GetIdealSplashImageSizeInPx(),
       ShortcutHelper::GetMinimumSplashImageSizeInPx(),
-      ShortcutHelper::GetIdealBadgeIconSizeInPx(),
+      ShortcutHelper::GetIdealBadgeIconSizeInPx(), kDataTimeoutInMilliseconds,
       check_webapk_compatible, this);
 }
 

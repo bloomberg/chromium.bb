@@ -140,7 +140,7 @@ AppBannerManager::AppBannerManager(content::WebContents* web_contents)
       SiteEngagementObserver(SiteEngagementService::Get(
           Profile::FromBrowserContext(web_contents->GetBrowserContext()))),
       state_(State::INACTIVE),
-      manager_(nullptr),
+      manager_(InstallableManager::FromWebContents(web_contents)),
       event_request_id_(-1),
       binding_(this),
       has_sufficient_engagement_(false),
@@ -149,9 +149,6 @@ AppBannerManager::AppBannerManager(content::WebContents* web_contents)
       triggered_by_devtools_(false),
       need_to_log_status_(false),
       weak_factory_(this) {
-  // Ensure the InstallableManager exists since we have a hard dependency on it.
-  InstallableManager::CreateForWebContents(web_contents);
-  manager_ = InstallableManager::FromWebContents(web_contents);
   DCHECK(manager_);
 
   AppBannerSettingsHelper::UpdateFromFieldTrial();

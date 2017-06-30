@@ -19,6 +19,7 @@ struct FaviconRawBitmapResult;
 }
 
 class GURL;
+class InstallableManager;
 struct InstallableData;
 struct WebApplicationInfo;
 
@@ -27,19 +28,19 @@ struct WebApplicationInfo;
 //
 // Because of the various asynchronous calls made by this class, it is
 // refcounted to prevent the class from being prematurely deleted.  If the
-// pointer to the ShortcutHelper becomes invalid, the pipeline should kill
-// itself.
+// |weak_observer_| pointer becomes invalid, the pipeline should kill itself.
 class AddToHomescreenDataFetcher
     : public base::RefCounted<AddToHomescreenDataFetcher>,
       public content::WebContentsObserver {
  public:
   class Observer {
    public:
-    // Callded when the installable check is compelte.
+    // Called when the installable check is complete.
     virtual void OnDidDetermineWebApkCompatibility(
         bool is_webapk_compatible) = 0;
 
-    // Called when the title of the page is available.
+    // Called when the title of the page is available. Will be called after
+    // OnDidDetermineWebApkCompatibility.
     virtual void OnUserTitleAvailable(const base::string16& title) = 0;
 
     // Converts the icon into one that can be used on the Android Home screen.
@@ -67,6 +68,7 @@ class AddToHomescreenDataFetcher
                              int ideal_splash_image_size_in_px,
                              int minimum_splash_image_size_in_px,
                              int badge_size_in_px,
+                             int data_timeout_ms,
                              bool check_webapk_compatible,
                              Observer* observer);
 
@@ -92,6 +94,9 @@ class AddToHomescreenDataFetcher
   void OnDataTimedout();
 
   // Called when InstallableManager finishes looking for a manifest and icon.
+  void OnDidGetManifestAndIcons(const InstallableData& data);
+
+  // Called when InstallableManager finishes checking for installability.
   void OnDidPerformInstallableCheck(const InstallableData& data);
 
   // Grabs the favicon for the current URL.
@@ -105,16 +110,18 @@ class AddToHomescreenDataFetcher
   SkBitmap CreateLauncherIconFromFaviconInBackground(
       const favicon_base::FaviconRawBitmapResult& bitmap_result);
 
-  // Creates the launcher icon from the given |raw_icon|.
-  void CreateLauncherIcon(const SkBitmap& raw_icon);
-  SkBitmap CreateLauncherIconInBackground(const SkBitmap& raw_icon);
+  // Creates the primary launcher icon from the given |icon|.
+  void CreateLauncherIcon(const SkBitmap& icon);
+  SkBitmap CreateLauncherIconInBackground(const SkBitmap& icon);
 
   // Notifies the observer that the shortcut data is all available.
   void NotifyObserver(const SkBitmap& icon);
 
+  InstallableManager* installable_manager_;
   Observer* weak_observer_;
 
   // The icons must only be set on the UI thread for thread safety.
+  SkBitmap raw_primary_icon_;
   SkBitmap badge_icon_;
   SkBitmap primary_icon_;
   ShortcutInfo shortcut_info_;
@@ -127,12 +134,12 @@ class AddToHomescreenDataFetcher
   const int ideal_splash_image_size_in_px_;
   const int minimum_splash_image_size_in_px_;
   const int badge_size_in_px_;
+  const int data_timeout_ms_;
 
   // Indicates whether to check WebAPK compatibility.
   bool check_webapk_compatibility_;
   bool is_waiting_for_web_application_info_;
   bool is_installable_check_complete_;
-  bool is_icon_saved_;
 
   DISALLOW_COPY_AND_ASSIGN(AddToHomescreenDataFetcher);
 };
