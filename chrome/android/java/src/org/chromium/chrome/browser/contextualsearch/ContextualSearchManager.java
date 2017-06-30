@@ -782,7 +782,6 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
 
         // Notify the UI of the caption.
         mSearchPanel.setCaption(caption);
-        System.out.println("ctxs checking mQuickAnswersHeuristic " + mQuickAnswersHeuristic);
         if (mQuickAnswersHeuristic != null) {
             mQuickAnswersHeuristic.setConditionSatisfied(true);
             mQuickAnswersHeuristic.setDoesAnswer(doesAnswer);

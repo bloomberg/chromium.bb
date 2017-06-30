@@ -52,6 +52,8 @@ public class ContextualSearchFieldTrial {
     private static final String SHORT_WORD_SUPPRESSION_ENABLED = "enable_short_word_suppression";
     private static final String NOT_LONG_WORD_SUPPRESSION_ENABLED =
             "enable_not_long_word_suppression";
+    @VisibleForTesting
+    static final String NOT_AN_ENTITY_SUPPRESSION_ENABLED = "enable_not_an_entity_suppression";
 
     private static final String MINIMUM_SELECTION_LENGTH = "minimum_selection_length";
 
@@ -86,6 +88,7 @@ public class ContextualSearchFieldTrial {
     private static Boolean sIsWordEdgeSuppressionEnabled;
     private static Boolean sIsShortWordSuppressionEnabled;
     private static Boolean sIsNotLongWordSuppressionEnabled;
+    private static Boolean sIsNotAnEntitySuppressionEnabled;
     private static Integer sMinimumSelectionLength;
     private static Boolean sIsOnlineDetectionDisabled;
     private static Boolean sIsAmpAsSeparateTabDisabled;
@@ -283,6 +286,16 @@ public class ContextualSearchFieldTrial {
             sIsNotLongWordSuppressionEnabled = getBooleanParam(NOT_LONG_WORD_SUPPRESSION_ENABLED);
         }
         return sIsNotLongWordSuppressionEnabled.booleanValue();
+    }
+
+    /**
+     * @return Whether triggering is suppressed for a tap that's not on an entity.
+     */
+    static boolean isNotAnEntitySuppressionEnabled() {
+        if (sIsNotAnEntitySuppressionEnabled == null) {
+            sIsNotAnEntitySuppressionEnabled = getBooleanParam(NOT_AN_ENTITY_SUPPRESSION_ENABLED);
+        }
+        return sIsNotAnEntitySuppressionEnabled.booleanValue();
     }
 
     /**
