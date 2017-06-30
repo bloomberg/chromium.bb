@@ -16,16 +16,15 @@ module chrome_cleaner.mojom;
 [Extensible]
 enum PromptAcceptance {
   UNSPECIFIED = 0,
-  // The Chrome prompt was not shown to the user (for example, due to an
-  // experiment run that shouldn't prompt the user or because the user has
-  // been prompted recently).
-  NOT_SHOWN = 1,
-  // The user explicitly accepted the Chrome prompt.
-  ACCEPTED = 2,
+  // The user explicitly accepted the cleanup operation and cleaner logs
+  // upload is allowed.
+  ACCEPTED_WITH_LOGS = 1,
+  // The user explicitly accepted the cleanup operation and cleaner logs
+  // upload is not allowed.
+  ACCEPTED_WITHOUT_LOGS = 2,
   // The user explicitly denied the Chrome prompt.
   DENIED = 3,
-  // The user didn't interact with the Chrome prompt after a while.
-  IGNORED = 4,
+  NUM_VALUES,
 };
 
 struct FilePath {

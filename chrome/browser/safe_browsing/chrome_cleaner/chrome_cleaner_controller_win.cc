@@ -41,8 +41,9 @@ using ::chrome_cleaner::mojom::ChromePrompt;
 using ::chrome_cleaner::mojom::PromptAcceptance;
 using ::content::BrowserThread;
 
-// Keeps track of whether GetInstance() has been called.
-bool g_instance_exists = false;
+// The global singleton instance. Exposed outside of GetInstance() so that it
+// can be reset by tests.
+ChromeCleanerController* g_controller = nullptr;
 
 // TODO(alito): Move these shared exit codes to the chrome_cleaner component.
 // https://crbug.com/727956
@@ -139,22 +140,31 @@ void ChromeCleanerControllerDelegate::ResetTaggedProfiles(
 ChromeCleanerController* ChromeCleanerController::GetInstance() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  static ChromeCleanerController* const kInstance =
-      new ChromeCleanerController();
-  g_instance_exists = true;
-  return kInstance;
+  if (!g_controller)
+    g_controller = new ChromeCleanerController();
+
+  return g_controller;
 }
 
 // static
 bool ChromeCleanerController::ShouldShowCleanupInSettingsUI() {
   // Short-circuit if the instance doesn't exist to avoid creating it during
   // navigation to chrome://settings.
-  if (!g_instance_exists)
+  if (!g_controller)
     return false;
 
   State state = GetInstance()->state();
   return state == State::kInfected || state == State::kCleaning ||
          state == State::kRebootRequired;
+}
+
+void ChromeCleanerController::SetLogsEnabled(bool logs_enabled) {
+  if (logs_enabled_ == logs_enabled)
+    return;
+
+  logs_enabled_ = logs_enabled;
+  for (auto& observer : observer_list_)
+    observer.OnLogsEnabledChanged(logs_enabled_);
 }
 
 void ChromeCleanerController::SetDelegateForTesting(
@@ -164,10 +174,14 @@ void ChromeCleanerController::SetDelegateForTesting(
   DCHECK(delegate_);
 }
 
-void ChromeCleanerController::DismissRebootForTesting() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK_EQ(State::kRebootRequired, state());
-  state_ = State::kIdle;
+// static
+void ChromeCleanerController::ResetInstanceForTesting() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (g_controller) {
+    delete g_controller;
+    g_controller = nullptr;
+  }
 }
 
 void ChromeCleanerController::AddObserver(Observer* observer) {
@@ -214,8 +228,15 @@ void ChromeCleanerController::ReplyWithUserResponse(
   PromptAcceptance acceptance = PromptAcceptance::DENIED;
   State new_state = State::kIdle;
   switch (user_response) {
-    case UserResponse::kAccepted:
-      acceptance = PromptAcceptance::ACCEPTED;
+    case UserResponse::kAcceptedWithLogs:
+      acceptance = PromptAcceptance::ACCEPTED_WITH_LOGS;
+      SetLogsEnabled(true);
+      new_state = State::kCleaning;
+      delegate_->TagForResetting(profile);
+      break;
+    case UserResponse::kAcceptedWithoutLogs:
+      acceptance = PromptAcceptance::ACCEPTED_WITHOUT_LOGS;
+      SetLogsEnabled(false);
       new_state = State::kCleaning;
       delegate_->TagForResetting(profile);
       break;

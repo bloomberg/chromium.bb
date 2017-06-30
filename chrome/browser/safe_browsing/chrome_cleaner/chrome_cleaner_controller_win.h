@@ -91,8 +91,10 @@ class ChromeCleanerController {
   };
 
   enum class UserResponse {
-    // User accepted the cleanup operation.
-    kAccepted,
+    // User accepted the cleanup operation and logs upload is enabled.
+    kAcceptedWithLogs,
+    // User accepted the cleanup operation and logs upload is not enabled.
+    kAcceptedWithoutLogs,
     // User explicitly denied the cleanup operation, for example by clicking the
     // Cleaner dialog's cancel button.
     kDenied,
@@ -109,6 +111,7 @@ class ChromeCleanerController {
     virtual void OnCleaning(const std::set<base::FilePath>& files_to_delete) {}
     virtual void OnRebootRequired() {}
     virtual void OnRebootFailed() {}
+    virtual void OnLogsEnabledChanged(bool logs_enabled) {}
 
    protected:
     virtual ~Observer() = default;
@@ -122,6 +125,12 @@ class ChromeCleanerController {
   static bool ShouldShowCleanupInSettingsUI();
 
   State state() const { return state_; }
+
+  // Called by Chrome Cleaner's UI when the user changes Cleaner logs upload
+  // permissions. Observers are notified if |logs_enabled| is different from the
+  // current permission state.
+  void SetLogsEnabled(bool logs_enabled);
+  bool logs_enabled() const { return logs_enabled_; }
 
   // |AddObserver()| immediately notifies |observer| of the controller's state
   // by calling the corresponding |On*()| function.
@@ -167,10 +176,10 @@ class ChromeCleanerController {
   // if the system calls to initiate a reboot return success.
   void Reboot();
 
+  static void ResetInstanceForTesting();
   // Passing in a nullptr as |delegate| resets the delegate to a default
   // production version.
   void SetDelegateForTesting(ChromeCleanerControllerDelegate* delegate);
-  void DismissRebootForTesting();
 
  private:
   ChromeCleanerController();
@@ -216,6 +225,9 @@ class ChromeCleanerController {
   ChromeCleanerControllerDelegate* delegate_;
 
   State state_ = State::kIdle;
+  // The logs permission checkboxes in the Chrome Cleaner dialog and webui page
+  // are opt out.
+  bool logs_enabled_ = true;
   IdleReason idle_reason_ = IdleReason::kInitial;
   std::unique_ptr<SwReporterInvocation> reporter_invocation_;
   std::unique_ptr<std::set<base::FilePath>> files_to_delete_;

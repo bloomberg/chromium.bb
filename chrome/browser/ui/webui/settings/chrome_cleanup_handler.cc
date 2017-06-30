@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/settings/chrome_cleanup_handler.h"
 
+#include <string>
+
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/synchronization/lock.h"
@@ -146,7 +148,9 @@ void ChromeCleanupHandler::HandleStartCleanup(const base::ListValue* args) {
   DCHECK_EQ(0U, args->GetSize());
 
   controller_->ReplyWithUserResponse(
-      profile_, ChromeCleanerController::UserResponse::kAccepted);
+      // TODO(proberge): Send kAcceptedWithLogs or kAcceptedWithoutLogs based on
+      // the state of a logs upload permissions checkbox.
+      profile_, ChromeCleanerController::UserResponse::kAcceptedWithoutLogs);
 }
 
 }  // namespace settings

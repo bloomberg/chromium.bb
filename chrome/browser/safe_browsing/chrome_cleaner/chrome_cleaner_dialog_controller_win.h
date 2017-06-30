@@ -23,7 +23,7 @@ class ChromeCleanerDialogController {
   // Called by the Cleaner dialog when user accepts the prompt. Once |Accept()|
   // has been called, the controller will eventually delete itself and no member
   // functions should be called after that.
-  virtual void Accept() = 0;
+  virtual void Accept(bool logs_enabled) = 0;
   // Called by the Cleaner dialog when the dialog is closed via the cancel
   // button. Once |Cancel()| has been called, the controller will eventually
   // delete itself and no member functions should be called after that.
@@ -38,7 +38,14 @@ class ChromeCleanerDialogController {
   // close. After a call to |DetailsButtonClicked()|, the controller will
   // eventually delete itself and no member functions should be called after
   // that.
-  virtual void DetailsButtonClicked() = 0;
+  virtual void DetailsButtonClicked(bool logs_enabled) = 0;
+
+  // To be called by the dialog when the user changes the state of the logs
+  // upload permission checkbox.
+  virtual void SetLogsEnabled(bool logs_enabled) = 0;
+  // Returns whether logs upload is currently enabled. Used to set the dialog's
+  // default permission checkbox state.
+  virtual bool LogsEnabled() = 0;
 
  protected:
   virtual ~ChromeCleanerDialogController() {}

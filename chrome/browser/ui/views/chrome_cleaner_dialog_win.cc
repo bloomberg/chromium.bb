@@ -19,9 +19,11 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/text_constants.h"
+#include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/layout_provider.h"
 #include "ui/views/widget/widget.h"
 
 namespace chrome {
@@ -45,7 +47,10 @@ constexpr int kDialogWidth = 448;
 
 ChromeCleanerDialog::ChromeCleanerDialog(
     safe_browsing::ChromeCleanerDialogController* controller)
-    : browser_(nullptr), controller_(controller) {
+    : browser_(nullptr),
+      controller_(controller),
+      details_button_(nullptr),
+      logs_permission_checkbox_(nullptr) {
   DCHECK(controller_);
 
   SetLayoutManager(
@@ -92,6 +97,22 @@ base::string16 ChromeCleanerDialog::GetWindowTitle() const {
 
 // DialogDelegate overrides.
 
+views::View* ChromeCleanerDialog::CreateFootnoteView() {
+  DCHECK(!logs_permission_checkbox_);
+  DCHECK(controller_);
+
+  views::View* footnote_view = new views::View();
+  footnote_view->SetLayoutManager(new views::BoxLayout(
+      views::BoxLayout::kVertical, ChromeLayoutProvider::Get()->GetInsetsMetric(
+                                       views::INSETS_DIALOG_CONTENTS)));
+  logs_permission_checkbox_ = new views::Checkbox(
+      l10n_util::GetStringUTF16(IDS_CHROME_CLEANUP_LOGS_PERMISSION));
+  logs_permission_checkbox_->SetChecked(controller_->LogsEnabled());
+  logs_permission_checkbox_->set_listener(this);
+  footnote_view->AddChildView(logs_permission_checkbox_);
+  return footnote_view;
+}
+
 base::string16 ChromeCleanerDialog::GetDialogButtonLabel(
     ui::DialogButton button) const {
   DCHECK(button == ui::DIALOG_BUTTON_OK || button == ui::DIALOG_BUTTON_CANCEL);
@@ -104,14 +125,17 @@ base::string16 ChromeCleanerDialog::GetDialogButtonLabel(
 }
 
 views::View* ChromeCleanerDialog::CreateExtraView() {
-  return views::MdTextButton::CreateSecondaryUiButton(
+  DCHECK(!details_button_);
+
+  details_button_ = views::MdTextButton::CreateSecondaryUiButton(
       this, l10n_util::GetStringUTF16(
                 IDS_CHROME_CLEANUP_PROMPT_DETAILS_BUTTON_LABEL));
+  return details_button_;
 }
 
 bool ChromeCleanerDialog::Accept() {
   if (controller_) {
-    controller_->Accept();
+    controller_->Accept(/*logs_enabled=*/logs_permission_checkbox_->checked());
     controller_ = nullptr;
   }
   return true;
@@ -145,11 +169,18 @@ void ChromeCleanerDialog::ButtonPressed(views::Button* sender,
                                         const ui::Event& event) {
   DCHECK(browser_);
 
-  // TODO(alito): Navigate to the webui version of the Chrome Cleaner UI when
-  // that is implemented.
-  if (controller_) {
-    controller_->DetailsButtonClicked();
-    controller_ = nullptr;
+  if (sender == details_button_) {
+    if (controller_) {
+      controller_->DetailsButtonClicked(
+          /*logs_enabled=*/logs_permission_checkbox_->checked());
+      controller_ = nullptr;
+    }
+    GetWidget()->Close();
+    return;
   }
-  GetWidget()->Close();
+
+  DCHECK_EQ(logs_permission_checkbox_, sender);
+
+  if (controller_)
+    controller_->SetLogsEnabled(logs_permission_checkbox_->checked());
 }

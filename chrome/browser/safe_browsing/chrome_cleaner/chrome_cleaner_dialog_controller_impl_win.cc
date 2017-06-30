@@ -57,11 +57,14 @@ ChromeCleanerDialogControllerImpl::~ChromeCleanerDialogControllerImpl() =
 
 void ChromeCleanerDialogControllerImpl::DialogShown() {}
 
-void ChromeCleanerDialogControllerImpl::Accept() {
+void ChromeCleanerDialogControllerImpl::Accept(bool logs_enabled) {
   DCHECK(browser_);
 
   cleaner_controller_->ReplyWithUserResponse(
-      browser_->profile(), ChromeCleanerController::UserResponse::kAccepted);
+      browser_->profile(),
+      logs_enabled
+          ? ChromeCleanerController::UserResponse::kAcceptedWithLogs
+          : ChromeCleanerController::UserResponse::kAcceptedWithoutLogs);
   OpenSettingsPage(browser_);
   OnInteractionDone();
 }
@@ -82,9 +85,19 @@ void ChromeCleanerDialogControllerImpl::Close() {
   OnInteractionDone();
 }
 
-void ChromeCleanerDialogControllerImpl::DetailsButtonClicked() {
+void ChromeCleanerDialogControllerImpl::DetailsButtonClicked(
+    bool logs_enabled) {
+  cleaner_controller_->SetLogsEnabled(logs_enabled);
   OpenSettingsPage(browser_);
   OnInteractionDone();
+}
+
+void ChromeCleanerDialogControllerImpl::SetLogsEnabled(bool logs_enabled) {
+  cleaner_controller_->SetLogsEnabled(logs_enabled);
+}
+
+bool ChromeCleanerDialogControllerImpl::LogsEnabled() {
+  return cleaner_controller_->logs_enabled();
 }
 
 void ChromeCleanerDialogControllerImpl::OnIdle(
