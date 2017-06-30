@@ -18806,7 +18806,16 @@ uploading your change for review.  These are checked by presubmit scripts.
   <summary>
     These numbers are the lower 32 bits of the hash of the metric name.
   </summary>
+  <int value="-2055973512" label="Login.ConsumerNewUsersAllowed"/>
+  <int value="-1286300074"
+      label="Network.Shill.Wifi.ExpiredLeaseLengthSeconds"/>
   <int value="0" label="Missing hash value"/>
+  <int value="424952287"
+      label="Network.Shill.Wifi.LinkMonitorResponseTimeSample"/>
+  <int value="628921860"
+      label="Network.Shill.Ethernet.LinkMonitorResponseTimeSample"/>
+  <int value="662206917"
+      label="Network.Shill.Ethernet.ExpiredLeaseLengthSeconds"/>
 </enum>
 
 <enum name="HistoryFaviconsRecoveryEnum">
