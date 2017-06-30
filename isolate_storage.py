@@ -568,7 +568,7 @@ class IsolateServerGrpc(StorageApi):
       self._channel = grpc.insecure_channel(host)
     elif transport == 'https':
       # Using cloud container builder scopes for testing:
-      scopes = ('https://www.googleapis.com/auth/cloud-build-service',)
+      scopes = ('https://www.googleapis.com/auth/cloud-source-tools',)
       credentials, _ = google_auth.default(scopes=scopes)
       request = google_auth_transport_requests.Request()
       options = ()
