@@ -200,11 +200,14 @@ void WaitForAlertToBeShown(NSString* alert_label) {
              @"Alert with title was not present: %@", alert_label);
 }
 
-void WaitForJavaScripDialogToBeShown() {
-  NSString* alert_label = [DialogPresenter
-      localizedTitleForJavaScriptAlertFromPage:HttpServer::MakeUrl(
-                                                   kJavaScriptTestURL)];
-  WaitForAlertToBeShown(alert_label);
+void WaitForJavaScriptDialogToBeShown() {
+  GURL javaScriptURL = HttpServer::MakeUrl(kJavaScriptTestURL);
+
+  NSString* hostname = base::SysUTF8ToNSString(javaScriptURL.host());
+  NSString* expectedTitle = l10n_util::GetNSStringF(
+      IDS_JAVASCRIPT_MESSAGEBOX_TITLE, base::SysNSStringToUTF16(hostname));
+
+  WaitForAlertToBeShown(expectedTitle);
 }
 
 // Injects JavaScript to show a dialog with |type|, verifying that it was
@@ -212,7 +215,7 @@ void WaitForJavaScripDialogToBeShown() {
 void ShowJavaScriptDialog(JavaScriptAlertType type) {
   DisplayJavaScriptAlert(type);
 
-  WaitForJavaScripDialogToBeShown();
+  WaitForJavaScriptDialogToBeShown();
 
   // Check the message of the alert.
   id<GREYMatcher> messageLabel =
@@ -226,11 +229,13 @@ void ShowJavaScriptDialog(JavaScriptAlertType type) {
 void AssertJavaScriptAlertNotPresent() {
   ConditionBlock condition = ^{
     NSError* error = nil;
-    NSString* alertLabel = [DialogPresenter
-        localizedTitleForJavaScriptAlertFromPage:HttpServer::MakeUrl(
-                                                     kJavaScriptTestURL)];
+    GURL javaScriptURL = HttpServer::MakeUrl(kJavaScriptTestURL);
+    NSString* hostname = base::SysUTF8ToNSString(javaScriptURL.host());
+    NSString* expectedTitle = l10n_util::GetNSStringF(
+        IDS_JAVASCRIPT_MESSAGEBOX_TITLE, base::SysNSStringToUTF16(hostname));
+
     id<GREYMatcher> titleLabel =
-        chrome_test_util::StaticTextWithAccessibilityLabel(alertLabel);
+        chrome_test_util::StaticTextWithAccessibilityLabel(expectedTitle);
     [[EarlGrey selectElementWithMatcher:titleLabel] assertWithMatcher:grey_nil()
                                                                 error:&error];
     return !error;
@@ -443,10 +448,10 @@ void TapSuppressDialogsButton() {
   web::WebState* webState = chrome_test_util::GetCurrentWebState();
   NSString* script = GetJavaScriptAlertLoopScript();
   webState->ExecuteJavaScript(base::SysNSStringToUTF16(script));
-  WaitForJavaScripDialogToBeShown();
+  WaitForJavaScriptDialogToBeShown();
 
   [[EarlGrey selectElementWithMatcher:OKButton()] performAction:grey_tap()];
-  WaitForJavaScripDialogToBeShown();
+  WaitForJavaScriptDialogToBeShown();
 
   // Tap the suppress dialogs button.
   TapSuppressDialogsButton();
@@ -495,7 +500,7 @@ void TapSuppressDialogsButton() {
       performAction:grey_tap()];
 
   // Make sure the alert is present.
-  WaitForJavaScripDialogToBeShown();
+  WaitForJavaScriptDialogToBeShown();
 
   [[EarlGrey selectElementWithMatcher:OKButton()] performAction:grey_tap()];
 
@@ -574,10 +579,12 @@ void TapSuppressDialogsButton() {
   }
 
   // Wait for the alert to be shown.
-  NSString* alertLabel = [DialogPresenter
-      localizedTitleForJavaScriptAlertFromPage:HttpServer::MakeUrl(
-                                                   kJavaScriptTestURL)];
-  WaitForAlertToBeShown(alertLabel);
+  GURL javaScriptURL = HttpServer::MakeUrl(kJavaScriptTestURL);
+  NSString* hostname = base::SysUTF8ToNSString(javaScriptURL.host());
+  NSString* expectedTitle = l10n_util::GetNSStringF(
+      IDS_JAVASCRIPT_MESSAGEBOX_TITLE, base::SysNSStringToUTF16(hostname));
+
+  WaitForAlertToBeShown(expectedTitle);
 
   // Verify that the omnibox shows the correct URL when the dialog is visible.
   GURL onloadURL = HttpServer::MakeUrl(kOnLoadAlertURL);

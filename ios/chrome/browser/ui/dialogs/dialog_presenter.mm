@@ -91,6 +91,12 @@ NSString* const kJavaScriptDialogTextFieldAccessibiltyIdentifier =
 // The block to use for the JavaScript dialog blocking option for |coordinator|.
 - (ProceduralBlock)blockingActionForCoordinator:(AlertCoordinator*)coordinator;
 
+// Creates a title for the alert based on the URL (|pageURL|), and its
+// relationship to the |mainFrameURL| (typically these are identical except for
+// when posting alerts from an embedded iframe).
++ (NSString*)localizedTitleForJavaScriptAlertFromPage:(const GURL&)pageURL
+                                         mainFrameURL:(const GURL&)mainFrameURL;
+
 @end
 
 @implementation DialogPresenter
@@ -134,8 +140,9 @@ NSString* const kJavaScriptDialogTextFieldAccessibiltyIdentifier =
                                 requestURL:(const GURL&)requestURL
                                   webState:(web::WebState*)webState
                          completionHandler:(void (^)(void))completionHandler {
-  NSString* title =
-      [DialogPresenter localizedTitleForJavaScriptAlertFromPage:requestURL];
+  NSString* title = [DialogPresenter
+      localizedTitleForJavaScriptAlertFromPage:requestURL
+                                  mainFrameURL:webState->GetLastCommittedURL()];
   AlertCoordinator* alertCoordinator =
       [[AlertCoordinator alloc] initWithBaseViewController:self.viewController
                                                      title:title
@@ -170,8 +177,9 @@ NSString* const kJavaScriptDialogTextFieldAccessibiltyIdentifier =
                                     webState:(web::WebState*)webState
                            completionHandler:
                                (void (^)(BOOL isConfirmed))completionHandler {
-  NSString* title =
-      [DialogPresenter localizedTitleForJavaScriptAlertFromPage:requestURL];
+  NSString* title = [DialogPresenter
+      localizedTitleForJavaScriptAlertFromPage:requestURL
+                                  mainFrameURL:webState->GetLastCommittedURL()];
   AlertCoordinator* alertCoordinator =
       [[AlertCoordinator alloc] initWithBaseViewController:self.viewController
                                                      title:title
@@ -207,8 +215,9 @@ NSString* const kJavaScriptDialogTextFieldAccessibiltyIdentifier =
                                      webState:(web::WebState*)webState
                             completionHandler:
                                 (void (^)(NSString* input))completionHandler {
-  NSString* title =
-      [DialogPresenter localizedTitleForJavaScriptAlertFromPage:requestURL];
+  NSString* title = [DialogPresenter
+      localizedTitleForJavaScriptAlertFromPage:requestURL
+                                  mainFrameURL:webState->GetLastCommittedURL()];
   InputAlertCoordinator* alertCoordinator = [[InputAlertCoordinator alloc]
       initWithBaseViewController:self.viewController
                            title:title
@@ -349,10 +358,15 @@ NSString* const kJavaScriptDialogTextFieldAccessibiltyIdentifier =
     [self showNextDialog];
 }
 
-+ (NSString*)localizedTitleForJavaScriptAlertFromPage:(const GURL&)pageURL {
++ (NSString*)localizedTitleForJavaScriptAlertFromPage:(const GURL&)pageURL
+                                         mainFrameURL:
+                                             (const GURL&)mainFrameURL {
   NSString* localizedTitle = nil;
   NSString* hostname = base::SysUTF8ToNSString(pageURL.host());
-  if (!hostname.length) {
+
+  bool sameOriginAsMainFrame = pageURL.GetOrigin() == mainFrameURL.GetOrigin();
+
+  if (!sameOriginAsMainFrame) {
     localizedTitle = l10n_util::GetNSString(
         IDS_JAVASCRIPT_MESSAGEBOX_TITLE_NONSTANDARD_URL_IFRAME);
   } else {
