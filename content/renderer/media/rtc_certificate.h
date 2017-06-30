@@ -11,8 +11,8 @@
 #include "base/macros.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebRTCCertificate.h"
-#include "third_party/webrtc/base/rtccertificate.h"
-#include "third_party/webrtc/base/scoped_ref_ptr.h"
+#include "third_party/webrtc/rtc_base/rtccertificate.h"
+#include "third_party/webrtc/rtc_base/scoped_ref_ptr.h"
 
 namespace content {
 

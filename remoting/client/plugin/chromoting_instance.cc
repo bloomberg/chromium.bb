@@ -56,8 +56,8 @@
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/transport_context.h"
 #include "remoting/signaling/delegating_signal_strategy.h"
-#include "third_party/webrtc/base/helpers.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_region.h"
+#include "third_party/webrtc/rtc_base/helpers.h"
 #include "url/gurl.h"
 
 namespace remoting {

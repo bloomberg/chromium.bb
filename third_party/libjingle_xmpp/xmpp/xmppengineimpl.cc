@@ -19,7 +19,7 @@
 #include "third_party/libjingle_xmpp/xmpp/constants.h"
 #include "third_party/libjingle_xmpp/xmpp/saslhandler.h"
 #include "third_party/libjingle_xmpp/xmpp/xmpplogintask.h"
-#include "third_party/webrtc/base/checks.h"
+#include "third_party/webrtc/rtc_base/checks.h"
 
 namespace buzz {
 

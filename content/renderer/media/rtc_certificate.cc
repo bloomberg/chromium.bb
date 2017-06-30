@@ -8,7 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
-#include "third_party/webrtc/base/sslidentity.h"
+#include "third_party/webrtc/rtc_base/sslidentity.h"
 #include "url/gurl.h"
 
 namespace content {

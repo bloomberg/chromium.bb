@@ -8,14 +8,14 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#ifndef WEBRTC_BASE_TASK_QUEUE_H_
-#define WEBRTC_BASE_TASK_QUEUE_H_
+#ifndef WEBRTC_RTC_BASE_TASK_QUEUE_H_
+#define WEBRTC_RTC_BASE_TASK_QUEUE_H_
 
 #include <stdint.h>
 #include <memory>
 
 #include "base/macros.h"
-#include "third_party/webrtc/base/thread_annotations.h"
+#include "third_party/webrtc/rtc_base/thread_annotations.h"
 
 namespace rtc {
 
@@ -227,4 +227,4 @@ class LOCKABLE TaskQueue {
 
 }  // namespace rtc
 
-#endif  // WEBRTC_BASE_TASK_QUEUE_H_
+#endif  // WEBRTC_RTC_BASE_TASK_QUEUE_H_

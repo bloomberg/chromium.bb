@@ -11,7 +11,7 @@
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 #include "third_party/libjingle_xmpp/xmpp/constants.h"
 #include "third_party/libjingle_xmpp/xmpp/saslmechanism.h"
-#include "third_party/webrtc/base/base64.h"
+#include "third_party/webrtc/rtc_base/base64.h"
 
 using rtc::Base64;
 

@@ -768,7 +768,7 @@ target(link_target_type, "renderer") {
       "//third_party/webrtc/api:video_frame_api",
       "//third_party/webrtc/api/audio_codecs:builtin_audio_decoder_factory",
       "//third_party/webrtc/api/audio_codecs:builtin_audio_encoder_factory",
-      "//third_party/webrtc/base:rtc_base",
+      "//third_party/webrtc/rtc_base:rtc_base",
       "//third_party/webrtc/media:rtc_media",
       "//third_party/webrtc/media:rtc_media_base",
       "//third_party/webrtc/modules/audio_device",

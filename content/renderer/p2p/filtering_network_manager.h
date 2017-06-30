@@ -11,8 +11,8 @@
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/renderer/p2p/network_manager_uma.h"
-#include "third_party/webrtc/base/network.h"
-#include "third_party/webrtc/base/sigslot.h"
+#include "third_party/webrtc/rtc_base/network.h"
+#include "third_party/webrtc/rtc_base/sigslot.h"
 #include "url/gurl.h"
 
 namespace media {

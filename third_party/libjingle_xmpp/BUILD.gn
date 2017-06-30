@@ -42,7 +42,7 @@ rtc_static_library("rtc_xmllite") {
   ]
 
   deps = [
-    "//third_party/webrtc/base:rtc_base",
+    "//third_party/webrtc/rtc_base:rtc_base",
   ]
   public_deps = [
     "//third_party/expat",
@@ -92,7 +92,7 @@ rtc_static_library("rtc_xmpp") {
 
   deps = [
     ":rtc_xmllite",
-    "//third_party/webrtc/base:rtc_base_approved",
+    "//third_party/webrtc/rtc_base:rtc_base_approved",
   ]
   public_deps = [
     ":rtc_task_runner",
@@ -135,7 +135,7 @@ rtc_test("libjingle_xmpp_unittests") {
     "//base/test:run_all_unittests",
     "//base/test:test_support",
     # TODO(kjellander): Refactor/remove this dependency. It is needed by
-    # third_party/webrtc_overrides/webrtc/base/win32socketinit.cc.
+    # third_party/webrtc_overrides/webrtc/rtc_base/win32socketinit.cc.
     "//net",
     "//testing/gtest",
   ]

@@ -12,8 +12,8 @@
 #include "content/renderer/media/webrtc/webrtc_video_capturer_adapter.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/webrtc/api/mediastreaminterface.h"
-#include "third_party/webrtc/base/scoped_ref_ptr.h"
 #include "third_party/webrtc/media/base/videocapturer.h"
+#include "third_party/webrtc/rtc_base/scoped_ref_ptr.h"
 
 using webrtc::AudioSourceInterface;
 using webrtc::AudioTrackInterface;

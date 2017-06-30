@@ -1,5 +1,5 @@
 include_rules = [
-  "+webrtc/base",
+  "+webrtc/rtc_base",
   "+third_party/libjingle_xmpp/xmpp",
   "+third_party/libjingle_xmpp/xmllite",
 ]

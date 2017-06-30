@@ -8,7 +8,7 @@
 #include <stddef.h>
 
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/webrtc/base/stream.h"
+#include "third_party/webrtc/rtc_base/stream.h"
 
 namespace jingle_glue {
 

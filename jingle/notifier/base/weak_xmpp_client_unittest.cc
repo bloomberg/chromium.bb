@@ -12,7 +12,7 @@
 #include "jingle/glue/task_pump.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webrtc/base/sigslot.h"
+#include "webrtc/rtc_base/sigslot.h"
 
 namespace notifier {
 

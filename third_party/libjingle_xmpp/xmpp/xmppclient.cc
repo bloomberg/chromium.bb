@@ -14,9 +14,9 @@
 #include "third_party/libjingle_xmpp/xmpp/plainsaslhandler.h"
 #include "third_party/libjingle_xmpp/xmpp/prexmppauth.h"
 #include "third_party/libjingle_xmpp/xmpp/saslplainmechanism.h"
-#include "third_party/webrtc/base/sigslot.h"
-#include "third_party/webrtc/base/stringutils.h"
-#include "third_party/webrtc_overrides/webrtc/base/logging.h"
+#include "third_party/webrtc/rtc_base/sigslot.h"
+#include "third_party/webrtc/rtc_base/stringutils.h"
+#include "third_party/webrtc_overrides/webrtc/rtc_base/logging.h"
 #include "xmpptask.h"
 
 namespace buzz {

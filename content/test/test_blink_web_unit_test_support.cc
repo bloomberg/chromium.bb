@@ -52,7 +52,7 @@
 
 #if BUILDFLAG(ENABLE_WEBRTC)
 #include "content/renderer/media/rtc_certificate.h"
-#include "third_party/webrtc/base/rtccertificate.h"  // nogncheck
+#include "third_party/webrtc/rtc_base/rtccertificate.h"  // nogncheck
 #endif
 
 using blink::WebString;

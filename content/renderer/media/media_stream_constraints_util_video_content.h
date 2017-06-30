@@ -9,7 +9,7 @@
 
 #include "content/common/content_export.h"
 #include "content/renderer/media/media_stream_constraints_util.h"
-#include "third_party/webrtc/base/optional.h"
+#include "third_party/webrtc/rtc_base/optional.h"
 
 namespace blink {
 class WebMediaConstraints;

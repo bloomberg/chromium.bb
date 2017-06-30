@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/memory/weak_ptr.h"
-#include "third_party/webrtc/base/network.h"
+#include "third_party/webrtc/rtc_base/network.h"
 
 namespace remoting {
 

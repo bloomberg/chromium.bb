@@ -12,7 +12,7 @@
 #include "content/common/content_export.h"
 #include "content/renderer/p2p/network_list_manager.h"
 #include "content/renderer/p2p/network_list_observer.h"
-#include "third_party/webrtc/base/network.h"
+#include "third_party/webrtc/rtc_base/network.h"
 
 namespace net {
 class IPAddress;

@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/threading/thread_local.h"
 #include "base/trace_event/trace_event.h"
-#include "third_party/webrtc/base/nullsocketserver.h"
+#include "third_party/webrtc/rtc_base/nullsocketserver.h"
 
 namespace jingle_glue {
 

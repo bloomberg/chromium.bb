@@ -14,7 +14,7 @@
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 #include "third_party/libjingle_xmpp/xmpp/util_unittest.h"
 #include "third_party/libjingle_xmpp/xmpp/xmppengine.h"
-#include "third_party/webrtc/base/gunit.h"
+#include "third_party/webrtc/rtc_base/gunit.h"
 
 namespace buzz {
 

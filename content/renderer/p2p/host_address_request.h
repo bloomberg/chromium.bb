@@ -14,7 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "net/base/ip_address.h"
-#include "third_party/webrtc/base/asyncresolverinterface.h"
+#include "third_party/webrtc/rtc_base/asyncresolverinterface.h"
 
 namespace base {
 class SingleThreadTaskRunner;

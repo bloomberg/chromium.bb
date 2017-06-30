@@ -12,8 +12,8 @@
 #include <sstream>
 #include <string>
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
-#include "third_party/webrtc/base/gunit.h"
-#include "third_party/webrtc/base/thread.h"
+#include "third_party/webrtc/rtc_base/gunit.h"
+#include "third_party/webrtc/rtc_base/thread.h"
 
 using buzz::QName;
 using buzz::XmlAttr;

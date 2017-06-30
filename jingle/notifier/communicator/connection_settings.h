@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "jingle/notifier/base/server_information.h"
-#include "webrtc/base/socketaddress.h"
+#include "webrtc/rtc_base/socketaddress.h"
 
 namespace buzz {
 class XmppClientSettings;

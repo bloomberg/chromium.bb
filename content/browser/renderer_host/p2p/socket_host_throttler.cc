@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include "third_party/webrtc/base/ratelimiter.h"
-#include "third_party/webrtc/base/timeutils.h"
+#include "third_party/webrtc/rtc_base/ratelimiter.h"
+#include "third_party/webrtc/rtc_base/timeutils.h"
 
 namespace content {
 

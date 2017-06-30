@@ -5,7 +5,7 @@
 #include "content/renderer/media/webrtc/rtc_rtp_sender.h"
 
 #include "base/logging.h"
-#include "third_party/webrtc/base/scoped_ref_ptr.h"
+#include "third_party/webrtc/rtc_base/scoped_ref_ptr.h"
 
 namespace content {
 
