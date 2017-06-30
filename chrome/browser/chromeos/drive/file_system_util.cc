@@ -20,6 +20,7 @@
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
@@ -193,8 +194,8 @@ void PrepareWritableFileAndRun(Profile* profile,
 
   FileSystemInterface* file_system = GetFileSystemByProfile(profile);
   if (!file_system || !IsUnderDriveMountPoint(path)) {
-    content::BrowserThread::GetBlockingPool()->PostTask(
-        FROM_HERE,
+    base::PostTaskWithTraits(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
         base::BindOnce(callback, FILE_ERROR_FAILED, base::FilePath()));
     return;
   }
