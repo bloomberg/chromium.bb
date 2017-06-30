@@ -1034,66 +1034,6 @@ LayoutUnit LayoutTableCell::BorderBottom() const {
              : LayoutBlockFlow::BorderBottom();
 }
 
-unsigned LayoutTableCell::CollapsedBorderHalfStart(bool outer) const {
-  UpdateCollapsedBorderValues();
-  const auto* collapsed_border_values = this->GetCollapsedBorderValues();
-  if (!collapsed_border_values)
-    return 0;
-
-  const auto& border = collapsed_border_values->StartBorder();
-  if (border.Exists()) {
-    return (border.Width() +
-            ((TableStyle().IsLeftToRightDirection() ^ outer) ? 1 : 0)) /
-           2;  // Give the extra pixel to top and left.
-  }
-  return 0;
-}
-
-unsigned LayoutTableCell::CollapsedBorderHalfEnd(bool outer) const {
-  UpdateCollapsedBorderValues();
-  const auto* collapsed_border_values = this->GetCollapsedBorderValues();
-  if (!collapsed_border_values)
-    return 0;
-
-  const auto& border = collapsed_border_values->EndBorder();
-  if (border.Exists()) {
-    return (border.Width() +
-            ((TableStyle().IsLeftToRightDirection() ^ outer) ? 0 : 1)) /
-           2;
-  }
-  return 0;
-}
-
-unsigned LayoutTableCell::CollapsedBorderHalfBefore(bool outer) const {
-  UpdateCollapsedBorderValues();
-  const auto* collapsed_border_values = this->GetCollapsedBorderValues();
-  if (!collapsed_border_values)
-    return 0;
-
-  const auto& border = collapsed_border_values->BeforeBorder();
-  if (border.Exists()) {
-    return (border.Width() +
-            ((TableStyle().IsFlippedBlocksWritingMode() ^ outer) ? 0 : 1)) /
-           2;  // Give the extra pixel to top and left.
-  }
-  return 0;
-}
-
-unsigned LayoutTableCell::CollapsedBorderHalfAfter(bool outer) const {
-  UpdateCollapsedBorderValues();
-  const auto* collapsed_border_values = this->GetCollapsedBorderValues();
-  if (!collapsed_border_values)
-    return 0;
-
-  const auto& border = collapsed_border_values->AfterBorder();
-  if (border.Exists()) {
-    return (border.Width() +
-            ((TableStyle().IsFlippedBlocksWritingMode() ^ outer) ? 1 : 0)) /
-           2;
-  }
-  return 0;
-}
-
 void LayoutTableCell::Paint(const PaintInfo& paint_info,
                             const LayoutPoint& paint_offset) const {
   TableCellPainter(*this).Paint(paint_info, paint_offset);
