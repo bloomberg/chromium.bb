@@ -379,6 +379,34 @@ TEST_F(DataReductionProxyRequestOptionsTest, TestExperimentPrecedence) {
   VerifyExpectedHeader(expected_header, kPageIdValue);
 }
 
+TEST_F(DataReductionProxyRequestOptionsTest, TestExperimentOtherLoFiFlags) {
+  std::string expected_header;
+  std::vector<std::string> expected_experiments;
+
+  // No "exp=force_*" is set for SlowConnectionOnly flag.
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kDataReductionProxyLoFi,
+      switches::kDataReductionProxyLoFiValueSlowConnectionsOnly);
+  expected_experiments.clear();
+  SetHeaderExpectations(kExpectedSession, kExpectedCredentials, std::string(),
+                        kClientStr, kExpectedBuild, kExpectedPatch, kPageId,
+                        expected_experiments, &expected_header);
+  CreateRequestOptions(kVersion);
+  VerifyExpectedHeader(expected_header, kPageIdValue);
+
+  // "exp=force_empty_image" is set for CellularOnly flag.
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kDataReductionProxyLoFi,
+      switches::kDataReductionProxyLoFiValueAlwaysOn);
+  expected_experiments.clear();
+  expected_experiments.push_back(chrome_proxy_experiment_force_empty_image());
+  SetHeaderExpectations(kExpectedSession, kExpectedCredentials, std::string(),
+                        kClientStr, kExpectedBuild, kExpectedPatch, kPageId,
+                        expected_experiments, &expected_header);
+  CreateRequestOptions(kVersion);
+  VerifyExpectedHeader(expected_header, kPageIdValue);
+}
+
 TEST_F(DataReductionProxyRequestOptionsTest, GetSessionKeyFromRequestHeaders) {
   const struct {
     std::string chrome_proxy_header_key;

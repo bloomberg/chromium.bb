@@ -120,7 +120,8 @@ void DataReductionProxyRequestOptions::UpdateExperiments() {
     }
   } else if (params::AreLitePagesEnabledViaFlags()) {
     experiments_.push_back(chrome_proxy_experiment_force_lite_page());
-  } else if (params::IsLoFiOnViaFlags()) {
+  } else if (params::IsLoFiAlwaysOnViaFlags() ||
+             params::IsLoFiCellularOnlyViaFlags()) {
     experiments_.push_back(chrome_proxy_experiment_force_empty_image());
   } else {
     // If no other "exp" directive is forced by flags, add the field trial
