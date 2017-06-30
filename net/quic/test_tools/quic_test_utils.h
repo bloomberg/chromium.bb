@@ -517,6 +517,21 @@ class MockQuicSession : public QuicSession {
   DISALLOW_COPY_AND_ASSIGN(MockQuicSession);
 };
 
+class MockQuicCryptoStream : public QuicCryptoStream {
+ public:
+  explicit MockQuicCryptoStream(QuicSession* session);
+
+  ~MockQuicCryptoStream() override;
+
+  bool encryption_established() const override;
+  bool handshake_confirmed() const override;
+  const QuicCryptoNegotiatedParameters& crypto_negotiated_params()
+      const override;
+
+ private:
+  QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> params_;
+};
+
 class MockQuicSpdySession : public QuicSpdySession {
  public:
   // Takes ownership of |connection|.

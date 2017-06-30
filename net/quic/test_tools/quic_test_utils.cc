@@ -349,7 +349,7 @@ void PacketSavingConnection::SendOrQueuePacket(SerializedPacket* packet) {
 
 MockQuicSession::MockQuicSession(QuicConnection* connection)
     : QuicSession(connection, nullptr, DefaultQuicConfig()) {
-  crypto_stream_.reset(new QuicCryptoStream(this));
+  crypto_stream_.reset(new MockQuicCryptoStream(this));
   Initialize();
   ON_CALL(*this, WritevData(_, _, _, _, _, _))
       .WillByDefault(testing::Return(QuicConsumedData(0, false)));
@@ -379,9 +379,27 @@ QuicConsumedData MockQuicSession::ConsumeAllData(
   return QuicConsumedData(data.total_length, state != NO_FIN);
 }
 
+MockQuicCryptoStream::MockQuicCryptoStream(QuicSession* session)
+    : QuicCryptoStream(session), params_(new QuicCryptoNegotiatedParameters) {}
+
+MockQuicCryptoStream::~MockQuicCryptoStream() {}
+
+bool MockQuicCryptoStream::encryption_established() const {
+  return false;
+}
+
+bool MockQuicCryptoStream::handshake_confirmed() const {
+  return false;
+}
+
+const QuicCryptoNegotiatedParameters&
+MockQuicCryptoStream::crypto_negotiated_params() const {
+  return *params_;
+}
+
 MockQuicSpdySession::MockQuicSpdySession(QuicConnection* connection)
     : QuicSpdySession(connection, nullptr, DefaultQuicConfig()) {
-  crypto_stream_.reset(new QuicCryptoStream(this));
+  crypto_stream_.reset(new MockQuicCryptoStream(this));
   Initialize();
   ON_CALL(*this, WritevData(_, _, _, _, _, _))
       .WillByDefault(testing::Return(QuicConsumedData(0, false)));
