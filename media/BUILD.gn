@@ -466,20 +466,11 @@ test("media_unittests") {
     ":unit_tests",
     "//media/audio:unit_tests",
     "//media/base:unit_tests",
+    "//media/gpu:unit_tests",
     "//media/mojo:unit_tests",
     "//media/test:pipeline_integration_tests",
     "//media/test:run_all_unittests",
   ]
-
-  if (is_android) {
-    deps += [
-      # The test needs the java dependencies to add the java classes for their
-      # native counterparts to the test apk.
-      "//media/base/android:media_java",
-      "//media/gpu:android_video_decode_accelerator_unittests",
-      "//ui/android:ui_java",
-    ]
-  }
 
   if (enable_media_remoting) {
     deps += [ "//media/remoting:media_remoting_tests" ]
