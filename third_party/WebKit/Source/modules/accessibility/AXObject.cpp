@@ -1527,8 +1527,7 @@ void AXObject::GetRelativeBounds(AXObject** out_container,
   LayoutObject* container_layout_object = nullptr;
   while (container) {
     container_layout_object = container->GetLayoutObject();
-    if (container_layout_object &&
-        container_layout_object->IsBoxModelObject() &&
+    if (container_layout_object && container_layout_object->IsBox() &&
         layout_object->IsDescendantOf(container_layout_object)) {
       if (container->IsScrollableContainer() ||
           container_layout_object->HasLayer())
