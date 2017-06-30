@@ -49,9 +49,14 @@ extern const int kTrayPopupAutoCloseDelayForTextInSeconds;
 extern const int kTrayPopupPaddingHorizontal;
 extern const int kTrayPopupPaddingBetweenItems;
 extern const int kTrayPopupButtonEndMargin;
+
 // The padding used on the left and right of labels. This applies to all labels
 // in the system menu.
 extern const int kTrayPopupLabelHorizontalPadding;
+
+// The horizontal padding used to properly lay out a slider in a TriView
+// container with a FillLayout (such as a volume notification bubble).
+extern const int kTrayPopupSliderHorizontalPadding;
 
 // The minimum/default height of the rows in the system tray menu.
 extern const int kTrayPopupItemMinHeight;

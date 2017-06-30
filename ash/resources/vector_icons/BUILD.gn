@@ -152,6 +152,8 @@ aggregate_vector_icons("ash_vector_icons") {
     "system_menu_info.icon",
     "system_menu_keyboard.1x.icon",
     "system_menu_keyboard.icon",
+    "system_menu_keyboard_brightness.1x.icon",
+    "system_menu_keyboard_brightness.icon",
     "system_menu_lock.1x.icon",
     "system_menu_lock.icon",
     "system_menu_mouse.1x.icon",
