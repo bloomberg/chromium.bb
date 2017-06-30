@@ -2209,7 +2209,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
     mbmi->mode = ZEROMV;
     if (bsize < BLOCK_8X8 && !unify_bsize) {
       aom_internal_error(xd->error_info, AOM_CODEC_UNSUP_BITSTREAM,
-                         "Invalid usage of segement feature on small blocks");
+                         "Invalid usage of segment feature on small blocks");
       return;
     }
   } else {
