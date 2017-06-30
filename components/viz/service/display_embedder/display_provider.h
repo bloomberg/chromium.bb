@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_COMPOSITOR_DISPLAY_PROVIDER_H_
-#define COMPONENTS_VIZ_SERVICE_DISPLAY_COMPOSITOR_DISPLAY_PROVIDER_H_
+#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_DISPLAY_PROVIDER_H_
+#define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_DISPLAY_PROVIDER_H_
 
 #include <memory>
 
@@ -13,7 +13,7 @@ namespace cc {
 class BeginFrameSource;
 class Display;
 class FrameSinkId;
-}
+}  // namespace cc
 
 namespace viz {
 
@@ -33,4 +33,4 @@ class DisplayProvider {
 
 }  // namespace viz
 
-#endif  //  COMPONENTS_VIZ_SERVICE_DISPLAY_COMPOSITOR_DISPLAY_PROVIDER_H_
+#endif  //  COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_DISPLAY_PROVIDER_H_

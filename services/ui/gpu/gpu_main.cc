@@ -9,7 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/power_monitor/power_monitor_device_source.h"
 #include "base/single_thread_task_runner.h"
-#include "components/viz/service/display_compositor/gpu_display_provider.h"
+#include "components/viz/service/display_embedder/gpu_display_provider.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"

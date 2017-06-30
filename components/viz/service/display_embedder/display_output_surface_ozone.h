@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_COMPOSITOR_DISPLAY_OUTPUT_SURFACE_OZONE_H_
-#define COMPONENTS_VIZ_SERVICE_DISPLAY_COMPOSITOR_DISPLAY_OUTPUT_SURFACE_OZONE_H_
+#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_DISPLAY_OUTPUT_SURFACE_OZONE_H_
+#define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_DISPLAY_OUTPUT_SURFACE_OZONE_H_
 
 #include <memory>
 
@@ -12,7 +12,7 @@
 #include "cc/output/in_process_context_provider.h"
 #include "cc/output/output_surface.h"
 #include "components/viz/common/gl_helper.h"
-#include "components/viz/service/display_compositor/display_output_surface.h"
+#include "components/viz/service/display_embedder/display_output_surface.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/swap_result.h"
@@ -75,4 +75,4 @@ class DisplayOutputSurfaceOzone : public DisplayOutputSurface {
 
 }  // namespace viz
 
-#endif  // COMPONENTS_VIZ_SERVICE_DISPLAY_COMPOSITOR_DISPLAY_OUTPUT_SURFACE_OZONE_H_
+#endif  // COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_DISPLAY_OUTPUT_SURFACE_OZONE_H_

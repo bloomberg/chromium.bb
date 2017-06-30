@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/viz/service/display_compositor/in_process_gpu_memory_buffer_manager.h"
+#include "components/viz/service/display_embedder/in_process_gpu_memory_buffer_manager.h"
 
 #include "gpu/ipc/client/gpu_memory_buffer_impl.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"

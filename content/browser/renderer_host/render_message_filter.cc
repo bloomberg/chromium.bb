@@ -20,7 +20,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
-#include "components/viz/service/display_compositor/server_shared_bitmap_manager.h"
+#include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/cache_storage/cache_storage_cache.h"

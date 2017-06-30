@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_COMPOSITOR_GPU_DISPLAY_PROVIDER_H_
-#define COMPONENTS_VIZ_SERVICE_DISPLAY_COMPOSITOR_GPU_DISPLAY_PROVIDER_H_
+#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_GPU_DISPLAY_PROVIDER_H_
+#define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_GPU_DISPLAY_PROVIDER_H_
 
 #include <memory>
 
@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "cc/surfaces/frame_sink_id.h"
-#include "components/viz/service/display_compositor/display_provider.h"
+#include "components/viz/service/display_embedder/display_provider.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/ipc/common/surface_handle.h"
@@ -20,7 +20,7 @@
 namespace gpu {
 class GpuChannelManager;
 class ImageFactory;
-}
+}  // namespace gpu
 
 namespace viz {
 
@@ -51,4 +51,4 @@ class VIZ_SERVICE_EXPORT GpuDisplayProvider
 
 }  // namespace viz
 
-#endif  //  COMPONENTS_VIZ_SERVICE_DISPLAY_COMPOSITOR_GPU_DISPLAY_PROVIDER_H_
+#endif  //  COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_GPU_DISPLAY_PROVIDER_H_

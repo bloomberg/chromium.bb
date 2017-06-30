@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/viz/service/display_compositor/display_output_surface.h"
+#include "components/viz/service/display_embedder/display_output_surface.h"
 
 #include <stdint.h>
 

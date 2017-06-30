@@ -1,5 +1,5 @@
 include_rules = [
-  "+components/display_compositor",
+  "+components/viz/common",
   "+third_party/libyuv",  # For scaling in desktop_capture_device.cc.
 ]
 

@@ -1,5 +1,7 @@
 include_rules = [
- "+components/display_compositor",
+ "+components/viz/common",
+ "+components/viz/host",
+ "+components/viz/service",
  "+services/ui/public/cpp",
  "+ui/platform_window",
 ]
