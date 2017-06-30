@@ -68,6 +68,7 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/refcounted_keyed_service.h"
+#include "components/offline_pages/features/features.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/history_index_restore_observer.h"
 #include "components/omnibox/browser/in_memory_url_index.h"
@@ -129,8 +130,8 @@
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
 #endif
 
-#if defined(OS_ANDROID)
-#include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+#include "chrome/browser/offline_pages/offline_page_model_factory.h"
 #include "components/offline_pages/core/stub_offline_page_model.h"
 #endif
 
@@ -253,7 +254,7 @@ std::unique_ptr<KeyedService> BuildWebDataService(
       &TestProfileErrorCallback);
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
 std::unique_ptr<KeyedService> BuildOfflinePageModel(
     content::BrowserContext* context) {
   return base::MakeUnique<offline_pages::StubOfflinePageModel>();
@@ -640,7 +641,7 @@ void TestingProfile::CreateBookmarkModel(bool delete_file) {
     base::FilePath path = GetPath().Append(bookmarks::kBookmarksFileName);
     base::DeleteFile(path, false);
   }
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   offline_pages::OfflinePageModelFactory::GetInstance()->SetTestingFactory(
       this, BuildOfflinePageModel);
 #endif

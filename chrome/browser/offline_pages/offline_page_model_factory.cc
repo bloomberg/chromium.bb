@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
+#include "chrome/browser/offline_pages/offline_page_model_factory.h"
 
 #include <utility>
 
@@ -22,8 +22,7 @@ namespace offline_pages {
 OfflinePageModelFactory::OfflinePageModelFactory()
     : BrowserContextKeyedServiceFactory(
           "OfflinePageModel",
-          BrowserContextDependencyManager::GetInstance()) {
-}
+          BrowserContextDependencyManager::GetInstance()) {}
 
 // static
 OfflinePageModelFactory* OfflinePageModelFactory::GetInstance() {
