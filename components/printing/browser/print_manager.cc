@@ -50,20 +50,20 @@ void PrintManager::OnPrintingFailed(int cookie) {
     return;
   }
 #if defined(OS_ANDROID)
-  PdfWritingDone(false);
+  PdfWritingDone(0);
 #endif
 }
 
 void PrintManager::PrintingRenderFrameDeleted() {
 #if defined(OS_ANDROID)
-  PdfWritingDone(false);
+  PdfWritingDone(0);
 #endif
 }
 
 #if defined(OS_ANDROID)
-void PrintManager::PdfWritingDone(bool result) {
+void PrintManager::PdfWritingDone(int page_count) {
   if (!pdf_writing_done_callback_.is_null())
-    pdf_writing_done_callback_.Run(file_descriptor().fd, result);
+    pdf_writing_done_callback_.Run(file_descriptor().fd, page_count);
   // Invalidate the file descriptor so it doesn't get reused.
   file_descriptor_ = base::FileDescriptor(-1, false);
 }

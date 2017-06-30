@@ -110,13 +110,13 @@ public class PrintingContext implements PrintingContextInterface {
     }
 
     @CalledByNative
-    public static void pdfWritingDone(int fd, boolean success) {
+    public static void pdfWritingDone(int fd, int pageCount) {
         ThreadUtils.assertOnUiThread();
         // TODO(cimamoglu): Do something when fd == -1.
         if (PRINTING_CONTEXT_MAP.get(fd) != null) {
             ThreadUtils.assertOnUiThread();
             PrintingContext printingContext = PRINTING_CONTEXT_MAP.get(fd);
-            printingContext.mController.pdfWritingDone(success);
+            printingContext.mController.pdfWritingDone(pageCount);
             PRINTING_CONTEXT_MAP.remove(fd);
         } else {
             Log.d(TAG, "No PrintingContext found for fd %d, can't notify print completion.", fd);

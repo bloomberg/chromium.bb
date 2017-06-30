@@ -22,9 +22,9 @@ class PrintManager : public content::WebContentsObserver {
 
 #if defined(OS_ANDROID)
   // TODO(timvolodine): consider introducing PrintManagerAndroid (crbug/500960)
-  typedef base::Callback<void(int, bool)> PdfWritingDoneCallback;
+  using PdfWritingDoneCallback = base::Callback<void(int, int)>;
 
-  void PdfWritingDone(bool result);
+  void PdfWritingDone(int page_count);
 
   // Sets the file descriptor into which the PDF will be written.
   void set_file_descriptor(const base::FileDescriptor& file_descriptor) {
