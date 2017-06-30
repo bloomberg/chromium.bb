@@ -27,8 +27,8 @@
 #pragma mark - CWVTranslationDelegate methods
 
 - (void)translationController:(CWVTranslationController*)controller
-    didFinishLanguageDetectionWithResult:(CWVLanguageDetectionResult*)result
-                                   error:(NSError*)error {
+    canOfferTranslationFromLanguage:(CWVTranslationLanguage*)pageLanguage
+                         toLanguage:(CWVTranslationLanguage*)userLanguage {
   __weak ShellTranslationDelegate* weakSelf = self;
 
   self.beforeTranslateActionSheet = [UIAlertController
@@ -48,9 +48,11 @@
                 style:UIAlertActionStyleDefault
               handler:^(UIAlertAction* action) {
                 weakSelf.beforeTranslateActionSheet = nil;
-                CWVTranslationLanguage* source = result.pageLanguage;
-                CWVTranslationLanguage* target = result.suggestedTargetLanguage;
-                [controller translatePageFromLanguage:source toLanguage:target];
+                CWVTranslationLanguage* source = pageLanguage;
+                CWVTranslationLanguage* target = userLanguage;
+                [controller translatePageFromLanguage:source
+                                           toLanguage:target
+                                        userInitiated:YES];
               }];
   [_beforeTranslateActionSheet addAction:translateAction];
 
