@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//base/android/jni_generator/jni_exception_list.gni")
 import("//build/buildflag_header.gni")
 import("//build/config/features.gni")
 import("//build/config/sanitizers/sanitizers.gni")
@@ -482,11 +481,6 @@ buildflag_header("chromecast_features") {
 }
 
 if (is_android) {
-  generate_jni_registration("cast_shell_jni_registration") {
-    target = ":cast_shell_apk"
-    output = "$root_gen_dir/chromecast/android/${target_name}.h"
-    exception_files = jni_exception_files
-  }
   android_assets("cast_shell_apk_assets") {
     assert(v8_use_external_startup_data)
 

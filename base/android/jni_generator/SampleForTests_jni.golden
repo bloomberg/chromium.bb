@@ -482,35 +482,24 @@ static const JNINativeMethod kMethodsSampleForTests[] = {
     },
 };
 
-// TODO(agrieve): Remove these empty registration functions and functions
-// calling them. https://crbug.com/683256.
 static bool RegisterNativesImpl(JNIEnv* env) {
-  return true;
-}
+  if (jni_generator::ShouldSkipJniRegistration(false))
+    return true;
 
-}  // namespace android
-}  // namespace base
-
-JNI_REGISTRATION_EXPORT bool
-    RegisterNative_org_chromium_example_jni_1generator_SampleForTests(JNIEnv*
-    env) {
-
-  const int kMethodsInnerClassSize =
-      arraysize(base::android::kMethodsInnerClass);
+  const int kMethodsInnerClassSize = arraysize(kMethodsInnerClass);
 
   if (env->RegisterNatives(InnerClass_clazz(env),
-                           base::android::kMethodsInnerClass,
+                           kMethodsInnerClass,
                            kMethodsInnerClassSize) < 0) {
     jni_generator::HandleRegistrationError(
         env, InnerClass_clazz(env), __FILE__);
     return false;
   }
 
-  const int kMethodsSampleForTestsSize =
-      arraysize(base::android::kMethodsSampleForTests);
+  const int kMethodsSampleForTestsSize = arraysize(kMethodsSampleForTests);
 
   if (env->RegisterNatives(SampleForTests_clazz(env),
-                           base::android::kMethodsSampleForTests,
+                           kMethodsSampleForTests,
                            kMethodsSampleForTestsSize) < 0) {
     jni_generator::HandleRegistrationError(
         env, SampleForTests_clazz(env), __FILE__);
@@ -519,5 +508,8 @@ JNI_REGISTRATION_EXPORT bool
 
   return true;
 }
+
+}  // namespace android
+}  // namespace base
 
 #endif  // org_chromium_example_jni_generator_SampleForTests_JNI

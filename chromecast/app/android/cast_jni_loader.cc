@@ -6,7 +6,6 @@
 #include "base/android/library_loader/library_loader_hooks.h"
 #include "base/bind.h"
 #include "chromecast/android/cast_jni_registrar.h"
-#include "chromecast/android/cast_shell_jni_registration.h"
 #include "chromecast/android/platform_jni_loader.h"
 #include "chromecast/app/cast_main_delegate.h"
 #include "chromecast/browser/android/jni_registrar.h"
@@ -43,12 +42,6 @@ bool NativeInit() {
 JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
   base::android::InitVM(vm);
   JNIEnv* env = base::android::AttachCurrentThread();
-  if (!RegisterMainDexNatives(env) || !RegisterNonMainDexNatives(env)) {
-    return -1;
-  }
-
-  // TODO(agrieve): Delete this block, this is a no-op now.
-  // https://crbug.com/683256.
   if (!content::android::OnJNIOnLoadRegisterJNI(env) || !RegisterJNI(env) ||
       !NativeInit()) {
     return -1;
