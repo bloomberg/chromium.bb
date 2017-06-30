@@ -239,8 +239,9 @@ TEST_F(ArcSessionManagerTest, BaseWorkflow) {
   ASSERT_EQ(ArcSessionManager::State::NEGOTIATING_TERMS_OF_SERVICE,
             arc_session_manager()->state());
 
-  // TODO(hidehiko): Verify state transition from NEGOTIATING_TERMS_OF_SERVICE
-  // -> CHECKING_ANDROID_MANAGEMENT, when we extract ArcSessionManager.
+  arc_session_manager()->OnTermsOfServiceNegotiatedForTesting(true);
+  ASSERT_EQ(ArcSessionManager::State::CHECKING_ANDROID_MANAGEMENT,
+            arc_session_manager()->state());
   arc_session_manager()->StartArcForTesting();
 
   EXPECT_TRUE(arc_session_manager()->sign_in_start_time().is_null());
@@ -318,6 +319,9 @@ TEST_F(ArcSessionManagerTest, CloseUIKeepsArcEnabled) {
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(ArcSessionManager::State::NEGOTIATING_TERMS_OF_SERVICE,
             arc_session_manager()->state());
+  arc_session_manager()->OnTermsOfServiceNegotiatedForTesting(true);
+  ASSERT_EQ(ArcSessionManager::State::CHECKING_ANDROID_MANAGEMENT,
+            arc_session_manager()->state());
   arc_session_manager()->StartArcForTesting();
   ASSERT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
 
@@ -345,7 +349,9 @@ TEST_F(ArcSessionManagerTest, Provisioning_Success) {
             arc_session_manager()->state());
 
   // Emulate to accept the terms of service.
-  prefs->SetBoolean(prefs::kArcTermsAccepted, true);
+  arc_session_manager()->OnTermsOfServiceNegotiatedForTesting(true);
+  ASSERT_EQ(ArcSessionManager::State::CHECKING_ANDROID_MANAGEMENT,
+            arc_session_manager()->state());
   arc_session_manager()->StartArcForTesting();
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
   EXPECT_TRUE(arc_session_manager()->IsSessionRunning());
@@ -415,6 +421,9 @@ TEST_F(ArcSessionManagerTest, RemoveDataDir) {
       profile()->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested));
   EXPECT_EQ(ArcSessionManager::State::NEGOTIATING_TERMS_OF_SERVICE,
             arc_session_manager()->state());
+  arc_session_manager()->OnTermsOfServiceNegotiatedForTesting(true);
+  ASSERT_EQ(ArcSessionManager::State::CHECKING_ANDROID_MANAGEMENT,
+            arc_session_manager()->state());
   arc_session_manager()->StartArcForTesting();
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
 
@@ -449,6 +458,7 @@ TEST_F(ArcSessionManagerTest, RemoveDataDir_Restart) {
 TEST_F(ArcSessionManagerTest, IgnoreSecondErrorReporting) {
   arc_session_manager()->SetProfile(profile());
   arc_session_manager()->RequestEnable();
+  arc_session_manager()->OnTermsOfServiceNegotiatedForTesting(true);
   arc_session_manager()->StartArcForTesting();
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
 
@@ -494,12 +504,7 @@ TEST_F(ArcSessionManagerArcAlwaysStartTest, BaseWorkflow) {
   arc_session_manager()->RequestEnable();
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
-
-  arc_session_manager()->StartArcForTesting();
-
   EXPECT_FALSE(arc_session_manager()->arc_start_time().is_null());
-
-  ASSERT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
   ASSERT_TRUE(arc_session_manager()->IsSessionRunning());
 
   arc_session_manager()->Shutdown();
@@ -577,16 +582,16 @@ TEST_P(ArcSessionManagerPolicyTest, SkippingTerms) {
                                        backup_restore_pref_value().is_bool() &&
                                        location_service_pref_value().is_bool();
   EXPECT_EQ(expected_terms_skipping
-                ? ArcSessionManager::State::ACTIVE
+                ? ArcSessionManager::State::CHECKING_ANDROID_MANAGEMENT
                 : ArcSessionManager::State::NEGOTIATING_TERMS_OF_SERVICE,
             arc_session_manager()->state());
 
   // Complete provisioning if it's not done yet.
-  if (!expected_terms_skipping) {
-    arc_session_manager()->StartArcForTesting();
-    arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS);
-  }
+  if (!expected_terms_skipping)
+    arc_session_manager()->OnTermsOfServiceNegotiatedForTesting(true);
+  arc_session_manager()->StartArcForTesting();
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
+  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS);
 
   // Play Store app is launched unless the Terms screen was suppressed.
   EXPECT_NE(expected_terms_skipping,
@@ -822,7 +827,8 @@ TEST_P(ArcSessionOobeOptInNegotiatorTest, OobeTermsAccepted) {
   EXPECT_EQ(ArcSessionManager::State::NEGOTIATING_TERMS_OF_SERVICE,
             arc_session_manager()->state());
   ReportResult(true);
-  EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
+  EXPECT_EQ(ArcSessionManager::State::CHECKING_ANDROID_MANAGEMENT,
+            arc_session_manager()->state());
 }
 
 TEST_P(ArcSessionOobeOptInNegotiatorTest, OobeTermsRejected) {

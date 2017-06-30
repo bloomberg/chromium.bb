@@ -157,9 +157,12 @@ TEST_F(ArcProvisionNotificationServiceTest,
   EXPECT_CALL(*arc_provision_notification_service_delegate(),
               ShowManagedProvisionNotification());
   arc_session_manager()->RequestEnable();
-  EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
   Mock::VerifyAndClearExpectations(
       arc_provision_notification_service_delegate());
+  EXPECT_EQ(ArcSessionManager::State::CHECKING_ANDROID_MANAGEMENT,
+            arc_session_manager()->state());
+  arc_session_manager()->StartArcForTesting();
+  EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
 
   // Emulate successful provisioning. The notification gets removed.
   EXPECT_CALL(*arc_provision_notification_service_delegate(),
@@ -218,9 +221,12 @@ TEST_F(ArcProvisionNotificationServiceTest,
   EXPECT_CALL(*arc_provision_notification_service_delegate(),
               ShowManagedProvisionNotification());
   arc_session_manager()->RequestEnable();
-  EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
   Mock::VerifyAndClearExpectations(
       arc_provision_notification_service_delegate());
+  EXPECT_EQ(ArcSessionManager::State::CHECKING_ANDROID_MANAGEMENT,
+            arc_session_manager()->state());
+  arc_session_manager()->StartArcForTesting();
+  EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
 
   // Emulate provisioning failure that leads to stopping ARC. The notification
   // gets removed.
@@ -251,9 +257,12 @@ TEST_F(ArcProvisionNotificationServiceTest,
   EXPECT_CALL(*arc_provision_notification_service_delegate(),
               ShowManagedProvisionNotification());
   arc_session_manager()->RequestEnable();
-  EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
   Mock::VerifyAndClearExpectations(
       arc_provision_notification_service_delegate());
+  EXPECT_EQ(ArcSessionManager::State::CHECKING_ANDROID_MANAGEMENT,
+            arc_session_manager()->state());
+  arc_session_manager()->StartArcForTesting();
+  EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
 
   // Emulate provisioning failure that leads to showing an error screen without
   // shutting ARC down. The notification gets removed.
@@ -288,7 +297,7 @@ TEST_F(ArcProvisionNotificationServiceTest,
             arc_session_manager()->state());
 
   // Emulate accepting the terms of service.
-  profile()->GetPrefs()->SetBoolean(prefs::kArcTermsAccepted, true);
+  arc_session_manager()->OnTermsOfServiceNegotiatedForTesting(true);
   arc_session_manager()->StartArcForTesting();
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
 
