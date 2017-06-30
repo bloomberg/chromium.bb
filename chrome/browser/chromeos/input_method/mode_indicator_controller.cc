@@ -9,16 +9,20 @@
 #include "ash/wm/window_util.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/ash_config.h"
+#include "mojo/public/cpp/bindings/type_converter.h"
+#include "services/ui/public/cpp/property_type_converters.h"
+#include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/base/ime/chromeos/input_method_util.h"
-#include "ui/chromeos/ime/mode_indicator_view.h"
 
 namespace chromeos {
 namespace input_method {
 
 namespace {
-ModeIndicatorObserverInterface* g_mode_indicator_observer_for_testing_ = NULL;
-}  // namespace
 
+ModeIndicatorObserverInterface* g_mode_indicator_observer_for_testing = nullptr;
+
+// The non-test version of the interface.
 class ModeIndicatorObserver : public ModeIndicatorObserverInterface {
  public:
   ModeIndicatorObserver()
@@ -49,6 +53,7 @@ class ModeIndicatorObserver : public ModeIndicatorObserverInterface {
   views::Widget* active_widget_;
 };
 
+}  // namespace
 
 ModeIndicatorController::ModeIndicatorController(InputMethodManager* imm)
     : imm_(imm),
@@ -74,13 +79,7 @@ void ModeIndicatorController::FocusStateChanged(bool is_focused) {
 // static
 void ModeIndicatorController::SetModeIndicatorObserverForTesting(
     ModeIndicatorObserverInterface* observer) {
-  g_mode_indicator_observer_for_testing_ = observer;
-}
-
-// static
-ModeIndicatorObserverInterface*
-ModeIndicatorController::GetModeIndicatorObserverForTesting() {
-  return g_mode_indicator_observer_for_testing_;
+  g_mode_indicator_observer_for_testing = observer;
 }
 
 void ModeIndicatorController::InputMethodChanged(InputMethodManager* manager,
@@ -89,6 +88,22 @@ void ModeIndicatorController::InputMethodChanged(InputMethodManager* manager,
   if (!show_message)
     return;
   ShowModeIndicator();
+}
+
+void ModeIndicatorController::InitWidgetContainer(
+    views::Widget::InitParams* params) {
+  // The bubble needs to be placed in the proper ash window container, even
+  // though it is created by Chrome.
+  // TODO(crbug.com/738531): Consider moving the ModeIndicatorView into ash.
+  const int container_id = ash::kShellWindowId_SettingBubbleContainer;
+  if (chromeos::GetAshConfig() == ash::Config::MASH) {
+    using ui::mojom::WindowManager;
+    params->mus_properties[WindowManager::kContainerId_InitProperty] =
+        mojo::ConvertTo<std::vector<uint8_t>>(container_id);
+  } else {
+    params->parent = ash::Shell::GetContainer(
+        ash::wm::GetActiveWindow()->GetRootWindow(), container_id);
+  }
 }
 
 void ModeIndicatorController::ShowModeIndicator() {
@@ -106,16 +121,13 @@ void ModeIndicatorController::ShowModeIndicator() {
   const base::string16 short_name =
       imm_->GetInputMethodUtil()->GetInputMethodShortName(descriptor);
 
-  aura::Window* parent =
-      ash::Shell::GetContainer(ash::wm::GetActiveWindow()->GetRootWindow(),
-                               ash::kShellWindowId_SettingBubbleContainer);
-  ui::ime::ModeIndicatorView* mi_view = new ui::ime::ModeIndicatorView(
-      parent, cursor_bounds_, short_name);
+  ui::ime::ModeIndicatorView* mi_view =
+      new ui::ime::ModeIndicatorView(this, cursor_bounds_, short_name);
   views::BubbleDialogDelegateView::CreateBubble(mi_view);
 
   views::Widget* mi_widget = mi_view->GetWidget();
-  if (GetModeIndicatorObserverForTesting())
-    GetModeIndicatorObserverForTesting()->AddModeIndicatorWidget(mi_widget);
+  if (g_mode_indicator_observer_for_testing)
+    g_mode_indicator_observer_for_testing->AddModeIndicatorWidget(mi_widget);
 
   mi_observer_->AddModeIndicatorWidget(mi_widget);
   mi_view->ShowAndFadeOut();
