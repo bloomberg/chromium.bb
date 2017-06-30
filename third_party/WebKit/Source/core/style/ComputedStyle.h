@@ -81,8 +81,6 @@ class CSSTransitionData;
 class CSSVariableData;
 class Font;
 class Hyphenation;
-class RotateTransformOperation;
-class ScaleTransformOperation;
 class ShadowList;
 class ShapeValue;
 class StyleDifference;
@@ -90,7 +88,6 @@ class StyleImage;
 class StylePath;
 class StyleResolver;
 class TransformationMatrix;
-class TranslateTransformOperation;
 
 class ContentData;
 
@@ -477,9 +474,6 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // box-shadow (aka -webkit-box-shadow)
-  static ShadowList* InitialBoxShadow() { return 0; }
-  ShadowList* BoxShadow() const { return BoxShadowInternal().Get(); }
-  void SetBoxShadow(RefPtr<ShadowList>);
   bool BoxShadowDataEquivalent(const ComputedStyle& other) const {
     return DataEquivalent(BoxShadow(), other.BoxShadow());
   }
@@ -572,13 +566,6 @@ class ComputedStyle : public ComputedStyleBase,
         std::min(std::numeric_limits<unsigned>::max() - 1, og));
   }
 
-  // -webkit-box-reflect
-  static StyleReflection* InitialBoxReflect() { return 0; }
-  StyleReflection* BoxReflect() const { return BoxReflectInternal().Get(); }
-  void SetBoxReflect(RefPtr<StyleReflection> reflect) {
-    SetBoxReflectInternal(std::move(reflect));
-  }
-
   // Grid properties.
   static size_t InitialGridAutoRepeatInsertionPoint() { return 0; }
   static AutoRepeatType InitialGridAutoRepeatType() {
@@ -588,11 +575,6 @@ class ComputedStyle : public ComputedStyleBase,
   // grid-auto-flow
   static GridAutoFlow InitialGridAutoFlow() { return kAutoFlowRow; }
   void SetGridAutoFlow(GridAutoFlow flow) { SetGridAutoFlowInternal(flow); }
-
-  // offset-path
-  static BasicShape* InitialOffsetPath() { return nullptr; }
-  BasicShape* OffsetPath() const { return OffsetPathInternal().Get(); }
-  void SetOffsetPath(RefPtr<BasicShape>);
 
   // opacity (aka -webkit-opacity)
   static float InitialOpacity() { return 1.0f; }
@@ -718,32 +700,6 @@ class ComputedStyle : public ComputedStyleBase,
   void SetTransformOriginZ(float f) {
     SetTransformOrigin(
         TransformOrigin(TransformOriginX(), TransformOriginY(), f));
-  }
-
-  // Independent transform properties.
-  // translate
-  static RefPtr<TranslateTransformOperation> InitialTranslate() {
-    return nullptr;
-  }
-  TranslateTransformOperation* Translate() const {
-    return TranslateInternal().Get();
-  }
-  void SetTranslate(RefPtr<TranslateTransformOperation> v) {
-    SetTranslateInternal(std::move(v));
-  }
-
-  // rotate
-  static RefPtr<RotateTransformOperation> InitialRotate() { return nullptr; }
-  RotateTransformOperation* Rotate() const { return RotateInternal().Get(); }
-  void SetRotate(RefPtr<RotateTransformOperation> v) {
-    SetRotateInternal(std::move(v));
-  }
-
-  // scale
-  static RefPtr<ScaleTransformOperation> InitialScale() { return nullptr; }
-  ScaleTransformOperation* Scale() const { return ScaleInternal().Get(); }
-  void SetScale(RefPtr<ScaleTransformOperation> v) {
-    SetScaleInternal(std::move(v));
   }
 
   // Scroll properties.
@@ -930,11 +886,6 @@ class ComputedStyle : public ComputedStyleBase,
   void SetAppearance(ControlPart a) { SetAppearanceInternal(a); }
 
   // -webkit-clip-path
-  static ClipPathOperation* InitialClipPath() { return 0; }
-  ClipPathOperation* ClipPath() const { return ClipPathInternal().Get(); }
-  void SetClipPath(RefPtr<ClipPathOperation> operation) {
-    SetClipPathInternal(std::move(operation));
-  }
   bool ClipPathDataEquivalent(const ComputedStyle& other) const {
     return DataEquivalent(ClipPath(), other.ClipPath());
   }
@@ -991,17 +942,9 @@ class ComputedStyle : public ComputedStyleBase,
   void SetListStyleImage(StyleImage*);
 
   // quotes
-  static QuotesData* InitialQuotes() { return 0; }
-  QuotesData* Quotes() const { return QuotesInternal().Get(); }
-  void SetQuotes(RefPtr<QuotesData>);
-
   bool QuotesDataEquivalent(const ComputedStyle&) const;
 
   // text-shadow
-  static ShadowList* InitialTextShadow() { return 0; }
-  ShadowList* TextShadow() const { return TextShadowInternal().Get(); }
-  void SetTextShadow(RefPtr<ShadowList>);
-
   bool TextShadowDataEquivalent(const ComputedStyle&) const;
 
   // Text emphasis properties.

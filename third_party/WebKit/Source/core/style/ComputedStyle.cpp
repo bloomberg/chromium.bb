@@ -710,10 +710,6 @@ void ComputedStyle::SetCursorList(CursorList* other) {
   SetCursorDataInternal(other);
 }
 
-void ComputedStyle::SetQuotes(RefPtr<QuotesData> q) {
-  SetQuotesInternal(std::move(q));
-}
-
 bool ComputedStyle::QuotesDataEquivalent(const ComputedStyle& other) const {
   return DataEquivalent(Quotes(), other.Quotes());
 }
@@ -994,16 +990,8 @@ void ComputedStyle::ApplyMotionPathTransform(
     transform.Translate(-origin_shift_x, -origin_shift_y);
 }
 
-void ComputedStyle::SetTextShadow(RefPtr<ShadowList> s) {
-  SetTextShadowInternal(std::move(s));
-}
-
 bool ComputedStyle::TextShadowDataEquivalent(const ComputedStyle& other) const {
   return DataEquivalent(TextShadow(), other.TextShadow());
-}
-
-void ComputedStyle::SetBoxShadow(RefPtr<ShadowList> s) {
-  SetBoxShadowInternal(std::move(s));
 }
 
 static FloatRoundedRect::Radii CalcRadiiFor(const LengthSize& top_left,
@@ -1881,10 +1869,6 @@ void ComputedStyle::SetMarginEnd(const Length& margin) {
     else
       SetMarginTop(margin);
   }
-}
-
-void ComputedStyle::SetOffsetPath(RefPtr<BasicShape> path) {
-  SetOffsetPathInternal(std::move(path));
 }
 
 int ComputedStyle::OutlineOutsetExtent() const {
