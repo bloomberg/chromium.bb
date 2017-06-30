@@ -220,6 +220,8 @@ int InspectorDOMSnapshotAgent::VisitNode(Node* node) {
     Document* document = ToDocument(node);
     value->setDocumentURL(InspectorDOMAgent::DocumentURLString(document));
     value->setBaseURL(InspectorDOMAgent::DocumentBaseURLString(document));
+    if (document->ContentLanguage())
+      value->setContentLanguage(document->ContentLanguage().Utf8().data());
   } else if (node->IsDocumentTypeNode()) {
     DocumentType* doc_type = ToDocumentType(node);
     value->setPublicId(doc_type->publicId());

@@ -11,7 +11,8 @@ Tests DOMSnapshot.getSnapshot method.
       ],
       "layoutNodeIndex": 0,
       "documentURL": "<string>",
-      "baseURL": "<string>"
+      "baseURL": "<string>",
+      "contentLanguage": "de"
     },
     {
       "nodeType": 1,
@@ -85,7 +86,9 @@ Tests DOMSnapshot.getSnapshot method.
       "childNodeIndexes": [
         10,
         11,
-        61
+        61,
+        62,
+        63
       ],
       "attributes": [
         {
@@ -593,6 +596,28 @@ Tests DOMSnapshot.getSnapshot method.
       "nodeValue": "\n",
       "backendNodeId": "<number>",
       "layoutNodeIndex": 31
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n",
+      "backendNodeId": "<number>"
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "META",
+      "nodeValue": "",
+      "backendNodeId": "<number>",
+      "attributes": [
+        {
+          "name": "http-equiv",
+          "value": "content-language"
+        },
+        {
+          "name": "content",
+          "value": "de"
+        }
+      ]
     },
     {
       "nodeType": 3,
