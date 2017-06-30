@@ -22,6 +22,10 @@ class WebViewWebClient : public web::WebClient {
   std::unique_ptr<web::WebMainParts> CreateWebMainParts() override;
   std::string GetProduct() const override;
   std::string GetUserAgent(web::UserAgentType type) const override;
+  base::StringPiece GetDataResource(
+      int resource_id,
+      ui::ScaleFactor scale_factor) const override;
+  base::RefCountedMemory* GetDataResourceBytes(int resource_id) const override;
   NSString* GetEarlyPageScript(web::BrowserState* browser_state) const override;
 
  private:
