@@ -11792,7 +11792,8 @@
         ],
         "chrome_sdk_build_chrome": false,
         "hw_tests_override": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"cts\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"arc-cts-qual\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 172800,\n    \"warn_only\": false\n}"
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"cts\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"arc-cts-qual\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 172800,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"cts\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"arc-gts-qual\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 172800,\n    \"warn_only\": false\n}"
         ],
         "important": true,
         "vm_tests": []
@@ -12005,7 +12006,8 @@
         ],
         "chrome_sdk_build_chrome": false,
         "hw_tests_override": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"cts\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"arc-cts-qual\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 172800,\n    \"warn_only\": false\n}"
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"cts\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"arc-cts-qual\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 172800,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"cts\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"arc-gts-qual\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 172800,\n    \"warn_only\": false\n}"
         ],
         "important": true,
         "vm_tests": [],
@@ -24772,7 +24774,8 @@
         ],
         "chrome_sdk_build_chrome": false,
         "hw_tests_override": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"cts\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"arc-cts-qual\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 172800,\n    \"warn_only\": false\n}"
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"cts\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"arc-cts-qual\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 172800,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"cts\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"arc-gts-qual\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 172800,\n    \"warn_only\": false\n}"
         ],
         "important": true,
         "vm_tests": [],
@@ -26600,7 +26603,8 @@
         ],
         "chrome_sdk_build_chrome": false,
         "hw_tests_override": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"cts\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"arc-cts-qual\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 172800,\n    \"warn_only\": false\n}"
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"cts\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"arc-cts-qual\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 172800,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"cts\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"arc-gts-qual\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 172800,\n    \"warn_only\": false\n}"
         ],
         "important": true,
         "vm_tests": [],

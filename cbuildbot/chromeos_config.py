@@ -366,6 +366,27 @@ class HWTestList(object):
             config_lib.HWTestConfig('security',
                                     **default_dict)]
 
+  def CtsGtsTests(self, **kwargs):
+    """Return a list of HWTestConfigs for CTS, GTS tests."""
+
+    cts_config = dict(
+        pool=constants.HWTEST_CTS_POOL,
+        timeout=config_lib.HWTestConfig.CTS_QUAL_HW_TEST_TIMEOUT,
+        priority='PostBuild'
+    )
+    gts_config = dict(
+        pool=constants.HWTEST_GTS_POOL,
+        timeout=config_lib.HWTestConfig.GTS_QUAL_HW_TEST_TIMEOUT,
+        priority='PostBuild'
+    )
+
+    return [config_lib.HWTestConfig(constants.HWTEST_CTS_QUAL_SUITE,
+                                    **cts_config),
+            config_lib.HWTestConfig(constants.HWTEST_GTS_QUAL_SUITE,
+                                    **gts_config)
+    ]
+
+
 
 def append_useflags(useflags):
   """Used to append a set of useflags to existing useflags.
@@ -1438,16 +1459,9 @@ def GeneralTemplates(site_config, ge_build_config):
   )
 
   site_config.AddTemplate(
-      'release_cts',
+      'release_cts_gts',
       site_config.templates.release,
-      hw_tests_override=[
-          config_lib.HWTestConfig(
-              constants.HWTEST_CTS_QUAL_SUITE,
-              pool=constants.HWTEST_CTS_POOL,
-              timeout=config_lib.HWTestConfig.CTS_QUAL_HW_TEST_TIMEOUT,
-              priority='PostBuild'
-          )
-      ],
+      hw_tests_override=hw_test_list.CtsGtsTests(),
   )
 
   ### Release AFDO configs.
@@ -3104,10 +3118,10 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
       config_lib.CONFIG_TEMPLATE_RELEASE]
 
   if is_release_branch:
-      _cts_boards = (boards_dict['all_release_boards'] |
+      _cts_gts_boards = (boards_dict['all_release_boards'] |
                      _all_release_builder_boards) - _critical_for_chrome_boards
   else:
-      _cts_boards = frozenset([
+      _cts_gts_boards = frozenset([
           'terra',
           'kevin',
           'veyron_mighty',
@@ -3116,16 +3130,16 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
 
   site_config.AddForBoards(
       config_lib.CONFIG_TYPE_RELEASE,
-      _cts_boards,
+      _cts_gts_boards,
       board_configs,
       site_config.templates.release,
-      site_config.templates.release_cts,
+      site_config.templates.release_cts_gts,
   )
 
   site_config.AddForBoards(
       config_lib.CONFIG_TYPE_RELEASE,
       ((boards_dict['all_release_boards'] | _all_release_builder_boards) -
-       _critical_for_chrome_boards - _cts_boards),
+       _critical_for_chrome_boards - _cts_gts_boards),
       board_configs,
       site_config.templates.release,
   )
