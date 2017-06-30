@@ -81,6 +81,7 @@ CONTENT_EXPORT extern const base::Feature kVrShell;
 CONTENT_EXPORT extern const base::Feature kWebAssembly;
 CONTENT_EXPORT extern const base::Feature kWebAssemblyStreaming;
 CONTENT_EXPORT extern const base::Feature kWebAssemblyTrapHandler;
+CONTENT_EXPORT extern const base::Feature kWebAuth;
 CONTENT_EXPORT extern const base::Feature kWebGLImageChromium;
 CONTENT_EXPORT extern const base::Feature kWebPayments;
 CONTENT_EXPORT extern const base::Feature kWebRtcEcdsaDefault;

@@ -418,4 +418,8 @@ void WebRuntimeFeatures::EnableMediaCastOverlayButton(bool enable) {
   RuntimeEnabledFeatures::SetMediaCastOverlayButtonEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableWebAuth(bool enable) {
+  RuntimeEnabledFeatures::SetWebAuthEnabled(enable);
+}
+
 }  // namespace blink

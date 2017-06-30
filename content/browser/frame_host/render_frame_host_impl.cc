@@ -60,6 +60,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/shared_worker/shared_worker_service_impl.h"
+#include "content/browser/webauth/authenticator_impl.h"
 #include "content/browser/websockets/websocket_manager.h"
 #include "content/browser/webui/url_data_manager_backend.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
@@ -2923,6 +2924,11 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   GetInterfaceRegistry()->AddInterface(
       base::Bind(&ForwardShapeDetectionRequest<
                  shape_detection::mojom::TextDetectionRequest>));
+
+  if (base::FeatureList::IsEnabled(features::kWebAuth)) {
+    GetInterfaceRegistry()->AddInterface(
+        base::Bind(&AuthenticatorImpl::Create, base::Unretained(this)));
+  }
 }
 
 void RenderFrameHostImpl::ResetWaitingState() {
