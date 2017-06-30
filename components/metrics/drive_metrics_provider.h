@@ -10,8 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sequenced_task_runner.h"
-#include "base/threading/thread_checker.h"
+#include "base/sequence_checker.h"
 #include "components/metrics/metrics_provider.h"
 #include "components/metrics/proto/system_profile.pb.h"
 
@@ -23,13 +22,9 @@ namespace metrics {
 
 // Provides metrics about the local drives on a user's computer. Currently only
 // checks to see if they incur a seek-time penalty (e.g. if they're SSDs).
-//
-// Defers gathering metrics until after "rush hour" (startup) so as to not bog
-// down the file thread.
 class DriveMetricsProvider : public metrics::MetricsProvider {
  public:
-  DriveMetricsProvider(scoped_refptr<base::SequencedTaskRunner> file_thread,
-                       int local_state_path_key);
+  explicit DriveMetricsProvider(int local_state_path_key);
   ~DriveMetricsProvider() override;
 
   // metrics::MetricsDataProvider:
@@ -60,15 +55,16 @@ class DriveMetricsProvider : public metrics::MetricsProvider {
   static bool HasSeekPenalty(const base::FilePath& path,
                              bool* has_seek_penalty);
 
-  // Gather metrics about various drives on |file_thread_|.
-  static DriveMetrics GetDriveMetricsOnFileThread(int local_state_path_key);
+  // Gather metrics about various drives. Should be run on a background thread.
+  static DriveMetrics GetDriveMetricsOnBackgroundThread(
+      int local_state_path_key);
 
   // Tries to determine whether there is a penalty for seeking on the drive that
   // hosts |path_service_key| (for example: the drive that holds "Local State").
   static void QuerySeekPenalty(int path_service_key,
                                SeekPenaltyResponse* response);
 
-  // Called when metrics are done being gathered from the FILE thread.
+  // Called when metrics are done being gathered asynchronously.
   // |done_callback| is the callback that should be called once all metrics are
   // gathered.
   void GotDriveMetrics(const base::Closure& done_callback,
@@ -78,10 +74,6 @@ class DriveMetricsProvider : public metrics::MetricsProvider {
   void FillDriveMetrics(const SeekPenaltyResponse& response,
                         metrics::SystemProfileProto::Hardware::Drive* drive);
 
-  // The thread on which file operations are performed (supplied by the
-  // embedder).
-  scoped_refptr<base::SequencedTaskRunner> file_thread_;
-
   // The key to give to base::PathService to obtain the path to local state
   // (supplied by the embedder).
   int local_state_path_key_;
@@ -89,7 +81,7 @@ class DriveMetricsProvider : public metrics::MetricsProvider {
   // Information gathered about various important drives.
   DriveMetrics metrics_;
 
-  base::ThreadChecker thread_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<DriveMetricsProvider> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DriveMetricsProvider);

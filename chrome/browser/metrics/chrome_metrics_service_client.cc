@@ -644,8 +644,6 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
       ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled()));
 
   drive_metrics_provider_ = new metrics::DriveMetricsProvider(
-      content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::FILE),
       chrome::FILE_LOCAL_STATE);
   metrics_service_->RegisterMetricsProvider(
       std::unique_ptr<metrics::MetricsProvider>(drive_metrics_provider_));
