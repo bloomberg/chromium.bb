@@ -75,8 +75,9 @@ void NavigatorShare::ShareClientImpl::Callback(mojom::blink::ShareError error) {
 }
 
 void NavigatorShare::ShareClientImpl::OnConnectionError() {
-  resolver_->Reject(
-      DOMException::Create(kSecurityError, "WebShare is disabled."));
+  resolver_->Reject(DOMException::Create(
+      kAbortError,
+      "Internal error: could not connect to Web Share interface."));
 }
 
 NavigatorShare::~NavigatorShare() = default;
