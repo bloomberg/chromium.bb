@@ -15644,6 +15644,8 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2031" label="MIDIMessageEvent"/>
   <int value="2032" label="FetchEventIsReload"/>
   <int value="2033" label="ServiceWorkerClientFrameType"/>
+  <int value="2034" label="QuirksModeDocument"/>
+  <int value="2035" label="LimitedQuirksModeDocument"/>
 </enum>
 
 <enum name="FeedbackSource">

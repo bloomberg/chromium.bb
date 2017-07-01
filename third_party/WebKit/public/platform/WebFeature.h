@@ -1566,6 +1566,8 @@ enum class WebFeature : uint32_t {
   kMIDIMessageEvent = 2031,
   kFetchEventIsReload = 2032,
   kServiceWorkerClientFrameType = 2033,
+  kQuirksModeDocument = 2034,
+  kLimitedQuirksModeDocument = 2035,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
