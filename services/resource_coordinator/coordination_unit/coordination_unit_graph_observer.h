@@ -27,9 +27,9 @@ namespace resource_coordinator {
 // initialized and valid.
 //
 // To create and install a new observer:
-//   (1) derive from this class
-//   (2) register in CoordinationUnitManager::RegisterObserver
-//       inside of CoordinationUnitManager::CoordinationUnitManager
+//   (1) Derive from this class.
+//   (2) Register by calling on |coordination_unit_manager().ResgiterObserver|
+//       inside of the ResourceCoordinatorService::Create.
 class CoordinationUnitGraphObserver {
  public:
   CoordinationUnitGraphObserver();

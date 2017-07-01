@@ -41,6 +41,9 @@ class ResourceCoordinatorService : public service_manager::Service {
     return ref_factory_.get();
   }
   ukm::MojoUkmRecorder* ukm_recorder() { return ukm_recorder_.get(); }
+  CoordinationUnitManager* coordination_unit_manager() {
+    return &coordination_unit_manager_;
+  }
 
  private:
   service_manager::BinderRegistry registry_;
