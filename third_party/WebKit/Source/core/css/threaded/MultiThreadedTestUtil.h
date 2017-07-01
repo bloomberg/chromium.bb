@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef MultiThreadedTestUtil_h
+#define MultiThreadedTestUtil_h
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "platform/CrossThreadFunctional.h"
@@ -92,3 +95,5 @@ class MultiThreadedTest : public testing::Test {
 };
 
 }  // namespace blink
+
+#endif  // MultiThreadedTestUtil_h

@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef WorkerThreadTestHelper_h
+#define WorkerThreadTestHelper_h
+
 #include <memory>
 
 #include "bindings/core/v8/SourceLocation.h"
@@ -134,3 +137,5 @@ inline WorkerOrWorkletGlobalScope* WorkerThreadForTest::CreateWorkerGlobalScope(
 }
 
 }  // namespace blink
+
+#endif  // WorkerThreadTestHelper_h

@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef ImageDecoderTestHelpers_h
+#define ImageDecoderTestHelpers_h
+
 #include <memory>
 #include "platform/image-decoders/ImageDecoder.h"
 #include "platform/wtf/Vector.h"
@@ -109,3 +112,5 @@ void TestResumePartialDecodeAfterClearFrameBufferCache(DecoderCreator,
 void TestAlphaBlending(DecoderCreatorWithAlpha, const char*);
 
 }  // namespace blink
+
+#endif  // ImageDecoderTestHelpers_h

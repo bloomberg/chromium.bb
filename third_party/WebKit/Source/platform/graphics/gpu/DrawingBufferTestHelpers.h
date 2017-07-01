@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef DrawingBufferTestHelpers_h
+#define DrawingBufferTestHelpers_h
+
 #include "gpu/command_buffer/common/capabilities.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/CanvasColorParams.h"
@@ -423,3 +426,5 @@ class DrawingBufferForTests : public DrawingBuffer {
 };
 
 }  // blink
+
+#endif  // DrawingBufferTestHelpers_h

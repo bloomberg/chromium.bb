@@ -23,8 +23,13 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef WebCoreNSCellExtras_h
+#define WebCoreNSCellExtras_h
+
 #import <AppKit/AppKit.h>
 
 @interface NSCell (BlinkFocusRingDrawing)
 - (void)cr_drawFocusRingWithFrame:(NSRect)cellFrame inView:(NSView*)controlView;
 @end
+
+#endif  // WebCoreNSCellExtras_h

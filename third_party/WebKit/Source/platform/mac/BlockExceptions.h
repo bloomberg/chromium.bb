@@ -23,6 +23,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef BlockExceptions_h
+#define BlockExceptions_h
+
 #import <Foundation/NSException.h>
 #import "platform/PlatformExport.h"
 #import "platform/wtf/Assertions.h"
@@ -35,3 +38,5 @@ PLATFORM_EXPORT void ReportBlockedObjCException(NSException*);
   @catch (NSException * localException) {       \
     ReportBlockedObjCException(localException); \
   }
+
+#endif  // BlockExceptions_h

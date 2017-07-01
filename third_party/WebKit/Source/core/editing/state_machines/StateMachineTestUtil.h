@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef StateMachineTestUtil_h
+#define StateMachineTestUtil_h
+
 #include "base/macros.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/Unicode.h"
@@ -52,3 +55,5 @@ class GraphemeStateMachineTestBase : public ::testing::Test {
 };
 
 }  // namespace blink
+
+#endif  // StateMachineTestUtil_h

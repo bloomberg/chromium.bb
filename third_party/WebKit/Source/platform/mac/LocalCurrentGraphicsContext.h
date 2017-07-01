@@ -17,6 +17,9 @@
  * Boston, MA 02110-1301, USA.
  */
 
+#ifndef LocalCurrentGraphicsContext_h
+#define LocalCurrentGraphicsContext_h
+
 #include "platform/PlatformExport.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/paint/PaintCanvas.h"
@@ -50,3 +53,5 @@ class PLATFORM_EXPORT LocalCurrentGraphicsContext {
   GraphicsContextCanvas graphics_context_canvas_;
 };
 }
+
+#endif  // LocalCurrentGraphicsContext_h

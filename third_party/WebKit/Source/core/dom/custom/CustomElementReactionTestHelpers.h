@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CustomElementReactionTestHelpers_h
+#define CustomElementReactionTestHelpers_h
+
 #include "core/dom/custom/CustomElementReaction.h"
 
 #include <initializer_list>
@@ -148,3 +151,5 @@ class ResetCustomElementReactionStackForTest final {
 };
 
 }  // namespace blink
+
+#endif  // CustomElementReactionTestHelpers_h

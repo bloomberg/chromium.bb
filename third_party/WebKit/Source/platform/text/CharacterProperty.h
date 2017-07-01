@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CharacterProperty_h
+#define CharacterProperty_h
+
 #include <cstdint>
 
 namespace blink {
@@ -30,3 +33,5 @@ inline CharacterProperty operator|=(CharacterProperty& a, CharacterProperty b) {
 }
 
 }  // namespace blink
+
+#endif  // CharacterProperty_h
