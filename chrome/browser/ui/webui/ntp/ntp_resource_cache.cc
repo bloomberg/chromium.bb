@@ -352,6 +352,9 @@ void NTPResourceCache::CreateNewTabGuestHTML() {
                                 chrome::kLearnMoreEnterpriseURL);
   } else {
     localized_strings.SetString("enterpriseInfoVisible", "false");
+    localized_strings.SetString("enterpriseInfoMessage", "");
+    localized_strings.SetString("enterpriseLearnMore", "");
+    localized_strings.SetString("enterpriseInfoHintLink", "");
   }
 #endif
 
@@ -369,17 +372,10 @@ void NTPResourceCache::CreateNewTabGuestHTML() {
   static const base::StringPiece guest_tab_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(guest_tab_ids));
 
-#if defined(OS_CHROMEOS)
-  // TODO(dbeam): convert c/b/resources/chromeos/guest_session_tab.html from
-  // i18n-* to $i18n{}.
-  std::string full_html = webui::GetI18nTemplateHtml(
-      guest_tab_html, &localized_strings);
-#else
   ui::TemplateReplacements replacements;
   ui::TemplateReplacementsFromDictionaryValue(localized_strings, &replacements);
   std::string full_html =
       ui::ReplaceTemplateExpressions(guest_tab_html, replacements);
-#endif
 
   new_tab_guest_html_ = base::RefCountedString::TakeString(&full_html);
 }
