@@ -1,0 +1,24 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [23, 23, 404, 404],
+          "reason": "SVG resource change"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "SVG resource change"
+    }
+  ]
+}
+

@@ -1,0 +1,29 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "Caret",
+          "rect": [399, 11, 1, 16],
+          "reason": "caret"
+        },
+        {
+          "object": "Caret",
+          "rect": [396, 11, 1, 16],
+          "reason": "caret"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "Caret",
+      "reason": "caret"
+    }
+  ]
+}
+

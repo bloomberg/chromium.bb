@@ -1,0 +1,28 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (positioned) DIV",
+          "rect": [185, 100, 15, 200],
+          "reason": "disappeared"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "VerticalScrollbar",
+      "reason": "scroll control"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV",
+      "reason": "geometry"
+    }
+  ]
+}
+
