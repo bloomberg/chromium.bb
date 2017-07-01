@@ -1118,6 +1118,50 @@ void ShellSurface::OnMouseEvent(ui::MouseEvent* event) {
   }
 }
 
+void ShellSurface::OnGestureEvent(ui::GestureEvent* event) {
+  if (!resizer_) {
+    views::View::OnGestureEvent(event);
+    return;
+  }
+
+  if (event->handled())
+    return;
+
+  // TODO(domlaskowski): Handle touch dragging/resizing for BoundsMode::SHELL.
+  // See crbug.com/738606.
+  switch (event->type()) {
+    case ui::ET_GESTURE_END: {
+      ScopedConfigure scoped_configure(this, false);
+      EndDrag(false /* revert */);
+      break;
+    }
+    case ui::ET_GESTURE_SCROLL_BEGIN:
+    case ui::ET_GESTURE_SCROLL_END:
+    case ui::ET_GESTURE_SCROLL_UPDATE:
+    case ui::ET_GESTURE_TAP:
+    case ui::ET_GESTURE_TAP_DOWN:
+    case ui::ET_GESTURE_TAP_CANCEL:
+    case ui::ET_GESTURE_TAP_UNCONFIRMED:
+    case ui::ET_GESTURE_DOUBLE_TAP:
+    case ui::ET_GESTURE_BEGIN:
+    case ui::ET_GESTURE_TWO_FINGER_TAP:
+    case ui::ET_GESTURE_PINCH_BEGIN:
+    case ui::ET_GESTURE_PINCH_END:
+    case ui::ET_GESTURE_PINCH_UPDATE:
+    case ui::ET_GESTURE_LONG_PRESS:
+    case ui::ET_GESTURE_LONG_TAP:
+    case ui::ET_GESTURE_SWIPE:
+    case ui::ET_GESTURE_SHOW_PRESS:
+    case ui::ET_SCROLL:
+    case ui::ET_SCROLL_FLING_START:
+    case ui::ET_SCROLL_FLING_CANCEL:
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ui::AcceleratorTarget overrides:
 
