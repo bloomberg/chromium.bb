@@ -163,7 +163,6 @@ class WEB_EXPORT WebLocalFrameImpl final
   void SetReferrerForRequest(WebURLRequest&, const WebURL& referrer) override;
   WebAssociatedURLLoader* CreateAssociatedURLLoader(
       const WebAssociatedURLLoaderOptions&) override;
-  unsigned UnloadListenerCount() const override;
   void SetMarkedText(const WebString&,
                      unsigned location,
                      unsigned length) override;

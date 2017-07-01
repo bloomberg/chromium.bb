@@ -89,6 +89,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <set>
 #include <utility>
 
 #include "bindings/core/v8/BindingSecurity.h"
@@ -937,10 +938,6 @@ void WebLocalFrameImpl::SetReferrerForRequest(WebURLRequest& request,
 WebAssociatedURLLoader* WebLocalFrameImpl::CreateAssociatedURLLoader(
     const WebAssociatedURLLoaderOptions& options) {
   return new WebAssociatedURLLoaderImpl(GetFrame()->GetDocument(), options);
-}
-
-unsigned WebLocalFrameImpl::UnloadListenerCount() const {
-  return GetFrame()->DomWindow()->PendingUnloadEventListeners();
 }
 
 void WebLocalFrameImpl::ReplaceSelection(const WebString& text) {

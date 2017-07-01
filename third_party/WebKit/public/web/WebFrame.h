@@ -209,9 +209,6 @@ class BLINK_EXPORT WebFrame {
   virtual WebAssociatedURLLoader* CreateAssociatedURLLoader(
       const WebAssociatedURLLoaderOptions&) = 0;
 
-  // Returns the number of registered unload listeners.
-  virtual unsigned UnloadListenerCount() const = 0;
-
   // Will return true if between didStartLoading and didStopLoading
   // notifications.
   virtual bool IsLoading() const;
