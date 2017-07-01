@@ -26,6 +26,10 @@
 
 #include "core/frame/LocalDOMWindow.h"
 
+#include <memory>
+#include <string>
+#include <utility>
+
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/SourceLocation.h"
 #include "bindings/core/v8/WindowProxy.h"
@@ -90,8 +94,6 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebScreenInfo.h"
 #include "public/platform/site_engagement.mojom-blink.h"
-
-#include <memory>
 
 namespace blink {
 
@@ -263,11 +265,6 @@ static bool AllowsBeforeUnloadListeners(LocalDOMWindow* window) {
   if (!frame)
     return false;
   return frame->IsMainFrame();
-}
-
-unsigned LocalDOMWindow::PendingUnloadEventListeners() const {
-  return WindowsWithUnloadEventListeners().count(
-      const_cast<LocalDOMWindow*>(this));
 }
 
 LocalDOMWindow::LocalDOMWindow(LocalFrame& frame)

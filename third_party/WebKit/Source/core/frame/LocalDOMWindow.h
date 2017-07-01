@@ -265,8 +265,6 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   void FrameDestroyed();
   void Reset();
 
-  unsigned PendingUnloadEventListeners() const;
-
   Element* frameElement() const;
 
   DOMWindow* open(const String& url_string,

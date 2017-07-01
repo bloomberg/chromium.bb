@@ -45,7 +45,6 @@ class CORE_EXPORT WebRemoteFrameImpl final
   bool IsViewSourceModeEnabled() const override;
   WebAssociatedURLLoader* CreateAssociatedURLLoader(
       const WebAssociatedURLLoaderOptions&) override;
-  unsigned UnloadListenerCount() const override;
 
   // WebRemoteFrame methods:
   WebLocalFrame* CreateLocalChild(WebTreeScopeType,

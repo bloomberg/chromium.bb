@@ -151,11 +151,6 @@ WebAssociatedURLLoader* WebRemoteFrameImpl::CreateAssociatedURLLoader(
   return nullptr;
 }
 
-unsigned WebRemoteFrameImpl::UnloadListenerCount() const {
-  NOTREACHED();
-  return 0;
-}
-
 WebLocalFrame* WebRemoteFrameImpl::CreateLocalChild(
     WebTreeScopeType scope,
     const WebString& name,
