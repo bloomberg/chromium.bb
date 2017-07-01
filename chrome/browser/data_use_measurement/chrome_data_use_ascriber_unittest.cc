@@ -124,9 +124,9 @@ TEST_F(ChromeDataUseAscriberTest, RenderFrameShownAndHidden) {
   ascriber()->ReadyToCommitMainFrameNavigation(
       content::GlobalRequestID(kRenderProcessId, 0), kRenderProcessId,
       kRenderFrameId);
-  ascriber()->DidFinishMainFrameNavigation(kRenderProcessId, kRenderFrameId,
-                                           GURL("http://test.com"), false,
-                                           kPageTransition);
+  ascriber()->DidFinishMainFrameNavigation(
+      kRenderProcessId, kRenderFrameId, GURL("http://test.com"), false,
+      kPageTransition, base::TimeTicks::Now());
   ascriber()->WasShownOrHidden(kRenderProcessId, kRenderFrameId, true);
 
   EXPECT_TRUE(ascriber()->GetDataUseRecorder(*request)->is_visible());
@@ -147,9 +147,9 @@ TEST_F(ChromeDataUseAscriberTest, RenderFrameHiddenAndShown) {
   ascriber()->ReadyToCommitMainFrameNavigation(
       content::GlobalRequestID(kRenderProcessId, 0), kRenderProcessId,
       kRenderFrameId);
-  ascriber()->DidFinishMainFrameNavigation(kRenderProcessId, kRenderFrameId,
-                                           GURL("http://test.com"), false,
-                                           kPageTransition);
+  ascriber()->DidFinishMainFrameNavigation(
+      kRenderProcessId, kRenderFrameId, GURL("http://test.com"), false,
+      kPageTransition, base::TimeTicks::Now());
   ascriber()->WasShownOrHidden(kRenderProcessId, kRenderFrameId, false);
 
   EXPECT_FALSE(ascriber()->GetDataUseRecorder(*request)->is_visible());
@@ -170,9 +170,9 @@ TEST_F(ChromeDataUseAscriberTest, RenderFrameHostChanged) {
   ascriber()->ReadyToCommitMainFrameNavigation(
       content::GlobalRequestID(kRenderProcessId, 0), kRenderProcessId,
       kRenderFrameId);
-  ascriber()->DidFinishMainFrameNavigation(kRenderProcessId, kRenderFrameId,
-                                           GURL("http://test.com"), false,
-                                           kPageTransition);
+  ascriber()->DidFinishMainFrameNavigation(
+      kRenderProcessId, kRenderFrameId, GURL("http://test.com"), false,
+      kPageTransition, base::TimeTicks::Now());
   ascriber()->WasShownOrHidden(kRenderProcessId, kRenderFrameId, true);
   EXPECT_TRUE(ascriber()->GetDataUseRecorder(*request)->is_visible());
 
@@ -208,9 +208,9 @@ TEST_F(ChromeDataUseAscriberTest, MainFrameNavigation) {
   ascriber()->ReadyToCommitMainFrameNavigation(
       content::GlobalRequestID(kRenderProcessId, 0), kRenderProcessId,
       kRenderFrameId);
-  ascriber()->DidFinishMainFrameNavigation(kRenderProcessId, kRenderFrameId,
-                                           GURL("http://mobile.test.com"),
-                                           false, kPageTransition);
+  ascriber()->DidFinishMainFrameNavigation(
+      kRenderProcessId, kRenderFrameId, GURL("http://mobile.test.com"), false,
+      kPageTransition, base::TimeTicks::Now());
 
   // Navigation commit should merge the two data use recorder entries.
   EXPECT_EQ(1u, recorders().size());
@@ -248,9 +248,9 @@ TEST_F(ChromeDataUseAscriberTest, SubResourceRequestsAttributed) {
   ascriber()->ReadyToCommitMainFrameNavigation(
       content::GlobalRequestID(kRenderProcessId, 0), kRenderProcessId,
       kRenderFrameId);
-  ascriber()->DidFinishMainFrameNavigation(kRenderProcessId, kRenderFrameId,
-                                           GURL("http://mobile.test.com"),
-                                           false, kPageTransition);
+  ascriber()->DidFinishMainFrameNavigation(
+      kRenderProcessId, kRenderFrameId, GURL("http://mobile.test.com"), false,
+      kPageTransition, base::TimeTicks::Now());
 
   std::unique_ptr<net::URLRequest> page_load_b_main_frame_request =
       CreateNewRequest("http://test_2.com", true, kRequestId + 1,
@@ -269,9 +269,9 @@ TEST_F(ChromeDataUseAscriberTest, SubResourceRequestsAttributed) {
   ascriber()->ReadyToCommitMainFrameNavigation(
       content::GlobalRequestID(kRenderProcessId, 0), kRenderProcessId,
       kRenderFrameId);
-  ascriber()->DidFinishMainFrameNavigation(kRenderProcessId, kRenderFrameId,
-                                           GURL("http://mobile.test_2.com"),
-                                           false, kPageTransition);
+  ascriber()->DidFinishMainFrameNavigation(
+      kRenderProcessId, kRenderFrameId, GURL("http://mobile.test_2.com"), false,
+      kPageTransition, base::TimeTicks::Now());
 
   // Delete the first main frame request.
   ascriber()->OnUrlRequestDestroyed(page_load_a_main_frame_request.get());
@@ -295,6 +295,90 @@ TEST_F(ChromeDataUseAscriberTest, SubResourceRequestsAttributed) {
 
   ascriber()->OnUrlRequestDestroyed(page_load_b_sub_request.get());
   ascriber()->OnUrlRequestDestroyed(page_load_b_main_frame_request.get());
+  ascriber()->RenderFrameDeleted(kRenderProcessId, kRenderFrameId, -1, -1);
+  EXPECT_EQ(0u, recorders().size());
+}
+
+// Verifies that navigation finish acts as the event that separates pageloads.
+// subresource requests started before the navigation commit has finished are
+// ascribed to the previous page load, and requests started after are ascribed
+// to the next page load.
+TEST_F(ChromeDataUseAscriberTest, SubResourceRequestsAfterNavigationFinish) {
+  std::unique_ptr<net::URLRequest> page_load_a_mainresource = CreateNewRequest(
+      "http://test.com", true, kRequestId, kRenderProcessId, kRenderFrameId);
+  std::unique_ptr<net::URLRequest> page_load_a_subresource =
+      CreateNewRequest("http://test.com/subresource", false, kRequestId + 1,
+                       kRenderProcessId, kRenderFrameId);
+
+  // First page load 'a'.
+  ascriber()->RenderFrameCreated(kRenderProcessId, kRenderFrameId, -1, -1);
+  ascriber()->OnBeforeUrlRequest(page_load_a_mainresource.get());
+  ascriber()->DidStartMainFrameNavigation(GURL("http://test.com"),
+                                          kRenderProcessId, kRenderFrameId,
+                                          kNavigationHandle);
+  ascriber()->ReadyToCommitMainFrameNavigation(
+      content::GlobalRequestID(kRenderProcessId, 0), kRenderProcessId,
+      kRenderFrameId);
+  ascriber()->DidFinishMainFrameNavigation(
+      kRenderProcessId, kRenderFrameId, GURL("http://mobile.test.com"), false,
+      kPageTransition, base::TimeTicks::Now());
+
+  ascriber()->OnBeforeUrlRequest(page_load_a_subresource.get());
+  ascriber()->OnUrlRequestDestroyed(page_load_a_mainresource.get());
+
+  EXPECT_EQ(1u, recorders().size());
+  auto& page_load_a_recorder = recorders().front();
+  EXPECT_EQ(RenderFrameHostID(kRenderProcessId, kRenderFrameId),
+            page_load_a_recorder.main_frame_id());
+  EXPECT_EQ(content::GlobalRequestID(kRenderProcessId, 0),
+            page_load_a_recorder.main_frame_request_id());
+  EXPECT_EQ(GURL("http://mobile.test.com"),
+            page_load_a_recorder.data_use().url());
+  EXPECT_EQ(DataUse::TrafficType::USER_TRAFFIC,
+            page_load_a_recorder.data_use().traffic_type());
+
+  std::unique_ptr<net::URLRequest> page_load_b_mainresource =
+      CreateNewRequest("http://test_2.com", true, kRequestId + 2,
+                       kRenderProcessId, kRenderFrameId);
+  std::unique_ptr<net::URLRequest> page_load_b_subresource =
+      CreateNewRequest("http://test_2.com/subresource", false, kRequestId + 3,
+                       kRenderProcessId, kRenderFrameId);
+
+  // Second page load 'b' on the same main render frame.
+  ascriber()->OnBeforeUrlRequest(page_load_b_mainresource.get());
+  ascriber()->DidStartMainFrameNavigation(GURL("http://test_2.com"),
+                                          kRenderProcessId, kRenderFrameId,
+                                          kNavigationHandle);
+  ascriber()->ReadyToCommitMainFrameNavigation(
+      content::GlobalRequestID(kRenderProcessId, 0), kRenderProcessId,
+      kRenderFrameId);
+  ascriber()->DidFinishMainFrameNavigation(
+      kRenderProcessId, kRenderFrameId, GURL("http://mobile.test_2.com"), false,
+      kPageTransition, base::TimeTicks::Now());
+
+  ascriber()->OnBeforeUrlRequest(page_load_b_subresource.get());
+  ascriber()->OnNetworkBytesReceived(page_load_b_subresource.get(), 200);
+  ascriber()->OnNetworkBytesReceived(page_load_a_subresource.get(), 100);
+
+  // Previous page recorder still exists.
+  EXPECT_EQ(2u, recorders().size());
+  auto& page_load_b_recorder = recorders().back();
+  EXPECT_EQ(RenderFrameHostID(kRenderProcessId, kRenderFrameId),
+            page_load_b_recorder.main_frame_id());
+  EXPECT_EQ(content::GlobalRequestID(kRenderProcessId, 0),
+            page_load_b_recorder.main_frame_request_id());
+  EXPECT_EQ(GURL("http://mobile.test_2.com"),
+            page_load_b_recorder.data_use().url());
+  EXPECT_EQ(DataUse::TrafficType::USER_TRAFFIC,
+            page_load_b_recorder.data_use().traffic_type());
+
+  // Verify the data usage.
+  EXPECT_EQ(100, page_load_a_recorder.data_use().total_bytes_received());
+  EXPECT_EQ(200, page_load_b_recorder.data_use().total_bytes_received());
+
+  ascriber()->OnUrlRequestDestroyed(page_load_a_subresource.get());
+  ascriber()->OnUrlRequestDestroyed(page_load_b_subresource.get());
+  ascriber()->OnUrlRequestDestroyed(page_load_b_mainresource.get());
   ascriber()->RenderFrameDeleted(kRenderProcessId, kRenderFrameId, -1, -1);
   EXPECT_EQ(0u, recorders().size());
 }
@@ -345,18 +429,16 @@ TEST_F(ChromeDataUseAscriberTest, PageLoadObserverNotified) {
       kRenderFrameId);
 
   EXPECT_EQ(2u, recorders().size());
-  DataUse* data_use = &recorders().front().data_use();
+  DataUse* data_use = &recorders().back().data_use();
 
-  EXPECT_CALL(mock_observer,
-              OnPageResourceLoad(testing::_, &recorders().back().data_use()))
-      .Times(1);
+  EXPECT_CALL(mock_observer, OnPageResourceLoad(testing::_, data_use)).Times(1);
   ascriber()->OnUrlRequestCompleted(*request, false);
 
   EXPECT_CALL(mock_observer, OnPageLoadCommit(data_use)).Times(1);
   EXPECT_CALL(mock_observer, OnPageLoadComplete(testing::_)).Times(1);
-  ascriber()->DidFinishMainFrameNavigation(kRenderProcessId, kRenderFrameId,
-                                           GURL("http://mobile.test.com"),
-                                           false, kPageTransition);
+  ascriber()->DidFinishMainFrameNavigation(
+      kRenderProcessId, kRenderFrameId, GURL("http://mobile.test.com"), false,
+      kPageTransition, base::TimeTicks::Now());
 
   EXPECT_EQ(1u, recorders().size());
   auto& recorder_entry = recorders().front();

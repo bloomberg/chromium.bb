@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "base/supports_user_data.h"
+#include "base/time/time.h"
 #include "components/data_use_measurement/core/data_use.h"
 #include "net/base/net_export.h"
 
@@ -29,10 +30,16 @@ class DataUseRecorder {
  public:
   // Stores network data used by a URLRequest.
   struct URLRequestDataUse {
-    URLRequestDataUse() : bytes_received(0), bytes_sent(0) {}
+    URLRequestDataUse()
+        : bytes_received(0),
+          bytes_sent(0),
+          started_time(base::TimeTicks::Now()) {}
 
     int64_t bytes_received;
     int64_t bytes_sent;
+
+    // Time the request started and associated with the DataUseRecorder.
+    base::TimeTicks started_time;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(URLRequestDataUse);
@@ -77,6 +84,8 @@ class DataUseRecorder {
   // updates the data use for the recorders.
   void MovePendingURLRequestTo(DataUseRecorder* other,
                                net::URLRequest* request);
+
+  base::TimeTicks GetPendingURLRequestStartTime(net::URLRequest* request);
 
   // Clears the list of pending URLRequests that ascribe data use to this
   // recorder.

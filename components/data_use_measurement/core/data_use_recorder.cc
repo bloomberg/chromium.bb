@@ -56,6 +56,12 @@ void DataUseRecorder::MovePendingURLRequestTo(DataUseRecorder* other,
   pending_url_requests_.erase(request_it);
 }
 
+base::TimeTicks DataUseRecorder::GetPendingURLRequestStartTime(
+    net::URLRequest* request) {
+  auto request_it = pending_url_requests_.find(request);
+  return request_it->second.started_time;
+}
+
 void DataUseRecorder::RemoveAllPendingURLRequests() {
   pending_url_requests_.clear();
 }
