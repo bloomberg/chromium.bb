@@ -889,6 +889,7 @@ int drmHandleEvent(int fd, drmEventContextPtr evctx)
 	int len, i;
 	struct drm_event *e;
 	struct drm_event_vblank *vblank;
+	struct drm_event_crtc_sequence *seq;
 	void *user_data;
 
 	/* The DRM read semantics guarantees that we always get only
@@ -932,6 +933,14 @@ int drmHandleEvent(int fd, drmEventContextPtr evctx)
 							 vblank->tv_sec,
 							 vblank->tv_usec,
 							 user_data);
+			break;
+		case DRM_EVENT_CRTC_SEQUENCE:
+			seq = (struct drm_event_crtc_sequence *) e;
+			if (evctx->version >= 4 && evctx->sequence_handler)
+				evctx->sequence_handler(fd,
+							seq->sequence,
+							seq->time_ns,
+							seq->user_data);
 			break;
 		default:
 			break;

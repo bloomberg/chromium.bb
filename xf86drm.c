@@ -1695,6 +1695,43 @@ int drmUpdateDrawableInfo(int fd, drm_drawable_t handle,
     return 0;
 }
 
+int drmCrtcGetSequence(int fd, uint32_t crtcId, uint64_t *sequence, uint64_t *ns)
+{
+    struct drm_crtc_get_sequence get_seq;
+    int ret;
+
+    memclear(get_seq);
+    get_seq.crtc_id = crtcId;
+    ret = drmIoctl(fd, DRM_IOCTL_CRTC_GET_SEQUENCE, &get_seq);
+    if (ret)
+        return ret;
+
+    if (sequence)
+        *sequence = get_seq.sequence;
+    if (ns)
+        *ns = get_seq.sequence_ns;
+    return 0;
+}
+
+int drmCrtcQueueSequence(int fd, uint32_t crtcId, uint32_t flags, uint64_t sequence,
+                         uint64_t *sequence_queued, uint64_t user_data)
+{
+    struct drm_crtc_queue_sequence queue_seq;
+    int ret;
+
+    memclear(queue_seq);
+    queue_seq.crtc_id = crtcId;
+    queue_seq.flags = flags;
+    queue_seq.sequence = sequence;
+    queue_seq.user_data = user_data;
+
+    ret = drmIoctl(fd, DRM_IOCTL_CRTC_QUEUE_SEQUENCE, &queue_seq);
+    if (ret == 0 && sequence_queued)
+        *sequence_queued = queue_seq.sequence;
+
+    return ret;
+}
+
 /**
  * Acquire the AGP device.
  *
