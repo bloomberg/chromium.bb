@@ -367,12 +367,11 @@ class AwContents : public FindHelper::Listener,
   bool CanShowInterstitial() override;
   int GetErrorUiType() override;
 
-  void CallProceedOnInterstitialForTesting(
+  void EvaluateJavaScriptOnInterstitialForTesting(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
-  void CallDontProceedOnInterstitialForTesting(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& script,
+      const base::android::JavaParamRef<jobject>& callback);
 
   // AwRenderProcessGoneDelegate overrides
   void OnRenderProcessGone(int child_process_id) override;

@@ -43,6 +43,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ptr_util.h"
@@ -133,6 +134,16 @@ class AwContentsUserData : public base::SupportsUserData::Data {
 };
 
 base::subtle::Atomic32 g_instance_count = 0;
+
+void JavaScriptResultCallbackForTesting(
+    const ScopedJavaGlobalRef<jobject>& callback,
+    const base::Value* result) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  std::string json;
+  base::JSONWriter::Write(*result, &json);
+  ScopedJavaLocalRef<jstring> j_json = ConvertUTF8ToJavaString(env, json);
+  Java_AwContents_onEvaluateJavaScriptResultForTesting(env, j_json, callback);
+}
 
 }  // namespace
 
@@ -1435,18 +1446,31 @@ int AwContents::GetErrorUiType() {
   return Java_AwContents_getErrorUiType(env, obj);
 }
 
-void AwContents::CallProceedOnInterstitialForTesting(
+void AwContents::EvaluateJavaScriptOnInterstitialForTesting(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj) {
-  DCHECK(web_contents_->GetInterstitialPage());
-  web_contents_->GetInterstitialPage()->Proceed();
-}
+    const base::android::JavaParamRef<jobject>& obj,
+    const base::android::JavaParamRef<jstring>& script,
+    const base::android::JavaParamRef<jobject>& callback) {
+  content::InterstitialPage* interstitial =
+      web_contents_->GetInterstitialPage();
+  DCHECK(interstitial);
 
-void AwContents::CallDontProceedOnInterstitialForTesting(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj) {
-  DCHECK(web_contents_->GetInterstitialPage());
-  web_contents_->GetInterstitialPage()->DontProceed();
+  if (!callback) {
+    // No callback requested.
+    interstitial->GetMainFrame()->ExecuteJavaScriptForTests(
+        ConvertJavaStringToUTF16(env, script));
+    return;
+  }
+
+  // Secure the Java callback in a scoped object and give ownership of it to the
+  // base::Callback.
+  ScopedJavaGlobalRef<jobject> j_callback;
+  j_callback.Reset(env, callback);
+  RenderFrameHost::JavaScriptResultCallback js_callback =
+      base::Bind(&JavaScriptResultCallbackForTesting, j_callback);
+
+  interstitial->GetMainFrame()->ExecuteJavaScriptForTests(
+      ConvertJavaStringToUTF16(env, script), js_callback);
 }
 
 void AwContents::OnRenderProcessGone(int child_process_id) {
