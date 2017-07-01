@@ -301,8 +301,10 @@ void EXPORT_CALL lou_setLogLevel(logLevels level);
 /**
  * Parse, analyze and index tables.
  *
- * This function must be called prior to lou_findTable(). An error
- * message is given when a table contains invalid or duplicate
+ * This function must be called prior to lou_findTable() and
+ * lou_listTables(). Table names must be provided as a NULL-terminated
+ * array of strings. Each table should resolve to exactly one file. An
+ * error message is given when a table contains invalid or duplicate
  * metadata fields.
  */
 LIBLOUIS_API
@@ -311,11 +313,38 @@ void EXPORT_CALL lou_indexTables(const char **tables);
 /**
  * Find the best match for a query.
  *
- * Returns a string with the table name. Returns NULL when no match
- * can be found. An error message is given when the query is invalid.
+ * Returns the name of the table, or NULL when no match can be
+ * found. If lou_indexTables() has not been previously called, the
+ * table search path specified with LOUIS_TABLEPATH will be indexed
+ * first. An error message is given when the query is invalid. Freeing
+ * the memory of the returned string is the responsibility of the
+ * caller.
  */
 LIBLOUIS_API
 char *EXPORT_CALL lou_findTable(const char *query);
+
+/**
+ * Read metadata from a file.
+ *
+ * Returns the value of the metadata field specified by `key' in
+ * `table', or NULL when the field does not exist. Freeing the memory
+ * of the returned string is the responsibility of the caller.
+ */
+LIBLOUIS_API
+const char * EXPORT_CALL lou_getTableInfo(const char *table, const char *key);
+
+/**
+ * List available tables.
+ *
+ * Returns the names of available tables as a NULL-terminated array of
+ * strings. Only tables that are discoverable, i.e. the have active
+ * metadata, are listed. If lou_indexTables() has not been previously
+ * called, the table search path specified with LOUIS_TABLEPATH will
+ * be indexed first. Freeing the memory of the returned array and
+ * strings is the responsibility of the caller.
+ */
+LIBLOUIS_API
+const char **EXPORT_CALL lou_listTables();
 
 /* ====================== END OF BETA API ====================== */
 

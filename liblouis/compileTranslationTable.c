@@ -39,7 +39,7 @@ License along with liblouis. If not, see <http://www.gnu.org/licenses/>.
 #include <sys/stat.h>
 
 #include "internal.h"
-#include "findTable.h"
+#include "metadata.h"
 #include "config.h"
 
 #define QUOTESUB 28		/*Stand-in for double quotes in strings */

@@ -40,7 +40,8 @@ bin_PROGRAMS =					\
 	lou_debug				\
 	lou_translate				\
 	lou_trace				\
-	lou_compare
+	lou_compare				\
+	lou_tableinfo
 
 # install lou_checkyaml only if libyaml is found
 if WITH_YAML
@@ -57,3 +58,4 @@ lou_translate_SOURCES =	lou_translate.c
 lou_trace_SOURCES = lou_trace.c
 lou_compare_SOURCES = lou_compare.c
 lou_checkyaml_SOURCES =	lou_checkyaml.c
+lou_tableinfo_SOURCES =	lou_tableinfo.c

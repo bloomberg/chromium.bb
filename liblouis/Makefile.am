@@ -35,8 +35,8 @@ liblouis_la_SOURCES =				\
 	lou_translateString.c			\
 	lou_backTranslateString.c		\
 	commonTranslationFunctions.c		\
-	findTable.h 				\
-	findTable.c 				\
+	metadata.h 				\
+	metadata.c 				\
 	pattern.c				\
 	logging.c				\
 	wrappers.c				\

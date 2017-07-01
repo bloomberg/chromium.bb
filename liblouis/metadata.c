@@ -33,7 +33,7 @@ License along with liblouis. If not, see <http://www.gnu.org/licenses/>.
 #endif
 #include <sys/stat.h>
 #include "internal.h"
-#include "findTable.h"
+#include "metadata.h"
 #include "config.h"
 
 /* =============================== LIST =================================== */
@@ -50,8 +50,8 @@ typedef struct List
  * if `cmp' is not NULL and if `list' is also sorted. New elements replace
  * existing ones if they are equal according to `cmp'. If `cmp' is NULL,
  * elements are simply prepended to the list. The function `dup' is used to
- * duplicate elements before they are added to the list. If `free' function is
- * used to free elements when they are removed from the list. The returned
+ * duplicate elements before they are added to the list. The `free' function
+ * is used to free elements when they are removed from the list. The returned
  * list must be freed by the caller.
  */
 static List *
@@ -328,6 +328,15 @@ isIdentChar(char c)
 }
 
 /**
+ * Return true if a character matches [\s\t]
+ */
+static int
+isSpace(char c)
+{
+  return c == ' ' || c == '\t';
+}
+
+/**
  * Parse a table query into a list of features. Features defined first get a
  * higher importance.
  */
@@ -344,7 +353,7 @@ parseQuery(const char * query)
   while (1)
     {
       c = &query[pos++];
-      if ((*c == ' ') || (*c == '\t') || (*c == '\n') | (*c == '\0'))
+      if (isSpace(*c) || (*c == '\n') | (*c == '\0'))
 	{
 	  if (key)
 	    {
@@ -433,7 +442,7 @@ widestrToStr(const widechar * str, size_t n)
  * Extract a list of features from a table.
  */
 static List *
-analyzeTable(const char * table)
+analyzeTable(const char * table, int activeOnly)
 {
   static char fileName[MAXSTRING];
   char ** resolved;
@@ -467,8 +476,9 @@ analyzeTable(const char * table)
 	  if (info.linelen == 0);
 	  else if (info.line[0] == '#')
 	    {
-	      if (info.linelen >= 2 && info.line[1] == '+')
+	      if (info.linelen >= 2 && (info.line[1] == '+' || (!activeOnly && info.line[1] == '-')))
 		{
+		  int active = (info.line[1] == '+');
 		  widechar * key = NULL;
 		  widechar * val = NULL;
 		  size_t keySize = 0;
@@ -487,15 +497,16 @@ analyzeTable(const char * table)
 		      if (info.linepos < info.linelen && info.line[info.linepos] == ':')
 			{
 			  info.linepos++;
-			  while (info.linepos < info.linelen
-				 && (info.line[info.linepos] == ' ' || info.line[info.linepos] == '\t'))
+			  while (info.linepos < info.linelen && isSpace((char) info.line[info.linepos]))
 			    info.linepos++;
-			  if (info.linepos < info.linelen && isIdentChar((char) info.line[info.linepos]))
+			  if (info.linepos < info.linelen
+			      && (!active || isIdentChar((char) info.line[info.linepos])))
 			    {
 			      val = &info.line[info.linepos];
 			      valSize = 1;
 			      info.linepos++;
-			      while (info.linepos < info.linelen && isIdentChar((char) info.line[info.linepos]))
+			      while (info.linepos < info.linelen
+				     && (!active || isIdentChar((char) info.line[info.linepos])))
 				{
 				  valSize++;
 				  info.linepos++;
@@ -508,6 +519,27 @@ analyzeTable(const char * table)
 			{
 			  char * k = widestrToStr(key, keySize);
 			  char * v = val ? widestrToStr(val, valSize) : NULL;
+			  if (!active) {
+			    // normalize space
+			    int i = 0;
+			    int j = 0;
+			    int space = 1;
+			    while (v[i]) {
+			      if (isSpace(v[i])) {
+				if (!space) {
+				  v[j++] = ' ';
+				  space = 1;
+				}
+			      } else {
+				v[j++] = v[i];
+				space = 0;
+			      }
+			      i++;
+			    }
+			    if (j > 0 && v[j-1] == ' ')
+			      j--;
+			    v[j] = '\0';
+			  }
 			  Feature f = feature_new(k, v);
 			  _lou_logMessage(LOG_DEBUG, "Table has feature '%s:%s'", f.key, f.val);
 			  features = list_conj(features, memcpy(malloc(sizeof(f)), &f, sizeof(f)),
@@ -553,7 +585,7 @@ lou_indexTables(const char ** tables)
   for (table = tables; *table; table++)
     {
       _lou_logMessage(LOG_DEBUG, "Analyzing table %s", *table);
-      List * features = analyzeTable(*table);
+      List * features = analyzeTable(*table, 1);
       if (features)
 	{
 	  TableMeta m = { strdup(*table), features };
@@ -652,23 +684,27 @@ listFiles(char * searchPath)
   return list;
 }
 
+static void
+indexTablePath()
+{
+  char * searchPath;
+  List * tables;
+  const char ** tablesArray;
+  _lou_logMessage(LOG_WARN, "Tables have not been indexed yet. Indexing LOUIS_TABLEPATH.");
+  searchPath = _lou_getTablePath();
+  tables = listFiles(searchPath);
+  tablesArray = (const char **)list_toArray(tables, NULL);
+  lou_indexTables(tablesArray);
+  free(searchPath);
+  list_free(tables);
+  free((char **) tablesArray);
+}
+
 char * EXPORT_CALL
 lou_findTable(const char * query)
 {
   if (!tableIndex)
-    {
-      char * searchPath;
-      List * tables;
-      const char ** tablesArray;
-      _lou_logMessage(LOG_WARN, "Tables have not been indexed yet. Indexing LOUIS_TABLEPATH.");
-      searchPath = _lou_getTablePath();
-      tables = listFiles(searchPath);
-      tablesArray = (const char **)list_toArray(tables, NULL);
-      lou_indexTables(tablesArray);
-      free(searchPath);
-      list_free(tables);
-      free((char **) tablesArray);
-    }
+    indexTablePath();
   List * queryFeatures = parseQuery(query);
   int bestQuotient = 0;
   char * bestMatch = NULL;
@@ -693,4 +729,41 @@ lou_findTable(const char * query)
       _lou_logMessage(LOG_INFO, "No table could be found for query '%s'", query);
       return NULL;
     }
+}
+
+const char * EXPORT_CALL
+lou_getTableInfo(const char *table, const char *key)
+{
+  const char *value = NULL;
+  List * features = analyzeTable(table, 0);
+  List * l;
+  for (l = features; l; l = l->tail)
+    {
+      Feature * f = l->head;
+      if (strcmp(f->key, key) == 0) {
+	value = strdup(f->val);
+	list_free(features);
+	break;
+      }
+    }
+  return value;
+}
+
+const char ** EXPORT_CALL
+lou_listTables()
+{
+  const char ** tablesArray;
+  List * tables = NULL;
+  List * l;
+  if (!tableIndex)
+    indexTablePath();
+  for (l = tableIndex; l; l = l->tail)
+    {
+      TableMeta * table = l->head;
+      tables = list_conj(tables, strdup(table->name),
+			 (int (*)(void *, void *))strcmp, NULL, NULL);
+    }
+  tablesArray = (const char **)list_toArray(tables, NULL);
+  list_free(tables);
+  return tablesArray;
 }

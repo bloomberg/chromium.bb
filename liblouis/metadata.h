@@ -24,8 +24,8 @@ License along with liblouis. If not, see <http://www.gnu.org/licenses/>.
  * @brief Find translation tables
  */
 
-#ifndef __FINDTABLE_H_
-#define __FINDTABLE_H_
+#ifndef __METADATA_H_
+#define __METADATA_H_
 
 #include <stdio.h>
 
@@ -56,4 +56,4 @@ int EXPORT_CALL _lou_getALine(FileInfo *info);
 }
 #endif /* __cplusplus */
 
-#endif /* __FINDTABLE_H_ */
+#endif /* __METADATA_H_ */
