@@ -17,6 +17,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "content/browser/isolated_origin_util.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/public/browser/browser_context.h"
@@ -1092,12 +1093,12 @@ bool ChildProcessSecurityPolicyImpl::CanSendMidiSysExMessage(int child_id) {
 
 void ChildProcessSecurityPolicyImpl::AddIsolatedOrigin(
     const url::Origin& origin) {
-  CHECK(!origin.unique())
-      << "Cannot register a unique origin as an isolated origin.";
-  CHECK(!IsIsolatedOrigin(origin))
-      << "Duplicate isolated origin: " << origin.Serialize();
+  CHECK(IsolatedOriginUtil::IsValidIsolatedOrigin(origin));
 
   base::AutoLock lock(lock_);
+  CHECK(!isolated_origins_.count(origin))
+      << "Duplicate isolated origin: " << origin.Serialize();
+
   isolated_origins_.insert(origin);
 }
 
@@ -1114,8 +1115,38 @@ void ChildProcessSecurityPolicyImpl::AddIsolatedOriginsFromCommandLine(
 
 bool ChildProcessSecurityPolicyImpl::IsIsolatedOrigin(
     const url::Origin& origin) {
+  url::Origin unused_result;
+  return GetMatchingIsolatedOrigin(origin, &unused_result);
+}
+
+bool ChildProcessSecurityPolicyImpl::GetMatchingIsolatedOrigin(
+    const url::Origin& origin,
+    url::Origin* result) {
+  *result = url::Origin();
   base::AutoLock lock(lock_);
-  return isolated_origins_.find(origin) != isolated_origins_.end();
+
+  // If multiple isolated origins are registered with a common domain suffix,
+  // return the most specific one.  For example, if foo.isolated.com and
+  // isolated.com are both isolated origins, bar.foo.isolated.com should return
+  // foo.isolated.com.
+  bool found = false;
+  for (auto isolated_origin : isolated_origins_) {
+    if (IsolatedOriginUtil::DoesOriginMatchIsolatedOrigin(origin,
+                                                          isolated_origin)) {
+      if (!found || result->host().length() < isolated_origin.host().length()) {
+        *result = isolated_origin;
+        found = true;
+      }
+    }
+  }
+
+  return found;
+}
+
+void ChildProcessSecurityPolicyImpl::RemoveIsolatedOriginForTesting(
+    const url::Origin& origin) {
+  base::AutoLock lock(lock_);
+  isolated_origins_.erase(origin);
 }
 
 }  // namespace content

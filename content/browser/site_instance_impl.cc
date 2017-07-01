@@ -319,21 +319,36 @@ bool SiteInstance::IsSameWebSite(BrowserContext* browser_context,
   if (dest_url == blank_page)
     return true;
 
-  // If either URL has an isolated origin, compare origins rather than sites.
   url::Origin src_origin(src_url);
   url::Origin dest_origin(dest_url);
-  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  if (policy->IsIsolatedOrigin(src_origin) ||
-      policy->IsIsolatedOrigin(dest_origin))
-    return src_origin == dest_origin;
 
   // If the schemes differ, they aren't part of the same site.
   if (src_origin.scheme() != dest_origin.scheme())
     return false;
 
-  return net::registry_controlled_domains::SameDomainOrHost(
-      src_origin, dest_origin,
-      net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+  if (!net::registry_controlled_domains::SameDomainOrHost(
+          src_origin, dest_origin,
+          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
+    return false;
+  }
+
+  // If the sites are the same, check isolated origins.  If either URL matches
+  // an isolated origin, compare origins rather than sites.
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  url::Origin src_isolated_origin;
+  url::Origin dest_isolated_origin;
+  bool src_origin_is_isolated =
+      policy->GetMatchingIsolatedOrigin(src_origin, &src_isolated_origin);
+  bool dest_origin_is_isolated =
+      policy->GetMatchingIsolatedOrigin(dest_origin, &dest_isolated_origin);
+  if (src_origin_is_isolated || dest_origin_is_isolated) {
+    // Compare most specific matching origins to ensure that a subdomain of an
+    // isolated origin (e.g., https://subdomain.isolated.foo.com) also matches
+    // the isolated origin's site URL (e.g., https://isolated.foo.com).
+    return src_isolated_origin == dest_isolated_origin;
+  }
+
+  return true;
 }
 
 // static
@@ -346,10 +361,14 @@ GURL SiteInstance::GetSiteForURL(BrowserContext* browser_context,
   GURL url = SiteInstanceImpl::GetEffectiveURL(browser_context, real_url);
   url::Origin origin(url);
 
-  // Isolated origins should use the full origin as their site URL.
+  // Isolated origins should use the full origin as their site URL. A subdomain
+  // of an isolated origin should also use that isolated origin's site URL.
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  if (policy->IsIsolatedOrigin(origin))
-    return origin.GetURL();
+  url::Origin isolated_origin;
+  if (policy->GetMatchingIsolatedOrigin(url::Origin(real_url),
+                                        &isolated_origin)) {
+    return isolated_origin.GetURL();
+  }
 
   // If the url has a host, then determine the site.
   if (!origin.host().empty()) {
