@@ -9,6 +9,7 @@
 #include "services/resource_coordinator/coordination_unit/coordination_unit_impl_unittest_util.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_id.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_types.h"
+#include "services/resource_coordinator/public/interfaces/coordination_unit.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace resource_coordinator {
@@ -29,7 +30,9 @@ TEST_F(ProcessCoordinationUnitImplTest, MeasureCPUUsage) {
 
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_LE(0.0, coordination_unit_->GetCPUUsageForTesting());
+  base::Value cpu_usage_value =
+      coordination_unit_->GetProperty(mojom::PropertyType::kCPUUsage);
+  EXPECT_LE(0.0, cpu_usage_value.GetDouble());
 }
 
 }  // namespace resource_coordinator

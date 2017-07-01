@@ -26,9 +26,6 @@ CUIDMap& g_cu_map() {
 
 }  // namespace
 
-const double CoordinationUnitImpl::kCPUUsageMinimumForTesting = 0.0;
-const double CoordinationUnitImpl::kCPUUsageUnmeasuredForTesting = -1.0;
-
 CoordinationUnitImpl::CoordinationUnitImpl(
     const CoordinationUnitID& id,
     std::unique_ptr<service_manager::ServiceContextRef> service_ref)
@@ -262,8 +259,49 @@ void CoordinationUnitImpl::UnregisterCoordinationPolicyCallback() {
   current_policy_.reset();
 }
 
-double CoordinationUnitImpl::GetCPUUsageForTesting() {
-  return kCPUUsageUnmeasuredForTesting;
+std::set<CoordinationUnitImpl*>
+CoordinationUnitImpl::GetChildCoordinationUnitsOfType(
+    CoordinationUnitType type) {
+  std::set<CoordinationUnitImpl*> coordination_units;
+
+  for (auto* child : children()) {
+    if (child->id().type == type) {
+      coordination_units.insert(child);
+    }
+
+    for (auto* coordination_unit :
+         child->GetChildCoordinationUnitsOfType(type)) {
+      coordination_units.insert(coordination_unit);
+    }
+  }
+
+  return coordination_units;
+}
+
+std::set<CoordinationUnitImpl*>
+CoordinationUnitImpl::GetParentCoordinationUnitsOfType(
+    CoordinationUnitType type) {
+  std::set<CoordinationUnitImpl*> coordination_units;
+
+  for (auto* parent : parents()) {
+    if (parent->id().type == type) {
+      coordination_units.insert(parent);
+    }
+
+    for (auto* coordination_unit :
+         parent->GetParentCoordinationUnitsOfType(type)) {
+      coordination_units.insert(coordination_unit);
+    }
+  }
+
+  return coordination_units;
+}
+
+std::set<CoordinationUnitImpl*>
+CoordinationUnitImpl::GetAssociatedCoordinationUnitsOfType(
+    CoordinationUnitType type) {
+  NOTREACHED();
+  return std::set<CoordinationUnitImpl*>();
 }
 
 base::Value CoordinationUnitImpl::GetProperty(
@@ -311,6 +349,34 @@ void CoordinationUnitImpl::AddObserver(
 void CoordinationUnitImpl::RemoveObserver(
     CoordinationUnitGraphObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+// static
+bool CoordinationUnitImpl::IsCoordinationUnitType(
+    const CoordinationUnitImpl* coordination_unit,
+    CoordinationUnitType type) {
+  return coordination_unit->id().type == type;
+}
+
+// static
+bool CoordinationUnitImpl::IsFrameCoordinationUnit(
+    const CoordinationUnitImpl* coordination_unit) {
+  return IsCoordinationUnitType(coordination_unit,
+                                CoordinationUnitType::kFrame);
+}
+
+// static
+bool CoordinationUnitImpl::IsProcessCoordinationUnit(
+    const CoordinationUnitImpl* coordination_unit) {
+  return IsCoordinationUnitType(coordination_unit,
+                                CoordinationUnitType::kProcess);
+}
+
+// static
+bool CoordinationUnitImpl::IsWebContentsCoordinationUnit(
+    const CoordinationUnitImpl* coordination_unit) {
+  return IsCoordinationUnitType(coordination_unit,
+                                CoordinationUnitType::kWebContents);
 }
 
 }  // namespace resource_coordinator
