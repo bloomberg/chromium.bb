@@ -468,4 +468,38 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, ProcessLimit) {
             new_shell->web_contents()->GetMainFrame()->GetProcess());
 }
 
+// Check that subdomains on an isolated origin (e.g., bar.isolated.foo.com)
+// also end up in the isolated origin's SiteInstance.
+IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, IsolatedOriginWithSubdomain) {
+  // Start on a page with an isolated origin with a same-site iframe.
+  GURL isolated_url(embedded_test_server()->GetURL("isolated.foo.com",
+                                                   "/page_with_iframe.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), isolated_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  FrameTreeNode* child = root->child_at(0);
+  scoped_refptr<SiteInstance> isolated_instance =
+      web_contents()->GetSiteInstance();
+
+  // Navigate iframe to the isolated origin's subdomain.
+  GURL isolated_subdomain_url(
+      embedded_test_server()->GetURL("bar.isolated.foo.com", "/title1.html"));
+  NavigateIframeToURL(web_contents(), "test_iframe", isolated_subdomain_url);
+  EXPECT_EQ(child->current_url(), isolated_subdomain_url);
+
+  EXPECT_EQ(isolated_instance, child->current_frame_host()->GetSiteInstance());
+  EXPECT_FALSE(child->current_frame_host()->IsCrossProcessSubframe());
+  EXPECT_EQ(isolated_url.GetOrigin(),
+            child->current_frame_host()->GetSiteInstance()->GetSiteURL());
+
+  // Now try navigating the main frame (renderer-initiated) to the isolated
+  // origin's subdomain.  This should not swap processes.
+  TestNavigationObserver observer(web_contents());
+  EXPECT_TRUE(
+      ExecuteScript(web_contents(),
+                    "location.href = '" + isolated_subdomain_url.spec() + "'"));
+  observer.Wait();
+  EXPECT_EQ(isolated_instance, web_contents()->GetSiteInstance());
+}
+
 }  // namespace content

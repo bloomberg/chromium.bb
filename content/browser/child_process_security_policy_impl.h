@@ -209,17 +209,21 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // scheme+host+port tuple rather than scheme and eTLD+1 will be used.
   // SiteInstances for these origins will also use the full origin as site URL.
   //
+  // Subdomains of an isolated origin are considered to be part of that
+  // origin's site.  For example, if https://isolated.foo.com is added as an
+  // isolated origin, then https://bar.isolated.foo.com will be considered part
+  // of the site for https://isolated.foo.com.
+  //
   // Note that |origin| must not be unique.  URLs that render with
   // unique origins, such as data: URLs, are not supported.  Suborigins (see
   // https://w3c.github.io/webappsec-suborigins/ -- not to be confused with
   // subdomains) and non-standard schemes are also not supported.  Sandboxed
-  // frames (e.g., <iframe sandbox>)
-  // *are* supported, since process placement decisions will be based on the
-  // URLs such frames navigate to, and not the origin of committed documents
-  // (which might be unique).  If an isolated origin opens an about:blank
-  // popup, it will stay in the isolated origin's process. Nested URLs
-  // (filesystem: and blob:) retain process isolation behavior of their inner
-  // origin.
+  // frames (e.g., <iframe sandbox>) *are* supported, since process placement
+  // decisions will be based on the URLs such frames navigate to, and not the
+  // origin of committed documents (which might be unique).  If an isolated
+  // origin opens an about:blank popup, it will stay in the isolated origin's
+  // process. Nested URLs (filesystem: and blob:) retain process isolation
+  // behavior of their inner origin.
   void AddIsolatedOrigin(const url::Origin& origin);
 
   // Register a set of isolated origins as specified on the command line with
@@ -228,8 +232,43 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // AddIsolatedOrigin for definition of an isolated origin.
   void AddIsolatedOriginsFromCommandLine(const std::string& origin_list);
 
-  // Helper to check whether an origin requires origin-wide process isolation.
+  // Check whether |origin| requires origin-wide process isolation.
+  //
+  // Subdomains of an isolated origin are considered part of that isolated
+  // origin.  Thus, if https://isolated.foo.com/ had been added as an isolated
+  // origin, this will return true for https://isolated.foo.com/,
+  // https://bar.isolated.foo.com/, or https://baz.bar.isolated.foo.com/; and
+  // it will return false for https://foo.com/ or https://unisolated.foo.com/.
+  //
+  // Note that unlike site URLs for regular web sites, isolated origins care
+  // about port.
   bool IsIsolatedOrigin(const url::Origin& origin);
+
+  // This function will check whether |origin| requires process isolation, and
+  // if so, it will return true and put the most specific matching isolated
+  // origin into |result|.
+  //
+  // If |origin| does not require process isolation, this function will return
+  // false, and |result| will be a unique origin. This means that neither
+  // |origin|, nor any origins for which |origin| is a subdomain, have been
+  // registered as isolated origins.
+  //
+  // For example, if both https://isolated.com/ and
+  // https://bar.foo.isolated.com/ are registered as isolated origins, then the
+  // values returned in |result| are:
+  //   https://isolated.com/             -->  https://isolated.com/
+  //   https://foo.isolated.com/         -->  https://isolated.com/
+  //   https://bar.foo.isolated.com/     -->  https://bar.foo.isolated.com/
+  //   https://baz.bar.foo.isolated.com/ -->  https://bar.foo.isolated.com/
+  //   https://unisolated.com/           -->  (unique origin)
+  bool GetMatchingIsolatedOrigin(const url::Origin& origin,
+                                 url::Origin* result);
+
+  // Removes a previously added isolated origin, currently only used in tests.
+  //
+  // TODO(alexmos): Exposing this more generally will require extra care, such
+  // as ensuring that there are no active SiteInstances in that origin.
+  void RemoveIsolatedOriginForTesting(const url::Origin& origin);
 
  private:
   friend class ChildProcessSecurityPolicyInProcessBrowserTest;
