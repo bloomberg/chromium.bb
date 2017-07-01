@@ -26,6 +26,7 @@
 #include "remoting/protocol/clipboard_filter.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/connection_to_client.h"
+#include "remoting/protocol/data_channel_manager.h"
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/input_event_tracker.h"
 #include "remoting/protocol/input_filter.h"
@@ -89,13 +90,16 @@ class ClientSession : public protocol::HostStub,
 
   // |event_handler| and |desktop_environment_factory| must outlive |this|.
   // All |HostExtension|s in |extensions| must outlive |this|.
-  ClientSession(EventHandler* event_handler,
-                std::unique_ptr<protocol::ConnectionToClient> connection,
-                DesktopEnvironmentFactory* desktop_environment_factory,
-                const DesktopEnvironmentOptions& desktop_environment_options,
-                const base::TimeDelta& max_duration,
-                scoped_refptr<protocol::PairingRegistry> pairing_registry,
-                const std::vector<HostExtension*>& extensions);
+  ClientSession(
+      EventHandler* event_handler,
+      std::unique_ptr<protocol::ConnectionToClient> connection,
+      DesktopEnvironmentFactory* desktop_environment_factory,
+      const DesktopEnvironmentOptions& desktop_environment_options,
+      const base::TimeDelta& max_duration,
+      scoped_refptr<protocol::PairingRegistry> pairing_registry,
+      const std::vector<HostExtension*>& extensions,
+      const std::vector<protocol::DataChannelManager::NameCallbackPair>&
+          data_channel_callbacks);
   ~ClientSession() override;
 
   // Returns the set of capabilities negotiated between client and host.
@@ -119,6 +123,9 @@ class ClientSession : public protocol::HostStub,
   void OnConnectionClosed(protocol::ErrorCode error) override;
   void OnRouteChange(const std::string& channel_name,
                      const protocol::TransportRoute& route) override;
+  void OnIncomingDataChannel(
+      const std::string& channel_name,
+      std::unique_ptr<protocol::MessagePipe> pipe) override;
 
   // ClientSessionControl interface.
   const std::string& client_jid() const override;
@@ -226,6 +233,9 @@ class ClientSession : public protocol::HostStub,
 
   // Used to manage extension functionality.
   std::unique_ptr<HostExtensionSessionManager> extension_manager_;
+
+  // Used to dispatch new data channels to factory methods.
+  protocol::DataChannelManager data_channel_manager_;
 
   // Set to true if the client was authenticated successfully.
   bool is_authenticated_ = false;
