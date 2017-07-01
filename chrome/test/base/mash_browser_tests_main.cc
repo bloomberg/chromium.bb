@@ -19,6 +19,7 @@
 #include "base/run_loop.h"
 #include "base/sys_info.h"
 #include "base/task_scheduler/task_scheduler.h"
+#include "base/test/launcher/test_launcher.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/app/mash/embedded_services.h"
@@ -201,7 +202,10 @@ bool RunMashBrowserTests(int argc, char** argv, int* exit_code) {
     return true;
   }
 
-  int default_jobs = std::max(1, base::SysInfo::NumberOfProcessors() / 2);
+  size_t parallel_jobs = base::NumParallelJobs();
+  if (parallel_jobs > 1U) {
+    parallel_jobs /= 2U;
+  }
   MashTestLauncherDelegate delegate;
   // --single_process and no service pipe token indicate we were run directly
   // from the command line. In this case we have to start up
@@ -214,6 +218,6 @@ bool RunMashBrowserTests(int argc, char** argv, int* exit_code) {
     content::ServiceManagerConnection::SetFactoryForTest(
         &service_manager_connection_factory);
   }
-  *exit_code = LaunchChromeTests(default_jobs, &delegate, argc, argv);
+  *exit_code = LaunchChromeTests(parallel_jobs, &delegate, argc, argv);
   return true;
 }

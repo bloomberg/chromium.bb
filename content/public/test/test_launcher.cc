@@ -481,7 +481,7 @@ TestLauncherDelegate::~TestLauncherDelegate() {
 }
 
 int LaunchTests(TestLauncherDelegate* launcher_delegate,
-                int default_jobs,
+                size_t parallel_jobs,
                 int argc,
                 char** argv) {
   DCHECK(!g_launcher_delegate);
@@ -546,11 +546,8 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
 
   launcher_delegate->PreSharding();
 
-  // Allow the |launcher_delegate| to modify |default_jobs|.
-  launcher_delegate->AdjustDefaultParallelJobs(&default_jobs);
-
   WrapperTestLauncherDelegate delegate(launcher_delegate);
-  base::TestLauncher launcher(&delegate, default_jobs);
+  base::TestLauncher launcher(&delegate, parallel_jobs);
   const int result = launcher.Run() ? 0 : 1;
   launcher_delegate->OnDoneRunningTests();
   return result;

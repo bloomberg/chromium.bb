@@ -44,10 +44,10 @@ class ChromeTestLauncherDelegate : public content::TestLauncherDelegate {
   DISALLOW_COPY_AND_ASSIGN(ChromeTestLauncherDelegate);
 };
 
-// Launches Chrome browser tests. |default_jobs| is number of test jobs to be
-// run in parallel, unless overridden from the command line. Returns exit code.
+// Launches Chrome browser tests. |parallel_jobs| is number of test jobs to be
+// run in parallel. Returns exit code.
 // Does not take ownership of ChromeTestLauncherDelegate.
-int LaunchChromeTests(int default_jobs,
+int LaunchChromeTests(size_t parallel_jobs,
                       content::TestLauncherDelegate* delegate,
                       int argc,
                       char** argv);

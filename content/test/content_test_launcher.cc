@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/process/memory.h"
 #include "base/sys_info.h"
+#include "base/test/launcher/test_launcher.h"
 #include "base/test/test_suite.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
@@ -126,7 +127,11 @@ class ContentTestLauncherDelegate : public TestLauncherDelegate {
 }  // namespace content
 
 int main(int argc, char** argv) {
-  int default_jobs = std::max(1, base::SysInfo::NumberOfProcessors() / 2);
+  base::CommandLine::Init(argc, argv);
+  size_t parallel_jobs = base::NumParallelJobs();
+  if (parallel_jobs > 1U) {
+    parallel_jobs /= 2U;
+  }
   content::ContentTestLauncherDelegate launcher_delegate;
-  return LaunchTests(&launcher_delegate, default_jobs, argc, argv);
+  return LaunchTests(&launcher_delegate, parallel_jobs, argc, argv);
 }

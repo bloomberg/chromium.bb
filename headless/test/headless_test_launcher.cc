@@ -5,8 +5,9 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/macros.h"
-#include "base/sys_info.h"
+#include "base/test/launcher/test_launcher.h"
 #include "content/public/test/content_test_suite_base.h"
 #include "content/public/test/test_launcher.h"
 #include "headless/lib/browser/headless_browser_impl.h"
@@ -63,7 +64,11 @@ class HeadlessTestLauncherDelegate : public content::TestLauncherDelegate {
 }  // namespace headless
 
 int main(int argc, char** argv) {
-  int default_jobs = std::max(1, base::SysInfo::NumberOfProcessors() / 2);
+  base::CommandLine::Init(argc, argv);
+  size_t parallel_jobs = base::NumParallelJobs();
+  if (parallel_jobs > 1U) {
+    parallel_jobs /= 2U;
+  }
   headless::HeadlessTestLauncherDelegate launcher_delegate;
-  return LaunchTests(&launcher_delegate, default_jobs, argc, argv);
+  return LaunchTests(&launcher_delegate, parallel_jobs, argc, argv);
 }
