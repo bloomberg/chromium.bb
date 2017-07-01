@@ -3010,15 +3010,28 @@ public class AwContents implements SmartClipProvider {
     }
 
     @VisibleForTesting
-    public void callProceedOnInterstitial() {
-        if (isDestroyedOrNoOperation(NO_WARN)) return;
-        nativeCallProceedOnInterstitialForTesting(mNativeAwContents);
+    public void evaluateJavaScriptOnInterstitialForTesting(
+            String script, final ValueCallback<String> callback) {
+        if (TRACE) Log.i(TAG, "%s evaluateJavascriptOnInterstitial=%s", this, script);
+        if (isDestroyedOrNoOperation(WARN)) return;
+        JavaScriptCallback jsCallback = null;
+        if (callback != null) {
+            jsCallback = new JavaScriptCallback() {
+                @Override
+                public void handleJavaScriptResult(String jsonResult) {
+                    callback.onReceiveValue(jsonResult);
+                }
+            };
+        }
+
+        // mWebContents.evaluateJavaScript(script, jsCallback);
+        nativeEvaluateJavaScriptOnInterstitialForTesting(mNativeAwContents, script, jsCallback);
     }
 
-    @VisibleForTesting
-    public void callDontProceedOnInterstitial() {
-        if (isDestroyedOrNoOperation(NO_WARN)) return;
-        nativeCallDontProceedOnInterstitialForTesting(mNativeAwContents);
+    @CalledByNative
+    private static void onEvaluateJavaScriptResultForTesting(
+            String jsonResult, JavaScriptCallback callback) {
+        callback.handleJavaScriptResult(jsonResult);
     }
 
     // -------------------------------------------------------------------------------------------
@@ -3483,8 +3496,8 @@ public class AwContents implements SmartClipProvider {
     private static native void nativeSetShouldDownloadFavicons();
     private static native void nativeUpdateDefaultLocale(String locale, String localeList);
 
-    private native void nativeCallProceedOnInterstitialForTesting(long nativeAwContents);
-    private native void nativeCallDontProceedOnInterstitialForTesting(long nativeAwContents);
+    private native void nativeEvaluateJavaScriptOnInterstitialForTesting(
+            long nativeAwContents, String script, JavaScriptCallback jsCallback);
     private native void nativeSetJavaPeers(long nativeAwContents, AwContents awContents,
             AwWebContentsDelegate webViewWebContentsDelegate,
             AwContentsClientBridge contentsClientBridge, AwContentsIoThreadClient ioThreadClient,
