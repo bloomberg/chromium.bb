@@ -5048,6 +5048,10 @@ IN_PROC_BROWSER_TEST_F(SuperfishSSLUITest, NoSuperfishRecorded) {
 // Tests that the Superfish interstitial is shown when the Finch feature is
 // enabled and the Superfish certificate is present.
 IN_PROC_BROWSER_TEST_F(SuperfishSSLUITest, SuperfishInterstitial) {
+  base::HistogramTester histograms;
+  const char kDecisionHistogram[] = "interstitial.superfish.decision";
+  const char kInteractionHistogram[] = "interstitial.superfish.interaction";
+
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitFromCommandLine("SuperfishInterstitial",
                                           std::string());
@@ -5069,6 +5073,15 @@ IN_PROC_BROWSER_TEST_F(SuperfishSSLUITest, SuperfishInterstitial) {
       l10n_util::GetStringUTF8(IDS_SSL_SUPERFISH_HEADING);
   EXPECT_TRUE(chrome_browser_interstitials::IsInterstitialDisplayingText(
       interstitial_page, expected_title));
+
+  // Check that the correct histograms were recorded.
+  histograms.ExpectTotalCount(kDecisionHistogram, 1);
+  histograms.ExpectBucketCount(kDecisionHistogram,
+                               security_interstitials::MetricsHelper::SHOW, 1);
+  histograms.ExpectTotalCount(kInteractionHistogram, 1);
+  histograms.ExpectBucketCount(
+      kInteractionHistogram,
+      security_interstitials::MetricsHelper::TOTAL_VISITS, 1);
 }
 
 // Tests that the Superfish interstitial is not shown when the Finch feature is
