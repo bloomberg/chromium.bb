@@ -101,22 +101,22 @@ RefPtr<NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
   // relative to the container's padding box.
   static_position.offset -= container_border_physical_offset_;
 
-  // The inline and block estimates are in the descendant's writing mode.
-  Optional<MinMaxContentSize> inline_estimate;
+  // The block estimate is in the descendant's writing mode.
+  Optional<MinMaxContentSize> min_max_size;
   Optional<LayoutUnit> block_estimate;
 
   RefPtr<NGLayoutResult> layout_result = nullptr;
   NGWritingMode descendant_writing_mode(
       FromPlatformWritingMode(descendant.Style().GetWritingMode()));
 
-  if (AbsoluteNeedsChildInlineSize(descendant.Style())) {
-    inline_estimate = descendant.ComputeMinMaxContentSize();
+  if (AbsoluteNeedsChildInlineSize(descendant.Style()) ||
+      NeedMinMaxContentSize(descendant.Style())) {
+    min_max_size = descendant.ComputeMinMaxContentSize();
   }
 
   NGAbsolutePhysicalPosition node_position =
       ComputePartialAbsoluteWithChildInlineSize(
-          *container_space_, descendant.Style(), static_position,
-          inline_estimate);
+          *container_space_, descendant.Style(), static_position, min_max_size);
 
   if (AbsoluteNeedsChildBlockSize(descendant.Style())) {
     layout_result = GenerateFragment(descendant, block_estimate, node_position);
