@@ -38,7 +38,7 @@ public class RlzPingHandler {
         String id =
                 new SettingsSecureBasedIdentificationGenerator(ContextUtils.getApplicationContext())
                         .getUniqueId(ID_SALT);
-        id = generate50CharacterId(id);
+        id = generate50CharacterId(id.toUpperCase(Locale.getDefault()));
 
         nativeStartPing(Profile.getLastUsedProfile().getOriginalProfile(), brand,
                 Locale.getDefault().getLanguage(), TextUtils.join(",", events), id, callback);
