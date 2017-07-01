@@ -37,6 +37,29 @@ class CoordinationUnitImpl : public mojom::CoordinationUnit {
       std::unique_ptr<service_manager::ServiceContextRef> service_ref);
   ~CoordinationUnitImpl() override;
 
+  // Utility functions for working with CoordinationUnitImpl instances.
+  static bool IsCoordinationUnitType(
+      const CoordinationUnitImpl* coordination_unit,
+      CoordinationUnitType type);
+  static bool IsFrameCoordinationUnit(
+      const CoordinationUnitImpl* coordination_unit);
+  static bool IsProcessCoordinationUnit(
+      const CoordinationUnitImpl* coordination_unit);
+  static bool IsWebContentsCoordinationUnit(
+      const CoordinationUnitImpl* coordination_unit);
+
+  // Return all of the reachable |CoordinationUnitImpl| instances
+  // of type |CoordinationUnitType|. Note that a callee should
+  // never be associated with itself.
+  virtual std::set<CoordinationUnitImpl*> GetAssociatedCoordinationUnitsOfType(
+      CoordinationUnitType type);
+
+  // Recalculate property internally.
+  virtual void RecalculateProperty(mojom::PropertyType property) {}
+  // Propagate property change to relevant |CoordinationUnitImpl| instances
+  // by invoking their their |RecalculateProperty|.
+  virtual void PropagateProperty(mojom::PropertyType property) {}
+
   // Overridden from mojom::CoordinationUnit:
   void SendEvent(mojom::EventPtr event) override;
   void GetID(const GetIDCallback& callback) override;
@@ -47,6 +70,17 @@ class CoordinationUnitImpl : public mojom::CoordinationUnit {
       mojom::CoordinationPolicyCallbackPtr callback) override;
   void SetProperty(mojom::PropertyPtr property) override;
 
+  // Operations performed on the internal key-value store.
+  void ClearProperty(mojom::PropertyType property);
+  base::Value GetProperty(mojom::PropertyType property) const;
+  void SetProperty(mojom::PropertyType property, base::Value value);
+
+  // Methods utilized by the |CoordinationUnitGraphObserver| framework.
+  void WillBeDestroyed();
+  void AddObserver(CoordinationUnitGraphObserver* observer);
+  void RemoveObserver(CoordinationUnitGraphObserver* observer);
+
+  // Getters and setters.
   const CoordinationUnitID& id() const { return id_; }
   const std::set<CoordinationUnitImpl*>& children() const { return children_; }
   const std::set<CoordinationUnitImpl*>& parents() const { return parents_; }
@@ -55,25 +89,16 @@ class CoordinationUnitImpl : public mojom::CoordinationUnit {
     return property_store_;
   }
 
-  static const double kCPUUsageMinimumForTesting;
-  static const double kCPUUsageUnmeasuredForTesting;
-  virtual double GetCPUUsageForTesting();
-
-  // Clear property from internal key-value store
-  void ClearProperty(mojom::PropertyType property);
-  // Retrieve property from internal key-value store
-  base::Value GetProperty(mojom::PropertyType property) const;
-  // Set property from internal key-value store
-  void SetProperty(mojom::PropertyType property, base::Value value);
-
-  void WillBeDestroyed();
-  void AddObserver(CoordinationUnitGraphObserver* observer);
-  void RemoveObserver(CoordinationUnitGraphObserver* observer);
-
  protected:
   const CoordinationUnitID id_;
   std::set<CoordinationUnitImpl*> children_;
   std::set<CoordinationUnitImpl*> parents_;
+
+  // Coordination unit graph traversal helper functions.
+  std::set<CoordinationUnitImpl*> GetChildCoordinationUnitsOfType(
+      CoordinationUnitType type);
+  std::set<CoordinationUnitImpl*> GetParentCoordinationUnitsOfType(
+      CoordinationUnitType type);
 
  private:
   bool AddChild(CoordinationUnitImpl* child);
@@ -82,7 +107,6 @@ class CoordinationUnitImpl : public mojom::CoordinationUnit {
   void RemoveParent(CoordinationUnitImpl* parent);
   bool HasParent(CoordinationUnitImpl* unit);
   bool HasChild(CoordinationUnitImpl* unit);
-
   void RecalcCoordinationPolicy();
   void UnregisterCoordinationPolicyCallback();
 

@@ -4,13 +4,13 @@
 
 #include "services/resource_coordinator/coordination_unit/process_coordination_unit_impl.h"
 
-#include <memory>
 #include <utility>
 
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
 #include "base/process/process_metrics.h"
 #include "base/time/time.h"
+#include "base/values.h"
 
 #if defined(OS_MACOSX)
 #include "services/service_manager/public/cpp/standalone_service/mach_broker.h"
@@ -37,7 +37,7 @@ const int kCPUProfilingIntervalInSeconds = 5;
 ProcessCoordinationUnitImpl::ProcessCoordinationUnitImpl(
     const CoordinationUnitID& id,
     std::unique_ptr<service_manager::ServiceContextRef> service_ref)
-    : CoordinationUnitImpl(id, std::move(service_ref)), cpu_usage_(-1.0) {
+    : CoordinationUnitImpl(id, std::move(service_ref)) {
   // ProcessCoordinationUnit ids should correspond to its pid
   base::ProcessId pid = id.id;
 #if defined(OS_WIN)
@@ -62,16 +62,51 @@ ProcessCoordinationUnitImpl::ProcessCoordinationUnitImpl(
 
 ProcessCoordinationUnitImpl::~ProcessCoordinationUnitImpl() = default;
 
+std::set<CoordinationUnitImpl*>
+ProcessCoordinationUnitImpl::GetAssociatedCoordinationUnitsOfType(
+    CoordinationUnitType type) {
+  switch (type) {
+    case CoordinationUnitType::kWebContents: {
+      // There is currently not a direct relationship between processes and
+      // tabs. However, frames are children of both processes and frames, so we
+      // find all of the tabs that are reachable from the process's child
+      // frames.
+      std::set<CoordinationUnitImpl*> web_contents_coordination_units;
+
+      for (auto* frame_coordination_unit :
+           GetChildCoordinationUnitsOfType(CoordinationUnitType::kFrame)) {
+        for (auto* web_contents_coordination_unit :
+             frame_coordination_unit->GetAssociatedCoordinationUnitsOfType(
+                 CoordinationUnitType::kWebContents)) {
+          web_contents_coordination_units.insert(
+              web_contents_coordination_unit);
+        }
+      }
+
+      return web_contents_coordination_units;
+    }
+    case CoordinationUnitType::kFrame:
+      return GetChildCoordinationUnitsOfType(type);
+    default:
+      return std::set<CoordinationUnitImpl*>();
+  }
+}
+
 void ProcessCoordinationUnitImpl::MeasureProcessCPUUsage() {
-  cpu_usage_ = process_metrics_->GetPlatformIndependentCPUUsage();
+  double cpu_usage = process_metrics_->GetPlatformIndependentCPUUsage();
+  SetProperty(mojom::PropertyType::kCPUUsage, base::Value(cpu_usage));
+
+  // Trigger tab coordination units to recalculate their CPU usage.
+  // TODO(matthalp): Move propagation functionality into a separate,
+  // more generalized method to support other property changes.
+  for (auto* tab : GetAssociatedCoordinationUnitsOfType(
+           CoordinationUnitType::kWebContents)) {
+    tab->RecalculateProperty(mojom::PropertyType::kCPUUsage);
+  }
 
   repeating_timer_.Start(
       FROM_HERE, base::TimeDelta::FromSeconds(kCPUProfilingIntervalInSeconds),
       this, &ProcessCoordinationUnitImpl::MeasureProcessCPUUsage);
-}
-
-double ProcessCoordinationUnitImpl::GetCPUUsageForTesting() {
-  return cpu_usage_;
 }
 
 }  // namespace resource_coordinator

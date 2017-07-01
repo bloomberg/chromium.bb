@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_PROCESS_COORDINATION_UNIT_IMPL_H_
-#define SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_PROCESS_COORDINATION_UNIT_IMPL_H_
+#ifndef SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_WEB_CONTENTS_COORDINATION_UNIT_IMPL_H_
+#define SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_WEB_CONTENTS_COORDINATION_UNIT_IMPL_H_
 
 #include <stdint.h>
 
@@ -11,8 +11,6 @@
 #include <set>
 
 #include "base/macros.h"
-#include "base/process/process_metrics.h"
-#include "base/timer/timer.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_impl.h"
 #include "services/resource_coordinator/public/interfaces/coordination_unit.mojom.h"
 
@@ -24,26 +22,24 @@ namespace resource_coordinator {
 
 struct CoordinationUnitID;
 
-class ProcessCoordinationUnitImpl : public CoordinationUnitImpl {
+class WebContentsCoordinationUnitImpl : public CoordinationUnitImpl {
  public:
-  ProcessCoordinationUnitImpl(
+  WebContentsCoordinationUnitImpl(
       const CoordinationUnitID& id,
       std::unique_ptr<service_manager::ServiceContextRef> service_ref);
-  ~ProcessCoordinationUnitImpl() override;
+  ~WebContentsCoordinationUnitImpl() override;
 
   // CoordinationUnitImpl implementation.
   std::set<CoordinationUnitImpl*> GetAssociatedCoordinationUnitsOfType(
       CoordinationUnitType type) override;
-
-  void MeasureProcessCPUUsage();
+  void RecalculateProperty(mojom::PropertyType property_type) override;
 
  private:
-  std::unique_ptr<base::ProcessMetrics> process_metrics_;
-  base::OneShotTimer repeating_timer_;
+  double CalculateCPUUsage();
 
-  DISALLOW_COPY_AND_ASSIGN(ProcessCoordinationUnitImpl);
+  DISALLOW_COPY_AND_ASSIGN(WebContentsCoordinationUnitImpl);
 };
 
 }  // namespace resource_coordinator
 
-#endif  // SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_PROCESS_COORDINATION_UNIT_IMPL_H_
+#endif  // SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_WEB_CONTENTS_COORDINATION_UNIT_IMPL_H_

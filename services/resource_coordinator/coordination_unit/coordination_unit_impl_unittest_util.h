@@ -5,13 +5,20 @@
 #ifndef SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_COORDINATION_UNIT_IMPL_UNITTEST_UTIL_H_
 #define SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_COORDINATION_UNIT_IMPL_UNITTEST_UTIL_H_
 
+#include <stdint.h>
+
+#include <memory>
+
 #include "base/message_loop/message_loop.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_manager.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_provider_impl.h"
+#include "services/resource_coordinator/public/interfaces/coordination_unit.mojom.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace resource_coordinator {
+
+struct CoordinationUnitID;
 
 class CoordinationUnitImplTestBase : public testing::Test {
  public:
@@ -20,6 +27,11 @@ class CoordinationUnitImplTestBase : public testing::Test {
 
   // testing::Test:
   void TearDown() override;
+
+  std::unique_ptr<CoordinationUnitImpl> CreateCoordinationUnit(
+      CoordinationUnitID cu_id);
+  std::unique_ptr<CoordinationUnitImpl> CreateCoordinationUnit(
+      CoordinationUnitType type);
 
  protected:
   service_manager::ServiceContextRefFactory* service_context_ref_factory() {
