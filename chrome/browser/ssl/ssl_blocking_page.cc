@@ -99,10 +99,15 @@ std::unique_ptr<ChromeMetricsHelper> CreateMetricsHelper(
     content::WebContents* web_contents,
     int cert_error,
     const GURL& request_url,
-    bool overridable) {
+    bool overridable,
+    bool is_superfish) {
   security_interstitials::MetricsHelper::ReportDetails reporting_info;
-  reporting_info.metric_prefix =
-      overridable ? "ssl_overridable" : "ssl_nonoverridable";
+  if (is_superfish) {
+    reporting_info.metric_prefix = "superfish";
+  } else {
+    reporting_info.metric_prefix =
+        overridable ? "ssl_overridable" : "ssl_nonoverridable";
+  }
   return base::MakeUnique<ChromeMetricsHelper>(
       web_contents, request_url, reporting_info,
       GetSamplingEventName(overridable, cert_error));
@@ -143,8 +148,8 @@ SSLBlockingPage* SSLBlockingPage::Create(
   else
     options_mask &= ~SSLErrorUI::SOFT_OVERRIDE_ENABLED;
 
-  std::unique_ptr<ChromeMetricsHelper> metrics_helper(
-      CreateMetricsHelper(web_contents, cert_error, request_url, overridable));
+  std::unique_ptr<ChromeMetricsHelper> metrics_helper(CreateMetricsHelper(
+      web_contents, cert_error, request_url, overridable, is_superfish));
   metrics_helper.get()->StartRecordingCaptivePortalMetrics(overridable);
 
   return new SSLBlockingPage(web_contents, cert_error, ssl_info, request_url,
