@@ -85,7 +85,11 @@ class PLATFORM_EXPORT DisplayItemList
 
   std::unique_ptr<JSONArray> SubsequenceAsJSON(size_t begin_index,
                                                size_t end_index,
-                                               JsonFlags options) const;
+                                               JsonFlags) const;
+  void AppendSubsequenceAsJSON(size_t begin_index,
+                               size_t end_index,
+                               JsonFlags,
+                               JSONArray&) const;
 };
 
 }  // namespace blink
