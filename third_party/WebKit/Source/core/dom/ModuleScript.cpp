@@ -189,6 +189,22 @@ ScriptModuleState ModuleScript::RecordStatus() const {
   return settings_object_->GetRecordStatus(Record());
 }
 
+// https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-has-instantiated
+bool ModuleScript::HasInstantiated() const {
+  // "We say that a module script has instantiated if ..." [spec text]
+
+  // "its module record is not null, and ..." [spec text]
+  if (record_.IsEmpty())
+    return false;
+
+  // "its module record's [[Status]] field is ..." [spec text]
+  ScriptModuleState status = RecordStatus();
+
+  // "either "instantiated" or "evaluated"." [spec text]
+  return status == ScriptModuleState::kInstantiated ||
+         status == ScriptModuleState::kEvaluated;
+}
+
 void ModuleScript::SetErrorAndClearRecord(ScriptValue error) {
   DVLOG(1) << "ModuleScript[" << this << "]::SetErrorAndClearRecord()";
 
