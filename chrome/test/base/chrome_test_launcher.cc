@@ -125,7 +125,7 @@ void ChromeTestLauncherDelegate::PreSharding() {
 #endif
 }
 
-int LaunchChromeTests(int default_jobs,
+int LaunchChromeTests(size_t parallel_jobs,
                       content::TestLauncherDelegate* delegate,
                       int argc,
                       char** argv) {
@@ -146,5 +146,5 @@ int LaunchChromeTests(int default_jobs,
   crash_reporter::SetCrashReporterClient(crash_client);
 #endif
 
-  return content::LaunchTests(delegate, default_jobs, argc, argv);
+  return content::LaunchTests(delegate, parallel_jobs, argc, argv);
 }
