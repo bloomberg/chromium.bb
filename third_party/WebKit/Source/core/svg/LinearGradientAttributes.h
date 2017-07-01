@@ -112,6 +112,4 @@ class LinearGradientAttributesWrapper
 
 }  // namespace blink
 
-#endif
-
-// vim:ts=4:noet
+#endif  // LinearGradientAttributes_h
