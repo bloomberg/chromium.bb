@@ -34,10 +34,10 @@
 #include <stdint.h>
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Vector.h"
+#include "public/platform/modules/websockets/websocket.mojom-blink.h"
 
 namespace blink {
 
-class InterfaceProvider;
 class KURL;
 class SecurityOrigin;
 class WebSocketHandleClient;
@@ -60,11 +60,7 @@ class WebSocketHandle {
 
   virtual ~WebSocketHandle() {}
 
-  // This method may optionally be called before connect() to specify an
-  // InterfaceProvider to get a WebSocket instance. By default, connect() will
-  // use Platform::interfaceProvider().
-  virtual void Initialize(InterfaceProvider*) = 0;
-
+  virtual void Initialize(mojom::blink::WebSocketPtr) = 0;
   virtual void Connect(const KURL&,
                        const Vector<String>& protocols,
                        SecurityOrigin*,

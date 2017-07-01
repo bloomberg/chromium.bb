@@ -51,6 +51,7 @@
 #include "modules/websockets/WebSocketChannelClient.h"
 #include "modules/websockets/WebSocketFrame.h"
 #include "modules/websockets/WebSocketHandleImpl.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
 #include "platform/WebFrameScheduler.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/loader/fetch/UniqueIdentifier.h"
@@ -193,7 +194,8 @@ DocumentWebSocketChannel::~DocumentWebSocketChannel() {
 }
 
 bool DocumentWebSocketChannel::Connect(const KURL& url,
-                                       const String& protocol) {
+                                       const String& protocol,
+                                       mojom::blink::WebSocketPtr socket_ptr) {
   NETWORK_DVLOG(1) << this << " Connect()";
   if (!handle_)
     return false;
@@ -243,19 +245,7 @@ bool DocumentWebSocketChannel::Connect(const KURL& url,
     return true;
   }
 
-  // TODO(kinuko): document() should return nullptr if we don't
-  // have valid document/frame that returns non-empty interface provider.
-  if (GetDocument() && GetDocument()->GetFrame() &&
-      GetDocument()->GetFrame()->GetInterfaceProvider() !=
-          InterfaceProvider::GetEmptyInterfaceProvider()) {
-    // Initialize the WebSocketHandle with the frame's InterfaceProvider to
-    // provide the WebSocket implementation with context about this frame.
-    // This is important so that the browser can show UI associated with
-    // the WebSocket (e.g., for certificate errors).
-    handle_->Initialize(GetDocument()->GetFrame()->GetInterfaceProvider());
-  } else {
-    handle_->Initialize(Platform::Current()->GetInterfaceProvider());
-  }
+  handle_->Initialize(std::move(socket_ptr));
   handle_->Connect(url, protocols, loading_context_->GetSecurityOrigin(),
                    loading_context_->FirstPartyForCookies(),
                    loading_context_->UserAgent(), this);
@@ -283,6 +273,18 @@ bool DocumentWebSocketChannel::Connect(const KURL& url,
                            GetDocument(), identifier_, url, protocol));
   probe::didCreateWebSocket(GetDocument(), identifier_, url, protocol);
   return true;
+}
+
+bool DocumentWebSocketChannel::Connect(const KURL& url,
+                                       const String& protocol) {
+  mojom::blink::WebSocketPtr socket_ptr;
+  auto socket_request = mojo::MakeRequest(&socket_ptr);
+  if (GetDocument() && GetDocument()->GetFrame()) {
+    GetDocument()->GetFrame()->GetInterfaceProvider()->GetInterface(
+        std::move(socket_request));
+  }
+
+  return Connect(url, protocol, std::move(socket_ptr));
 }
 
 void DocumentWebSocketChannel::Send(const CString& message) {

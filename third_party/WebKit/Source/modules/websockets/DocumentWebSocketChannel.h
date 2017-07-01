@@ -52,6 +52,7 @@
 #include "platform/wtf/text/CString.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebCallbacks.h"
+#include "public/platform/modules/websockets/websocket.mojom-blink.h"
 
 namespace blink {
 
@@ -89,6 +90,10 @@ class MODULES_EXPORT DocumentWebSocketChannel final
       std::unique_ptr<WebSocketHandshakeThrottle>);
 
   ~DocumentWebSocketChannel() override;
+
+  // Allows the caller to provide the Mojo pipe through which the socket is
+  // connected, overriding the interface provider of the Document.
+  bool Connect(const KURL&, const String& protocol, mojom::blink::WebSocketPtr);
 
   // WebSocketChannel functions.
   bool Connect(const KURL&, const String& protocol) override;
