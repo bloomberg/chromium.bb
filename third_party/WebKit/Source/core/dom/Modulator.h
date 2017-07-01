@@ -5,6 +5,7 @@
 #ifndef Modulator_h
 #define Modulator_h
 
+#include "bindings/core/v8/ScriptModule.h"
 #include "core/CoreExport.h"
 #include "core/dom/AncestorList.h"
 #include "platform/bindings/ScriptWrappable.h"
@@ -22,7 +23,6 @@ class ExceptionState;
 class ModuleScript;
 class ModuleScriptFetchRequest;
 class ModuleScriptLoaderClient;
-class ScriptModule;
 class ScriptModuleResolver;
 class ScriptState;
 class ScriptValue;
@@ -122,6 +122,8 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
                                      ExceptionState&) = 0;
 
   virtual ScriptValue InstantiateModule(ScriptModule) = 0;
+
+  virtual ScriptModuleState GetRecordStatus(ScriptModule) = 0;
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-error
   virtual ScriptValue GetError(const ModuleScript*) = 0;

@@ -61,6 +61,9 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
 
   ModuleInstantiationState State() const { return state_; }
 
+  // Corresponds to spec concept: module script's record's [[Status]]
+  ScriptModuleState RecordStatus() const;
+
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-is-errored
   bool IsErrored() const { return record_.IsEmpty(); }
 

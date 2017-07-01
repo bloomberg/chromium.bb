@@ -148,6 +148,11 @@ ScriptValue ModulatorImpl::InstantiateModule(ScriptModule script_module) {
   return script_module.Instantiate(script_state_.Get());
 }
 
+ScriptModuleState ModulatorImpl::GetRecordStatus(ScriptModule script_module) {
+  ScriptState::Scope scope(script_state_.Get());
+  return script_module.Status(script_state_.Get());
+}
+
 ScriptValue ModulatorImpl::GetError(const ModuleScript* module_script) {
   DCHECK(module_script);
   ScriptState::Scope scope(script_state_.Get());

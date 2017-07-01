@@ -115,6 +115,11 @@ ScriptValue DummyModulator::InstantiateModule(ScriptModule) {
   return ScriptValue();
 }
 
+ScriptModuleState DummyModulator::GetRecordStatus(ScriptModule) {
+  NOTREACHED();
+  return ScriptModuleState::kErrored;
+}
+
 ScriptValue DummyModulator::GetError(const ModuleScript*) {
   NOTREACHED();
   return ScriptValue();
