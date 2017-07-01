@@ -51,6 +51,7 @@
 #include "chrome/renderer/page_load_metrics/metrics_render_frame_observer.h"
 #include "chrome/renderer/pepper/pepper_helper.h"
 #include "chrome/renderer/plugins/non_loadable_plugin_placeholder.h"
+#include "chrome/renderer/plugins/pdf_plugin_placeholder.h"
 #include "chrome/renderer/plugins/plugin_preroller.h"
 #include "chrome/renderer/plugins/plugin_uma.h"
 #include "chrome/renderer/prerender/prerender_dispatcher.h"
@@ -883,6 +884,13 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
             ASCIIToUTF16(ChromeContentClient::kPDFExtensionPluginName)) {
           ReportPDFLoadStatus(
               PDFLoadStatus::kShowedDisabledPluginPlaceholderForEmbeddedPdf);
+
+          if (base::FeatureList::IsEnabled(
+                  features::kClickToOpenPDFPlaceholder)) {
+            return PDFPluginPlaceholder::CreatePDFPlaceholder(render_frame,
+                                                              params)
+                ->plugin();
+          }
         }
 
         placeholder = create_blocked_plugin(
