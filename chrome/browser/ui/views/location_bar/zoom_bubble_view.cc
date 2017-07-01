@@ -119,7 +119,11 @@ void ZoomBubbleView::ShowBubble(content::WebContents* web_contents,
                                 const gfx::Point& anchor_point,
                                 DisplayReason reason) {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  DCHECK(browser && browser->window() &&
+  // |web_contents| could have been unloaded if a tab gets closed and a mouse
+  // event arrives before the zoom icon gets hidden.
+  if (!browser)
+    return;
+  DCHECK(browser->window() &&
          browser->exclusive_access_manager()->fullscreen_controller());
 
   views::View* anchor_view = nullptr;
