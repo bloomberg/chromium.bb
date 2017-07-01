@@ -214,10 +214,10 @@ void ModulatorImpl::ExecuteModule(const ModuleScript* module_script) {
   // Step 3. "If s is errored, then report the exception given by s's error for
   // s and abort these steps." [spec text]
   if (module_script->IsErrored()) {
-    v8::Isolate* isolate = script_state_->GetIsolate();
-    ScriptModule::ReportException(
-        script_state_.Get(), module_script->CreateErrorInternal(isolate),
-        module_script->BaseURL().GetString(), module_script->StartPosition());
+    ScriptValue error = GetError(module_script);
+    ScriptModule::ReportException(script_state_.Get(), error.V8Value(),
+                                  module_script->BaseURL().GetString(),
+                                  module_script->StartPosition());
     return;
   }
 
