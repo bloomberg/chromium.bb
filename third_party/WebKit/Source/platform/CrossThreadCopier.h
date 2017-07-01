@@ -32,6 +32,7 @@
 #define CrossThreadCopier_h
 
 #include <memory>
+#include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "platform/PlatformExport.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/Forward.h"
@@ -228,6 +229,16 @@ struct CrossThreadCopier<ResourceResponse> {
   typedef WTF::PassedWrapper<std::unique_ptr<CrossThreadResourceResponseData>>
       Type;
   PLATFORM_EXPORT static Type Copy(const ResourceResponse&);
+};
+
+// mojo::InterfacePtrInfo is a cross-thread safe mojo::InterfacePtr.
+template <typename Interface>
+struct CrossThreadCopier<mojo::InterfacePtrInfo<Interface>> {
+  STATIC_ONLY(CrossThreadCopier);
+  using Type = mojo::InterfacePtrInfo<Interface>;
+  static Type Copy(Type ptr_info) {
+    return ptr_info;  // This is in fact a move.
+  }
 };
 
 }  // namespace blink

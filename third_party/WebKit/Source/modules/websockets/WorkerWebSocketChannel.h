@@ -46,6 +46,7 @@
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebTraceLocation.h"
+#include "public/platform/modules/websockets/websocket.mojom-blink.h"
 
 namespace blink {
 
@@ -111,7 +112,9 @@ class WorkerWebSocketChannel final : public WebSocketChannel {
     // SourceLocation parameter may be shown when the connection fails.
     bool Initialize(std::unique_ptr<SourceLocation>, ThreadableLoadingContext*);
 
-    bool Connect(const KURL&, const String& protocol);
+    bool Connect(const KURL&,
+                 const String& protocol,
+                 mojom::blink::WebSocketPtr);
     void SendTextAsCharVector(std::unique_ptr<Vector<char>>);
     void SendBinaryAsCharVector(std::unique_ptr<Vector<char>>);
     void SendBlob(PassRefPtr<BlobDataHandle>);
@@ -178,6 +181,7 @@ class WorkerWebSocketChannel final : public WebSocketChannel {
                              WorkerThreadLifecycleContext*,
                              const KURL&,
                              const String& protocol,
+                             mojom::blink::WebSocketPtrInfo,
                              WebSocketChannelSyncHelper*);
 
     // Returns null when |disconnect| has already been called.

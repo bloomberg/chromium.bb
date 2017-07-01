@@ -14,7 +14,6 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/text/WTFString.h"
-#include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
 
 namespace blink {
@@ -36,12 +35,11 @@ WebSocketHandleImpl::~WebSocketHandleImpl() {
     websocket_->StartClosingHandshake(kAbnormalShutdownOpCode, g_empty_string);
 }
 
-void WebSocketHandleImpl::Initialize(InterfaceProvider* interface_provider) {
+void WebSocketHandleImpl::Initialize(mojom::blink::WebSocketPtr websocket) {
   NETWORK_DVLOG(1) << this << " initialize(...)";
 
   DCHECK(!websocket_);
-  interface_provider->GetInterface(mojo::MakeRequest(&websocket_));
-
+  websocket_ = std::move(websocket);
   websocket_.set_connection_error_with_reason_handler(
       ConvertToBaseCallback(WTF::Bind(&WebSocketHandleImpl::OnConnectionError,
                                       WTF::Unretained(this))));
