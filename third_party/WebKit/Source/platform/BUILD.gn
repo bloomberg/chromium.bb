@@ -1096,6 +1096,7 @@ component("platform") {
     "graphics/paint/PaintChunker.h",
     "graphics/paint/PaintController.cpp",
     "graphics/paint/PaintController.h",
+    "graphics/paint/PaintControllerDebugData.cpp",
     "graphics/paint/PaintFlags.h",
     "graphics/paint/PaintPropertyNode.cpp",
     "graphics/paint/PaintPropertyNode.h",

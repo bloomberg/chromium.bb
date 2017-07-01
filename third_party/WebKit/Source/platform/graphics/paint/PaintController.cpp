@@ -13,7 +13,6 @@
 
 #ifndef NDEBUG
 #include "platform/graphics/LoggingCanvas.h"
-#include <stdio.h>
 #endif
 
 namespace blink {
@@ -1066,34 +1065,6 @@ void PaintController::CheckUnderInvalidation() {
   MoveItemFromCurrentListToNewList(old_item_index);
 
   ++under_invalidation_checking_begin_;
-}
-
-void PaintController::ShowDebugDataInternal(bool show_paint_records) const {
-  WTFLogAlways("current display item list: [%s]\n",
-               current_paint_artifact_.GetDisplayItemList()
-                   .SubsequenceAsJSON(
-                       0, current_paint_artifact_.GetDisplayItemList().size(),
-                       show_paint_records
-                           ? DisplayItemList::JsonOptions::kShowPaintRecords
-                           : DisplayItemList::JsonOptions::kDefault)
-                   ->ToPrettyJSONString()
-                   .Utf8()
-                   .data());
-  // debugName() and clientCacheIsValid() can only be called on a live
-  // client, so only output it for m_newDisplayItemList, in which we are
-  // sure the clients are all alive.
-  WTFLogAlways(
-      "new display item list: [%s]\n",
-      new_display_item_list_
-          .SubsequenceAsJSON(
-              0, new_display_item_list_.size(),
-              show_paint_records
-                  ? (DisplayItemList::JsonOptions::kShowPaintRecords |
-                     DisplayItemList::JsonOptions::kShowClientDebugName)
-                  : DisplayItemList::JsonOptions::kShowClientDebugName)
-          ->ToPrettyJSONString()
-          .Utf8()
-          .data());
 }
 
 void PaintController::SetFirstPainted() {
