@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef MockScriptElementBase_h
+#define MockScriptElementBase_h
+
 #include "bindings/core/v8/HTMLScriptElementOrSVGScriptElement.h"
 #include "core/dom/Document.h"
 #include "core/dom/ScriptElementBase.h"
@@ -53,3 +56,5 @@ class MockScriptElementBase
 };
 
 }  // namespace blink
+
+#endif  // MockScriptElementBase_h

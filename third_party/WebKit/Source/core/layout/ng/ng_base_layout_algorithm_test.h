@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef NG_BASE_LAYOUT_ALGORITHM_TEST_H_
+#define NG_BASE_LAYOUT_ALGORITHM_TEST_H_
+
 #include "core/layout/LayoutTestHelper.h"
 
 #include "core/dom/Element.h"
@@ -28,3 +31,5 @@ class NGBaseLayoutAlgorithmTest
 };
 
 }  // namespace blink
+
+#endif  // NG_BASE_LAYOUT_ALGORITHM_TEST_H_

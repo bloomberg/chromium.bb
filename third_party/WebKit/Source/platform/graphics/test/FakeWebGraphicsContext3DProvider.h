@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef FakeWebGraphicsContext3DProvider_h
+#define FakeWebGraphicsContext3DProvider_h
+
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
@@ -40,3 +43,5 @@ class FakeWebGraphicsContext3DProvider : public WebGraphicsContext3DProvider {
 };
 
 }  // namespace blink
+
+#endif  // FakeWebGraphicsContext3DProvider_h

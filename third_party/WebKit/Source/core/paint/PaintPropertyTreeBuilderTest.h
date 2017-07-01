@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef PaintPropertyTreeBuilderTest_h
+#define PaintPropertyTreeBuilderTest_h
+
 #include "core/layout/LayoutTestHelper.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
@@ -49,3 +52,5 @@ class PaintPropertyTreeBuilderTest
 };
 
 }  // namespace blink
+
+#endif  // PaintPropertyTreeBuilderTest_h

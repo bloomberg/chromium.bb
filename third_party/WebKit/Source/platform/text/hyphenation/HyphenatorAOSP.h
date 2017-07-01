@@ -16,15 +16,15 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+#ifndef HyphenatorAOSP_h
+#define HyphenatorAOSP_h
+
 /**
  * An implementation of Liang's hyphenation algorithm.
  */
 
 #include <memory>
 #include <unordered_map>
-
-#ifndef MINIKIN_HYPHENATOR_H
-#define MINIKIN_HYPHENATOR_H
 
 namespace android {
 
@@ -87,4 +87,4 @@ class Hyphenator {
 
 }  // namespace android
 
-#endif  // MINIKIN_HYPHENATOR_H
+#endif  // HyphenatorAOSP_h

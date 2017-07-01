@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef PaintPropertyTestHelpers_h
+#define PaintPropertyTestHelpers_h
+
 #include "platform/graphics/paint/ClipPaintPropertyNode.h"
 #include "platform/graphics/paint/EffectPaintPropertyNode.h"
 #include "platform/graphics/paint/PaintChunkProperties.h"
@@ -31,3 +34,5 @@ static inline PaintChunkProperties DefaultPaintChunkProperties() {
 
 }  // namespace testing
 }  // namespace blink
+
+#endif  // PaintPropertyTestHelpers_h

@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef TestingPlatformSupportWithWebRTC_h
+#define TestingPlatformSupportWithWebRTC_h
+
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "public/platform/WebRTCPeerConnectionHandler.h"
@@ -52,3 +55,5 @@ class TestingPlatformSupportWithWebRTC : public TestingPlatformSupport {
 };
 
 }  // namespace blink
+
+#endif  // TestingPlatformSupportWithWebRTC_h
