@@ -15,8 +15,6 @@
 
 namespace blink {
 
-enum NewChunkForceState { kDontForceNewChunk, kForceNewChunk };
-
 // Accepts information about changes to |PaintChunkProperties| as drawings are
 // accumulated, and produces a series of paint chunks: contiguous ranges of the
 // display list with identical |PaintChunkProperties|.
@@ -35,15 +33,13 @@ class PLATFORM_EXPORT PaintChunker final {
   const PaintChunkProperties& CurrentPaintChunkProperties() const {
     return current_properties_;
   }
-  void UpdateCurrentPaintChunkProperties(
-      const PaintChunk::Id*,
-      const PaintChunkProperties&,
-      NewChunkForceState force_new_chunk = kDontForceNewChunk);
+  void UpdateCurrentPaintChunkProperties(const PaintChunk::Id*,
+                                         const PaintChunkProperties&);
+
+  void ForceNewChunk() { force_new_chunk_ = true; }
 
   // Returns true if a new chunk is created.
   bool IncrementDisplayItemIndex(const DisplayItem&);
-
-  void DecrementDisplayItemIndex();
 
   PaintChunk& PaintChunkAt(size_t i) { return chunks_[i]; }
   size_t LastChunkIndex() const {
@@ -64,19 +60,10 @@ class PLATFORM_EXPORT PaintChunker final {
   Vector<PaintChunk> ReleasePaintChunks();
 
  private:
-  enum ItemBehavior {
-    // Can be combined with adjacent items when building chunks.
-    kDefaultBehavior = 0,
-
-    // Item requires its own paint chunk.
-    kRequiresSeparateChunk,
-  };
-
   Vector<PaintChunk> chunks_;
-  Vector<ItemBehavior> chunk_behavior_;
   Optional<PaintChunk::Id> current_chunk_id_;
   PaintChunkProperties current_properties_;
-  NewChunkForceState force_new_chunk_;
+  bool force_new_chunk_;
 };
 
 }  // namespace blink

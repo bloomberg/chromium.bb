@@ -126,30 +126,30 @@ bool PaintController::UseCachedSubsequenceIfPossible(
     return false;
   }
 
-  // |cachedItem| will point to the first item after the subsequence or end of
-  // the current list.
   EnsureNewDisplayItemListInitialCapacity();
 
-  size_t size_before_copy = new_display_item_list_.size();
-  CopyCachedSubsequence(markers->start, markers->end);
-
-  if (!RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled()) {
-    AddCachedSubsequence(client, size_before_copy,
-                         new_display_item_list_.size() - 1);
-  }
-
-  next_item_to_match_ = markers->end + 1;
-  // Items before |m_nextItemToMatch| have been copied so we don't need to index
-  // them.
+  next_item_to_match_ = markers->end;
+  // Items before |next_item_to_match_| have been copied so we don't need to
+  // index them.
   if (next_item_to_match_ > next_item_to_index_)
     next_item_to_index_ = next_item_to_match_;
 
+  num_cached_new_items_ += markers->end - markers->start;
+
   if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled()) {
+    DCHECK(!IsCheckingUnderInvalidation());
+    under_invalidation_checking_begin_ = markers->start;
+    under_invalidation_checking_end_ = markers->end;
+    under_invalidation_message_prefix_ =
+        "(In cached subsequence for " + client.DebugName() + ")";
     // Return false to let the painter actually paint. We will check if the new
     // painting is the same as the cached one.
     return false;
   }
 
+  size_t start = BeginSubsequence();
+  CopyCachedSubsequence(markers->start, markers->end);
+  EndSubsequence(client, start);
   return true;
 }
 
@@ -161,11 +161,26 @@ PaintController::SubsequenceMarkers* PaintController::GetSubsequenceMarkers(
   return &result->value;
 }
 
-void PaintController::AddCachedSubsequence(const DisplayItemClient& client,
-                                           unsigned start,
-                                           unsigned end) {
-  DCHECK(start <= end);
-  DCHECK(end < new_display_item_list_.size());
+size_t PaintController::BeginSubsequence() {
+  // Force new paint chunk which is required for subsequence caching.
+  new_paint_chunks_.ForceNewChunk();
+  return new_display_item_list_.size();
+}
+
+void PaintController::EndSubsequence(const DisplayItemClient& client,
+                                     size_t start) {
+  size_t end = new_display_item_list_.size();
+  if (start == end) {
+    // Omit the empty subsequence. The forcing-new-chunk flag set by
+    // BeginSubsequence() still applies, but this not a big deal because empty
+    // subsequences are not common. Also we should not clear the flag because
+    // there might be unhandled flag that was set before this empty subsequence.
+    return;
+  }
+
+  // Force new paint chunk which is required for subsequence caching.
+  new_paint_chunks_.ForceNewChunk();
+
   if (IsCheckingUnderInvalidation()) {
     SubsequenceMarkers* markers = GetSubsequenceMarkers(client);
     if (!markers) {
@@ -189,6 +204,8 @@ void PaintController::AddCachedSubsequence(const DisplayItemClient& client,
 }
 
 bool PaintController::LastDisplayItemIsNoopBegin() const {
+  DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
+
   if (new_display_item_list_.IsEmpty())
     return false;
 
@@ -198,10 +215,12 @@ bool PaintController::LastDisplayItemIsNoopBegin() const {
 
 bool PaintController::LastDisplayItemIsSubsequenceEnd() const {
   return !new_cached_subsequences_.IsEmpty() &&
-         last_cached_subsequence_end_ == new_display_item_list_.size() - 1;
+         last_cached_subsequence_end_ == new_display_item_list_.size();
 }
 
 void PaintController::RemoveLastDisplayItem() {
+  DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
+
   if (new_display_item_list_.IsEmpty())
     return;
 
@@ -227,9 +246,6 @@ void PaintController::RemoveLastDisplayItem() {
     }
   }
   new_display_item_list_.RemoveLast();
-
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
-    new_paint_chunks_.DecrementDisplayItemIndex();
 }
 
 const DisplayItem* PaintController::LastDisplayItem(unsigned offset) {
@@ -314,10 +330,8 @@ DisplayItem& PaintController::MoveItemFromCurrentListToNewList(size_t index) {
 
 void PaintController::UpdateCurrentPaintChunkProperties(
     const PaintChunk::Id* id,
-    const PaintChunkProperties& new_properties,
-    NewChunkForceState force_new_chunk) {
-  new_paint_chunks_.UpdateCurrentPaintChunkProperties(id, new_properties,
-                                                      force_new_chunk);
+    const PaintChunkProperties& new_properties) {
+  new_paint_chunks_.UpdateCurrentPaintChunkProperties(id, new_properties);
 }
 
 const PaintChunkProperties& PaintController::CurrentPaintChunkProperties()
@@ -463,35 +477,33 @@ size_t PaintController::FindOutOfOrderCachedItemForward(
 // under-invalidation checking.
 void PaintController::CopyCachedSubsequence(size_t begin_index,
                                             size_t end_index) {
+  DCHECK(!RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled());
+
   AutoReset<size_t> subsequence_begin_index(
       &current_cached_subsequence_begin_index_in_new_list_,
       new_display_item_list_.size());
   DisplayItem* cached_item =
       &current_paint_artifact_.GetDisplayItemList()[begin_index];
 
-  if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled()) {
-    DCHECK(!IsCheckingUnderInvalidation());
-    under_invalidation_checking_begin_ = begin_index;
-    under_invalidation_message_prefix_ =
-        "(In cached subsequence starting with " +
-        cached_item->Client().DebugName() + ")";
-  }
-
   Vector<PaintChunk>::const_iterator cached_chunk;
+  PaintChunkProperties properties_before_subsequence;
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     cached_chunk =
         current_paint_artifact_.FindChunkByDisplayItemIndex(begin_index);
     DCHECK(cached_chunk != current_paint_artifact_.PaintChunks().end());
 
+    properties_before_subsequence =
+        new_paint_chunks_.CurrentPaintChunkProperties();
+    new_paint_chunks_.ForceNewChunk();
     UpdateCurrentPaintChunkProperties(
         cached_chunk->is_cacheable ? &cached_chunk->id : nullptr,
-        cached_chunk->properties, kForceNewChunk);
+        cached_chunk->properties);
   } else {
     // Avoid uninitialized variable error on Windows.
     cached_chunk = current_paint_artifact_.PaintChunks().begin();
   }
 
-  for (size_t current_index = begin_index; current_index <= end_index;
+  for (size_t current_index = begin_index; current_index < end_index;
        ++current_index) {
     cached_item = &current_paint_artifact_.GetDisplayItemList()[current_index];
     DCHECK(cached_item->HasValidClient());
@@ -501,41 +513,45 @@ void PaintController::CopyCachedSubsequence(size_t begin_index,
 #if DCHECK_IS_ON()
     DCHECK(cached_item->Client().IsAlive());
 #endif
-    ++num_cached_new_items_;
-    if (!RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled()) {
-      if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
-          current_index == cached_chunk->end_index) {
-        ++cached_chunk;
-        DCHECK(cached_chunk != current_paint_artifact_.PaintChunks().end());
-        UpdateCurrentPaintChunkProperties(
-            cached_chunk->is_cacheable ? &cached_chunk->id : nullptr,
-            cached_chunk->properties, kForceNewChunk);
-      }
+
+    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+        current_index == cached_chunk->end_index) {
+      ++cached_chunk;
+      DCHECK(cached_chunk != current_paint_artifact_.PaintChunks().end());
+      new_paint_chunks_.ForceNewChunk();
+      UpdateCurrentPaintChunkProperties(
+          cached_chunk->is_cacheable ? &cached_chunk->id : nullptr,
+          cached_chunk->properties);
+    }
 
 #if DCHECK_IS_ON()
-      // Visual rect change should not happen in a cached subsequence.
-      // However, because of different method of pixel snapping in different
-      // paths, there are false positives. Just log an error.
-      if (cached_item->VisualRect() != cached_item->Client().VisualRect()) {
-        LOG(ERROR) << "Visual rect changed in a cached subsequence: "
-                   << cached_item->Client().DebugName()
-                   << " old=" << cached_item->VisualRect().ToString()
-                   << " new=" << cached_item->Client().VisualRect().ToString();
-      }
+    // Visual rect change should not happen in a cached subsequence.
+    // However, because of different method of pixel snapping in different
+    // paths, there are false positives. Just log an error.
+    if (cached_item->VisualRect() != cached_item->Client().VisualRect()) {
+      LOG(ERROR) << "Visual rect changed in a cached subsequence: "
+                 << cached_item->Client().DebugName()
+                 << " old=" << cached_item->VisualRect().ToString()
+                 << " new=" << cached_item->Client().VisualRect().ToString();
+    }
 #endif
 
-      ProcessNewItem(MoveItemFromCurrentListToNewList(current_index));
-      if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-        DCHECK((!new_paint_chunks_.LastChunk().is_cacheable &&
-                !cached_chunk->is_cacheable) ||
-               new_paint_chunks_.LastChunk().Matches(*cached_chunk));
-      }
+    ProcessNewItem(MoveItemFromCurrentListToNewList(current_index));
+    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+      DCHECK((!new_paint_chunks_.LastChunk().is_cacheable &&
+              !cached_chunk->is_cacheable) ||
+             new_paint_chunks_.LastChunk().Matches(*cached_chunk));
     }
   }
 
   if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled()) {
-    under_invalidation_checking_end_ = end_index + 1;
+    under_invalidation_checking_end_ = end_index;
     DCHECK(IsCheckingUnderInvalidation());
+  } else if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    // Restore properties and force new chunk for any trailing display items
+    // after the cached subsequence without new properties.
+    new_paint_chunks_.ForceNewChunk();
+    UpdateCurrentPaintChunkProperties(nullptr, properties_before_subsequence);
   }
 }
 

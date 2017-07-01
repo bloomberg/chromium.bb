@@ -71,10 +71,8 @@ class PLATFORM_EXPORT PaintController {
 
   // Provide a new set of paint chunk properties to apply to recorded display
   // items, for Slimming Paint v2.
-  void UpdateCurrentPaintChunkProperties(
-      const PaintChunk::Id*,
-      const PaintChunkProperties&,
-      NewChunkForceState force_new_chunk = kDontForceNewChunk);
+  void UpdateCurrentPaintChunkProperties(const PaintChunk::Id*,
+                                         const PaintChunkProperties&);
 
   // Retrieve the current paint properties.
   const PaintChunkProperties& CurrentPaintChunkProperties() const;
@@ -104,6 +102,8 @@ class PLATFORM_EXPORT PaintController {
   // item construction is disabled, no list mutations will be performed.
   template <typename DisplayItemClass, typename... Args>
   void EndItem(Args&&... args) {
+    DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
+
     if (DisplayItemConstructionIsDisabled())
       return;
     if (LastDisplayItemIsNoopBegin())
@@ -122,9 +122,10 @@ class PLATFORM_EXPORT PaintController {
   // true. Otherwise returns false.
   bool UseCachedSubsequenceIfPossible(const DisplayItemClient&);
 
-  void AddCachedSubsequence(const DisplayItemClient&,
-                            unsigned start,
-                            unsigned end);
+  size_t BeginSubsequence();
+  // The |start| parameter should be the return value of the corresponding
+  // BeginSubsequence().
+  void EndSubsequence(const DisplayItemClient&, size_t start);
 
   // True if the last display item is a begin that doesn't draw content.
   void RemoveLastDisplayItem();
@@ -318,8 +319,8 @@ class PLATFORM_EXPORT PaintController {
     SubsequenceMarkers() : start(0), end(0) {}
     SubsequenceMarkers(size_t start_arg, size_t end_arg)
         : start(start_arg), end(end_arg) {}
-    // The start and end index within m_currentPaintArtifact of this
-    // subsequence.
+    // The start and end (not included) index within current_paint_artifact_
+    // of this subsequence.
     size_t start;
     size_t end;
   };
