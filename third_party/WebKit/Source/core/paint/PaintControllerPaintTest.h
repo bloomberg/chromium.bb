@@ -124,28 +124,24 @@ class TestDisplayItem final : public DisplayItem {
   }
 };
 
-#ifndef NDEBUG
-#define TRACE_DISPLAY_ITEMS(i, expected, actual)             \
-  String trace = String::Format("%d: ", (int)i) +            \
-                 "Expected: " + (expected).AsDebugString() + \
-                 " Actual: " + (actual).AsDebugString();     \
-  SCOPED_TRACE(trace.Utf8().data());
-#else
-#define TRACE_DISPLAY_ITEMS(i, expected, actual)
-#endif
-
-#define EXPECT_DISPLAY_LIST(actual, expectedSize, ...)                     \
-  do {                                                                     \
-    EXPECT_EQ((size_t)expectedSize, actual.size());                        \
-    if (expectedSize != actual.size())                                     \
-      break;                                                               \
-    const TestDisplayItem expected[] = {__VA_ARGS__};                      \
-    for (size_t index = 0;                                                 \
-         index < std::min<size_t>(actual.size(), expectedSize); index++) { \
-      TRACE_DISPLAY_ITEMS(index, expected[index], actual[index]);          \
-      EXPECT_EQ(expected[index].Client(), actual[index].Client());         \
-      EXPECT_EQ(expected[index].GetType(), actual[index].GetType());       \
-    }                                                                      \
+#define EXPECT_DISPLAY_LIST(actual, expected_size, ...)                   \
+  do {                                                                    \
+    EXPECT_EQ((size_t)expected_size, actual.size());                      \
+    if (expected_size != actual.size())                                   \
+      break;                                                              \
+    const TestDisplayItem expected[] = {__VA_ARGS__};                     \
+    for (size_t i = 0; i < expected_size; ++i) {                          \
+      SCOPED_TRACE(                                                       \
+          String::Format("%d: Expected:(client=%p:\"%s\" type=%d) "       \
+                         "Actual:(client=%p:%s type=%d)",                 \
+                         (int)i, &expected[i].Client(),                   \
+                         expected[i].Client().DebugName().Ascii().data(), \
+                         (int)expected[i].GetType(), &actual[i].Client(), \
+                         actual[i].Client().DebugName().Ascii().data(),   \
+                         (int)actual[i].GetType()));                      \
+      EXPECT_EQ(&expected[i].Client(), &actual[i].Client());              \
+      EXPECT_EQ(expected[i].GetType(), actual[i].GetType());              \
+    }                                                                     \
   } while (false);
 
 // Shorter names for frequently used display item types in tests.

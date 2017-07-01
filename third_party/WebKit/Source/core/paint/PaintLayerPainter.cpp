@@ -524,11 +524,8 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     properties.property_tree_state = *local_border_box_properties;
     properties.backface_hidden =
         paint_layer_.GetLayoutObject().HasHiddenBackface();
-    content_scoped_paint_chunk_properties.emplace(
-        context.GetPaintController(), paint_layer_, properties,
-        // Force a new paint chunk, since it is required for subsequence
-        // caching.
-        should_create_subsequence ? kForceNewChunk : kDontForceNewChunk);
+    content_scoped_paint_chunk_properties.emplace(context.GetPaintController(),
+                                                  paint_layer_, properties);
   }
 
   bool selection_only =

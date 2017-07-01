@@ -26,7 +26,7 @@ class PaintController;
 // responsible for checking that none of the DisplayItemClients that contribute
 // to the subsequence have been invalidated.
 //
-class PLATFORM_EXPORT SubsequenceRecorder final {
+class SubsequenceRecorder final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
   WTF_MAKE_NONCOPYABLE(SubsequenceRecorder);
 
@@ -36,13 +36,23 @@ class PLATFORM_EXPORT SubsequenceRecorder final {
     return context.GetPaintController().UseCachedSubsequenceIfPossible(client);
   }
 
-  SubsequenceRecorder(GraphicsContext&, const DisplayItemClient&);
-  ~SubsequenceRecorder();
+  SubsequenceRecorder(GraphicsContext& context, const DisplayItemClient& client)
+      : paint_controller_(context.GetPaintController()),
+        client_(client),
+        start_(0) {
+    if (!paint_controller_.DisplayItemConstructionIsDisabled())
+      start_ = paint_controller_.BeginSubsequence();
+  }
+
+  ~SubsequenceRecorder() {
+    if (!paint_controller_.DisplayItemConstructionIsDisabled())
+      paint_controller_.EndSubsequence(client_, start_);
+  }
 
  private:
   PaintController& paint_controller_;
   const DisplayItemClient& client_;
-  size_t begin_subsequence_index_;
+  size_t start_;
 };
 
 }  // namespace blink
