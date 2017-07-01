@@ -65,7 +65,7 @@ class VpxOffloadThread {
   ~VpxOffloadThread() {}
 
   scoped_refptr<base::SingleThreadTaskRunner> RequestOffloadThread() {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     ++offload_thread_users_;
     if (!offload_thread_.IsRunning())
       offload_thread_.Start();
@@ -74,7 +74,7 @@ class VpxOffloadThread {
   }
 
   void WaitForOutstandingTasks() {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     DCHECK(offload_thread_users_);
     DCHECK(offload_thread_.IsRunning());
     base::WaitableEvent waiter(base::WaitableEvent::ResetPolicy::AUTOMATIC,
@@ -85,31 +85,29 @@ class VpxOffloadThread {
     waiter.Wait();
   }
 
-  void WaitForOutstandingTasksAndReleaseOffloadThread() {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    DCHECK(offload_thread_users_);
-    DCHECK(offload_thread_.IsRunning());
-    WaitForOutstandingTasks();
-    if (!--offload_thread_users_) {
-      // Don't shut down the thread immediately in case we're in the middle of
-      // a configuration change.
-      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-          FROM_HERE, base::Bind(&VpxOffloadThread::ShutdownOffloadThread,
-                                base::Unretained(this)),
-          base::TimeDelta::FromSeconds(5));
-    }
+  void ReleaseOffloadThread() {
+    if (--offload_thread_users_)
+      return;
+
+    // Don't shut down the thread immediately in case we're in the middle of
+    // a configuration change.
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&VpxOffloadThread::ShutdownOffloadThread,
+                   base::Unretained(this)),
+        base::TimeDelta::FromSeconds(5));
   }
 
  private:
   void ShutdownOffloadThread() {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     if (!offload_thread_users_)
       offload_thread_.Stop();
   }
 
   int offload_thread_users_ = 0;
   base::Thread offload_thread_;
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(VpxOffloadThread);
 };
@@ -216,13 +214,12 @@ class VpxVideoDecoder::MemoryPool
 
   void Shutdown();
 
-  // Reference counted frame buffers used for VP9 decoding. Reference counting
-  // is done manually because both chromium and libvpx has to release this
-  // before a buffer can be re-used.
+  // Reference counted frame buffers used for VP9 decoding.
   struct VP9FrameBuffer {
     std::vector<uint8_t> data;
     std::vector<uint8_t> alpha_data;
-    uint32_t ref_cnt = 0;
+    bool held_by_libvpx = false;
+    bool held_by_frame = false;
     base::TimeTicks last_use_time;
   };
 
@@ -236,7 +233,9 @@ class VpxVideoDecoder::MemoryPool
   friend class base::RefCountedThreadSafe<VpxVideoDecoder::MemoryPool>;
   ~MemoryPool() override;
 
-  // Drop all entries in |frame_buffers_| with a zero |ref_cnt|.
+  static bool IsUsed(const VP9FrameBuffer* buf);
+
+  // Drop all entries in |frame_buffers_| that report !IsUsed().
   void EraseUnusedResources();
 
   // Gets the next available frame buffer for use by libvpx.
@@ -251,27 +250,42 @@ class VpxVideoDecoder::MemoryPool
 
   bool in_shutdown_ = false;
 
+  bool registered_dump_provider_ = false;
+
   // |tick_clock_| is always &|default_tick_clock_| outside of testing.
   base::DefaultTickClock default_tick_clock_;
   base::TickClock* tick_clock_;
 
+  THREAD_CHECKER(thread_checker_);
+
   DISALLOW_COPY_AND_ASSIGN(MemoryPool);
 };
 
-VpxVideoDecoder::MemoryPool::MemoryPool() : tick_clock_(&default_tick_clock_) {}
+VpxVideoDecoder::MemoryPool::MemoryPool() : tick_clock_(&default_tick_clock_) {
+  DETACH_FROM_THREAD(thread_checker_);
+}
 
 VpxVideoDecoder::MemoryPool::~MemoryPool() {
   DCHECK(in_shutdown_);
+
+  // May be destructed on any thread.
 }
 
 VpxVideoDecoder::MemoryPool::VP9FrameBuffer*
 VpxVideoDecoder::MemoryPool::GetFreeFrameBuffer(size_t min_size) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!in_shutdown_);
+
+  if (!registered_dump_provider_) {
+    base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+        this, "VpxVideoDecoder", base::ThreadTaskRunnerHandle::Get());
+    registered_dump_provider_ = true;
+  }
 
   // Check if a free frame buffer exists.
   size_t i = 0;
   for (; i < frame_buffers_.size(); ++i) {
-    if (frame_buffers_[i]->ref_cnt == 0)
+    if (!IsUsed(frame_buffers_[i].get()))
       break;
   }
 
@@ -302,7 +316,9 @@ int32_t VpxVideoDecoder::MemoryPool::GetVP9FrameBuffer(
 
   fb->data = &fb_to_use->data[0];
   fb->size = fb_to_use->data.size();
-  ++fb_to_use->ref_cnt;
+
+  DCHECK(!IsUsed(fb_to_use));
+  fb_to_use->held_by_libvpx = true;
 
   // Set the frame buffer's private data to point at the external frame buffer.
   fb->priv = static_cast<void*>(fb_to_use);
@@ -318,10 +334,12 @@ int32_t VpxVideoDecoder::MemoryPool::ReleaseVP9FrameBuffer(
   if (!fb->priv)
     return -1;
 
+  // Note: libvpx may invoke this method multiple times for the same frame, so
+  // we can't DCHECK that |held_by_libvpx| is true.
   VP9FrameBuffer* frame_buffer = static_cast<VP9FrameBuffer*>(fb->priv);
-  --frame_buffer->ref_cnt;
+  frame_buffer->held_by_libvpx = false;
 
-  if (!frame_buffer->ref_cnt) {
+  if (!IsUsed(frame_buffer)) {
     // TODO(dalecurtis): This should be |tick_clock_| but we don't have access
     // to the main class from this static function and its only needed for tests
     // which all hit the OnVideoFrameDestroyed() path below instead.
@@ -333,8 +351,11 @@ int32_t VpxVideoDecoder::MemoryPool::ReleaseVP9FrameBuffer(
 
 base::Closure VpxVideoDecoder::MemoryPool::CreateFrameCallback(
     void* fb_priv_data) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   VP9FrameBuffer* frame_buffer = static_cast<VP9FrameBuffer*>(fb_priv_data);
-  ++frame_buffer->ref_cnt;
+  frame_buffer->held_by_frame = true;
+
   return BindToCurrentLoop(
       base::Bind(&MemoryPool::OnVideoFrameDestroyed, this, frame_buffer));
 }
@@ -342,6 +363,8 @@ base::Closure VpxVideoDecoder::MemoryPool::CreateFrameCallback(
 bool VpxVideoDecoder::MemoryPool::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   base::trace_event::MemoryAllocatorDump* memory_dump =
       pmd->CreateAllocatorDump("media/vpx/memory_pool");
   base::trace_event::MemoryAllocatorDump* used_memory_dump =
@@ -353,7 +376,7 @@ bool VpxVideoDecoder::MemoryPool::OnMemoryDump(
   size_t bytes_used = 0;
   size_t bytes_reserved = 0;
   for (const auto& frame_buffer : frame_buffers_) {
-    if (frame_buffer->ref_cnt)
+    if (IsUsed(frame_buffer.get()))
       bytes_used += frame_buffer->data.size();
     bytes_reserved += frame_buffer->data.size();
   }
@@ -369,22 +392,39 @@ bool VpxVideoDecoder::MemoryPool::OnMemoryDump(
 }
 
 void VpxVideoDecoder::MemoryPool::Shutdown() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   in_shutdown_ = true;
-  // Drop unused resources. We must maintain ownership of buffers marked as
-  // used since libvpx may not have cleaned up its refs during shutdown; these
-  // are safe to release since libvpx is destroyed before the pool.
+
+  if (registered_dump_provider_) {
+    base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+        this);
+  }
+
+  // Clear any refs held by libvpx which isn't good about cleaning up after
+  // itself. This is safe since libvpx has already been shutdown by this point.
+  for (const auto& frame_buffer : frame_buffers_)
+    frame_buffer->held_by_libvpx = false;
+
   EraseUnusedResources();
 }
 
+// static
+bool VpxVideoDecoder::MemoryPool::IsUsed(const VP9FrameBuffer* buf) {
+  return buf->held_by_libvpx || buf->held_by_frame;
+}
+
 void VpxVideoDecoder::MemoryPool::EraseUnusedResources() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   base::EraseIf(frame_buffers_, [](const std::unique_ptr<VP9FrameBuffer>& buf) {
-    return !buf->ref_cnt;
+    return !IsUsed(buf.get());
   });
 }
 
 void VpxVideoDecoder::MemoryPool::OnVideoFrameDestroyed(
     VP9FrameBuffer* frame_buffer) {
-  --frame_buffer->ref_cnt;
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(frame_buffer->held_by_frame);
+  frame_buffer->held_by_frame = false;
 
   if (in_shutdown_) {
     // If we're in shutdown we can be sure that libvpx has been destroyed.
@@ -393,13 +433,14 @@ void VpxVideoDecoder::MemoryPool::OnVideoFrameDestroyed(
   }
 
   const base::TimeTicks now = tick_clock_->NowTicks();
-  if (!frame_buffer->ref_cnt)
+  if (!IsUsed(frame_buffer))
     frame_buffer->last_use_time = now;
 
-  base::EraseIf(
-      frame_buffers_, [now](const std::unique_ptr<VP9FrameBuffer>& buf) {
-        return !buf->ref_cnt && now - buf->last_use_time > kStaleFrameLimit;
-      });
+  base::EraseIf(frame_buffers_,
+                [now](const std::unique_ptr<VP9FrameBuffer>& buf) {
+                  return !IsUsed(buf.get()) &&
+                         now - buf->last_use_time > kStaleFrameLimit;
+                });
 }
 
 VpxVideoDecoder::VpxVideoDecoder()
@@ -577,10 +618,6 @@ bool VpxVideoDecoder::ConfigureDecoder(const VideoDecoderConfig& config) {
 
     DCHECK(!memory_pool_);
     memory_pool_ = new MemoryPool();
-    base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-        memory_pool_.get(), "VpxVideoDecoder",
-        base::ThreadTaskRunnerHandle::Get());
-
     if (vpx_codec_set_frame_buffer_functions(vpx_codec_,
                                              &MemoryPool::GetVP9FrameBuffer,
                                              &MemoryPool::ReleaseVP9FrameBuffer,
@@ -599,26 +636,37 @@ bool VpxVideoDecoder::ConfigureDecoder(const VideoDecoderConfig& config) {
 }
 
 void VpxVideoDecoder::CloseDecoder() {
-  if (offload_task_runner_) {
-    GetOffloadThread()->WaitForOutstandingTasksAndReleaseOffloadThread();
-    offload_task_runner_ = nullptr;
-  }
+  if (offload_task_runner_)
+    GetOffloadThread()->WaitForOutstandingTasks();
 
   if (vpx_codec_) {
     vpx_codec_destroy(vpx_codec_);
     delete vpx_codec_;
     vpx_codec_ = nullptr;
   }
+
   if (vpx_codec_alpha_) {
     vpx_codec_destroy(vpx_codec_alpha_);
     delete vpx_codec_alpha_;
     vpx_codec_alpha_ = nullptr;
   }
+
   if (memory_pool_) {
-    base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
-        memory_pool_.get());
-    memory_pool_->Shutdown();
+    if (offload_task_runner_) {
+      // Shutdown must be called on the same thread as buffers are created.
+      offload_task_runner_->PostTask(
+          FROM_HERE,
+          base::Bind(&VpxVideoDecoder::MemoryPool::Shutdown, memory_pool_));
+    } else {
+      memory_pool_->Shutdown();
+    }
+
     memory_pool_ = nullptr;
+  }
+
+  if (offload_task_runner_) {
+    GetOffloadThread()->ReleaseOffloadThread();
+    offload_task_runner_ = nullptr;
   }
 }
 
