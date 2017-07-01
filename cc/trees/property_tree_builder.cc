@@ -1027,7 +1027,6 @@ void AddScrollNodeIfNeeded(
     data_for_children->scroll_tree_parent = node_id;
   } else {
     ScrollNode node;
-    node.owning_layer_id = layer->id();
     node.scrollable = scrollable;
     node.main_thread_scrolling_reasons = main_thread_scrolling_reasons;
     node.non_fast_scrollable_region = layer->non_fast_scrollable_region();

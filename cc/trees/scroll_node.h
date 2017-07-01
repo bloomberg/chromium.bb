@@ -27,12 +27,6 @@ struct CC_EXPORT ScrollNode {
   // The node index of the parent node in the scroll tree node vector.
   int parent_id;
 
-  // The layer id that corresponds to the layer contents that are scrolled.
-  // Unlike |id|, this id is stable across frames that don't change the
-  // composited layer list.
-  // TODO(pdr): This is no longer used and can be removed.
-  int owning_layer_id;
-
   uint32_t main_thread_scrolling_reasons;
 
   Region non_fast_scrollable_region;
