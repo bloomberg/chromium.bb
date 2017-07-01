@@ -1,4 +1,4 @@
-# This UI is deprecated. See chrome/browser/ui/webui/options/ instead.
+# This UI is deprecated. See chrome/browser/ui/webui/settings/ instead.
 set noparent
 
 dbeam@chromium.org
