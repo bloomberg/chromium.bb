@@ -141,6 +141,21 @@ IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, ImmersiveFullscreen) {
 }
 #endif  // OS_CHROMEOS
 
+// Tests that trying to open zoom bubble with stale WebContents is safe.
+IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, NoWebContentsIsSafe) {
+  BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
+  content::WebContents* web_contents = browser_view->GetActiveWebContents();
+
+  ZoomBubbleView::ShowBubble(web_contents, gfx::Point(),
+                             ZoomBubbleView::AUTOMATIC);
+
+  // Close the current tab and try opening the zoom bubble with stale
+  // |web_contents|.
+  chrome::CloseTab(browser());
+  ZoomBubbleView::ShowBubble(web_contents, gfx::Point(),
+                             ZoomBubbleView::AUTOMATIC);
+}
+
 class ZoomBubbleDialogTest : public DialogBrowserTest {
  public:
   ZoomBubbleDialogTest() {}
