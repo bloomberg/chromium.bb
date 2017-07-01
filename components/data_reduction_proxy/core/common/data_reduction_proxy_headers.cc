@@ -30,7 +30,8 @@ namespace {
 
 const char kChromeProxyHeader[] = "chrome-proxy";
 const char kDataReductionPassThroughHeader[] =
-    "Chrome-Proxy-Accept-Transform: identity\nCache-Control: no-cache";
+    "Chrome-Proxy-Accept-Transform: identity\r\nCache-Control: "
+    "no-cache\r\n\r\n";
 const char kChromeProxyECTHeader[] = "chrome-proxy-ect";
 const char kChromeProxyAcceptTransformHeader[] =
     "chrome-proxy-accept-transform";
