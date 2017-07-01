@@ -15,6 +15,7 @@
 #include "base/hash.h"
 #include "base/macros.h"
 #include "base/supports_user_data.h"
+#include "base/time/time.h"
 #include "chrome/browser/data_use_measurement/chrome_data_use_recorder.h"
 #include "components/data_use_measurement/core/data_use_ascriber.h"
 #include "content/public/browser/global_request_id.h"
@@ -91,6 +92,14 @@ class ChromeDataUseAscriber : public DataUseAscriber {
       int render_process_id,
       int render_frame_id);
 
+  // Called when the main frame navigation is committed in the renderer.
+  void DidFinishMainFrameNavigation(int render_process_id,
+                                    int render_frame_id,
+                                    const GURL& gurl,
+                                    bool is_same_page_navigation,
+                                    uint32_t page_transition,
+                                    base::TimeTicks time);
+
   // Called every time the WebContents changes visibility.
   void WasShownOrHidden(int main_render_process_id,
                         int main_render_frame_id,
@@ -101,12 +110,6 @@ class ChromeDataUseAscriber : public DataUseAscriber {
                               int old_render_frame_id,
                               int new_render_process_id,
                               int new_render_frame_id);
-
-  void DidFinishMainFrameNavigation(int render_process_id,
-                                    int render_frame_id,
-                                    const GURL& gurl,
-                                    bool is_same_page_navigation,
-                                    uint32_t page_transition);
 
  private:
   friend class ChromeDataUseAscriberTest;

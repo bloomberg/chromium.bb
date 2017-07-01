@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/data_use_measurement/chrome_data_use_ascriber.h"
 #include "chrome/browser/io_thread.h"
@@ -173,13 +174,13 @@ void ChromeDataUseAscriberService::DidFinishNavigation(
   content::WebContents* web_contents = navigation_handle->GetWebContents();
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&ChromeDataUseAscriber::DidFinishMainFrameNavigation,
-                     base::Unretained(ascriber_),
-                     web_contents->GetRenderProcessHost()->GetID(),
-                     web_contents->GetMainFrame()->GetRoutingID(),
-                     navigation_handle->GetURL(),
-                     navigation_handle->IsSameDocument(),
-                     navigation_handle->GetPageTransition()));
+      base::BindOnce(
+          &ChromeDataUseAscriber::DidFinishMainFrameNavigation,
+          base::Unretained(ascriber_),
+          web_contents->GetRenderProcessHost()->GetID(),
+          web_contents->GetMainFrame()->GetRoutingID(),
+          navigation_handle->GetURL(), navigation_handle->IsSameDocument(),
+          navigation_handle->GetPageTransition(), base::TimeTicks::Now()));
 }
 
 void ChromeDataUseAscriberService::SetDataUseAscriber(

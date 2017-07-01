@@ -6,6 +6,7 @@
 
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/data_use_measurement/chrome_data_use_recorder.h"
@@ -172,6 +173,9 @@ void ChromeDataUseAscriber::OnUrlRequestCompleted(
   if (!recorder)
     return;
 
+  for (auto& observer : observers_)
+    observer.OnPageResourceLoad(request, &recorder->data_use());
+
   const content::ResourceRequestInfo* request_info =
       content::ResourceRequestInfo::ForRequest(&request);
   if (!request_info ||
@@ -196,9 +200,6 @@ void ChromeDataUseAscriber::OnUrlRequestDestroyed(net::URLRequest* request) {
 
   if (entry == data_use_recorders_.end())
     return;
-
-  for (auto& observer : observers_)
-    observer.OnPageResourceLoad(*request, &entry->data_use());
 
   const auto main_frame_it =
       main_render_frame_entry_map_.find(entry->main_frame_id());
@@ -310,7 +311,8 @@ void ChromeDataUseAscriber::DidFinishMainFrameNavigation(
     int render_frame_id,
     const GURL& gurl,
     bool is_same_page_navigation,
-    uint32_t page_transition) {
+    uint32_t page_transition,
+    base::TimeTicks time) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   RenderFrameHostID main_frame(render_process_id, render_frame_id);
@@ -376,7 +378,6 @@ void ChromeDataUseAscriber::DidFinishMainFrameNavigation(
   DataUseRecorderEntry old_frame_entry =
       main_frame_it->second.data_use_recorder;
   old_frame_entry->set_page_transition(page_transition);
-  NotifyPageLoadCommit(old_frame_entry);
 
   if (is_same_page_navigation) {
     std::vector<net::URLRequest*> pending_url_requests;
@@ -386,12 +387,9 @@ void ChromeDataUseAscriber::DidFinishMainFrameNavigation(
       entry->MovePendingURLRequestTo(&(*old_frame_entry), request);
     }
     data_use_recorders_.erase(entry);
-  } else {
-    if (old_frame_entry->IsDataUseComplete()) {
-      NotifyDataUseCompleted(old_frame_entry);
-      data_use_recorders_.erase(old_frame_entry);
-    }
 
+    NotifyPageLoadCommit(old_frame_entry);
+  } else {
     DataUse& data_use = entry->data_use();
     DCHECK(!data_use.url().is_valid() || data_use.url() == gurl)
         << "is valid: " << data_use.url().is_valid()
@@ -401,8 +399,31 @@ void ChromeDataUseAscriber::DidFinishMainFrameNavigation(
       data_use.set_url(gurl);
     }
 
+    // |time| is when navigation commit finished in UI thread. Before this
+    // navigation finish is processed in IO thread, there could be some
+    // subresource requests started and get asribed to |old_frame_entry|. Move
+    // these requests that started after |time| but ascribed to the previous
+    // page load to page load |entry|.
+    // TODO(rajendrant): This does not move completed requests. It is possible
+    // that requests could complete (more likely for cached requests) before
+    // this code is executed. crbug.com/738522
+    std::vector<net::URLRequest*> pending_url_requests;
+    old_frame_entry->GetPendingURLRequests(&pending_url_requests);
+    for (net::URLRequest* request : pending_url_requests) {
+      DCHECK(
+          !old_frame_entry->GetPendingURLRequestStartTime(request).is_null());
+      if (old_frame_entry->GetPendingURLRequestStartTime(request) > time) {
+        old_frame_entry->MovePendingURLRequestTo(&*entry, request);
+        AscribeRecorderWithRequest(request, entry);
+      }
+    }
+    if (old_frame_entry->IsDataUseComplete()) {
+      NotifyDataUseCompleted(old_frame_entry);
+      data_use_recorders_.erase(old_frame_entry);
+    }
     entry->set_is_visible(main_frame_it->second.is_visible);
     main_frame_it->second.data_use_recorder = entry;
+    NotifyPageLoadCommit(entry);
   }
 }
 
