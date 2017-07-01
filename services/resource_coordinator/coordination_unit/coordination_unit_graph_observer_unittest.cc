@@ -97,7 +97,7 @@ class TestCoordinationUnitGraphObserver : public CoordinationUnitGraphObserver {
 
 }  // namespace
 
-TEST_F(CoordinationUnitGraphObserverTest, CallbacksInvokedNoFilters) {
+TEST_F(CoordinationUnitGraphObserverTest, CallbacksInvoked) {
   EXPECT_TRUE(coordination_unit_manager().observers_for_testing().empty());
   coordination_unit_manager().RegisterObserver(
       base::MakeUnique<TestCoordinationUnitGraphObserver>());

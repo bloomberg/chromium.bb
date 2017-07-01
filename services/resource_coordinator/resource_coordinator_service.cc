@@ -6,13 +6,22 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
+#include "services/resource_coordinator/coordination_unit/tab_signal_generator.h"
 #include "services/resource_coordinator/service_callbacks_impl.h"
 #include "services/service_manager/public/cpp/service_context.h"
 
 namespace resource_coordinator {
 
 std::unique_ptr<service_manager::Service> ResourceCoordinatorService::Create() {
-  return base::MakeUnique<ResourceCoordinatorService>();
+  auto resource_coordinator_service =
+      base::MakeUnique<ResourceCoordinatorService>();
+
+  // Register new |CoordinationUnitGraphObserver| implementations here.
+  resource_coordinator_service->coordination_unit_manager()->RegisterObserver(
+      base::MakeUnique<TabSignalGenerator>());
+
+  return resource_coordinator_service;
 }
 
 ResourceCoordinatorService::ResourceCoordinatorService()
