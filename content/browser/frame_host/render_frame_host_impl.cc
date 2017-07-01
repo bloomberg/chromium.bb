@@ -45,6 +45,7 @@
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/media/media_interface_proxy.h"
 #include "content/browser/media/session/media_session_service_impl.h"
+#include "content/browser/payments/payment_app_context_impl.h"
 #include "content/browser/permissions/permission_service_context.h"
 #include "content/browser/permissions/permission_service_impl.h"
 #include "content/browser/presentation/presentation_service_impl.h"
@@ -60,6 +61,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/shared_worker/shared_worker_service_impl.h"
+#include "content/browser/storage_partition_impl.h"
 #include "content/browser/webauth/authenticator_impl.h"
 #include "content/browser/websockets/websocket_manager.h"
 #include "content/browser/webui/url_data_manager_backend.h"
@@ -350,6 +352,16 @@ void ForwardShapeDetectionRequest(const service_manager::BindSourceInfo&,
       ServiceManagerConnection::GetForProcess()->GetConnector();
   connector->BindInterface(shape_detection::mojom::kServiceName,
                            std::move(request));
+}
+
+void CreatePaymentManager(RenderFrameHostImpl* rfh,
+                          const service_manager::BindSourceInfo& source_info,
+                          payments::mojom::PaymentManagerRequest request) {
+  StoragePartitionImpl* storage_partition =
+      static_cast<StoragePartitionImpl*>(BrowserContext::GetStoragePartition(
+          rfh->GetSiteInstance()->GetBrowserContext(), rfh->GetSiteInstance()));
+  storage_partition->GetPaymentAppContext()->CreatePaymentManager(
+      source_info, std::move(request));
 }
 
 }  // namespace
@@ -2924,6 +2936,9 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   GetInterfaceRegistry()->AddInterface(
       base::Bind(&ForwardShapeDetectionRequest<
                  shape_detection::mojom::TextDetectionRequest>));
+
+  GetInterfaceRegistry()->AddInterface(
+      base::Bind(&CreatePaymentManager, base::Unretained(this)));
 
   if (base::FeatureList::IsEnabled(features::kWebAuth)) {
     GetInterfaceRegistry()->AddInterface(

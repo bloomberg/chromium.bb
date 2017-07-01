@@ -117,6 +117,7 @@
           "media::mojom::RemoterFactory",
           "media::mojom::Renderer",
           "mojom::MediaDevicesDispatcherHost",
+          "payments::mojom::PaymentManager",
           "payments::mojom::PaymentRequest",
           "resource_coordinator::mojom::CoordinationUnit",
           "shape_detection::mojom::BarcodeDetection",
