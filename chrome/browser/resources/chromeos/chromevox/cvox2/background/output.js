@@ -277,11 +277,14 @@ Output.RULES = {
     },
     alert: {
       enter: '$name $role $state',
-      speak: '$earcon(ALERT_NONMODAL) $role $nameOrTextContent $state'
+      speak: '$earcon(ALERT_NONMODAL) $role $nameOrTextContent $description ' +
+          '$state'
     },
     alertDialog: {
-      enter: '$earcon(ALERT_MODAL) $name $state',
-      speak: '$earcon(ALERT_MODAL) $name $nameOrTextContent $state $role'
+      enter: '$earcon(ALERT_MODAL) $name $state $description',
+      speak:
+          '$earcon(ALERT_MODAL) $name $nameOrTextContent $description $state ' +
+          '$role'
     },
     cell: {
       enter: '@cell_summary($if($ariaCellRowIndex, $ariaCellRowIndex, ' +
@@ -291,7 +294,7 @@ Output.RULES = {
       speak: '$name @cell_summary($if($ariaCellRowIndex, $ariaCellRowIndex, ' +
           '$tableCellRowIndex), ' +
           '$if($ariaCellColumnIndex, $ariaCellColumnIndex, ' +
-          '$tableCellColumnIndex)) $node(tableColumnHeader) $state'
+          '$tableCellColumnIndex)) $node(tableColumnHeader) $state $description'
     },
     checkBox: {
       speak: '$if($checked, $earcon(CHECK_ON), $earcon(CHECK_OFF)) ' +
@@ -300,8 +303,10 @@ Output.RULES = {
     client: {speak: '$name'},
     date: {enter: '$nameFromNode $role $description'},
     dialog: {enter: '$nameFromNode $role $description'},
-    genericContainer:
-        {enter: '$nameFromNode', speak: '$nameOrTextContent $description'},
+    genericContainer: {
+      enter: '$nameFromNode $description $state',
+      speak: '$nameOrTextContent $description $state'
+    },
     embeddedObject: {speak: '$name'},
     grid: {enter: '$nameFromNode $role $description'},
     group: {
@@ -312,10 +317,12 @@ Output.RULES = {
     heading: {
       enter: '!relativePitch(hierarchicalLevel) ' +
           '$nameFromNode= ' +
-          '$if($hierarchicalLevel, @tag_h+$hierarchicalLevel, $role) $state',
+          '$if($hierarchicalLevel, @tag_h+$hierarchicalLevel, $role) $state ' +
+          '$description',
       speak: '!relativePitch(hierarchicalLevel) ' +
           '$nameOrDescendants= ' +
-          '$if($hierarchicalLevel, @tag_h+$hierarchicalLevel, $role) $state'
+          '$if($hierarchicalLevel, @tag_h+$hierarchicalLevel, $role) $state ' +
+          '$description'
     },
     image: {
       speak: '$if($name, $name, $urlFilename) ' +
@@ -330,7 +337,8 @@ Output.RULES = {
     },
     list: {
       enter: '$role @@list_with_items($countChildren(listItem))',
-      speak: '$descendants $role @@list_with_items($countChildren(listItem))'
+      speak: '$descendants $role @@list_with_items($countChildren(listItem)) ' +
+          '$description $state'
     },
     listBox: {
       enter: '$nameFromNode ' +
@@ -348,7 +356,8 @@ Output.RULES = {
     listMarker: {speak: '$name'},
     menu: {
       enter: '$name $role',
-      speak: '$name $role @@list_with_items($countChildren(menuItem)) $state'
+      speak: '$name $role @@list_with_items($countChildren(menuItem)) ' +
+          '$description $state'
     },
     menuItem: {
       speak: '$name $role $if($haspopup, @has_submenu) ' +
@@ -357,18 +366,19 @@ Output.RULES = {
     },
     menuItemCheckBox: {
       speak: '$if($checked, $earcon(CHECK_ON), $earcon(CHECK_OFF)) ' +
-          '$name $role $checked $description ' +
+          '$name $role $checked $state $description ' +
           '@describe_index($indexInParent, $parentChildCount) '
     },
     menuItemRadio: {
       speak: '$if($checked, $earcon(CHECK_ON), $earcon(CHECK_OFF)) ' +
           '$if($checked, @describe_radio_selected($name), ' +
-          '@describe_radio_unselected($name)) $description ' +
+          '@describe_radio_unselected($name)) $state $description ' +
           '@describe_index($indexInParent, $parentChildCount) '
     },
     menuListOption: {
       speak: '$name @role_menuitem ' +
-          '@describe_index($indexInParent, $parentChildCount) $description'
+          '@describe_index($indexInParent, $parentChildCount) $state ' +
+          '$description'
     },
     paragraph: {speak: '$descendants'},
     popUpButton: {
@@ -378,13 +388,13 @@ Output.RULES = {
     radioButton: {
       speak: '$if($checked, $earcon(CHECK_ON), $earcon(CHECK_OFF)) ' +
           '$if($checked, @describe_radio_selected($name), ' +
-          '@describe_radio_unselected($name)) $description'
+          '@describe_radio_unselected($name)) $description $state'
     },
     radioGroup: {enter: '$name $role $description'},
     rootWebArea: {enter: '$name', speak: '$if($name, $name, $docUrl)'},
-    region: {speak: '$nameOrTextContent'},
+    region: {speak: '$state $nameOrTextContent $description'},
     row: {enter: '$node(tableRowHeader)'},
-    rowHeader: {speak: '$nameOrTextContent $state'},
+    rowHeader: {speak: '$nameOrTextContent $description $state'},
     staticText: {speak: '$name='},
     switch: {
       speak: '$if($checked, $earcon(CHECK_ON), $earcon(CHECK_OFF)) ' +
@@ -419,7 +429,7 @@ Output.RULES = {
           '@describe_index($indexInParent, $parentChildCount) ' +
           '@describe_depth($hierarchicalLevel)',
       speak: '$name ' +
-          '$role $state ' +
+          '$role $description $state ' +
           '@describe_index($indexInParent, $parentChildCount) ' +
           '@describe_depth($hierarchicalLevel)'
     },

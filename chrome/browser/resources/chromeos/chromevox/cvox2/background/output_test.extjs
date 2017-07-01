@@ -787,3 +787,55 @@ TEST_F('OutputE2ETest', 'RoleDescription', function() {
       o);
   });
 });
+
+SYNC_TEST_F('OutputE2ETest', 'ValidateStateAndDescription', function() {
+  var stateStr = '$state';
+  var descStr = '$description';
+  var missingState = [];
+  var missingDescription = [];
+  for (var key in Output.RULES.navigate) {
+    var speak = Output.RULES.navigate[key].speak;
+    if (!speak)
+    continue;
+
+    if (speak.indexOf(stateStr) == -1)
+      missingState.push(key);
+    if (speak.indexOf(descStr) == -1)
+      missingDescription.push(key);
+  }
+
+  // This filters out known roles that don't have states or descriptions.
+  var notStated = [RoleType.CLIENT, RoleType.EMBEDDED_OBJECT,
+      RoleType.INLINE_TEXT_BOX, RoleType.LIST_MARKER,
+      RoleType.PARAGRAPH, RoleType.ROOT_WEB_AREA,
+      RoleType.STATIC_TEXT, RoleType.WINDOW];
+  var notDescribed = [RoleType.CLIENT, RoleType.EMBEDDED_OBJECT,
+      RoleType.INLINE_TEXT_BOX, RoleType.LIST_MARKER, RoleType.PARAGRAPH,
+      RoleType.ROOT_WEB_AREA, RoleType.STATIC_TEXT, RoleType.WINDOW];
+  missingState = missingState.filter(function(state) {
+    return notStated.indexOf(state) == -1;
+  });
+  missingDescription = missingDescription.filter(function(desc) {
+    return notDescribed.indexOf(desc) == -1;
+  });
+
+  assertEquals(0, missingState.length,
+               'Unexpected missing states for output rules ' +
+                   missingState.join(' '));
+  assertEquals(0, missingDescription.length,
+               'Unexpected missing descriptions for output rules ' +
+                   missingDescription.join(' '));
+
+  // If you fail this test, you likely need to insert a $state or $description
+  // into the output rules for the printed roles. Typically, $description goes
+  // towards the end of the output rule, though this depends on the role. For
+  // example, it could make sense to put $description before $value or $state.
+
+  // You can also add the role to be excluded from this check. You are
+  // encouraged to write a more intelligent output rule to provide friendlier
+  // feedback. For example, 'not selected apple item 2 out of 3' coming from a
+  // message template like '@smart_selection($state, $name, $indexInParent,
+  // $childCount)'.
+  // In such cases, you are responsible for ensuring you include all states and
+  // descriptions somewhere in the output.
+});
