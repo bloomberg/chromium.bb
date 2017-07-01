@@ -37,6 +37,7 @@ License along with liblouis. If not, see <http://www.gnu.org/licenses/>.
 extern "C" {
 #endif /* __cplusplus */
 
+#include <stdio.h>
 #include "liblouis.h"
 
 #ifdef _WIN32
@@ -570,6 +571,21 @@ typedef enum {
   lenPhraseOffset = 8
 } EmphCodeOffset;
 
+
+typedef enum { noEncoding, bigEndian, littleEndian, ascii8 } EncodingType;
+
+typedef struct {
+  const char *fileName;
+  FILE *in;
+  int lineNumber;
+  EncodingType encoding;
+  int status;
+  int linelen;
+  int linepos;
+  int checkencoding[2];
+  widechar line[MAXSTRING];
+} FileInfo;
+
 /* The following function definitions are hooks into
 * compileTranslationTable.c. Some are used by other library modules.
 * Others are used by tools like lou_allround.c and lou_debug.c. */
@@ -727,6 +743,11 @@ void EXPORT_CALL _lou_pattern_reverse(widechar *expr_data);
 int EXPORT_CALL _lou_pattern_check(const widechar *input, const int input_start, const int
 		  input_minmax, const int input_dir, const widechar *expr_data,
 		  const TranslationTableHeader *t);
+
+/**
+ * Read a line of widechar's from an input file
+ */
+int EXPORT_CALL _lou_getALine(FileInfo *info);
 
 #ifdef DEBUG
 /* Can be inserted in code to be used as a breakpoint in gdb */

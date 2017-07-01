@@ -33,7 +33,6 @@ License along with liblouis. If not, see <http://www.gnu.org/licenses/>.
 #endif
 #include <sys/stat.h>
 #include "internal.h"
-#include "metadata.h"
 #include "config.h"
 
 /* =============================== LIST =================================== */
