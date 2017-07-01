@@ -60,7 +60,7 @@ cr.define('settings', function() {
    * because polymer only notifies after a property is set.
    * @type {!GuestModePageVisibility}
    */
-  var pageVisibility = {};
+  var pageVisibility;
 
   if (loadTimeData.getBoolean('isGuest')) {
     // "if not chromeos" and "if chromeos" in two completely separate blocks
