@@ -183,10 +183,15 @@ void WebrtcConnectionToClient::OnWebrtcTransportIncomingDataChannel(
     const std::string& name,
     std::unique_ptr<MessagePipe> pipe) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(event_handler_);
+
   if (name == event_dispatcher_->channel_name() &&
       !event_dispatcher_->is_connected()) {
     event_dispatcher_->Init(std::move(pipe), this);
+    return;
   }
+
+  event_handler_->OnIncomingDataChannel(name, std::move(pipe));
 }
 
 void WebrtcConnectionToClient::OnWebrtcTransportMediaStreamAdded(

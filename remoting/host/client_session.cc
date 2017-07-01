@@ -49,7 +49,9 @@ ClientSession::ClientSession(
     const DesktopEnvironmentOptions& desktop_environment_options,
     const base::TimeDelta& max_duration,
     scoped_refptr<protocol::PairingRegistry> pairing_registry,
-    const std::vector<HostExtension*>& extensions)
+    const std::vector<HostExtension*>& extensions,
+    const std::vector<protocol::DataChannelManager::NameCallbackPair>&
+        data_channel_callbacks)
     : event_handler_(event_handler),
       connection_(std::move(connection)),
       client_jid_(connection_->session()->jid()),
@@ -73,6 +75,11 @@ ClientSession::ClientSession(
 
   // Create a manager for the configured extensions, if any.
   extension_manager_.reset(new HostExtensionSessionManager(extensions, this));
+
+  for (const auto& callback : data_channel_callbacks) {
+    data_channel_manager_.RegisterCreateHandlerCallback(callback.first,
+                                                        callback.second);
+  }
 
 #if defined(OS_WIN)
   // LocalInputMonitorWin filters out an echo of the injected input before it
@@ -356,11 +363,16 @@ void ClientSession::OnConnectionClosed(protocol::ErrorCode error) {
   event_handler_->OnSessionClosed(this);
 }
 
-void ClientSession::OnRouteChange(
-    const std::string& channel_name,
-    const protocol::TransportRoute& route) {
+void ClientSession::OnRouteChange(const std::string& channel_name,
+                                  const protocol::TransportRoute& route) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   event_handler_->OnSessionRouteChange(this, channel_name, route);
+}
+
+void ClientSession::OnIncomingDataChannel(
+    const std::string& channel_name,
+    std::unique_ptr<protocol::MessagePipe> pipe) {
+  data_channel_manager_.OnIncomingDataChannel(channel_name, std::move(pipe));
 }
 
 const std::string& ClientSession::client_jid() const {

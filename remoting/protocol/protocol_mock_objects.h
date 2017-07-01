@@ -85,6 +85,13 @@ class MockConnectionToClientEventHandler
                void(const std::string& channel_name,
                     const TransportRoute& route));
 
+  MOCK_METHOD2(OnIncomingDataChannelPtr,
+               void(const std::string& channel_name, MessagePipe* pipe));
+  void OnIncomingDataChannel(const std::string& channel_name,
+                             std::unique_ptr<MessagePipe> pipe) override {
+    OnIncomingDataChannelPtr(channel_name, pipe.get());
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MockConnectionToClientEventHandler);
 };
