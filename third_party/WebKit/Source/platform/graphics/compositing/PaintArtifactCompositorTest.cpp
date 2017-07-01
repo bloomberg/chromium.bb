@@ -769,7 +769,6 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, OneScrollNode) {
             scroll_node.main_thread_scrolling_reasons);
 
   auto* layer = ContentLayerAt(0);
-  EXPECT_EQ(layer->id(), scroll_node.owning_layer_id);
   auto scroll_node_index = layer->scroll_tree_index();
   EXPECT_EQ(scroll_node_index, scroll_node.id);
 

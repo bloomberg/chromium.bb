@@ -137,7 +137,6 @@ void PropertyTreeManager::SetupRootScrollNode() {
   cc::ScrollNode& scroll_node =
       *scroll_tree.Node(scroll_tree.Insert(cc::ScrollNode(), kRealRootNodeId));
   DCHECK_EQ(scroll_node.id, kSecondaryRootNodeId);
-  scroll_node.owning_layer_id = root_layer_->id();
   scroll_node.transform_id = kSecondaryRootNodeId;
 
   scroll_node_map_.Set(ScrollPaintPropertyNode::Root(), scroll_node.id);
@@ -307,28 +306,26 @@ void PropertyTreeManager::UpdateLayerScrollMapping(
   auto* enclosing_scroll_node = transform->FindEnclosingScrollNode();
   int scroll_node_id = EnsureCompositorScrollNode(enclosing_scroll_node);
   layer->SetScrollTreeIndex(scroll_node_id);
-  int layer_id = layer->id();
   auto& compositor_scroll_node = *GetScrollTree().Node(scroll_node_id);
 
   if (!transform->IsScrollTranslation())
     return;
 
-  // TODO(pdr): Remove the scroll node's owning_layer_id. This approach of
-  // setting owning_layer_id only when it is not set lets us maintain a 1:1
-  // mapping from layer to scroll node.
-  if (compositor_scroll_node.owning_layer_id == cc::Layer::INVALID_ID) {
-    compositor_scroll_node.owning_layer_id = layer_id;
-    auto& compositor_transform_node =
-        *GetTransformTree().Node(compositor_scroll_node.transform_id);
-    // TODO(pdr): Set this in updateScrollAndScrollTranslationNodes once the
-    // layer id is no longer needed.
-    GetScrollTree().SetScrollOffset(transform->GetCompositorElementId(),
-                                    compositor_transform_node.scroll_offset);
-    if (auto* scroll_client = enclosing_scroll_node->ScrollClient()) {
-      layer->set_did_scroll_callback(
-          base::Bind(&blink::WebLayerScrollClient::DidScroll,
-                     base::Unretained(scroll_client)));
-    }
+  auto& compositor_transform_node =
+      *GetTransformTree().Node(compositor_scroll_node.transform_id);
+  // TODO(pdr): Set this in updateScrollAndScrollTranslationNodes once the
+  // layer id is no longer needed.
+  GetScrollTree().SetScrollOffset(transform->GetCompositorElementId(),
+                                  compositor_transform_node.scroll_offset);
+
+  // TODO(pdr): This approach of setting a callback on all Layers with a scroll
+  // node is wrong because only the base scrollable layer needs this callback.
+  // This should be fixed as part of correctly creating scrollable layers in
+  // https://crbug.com/738613.
+  if (auto* scroll_client = enclosing_scroll_node->ScrollClient()) {
+    layer->set_did_scroll_callback(
+        base::Bind(&blink::WebLayerScrollClient::DidScroll,
+                   base::Unretained(scroll_client)));
   }
 }
 

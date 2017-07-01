@@ -3038,10 +3038,6 @@ bool LayerTreeHostImpl::ScrollAnimationCreate(ScrollNode* scroll_node,
       scroll_tree.current_scroll_offset(scroll_node->element_id);
   gfx::ScrollOffset target_offset = scroll_tree.ClampScrollOffsetToLimits(
       current_offset + gfx::ScrollOffset(delta), scroll_node);
-  DCHECK_EQ(
-      ElementId(
-          active_tree()->LayerById(scroll_node->owning_layer_id)->element_id()),
-      scroll_node->element_id);
 
   // Start the animation one full frame in. Without any offset, the animation
   // doesn't start until next frame, increasing latency, and preventing our
@@ -4216,11 +4212,6 @@ bool LayerTreeHostImpl::ScrollAnimationUpdateTarget(
     ScrollNode* scroll_node,
     const gfx::Vector2dF& scroll_delta,
     base::TimeDelta delayed_by) {
-  DCHECK_EQ(
-      ElementId(
-          active_tree()->LayerById(scroll_node->owning_layer_id)->element_id()),
-      scroll_node->element_id);
-
   return mutator_host_->ImplOnlyScrollAnimationUpdateTarget(
       scroll_node->element_id, scroll_delta,
       active_tree_->property_trees()->scroll_tree.MaxScrollOffset(
