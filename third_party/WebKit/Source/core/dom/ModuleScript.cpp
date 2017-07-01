@@ -184,6 +184,11 @@ bool ModuleScript::HasEmptyRecord() const {
   return record_.IsEmpty();
 }
 
+ScriptModuleState ModuleScript::RecordStatus() const {
+  DCHECK(!record_.IsEmpty());
+  return settings_object_->GetRecordStatus(Record());
+}
+
 void ModuleScript::SetErrorAndClearRecord(ScriptValue error) {
   DVLOG(1) << "ModuleScript[" << this << "]::SetErrorAndClearRecord()";
 

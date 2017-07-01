@@ -58,6 +58,7 @@ class DummyModulator : public Modulator {
                              const TextPosition&,
                              ExceptionState&) override;
   ScriptValue InstantiateModule(ScriptModule) override;
+  ScriptModuleState GetRecordStatus(ScriptModule) override;
   ScriptValue GetError(const ModuleScript*) override;
   Vector<ModuleRequest> ModuleRequestsFromScriptModule(ScriptModule) override;
   void ExecuteModule(const ModuleScript*) override;
