@@ -44,6 +44,7 @@ const char kActionValueDelimiter = '=';
 const char kEmptyImageDirective[] = "empty-image";
 const char kLitePageDirective[] = "lite-page";
 const char kCompressedVideoDirective[] = "compressed-video";
+const char kIdentityDirective[] = "identity";
 const char kChromeProxyPagePoliciesDirective[] = "page-policies";
 
 // The legacy Chrome-Proxy response header directive for LoFi images.
@@ -234,6 +235,10 @@ TransformDirective ParseResponseTransform(
   } else if (base::LowerCaseEqualsASCII(content_transform_value,
                                         empty_image_directive())) {
     return TRANSFORM_EMPTY_IMAGE;
+  } else if (base::LowerCaseEqualsASCII(content_transform_value,
+                                        kIdentityDirective)) {
+    // Open Original Image - not really a transform.
+    return TRANSFORM_NONE;
   } else {
     NOTREACHED() << "Unexpected content transform header: "
                  << content_transform_value;
