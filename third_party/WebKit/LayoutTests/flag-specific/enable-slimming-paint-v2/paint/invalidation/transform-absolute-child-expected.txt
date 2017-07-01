@@ -1,0 +1,23 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV id='box' class='rotated'",
+          "rect": [16, 8, 497, 464],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV id='box'",
+          "rect": [58, 50, 477, 204],
+          "reason": "paint property change"
+        }
+      ]
+    }
+  ]
+}
+
