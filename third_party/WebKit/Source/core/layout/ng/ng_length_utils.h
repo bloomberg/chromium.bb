@@ -35,6 +35,8 @@ enum class LengthResolveType {
 CORE_EXPORT bool NeedMinMaxContentSize(const NGConstraintSpace&,
                                        const ComputedStyle&);
 
+CORE_EXPORT bool NeedMinMaxContentSize(const ComputedStyle&);
+
 // Like NeedMinMaxContentSize, but for use when calling
 // ComputeMinAndMaxContentContribution.
 CORE_EXPORT bool NeedMinMaxContentSizeForContentContribution(

@@ -22,8 +22,11 @@ bool NeedMinMaxContentSize(const NGConstraintSpace& constraint_space,
   // This check is technically too broad (fill-available does not need intrinsic
   // size computation) but that's a rare case and only affects performance, not
   // correctness.
-  return constraint_space.IsShrinkToFit() ||
-         style.LogicalWidth().IsIntrinsic() ||
+  return constraint_space.IsShrinkToFit() || NeedMinMaxContentSize(style);
+}
+
+bool NeedMinMaxContentSize(const ComputedStyle& style) {
+  return style.LogicalWidth().IsIntrinsic() ||
          style.LogicalMinWidth().IsIntrinsic() ||
          style.LogicalMaxWidth().IsIntrinsic();
 }
