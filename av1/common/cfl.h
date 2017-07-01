@@ -43,7 +43,9 @@ typedef struct {
 
   // Transform level averages of the luma reconstructed values over the entire
   // prediction unit
-  double y_averages[MAX_NUM_TXB];
+  // Fixed point y_averages is Q12.10:
+  //   * Worst case division is 1/1024
+  int y_averages_q10[MAX_NUM_TXB];
   int y_averages_stride;
 
   int are_parameters_computed;

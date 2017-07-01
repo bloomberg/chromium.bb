@@ -190,12 +190,14 @@ static void cfl_compute_averages(CFL_CTX *cfl, TX_SIZE tx_size) {
   const int tx_width = tx_size_wide[tx_size];
   const int stride = width >> tx_size_wide_log2[tx_size];
   const int block_row_stride = MAX_SB_SIZE << tx_size_high_log2[tx_size];
-  const double num_pel = tx_width * tx_height;
+  const int num_pel_log2 =
+      (tx_size_high_log2[tx_size] + tx_size_wide_log2[tx_size]);
+
   // TODO(ltrudeau) Convert to uint16 for HBD support
   const uint8_t *y_pix = cfl->y_down_pix;
   // TODO(ltrudeau) Convert to uint16 for HBD support
   const uint8_t *t_y_pix;
-  double *averages = cfl->y_averages;
+  int *averages_q10 = cfl->y_averages_q10;
 
   cfl_load(cfl, 0, 0, width, height);
 
@@ -210,7 +212,11 @@ static void cfl_compute_averages(CFL_CTX *cfl, TX_SIZE tx_size) {
         }
         t_y_pix += MAX_SB_SIZE;
       }
-      averages[a++] = sum / num_pel;
+      averages_q10[a++] = (sum << 10) >> num_pel_log2;
+
+      // Assert no loss from fixed point
+      assert((double)averages_q10[a - 1] ==
+             (sum / ((double)(1 << num_pel_log2))) * (1 << 10));
     }
     assert(a % stride == 0);
     y_pix += block_row_stride;
@@ -256,7 +262,7 @@ void cfl_predict_block(MACROBLOCKD *const xd, uint8_t *dst, int dst_stride,
   const int avg_col =
       (col << tx_size_high_log2[0]) >> tx_size_high_log2[tx_size];
   const double avg =
-      cfl->y_averages[cfl->y_averages_stride * avg_row + avg_col];
+      cfl->y_averages_q10[cfl->y_averages_stride * avg_row + avg_col] / 1024.0;
 
   cfl_load(cfl, row, col, width, height);
   for (int j = 0; j < height; j++) {

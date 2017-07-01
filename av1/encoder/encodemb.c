@@ -1429,7 +1429,7 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
 
 #if CONFIG_CFL
 static int cfl_alpha_dist(const uint8_t *y_pix, int y_stride,
-                          const double y_averages[MAX_NUM_TXB],
+                          const int y_averages_q10[MAX_NUM_TXB],
                           const uint8_t *src, int src_stride, int width,
                           int height, TX_SIZE tx_size, double dc_pred,
                           double alpha, int *dist_neg_out) {
@@ -1464,12 +1464,13 @@ static int cfl_alpha_dist(const uint8_t *y_pix, int y_stride,
     const int h = b_j + tx_height;
     for (int b_i = 0; b_i < width; b_i += tx_width) {
       const int w = b_i + tx_width;
-      const double tx_avg = y_averages[a++];
+      // TODO(ltrudeau) Remove div when DC_PRED is also fixed point
+      const double tx_avg_q10 = y_averages_q10[a++] / 1024.0;
       t_y_pix = y_pix;
       t_src = src;
       for (int t_j = b_j; t_j < h; t_j++) {
         for (int t_i = b_i; t_i < w; t_i++) {
-          const double scaled_luma = alpha * (t_y_pix[t_i] - tx_avg);
+          const double scaled_luma = alpha * (t_y_pix[t_i] - tx_avg_q10);
           const int uv = t_src[t_i];
 
           // TODO(ltrudeau) add support for HBD.
@@ -1529,7 +1530,7 @@ static void cfl_compute_alpha_ind(MACROBLOCK *const x, FRAME_CONTEXT *ec_ctx,
   const int height = cfl->uv_height;
   const double dc_pred_u = cfl->dc_pred[CFL_PRED_U];
   const double dc_pred_v = cfl->dc_pred[CFL_PRED_V];
-  const double *y_averages = cfl->y_averages;
+  const int *y_averages = cfl->y_averages_q10;
   const uint8_t *y_pix = cfl->y_down_pix;
 
   CFL_SIGN_TYPE *signs = mbmi->cfl_alpha_signs;
