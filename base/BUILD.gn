@@ -2032,6 +2032,7 @@ test("base_unittests") {
     "file_version_info_win_unittest.cc",
     "files/dir_reader_posix_unittest.cc",
     "files/file_descriptor_watcher_posix_unittest.cc",
+    "files/file_enumerator_unittest.cc",
     "files/file_locking_unittest.cc",
     "files/file_path_unittest.cc",
     "files/file_path_watcher_unittest.cc",

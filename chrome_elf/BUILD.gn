@@ -243,6 +243,7 @@ test("chrome_elf_unittests") {
     "/DELAYLOAD:advapi32.dll",
     "/DELAYLOAD:ole32.dll",
     "/DELAYLOAD:shell32.dll",
+    "/DELAYLOAD:shlwapi.dll",
     "/DELAYLOAD:user32.dll",
     "/DELAYLOAD:winmm.dll",
   ]
