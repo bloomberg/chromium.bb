@@ -47,7 +47,7 @@ def validate_blink_idl_definitions(idl_filename, idl_file_basename,
     """Validate file contents with filename convention.
 
        The Blink IDL conventions are:
-       - If an IDL file defines an interface, a dictionary, or an exception,
+       - If an IDL file defines an interface or a dictionary,
          the IDL file must contain exactly one definition. The definition
          name must agree with the file's basename, unless it is a partial
          definition. (e.g., 'partial interface Foo' can be in FooBar.idl).

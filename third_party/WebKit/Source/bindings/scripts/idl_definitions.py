@@ -54,8 +54,6 @@ IdlDefinitions
         IdlIterable < IdlIterableOrMaplikeOrSetlike
         IdlMaplike < IdlIterableOrMaplikeOrSetlike
         IdlSetlike < IdlIterableOrMaplikeOrSetlike
-    IdlException < IdlInterface
-        (same contents as IdlInterface)
 
 TypedObject :: Object with one or more attributes that is a type.
 
@@ -115,10 +113,6 @@ class IdlDefinitions(object):
             if child_class == 'Interface':
                 interface = IdlInterface(child)
                 self.interfaces[interface.name] = interface
-            elif child_class == 'Exception':
-                exception = IdlException(child)
-                # For simplicity, treat exceptions as interfaces
-                self.interfaces[exception.name] = exception
             elif child_class == 'Typedef':
                 typedef = IdlTypedef(child)
                 self.typedefs[typedef.name] = typedef
@@ -287,11 +281,11 @@ class IdlTypedef(object):
 
 
 ################################################################################
-# Interfaces and Exceptions
+# Interfaces
 ################################################################################
 
 class IdlInterface(object):
-    def __init__(self, node=None):
+    def __init__(self, node):
         self.attributes = []
         self.constants = []
         self.constructors = []
@@ -307,11 +301,8 @@ class IdlInterface(object):
         self.setlike = None
         self.original_interface = None
         self.partial_interfaces = []
-        if not node:  # Early exit for IdlException.__init__
-            return
 
         self.is_callback = bool(node.GetProperty('CALLBACK'))
-        self.is_exception = False
         # FIXME: uppercase 'Partial' => 'PARTIAL' in base IDL parser
         self.is_partial = bool(node.GetProperty('Partial'))
         self.name = node.GetName()
@@ -418,42 +409,6 @@ class IdlInterface(object):
             self.serializer = other.serializer
         if self.stringifier is None:
             self.stringifier = other.stringifier
-
-
-class IdlException(IdlInterface):
-    # Properly exceptions and interfaces are distinct, and thus should inherit a
-    # common base class (say, "IdlExceptionOrInterface").
-    # However, there is only one exception (DOMException), and new exceptions
-    # are not expected. Thus it is easier to implement exceptions as a
-    # restricted subclass of interfaces.
-    # http://www.w3.org/TR/WebIDL/#idl-exceptions
-    def __init__(self, node):
-        # Exceptions are similar to Interfaces, but simpler
-        IdlInterface.__init__(self)
-        self.is_callback = False
-        self.is_exception = True
-        self.is_partial = False
-        self.name = node.GetName()
-        self.idl_type = IdlType(self.name)
-
-        children = node.GetChildren()
-        for child in children:
-            child_class = child.GetClass()
-            if child_class == 'Attribute':
-                attribute = IdlAttribute(child)
-                self.attributes.append(attribute)
-            elif child_class == 'Const':
-                self.constants.append(IdlConstant(child))
-            elif child_class == 'ExtAttributes':
-                extended_attributes = ext_attributes_node_to_extended_attributes(child)
-                self.constructors, self.custom_constructors = (
-                    extended_attributes_to_constructors(extended_attributes))
-                clear_constructor_attributes(extended_attributes)
-                self.extended_attributes = extended_attributes
-            elif child_class == 'ExceptionOperation':
-                self.operations.append(IdlOperation.from_exception_operation_node(child))
-            else:
-                raise ValueError('Unrecognized node class: %s' % child_class)
 
 
 ################################################################################
@@ -615,27 +570,6 @@ class IdlOperation(TypedObject):
                 self.extended_attributes = ext_attributes_node_to_extended_attributes(child)
             else:
                 raise ValueError('Unrecognized node class: %s' % child_class)
-
-    @classmethod
-    def from_exception_operation_node(cls, node):
-        # Needed to handle one case in DOMException.idl:
-        # // Override in a Mozilla compatible format
-        # [NotEnumerable] DOMString toString();
-        # FIXME: can we remove this? replace with a stringifier?
-        operation = cls()
-        operation.name = node.GetName()
-        children = node.GetChildren()
-        if len(children) < 1 or len(children) > 2:
-            raise ValueError('ExceptionOperation node with %s children, expected 1 or 2' % len(children))
-
-        type_node = children[0]
-        operation.idl_type = type_node_to_type(type_node)
-
-        if len(children) > 1:
-            ext_attributes_node = children[1]
-            operation.extended_attributes = ext_attributes_node_to_extended_attributes(ext_attributes_node)
-
-        return operation
 
     @classmethod
     def constructor_from_arguments_node(cls, name, arguments_node):

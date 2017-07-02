@@ -356,7 +356,7 @@ def should_generate_impl_file_from_idl(file_contents):
     """True when a given IDL file contents could generate .h/.cpp files."""
     # FIXME: This would be error-prone and we should use AST rather than
     # improving the regexp pattern.
-    match = re.search(r'(interface|dictionary|exception)\s+\w+', file_contents)
+    match = re.search(r'(interface|dictionary)\s+\w+', file_contents)
     return bool(match)
 
 
@@ -370,7 +370,7 @@ def match_interface_extended_attributes_from_idl(file_contents):
 
     match = re.search(
         r'\[([^[]*)\]\s*'
-        r'(interface|callback\s+interface|partial\s+interface|exception)\s+'
+        r'(interface|callback\s+interface|partial\s+interface)\s+'
         r'\w+\s*'
         r'(:\s*\w+\s*)?'
         r'{',
