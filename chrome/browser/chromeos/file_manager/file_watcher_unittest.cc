@@ -8,6 +8,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/task_scheduler/task_scheduler.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/drive/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -129,7 +130,9 @@ TEST_F(FileManagerFileWatcherTest, WatchLocalFile) {
       CreateQuitCallback(
           &run_loop, CreateCopyResultCallback(&changed_path, &on_change_error)),
       CreateCopyResultCallback(&watcher_created));
-  // Spin the message loop so the base::FilePathWatcher is created.
+  // Flush the task scheduler and spin the message loop and so the
+  // base::FilePathWatcher is created.
+  base::TaskScheduler::GetInstance()->FlushForTesting();
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(watcher_created);
 
@@ -144,11 +147,11 @@ TEST_F(FileManagerFileWatcherTest, WatchLocalFile) {
   ASSERT_EQ(temp_dir.GetPath().value(), changed_path.value());
 
   // This is ugly, but FileWatcher should be deleted explicitly here, and
-  // spin the message loop so the base::FilePathWatcher is deleted.
+  // flush the task scheduler, so the base::FilePathWatcher is deleted.
   // Otherwise, base::FilePathWatcher may detect a change when the temporary
   // directory is deleted, which may result in crash.
   file_watcher.reset();
-  base::RunLoop().RunUntilIdle();
+  base::TaskScheduler::GetInstance()->FlushForTesting();
 }
 
 }  // namespace

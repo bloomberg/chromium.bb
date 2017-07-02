@@ -5,6 +5,8 @@
 #include "chrome/browser/chromeos/file_manager/file_watcher.h"
 
 #include "base/bind.h"
+#include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/drive/task_util.h"
 
@@ -18,7 +20,6 @@ namespace {
 base::FilePathWatcher* CreateAndStartFilePathWatcher(
     const base::FilePath& watch_path,
     const base::FilePathWatcher::Callback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(!callback.is_null());
 
   std::unique_ptr<base::FilePathWatcher> watcher(new base::FilePathWatcher);
@@ -31,7 +32,9 @@ base::FilePathWatcher* CreateAndStartFilePathWatcher(
 }  // namespace
 
 FileWatcher::FileWatcher(const base::FilePath& virtual_path)
-    : local_file_watcher_(NULL),
+    : sequenced_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE})),
+      local_file_watcher_(NULL),
       virtual_path_(virtual_path),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -40,9 +43,7 @@ FileWatcher::FileWatcher(const base::FilePath& virtual_path)
 FileWatcher::~FileWatcher() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  BrowserThread::DeleteSoon(BrowserThread::FILE,
-                            FROM_HERE,
-                            local_file_watcher_);
+  sequenced_task_runner_->DeleteSoon(FROM_HERE, local_file_watcher_);
 }
 
 void FileWatcher::AddExtension(const std::string& extension_id) {
@@ -86,14 +87,11 @@ void FileWatcher::WatchLocalFile(
   DCHECK(!callback.is_null());
   DCHECK(!local_file_watcher_);
 
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&CreateAndStartFilePathWatcher,
-                 local_path,
+  base::PostTaskAndReplyWithResult(
+      sequenced_task_runner_.get(), FROM_HERE,
+      base::Bind(&CreateAndStartFilePathWatcher, local_path,
                  google_apis::CreateRelayCallback(file_watcher_callback)),
-      base::Bind(&FileWatcher::OnWatcherStarted,
-                 weak_ptr_factory_.GetWeakPtr(),
+      base::Bind(&FileWatcher::OnWatcherStarted, weak_ptr_factory_.GetWeakPtr(),
                  callback));
 }
 

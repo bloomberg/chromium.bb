@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -300,10 +301,10 @@ IN_PROC_BROWSER_TEST_F(FileBrowserHandlerExtensionTest, EndToEnd) {
 
   // Let's check that the file has the expected content.
   const std::string expected_contents = "hello from test extension.";
-  content::BrowserThread::PostTask(
-      content::BrowserThread::FILE, FROM_HERE,
-      base::BindOnce(&ExpectFileContentEquals, selected_path,
-                     expected_contents));
+  base::PostTaskWithTraits(FROM_HERE,
+                           {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+                           base::BindOnce(&ExpectFileContentEquals,
+                                          selected_path, expected_contents));
 
   // Make sure test doesn't finish until we check on file thread that the
   // selected file's content is as expected.
