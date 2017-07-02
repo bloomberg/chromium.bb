@@ -4308,14 +4308,13 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
   int64_t this_rd = INT64_MAX;
   ENTROPY_CONTEXT *pta = ta + blk_col;
   ENTROPY_CONTEXT *ptl = tl + blk_row;
-  int coeff_ctx, i;
+  int i;
   int ctx = txfm_partition_context(tx_above + blk_col, tx_left + blk_row,
                                    mbmi->sb_type, tx_size);
   int64_t sum_rd = INT64_MAX;
   int tmp_eob = 0;
   int zero_blk_rate;
   RD_STATS sum_rd_stats;
-  const int tx_size_ctx = txsize_sqr_map[tx_size];
 #if CONFIG_TXK_SEL
   TX_TYPE best_tx_type = TX_TYPES;
   int txk_idx = block;
@@ -4330,14 +4329,22 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
     return;
   }
 
-  coeff_ctx = get_entropy_context(tx_size, pta, ptl);
-
   av1_init_rd_stats(rd_stats);
 
   if (blk_row >= max_blocks_high || blk_col >= max_blocks_wide) return;
 
+#if CONFIG_LV_MAP
+  TX_SIZE txs_ctx = get_txsize_context(tx_size);
+  TXB_CTX txb_ctx;
+  get_txb_ctx(plane_bsize, tx_size, plane, pta, ptl, &txb_ctx);
+  zero_blk_rate =
+      av1_cost_bit(xd->fc->txb_skip[txs_ctx][txb_ctx.txb_skip_ctx], 1);
+#else
+  const int tx_size_ctx = txsize_sqr_map[tx_size];
+  int coeff_ctx = get_entropy_context(tx_size, pta, ptl);
   zero_blk_rate = x->token_costs[tx_size_ctx][pd->plane_type][1][0][0]
                                 [coeff_ctx][EOB_TOKEN];
+#endif
 
   if (cpi->common.tx_mode == TX_MODE_SELECT || tx_size == TX_4X4) {
     inter_tx_size[0][0] = tx_size;
