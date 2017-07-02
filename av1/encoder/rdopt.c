@@ -4204,12 +4204,6 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
 
   int coeff_ctx = get_entropy_context(tx_size, a, l);
 
-#if CONFIG_TXK_SEL
-  av1_search_txk_type(cpi, x, plane, block, blk_row, blk_col, plane_bsize,
-                      tx_size, a, l, 0, rd_stats);
-  return;
-#endif
-
 #if DISABLE_TRELLISQ_SEARCH
   av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
                   coeff_ctx, AV1_XFORM_QUANT_B);
