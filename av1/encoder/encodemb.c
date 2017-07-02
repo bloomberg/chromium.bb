@@ -128,19 +128,12 @@ static INLINE unsigned int get_token_bit_costs(
 
 #if !CONFIG_LV_MAP
 
-typedef struct av1_token_state_greedy {
-  int16_t token;
-  tran_low_t qc;
-  tran_low_t dqc;
-} av1_token_state_greedy;
-
 static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
                              int block, TX_SIZE tx_size, int ctx) {
   MACROBLOCKD *const xd = &mb->e_mbd;
   struct macroblock_plane *const p = &mb->plane[plane];
   struct macroblockd_plane *const pd = &xd->plane[plane];
   const int ref = is_inter_block(&xd->mi[0]->mbmi);
-  av1_token_state_greedy tokens[MAX_TX_SQUARE + 1][2];
   uint8_t token_cache[MAX_TX_SQUARE];
   const tran_low_t *const coeff = BLOCK_OFFSET(p->coeff, block);
   tran_low_t *const qcoeff = BLOCK_OFFSET(p->qcoeff, block);
@@ -187,19 +180,8 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
   int64_t rate0, rate1;
   for (i = 0; i < eob; i++) {
     const int rc = scan[i];
-    int x = qcoeff[rc];
-    t0 = av1_get_token(x);
-
-    tokens[i][0].qc = x;
-    tokens[i][0].token = t0;
-    tokens[i][0].dqc = dqcoeff[rc];
-
-    token_cache[rc] = av1_pt_energy_class[t0];
+    token_cache[rc] = av1_pt_energy_class[av1_get_token(qcoeff[rc])];
   }
-  tokens[eob][0].token = EOB_TOKEN;
-  tokens[eob][0].qc = 0;
-  tokens[eob][0].dqc = 0;
-  tokens[eob][1] = tokens[eob][0];
 
   unsigned int(*token_costs_ptr)[2][COEFF_CONTEXTS][ENTROPY_TOKENS] =
       token_costs;
@@ -207,6 +189,8 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
   final_eob = 0;
 
   int64_t eob_cost0, eob_cost1;
+  tran_low_t before_best_eob_qc = 0;
+  tran_low_t before_best_eob_dqc = 0;
 
   const int ctx0 = ctx;
   /* Record the r-d cost */
@@ -220,9 +204,7 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
   int64_t best_block_rd_cost = RDCOST(rdmult, rate0, accu_error);
 
   // int64_t best_block_rd_cost_all0 = best_block_rd_cost;
-
   int x_prev = 1;
-
   for (i = 0; i < eob; i++) {
     const int rc = scan[i];
     int x = qcoeff[rc];
@@ -234,9 +216,9 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
 
     if (x == 0) {
       // no need to search when x == 0
-      rate0 =
-          get_token_bit_costs(*(token_costs_ptr + band_cur), token_tree_sel_cur,
-                              ctx_cur, tokens[i][0].token);
+      int token = av1_get_token(x);
+      rate0 = get_token_bit_costs(*(token_costs_ptr + band_cur),
+                                  token_tree_sel_cur, ctx_cur, token);
       accu_rate += rate0;
       x_prev = 0;
       // accu_error does not change when x==0
@@ -327,14 +309,16 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
       if (i < default_eob - 1) {
         int ctx_next, token_tree_sel_next;
         int band_next = band_translate[i + 1];
+        int token_next =
+            i + 1 != eob ? av1_get_token(qcoeff[scan[i + 1]]) : EOB_TOKEN;
 
         token_cache[rc] = av1_pt_energy_class[t0];
         ctx_next = get_coef_context(nb, token_cache, i + 1);
         token_tree_sel_next = (x == 0);
 
-        next_bits0 = get_token_bit_costs(*(token_costs_ptr + band_next),
-                                         token_tree_sel_next, ctx_next,
-                                         tokens[i + 1][0].token);
+        next_bits0 =
+            get_token_bit_costs(*(token_costs_ptr + band_next),
+                                token_tree_sel_next, ctx_next, token_next);
         next_eob_bits0 =
             get_token_bit_costs(*(token_costs_ptr + band_next),
                                 token_tree_sel_next, ctx_next, EOB_TOKEN);
@@ -343,9 +327,9 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
         ctx_next = get_coef_context(nb, token_cache, i + 1);
         token_tree_sel_next = (x_a == 0);
 
-        next_bits1 = get_token_bit_costs(*(token_costs_ptr + band_next),
-                                         token_tree_sel_next, ctx_next,
-                                         tokens[i + 1][0].token);
+        next_bits1 =
+            get_token_bit_costs(*(token_costs_ptr + band_next),
+                                token_tree_sel_next, ctx_next, token_next);
 
         if (x_a != 0) {
           next_eob_bits1 =
@@ -413,34 +397,30 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
       x_prev = qcoeff[rc];
 
       // determine whether to move the eob position to i+1
-      int64_t best_eob_cost_i = eob_cost0;
-
-      tokens[i][1].token = t0;
-      tokens[i][1].qc = x;
-      tokens[i][1].dqc = dqc;
-
-      if ((x_a != 0) && (best_eob_x)) {
-        best_eob_cost_i = eob_cost1;
-
-        tokens[i][1].token = t1;
-        tokens[i][1].qc = x_a;
-        tokens[i][1].dqc = dqc_a;
-      }
+      int use_a = (x_a != 0) && (best_eob_x);
+      int64_t best_eob_cost_i = use_a ? eob_cost1 : eob_cost0;
 
       if (best_eob_cost_i < best_block_rd_cost) {
         best_block_rd_cost = best_eob_cost_i;
         final_eob = i + 1;
+        if (use_a) {
+          before_best_eob_qc = x_a;
+          before_best_eob_dqc = dqc_a;
+        } else {
+          before_best_eob_qc = x;
+          before_best_eob_dqc = dqc;
+        }
       }
     }  // if (x==0)
   }    // for (i)
 
   assert(final_eob <= eob);
   if (final_eob > 0) {
-    assert(tokens[final_eob - 1][1].qc != 0);
+    assert(before_best_eob_qc != 0);
     i = final_eob - 1;
     int rc = scan[i];
-    qcoeff[rc] = tokens[i][1].qc;
-    dqcoeff[rc] = tokens[i][1].dqc;
+    qcoeff[rc] = before_best_eob_qc;
+    dqcoeff[rc] = before_best_eob_dqc;
   }
 
   for (i = final_eob; i < eob; i++) {
