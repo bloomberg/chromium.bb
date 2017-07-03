@@ -19,7 +19,8 @@ cr.define('bookmarks', function() {
       /** @private */
       open_: {
         type: Boolean,
-        reflectToAttribute: true,
+        observer: 'openChanged_',
+        value: false,
       },
 
       /** @private */
@@ -36,6 +37,9 @@ cr.define('bookmarks', function() {
     attached: function() {
       assert(ToastManager.instance_ == null);
       ToastManager.instance_ = this;
+      Polymer.RenderStatus.afterNextRender(this, function() {
+        Polymer.IronA11yAnnouncer.requestAvailability();
+      });
     },
 
     /** @override */
@@ -82,6 +86,7 @@ cr.define('bookmarks', function() {
     showInternal_: function(showUndo) {
       this.open_ = true;
       this.showUndo_ = showUndo;
+      this.fire('iron-announce', {text: this.$.content.textContent});
 
       if (!this.duration)
         return;
@@ -90,19 +95,26 @@ cr.define('bookmarks', function() {
         this.timerProxy_.clearTimeout(this.hideTimeoutId_);
 
       this.hideTimeoutId_ = this.timerProxy_.setTimeout(function() {
-        this.open_ = false;
+        this.hide();
         this.hideTimeoutId_ = null;
       }.bind(this), this.duration);
     },
 
     hide: function() {
       this.open_ = false;
+      // Hide the undo button to prevent it from being accessed with tab.
+      this.showUndo_ = false;
     },
 
     /** @private */
     onUndoTap_: function() {
       // Will hide the toast.
       this.fire('command-undo');
+    },
+
+    /** @private */
+    openChanged_: function() {
+      this.$.toast.setAttribute('aria-hidden', String(!this.open_));
     },
   });
 

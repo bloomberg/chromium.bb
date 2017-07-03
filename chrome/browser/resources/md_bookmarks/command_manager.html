@@ -28,13 +28,14 @@
       }
     </style>
     <template is="cr-lazy-render" id="dropdown">
-      <dialog is="cr-action-menu" on-mousedown="onMenuMousedown_">
+      <dialog is="cr-action-menu" on-mousedown="onMenuMousedown_" role="menu">
         <template is="dom-repeat" items="[[menuCommands_]]" as="command">
           <button class="dropdown-item"
               command$="[[command]]"
               hidden$="[[!isCommandVisible_(command, menuIds_)]]"
               disabled$="[[!isCommandEnabled_(command, menuIds_)]]"
-              on-click="onCommandClick_">
+              on-click="onCommandClick_"
+              role="menuitem">
             <span class="label">
               [[getCommandLabel_(command, menuIds_)]]
             </span>

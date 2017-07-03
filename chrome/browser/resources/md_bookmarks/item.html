@@ -68,9 +68,13 @@
       <div id="website-title">
         [[item_.title]]
       </div>
-      <button is="paper-icon-button-light" class="more-vert-button"
-          on-click="onMenuButtonClick_" on-dblclick="onMenuButtonDblClick_"
-          tabindex$="[[ironListTabIndex]]" on-focus="clearMouseFocus">
+      <button is="paper-icon-button-light"
+          class="more-vert-button"
+          tabindex$="[[ironListTabIndex]]"
+          title="$i18n{moreActionsButtonTitle}"
+          on-click="onMenuButtonClick_"
+          on-dblclick="onMenuButtonDblClick_"
+          on-focus="clearMouseFocus">
         <div></div>
         <div></div>
         <div></div>
