@@ -189,7 +189,7 @@ TEST_F(WorkerThreadTest, SyncTerminate_OnIdle) {
   // idle.
   worker_thread_->WaitForInit();
 
-  worker_thread_->TerminateAndWait();
+  WorkerThread::TerminateAndWaitForAllWorkers();
   EXPECT_EQ(ExitCode::kSyncForciblyTerminated, GetExitCode());
 }
 
@@ -218,7 +218,7 @@ TEST_F(WorkerThreadTest, SyncTerminate_ImmediatelyAfterStart) {
   // TODO(nhiroki): Make this test deterministically pass through the case 1),
   // that is, terminateAndWait() is called before initializeOnWorkerThread().
   // Then, rename this test to SyncTerminate_BeforeInitialization.
-  worker_thread_->TerminateAndWait();
+  WorkerThread::TerminateAndWaitForAllWorkers();
   ExitCode exit_code = GetExitCode();
   EXPECT_TRUE(ExitCode::kGracefullyTerminated == exit_code ||
               ExitCode::kSyncForciblyTerminated == exit_code);
@@ -254,7 +254,7 @@ TEST_F(WorkerThreadTest, SyncTerminate_WhileTaskIsRunning) {
   reporting_proxy_->WaitUntilScriptEvaluation();
 
   // terminateAndWait() synchronously terminates the worker execution.
-  worker_thread_->TerminateAndWait();
+  WorkerThread::TerminateAndWaitForAllWorkers();
   EXPECT_EQ(ExitCode::kSyncForciblyTerminated, GetExitCode());
 }
 
@@ -273,7 +273,7 @@ TEST_F(WorkerThreadTest,
   EXPECT_EQ(ExitCode::kNotTerminated, GetExitCode());
 
   // terminateAndWait() should overtake the scheduled force termination task.
-  worker_thread_->TerminateAndWait();
+  WorkerThread::TerminateAndWaitForAllWorkers();
   EXPECT_FALSE(IsForcibleTerminationTaskScheduled());
   EXPECT_EQ(ExitCode::kSyncForciblyTerminated, GetExitCode());
 }
@@ -378,7 +378,5 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunning) {
   worker_thread_->WaitForShutdownForTesting();
   EXPECT_EQ(ExitCode::kGracefullyTerminated, GetExitCode());
 }
-
-// TODO(nhiroki): Add tests for terminateAndWaitForAllWorkers.
 
 }  // namespace blink

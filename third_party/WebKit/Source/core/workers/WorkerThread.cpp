@@ -138,18 +138,6 @@ void WorkerThread::Terminate() {
   TerminateInternal(TerminationMode::kGraceful);
 }
 
-void WorkerThread::TerminateAndWait() {
-  DCHECK(IsMainThread());
-
-  // The main thread will be blocked, so asynchronous graceful shutdown does
-  // not work.
-  TerminateInternal(TerminationMode::kForcible);
-  shutdown_event_->Wait();
-
-  // Destruct base::Thread and join the underlying system thread.
-  ClearWorkerBackingThread();
-}
-
 void WorkerThread::TerminateAndWaitForAllWorkers() {
   DCHECK(IsMainThread());
 

@@ -69,7 +69,8 @@ class AnimationWorkletGlobalScopeTest : public ::testing::Test {
                                    CrossThreadUnretained(&waitable_event)));
     waitable_event.Wait();
 
-    worklet->TerminateAndWait();
+    worklet->Terminate();
+    worklet->WaitForShutdownForTesting();
   }
 
   void RunBasicParsingTestOnWorklet(WorkerThread* thread,

@@ -312,25 +312,29 @@ class AudioWorkletGlobalScopeTest : public ::testing::Test {
 TEST_F(AudioWorkletGlobalScopeTest, Basic) {
   std::unique_ptr<AudioWorkletThread> thread = CreateAudioWorkletThread();
   RunBasicTest(thread.get());
-  thread->TerminateAndWait();
+  thread->Terminate();
+  thread->WaitForShutdownForTesting();
 }
 
 TEST_F(AudioWorkletGlobalScopeTest, Parsing) {
   std::unique_ptr<AudioWorkletThread> thread = CreateAudioWorkletThread();
   RunParsingTest(thread.get());
-  thread->TerminateAndWait();
+  thread->Terminate();
+  thread->WaitForShutdownForTesting();
 }
 
 TEST_F(AudioWorkletGlobalScopeTest, BufferProcessing) {
   std::unique_ptr<AudioWorkletThread> thread = CreateAudioWorkletThread();
   RunSimpleProcessTest(thread.get());
-  thread->TerminateAndWait();
+  thread->Terminate();
+  thread->WaitForShutdownForTesting();
 }
 
 TEST_F(AudioWorkletGlobalScopeTest, ParsingParameterDescriptor) {
   std::unique_ptr<AudioWorkletThread> thread = CreateAudioWorkletThread();
   RunParsingParameterDescriptorTest(thread.get());
-  thread->TerminateAndWait();
+  thread->Terminate();
+  thread->WaitForShutdownForTesting();
 }
 
 }  // namespace blink

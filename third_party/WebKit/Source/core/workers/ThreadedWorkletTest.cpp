@@ -166,7 +166,8 @@ class ThreadedWorkletTest : public ::testing::Test {
   }
 
   void TearDown() override {
-    GetWorkerThread()->TerminateAndWait();
+    GetWorkerThread()->Terminate();
+    GetWorkerThread()->WaitForShutdownForTesting();
     testing::RunPendingTasks();
     messaging_proxy_ = nullptr;
   }

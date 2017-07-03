@@ -112,9 +112,8 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   void Start(std::unique_ptr<WorkerThreadStartupData>, ParentFrameTaskRunners*);
   void Terminate();
 
-  // Called on the main thread. Internally calls terminateInternal() and wait
-  // (by *blocking* the calling thread) until the worker(s) is/are shut down.
-  void TerminateAndWait();
+  // Called on the main thread for the leak detector. Waits by *blocking* the
+  // calling thread until the workers are shut down.
   static void TerminateAndWaitForAllWorkers();
 
   // WebThread::TaskObserver.
