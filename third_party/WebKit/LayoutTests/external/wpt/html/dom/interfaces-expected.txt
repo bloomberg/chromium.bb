@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 5187 tests; 4980 PASS, 207 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 5193 tests; 4986 PASS, 207 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test driver 
 PASS Document interface: attribute domain 
 PASS Document interface: attribute referrer 
@@ -4332,12 +4332,12 @@ PASS Window interface: existence and properties of interface object
 PASS Window interface object length 
 PASS Window interface object name 
 PASS Window interface: existence and properties of interface prototype object 
-PASS Window interface: internal [[SetPrototypeOf]] method of global platform object - setting to a new value via Object.setPrototypeOf should throw a TypeError 
-PASS Window interface: internal [[SetPrototypeOf]] method of global platform object - setting to a new value via __proto__ should throw a TypeError 
-PASS Window interface: internal [[SetPrototypeOf]] method of global platform object - setting to a new value via Reflect.setPrototypeOf should return false 
-PASS Window interface: internal [[SetPrototypeOf]] method of global platform object - setting to its original value via Object.setPrototypeOf should not throw 
-PASS Window interface: internal [[SetPrototypeOf]] method of global platform object - setting to its original value via __proto__ should not throw 
-PASS Window interface: internal [[SetPrototypeOf]] method of global platform object - setting to its original value via Reflect.setPrototypeOf should return true 
+PASS Window interface: internal [[SetPrototypeOf]] method of interface prototype object - setting to a new value via Object.setPrototypeOf should throw a TypeError 
+PASS Window interface: internal [[SetPrototypeOf]] method of interface prototype object - setting to a new value via __proto__ should throw a TypeError 
+PASS Window interface: internal [[SetPrototypeOf]] method of interface prototype object - setting to a new value via Reflect.setPrototypeOf should return false 
+PASS Window interface: internal [[SetPrototypeOf]] method of interface prototype object - setting to its original value via Object.setPrototypeOf should not throw 
+PASS Window interface: internal [[SetPrototypeOf]] method of interface prototype object - setting to its original value via __proto__ should not throw 
+PASS Window interface: internal [[SetPrototypeOf]] method of interface prototype object - setting to its original value via Reflect.setPrototypeOf should return true 
 PASS Window interface: existence and properties of interface prototype object's "constructor" property 
 FAIL Window interface: attribute self assert_equals: "self" must have a getter expected "function" but got "undefined"
 PASS Window interface: attribute name 
@@ -4458,6 +4458,12 @@ PASS Window interface: operation createImageBitmap(ImageBitmapSource,ImageBitmap
 PASS Window interface: operation createImageBitmap(ImageBitmapSource,long,long,long,long,ImageBitmapOptions) 
 PASS Window interface: attribute sessionStorage 
 PASS Window interface: attribute localStorage 
+PASS Window interface: internal [[SetPrototypeOf]] method of global platform object - setting to a new value via Object.setPrototypeOf should throw a TypeError 
+PASS Window interface: internal [[SetPrototypeOf]] method of global platform object - setting to a new value via __proto__ should throw a TypeError 
+PASS Window interface: internal [[SetPrototypeOf]] method of global platform object - setting to a new value via Reflect.setPrototypeOf should return false 
+PASS Window interface: internal [[SetPrototypeOf]] method of global platform object - setting to its original value via Object.setPrototypeOf should not throw 
+PASS Window interface: internal [[SetPrototypeOf]] method of global platform object - setting to its original value via __proto__ should not throw 
+PASS Window interface: internal [[SetPrototypeOf]] method of global platform object - setting to its original value via Reflect.setPrototypeOf should return true 
 PASS Window must be primary interface of window 
 PASS Stringification of window 
 FAIL Window interface: window must have own property "window" assert_false: property descriptor should not have a "value" field expected false got true

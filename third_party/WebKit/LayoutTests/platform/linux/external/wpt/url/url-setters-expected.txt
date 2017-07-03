@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 571 tests; 272 PASS, 299 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 574 tests; 275 PASS, 299 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Loading data… 
 PASS URL: Setting <a://example.net>.protocol = '' The empty string is not a valid scheme. Setter leaves the URL unchanged. 
 PASS <a>: Setting <a://example.net>.protocol = '' The empty string is not a valid scheme. Setter leaves the URL unchanged. 
@@ -85,6 +85,9 @@ PASS <area>: Setting <http://example.net>.protocol = 'https:foo : bar' Stuff aft
 PASS URL: Setting <data:text/html,<p>Test>.protocol = 'view-source+data:foo : bar' Stuff after the first ':' is ignored 
 PASS <a>: Setting <data:text/html,<p>Test>.protocol = 'view-source+data:foo : bar' Stuff after the first ':' is ignored 
 PASS <area>: Setting <data:text/html,<p>Test>.protocol = 'view-source+data:foo : bar' Stuff after the first ':' is ignored 
+PASS URL: Setting <http://foo.com:443/>.protocol = 'https' Port is set to null if it is the default for new scheme. 
+PASS <a>: Setting <http://foo.com:443/>.protocol = 'https' Port is set to null if it is the default for new scheme. 
+PASS <area>: Setting <http://foo.com:443/>.protocol = 'https' Port is set to null if it is the default for new scheme. 
 PASS URL: Setting <file:///home/you/index.html>.username = 'me' No host means no username 
 PASS <a>: Setting <file:///home/you/index.html>.username = 'me' No host means no username 
 PASS <area>: Setting <file:///home/you/index.html>.username = 'me' No host means no username 

@@ -262,7 +262,7 @@ external/wpt/upgrade-insecure-requests [ WontFix ]
 
 # Upstreaming WPT font matching tests first, then activating those once the new
 # font matching algorithm implementation is in place.
-crbug.com/733154 external/wpt/fonts/matching [ WontFix ]
+crbug.com/733154 external/wpt/css-fonts/matching [ WontFix ]
 
 # Temporary disabling of all encrypted-media WPT tests while enabling
 # https only. Once the switch is complete (and the WPT tests renamed so they
