@@ -33,6 +33,7 @@ namespace password_manager {
 class LogManager;
 class PasswordFormManager;
 class PasswordManager;
+class PasswordManagerMetricsRecorder;
 class PasswordStore;
 
 enum PasswordSyncState {
@@ -222,6 +223,12 @@ class PasswordManagerClient {
   // Gets a ukm::SourceId that is associated with the WebContents object
   // and its last committed main frame navigation.
   virtual ukm::SourceId GetUkmSourceId() = 0;
+
+  // Gets a metrics recorder for the currently committed navigation.
+  // As PasswordManagerMetricsRecorder submits metrics on destruction, a new
+  // instance will be returned for each committed navigation. A caller must not
+  // hold on to the pointer.
+  virtual PasswordManagerMetricsRecorder& GetMetricsRecorder() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerClient);

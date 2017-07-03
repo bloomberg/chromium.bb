@@ -28,6 +28,7 @@
 #endif
 
 using password_manager::PasswordFormManager;
+using password_manager::PasswordManagerMetricsRecorder;
 using password_manager::PasswordStore;
 using password_manager::PasswordSyncState;
 
@@ -149,6 +150,7 @@ ukm::SourceId IOSChromePasswordManagerClient::GetUkmSourceId() {
   // TODO(crbug.com/732846): The UKM Source should be recycled (e.g. from the
   // web contents), once the UKM framework provides a mechanism for that.
   if (ukm_source_url_ != delegate_.lastCommittedURL) {
+    metrics_recorder_.reset();
     ukm_source_url_ = delegate_.lastCommittedURL;
     ukm_source_id_ = ukm::UkmRecorder::GetNewSourceID();
     ukm::UkmRecorder* ukm_recorder = GetUkmRecorder();
@@ -156,4 +158,14 @@ ukm::SourceId IOSChromePasswordManagerClient::GetUkmSourceId() {
       ukm_recorder->UpdateSourceURL(ukm_source_id_, ukm_source_url_);
   }
   return ukm_source_id_;
+}
+
+PasswordManagerMetricsRecorder&
+IOSChromePasswordManagerClient::GetMetricsRecorder() {
+  if (!metrics_recorder_) {
+    metrics_recorder_.emplace(PasswordManagerMetricsRecorder(
+        PasswordManagerMetricsRecorder::CreateUkmEntryBuilder(
+            GetUkmRecorder(), GetUkmSourceId())));
+  }
+  return metrics_recorder_.value();
 }

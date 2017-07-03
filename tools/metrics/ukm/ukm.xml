@@ -646,6 +646,22 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="PageWithPassword">
+  <owner>battre@chromium.org</owner>
+  <summary>
+    Metrics about websites that contain password forms and the user's
+    interactions with them. No events are created for pages that don't contain
+    password forms.
+  </summary>
+  <metric name="UserModifiedPasswordField">
+    <summary>
+      Records a 1 for every page on which a user has modified a password text
+      field - regardless of how many password fields a page contains or the user
+      modifies.
+    </summary>
+  </metric>
+</event>
+
 <event name="PaymentRequest.CheckoutEvents">
   <owner>sebsg@chromium.org</owner>
   <metric name="CompletionsStatus">

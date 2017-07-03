@@ -45,6 +45,7 @@ class JourneyLogger;
 }
 
 namespace password_manager {
+class PasswordManagerMetricsRecorder;
 class PasswordFormMetricsRecorder;
 }
 
@@ -95,6 +96,7 @@ class UKM_EXPORT UkmRecorder {
   friend content::MediaInternals;
   friend content::RenderFrameImpl;
   friend content::RenderWidgetHostLatencyTracker;
+  friend password_manager::PasswordManagerMetricsRecorder;
   friend password_manager::PasswordFormMetricsRecorder;
   friend resource_coordinator::CoordinationUnitManager;
   FRIEND_TEST_ALL_PREFIXES(UkmServiceTest, AddEntryWithEmptyMetrics);

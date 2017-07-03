@@ -16,6 +16,7 @@
 #include "components/password_manager/content/browser/credential_manager_impl.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
+#include "components/password_manager/core/browser/password_manager_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_reuse_detection_manager.h"
 #include "components/password_manager/sync/browser/sync_credentials_filter.h"
 #include "components/prefs/pref_member.h"
@@ -118,6 +119,8 @@ class ChromePasswordManagerClient
 
   ukm::UkmRecorder* GetUkmRecorder() override;
   ukm::SourceId GetUkmSourceId() override;
+  password_manager::PasswordManagerMetricsRecorder& GetMetricsRecorder()
+      override;
 
   static void CreateForWebContentsWithAutofillClient(
       content::WebContents* contents,
@@ -222,6 +225,12 @@ class ChromePasswordManagerClient
   // If set, this stores a ukm::SourceId that is bound to the last committed
   // navigation of the tab owning this ChromePasswordManagerClient.
   base::Optional<ukm::SourceId> ukm_source_id_;
+
+  // Recorder of metrics that is associated with the last committed navigation
+  // of the WebContents owning this ChromePasswordManagerClient. May be unset at
+  // times. Sends statistics on destruction.
+  base::Optional<password_manager::PasswordManagerMetricsRecorder>
+      metrics_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromePasswordManagerClient);
 };
