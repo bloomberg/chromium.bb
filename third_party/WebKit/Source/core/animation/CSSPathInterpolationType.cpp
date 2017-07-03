@@ -91,7 +91,7 @@ InterpolationValue CSSPathInterpolationType::MaybeConvertValue(
     return nullptr;
   }
   return PathInterpolationFunctions::ConvertValue(
-      ToCSSPathValue(value).ByteStream());
+      cssvalue::ToCSSPathValue(value).ByteStream());
 }
 
 InterpolationValue

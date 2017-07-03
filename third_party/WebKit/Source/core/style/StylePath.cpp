@@ -51,7 +51,7 @@ bool StylePath::IsClosed() const {
 }
 
 CSSValue* StylePath::ComputedCSSValue() const {
-  return CSSPathValue::Create(const_cast<StylePath*>(this));
+  return cssvalue::CSSPathValue::Create(const_cast<StylePath*>(this));
 }
 
 bool StylePath::operator==(const BasicShape& o) const {

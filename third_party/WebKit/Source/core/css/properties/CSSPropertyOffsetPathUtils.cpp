@@ -41,7 +41,7 @@ CSSValue* ConsumePath(CSSParserTokenRange& range) {
   range = function_range;
   if (byte_stream->IsEmpty())
     return CSSIdentifierValue::Create(CSSValueNone);
-  return CSSPathValue::Create(std::move(byte_stream));
+  return cssvalue::CSSPathValue::Create(std::move(byte_stream));
 }
 
 CSSValue* ConsumeRay(CSSParserTokenRange& range,

@@ -45,7 +45,7 @@ SVGAnimatedPath::SVGAnimatedPath(SVGElement* context_element,
 SVGAnimatedPath::~SVGAnimatedPath() {}
 
 const CSSValue* SVGAnimatedPath::CssValue() const {
-  const CSSPathValue* path_value = CurrentValue()->PathValue();
+  const cssvalue::CSSPathValue* path_value = CurrentValue()->PathValue();
   if (path_value->GetStylePath()->ByteStream().IsEmpty())
     return CSSIdentifierValue::Create(CSSValueNone);
   return path_value;

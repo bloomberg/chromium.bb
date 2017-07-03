@@ -46,7 +46,7 @@ SVGPropertyBase* SVGPathInterpolationType::AppliedSVGValue(
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue* non_interpolable_value) const {
   return SVGPath::Create(
-      CSSPathValue::Create(PathInterpolationFunctions::AppliedValue(
+      cssvalue::CSSPathValue::Create(PathInterpolationFunctions::AppliedValue(
           interpolable_value, non_interpolable_value)));
 }
 
