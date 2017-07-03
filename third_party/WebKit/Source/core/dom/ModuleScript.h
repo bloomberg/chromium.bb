@@ -172,6 +172,8 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
   const TextPosition start_position_;
 };
 
+CORE_EXPORT std::ostream& operator<<(std::ostream&, const ModuleScript&);
+
 }  // namespace blink
 
 #endif

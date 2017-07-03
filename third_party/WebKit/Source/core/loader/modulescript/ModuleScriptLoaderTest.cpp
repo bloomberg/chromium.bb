@@ -87,6 +87,9 @@ class ModuleScriptLoaderTestModulator final : public DummyModulator {
   Vector<ModuleRequest> ModuleRequestsFromScriptModule(ScriptModule) override {
     return requests_;
   }
+  ScriptModuleState GetRecordStatus(ScriptModule) override {
+    return ScriptModuleState::kUninstantiated;
+  }
 
   DECLARE_TRACE();
 
@@ -145,8 +148,7 @@ TEST_F(ModuleScriptLoaderTest, fetchDataURL) {
   EXPECT_TRUE(client->WasNotifyFinished())
       << "ModuleScriptLoader should finish synchronously.";
   ASSERT_TRUE(client->GetModuleScript());
-  EXPECT_EQ(client->GetModuleScript()->State(),
-            ModuleInstantiationState::kUninstantiated);
+  EXPECT_FALSE(client->GetModuleScript()->IsErrored());
 }
 
 TEST_F(ModuleScriptLoaderTest, InvalidSpecifier) {

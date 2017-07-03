@@ -206,7 +206,7 @@ bool ModuleScript::HasInstantiated() const {
 }
 
 void ModuleScript::SetErrorAndClearRecord(ScriptValue error) {
-  DVLOG(1) << "ModuleScript[" << this << "]::SetErrorAndClearRecord()";
+  DVLOG(1) << *this << "::SetErrorAndClearRecord()";
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-set-pre-instantiation-error
   // Step 1. "If script's module record is not null, ..." [spec text]
@@ -256,12 +256,25 @@ bool ModuleScript::CheckMIMETypeBeforeRunScript(Document* context_document,
 }
 
 void ModuleScript::RunScript(LocalFrame* frame, const SecurityOrigin*) const {
-  DVLOG(1) << "ModuleScript[" << this << "]::RunScript()";
+  DVLOG(1) << *this << "::RunScript()";
   settings_object_->ExecuteModule(this);
 }
 
 String ModuleScript::InlineSourceTextForCSP() const {
   return source_text_;
+}
+
+std::ostream& operator<<(std::ostream& stream,
+                         const ModuleScript& module_script) {
+  stream << "ModuleScript[" << &module_script << ", ";
+  if (module_script.HasEmptyRecord()) {
+    stream << "errored (empty record)";
+  } else {
+    stream << "record's [[Status]] = "
+           << ScriptModuleStateToString(module_script.RecordStatus());
+  }
+
+  return stream << "]";
 }
 
 }  // namespace blink
