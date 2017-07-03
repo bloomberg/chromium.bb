@@ -205,6 +205,19 @@ bool ModuleScript::HasInstantiated() const {
          status == ScriptModuleState::kEvaluated;
 }
 
+// https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-is-errored
+bool ModuleScript::IsErrored() const {
+  // "We say that a module script is errored ..." [spec text]
+
+  // "if either its module record is null, ..." [spec text]
+  if (record_.IsEmpty())
+    return true;
+
+  // "or its module record's [[Status]] field has the value "errored"." [spec
+  // text]
+  return RecordStatus() == ScriptModuleState::kErrored;
+}
+
 void ModuleScript::SetErrorAndClearRecord(ScriptValue error) {
   DVLOG(1) << *this << "::SetErrorAndClearRecord()";
 

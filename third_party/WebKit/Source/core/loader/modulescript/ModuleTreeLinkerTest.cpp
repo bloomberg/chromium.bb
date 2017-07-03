@@ -189,14 +189,24 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
     return it->value;
   }
 
-  ScriptValue InstantiateModule(ScriptModule) override {
+  ScriptValue InstantiateModule(ScriptModule record) override {
     if (instantiate_should_fail_) {
       ScriptState::Scope scope(script_state_.Get());
       v8::Local<v8::Value> error = V8ThrowException::CreateError(
           script_state_->GetIsolate(), "Instantiation failure.");
+      errored_records_.insert(record);
       return ScriptValue(script_state_.Get(), error);
     }
+    instantiated_records_.insert(record);
     return ScriptValue();
+  }
+
+  ScriptModuleState GetRecordStatus(ScriptModule record) override {
+    if (instantiated_records_.Contains(record))
+      return ScriptModuleState::kInstantiated;
+    if (errored_records_.Contains(record))
+      return ScriptModuleState::kErrored;
+    return ScriptModuleState::kUninstantiated;
   }
 
   ScriptValue GetError(const ModuleScript* module_script) override {
@@ -224,6 +234,8 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
   HeapHashMap<KURL, Member<ModuleScript>> module_map_;
   HeapHashMap<KURL, Member<ModuleTreeClient>> pending_tree_client_map_;
   HashMap<KURL, AncestorList> pending_tree_ancestor_list_;
+  HashSet<ScriptModule> instantiated_records_;
+  HashSet<ScriptModule> errored_records_;
   bool instantiate_should_fail_ = false;
 };
 

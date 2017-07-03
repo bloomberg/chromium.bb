@@ -68,7 +68,7 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
   bool HasInstantiated() const;
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-is-errored
-  bool IsErrored() const { return record_.IsEmpty(); }
+  bool IsErrored() const;
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-set-pre-instantiation-error
   void SetErrorAndClearRecord(ScriptValue error);
