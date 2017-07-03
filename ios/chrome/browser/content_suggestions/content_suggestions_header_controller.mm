@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_synchronizing.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_view.h"
 #import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
@@ -30,6 +31,10 @@ const CGFloat kHintLabelSidePadding = 12;
 }  // namespace
 
 @interface ContentSuggestionsHeaderController ()
+
+// |YES| when notifications indicate the omnibox is focused.
+@property(nonatomic, assign, getter=isOmniboxFocused, readwrite)
+    BOOL omniboxFocused;
 
 // |YES| if this consumer is has voice search enabled.
 @property(nonatomic, assign) BOOL voiceSearchIsEnabled;
@@ -55,10 +60,6 @@ const CGFloat kHintLabelSidePadding = 12;
 // Gets the text of a what's new promo.
 @property(nonatomic, copy) NSString* promoText;
 
-// |YES| if this NTP panel is visible.  When set to |NO| various UI updates are
-// ignored.
-@property(nonatomic, assign) BOOL isShowing;
-
 // The number of tabs to show in the google landing fake toolbar.
 @property(nonatomic, assign) int tabCount;
 
@@ -80,6 +81,7 @@ const CGFloat kHintLabelSidePadding = 12;
 @synthesize dispatcher = _dispatcher;
 @synthesize delegate = _delegate;
 @synthesize commandHandler = _commandHandler;
+@synthesize collectionSynchronizer = _collectionSynchronizer;
 @synthesize readingListModel = _readingListModel;
 
 @synthesize logoVendor = _logoVendor;
@@ -107,6 +109,20 @@ const CGFloat kHintLabelSidePadding = 12;
 
 #pragma mark - Public
 
+- (UIView*)toolBarView {
+  return self.headerView.toolBarView;
+}
+
+#pragma mark - Property
+
+- (void)setIsShowing:(BOOL)isShowing {
+  _isShowing = isShowing;
+  if (isShowing)
+    [self.headerView hideToolbarViewsForNewTabPage];
+}
+
+#pragma mark - ContentSuggestionsHeaderControlling
+
 - (void)updateSearchFieldForOffset:(CGFloat)offset {
   NSArray* constraints =
       @[ self.hintLabelLeadingConstraint, self.voiceTapTrailingConstraint ];
@@ -119,8 +135,12 @@ const CGFloat kHintLabelSidePadding = 12;
                                 forOffset:offset];
 }
 
-- (UIView*)toolBarView {
-  return self.headerView.toolBarView;
+- (void)unfocusOmnibox {
+  if (self.omniboxFocused) {
+    [self.dispatcher cancelOmniboxEdit];
+  } else {
+    [self locationBarResignsFirstResponder];
+  }
 }
 
 #pragma mark - ContentSuggestionsHeaderProvider
@@ -270,6 +290,28 @@ const CGFloat kHintLabelSidePadding = 12;
   ]];
 }
 
+- (void)shiftTilesDown {
+  if (!IsIPadIdiom()) {
+    self.fakeOmnibox.hidden = NO;
+    [self.dispatcher onFakeboxBlur];
+  }
+
+  [self.collectionSynchronizer shiftTilesDown];
+
+  [self.commandHandler dismissModals];
+}
+
+- (void)shiftTilesUp {
+  void (^completionBlock)() = ^{
+    if (!IsIPadIdiom()) {
+      [self.dispatcher onFakeboxAnimationComplete];
+      [self.headerView fadeOutShadow];
+      [self.fakeOmnibox setHidden:YES];
+    }
+  };
+  [self.collectionSynchronizer shiftTilesUpWithCompletionBlock:completionBlock];
+}
+
 #pragma mark - ToolbarOwner
 
 - (ToolbarController*)relinquishedToolbarController {
@@ -325,7 +367,7 @@ const CGFloat kHintLabelSidePadding = 12;
     return;
 
   self.omniboxFocused = YES;
-  [self.commandHandler shiftTilesUp];
+  [self shiftTilesUp];
 }
 
 - (void)locationBarResignsFirstResponder {
@@ -337,7 +379,7 @@ const CGFloat kHintLabelSidePadding = 12;
     return;
   }
 
-  [self.commandHandler shiftTilesDown];
+  [self shiftTilesDown];
 }
 
 @end

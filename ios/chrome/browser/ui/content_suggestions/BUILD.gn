@@ -4,17 +4,23 @@
 
 source_set("content_suggestions") {
   sources = [
+    "content_suggestions_collection_controlling.h",
+    "content_suggestions_collection_synchronizing.h",
     "content_suggestions_collection_updater.h",
     "content_suggestions_collection_updater.mm",
     "content_suggestions_commands.h",
     "content_suggestions_data_sink.h",
     "content_suggestions_data_source.h",
-    "content_suggestions_header_commands.h",
+    "content_suggestions_header_controlling.h",
+    "content_suggestions_header_synchronizer.h",
+    "content_suggestions_header_synchronizer.mm",
+    "content_suggestions_header_synchronizing.h",
     "content_suggestions_image_fetcher.h",
     "content_suggestions_layout.h",
     "content_suggestions_layout.mm",
     "content_suggestions_view_controller.h",
     "content_suggestions_view_controller.mm",
+    "content_suggestions_view_controller_audience.h",
     "content_suggestions_view_controller_delegate.h",
     "content_suggestions_view_controller_utils.h",
     "content_suggestions_view_controller_utils.mm",
@@ -64,6 +70,7 @@ source_set("unit_tests") {
   sources = [
     "content_suggestions_collection_updater_unittest.mm",
     "content_suggestions_collection_utils_unittest.mm",
+    "content_suggestions_header_synchronizer_unittest.mm",
     "content_suggestions_view_controller_utils_unittest.mm",
   ]
   deps = [

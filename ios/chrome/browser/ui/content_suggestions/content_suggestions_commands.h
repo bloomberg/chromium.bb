@@ -7,7 +7,8 @@
 
 @class CollectionViewItem;
 
-// Commands protocol for the ContentSuggestionsViewController.
+// Commands protocol allowing the ContentSuggestions ViewControllers to interact
+// with the coordinator layer, and from there to the rest of the application.
 @protocol ContentSuggestionsCommands
 
 // Opens the Reading List.

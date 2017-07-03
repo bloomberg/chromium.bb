@@ -216,4 +216,20 @@ TEST_F(ContentSuggestionsCollectionUtilsTest, SizeIPadSplit) {
   EXPECT_EQ(3U, numberOfTilesForWidth(360));
 }
 
+TEST_F(ContentSuggestionsCollectionUtilsTest, NearestAncestor) {
+  // Setup.
+  // The types of the view has no meaning.
+  UILabel* rootView = [[UILabel alloc] init];
+  UIView* intermediaryView = [[UIView alloc] init];
+  UIScrollView* leafView = [[UIScrollView alloc] init];
+  [rootView addSubview:intermediaryView];
+  [intermediaryView addSubview:leafView];
+
+  // Tests.
+  EXPECT_EQ(leafView, nearestAncestor(leafView, [UIScrollView class]));
+  EXPECT_EQ(leafView, nearestAncestor(leafView, [UIView class]));
+  EXPECT_EQ(rootView, nearestAncestor(leafView, [UILabel class]));
+  EXPECT_EQ(nil, nearestAncestor(leafView, [UITextView class]));
+}
+
 }  // namespace content_suggestions
