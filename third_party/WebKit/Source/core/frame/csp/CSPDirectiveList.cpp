@@ -278,7 +278,7 @@ bool CSPDirectiveList::CheckAncestors(SourceListDirective* directive,
     //
     // TODO(mkwst): Move this check up into the browser process.  See
     // https://crbug.com/555418.
-    KURL url(KURL(),
+    KURL url(NullURL(),
              current->GetSecurityContext()->GetSecurityOrigin()->ToString());
     if (!directive->Allows(url, ResourceRequest::RedirectStatus::kNoRedirect))
       return false;
@@ -428,7 +428,7 @@ bool CSPDirectiveList::CheckMediaTypeAndReportViolation(
   // targets, as we won't have had a chance to redirect yet.
   ReportViolation(
       directive->GetText(), ContentSecurityPolicy::DirectiveType::kPluginTypes,
-      message + "\n", KURL(), ResourceRequest::RedirectStatus::kNoRedirect);
+      message + "\n", NullURL(), ResourceRequest::RedirectStatus::kNoRedirect);
   return DenyIfEnforcingPolicy();
 }
 

@@ -49,7 +49,7 @@ bool HostIsIPAddress(const String& host) {
     return false;
 
   String protocol("https://");
-  KURL url(KURL(), protocol + host + "/");
+  KURL url(NullURL(), protocol + host + "/");
   if (!url.IsValid())
     return false;
 

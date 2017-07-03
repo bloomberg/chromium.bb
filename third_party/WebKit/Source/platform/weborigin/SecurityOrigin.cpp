@@ -522,7 +522,7 @@ void SecurityOrigin::BuildRawString(StringBuilder& builder,
 
 RefPtr<SecurityOrigin> SecurityOrigin::CreateFromString(
     const String& origin_string) {
-  return SecurityOrigin::Create(KURL(KURL(), origin_string));
+  return SecurityOrigin::Create(KURL(NullURL(), origin_string));
 }
 
 RefPtr<SecurityOrigin> SecurityOrigin::Create(const String& protocol,
@@ -534,7 +534,7 @@ RefPtr<SecurityOrigin> SecurityOrigin::Create(const String& protocol,
   DCHECK_EQ(host, DecodeURLEscapeSequences(host));
 
   String port_part = port ? ":" + String::Number(port) : String();
-  return Create(KURL(KURL(), protocol + "://" + host + port_part + "/"));
+  return Create(KURL(NullURL(), protocol + "://" + host + port_part + "/"));
 }
 
 RefPtr<SecurityOrigin> SecurityOrigin::Create(const String& protocol,

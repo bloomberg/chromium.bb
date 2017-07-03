@@ -154,7 +154,7 @@ void LocalFileSystem::FileSystemAllowedInternal(ExecutionContext* context,
     return;
   }
   KURL storage_partition =
-      KURL(KURL(), context->GetSecurityOrigin()->ToString());
+      KURL(NullURL(), context->GetSecurityOrigin()->ToString());
   file_system->OpenFileSystem(storage_partition,
                               static_cast<WebFileSystemType>(type),
                               callbacks->Release());

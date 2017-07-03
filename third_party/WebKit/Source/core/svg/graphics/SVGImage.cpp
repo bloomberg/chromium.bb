@@ -315,7 +315,7 @@ void SVGImage::DrawForContainer(PaintCanvas* canvas,
 }
 
 sk_sp<SkImage> SVGImage::ImageForCurrentFrame() {
-  return ImageForCurrentFrameForContainer(KURL(), Size());
+  return ImageForCurrentFrameForContainer(NullURL(), Size());
 }
 
 void SVGImage::DrawPatternForContainer(GraphicsContext& context,
@@ -416,7 +416,7 @@ bool SVGImage::ApplyShaderInternal(PaintFlags& flags,
 }
 
 bool SVGImage::ApplyShader(PaintFlags& flags, const SkMatrix& local_matrix) {
-  return ApplyShaderInternal(flags, local_matrix, KURL());
+  return ApplyShaderInternal(flags, local_matrix, NullURL());
 }
 
 bool SVGImage::ApplyShaderForContainer(const FloatSize& container_size,
@@ -448,7 +448,7 @@ void SVGImage::Draw(
     return;
 
   DrawInternal(canvas, flags, dst_rect, src_rect,
-               should_respect_image_orientation, clamp_mode, KURL());
+               should_respect_image_orientation, clamp_mode, NullURL());
 }
 
 sk_sp<PaintRecord> SVGImage::PaintRecordForCurrentFrame(const IntRect& bounds,
@@ -769,10 +769,11 @@ Image::SizeAvailability SVGImage::DataChanged(bool all_data_received) {
     page_ = page;
 
     TRACE_EVENT0("blink", "SVGImage::dataChanged::load");
-    loader.Load(FrameLoadRequest(
-        0, ResourceRequest(BlankURL()),
-        SubstituteData(Data(), AtomicString("image/svg+xml"),
-                       AtomicString("UTF-8"), KURL(), kForceSynchronousLoad)));
+    loader.Load(
+        FrameLoadRequest(0, ResourceRequest(BlankURL()),
+                         SubstituteData(Data(), AtomicString("image/svg+xml"),
+                                        AtomicString("UTF-8"), NullURL(),
+                                        kForceSynchronousLoad)));
 
     // Set the concrete object size before a container size is available.
     intrinsic_size_ = RoundedIntSize(ConcreteObjectSize(FloatSize(

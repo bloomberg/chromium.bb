@@ -625,7 +625,7 @@ ScriptPromise Cache::PutImpl(ScriptState* script_state,
       new BarrierCallbackForPut(requests.size(), this, resolver);
 
   for (size_t i = 0; i < requests.size(); ++i) {
-    KURL url(KURL(), requests[i]->url());
+    KURL url(NullURL(), requests[i]->url());
     if (!url.ProtocolIsInHTTPFamily()) {
       barrier_callback->OnError("Request scheme '" + url.Protocol() +
                                 "' is unsupported");

@@ -403,7 +403,8 @@ ScriptPromise RejectIfInvalidURLRecord(ScriptState* script_state,
   }
 
   blink::V8StringResource<> string_resource = record.data().V8Value();
-  if (!string_resource.Prepare() || !KURL(KURL(), string_resource).IsValid()) {
+  if (!string_resource.Prepare() ||
+      !KURL(NullURL(), string_resource).IsValid()) {
     return RejectWithDOMException(script_state, kSyntaxError,
                                   "Cannot parse data for 'url' record.");
   }

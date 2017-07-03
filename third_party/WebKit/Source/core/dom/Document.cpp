@@ -5048,7 +5048,7 @@ const KURL Document::FirstPartyForCookies() const {
     SecurityOrigin* origin = top.GetSecurityContext()->GetSecurityOrigin();
     // TODO(yhirano): Ideally |origin| should not be null here.
     if (origin)
-      top_document_url = KURL(KURL(), origin->ToString());
+      top_document_url = KURL(NullURL(), origin->ToString());
     else
       top_document_url = SecurityOrigin::UrlWithUniqueSecurityOrigin();
   }

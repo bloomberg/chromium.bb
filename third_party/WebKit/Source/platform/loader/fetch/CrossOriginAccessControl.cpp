@@ -169,7 +169,7 @@ CrossOriginAccessControl::AccessStatus CrossOriginAccessControl::CheckAccess(
         kNotFound) {
       return kMultipleAllowOriginValues;
     }
-    KURL header_origin(KURL(), allow_origin_header_value);
+    KURL header_origin(NullURL(), allow_origin_header_value);
     if (!header_origin.IsValid())
       return kInvalidAllowOriginValue;
 

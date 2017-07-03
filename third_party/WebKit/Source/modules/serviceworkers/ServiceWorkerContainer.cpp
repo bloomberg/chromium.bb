@@ -176,7 +176,7 @@ void ServiceWorkerContainer::RegisterServiceWorkerImpl(
     return;
   }
 
-  KURL page_url = KURL(KURL(), document_origin->ToString());
+  KURL page_url = KURL(NullURL(), document_origin->ToString());
   if (!SchemeRegistry::ShouldTreatURLSchemeAsAllowingServiceWorkers(
           page_url.Protocol())) {
     callbacks->OnError(WebServiceWorkerError(
@@ -330,7 +330,7 @@ ScriptPromise ServiceWorkerContainer::getRegistration(
     return promise;
   }
 
-  KURL page_url = KURL(KURL(), document_origin->ToString());
+  KURL page_url = KURL(NullURL(), document_origin->ToString());
   if (!SchemeRegistry::ShouldTreatURLSchemeAsAllowingServiceWorkers(
           page_url.Protocol())) {
     resolver->Reject(DOMException::Create(
@@ -383,7 +383,7 @@ ScriptPromise ServiceWorkerContainer::getRegistrations(
     return promise;
   }
 
-  KURL page_url = KURL(KURL(), document_origin->ToString());
+  KURL page_url = KURL(NullURL(), document_origin->ToString());
   if (!SchemeRegistry::ShouldTreatURLSchemeAsAllowingServiceWorkers(
           page_url.Protocol())) {
     resolver->Reject(DOMException::Create(

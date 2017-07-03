@@ -199,7 +199,7 @@ ScriptPromise CredentialsContainer::get(
   Vector<KURL> providers;
   if (options.hasFederated() && options.federated().hasProviders()) {
     for (const auto& string : options.federated().providers()) {
-      KURL url = KURL(KURL(), string);
+      KURL url = KURL(NullURL(), string);
       if (url.IsValid())
         providers.push_back(std::move(url));
     }

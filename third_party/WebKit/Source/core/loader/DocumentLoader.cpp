@@ -1136,7 +1136,7 @@ void DocumentLoader::ReplaceDocumentWhileExecutingJavaScriptURL(
   InstallNewDocument(init, MimeType(),
                      writer_ ? writer_->Encoding() : g_empty_atom,
                      InstallNewDocumentReason::kJavascriptURL,
-                     kForceSynchronousParsing, KURL());
+                     kForceSynchronousParsing, NullURL());
   if (!source.IsNull())
     writer_->AppendReplacingData(source);
   EndWriting();

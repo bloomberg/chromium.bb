@@ -92,7 +92,7 @@ TEST_F(PresentationReceiverTest, OneConnectionResolvedConnectionListNoEvent) {
 
   // Receive first connection.
   receiver->OnReceiverConnectionAvailable(
-      WebPresentationInfo(KURL(KURL(), "http://example.com"), "id"));
+      WebPresentationInfo(KURL(NullURL(), "http://example.com"), "id"));
 
   VerifyConnectionListPropertyState(ScriptPromisePropertyBase::kResolved,
                                     receiver);
@@ -110,7 +110,7 @@ TEST_F(PresentationReceiverTest, TwoConnectionsFireOnconnectionavailableEvent) {
 
   receiver->connectionList(scope.GetScriptState());
 
-  WebPresentationInfo presentation_info(KURL(KURL(), "http://example.com"),
+  WebPresentationInfo presentation_info(KURL(NullURL(), "http://example.com"),
                                         "id");
   // Receive first connection.
   receiver->OnReceiverConnectionAvailable(presentation_info);
@@ -129,7 +129,7 @@ TEST_F(PresentationReceiverTest, TwoConnectionsNoEvent) {
   AddConnectionavailableEventListener(event_handler, receiver);
   EXPECT_CALL(*event_handler, handleEvent(testing::_, testing::_)).Times(0);
 
-  WebPresentationInfo presentation_info(KURL(KURL(), "http://example.com"),
+  WebPresentationInfo presentation_info(KURL(NullURL(), "http://example.com"),
                                         "id");
   // Receive first connection.
   auto* connection1 =
@@ -160,14 +160,14 @@ TEST_F(PresentationReceiverTest, TestRemoveConnection) {
   auto receiver = new PresentationReceiver(&scope.GetFrame(), nullptr);
 
   // Receive first connection.
-  WebPresentationInfo presentation_info1(KURL(KURL(), "http://example1.com"),
+  WebPresentationInfo presentation_info1(KURL(NullURL(), "http://example1.com"),
                                          "id1");
   auto* connection1 =
       receiver->OnReceiverConnectionAvailable(presentation_info1);
   EXPECT_TRUE(connection1);
 
   // Receive second connection.
-  WebPresentationInfo presentation_info2(KURL(KURL(), "http://example2.com"),
+  WebPresentationInfo presentation_info2(KURL(NullURL(), "http://example2.com"),
                                          "id2");
   auto* connection2 =
       receiver->OnReceiverConnectionAvailable(presentation_info2);

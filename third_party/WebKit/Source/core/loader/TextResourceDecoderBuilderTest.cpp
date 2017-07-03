@@ -14,7 +14,7 @@ static const WTF::TextEncoding DefaultEncodingForURL(const char* url) {
   std::unique_ptr<DummyPageHolder> page_holder =
       DummyPageHolder::Create(IntSize(0, 0));
   Document& document = page_holder->GetDocument();
-  document.SetURL(KURL(KURL(), url));
+  document.SetURL(KURL(NullURL(), url));
   TextResourceDecoderBuilder decoder_builder("text/html", g_null_atom);
   return decoder_builder.BuildFor(&document)->Encoding();
 }

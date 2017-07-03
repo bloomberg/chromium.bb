@@ -127,7 +127,7 @@ class ModuleScriptLoaderTest : public ::testing::Test {
 void ModuleScriptLoaderTest::SetUp() {
   platform_->AdvanceClockSeconds(1.);  // For non-zero DocumentParserTimings
   dummy_page_holder_ = DummyPageHolder::Create(IntSize(500, 500));
-  GetDocument().SetURL(KURL(KURL(), "https://example.test"));
+  GetDocument().SetURL(KURL(NullURL(), "https://example.test"));
   auto* context =
       MockFetchContext::Create(MockFetchContext::kShouldLoadNewResource);
   fetcher_ = ResourceFetcher::Create(context, context->GetTaskRunner().Get());
@@ -138,7 +138,7 @@ void ModuleScriptLoaderTest::SetUp() {
 
 TEST_F(ModuleScriptLoaderTest, fetchDataURL) {
   ModuleScriptLoaderRegistry* registry = ModuleScriptLoaderRegistry::Create();
-  KURL url(KURL(), "data:text/javascript,export default 'grapes';");
+  KURL url(NullURL(), "data:text/javascript,export default 'grapes';");
   ModuleScriptFetchRequest module_request(
       url, String(), kParserInserted, WebURLRequest::kFetchCredentialsModeOmit);
   TestModuleScriptLoaderClient* client = new TestModuleScriptLoaderClient;
@@ -153,7 +153,7 @@ TEST_F(ModuleScriptLoaderTest, fetchDataURL) {
 
 TEST_F(ModuleScriptLoaderTest, InvalidSpecifier) {
   ModuleScriptLoaderRegistry* registry = ModuleScriptLoaderRegistry::Create();
-  KURL url(KURL(),
+  KURL url(NullURL(),
            "data:text/javascript,import 'invalid';export default 'grapes';");
   ModuleScriptFetchRequest module_request(
       url, String(), kParserInserted, WebURLRequest::kFetchCredentialsModeOmit);

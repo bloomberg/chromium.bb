@@ -64,7 +64,7 @@ class IDBRequestTest : public ::testing::Test {
   void SetUp() override {
     url_loader_mock_factory_ = Platform::Current()->GetURLLoaderMockFactory();
     WebURLResponse response;
-    response.SetURL(KURL(KURL(), "blob:"));
+    response.SetURL(KURL(NullURL(), "blob:"));
     url_loader_mock_factory_->RegisterURLProtocol(WebString("blob"), response,
                                                   "");
   }

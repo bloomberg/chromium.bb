@@ -54,7 +54,7 @@ class DOMURL final : public GarbageCollectedFinalized<DOMURL>,
   static DOMURL* Create(const String& url,
                         const String& base,
                         ExceptionState& exception_state) {
-    return new DOMURL(url, KURL(KURL(), base), exception_state);
+    return new DOMURL(url, KURL(NullURL(), base), exception_state);
   }
   ~DOMURL();
 

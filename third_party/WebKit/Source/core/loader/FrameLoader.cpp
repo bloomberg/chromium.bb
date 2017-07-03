@@ -902,7 +902,7 @@ SubstituteData FrameLoader::DefaultSubstituteDataForURL(const KURL& url) {
   CString encoded_srcdoc = srcdoc.Utf8();
   return SubstituteData(
       SharedBuffer::Create(encoded_srcdoc.data(), encoded_srcdoc.length()),
-      "text/html", "UTF-8", KURL());
+      "text/html", "UTF-8", NullURL());
 }
 
 void FrameLoader::StopAllLoaders() {

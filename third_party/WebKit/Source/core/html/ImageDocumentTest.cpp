@@ -98,7 +98,7 @@ void ImageDocumentTest::CreateDocumentWithoutLoadingImage(int view_width,
 
   LocalFrame& frame = dummy_page_holder_->GetFrame();
   frame.GetDocument()->Shutdown();
-  DocumentInit init(KURL(), &frame);
+  DocumentInit init(NullURL(), &frame);
   frame.DomWindow()->InstallNewDocument("image/jpeg", init);
 }
 

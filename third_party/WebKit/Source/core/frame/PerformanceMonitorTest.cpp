@@ -56,13 +56,14 @@ class PerformanceMonitorTest : public ::testing::Test {
 
 void PerformanceMonitorTest::SetUp() {
   page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
-  page_holder_->GetDocument().SetURL(KURL(KURL(), "https://example.com/foo"));
+  page_holder_->GetDocument().SetURL(
+      KURL(NullURL(), "https://example.com/foo"));
   monitor_ = new PerformanceMonitor(GetFrame());
 
   // Create another dummy page holder and pretend this is the iframe.
   another_page_holder_ = DummyPageHolder::Create(IntSize(400, 300));
   another_page_holder_->GetDocument().SetURL(
-      KURL(KURL(), "https://iframed.com/bar"));
+      KURL(NullURL(), "https://iframed.com/bar"));
 }
 
 void PerformanceMonitorTest::TearDown() {

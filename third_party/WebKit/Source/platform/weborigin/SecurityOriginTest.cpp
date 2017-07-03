@@ -206,7 +206,7 @@ TEST_F(SecurityOriginTest, IsSecure) {
               SecurityOrigin::IsSecure(KURL(kParsedURLString, test.url)))
         << "URL: '" << test.url << "'";
 
-  EXPECT_FALSE(SecurityOrigin::IsSecure(KURL()));
+  EXPECT_FALSE(SecurityOrigin::IsSecure(NullURL()));
 }
 
 TEST_F(SecurityOriginTest, IsSecureViaTrustworthy) {

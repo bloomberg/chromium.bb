@@ -217,10 +217,10 @@ void DOMWindow::postMessage(PassRefPtr<SerializedScriptValue> message,
 
   KURL target_url = IsLocalDOMWindow()
                         ? blink::ToLocalDOMWindow(this)->document()->Url()
-                        : KURL(KURL(), GetFrame()
-                                           ->GetSecurityContext()
-                                           ->GetSecurityOrigin()
-                                           ->ToString());
+                        : KURL(NullURL(), GetFrame()
+                                              ->GetSecurityContext()
+                                              ->GetSecurityOrigin()
+                                              ->ToString());
   if (MixedContentChecker::IsMixedContent(source_document->GetSecurityOrigin(),
                                           target_url)) {
     UseCounter::Count(source->GetFrame(),
@@ -315,7 +315,7 @@ String DOMWindow::CrossDomainAccessErrorMessage(
   // there isn't anything else to show other than "null" for its origin.
   KURL target_url = IsLocalDOMWindow()
                         ? blink::ToLocalDOMWindow(this)->document()->Url()
-                        : KURL(KURL(), target_origin->ToString());
+                        : KURL(NullURL(), target_origin->ToString());
   if (GetFrame()->GetSecurityContext()->IsSandboxed(kSandboxOrigin) ||
       calling_window->document()->IsSandboxed(kSandboxOrigin)) {
     message = "Blocked a frame at \"" +

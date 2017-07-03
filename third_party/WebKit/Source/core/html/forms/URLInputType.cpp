@@ -50,7 +50,7 @@ const AtomicString& URLInputType::FormControlType() const {
 }
 
 bool URLInputType::TypeMismatchFor(const String& value) const {
-  return !value.IsEmpty() && !KURL(KURL(), value).IsValid();
+  return !value.IsEmpty() && !KURL(NullURL(), value).IsValid();
 }
 
 bool URLInputType::TypeMismatch() const {

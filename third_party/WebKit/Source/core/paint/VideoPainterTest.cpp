@@ -79,7 +79,7 @@ class VideoPainterTestForSPv2 : public ::testing::Test,
         });
     GetDocument().View()->SetParentVisible(true);
     GetDocument().View()->SetSelfVisible(true);
-    GetDocument().SetURL(KURL(KURL(), "https://example.com/"));
+    GetDocument().SetURL(KURL(NullURL(), "https://example.com/"));
   }
 
   Document& GetDocument() { return page_holder_->GetDocument(); }

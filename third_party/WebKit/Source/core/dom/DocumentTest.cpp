@@ -520,14 +520,16 @@ TEST_F(DocumentTest, referrerPolicyParsing) {
 }
 
 TEST_F(DocumentTest, OutgoingReferrer) {
-  GetDocument().SetURL(KURL(KURL(), "https://www.example.com/hoge#fuga?piyo"));
+  GetDocument().SetURL(
+      KURL(NullURL(), "https://www.example.com/hoge#fuga?piyo"));
   GetDocument().SetSecurityOrigin(
-      SecurityOrigin::Create(KURL(KURL(), "https://www.example.com/")));
+      SecurityOrigin::Create(KURL(NullURL(), "https://www.example.com/")));
   EXPECT_EQ("https://www.example.com/hoge", GetDocument().OutgoingReferrer());
 }
 
 TEST_F(DocumentTest, OutgoingReferrerWithUniqueOrigin) {
-  GetDocument().SetURL(KURL(KURL(), "https://www.example.com/hoge#fuga?piyo"));
+  GetDocument().SetURL(
+      KURL(NullURL(), "https://www.example.com/hoge#fuga?piyo"));
   GetDocument().SetSecurityOrigin(SecurityOrigin::CreateUnique());
   EXPECT_EQ(String(), GetDocument().OutgoingReferrer());
 }
@@ -834,13 +836,13 @@ TEST_F(DocumentTest, SandboxDisablesAppCache) {
   GetDocument().SetSecurityOrigin(origin);
   SandboxFlags mask = kSandboxOrigin;
   GetDocument().EnforceSandboxFlags(mask);
-  GetDocument().SetURL(KURL(KURL(), "https://test.com/foobar/document"));
+  GetDocument().SetURL(KURL(NullURL(), "https://test.com/foobar/document"));
 
   ApplicationCacheHost* appcache_host =
       GetDocument().Loader()->GetApplicationCacheHost();
   appcache_host->host_ = WTF::MakeUnique<MockWebApplicationCacheHost>();
   appcache_host->SelectCacheWithManifest(
-      KURL(KURL(), "https://test.com/foobar/manifest"));
+      KURL(NullURL(), "https://test.com/foobar/manifest"));
   MockWebApplicationCacheHost* mock_web_host =
       static_cast<MockWebApplicationCacheHost*>(appcache_host->host_.get());
   EXPECT_FALSE(mock_web_host->with_manifest_was_called_);
@@ -855,13 +857,13 @@ TEST_F(DocumentTest, SuboriginDisablesAppCache) {
   suborigin.SetName("foobar");
   origin->AddSuborigin(suborigin);
   GetDocument().SetSecurityOrigin(origin);
-  GetDocument().SetURL(KURL(KURL(), "https://test.com/foobar/document"));
+  GetDocument().SetURL(KURL(NullURL(), "https://test.com/foobar/document"));
 
   ApplicationCacheHost* appcache_host =
       GetDocument().Loader()->GetApplicationCacheHost();
   appcache_host->host_ = WTF::MakeUnique<MockWebApplicationCacheHost>();
   appcache_host->SelectCacheWithManifest(
-      KURL(KURL(), "https://test.com/foobar/manifest"));
+      KURL(NullURL(), "https://test.com/foobar/manifest"));
   MockWebApplicationCacheHost* mock_web_host =
       static_cast<MockWebApplicationCacheHost*>(appcache_host->host_.get());
   EXPECT_FALSE(mock_web_host->with_manifest_was_called_);

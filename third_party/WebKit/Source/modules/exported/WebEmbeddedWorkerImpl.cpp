@@ -309,9 +309,9 @@ void WebEmbeddedWorkerImpl::LoadShadowPage() {
   RefPtr<SharedBuffer> buffer(
       SharedBuffer::Create(content.data(), content.length()));
   loading_shadow_page_ = true;
-  main_frame_->GetFrame()->Loader().Load(
-      FrameLoadRequest(0, ResourceRequest(worker_start_data_.script_url),
-                       SubstituteData(buffer, "text/html", "UTF-8", KURL())));
+  main_frame_->GetFrame()->Loader().Load(FrameLoadRequest(
+      0, ResourceRequest(worker_start_data_.script_url),
+      SubstituteData(buffer, "text/html", "UTF-8", NullURL())));
 }
 
 void WebEmbeddedWorkerImpl::FrameDetached(WebLocalFrame* frame,

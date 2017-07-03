@@ -290,7 +290,7 @@ void DOMWebSocket::Connect(const String& url,
   UseCounter::Count(GetExecutionContext(), WebFeature::kWebSocket);
 
   NETWORK_DVLOG(1) << "WebSocket " << this << " connect() url=" << url;
-  url_ = KURL(KURL(), url);
+  url_ = KURL(NullURL(), url);
 
   if (GetExecutionContext()->GetSecurityContext().GetInsecureRequestPolicy() &
           kUpgradeInsecureRequests &&

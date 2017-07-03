@@ -321,7 +321,7 @@ bool WebPagePopupImpl::InitializePage() {
   frame->SetPageZoomFactor(popup_client_->ZoomFactor());
   frame->Loader().Load(
       FrameLoadRequest(0, ResourceRequest(BlankURL()),
-                       SubstituteData(data, "text/html", "UTF-8", KURL(),
+                       SubstituteData(data, "text/html", "UTF-8", NullURL(),
                                       kForceSynchronousLoad)));
   return true;
 }

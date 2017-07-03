@@ -42,7 +42,7 @@ struct Referrer {
   DISALLOW_NEW();
   Referrer(const String& referrer, ReferrerPolicy referrer_policy)
       : referrer(referrer), referrer_policy(referrer_policy) {
-    DCHECK(referrer == NoReferrer() || KURL(KURL(), referrer).IsValid());
+    DCHECK(referrer == NoReferrer() || KURL(NullURL(), referrer).IsValid());
   }
   Referrer() : referrer_policy(kReferrerPolicyDefault) {}
   static String NoReferrer() { return String(); }

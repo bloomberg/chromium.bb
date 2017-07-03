@@ -32,7 +32,7 @@ class HTMLDocumentParserTest : public testing::Test {
  protected:
   HTMLDocumentParserTest() : dummy_page_holder_(DummyPageHolder::Create()) {
     dummy_page_holder_->GetDocument().SetURL(
-        KURL(KURL(), "https://example.test"));
+        KURL(NullURL(), "https://example.test"));
   }
 
   HTMLDocumentParser* CreateParser(HTMLDocument& document) {

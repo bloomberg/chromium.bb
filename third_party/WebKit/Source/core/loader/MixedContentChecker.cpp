@@ -56,7 +56,7 @@ namespace {
 // messages about mixed content.
 KURL MainResourceUrlForFrame(Frame* frame) {
   if (frame->IsRemoteFrame()) {
-    return KURL(KURL(),
+    return KURL(NullURL(),
                 frame->GetSecurityContext()->GetSecurityOrigin()->ToString());
   }
   return ToLocalFrame(frame)->GetDocument()->Url();

@@ -361,7 +361,7 @@ TEST(ImageResourceTest, MultipartImage) {
   // Send the multipart response. No image or data buffer is created. Note that
   // the response must be routed through ResourceLoader to ensure the load is
   // flagged as multipart.
-  ResourceResponse multipart_response(KURL(), "multipart/x-mixed-replace", 0,
+  ResourceResponse multipart_response(NullURL(), "multipart/x-mixed-replace", 0,
                                       g_null_atom);
   multipart_response.SetMultipartBoundary("boundary", strlen("boundary"));
   image_resource->Loader()->DidReceiveResponse(
@@ -439,7 +439,7 @@ TEST(ImageResourceTest, BitmapMultipartImage) {
   image_resource->SetIdentifier(CreateUniqueIdentifier());
   fetcher->StartLoad(image_resource);
 
-  ResourceResponse multipart_response(KURL(), "multipart/x-mixed-replace", 0,
+  ResourceResponse multipart_response(NullURL(), "multipart/x-mixed-replace", 0,
                                       g_null_atom);
   multipart_response.SetMultipartBoundary("boundary", strlen("boundary"));
   image_resource->Loader()->DidReceiveResponse(
@@ -493,7 +493,7 @@ TEST(ImageResourceTest, CancelOnRemoveObserver) {
 }
 
 TEST(ImageResourceTest, DecodedDataRemainsWhileHasClients) {
-  ImageResource* image_resource = ImageResource::CreateForTest(KURL());
+  ImageResource* image_resource = ImageResource::CreateForTest(NullURL());
   image_resource->SetStatus(ResourceStatus::kPending);
   image_resource->NotifyStartLoad();
 
@@ -502,11 +502,12 @@ TEST(ImageResourceTest, DecodedDataRemainsWhileHasClients) {
 
   // Send the image response.
   image_resource->ResponseReceived(
-      ResourceResponse(KURL(), "multipart/x-mixed-replace", 0, g_null_atom),
+      ResourceResponse(NullURL(), "multipart/x-mixed-replace", 0, g_null_atom),
       nullptr);
 
   image_resource->ResponseReceived(
-      ResourceResponse(KURL(), "image/jpeg", sizeof(kJpegImage), g_null_atom),
+      ResourceResponse(NullURL(), "image/jpeg", sizeof(kJpegImage),
+                       g_null_atom),
       nullptr);
   image_resource->AppendData(reinterpret_cast<const char*>(kJpegImage),
                              sizeof(kJpegImage));
@@ -536,7 +537,7 @@ TEST(ImageResourceTest, DecodedDataRemainsWhileHasClients) {
 }
 
 TEST(ImageResourceTest, UpdateBitmapImages) {
-  ImageResource* image_resource = ImageResource::CreateForTest(KURL());
+  ImageResource* image_resource = ImageResource::CreateForTest(NullURL());
   image_resource->SetStatus(ResourceStatus::kPending);
   image_resource->NotifyStartLoad();
 
@@ -545,7 +546,8 @@ TEST(ImageResourceTest, UpdateBitmapImages) {
 
   // Send the image response.
   image_resource->ResponseReceived(
-      ResourceResponse(KURL(), "image/jpeg", sizeof(kJpegImage), g_null_atom),
+      ResourceResponse(NullURL(), "image/jpeg", sizeof(kJpegImage),
+                       g_null_atom),
       nullptr);
   image_resource->AppendData(reinterpret_cast<const char*>(kJpegImage),
                              sizeof(kJpegImage));
@@ -570,8 +572,8 @@ TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderAfterFinished) {
   ResourceFetcher* fetcher = CreateFetcher();
 
   // Send the image response.
-  ResourceResponse resource_response(KURL(), "image/jpeg", sizeof(kJpegImage),
-                                     g_null_atom);
+  ResourceResponse resource_response(NullURL(), "image/jpeg",
+                                     sizeof(kJpegImage), g_null_atom);
   resource_response.AddHTTPHeaderField("chrome-proxy-content-transform",
                                        "empty-image");
 
@@ -614,8 +616,8 @@ TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderAfterFinishedWithOldHeaders) {
   ResourceFetcher* fetcher = CreateFetcher();
 
   // Send the image response.
-  ResourceResponse resource_response(KURL(), "image/jpeg", sizeof(kJpegImage),
-                                     g_null_atom);
+  ResourceResponse resource_response(NullURL(), "image/jpeg",
+                                     sizeof(kJpegImage), g_null_atom);
   resource_response.AddHTTPHeaderField("chrome-proxy", "q=low");
 
   image_resource->ResponseReceived(resource_response, nullptr);
@@ -662,7 +664,8 @@ TEST(ImageResourceTest,
 
   // Send the image response, without any LoFi image response headers.
   image_resource->ResponseReceived(
-      ResourceResponse(KURL(), "image/jpeg", sizeof(kJpegImage), g_null_atom),
+      ResourceResponse(NullURL(), "image/jpeg", sizeof(kJpegImage),
+                       g_null_atom),
       nullptr);
   image_resource->AppendData(reinterpret_cast<const char*>(kJpegImage),
                              sizeof(kJpegImage));
@@ -706,8 +709,8 @@ TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderViaResourceFetcher) {
       MockImageResourceObserver::Create(content);
 
   // Send the image response.
-  ResourceResponse resource_response(KURL(), "image/jpeg", sizeof(kJpegImage),
-                                     g_null_atom);
+  ResourceResponse resource_response(NullURL(), "image/jpeg",
+                                     sizeof(kJpegImage), g_null_atom);
   resource_response.AddHTTPHeaderField("chrome-proxy-content-transform",
                                        "empty-image");
 
@@ -1691,8 +1694,8 @@ TEST(ImageResourceTest, PeriodicFlushTest) {
       MockImageResourceObserver::Create(image_resource->GetContent());
 
   // Send the image response.
-  ResourceResponse resource_response(KURL(), "image/jpeg", sizeof(kJpegImage2),
-                                     g_null_atom);
+  ResourceResponse resource_response(NullURL(), "image/jpeg",
+                                     sizeof(kJpegImage2), g_null_atom);
   resource_response.AddHTTPHeaderField("chrome-proxy", "q=low");
 
   image_resource->ResponseReceived(resource_response, nullptr);
