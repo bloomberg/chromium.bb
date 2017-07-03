@@ -33,9 +33,14 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.25;
     headerController;
 @property(nonatomic, assign) CFTimeInterval shiftTilesDownStartTime;
 
-// Tap and swipe gesture recognizers when the omnibox is focused.
+// Tap gesture recognizer when the omnibox is focused.
 @property(nonatomic, strong) UITapGestureRecognizer* tapGestureRecognizer;
-@property(nonatomic, strong) UISwipeGestureRecognizer* swipeGestureRecognizer;
+
+// When the omnibox is focused, this value represents the shift distance of the
+// collection needed to pin the omnibox to the top. It is 0 if the omnibox has
+// not been moved when focused (i.e. the collection was already scrolled to
+// top).
+@property(nonatomic, assign) CGFloat collectionShiftingOffset;
 
 @end
 
@@ -46,7 +51,7 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.25;
 @synthesize shouldAnimateHeader = _shouldAnimateHeader;
 @synthesize shiftTilesDownStartTime = _shiftTilesDownStartTime;
 @synthesize tapGestureRecognizer = _tapGestureRecognizer;
-@synthesize swipeGestureRecognizer = _swipeGestureRecognizer;
+@synthesize collectionShiftingOffset = _collectionShiftingOffset;
 
 - (instancetype)
 initWithCollectionController:
@@ -62,14 +67,11 @@ initWithCollectionController:
         initWithTarget:self
                 action:@selector(unfocusOmnibox)];
     [_tapGestureRecognizer setDelegate:self];
-    _swipeGestureRecognizer = [[UISwipeGestureRecognizer alloc]
-        initWithTarget:self
-                action:@selector(unfocusOmnibox)];
-    [_swipeGestureRecognizer
-        setDirection:UISwipeGestureRecognizerDirectionDown];
 
     _headerController = headerController;
     _collectionController = collectionController;
+
+    _collectionShiftingOffset = 0;
   }
   return self;
 }
@@ -77,11 +79,16 @@ initWithCollectionController:
 #pragma mark - ContentSuggestionsCollectionSynchronizing
 
 - (void)shiftTilesDown {
-  self.shouldAnimateHeader = YES;
-  self.collectionController.scrolledToTop = NO;
-
   [self.collectionView removeGestureRecognizer:self.tapGestureRecognizer];
-  [self.collectionView removeGestureRecognizer:self.swipeGestureRecognizer];
+
+  self.shouldAnimateHeader = YES;
+
+  if (self.collectionShiftingOffset == 0 || self.collectionView.dragging) {
+    [self updateFakeOmniboxForScrollView:self.collectionView];
+    return;
+  }
+
+  self.collectionController.scrolledToTop = NO;
 
   // CADisplayLink is used for this animation instead of the standard UIView
   // animation because the standard animation did not properly convert the
@@ -97,13 +104,22 @@ initWithCollectionController:
 }
 
 - (void)shiftTilesUpWithCompletionBlock:(ProceduralBlock)completion {
-  self.collectionController.scrolledToTop = YES;
   // Add gesture recognizer to collection view when the omnibox is focused.
   [self.collectionView addGestureRecognizer:self.tapGestureRecognizer];
-  [self.collectionView addGestureRecognizer:self.swipeGestureRecognizer];
 
   CGFloat pinnedOffsetY =
       [self.collectionController.suggestionsDelegate pinnedOffsetY];
+  self.collectionShiftingOffset =
+      MAX(0, pinnedOffsetY - self.collectionView.contentOffset.y);
+
+  if (self.collectionController.scrolledToTop) {
+    self.shouldAnimateHeader = NO;
+    if (completion)
+      completion();
+    return;
+  }
+
+  self.collectionController.scrolledToTop = YES;
   self.shouldAnimateHeader = !IsIPadIdiom();
 
   [UIView animateWithDuration:kShiftTilesUpAnimationDuration
@@ -130,10 +146,7 @@ initWithCollectionController:
 - (void)updateFakeOmniboxForScrollView:(UIScrollView*)scrollView {
   // Unfocus the omnibox when the scroll view is scrolled below the pinned
   // offset.
-  CGFloat pinnedOffsetY =
-      [self.collectionController.suggestionsDelegate pinnedOffsetY];
-  if ([self.headerController isOmniboxFocused] && scrollView.dragging &&
-      scrollView.contentOffset.y < pinnedOffsetY) {
+  if ([self.headerController isOmniboxFocused] && !self.shouldAnimateHeader) {
     [self.headerController unfocusOmnibox];
   }
 
@@ -177,14 +190,16 @@ initWithCollectionController:
   // Find how much the collection view should be scrolled up in the next frame.
   CGFloat yOffset =
       (1.0 - percentComplete) *
-      [self.collectionController.suggestionsDelegate pinnedOffsetY];
+          [self.collectionController.suggestionsDelegate pinnedOffsetY] +
+      percentComplete *
+          ([self.collectionController.suggestionsDelegate pinnedOffsetY] -
+           self.collectionShiftingOffset);
   self.collectionView.contentOffset = CGPointMake(0, yOffset);
 
   if (percentComplete == 1.0) {
     [link invalidate];
     // Reset |shiftTilesDownStartTime to its sentinel value.
     self.shiftTilesDownStartTime = -1;
-    [self.collectionView.collectionViewLayout invalidateLayout];
   }
 }
 

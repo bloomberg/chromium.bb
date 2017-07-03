@@ -26,6 +26,8 @@ const CGFloat kSpacingIPad = 24;
 const CGFloat kMinSearchFieldWidth = 50;
 
 const CGFloat kSearchHintMargin = 3;
+// Offset to align the hint of the fake omnibox with the one in the toolbar.
+const CGFloat kSearchHintVerticalOffset = 0.5;
 
 const CGFloat kMaxSearchFieldFrameMargin = 200;
 const CGFloat kDoodleTopMarginIPad = 82;
@@ -138,7 +140,8 @@ void configureSearchHintLabel(UILabel* searchHintLabel,
     [searchHintLabel.heightAnchor
         constraintEqualToConstant:kSearchFieldHeight - 2 * kSearchHintMargin],
     [searchHintLabel.centerYAnchor
-        constraintEqualToAnchor:searchTapTarget.centerYAnchor]
+        constraintEqualToAnchor:searchTapTarget.centerYAnchor
+                       constant:kSearchHintVerticalOffset]
   ]];
 
   [searchHintLabel setText:l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT)];
