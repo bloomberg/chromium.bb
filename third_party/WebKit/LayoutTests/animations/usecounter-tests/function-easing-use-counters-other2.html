@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<script src="../resources/testharness.js"></script>
-<script src="../resources/testharnessreport.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <script>
 'use strict';
 // From UseCounter.h
@@ -10,8 +10,8 @@ var WebAnimationsEasingAsFunctionOther = 1296;
 test(() => {
   assert_throws(
       {name: 'TypeError'},
-      function() { document.documentElement.animate([], { easing: 'function (x){return x}' }) });
+      function() { document.documentElement.animate([], { easing: 'function(x, y){return 0.3}' }) });
   assert_false(internals.isUseCounted(document, WebAnimationsEasingAsFunctionLinear));
   assert_true(internals.isUseCounted(document, WebAnimationsEasingAsFunctionOther));
-}, 'Any linear function for easing other than "function (a){return a}" is counted in WebAnimationsEasingAsFunctionOther.');
+}, 'Arbitrary functions for easing are counted in WebAnimationsEasingAsFunctionOther.');
 </script>
