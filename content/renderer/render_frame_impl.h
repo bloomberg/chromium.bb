@@ -909,6 +909,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnSetFrameOwnerProperties(
       const FrameOwnerProperties& frame_owner_properties);
   void OnAdvanceFocus(blink::WebFocusType type, int32_t source_routing_id);
+  void OnAdvanceFocusInForm(blink::WebFocusType focus_type);
   void OnSetFocusedFrame();
   void OnTextTrackSettingsChanged(
       const FrameMsg_TextTrackSettings_Params& params);
