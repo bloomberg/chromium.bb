@@ -39,37 +39,40 @@ var AnchorAlignment = {
  * @private
  * @param {number} start
  * @param {number} end
- * @param {number} length
+ * @param {number} menuLength
  * @param {AnchorAlignment} anchorAlignment
  * @param {number} min
  * @param {number} max
  * @return {number}
  */
 function getStartPointWithAnchor(
-    start, end, length, anchorAlignment, min, max) {
+    start, end, menuLength, anchorAlignment, min, max) {
   var startPoint = 0;
   switch (anchorAlignment) {
     case AnchorAlignment.BEFORE_START:
-      startPoint = -length;
+      startPoint = -menuLength;
       break;
     case AnchorAlignment.AFTER_START:
       startPoint = start;
       break;
     case AnchorAlignment.CENTER:
-      startPoint = (start + end - length) / 2;
+      startPoint = (start + end - menuLength) / 2;
       break;
     case AnchorAlignment.BEFORE_END:
-      startPoint = end - length;
+      startPoint = end - menuLength;
       break;
     case AnchorAlignment.AFTER_END:
       startPoint = end;
       break;
   }
 
-  if (startPoint + length > max)
-    startPoint = end - length;
+  if (startPoint + menuLength > max)
+    startPoint = end - menuLength;
   if (startPoint < min)
     startPoint = start;
+
+  startPoint = Math.max(min, Math.min(startPoint, max - menuLength));
+
   return startPoint;
 }
 

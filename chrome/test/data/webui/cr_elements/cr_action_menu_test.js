@@ -215,8 +215,6 @@ suite('CrActionMenu', function() {
       anchorAlignmentX: AnchorAlignment.CENTER,
       anchorAlignmentY: AnchorAlignment.CENTER,
     }));
-    menuWidth = menu.offsetWidth;
-    menuHeight = menu.offsetHeight;
     assertEquals(`${120 - menuWidth / 2}px`, menu.style.left);
     assertEquals(`${255 - menuHeight / 2}px`, menu.style.top);
     menu.close();
@@ -226,8 +224,6 @@ suite('CrActionMenu', function() {
       anchorAlignmentX: AnchorAlignment.BEFORE_END,
       anchorAlignmentY: AnchorAlignment.BEFORE_END,
     }));
-    menuWidth = menu.offsetWidth;
-    menuHeight = menu.offsetHeight;
     assertEquals(`${140 - menuWidth}px`, menu.style.left);
     assertEquals(`${260 - menuHeight}px`, menu.style.top);
     menu.close();
@@ -239,8 +235,6 @@ suite('CrActionMenu', function() {
       left: 0,
       top: 0,
     }));
-    menuWidth = menu.offsetWidth;
-    menuHeight = menu.offsetHeight;
     assertEquals(`0px`, menu.style.left);
     assertEquals(`0px`, menu.style.top);
     menu.close();
@@ -253,17 +247,25 @@ suite('CrActionMenu', function() {
       maxX: 1000,
       maxY: 2000,
     });
-    menuWidth = menu.offsetWidth;
-    menuHeight = menu.offsetHeight;
     assertEquals(`${1000 - menuWidth}px`, menu.style.left);
     assertEquals(`${2000 - menuHeight}px`, menu.style.top);
+    menu.close();
+
+    // If the viewport can't fit the menu, align the menu to the viewport.
+    menu.showAtPosition({
+      left: menuWidth - 5,
+      top: 0,
+      width: 0,
+      height: 0,
+      maxX: menuWidth * 2 - 10,
+    });
+    assertEquals(`${menuWidth  - 10}px`, menu.style.left);
+    assertEquals(`0px`, menu.style.top);
     menu.close();
 
     // Alignment is reversed in RTL.
     document.body.style.direction = 'rtl';
     menu.showAtPosition(config);
-    menuWidth = menu.offsetWidth;
-    menuHeight = menu.offsetHeight;
     assertTrue(menu.open);
     assertEquals(140 - menuWidth, menu.offsetLeft);
     assertEquals('250px', menu.style.top);
