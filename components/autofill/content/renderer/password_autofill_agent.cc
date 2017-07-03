@@ -810,6 +810,9 @@ void PasswordAutofillAgent::UpdateStateForTextChange(
       mutable_element.SetAutofilled(false);
     }
   }
+
+  if (element.IsPasswordField())
+    GetPasswordManagerDriver()->UserModifiedPasswordField();
 }
 
 bool PasswordAutofillAgent::FillSuggestion(

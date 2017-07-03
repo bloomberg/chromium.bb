@@ -13,6 +13,7 @@
 #include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
+#include "components/password_manager/core/browser/password_manager_metrics_recorder.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/navigation_entry.h"
@@ -316,6 +317,10 @@ void ContentPasswordManagerDriver::ShowNotSecureWarning(
 void ContentPasswordManagerDriver::RecordSavePasswordProgress(
     const std::string& log) {
   client_->GetLogManager()->LogSavePasswordProgress(log);
+}
+
+void ContentPasswordManagerDriver::UserModifiedPasswordField() {
+  client_->GetMetricsRecorder().RecordUserModifiedPasswordField();
 }
 
 bool ContentPasswordManagerDriver::CheckChildProcessSecurityPolicy(

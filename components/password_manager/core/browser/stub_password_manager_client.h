@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
+#include "components/password_manager/core/browser/password_manager_metrics_recorder.h"
 #include "components/password_manager/core/browser/stub_credentials_filter.h"
 #include "components/password_manager/core/browser/stub_log_manager.h"
 
@@ -53,11 +54,13 @@ class StubPasswordManagerClient : public PasswordManagerClient {
 #endif
   ukm::UkmRecorder* GetUkmRecorder() override;
   ukm::SourceId GetUkmSourceId() override;
+  PasswordManagerMetricsRecorder& GetMetricsRecorder() override;
 
  private:
   const StubCredentialsFilter credentials_filter_;
   StubLogManager log_manager_;
   ukm::SourceId ukm_source_id_;
+  PasswordManagerMetricsRecorder metrics_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(StubPasswordManagerClient);
 };

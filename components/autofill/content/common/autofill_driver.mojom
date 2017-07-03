@@ -88,6 +88,10 @@ interface PasswordManagerDriver {
   // Never pass a free-form string as |log|.
   RecordSavePasswordProgress(string log);
 
+  // Notification that the user (not JavaScript) modified the value of a
+  // password field.
+  UserModifiedPasswordField();
+
   // Instructs the browser to show a popup with suggestions filled from data
   // associated with |key|. The popup will use |text_direction| for displaying
   // text.

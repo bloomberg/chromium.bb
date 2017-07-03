@@ -72,6 +72,8 @@ class FakeContentPasswordManagerDriver : public mojom::PasswordManagerDriver {
     log_ = log;
   }
 
+  void UserModifiedPasswordField() override {}
+
   void SaveGenerationFieldDetectedByClassifier(
       const autofill::PasswordForm& password_form,
       const base::string16& generation_field) override {}

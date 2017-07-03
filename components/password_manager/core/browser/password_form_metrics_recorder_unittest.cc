@@ -15,11 +15,11 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
-constexpr char kTestUrl[] = "https://www.example.com/";
-}
-
 namespace password_manager {
+
+namespace {
+
+constexpr char kTestUrl[] = "https://www.example.com/";
 
 // Create a UkmEntryBuilder with a SourceId that is initialized for kTestUrl.
 std::unique_ptr<ukm::UkmEntryBuilder> CreateUkmEntryBuilder(
@@ -38,12 +38,12 @@ void ExpectUkmValueCount(ukm::TestUkmRecorder* test_ukm_recorder,
                          int64_t value,
                          int64_t expected_count) {
   const ukm::UkmSource* source = test_ukm_recorder->GetSourceForUrl(kTestUrl);
-  ASSERT_NE(nullptr, source);
+  ASSERT_TRUE(source);
 
   ASSERT_EQ(1U, test_ukm_recorder->entries_count());
   const ukm::mojom::UkmEntry* entry = test_ukm_recorder->GetEntry(0);
 
-  int occurrences = 0;
+  int64_t occurrences = 0;
   for (const ukm::mojom::UkmMetricPtr& metric : entry->metrics) {
     if (metric->metric_hash == base::HashMetricName(metric_name) &&
         metric->value == value)
@@ -51,6 +51,8 @@ void ExpectUkmValueCount(ukm::TestUkmRecorder* test_ukm_recorder,
   }
   EXPECT_EQ(expected_count, occurrences) << metric_name << ": " << value;
 }
+
+}  // namespace
 
 // Test the metrics recorded around password generation and the user's
 // interaction with the offer to generate passwords.

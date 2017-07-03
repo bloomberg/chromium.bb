@@ -90,6 +90,7 @@
 
 using password_manager::ContentPasswordManagerDriverFactory;
 using password_manager::PasswordManagerInternalsService;
+using password_manager::PasswordManagerMetricsRecorder;
 using sessions::SerializedNavigationEntry;
 
 // Shorten the name to spare line breaks. The code provides enough context
@@ -454,6 +455,16 @@ ukm::SourceId ChromePasswordManagerClient::GetUkmSourceId() {
   return *ukm_source_id_;
 }
 
+PasswordManagerMetricsRecorder&
+ChromePasswordManagerClient::GetMetricsRecorder() {
+  if (!metrics_recorder_) {
+    metrics_recorder_.emplace(
+        PasswordManagerMetricsRecorder::CreateUkmEntryBuilder(
+            GetUkmRecorder(), GetUkmSourceId()));
+  }
+  return metrics_recorder_.value();
+}
+
 // TODO(crbug.com/706392): Fix password reuse detection for Android.
 #if !defined(OS_ANDROID)
 void ChromePasswordManagerClient::DidFinishNavigation(
@@ -461,8 +472,11 @@ void ChromePasswordManagerClient::DidFinishNavigation(
   if (!navigation_handle->IsInMainFrame() || !navigation_handle->HasCommitted())
     return;
 
-  if (!navigation_handle->IsSameDocument())
+  if (!navigation_handle->IsSameDocument()) {
     ukm_source_id_.reset();
+    // Send any collected metrics by destroying the metrics recorder.
+    metrics_recorder_.reset();
+  }
 
   password_reuse_detection_manager_.DidNavigateMainFrame(GetMainFrameURL());
   // After some navigations RenderViewHost persists and just adding the observer

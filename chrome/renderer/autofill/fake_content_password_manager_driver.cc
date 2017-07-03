@@ -76,6 +76,10 @@ void FakeContentPasswordManagerDriver::RecordSavePasswordProgress(
   called_record_save_progress_ = true;
 }
 
+void FakeContentPasswordManagerDriver::UserModifiedPasswordField() {
+  called_user_modified_password_field_ = true;
+}
+
 void FakeContentPasswordManagerDriver::SaveGenerationFieldDetectedByClassifier(
     const autofill::PasswordForm& password_form,
     const base::string16& generation_field) {

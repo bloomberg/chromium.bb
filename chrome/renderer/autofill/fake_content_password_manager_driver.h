@@ -93,6 +93,10 @@ class FakeContentPasswordManagerDriver
     return called_record_save_progress_;
   }
 
+  bool called_user_modified_password_field() const {
+    return called_user_modified_password_field_;
+  }
+
   bool called_save_generation_field() const {
     return called_save_generation_field_;
   }
@@ -157,6 +161,8 @@ class FakeContentPasswordManagerDriver
 
   void RecordSavePasswordProgress(const std::string& log) override;
 
+  void UserModifiedPasswordField() override;
+
   void SaveGenerationFieldDetectedByClassifier(
       const autofill::PasswordForm& password_form,
       const base::string16& generation_field) override;
@@ -190,6 +196,8 @@ class FakeContentPasswordManagerDriver
   base::Optional<std::vector<autofill::PasswordForm>> password_forms_rendered_;
   // Records whether RecordSavePasswordProgress() gets called.
   bool called_record_save_progress_ = false;
+  // Records whether UserModifiedPasswordField() gets called.
+  bool called_user_modified_password_field_ = false;
   // Records whether SaveGenerationFieldDetectedByClassifier() gets called.
   bool called_save_generation_field_ = false;
   // Records data received via SaveGenerationFieldDetectedByClassifier() call.
