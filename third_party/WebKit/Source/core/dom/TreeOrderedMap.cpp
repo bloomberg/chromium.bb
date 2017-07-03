@@ -29,7 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/DocumentOrderedMap.h"
+#include "core/dom/TreeOrderedMap.h"
 
 #include "core/HTMLNames.h"
 #include "core/dom/Element.h"
@@ -42,20 +42,20 @@ namespace blink {
 
 using namespace HTMLNames;
 
-DocumentOrderedMap* DocumentOrderedMap::Create() {
-  return new DocumentOrderedMap;
+TreeOrderedMap* TreeOrderedMap::Create() {
+  return new TreeOrderedMap;
 }
 
-DocumentOrderedMap::DocumentOrderedMap() {}
+TreeOrderedMap::TreeOrderedMap() {}
 
 #if DCHECK_IS_ON()
 static int g_remove_scope_level = 0;
 
-DocumentOrderedMap::RemoveScope::RemoveScope() {
+TreeOrderedMap::RemoveScope::RemoveScope() {
   g_remove_scope_level++;
 }
 
-DocumentOrderedMap::RemoveScope::~RemoveScope() {
+TreeOrderedMap::RemoveScope::~RemoveScope() {
   DCHECK(g_remove_scope_level);
   g_remove_scope_level--;
 }
@@ -76,7 +76,7 @@ inline bool KeyMatchesSlotName(const AtomicString& key,
          toHTMLSlotElement(element).GetName() == key;
 }
 
-void DocumentOrderedMap::Add(const AtomicString& key, Element* element) {
+void TreeOrderedMap::Add(const AtomicString& key, Element* element) {
   DCHECK(key);
   DCHECK(element);
 
@@ -91,7 +91,7 @@ void DocumentOrderedMap::Add(const AtomicString& key, Element* element) {
   entry->ordered_list.clear();
 }
 
-void DocumentOrderedMap::Remove(const AtomicString& key, Element* element) {
+void TreeOrderedMap::Remove(const AtomicString& key, Element* element) {
   DCHECK(key);
   DCHECK(element);
 
@@ -117,8 +117,8 @@ void DocumentOrderedMap::Remove(const AtomicString& key, Element* element) {
 }
 
 template <bool keyMatches(const AtomicString&, const Element&)>
-inline Element* DocumentOrderedMap::Get(const AtomicString& key,
-                                        const TreeScope& scope) const {
+inline Element* TreeOrderedMap::Get(const AtomicString& key,
+                                    const TreeScope& scope) const {
   DCHECK(key);
 
   MapEntry* entry = map_.at(key);
@@ -147,12 +147,12 @@ inline Element* DocumentOrderedMap::Get(const AtomicString& key,
   return nullptr;
 }
 
-Element* DocumentOrderedMap::GetElementById(const AtomicString& key,
-                                            const TreeScope& scope) const {
+Element* TreeOrderedMap::GetElementById(const AtomicString& key,
+                                        const TreeScope& scope) const {
   return Get<KeyMatchesId>(key, scope);
 }
 
-const HeapVector<Member<Element>>& DocumentOrderedMap::GetAllElementsById(
+const HeapVector<Member<Element>>& TreeOrderedMap::GetAllElementsById(
     const AtomicString& key,
     const TreeScope& scope) const {
   DCHECK(key);
@@ -185,15 +185,14 @@ const HeapVector<Member<Element>>& DocumentOrderedMap::GetAllElementsById(
   return entry->ordered_list;
 }
 
-Element* DocumentOrderedMap::GetElementByMapName(const AtomicString& key,
-                                                 const TreeScope& scope) const {
+Element* TreeOrderedMap::GetElementByMapName(const AtomicString& key,
+                                             const TreeScope& scope) const {
   return Get<KeyMatchesMapName>(key, scope);
 }
 
 // TODO(hayato): Template get<> by return type.
-HTMLSlotElement* DocumentOrderedMap::GetSlotByName(
-    const AtomicString& key,
-    const TreeScope& scope) const {
+HTMLSlotElement* TreeOrderedMap::GetSlotByName(const AtomicString& key,
+                                               const TreeScope& scope) const {
   if (Element* slot = Get<KeyMatchesSlotName>(key, scope)) {
     DCHECK(isHTMLSlotElement(slot));
     return toHTMLSlotElement(slot);
@@ -201,7 +200,7 @@ HTMLSlotElement* DocumentOrderedMap::GetSlotByName(
   return nullptr;
 }
 
-Element* DocumentOrderedMap::GetCachedFirstElementWithoutAccessingNodeTree(
+Element* TreeOrderedMap::GetCachedFirstElementWithoutAccessingNodeTree(
     const AtomicString& key) {
   MapEntry* entry = map_.at(key);
   if (!entry)
@@ -210,11 +209,11 @@ Element* DocumentOrderedMap::GetCachedFirstElementWithoutAccessingNodeTree(
   return entry->element;
 }
 
-DEFINE_TRACE(DocumentOrderedMap) {
+DEFINE_TRACE(TreeOrderedMap) {
   visitor->Trace(map_);
 }
 
-DEFINE_TRACE(DocumentOrderedMap::MapEntry) {
+DEFINE_TRACE(TreeOrderedMap::MapEntry) {
   visitor->Trace(element);
   visitor->Trace(ordered_list);
 }

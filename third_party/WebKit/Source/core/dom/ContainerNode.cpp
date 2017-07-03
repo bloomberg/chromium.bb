@@ -669,7 +669,7 @@ Node* ContainerNode::RemoveChild(Node* old_child,
 
   {
     HTMLFrameOwnerElement::PluginDisposeSuspendScope suspend_plugin_dispose;
-    DocumentOrderedMap::RemoveScope tree_remove_scope;
+    TreeOrderedMap::RemoveScope tree_remove_scope;
 
     Node* prev = child->previousSibling();
     Node* next = child->nextSibling();
@@ -725,7 +725,7 @@ void ContainerNode::ParserRemoveChild(Node& old_child) {
   old_child.NotifyMutationObserversNodeWillDetach();
 
   HTMLFrameOwnerElement::PluginDisposeSuspendScope suspend_plugin_dispose;
-  DocumentOrderedMap::RemoveScope tree_remove_scope;
+  TreeOrderedMap::RemoveScope tree_remove_scope;
 
   Node* prev = old_child.previousSibling();
   Node* next = old_child.nextSibling();
@@ -763,7 +763,7 @@ void ContainerNode::RemoveChildren(SubtreeModificationAction action) {
 
   {
     HTMLFrameOwnerElement::PluginDisposeSuspendScope suspend_plugin_dispose;
-    DocumentOrderedMap::RemoveScope tree_remove_scope;
+    TreeOrderedMap::RemoveScope tree_remove_scope;
     {
       EventDispatchForbiddenScope assert_no_event_dispatch;
       ScriptForbiddenScope forbid_script;
