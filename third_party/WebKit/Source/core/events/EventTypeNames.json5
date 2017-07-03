@@ -193,6 +193,7 @@
     "progress",
     "push",
     "ratechange",
+    "reading",
     "readystatechange",
     "rejectionhandled",
     "removesourcebuffer",

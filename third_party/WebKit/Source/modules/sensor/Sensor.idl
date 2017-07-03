@@ -17,6 +17,6 @@
     [MeasureAs=GenericSensorStop] void stop();
 
     [MeasureAs=GenericSensorOnError] attribute EventHandler onerror;
-    [MeasureAs=GenericSensorOnChange] attribute EventHandler onchange;
+    [MeasureAs=GenericSensorOnChange] attribute EventHandler onreading;
     [MeasureAs=GenericSensorOnActivate] attribute EventHandler onactivate;
 };

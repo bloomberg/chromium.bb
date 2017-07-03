@@ -6470,15 +6470,15 @@ interface Sensor : EventTarget
     attribute @@toStringTag
     getter activated
     getter onactivate
-    getter onchange
     getter onerror
+    getter onreading
     getter timestamp
     method constructor
     method start
     method stop
     setter onactivate
-    setter onchange
     setter onerror
+    setter onreading
 interface SensorErrorEvent : Event
     attribute @@toStringTag
     getter error

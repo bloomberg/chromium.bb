@@ -222,7 +222,7 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
               resolve(mockSensor);
             }, reject);
 
-            sensorObject.onchange = wrapper.callback;
+            sensorObject.onreading = wrapper.callback;
             sensorObject.onerror = reject;
           });
         })
@@ -233,7 +233,7 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
 
   sensor_test(sensor => {
     return checkOnChangeIsCalledAndReadingIsValid(sensor);
-  }, prefix + 'Test that onChange is called and sensor reading is valid (onchange reporting).');
+  }, prefix + 'Test that onChange is called and sensor reading is valid (onreading reporting).');
 
   sensor_test(sensor => {
     sensor.mockSensorProvider.setContinuousReportingMode();
@@ -254,7 +254,7 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
               resolve(mockSensor);
             }, reject);
 
-            sensorObject.onchange = wrapper.callback;
+            sensorObject.onreading = wrapper.callback;
             sensorObject.onerror = reject;
           });
         })
@@ -296,7 +296,7 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
             resolve(mockSensor);
           }, reject);
 
-          sensorObject.onchange = wrapper.callback;
+          sensorObject.onreading = wrapper.callback;
           sensorObject.onerror = reject;
         }))
         .then(mockSensor => {
@@ -346,7 +346,7 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
               resolve(mockSensor);
             }, reject);
 
-            sensor1.onchange = wrapper.callback;
+            sensor1.onreading = wrapper.callback;
             sensor1.onerror = reject;
             sensor2.onerror = reject;
           });
@@ -392,8 +392,8 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
               }
             }, reject);
 
-            fastSensor.onchange = fastSensorWrapper.callback;
-            slowSensor.onchange = slowSensorWrapper.callback;
+            fastSensor.onreading = fastSensorWrapper.callback;
+            slowSensor.onreading = slowSensorWrapper.callback;
             fastSensor.onerror = reject;
             slowSensor.onerror = reject;
           });
@@ -405,7 +405,7 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
 
   sensor_test(sensor => {
     return checkFrequencyHintWorks(sensor);
-  }, prefix + 'Test that frequency hint works (onchange reporting).');
+  }, prefix + 'Test that frequency hint works (onreading reporting).');
 
   sensor_test(sensor => {
     sensor.mockSensorProvider.setContinuousReportingMode();
