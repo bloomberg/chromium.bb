@@ -689,7 +689,6 @@ AC_MSG_RESULT([
 
 	Cairo Renderer			${with_cairo}
 	EGL				${enable_egl}
-	libxkbcommon			${enable_xkbcommon}
 	xcb_xkb				${have_xcb_xkb}
 	XWayland			${enable_xwayland}
 	dbus				${enable_dbus}
