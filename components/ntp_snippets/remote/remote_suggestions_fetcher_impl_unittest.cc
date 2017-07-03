@@ -1012,6 +1012,78 @@ TEST_F(RemoteSuggestionsSignedOutFetcherTest,
 }
 
 TEST_F(RemoteSuggestionsSignedOutFetcherTest,
+       ShouldReportInvalidListErrorForInvalidTimestampButValidJson) {
+  // This is valid json, but it does not represent a valid suggestion
+  // (creationTime is invalid).
+  const std::string kValidJsonStr =
+      "{\"categories\" : [{"
+      "  \"id\": 1,"
+      "  \"localizedTitle\": \"Articles for You\","
+      "  \"suggestions\" : [{"
+      "    \"ids\" : [\"http://localhost/foobar\"],"
+      "    \"title\" : \"Foo Barred from Baz\","
+      "    \"snippet\" : \"...\","
+      "    \"fullPageUrl\" : \"http://localhost/foobar\","
+      "    \"creationTime\" : \"INVALID_2016-06-30T11:01:37.000Z\","
+      "    \"expirationTime\" : \"2016-07-01T11:01:37.000Z\","
+      "    \"attribution\" : \"Foo News\","
+      "    \"imageUrl\" : \"http://localhost/foobar.jpg\","
+      "    \"ampUrl\" : \"http://localhost/amp\","
+      "    \"faviconUrl\" : \"http://localhost/favicon.ico\" "
+      "  }]"
+      "}]}";
+  SetFakeResponse(/*response_data=*/kValidJsonStr, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
+  EXPECT_CALL(
+      mock_callback(),
+      Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
+          /*fetched_categories=*/Property(
+              &base::Optional<std::vector<FetchedCategory>>::has_value, false)))
+      .Times(1);
+  fetcher().FetchSnippets(test_params(),
+                          ToSnippetsAvailableCallback(&mock_callback()));
+  FastForwardUntilNoTasksRemain();
+  EXPECT_THAT(fetcher().GetLastStatusForDebugging(),
+              StartsWith("Invalid / empty list"));
+}
+
+TEST_F(RemoteSuggestionsSignedOutFetcherTest,
+       ShouldReportInvalidListErrorForInvalidUrlButValidJson) {
+  // This is valid json, but it does not represent a valid suggestion
+  // (URL is invalid).
+  const std::string kValidJsonStr =
+      "{\"categories\" : [{"
+      "  \"id\": 1,"
+      "  \"localizedTitle\": \"Articles for You\","
+      "  \"suggestions\" : [{"
+      "    \"ids\" : [\"NOT A URL\"],"
+      "    \"title\" : \"Foo Barred from Baz\","
+      "    \"snippet\" : \"...\","
+      "    \"fullPageUrl\" : \"NOT A URL\","
+      "    \"creationTime\" : \"2016-06-30T11:01:37.000Z\","
+      "    \"expirationTime\" : \"2016-07-01T11:01:37.000Z\","
+      "    \"attribution\" : \"Foo News\","
+      "    \"imageUrl\" : \"http://localhost/foobar.jpg\","
+      "    \"ampUrl\" : \"http://localhost/amp\","
+      "    \"faviconUrl\" : \"http://localhost/favicon.ico\" "
+      "  }]"
+      "}]}";
+  SetFakeResponse(/*response_data=*/kValidJsonStr, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
+  EXPECT_CALL(
+      mock_callback(),
+      Run(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
+          /*fetched_categories=*/Property(
+              &base::Optional<std::vector<FetchedCategory>>::has_value, false)))
+      .Times(1);
+  fetcher().FetchSnippets(test_params(),
+                          ToSnippetsAvailableCallback(&mock_callback()));
+  FastForwardUntilNoTasksRemain();
+  EXPECT_THAT(fetcher().GetLastStatusForDebugging(),
+              StartsWith("Invalid / empty list"));
+}
+
+TEST_F(RemoteSuggestionsSignedOutFetcherTest,
        ShouldReportRequestFailureAsTemporaryError) {
   SetFakeResponse(/*response_data=*/std::string(), net::HTTP_NOT_FOUND,
                   net::URLRequestStatus::FAILED);
