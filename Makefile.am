@@ -97,13 +97,13 @@ nodist_libwayland_client_la_SOURCES =		\
 pkgconfig_DATA += src/wayland-client.pc src/wayland-server.pc
 
 protocol/%-protocol.c : $(top_srcdir)/protocol/%.xml
-	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(wayland_scanner) code < $< > $@
+	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(wayland_scanner) code $< $@
 
 protocol/%-server-protocol.h : $(top_srcdir)/protocol/%.xml
-	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(wayland_scanner) server-header < $< > $@
+	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(wayland_scanner) server-header $< $@
 
 protocol/%-client-protocol.h : $(top_srcdir)/protocol/%.xml
-	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(wayland_scanner) client-header < $< > $@
+	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(wayland_scanner) client-header $< $@
 
 protocol/%-server-protocol-core.h : $(top_srcdir)/protocol/%.xml
 	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(wayland_scanner) server-header -c < $< > $@
