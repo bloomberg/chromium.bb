@@ -52,6 +52,20 @@ SkColor DefaultTypographyProvider::GetColor(
     int context,
     int style,
     const ui::NativeTheme& theme) const {
+  if (context == style::CONTEXT_BUTTON_MD) {
+    ui::NativeTheme::ColorId color_id =
+        ui::NativeTheme::kColorId_ButtonEnabledColor;
+    switch (style) {
+      case views::style::STYLE_DIALOG_BUTTON_DEFAULT:
+        color_id = ui::NativeTheme::kColorId_TextOnProminentButtonColor;
+        break;
+      case views::style::STYLE_DISABLED:
+        color_id = ui::NativeTheme::kColorId_ButtonDisabledColor;
+        break;
+    }
+    return theme.GetSystemColor(color_id);
+  }
+
   return theme.GetSystemColor(
       (style == style::STYLE_DISABLED)
           ? ui::NativeTheme::kColorId_LabelDisabledColor
