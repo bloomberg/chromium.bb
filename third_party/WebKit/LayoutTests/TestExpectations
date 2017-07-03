@@ -2987,3 +2987,4 @@ crbug.com/736732 virtual/enable_wasm/external/wpt/wasm/wasm_local_iframe_test.ht
 
 # Sheriff failures 2017-07-03
 crbug.com/708994 http/tests/security/cross-frame-mouse-source-capabilities.html [ Timeout Pass ]
+crbug.com/708994 virtual/mojo-loading/http/tests/security/cross-frame-mouse-source-capabilities.html [ Timeout Pass ]
