@@ -32,6 +32,7 @@
 #define Heap_h
 
 #include <memory>
+#include "build/build_config.h"
 #include "platform/PlatformExport.h"
 #include "platform/heap/GCInfo.h"
 #include "platform/heap/HeapPage.h"
@@ -488,7 +489,7 @@ class GarbageCollected {
   // For now direct allocation of arrays on the heap is not allowed.
   void* operator new[](size_t size);
 
-#if OS(WIN) && COMPILER(MSVC)
+#if defined(OS_WIN) && defined(COMPILER_MSVC)
   // Due to some quirkiness in the MSVC compiler we have to provide
   // the delete[] operator in the GarbageCollected subclasses as it
   // is called when a class is exported in a DLL.

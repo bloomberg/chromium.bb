@@ -21,6 +21,12 @@
 #ifndef WTF_Vector_h
 #define WTF_Vector_h
 
+#include <string.h>
+#include <algorithm>
+#include <initializer_list>
+#include <iterator>
+#include <utility>
+#include "build/build_config.h"
 #include "platform/wtf/Alignment.h"
 #include "platform/wtf/ConditionalDestructor.h"
 #include "platform/wtf/ContainerAnnotations.h"
@@ -29,11 +35,6 @@
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/VectorTraits.h"
 #include "platform/wtf/allocator/PartitionAllocator.h"
-#include <algorithm>
-#include <initializer_list>
-#include <iterator>
-#include <string.h>
-#include <utility>
 
 // For ASAN builds, disable inline buffers completely as they cause various
 // issues.
@@ -244,7 +245,7 @@ struct VectorFiller<true, T> {
   STATIC_ONLY(VectorFiller);
   static void UninitializedFill(T* dst, T* dst_end, const T& val) {
     static_assert(sizeof(T) == sizeof(char), "size of type should be one");
-#if COMPILER(GCC) && defined(_FORTIFY_SOURCE)
+#if defined(COMPILER_GCC) && defined(_FORTIFY_SOURCE)
     if (!__builtin_constant_p(dst_end - dst) || (!(dst_end - dst)))
       memset(dst, val, dst_end - dst);
 #else

@@ -86,7 +86,7 @@ size_t GetUnderestimatedStackSize() {
 #endif
   }
   return pthread_get_stacksize_np(pthread_self());
-#elif OS(WIN) && COMPILER(MSVC)
+#elif defined(OS_WIN) && defined(COMPILER_MSVC)
   return WTFThreadData::ThreadStackSize();
 #else
 #error "Stack frame size estimation not supported on this platform."
@@ -127,7 +127,7 @@ void* GetStackStart() {
 #endif
 #elif OS(MACOSX)
   return pthread_get_stackaddr_np(pthread_self());
-#elif OS(WIN) && COMPILER(MSVC)
+#elif defined(OS_WIN) && defined(COMPILER_MSVC)
 // On Windows stack limits for the current thread are available in
 // the thread information block (TIB). Its fields can be accessed through
 // FS segment register on x86 and GS segment register on x86_64.
@@ -160,7 +160,7 @@ void InitializeMainThreadStackEstimate() {
   g_main_thread_underestimated_stack_size = underestimated_stack_size;
 }
 
-#if OS(WIN) && COMPILER(MSVC)
+#if defined(OS_WIN) && defined(COMPILER_MSVC)
 size_t ThreadStackSize() {
   // Notice that we cannot use the TIB's StackLimit for the stack end, as i
   // tracks the end of the committed range. We're after the end of the reserved

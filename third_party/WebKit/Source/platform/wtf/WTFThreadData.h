@@ -27,6 +27,8 @@
 #ifndef WTFThreadData_h
 #define WTFThreadData_h
 
+#include <memory>
+#include "build/build_config.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/Noncopyable.h"
@@ -34,7 +36,6 @@
 #include "platform/wtf/Threading.h"
 #include "platform/wtf/WTFExport.h"
 #include "platform/wtf/text/StringHash.h"
-#include <memory>
 
 namespace WTF {
 
@@ -58,7 +59,7 @@ class WTF_EXPORT WTFThreadData {
   // Must be called on the main thread before any callers to wtfThreadData().
   static void Initialize();
 
-#if OS(WIN) && COMPILER(MSVC)
+#if defined(OS_WIN) && defined(COMPILER_MSVC)
   static size_t ThreadStackSize();
 #endif
 
@@ -68,7 +69,7 @@ class WTF_EXPORT WTFThreadData {
 
   ThreadIdentifier thread_id_;
 
-#if OS(WIN) && COMPILER(MSVC)
+#if defined(OS_WIN) && defined(COMPILER_MSVC)
   size_t thread_stack_size_ = 0u;
 #endif
 

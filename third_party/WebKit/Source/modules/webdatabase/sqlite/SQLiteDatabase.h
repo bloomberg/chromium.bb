@@ -27,13 +27,14 @@
 #ifndef SQLiteDatabase_h
 #define SQLiteDatabase_h
 
+#include "build/build_config.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Threading.h"
 #include "platform/wtf/ThreadingPrimitives.h"
 #include "platform/wtf/text/CString.h"
 #include "platform/wtf/text/WTFString.h"
 
-#if COMPILER(MSVC)
+#if defined(COMPILER_MSVC)
 #pragma warning(disable : 4800)
 #endif
 

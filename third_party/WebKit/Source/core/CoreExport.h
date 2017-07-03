@@ -5,7 +5,7 @@
 #ifndef CoreExport_h
 #define CoreExport_h
 
-#include "platform/wtf/Compiler.h"
+#include "build/build_config.h"
 
 #if defined(COMPONENT_BUILD)
 #if defined(WIN32)
@@ -29,11 +29,11 @@
 #endif
 
 #if defined(BLINK_CORE_IMPLEMENTATION) && BLINK_CORE_IMPLEMENTATION
-#if COMPILER(MSVC)
+#if defined(COMPILER_MSVC)
 #define CORE_TEMPLATE_CLASS_EXPORT
 #define CORE_EXTERN_TEMPLATE_EXPORT CORE_EXPORT
 #define CORE_TEMPLATE_EXPORT CORE_EXPORT
-#elif COMPILER(GCC)
+#elif defined(COMPILER_GCC)
 #define CORE_TEMPLATE_CLASS_EXPORT CORE_EXPORT
 #define CORE_EXTERN_TEMPLATE_EXPORT CORE_EXPORT
 #define CORE_TEMPLATE_EXPORT

@@ -147,8 +147,8 @@ inline void CopyLCharsFromUCharSource(LChar* destination,
     DCHECK(!(source[i] & 0xff00));
     destination[i] = static_cast<LChar>(source[i]);
   }
-#elif COMPILER(GCC) && WTF_CPU_ARM_NEON && !defined(ARCH_CPU_BIG_ENDIAN) && \
-    defined(NDEBUG)
+#elif defined(COMPILER_GCC) && WTF_CPU_ARM_NEON && \
+    !defined(ARCH_CPU_BIG_ENDIAN) && defined(NDEBUG)
   const LChar* const end = destination + length;
   const uintptr_t kMemoryAccessSize = 8;
 

@@ -915,7 +915,7 @@ inline void HeapObjectHeader::CheckFromPayload(const void* payload) {
 
 #if defined(ARCH_CPU_64_BITS)
 ALWAYS_INLINE uint32_t RotateLeft16(uint32_t x) {
-#if COMPILER(MSVC)
+#if defined(COMPILER_MSVC)
   return _lrotr(x, 16);
 #else
   // http://blog.regehr.org/archives/1063
@@ -926,7 +926,7 @@ ALWAYS_INLINE uint32_t RotateLeft16(uint32_t x) {
 inline uint32_t HeapObjectHeader::GetMagic() const {
 // Ignore C4319: It is OK to 0-extend into the high-order bits of the uintptr_t
 // on 64-bit, in this case.
-#if COMPILER(MSVC)
+#if defined(COMPILER_MSVC)
 #pragma warning(push)
 #pragma warning(disable : 4319)
 #endif
@@ -959,7 +959,7 @@ inline uint32_t HeapObjectHeader::GetMagic() const {
 #error architecture not supported
 #endif
 
-#if COMPILER(MSVC)
+#if defined(COMPILER_MSVC)
 #pragma warning(pop)
 #endif
 

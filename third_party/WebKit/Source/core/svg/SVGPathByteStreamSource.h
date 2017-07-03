@@ -20,6 +20,7 @@
 #ifndef SVGPathByteStreamSource_h
 #define SVGPathByteStreamSource_h
 
+#include "build/build_config.h"
 #include "core/svg/SVGPathByteStream.h"
 #include "core/svg/SVGPathData.h"
 #include "platform/geometry/FloatPoint.h"
@@ -38,7 +39,7 @@ class SVGPathByteStreamSource {
   PathSegmentData ParseSegment();
 
  private:
-#if COMPILER(MSVC)
+#if defined(COMPILER_MSVC)
 #pragma warning(disable : 4701)
 #endif
   template <typename DataType>

@@ -26,17 +26,18 @@
 #ifndef WTF_StringExtras_h
 #define WTF_StringExtras_h
 
-#include "platform/wtf/build_config.h"
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
+#include "build/build_config.h"
+#include "platform/wtf/build_config.h"
 
 #if OS(POSIX)
 #include <strings.h>
 #endif
 
-#if COMPILER(MSVC)
-// FIXME: why a COMPILER check instead of OS? also, these should be HAVE checks
+#if defined(COMPILER_MSVC)
+// FIXME: why a compiler check instead of OS? also, these should be HAVE checks
 
 #if _MSC_VER < 1900
 // snprintf is implemented in VS 2015

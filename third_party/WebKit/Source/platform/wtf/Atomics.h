@@ -30,14 +30,13 @@
 #ifndef Atomics_h
 #define Atomics_h
 
+#include <stdint.h>
 #include "build/build_config.h"
 #include "platform/wtf/AddressSanitizer.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/CPU.h"
 
-#include <stdint.h>
-
-#if COMPILER(MSVC)
+#if defined(COMPILER_MSVC)
 #include <windows.h>
 #endif
 
@@ -51,7 +50,7 @@
 
 namespace WTF {
 
-#if COMPILER(MSVC)
+#if defined(COMPILER_MSVC)
 
 // atomicAdd returns the result of the addition.
 ALWAYS_INLINE int AtomicAdd(int volatile* addend, int increment) {
@@ -260,7 +259,7 @@ ALWAYS_INLINE float NoBarrierLoad(volatile const float* ptr) {
 
 #if defined(ARCH_CPU_X86_FAMILY)
 // Only compiler barrier is needed.
-#if COMPILER(MSVC)
+#if defined(COMPILER_MSVC)
 // Starting from Visual Studio 2005 compiler guarantees acquire and release
 // semantics for operations on volatile variables. See MSDN entry for
 // MemoryBarrier macro.

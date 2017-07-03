@@ -30,6 +30,7 @@
 
 #include "platform/fonts/WebFontDecoder.h"
 
+#include "build/build_config.h"
 #include "platform/Histogram.h"
 #include "platform/SharedBuffer.h"
 #include "platform/fonts/FontCache.h"
@@ -63,7 +64,7 @@ void BlinkOTSContext::Message(int level, const char* format, ...) {
   va_list args;
   va_start(args, format);
 
-#if COMPILER(MSVC)
+#if defined(COMPILER_MSVC)
   int result = _vscprintf(format, args);
 #else
   char ch;

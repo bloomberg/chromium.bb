@@ -26,6 +26,7 @@
 #ifndef Attribute_h
 #define Attribute_h
 
+#include "build/build_config.h"
 #include "core/dom/QualifiedName.h"
 #include "platform/wtf/Allocator.h"
 
@@ -62,7 +63,7 @@ class Attribute {
   // elements may have placed the Attribute in a hash by name.
   void ParserSetName(const QualifiedName& name) { name_ = name; }
 
-#if COMPILER(MSVC)
+#if defined(COMPILER_MSVC)
   // NOTE: This constructor is not actually implemented, it's just defined so
   // MSVC will let us use a zero-length array of Attributes.
   Attribute();

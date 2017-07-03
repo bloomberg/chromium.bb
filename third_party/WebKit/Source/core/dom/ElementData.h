@@ -32,6 +32,7 @@
 #ifndef ElementData_h
 #define ElementData_h
 
+#include "build/build_config.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/AttributeCollection.h"
 #include "core/dom/SpaceSplitString.h"
@@ -112,10 +113,10 @@ class ElementData : public GarbageCollectedFinalized<ElementData> {
   DEFINE_TYPE_CASTS(thisType, ElementData, data, pointerPredicate, \
                     referencePredicate)
 
-#if COMPILER(MSVC)
+#if defined(COMPILER_MSVC)
 #pragma warning(push)
-#pragma warning( \
-    disable : 4200)  // Disable "zero-sized array in struct/union" warning
+// Disable "zero-sized array in struct/union" warning
+#pragma warning(disable : 4200)
 #endif
 
 // SharableElementData is managed by ElementDataCache and is produced by
@@ -150,7 +151,7 @@ DEFINE_ELEMENT_DATA_TYPE_CASTS(ShareableElementData,
                                !data->IsUnique(),
                                !data.IsUnique());
 
-#if COMPILER(MSVC)
+#if defined(COMPILER_MSVC)
 #pragma warning(pop)
 #endif
 

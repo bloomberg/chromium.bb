@@ -34,15 +34,15 @@
 
 #include "platform/wtf/Assertions.h"
 
-#include "platform/wtf/Compiler.h"
-#include "platform/wtf/PtrUtil.h"
-#include "platform/wtf/ThreadSpecific.h"
-#include "platform/wtf/Threading.h"
-#include <memory>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <memory>
+#include "build/build_config.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/ThreadSpecific.h"
+#include "platform/wtf/Threading.h"
 
 #if OS(MACOSX)
 #include <AvailabilityMacros.h>
@@ -52,7 +52,7 @@
 #endif
 #endif  // OS(MACOSX)
 
-#if COMPILER(MSVC)
+#if defined(COMPILER_MSVC)
 #include <crtdbg.h>
 #endif
 
@@ -102,7 +102,7 @@ static void vprintf_stderr_common(const char* format, va_list args) {
   vfprintf(stderr, format, args);
 }
 
-#if COMPILER(GCC)
+#if defined(COMPILER_GCC)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wformat-nonliteral"
 #endif
@@ -124,7 +124,7 @@ static void vprintf_stderr_with_trailing_newline(const char* format,
   vprintf_stderr_common(formatWithNewline.get(), args);
 }
 
-#if COMPILER(GCC)
+#if defined(COMPILER_GCC)
 #pragma GCC diagnostic pop
 #endif
 

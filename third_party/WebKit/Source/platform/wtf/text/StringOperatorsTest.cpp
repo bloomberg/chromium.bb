@@ -27,6 +27,7 @@
 
 static int wtfStringCopyCount;
 
+#include "build/build_config.h"
 #include "platform/wtf/text/WTFString.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -184,7 +185,7 @@ TEST(StringOperatorsTest, DISABLED_StringOperators) {
   EXPECT_N_WTF_STRING_COPIES(2, atomic_string + (literal + string + literal));
   EXPECT_N_WTF_STRING_COPIES(2, (atomic_string + literal) + (string + literal));
 
-#if COMPILER(MSVC)
+#if defined(COMPILER_MSVC)
   EXPECT_N_WTF_STRING_COPIES(1, L"wide string" + string);
   EXPECT_N_WTF_STRING_COPIES(1, string + L"wide string");
   EXPECT_N_WTF_STRING_COPIES(1, L"wide string" + atomic_string);

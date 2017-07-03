@@ -5,6 +5,7 @@
 #ifndef HeapAllocator_h
 #define HeapAllocator_h
 
+#include "build/build_config.h"
 #include "platform/heap/Heap.h"
 #include "platform/heap/Persistent.h"
 #include "platform/heap/TraceTraits.h"
@@ -129,7 +130,7 @@ class PLATFORM_EXPORT HeapAllocator {
         size, IsEagerlyFinalizedType<Metadata>::value));
   }
 
-#if OS(WIN) && COMPILER(MSVC)
+#if defined(OS_WIN) && defined(COMPILER_MSVC)
   // MSVC eagerly instantiates the unused 'operator delete',
   // provide a version that asserts and fails at run-time if
   // used.

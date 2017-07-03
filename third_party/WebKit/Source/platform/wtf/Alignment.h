@@ -21,18 +21,17 @@
 #ifndef WTF_Alignment_h
 #define WTF_Alignment_h
 
-#include "platform/wtf/Compiler.h"
-#include <algorithm>
 #include <stdint.h>
 #include <utility>
+#include "build/build_config.h"
 
 namespace WTF {
 
-#if COMPILER(GCC)
+#if defined(COMPILER_GCC)
 #define WTF_ALIGN_OF(type) __alignof__(type)
 #define WTF_ALIGNED(variable_type, variable, n) \
   variable_type variable __attribute__((__aligned__(n)))
-#elif COMPILER(MSVC)
+#elif defined(COMPILER_MSVC)
 #define WTF_ALIGN_OF(type) __alignof(type)
 #define WTF_ALIGNED(variable_type, variable, n) \
   __declspec(align(n)) variable_type variable
@@ -40,7 +39,7 @@ namespace WTF {
 #error WTF_ALIGN macros need alignment control.
 #endif
 
-#if COMPILER(GCC)
+#if defined(COMPILER_GCC)
 typedef char __attribute__((__may_alias__)) AlignedBufferChar;  // NOLINT
 #else
 typedef char AlignedBufferChar;
