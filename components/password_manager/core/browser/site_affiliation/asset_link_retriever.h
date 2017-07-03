@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "components/password_manager/core/browser/site_affiliation/asset_link_data.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
@@ -29,6 +30,7 @@ class AssetLinkRetriever : public base::RefCounted<AssetLinkRetriever>,
   enum class State {
     INACTIVE,
     NETWORK_REQUEST,
+    PARSING,
     FINISHED,
   };
 
@@ -42,12 +44,17 @@ class AssetLinkRetriever : public base::RefCounted<AssetLinkRetriever>,
 
   bool error() const { return error_; }
 
+  const std::vector<GURL>& includes() const { return data_.includes(); }
+  const std::vector<GURL>& targets() const { return data_.targets(); }
+
  private:
   friend class base::RefCounted<AssetLinkRetriever>;
   ~AssetLinkRetriever() override;
 
   // net::URLFetcherDelegate:
   void OnURLFetchComplete(const net::URLFetcher* source) override;
+
+  void OnResponseParsed(std::unique_ptr<AssetLinkData> data, bool result);
 
   // URL of the file retrieved.
   const GURL url_;
@@ -57,6 +64,9 @@ class AssetLinkRetriever : public base::RefCounted<AssetLinkRetriever>,
 
   // Whether the reading finished with error.
   bool error_;
+
+  // Actual data from the asset link.
+  AssetLinkData data_;
 
   std::unique_ptr<net::URLFetcher> fetcher_;
 

@@ -9,10 +9,14 @@
 #include "base/test/scoped_task_environment.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace password_manager {
 namespace {
+
+using ::testing::IsEmpty;
+using ::testing::ElementsAre;
 
 constexpr char kAssetLinkFile[] =
     "https://example.com/.well-known/assetlinks.json";
@@ -98,10 +102,63 @@ TEST_F(AssetLinkRetrieverTest, LoadRedirect) {
   factory().SetFakeResponse(GURL(kAssetLinkFile), std::string(),
                             net::HTTP_FOUND, net::URLRequestStatus::CANCELED);
   asset_link_retriever->Start(request_context());
+  EXPECT_EQ(AssetLinkRetriever::State::NETWORK_REQUEST,
+            asset_link_retriever->state());
 
   RunUntilIdle();
   EXPECT_EQ(AssetLinkRetriever::State::FINISHED, asset_link_retriever->state());
   EXPECT_TRUE(asset_link_retriever->error());
+}
+
+// Load a valid asset links resource.
+TEST_F(AssetLinkRetrieverTest, LoadValidFile) {
+  scoped_refptr<AssetLinkRetriever> asset_link_retriever =
+      base::MakeRefCounted<AssetLinkRetriever>(GURL(kAssetLinkFile));
+  EXPECT_EQ(AssetLinkRetriever::State::INACTIVE, asset_link_retriever->state());
+
+  constexpr char json[] =
+      u8R"([{
+  "relation": ["delegate_permission/common.get_login_creds"],
+  "target": {
+    "namespace": "web",
+    "site": "https://www.google.com"
+  }
+  },{
+  "include": "https://go/assetlinks.json"
+  }])";
+  factory().SetFakeResponse(GURL(kAssetLinkFile), json, net::HTTP_OK,
+                            net::URLRequestStatus::SUCCESS);
+  asset_link_retriever->Start(request_context());
+  EXPECT_EQ(AssetLinkRetriever::State::NETWORK_REQUEST,
+            asset_link_retriever->state());
+
+  RunUntilIdle();
+  EXPECT_EQ(AssetLinkRetriever::State::FINISHED, asset_link_retriever->state());
+  EXPECT_FALSE(asset_link_retriever->error());
+  EXPECT_THAT(asset_link_retriever->includes(),
+              ElementsAre(GURL("https://go/assetlinks.json")));
+  EXPECT_THAT(asset_link_retriever->targets(),
+              ElementsAre(GURL("https://www.google.com")));
+}
+
+// Load a broken resource.
+TEST_F(AssetLinkRetrieverTest, LoadInvalidFile) {
+  scoped_refptr<AssetLinkRetriever> asset_link_retriever =
+      base::MakeRefCounted<AssetLinkRetriever>(GURL(kAssetLinkFile));
+  EXPECT_EQ(AssetLinkRetriever::State::INACTIVE, asset_link_retriever->state());
+
+  constexpr char json[] = u8R"([{111}])";
+  factory().SetFakeResponse(GURL(kAssetLinkFile), json, net::HTTP_OK,
+                            net::URLRequestStatus::SUCCESS);
+  asset_link_retriever->Start(request_context());
+  EXPECT_EQ(AssetLinkRetriever::State::NETWORK_REQUEST,
+            asset_link_retriever->state());
+
+  RunUntilIdle();
+  EXPECT_EQ(AssetLinkRetriever::State::FINISHED, asset_link_retriever->state());
+  EXPECT_TRUE(asset_link_retriever->error());
+  EXPECT_THAT(asset_link_retriever->includes(), IsEmpty());
+  EXPECT_THAT(asset_link_retriever->targets(), IsEmpty());
 }
 
 }  // namespace
