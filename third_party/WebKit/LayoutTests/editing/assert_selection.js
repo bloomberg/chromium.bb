@@ -60,6 +60,10 @@ const DumpAs = {
   FLAT_TREE: 'flattree',
 };
 
+// border-size of IFRAME which hosts sample HTML. This value comes from
+// "core/css/html.css".
+const kIFrameBorderSize = 2;
+
 /** @const @type {string} */
 const kTextArea = 'TEXTAREA';
 
@@ -664,6 +668,28 @@ class Serializer {
 }
 
 /**
+ * @param {!HTMLElement} element
+ * @return {number}
+ */
+function computeLeft(element) {
+  let left = kIFrameBorderSize + element.ownerDocument.offsetLeft;
+  for (let runner = element; runner; runner = runner.offsetParent)
+    left += runner.offsetLeft;
+  return left;
+}
+
+/**
+ * @param {!HTMLElement} element
+ * @return {number}
+ */
+function computeTop(element) {
+  let top = kIFrameBorderSize + element.ownerDocument.offsetTop;
+  for (let runner = element; runner; runner = runner.offsetParent)
+    top += runner.offsetTop;
+  return top;
+}
+
+/**
  * @this {!DOMSelection}
  * @param {string} html
  * @param {string=} opt_text
@@ -712,6 +738,8 @@ class Sample {
     this.selection_.document.offsetLeft = this.iframe_.offsetLeft;
     this.selection_.document.offsetTop = this.iframe_.offsetTop;
     this.selection_.setClipboardData = setClipboardData;
+    this.selection_.computeLeft = computeLeft;
+    this.selection_.computeTop = computeTop;
     this.load(sampleText);
   }
 
