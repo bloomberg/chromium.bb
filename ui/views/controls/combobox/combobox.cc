@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/default_style.h"
 #include "ui/base/ime/input_method.h"
@@ -764,6 +765,20 @@ void Combobox::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   }
   node_data->AddIntAttribute(ui::AX_ATTR_POS_IN_SET, selected_index_);
   node_data->AddIntAttribute(ui::AX_ATTR_SET_SIZE, model_->GetItemCount());
+}
+
+bool Combobox::HandleAccessibleAction(const ui::AXActionData& action_data) {
+  // The action handling in View would generate a mouse event and send it to
+  // |this|. However, mouse events for Combobox are handled by |arrow_button_|,
+  // which is hidden from the a11y tree (so can't expose actions). Rather than
+  // forwarding AX_ACTION_DO_DEFAULT to View and then forwarding the mouse event
+  // it generates to |arrow_button_| to have it forward back to |this| (as its
+  // ButtonListener), just handle the action explicitly here and bypass View.
+  if (enabled() && action_data.action == ui::AX_ACTION_DO_DEFAULT) {
+    ShowDropDownMenu(ui::MENU_SOURCE_KEYBOARD);
+    return true;
+  }
+  return View::HandleAccessibleAction(action_data);
 }
 
 void Combobox::ButtonPressed(Button* sender, const ui::Event& event) {

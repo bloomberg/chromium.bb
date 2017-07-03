@@ -18,6 +18,7 @@
 #include "ui/base/ime/text_input_type.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/widget_test.h"
@@ -319,6 +320,10 @@ TEST_F(NativeWidgetMacAccessibilityTest, TextfieldGenericAttributes) {
       NSAccessibilityTextFieldRole, NSAccessibilitySecureTextFieldSubrole);
   EXPECT_NSEQ(role_description, AttributeValueAtMidpoint(
                                     NSAccessibilityRoleDescriptionAttribute));
+
+  // Expect to see the action to show a context menu.
+  EXPECT_NSEQ(@[ NSAccessibilityShowMenuAction ],
+              [A11yElementAtMidpoint() accessibilityActionNames]);
 
   // Prevent the textfield from interfering with hit tests on the widget itself.
   widget()->GetContentsView()->RemoveChildView(textfield);
@@ -731,6 +736,43 @@ TEST_F(NativeWidgetMacAccessibilityTest, Label) {
   EXPECT_NSEQ(([NSValue valueWithRange:{0, kTestStringLength}]),
               [ax_node AXVisibleCharacterRange]);
   EXPECT_EQ(0, [[ax_node AXInsertionPointLineNumber] intValue]);
+}
+
+class TestComboboxModel : public ui::ComboboxModel {
+ public:
+  TestComboboxModel() = default;
+
+  // ui::ComboboxModel:
+  int GetItemCount() const override { return 2; }
+  base::string16 GetItemAt(int index) override {
+    return index == 0 ? base::SysNSStringToUTF16(kTestStringValue)
+                      : base::ASCIIToUTF16("Second Item");
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestComboboxModel);
+};
+
+// Test a11y attributes of Comboboxes.
+TEST_F(NativeWidgetMacAccessibilityTest, Combobox) {
+  Combobox* combobox = new Combobox(base::MakeUnique<TestComboboxModel>());
+  combobox->SetSize(GetWidgetBounds().size());
+  widget()->GetContentsView()->AddChildView(combobox);
+
+  id ax_node = A11yElementAtMidpoint();
+  EXPECT_TRUE(ax_node);
+
+  EXPECT_NSEQ(NSAccessibilityPopUpButtonRole, [ax_node AXRole]);
+
+  // The initial value should be the first item in the menu.
+  EXPECT_NSEQ(kTestStringValue, [ax_node AXValue]);
+  combobox->SetSelectedIndex(1);
+  EXPECT_NSEQ(@"Second Item", [ax_node AXValue]);
+
+  // Expect to see both a press action and a show menu action. This matches
+  // Cocoa behavior.
+  EXPECT_NSEQ((@[ NSAccessibilityPressAction, NSAccessibilityShowMenuAction ]),
+              [ax_node accessibilityActionNames]);
 }
 
 }  // namespace views

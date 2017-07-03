@@ -20,21 +20,12 @@
 
 namespace {
 
-struct RoleMapEntry {
-  ui::AXRole value;
-  NSString* nativeValue;
-};
-
-struct EventMapEntry {
-  ui::AXEvent value;
-  NSString* nativeValue;
-};
-
-typedef std::map<ui::AXRole, NSString*> RoleMap;
-typedef std::map<ui::AXEvent, NSString*> EventMap;
+using RoleMap = std::map<ui::AXRole, NSString*>;
+using EventMap = std::map<ui::AXEvent, NSString*>;
+using ActionList = std::vector<std::pair<ui::AXAction, NSString*>>;
 
 RoleMap BuildRoleMap() {
-  const RoleMapEntry roles[] = {
+  const RoleMap::value_type roles[] = {
       {ui::AX_ROLE_ABBR, NSAccessibilityGroupRole},
       {ui::AX_ROLE_ALERT, NSAccessibilityGroupRole},
       {ui::AX_ROLE_ALERT_DIALOG, NSAccessibilityGroupRole},
@@ -161,14 +152,11 @@ RoleMap BuildRoleMap() {
       // { ui::AX_ROLE_SCROLL_AREA, NSAccessibilityScrollAreaRole },
   };
 
-  RoleMap role_map;
-  for (size_t i = 0; i < arraysize(roles); ++i)
-    role_map[roles[i].value] = roles[i].nativeValue;
-  return role_map;
+  return RoleMap(begin(roles), end(roles));
 }
 
 RoleMap BuildSubroleMap() {
-  const RoleMapEntry subroles[] = {
+  const RoleMap::value_type subroles[] = {
       {ui::AX_ROLE_ALERT, @"AXApplicationAlert"},
       {ui::AX_ROLE_ALERT_DIALOG, @"AXApplicationAlertDialog"},
       {ui::AX_ROLE_APPLICATION, @"AXLandmarkApplication"},
@@ -202,14 +190,11 @@ RoleMap BuildSubroleMap() {
       {ui::AX_ROLE_TREE_ITEM, NSAccessibilityOutlineRowSubrole},
   };
 
-  RoleMap subrole_map;
-  for (size_t i = 0; i < arraysize(subroles); ++i)
-    subrole_map[subroles[i].value] = subroles[i].nativeValue;
-  return subrole_map;
+  return RoleMap(begin(subroles), end(subroles));
 }
 
 EventMap BuildEventMap() {
-  const EventMapEntry events[] = {
+  const EventMap::value_type events[] = {
       {ui::AX_EVENT_FOCUS, NSAccessibilityFocusedUIElementChangedNotification},
       {ui::AX_EVENT_TEXT_CHANGED, NSAccessibilityTitleChangedNotification},
       {ui::AX_EVENT_VALUE_CHANGED, NSAccessibilityValueChangedNotification},
@@ -218,15 +203,43 @@ EventMap BuildEventMap() {
       // TODO(patricialor): Add more events.
   };
 
-  EventMap event_map;
-  for (size_t i = 0; i < arraysize(events); ++i)
-    event_map[events[i].value] = events[i].nativeValue;
-  return event_map;
+  return EventMap(begin(events), end(events));
+}
+
+ActionList BuildActionList() {
+  const ActionList::value_type entries[] = {
+      // NSAccessibilityPressAction must come first in this list.
+      {ui::AX_ACTION_DO_DEFAULT, NSAccessibilityPressAction},
+
+      {ui::AX_ACTION_DECREMENT, NSAccessibilityDecrementAction},
+      {ui::AX_ACTION_INCREMENT, NSAccessibilityIncrementAction},
+      {ui::AX_ACTION_SHOW_CONTEXT_MENU, NSAccessibilityShowMenuAction},
+  };
+  return ActionList(begin(entries), end(entries));
+}
+
+const ActionList& GetActionList() {
+  CR_DEFINE_STATIC_LOCAL(const ActionList, action_map, (BuildActionList()));
+  return action_map;
 }
 
 void NotifyMacEvent(AXPlatformNodeCocoa* target, ui::AXEvent event_type) {
   NSAccessibilityPostNotification(
       target, [AXPlatformNodeCocoa nativeNotificationFromAXEvent:event_type]);
+}
+
+// Returns true if |action| should be added implicitly for |data|.
+bool HasImplicitAction(const ui::AXNodeData& data, ui::AXAction action) {
+  return action == ui::AX_ACTION_DO_DEFAULT && ui::IsRoleClickable(data.role);
+}
+
+// For roles that show a menu for the default action, ensure "show menu" also
+// appears in available actions, but only if that's not already used for a
+// context menu. It will be mapped back to the default action when performed.
+bool AlsoUseShowMenuActionForDefaultAction(const ui::AXNodeData& data) {
+  return HasImplicitAction(data, ui::AX_ACTION_DO_DEFAULT) &&
+         !data.HasAction(ui::AX_ACTION_SHOW_CONTEXT_MENU) &&
+         data.role == ui::AX_ROLE_POP_UP_BUTTON;
 }
 
 }  // namespace
@@ -244,24 +257,21 @@ void NotifyMacEvent(AXPlatformNodeCocoa* target, ui::AXEvent event_type) {
 
 @synthesize node = node_;
 
-// A mapping of AX roles to native roles.
 + (NSString*)nativeRoleFromAXRole:(ui::AXRole)role {
-  CR_DEFINE_STATIC_LOCAL(RoleMap, role_map, (BuildRoleMap()));
-  RoleMap::iterator it = role_map.find(role);
+  CR_DEFINE_STATIC_LOCAL(const RoleMap, role_map, (BuildRoleMap()));
+  RoleMap::const_iterator it = role_map.find(role);
   return it != role_map.end() ? it->second : NSAccessibilityUnknownRole;
 }
 
-// A mapping of AX roles to native subroles.
 + (NSString*)nativeSubroleFromAXRole:(ui::AXRole)role {
-  CR_DEFINE_STATIC_LOCAL(RoleMap, subrole_map, (BuildSubroleMap()));
-  RoleMap::iterator it = subrole_map.find(role);
+  CR_DEFINE_STATIC_LOCAL(const RoleMap, subrole_map, (BuildSubroleMap()));
+  RoleMap::const_iterator it = subrole_map.find(role);
   return it != subrole_map.end() ? it->second : nil;
 }
 
-// A mapping of AX events to native notifications.
 + (NSString*)nativeNotificationFromAXEvent:(ui::AXEvent)event {
-  CR_DEFINE_STATIC_LOCAL(EventMap, event_map, (BuildEventMap()));
-  EventMap::iterator it = event_map.find(event);
+  CR_DEFINE_STATIC_LOCAL(const EventMap, event_map, (BuildEventMap()));
+  EventMap::const_iterator it = event_map.find(event);
   return it != event_map.end() ? it->second : nil;
 }
 
@@ -327,9 +337,19 @@ void NotifyMacEvent(AXPlatformNodeCocoa* target, ui::AXEvent event_type) {
   base::scoped_nsobject<NSMutableArray> axActions(
       [[NSMutableArray alloc] init]);
 
-  // VoiceOver expects the "press" action to be first.
-  if (ui::IsRoleClickable(node_->GetData().role))
-    [axActions addObject:NSAccessibilityPressAction];
+  const ui::AXNodeData& data = node_->GetData();
+  const ActionList& action_list = GetActionList();
+
+  // VoiceOver expects the "press" action to be first. Note that some roles
+  // should be given a press action implicitly.
+  DCHECK([action_list[0].second isEqualToString:NSAccessibilityPressAction]);
+  for (const auto item : action_list) {
+    if (data.HasAction(item.first) || HasImplicitAction(data, item.first))
+      [axActions addObject:item.second];
+  }
+
+  if (AlsoUseShowMenuActionForDefaultAction(data))
+    [axActions addObject:NSAccessibilityShowMenuAction];
 
   return axActions.autorelease();
 }
@@ -337,8 +357,17 @@ void NotifyMacEvent(AXPlatformNodeCocoa* target, ui::AXEvent event_type) {
 - (void)accessibilityPerformAction:(NSString*)action {
   DCHECK([[self accessibilityActionNames] containsObject:action]);
   ui::AXActionData data;
-  if ([action isEqualToString:NSAccessibilityPressAction])
+  if ([action isEqualToString:NSAccessibilityShowMenuAction] &&
+      AlsoUseShowMenuActionForDefaultAction(node_->GetData())) {
     data.action = ui::AX_ACTION_DO_DEFAULT;
+  } else {
+    for (const ActionList::value_type& entry : GetActionList()) {
+      if ([action isEqualToString:entry.second]) {
+        data.action = entry.first;
+        break;
+      }
+    }
+  }
 
   // Note ui::AX_ACTIONs which are just overwriting an accessibility attribute
   // are already implemented in -accessibilitySetValue:forAttribute:, so ignore

@@ -89,6 +89,9 @@ const ui::AXNodeData& NativeViewAccessibilityBase::GetData() const {
   if (!view_->IsDrawn())
     data_.AddState(ui::AX_STATE_INVISIBLE);
 
+  if (view_->context_menu_controller())
+    data_.AddAction(ui::AX_ACTION_SHOW_CONTEXT_MENU);
+
   // Make sure this element is excluded from the a11y tree if there's a
   // focusable parent. All keyboard focusable elements should be leaf nodes.
   // Exceptions to this rule will themselves be accessibility focusable.
