@@ -157,14 +157,14 @@ class ChromeIdentityService {
   // Uses the default client id and client secret.
   virtual void GetAccessToken(ChromeIdentity* identity,
                               const std::set<std::string>& scopes,
-                              const AccessTokenCallback& callback);
+                              AccessTokenCallback callback);
 
   // Asynchronously retrieves access tokens for the given identity and scopes.
   virtual void GetAccessToken(ChromeIdentity* identity,
                               const std::string& client_id,
                               const std::string& client_secret,
                               const std::set<std::string>& scopes,
-                              const AccessTokenCallback& callback);
+                              AccessTokenCallback callback);
 
   // Fetches the profile avatar, from the cache or the network.
   // For high resolution iPads, returns large images (200 x 200) to avoid

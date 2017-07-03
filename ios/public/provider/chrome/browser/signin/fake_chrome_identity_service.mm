@@ -23,7 +23,7 @@ void FakeGetAccessToken(ChromeIdentity*,
                         const std::string&,
                         const std::string&,
                         const std::set<std::string>&,
-                        const ios::AccessTokenCallback& callback) {
+                        ios::AccessTokenCallback callback) {
   base::mac::ScopedBlock<ios::AccessTokenCallback> safe_callback(
       [callback copy]);
 
@@ -215,7 +215,7 @@ void FakeChromeIdentityService::GetAccessToken(
     const std::string& client_id,
     const std::string& client_secret,
     const std::set<std::string>& scopes,
-    const ios::AccessTokenCallback& callback) {
+    ios::AccessTokenCallback callback) {
   FakeGetAccessToken(identity, client_id, client_secret, scopes, callback);
 }
 
