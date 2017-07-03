@@ -607,8 +607,9 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, URLRequestContextIsolation) {
     base::RunLoop run_loop;
     content::BrowserThread::PostTaskAndReply(
         content::BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&CompareURLRequestContexts, extension_context_getter,
-                       main_context_getter),
+        base::BindOnce(&CompareURLRequestContexts,
+                       base::RetainedRef(extension_context_getter),
+                       base::RetainedRef(main_context_getter)),
         run_loop.QuitClosure());
     run_loop.Run();
   }
@@ -646,8 +647,9 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
     base::RunLoop run_loop;
     content::BrowserThread::PostTaskAndReply(
         content::BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&CompareURLRequestContexts, extension_context_getter,
-                       main_context_getter),
+        base::BindOnce(&CompareURLRequestContexts,
+                       base::RetainedRef(extension_context_getter),
+                       base::RetainedRef(main_context_getter)),
         run_loop.QuitClosure());
     run_loop.Run();
   }

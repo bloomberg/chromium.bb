@@ -1240,7 +1240,7 @@ void NodeController::OnChannelError(const ports::NodeName& from_node,
     io_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&NodeController::OnChannelError, base::Unretained(this),
-                   from_node, channel));
+                   from_node, base::RetainedRef(channel)));
   }
 }
 

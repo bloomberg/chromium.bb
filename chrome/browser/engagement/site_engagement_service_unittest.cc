@@ -208,7 +208,8 @@ class SiteEngagementServiceTest : public ChromeRenderViewHostTestHarness {
     content::BrowserThread::GetTaskRunnerForThread(thread_id)->PostTaskAndReply(
         FROM_HERE,
         base::BindOnce(&SiteEngagementServiceTest::CheckScoreFromSettings,
-                       base::Unretained(this), settings_map, url, &score),
+                       base::Unretained(this), base::RetainedRef(settings_map),
+                       url, &score),
         run_loop.QuitClosure());
     run_loop.Run();
     return score;

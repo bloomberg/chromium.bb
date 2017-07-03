@@ -188,8 +188,8 @@ void TaskQueueThrottler::OnQueueNextWakeUpChanged(
     base::TimeTicks next_wake_up) {
   if (!control_task_queue_->RunsTasksInCurrentSequence()) {
     control_task_queue_->PostTask(
-        FROM_HERE,
-        base::Bind(forward_immediate_work_callback_, queue, next_wake_up));
+        FROM_HERE, base::Bind(forward_immediate_work_callback_,
+                              base::RetainedRef(queue), next_wake_up));
     return;
   }
 
