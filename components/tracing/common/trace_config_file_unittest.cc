@@ -16,16 +16,15 @@ namespace tracing {
 namespace {
 
 const char kTraceConfig[] =
-  "{"
+    "{"
     "\"enable_argument_filter\":true,"
     "\"enable_systrace\":true,"
     "\"excluded_categories\":[\"excluded\",\"exc_pattern*\"],"
     "\"included_categories\":[\"included\","
-                             "\"inc_pattern*\","
-                             "\"disabled-by-default-cc\"],"
-    "\"record_mode\":\"record-continuously\","
-    "\"synthetic_delays\":[\"test.Delay1;16\",\"test.Delay2;32\"]"
-  "}";
+    "\"inc_pattern*\","
+    "\"disabled-by-default-cc\"],"
+    "\"record_mode\":\"record-continuously\""
+    "}";
 
 std::string GetTraceConfigFileContent(std::string trace_config,
                                       std::string startup_duration,

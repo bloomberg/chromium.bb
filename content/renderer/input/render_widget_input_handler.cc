@@ -11,7 +11,6 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/trace_event/trace_event_synthetic_delay.h"
 #include "build/build_config.h"
 #include "cc/trees/swap_promise_monitor.h"
 #include "content/common/input/input_event_ack.h"
@@ -234,7 +233,6 @@ void RenderWidgetInputHandler::HandleInputEvent(
   TRACE_EVENT1("renderer,benchmark,rail",
                "RenderWidgetInputHandler::OnHandleInputEvent", "event",
                WebInputEvent::GetName(input_event.GetType()));
-  TRACE_EVENT_SYNTHETIC_DELAY_BEGIN("blink.HandleInputEvent");
   TRACE_EVENT_WITH_FLOW1("input,benchmark", "LatencyInfo.Flow",
                          TRACE_ID_DONT_MANGLE(latency_info.trace_id()),
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
@@ -389,7 +387,6 @@ void RenderWidgetInputHandler::HandleInputEvent(
     }
   }
 
-  TRACE_EVENT_SYNTHETIC_DELAY_END("blink.HandleInputEvent");
   if (callback) {
     std::move(callback).Run(ack_result, swap_latency_info,
                             std::move(event_overscroll));

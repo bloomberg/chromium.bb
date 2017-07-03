@@ -37,8 +37,7 @@ const char kCustomTraceConfigString[] =
     "}"
     "]"
     "},"
-    "\"record_mode\":\"record-continuously\","
-    "\"synthetic_delays\":[\"test.Delay1;16\",\"test.Delay2;32\"]"
+    "\"record_mode\":\"record-continuously\""
     "}";
 
 const char kCustomTraceConfigStringDevToolsStyle[] =
@@ -65,8 +64,7 @@ const char kCustomTraceConfigStringDevToolsStyle[] =
     "}"
     "]"
     "},"
-    "\"recordMode\":\"recordContinuously\","
-    "\"synthetic_delays\":[\"test.Delay1;16\",\"test.Delay2;32\"]"
+    "\"recordMode\":\"recordContinuously\""
     "}";
 
 }  // namespace

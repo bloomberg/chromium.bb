@@ -22,7 +22,6 @@
 #include "base/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
-#include "base/trace_event/trace_event_synthetic_delay.h"
 #include "build/build_config.h"
 #include "cc/animation/animation_host.h"
 #include "cc/input/touch_action.h"

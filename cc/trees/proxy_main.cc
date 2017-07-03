@@ -10,7 +10,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "base/trace_event/trace_event_synthetic_delay.h"
 #include "cc/base/completion_event.h"
 #include "cc/base/devtools_instrumentation.h"
 #include "cc/benchmarks/benchmark_instrumentation.h"
@@ -127,7 +126,6 @@ void ProxyMain::BeginMainFrame(
 
   base::TimeTicks begin_main_frame_start_time = base::TimeTicks::Now();
 
-  TRACE_EVENT_SYNTHETIC_DELAY_BEGIN("cc.BeginMainFrame");
   DCHECK(IsMainThread());
   DCHECK_EQ(NO_PIPELINE_STAGE, current_pipeline_stage_);
 
@@ -213,8 +211,6 @@ void ProxyMain::BeginMainFrame(
     layer_tree_host_->DidBeginMainFrame();
     return;
   }
-
-  TRACE_EVENT_SYNTHETIC_DELAY_END("cc.BeginMainFrame");
 
   bool can_cancel_this_commit = final_pipeline_stage_ < COMMIT_PIPELINE_STAGE &&
                                 !begin_main_frame_state->evicted_ui_resources;
