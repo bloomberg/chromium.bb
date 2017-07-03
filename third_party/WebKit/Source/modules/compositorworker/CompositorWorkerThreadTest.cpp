@@ -156,7 +156,8 @@ TEST_F(CompositorWorkerThreadTest, Basic) {
   std::unique_ptr<CompositorWorkerThread> compositor_worker =
       CreateCompositorWorker();
   CheckWorkerCanExecuteScript(compositor_worker.get());
-  compositor_worker->TerminateAndWait();
+  compositor_worker->Terminate();
+  compositor_worker->WaitForShutdownForTesting();
 }
 
 // Tests that the same WebThread is used for new workers if the WebThread is
@@ -191,7 +192,8 @@ TEST_F(CompositorWorkerThreadTest, CreateSecondAndTerminateFirst) {
   // Verify that the worker can still successfully execute script.
   CheckWorkerCanExecuteScript(second_worker.get());
 
-  second_worker->TerminateAndWait();
+  second_worker->Terminate();
+  second_worker->WaitForShutdownForTesting();
 }
 
 // Tests that a new WebThread is created if all existing workers are terminated
@@ -215,7 +217,8 @@ TEST_F(CompositorWorkerThreadTest, TerminateFirstAndCreateSecond) {
   EXPECT_EQ(first_thread, second_thread);
   CheckWorkerCanExecuteScript(compositor_worker.get());
 
-  compositor_worker->TerminateAndWait();
+  compositor_worker->Terminate();
+  compositor_worker->WaitForShutdownForTesting();
 }
 
 // Tests that v8::Isolate and WebThread are correctly set-up if a worker is
@@ -244,7 +247,8 @@ TEST_F(CompositorWorkerThreadTest, CreatingSecondDuringTerminationOfFirst) {
   // Verify that the isolate can run some scripts correctly in the second
   // worker.
   CheckWorkerCanExecuteScript(second_worker.get());
-  second_worker->TerminateAndWait();
+  second_worker->Terminate();
+  second_worker->WaitForShutdownForTesting();
 }
 
 }  // namespace blink

@@ -259,7 +259,8 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper {
         BLINK_FROM_HERE,
         CrossThreadBind(&WaitableEvent::Signal, CrossThreadUnretained(&event)));
     event.Wait();
-    worker_thread_->TerminateAndWait();
+    worker_thread_->Terminate();
+    worker_thread_->WaitForShutdownForTesting();
 
     // Needed to clean up the things on the main thread side and
     // avoid Resource leaks.

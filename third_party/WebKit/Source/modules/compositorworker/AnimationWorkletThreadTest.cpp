@@ -124,7 +124,8 @@ TEST_F(AnimationWorkletThreadTest, Basic) {
   std::unique_ptr<AnimationWorkletThread> worklet =
       CreateAnimationWorkletThread();
   CheckWorkletCanExecuteScript(worklet.get());
-  worklet->TerminateAndWait();
+  worklet->Terminate();
+  worklet->WaitForShutdownForTesting();
 }
 
 // Tests that the same WebThread is used for new worklets if the WebThread is
@@ -159,7 +160,8 @@ TEST_F(AnimationWorkletThreadTest, CreateSecondAndTerminateFirst) {
   // Verify that the worklet can still successfully execute script.
   CheckWorkletCanExecuteScript(second_worklet.get());
 
-  second_worklet->TerminateAndWait();
+  second_worklet->Terminate();
+  second_worklet->WaitForShutdownForTesting();
 }
 
 // Tests that a new WebThread is created if all existing worklets are
@@ -183,7 +185,8 @@ TEST_F(AnimationWorkletThreadTest, TerminateFirstAndCreateSecond) {
   EXPECT_EQ(first_thread, second_thread);
   CheckWorkletCanExecuteScript(worklet.get());
 
-  worklet->TerminateAndWait();
+  worklet->Terminate();
+  worklet->WaitForShutdownForTesting();
 }
 
 // Tests that v8::Isolate and WebThread are correctly set-up if a worklet is
@@ -212,7 +215,8 @@ TEST_F(AnimationWorkletThreadTest, CreatingSecondDuringTerminationOfFirst) {
   // Verify that the isolate can run some scripts correctly in the second
   // worklet.
   CheckWorkletCanExecuteScript(second_worklet.get());
-  second_worklet->TerminateAndWait();
+  second_worklet->Terminate();
+  second_worklet->WaitForShutdownForTesting();
 }
 
 }  // namespace blink
