@@ -805,7 +805,7 @@ bool SourceBuffer::InitializationSegmentReceived(
                   << " failed: tracks mismatch the first init segment.";
       return false;
     }
-#if !LOG_DISABLED
+#if DCHECK_IS_ON()
     const char* log_track_type_str =
         (track_info.track_type == WebMediaPlayer::kAudioTrack) ? "audio"
                                                                : "video";

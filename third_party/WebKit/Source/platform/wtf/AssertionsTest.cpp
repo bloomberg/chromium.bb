@@ -36,7 +36,7 @@ TEST(AssertionsTest, Assertions) {
   EXPECT_DEATH_IF_SUPPORTED(SECURITY_CHECK(false), "");
 };
 
-#if !LOG_DISABLED
+#if DCHECK_IS_ON()
 static const int kPrinterBufferSize = 256;
 static char g_buffer[kPrinterBufferSize];
 static StringBuilder g_builder;
@@ -71,6 +71,6 @@ TEST(AssertionsTest, ScopedLogger) {
       ")\n",
       g_builder.ToString());
 };
-#endif  // !LOG_DISABLED
+#endif  // DCHECK_IS_ON()
 
 }  // namespace WTF
