@@ -345,4 +345,27 @@ test(() => {
             assert_equals(internals.textAffinity, 'Upstream'); },
         '<div contenteditable style="width: 25px;">foo|bar</div>');
 }, 'Textaffinity');
+
+test(() => {
+  assert_exists(window, 'eventSender');
+  assert_selection(
+    [
+      '<div id="first">one <span id="start"></span>two three</div>',
+      '<div id="second">four <span id="end"></span>five six</div>',
+    ].join(''),
+    selection => {
+      const start = selection.document.getElementById('start');
+      const end = selection.document.getElementById('end');
+      eventSender.mouseMoveTo(selection.computeLeft(start),
+                              selection.computeTop(start));
+      eventSender.mouseDown();
+      eventSender.mouseMoveTo(selection.computeLeft(end),
+                              selection.computeTop(end));
+      eventSender.mouseUp();
+    },
+    [
+      '<div id="first">one <span id="start"></span>^two three</div>',
+      '<div id="second">four |<span id="end"></span>five six</div>',
+    ].join(''));
+}, 'computeLeft() and computeTop()');
 </script>
