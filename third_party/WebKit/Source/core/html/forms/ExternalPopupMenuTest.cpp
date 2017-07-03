@@ -112,7 +112,7 @@ class ExternalPopupMenuTest : public ::testing::Test {
 
   void RegisterMockedURLLoad(const std::string& file_name) {
     URLTestHelpers::RegisterMockedURLLoadFromBase(
-        WebString::FromUTF8(base_url_), testing::WebTestDataPath("popup"),
+        WebString::FromUTF8(base_url_), testing::CoreTestDataPath("popup"),
         WebString::FromUTF8(file_name), WebString::FromUTF8("text/html"));
   }
 

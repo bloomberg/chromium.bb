@@ -79,7 +79,7 @@ void RenderingTest::SetChildFrameHTML(const String& html) {
 
 void RenderingTest::LoadAhem() {
   RefPtr<SharedBuffer> shared_buffer =
-      testing::ReadFromFile(testing::WebTestDataPath("Ahem.ttf"));
+      testing::ReadFromFile(testing::CoreTestDataPath("Ahem.ttf"));
   StringOrArrayBufferOrArrayBufferView buffer =
       StringOrArrayBufferOrArrayBufferView::fromArrayBuffer(
           DOMArrayBuffer::Create(shared_buffer));

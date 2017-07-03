@@ -158,7 +158,7 @@ constexpr char kSvgImage2[] =
 constexpr char kTestURL[] = "http://www.test.com/cancelTest.html";
 
 String GetTestFilePath() {
-  return testing::WebTestDataPath("cancelTest.html");
+  return testing::CoreTestDataPath("cancelTest.html");
 }
 
 constexpr char kSvgImageWithSubresource[] =

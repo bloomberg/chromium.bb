@@ -68,7 +68,7 @@ class WebAssociatedURLLoaderTest : public ::testing::Test,
         did_finish_loading_(false),
         did_fail_(false) {
     // Reuse one of the test files from WebFrameTest.
-    frame_file_path_ = testing::WebTestDataPath("iframes_test.html");
+    frame_file_path_ = testing::CoreTestDataPath("iframes_test.html");
   }
 
   KURL RegisterMockedUrl(const std::string& url_root,
@@ -77,7 +77,7 @@ class WebAssociatedURLLoaderTest : public ::testing::Test,
     response.SetMIMEType("text/html");
     KURL url = ToKURL(url_root + filename.Utf8().data());
     Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
-        url, response, testing::WebTestDataPath(filename.Utf8().data()));
+        url, response, testing::CoreTestDataPath(filename.Utf8().data()));
     return url;
   }
 

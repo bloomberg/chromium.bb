@@ -51,7 +51,7 @@ namespace {
 void RegisterMockedURLLoadFromBaseURL(const std::string& base_url,
                                       const std::string& file_name) {
   URLTestHelpers::RegisterMockedURLLoadFromBase(WebString::FromUTF8(base_url),
-                                                testing::WebTestDataPath(),
+                                                testing::CoreTestDataPath(),
                                                 WebString::FromUTF8(file_name));
 }
 

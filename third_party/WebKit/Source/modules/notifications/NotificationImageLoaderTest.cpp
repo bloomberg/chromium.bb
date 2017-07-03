@@ -54,7 +54,7 @@ class NotificationImageLoaderTest : public ::testing::Test {
   // directory.
   WebURL RegisterMockedURL(const String& file_name) {
     WebURL registered_url = URLTestHelpers::RegisterMockedURLLoadFromBase(
-        kBaseUrl, testing::WebTestDataPath(kBaseDir), file_name, "image/png");
+        kBaseUrl, testing::CoreTestDataPath(kBaseDir), file_name, "image/png");
     return registered_url;
   }
 

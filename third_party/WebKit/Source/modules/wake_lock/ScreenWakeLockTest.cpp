@@ -86,7 +86,7 @@ class ScreenWakeLockTest : public ::testing::Test {
   void SetUp() override {
     web_view_helper_.Initialize(&test_web_frame_client_);
     URLTestHelpers::RegisterMockedURLLoadFromBase(
-        WebString::FromUTF8("http://example.com/"), testing::WebTestDataPath(),
+        WebString::FromUTF8("http://example.com/"), testing::CoreTestDataPath(),
         WebString::FromUTF8("foo.html"));
     LoadFrame();
   }

@@ -382,7 +382,7 @@ class ThreadableLoaderTest
 
   void SetUpSuccessURL() {
     URLTestHelpers::RegisterMockedURLLoad(
-        SuccessURL(), testing::WebTestDataPath(kFileName), "text/html");
+        SuccessURL(), testing::CoreTestDataPath(kFileName), "text/html");
   }
 
   void SetUpErrorURL() {
@@ -403,7 +403,7 @@ class ThreadableLoaderTest
     response.AddHTTPHeaderField("Access-Control-Allow-Origin", "null");
 
     URLTestHelpers::RegisterMockedURLLoadWithCustomResponse(
-        url, testing::WebTestDataPath(kFileName), response);
+        url, testing::CoreTestDataPath(kFileName), response);
   }
 
   void SetUpRedirectLoopURL() {
@@ -420,7 +420,7 @@ class ThreadableLoaderTest
     response.AddHTTPHeaderField("Access-Control-Allow-Origin", "null");
 
     URLTestHelpers::RegisterMockedURLLoadWithCustomResponse(
-        url, testing::WebTestDataPath(kFileName), response);
+        url, testing::CoreTestDataPath(kFileName), response);
   }
 
   std::unique_ptr<MockThreadableLoaderClient> client_;

@@ -68,7 +68,7 @@ GestureEventWithHitTestResults GetTargetedEvent(WebViewBase* web_view_impl,
 
 std::string RegisterMockedURLLoad() {
   WebURL url = URLTestHelpers::RegisterMockedURLLoadFromBase(
-      WebString::FromUTF8("http://www.test.com/"), testing::WebTestDataPath(),
+      WebString::FromUTF8("http://www.test.com/"), testing::CoreTestDataPath(),
       WebString::FromUTF8("test_touch_link_highlight.html"));
   return url.GetString().Utf8();
 }

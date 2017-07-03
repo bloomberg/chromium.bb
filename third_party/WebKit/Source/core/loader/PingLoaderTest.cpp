@@ -58,7 +58,7 @@ class PingLoaderTest : public ::testing::Test {
   const ResourceRequest& PingAndGetRequest(const KURL& ping_url) {
     KURL destination_url(kParsedURLString, "http://navigation.destination");
     URLTestHelpers::RegisterMockedURLLoad(
-        ping_url, testing::WebTestDataPath("bar.html"), "text/html");
+        ping_url, testing::CoreTestDataPath("bar.html"), "text/html");
     PingLoader::SendLinkAuditPing(&page_holder_->GetFrame(), ping_url,
                                   destination_url);
     const ResourceRequest& ping_request = client_->PingRequest();
