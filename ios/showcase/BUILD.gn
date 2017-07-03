@@ -6,6 +6,7 @@ import("//build/config/ios/rules.gni")
 import("//ios/build/chrome_build.gni")
 import("//ios/build/config.gni")
 import("//ios/third_party/earl_grey/ios_eg_test.gni")
+import("//tools/grit/repack.gni")
 
 ios_app_bundle("showcase") {
   info_plist = "core/Info.plist"
@@ -47,11 +48,23 @@ group("all_tests") {
   ]
 }
 
+repack("packed_resources") {
+  sources = [
+    "$root_gen_dir/ios/web/ios_web_resources.pak",
+  ]
+  deps = [
+    "//ios/web:resources",
+  ]
+  output = "$target_gen_dir/showcase_resources.pak"
+  copy_data_to_bundle = true
+}
+
 ios_eg_test("ios_showcase_egtests") {
   info_plist = "core/Info.plist"
   extra_substitutions = [ "IOS_BUNDLE_ID_PREFIX=$ios_app_bundle_id_prefix" ]
   deps = [
     ":features",
+    ":packed_resources",
     "//ios/showcase/core:main",
 
     # Add all eg_tests targets below.
