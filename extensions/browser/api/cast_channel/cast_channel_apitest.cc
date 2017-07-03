@@ -224,7 +224,7 @@ ACTION_P2(InvokeObserverOnError, api_test, cast_socket_service) {
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&CastChannelAPITest::DoCallOnError, base::Unretained(api_test),
-                 cast_socket_service));
+                 base::RetainedRef(cast_socket_service)));
 }
 
 // TODO(kmarshall): Win Dbg has a workaround that makes RunExtensionSubtest
