@@ -500,6 +500,7 @@ enum class WebFeature : uint32_t {
   kFullscreenInsecureOrigin = 766,
   kDialogInSandboxedContext = 767,
   kSVGSMILAnimationInImageRegardlessOfCache = 768,
+  kEncryptedMediaSecureOrigin = 770,
   kPerformanceFrameTiming = 772,
   kV8Element_Animate_Method = 773,
   // The above items are available in M44 branch.
@@ -1568,6 +1569,7 @@ enum class WebFeature : uint32_t {
   kServiceWorkerClientFrameType = 2033,
   kQuirksModeDocument = 2034,
   kLimitedQuirksModeDocument = 2035,
+  kEncryptedMediaCrossOriginIframe = 2036,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

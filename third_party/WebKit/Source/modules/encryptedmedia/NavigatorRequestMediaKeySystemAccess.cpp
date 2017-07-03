@@ -327,6 +327,10 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
             "The context provided is not associated with a page."));
   }
 
+  UseCounter::Count(*document, WebFeature::kEncryptedMediaSecureOrigin);
+  UseCounter::CountCrossOriginIframe(
+      *document, WebFeature::kEncryptedMediaCrossOriginIframe);
+
   // 4. Let origin be the origin of document.
   //    (Passed with the execution context.)
 
