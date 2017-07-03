@@ -71,7 +71,9 @@ class TranslateLanguageList {
   static const char kTargetLanguagesKey[];
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(TranslateLanguageListTest, IsSupportedLanguage);
   FRIEND_TEST_ALL_PREFIXES(TranslateLanguageListTest, SetSupportedLanguages);
+  FRIEND_TEST_ALL_PREFIXES(TranslateLanguageListTest, TranslateLanguageUrl);
 
   // Callback function called when TranslateURLFetcher::Request() is finished.
   void OnLanguageListFetchComplete(int id,
