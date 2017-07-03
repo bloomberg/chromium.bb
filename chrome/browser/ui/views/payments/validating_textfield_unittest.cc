@@ -13,10 +13,11 @@
 #include "chrome/browser/ui/views/payments/validation_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/test/views_test_base.h"
 
 namespace payments {
 
-class ValidatingTextfieldTest : public testing::Test {
+class ValidatingTextfieldTest : public views::ViewsTestBase {
  public:
   ValidatingTextfieldTest() {}
   ~ValidatingTextfieldTest() override {}
