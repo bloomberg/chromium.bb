@@ -31,7 +31,10 @@ ChromeBrowserProvider* GetChromeBrowserProvider() {
 
 ChromeBrowserProvider::ChromeBrowserProvider() {}
 
-ChromeBrowserProvider::~ChromeBrowserProvider() {}
+ChromeBrowserProvider::~ChromeBrowserProvider() {
+  for (auto& observer : observer_list_)
+    observer.OnChromeBrowserProviderWillBeDestroyed();
+}
 
 void ChromeBrowserProvider::AppendSwitchesFromExperimentalSettings(
     NSUserDefaults* experimental_settings,
@@ -117,5 +120,19 @@ ChromeBrowserProvider::GetNativeAppWhitelistManager() const {
 void ChromeBrowserProvider::HideModalViewStack() const {}
 
 void ChromeBrowserProvider::LogIfModalViewsArePresented() const {}
+
+void ChromeBrowserProvider::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void ChromeBrowserProvider::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
+void ChromeBrowserProvider::FireChromeIdentityServiceDidChange(
+    ChromeIdentityService* new_service) {
+  for (auto& observer : observer_list_)
+    observer.OnChromeIdentityServiceDidChange(new_service);
+}
 
 }  // namespace ios
