@@ -23,10 +23,12 @@ typedef std::map<PolicyDomain, ComponentMap> DomainMap;
 
 // Contains a mapping of policy namespaces (domain + component ID) to its
 // corresponding Schema.
+// This class is thread-safe.
 class POLICY_EXPORT SchemaMap : public base::RefCountedThreadSafe<SchemaMap> {
  public:
   SchemaMap();
   // Takes ownership of |map| (its contents will be swapped).
+  // TODO(emaxx): Change to use move semantics.
   explicit SchemaMap(DomainMap& map);
 
   const DomainMap& GetDomains() const;

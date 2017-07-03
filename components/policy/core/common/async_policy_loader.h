@@ -30,9 +30,10 @@ class PolicyBundle;
 //
 // All methods are invoked on the background |task_runner_|, including the
 // destructor. The only exceptions are the constructor (which may be called on
-// any thread), and the initial Load() which is called on the thread that owns
-// the provider.
-// LastModificationTime() is also invoked once on that thread at startup.
+// any thread), InitialLoad() which is called on the thread that owns the
+// provider and the calls of Load() and LastModificationTime() during the
+// initial load.
+// Also, during tests the destructor may be called on the main thread.
 class POLICY_EXPORT AsyncPolicyLoader {
  public:
   explicit AsyncPolicyLoader(
@@ -96,8 +97,8 @@ class POLICY_EXPORT AsyncPolicyLoader {
   // before retrying when this returns false.
   bool IsSafeToReload(const base::Time& now, base::TimeDelta* delay);
 
-  // Task runner to run background threads.
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  // Task runner for running background jobs.
+  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // Callback for updates, passed in Init().
   UpdateCallback update_callback_;
@@ -115,7 +116,7 @@ class POLICY_EXPORT AsyncPolicyLoader {
   scoped_refptr<SchemaMap> schema_map_;
 
   // Used to get WeakPtrs for the periodic reload task.
-  base::WeakPtrFactory<AsyncPolicyLoader> weak_factory_;
+  base::WeakPtrFactory<AsyncPolicyLoader> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AsyncPolicyLoader);
 };

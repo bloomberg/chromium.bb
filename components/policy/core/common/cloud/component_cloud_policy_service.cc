@@ -126,6 +126,8 @@ class ComponentCloudPolicyService::Backend
   bool has_credentials_set_ = false;
   std::unique_ptr<ScopedResponseMap> last_fetched_policy_;
 
+  SEQUENCE_CHECKER(sequence_checker_);
+
   DISALLOW_COPY_AND_ASSIGN(Backend);
 };
 
@@ -140,11 +142,17 @@ ComponentCloudPolicyService::Backend::Backend(
       service_task_runner_(service_task_runner),
       cache_(std::move(cache)),
       external_policy_data_fetcher_(std::move(external_policy_data_fetcher)),
-      store_(this, cache_.get()) {}
+      store_(this, cache_.get()) {
+  // This class is allowed to be instantiated on any thread.
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+}
 
-ComponentCloudPolicyService::Backend::~Backend() {}
+ComponentCloudPolicyService::Backend::~Backend() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
 
 void ComponentCloudPolicyService::Backend::ClearCache() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(1) << "Clearing cache";
   store_.Clear();
   has_credentials_set_ = false;
@@ -156,6 +164,7 @@ void ComponentCloudPolicyService::Backend::SetCredentials(
     const std::string& device_id,
     const std::string& public_key,
     int public_key_version) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!username.empty());
   DCHECK(!dm_token.empty());
   DVLOG(1) << "Updating credentials: username = " << username
@@ -171,6 +180,8 @@ void ComponentCloudPolicyService::Backend::SetCredentials(
 }
 
 void ComponentCloudPolicyService::Backend::InitIfNeeded() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (initialized_)
     return;
 
@@ -202,6 +213,7 @@ void ComponentCloudPolicyService::Backend::InitIfNeeded() {
 
 void ComponentCloudPolicyService::Backend::SetFetchedPolicy(
     std::unique_ptr<ScopedResponseMap> responses) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(2) << "Updating last fetched policies (count = " << responses->size()
            << ")";
   last_fetched_policy_ = std::move(responses);
@@ -210,6 +222,8 @@ void ComponentCloudPolicyService::Backend::SetFetchedPolicy(
 
 void ComponentCloudPolicyService::Backend::
     OnComponentCloudPolicyStoreUpdated() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (!initialized_) {
     // Ignore notifications triggered by the initial Purge or Clear.
     return;
@@ -224,6 +238,8 @@ void ComponentCloudPolicyService::Backend::
 }
 
 void ComponentCloudPolicyService::Backend::UpdateWithLastFetchedPolicy() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (!has_credentials_set_ || !last_fetched_policy_ || !initialized_)
     return;
 
@@ -352,6 +368,7 @@ void ComponentCloudPolicyService::OnCoreDisconnecting(CloudPolicyCore* core) {
 
 void ComponentCloudPolicyService::OnRefreshSchedulerStarted(
     CloudPolicyCore* core) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Ignored.
 }
 

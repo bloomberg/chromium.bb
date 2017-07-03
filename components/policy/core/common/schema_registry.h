@@ -91,14 +91,14 @@ class POLICY_EXPORT SchemaRegistry {
  protected:
   void Notify(bool has_new_schemas);
 
+  SEQUENCE_CHECKER(sequence_checker_);
+
   scoped_refptr<SchemaMap> schema_map_;
 
  private:
   base::ObserverList<Observer, true> observers_;
   base::ObserverList<InternalObserver, true> internal_observers_;
   bool domains_ready_[POLICY_DOMAIN_SIZE];
-
-  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(SchemaRegistry);
 };
