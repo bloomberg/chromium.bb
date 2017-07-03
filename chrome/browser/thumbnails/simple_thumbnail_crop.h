@@ -36,19 +36,10 @@ class SimpleThumbnailCrop : public ThumbnailingAlgorithm {
                                    const gfx::Size& desired_size,
                                    ClipResult* clip_result);
 
-  // Computes the size of a thumbnail that should be stored in the database from
-  // |given_size| (expected to be the thumbnail size we would normally want to
-  // see). The returned size is expressed in pixels and is determined by
-  // bumping the resolution up to the maximum scale factor.
-  static gfx::Size ComputeTargetSizeAtMaximumScale(const gfx::Size& given_size);
-
  protected:
   ~SimpleThumbnailCrop() override;
 
  private:
-  static SkBitmap CreateThumbnail(const SkBitmap& bitmap,
-                                  const gfx::Size& desired_size);
-
   // The target size of the captured thumbnails, in DIPs.
   const gfx::Size target_size_;
 
