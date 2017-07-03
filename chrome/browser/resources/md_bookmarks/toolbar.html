@@ -55,6 +55,7 @@
       <button is="paper-icon-button-light"
           id="menuButton"
           class="more-actions more-vert-button"
+          title="$i18n{organizeButtonTitle}"
           on-tap="onMenuButtonOpenTap_">
         <div></div>
         <div></div>
@@ -62,26 +63,38 @@
       </button>
     </cr-toolbar>
     <template is="cr-lazy-render" id="dropdown">
-      <dialog is="cr-action-menu">
-        <button class="dropdown-item" on-tap="onSortTap_"
-            disabled="[[!canChangeList_]]">
+      <dialog is="cr-action-menu" role="menu">
+        <button class="dropdown-item"
+            on-tap="onSortTap_"
+            disabled="[[!canChangeList_]]"
+            role="menuitem">
           $i18n{menuSort}
         </button>
         <hr>
-        <button id="addBookmarkButton" class="dropdown-item"
-            on-tap="onAddBookmarkTap_" disabled="[[!canChangeList_]]">
+        <button id="addBookmarkButton"
+            class="dropdown-item"
+            on-tap="onAddBookmarkTap_"
+            disabled="[[!canChangeList_]]"
+            role="menuitem">
           $i18n{menuAddBookmark}
         </button>
-        <button class="dropdown-item" on-tap="onAddFolderTap_"
-            disabled="[[!canChangeList_]]">
+        <button class="dropdown-item"
+            on-tap="onAddFolderTap_"
+            disabled="[[!canChangeList_]]"
+            role="menuitem">
           $i18n{menuAddFolder}
         </button>
         <hr>
-        <button id="importBookmarkButton" class="dropdown-item"
-            on-tap="onImportTap_" disabled="[[!globalCanEdit_]]">
+        <button id="importBookmarkButton"
+            class="dropdown-item"
+            on-tap="onImportTap_"
+            disabled="[[!globalCanEdit_]]"
+            role="menuitem">
           $i18n{menuImport}
         </button>
-        <button class="dropdown-item" on-tap="onExportTap_">
+        <button class="dropdown-item"
+            on-tap="onExportTap_"
+            role="menuitem">
           $i18n{menuExport}
         </button>
       </dialog>

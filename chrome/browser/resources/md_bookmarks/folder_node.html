@@ -86,8 +86,9 @@
         on-tap="selectFolder_"
         on-contextmenu="onContextMenu_"
         tabindex$="[[getTabIndex_(isSelectedFolder_)]]"
-        hidden="[[isRootFolder_(depth)]]">
-      <template is="dom-if" if="[[hasChildFolder_(item_.children)]]">
+        hidden="[[isRootFolder_(depth)]]"
+        role="treeitem">
+      <template is="dom-if" if="[[hasChildFolder_]]">
         <button is="paper-icon-button-light" id="arrow"
             on-tap="toggleFolder_" on-mousedown="preventDefault_" tabindex="-1">
           <iron-icon icon="cr:arrow-drop-down" is-open$="[[!isClosed_]]">
@@ -96,12 +97,12 @@
       </template>
       <div id="folder-label" class="v-centered">
         <iron-icon icon="[[getFolderIcon_(isSelectedFolder_)]]"
-            no-children$="[[!hasChildFolder_(item_.children)]]">
+            no-children$="[[!hasChildFolder_]]">
         </iron-icon>
         <div class="menu-label">[[item_.title]]</div>
       </div>
     </div>
-    <div id="descendants" hidden$="[[isClosed_]]">
+    <div id="descendants" hidden$="[[isClosed_]]" role="group">
       <template is="dom-repeat"
           items="[[item_.children]]"
           as="child"

@@ -40,11 +40,21 @@ Polymer({
       reflectToAttribute: true,
       computed: 'computeIsSelected_(itemId, selectedFolder_, searchActive_)'
     },
+
+    /** @private */
+    hasChildFolder_: {
+      type: Boolean,
+      computed: 'computeHasChildFolder_(item_.children)',
+    },
   },
 
   listeners: {
     'keydown': 'onKeydown_',
   },
+
+  observers: [
+    'updateAriaExpanded_(hasChildFolder_, isClosed_)',
+  ],
 
   /** @override */
   attached: function() {
@@ -135,7 +145,7 @@ Polymer({
     if (xDirection == 1) {
       // The right arrow opens a folder if closed and goes to the first child
       // otherwise.
-      if (this.hasChildFolder_()) {
+      if (this.hasChildFolder_) {
         if (this.isClosed_) {
           this.dispatch(
               bookmarks.actions.changeFolderOpen(this.item_.id, true));
@@ -146,7 +156,7 @@ Polymer({
     } else if (xDirection == -1) {
       // The left arrow closes a folder if open and goes to the parent
       // otherwise.
-      if (this.hasChildFolder_() && !this.isClosed_) {
+      if (this.hasChildFolder_ && !this.isClosed_) {
         this.dispatch(bookmarks.actions.changeFolderOpen(this.item_.id, false));
       } else {
         var parentFolderNode = this.getParentFolderNode_();
@@ -317,13 +327,15 @@ Polymer({
    * @private
    * @return {boolean}
    */
-  hasChildFolder_: function() {
+  computeHasChildFolder_: function() {
     return bookmarks.util.hasChildFolders(this.itemId, this.getState().nodes);
   },
 
   /** @private */
   depthChanged_: function() {
     this.style.setProperty('--node-depth', String(this.depth));
+    if (this.depth == -1)
+      this.$.descendants.removeAttribute('role');
   },
 
   /**
@@ -357,5 +369,19 @@ Polymer({
    */
   getTabIndex_: function() {
     return this.isSelectedFolder_ ? '0' : '-1';
+  },
+
+  /**
+   * Sets the 'aria-expanded' accessibility on nodes which need it. Note that
+   * aria-expanded="false" is different to having the attribute be undefined.
+   * @param {boolean} hasChildFolder
+   * @param {boolean} isClosed
+   * @private
+   */
+  updateAriaExpanded_: function(hasChildFolder, isClosed) {
+    if (hasChildFolder)
+      this.getFocusTarget().setAttribute('aria-expanded', String(!isClosed));
+    else
+      this.getFocusTarget().removeAttribute('aria-expanded');
   },
 });

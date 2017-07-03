@@ -22,6 +22,9 @@ suite('<bookmarks-toast-manager>', function() {
 
     toastManager.show('test', true);
     assertFalse(toastManager.$$('paper-button').hidden);
+
+    toastManager.hide();
+    assertTrue(toastManager.$.button.hidden);
   });
 
   test('auto hide', function() {

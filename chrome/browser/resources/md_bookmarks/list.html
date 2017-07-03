@@ -39,7 +39,7 @@
       }
     </style>
     <iron-list items="[[displayedList_]]" id="bookmarksCard"
-        hidden$="[[isEmptyList_(displayedList_.length)]]">
+        hidden$="[[isEmptyList_(displayedList_.length)]]" role="list">
       <template>
         <bookmarks-item item-id="[[item.id]]" draggable="true"
             tabindex$="[[tabIndex]]" iron-list-tab-index="[[tabIndex]]">

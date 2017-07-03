@@ -1,5 +1,5 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
-
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-announcer/iron-a11y-announcer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://bookmarks/shared_style.html">
 
@@ -54,12 +54,12 @@
         white-space: nowrap;
       }
 
-      :host([open_]) #toast {
+      #toast[aria-hidden=false] {
         opacity: 1;
         transform: translateY(0);
       }
     </style>
-    <div id="toast" aria-live="polite">
+    <div id="toast">
       <div id="content"></div>
       <paper-button id="button" hidden$="[[!showUndo_]]" on-tap="onUndoTap_">
         $i18n{undo}
