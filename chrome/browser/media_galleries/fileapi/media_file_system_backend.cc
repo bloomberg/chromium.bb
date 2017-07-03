@@ -115,9 +115,9 @@ void AttemptAutoMountOnUIThread(
               profile);
       // Pass the WebContentsGetter to the closure to prevent a use-after-free
       // in the case that the web_contents is destroyed before the closure runs.
-      preferences->EnsureInitialized(base::Bind(&OnPreferencesInit,
-                                                web_contents_getter, extension,
-                                                pref_id, callback));
+      preferences->EnsureInitialized(
+          base::Bind(&OnPreferencesInit, web_contents_getter,
+                     base::RetainedRef(extension), pref_id, callback));
       return;
     }
   }

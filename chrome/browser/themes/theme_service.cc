@@ -849,7 +849,8 @@ void ThemeService::BuildFromExtension(const Extension* extension,
       {base::MayBlock(), base::TaskPriority::USER_BLOCKING});
   build_extension_task_tracker_.PostTaskAndReply(
       task_runner.get(), FROM_HERE,
-      base::Bind(&BrowserThemePack::BuildFromExtension, extension, pack),
+      base::Bind(&BrowserThemePack::BuildFromExtension,
+                 base::RetainedRef(extension), pack),
       base::Bind(&ThemeService::OnThemeBuiltFromExtension,
                  weak_ptr_factory_.GetWeakPtr(), extension->id(), pack,
                  suppress_infobar));

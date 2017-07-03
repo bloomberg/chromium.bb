@@ -352,9 +352,9 @@ TEST_F(DeveloperPrivateApiUnitTest,
   TestExtensionPrefSetting(
       base::Bind(&HasPrefsPermission, &util::AllowFileAccess, profile(), id),
       "fileAccess", id);
-  TestExtensionPrefSetting(
-      base::Bind(&HasAllUrlsPermission, extension, profile()), "runOnAllUrls",
-      id);
+  TestExtensionPrefSetting(base::Bind(&HasAllUrlsPermission,
+                                      base::RetainedRef(extension), profile()),
+                           "runOnAllUrls", id);
 }
 
 // Test developerPrivate.reload.

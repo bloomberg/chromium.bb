@@ -154,7 +154,7 @@ void BackgroundModeManager::BackgroundModeData::BuildProfileMenu(
       DCHECK_LT(command_id, IDC_MinimumLabelValue);
       command_id_handler_vector_->push_back(
           base::Bind(&BackgroundModeManager::LaunchBackgroundApplication,
-                     profile_, application.get()));
+                     profile_, base::RetainedRef(application)));
       menu->AddItem(command_id, base::UTF8ToUTF16(name));
       if (icon)
         menu->SetIcon(menu->GetItemCount() - 1, gfx::Image(*icon));
