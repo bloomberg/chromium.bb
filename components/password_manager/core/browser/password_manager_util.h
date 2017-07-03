@@ -49,9 +49,6 @@ void TrimUsernameOnlyCredentials(
 // and required to always return non-null.
 bool IsLoggingActive(const password_manager::PasswordManagerClient* client);
 
-// Returns 37 bits from Sha256 hash.
-uint64_t Calculate37BitsOfSHA256Hash(const base::StringPiece16& text);
-
 // Calculates 37 bits hash for a sync password. The calculation is based on a
 // slow hash function. The running time is ~10^{-4} seconds on Desktop.
 uint64_t CalculateSyncPasswordHash(const base::StringPiece16& text,

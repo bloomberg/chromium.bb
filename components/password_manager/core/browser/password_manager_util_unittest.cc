@@ -58,22 +58,6 @@ TEST(PasswordManagerUtil, TrimUsernameOnlyCredentials) {
   EXPECT_THAT(forms, UnorderedPasswordFormElementsAre(&expected_forms));
 }
 
-TEST(PasswordManagerUtil, Calculate37BitsOfSHA256Hash) {
-  const char* kInputData[] = {"", "password", "secret"};
-
-  constexpr uint64_t kExpectedResult[] = {
-      UINT64_C(0x1842c4b0e3), UINT64_C(0x55d0601e2), UINT64_C(0x8b9dea8b3)};
-
-  ASSERT_EQ(arraysize(kInputData), arraysize(kExpectedResult));
-
-  for (size_t i = 0; i < arraysize(kInputData); ++i) {
-    base::string16 input = base::UTF8ToUTF16(kInputData[i]);
-
-    EXPECT_EQ(kExpectedResult[i],
-              password_manager_util::Calculate37BitsOfSHA256Hash(input));
-  }
-}
-
 TEST(PasswordManagerUtil, CalculateSyncPasswordHash) {
   const char* kPlainText[] = {"", "password", "password", "secret"};
   const char* kSalt[] = {"", "salt", "123", "456"};
