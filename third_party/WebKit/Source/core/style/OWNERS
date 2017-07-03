@@ -1,10 +1,12 @@
-alancutter@chromium.org # Also a core owner
 bugsnash@chromium.org
 ericwilligers@chromium.org
-meade@chromium.org # Also a core owner
 nainar@chromium.org
 shend@chromium.org
 suzyh@chromium.org
 rjwright@chromium.org
+
+# Also core owners
+alancutter@chromium.org
+meade@chromium.org
 
 # COMPONENT: Blink>CSS
