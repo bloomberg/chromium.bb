@@ -35,9 +35,9 @@ void BrowserURLLoaderThrottle::WillStartRequest(
   url_checker_ = base::MakeUnique<SafeBrowsingUrlCheckerImpl>(
       load_flags, resource_type, std::move(database_manager_),
       std::move(ui_manager_), web_contents_getter_);
-  url_checker_->CheckUrl(url,
-                         base::Bind(&BrowserURLLoaderThrottle::OnCheckUrlResult,
-                                    base::Unretained(this)));
+  url_checker_->CheckUrl(
+      url, base::BindOnce(&BrowserURLLoaderThrottle::OnCheckUrlResult,
+                          base::Unretained(this)));
 }
 
 void BrowserURLLoaderThrottle::WillRedirectRequest(

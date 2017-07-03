@@ -98,8 +98,8 @@ void SafeBrowsingUrlCheckerImpl::OnCheckBrowseUrlResult(
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&SafeBrowsingUrlCheckerImpl::StartDisplayingBlockingPage,
-                 weak_factory_.GetWeakPtr(), ui_manager_, resource));
+      base::BindOnce(&SafeBrowsingUrlCheckerImpl::StartDisplayingBlockingPage,
+                     weak_factory_.GetWeakPtr(), ui_manager_, resource));
 }
 
 // static
