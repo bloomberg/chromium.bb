@@ -94,7 +94,7 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
   }
       completion:^(BOOL) {
         // The context menu could be displayed for the deleted entry.
-        [self.suggestionCommandHandler dismissContextMenu];
+        [self.suggestionCommandHandler dismissModals];
       }];
 }
 
@@ -112,7 +112,7 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
   }
       completion:^(BOOL) {
         // The context menu could be displayed for the deleted entries.
-        [self.suggestionCommandHandler dismissContextMenu];
+        [self.suggestionCommandHandler dismissModals];
       }];
 }
 

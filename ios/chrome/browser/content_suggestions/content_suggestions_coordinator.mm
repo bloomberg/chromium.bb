@@ -206,11 +206,6 @@
   [self.alertCoordinator start];
 }
 
-- (void)dismissContextMenu {
-  [self.alertCoordinator stop];
-  self.alertCoordinator = nil;
-}
-
 - (void)handlePromoTapped {
   NotificationPromoWhatsNew* notificationPromo =
       [self.contentSuggestionsMediator notificationPromo];
@@ -398,7 +393,8 @@
 }
 
 - (void)dismissModals {
-  // TODO(crbug.com/700375): implement this.
+  [self.alertCoordinator stop];
+  self.alertCoordinator = nil;
 }
 
 - (void)dismissKeyboard {
