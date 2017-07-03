@@ -21,14 +21,14 @@ H264Decoder::H264Accelerator::H264Accelerator() {}
 H264Decoder::H264Accelerator::~H264Accelerator() {}
 
 H264Decoder::H264Decoder(H264Accelerator* accelerator)
-    : max_frame_num_(0),
+    : state_(kNeedStreamMetadata),
+      max_frame_num_(0),
       max_pic_num_(0),
       max_long_term_frame_idx_(0),
       max_num_reorder_frames_(0),
       accelerator_(accelerator) {
   DCHECK(accelerator_);
   Reset();
-  state_ = kNeedStreamMetadata;
 }
 
 H264Decoder::~H264Decoder() {}
