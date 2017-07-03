@@ -7,11 +7,9 @@
 
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/thumbnails/thumbnailing_context.h"
-#include "ui/base/layout.h"
+#include "ui/base/resource/scale_factor.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
-
-class SkBitmap;
 
 namespace thumbnails {
 
@@ -21,8 +19,6 @@ namespace thumbnails {
 class ThumbnailingAlgorithm
     : public base::RefCountedThreadSafe<ThumbnailingAlgorithm> {
  public:
-  typedef base::Callback<void(const ThumbnailingContext&, const SkBitmap&)>
-      ConsumerCallback;
   // Provides information necessary to crop-and-resize image data from a source
   // canvas of |source_size|. Auxiliary |scale_factor| helps compute the target
   // thumbnail size to be copied from the backing store, in pixels. Parameters
@@ -34,18 +30,6 @@ class ThumbnailingAlgorithm
                                        ui::ScaleFactor scale_factor,
                                        gfx::Rect* clipping_rect,
                                        gfx::Size* copy_size) const = 0;
-
-  // Invoked to produce a thumbnail image from a |bitmap| extracted by the
-  // callee from source canvas according to instructions provided by a call
-  // to GetCanvasCopyInfo.
-  // Note that ProcessBitmap must be able to handle bitmaps which might have not
-  // been processed (scalled/cropped) as requested. |context| gives additional
-  // information on the source, including if and how it was clipped.
-  // The function shall invoke |callback| once done, passing in fully populated
-  // |context| along with resulting thumbnail bitmap.
-  virtual void ProcessBitmap(scoped_refptr<ThumbnailingContext> context,
-                             const ConsumerCallback& callback,
-                             const SkBitmap& bitmap) = 0;
 
  protected:
   virtual ~ThumbnailingAlgorithm() {}

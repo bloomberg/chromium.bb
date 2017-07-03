@@ -24,10 +24,6 @@ class SimpleThumbnailCrop : public ThumbnailingAlgorithm {
                                gfx::Rect* clipping_rect,
                                gfx::Size* copy_size) const override;
 
-  void ProcessBitmap(scoped_refptr<ThumbnailingContext> context,
-                     const ConsumerCallback& callback,
-                     const SkBitmap& bitmap) override;
-
   // Returns the size copied from the backing store. |thumbnail_size| is in
   // DIP, returned size in pixels.
   static gfx::Size GetCopySizeForThumbnail(ui::ScaleFactor scale_factor,

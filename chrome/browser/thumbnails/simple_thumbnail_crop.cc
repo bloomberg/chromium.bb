@@ -5,8 +5,6 @@
 #include "chrome/browser/thumbnails/simple_thumbnail_crop.h"
 
 #include "content/public/browser/browser_thread.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
 namespace thumbnails {
@@ -25,25 +23,6 @@ ClipResult SimpleThumbnailCrop::GetCanvasCopyInfo(const gfx::Size& source_size,
   *clipping_rect = GetClippingRect(source_size, target_size_, &clip_result);
   *copy_size = GetCopySizeForThumbnail(scale_factor, target_size_);
   return clip_result;
-}
-
-void SimpleThumbnailCrop::ProcessBitmap(
-    scoped_refptr<ThumbnailingContext> context,
-    const ConsumerCallback& callback,
-    const SkBitmap& bitmap) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (bitmap.isNull() || bitmap.empty())
-    return;
-
-  DCHECK(context->clip_result != thumbnails::CLIP_RESULT_UNPROCESSED);
-
-  context->score.boring_score = color_utils::CalculateBoringScore(bitmap);
-  context->score.good_clipping =
-      (context->clip_result == CLIP_RESULT_WIDER_THAN_TALL ||
-       context->clip_result == CLIP_RESULT_TALLER_THAN_WIDE ||
-       context->clip_result == CLIP_RESULT_NOT_CLIPPED);
-
-  callback.Run(*context.get(), bitmap);
 }
 
 // RenderWidgetHostView::CopyFromSurface() can be costly especially when it is
