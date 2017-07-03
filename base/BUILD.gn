@@ -599,6 +599,8 @@ component("base") {
     "nix/xdg_util.h",
     "numerics/checked_math.h",
     "numerics/checked_math_impl.h",
+    "numerics/clamped_math.h",
+    "numerics/clamped_math_impl.h",
     "numerics/safe_conversions.h",
     "numerics/safe_conversions_impl.h",
     "numerics/safe_math.h",
