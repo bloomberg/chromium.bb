@@ -105,7 +105,7 @@ NSString* ReadingListEmptySection() {
       performAction:grey_swipeFastInDirection(kGREYDirectionLeft)];
 
   [[EarlGrey
-      selectElementWithMatcher:grey_allOf(grey_text(@"dismissContextMenu"),
+      selectElementWithMatcher:grey_allOf(grey_text(@"dismissModals"),
                                           grey_sufficientlyVisible(), nil)]
       assertWithMatcher:grey_sufficientlyVisible()];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(
