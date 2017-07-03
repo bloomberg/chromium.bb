@@ -194,8 +194,6 @@ source_set("modules_testing") {
     "navigatorcontentutils/testing/NavigatorContentUtilsClientMock.h",
     "peerconnection/testing/InternalsRTCCertificate.cpp",
     "peerconnection/testing/InternalsRTCCertificate.h",
-    "peerconnection/testing/TestingPlatformSupportWithWebRTC.cpp",
-    "peerconnection/testing/TestingPlatformSupportWithWebRTC.h",
     "serviceworkers/testing/InternalsServiceWorker.cpp",
     "serviceworkers/testing/InternalsServiceWorker.h",
     "speech/testing/InternalsSpeechSynthesis.cpp",
