@@ -128,7 +128,7 @@ static void vprintf_stderr_with_trailing_newline(const char* format,
 #pragma GCC diagnostic pop
 #endif
 
-#if !LOG_DISABLED
+#if DCHECK_IS_ON()
 namespace WTF {
 
 ScopedLogger::ScopedLogger(bool condition, const char* format, ...)
@@ -216,7 +216,7 @@ ScopedLogger::PrintFunctionPtr ScopedLogger::print_func_ =
     vprintf_stderr_common;
 
 }  // namespace WTF
-#endif  // !LOG_DISABLED
+#endif  // DCHECK_IS_ON
 
 void WTFLogAlways(const char* format, ...) {
   va_list args;

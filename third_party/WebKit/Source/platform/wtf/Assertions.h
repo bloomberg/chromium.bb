@@ -43,17 +43,13 @@
 #include <windows.h>
 #endif
 
-#ifndef LOG_DISABLED
-#define LOG_DISABLED !DCHECK_IS_ON()
-#endif
-
 // WTFLogAlways() is deprecated. crbug.com/638849
 WTF_EXPORT PRINTF_FORMAT(1, 2)  // NOLINT
     void WTFLogAlways(const char* format, ...);
 
 namespace WTF {
 
-#if LOG_DISABLED
+#if !DCHECK_IS_ON()
 
 #define WTF_CREATE_SCOPED_LOGGER(...) ((void)0)
 #define WTF_CREATE_SCOPED_LOGGER_IF(...) ((void)0)
@@ -105,7 +101,7 @@ class WTF_EXPORT ScopedLogger {
   WTF::ScopedLogger name(condition, __VA_ARGS__)
 #define WTF_APPEND_SCOPED_LOGGER(name, ...) (name.Log(__VA_ARGS__))
 
-#endif  // LOG_DISABLED
+#endif  // !DCHECK_IS_ON()
 
 }  // namespace WTF
 
