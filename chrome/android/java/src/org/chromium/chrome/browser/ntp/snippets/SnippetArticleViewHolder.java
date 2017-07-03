@@ -364,7 +364,15 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
             mThumbnailRequest = mImageFetcher.makeDownloadThumbnailRequest(
                     mArticle, mThumbnailSize, new FetchImageCallback(mArticle, mThumbnailSize));
         }
-        setThumbnailFromFileType(fileType);
+
+        // Code order here is important because the call to fetch a thumbnail above can be
+        // synchronous (if the image is cached) or asynchronous (if not). In the first case, it will
+        // immediately set a thumbnail on the mThumbnailView and no placeholder will be needed. In
+        // the second case, the placeholder will be replaced once the thumbnail is retrieved.
+        // We check here that there is no thumbnail already set on the mThumbnailView.
+        if (mThumbnailView.getDrawable() == null) {
+            setThumbnailFromFileType(fileType);
+        }
     }
 
     private void setThumbnail() {
@@ -412,7 +420,7 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
         mThumbnailView.setTint(null);
         int duration = (int) (FADE_IN_ANIMATION_TIME_MS
                 * ChromeAnimation.Animation.getAnimationMultiplier());
-        if (duration == 0) {
+        if (duration == 0 || mThumbnailView.getDrawable() == null) {
             mThumbnailView.setImageBitmap(thumbnail);
             return;
         }
@@ -451,7 +459,7 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
         FetchImageCallback(SnippetArticle suggestion, int size) {
             mSuggestion = suggestion;
             mThumbnailSize = size;
-            mIsBitmapOwned = suggestion.isDownload();
+            mIsBitmapOwned = suggestion.isArticle();
         }
 
         @Override
