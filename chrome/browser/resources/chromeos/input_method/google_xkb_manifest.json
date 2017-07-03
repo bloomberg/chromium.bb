@@ -115,6 +115,22 @@
       "options_page": "hmm_options.html?code=xkb:us:intl:eng"
     },
     {
+      "name": "__MSG_keyboard_us_international_pc__",
+      "type": "ime",
+      "id": "xkb:us:intl_pc:eng",
+      "indicator": "INTL",
+      "description": "",
+      "language": [
+        "en",
+        "en-US"
+      ],
+      "layouts": [
+        "us(intl_pc)"
+      ],
+      "input_view": "inputview.html#id=us-intl&language=en-US&passwordLayout=us-intl&name=keyboard_us_international_pc",
+      "options_page": "hmm_options.html?code=xkb:us:intl_pc:eng"
+    },
+    {
       "name": "__MSG_keyboard_netherlands__",
       "type": "ime",
       "id": "xkb:us:intl:nld",
@@ -130,6 +146,21 @@
       "options_page": "hmm_options.html?code=xkb:us:intl:nld"
     },
     {
+      "name": "__MSG_keyboard_us_international_pc__",
+      "type": "ime",
+      "id": "xkb:us:intl_pc:nld",
+      "indicator": "NLD",
+      "description": "",
+      "language": [
+        "nl"
+      ],
+      "layouts": [
+        "us(intl_pc)"
+      ],
+      "input_view": "inputview.html#id=us-intl&language=nl&passwordLayout=us-intl&name=keyboard_us_international_pc",
+      "options_page": "hmm_options.html?code=xkb:us:intl_pc:nld"
+    },
+    {
       "name": "__MSG_keyboard_us_international__",
       "type": "ime",
       "id": "xkb:us:intl:por",
@@ -143,6 +174,21 @@
       ],
       "input_view": "inputview.html#id=us-intl&language=pt-BR&passwordLayout=us-intl&name=keyboard_us_international",
       "options_page": "hmm_options.html?code=xkb:us:intl:por"
+    },
+    {
+      "name": "__MSG_keyboard_us_international_pc__",
+      "type": "ime",
+      "id": "xkb:us:intl_pc:por",
+      "indicator": "INTL",
+      "description": "",
+      "language": [
+        "pt-BR"
+      ],
+      "layouts": [
+        "us(intl_pc)"
+      ],
+      "input_view": "inputview.html#id=us-intl&language=pt-BR&passwordLayout=us-intl&name=keyboard_us_international_pc",
+      "options_page": "hmm_options.html?code=xkb:us:intl_pc:por"
     },
     {
       "name": "__MSG_keyboard_us_extended__",
