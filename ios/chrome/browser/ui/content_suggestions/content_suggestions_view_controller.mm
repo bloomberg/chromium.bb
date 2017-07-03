@@ -94,6 +94,7 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
     [self addEmptySectionPlaceholderIfNeeded:indexPath.section];
   }
       completion:^(BOOL) {
+        [self.audience contentSuggestionsDidScroll];
         // The context menu could be displayed for the deleted entry.
         [self.suggestionCommandHandler dismissModals];
       }];
@@ -112,6 +113,7 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
     [self.collectionView deleteSections:[NSIndexSet indexSetWithIndex:section]];
   }
       completion:^(BOOL) {
+        [self.audience contentSuggestionsDidScroll];
         // The context menu could be displayed for the deleted entries.
         [self.suggestionCommandHandler dismissModals];
       }];
@@ -128,7 +130,9 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
         addSectionsForSectionInfoToModel:@[ sectionInfo ]];
     [self.collectionView insertSections:addedSections];
   }
-                                completion:nil];
+      completion:^(BOOL) {
+        [self.audience contentSuggestionsDidScroll];
+      }];
 
   [self.collectionView performBatchUpdates:^{
     NSIndexPath* removedItem = [self.collectionUpdater
@@ -142,7 +146,9 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
                                       withSectionInfo:sectionInfo];
     [self.collectionView insertItemsAtIndexPaths:addedItems];
   }
-                                completion:nil];
+      completion:^(BOOL) {
+        [self.audience contentSuggestionsDidScroll];
+      }];
 }
 
 #pragma mark - UIViewController
