@@ -252,13 +252,14 @@ class DownloadUrlSBClient
       UpdateDownloadCheckStats(dangerous_type_);
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          base::Bind(&DownloadUrlSBClient::ReportMalware, this, threat_type));
+          base::BindOnce(&DownloadUrlSBClient::ReportMalware, this,
+                         threat_type));
     } else {
       // Identify download referrer chain, which will be used in
       // ClientDownloadRequest.
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          base::Bind(&DownloadUrlSBClient::IdentifyReferrerChain, this));
+          base::BindOnce(&DownloadUrlSBClient::IdentifyReferrerChain, this));
     }
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             base::BindOnce(callback_, result));
