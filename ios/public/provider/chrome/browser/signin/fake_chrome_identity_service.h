@@ -41,12 +41,11 @@ class FakeChromeIdentityService : public ChromeIdentityService {
   void ForgetIdentity(ChromeIdentity* identity,
                       ForgetIdentityCallback callback) override;
 
-  virtual void GetAccessToken(
-      ChromeIdentity* identity,
-      const std::string& client_id,
-      const std::string& client_secret,
-      const std::set<std::string>& scopes,
-      const ios::AccessTokenCallback& callback) override;
+  virtual void GetAccessToken(ChromeIdentity* identity,
+                              const std::string& client_id,
+                              const std::string& client_secret,
+                              const std::set<std::string>& scopes,
+                              ios::AccessTokenCallback callback) override;
 
   virtual void GetAvatarForIdentity(ChromeIdentity* identity,
                                     GetAvatarCallback callback) override;

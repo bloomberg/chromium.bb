@@ -77,17 +77,15 @@ NSArray* ChromeIdentityService::GetAllIdentitiesSortedForDisplay() const {
 void ChromeIdentityService::ForgetIdentity(ChromeIdentity* identity,
                                            ForgetIdentityCallback callback) {}
 
-void ChromeIdentityService::GetAccessToken(
-    ChromeIdentity* identity,
-    const std::set<std::string>& scopes,
-    const AccessTokenCallback& callback) {}
+void ChromeIdentityService::GetAccessToken(ChromeIdentity* identity,
+                                           const std::set<std::string>& scopes,
+                                           AccessTokenCallback callback) {}
 
-void ChromeIdentityService::GetAccessToken(
-    ChromeIdentity* identity,
-    const std::string& client_id,
-    const std::string& client_secret,
-    const std::set<std::string>& scopes,
-    const AccessTokenCallback& callback) {}
+void ChromeIdentityService::GetAccessToken(ChromeIdentity* identity,
+                                           const std::string& client_id,
+                                           const std::string& client_secret,
+                                           const std::set<std::string>& scopes,
+                                           AccessTokenCallback callback) {}
 
 void ChromeIdentityService::GetAvatarForIdentity(ChromeIdentity* identity,
                                                  GetAvatarCallback callback) {}
