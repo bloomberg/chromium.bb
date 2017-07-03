@@ -5,11 +5,11 @@
 #ifndef StackUtil_h
 #define StackUtil_h
 
-#include "platform/wtf/Compiler.h"
-#include "platform/wtf/WTFExport.h"
-#include "platform/wtf/build_config.h"
 #include <stddef.h>
 #include <stdint.h>
+#include "build/build_config.h"
+#include "platform/wtf/WTFExport.h"
+#include "platform/wtf/build_config.h"
 
 namespace WTF {
 
@@ -23,7 +23,7 @@ WTF_EXPORT extern uintptr_t g_main_thread_underestimated_stack_size;
 
 WTF_EXPORT void InitializeMainThreadStackEstimate();
 
-#if OS(WIN) && COMPILER(MSVC)
+#if defined(OS_WIN) && defined(COMPILER_MSVC)
 size_t ThreadStackSize();
 #endif
 

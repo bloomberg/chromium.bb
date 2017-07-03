@@ -31,11 +31,11 @@
 #ifndef ScriptWrappable_h
 #define ScriptWrappable_h
 
+#include "build/build_config.h"
 #include "platform/PlatformExport.h"
 #include "platform/bindings/ScriptWrappableVisitor.h"
 #include "platform/bindings/WrapperTypeInfo.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/Compiler.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/TypeTraits.h"
 #include "v8/include/v8.h"
@@ -78,7 +78,7 @@ class PLATFORM_EXPORT ScriptWrappable : public TraceWrapperBase {
 // have two or more ScriptWrappable as superclasses. If T has two
 // ScriptWrappable as superclasses, conversions from T* to
 // ScriptWrappable* are ambiguous.
-#if !COMPILER(MSVC)
+#if !defined(COMPILER_MSVC)
     // MSVC 2013 doesn't support static_assert + constexpr well.
     static_assert(!static_cast<ScriptWrappable*>(static_cast<T*>(nullptr)),
                   "Class T must not have two or more ScriptWrappable as its "

@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 #include <cstddef>
+#include "build/build_config.h"
 #include "platform/PlatformExport.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Assertions.h"
@@ -46,23 +47,23 @@ class PLATFORM_EXPORT StackFrameDepth final {
 #endif
   }
 
-#if COMPILER(MSVC)
+#if defined(COMPILER_MSVC)
 // Ignore C4172: returning address of local variable or temporary: dummy. This
 // warning suppression has to go outside of the function to take effect.
 #pragma warning(push)
 #pragma warning(disable : 4172)
 #endif
   static uintptr_t CurrentStackFrame(const char* dummy = nullptr) {
-#if COMPILER(GCC)
+#if defined(COMPILER_GCC)
     return reinterpret_cast<uintptr_t>(__builtin_frame_address(0));
-#elif COMPILER(MSVC)
+#elif defined(COMPILER_MSVC)
     return reinterpret_cast<uintptr_t>(&dummy) - sizeof(void*);
 #else
 #error "Stack frame pointer estimation not supported on this platform."
     return 0;
 #endif
   }
-#if COMPILER(MSVC)
+#if defined(COMPILER_MSVC)
 #pragma warning(pop)
 #endif
 

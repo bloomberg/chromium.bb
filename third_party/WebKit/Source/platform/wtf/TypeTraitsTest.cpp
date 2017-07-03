@@ -21,6 +21,7 @@
 
 #include "platform/wtf/TypeTraits.h"
 
+#include "build/build_config.h"
 #include "platform/wtf/Noncopyable.h"
 
 // No gtest tests; only static_assert checks.
@@ -125,7 +126,7 @@ static_assert((IsSubclassOfTemplate<TestDerivedClass, TestBaseClass>::value),
 typedef int IntArray[];
 typedef int IntArraySized[4];
 
-#if !COMPILER(MSVC) || defined(__clang__)
+#if !defined(COMPILER_MSVC) || defined(__clang__)
 
 class AssignmentDeleted final {
  private:
@@ -200,7 +201,7 @@ static_assert(IsCopyAssignable<AssignableImplicit>::value,
 static_assert(IsMoveAssignable<AssignableImplicit>::value,
               "AssignableImplicit is move assignable.");
 
-#endif  // !COMPILER(MSVC) || defined(__clang__)
+#endif  // !defined(COMPILER_MSVC) || defined(__clang__)
 
 class DefaultConstructorDeleted final {
  private:

@@ -37,12 +37,12 @@ namespace blink {
 
 // Define HAVE_DENORMAL if we support flushing denormals to zero.
 
-#if OS(WIN) && COMPILER(MSVC)
+#if defined(OS_WIN) && defined(COMPILER_MSVC)
 // Windows compiled using MSVC with SSE2
 #define HAVE_DENORMAL 1
 #endif
 
-#if COMPILER(GCC) && defined(ARCH_CPU_X86_FAMILY)
+#if defined(COMPILER_GCC) && defined(ARCH_CPU_X86_FAMILY)
 // X86 chips can flush denormals
 #define HAVE_DENORMAL 1
 #endif
@@ -66,7 +66,7 @@ class DenormalDisabler {
  private:
   unsigned saved_csr_;
 
-#if COMPILER(GCC) && defined(ARCH_CPU_X86_FAMILY)
+#if defined(COMPILER_GCC) && defined(ARCH_CPU_X86_FAMILY)
   inline void DisableDenormals() {
     saved_csr_ = GetCSR();
     SetCSR(saved_csr_ | 0x8040);
@@ -85,7 +85,7 @@ class DenormalDisabler {
     asm volatile("ldmxcsr %0" : : "m"(temp));
   }
 
-#elif OS(WIN) && COMPILER(MSVC)
+#elif defined(OS_WIN) && defined(COMPILER_MSVC)
   inline void DisableDenormals() {
     // Save the current state, and set mode to flush denormals.
     //

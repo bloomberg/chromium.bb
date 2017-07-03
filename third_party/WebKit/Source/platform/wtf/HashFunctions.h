@@ -21,11 +21,12 @@
 #ifndef WTF_HashFunctions_h
 #define WTF_HashFunctions_h
 
+#include <stdint.h>
+#include <memory>
+#include <type_traits>
+#include "build/build_config.h"
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/StdLibExtras.h"
-#include <memory>
-#include <stdint.h>
-#include <type_traits>
 
 namespace WTF {
 
@@ -145,13 +146,13 @@ struct FloatHash {
 template <typename T>
 struct PtrHash {
   static unsigned GetHash(T* key) {
-#if COMPILER(MSVC)
+#if defined(COMPILER_MSVC)
 #pragma warning(push)
 // work around what seems to be a bug in MSVC's conversion warnings
 #pragma warning(disable : 4244)
 #endif
     return IntHash<uintptr_t>::GetHash(reinterpret_cast<uintptr_t>(key));
-#if COMPILER(MSVC)
+#if defined(COMPILER_MSVC)
 #pragma warning(pop)
 #endif
   }

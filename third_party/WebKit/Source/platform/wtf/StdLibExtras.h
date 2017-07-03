@@ -197,7 +197,7 @@ class StaticSingleton final {
  * - https://bugs.webkit.org/show_bug.cgi?id=38045
  * - http://gcc.gnu.org/bugzilla/show_bug.cgi?id=43976
  */
-#if defined(ARCH_CPU_ARMEL) && COMPILER(GCC)
+#if defined(ARCH_CPU_ARMEL) && defined(COMPILER_GCC)
 template <typename Type>
 bool isPointerTypeAlignmentOkay(Type* ptr) {
   return !(reinterpret_cast<intptr_t>(ptr) % __alignof__(Type));
@@ -286,7 +286,7 @@ inline To SafeCast(From value) {
 template <typename T, size_t Size>
 char (&ArrayLengthHelperFunction(T (&)[Size]))[Size];
 // GCC needs some help to deduce a 0 length array.
-#if COMPILER(GCC)
+#if defined(COMPILER_GCC)
 template <typename T>
 char (&ArrayLengthHelperFunction(T (&)[0]))[0];
 #endif

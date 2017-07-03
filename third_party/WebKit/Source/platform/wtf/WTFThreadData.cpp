@@ -47,7 +47,7 @@ void WTFThreadData::Initialize() {
   WtfThreadData();
 }
 
-#if OS(WIN) && COMPILER(MSVC)
+#if defined(OS_WIN) && defined(COMPILER_MSVC)
 size_t WTFThreadData::ThreadStackSize() {
   // Needed to bootstrap WTFThreadData on Windows, because this value is needed
   // before the main thread data is fully initialized.

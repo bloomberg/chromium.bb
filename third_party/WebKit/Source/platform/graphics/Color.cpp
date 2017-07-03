@@ -25,6 +25,7 @@
 
 #include "platform/graphics/Color.h"
 
+#include "build/build_config.h"
 #include "platform/Decimal.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/wtf/Assertions.h"
@@ -36,7 +37,7 @@
 namespace blink {
 
 // VS 2015 and above allow these definitions and in this case require them
-#if !COMPILER(MSVC) || _MSC_VER >= 1900
+#if !defined(COMPILER_MSVC) || _MSC_VER >= 1900
 // FIXME: Use C++11 enum classes to avoid static data member initializer
 // definition problems.
 const RGBA32 Color::kBlack;

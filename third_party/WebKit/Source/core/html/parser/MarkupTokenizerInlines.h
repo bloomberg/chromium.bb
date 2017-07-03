@@ -28,6 +28,7 @@
 #ifndef MarkupTokenizerInlines_h
 #define MarkupTokenizerInlines_h
 
+#include "build/build_config.h"
 #include "platform/text/SegmentedString.h"
 
 namespace blink {
@@ -49,7 +50,7 @@ inline void AdvanceStringAndASSERT(SegmentedString& source,
     source.AdvanceAndASSERT(*expected_characters++);
 }
 
-#if COMPILER(MSVC)
+#if defined(COMPILER_MSVC)
 // We need to disable the "unreachable code" warning because we want to assert
 // that some code points aren't reached in the state machine.
 #pragma warning(disable : 4702)
