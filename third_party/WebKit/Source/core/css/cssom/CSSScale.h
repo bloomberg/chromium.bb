@@ -38,23 +38,22 @@ class CORE_EXPORT CSSScale final : public CSSTransformComponent {
   void setZ(double z) { z_ = z; }
 
   // Internal methods - from CSSTransformComponent.
-  TransformComponentType GetType() const override {
-    return is2d_ ? kScaleType : kScale3DType;
-  }
-  DOMMatrix* AsMatrix() const override {
+  TransformComponentType GetType() const final { return kScaleType; }
+  DOMMatrix* AsMatrix() const final {
     DOMMatrix* result = DOMMatrix::Create();
     return result->scaleSelf(x_, y_, z_);
   }
-  CSSFunctionValue* ToCSSValue() const override;
+  CSSFunctionValue* ToCSSValue() const final;
 
  private:
-  CSSScale(double x, double y) : x_(x), y_(y), z_(1), is2d_(true) {}
-  CSSScale(double x, double y, double z) : x_(x), y_(y), z_(z), is2d_(false) {}
+  CSSScale(double x, double y)
+      : CSSTransformComponent(true /* is2D */), x_(x), y_(y), z_(1) {}
+  CSSScale(double x, double y, double z)
+      : CSSTransformComponent(false /* is2D */), x_(x), y_(y), z_(z) {}
 
   double x_;
   double y_;
   double z_;
-  bool is2d_;
 };
 
 }  // namespace blink

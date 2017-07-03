@@ -33,7 +33,8 @@ var testParams = [
     x: 0,
     y: 0,
     z: 1,
-    is2D: true, cssText: "rotate(-21deg)",
+    is2D: true,
+    cssText: "rotate(-21deg)",
     asMatrix: new DOMMatrixReadOnly([0.9335804, -0.3583679, 0.3583679, 0.9335804, 0, 0])
   },
   {
@@ -128,7 +129,7 @@ for (let params of testParams) {
 
 for (let params of testParams) {
   test(() => {
-    assert_equals(params.input.is2D(), params.is2D);
+    assert_equals(params.input.is2D, params.is2D);
   }, "is2D value is correct for " + params.cssText);
 }
 
@@ -143,7 +144,7 @@ for (let params of testParams) {
   test(() => {
     var transformValue = new CSSTransformValue([input]);
     var result = transformValue.toMatrix();
-    assert_equals(result.is2D, input.is2D(), 'is2D');
+    assert_equals(result.is2D, input.is2D, 'is2D');
     assert_matrix_approx_equals(result, params.asMatrix, EPSILON);
   }, "toMatrix works for " + params.cssText);
 }

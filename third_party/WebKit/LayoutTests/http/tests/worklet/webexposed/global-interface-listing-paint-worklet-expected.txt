@@ -60,9 +60,10 @@ CONSOLE MESSAGE: line 147: interface CSSStyleValue
 CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147:     method toString
 CONSOLE MESSAGE: line 147: interface CSSTransformComponent
+CONSOLE MESSAGE: line 147:     getter is2D
 CONSOLE MESSAGE: line 147:     method constructor
-CONSOLE MESSAGE: line 147:     method is2D
 CONSOLE MESSAGE: line 147:     method toString
+CONSOLE MESSAGE: line 147:     setter is2D
 CONSOLE MESSAGE: line 147: interface CSSTransformValue : CSSStyleValue
 CONSOLE MESSAGE: line 147:     getter is2D
 CONSOLE MESSAGE: line 147:     getter length

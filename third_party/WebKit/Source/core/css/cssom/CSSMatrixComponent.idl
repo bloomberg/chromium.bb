@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 // Represents a matrix value in a CSSTransformValue used for properties like
 // "transform".
 // Spec: https://drafts.css-houdini.org/css-typed-om/#cssmatrixcomponent
 [
-    Constructor(DOMMatrixReadOnly matrix),
+    Constructor(DOMMatrixReadOnly matrix,
+        optional CSSMatrixComponentOptions options),
     Exposed=(Window,PaintWorklet),
     RuntimeEnabled=CSSTypedOM
 ] interface CSSMatrixComponent : CSSTransformComponent {

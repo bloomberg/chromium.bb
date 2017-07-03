@@ -68,7 +68,7 @@ for (let params of testParams) {
 
 for (let params of testParams) {
   test(() => {
-    assert_true(params.input.is2D());
+    assert_true(params.input.is2D);
   }, "is2D value is correct for " + params.cssText);
 }
 
@@ -129,5 +129,15 @@ for (let a of ['ax', 'ay']) {
     });
   }, "Setting " + a + " with invalid values");
 }
+
+test(() => {
+  let skew = new CSSSkew(
+      new CSSUnitValue(1, 'deg'), new CSSUnitValue(2, 'deg'));
+  assert_true(skew.is2D);
+
+  skew.is2D = false;
+
+  assert_true(skew.is2D);
+}, "Setting is2D does nothing");
 
 </script>

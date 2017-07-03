@@ -13,6 +13,22 @@ namespace blink {
 
 CSSTranslation* CSSTranslation::Create(CSSNumericValue* x,
                                        CSSNumericValue* y,
+                                       ExceptionState& exception_state) {
+  if ((x->GetType() != CSSStyleValue::StyleValueType::kLengthType &&
+       x->GetType() != CSSStyleValue::StyleValueType::kPercentType) ||
+      (y->GetType() != CSSStyleValue::StyleValueType::kLengthType &&
+       y->GetType() != CSSStyleValue::StyleValueType::kPercentType)) {
+    exception_state.ThrowTypeError(
+        "Must pass length or percentage to X and Y of CSSTranslation");
+    return nullptr;
+  }
+  return new CSSTranslation(
+      x, y, CSSUnitValue::Create(0, CSSPrimitiveValue::UnitType::kPixels),
+      true /* is2D */);
+}
+
+CSSTranslation* CSSTranslation::Create(CSSNumericValue* x,
+                                       CSSNumericValue* y,
                                        CSSNumericValue* z,
                                        ExceptionState& exception_state) {
   if ((x->GetType() != CSSStyleValue::StyleValueType::kLengthType &&
@@ -32,7 +48,7 @@ CSSTranslation* CSSTranslation::Create(CSSNumericValue* x,
         "CSSTranslation does not support z CSSNumericValue with percent units");
     return nullptr;
   }
-  return new CSSTranslation(x, y, z);
+  return new CSSTranslation(x, y, z, false /* is2D */);
 }
 
 void CSSTranslation::setX(CSSNumericValue* x, ExceptionState& exception_state) {
@@ -70,10 +86,10 @@ void CSSTranslation::setZ(CSSNumericValue* z, ExceptionState& exception_state) {
 
 CSSFunctionValue* CSSTranslation::ToCSSValue() const {
   CSSFunctionValue* result = CSSFunctionValue::Create(
-      Is2D() ? CSSValueTranslate : CSSValueTranslate3d);
+      is2D() ? CSSValueTranslate : CSSValueTranslate3d);
   result->Append(*x_->ToCSSValue());
   result->Append(*y_->ToCSSValue());
-  if (!Is2D())
+  if (!is2D())
     result->Append(*z_->ToCSSValue());
   return result;
 }

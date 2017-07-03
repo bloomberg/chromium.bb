@@ -33,5 +33,13 @@ test(() => {
   assert_equals(perspective.toString(), 'perspective(10px)');
 }, "toString should return perspective(<CSSNumericValue.cssString()>)");
 
+test(() => {
+  let perspective = new CSSPerspective(new CSSUnitValue(10, 'px'));
+  assert_false(perspective.is2D);
+
+  perspective.is2D = true;
+  assert_false(perspective.is2D);
+}, "Setting is2D does nothing");
+
 </script>
 

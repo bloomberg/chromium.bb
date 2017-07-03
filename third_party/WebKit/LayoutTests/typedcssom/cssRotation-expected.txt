@@ -13,7 +13,7 @@ PASS is2D value is correct for rotate(0deg)
 PASS is2D value is correct for rotate(10deg) 
 PASS is2D value is correct for rotate(-21deg) 
 PASS is2D value is correct for rotate(3.2deg) 
-FAIL is2D value is correct for rotate3d(0, 0, 1, 90deg) assert_equals: expected false but got true
+PASS is2D value is correct for rotate3d(0, 0, 1, 90deg) 
 PASS is2D value is correct for rotate3d(2.7, -3, 4.4, 0deg) 
 PASS is2D value is correct for rotate3d(2, 3, 4, 10deg) 
 PASS is2D value is correct for rotate3d(2, 3.7, -4, -1.2deg) 
@@ -31,7 +31,7 @@ PASS toMatrix works for rotate(0deg)
 FAIL toMatrix works for rotate(10deg) assert_approx_equals: expected 0.9848077 +/- 0.000001 but got 1
 FAIL toMatrix works for rotate(-21deg) assert_approx_equals: expected 0.9335804 +/- 0.000001 but got 1
 FAIL toMatrix works for rotate(3.2deg) assert_approx_equals: expected 0.9984407 +/- 0.000001 but got 1
-FAIL toMatrix works for rotate3d(0, 0, 1, 90deg) assert_approx_equals: expected 0 +/- 0.000001 but got 1
+FAIL toMatrix works for rotate3d(0, 0, 1, 90deg) assert_equals: is2D expected false but got true
 FAIL toMatrix works for rotate3d(2.7, -3, 4.4, 0deg) assert_equals: is2D expected false but got true
 FAIL toMatrix works for rotate3d(2, 3, 4, 10deg) assert_equals: is2D expected false but got true
 FAIL toMatrix works for rotate3d(2, 3.7, -4, -1.2deg) assert_equals: is2D expected false but got true

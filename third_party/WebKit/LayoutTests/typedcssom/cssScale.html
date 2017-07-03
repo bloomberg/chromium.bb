@@ -60,7 +60,7 @@ for (let params of testParams) {
 
 for (let params of testParams) {
   test(() => {
-    assert_equals(params.input.is2D(), params.is2D);
+    assert_equals(params.input.is2D, params.is2D);
   }, "is2D value is correct for " + params.cssText);
 }
 
@@ -109,9 +109,9 @@ for (let params of testParams) {
     var input = params.input;
     var transformValue = new CSSTransformValue([input]);
     var inputAsMatrix = transformValue.toMatrix();
-    assert_equals(inputAsMatrix.is2D, input.is2D());
+    assert_equals(inputAsMatrix.is2D, input.is2D);
 
-    var expectedMatrix = input.is2D() ?
+    var expectedMatrix = input.is2D ?
         new DOMMatrixReadOnly([input.x, 0, 0, input.y, 0, 0]) :
         new DOMMatrixReadOnly(
           [input.x, 0, 0, 0, 0, input.y, 0, 0, 0, 0, input.z, 0, 0, 0, 0, 1]);

@@ -7,10 +7,11 @@
 
 #include "core/css/cssom/CSSTransformComponent.h"
 #include "core/geometry/DOMMatrix.h"
+#include "core/geometry/DOMMatrixReadOnly.h"
 
 namespace blink {
 
-class DOMMatrix;
+class CSSMatrixComponentOptions;
 
 // Represents a matrix value in a CSSTransformValue used for properties like
 // "transform".
@@ -20,24 +21,24 @@ class CORE_EXPORT CSSMatrixComponent final : public CSSTransformComponent {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  // Constructor defined in the IDL.
-  static CSSMatrixComponent* Create(DOMMatrixReadOnly*);
+  // Constructors defined in the IDL.
+  static CSSMatrixComponent* Create(DOMMatrixReadOnly*,
+                                    const CSSMatrixComponentOptions&);
 
   // Blink-internal ways of creating CSSMatrixComponents.
   static CSSMatrixComponent* FromCSSValue(const CSSFunctionValue& value) {
+    // TODO(meade): Implement.
     return nullptr;
   }
 
   // Getters and setters for attributes defined in the IDL.
-  DOMMatrix* matrix() const { return matrix_; }
+  DOMMatrix* matrix() { return matrix_.Get(); }
   void setMatrix(DOMMatrix* matrix) { matrix_ = matrix; }
 
   // Internal methods - from CSSTransformComponent.
-  TransformComponentType GetType() const override {
-    return is2d_ ? kMatrixType : kMatrix3DType;
-  }
-  DOMMatrix* AsMatrix() const override { return matrix(); }
-  CSSFunctionValue* ToCSSValue() const override;
+  TransformComponentType GetType() const final { return kMatrixType; }
+  DOMMatrix* AsMatrix() const final;
+  CSSFunctionValue* ToCSSValue() const final;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
     visitor->Trace(matrix_);
@@ -45,10 +46,10 @@ class CORE_EXPORT CSSMatrixComponent final : public CSSTransformComponent {
   }
 
  private:
-  CSSMatrixComponent(DOMMatrixReadOnly*);
+  CSSMatrixComponent(DOMMatrixReadOnly* matrix, bool is2D)
+      : CSSTransformComponent(is2D), matrix_(DOMMatrix::Create(matrix)) {}
 
   Member<DOMMatrix> matrix_;
-  bool is2d_;
 };
 
 }  // namespace blink

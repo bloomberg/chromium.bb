@@ -64,13 +64,13 @@ CSSScale* CSSScale::FromCSSValue(const CSSFunctionValue& value) {
 
 CSSFunctionValue* CSSScale::ToCSSValue() const {
   CSSFunctionValue* result =
-      CSSFunctionValue::Create(is2d_ ? CSSValueScale : CSSValueScale3d);
+      CSSFunctionValue::Create(is2D() ? CSSValueScale : CSSValueScale3d);
 
   result->Append(
       *CSSPrimitiveValue::Create(x_, CSSPrimitiveValue::UnitType::kNumber));
   result->Append(
       *CSSPrimitiveValue::Create(y_, CSSPrimitiveValue::UnitType::kNumber));
-  if (!is2d_)
+  if (!is2D())
     result->Append(
         *CSSPrimitiveValue::Create(z_, CSSPrimitiveValue::UnitType::kNumber));
 
