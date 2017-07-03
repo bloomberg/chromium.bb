@@ -148,7 +148,7 @@ int check_full(const char *tableList, const char *str,
   int inlen = strlen(str);
   int outlen = inlen * 10;
   int expectedlen = strlen(expected);
-  int i, rv = 0;
+  int i, retval = 0;
   int funcStatus = 0;
   formtype *typeformbuf = NULL;
   int *cursorPosbuf = NULL;
@@ -167,7 +167,8 @@ int check_full(const char *tableList, const char *str,
   inlen = _lou_extParseChars(str, inbuf);
   if (!inlen) {
     fprintf(stderr, "Cannot parse input string.\n");
-    return 1;
+    retval = 1;
+    goto fail;
   }
   if (direction == 0) {
     funcStatus = lou_translate(tableList, inbuf, &inlen, outbuf, &outlen,
@@ -178,14 +179,15 @@ int check_full(const char *tableList, const char *str,
   }
   if (!funcStatus) {
     fprintf(stderr, "Translation failed.\n");
-    return 1;
+    retval = 1;
+    goto fail;
   }
 
   expectedlen = _lou_extParseChars(expected, expectedbuf);
   for (i = 0; i < outlen && i < expectedlen && expectedbuf[i] == outbuf[i]; i++)
     ;
   if (i < outlen || i < expectedlen) {
-    rv = 1;
+    retval = 1;
     if (diagnostics) {
       outbuf[outlen] = 0;
       fprintf(stderr, "Input:    '%s'\n", str);
@@ -228,12 +230,13 @@ int check_full(const char *tableList, const char *str,
     }
   }
 
+ fail:
   free(inbuf);
   free(outbuf);
   free(expectedbuf);
   free(typeformbuf);
   free(cursorPosbuf);
-  return rv;
+  return retval;
 }
 
 int check_inpos(const char *tableList, const char *str,
@@ -243,7 +246,7 @@ int check_inpos(const char *tableList, const char *str,
   int *inpos;
   int inlen;
   int outlen;
-  int i, rv = 0;
+  int i, retval = 0;
 
   inlen = strlen(str) * 2;
   outlen = inlen;
@@ -256,20 +259,22 @@ int check_inpos(const char *tableList, const char *str,
   if (!lou_translate(tableList, inbuf, &inlen, outbuf, &outlen, NULL, NULL, NULL,
 		     inpos, NULL, 0)) {
     fprintf(stderr, "Translation failed.\n");
-    return 1;
+    retval = 1;
+    goto fail;
   }
   for (i = 0; i < outlen; i++) {
     if (expected_poslist[i] != inpos[i]) {
-      rv = 1;
       fprintf(stderr, "Expected %d, received %d in index %d\n",
               expected_poslist[i], inpos[i], i);
+      retval = 1;
     }
   }
 
+ fail:
   free(inbuf);
   free(outbuf);
   free(inpos);
-  return rv;
+  return retval;
 }
 
 int check_outpos(const char *tableList, const char *str,
@@ -279,7 +284,7 @@ int check_outpos(const char *tableList, const char *str,
   int *inpos, *outpos;
   int origInlen, inlen;
   int outlen;
-  int i, rv = 0;
+  int i, retval = 0;
 
   origInlen = inlen = strlen(str);
   outlen = inlen * 2;
@@ -294,7 +299,8 @@ int check_outpos(const char *tableList, const char *str,
   if (!lou_translate(tableList, inbuf, &inlen, outbuf, &outlen, NULL, NULL, outpos,
 		     inpos, NULL, 0)) {
     fprintf(stderr, "Translation failed.\n");
-    return 1;
+    retval = 1;
+    goto fail;
   }
   if (inlen != origInlen) {
     fprintf(stderr, "original inlen %d and returned inlen %d differ\n",
@@ -303,17 +309,18 @@ int check_outpos(const char *tableList, const char *str,
 
   for (i = 0; i < inlen; i++) {
     if (expected_poslist[i] != outpos[i]) {
-      rv = 1;
       fprintf(stderr, "Expected %d, received %d in index %d\n",
               expected_poslist[i], outpos[i], i);
+      retval = 1;
     }
   }
 
+ fail:
   free(inbuf);
   free(outbuf);
   free(inpos);
   free(outpos);
-  return rv;
+  return retval;
 }
 
 int check_cursor_pos(const char *tableList, const char *str,
@@ -324,7 +331,7 @@ int check_cursor_pos(const char *tableList, const char *str,
   int inlen = strlen(str);
   int outlen = inlen;
   int cursor_pos;
-  int i, rv = 0;
+  int i, retval = 0;
 
   inbuf = malloc(sizeof(widechar) * inlen);
   outbuf = malloc(sizeof(widechar) * inlen);
@@ -337,22 +344,24 @@ int check_cursor_pos(const char *tableList, const char *str,
     if (!lou_translate(tableList, inbuf, &inlen, outbuf, &outlen, NULL, NULL, NULL,
 		       NULL, &cursor_pos, compbrlAtCursor)) {
       fprintf(stderr, "Translation failed.\n");
-      return 1;
+      retval = 1;
+      goto fail;
     }
     if (expected_pos[i] != cursor_pos) {
-      rv = 1;
       fprintf(stderr,
               "string='%s' cursor=%d ('%c') expected=%d received=%d ('%c')\n",
               str, i, str[i], expected_pos[i], cursor_pos,
               (char)outbuf[cursor_pos]);
+      retval = 1;
     }
   }
 
+ fail:
   free(inbuf);
   free(outbuf);
   free(inpos);
   free(outpos);
-  return rv;
+  return retval;
 }
 
 /* Check if a string is hyphenated as expected. Return 0 if the
@@ -360,31 +369,34 @@ int check_cursor_pos(const char *tableList, const char *str,
 int check_hyphenation(const char *tableList, const char *str,
                       const char *expected) {
   widechar *inbuf;
-  char *hyphens;
+  char *hyphens = NULL;
   int inlen = strlen(str);
-  int rv = 0;
+  int retval = 0;
 
   inbuf = malloc(sizeof(widechar) * inlen);
   inlen = _lou_extParseChars(str, inbuf);
   if (!inlen) {
     fprintf(stderr, "Cannot parse input string.\n");
-    return 1;
+    retval = 1;
+    goto fail;
   }
   hyphens = calloc(inlen + 1, sizeof(char));
 
   if (!lou_hyphenate(tableList, inbuf, inlen, hyphens, 0)) {
     fprintf(stderr, "Hyphenation failed.\n");
-    return 1;
+    retval = 1;
+    goto fail;
   }
 
   if (strcmp(expected, hyphens)) {
     fprintf(stderr, "Input:    '%s'\n", str);
     fprintf(stderr, "Expected: '%s'\n", expected);
     fprintf(stderr, "Received: '%s'\n", hyphens);
-    rv = 1;
+    retval = 1;
   }
 
+ fail:
   free(inbuf);
   free(hyphens);
-  return rv;
+  return retval;
 }
