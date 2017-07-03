@@ -41,8 +41,14 @@ class AXPlatformNodeMac : public AXPlatformNodeBase {
 AX_EXPORT
 @interface AXPlatformNodeCocoa : NSObject
 
+// Maps AX roles to native roles. Returns NSAccessibilityUnknownRole if not
+// found.
 + (NSString*)nativeRoleFromAXRole:(ui::AXRole)role;
+
+// Maps AX roles to native subroles. Returns nil if not found.
 + (NSString*)nativeSubroleFromAXRole:(ui::AXRole)role;
+
+// Maps AX events to native notifications. Returns nil if not found.
 + (NSString*)nativeNotificationFromAXEvent:(ui::AXEvent)event;
 
 - (instancetype)initWithNode:(ui::AXPlatformNodeBase*)node;

@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "ui/accessibility/ax_action_data.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/models/combobox_model.h"
@@ -640,6 +641,36 @@ TEST_F(ComboboxTest, NotifyOnClickWithSpaceKey) {
   ReleaseKey(ui::VKEY_SPACE);
   EXPECT_EQ(1, menu_show_count_);
   EXPECT_FALSE(listener.on_perform_action_called());
+}
+
+// Test that accessibility action events show the combobox dropdown.
+TEST_F(ComboboxTest, ShowViaAccessibleAction) {
+  InitCombobox(nullptr, Combobox::STYLE_NORMAL);
+
+  ui::AXActionData data;
+  data.action = ui::AX_ACTION_DO_DEFAULT;
+
+  EXPECT_EQ(0, menu_show_count_);
+  combobox_->HandleAccessibleAction(data);
+  EXPECT_EQ(1, menu_show_count_);
+
+  // AX_ACTION_SHOW_CONTEXT_MENU is specifically for a context menu (e.g. right-
+  // click). Combobox should ignore it.
+  data.action = ui::AX_ACTION_SHOW_CONTEXT_MENU;
+  combobox_->HandleAccessibleAction(data);
+  EXPECT_EQ(1, menu_show_count_);  // No change.
+
+  data.action = ui::AX_ACTION_BLUR;
+  combobox_->HandleAccessibleAction(data);
+  EXPECT_EQ(1, menu_show_count_);  // No change.
+
+  combobox_->SetEnabled(false);
+  combobox_->HandleAccessibleAction(data);
+  EXPECT_EQ(1, menu_show_count_);  // No change.
+
+  data.action = ui::AX_ACTION_SHOW_CONTEXT_MENU;
+  combobox_->HandleAccessibleAction(data);
+  EXPECT_EQ(1, menu_show_count_);  // No change.
 }
 
 TEST_F(ComboboxTest, NotifyOnClickWithSpaceKeyActionStyle) {

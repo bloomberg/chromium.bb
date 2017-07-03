@@ -100,6 +100,7 @@ class VIEWS_EXPORT Combobox : public View,
   void OnFocus() override;
   void OnBlur() override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  bool HandleAccessibleAction(const ui::AXActionData& action_data) override;
   void Layout() override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
