@@ -158,6 +158,9 @@ void PasswordManager::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kWasObsoleteHttpDataCleaned, false);
   registry->RegisterStringPref(prefs::kSyncPasswordHash, std::string(),
                                PrefRegistry::NO_REGISTRATION_FLAGS);
+  registry->RegisterStringPref(prefs::kSyncPasswordLengthAndHashSalt,
+                               std::string(),
+                               PrefRegistry::NO_REGISTRATION_FLAGS);
 #if defined(OS_MACOSX)
   registry->RegisterIntegerPref(
       prefs::kKeychainMigrationStatus,

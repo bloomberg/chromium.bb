@@ -68,8 +68,13 @@ extern const char kWasSignInPasswordPromoClicked[];
 // Number of times the Chrome Sign in promo popped up.
 extern const char kNumberSignInPasswordPromoShown[];
 
-// String that represent the sync password hash.
+// String that represents the sync password hash.
 extern const char kSyncPasswordHash[];
+
+// String that represents the sync password length and salt. Its format is
+// encrypted and converted to base64 string "<password length, as ascii
+// int>.<16 char salt>".
+extern const char kSyncPasswordLengthAndHashSalt[];
 
 }  // namespace prefs
 }  // namespace password_manager

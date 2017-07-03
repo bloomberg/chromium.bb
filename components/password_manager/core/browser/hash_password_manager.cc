@@ -4,20 +4,33 @@
 
 #include "components/password_manager/core/browser/hash_password_manager.h"
 
+#include "base/base64.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "components/os_crypt/os_crypt.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "crypto/random.h"
+
+namespace {
+constexpr size_t kSyncPasswordSaltLength = 16;
+constexpr char kSeparator = '.';
+}  // namespace
 
 namespace password_manager {
 
-void HashPasswordManager::SavePasswordHash(const base::string16& password) {
-  if (prefs_) {
-    // TODO(crbug.com/657041) Implement creating a salt, hash calculation,
-    // encrypting and saving of hash of |password| into preference
-    // kSyncPasswordHash.
-    prefs_->SetString(prefs::kSyncPasswordHash, std::string());
-  }
+bool HashPasswordManager::SavePasswordHash(const base::string16& password) {
+  if (!prefs_)
+    return false;
+
+  std::string salt = CreateRandomSalt();
+  // TODO(crbug.com/657041) Implement hash calculation.
+  prefs_->SetString(prefs::kSyncPasswordHash, std::string());
+
+  // Password length and salt are stored together.
+  std::string length_salt = LengthAndSaltToString(salt, password.size());
+  return EncryptAndSaveToPrefs(prefs::kSyncPasswordLengthAndHashSalt,
+                               length_salt);
 }
 
 void HashPasswordManager::ClearSavedPasswordHash() {
@@ -28,11 +41,77 @@ void HashPasswordManager::ClearSavedPasswordHash() {
 base::Optional<SyncPasswordData> HashPasswordManager::RetrievePasswordHash() {
   if (!prefs_ || !prefs_->HasPrefPath(prefs::kSyncPasswordHash))
     return base::Optional<SyncPasswordData>();
+
   SyncPasswordData result;
-  if (!base::StringToUint64(prefs_->GetString(prefs::kSyncPasswordHash),
-                            &result.hash))
-    return base::Optional<SyncPasswordData>();
+  std::string hash_str =
+      RetrivedDecryptedStringFromPrefs(prefs::kSyncPasswordHash);
+  // TODO(crbug.com/657041) Add checking of hash correctness retrieving when
+  // hash calculation is implemented.
+  if (!base::StringToUint64(hash_str, &result.hash))
+    result.hash = 0;
+
+  StringToLengthAndSalt(
+      RetrivedDecryptedStringFromPrefs(prefs::kSyncPasswordLengthAndHashSalt),
+      &result.length, &result.salt);
   return result;
+}
+
+std::string HashPasswordManager::CreateRandomSalt() {
+  char buffer[kSyncPasswordSaltLength];
+  crypto::RandBytes(buffer, kSyncPasswordSaltLength);
+  // Explicit std::string constructor with a string length must be used in order
+  // to avoid treating '\0' symbols as a string ends.
+  std::string result(buffer, kSyncPasswordSaltLength);
+  return result;
+}
+
+std::string HashPasswordManager::LengthAndSaltToString(const std::string& salt,
+                                                       size_t password_length) {
+  return base::SizeTToString(password_length) + kSeparator + salt;
+}
+
+void HashPasswordManager::StringToLengthAndSalt(const std::string& s,
+                                                size_t* password_length,
+                                                std::string* salt) {
+  DCHECK(s.find(kSeparator) != std::string::npos);
+  DCHECK(salt);
+  size_t separator_index = s.find(kSeparator);
+  std::string prefix = s.substr(0, separator_index);
+
+  bool is_converted = base::StringToSizeT(prefix, password_length);
+  DCHECK(is_converted);
+
+  *salt = s.substr(separator_index + 1);
+}
+
+bool HashPasswordManager::EncryptAndSaveToPrefs(const std::string& pref_name,
+                                                const std::string& s) {
+  DCHECK(prefs_);
+  std::string encrypted_text;
+  if (!OSCrypt::EncryptString(s, &encrypted_text))
+    return false;
+  std::string encrypted_base64_text;
+  base::Base64Encode(encrypted_text, &encrypted_base64_text);
+  prefs_->SetString(pref_name, encrypted_base64_text);
+  return true;
+}
+
+std::string HashPasswordManager::RetrivedDecryptedStringFromPrefs(
+    const std::string& pref_name) {
+  DCHECK(prefs_);
+  std::string encrypted_base64_text = prefs_->GetString(pref_name);
+  if (encrypted_base64_text.empty())
+    return std::string();
+
+  std::string encrypted_text;
+  if (!base::Base64Decode(encrypted_base64_text, &encrypted_text))
+    return std::string();
+
+  std::string plain_text;
+  if (!OSCrypt::DecryptString(encrypted_text, &plain_text))
+    return std::string();
+
+  return plain_text;
 }
 
 }  // namespace password_manager

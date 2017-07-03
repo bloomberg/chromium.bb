@@ -338,6 +338,7 @@ void PasswordStore::CheckReuse(const base::string16& input,
 
 #if !defined(OS_CHROMEOS)
 void PasswordStore::SaveSyncPasswordHash(const base::string16& password) {
+  // TODO(crbug.com/657041): Log success of saving password hash to UMA.
   hash_password_manager_.SavePasswordHash(password);
   base::Optional<SyncPasswordData> sync_password_data =
       hash_password_manager_.RetrievePasswordHash();

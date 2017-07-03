@@ -41,5 +41,8 @@ const char kNumberSignInPasswordPromoShown[] =
 
 const char kSyncPasswordHash[] = "profile.sync_password_hash";
 
+const char kSyncPasswordLengthAndHashSalt[] =
+    "profile.sync_password_length_and_hash_salt";
+
 }  // namespace prefs
 }  // namespace password_manager
