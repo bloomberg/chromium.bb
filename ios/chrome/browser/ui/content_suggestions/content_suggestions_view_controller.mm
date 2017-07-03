@@ -16,7 +16,6 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_layout.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_audience.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_delegate.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_utils.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 
@@ -221,21 +220,20 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
     didSelectItemAtIndexPath:(NSIndexPath*)indexPath {
   [super collectionView:collectionView didSelectItemAtIndexPath:indexPath];
 
+  [self.headerCommandHandler unfocusOmnibox];
+
   CollectionViewItem* item =
       [self.collectionViewModel itemAtIndexPath:indexPath];
   switch ([self.collectionUpdater contentSuggestionTypeForItem:item]) {
     case ContentSuggestionTypeReadingList:
     case ContentSuggestionTypeArticle:
-      [self unfocusOmnibox];
       [self.suggestionCommandHandler openPageForItem:item];
       break;
     case ContentSuggestionTypeMostVisited:
-      [self unfocusOmnibox];
       [self.suggestionCommandHandler openMostVisitedItem:item
                                                  atIndex:indexPath.item];
       break;
     case ContentSuggestionTypePromo:
-      [self unfocusOmnibox];
       [self dismissEntryAtIndexPath:indexPath];
       [self.suggestionCommandHandler handlePromoTapped];
       [self.collectionViewLayout invalidateLayout];
@@ -396,6 +394,8 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
   [self.overscrollActionsController scrollViewDidScroll:scrollView];
   [self.audience contentSuggestionsDidScroll];
   [self.headerCommandHandler updateFakeOmniboxForScrollView:scrollView];
+  self.scrolledToTop =
+      scrollView.contentOffset.y >= [self.suggestionsDelegate pinnedOffsetY];
 }
 
 - (void)scrollViewWillBeginDragging:(UIScrollView*)scrollView {
@@ -419,16 +419,6 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
       scrollViewWillEndDragging:scrollView
                    withVelocity:velocity
             targetContentOffset:targetContentOffset];
-
-  if (IsIPadIdiom() || [self.suggestionsDelegate isOmniboxFocused])
-    return;
-
-  [ContentSuggestionsViewControllerUtils
-      viewControllerWillEndDragging:self
-                        withYOffset:scrollView.contentOffset.y
-                      pinnedYOffset:[self.suggestionsDelegate pinnedOffsetY]
-                     draggingUpward:velocity.y > 0
-                targetContentOffset:targetContentOffset];
 }
 
 #pragma mark - Private
@@ -482,12 +472,6 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
       [self.collectionUpdater addEmptyItemForSection:section];
   if (emptyItem)
     [self.collectionView insertItemsAtIndexPaths:@[ emptyItem ]];
-}
-
-// Tells WebToolbarController to resign focus to the omnibox.
-- (void)unfocusOmnibox {
-  // TODO(crbug.com/700375): once the omnibox is part of Content Suggestions,
-  // remove the fake omnibox focus here.
 }
 
 @end
