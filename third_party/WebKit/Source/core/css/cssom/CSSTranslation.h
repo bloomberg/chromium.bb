@@ -31,9 +31,7 @@ class CORE_EXPORT CSSTranslation final : public CSSTransformComponent {
                                 ExceptionState&);
   static CSSTranslation* Create(CSSNumericValue* x,
                                 CSSNumericValue* y,
-                                ExceptionState& exception_state) {
-    return Create(x, y, nullptr, exception_state);
-  }
+                                ExceptionState&);
 
   // Blink-internal ways of creating CSSTranslations.
   static CSSTranslation* FromCSSValue(const CSSFunctionValue& value) {
@@ -49,9 +47,7 @@ class CORE_EXPORT CSSTranslation final : public CSSTransformComponent {
   void setZ(CSSNumericValue* z, ExceptionState&);
 
   // Internal methods - from CSSTransformComponent.
-  TransformComponentType GetType() const final {
-    return Is2D() ? kTranslationType : kTranslation3DType;
-  }
+  TransformComponentType GetType() const final { return kTranslationType; }
   // TODO: Implement AsMatrix for CSSTranslation.
   DOMMatrix* AsMatrix() const final { return nullptr; }
   CSSFunctionValue* ToCSSValue() const final;
@@ -64,10 +60,11 @@ class CORE_EXPORT CSSTranslation final : public CSSTransformComponent {
   }
 
  private:
-  CSSTranslation(CSSNumericValue* x, CSSNumericValue* y, CSSNumericValue* z)
-      : CSSTransformComponent(), x_(x), y_(y), z_(z) {}
-
-  bool Is2D() const { return !z_; }
+  CSSTranslation(CSSNumericValue* x,
+                 CSSNumericValue* y,
+                 CSSNumericValue* z,
+                 bool is2D)
+      : CSSTransformComponent(is2D), x_(x), y_(y), z_(z) {}
 
   Member<CSSNumericValue> x_;
   Member<CSSNumericValue> y_;

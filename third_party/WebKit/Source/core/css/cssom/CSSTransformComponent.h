@@ -32,10 +32,6 @@ class CORE_EXPORT CSSTransformComponent
     kScaleType,
     kSkewType,
     kTranslationType,
-    kMatrix3DType,
-    kRotation3DType,
-    kScale3DType,
-    kTranslation3DType
   };
 
   virtual ~CSSTransformComponent() {}
@@ -44,7 +40,8 @@ class CORE_EXPORT CSSTransformComponent
   static CSSTransformComponent* FromCSSValue(const CSSValue&);
 
   // Getters and setters for attributes defined in the IDL.
-  bool is2D() const { return Is2DComponentType(GetType()); }
+  bool is2D() const { return is2D_; }
+  virtual void setIs2D(bool is2D) { is2D_ = is2D; }
   virtual String toString() const {
     const CSSValue* result = ToCSSValue();
     // TODO(meade): Remove this once all the number and length types are
@@ -60,15 +57,10 @@ class CORE_EXPORT CSSTransformComponent
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
  protected:
-  static bool Is2DComponentType(TransformComponentType transform_type) {
-    return transform_type != kMatrix3DType &&
-           transform_type != kPerspectiveType &&
-           transform_type != kRotation3DType &&
-           transform_type != kScale3DType &&
-           transform_type != kTranslation3DType;
-  }
+  CSSTransformComponent(bool is2D) : is2D_(is2D) {}
 
-  CSSTransformComponent() = default;
+ private:
+  bool is2D_;
 };
 
 }  // namespace blink

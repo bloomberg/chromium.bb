@@ -515,6 +515,7 @@ core_dictionary_idl_files =
                     "css/FontFaceSetLoadEventInit.idl",
                     "css/MediaQueryListEventInit.idl",
                     "css/PropertyDescriptor.idl",
+                    "css/cssom/CSSMatrixComponentOptions.idl",
                     "dom/ElementCreationOptions.idl",
                     "dom/ElementDefinitionOptions.idl",
                     "dom/ElementRegistrationOptions.idl",

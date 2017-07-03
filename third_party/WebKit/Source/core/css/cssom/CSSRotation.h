@@ -22,10 +22,7 @@ class CORE_EXPORT CSSRotation final : public CSSTransformComponent {
 
  public:
   // Constructors defined in the IDL.
-  static CSSRotation* Create(CSSNumericValue* angle,
-                             ExceptionState& exception_state) {
-    return Create(0, 0, 1, angle, exception_state);
-  }
+  static CSSRotation* Create(CSSNumericValue* angle, ExceptionState&);
   static CSSRotation* Create(double x,
                              double y,
                              double z,
@@ -33,9 +30,7 @@ class CORE_EXPORT CSSRotation final : public CSSTransformComponent {
                              ExceptionState&);
 
   // Blink-internal ways of creating CSSRotations.
-  static CSSRotation* Create(CSSNumericValue* angle) {
-    return Create(0, 0, 1, angle);
-  }
+  static CSSRotation* Create(CSSNumericValue* angle);
   static CSSRotation* Create(double x,
                              double y,
                              double z,
@@ -53,9 +48,7 @@ class CORE_EXPORT CSSRotation final : public CSSTransformComponent {
   void setZ(double z) { z_ = z; }
 
   // Internal methods - from CSSTransformComponent.
-  TransformComponentType GetType() const final {
-    return z_ == 1 ? kRotationType : kRotation3DType;
-  }
+  TransformComponentType GetType() const final { return kRotationType; }
   DOMMatrix* AsMatrix() const final {
     return nullptr;
     // TODO(meade): Implement.
@@ -74,8 +67,8 @@ class CORE_EXPORT CSSRotation final : public CSSTransformComponent {
   }
 
  private:
-  CSSRotation(double x, double y, double z, CSSNumericValue* angle)
-      : angle_(angle), x_(x), y_(y), z_(z) {}
+  CSSRotation(double x, double y, double z, CSSNumericValue* angle, bool is2D)
+      : CSSTransformComponent(is2D), angle_(angle), x_(x), y_(y), z_(z) {}
 
   Member<CSSNumericValue> angle_;
   double x_;

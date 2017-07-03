@@ -11,5 +11,5 @@
     RuntimeEnabled=CSSTypedOM
 ] interface CSSTransformComponent {
     stringifier;
-    boolean is2D();
+    attribute boolean is2D;
 };

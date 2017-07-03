@@ -35,6 +35,11 @@ class CORE_EXPORT CSSSkew final : public CSSTransformComponent {
   void setAx(CSSNumericValue*, ExceptionState&);
   void setAy(CSSNumericValue*, ExceptionState&);
 
+  // From CSSTransformComponent
+  // Setting is2D for CSSSkew does nothing.
+  // https://drafts.css-houdini.org/css-typed-om/#dom-cssskew-is2d
+  void setIs2D(bool is2D) final {}
+
   // Internal methods - from CSSTransformComponent.
   DOMMatrix* AsMatrix() const override;
   TransformComponentType GetType() const override { return kSkewType; }
@@ -48,7 +53,7 @@ class CORE_EXPORT CSSSkew final : public CSSTransformComponent {
 
  private:
   CSSSkew(CSSNumericValue* ax, CSSNumericValue* ay)
-      : CSSTransformComponent(), ax_(ax), ay_(ay) {}
+      : CSSTransformComponent(true /* is2D */), ax_(ax), ay_(ay) {}
 
   Member<CSSNumericValue> ax_;
   Member<CSSNumericValue> ay_;

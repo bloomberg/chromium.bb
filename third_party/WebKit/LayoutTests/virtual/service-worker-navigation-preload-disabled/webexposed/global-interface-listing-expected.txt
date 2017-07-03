@@ -791,9 +791,10 @@ interface CSSSupportsRule : CSSConditionRule
     method constructor
 interface CSSTransformComponent
     attribute @@toStringTag
+    getter is2D
     method constructor
-    method is2D
     method toString
+    setter is2D
 interface CSSTransformValue : CSSStyleValue
     attribute @@toStringTag
     getter is2D

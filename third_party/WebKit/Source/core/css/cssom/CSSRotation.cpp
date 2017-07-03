@@ -61,6 +61,15 @@ CSSRotation* FromCSSRotateXYZ(const CSSFunctionValue& value) {
 
 }  // namespace
 
+CSSRotation* CSSRotation::Create(CSSNumericValue* angle,
+                                 ExceptionState& exception_state) {
+  if (angle->GetType() != CSSStyleValue::StyleValueType::kAngleType) {
+    exception_state.ThrowTypeError("Must pass an angle to CSSRotation");
+    return nullptr;
+  }
+  return new CSSRotation(0, 0, 1, angle, true /* is2D */);
+}
+
 CSSRotation* CSSRotation::Create(double x,
                                  double y,
                                  double z,
@@ -70,7 +79,12 @@ CSSRotation* CSSRotation::Create(double x,
     exception_state.ThrowTypeError("Must pass an angle to CSSRotation");
     return nullptr;
   }
-  return new CSSRotation(x, y, z, angle);
+  return new CSSRotation(x, y, z, angle, false /* is2D */);
+}
+
+CSSRotation* CSSRotation::Create(CSSNumericValue* angle) {
+  DCHECK_EQ(angle->GetType(), CSSStyleValue::StyleValueType::kAngleType);
+  return new CSSRotation(0, 0, 1, angle, true /* is2D */);
 }
 
 CSSRotation* CSSRotation::Create(double x,
@@ -78,7 +92,7 @@ CSSRotation* CSSRotation::Create(double x,
                                  double z,
                                  CSSNumericValue* angle) {
   DCHECK_EQ(angle->GetType(), CSSStyleValue::StyleValueType::kAngleType);
-  return new CSSRotation(x, y, z, angle);
+  return new CSSRotation(x, y, z, angle, false /* is2D */);
 }
 
 CSSRotation* CSSRotation::FromCSSValue(const CSSFunctionValue& value) {
@@ -115,8 +129,8 @@ CSSFunctionValue* CSSRotation::ToCSSValue() const {
   // TODO(meade): Re-implement this when we finish rewriting number/length
   // types.
   // CSSFunctionValue* result =
-  //     CSSFunctionValue::Create(is2d_ ? CSSValueRotate : CSSValueRotate3d);
-  // if (!is2d_) {
+  //     CSSFunctionValue::Create(is2D() ? CSSValueRotate : CSSValueRotate3d);
+  // if (!is2D()) {
   //   result->Append(
   //      *CSSPrimitiveValue::Create(x_, CSSPrimitiveValue::UnitType::kNumber));
   //   result->Append(
