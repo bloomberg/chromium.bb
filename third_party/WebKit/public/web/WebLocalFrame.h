@@ -13,6 +13,7 @@
 #include "WebFrameLoadType.h"
 #include "WebHistoryItem.h"
 #include "public/platform/WebCachePolicy.h"
+#include "public/platform/WebFocusType.h"
 #include "public/platform/WebSize.h"
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebURLRequest.h"
@@ -763,6 +764,13 @@ class WebLocalFrame : public WebFrame {
   // plugin whose content indicates that printed output should not be scaled,
   // return true, otherwise return false.
   virtual bool IsPrintScalingDisabledForPlugin(const WebNode& = WebNode()) = 0;
+
+  // Advance the focus of the WebView to next text input element from current
+  // input field wrt sequential navigation with TAB or Shift + TAB
+  // WebFocusTypeForward simulates TAB and WebFocusTypeBackward simulates
+  // Shift + TAB. (Will be extended to other form controls like select element,
+  // checkbox, radio etc.)
+  virtual void AdvanceFocusInForm(WebFocusType) = 0;
 
   // Testing ------------------------------------------------------------------
 
