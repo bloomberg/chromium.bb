@@ -71,8 +71,12 @@ class TestDisplayScheduler : public DisplayScheduler {
   TestDisplayScheduler(BeginFrameSource* begin_frame_source,
                        SurfaceManager* surface_manager,
                        base::SingleThreadTaskRunner* task_runner,
-                       int max_pending_swaps)
-      : DisplayScheduler(begin_frame_source, task_runner, max_pending_swaps),
+                       int max_pending_swaps,
+                       bool wait_for_all_surfaces_before_draw)
+      : DisplayScheduler(begin_frame_source,
+                         task_runner,
+                         max_pending_swaps,
+                         wait_for_all_surfaces_before_draw),
         scheduler_begin_frame_deadline_count_(0) {}
 
   base::TimeTicks DesiredBeginFrameDeadlineTimeForTest() {
@@ -108,13 +112,14 @@ class TestDisplayScheduler : public DisplayScheduler {
 
 class DisplaySchedulerTest : public testing::Test {
  public:
-  DisplaySchedulerTest()
+  explicit DisplaySchedulerTest(bool wait_for_all_surfaces_before_draw = false)
       : fake_begin_frame_source_(0.f, false),
         task_runner_(new base::NullTaskRunner),
         scheduler_(&fake_begin_frame_source_,
                    &surface_manager_,
                    task_runner_.get(),
-                   kMaxPendingSwaps) {
+                   kMaxPendingSwaps,
+                   wait_for_all_surfaces_before_draw) {
     now_src_.Advance(base::TimeDelta::FromMicroseconds(10000));
     surface_manager_.AddObserver(&scheduler_);
     scheduler_.SetClient(&client_);
@@ -288,7 +293,7 @@ TEST_F(DisplaySchedulerTest, SurfaceDamaged) {
             scheduler_.DesiredBeginFrameDeadlineTimeForTest());
   scheduler_.BeginFrameDeadlineForTest();
 
-  // SurfaceDamage with |!has_damage| triggers early deadline if other damage
+  // Surface damage with |!has_damage| triggers early deadline if other damage
   // exists.
   AdvanceTimeAndBeginFrameForTest({sid1, sid2});
   EXPECT_LT(now_src().NowTicks(),
@@ -303,7 +308,7 @@ TEST_F(DisplaySchedulerTest, SurfaceDamaged) {
             scheduler_.DesiredBeginFrameDeadlineTimeForTest());
   scheduler_.BeginFrameDeadlineForTest();
 
-  // SurfaceDamage with |!has_damage| does not trigger early deadline if no
+  // Surface damage with |!has_damage| does not trigger early deadline if no
   // other damage exists.
   AdvanceTimeAndBeginFrameForTest({sid1});
   EXPECT_LT(now_src().NowTicks(),
@@ -319,7 +324,7 @@ TEST_F(DisplaySchedulerTest, SurfaceDamaged) {
   AdvanceTimeAndBeginFrameForTest(std::vector<SurfaceId>());
   EXPECT_FALSE(scheduler_.inside_begin_frame_deadline_interval());
 
-  // SurfaceDamage with |!display_damaged| does not affect needs_draw and
+  // Surface damage with |!display_damaged| does not affect needs_draw and
   // scheduler stays idle.
   scheduler_.ProcessSurfaceDamage(sid1, AckForCurrentBeginFrame(), false);
   EXPECT_FALSE(scheduler_.inside_begin_frame_deadline_interval());
@@ -329,6 +334,86 @@ TEST_F(DisplaySchedulerTest, SurfaceDamaged) {
   scheduler_.OnSurfaceDamageExpected(root_surface_id, last_begin_frame_args_);
   EXPECT_FALSE(scheduler_.inside_begin_frame_deadline_interval());
   SurfaceDamaged(root_surface_id);
+  EXPECT_GE(now_src().NowTicks(),
+            scheduler_.DesiredBeginFrameDeadlineTimeForTest());
+  scheduler_.BeginFrameDeadlineForTest();
+}
+
+class DisplaySchedulerWaitForAllSurfacesTest : public DisplaySchedulerTest {
+ public:
+  DisplaySchedulerWaitForAllSurfacesTest()
+      : DisplaySchedulerTest(true /* wait_for_all_surfaces_before_draw */) {}
+};
+
+TEST_F(DisplaySchedulerWaitForAllSurfacesTest, WaitForAllSurfacesBeforeDraw) {
+  SurfaceId root_surface_id(
+      kArbitraryFrameSinkId,
+      LocalSurfaceId(1, base::UnguessableToken::Create()));
+  SurfaceId sid1(kArbitraryFrameSinkId,
+                 LocalSurfaceId(2, base::UnguessableToken::Create()));
+  SurfaceId sid2(kArbitraryFrameSinkId,
+                 LocalSurfaceId(3, base::UnguessableToken::Create()));
+
+  scheduler_.SetVisible(true);
+  scheduler_.SetNewRootSurface(root_surface_id);
+
+  // Set surface1 as active via SurfaceDamageExpected().
+  AdvanceTimeAndBeginFrameForTest({sid1});
+
+  // Deadline is blocked indefinitely until surface 1 is damaged.
+  EXPECT_EQ(base::TimeTicks::Max(),
+            scheduler_.DesiredBeginFrameDeadlineTimeForTest());
+
+  // Damage only from surface 2 (inactive) does not change deadline.
+  SurfaceDamaged(sid2);
+  EXPECT_TRUE(scheduler_.has_pending_surfaces());
+  EXPECT_EQ(base::TimeTicks::Max(),
+            scheduler_.DesiredBeginFrameDeadlineTimeForTest());
+
+  // Damage from surface 1 triggers deadline immediately.
+  SurfaceDamaged(sid1);
+  EXPECT_FALSE(scheduler_.has_pending_surfaces());
+  EXPECT_GE(now_src().NowTicks(),
+            scheduler_.DesiredBeginFrameDeadlineTimeForTest());
+  scheduler_.BeginFrameDeadlineForTest();
+
+  // Surface damage with |!has_damage| triggers immediate deadline if other
+  // damage exists.
+  AdvanceTimeAndBeginFrameForTest({sid1, sid2});
+  EXPECT_EQ(base::TimeTicks::Max(),
+            scheduler_.DesiredBeginFrameDeadlineTimeForTest());
+  SurfaceDamaged(sid2);
+  EXPECT_EQ(base::TimeTicks::Max(),
+            scheduler_.DesiredBeginFrameDeadlineTimeForTest());
+  BeginFrameAck ack = AckForCurrentBeginFrame();
+  ack.has_damage = false;
+  scheduler_.ProcessSurfaceDamage(sid1, ack, false);
+  EXPECT_GE(now_src().NowTicks(),
+            scheduler_.DesiredBeginFrameDeadlineTimeForTest());
+  scheduler_.BeginFrameDeadlineForTest();
+
+  // Surface damage with |!has_damage| also triggers immediate deadline even if
+  // no other damage exists.
+  AdvanceTimeAndBeginFrameForTest({sid1});
+  EXPECT_EQ(base::TimeTicks::Max(),
+            scheduler_.DesiredBeginFrameDeadlineTimeForTest());
+  ack = AckForCurrentBeginFrame();
+  ack.has_damage = false;
+  scheduler_.ProcessSurfaceDamage(sid1, ack, false);
+  EXPECT_GE(now_src().NowTicks(),
+            scheduler_.DesiredBeginFrameDeadlineTimeForTest());
+  scheduler_.BeginFrameDeadlineForTest();
+
+  // System should be idle now because we had a frame without damage. Restore it
+  // to active state (DisplayScheduler observing BeginFrames) for the next test.
+  AdvanceTimeAndBeginFrameForTest(std::vector<SurfaceId>());
+  EXPECT_FALSE(scheduler_.inside_begin_frame_deadline_interval());
+  SurfaceDamaged(sid1);
+  scheduler_.BeginFrameDeadlineForTest();
+
+  // BeginFrame without expected surface damage triggers immediate deadline.
+  AdvanceTimeAndBeginFrameForTest(std::vector<SurfaceId>());
+  EXPECT_TRUE(scheduler_.inside_begin_frame_deadline_interval());
   EXPECT_GE(now_src().NowTicks(),
             scheduler_.DesiredBeginFrameDeadlineTimeForTest());
   scheduler_.BeginFrameDeadlineForTest();
