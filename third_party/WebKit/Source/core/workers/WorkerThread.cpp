@@ -398,17 +398,8 @@ bool WorkerThread::ShouldScheduleToTerminateExecution(const MutexLocker& lock) {
 void WorkerThread::MayForciblyTerminateExecution() {
   DCHECK(IsMainThread());
   MutexLocker lock(thread_state_mutex_);
-  if (thread_state_ == ThreadState::kReadyToShutdown) {
-    // Shutdown sequence is now running. Just return.
-    return;
-  }
-  if (running_debugger_task_) {
-    // Any debugger task is guaranteed to finish, so we can wait for the
-    // completion. Shutdown sequence will start after that.
-    return;
-  }
-
-  ForciblyTerminateExecution(lock, ExitCode::kAsyncForciblyTerminated);
+  if (ShouldScheduleToTerminateExecution(lock))
+    ForciblyTerminateExecution(lock, ExitCode::kAsyncForciblyTerminated);
 }
 
 void WorkerThread::ForciblyTerminateExecution(const MutexLocker& lock,
