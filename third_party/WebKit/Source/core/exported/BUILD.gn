@@ -92,5 +92,10 @@ blink_core_sources("exported") {
     "WebViewBase.h",
   ]
 
+  jumbo_excluded_sources = [
+    # Too many different toElement (ListedElement and Node). https://crbug.com/738389
+    "WebSearchableFormData.cpp",
+  ]
+
   defines = [ "BLINK_IMPLEMENTATION=1" ]
 }

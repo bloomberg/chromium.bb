@@ -551,6 +551,17 @@ blink_core_sources("html") {
     "track/vtt/VTTTokenizer.h",
   ]
 
+  jumbo_excluded_sources = [
+    "canvas/CanvasRenderingContext.cpp",  # https://crbug.com/716395
+
+    # Does ugly things with undef (patch incoming)
+    "parser/HTMLTokenizer.cpp",
+
+    # kSupportedTokens in both HTMLMediaElementControlsList.cpp
+    # and HTMLIFrameElementSandbox.cpp
+    "HTMLIFrameElementSandbox.cpp",
+  ]
+
   configs += [
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     "//build/config/compiler:no_size_t_to_int_warning",

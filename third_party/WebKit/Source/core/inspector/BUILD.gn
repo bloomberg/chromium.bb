@@ -94,6 +94,21 @@ blink_core_sources("inspector") {
     "WorkerThreadDebugger.h",
   ]
 
+  jumbo_excluded_sources = [
+    # Collides with DOMPatchSupport.cpp (patch incoming)
+    "InspectorAnimationAgent.cpp",
+
+    # Collides with InspectorPageAgent.cpp and
+    # NetworkResourcesData.cpp (patch incoming)
+    "InspectorNetworkAgent.cpp",
+
+    # Collides with InspectorPageAgent.cpp (patch incoming)
+    "MainThreadDebugger.cpp",
+
+    "InspectorOverlayAgent.cpp",  # Way too many different "Response"
+    "InspectorEmulationAgent.cpp",  # Way too many different "Response"
+  ]
+
   configs += [
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     "//build/config/compiler:no_size_t_to_int_warning",
