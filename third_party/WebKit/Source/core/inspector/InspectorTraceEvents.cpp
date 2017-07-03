@@ -24,6 +24,7 @@
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutObject.h"
+#include "core/loader/DocumentLoader.h"
 #include "core/loader/resource/CSSStyleSheetResource.h"
 #include "core/page/Page.h"
 #include "core/paint/PaintLayer.h"
@@ -108,55 +109,59 @@ DEFINE_TRACE(InspectorTraceEvents) {
 }
 
 void InspectorTraceEvents::WillSendRequest(
-    LocalFrame* frame,
+    ExecutionContext*,
     unsigned long identifier,
-    DocumentLoader*,
+    DocumentLoader* loader,
     ResourceRequest& request,
     const ResourceResponse& redirect_response,
     const FetchInitiatorInfo&) {
+  LocalFrame* frame = loader ? loader->GetFrame() : nullptr;
   TRACE_EVENT_INSTANT1(
       "devtools.timeline", "ResourceSendRequest", TRACE_EVENT_SCOPE_THREAD,
       "data", InspectorSendRequestEvent::Data(identifier, frame, request));
-  probe::AsyncTaskScheduled(frame->GetDocument(), "SendRequest",
-                            AsyncId(identifier));
+  probe::AsyncTaskScheduled(frame ? frame->GetDocument() : nullptr,
+                            "SendRequest", AsyncId(identifier));
 }
 
 void InspectorTraceEvents::DidReceiveResourceResponse(
-    LocalFrame* frame,
     unsigned long identifier,
-    DocumentLoader*,
+    DocumentLoader* loader,
     const ResourceResponse& response,
     Resource*) {
+  LocalFrame* frame = loader ? loader->GetFrame() : nullptr;
   TRACE_EVENT_INSTANT1(
       "devtools.timeline", "ResourceReceiveResponse", TRACE_EVENT_SCOPE_THREAD,
       "data", InspectorReceiveResponseEvent::Data(identifier, frame, response));
-  probe::AsyncTask async_task(frame->GetDocument(), AsyncId(identifier),
-                              "response");
+  probe::AsyncTask async_task(frame ? frame->GetDocument() : nullptr,
+                              AsyncId(identifier), "response");
 }
 
-void InspectorTraceEvents::DidReceiveData(LocalFrame* frame,
-                                          unsigned long identifier,
+void InspectorTraceEvents::DidReceiveData(unsigned long identifier,
+                                          DocumentLoader* loader,
                                           const char* data,
                                           int encoded_data_length) {
+  LocalFrame* frame = loader ? loader->GetFrame() : nullptr;
   TRACE_EVENT_INSTANT1(
       "devtools.timeline", "ResourceReceivedData", TRACE_EVENT_SCOPE_THREAD,
       "data",
       InspectorReceiveDataEvent::Data(identifier, frame, encoded_data_length));
-  probe::AsyncTask async_task(frame->GetDocument(), AsyncId(identifier),
-                              "data");
+  probe::AsyncTask async_task(frame ? frame->GetDocument() : nullptr,
+                              AsyncId(identifier), "data");
 }
 
-void InspectorTraceEvents::DidFinishLoading(LocalFrame* frame,
-                                            unsigned long identifier,
+void InspectorTraceEvents::DidFinishLoading(unsigned long identifier,
+                                            DocumentLoader* loader,
                                             double finish_time,
                                             int64_t encoded_data_length,
                                             int64_t decoded_body_length) {
+  LocalFrame* frame = loader ? loader->GetFrame() : nullptr;
   TRACE_EVENT_INSTANT1("devtools.timeline", "ResourceFinish",
                        TRACE_EVENT_SCOPE_THREAD, "data",
                        InspectorResourceFinishEvent::Data(
                            identifier, finish_time, false, encoded_data_length,
                            decoded_body_length));
-  probe::AsyncTask async_task(frame->GetDocument(), AsyncId(identifier));
+  probe::AsyncTask async_task(frame ? frame->GetDocument() : nullptr,
+                              AsyncId(identifier));
 }
 
 void InspectorTraceEvents::DidFailLoading(unsigned long identifier,

@@ -75,24 +75,22 @@ class CORE_EXPORT InspectorTraceEvents : public InspectorAgent {
             protocol::UberDispatcher*,
             protocol::DictionaryValue*) override;
   void Dispose() override;
-
-  void WillSendRequest(LocalFrame*,
+  void WillSendRequest(ExecutionContext*,
                        unsigned long identifier,
                        DocumentLoader*,
                        ResourceRequest&,
                        const ResourceResponse& redirect_response,
                        const FetchInitiatorInfo&);
-  void DidReceiveResourceResponse(LocalFrame*,
-                                  unsigned long identifier,
+  void DidReceiveResourceResponse(unsigned long identifier,
                                   DocumentLoader*,
                                   const ResourceResponse&,
                                   Resource*);
-  void DidReceiveData(LocalFrame*,
-                      unsigned long identifier,
+  void DidReceiveData(unsigned long identifier,
+                      DocumentLoader*,
                       const char* data,
                       int data_length);
-  void DidFinishLoading(LocalFrame*,
-                        unsigned long identifier,
+  void DidFinishLoading(unsigned long identifier,
+                        DocumentLoader*,
                         double monotonic_finish_time,
                         int64_t encoded_data_length,
                         int64_t decoded_body_length);

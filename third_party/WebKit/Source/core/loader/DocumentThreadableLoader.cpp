@@ -834,7 +834,7 @@ void DocumentThreadableLoader::ReportResponseReceived(
   if (!frame)
     return;
   DocumentLoader* loader = frame->Loader().GetDocumentLoader();
-  probe::didReceiveResourceResponse(frame, identifier, loader, response,
+  probe::didReceiveResourceResponse(GetDocument(), identifier, loader, response,
                                     GetResource());
   frame->Console().ReportResourceResponseReceived(loader, identifier, response);
 }

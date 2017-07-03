@@ -398,8 +398,9 @@ void FrameFetchContext::DispatchWillSendRequest(
     GetFrame()->Loader().Progress().WillStartLoading(identifier,
                                                      request.Priority());
   }
-  probe::willSendRequest(GetFrame(), identifier, MasterDocumentLoader(),
-                         request, redirect_response, initiator_info);
+  probe::willSendRequest(GetFrame()->GetDocument(), identifier,
+                         MasterDocumentLoader(), request, redirect_response,
+                         initiator_info);
   if (GetFrame()->FrameScheduler())
     GetFrame()->FrameScheduler()->DidStartLoading(identifier);
 }
@@ -451,8 +452,8 @@ void FrameFetchContext::DispatchDidReceiveResponse(
   GetFrame()->Loader().Progress().IncrementProgress(identifier, response);
   GetLocalFrameClient()->DispatchDidReceiveResponse(response);
   DocumentLoader* document_loader = MasterDocumentLoader();
-  probe::didReceiveResourceResponse(GetFrame(), identifier, document_loader,
-                                    response, resource);
+  probe::didReceiveResourceResponse(GetFrame()->GetDocument(), identifier,
+                                    document_loader, response, resource);
   // It is essential that inspector gets resource response BEFORE console.
   GetFrame()->Console().ReportResourceResponseReceived(document_loader,
                                                        identifier, response);
@@ -477,15 +478,15 @@ void FrameFetchContext::DispatchDidReceiveData(unsigned long identifier,
     return;
 
   GetFrame()->Loader().Progress().IncrementProgress(identifier, data_length);
-  probe::didReceiveData(GetFrame(), identifier, data, data_length);
+  probe::didReceiveData(GetFrame()->GetDocument(), identifier,
+                        MasterDocumentLoader(), data, data_length);
 }
 
 void FrameFetchContext::DispatchDidReceiveEncodedData(unsigned long identifier,
                                                       int encoded_data_length) {
   if (IsDetached())
     return;
-
-  probe::didReceiveEncodedDataLength(GetFrame(), identifier,
+  probe::didReceiveEncodedDataLength(GetFrame()->GetDocument(), identifier,
                                      encoded_data_length);
 }
 
@@ -496,8 +497,9 @@ void FrameFetchContext::DispatchDidDownloadData(unsigned long identifier,
     return;
 
   GetFrame()->Loader().Progress().IncrementProgress(identifier, data_length);
-  probe::didReceiveData(GetFrame(), identifier, 0, data_length);
-  probe::didReceiveEncodedDataLength(GetFrame(), identifier,
+  probe::didReceiveData(GetFrame()->GetDocument(), identifier,
+                        MasterDocumentLoader(), 0, data_length);
+  probe::didReceiveEncodedDataLength(GetFrame()->GetDocument(), identifier,
                                      encoded_data_length);
 }
 
@@ -509,7 +511,8 @@ void FrameFetchContext::DispatchDidFinishLoading(unsigned long identifier,
     return;
 
   GetFrame()->Loader().Progress().CompleteProgress(identifier);
-  probe::didFinishLoading(GetFrame(), identifier, finish_time,
+  probe::didFinishLoading(GetFrame()->GetDocument(), identifier,
+                          MasterDocumentLoader(), finish_time,
                           encoded_data_length, decoded_body_length);
   if (GetFrame()->FrameScheduler())
     GetFrame()->FrameScheduler()->DidStopLoading(identifier);
@@ -523,7 +526,7 @@ void FrameFetchContext::DispatchDidFail(unsigned long identifier,
     return;
 
   GetFrame()->Loader().Progress().CompleteProgress(identifier);
-  probe::didFailLoading(GetFrame(), identifier, error);
+  probe::didFailLoading(GetFrame()->GetDocument(), identifier, error);
   // Notification to FrameConsole should come AFTER InspectorInstrumentation
   // call, DevTools front-end relies on this.
   if (!is_internal_request)
@@ -899,7 +902,7 @@ bool FrameFetchContext::ShouldBlockRequestByInspector(
   if (IsDetached())
     return false;
   bool should_block_request = false;
-  probe::shouldBlockRequest(GetFrame(), resource_request,
+  probe::shouldBlockRequest(GetFrame()->GetDocument(), resource_request,
                             &should_block_request);
   return should_block_request;
 }
@@ -910,8 +913,9 @@ void FrameFetchContext::DispatchDidBlockRequest(
     ResourceRequestBlockedReason blocked_reason) const {
   if (IsDetached())
     return;
-  probe::didBlockRequest(GetFrame(), resource_request, MasterDocumentLoader(),
-                         fetch_initiator_info, blocked_reason);
+  probe::didBlockRequest(GetFrame()->GetDocument(), resource_request,
+                         MasterDocumentLoader(), fetch_initiator_info,
+                         blocked_reason);
 }
 
 bool FrameFetchContext::ShouldBypassMainWorldCSP() const {

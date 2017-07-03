@@ -679,8 +679,7 @@ void NetworkHandler::NavigationPreloadRequestSent(
   for (net::HttpRequestHeaders::Iterator it(headers); it.GetNext();)
     headers_dict->setString(it.name(), it.value());
   frontend_->RequestWillBeSent(
-      request_id, version_id /* frameId */, version_id /* loaderId */,
-      "" /* documentURL */,
+      request_id, "" /* loader_id */, request.url.spec(),
       Network::Request::Create()
           .SetUrl(request.url.spec())
           .SetMethod(request.method)
@@ -750,7 +749,7 @@ void NetworkHandler::NavigationPreloadResponseReceived(
   response->SetRemoteIPAddress(head.socket_address.HostForURL());
   response->SetRemotePort(head.socket_address.port());
   frontend_->ResponseReceived(
-      request_id, version_id /* frameId */, version_id /* loaderId */,
+      request_id, "" /* loader_id */,
       base::TimeTicks::Now().ToInternalValue() /
           static_cast<double>(base::Time::kMicrosecondsPerSecond),
       Page::ResourceTypeEnum::Other, std::move(response));
@@ -796,8 +795,7 @@ void NetworkHandler::NavigationFailed(
   for (net::HttpRequestHeaders::Iterator it(headers); it.GetNext();)
     headers_dict->setString(it.name(), it.value());
   frontend_->RequestWillBeSent(
-      request_id, request_id /* frameId */, request_id /* loaderId */,
-      common_params.url.spec(),
+      request_id, "" /* loader_id */, common_params.url.spec(),
       Network::Request::Create()
           .SetUrl(common_params.url.spec())
           .SetMethod(common_params.method)

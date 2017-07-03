@@ -32,13 +32,17 @@
 
 #include "core/CoreProbeSink.h"
 #include "core/inspector/InspectorLogAgent.h"
+#include "core/inspector/InspectorNetworkAgent.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/inspector/WorkerThreadDebugger.h"
 #include "core/inspector/protocol/Protocol.h"
+#include "core/loader/WorkerFetchContext.h"
 #include "core/probe/CoreProbes.h"
 #include "core/workers/WorkerBackingThread.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThread.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/WebThreadSupportingGC.h"
 
 namespace blink {
@@ -70,6 +74,12 @@ void WorkerInspectorController::ConnectFrontend(int session_id) {
       debugger_->ContextGroupId(thread_), nullptr);
   session->Append(
       new InspectorLogAgent(thread_->GetConsoleMessageStorage(), nullptr));
+  if (thread_->GlobalScope()->IsWorkerGlobalScope() &&
+      RuntimeEnabledFeatures::OffMainThreadFetchEnabled()) {
+    DCHECK(ToWorkerGlobalScope(thread_->GlobalScope())->GetFetchContext());
+    session->Append(InspectorNetworkAgent::CreateForWorker(
+        ToWorkerGlobalScope(thread_->GlobalScope())));
+  }
   if (sessions_.IsEmpty())
     thread_->GetWorkerBackingThread().BackingThread().AddTaskObserver(this);
   sessions_.insert(session_id, session);
