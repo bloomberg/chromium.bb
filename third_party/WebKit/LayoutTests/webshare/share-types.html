@@ -36,11 +36,4 @@ share_test((t, webshare, mock) => {
         {title: null, text: undefined, url: null}));
 }, 'share of null/undefined dict values');
 
-promise_test(t => {
-  // URL is invalid in that the URL Parser returns failure (port is too
-  // large).
-  const url = 'http://example.com:65536';
-  return promise_rejects(t, new TypeError(), navigator.share({url: url}));
-}, 'share with an invalid URL');
-
 </script>
