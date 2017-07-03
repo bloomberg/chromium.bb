@@ -689,8 +689,6 @@ void ArcSessionImpl::ArcInstanceStopped(
           << (clean ? "cleanly" : "uncleanly");
 
   if (container_instance_id != container_instance_id_) {
-    // This path is taken e.g. when an instance for login screen is Stop()ped
-    // by ArcSessionRunner.
     VLOG(1) << "Container instance id mismatch. Do nothing."
             << container_instance_id << " vs " << container_instance_id_;
     return;
