@@ -29,14 +29,6 @@
 #ifndef WTF_CPU_h
 #define WTF_CPU_h
 
-#include "platform/wtf/Compiler.h"
-
-/* CPU() - the target CPU architecture */
-#define CPU(WTF_FEATURE) \
-  (defined WTF_CPU_##WTF_FEATURE && WTF_CPU_##WTF_FEATURE)
-
-/* ==== CPU() - the target CPU architecture ==== */
-
 #if defined(arm) || defined(__arm__) || defined(ARM) || defined(_ARM_)
 
 #if !defined(__ARMEB__) && !defined(__ARM_EABI__) && !defined(__EABI__) && \
@@ -44,11 +36,16 @@
 #error Chromium does not support middle endian architecture
 #endif
 
+// WTF_CPU_ARM_NEON is 0 or 1, and should not use defined(WTF_CPU_ARM_NEON).
 #if defined(__ARM_NEON__) && !defined(WTF_CPU_ARM_NEON)
 #define WTF_CPU_ARM_NEON 1
 #endif
 
 #endif /* ARM */
+
+#if !defined(WTF_CPU_ARM_NEON)
+#define WTF_CPU_ARM_NEON 0
+#endif
 
 #if defined(__mips_msa) && defined(__mips_isa_rev) && (__mips_isa_rev >= 5)
 // All MSA intrinsics usage can be disabled by this macro.

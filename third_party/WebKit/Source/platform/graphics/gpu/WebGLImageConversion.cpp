@@ -475,7 +475,7 @@ void Unpack<WebGLImageConversion::kDataFormatRGBA5551, uint16_t, uint8_t>(
   SIMD::UnpackOneRowOfRGBA5551LittleToRGBA8(source, destination,
                                             pixels_per_row);
 #endif
-#if CPU(ARM_NEON)
+#if WTF_CPU_ARM_NEON
   SIMD::UnpackOneRowOfRGBA5551ToRGBA8(source, destination, pixels_per_row);
 #endif
 #if HAVE(MIPS_MSA_INTRINSICS)

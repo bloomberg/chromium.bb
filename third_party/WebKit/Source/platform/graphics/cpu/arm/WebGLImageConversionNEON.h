@@ -27,7 +27,7 @@
 #ifndef WebGLImageConversionNEON_h
 #define WebGLImageConversionNEON_h
 
-#if CPU(ARM_NEON)
+#if WTF_CPU_ARM_NEON
 
 #include <arm_neon.h>
 
@@ -292,6 +292,6 @@ ALWAYS_INLINE void PackOneRowOfRGBA8ToUnsignedShort565(
 
 }  // namespace blink
 
-#endif  // CPU(ARM_NEON)
+#endif  // WTF_CPU_ARM_NEON
 
 #endif  // WebGLImageConversionNEON_h
