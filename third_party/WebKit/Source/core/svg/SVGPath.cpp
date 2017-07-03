@@ -35,6 +35,8 @@
 
 namespace blink {
 
+using cssvalue::CSSPathValue;
+
 namespace {
 
 std::unique_ptr<SVGPathByteStream> BlendPathByteStreams(

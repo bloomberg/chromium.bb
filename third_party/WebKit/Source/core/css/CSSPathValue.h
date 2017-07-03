@@ -16,6 +16,8 @@ namespace blink {
 
 class StylePath;
 
+namespace cssvalue {
+
 class CSSPathValue : public CSSValue {
  public:
   static CSSPathValue* Create(PassRefPtr<StylePath>);
@@ -42,6 +44,7 @@ class CSSPathValue : public CSSValue {
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSPathValue, IsPathValue());
 
+}  // namespace cssvalue
 }  // namespace blink
 
 #endif  // CSSPathValue_h

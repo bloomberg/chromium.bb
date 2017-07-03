@@ -10,6 +10,8 @@
 
 namespace blink {
 
+namespace cssvalue {
+
 CSSPathValue* CSSPathValue::Create(PassRefPtr<StylePath> style_path) {
   return new CSSPathValue(std::move(style_path));
 }
@@ -54,4 +56,5 @@ DEFINE_TRACE_AFTER_DISPATCH(CSSPathValue) {
   CSSValue::TraceAfterDispatch(visitor);
 }
 
+}  // namespace cssvalue
 }  // namespace blink
