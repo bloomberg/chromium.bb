@@ -174,15 +174,6 @@ KeyboardUIContent::~KeyboardUIContent() {
   ResetInsets();
 }
 
-void KeyboardUIContent::LoadSystemKeyboard() {
-  DCHECK(keyboard_contents_);
-  if (keyboard_contents_->GetURL() != default_url_) {
-    // TODO(bshe): The height of system virtual keyboard and IME virtual
-    // keyboard may different. The height needs to be restored too.
-    LoadContents(default_url_);
-  }
-}
-
 void KeyboardUIContent::UpdateInsetsForWindow(aura::Window* window) {
   aura::Window* keyboard_container =
       keyboard_controller()->GetContainerWindow();
