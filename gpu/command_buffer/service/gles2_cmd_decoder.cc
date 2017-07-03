@@ -25,7 +25,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
-#include "base/trace_event/trace_event_synthetic_delay.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/debug_marker_manager.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
@@ -11917,7 +11916,6 @@ void GLES2DecoderImpl::DoSwapBuffersWithBoundsCHROMIUM(
     GLsizei count,
     const volatile GLint* rects) {
   TRACE_EVENT0("gpu", "GLES2DecoderImpl::SwapBuffersWithBoundsCHROMIUM");
-  { TRACE_EVENT_SYNTHETIC_DELAY("gpu.PresentingFrame"); }
   if (!supports_swap_buffers_with_bounds_) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glSwapBuffersWithBoundsCHROMIUM",
                        "command not supported by surface");
@@ -11951,9 +11949,6 @@ error::Error GLES2DecoderImpl::HandlePostSubBufferCHROMIUM(
       *static_cast<const volatile gles2::cmds::PostSubBufferCHROMIUM*>(
           cmd_data);
   TRACE_EVENT0("gpu", "GLES2DecoderImpl::HandlePostSubBufferCHROMIUM");
-  {
-    TRACE_EVENT_SYNTHETIC_DELAY("gpu.PresentingFrame");
-  }
   if (!supports_post_sub_buffer_) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
@@ -15548,9 +15543,6 @@ void GLES2DecoderImpl::DoSwapBuffers() {
   TRACE_EVENT2("gpu", "GLES2DecoderImpl::DoSwapBuffers",
                "offscreen", is_offscreen,
                "frame", this_frame_number);
-  {
-    TRACE_EVENT_SYNTHETIC_DELAY("gpu.PresentingFrame");
-  }
 
   ScopedGPUTrace scoped_gpu_trace(gpu_tracer_.get(), kTraceDecoder,
                                   "GLES2Decoder", "SwapBuffer");

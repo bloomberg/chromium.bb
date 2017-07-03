@@ -15,7 +15,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "base/trace_event/trace_event_synthetic_delay.h"
 #include "cc/base/devtools_instrumentation.h"
 #include "cc/benchmarks/benchmark_instrumentation.h"
 #include "cc/input/browser_controls_offset_manager.h"
@@ -639,8 +638,6 @@ void ProxyImpl::ScheduledActionBeginMainFrameNotExpectedUntil(
 }
 
 DrawResult ProxyImpl::DrawInternal(bool forced_draw) {
-  TRACE_EVENT_SYNTHETIC_DELAY("cc.Draw");
-
   DCHECK(IsImplThread());
   DCHECK(layer_tree_host_impl_.get());
 
