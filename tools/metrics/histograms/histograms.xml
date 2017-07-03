@@ -80646,10 +80646,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>sorin@chromium.org</owner>
   <summary>
     The number of download jobs found in the Windows BITS queue. This value is
-    expected to be zero in most cases, or a small number otherwise.
-    Large values indicate a problem with the job creation or clean up code.
-    The metric is recorded before a new BITS job is created and inserted
-    into BITS queue.
+    expected to be zero in most cases, or a small number otherwise. Large values
+    indicate a problem with the job creation or clean up code. The metric is
+    recorded before a new BITS job is created and inserted into BITS queue.
   </summary>
 </histogram>
 
