@@ -51,9 +51,10 @@ void RegisterServicesForFrame(content::RenderFrameHost* render_frame_host,
 
   service_manager::BinderRegistry* registry =
       render_frame_host->GetInterfaceRegistry();
-  registry->AddInterface(base::Bind(
-      KeepAliveImpl::Create,
-      render_frame_host->GetProcess()->GetBrowserContext(), extension));
+  registry->AddInterface(
+      base::Bind(KeepAliveImpl::Create,
+                 render_frame_host->GetProcess()->GetBrowserContext(),
+                 base::RetainedRef(extension)));
 
 #if BUILDFLAG(ENABLE_WIFI_DISPLAY)
   if (ExtensionHasPermission(extension, render_frame_host->GetProcess(),

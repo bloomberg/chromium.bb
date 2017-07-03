@@ -54,9 +54,10 @@ void PublicSessionMediaAccessHandler::HandleRequest(
 
   // This Unretained is safe because the lifetime of this object is until
   // process exit (living inside a base::Singleton object).
-  auto prompt_resolved_callback = base::Bind(
-      &PublicSessionMediaAccessHandler::ChainHandleRequest,
-      base::Unretained(this), web_contents, request, callback, extension);
+  auto prompt_resolved_callback =
+      base::Bind(&PublicSessionMediaAccessHandler::ChainHandleRequest,
+                 base::Unretained(this), web_contents, request, callback,
+                 base::RetainedRef(extension));
 
   extensions::PermissionIDSet requested_permissions;
   if (request.audio_type == content::MEDIA_DEVICE_AUDIO_CAPTURE)

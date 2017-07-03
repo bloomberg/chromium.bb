@@ -29,7 +29,7 @@ void RegisterChromeServicesForFrame(content::RenderFrameHost* render_frame_host,
             APIPermission::kMediaRouterPrivate)) {
       render_frame_host->GetInterfaceRegistry()->AddInterface(
           base::Bind(media_router::MediaRouterMojoImpl::BindToRequest,
-                     extension, context));
+                     base::RetainedRef(extension), context));
     }
   }
 }
