@@ -130,10 +130,8 @@ class CORE_EXPORT SelectionController final
   bool HandleTripleClick(const MouseEventWithHitTestResults&);
 
   Member<LocalFrame> const frame_;
-  // TODO(yosin): We should use |PositionWIthAffinityInFlatTree| since we
-  // should reduce usage of |VisibleSelectionInFlatTree|.
   // Used to store base before the adjustment at bidi boundary
-  VisiblePositionInFlatTree original_base_in_flat_tree_;
+  PositionInFlatTreeWithAffinity original_base_in_flat_tree_;
   bool mouse_down_may_start_select_;
   bool mouse_down_was_single_click_in_selection_;
   bool mouse_down_allows_multi_click_;

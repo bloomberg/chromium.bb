@@ -140,7 +140,7 @@ Document& SelectionController::GetDocument() const {
 }
 
 void SelectionController::ContextDestroyed(Document*) {
-  original_base_in_flat_tree_ = VisiblePositionInFlatTree();
+  original_base_in_flat_tree_ = PositionInFlatTreeWithAffinity();
 }
 
 static PositionInFlatTree AdjustPositionRespectUserSelectAll(
@@ -729,8 +729,10 @@ void SelectionController::SetNonDirectionalSelectionIfNeeded(
 
   const VisibleSelectionInFlatTree& new_selection =
       CreateVisibleSelection(passed_selection);
+  // TODO(editing-dev): We should use |PositionWithAffinity| to pass affinity
+  // to |CreateVisiblePosition()| for |original_base|.
   const PositionInFlatTree& base_position =
-      original_base_in_flat_tree_.DeepEquivalent();
+      original_base_in_flat_tree_.GetPosition();
   const VisiblePositionInFlatTree& original_base =
       base_position.IsConnected() ? CreateVisiblePosition(base_position)
                                   : VisiblePositionInFlatTree();
@@ -750,7 +752,7 @@ void SelectionController::SetNonDirectionalSelectionIfNeeded(
   SelectionInFlatTree::Builder builder(new_selection.AsSelection());
   if (adjusted_selection.Base() != base.DeepEquivalent() ||
       adjusted_selection.Extent() != extent.DeepEquivalent()) {
-    original_base_in_flat_tree_ = base;
+    original_base_in_flat_tree_ = base.ToPositionWithAffinity();
     SetContext(&GetDocument());
     builder.SetBaseAndExtent(adjusted_selection.Base(),
                              adjusted_selection.Extent());
@@ -760,7 +762,7 @@ void SelectionController::SetNonDirectionalSelectionIfNeeded(
       builder.SetBaseAndExtent(original_base.DeepEquivalent(),
                                new_selection.Extent());
     }
-    original_base_in_flat_tree_ = VisiblePositionInFlatTree();
+    original_base_in_flat_tree_ = PositionInFlatTreeWithAffinity();
   }
 
   builder.SetIsHandleVisible(handle_visibility == HandleVisibility::kVisible)
