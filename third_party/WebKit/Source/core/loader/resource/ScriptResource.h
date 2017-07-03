@@ -36,8 +36,6 @@
 
 namespace blink {
 
-enum class ScriptIntegrityDisposition { kNotChecked = 0, kFailed, kPassed };
-
 class FetchParameters;
 class KURL;
 class ResourceFetcher;
