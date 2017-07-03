@@ -12,7 +12,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sequenced_task_runner.h"
 
 namespace file_manager {
 
@@ -71,7 +70,6 @@ class FileWatcher {
   void OnWatcherStarted(const BoolCallback& callback,
                         base::FilePathWatcher* file_path_watcher);
 
-  scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
   base::FilePathWatcher* local_file_watcher_;
   base::FilePath virtual_path_;
   // Map of extension-id to counter. See the comment at AddExtension() for
