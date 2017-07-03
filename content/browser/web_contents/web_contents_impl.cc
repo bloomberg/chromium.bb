@@ -3226,9 +3226,8 @@ void WebContentsImpl::SaveFrameWithHeaders(const GURL& url,
   if (headers.empty()) {
     params->set_prefer_cache(true);
   } else {
-    for (const base::StringPiece& key_value :
-         base::SplitStringPiece(
-             headers, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+    for (const base::StringPiece& key_value : base::SplitStringPiece(
+             headers, "\r\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
       std::vector<std::string> pair = base::SplitString(
           key_value, ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
       DCHECK_EQ(2ul, pair.size());
