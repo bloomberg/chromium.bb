@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/tracing/common/process_metrics_memory_dump_provider.h"
+#include "services/resource_coordinator/public/cpp/memory_instrumentation/process_metrics_memory_dump_provider.h"
 
 #include <stdint.h>
 
@@ -28,7 +28,7 @@
 #include <base/strings/sys_string_conversions.h>
 #endif
 
-namespace tracing {
+namespace memory_instrumentation {
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
 namespace {
@@ -411,4 +411,4 @@ TEST(ProcessMetricsMemoryDumpProviderTest, TestMachOReading) {
 }
 
 #endif  // defined(OS_MACOSX)
-}  // namespace tracing
+}  // namespace memory_instrumentation

@@ -12,6 +12,8 @@ component("resource_coordinator_cpp") {
     "memory_instrumentation/coordinator.h",
     "memory_instrumentation/memory_instrumentation.cc",
     "memory_instrumentation/memory_instrumentation.h",
+    "memory_instrumentation/process_metrics_memory_dump_provider.cc",
+    "memory_instrumentation/process_metrics_memory_dump_provider.h",
     "resource_coordinator_features.cc",
     "resource_coordinator_features.h",
     "resource_coordinator_interface.cc",
@@ -25,6 +27,10 @@ component("resource_coordinator_cpp") {
   deps = [
     ":struct_traits",
   ]
+
+  if (is_win) {
+    deps += [ "//base/win:pe_image" ]
+  }
 
   public_deps = [
     "//base",
