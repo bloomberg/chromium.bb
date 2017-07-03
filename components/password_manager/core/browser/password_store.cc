@@ -193,11 +193,6 @@ void PasswordStore::DisableAutoSignInForOrigins(
                  base::Callback<bool(const GURL&)>(origin_filter), completion));
 }
 
-void PasswordStore::TrimAffiliationCache() {
-  if (affiliated_match_helper_)
-    affiliated_match_helper_->TrimAffiliationCache();
-}
-
 void PasswordStore::GetLogins(const FormDigest& form,
                               PasswordStoreConsumer* consumer) {
   // Per http://crbug.com/121738, we deliberately ignore saved logins for

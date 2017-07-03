@@ -125,10 +125,6 @@ void AffiliatedMatchHelper::CompleteInjectAffiliatedWebRealm(
   barrier_closure.Run();
 }
 
-void AffiliatedMatchHelper::TrimAffiliationCache() {
-  affiliation_service_->TrimCache();
-}
-
 // static
 bool AffiliatedMatchHelper::IsValidAndroidCredential(
     const PasswordStore::FormDigest& form) {

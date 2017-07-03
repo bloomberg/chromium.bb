@@ -139,18 +139,10 @@ class AffiliationService : public KeyedService {
   // Wipes results of on-demand fetches and expired prefetches from the cache,
   // but retains information corresponding to facets that are being kept fresh.
   // As no required data is deleted, there will be no network requests directly
-  // triggered by this call.
-  //
-  // The second version will only potentially remove data corresponding to the
-  // given |facet_uri|, but still only as long as the data is no longer needed.
-  virtual void TrimCache();
+  // triggered by this call. It will only potentially remove data
+  // corresponding to the given |facet_uri|, but still only as long as the
+  // data is no longer needed.
   virtual void TrimCacheForFacet(const FacetURI& facet_uri);
-
-  // Posts a task to the |backend_task_runner| to delete the cache database file
-  // at |db_path|, and all auxiliary files. The database must be closed before
-  // calling this.
-  static void DeleteCache(const base::FilePath& db_path,
-                          base::SingleThreadTaskRunner* backend_task_runner);
 
  private:
   // The backend, owned by this AffiliationService instance, but living on the

@@ -75,18 +75,6 @@ void ToggleAffiliationBasedMatchingBasedOnPasswordSyncedState(
   }
 }
 
-void TrimOrDeleteAffiliationCacheForStoreAndPath(
-    PasswordStore* password_store,
-    const base::FilePath& profile_path,
-    scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner) {
-  if (password_store && password_store->affiliated_match_helper()) {
-    password_store->TrimAffiliationCache();
-  } else {
-    AffiliationService::DeleteCache(GetAffiliationDatabasePath(profile_path),
-                                    db_thread_runner.get());
-  }
-}
-
 std::unique_ptr<LoginDatabase> CreateLoginDatabase(
     const base::FilePath& profile_path) {
   base::FilePath login_db_file_path = profile_path.Append(kLoginDataFileName);
