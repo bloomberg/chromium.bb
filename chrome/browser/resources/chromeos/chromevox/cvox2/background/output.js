@@ -353,6 +353,7 @@ Output.RULES = {
       enter: '$name= $role $state $description',
       speak: '$nameOrDescendants $earcon(LIST_ITEM) $role $state $description'
     },
+    listMarker: {speak: '$name'},
     menu: {
       enter: '$name $role',
       speak: '$name $role @@list_with_items($countChildren(menuItem)) ' +
