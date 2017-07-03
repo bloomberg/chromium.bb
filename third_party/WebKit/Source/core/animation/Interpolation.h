@@ -8,12 +8,11 @@
 #include <memory>
 #include "core/CoreExport.h"
 #include "core/animation/InterpolableValue.h"
+#include "core/animation/PropertyHandle.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/RefCounted.h"
 
 namespace blink {
-
-class PropertyHandle;
 
 // The Interpolation class is an abstract class representing an animation effect
 // between two keyframe values for the same property (CSS property, SVG
@@ -81,6 +80,7 @@ class CORE_EXPORT Interpolation : public RefCounted<Interpolation> {
 };
 
 using ActiveInterpolations = Vector<RefPtr<Interpolation>, 1>;
+using ActiveInterpolationsMap = HashMap<PropertyHandle, ActiveInterpolations>;
 
 }  // namespace blink
 
