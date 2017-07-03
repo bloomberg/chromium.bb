@@ -98,15 +98,6 @@ void AffiliationBackend::CancelPrefetch(const FacetURI& facet_uri,
     facet_managers_.erase(facet_uri);
 }
 
-void AffiliationBackend::TrimCache() {
-  DCHECK(thread_checker_ && thread_checker_->CalledOnValidThread());
-
-  std::vector<AffiliatedFacetsWithUpdateTime> all_affiliations;
-  cache_->GetAllAffiliations(&all_affiliations);
-  for (const auto& affiliation : all_affiliations)
-    DiscardCachedDataIfNoLongerNeeded(affiliation.facets);
-}
-
 void AffiliationBackend::TrimCacheForFacet(const FacetURI& facet_uri) {
   DCHECK(thread_checker_ && thread_checker_->CalledOnValidThread());
 

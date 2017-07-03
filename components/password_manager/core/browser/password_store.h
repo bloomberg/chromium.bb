@@ -175,10 +175,6 @@ class PasswordStore : protected PasswordStoreSync,
       const base::Callback<bool(const GURL&)>& origin_filter,
       const base::Closure& completion);
 
-  // Removes cached affiliation data that is no longer needed; provided that
-  // affiliation-based matching is enabled.
-  void TrimAffiliationCache();
-
   // Searches for a matching PasswordForm, and notifies |consumer| on
   // completion. The request will be cancelled if the consumer is destroyed.
   virtual void GetLogins(const FormDigest& form,

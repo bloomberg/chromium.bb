@@ -110,16 +110,6 @@ void PasswordStoreFactory::OnPasswordsSyncedStatePotentiallyChanged(
                               content::BrowserThread::DB));
 }
 
-// static
-void PasswordStoreFactory::TrimOrDeleteAffiliationCache(Profile* profile) {
-  scoped_refptr<PasswordStore> password_store =
-      GetForProfile(profile, ServiceAccessType::EXPLICIT_ACCESS);
-  password_manager::TrimOrDeleteAffiliationCacheForStoreAndPath(
-      password_store.get(), profile->GetPath(),
-      content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::DB));
-}
-
 PasswordStoreFactory::PasswordStoreFactory()
     : RefcountedBrowserContextKeyedServiceFactory(
           "PasswordStore",

@@ -33,15 +33,6 @@ void ToggleAffiliationBasedMatchingBasedOnPasswordSyncedState(
     const base::FilePath& profile_path,
     scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner);
 
-// Trims the affiliation cache (placed in |profile_path|) for |password_store|
-// if affiliation-based matching is enabled, and completely deletes it
-// otherwise. The AffiliationService will use |db_thread_runner| as its backend
-// thread.
-void TrimOrDeleteAffiliationCacheForStoreAndPath(
-    PasswordStore* password_store,
-    const base::FilePath& profile_path,
-    scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner);
-
 // Creates a LoginDatabase. Looks in |profile_path| for the database file.
 // Does not call LoginDatabase::Init() -- to avoid UI jank, that needs to be
 // called by PasswordStore::Init() on the background thread.

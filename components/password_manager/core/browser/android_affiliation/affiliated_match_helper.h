@@ -89,9 +89,6 @@ class AffiliatedMatchHelper : public PasswordStore::Observer,
       std::vector<std::unique_ptr<autofill::PasswordForm>> forms,
       const PasswordFormsCallback& result_callback);
 
-  // Removes cached affiliation data that is no longer needed.
-  void TrimAffiliationCache();
-
   // Returns whether or not |form| represents an Android credential.
   static bool IsValidAndroidCredential(const PasswordStore::FormDigest& form);
 
