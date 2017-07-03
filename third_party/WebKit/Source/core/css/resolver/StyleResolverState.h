@@ -102,6 +102,9 @@ class CORE_EXPORT StyleResolverState {
   }
 
   CSSAnimationUpdate& AnimationUpdate() { return animation_update_; }
+  const CSSAnimationUpdate& AnimationUpdate() const {
+    return animation_update_;
+  }
 
   bool IsAnimationInterpolationMapReady() const {
     return is_animation_interpolation_map_ready_;
@@ -115,6 +118,14 @@ class CORE_EXPORT StyleResolverState {
   }
   void SetIsAnimatingCustomProperties(bool value) {
     is_animating_custom_properties_ = value;
+  }
+
+  HashSet<PropertyHandle>& AnimationPendingCustomProperties() {
+    return animation_pending_custom_properties_;
+  }
+
+  const HashSet<PropertyHandle>& AnimationPendingCustomProperties() const {
+    return animation_pending_custom_properties_;
   }
 
   void SetParentStyle(RefPtr<const ComputedStyle> parent_style) {
@@ -237,6 +248,7 @@ class CORE_EXPORT StyleResolverState {
   CSSAnimationUpdate animation_update_;
   bool is_animation_interpolation_map_ready_;
   bool is_animating_custom_properties_;
+  HashSet<PropertyHandle> animation_pending_custom_properties_;
 
   bool apply_property_to_regular_style_;
   bool apply_property_to_visited_link_style_;

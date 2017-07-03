@@ -43,8 +43,6 @@
 
 namespace blink {
 
-using ActiveInterpolationsMap = HashMap<PropertyHandle, ActiveInterpolations>;
-
 class InertEffect;
 
 // Represents the order in which a sequence of SampledEffects should apply.

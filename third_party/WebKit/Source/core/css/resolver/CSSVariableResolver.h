@@ -13,6 +13,7 @@
 
 namespace blink {
 
+class CSSCustomPropertyDeclaration;
 class CSSParserTokenRange;
 class CSSPendingSubstitutionValue;
 class CSSVariableData;
@@ -27,6 +28,9 @@ class CSSVariableResolver {
 
  public:
   CSSVariableResolver(const StyleResolverState&);
+
+  RefPtr<CSSVariableData> ResolveCustomPropertyAnimationKeyframe(
+      const CSSCustomPropertyDeclaration& keyframe);
 
   void ResolveVariableDefinitions();
 

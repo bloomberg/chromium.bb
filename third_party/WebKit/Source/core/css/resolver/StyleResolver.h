@@ -24,6 +24,7 @@
 #define StyleResolver_h
 
 #include "core/CoreExport.h"
+#include "core/animation/Interpolation.h"
 #include "core/animation/PropertyHandle.h"
 #include "core/css/ElementRuleCollector.h"
 #include "core/css/PseudoStyleRequest.h"
@@ -52,6 +53,7 @@ class MatchResult;
 class RuleSet;
 class StylePropertySet;
 class StyleRuleUsageTracker;
+class CSSVariableResolver;
 
 enum StyleSharingBehavior {
   kAllowStyleSharing,
@@ -63,8 +65,6 @@ enum RuleMatchingBehavior { kMatchAllRules, kMatchAllRulesExcludingSMIL };
 const unsigned kStyleSharingListSize = 15;
 const unsigned kStyleSharingMaxDepth = 32;
 using StyleSharingList = HeapDeque<Member<Element>, kStyleSharingListSize>;
-using ActiveInterpolationsMap =
-    HashMap<PropertyHandle, Vector<RefPtr<Interpolation>, 1>>;
 
 // This class selects a ComputedStyle for a given element based on a collection
 // of stylesheets.
@@ -156,6 +156,10 @@ class CORE_EXPORT StyleResolver final
 
   void SetRuleUsageTracker(StyleRuleUsageTracker*);
   void UpdateMediaType();
+
+  static void ApplyAnimatedCustomProperty(StyleResolverState&,
+                                          CSSVariableResolver&,
+                                          const PropertyHandle&);
 
   DECLARE_TRACE();
 
@@ -278,8 +282,8 @@ class CORE_EXPORT StyleResolver final
                        NeedsApplyPass&,
                        PropertyWhitelistType = kPropertyWhitelistNone);
   template <CSSPropertyPriority priority>
-  void ApplyAnimatedProperties(StyleResolverState&,
-                               const ActiveInterpolationsMap&);
+  void ApplyAnimatedStandardProperties(StyleResolverState&,
+                                       const ActiveInterpolationsMap&);
   template <CSSPropertyPriority priority>
   void ApplyAllProperty(StyleResolverState&,
                         const CSSValue&,
