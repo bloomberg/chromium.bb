@@ -27,6 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include "internal.h"
 #include "error.h"
+#include "errno.h"
 #include "progname.h"
 #include "version-etc.h"
 #include "brl_checks.h"
@@ -303,11 +304,17 @@ read_cursorPos (yaml_parser_t *parser, int len) {
 
   while ((parse_error = yaml_parser_parse(parser, &event)) &&
 	 (event.type == YAML_SCALAR_EVENT)) {
-    pos[i++] = strtol((const char *)event.data.scalar.value, &tail, 0);
-    if (!pos && !strcmp((const char *)event.data.scalar.value, tail))
+    errno = 0;
+    int val = strtol((const char *)event.data.scalar.value, &tail, 0);
+    if (errno != 0)
       error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line + 1,
 		    "Not a valid cursor position '%s'. Must be a number\n",
 		    event.data.scalar.value);
+    if ((const char *)event.data.scalar.value == tail)
+      error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line + 1,
+		    "No digits found in cursor position '%s'. Must be a number\n",
+		    event.data.scalar.value);
+    pos[i++] = val;
     yaml_event_delete(&event);
   }
   if (i != len)
