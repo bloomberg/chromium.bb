@@ -6,7 +6,11 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
+#include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -67,9 +71,29 @@ void AssetLinkRetriever::OnURLFetchComplete(const net::URLFetcher* source) {
   if (error_) {
     state_ = State::FINISHED;
   } else {
-    // TODO(crbug.com/630555): Start parsing here.
+    state_ = State::PARSING;
+    std::string response_string;
+    source->GetResponseAsString(&response_string);
+    scoped_refptr<base::TaskRunner> task_runner =
+        base::CreateTaskRunnerWithTraits({base::TaskPriority::USER_BLOCKING});
+    auto data = base::MakeUnique<AssetLinkData>();
+    AssetLinkData* data_raw = data.get();
+    base::PostTaskAndReplyWithResult(
+        task_runner.get(), FROM_HERE,
+        base::BindOnce(&AssetLinkData::Parse, base::Unretained(data_raw),
+                       std::move(response_string)),
+        base::BindOnce(&AssetLinkRetriever::OnResponseParsed, this,
+                       base::Passed(&data)));
   }
   fetcher_.reset();
+}
+
+void AssetLinkRetriever::OnResponseParsed(std::unique_ptr<AssetLinkData> data,
+                                          bool result) {
+  error_ = !result;
+  if (result)
+    data_ = std::move(*data);
+  state_ = State::FINISHED;
 }
 
 }  // namespace password_manager
