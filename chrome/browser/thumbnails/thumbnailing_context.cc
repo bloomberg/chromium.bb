@@ -9,6 +9,12 @@
 
 namespace thumbnails {
 
+bool IsGoodClipping(ClipResult clip_result) {
+  return clip_result == CLIP_RESULT_WIDER_THAN_TALL ||
+         clip_result == CLIP_RESULT_TALLER_THAN_WIDE ||
+         clip_result == CLIP_RESULT_NOT_CLIPPED;
+}
+
 ThumbnailingContext::ThumbnailingContext(content::WebContents* web_contents,
                                          ThumbnailService* receiving_service,
                                          bool load_interrupted)

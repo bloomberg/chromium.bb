@@ -57,14 +57,11 @@ class ThumbnailTabHelper
 
   // Create a thumbnail from the web contents bitmap.
   void ProcessCapturedBitmap(
-      scoped_refptr<thumbnails::ThumbnailingAlgorithm> algorithm,
       const SkBitmap& bitmap,
       content::ReadbackResponse response);
 
   // Pass the thumbnail to the thumbnail service.
-  void UpdateThumbnail(
-      const thumbnails::ThumbnailingContext& context,
-      const SkBitmap& thumbnail);
+  void UpdateThumbnail(const SkBitmap& thumbnail);
 
   // Clean up after thumbnail generation has ended.
   void CleanUpFromThumbnailGeneration();
@@ -85,7 +82,6 @@ class ThumbnailTabHelper
   scoped_refptr<thumbnails::ThumbnailingContext> thumbnailing_context_;
 
   base::TimeTicks copy_from_surface_start_time_;
-  base::TimeTicks process_bitmap_start_time_;
 
   base::WeakPtrFactory<ThumbnailTabHelper> weak_factory_;
 

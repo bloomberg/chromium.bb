@@ -28,9 +28,9 @@ enum ClipResult {
   CLIP_RESULT_TALLER_THAN_WIDE,
   // The source and destination aspect ratios are identical.
   CLIP_RESULT_NOT_CLIPPED,
-  // The source and destination are identical.
-  CLIP_RESULT_SOURCE_SAME_AS_TARGET,
 };
+
+bool IsGoodClipping(ClipResult clip_result);
 
 // Holds the information needed for processing a thumbnail.
 struct ThumbnailingContext : base::RefCountedThreadSafe<ThumbnailingContext> {

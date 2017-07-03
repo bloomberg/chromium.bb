@@ -118,7 +118,7 @@ bool ThumbnailServiceImpl::ShouldAcquirePageThumbnail(
       !current_score.ShouldConsiderUpdating()) {
     return false;
   }
-  // Skip if we don't have to udpate the temporary thumbnail (i.e. the one
+  // Skip if we don't have to update the temporary thumbnail (i.e. the one
   // not yet saved).
   ThumbnailScore temporary_score;
   if (local_ptr->GetTemporaryPageThumbnailScore(url, &temporary_score) &&

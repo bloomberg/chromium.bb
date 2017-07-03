@@ -19,11 +19,11 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/scrollbar_size.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(ThumbnailTabHelper);
-
-class SkBitmap;
 
 // Overview
 // --------
@@ -208,12 +208,11 @@ void ThumbnailTabHelper::AsyncProcessThumbnail(
   copy_from_surface_start_time_ = base::TimeTicks::Now();
   view->CopyFromSurface(copy_rect, thumbnailing_context_->requested_copy_size,
                         base::Bind(&ThumbnailTabHelper::ProcessCapturedBitmap,
-                                   weak_factory_.GetWeakPtr(), algorithm),
+                                   weak_factory_.GetWeakPtr()),
                         kN32_SkColorType);
 }
 
 void ThumbnailTabHelper::ProcessCapturedBitmap(
-    scoped_refptr<ThumbnailingAlgorithm> algorithm,
     const SkBitmap& bitmap,
     content::ReadbackResponse response) {
   base::TimeDelta copy_from_surface_time =
@@ -223,11 +222,20 @@ void ThumbnailTabHelper::ProcessCapturedBitmap(
   if (response == content::READBACK_SUCCESS) {
     // On success, we must be on the UI thread.
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    process_bitmap_start_time_ = base::TimeTicks::Now();
-    algorithm->ProcessBitmap(thumbnailing_context_,
-                             base::Bind(&ThumbnailTabHelper::UpdateThumbnail,
-                                        weak_factory_.GetWeakPtr()),
-                             bitmap);
+    base::TimeTicks process_bitmap_start_time = base::TimeTicks::Now();
+    if (!bitmap.isNull() && !bitmap.empty()) {
+      // TODO(treib): Move this off the UI thread. crbug.com/737396
+      thumbnailing_context_->score.boring_score =
+          color_utils::CalculateBoringScore(bitmap);
+
+      thumbnailing_context_->score.good_clipping =
+          thumbnails::IsGoodClipping(thumbnailing_context_->clip_result);
+    }
+    base::TimeDelta process_bitmap_time =
+        base::TimeTicks::Now() - process_bitmap_start_time;
+    UMA_HISTOGRAM_TIMES("Thumbnails.ProcessBitmapTime", process_bitmap_time);
+
+    UpdateThumbnail(bitmap);
   } else {
     // On failure because of shutdown we are not on the UI thread, so ensure
     // that cleanup happens on that thread.
@@ -239,18 +247,15 @@ void ThumbnailTabHelper::ProcessCapturedBitmap(
   }
 }
 
-void ThumbnailTabHelper::UpdateThumbnail(const ThumbnailingContext& context,
-                                         const SkBitmap& thumbnail) {
+void ThumbnailTabHelper::UpdateThumbnail(const SkBitmap& thumbnail) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  base::TimeDelta process_bitmap_time =
-      base::TimeTicks::Now() - process_bitmap_start_time_;
-  UMA_HISTOGRAM_TIMES("Thumbnails.ProcessBitmapTime", process_bitmap_time);
 
   // Feed the constructed thumbnail to the thumbnail service.
   gfx::Image image = gfx::Image::CreateFrom1xBitmap(thumbnail);
-  context.service->SetPageThumbnail(context, image);
-  DVLOG(1) << "Thumbnail taken for " << context.url << ": "
-      << context.score.ToString();
+  thumbnailing_context_->service->SetPageThumbnail(*thumbnailing_context_,
+                                                   image);
+  DVLOG(1) << "Thumbnail taken for " << thumbnailing_context_->url << ": "
+           << thumbnailing_context_->score.ToString();
 
   CleanUpFromThumbnailGeneration();
 }
