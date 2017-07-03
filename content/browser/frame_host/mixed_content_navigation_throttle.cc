@@ -70,7 +70,7 @@ bool IsUrlPotentiallySecure(const GURL& url) {
   // https://tools.ietf.org/html/draft-west-let-localhost-be-localhost-03. See:
   // https://crbug.com/691930.
   if (is_secure && url.SchemeIs(url::kHttpScheme) &&
-      net::IsLocalHostname(url.HostNoBrackets(), nullptr)) {
+      net::IsLocalHostname(url.HostNoBracketsPiece(), nullptr)) {
     is_secure = false;
   }
 

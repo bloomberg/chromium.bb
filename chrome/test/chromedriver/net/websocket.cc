@@ -88,7 +88,7 @@ void WebSocket::Connect(const net::CompletionCallback& callback) {
       endpoints.AppendString(endpoint.ToStringWithoutPort());
     std::string json;
     CHECK(base::JSONWriter::Write(endpoints, &json));
-    VLOG(0) << "resolved " << url_.HostNoBrackets() << " to " << json;
+    VLOG(0) << "resolved " << url_.HostNoBracketsPiece() << " to " << json;
   }
 
   net::NetLogSource source;
@@ -127,8 +127,8 @@ bool WebSocket::Send(const std::string& message) {
 
 void WebSocket::OnSocketConnect(int code) {
   if (code != net::OK) {
-    VLOG(1) << "failed to connect to " << url_.HostNoBrackets() << " (error "
-            << code << ")";
+    VLOG(1) << "failed to connect to " << url_.HostNoBracketsPiece()
+            << " (error " << code << ")";
     Close(code);
     return;
   }
