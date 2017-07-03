@@ -5,21 +5,16 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_view.h"
 
 #include "base/logging.h"
-#include "base/mac/objc_property_releaser.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_bar.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_bar_item.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 
-@implementation NewTabPageView {
- @private
-  // The objects pointed to by |tabBar_| and |scrollView_| are owned as
-  // subviews already.
-  __unsafe_unretained NewTabPageBar* tabBar_;     // weak
-  __unsafe_unretained UIScrollView* scrollView_;  // weak
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
-  base::mac::ObjCPropertyReleaser propertyReleaser_NewTabPageView_;
-}
+@implementation NewTabPageView
 
 @synthesize scrollView = scrollView_;
 @synthesize tabBar = tabBar_;
@@ -29,7 +24,6 @@
                     andTabBar:(NewTabPageBar*)tabBar {
   self = [super initWithFrame:frame];
   if (self) {
-    propertyReleaser_NewTabPageView_.Init(self, [NewTabPageView class]);
     [self addSubview:scrollView];
     [self addSubview:tabBar];
     scrollView_ = scrollView;

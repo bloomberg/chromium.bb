@@ -5,12 +5,15 @@
 #import "ios/chrome/browser/ui/ntp/whats_new_header_view.h"
 
 #include "base/logging.h"
-#include "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/common/string_util.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/images/branded_image_provider.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -28,11 +31,11 @@ const int kLinkColorRgb = 0x5595FE;
 }  // namespace
 
 @interface WhatsNewHeaderView () {
-  base::scoped_nsobject<UIImageView> _infoIconImageView;
-  base::scoped_nsobject<UILabel> _promoLabel;
-  base::scoped_nsobject<NSLayoutConstraint> _edgeConstraint;
-  base::scoped_nsobject<UIView> _leftSpacer;
-  base::scoped_nsobject<UIView> _rightSpacer;
+  UIImageView* _infoIconImageView;
+  UILabel* _promoLabel;
+  NSLayoutConstraint* _edgeConstraint;
+  UIView* _leftSpacer;
+  UIView* _rightSpacer;
   CGFloat _sideMargin;
 }
 
@@ -49,16 +52,15 @@ const int kLinkColorRgb = 0x5595FE;
     UIImage* infoIconImage = ios::GetChromeBrowserProvider()
                                  ->GetBrandedImageProvider()
                                  ->GetWhatsNewIconImage(WHATS_NEW_INFO);
-    _infoIconImageView.reset([[UIImageView alloc] initWithImage:infoIconImage]);
-    _promoLabel.reset([[[self class] promoLabel] retain]);
+    _infoIconImageView = [[UIImageView alloc] initWithImage:infoIconImage];
+    _promoLabel = [[self class] promoLabel];
     [_promoLabel setUserInteractionEnabled:YES];
-    base::scoped_nsobject<UITapGestureRecognizer> promoTapRecognizer(
-        [[UITapGestureRecognizer alloc]
-            initWithTarget:self
-                    action:@selector(promoButtonPressed)]);
+    UITapGestureRecognizer* promoTapRecognizer = [[UITapGestureRecognizer alloc]
+        initWithTarget:self
+                action:@selector(promoButtonPressed)];
     [_promoLabel addGestureRecognizer:promoTapRecognizer];
-    _leftSpacer.reset([[UIView alloc] initWithFrame:CGRectZero]);
-    _rightSpacer.reset([[UIView alloc] initWithFrame:CGRectZero]);
+    _leftSpacer = [[UIView alloc] initWithFrame:CGRectZero];
+    _rightSpacer = [[UIView alloc] initWithFrame:CGRectZero];
 
     [_leftSpacer setHidden:YES];
     [_rightSpacer setHidden:YES];
@@ -105,14 +107,14 @@ const int kLinkColorRgb = 0x5595FE;
         ],
         views, metrics, self);
 
-    _edgeConstraint.reset([[NSLayoutConstraint
+    _edgeConstraint = [NSLayoutConstraint
         constraintWithItem:_leftSpacer
                  attribute:NSLayoutAttributeWidth
                  relatedBy:NSLayoutRelationGreaterThanOrEqual
                     toItem:nil
                  attribute:NSLayoutAttributeNotAnAttribute
                 multiplier:1
-                  constant:_sideMargin] retain]);
+                  constant:_sideMargin];
     [self addConstraint:_edgeConstraint];
   }
   [_edgeConstraint setConstant:_sideMargin];
@@ -136,13 +138,13 @@ const int kLinkColorRgb = 0x5595FE;
   [self setNeedsUpdateConstraints];
   CGFloat maxLabelWidth =
       width - 2 * sideMargin - kInfoIconSize - kLabelLeftMargin;
-  [_promoLabel.get() setPreferredMaxLayoutWidth:maxLabelWidth];
+  [_promoLabel setPreferredMaxLayoutWidth:maxLabelWidth];
 }
 
 - (void)promoButtonPressed {
   [_delegate onPromoLabelTapped];
   [self removeConstraints:self.constraints];
-  _edgeConstraint.reset();
+  _edgeConstraint = nil;
 }
 
 + (void)setText:(NSString*)promoLabelText inPromoLabel:(UILabel*)promoLabel {
@@ -153,8 +155,7 @@ const int kLinkColorRgb = 0x5595FE;
   DCHECK_NE(0u, linkRange.length);
 
   NSMutableAttributedString* attributedText =
-      [[[NSMutableAttributedString alloc] initWithString:strippedText]
-          autorelease];
+      [[NSMutableAttributedString alloc] initWithString:strippedText];
 
   // Sets the styling to mimic a link.
   UIColor* linkColor = UIColorFromRGB(kLinkColorRgb, 1.0);
@@ -170,8 +171,7 @@ const int kLinkColorRgb = 0x5595FE;
 
   // Sets the line spacing on the attributed string.
   NSInteger strLength = [strippedText length];
-  base::scoped_nsobject<NSMutableParagraphStyle> style(
-      [[NSMutableParagraphStyle alloc] init]);
+  NSMutableParagraphStyle* style = [[NSMutableParagraphStyle alloc] init];
   [style setLineSpacing:kLabelLineSpacing];
   [attributedText addAttribute:NSParagraphStyleAttributeName
                          value:style
@@ -181,21 +181,20 @@ const int kLinkColorRgb = 0x5595FE;
 }
 
 + (UILabel*)promoLabel {
-  base::scoped_nsobject<UILabel> promoLabel(
-      [[UILabel alloc] initWithFrame:CGRectZero]);
+  UILabel* promoLabel = [[UILabel alloc] initWithFrame:CGRectZero];
   [promoLabel
       setFont:[[MDCTypography fontLoader] regularFontOfSize:kLabelFontSize]];
   [promoLabel setTextColor:UIColorFromRGB(kTextColorRgb, 1.0)];
   [promoLabel setNumberOfLines:0];
   [promoLabel setTextAlignment:NSTextAlignmentNatural];
   [promoLabel setLineBreakMode:NSLineBreakByWordWrapping];
-  return promoLabel.autorelease();
+  return promoLabel;
 }
 
 + (int)heightToFitText:(NSString*)text inWidth:(CGFloat)width {
   CGFloat maxWidthForLabel = width - kInfoIconSize - kLabelLeftMargin;
-  base::scoped_nsobject<UILabel> promoLabel([[self promoLabel] retain]);
-  [[self class] setText:text inPromoLabel:promoLabel.get()];
+  UILabel* promoLabel = [self promoLabel];
+  [[self class] setText:text inPromoLabel:promoLabel];
   CGFloat promoLabelHeight =
       [promoLabel sizeThatFits:CGSizeMake(maxWidthForLabel, CGFLOAT_MAX)]
           .height;

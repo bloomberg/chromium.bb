@@ -19,8 +19,8 @@
 
 @property(nonatomic, copy) NSString* title;
 @property(nonatomic, assign) NSUInteger identifier;
-@property(nonatomic, retain) UIImage* image;
-@property(nonatomic, assign) UIView* view;
+@property(nonatomic, strong) UIImage* image;
+@property(nonatomic, weak) UIView* view;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_NTP_NEW_TAB_PAGE_BAR_ITEM_H_

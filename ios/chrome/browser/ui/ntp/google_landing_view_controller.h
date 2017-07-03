@@ -25,9 +25,9 @@
                        NewTabPagePanelProtocol,
                        ToolbarOwner>
 
-@property(nonatomic, assign) id<GoogleLandingDataSource> dataSource;
+@property(nonatomic, weak) id<GoogleLandingDataSource> dataSource;
 
-@property(nonatomic, assign) id<UrlLoader, OmniboxFocuser> dispatcher;
+@property(nonatomic, weak) id<UrlLoader, OmniboxFocuser> dispatcher;
 
 @end
 

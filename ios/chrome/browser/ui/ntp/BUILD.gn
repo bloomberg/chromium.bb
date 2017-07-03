@@ -169,6 +169,7 @@ source_set("ntp_controller") {
 }
 
 source_set("ntp_internal") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "centering_scrollview.h",
     "centering_scrollview.mm",

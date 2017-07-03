@@ -8,8 +8,7 @@
 #include <cmath>
 
 #include "base/logging.h"
-#include "base/mac/objc_property_releaser.h"
-#include "base/mac/scoped_nsobject.h"
+
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_bar_button.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_bar_item.h"
@@ -18,6 +17,10 @@
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ui/gfx/ios/NSString+CrStringDrawing.h"
 #include "ui/gfx/scoped_ui_graphics_push_context_ios.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -32,11 +35,11 @@ const int kNumberOfTabsIncognito = 2;
 }  // anonymous namespace
 
 @interface NewTabPageBar () {
-  base::scoped_nsobject<UIImageView> shadow_;
+  UIImageView* shadow_;
 }
 
-@property(nonatomic, readwrite, retain) NSArray* buttons;
-@property(nonatomic, readwrite, retain) UIButton* popupButton;
+@property(nonatomic, readwrite, strong) NSArray* buttons;
+@property(nonatomic, readwrite, strong) UIButton* popupButton;
 
 - (void)setup;
 - (void)calculateButtonWidth;
@@ -46,28 +49,21 @@ const int kNumberOfTabsIncognito = 2;
 @end
 
 @implementation NewTabPageBar {
-  // Tabbar buttons.
-  NSArray* buttons_;  // UIButton
-  NSArray* items_;    // NewTabPageBarItem
   // Which button is currently selected.
   NSUInteger selectedIndex_;
-  // Popup button helper, for iPhone labels.
-  UIButton* popupButton_;
   // Don't allow tabbar animations on startup, only after first tap.
   BOOL canAnimate_;
-  id<NewTabPageBarDelegate> delegate_;  // weak
+  __weak id<NewTabPageBarDelegate> delegate_;
   // Logo view, used to center the tab buttons.
-  base::scoped_nsobject<UIImageView> logoView_;
+  UIImageView* logoView_;
   // Overlay view, used to highlight the selected button.
-  base::scoped_nsobject<UIImageView> overlayView_;
+  UIImageView* overlayView_;
   // Overlay view, used to highlight the selected button.
-  base::scoped_nsobject<UIView> overlayColorView_;
+  UIView* overlayColorView_;
   // Width of a button.
   CGFloat buttonWidth_;
   // Percentage overlay sits over tab bar buttons.
   CGFloat overlayPercentage_;
-
-  base::mac::ObjCPropertyReleaser propertyReleaser_NewTabPageBar_;
 }
 
 @synthesize items = items_;
@@ -94,7 +90,6 @@ const int kNumberOfTabsIncognito = 2;
 }
 
 - (void)setup {
-  propertyReleaser_NewTabPageBar_.Init(self, [NewTabPageBar class]);
   self.selectedIndex = NSNotFound;
   canAnimate_ = NO;
   self.autoresizingMask =
@@ -103,13 +98,13 @@ const int kNumberOfTabsIncognito = 2;
   self.backgroundColor = [UIColor clearColor];
 
   if ([self showOverlay]) {
-    overlayView_.reset(
-        [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, buttonWidth_, 2)]);
+    overlayView_ =
+        [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, buttonWidth_, 2)];
 
     // Center |overlayColorView_| inside |overlayView_|.
     CGFloat colorX = AlignValueToPixel((buttonWidth_ - kOverlayColorWidth) / 2);
-    overlayColorView_.reset([[UIView alloc]
-        initWithFrame:CGRectMake(colorX, 0, kOverlayColorWidth, 2)]);
+    overlayColorView_ = [[UIView alloc]
+        initWithFrame:CGRectMake(colorX, 0, kOverlayColorWidth, 2)];
     [overlayColorView_
         setBackgroundColor:UIColorFromRGB(kOverlayViewColor, 1.0)];
     [overlayColorView_ layer].cornerRadius = 1.0;
@@ -122,7 +117,7 @@ const int kNumberOfTabsIncognito = 2;
 
   // Make the drop shadow.
   UIImage* shadowImage = [UIImage imageNamed:@"ntp_bottom_bar_shadow"];
-  shadow_.reset([[UIImageView alloc] initWithImage:shadowImage]);
+  shadow_ = [[UIImageView alloc] initWithImage:shadowImage];
   // Shadow is positioned directly above the new tab page bar.
   [shadow_
       setFrame:CGRectMake(0, -shadowImage.size.height, self.bounds.size.width,
@@ -140,7 +135,7 @@ const int kNumberOfTabsIncognito = 2;
   // is enabled.
   [self calculateButtonWidth];
 
-  CGFloat logoWidth = logoView_.get().image.size.width;
+  CGFloat logoWidth = logoView_.image.size.width;
   CGFloat padding = [self useIconsInButtons] ? logoWidth : 0;
   CGFloat buttonPadding = floor((CGRectGetWidth(self.bounds) - padding -
                                  buttonWidth_ * self.buttons.count) /
@@ -193,8 +188,7 @@ const int kNumberOfTabsIncognito = 2;
   if (newItems == items_)
     return;
 
-  [items_ autorelease];
-  items_ = [newItems retain];
+  items_ = newItems;
   // Remove all the existing buttons from the view.
   for (UIButton* button in self.buttons) {
     [button removeFromSuperview];

@@ -6,7 +6,6 @@
 
 #include <string>
 
-#import "base/mac/scoped_nsobject.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/application_context.h"
@@ -22,6 +21,10 @@
 #import "net/base/mac/url_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 // The URL for the the Learn More page shown on incognito new tab.
@@ -53,63 +56,63 @@ const int kLinkColor = 0x03A9F4;
 @end
 
 @implementation IncognitoNTPView {
-  base::WeakNSProtocol<id<UrlLoader>> _loader;
-  base::scoped_nsobject<UIView> _containerView;
+  __weak id<UrlLoader> _loader;
+  UIView* _containerView;
 
   // Constraint ensuring that |containerView| is at least as high as the
   // superview of the IncognitoNTPView, i.e. the Incognito panel.
   // This ensures that if the Incognito panel is higher than a compact
   // |containerView|, the |containerView|'s |topGuide| and |bottomGuide| are
   // forced to expand, centering the views in between them.
-  base::scoped_nsobject<NSLayoutConstraint> _containerVerticalConstraint;
+  NSLayoutConstraint* _containerVerticalConstraint;
 
   // Constraint ensuring that |containerView| is as wide as the superview of the
   // the IncognitoNTPView, i.e. the Incognito panel.
-  base::scoped_nsobject<NSLayoutConstraint> _containerHorizontalConstraint;
+  NSLayoutConstraint* _containerHorizontalConstraint;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame urlLoader:(id<UrlLoader>)loader {
   self = [super initWithFrame:frame];
   if (self) {
-    _loader.reset(loader);
+    _loader = loader;
 
     self.alwaysBounceVertical = YES;
 
     // Container in which all the subviews (image, labels, button) are added.
-    _containerView.reset([[UIView alloc] initWithFrame:frame]);
+    _containerView = [[UIView alloc] initWithFrame:frame];
     [_containerView setTranslatesAutoresizingMaskIntoConstraints:NO];
 
     // Incognito image.
-    base::scoped_nsobject<UIImageView> incognitoImage([[UIImageView alloc]
-        initWithImage:[UIImage imageNamed:@"incognito_icon"]]);
+    UIImageView* incognitoImage = [[UIImageView alloc]
+        initWithImage:[UIImage imageNamed:@"incognito_icon"]];
     [incognitoImage setTranslatesAutoresizingMaskIntoConstraints:NO];
     [_containerView addSubview:incognitoImage];
 
     // Title.
     UIFont* titleFont = [[MDCTypography fontLoader] lightFontOfSize:24];
-    base::scoped_nsobject<UILabel> incognitoTabHeading(
-        [[self labelWithString:l10n_util::GetNSString(IDS_NEW_TAB_OTR_HEADING)
-                          font:titleFont
-                         alpha:0.8] retain]);
+    UILabel* incognitoTabHeading =
+        [self labelWithString:l10n_util::GetNSString(IDS_NEW_TAB_OTR_HEADING)
+                         font:titleFont
+                        alpha:0.8];
     [_containerView addSubview:incognitoTabHeading];
 
     // Description paragraph.
     UIFont* regularFont = [[MDCTypography fontLoader] regularFontOfSize:14];
-    base::scoped_nsobject<UILabel> incognitoTabDescription([[self
+    UILabel* incognitoTabDescription = [self
         labelWithString:l10n_util::GetNSString(IDS_NEW_TAB_OTR_DESCRIPTION)
                    font:regularFont
-                  alpha:0.7] retain]);
+                  alpha:0.7];
     [_containerView addSubview:incognitoTabDescription];
 
     // Warning paragraph.
-    base::scoped_nsobject<UILabel> incognitoTabWarning([[self
+    UILabel* incognitoTabWarning = [self
         labelWithString:l10n_util::GetNSString(IDS_NEW_TAB_OTR_MESSAGE_WARNING)
                    font:regularFont
-                  alpha:0.7] retain]);
+                  alpha:0.7];
     [_containerView addSubview:incognitoTabWarning];
 
     // Learn more button.
-    base::scoped_nsobject<MDCButton> learnMore([[MDCFlatButton alloc] init]);
+    MDCButton* learnMore = [[MDCFlatButton alloc] init];
     UIColor* inkColor =
         [[[MDCPalette greyPalette] tint300] colorWithAlphaComponent:0.25];
     [learnMore setInkColor:inkColor];
@@ -126,20 +129,19 @@ const int kLinkColor = 0x03A9F4;
 
     // |topGuide| and |bottomGuide| exist to vertically center the sibling views
     // located in between them.
-    base::scoped_nsobject<UILayoutGuide> topGuide([[UILayoutGuide alloc] init]);
-    base::scoped_nsobject<UILayoutGuide> bottomGuide(
-        [[UILayoutGuide alloc] init]);
+    UILayoutGuide* topGuide = [[UILayoutGuide alloc] init];
+    UILayoutGuide* bottomGuide = [[UILayoutGuide alloc] init];
     [_containerView addLayoutGuide:topGuide];
     [_containerView addLayoutGuide:bottomGuide];
 
     NSDictionary* viewsDictionary = @{
-      @"topGuide" : topGuide.get(),
-      @"image" : incognitoImage.get(),
-      @"heading" : incognitoTabHeading.get(),
-      @"description" : incognitoTabDescription.get(),
-      @"warning" : incognitoTabWarning.get(),
-      @"learnMoreButton" : learnMore.get(),
-      @"bottomGuide" : bottomGuide.get(),
+      @"topGuide" : topGuide,
+      @"image" : incognitoImage,
+      @"heading" : incognitoTabHeading,
+      @"description" : incognitoTabDescription,
+      @"warning" : incognitoTabWarning,
+      @"learnMoreButton" : learnMore,
+      @"bottomGuide" : bottomGuide,
     };
     NSArray* constraints = @[
       @"V:|-0-[topGuide(>=12)]-[image]-24-[heading]-32-[description]",
@@ -174,7 +176,7 @@ const int kLinkColor = 0x03A9F4;
     // Constraints comunicating the size of the contentView to the scrollview.
     // See UIScrollView autolayout information at
     // https://developer.apple.com/library/ios/releasenotes/General/RN-iOSSDK-6_0/index.html
-    viewsDictionary = @{ @"containerView" : _containerView.get() };
+    viewsDictionary = @{@"containerView" : _containerView};
     constraints = @[
       @"V:|-0-[containerView]-0-|",
       @"H:|-0-[containerView]-0-|",
@@ -188,23 +190,22 @@ const int kLinkColor = 0x03A9F4;
 - (UILabel*)labelWithString:(NSString*)string
                        font:(UIFont*)font
                       alpha:(float)alpha {
-  base::scoped_nsobject<NSMutableAttributedString> attributedString(
-      [[NSMutableAttributedString alloc] initWithString:string]);
-  base::scoped_nsobject<NSMutableParagraphStyle> paragraphStyle(
-      [[NSMutableParagraphStyle alloc] init]);
+  NSMutableAttributedString* attributedString =
+      [[NSMutableAttributedString alloc] initWithString:string];
+  NSMutableParagraphStyle* paragraphStyle =
+      [[NSMutableParagraphStyle alloc] init];
   [paragraphStyle setLineSpacing:4];
   [paragraphStyle setAlignment:NSTextAlignmentJustified];
   [attributedString addAttribute:NSParagraphStyleAttributeName
                            value:paragraphStyle
                            range:NSMakeRange(0, string.length)];
-  base::scoped_nsobject<UILabel> label(
-      [[UILabel alloc] initWithFrame:CGRectZero]);
+  UILabel* label = [[UILabel alloc] initWithFrame:CGRectZero];
   [label setTranslatesAutoresizingMaskIntoConstraints:NO];
   [label setNumberOfLines:0];
   [label setFont:font];
   [label setAttributedText:attributedString];
   [label setTextColor:[UIColor colorWithWhite:1.0 alpha:alpha]];
-  return label.autorelease();
+  return label;
 }
 
 - (void)learnMoreButtonPressed {
@@ -219,31 +220,31 @@ const int kLinkColor = 0x03A9F4;
 
 - (void)didMoveToSuperview {
   [super didMoveToSuperview];
-  _containerHorizontalConstraint.reset(
-      [[NSLayoutConstraint constraintWithItem:_containerView.get()
-                                    attribute:NSLayoutAttributeWidth
-                                    relatedBy:NSLayoutRelationEqual
-                                       toItem:[self superview]
-                                    attribute:NSLayoutAttributeWidth
-                                   multiplier:1
-                                     constant:0] retain]);
-  _containerVerticalConstraint.reset(
-      [[NSLayoutConstraint constraintWithItem:_containerView.get()
-                                    attribute:NSLayoutAttributeHeight
-                                    relatedBy:NSLayoutRelationGreaterThanOrEqual
-                                       toItem:[self superview]
-                                    attribute:NSLayoutAttributeHeight
-                                   multiplier:1
-                                     constant:0] retain]);
-  [[self superview] addConstraint:_containerHorizontalConstraint.get()];
-  [[self superview] addConstraint:_containerVerticalConstraint.get()];
+  _containerHorizontalConstraint =
+      [NSLayoutConstraint constraintWithItem:_containerView
+                                   attribute:NSLayoutAttributeWidth
+                                   relatedBy:NSLayoutRelationEqual
+                                      toItem:[self superview]
+                                   attribute:NSLayoutAttributeWidth
+                                  multiplier:1
+                                    constant:0];
+  _containerVerticalConstraint =
+      [NSLayoutConstraint constraintWithItem:_containerView
+                                   attribute:NSLayoutAttributeHeight
+                                   relatedBy:NSLayoutRelationGreaterThanOrEqual
+                                      toItem:[self superview]
+                                   attribute:NSLayoutAttributeHeight
+                                  multiplier:1
+                                    constant:0];
+  [[self superview] addConstraint:_containerHorizontalConstraint];
+  [[self superview] addConstraint:_containerVerticalConstraint];
 }
 
 - (void)willMoveToSuperview:(UIView*)newSuperview {
-  [[self superview] removeConstraint:_containerHorizontalConstraint.get()];
-  [[self superview] removeConstraint:_containerVerticalConstraint.get()];
-  _containerHorizontalConstraint.reset();
-  _containerVerticalConstraint.reset();
+  [[self superview] removeConstraint:_containerHorizontalConstraint];
+  [[self superview] removeConstraint:_containerVerticalConstraint];
+  _containerHorizontalConstraint = nil;
+  _containerVerticalConstraint = nil;
   [super willMoveToSuperview:newSuperview];
 }
 
@@ -257,33 +258,29 @@ const int kLinkColor = 0x03A9F4;
 
 @implementation IncognitoPanelController {
   // Delegate for updating the toolbar's background alpha.
-  base::WeakNSProtocol<id<WebToolbarDelegate>> _webToolbarDelegate;
-
-  // The view containing the scrollview.
-  // The purpose of this view is to be used to set the size
-  // of the contentView of the scrollview with constraints.
-  base::scoped_nsobject<UIView> _view;
+  __weak id<WebToolbarDelegate> _webToolbarDelegate;
 
   // The scrollview containing the actual views.
-  base::scoped_nsobject<IncognitoNTPView> _incognitoView;
+  IncognitoNTPView* _incognitoView;
 }
 
 // Property declared in NewTabPagePanelProtocol.
 @synthesize delegate = _delegate;
+@synthesize view = _view;
 
 - (id)initWithLoader:(id<UrlLoader>)loader
           browserState:(ios::ChromeBrowserState*)browserState
     webToolbarDelegate:(id<WebToolbarDelegate>)webToolbarDelegate {
   self = [super init];
   if (self) {
-    _view.reset([[UIView alloc]
-        initWithFrame:[UIApplication sharedApplication].keyWindow.bounds]);
+    _view = [[UIView alloc]
+        initWithFrame:[UIApplication sharedApplication].keyWindow.bounds];
     [_view setAccessibilityIdentifier:@"NTP Incognito Panel"];
     [_view setAutoresizingMask:UIViewAutoresizingFlexibleHeight |
                                UIViewAutoresizingFlexibleWidth];
-    _incognitoView.reset([[IncognitoNTPView alloc]
+    _incognitoView = [[IncognitoNTPView alloc]
         initWithFrame:[UIApplication sharedApplication].keyWindow.bounds
-            urlLoader:loader]);
+            urlLoader:loader];
     [_incognitoView setAutoresizingMask:UIViewAutoresizingFlexibleHeight |
                                         UIViewAutoresizingFlexibleWidth];
 
@@ -295,7 +292,7 @@ const int kLinkColor = 0x03A9F4;
     }
     if (!IsIPadIdiom()) {
       [_incognitoView setDelegate:self];
-      _webToolbarDelegate.reset(webToolbarDelegate);
+      _webToolbarDelegate = webToolbarDelegate;
       [_webToolbarDelegate updateToolbarBackgroundAlpha:0];
     }
     [_view addSubview:_incognitoView];
@@ -311,7 +308,7 @@ const int kLinkColor = 0x03A9F4;
 - (void)dealloc {
   [_webToolbarDelegate updateToolbarBackgroundAlpha:1];
   [_incognitoView setDelegate:nil];
-  [super dealloc];
+  ;
 }
 
 #pragma mark -
@@ -340,10 +337,6 @@ const int kLinkColor = 0x03A9F4;
 
 - (CGFloat)alphaForBottomShadow {
   return 0;
-}
-
-- (UIView*)view {
-  return _view.get();
 }
 
 #pragma mark -

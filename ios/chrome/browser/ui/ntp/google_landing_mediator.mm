@@ -4,9 +4,7 @@
 
 #import "ios/chrome/browser/ui/ntp/google_landing_mediator.h"
 
-#import "base/ios/weak_nsobject.h"
 #include "base/mac/bind_objc_block.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
@@ -44,6 +42,10 @@
 #include "ios/web/public/web_state/web_state.h"
 #include "skia/ext/skia_utils_ios.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 using base::UserMetricsAction;
 
 namespace {
@@ -70,7 +72,7 @@ class SearchEngineObserver : public TemplateURLServiceObserver {
   void OnTemplateURLServiceChanged() override;
 
  private:
-  base::WeakNSObject<GoogleLandingMediator> _owner;
+  __weak GoogleLandingMediator* _owner;
   TemplateURLService* _templateURLService;  // weak
 };
 
@@ -100,7 +102,7 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
   BOOL _recordedPageImpression;
 
   // Controller to fetch and show doodles or a default Google logo.
-  base::scoped_nsprotocol<id<LogoVendor>> _doodleController;
+  id<LogoVendor> _doodleController;
 
   // Listen for default search engine changes.
   std::unique_ptr<google_landing::SearchEngineObserver> _observer;
@@ -135,23 +137,16 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 
   // Used to cancel tasks for the LargeIconService.
   base::CancelableTaskTracker _cancelable_task_tracker;
-
-  // Consumer to handle google landing update notifications.
-  base::WeakNSProtocol<id<GoogleLandingConsumer>> _consumer;
-
-  // Dispatcher for this mediator.
-  base::WeakNSProtocol<id<ChromeExecuteCommand, UrlLoader>> _dispatcher;
 }
 
 // Consumer to handle google landing update notifications.
-@property(nonatomic, assign, readonly) id<GoogleLandingConsumer> consumer;
+@property(nonatomic, weak) id<GoogleLandingConsumer> consumer;
 
 // The WebStateList that is being observed by this mediator.
 @property(nonatomic, assign, readonly) WebStateList* webStateList;
 
 // The dispatcher for this mediator.
-@property(nonatomic, assign, readonly) id<ChromeExecuteCommand, UrlLoader>
-    dispatcher;
+@property(nonatomic, weak) id<ChromeExecuteCommand, UrlLoader> dispatcher;
 
 // Perform initial setup.
 - (void)setUp;
@@ -161,6 +156,8 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 @implementation GoogleLandingMediator
 
 @synthesize webStateList = _webStateList;
+@synthesize consumer = _consumer;
+@synthesize dispatcher = _dispatcher;
 
 - (instancetype)initWithConsumer:(id<GoogleLandingConsumer>)consumer
                     browserState:(ios::ChromeBrowserState*)browserState
@@ -168,9 +165,9 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
                     webStateList:(WebStateList*)webStateList {
   self = [super init];
   if (self) {
-    _consumer.reset(consumer);
+    _consumer = consumer;
     _browserState = browserState;
-    _dispatcher.reset(dispatcher);
+    _dispatcher = dispatcher;
     _webStateList = webStateList;
 
     _webStateListObserver = base::MakeUnique<WebStateListObserverBridge>(self);
@@ -207,9 +204,9 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
   _observer.reset(
       new google_landing::SearchEngineObserver(self, _templateURLService));
   _templateURLService->Load();
-  _doodleController.reset(ios::GetChromeBrowserProvider()->CreateLogoVendor(
-      _browserState, self.dispatcher));
-  [self.consumer setLogoVendor:_doodleController];
+  _doodleController = ios::GetChromeBrowserProvider()->CreateLogoVendor(
+      _browserState, self.dispatcher);
+  [_consumer setLogoVendor:_doodleController];
   [self updateShowLogo];
 
   // Set up most visited sites.  This call may have the side effect of
@@ -298,7 +295,7 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
         fallbackCallback:(void (^)(UIColor* textColor,
                                    UIColor* backgroundColor,
                                    BOOL isDefaultColor))fallbackCallback {
-  base::WeakNSObject<GoogleLandingMediator> weakSelf(self);
+  __weak GoogleLandingMediator* weakSelf = self;
 
   void (^faviconBlock)(const favicon_base::LargeIconResult&) = ^(
       const favicon_base::LargeIconResult& result) {
@@ -325,11 +322,10 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
                                 : ntp_tiles::TileVisualType::ICON_COLOR;
     }
 
-    base::scoped_nsobject<GoogleLandingMediator> strongSelf([weakSelf retain]);
-    if (strongSelf) {
-      if ((result.bitmap.is_valid() || result.fallback_icon_style))
-        [strongSelf largeIconCache]->SetCachedResult(URL, result);
-      [strongSelf faviconOfType:tileType fetchedForURL:URL];
+    GoogleLandingMediator* strongSelf = weakSelf;
+    if (strongSelf &&
+        (result.bitmap.is_valid() || result.fallback_icon_style)) {
+      [strongSelf largeIconCache]->SetCachedResult(URL, result);
     }
   };
 
@@ -344,7 +340,7 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
   CGFloat faviconSize = [UIScreen mainScreen].scale * size;
   CGFloat faviconMinSize = [UIScreen mainScreen].scale * kFaviconMinSize;
   [self largeIconService]->GetLargeIconOrFallbackStyle(
-      URL, faviconMinSize, faviconSize, base::BindBlock(faviconBlock),
+      URL, faviconMinSize, faviconSize, base::BindBlockArc(faviconBlock),
       &_cancelable_task_tracker);
 }
 
@@ -439,9 +435,8 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
   }
 
   if (_notificationPromo->IsChromeCommand()) {
-    base::scoped_nsobject<GenericChromeCommand> command(
-        [[GenericChromeCommand alloc]
-            initWithTag:_notificationPromo->command_id()]);
+    GenericChromeCommand* command = [[GenericChromeCommand alloc]
+        initWithTag:_notificationPromo->command_id()];
     [self.dispatcher chromeExecuteCommand:command];
     return;
   }
@@ -472,16 +467,6 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
       break;
     }
   }
-}
-
-#pragma mark - Properties
-
-- (id<GoogleLandingConsumer>)consumer {
-  return _consumer.get();
-}
-
-- (id<ChromeExecuteCommand, UrlLoader>)dispatcher {
-  return _dispatcher.get();
 }
 
 @end
