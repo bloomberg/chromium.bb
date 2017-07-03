@@ -17,7 +17,7 @@ namespace {
 TEST(PaymentRequestTest, SecureContextRequired) {
   V8TestingScope scope;
   scope.GetDocument().SetSecurityOrigin(
-      SecurityOrigin::Create(KURL(KURL(), "http://www.example.com/")));
+      SecurityOrigin::Create(KURL(NullURL(), "http://www.example.com/")));
 
   PaymentRequest::Create(
       scope.GetExecutionContext(), BuildPaymentMethodDataForTest(),

@@ -433,8 +433,8 @@ TEST(KURLTest, AbsolutePotentiallyDanglingMarkup) {
 
   for (const auto& test : cases) {
     SCOPED_TRACE(::testing::Message() << test.input << ", " << test.expected);
-    const KURL input(KURL(), test.input);
-    const KURL expected(KURL(), test.expected);
+    const KURL input(NullURL(), test.input);
+    const KURL expected(NullURL(), test.expected);
     EXPECT_EQ(input, expected) << input.GetString() << expected.GetString();
     EXPECT_EQ(test.potentially_dangling_markup,
               input.PotentiallyDanglingMarkup());
@@ -529,59 +529,59 @@ TEST(KURLTest, Valid_HTTP_FTP_URLsHaveHosts) {
   EXPECT_TRUE(kurl.ProtocolIs("ftp"));
   EXPECT_TRUE(kurl.IsValid());
 
-  kurl = KURL(KURL(), "http://");
+  kurl = KURL(NullURL(), "http://");
   EXPECT_FALSE(kurl.ProtocolIs("http"));
 
-  kurl = KURL(KURL(), "http://wide#鸡");
+  kurl = KURL(NullURL(), "http://wide#鸡");
   EXPECT_TRUE(kurl.ProtocolIs("http"));
   EXPECT_EQ(kurl.Protocol(), "http");
 
-  kurl = KURL(KURL(), "http-so://foo");
+  kurl = KURL(NullURL(), "http-so://foo");
   EXPECT_TRUE(kurl.ProtocolIs("http-so"));
 
-  kurl = KURL(KURL(), "https://foo");
+  kurl = KURL(NullURL(), "https://foo");
   EXPECT_TRUE(kurl.ProtocolIs("https"));
 
-  kurl = KURL(KURL(), "https-so://foo");
+  kurl = KURL(NullURL(), "https-so://foo");
   EXPECT_TRUE(kurl.ProtocolIs("https-so"));
 
-  kurl = KURL(KURL(), "ftp://foo");
+  kurl = KURL(NullURL(), "ftp://foo");
   EXPECT_TRUE(kurl.ProtocolIs("ftp"));
 
-  kurl = KURL(KURL(), "http://host/");
+  kurl = KURL(NullURL(), "http://host/");
   EXPECT_TRUE(kurl.IsValid());
   kurl.SetHost("");
   EXPECT_FALSE(kurl.IsValid());
 
-  kurl = KURL(KURL(), "http-so://host/");
+  kurl = KURL(NullURL(), "http-so://host/");
   EXPECT_TRUE(kurl.IsValid());
   kurl.SetHost("");
   EXPECT_FALSE(kurl.IsValid());
 
-  kurl = KURL(KURL(), "https://host/");
+  kurl = KURL(NullURL(), "https://host/");
   EXPECT_TRUE(kurl.IsValid());
   kurl.SetHost("");
   EXPECT_FALSE(kurl.IsValid());
 
-  kurl = KURL(KURL(), "https-so://host/");
+  kurl = KURL(NullURL(), "https-so://host/");
   EXPECT_TRUE(kurl.IsValid());
   kurl.SetHost("");
   EXPECT_FALSE(kurl.IsValid());
 
-  kurl = KURL(KURL(), "ftp://host/");
+  kurl = KURL(NullURL(), "ftp://host/");
   EXPECT_TRUE(kurl.IsValid());
   kurl.SetHost("");
   EXPECT_FALSE(kurl.IsValid());
 
-  kurl = KURL(KURL(), "http:///noodles/pho.php");
+  kurl = KURL(NullURL(), "http:///noodles/pho.php");
   EXPECT_STREQ("http://noodles/pho.php", kurl.GetString().Utf8().data());
   EXPECT_STREQ("noodles", kurl.Host().Utf8().data());
   EXPECT_TRUE(kurl.IsValid());
 
-  kurl = KURL(KURL(), "https://username:password@/");
+  kurl = KURL(NullURL(), "https://username:password@/");
   EXPECT_FALSE(kurl.IsValid());
 
-  kurl = KURL(KURL(), "https://username:password@host/");
+  kurl = KURL(NullURL(), "https://username:password@host/");
   EXPECT_TRUE(kurl.IsValid());
 }
 
@@ -702,7 +702,7 @@ TEST(KURLTest, Empty) {
   EXPECT_TRUE(kurl4.GetString().IsEmpty());
 
   // Resolving an empty URL on an invalid string.
-  KURL kurl5(KURL(), "foo.js");
+  KURL kurl5(NullURL(), "foo.js");
   // We'll be empty in this case, but KURL won't be. Should be OK.
   // EXPECT_EQ(kurl5.isEmpty(), kurl5.isEmpty());
   // EXPECT_EQ(kurl5.getString().isEmpty(), kurl5.getString().isEmpty());
@@ -840,7 +840,7 @@ TEST(KURLTest, ProtocolIs) {
   KURL invalid_utf8(kParsedURLString, "http://a@9%aa%:");
   EXPECT_FALSE(invalid_utf8.ProtocolIs("http"));
 
-  KURL capital(KURL(), "HTTP://www.example.text");
+  KURL capital(NullURL(), "HTTP://www.example.text");
   EXPECT_TRUE(capital.ProtocolIs("http"));
   EXPECT_EQ(capital.Protocol(), "http");
 }

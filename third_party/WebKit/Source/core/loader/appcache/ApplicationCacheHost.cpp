@@ -235,7 +235,7 @@ void ApplicationCacheHost::NotifyApplicationCache(
 
 ApplicationCacheHost::CacheInfo ApplicationCacheHost::ApplicationCacheInfo() {
   if (!host_)
-    return CacheInfo(KURL(), 0, 0, 0);
+    return CacheInfo(NullURL(), 0, 0, 0);
 
   WebApplicationCacheHost::CacheInfo web_info;
   host_->GetAssociatedCacheInfo(&web_info);

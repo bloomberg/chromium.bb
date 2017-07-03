@@ -375,7 +375,7 @@ TEST_F(BlobDataHandleTest, CreateFromEmptyElements) {
   data->AppendBytes(small_test_data_.data(), 0);
   data->AppendBlob(empty_blob_, 0, 0);
   data->AppendFile("path", 0, 0, 0.0);
-  data->AppendFileSystemURL(KURL(), 0, 0, 0.0);
+  data->AppendFileSystemURL(NullURL(), 0, 0, 0.0);
 
   TestCreateBlob(std::move(data), {});
 }
@@ -451,7 +451,7 @@ TEST_F(BlobDataHandleTest, CreateFromMergedSmallAndLargeBytes) {
 TEST_F(BlobDataHandleTest, CreateFromFileAndFileSystemURL) {
   double timestamp1 = CurrentTime();
   double timestamp2 = timestamp1 + 1;
-  KURL url(KURL(), "http://example.com/");
+  KURL url(NullURL(), "http://example.com/");
   std::unique_ptr<BlobData> data = BlobData::Create();
   data->AppendFile("path", 4, 32, timestamp1);
   data->AppendFileSystemURL(url, 15, 876, timestamp2);
@@ -476,7 +476,7 @@ TEST_F(BlobDataHandleTest, CreateFromFileWithUnknownSize) {
 
 TEST_F(BlobDataHandleTest, CreateFromFilesystemFileWithUnknownSize) {
   double timestamp = CurrentTime();
-  KURL url(KURL(), "http://example.com/");
+  KURL url(NullURL(), "http://example.com/");
   Vector<ExpectedElement> expected_elements;
   expected_elements.push_back(ExpectedElement::FileFilesystem(
       url, 0, uint64_t(-1), WTF::Time::FromDoubleT(timestamp)));

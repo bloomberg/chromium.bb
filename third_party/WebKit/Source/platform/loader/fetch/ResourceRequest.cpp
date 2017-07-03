@@ -40,7 +40,7 @@ namespace blink {
 
 double ResourceRequest::default_timeout_interval_ = INT_MAX;
 
-ResourceRequest::ResourceRequest() : ResourceRequest(KURL()) {}
+ResourceRequest::ResourceRequest() : ResourceRequest(NullURL()) {}
 
 ResourceRequest::ResourceRequest(const String& url_string)
     : ResourceRequest(KURL(kParsedURLString, url_string)) {}

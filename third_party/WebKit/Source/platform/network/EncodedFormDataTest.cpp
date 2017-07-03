@@ -38,7 +38,7 @@ TEST_F(EncodedFormDataTest, DeepCopy) {
   original->AppendData("Foo", 3);
   original->AppendFileRange("example.txt", 12345, 56789, 9999.0);
   original->AppendBlob("originalUUID", nullptr);
-  original->AppendFileSystemURLRange(KURL(KURL(), "ws://localhost/"), 23456,
+  original->AppendFileSystemURLRange(KURL(NullURL(), "ws://localhost/"), 23456,
                                      34567, 1111.0);
 
   Vector<char> boundary_vector;
@@ -70,7 +70,7 @@ TEST_F(EncodedFormDataTest, DeepCopy) {
   EXPECT_EQ(String("originalUUID"), copy_elements[2].blob_uuid_);
 
   EXPECT_EQ(FormDataElement::kEncodedFileSystemURL, copy_elements[3].type_);
-  EXPECT_EQ(KURL(KURL(), String("ws://localhost/")),
+  EXPECT_EQ(KURL(NullURL(), String("ws://localhost/")),
             copy_elements[3].file_system_url_);
   EXPECT_EQ(23456ll, copy_elements[3].file_start_);
   EXPECT_EQ(34567ll, copy_elements[3].file_length_);

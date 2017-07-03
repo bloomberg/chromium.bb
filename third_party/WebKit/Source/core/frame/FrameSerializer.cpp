@@ -353,7 +353,7 @@ void FrameSerializer::SerializeFrame(const LocalFrame& frame) {
     } else if (isHTMLStyleElement(element)) {
       HTMLStyleElement& style_element = toHTMLStyleElement(element);
       if (CSSStyleSheet* sheet = style_element.sheet())
-        SerializeCSSStyleSheet(*sheet, KURL());
+        SerializeCSSStyleSheet(*sheet, NullURL());
     }
   }
   if (should_collect_problem_metric_) {

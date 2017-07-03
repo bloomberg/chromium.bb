@@ -41,7 +41,7 @@ void URLFileAPI::revokeObjectURL(ScriptState* script_state,
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   DCHECK(execution_context);
 
-  KURL url(KURL(), url_string);
+  KURL url(NullURL(), url_string);
   execution_context->RemoveURLFromMemoryCache(url);
   execution_context->GetPublicURLManager().Revoke(url);
 }

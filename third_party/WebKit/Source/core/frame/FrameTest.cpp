@@ -25,10 +25,10 @@ class FrameTest : public ::testing::Test {
   Document& GetDocument() const { return dummy_page_holder_->GetDocument(); }
 
   void Navigate(const String& destinationUrl) {
-    const KURL& url = KURL(KURL(), destinationUrl);
-    FrameLoadRequest request(
-        nullptr, ResourceRequest(url),
-        SubstituteData(SharedBuffer::Create(), "text/html", "UTF-8", KURL()));
+    const KURL& url = KURL(NullURL(), destinationUrl);
+    FrameLoadRequest request(nullptr, ResourceRequest(url),
+                             SubstituteData(SharedBuffer::Create(), "text/html",
+                                            "UTF-8", NullURL()));
     GetDocument().GetFrame()->Loader().Load(request);
     blink::testing::RunPendingTasks();
     ASSERT_EQ(url.GetString(), GetDocument().Url().GetString());

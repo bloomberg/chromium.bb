@@ -99,9 +99,9 @@ TEST(PasswordInputTypeTest, PasswordVisibilityEventInSecureContext) {
   MockInterfaceProvider interface_provider;
   std::unique_ptr<DummyPageHolder> page_holder = DummyPageHolder::Create(
       IntSize(2000, 2000), nullptr, nullptr, nullptr, &interface_provider);
-  page_holder->GetDocument().SetURL(KURL(KURL(), "https://example.test"));
+  page_holder->GetDocument().SetURL(KURL(NullURL(), "https://example.test"));
   page_holder->GetDocument().SetSecurityOrigin(
-      SecurityOrigin::Create(KURL(KURL(), "https://example.test")));
+      SecurityOrigin::Create(KURL(NullURL(), "https://example.test")));
   page_holder->GetDocument().body()->setInnerHTML("<input type='password'>");
   page_holder->GetDocument().View()->UpdateAllLifecyclePhases();
   // No message should have been sent from a secure context.

@@ -68,7 +68,7 @@ class V8ScriptRunnerTest : public ::testing::Test {
   }
 
   void SetEmptyResource() {
-    resource_ = ScriptResource::CreateForTest(KURL(), UTF8Encoding());
+    resource_ = ScriptResource::CreateForTest(NullURL(), UTF8Encoding());
   }
 
   void SetResource() {

@@ -265,7 +265,7 @@ TEST_F(BaseFetchContextTest, RedirectChecksReportedAndEnforcedCSP) {
                            kContentSecurityPolicyHeaderTypeReport,
                            kContentSecurityPolicyHeaderSourceHTTP);
 
-  KURL url(KURL(), "http://baz.test");
+  KURL url(NullURL(), "http://baz.test");
   ResourceRequest resource_request(url);
   resource_request.SetRequestContext(WebURLRequest::kRequestContextScript);
   resource_request.SetFetchCredentialsMode(
@@ -292,7 +292,7 @@ TEST_F(BaseFetchContextTest, AllowResponseChecksReportedAndEnforcedCSP) {
                            kContentSecurityPolicyHeaderTypeReport,
                            kContentSecurityPolicyHeaderSourceHTTP);
 
-  KURL url(KURL(), "http://baz.test");
+  KURL url(NullURL(), "http://baz.test");
   ResourceRequest resource_request(url);
   resource_request.SetRequestContext(WebURLRequest::kRequestContextScript);
   resource_request.SetFetchCredentialsMode(
@@ -307,7 +307,7 @@ TEST_F(BaseFetchContextTest, AllowResponseChecksReportedAndEnforcedCSP) {
 }
 
 TEST_F(BaseFetchContextTest, CanRequestWhenDetached) {
-  KURL url(KURL(), "http://www.example.com/");
+  KURL url(NullURL(), "http://www.example.com/");
   ResourceRequest request(url);
   ResourceRequest keepalive_request(url);
   keepalive_request.SetKeepalive(true);

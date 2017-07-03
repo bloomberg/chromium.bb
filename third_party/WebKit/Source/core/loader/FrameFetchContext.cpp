@@ -1110,7 +1110,7 @@ FetchContext* FrameFetchContext::Detach() {
   } else {
     // Some getters are unavailable in this case.
     frozen_state_ = new FrozenState(
-        kReferrerPolicyDefault, String(), KURL(), GetSecurityOrigin(),
+        kReferrerPolicyDefault, String(), NullURL(), GetSecurityOrigin(),
         GetParentSecurityOrigin(), GetAddressSpace(),
         GetContentSecurityPolicy(), GetFirstPartyForCookies(),
         SecurityOrigin::CreateUnique(), SecurityOrigin::CreateUnique(),

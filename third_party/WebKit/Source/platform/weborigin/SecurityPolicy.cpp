@@ -94,7 +94,7 @@ Referrer SecurityPolicy::GenerateReferrer(ReferrerPolicy referrer_policy,
     return Referrer(Referrer::NoReferrer(), referrer_policy_no_default);
   DCHECK(!referrer.IsEmpty());
 
-  KURL referrer_url = KURL(KURL(), referrer);
+  KURL referrer_url = KURL(NullURL(), referrer);
   String scheme = referrer_url.Protocol();
   if (!SchemeRegistry::ShouldTreatURLSchemeAsAllowedForReferrer(scheme))
     return Referrer(Referrer::NoReferrer(), referrer_policy_no_default);

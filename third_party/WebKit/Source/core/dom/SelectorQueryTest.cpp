@@ -68,7 +68,7 @@ TEST(SelectorQueryTest, NotMatchingPseudoElement) {
       "<body><style>span::before { content: 'X' }</style><span></span></body>");
 
   CSSSelectorList selector_list = CSSParser::ParseSelector(
-      CSSParserContext::Create(*document, KURL(), kReferrerPolicyDefault,
+      CSSParserContext::Create(*document, NullURL(), kReferrerPolicyDefault,
                                WTF::TextEncoding(),
                                CSSParserContext::kStaticProfile),
       nullptr, "span::before");
@@ -78,7 +78,7 @@ TEST(SelectorQueryTest, NotMatchingPseudoElement) {
   EXPECT_EQ(nullptr, elm);
 
   selector_list = CSSParser::ParseSelector(
-      CSSParserContext::Create(*document, KURL(), kReferrerPolicyDefault,
+      CSSParserContext::Create(*document, NullURL(), kReferrerPolicyDefault,
                                WTF::TextEncoding(),
                                CSSParserContext::kStaticProfile),
       nullptr, "span");
@@ -97,7 +97,7 @@ TEST(SelectorQueryTest, LastOfTypeNotFinishedParsing) {
   document->body()->BeginParsingChildren();
 
   CSSSelectorList selector_list = CSSParser::ParseSelector(
-      CSSParserContext::Create(*document, KURL(), kReferrerPolicyDefault,
+      CSSParserContext::Create(*document, NullURL(), kReferrerPolicyDefault,
                                WTF::TextEncoding(),
                                CSSParserContext::kStaticProfile),
       nullptr, "p:last-of-type");

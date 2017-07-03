@@ -116,7 +116,7 @@ TEST_P(LinkLoaderPreloadTest, Preload) {
   Persistent<MockLinkLoaderClient> loader_client =
       MockLinkLoaderClient::Create(test_case.link_loader_should_load_value);
   LinkLoader* loader = LinkLoader::Create(loader_client.Get());
-  KURL href_url = KURL(KURL(), test_case.href);
+  KURL href_url = KURL(NullURL(), test_case.href);
   URLTestHelpers::RegisterMockedErrorURLLoad(href_url);
   loader->LoadLink(LinkRelAttribute("preload"), kCrossOriginAttributeNotSet,
                    test_case.type, test_case.as, test_case.media,
@@ -303,7 +303,7 @@ TEST(LinkLoaderTest, Prefetch) {
     Persistent<MockLinkLoaderClient> loader_client =
         MockLinkLoaderClient::Create(test_case.link_loader_should_load_value);
     LinkLoader* loader = LinkLoader::Create(loader_client.Get());
-    KURL href_url = KURL(KURL(), test_case.href);
+    KURL href_url = KURL(NullURL(), test_case.href);
     URLTestHelpers::RegisterMockedErrorURLLoad(href_url);
     loader->LoadLink(LinkRelAttribute("prefetch"), kCrossOriginAttributeNotSet,
                      test_case.type, "", test_case.media,

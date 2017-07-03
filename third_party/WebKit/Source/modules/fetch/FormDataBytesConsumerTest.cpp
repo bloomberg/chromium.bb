@@ -38,7 +38,8 @@ PassRefPtr<EncodedFormData> ComplexFormData() {
 
   data->AppendData("foo", 3);
   data->AppendFileRange("/foo/bar/baz", 3, 4, 5);
-  data->AppendFileSystemURLRange(KURL(KURL(), "file:///foo/bar/baz"), 6, 7, 8);
+  data->AppendFileSystemURLRange(KURL(NullURL(), "file:///foo/bar/baz"), 6, 7,
+                                 8);
   std::unique_ptr<BlobData> blob_data = BlobData::Create();
   blob_data->AppendText("hello", false);
   auto size = blob_data->length();

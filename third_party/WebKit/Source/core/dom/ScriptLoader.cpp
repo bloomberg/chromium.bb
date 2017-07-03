@@ -910,7 +910,7 @@ void ScriptLoader::Execute() {
   DCHECK(async_exec_type_ != ScriptRunner::kNone);
   DCHECK(pending_script_->IsExternal());
   bool error_occurred = false;
-  Script* script = pending_script_->GetSource(KURL(), error_occurred);
+  Script* script = pending_script_->GetSource(NullURL(), error_occurred);
   const bool was_canceled = pending_script_->WasCanceled();
   DetachPendingScript();
   if (error_occurred) {

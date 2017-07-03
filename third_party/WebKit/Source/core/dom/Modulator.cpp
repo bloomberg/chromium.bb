@@ -75,7 +75,7 @@ KURL Modulator::ResolveModuleSpecifier(const String& module_request,
                                        const KURL& base_url) {
   // Step 1. Apply the URL parser to specifier. If the result is not failure,
   // return the result.
-  KURL url(KURL(), module_request);
+  KURL url(NullURL(), module_request);
   if (url.IsValid())
     return url;
 

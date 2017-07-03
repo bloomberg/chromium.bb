@@ -391,7 +391,7 @@ TEST(UseCounterTest, MutedDocuments) {
                    CSSPropertyFontWeight, 3);
 
   // Or empty URLs (a main frame with no Document)
-  use_counter.DidCommitLoad(KURL());
+  use_counter.DidCommitLoad(NullURL());
   use_counter.RecordMeasurement(WebFeature::kFetch);
   use_counter.Count(kHTMLStandardMode, CSSPropertyFontWeight);
   ExpectHistograms(histogram_tester, 2, WebFeature::kFetch, 3,

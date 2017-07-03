@@ -296,7 +296,7 @@ WebRTCConfiguration ParseConfiguration(ExecutionContext* context,
       String credential = ice_server.credential();
 
       for (const String& url_string : url_strings) {
-        KURL url(KURL(), url_string);
+        KURL url(NullURL(), url_string);
         if (!url.IsValid()) {
           exception_state.ThrowDOMException(
               kSyntaxError, "'" + url_string + "' is not a valid URL.");

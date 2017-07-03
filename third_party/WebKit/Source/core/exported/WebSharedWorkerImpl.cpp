@@ -167,9 +167,9 @@ void WebSharedWorkerImpl::LoadShadowPage() {
   CString content("");
   RefPtr<SharedBuffer> buffer(
       SharedBuffer::Create(content.data(), content.length()));
-  main_frame_->GetFrame()->Loader().Load(
-      FrameLoadRequest(0, ResourceRequest(url_),
-                       SubstituteData(buffer, "text/html", "UTF-8", KURL())));
+  main_frame_->GetFrame()->Loader().Load(FrameLoadRequest(
+      0, ResourceRequest(url_),
+      SubstituteData(buffer, "text/html", "UTF-8", NullURL())));
 }
 
 void WebSharedWorkerImpl::FrameDetached(WebLocalFrame* frame, DetachType type) {

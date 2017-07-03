@@ -44,8 +44,8 @@ CSSTestHelper::~CSSTestHelper() {}
 CSSTestHelper::CSSTestHelper() {
   document_ = Document::Create();
   TextPosition position;
-  style_sheet_ =
-      CSSStyleSheet::CreateInline(*document_, KURL(), position, UTF8Encoding());
+  style_sheet_ = CSSStyleSheet::CreateInline(*document_, NullURL(), position,
+                                             UTF8Encoding());
 }
 
 CSSRuleList* CSSTestHelper::CssRules() {

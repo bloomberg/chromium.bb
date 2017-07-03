@@ -643,7 +643,7 @@ static void* OpenFunc(const char* uri) {
   DCHECK(XMLDocumentParserScope::current_document_);
   DCHECK_EQ(CurrentThread(), g_libxml_loader_thread);
 
-  KURL url(KURL(), uri);
+  KURL url(NullURL(), uri);
 
   if (!ShouldAllowExternalLoad(url))
     return &g_global_descriptor;

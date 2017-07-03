@@ -849,7 +849,7 @@ bool WebFrame::ScriptCanAccess(WebFrame* target) {
 void WebLocalFrameImpl::Reload(WebFrameLoadType load_type) {
   // TODO(clamy): Remove this function once RenderFrame calls load for all
   // requests.
-  ReloadWithOverrideURL(KURL(), load_type);
+  ReloadWithOverrideURL(NullURL(), load_type);
 }
 
 void WebLocalFrameImpl::ReloadWithOverrideURL(const WebURL& override_url,
@@ -2381,7 +2381,7 @@ void WebLocalFrameImpl::SaveImageAt(const WebPoint& pos_in_viewport) {
     return;
 
   String url = ToElement(*node).ImageSourceURL();
-  if (!KURL(KURL(), url).ProtocolIsData())
+  if (!KURL(NullURL(), url).ProtocolIsData())
     return;
 
   client_->SaveImageFromDataURL(url);

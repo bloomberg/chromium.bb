@@ -30,7 +30,7 @@ bool PaymentsValidators::IsValidCurrencyCodeFormat(
     return false;
   }
 
-  if (!KURL(KURL(), system).IsValid()) {
+  if (!KURL(NullURL(), system).IsValid()) {
     if (optional_error_message)
       *optional_error_message = "The currency system is not a valid URL";
 
