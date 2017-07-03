@@ -26943,11 +26943,17 @@ from previous Chrome versions.
 </enum>
 
 <enum name="OfflinePagesOfflineUsage">
-  <int value="0" label="Not used"/>
-  <int value="1" label="Started, but no pages loaded successfully"/>
-  <int value="2" label="Offline pages loaded only"/>
-  <int value="3" label="Online pages loaded only"/>
-  <int value="4" label="Both offlilne and online pages loaded"/>
+  <int value="0" label="Not used">Not used at all during whole day.</int>
+  <int value="1" label="Started, but no pages loaded successfully">
+    Started, but failed to successfully navigate.
+  </int>
+  <int value="2" label="Offline pages loaded only">
+    Only navigated to offline pages locally saved on the device.
+  </int>
+  <int value="3" label="Online pages loaded only">Only navigated online.</int>
+  <int value="4" label="Both offlilne and online pages loaded">
+    Navigated to both online and offline pages.
+  </int>
 </enum>
 
 <enum name="OfflinePagesRedirectResult">
