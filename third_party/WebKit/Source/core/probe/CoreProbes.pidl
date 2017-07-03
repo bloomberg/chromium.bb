@@ -85,17 +85,17 @@ interface CoreProbes {
   void didFireWebGLErrorOrWarning(Element*, const String& message);
   void didResizeMainFrame(LocalFrame*);
   void didPaint(LocalFrame*, const GraphicsLayer*, GraphicsContext&, const LayoutRect&);
-  void applyUserAgentOverride(LocalFrame*, String* userAgent);
-  void didBlockRequest([Keep] LocalFrame*, const ResourceRequest&, DocumentLoader*, const FetchInitiatorInfo&, ResourceRequestBlockedReason);
+  void applyUserAgentOverride(ExecutionContext*, String* userAgent);
+  void didBlockRequest([Keep] ExecutionContext*, const ResourceRequest&, DocumentLoader*, const FetchInitiatorInfo&, ResourceRequestBlockedReason);
   void didChangeResourcePriority(LocalFrame*, unsigned long identifier, ResourceLoadPriority loadPriority);
-  void willSendRequest([Keep] LocalFrame*, unsigned long identifier, DocumentLoader*, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo&);
+  void willSendRequest([Keep] ExecutionContext*, unsigned long identifier, DocumentLoader*, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo&);
   void markResourceAsCached(LocalFrame*, unsigned long identifier);
-  void didReceiveResourceResponse([Keep] LocalFrame*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, Resource*);
-  void didReceiveData([Keep] LocalFrame*, unsigned long identifier, const char* data, int dataLength);
-  void didReceiveEncodedDataLength([Keep] LocalFrame*, unsigned long identifier, int encodedDataLength);
-  void didFinishLoading([Keep] LocalFrame* frame, unsigned long identifier, double finishTime, int64_t encodedDataLength, int64_t decodedBodyLength);
+  void didReceiveResourceResponse(ExecutionContext*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, Resource*);
+  void didReceiveData(ExecutionContext*, unsigned long identifier, DocumentLoader*, const char* data, int dataLength);
+  void didReceiveEncodedDataLength(ExecutionContext*, unsigned long identifier, int encodedDataLength);
+  void didFinishLoading(ExecutionContext*, unsigned long identifier, DocumentLoader*, double finishTime, int64_t encodedDataLength, int64_t decodedBodyLength);
   void didReceiveCORSRedirectResponse([Keep] LocalFrame*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, Resource*);
-  void didFailLoading(LocalFrame* frame, unsigned long identifier, const ResourceError&);
+  void didFailLoading(ExecutionContext*, unsigned long identifier, const ResourceError&);
   void documentThreadableLoaderStartedLoadingForClient(ExecutionContext*, unsigned long identifier, ThreadableLoaderClient* client);
   void documentThreadableLoaderFailedToStartLoadingForClient(ExecutionContext*, ThreadableLoaderClient* client);
   void willSendEventSourceRequest(ExecutionContext*, ThreadableLoaderClient* eventSource);
@@ -156,5 +156,5 @@ interface CoreProbes {
   void forcePseudoState([Keep] Element* element, CSSSelector::PseudoType pseudoState, bool* result);
   void shouldWaitForDebuggerOnWorkerStart(ExecutionContext* context, bool* result);
   void shouldForceCORSPreflight(Document*, bool* result);
-  void shouldBlockRequest(LocalFrame*, const ResourceRequest&, bool* result);
+  void shouldBlockRequest(ExecutionContext*, const ResourceRequest&, bool* result);
 }

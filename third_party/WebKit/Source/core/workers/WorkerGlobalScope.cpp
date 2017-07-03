@@ -270,6 +270,8 @@ WorkerEventQueue* WorkerGlobalScope::GetEventQueue() const {
 }
 
 CoreProbeSink* WorkerGlobalScope::GetProbeSink() {
+  if (IsClosing())
+    return nullptr;
   if (WorkerInspectorController* controller =
           GetThread()->GetWorkerInspectorController())
     return controller->GetProbeSink();

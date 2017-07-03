@@ -8,12 +8,17 @@
 #include "core/frame/Deprecation.h"
 #include "core/frame/UseCounter.h"
 #include "core/loader/MixedContentChecker.h"
+#include "core/probe/CoreProbes.h"
 #include "core/timing/WorkerGlobalScopePerformance.h"
 #include "core/workers/WorkerClients.h"
+#include "core/workers/WorkerGlobalScope.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/Supplementable.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/exported/WrappedResourceRequest.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
+#include "platform/weborigin/SecurityPolicy.h"
+#include "public/platform/Platform.h"
 #include "public/platform/WebMixedContent.h"
 #include "public/platform/WebMixedContentContextType.h"
 #include "public/platform/WebURLRequest.h"
@@ -112,15 +117,18 @@ SubresourceFilter* WorkerFetchContext::GetSubresourceFilter() const {
 
 bool WorkerFetchContext::ShouldBlockRequestByInspector(
     const ResourceRequest& resource_request) const {
-  // TODO(horo): Implement this.
-  return false;
+  bool should_block_request = false;
+  probe::shouldBlockRequest(global_scope_, resource_request,
+                            &should_block_request);
+  return should_block_request;
 }
 
 void WorkerFetchContext::DispatchDidBlockRequest(
     const ResourceRequest& resource_request,
     const FetchInitiatorInfo& fetch_initiator_info,
     ResourceRequestBlockedReason blocked_reason) const {
-  // TODO(horo): Implement this.
+  probe::didBlockRequest(global_scope_, resource_request, nullptr,
+                         fetch_initiator_info, blocked_reason);
 }
 
 bool WorkerFetchContext::ShouldBypassMainWorldCSP() const {
@@ -221,6 +229,11 @@ bool WorkerFetchContext::IsControlledByServiceWorker() const {
 
 void WorkerFetchContext::PrepareRequest(ResourceRequest& request,
                                         RedirectType) {
+  String user_agent = global_scope_->UserAgent();
+  probe::applyUserAgentOverride(global_scope_, &user_agent);
+  DCHECK(!user_agent.IsNull());
+  request.SetHTTPUserAgent(AtomicString(user_agent));
+
   request.OverrideLoadingIPCType(WebURLRequest::LoadingIPCType::kMojo);
   WrappedResourceRequest webreq(request);
   web_context_->WillSendRequest(webreq);
@@ -236,6 +249,15 @@ void WorkerFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request,
 
   if (web_context_->IsDataSaverEnabled())
     request.SetHTTPHeaderField("Save-Data", "on");
+}
+
+void WorkerFetchContext::DispatchWillSendRequest(
+    unsigned long identifier,
+    ResourceRequest& request,
+    const ResourceResponse& redirect_response,
+    const FetchInitiatorInfo& initiator_info) {
+  probe::willSendRequest(global_scope_, identifier, nullptr, request,
+                         redirect_response, initiator_info);
 }
 
 void WorkerFetchContext::DispatchDidReceiveResponse(
@@ -255,6 +277,36 @@ void WorkerFetchContext::DispatchDidReceiveResponse(
       web_context_->DidDisplayContentWithCertificateErrors(response.Url());
     }
   }
+  probe::didReceiveResourceResponse(global_scope_, identifier, nullptr,
+                                    response, resource);
+}
+
+void WorkerFetchContext::DispatchDidReceiveData(unsigned long identifier,
+                                                const char* data,
+                                                int data_length) {
+  probe::didReceiveData(global_scope_, identifier, nullptr, data, data_length);
+}
+
+void WorkerFetchContext::DispatchDidReceiveEncodedData(
+    unsigned long identifier,
+    int encoded_data_length) {
+  probe::didReceiveEncodedDataLength(global_scope_, identifier,
+                                     encoded_data_length);
+}
+
+void WorkerFetchContext::DispatchDidFinishLoading(unsigned long identifier,
+                                                  double finish_time,
+                                                  int64_t encoded_data_length,
+                                                  int64_t decoded_body_length) {
+  probe::didFinishLoading(global_scope_, identifier, nullptr, finish_time,
+                          encoded_data_length, decoded_body_length);
+}
+
+void WorkerFetchContext::DispatchDidFail(unsigned long identifier,
+                                         const ResourceError& error,
+                                         int64_t encoded_data_length,
+                                         bool is_internal_request) {
+  probe::didFailLoading(global_scope_, identifier, error);
 }
 
 void WorkerFetchContext::AddResourceTiming(const ResourceTimingInfo& info) {

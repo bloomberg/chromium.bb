@@ -19,7 +19,7 @@ function test()
     InspectorTest.evaluateInPage("loadIFrame()");
 
     var encodedBytesReceived = 0;
-    function responseReceived(requestId, frameId, loaderId, time, resourceType, response)
+    function responseReceived(requestId, loaderId, time, resourceType, response, frameId)
     {
         var request = InspectorTest.networkLog.requestByManagerAndId(InspectorTest.networkManager, requestId);
         if (/resource\.php/.exec(request.url())) {

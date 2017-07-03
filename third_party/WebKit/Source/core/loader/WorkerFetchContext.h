@@ -64,21 +64,36 @@ class WorkerFetchContext final : public BaseFetchContext {
   void AddConsoleMessage(ConsoleMessage*) const override;
 
   // FetchContext implementation:
-  // TODO(horo): Implement more methods.
   SecurityOrigin* GetSecurityOrigin() const override;
   std::unique_ptr<WebURLLoader> CreateURLLoader(
       const ResourceRequest&) override;
   void PrepareRequest(ResourceRequest&, RedirectType) override;
   bool IsControlledByServiceWorker() const override;
-
   void AddAdditionalRequestHeaders(ResourceRequest&,
                                    FetchResourceType) override;
+  void DispatchWillSendRequest(unsigned long,
+                               ResourceRequest&,
+                               const ResourceResponse&,
+                               const FetchInitiatorInfo&) override;
   void DispatchDidReceiveResponse(unsigned long identifier,
                                   const ResourceResponse&,
                                   WebURLRequest::FrameType,
                                   WebURLRequest::RequestContext,
                                   Resource*,
                                   ResourceResponseType) override;
+  void DispatchDidReceiveData(unsigned long identifier,
+                              const char* data,
+                              int dataLength) override;
+  void DispatchDidReceiveEncodedData(unsigned long identifier,
+                                     int encodedDataLength) override;
+  void DispatchDidFinishLoading(unsigned long identifier,
+                                double finishTime,
+                                int64_t encodedDataLength,
+                                int64_t decodedBodyLength) override;
+  void DispatchDidFail(unsigned long identifier,
+                       const ResourceError&,
+                       int64_t encodedDataLength,
+                       bool isInternalRequest) override;
   void AddResourceTiming(const ResourceTimingInfo&) override;
   void PopulateResourceRequest(const KURL&,
                                Resource::Type,
