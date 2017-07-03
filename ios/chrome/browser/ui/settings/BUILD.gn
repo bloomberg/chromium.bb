@@ -2,29 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-bundle_data("resources") {
-  sources = [
-    "resources/app_icon_placeholder.png",
-    "resources/app_icon_placeholder@2x.png",
-    "resources/app_icon_placeholder@3x.png",
-    "resources/encryption_error.png",
-    "resources/encryption_error@2x.png",
-    "resources/encryption_error@3x.png",
-    "resources/settings_accounts_add_account.png",
-    "resources/settings_accounts_add_account@2x.png",
-    "resources/settings_accounts_add_account@3x.png",
-    "resources/settings_error.png",
-    "resources/settings_error@2x.png",
-    "resources/settings_error@3x.png",
-    "resources/settings_sync.png",
-    "resources/settings_sync@2x.png",
-    "resources/settings_sync@3x.png",
-  ]
-  outputs = [
-    "{{bundle_resources_dir}}/{{source_file_part}}",
-  ]
-}
-
 source_set("settings") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
@@ -102,7 +79,11 @@ source_set("settings") {
     "voicesearch_collection_view_controller.mm",
   ]
   deps = [
-    ":resources",
+    "resources:app_icon_placeholder",
+    "resources:encryption_error",
+    "resources:settings_accounts_add_account",
+    "resources:settings_error",
+    "resources:settings_sync",
     "//base",
     "//base:i18n",
     "//components/autofill/core/browser",
