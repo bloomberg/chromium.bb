@@ -864,8 +864,8 @@ TEST_F(ProfileResetterTest, CheckSnapshots) {
 
   ResettableSettingsSnapshot nonorganic_snap(profile());
   nonorganic_snap.RequestShortcuts(base::Closure());
-  // Let it enumerate shortcuts on the FILE thread.
-  base::RunLoop().RunUntilIdle();
+  // Let it enumerate shortcuts on a blockable task runner.
+  content::RunAllBlockingPoolTasksUntilIdle();
   int diff_fields = ResettableSettingsSnapshot::ALL_FIELDS;
   if (!ShortcutHandler::IsSupported())
     diff_fields &= ~ResettableSettingsSnapshot::SHORTCUTS;
@@ -892,8 +892,8 @@ TEST_F(ProfileResetterTest, CheckSnapshots) {
 
   ResettableSettingsSnapshot organic_snap(profile());
   organic_snap.RequestShortcuts(base::Closure());
-  // Let it enumerate shortcuts on the FILE thread.
-  base::RunLoop().RunUntilIdle();
+  // Let it enumerate shortcuts on a blockable task runner.
+  content::RunAllBlockingPoolTasksUntilIdle();
   EXPECT_EQ(diff_fields, nonorganic_snap.FindDifferentFields(organic_snap));
   nonorganic_snap.Subtract(organic_snap);
   const GURL urls[] = {GURL("http://foo.de"), GURL("http://goo.gl")};
@@ -936,8 +936,8 @@ TEST_F(ProfileResetterTest, FeedbackSerializationAsProtoTest) {
 
   ResettableSettingsSnapshot nonorganic_snap(profile());
   nonorganic_snap.RequestShortcuts(base::Closure());
-  // Let it enumerate shortcuts on the FILE thread.
-  base::RunLoop().RunUntilIdle();
+  // Let it enumerate shortcuts on a blockable task runner.
+  content::RunAllBlockingPoolTasksUntilIdle();
 
   static_assert(ResettableSettingsSnapshot::ALL_FIELDS == 31,
                 "this test needs to be expanded");
@@ -1015,8 +1015,9 @@ TEST_F(ProfileResetterTest, GetReadableFeedback) {
                                        base::Unretained(&capture),
                                        profile(),
                                        base::ConstRef(snapshot)));
-  // Let it enumerate shortcuts on the FILE thread.
-  base::RunLoop().RunUntilIdle();
+  // Let it enumerate shortcuts on a blockable task runner.
+  content::RunAllBlockingPoolTasksUntilIdle();
+  EXPECT_TRUE(snapshot.shortcuts_determined());
   ::testing::Mock::VerifyAndClearExpectations(&capture);
   // The homepage and the startup page are in punycode. They are unreadable.
   // Trying to find the extension name.
