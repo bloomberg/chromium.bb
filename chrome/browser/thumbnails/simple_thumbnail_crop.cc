@@ -4,19 +4,10 @@
 
 #include "chrome/browser/thumbnails/simple_thumbnail_crop.h"
 
-#include "base/metrics/histogram_macros.h"
 #include "content/public/browser/browser_thread.h"
-#include "skia/ext/platform_canvas.h"
-#include "ui/base/layout.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/size_conversions.h"
-#include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/scrollbar_size.h"
-#include "ui/gfx/skbitmap_operations.h"
-
-namespace {
-static const char kThumbnailHistogramName[] = "Thumbnail.ComputeMS";
-}
 
 namespace thumbnails {
 
@@ -45,21 +36,14 @@ void SimpleThumbnailCrop::ProcessBitmap(
     return;
 
   DCHECK(context->clip_result != thumbnails::CLIP_RESULT_UNPROCESSED);
-  // TODO(treib): Getting the maximum supported scale here seems pointless -
-  // we only read back what GetCopySizeForThumbnail said. The max scale could
-  // only ever be smaller in the 1x -> 2x hack case (see
-  // GetCopySizeForThumbnail), but that seems like a bug - why would we scale
-  // on the CPU in that case?
-  SkBitmap thumbnail =
-      CreateThumbnail(bitmap, ComputeTargetSizeAtMaximumScale(target_size_));
 
-  context->score.boring_score = color_utils::CalculateBoringScore(thumbnail);
+  context->score.boring_score = color_utils::CalculateBoringScore(bitmap);
   context->score.good_clipping =
       (context->clip_result == CLIP_RESULT_WIDER_THAN_TALL ||
        context->clip_result == CLIP_RESULT_TALLER_THAN_WIDE ||
        context->clip_result == CLIP_RESULT_NOT_CLIPPED);
 
-  callback.Run(*context.get(), thumbnail);
+  callback.Run(*context.get(), bitmap);
 }
 
 // RenderWidgetHostView::CopyFromSurface() can be costly especially when it is
@@ -123,33 +107,6 @@ gfx::Rect SimpleThumbnailCrop::GetClippingRect(const gfx::Size& source_size,
   return clipping_rect;
 }
 
-// static
-gfx::Size SimpleThumbnailCrop::ComputeTargetSizeAtMaximumScale(
-    const gfx::Size& given_size) {
-  // TODO(mazda|oshima): Update thumbnail when the max scale factor changes.
-  // crbug.com/159157.
-  float max_scale_factor = gfx::ImageSkia::GetMaxSupportedScale();
-  return gfx::ScaleToFlooredSize(given_size, max_scale_factor);
-}
-
-SimpleThumbnailCrop::~SimpleThumbnailCrop() {
-}
-
-// Creates a downsampled thumbnail from the given bitmap.
-// store. The returned bitmap will be isNull if there was an error creating it.
-SkBitmap SimpleThumbnailCrop::CreateThumbnail(const SkBitmap& bitmap,
-                                              const gfx::Size& desired_size) {
-  base::TimeTicks begin_compute_thumbnail = base::TimeTicks::Now();
-
-  // Need to resize it to the size we want, so downsample until it's
-  // close, and let the caller make it the exact size if desired.
-  // TODO(treib): This is probably pointless, see TODO in ProcessBitmap.
-  SkBitmap result = SkBitmapOperations::DownsampleByTwoUntilSize(
-      bitmap, desired_size.width(), desired_size.height());
-
-  LOCAL_HISTOGRAM_TIMES(kThumbnailHistogramName,
-                        base::TimeTicks::Now() - begin_compute_thumbnail);
-  return result;
-}
+SimpleThumbnailCrop::~SimpleThumbnailCrop() = default;
 
 } // namespace thumbnails
