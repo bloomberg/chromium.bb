@@ -24,41 +24,42 @@ const DomainMap& SchemaMap::GetDomains() const {
 }
 
 const ComponentMap* SchemaMap::GetComponents(PolicyDomain domain) const {
-  DomainMap::const_iterator it = map_.find(domain);
-  return it == map_.end() ? NULL : &it->second;
+  const auto it = map_.find(domain);
+  return it == map_.end() ? nullptr : &it->second;
 }
 
 const Schema* SchemaMap::GetSchema(const PolicyNamespace& ns) const {
   const ComponentMap* map = GetComponents(ns.domain);
   if (!map)
-    return NULL;
-  ComponentMap::const_iterator it = map->find(ns.component_id);
-  return it == map->end() ? NULL : &it->second;
+    return nullptr;
+  const auto it = map->find(ns.component_id);
+  return it == map->end() ? nullptr : &it->second;
 }
 
 void SchemaMap::FilterBundle(PolicyBundle* bundle) const {
-  for (PolicyBundle::iterator it = bundle->begin(); it != bundle->end(); ++it) {
+  for (const auto& bundle_item : *bundle) {
+    const PolicyNamespace& ns = bundle_item.first;
+    const std::unique_ptr<PolicyMap>& policy_map = bundle_item.second;
+
     // Chrome policies are not filtered, so that typos appear in about:policy.
     // Everything else gets filtered, so that components only see valid policy.
-    if (it->first.domain == POLICY_DOMAIN_CHROME)
+    if (ns.domain == POLICY_DOMAIN_CHROME)
       continue;
 
-    const Schema* schema = GetSchema(it->first);
+    const Schema* schema = GetSchema(ns);
 
     if (!schema) {
-      it->second->Clear();
+      policy_map->Clear();
       continue;
     }
 
     if (!schema->valid()) {
       // Don't serve unknown policies.
-      it->second->Clear();
+      policy_map->Clear();
       continue;
     }
 
-    PolicyMap* map = it->second.get();
-    for (PolicyMap::const_iterator it_map = map->begin();
-         it_map != map->end();) {
+    for (auto it_map = policy_map->begin(); it_map != policy_map->end();) {
       const std::string& policy_name = it_map->first;
       const base::Value* policy_value = it_map->second.value.get();
       Schema policy_schema = schema->GetProperty(policy_name);
@@ -71,21 +72,22 @@ void SchemaMap::FilterBundle(PolicyBundle* bundle) const {
                                   &error_path,
                                   &error)) {
         LOG(ERROR) << "Dropping policy " << policy_name << " of component "
-                   << it->first.component_id << " due to error at "
+                   << ns.component_id << " due to error at "
                    << (error_path.empty() ? "root" : error_path) << ": "
                    << error;
-        map->Erase(policy_name);
+        policy_map->Erase(policy_name);
       }
     }
   }
 }
 
 bool SchemaMap::HasComponents() const {
-  for (DomainMap::const_iterator domain = map_.begin();
-       domain != map_.end(); ++domain) {
-    if (domain->first == POLICY_DOMAIN_CHROME)
+  for (const auto& item : map_) {
+    const PolicyDomain& domain = item.first;
+    const ComponentMap& component_map = item.second;
+    if (domain == POLICY_DOMAIN_CHROME)
       continue;
-    if (!domain->second.empty())
+    if (!component_map.empty())
       return true;
   }
   return false;
@@ -101,12 +103,12 @@ void SchemaMap::GetChanges(const scoped_refptr<SchemaMap>& older,
 void SchemaMap::GetNamespacesNotInOther(const SchemaMap* other,
                                         PolicyNamespaceList* list) const {
   list->clear();
-  for (DomainMap::const_iterator domain = map_.begin();
-       domain != map_.end(); ++domain) {
-    const ComponentMap& components = domain->second;
-    for (ComponentMap::const_iterator comp = components.begin();
-         comp != components.end(); ++comp) {
-      PolicyNamespace ns(domain->first, comp->first);
+  for (const auto& item : map_) {
+    const PolicyDomain& domain = item.first;
+    const ComponentMap& component_map = item.second;
+    for (const auto& comp : component_map) {
+      const std::string& component_id = comp.first;
+      const PolicyNamespace ns(domain, component_id);
       if (!other->GetSchema(ns))
         list->push_back(ns);
     }

@@ -291,6 +291,7 @@ void ComponentCloudPolicyStore::Purge(
 }
 
 void ComponentCloudPolicyStore::Clear() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (const DomainConstants& constants : kDomains) {
     cache_->Clear(constants.proto_cache_key);
     cache_->Clear(constants.data_cache_key);
@@ -309,6 +310,8 @@ bool ComponentCloudPolicyStore::ValidatePolicy(
     std::unique_ptr<em::PolicyFetchResponse> proto,
     em::PolicyData* policy_data,
     em::ExternalPolicyData* payload) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   std::string policy_type;
   if (!GetPolicyType(ns.domain, &policy_type)) {
     LOG(ERROR) << "Bad policy type " << ns.domain << ".";

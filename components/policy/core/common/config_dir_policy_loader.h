@@ -50,11 +50,14 @@ class POLICY_EXPORT ConfigDirPolicyLoader : public AsyncPolicyLoader {
   // Callback for the FilePathWatchers.
   void OnFileUpdated(const base::FilePath& path, bool error);
 
+  // Task runner for running background jobs.
+  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
+
   // The directory containing the policy files.
-  base::FilePath config_dir_;
+  const base::FilePath config_dir_;
 
   // Policies loaded by this provider will have this scope.
-  PolicyScope scope_;
+  const PolicyScope scope_;
 
   // Watchers for events on the mandatory and recommended subdirectories of
   // |config_dir_|.

@@ -29,6 +29,7 @@ SchemaRegistry::~SchemaRegistry() {
 
 void SchemaRegistry::RegisterComponent(const PolicyNamespace& ns,
                                        const Schema& schema) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   ComponentMap map;
   map[ns.component_id] = schema;
   RegisterComponents(ns.domain, map);
@@ -36,6 +37,7 @@ void SchemaRegistry::RegisterComponent(const PolicyNamespace& ns,
 
 void SchemaRegistry::RegisterComponents(PolicyDomain domain,
                                         const ComponentMap& components) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Don't issue notifications if nothing is being registered.
   if (components.empty())
     return;
@@ -51,6 +53,7 @@ void SchemaRegistry::RegisterComponents(PolicyDomain domain,
 }
 
 void SchemaRegistry::UnregisterComponent(const PolicyNamespace& ns) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DomainMap map(schema_map_->GetDomains());
   if (map[ns.domain].erase(ns.component_id) != 0) {
     schema_map_ = new SchemaMap(map);
@@ -61,6 +64,7 @@ void SchemaRegistry::UnregisterComponent(const PolicyNamespace& ns) {
 }
 
 bool SchemaRegistry::IsReady() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (int i = 0; i < POLICY_DOMAIN_SIZE; ++i) {
     if (!domains_ready_[i])
       return false;
@@ -69,6 +73,7 @@ bool SchemaRegistry::IsReady() const {
 }
 
 void SchemaRegistry::SetDomainReady(PolicyDomain domain) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (domains_ready_[domain])
     return;
   domains_ready_[domain] = true;
@@ -79,32 +84,39 @@ void SchemaRegistry::SetDomainReady(PolicyDomain domain) {
 }
 
 void SchemaRegistry::SetAllDomainsReady() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (int i = 0; i < POLICY_DOMAIN_SIZE; ++i)
     SetDomainReady(static_cast<PolicyDomain>(i));
 }
 
 void SchemaRegistry::SetExtensionsDomainsReady() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   SetDomainReady(POLICY_DOMAIN_EXTENSIONS);
   SetDomainReady(POLICY_DOMAIN_SIGNIN_EXTENSIONS);
 }
 
 void SchemaRegistry::AddObserver(Observer* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   observers_.AddObserver(observer);
 }
 
 void SchemaRegistry::RemoveObserver(Observer* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   observers_.RemoveObserver(observer);
 }
 
 void SchemaRegistry::AddInternalObserver(InternalObserver* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   internal_observers_.AddObserver(observer);
 }
 
 void SchemaRegistry::RemoveInternalObserver(InternalObserver* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   internal_observers_.RemoveObserver(observer);
 }
 
 void SchemaRegistry::Notify(bool has_new_schemas) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& observer : observers_)
     observer.OnSchemaRegistryUpdated(has_new_schemas);
 }
@@ -120,6 +132,7 @@ CombinedSchemaRegistry::CombinedSchemaRegistry()
 CombinedSchemaRegistry::~CombinedSchemaRegistry() {}
 
 void CombinedSchemaRegistry::Track(SchemaRegistry* registry) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   registries_.insert(registry);
   registry->AddObserver(this);
   registry->AddInternalObserver(this);
@@ -132,6 +145,7 @@ void CombinedSchemaRegistry::Track(SchemaRegistry* registry) {
 void CombinedSchemaRegistry::RegisterComponents(
     PolicyDomain domain,
     const ComponentMap& components) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DomainMap map(own_schema_map_->GetDomains());
   for (ComponentMap::const_iterator it = components.begin();
        it != components.end(); ++it) {
@@ -142,6 +156,7 @@ void CombinedSchemaRegistry::RegisterComponents(
 }
 
 void CombinedSchemaRegistry::UnregisterComponent(const PolicyNamespace& ns) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DomainMap map(own_schema_map_->GetDomains());
   if (map[ns.domain].erase(ns.component_id) != 0) {
     own_schema_map_ = new SchemaMap(map);
@@ -152,11 +167,13 @@ void CombinedSchemaRegistry::UnregisterComponent(const PolicyNamespace& ns) {
 }
 
 void CombinedSchemaRegistry::OnSchemaRegistryUpdated(bool has_new_schemas) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   Combine(has_new_schemas);
 }
 
 void CombinedSchemaRegistry::OnSchemaRegistryShuttingDown(
     SchemaRegistry* registry) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   registry->RemoveObserver(this);
   registry->RemoveInternalObserver(this);
   if (registries_.erase(registry) != 0) {
@@ -168,6 +185,7 @@ void CombinedSchemaRegistry::OnSchemaRegistryShuttingDown(
 }
 
 void CombinedSchemaRegistry::Combine(bool has_new_schemas) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // If two registries publish a Schema for the same component then it's
   // undefined which version gets in the combined registry.
   //
@@ -214,6 +232,7 @@ ForwardingSchemaRegistry::~ForwardingSchemaRegistry() {
 void ForwardingSchemaRegistry::RegisterComponents(
     PolicyDomain domain,
     const ComponentMap& components) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // POLICY_DOMAIN_CHROME is skipped to avoid spurious updates when a new
   // Profile is created. If the ForwardingSchemaRegistry is used outside
   // device-level accounts then this should become configurable.
@@ -223,22 +242,26 @@ void ForwardingSchemaRegistry::RegisterComponents(
 }
 
 void ForwardingSchemaRegistry::UnregisterComponent(const PolicyNamespace& ns) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (wrapped_)
     wrapped_->UnregisterComponent(ns);
   // Ignore otherwise.
 }
 
 void ForwardingSchemaRegistry::OnSchemaRegistryUpdated(bool has_new_schemas) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   schema_map_ = wrapped_->schema_map();
   Notify(has_new_schemas);
 }
 
 void ForwardingSchemaRegistry::OnSchemaRegistryReady() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   UpdateReadiness();
 }
 
 void ForwardingSchemaRegistry::OnSchemaRegistryShuttingDown(
     SchemaRegistry* registry) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(wrapped_, registry);
   wrapped_->RemoveObserver(this);
   wrapped_->RemoveInternalObserver(this);
@@ -247,6 +270,7 @@ void ForwardingSchemaRegistry::OnSchemaRegistryShuttingDown(
 }
 
 void ForwardingSchemaRegistry::UpdateReadiness() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (wrapped_->IsReady())
     SetAllDomainsReady();
 }
