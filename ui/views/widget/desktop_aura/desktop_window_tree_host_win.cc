@@ -600,10 +600,6 @@ void DesktopWindowTreeHostWin::OnWindowHidingAnimationCompleted() {
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostWin, HWNDMessageHandlerDelegate implementation:
 
-ui::InputMethod* DesktopWindowTreeHostWin::GetHWNDMessageDelegateInputMethod() {
-  return GetInputMethod();
-}
-
 bool DesktopWindowTreeHostWin::HasNonClientView() const {
   return has_non_client_view_;
 }
