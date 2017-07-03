@@ -12,6 +12,8 @@
 #include "base/macros.h"
 #include "components/ukm/public/ukm_recorder.h"
 
+class GURL;
+
 namespace password_manager {
 
 // Internal namespace is intended for component wide access only.
@@ -21,6 +23,8 @@ constexpr char kUkmUserModifiedPasswordField[] = "UserModifiedPasswordField";
 
 }  // namespace internal
 
+class BrowserSavePasswordProgressLogger;
+
 // The pupose of this class is to record various types of metrics about the
 // behavior of the PasswordManager and its interaction with the user and the
 // page.
@@ -28,6 +32,20 @@ constexpr char kUkmUserModifiedPasswordField[] = "UserModifiedPasswordField";
 // any owner needs to destroy this instance when navigations are committed.
 class PasswordManagerMetricsRecorder {
  public:
+  // Reasons why the password manager failed to do a provisional saving and
+  // therefore did not offer the user to save a password.
+  enum ProvisionalSaveFailure {
+    SAVING_DISABLED,
+    EMPTY_PASSWORD,
+    NO_MATCHING_FORM,
+    MATCHING_NOT_COMPLETE,
+    FORM_BLACKLISTED,
+    INVALID_FORM,
+    SYNC_CREDENTIAL,
+    SAVING_ON_HTTP_AFTER_HTTPS,
+    MAX_FAILURE_VALUE
+  };
+
   // |ukm_entry_builder| is the destination into which UKM metrics are recorded.
   // It may be nullptr, in which case no UKM metrics are recorded. This should
   // be created via the static CreateUkmEntryBuilder() method of this class.
@@ -50,6 +68,13 @@ class PasswordManagerMetricsRecorder {
   // Records that the user has modified a password field on a page. This may be
   // called multiple times but a single metric will be reported.
   void RecordUserModifiedPasswordField();
+
+  // Log failure to provisionally save a password to in the PasswordManager to
+  // UMA and the |logger|.
+  void RecordProvisionalSaveFailure(ProvisionalSaveFailure failure,
+                                    const GURL& main_frame_url,
+                                    const GURL& form_origin,
+                                    BrowserSavePasswordProgressLogger* logger);
 
  private:
   // Records a metric into |ukm_entry_builder_| if it is not nullptr.

@@ -28,6 +28,7 @@
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
+#include "components/password_manager/core/browser/password_manager_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -267,13 +268,17 @@ void PasswordManager::ProvisionallySavePassword(
   }
 
   if (!is_saving_and_filling_enabled) {
-    RecordFailure(SAVING_DISABLED, form.origin, logger.get());
+    client_->GetMetricsRecorder().RecordProvisionalSaveFailure(
+        PasswordManagerMetricsRecorder::SAVING_DISABLED, main_frame_url_,
+        form.origin, logger.get());
     return;
   }
 
   // No password to save? Then don't.
   if (PasswordFormManager::PasswordToSave(form).empty()) {
-    RecordFailure(EMPTY_PASSWORD, form.origin, logger.get());
+    client_->GetMetricsRecorder().RecordProvisionalSaveFailure(
+        PasswordManagerMetricsRecorder::EMPTY_PASSWORD, main_frame_url_,
+        form.origin, logger.get());
     return;
   }
 
@@ -281,7 +286,9 @@ void PasswordManager::ProvisionallySavePassword(
   metrics_util::LogShouldBlockPasswordForSameOriginButDifferentScheme(
       should_block);
   if (should_block) {
-    RecordFailure(SAVING_ON_HTTP_AFTER_HTTPS, form.origin, logger.get());
+    client_->GetMetricsRecorder().RecordProvisionalSaveFailure(
+        PasswordManagerMetricsRecorder::SAVING_ON_HTTP_AFTER_HTTPS,
+        main_frame_url_, form.origin, logger.get());
     return;
   }
 
@@ -338,7 +345,9 @@ void PasswordManager::ProvisionallySavePassword(
   // first loading the page containing the form. Don't offer to save
   // passwords in this case.
   if (matched_manager_it == pending_login_managers_.end()) {
-    RecordFailure(NO_MATCHING_FORM, form.origin, logger.get());
+    client_->GetMetricsRecorder().RecordProvisionalSaveFailure(
+        PasswordManagerMetricsRecorder::NO_MATCHING_FORM, main_frame_url_,
+        form.origin, logger.get());
     return;
   }
 
@@ -409,48 +418,6 @@ void PasswordManager::DropFormManagers() {
 
 bool PasswordManager::IsPasswordFieldDetectedOnPage() {
   return !pending_login_managers_.empty();
-}
-
-void PasswordManager::RecordFailure(ProvisionalSaveFailure failure,
-                                    const GURL& form_origin,
-                                    BrowserSavePasswordProgressLogger* logger) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "PasswordManager.ProvisionalSaveFailure", failure, MAX_FAILURE_VALUE);
-
-  if (logger) {
-    switch (failure) {
-      case SAVING_DISABLED:
-        logger->LogMessage(Logger::STRING_SAVING_DISABLED);
-        break;
-      case EMPTY_PASSWORD:
-        logger->LogMessage(Logger::STRING_EMPTY_PASSWORD);
-        break;
-      case MATCHING_NOT_COMPLETE:
-        logger->LogMessage(Logger::STRING_MATCHING_NOT_COMPLETE);
-        break;
-      case NO_MATCHING_FORM:
-        logger->LogMessage(Logger::STRING_NO_MATCHING_FORM);
-        break;
-      case FORM_BLACKLISTED:
-        logger->LogMessage(Logger::STRING_FORM_BLACKLISTED);
-        break;
-      case INVALID_FORM:
-        logger->LogMessage(Logger::STRING_INVALID_FORM);
-        break;
-      case SYNC_CREDENTIAL:
-        logger->LogMessage(Logger::STRING_SYNC_CREDENTIAL);
-        break;
-      case SAVING_ON_HTTP_AFTER_HTTPS:
-        logger->LogSuccessiveOrigins(
-            Logger::STRING_BLOCK_PASSWORD_SAME_ORIGIN_INSECURE_SCHEME,
-            main_frame_url_.GetOrigin(), form_origin.GetOrigin());
-        break;
-      case MAX_FAILURE_VALUE:
-        NOTREACHED();
-        return;
-    }
-    logger->LogMessage(Logger::STRING_DECISION_DROP);
-  }
 }
 
 void PasswordManager::AddSubmissionCallback(
@@ -598,9 +565,9 @@ bool PasswordManager::CanProvisionalManagerSave() {
       FormFetcher::State::WAITING) {
     // We have a provisional save manager, but it didn't finish matching yet.
     // We just give up.
-    RecordFailure(MATCHING_NOT_COMPLETE,
-                  provisional_save_manager_->observed_form().origin,
-                  logger.get());
+    client_->GetMetricsRecorder().RecordProvisionalSaveFailure(
+        PasswordManagerMetricsRecorder::MATCHING_NOT_COMPLETE, main_frame_url_,
+        provisional_save_manager_->observed_form().origin, logger.get());
     provisional_save_manager_.reset();
     return false;
   }
@@ -749,9 +716,9 @@ void PasswordManager::OnLoginSuccessful() {
     if (!client_->GetStoreResultFilter()->ShouldSave(
             *provisional_save_manager_->submitted_form())) {
       provisional_save_manager_->WipeStoreCopyIfOutdated();
-      RecordFailure(SYNC_CREDENTIAL,
-                    provisional_save_manager_->observed_form().origin,
-                    logger.get());
+      client_->GetMetricsRecorder().RecordProvisionalSaveFailure(
+          PasswordManagerMetricsRecorder::SYNC_CREDENTIAL, main_frame_url_,
+          provisional_save_manager_->observed_form().origin, logger.get());
       provisional_save_manager_.reset();
       return;
     }

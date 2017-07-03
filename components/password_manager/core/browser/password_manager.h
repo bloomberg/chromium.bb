@@ -33,7 +33,6 @@ class FormStructure;
 
 namespace password_manager {
 
-class BrowserSavePasswordProgressLogger;
 class PasswordManagerClient;
 class PasswordManagerDriver;
 class PasswordFormManager;
@@ -190,26 +189,6 @@ class PasswordManager : public LoginModel {
   FRIEND_TEST_ALL_PREFIXES(
       PasswordManagerTest,
       ShouldBlockPasswordForSameOriginButDifferentSchemeTest);
-
-  enum ProvisionalSaveFailure {
-    SAVING_DISABLED,
-    EMPTY_PASSWORD,
-    NO_MATCHING_FORM,
-    MATCHING_NOT_COMPLETE,
-    FORM_BLACKLISTED,
-    INVALID_FORM,
-    SYNC_CREDENTIAL,
-    SAVING_ON_HTTP_AFTER_HTTPS,
-    MAX_FAILURE_VALUE
-  };
-
-  // Log failure for UMA. Logs additional metrics if the |form_origin|
-  // corresponds to one of the top, explicitly monitored websites. For some
-  // values of |failure| also sends logs to the internals page through |logger|,
-  // it |logger| is not NULL.
-  void RecordFailure(ProvisionalSaveFailure failure,
-                     const GURL& form_origin,
-                     BrowserSavePasswordProgressLogger* logger);
 
   // Returns true if we can show possible usernames to users in cases where
   // the username for the form is ambigious.
