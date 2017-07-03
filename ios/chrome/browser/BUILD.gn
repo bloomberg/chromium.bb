@@ -91,6 +91,7 @@ source_set("browser") {
     "//components/metrics_services_manager",
     "//components/net_log",
     "//components/ntp_tiles",
+    "//components/password_manager/core/common:common",
     "//components/pref_registry",
     "//components/prefs",
     "//components/proxy_config",
