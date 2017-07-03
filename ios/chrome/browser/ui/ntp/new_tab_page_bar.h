@@ -23,11 +23,11 @@
 // create a "speech bubble" effect.
 @interface NewTabPageBar : UIView<UIGestureRecognizerDelegate>
 
-@property(nonatomic, retain) NSArray* items;
+@property(nonatomic, strong) NSArray* items;
 @property(nonatomic, assign) NSUInteger selectedIndex;
 @property(nonatomic, assign) CGFloat overlayPercentage;
-@property(nonatomic, readonly, retain) NSArray* buttons;
-@property(nonatomic, assign) id<NewTabPageBarDelegate> delegate;
+@property(nonatomic, readonly, strong) NSArray* buttons;
+@property(nonatomic, weak) id<NewTabPageBarDelegate> delegate;
 
 // Changes the colors of the buttons and overlay depending on the content offset
 // of the scroll view. Tablet Incognito only.

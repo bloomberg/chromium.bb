@@ -18,7 +18,7 @@
 
 @interface WhatsNewHeaderView : UICollectionReusableView
 
-@property(nonatomic, assign) id<WhatsNewHeaderViewDelegate> delegate;
+@property(nonatomic, weak) id<WhatsNewHeaderViewDelegate> delegate;
 
 // Sets the text for the attributed label.
 - (void)setText:(NSString*)text;

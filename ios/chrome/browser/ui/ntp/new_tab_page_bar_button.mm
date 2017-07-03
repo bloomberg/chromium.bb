@@ -5,10 +5,14 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_bar_button.h"
 
 #include "base/logging.h"
-#include "base/mac/objc_property_releaser.h"
+
 #import "ios/chrome/browser/ui/ntp/new_tab_page_bar_item.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -17,26 +21,15 @@ const int kButtonSelectedColor = 0x4285F4;
 
 }  // anonymous namespace
 
-@interface NewTabPageBarButton () {
-  UIColor* _color;
-  UIColor* _selectedColor;
-  UIColor* _incognitoColor;
-  UIColor* _incognitoSelectedColor;
-  UIColor* _interpolatedColor;
-  UIColor* _interpolatedSelectedColor;
+@interface NewTabPageBarButton ()
 
-  UIImage* _image;
-  NSString* _title;
-  base::mac::ObjCPropertyReleaser _propertyReleaser_NewTabPageBarButton;
-}
-
-@property(nonatomic, retain) UIColor* color;
-@property(nonatomic, retain) UIColor* selectedColor;
-@property(nonatomic, retain) UIColor* incognitoColor;
-@property(nonatomic, retain) UIColor* incognitoSelectedColor;
-@property(nonatomic, retain) UIColor* interpolatedColor;
-@property(nonatomic, retain) UIColor* interpolatedSelectedColor;
-@property(nonatomic, retain) UIImage* image;
+@property(nonatomic, strong) UIColor* color;
+@property(nonatomic, strong) UIColor* selectedColor;
+@property(nonatomic, strong) UIColor* incognitoColor;
+@property(nonatomic, strong) UIColor* incognitoSelectedColor;
+@property(nonatomic, strong) UIColor* interpolatedColor;
+@property(nonatomic, strong) UIColor* interpolatedSelectedColor;
+@property(nonatomic, strong) UIImage* image;
 @property(nonatomic, copy) NSString* title;
 
 // Sets the tint color of the button to |interpolatedColor| or
@@ -62,8 +55,6 @@ const int kButtonSelectedColor = 0x4285F4;
   DCHECK(item.image);
   NewTabPageBarButton* button =
       [[self class] buttonWithType:UIButtonTypeCustom];
-  button->_propertyReleaser_NewTabPageBarButton.Init(
-      button, [NewTabPageBarButton class]);
 
   button.title = item.title;
   button.image =

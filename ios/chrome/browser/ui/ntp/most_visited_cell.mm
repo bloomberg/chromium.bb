@@ -6,9 +6,7 @@
 
 #include <memory>
 
-#import "base/ios/weak_nsobject.h"
 #include "base/mac/bind_objc_block.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/favicon/core/fallback_url_util.h"
@@ -16,6 +14,10 @@
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 const CGFloat kFaviconSize = 48;
 const CGFloat kImageViewBackgroundColor = 0.941;
@@ -29,13 +31,13 @@ const CGFloat kMaximumHeight = 100;
   // Backs property with the same name.
   GURL _URL;
   // Weak reference to the relevant GoogleLandingDataSource.
-  base::WeakNSProtocol<id<GoogleLandingDataSource>> _dataSource;
+  __weak id<GoogleLandingDataSource> _dataSource;
   // Backs property with the same name.
   ntp_tiles::TileVisualType _tileType;
 
-  base::scoped_nsobject<UILabel> _label;
-  base::scoped_nsobject<UILabel> _noIconLabel;
-  base::scoped_nsobject<UIImageView> _imageView;
+  UILabel* _label;
+  UILabel* _noIconLabel;
+  UIImageView* _imageView;
 }
 // Set the background color and center the first letter of the site title (or
 // domain if the title is a url).
@@ -56,7 +58,7 @@ const CGFloat kMaximumHeight = 100;
   if (!self) {
     return nil;
   }
-  _label.reset([[UILabel alloc] initWithFrame:CGRectZero]);
+  _label = [[UILabel alloc] initWithFrame:CGRectZero];
   [_label setTextColor:[UIColor colorWithWhite:kLabelTextColor alpha:1.0]];
   [_label setBackgroundColor:[UIColor clearColor]];
   [_label setFont:[MDCTypography captionFont]];
@@ -65,12 +67,12 @@ const CGFloat kMaximumHeight = 100;
   [_label setPreferredMaxLayoutWidth:maxSize.width];
   [_label setNumberOfLines:kLabelNumLines];
 
-  _noIconLabel.reset([[UILabel alloc] initWithFrame:CGRectZero]);
+  _noIconLabel = [[UILabel alloc] initWithFrame:CGRectZero];
   [_noIconLabel setBackgroundColor:[UIColor clearColor]];
   [_noIconLabel setFont:[MDCTypography headlineFont]];
   [_noIconLabel setTextAlignment:NSTextAlignmentCenter];
 
-  _imageView.reset([[UIImageView alloc] initWithFrame:CGRectZero]);
+  _imageView = [[UIImageView alloc] initWithFrame:CGRectZero];
   [_imageView layer].cornerRadius = kImageViewCornerRadius;
   [_imageView setClipsToBounds:YES];
   [self addSubview:_imageView];
@@ -131,11 +133,11 @@ const CGFloat kMaximumHeight = 100;
 - (void)setupWithURL:(GURL)URL
                title:(NSString*)title
           dataSource:(id<GoogleLandingDataSource>)dataSource {
-  _dataSource.reset(dataSource);
+  _dataSource = dataSource;
   _tileType = ntp_tiles::TileVisualType::NONE;
   [self setText:title];
   [self setURL:URL];
-  base::WeakNSObject<MostVisitedCell> weakSelf(self);
+  __weak MostVisitedCell* weakSelf = self;
 
   void (^faviconImageBlock)(UIImage*) = ^(UIImage* favicon) {
 
