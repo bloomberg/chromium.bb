@@ -1757,14 +1757,6 @@ crbug.com/705125 virtual/mojo-loading/http/tests/security/suborigins/crossorigin
 # This test fails with the stable release mode.
 crbug.com/694958 virtual/stable/http/tests/navigation/same-and-different-back.html [ Skip ]
 
-# Failing because of module-related implementation/test issues.
-crbug.com/594639 external/wpt/html/semantics/scripting-1/the-script-element/module/errorhandling.html [ Failure ]
-crbug.com/594639 external/wpt/html/semantics/scripting-1/the-script-element/module/evaluation-error-1.html [ Failure ]
-crbug.com/594639 external/wpt/html/semantics/scripting-1/the-script-element/module/evaluation-error-2.html [ Failure ]
-crbug.com/594639 external/wpt/html/semantics/scripting-1/the-script-element/module/evaluation-error-3.html [ Failure ]
-crbug.com/594639 external/wpt/html/semantics/scripting-1/the-script-element/module/evaluation-error-4.html [ Failure ]
-crbug.com/594639 external/wpt/html/semantics/scripting-1/the-script-element/module/slow-cycle.html [ Failure ]
-
 # This test has a failure console message with specific performance
 # numbers so a consistent baseline cannot be added. This test could be
 # imported if the test passed or if the results for testharness tests
