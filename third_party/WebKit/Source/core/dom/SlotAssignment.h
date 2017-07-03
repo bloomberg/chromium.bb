@@ -5,7 +5,6 @@
 #ifndef SlotAssignment_h
 #define SlotAssignment_h
 
-// #include "core/dom/DocumentOrderedList.h"
 #include "core/dom/TreeOrderedMap.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/HashMap.h"
