@@ -996,6 +996,9 @@ TEST_F(PasswordStoreTest, SavingClearingSyncPassword) {
   TestingPrefServiceSimple prefs;
   prefs.registry()->RegisterStringPref(prefs::kSyncPasswordHash, std::string(),
                                        PrefRegistry::NO_REGISTRATION_FLAGS);
+  prefs.registry()->RegisterStringPref(prefs::kSyncPasswordLengthAndHashSalt,
+                                       std::string(),
+                                       PrefRegistry::NO_REGISTRATION_FLAGS);
   ASSERT_FALSE(prefs.HasPrefPath(prefs::kSyncPasswordHash));
   store->Init(syncer::SyncableService::StartSyncFlare(), &prefs);
 

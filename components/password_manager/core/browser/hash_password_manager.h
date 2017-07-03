@@ -15,7 +15,8 @@ namespace password_manager {
 
 struct SyncPasswordData {
   uint64_t hash;
-  // TODO(crbug.com/722414): Add salt.
+  std::string salt;
+  size_t length;
 };
 
 // Responsible for saving, clearing, retrieving and encryption of a sync
@@ -26,7 +27,7 @@ class HashPasswordManager {
   HashPasswordManager() = default;
   ~HashPasswordManager() = default;
 
-  void SavePasswordHash(const base::string16& password);
+  bool SavePasswordHash(const base::string16& password);
   void ClearSavedPasswordHash();
 
   // Returns empty if no hash is available.
@@ -35,6 +36,26 @@ class HashPasswordManager {
   void set_prefs(PrefService* prefs) { prefs_ = prefs; }
 
  private:
+  std::string CreateRandomSalt();
+
+  // Packs |salt| and |password_length| to a string.
+  std::string LengthAndSaltToString(const std::string& salt,
+                                    size_t password_length);
+
+  // Unpacks |salt| and |password_length| from a string |s|.
+  void StringToLengthAndSalt(const std::string& s,
+                             size_t* password_length,
+                             std::string* salt);
+
+  // Saves encrypted string |s| in a preference |pref_name|. Return true on
+  // success.
+  bool EncryptAndSaveToPrefs(const std::string& pref_name,
+                             const std::string& s);
+
+  // Retrieves and decrypts string value from a preference |pref_name|. Return
+  // an empty string on failure.
+  std::string RetrivedDecryptedStringFromPrefs(const std::string& pref_name);
+
   PrefService* prefs_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(HashPasswordManager);
