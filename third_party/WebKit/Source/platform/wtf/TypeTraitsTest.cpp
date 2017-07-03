@@ -125,7 +125,7 @@ static_assert((IsSubclassOfTemplate<TestDerivedClass, TestBaseClass>::value),
 typedef int IntArray[];
 typedef int IntArraySized[4];
 
-#if !COMPILER(MSVC) || COMPILER(CLANG)
+#if !COMPILER(MSVC) || defined(__clang__)
 
 class AssignmentDeleted final {
  private:
@@ -200,7 +200,7 @@ static_assert(IsCopyAssignable<AssignableImplicit>::value,
 static_assert(IsMoveAssignable<AssignableImplicit>::value,
               "AssignableImplicit is move assignable.");
 
-#endif  // !COMPILER(MSVC) || COMPILER(CLANG)
+#endif  // !COMPILER(MSVC) || defined(__clang__)
 
 class DefaultConstructorDeleted final {
  private:

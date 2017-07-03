@@ -70,7 +70,7 @@ class __thisIsHereToForceASemicolonAfterThisMacro;
  private:                                   \
   friend class ::WTF::internal::__thisIsHereToForceASemicolonAfterThisMacro
 
-#if COMPILER(CLANG)
+#if defined(__clang__)
 #define STACK_ALLOCATED()                                                \
   __attribute__((annotate("blink_stack_allocated"))) void* operator new( \
       size_t) = delete;                                                  \

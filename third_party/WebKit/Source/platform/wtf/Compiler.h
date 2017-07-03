@@ -34,11 +34,6 @@
 
 /* ==== COMPILER() - the compiler being used to build the project ==== */
 
-/* COMPILER(CLANG) - Clang  */
-#if defined(__clang__)
-#define WTF_COMPILER_CLANG 1
-#endif
-
 /* COMPILER(MSVC) - Microsoft Visual C++ (and Clang when compiling for Windows).
  */
 #if defined(_MSC_VER)
@@ -90,7 +85,7 @@
 /* NO_SANITIZE_UNRELATED_CAST - Disable runtime checks related to casts between
  * unrelated objects (-fsanitize=cfi-unrelated-cast or -fsanitize=vptr). */
 
-#if COMPILER(CLANG)
+#if defined(__clang__)
 #define NO_SANITIZE_UNRELATED_CAST \
   __attribute__((no_sanitize("cfi-unrelated-cast", "vptr")))
 #else
