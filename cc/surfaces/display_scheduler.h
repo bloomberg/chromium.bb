@@ -39,7 +39,8 @@ class CC_SURFACES_EXPORT DisplayScheduler : public BeginFrameObserverBase,
  public:
   DisplayScheduler(BeginFrameSource* begin_frame_source,
                    base::SingleThreadTaskRunner* task_runner,
-                   int max_pending_swaps);
+                   int max_pending_swaps,
+                   bool wait_for_all_surfaces_before_draw = false);
   ~DisplayScheduler() override;
 
   void SetClient(DisplaySchedulerClient* client);
@@ -73,7 +74,10 @@ class CC_SURFACES_EXPORT DisplayScheduler : public BeginFrameObserverBase,
   void OnSurfaceWillDraw(const SurfaceId& surface_id) override;
 
  protected:
-  base::TimeTicks DesiredBeginFrameDeadlineTime();
+  enum class BeginFrameDeadlineMode { kImmediate, kRegular, kLate, kNone };
+  base::TimeTicks DesiredBeginFrameDeadlineTime() const;
+  BeginFrameDeadlineMode AdjustedBeginFrameDeadlineMode() const;
+  BeginFrameDeadlineMode DesiredBeginFrameDeadlineMode() const;
   virtual void ScheduleBeginFrameDeadline();
   bool AttemptDrawAndSwap();
   void OnBeginFrameDeadline();
@@ -115,6 +119,7 @@ class CC_SURFACES_EXPORT DisplayScheduler : public BeginFrameObserverBase,
   int next_swap_id_;
   int pending_swaps_;
   int max_pending_swaps_;
+  bool wait_for_all_surfaces_before_draw_;
 
   bool observing_begin_frame_source_;
 
