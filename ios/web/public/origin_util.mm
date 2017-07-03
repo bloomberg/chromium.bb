@@ -27,8 +27,7 @@ bool IsOriginSecure(const GURL& url) {
     return true;
   }
 
-  std::string hostname = url.HostNoBrackets();
-  if (net::IsLocalhost(hostname))
+  if (net::IsLocalhost(url.HostNoBracketsPiece()))
     return true;
 
   return false;
