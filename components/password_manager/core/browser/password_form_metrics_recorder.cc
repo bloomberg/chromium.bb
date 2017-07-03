@@ -158,56 +158,73 @@ int PasswordFormMetricsRecorder::GetActionsTaken() const {
 void PasswordFormMetricsRecorder::RecordHistogramsOnSuppressedAccounts(
     bool observed_form_origin_has_cryptographic_scheme,
     const FormFetcher& form_fetcher,
-    const PasswordForm& pending_credentials) const {
+    const PasswordForm& pending_credentials) {
   UMA_HISTOGRAM_BOOLEAN("PasswordManager.QueryingSuppressedAccountsFinished",
                         form_fetcher.DidCompleteQueryingSuppressedForms());
 
   if (!form_fetcher.DidCompleteQueryingSuppressedForms())
     return;
 
+  SuppressedAccountExistence best_match = kSuppressedAccountNone;
+
   if (!observed_form_origin_has_cryptographic_scheme) {
+    best_match = GetBestMatchingSuppressedAccount(
+        form_fetcher.GetSuppressedHTTPSForms(), PasswordForm::TYPE_GENERATED,
+        pending_credentials);
     UMA_HISTOGRAM_ENUMERATION(
         "PasswordManager.SuppressedAccount.Generated.HTTPSNotHTTP",
-        GetHistogramSampleForSuppressedAccounts(
-            form_fetcher.GetSuppressedHTTPSForms(),
-            PasswordForm::TYPE_GENERATED, pending_credentials),
+        GetHistogramSampleForSuppressedAccounts(best_match),
         kMaxSuppressedAccountStats);
+    RecordUkmMetric("SuppressedAccount.Generated.HTTPSNotHTTP", best_match);
+
+    best_match = GetBestMatchingSuppressedAccount(
+        form_fetcher.GetSuppressedHTTPSForms(), PasswordForm::TYPE_MANUAL,
+        pending_credentials);
     UMA_HISTOGRAM_ENUMERATION(
         "PasswordManager.SuppressedAccount.Manual.HTTPSNotHTTP",
-        GetHistogramSampleForSuppressedAccounts(
-            form_fetcher.GetSuppressedHTTPSForms(), PasswordForm::TYPE_MANUAL,
-            pending_credentials),
+        GetHistogramSampleForSuppressedAccounts(best_match),
         kMaxSuppressedAccountStats);
+    RecordUkmMetric("SuppressedAccount.Manual.HTTPSNotHTTP", best_match);
   }
 
+  best_match = GetBestMatchingSuppressedAccount(
+      form_fetcher.GetSuppressedPSLMatchingForms(),
+      PasswordForm::TYPE_GENERATED, pending_credentials);
   UMA_HISTOGRAM_ENUMERATION(
       "PasswordManager.SuppressedAccount.Generated.PSLMatching",
-      GetHistogramSampleForSuppressedAccounts(
-          form_fetcher.GetSuppressedPSLMatchingForms(),
-          PasswordForm::TYPE_GENERATED, pending_credentials),
+      GetHistogramSampleForSuppressedAccounts(best_match),
       kMaxSuppressedAccountStats);
+  RecordUkmMetric("SuppressedAccount.Generated.PSLMatching", best_match);
+  best_match = GetBestMatchingSuppressedAccount(
+      form_fetcher.GetSuppressedPSLMatchingForms(), PasswordForm::TYPE_MANUAL,
+      pending_credentials);
   UMA_HISTOGRAM_ENUMERATION(
       "PasswordManager.SuppressedAccount.Manual.PSLMatching",
-      GetHistogramSampleForSuppressedAccounts(
-          form_fetcher.GetSuppressedPSLMatchingForms(),
-          PasswordForm::TYPE_MANUAL, pending_credentials),
+      GetHistogramSampleForSuppressedAccounts(best_match),
       kMaxSuppressedAccountStats);
+  RecordUkmMetric("SuppressedAccount.Manual.PSLMatching", best_match);
 
+  best_match = GetBestMatchingSuppressedAccount(
+      form_fetcher.GetSuppressedSameOrganizationNameForms(),
+      PasswordForm::TYPE_GENERATED, pending_credentials);
   UMA_HISTOGRAM_ENUMERATION(
       "PasswordManager.SuppressedAccount.Generated.SameOrganizationName",
-      GetHistogramSampleForSuppressedAccounts(
-          form_fetcher.GetSuppressedSameOrganizationNameForms(),
-          PasswordForm::TYPE_GENERATED, pending_credentials),
+      GetHistogramSampleForSuppressedAccounts(best_match),
       kMaxSuppressedAccountStats);
+  RecordUkmMetric("SuppressedAccount.Generated.SameOrganizationName",
+                  best_match);
+  best_match = GetBestMatchingSuppressedAccount(
+      form_fetcher.GetSuppressedSameOrganizationNameForms(),
+      PasswordForm::TYPE_MANUAL, pending_credentials);
   UMA_HISTOGRAM_ENUMERATION(
       "PasswordManager.SuppressedAccount.Manual.SameOrganizationName",
-      GetHistogramSampleForSuppressedAccounts(
-          form_fetcher.GetSuppressedSameOrganizationNameForms(),
-          PasswordForm::TYPE_MANUAL, pending_credentials),
+      GetHistogramSampleForSuppressedAccounts(best_match),
       kMaxSuppressedAccountStats);
+  RecordUkmMetric("SuppressedAccount.Manual.SameOrganizationName", best_match);
 }
 
-int PasswordFormMetricsRecorder::GetHistogramSampleForSuppressedAccounts(
+PasswordFormMetricsRecorder::SuppressedAccountExistence
+PasswordFormMetricsRecorder::GetBestMatchingSuppressedAccount(
     const std::vector<const PasswordForm*>& suppressed_forms,
     PasswordForm::Type manual_or_generated,
     const PasswordForm& pending_credentials) const {
@@ -228,7 +245,11 @@ int PasswordFormMetricsRecorder::GetHistogramSampleForSuppressedAccounts(
 
     best_matching_account = std::max(best_matching_account, current_account);
   }
+  return best_matching_account;
+}
 
+int PasswordFormMetricsRecorder::GetHistogramSampleForSuppressedAccounts(
+    SuppressedAccountExistence best_matching_account) const {
   // Encoding: most significant digit is the |best_matching_account|.
   int mixed_base_encoding = 0;
   mixed_base_encoding += best_matching_account;

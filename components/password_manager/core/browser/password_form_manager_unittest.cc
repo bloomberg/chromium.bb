@@ -13,6 +13,8 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/metrics_hashes.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -39,6 +41,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -706,6 +709,30 @@ class PasswordFormManagerTest : public testing::Test {
     }
     Mock::VerifyAndClearExpectations(
         client()->mock_driver()->mock_autofill_download_manager());
+  }
+
+  // Returns the sample values of |metric_value| in events named |event_name|.
+  std::vector<int64_t> GetAllUkmSamples(
+      const ukm::TestUkmRecorder& test_ukm_recorder,
+      base::StringPiece event_name,
+      base::StringPiece metric_name) {
+    std::vector<int64_t> values;
+    const ukm::UkmSource* source =
+        test_ukm_recorder.GetSourceForSourceId(client()->GetUkmSourceId());
+    if (!source)
+      return values;
+
+    for (size_t i = 0; i < test_ukm_recorder.entries_count(); ++i) {
+      const ukm::mojom::UkmEntry* entry = test_ukm_recorder.GetEntry(i);
+      if (entry->event_hash != base::HashMetricName(event_name))
+        continue;
+
+      for (const ukm::mojom::UkmMetricPtr& metric : entry->metrics) {
+        if (metric->metric_hash == base::HashMetricName(metric_name))
+          values.push_back(metric->value);
+      }
+    }
+    return values;
   }
 
   PasswordForm* observed_form() { return &observed_form_; }
@@ -3452,6 +3479,7 @@ TEST_F(PasswordFormManagerTest, SuppressedFormsHistograms) {
       SCOPED_TRACE(test_case.expected_histogram_sample_generated);
 
       base::HistogramTester histogram_tester;
+      ukm::TestUkmRecorder test_ukm_recorder;
 
       std::vector<PasswordForm> suppressed_forms;
       for (const auto* form_data : test_case.simulated_suppressed_forms) {
@@ -3459,6 +3487,11 @@ TEST_F(PasswordFormManagerTest, SuppressedFormsHistograms) {
             suppression_params.type, form_data->username_value,
             form_data->password_value, form_data->manual_or_generated));
       }
+
+      // Bind the UKM SourceId to any URL, it does not matter. The SourceId
+      // needs to be bound, though, for reporting to happen.
+      client()->GetUkmRecorder()->UpdateSourceURL(client()->GetUkmSourceId(),
+                                                  GURL("https://example.com/"));
 
       std::vector<const PasswordForm*> suppressed_forms_ptrs;
       for (const auto& form : suppressed_forms)
@@ -3485,11 +3518,27 @@ TEST_F(PasswordFormManagerTest, SuppressedFormsHistograms) {
           ::testing::ElementsAre(
               base::Bucket(test_case.expected_histogram_sample_generated, 1)));
       EXPECT_THAT(
+          GetAllUkmSamples(
+              test_ukm_recorder, "PasswordForm",
+              "SuppressedAccount.Generated." +
+                  std::string(suppression_params.expected_histogram_suffix)),
+          ::testing::ElementsAre(
+              test_case.expected_histogram_sample_generated /
+              PasswordFormMetricsRecorder::kMaxNumActionsTakenNew));
+      EXPECT_THAT(
           histogram_tester.GetAllSamples(
               "PasswordManager.SuppressedAccount.Manual." +
               std::string(suppression_params.expected_histogram_suffix)),
           ::testing::ElementsAre(
               base::Bucket(test_case.expected_histogram_sample_manual, 1)));
+      EXPECT_THAT(
+          GetAllUkmSamples(
+              test_ukm_recorder, "PasswordForm",
+              "SuppressedAccount.Manual." +
+                  std::string(suppression_params.expected_histogram_suffix)),
+          ::testing::ElementsAre(
+              test_case.expected_histogram_sample_manual /
+              PasswordFormMetricsRecorder::kMaxNumActionsTakenNew));
     }
   }
 }
