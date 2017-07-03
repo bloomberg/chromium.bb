@@ -1,0 +1,235 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/ios/imageset.gni")
+
+imageset("autofill_card_american_express") {
+  sources = [
+    "autofill_card_american_express.imageset/Contents.json",
+    "autofill_card_american_express.imageset/autofill_card_american_express.png",
+    "autofill_card_american_express.imageset/autofill_card_american_express@2x.png",
+    "autofill_card_american_express.imageset/autofill_card_american_express@2x~ipad.png",
+    "autofill_card_american_express.imageset/autofill_card_american_express@3x.png",
+    "autofill_card_american_express.imageset/autofill_card_american_express~ipad.png",
+  ]
+}
+
+imageset("autofill_card_diners") {
+  sources = [
+    "autofill_card_diners.imageset/Contents.json",
+    "autofill_card_diners.imageset/autofill_card_diners.png",
+    "autofill_card_diners.imageset/autofill_card_diners@2x.png",
+    "autofill_card_diners.imageset/autofill_card_diners@2x~ipad.png",
+    "autofill_card_diners.imageset/autofill_card_diners@3x.png",
+    "autofill_card_diners.imageset/autofill_card_diners~ipad.png",
+  ]
+}
+
+imageset("autofill_card_discover") {
+  sources = [
+    "autofill_card_discover.imageset/Contents.json",
+    "autofill_card_discover.imageset/autofill_card_discover.png",
+    "autofill_card_discover.imageset/autofill_card_discover@2x.png",
+    "autofill_card_discover.imageset/autofill_card_discover@2x~ipad.png",
+    "autofill_card_discover.imageset/autofill_card_discover@3x.png",
+    "autofill_card_discover.imageset/autofill_card_discover~ipad.png",
+  ]
+}
+
+imageset("autofill_card_generic") {
+  sources = [
+    "autofill_card_generic.imageset/Contents.json",
+    "autofill_card_generic.imageset/autofill_card_generic.png",
+    "autofill_card_generic.imageset/autofill_card_generic@2x.png",
+    "autofill_card_generic.imageset/autofill_card_generic@2x~ipad.png",
+    "autofill_card_generic.imageset/autofill_card_generic@3x.png",
+    "autofill_card_generic.imageset/autofill_card_generic~ipad.png",
+  ]
+}
+
+imageset("autofill_card_jcb") {
+  sources = [
+    "autofill_card_jcb.imageset/Contents.json",
+    "autofill_card_jcb.imageset/autofill_card_jcb.png",
+    "autofill_card_jcb.imageset/autofill_card_jcb@2x.png",
+    "autofill_card_jcb.imageset/autofill_card_jcb@2x~ipad.png",
+    "autofill_card_jcb.imageset/autofill_card_jcb@3x.png",
+    "autofill_card_jcb.imageset/autofill_card_jcb~ipad.png",
+  ]
+}
+
+imageset("autofill_card_mastercard") {
+  sources = [
+    "autofill_card_mastercard.imageset/Contents.json",
+    "autofill_card_mastercard.imageset/autofill_card_mastercard.png",
+    "autofill_card_mastercard.imageset/autofill_card_mastercard@2x.png",
+    "autofill_card_mastercard.imageset/autofill_card_mastercard@2x~ipad.png",
+    "autofill_card_mastercard.imageset/autofill_card_mastercard@3x.png",
+    "autofill_card_mastercard.imageset/autofill_card_mastercard~ipad.png",
+  ]
+}
+
+imageset("autofill_card_unionpay") {
+  sources = [
+    "autofill_card_unionpay.imageset/Contents.json",
+    "autofill_card_unionpay.imageset/autofill_card_unionpay.png",
+    "autofill_card_unionpay.imageset/autofill_card_unionpay@2x.png",
+    "autofill_card_unionpay.imageset/autofill_card_unionpay@2x~ipad.png",
+    "autofill_card_unionpay.imageset/autofill_card_unionpay@3x.png",
+    "autofill_card_unionpay.imageset/autofill_card_unionpay~ipad.png",
+  ]
+}
+
+imageset("autofill_card_visa") {
+  sources = [
+    "autofill_card_visa.imageset/Contents.json",
+    "autofill_card_visa.imageset/autofill_card_visa.png",
+    "autofill_card_visa.imageset/autofill_card_visa@2x.png",
+    "autofill_card_visa.imageset/autofill_card_visa@2x~ipad.png",
+    "autofill_card_visa.imageset/autofill_card_visa@3x.png",
+    "autofill_card_visa.imageset/autofill_card_visa~ipad.png",
+  ]
+}
+
+imageset("autofill_close") {
+  sources = [
+    "autofill_close.imageset/Contents.json",
+    "autofill_close.imageset/autofill_close.png",
+    "autofill_close.imageset/autofill_close@2x.png",
+    "autofill_close.imageset/autofill_close@3x.png",
+  ]
+}
+
+imageset("autofill_close_pressed") {
+  sources = [
+    "autofill_close_pressed.imageset/Contents.json",
+    "autofill_close_pressed.imageset/autofill_close_pressed.png",
+    "autofill_close_pressed.imageset/autofill_close_pressed@2x.png",
+    "autofill_close_pressed.imageset/autofill_close_pressed@3x.png",
+  ]
+}
+
+imageset("autofill_keyboard_background") {
+  sources = [
+    "autofill_keyboard_background.imageset/Contents.json",
+    "autofill_keyboard_background.imageset/autofill_keyboard_background.png",
+    "autofill_keyboard_background.imageset/autofill_keyboard_background@2x.png",
+    "autofill_keyboard_background.imageset/autofill_keyboard_background@3x.png",
+  ]
+}
+
+imageset("autofill_keyboard_background_left") {
+  sources = [
+    "autofill_keyboard_background_left.imageset/Contents.json",
+    "autofill_keyboard_background_left.imageset/autofill_keyboard_background_left.png",
+    "autofill_keyboard_background_left.imageset/autofill_keyboard_background_left@2x.png",
+  ]
+}
+
+imageset("autofill_keyboard_background_right") {
+  sources = [
+    "autofill_keyboard_background_right.imageset/Contents.json",
+    "autofill_keyboard_background_right.imageset/autofill_keyboard_background_right.png",
+    "autofill_keyboard_background_right.imageset/autofill_keyboard_background_right@2x.png",
+  ]
+}
+
+imageset("autofill_left_sep") {
+  sources = [
+    "autofill_left_sep.imageset/Contents.json",
+    "autofill_left_sep.imageset/autofill_left_sep.png",
+    "autofill_left_sep.imageset/autofill_left_sep@2x.png",
+    "autofill_left_sep.imageset/autofill_left_sep@3x.png",
+  ]
+}
+
+imageset("autofill_left_sep_RTL") {
+  sources = [
+    "autofill_left_sep_RTL.imageset/Contents.json",
+    "autofill_left_sep_RTL.imageset/autofill_left_sep_RTL.png",
+    "autofill_left_sep_RTL.imageset/autofill_left_sep_RTL@2x.png",
+    "autofill_left_sep_RTL.imageset/autofill_left_sep_RTL@3x.png",
+  ]
+}
+
+imageset("autofill_middle_sep") {
+  sources = [
+    "autofill_middle_sep.imageset/Contents.json",
+    "autofill_middle_sep.imageset/autofill_middle_sep.png",
+    "autofill_middle_sep.imageset/autofill_middle_sep@2x.png",
+    "autofill_middle_sep.imageset/autofill_middle_sep@3x.png",
+  ]
+}
+
+imageset("autofill_next") {
+  sources = [
+    "autofill_next.imageset/Contents.json",
+    "autofill_next.imageset/autofill_next.png",
+    "autofill_next.imageset/autofill_next@2x.png",
+    "autofill_next.imageset/autofill_next@3x.png",
+  ]
+}
+
+imageset("autofill_next_inactive") {
+  sources = [
+    "autofill_next_inactive.imageset/Contents.json",
+    "autofill_next_inactive.imageset/autofill_next_inactive.png",
+    "autofill_next_inactive.imageset/autofill_next_inactive@2x.png",
+    "autofill_next_inactive.imageset/autofill_next_inactive@3x.png",
+  ]
+}
+
+imageset("autofill_next_pressed") {
+  sources = [
+    "autofill_next_pressed.imageset/Contents.json",
+    "autofill_next_pressed.imageset/autofill_next_pressed.png",
+    "autofill_next_pressed.imageset/autofill_next_pressed@2x.png",
+    "autofill_next_pressed.imageset/autofill_next_pressed@3x.png",
+  ]
+}
+
+imageset("autofill_prev") {
+  sources = [
+    "autofill_prev.imageset/Contents.json",
+    "autofill_prev.imageset/autofill_prev.png",
+    "autofill_prev.imageset/autofill_prev@2x.png",
+    "autofill_prev.imageset/autofill_prev@3x.png",
+  ]
+}
+
+imageset("autofill_prev_inactive") {
+  sources = [
+    "autofill_prev_inactive.imageset/Contents.json",
+    "autofill_prev_inactive.imageset/autofill_prev_inactive.png",
+    "autofill_prev_inactive.imageset/autofill_prev_inactive@2x.png",
+    "autofill_prev_inactive.imageset/autofill_prev_inactive@3x.png",
+  ]
+}
+
+imageset("autofill_prev_pressed") {
+  sources = [
+    "autofill_prev_pressed.imageset/Contents.json",
+    "autofill_prev_pressed.imageset/autofill_prev_pressed.png",
+    "autofill_prev_pressed.imageset/autofill_prev_pressed@2x.png",
+    "autofill_prev_pressed.imageset/autofill_prev_pressed@3x.png",
+  ]
+}
+
+imageset("autofill_right_sep") {
+  sources = [
+    "autofill_right_sep.imageset/Contents.json",
+    "autofill_right_sep.imageset/autofill_right_sep.png",
+    "autofill_right_sep.imageset/autofill_right_sep@2x.png",
+    "autofill_right_sep.imageset/autofill_right_sep@3x.png",
+  ]
+}
+
+imageset("autofill_right_sep_RTL") {
+  sources = [
+    "autofill_right_sep_RTL.imageset/Contents.json",
+    "autofill_right_sep_RTL.imageset/autofill_right_sep_RTL.png",
+    "autofill_right_sep_RTL.imageset/autofill_right_sep_RTL@2x.png",
+    "autofill_right_sep_RTL.imageset/autofill_right_sep_RTL@3x.png",
+  ]
+}
