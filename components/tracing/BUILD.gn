@@ -35,11 +35,8 @@ component("tracing") {
   deps = [
     "//base",
     "//ipc",
+    "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
   ]
-
-  if (is_win) {
-    deps += [ "//base/win:pe_image" ]
-  }
 
   public_deps = [
     "//components/tracing/proto:protos",
@@ -47,6 +44,7 @@ component("tracing") {
 
   if (is_nacl) {
     sources -= [ "common/process_metrics_memory_dump_provider.cc" ]
+    deps -= [ "//services/resource_coordinator/public/cpp:resource_coordinator_cpp" ]
   }
 }
 
@@ -96,7 +94,6 @@ source_set("unit_tests") {
   sources = [
     "child/child_trace_message_filter_unittest.cc",
     "common/graphics_memory_dump_provider_android_unittest.cc",
-    "common/process_metrics_memory_dump_provider_unittest.cc",
     "core/proto_utils_unittest.cc",
     "core/proto_zero_message_unittest.cc",
     "core/scattered_stream_writer_unittest.cc",
