@@ -140,7 +140,7 @@ const HeapVector<Member<Element>>& TreeScope::GetAllElementsById(
 void TreeScope::AddElementById(const AtomicString& element_id,
                                Element* element) {
   if (!elements_by_id_)
-    elements_by_id_ = DocumentOrderedMap::Create();
+    elements_by_id_ = TreeOrderedMap::Create();
   elements_by_id_->Add(element_id, element);
   id_target_observer_registry_->NotifyObservers(element_id);
 }
@@ -171,7 +171,7 @@ void TreeScope::AddImageMap(HTMLMapElement* image_map) {
   if (!name)
     return;
   if (!image_maps_by_name_)
-    image_maps_by_name_ = DocumentOrderedMap::Create();
+    image_maps_by_name_ = TreeOrderedMap::Create();
   image_maps_by_name_->Add(name, image_map);
 }
 

@@ -28,7 +28,7 @@
 #define TreeScope_h
 
 #include "core/CoreExport.h"
-#include "core/dom/DocumentOrderedMap.h"
+#include "core/dom/TreeOrderedMap.h"
 #include "core/html/forms/RadioButtonGroupScope.h"
 #include "core/layout/HitTestRequest.h"
 #include "platform/heap/Handle.h"
@@ -145,8 +145,8 @@ class CORE_EXPORT TreeScope : public GarbageCollectedMixin {
   Member<Document> document_;
   Member<TreeScope> parent_tree_scope_;
 
-  Member<DocumentOrderedMap> elements_by_id_;
-  Member<DocumentOrderedMap> image_maps_by_name_;
+  Member<TreeOrderedMap> elements_by_id_;
+  Member<TreeOrderedMap> image_maps_by_name_;
 
   Member<IdTargetObserverRegistry> id_target_observer_registry_;
 

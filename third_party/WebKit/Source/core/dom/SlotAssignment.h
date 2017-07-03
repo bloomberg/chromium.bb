@@ -6,7 +6,7 @@
 #define SlotAssignment_h
 
 // #include "core/dom/DocumentOrderedList.h"
-#include "core/dom/DocumentOrderedMap.h"
+#include "core/dom/TreeOrderedMap.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/text/AtomicString.h"
@@ -71,7 +71,7 @@ class SlotAssignment final : public GarbageCollected<SlotAssignment> {
                              SlotMutationType);
 
   HeapVector<Member<HTMLSlotElement>> slots_;
-  Member<DocumentOrderedMap> slot_map_;
+  Member<TreeOrderedMap> slot_map_;
   WeakMember<ShadowRoot> owner_;
   unsigned needs_collect_slots_ : 1;
   unsigned slot_count_ : 31;

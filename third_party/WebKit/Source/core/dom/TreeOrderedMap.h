@@ -29,8 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DocumentOrderedMap_h
-#define DocumentOrderedMap_h
+#ifndef TreeOrderedMap_h
+#define TreeOrderedMap_h
 
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Allocator.h"
@@ -46,9 +46,9 @@ class Element;
 class HTMLSlotElement;
 class TreeScope;
 
-class DocumentOrderedMap : public GarbageCollected<DocumentOrderedMap> {
+class TreeOrderedMap : public GarbageCollected<TreeOrderedMap> {
  public:
-  static DocumentOrderedMap* Create();
+  static TreeOrderedMap* Create();
 
   void Add(const AtomicString&, Element*);
   void Remove(const AtomicString&, Element*);
@@ -62,7 +62,7 @@ class DocumentOrderedMap : public GarbageCollected<DocumentOrderedMap> {
   Element* GetElementByMapName(const AtomicString&, const TreeScope&) const;
   HTMLSlotElement* GetSlotByName(const AtomicString&, const TreeScope&) const;
   // Don't use this unless the caller can know the internal state of
-  // DocumentOrderedMap exactly.
+  // TreeOrderedMap exactly.
   Element* GetCachedFirstElementWithoutAccessingNodeTree(const AtomicString&);
 
   DECLARE_TRACE();
@@ -71,8 +71,8 @@ class DocumentOrderedMap : public GarbageCollected<DocumentOrderedMap> {
   // While removing a ContainerNode, ID lookups won't be precise should the tree
   // have elements with duplicate IDs contained in the element being removed.
   // Rare trees, but ID lookups may legitimately fail across such removals;
-  // this scope object informs DocumentOrderedMaps about the transitory
-  // state of the underlying tree.
+  // this scope object informs TreeOrderedMaps about the transitory state of the
+  // underlying tree.
   class RemoveScope {
     STACK_ALLOCATED();
 
@@ -91,7 +91,7 @@ class DocumentOrderedMap : public GarbageCollected<DocumentOrderedMap> {
 #endif
 
  private:
-  DocumentOrderedMap();
+  TreeOrderedMap();
 
   template <bool keyMatches(const AtomicString&, const Element&)>
   Element* Get(const AtomicString&, const TreeScope&) const;
@@ -113,15 +113,15 @@ class DocumentOrderedMap : public GarbageCollected<DocumentOrderedMap> {
   mutable Map map_;
 };
 
-inline bool DocumentOrderedMap::Contains(const AtomicString& id) const {
+inline bool TreeOrderedMap::Contains(const AtomicString& id) const {
   return map_.Contains(id);
 }
 
-inline bool DocumentOrderedMap::ContainsMultiple(const AtomicString& id) const {
+inline bool TreeOrderedMap::ContainsMultiple(const AtomicString& id) const {
   Map::const_iterator it = map_.find(id);
   return it != map_.end() && it->value->count > 1;
 }
 
 }  // namespace blink
 
-#endif  // DocumentOrderedMap_h
+#endif  // TreeOrderedMap_h
