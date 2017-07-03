@@ -147,12 +147,28 @@ void NotificationHeaderView::SetAppName(const base::string16& name) {
 void NotificationHeaderView::SetProgress(int progress) {
   summary_text_view_->SetText(l10n_util::GetStringFUTF16Int(
       IDS_MESSAGE_CENTER_NOTIFICATION_PROGRESS_PERCENTAGE, progress));
-  has_summary_text_ = true;
+  has_progress_ = true;
   UpdateSummaryTextVisibility();
 }
 
 void NotificationHeaderView::ClearProgress() {
-  has_summary_text_ = false;
+  has_progress_ = false;
+  UpdateSummaryTextVisibility();
+}
+
+void NotificationHeaderView::SetOverflowIndicator(int count) {
+  if (count > 0) {
+    summary_text_view_->SetText(l10n_util::GetStringFUTF16Int(
+        IDS_MESSAGE_CENTER_LIST_NOTIFICATION_HEADER_OVERFLOW_INDICATOR, count));
+    has_overflow_indicator_ = true;
+  } else {
+    has_overflow_indicator_ = false;
+  }
+  UpdateSummaryTextVisibility();
+}
+
+void NotificationHeaderView::ClearOverflowIndicator() {
+  has_overflow_indicator_ = false;
   UpdateSummaryTextVisibility();
 }
 
@@ -234,8 +250,9 @@ void NotificationHeaderView::UpdateControlButtonsVisibility() {
 }
 
 void NotificationHeaderView::UpdateSummaryTextVisibility() {
-  summary_text_divider_->SetVisible(has_summary_text_);
-  summary_text_view_->SetVisible(has_summary_text_);
+  const bool visible = has_progress_ || has_overflow_indicator_;
+  summary_text_divider_->SetVisible(visible);
+  summary_text_view_->SetVisible(visible);
   Layout();
 }
 
