@@ -13,10 +13,12 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/common/autofill_switches.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/signin/core/common/signin_switches.h"
 #include "components/variations/variations_associated_data.h"
 #include "ios/chrome/browser/chrome_switches.h"
@@ -233,7 +235,8 @@ bool IsViewCopyPasswordsEnabled() {
       objectForKey:kEnableViewCopyPasswords];
   if ([viewCopyPasswordFlag isEqualToString:@"Enabled"])
     return true;
-  return false;
+  return base::FeatureList::IsEnabled(
+      password_manager::features::kViewPasswords);
 }
 
 bool UseOnlyLocalHeuristicsForPasswordGeneration() {
