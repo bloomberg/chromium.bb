@@ -634,8 +634,11 @@ need to be translated for each locale.-->
       <message name="IDS_MESSAGE_CENTER_CLEAR_ALL" desc="The button for clearing all notifications.">
         Clear All
       </message>
-      <message name="IDS_MESSAGE_CENTER_LIST_NOTIFICATION_OVERFLOW_INDICATOR" desc="The overflow indicator shown when a list notification has more list items than visible ones. Should be same as AndroidPlatform msgId 1863231301642314183. (frameworks/base/packages/SystemUI/res/values/strings.xml:notification_group_overflow_indicator)">
-        + <ph name="NUMBER">$1<ex>3</ex></ph>
+      <message name="IDS_MESSAGE_CENTER_LIST_NOTIFICATION_MESSAGE_WITH_DIVIDER" desc="The divider symbol of the title and the message of a sub item in list notification. In English, the title is on the left of this text. In RTL languages, the title is on the right of this message.">
+        ''' - <ph name="message">$1<ex>This is the message!</ex></ph>'''
+      </message>
+      <message name="IDS_MESSAGE_CENTER_LIST_NOTIFICATION_HEADER_OVERFLOW_INDICATOR" desc="The overflow indicator shown on the notification header when a list notification has more list items than visible ones.">
+        +<ph name="NUMBER">$1<ex>3</ex></ph> more
       </message>
       <message name="IDS_MESSAGE_CENTER_NOTIFICATION_PROGRESS_PERCENTAGE" desc="The summary text in a notification that is shown with progress bar.">
         <ph name="NUMBER">$1<ex>75</ex></ph> %

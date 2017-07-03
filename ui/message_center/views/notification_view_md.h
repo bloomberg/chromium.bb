@@ -86,6 +86,9 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   // Whether this notification is expanded or not.
   bool expanded_ = false;
 
+  // Number of total list items in the given Notification class.
+  int list_items_count_ = 0;
+
   // Describes whether the view should display a hand pointer or not.
   bool clickable_;
 

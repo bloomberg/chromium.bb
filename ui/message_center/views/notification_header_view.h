@@ -23,12 +23,14 @@ class NotificationHeaderView : public views::CustomButton {
   void SetAppIcon(const gfx::ImageSkia& img);
   void SetAppName(const base::string16& name);
   void SetProgress(int progress);
+  void SetOverflowIndicator(int count);
   void SetExpandButtonEnabled(bool enabled);
   void SetExpanded(bool expanded);
   void SetSettingsButtonEnabled(bool enabled);
   void SetCloseButtonEnabled(bool enabled);
   void SetControlButtonsVisible(bool visible);
   void ClearProgress();
+  void ClearOverflowIndicator();
   bool IsExpandButtonEnabled();
   bool IsSettingsButtonEnabled();
   bool IsCloseButtonEnabled();
@@ -59,7 +61,8 @@ class NotificationHeaderView : public views::CustomButton {
   bool settings_button_enabled_ = false;
   bool close_button_enabled_ = false;
   bool is_control_buttons_visible_ = false;
-  bool has_summary_text_ = false;
+  bool has_progress_ = false;
+  bool has_overflow_indicator_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationHeaderView);
 };
