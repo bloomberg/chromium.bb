@@ -86,7 +86,7 @@ class LineReader {
 
 class MHTMLTest : public ::testing::Test {
  public:
-  MHTMLTest() { file_path_ = testing::WebTestDataPath("mhtml/"); }
+  MHTMLTest() { file_path_ = testing::CoreTestDataPath("mhtml/"); }
 
  protected:
   void SetUp() override { helper_.Initialize(); }
@@ -101,7 +101,7 @@ class MHTMLTest : public ::testing::Test {
                              const std::string& file_name) {
     URLTestHelpers::RegisterMockedURLLoad(
         ToKURL(url),
-        testing::WebTestDataPath(WebString::FromUTF8("mhtml/" + file_name)),
+        testing::CoreTestDataPath(WebString::FromUTF8("mhtml/" + file_name)),
         WebString::FromUTF8("multipart/related"));
   }
 

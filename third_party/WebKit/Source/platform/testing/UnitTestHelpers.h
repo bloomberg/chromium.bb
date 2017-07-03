@@ -52,11 +52,6 @@ void YieldCurrentThread();
 // /src/third_party/WebKit.
 String BlinkRootDir();
 
-// Returns test data absolute path for webkit_unit_tests, i.e.
-// <blinkRootDir>/Source/web/tests/data/<relativePath>.
-// It returns the top web test directory if |relativePath| was not specified.
-String WebTestDataPath(const String& relative_path = String());
-
 // Returns test data absolute path for webkit_unit_tests in core, i.e.
 // <blinkRootDir>/Source/core/testing/data/<relativePath>.
 // It returns the top web test directory if |relativePath| was not specified.
