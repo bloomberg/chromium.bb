@@ -155,8 +155,8 @@ const char TranslateLanguageList::kTargetLanguagesKey[] = "tl";
 TranslateLanguageList::TranslateLanguageList()
     : resource_requests_allowed_(false), request_pending_(false) {
   // We default to our hard coded list of languages in
-  // |kDefaultSupportedLanguages|. This list will be overriden by a server
-  // providing supported langauges list.
+  // |kDefaultSupportedLanguages|. This list will be overridden by a server
+  // providing supported languages list.
   for (size_t i = 0; i < arraysize(kDefaultSupportedLanguages); ++i)
     supported_languages_.insert(kDefaultSupportedLanguages[i]);
 
