@@ -95,7 +95,7 @@ TEST_F(GpuJpegDecodeAcceleratorTest, DecodeFrameCallArrivesAtDecoder) {
   auto* decoder_ptr = decoder.get();
   ON_CALL(*decoder, Initialize(_)).WillByDefault(Return(true));
 
-  IPC::MessageFilter* message_filter = nullptr;
+  scoped_refptr<IPC::MessageFilter> message_filter = nullptr;
   EXPECT_CALL(*this, GetMockJpegDecodeAccelerator(_))
       .WillOnce(InvokeWithoutArgs([&decoder]() { return std::move(decoder); }));
   EXPECT_CALL(gpu_channel_, AddFilter(_)).WillOnce(SaveArg<0>(&message_filter));
@@ -124,7 +124,8 @@ TEST_F(GpuJpegDecodeAcceleratorTest, DecodeFrameCallArrivesAtDecoder) {
   io_task_runner->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&GpuJpegDecodeAcceleratorTest::SendStubFrame,
-                 base::Unretained(this), message_filter, kArbitraryRouteId),
+                 base::Unretained(this), base::RetainedRef(message_filter),
+                 kArbitraryRouteId),
       run_loop2.QuitClosure());
   run_loop2.Run();
 }

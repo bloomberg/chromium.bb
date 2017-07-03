@@ -637,9 +637,9 @@ class ChannelAssociatedGroupController
     } else {
       endpoint->task_runner()->PostTask(
           FROM_HERE,
-          base::Bind(&ChannelAssociatedGroupController
-                ::NotifyEndpointOfErrorOnEndpointThread, this, endpoint->id(),
-                endpoint));
+          base::Bind(&ChannelAssociatedGroupController::
+                         NotifyEndpointOfErrorOnEndpointThread,
+                     this, endpoint->id(), base::Unretained(endpoint)));
     }
   }
 

@@ -69,9 +69,9 @@ ConnectivityCheckerImpl::ConnectivityCheckerImpl(
       network_changed_pending_(false) {
   DCHECK(task_runner_.get());
 
-  task_runner->PostTask(FROM_HERE,
-                        base::Bind(&ConnectivityCheckerImpl::Initialize, this,
-                                   url_request_context_getter));
+  task_runner->PostTask(
+      FROM_HERE, base::Bind(&ConnectivityCheckerImpl::Initialize, this,
+                            base::RetainedRef(url_request_context_getter)));
 }
 
 void ConnectivityCheckerImpl::Initialize(
