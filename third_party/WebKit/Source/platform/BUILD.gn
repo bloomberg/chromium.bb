@@ -1748,6 +1748,8 @@ static_library("test_support") {
     "testing/TestPaintArtifact.h",
     "testing/TestingPlatformSupport.cpp",
     "testing/TestingPlatformSupport.h",
+    "testing/TestingPlatformSupportWithWebRTC.cpp",
+    "testing/TestingPlatformSupportWithWebRTC.h",
     "testing/TransformPrinters.cpp",
     "testing/TransformPrinters.h",
     "testing/URLTestHelpers.cpp",

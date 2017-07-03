@@ -95,9 +95,6 @@ test("webkit_unit_tests") {
     "tests/VirtualTimeTest.cpp",
     "tests/WebFrameSerializerSanitizationTest.cpp",
     "tests/WebFrameTest.cpp",
-    "tests/scheduler/ActiveConnectionThrottlingTest.cpp",
-    "tests/scheduler/FrameThrottlingTest.cpp",
-    "tests/scheduler/ThrottlingTest.cpp",
   ]
   sources += bindings_unittest_files
 
