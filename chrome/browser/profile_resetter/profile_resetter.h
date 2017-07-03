@@ -117,10 +117,12 @@ typedef std::pair<base::FilePath, base::string16> ShortcutCommand;
 
 typedef base::RefCountedData<base::CancellationFlag> SharedCancellationFlag;
 
+#if defined(OS_WIN)
 // On Windows returns all the shortcuts which launch Chrome and corresponding
 // arguments. |cancel| can be passed to abort the operation earlier.
-// Call on FILE thread.
+// Call on COM task runner that may block.
 std::vector<ShortcutCommand> GetChromeLaunchShortcuts(
     const scoped_refptr<SharedCancellationFlag>& cancel);
+#endif
 
 #endif  // CHROME_BROWSER_PROFILE_RESETTER_PROFILE_RESETTER_H_
