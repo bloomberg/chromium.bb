@@ -120,6 +120,11 @@ class NoStatePrefetchBrowserTest
           content::BrowserThread::IO, FROM_HERE,
           base::BindOnce(WaitForAppcacheOnIO, manifest_url, appcache_service,
                          wait_loop.QuitClosure(), &found_manifest));
+      // There seems to be some flakiness in the appcache getting back to us, so
+      // use a timeout task to try the appcache query again.
+      content::BrowserThread::PostDelayedTask(
+          content::BrowserThread::UI, FROM_HERE, wait_loop.QuitClosure(),
+          base::TimeDelta::FromMilliseconds(2000));
       wait_loop.Run();
     } while (!found_manifest);
   }
