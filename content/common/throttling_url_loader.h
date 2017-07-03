@@ -45,7 +45,7 @@ class CONTENT_EXPORT ThrottlingURLLoader : public mojom::URLLoaderClient,
       uint32_t options,
       const ResourceRequest& url_request,
       mojom::URLLoaderClient* client,
-      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner =
           base::ThreadTaskRunnerHandle::Get());
 
@@ -61,6 +61,7 @@ class CONTENT_EXPORT ThrottlingURLLoader : public mojom::URLLoaderClient,
       std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
       const ResourceRequest& url_request,
       mojom::URLLoaderClient* client,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner =
           base::ThreadTaskRunnerHandle::Get());
 
@@ -73,7 +74,7 @@ class CONTENT_EXPORT ThrottlingURLLoader : public mojom::URLLoaderClient,
   ThrottlingURLLoader(
       std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
       mojom::URLLoaderClient* client,
-      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation);
+      const net::NetworkTrafficAnnotationTag& traffic_annotation);
 
   // Either of the two sets of arguments below is valid but not both:
   // - |factory|, |routing_id|, |request_id| and |options|;
@@ -189,7 +190,7 @@ class CONTENT_EXPORT ThrottlingURLLoader : public mojom::URLLoaderClient,
   // Set if request is deferred and SetPriority() is called.
   std::unique_ptr<PriorityInfo> priority_info_;
 
-  const net::MutableNetworkTrafficAnnotationTag traffic_annotation_;
+  const net::NetworkTrafficAnnotationTag traffic_annotation_;
 
   DISALLOW_COPY_AND_ASSIGN(ThrottlingURLLoader);
 };

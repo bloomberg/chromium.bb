@@ -59,7 +59,7 @@ std::unique_ptr<ThrottlingURLLoader> ThrottlingURLLoader::CreateLoaderAndStart(
     uint32_t options,
     const ResourceRequest& url_request,
     mojom::URLLoaderClient* client,
-    const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
+    const net::NetworkTrafficAnnotationTag& traffic_annotation,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   std::unique_ptr<ThrottlingURLLoader> loader(new ThrottlingURLLoader(
       std::move(throttles), client, traffic_annotation));
@@ -74,9 +74,10 @@ std::unique_ptr<ThrottlingURLLoader> ThrottlingURLLoader::CreateLoaderAndStart(
     std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
     const ResourceRequest& url_request,
     mojom::URLLoaderClient* client,
+    const net::NetworkTrafficAnnotationTag& traffic_annotation,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   std::unique_ptr<ThrottlingURLLoader> loader(new ThrottlingURLLoader(
-      std::move(throttles), client, net::MutableNetworkTrafficAnnotationTag()));
+      std::move(throttles), client, traffic_annotation));
   loader->Start(nullptr, 0, 0, mojom::kURLLoadOptionNone,
                 std::move(start_loader_callback), url_request,
                 std::move(task_runner));
@@ -105,7 +106,7 @@ void ThrottlingURLLoader::SetPriority(net::RequestPriority priority,
 ThrottlingURLLoader::ThrottlingURLLoader(
     std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
     mojom::URLLoaderClient* client,
-    const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
+    const net::NetworkTrafficAnnotationTag& traffic_annotation)
     : forwarding_client_(client),
       client_binding_(this),
       traffic_annotation_(traffic_annotation) {
@@ -168,9 +169,10 @@ void ThrottlingURLLoader::StartNow(
     mojom::URLLoaderAssociatedPtr url_loader;
     auto url_loader_request = mojo::MakeRequest(&url_loader);
     url_loader_ = std::move(url_loader);
-    factory->CreateLoaderAndStart(std::move(url_loader_request), routing_id,
-                                  request_id, options, url_request,
-                                  std::move(client), traffic_annotation_);
+    factory->CreateLoaderAndStart(
+        std::move(url_loader_request), routing_id, request_id, options,
+        url_request, std::move(client),
+        net::MutableNetworkTrafficAnnotationTag(traffic_annotation_));
   } else {
     mojom::URLLoaderPtr url_loader;
     auto url_loader_request = mojo::MakeRequest(&url_loader);

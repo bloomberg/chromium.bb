@@ -212,8 +212,7 @@ class ThrottlingURLLoaderTest : public testing::Test {
     request.url = GURL("http://example.org");
     loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
         factory_.factory_ptr().get(), std::move(throttles_), 0, 0, 0, request,
-        &client_,
-        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
+        &client_, TRAFFIC_ANNOTATION_FOR_TESTS);
     factory_.factory_ptr().FlushForTesting();
   }
 
