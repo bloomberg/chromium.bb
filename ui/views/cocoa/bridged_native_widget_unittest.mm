@@ -29,6 +29,7 @@
 #import "ui/views/cocoa/views_nswindow_delegate.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_model.h"
+#include "ui/views/test/test_views_delegate.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/native_widget_mac.h"
 #include "ui/views/widget/root_view.h"
@@ -287,6 +288,11 @@ class BridgedNativeWidgetTestBase : public ui::CocoaTest {
 
   // Make the InitParams available to tests to cover initialization codepaths.
   Widget::InitParams init_params_;
+
+ private:
+  TestViewsDelegate test_views_delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(BridgedNativeWidgetTestBase);
 };
 
 class BridgedNativeWidgetTest : public BridgedNativeWidgetTestBase {

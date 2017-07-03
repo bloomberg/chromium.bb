@@ -28,6 +28,7 @@
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/render_text.h"
 #include "ui/views/controls/textfield/textfield_test_api.h"
+#include "ui/views/test/views_test_base.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
@@ -173,7 +174,7 @@ class TestingOmniboxEditController : public ChromeOmniboxEditController {
 
 // OmniboxViewViewsTest -------------------------------------------------------
 
-class OmniboxViewViewsTest : public testing::Test {
+class OmniboxViewViewsTest : public views::ViewsTestBase {
  public:
   OmniboxViewViewsTest();
 
@@ -228,6 +229,7 @@ void OmniboxViewViewsTest::SetAndEmphasizeText(const std::string& new_text,
 }
 
 void OmniboxViewViewsTest::SetUp() {
+  ViewsTestBase::SetUp();
 #if defined(OS_CHROMEOS)
   chromeos::input_method::InitializeForTesting(
       new chromeos::input_method::MockInputMethodManagerImpl);
@@ -248,6 +250,7 @@ void OmniboxViewViewsTest::TearDown() {
 #if defined(OS_CHROMEOS)
   chromeos::input_method::Shutdown();
 #endif
+  ViewsTestBase::TearDown();
 }
 
 // Actual tests ---------------------------------------------------------------
