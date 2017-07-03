@@ -238,21 +238,21 @@ void MdTextButton::UpdatePadding() {
 }
 
 void MdTextButton::UpdateColors() {
-  ui::NativeTheme::ColorId fg_color_id =
-      is_prominent_ ? ui::NativeTheme::kColorId_TextOnProminentButtonColor
-                    : ui::NativeTheme::kColorId_ButtonEnabledColor;
-
   ui::NativeTheme* theme = GetNativeTheme();
+  SkColor enabled_text_color = style::GetColor(
+      label()->text_context(),
+      is_prominent_ ? style::STYLE_DIALOG_BUTTON_DEFAULT : style::STYLE_PRIMARY,
+      theme);
   if (!explicitly_set_normal_color()) {
     const auto colors = explicitly_set_colors();
-    LabelButton::SetEnabledTextColors(theme->GetSystemColor(fg_color_id));
+    LabelButton::SetEnabledTextColors(enabled_text_color);
     set_explicitly_set_colors(colors);
   }
 
   // Prominent buttons keep their enabled text color; disabled state is conveyed
   // by shading the background instead.
   if (is_prominent_)
-    SetTextColor(STATE_DISABLED, theme->GetSystemColor(fg_color_id));
+    SetTextColor(STATE_DISABLED, enabled_text_color);
 
   SkColor text_color = label()->enabled_color();
   SkColor bg_color =

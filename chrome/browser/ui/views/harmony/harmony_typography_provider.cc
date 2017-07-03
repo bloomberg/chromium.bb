@@ -4,15 +4,82 @@
 
 #include "chrome/browser/ui/views/harmony/harmony_typography_provider.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/platform_font.h"
 #include "ui/native_theme/native_theme.h"
+
+#if defined(OS_WIN)
+#include "ui/native_theme/native_theme_win.h"
+#endif
 
 #if defined(USE_ASH)
 #include "ash/public/cpp/ash_typography.h"  // nogncheck
 #endif
+
+namespace {
+
+// If the default foreground color from the native theme isn't black, the rest
+// of the Harmony spec isn't going to work. Also skip Harmony if a Windows
+// High Contrast theme is enabled. One of the four standard High Contrast themes
+// in Windows 10 still has black text, but (since the user wants high contrast)
+// the grey text shades in Harmony should not be used.
+bool ShouldIgnoreHarmonySpec(const ui::NativeTheme& theme) {
+#if defined(OS_WIN)
+  if (ui::NativeThemeWin::IsUsingHighContrastTheme())
+    return true;
+#endif
+  constexpr auto kTestColorId = ui::NativeTheme::kColorId_LabelEnabledColor;
+  return theme.GetSystemColor(kTestColorId) != SK_ColorBLACK;
+}
+
+// Returns a color for a possibly inverted or high-contrast OS color theme.
+SkColor GetHarmonyTextColorForNonStandardNativeTheme(
+    int context,
+    int style,
+    const ui::NativeTheme& theme) {
+  // At the time of writing, very few UI surfaces need typography for a Chrome-
+  // provided theme. Typically just incognito browser windows (when the native
+  // theme is NativeThemeDarkAura). Instead, this method is consulted when the
+  // actual OS theme is configured in a special way. So pick from a small number
+  // of NativeTheme constants that are known to adapt properly to distinct
+  // colors when configuring the OS to use a high-contrast theme. For example,
+  // ::GetSysColor() on Windows has 8 text colors: BTNTEXT, CAPTIONTEXT,
+  // GRAYTEXT, HIGHLIGHTTEXT, INACTIVECAPTIONTEXT, INFOTEXT (tool tips),
+  // MENUTEXT, and WINDOWTEXT. There's also hyperlinks: COLOR_HOTLIGHT.
+  // Diverging from these risks using a color that doesn't match user
+  // expectations.
+
+  const bool inverted_scheme = color_utils::IsInvertedColorScheme();
+
+  ui::NativeTheme::ColorId color_id =
+      (context == views::style::CONTEXT_BUTTON ||
+       context == views::style::CONTEXT_BUTTON_MD)
+          ? ui::NativeTheme::kColorId_ButtonEnabledColor
+          : ui::NativeTheme::kColorId_TextfieldDefaultColor;
+  switch (style) {
+    case views::style::STYLE_DIALOG_BUTTON_DEFAULT:
+      // This is just white in Harmony and, even in inverted themes, prominent
+      // buttons have a dark background, so white will maximize contrast.
+      return SK_ColorWHITE;
+    case views::style::STYLE_DISABLED:
+      color_id = ui::NativeTheme::kColorId_LabelDisabledColor;
+      break;
+    case views::style::STYLE_LINK:
+      color_id = ui::NativeTheme::kColorId_LinkEnabled;
+      break;
+    case STYLE_RED:
+      return inverted_scheme ? gfx::kGoogleRed300 : gfx::kGoogleRed700;
+    case STYLE_GREEN:
+      return inverted_scheme ? gfx::kGoogleGreen300 : gfx::kGoogleGreen700;
+  }
+  return theme.GetSystemColor(color_id);
+}
+
+}  // namespace
 
 const gfx::FontList& HarmonyTypographyProvider::GetFont(int context,
                                                         int style) const {
@@ -56,32 +123,18 @@ SkColor HarmonyTypographyProvider::GetColor(
     int context,
     int style,
     const ui::NativeTheme& theme) const {
-  const SkColor foreground_color =
-      theme.GetSystemColor(ui::NativeTheme::kColorId_LabelEnabledColor);
+  if (ShouldIgnoreHarmonySpec(theme))
+    return GetHarmonyTextColorForNonStandardNativeTheme(context, style, theme);
 
-  // If the default foreground color from the native theme isn't black, the rest
-  // of the Harmony spec isn't going to work. TODO(tapted): Something more
-  // generic would be nice here, but that requires knowing the background color
-  // for the text. At the time of writing, very few UI surfaces need native-
-  // themed typography with a custom native theme. Typically just incognito
-  // browser windows, when the native theme is NativeThemeDarkAura.
-  if (foreground_color != SK_ColorBLACK) {
+  if (context == views::style::CONTEXT_BUTTON_MD) {
     switch (style) {
+      case views::style::STYLE_DIALOG_BUTTON_DEFAULT:
+        return SK_ColorWHITE;
       case views::style::STYLE_DISABLED:
-      case STYLE_SECONDARY:
-      case STYLE_HINT:
-        return theme.GetSystemColor(
-            ui::NativeTheme::kColorId_LabelDisabledColor);
-      case views::style::STYLE_LINK:
-        return theme.GetSystemColor(ui::NativeTheme::kColorId_LinkEnabled);
-      case STYLE_RED:
-        return foreground_color == SK_ColorWHITE ? gfx::kGoogleRed300
-                                                 : gfx::kGoogleRed700;
-      case STYLE_GREEN:
-        return foreground_color == SK_ColorWHITE ? gfx::kGoogleGreen300
-                                                 : gfx::kGoogleGreen700;
+        return SkColorSetRGB(0x9e, 0x9e, 0x9e);
+      default:
+        return SkColorSetRGB(0x75, 0x75, 0x75);
     }
-    return foreground_color;
   }
 
   switch (style) {

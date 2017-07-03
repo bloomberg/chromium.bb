@@ -73,6 +73,10 @@ class VIEWS_EXPORT Label : public View,
   const base::string16& text() const { return render_text_->text(); }
   virtual void SetText(const base::string16& text);
 
+  // Where the label appears in the UI. Passed in from the constructor. This is
+  // a value from views::style::TextContext or an enum that extends it.
+  int text_context() const { return text_context_; }
+
   // Enables or disables auto-color-readability (enabled by default).  If this
   // is enabled, then calls to set any foreground or background color will
   // trigger an automatic mapper that uses color_utils::GetReadableColor() to
@@ -228,8 +232,6 @@ class VIEWS_EXPORT Label : public View,
 
   void PaintText(gfx::Canvas* canvas);
 
-  int text_context() const { return text_context_; }
-
   // View:
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   void VisibilityChanged(View* starting_from, bool is_visible) override;
@@ -325,8 +327,6 @@ class VIEWS_EXPORT Label : public View,
   // Builds |context_menu_contents_|.
   void BuildContextMenuContents();
 
-  // Where the label appears in the UI. Passed in from the constructor. This is
-  // a value from views::style::TextContext or an enum that extends it.
   const int text_context_;
 
   // An un-elided and single-line RenderText object used for preferred sizing.
