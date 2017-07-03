@@ -649,8 +649,8 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
                           dep_value.get('should_process', True))
         condition = dep_value.get('condition')
       if condition:
-        # TODO(phajdan.jr): should we also take custom vars into account?
-        condition_value = gclient_eval.EvaluateCondition(condition, self._vars)
+        condition_value = gclient_eval.EvaluateCondition(
+            condition, self.get_vars())
         should_process = should_process and condition_value
       deps_to_add.append(Dependency(
           self, name, url, None, None, self.custom_vars, None,
@@ -793,7 +793,8 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       # Keep original contents of hooks_os for flatten.
       for hook_os, os_hooks in hooks_os.iteritems():
         self._os_deps_hooks[hook_os] = [
-            Hook.from_dict(hook, variables=self._vars) for hook in os_hooks]
+            Hook.from_dict(hook, variables=self.get_vars())
+            for hook in os_hooks]
 
       # Specifically append these to ensure that hooks_os run after hooks.
       for the_target_os in target_os_list:
@@ -807,7 +808,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
     if self.recursion_limit:
       self._pre_deps_hooks = [
-          Hook.from_dict(hook, variables=self._vars) for hook in
+          Hook.from_dict(hook, variables=self.get_vars()) for hook in
           local_scope.get('pre_deps_hooks', [])]
 
     self.add_dependencies_and_close(
@@ -831,8 +832,8 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
                 else deps_to_add):
       self.add_orig_dependency(dep)
     self._mark_as_parsed(
-        [Hook.from_dict(h, variables=self._vars) for h in hooks],
-        orig_hooks=[Hook.from_dict(h, variables=self._vars)
+        [Hook.from_dict(h, variables=self.get_vars()) for h in hooks],
+        orig_hooks=[Hook.from_dict(h, variables=self.get_vars())
                     for h in (orig_hooks if orig_hooks is not None else hooks)])
 
   def findDepsFromNotAllowedHosts(self):
@@ -969,7 +970,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
   def WriteGNArgsFile(self):
     lines = ['# Generated from %r' % self.deps_file]
     for arg in self._gn_args:
-      lines.append('%s = %s' % (arg, ToGNString(self._vars[arg])))
+      lines.append('%s = %s' % (arg, ToGNString(self.get_vars()[arg])))
     with open(os.path.join(self.root.root_dir, self._gn_args_file), 'w') as f:
       f.write('\n'.join(lines))
 
@@ -1170,6 +1171,13 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       out = '%s -> %s' % (format_name(i), out)
       i = i.parent
     return out
+
+  def get_vars(self):
+    """Returns a dictionary of effective variable values
+    (DEPS file contents with applied custom_vars overrides)."""
+    result = dict(self._vars)
+    result.update(self.custom_vars or {})
+    return result
 
 
 class GClient(Dependency):
