@@ -71,7 +71,7 @@ translate_input (int forward_translation, char *table_name)
     {
       translen = BUFSIZE;
       k = 0;
-      while ((ch = fgetc(input)) != '\n' && ch != EOF && k < BUFSIZE)
+      while ((ch = fgetc(input)) != '\n' && ch != EOF && k < BUFSIZE-1)
 	charbuf[k++] = ch;
       if (ch == EOF && k == 0)
 	break;

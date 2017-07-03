@@ -338,7 +338,7 @@ _lou_getALine (FileInfo * nested)
 	  nested->linelen--;
 	  continue;
 	}
-      if (ch == 10 || nested->linelen >= MAXSTRING)
+      if (ch == 10 || nested->linelen >= MAXSTRING-1)
 	break;
       nested->line[nested->linelen++] = (widechar) ch;
       pch = ch;
@@ -1490,7 +1490,7 @@ _lou_extParseChars (const char *inString, widechar * outString)
   CharsString wideIn;
   CharsString result;
   int k;
-  for (k = 0; inString[k] && k < MAXSTRING; k++)
+  for (k = 0; inString[k] && k < MAXSTRING-1; k++)
     wideIn.chars[k] = inString[k];
   wideIn.chars[k] = 0;
   wideIn.length = k;
@@ -1623,7 +1623,7 @@ _lou_extParseDots (const char *inString,
   CharsString wideIn;
   CharsString result;
   int k;
-  for (k = 0; inString[k] && k < MAXSTRING; k++)
+  for (k = 0; inString[k] && k < MAXSTRING-1; k++)
     wideIn.chars[k] = inString[k];
   wideIn.chars[k] = 0;
   wideIn.length = k;
