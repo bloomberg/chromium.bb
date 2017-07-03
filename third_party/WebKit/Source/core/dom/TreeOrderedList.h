@@ -3,11 +3,10 @@
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
  *           (C) 2006 Alexey Proskuryakov (ap@webkit.org)
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2011, 2012 Apple Inc. All
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012 Apple Inc. All
  * rights reserved.
  * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved.
  * (http://www.torchmobile.com/)
- * Copyright (C) 2008, 2009, 2011, 2012 Google Inc. All rights reserved.
  * Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies)
  * Copyright (C) 2013 Google Inc. All rights reserved.
  *
@@ -25,46 +24,51 @@
  * along with this library; see the file COPYING.LIB.  If not, write to
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
+ *
  */
 
-#include "core/dom/DocumentOrderedList.h"
+#ifndef TreeOrderedList_h
+#define TreeOrderedList_h
 
-#include "core/dom/Node.h"
+#include "platform/heap/Handle.h"
+#include "platform/wtf/ListHashSet.h"
 
 namespace blink {
 
-void DocumentOrderedList::Add(Node* node) {
-  if (nodes_.IsEmpty()) {
-    nodes_.insert(node);
-    return;
-  }
+class Node;
 
-  // Determine an appropriate insertion point.
-  iterator begin = nodes_.begin();
-  iterator end = nodes_.end();
-  iterator it = end;
-  Node* following_node = 0;
-  do {
-    --it;
-    Node* n = *it;
-    unsigned short position =
-        n->compareDocumentPosition(node, Node::kTreatShadowTreesAsComposed);
-    if (position & Node::kDocumentPositionFollowing) {
-      nodes_.InsertBefore(following_node, node);
-      return;
-    }
-    following_node = n;
-  } while (it != begin);
+class TreeOrderedList final {
+  WTF_MAKE_NONCOPYABLE(TreeOrderedList);
+  DISALLOW_NEW();
 
-  nodes_.InsertBefore(following_node, node);
-}
+ public:
+  TreeOrderedList() {}
 
-void DocumentOrderedList::Remove(const Node* node) {
-  nodes_.erase(const_cast<Node*>(node));
-}
+  void Add(Node*);
+  void Remove(const Node*);
+  bool IsEmpty() const { return nodes_.IsEmpty(); }
+  void Clear() { nodes_.clear(); }
+  size_t size() const { return nodes_.size(); }
 
-DEFINE_TRACE(DocumentOrderedList) {
-  visitor->Trace(nodes_);
-}
+  using iterator = HeapListHashSet<Member<Node>, 32>::iterator;
+  using const_iterator = HeapListHashSet<Member<Node>, 32>::const_iterator;
+  using const_reverse_iterator =
+      HeapListHashSet<Member<Node>, 32>::const_reverse_iterator;
+
+  iterator begin() { return nodes_.begin(); }
+  iterator end() { return nodes_.end(); }
+  const_iterator begin() const { return nodes_.begin(); }
+  const_iterator end() const { return nodes_.end(); }
+
+  const_reverse_iterator rbegin() const { return nodes_.rbegin(); }
+  const_reverse_iterator rend() const { return nodes_.rend(); }
+
+  DECLARE_TRACE();
+
+ private:
+  HeapListHashSet<Member<Node>, 32> nodes_;
+};
 
 }  // namespace blink
+
+#endif

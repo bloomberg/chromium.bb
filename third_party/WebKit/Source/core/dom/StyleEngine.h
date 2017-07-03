@@ -40,9 +40,9 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/css/resolver/StyleResolverStats.h"
 #include "core/dom/Document.h"
-#include "core/dom/DocumentOrderedList.h"
 #include "core/dom/DocumentStyleSheetCollection.h"
 #include "core/dom/StyleEngineContext.h"
+#include "core/dom/TreeOrderedList.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/bindings/TraceWrapperMember.h"
 #include "platform/heap/Handle.h"
@@ -185,7 +185,7 @@ class CORE_EXPORT StyleEngine final
 
   void ShadowRootRemovedFromDocument(ShadowRoot*);
   void AddTreeBoundaryCrossingScope(const TreeScope&);
-  const DocumentOrderedList& TreeBoundaryCrossingScopes() const {
+  const TreeOrderedList& TreeBoundaryCrossingScopes() const {
     return tree_boundary_crossing_scopes_;
   }
   void ResetAuthorStyle(TreeScope&);
@@ -379,7 +379,7 @@ class CORE_EXPORT StyleEngine final
   bool tree_scopes_removed_ = false;
   UnorderedTreeScopeSet dirty_tree_scopes_;
   UnorderedTreeScopeSet active_tree_scopes_;
-  DocumentOrderedList tree_boundary_crossing_scopes_;
+  TreeOrderedList tree_boundary_crossing_scopes_;
 
   String preferred_stylesheet_set_name_;
   String selected_stylesheet_set_name_;
