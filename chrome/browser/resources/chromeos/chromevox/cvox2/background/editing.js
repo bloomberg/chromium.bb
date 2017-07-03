@@ -547,9 +547,9 @@ editing.EditableLine = function(
   // Computed members.
   /** @private {Spannable} */
   this.value_;
-  /** @private {AutomationNode|undefined} */
+  /** @private {AutomationNode} */
   this.lineStart_;
-  /** @private {AutomationNode|undefined} */
+  /** @private {AutomationNode} */
   this.lineEnd_;
   /** @private {AutomationNode|undefined} */
   this.startContainer_;
@@ -593,27 +593,24 @@ editing.EditableLine.prototype = {
     // Annotate each chunk with its associated inline text box node.
     this.value_.setSpan(this.lineStart_, 0, nameLen);
 
-    // Also, track the nodes necessary for selection (either their parents, in
-    // the case of inline text boxes, or the node itself).
+    // If the current selection is not on an inline text box (e.g. an image),
+    // return early here so that the line contents are just the node. This is
+    // pending the ability to show non-text leaf inline objects.
+    if (this.lineStart_.role != RoleType.INLINE_TEXT_BOX)
+      return;
+
+    // Also, track their static text parents.
     var parents = [this.startContainer_];
 
     // Compute the start of line.
     var lineStart = this.lineStart_;
-
-    // Hack: note underlying bugs require these hacks.
-    while ((lineStart.previousOnLine && lineStart.previousOnLine.role) ||
-           (lineStart.previousSibling && lineStart.previousSibling.lastChild &&
-            lineStart.previousSibling.lastChild.nextOnLine == lineStart)) {
-      if (lineStart.previousOnLine)
-        lineStart = lineStart.previousOnLine;
-      else
-        lineStart = lineStart.previousSibling.lastChild;
+    while (lineStart.previousOnLine && lineStart.previousOnLine.role) {
+      lineStart = lineStart.previousOnLine;
+      if (lineStart.role != RoleType.INLINE_TEXT_BOX)
+        continue;
 
       this.lineStart_ = lineStart;
-
-      if (lineStart.role != RoleType.INLINE_TEXT_BOX)
-        parents.unshift(lineStart);
-      else if (parents[0] != lineStart.parent)
+      if (parents[0] != lineStart.parent)
         parents.unshift(lineStart.parent);
 
       var prepend = new Spannable(lineStart.name, lineStart);
@@ -623,21 +620,13 @@ editing.EditableLine.prototype = {
     this.lineStartContainer_ = this.lineStart_.parent;
 
     var lineEnd = this.lineEnd_;
-
-    // Hack: note underlying bugs require these hacks.
-    while ((lineEnd.nextOnLine && lineEnd.nextOnLine.role) ||
-           (lineEnd.nextSibling &&
-            lineEnd.nextSibling.previousOnLine == lineEnd)) {
-      if (lineEnd.nextOnLine)
-        lineEnd = lineEnd.nextOnLine;
-      else
-        lineEnd = lineEnd.nextSibling.firstChild;
+    while (lineEnd.nextOnLine && lineEnd.nextOnLine.role) {
+      lineEnd = lineEnd.nextOnLine;
+      if (lineEnd.role != RoleType.INLINE_TEXT_BOX)
+        continue;
 
       this.lineEnd_ = lineEnd;
-
-      if (lineEnd.role != RoleType.INLINE_TEXT_BOX)
-        parents.push(this.lineEnd_);
-      else if (parents[parents.length - 1] != lineEnd.parent)
+      if (parents[parents.length - 1] != lineEnd.parent)
         parents.push(this.lineEnd_.parent);
 
       var annotation = lineEnd;
