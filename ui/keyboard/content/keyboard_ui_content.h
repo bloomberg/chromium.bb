@@ -59,10 +59,6 @@ class KEYBOARD_EXPORT KeyboardUIContent : public KeyboardUI,
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback) = 0;
 
-  // Loads system virtual keyboard. Noop if the current virtual keyboard is
-  // system virtual keyboard.
-  virtual void LoadSystemKeyboard();
-
   // Called when a window being observed changes bounds, to update its insets.
   void UpdateInsetsForWindow(aura::Window* window);
 
