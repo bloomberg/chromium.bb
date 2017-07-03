@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.tab;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
@@ -24,6 +25,10 @@ import org.chromium.content_public.common.ConsoleMessageLevel;
  * Class that controls navigations and allows to intercept them. It is used on Android to 'convert'
  * certain navigations to Intents to 3rd party applications and to "pause" navigations when data use
  * tracking has ended.
+ * Note the Intent is often created together with a new empty tab which then shoud be closed
+ * immediately. Closing the tab will cancel the navigation that this delegate is running for,
+ * hence can cause UAF error. It should be done in an asynchronous fashion to avoid it.
+ * See https://crbug.com/732260.
  */
 public class InterceptNavigationDelegateImpl implements InterceptNavigationDelegate {
     private final Tab mTab;
@@ -243,7 +248,14 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
                 // crbug.com/487938.
                 mTab.getActivity().moveTaskToBack(false);
             }
-            mTab.getTabModelSelector().closeTab(mTab);
+            // Defer closing a tab (and the associated WebContents) till the navigation
+            // request and the throttle finishes the job with it.
+            ThreadUtils.postOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mTab.getTabModelSelector().closeTab(mTab);
+                }
+            });
         } else if (mTab.getTabRedirectHandler().isOnNavigation()) {
             int lastCommittedEntryIndexBeforeNavigation = mTab.getTabRedirectHandler()
                     .getLastCommittedEntryIndexBeforeStartingNavigation();
