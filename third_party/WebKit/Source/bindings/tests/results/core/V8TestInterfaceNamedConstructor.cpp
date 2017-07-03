@@ -27,7 +27,7 @@ namespace blink {
 
 // Suppress warning: global constructors, because struct WrapperTypeInfo is trivial
 // and does not depend on another global objects.
-#if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
+#if defined(COMPONENT_BUILD) && defined(WIN32) && defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
@@ -44,7 +44,7 @@ const WrapperTypeInfo V8TestInterfaceNamedConstructor::wrapperTypeInfo = {
     WrapperTypeInfo::kInheritFromActiveScriptWrappable,
     WrapperTypeInfo::kDependent,
 };
-#if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
+#if defined(COMPONENT_BUILD) && defined(WIN32) && defined(__clang__)
 #pragma clang diagnostic pop
 #endif
 
@@ -72,20 +72,20 @@ namespace TestInterfaceNamedConstructorV8Internal {
 
 // Suppress warning: global constructors, because AttributeConfiguration is trivial
 // and does not depend on another global objects.
-#if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
+#if defined(COMPONENT_BUILD) && defined(WIN32) && defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
 static const V8DOMConfiguration::AttributeConfiguration V8TestInterfaceNamedConstructorLazyDataAttributes[] = {
     { "testNamedConstructorConstructorAttribute", V8TestNamedConstructor::NamedConstructorAttributeGetter, nullptr, const_cast<WrapperTypeInfo*>(&V8TestNamedConstructor::wrapperTypeInfo), static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::kOnInstance, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds },
 };
-#if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
+#if defined(COMPONENT_BUILD) && defined(WIN32) && defined(__clang__)
 #pragma clang diagnostic pop
 #endif
 
 // Suppress warning: global constructors, because struct WrapperTypeInfo is trivial
 // and does not depend on another global objects.
-#if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
+#if defined(COMPONENT_BUILD) && defined(WIN32) && defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
@@ -102,7 +102,7 @@ const WrapperTypeInfo V8TestInterfaceNamedConstructorConstructor::wrapperTypeInf
     WrapperTypeInfo::kInheritFromActiveScriptWrappable,
     WrapperTypeInfo::kDependent,
 };
-#if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
+#if defined(COMPONENT_BUILD) && defined(WIN32) && defined(__clang__)
 #pragma clang diagnostic pop
 #endif
 

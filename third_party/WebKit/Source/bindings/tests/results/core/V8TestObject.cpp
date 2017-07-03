@@ -84,7 +84,7 @@ namespace blink {
 
 // Suppress warning: global constructors, because struct WrapperTypeInfo is trivial
 // and does not depend on another global objects.
-#if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
+#if defined(COMPONENT_BUILD) && defined(WIN32) && defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
@@ -101,7 +101,7 @@ const WrapperTypeInfo V8TestObject::wrapperTypeInfo = {
     WrapperTypeInfo::kNotInheritFromActiveScriptWrappable,
     WrapperTypeInfo::kIndependent,
 };
-#if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
+#if defined(COMPONENT_BUILD) && defined(WIN32) && defined(__clang__)
 #pragma clang diagnostic pop
 #endif
 
@@ -12269,7 +12269,7 @@ void V8TestObject::indexedPropertyDeleterCallback(uint32_t index, const v8::Prop
 
 // Suppress warning: global constructors, because AttributeConfiguration is trivial
 // and does not depend on another global objects.
-#if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
+#if defined(COMPONENT_BUILD) && defined(WIN32) && defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
@@ -12278,20 +12278,20 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectAttributes[]
 
     { "measureAsFeatureNameTestInterfaceEmptyConstructorAttribute", V8TestObject::measureAsFeatureNameTestInterfaceEmptyConstructorAttributeConstructorGetterCallback, nullptr, const_cast<WrapperTypeInfo*>(&V8TestInterfaceEmpty::wrapperTypeInfo), static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::kOnInstance, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds },
 };
-#if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
+#if defined(COMPONENT_BUILD) && defined(WIN32) && defined(__clang__)
 #pragma clang diagnostic pop
 #endif
 
 // Suppress warning: global constructors, because AttributeConfiguration is trivial
 // and does not depend on another global objects.
-#if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
+#if defined(COMPONENT_BUILD) && defined(WIN32) && defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
 static const V8DOMConfiguration::AttributeConfiguration V8TestObjectLazyDataAttributes[] = {
     { "testInterfaceEmptyConstructorAttribute", V8ConstructorAttributeGetter, nullptr, const_cast<WrapperTypeInfo*>(&V8TestInterfaceEmpty::wrapperTypeInfo), static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::kOnInstance, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds },
 };
-#if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
+#if defined(COMPONENT_BUILD) && defined(WIN32) && defined(__clang__)
 #pragma clang diagnostic pop
 #endif
 
