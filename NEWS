@@ -23,6 +23,7 @@ issues]].
 *** New
 - hr-g1.ctb
 *** Renamed
+- hr.ctb -> hr-comp8.utb
 *** Removed
 * Noteworthy changes in release 3.2.0 (2017-06-06)
 Aside from the usual improvements to Braille tables this release
