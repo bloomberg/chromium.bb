@@ -4,7 +4,7 @@
     <script type="text/javascript">
       var timeOrigin;
       var sensor;
-      function onAmbientLightReadingChange() {
+      function onAmbientLightReading() {
         if (sensor.illuminance == 50 &&
             sensor.timestamp > timeOrigin &&
             sensor.timestamp < window.performance.now()) {
@@ -17,8 +17,8 @@
       function start() {
         sensor = new AmbientLightSensor();
         timeOrigin = window.performance.now();
-        sensor.onchange =
-            onAmbientLightReadingChange;
+        sensor.onreading =
+            onAmbientLightReading;
         sensor.start();
       }
 

@@ -52,7 +52,7 @@ class Sensor : public EventTargetWithInlineData,
   DOMHighResTimeStamp timestamp(ScriptState*, bool& is_null) const;
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(reading);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(activate);
 
   // ActiveScriptWrappable overrides.
@@ -104,7 +104,7 @@ class Sensor : public EventTargetWithInlineData,
                    const String& sanitized_message = String(),
                    const String& unsanitized_message = String());
 
-  void NotifyChange();
+  void NotifyReading();
   void NotifyActivate();
   void NotifyError(DOMException* error);
 

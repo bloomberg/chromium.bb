@@ -81,7 +81,7 @@ function checkPopulateMatrix(sensor, sensorType) {
           resolve(mockSensor);
         }, reject);
 
-        sensorObject.onchange = wrapper.callback;
+        sensorObject.onreading = wrapper.callback;
         sensorObject.onerror = reject;
       });
     })
