@@ -186,7 +186,7 @@ TEST_F(ModuleScriptLoaderTest, fetchInvalidURL) {
 TEST_F(ModuleScriptLoaderTest, fetchURL) {
   KURL url(kParsedURLString, "http://127.0.0.1:8000/module.js");
   URLTestHelpers::RegisterMockedURLLoad(
-      url, testing::WebTestDataPath("module.js"), "text/javascript");
+      url, testing::CoreTestDataPath("module.js"), "text/javascript");
 
   ModuleScriptLoaderRegistry* registry = ModuleScriptLoaderRegistry::Create();
   ModuleScriptFetchRequest module_request(

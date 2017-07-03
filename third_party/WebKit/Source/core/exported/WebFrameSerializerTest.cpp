@@ -85,7 +85,7 @@ class WebFrameSerializerTest : public ::testing::Test {
                                  const String& file_path,
                                  const String& mime_type = "image/png") {
     URLTestHelpers::RegisterMockedURLLoad(
-        url, testing::WebTestDataPath(file_path.Utf8().data()), mime_type);
+        url, testing::CoreTestDataPath(file_path.Utf8().data()), mime_type);
   }
 
   class SingleLinkRewritingDelegate

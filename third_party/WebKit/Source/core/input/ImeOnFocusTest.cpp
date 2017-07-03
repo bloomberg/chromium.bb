@@ -95,7 +95,7 @@ void ImeOnFocusTest::RunImeOnFocusTest(
     std::string frame) {
   ImeRequestTrackingWebViewClient client;
   RegisterMockedURLLoadFromBase(WebString::FromUTF8(base_url_),
-                                testing::WebTestDataPath(),
+                                testing::CoreTestDataPath(),
                                 WebString::FromUTF8(file_name));
   WebViewBase* web_view =
       web_view_helper_.Initialize(nullptr, nullptr, &client);
@@ -115,7 +115,7 @@ void ImeOnFocusTest::RunImeOnFocusTest(
 
   if (!frame.empty()) {
     RegisterMockedURLLoadFromBase(WebString::FromUTF8(base_url_),
-                                  testing::WebTestDataPath(),
+                                  testing::CoreTestDataPath(),
                                   WebString::FromUTF8(frame));
     WebLocalFrame* child_frame =
         web_view->MainFrame()->FirstChild()->ToWebLocalFrame();

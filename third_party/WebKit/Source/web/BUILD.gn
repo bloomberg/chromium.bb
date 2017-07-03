@@ -71,6 +71,7 @@ component("web") {
 group("webkit_unit_tests_data") {
   data = [
     "tests/data/",
+    "../core/testing/data/",
     "../core/paint/test_data/",
   ]
 }

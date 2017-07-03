@@ -99,6 +99,13 @@ String WebTestDataPath(const String& relative_path) {
           .Append(WebStringToFilePath(relative_path)));
 }
 
+String CoreTestDataPath(const String& relative_path) {
+  return FilePathToWebString(
+      BlinkRootFilePath()
+          .Append(FILE_PATH_LITERAL("Source/core/testing/data"))
+          .Append(WebStringToFilePath(relative_path)));
+}
+
 String PlatformTestDataPath(const String& relative_path) {
   return FilePathToWebString(
       BlinkRootFilePath()
