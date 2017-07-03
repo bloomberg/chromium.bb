@@ -43,6 +43,9 @@ void configureSearchHintLabel(UILabel* searchHintLabel,
 void configureVoiceSearchButton(UIButton* voiceSearchButton,
                                 UIButton* searchTapTarget);
 
+// Returns the nearest ancestor of |view| that is kind of |aClass|.
+UIView* nearestAncestor(UIView* view, Class aClass);
+
 }  // namespace content_suggestions
 
 #endif  // IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_COLLECTION_UTILS_H_

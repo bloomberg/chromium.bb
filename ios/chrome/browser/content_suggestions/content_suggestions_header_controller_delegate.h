@@ -7,6 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
+// TODO(crbug.com/700375): Implement this protocol somewhere.
 @protocol ContentSuggestionsHeaderControllerDelegate
 
 - (BOOL)isContextMenuVisible;
@@ -14,10 +15,11 @@
 
 @end
 
+// Commands protocol for the header controller.
 @protocol ContentSuggestionsHeaderControllerCommandHandler
 
-- (void)shiftTilesDown;
-- (void)shiftTilesUp;
+// Dismisses all presented modals.
+- (void)dismissModals;
 
 @end
 

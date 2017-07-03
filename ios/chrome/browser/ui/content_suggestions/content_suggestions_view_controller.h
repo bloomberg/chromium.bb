@@ -8,17 +8,20 @@
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_controlling.h"
 
 @class ContentSuggestionsSectionInformation;
 @protocol ContentSuggestionsCommands;
 @protocol ContentSuggestionsDataSource;
-@protocol ContentSuggestionsHeaderCommands;
+@protocol ContentSuggestionsHeaderSynchronizing;
+@protocol ContentSuggestionsViewControllerAudience;
 @protocol ContentSuggestionsViewControllerDelegate;
 @protocol OverscrollActionsControllerDelegate;
 @protocol SuggestedContent;
 
 // CollectionViewController to display the suggestions items.
-@interface ContentSuggestionsViewController : CollectionViewController
+@interface ContentSuggestionsViewController
+    : CollectionViewController<ContentSuggestionsCollectionControlling>
 
 - (instancetype)initWithStyle:(CollectionViewControllerStyle)style
                    dataSource:(id<ContentSuggestionsDataSource>)dataSource
@@ -31,10 +34,10 @@
 // Handler for the commands sent by the ContentSuggestionsViewController.
 @property(nonatomic, weak) id<ContentSuggestionsCommands>
     suggestionCommandHandler;
-@property(nonatomic, weak) id<ContentSuggestionsHeaderCommands>
+@property(nonatomic, weak) id<ContentSuggestionsHeaderSynchronizing>
     headerCommandHandler;
-@property(nonatomic, weak) id<ContentSuggestionsViewControllerDelegate>
-    suggestionsDelegate;
+@property(nonatomic, weak) id<ContentSuggestionsViewControllerAudience>
+    audience;
 // Override from superclass to have a more specific type.
 @property(nonatomic, readonly)
     CollectionViewModel<CollectionViewItem<SuggestedContent>*>*
@@ -42,9 +45,6 @@
 // Delegate for the overscroll actions.
 @property(nonatomic, weak) id<OverscrollActionsControllerDelegate>
     overscrollDelegate;
-// |YES| if the collection scrollView is scrolled all the way to the top. Used
-// to lock this position in place on various frame changes.
-@property(nonatomic, assign, getter=isScrolledToTop) BOOL scrolledToTop;
 
 // Removes the entry at |indexPath|, from the collection and its model.
 - (void)dismissEntryAtIndexPath:(NSIndexPath*)indexPath;

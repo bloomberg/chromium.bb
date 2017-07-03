@@ -8,10 +8,12 @@
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/content_suggestions/content_suggestions_header_provider.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_controlling.h"
 #import "ios/chrome/browser/ui/ntp/google_landing_consumer.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_owner.h"
 #import "ios/public/provider/chrome/browser/voice/logo_animation_controller.h"
 
+@protocol ContentSuggestionsCollectionSynchronizing;
 @protocol ContentSuggestionsHeaderControllerDelegate;
 @protocol ContentSuggestionsHeaderControllerCommandHandler;
 @protocol OmniboxFocuser;
@@ -22,7 +24,8 @@ class ReadingListModel;
 // the interactions between the header and the collection, and the rest of the
 // application.
 @interface ContentSuggestionsHeaderController
-    : NSObject<ContentSuggestionsHeaderProvider,
+    : NSObject<ContentSuggestionsHeaderControlling,
+               ContentSuggestionsHeaderProvider,
                GoogleLandingConsumer,
                ToolbarOwner,
                LogoAnimationControllerOwnerOwner>
@@ -32,16 +35,16 @@ class ReadingListModel;
     delegate;
 @property(nonatomic, weak) id<ContentSuggestionsHeaderControllerCommandHandler>
     commandHandler;
+@property(nonatomic, weak) id<ContentSuggestionsCollectionSynchronizing>
+    collectionSynchronizer;
 @property(nonatomic, assign) ReadingListModel* readingListModel;
-
-// |YES| when notifications indicate the omnibox is focused.
-@property(nonatomic, assign) BOOL omniboxFocused;
 
 // Whether the Google logo or doodle is being shown.
 @property(nonatomic, assign) BOOL logoIsShowing;
 
-// Update the iPhone fakebox's frame based on the current scroll view |offset|.
-- (void)updateSearchFieldForOffset:(CGFloat)offset;
+// |YES| if its view is visible.  When set to |NO| various UI updates are
+// ignored.
+@property(nonatomic, assign) BOOL isShowing;
 
 // Return the toolbar view;
 - (UIView*)toolBarView;

@@ -19,6 +19,7 @@
 #import "ios/chrome/browser/content_suggestions/content_suggestions_alert_commands.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_alert_factory.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_header_controller.h"
+#import "ios/chrome/browser/content_suggestions/content_suggestions_header_controller_delegate.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_mediator.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
@@ -33,8 +34,9 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_commands.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_synchronizer.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_audience.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestion_identifier.h"
 #import "ios/chrome/browser/ui/ntp/google_landing_mediator.h"
@@ -56,7 +58,8 @@
 @interface ContentSuggestionsCoordinator ()<
     ContentSuggestionsAlertCommands,
     ContentSuggestionsCommands,
-    ContentSuggestionsHeaderCommands,
+    ContentSuggestionsHeaderControllerCommandHandler,
+    ContentSuggestionsViewControllerAudience,
     ContentSuggestionsViewControllerDelegate,
     OverscrollActionsControllerDelegate>
 
@@ -66,13 +69,12 @@
 @property(nonatomic, strong)
     ContentSuggestionsMediator* contentSuggestionsMediator;
 @property(nonatomic, strong) GoogleLandingMediator* googleLandingMediator;
+@property(nonatomic, strong)
+    ContentSuggestionsHeaderSynchronizer* headerCollectionInteractionHandler;
 
 // Redefined as readwrite.
 @property(nonatomic, strong, readwrite)
     ContentSuggestionsHeaderController* headerController;
-
-// |YES| if the fakebox header should be animated on scroll.
-@property(nonatomic, assign) BOOL animateHeader;
 
 @end
 
@@ -84,12 +86,13 @@
 @synthesize URLLoader = _URLLoader;
 @synthesize visible = _visible;
 @synthesize contentSuggestionsMediator = _contentSuggestionsMediator;
+@synthesize headerCollectionInteractionHandler =
+    _headerCollectionInteractionHandler;
 @synthesize headerController = _headerController;
 @synthesize googleLandingMediator = _googleLandingMediator;
 @synthesize webStateList = _webStateList;
 @synthesize dispatcher = _dispatcher;
 @synthesize delegate = _delegate;
-@synthesize animateHeader = _animateHeader;
 
 - (void)start {
   if (self.visible || !self.browserState) {
@@ -99,7 +102,6 @@
   }
 
   _visible = YES;
-  self.animateHeader = YES;
 
   ntp_snippets::ContentSuggestionsService* contentSuggestionsService =
       IOSChromeContentSuggestionsServiceFactory::GetForBrowserState(
@@ -128,10 +130,20 @@
   self.suggestionsViewController = [[ContentSuggestionsViewController alloc]
       initWithStyle:CollectionViewControllerStyleDefault
          dataSource:self.contentSuggestionsMediator];
-  self.suggestionsViewController.headerCommandHandler = self;
   self.suggestionsViewController.suggestionCommandHandler = self;
   self.suggestionsViewController.suggestionsDelegate = self;
+  self.suggestionsViewController.audience = self;
   self.suggestionsViewController.overscrollDelegate = self;
+
+  self.headerCollectionInteractionHandler =
+      [[ContentSuggestionsHeaderSynchronizer alloc]
+          initWithCollectionController:self.suggestionsViewController
+                      headerController:self.headerController];
+
+  self.suggestionsViewController.headerCommandHandler =
+      self.headerCollectionInteractionHandler;
+  self.headerController.collectionSynchronizer =
+      self.headerCollectionInteractionHandler;
 }
 
 - (void)stop {
@@ -277,30 +289,6 @@
   [self showMostVisitedUndoForURL:mostVisitedItem.URL];
 }
 
-#pragma mark - ContentSuggestionsHeaderCommands
-
-- (void)updateFakeOmniboxForScrollView:(UIScrollView*)scrollView {
-  [self.delegate updateNtpBarShadowForPanelController:self];
-
-  // Unfocus the omnibox when the scroll view is scrolled below the pinned
-  // offset.
-  CGFloat pinnedOffsetY = [self pinnedOffsetY];
-  if (self.headerController.omniboxFocused && scrollView.dragging &&
-      scrollView.contentOffset.y < pinnedOffsetY) {
-    [self.dispatcher cancelOmniboxEdit];
-  }
-
-  if (IsIPadIdiom()) {
-    return;
-  }
-
-  if (self.animateHeader) {
-    [self.headerController
-        updateSearchFieldForOffset:self.suggestionsViewController.collectionView
-                                       .contentOffset.y];
-  }
-}
-
 #pragma mark - ContentSuggestionsViewControllerDelegate
 
 - (CGFloat)pinnedOffsetY {
@@ -316,7 +304,13 @@
 }
 
 - (BOOL)isOmniboxFocused {
-  return self.headerController.omniboxFocused;
+  return [self.headerController isOmniboxFocused];
+}
+
+#pragma mark - ContentSuggestionsViewControllerAudience
+
+- (void)contentSuggestionsDidScroll {
+  [self.delegate updateNtpBarShadowForPanelController:self];
 }
 
 #pragma mark - OverscrollActionsControllerDelegate
@@ -385,11 +379,11 @@
 }
 
 - (void)wasShown {
-  // TODO(crbug.com/700375): implement this.
+  self.headerController.isShowing = YES;
 }
 
 - (void)wasHidden {
-  // TODO(crbug.com/700375): implement this.
+  self.headerController.isShowing = NO;
 }
 
 - (void)dismissModals {

@@ -175,4 +175,14 @@ void configureVoiceSearchButton(UIButton* voiceSearchButton,
   [voiceSearchButton setAccessibilityIdentifier:@"Voice Search"];
 }
 
+UIView* nearestAncestor(UIView* view, Class aClass) {
+  if (!view) {
+    return nil;
+  }
+  if ([view isKindOfClass:aClass]) {
+    return view;
+  }
+  return nearestAncestor([view superview], aClass);
+}
+
 }  // namespace content_suggestions
