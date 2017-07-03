@@ -168,10 +168,10 @@ table_files = \
 	hi-in-g1.utb \
 	hi.tbl \
 	hr-chardefs.cti \
-	hr.ctb \
+	hr-comp8.tbl \
+	hr-comp8.utb \
 	hr-digits.uti \
 	hr-g1.ctb \
-	hr.tbl \
 	hr-translation.cti \
 	hu-backtranslate-correction.dis \
 	hu-chardefs.cti \
