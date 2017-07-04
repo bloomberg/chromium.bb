@@ -31,12 +31,12 @@
 #ifndef HTMLShadowElement_h
 #define HTMLShadowElement_h
 
-#include "core/dom/InsertionPoint.h"
+#include "core/dom/V0InsertionPoint.h"
 #include "platform/wtf/Forward.h"
 
 namespace blink {
 
-class HTMLShadowElement final : public InsertionPoint {
+class HTMLShadowElement final : public V0InsertionPoint {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

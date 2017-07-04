@@ -33,11 +33,11 @@
 #include <array>
 #include "core/HTMLNames.h"
 #include "core/dom/ElementShadow.h"
-#include "core/dom/InsertionPoint.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/SlotAssignment.h"
 #include "core/dom/StyleChangeReason.h"
 #include "core/dom/StyleEngine.h"
+#include "core/dom/V0InsertionPoint.h"
 #include "core/dom/WhitespaceAttacher.h"
 #include "core/events/Event.h"
 #include "core/frame/UseCounter.h"

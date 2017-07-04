@@ -36,12 +36,12 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/FlatTreeTraversal.h"
 #include "core/dom/Fullscreen.h"
-#include "core/dom/InsertionPoint.h"
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/NthIndexCache.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/dom/StyleEngine.h"
 #include "core/dom/Text.h"
+#include "core/dom/V0InsertionPoint.h"
 #include "core/editing/FrameSelection.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLDocument.h"
@@ -521,7 +521,7 @@ SelectorChecker::MatchStatus SelectorChecker::MatchForPseudoContent(
     const SelectorCheckingContext& context,
     const Element& element,
     MatchResult& result) const {
-  HeapVector<Member<InsertionPoint>, 8> insertion_points;
+  HeapVector<Member<V0InsertionPoint>, 8> insertion_points;
   CollectDestinationInsertionPoints(element, insertion_points);
   SelectorCheckingContext next_context(context);
   for (const auto& insertion_point : insertion_points) {
@@ -1183,7 +1183,7 @@ bool SelectorChecker::CheckPseudoElement(const SelectorCheckingContext& context,
       return Match(sub_context);
     }
     case CSSSelector::kPseudoContent:
-      return element.IsInShadowTree() && element.IsInsertionPoint();
+      return element.IsInShadowTree() && element.IsV0InsertionPoint();
     case CSSSelector::kPseudoShadow:
       return element.IsInShadowTree() && context.previous_element;
     default:

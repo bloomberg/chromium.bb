@@ -42,7 +42,7 @@ class DistributionPool final {
   explicit DistributionPool(const ContainerNode&);
   void Clear();
   ~DistributionPool();
-  void DistributeTo(InsertionPoint*, ElementShadowV0*);
+  void DistributeTo(V0InsertionPoint*, ElementShadowV0*);
   void PopulateChildren(const ContainerNode&);
 
  private:
@@ -68,8 +68,8 @@ inline void DistributionPool::PopulateChildren(const ContainerNode& parent) {
       // TODO(hayato): Support re-distribution across v0 and v1 shadow trees
       continue;
     }
-    if (IsActiveInsertionPoint(*child)) {
-      InsertionPoint* insertion_point = ToInsertionPoint(child);
+    if (IsActiveV0InsertionPoint(*child)) {
+      V0InsertionPoint* insertion_point = ToV0InsertionPoint(child);
       for (size_t i = 0; i < insertion_point->DistributedNodesSize(); ++i)
         nodes_.push_back(insertion_point->DistributedNodeAt(i));
     } else {
@@ -80,7 +80,7 @@ inline void DistributionPool::PopulateChildren(const ContainerNode& parent) {
   distributed_.Fill(false);
 }
 
-void DistributionPool::DistributeTo(InsertionPoint* insertion_point,
+void DistributionPool::DistributeTo(V0InsertionPoint* insertion_point,
                                     ElementShadowV0* element_shadow) {
   DistributedNodes distributed_nodes;
 
@@ -140,7 +140,7 @@ ShadowRoot& ElementShadowV0::OldestShadowRoot() const {
   return element_shadow_->OldestShadowRoot();
 }
 
-const InsertionPoint* ElementShadowV0::FinalDestinationInsertionPointFor(
+const V0InsertionPoint* ElementShadowV0::FinalDestinationInsertionPointFor(
     const Node* key) const {
   DCHECK(key);
   DCHECK(!key->NeedsDistributionRecalc());
@@ -203,7 +203,7 @@ void ElementShadowV0::Distribute() {
 }
 
 void ElementShadowV0::DidDistributeNode(const Node* node,
-                                        InsertionPoint* insertion_point) {
+                                        V0InsertionPoint* insertion_point) {
   NodeToDestinationInsertionPoints::AddResult result =
       node_to_insertion_points_.insert(node, nullptr);
   if (result.is_new_entry)

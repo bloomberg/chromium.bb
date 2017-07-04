@@ -31,7 +31,7 @@
 #ifndef ShadowRootRareDataV0_h
 #define ShadowRootRareDataV0_h
 
-#include "core/dom/InsertionPoint.h"
+#include "core/dom/V0InsertionPoint.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {
@@ -50,8 +50,8 @@ class ShadowRootRareDataV0 : public GarbageCollected<ShadowRootRareDataV0> {
     shadow_insertion_point_of_younger_shadow_root_ = shadow_insertion_point;
   }
 
-  void DidAddInsertionPoint(InsertionPoint*);
-  void DidRemoveInsertionPoint(InsertionPoint*);
+  void DidAddInsertionPoint(V0InsertionPoint*);
+  void DidRemoveInsertionPoint(V0InsertionPoint*);
 
   bool ContainsShadowElements() const {
     return descendant_shadow_element_count_;
@@ -64,10 +64,11 @@ class ShadowRootRareDataV0 : public GarbageCollected<ShadowRootRareDataV0> {
     return descendant_shadow_element_count_;
   }
 
-  const HeapVector<Member<InsertionPoint>>& DescendantInsertionPoints() {
+  const HeapVector<Member<V0InsertionPoint>>& DescendantInsertionPoints() {
     return descendant_insertion_points_;
   }
-  void SetDescendantInsertionPoints(HeapVector<Member<InsertionPoint>>& list) {
+  void SetDescendantInsertionPoints(
+      HeapVector<Member<V0InsertionPoint>>& list) {
     descendant_insertion_points_.swap(list);
   }
   void ClearDescendantInsertionPoints() {
@@ -97,10 +98,11 @@ class ShadowRootRareDataV0 : public GarbageCollected<ShadowRootRareDataV0> {
   Member<HTMLShadowElement> shadow_insertion_point_of_younger_shadow_root_;
   unsigned descendant_shadow_element_count_;
   unsigned descendant_content_element_count_;
-  HeapVector<Member<InsertionPoint>> descendant_insertion_points_;
+  HeapVector<Member<V0InsertionPoint>> descendant_insertion_points_;
 };
 
-inline void ShadowRootRareDataV0::DidAddInsertionPoint(InsertionPoint* point) {
+inline void ShadowRootRareDataV0::DidAddInsertionPoint(
+    V0InsertionPoint* point) {
   DCHECK(point);
   if (isHTMLShadowElement(*point))
     ++descendant_shadow_element_count_;
@@ -111,7 +113,7 @@ inline void ShadowRootRareDataV0::DidAddInsertionPoint(InsertionPoint* point) {
 }
 
 inline void ShadowRootRareDataV0::DidRemoveInsertionPoint(
-    InsertionPoint* point) {
+    V0InsertionPoint* point) {
   DCHECK(point);
   if (isHTMLShadowElement(*point)) {
     DCHECK_GT(descendant_shadow_element_count_, 0u);

@@ -442,7 +442,7 @@ class CORE_EXPORT Element : public ContainerNode {
   bool NeedsRebuildLayoutTree(
       const WhitespaceAttacher& whitespace_attacher) const {
     return NeedsReattachLayoutTree() || ChildNeedsReattachLayoutTree() ||
-           IsActiveSlotOrActiveInsertionPoint() ||
+           IsActiveSlotOrActiveV0InsertionPoint() ||
            (whitespace_attacher.LastTextNodeNeedsReattach() &&
             HasDisplayContentsStyle());
   }

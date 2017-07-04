@@ -29,9 +29,9 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/Document.h"
-#include "core/dom/InsertionPoint.h"
 #include "core/dom/LayoutTreeBuilderTraversal.h"
 #include "core/dom/ShadowRoot.h"
+#include "core/dom/V0InsertionPoint.h"
 #include "platform/wtf/Allocator.h"
 
 namespace blink {

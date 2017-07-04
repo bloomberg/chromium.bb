@@ -472,7 +472,7 @@ bool Internals::isSharingStyle(Element* element1, Element* element2) const {
 bool Internals::isValidContentSelect(Element* insertion_point,
                                      ExceptionState& exception_state) {
   DCHECK(insertion_point);
-  if (!insertion_point->IsInsertionPoint()) {
+  if (!insertion_point->IsV0InsertionPoint()) {
     exception_state.ThrowDOMException(kInvalidAccessError,
                                       "The element is not an insertion point.");
     return false;

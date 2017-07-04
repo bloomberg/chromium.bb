@@ -33,7 +33,7 @@
 
 #include "core/CoreExport.h"
 #include "core/css/CSSSelectorList.h"
-#include "core/dom/InsertionPoint.h"
+#include "core/dom/V0InsertionPoint.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -48,7 +48,7 @@ class HTMLContentSelectFilter
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 };
 
-class CORE_EXPORT HTMLContentElement final : public InsertionPoint {
+class CORE_EXPORT HTMLContentElement final : public V0InsertionPoint {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

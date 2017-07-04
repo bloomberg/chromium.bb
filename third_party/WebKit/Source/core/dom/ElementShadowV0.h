@@ -28,8 +28,8 @@
 #define ElementShadowV0_h
 
 #include "core/CoreExport.h"
-#include "core/dom/InsertionPoint.h"
 #include "core/dom/SelectRuleFeatureSet.h"
+#include "core/dom/V0InsertionPoint.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Noncopyable.h"
@@ -48,12 +48,12 @@ class CORE_EXPORT ElementShadowV0 final
   void WillAffectSelector();
   const SelectRuleFeatureSet& EnsureSelectFeatureSet();
 
-  const InsertionPoint* FinalDestinationInsertionPointFor(const Node*) const;
+  const V0InsertionPoint* FinalDestinationInsertionPointFor(const Node*) const;
   const DestinationInsertionPoints* DestinationInsertionPointsFor(
       const Node*) const;
 
   void Distribute();
-  void DidDistributeNode(const Node*, InsertionPoint*);
+  void DidDistributeNode(const Node*, V0InsertionPoint*);
   void ClearDistribution();
 
   DECLARE_TRACE();
@@ -65,7 +65,7 @@ class CORE_EXPORT ElementShadowV0 final
   ShadowRoot& YoungestShadowRoot() const;
   ShadowRoot& OldestShadowRoot() const;
 
-  void DistributeNodeChildrenTo(InsertionPoint*, ContainerNode*);
+  void DistributeNodeChildrenTo(V0InsertionPoint*, ContainerNode*);
 
   void CollectSelectFeatureSetFrom(const ShadowRoot&);
   bool NeedsSelectFeatureSet() const { return needs_select_feature_set_; }

@@ -689,7 +689,7 @@ PassRefPtr<ComputedStyle> StyleResolver::StyleForElement(
 
   // contenteditable attribute (implemented by -webkit-user-modify) should
   // be propagated from shadow host to distributed node.
-  if (state.DistributedToInsertionPoint()) {
+  if (state.DistributedToV0InsertionPoint()) {
     if (Element* parent = element->parentElement()) {
       if (ComputedStyle* style_of_shadow_host = parent->MutableComputedStyle())
         state.Style()->SetUserModify(style_of_shadow_host->UserModify());
@@ -1766,7 +1766,7 @@ StyleResolver::CacheSuccess StyleResolver::ApplyMatchedCache(
     if (state.ParentStyle()->InheritedDataShared(
             *cached_matched_properties->parent_computed_style) &&
         !IsAtShadowBoundary(element) &&
-        (!state.DistributedToInsertionPoint() ||
+        (!state.DistributedToV0InsertionPoint() ||
          state.Style()->UserModify() == EUserModify::kReadOnly)) {
       INCREMENT_STYLE_STATS_COUNTER(GetDocument().GetStyleEngine(),
                                     matched_property_cache_inherited_hit, 1);

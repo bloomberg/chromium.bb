@@ -46,12 +46,12 @@
 #include "core/dom/DocumentType.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementShadow.h"
-#include "core/dom/InsertionPoint.h"
 #include "core/dom/Node.h"
 #include "core/dom/PseudoElement.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/dom/StaticNodeList.h"
 #include "core/dom/Text.h"
+#include "core/dom/V0InsertionPoint.h"
 #include "core/editing/serializers/Serialization.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFrameOwnerElement.h"
@@ -1459,9 +1459,9 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::BuildObjectForNode(
         value->setXmlVersion(element->ownerDocument()->xmlVersion());
     }
 
-    if (element->IsInsertionPoint()) {
+    if (element->IsV0InsertionPoint()) {
       value->setDistributedNodes(
-          BuildArrayForDistributedNodes(ToInsertionPoint(element)));
+          BuildArrayForDistributedNodes(ToV0InsertionPoint(element)));
       force_push_children = true;
     }
     if (isHTMLSlotElement(*element)) {
@@ -1587,7 +1587,7 @@ InspectorDOMAgent::BuildArrayForPseudoElements(Element* element,
 
 std::unique_ptr<protocol::Array<protocol::DOM::BackendNode>>
 InspectorDOMAgent::BuildArrayForDistributedNodes(
-    InsertionPoint* insertion_point) {
+    V0InsertionPoint* insertion_point) {
   std::unique_ptr<protocol::Array<protocol::DOM::BackendNode>>
       distributed_nodes = protocol::Array<protocol::DOM::BackendNode>::create();
   for (size_t i = 0; i < insertion_point->DistributedNodesSize(); ++i) {
@@ -1949,10 +1949,10 @@ void InspectorDOMAgent::DidPerformElementShadowDistribution(
 
   for (ShadowRoot* root = shadow_host->YoungestShadowRoot(); root;
        root = root->OlderShadowRoot()) {
-    const HeapVector<Member<InsertionPoint>>& insertion_points =
+    const HeapVector<Member<V0InsertionPoint>>& insertion_points =
         root->DescendantInsertionPoints();
     for (const auto& it : insertion_points) {
-      InsertionPoint* insertion_point = it.Get();
+      V0InsertionPoint* insertion_point = it.Get();
       int insertion_point_id = document_node_to_id_map_->at(insertion_point);
       if (insertion_point_id)
         GetFrontend()->distributedNodesUpdated(

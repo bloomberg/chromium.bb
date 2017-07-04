@@ -335,13 +335,13 @@ class CORE_EXPORT Node : public EventTarget {
   bool IsTreeScope() const;
   bool IsDocumentFragment() const { return GetFlag(kIsDocumentFragmentFlag); }
   bool IsShadowRoot() const { return IsDocumentFragment() && IsTreeScope(); }
-  bool IsInsertionPoint() const { return GetFlag(kIsInsertionPointFlag); }
+  bool IsV0InsertionPoint() const { return GetFlag(kIsV0InsertionPointFlag); }
 
   bool CanParticipateInFlatTree() const;
-  bool IsActiveSlotOrActiveInsertionPoint() const;
+  bool IsActiveSlotOrActiveV0InsertionPoint() const;
   // A re-distribution across v0 and v1 shadow trees is not supported.
   bool IsSlotable() const {
-    return IsTextNode() || (IsElementNode() && !IsInsertionPoint());
+    return IsTextNode() || (IsElementNode() && !IsV0InsertionPoint());
   }
   AtomicString SlotName() const;
 
@@ -845,7 +845,7 @@ class CORE_EXPORT Node : public EventTarget {
     kIsHTMLFlag = 1 << 4,
     kIsSVGFlag = 1 << 5,
     kIsDocumentFragmentFlag = 1 << 6,
-    kIsInsertionPointFlag = 1 << 7,
+    kIsV0InsertionPointFlag = 1 << 7,
 
     // Changes based on if the element should be treated like a link,
     // ex. When setting the href attribute on an <a>.
@@ -915,7 +915,7 @@ class CORE_EXPORT Node : public EventTarget {
     kCreateHTMLElement = kCreateElement | kIsHTMLFlag,
     kCreateSVGElement = kCreateElement | kIsSVGFlag,
     kCreateDocument = kCreateContainer | kIsConnectedFlag,
-    kCreateInsertionPoint = kCreateHTMLElement | kIsInsertionPointFlag,
+    kCreateV0InsertionPoint = kCreateHTMLElement | kIsV0InsertionPointFlag,
     kCreateEditingText = kCreateText | kHasNameOrIsEditingTextFlag,
   };
 

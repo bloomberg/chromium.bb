@@ -301,7 +301,7 @@ class CORE_EXPORT CSSSelector {
     return pseudo_type_ == kPseudoHost || pseudo_type_ == kPseudoHostContext;
   }
   bool IsUserActionPseudoClass() const;
-  bool IsInsertionPointCrossing() const {
+  bool IsV0InsertionPointCrossing() const {
     return pseudo_type_ == kPseudoHostContext || pseudo_type_ == kPseudoContent;
   }
   bool IsIdClassOrAttributeSelector() const;

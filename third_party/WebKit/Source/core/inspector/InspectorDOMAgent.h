@@ -55,7 +55,7 @@ class Element;
 class ExceptionState;
 class FloatQuad;
 class HTMLSlotElement;
-class InsertionPoint;
+class V0InsertionPoint;
 class InspectedFrames;
 class InspectorHistory;
 class Node;
@@ -288,7 +288,7 @@ class CORE_EXPORT InspectorDOMAgent final
   std::unique_ptr<protocol::Array<protocol::DOM::Node>>
   BuildArrayForPseudoElements(Element*, NodeToIdMap* nodes_map);
   std::unique_ptr<protocol::Array<protocol::DOM::BackendNode>>
-  BuildArrayForDistributedNodes(InsertionPoint*);
+  BuildArrayForDistributedNodes(V0InsertionPoint*);
   std::unique_ptr<protocol::Array<protocol::DOM::BackendNode>>
   BuildDistributedNodesForSlot(HTMLSlotElement*);
 

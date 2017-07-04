@@ -32,10 +32,10 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/FirstLetterPseudoElement.h"
 #include "core/dom/Fullscreen.h"
-#include "core/dom/InsertionPoint.h"
 #include "core/dom/Node.h"
 #include "core/dom/PseudoElement.h"
 #include "core/dom/Text.h"
+#include "core/dom/V0InsertionPoint.h"
 #include "core/layout/LayoutFullScreen.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutText.h"
@@ -48,7 +48,7 @@ namespace blink {
 LayoutTreeBuilderForElement::LayoutTreeBuilderForElement(Element& element,
                                                          ComputedStyle* style)
     : LayoutTreeBuilder(element, nullptr), style_(style) {
-  DCHECK(!element.IsActiveSlotOrActiveInsertionPoint());
+  DCHECK(!element.IsActiveSlotOrActiveV0InsertionPoint());
   // TODO(ecobos): Move the first-letter logic inside parentLayoutObject too?
   // It's an extra (unnecessary) check for text nodes, though.
   if (element.IsFirstLetterPseudoElement()) {

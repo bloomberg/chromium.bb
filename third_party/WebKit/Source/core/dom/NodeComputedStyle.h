@@ -26,9 +26,9 @@
 #define NodeComputedStyle_h
 
 #include "core/dom/Element.h"
-#include "core/dom/InsertionPoint.h"
 #include "core/dom/LayoutTreeBuilderTraversal.h"
 #include "core/dom/Node.h"
+#include "core/dom/V0InsertionPoint.h"
 #include "core/html/HTMLOptGroupElement.h"
 #include "core/layout/LayoutObject.h"
 
@@ -49,7 +49,7 @@ inline ComputedStyle* Node::MutableComputedStyle() const {
 }
 
 inline const ComputedStyle* Node::ParentComputedStyle() const {
-  if (IsActiveSlotOrActiveInsertionPoint())
+  if (IsActiveSlotOrActiveV0InsertionPoint())
     return 0;
   ContainerNode* parent = LayoutTreeBuilderTraversal::Parent(*this);
   return parent ? parent->GetComputedStyle() : 0;

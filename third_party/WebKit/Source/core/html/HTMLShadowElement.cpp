@@ -41,7 +41,7 @@ namespace blink {
 class Document;
 
 inline HTMLShadowElement::HTMLShadowElement(Document& document)
-    : InsertionPoint(HTMLNames::shadowTag, document) {
+    : V0InsertionPoint(HTMLNames::shadowTag, document) {
   UseCounter::Count(document, WebFeature::kHTMLShadowElement);
 }
 
@@ -79,7 +79,7 @@ Node::InsertionNotificationRequest HTMLShadowElement::InsertedInto(
           kRenderingMessageSource, kWarningMessageLevel, message));
     }
   }
-  return InsertionPoint::InsertedInto(insertion_point);
+  return V0InsertionPoint::InsertedInto(insertion_point);
 }
 
 }  // namespace blink

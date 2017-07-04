@@ -64,7 +64,6 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/FirstLetterPseudoElement.h"
 #include "core/dom/Fullscreen.h"
-#include "core/dom/InsertionPoint.h"
 #include "core/dom/LayoutTreeBuilder.h"
 #include "core/dom/MutationObserverInterestGroup.h"
 #include "core/dom/MutationRecord.h"
@@ -81,6 +80,7 @@
 #include "core/dom/StyleChangeReason.h"
 #include "core/dom/StyleEngine.h"
 #include "core/dom/Text.h"
+#include "core/dom/V0InsertionPoint.h"
 #include "core/dom/WhitespaceAttacher.h"
 #include "core/dom/custom/CustomElement.h"
 #include "core/dom/custom/CustomElementRegistry.h"
@@ -1795,7 +1795,7 @@ void Element::AttachLayoutTree(AttachContext& context) {
     data->ClearComputedStyle();
   }
 
-  if (!IsActiveSlotOrActiveInsertionPoint()) {
+  if (!IsActiveSlotOrActiveV0InsertionPoint()) {
     LayoutTreeBuilderForElement builder(*this, context.resolved_style);
     builder.CreateLayoutObjectIfNeeded();
 
