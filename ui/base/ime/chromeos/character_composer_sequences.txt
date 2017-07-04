@@ -4946,3 +4946,64 @@ Dead<combining katakana-hiragana semi-voiced sound mark> <katakana letter hi> <k
 Dead<combining katakana-hiragana semi-voiced sound mark> <katakana letter hu> <katakana letter pu>
 Dead<combining katakana-hiragana semi-voiced sound mark> <katakana letter he> <katakana letter pe>
 Dead<combining katakana-hiragana semi-voiced sound mark> <katakana letter ho> <katakana letter po>
+
+# Windows-style combinations.
+# Reference:
+# https://support.microsoft.com/en-ca/help/97738/using-us-int-l-keyboard-layout-to-type-accented-characters
+
+Dead<'> <space>  <'>
+Dead<'> <A>      <latin capital letter a with acute>
+Dead<'> <C>      <latin capital letter c with cedilla>
+Dead<'> <E>      <latin capital letter e with acute>
+Dead<'> <I>      <latin capital letter i with acute>
+Dead<'> <O>      <latin capital letter o with acute>
+Dead<'> <U>      <latin capital letter u with acute>
+Dead<'> <Y>      <latin capital letter y with acute>
+Dead<'> <a>      <latin small letter a with acute>
+Dead<'> <c>      <latin small letter c with cedilla>
+Dead<'> <e>      <latin small letter e with acute>
+Dead<'> <i>      <latin small letter i with acute>
+Dead<'> <o>      <latin small letter o with acute>
+Dead<'> <u>      <latin small letter u with acute>
+Dead<'> <y>      <latin small letter y with acute>
+
+Dead<"> <space>  <">
+Dead<"> <A>      <latin capital letter a with diaeresis>
+Dead<"> <E>      <latin capital letter e with diaeresis>
+Dead<"> <I>      <latin capital letter i with diaeresis>
+Dead<"> <O>      <latin capital letter o with diaeresis>
+Dead<"> <U>      <latin capital letter u with diaeresis>
+Dead<"> <a>      <latin small letter a with diaeresis>
+Dead<"> <e>      <latin small letter e with diaeresis>
+Dead<"> <i>      <latin small letter i with diaeresis>
+Dead<"> <o>      <latin small letter o with diaeresis>
+Dead<"> <u>      <latin small letter u with diaeresis>
+
+Dead<`> <space>  <`>
+Dead<`> <E>      <latin capital letter e with grave>
+Dead<`> <I>      <latin capital letter i with grave>
+Dead<`> <O>      <latin capital letter o with grave>
+Dead<`> <U>      <latin capital letter u with grave>
+Dead<`> <e>      <latin small letter e with grave>
+Dead<`> <i>      <latin small letter i with grave>
+Dead<`> <o>      <latin small letter o with grave>
+Dead<`> <u>      <latin small letter u with grave>
+
+Dead<~> <space>  <~>
+Dead<~> <N>      <latin capital letter n with tilde>
+Dead<~> <O>      <latin capital letter o with tilde>
+Dead<~> <n>      <latin small letter n with tilde>
+Dead<~> <o>      <latin small letter o with tilde>
+
+Dead<^> <space>  <^>
+Dead<^> <A>      <latin capital letter a with circumflex>
+Dead<^> <E>      <latin capital letter e with circumflex>
+Dead<^> <I>      <latin capital letter i with circumflex>
+Dead<^> <O>      <latin capital letter o with circumflex>
+Dead<^> <U>      <latin capital letter u with circumflex>
+Dead<^> <a>      <latin small letter a with circumflex>
+Dead<^> <e>      <latin small letter e with circumflex>
+Dead<^> <i>      <latin small letter i with circumflex>
+Dead<^> <o>      <latin small letter o with circumflex>
+Dead<^> <u>      <latin small letter u with circumflex>
+
