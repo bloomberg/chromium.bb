@@ -327,9 +327,17 @@ void InputHandlerProxy::HandleInputEventWithLatencyInfo(
 
   if (has_ongoing_compositor_scroll_fling_pinch_) {
     const auto& gesture_event = ToWebGestureEvent(event_with_callback->event());
-    if (gesture_event.source_device == blink::kWebGestureDeviceTouchscreen &&
-        gesture_event.is_source_touch_event_set_non_blocking) {
-      // Dispatch immediately to avoid regression in
+    bool is_from_set_non_blocking_touch =
+        gesture_event.source_device == blink::kWebGestureDeviceTouchscreen &&
+        gesture_event.is_source_touch_event_set_non_blocking;
+    bool is_scroll_end_from_wheel =
+        gesture_event.source_device == blink::kWebGestureDeviceTouchpad &&
+        gesture_event.GetType() == blink::WebGestureEvent::kGestureScrollEnd;
+    if (is_from_set_non_blocking_touch || is_scroll_end_from_wheel) {
+      // Gesture events was already delayed by blocking events in rAF aligned
+      // queue. We want to avoid additional one frame delay by flushing the
+      // VSync queue immediately.
+      // The first GSU latency was tracked by:
       // |smoothness.tough_scrolling_cases:first_gesture_scroll_update_latency|.
       compositor_event_queue_->Queue(std::move(event_with_callback),
                                      tick_clock_->NowTicks());
