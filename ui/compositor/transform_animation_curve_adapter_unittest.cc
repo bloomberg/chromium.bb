@@ -31,29 +31,28 @@ TEST(InverseTransformCurveAdapterTest, InversesTransform) {
   const gfx::Transform effective_child_transform =
       parent_start * child_transform;
 
-  TransformAnimationCurveAdapter parent_curve(gfx::Tween::LINEAR,
-                                              parent_start,
-                                              parent_target,
-                                              duration);
+  TransformAnimationCurveAdapter parent_curve(gfx::Tween::LINEAR, parent_start,
+                                              parent_target, duration);
 
-  InverseTransformCurveAdapter child_curve(parent_curve,
-                                           child_transform,
+  InverseTransformCurveAdapter child_curve(parent_curve, child_transform,
                                            duration);
   static const int kSteps = 1000;
   double step = 1.0 / kSteps;
-  for (int i = 0; i <= kSteps ; ++i) {
+  for (int i = 0; i <= kSteps; ++i) {
     base::TimeDelta time_step = cc::TimeUtil::Scale(duration, i * step);
     std::ostringstream message;
     message << "Step " << i << " of " << kSteps;
     SCOPED_TRACE(message.str());
-    gfx::Transform progress_parent_transform = parent_curve.GetValue(time_step);
-    gfx::Transform progress_child_transform = child_curve.GetValue(time_step);
-    CheckApproximatelyEqual(effective_child_transform,
-                            progress_parent_transform *
-                            progress_child_transform);
+    gfx::Transform progress_parent_transform =
+        parent_curve.GetValue(time_step).Apply();
+    gfx::Transform progress_child_transform =
+        child_curve.GetValue(time_step).Apply();
+    CheckApproximatelyEqual(
+        effective_child_transform,
+        progress_parent_transform * progress_child_transform);
   }
 }
 
-} // namespace
+}  // namespace
 
-} // namespace ui
+}  // namespace ui

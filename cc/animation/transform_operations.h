@@ -36,6 +36,8 @@ class CC_ANIMATION_EXPORT TransformOperations {
   TransformOperations(const TransformOperations& other);
   ~TransformOperations();
 
+  TransformOperations& operator=(const TransformOperations& other);
+
   // Returns a transformation matrix representing these transform operations.
   gfx::Transform Apply() const;
 
@@ -46,8 +48,8 @@ class CC_ANIMATION_EXPORT TransformOperations {
   // transforms are baked to matrices (using apply), and the matrices are
   // then decomposed and interpolated. For more information, see
   // http://www.w3.org/TR/2011/WD-css3-2d-transforms-20111215/#matrix-decomposition.
-  gfx::Transform Blend(const TransformOperations& from,
-                       SkMScalar progress) const;
+  TransformOperations Blend(const TransformOperations& from,
+                            SkMScalar progress) const;
 
   // Sets |bounds| be the bounding box for the region within which |box| will
   // exist when it is transformed by the result of calling Blend on |from| and
@@ -86,6 +88,7 @@ class CC_ANIMATION_EXPORT TransformOperations {
   void AppendPerspective(SkMScalar depth);
   void AppendMatrix(const gfx::Transform& matrix);
   void AppendIdentity();
+  void Append(const TransformOperation& operation);
   bool IsIdentity() const;
 
   size_t size() const { return operations_.size(); }
@@ -98,7 +101,7 @@ class CC_ANIMATION_EXPORT TransformOperations {
  private:
   bool BlendInternal(const TransformOperations& from,
                      SkMScalar progress,
-                     gfx::Transform* result) const;
+                     TransformOperations* result) const;
 
   std::vector<TransformOperation> operations_;
 
@@ -107,8 +110,6 @@ class CC_ANIMATION_EXPORT TransformOperations {
   // For efficiency, we cache the decomposed transform.
   mutable std::unique_ptr<gfx::DecomposedTransform> decomposed_transform_;
   mutable bool decomposed_transform_dirty_;
-
-  DISALLOW_ASSIGN(TransformOperations);
 };
 
 }  // namespace cc

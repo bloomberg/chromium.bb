@@ -25,6 +25,7 @@ class FloatAnimationCurve;
 class ScrollOffsetAnimationCurve;
 class SizeAnimationCurve;
 class TransformAnimationCurve;
+class TransformOperations;
 
 // An animation curve is a function that returns a value given a time.
 class CC_ANIMATION_EXPORT AnimationCurve {
@@ -71,7 +72,7 @@ class CC_ANIMATION_EXPORT TransformAnimationCurve : public AnimationCurve {
  public:
   ~TransformAnimationCurve() override {}
 
-  virtual gfx::Transform GetValue(base::TimeDelta t) const = 0;
+  virtual TransformOperations GetValue(base::TimeDelta t) const = 0;
 
   // Sets |bounds| to be the bounding box for the region within which |box|
   // will move during this animation. If this region cannot be computed,

@@ -37,6 +37,17 @@ TransformOperations::TransformOperations(const TransformOperations& other) {
 TransformOperations::~TransformOperations() {
 }
 
+TransformOperations& TransformOperations::operator=(
+    const TransformOperations& other) {
+  operations_ = other.operations_;
+  decomposed_transform_dirty_ = other.decomposed_transform_dirty_;
+  if (!decomposed_transform_dirty_) {
+    decomposed_transform_.reset(
+        new gfx::DecomposedTransform(*other.decomposed_transform_.get()));
+  }
+  return *this;
+}
+
 gfx::Transform TransformOperations::Apply() const {
   gfx::Transform to_return;
   for (size_t i = 0; i < operations_.size(); ++i)
@@ -44,9 +55,9 @@ gfx::Transform TransformOperations::Apply() const {
   return to_return;
 }
 
-gfx::Transform TransformOperations::Blend(const TransformOperations& from,
-                                          SkMScalar progress) const {
-  gfx::Transform to_return;
+TransformOperations TransformOperations::Blend(const TransformOperations& from,
+                                               SkMScalar progress) const {
+  TransformOperations to_return;
   BlendInternal(from, progress, &to_return);
   return to_return;
 }
@@ -192,7 +203,7 @@ bool TransformOperations::MatchesTypes(const TransformOperations& other) const {
 
 bool TransformOperations::CanBlendWith(
     const TransformOperations& other) const {
-  gfx::Transform dummy;
+  TransformOperations dummy;
   return BlendInternal(other, 0.5, &dummy);
 }
 
@@ -214,42 +225,42 @@ void TransformOperations::AppendRotate(SkMScalar x,
                                        SkMScalar z,
                                        SkMScalar degrees) {
   TransformOperation to_add;
-  to_add.matrix.RotateAbout(gfx::Vector3dF(x, y, z), degrees);
   to_add.type = TransformOperation::TRANSFORM_OPERATION_ROTATE;
   to_add.rotate.axis.x = x;
   to_add.rotate.axis.y = y;
   to_add.rotate.axis.z = z;
   to_add.rotate.angle = degrees;
+  to_add.Bake();
   operations_.push_back(to_add);
   decomposed_transform_dirty_ = true;
 }
 
 void TransformOperations::AppendScale(SkMScalar x, SkMScalar y, SkMScalar z) {
   TransformOperation to_add;
-  to_add.matrix.Scale3d(x, y, z);
   to_add.type = TransformOperation::TRANSFORM_OPERATION_SCALE;
   to_add.scale.x = x;
   to_add.scale.y = y;
   to_add.scale.z = z;
+  to_add.Bake();
   operations_.push_back(to_add);
   decomposed_transform_dirty_ = true;
 }
 
 void TransformOperations::AppendSkew(SkMScalar x, SkMScalar y) {
   TransformOperation to_add;
-  to_add.matrix.Skew(x, y);
   to_add.type = TransformOperation::TRANSFORM_OPERATION_SKEW;
   to_add.skew.x = x;
   to_add.skew.y = y;
+  to_add.Bake();
   operations_.push_back(to_add);
   decomposed_transform_dirty_ = true;
 }
 
 void TransformOperations::AppendPerspective(SkMScalar depth) {
   TransformOperation to_add;
-  to_add.matrix.ApplyPerspectiveDepth(depth);
   to_add.type = TransformOperation::TRANSFORM_OPERATION_PERSPECTIVE;
   to_add.perspective_depth = depth;
+  to_add.Bake();
   operations_.push_back(to_add);
   decomposed_transform_dirty_ = true;
 }
@@ -274,9 +285,13 @@ bool TransformOperations::IsIdentity() const {
   return true;
 }
 
+void TransformOperations::Append(const TransformOperation& operation) {
+  operations_.push_back(operation);
+}
+
 bool TransformOperations::BlendInternal(const TransformOperations& from,
                                         SkMScalar progress,
-                                        gfx::Transform* result) const {
+                                        TransformOperations* result) const {
   bool from_identity = from.IsIdentity();
   bool to_identity = IsIdentity();
   if (from_identity && to_identity)
@@ -287,14 +302,13 @@ bool TransformOperations::BlendInternal(const TransformOperations& from,
         std::max(from_identity ? 0 : from.operations_.size(),
                  to_identity ? 0 : operations_.size());
     for (size_t i = 0; i < num_operations; ++i) {
-      gfx::Transform blended;
+      TransformOperation blended;
       if (!TransformOperation::BlendTransformOperations(
-          from_identity ? 0 : &from.operations_[i],
-          to_identity ? 0 : &operations_[i],
-          progress,
-          &blended))
-          return false;
-      result->PreconcatTransform(blended);
+              from_identity ? 0 : &from.operations_[i],
+              to_identity ? 0 : &operations_[i], progress, &blended)) {
+        return false;
+      }
+      result->Append(blended);
     }
     return true;
   }
@@ -307,7 +321,7 @@ bool TransformOperations::BlendInternal(const TransformOperations& from,
                                              *from.decomposed_transform_.get(),
                                              progress);
 
-  *result = ComposeTransform(to_return);
+  result->AppendMatrix(ComposeTransform(to_return));
   return true;
 }
 

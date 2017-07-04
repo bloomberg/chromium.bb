@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "cc/animation/animation_curve.h"
+#include "cc/animation/transform_operations.h"
 #include "ui/compositor/compositor_export.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/transform.h"
@@ -32,7 +33,7 @@ class COMPOSITOR_EXPORT TransformAnimationCurveAdapter
   // TransformAnimationCurve implementation.
   base::TimeDelta Duration() const override;
   std::unique_ptr<AnimationCurve> Clone() const override;
-  gfx::Transform GetValue(base::TimeDelta t) const override;
+  cc::TransformOperations GetValue(base::TimeDelta t) const override;
   bool AnimatedBoundsForBox(const gfx::BoxF& box,
                             gfx::BoxF* bounds) const override;
   bool IsTranslation() const override;
@@ -45,7 +46,9 @@ class COMPOSITOR_EXPORT TransformAnimationCurveAdapter
  private:
   gfx::Tween::Type tween_type_;
   gfx::Transform initial_value_;
+  cc::TransformOperations initial_wrapped_value_;
   gfx::Transform target_value_;
+  cc::TransformOperations target_wrapped_value_;
   gfx::DecomposedTransform decomposed_initial_value_;
   gfx::DecomposedTransform decomposed_target_value_;
   base::TimeDelta duration_;
@@ -64,7 +67,7 @@ class COMPOSITOR_EXPORT InverseTransformCurveAdapter
 
   base::TimeDelta Duration() const override;
   std::unique_ptr<AnimationCurve> Clone() const override;
-  gfx::Transform GetValue(base::TimeDelta t) const override;
+  cc::TransformOperations GetValue(base::TimeDelta t) const override;
   bool AnimatedBoundsForBox(const gfx::BoxF& box,
                             gfx::BoxF* bounds) const override;
   bool IsTranslation() const override;
@@ -77,6 +80,7 @@ class COMPOSITOR_EXPORT InverseTransformCurveAdapter
  private:
   TransformAnimationCurveAdapter base_curve_;
   gfx::Transform initial_value_;
+  cc::TransformOperations initial_wrapped_value_;
   gfx::Transform effective_initial_value_;
   base::TimeDelta duration_;
 

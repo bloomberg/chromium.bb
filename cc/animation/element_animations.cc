@@ -15,6 +15,7 @@
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_player.h"
 #include "cc/animation/keyframed_animation_curve.h"
+#include "cc/animation/transform_operations.h"
 #include "cc/base/filter_operations.h"
 #include "cc/trees/mutator_host_client.h"
 #include "ui/gfx/geometry/box_f.h"
@@ -200,14 +201,18 @@ void ElementAnimations::NotifyAnimationPropertyUpdate(
   bool notify_active_elements = true;
   bool notify_pending_elements = true;
   switch (event.target_property) {
-    case TargetProperty::OPACITY:
+    case TargetProperty::OPACITY: {
       NotifyClientOpacityAnimated(event.opacity, notify_active_elements,
                                   notify_pending_elements);
       break;
-    case TargetProperty::TRANSFORM:
-      NotifyClientTransformAnimated(event.transform, notify_active_elements,
-                                    notify_pending_elements);
+    }
+    case TargetProperty::TRANSFORM: {
+      TransformOperations operations;
+      operations.AppendMatrix(event.transform);
+      NotifyClientTransformOperationsAnimated(
+          operations, notify_active_elements, notify_pending_elements);
       break;
+    }
     default:
       NOTREACHED();
   }
@@ -324,10 +329,11 @@ void ElementAnimations::NotifyClientOpacityAnimated(
     OnOpacityAnimated(ElementListType::PENDING, opacity);
 }
 
-void ElementAnimations::NotifyClientTransformAnimated(
-    const gfx::Transform& transform,
+void ElementAnimations::NotifyClientTransformOperationsAnimated(
+    const TransformOperations& operations,
     bool notify_active_elements,
     bool notify_pending_elements) {
+  gfx::Transform transform = operations.Apply();
   if (notify_active_elements && has_element_in_active_list())
     OnTransformAnimated(ElementListType::ACTIVE, transform);
   if (notify_pending_elements && has_element_in_pending_list())

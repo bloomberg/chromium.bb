@@ -5,6 +5,8 @@
 #ifndef CC_TEST_GEOMETRY_TEST_UTILS_H_
 #define CC_TEST_GEOMETRY_TEST_UTILS_H_
 
+#include "cc/cc_export.h"
+
 namespace gfx {
 class Transform;
 }
@@ -94,6 +96,16 @@ void ExpectTransformationMatrixEq(const gfx::Transform& expected,
   do {                                                    \
     SCOPED_TRACE("");                                     \
     ExpectTransformationMatrixEq(expected, actual);       \
+  } while (false)
+
+void ExpectTransformationMatrixNear(const gfx::Transform& expected,
+                                    const gfx::Transform& actual,
+                                    float abs_error);
+
+#define EXPECT_TRANSFORMATION_MATRIX_NEAR(expected, actual, abs_error) \
+  do {                                                                 \
+    SCOPED_TRACE("");                                                  \
+    ExpectTransformationMatrixNear(expected, actual, abs_error);       \
   } while (false)
 
 // Should be used in test code only, for convenience. Production code should use

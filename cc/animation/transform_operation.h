@@ -54,10 +54,14 @@ struct TransformOperation {
   };
 
   bool IsIdentity() const;
+
+  // Sets |matrix| based on type and the union values.
+  void Bake();
+
   static bool BlendTransformOperations(const TransformOperation* from,
                                        const TransformOperation* to,
                                        SkMScalar progress,
-                                       gfx::Transform* result);
+                                       TransformOperation* result);
 
   static bool BlendedBoundsForBox(const gfx::BoxF& box,
                                   const TransformOperation* from,

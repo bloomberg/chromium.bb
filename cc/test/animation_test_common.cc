@@ -159,8 +159,9 @@ base::TimeDelta FakeTransformTransition::Duration() const {
   return duration_;
 }
 
-gfx::Transform FakeTransformTransition::GetValue(base::TimeDelta time) const {
-  return gfx::Transform();
+TransformOperations FakeTransformTransition::GetValue(
+    base::TimeDelta time) const {
+  return TransformOperations();
 }
 
 bool FakeTransformTransition::AnimatedBoundsForBox(const gfx::BoxF& box,

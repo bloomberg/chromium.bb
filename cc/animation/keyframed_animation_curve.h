@@ -237,7 +237,7 @@ class CC_ANIMATION_EXPORT KeyframedTransformAnimationCurve
   std::unique_ptr<AnimationCurve> Clone() const override;
 
   // TransformAnimationCurve implementation
-  gfx::Transform GetValue(base::TimeDelta t) const override;
+  TransformOperations GetValue(base::TimeDelta t) const override;
   bool AnimatedBoundsForBox(const gfx::BoxF& box,
                             gfx::BoxF* bounds) const override;
   bool PreservesAxisAlignment() const override;

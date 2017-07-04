@@ -14,6 +14,7 @@
 #include "cc/trees/mutator_host_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/scroll_offset.h"
+#include "ui/gfx/transform.h"
 
 namespace cc {
 

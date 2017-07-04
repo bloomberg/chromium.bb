@@ -9,6 +9,16 @@
 
 namespace ui {
 
+namespace {
+
+static cc::TransformOperations WrapTransform(const gfx::Transform& transform) {
+  cc::TransformOperations operations;
+  operations.AppendMatrix(transform);
+  return operations;
+}
+
+}  // namespace
+
 TransformAnimationCurveAdapter::TransformAnimationCurveAdapter(
     gfx::Tween::Type tween_type,
     gfx::Transform initial_value,
@@ -16,10 +26,12 @@ TransformAnimationCurveAdapter::TransformAnimationCurveAdapter(
     base::TimeDelta duration)
     : tween_type_(tween_type),
       initial_value_(initial_value),
+      initial_wrapped_value_(WrapTransform(initial_value)),
       target_value_(target_value),
+      target_wrapped_value_(WrapTransform(target_value)),
       duration_(duration) {
-  gfx::DecomposeTransform(&decomposed_initial_value_, initial_value_);
-  gfx::DecomposeTransform(&decomposed_target_value_, target_value_);
+  gfx::DecomposeTransform(&decomposed_initial_value_, initial_value);
+  gfx::DecomposeTransform(&decomposed_target_value_, target_value);
 }
 
 TransformAnimationCurveAdapter::TransformAnimationCurveAdapter(
@@ -38,18 +50,19 @@ std::unique_ptr<cc::AnimationCurve> TransformAnimationCurveAdapter::Clone()
       tween_type_, initial_value_, target_value_, duration_));
 }
 
-gfx::Transform TransformAnimationCurveAdapter::GetValue(
+cc::TransformOperations TransformAnimationCurveAdapter::GetValue(
     base::TimeDelta t) const {
   if (t >= duration_)
-    return target_value_;
+    return target_wrapped_value_;
   if (t <= base::TimeDelta())
-    return initial_value_;
+    return initial_wrapped_value_;
   double progress = cc::TimeUtil::Divide(t, duration_);
 
   gfx::DecomposedTransform to_return = gfx::BlendDecomposedTransforms(
       decomposed_target_value_, decomposed_initial_value_,
       gfx::Tween::CalculateValue(tween_type_, progress));
-  return gfx::ComposeTransform(to_return);
+
+  return WrapTransform(gfx::ComposeTransform(to_return));
 }
 
 bool TransformAnimationCurveAdapter::AnimatedBoundsForBox(
@@ -90,9 +103,10 @@ InverseTransformCurveAdapter::InverseTransformCurveAdapter(
     base::TimeDelta duration)
     : base_curve_(base_curve),
       initial_value_(initial_value),
+      initial_wrapped_value_(WrapTransform(initial_value)),
       duration_(duration) {
   effective_initial_value_ =
-      base_curve_.GetValue(base::TimeDelta()) * initial_value_;
+      base_curve_.GetValue(base::TimeDelta()).Apply() * initial_value_;
 }
 
 InverseTransformCurveAdapter::~InverseTransformCurveAdapter() {
@@ -108,18 +122,20 @@ std::unique_ptr<cc::AnimationCurve> InverseTransformCurveAdapter::Clone()
       new InverseTransformCurveAdapter(base_curve_, initial_value_, duration_));
 }
 
-gfx::Transform InverseTransformCurveAdapter::GetValue(base::TimeDelta t) const {
+cc::TransformOperations InverseTransformCurveAdapter::GetValue(
+    base::TimeDelta t) const {
   if (t <= base::TimeDelta())
-    return initial_value_;
+    return initial_wrapped_value_;
 
-  gfx::Transform base_transform = base_curve_.GetValue(t);
+  gfx::Transform base_transform = base_curve_.GetValue(t).Apply();
   // Invert base
   gfx::Transform to_return(gfx::Transform::kSkipInitialization);
   bool is_invertible = base_transform.GetInverse(&to_return);
   DCHECK(is_invertible);
 
   to_return.PreconcatTransform(effective_initial_value_);
-  return to_return;
+
+  return WrapTransform(to_return);
 }
 
 bool InverseTransformCurveAdapter::AnimatedBoundsForBox(
