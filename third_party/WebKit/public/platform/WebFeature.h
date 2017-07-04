@@ -1570,6 +1570,20 @@ enum class WebFeature : uint32_t {
   kQuirksModeDocument = 2034,
   kLimitedQuirksModeDocument = 2035,
   kEncryptedMediaCrossOriginIframe = 2036,
+  kCSSSelectorWebkitMediaControls = 2037,
+  kCSSSelectorWebkitMediaControlsOverlayEnclosure = 2038,
+  kCSSSelectorWebkitMediaControlsOverlayPlayButton = 2039,
+  kCSSSelectorWebkitMediaControlsEnclosure = 2040,
+  kCSSSelectorWebkitMediaControlsPanel = 2041,
+  kCSSSelectorWebkitMediaControlsPlayButton = 2042,
+  kCSSSelectorWebkitMediaControlsCurrentTimeDisplay = 2043,
+  kCSSSelectorWebkitMediaControlsTimeRemainingDisplay = 2044,
+  kCSSSelectorWebkitMediaControlsTimeline = 2045,
+  kCSSSelectorWebkitMediaControlsTimelineContainer = 2046,
+  kCSSSelectorWebkitMediaControlsMuteButton = 2047,
+  kCSSSelectorWebkitMediaControlsVolumeSlider = 2048,
+  kCSSSelectorWebkitMediaControlsFullscreenButton = 2049,
+  kCSSSelectorWebkitMediaControlsToggleClosedCaptionsButton = 2050,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
