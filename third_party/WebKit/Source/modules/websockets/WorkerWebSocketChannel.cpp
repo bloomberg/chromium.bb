@@ -37,6 +37,7 @@
 #include "core/loader/ThreadableLoadingContext.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
+#include "core/workers/WorkerThreadLifecycleContext.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WaitableEvent.h"
 #include "platform/heap/SafePoint.h"

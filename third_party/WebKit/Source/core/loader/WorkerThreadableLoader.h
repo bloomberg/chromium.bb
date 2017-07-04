@@ -52,6 +52,7 @@ class ResourceError;
 class ResourceRequest;
 class ResourceResponse;
 class WorkerGlobalScope;
+class WorkerThreadLifecycleContext;
 struct CrossThreadResourceRequestData;
 struct CrossThreadResourceTimingInfoData;
 

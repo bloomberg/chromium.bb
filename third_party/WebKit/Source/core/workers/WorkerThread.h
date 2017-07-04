@@ -33,8 +33,8 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/loader/ThreadableLoadingContext.h"
 #include "core/workers/ParentFrameTaskRunners.h"
+#include "core/workers/WorkerThreadLifecycleContext.h"
 #include "core/workers/WorkerThreadLifecycleObserver.h"
-#include "platform/LifecycleNotifier.h"
 #include "platform/WaitableEvent.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/scheduler/child/worker_global_scope_scheduler.h"
@@ -59,26 +59,6 @@ class WorkerThreadStartupData;
 enum WorkerThreadStartMode {
   kDontPauseWorkerGlobalScopeOnStart,
   kPauseWorkerGlobalScopeOnStart
-};
-
-// Used for notifying observers on the main thread of worker thread termination.
-// The lifetime of this class is equal to that of WorkerThread. Created and
-// destructed on the main thread.
-class CORE_EXPORT WorkerThreadLifecycleContext final
-    : public GarbageCollectedFinalized<WorkerThreadLifecycleContext>,
-      public LifecycleNotifier<WorkerThreadLifecycleContext,
-                               WorkerThreadLifecycleObserver> {
-  USING_GARBAGE_COLLECTED_MIXIN(WorkerThreadLifecycleContext);
-  WTF_MAKE_NONCOPYABLE(WorkerThreadLifecycleContext);
-
- public:
-  WorkerThreadLifecycleContext();
-  ~WorkerThreadLifecycleContext() override;
-  void NotifyContextDestroyed() override;
-
- private:
-  friend class WorkerThreadLifecycleObserver;
-  bool was_context_destroyed_ = false;
 };
 
 // WorkerThread is a kind of WorkerBackingThread client. Each worker mechanism
