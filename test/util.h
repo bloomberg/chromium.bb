@@ -17,6 +17,8 @@
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 #include "aom/aom_image.h"
 
+#define ARRAY_SIZE(x) (int)(sizeof(x) / sizeof(x[0]))
+
 // Macros
 #define GET_PARAM(k) std::tr1::get<k>(GetParam())
 

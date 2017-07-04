@@ -42,16 +42,17 @@ class AV1InvTxfm2d : public ::testing::TestWithParam<AV1InvTxfm2dParam> {
     max_avg_error_ = GET_PARAM(3);
     txfm1d_size_ = libaom_test::get_txfm1d_size(tx_size_);
     txfm2d_size_ = txfm1d_size_ * txfm1d_size_;
-
-    input_ = reinterpret_cast<int16_t *>(
-        aom_memalign(16, sizeof(int16_t) * txfm2d_size_));
-    ref_input_ = reinterpret_cast<uint16_t *>(
-        aom_memalign(16, sizeof(uint16_t) * txfm2d_size_));
-    output_ = reinterpret_cast<int32_t *>(
-        aom_memalign(16, sizeof(int32_t) * txfm2d_size_));
   }
 
   void RunRoundtripCheck() {
+    int16_t input_[64 * 64];
+    uint16_t ref_input_[64 * 64];
+    int32_t output_[64 * 64];
+
+    assert(txfm2d_size_ < ARRAY_SIZE(input_));
+    assert(txfm2d_size_ < ARRAY_SIZE(output_));
+    assert(txfm2d_size_ < ARRAY_SIZE(ref_input_));
+
     const Fwd_Txfm2d_Func fwd_txfm_func =
         libaom_test::fwd_txfm_func_ls[tx_size_];
     const Inv_Txfm2d_Func inv_txfm_func =
@@ -90,12 +91,6 @@ class AV1InvTxfm2d : public ::testing::TestWithParam<AV1InvTxfm2dParam> {
     EXPECT_GE(max_avg_error_, avg_abs_error);
   }
 
-  virtual void TearDown() {
-    aom_free(input_);
-    aom_free(output_);
-    aom_free(ref_input_);
-  }
-
  private:
   int max_error_;
   double max_avg_error_;
@@ -103,9 +98,6 @@ class AV1InvTxfm2d : public ::testing::TestWithParam<AV1InvTxfm2dParam> {
   TX_SIZE tx_size_;
   int txfm1d_size_;
   int txfm2d_size_;
-  int16_t *input_;
-  uint16_t *ref_input_;
-  int32_t *output_;
 };
 
 TEST_P(AV1InvTxfm2d, RunRoundtripCheck) { RunRoundtripCheck(); }

@@ -10,6 +10,7 @@
  */
 
 #include "test/av1_txfm_test.h"
+#include "test/util.h"
 #include "av1/common/av1_fwd_txfm1d.h"
 #include "av1/common/av1_inv_txfm1d.h"
 
@@ -43,8 +44,6 @@ const TxfmFunc inv_txfm_func_ls[][2] = {
 // the maximum stage number of fwd/inv 1d dct/adst txfm is 12
 const int8_t cos_bit[12] = { 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14 };
 const int8_t range_bit[12] = { 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32 };
-
-#define ARRAY_SIZE(x) (int)(sizeof(x) / sizeof(x[0]))
 
 TEST(av1_inv_txfm1d, round_trip) {
   ACMRandom rnd(ACMRandom::DeterministicSeed());
