@@ -586,6 +586,7 @@ css_properties("make_core_generated_css_property_apis") {
     "$blink_core_output_dir/css/properties/CSSPropertyAPIZoom.h",
     "$blink_core_output_dir/css/properties/CSSPropertyDescriptor.cpp",
     "$blink_core_output_dir/css/properties/CSSPropertyDescriptor.h",
+    "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIAnimation.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIBorderRadius.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIBorderSpacing.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIColumns.h",
@@ -595,6 +596,7 @@ css_properties("make_core_generated_css_property_apis") {
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIOverflow.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIOffset.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPITextDecoration.h",
+    "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPITransition.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIWebkitMarginCollapse.h",
   ]
 }
@@ -1296,8 +1298,8 @@ source_set("unit_tests") {
     "fileapi/FileTest.cpp",
     "frame/BrowserControlsTest.cpp",
     "frame/DOMTimerTest.cpp",
-    "frame/DocumentLoadingRenderingTest.cpp",
     "frame/DeferredLoadingTest.cpp",
+    "frame/DocumentLoadingRenderingTest.cpp",
     "frame/FrameSerializerTest.cpp",
     "frame/FrameTest.cpp",
     "frame/FrameTestHelpers.cpp",

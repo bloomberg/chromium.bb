@@ -1745,8 +1745,8 @@
       type_name: "WebBlendMode",
       field_template: "keyword",
       keywords: ["normal", "multiply", "screen", "overlay", "darken", "lighten",
-       "color-dodge", "color-burn", "hard-light", "soft-light", "difference", 
-       "exclusion", "hue", "saturation", "color", "luminosity"], 
+       "color-dodge", "color-burn", "hard-light", "soft-light", "difference",
+       "exclusion", "hue", "saturation", "color", "luminosity"],
       field_group: "rare-non-inherited",
       default_value: "normal",
       include_paths: ["public/platform/WebBlendMode.h"],
@@ -3667,6 +3667,8 @@
     {
       name: "animation",
       longhands: "animation-name;animation-duration;animation-timing-function;animation-delay;animation-iteration-count;animation-direction;animation-fill-mode;animation-play-state",
+      api_class: true,
+      api_methods: ["parseShorthand"],
     },
     {
       name: "background",
@@ -3875,6 +3877,8 @@
     {
       name: "transition",
       longhands: "transition-property;transition-duration;transition-timing-function;transition-delay",
+      api_class: true,
+      api_methods: ["parseShorthand"],
     },
     {
       name: "-webkit-border-after",
