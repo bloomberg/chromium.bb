@@ -80,21 +80,6 @@ static int GetNextWorkerThreadId() {
   return next_worker_thread_id++;
 }
 
-WorkerThreadLifecycleContext::WorkerThreadLifecycleContext() {
-  DCHECK(IsMainThread());
-}
-
-WorkerThreadLifecycleContext::~WorkerThreadLifecycleContext() {
-  DCHECK(IsMainThread());
-}
-
-void WorkerThreadLifecycleContext::NotifyContextDestroyed() {
-  DCHECK(IsMainThread());
-  DCHECK(!was_context_destroyed_);
-  was_context_destroyed_ = true;
-  LifecycleNotifier::NotifyContextDestroyed();
-}
-
 WorkerThread::~WorkerThread() {
   DCHECK(IsMainThread());
   MutexLocker lock(ThreadSetMutex());

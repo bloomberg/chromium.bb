@@ -55,6 +55,7 @@ class KURL;
 class ThreadableLoadingContext;
 class WebSocketChannelSyncHelper;
 class WorkerGlobalScope;
+class WorkerThreadLifecycleContext;
 
 class WorkerWebSocketChannel final : public WebSocketChannel {
   WTF_MAKE_NONCOPYABLE(WorkerWebSocketChannel);
