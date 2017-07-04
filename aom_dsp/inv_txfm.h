@@ -23,8 +23,7 @@ extern "C" {
 #endif
 
 static INLINE tran_high_t dct_const_round_shift(tran_high_t input) {
-  tran_high_t rv = ROUND_POWER_OF_TWO(input, DCT_CONST_BITS);
-  return rv;
+  return ROUND_POWER_OF_TWO(input, DCT_CONST_BITS);
 }
 
 static INLINE tran_high_t check_range(tran_high_t input, int bd) {
