@@ -61,18 +61,44 @@ void InstantiatePersistentHistograms() {
   if (!base::PathService::Get(chrome::DIR_USER_DATA, &metrics_dir))
     return;
 
-  base::FilePath metrics_file;
-  base::FilePath active_file;
-  base::FilePath spare_file;
+  // Remove any existing file from its legacy location.
+  // TODO(bcwhite): Remove this block of code in M62 or later.
+  base::FilePath legacy_file;
   base::GlobalHistogramAllocator::ConstructFilePaths(
       metrics_dir, ChromeMetricsServiceClient::kBrowserMetricsName,
-      &metrics_file, &active_file, &spare_file);
+      &legacy_file, nullptr, nullptr);
+  base::PostTaskWithTraits(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      base::BindOnce(base::IgnoreResult(&base::DeleteFile),
+                     base::Passed(&legacy_file), /*recursive=*/false));
+
+  // Create a directory for storing completed metrics files. Files in this
+  // directory must have embedded system profiles. If the directory can't be
+  // created, the file will just be deleted below.
+  base::FilePath upload_dir =
+      metrics_dir.AppendASCII(ChromeMetricsServiceClient::kBrowserMetricsName);
+  base::CreateDirectory(upload_dir);
+
+  // Metrics files are typically created as a |spare_file| in the profile
+  // directory (e.g. "BrowserMetrics-spare.pma") and are then rotated into
+  // the |active_file| (e.g. "BrowserMetrics-active.pma") location for use
+  // during the browser run. It is then moved to a time-stamped file in a
+  // subdirectory (e.g. "BrowserMetrics/BrowserMetrics-1234ABCD.pma") for
+  // upload when convenient.
+  base::FilePath upload_file;
+  base::FilePath active_file;
+  base::FilePath spare_file;
+  base::GlobalHistogramAllocator::ConstructFilePathsForUploadDir(
+      metrics_dir, upload_dir, ChromeMetricsServiceClient::kBrowserMetricsName,
+      &upload_file, &active_file, &spare_file);
 
   // Move any existing "active" file to the final name from which it will be
   // read when reporting initial stability metrics. If there is no file to
   // move, remove any old, existing file from before the previous session.
-  if (!base::ReplaceFile(active_file, metrics_file, nullptr))
-    base::DeleteFile(metrics_file, /*recursive=*/false);
+  if (!base::ReplaceFile(active_file, upload_file, nullptr))
+    base::DeleteFile(active_file, /*recursive=*/false);
 
   // This is used to report results to an UMA histogram.
   enum InitResult {
