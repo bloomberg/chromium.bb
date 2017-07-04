@@ -84,11 +84,14 @@ namespace blink {
 
 template class MODULES_EXPORT WorkerClientsInitializer<WebEmbeddedWorkerImpl>;
 
-WebEmbeddedWorker* WebEmbeddedWorker::Create(
-    WebServiceWorkerContextClient* client,
-    WebContentSettingsClient* content_settings_client) {
-  return new WebEmbeddedWorkerImpl(WTF::WrapUnique(client),
-                                   WTF::WrapUnique(content_settings_client));
+std::unique_ptr<WebEmbeddedWorker> WebEmbeddedWorker::Create(
+    std::unique_ptr<WebServiceWorkerContextClient> client,
+    std::unique_ptr<WebServiceWorkerInstalledScriptsManager>
+        installed_scripts_manager,
+    std::unique_ptr<WebContentSettingsClient> content_settings_client) {
+  return WTF::MakeUnique<WebEmbeddedWorkerImpl>(
+      std::move(client), std::move(installed_scripts_manager),
+      std::move(content_settings_client));
 }
 
 static HashSet<WebEmbeddedWorkerImpl*>& RunningWorkerInstances() {
@@ -98,10 +101,13 @@ static HashSet<WebEmbeddedWorkerImpl*>& RunningWorkerInstances() {
 
 WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(
     std::unique_ptr<WebServiceWorkerContextClient> client,
+    std::unique_ptr<WebServiceWorkerInstalledScriptsManager>
+        installed_scripts_manager,
     std::unique_ptr<WebContentSettingsClient> content_settings_client)
     : worker_context_client_(std::move(client)),
       installed_scripts_manager_(
-          WTF::MakeUnique<ServiceWorkerInstalledScriptsManager>()),
+          WTF::MakeUnique<ServiceWorkerInstalledScriptsManager>(
+              std::move(installed_scripts_manager))),
       content_settings_client_(std::move(content_settings_client)),
       worker_inspector_proxy_(WorkerInspectorProxy::Create()),
       web_view_(nullptr),
