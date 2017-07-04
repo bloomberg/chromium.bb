@@ -20,21 +20,40 @@ const CGFloat kMaxContentSize = 421;
 }  // namespace
 
 @interface SearchWidgetView ()
-
+// The content displayed in the actions section.
+@property(nonatomic, strong) UIView* actionsContent;
+// The actions section. Can be bigger than the content within.
+@property(nonatomic, strong) UIView* actionsSection;
 // The copied URL section. Fits its contents.
 @property(nonatomic, strong) CopiedURLView* copiedURLSection;
+// The height used in the compact display mode.
+@property(nonatomic) CGFloat compactHeight;
 // The target for actions in the view.
 @property(nonatomic, weak) id<SearchWidgetViewActionTarget> target;
 // The primary effect of the widget. Use for a more opaque appearance.
 @property(nonatomic, strong) UIVisualEffect* primaryEffect;
 // The secondary effect of the widget. Use for a more transparent appearance.
 @property(nonatomic, strong) UIVisualEffect* secondaryEffect;
+// The actions section height constraint. Set its constant to modify the action
+// section's height.
+@property(nonatomic, strong) NSLayoutConstraint* actionsSectionHeightConstraint;
 
-// Sets up the widget UI.
-- (void)createUI;
+// Sets up the widget UI for an expanded or compact appearance based on
+// |compact|.
+- (void)createUI:(BOOL)compact;
 
-// Creates the view for the action buttons.
-- (UIView*)newActionsView;
+// Creates the views for the action buttons.
+- (void)createActionsView;
+
+// Returns the height of the action content.
+- (CGFloat)actionContentHeight;
+
+// Returns the height of the copied URL section.
+- (CGFloat)copiedURLSectionHeight;
+
+// Returns the height to use for the action section, depending on the display
+// mode.
+- (CGFloat)actionSectionHeight:(BOOL)compact;
 
 @end
 
@@ -44,27 +63,34 @@ const CGFloat kMaxContentSize = 421;
 @synthesize primaryEffect = _primaryEffect;
 @synthesize secondaryEffect = _secondaryEffect;
 @synthesize copiedURLSection = _copiedURLSection;
+@synthesize actionsSection = _actionsSection;
+@synthesize actionsContent = _actionsContent;
+@synthesize compactHeight = _compactHeight;
+@synthesize actionsSectionHeightConstraint = _actionsSectionHeightConstraint;
 
 - (instancetype)initWithActionTarget:(id<SearchWidgetViewActionTarget>)target
                primaryVibrancyEffect:(UIVibrancyEffect*)primaryVibrancyEffect
-             secondaryVibrancyEffect:
-                 (UIVibrancyEffect*)secondaryVibrancyEffect {
+             secondaryVibrancyEffect:(UIVibrancyEffect*)secondaryVibrancyEffect
+                       compactHeight:(CGFloat)compactHeight
+                    initiallyCompact:(BOOL)compact {
   self = [super initWithFrame:CGRectZero];
   if (self) {
     DCHECK(target);
     _target = target;
     _primaryEffect = primaryVibrancyEffect;
     _secondaryEffect = secondaryVibrancyEffect;
-    [self createUI];
+    _compactHeight = compactHeight;
+    [self createUI:compact];
   }
   return self;
 }
 
 #pragma mark - UI creation
 
-- (void)createUI {
-  UIView* actionsView = [self newActionsView];
-  [self addSubview:actionsView];
+- (void)createUI:(BOOL)compact {
+  [self createActionsView];
+  _actionsSection.translatesAutoresizingMaskIntoConstraints = NO;
+  [self addSubview:_actionsSection];
 
   _copiedURLSection =
       [[CopiedURLView alloc] initWithActionTarget:self.target
@@ -73,81 +99,141 @@ const CGFloat kMaxContentSize = 421;
                                   secondaryEffect:self.secondaryEffect];
   [self addSubview:_copiedURLSection];
 
+  _actionsSectionHeightConstraint = [self.actionsSection.heightAnchor
+      constraintEqualToConstant:[self actionSectionHeight:compact]];
+
+  [NSLayoutConstraint activateConstraints:@[
+    [_actionsSection.topAnchor constraintEqualToAnchor:self.topAnchor],
+    [_actionsSection.bottomAnchor
+        constraintEqualToAnchor:_copiedURLSection.topAnchor],
+
+    [self.leadingAnchor
+        constraintEqualToAnchor:self.actionsSection.leadingAnchor],
+    [self.leadingAnchor
+        constraintEqualToAnchor:self.copiedURLSection.leadingAnchor],
+    [self.trailingAnchor
+        constraintEqualToAnchor:self.actionsSection.trailingAnchor],
+    [self.trailingAnchor
+        constraintEqualToAnchor:self.copiedURLSection.trailingAnchor],
+    _actionsSectionHeightConstraint,
+  ]];
+}
+
+- (CGFloat)actionSectionHeight:(BOOL)compact {
+  if (compact) {
+    return self.compactHeight;
+  }
+  CGFloat contentHeight = [self actionContentHeight];
+  CGFloat copiedURLHeight = [self copiedURLSectionHeight];
+  CGFloat height = contentHeight + copiedURLHeight;
+  if (height >= self.compactHeight) {
+    return contentHeight;
+  }
+  return self.compactHeight - copiedURLHeight;
+}
+
+- (CGFloat)actionContentHeight {
+  CGFloat height =
+      [self.actionsContent
+          systemLayoutSizeFittingSize:UILayoutFittingCompressedSize]
+          .height;
+  return height + 2 * ui_util::kContentMargin;
+}
+
+- (CGFloat)copiedURLSectionHeight {
+  CGFloat height =
+      [self.copiedURLSection
+          systemLayoutSizeFittingSize:UILayoutFittingCompressedSize]
+          .height;
+  return height;
+}
+
+- (void)createActionsView {
+  UIStackView* actionsContentStack =
+      [[UIStackView alloc] initWithArrangedSubviews:@[
+        [[SearchActionView alloc]
+            initWithActionTarget:self.target
+                  actionSelector:@selector(openSearch:)
+                   primaryEffect:self.primaryEffect
+                 secondaryEffect:self.secondaryEffect
+                           title:NSLocalizedString(@"IDS_IOS_NEW_SEARCH",
+                                                   @"New Search")
+                       imageName:@"quick_action_search"],
+        [[SearchActionView alloc]
+            initWithActionTarget:self.target
+                  actionSelector:@selector(openIncognito:)
+                   primaryEffect:self.primaryEffect
+                 secondaryEffect:self.secondaryEffect
+                           title:NSLocalizedString(@"IDS_IOS_INCOGNITO_SEARCH",
+                                                   @"Incognito Search")
+                       imageName:@"quick_action_incognito_search"],
+        [[SearchActionView alloc]
+            initWithActionTarget:self.target
+                  actionSelector:@selector(openVoice:)
+                   primaryEffect:self.primaryEffect
+                 secondaryEffect:self.secondaryEffect
+                           title:NSLocalizedString(@"IDS_IOS_VOICE_SEARCH",
+                                                   @"Voice Search")
+                       imageName:@"quick_action_voice_search"],
+        [[SearchActionView alloc]
+            initWithActionTarget:self.target
+                  actionSelector:@selector(openQRCode:)
+                   primaryEffect:self.primaryEffect
+                 secondaryEffect:self.secondaryEffect
+                           title:NSLocalizedString(@"IDS_IOS_SCAN_QR_CODE",
+                                                   @"Scan QR Code")
+                       imageName:@"quick_action_camera_search"],
+      ]];
+
+  actionsContentStack.axis = UILayoutConstraintAxisHorizontal;
+  actionsContentStack.alignment = UIStackViewAlignmentTop;
+  actionsContentStack.distribution = UIStackViewDistributionFillEqually;
+  actionsContentStack.spacing = ui_util::kIconSpacing;
+  actionsContentStack.layoutMargins = UIEdgeInsetsZero;
+  actionsContentStack.layoutMarginsRelativeArrangement = YES;
+  actionsContentStack.translatesAutoresizingMaskIntoConstraints = NO;
+
+  self.actionsContent = actionsContentStack;
+
+  self.actionsSection = [[UIView alloc] initWithFrame:CGRectZero];
+  self.actionsSection.translatesAutoresizingMaskIntoConstraints = NO;
+  [self.actionsSection addSubview:self.actionsContent];
+
   // These constraints stretch the action row to the full width of the widget.
   // Their priority is < UILayoutPriorityRequired so that they can break when
   // the view is larger than kMaxContentSize.
   NSLayoutConstraint* actionsLeadingConstraint =
-      [actionsView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor];
+      [self.actionsContent.leadingAnchor
+          constraintEqualToAnchor:self.actionsSection.leadingAnchor
+                         constant:ui_util::kContentMargin];
   actionsLeadingConstraint.priority = UILayoutPriorityDefaultHigh;
-
   NSLayoutConstraint* actionsTrailingConstraint =
-      [actionsView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor];
+      [self.actionsContent.trailingAnchor
+          constraintEqualToAnchor:self.actionsSection.trailingAnchor
+                         constant:-ui_util::kContentMargin];
   actionsTrailingConstraint.priority = UILayoutPriorityDefaultHigh;
 
   [NSLayoutConstraint activateConstraints:@[
-    [actionsView.centerXAnchor constraintEqualToAnchor:self.centerXAnchor],
-    [actionsView.widthAnchor
+    [self.actionsSection.centerYAnchor
+        constraintEqualToAnchor:self.actionsContent.centerYAnchor],
+    [self.actionsContent.centerXAnchor
+        constraintEqualToAnchor:self.actionsSection.centerXAnchor],
+    [self.actionsContent.widthAnchor
         constraintLessThanOrEqualToConstant:kMaxContentSize],
     actionsLeadingConstraint,
     actionsTrailingConstraint,
-    [actionsView.topAnchor constraintEqualToAnchor:self.topAnchor
-                                          constant:ui_util::kContentMargin],
-    [actionsView.bottomAnchor
-        constraintEqualToAnchor:_copiedURLSection.topAnchor],
-    [_copiedURLSection.leadingAnchor
-        constraintEqualToAnchor:self.leadingAnchor],
-    [_copiedURLSection.trailingAnchor
-        constraintEqualToAnchor:self.trailingAnchor],
-    [_copiedURLSection.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
   ]];
 }
 
-- (UIView*)newActionsView {
-  UIStackView* actionRow = [[UIStackView alloc] initWithArrangedSubviews:@[
-    [[SearchActionView alloc]
-        initWithActionTarget:self.target
-              actionSelector:@selector(openSearch:)
-               primaryEffect:self.primaryEffect
-             secondaryEffect:self.secondaryEffect
-                       title:NSLocalizedString(@"IDS_IOS_NEW_SEARCH",
-                                               @"New Search")
-                   imageName:@"quick_action_search"],
+#pragma mark - SearchWidgetView
 
-    [[SearchActionView alloc]
-        initWithActionTarget:self.target
-              actionSelector:@selector(openIncognito:)
-               primaryEffect:self.primaryEffect
-             secondaryEffect:self.secondaryEffect
-                       title:NSLocalizedString(@"IDS_IOS_INCOGNITO_SEARCH",
-                                               @"Incognito Search")
-                   imageName:@"quick_action_incognito_search"],
-    [[SearchActionView alloc]
-        initWithActionTarget:self.target
-              actionSelector:@selector(openVoice:)
-               primaryEffect:self.primaryEffect
-             secondaryEffect:self.secondaryEffect
-                       title:NSLocalizedString(@"IDS_IOS_VOICE_SEARCH",
-                                               @"Voice Search")
-                   imageName:@"quick_action_voice_search"],
-    [[SearchActionView alloc]
-        initWithActionTarget:self.target
-              actionSelector:@selector(openQRCode:)
-               primaryEffect:self.primaryEffect
-             secondaryEffect:self.secondaryEffect
-                       title:NSLocalizedString(@"IDS_IOS_SCAN_QR_CODE",
-                                               @"Scan QR Code")
-                   imageName:@"quick_action_camera_search"],
-  ]];
+- (void)showMode:(BOOL)compact {
+  self.actionsSectionHeightConstraint.constant =
+      [self actionSectionHeight:compact];
+}
 
-  actionRow.axis = UILayoutConstraintAxisHorizontal;
-  actionRow.alignment = UIStackViewAlignmentTop;
-  actionRow.distribution = UIStackViewDistributionFillEqually;
-  actionRow.spacing = ui_util::kIconSpacing;
-  actionRow.layoutMargins =
-      UIEdgeInsetsMake(0, ui_util::kContentMargin, 0, ui_util::kContentMargin);
-  actionRow.layoutMarginsRelativeArrangement = YES;
-  actionRow.translatesAutoresizingMaskIntoConstraints = NO;
-  return actionRow;
+- (CGFloat)widgetHeight {
+  return [self actionContentHeight] + [self copiedURLSectionHeight];
 }
 
 - (void)setCopiedURLString:(NSString*)URL {
