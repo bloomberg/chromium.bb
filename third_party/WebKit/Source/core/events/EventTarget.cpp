@@ -131,6 +131,18 @@ void ReportBlockedEvent(ExecutionContext* context,
   registered_listener->SetBlockedEventWarningEmitted();
 }
 
+// UseCounts the event if it has the specified type. Returns true iff the event
+// type matches.
+bool CheckTypeThenUseCount(const Event* event,
+                           const AtomicString& event_type_to_count,
+                           const WebFeature feature,
+                           const Document* document) {
+  if (event->type() != event_type_to_count)
+    return false;
+  UseCounter::Count(*document, feature);
+  return true;
+}
+
 }  // namespace
 
 EventTargetData::EventTargetData() {}
@@ -354,27 +366,19 @@ bool EventTarget::AddEventListenerInternal(
 void EventTarget::AddedEventListener(
     const AtomicString& event_type,
     RegisteredEventListener& registered_listener) {
-  if (event_type == EventTypeNames::auxclick) {
-    if (LocalDOMWindow* executing_window = this->ExecutingWindow()) {
-      UseCounter::Count(executing_window->document(),
-                        WebFeature::kAuxclickAddListenerCount);
+  if (const LocalDOMWindow* executing_window = this->ExecutingWindow()) {
+    if (const Document* document = executing_window->document()) {
+      if (event_type == EventTypeNames::auxclick)
+        UseCounter::Count(*document, WebFeature::kAuxclickAddListenerCount);
+      else if (event_type == EventTypeNames::appinstalled)
+        UseCounter::Count(*document, WebFeature::kAppInstalledEventAddListener);
+      else if (EventUtil::IsPointerEventType(event_type))
+        UseCounter::Count(*document, WebFeature::kPointerEventAddListenerCount);
+      else if (event_type == EventTypeNames::slotchange)
+        UseCounter::Count(*document, WebFeature::kSlotChangeEventAddListener);
     }
-  } else if (event_type == EventTypeNames::appinstalled) {
-    if (LocalDOMWindow* executing_window = this->ExecutingWindow()) {
-      UseCounter::Count(executing_window->document(),
-                        WebFeature::kAppInstalledEventAddListener);
-    }
-  } else if (EventUtil::IsPointerEventType(event_type)) {
-    if (LocalDOMWindow* executing_window = this->ExecutingWindow()) {
-      UseCounter::Count(executing_window->document(),
-                        WebFeature::kPointerEventAddListenerCount);
-    }
-  } else if (event_type == EventTypeNames::slotchange) {
-    if (LocalDOMWindow* executing_window = this->ExecutingWindow()) {
-      UseCounter::Count(executing_window->document(),
-                        WebFeature::kSlotChangeEventAddListener);
-    }
-  } else if (EventUtil::IsDOMMutationEventType(event_type)) {
+  }
+  if (EventUtil::IsDOMMutationEventType(event_type)) {
     if (ExecutionContext* context = GetExecutionContext()) {
       String message_text = String::Format(
           "Added synchronous DOM mutation listener to a '%s' event. "
@@ -586,15 +590,16 @@ void EventTarget::CountLegacyEvents(
     return;
   }
 
-  if (LocalDOMWindow* executing_window = this->ExecutingWindow()) {
-    if (legacy_listeners_vector) {
-      if (listeners_vector)
-        UseCounter::Count(executing_window->document(),
-                          prefixed_and_unprefixed_feature);
-      else
-        UseCounter::Count(executing_window->document(), prefixed_feature);
-    } else if (listeners_vector) {
-      UseCounter::Count(executing_window->document(), unprefixed_feature);
+  if (const LocalDOMWindow* executing_window = this->ExecutingWindow()) {
+    if (const Document* document = executing_window->document()) {
+      if (legacy_listeners_vector) {
+        if (listeners_vector)
+          UseCounter::Count(*document, prefixed_and_unprefixed_feature);
+        else
+          UseCounter::Count(*document, prefixed_feature);
+      } else if (listeners_vector) {
+        UseCounter::Count(*document, unprefixed_feature);
+      }
     }
   }
 }
@@ -641,17 +646,6 @@ DispatchEventResult EventTarget::FireEventListeners(Event* event) {
   return GetDispatchEventResult(*event);
 }
 
-bool EventTarget::CheckTypeThenUseCount(const Event* event,
-                                        const AtomicString& event_type_to_count,
-                                        const WebFeature feature) {
-  if (event->type() == event_type_to_count) {
-    if (LocalDOMWindow* executing_window = this->ExecutingWindow())
-      UseCounter::Count(executing_window->document(), feature);
-    return true;
-  }
-  return false;
-}
-
 bool EventTarget::FireEventListeners(Event* event,
                                      EventTargetData* d,
                                      EventListenerVector& entry) {
@@ -660,48 +654,56 @@ bool EventTarget::FireEventListeners(Event* event,
   // dispatch. Conveniently, all new event listeners will be added after or at
   // index |size|, so iterating up to (but not including) |size| naturally
   // excludes new event listeners.
-
-  if (CheckTypeThenUseCount(event, EventTypeNames::beforeunload,
-                            WebFeature::kDocumentBeforeUnloadFired)) {
-    if (LocalDOMWindow* executing_window = this->ExecutingWindow()) {
-      if (executing_window != executing_window->top()) {
-        UseCounter::Count(executing_window->document(),
-                          WebFeature::kSubFrameBeforeUnloadFired);
+  if (const LocalDOMWindow* executing_window = this->ExecutingWindow()) {
+    if (const Document* document = executing_window->document()) {
+      if (CheckTypeThenUseCount(event, EventTypeNames::beforeunload,
+                                WebFeature::kDocumentBeforeUnloadFired,
+                                document)) {
+        if (executing_window != executing_window->top())
+          UseCounter::Count(*document, WebFeature::kSubFrameBeforeUnloadFired);
+      } else if (CheckTypeThenUseCount(event, EventTypeNames::unload,
+                                       WebFeature::kDocumentUnloadFired,
+                                       document)) {
+      } else if (CheckTypeThenUseCount(event, EventTypeNames::DOMFocusIn,
+                                       WebFeature::kDOMFocusInOutEvent,
+                                       document)) {
+      } else if (CheckTypeThenUseCount(event, EventTypeNames::DOMFocusOut,
+                                       WebFeature::kDOMFocusInOutEvent,
+                                       document)) {
+      } else if (CheckTypeThenUseCount(event, EventTypeNames::focusin,
+                                       WebFeature::kFocusInOutEvent,
+                                       document)) {
+      } else if (CheckTypeThenUseCount(event, EventTypeNames::focusout,
+                                       WebFeature::kFocusInOutEvent,
+                                       document)) {
+      } else if (CheckTypeThenUseCount(event, EventTypeNames::textInput,
+                                       WebFeature::kTextInputFired, document)) {
+      } else if (CheckTypeThenUseCount(event, EventTypeNames::touchstart,
+                                       WebFeature::kTouchStartFired,
+                                       document)) {
+      } else if (CheckTypeThenUseCount(event, EventTypeNames::mousedown,
+                                       WebFeature::kMouseDownFired, document)) {
+      } else if (CheckTypeThenUseCount(event, EventTypeNames::pointerdown,
+                                       WebFeature::kPointerDownFired,
+                                       document)) {
+        if (event->IsPointerEvent() &&
+            static_cast<PointerEvent*>(event)->pointerType() == "touch") {
+          UseCounter::Count(*document, WebFeature::kPointerDownFiredForTouch);
+        }
+      } else if (CheckTypeThenUseCount(event, EventTypeNames::pointerenter,
+                                       WebFeature::kPointerEnterLeaveFired,
+                                       document)) {
+      } else if (CheckTypeThenUseCount(event, EventTypeNames::pointerleave,
+                                       WebFeature::kPointerEnterLeaveFired,
+                                       document)) {
+      } else if (CheckTypeThenUseCount(event, EventTypeNames::pointerover,
+                                       WebFeature::kPointerOverOutFired,
+                                       document)) {
+      } else if (CheckTypeThenUseCount(event, EventTypeNames::pointerout,
+                                       WebFeature::kPointerOverOutFired,
+                                       document)) {
       }
     }
-  } else if (CheckTypeThenUseCount(event, EventTypeNames::unload,
-                                   WebFeature::kDocumentUnloadFired)) {
-  } else if (CheckTypeThenUseCount(event, EventTypeNames::DOMFocusIn,
-                                   WebFeature::kDOMFocusInOutEvent)) {
-  } else if (CheckTypeThenUseCount(event, EventTypeNames::DOMFocusOut,
-                                   WebFeature::kDOMFocusInOutEvent)) {
-  } else if (CheckTypeThenUseCount(event, EventTypeNames::focusin,
-                                   WebFeature::kFocusInOutEvent)) {
-  } else if (CheckTypeThenUseCount(event, EventTypeNames::focusout,
-                                   WebFeature::kFocusInOutEvent)) {
-  } else if (CheckTypeThenUseCount(event, EventTypeNames::textInput,
-                                   WebFeature::kTextInputFired)) {
-  } else if (CheckTypeThenUseCount(event, EventTypeNames::touchstart,
-                                   WebFeature::kTouchStartFired)) {
-  } else if (CheckTypeThenUseCount(event, EventTypeNames::mousedown,
-                                   WebFeature::kMouseDownFired)) {
-  } else if (CheckTypeThenUseCount(event, EventTypeNames::pointerdown,
-                                   WebFeature::kPointerDownFired)) {
-    if (LocalDOMWindow* executing_window = this->ExecutingWindow()) {
-      if (event->IsPointerEvent() &&
-          static_cast<PointerEvent*>(event)->pointerType() == "touch") {
-        UseCounter::Count(executing_window->document(),
-                          WebFeature::kPointerDownFiredForTouch);
-      }
-    }
-  } else if (CheckTypeThenUseCount(event, EventTypeNames::pointerenter,
-                                   WebFeature::kPointerEnterLeaveFired)) {
-  } else if (CheckTypeThenUseCount(event, EventTypeNames::pointerleave,
-                                   WebFeature::kPointerEnterLeaveFired)) {
-  } else if (CheckTypeThenUseCount(event, EventTypeNames::pointerover,
-                                   WebFeature::kPointerOverOutFired)) {
-  } else if (CheckTypeThenUseCount(event, EventTypeNames::pointerout,
-                                   WebFeature::kPointerOverOutFired)) {
   }
 
   ExecutionContext* context = GetExecutionContext();

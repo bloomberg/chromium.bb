@@ -56,7 +56,6 @@ class LocalDOMWindow;
 class MessagePort;
 class Node;
 class ServiceWorker;
-enum class WebFeature : uint32_t;
 
 struct FiringEventIterator {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
@@ -210,12 +209,6 @@ class CORE_EXPORT EventTarget : public GarbageCollectedFinalized<EventTarget>,
   void SetDefaultAddEventListenerOptions(const AtomicString& event_type,
                                          EventListener*,
                                          AddEventListenerOptionsResolved&);
-
-  // UseCounts the event if it has the specified type. Returns true iff the
-  // event type matches.
-  bool CheckTypeThenUseCount(const Event*,
-                             const AtomicString&,
-                             const WebFeature);
 
   bool FireEventListeners(Event*, EventTargetData*, EventListenerVector&);
   void CountLegacyEvents(const AtomicString& legacy_type_name,
