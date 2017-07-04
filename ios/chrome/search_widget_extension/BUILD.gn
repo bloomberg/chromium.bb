@@ -24,9 +24,12 @@ compile_plist("entitlements") {
 
 ios_appex_bundle("search_widget_extension") {
   deps = [
-    ":resources",
     ":search_widget",
     ":system_strings",
+    "resources:quick_action_camera_search",
+    "resources:quick_action_incognito_search",
+    "resources:quick_action_search",
+    "resources:quick_action_voice_search",
   ]
 
   extra_substitutions = [
@@ -74,27 +77,6 @@ source_set("unit_tests") {
     "//testing/gtest",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
-}
-
-bundle_data("resources") {
-  visibility = [ ":*" ]
-  sources = [
-    "resources/quick_action_camera_search.png",
-    "resources/quick_action_camera_search@2x.png",
-    "resources/quick_action_camera_search@3x.png",
-    "resources/quick_action_incognito_search.png",
-    "resources/quick_action_incognito_search@2x.png",
-    "resources/quick_action_incognito_search@3x.png",
-    "resources/quick_action_search.png",
-    "resources/quick_action_search@2x.png",
-    "resources/quick_action_search@3x.png",
-    "resources/quick_action_voice_search.png",
-    "resources/quick_action_voice_search@2x.png",
-    "resources/quick_action_voice_search@3x.png",
-  ]
-  outputs = [
-    "{{bundle_resources_dir}}/{{source_file_part}}",
-  ]
 }
 
 repack_locales("packed_resources") {
