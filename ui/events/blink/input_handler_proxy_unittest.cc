@@ -1478,6 +1478,7 @@ void InputHandlerProxyTest::GestureFlingPassiveListener() {
                                      fling_global_point.y);
   expected_wheel.delta_x = fling_delta.x / 10;
   expected_wheel.has_precise_scrolling_deltas = true;
+  expected_wheel.phase = WebMouseWheelEvent::kPhaseChanged;
 
   EXPECT_CALL(mock_client_, DispatchNonBlockingEventToMainThread_(
                                 WheelEventsMatch(expected_wheel)))

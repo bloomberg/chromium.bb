@@ -2619,6 +2619,12 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
 
   // Send a GesturePinchBegin event if none has been sent yet.
   if (!gestureBeginPinchSent_) {
+    if (renderWidgetHostView_->wheel_scroll_latching_enabled()) {
+      // Before starting a pinch sequence, send the pending wheel end event to
+      // finish scrolling.
+      renderWidgetHostView_->mouse_wheel_phase_handler_
+          .DispatchPendingWheelEndEvent();
+    }
     WebGestureEvent beginEvent(*gestureBeginEvent_);
     beginEvent.SetType(WebInputEvent::kGesturePinchBegin);
     renderWidgetHostView_->render_widget_host_->ForwardGestureEvent(beginEvent);

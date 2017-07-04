@@ -17,12 +17,23 @@ namespace blink {
 class WebMouseWheelEvent : public WebMouseEvent {
  public:
   enum Phase {
+    // No phase information is avaiable.
     kPhaseNone = 0,
+    // This wheel event is the beginning of a scrolling sequence.
     kPhaseBegan = 1 << 0,
+    // Shows that scrolling is ongoing but the scroll delta for this wheel event
+    // is zero.
     kPhaseStationary = 1 << 1,
+    // Shows that a scroll is ongoing and the scroll delta for this wheel event
+    // is non-zero.
     kPhaseChanged = 1 << 2,
+    // This wheel event is the last event of a scrolling sequence.
     kPhaseEnded = 1 << 3,
+    // A wheel event with phase cancelled shows that the scrolling sequence is
+    // cancelled.
     kPhaseCancelled = 1 << 4,
+    // A wheel event with phase may begin shows that a scrolling sequence may
+    // start.
     kPhaseMayBegin = 1 << 5,
   };
 

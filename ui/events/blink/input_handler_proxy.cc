@@ -1599,6 +1599,7 @@ bool InputHandlerProxy::TouchpadFlingScroll(
       synthetic_wheel.delta_x = increment.width;
       synthetic_wheel.delta_y = increment.height;
       synthetic_wheel.has_precise_scrolling_deltas = true;
+      synthetic_wheel.phase = WebMouseWheelEvent::kPhaseChanged;
       synthetic_wheel.SetPositionInWidget(fling_parameters_.point.x,
                                           fling_parameters_.point.y);
       synthetic_wheel.SetPositionInScreen(fling_parameters_.global_point.x,
