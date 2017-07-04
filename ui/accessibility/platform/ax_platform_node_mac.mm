@@ -311,6 +311,9 @@ bool AlsoUseShowMenuActionForDefaultAction(const ui::AXNodeData& data) {
 // NSAccessibility informal protocol implementation.
 
 - (BOOL)accessibilityIsIgnored {
+  if (!node_)
+    return YES;
+
   return [[self AXRole] isEqualToString:NSAccessibilityUnknownRole] ||
          node_->GetData().HasState(ui::AX_STATE_INVISIBLE);
 }
@@ -330,10 +333,13 @@ bool AlsoUseShowMenuActionForDefaultAction(const ui::AXNodeData& data) {
 }
 
 - (id)accessibilityFocusedUIElement {
-  return node_->GetDelegate()->GetFocus();
+  return node_ ? node_->GetDelegate()->GetFocus() : nil;
 }
 
 - (NSArray*)accessibilityActionNames {
+  if (!node_)
+    return @[];
+
   base::scoped_nsobject<NSMutableArray> axActions(
       [[NSMutableArray alloc] init]);
 
@@ -355,7 +361,11 @@ bool AlsoUseShowMenuActionForDefaultAction(const ui::AXNodeData& data) {
 }
 
 - (void)accessibilityPerformAction:(NSString*)action {
-  DCHECK([[self accessibilityActionNames] containsObject:action]);
+  // Actions are performed asynchronously, so it's always possible for an object
+  // to change its mind after previously reporting an action as available.
+  if (![[self accessibilityActionNames] containsObject:action])
+    return;
+
   ui::AXActionData data;
   if ([action isEqualToString:NSAccessibilityShowMenuAction] &&
       AlsoUseShowMenuActionForDefaultAction(node_->GetData())) {
@@ -378,6 +388,9 @@ bool AlsoUseShowMenuActionForDefaultAction(const ui::AXNodeData& data) {
 }
 
 - (NSArray*)accessibilityAttributeNames {
+  if (!node_)
+    return @[];
+
   // These attributes are required on all accessibility objects.
   NSArray* const kAllRoleAttributes = @[
     NSAccessibilityChildrenAttribute,
@@ -447,7 +460,7 @@ bool AlsoUseShowMenuActionForDefaultAction(const ui::AXNodeData& data) {
 
 - (NSArray*)accessibilityParameterizedAttributeNames {
   if (!node_)
-    return nil;
+    return @[];
 
   static NSArray* const kSelectableTextAttributes = [@[
     NSAccessibilityLineForIndexParameterizedAttribute,
@@ -472,6 +485,9 @@ bool AlsoUseShowMenuActionForDefaultAction(const ui::AXNodeData& data) {
 }
 
 - (BOOL)accessibilityIsAttributeSettable:(NSString*)attributeName {
+  if (!node_)
+    return NO;
+
   if (node_->GetData().HasState(ui::AX_STATE_DISABLED))
     return NO;
 
@@ -509,6 +525,9 @@ bool AlsoUseShowMenuActionForDefaultAction(const ui::AXNodeData& data) {
 }
 
 - (void)accessibilitySetValue:(id)value forAttribute:(NSString*)attribute {
+  if (!node_)
+    return;
+
   ui::AXActionData data;
 
   // Check for attributes first. Only the |data.action| should be set here - any
@@ -547,6 +566,9 @@ bool AlsoUseShowMenuActionForDefaultAction(const ui::AXNodeData& data) {
 }
 
 - (id)accessibilityAttributeValue:(NSString*)attribute {
+  if (!node_)
+    return nil;  // Return nil when detached. Even for AXRole.
+
   SEL selector = NSSelectorFromString(attribute);
   if ([self respondsToSelector:selector])
     return [self performSelector:selector];
@@ -555,6 +577,9 @@ bool AlsoUseShowMenuActionForDefaultAction(const ui::AXNodeData& data) {
 
 - (id)accessibilityAttributeValue:(NSString*)attribute
                      forParameter:(id)parameter {
+  if (!node_)
+    return nil;
+
   SEL selector = NSSelectorFromString([attribute stringByAppendingString:@":"]);
   if ([self respondsToSelector:selector])
     return [self performSelector:selector withObject:parameter];
@@ -567,6 +592,7 @@ bool AlsoUseShowMenuActionForDefaultAction(const ui::AXNodeData& data) {
 - (NSString*)AXRole {
   if (!node_)
     return nil;
+
   return [[self class] nativeRoleFromAXRole:node_->GetData().role];
 }
 
@@ -634,7 +660,8 @@ bool AlsoUseShowMenuActionForDefaultAction(const ui::AXNodeData& data) {
 
 - (NSArray*)AXChildren {
   if (!node_)
-    return nil;
+    return @[];
+
   int count = node_->GetChildCount();
   NSMutableArray* children = [NSMutableArray arrayWithCapacity:count];
   for (int i = 0; i < count; ++i)
