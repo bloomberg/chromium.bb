@@ -15,9 +15,7 @@ body {
 <!-- All texts inside the ruby should be highlighted. -->
 a<ruby>1<rt>1</rt>2<rt>2</rt>3<rt>3</rt>4<rt>4</rt></ruby>b
 <script>
-var range = document.createRange();
-range.selectNodeContents(document.body);
-window.getSelection().addRange(range);
+window.getSelection().setBaseAndExtent(document.body.childNodes[2], 1, document.body.childNodes[4], 1)
 </script>
 </body>
 </html>
