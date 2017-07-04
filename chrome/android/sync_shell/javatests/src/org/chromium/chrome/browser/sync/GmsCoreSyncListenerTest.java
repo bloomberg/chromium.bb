@@ -78,12 +78,12 @@ public class GmsCoreSyncListenerTest extends SyncTestBase {
     @MediumTest
     @Feature({"Sync"})
     public void testClearData() throws Throwable {
-        setUpTestAccountAndSignIn();
+        Account account = setUpTestAccountAndSignIn();
         assertEquals(0, mListener.callCount());
         encryptWithPassphrase(PASSPHRASE);
         waitForCallCount(1);
         clearServerData();
-        setUpTestAccountAndSignIn();
+        signIn(account);
         encryptWithPassphrase(PASSPHRASE);
         waitForCallCount(2);
     }

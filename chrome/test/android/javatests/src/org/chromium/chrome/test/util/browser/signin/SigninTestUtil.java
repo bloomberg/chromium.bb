@@ -20,7 +20,9 @@ import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.test.util.AccountHolder;
 import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
 /**
  * Utility class for test signin functionality.
@@ -34,6 +36,8 @@ public final class SigninTestUtil {
     private static Context sContext;
     @SuppressLint("StaticFieldLeak")
     private static FakeAccountManagerDelegate sAccountManager;
+    @SuppressLint("StaticFieldLeak")
+    private static List<AccountHolder> sAddedAccounts = new ArrayList<>();
 
     /**
      * Sets up the test authentication environment.
@@ -59,6 +63,10 @@ public final class SigninTestUtil {
      * Tears down the test authentication environment.
      */
     public static void tearDownAuthForTest() {
+        for (AccountHolder accountHolder : sAddedAccounts) {
+            sAccountManager.removeAccountHolderExplicitly(accountHolder);
+        }
+        sAddedAccounts.clear();
         sContext = null;
     }
 
@@ -109,8 +117,9 @@ public final class SigninTestUtil {
     private static Account createTestAccount(String accountName) {
         assert sContext != null;
         Account account = AccountManagerHelper.createAccountFromName(accountName);
-        AccountHolder.Builder accountHolder = AccountHolder.builder(account).alwaysAccept(true);
-        sAccountManager.addAccountHolderExplicitly(accountHolder.build());
+        AccountHolder accountHolder = AccountHolder.builder(account).alwaysAccept(true).build();
+        sAccountManager.addAccountHolderExplicitly(accountHolder);
+        sAddedAccounts.add(accountHolder);
         return account;
     }
 
