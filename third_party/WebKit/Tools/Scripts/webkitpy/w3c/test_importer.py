@@ -360,7 +360,7 @@ class TestImporter(object):
 
         if try_results and all(s == TryJobStatus('COMPLETED', 'SUCCESS') for _, s in try_results.iteritems()):
             _log.info('CQ appears to have passed; trying to commit.')
-            self.git_cl.run(['cl', 'upload', '--send-mail'])  # Turn off WIP mode.
+            self.git_cl.run(['upload', '--send-mail'])  # Turn off WIP mode.
             self.git_cl.run(['set-commit'])
             _log.info('Update completed.')
             return True
