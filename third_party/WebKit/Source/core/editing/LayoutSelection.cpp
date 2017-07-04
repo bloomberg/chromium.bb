@@ -120,20 +120,21 @@ static bool ShouldShowBlockCursor(const FrameSelection& frame_selection,
   return true;
 }
 
-static VisibleSelectionInFlatTree CalcSelection(
+static EphemeralRangeInFlatTree CalcSelection(
     const FrameSelection& frame_selection) {
   const VisibleSelectionInFlatTree& original_selection =
       frame_selection.ComputeVisibleSelectionInFlatTree();
 
   if (!ShouldShowBlockCursor(frame_selection, original_selection))
-    return original_selection;
+    return {original_selection.Start(), original_selection.End()};
 
   const PositionInFlatTree end_position = NextPositionOf(
       original_selection.Start(), PositionMoveType::kGraphemeCluster);
-  return CreateVisibleSelection(
+  const VisibleSelectionInFlatTree& block_cursor = CreateVisibleSelection(
       SelectionInFlatTree::Builder()
           .SetBaseAndExtent(original_selection.Start(), end_position)
           .Build());
+  return {block_cursor.Start(), block_cursor.End()};
 }
 
 // Objects each have a single selection rect to examine.
@@ -297,13 +298,12 @@ static SelectionPaintRange CalcSelectionPaintRange(
   if (selection_in_dom.IsNone())
     return SelectionPaintRange();
 
-  const VisibleSelectionInFlatTree& selection = CalcSelection(frame_selection);
-  if (!selection.IsRange() || frame_selection.IsHidden())
+  const EphemeralRangeInFlatTree& selection = CalcSelection(frame_selection);
+  if (selection.IsCollapsed() || frame_selection.IsHidden())
     return SelectionPaintRange();
 
-  DCHECK(!selection.IsNone());
-  const PositionInFlatTree start_pos = selection.Start();
-  const PositionInFlatTree end_pos = selection.End();
+  const PositionInFlatTree start_pos = selection.StartPosition();
+  const PositionInFlatTree end_pos = selection.EndPosition();
   DCHECK_LE(start_pos, end_pos);
   LayoutObject* start_layout_object = start_pos.AnchorNode()->GetLayoutObject();
   LayoutObject* end_layout_object = end_pos.AnchorNode()->GetLayoutObject();
