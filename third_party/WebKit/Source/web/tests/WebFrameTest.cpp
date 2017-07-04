@@ -112,6 +112,7 @@
 #include "platform/scroll/ScrollbarTheme.h"
 #include "platform/scroll/ScrollbarThemeMock.h"
 #include "platform/scroll/ScrollbarThemeOverlayMock.h"
+#include "platform/testing/HistogramTester.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
@@ -12023,6 +12024,47 @@ TEST_F(WebFrameTest, NavigatorPluginsClearedWhenPluginsDisabled) {
   result = web_view_helper.LocalMainFrame()->ExecuteScriptAndReturnValue(
       WebScriptSource("navigator.plugins.length"));
   EXPECT_EQ(0, result->Int32Value());
+}
+
+TEST_F(WebFrameTest, RecordSameDocumentNavigationToHistogram) {
+  const char* histogramName =
+      "RendererScheduler.UpdateForSameDocumentNavigationCount";
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  HistogramTester tester;
+  web_view_helper.InitializeAndLoad("about:blank");
+  LocalFrame* frame =
+      ToLocalFrame(web_view_helper.WebView()->GetPage()->MainFrame());
+
+  FrameLoader& main_frame_loader =
+      web_view_helper.WebView()->MainFrameImpl()->GetFrame()->Loader();
+  RefPtr<SerializedScriptValue> message =
+      SerializeString("message", ToScriptStateForMainWorld(frame));
+  tester.ExpectTotalCount(histogramName, 0);
+  main_frame_loader.UpdateForSameDocumentNavigation(
+      ToKURL("about:blank"), kSameDocumentNavigationHistoryApi, message,
+      kScrollRestorationAuto, kFrameLoadTypeInitialHistoryLoad,
+      frame->GetDocument());
+  // The bucket index corresponds to the definition of
+  // |SinglePageAppNavigationType|.
+  tester.ExpectBucketCount(histogramName,
+                           kSPANavTypeHistoryPushStateOrReplaceState, 1);
+  main_frame_loader.UpdateForSameDocumentNavigation(
+      ToKURL("about:blank"), kSameDocumentNavigationDefault, message,
+      kScrollRestorationManual, kFrameLoadTypeBackForward,
+      frame->GetDocument());
+  tester.ExpectBucketCount(histogramName,
+                           kSPANavTypeSameDocumentBackwardOrForward, 1);
+  main_frame_loader.UpdateForSameDocumentNavigation(
+      ToKURL("about:blank"), kSameDocumentNavigationDefault, message,
+      kScrollRestorationManual, kFrameLoadTypeInitialHistoryLoad,
+      frame->GetDocument());
+  tester.ExpectBucketCount(histogramName, kSPANavTypeOtherFragmentNavigation,
+                           1);
+  // kSameDocumentNavigationHistoryApi and kFrameLoadTypeBackForward is an
+  // illegal combination, which has been caught by DCHECK in
+  // UpdateForSameDocumentNavigation().
+
+  tester.ExpectTotalCount(histogramName, 3);
 }
 
 }  // namespace blink
