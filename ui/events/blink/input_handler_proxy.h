@@ -33,6 +33,7 @@ namespace ui {
 namespace test {
 class InputHandlerProxyTest;
 class InputHandlerProxyEventQueueTest;
+class TestInputHandlerProxy;
 }
 
 class CompositorThreadEventQueue;
@@ -118,6 +119,7 @@ class InputHandlerProxy
                                    uint32_t reasons);
 
  private:
+  friend class test::TestInputHandlerProxy;
   friend class test::InputHandlerProxyTest;
   friend class test::InputHandlerProxyEventQueueTest;
 
@@ -184,8 +186,14 @@ class InputHandlerProxy
 
   void SetTickClockForTesting(std::unique_ptr<base::TickClock> tick_clock);
 
-  EventDisposition HitTestTouchEvent(const blink::WebTouchEvent& touch_event,
-                                     bool* is_touching_scrolling_layer);
+  // |is_touching_scrolling_layer| indicates if one of the points that has
+  // been touched hits a currently scrolling layer.
+  // |white_listed_touch_action| is the touch_action we are sure will be
+  // allowed for the given touch event.
+  EventDisposition HitTestTouchEvent(
+      const blink::WebTouchEvent& touch_event,
+      bool* is_touching_scrolling_layer,
+      cc::TouchAction* white_listed_touch_action);
 
   std::unique_ptr<blink::WebGestureCurve> fling_curve_;
   // Parameters for the active fling animation, stored in case we need to
