@@ -288,6 +288,7 @@ void PermissionDecisionAutoBlocker::CheckSafeBrowsingBlacklist(
     const GURL& request_origin,
     ContentSettingsType permission,
     base::Callback<void(bool)> callback) {
+  permission = PermissionUtil::GetContentSettingsStorageType(permission);
   DCHECK_EQ(CONTENT_SETTING_ASK,
             GetEmbargoResult(request_origin, permission).content_setting);
 
@@ -311,6 +312,7 @@ void PermissionDecisionAutoBlocker::CheckSafeBrowsingBlacklist(
 PermissionResult PermissionDecisionAutoBlocker::GetEmbargoResult(
     const GURL& request_origin,
     ContentSettingsType permission) {
+  permission = PermissionUtil::GetContentSettingsStorageType(permission);
   return GetEmbargoResult(
       HostContentSettingsMapFactory::GetForProfile(profile_), request_origin,
       permission, clock_->Now());
@@ -319,18 +321,21 @@ PermissionResult PermissionDecisionAutoBlocker::GetEmbargoResult(
 int PermissionDecisionAutoBlocker::GetDismissCount(
     const GURL& url,
     ContentSettingsType permission) {
+  permission = PermissionUtil::GetContentSettingsStorageType(permission);
   return GetActionCount(url, permission, kPromptDismissCountKey, profile_);
 }
 
 int PermissionDecisionAutoBlocker::GetIgnoreCount(
     const GURL& url,
     ContentSettingsType permission) {
+  permission = PermissionUtil::GetContentSettingsStorageType(permission);
   return GetActionCount(url, permission, kPromptIgnoreCountKey, profile_);
 }
 
 bool PermissionDecisionAutoBlocker::RecordDismissAndEmbargo(
     const GURL& url,
     ContentSettingsType permission) {
+  permission = PermissionUtil::GetContentSettingsStorageType(permission);
   int current_dismissal_count = RecordActionInWebsiteSettings(
       url, permission, kPromptDismissCountKey, profile_);
 
@@ -355,6 +360,7 @@ bool PermissionDecisionAutoBlocker::RecordDismissAndEmbargo(
 bool PermissionDecisionAutoBlocker::RecordIgnoreAndEmbargo(
     const GURL& url,
     ContentSettingsType permission) {
+  permission = PermissionUtil::GetContentSettingsStorageType(permission);
   int current_ignore_count = RecordActionInWebsiteSettings(
       url, permission, kPromptIgnoreCountKey, profile_);
 
@@ -370,6 +376,7 @@ bool PermissionDecisionAutoBlocker::RecordIgnoreAndEmbargo(
 void PermissionDecisionAutoBlocker::RemoveEmbargoByUrl(
     const GURL& url,
     ContentSettingsType permission) {
+  permission = PermissionUtil::GetContentSettingsStorageType(permission);
   if (!PermissionUtil::IsPermission(permission))
     return;
 

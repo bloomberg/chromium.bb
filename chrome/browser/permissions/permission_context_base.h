@@ -174,9 +174,6 @@ class PermissionContextBase : public KeyedService {
     return content_settings_type_;
   }
 
-  // TODO(timloh): The CONTENT_SETTINGS_TYPE_NOTIFICATIONS type is used to
-  // store both push messaging and notifications permissions. Remove this
-  // once we've unified these types (crbug.com/563297).
   ContentSettingsType content_settings_storage_type() const;
 
  private:

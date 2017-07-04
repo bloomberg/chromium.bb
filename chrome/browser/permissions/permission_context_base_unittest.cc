@@ -23,6 +23,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
+#include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_queue_controller.h"
 #include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
@@ -878,6 +879,28 @@ TEST_P(PermissionContextBaseTests, TestDismissUntilBlocked) {
 // Test setting a custom number of dismissals before block via variations.
 TEST_P(PermissionContextBaseTests, TestDismissVariations) {
   TestVariationBlockOnSeveralDismissals_TestContent();
+}
+
+// Test that too many dismissals for push messaging will result in notifications
+// being embargoed.
+TEST_P(PermissionContextBaseTests, PushMessagingEmbargoEmbargoesNotifications) {
+  GURL url("https://www.google.com");
+  SetUpUrl(url);
+  DismissMultipleTimesAndExpectBlock(url, CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
+                                     3);
+  PermissionManager* permission_manager = PermissionManager::Get(profile());
+
+  // Check push messaging is now embargoed.
+  PermissionResult result = permission_manager->GetPermissionStatus(
+      CONTENT_SETTINGS_TYPE_PUSH_MESSAGING, url, url);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
+  EXPECT_EQ(PermissionStatusSource::MULTIPLE_DISMISSALS, result.source);
+
+  // Check notifications yields the same result.
+  result = permission_manager->GetPermissionStatus(
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS, url, url);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
+  EXPECT_EQ(PermissionStatusSource::MULTIPLE_DISMISSALS, result.source);
 }
 
 // Simulates non-valid requesting URL.

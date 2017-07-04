@@ -470,9 +470,7 @@ void PermissionContextBase::UpdateContentSetting(
 
 ContentSettingsType PermissionContextBase::content_settings_storage_type()
     const {
-  if (content_settings_type_ == CONTENT_SETTINGS_TYPE_PUSH_MESSAGING)
-    return CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
-  return content_settings_type_;
+  return PermissionUtil::GetContentSettingsStorageType(content_settings_type_);
 }
 
 bool PermissionContextBase::PermissionAllowedByFeaturePolicy(
