@@ -95,24 +95,64 @@ def GetRelativeUrl(module, base_module):
 
 
 class JavaScriptStylizer(generator.Stylizer):
-  def __init__(self, use_new_js_bindings):
-    self.use_new_js_bindings = use_new_js_bindings
+  MODE_RESET = 0
+  MODE_OLD = 1
+  MODE_NEW = 2
+
+  def __init__(self, mode):
+    assert (mode == JavaScriptStylizer.MODE_RESET or
+            mode == JavaScriptStylizer.MODE_OLD or
+            mode == JavaScriptStylizer.MODE_NEW)
+    self.mode = mode
+
+  def StylizeConstant(self, mojom_name):
+    if self.mode == JavaScriptStylizer.MODE_RESET:
+      return ""
+    return mojom_name
 
   def StylizeField(self, mojom_name):
-    if not self.use_new_js_bindings:
+    if self.mode == JavaScriptStylizer.MODE_RESET:
+      return ""
+    if self.mode == JavaScriptStylizer.MODE_OLD:
       return mojom_name
     return generator.ToCamel(mojom_name, lower_initial=True)
 
+  def StylizeStruct(self, mojom_name):
+    if self.mode == JavaScriptStylizer.MODE_RESET:
+      return ""
+    return mojom_name
+
+  def StylizeUnion(self, mojom_name):
+    if self.mode == JavaScriptStylizer.MODE_RESET:
+      return ""
+    return mojom_name
+
   def StylizeParameter(self, mojom_name):
-    if not self.use_new_js_bindings:
+    if self.mode == JavaScriptStylizer.MODE_RESET:
+      return ""
+    if self.mode == JavaScriptStylizer.MODE_OLD:
       return mojom_name
     return generator.ToCamel(mojom_name, lower_initial=True)
 
   def StylizeMethod(self, mojom_name):
+    if self.mode == JavaScriptStylizer.MODE_RESET:
+      return ""
     return generator.ToCamel(mojom_name, lower_initial=True)
 
+  def StylizeEnumField(self, mojom_name):
+    if self.mode == JavaScriptStylizer.MODE_RESET:
+      return ""
+    return mojom_name
+
+  def StylizeEnum(self, mojom_name):
+    if self.mode == JavaScriptStylizer.MODE_RESET:
+      return ""
+    return mojom_name
+
   def StylizeModule(self, mojom_namespace):
-    if not self.use_new_js_bindings:
+    if self.mode == JavaScriptStylizer.MODE_RESET:
+      return ""
+    if self.mode == JavaScriptStylizer.MODE_OLD:
       return mojom_namespace
     return '.'.join(generator.ToCamel(word, lower_initial=True)
                         for word in mojom_namespace.split('.'))
@@ -128,7 +168,7 @@ class Generator(generator.Generator):
       "module": self.module,
       "structs": self.module.structs + self._GetStructsFromMethods(),
       "unions": self.module.unions,
-      "use_new_js_bindings": self.use_new_js_bindings,
+      "js_bindings_mode": self.js_bindings_mode,
     }
 
   @staticmethod
@@ -162,6 +202,7 @@ class Generator(generator.Generator):
       "js_type": self._JavaScriptType,
       "method_passes_associated_kinds": mojom.MethodPassesAssociatedKinds,
       "payload_size": JavaScriptPayloadSize,
+      "set_current_mode": self._SetCurrentMode,
       "to_camel": generator.ToCamel,
       "union_decode_snippet": self._JavaScriptUnionDecodeSnippet,
       "union_encode_snippet": self._JavaScriptUnionEncodeSnippet,
@@ -182,7 +223,7 @@ class Generator(generator.Generator):
     if self.variant:
       raise Exception("Variants not supported in JavaScript bindings.")
 
-    self.module.Stylize(JavaScriptStylizer(self.use_new_js_bindings))
+    self.module.Stylize(JavaScriptStylizer(JavaScriptStylizer.MODE_RESET))
 
     # TODO(yzshen): Remove this method once the old JS bindings go away.
     self._SetUniqueNameForImports()
@@ -407,3 +448,10 @@ class Generator(generator.Generator):
         if method.response_param_struct is not None:
           result.append(method.response_param_struct)
     return result
+
+  def _SetCurrentMode(self, mode):
+    self.module.Stylize(JavaScriptStylizer(
+        JavaScriptStylizer.MODE_OLD if mode == "old"
+            else JavaScriptStylizer.MODE_NEW))
+    return ""
+

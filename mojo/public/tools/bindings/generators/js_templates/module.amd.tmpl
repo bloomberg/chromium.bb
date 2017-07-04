@@ -2,9 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-{%- if use_new_js_bindings %}
+{%- if js_bindings_mode == "both" or js_bindings_mode == "new" %}
+{{"new"|set_current_mode}}
 
 'use strict';
+
+{%-   if js_bindings_mode == "both" %}
+if ((typeof mojo !== 'undefined')  && mojo.internal && mojo.config) {
+{%-   endif %}
 
 (function() {
   var mojomId = '{{module.path}}';
@@ -21,6 +26,8 @@
   var codec = mojo.internal;
   var validator = mojo.internal;
 
+  var exports = mojo.internal.exposeNamespace('{{module.namespace}}');
+
 {%-   for import in imports %}
   var {{import.unique_name}} =
       mojo.internal.exposeNamespace('{{import.namespace}}');
@@ -35,7 +42,18 @@
 {% include "module_definition.tmpl" %}
 })();
 
-{%- else %}
+{%-   if js_bindings_mode == "both" %}
+}
+{%-   endif %}
+
+{%- endif %}
+
+{%- if js_bindings_mode == "both" or js_bindings_mode == "old" %}
+{{"old"|set_current_mode}}
+
+{%-   if js_bindings_mode == "both" %}
+if ((typeof mojo === 'undefined') || !mojo.internal || !mojo.config) {
+{%-   endif %}
 
 define("{{module.path}}", [
 {%- if module.path !=
@@ -62,10 +80,15 @@ codec, core, validator
     , {{import.unique_name}}
 {%-   endfor -%}
 ) {
+  var exports = {};
 
 {%- include "module_definition.tmpl" %}
 
   return exports;
 });
+
+{%-   if js_bindings_mode == "both" %}
+}
+{%-   endif %}
 
 {%- endif %}
