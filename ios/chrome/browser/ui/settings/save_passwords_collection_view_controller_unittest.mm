@@ -10,19 +10,25 @@
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
+#import "ios/chrome/browser/ui/settings/password_details_collection_view_controller.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface SavePasswordsCollectionViewController (InternalMethods)
+using password_manager::MockPasswordStore;
+
+@interface SavePasswordsCollectionViewController (
+    InternalMethods)<PasswordDetailsCollectionViewControllerDelegate>
 - (void)onGetPasswordStoreResults:
     (const std::vector<autofill::PasswordForm*>&)result;
 @end
@@ -41,9 +47,16 @@ class SavePasswordsCollectionViewControllerTest
     CollectionViewControllerTest::SetUp();
     IOSChromePasswordStoreFactory::GetInstance()->SetTestingFactory(
         chrome_browser_state_.get(),
-        &password_manager::BuildPasswordStore<
-            web::BrowserState, password_manager::MockPasswordStore>);
+        &password_manager::BuildPasswordStore<web::BrowserState,
+                                              MockPasswordStore>);
     CreateController();
+  }
+
+  MockPasswordStore& GetMockStore() {
+    return *static_cast<MockPasswordStore*>(
+        IOSChromePasswordStoreFactory::GetForBrowserState(
+            chrome_browser_state_.get(), ServiceAccessType::EXPLICIT_ACCESS)
+            .get());
   }
 
   CollectionViewController* InstantiateController() override {
@@ -181,6 +194,22 @@ TEST_F(SavePasswordsCollectionViewControllerTest, DeleteItems) {
   deleteItemWithWait(2, 0);
   // There should be no password sections remaining.
   EXPECT_EQ(2, NumberOfSections());
+}
+
+TEST_F(SavePasswordsCollectionViewControllerTest, PropagateDeletionToStore) {
+  SavePasswordsCollectionViewController* save_password_controller =
+      static_cast<SavePasswordsCollectionViewController*>(controller());
+  autofill::PasswordForm form;
+  form.origin = GURL("http://www.example.com/accounts/LoginAuth");
+  form.action = GURL("http://www.example.com/accounts/Login");
+  form.username_element = base::ASCIIToUTF16("Email");
+  form.username_value = base::ASCIIToUTF16("test@egmail.com");
+  form.password_element = base::ASCIIToUTF16("Passwd");
+  form.password_value = base::ASCIIToUTF16("test");
+  form.signon_realm = "http://www.example.com/";
+  form.scheme = autofill::PasswordForm::SCHEME_HTML;
+  EXPECT_CALL(GetMockStore(), RemoveLogin(form));
+  [save_password_controller deletePassword:form];
 }
 
 }  // namespace

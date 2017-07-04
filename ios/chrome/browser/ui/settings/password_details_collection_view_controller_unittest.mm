@@ -50,16 +50,11 @@
 
 - (void)deletePassword:(const autofill::PasswordForm&)passwordForm;
 
-@property(nonatomic) NSInteger numberOfCallsToDeletePassword;
-
 @end
 
 @implementation MockSavePasswordsCollectionViewController
 
-@synthesize numberOfCallsToDeletePassword = _numberOfCallsToDeletePassword;
-
 - (void)deletePassword:(const autofill::PasswordForm&)passwordForm {
-  ++_numberOfCallsToDeletePassword;
 }
 
 @end
@@ -249,14 +244,6 @@ TEST_F(PasswordDetailsCollectionViewControllerTest, CopyPassword) {
   EXPECT_NSEQ(
       l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_REAUTH_REASON_COPY),
       reauthenticationModule_.localizedReasonForAuthentication);
-}
-
-TEST_F(PasswordDetailsCollectionViewControllerTest, DeletePassword) {
-  CreateController();
-  [controller() collectionView:[controller() collectionView]
-      didSelectItemAtIndexPath:[NSIndexPath indexPathForRow:kDeleteButtonItem
-                                                  inSection:kDeleteSection]];
-  EXPECT_EQ(1, delegate_.numberOfCallsToDeletePassword);
 }
 
 }  // namespace
