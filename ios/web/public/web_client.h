@@ -5,6 +5,7 @@
 #ifndef IOS_WEB_PUBLIC_WEB_CLIENT_H_
 #define IOS_WEB_PUBLIC_WEB_CLIENT_H_
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -13,7 +14,9 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/task_scheduler/task_scheduler.h"
+#include "base/values.h"
 #include "ios/web/public/user_agent.h"
+#include "services/service_manager/embedder/embedded_service_info.h"
 #include "ui/base/layout.h"
 #include "url/url_util.h"
 
@@ -112,6 +115,19 @@ class WebClient {
   // TODO(crbug.com/703964): Change the return value to NSArray<NSString*> to
   // improve performance.
   virtual NSString* GetEarlyPageScript(BrowserState* browser_state) const;
+
+  using StaticServiceMap =
+      std::map<std::string, service_manager::EmbeddedServiceInfo>;
+
+  // Registers services to be loaded by the Service Manager.
+  virtual void RegisterServices(StaticServiceMap* services) {}
+
+  // Allows the embedder to provide a dictionary loaded from a JSON file
+  // resembling a service manifest whose capabilities section will be merged
+  // with web's own for |name|. Additional entries will be appended to their
+  // respective sections.
+  virtual std::unique_ptr<base::Value> GetServiceManifestOverlay(
+      base::StringPiece name);
 
   // Informs the embedder that a certificate error has occurred. If
   // |overridable| is true, the user can ignore the error and continue. The
