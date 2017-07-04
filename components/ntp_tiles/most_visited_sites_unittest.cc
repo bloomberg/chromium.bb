@@ -463,6 +463,37 @@ TEST_P(MostVisitedSitesTest, ShouldNotIncludeHomePageWithoutClient) {
   base::RunLoop().RunUntilIdle();
 }
 
+TEST_P(MostVisitedSitesTest, ShouldUpdateHomePageTileOnHomePageStateChanged) {
+  FakeHomePageClient* home_page_client = RegisterNewHomePageClient();
+  home_page_client->SetHomePageEnabled(true);
+  DisableRemoteSuggestions();
+
+  // Ensure that home tile is available as usual.
+  EXPECT_CALL(*mock_top_sites_, GetMostVisitedURLs(_, false))
+      .WillRepeatedly(InvokeCallbackArgument<0>(MostVisitedURLList{}));
+  EXPECT_CALL(*mock_top_sites_, SyncWithHistory());
+  EXPECT_CALL(*mock_top_sites_, IsBlacklisted(Eq(GURL(kHomePageUrl))))
+      .Times(AnyNumber())
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(mock_observer_, OnMostVisitedURLsAvailable(FirstTileIs(
+                                  "", kHomePageUrl, TileSource::HOMEPAGE)));
+  most_visited_sites_->SetMostVisitedURLsObserver(&mock_observer_,
+                                                  /*num_sites=*/3);
+  base::RunLoop().RunUntilIdle();
+  VerifyAndClearExpectations();
+
+  // Disable home page and rebuild _without_ Resync. The tile should be gone.
+  home_page_client->SetHomePageEnabled(false);
+  DisableRemoteSuggestions();
+  EXPECT_CALL(*mock_top_sites_, GetMostVisitedURLs(_, false))
+      .WillRepeatedly(InvokeCallbackArgument<0>(MostVisitedURLList{}));
+  EXPECT_CALL(*mock_top_sites_, SyncWithHistory()).Times(0);
+  EXPECT_CALL(mock_observer_, OnMostVisitedURLsAvailable(Not(FirstTileIs(
+                                  "", kHomePageUrl, TileSource::HOMEPAGE))));
+  most_visited_sites_->OnHomePageStateChanged();
+  base::RunLoop().RunUntilIdle();
+}
+
 TEST_P(MostVisitedSitesTest, ShouldNotIncludeHomePageIfNoTileRequested) {
   FakeHomePageClient* home_page_client = RegisterNewHomePageClient();
   home_page_client->SetHomePageEnabled(true);

@@ -139,6 +139,10 @@ void MostVisitedSites::Refresh() {
   suggestions_service_->FetchSuggestionsData();
 }
 
+void MostVisitedSites::OnHomePageStateChanged() {
+  BuildCurrentTiles();
+}
+
 void MostVisitedSites::AddOrRemoveBlacklistedUrl(const GURL& url,
                                                  bool add_url) {
   if (add_url) {

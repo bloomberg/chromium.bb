@@ -25,6 +25,9 @@ class MostVisitedSitesBridge {
 
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
+  void OnHomePageStateChanged(JNIEnv* env,
+                              const base::android::JavaParamRef<jobject>& obj);
+
   void SetObserver(JNIEnv* env,
                    const base::android::JavaParamRef<jobject>& obj,
                    const base::android::JavaParamRef<jobject>& j_observer,
