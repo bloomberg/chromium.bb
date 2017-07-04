@@ -166,6 +166,7 @@ public abstract class ChromeFeatureList {
             "ContentSuggestionsLargeThumbnail";
     public static final String CONTENT_SUGGESTIONS_SETTINGS = "ContentSuggestionsSettings";
     public static final String CONTENT_SUGGESTIONS_SHOW_SUMMARY = "ContentSuggestionsShowSummary";
+    public static final String CONTENT_SUGGESTIONS_VIDEO_OVERLAY = "ContentSuggestionsVideoOverlay";
     public static final String CONTEXTUAL_SEARCH_SINGLE_ACTIONS = "ContextualSearchSingleActions";
     public static final String CONTEXTUAL_SEARCH_URL_ACTIONS = "ContextualSearchUrlActions";
     public static final String CONTEXTUAL_SUGGESTIONS_CAROUSEL = "ContextualSuggestionsCarousel";

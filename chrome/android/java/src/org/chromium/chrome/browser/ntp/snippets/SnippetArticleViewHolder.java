@@ -75,6 +75,7 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
     private final TextView mArticleSnippetTextView;
     private final TextView mArticleAgeTextView;
     private final TintedImageView mThumbnailView;
+    private final ImageView mThumbnailVideoOverlay;
     private final ImageView mOfflineBadge;
     private final View mPublisherBar;
 
@@ -115,6 +116,8 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
         mArticleSnippetTextView = (TextView) itemView.findViewById(R.id.article_snippet);
         mArticleAgeTextView = (TextView) itemView.findViewById(R.id.article_age);
         mThumbnailView = (TintedImageView) itemView.findViewById(R.id.article_thumbnail);
+        mThumbnailVideoOverlay =
+                (ImageView) itemView.findViewById(R.id.article_thumbnail_video_overlay);
         mPublisherBar = itemView.findViewById(R.id.publisher_bar);
         mOfflineBadge = (ImageView) itemView.findViewById(R.id.offline_icon);
 
@@ -232,6 +235,7 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
         boolean showHeadline = shouldShowHeadline();
         boolean showDescription = shouldShowDescription(horizontalStyle, verticalStyle, layout);
         boolean showThumbnail = shouldShowThumbnail(layout);
+        boolean showThumbnailVideoOverlay = shouldShowThumbnailVideoOverlay(showThumbnail);
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTENT_SUGGESTIONS_LARGE_THUMBNAIL)) {
             mTextLayout.setMinimumHeight(showThumbnail ? mThumbnailSize : 0);
@@ -240,6 +244,7 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
         mHeadlineTextView.setMaxLines(getHeaderMaxLines(horizontalStyle, verticalStyle, layout));
         mArticleSnippetTextView.setVisibility(showDescription ? View.VISIBLE : View.GONE);
         mThumbnailView.setVisibility(showThumbnail ? View.VISIBLE : View.GONE);
+        mThumbnailVideoOverlay.setVisibility(showThumbnailVideoOverlay ? View.VISIBLE : View.GONE);
 
         ViewGroup.MarginLayoutParams publisherBarParams =
                 (ViewGroup.MarginLayoutParams) mPublisherBar.getLayoutParams();
@@ -290,6 +295,12 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
         if (layout == ContentSuggestionsCardLayout.MINIMAL_CARD) return false;
 
         return true;
+    }
+
+    private boolean shouldShowThumbnailVideoOverlay(boolean showThumbnail) {
+        if (!showThumbnail) return false;
+        if (!mArticle.mIsVideoSuggestion) return false;
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.CONTENT_SUGGESTIONS_VIDEO_OVERLAY);
     }
 
     /**
