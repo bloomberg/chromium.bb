@@ -24,7 +24,7 @@
         android:ellipsize="end"
         android:textSize="16sp"
         android:textColor="@color/snippets_headline_text_color"
-        chrome:leading="24dp" />
+        chrome:leading="24sp" />
 
     <org.chromium.ui.widget.TextViewWithLeading
         android:id="@+id/article_snippet"
@@ -38,7 +38,7 @@
         android:ellipsize="end"
         android:textSize="14sp"
         android:textColor="@color/snippets_text_color"
-        chrome:leading="20dp" />
+        chrome:leading="20sp" />
 
     <LinearLayout
         tools:ignore="UseCompoundDrawables"
