@@ -193,6 +193,21 @@ enum class SubmittedFormFrame {
   SUBMITTED_FORM_FRAME_COUNT
 };
 
+// Metrics: "PasswordManager.AccessPasswordInSettings"
+enum AccessPasswordInSettingsEvent {
+  ACCESS_PASSWORD_VIEWED = 0,
+  ACCESS_PASSWORD_COPIED = 1,
+  ACCESS_PASSWORD_COUNT
+};
+
+// Metrics: PasswordManager.ReauthToAccessPasswordInSettings
+enum ReauthToAccessPasswordInSettingsEvent {
+  REAUTH_SUCCESS = 0,
+  REAUTH_FAILURE = 1,
+  REAUTH_SKIPPED = 2,
+  REAUTH_COUNT
+};
+
 // A version of the UMA_HISTOGRAM_BOOLEAN macro that allows the |name|
 // to vary over the program's runtime.
 void LogUMAHistogramBoolean(const std::string& name, bool sample);

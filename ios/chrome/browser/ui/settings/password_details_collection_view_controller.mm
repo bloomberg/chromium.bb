@@ -7,9 +7,11 @@
 #import <UIKit/UIKit.h>
 
 #include "base/mac/foundation_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
@@ -324,6 +326,10 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule
       [[strongSelf collectionView].collectionViewLayout invalidateLayout];
       strongSelf->_plainTextPasswordShown = YES;
       [strongSelf toggleShowHideButton];
+      UMA_HISTOGRAM_ENUMERATION(
+          "PasswordManager.AccessPasswordInSettings",
+          password_manager::metrics_util::ACCESS_PASSWORD_VIEWED,
+          password_manager::metrics_util::ACCESS_PASSWORD_COUNT);
     };
 
     [_weakReauthenticationModule
@@ -355,6 +361,14 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule
     [self
         showCopyResultToast:l10n_util::GetNSString(
                                 IDS_IOS_SETTINGS_PASSWORD_WAS_COPIED_MESSAGE)];
+    UMA_HISTOGRAM_ENUMERATION(
+        "PasswordManager.AccessPasswordInSettings",
+        password_manager::metrics_util::ACCESS_PASSWORD_COPIED,
+        password_manager::metrics_util::ACCESS_PASSWORD_COUNT);
+    UMA_HISTOGRAM_ENUMERATION(
+        "PasswordManager.ReauthToAccessPasswordInSettings",
+        password_manager::metrics_util::REAUTH_SKIPPED,
+        password_manager::metrics_util::REAUTH_COUNT);
   } else if ([_weakReauthenticationModule canAttemptReauth]) {
     __weak PasswordDetailsCollectionViewController* weakSelf = self;
     void (^copyPasswordHandler)(BOOL) = ^(BOOL success) {
@@ -368,6 +382,10 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule
         [strongSelf showCopyResultToast:
                         l10n_util::GetNSString(
                             IDS_IOS_SETTINGS_PASSWORD_WAS_COPIED_MESSAGE)];
+        UMA_HISTOGRAM_ENUMERATION(
+            "PasswordManager.AccessPasswordInSettings",
+            password_manager::metrics_util::ACCESS_PASSWORD_COPIED,
+            password_manager::metrics_util::ACCESS_PASSWORD_COUNT);
       } else {
         TriggerHapticFeedbackForNotification(UINotificationFeedbackTypeError);
         [strongSelf showCopyResultToast:

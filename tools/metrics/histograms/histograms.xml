@@ -51607,6 +51607,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.AccessPasswordInSettings"
+    enum="AccessPasswordInSettingsEvent">
+  <owner>vabr@chromium.org</owner>
+  <summary>
+    Recorded whenever the user accesses the passwords in the settings page.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.AccountChooserDialog"
     enum="AccountChooserDismissalReason">
   <obsolete>
@@ -52310,6 +52318,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Records, for each password form seen by the password manager, whether the
     PasswordStore responded quickly enough so that
     PasswordManager.SuppressedAccount histogram samples could be computed.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.ReauthToAccessPasswordInSettings"
+    enum="ReauthToAccessPasswordInSettingsEvent">
+  <owner>vabr@chromium.org</owner>
+  <summary>
+    Recorded whenever the user interacts with reauthentication in order to
+    access the passwords in settings, or when such reauthentication is skipped
+    for a well-defined reason.
   </summary>
 </histogram>
 

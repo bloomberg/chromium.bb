@@ -346,6 +346,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="157" label="UMA_API_UNSELECT_ROW">unselectRow</int>
 </enum>
 
+<enum name="AccessPasswordInSettingsEvent">
+  <int value="0" label="Viewed"/>
+  <int value="1" label="Copied"/>
+</enum>
+
 <enum name="AccountChooserDismissalReason">
   <int value="0" label="Canceled"/>
   <int value="1" label="Credential chosen"/>
@@ -31411,6 +31416,12 @@ from previous Chrome versions.
   <int value="0" label="Success"/>
   <int value="1" label="Failure"/>
   <int value="2" label="Will retry"/>
+</enum>
+
+<enum name="ReauthToAccessPasswordInSettingsEvent">
+  <int value="0" label="Success"/>
+  <int value="1" label="Failure"/>
+  <int value="2" label="Skipped"/>
 </enum>
 
 <enum name="RecentTabsAction">
