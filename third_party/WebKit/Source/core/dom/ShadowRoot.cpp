@@ -32,11 +32,11 @@
 #include "core/css/resolver/StyleSharingDepthScope.h"
 #include "core/dom/ElementShadow.h"
 #include "core/dom/ElementTraversal.h"
-#include "core/dom/InsertionPoint.h"
 #include "core/dom/ShadowRootRareDataV0.h"
 #include "core/dom/SlotAssignment.h"
 #include "core/dom/StyleEngine.h"
 #include "core/dom/Text.h"
+#include "core/dom/V0InsertionPoint.h"
 #include "core/dom/WhitespaceAttacher.h"
 #include "core/editing/serializers/Serialization.h"
 #include "core/html/HTMLShadowElement.h"
@@ -267,7 +267,7 @@ void ShadowRoot::ChildrenChanged(const ChildrenChange& change) {
         change.sibling_after_change);
   }
 
-  if (InsertionPoint* point = ShadowInsertionPointOfYoungerShadowRoot()) {
+  if (V0InsertionPoint* point = ShadowInsertionPointOfYoungerShadowRoot()) {
     if (ShadowRoot* root = point->ContainingShadowRoot())
       root->Owner()->SetNeedsDistributionRecalc();
   }
@@ -314,12 +314,12 @@ void ShadowRoot::SetShadowInsertionPointOfYoungerShadowRoot(
       shadow_insertion_point);
 }
 
-void ShadowRoot::DidAddInsertionPoint(InsertionPoint* insertion_point) {
+void ShadowRoot::DidAddInsertionPoint(V0InsertionPoint* insertion_point) {
   EnsureShadowRootRareDataV0().DidAddInsertionPoint(insertion_point);
   InvalidateDescendantInsertionPoints();
 }
 
-void ShadowRoot::DidRemoveInsertionPoint(InsertionPoint* insertion_point) {
+void ShadowRoot::DidRemoveInsertionPoint(V0InsertionPoint* insertion_point) {
   shadow_root_rare_data_v0_->DidRemoveInsertionPoint(insertion_point);
   InvalidateDescendantInsertionPoints();
 }
@@ -329,10 +329,10 @@ void ShadowRoot::InvalidateDescendantInsertionPoints() {
   shadow_root_rare_data_v0_->ClearDescendantInsertionPoints();
 }
 
-const HeapVector<Member<InsertionPoint>>&
+const HeapVector<Member<V0InsertionPoint>>&
 ShadowRoot::DescendantInsertionPoints() {
-  DEFINE_STATIC_LOCAL(HeapVector<Member<InsertionPoint>>, empty_list,
-                      (new HeapVector<Member<InsertionPoint>>));
+  DEFINE_STATIC_LOCAL(HeapVector<Member<V0InsertionPoint>>, empty_list,
+                      (new HeapVector<Member<V0InsertionPoint>>));
   if (shadow_root_rare_data_v0_ && descendant_insertion_points_is_valid_)
     return shadow_root_rare_data_v0_->DescendantInsertionPoints();
 
@@ -341,9 +341,9 @@ ShadowRoot::DescendantInsertionPoints() {
   if (!ContainsInsertionPoints())
     return empty_list;
 
-  HeapVector<Member<InsertionPoint>> insertion_points;
-  for (InsertionPoint& insertion_point :
-       Traversal<InsertionPoint>::DescendantsOf(*this))
+  HeapVector<Member<V0InsertionPoint>> insertion_points;
+  for (V0InsertionPoint& insertion_point :
+       Traversal<V0InsertionPoint>::DescendantsOf(*this))
     insertion_points.push_back(&insertion_point);
 
   EnsureShadowRootRareDataV0().SetDescendantInsertionPoints(insertion_points);

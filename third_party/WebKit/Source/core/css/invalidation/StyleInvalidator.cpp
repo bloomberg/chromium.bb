@@ -205,7 +205,7 @@ StyleInvalidator::RecursionData::MatchesCurrentInvalidationSets(
     return true;
   }
 
-  if (insertion_point_crossing_ && element.IsInsertionPoint())
+  if (insertion_point_crossing_ && element.IsV0InsertionPoint())
     return true;
 
   for (const auto& invalidation_set : invalidation_sets_) {
@@ -417,7 +417,7 @@ bool StyleInvalidator::Invalidate(Element& element,
     }
   }
 
-  if (recursion_data.InsertionPointCrossing() && element.IsInsertionPoint())
+  if (recursion_data.InsertionPointCrossing() && element.IsV0InsertionPoint())
     element.SetNeedsStyleRecalc(kSubtreeStyleChange,
                                 StyleChangeReasonForTracing::Create(
                                     StyleChangeReason::kStyleInvalidator));

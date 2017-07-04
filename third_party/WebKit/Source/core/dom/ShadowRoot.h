@@ -41,7 +41,7 @@ class Document;
 class ElementShadow;
 class ExceptionState;
 class HTMLShadowElement;
-class InsertionPoint;
+class V0InsertionPoint;
 class ShadowRootRareDataV0;
 class SlotAssignment;
 class WhitespaceAttacher;
@@ -115,9 +115,9 @@ class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
   unsigned DescendantShadowElementCount() const;
   HTMLShadowElement* ShadowInsertionPointOfYoungerShadowRoot() const;
   void SetShadowInsertionPointOfYoungerShadowRoot(HTMLShadowElement*);
-  void DidAddInsertionPoint(InsertionPoint*);
-  void DidRemoveInsertionPoint(InsertionPoint*);
-  const HeapVector<Member<InsertionPoint>>& DescendantInsertionPoints();
+  void DidAddInsertionPoint(V0InsertionPoint*);
+  void DidRemoveInsertionPoint(V0InsertionPoint*);
+  const HeapVector<Member<V0InsertionPoint>>& DescendantInsertionPoints();
 
   // For Internals, don't use this.
   unsigned ChildShadowRootCount() const { return child_shadow_root_count_; }

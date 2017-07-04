@@ -26,7 +26,7 @@
 
 #include "core/dom/DistributedNodes.h"
 
-#include "core/dom/InsertionPoint.h"
+#include "core/dom/V0InsertionPoint.h"
 
 namespace blink {
 
@@ -37,7 +37,7 @@ void DistributedNodes::Swap(DistributedNodes& other) {
 
 void DistributedNodes::Append(Node* node) {
   DCHECK(node);
-  DCHECK(!node->IsActiveSlotOrActiveInsertionPoint());
+  DCHECK(!node->IsActiveSlotOrActiveV0InsertionPoint());
   size_t size = nodes_.size();
   indices_.Set(node, size);
   nodes_.push_back(node);

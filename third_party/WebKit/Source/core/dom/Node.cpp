@@ -48,7 +48,6 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/FlatTreeTraversal.h"
 #include "core/dom/GetRootNodeOptions.h"
-#include "core/dom/InsertionPoint.h"
 #include "core/dom/LayoutTreeBuilderTraversal.h"
 #include "core/dom/NodeRareData.h"
 #include "core/dom/NodeTraversal.h"
@@ -62,6 +61,7 @@
 #include "core/dom/Text.h"
 #include "core/dom/TreeScopeAdopter.h"
 #include "core/dom/UserActionElementSet.h"
+#include "core/dom/V0InsertionPoint.h"
 #include "core/dom/custom/CustomElement.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/markers/DocumentMarkerController.h"
@@ -800,8 +800,8 @@ static ContainerNode* GetReattachParent(Node& node) {
   }
   if (node.IsInV0ShadowTree() || node.IsChildOfV0ShadowHost()) {
     if (ShadowWhereNodeCanBeDistributedForV0(node)) {
-      if (InsertionPoint* insertion_point =
-              const_cast<InsertionPoint*>(ResolveReprojection(&node))) {
+      if (V0InsertionPoint* insertion_point =
+              const_cast<V0InsertionPoint*>(ResolveReprojection(&node))) {
         return insertion_point;
       }
     }
@@ -1097,13 +1097,13 @@ bool Node::IsStyledElement() const {
 
 bool Node::CanParticipateInFlatTree() const {
   // TODO(hayato): Return false for pseudo elements.
-  return !IsShadowRoot() && !IsActiveSlotOrActiveInsertionPoint();
+  return !IsShadowRoot() && !IsActiveSlotOrActiveV0InsertionPoint();
 }
 
-bool Node::IsActiveSlotOrActiveInsertionPoint() const {
+bool Node::IsActiveSlotOrActiveV0InsertionPoint() const {
   return (isHTMLSlotElement(*this) &&
           toHTMLSlotElement(*this).SupportsDistribution()) ||
-         IsActiveInsertionPoint(*this);
+         IsActiveV0InsertionPoint(*this);
 }
 
 AtomicString Node::SlotName() const {
@@ -2422,7 +2422,7 @@ void Node::DecrementConnectedSubframeCount() {
 
 StaticNodeList* Node::getDestinationInsertionPoints() {
   UpdateDistribution();
-  HeapVector<Member<InsertionPoint>, 8> insertion_points;
+  HeapVector<Member<V0InsertionPoint>, 8> insertion_points;
   CollectDestinationInsertionPoints(*this, insertion_points);
   HeapVector<Member<Node>> filtered_insertion_points;
   for (const auto& insertion_point : insertion_points) {

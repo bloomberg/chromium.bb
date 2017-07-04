@@ -28,10 +28,10 @@
 
 #include "core/EventNames.h"
 #include "core/dom/Document.h"
-#include "core/dom/InsertionPoint.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/dom/Touch.h"
 #include "core/dom/TouchList.h"
+#include "core/dom/V0InsertionPoint.h"
 #include "core/events/TouchEvent.h"
 #include "core/events/TouchEventContext.h"
 #include "core/html/HTMLSlotElement.h"
@@ -103,7 +103,7 @@ void EventPath::CalculatePath() {
   while (current) {
     if (event_ && current->KeepEventInNode(event_))
       break;
-    HeapVector<Member<InsertionPoint>, 8> insertion_points;
+    HeapVector<Member<V0InsertionPoint>, 8> insertion_points;
     CollectDestinationInsertionPoints(*current, insertion_points);
     if (!insertion_points.IsEmpty()) {
       for (const auto& insertion_point : insertion_points) {

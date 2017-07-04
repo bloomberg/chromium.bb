@@ -754,7 +754,7 @@ void RuleFeatureSet::AddFeaturesToInvalidationSetsForSimpleSelector(
 
   if (simple_selector.IsHostPseudoClass())
     descendant_features.tree_boundary_crossing = true;
-  if (simple_selector.IsInsertionPointCrossing())
+  if (simple_selector.IsV0InsertionPointCrossing())
     descendant_features.insertion_point_crossing = true;
 
   AddFeaturesToInvalidationSetsForSelectorList(

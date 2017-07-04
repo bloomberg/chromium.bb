@@ -48,7 +48,7 @@ HTMLContentElement* HTMLContentElement::Create(
 
 inline HTMLContentElement::HTMLContentElement(Document& document,
                                               HTMLContentSelectFilter* filter)
-    : InsertionPoint(contentTag, document),
+    : V0InsertionPoint(contentTag, document),
       should_parse_select_(false),
       is_valid_selector_(true),
       filter_(filter) {
@@ -59,7 +59,7 @@ HTMLContentElement::~HTMLContentElement() {}
 
 DEFINE_TRACE(HTMLContentElement) {
   visitor->Trace(filter_);
-  InsertionPoint::Trace(visitor);
+  V0InsertionPoint::Trace(visitor);
 }
 
 void HTMLContentElement::ParseSelect() {
@@ -83,7 +83,7 @@ void HTMLContentElement::ParseAttribute(
     should_parse_select_ = true;
     select_ = params.new_value;
   } else {
-    InsertionPoint::ParseAttribute(params);
+    V0InsertionPoint::ParseAttribute(params);
   }
 }
 

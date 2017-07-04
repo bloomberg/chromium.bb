@@ -56,7 +56,7 @@ class CORE_EXPORT ElementResolveContext {
     return LayoutParent() ? LayoutParent()->GetComputedStyle() : nullptr;
   }
   EInsideLink ElementLinkState() const { return element_link_state_; }
-  bool DistributedToInsertionPoint() const {
+  bool DistributedToV0InsertionPoint() const {
     return distributed_to_insertion_point_;
   }
 

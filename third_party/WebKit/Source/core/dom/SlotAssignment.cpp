@@ -7,10 +7,10 @@
 #include "core/HTMLNames.h"
 #include "core/dom/ElementShadow.h"
 #include "core/dom/ElementTraversal.h"
-#include "core/dom/InsertionPoint.h"
 #include "core/dom/Node.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/ShadowRoot.h"
+#include "core/dom/V0InsertionPoint.h"
 #include "core/html/HTMLSlotElement.h"
 
 namespace blink {

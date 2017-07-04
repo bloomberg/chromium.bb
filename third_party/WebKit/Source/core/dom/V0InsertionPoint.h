@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef InsertionPoint_h
-#define InsertionPoint_h
+#ifndef V0InsertionPoint_h
+#define V0InsertionPoint_h
 
 #include "core/CoreExport.h"
 #include "core/css/CSSSelectorList.h"
@@ -39,9 +39,9 @@
 
 namespace blink {
 
-class CORE_EXPORT InsertionPoint : public HTMLElement {
+class CORE_EXPORT V0InsertionPoint : public HTMLElement {
  public:
-  ~InsertionPoint() override;
+  ~V0InsertionPoint() override;
 
   bool HasDistribution() const { return !distributed_nodes_.IsEmpty(); }
   void SetDistributedNodes(DistributedNodes&);
@@ -80,7 +80,7 @@ class CORE_EXPORT InsertionPoint : public HTMLElement {
   DECLARE_VIRTUAL_TRACE();
 
  protected:
-  InsertionPoint(const QualifiedName&, Document&);
+  V0InsertionPoint(const QualifiedName&, Document&);
   bool LayoutObjectIsNeeded(const ComputedStyle&) override;
   void ChildrenChanged(const ChildrenChange&) override;
   InsertionNotificationRequest InsertedInto(ContainerNode*) override;
@@ -88,24 +88,24 @@ class CORE_EXPORT InsertionPoint : public HTMLElement {
   void WillRecalcStyle(StyleRecalcChange) override;
 
  private:
-  bool IsInsertionPoint() const =
+  bool IsV0InsertionPoint() const =
       delete;  // This will catch anyone doing an unnecessary check.
 
   DistributedNodes distributed_nodes_;
   bool registered_with_shadow_root_;
 };
 
-typedef HeapVector<Member<InsertionPoint>, 1> DestinationInsertionPoints;
+typedef HeapVector<Member<V0InsertionPoint>, 1> DestinationInsertionPoints;
 
-DEFINE_ELEMENT_TYPE_CASTS(InsertionPoint, IsInsertionPoint());
+DEFINE_ELEMENT_TYPE_CASTS(V0InsertionPoint, IsV0InsertionPoint());
 
-inline bool IsActiveInsertionPoint(const Node& node) {
-  return node.IsInsertionPoint() && ToInsertionPoint(node).IsActive();
+inline bool IsActiveV0InsertionPoint(const Node& node) {
+  return node.IsV0InsertionPoint() && ToV0InsertionPoint(node).IsActive();
 }
 
 inline bool IsActiveShadowInsertionPoint(const Node& node) {
-  return node.IsInsertionPoint() &&
-         ToInsertionPoint(node).IsShadowInsertionPoint();
+  return node.IsV0InsertionPoint() &&
+         ToV0InsertionPoint(node).IsShadowInsertionPoint();
 }
 
 inline ElementShadow* ShadowWhereNodeCanBeDistributedForV0(const Node& node) {
@@ -114,19 +114,19 @@ inline ElementShadow* ShadowWhereNodeCanBeDistributedForV0(const Node& node) {
     return nullptr;
   if (parent->IsShadowRoot() && !ToShadowRoot(parent)->IsYoungest())
     return node.OwnerShadowHost()->Shadow();
-  if (IsActiveInsertionPoint(*parent))
+  if (IsActiveV0InsertionPoint(*parent))
     return node.OwnerShadowHost()->Shadow();
   if (parent->IsElementNode())
     return ToElement(parent)->Shadow();
   return nullptr;
 }
 
-const InsertionPoint* ResolveReprojection(const Node*);
+const V0InsertionPoint* ResolveReprojection(const Node*);
 
 void CollectDestinationInsertionPoints(
     const Node&,
-    HeapVector<Member<InsertionPoint>, 8>& results);
+    HeapVector<Member<V0InsertionPoint>, 8>& results);
 
 }  // namespace blink
 
-#endif  // InsertionPoint_h
+#endif  // V0InsertionPoint_h

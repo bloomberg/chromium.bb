@@ -44,7 +44,7 @@ static bool IsLayoutObjectReparented(const LayoutObject* layout_object) {
 }
 
 void LayoutTreeBuilderTraversal::ParentDetails::DidTraverseInsertionPoint(
-    const InsertionPoint* insertion_point) {
+    const V0InsertionPoint* insertion_point) {
   if (!insertion_point_) {
     insertion_point_ = insertion_point;
   }

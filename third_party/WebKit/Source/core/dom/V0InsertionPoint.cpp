@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/InsertionPoint.h"
+#include "core/dom/V0InsertionPoint.h"
 
 #include "core/HTMLNames.h"
 #include "core/dom/ElementShadow.h"
@@ -43,16 +43,17 @@ namespace blink {
 
 using namespace HTMLNames;
 
-InsertionPoint::InsertionPoint(const QualifiedName& tag_name,
-                               Document& document)
-    : HTMLElement(tag_name, document, kCreateInsertionPoint),
+V0InsertionPoint::V0InsertionPoint(const QualifiedName& tag_name,
+                                   Document& document)
+    : HTMLElement(tag_name, document, kCreateV0InsertionPoint),
       registered_with_shadow_root_(false) {
   SetHasCustomStyleCallbacks();
 }
 
-InsertionPoint::~InsertionPoint() {}
+V0InsertionPoint::~V0InsertionPoint() {}
 
-void InsertionPoint::SetDistributedNodes(DistributedNodes& distributed_nodes) {
+void V0InsertionPoint::SetDistributedNodes(
+    DistributedNodes& distributed_nodes) {
   // Attempt not to reattach nodes that would be distributed to the exact same
   // location by comparing the old and new distributions.
 
@@ -102,7 +103,7 @@ void InsertionPoint::SetDistributedNodes(DistributedNodes& distributed_nodes) {
   distributed_nodes_.ShrinkToFit();
 }
 
-void InsertionPoint::AttachLayoutTree(AttachContext& context) {
+void V0InsertionPoint::AttachLayoutTree(AttachContext& context) {
   // We need to attach the distribution here so that they're inserted in the
   // right order otherwise the n^2 protection inside LayoutTreeBuilder will
   // cause them to be inserted in the wrong place later. This also lets
@@ -121,14 +122,14 @@ void InsertionPoint::AttachLayoutTree(AttachContext& context) {
   HTMLElement::AttachLayoutTree(context);
 }
 
-void InsertionPoint::DetachLayoutTree(const AttachContext& context) {
+void V0InsertionPoint::DetachLayoutTree(const AttachContext& context) {
   for (size_t i = 0; i < distributed_nodes_.size(); ++i)
     distributed_nodes_.at(i)->LazyReattachIfAttached();
 
   HTMLElement::DetachLayoutTree(context);
 }
 
-void InsertionPoint::RebuildDistributedChildrenLayoutTrees(
+void V0InsertionPoint::RebuildDistributedChildrenLayoutTrees(
     WhitespaceAttacher& whitespace_attacher) {
   // This loop traverses the nodes from right to left for the same reason as the
   // one described in ContainerNode::RebuildChildrenLayoutTrees().
@@ -138,7 +139,7 @@ void InsertionPoint::RebuildDistributedChildrenLayoutTrees(
   }
 }
 
-void InsertionPoint::WillRecalcStyle(StyleRecalcChange change) {
+void V0InsertionPoint::WillRecalcStyle(StyleRecalcChange change) {
   StyleChangeType style_change_type = kNoStyleChange;
 
   if (change > kInherit || GetStyleChangeType() > kLocalStyleChange)
@@ -156,16 +157,16 @@ void InsertionPoint::WillRecalcStyle(StyleRecalcChange change) {
   }
 }
 
-bool InsertionPoint::CanBeActive() const {
+bool V0InsertionPoint::CanBeActive() const {
   ShadowRoot* shadow_root = ContainingShadowRoot();
   if (!shadow_root)
     return false;
   if (shadow_root->IsV1())
     return false;
-  return !Traversal<InsertionPoint>::FirstAncestor(*this);
+  return !Traversal<V0InsertionPoint>::FirstAncestor(*this);
 }
 
-bool InsertionPoint::IsActive() const {
+bool V0InsertionPoint::IsActive() const {
   if (!CanBeActive())
     return false;
   ShadowRoot* shadow_root = ContainingShadowRoot();
@@ -183,15 +184,15 @@ bool InsertionPoint::IsActive() const {
   return true;
 }
 
-bool InsertionPoint::IsShadowInsertionPoint() const {
+bool V0InsertionPoint::IsShadowInsertionPoint() const {
   return isHTMLShadowElement(*this) && IsActive();
 }
 
-bool InsertionPoint::IsContentInsertionPoint() const {
+bool V0InsertionPoint::IsContentInsertionPoint() const {
   return isHTMLContentElement(*this) && IsActive();
 }
 
-StaticNodeList* InsertionPoint::getDistributedNodes() {
+StaticNodeList* V0InsertionPoint::getDistributedNodes() {
   UpdateDistribution();
 
   HeapVector<Member<Node>> nodes;
@@ -202,11 +203,11 @@ StaticNodeList* InsertionPoint::getDistributedNodes() {
   return StaticNodeList::Adopt(nodes);
 }
 
-bool InsertionPoint::LayoutObjectIsNeeded(const ComputedStyle& style) {
+bool V0InsertionPoint::LayoutObjectIsNeeded(const ComputedStyle& style) {
   return !IsActive() && HTMLElement::LayoutObjectIsNeeded(style);
 }
 
-void InsertionPoint::ChildrenChanged(const ChildrenChange& change) {
+void V0InsertionPoint::ChildrenChanged(const ChildrenChange& change) {
   HTMLElement::ChildrenChanged(change);
   if (ShadowRoot* root = ContainingShadowRoot()) {
     if (ElementShadow* root_owner = root->Owner())
@@ -214,7 +215,7 @@ void InsertionPoint::ChildrenChanged(const ChildrenChange& change) {
   }
 }
 
-Node::InsertionNotificationRequest InsertionPoint::InsertedInto(
+Node::InsertionNotificationRequest V0InsertionPoint::InsertedInto(
     ContainerNode* insertion_point) {
   HTMLElement::InsertedInto(insertion_point);
   if (ShadowRoot* root = ContainingShadowRoot()) {
@@ -239,7 +240,7 @@ Node::InsertionNotificationRequest InsertionPoint::InsertedInto(
   return kInsertionDone;
 }
 
-void InsertionPoint::RemovedFrom(ContainerNode* insertion_point) {
+void V0InsertionPoint::RemovedFrom(ContainerNode* insertion_point) {
   ShadowRoot* root = ContainingShadowRoot();
   if (!root)
     root = insertion_point->ContainingShadowRoot();
@@ -271,14 +272,14 @@ void InsertionPoint::RemovedFrom(ContainerNode* insertion_point) {
   HTMLElement::RemovedFrom(insertion_point);
 }
 
-DEFINE_TRACE(InsertionPoint) {
+DEFINE_TRACE(V0InsertionPoint) {
   visitor->Trace(distributed_nodes_);
   HTMLElement::Trace(visitor);
 }
 
-const InsertionPoint* ResolveReprojection(const Node* projected_node) {
+const V0InsertionPoint* ResolveReprojection(const Node* projected_node) {
   DCHECK(projected_node);
-  const InsertionPoint* insertion_point = 0;
+  const V0InsertionPoint* insertion_point = 0;
   const Node* current = projected_node;
   ElementShadow* last_element_shadow = 0;
   while (true) {
@@ -286,7 +287,7 @@ const InsertionPoint* ResolveReprojection(const Node* projected_node) {
     if (!shadow || shadow->IsV1() || shadow == last_element_shadow)
       break;
     last_element_shadow = shadow;
-    const InsertionPoint* inserted_to =
+    const V0InsertionPoint* inserted_to =
         shadow->V0().FinalDestinationInsertionPointFor(projected_node);
     if (!inserted_to)
       break;
@@ -299,7 +300,7 @@ const InsertionPoint* ResolveReprojection(const Node* projected_node) {
 
 void CollectDestinationInsertionPoints(
     const Node& node,
-    HeapVector<Member<InsertionPoint>, 8>& results) {
+    HeapVector<Member<V0InsertionPoint>, 8>& results) {
   const Node* current = &node;
   ElementShadow* last_element_shadow = 0;
   while (true) {

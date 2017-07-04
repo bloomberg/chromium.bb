@@ -37,7 +37,7 @@ static inline ElementShadow* ShadowFor(const Node& node) {
   return node.IsElementNode() ? ToElement(node).Shadow() : nullptr;
 }
 
-static inline bool CanBeDistributedToInsertionPoint(const Node& node) {
+static inline bool CanBeDistributedToV0InsertionPoint(const Node& node) {
   return node.IsInV0ShadowTree() || node.IsChildOfV0ShadowHost();
 }
 
@@ -92,9 +92,9 @@ Node* FlatTreeTraversal::V0ResolveDistributionStartingAt(
        sibling = (direction == kTraversalDirectionForward
                       ? sibling->nextSibling()
                       : sibling->previousSibling())) {
-    if (!IsActiveInsertionPoint(*sibling))
+    if (!IsActiveV0InsertionPoint(*sibling))
       return const_cast<Node*>(sibling);
-    const InsertionPoint& insertion_point = ToInsertionPoint(*sibling);
+    const V0InsertionPoint& insertion_point = ToV0InsertionPoint(*sibling);
     if (Node* found = (direction == kTraversalDirectionForward
                            ? insertion_point.FirstDistributedNode()
                            : insertion_point.LastDistributedNode()))
@@ -165,7 +165,7 @@ Node* FlatTreeTraversal::TraverseSiblingsForV1HostChild(
 Node* FlatTreeTraversal::TraverseSiblingsForV0Distribution(
     const Node& node,
     TraversalDirection direction) {
-  const InsertionPoint* final_destination = ResolveReprojection(&node);
+  const V0InsertionPoint* final_destination = ResolveReprojection(&node);
   if (!final_destination)
     return nullptr;
   if (Node* found = (direction == kTraversalDirectionForward
@@ -200,7 +200,7 @@ ContainerNode* FlatTreeTraversal::TraverseParent(
     }
   }
 
-  if (CanBeDistributedToInsertionPoint(node))
+  if (CanBeDistributedToV0InsertionPoint(node))
     return TraverseParentForV0(node, details);
 
   DCHECK(!ShadowWhereNodeCanBeDistributedForV0(node));
@@ -211,7 +211,7 @@ ContainerNode* FlatTreeTraversal::TraverseParentForV0(
     const Node& node,
     ParentTraversalDetails* details) {
   if (ShadowWhereNodeCanBeDistributedForV0(node)) {
-    if (const InsertionPoint* insertion_point = ResolveReprojection(&node)) {
+    if (const V0InsertionPoint* insertion_point = ResolveReprojection(&node)) {
       if (details)
         details->DidTraverseInsertionPoint(insertion_point);
       // The node is distributed. But the distribution was stopped at this
@@ -223,7 +223,7 @@ ContainerNode* FlatTreeTraversal::TraverseParentForV0(
     return nullptr;
   }
   ContainerNode* parent = TraverseParentOrHost(node);
-  if (IsActiveInsertionPoint(*parent))
+  if (IsActiveV0InsertionPoint(*parent))
     return nullptr;
   return parent;
 }

@@ -22,10 +22,10 @@
 
 #include "core/css/resolver/ElementResolveContext.h"
 
-#include "core/dom/InsertionPoint.h"
 #include "core/dom/LayoutTreeBuilderTraversal.h"
 #include "core/dom/Node.h"
 #include "core/dom/NodeComputedStyle.h"
+#include "core/dom/V0InsertionPoint.h"
 #include "core/dom/VisitedLinkState.h"
 
 namespace blink {
@@ -47,7 +47,7 @@ ElementResolveContext::ElementResolveContext(Element& element)
               element)),
       distributed_to_insertion_point_(false) {
   LayoutTreeBuilderTraversal::ParentDetails parent_details;
-  if (element.IsActiveSlotOrActiveInsertionPoint()) {
+  if (element.IsActiveSlotOrActiveV0InsertionPoint()) {
     parent_node_ = nullptr;
     layout_parent_ = nullptr;
   } else {
