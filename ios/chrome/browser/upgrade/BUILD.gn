@@ -10,13 +10,13 @@ source_set("upgrade") {
     "upgrade_recommended_details.h",
   ]
   deps = [
+    "resources:infobar_update",
     "//base",
     "//components/infobars/core",
     "//components/version_info",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/ui/commands",
-    "//ios/chrome/browser/ui/infobars:resources",
     "//ios/web",
     "//net",
     "//ui/base",
