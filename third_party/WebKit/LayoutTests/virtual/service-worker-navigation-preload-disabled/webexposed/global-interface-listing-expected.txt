@@ -6421,6 +6421,12 @@ interface ScriptProcessorNode : AudioNode
     getter onaudioprocess
     method constructor
     setter onaudioprocess
+interface ScrollTimeline : AnimationTimeline
+    attribute @@toStringTag
+    getter orientation
+    getter scrollSource
+    getter timeRange
+    method constructor
 interface SecurityPolicyViolationEvent : Event
     attribute @@toStringTag
     getter blockedURI
