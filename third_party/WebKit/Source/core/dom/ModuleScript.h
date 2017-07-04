@@ -146,9 +146,13 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
   //   DOMWindow -> Modulator/ModulatorImpl -> ModuleTreeLinkerRegistry
   //   -> ModuleTreeLinker -> ModuleScript
   // * inline module script case, after the PendingScript is created.
-  //   HTMLScriptElement -> ScriptLoader -> PendingScript -> ModulePendingScript
+  //   HTMLScriptElement -> ScriptLoader -> ModulePendingScript
   //   -> ModulePendingScriptTreeClient -> ModuleScript.
-  //
+  // * inline module script case, queued in HTMLParserScriptRunner,
+  //   when HTMLScriptElement is removed before execution.
+  //   Document -> HTMLDocumentParser -> HTMLParserScriptRunner
+  //   -> ModulePendingScript -> ModulePendingScriptTreeClient
+  //   -> ModuleScript.
   // All the classes/references on the graphs above should be
   // TraceWrapperBase/TraceWrapperMember<>/etc.,
   TraceWrapperV8Reference<v8::Value> preinstantiation_error_;

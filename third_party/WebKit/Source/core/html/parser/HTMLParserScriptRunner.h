@@ -29,6 +29,8 @@
 #include "bindings/core/v8/ScriptStreamer.h"
 #include "core/dom/PendingScript.h"
 #include "core/html/parser/HTMLParserReentryPermit.h"
+#include "platform/bindings/ScriptWrappable.h"
+#include "platform/bindings/TraceWrapperMember.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/ResourceClient.h"
 #include "platform/wtf/Deque.h"
@@ -52,7 +54,8 @@ class HTMLParserScriptRunnerHost;
 // An HTMLParserScriptRunner is owned by its host, an HTMLDocumentParser.
 class HTMLParserScriptRunner final
     : public GarbageCollectedFinalized<HTMLParserScriptRunner>,
-      public PendingScriptClient {
+      public PendingScriptClient,
+      public TraceWrapperBase {
   WTF_MAKE_NONCOPYABLE(HTMLParserScriptRunner);
   USING_GARBAGE_COLLECTED_MIXIN(HTMLParserScriptRunner);
 
@@ -94,6 +97,7 @@ class HTMLParserScriptRunner final
   }
 
   DECLARE_TRACE();
+  DECLARE_TRACE_WRAPPERS();
 
  private:
   HTMLParserScriptRunner(HTMLParserReentryPermit*,
@@ -129,10 +133,11 @@ class HTMLParserScriptRunner final
   Member<HTMLParserScriptRunnerHost> host_;
 
   // https://html.spec.whatwg.org/#pending-parsing-blocking-script
-  Member<PendingScript> parser_blocking_script_;
+  TraceWrapperMember<PendingScript> parser_blocking_script_;
 
   // https://html.spec.whatwg.org/#list-of-scripts-that-will-execute-when-the-document-has-finished-parsing
-  HeapDeque<Member<PendingScript>> scripts_to_execute_after_parsing_;
+  HeapDeque<TraceWrapperMember<PendingScript>>
+      scripts_to_execute_after_parsing_;
 };
 
 }  // namespace blink

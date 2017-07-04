@@ -1463,7 +1463,7 @@ class CORE_EXPORT Document : public ContainerNode,
   TraceWrapperMember<HTMLImportsController> imports_controller_;
 
   Member<ResourceFetcher> fetcher_;
-  Member<DocumentParser> parser_;
+  TraceWrapperMember<DocumentParser> parser_;
   Member<ContextFeatures> context_features_;
 
   bool well_formed_;
