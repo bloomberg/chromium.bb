@@ -73,10 +73,6 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-set-pre-instantiation-error
   void SetErrorAndClearRecord(ScriptValue error);
 
-  // Implements Step 7.2 of:
-  // https://html.spec.whatwg.org/multipage/webappapis.html#internal-module-script-graph-fetching-procedure
-  void SetInstantiationSuccess();
-
   v8::Local<v8::Value> CreateError(v8::Isolate* isolate) const {
     return preinstantiation_error_.NewLocal(isolate);
   }

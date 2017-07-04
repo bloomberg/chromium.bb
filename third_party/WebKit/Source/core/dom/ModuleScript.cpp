@@ -241,15 +241,6 @@ void ModuleScript::SetErrorAndClearRecord(ScriptValue error) {
   }
 }
 
-void ModuleScript::SetInstantiationSuccess() {
-  // Implements Step 7.2 of:
-  // https://html.spec.whatwg.org/multipage/webappapis.html#internal-module-script-graph-fetching-procedure
-
-  // "set script's instantiation state to "instantiated"."
-  DCHECK_EQ(state_, ModuleInstantiationState::kUninstantiated);
-  state_ = ModuleInstantiationState::kInstantiated;
-}
-
 DEFINE_TRACE(ModuleScript) {
   visitor->Trace(settings_object_);
   Script::Trace(visitor);
