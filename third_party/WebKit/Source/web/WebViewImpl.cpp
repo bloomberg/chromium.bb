@@ -599,6 +599,7 @@ bool WebViewImpl::ScrollBy(const WebFloatSize& delta,
     synthetic_wheel.wheel_ticks_x = delta.width / kTickDivisor;
     synthetic_wheel.wheel_ticks_y = delta.height / kTickDivisor;
     synthetic_wheel.has_precise_scrolling_deltas = true;
+    synthetic_wheel.phase = WebMouseWheelEvent::kPhaseChanged;
     synthetic_wheel.SetPositionInWidget(position_on_fling_start_.x,
                                         position_on_fling_start_.y);
     synthetic_wheel.SetPositionInScreen(global_position_on_fling_start_.x,

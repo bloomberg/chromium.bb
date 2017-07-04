@@ -4,7 +4,7 @@ var actualWheelEventsOccurred = 0;
 var cumulativeScrollX = 0;
 var cumulativeScrollY = 0;
 
-var minimumWheelEventsExpected = "1";
+var minimumWheelEventsExpected = "2";
 var minimumScrollXExpected = 300;
 var minimumScrollYExpected = 300;
 
@@ -41,6 +41,9 @@ function recordWheelEvent(event)
 document.addEventListener("mousewheel", recordWheelEvent);
 
 if (window.testRunner && window.eventSender && window.eventSender.gestureFlingStart) {
+    // At least one wheel event must happen before touchpad fling start.
+    eventSender.mouseMoveTo(10, 11);
+    eventSender.mouseScrollBy(1, 1, false, true, 0, true, "phaseBegan");
     eventSender.gestureFlingStart(positionX, positionY, velocityX, velocityY, "touchpad");
 }
 
