@@ -1000,8 +1000,6 @@ split_static_library("browser") {
     "predictors/resource_prefetch_predictor_tables.h",
     "predictors/resource_prefetcher.cc",
     "predictors/resource_prefetcher.h",
-    "predictors/resource_prefetcher_manager.cc",
-    "predictors/resource_prefetcher_manager.h",
     "prefs/browser_prefs.cc",
     "prefs/browser_prefs.h",
     "prefs/chrome_command_line_pref_store.cc",

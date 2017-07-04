@@ -15,15 +15,13 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
-
-namespace net {
-class URLRequestContext;
-}
 
 namespace predictors {
 
@@ -41,7 +39,8 @@ constexpr char kResourcePrefetchPredictorPrefetchedSizeHistogram[] =
 //  - Limits the max number of resources in flight for any host and also across
 //    hosts.
 //  - When stopped, will wait for the pending requests to finish.
-//  - Lives entirely on the IO thread.
+//  - Created on the UI thread, member functions called and instances destroyed
+//    on the IO thread.
 class ResourcePrefetcher : public net::URLRequest::Delegate {
  public:
   struct PrefetchedRequestStats {
@@ -65,23 +64,20 @@ class ResourcePrefetcher : public net::URLRequest::Delegate {
     std::vector<PrefetchedRequestStats> requests_stats;
   };
 
-  // Used to communicate when the prefetching is done. All methods are invoked
-  // on the IO thread.
+  // Used to communicate when the prefetching is done. Lives on the UI thread.
   class Delegate {
    public:
-    virtual ~Delegate() { }
+    virtual ~Delegate() {}
 
     // Called when the ResourcePrefetcher is finished, i.e. there is nothing
     // pending in flight.
     virtual void ResourcePrefetcherFinished(
         ResourcePrefetcher* prefetcher,
         std::unique_ptr<PrefetcherStats> stats) = 0;
-
-    virtual net::URLRequestContext* GetURLRequestContext() = 0;
   };
 
-  // |delegate| has to outlive the ResourcePrefetcher.
-  ResourcePrefetcher(Delegate* delegate,
+  ResourcePrefetcher(base::WeakPtr<Delegate> delegate,
+                     scoped_refptr<net::URLRequestContextGetter> context_getter,
                      size_t max_concurrent_requests,
                      size_t max_concurrent_requests_per_host,
                      const GURL& main_frame_url,
@@ -139,9 +135,9 @@ class ResourcePrefetcher : public net::URLRequest::Delegate {
     FINISHED = 3      // No more inflight request, new requests not possible.
   };
 
-  base::ThreadChecker thread_checker_;
   PrefetcherState state_;
-  Delegate* const delegate_;
+  base::WeakPtr<Delegate> delegate_;
+  scoped_refptr<net::URLRequestContextGetter> context_getter_;
   size_t max_concurrent_requests_;
   size_t max_concurrent_requests_per_host_;
   GURL main_frame_url_;
