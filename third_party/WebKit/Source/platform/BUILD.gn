@@ -617,6 +617,7 @@ component("platform") {
     "exported/WebScrollbarThemeGeometryNative.h",
     "exported/WebScrollbarThemePainter.cpp",
     "exported/WebSecurityOrigin.cpp",
+    "exported/WebServiceWorkerInstalledScriptsManager.cpp",
     "exported/WebServiceWorkerRequest.cpp",
     "exported/WebServiceWorkerResponse.cpp",
     "exported/WebServiceWorkerStreamHandle.cpp",

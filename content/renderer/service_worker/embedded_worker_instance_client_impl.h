@@ -50,7 +50,7 @@ class EmbeddedWorkerInstanceClientImpl
   // references automatically.
   class WorkerWrapper {
    public:
-    WorkerWrapper(blink::WebEmbeddedWorker* worker,
+    WorkerWrapper(std::unique_ptr<blink::WebEmbeddedWorker> worker,
                   int devtools_agent_route_id);
     ~WorkerWrapper();
 

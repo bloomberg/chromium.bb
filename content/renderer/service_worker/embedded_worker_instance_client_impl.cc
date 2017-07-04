@@ -13,17 +13,20 @@
 #include "content/public/common/content_client.h"
 #include "content/renderer/service_worker/embedded_worker_devtools_agent.h"
 #include "content/renderer/service_worker/service_worker_context_client.h"
+#include "content/renderer/service_worker/web_service_worker_installed_scripts_manager_impl.h"
+#include "third_party/WebKit/public/platform/WebContentSettingsClient.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerInstalledScriptsManager.h"
 #include "third_party/WebKit/public/web/WebEmbeddedWorker.h"
 #include "third_party/WebKit/public/web/WebEmbeddedWorkerStartData.h"
 
 namespace content {
 
 EmbeddedWorkerInstanceClientImpl::WorkerWrapper::WorkerWrapper(
-    blink::WebEmbeddedWorker* worker,
+    std::unique_ptr<blink::WebEmbeddedWorker> worker,
     int devtools_agent_route_id)
-    : worker_(worker),
+    : worker_(std::move(worker)),
       devtools_agent_(base::MakeUnique<EmbeddedWorkerDevToolsAgent>(
-          worker,
+          worker_.get(),
           devtools_agent_route_id)) {}
 
 EmbeddedWorkerInstanceClientImpl::WorkerWrapper::~WorkerWrapper() = default;
@@ -107,8 +110,12 @@ std::unique_ptr<EmbeddedWorkerInstanceClientImpl::WorkerWrapper>
 EmbeddedWorkerInstanceClientImpl::StartWorkerContext(
     const EmbeddedWorkerStartParams& params,
     std::unique_ptr<ServiceWorkerContextClient> context_client) {
+  std::unique_ptr<blink::WebServiceWorkerInstalledScriptsManager> manager =
+      WebServiceWorkerInstalledScriptsManagerImpl::Create();
+
   auto wrapper = base::MakeUnique<WorkerWrapper>(
-      blink::WebEmbeddedWorker::Create(context_client.release(), nullptr),
+      blink::WebEmbeddedWorker::Create(std::move(context_client),
+                                       std::move(manager), nullptr),
       params.worker_devtools_agent_route_id);
 
   blink::WebEmbeddedWorkerStartData start_data;

@@ -436,6 +436,7 @@ source_set("blink_headers") {
     "platform/modules/serviceworker/WebServiceWorkerClientsInfo.h",
     "platform/modules/serviceworker/WebServiceWorkerError.h",
     "platform/modules/serviceworker/WebServiceWorkerEventResult.h",
+    "platform/modules/serviceworker/WebServiceWorkerInstalledScriptsManager.h",
     "platform/modules/serviceworker/WebServiceWorkerNetworkProvider.h",
     "platform/modules/serviceworker/WebServiceWorkerProvider.h",
     "platform/modules/serviceworker/WebServiceWorkerProviderClient.h",
