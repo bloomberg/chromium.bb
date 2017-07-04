@@ -11,6 +11,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/open_from_clipboard/clipboard_recent_content_impl_ios.h"
 #include "ios/chrome/common/app_group/app_group_constants.h"
+#import "ios/chrome/search_widget_extension/copied_url_view.h"
 #import "ios/chrome/search_widget_extension/search_widget_view.h"
 #import "ios/chrome/search_widget_extension/ui_util.h"
 
@@ -71,6 +72,12 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
 
   UIVibrancyEffect* primary;
   UIVibrancyEffect* secondary;
+  CGFloat height =
+      self.extensionContext
+          ? [self.extensionContext
+                widgetMaximumSizeForDisplayMode:NCWidgetDisplayModeCompact]
+                .height
+          : 110;
   if (base::ios::IsRunningOnIOS10OrLater()) {
     primary = [UIVibrancyEffect widgetPrimaryVibrancyEffect];
     secondary = [UIVibrancyEffect widgetSecondaryVibrancyEffect];
@@ -81,10 +88,14 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
 
   // A local variable is necessary here as the property is declared weak and the
   // object would be deallocated before being retained by the addSubview call.
-  SearchWidgetView* widgetView =
-      [[SearchWidgetView alloc] initWithActionTarget:self
-                               primaryVibrancyEffect:primary
-                             secondaryVibrancyEffect:secondary];
+  SearchWidgetView* widgetView = [[SearchWidgetView alloc]
+         initWithActionTarget:self
+        primaryVibrancyEffect:primary
+      secondaryVibrancyEffect:secondary
+                compactHeight:height
+             initiallyCompact:([self.extensionContext
+                                       widgetActiveDisplayMode] ==
+                               NCWidgetDisplayModeCompact)];
   self.widgetView = widgetView;
   [self.view addSubview:self.widgetView];
 
@@ -121,29 +132,35 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
   return NO;
 }
 
+- (void)viewWillTransitionToSize:(CGSize)size
+       withTransitionCoordinator:
+           (id<UIViewControllerTransitionCoordinator>)coordinator {
+  [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+
+  BOOL isCompact = [self.extensionContext widgetActiveDisplayMode] ==
+                   NCWidgetDisplayModeCompact;
+
+  [coordinator
+      animateAlongsideTransition:^(
+          id<UIViewControllerTransitionCoordinatorContext> _Nonnull context) {
+        [self.widgetView showMode:isCompact];
+      }
+                      completion:nil];
+}
+
 #pragma mark - NCWidgetProviding
 
 - (void)widgetActiveDisplayModeDidChange:(NCWidgetDisplayMode)activeDisplayMode
                          withMaximumSize:(CGSize)maxSize {
-  BOOL isVariableHeight = (activeDisplayMode == NCWidgetDisplayModeExpanded);
-
-  // If the widget's height is not variable, the preferredContentSize is the
-  // maxSize. Widgets cannot be shrunk, and this ensures the view will lay
-  // itself out according to the actual screen size. (This is only likely to
-  // happen if the accessibility option for larger font is used.) If the widget
-  // is not a fixed size, if the fitting size for the widget's contents is
-  // larger than the maximum size for the current widget display mode, this
-  // maximum size is used for the widget. Otherwise, the preferredContentSize is
-  // set to the fitting size so that the widget gets the correct height.
-  if (isVariableHeight) {
-    CGSize fittingSize = [self.widgetView
-        systemLayoutSizeFittingSize:UILayoutFittingCompressedSize];
-    if (fittingSize.height < maxSize.height) {
-      self.preferredContentSize = fittingSize;
-      return;
-    }
+  switch (activeDisplayMode) {
+    case NCWidgetDisplayModeCompact:
+      self.preferredContentSize = maxSize;
+      break;
+    case NCWidgetDisplayModeExpanded:
+      self.preferredContentSize =
+          CGSizeMake(maxSize.width, [self.widgetView widgetHeight]);
+      break;
   }
-  self.preferredContentSize = maxSize;
 }
 
 // Implementing this method removes the leading edge inset for iOS version < 10.

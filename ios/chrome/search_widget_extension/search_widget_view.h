@@ -30,13 +30,22 @@
 
 // Designated initializer, creates the widget view with a |target| for user
 // actions. The |primaryVibrancyEffect| and |secondaryVibrancyEffect| are used
-// to display view elements.
+// to display view elements. |compactHeight| indicates the size to use in
+// compact display. |initiallyCompact| indicates which mode to display on
+// initialization.
 - (instancetype)initWithActionTarget:(id<SearchWidgetViewActionTarget>)target
                primaryVibrancyEffect:(UIVibrancyEffect*)primaryVibrancyEffect
              secondaryVibrancyEffect:(UIVibrancyEffect*)secondaryVibrancyEffect
-    NS_DESIGNATED_INITIALIZER;
+                       compactHeight:(CGFloat)compactHeight
+                    initiallyCompact:(BOOL)compact NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
+
+// Changes the display mode of the view to compact of expanded.
+- (void)showMode:(BOOL)compact;
+
+// Gets the height of the widget.
+- (CGFloat)widgetHeight;
 
 // Sets the copied URL string to be displayed. nil is a valid value to indicate
 // there is no copied URL to display.
