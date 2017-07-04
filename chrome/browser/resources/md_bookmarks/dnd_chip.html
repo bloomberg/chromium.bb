@@ -1,0 +1,70 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/html/icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://bookmarks/shared_style.html">
+
+<dom-module id="bookmarks-dnd-chip">
+  <template>
+    <style include="shared-style">
+      :host {
+        align-items: center;
+        background-color: var(--interactive-color);
+        border-radius: 20px;
+        box-shadow: 0 0 8px 0 rgba(0,0,0,0.12), 0 8px 8px 0 rgba(0,0,0,0.24);
+        display: none;
+        height: 40px;
+        left: 0;
+        padding: 0 20px;
+        pointer-events: none;
+        position: absolute;
+        top: 0;
+        transform: translate(
+            calc(var(--mouse-x) - 50%), calc(var(--mouse-y) - 80%));
+        width: 132px;
+      }
+
+      :host([showing_]) {
+        display: flex;
+      }
+
+      #title {
+        -webkit-margin-start: 20px;
+        color: white;
+        flex: 1;
+        font-weight: 500;
+        overflow: hidden;
+        text-decoration: none;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      #icon-wrapper {
+        align-items: center;
+        background: white;
+        border-radius: 12px;
+        color: var(--secondary-text-color);
+        display: flex;
+        height: 24px;
+        justify-content: center;
+        position: relative;
+        width: 24px;
+      }
+
+      #icon {
+        background-repeat: no-repeat;
+        height: 16px;
+        margin: 2px;
+        width: 16px;
+      }
+    </style>
+    <div id="icon-wrapper">
+      <iron-icon id="folder-icon" icon="cr:folder" hidden$="[[!isFolder_]]">
+      </iron-icon>
+      <div id="icon" hidden$="[[isFolder_]]"></div>
+    </div>
+    <div id="title"></div>
+  </template>
+  <script src="chrome://bookmarks/dnd_chip.js"></script>
+<dom-module>
