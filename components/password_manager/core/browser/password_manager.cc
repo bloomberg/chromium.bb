@@ -718,6 +718,21 @@ void PasswordManager::OnLoginSuccessful() {
     DCHECK(provisional_save_manager_->submitted_form());
     if (!client_->GetStoreResultFilter()->ShouldSave(
             *provisional_save_manager_->submitted_form())) {
+#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS)) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+      // When |username_value| is empty, it's not clear whether the submitted
+      // credentials are really sync credentials. Don't save sync password hash
+      // in that case.
+      if (!provisional_save_manager_->submitted_form()
+               ->username_value.empty()) {
+        password_manager::PasswordStore* store = client_->GetPasswordStore();
+        // May be null in tests.
+        if (store) {
+          store->SaveSyncPasswordHash(
+              provisional_save_manager_->submitted_form()->password_value);
+        }
+      }
+#endif
       provisional_save_manager_->WipeStoreCopyIfOutdated();
       client_->GetMetricsRecorder().RecordProvisionalSaveFailure(
           PasswordManagerMetricsRecorder::SYNC_CREDENTIAL, main_frame_url_,
