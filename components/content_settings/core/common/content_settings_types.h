@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,6 +66,10 @@ enum ContentSettingsType {
   // This content setting type is for caching password protection service's
   // verdicts of each origin.
   CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION,
+
+  // Website setting which stores engagement data for media related to a
+  // specific origin.
+  CONTENT_SETTINGS_TYPE_MEDIA_ENGAGEMENT,
 
   // WARNING: This enum is going to be removed soon. Do not depend on NUM_TYPES.
   CONTENT_SETTINGS_NUM_TYPES_DO_NOT_USE,
