@@ -43,7 +43,6 @@ CONTENT_EXPORT extern const base::Feature kHeapCompaction;
 CONTENT_EXPORT extern const base::Feature kIdleTimeSpellChecking;
 CONTENT_EXPORT extern const base::Feature kLazyParseCSS;
 CONTENT_EXPORT extern const base::Feature kLoadingWithMojo;
-CONTENT_EXPORT extern const base::Feature kLocationHardReload;
 CONTENT_EXPORT extern const base::Feature kMediaDocumentDownloadButton;
 CONTENT_EXPORT extern const base::Feature kMediaStreamOldAudioConstraints;
 CONTENT_EXPORT extern const base::Feature kMediaStreamOldVideoConstraints;

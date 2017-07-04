@@ -3055,10 +3055,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUseSuggestionsEvenIfFewFeatureDescription, kOsAll,
      FEATURE_VALUE_TYPE(suggestions::kUseSuggestionsEvenIfFewFeature)},
 
-    {"enable-location-hard-reload", flag_descriptions::kLocationHardReloadName,
-     flag_descriptions::kLocationHardReloadDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kLocationHardReload)},
-
     {"capture-thumbnail-on-load-finished",
      flag_descriptions::kCaptureThumbnailOnLoadFinishedName,
      flag_descriptions::kCaptureThumbnailOnLoadFinishedDescription, kOsDesktop,
