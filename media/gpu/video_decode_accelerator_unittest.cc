@@ -267,13 +267,7 @@ class VideoDecodeAcceleratorTestEnvironment : public ::testing::Environment {
 
   void SetUp() override {
     base::Thread::Options options;
-#if defined(OS_WIN)
     options.message_loop_type = base::MessageLoop::TYPE_UI;
-#elif defined(USE_OZONE)
-    // Some ozone platforms (e.g. drm) expects to be able to watch a file
-    // handler from this thread. So use the IO type message loop here.
-    options.message_loop_type = base::MessageLoop::TYPE_IO;
-#endif
     rendering_thread_.StartWithOptions(options);
 
     base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
@@ -289,12 +283,15 @@ class VideoDecodeAcceleratorTestEnvironment : public ::testing::Environment {
     //
     // This also needs to be done in the test environment since this shouldn't
     // be initialized multiple times for the same Ozone platform.
-    gpu_helper_->Initialize(base::ThreadTaskRunnerHandle::Get(),
-                            GetRenderingTaskRunner());
-    // Part of the initialization happens on the rendering thread. Make sure it
-    // has completed, otherwise we may start using resources that are not yet
-    // available.
-    rendering_thread_.FlushForTesting();
+    gpu_helper_->Initialize(base::ThreadTaskRunnerHandle::Get());
+    // Flush the message loop for the current thread (UI) as the rendering
+    // thread will make calls to it during initialization.
+    {
+        base::MessageLoop::ScopedNestableTaskAllower nest_loop(
+            base::MessageLoop::current());
+        base::RunLoop flush_ui_loop;
+        flush_ui_loop.RunUntilIdle();
+    }
 #endif
   }
 
