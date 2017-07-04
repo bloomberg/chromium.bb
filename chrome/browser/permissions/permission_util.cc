@@ -141,6 +141,13 @@ bool PermissionUtil::GetPermissionType(ContentSettingsType type,
   return true;
 }
 
+ContentSettingsType PermissionUtil::GetContentSettingsStorageType(
+    ContentSettingsType type) {
+  if (type == CONTENT_SETTINGS_TYPE_PUSH_MESSAGING)
+    return CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
+  return type;
+}
+
 bool PermissionUtil::IsPermission(ContentSettingsType type) {
   switch (type) {
     case CONTENT_SETTINGS_TYPE_GEOLOCATION:
