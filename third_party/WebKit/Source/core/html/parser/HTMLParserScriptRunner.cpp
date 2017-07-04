@@ -159,7 +159,7 @@ HTMLParserScriptRunner::HTMLParserScriptRunner(
     : reentry_permit_(reentry_permit),
       document_(document),
       host_(host),
-      parser_blocking_script_(nullptr) {
+      parser_blocking_script_(this, nullptr) {
   DCHECK(host_);
 }
 
@@ -584,7 +584,8 @@ void HTMLParserScriptRunner::RequestDeferredScript(Element* element) {
   // "Add the element to the end of the list of scripts that will execute
   //  when the document has finished parsing associated with the Document
   //  of the parser that created the element."
-  scripts_to_execute_after_parsing_.push_back(pending_script);
+  scripts_to_execute_after_parsing_.push_back(
+      TraceWrapperMember<PendingScript>(this, pending_script));
 }
 
 PendingScript* HTMLParserScriptRunner::RequestPendingScript(
@@ -697,6 +698,11 @@ DEFINE_TRACE(HTMLParserScriptRunner) {
   visitor->Trace(parser_blocking_script_);
   visitor->Trace(scripts_to_execute_after_parsing_);
   PendingScriptClient::Trace(visitor);
+}
+DEFINE_TRACE_WRAPPERS(HTMLParserScriptRunner) {
+  visitor->TraceWrappers(parser_blocking_script_);
+  for (const auto& member : scripts_to_execute_after_parsing_)
+    visitor->TraceWrappers(member);
 }
 
 }  // namespace blink

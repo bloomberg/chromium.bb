@@ -514,6 +514,7 @@ Document::Document(const DocumentInit& initializer,
       // pointer?
       dom_window_(frame_ ? frame_->DomWindow() : nullptr),
       imports_controller_(this, initializer.ImportsController()),
+      parser_(this, nullptr),
       context_features_(ContextFeatures::DefaultSwitch()),
       well_formed_(false),
       implementation_(this, nullptr),
@@ -6915,6 +6916,7 @@ DEFINE_TRACE_WRAPPERS(Document) {
   // them only alive for live nodes. Otherwise we would keep lists of dead
   // nodes alive that have not yet been invalidated.
   visitor->TraceWrappers(imports_controller_);
+  visitor->TraceWrappers(parser_);
   visitor->TraceWrappers(implementation_);
   visitor->TraceWrappers(style_sheet_list_);
   visitor->TraceWrappers(style_engine_);

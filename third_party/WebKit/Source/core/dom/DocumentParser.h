@@ -26,6 +26,7 @@
 
 #include <memory>
 #include "core/CoreExport.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
 
@@ -38,7 +39,8 @@ class ScriptableDocumentParser;
 class TextResourceDecoder;
 
 class CORE_EXPORT DocumentParser
-    : public GarbageCollectedFinalized<DocumentParser> {
+    : public GarbageCollectedFinalized<DocumentParser>,
+      public TraceWrapperBase {
  public:
   virtual ~DocumentParser();
   DECLARE_VIRTUAL_TRACE();

@@ -45,6 +45,7 @@
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/html/parser/XSSAuditor.h"
 #include "core/html/parser/XSSAuditorDelegate.h"
+#include "platform/bindings/TraceWrapperMember.h"
 #include "platform/wtf/Deque.h"
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/WeakPtr.h"
@@ -81,6 +82,7 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   }
   ~HTMLDocumentParser() override;
   DECLARE_VIRTUAL_TRACE();
+  DECLARE_TRACE_WRAPPERS();
 
   // TODO(alexclarke): Remove when background parser goes away.
   void Dispose();
@@ -241,7 +243,7 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
 
   std::unique_ptr<HTMLToken> token_;
   std::unique_ptr<HTMLTokenizer> tokenizer_;
-  Member<HTMLParserScriptRunner> script_runner_;
+  TraceWrapperMember<HTMLParserScriptRunner> script_runner_;
   Member<HTMLTreeBuilder> tree_builder_;
 
   std::unique_ptr<HTMLPreloadScanner> preload_scanner_;

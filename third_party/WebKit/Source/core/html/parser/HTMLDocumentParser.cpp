@@ -132,6 +132,7 @@ HTMLDocumentParser::HTMLDocumentParser(Document& document,
       tokenizer_(sync_policy == kForceSynchronousParsing
                      ? HTMLTokenizer::Create(options_)
                      : nullptr),
+      script_runner_(this, nullptr),
       loading_task_runner_(
           TaskRunnerHelper::Get(TaskType::kNetworking, &document)),
       parser_scheduler_(
@@ -176,6 +177,10 @@ DEFINE_TRACE(HTMLDocumentParser) {
   visitor->Trace(preloader_);
   ScriptableDocumentParser::Trace(visitor);
   HTMLParserScriptRunnerHost::Trace(visitor);
+}
+
+DEFINE_TRACE_WRAPPERS(HTMLDocumentParser) {
+  visitor->TraceWrappers(script_runner_);
 }
 
 void HTMLDocumentParser::Detach() {
