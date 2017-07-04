@@ -784,6 +784,16 @@ void AnimationPlayer::TickAnimations(base::TimeTicks monotonic_time) {
               animations_[i]->affects_pending_elements());
           break;
         }
+
+        case TargetProperty::BOUNDS: {
+          const SizeAnimationCurve* size_animation_curve =
+              animations_[i]->curve()->ToSizeAnimationCurve();
+          const gfx::SizeF size = size_animation_curve->GetValue(trimmed);
+          element_animations_->NotifyClientBoundsAnimated(
+              size, animations_[i]->affects_active_elements(),
+              animations_[i]->affects_pending_elements());
+          break;
+        }
       }
     }
   }

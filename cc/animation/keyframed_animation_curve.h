@@ -13,6 +13,7 @@
 #include "cc/animation/animation_export.h"
 #include "cc/animation/timing_function.h"
 #include "cc/animation/transform_operations.h"
+#include "ui/gfx/geometry/size_f.h"
 
 namespace cc {
 
@@ -113,6 +114,26 @@ class CC_ANIMATION_EXPORT FilterKeyframe : public Keyframe {
                  std::unique_ptr<TimingFunction> timing_function);
 
   FilterOperations value_;
+};
+
+class CC_ANIMATION_EXPORT SizeKeyframe : public Keyframe {
+ public:
+  static std::unique_ptr<SizeKeyframe> Create(
+      base::TimeDelta time,
+      const gfx::SizeF& bounds,
+      std::unique_ptr<TimingFunction> timing_function);
+  ~SizeKeyframe() override;
+
+  const gfx::SizeF& Value() const;
+
+  std::unique_ptr<SizeKeyframe> Clone() const;
+
+ private:
+  SizeKeyframe(base::TimeDelta time,
+               const gfx::SizeF& value,
+               std::unique_ptr<TimingFunction> timing_function);
+
+  gfx::SizeF value_;
 };
 
 class CC_ANIMATION_EXPORT KeyframedColorAnimationCurve
@@ -273,6 +294,42 @@ class CC_ANIMATION_EXPORT KeyframedFilterAnimationCurve
   double scaled_duration_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyframedFilterAnimationCurve);
+};
+
+class CC_ANIMATION_EXPORT KeyframedSizeAnimationCurve
+    : public SizeAnimationCurve {
+ public:
+  // It is required that the keyframes be sorted by time.
+  static std::unique_ptr<KeyframedSizeAnimationCurve> Create();
+
+  ~KeyframedSizeAnimationCurve() override;
+
+  void AddKeyframe(std::unique_ptr<SizeKeyframe> keyframe);
+  void SetTimingFunction(std::unique_ptr<TimingFunction> timing_function) {
+    timing_function_ = std::move(timing_function);
+  }
+  double scaled_duration() const { return scaled_duration_; }
+  void set_scaled_duration(double scaled_duration) {
+    scaled_duration_ = scaled_duration;
+  }
+
+  // AnimationCurve implementation
+  base::TimeDelta Duration() const override;
+  std::unique_ptr<AnimationCurve> Clone() const override;
+
+  // SizeAnimationCurve implementation
+  gfx::SizeF GetValue(base::TimeDelta t) const override;
+
+ private:
+  KeyframedSizeAnimationCurve();
+
+  // Always sorted in order of increasing time. No two keyframes have the
+  // same time.
+  std::vector<std::unique_ptr<SizeKeyframe>> keyframes_;
+  std::unique_ptr<TimingFunction> timing_function_;
+  double scaled_duration_;
+
+  DISALLOW_COPY_AND_ASSIGN(KeyframedSizeAnimationCurve);
 };
 
 }  // namespace cc

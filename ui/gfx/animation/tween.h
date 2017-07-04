@@ -9,6 +9,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/animation/animation_export.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/transform.h"
 
 namespace base {
@@ -71,6 +72,10 @@ class ANIMATION_EXPORT Tween {
       double value,
       const gfx::Transform& start_transform,
       const gfx::Transform& target_transform);
+
+  static gfx::SizeF SizeValueBetween(double value,
+                                     const gfx::SizeF& start_size,
+                                     const gfx::SizeF& target_size);
 
  private:
   Tween();

@@ -57,4 +57,13 @@ ScrollOffsetAnimationCurve* AnimationCurve::ToScrollOffsetAnimationCurve() {
   return static_cast<ScrollOffsetAnimationCurve*>(this);
 }
 
+const SizeAnimationCurve* AnimationCurve::ToSizeAnimationCurve() const {
+  DCHECK(Type() == AnimationCurve::SIZE);
+  return static_cast<const SizeAnimationCurve*>(this);
+}
+
+AnimationCurve::CurveType SizeAnimationCurve::Type() const {
+  return SIZE;
+}
+
 }  // namespace cc

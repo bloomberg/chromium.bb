@@ -354,6 +354,15 @@ void ElementAnimations::NotifyClientScrollOffsetAnimated(
     OnScrollOffsetAnimated(ElementListType::PENDING, scroll_offset);
 }
 
+void ElementAnimations::NotifyClientBoundsAnimated(
+    const gfx::SizeF& size,
+    bool notify_active_elements,
+    bool notify_pending_elements) {
+  // TODO(vollick): once we have an animation observer, we can remove client
+  // animated notifications we do not use in element animations, such as this
+  // one.
+}
+
 void ElementAnimations::UpdateClientAnimationState() {
   if (!element_id())
     return;

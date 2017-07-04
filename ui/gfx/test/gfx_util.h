@@ -17,6 +17,7 @@ class AxisTransform2d;
 class BoxF;
 class PointF;
 class RectF;
+class SizeF;
 
 #define EXPECT_AXIS_TRANSFORM2D_EQ(a, b) \
   EXPECT_PRED_FORMAT2(::gfx::AssertAxisTransform2dFloatEqual, a, b)
@@ -59,6 +60,13 @@ class RectF;
                                                SkColor lhs,
                                                SkColor rhs);
 
+#define EXPECT_SIZEF_EQ(a, b) \
+  EXPECT_PRED_FORMAT2(::gfx::AssertSizeFFloatEqual, a, b)
+
+::testing::AssertionResult AssertSizeFFloatEqual(const char* lhs_expr,
+                                                 const char* rhs_expr,
+                                                 const SizeF& lhs,
+                                                 const SizeF& rhs);
 }  // namespace gfx
 
 #endif  // UI_GFX_TEST_GFX_UTIL_H_
