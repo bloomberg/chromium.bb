@@ -1086,6 +1086,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ViewBoundsInNestedFrameTest) {
                         scale_factor));
   scroll_event.delta_x = 0.0f;
   scroll_event.delta_y = -30.0f;
+  scroll_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
   rwhv_root->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
 
   filter->Wait();
@@ -1113,14 +1114,23 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   FrameTreeNode* child_iframe_node = root->child_at(0);
 
+  RenderWidgetHost* child_rwh =
+      child_iframe_node->current_frame_host()->GetRenderWidgetHost();
+
+  RenderWidgetHostViewBase* child_rwhv =
+      static_cast<RenderWidgetHostViewBase*>(child_rwh->GetView());
+
   std::unique_ptr<InputEventAckWaiter> gesture_fling_start_ack_observer =
       base::MakeUnique<InputEventAckWaiter>(
           blink::WebInputEvent::kGestureFlingStart);
-  root->current_frame_host()->GetRenderWidgetHost()->AddInputEventObserver(
-      gesture_fling_start_ack_observer.get());
-
-  RenderWidgetHost* child_rwh =
-      child_iframe_node->current_frame_host()->GetRenderWidgetHost();
+  if (child_rwhv->wheel_scroll_latching_enabled()) {
+    // If wheel scroll latching is enabled, the fling start won't bubble since
+    // its corresponding GSB hasn't bubbled.
+    child_rwh->AddInputEventObserver(gesture_fling_start_ack_observer.get());
+  } else {
+    root->current_frame_host()->GetRenderWidgetHost()->AddInputEventObserver(
+        gesture_fling_start_ack_observer.get());
+  }
 
   WaitForChildFrameSurfaceReady(child_iframe_node->current_frame_host());
 
