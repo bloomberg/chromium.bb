@@ -126,9 +126,6 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
 - (void)widgetActiveDisplayModeDidChange:(NCWidgetDisplayMode)activeDisplayMode
                          withMaximumSize:(CGSize)maxSize {
   BOOL isVariableHeight = (activeDisplayMode == NCWidgetDisplayModeExpanded);
-  // Set the copied URL section here so that the fitting size is correctly
-  // calculated.
-  [self.widgetView setCopiedURLVisible:isVariableHeight];
 
   // If the widget's height is not variable, the preferredContentSize is the
   // maxSize. Widgets cannot be shrunk, and this ensures the view will lay

@@ -12,6 +12,9 @@
 
 namespace ui_util {
 
+CGFloat const kIconSpacing = 5;
+CGFloat const kContentMargin = 12;
+
 NSArray<NSLayoutConstraint*>* CreateSameConstraints(UIView* view1,
                                                     UIView* view2) {
   return @[

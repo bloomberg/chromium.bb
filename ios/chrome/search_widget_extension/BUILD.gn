@@ -44,6 +44,10 @@ ios_appex_bundle("search_widget_extension") {
 
 source_set("search_widget") {
   sources = [
+    "copied_url_view.h",
+    "copied_url_view.mm",
+    "search_action_view.h",
+    "search_action_view.mm",
     "search_widget_view.h",
     "search_widget_view.mm",
     "search_widget_view_controller.h",
