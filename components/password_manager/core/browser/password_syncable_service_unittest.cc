@@ -553,38 +553,6 @@ TEST_F(PasswordSyncableServiceTest, FailedProcessSyncChanges) {
   service()->ActOnPasswordStoreChanges(list);
 }
 
-// Tests that empty forms known to the client and/or the server are deleted.
-TEST_F(PasswordSyncableServiceTest, MergeEmptyPasswords) {
-  autofill::PasswordForm old_empty_form;
-  old_empty_form.signon_realm = kSignonRealm;
-  old_empty_form.times_used = kTimesUsed;
-  old_empty_form.type = kArbitraryType;
-
-  autofill::PasswordForm db_empty_form = old_empty_form;
-  db_empty_form.signon_realm = kSignonRealm2;
-
-  autofill::PasswordForm sync_empty_form = old_empty_form;
-  sync_empty_form.signon_realm = kSignonRealm3;
-  SyncDataList sync_data;
-  sync_data.push_back(SyncDataFromPassword(old_empty_form));
-  sync_data.push_back(SyncDataFromPassword(sync_empty_form));
-
-  EXPECT_CALL(*password_store(), FillAutofillableLogins(_))
-      .WillOnce(DoAll(IgnoreResult(AppendForm(old_empty_form)),
-                      AppendForm(db_empty_form)));
-  EXPECT_CALL(*password_store(), FillBlacklistLogins(_)).WillOnce(Return(true));
-
-  EXPECT_CALL(*password_store(), RemoveLoginImpl(PasswordIs(old_empty_form)));
-  EXPECT_CALL(*password_store(), RemoveLoginImpl(PasswordIs(db_empty_form)));
-  EXPECT_CALL(*processor_, ProcessSyncChanges(_, ElementsAre(
-      SyncChangeIs(SyncChange::ACTION_DELETE, old_empty_form),
-      SyncChangeIs(SyncChange::ACTION_DELETE, sync_empty_form))));
-
-  service()->MergeDataAndStartSyncing(
-      syncer::PASSWORDS, sync_data, std::move(processor_),
-      std::unique_ptr<syncer::SyncErrorFactory>());
-}
-
 // Serialize and deserialize empty federation_origin and make sure it's an empty
 // string.
 TEST_F(PasswordSyncableServiceTest, SerializeEmptyFederation) {
