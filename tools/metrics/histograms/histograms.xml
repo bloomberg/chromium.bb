@@ -86178,6 +86178,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.Video.InterframeDelayInMs" units="ms">
+  <owner>ilnik@chromium.org</owner>
+  <summary>
+    The average interframe delay for a received video stream. Recorded
+    when a stream is removed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.InterframeDelayMaxInMs" units="ms">
+  <owner>ilnik@chromium.org</owner>
+  <summary>
+    The maximum interframe delay for a received video stream. Recorded
+    when a stream is removed.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.Video.JitterBufferDelayInMs" units="ms">
   <owner>asapersson@chromium.org</owner>
   <summary>
@@ -86544,6 +86560,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The average input width per frame (for incoming frames to video engine) for
     a sent (screen content) video stream. Recorded when a stream is removed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.Screenshare.InterframeDelayInMs" units="ms">
+  <owner>ilnik@chromium.org</owner>
+  <summary>
+    The average interframe delay for a received screenshare stream. Recorded
+    when a stream is removed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.Screenshare.InterframeDelayMaxInMs" units="ms">
+  <owner>ilnik@chromium.org</owner>
+  <summary>
+    The maximum interframe delay for a received screenshare stream. Recorded
+    when a stream is removed.
   </summary>
 </histogram>
 
