@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "base/task_scheduler/post_task.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliated_match_helper.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_service.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
@@ -29,17 +28,13 @@ bool ShouldAffiliationBasedMatchingBeActive(syncer::SyncService* sync_service) {
 void ActivateAffiliationBasedMatching(
     PasswordStore* password_store,
     net::URLRequestContextGetter* request_context_getter,
-    const base::FilePath& db_path) {
+    const base::FilePath& db_path,
+    scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner) {
   // The PasswordStore is so far the only consumer of the AffiliationService,
   // therefore the service is owned by the AffiliatedMatchHelper, which in
   // turn is owned by the PasswordStore.
-  // Task priority is USER_VISIBLE, because AffiliationService-related tasks
-  // block obtaining credentials from PasswordStore, which matches the
-  // USER_VISIBLE example: "Loading data that might be shown in the UI after a
-  // future user interaction."
   std::unique_ptr<AffiliationService> affiliation_service(
-      new AffiliationService(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_VISIBLE})));
+      new AffiliationService(db_thread_runner));
   affiliation_service->Initialize(request_context_getter, db_path);
   std::unique_ptr<AffiliatedMatchHelper> affiliated_match_helper(
       new AffiliatedMatchHelper(password_store,
@@ -61,7 +56,8 @@ void ToggleAffiliationBasedMatchingBasedOnPasswordSyncedState(
     PasswordStore* password_store,
     syncer::SyncService* sync_service,
     net::URLRequestContextGetter* request_context_getter,
-    const base::FilePath& profile_path) {
+    const base::FilePath& profile_path,
+    scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner) {
   DCHECK(password_store);
 
   const bool matching_should_be_active =
@@ -71,7 +67,8 @@ void ToggleAffiliationBasedMatchingBasedOnPasswordSyncedState(
 
   if (matching_should_be_active && !matching_is_active) {
     ActivateAffiliationBasedMatching(password_store, request_context_getter,
-                                     GetAffiliationDatabasePath(profile_path));
+                                     GetAffiliationDatabasePath(profile_path),
+                                     db_thread_runner);
   } else if (!matching_should_be_active && matching_is_active) {
     password_store->SetAffiliatedMatchHelper(
         base::WrapUnique<AffiliatedMatchHelper>(nullptr));
