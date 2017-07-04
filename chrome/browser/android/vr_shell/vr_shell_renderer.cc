@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/android/vr_shell/vr_gl_util.h"
@@ -16,24 +17,20 @@
 namespace {
 
 static constexpr float kHalfSize = 0.5f;
+
 /* clang-format off */
-static constexpr float kTextureQuadVertices[30] = {
-    //       x           y     z,    u,    v
-    -kHalfSize,  kHalfSize, 0.0f, 0.0f, 0.0f,
-    -kHalfSize, -kHalfSize, 0.0f, 0.0f, 1.0f,
-     kHalfSize,  kHalfSize, 0.0f, 1.0f, 0.0f,
-    -kHalfSize, -kHalfSize, 0.0f, 0.0f, 1.0f,
-     kHalfSize, -kHalfSize, 0.0f, 1.0f, 1.0f,
-     kHalfSize,  kHalfSize, 0.0f, 1.0f, 0.0f };
+static constexpr float kTexturedQuadVertices[8] = {
+    //       x           y
+    -kHalfSize,  kHalfSize,
+    -kHalfSize, -kHalfSize,
+     kHalfSize,  kHalfSize,
+     kHalfSize, -kHalfSize,
+};
+
+static constexpr GLushort kTexturedQuadIndices[6] = { 0, 1, 2, 1, 3, 2 };
 /* clang-format on */
-static constexpr size_t kTextureQuadVerticesSize = sizeof(float) * 30;
-static constexpr size_t kTextureQuadDataStride = sizeof(float) * 5;
-static constexpr int kPositionDataSize = 3;
-static constexpr size_t kPositionDataOffset = 0;
-static constexpr int kTextureCoordinateDataSize = 2;
-static constexpr size_t kTextureCoordinateDataOffset = sizeof(float) * 3;
-// Number of vertices passed to glDrawArrays().
-static constexpr int kVerticesNumber = 6;
+
+static constexpr int kTexturedQuadPositionDataSize = 2;
 
 // Reticle constants
 static constexpr float kRingDiameter = 1.0f;
@@ -76,8 +73,20 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
     case vr_shell::ShaderID::EXTERNAL_TEXTURED_QUAD_VERTEX_SHADER:
     case vr_shell::ShaderID::RETICLE_VERTEX_SHADER:
     case vr_shell::ShaderID::LASER_VERTEX_SHADER:
-    case vr_shell::ShaderID::CONTROLLER_VERTEX_SHADER:
     case vr_shell::ShaderID::TEXTURED_QUAD_VERTEX_SHADER:
+      return SHADER(
+          /* clang-format off */
+          precision mediump float;
+          uniform mat4 u_ModelViewProjMatrix;
+          attribute vec4 a_Position;
+          varying vec2 v_TexCoordinate;
+
+          void main() {
+            v_TexCoordinate = vec2(0.5 + a_Position[0], 0.5 - a_Position[1]);
+            gl_Position = u_ModelViewProjMatrix * a_Position;
+          }
+          /* clang-format on */);
+    case vr_shell::ShaderID::CONTROLLER_VERTEX_SHADER:
       return SHADER(
           /* clang-format off */
           precision mediump float;
@@ -325,15 +334,12 @@ BaseRenderer::BaseRenderer(ShaderID vertex_id, ShaderID fragment_id) {
   glDeleteShader(fragment_shader_handle);
 
   position_handle_ = glGetAttribLocation(program_handle_, "a_Position");
-  tex_coord_handle_ = glGetAttribLocation(program_handle_, "a_TexCoordinate");
 }
 
 BaseRenderer::~BaseRenderer() = default;
 
 BaseQuadRenderer::BaseQuadRenderer(ShaderID vertex_id, ShaderID fragment_id)
     : BaseRenderer(vertex_id, fragment_id) {}
-
-GLuint BaseQuadRenderer::vertex_buffer_ = 0;
 
 BaseQuadRenderer::~BaseQuadRenderer() = default;
 
@@ -348,26 +354,32 @@ void BaseQuadRenderer::PrepareToDraw(GLuint view_proj_matrix_handle,
   glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_);
 
   // Set up position attribute.
-  glVertexAttribPointer(position_handle_, kPositionDataSize, GL_FLOAT, false,
-                        kTextureQuadDataStride,
-                        VOID_OFFSET(kPositionDataOffset));
+  glVertexAttribPointer(position_handle_, kTexturedQuadPositionDataSize,
+                        GL_FLOAT, false, 0, 0);
   glEnableVertexAttribArray(position_handle_);
-
-  // Set up texture coordinate attribute.
-  glVertexAttribPointer(tex_coord_handle_, kTextureCoordinateDataSize, GL_FLOAT,
-                        false, kTextureQuadDataStride,
-                        VOID_OFFSET(kTextureCoordinateDataOffset));
-  glEnableVertexAttribArray(tex_coord_handle_);
 
   glEnable(GL_BLEND);
   glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 }
 
+GLuint BaseQuadRenderer::vertex_buffer_ = 0;
+GLuint BaseQuadRenderer::index_buffer_ = 0;
+
 void BaseQuadRenderer::SetVertexBuffer() {
-  glGenBuffersARB(1, &vertex_buffer_);
+  GLuint buffers[2];
+  glGenBuffersARB(2, buffers);
+  vertex_buffer_ = buffers[0];
+  index_buffer_ = buffers[1];
+
   glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_);
-  glBufferData(GL_ARRAY_BUFFER, kTextureQuadVerticesSize, kTextureQuadVertices,
-               GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER,
+               arraysize(kTexturedQuadVertices) * sizeof(float),
+               kTexturedQuadVertices, GL_STATIC_DRAW);
+
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+               arraysize(kTexturedQuadIndices) * sizeof(GLushort),
+               kTexturedQuadIndices, GL_STATIC_DRAW);
 }
 
 ExternalTexturedQuadRenderer::ExternalTexturedQuadRenderer()
@@ -400,10 +412,11 @@ void ExternalTexturedQuadRenderer::Draw(int texture_data_handle,
                reinterpret_cast<const float*>(&copy_rect));
   glUniform1f(opacity_handle_, opacity);
 
-  glDrawArrays(GL_TRIANGLES, 0, kVerticesNumber);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_);
+  glDrawElements(GL_TRIANGLES, arraysize(kTexturedQuadIndices),
+                 GL_UNSIGNED_SHORT, 0);
 
   glDisableVertexAttribArray(position_handle_);
-  glDisableVertexAttribArray(tex_coord_handle_);
 }
 
 ExternalTexturedQuadRenderer::~ExternalTexturedQuadRenderer() = default;
@@ -445,16 +458,9 @@ void TexturedQuadRenderer::Flush() {
   glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_);
 
   // Set up position attribute.
-  glVertexAttribPointer(position_handle_, kPositionDataSize, GL_FLOAT, false,
-                        kTextureQuadDataStride,
-                        VOID_OFFSET(kPositionDataOffset));
+  glVertexAttribPointer(position_handle_, kTexturedQuadPositionDataSize,
+                        GL_FLOAT, false, 0, 0);
   glEnableVertexAttribArray(position_handle_);
-
-  // Set up texture coordinate attribute.
-  glVertexAttribPointer(tex_coord_handle_, kTextureCoordinateDataSize, GL_FLOAT,
-                        false, kTextureQuadDataStride,
-                        VOID_OFFSET(kTextureCoordinateDataOffset));
-  glEnableVertexAttribArray(tex_coord_handle_);
 
   glEnable(GL_BLEND);
   glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
@@ -488,13 +494,14 @@ void TexturedQuadRenderer::Flush() {
     glUniform4fv(copy_rect_uniform_handle_, 1,
                  reinterpret_cast<const float*>(&quad.copy_rect));
 
-    glDrawArrays(GL_TRIANGLES, 0, kVerticesNumber);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_);
+    glDrawElements(GL_TRIANGLES, arraysize(kTexturedQuadIndices),
+                   GL_UNSIGNED_SHORT, 0);
 
     quad_queue_.pop();
   }
 
   glDisableVertexAttribArray(position_handle_);
-  glDisableVertexAttribArray(tex_coord_handle_);
 }
 
 TexturedQuadRenderer::~TexturedQuadRenderer() = default;
@@ -512,16 +519,9 @@ void WebVrRenderer::Draw(int texture_handle) {
   glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_);
 
   // Set up position attribute.
-  glVertexAttribPointer(position_handle_, kPositionDataSize, GL_FLOAT, false,
-                        kTextureQuadDataStride,
-                        VOID_OFFSET(kPositionDataOffset));
+  glVertexAttribPointer(position_handle_, kTexturedQuadPositionDataSize,
+                        GL_FLOAT, false, 0, 0);
   glEnableVertexAttribArray(position_handle_);
-
-  // Set up texture coordinate attribute.
-  glVertexAttribPointer(tex_coord_handle_, kTextureCoordinateDataSize, GL_FLOAT,
-                        false, kTextureQuadDataStride,
-                        VOID_OFFSET(kTextureCoordinateDataOffset));
-  glEnableVertexAttribArray(tex_coord_handle_);
 
   // Bind texture. This is a 1:1 pixel copy since the source surface
   // and renderbuffer destination size are resized to match, so use
@@ -535,10 +535,11 @@ void WebVrRenderer::Draw(int texture_handle) {
   glUniform1i(tex_uniform_handle_, 0);
 
   // Blit texture to buffer
-  glDrawArrays(GL_TRIANGLES, 0, kVerticesNumber);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_);
+  glDrawElements(GL_TRIANGLES, arraysize(kTexturedQuadIndices),
+                 GL_UNSIGNED_SHORT, 0);
 
   glDisableVertexAttribArray(position_handle_);
-  glDisableVertexAttribArray(tex_coord_handle_);
 }
 
 // Note that we don't explicitly delete gl objects here, they're deleted
@@ -575,10 +576,11 @@ void ReticleRenderer::Draw(const gfx::Transform& view_proj_matrix) {
   glUniform1f(mid_ring_end_handle_, kMidRingEnd);
   glUniform1f(mid_ring_opacity_handle_, kMidRingOpacity);
 
-  glDrawArrays(GL_TRIANGLES, 0, kVerticesNumber);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_);
+  glDrawElements(GL_TRIANGLES, arraysize(kTexturedQuadIndices),
+                 GL_UNSIGNED_SHORT, 0);
 
   glDisableVertexAttribArray(position_handle_);
-  glDisableVertexAttribArray(tex_coord_handle_);
 }
 
 ReticleRenderer::~ReticleRenderer() = default;
@@ -620,10 +622,11 @@ void LaserRenderer::Draw(float opacity,
   glUniform1f(fade_end_handle_, kFadeEnd);
   glUniform1f(opacity_handle_, opacity);
 
-  glDrawArrays(GL_TRIANGLES, 0, kVerticesNumber);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_);
+  glDrawElements(GL_TRIANGLES, arraysize(kTexturedQuadIndices),
+                 GL_UNSIGNED_SHORT, 0);
 
   glDisableVertexAttribArray(position_handle_);
-  glDisableVertexAttribArray(tex_coord_handle_);
 }
 
 LaserRenderer::~LaserRenderer() = default;
@@ -633,6 +636,7 @@ ControllerRenderer::ControllerRenderer()
       texture_handles_(VrControllerModel::STATE_COUNT) {
   model_view_proj_matrix_handle_ =
       glGetUniformLocation(program_handle_, "u_ModelViewProjMatrix");
+  tex_coord_handle_ = glGetAttribLocation(program_handle_, "a_TexCoordinate");
   tex_uniform_handle_ = glGetUniformLocation(program_handle_, "u_Texture");
   opacity_handle_ = glGetUniformLocation(program_handle_, "u_Opacity");
 }
@@ -746,10 +750,11 @@ void GradientQuadRenderer::Draw(const gfx::Transform& view_proj_matrix,
   SetColorUniform(center_color_handle_, center_color);
   glUniform1f(opacity_handle_, opacity);
 
-  glDrawArrays(GL_TRIANGLES, 0, kVerticesNumber);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_);
+  glDrawElements(GL_TRIANGLES, arraysize(kTexturedQuadIndices),
+                 GL_UNSIGNED_SHORT, 0);
 
   glDisableVertexAttribArray(position_handle_);
-  glDisableVertexAttribArray(tex_coord_handle_);
 }
 
 GradientQuadRenderer::~GradientQuadRenderer() = default;
@@ -785,10 +790,11 @@ void GradientGridRenderer::Draw(const gfx::Transform& view_proj_matrix,
   SetColorUniform(grid_color_handle_, grid_color);
   glUniform1f(opacity_handle_, opacity);
 
-  glDrawArrays(GL_TRIANGLES, 0, kVerticesNumber);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_);
+  glDrawElements(GL_TRIANGLES, arraysize(kTexturedQuadIndices),
+                 GL_UNSIGNED_SHORT, 0);
 
   glDisableVertexAttribArray(position_handle_);
-  glDisableVertexAttribArray(tex_coord_handle_);
 }
 
 GradientGridRenderer::~GradientGridRenderer() = default;

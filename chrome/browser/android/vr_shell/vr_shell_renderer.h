@@ -17,7 +17,6 @@
 
 namespace vr_shell {
 
-// TODO(tiborg): set background color through JS API.
 constexpr float kFogBrightness = 0.57f;
 
 enum ShaderID {
@@ -75,7 +74,6 @@ class BaseRenderer {
 
   GLuint program_handle_;
   GLuint position_handle_;
-  GLuint tex_coord_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseRenderer);
 };
@@ -92,6 +90,7 @@ class BaseQuadRenderer : public BaseRenderer {
                      const gfx::Transform& view_proj_matrix);
 
   static GLuint vertex_buffer_;
+  static GLuint index_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseQuadRenderer);
 };
@@ -206,6 +205,7 @@ class ControllerRenderer : public BaseRenderer {
 
  private:
   GLuint model_view_proj_matrix_handle_;
+  GLuint tex_coord_handle_;
   GLuint tex_uniform_handle_;
   GLuint opacity_handle_;
   GLuint indices_buffer_ = 0;
