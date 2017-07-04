@@ -1377,7 +1377,8 @@ TEST_F(RenderWidgetHostViewMacWithWheelScrollLatchingEnabledTest,
   std::unique_ptr<IPC::Message> response1(
       new InputHostMsg_HandleInputEvent_ACK(0, unhandled_ack));
   host->OnMessageReceived(*response1);
-  ASSERT_EQ(2U, process_host->sink().message_count());
+  // Only wheel event ack exists since GSB event is blocking.
+  ASSERT_EQ(1U, process_host->sink().message_count());
   process_host->sink().ClearMessages();
 
   // Send a wheel event with phaseEnded. When wheel scroll latching is enabled
@@ -1423,7 +1424,8 @@ TEST_F(RenderWidgetHostViewMacWithWheelScrollLatchingEnabledTest,
   std::unique_ptr<IPC::Message> response1(
       new InputHostMsg_HandleInputEvent_ACK(0, unhandled_ack));
   host->OnMessageReceived(*response1);
-  ASSERT_EQ(2U, process_host->sink().message_count());
+  // Only wheel event ack exists since GSB event is blocking.
+  ASSERT_EQ(1U, process_host->sink().message_count());
   process_host->sink().ClearMessages();
 
   // Send a wheel event with phaseEnded. When wheel scroll latching is enabled
@@ -1479,7 +1481,8 @@ TEST_F(RenderWidgetHostViewMacWithWheelScrollLatchingEnabledTest,
   std::unique_ptr<IPC::Message> response1(
       new InputHostMsg_HandleInputEvent_ACK(0, unhandled_ack));
   host->OnMessageReceived(*response1);
-  ASSERT_EQ(2U, process_host->sink().message_count());
+  // Only wheel event ack exists since GSB event is blocking.
+  ASSERT_EQ(1U, process_host->sink().message_count());
   process_host->sink().ClearMessages();
 
   // Send a wheel event with phaseEnded. When wheel scroll latching is enabled

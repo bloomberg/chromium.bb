@@ -240,6 +240,8 @@ class CONTENT_EXPORT LegacyInputRouterImpl
   // gesture scroll yet.
   bool touch_scroll_started_sent_;
 
+  bool wheel_scroll_latching_enabled_;
+
   MouseWheelEventQueue wheel_event_queue_;
   std::unique_ptr<TouchEventQueue> touch_event_queue_;
   GestureEventQueue gesture_event_queue_;

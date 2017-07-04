@@ -50,7 +50,8 @@ enum {
 bool ShouldBlockEventStream(const blink::WebInputEvent& event) {
   return ui::WebInputEventTraits::ShouldBlockEventStream(
       event,
-      base::FeatureList::IsEnabled(features::kRafAlignedTouchInputEvents));
+      base::FeatureList::IsEnabled(features::kRafAlignedTouchInputEvents),
+      base::FeatureList::IsEnabled(features::kTouchpadAndWheelScrollLatching));
 }
 
 class MockWebWidget : public blink::WebWidget {

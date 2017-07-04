@@ -403,19 +403,35 @@ void RenderWidgetHostViewChildFrame::GestureEventAck(
     InputEventAckState ack_result) {
   bool not_consumed = ack_result == INPUT_EVENT_ACK_STATE_NOT_CONSUMED ||
                       ack_result == INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS;
-  // GestureScrollBegin is consumed by the target frame and not forwarded,
-  // because we don't know whether we will need to bubble scroll until we
-  // receive a GestureScrollUpdate ACK. GestureScrollUpdate with unused
-  // scroll extent is forwarded for bubbling, while GestureScrollEnd is
-  // always forwarded and handled according to current scroll state in the
-  // RenderWidgetHostInputEventRouter.
+
   if (!frame_connector_)
     return;
-  if ((event.GetType() == blink::WebInputEvent::kGestureScrollUpdate &&
-       not_consumed) ||
-      event.GetType() == blink::WebInputEvent::kGestureScrollEnd ||
-      event.GetType() == blink::WebInputEvent::kGestureFlingStart) {
-    frame_connector_->BubbleScrollEvent(event);
+  if (wheel_scroll_latching_enabled()) {
+    // GestureScrollBegin is a blocking event; It is forwarded for bubbling if
+    // its ack is not consumed. For the rest of the scroll events
+    // (GestureScrollUpdate, GestureScrollEnd, GestureFlingStart) the
+    // frame_connector_ decides to forward them for bubbling if the
+    // GestureScrollBegin event is forwarded.
+    if ((event.GetType() == blink::WebInputEvent::kGestureScrollBegin &&
+         not_consumed) ||
+        event.GetType() == blink::WebInputEvent::kGestureScrollUpdate ||
+        event.GetType() == blink::WebInputEvent::kGestureScrollEnd ||
+        event.GetType() == blink::WebInputEvent::kGestureFlingStart) {
+      frame_connector_->BubbleScrollEvent(event);
+    }
+  } else {
+    // GestureScrollBegin is consumed by the target frame and not forwarded,
+    // because we don't know whether we will need to bubble scroll until we
+    // receive a GestureScrollUpdate ACK. GestureScrollUpdate with unused
+    // scroll extent is forwarded for bubbling, while GestureScrollEnd is
+    // always forwarded and handled according to current scroll state in the
+    // RenderWidgetHostInputEventRouter.
+    if ((event.GetType() == blink::WebInputEvent::kGestureScrollUpdate &&
+         not_consumed) ||
+        event.GetType() == blink::WebInputEvent::kGestureScrollEnd ||
+        event.GetType() == blink::WebInputEvent::kGestureFlingStart) {
+      frame_connector_->BubbleScrollEvent(event);
+    }
   }
 }
 
