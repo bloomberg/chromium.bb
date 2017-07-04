@@ -58,7 +58,10 @@ ios_appex_bundle("today_extension") {
 
   deps = [
     ":packed_resources",
-    ":resources",
+    "resources:todayview_clipboard",
+    "resources:todayview_new_tab",
+    "resources:todayview_physical_web",
+    "resources:todayview_voice_search",
     "//base",
     "//base:i18n",
     "//components/metrics",
@@ -95,25 +98,4 @@ ios_appex_bundle("today_extension") {
 
   entitlements_target = ":entitlements"
   info_plist_target = ":tweak_info_plist"
-}
-
-bundle_data("resources") {
-  visibility = [ ":*" ]
-  sources = [
-    "resources/todayview_clipboard.png",
-    "resources/todayview_clipboard@2x.png",
-    "resources/todayview_clipboard@3x.png",
-    "resources/todayview_new_tab.png",
-    "resources/todayview_new_tab@2x.png",
-    "resources/todayview_new_tab@3x.png",
-    "resources/todayview_physical_web.png",
-    "resources/todayview_physical_web@2x.png",
-    "resources/todayview_physical_web@3x.png",
-    "resources/todayview_voice_search.png",
-    "resources/todayview_voice_search@2x.png",
-    "resources/todayview_voice_search@3x.png",
-  ]
-  outputs = [
-    "{{bundle_resources_dir}}/{{source_file_part}}",
-  ]
 }
