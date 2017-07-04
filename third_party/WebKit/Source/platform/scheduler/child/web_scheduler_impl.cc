@@ -71,7 +71,6 @@ blink::WebTaskRunner* WebSchedulerImpl::TimerTaskRunner() {
 }
 
 blink::WebTaskRunner* WebSchedulerImpl::CompositorTaskRunner() {
-  NOTREACHED();
   return nullptr;
 }
 
