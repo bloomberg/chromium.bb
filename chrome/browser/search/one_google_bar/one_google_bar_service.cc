@@ -27,8 +27,7 @@ class OneGoogleBarService::SigninObserver : public SigninManagerBase::Observer {
  private:
   // SigninManagerBase::Observer implementation.
   void GoogleSigninSucceeded(const std::string& account_id,
-                             const std::string& username,
-                             const std::string& password) override {
+                             const std::string& username) override {
     callback_.Run();
   }
 

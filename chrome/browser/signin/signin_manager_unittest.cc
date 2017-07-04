@@ -68,15 +68,17 @@ std::unique_ptr<KeyedService> SigninManagerBuild(
 
 class TestSigninManagerObserver : public SigninManagerBase::Observer {
  public:
-  TestSigninManagerObserver() : num_failed_signins_(0),
-                                num_successful_signins_(0),
-                                num_signouts_(0) {
-  }
+  TestSigninManagerObserver()
+      : num_failed_signins_(0),
+        num_successful_signins_(0),
+        num_successful_signins_with_password_(0),
+        num_signouts_(0) {}
 
   ~TestSigninManagerObserver() override {}
 
   int num_failed_signins_;
   int num_successful_signins_;
+  int num_successful_signins_with_password_;
   int num_signouts_;
 
  private:
@@ -86,9 +88,14 @@ class TestSigninManagerObserver : public SigninManagerBase::Observer {
   }
 
   void GoogleSigninSucceeded(const std::string& account_id,
-                             const std::string& username,
-                             const std::string& password) override {
+                             const std::string& username) override {
     num_successful_signins_++;
+  }
+
+  void GoogleSigninSucceededWithPassword(const std::string& account_id,
+                                         const std::string& username,
+                                         const std::string& password) override {
+    num_successful_signins_with_password_++;
   }
 
   void GoogleSignedOut(const std::string& account_id,
@@ -209,6 +216,7 @@ class SigninManagerTest : public testing::Test {
 
     // Should go into token service and stop.
     EXPECT_EQ(1, test_observer_.num_successful_signins_);
+    EXPECT_EQ(1, test_observer_.num_successful_signins_with_password_);
     EXPECT_EQ(0, test_observer_.num_failed_signins_);
   }
 
@@ -404,10 +412,12 @@ TEST_F(SigninManagerTest, ExternalSignIn) {
   EXPECT_EQ("", manager_->GetAuthenticatedAccountInfo().email);
   EXPECT_EQ("", manager_->GetAuthenticatedAccountId());
   EXPECT_EQ(0, test_observer_.num_successful_signins_);
+  EXPECT_EQ(0, test_observer_.num_successful_signins_with_password_);
 
   std::string account_id = AddToAccountTracker("gaia_id", "user@gmail.com");
   manager_->OnExternalSigninCompleted("user@gmail.com");
   EXPECT_EQ(1, test_observer_.num_successful_signins_);
+  EXPECT_EQ(1, test_observer_.num_successful_signins_with_password_);
   EXPECT_EQ(0, test_observer_.num_failed_signins_);
   EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedAccountInfo().email);
   EXPECT_EQ(account_id, manager_->GetAuthenticatedAccountId());

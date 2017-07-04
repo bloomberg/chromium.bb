@@ -191,8 +191,7 @@ class AboutSigninInternals
   // SigninManagerBase::Observer implementations.
   void GoogleSigninFailed(const GoogleServiceAuthError& error) override;
   void GoogleSigninSucceeded(const std::string& account_id,
-                                     const std::string& username,
-                                     const std::string& password) override;
+                             const std::string& username) override;
   void GoogleSignedOut(const std::string& account_id,
                                const std::string& username) override;
 

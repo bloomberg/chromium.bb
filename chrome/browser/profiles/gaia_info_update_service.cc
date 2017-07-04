@@ -206,10 +206,8 @@ void GAIAInfoUpdateService::ScheduleNextUpdate() {
   timer_.Start(FROM_HERE, delta, this, &GAIAInfoUpdateService::Update);
 }
 
-void GAIAInfoUpdateService::GoogleSigninSucceeded(
-    const std::string& account_id,
-    const std::string& username,
-    const std::string& password) {
+void GAIAInfoUpdateService::GoogleSigninSucceeded(const std::string& account_id,
+                                                  const std::string& username) {
   OnUsernameChanged(username);
 }
 

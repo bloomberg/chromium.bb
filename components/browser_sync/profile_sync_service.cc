@@ -1943,9 +1943,10 @@ void ProfileSyncService::OnSyncManagedPrefChange(bool is_sync_managed) {
   }
 }
 
-void ProfileSyncService::GoogleSigninSucceeded(const std::string& account_id,
-                                               const std::string& username,
-                                               const std::string& password) {
+void ProfileSyncService::GoogleSigninSucceededWithPassword(
+    const std::string& account_id,
+    const std::string& username,
+    const std::string& password) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (IsSyncRequested() && !password.empty()) {
     crypto_->CachePassphrase(password);

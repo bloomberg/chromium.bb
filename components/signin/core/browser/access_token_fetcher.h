@@ -51,8 +51,7 @@ class AccessTokenFetcher : public SigninManagerBase::Observer,
 
   // SigninManagerBase::Observer implementation.
   void GoogleSigninSucceeded(const std::string& account_id,
-                             const std::string& username,
-                             const std::string& password) override;
+                             const std::string& username) override;
   void GoogleSigninFailed(const GoogleServiceAuthError& error) override;
 
   // OAuth2TokenService::Observer implementation.

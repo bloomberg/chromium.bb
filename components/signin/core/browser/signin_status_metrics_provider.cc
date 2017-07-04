@@ -77,8 +77,7 @@ void SigninStatusMetricsProvider::OnSigninManagerShutdown(
 
 void SigninStatusMetricsProvider::GoogleSigninSucceeded(
     const std::string& account_id,
-    const std::string& username,
-    const std::string& password) {
+    const std::string& username) {
   SigninStatus recorded_signin_status = signin_status();
   if (recorded_signin_status == ALL_PROFILES_NOT_SIGNED_IN) {
     UpdateSigninStatus(MIXED_SIGNIN_STATUS);

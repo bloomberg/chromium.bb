@@ -58,8 +58,9 @@ void FakeSigninManager::CompletePendingSignin() {
   SetAuthenticatedAccountId(GetAccountIdForAuthInProgress());
   set_auth_in_progress(std::string());
   for (auto& observer : observer_list_) {
-    observer.GoogleSigninSucceeded(authenticated_account_id_, username_,
-                                   password_);
+    observer.GoogleSigninSucceeded(authenticated_account_id_, username_);
+    observer.GoogleSigninSucceededWithPassword(authenticated_account_id_,
+                                               username_, password_);
   }
 }
 

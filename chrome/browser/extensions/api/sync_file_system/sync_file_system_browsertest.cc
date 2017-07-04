@@ -123,7 +123,7 @@ class SyncFileSystemTest : public extensions::PlatformAppBrowserTest,
 
   void SignIn() {
     fake_signin_manager_->SetAuthenticatedAccountInfo("12345", "tester");
-    sync_engine()->GoogleSigninSucceeded("12345", "tester", "password");
+    sync_engine()->GoogleSigninSucceeded("12345", "tester");
   }
 
   void SetSyncEnabled(bool enabled) {
@@ -187,7 +187,7 @@ IN_PROC_BROWSER_TEST_F(SyncFileSystemTest, AuthorizationTest) {
   EXPECT_EQ(REMOTE_SERVICE_AUTHENTICATION_REQUIRED,
             sync_engine()->GetCurrentState());
 
-  sync_engine()->GoogleSigninSucceeded("test_account", "tester", "testing");
+  sync_engine()->GoogleSigninSucceeded("test_account", "tester");
   WaitUntilIdle();
 
   bar_created.Reply("resume");
