@@ -43,9 +43,12 @@ typedef struct {
 
   // Transform level averages of the luma reconstructed values over the entire
   // prediction unit
-  // Fixed point y_averages is Q12.10:
+  // Fixed point y_averages is Q12.3:
   //   * Worst case division is 1/1024
-  int y_averages_q10[MAX_NUM_TXB];
+  //   * Max error will be 1/16th.
+  // Note: 3 is chosen so that y_averages fits in 15 bits when 12 bit input is
+  // used
+  int y_averages_q3[MAX_NUM_TXB];
   int y_averages_stride;
 
   int are_parameters_computed;
@@ -54,9 +57,11 @@ typedef struct {
   int subsampling_x, subsampling_y;
 
   // Block level DC_PRED for each chromatic plane
-  // Fixed point dc_pred is Q12.7:
+  // Fixed point dc_pred is Q12.6
   //   * Worst case division is 1/128
-  int dc_pred_q7[CFL_PRED_PLANES];
+  //   * Max error is 1/128th
+  // Note: 6 is chosen because alpha_q3 * y_average_q3 implies Q6
+  int dc_pred_q6[CFL_PRED_PLANES];
 
   // The rate associated with each alpha codeword
   int costs[CFL_ALPHABET_SIZE];
@@ -75,8 +80,8 @@ static const int cfl_alpha_codes[CFL_ALPHABET_SIZE][CFL_PRED_PLANES] = {
   { 0, 3 }, { 5, 1 }, { 1, 5 }, { 0, 5 }
 };
 
-static INLINE int get_scaled_luma_q13(int alpha_q3, int y_pix, int avg_q10) {
-  return alpha_q3 * ((y_pix << 10) - avg_q10);
+static INLINE int get_scaled_luma_q6(int alpha_q3, int y_pix, int avg_q3) {
+  return alpha_q3 * ((y_pix << 3) - avg_q3);
 }
 
 void cfl_init(CFL_CTX *cfl, AV1_COMMON *cm);

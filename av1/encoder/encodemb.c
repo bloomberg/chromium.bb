@@ -1429,15 +1429,15 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
 
 #if CONFIG_CFL
 static int cfl_alpha_dist(const uint8_t *y_pix, int y_stride,
-                          const int y_averages_q10[MAX_NUM_TXB],
+                          const int y_averages_q3[MAX_NUM_TXB],
                           const uint8_t *src, int src_stride, int width,
-                          int height, TX_SIZE tx_size, int dc_pred_q7,
+                          int height, TX_SIZE tx_size, int dc_pred_q6,
                           double alpha, int *dist_neg_out) {
   int dist = 0;
   int diff;
 
   if (alpha == 0.0) {
-    const int dc_pred_bias = (dc_pred_q7 + 64) >> 7;
+    const int dc_pred_bias = (dc_pred_q6 + 32) >> 6;
     for (int j = 0; j < height; j++) {
       for (int i = 0; i < width; i++) {
         diff = src[i] - dc_pred_bias;
@@ -1451,7 +1451,7 @@ static int cfl_alpha_dist(const uint8_t *y_pix, int y_stride,
     return dist;
   }
 
-  const int dc_pred_bias_q13 = (dc_pred_q7 << 6) + (1 << 12);
+  const int dc_pred_bias_q6 = dc_pred_q6 + 32;
   // TODO(ltrudeau) Convert alpha to fixed point
   const int alpha_q3 = (int)(alpha * 8);
   int dist_neg = 0;
@@ -1466,26 +1466,24 @@ static int cfl_alpha_dist(const uint8_t *y_pix, int y_stride,
     const int h = b_j + tx_height;
     for (int b_i = 0; b_i < width; b_i += tx_width) {
       const int w = b_i + tx_width;
-      const int tx_avg_q10 = y_averages_q10[a++];
+      const int tx_avg_q3 = y_averages_q3[a++];
       t_y_pix = y_pix;
       t_src = src;
       for (int t_j = b_j; t_j < h; t_j++) {
         for (int t_i = b_i; t_i < w; t_i++) {
-          const int scaled_luma_q13 =
-              get_scaled_luma_q13(alpha_q3, t_y_pix[t_i], tx_avg_q10);
-
           const int uv = t_src[t_i];
 
+          const int scaled_luma_q6 =
+              get_scaled_luma_q6(alpha_q3, t_y_pix[t_i], tx_avg_q3);
+
           // TODO(ltrudeau) add support for HBD.
-          diff =
-              uv -
-              (clamp(scaled_luma_q13 + dc_pred_bias_q13, 0, (255 << 13)) >> 13);
+          diff = uv -
+                 (clamp(scaled_luma_q6 + dc_pred_bias_q6, 0, (255 << 6)) >> 6);
           dist += diff * diff;
 
           // TODO(ltrudeau) add support for HBD.
           diff = uv -
-                 (clamp(-scaled_luma_q13 + dc_pred_bias_q13, 0, (255 << 13)) >>
-                  13);
+                 (clamp(-scaled_luma_q6 + dc_pred_bias_q6, 0, (255 << 6)) >> 6);
           dist_neg += diff * diff;
         }
         t_y_pix += y_stride;
@@ -1535,9 +1533,9 @@ static void cfl_compute_alpha_ind(MACROBLOCK *const x, FRAME_CONTEXT *ec_ctx,
   cfl_compute_parameters(xd, tx_size);
   const int width = cfl->uv_width;
   const int height = cfl->uv_height;
-  const int dc_pred_u_q7 = cfl->dc_pred_q7[CFL_PRED_U];
-  const int dc_pred_v_q7 = cfl->dc_pred_q7[CFL_PRED_V];
-  const int *y_averages_q10 = cfl->y_averages_q10;
+  const int dc_pred_u_q6 = cfl->dc_pred_q6[CFL_PRED_U];
+  const int dc_pred_v_q6 = cfl->dc_pred_q6[CFL_PRED_V];
+  const int *y_averages_q3 = cfl->y_averages_q3;
   const uint8_t *y_pix = cfl->y_down_pix;
 
   CFL_SIGN_TYPE *signs = mbmi->cfl_alpha_signs;
@@ -1546,20 +1544,20 @@ static void cfl_compute_alpha_ind(MACROBLOCK *const x, FRAME_CONTEXT *ec_ctx,
 
   int sse[CFL_PRED_PLANES][CFL_MAGS_SIZE];
   sse[CFL_PRED_U][0] =
-      cfl_alpha_dist(y_pix, MAX_SB_SIZE, y_averages_q10, src_u, src_stride_u,
-                     width, height, tx_size, dc_pred_u_q7, 0, NULL);
+      cfl_alpha_dist(y_pix, MAX_SB_SIZE, y_averages_q3, src_u, src_stride_u,
+                     width, height, tx_size, dc_pred_u_q6, 0, NULL);
   sse[CFL_PRED_V][0] =
-      cfl_alpha_dist(y_pix, MAX_SB_SIZE, y_averages_q10, src_v, src_stride_v,
-                     width, height, tx_size, dc_pred_v_q7, 0, NULL);
+      cfl_alpha_dist(y_pix, MAX_SB_SIZE, y_averages_q3, src_v, src_stride_v,
+                     width, height, tx_size, dc_pred_v_q6, 0, NULL);
 
   for (int m = 1; m < CFL_MAGS_SIZE; m += 2) {
     assert(cfl_alpha_mags[m + 1] == -cfl_alpha_mags[m]);
     sse[CFL_PRED_U][m] = cfl_alpha_dist(
-        y_pix, MAX_SB_SIZE, y_averages_q10, src_u, src_stride_u, width, height,
-        tx_size, dc_pred_u_q7, cfl_alpha_mags[m], &sse[CFL_PRED_U][m + 1]);
+        y_pix, MAX_SB_SIZE, y_averages_q3, src_u, src_stride_u, width, height,
+        tx_size, dc_pred_u_q6, cfl_alpha_mags[m], &sse[CFL_PRED_U][m + 1]);
     sse[CFL_PRED_V][m] = cfl_alpha_dist(
-        y_pix, MAX_SB_SIZE, y_averages_q10, src_v, src_stride_v, width, height,
-        tx_size, dc_pred_v_q7, cfl_alpha_mags[m], &sse[CFL_PRED_V][m + 1]);
+        y_pix, MAX_SB_SIZE, y_averages_q3, src_v, src_stride_v, width, height,
+        tx_size, dc_pred_v_q6, cfl_alpha_mags[m], &sse[CFL_PRED_V][m + 1]);
   }
 
   int dist;
