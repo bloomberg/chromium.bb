@@ -7,13 +7,15 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/passwords/password_dialog_prompts.h"
-#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/styled_label_listener.h"
 #include "ui/views/window/dialog_delegate.h"
 
+namespace views {
+class StyledLabel;
+}
+
 class AutoSigninFirstRunDialogView : public views::DialogDelegateView,
                                      public views::StyledLabelListener,
-                                     public views::ButtonListener,
                                      public AutoSigninFirstRunPrompt {
  public:
   AutoSigninFirstRunDialogView(PasswordDialogController* controller,
@@ -25,22 +27,16 @@ class AutoSigninFirstRunDialogView : public views::DialogDelegateView,
   void ControllerGone() override;
 
  private:
-  // views::WidgetDelegate:
+  // views::DialogDelegateView:
   ui::ModalType GetModalType() const override;
   base::string16 GetWindowTitle() const override;
-  bool ShouldShowWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
-  views::View* GetInitiallyFocusedView() override;
   void WindowClosing() override;
-
-  // views::DialogDelegate:
-  int GetDialogButtons() const override;
-
-  // views::View
-  gfx::Size CalculatePreferredSize() const override;
-
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  bool Cancel() override;
+  bool Accept() override;
+  bool Close() override;
+  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
 
   // views::StyledLabelListener:
   void StyledLabelLinkClicked(views::StyledLabel* label,
@@ -50,12 +46,11 @@ class AutoSigninFirstRunDialogView : public views::DialogDelegateView,
   // Sets up the child views.
   void InitWindow();
 
-  views::View* ok_button_;
-  views::View* turn_off_button_;
-
   // A weak pointer to the controller.
   PasswordDialogController* controller_;
   content::WebContents* const web_contents_;
+
+  views::StyledLabel* text_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoSigninFirstRunDialogView);
 };

@@ -11,71 +11,15 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "ui/views/controls/button/md_text_button.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/styled_label.h"
-#include "ui/views/layout/grid_layout.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
-
-namespace {
-// An identifier for views::ColumnSet.
-enum ColumnSetType {
-  // | | (FILL, FILL) | |
-  SINGLE_VIEW_COLUMN_SET,
-
-  // | | (TRAILING, CENTER) | | (TRAILING, CENTER) | |
-  // Used for buttons at the bottom of the dialog which should nest at the
-  // bottom-right corner.
-  DOUBLE_BUTTON_COLUMN_SET,
-};
-
-// Construct an appropriate ColumnSet for the given |type|, and add it
-// to |layout|.
-void BuildColumnSet(views::GridLayout* layout, ColumnSetType type) {
-  views::ColumnSet* column_set = layout->AddColumnSet(type);
-  ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
-  gfx::Insets dialog_insets =
-      layout_provider->GetInsetsMetric(views::INSETS_DIALOG_CONTENTS);
-  column_set->AddPaddingColumn(0, dialog_insets.left());
-  switch (type) {
-    case SINGLE_VIEW_COLUMN_SET:
-      column_set->AddColumn(views::GridLayout::FILL,
-                            views::GridLayout::FILL,
-                            1,
-                            views::GridLayout::USE_PREF,
-                            0,
-                            0);
-      break;
-    case DOUBLE_BUTTON_COLUMN_SET:
-      column_set->AddColumn(views::GridLayout::TRAILING,
-                            views::GridLayout::CENTER,
-                            1,
-                            views::GridLayout::USE_PREF,
-                            0,
-                            0);
-      column_set->AddPaddingColumn(
-          0, layout_provider->GetDistanceMetric(
-                 views::DISTANCE_RELATED_BUTTON_HORIZONTAL));
-      column_set->AddColumn(views::GridLayout::TRAILING,
-                            views::GridLayout::CENTER,
-                            0,
-                            views::GridLayout::USE_PREF,
-                            0,
-                            0);
-      break;
-  }
-  column_set->AddPaddingColumn(0, dialog_insets.right());
-}
-
-}  // namespace
 
 AutoSigninFirstRunDialogView::AutoSigninFirstRunDialogView(
     PasswordDialogController* controller,
     content::WebContents* web_contents)
-    : ok_button_(nullptr),
-      turn_off_button_(nullptr),
-      controller_(controller),
-      web_contents_(web_contents) {
+    : controller_(controller), web_contents_(web_contents), text_(nullptr) {
   chrome::RecordDialogCreation(chrome::DialogIdentifier::AUTO_SIGNIN_FIRST_RUN);
 }
 
@@ -100,17 +44,8 @@ base::string16 AutoSigninFirstRunDialogView::GetWindowTitle() const {
   return controller_->GetAutoSigninPromoTitle();
 }
 
-bool AutoSigninFirstRunDialogView::ShouldShowWindowTitle() const {
-  // The framework trims the title instead of resizing the dialog.
-  return false;
-}
-
 bool AutoSigninFirstRunDialogView::ShouldShowCloseButton() const {
   return false;
-}
-
-views::View* AutoSigninFirstRunDialogView::GetInitiallyFocusedView() {
-  return ok_button_;
 }
 
 void AutoSigninFirstRunDialogView::WindowClosing() {
@@ -118,24 +53,34 @@ void AutoSigninFirstRunDialogView::WindowClosing() {
     controller_->OnCloseDialog();
 }
 
-int AutoSigninFirstRunDialogView::GetDialogButtons() const {
-  // None because ESC is equivalent to Cancel. It shouldn't turn off the auto
-  // signin.
-  return ui::DIALOG_BUTTON_NONE;
+void AutoSigninFirstRunDialogView::OnNativeThemeChanged(
+    const ui::NativeTheme* theme) {
+  views::StyledLabel::RangeStyleInfo default_style;
+  default_style.color =
+      views::style::GetColor(CONTEXT_BODY_TEXT_LARGE, STYLE_SECONDARY, theme);
+  text_->SetDefaultStyle(default_style);
 }
 
-gfx::Size AutoSigninFirstRunDialogView::CalculatePreferredSize() const {
-  return gfx::Size(kDesiredWidth, GetHeightForWidth(kDesiredWidth));
+bool AutoSigninFirstRunDialogView::Cancel() {
+  controller_->OnAutoSigninTurnOff();
+  return true;
 }
 
-void AutoSigninFirstRunDialogView::ButtonPressed(views::Button* sender,
-                                                 const ui::Event& event) {
-  if (sender == ok_button_)
-    controller_->OnAutoSigninOK();
-  else if (sender == turn_off_button_)
-    controller_->OnAutoSigninTurnOff();
-  else
-    NOTREACHED();
+bool AutoSigninFirstRunDialogView::Accept() {
+  controller_->OnAutoSigninOK();
+  return true;
+}
+
+bool AutoSigninFirstRunDialogView::Close() {
+  // Do nothing rather than running Cancel(), which would turn off auto-signin.
+  return true;
+}
+
+base::string16 AutoSigninFirstRunDialogView::GetDialogButtonLabel(
+    ui::DialogButton button) const {
+  return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_OK
+                                       ? IDS_AUTO_SIGNIN_FIRST_RUN_OK
+                                       : IDS_AUTO_SIGNIN_FIRST_RUN_TURN_OFF);
 }
 
 void AutoSigninFirstRunDialogView::StyledLabelLinkClicked(
@@ -146,58 +91,22 @@ void AutoSigninFirstRunDialogView::StyledLabelLinkClicked(
 }
 
 void AutoSigninFirstRunDialogView::InitWindow() {
-  ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
-  views::GridLayout* layout = new views::GridLayout(this);
-  SetLayoutManager(layout);
-  BuildColumnSet(layout, SINGLE_VIEW_COLUMN_SET);
+  SetBorder(
+      views::CreateEmptyBorder(ChromeLayoutProvider::Get()->GetInsetsMetric(
+          views::INSETS_DIALOG_CONTENTS)));
+  SetLayoutManager(new views::FillLayout());
 
-  // Title.
-  views::Label* title_label =
-      new views::Label(GetWindowTitle(), views::style::CONTEXT_DIALOG_TITLE);
-  title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-
-  // Content.
   std::pair<base::string16, gfx::Range> text_content =
       controller_->GetAutoSigninText();
-  views::StyledLabel* content_label =
-      new views::StyledLabel(text_content.first, this);
-  content_label->SetBaseFontList(views::style::GetFont(
-      CONTEXT_DEPRECATED_SMALL, views::style::STYLE_PRIMARY));
-  views::StyledLabel::RangeStyleInfo default_style;
-  default_style.color = kAutoSigninTextColor;
-  content_label->SetDefaultStyle(default_style);
+  text_ = new views::StyledLabel(text_content.first, this);
+  text_->SetBaseFontList(
+      views::style::GetFont(CONTEXT_BODY_TEXT_LARGE, STYLE_SECONDARY));
+  OnNativeThemeChanged(GetNativeTheme());
   if (!text_content.second.is_empty()) {
-    content_label->AddStyleRange(
-        text_content.second,
-        views::StyledLabel::RangeStyleInfo::CreateForLink());
+    text_->AddStyleRange(text_content.second,
+                         views::StyledLabel::RangeStyleInfo::CreateForLink());
   }
-
-  // Buttons.
-  ok_button_ = views::MdTextButton::CreateSecondaryUiButton(
-      this, l10n_util::GetStringUTF16(IDS_AUTO_SIGNIN_FIRST_RUN_OK));
-  turn_off_button_ = views::MdTextButton::CreateSecondaryUiButton(
-      this, l10n_util::GetStringUTF16(IDS_AUTO_SIGNIN_FIRST_RUN_TURN_OFF));
-
-  // Layout.
-  layout->StartRowWithPadding(
-      0, SINGLE_VIEW_COLUMN_SET, 0,
-      layout_provider->GetInsetsMetric(views::INSETS_DIALOG_TITLE).top());
-  layout->AddView(title_label);
-  const gfx::Insets dialog_insets =
-      layout_provider->GetInsetsMetric(views::INSETS_DIALOG_CONTENTS);
-  layout->StartRowWithPadding(0, SINGLE_VIEW_COLUMN_SET, 0,
-                              dialog_insets.top());
-  layout->AddView(content_label);
-  layout->AddPaddingRow(0, dialog_insets.bottom());
-
-  BuildColumnSet(layout, DOUBLE_BUTTON_COLUMN_SET);
-  const gfx::Insets button_insets =
-      layout_provider->GetInsetsMetric(views::INSETS_DIALOG_BUTTON_ROW);
-  layout->StartRowWithPadding(0, DOUBLE_BUTTON_COLUMN_SET, 0,
-                              button_insets.top());
-  layout->AddView(ok_button_);
-  layout->AddView(turn_off_button_);
-  layout->AddPaddingRow(0, button_insets.bottom());
+  AddChildView(text_);
 }
 
 AutoSigninFirstRunPrompt* CreateAutoSigninPromptView(
