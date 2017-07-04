@@ -658,27 +658,6 @@ inline ETableLayout CSSIdentifierValue::ConvertTo() const {
 }
 
 template <>
-inline TextDecoration CSSIdentifierValue::ConvertTo() const {
-  switch (value_id_) {
-    case CSSValueNone:
-      return TextDecoration::kNone;
-    case CSSValueUnderline:
-      return TextDecoration::kUnderline;
-    case CSSValueOverline:
-      return TextDecoration::kOverline;
-    case CSSValueLineThrough:
-      return TextDecoration::kLineThrough;
-    case CSSValueBlink:
-      return TextDecoration::kBlink;
-    default:
-      break;
-  }
-
-  NOTREACHED();
-  return TextDecoration::kNone;
-}
-
-template <>
 inline TextDecorationSkip CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueObjects:

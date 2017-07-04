@@ -20,6 +20,7 @@
    aspects of the field (e.g. getters, setters).
 #}
 {% import 'fields/keyword.tmpl' as keyword %}
+{% import 'fields/multi_keyword.tmpl' as multi_keyword %}
 {% import 'fields/primitive.tmpl' as primitive %}
 {% import 'fields/monotonic_flag.tmpl' as monotonic_flag %}
 {% import 'fields/storage_only.tmpl' as storage_only %}
@@ -28,6 +29,7 @@
 {% from 'fields/field.tmpl' import encode %}
 {% set field_templates = {
      'keyword': keyword,
+     'multi_keyword': multi_keyword,
      'primitive': primitive,
      'monotonic_flag': monotonic_flag,
      'storage_only': storage_only, 

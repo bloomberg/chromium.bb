@@ -4,7 +4,6 @@
 # found in the LICENSE file.
 
 import math
-import sys
 
 import json5_generator
 import template_expander
@@ -14,7 +13,6 @@ from name_utilities import (
     enum_for_css_keyword, enum_type_name, enum_value_name, class_member_name, method_name,
     class_name, join_name
 )
-from collections import defaultdict, OrderedDict
 from itertools import chain
 
 # Heuristic ordering of types from largest to smallest, used to sort fields by their alignment sizes.
@@ -107,6 +105,14 @@ class Group(object):
             group_path.insert(0, current_group)
             current_group = current_group.parent
         return group_path
+
+
+class Enum(object):
+    """Represents a generated enum in ComputedStyleBaseConstants."""
+    def __init__(self, type_name, keywords, is_set):
+        self.type_name = type_name
+        self.values = [enum_value_name(keyword) for keyword in keywords]
+        self.is_set = is_set
 
 
 class DiffGroup(object):
@@ -294,27 +300,29 @@ def _create_diff_groups(fields_to_diff, methods_to_diff, predicates_to_test, roo
 
 
 def _create_enums(properties):
-    """
-    Returns an OrderedDict of enums to be generated, enum name -> [list of enum values]
-    """
+    """Returns a list of Enums to be generated"""
     enums = {}
     for property_ in properties:
         # Only generate enums for keyword properties that do not require includes.
-        if property_['field_template'] == 'keyword' and len(property_['include_paths']) == 0:
-            enum_name = property_['type_name']
-            enum_values = [enum_value_name(k) for k in property_['keywords']]
+        if property_['field_template'] in ('keyword', 'multi_keyword') and len(property_['include_paths']) == 0:
+            enum = Enum(property_['type_name'], property_['keywords'],
+                        is_set=(property_['field_template'] == 'multi_keyword'))
 
-            if enum_name in enums:
+            if property_['field_template'] == 'multi_keyword':
+                assert property_['keywords'][0] == 'none', \
+                    "First keyword in a 'multi_keyword' field must be 'none' in '{}'.".format(property_['name'])
+
+            if enum.type_name in enums:
                 # There's an enum with the same name, check if the enum values are the same
-                assert set(enums[enum_name]) == set(enum_values), \
-                    ("'" + property_['name'] + "' can't have type_name '" + enum_name + "' "
+                assert set(enums[enum.type_name].values) == set(enum.values), \
+                    ("'" + property_['name'] + "' can't have type_name '" + enum.type_name + "' "
                      "because it was used by a previous property, but with a different set of keywords. "
                      "Either give it a different name or ensure the keywords are the same.")
 
-            enums[enum_name] = enum_values
+            enums[enum.type_name] = enum
 
-    # Return the enums sorted by key (enum name)
-    return OrderedDict(sorted(enums.items(), key=lambda t: t[0]))
+    # Return the enums sorted by type name
+    return list(sorted(enums.values(), key=lambda e: e.type_name))
 
 
 def _create_property_field(property_):
@@ -334,6 +342,10 @@ def _create_property_field(property_):
             ("'" + property_['name'] + "' is a keyword field, "
              "so it should not specify a field_size")
         size = int(math.ceil(math.log(len(property_['keywords']), 2)))
+    elif property_['field_template'] == 'multi_keyword':
+        type_name = property_['type_name']
+        default_value = type_name + '::' + enum_value_name(property_['default_value'])
+        size = len(property_['keywords']) - 1  # Subtract 1 for 'none' keyword
     elif property_['field_template'] == 'storage_only':
         type_name = property_['type_name']
         default_value = property_['default_value']

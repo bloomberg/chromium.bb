@@ -820,15 +820,6 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // Text decoration properties.
-  // text-decoration-line
-  static TextDecoration InitialTextDecoration() {
-    return TextDecoration::kNone;
-  }
-  TextDecoration GetTextDecoration() const {
-    return static_cast<TextDecoration>(TextDecorationInternal());
-  }
-  void SetTextDecoration(TextDecoration v) { SetTextDecorationInternal(v); }
-
   // text-decoration-skip
   static TextDecorationSkip InitialTextDecorationSkip() {
     return TextDecorationSkip::kObjects;

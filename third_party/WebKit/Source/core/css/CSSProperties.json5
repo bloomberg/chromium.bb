@@ -87,6 +87,8 @@
         // If include_paths is empty, we would also generate the corresponding
         // enum definition in ComputedStyleConstants.h.
         "keyword",
+        // Field can take on any subset of values from a list of keywords.
+        "multi_keyword",
         // Field stores a primitive value like int/bool. The type is specified by
         // type_name. The interface has a initial/getter/setter/resetter.
         "primitive",
@@ -2553,9 +2555,9 @@
       name_for_methods: "TextDecoration",
       runtime_flag: "CSS3TextDecorations",
       type_name: "TextDecoration",
-      field_template: "storage_only",
-      field_size: 4,
-      default_value: "TextDecoration::kNone",
+      field_template: "multi_keyword",
+      default_value: "none",
+      keywords: ["none", "underline", "overline", "line-through", "blink"],
       field_group: "visual",
     },
     {
