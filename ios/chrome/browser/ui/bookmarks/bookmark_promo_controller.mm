@@ -60,8 +60,7 @@ class SignInObserver;
 
 // Called when a user signs into Google services such as sync.
 - (void)googleSigninSucceededWithAccountId:(const std::string&)account_id
-                                  username:(const std::string&)username
-                                  password:(const std::string&)password;
+                                  username:(const std::string&)username;
 
 // Called when the currently signed-in user for a user has been signed out.
 - (void)googleSignedOutWithAcountId:(const std::string&)account_id
@@ -76,11 +75,9 @@ class SignInObserver : public SigninManagerBase::Observer {
       : controller_(controller) {}
 
   void GoogleSigninSucceeded(const std::string& account_id,
-                             const std::string& username,
-                             const std::string& password) override {
+                             const std::string& username) override {
     [controller_ googleSigninSucceededWithAccountId:account_id
-                                           username:username
-                                           password:password];
+                                           username:username];
   }
 
   void GoogleSignedOut(const std::string& account_id,
@@ -203,8 +200,7 @@ class SignInObserver : public SigninManagerBase::Observer {
 
 // Called when a user signs into Google services such as sync.
 - (void)googleSigninSucceededWithAccountId:(const std::string&)account_id
-                                  username:(const std::string&)username
-                                  password:(const std::string&)password {
+                                  username:(const std::string&)username {
   self.promoState = NO;
 }
 

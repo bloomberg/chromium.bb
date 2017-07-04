@@ -43,6 +43,14 @@ class PrefRegistrySimple;
 class PrefService;
 class SigninClient;
 
+namespace browser_sync {
+class ProfileSyncService;
+}
+
+namespace password_manager {
+class PasswordStoreSigninNotifierImpl;
+}
+
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
@@ -56,8 +64,7 @@ class SigninManagerBase : public KeyedService {
 
     // Called when a user signs into Google services such as sync.
     virtual void GoogleSigninSucceeded(const std::string& account_id,
-                                       const std::string& username,
-                                       const std::string& password) {}
+                                       const std::string& username) {}
 
     // Called when the currently signed-in user for a user has been signed out.
     virtual void GoogleSignedOut(const std::string& account_id,
@@ -65,6 +72,31 @@ class SigninManagerBase : public KeyedService {
 
    protected:
     virtual ~Observer() {}
+
+   private:
+    // Observers that can observer the password of the Google account after a
+    // successful sign-in.
+    friend class PasswordStoreSigninNotifierImpl;
+    friend class browser_sync::ProfileSyncService;
+
+    // SigninManagers that fire |GoogleSigninSucceededWithPassword|
+    // notifications.
+    friend class SigninManager;
+    friend class FakeSigninManager;
+
+    // Called when a user signs into Google services such as sync. Also passes
+    // the password of the Google account that was used to sign in.
+    //
+    // Observers should override |GoogleSigninSucceeded| if they are not
+    // interested in the password thas was used during the sign-in.
+    //
+    // Note: The password is always empty on mobile as the user signs in to
+    // Chrome with accounts that were added to the device, so Chrome does not
+    // have access to the password.
+    virtual void GoogleSigninSucceededWithPassword(
+        const std::string& account_id,
+        const std::string& username,
+        const std::string& password) {}
   };
 
   SigninManagerBase(SigninClient* client,

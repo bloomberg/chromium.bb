@@ -76,8 +76,7 @@ void AccessTokenFetcher::StartAccessTokenRequest() {
 }
 
 void AccessTokenFetcher::GoogleSigninSucceeded(const std::string& account_id,
-                                               const std::string& username,
-                                               const std::string& password) {
+                                               const std::string& username) {
   DCHECK(waiting_for_sign_in_);
   DCHECK(!waiting_for_refresh_token_);
   DCHECK(signin_manager_->IsAuthenticated());

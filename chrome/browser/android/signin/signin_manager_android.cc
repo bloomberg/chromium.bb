@@ -299,8 +299,7 @@ void SigninManagerAndroid::GoogleSigninFailed(
     const GoogleServiceAuthError& error) {}
 
 void SigninManagerAndroid::GoogleSigninSucceeded(const std::string& account_id,
-                                                 const std::string& username,
-                                                 const std::string& password) {}
+                                                 const std::string& username) {}
 
 void SigninManagerAndroid::GoogleSignedOut(const std::string& account_id,
                                            const std::string& username) {

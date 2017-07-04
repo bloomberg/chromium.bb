@@ -66,9 +66,9 @@ bool SigninManager::PrepareForSignin(SigninType type,
                                      const std::string& password) {
   std::string account_id =
       account_tracker_service()->PickAccountIdForAccount(gaia_id, username);
+  DCHECK(!account_id.empty());
   DCHECK(possibly_invalid_account_id_.empty() ||
          possibly_invalid_account_id_ == account_id);
-  DCHECK(!account_id.empty());
 
   if (!IsAllowedUsername(username)) {
     // Account is not allowed by admin policy.
@@ -385,8 +385,11 @@ void SigninManager::OnSignedIn() {
 
   for (auto& observer : observer_list_) {
     observer.GoogleSigninSucceeded(GetAuthenticatedAccountId(),
-                                   GetAuthenticatedAccountInfo().email,
-                                   password_);
+                                   GetAuthenticatedAccountInfo().email);
+
+    observer.GoogleSigninSucceededWithPassword(
+        GetAuthenticatedAccountId(), GetAuthenticatedAccountInfo().email,
+        password_);
   }
 
   client_->OnSignedIn(GetAuthenticatedAccountId(), gaia_id,

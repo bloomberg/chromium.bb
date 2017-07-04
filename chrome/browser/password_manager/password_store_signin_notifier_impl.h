@@ -27,9 +27,9 @@ class PasswordStoreSigninNotifierImpl : public PasswordStoreSigninNotifier,
   void UnsubscribeFromSigninEvents() override;
 
   // SigninManagerBase::Observer implementations.
-  void GoogleSigninSucceeded(const std::string& account_id,
-                             const std::string& username,
-                             const std::string& password) override;
+  void GoogleSigninSucceededWithPassword(const std::string& account_id,
+                                         const std::string& username,
+                                         const std::string& password) override;
 
   void GoogleSignedOut(const std::string& account_id,
                        const std::string& username) override;

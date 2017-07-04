@@ -706,8 +706,7 @@ void SyncEngine::GoogleSigninFailed(const GoogleServiceAuthError& error) {
 }
 
 void SyncEngine::GoogleSigninSucceeded(const std::string& account_id,
-                                       const std::string& username,
-                                       const std::string& password) {
+                                       const std::string& username) {
   Initialize();
 }
 

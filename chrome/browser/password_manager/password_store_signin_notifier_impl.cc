@@ -28,7 +28,7 @@ void PasswordStoreSigninNotifierImpl::UnsubscribeFromSigninEvents() {
   SigninManagerFactory::GetForProfile(profile_)->RemoveObserver(this);
 }
 
-void PasswordStoreSigninNotifierImpl::GoogleSigninSucceeded(
+void PasswordStoreSigninNotifierImpl::GoogleSigninSucceededWithPassword(
     const std::string& account_id,
     const std::string& username,
     const std::string& password) {
