@@ -57,9 +57,8 @@ void ViewStack::Push(std::unique_ptr<views::View> view, bool animate) {
     // This is handled by the post-animation callback in the animated case, so
     // trigger it synchronously here.
     HideCoveredViews();
+    RequestFocus();
   }
-
-  RequestFocus();
 }
 
 void ViewStack::Pop() {
@@ -144,10 +143,10 @@ void ViewStack::OnBoundsAnimatorDone(views::BoundsAnimator* animator) {
   if (animator == slide_out_animator_.get()) {
     stack_.pop_back();
     DCHECK(!stack_.empty()) << "State stack should never be empty";
-    RequestFocus();
   } else if (animator == slide_in_animator_.get()) {
     HideCoveredViews();
   } else {
     NOTREACHED();
   }
+  RequestFocus();
 }

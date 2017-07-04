@@ -567,6 +567,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   InvokePaymentRequestUI();
   SetRegionDataLoader(&test_region_data_loader_);
 
+  // Focus expectations are different in Keyboard Accessible mode.
+  dialog_view()->GetFocusManager()->SetKeyboardAccessible(false);
+
   test_region_data_loader_.set_synchronous_callback(true);
   OpenShippingAddressEditorScreen();
 

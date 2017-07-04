@@ -468,6 +468,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EditingExpiredCard) {
 
   InvokePaymentRequestUI();
 
+  // Focus expectations are different in Keyboard Accessible mode.
+  dialog_view()->GetFocusManager()->SetKeyboardAccessible(false);
+
   // One instrument is available, and it's selected because being expired can
   // still select the instrument.
   PaymentRequest* request = GetPaymentRequests(GetActiveWebContents()).front();
