@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/string_piece.h"
@@ -32,6 +33,7 @@
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/import/password_importer.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/password_manager/sync/browser/password_sync_util.h"
@@ -252,6 +254,10 @@ void PasswordManagerPresenter::RequestShowPassword(size_t index) {
       origin_url,
       base::UTF16ToUTF8(password_list_[index]->username_value),
       password_list_[index]->password_value);
+  UMA_HISTOGRAM_ENUMERATION(
+      "PasswordManager.AccessPasswordInSettings",
+      password_manager::metrics_util::ACCESS_PASSWORD_VIEWED,
+      password_manager::metrics_util::ACCESS_PASSWORD_COUNT);
 #endif
 }
 
@@ -345,8 +351,16 @@ bool PasswordManagerPresenter::IsUserAuthenticated() {
 #endif
     if (authenticated)
       last_authentication_time_ = base::TimeTicks::Now();
+    UMA_HISTOGRAM_ENUMERATION(
+        "PasswordManager.ReauthToAccessPasswordInSettings",
+        authenticated ? password_manager::metrics_util::REAUTH_SUCCESS
+                      : password_manager::metrics_util::REAUTH_FAILURE,
+        password_manager::metrics_util::REAUTH_COUNT);
     return authenticated;
   }
+  UMA_HISTOGRAM_ENUMERATION("PasswordManager.ReauthToAccessPasswordInSettings",
+                            password_manager::metrics_util::REAUTH_SKIPPED,
+                            password_manager::metrics_util::REAUTH_COUNT);
   return true;
 }
 

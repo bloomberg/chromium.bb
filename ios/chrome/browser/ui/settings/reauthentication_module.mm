@@ -6,6 +6,8 @@
 #import <LocalAuthentication/LocalAuthentication.h>
 
 #import "base/logging.h"
+#include "base/metrics/histogram_macros.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -42,6 +44,10 @@
                                  handler:(void (^)(BOOL success))handler {
   if ([self isPreviousAuthValid]) {
     handler(YES);
+    UMA_HISTOGRAM_ENUMERATION(
+        "PasswordManager.ReauthToAccessPasswordInSettings",
+        password_manager::metrics_util::REAUTH_SKIPPED,
+        password_manager::metrics_util::REAUTH_COUNT);
     return;
   }
 
@@ -60,6 +66,11 @@
         [strongSelf->_successfulReauthTimeAccessor updateSuccessfulReauthTime];
       }
       handler(success);
+      UMA_HISTOGRAM_ENUMERATION(
+          "PasswordManager.ReauthToAccessPasswordInSettings",
+          success ? password_manager::metrics_util::REAUTH_SUCCESS
+                  : password_manager::metrics_util::REAUTH_FAILURE,
+          password_manager::metrics_util::REAUTH_COUNT);
     });
   };
 
