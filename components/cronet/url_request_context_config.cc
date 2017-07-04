@@ -23,6 +23,7 @@
 #include "net/dns/host_resolver.h"
 #include "net/dns/mapped_host_resolver.h"
 #include "net/http/http_server_properties.h"
+#include "net/nqe/network_quality_estimator_params.h"
 #include "net/quic/chromium/quic_utils_chromium.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/socket/ssl_client_socket.h"
@@ -85,6 +86,12 @@ const char kStaleDnsPersistTimer[] = "persist_delay_ms";
 const char kHostResolverRulesFieldTrialName[] = "HostResolverRules";
 const char kHostResolverRules[] = "host_resolver_rules";
 
+// NetworkQualityEstimator (NQE) experiment dictionary name.
+const char kNetworkQualityEstimatorFieldTrialName[] = "NetworkQualityEstimator";
+// Name of the boolean to enable reading of the persistent prefs in NQE.
+const char kNQEPersistentCacheReadingEnabled[] =
+    "persistent_cache_reading_enabled";
+
 // Disable IPv6 when on WiFi. This is a workaround for a known issue on certain
 // Android phones, and should not be necessary when not on one of those devices.
 // See https://crbug.com/696569 for details.
@@ -136,12 +143,13 @@ URLRequestContextConfig::URLRequestContextConfig(
       load_disable_cache(load_disable_cache),
       storage_path(storage_path),
       user_agent(user_agent),
-      experimental_options(experimental_options),
       mock_cert_verifier(std::move(mock_cert_verifier)),
       enable_network_quality_estimator(enable_network_quality_estimator),
       bypass_public_key_pinning_for_local_trust_anchors(
           bypass_public_key_pinning_for_local_trust_anchors),
-      cert_verifier_data(cert_verifier_data) {}
+      cert_verifier_data(cert_verifier_data),
+      nqe_persistent_caching_enabled(false),
+      experimental_options(experimental_options) {}
 
 URLRequestContextConfig::~URLRequestContextConfig() {}
 
@@ -337,6 +345,38 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
                                                  file_task_runner);
         }
       }
+    } else if (it.key() == kNetworkQualityEstimatorFieldTrialName) {
+      const base::DictionaryValue* nqe_args = nullptr;
+      if (!it.value().GetAsDictionary(&nqe_args)) {
+        LOG(ERROR) << "\"" << it.key() << "\" config params \"" << it.value()
+                   << "\" is not a dictionary value";
+        effective_experimental_options->Remove(it.key(), nullptr);
+        continue;
+      }
+
+      bool persistent_caching_enabled;
+      if (nqe_args->GetBoolean(kNQEPersistentCacheReadingEnabled,
+                               &persistent_caching_enabled)) {
+        nqe_persistent_caching_enabled = persistent_caching_enabled;
+      }
+
+      std::string nqe_option;
+      if (nqe_args->GetString(net::kForceEffectiveConnectionType,
+                              &nqe_option)) {
+        net::EffectiveConnectionType forced_effective_connection_type =
+            net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+        bool effective_connection_type_available =
+            net::GetEffectiveConnectionTypeForName(
+                nqe_option, &forced_effective_connection_type);
+        if (!effective_connection_type_available) {
+          LOG(ERROR) << "\"" << nqe_option
+                     << "\" is not a valid effective connection type value";
+        } else {
+          nqe_forced_effective_connection_type =
+              forced_effective_connection_type;
+        }
+      }
+
     } else {
       LOG(WARNING) << "Unrecognized Cronet experimental option \"" << it.key()
                    << "\" with params \"" << it.value();

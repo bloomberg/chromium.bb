@@ -11,10 +11,12 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "net/base/hash_value.h"
 #include "net/cert/cert_verifier.h"
+#include "net/nqe/effective_connection_type.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -141,18 +143,11 @@ struct URLRequestContextConfig {
   const std::string storage_path;
   // User-Agent request header field.
   const std::string user_agent;
-  // Experimental options encoded as a string in a JSON format containing
-  // experiments and their corresponding configuration options. The format
-  // is a JSON object with the name of the experiment as the key, and the
-  // configuration options as the value. An example:
-  //   {"experiment1": {"option1": "option_value1", "option2": "option_value2",
-  //    ...}, "experiment2: {"option3", "option_value3", ...}, ...}
-  const std::string experimental_options;
 
   // Certificate verifier for testing.
   std::unique_ptr<net::CertVerifier> mock_cert_verifier;
 
-  // Enable network quality estimator.
+  // Enable Network Quality Estimator (NQE).
   const bool enable_network_quality_estimator;
 
   // Enable public key pinning bypass for local trust anchors.
@@ -178,6 +173,14 @@ struct URLRequestContextConfig {
   std::unique_ptr<base::DictionaryValue> effective_experimental_options =
       nullptr;
 
+  // Enable reading of the network quality from the prefs.
+  bool nqe_persistent_caching_enabled;
+
+  // If set, forces NQE to return the set value as the effective connection
+  // type.
+  base::Optional<net::EffectiveConnectionType>
+      nqe_forced_effective_connection_type;
+
  private:
   // Parses experimental options and makes appropriate changes to settings in
   // the URLRequestContextConfig and URLRequestContextBuilder.
@@ -185,6 +188,14 @@ struct URLRequestContextConfig {
       net::URLRequestContextBuilder* context_builder,
       net::NetLog* net_log,
       const scoped_refptr<base::SequencedTaskRunner>& file_task_runner);
+
+  // Experimental options encoded as a string in a JSON format containing
+  // experiments and their corresponding configuration options. The format
+  // is a JSON object with the name of the experiment as the key, and the
+  // configuration options as the value. An example:
+  //   {"experiment1": {"option1": "option_value1", "option2": "option_value2",
+  //    ...}, "experiment2: {"option3", "option_value3", ...}, ...}
+  const std::string experimental_options;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestContextConfig);
 };

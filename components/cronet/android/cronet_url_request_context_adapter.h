@@ -212,6 +212,10 @@ class CronetURLRequestContextAdapter
 
   std::unique_ptr<base::DictionaryValue> GetNetLogInfo() const;
 
+  // Initializes Network Quality Estimator (NQE) prefs manager on network
+  // thread.
+  void InitializeNQEPrefsOnNetworkThread() const;
+
   // Network thread is owned by |this|, but is destroyed from java thread.
   base::Thread* network_thread_;
 
