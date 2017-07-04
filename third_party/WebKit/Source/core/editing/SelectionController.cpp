@@ -840,13 +840,14 @@ bool SelectionController::HandleDoubleClick(
     // m_beganSelectingText to prevent handleMouseReleaseEvent
     // from setting caret selection.
     selection_state_ = SelectionState::kExtendedSelection;
-  } else {
-    const bool did_select = SelectClosestWordFromMouseEvent(event);
-    if (did_select && Selection().IsHandleVisible()) {
-      frame_->GetEventHandler().ShowNonLocatedContextMenu(nullptr,
-                                                          kMenuSourceTouch);
-    }
+    return true;
   }
+  if (!SelectClosestWordFromMouseEvent(event))
+    return true;
+  if (!Selection().IsHandleVisible())
+    return true;
+  frame_->GetEventHandler().ShowNonLocatedContextMenu(nullptr,
+                                                      kMenuSourceTouch);
   return true;
 }
 
