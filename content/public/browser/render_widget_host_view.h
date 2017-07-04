@@ -27,8 +27,8 @@ class VideoFrame;
 }
 
 namespace ui {
-class TextInputClient;
 class AcceleratedWidgetMac;
+class TextInputClient;
 }
 
 namespace content {
