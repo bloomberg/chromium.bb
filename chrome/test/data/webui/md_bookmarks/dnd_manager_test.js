@@ -527,4 +527,21 @@ suite('drag and drop', function() {
     assertEquals(
         DropPosition.NONE, dndManager.calculateValidDropPositions_(dragTarget));
   });
+
+  test('ensure drag and drop chip shows', function() {
+    var dragElement = getListItem('13');
+    var dragTarget = getFolderNode('2');
+    dispatchDragEvent('dragstart', dragElement);
+    dndManager.dragInfo_.handleChromeDragEnter(createDragData(draggedIds));
+
+    dispatchDragEvent('dragover', dragTarget, {x: 50, y: 80});
+    assertTrue(!!dndManager.chip_);
+    var dndChip = dndManager.dndChip;
+    assertEquals('50px', dndChip.style.getPropertyValue('--mouse-x'));
+    assertEquals('80px', dndChip.style.getPropertyValue('--mouse-y'));
+    assertTrue(dndChip.showing_);
+
+    dispatchDragEvent('dragend', dragElement);
+    assertFalse(dndChip.showing_);
+  });
 });

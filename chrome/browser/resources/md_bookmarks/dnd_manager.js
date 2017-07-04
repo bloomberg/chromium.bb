@@ -289,6 +289,12 @@ cr.define('bookmarks', function() {
      * @private {bookmarks.TimerProxy}
      */
     this.timerProxy_ = new bookmarks.TimerProxy();
+
+    /**
+     * The bookmark drag and drop indicator chip.
+     * @private {BookmarksDndChipElement}
+     */
+    this.chip_ = null;
   }
 
   DNDManager.prototype = {
@@ -319,6 +325,9 @@ cr.define('bookmarks', function() {
     },
 
     destroy: function() {
+      if (this.chip_ && this.chip_.parentElement)
+        document.body.removeChild(this.chip_);
+
       for (var event in this.documentListeners_)
         document.removeEventListener(event, this.documentListeners_[event]);
     },
@@ -384,6 +393,8 @@ cr.define('bookmarks', function() {
 
     /** @private */
     clearDragData_: function() {
+      this.dndChip.hide();
+
       // Defer the clearing of the data so that the bookmark manager API's drop
       // event doesn't clear the drop data before the web drop event has a
       // chance to execute (on Mac).
@@ -477,6 +488,12 @@ cr.define('bookmarks', function() {
 
       if (!this.dragInfo_.isDragValid())
         return;
+
+      this.dndChip.showForItems(
+          e.clientX, e.clientY,
+          this.dragInfo_.dragData.elements.map(function(x) {
+            return bookmarks.util.normalizeNode(x);
+          }));
 
       var overElement = getBookmarkElement(e.path);
       this.autoExpander_.update(e, overElement);
@@ -643,7 +660,19 @@ cr.define('bookmarks', function() {
     setTimerProxyForTesting: function(timerProxy) {
       this.timerProxy_ = timerProxy;
       this.dropIndicator_.timerProxy = timerProxy;
-    }
+    },
+
+    /** @return {BookmarksDndChipElement} */
+    get dndChip() {
+      if (!this.chip_) {
+        this.chip_ =
+            /** @type {BookmarksDndChipElement} */ (
+                document.createElement('bookmarks-dnd-chip'));
+        document.body.appendChild(this.chip_);
+      }
+
+      return this.chip_;
+    },
   };
 
   return {

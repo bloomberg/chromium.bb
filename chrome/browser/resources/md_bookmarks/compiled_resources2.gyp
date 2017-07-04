@@ -67,14 +67,25 @@
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
+      'target_name': 'dnd_chip',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:icon',
+        'types',
+      ],
+      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
       'target_name': 'dnd_manager',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         '<(EXTERNS_GYP):bookmark_manager_private',
         '<(EXTERNS_GYP):metrics_private',
+        'dnd_chip',
         'store',
         'timer_proxy',
         'types',
+        'util',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi']
     },
