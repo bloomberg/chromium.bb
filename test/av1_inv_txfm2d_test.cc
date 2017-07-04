@@ -42,7 +42,6 @@ class AV1InvTxfm2d : public ::testing::TestWithParam<AV1InvTxfm2dParam> {
     max_avg_error_ = GET_PARAM(3);
     txfm1d_size_ = libaom_test::get_txfm1d_size(tx_size_);
     txfm2d_size_ = txfm1d_size_ * txfm1d_size_;
-    count_ = 500;
 
     input_ = reinterpret_cast<int16_t *>(
         aom_memalign(16, sizeof(int16_t) * txfm2d_size_));
@@ -59,6 +58,9 @@ class AV1InvTxfm2d : public ::testing::TestWithParam<AV1InvTxfm2dParam> {
         libaom_test::inv_txfm_func_ls[tx_size_];
     double avg_abs_error = 0;
     ACMRandom rnd(ACMRandom::DeterministicSeed());
+
+    const int count_ = 500;
+
     for (int ci = 0; ci < count_; ci++) {
       for (int ni = 0; ni < txfm2d_size_; ++ni) {
         if (ci == 0) {
@@ -95,7 +97,6 @@ class AV1InvTxfm2d : public ::testing::TestWithParam<AV1InvTxfm2dParam> {
   }
 
  private:
-  int count_;
   int max_error_;
   double max_avg_error_;
   TX_TYPE tx_type_;
