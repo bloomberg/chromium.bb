@@ -2,7 +2,7 @@ accessibility/aria-labelledby-on-input.html
 accessibility/aria-link-supports-press.html
 accessibility/insert-adjacent-html-causes-crash.xhtml
 animations/animation-shorthand-overriding.html
-animations/empty-keyframes.html
+animations/stability/empty-keyframes.html
 animations/interpolation/border-image-slice-interpolation-stability.html
 animations/responsive/offset-rotate-responsive.html
 animations/svg-attribute-composition/svg-bias-composition.html
@@ -998,7 +998,7 @@ virtual/stable/http/tests/navigation/useragent.php
 virtual/stable/web-animations-api/additive-animations-unsupported.html
 virtual/stable/webexposed/global-interface-listing-compositor-worker.html
 virtual/stable/webexposed/internal-properties-should-not-be-exposed.html
-virtual/threaded/animations/pseudo-element-animation-with-marker-crash.html
+virtual/threaded/animations/stability/pseudo-element-animation-with-marker-crash.html
 virtual/threaded/printing/page-and-element-geometry-match.html
 virtual/without-smil/svg/animations/exposed/effect.html
 wake_lock/wakelock-api.html

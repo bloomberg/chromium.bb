@@ -170,7 +170,7 @@ crbug.com/248938 virtual/threaded/animations/3d/transform-perspective.html [ Slo
 crbug.com/248938 virtual/threaded/animations/animation-direction-reverse-fill-mode-hardware.html [ Slow ]
 crbug.com/248938 virtual/threaded/animations/animation-direction-reverse-fill-mode.html [ Slow ]
 crbug.com/248938 virtual/threaded/animations/animation-direction-reverse-hardware.html [ Slow ]
-crbug.com/248938 virtual/threaded/animations/animation-on-inline-crash.html [ Slow ]
+crbug.com/248938 virtual/threaded/animations/stability/animation-on-inline-crash.html [ Slow ]
 crbug.com/248938 virtual/threaded/animations/cross-fade-background-image.html [ Slow ]
 crbug.com/248938 virtual/threaded/animations/cross-fade-border-image-source.html [ Slow ]
 crbug.com/248938 virtual/threaded/animations/cross-fade-webkit-mask-box-image.html [ Slow ]
