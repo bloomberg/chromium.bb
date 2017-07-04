@@ -235,10 +235,7 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
     v = (val * dqv) >> dq_shift;
 #endif
 
-    v = aom_read_bit(r, ACCT_STR) ? -v : v;
-#if CONFIG_COEFFICIENT_RANGE_CHECKING
-    check_range(v, xd->bd);
-#endif  // CONFIG_COEFFICIENT_RANGE_CHECKING
+    v = (int)check_range(aom_read_bit(r, ACCT_STR) ? -v : v, xd->bd);
 
     dqcoeff[scan[c]] = v;
 
