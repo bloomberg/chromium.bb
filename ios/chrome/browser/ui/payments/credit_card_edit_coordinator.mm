@@ -72,6 +72,8 @@ bool IsValidCreditCardNumber(const base::string16& card_number,
 @property(nonatomic, strong)
     BillingAddressSelectionCoordinator* billingAddressSelectionCoordinator;
 
+@property(nonatomic, strong) AddressEditCoordinator* addressEditCoordinator;
+
 @property(nonatomic, strong) UINavigationController* viewController;
 
 @property(nonatomic, strong)
@@ -88,6 +90,7 @@ bool IsValidCreditCardNumber(const base::string16& card_number,
 @synthesize delegate = _delegate;
 @synthesize billingAddressSelectionCoordinator =
     _billingAddressSelectionCoordinator;
+@synthesize addressEditCoordinator = _addressEditCoordinator;
 @synthesize viewController = _viewController;
 @synthesize editViewController = _editViewController;
 @synthesize mediator = _mediator;
@@ -124,6 +127,8 @@ bool IsValidCreditCardNumber(const base::string16& card_number,
   [[self.viewController presentingViewController]
       dismissViewControllerAnimated:YES
                          completion:nil];
+  [self.addressEditCoordinator stop];
+  self.addressEditCoordinator = nil;
   [self.billingAddressSelectionCoordinator stop];
   self.billingAddressSelectionCoordinator = nil;
   self.editViewController = nil;
@@ -171,15 +176,24 @@ bool IsValidCreditCardNumber(const base::string16& card_number,
             (PaymentRequestEditViewController*)controller
                           didSelectField:(EditorField*)field {
   if (field.autofillUIType == AutofillUITypeCreditCardBillingAddress) {
-    self.billingAddressSelectionCoordinator =
-        [[BillingAddressSelectionCoordinator alloc]
-            initWithBaseViewController:self.editViewController];
-    [self.billingAddressSelectionCoordinator
-        setPaymentRequest:self.paymentRequest];
-    [self.billingAddressSelectionCoordinator
-        setSelectedBillingProfile:self.mediator.billingProfile];
-    [self.billingAddressSelectionCoordinator setDelegate:self];
-    [self.billingAddressSelectionCoordinator start];
+    if (_paymentRequest->billing_profiles().empty()) {
+      self.addressEditCoordinator = [[AddressEditCoordinator alloc]
+          initWithBaseViewController:_viewController];
+      [self.addressEditCoordinator setPaymentRequest:_paymentRequest];
+      [self.addressEditCoordinator setDelegate:self];
+      [self.addressEditCoordinator start];
+      return;
+    } else {
+      self.billingAddressSelectionCoordinator =
+          [[BillingAddressSelectionCoordinator alloc]
+              initWithBaseViewController:self.editViewController];
+      [self.billingAddressSelectionCoordinator
+          setPaymentRequest:self.paymentRequest];
+      [self.billingAddressSelectionCoordinator
+          setSelectedBillingProfile:self.mediator.billingProfile];
+      [self.billingAddressSelectionCoordinator setDelegate:self];
+      [self.billingAddressSelectionCoordinator start];
+    }
   }
 }
 
@@ -272,6 +286,26 @@ bool IsValidCreditCardNumber(const base::string16& card_number,
     (BillingAddressSelectionCoordinator*)coordinator {
   [self.billingAddressSelectionCoordinator stop];
   self.billingAddressSelectionCoordinator = nil;
+}
+
+#pragma mark - AddressEditCoordinatorDelegate
+
+- (void)addressEditCoordinator:(AddressEditCoordinator*)coordinator
+       didFinishEditingAddress:(autofill::AutofillProfile*)address {
+  // Update view controller's data source with the selection and reload the view
+  // controller.
+  DCHECK(address);
+  [self.mediator setBillingProfile:address];
+  [self.editViewController loadModel];
+  [self.editViewController.collectionView reloadData];
+
+  [self.addressEditCoordinator stop];
+  self.addressEditCoordinator = nil;
+}
+
+- (void)addressEditCoordinatorDidCancel:(AddressEditCoordinator*)coordinator {
+  [self.addressEditCoordinator stop];
+  self.addressEditCoordinator = nil;
 }
 
 @end

@@ -6,6 +6,7 @@
 #define IOS_CHROME_BROWSER_UI_PAYMENTS_CREDIT_CARD_EDIT_COORDINATOR_H_
 
 #import "ios/chrome/browser/chrome_coordinator.h"
+#import "ios/chrome/browser/ui/payments/address_edit_coordinator.h"
 #import "ios/chrome/browser/ui/payments/billing_address_selection_coordinator.h"
 #import "ios/chrome/browser/ui/payments/payment_request_edit_view_controller.h"
 
@@ -38,9 +39,10 @@ class PaymentRequest;
 // controller. This view controller will be presented by the view controller
 // provided in the initializer.
 @interface CreditCardEditCoordinator
-    : ChromeCoordinator<PaymentRequestEditViewControllerDelegate,
-                        PaymentRequestEditViewControllerValidator,
-                        BillingAddressSelectionCoordinatorDelegate>
+    : ChromeCoordinator<AddressEditCoordinatorDelegate,
+                        BillingAddressSelectionCoordinatorDelegate,
+                        PaymentRequestEditViewControllerDelegate,
+                        PaymentRequestEditViewControllerValidator>
 
 // The credit card to be edited, if any. This pointer is not owned by this class
 // and should outlive it.
