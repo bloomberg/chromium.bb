@@ -32,8 +32,8 @@ namespace internal {
 
 namespace {
 
-const int64_t kBaseResourceListChangestamp = 123;
-const char kRootId[] = "fake_root";
+constexpr int64_t kBaseResourceListChangestamp = 123;
+constexpr char kRootId[] = "fake_root";
 
 enum FileOrDirectory {
   FILE,
@@ -137,23 +137,40 @@ class ChangeListProcessorTest : public testing::Test {
     about_resource->set_root_folder_id(kRootId);
 
     ChangeListProcessor processor(metadata_.get(), nullptr);
-    return processor.Apply(std::move(about_resource), std::move(changes),
-                           false /* is_delta_update */);
+    return processor.ApplyUserChangeList(std::move(about_resource),
+                                         std::move(changes),
+                                         false /* is_delta_update */);
   }
 
-  // Applies the |changes| to |metadata_| as a delta update. Delta changelists
-  // should contain their changestamp in themselves.
-  FileError ApplyChangeList(std::vector<std::unique_ptr<ChangeList>> changes,
-                            FileChange* changed_files) {
+  // Applies |changes| to |metadata_| as a delta update. The |changes| are
+  // treated as user's changelists. Delta changelists should contain their
+  // changestamp in themselves.
+  FileError ApplyUserChangeList(
+      std::vector<std::unique_ptr<ChangeList>> changes,
+      FileChange* changed_files) {
     std::unique_ptr<google_apis::AboutResource> about_resource(
         new google_apis::AboutResource);
     about_resource->set_largest_change_id(kBaseResourceListChangestamp);
     about_resource->set_root_folder_id(kRootId);
 
     ChangeListProcessor processor(metadata_.get(), nullptr);
+    FileError error = processor.ApplyUserChangeList(std::move(about_resource),
+                                                    std::move(changes),
+                                                    true /* is_delta_update */);
+    *changed_files = processor.changed_files();
+    return error;
+  }
+
+  // Applies the |changes| to |metadata_| as a delta update. Delta changelists
+  // should contain their changestamp in themselves. |team_drive_id| is the
+  // Team Drive's ID which is giving the change.
+  FileError ApplyTeamDriveChangeList(
+      const std::string& team_drive_id,
+      std::vector<std::unique_ptr<ChangeList>> changes,
+      FileChange* changed_files) {
+    ChangeListProcessor processor(metadata_.get(), nullptr);
     FileError error =
-        processor.Apply(std::move(about_resource), std::move(changes),
-                        true /* is_delta_update */);
+        processor.ApplyTeamDriveChangeList(team_drive_id, std::move(changes));
     *changed_files = processor.changed_files();
     return error;
   }
@@ -250,7 +267,7 @@ TEST_F(ChangeListProcessorTest, DeltaFileAddedInNewDirectory) {
 
   FileChange changed_files;
   EXPECT_EQ(FILE_ERROR_OK,
-            ApplyChangeList(std::move(change_lists), &changed_files));
+            ApplyUserChangeList(std::move(change_lists), &changed_files));
 
   int64_t changestamp = 0;
   EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
@@ -264,6 +281,88 @@ TEST_F(ChangeListProcessorTest, DeltaFileAddedInNewDirectory) {
       "drive/root/New Directory/File in new dir.txt")));
   EXPECT_TRUE(changed_files.count(
       base::FilePath::FromUTF8Unsafe("drive/root/New Directory")));
+}
+
+TEST_F(ChangeListProcessorTest, DeltaFileAddedInNewDirectoryByTeamDriveChange) {
+  constexpr int64_t kBaseResourceListChangestampForTeamDrive = 12;
+  constexpr char kTeamDriveId[] = "theTeamDriveId";
+
+  std::vector<std::unique_ptr<ChangeList>> change_lists;
+  change_lists.push_back(base::MakeUnique<ChangeList>());
+
+  // Set up a Team Drive root directory.
+  ResourceEntry team_drive;
+  team_drive.set_title("My Team Drive");
+  team_drive.set_resource_id(kTeamDriveId);
+  team_drive.set_parent_local_id(util::kDriveTeamDrivesDirLocalId);
+  team_drive.mutable_file_info()->set_is_directory(true);
+
+  change_lists.push_back(base::MakeUnique<ChangeList>());
+  change_lists[0]->mutable_entries()->push_back(team_drive);
+  change_lists[0]->set_largest_changestamp(kBaseResourceListChangestamp);
+  change_lists[0]->mutable_parent_resource_ids()->push_back("");
+
+  EXPECT_EQ(FILE_ERROR_OK, ApplyFullResourceList(CreateBaseChangeList()));
+  FileChange changed_files;
+  EXPECT_EQ(FILE_ERROR_OK,
+            ApplyUserChangeList(std::move(change_lists), &changed_files));
+  std::unique_ptr<ResourceEntry> team_drive_root =
+      GetResourceEntry("drive/team_drives/My Team Drive");
+  ASSERT_TRUE(team_drive_root);
+  EXPECT_FALSE(team_drive_root->local_id().empty());
+  change_lists.clear();
+  change_lists.push_back(base::MakeUnique<ChangeList>());
+
+  // Add files to the Team Drive directory.
+  ResourceEntry new_folder;
+  new_folder.set_resource_id("new_folder_resource_id");
+  new_folder.set_title("New Directory");
+  new_folder.mutable_file_info()->set_is_directory(true);
+  change_lists[0]->mutable_entries()->push_back(new_folder);
+  change_lists[0]->mutable_parent_resource_ids()->push_back(kTeamDriveId);
+
+  ResourceEntry new_file;
+  new_file.set_resource_id("file_added_in_new_dir_id");
+  new_file.set_title("File in new dir.txt");
+  change_lists[0]->mutable_entries()->push_back(new_file);
+  change_lists[0]->mutable_parent_resource_ids()->push_back(
+      new_folder.resource_id());
+
+  change_lists[0]->set_largest_changestamp(
+      kBaseResourceListChangestampForTeamDrive);
+
+  EXPECT_EQ(FILE_ERROR_OK,
+            ApplyTeamDriveChangeList(kTeamDriveId, std::move(change_lists),
+                                     &changed_files));
+
+  std::unique_ptr<ResourceEntry> result_team_drive_root =
+      GetResourceEntry("drive/team_drives/My Team Drive");
+  EXPECT_EQ(kBaseResourceListChangestampForTeamDrive,
+            result_team_drive_root->directory_specific_info().changestamp());
+
+  // The "My Drive" root directory entry should be kept unchanged.
+  std::unique_ptr<ResourceEntry> result_drive_root =
+      GetResourceEntry("drive/root");
+  EXPECT_EQ(kBaseResourceListChangestamp,
+            result_drive_root->directory_specific_info().changestamp());
+
+  // The largest changestamp in the header, which holds next change ID of the
+  // user's change list, should also be kept unchanged. Otherwise loading Team
+  // Drive's change list would break the syncing of the user's change.
+  int64_t changestamp = 0;
+  EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
+  EXPECT_EQ(kBaseResourceListChangestamp, changestamp);
+
+  EXPECT_TRUE(
+      GetResourceEntry("drive/team_drives/My Team Drive/New Directory"));
+  EXPECT_TRUE(GetResourceEntry(
+      "drive/team_drives/My Team Drive/New Directory/File in new dir.txt"));
+
+  EXPECT_EQ(2U, changed_files.size());
+  EXPECT_TRUE(changed_files.count(base::FilePath::FromUTF8Unsafe(
+      "drive/team_drives/My Team Drive/New Directory/File in new dir.txt")));
+  EXPECT_TRUE(changed_files.count(base::FilePath::FromUTF8Unsafe(
+      "drive/team_drives/My Team Drive/New Directory")));
 }
 
 TEST_F(ChangeListProcessorTest, DeltaDirMovedFromRootToDirectory) {
@@ -285,7 +384,7 @@ TEST_F(ChangeListProcessorTest, DeltaDirMovedFromRootToDirectory) {
 
   FileChange changed_files;
   EXPECT_EQ(FILE_ERROR_OK,
-            ApplyChangeList(std::move(change_lists), &changed_files));
+            ApplyUserChangeList(std::move(change_lists), &changed_files));
 
   int64_t changestamp = 0;
   EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
@@ -321,7 +420,7 @@ TEST_F(ChangeListProcessorTest, DeltaFileMovedFromDirectoryToRoot) {
   EXPECT_EQ(FILE_ERROR_OK, ApplyFullResourceList(CreateBaseChangeList()));
   FileChange changed_files;
   EXPECT_EQ(FILE_ERROR_OK,
-            ApplyChangeList(std::move(change_lists), &changed_files));
+            ApplyUserChangeList(std::move(change_lists), &changed_files));
 
   int64_t changestamp = 0;
   EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
@@ -354,7 +453,7 @@ TEST_F(ChangeListProcessorTest, DeltaFileRenamedInDirectory) {
   EXPECT_EQ(FILE_ERROR_OK, ApplyFullResourceList(CreateBaseChangeList()));
   FileChange changed_files;
   EXPECT_EQ(FILE_ERROR_OK,
-            ApplyChangeList(std::move(change_lists), &changed_files));
+            ApplyUserChangeList(std::move(change_lists), &changed_files));
   EXPECT_EQ(2U, changed_files.size());
   EXPECT_TRUE(changed_files.count(base::FilePath::FromUTF8Unsafe(
       "drive/root/Directory 1/SubDirectory File 1.txt")));
@@ -393,7 +492,7 @@ TEST_F(ChangeListProcessorTest, DeltaAddAndDeleteFileInRoot) {
   EXPECT_EQ(FILE_ERROR_OK, ApplyFullResourceList(CreateBaseChangeList()));
   FileChange changed_files;
   EXPECT_EQ(FILE_ERROR_OK,
-            ApplyChangeList(std::move(change_lists), &changed_files));
+            ApplyUserChangeList(std::move(change_lists), &changed_files));
 
   int64_t changestamp = 0;
   EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
@@ -414,7 +513,7 @@ TEST_F(ChangeListProcessorTest, DeltaAddAndDeleteFileInRoot) {
 
   // Apply.
   EXPECT_EQ(FILE_ERROR_OK,
-            ApplyChangeList(std::move(change_lists), &changed_files));
+            ApplyUserChangeList(std::move(change_lists), &changed_files));
   EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
   EXPECT_EQ(16687, changestamp);
   EXPECT_FALSE(GetResourceEntry("drive/root/Added file.txt"));
@@ -442,7 +541,7 @@ TEST_F(ChangeListProcessorTest, DeltaAddAndDeleteFileFromExistingDirectory) {
   EXPECT_EQ(FILE_ERROR_OK, ApplyFullResourceList(CreateBaseChangeList()));
   FileChange changed_files;
   EXPECT_EQ(FILE_ERROR_OK,
-            ApplyChangeList(std::move(change_lists), &changed_files));
+            ApplyUserChangeList(std::move(change_lists), &changed_files));
   int64_t changestamp = 0;
   EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
   EXPECT_EQ(16730, changestamp);
@@ -464,7 +563,7 @@ TEST_F(ChangeListProcessorTest, DeltaAddAndDeleteFileFromExistingDirectory) {
 
   // Apply.
   EXPECT_EQ(FILE_ERROR_OK,
-            ApplyChangeList(std::move(change_lists), &changed_files));
+            ApplyUserChangeList(std::move(change_lists), &changed_files));
   EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
   EXPECT_EQ(16770, changestamp);
   EXPECT_FALSE(GetResourceEntry("drive/root/Directory 1/Added file.txt"));
@@ -504,7 +603,7 @@ TEST_F(ChangeListProcessorTest, DeltaAddFileToNewButDeletedDirectory) {
   EXPECT_EQ(FILE_ERROR_OK, ApplyFullResourceList(CreateBaseChangeList()));
   FileChange changed_files;
   EXPECT_EQ(FILE_ERROR_OK,
-            ApplyChangeList(std::move(change_lists), &changed_files));
+            ApplyUserChangeList(std::move(change_lists), &changed_files));
 
   int64_t changestamp = 0;
   EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
@@ -609,7 +708,7 @@ TEST_F(ChangeListProcessorTest, SharedFilesWithNoParentInFeed) {
 
   FileChange changed_files;
   EXPECT_EQ(FILE_ERROR_OK,
-            ApplyChangeList(std::move(change_lists), &changed_files));
+            ApplyUserChangeList(std::move(change_lists), &changed_files));
 
   // "new_file" should be added under drive/other.
   ResourceEntry entry;
@@ -654,7 +753,7 @@ TEST_F(ChangeListProcessorTest, ModificationDate) {
   // Apply the change.
   FileChange changed_files;
   EXPECT_EQ(FILE_ERROR_OK,
-            ApplyChangeList(std::move(change_lists), &changed_files));
+            ApplyUserChangeList(std::move(change_lists), &changed_files));
 
   // The change is rejected due to the old modification date.
   ResourceEntry entry;
@@ -683,7 +782,7 @@ TEST_F(ChangeListProcessorTest, DeltaTeamDriveChange) {
 
   FileChange changed_files;
   EXPECT_EQ(FILE_ERROR_OK,
-            ApplyChangeList(std::move(change_lists), &changed_files));
+            ApplyUserChangeList(std::move(change_lists), &changed_files));
 
   int64_t changestamp = 0;
   EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
@@ -707,7 +806,7 @@ TEST_F(ChangeListProcessorTest, DeltaTeamDriveChange) {
   change_lists[0]->set_largest_changestamp(kBaseResourceListChangestamp + 2);
   change_lists[0]->mutable_parent_resource_ids()->push_back("");
   EXPECT_EQ(FILE_ERROR_OK,
-            ApplyChangeList(std::move(change_lists), &changed_files));
+            ApplyUserChangeList(std::move(change_lists), &changed_files));
   EXPECT_EQ(
       FILE_ERROR_OK,
       metadata_->GetResourceEntryByPath(
@@ -722,7 +821,7 @@ TEST_F(ChangeListProcessorTest, DeltaTeamDriveChange) {
   change_lists[0]->mutable_parent_resource_ids()->push_back("");
   change_lists[0]->mutable_entries()->push_back(team_drive);
   EXPECT_EQ(FILE_ERROR_OK,
-            ApplyChangeList(std::move(change_lists), &changed_files));
+            ApplyUserChangeList(std::move(change_lists), &changed_files));
   EXPECT_EQ(
       FILE_ERROR_NOT_FOUND,
       metadata_->GetResourceEntryByPath(
