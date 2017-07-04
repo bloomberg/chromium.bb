@@ -50,6 +50,7 @@ suite('<bookmarks-command-manager>', function() {
                 createFolder('21', []),
               ]),
           createFolder('3', bulkChildren)),
+      selectedFolder: '1',
     });
     store.replaceSingleton();
 
@@ -59,10 +60,11 @@ suite('<bookmarks-command-manager>', function() {
         document.createElement('bookmarks-toast-manager'));
   });
 
-  test('can only copy single URL items', function() {
-    assertFalse(commandManager.canExecute(Command.COPY, new Set(['11'])));
-    assertFalse(commandManager.canExecute(Command.COPY, new Set(['11', '13'])));
-    assertTrue(commandManager.canExecute(Command.COPY, new Set(['13'])));
+  test('Copy URL is only active for single URL items', function() {
+    assertFalse(commandManager.canExecute(Command.COPY_URL, new Set(['11'])));
+    assertFalse(
+        commandManager.canExecute(Command.COPY_URL, new Set(['11', '13'])));
+    assertTrue(commandManager.canExecute(Command.COPY_URL, new Set(['13'])));
   });
 
   test('context menu hides invalid commands', function() {
@@ -79,32 +81,32 @@ suite('<bookmarks-command-manager>', function() {
 
     // With a folder and an item selected, the only available context menu item
     // is 'Delete'.
-    assertTrue(commandHidden['edit']);
-    assertTrue(commandHidden['copy']);
-    assertFalse(commandHidden['delete']);
+    assertTrue(commandHidden[Command.EDIT]);
+    assertTrue(commandHidden[Command.COPY_URL]);
+    assertFalse(commandHidden[Command.DELETE]);
   });
 
-  test('keyboard shortcuts trigger when valid', function() {
-    var modifier = cr.isMac ? 'meta' : 'ctrl';
+  test('edit shortcut triggers when valid', function() {
+    var key = cr.isMac ? 'Enter' : 'F2';
 
     store.data.selection.items = new Set(['13']);
     store.notifyObservers();
 
-    MockInteractions.pressAndReleaseKeyOn(document.body, 67, modifier, 'c');
-    commandManager.assertLastCommand('copy', ['13']);
+    MockInteractions.pressAndReleaseKeyOn(document.body, '', [], key);
+    commandManager.assertLastCommand('edit', ['13']);
 
-    // Doesn't trigger when a folder is selected.
-    store.data.selection.items = new Set(['11']);
+    // Doesn't trigger when multiple items are selected.
+    store.data.selection.items = new Set(['11', '13']);
     store.notifyObservers();
 
-    MockInteractions.pressAndReleaseKeyOn(document.body, 67, modifier, 'c');
+    MockInteractions.pressAndReleaseKeyOn(document.body, '', [], key);
     commandManager.assertLastCommand(null);
 
     // Doesn't trigger when nothing is selected.
     store.data.selection.items = new Set();
     store.notifyObservers();
 
-    MockInteractions.pressAndReleaseKeyOn(document.body, 67, modifier, 'c');
+    MockInteractions.pressAndReleaseKeyOn(document.body, '', [], key);
     commandManager.assertLastCommand(null);
   });
 
@@ -116,15 +118,35 @@ suite('<bookmarks-command-manager>', function() {
     commandManager.assertLastCommand('delete', ['12', '13']);
   });
 
-  test('edit command triggers', function() {
-    var key = cr.isMac ? 'Enter' : 'F2';
-    var keyCode = cr.isMac ? 13 : 113;
+  test('copy command triggers', function() {
+    var modifier = cr.isMac ? 'meta' : 'ctrl';
 
-    store.data.selection.items = new Set(['11']);
+    store.data.selection.items = new Set(['11', '13']);
     store.notifyObservers();
 
-    MockInteractions.pressAndReleaseKeyOn(document.body, keyCode, '', key);
-    commandManager.assertLastCommand('edit', ['11']);
+    MockInteractions.pressAndReleaseKeyOn(document.body, '', modifier, 'c');
+    commandManager.assertLastCommand('copy', ['11', '13']);
+  });
+
+  test('cut/paste commands trigger', function() {
+    var lastCut;
+    var lastPaste;
+    chrome.bookmarkManagerPrivate.cut = function(idList) {
+      lastCut = idList.sort();
+    };
+    chrome.bookmarkManagerPrivate.paste = function(selectedFolder) {
+      lastPaste = selectedFolder;
+    };
+
+    var modifier = cr.isMac ? 'meta' : 'ctrl';
+
+    store.data.selection.items = new Set(['11', '13']);
+    store.notifyObservers();
+
+    MockInteractions.pressAndReleaseKeyOn(document.body, '', modifier, 'x');
+    assertDeepEquals(['11', '13'], lastCut);
+    MockInteractions.pressAndReleaseKeyOn(document.body, '', modifier, 'v');
+    assertEquals('1', lastPaste);
   });
 
   test('undo and redo commands trigger', function() {
