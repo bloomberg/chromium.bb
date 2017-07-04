@@ -43,7 +43,7 @@ static void VerifyUrlRequestContextConfig(
   CHECK_EQ(config->http_cache, URLRequestContextConfig::HttpCacheType::MEMORY);
   CHECK_EQ(config->http_cache_max_size, 54321);
   CHECK_EQ(config->user_agent, "efgh");
-  CHECK_EQ(config->experimental_options, "ijkl");
+  CHECK(!config->effective_experimental_options);
   CHECK_EQ(config->storage_path,
            base::android::ConvertJavaStringToUTF8(env, jstorage_path));
 }
