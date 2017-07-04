@@ -7,9 +7,17 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/fonts/FontCache.h"
+#include "platform/fonts/SimpleFontData.h"
+#include "platform/fonts/shaping/HarfBuzzFontCache.h"
+#include "platform/wtf/HashMap.h"
 #include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/text/AtomicStringHash.h"
+
+struct hb_font_funcs_t;
 
 namespace blink {
+
+class FontCache;
 
 enum CreateIfNeeded { kDoNotCreate, kCreate };
 
@@ -21,7 +29,19 @@ class PLATFORM_EXPORT FontGlobalContext {
  public:
   static FontGlobalContext* Get(CreateIfNeeded = kCreate);
 
-  static inline FontCache& GetFontCache() { return Get()->font_cache; }
+  static inline FontCache& GetFontCache() { return Get()->font_cache_; }
+
+  static inline HarfBuzzFontCache& GetHarfBuzzFontCache() {
+    return Get()->harf_buzz_font_cache_;
+  }
+
+  static hb_font_funcs_t* GetHarfBuzzFontFuncs() {
+    return Get()->harfbuzz_font_funcs_;
+  }
+
+  static void SetHarfBuzzFontFuncs(hb_font_funcs_t* funcs) {
+    Get()->harfbuzz_font_funcs_ = funcs;
+  }
 
   // Called by MemoryCoordinator to clear memory.
   static void ClearMemory();
@@ -31,7 +51,11 @@ class PLATFORM_EXPORT FontGlobalContext {
 
   FontGlobalContext();
 
-  FontCache font_cache;
+  FontCache font_cache_;
+
+  HarfBuzzFontCache harf_buzz_font_cache_;
+
+  hb_font_funcs_t* harfbuzz_font_funcs_;
 };
 
 }  // namespace blink

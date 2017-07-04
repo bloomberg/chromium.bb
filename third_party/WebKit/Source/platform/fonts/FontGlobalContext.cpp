@@ -19,7 +19,7 @@ FontGlobalContext* FontGlobalContext::Get(CreateIfNeeded create_if_needed) {
   return *font_persistent;
 }
 
-FontGlobalContext::FontGlobalContext() {}
+FontGlobalContext::FontGlobalContext() : harfbuzz_font_funcs_(nullptr) {}
 
 void FontGlobalContext::ClearMemory() {
   if (!Get(kDoNotCreate))
