@@ -39,16 +39,10 @@ enum class WebFeaturePolicyFeature {
   kDocumentDomain,
   // Controls access to document.write and document.writeln methods.
   kDocumentWrite,
-  // Controls access to Notification interface.
-  kNotifications,
-  // Controls access to PushManager interface.
-  kPush,
   // Controls whether synchronous script elements will run.
   kSyncScript,
   // Controls use of synchronous XMLHTTPRequest API.
   kSyncXHR,
-  // Controls access to RTCPeerConnection interface.
-  kWebRTC,
   // Controls access to the WebUSB API.
   kUsb,
   LAST_FEATURE = kUsb

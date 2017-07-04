@@ -107,34 +107,28 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
                                  WebFeaturePolicyFeature::kFullscreen);
     default_feature_name_map.Set("payment", WebFeaturePolicyFeature::kPayment);
     default_feature_name_map.Set("usb", WebFeaturePolicyFeature::kUsb);
+    default_feature_name_map.Set("camera", WebFeaturePolicyFeature::kCamera);
+    default_feature_name_map.Set("encrypted-media",
+                                 WebFeaturePolicyFeature::kEme);
+    default_feature_name_map.Set("microphone",
+                                 WebFeaturePolicyFeature::kMicrophone);
+    default_feature_name_map.Set("speaker", WebFeaturePolicyFeature::kSpeaker);
+    default_feature_name_map.Set("geolocation",
+                                 WebFeaturePolicyFeature::kGeolocation);
+    default_feature_name_map.Set("midi", WebFeaturePolicyFeature::kMidiFeature);
     if (RuntimeEnabledFeatures::FeaturePolicyExperimentalFeaturesEnabled()) {
       default_feature_name_map.Set("vibrate",
                                    WebFeaturePolicyFeature::kVibrate);
-      default_feature_name_map.Set("camera", WebFeaturePolicyFeature::kCamera);
-      default_feature_name_map.Set("encrypted-media",
-                                   WebFeaturePolicyFeature::kEme);
-      default_feature_name_map.Set("microphone",
-                                   WebFeaturePolicyFeature::kMicrophone);
-      default_feature_name_map.Set("speaker",
-                                   WebFeaturePolicyFeature::kSpeaker);
       default_feature_name_map.Set("cookie",
                                    WebFeaturePolicyFeature::kDocumentCookie);
       default_feature_name_map.Set("domain",
                                    WebFeaturePolicyFeature::kDocumentDomain);
       default_feature_name_map.Set("docwrite",
                                    WebFeaturePolicyFeature::kDocumentWrite);
-      default_feature_name_map.Set("geolocation",
-                                   WebFeaturePolicyFeature::kGeolocation);
-      default_feature_name_map.Set("midi",
-                                   WebFeaturePolicyFeature::kMidiFeature);
-      default_feature_name_map.Set("notifications",
-                                   WebFeaturePolicyFeature::kNotifications);
-      default_feature_name_map.Set("push", WebFeaturePolicyFeature::kPush);
       default_feature_name_map.Set("sync-script",
                                    WebFeaturePolicyFeature::kSyncScript);
       default_feature_name_map.Set("sync-xhr",
                                    WebFeaturePolicyFeature::kSyncXHR);
-      default_feature_name_map.Set("webrtc", WebFeaturePolicyFeature::kWebRTC);
     }
   }
   return default_feature_name_map;
