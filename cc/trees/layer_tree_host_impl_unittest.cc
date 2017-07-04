@@ -1034,12 +1034,15 @@ TEST_F(LayerTreeHostImplTest, ScrollBlocksOnTouchEventHandlers) {
   }
 
   // Touch handler regions determine whether touch events block scroll.
+  TouchAction touch_action;
   TouchActionRegion touch_action_region;
-  touch_action_region.Union(kTouchActionNone, gfx::Rect(0, 0, 100, 100));
+  touch_action_region.Union(kTouchActionPanLeft, gfx::Rect(0, 0, 100, 100));
+  touch_action_region.Union(kTouchActionPanRight, gfx::Rect(25, 25, 100, 100));
   root->SetTouchActionRegion(std::move(touch_action_region));
-  EXPECT_EQ(
-      InputHandler::TouchStartOrMoveEventListenerType::HANDLER,
-      host_impl_->EventListenerTypeForTouchStartOrMoveAt(gfx::Point(10, 10)));
+  EXPECT_EQ(InputHandler::TouchStartOrMoveEventListenerType::HANDLER,
+            host_impl_->EventListenerTypeForTouchStartOrMoveAt(
+                gfx::Point(10, 10), &touch_action));
+  EXPECT_EQ(kTouchActionPanLeft, touch_action);
 
   // But they don't influence the actual handling of the scroll gestures.
   InputHandler::ScrollStatus status = host_impl_->ScrollBegin(
@@ -1049,19 +1052,21 @@ TEST_F(LayerTreeHostImplTest, ScrollBlocksOnTouchEventHandlers) {
             status.main_thread_scrolling_reasons);
   host_impl_->ScrollEnd(EndState().get());
 
-  EXPECT_EQ(
-      InputHandler::TouchStartOrMoveEventListenerType::HANDLER,
-      host_impl_->EventListenerTypeForTouchStartOrMoveAt(gfx::Point(10, 30)));
+  EXPECT_EQ(InputHandler::TouchStartOrMoveEventListenerType::HANDLER,
+            host_impl_->EventListenerTypeForTouchStartOrMoveAt(
+                gfx::Point(10, 30), &touch_action));
   root->SetTouchActionRegion(TouchActionRegion());
-  EXPECT_EQ(
-      InputHandler::TouchStartOrMoveEventListenerType::NO_HANDLER,
-      host_impl_->EventListenerTypeForTouchStartOrMoveAt(gfx::Point(10, 30)));
+  EXPECT_EQ(InputHandler::TouchStartOrMoveEventListenerType::NO_HANDLER,
+            host_impl_->EventListenerTypeForTouchStartOrMoveAt(
+                gfx::Point(10, 30), &touch_action));
+  EXPECT_EQ(kTouchActionAuto, touch_action);
   touch_action_region = TouchActionRegion();
-  touch_action_region.Union(kTouchActionNone, gfx::Rect(0, 0, 50, 50));
+  touch_action_region.Union(kTouchActionPanX, gfx::Rect(0, 0, 50, 50));
   child->SetTouchActionRegion(std::move(touch_action_region));
-  EXPECT_EQ(
-      InputHandler::TouchStartOrMoveEventListenerType::HANDLER,
-      host_impl_->EventListenerTypeForTouchStartOrMoveAt(gfx::Point(10, 30)));
+  EXPECT_EQ(InputHandler::TouchStartOrMoveEventListenerType::HANDLER,
+            host_impl_->EventListenerTypeForTouchStartOrMoveAt(
+                gfx::Point(10, 30), &touch_action));
+  EXPECT_EQ(kTouchActionPanX, touch_action);
 }
 
 TEST_F(LayerTreeHostImplTest, FlingOnlyWhenScrollingTouchscreen) {
@@ -10447,16 +10452,17 @@ TEST_F(LayerTreeHostImplTest, TouchInsideFlingLayer) {
   DrawFrame();
 
   {
+    TouchAction touch_action;
     // Touch on a layer which does not have a handler will return kNone.
-    EXPECT_EQ(
-        InputHandler::TouchStartOrMoveEventListenerType::NO_HANDLER,
-        host_impl_->EventListenerTypeForTouchStartOrMoveAt(gfx::Point(10, 10)));
+    EXPECT_EQ(InputHandler::TouchStartOrMoveEventListenerType::NO_HANDLER,
+              host_impl_->EventListenerTypeForTouchStartOrMoveAt(
+                  gfx::Point(10, 10), &touch_action));
     TouchActionRegion touch_action_region;
     touch_action_region.Union(kTouchActionNone, gfx::Rect(0, 0, 100, 100));
     child_layer->SetTouchActionRegion(touch_action_region);
-    EXPECT_EQ(
-        InputHandler::TouchStartOrMoveEventListenerType::HANDLER,
-        host_impl_->EventListenerTypeForTouchStartOrMoveAt(gfx::Point(10, 10)));
+    EXPECT_EQ(InputHandler::TouchStartOrMoveEventListenerType::HANDLER,
+              host_impl_->EventListenerTypeForTouchStartOrMoveAt(
+                  gfx::Point(10, 10), &touch_action));
     // Flinging the grand_child layer.
     EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
               host_impl_
@@ -10469,10 +10475,10 @@ TEST_F(LayerTreeHostImplTest, TouchInsideFlingLayer) {
               host_impl_->CurrentlyScrollingNode()->id);
     // Touch on the grand_child layer, which is an active fling layer, the touch
     // event handler will force to be passive.
-    EXPECT_EQ(
-        InputHandler::TouchStartOrMoveEventListenerType::
-            HANDLER_ON_SCROLLING_LAYER,
-        host_impl_->EventListenerTypeForTouchStartOrMoveAt(gfx::Point(70, 80)));
+    EXPECT_EQ(InputHandler::TouchStartOrMoveEventListenerType::
+                  HANDLER_ON_SCROLLING_LAYER,
+              host_impl_->EventListenerTypeForTouchStartOrMoveAt(
+                  gfx::Point(70, 80), &touch_action));
   }
 }
 
@@ -10531,16 +10537,17 @@ TEST_F(LayerTreeHostImplTest, TouchInsideOrOutsideFlingLayer) {
               host_impl_->CurrentlyScrollingNode()->id);
     // Touch on the grand_child layer, which is an active fling layer, the touch
     // event handler will force to be passive.
-    EXPECT_EQ(
-        InputHandler::TouchStartOrMoveEventListenerType::
-            HANDLER_ON_SCROLLING_LAYER,
-        host_impl_->EventListenerTypeForTouchStartOrMoveAt(gfx::Point(70, 80)));
+    TouchAction touch_action;
+    EXPECT_EQ(InputHandler::TouchStartOrMoveEventListenerType::
+                  HANDLER_ON_SCROLLING_LAYER,
+              host_impl_->EventListenerTypeForTouchStartOrMoveAt(
+                  gfx::Point(70, 80), &touch_action));
     // Touch on the great_grand_child_layer layer, which is the child of the
     // active fling layer, the touch event handler will force to be passive.
-    EXPECT_EQ(
-        InputHandler::TouchStartOrMoveEventListenerType::
-            HANDLER_ON_SCROLLING_LAYER,
-        host_impl_->EventListenerTypeForTouchStartOrMoveAt(gfx::Point(20, 30)));
+    EXPECT_EQ(InputHandler::TouchStartOrMoveEventListenerType::
+                  HANDLER_ON_SCROLLING_LAYER,
+              host_impl_->EventListenerTypeForTouchStartOrMoveAt(
+                  gfx::Point(20, 30), &touch_action));
 
     // Now flinging on the great_grand_child_layer.
     EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
@@ -10553,9 +10560,9 @@ TEST_F(LayerTreeHostImplTest, TouchInsideOrOutsideFlingLayer) {
     EXPECT_EQ(great_grand_child_layer->scroll_tree_index(),
               host_impl_->CurrentlyScrollingNode()->id);
     // Touch on the child layer, the touch event handler will be blocked.
-    EXPECT_EQ(
-        InputHandler::TouchStartOrMoveEventListenerType::HANDLER,
-        host_impl_->EventListenerTypeForTouchStartOrMoveAt(gfx::Point(60, 60)));
+    EXPECT_EQ(InputHandler::TouchStartOrMoveEventListenerType::HANDLER,
+              host_impl_->EventListenerTypeForTouchStartOrMoveAt(
+                  gfx::Point(60, 60), &touch_action));
   }
 }
 
