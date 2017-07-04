@@ -180,17 +180,20 @@ VisibleSelectionTemplate<Strategy>::ToNormalizedEphemeralRange() const {
 }
 
 template <typename Strategy>
-void VisibleSelectionTemplate<Strategy>::AppendTrailingWhitespace() {
+VisibleSelectionTemplate<Strategy>
+VisibleSelectionTemplate<Strategy>::AppendTrailingWhitespace() const {
   if (IsNone())
-    return;
+    return *this;
   DCHECK_EQ(granularity_, kWordGranularity);
   if (!IsRange())
-    return;
+    return *this;
   const PositionTemplate<Strategy>& new_end = SkipWhitespace(end_);
   if (end_ == new_end)
-    return;
-  has_trailing_whitespace_ = true;
-  end_ = new_end;
+    return *this;
+  VisibleSelectionTemplate<Strategy> result = *this;
+  result.has_trailing_whitespace_ = true;
+  result.end_ = new_end;
+  return result;
 }
 
 template <typename Strategy>
@@ -452,7 +455,7 @@ void VisibleSelectionTemplate<Strategy>::Validate(TextGranularity granularity) {
   }
   if (!has_trailing_whitespace_)
     return;
-  AppendTrailingWhitespace();
+  *this = AppendTrailingWhitespace();
 }
 
 template <typename Strategy>
