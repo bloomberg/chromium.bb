@@ -25,7 +25,8 @@ source_set("content_suggestions") {
   ]
   deps = [
     ":content_suggestions_util",
-    ":resources",
+    "resources:content_suggestions_no_image",
+    "resources:content_suggestions_offline",
     "//base",
     "//components/strings",
     "//ios/chrome/browser/ui",
@@ -83,18 +84,4 @@ source_set("unit_tests") {
     "//third_party/ocmock",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
-}
-
-bundle_data("resources") {
-  sources = [
-    "resources/content_suggestions_no_image.png",
-    "resources/content_suggestions_no_image@2x.png",
-    "resources/content_suggestions_no_image@3x.png",
-    "resources/content_suggestions_offline.png",
-    "resources/content_suggestions_offline@2x.png",
-    "resources/content_suggestions_offline@3x.png",
-  ]
-  outputs = [
-    "{{bundle_resources_dir}}/{{source_file_part}}",
-  ]
 }
