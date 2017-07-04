@@ -238,8 +238,10 @@ void SensorProxy::OnAddConfigurationCompleted(
 
 void SensorProxy::OnRemoveConfigurationCompleted(double frequency,
                                                  bool result) {
-  if (!result)
+  if (!result) {
     DVLOG(1) << "Failure at sensor configuration removal";
+    return;
+  }
 
   size_t index = frequencies_used_.Find(frequency);
   if (index == kNotFound) {
@@ -248,6 +250,7 @@ void SensorProxy::OnRemoveConfigurationCompleted(double frequency,
   }
 
   frequencies_used_.erase(index);
+  UpdatePollingStatus();
 }
 
 bool SensorProxy::TryReadFromBuffer(device::SensorReading& result) {
