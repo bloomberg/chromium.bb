@@ -2477,7 +2477,6 @@ crbug.com/701047 [ Mac10.12 ] editing/pasteboard/paste-line-endings-003.html [ F
 crbug.com/701047 [ Mac10.12 ] editing/pasteboard/paste-line-endings-004.html [ Failure ]
 crbug.com/701047 [ Mac10.12 ] editing/pasteboard/paste-line-endings-005.html [ Failure ]
 crbug.com/701047 [ Mac10.12 ] editing/pasteboard/paste-text-016.html [ Failure ]
-crbug.com/701047 [ Mac10.12 ] editing/selection/3690719.html [ Failure ]
 crbug.com/701047 [ Mac10.12 ] editing/selection/4975120.html [ Failure ]
 crbug.com/701047 [ Mac10.12 ] editing/selection/move-3875618-fix.html [ Failure ]
 crbug.com/701047 [ Mac10.12 ] editing/selection/move-3875641-fix.html [ Failure ]
