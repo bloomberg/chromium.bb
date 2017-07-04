@@ -43,7 +43,7 @@ class FakeTransformTransition : public TransformAnimationCurve {
   ~FakeTransformTransition() override;
 
   base::TimeDelta Duration() const override;
-  gfx::Transform GetValue(base::TimeDelta time) const override;
+  TransformOperations GetValue(base::TimeDelta time) const override;
   bool AnimatedBoundsForBox(const gfx::BoxF& box,
                             gfx::BoxF* bounds) const override;
   bool IsTranslation() const override;

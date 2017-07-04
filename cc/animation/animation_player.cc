@@ -12,6 +12,7 @@
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_timeline.h"
 #include "cc/animation/scroll_offset_animation_curve.h"
+#include "cc/animation/transform_operations.h"
 #include "cc/trees/property_animation_state.h"
 
 namespace cc {
@@ -739,10 +740,10 @@ void AnimationPlayer::TickAnimations(base::TimeTicks monotonic_time) {
         case TargetProperty::TRANSFORM: {
           const TransformAnimationCurve* transform_animation_curve =
               animations_[i]->curve()->ToTransformAnimationCurve();
-          const gfx::Transform transform =
+          const TransformOperations operations =
               transform_animation_curve->GetValue(trimmed);
-          element_animations_->NotifyClientTransformAnimated(
-              transform, animations_[i]->affects_active_elements(),
+          element_animations_->NotifyClientTransformOperationsAnimated(
+              operations, animations_[i]->affects_active_elements(),
               animations_[i]->affects_pending_elements());
           break;
         }

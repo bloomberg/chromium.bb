@@ -90,11 +90,37 @@ static SkMScalar BlendSkMScalars(SkMScalar from,
   return from * (1 - progress) + to * progress;
 }
 
+void TransformOperation::Bake() {
+  matrix.MakeIdentity();
+  switch (type) {
+    case TransformOperation::TRANSFORM_OPERATION_TRANSLATE:
+      matrix.Translate3d(translate.x, translate.y, translate.z);
+      break;
+    case TransformOperation::TRANSFORM_OPERATION_ROTATE:
+      matrix.RotateAbout(
+          gfx::Vector3dF(rotate.axis.x, rotate.axis.y, rotate.axis.z),
+          rotate.angle);
+      break;
+    case TransformOperation::TRANSFORM_OPERATION_SCALE:
+      matrix.Scale3d(scale.x, scale.y, scale.z);
+      break;
+    case TransformOperation::TRANSFORM_OPERATION_SKEW:
+      matrix.Skew(skew.x, skew.y);
+      break;
+    case TransformOperation::TRANSFORM_OPERATION_PERSPECTIVE:
+      matrix.ApplyPerspectiveDepth(perspective_depth);
+      break;
+    case TransformOperation::TRANSFORM_OPERATION_MATRIX:
+    case TransformOperation::TRANSFORM_OPERATION_IDENTITY:
+      break;
+  }
+}
+
 bool TransformOperation::BlendTransformOperations(
     const TransformOperation* from,
     const TransformOperation* to,
     SkMScalar progress,
-    gfx::Transform* result) {
+    TransformOperation* result) {
   if (IsOperationIdentity(from) && IsOperationIdentity(to))
     return true;
 
@@ -104,97 +130,101 @@ bool TransformOperation::BlendTransformOperations(
     interpolation_type = from->type;
   else
     interpolation_type = to->type;
+  result->type = interpolation_type;
 
   switch (interpolation_type) {
     case TransformOperation::TRANSFORM_OPERATION_TRANSLATE: {
-    SkMScalar from_x = IsOperationIdentity(from) ? 0 : from->translate.x;
-    SkMScalar from_y = IsOperationIdentity(from) ? 0 : from->translate.y;
-    SkMScalar from_z = IsOperationIdentity(from) ? 0 : from->translate.z;
-    SkMScalar to_x = IsOperationIdentity(to) ? 0 : to->translate.x;
-    SkMScalar to_y = IsOperationIdentity(to) ? 0 : to->translate.y;
-    SkMScalar to_z = IsOperationIdentity(to) ? 0 : to->translate.z;
-    result->Translate3d(BlendSkMScalars(from_x, to_x, progress),
-                        BlendSkMScalars(from_y, to_y, progress),
-                        BlendSkMScalars(from_z, to_z, progress));
-    break;
-  }
-  case TransformOperation::TRANSFORM_OPERATION_ROTATE: {
-    SkMScalar axis_x = 0;
-    SkMScalar axis_y = 0;
-    SkMScalar axis_z = 1;
-    SkMScalar from_angle = 0;
-    SkMScalar to_angle = IsOperationIdentity(to) ? 0 : to->rotate.angle;
-    if (ShareSameAxis(from, to, &axis_x, &axis_y, &axis_z, &from_angle)) {
-      result->RotateAbout(gfx::Vector3dF(axis_x, axis_y, axis_z),
-                          BlendSkMScalars(from_angle, to_angle, progress));
-    } else {
-      gfx::Transform to_matrix;
+      SkMScalar from_x = IsOperationIdentity(from) ? 0 : from->translate.x;
+      SkMScalar from_y = IsOperationIdentity(from) ? 0 : from->translate.y;
+      SkMScalar from_z = IsOperationIdentity(from) ? 0 : from->translate.z;
+      SkMScalar to_x = IsOperationIdentity(to) ? 0 : to->translate.x;
+      SkMScalar to_y = IsOperationIdentity(to) ? 0 : to->translate.y;
+      SkMScalar to_z = IsOperationIdentity(to) ? 0 : to->translate.z;
+      result->translate.x = BlendSkMScalars(from_x, to_x, progress),
+      result->translate.y = BlendSkMScalars(from_y, to_y, progress),
+      result->translate.z = BlendSkMScalars(from_z, to_z, progress),
+      result->Bake();
+      break;
+    }
+    case TransformOperation::TRANSFORM_OPERATION_ROTATE: {
+      SkMScalar axis_x = 0;
+      SkMScalar axis_y = 0;
+      SkMScalar axis_z = 1;
+      SkMScalar from_angle = 0;
+      SkMScalar to_angle = IsOperationIdentity(to) ? 0 : to->rotate.angle;
+      if (ShareSameAxis(from, to, &axis_x, &axis_y, &axis_z, &from_angle)) {
+        result->rotate.axis.x = axis_x;
+        result->rotate.axis.y = axis_y;
+        result->rotate.axis.z = axis_z;
+        result->rotate.angle = BlendSkMScalars(from_angle, to_angle, progress);
+        result->Bake();
+      } else {
+        if (!IsOperationIdentity(to))
+          result->matrix = to->matrix;
+        gfx::Transform from_matrix;
+        if (!IsOperationIdentity(from))
+          from_matrix = from->matrix;
+        if (!result->matrix.Blend(from_matrix, progress))
+          return false;
+      }
+      break;
+    }
+    case TransformOperation::TRANSFORM_OPERATION_SCALE: {
+      SkMScalar from_x = IsOperationIdentity(from) ? 1 : from->scale.x;
+      SkMScalar from_y = IsOperationIdentity(from) ? 1 : from->scale.y;
+      SkMScalar from_z = IsOperationIdentity(from) ? 1 : from->scale.z;
+      SkMScalar to_x = IsOperationIdentity(to) ? 1 : to->scale.x;
+      SkMScalar to_y = IsOperationIdentity(to) ? 1 : to->scale.y;
+      SkMScalar to_z = IsOperationIdentity(to) ? 1 : to->scale.z;
+      result->scale.x = BlendSkMScalars(from_x, to_x, progress);
+      result->scale.y = BlendSkMScalars(from_y, to_y, progress);
+      result->scale.z = BlendSkMScalars(from_z, to_z, progress);
+      result->Bake();
+      break;
+    }
+    case TransformOperation::TRANSFORM_OPERATION_SKEW: {
+      SkMScalar from_x = IsOperationIdentity(from) ? 0 : from->skew.x;
+      SkMScalar from_y = IsOperationIdentity(from) ? 0 : from->skew.y;
+      SkMScalar to_x = IsOperationIdentity(to) ? 0 : to->skew.x;
+      SkMScalar to_y = IsOperationIdentity(to) ? 0 : to->skew.y;
+      result->skew.x = BlendSkMScalars(from_x, to_x, progress);
+      result->skew.y = BlendSkMScalars(from_y, to_y, progress);
+      result->Bake();
+      break;
+    }
+    case TransformOperation::TRANSFORM_OPERATION_PERSPECTIVE: {
+      SkMScalar from_perspective_depth =
+          IsOperationIdentity(from) ? std::numeric_limits<SkMScalar>::max()
+                                    : from->perspective_depth;
+      SkMScalar to_perspective_depth =
+          IsOperationIdentity(to) ? std::numeric_limits<SkMScalar>::max()
+                                  : to->perspective_depth;
+      if (from_perspective_depth == 0.f || to_perspective_depth == 0.f)
+        return false;
+
+      SkMScalar blended_perspective_depth = BlendSkMScalars(
+          1.f / from_perspective_depth, 1.f / to_perspective_depth, progress);
+
+      if (blended_perspective_depth == 0.f)
+        return false;
+
+      result->perspective_depth = 1.f / blended_perspective_depth;
+      result->Bake();
+      break;
+    }
+    case TransformOperation::TRANSFORM_OPERATION_MATRIX: {
       if (!IsOperationIdentity(to))
-        to_matrix = to->matrix;
+        result->matrix = to->matrix;
       gfx::Transform from_matrix;
       if (!IsOperationIdentity(from))
         from_matrix = from->matrix;
-      *result = to_matrix;
-      if (!result->Blend(from_matrix, progress))
+      if (!result->matrix.Blend(from_matrix, progress))
         return false;
+      break;
     }
-    break;
-  }
-  case TransformOperation::TRANSFORM_OPERATION_SCALE: {
-    SkMScalar from_x = IsOperationIdentity(from) ? 1 : from->scale.x;
-    SkMScalar from_y = IsOperationIdentity(from) ? 1 : from->scale.y;
-    SkMScalar from_z = IsOperationIdentity(from) ? 1 : from->scale.z;
-    SkMScalar to_x = IsOperationIdentity(to) ? 1 : to->scale.x;
-    SkMScalar to_y = IsOperationIdentity(to) ? 1 : to->scale.y;
-    SkMScalar to_z = IsOperationIdentity(to) ? 1 : to->scale.z;
-    result->Scale3d(BlendSkMScalars(from_x, to_x, progress),
-                    BlendSkMScalars(from_y, to_y, progress),
-                    BlendSkMScalars(from_z, to_z, progress));
-    break;
-  }
-  case TransformOperation::TRANSFORM_OPERATION_SKEW: {
-    SkMScalar from_x = IsOperationIdentity(from) ? 0 : from->skew.x;
-    SkMScalar from_y = IsOperationIdentity(from) ? 0 : from->skew.y;
-    SkMScalar to_x = IsOperationIdentity(to) ? 0 : to->skew.x;
-    SkMScalar to_y = IsOperationIdentity(to) ? 0 : to->skew.y;
-    result->Skew(BlendSkMScalars(from_x, to_x, progress),
-                 BlendSkMScalars(from_y, to_y, progress));
-    break;
-  }
-  case TransformOperation::TRANSFORM_OPERATION_PERSPECTIVE: {
-    SkMScalar from_perspective_depth =
-        IsOperationIdentity(from) ? std::numeric_limits<SkMScalar>::max()
-                                  : from->perspective_depth;
-    SkMScalar to_perspective_depth =
-        IsOperationIdentity(to) ? std::numeric_limits<SkMScalar>::max()
-                                : to->perspective_depth;
-    if (from_perspective_depth == 0.f || to_perspective_depth == 0.f)
-      return false;
-
-    SkMScalar blended_perspective_depth = BlendSkMScalars(
-        1.f / from_perspective_depth, 1.f / to_perspective_depth, progress);
-
-    if (blended_perspective_depth == 0.f)
-      return false;
-
-    result->ApplyPerspectiveDepth(1.f / blended_perspective_depth);
-    break;
-  }
-  case TransformOperation::TRANSFORM_OPERATION_MATRIX: {
-    gfx::Transform to_matrix;
-    if (!IsOperationIdentity(to))
-      to_matrix = to->matrix;
-    gfx::Transform from_matrix;
-    if (!IsOperationIdentity(from))
-      from_matrix = from->matrix;
-    *result = to_matrix;
-    if (!result->Blend(from_matrix, progress))
-      return false;
-    break;
-  }
-  case TransformOperation::TRANSFORM_OPERATION_IDENTITY:
-    // Do nothing.
-    break;
+    case TransformOperation::TRANSFORM_OPERATION_IDENTITY:
+      // Do nothing.
+      break;
   }
 
   return true;
@@ -389,17 +419,17 @@ bool TransformOperation::BlendedBoundsForBox(const gfx::BoxF& box,
     case TransformOperation::TRANSFORM_OPERATION_SKEW:
     case TransformOperation::TRANSFORM_OPERATION_PERSPECTIVE:
     case TransformOperation::TRANSFORM_OPERATION_SCALE: {
-      gfx::Transform from_transform;
-      gfx::Transform to_transform;
-      if (!BlendTransformOperations(from, to, min_progress, &from_transform) ||
-          !BlendTransformOperations(from, to, max_progress, &to_transform))
+      TransformOperation from_operation;
+      TransformOperation to_operation;
+      if (!BlendTransformOperations(from, to, min_progress, &from_operation) ||
+          !BlendTransformOperations(from, to, max_progress, &to_operation))
         return false;
 
       *bounds = box;
-      from_transform.TransformBox(bounds);
+      from_operation.matrix.TransformBox(bounds);
 
       gfx::BoxF to_box = box;
-      to_transform.TransformBox(&to_box);
+      to_operation.matrix.TransformBox(&to_box);
       bounds->ExpandTo(to_box);
 
       return true;

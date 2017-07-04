@@ -14,8 +14,9 @@
 namespace cc {
 namespace {
 
-void ExpectTranslateX(SkMScalar translate_x, const gfx::Transform& transform) {
-  EXPECT_FLOAT_EQ(translate_x, transform.matrix().get(0, 3));
+void ExpectTranslateX(SkMScalar translate_x,
+                      const TransformOperations& operations) {
+  EXPECT_FLOAT_EQ(translate_x, operations.Apply().matrix().get(0, 3));
 }
 
 void ExpectBrightness(double brightness, const FilterOperations& filter) {
@@ -293,7 +294,8 @@ TEST(KeyframedAnimationCurveTest, RepeatedTransformKeyTimes) {
   ExpectTranslateX(4.f, curve->GetValue(base::TimeDelta::FromSecondsD(0.5f)));
 
   // There is a discontinuity at 1. Any value between 4 and 6 is valid.
-  gfx::Transform value = curve->GetValue(base::TimeDelta::FromSecondsD(1.f));
+  gfx::Transform value =
+      curve->GetValue(base::TimeDelta::FromSecondsD(1.f)).Apply();
   EXPECT_GE(value.matrix().get(0, 3), 4.f);
   EXPECT_LE(value.matrix().get(0, 3), 6.f);
 

@@ -367,13 +367,13 @@ std::unique_ptr<AnimationCurve> KeyframedTransformAnimationCurve::Clone()
   return std::move(to_return);
 }
 
-gfx::Transform KeyframedTransformAnimationCurve::GetValue(
+TransformOperations KeyframedTransformAnimationCurve::GetValue(
     base::TimeDelta t) const {
   if (t <= TimeUtil::Scale(keyframes_.front()->Time(), scaled_duration()))
-    return keyframes_.front()->Value().Apply();
+    return keyframes_.front()->Value();
 
   if (t >= TimeUtil::Scale(keyframes_.back()->Time(), scaled_duration()))
-    return keyframes_.back()->Value().Apply();
+    return keyframes_.back()->Value();
 
   t = TransformedAnimationTime(keyframes_, timing_function_, scaled_duration(),
                                t);

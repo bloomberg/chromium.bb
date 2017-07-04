@@ -28,6 +28,7 @@ namespace cc {
 class AnimationHost;
 class AnimationPlayer;
 class FilterOperations;
+class TransformOperations;
 enum class ElementListType;
 struct AnimationEvent;
 
@@ -149,9 +150,10 @@ class CC_ANIMATION_EXPORT ElementAnimations
   void NotifyClientOpacityAnimated(float opacity,
                                    bool notify_active_elements,
                                    bool notify_pending_elements);
-  void NotifyClientTransformAnimated(const gfx::Transform& transform,
-                                     bool notify_active_elements,
-                                     bool notify_pending_elements);
+  void NotifyClientTransformOperationsAnimated(
+      const TransformOperations& operations,
+      bool notify_active_elements,
+      bool notify_pending_elements);
   void NotifyClientFilterAnimated(const FilterOperations& filter,
                                   bool notify_active_elements,
                                   bool notify_pending_elements);
