@@ -4,33 +4,6 @@
 
 import("//build/config/chrome_build.gni")
 
-bundle_data("resources") {
-  sources = [
-    "resources/signin_confirmation_more.png",
-    "resources/signin_confirmation_more@2x.png",
-    "resources/signin_confirmation_more@3x.png",
-    "resources/signin_promo_close_gray.png",
-    "resources/signin_promo_close_gray@2x.png",
-    "resources/signin_promo_close_gray@3x.png",
-  ]
-  if (is_chrome_branded) {
-    sources += [
-      "resources/signin_promo_logo_chrome_color.png",
-      "resources/signin_promo_logo_chrome_color@2x.png",
-      "resources/signin_promo_logo_chrome_color@3x.png",
-    ]
-  } else {
-    sources += [
-      "resources/signin_promo_logo_chromium_color.png",
-      "resources/signin_promo_logo_chromium_color@2x.png",
-      "resources/signin_promo_logo_chromium_color@3x.png",
-    ]
-  }
-  outputs = [
-    "{{bundle_resources_dir}}/{{source_file_part}}",
-  ]
-}
-
 source_set("authentication") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
@@ -57,7 +30,8 @@ source_set("authentication") {
   deps = [
     ":authentication_arc",
     ":authentication_ui",
-    ":resources",
+    "resources:signin_confirmation_more",
+    "resources:signin_promo_close_gray",
     "//base",
     "//components/google/core/browser",
     "//components/infobars/core",
@@ -93,6 +67,11 @@ source_set("authentication") {
     "//ui/gfx",
     "//url",
   ]
+  if (is_chrome_branded) {
+    deps += [ "resources:signin_promo_logo_chrome_color" ]
+  } else {
+    deps += [ "resources:signin_promo_logo_chromium_color" ]
+  }
   libs = [
     "CoreGraphics.framework",
     "QuartzCore.framework",
