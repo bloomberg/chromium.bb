@@ -230,6 +230,7 @@ void InputMethodWin::OnTextInputTypeChanged(const TextInputClient* client) {
 void InputMethodWin::OnCaretBoundsChanged(const TextInputClient* client) {
   if (!IsTextInputClientFocused(client) || !IsWindowFocused(client))
     return;
+  NotifyTextInputCaretBoundsChanged(client);
   TextInputType text_input_type = GetTextInputType();
   if (client == GetTextInputClient() &&
       text_input_type != TEXT_INPUT_TYPE_NONE &&
