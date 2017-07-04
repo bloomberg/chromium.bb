@@ -2386,6 +2386,13 @@ const char kEnableContentSuggestionsLargeThumbnailDescription[] =
     "If enabled, the content suggestions cards will use large thumbnails and "
     "some related adjustments.";
 
+const char kEnableContentSuggestionsVideoOverlayName[] =
+    "Video icon overlay on thumbnails for content suggestions cards.";
+
+const char kEnableContentSuggestionsVideoOverlayDescription[] =
+    "If enabled, the content suggestions cards for suggestions with a video "
+    "will show a video play icon overlay on the thumbnail.";
+
 const char kEnableContentSuggestionsSettingsName[] =
     "Show content suggestions settings.";
 

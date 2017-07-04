@@ -910,6 +910,9 @@ extern const char kEnableContentSuggestionsCategoriesDescription[];
 extern const char kEnableContentSuggestionsLargeThumbnailName[];
 extern const char kEnableContentSuggestionsLargeThumbnailDescription[];
 
+extern const char kEnableContentSuggestionsVideoOverlayName[];
+extern const char kEnableContentSuggestionsVideoOverlayDescription[];
+
 extern const char kEnableContentSuggestionsSettingsName[];
 extern const char kEnableContentSuggestionsSettingsDescription[];
 
