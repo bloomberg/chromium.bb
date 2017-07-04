@@ -549,6 +549,15 @@
     ]
   },
 
+  "SafeBrowsingForTrustedSourcesEnabled": {
+    "os": ["win"],
+    "can_be_recommended": true,
+    "test_policy": { "SafeBrowsingForTrustedSourcesEnabled": false },
+    "pref_mappings": [
+      { "pref": "safebrowsing_for_trusted_sources_enabled" }
+    ]
+  },
+
   "DownloadDirectory.0": {
     "os": ["win", "mac", "linux", "chromeos"],
     "can_be_recommended": true,

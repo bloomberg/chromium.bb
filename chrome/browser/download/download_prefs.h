@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_PREFS_H_
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_PREFS_H_
 
+#include <memory>
 #include <set>
 
 #include "base/files/file_path.h"
@@ -13,9 +14,11 @@
 #include "components/prefs/pref_member.h"
 
 class Profile;
+class TrustedSourcesManager;
 
 namespace content {
 class BrowserContext;
+class DownloadItem;
 class DownloadManager;
 }
 
@@ -50,6 +53,9 @@ class DownloadPrefs {
   static DownloadPrefs* FromBrowserContext(
       content::BrowserContext* browser_context);
 
+  // Identify whether the downloaded item was downloaded from a trusted source.
+  bool IsFromTrustedSource(const content::DownloadItem& item);
+
   base::FilePath DownloadPath() const;
   void SetDownloadPath(const base::FilePath& path);
   base::FilePath SaveFilePath() const;
@@ -58,6 +64,9 @@ class DownloadPrefs {
   void SetSaveFileType(int type);
   DownloadRestriction download_restriction() const {
     return static_cast<DownloadRestriction>(*download_restriction_);
+  }
+  bool safebrowsing_for_trusted_sources_enabled() const {
+    return *safebrowsing_for_trusted_sources_enabled_;
   }
 
   // Returns true if the prompt_for_download preference has been set and the
@@ -109,6 +118,10 @@ class DownloadPrefs {
   FilePathPrefMember save_file_path_;
   IntegerPrefMember save_file_type_;
   IntegerPrefMember download_restriction_;
+  BooleanPrefMember safebrowsing_for_trusted_sources_enabled_;
+
+  // To identify if a download URL is from a trusted source.
+  std::unique_ptr<TrustedSourcesManager> trusted_sources_manager_;
 
   // Set of file extensions to open at download completion.
   struct AutoOpenCompareFunctor {

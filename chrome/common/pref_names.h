@@ -39,6 +39,7 @@ extern const char kVoiceInteractionContextEnabled[];
 #endif
 extern const char kChildAccountStatusKnown[];
 extern const char kDefaultApps[];
+extern const char kSafeBrowsingForTrustedSourcesEnabled[];
 extern const char kDisableScreenshots[];
 extern const char kDownloadRestrictions[];
 extern const char kForceEphemeralProfiles[];
@@ -545,6 +546,7 @@ extern const char kOpenPdfDownloadInSystemReader[];
 
 extern const char kSaveFileDefaultDirectory[];
 extern const char kSaveFileType[];
+extern const char kTrustedDownloadSources[];
 
 extern const char kAllowFileSelectionDialogs[];
 extern const char kDefaultTasksByMimeType[];

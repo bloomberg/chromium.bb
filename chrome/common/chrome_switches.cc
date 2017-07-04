@@ -769,6 +769,10 @@ const char kSystemLogUploadFrequency[] = "system-log-upload-frequency";
 // Passes the name of the current running automated test to Chrome.
 const char kTestName[]                      = "test-name";
 
+// Identifies a list of download sources as trusted, but only if proper group
+// policy is set.
+const char kTrustedDownloadSources[] = "trusted-download-sources";
+
 // Experimental. Shows a dialog asking the user to try chrome. This flag is to
 // be used only by the upgrade process.
 const char kTryChromeAgain[]                = "try-chrome-again";
