@@ -107,7 +107,12 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
     [strongSelf fetchFaviconImageForSuggestions:strongItem inCategory:category];
   };
 
-  [self.suggestionsAttributesProvider fetchFaviconAttributesForURL:item.URL
+  GURL URL = item.URL;
+  if (category.IsKnownCategory(ntp_snippets::KnownCategories::READING_LIST)) {
+    URL = item.faviconURL;
+  }
+
+  [self.suggestionsAttributesProvider fetchFaviconAttributesForURL:URL
                                                         completion:completion];
 }
 

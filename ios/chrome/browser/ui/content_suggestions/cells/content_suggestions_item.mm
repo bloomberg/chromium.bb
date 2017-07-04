@@ -45,6 +45,7 @@
 @synthesize delegate = _delegate;
 @synthesize imageFetched = _imageFetched;
 @synthesize attributes = _attributes;
+@synthesize faviconURL = _faviconURL;
 @synthesize hasImage = _hasImage;
 @synthesize availableOffline = _availableOffline;
 @synthesize firstTimeWithImage = _firstTimeWithImage;
