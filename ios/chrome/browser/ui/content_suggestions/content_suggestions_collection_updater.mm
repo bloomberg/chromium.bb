@@ -24,7 +24,6 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestion_identifier.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestions_section_information.h"
-#import "ios/chrome/browser/ui/favicon/favicon_attributes.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -259,10 +258,11 @@ const CGFloat kNumberOfMostVisitedLines = 2;
       reloadSections:[NSIndexSet indexSetWithIndex:section]];
 }
 
-- (void)faviconAvailableForItem:(CollectionViewItem<SuggestedContent>*)item {
-  if ([self.collectionViewController.collectionViewModel hasItem:item]) {
-    [self fetchFaviconForItem:item];
+- (void)itemHasChanged:(CollectionViewItem<SuggestedContent>*)item {
+  if (![self.collectionViewController.collectionViewModel hasItem:item]) {
+    return;
   }
+  [self.collectionViewController reconfigureCellsForItems:@[ item ]];
 }
 
 #pragma mark - Public methods
@@ -332,7 +332,6 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
     item.type = type;
     NSIndexPath* addedIndexPath =
         [self addItem:item toSectionWithIdentifier:sectionIdentifier];
-    [self fetchFaviconForItem:item];
     item.delegate = self;
 
     [indexPaths addObject:addedIndexPath];
@@ -545,53 +544,6 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
 - (void)resetModels {
   [self.collectionViewController loadModel];
   self.sectionInfoBySectionIdentifier = [[NSMutableDictionary alloc] init];
-}
-
-// Fetches the favicon attributes for the |item|.
-- (void)fetchFaviconForItem:(CSCollectionViewItem*)item {
-  __weak ContentSuggestionsCollectionUpdater* weakSelf = self;
-  __weak CSCollectionViewItem* weakItem = item;
-
-  [self.dataSource
-      fetchFaviconAttributesForItem:item
-                         completion:^(FaviconAttributes* attributes) {
-                           ContentSuggestionsCollectionUpdater* strongSelf =
-                               weakSelf;
-                           CSCollectionViewItem* strongItem = weakItem;
-                           if (!strongSelf || !strongItem)
-                             return;
-
-                           [strongSelf reconfigure:strongItem
-                                    withAttributes:attributes];
-
-                           [strongSelf fetchFaviconImageForItem:strongItem];
-                         }];
-}
-
-// Fetches the favicon image for the |item|.
-- (void)fetchFaviconImageForItem:(CSCollectionViewItem*)item {
-  __weak ContentSuggestionsCollectionUpdater* weakSelf = self;
-  __weak CSCollectionViewItem* weakItem = item;
-
-  [self.dataSource
-      fetchFaviconImageForItem:item
-                    completion:^(UIImage* image) {
-                      [weakSelf reconfigure:weakItem
-                             withAttributes:[FaviconAttributes
-                                                attributesWithImage:image]];
-                    }];
-}
-
-// Sets the attributes of |item| to |attributes| and reconfigures it.
-- (void)reconfigure:(CSCollectionViewItem*)item
-     withAttributes:(FaviconAttributes*)attributes {
-  if (!item || !attributes ||
-      ![self.collectionViewController.collectionViewModel hasItem:item]) {
-    return;
-  }
-
-  item.attributes = attributes;
-  [self.collectionViewController reconfigureCellsForItems:@[ item ]];
 }
 
 // Runs the additional action for the section identified by |sectionInfo|.

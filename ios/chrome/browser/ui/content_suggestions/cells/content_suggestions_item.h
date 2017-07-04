@@ -35,6 +35,8 @@ class GURL;
 @property(nonatomic, assign) BOOL hasImage;
 // Whether the suggestion is available offline. If YES, an icon is displayed.
 @property(nonatomic, assign) BOOL availableOffline;
+// Attributes for favicon.
+@property(nonatomic, strong) FaviconAttributes* attributes;
 
 @end
 

@@ -34,7 +34,6 @@ const int kLinkColorRGB = 0x5595FE;
 @synthesize text = _text;
 @synthesize delegate = _delegate;
 @synthesize image = _image;
-@synthesize attributes = _attributes;
 @synthesize suggestionIdentifier = _suggestionIdentifier;
 
 - (instancetype)initWithType:(NSInteger)type {
