@@ -3224,7 +3224,15 @@
       }
     ]
   },
+  "Cast Android (dbg)": {
+    "additional_compile_targets": [
+      "cast_shell_apk"
+    ]
+  },
   "Cast Audio Linux": {
+    "additional_compile_targets": [
+      "cast_shell"
+    ],
     "gtest_tests": [
       {
         "swarming": {
@@ -3406,6 +3414,9 @@
     ]
   },
   "Cast Linux": {
+    "additional_compile_targets": [
+      "cast_shell"
+    ],
     "gtest_tests": [
       {
         "swarming": {
@@ -3594,6 +3605,12 @@
   "Linux Builder (dbg)": {
     "additional_compile_targets": [
       "all"
+    ]
+  },
+  "Linux Builder (dbg)(32)": {
+    "additional_compile_targets": [
+      "google_apis_unittests",
+      "sync_integration_tests"
     ]
   },
   "Linux Tests": {
