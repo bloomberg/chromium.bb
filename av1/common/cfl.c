@@ -239,7 +239,8 @@ void cfl_predict_block(MACROBLOCKD *const xd, uint8_t *dst, int dst_stride,
   cfl_load(cfl, row, col, width, height);
   for (int j = 0; j < height; j++) {
     for (int i = 0; i < width; i++) {
-      dst[i] = (uint8_t)(alpha * (y_pix[i] - avg) + dc_pred + 0.5);
+      // TODO(ltrudeau) call clip_pixel_highbd when HBD is enabled.
+      dst[i] = clip_pixel((int)(alpha * (y_pix[i] - avg) + dc_pred + 0.5));
     }
     dst += dst_stride;
     y_pix += MAX_SB_SIZE;
