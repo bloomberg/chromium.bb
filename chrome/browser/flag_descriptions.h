@@ -464,6 +464,9 @@ extern const char kMhtmlSkipNostoreAll[];
 extern const char kMojoLoadingName[];
 extern const char kMojoLoadingDescription[];
 
+extern const char kModuleScriptsName[];
+extern const char kModuleScriptsDescription[];
+
 extern const char kNewAudioRenderingMixingStrategyName[];
 extern const char kNewAudioRenderingMixingStrategyDescription[];
 

@@ -3114,6 +3114,10 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(switches::kEnableExperimentalFullscreenExitUI)},
 #endif  // defined(TOOLKIT_VIEWS)
 
+    {"enable-module-scripts", flag_descriptions::kModuleScriptsName,
+     flag_descriptions::kModuleScriptsDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kModuleScripts)},
+
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms/enums.xml. See note in
     // enums.xml and don't forget to run AboutFlagsHistogramTest unit test.

@@ -23223,6 +23223,7 @@ from previous Chrome versions.
   <int value="1510476448" label="disable-prefixed-encrypted-media"/>
   <int value="1511140997" label="OfflinePagesAsyncDownload:disabled"/>
   <int value="1511161758" label="BackgroundLoader:enabled"/>
+  <int value="1512249489" label="ModuleScripts:disabled"/>
   <int value="1515196403" label="fast-user-switching"/>
   <int value="1517863401" label="history-entry-requires-user-gesture"/>
   <int value="1533111748" label="Multidevice:enabled"/>
@@ -23368,6 +23369,7 @@ from previous Chrome versions.
   <int value="2059322877" label="new-avatar-menu"/>
   <int value="2063091429" label="OfflinePagesSharing:enabled"/>
   <int value="2067634730" label="LsdPermissionPrompt:disabled"/>
+  <int value="2067923510" label="ModuleScripts:enabled"/>
   <int value="2071340353" label="progress-bar-completion"/>
   <int value="2071461362" label="disable-credit-card-scan"/>
   <int value="2076787478" label="OmniboxDisplayTitleForCurrentUrl:disabled"/>
