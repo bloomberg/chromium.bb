@@ -574,6 +574,8 @@ split_static_library("browser") {
     "media/media_device_id_salt.h",
     "media/media_engagement_contents_observer.cc",
     "media/media_engagement_contents_observer.h",
+    "media/media_engagement_score.cc",
+    "media/media_engagement_score.h",
     "media/media_engagement_service.cc",
     "media/media_engagement_service.h",
     "media/media_engagement_service_factory.cc",
