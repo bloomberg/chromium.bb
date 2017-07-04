@@ -60,7 +60,8 @@ void IOSChromePasswordStoreFactory::OnPasswordsSyncedStatePotentiallyChanged(
       browser_state->GetRequestContext();
   password_manager::ToggleAffiliationBasedMatchingBasedOnPasswordSyncedState(
       password_store.get(), sync_service, request_context_getter,
-      browser_state->GetStatePath());
+      browser_state->GetStatePath(),
+      web::WebThread::GetTaskRunnerForThread(web::WebThread::DB));
 }
 
 IOSChromePasswordStoreFactory::IOSChromePasswordStoreFactory()

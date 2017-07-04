@@ -12,7 +12,7 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/sequenced_task_runner.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/clock.h"
 #include "base/time/tick_clock.h"
@@ -27,7 +27,7 @@ namespace password_manager {
 
 AffiliationBackend::AffiliationBackend(
     const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
-    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     std::unique_ptr<base::Clock> time_source,
     std::unique_ptr<base::TickClock> time_tick_source)
     : request_context_getter_(request_context_getter),

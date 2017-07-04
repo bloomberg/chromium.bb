@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/rand_util.h"
-#include "base/sequenced_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
@@ -51,7 +50,7 @@ const int64_t AffiliationFetchThrottler::kGracePeriodAfterReconnectMs =
 
 AffiliationFetchThrottler::AffiliationFetchThrottler(
     AffiliationFetchThrottlerDelegate* delegate,
-    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     base::TickClock* tick_clock)
     : delegate_(delegate),
       task_runner_(task_runner),
