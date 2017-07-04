@@ -76,7 +76,6 @@ public class ChromeSigninUtils {
         }
 
         Account account = new Account(username, GOOGLE_ACCOUNT_TYPE);
-        mFakeAccountManagerDelegate = new FakeAccountManagerDelegate(mContext, account);
         AccountHolder accountHolder = AccountHolder.builder(account).password(password).build();
         mFakeAccountManagerDelegate.addAccountHolderExplicitly(accountHolder);
     }

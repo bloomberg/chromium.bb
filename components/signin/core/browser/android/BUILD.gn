@@ -50,6 +50,7 @@ android_library("signin_java_test_support") {
     "//base:base_java_test_support",
     "//third_party/android_tools:android_support_annotations_java",
     "//third_party/jsr-305:jsr_305_javalib",
+    "//third_party/junit",
   ]
 
   java_files = [
