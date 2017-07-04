@@ -71,7 +71,7 @@ class ChromeBrowserProvider {
     Observer() {}
     virtual ~Observer() {}
 
-    // Called when a new ChromeIdentityService has been changed.
+    // Called when a new ChromeIdentityService has been installed.
     virtual void OnChromeIdentityServiceDidChange(
         ChromeIdentityService* new_service) {}
 

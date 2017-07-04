@@ -11,6 +11,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/chrome_browser_provider_observer_bridge.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/signin/chrome_identity_service_observer_bridge.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_configurator.h"
@@ -112,12 +113,14 @@ enum class SigninPromoViewState {
 };
 }  // namespace
 
-@interface SigninPromoViewMediator ()<ChromeIdentityServiceObserver>
+@interface SigninPromoViewMediator ()<ChromeIdentityServiceObserver,
+                                      ChromeBrowserProviderObserver>
 @end
 
 @implementation SigninPromoViewMediator {
   ios::ChromeBrowserState* _browserState;
   std::unique_ptr<ChromeIdentityServiceObserverBridge> _identityServiceObserver;
+  std::unique_ptr<ChromeBrowserProviderObserverBridge> _browserProviderObserver;
   UIImage* _identityAvatar;
   SigninPromoViewState _signinPromoViewState;
 }
@@ -142,6 +145,8 @@ enum class SigninPromoViewState {
     }
     _identityServiceObserver =
         base::MakeUnique<ChromeIdentityServiceObserverBridge>(self);
+    _browserProviderObserver =
+        base::MakeUnique<ChromeBrowserProviderObserverBridge>(self);
   }
   return self;
 }
@@ -287,6 +292,22 @@ enum class SigninPromoViewState {
   if (identity == _defaultIdentity) {
     [self sendConsumerNotificationWithIdentityChanged:NO];
   }
+}
+
+- (void)onChromeIdentityServiceWillBeDestroyed {
+  _identityServiceObserver.reset();
+}
+
+#pragma mark - ChromeBrowserProviderObserver
+
+- (void)chromeIdentityServiceDidChange:(ios::ChromeIdentityService*)identity {
+  DCHECK(!_identityServiceObserver.get());
+  _identityServiceObserver =
+      base::MakeUnique<ChromeIdentityServiceObserverBridge>(self);
+}
+
+- (void)chromeBrowserProviderWillBeDestroyed {
+  _browserProviderObserver.reset();
 }
 
 #pragma mark - SigninPromoViewDelegate
