@@ -576,6 +576,10 @@ TEST_F(PasswordManagerTest, SyncCredentialsNotSaved) {
   // User should not be prompted and password should not be saved.
   EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_)).Times(0);
   EXPECT_CALL(*store_, AddLogin(_)).Times(0);
+#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS)) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+  EXPECT_CALL(*store_, SaveSyncPasswordHash(form.password_value));
+#endif
   // Prefs are needed for failure logging about sync credentials.
   EXPECT_CALL(client_, GetPrefs()).WillRepeatedly(Return(nullptr));
   EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
@@ -647,6 +651,10 @@ TEST_F(PasswordManagerTest, SyncCredentialsNotDroppedIfUpToDate) {
   EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(client_, GetPrefs()).WillRepeatedly(Return(nullptr));
+#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS)) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+  EXPECT_CALL(*store_, SaveSyncPasswordHash(form.password_value));
+#endif
   manager()->ProvisionallySavePassword(form, nullptr);
 
   // Chrome should not remove the sync credential, because it was successfully
@@ -680,6 +688,10 @@ TEST_F(PasswordManagerTest, SyncCredentialsDroppedWhenObsolete) {
   EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(client_, GetPrefs()).WillRepeatedly(Return(nullptr));
+#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS)) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+  EXPECT_CALL(*store_, SaveSyncPasswordHash(ASCIIToUTF16("n3w passw0rd")));
+#endif
   manager()->ProvisionallySavePassword(updated_form, nullptr);
 
   client_.FilterAllResultsForSaving();
@@ -1724,5 +1736,64 @@ TEST_F(PasswordManagerTest, ClearedFieldsSuccessCriteria) {
   manager()->OnPasswordFormsParsed(&driver_, observed);
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
 }
+
+#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS)) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+// Check that no sync password hash is saved when no username is available,
+// because we it's not clear whether the submitted credentials are sync
+// credentials.
+TEST_F(PasswordManagerTest, NotSavingSyncPasswordHash_NoUsername) {
+  // Simulate loading a simple form with no existing stored password.
+  std::vector<PasswordForm> observed;
+  PasswordForm form(MakeSimpleGAIAForm());
+  // Simulate that no username is found.
+  form.username_value.clear();
+  observed.push_back(form);
+  EXPECT_CALL(*store_, GetLogins(_, _))
+      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+
+  EXPECT_CALL(client_, GetPrefs()).WillRepeatedly(Return(nullptr));
+  EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
+      .WillRepeatedly(Return(true));
+
+  // Simulate that this credentials which is similar to be sync credentials.
+  client_.FilterAllResultsForSaving();
+
+  // Check that no sync credential password hash is saved.
+  EXPECT_CALL(*store_, SaveSyncPasswordHash(_)).Times(0);
+  OnPasswordFormSubmitted(form);
+  observed.clear();
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+}
+
+// Check that no sync password hash is saved when the submitted credentials are
+// not qualified as sync credentials.
+TEST_F(PasswordManagerTest, NotSavingSyncPasswordHash_NotSyncCredentials) {
+  // Simulate loading a simple form with no existing stored password.
+  std::vector<PasswordForm> observed;
+  PasswordForm form(MakeSimpleGAIAForm());
+  observed.push_back(form);
+  EXPECT_CALL(*store_, GetLogins(_, _))
+      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+
+  EXPECT_CALL(client_, GetPrefs()).WillRepeatedly(Return(nullptr));
+  EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
+      .WillRepeatedly(Return(true));
+
+  // Check that no sync credential password hash is saved since these
+  // credentials are eligible for saving.
+  EXPECT_CALL(*store_, SaveSyncPasswordHash(_)).Times(0);
+
+  std::unique_ptr<PasswordFormManager> form_manager_to_save;
+  EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_))
+      .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
+
+  OnPasswordFormSubmitted(form);
+  observed.clear();
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+}
+#endif
 
 }  // namespace password_manager
