@@ -72,7 +72,12 @@ source_set("reading_list_ui") {
     "text_badge_view.mm",
   ]
   deps = [
-    ":resources",
+    "resources:distillation_fail",
+    "resources:distillation_success",
+    "resources:reading_list_empty_state",
+    "resources:reading_list_share_icon",
+    "resources:reading_list_side_swipe",
+    "resources:reading_list_toolbar_icon",
     "//base",
     "//components/strings",
     "//components/url_formatter",
@@ -162,31 +167,5 @@ source_set("eg_tests") {
   libs = [
     "UIKit.framework",
     "XCTest.framework",
-  ]
-}
-
-bundle_data("resources") {
-  sources = [
-    "resources/distillation_fail.png",
-    "resources/distillation_fail@2x.png",
-    "resources/distillation_fail@3x.png",
-    "resources/distillation_success.png",
-    "resources/distillation_success@2x.png",
-    "resources/distillation_success@3x.png",
-    "resources/reading_list_empty_state.png",
-    "resources/reading_list_empty_state@2x.png",
-    "resources/reading_list_empty_state@3x.png",
-    "resources/reading_list_share_icon.png",
-    "resources/reading_list_share_icon@2x.png",
-    "resources/reading_list_share_icon@3x.png",
-    "resources/reading_list_side_swipe.png",
-    "resources/reading_list_side_swipe@2x.png",
-    "resources/reading_list_side_swipe@3x.png",
-    "resources/reading_list_toolbar_icon.png",
-    "resources/reading_list_toolbar_icon@2x.png",
-    "resources/reading_list_toolbar_icon@3x.png",
-  ]
-  outputs = [
-    "{{bundle_resources_dir}}/{{source_file_part}}",
   ]
 }
