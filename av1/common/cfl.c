@@ -133,7 +133,7 @@ static void cfl_dc_pred(MACROBLOCKD *xd, BLOCK_SIZE plane_bsize) {
   const int height = max_block_high(xd, plane_bsize, AOM_PLANE_U)
                      << tx_size_high_log2[0];
   // Number of pixel on the top and left borders.
-  const double num_pel = width + height;
+  const int num_pel = width + height;
 
   int sum_u = 0;
   int sum_v = 0;
@@ -179,8 +179,8 @@ static void cfl_dc_pred(MACROBLOCKD *xd, BLOCK_SIZE plane_bsize) {
 
   // TODO(ltrudeau) Because of max_block_wide and max_block_high, num_pel will
   // not be a power of two. So these divisions will have to use a lookup table.
-  cfl->dc_pred[CFL_PRED_U] = sum_u / num_pel;
-  cfl->dc_pred[CFL_PRED_V] = sum_v / num_pel;
+  cfl->dc_pred_q7[CFL_PRED_U] = (sum_u << 7) / num_pel;
+  cfl->dc_pred_q7[CFL_PRED_V] = (sum_v << 7) / num_pel;
 }
 
 static void cfl_compute_averages(CFL_CTX *cfl, TX_SIZE tx_size) {
@@ -253,22 +253,34 @@ void cfl_predict_block(MACROBLOCKD *const xd, uint8_t *dst, int dst_stride,
   // TODO(ltrudeau) Convert to uint16 to support HBD
   const uint8_t *y_pix = cfl->y_down_pix;
 
-  const double dc_pred = cfl->dc_pred[plane - 1];
+  const int dc_pred_bias_q13 = (cfl->dc_pred_q7[plane - 1] << 6) + (1 << 12);
   const double alpha = cfl_idx_to_alpha(
       mbmi->cfl_alpha_idx, mbmi->cfl_alpha_signs[plane - 1], plane - 1);
+  // TODO(ltrudeau) Convert alpha to fixed point.
+  const int alpha_q3 = (int)(alpha * 8);
 
   const int avg_row =
       (row << tx_size_wide_log2[0]) >> tx_size_wide_log2[tx_size];
   const int avg_col =
       (col << tx_size_high_log2[0]) >> tx_size_high_log2[tx_size];
-  const double avg =
-      cfl->y_averages_q10[cfl->y_averages_stride * avg_row + avg_col] / 1024.0;
+  const int avg_q10 =
+      cfl->y_averages_q10[cfl->y_averages_stride * avg_row + avg_col];
 
   cfl_load(cfl, row, col, width, height);
   for (int j = 0; j < height; j++) {
     for (int i = 0; i < width; i++) {
-      // TODO(ltrudeau) call clip_pixel_highbd when HBD is enabled.
-      dst[i] = clip_pixel((int)(alpha * (y_pix[i] - avg) + dc_pred + 0.5));
+      const int pred_q13 =
+          get_scaled_luma_q13(alpha_q3, y_pix[i], avg_q10) + dc_pred_bias_q13;
+      // TODO(ltrudeau) Manage HBD.
+      if (pred_q13 <= 0) {
+        dst[i] = 0;
+      } else if (pred_q13 > (255 << 13)) {
+        dst[i] = 255;
+      } else {
+        dst[i] = (uint8_t)(pred_q13 >> 13);
+        assert(dst[i] == (int)(alpha * (y_pix[i] - (avg_q10 / 1024.0)) +
+                               (cfl->dc_pred_q7[plane - 1] / 128.0) + 0.5));
+      }
     }
     dst += dst_stride;
     y_pix += MAX_SB_SIZE;
