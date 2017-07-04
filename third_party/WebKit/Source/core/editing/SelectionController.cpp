@@ -474,14 +474,15 @@ bool SelectionController::UpdateSelectionForMouseDownDispatchingSelectStart(
 
   if (visible_selection.IsRange()) {
     selection_state_ = SelectionState::kExtendedSelection;
-  } else {
-    granularity = kCharacterGranularity;
-    selection_state_ = SelectionState::kPlacedCaret;
+    SetNonDirectionalSelectionIfNeeded(
+        selection, granularity, kDoNotAdjustEndpoints, handle_visibility);
+
+    return true;
   }
 
-  SetNonDirectionalSelectionIfNeeded(selection, granularity,
+  selection_state_ = SelectionState::kPlacedCaret;
+  SetNonDirectionalSelectionIfNeeded(selection, kCharacterGranularity,
                                      kDoNotAdjustEndpoints, handle_visibility);
-
   return true;
 }
 
