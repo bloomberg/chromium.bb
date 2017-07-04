@@ -206,115 +206,12 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('deqp/*', ['win', 'intel', 'd3d11'], bug=628395)
 
     # Passthrough command decoder / D3D11
-    self.Fail('conformance/textures/image_bitmap_from_video/*',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('conformance/textures/video/*',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('conformance/textures/misc/texture-corner-case-videos.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('conformance2/textures/image_bitmap_from_video/*',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('conformance2/textures/video/*',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-
     self.Fail('conformance2/glsl3/no-attribute-vertex-shader.html',
         ['win', 'passthrough', 'd3d11'], bug=602688)
     self.Fail('conformance2/rendering/clearbuffer-sub-source.html',
         ['win', 'passthrough', 'd3d11'], bug=602688)
 
-    self.Fail('conformance2/textures/canvas/tex-2d-rg8-rg-unsigned_byte.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('conformance2/textures/canvas/tex-2d-rg16f-rg-half_float.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('conformance2/textures/canvas/tex-2d-rg16f-rg-float.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('conformance2/textures/canvas/tex-2d-rg32f-rg-float.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('conformance2/textures/canvas/' +
-        'tex-2d-rg8ui-rg_integer-unsigned_byte.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('conformance2/textures/canvas/' +
-        'tex-2d-rgb8ui-rgb_integer-unsigned_byte.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('conformance2/textures/canvas/' +
-        'tex-2d-rgba8ui-rgba_integer-unsigned_byte.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-
-    self.Fail('conformance2/textures/canvas_sub_rectangle/' +
-        'tex-2d-rg8-rg-unsigned_byte.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('conformance2/textures/canvas_sub_rectangle/' +
-        'tex-2d-rg16f-rg-half_float.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('conformance2/textures/canvas_sub_rectangle/' +
-        'tex-2d-rg16f-rg-float.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('conformance2/textures/canvas_sub_rectangle/' +
-        'tex-2d-rg32f-rg-float.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('conformance2/textures/canvas_sub_rectangle/' +
-        'tex-2d-rg8ui-rg_integer-unsigned_byte.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('conformance2/textures/canvas_sub_rectangle/' +
-        'tex-2d-rgb8ui-rgb_integer-unsigned_byte.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('conformance2/textures/canvas_sub_rectangle/' +
-        'tex-2d-rgba8ui-rgba_integer-unsigned_byte.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-
-    self.Fail('conformance2/textures/webgl_canvas/' +
-        'tex-2d-rg8-rg-unsigned_byte.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('conformance2/textures/webgl_canvas/' +
-        'tex-2d-rg16f-rg-half_float.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('conformance2/textures/webgl_canvas/' +
-        'tex-2d-rg16f-rg-float.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('conformance2/textures/webgl_canvas/' +
-        'tex-2d-rg32f-rg-float.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('conformance2/textures/webgl_canvas/' +
-        'tex-2d-rg8ui-rg_integer-unsigned_byte.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('conformance2/textures/webgl_canvas/' +
-        'tex-2d-rgb8ui-rgb_integer-unsigned_byte.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('conformance2/textures/webgl_canvas/' +
-        'tex-2d-rgba8ui-rgba_integer-unsigned_byte.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-
-    self.Fail('conformance2/textures/image_bitmap_from_canvas/' +
-        'tex-2d-rg8-rg-unsigned_byte.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('conformance2/textures/image_bitmap_from_canvas/' +
-        'tex-2d-rg16f-rg-half_float.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('conformance2/textures/image_bitmap_from_canvas/' +
-        'tex-2d-rg16f-rg-float.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('conformance2/textures/image_bitmap_from_canvas/' +
-        'tex-2d-rg32f-rg-float.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('conformance2/textures/image_bitmap_from_canvas/' +
-        'tex-2d-rg8ui-rg_integer-unsigned_byte.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('conformance2/textures/image_bitmap_from_canvas/' +
-        'tex-2d-srgb8-rgb-unsigned_byte.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('conformance2/textures/image_bitmap_from_canvas/' +
-        'tex-2d-rgb8ui-rgb_integer-unsigned_byte.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('conformance2/textures/image_bitmap_from_canvas/' +
-        'tex-2d-srgb8_alpha8-rgba-unsigned_byte.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('conformance2/textures/image_bitmap_from_canvas/' +
-        'tex-2d-rgba8ui-rgba_integer-unsigned_byte.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-
     self.Fail('conformance/glsl/misc/shaders-with-name-conflicts.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('deqp/data/gles3/shaders/preprocessor.html',
         ['win', 'passthrough', 'd3d11'], bug=602688)
     self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
         ['win', 'passthrough', 'd3d11'], bug=602688)
@@ -327,9 +224,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'passthrough', 'd3d11'], bug=602688)
 
     self.Fail('conformance2/reading/format-r11f-g11f-b10f.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('conformance2/textures/misc/' +
-        'tex-image-with-bad-args-from-dom-elements.html',
         ['win', 'passthrough', 'd3d11'], bug=602688)
 
     self.Fail('conformance/misc/uninitialized-test.html',
@@ -351,15 +245,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'passthrough', 'd3d11'], bug=602688)
     self.Fail('deqp/functional/gles3/instancedrendering.html',
         ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('deqp/functional/gles3/integerstatequery.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
     self.Fail('deqp/functional/gles3/readpixel.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('deqp/functional/gles3/shaderderivate_dfdx.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('deqp/functional/gles3/shaderderivate_dfdy.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('deqp/functional/gles3/shaderderivate_fwidth.html',
         ['win', 'passthrough', 'd3d11'], bug=602688)
     self.Fail('deqp/functional/gles3/shaderstruct.html',
         ['win', 'passthrough', 'd3d11'], bug=602688)
