@@ -239,6 +239,17 @@ typedef struct frame_contexts {
   aom_prob intra_inter_prob[INTRA_INTER_CONTEXTS];
   aom_prob comp_inter_prob[COMP_INTER_CONTEXTS];
 #if CONFIG_NEW_MULTISYMBOL
+#if CONFIG_PALETTE
+  aom_cdf_prob palette_y_size_cdf[PALETTE_BLOCK_SIZES][CDF_SIZE(PALETTE_SIZES)];
+  aom_cdf_prob palette_uv_size_cdf[PALETTE_BLOCK_SIZES]
+                                  [CDF_SIZE(PALETTE_SIZES)];
+  aom_cdf_prob palette_y_color_index_cdf[PALETTE_SIZES]
+                                        [PALETTE_COLOR_INDEX_CONTEXTS]
+                                        [CDF_SIZE(PALETTE_COLORS)];
+  aom_cdf_prob palette_uv_color_index_cdf[PALETTE_SIZES]
+                                         [PALETTE_COLOR_INDEX_CONTEXTS]
+                                         [CDF_SIZE(PALETTE_COLORS)];
+#endif
   aom_cdf_prob comp_inter_cdf[COMP_INTER_CONTEXTS][CDF_SIZE(2)];
   aom_cdf_prob single_ref_cdf[REF_CONTEXTS][SINGLE_REFS - 1][CDF_SIZE(2)];
 #endif

@@ -260,10 +260,18 @@ void av1_decode_palette_tokens(MACROBLOCKD *const xd, int plane,
   const int n = mbmi->palette_mode_info.palette_size[plane];
   int i, j;
   uint8_t *const color_map = xd->plane[plane].color_index_map;
+#if CONFIG_NEW_MULTISYMBOL
+  aom_cdf_prob(
+      *palette_cdf)[PALETTE_COLOR_INDEX_CONTEXTS][CDF_SIZE(PALETTE_COLORS)] =
+      plane ? xd->tile_ctx->palette_uv_color_index_cdf
+            : xd->tile_ctx->palette_y_color_index_cdf;
+
+#else
   const aom_prob(
       *const prob)[PALETTE_COLOR_INDEX_CONTEXTS][PALETTE_COLORS - 1] =
       plane ? av1_default_palette_uv_color_index_prob
             : av1_default_palette_y_color_index_prob;
+#endif
   int plane_block_width, plane_block_height, rows, cols;
   av1_get_block_dimensions(mbmi->sb_type, plane, xd, &plane_block_width,
                            &plane_block_height, &rows, &cols);
@@ -275,9 +283,14 @@ void av1_decode_palette_tokens(MACROBLOCKD *const xd, int plane,
     for (j = AOMMIN(i, cols - 1); j >= AOMMAX(0, i - rows + 1); --j) {
       const int color_ctx = av1_get_palette_color_index_context(
           color_map, plane_block_width, (i - j), j, n, color_order, NULL);
+#if CONFIG_NEW_MULTISYMBOL
+      const int color_idx = aom_read_symbol(
+          r, palette_cdf[n - PALETTE_MIN_SIZE][color_ctx], n, ACCT_STR);
+#else
       const int color_idx =
           aom_read_tree(r, av1_palette_color_index_tree[n - 2],
                         prob[n - 2][color_ctx], ACCT_STR);
+#endif
       assert(color_idx >= 0 && color_idx < n);
       color_map[(i - j) * plane_block_width + j] = color_order[color_idx];
     }
@@ -295,9 +308,14 @@ void av1_decode_palette_tokens(MACROBLOCKD *const xd, int plane,
     for (j = (i == 0 ? 1 : 0); j < cols; ++j) {
       const int color_ctx = av1_get_palette_color_index_context(
           color_map, plane_block_width, i, j, n, color_order, NULL);
+#if CONFIG_NEW_MULTISYMBOL
+      const int color_idx = aom_read_symbol(
+          r, palette_cdf[n - PALETTE_MIN_SIZE][color_ctx], n, ACCT_STR);
+#else
       const int color_idx =
           aom_read_tree(r, av1_palette_color_index_tree[n - PALETTE_MIN_SIZE],
                         prob[n - PALETTE_MIN_SIZE][color_ctx], ACCT_STR);
+#endif
       assert(color_idx >= 0 && color_idx < n);
       color_map[i * plane_block_width + j] = color_order[color_idx];
     }

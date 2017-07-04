@@ -927,9 +927,13 @@ static void pack_palette_tokens(aom_writer *w, const TOKENEXTRA **tp, int n,
   const TOKENEXTRA *p = *tp;
 
   for (i = 0; i < num; ++i) {
+#if CONFIG_NEW_MULTISYMBOL
+    aom_write_symbol(w, p->token, p->palette_cdf, n);
+#else
     av1_write_token(
         w, av1_palette_color_index_tree[n - PALETTE_MIN_SIZE], p->context_tree,
         &palette_color_index_encodings[n - PALETTE_MIN_SIZE][p->token]);
+#endif
     ++p;
   }
 
@@ -1739,9 +1743,15 @@ static void write_palette_mode_info(const AV1_COMMON *cm, const MACROBLOCKD *xd,
         w, n > 0,
         av1_default_palette_y_mode_prob[bsize - BLOCK_8X8][palette_y_mode_ctx]);
     if (n > 0) {
+#if CONFIG_NEW_MULTISYMBOL
+      aom_write_symbol(w, n - PALETTE_MIN_SIZE,
+                       xd->tile_ctx->palette_y_size_cdf[bsize - BLOCK_8X8],
+                       PALETTE_SIZES);
+#else
       av1_write_token(w, av1_palette_size_tree,
                       av1_default_palette_y_size_prob[bsize - BLOCK_8X8],
                       &palette_size_encodings[n - PALETTE_MIN_SIZE]);
+#endif
 #if CONFIG_PALETTE_DELTA_ENCODING
       write_palette_colors_y(xd, pmi, cm->bit_depth, w);
 #else
@@ -1759,9 +1769,15 @@ static void write_palette_mode_info(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     const int palette_uv_mode_ctx = (pmi->palette_size[0] > 0);
     aom_write(w, n > 0, av1_default_palette_uv_mode_prob[palette_uv_mode_ctx]);
     if (n > 0) {
+#if CONFIG_NEW_MULTISYMBOL
+      aom_write_symbol(w, n - PALETTE_MIN_SIZE,
+                       xd->tile_ctx->palette_uv_size_cdf[bsize - BLOCK_8X8],
+                       PALETTE_SIZES);
+#else
       av1_write_token(w, av1_palette_size_tree,
                       av1_default_palette_uv_size_prob[bsize - BLOCK_8X8],
                       &palette_size_encodings[n - PALETTE_MIN_SIZE]);
+#endif
 #if CONFIG_PALETTE_DELTA_ENCODING
       write_palette_colors_uv(xd, pmi, cm->bit_depth, w);
 #else

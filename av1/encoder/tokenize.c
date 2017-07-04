@@ -331,10 +331,18 @@ void av1_tokenize_palette_sb(const AV1_COMP *cpi,
   int i, j;
   int this_rate = 0;
   uint8_t color_order[PALETTE_MAX_SIZE];
+#if CONFIG_NEW_MULTISYMBOL
+  aom_cdf_prob(
+      *palette_cdf)[PALETTE_COLOR_INDEX_CONTEXTS][CDF_SIZE(PALETTE_COLORS)] =
+      plane ? xd->tile_ctx->palette_uv_color_index_cdf
+            : xd->tile_ctx->palette_y_color_index_cdf;
+
+#else
   const aom_prob(
       *const probs)[PALETTE_COLOR_INDEX_CONTEXTS][PALETTE_COLORS - 1] =
       plane == 0 ? av1_default_palette_y_color_index_prob
                  : av1_default_palette_uv_color_index_prob;
+#endif
   int plane_block_width, rows, cols;
   av1_get_block_dimensions(bsize, plane, xd, &plane_block_width, NULL, &rows,
                            &cols);
@@ -357,7 +365,11 @@ void av1_tokenize_palette_sb(const AV1_COMP *cpi,
         this_rate += cpi->palette_y_color_cost[n - PALETTE_MIN_SIZE][color_ctx]
                                               [color_new_idx];
       (*t)->token = color_new_idx;
+#if CONFIG_NEW_MULTISYMBOL
+      (*t)->palette_cdf = palette_cdf[n - PALETTE_MIN_SIZE][color_ctx];
+#else
       (*t)->context_tree = probs[n - PALETTE_MIN_SIZE][color_ctx];
+#endif
       (*t)->skip_eob_node = 0;
       ++(*t);
     }
