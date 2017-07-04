@@ -20,6 +20,9 @@ import java.util.Scanner;
  * Creates ClassLoader for WebAPK-specific dex file in Chrome APK's assets.
  */
 public class HostBrowserClassLoader {
+    /** Directory for storing cached dex files. */
+    public static final String DEX_DIR_NAME = "dex";
+
     private static final String TAG = "cr_HostBrowserClassLoader";
 
     /**
@@ -80,7 +83,7 @@ public class HostBrowserClassLoader {
         if (newRuntimeDexVersion == -1) {
             newRuntimeDexVersion = runtimeDexVersion;
         }
-        File localDexDir = context.getDir("dex", Context.MODE_PRIVATE);
+        File localDexDir = context.getDir(DEX_DIR_NAME, Context.MODE_PRIVATE);
         if (newRuntimeDexVersion != runtimeDexVersion) {
             Log.w(TAG, "Delete cached dex files.");
             dexLoader.deleteCachedDexes(localDexDir);
@@ -88,7 +91,7 @@ public class HostBrowserClassLoader {
 
         String dexAssetName = WebApkVersionUtils.getRuntimeDexName(newRuntimeDexVersion);
         File remoteDexFile =
-                new File(remoteContext.getDir("dex", Context.MODE_PRIVATE), dexAssetName);
+                new File(remoteContext.getDir(DEX_DIR_NAME, Context.MODE_PRIVATE), dexAssetName);
         return dexLoader.load(
                 remoteContext, dexAssetName, canaryClassName, remoteDexFile, localDexDir);
     }
