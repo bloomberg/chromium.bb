@@ -91,22 +91,6 @@ bundle_data("chromium_icons") {
   ]
 }
 
-bundle_data("quick_action_icons") {
-  sources = [
-    "quick_action_new_incognito_tab@2x.png",
-    "quick_action_new_incognito_tab@3x.png",
-    "quick_action_new_tab@2x.png",
-    "quick_action_new_tab@3x.png",
-    "quick_action_qr_scanner@2x.png",
-    "quick_action_qr_scanner@3x.png",
-    "quick_action_voice_search@2x.png",
-    "quick_action_voice_search@3x.png",
-  ]
-  outputs = [
-    "{{bundle_resources_dir}}/{{source_file_part}}",
-  ]
-}
-
 imageset("launchscreen_app_logo") {
   sources = [
     "launchscreen_images.xcassets/launchscreen_app_logo.imageset/Contents.json",
@@ -149,5 +133,46 @@ generate_localizable_strings("system_strings") {
   ]
   deps = [
     ios_packed_resources_target,
+  ]
+}
+
+imageset("quick_action_new_incognito_tab") {
+  sources = [
+    "quick_action_new_incognito_tab.imageset/Contents.json",
+    "quick_action_new_incognito_tab.imageset/quick_action_new_incognito_tab@2x.png",
+    "quick_action_new_incognito_tab.imageset/quick_action_new_incognito_tab@3x.png",
+  ]
+}
+
+imageset("quick_action_new_tab") {
+  sources = [
+    "quick_action_new_tab.imageset/Contents.json",
+    "quick_action_new_tab.imageset/quick_action_new_tab@2x.png",
+    "quick_action_new_tab.imageset/quick_action_new_tab@3x.png",
+  ]
+}
+
+imageset("quick_action_qr_scanner") {
+  sources = [
+    "quick_action_qr_scanner.imageset/Contents.json",
+    "quick_action_qr_scanner.imageset/quick_action_qr_scanner@2x.png",
+    "quick_action_qr_scanner.imageset/quick_action_qr_scanner@3x.png",
+  ]
+}
+
+imageset("quick_action_voice_search") {
+  sources = [
+    "quick_action_voice_search.imageset/Contents.json",
+    "quick_action_voice_search.imageset/quick_action_voice_search@2x.png",
+    "quick_action_voice_search.imageset/quick_action_voice_search@3x.png",
+  ]
+}
+
+group("quick_action_icons") {
+  public_deps = [
+    ":quick_action_new_incognito_tab",
+    ":quick_action_new_tab",
+    ":quick_action_qr_scanner",
+    ":quick_action_voice_search",
   ]
 }
