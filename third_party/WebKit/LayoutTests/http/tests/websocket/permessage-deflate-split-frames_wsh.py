@@ -32,11 +32,11 @@ def web_socket_transfer_data(request):
     stripped = payload[:-4]
 
     header = create_header(common.OPCODE_TEXT, len(payload),
-        fin=0, rsv1=1, rsv2=0, rsv3=0, mask=False)
+                           fin=0, rsv1=1, rsv2=0, rsv3=0, mask=False)
     request.ws_stream._write(header + payload)
 
     header = create_header(common.OPCODE_CONTINUATION, len(stripped),
-        fin=1, rsv1=0, rsv2=0, rsv3=0, mask=False)
+                           fin=1, rsv1=0, rsv2=0, rsv3=0, mask=False)
     request.ws_stream._write(header + stripped)
 
 
