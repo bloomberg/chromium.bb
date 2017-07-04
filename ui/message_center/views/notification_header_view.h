@@ -42,7 +42,7 @@ class NotificationHeaderView : public views::CustomButton {
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
 
-  views::ImageButton* expand_button() { return expand_button_; }
+  views::ImageView* expand_button() { return expand_button_; }
   views::ImageButton* settings_button() { return settings_button_; }
   views::ImageButton* close_button() { return close_button_; }
 
@@ -54,7 +54,7 @@ class NotificationHeaderView : public views::CustomButton {
   views::Label* summary_text_divider_ = nullptr;
   views::Label* summary_text_view_ = nullptr;
   views::ImageView* app_icon_view_ = nullptr;
-  views::ImageButton* expand_button_ = nullptr;
+  views::ImageView* expand_button_ = nullptr;
   PaddedButton* settings_button_ = nullptr;
   PaddedButton* close_button_ = nullptr;
 
