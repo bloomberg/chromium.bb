@@ -3262,7 +3262,7 @@ float Internals::visualViewportScrollY() {
 }
 
 bool Internals::isUseCounted(Document* document, uint32_t feature) {
-  if (feature >= static_cast<uint32_t>(WebFeature::kNumberOfFeatures))
+  if (feature >= static_cast<int32_t>(WebFeature::kNumberOfFeatures))
     return false;
   return UseCounter::IsCounted(*document, static_cast<WebFeature>(feature));
 }
@@ -3313,7 +3313,7 @@ ScriptPromise Internals::observeUseCounter(ScriptState* script_state,
                                            uint32_t feature) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
-  if (feature >= static_cast<uint32_t>(WebFeature::kNumberOfFeatures)) {
+  if (feature >= static_cast<int32_t>(WebFeature::kNumberOfFeatures)) {
     resolver->Reject();
     return promise;
   }

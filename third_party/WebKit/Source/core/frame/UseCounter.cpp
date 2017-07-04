@@ -1375,13 +1375,13 @@ EnumerationHistogram& UseCounter::FeaturesHistogram() const {
   // So instead we just use a dedicated histogram for the SVG case.
   DEFINE_STATIC_LOCAL(blink::EnumerationHistogram, svg_histogram,
                       ("Blink.UseCounter.SVGImage.Features",
-                       static_cast<uint32_t>(WebFeature::kNumberOfFeatures)));
+                       static_cast<int32_t>(WebFeature::kNumberOfFeatures)));
   DEFINE_STATIC_LOCAL(blink::EnumerationHistogram, extension_histogram,
                       ("Blink.UseCounter.Extensions.Features",
-                       static_cast<uint32_t>(WebFeature::kNumberOfFeatures)));
+                       static_cast<int32_t>(WebFeature::kNumberOfFeatures)));
   DEFINE_STATIC_LOCAL(blink::EnumerationHistogram, histogram,
                       ("Blink.UseCounter.Features",
-                       static_cast<uint32_t>(WebFeature::kNumberOfFeatures)));
+                       static_cast<int32_t>(WebFeature::kNumberOfFeatures)));
   switch (context_) {
     case kSVGImageContext:
       return svg_histogram;
@@ -1427,7 +1427,7 @@ EnumerationHistogram& UseCounter::AnimatedCSSHistogram() const {
 static EnumerationHistogram& FeatureObserverHistogram() {
   DEFINE_STATIC_LOCAL(EnumerationHistogram, histogram,
                       ("WebCore.FeatureObserver",
-                       static_cast<uint32_t>(WebFeature::kNumberOfFeatures)));
+                       static_cast<int32_t>(WebFeature::kNumberOfFeatures)));
   return histogram;
 }
 
