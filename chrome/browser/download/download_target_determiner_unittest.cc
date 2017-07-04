@@ -2112,7 +2112,7 @@ void ForceRefreshOfPlugins() {
 #endif
   base::RunLoop run_loop;
   content::PluginService::GetInstance()->GetPlugins(
-      base::Bind(&DummyGetPluginsCallback, run_loop.QuitClosure()));
+      base::BindOnce(&DummyGetPluginsCallback, run_loop.QuitClosure()));
   run_loop.Run();
 #if !defined(OS_WIN)
   content::RenderProcessHost::SetRunRendererInProcess(false);

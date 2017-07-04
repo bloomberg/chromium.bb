@@ -280,7 +280,7 @@ class DownloadNotificationTestBase : public InProcessBrowserTest {
 
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&net::URLRequestSlowDownloadJob::AddUrlHandler));
+        base::BindOnce(&net::URLRequestSlowDownloadJob::AddUrlHandler));
 
     GetMessageCenter()->DisableTimersForTest();
 

@@ -130,8 +130,8 @@ DownloadPrefs::DownloadPrefs(Profile* profile) : profile_(profile) {
   // Ensure that the default download directory exists.
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(base::IgnoreResult(&base::CreateDirectory),
-                 GetDefaultDownloadDirectoryForProfile()));
+      base::BindOnce(base::IgnoreResult(&base::CreateDirectory),
+                     GetDefaultDownloadDirectoryForProfile()));
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
