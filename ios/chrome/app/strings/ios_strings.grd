@@ -1218,6 +1218,12 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_SHOW_PASSWORD_VIEW_USERNAME" desc="Label indicating that the text displayed below is the username to which a saved password corresponds. The password is displayed in the same view, but under a diferent label. [Length: 20em] [iOS only]">
         Username
       </message>
+      <message name="IDS_IOS_CANCEL_PASSWORD_DELETION" desc="Label of a confirmation dialogue button which allows the user to cancel deletion of a stored password. [Length: one line] [iOS only]">
+        Cancel
+      </message>
+      <message name="IDS_IOS_CONFIRM_PASSWORD_DELETION" desc="Label of a confirmation dialogue button which allows the user to confirm deletion of a stored password. [Length: one line] [iOS only]">
+        Delete Saved Password
+      </message>
       <message name="IDS_IOS_SIGNED_IN_ACCOUNTS_VIEW_OK_BUTTON" desc="The title of the OK button of the Signed In Accounts view [iOS only] [20em]">
         OK, Got It
       </message>

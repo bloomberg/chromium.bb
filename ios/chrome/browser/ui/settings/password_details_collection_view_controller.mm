@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/settings/password_details_collection_view_controller.h"
 
+#import <UIKit/UIKit.h>
+
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/common/password_form.h"
@@ -73,9 +75,15 @@ typedef NS_ENUM(NSInteger, ItemType) {
   PasswordDetailsItem* _passwordItem;
 }
 
+// Alert dialogue to confirm deletion of passwords upon pressing the delete
+// button.
+@property(nonatomic, strong) UIAlertController* deleteConfirmation;
+
 @end
 
 @implementation PasswordDetailsCollectionViewController
+
+@synthesize deleteConfirmation = _deleteConfirmation;
 
 - (instancetype)
   initWithPasswordForm:(autofill::PasswordForm)passwordForm
@@ -384,7 +392,35 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule
 }
 
 - (void)deletePassword {
-  [_weakDelegate deletePassword:_passwordForm];
+  __weak PasswordDetailsCollectionViewController* weakSelf = self;
+
+  self.deleteConfirmation = [UIAlertController
+      alertControllerWithTitle:nil
+                       message:nil
+                preferredStyle:UIAlertControllerStyleActionSheet];
+
+  UIAlertAction* cancelAction = [UIAlertAction
+      actionWithTitle:l10n_util::GetNSString(IDS_IOS_CANCEL_PASSWORD_DELETION)
+                style:UIAlertActionStyleCancel
+              handler:^(UIAlertAction* action) {
+                weakSelf.deleteConfirmation = nil;
+              }];
+  [_deleteConfirmation addAction:cancelAction];
+
+  UIAlertAction* deleteAction = [UIAlertAction
+      actionWithTitle:l10n_util::GetNSString(IDS_IOS_CONFIRM_PASSWORD_DELETION)
+                style:UIAlertActionStyleDestructive
+              handler:^(UIAlertAction* action) {
+                PasswordDetailsCollectionViewController* strongSelf = weakSelf;
+                if (!strongSelf) {
+                  return;
+                }
+                strongSelf.deleteConfirmation = nil;
+                [strongSelf->_weakDelegate deletePassword:_passwordForm];
+              }];
+  [_deleteConfirmation addAction:deleteAction];
+
+  [self presentViewController:_deleteConfirmation animated:YES completion:nil];
 }
 
 #pragma mark - UICollectionViewDelegate

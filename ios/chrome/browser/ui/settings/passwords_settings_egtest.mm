@@ -520,6 +520,17 @@ id<GREYMatcher> DeleteButton() {
       performAction:grey_tap()];
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 
+  // Tap the alert's Delete... button to confirm.
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(
+                                   grey_interactable(),
+                                   grey_sufficientlyVisible(),
+                                   ButtonWithAccessibilityLabel(
+                                       l10n_util::GetNSString(
+                                           IDS_IOS_CONFIRM_PASSWORD_DELETION)),
+                                   nullptr)] performAction:grey_tap()];
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+
   // Check that the current view is now the list view, by locating the header
   // of the list of passwords.
   [[EarlGrey selectElementWithMatcher:
@@ -532,6 +543,54 @@ id<GREYMatcher> DeleteButton() {
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
   [[EarlGrey selectElementWithMatcher:Entry(@"https://example.com, user")]
       assertWithMatcher:grey_not(grey_sufficientlyVisible())];
+
+  [self tapBackArrow];
+  [self tapDone];
+  [self clearPasswordStore];
+}
+
+// Checks that deleting a password from password details can be cancelled.
+- (void)testCancelDeletion {
+  [self scopedEnablePasswordManagementAndViewingUI];
+
+  // Save form to be deleted later.
+  [self saveExamplePasswordForm];
+
+  [self openPasswordSettings];
+
+  [[EarlGrey selectElementWithMatcher:Entry(@"https://example.com, user")]
+      performAction:grey_tap()];
+
+  // Tap the Delete... button.
+  [[[EarlGrey selectElementWithMatcher:DeleteButton()]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
+                                                  kScrollAmount)
+      onElementWithMatcher:grey_accessibilityID(
+                               @"PasswordDetailsCollectionViewController")]
+      performAction:grey_tap()];
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+
+  // Tap the alert's Cancel button to cancel.
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(
+                                   grey_interactable(),
+                                   grey_sufficientlyVisible(),
+                                   ButtonWithAccessibilityLabel(
+                                       l10n_util::GetNSString(
+                                           IDS_IOS_CANCEL_PASSWORD_DELETION)),
+                                   nullptr)] performAction:grey_tap()];
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+
+  // Check that the current view is still the detail view, by locating the Copy
+  // button.
+  [[EarlGrey selectElementWithMatcher:CopyPasswordButton()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Go back to the list view and verify that the password is still in the
+  // list.
+  [self tapBackArrow];
+  [[EarlGrey selectElementWithMatcher:Entry(@"https://example.com, user")]
+      assertWithMatcher:grey_sufficientlyVisible()];
 
   [self tapBackArrow];
   [self tapDone];
