@@ -76,6 +76,11 @@ NSString* WebClient::GetEarlyPageScript(BrowserState* browser_state) const {
   return @"";
 }
 
+std::unique_ptr<base::Value> WebClient::GetServiceManifestOverlay(
+    base::StringPiece name) {
+  return nullptr;
+}
+
 void WebClient::AllowCertificateError(
     WebState* web_state,
     int cert_error,

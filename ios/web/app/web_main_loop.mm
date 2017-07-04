@@ -26,6 +26,7 @@
 #import "ios/web/net/cookie_notification_bridge.h"
 #include "ios/web/public/app/web_main_parts.h"
 #import "ios/web/public/web_client.h"
+#include "ios/web/service_manager_context.h"
 #include "ios/web/web_thread_impl.h"
 #include "ios/web/webui/url_data_manager_ios.h"
 #include "net/base/network_change_notifier.h"
@@ -249,6 +250,8 @@ void WebMainLoop::ShutdownThreadsAndCleanUp() {
     parts_->PostMainMessageLoopRun();
   }
 
+  service_manager_context_.reset();
+
   // Must be size_t so we can subtract from it.
   for (size_t thread_id = WebThread::ID_COUNT - 1;
        thread_id >= (WebThread::UI + 1); --thread_id) {
@@ -315,6 +318,7 @@ void WebMainLoop::InitializeMainThread() {
 
 int WebMainLoop::WebThreadsStarted() {
   cookie_notification_bridge_.reset(new CookieNotificationBridge);
+  service_manager_context_ = base::MakeUnique<ServiceManagerContext>();
   return result_code_;
 }
 

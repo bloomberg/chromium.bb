@@ -1,0 +1,18 @@
+{
+  "name": "web_browser",
+  "display_name": "Web",
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "provides": {
+      },
+      "requires": {
+        "*": [ "app" ],
+        "service_manager": [
+          "service_manager:instance_name",
+          "service_manager:service_manager",
+          "service_manager:user_id"
+        ]
+      }
+    }
+  }
+}

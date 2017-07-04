@@ -2,6 +2,7 @@ include_rules = [
   # web interfaces cannot depend on private web code.
   "-ios/web",
   "+ios/web/public",
+  "+services/service_manager/embedder/runner",
 ]
 
 specific_include_rules = {

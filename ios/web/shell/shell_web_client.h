@@ -28,6 +28,9 @@ class ShellWebClient : public WebClient {
       int resource_id,
       ui::ScaleFactor scale_factor) const override;
   base::RefCountedMemory* GetDataResourceBytes(int resource_id) const override;
+  void RegisterServices(StaticServiceMap* services) override;
+  std::unique_ptr<base::Value> GetServiceManifestOverlay(
+      base::StringPiece name) override;
   void AllowCertificateError(
       WebState* web_state,
       int cert_error,
