@@ -7,6 +7,12 @@
 
 namespace ui_util {
 
+// The spacing to use between action icons.
+extern CGFloat const kIconSpacing;
+
+// The spacing between content and edges.
+extern CGFloat const kContentMargin;
+
 // Returns constraints to make two views' size and center equal by pinning
 // leading, trailing, top and bottom anchors.
 NSArray<NSLayoutConstraint*>* CreateSameConstraints(UIView* view1,
