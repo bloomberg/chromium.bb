@@ -76,6 +76,10 @@ const char kChildAccountStatusKnown[] = "child_account_status_known";
 // Defaults apps are installed only when creating a new profile.
 const char kDefaultApps[] = "default_apps";
 
+// Disable SafeBrowsing checks for files coming from trusted URLs when false.
+const char kSafeBrowsingForTrustedSourcesEnabled[] =
+    "safebrowsing_for_trusted_sources_enabled";
+
 // Disables screenshot accelerators and extension APIs.
 // This setting resides both in profile prefs and local state. Accelerator
 // handling code reads local state, while extension APIs use profile pref.
@@ -1512,6 +1516,9 @@ const char kSaveFileDefaultDirectory[] = "savefile.default_directory";
 // The type used to save the page. See the enum SavePackage::SavePackageType in
 // the chrome/browser/download/save_package.h for the possible values.
 const char kSaveFileType[] = "savefile.type";
+
+// A list of download sources that can be trusted, e.g., enterprise intranet.
+const char kTrustedDownloadSources[] = "trusted_download_sources";
 
 // String which specifies the last directory that was chosen for uploading
 // or opening a file.

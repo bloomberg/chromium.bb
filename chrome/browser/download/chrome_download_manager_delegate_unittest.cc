@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_target_info.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -883,6 +885,46 @@ TEST_P(ChromeDownloadManagerDelegateTestWithSafeBrowsing, CheckClientDownload) {
   run_loop.Run();
 }
 
+TEST_F(ChromeDownloadManagerDelegateTestWithSafeBrowsing,
+       TrustedSourcesPolicyNotTrusted) {
+  GURL download_url("http://untrusted.com/best-download-ever.exe");
+  pref_service()->SetBoolean(prefs::kSafeBrowsingForTrustedSourcesEnabled,
+                             false);
+  std::unique_ptr<content::MockDownloadItem> download_item =
+      CreateActiveDownloadItem(0);
+  EXPECT_CALL(*download_item, GetURL()).WillRepeatedly(ReturnRef(download_url));
+
+  EXPECT_CALL(*delegate(), GetDownloadProtectionService());
+  EXPECT_CALL(*download_protection_service(), MockCheckClientDownload())
+      .WillOnce(Return(safe_browsing::DownloadProtectionService::SAFE));
+  EXPECT_CALL(*download_item, GetDangerType())
+      .WillRepeatedly(Return(content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS));
+
+  base::RunLoop run_loop;
+  ASSERT_FALSE(delegate()->ShouldCompleteDownload(download_item.get(),
+                                                  run_loop.QuitClosure()));
+  run_loop.Run();
+}
+
+#if !defined(OS_WIN)
+// TODO(crbug.com/739204) Add a Windows version of this test.
+TEST_F(ChromeDownloadManagerDelegateTestWithSafeBrowsing,
+       TrustedSourcesPolicyTrusted) {
+  base::CommandLine* command_line(base::CommandLine::ForCurrentProcess());
+  DCHECK(command_line);
+  command_line->AppendSwitchASCII(switches::kTrustedDownloadSources,
+                                  "trusted.com");
+  GURL download_url("http://trusted.com/best-download-ever.exe");
+  pref_service()->SetBoolean(prefs::kSafeBrowsingForTrustedSourcesEnabled,
+                             false);
+  std::unique_ptr<content::MockDownloadItem> download_item =
+      CreateActiveDownloadItem(0);
+  EXPECT_CALL(*download_item, GetURL()).WillRepeatedly(ReturnRef(download_url));
+  EXPECT_CALL(*delegate(), GetDownloadProtectionService()).Times(0);
+  EXPECT_TRUE(
+      delegate()->ShouldCompleteDownload(download_item.get(), base::Closure()));
+}
+#endif  // OS_WIN
 #endif  // FULL_SAFE_BROWSING
 
 #if defined(OS_ANDROID)

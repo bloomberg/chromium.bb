@@ -143,7 +143,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 374
+#   For your editing convenience: highest ID currently used: 375
 #   And don't forget to also update the EnterprisePolicies enum of
 #   histograms.xml (run 'python tools/metrics/histograms/update_policies.py').
 #
@@ -258,7 +258,7 @@
           Leaving this policy not set will allow the user to choose their home page on their own if HomepageIsNewTabPage is not set too.
 
           This policy is not available on Windows instances that are not joined
-          to a Microsoft® Active Directory® domain.''',
+          to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain.''',
           'label': '''Home page URL''',
         },
         {
@@ -286,7 +286,7 @@
           Leaving this policy not set will allow the user to choose whether the new tab page is their home page on their own.
 
           This policy is not available on Windows instances that are not joined
-          to a Microsoft® Active Directory® domain.''',
+          to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain.''',
         },
       ],
     },
@@ -318,7 +318,7 @@
 
           If the policy is not set or left empty the default new tab page is used.
 
-          This policy is not available on Windows instances that are not joined to a Microsoft® Active Directory® domain.''',
+          This policy is not available on Windows instances that are not joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain.''',
           'label': '''New Tab page URL''',
         },
       ],
@@ -1305,7 +1305,7 @@
       upon installation / first run.
 
       This policy is not available on Windows instances that are not joined to
-      a Microsoft® Active Directory® domain.  (For Chrome OS, see
+      a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain.  (For Chrome OS, see
       DeviceMetricsReportingEnabled.)''',
     },
     {
@@ -1764,9 +1764,7 @@
 
       When this policy is not set, (or the 'No special restrictions' option is chosen), the dowloads will go through the usual security restrictions based on SafeBrowsing analysis results.
 
-      Note that these restrictions apply to downloads triggered from web page content, as well as the 'download link...' context menu option.
-
-      These restrictions do not apply to the save / download of the currently displayed page, nor does it apply to saving as PDF from the printing options.
+      Note that these restrictions apply to downloads triggered from web page content, as well as the 'download link...' context menu option. These restrictions do not apply to the save / download of the currently displayed page, nor does it apply to saving as PDF from the printing options.
 
       See https://developers.google.com/safe-browsing for more info on SafeBrowsing.''',
       'label': '''Download restrictions''',
@@ -1794,6 +1792,32 @@
       If this policy is left not set the default download directory will be used and the user will be able to change it.''',
       'label': '''Set download directory''',
       'arc_support': 'This policy has no effect on Android apps. Android apps always use the default downloads directory and cannot access any files downloaded by <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> into a non-default downloads directory.',
+    },
+    {
+      'name': 'SafeBrowsingForTrustedSourcesEnabled',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.win:61-'],
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': False,
+      'id': 375,
+      'caption': '''SafeBrowsing enable state for trusted sources''',
+      'tags': ['local-data-access'],
+      'desc': '''Identify if <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> can allow download without Safe Browsing checks when it's from a trusted source.
+
+      When False, downloaded files will not be sent to be analyzed by Safe Browsing when it's from a trusted source.
+
+      When not set (or set to True), downloaded files are sent to be analyzed by Safe Browsing, even when it's from a trusted source.
+
+      Note that these restrictions apply to downloads triggered from web page content, as well as the 'download link...' context menu option. These restrictions do not apply to the save / download of the currently displayed page, nor does it apply to saving as PDF from the printing options.
+
+      This policy is not available on Windows instances that are not joined
+      to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain.''',
+      'label': '''SafeBrowsing enable state for trusted sources''',
     },
     {
       'name': 'ClearSiteDataOnExit',
@@ -2690,7 +2714,7 @@
           Disabling this setting is equivalent to leaving it not configured. The user will still be able to change it in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
           This policy is not available on Windows instances that are not joined
-          to a Microsoft® Active Directory® domain.''',
+          to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain.''',
         },
         {
           'name': 'RestoreOnStartupURLs',
@@ -2714,7 +2738,7 @@
           This policy only works if the 'RestoreOnStartup' policy is set to 'RestoreOnStartupIsURLs'.
 
           This policy is not available on Windows instances that are not joined
-          to a Microsoft® Active Directory® domain.''',
+          to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain.''',
         },
       ],
     },
@@ -2777,7 +2801,7 @@
           If this policy is left not set, the default search provider is enabled, and the user will be able to set the search provider list.
 
           This policy is not available on Windows instances that are not joined
-          to a Microsoft® Active Directory® domain.''',
+          to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain.''',
         },
         {
           'name': 'DefaultSearchProviderName',
@@ -9816,7 +9840,7 @@
 
       The recommended way to configure policy on Windows is via GPO, although
       provisioning policy via registry is still supported for Windows instances
-      that are joined to a Microsoft® Active Directory® domain.'''
+      that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain.'''
     },
     'doc_back_to_top': {
       'desc': '''Text of a link in the generated policy documentation, that takes the user to the top of the page''',

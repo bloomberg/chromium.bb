@@ -23,6 +23,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_target_determiner.h"
+#include "chrome/browser/download/trusted_sources_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_paths.h"
@@ -31,6 +32,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/save_page_type.h"
 
@@ -156,6 +158,8 @@ DownloadPrefs::DownloadPrefs(Profile* profile) : profile_(profile) {
   download_path_.Init(prefs::kDownloadDefaultDirectory, prefs);
   save_file_path_.Init(prefs::kSaveFileDefaultDirectory, prefs);
   save_file_type_.Init(prefs::kSaveFileType, prefs);
+  safebrowsing_for_trusted_sources_enabled_.Init(
+      prefs::kSafeBrowsingForTrustedSourcesEnabled, prefs);
   download_restriction_.Init(prefs::kDownloadRestrictions, prefs);
 
   // We store any file extension that should be opened automatically at
@@ -188,8 +192,9 @@ DownloadPrefs::DownloadPrefs(Profile* profile) : profile_(profile) {
     // expected that some entries in the users' auto open list will get dropped
     // permanently as a result.
     if (FileTypePolicies::GetInstance()->IsAllowedToOpenAutomatically(
-            filename_with_extension))
+            filename_with_extension)) {
       auto_open_.insert(extension);
+    }
   }
 }
 
@@ -206,6 +211,9 @@ void DownloadPrefs::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kDownloadDirUpgraded, false);
   registry->RegisterIntegerPref(prefs::kSaveFileType,
                                 content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML);
+  registry->RegisterIntegerPref(prefs::kDownloadRestrictions, 0);
+  registry->RegisterBooleanPref(prefs::kSafeBrowsingForTrustedSourcesEnabled,
+                                true);
 
   const base::FilePath& default_download_path = GetDefaultDownloadDirectory();
   registry->RegisterFilePathPref(prefs::kDownloadDefaultDirectory,
@@ -243,6 +251,12 @@ DownloadPrefs* DownloadPrefs::FromDownloadManager(
 DownloadPrefs* DownloadPrefs::FromBrowserContext(
     content::BrowserContext* context) {
   return FromDownloadManager(BrowserContext::GetDownloadManager(context));
+}
+
+bool DownloadPrefs::IsFromTrustedSource(const content::DownloadItem& item) {
+  if (!trusted_sources_manager_)
+    trusted_sources_manager_.reset(TrustedSourcesManager::Create());
+  return trusted_sources_manager_->IsFromTrustedSource(item.GetURL());
 }
 
 base::FilePath DownloadPrefs::DownloadPath() const {
@@ -315,8 +329,9 @@ bool DownloadPrefs::EnableAutoOpenBasedOnExtension(
     const base::FilePath& file_name) {
   base::FilePath::StringType extension = file_name.Extension();
   if (!FileTypePolicies::GetInstance()->IsAllowedToOpenAutomatically(
-          file_name))
+          file_name)) {
     return false;
+  }
 
   DCHECK(extension[0] == base::FilePath::kExtensionSeparator);
   extension.erase(0, 1);

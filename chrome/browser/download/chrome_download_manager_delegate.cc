@@ -340,6 +340,11 @@ bool ChromeDownloadManagerDelegate::IsDownloadReadyForCompletion(
     const base::Closure& internal_complete_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #if defined(FULL_SAFE_BROWSING)
+  if (!download_prefs_->safebrowsing_for_trusted_sources_enabled() &&
+      download_prefs_->IsFromTrustedSource(*item)) {
+    return true;
+  }
+
   SafeBrowsingState* state = static_cast<SafeBrowsingState*>(
       item->GetUserData(&kSafeBrowsingUserDataKey));
   if (!state) {
