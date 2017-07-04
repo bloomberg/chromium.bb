@@ -37,6 +37,8 @@ class GURL;
 @property(nonatomic, assign) BOOL availableOffline;
 // Attributes for favicon.
 @property(nonatomic, strong) FaviconAttributes* attributes;
+// URL for the favicon, if different of |URL|.
+@property(nonatomic, assign) GURL faviconURL;
 
 @end
 

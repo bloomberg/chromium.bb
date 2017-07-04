@@ -65,6 +65,8 @@ ContentSuggestionsItem* ConvertSuggestion(
   if (category.IsKnownCategory(ntp_snippets::KnownCategories::READING_LIST)) {
     suggestion.availableOffline =
         contentSuggestion.reading_list_suggestion_extra()->distilled;
+    suggestion.faviconURL =
+        contentSuggestion.reading_list_suggestion_extra()->favicon_page_url;
   }
   if (category.IsKnownCategory(ntp_snippets::KnownCategories::ARTICLES)) {
     suggestion.hasImage = YES;
