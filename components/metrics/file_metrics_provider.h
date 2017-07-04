@@ -57,7 +57,9 @@ class FileMetricsProvider : public MetricsProvider,
     // the ImportantFileWriter) will not get read. Files that have been
     // read will be attempted to be deleted; should those files not be
     // deletable by this process, it is the reponsibility of the producer
-    // to keep the directory pruned in some manner.
+    // to keep the directory pruned in some manner. Added files must have a
+    // timestamp later (not the same or earlier) than the newest file that
+    // already exists or it may be assumed to have been already uploaded.
     SOURCE_HISTOGRAMS_ATOMIC_DIR,
 
     // "Active" files may be open by one or more other processes and updated

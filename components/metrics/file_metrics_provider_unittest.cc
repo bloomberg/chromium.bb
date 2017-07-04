@@ -597,4 +597,58 @@ TEST_P(FileMetricsProviderTest, AccessEmbeddedFallbackMetricsWithProfile) {
   EXPECT_FALSE(base::PathExists(metrics_file()));
 }
 
+TEST_P(FileMetricsProviderTest, AccessEmbeddedProfileMetricsFromDir) {
+  const int file_count = 3;
+  base::Time file_base_time = base::Time::Now();
+  std::vector<base::FilePath> file_names;
+  for (int i = 0; i < file_count; ++i) {
+    CreateMetricsFileWithHistograms(
+        2, [](base::PersistentHistogramAllocator* allocator) {
+          SystemProfileProto profile_proto;
+          SystemProfileProto::FieldTrial* trial =
+              profile_proto.add_field_trial();
+          trial->set_name_id(123);
+          trial->set_group_id(456);
+
+          PersistentSystemProfile persistent_profile;
+          persistent_profile.RegisterPersistentAllocator(
+              allocator->memory_allocator());
+          persistent_profile.SetSystemProfile(profile_proto, true);
+        });
+    ASSERT_TRUE(PathExists(metrics_file()));
+    char new_name[] = "hX";
+    new_name[1] = '1' + i;
+    base::FilePath file_name = temp_dir().AppendASCII(new_name).AddExtension(
+        base::PersistentMemoryAllocator::kFileExtension);
+    base::Time file_time =
+        file_base_time - base::TimeDelta::FromMinutes(file_count - i);
+    base::TouchFile(metrics_file(), file_time, file_time);
+    base::Move(metrics_file(), file_name);
+    file_names.push_back(std::move(file_name));
+  }
+
+  // Register the file and allow the "checker" task to run.
+  provider()->RegisterSource(
+      temp_dir(), FileMetricsProvider::SOURCE_HISTOGRAMS_ATOMIC_DIR,
+      FileMetricsProvider::ASSOCIATE_INTERNAL_PROFILE, "");
+
+  OnDidCreateMetricsLog();
+  RunTasks();
+
+  // A read of metrics with internal profiles should return one result.
+  HistogramFlattenerDeltaRecorder flattener;
+  base::HistogramSnapshotManager snapshot_manager(&flattener);
+  SystemProfileProto profile;
+  for (int i = 0; i < file_count; ++i) {
+    EXPECT_TRUE(ProvideIndependentMetrics(&profile, &snapshot_manager)) << i;
+    RunTasks();
+  }
+  EXPECT_FALSE(ProvideIndependentMetrics(&profile, &snapshot_manager));
+
+  OnDidCreateMetricsLog();
+  RunTasks();
+  for (const auto& file_name : file_names)
+    EXPECT_FALSE(base::PathExists(file_name));
+}
+
 }  // namespace metrics

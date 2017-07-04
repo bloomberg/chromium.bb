@@ -26,6 +26,7 @@
 #include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/strings/string16.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -215,19 +216,6 @@ std::unique_ptr<metrics::FileMetricsProvider> CreateFileMetricsProvider(
 
   base::FilePath user_data_dir;
   if (base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
-    // Reporting of persistent histograms from last session is controlled by
-    // a feature param. TODO(bcwhite): The current default is not to upload
-    // until some issues are resolved. See crbug.com/706422 for details.
-    std::string send_unreported = base::GetFieldTrialParamValueByFeature(
-        base::kPersistentHistogramsFeature, "send_unreported_metrics");
-    bool report_previous_persistent_histograms =
-        metrics_reporting_enabled && (send_unreported == "yes");
-    RegisterOrRemovePreviousRunMetricsFile(
-        report_previous_persistent_histograms, user_data_dir,
-        ChromeMetricsServiceClient::kBrowserMetricsName,
-        metrics::FileMetricsProvider::ASSOCIATE_INTERNAL_PROFILE, task_runner,
-        file_metrics_provider.get());
-
     // Register the Crashpad metrics files.
     // Register the data from the previous run if crashpad_handler didn't exit
     // cleanly.
@@ -237,7 +225,16 @@ std::unique_ptr<metrics::FileMetricsProvider> CreateFileMetricsProvider(
         metrics::FileMetricsProvider::
             ASSOCIATE_INTERNAL_PROFILE_OR_PREVIOUS_RUN,
         task_runner, file_metrics_provider.get());
+
+    base::FilePath browser_metrics_upload_dir = user_data_dir.AppendASCII(
+        ChromeMetricsServiceClient::kBrowserMetricsName);
     if (metrics_reporting_enabled) {
+      file_metrics_provider->RegisterSource(
+          browser_metrics_upload_dir,
+          metrics::FileMetricsProvider::SOURCE_HISTOGRAMS_ATOMIC_DIR,
+          metrics::FileMetricsProvider::ASSOCIATE_INTERNAL_PROFILE,
+          ChromeMetricsServiceClient::kBrowserMetricsName);
+
       base::FilePath active_path;
       base::GlobalHistogramAllocator::ConstructFilePaths(
           user_data_dir, kCrashpadHistogramAllocatorName, nullptr, &active_path,
@@ -249,6 +246,16 @@ std::unique_ptr<metrics::FileMetricsProvider> CreateFileMetricsProvider(
           metrics::FileMetricsProvider::SOURCE_HISTOGRAMS_ACTIVE_FILE,
           metrics::FileMetricsProvider::ASSOCIATE_CURRENT_RUN,
           base::StringPiece());
+    } else {
+      // When metrics reporting is not enabled, any existing files should be
+      // deleted in order to preserve user privacy.
+      base::PostTaskWithTraits(
+          FROM_HERE,
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+          base::BindOnce(base::IgnoreResult(&base::DeleteFile),
+                         base::Passed(&browser_metrics_upload_dir),
+                         /*recursive=*/true));
     }
   }
 

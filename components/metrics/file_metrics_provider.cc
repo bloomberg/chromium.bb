@@ -418,7 +418,7 @@ void FileMetricsProvider::MergeHistogramDeltasFromSource(SourceInfo* source) {
 void FileMetricsProvider::RecordHistogramSnapshotsFromSource(
     base::HistogramSnapshotManager* snapshot_manager,
     SourceInfo* source) {
-  DCHECK_EQ(SOURCE_HISTOGRAMS_ATOMIC_FILE, source->type);
+  DCHECK_NE(SOURCE_HISTOGRAMS_ACTIVE_FILE, source->type);
 
   base::PersistentHistogramAllocator::Iterator histogram_iter(
       source->allocator.get());
@@ -574,6 +574,8 @@ bool FileMetricsProvider::ProvideIndependentMetrics(
     RecordSourceAsRead(source);
     sources_to_check_.splice(sources_to_check_.end(), sources_with_profile_,
                              sources_with_profile_.begin());
+    ScheduleSourcesCheck();
+
     if (success)
       return true;
   }
