@@ -482,14 +482,10 @@ void IsHandledBySafePlugin(content::ResourceContext* resource_context,
     // The GetPlugins call causes the plugin list to be refreshed. Once that's
     // done we can retry the GetPluginInfo call. We break out of this cycle
     // after a single retry in order to avoid retrying indefinitely.
-    plugin_service->GetPlugins(
-        base::Bind(&InvokeClosureAfterGetPluginCallback,
-                   base::Bind(&IsHandledBySafePlugin,
-                              resource_context,
-                              url,
-                              mime_type,
-                              IGNORE_IF_STALE_PLUGIN_LIST,
-                              callback)));
+    plugin_service->GetPlugins(base::BindOnce(
+        &InvokeClosureAfterGetPluginCallback,
+        base::Bind(&IsHandledBySafePlugin, resource_context, url, mime_type,
+                   IGNORE_IF_STALE_PLUGIN_LIST, callback)));
     return;
   }
   // In practice, we assume that retrying once is enough.

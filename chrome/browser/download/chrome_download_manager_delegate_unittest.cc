@@ -368,8 +368,8 @@ bool ChromeDownloadManagerDelegateTest::CheckForFileExistence(
   base::RunLoop loop_runner;
   bool result = false;
   delegate()->CheckForFileExistence(
-      download_item,
-      base::Bind(&StoreBoolAndRunClosure, loop_runner.QuitClosure(), &result));
+      download_item, base::BindOnce(&StoreBoolAndRunClosure,
+                                    loop_runner.QuitClosure(), &result));
   loop_runner.Run();
   return result;
 }
