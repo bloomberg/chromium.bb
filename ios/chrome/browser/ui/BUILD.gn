@@ -133,29 +133,6 @@ bundle_data_ib_file("native_content_controller_test_xib") {
 
 bundle_data("resources") {
   sources = [
-    "resources/custom_row_voice.png",
-    "resources/custom_row_voice@2x.png",
-    "resources/custom_row_voice@2x~ipad.png",
-    "resources/custom_row_voice@3x.png",
-    "resources/custom_row_voice_pressed.png",
-    "resources/custom_row_voice_pressed@2x.png",
-    "resources/custom_row_voice_pressed@2x~ipad.png",
-    "resources/custom_row_voice_pressed@3x.png",
-    "resources/custom_row_voice_pressed~ipad.png",
-    "resources/custom_row_voice~ipad.png",
-    "resources/default_favicon.png",
-    "resources/default_favicon@2x.png",
-    "resources/default_favicon@3x.png",
-    "resources/default_favicon_incognito.png",
-    "resources/default_favicon_incognito@2x.png",
-    "resources/default_favicon_incognito@3x.png",
-    "resources/keyboard_bg_portrait_tablet.png",
-    "resources/keyboard_button.png",
-    "resources/keyboard_button@2x.png",
-    "resources/keyboard_button@2x~ipad.png",
-    "resources/keyboard_button@3x.png",
-    "resources/keyboard_button~ipad.png",
-
     # On iOS, the terms of service file need to be loaded from the application
     # bundle, not from a datapack. As GetTermsOfServicePath() returns path to
     # those files, they are added to //ios/chrome/browser/ui:resources.
@@ -234,6 +211,12 @@ source_set("ui_internal_arc") {
   deps = [
     ":resources",
     ":ui",
+    "resources:custom_row_voice",
+    "resources:custom_row_voice_pressed",
+    "resources:default_favicon",
+    "resources:default_favicon_incognito",
+    "resources:keyboard_bg_portrait_tablet",
+    "resources:keyboard_button",
     "//base",
     "//base:i18n",
     "//components/bookmarks/browser",
