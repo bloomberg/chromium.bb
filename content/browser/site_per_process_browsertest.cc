@@ -93,6 +93,7 @@
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/latency/latency_info.h"
 #include "ui/native_theme/native_theme_features.h"
@@ -1179,6 +1180,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // Test that scrolling a nested out-of-process iframe bubbles unused scroll
 // delta to a parent frame.
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollBubblingFromOOPIFTest) {
+  ui::GestureConfiguration::GetInstance()->set_scroll_debounce_interval_in_ms(
+      0);
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -1253,11 +1256,24 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollBubblingFromOOPIFTest) {
   scroll_event.SetPositionInWidget(1, 1);
   scroll_event.delta_x = 0.0f;
   scroll_event.delta_y = -5.0f;
+  scroll_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
   // Set has_precise_scroll_deltas to keep these events off the animated scroll
   // pathways, which currently break this test.
   // https://bugs.chromium.org/p/chromium/issues/detail?id=710513
   scroll_event.has_precise_scrolling_deltas = true;
   rwhv_parent->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
+
+  if (rwhv_parent->wheel_scroll_latching_enabled()) {
+    // When scroll latching is enabled the event router sends wheel events of a
+    // single scroll sequence to the target under the first wheel event. Send a
+    // wheel end event to the current target view before sending a wheel event
+    // to a different one.
+    scroll_event.delta_y = 0.0f;
+    scroll_event.phase = blink::WebMouseWheelEvent::kPhaseEnded;
+    scroll_event.dispatch_type =
+        blink::WebInputEvent::DispatchType::kEventNonBlocking;
+    rwhv_parent->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
+  }
 
   // Ensure that the view position is propagated to the child properly.
   filter->Wait();
@@ -1270,6 +1286,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollBubblingFromOOPIFTest) {
   // The upscroll exceeds the amount that the frame was initially scrolled
   // down to account for rounding.
   scroll_event.delta_y = 6.0f;
+  scroll_event.dispatch_type = blink::WebInputEvent::DispatchType::kBlocking;
+  scroll_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
   rwhv_nested->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
 
   filter->Wait();
@@ -1288,6 +1306,18 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollBubblingFromOOPIFTest) {
     update_rect = filter->last_rect();
   }
 
+  if (rwhv_parent->wheel_scroll_latching_enabled()) {
+    // When scroll latching is enabled the event router sends wheel events of a
+    // single scroll sequence to the target under the first wheel event. Send a
+    // wheel end event to the current target view before sending a wheel event
+    // to a different one.
+    scroll_event.delta_y = 0.0f;
+    scroll_event.phase = blink::WebMouseWheelEvent::kPhaseEnded;
+    scroll_event.dispatch_type =
+        blink::WebInputEvent::DispatchType::kEventNonBlocking;
+    rwhv_nested->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
+  }
+
   filter->Reset();
   // Once we've sent a wheel to the nested iframe that we expect to turn into
   // a bubbling scroll, we need to delay to make sure the GestureScrollBegin
@@ -1301,7 +1331,21 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollBubblingFromOOPIFTest) {
   // Scroll the parent down again in order to test scroll bubbling from
   // gestures.
   scroll_event.delta_y = -5.0f;
+  scroll_event.dispatch_type = blink::WebInputEvent::DispatchType::kBlocking;
+  scroll_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
   rwhv_parent->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
+
+  if (rwhv_parent->wheel_scroll_latching_enabled()) {
+    // When scroll latching is enabled the event router sends wheel events of a
+    // single scroll sequence to the target under the first wheel event. Send a
+    // wheel end event to the current target view before sending a wheel event
+    // to a different one.
+    scroll_event.delta_y = 0.0f;
+    scroll_event.phase = blink::WebMouseWheelEvent::kPhaseEnded;
+    scroll_event.dispatch_type =
+        blink::WebInputEvent::DispatchType::kEventNonBlocking;
+    rwhv_parent->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
+  }
 
   // Ensure ensuing offset change is received, and then reset the filter.
   filter->Wait();
@@ -1316,6 +1360,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollBubblingFromOOPIFTest) {
   gesture_event.source_device = blink::kWebGestureDeviceTouchpad;
   gesture_event.x = 1;
   gesture_event.y = 1;
+  gesture_event.data.scroll_begin.delta_x_hint = 0.0f;
+  gesture_event.data.scroll_begin.delta_y_hint = 6.0f;
   rwhv_nested->GetRenderWidgetHost()->ForwardGestureEvent(gesture_event);
 
   gesture_event.SetType(blink::WebGestureEvent::kGestureScrollUpdate);
@@ -1344,6 +1390,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollBubblingFromOOPIFTest) {
   // not propagate to the parent (see https://crbug.com/621624).
   filter->Reset();
   scroll_event.delta_y = -5.0f;
+  scroll_event.dispatch_type = blink::WebInputEvent::DispatchType::kBlocking;
+  scroll_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
   rwhv_nested->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
   // It isn't possible to busy loop waiting on the renderer here because we
   // are explicitly testing that something does *not* happen. This creates a
@@ -5859,8 +5907,8 @@ void OnSyntheticGestureCompleted(scoped_refptr<MessageLoopRunner> runner,
 
 }  // namespace anonymous
 
-// Flaky under Linux and Tsan. https://crbug.com/592320
-#if defined(THREAD_SANITIZER) || defined(OS_LINUX)
+// Flaky under TSan. https://crbug.com/592320
+#if defined(THREAD_SANITIZER)
 #define MAYBE_SubframeGestureEventRouting DISABLED_SubframeGestureEventRouting
 #else
 #define MAYBE_SubframeGestureEventRouting SubframeGestureEventRouting

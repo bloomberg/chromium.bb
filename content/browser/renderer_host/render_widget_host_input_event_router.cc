@@ -586,13 +586,10 @@ void RenderWidgetHostInputEventRouter::SendMouseEnterOrLeaveEvents(
 void RenderWidgetHostInputEventRouter::BubbleScrollEvent(
     RenderWidgetHostViewBase* target_view,
     const blink::WebGestureEvent& event) {
-  // TODO(kenrb, tdresser): This needs to be refactored when scroll latching
-  // is implemented (see https://crbug.com/526463). This design has some
-  // race problems that can result in lost scroll delta, which are very
-  // difficult to resolve until this is changed to do all scroll targeting,
-  // including bubbling, based on GestureScrollBegin.
   DCHECK(target_view);
-  DCHECK(event.GetType() == blink::WebInputEvent::kGestureScrollUpdate ||
+  DCHECK((target_view->wheel_scroll_latching_enabled() &&
+          event.GetType() == blink::WebInputEvent::kGestureScrollBegin) ||
+         event.GetType() == blink::WebInputEvent::kGestureScrollUpdate ||
          event.GetType() == blink::WebInputEvent::kGestureScrollEnd ||
          event.GetType() == blink::WebInputEvent::kGestureFlingStart);
   // DCHECK_XNOR the current and original bubble targets. Both should be set
@@ -602,6 +599,49 @@ void RenderWidgetHostInputEventRouter::BubbleScrollEvent(
 
   ui::LatencyInfo latency_info =
       ui::WebInputEventTraits::CreateLatencyInfoForWebGestureEvent(event);
+
+  if (target_view->wheel_scroll_latching_enabled()) {
+    if (event.GetType() == blink::WebInputEvent::kGestureScrollBegin) {
+      // If target_view has unrelated gesture events in progress, do
+      // not proceed. This could cause confusion between independent
+      // scrolls.
+      if (target_view == touchscreen_gesture_target_.target ||
+          target_view == touchpad_gesture_target_.target ||
+          target_view == touch_target_.target) {
+        return;
+      }
+
+      // This accounts for bubbling through nested OOPIFs. A gesture scroll
+      // begin has been bubbled but the target has sent back a gesture scroll
+      // event ack which didn't consume any scroll delta, and so another level
+      // of bubbling is needed. This requires a GestureScrollEnd be sent to the
+      // last view, which will no longer be the scroll target.
+      if (bubbling_gesture_scroll_target_.target)
+        SendGestureScrollEnd(bubbling_gesture_scroll_target_.target, event);
+      else
+        first_bubbling_scroll_target_.target = target_view;
+
+      bubbling_gesture_scroll_target_.target = target_view;
+    } else {  // !(event.GetType() == blink::WebInputEvent::kGestureScrollBegin)
+      if (!bubbling_gesture_scroll_target_.target) {
+        // The GestureScrollBegin event is not bubbled, don't bubble the rest of
+        // the scroll events.
+        return;
+      }
+    }
+
+    bubbling_gesture_scroll_target_.target->ProcessGestureEvent(event,
+                                                                latency_info);
+    if (event.GetType() == blink::WebInputEvent::kGestureScrollEnd ||
+        event.GetType() == blink::WebInputEvent::kGestureFlingStart) {
+      first_bubbling_scroll_target_.target = nullptr;
+      bubbling_gesture_scroll_target_.target = nullptr;
+    }
+
+    return;
+  }
+
+  DCHECK(!target_view->wheel_scroll_latching_enabled());
 
   // If target_view is already set up for bubbled scrolls, we forward
   // the event to the current scroll target without further consideration.

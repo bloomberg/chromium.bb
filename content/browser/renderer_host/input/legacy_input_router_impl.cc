@@ -88,9 +88,9 @@ LegacyInputRouterImpl::LegacyInputRouterImpl(IPC::Sender* sender,
       current_ack_source_(ACK_SOURCE_NONE),
       active_renderer_fling_count_(0),
       touch_scroll_started_sent_(false),
-      wheel_event_queue_(this,
-                         base::FeatureList::IsEnabled(
-                             features::kTouchpadAndWheelScrollLatching)),
+      wheel_scroll_latching_enabled_(base::FeatureList::IsEnabled(
+          features::kTouchpadAndWheelScrollLatching)),
+      wheel_event_queue_(this, wheel_scroll_latching_enabled_),
       gesture_event_queue_(this, this, config.gesture_config),
       device_scale_factor_(1.f),
       raf_aligned_touch_enabled_(
@@ -376,7 +376,7 @@ void LegacyInputRouterImpl::OfferToHandlers(
     return;
 
   bool should_block = WebInputEventTraits::ShouldBlockEventStream(
-      input_event, raf_aligned_touch_enabled_);
+      input_event, raf_aligned_touch_enabled_, wheel_scroll_latching_enabled_);
   OfferToRenderer(input_event, latency_info,
                   should_block
                       ? InputEventDispatchType::DISPATCH_TYPE_BLOCKING

@@ -645,6 +645,13 @@ class RenderWidgetHostTest : public testing::Test {
     host_->OnMessageReceived(InputHostMsg_HandleInputEvent_ACK(0, ack));
   }
 
+  void SendScrollBeginAckIfneeded(InputEventAckState ack_result) {
+    if (wheel_scroll_latching_enabled_) {
+      // GSB events are blocking, send the ack.
+      SendInputEventACK(WebInputEvent::kGestureScrollBegin, ack_result);
+    }
+  }
+
   double GetNextSimulatedEventTimeSeconds() {
     last_simulated_event_time_seconds_ += simulated_event_time_delta_seconds_;
     return last_simulated_event_time_seconds_;
@@ -1543,6 +1550,7 @@ TEST_F(RenderWidgetHostTest, TouchEmulator) {
   // Mouse drag generates touch move, cancels tap and starts scroll.
   SimulateMouseEvent(WebInputEvent::kMouseMove, 10, 30, 0, true);
   EXPECT_EQ(WebInputEvent::kTouchMove, host_->acked_touch_event_type());
+  SendScrollBeginAckIfneeded(INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_EQ(
       "GestureTapCancel GestureScrollBegin TouchScrollStarted "
       "GestureScrollUpdate",
@@ -1602,6 +1610,7 @@ TEST_F(RenderWidgetHostTest, TouchEmulator) {
 
   SimulateMouseEvent(WebInputEvent::kMouseMove, 10, 100, 0, true);
   EXPECT_EQ(WebInputEvent::kTouchMove, host_->acked_touch_event_type());
+  SendScrollBeginAckIfneeded(INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_EQ(
       "GestureTapCancel GestureScrollBegin TouchScrollStarted "
       "GestureScrollUpdate",
@@ -1656,6 +1665,7 @@ TEST_F(RenderWidgetHostTest, TouchEmulator) {
   // Scroll.
   SimulateMouseEvent(WebInputEvent::kMouseMove, 10, 30, 0, true);
   EXPECT_EQ(WebInputEvent::kTouchMove, host_->acked_touch_event_type());
+  SendScrollBeginAckIfneeded(INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_EQ(
       "GestureTapCancel GestureScrollBegin TouchScrollStarted "
       "GestureScrollUpdate",
@@ -1919,6 +1929,7 @@ void RenderWidgetHostTest::InputEventRWHLatencyComponent() {
   // Tests RWHI::ForwardGestureEvent().
   SimulateGestureEvent(WebInputEvent::kGestureScrollBegin,
                        blink::kWebGestureDeviceTouchscreen);
+  SendScrollBeginAckIfneeded(INPUT_EVENT_ACK_STATE_CONSUMED);
   CheckLatencyInfoComponentInMessage(process_, GetLatencyComponentId(),
                                      WebInputEvent::kGestureScrollBegin);
 

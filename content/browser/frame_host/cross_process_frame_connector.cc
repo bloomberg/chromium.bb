@@ -183,7 +183,9 @@ void CrossProcessFrameConnector::ForwardProcessAckedTouchEvent(
 
 void CrossProcessFrameConnector::BubbleScrollEvent(
     const blink::WebGestureEvent& event) {
-  DCHECK(event.GetType() == blink::WebInputEvent::kGestureScrollUpdate ||
+  DCHECK((view_->wheel_scroll_latching_enabled() &&
+          event.GetType() == blink::WebInputEvent::kGestureScrollBegin) ||
+         event.GetType() == blink::WebInputEvent::kGestureScrollUpdate ||
          event.GetType() == blink::WebInputEvent::kGestureScrollEnd ||
          event.GetType() == blink::WebInputEvent::kGestureFlingStart);
   auto* parent_view = GetParentRenderWidgetHostView();
@@ -202,14 +204,28 @@ void CrossProcessFrameConnector::BubbleScrollEvent(
   // See https://crbug.com/626020.
   resent_gesture_event.x += offset_from_parent.x();
   resent_gesture_event.y += offset_from_parent.y();
-  if (event.GetType() == blink::WebInputEvent::kGestureScrollUpdate) {
-    event_router->BubbleScrollEvent(parent_view, resent_gesture_event);
-    is_scroll_bubbling_ = true;
-  } else if ((event.GetType() == blink::WebInputEvent::kGestureScrollEnd ||
-              event.GetType() == blink::WebInputEvent::kGestureFlingStart) &&
-             is_scroll_bubbling_) {
-    event_router->BubbleScrollEvent(parent_view, resent_gesture_event);
-    is_scroll_bubbling_ = false;
+
+  if (view_->wheel_scroll_latching_enabled()) {
+    if (event.GetType() == blink::WebInputEvent::kGestureScrollBegin) {
+      event_router->BubbleScrollEvent(parent_view, resent_gesture_event);
+      is_scroll_bubbling_ = true;
+    } else if (is_scroll_bubbling_) {
+      event_router->BubbleScrollEvent(parent_view, resent_gesture_event);
+    }
+    if (event.GetType() == blink::WebInputEvent::kGestureScrollEnd ||
+        event.GetType() == blink::WebInputEvent::kGestureFlingStart) {
+      is_scroll_bubbling_ = false;
+    }
+  } else {  // !view_->wheel_scroll_latching_enabled()
+    if (event.GetType() == blink::WebInputEvent::kGestureScrollUpdate) {
+      event_router->BubbleScrollEvent(parent_view, resent_gesture_event);
+      is_scroll_bubbling_ = true;
+    } else if ((event.GetType() == blink::WebInputEvent::kGestureScrollEnd ||
+                event.GetType() == blink::WebInputEvent::kGestureFlingStart) &&
+               is_scroll_bubbling_) {
+      event_router->BubbleScrollEvent(parent_view, resent_gesture_event);
+      is_scroll_bubbling_ = false;
+    }
   }
 }
 
