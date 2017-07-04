@@ -53,7 +53,7 @@ void AutofillPopupViewAndroid::Show() {
 }
 
 void AutofillPopupViewAndroid::Hide() {
-  controller_ = NULL;
+  controller_ = nullptr;
   JNIEnv* env = base::android::AttachCurrentThread();
   if (!java_object_.is_null()) {
     Java_AutofillPopupBridge_dismiss(env, java_object_);
@@ -171,6 +171,8 @@ void AutofillPopupViewAndroid::PopupDismissed(
   if (controller_)
     controller_->ViewDestroyed();
 
+  // The controller has now deleted itself. Remove dangling weak reference.
+  controller_ = nullptr;
   delete this;
 }
 
