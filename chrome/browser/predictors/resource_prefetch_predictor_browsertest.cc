@@ -288,22 +288,14 @@ class LearningObserver : public TestObserver {
 // Helper class to track and allow waiting for a single OnPrefetchingFinished
 // event. Checks also that {Start,Stop}Prefetching are called with the right
 // argument.
-class PrefetchingObserver : public TestObserver {
+class PrefetchingObserver : public TestLoadingObserver {
  public:
-  PrefetchingObserver(ResourcePrefetchPredictor* predictor,
-                      const GURL& expected_main_frame_url,
-                      bool is_learning_allowed)
-      : TestObserver(predictor),
-        main_frame_url_(expected_main_frame_url),
-        is_learning_allowed_(is_learning_allowed) {}
+  PrefetchingObserver(LoadingPredictor* predictor,
+                      const GURL& expected_main_frame_url)
+      : TestLoadingObserver(predictor),
+        main_frame_url_(expected_main_frame_url) {}
 
-  // TestObserver:
-  void OnNavigationLearned(size_t url_visit_count,
-                           const PageRequestSummary& summary) override {
-    if (!is_learning_allowed_)
-      ADD_FAILURE() << "Prefetching shouldn't activate learning";
-  }
-
+  // LoadingTestObserver:
   void OnPrefetchingStarted(const GURL& main_frame_url) override {
     EXPECT_EQ(main_frame_url_, main_frame_url);
   }
@@ -317,12 +309,14 @@ class PrefetchingObserver : public TestObserver {
     run_loop_.Quit();
   }
 
+  // TODO(alexilin): Consider checking that prefetching does not activate
+  // learning here.
+
   void Wait() { run_loop_.Run(); }
 
  private:
   base::RunLoop run_loop_;
   GURL main_frame_url_;
-  bool is_learning_allowed_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefetchingObserver);
 };
@@ -446,8 +440,7 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
   }
 
   void NavigateToURLAndCheckPrefetching(const GURL& main_frame_url) {
-    PrefetchingObserver observer(resource_prefetch_predictor_, main_frame_url,
-                                 true);
+    PrefetchingObserver observer(predictor_, main_frame_url);
     ui_test_utils::NavigateToURL(browser(), main_frame_url);
     observer.Wait();
     for (auto& kv : resources_) {
@@ -457,8 +450,7 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
   }
 
   void PrefetchURL(const GURL& main_frame_url) {
-    PrefetchingObserver observer(resource_prefetch_predictor_, main_frame_url,
-                                 false);
+    PrefetchingObserver observer(predictor_, main_frame_url);
     predictor_->PrepareForPageLoad(main_frame_url, HintOrigin::EXTERNAL);
     observer.Wait();
     for (auto& kv : resources_) {

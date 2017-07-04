@@ -24,7 +24,6 @@
 #include "chrome/browser/predictors/resource_prefetch_common.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
 #include "chrome/browser/predictors/resource_prefetcher.h"
-#include "chrome/browser/predictors/resource_prefetcher_manager.h"
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/history_types.h"
@@ -100,16 +99,6 @@ struct PreconnectPrediction {
 //   it to disk in the DB thread through the ResourcePrefetchPredictorTables. It
 //   initiates resource prefetching using the ResourcePrefetcherManager. Owned
 //   by profile.
-// * ResourcePrefetcherManager - Manages the ResourcePrefetchers that do the
-//   prefetching on the IO thread. The manager is owned by the
-//   ResourcePrefetchPredictor and interfaces between the predictor on the UI
-//   thread and the prefetchers on the IO thread.
-// * ResourcePrefetcher - Lives entirely on the IO thread, owned by the
-//   ResourcePrefetcherManager, and issues net::URLRequest to fetch resources.
-//
-// TODO(zhenw): Currently only main frame requests/redirects/responses are
-// recorded. Consider recording sub-frame responses independently or together
-// with main frame.
 class ResourcePrefetchPredictor
     : public history::HistoryServiceObserver,
       public precache::PrecacheManager::Delegate {
@@ -233,12 +222,6 @@ class ResourcePrefetchPredictor
       const std::string& mime_type,
       content::ResourceType fallback);
 
-  // Called when ResourcePrefetcher is finished, i.e. there is nothing pending
-  // in flight.
-  void OnPrefetchingFinished(
-      const GURL& main_frame_url,
-      std::unique_ptr<ResourcePrefetcher::PrefetcherStats> stats);
-
   // Returns true if prefetching data exists for the |main_frame_url|.
   virtual bool IsUrlPrefetchable(const GURL& main_frame_url) const;
 
@@ -286,15 +269,6 @@ class ResourcePrefetchPredictor
       const NavigationID& navigation_id,
       const base::TimeTicks& first_contentful_paint);
 
-  // Starts prefetching for |main_frame_url| from a |prediction|.
-  void StartPrefetching(const GURL& main_frame_url,
-                        const Prediction& prediction);
-
-  // Stops prefetching that may be in progress corresponding to
-  // |main_frame_url|.
-  void StopPrefetching(const GURL& main_frame_url);
-
-  friend class LoadingPredictor;
   friend class ::PredictorsHandler;
   friend class LoadingDataCollector;
   friend class ResourcePrefetchPredictorTest;
@@ -452,19 +426,12 @@ class ResourcePrefetchPredictor
     tables_ = tables;
   }
 
-  // For testing.
-  void set_mock_resource_prefetcher_manager(
-      scoped_refptr<ResourcePrefetcherManager> prefetch_manager) {
-    prefetch_manager_ = prefetch_manager;
-  }
-
   Profile* const profile_;
   TestObserver* observer_;
   LoadingStatsCollector* stats_collector_;
   const LoadingPredictorConfig config_;
   InitializationState initialization_state_;
   scoped_refptr<ResourcePrefetchPredictorTables> tables_;
-  scoped_refptr<ResourcePrefetcherManager> prefetch_manager_;
   base::CancelableTaskTracker history_lookup_consumer_;
 
   std::unique_ptr<PrefetchDataMap> url_resource_data_;
@@ -496,12 +463,6 @@ class TestObserver {
   virtual void OnNavigationLearned(
       size_t url_visit_count,
       const ResourcePrefetchPredictor::PageRequestSummary& summary) {}
-
-  virtual void OnPrefetchingStarted(const GURL& main_frame_url) {}
-
-  virtual void OnPrefetchingStopped(const GURL& main_frame_url) {}
-
-  virtual void OnPrefetchingFinished(const GURL& main_frame_url) {}
 
  protected:
   // |predictor| must be non-NULL and has to outlive the TestObserver.

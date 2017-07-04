@@ -4,6 +4,8 @@
 
 #include "chrome/browser/predictors/loading_predictor.h"
 
+#include <vector>
+
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/predictors/loading_data_collector.h"
@@ -26,6 +28,7 @@ LoadingPredictor::LoadingPredictor(const LoadingPredictorConfig& config,
           config)),
       loading_data_collector_(base::MakeUnique<LoadingDataCollector>(
           resource_prefetch_predictor())),
+      observer_(nullptr),
       weak_factory_(this) {
   resource_prefetch_predictor_->SetStatsCollector(stats_collector_.get());
 }
@@ -41,9 +44,7 @@ void LoadingPredictor::PrepareForPageLoad(const GURL& url, HintOrigin origin) {
 
   // To report hint durations.
   active_hints_.emplace(url, base::TimeTicks::Now());
-
-  if (config_.IsPrefetchingEnabledForOrigin(profile_, origin))
-    resource_prefetch_predictor_->StartPrefetching(url, prediction);
+  MaybeAddPrefetch(url, prediction, origin);
 }
 
 void LoadingPredictor::CancelPageLoadHint(const GURL& url) {
@@ -64,6 +65,17 @@ ResourcePrefetchPredictor* LoadingPredictor::resource_prefetch_predictor() {
 
 void LoadingPredictor::Shutdown() {
   resource_prefetch_predictor_->Shutdown();
+
+  std::vector<std::unique_ptr<ResourcePrefetcher>> prefetchers;
+  for (auto& kv : prefetches_)
+    prefetchers.push_back(std::move(kv.second.first));
+
+  // |prefetchers| must be destroyed on the IO thread.
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::BindOnce(
+          [](std::vector<std::unique_ptr<ResourcePrefetcher>> prefetchers) {},
+          std::move(prefetchers)));
 }
 
 void LoadingPredictor::OnMainFrameRequest(const URLRequestSummary& summary) {
@@ -103,13 +115,17 @@ void LoadingPredictor::OnMainFrameResponse(const URLRequestSummary& summary) {
   }
 }
 
+void LoadingPredictor::SetObserverForTesting(TestLoadingObserver* observer) {
+  observer_ = observer;
+}
+
 std::map<GURL, base::TimeTicks>::iterator LoadingPredictor::CancelActiveHint(
     std::map<GURL, base::TimeTicks>::iterator hint_it) {
   if (hint_it == active_hints_.end())
     return hint_it;
 
   const GURL& url = hint_it->first;
-  resource_prefetch_predictor_->StopPrefetching(url);
+  MaybeRemovePrefetch(url);
 
   UMA_HISTOGRAM_TIMES(
       internal::kResourcePrefetchPredictorPrefetchingDurationHistogram,
@@ -147,6 +163,90 @@ void LoadingPredictor::CleanupAbandonedHintsAndNavigations(
       ++it;
     }
   }
+}
+
+void LoadingPredictor::MaybeAddPrefetch(
+    const GURL& url,
+    const ResourcePrefetchPredictor::Prediction& prediction,
+    HintOrigin origin) {
+  if (!config_.IsPrefetchingEnabledForOrigin(profile_, origin))
+    return;
+  std::string host = url.host();
+  if (prefetches_.find(host) != prefetches_.end())
+    return;
+
+  auto prefetcher = base::MakeUnique<ResourcePrefetcher>(
+      GetWeakPtr(), profile_->GetRequestContext(),
+      config_.max_prefetches_inflight_per_navigation,
+      config_.max_prefetches_inflight_per_host_per_navigation, url,
+      prediction.subresource_urls);
+  // base::Unretained(prefetcher.get()) is fine, as |prefetcher| is always
+  // destructed on the IO thread, and the destruction task is posted from the
+  // UI thread, after the current task. Since the IO thread is FIFO, then
+  // ResourcePrefetcher::Start() will be called before ~ResourcePrefetcher.
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&ResourcePrefetcher::Start,
+                     base::Unretained(prefetcher.get())));
+  prefetches_.emplace(host, std::make_pair(std::move(prefetcher), false));
+  if (observer_)
+    observer_->OnPrefetchingStarted(url);
+}
+
+void LoadingPredictor::MaybeRemovePrefetch(const GURL& url) {
+  std::string host = url.host();
+  auto it = prefetches_.find(host);
+  if (it == prefetches_.end())
+    return;
+
+  auto& prefetcher_and_deleted = it->second;
+  if (prefetcher_and_deleted.second)
+    return;
+
+  // Avoid to stop the same prefetcher twice, which can happen for instance with
+  // multiple prediction origins for the same |url|. Prefetches are
+  // de-duplicated, not their cancellation.
+  prefetcher_and_deleted.second = true;
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&ResourcePrefetcher::Stop,
+                     base::Unretained(prefetcher_and_deleted.first.get())));
+  if (observer_)
+    observer_->OnPrefetchingStopped(url);
+}
+
+void LoadingPredictor::ResourcePrefetcherFinished(
+    ResourcePrefetcher* prefetcher,
+    std::unique_ptr<ResourcePrefetcher::PrefetcherStats> stats) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  std::string host = prefetcher->main_frame_url().host();
+  auto it = prefetches_.find(host);
+  // Can happen after Shutdown() has been called, since it purges |prefetches_|.
+  if (it == prefetches_.end())
+    return;
+
+  DCHECK(it->second.first.get() == prefetcher);
+  stats_collector_->RecordPrefetcherStats(std::move(stats));
+
+  if (observer_)
+    observer_->OnPrefetchingFinished(prefetcher->main_frame_url());
+
+  // ResourcePrefetcher must be destroyed on the IO thread.
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::BindOnce([](std::unique_ptr<ResourcePrefetcher>) {},
+                     std::move(it->second.first)));
+
+  prefetches_.erase(it);
+}
+
+TestLoadingObserver::~TestLoadingObserver() {
+  predictor_->SetObserverForTesting(nullptr);
+}
+
+TestLoadingObserver::TestLoadingObserver(LoadingPredictor* predictor)
+    : predictor_(predictor) {
+  predictor_->SetObserverForTesting(this);
 }
 
 }  // namespace predictors

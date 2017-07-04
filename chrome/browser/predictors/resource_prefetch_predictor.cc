@@ -18,7 +18,6 @@
 #include "chrome/browser/predictors/loading_stats_collector.h"
 #include "chrome/browser/predictors/predictor_database.h"
 #include "chrome/browser/predictors/predictor_database_factory.h"
-#include "chrome/browser/predictors/resource_prefetcher_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/history/core/browser/history_database.h"
 #include "components/history/core/browser/history_service.h"
@@ -499,16 +498,6 @@ void ResourcePrefetchPredictor::RecordFirstContentfulPaint(
     nav_it->second->first_contentful_paint = first_contentful_paint;
 }
 
-void ResourcePrefetchPredictor::OnPrefetchingFinished(
-    const GURL& main_frame_url,
-    std::unique_ptr<ResourcePrefetcher::PrefetcherStats> stats) {
-  if (observer_)
-    observer_->OnPrefetchingFinished(main_frame_url);
-
-  if (stats_collector_)
-    stats_collector_->RecordPrefetcherStats(std::move(stats));
-}
-
 bool ResourcePrefetchPredictor::IsUrlPrefetchable(
     const GURL& main_frame_url) const {
   return GetPrefetchData(main_frame_url, nullptr);
@@ -533,10 +522,6 @@ void ResourcePrefetchPredictor::SetStatsCollector(
 }
 
 void ResourcePrefetchPredictor::Shutdown() {
-  if (prefetch_manager_.get()) {
-    prefetch_manager_->ShutdownOnUIThread();
-    prefetch_manager_ = nullptr;
-  }
   history_service_observer_.RemoveAll();
 }
 
@@ -863,13 +848,7 @@ void ResourcePrefetchPredictor::OnHistoryAndCacheLoaded() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(INITIALIZING, initialization_state_);
 
-  // Initialize the prefetch manager only if prefetching is enabled.
-  if (config_.IsPrefetchingEnabledForSomeOrigin(profile_)) {
-    prefetch_manager_ = new ResourcePrefetcherManager(
-        this, config_, profile_->GetRequestContext());
-  }
   initialization_state_ = INITIALIZED;
-
   if (observer_)
     observer_->OnPredictorInitialized();
 }
@@ -1384,38 +1363,6 @@ void ResourcePrefetchPredictor::ConnectToHistoryService() {
     // HistoryService is already loaded. Continue with Initialization.
     OnHistoryAndCacheLoaded();
   }
-}
-
-void ResourcePrefetchPredictor::StartPrefetching(
-    const GURL& url,
-    const ResourcePrefetchPredictor::Prediction& prediction) {
-  TRACE_EVENT1("browser", "ResourcePrefetchPredictor::StartPrefetching", "url",
-               url.spec());
-  if (!prefetch_manager_.get())  // Not enabled.
-    return;
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&ResourcePrefetcherManager::MaybeAddPrefetch,
-                     prefetch_manager_, url, prediction.subresource_urls));
-
-  if (observer_)
-    observer_->OnPrefetchingStarted(url);
-}
-
-void ResourcePrefetchPredictor::StopPrefetching(const GURL& url) {
-  TRACE_EVENT1("browser", "ResourcePrefetchPredictor::StopPrefetching", "url",
-               url.spec());
-  if (!prefetch_manager_.get())  // Not enabled.
-    return;
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&ResourcePrefetcherManager::MaybeRemovePrefetch,
-                     prefetch_manager_, url));
-
-  if (observer_)
-    observer_->OnPrefetchingStopped(url);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

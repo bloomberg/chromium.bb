@@ -49,29 +49,33 @@ ResourcePrefetcher::PrefetcherStats::PrefetcherStats(
       start_time(other.start_time),
       requests_stats(other.requests_stats) {}
 
-ResourcePrefetcher::ResourcePrefetcher(Delegate* delegate,
-                                       size_t max_concurrent_requests,
-                                       size_t max_concurrent_requests_per_host,
-                                       const GURL& main_frame_url,
-                                       const std::vector<GURL>& urls)
+ResourcePrefetcher::ResourcePrefetcher(
+    base::WeakPtr<Delegate> delegate,
+    scoped_refptr<net::URLRequestContextGetter> context_getter,
+    size_t max_concurrent_requests,
+    size_t max_concurrent_requests_per_host,
+    const GURL& main_frame_url,
+    const std::vector<GURL>& urls)
     : state_(INITIALIZED),
       delegate_(delegate),
+      context_getter_(context_getter),
       max_concurrent_requests_(max_concurrent_requests),
       max_concurrent_requests_per_host_(max_concurrent_requests_per_host),
       main_frame_url_(main_frame_url),
       prefetched_count_(0),
       prefetched_bytes_(0),
+      request_queue_(urls.begin(), urls.end()),
       stats_(base::MakeUnique<PrefetcherStats>(main_frame_url)) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-
-  std::copy(urls.begin(), urls.end(), std::back_inserter(request_queue_));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
-ResourcePrefetcher::~ResourcePrefetcher() {}
+ResourcePrefetcher::~ResourcePrefetcher() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+}
 
 void ResourcePrefetcher::Start() {
   TRACE_EVENT_ASYNC_BEGIN0("browser", "ResourcePrefetcher::Prefetch", this);
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   CHECK_EQ(state_, INITIALIZED);
   state_ = RUNNING;
@@ -82,7 +86,7 @@ void ResourcePrefetcher::Start() {
 
 void ResourcePrefetcher::Stop() {
   TRACE_EVENT_ASYNC_END0("browser", "ResourcePrefetcher::Prefetch", this);
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   if (state_ == FINISHED)
     return;
@@ -135,7 +139,11 @@ void ResourcePrefetcher::TryToLaunchPrefetchRequests() {
         prefetched_bytes_ / 1024);
 
     state_ = FINISHED;
-    delegate_->ResourcePrefetcherFinished(this, std::move(stats_));
+
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&Delegate::ResourcePrefetcherFinished, delegate_, this,
+                       base::Passed(std::move(stats_))));
   }
 }
 
@@ -181,8 +189,8 @@ void ResourcePrefetcher::SendRequest(const GURL& url) {
           }
         })");
   std::unique_ptr<net::URLRequest> url_request =
-      delegate_->GetURLRequestContext()->CreateRequest(url, net::IDLE, this,
-                                                       traffic_annotation);
+      context_getter_->GetURLRequestContext()->CreateRequest(
+          url, net::IDLE, this, traffic_annotation);
   host_inflight_counts_[url.host()] += 1;
 
   url_request->set_method("GET");
@@ -286,7 +294,6 @@ void ResourcePrefetcher::OnResponseStarted(net::URLRequest* request,
     return;
   }
 
-  // TODO(shishir): Do not read cached entries, or ones that are not cacheable.
   ReadFullResponse(request);
 }
 
