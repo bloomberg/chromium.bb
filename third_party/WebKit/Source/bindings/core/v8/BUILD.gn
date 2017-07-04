@@ -33,6 +33,8 @@ bindings_core_generated_union_type_files = [
   "$bindings_core_v8_output_dir/DoubleOrDoubleSequence.h",
   "$bindings_core_v8_output_dir/DoubleOrInternalEnum.cpp",
   "$bindings_core_v8_output_dir/DoubleOrInternalEnum.h",
+  "$bindings_core_v8_output_dir/DoubleOrScrollTimelineAutoKeyword.cpp",
+  "$bindings_core_v8_output_dir/DoubleOrScrollTimelineAutoKeyword.h",
   "$bindings_core_v8_output_dir/DoubleOrString.cpp",
   "$bindings_core_v8_output_dir/DoubleOrString.h",
   "$bindings_core_v8_output_dir/DoubleOrStringOrStringArray.cpp",

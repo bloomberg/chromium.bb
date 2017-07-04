@@ -205,6 +205,8 @@ blink_core_sources("animation") {
     "SVGValueInterpolationType.h",
     "SampledEffect.cpp",
     "SampledEffect.h",
+    "ScrollTimeline.cpp",
+    "ScrollTimeline.h",
     "ShadowInterpolationFunctions.cpp",
     "ShadowInterpolationFunctions.h",
     "ShadowListPropertyFunctions.h",
