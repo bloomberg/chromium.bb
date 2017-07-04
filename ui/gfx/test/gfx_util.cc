@@ -120,6 +120,19 @@ bool FloatAlmostEqual(float a, float b) {
                                        << "\nWhich is: " << ColorAsString(lhs);
 }
 
+::testing::AssertionResult AssertSizeFFloatEqual(const char* lhs_expr,
+                                                 const char* rhs_expr,
+                                                 const SizeF& lhs,
+                                                 const SizeF& rhs) {
+  if (FloatAlmostEqual(lhs.width(), rhs.width()) &&
+      FloatAlmostEqual(lhs.height(), rhs.height())) {
+    return ::testing::AssertionSuccess();
+  }
+  return ::testing::AssertionFailure()
+         << "Value of: " << rhs_expr << "\n  Actual: " << rhs.ToString()
+         << "\nExpected: " << lhs_expr << "\nWhich is: " << lhs.ToString();
+}
+
 void PrintTo(const AxisTransform2d& transform, ::std::ostream* os) {
   *os << transform.ToString();
 }

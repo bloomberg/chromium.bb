@@ -203,4 +203,13 @@ gfx::Transform Tween::TransformValueBetween(
   return to_return;
 }
 
+gfx::SizeF Tween::SizeValueBetween(double value,
+                                   const gfx::SizeF& start_size,
+                                   const gfx::SizeF& target_size) {
+  return gfx::SizeF(
+      Tween::FloatValueBetween(value, start_size.width(), target_size.width()),
+      Tween::FloatValueBetween(value, start_size.height(),
+                               target_size.height()));
+}
+
 }  // namespace gfx

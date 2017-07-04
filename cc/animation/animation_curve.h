@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "cc/animation/animation_export.h"
 #include "cc/base/filter_operations.h"
+#include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/transform.h"
 
 namespace gfx {
@@ -22,12 +23,13 @@ class ColorAnimationCurve;
 class FilterAnimationCurve;
 class FloatAnimationCurve;
 class ScrollOffsetAnimationCurve;
+class SizeAnimationCurve;
 class TransformAnimationCurve;
 
 // An animation curve is a function that returns a value given a time.
 class CC_ANIMATION_EXPORT AnimationCurve {
  public:
-  enum CurveType { COLOR, FLOAT, TRANSFORM, FILTER, SCROLL_OFFSET };
+  enum CurveType { COLOR, FLOAT, TRANSFORM, FILTER, SCROLL_OFFSET, SIZE };
 
   virtual ~AnimationCurve() {}
 
@@ -40,6 +42,7 @@ class CC_ANIMATION_EXPORT AnimationCurve {
   const TransformAnimationCurve* ToTransformAnimationCurve() const;
   const FilterAnimationCurve* ToFilterAnimationCurve() const;
   const ScrollOffsetAnimationCurve* ToScrollOffsetAnimationCurve() const;
+  const SizeAnimationCurve* ToSizeAnimationCurve() const;
 
   ScrollOffsetAnimationCurve* ToScrollOffsetAnimationCurve();
 };
@@ -104,6 +107,16 @@ class CC_ANIMATION_EXPORT FilterAnimationCurve : public AnimationCurve {
 
   virtual FilterOperations GetValue(base::TimeDelta t) const = 0;
   virtual bool HasFilterThatMovesPixels() const = 0;
+
+  // Partial Animation implementation.
+  CurveType Type() const override;
+};
+
+class CC_ANIMATION_EXPORT SizeAnimationCurve : public AnimationCurve {
+ public:
+  ~SizeAnimationCurve() override {}
+
+  virtual gfx::SizeF GetValue(base::TimeDelta t) const = 0;
 
   // Partial Animation implementation.
   CurveType Type() const override;

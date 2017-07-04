@@ -20,6 +20,7 @@
 
 namespace gfx {
 class BoxF;
+class SizeF;
 }
 
 namespace cc {
@@ -157,6 +158,10 @@ class CC_ANIMATION_EXPORT ElementAnimations
   void NotifyClientScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset,
                                         bool notify_active_elements,
                                         bool notify_pending_elements);
+  void NotifyClientBoundsAnimated(const gfx::SizeF& size,
+                                  bool notify_active_elements,
+                                  bool notify_pending_elements);
+
   gfx::ScrollOffset ScrollOffsetForAnimation() const;
 
  private:

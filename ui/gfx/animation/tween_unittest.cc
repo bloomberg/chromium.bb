@@ -155,5 +155,36 @@ TEST(TweenTest, ClampedFloatValueBetweenTimeTicks) {
   EXPECT_EQ(v2, Tween::ClampedFloatValueBetween(t_after, from, v1, to, v2));
 }
 
+TEST(TweenTest, SizeValueBetween) {
+  const gfx::SizeF s1(12.0f, 24.0f);
+  const gfx::SizeF s2(36.0f, 48.0f);
+
+  double before = -0.125;
+  double from = 0.0;
+  double between = 0.5;
+  double to = 1.0;
+  double after = 1.125;
+
+  EXPECT_SIZEF_EQ(gfx::SizeF(9.0f, 21.0f),
+                  Tween::SizeValueBetween(before, s1, s2));
+  EXPECT_SIZEF_EQ(s1, Tween::SizeValueBetween(from, s1, s2));
+  EXPECT_SIZEF_EQ(gfx::SizeF(24.0f, 36.0f),
+                  Tween::SizeValueBetween(between, s1, s2));
+  EXPECT_SIZEF_EQ(s2, Tween::SizeValueBetween(to, s1, s2));
+  EXPECT_SIZEF_EQ(gfx::SizeF(39.0f, 51.0f),
+                  Tween::SizeValueBetween(after, s1, s2));
+}
+
+TEST(TweenTest, SizeValueBetweenClampedExtrapolation) {
+  const gfx::SizeF s1(0.0f, 0.0f);
+  const gfx::SizeF s2(36.0f, 48.0f);
+
+  double before = -1.0f;
+
+  // We should not extrapolate in this case as it would result in a negative and
+  // invalid size.
+  EXPECT_SIZEF_EQ(s1, Tween::SizeValueBetween(before, s1, s2));
+}
+
 }  // namespace
 }  // namespace gfx
