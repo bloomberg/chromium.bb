@@ -991,12 +991,11 @@ void ServiceWorkerContextClient::RespondToFetchEventWithResponseStream(
   blink::mojom::ServiceWorkerStreamCallbackPtr callback_ptr;
   body_as_stream->callback_request = mojo::MakeRequest(&callback_ptr);
   body_as_stream->stream = web_body_as_stream->DrainStreamDataPipe();
+  DCHECK(body_as_stream->stream.is_valid());
 
   web_body_as_stream->SetListener(
       base::MakeUnique<StreamHandleListener>(std::move(callback_ptr)));
 
-  // Temporary CHECK to debug https://crbug.com/734978.
-  CHECK(body_as_stream->stream.is_valid());
   response_callback->OnResponseStream(
       response, std::move(body_as_stream),
       base::Time::FromDoubleT(event_dispatch_time));

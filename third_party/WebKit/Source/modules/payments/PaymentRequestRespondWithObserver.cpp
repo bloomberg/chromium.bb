@@ -54,6 +54,7 @@ const String GetMessageForResponseError(WebServiceWorkerResponseError error) {
     case kWebServiceWorkerResponseErrorForeignFetchHeadersWithoutOrigin:
     case kWebServiceWorkerResponseErrorForeignFetchMismatchedOrigin:
     case kWebServiceWorkerResponseErrorRedirectedResponseForNotFollowRequest:
+    case kWebServiceWorkerResponseErrorDataPipeCreationFailed:
       NOTREACHED();
       error_message = error_message + "an unexpected error occurred.";
       break;

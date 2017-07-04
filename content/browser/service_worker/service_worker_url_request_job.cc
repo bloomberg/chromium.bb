@@ -58,6 +58,16 @@ namespace content {
 
 namespace {
 
+net::URLRequestStatus ServiceWorkerResponseErrorToNetStatus(
+    blink::WebServiceWorkerResponseError error) {
+  if (error == blink::kWebServiceWorkerResponseErrorDataPipeCreationFailed) {
+    return net::URLRequestStatus::FromError(net::ERR_INSUFFICIENT_RESOURCES);
+  }
+
+  // TODO(falken): Add more mapping to net errors.
+  return net::URLRequestStatus::FromError(net::ERR_FAILED);
+}
+
 net::NetLogEventType RequestJobResultToNetEventType(
     ServiceWorkerMetrics::URLRequestJobResult result) {
   using n = net::NetLogEventType;
@@ -708,8 +718,7 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
   // error.
   if (response.status_code == 0) {
     RecordStatusZeroResponseError(response.error);
-    NotifyStartError(
-        net::URLRequestStatus(net::URLRequestStatus::FAILED, net::ERR_FAILED));
+    NotifyStartError(ServiceWorkerResponseErrorToNetStatus(response.error));
     return;
   }
 

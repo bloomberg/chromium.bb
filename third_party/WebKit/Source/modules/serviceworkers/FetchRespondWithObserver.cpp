@@ -94,6 +94,9 @@ const String GetMessageForResponseError(WebServiceWorkerResponseError error,
                       "a redirected response was used for a request whose "
                       "redirect mode is not \"follow\".";
       break;
+    case kWebServiceWorkerResponseErrorDataPipeCreationFailed:
+      error_message = error_message + "insufficient resources.";
+      break;
     case kWebServiceWorkerResponseErrorUnknown:
     default:
       error_message = error_message + "an unexpected error occurred.";
@@ -231,29 +234,33 @@ void FetchRespondWithObserver::OnResponseFulfilled(const ScriptValue& value) {
     RefPtr<BlobDataHandle> blob_data_handle = buffer->DrainAsBlobDataHandle(
         BytesConsumer::BlobSizePolicy::kAllowBlobWithInvalidSize);
     if (blob_data_handle) {
-      // Handle the blob response.
+      // Handle the blob response body.
       web_response.SetBlobDataHandle(blob_data_handle);
       ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
           ->RespondToFetchEvent(event_id_, web_response, event_dispatch_time_);
       return;
     }
-    // Handle the stream response.
-    mojo::DataPipe data_pipe;
-    // Temporary CHECKs to debug https://crbug.com/734978.
-    CHECK(data_pipe.producer_handle.is_valid());
-    CHECK(data_pipe.consumer_handle.is_valid());
+    // Handle the stream response body.
+    mojo::ScopedDataPipeProducerHandle producer;
+    mojo::ScopedDataPipeConsumerHandle consumer;
+    MojoResult result = mojo::CreateDataPipe(nullptr, &producer, &consumer);
+    if (result != MOJO_RESULT_OK) {
+      OnResponseRejected(kWebServiceWorkerResponseErrorDataPipeCreationFailed);
+      return;
+    }
+    DCHECK(producer.is_valid());
+    DCHECK(consumer.is_valid());
 
     std::unique_ptr<WebServiceWorkerStreamHandle> body_stream_handle =
-        WTF::MakeUnique<WebServiceWorkerStreamHandle>(
-            std::move(data_pipe.consumer_handle));
+        WTF::MakeUnique<WebServiceWorkerStreamHandle>(std::move(consumer));
     ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
         ->RespondToFetchEventWithResponseStream(event_id_, web_response,
                                                 body_stream_handle.get(),
                                                 event_dispatch_time_);
 
-    buffer->StartLoading(FetchDataLoader::CreateLoaderAsDataPipe(
-                             std::move(data_pipe.producer_handle)),
-                         new FetchLoaderClient(std::move(body_stream_handle)));
+    buffer->StartLoading(
+        FetchDataLoader::CreateLoaderAsDataPipe(std::move(producer)),
+        new FetchLoaderClient(std::move(body_stream_handle)));
     return;
   }
   ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
