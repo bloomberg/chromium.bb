@@ -540,7 +540,7 @@ bool SelectionController::SelectClosestWordFromHitTestResult(
   }
 
   if (append_trailing_whitespace == AppendTrailingWhitespace::kShouldAppend)
-    new_selection.AppendTrailingWhitespace();
+    new_selection = new_selection.AppendTrailingWhitespace();
 
   return UpdateSelectionForMouseDownDispatchingSelectStart(
       inner_node,
@@ -584,7 +584,7 @@ void SelectionController::SelectClosestMisspellingFromHitTestResult(
       SelectionInFlatTree::Builder().Collapse(start).Extend(end).Build());
 
   if (append_trailing_whitespace == AppendTrailingWhitespace::kShouldAppend)
-    new_selection.AppendTrailingWhitespace();
+    new_selection = new_selection.AppendTrailingWhitespace();
 
   UpdateSelectionForMouseDownDispatchingSelectStart(
       inner_node,

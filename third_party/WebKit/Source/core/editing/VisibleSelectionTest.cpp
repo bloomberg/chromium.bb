@@ -82,16 +82,16 @@ TEST_F(VisibleSelectionTest, appendTrailingWhitespaceWithAfterAnchor) {
   // TODO(editing-dev): We should remove above comment once we fix [1].
   // [1] http://crbug.com/701657 double-click on user-select:none should not
   // compute selection.
-  VisibleSelection selection =
+  const VisibleSelection selection =
       CreateVisibleSelection(SelectionInDOMTree::Builder()
                                  .Collapse(Position::BeforeNode(*input))
                                  .Extend(Position::AfterNode(*input))
                                  .SetGranularity(kWordGranularity)
                                  .Build());
-  selection.AppendTrailingWhitespace();
+  const VisibleSelection result = selection.AppendTrailingWhitespace();
 
-  EXPECT_EQ(Position::BeforeNode(*input), selection.Start());
-  EXPECT_EQ(Position::AfterNode(*input), selection.End());
+  EXPECT_EQ(Position::BeforeNode(*input), result.Start());
+  EXPECT_EQ(Position::AfterNode(*input), result.End());
 }
 
 TEST_F(VisibleSelectionTest, expandUsingGranularity) {
