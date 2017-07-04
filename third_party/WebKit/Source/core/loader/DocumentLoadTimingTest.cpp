@@ -11,7 +11,7 @@
 
 namespace blink {
 
-class DocumentLoadTimingTest : public testing::Test {};
+class DocumentLoadTimingTest : public ::testing::Test {};
 
 TEST_F(DocumentLoadTimingTest, ensureValidNavigationStartAfterEmbedder) {
   std::unique_ptr<DummyPageHolder> dummy_page = DummyPageHolder::Create();

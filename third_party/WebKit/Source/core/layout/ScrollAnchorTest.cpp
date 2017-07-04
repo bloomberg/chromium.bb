@@ -19,7 +19,7 @@ using Corner = ScrollAnchor::Corner;
 
 typedef bool TestParamRootLayerScrolling;
 class ScrollAnchorTest
-    : public testing::WithParamInterface<TestParamRootLayerScrolling>,
+    : public ::testing::WithParamInterface<TestParamRootLayerScrolling>,
       private ScopedRootLayerScrollingForTest,
       public RenderingTest {
  public:

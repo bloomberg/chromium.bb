@@ -26,7 +26,7 @@
 namespace blink {
 
 class HTMLCanvasPainterTestForSPv2 : public ::testing::Test,
-                                     public testing::WithParamInterface<bool>,
+                                     public ::testing::WithParamInterface<bool>,
                                      private ScopedSlimmingPaintV2ForTest,
                                      private ScopedRootLayerScrollingForTest {
  public:

@@ -20,7 +20,7 @@
 
 namespace blink {
 
-class HTMLInputElementTest : public testing::Test {
+class HTMLInputElementTest : public ::testing::Test {
  protected:
   Document& GetDocument() { return page_holder_->GetDocument(); }
   HTMLInputElement& TestElement() {

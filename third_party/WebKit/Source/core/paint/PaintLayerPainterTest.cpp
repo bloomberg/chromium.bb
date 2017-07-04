@@ -22,7 +22,7 @@ struct PaintLayerPainterTestParam {
 };
 
 class PaintLayerPainterTest
-    : public testing::WithParamInterface<PaintLayerPainterTestParam>,
+    : public ::testing::WithParamInterface<PaintLayerPainterTestParam>,
       private ScopedRootLayerScrollingForTest,
       public PaintControllerPaintTestBase {
   USING_FAST_MALLOC(PaintLayerPainterTest);

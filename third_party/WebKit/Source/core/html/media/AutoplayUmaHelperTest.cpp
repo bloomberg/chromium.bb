@@ -36,7 +36,7 @@ class MockAutoplayUmaHelper : public AutoplayUmaHelper {
   }
 };
 
-class AutoplayUmaHelperTest : public testing::Test {
+class AutoplayUmaHelperTest : public ::testing::Test {
  protected:
   Document& GetDocument() { return page_holder_->GetDocument(); }
 

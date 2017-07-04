@@ -12,7 +12,7 @@
 #include "public/platform/scheduler/renderer/renderer_scheduler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using testing::ElementsAre;
+using ::testing::ElementsAre;
 
 namespace blink {
 

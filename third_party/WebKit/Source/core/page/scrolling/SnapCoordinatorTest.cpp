@@ -22,7 +22,7 @@ using HTMLNames::styleAttr;
 
 typedef bool TestParamRootLayerScrolling;
 class SnapCoordinatorTest
-    : public testing::TestWithParam<TestParamRootLayerScrolling>,
+    : public ::testing::TestWithParam<TestParamRootLayerScrolling>,
       private ScopedRootLayerScrollingForTest {
  protected:
   SnapCoordinatorTest() : ScopedRootLayerScrollingForTest(GetParam()) {}

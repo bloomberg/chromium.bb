@@ -17,9 +17,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using testing::DoubleNear;
-using testing::ElementsAreArray;
-using testing::Matcher;
+using ::testing::DoubleNear;
+using ::testing::ElementsAreArray;
+using ::testing::Matcher;
 
 namespace blink {
 

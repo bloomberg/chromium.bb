@@ -13,7 +13,7 @@
 #include "public/web/WebScriptSource.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using testing::_;
+using ::testing::_;
 
 namespace blink {
 

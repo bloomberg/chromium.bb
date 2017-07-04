@@ -24,9 +24,9 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPaint.h"
 
-using testing::_;
-using testing::AtLeast;
-using testing::Property;
+using ::testing::_;
+using ::testing::AtLeast;
+using ::testing::Property;
 
 namespace blink {
 namespace {

@@ -11,7 +11,7 @@
 
 namespace blink {
 
-class HTMLLinkElementSizesAttributeTest : public testing::Test {};
+class HTMLLinkElementSizesAttributeTest : public ::testing::Test {};
 
 TEST(HTMLLinkElementSizesAttributeTest,
      setSizesPropertyValue_updatesAttribute) {

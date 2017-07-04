@@ -149,7 +149,7 @@ class MockHTMLResourcePreloader : public ResourcePreloader {
   std::unique_ptr<PreloadRequest> preload_request_;
 };
 
-class HTMLPreloadScannerTest : public testing::Test {
+class HTMLPreloadScannerTest : public ::testing::Test {
  protected:
   enum ViewportState {
     kViewportEnabled,

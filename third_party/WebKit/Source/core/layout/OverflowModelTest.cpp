@@ -44,7 +44,7 @@ LayoutRect InitialVisualOverflow() {
   return LayoutRect(0, 0, 100, 100);
 }
 
-class SimpleOverflowModelTest : public testing::Test {
+class SimpleOverflowModelTest : public ::testing::Test {
  protected:
   SimpleOverflowModelTest()
       : overflow_(InitialLayoutOverflow(), InitialVisualOverflow()) {}
@@ -111,7 +111,7 @@ TEST_F(SimpleOverflowModelTest, MoveAffectsVisualOverflow) {
   EXPECT_EQ(LayoutRect(500, 100, 100, 100), overflow_.VisualOverflowRect());
 }
 
-class BoxOverflowModelTest : public testing::Test {
+class BoxOverflowModelTest : public ::testing::Test {
  protected:
   BoxOverflowModelTest()
       : overflow_(InitialLayoutOverflow(), InitialVisualOverflow()) {}

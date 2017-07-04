@@ -41,7 +41,7 @@
 
 namespace blink {
 
-class KeyboardTest : public testing::Test {
+class KeyboardTest : public ::testing::Test {
  public:
   // Pass a WebKeyboardEvent into the EditorClient and get back the string
   // name of which editing event that key causes.

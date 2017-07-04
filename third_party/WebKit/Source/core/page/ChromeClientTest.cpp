@@ -32,7 +32,7 @@ class ChromeClientToolTipLogger : public EmptyChromeClient {
 
 }  // anonymous namespace
 
-class ChromeClientTest : public testing::Test {};
+class ChromeClientTest : public ::testing::Test {};
 
 TEST_F(ChromeClientTest, SetToolTipFlood) {
   ChromeClientToolTipLogger logger;

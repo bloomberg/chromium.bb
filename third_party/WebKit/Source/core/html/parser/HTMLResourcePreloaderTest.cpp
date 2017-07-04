@@ -41,7 +41,7 @@ class PreloaderNetworkHintsMock : public NetworkHintsInterface {
   mutable bool is_cross_origin_;
 };
 
-class HTMLResourcePreloaderTest : public testing::Test {
+class HTMLResourcePreloaderTest : public ::testing::Test {
  protected:
   HTMLResourcePreloaderTest() : dummy_page_holder_(DummyPageHolder::Create()) {}
 

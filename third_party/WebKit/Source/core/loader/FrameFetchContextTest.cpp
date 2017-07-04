@@ -60,7 +60,7 @@
 
 namespace blink {
 
-using Checkpoint = testing::StrictMock<testing::MockFunction<void(int)>>;
+using Checkpoint = ::testing::StrictMock<testing::MockFunction<void(int)>>;
 
 class StubLocalFrameClientWithParent final : public EmptyLocalFrameClient {
  public:
@@ -214,7 +214,7 @@ class FrameFetchContextMockedLocalFrameClientTest
   void SetUp() override {
     url = KURL(NullURL(), "https://example.test/foo");
     main_resource_url = KURL(NullURL(), "https://www.example.test");
-    client = new testing::NiceMock<MockLocalFrameClient>();
+    client = new ::testing::NiceMock<MockLocalFrameClient>();
     dummy_page_holder =
         DummyPageHolder::Create(IntSize(500, 500), nullptr, client);
     dummy_page_holder->GetPage().SetDeviceScaleFactorDeprecated(1.0);
@@ -901,12 +901,12 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
   Resource* resource = MockResource::Create(resource_request);
   EXPECT_CALL(*client,
               DispatchDidLoadResourceFromMemoryCache(
-                  testing::AllOf(
-                      testing::Property(&ResourceRequest::Url, url),
-                      testing::Property(&ResourceRequest::GetFrameType,
-                                        WebURLRequest::kFrameTypeNone),
-                      testing::Property(&ResourceRequest::GetRequestContext,
-                                        WebURLRequest::kRequestContextImage)),
+                  ::testing::AllOf(
+                      ::testing::Property(&ResourceRequest::Url, url),
+                      ::testing::Property(&ResourceRequest::GetFrameType,
+                                          WebURLRequest::kFrameTypeNone),
+                      ::testing::Property(&ResourceRequest::GetRequestContext,
+                                          WebURLRequest::kRequestContextImage)),
                   ResourceResponse()));
   fetch_context->DispatchDidLoadResourceFromMemoryCache(
       CreateUniqueIdentifier(), resource_request, resource->GetResponse());

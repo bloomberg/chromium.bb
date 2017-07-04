@@ -16,7 +16,7 @@ using Seq = std::vector<char>;
 using Backtrack = std::pair<size_t, size_t>;
 }
 
-class HTMLSlotElementTest : public testing::Test {
+class HTMLSlotElementTest : public ::testing::Test {
  protected:
   HTMLSlotElementTest() {}
   Seq LongestCommonSubsequence(const Seq& seq1, const Seq& seq2);

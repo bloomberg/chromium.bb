@@ -95,7 +95,7 @@ class MockIdleRequestCallback : public IdleRequestCallback {
 
 }  // namespace
 
-class ScriptedIdleTaskControllerTest : public testing::Test {
+class ScriptedIdleTaskControllerTest : public ::testing::Test {
  public:
   void SetUp() override { execution_context_ = new NullExecutionContext(); }
 
@@ -118,7 +118,7 @@ TEST_F(ScriptedIdleTaskControllerTest, RunCallback) {
 
   EXPECT_CALL(*callback, handleEvent(testing::_));
   platform->RunIdleTask();
-  testing::Mock::VerifyAndClearExpectations(callback);
+  ::testing::Mock::VerifyAndClearExpectations(callback);
   EXPECT_FALSE(platform->HasIdleTask());
 }
 
@@ -135,7 +135,7 @@ TEST_F(ScriptedIdleTaskControllerTest, DontRunCallbackWhenAskedToYield) {
 
   EXPECT_CALL(*callback, handleEvent(testing::_)).Times(0);
   platform->RunIdleTask();
-  testing::Mock::VerifyAndClearExpectations(callback);
+  ::testing::Mock::VerifyAndClearExpectations(callback);
 
   // The idle task should have been reposted.
   EXPECT_TRUE(platform->HasIdleTask());
