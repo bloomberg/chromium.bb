@@ -23,8 +23,8 @@ function refreshDeviceList() {
       let remove = document.createElement('td');
       let removeButton = document.createElement('button');
       name.textContent = device.name;
-      serialNumber.textContent = device.serial_number;
-      landingPage.textContent = device.landing_page.url;
+      serialNumber.textContent = device.serialNumber;
+      landingPage.textContent = device.landingPage.url;
       removeButton.addEventListener('click', function() {
         pageHandler.removeDeviceForTesting(device.guid).then(refreshDeviceList);
       });
@@ -54,24 +54,12 @@ function addTestDevice(event) {
   event.preventDefault();
 }
 
-function initializeProxies() {
-  return importModules([
-           'chrome/browser/ui/webui/usb_internals/usb_internals.mojom',
-           'content/public/renderer/frame_interfaces',
-         ])
-      .then(function(modules) {
-        let mojom = modules[0];
-        let frameInterfaces = modules[1];
-
-        pageHandler = new mojom.UsbInternalsPageHandlerPtr(
-            frameInterfaces.getInterface(mojom.UsbInternalsPageHandler.name));
-      });
-}
-
 document.addEventListener('DOMContentLoaded', function() {
-  initializeProxies().then(function() {
-    $('add-test-device-form').addEventListener('submit', addTestDevice);
-    refreshDeviceList();
-  });
+  pageHandler = new mojom.UsbInternalsPageHandlerPtr;
+  Mojo.bindInterface(
+      mojom.UsbInternalsPageHandler.name, mojo.makeRequest(pageHandler).handle);
+
+  $('add-test-device-form').addEventListener('submit', addTestDevice);
+  refreshDeviceList();
 });
 })();

@@ -25,12 +25,6 @@
 {%-   include "interface_definition.tmpl" %}
 {%- endfor %}
 
-{%- if use_new_js_bindings %}
-  var exports = mojo.internal.exposeNamespace("{{module.namespace}}");
-{%- else %}
-  var exports = {};
-{%- endif %}
-
 {%- for constant in module.constants %}
   exports.{{constant.name}} = {{constant.name}};
 {%- endfor %}

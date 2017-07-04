@@ -18,10 +18,10 @@ UsbInternalsUI::UsbInternalsUI(content::WebUI* web_ui)
   source->AddResourcePath("usb_internals.css", IDR_USB_INTERNALS_CSS);
   source->AddResourcePath("usb_internals.js", IDR_USB_INTERNALS_JS);
   source->AddResourcePath(
-      "chrome/browser/ui/webui/usb_internals/usb_internals.mojom",
+      "chrome/browser/ui/webui/usb_internals/usb_internals.mojom.js",
       IDR_USB_INTERNALS_MOJO_JS);
-  source->AddResourcePath("url/mojo/origin.mojom", IDR_ORIGIN_MOJO_JS);
-  source->AddResourcePath("url/mojo/url.mojom", IDR_URL_MOJO_JS);
+  source->AddResourcePath("url/mojo/origin.mojom.js", IDR_ORIGIN_MOJO_JS);
+  source->AddResourcePath("url/mojo/url.mojom.js", IDR_URL_MOJO_JS);
   source->SetDefaultResource(IDR_USB_INTERNALS_HTML);
   source->UseGzip(std::unordered_set<std::string>());
 
