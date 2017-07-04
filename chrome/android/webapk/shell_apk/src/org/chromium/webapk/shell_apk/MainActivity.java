@@ -11,7 +11,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -100,7 +99,7 @@ public class MainActivity extends Activity {
         if (!TextUtils.isEmpty(runtimeHostInPreferences)
                 && !runtimeHostInPreferences.equals(runtimeHost)) {
             deleteSharedPref(this);
-            deleteInternalStorageAsync();
+            deleteInternalStorage();
         }
 
         if (!TextUtils.isEmpty(runtimeHost)) {
@@ -126,16 +125,11 @@ public class MainActivity extends Activity {
         editor.apply();
     }
 
-    /** Deletes the internal storage asynchronously. */
-    private void deleteInternalStorageAsync() {
-        new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected Void doInBackground(Void... params) {
-                deletePath(getCacheDir());
-                deletePath(getFilesDir());
-                return null;
-            }
-        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    /** Deletes the internal storage. */
+    private void deleteInternalStorage() {
+        deletePath(getCacheDir());
+        deletePath(getFilesDir());
+        deletePath(getDir(HostBrowserClassLoader.DEX_DIR_NAME, Context.MODE_PRIVATE));
     }
 
     private void deletePath(File file) {
