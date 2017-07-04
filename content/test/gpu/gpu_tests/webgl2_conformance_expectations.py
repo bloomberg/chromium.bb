@@ -211,6 +211,13 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/rendering/clearbuffer-sub-source.html',
         ['win', 'passthrough', 'd3d11'], bug=602688)
 
+    self.Fail('conformance2/textures/image_bitmap_from_canvas/' +
+        'tex-2d-srgb8-rgb-unsigned_byte.html',
+        ['win', 'passthrough', 'd3d11'], bug=602688)
+    self.Fail('conformance2/textures/image_bitmap_from_canvas/' +
+        'tex-2d-srgb8_alpha8-rgba-unsigned_byte.html',
+        ['win', 'passthrough', 'd3d11'], bug=602688)
+
     self.Fail('conformance/glsl/misc/shaders-with-name-conflicts.html',
         ['win', 'passthrough', 'd3d11'], bug=602688)
     self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
