@@ -117,10 +117,12 @@ public class MostVisitedSitesBridge
             removeBlacklistedUrl(
                     HomepageManager.getHomepageUri(ContextUtils.getApplicationContext()));
         }
+        nativeOnHomePageStateChanged(mNativeMostVisitedSitesBridge);
     }
 
     private native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeMostVisitedSitesBridge);
+    private native void nativeOnHomePageStateChanged(long nativeMostVisitedSitesBridge);
     private native void nativeSetObserver(
             long nativeMostVisitedSitesBridge, MostVisitedSites.Observer observer, int numSites);
     private native void nativeSetHomePageClient(

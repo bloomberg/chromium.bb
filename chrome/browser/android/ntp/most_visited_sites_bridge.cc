@@ -141,6 +141,12 @@ void MostVisitedSitesBridge::Destroy(JNIEnv* env,
   delete this;
 }
 
+void MostVisitedSitesBridge::OnHomePageStateChanged(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  most_visited_->OnHomePageStateChanged();
+}
+
 void MostVisitedSitesBridge::SetObserver(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,

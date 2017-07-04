@@ -142,6 +142,9 @@ class MostVisitedSites : public history::TopSitesObserver,
   // if the request resulted in the set of tiles changing.
   void Refresh();
 
+  // Forces a rebuild of the current tiles to update the pinned home page.
+  void OnHomePageStateChanged();
+
   void AddOrRemoveBlacklistedUrl(const GURL& url, bool add_url);
   void ClearBlacklistedUrls();
 
