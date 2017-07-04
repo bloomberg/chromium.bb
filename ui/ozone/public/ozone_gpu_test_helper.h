@@ -29,13 +29,10 @@ class OZONE_EXPORT OzoneGpuTestHelper {
   OzoneGpuTestHelper();
   virtual ~OzoneGpuTestHelper();
 
-  // Start processing gpu messages. The host process will be using the
-  // |gpu_task_runner| to post messages intended for the GPU thread. The "gpu"
-  // process will be using the |ui_task_runner| to post messages intended for
-  // the "ui" thread.
+  // Start processing gpu messages. The "gpu" process will be using the
+  // |ui_task_runner| to post messages intended for the "ui" thread.
   bool Initialize(
-      const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
-      const scoped_refptr<base::SingleThreadTaskRunner>& gpu_task_runner);
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner);
 
  private:
   std::unique_ptr<FakeGpuProcess> fake_gpu_process_;

@@ -208,8 +208,7 @@ bool RendererFactory::Initialize() {
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(kDisableGpu) && gl::init::InitializeGLOneOff() &&
-      gpu_helper_.Initialize(base::ThreadTaskRunnerHandle::Get(),
-                             base::ThreadTaskRunnerHandle::Get())) {
+      gpu_helper_.Initialize(base::ThreadTaskRunnerHandle::Get())) {
     type_ = GL;
   } else {
     type_ = SOFTWARE;
