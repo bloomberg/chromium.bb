@@ -43,6 +43,46 @@ constexpr float kInkDropRippleVisibleOpacity = 0.08f;
 // Highlight (hover) ink drop opacity of action buttons.
 constexpr float kInkDropHighlightVisibleOpacity = 0.08f;
 
+// ExpandButtton forwards all mouse and key events to NotificationHeaderView,
+// but takes tab focus for accessibility purpose.
+class ExpandButton : public views::ImageView {
+ public:
+  ExpandButton();
+  ~ExpandButton() override;
+
+  void OnPaint(gfx::Canvas* canvas) override;
+  void OnFocus() override;
+  void OnBlur() override;
+
+ private:
+  std::unique_ptr<views::Painter> focus_painter_;
+};
+
+ExpandButton::ExpandButton() {
+  SetImage(gfx::CreateVectorIcon(kNotificationExpandMoreIcon, kExpandIconSize,
+                                 gfx::kChromeIconGrey));
+  focus_painter_ = views::Painter::CreateSolidFocusPainter(
+      kFocusBorderColor, gfx::Insets(1, 2, 2, 2));
+  SetFocusBehavior(FocusBehavior::ALWAYS);
+}
+
+ExpandButton::~ExpandButton() = default;
+
+void ExpandButton::OnPaint(gfx::Canvas* canvas) {
+  views::ImageView::OnPaint(canvas);
+  views::Painter::PaintFocusPainter(this, canvas, focus_painter_.get());
+}
+
+void ExpandButton::OnFocus() {
+  views::ImageView::OnFocus();
+  SchedulePaint();
+}
+
+void ExpandButton::OnBlur() {
+  views::ImageView::OnBlur();
+  SchedulePaint();
+}
+
 }  // namespace
 
 NotificationHeaderView::NotificationHeaderView(views::ButtonListener* listener)
@@ -101,14 +141,7 @@ NotificationHeaderView::NotificationHeaderView(views::ButtonListener* listener)
   app_info_container->AddChildView(summary_text_view_);
 
   // Expand button view
-  expand_button_ = new views::ImageButton(listener);
-  expand_button_->SetImage(
-      views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(kNotificationExpandMoreIcon, kExpandIconSize,
-                            gfx::kChromeIconGrey));
-  expand_button_->SetFocusForPlatform();
-  expand_button_->SetFocusPainter(views::Painter::CreateSolidFocusPainter(
-      kFocusBorderColor, gfx::Insets(1, 2, 2, 2)));
+  expand_button_ = new ExpandButton();
   app_info_container->AddChildView(expand_button_);
 
   // Spacer between left-aligned views and right-aligned views
@@ -173,12 +206,16 @@ void NotificationHeaderView::ClearOverflowIndicator() {
 }
 
 void NotificationHeaderView::SetExpandButtonEnabled(bool enabled) {
+  // SetInkDropMode iff. the visibility changed.
+  // Otherwise, the ink drop animation cannot finish.
+  if (expand_button_->visible() != enabled)
+    SetInkDropMode(enabled ? InkDropMode::ON : InkDropMode::OFF);
+
   expand_button_->SetVisible(enabled);
 }
 
 void NotificationHeaderView::SetExpanded(bool expanded) {
   expand_button_->SetImage(
-      views::Button::STATE_NORMAL,
       gfx::CreateVectorIcon(
           expanded ? kNotificationExpandLessIcon : kNotificationExpandMoreIcon,
           kExpandIconSize, gfx::kChromeIconGrey));

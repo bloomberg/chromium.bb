@@ -434,8 +434,7 @@ void NotificationViewMD::ButtonPressed(views::Button* sender,
 
   // Tapping anywhere on |header_row_| can expand the notification, though only
   // |expand_button| can be focused by TAB.
-  if (IsExpandable() &&
-      (sender == header_row_ || sender == header_row_->expand_button())) {
+  if (IsExpandable() && sender == header_row_) {
     ToggleExpanded();
     Layout();
     SchedulePaint();
