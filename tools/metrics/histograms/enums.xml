@@ -33164,6 +33164,7 @@ from previous Chrome versions.
   <int value="12" label="ForeignFetchHeadersWithoutOrigin"/>
   <int value="13" label="ForeignFetchMismatchedOrigin"/>
   <int value="14" label="RedirectedResponseForNotFollowRequest"/>
+  <int value="15" label="DataPipeCreationFailed (insufficient resources)"/>
 </enum>
 
 <enum name="ServiceWorkerSite">
