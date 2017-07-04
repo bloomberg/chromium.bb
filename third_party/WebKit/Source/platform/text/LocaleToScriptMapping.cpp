@@ -41,23 +41,13 @@ struct SubtagScript {
   UScriptCode script;
 };
 
-using SubtagScriptMap = HashMap<String, UScriptCode, CaseFoldingHash>;
-
-static void CreateSubtagScriptMap(SubtagScriptMap& map,
-                                  const SubtagScript list[],
-                                  size_t size) {
-  map.ReserveCapacityForSize(size);
-  for (size_t i = 0; i < size; ++i)
-    map.Set(list[i].subtag, list[i].script);
-}
-
 UScriptCode ScriptNameToCode(const String& script_name) {
   // This generally maps an ISO 15924 script code to its UScriptCode, but
   // certain families of script codes are treated as a single script for
   // assigning a per-script font in Settings. For example, "hira" is mapped to
   // USCRIPT_KATAKANA_OR_HIRAGANA instead of USCRIPT_HIRAGANA, since we want all
   // Japanese scripts to be rendered using the same font setting.
-  static const SubtagScript kScriptNameCodeList[] = {
+  static constexpr SubtagScript kScriptNameCodeList[] = {
       {"zyyy", USCRIPT_COMMON},
       {"qaai", USCRIPT_INHERITED},
       {"arab", USCRIPT_ARABIC},
@@ -164,19 +154,15 @@ UScriptCode ScriptNameToCode(const String& script_name) {
       {"kore", USCRIPT_HANGUL},
       {"zxxx", USCRIPT_UNWRITTEN_LANGUAGES},
       {"zzzz", USCRIPT_UNKNOWN}};
-  DEFINE_STATIC_LOCAL(SubtagScriptMap, script_name_code_map, ());
-  if (script_name_code_map.IsEmpty())
-    CreateSubtagScriptMap(script_name_code_map, kScriptNameCodeList,
-                          WTF_ARRAY_LENGTH(kScriptNameCodeList));
-
-  const auto& it = script_name_code_map.find(script_name);
-  if (it != script_name_code_map.end())
-    return it->value;
+  for (const auto& kv : kScriptNameCodeList) {
+    if (CodePointCompareIgnoringASCIICase(script_name, kv.subtag) == 0)
+      return kv.script;
+  }
   return USCRIPT_INVALID_CODE;
 }
 
 UScriptCode LocaleToScriptCodeForFontSelection(const String& locale) {
-  static const SubtagScript kLocaleScriptList[] = {
+  static constexpr SubtagScript kLocaleScriptList[] = {
       {"aa", USCRIPT_LATIN},
       {"ab", USCRIPT_CYRILLIC},
       {"ady", USCRIPT_CYRILLIC},
@@ -453,19 +439,18 @@ UScriptCode LocaleToScriptCodeForFontSelection(const String& locale) {
       {"zh-mo", USCRIPT_TRADITIONAL_HAN},
       {"zh-tw", USCRIPT_TRADITIONAL_HAN},
   };
-  DEFINE_STATIC_LOCAL(SubtagScriptMap, locale_script_map, ());
-  if (locale_script_map.IsEmpty())
-    CreateSubtagScriptMap(locale_script_map, kLocaleScriptList,
-                          WTF_ARRAY_LENGTH(kLocaleScriptList));
 
   // BCP 47 uses '-' as the delimiter but ICU uses '_'.
   // https://tools.ietf.org/html/bcp47
   String canonical_locale = locale;
   canonical_locale.Replace('_', '-');
+
   while (!canonical_locale.IsEmpty()) {
-    const auto& it = locale_script_map.find(canonical_locale);
-    if (it != locale_script_map.end())
-      return it->value;
+    for (const auto& kv : kLocaleScriptList) {
+      if (CodePointCompareIgnoringASCIICase(canonical_locale, kv.subtag) == 0)
+        return kv.script;
+    }
+
     size_t pos = canonical_locale.ReverseFind('-');
     if (pos == kNotFound)
       break;
@@ -481,18 +466,16 @@ UScriptCode LocaleToScriptCodeForFontSelection(const String& locale) {
 }
 
 static UScriptCode ScriptCodeForHanFromRegion(const String& region) {
-  static const SubtagScript kRegionScriptList[] = {
+  static constexpr SubtagScript kRegionScriptList[] = {
       {"hk", USCRIPT_TRADITIONAL_HAN}, {"jp", USCRIPT_KATAKANA_OR_HIRAGANA},
       {"kr", USCRIPT_HANGUL},          {"mo", USCRIPT_TRADITIONAL_HAN},
       {"tw", USCRIPT_TRADITIONAL_HAN},
   };
-  DEFINE_STATIC_LOCAL(SubtagScriptMap, region_script_map, ());
-  if (region_script_map.IsEmpty())
-    CreateSubtagScriptMap(region_script_map, kRegionScriptList,
-                          WTF_ARRAY_LENGTH(kRegionScriptList));
-
-  const auto& it = region_script_map.find(region);
-  return it != region_script_map.end() ? it->value : USCRIPT_COMMON;
+  for (const auto& kv : kRegionScriptList) {
+    if (CodePointCompareIgnoringASCIICase(region, kv.subtag) == 0)
+      return kv.script;
+  }
+  return USCRIPT_COMMON;
 }
 
 UScriptCode ScriptCodeForHanFromSubtags(const String& locale, char delimiter) {
