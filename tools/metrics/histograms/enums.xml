@@ -34013,6 +34013,12 @@ from previous Chrome versions.
   <int value="3" label="Fresh index with cache updated since backend start"/>
 </enum>
 
+<enum name="SinglePageAppNavigationType">
+  <int value="0" label="History push state or replace state"/>
+  <int value="1" label="Same document backward or forward"/>
+  <int value="2" label="Other fragment navigation"/>
+</enum>
+
 <enum name="SiteEngagementServiceEngagementType">
   <int value="0" label="Navigation"/>
   <int value="1" label="Keypress"/>

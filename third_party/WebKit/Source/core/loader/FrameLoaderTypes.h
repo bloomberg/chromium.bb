@@ -94,6 +94,17 @@ enum class ProgressBarCompletion {
   kResourcesBeforeDCLAndSameOriginIFrames
 };
 
+// This enum is used to index different kinds of single-page-application
+// navigations for UMA enum histogram. New enum values can be added, but
+// existing enums must never be renumbered or deleted and reused.
+// This enum should be consistent with SinglePageAppNavigationType in
+// tools/metrics/histograms/enums.xml.
+enum SinglePageAppNavigationType {
+  kSPANavTypeHistoryPushStateOrReplaceState = 0,
+  kSPANavTypeSameDocumentBackwardOrForward = 1,
+  kSPANavTypeOtherFragmentNavigation = 2,
+  kSPANavTypeCount
+};
 }  // namespace blink
 
 #endif

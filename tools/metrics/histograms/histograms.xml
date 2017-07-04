@@ -61768,6 +61768,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="RendererScheduler.UpdateForSameDocumentNavigationCount"
+    enum="SinglePageAppNavigationType">
+  <owner>maxlg@chromium.org</owner>
+  <summary>
+    The count of same-document-navigations split by whether it is the
+    same-document backward/forward navigation, history API navigation, or other
+    fragment navigation.
+  </summary>
+</histogram>
+
 <histogram name="RendererScheduler.UserModel.GestureDuration" units="ms">
   <owner>alexclarke@chromium.org</owner>
   <summary>Duration of gestures (scrolls and pinches).</summary>

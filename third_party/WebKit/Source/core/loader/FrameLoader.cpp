@@ -78,6 +78,7 @@
 #include "core/probe/CoreProbes.h"
 #include "core/svg/graphics/SVGImage.h"
 #include "core/xml/parser/XMLDocumentParser.h"
+#include "platform/Histogram.h"
 #include "platform/InstanceCounters.h"
 #include "platform/PluginScriptForbiddenScope.h"
 #include "platform/ScriptForbiddenScope.h"
@@ -193,6 +194,31 @@ static NavigationPolicy MaybeCheckCSP(
   }
 
   return policy;
+}
+
+static SinglePageAppNavigationType CategorizeSinglePageAppNavigation(
+    SameDocumentNavigationSource same_document_navigation_source,
+    FrameLoadType frame_load_type) {
+  // |SinglePageAppNavigationType| falls into this grid according to different
+  // combinations of |FrameLoadType| and |SameDocumentNavigationSource|:
+  //
+  //                              HistoryApi           Default
+  //  kFrameLoadTypeBackForward   illegal              otherFragmentNav
+  // !kFrameLoadTypeBackForward   sameDocBack/Forward  historyPushOrReplace
+  switch (same_document_navigation_source) {
+    case kSameDocumentNavigationDefault:
+      if (frame_load_type == kFrameLoadTypeBackForward) {
+        return kSPANavTypeSameDocumentBackwardOrForward;
+      }
+      return kSPANavTypeOtherFragmentNavigation;
+    case kSameDocumentNavigationHistoryApi:
+      // It's illegal to have both kSameDocumentNavigationHistoryApi and
+      // kFrameLoadTypeBackForward.
+      DCHECK(frame_load_type != kFrameLoadTypeBackForward);
+      return kSPANavTypeHistoryPushStateOrReplaceState;
+  }
+  NOTREACHED();
+  return kSPANavTypeSameDocumentBackwardOrForward;
 }
 
 ResourceRequest FrameLoader::ResourceRequestForReload(
@@ -491,6 +517,12 @@ void FrameLoader::UpdateForSameDocumentNavigation(
     HistoryScrollRestorationType scroll_restoration_type,
     FrameLoadType type,
     Document* initiating_document) {
+  SinglePageAppNavigationType single_page_app_navigation_type =
+      CategorizeSinglePageAppNavigation(same_document_navigation_source, type);
+  UMA_HISTOGRAM_ENUMERATION(
+      "RendererScheduler.UpdateForSameDocumentNavigationCount",
+      single_page_app_navigation_type, kSPANavTypeCount);
+
   TRACE_EVENT1("blink", "FrameLoader::updateForSameDocumentNavigation", "url",
                new_url.GetString().Ascii().data());
 
