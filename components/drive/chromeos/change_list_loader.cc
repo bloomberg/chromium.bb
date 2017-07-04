@@ -582,7 +582,7 @@ void ChangeListLoader::LoadChangeListFromServerAfterLoadChangeList(
   loader_controller_->ScheduleRun(base::Bind(
       &drive::util::RunAsyncTask, base::RetainedRef(blocking_task_runner_),
       FROM_HERE,
-      base::Bind(&ChangeListProcessor::Apply,
+      base::Bind(&ChangeListProcessor::ApplyUserChangeList,
                  base::Unretained(change_list_processor),
                  base::Passed(&about_resource), base::Passed(&change_lists),
                  is_delta_update),
