@@ -399,7 +399,7 @@ void RenderWidgetHostLatencyTracker::ReportRapporScrollLatency(
 
 ukm::SourceId RenderWidgetHostLatencyTracker::GetUkmSourceId() {
   ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
-  if (ukm_recorder && ukm_source_id_ == -1) {
+  if (ukm_recorder && ukm_source_id_ == -1 && render_widget_host_delegate_) {
     ukm_source_id_ = ukm_recorder->GetNewSourceID();
     render_widget_host_delegate_->UpdateUrlForUkmSource(ukm_recorder,
                                                         ukm_source_id_);
