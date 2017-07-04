@@ -1266,7 +1266,42 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
         self.assert_baselines(
             file_list, log_stream,
             'flag-specific/flag/failures/unexpected/text-image-checksum',
-            expected_extensions=['.png'], )
+            expected_extensions=['.png'])
+
+    def test_new_flag_specific_baseline_optimize(self):
+        # Test removing existing baselines under flag-specific directory if the
+        # actual results are the same as the fallback baselines.
+        host = MockHost()
+        host.filesystem.write_text_file(
+            test.LAYOUT_TEST_DIR +
+            '/failures/unexpected/text-image-checksum-expected.txt',
+            # This value is the same as actual text result of the test defined
+            # in webkitpy.layout_tests.port.test. This is added so that we check
+            # that the flag-specific text baseline is removed if the actual
+            # result is the same as this fallback baseline.
+            'text-image-checksum_fail-txt')
+        flag_specific_baseline_txt = (
+            test.LAYOUT_TEST_DIR +
+            '/flag-specific/flag/failures/unexpected/text-image-checksum-expected.txt')
+        host.filesystem.write_text_file(
+            flag_specific_baseline_txt, 'existing-baseline-different-from-fallback')
+
+        details, log_stream, _ = logging_run(
+            ['--additional-driver-flag=--flag',
+             '--new-flag-specific-baseline',
+             'failures/unexpected/text-image-checksum.html'],
+            tests_included=True, host=host)
+        self.assertEqual(details.exit_code, 0)
+        self.assertFalse(host.filesystem.exists(flag_specific_baseline_txt))
+        file_list = host.filesystem.written_files.keys()
+        # Exclude the removed file.
+        file_list.remove(flag_specific_baseline_txt)
+        self.assertEqual(len(file_list), 8)
+        # We should create new image baseline only.
+        self.assert_baselines(
+            file_list, log_stream,
+            'flag-specific/flag/failures/unexpected/text-image-checksum',
+            expected_extensions=['.png'])
 
 
 class MainTest(unittest.TestCase):

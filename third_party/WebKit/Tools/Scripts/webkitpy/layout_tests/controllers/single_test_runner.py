@@ -203,6 +203,13 @@ class SingleTestRunner(object):
         output_basename = fs.basename(fs.splitext(self._test_name)[0] + '-expected' + extension)
         output_path = fs.join(output_dir, output_basename)
 
+        # Remove |output_path| if it exists and is not the generic expectation to
+        # avoid extra baseline if the new baseline is the same as the fallback baseline.
+        generic_dir = fs.join(port.layout_tests_dir(), fs.dirname(self._test_name))
+        if output_dir != generic_dir and fs.exists(output_path):
+            _log.info('Removing the current baseline "%s"', port.relative_test_filename(output_path))
+            fs.remove(output_path)
+
         current_expected_path = port.expected_filename(self._test_name, extension)
         if fs.exists(current_expected_path) and fs.sha1(current_expected_path) == hashlib.sha1(data).hexdigest():
             _log.info('Not writing new expected result "%s" because it is the same as the current expected result',
