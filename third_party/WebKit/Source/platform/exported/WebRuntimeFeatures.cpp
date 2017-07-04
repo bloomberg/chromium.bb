@@ -172,6 +172,10 @@ void WebRuntimeFeatures::EnableMediaSession(bool enable) {
   RuntimeEnabledFeatures::SetMediaSessionEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableModuleScripts(bool enable) {
+  RuntimeEnabledFeatures::SetModuleScriptsEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableMojoBlobs(bool enable) {
   RuntimeEnabledFeatures::SetMojoBlobsEnabled(enable);
 }

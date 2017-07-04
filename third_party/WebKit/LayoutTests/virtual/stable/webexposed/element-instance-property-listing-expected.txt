@@ -817,6 +817,7 @@ html element script
     property event
     property htmlFor
     property integrity
+    property noModule
     property src
     property text
     property type
@@ -1402,6 +1403,7 @@ svg element script
     property event
     property htmlFor
     property integrity
+    property noModule
     property src
     property text
     property type
