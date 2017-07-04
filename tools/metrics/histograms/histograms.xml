@@ -54968,6 +54968,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Platform.TPM.VersionFingerprint" enum="TPMVersionFingerprint">
+  <owner>mnissler@chromium.org</owner>
+  <summary>
+    Indicates a fingerprint of hardware + firmware versions for the TPM chip
+    present in a Chrome OS device.
+  </summary>
+</histogram>
+
 <histogram name="Platform.TPMForcedReboot" units="reboots">
   <owner>dkrahn@chromium.org</owner>
   <summary>
