@@ -22,6 +22,6 @@
     function SelectText() {
         var ele = document.getElementById('container');
         var selection = window.getSelection();
-        selection.selectAllChildren(ele);
+        selection.setBaseAndExtent(ele.childNodes[1], 0, ele.childNodes[5], 1);
     }
 </script>

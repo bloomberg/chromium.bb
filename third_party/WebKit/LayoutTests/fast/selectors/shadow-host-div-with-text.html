@@ -28,9 +28,7 @@
     var span = root.querySelector('span');
     
     var selection = window.getSelection();
-    var range = document.createRange();
-    range.selectNodeContents(span);
-    selection.addRange(range);
+    selection.setBaseAndExtent(span.firstChild, 2, span.firstChild, 54);
   </script>
 </body>
 </html>
