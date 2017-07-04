@@ -90,7 +90,7 @@ translate_input (int forward_translation, char *table_name)
 #else
       outputbuf = u16_to_u8(transbuf, translen, NULL, &outlen);
 #endif
-      printf ("%.*s\n", (int)outlen, outputbuf);
+      printf (ch == EOF ? "%.*s" : "%.*s\n", (int)outlen, outputbuf);
       free(outputbuf);
     }
   lou_free ();
