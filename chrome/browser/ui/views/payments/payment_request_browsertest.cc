@@ -399,8 +399,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestSettingsLinkTest, ClickSettingsLink) {
   EXPECT_TRUE(styled_label);
   // The Link is the only child of the StyledLabel.
   content::WebContentsAddedObserver web_contents_added_observer;
-  styled_label->LinkClicked(
-      static_cast<views::Link*>(styled_label->child_at(0)), 0);
+  styled_label->LinkClicked(nullptr, 0);
   content::WebContents* new_tab_contents =
       web_contents_added_observer.GetWebContents();
 
