@@ -21,7 +21,7 @@ var DropPosition = {
  */
 var Command = {
   EDIT: 'edit',
-  COPY: 'copy',
+  COPY_URL: 'copy-url',
   DELETE: 'delete',
   OPEN_NEW_TAB: 'open-new-tab',
   OPEN_NEW_WINDOW: 'open-new-window',
@@ -32,6 +32,9 @@ var Command = {
   OPEN: 'open',
   SELECT_ALL: 'select-all',
   DESELECT_ALL: 'deselect-all',
+  COPY: 'copy',
+  CUT: 'cut',
+  PASTE: 'paste',
 };
 
 /**

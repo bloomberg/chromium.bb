@@ -439,6 +439,11 @@
   <message name="IDS_MD_BOOKMARK_MANAGER_TOAST_URL_COPIED" desc="Label displayed in toast popup message when a URL is copied.">
     URL copied
   </message>
+  <message name="IDS_MD_BOOKMARK_MANAGER_TOAST_ITEMS_COPIED" desc="Label displayed in a toast popup message when several bookmark items are copied">
+    {COUNT, plural,
+      =1 {'<ph name="COPIED_ITEM_NAME">$1</ph>' copied}
+      other {# items copied}}
+  </message>
   <!-- End of material design Bookmarks Manager strings. -->
 
   <!-- Begin of Bookmarks Menu (in the Main Menu) strings. -->
