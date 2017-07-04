@@ -1884,6 +1884,16 @@ int64_t av1_search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
       // if it's not, we skip it here.
       continue;
     }
+
+#if CONFIG_EXT_TX
+    int is_inter = is_inter_block(mbmi);
+    int ext_tx_set = get_ext_tx_set(get_min_tx_size(tx_size), mbmi->sb_type,
+                                    is_inter, cm->reduced_tx_set_used);
+    if (!(is_inter && ext_tx_used_inter[ext_tx_set][tx_type]) &&
+        !(!is_inter && ext_tx_used_intra[ext_tx_set][tx_type]))
+      continue;
+#endif  // CONFIG_EXT_TX
+
     RD_STATS this_rd_stats;
     av1_invalid_rd_stats(&this_rd_stats);
     av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
