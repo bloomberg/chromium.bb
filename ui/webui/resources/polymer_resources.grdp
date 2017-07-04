@@ -449,6 +449,26 @@
   <structure name="IDR_POLYMER_1_0_PAPER_CHECKBOX_PAPER_CHECKBOX_HTML"
              file="../../../third_party/polymer/v1_0/components-chromium/paper-checkbox/paper-checkbox.html"
              type="chrome_html" />
+  <if expr="chromeos">
+    <structure name="IDR_POLYMER_1_0_PAPER_DIALOG_BEHAVIOR_PAPER_DIALOG_BEHAVIOR_EXTRACTED_JS"
+               file="../../../third_party/polymer/v1_0/components-chromium/paper-dialog-behavior/paper-dialog-behavior-extracted.js"
+               type="chrome_html" />
+    <structure name="IDR_POLYMER_1_0_PAPER_DIALOG_BEHAVIOR_PAPER_DIALOG_BEHAVIOR_HTML"
+               file="../../../third_party/polymer/v1_0/components-chromium/paper-dialog-behavior/paper-dialog-behavior.html"
+               type="chrome_html" />
+    <structure name="IDR_POLYMER_1_0_PAPER_DIALOG_BEHAVIOR_PAPER_DIALOG_COMMON_CSS"
+               file="../../../third_party/polymer/v1_0/components-chromium/paper-dialog-behavior/paper-dialog-common.css"
+               type="chrome_html" />
+    <structure name="IDR_POLYMER_1_0_PAPER_DIALOG_BEHAVIOR_PAPER_DIALOG_SHARED_STYLES_HTML"
+               file="../../../third_party/polymer/v1_0/components-chromium/paper-dialog-behavior/paper-dialog-shared-styles.html"
+               type="chrome_html" />
+    <structure name="IDR_POLYMER_1_0_PAPER_DIALOG_PAPER_DIALOG_EXTRACTED_JS"
+               file="../../../third_party/polymer/v1_0/components-chromium/paper-dialog/paper-dialog-extracted.js"
+               type="chrome_html" />
+    <structure name="IDR_POLYMER_1_0_PAPER_DIALOG_PAPER_DIALOG_HTML"
+               file="../../../third_party/polymer/v1_0/components-chromium/paper-dialog/paper-dialog.html"
+               type="chrome_html" />
+  </if>
   <structure name="IDR_POLYMER_1_0_PAPER_DRAWER_PANEL_PAPER_DRAWER_PANEL_EXTRACTED_JS"
              file="../../../third_party/polymer/v1_0/components-chromium/paper-drawer-panel/paper-drawer-panel-extracted.js"
              type="chrome_html" />
