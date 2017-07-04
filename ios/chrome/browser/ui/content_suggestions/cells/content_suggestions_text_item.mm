@@ -18,7 +18,6 @@
 @synthesize text = _text;
 @synthesize detailText = _detailText;
 @synthesize suggestionIdentifier = _suggestionIdentifier;
-@synthesize attributes = _attributes;
 @synthesize delegate = _delegate;
 @synthesize image = _image;
 

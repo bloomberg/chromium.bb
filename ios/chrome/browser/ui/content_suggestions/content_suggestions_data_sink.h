@@ -36,8 +36,8 @@
 // now, removing the current content.
 - (void)reloadSection:(ContentSuggestionsSectionInformation*)sectionInfo;
 
-// Notifies the Data Sink that a new favicon is available for the |item|.
-- (void)faviconAvailableForItem:(CollectionViewItem<SuggestedContent>*)item;
+// Notifies the data sink that the |item| has changed.
+- (void)itemHasChanged:(CollectionViewItem<SuggestedContent>*)item;
 
 @end
 

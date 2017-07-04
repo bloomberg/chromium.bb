@@ -10,11 +10,14 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/suggested_content.h"
 
+@class FaviconAttributes;
+
 // Content Suggestions item configuring a ContentSuggetionsMostVisitedCell.
 @interface SCContentSuggestionsMostVisitedItem
     : CollectionViewItem<SuggestedContent>
 
 @property(nonatomic, copy) NSString* title;
+@property(nonatomic, strong) FaviconAttributes* attributes;
 
 @end
 

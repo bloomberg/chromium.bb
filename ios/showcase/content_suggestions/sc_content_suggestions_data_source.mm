@@ -127,14 +127,6 @@ using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
                            callback:(MoreSuggestionsFetched)callback {
 }
 
-- (void)fetchFaviconAttributesForItem:(CSCollectionViewItem*)item
-                           completion:(void (^)(FaviconAttributes*))completion {
-}
-
-- (void)fetchFaviconImageForItem:(CSCollectionViewItem*)item
-                      completion:(void (^)(UIImage*))completion {
-}
-
 - (void)dismissSuggestion:(ContentSuggestionIdentifier*)suggestionIdentifier {
 }
 

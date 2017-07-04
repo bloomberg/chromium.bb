@@ -12,6 +12,8 @@ source_set("content_suggestions") {
     "content_suggestions_category_wrapper.mm",
     "content_suggestions_coordinator.h",
     "content_suggestions_coordinator.mm",
+    "content_suggestions_favicon_mediator.h",
+    "content_suggestions_favicon_mediator.mm",
     "content_suggestions_header_controller.h",
     "content_suggestions_header_controller.mm",
     "content_suggestions_header_controller_delegate.h",

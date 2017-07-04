@@ -43,7 +43,7 @@ ContentSuggestionsSectionID SectionIDForCategory(
   return ContentSuggestionsSectionUnknown;
 }
 
-CollectionViewItem<SuggestedContent>* ConvertSuggestion(
+ContentSuggestionsItem* ConvertSuggestion(
     const ntp_snippets::ContentSuggestion& contentSuggestion,
     ContentSuggestionsSectionInformation* sectionInfo,
     ntp_snippets::Category category) {

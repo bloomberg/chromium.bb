@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/suggested_content.h"
 
+@class FaviconAttributes;
 class GURL;
 
 // Item containing a Most Visited suggestion.
@@ -23,6 +24,8 @@ class GURL;
 @property(nonatomic, assign) GURL URL;
 // Source of the Most Visited tile.
 @property(nonatomic, assign) ntp_tiles::TileSource source;
+// Attributes for favicon.
+@property(nonatomic, strong, nullable) FaviconAttributes* attributes;
 
 - (ntp_tiles::TileVisualType)tileType;
 

@@ -9,7 +9,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/strings/sys_string_conversions.h"
-#include "components/favicon/core/large_icon_service.h"
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/content_suggestion.h"
@@ -17,6 +16,7 @@
 #include "components/ntp_tiles/ntp_tile.h"
 #include "ios/chrome/browser/application_context.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_category_wrapper.h"
+#import "ios/chrome/browser/content_suggestions/content_suggestions_favicon_mediator.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_header_provider.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_service_bridge_observer.h"
 #import "ios/chrome/browser/content_suggestions/mediator_util.h"
@@ -30,12 +30,10 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_image_fetcher.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestion_identifier.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestions_section_information.h"
-#import "ios/chrome/browser/ui/favicon/favicon_attributes_provider.h"
 #import "ios/chrome/browser/ui/ntp/notification_promo_whats_new.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/images/branded_image_provider.h"
 #include "ios/public/provider/chrome/browser/images/whats_new_icon.h"
-#include "ui/gfx/image/image.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -45,8 +43,6 @@ namespace {
 
 using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
 
-// Size of the favicon returned by the provider.
-const CGFloat kDefaultFaviconSize = 48;
 // Maximum number of most visited tiles fetched.
 const NSInteger kMaxNumMostVisitedTiles = 8;
 
@@ -85,9 +81,8 @@ const NSInteger kMaxNumMostVisitedTiles = 8;
     NSMutableDictionary<ContentSuggestionsCategoryWrapper*,
                         ContentSuggestionsSectionInformation*>*
         sectionInformationByCategory;
-// FaviconAttributesProvider to fetch the favicon for the suggestions.
-@property(nonatomic, nullable, strong)
-    FaviconAttributesProvider* attributesProvider;
+// Mediator fetching the favicons for the items.
+@property(nonatomic, strong) ContentSuggestionsFaviconMediator* faviconMediator;
 
 @end
 
@@ -101,9 +96,9 @@ const NSInteger kMaxNumMostVisitedTiles = 8;
 @synthesize contentService = _contentService;
 @synthesize dataSink = _dataSink;
 @synthesize sectionInformationByCategory = _sectionInformationByCategory;
-@synthesize attributesProvider = _attributesProvider;
 @synthesize commandHandler = _commandHandler;
 @synthesize headerProvider = _headerProvider;
+@synthesize faviconMediator = _faviconMediator;
 
 #pragma mark - Public
 
@@ -118,10 +113,9 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
         base::MakeUnique<ContentSuggestionsServiceBridge>(self, contentService);
     _contentService = contentService;
     _sectionInformationByCategory = [[NSMutableDictionary alloc] init];
-    _attributesProvider = [[FaviconAttributesProvider alloc]
-        initWithFaviconSize:kDefaultFaviconSize
-             minFaviconSize:1
-           largeIconService:largeIconService];
+    _faviconMediator = [[ContentSuggestionsFaviconMediator alloc]
+        initWithContentService:contentService
+              largeIconService:largeIconService];
 
     _mostVisitedSectionInfo = MostVisitedSectionInformation();
     _logoSectionInfo = LogoSectionInformation();
@@ -151,6 +145,11 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
 
 - (NotificationPromoWhatsNew*)notificationPromo {
   return _notificationPromo.get();
+}
+
+- (void)setDataSink:(id<ContentSuggestionsDataSink>)dataSink {
+  _dataSink = dataSink;
+  self.faviconMediator.dataSink = dataSink;
 }
 
 #pragma mark - ContentSuggestionsDataSource
@@ -283,54 +282,6 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
   }
 }
 
-- (void)fetchFaviconAttributesForItem:(CSCollectionViewItem*)item
-                           completion:(void (^)(FaviconAttributes*))completion {
-  ContentSuggestionsSectionInformation* sectionInfo =
-      item.suggestionIdentifier.sectionInfo;
-  GURL url;
-  if ([self isRelatedToContentSuggestionsService:sectionInfo]) {
-    ContentSuggestionsItem* suggestionItem =
-        base::mac::ObjCCast<ContentSuggestionsItem>(item);
-    url = suggestionItem.URL;
-  } else if (sectionInfo == self.mostVisitedSectionInfo) {
-    ContentSuggestionsMostVisitedItem* mostVisited =
-        base::mac::ObjCCast<ContentSuggestionsMostVisitedItem>(item);
-    url = mostVisited.URL;
-  }
-  [self.attributesProvider fetchFaviconAttributesForURL:url
-                                             completion:completion];
-}
-
-- (void)fetchFaviconImageForItem:(CSCollectionViewItem*)item
-                      completion:(void (^)(UIImage*))completion {
-  ContentSuggestionsSectionInformation* sectionInfo =
-      item.suggestionIdentifier.sectionInfo;
-  if (![self isRelatedToContentSuggestionsService:sectionInfo]) {
-    return;
-  }
-  ContentSuggestionsItem* suggestionItem =
-      base::mac::ObjCCast<ContentSuggestionsItem>(item);
-  ntp_snippets::Category category =
-      [[self categoryWrapperForSectionInfo:sectionInfo] category];
-  if (!category.IsKnownCategory(ntp_snippets::KnownCategories::ARTICLES)) {
-    // TODO(crbug.com/721266): remove this guard once the choice to download the
-    // favicon from the google server is done in the provider.
-    return;
-  }
-  void (^imageCallback)(const gfx::Image&) = ^(const gfx::Image& image) {
-    if (!image.IsEmpty()) {
-      completion([image.ToUIImage() copy]);
-    }
-  };
-
-  ntp_snippets::ContentSuggestion::ID identifier =
-      ntp_snippets::ContentSuggestion::ID(
-          category, suggestionItem.suggestionIdentifier.IDInSection);
-  self.contentService->FetchSuggestionFavicon(
-      identifier, /* minimum_size_in_pixel = */ 1, kDefaultFaviconSize,
-      base::BindBlockArc(imageCallback));
-}
-
 - (void)dismissSuggestion:(ContentSuggestionIdentifier*)suggestionIdentifier {
   ContentSuggestionsCategoryWrapper* categoryWrapper =
       [self categoryWrapperForSectionInfo:suggestionIdentifier.sectionInfo];
@@ -424,8 +375,10 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
     (const ntp_tiles::NTPTilesVector&)mostVisited {
   self.freshMostVisitedItems = [NSMutableArray array];
   for (const ntp_tiles::NTPTile& tile : mostVisited) {
-    [self.freshMostVisitedItems
-        addObject:ConvertNTPTile(tile, self.mostVisitedSectionInfo)];
+    ContentSuggestionsMostVisitedItem* item =
+        ConvertNTPTile(tile, self.mostVisitedSectionInfo);
+    [self.faviconMediator fetchFaviconForMostVisited:item];
+    [self.freshMostVisitedItems addObject:item];
   }
 
   if ([self.mostVisitedItems count] > 0) {
@@ -445,7 +398,7 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
 - (void)onIconMadeAvailable:(const GURL&)siteURL {
   for (ContentSuggestionsMostVisitedItem* item in self.mostVisitedItems) {
     if (item.URL == siteURL) {
-      [self.dataSink faviconAvailableForItem:item];
+      [self.faviconMediator fetchFaviconForMostVisited:item];
       return;
     }
   }
@@ -472,8 +425,10 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
   ContentSuggestionsSectionInformation* sectionInfo =
       self.sectionInformationByCategory[categoryWrapper];
   for (auto& contentSuggestion : suggestions) {
-    CSCollectionViewItem* suggestion =
+    ContentSuggestionsItem* suggestion =
         ConvertSuggestion(contentSuggestion, sectionInfo, category);
+    [self.faviconMediator fetchFaviconForSuggestions:suggestion
+                                          inCategory:category];
 
     [itemArray addObject:suggestion];
   }
