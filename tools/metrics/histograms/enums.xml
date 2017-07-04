@@ -15649,6 +15649,21 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2034" label="QuirksModeDocument"/>
   <int value="2035" label="LimitedQuirksModeDocument"/>
   <int value="2036" label="EncryptedMediaCrossOriginIframe"/>
+  <int value="2037" label="CSSSelectorWebkitMediaControls"/>
+  <int value="2038" label="CSSSelectorWebkitMediaControlsOverlayEnclosure"/>
+  <int value="2039" label="CSSSelectorWebkitMediaControlsOverlayPlayButton"/>
+  <int value="2040" label="CSSSelectorWebkitMediaControlsEnclosure"/>
+  <int value="2041" label="CSSSelectorWebkitMediaControlsPanel"/>
+  <int value="2042" label="CSSSelectorWebkitMediaControlsPlayButton"/>
+  <int value="2043" label="CSSSelectorWebkitMediaControlsCurrentTimeDisplay"/>
+  <int value="2044" label="CSSSelectorWebkitMediaControlsTimeRemainingDisplay"/>
+  <int value="2045" label="CSSSelectorWebkitMediaControlsTimeline"/>
+  <int value="2046" label="CSSSelectorWebkitMediaControlsTimelineContainer"/>
+  <int value="2047" label="CSSSelectorWebkitMediaControlsMuteButton"/>
+  <int value="2048" label="CSSSelectorWebkitMediaControlsVolumeSlider"/>
+  <int value="2049" label="CSSSelectorWebkitMediaControlsFullscreenButton"/>
+  <int value="2050"
+      label="CSSSelectorWebkitMediaControlsToggleClosedCaptionsButton"/>
 </enum>
 
 <enum name="FeedbackSource">

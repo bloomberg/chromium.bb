@@ -874,6 +874,51 @@ void CSSSelectorParser::RecordUsageAndDeprecations(
                 "-internal-media-controls-overlay-cast-button") {
               feature = WebFeature::
                   kCSSSelectorInternalMediaControlsOverlayCastButton;
+            } else if (current->Value() == "-webkit-media-controls") {
+              feature = WebFeature::kCSSSelectorWebkitMediaControls;
+            } else if (current->Value() ==
+                       "-webkit-media-controls-overlay-enclosure") {
+              feature =
+                  WebFeature::kCSSSelectorWebkitMediaControlsOverlayEnclosure;
+            } else if (current->Value() ==
+                       "-webkit-media-controls-overlay-play-button") {
+              feature =
+                  WebFeature::kCSSSelectorWebkitMediaControlsOverlayPlayButton;
+            } else if (current->Value() == "-webkit-media-controls-enclosure") {
+              feature = WebFeature::kCSSSelectorWebkitMediaControlsEnclosure;
+            } else if (current->Value() == "-webkit-media-controls-panel") {
+              feature = WebFeature::kCSSSelectorWebkitMediaControlsPanel;
+            } else if (current->Value() ==
+                       "-webkit-media-controls-play-button") {
+              feature = WebFeature::kCSSSelectorWebkitMediaControlsPlayButton;
+            } else if (current->Value() ==
+                       "-webkit-media-controls-current-time-display") {
+              feature =
+                  WebFeature::kCSSSelectorWebkitMediaControlsCurrentTimeDisplay;
+            } else if (current->Value() ==
+                       "-webkit-media-controls-time-remaining-display") {
+              feature = WebFeature::
+                  kCSSSelectorWebkitMediaControlsTimeRemainingDisplay;
+            } else if (current->Value() == "-webkit-media-controls-timeline") {
+              feature = WebFeature::kCSSSelectorWebkitMediaControlsTimeline;
+            } else if (current->Value() ==
+                       "-webkit-media-controls-timeline-container") {
+              feature =
+                  WebFeature::kCSSSelectorWebkitMediaControlsTimelineContainer;
+            } else if (current->Value() ==
+                       "-webkit-media-controls-mute-button") {
+              feature = WebFeature::kCSSSelectorWebkitMediaControlsMuteButton;
+            } else if (current->Value() ==
+                       "-webkit-media-controls-volume-slider") {
+              feature = WebFeature::kCSSSelectorWebkitMediaControlsVolumeSlider;
+            } else if (current->Value() ==
+                       "-webkit-media-controls-fullscreen-button") {
+              feature =
+                  WebFeature::kCSSSelectorWebkitMediaControlsFullscreenButton;
+            } else if (current->Value() ==
+                       "-webkit-media-controls-toggle-closed-captions-button") {
+              feature = WebFeature::
+                  kCSSSelectorWebkitMediaControlsToggleClosedCaptionsButton;
             }
           }
           break;
