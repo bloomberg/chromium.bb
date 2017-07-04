@@ -13,7 +13,7 @@ namespace blink {
 
 typedef bool TestParamRootLayerScrolling;
 class MapCoordinatesTest
-    : public testing::WithParamInterface<TestParamRootLayerScrolling>,
+    : public ::testing::WithParamInterface<TestParamRootLayerScrolling>,
       private ScopedRootLayerScrollingForTest,
       public RenderingTest {
  public:

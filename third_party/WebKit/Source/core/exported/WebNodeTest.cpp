@@ -14,7 +14,7 @@
 
 namespace blink {
 
-class WebNodeTest : public testing::Test {
+class WebNodeTest : public ::testing::Test {
  protected:
   Document& GetDocument() { return page_holder_->GetDocument(); }
 

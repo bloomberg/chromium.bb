@@ -22,7 +22,7 @@
 
 namespace blink {
 
-class StaticRangeTest : public testing::Test {
+class StaticRangeTest : public ::testing::Test {
  protected:
   void SetUp() override;
 

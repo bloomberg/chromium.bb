@@ -10,7 +10,7 @@
 
 namespace blink {
 
-class NetworkQuietDetectorTest : public testing::Test {
+class NetworkQuietDetectorTest : public ::testing::Test {
  protected:
   void SetUp() override {
     platform_->AdvanceClockSeconds(1);

@@ -12,7 +12,7 @@
 
 namespace blink {
 
-class FirstMeaningfulPaintDetectorTest : public testing::Test {
+class FirstMeaningfulPaintDetectorTest : public ::testing::Test {
  protected:
   void SetUp() override {
     platform_->AdvanceClockSeconds(1);

@@ -15,7 +15,7 @@
 
 namespace blink {
 
-class AnimationTimingInputTest : public testing::Test {
+class AnimationTimingInputTest : public ::testing::Test {
  public:
   Timing ApplyTimingInputNumber(v8::Isolate*,
                                 String timing_property,

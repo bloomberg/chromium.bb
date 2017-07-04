@@ -27,7 +27,7 @@ ScrollState* CreateScrollState(double delta_x,
   return ScrollState::Create(std::move(scroll_state_data));
 }
 
-class ScrollStateTest : public testing::Test {};
+class ScrollStateTest : public ::testing::Test {};
 
 TEST_F(ScrollStateTest, ConsumeDeltaNative) {
   const float kDeltaX = 12.3;

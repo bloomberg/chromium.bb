@@ -9,7 +9,7 @@
 
 namespace blink {
 
-class CollapsedBorderValueTest : public testing::Test {
+class CollapsedBorderValueTest : public ::testing::Test {
  protected:
   void ExpectInvisible(const CollapsedBorderValue& v,
                        unsigned expected_width = 0) {

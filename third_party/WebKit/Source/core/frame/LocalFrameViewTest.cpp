@@ -23,8 +23,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using testing::_;
-using testing::AnyNumber;
+using ::testing::_;
+using ::testing::AnyNumber;
 
 namespace blink {
 namespace {
@@ -51,9 +51,9 @@ class MockChromeClient : public EmptyChromeClient {
 
 typedef bool TestParamRootLayerScrolling;
 class LocalFrameViewTest
-    : public testing::WithParamInterface<TestParamRootLayerScrolling>,
+    : public ::testing::WithParamInterface<TestParamRootLayerScrolling>,
       private ScopedRootLayerScrollingForTest,
-      public testing::Test {
+      public ::testing::Test {
  protected:
   LocalFrameViewTest()
       : ScopedRootLayerScrollingForTest(GetParam()),
@@ -63,7 +63,7 @@ class LocalFrameViewTest
   }
 
   ~LocalFrameViewTest() {
-    testing::Mock::VerifyAndClearExpectations(&ChromeClient());
+    ::testing::Mock::VerifyAndClearExpectations(&ChromeClient());
   }
 
   void SetUp() override {

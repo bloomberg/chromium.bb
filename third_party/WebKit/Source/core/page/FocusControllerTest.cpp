@@ -13,7 +13,7 @@
 
 namespace blink {
 
-class FocusControllerTest : public testing::Test {
+class FocusControllerTest : public ::testing::Test {
  public:
   Document& GetDocument() const { return page_holder_->GetDocument(); }
   FocusController& GetFocusController() const {

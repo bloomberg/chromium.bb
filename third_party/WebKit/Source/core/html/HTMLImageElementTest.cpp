@@ -14,7 +14,7 @@ namespace blink {
 
 const int kViewportWidth = 500;
 const int kViewportHeight = 600;
-class HTMLImageElementTest : public testing::Test {
+class HTMLImageElementTest : public ::testing::Test {
  protected:
   HTMLImageElementTest()
       : dummy_page_holder_(

@@ -17,7 +17,7 @@
 
 namespace blink {
 
-class CSSLazyParsingTest : public testing::Test {
+class CSSLazyParsingTest : public ::testing::Test {
  public:
   bool HasParsedProperties(StyleRule* rule) {
     return rule->HasParsedProperties();

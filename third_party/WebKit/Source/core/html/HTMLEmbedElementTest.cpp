@@ -14,7 +14,7 @@
 
 namespace blink {
 
-class HTMLEmbedElementTest : public testing::Test {
+class HTMLEmbedElementTest : public ::testing::Test {
  protected:
   HTMLEmbedElementTest() {}
 

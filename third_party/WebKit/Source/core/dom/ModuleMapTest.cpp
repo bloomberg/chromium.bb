@@ -146,7 +146,7 @@ void ModuleMapTestModulator::ResolveFetches() {
   test_requests_.clear();
 }
 
-class ModuleMapTest : public testing::Test {
+class ModuleMapTest : public ::testing::Test {
  public:
   void SetUp() override;
 

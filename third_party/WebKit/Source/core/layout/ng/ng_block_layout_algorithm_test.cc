@@ -24,8 +24,8 @@
 namespace blink {
 namespace {
 
-using testing::ElementsAre;
-using testing::Pointee;
+using ::testing::ElementsAre;
+using ::testing::Pointee;
 
 RefPtr<NGConstraintSpace> ConstructConstraintSpace(
     NGWritingMode writing_mode,

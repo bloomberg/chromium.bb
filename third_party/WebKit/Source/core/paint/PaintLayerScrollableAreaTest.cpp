@@ -14,7 +14,7 @@
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-using testing::_;
+using ::testing::_;
 
 namespace blink {
 namespace {
@@ -38,7 +38,7 @@ class PaintLayerScrollableAreaTest : public RenderingTest {
         chrome_client_(new MockChromeClient) {}
 
   ~PaintLayerScrollableAreaTest() {
-    testing::Mock::VerifyAndClearExpectations(&GetChromeClient());
+    ::testing::Mock::VerifyAndClearExpectations(&GetChromeClient());
   }
 
   MockChromeClient& GetChromeClient() const override { return *chrome_client_; }

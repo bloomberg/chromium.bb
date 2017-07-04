@@ -13,8 +13,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using testing::_;
-using testing::AtMost;
+using ::testing::_;
+using ::testing::AtMost;
 
 namespace blink {
 

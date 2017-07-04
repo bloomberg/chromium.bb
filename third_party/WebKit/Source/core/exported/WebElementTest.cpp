@@ -60,7 +60,7 @@ static const char kBlockWithEmptyInlines[] =
     "  <span></span> "
     "</div>";
 
-class WebElementTest : public testing::Test {
+class WebElementTest : public ::testing::Test {
  protected:
   Document& GetDocument() { return page_holder_->GetDocument(); }
   void InsertHTML(String html);

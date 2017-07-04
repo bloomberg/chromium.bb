@@ -36,7 +36,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using blink::testing::RunPendingTasks;
-using testing::Mock;
+using ::testing::Mock;
 
 namespace blink {
 

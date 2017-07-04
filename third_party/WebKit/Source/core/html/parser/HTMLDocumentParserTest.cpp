@@ -28,7 +28,7 @@ class TestPrerendererClient : public PrerendererClient {
   bool is_prefetch_only_;
 };
 
-class HTMLDocumentParserTest : public testing::Test {
+class HTMLDocumentParserTest : public ::testing::Test {
  protected:
   HTMLDocumentParserTest() : dummy_page_holder_(DummyPageHolder::Create()) {
     dummy_page_holder_->GetDocument().SetURL(

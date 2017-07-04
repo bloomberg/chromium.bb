@@ -66,7 +66,7 @@ class LocalFrameClientWithParent final : public EmptyLocalFrameClient {
   Member<LocalFrame> parent_;
 };
 
-class RenderingTest : public testing::Test {
+class RenderingTest : public ::testing::Test {
   USING_FAST_MALLOC(RenderingTest);
 
  public:
