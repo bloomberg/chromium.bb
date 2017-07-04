@@ -150,12 +150,6 @@ class MidiTaskServiceTest : public ::testing::Test {
   DISALLOW_COPY_AND_ASSIGN(MidiTaskServiceTest);
 };
 
-// Tests if posted static tasks can be processed without any bound instance.
-TEST_F(MidiTaskServiceTest, RunStaticTask) {
-  task_service()->PostStaticTask(kFirstRunner, base::BindOnce(&SignalEvent));
-  WaitEvent();
-}
-
 // Tests if posted tasks without calling BindInstance() are ignored.
 TEST_F(MidiTaskServiceTest, RunUnauthorizedBoundTask) {
   std::unique_ptr<TaskServiceClient> client =
@@ -186,13 +180,13 @@ TEST_F(MidiTaskServiceTest, BindTwice) {
   EXPECT_FALSE(client->Unbind());
 }
 
-// Tests if posted static tasks can be processed even with a bound instance.
-TEST_F(MidiTaskServiceTest, RunStaticTaskWithBoundInstance) {
+// Tests if posted static tasks can be processed correctly.
+TEST_F(MidiTaskServiceTest, RunStaticTask) {
   std::unique_ptr<TaskServiceClient> client =
       base::MakeUnique<TaskServiceClient>(task_service());
 
   EXPECT_TRUE(client->Bind());
-  // Should be able to post a static task even with a bound instance.
+  // Should be able to post a static task while an instance is bound.
   task_service()->PostStaticTask(kFirstRunner, base::BindOnce(&SignalEvent));
   WaitEvent();
   EXPECT_TRUE(client->Unbind());
