@@ -205,7 +205,6 @@ interface DOMMatrix : DOMMatrixReadOnly
     method rotateSelf
     method scale3dSelf
     method scaleSelf
-    method setMatrixValue
     method skewXSelf
     method skewYSelf
     method translateSelf
@@ -275,7 +274,6 @@ interface DOMMatrixReadOnly
     method toFloat32Array
     method toFloat64Array
     method toJSON
-    method toString
     method transformPoint
     method translate
 interface DOMPoint : DOMPointReadOnly

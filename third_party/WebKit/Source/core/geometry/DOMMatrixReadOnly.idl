@@ -76,6 +76,6 @@
     DOMPoint transformPoint(optional DOMPointInit point);
     Float32Array toFloat32Array();
     Float64Array toFloat64Array();
-    [RaisesException] stringifier;
+    [Exposed=Window, RaisesException] stringifier;
     serializer = { attribute };
 };

@@ -175,7 +175,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method rotateSelf
 [Worker]     method scale3dSelf
 [Worker]     method scaleSelf
-[Worker]     method setMatrixValue
 [Worker]     method skewXSelf
 [Worker]     method skewYSelf
 [Worker]     method translateSelf
@@ -245,7 +244,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method toFloat32Array
 [Worker]     method toFloat64Array
 [Worker]     method toJSON
-[Worker]     method toString
 [Worker]     method transformPoint
 [Worker]     method translate
 [Worker] interface DOMPoint : DOMPointReadOnly
