@@ -17,525 +17,535 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf character table
     0x0000,          // number of entries
     //   internal dead_key table
-    0x0019,          // number of entries
+    0x001E,          // number of entries
     0x0000,  // U+0000
-    0x0036,
+    0x0040,
+    0x0022,  // quotation mark
+    0x26FC,
+    0x0027,  // apostrophe
+    0x2716,
+    0x005E,  // circumflex accent
+    0x2738,
+    0x0060,  // grave accent
+    0x2752,
+    0x007E,  // tilde
+    0x2768,
     0x0300,  // combining grave accent
-    0x26F2,
+    0x2776,
     0x0301,  // combining acute accent
-    0x28D0,
+    0x2954,
     0x0302,  // combining circumflex accent
-    0x2B62,
+    0x2BE6,
     0x0303,  // combining tilde
-    0x2CCC,
+    0x2D50,
     0x0304,  // combining macron
-    0x2E50,
+    0x2ED4,
     0x0306,  // combining breve
-    0x2F6C,
+    0x2FF0,
     0x0307,  // combining dot above
-    0x3022,
+    0x30A6,
     0x0308,  // combining diaeresis
-    0x30FA,
+    0x317E,
     0x0309,  // combining hook above
-    0x31F2,
+    0x3276,
     0x030A,  // combining ring above
-    0x32D2,
+    0x3356,
     0x030B,  // combining double acute accent
-    0x32F6,
+    0x337A,
     0x030C,  // combining caron
-    0x330C,
+    0x3390,
     0x030F,  // combining double grave accent
-    0x33A8,
+    0x342C,
     0x0311,  // combining inverted breve
-    0x33C8,
+    0x344C,
     0x0313,  // combining comma above
-    0x33E4,
+    0x3468,
     0x0314,  // combining reversed comma above
-    0x3404,
+    0x3488,
     0x031B,  // combining horn
-    0x3428,
+    0x34AC,
     0x0323,  // combining dot below
-    0x3498,
+    0x351C,
     0x0327,  // combining cedilla
-    0x3562,
+    0x35E6,
     0x0328,  // combining ogonek
-    0x35B6,
+    0x363A,
     0x0338,  // combining long solidus overlay
-    0x35E2,
+    0x3666,
     0x0345,  // combining greek ypogegrammeni
-    0x3656,
+    0x36DA,
     0x3099,  // combining katakana-hiragana voiced sound mark
-    0x3A30,
+    0x3AB4,
     0x309A,  // combining katakana-hiragana semi-voiced sound mark
-    0x3A94,
+    0x3B18,
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0036:
+    // offset 0x0040:
     //   prefix:
     //     Compose
     //   internal character table
     0x00E6,          // number of entries
     0x0020,  // space
-    0x0206,
+    0x0210,
     0x0021,  // exclamation mark
-    0x0220,
+    0x022A,
     0x0022,  // quotation mark
-    0x0296,
+    0x02A0,
     0x0023,  // number sign
-    0x0356,
-    0x0025,  // percent sign
     0x0360,
+    0x0025,  // percent sign
+    0x036A,
     0x0027,  // apostrophe
-    0x0366,
+    0x0370,
     0x0028,  // left parenthesis
-    0x05BA,
+    0x05C4,
     0x0029,  // right parenthesis
-    0x0D88,
+    0x0D92,
     0x002A,  // asterisk
-    0x0DAC,
+    0x0DB6,
     0x002B,  // plus sign
-    0x0DBA,
+    0x0DC4,
     0x002C,  // comma
-    0x0DCA,
+    0x0DD4,
     0x002D,  // hyphen-minus
-    0x0E10,
+    0x0E1A,
     0x002E,  // full stop
-    0x0E54,
+    0x0E5E,
     0x002F,  // solidus
-    0x0EFE,
+    0x0F08,
     0x0030,  // digit zero
-    0x0F4A,
+    0x0F54,
     0x0031,  // digit one
-    0x0F5E,
+    0x0F68,
     0x0032,  // digit two
-    0x0F74,
+    0x0F7E,
     0x0033,  // digit three
-    0x0F82,
+    0x0F8C,
     0x0034,  // digit four
-    0x0F92,
+    0x0F9C,
     0x0035,  // digit five
-    0x0F98,
+    0x0FA2,
     0x0037,  // digit seven
-    0x0FA0,
+    0x0FAA,
     0x003A,  // colon
-    0x0FA6,
-    0x003B,  // semicolon
     0x0FB0,
+    0x003B,  // semicolon
+    0x0FBA,
     0x003C,  // less-than sign
-    0x0FC8,
+    0x0FD2,
     0x003D,  // equals sign
-    0x1002,
+    0x100C,
     0x003E,  // greater-than sign
-    0x102E,
+    0x1038,
     0x003F,  // question mark
-    0x1052,
+    0x105C,
     0x0041,  // capital a
-    0x10D6,
+    0x10E0,
     0x0042,  // capital b
-    0x10FA,
+    0x1104,
     0x0043,  // capital c
-    0x1100,
+    0x110A,
     0x0044,  // capital d
-    0x112A,
+    0x1134,
     0x0045,  // capital e
-    0x1136,
+    0x1140,
     0x0046,  // capital f
-    0x1154,
+    0x115E,
     0x0047,  // capital g
-    0x115C,
+    0x1166,
     0x0049,  // capital i
-    0x116A,
+    0x1174,
     0x004B,  // capital k
-    0x1186,
+    0x1190,
     0x004C,  // capital l
-    0x118C,
+    0x1196,
     0x004D,  // capital m
-    0x119E,
+    0x11A8,
     0x004E,  // capital n
-    0x11A4,
+    0x11AE,
     0x004F,  // capital o
-    0x11BA,
+    0x11C4,
     0x0050,  // capital p
-    0x11E6,
+    0x11F0,
     0x0052,  // capital r
-    0x11F2,
+    0x11FC,
     0x0053,  // capital s
-    0x1200,
+    0x120A,
     0x0054,  // capital t
-    0x1220,
+    0x122A,
     0x0055,  // capital u
-    0x1232,
+    0x123C,
     0x0056,  // capital v
-    0x12C2,
+    0x12CC,
     0x0057,  // capital w
-    0x12C8,
+    0x12D2,
     0x0058,  // capital x
-    0x12D0,
-    0x0059,  // capital y
     0x12DA,
+    0x0059,  // capital y
+    0x12E4,
     0x005A,  // capital z
-    0x12EC,
-    0x005E,  // circumflex accent
     0x12F6,
+    0x005E,  // circumflex accent
+    0x1300,
     0x005F,  // low line
-    0x13CC,
+    0x13D6,
     0x0060,  // grave accent
-    0x14D4,
+    0x14DE,
     0x0061,  // letter a
-    0x1692,
+    0x169C,
     0x0062,  // letter b
-    0x16B4,
+    0x16BE,
     0x0063,  // letter c
-    0x172C,
+    0x1736,
     0x0064,  // letter d
-    0x179E,
+    0x17A8,
     0x0065,  // letter e
-    0x17AA,
+    0x17B4,
     0x0066,  // letter f
-    0x17CA,
-    0x0067,  // letter g
     0x17D4,
+    0x0067,  // letter g
+    0x17DE,
     0x0069,  // letter i
-    0x17E2,
+    0x17EC,
     0x006B,  // letter k
-    0x17FE,
+    0x1808,
     0x006C,  // letter l
-    0x1806,
+    0x1810,
     0x006D,  // letter m
-    0x1818,
-    0x006E,  // letter n
     0x1822,
+    0x006E,  // letter n
+    0x182C,
     0x006F,  // letter o
-    0x1832,
+    0x183C,
     0x0070,  // letter p
-    0x1874,
+    0x187E,
     0x0072,  // letter r
-    0x187C,
-    0x0073,  // letter s
     0x1886,
+    0x0073,  // letter s
+    0x1890,
     0x0074,  // letter t
-    0x18A6,
+    0x18B0,
     0x0075,  // letter u
-    0x18B8,
+    0x18C2,
     0x0076,  // letter v
-    0x18D8,
-    0x0077,  // letter w
     0x18E2,
+    0x0077,  // letter w
+    0x18EC,
     0x0078,  // letter x
-    0x18E8,
+    0x18F2,
     0x0079,  // letter y
-    0x18F4,
+    0x18FE,
     0x007A,  // letter z
-    0x1906,
-    0x007C,  // vertical line
     0x1910,
+    0x007C,  // vertical line
+    0x191A,
     0x007E,  // tilde
-    0x1918,
+    0x1922,
     0x00A8,  // diaeresis
-    0x1A4E,
+    0x1A58,
     0x00AF,  // macron
-    0x1A78,
+    0x1A82,
     0x00B4,  // acute accent
-    0x1B58,
+    0x1B62,
     0x00B8,  // cedilla
-    0x1DAA,
+    0x1DB4,
     0x02D8,  // breve
-    0x1DDA,
+    0x1DE4,
     0x0391,  // capital alpha
-    0x1DE2,
+    0x1DEC,
     0x0395,  // capital epsilon
-    0x1DE8,
+    0x1DF2,
     0x0397,  // capital eta
-    0x1DEE,
+    0x1DF8,
     0x0399,  // capital iota
-    0x1DF4,
+    0x1DFE,
     0x039F,  // capital omicron
-    0x1DFC,
+    0x1E06,
     0x03A5,  // capital upsilon
-    0x1E02,
+    0x1E0C,
     0x03A9,  // capital omega
-    0x1E0A,
+    0x1E14,
     0x03B1,  // letter alpha
-    0x1E10,
+    0x1E1A,
     0x03B5,  // letter epsilon
-    0x1E16,
+    0x1E20,
     0x03B7,  // letter eta
-    0x1E1C,
+    0x1E26,
     0x03B9,  // letter iota
-    0x1E22,
+    0x1E2C,
     0x03BF,  // letter omicron
-    0x21E2,
+    0x21EC,
     0x03C5,  // letter upsilon
-    0x21E8,
+    0x21F2,
     0x03C9,  // letter omega
-    0x21F0,
+    0x21FA,
     0x0415,  // cyrillic capital ie
-    0x21F6,
+    0x2200,
     0x041D,  // cyrillic capital en
-    0x21FC,
+    0x2206,
     0x0421,  // cyrillic capital es
-    0x2204,
+    0x220E,
     0x043F,  // cyrillic small pe
-    0x220A,
+    0x2214,
     0x05B4,  // hebrew point hiriq
-    0x2210,
+    0x221A,
     0x05B7,  // hebrew point patah
-    0x2216,
+    0x2220,
     0x05B8,  // hebrew point qamats
-    0x221E,
+    0x2228,
     0x05B9,  // hebrew point holam
-    0x2224,
+    0x222E,
     0x05BC,  // hebrew point dagesh or mapiq
-    0x222A,
+    0x2234,
     0x061F,  // arabic question mark
-    0x225A,
-    0x0621,  // arabic hamza
     0x2264,
+    0x0621,  // arabic hamza
+    0x226E,
     0x0622,  // arabic alef with madda above
-    0x2274,
+    0x227E,
     0x0653,  // arabic maddah above
-    0x2284,
+    0x228E,
     0x0654,  // arabic hamza above
-    0x228A,
+    0x2294,
     0x0655,  // arabic hamza below
-    0x229A,
+    0x22A4,
     0x093C,  // devanagari sign nukta
-    0x22A0,
+    0x22AA,
     0x09BC,  // bengali sign nukta
-    0x22BA,
-    0x09C7,  // bengali vowel sign e
     0x22C4,
+    0x09C7,  // bengali vowel sign e
+    0x22CE,
     0x0A3C,  // gurmukhi sign nukta
-    0x22CC,
+    0x22D6,
     0x0B3C,  // oriya sign nukta
-    0x22DC,
+    0x22E6,
     0x0B47,  // oriya vowel sign e
-    0x22E4,
-    0x0BC7,  // tamil vowel sign ee
     0x22EE,
+    0x0BC7,  // tamil vowel sign ee
+    0x22F8,
     0x0BD7,  // tamil au length mark
-    0x22F4,
+    0x22FE,
     0x0C46,  // telugu vowel sign e
-    0x22FA,
+    0x2304,
     0x0CBF,  // kannada vowel sign i
-    0x2300,
+    0x230A,
     0x0CC6,  // kannada vowel sign e
-    0x2306,
-    0x0CCA,  // kannada vowel sign o
     0x2310,
+    0x0CCA,  // kannada vowel sign o
+    0x231A,
     0x0D46,  // malayalam vowel sign e
-    0x2316,
+    0x2320,
     0x0D47,  // malayalam vowel sign ee
-    0x231E,
+    0x2328,
     0x0DDC,  // sinhala vowel sign kombuva haa aela-pilla
-    0x2324,
+    0x232E,
     0x0E39,  // thai character sara uu
-    0x232A,
-    0x0F71,  // tibetan vowel sign aa
     0x2334,
-    0x0F90,  // tibetan subjoined ka
+    0x0F71,  // tibetan vowel sign aa
     0x233E,
+    0x0F90,  // tibetan subjoined ka
+    0x2348,
     0x0F92,  // tibetan subjoined ga
-    0x2344,
+    0x234E,
     0x0F9C,  // tibetan subjoined dda
-    0x234A,
+    0x2354,
     0x0FA1,  // tibetan subjoined da
-    0x2350,
+    0x235A,
     0x0FA6,  // tibetan subjoined ba
-    0x2356,
+    0x2360,
     0x0FAB,  // tibetan subjoined dza
-    0x235C,
+    0x2366,
     0x0FB2,  // tibetan subjoined ra
-    0x2362,
+    0x236C,
     0x0FB3,  // tibetan subjoined la
-    0x2368,
+    0x2372,
     0x0FB5,  // tibetan subjoined ssa
-    0x236E,
+    0x2378,
     0x0FB7,  // tibetan subjoined ha
-    0x2374,
+    0x237E,
     0x102E,  // myanmar vowel sign ii
-    0x2382,
+    0x238C,
     0x1100,  // hangul choseong kiyeok
-    0x2388,
+    0x2392,
     0x1102,  // hangul choseong nieun
-    0x238E,
+    0x2398,
     0x1103,  // hangul choseong tikeut
-    0x239A,
+    0x23A4,
     0x1105,  // hangul choseong rieul
-    0x23A2,
+    0x23AC,
     0x1106,  // hangul choseong mieum
-    0x23AE,
+    0x23B8,
     0x1107,  // hangul choseong pieup
-    0x23B6,
+    0x23C0,
     0x1108,  // hangul choseong ssangpieup
-    0x23DA,
+    0x23E4,
     0x1109,  // hangul choseong sios
-    0x23E0,
+    0x23EA,
     0x110A,  // hangul choseong ssangsios
-    0x2404,
+    0x240E,
     0x110B,  // hangul choseong ieung
-    0x240A,
+    0x2414,
     0x110C,  // hangul choseong cieuc
-    0x2424,
+    0x242E,
     0x110E,  // hangul choseong chieuch
-    0x242C,
+    0x2436,
     0x1111,  // hangul choseong phieuph
-    0x2434,
+    0x243E,
     0x1112,  // hangul choseong hieuh
-    0x243C,
+    0x2446,
     0x1121,  // hangul choseong pieup-sios
-    0x2442,
+    0x244C,
     0x1132,  // hangul choseong sios-pieup
-    0x2450,
+    0x245A,
     0x113C,  // hangul choseong chitueumsios
-    0x2456,
+    0x2460,
     0x113E,  // hangul choseong ceongchieumsios
-    0x245C,
+    0x2466,
     0x114E,  // hangul choseong chitueumcieuc
-    0x2462,
+    0x246C,
     0x1150,  // hangul choseong ceongchieumcieuc
-    0x2468,
+    0x2472,
     0x1161,  // hangul jungseong a
-    0x246E,
-    0x1163,  // hangul jungseong ya
     0x2478,
-    0x1165,  // hangul jungseong eo
+    0x1163,  // hangul jungseong ya
     0x2482,
+    0x1165,  // hangul jungseong eo
+    0x248C,
     0x1167,  // hangul jungseong yeo
-    0x248E,
-    0x1169,  // hangul jungseong o
     0x2498,
+    0x1169,  // hangul jungseong o
+    0x24A2,
     0x116A,  // hangul jungseong wa
-    0x24AC,
+    0x24B6,
     0x116D,  // hangul jungseong yo
-    0x24B2,
+    0x24BC,
     0x116E,  // hangul jungseong u
-    0x24C0,
+    0x24CA,
     0x116F,  // hangul jungseong weo
-    0x24D4,
+    0x24DE,
     0x1172,  // hangul jungseong yu
-    0x24DC,
+    0x24E6,
     0x1173,  // hangul jungseong eu
-    0x24EE,
-    0x1174,  // hangul jungseong yi
     0x24F8,
+    0x1174,  // hangul jungseong yi
+    0x2502,
     0x1175,  // hangul jungseong i
-    0x24FE,
+    0x2508,
     0x119E,  // hangul jungseong araea
-    0x250E,
+    0x2518,
     0x11A8,  // hangul jongseong kiyeok
-    0x251A,
+    0x2524,
     0x11AA,  // hangul jongseong kiyeok-sios
-    0x2526,
+    0x2530,
     0x11AB,  // hangul jongseong nieun
-    0x252C,
+    0x2536,
     0x11AE,  // hangul jongseong tikeut
-    0x253E,
+    0x2548,
     0x11AF,  // hangul jongseong rieul
-    0x2546,
+    0x2550,
     0x11B0,  // hangul jongseong rieul-kiyeok
-    0x2572,
+    0x257C,
     0x11B1,  // hangul jongseong rieul-mieum
-    0x2578,
+    0x2582,
     0x11B2,  // hangul jongseong rieul-pieup
-    0x2580,
-    0x11B3,  // hangul jongseong rieul-sios
     0x258A,
+    0x11B3,  // hangul jongseong rieul-sios
+    0x2594,
     0x11B7,  // hangul jongseong mieum
-    0x2590,
+    0x259A,
     0x11B8,  // hangul jongseong pieup
-    0x25A6,
+    0x25B0,
     0x11BA,  // hangul jongseong sios
-    0x25B4,
+    0x25BE,
     0x11BC,  // hangul jongseong ieung
-    0x25C2,
+    0x25CC,
     0x11C1,  // hangul jongseong phieuph
-    0x25CE,
+    0x25D8,
     0x11C2,  // hangul jongseong hieuh
-    0x25D6,
+    0x25E0,
     0x11CE,  // hangul jongseong rieul-tikeut
-    0x25E2,
+    0x25EC,
     0x11DD,  // hangul jongseong mieum-sios
-    0x25E8,
+    0x25F2,
     0x11EC,  // hangul jongseong ieung-kiyeok
-    0x25EE,
+    0x25F8,
     0x11F0,  // hangul jongseong yesieung
-    0x25F4,
+    0x25FE,
     0x1FBF,  // psili
-    0x25FC,
+    0x2606,
     0x1FFE,  // dasia
-    0x260E,
+    0x2618,
     0x2203,  // there exists
-    0x2620,
+    0x262A,
     0x2208,  // element of
-    0x2626,
+    0x2630,
     0x220B,  // contains as member
-    0x262C,
+    0x2636,
     0x2223,  // divides
-    0x2632,
+    0x263C,
     0x2225,  // parallel to
-    0x2638,
+    0x2642,
     0x223C,  // tilde operator
-    0x263E,
+    0x2648,
     0x2243,  // asymptotically equal to
-    0x2644,
+    0x264E,
     0x2248,  // almost equal to
-    0x264A,
+    0x2654,
     0x224D,  // equivalent to
-    0x2650,
+    0x265A,
     0x2261,  // identical to
-    0x2656,
+    0x2660,
     0x2264,  // less-than or equal to
-    0x265C,
+    0x2666,
     0x2265,  // greater-than or equal to
-    0x2662,
+    0x266C,
     0x2272,  // less-than or equivalent to
-    0x2668,
+    0x2672,
     0x2273,  // greater-than or equivalent to
-    0x266E,
+    0x2678,
     0x2276,  // less-than or greater-than
-    0x2674,
+    0x267E,
     0x2277,  // greater-than or less-than
-    0x267A,
+    0x2684,
     0x227A,  // precedes
-    0x2680,
+    0x268A,
     0x227B,  // succeeds
-    0x2686,
+    0x2690,
     0x227C,  // precedes or equal to
-    0x268C,
+    0x2696,
     0x227D,  // succeeds or equal to
-    0x2692,
+    0x269C,
     0x2282,  // subset of
-    0x2698,
+    0x26A2,
     0x2283,  // superset of
-    0x269E,
+    0x26A8,
     0x2286,  // subset of or equal to
-    0x26A4,
+    0x26AE,
     0x2287,  // superset of or equal to
-    0x26AA,
+    0x26B4,
     0x2291,  // square image of or equal to
-    0x26B0,
+    0x26BA,
     0x2292,  // square original of or equal to
-    0x26B6,
+    0x26C0,
     0x22A2,  // right tack
-    0x26BC,
+    0x26C6,
     0x22A8,  // true
-    0x26C2,
+    0x26CC,
     0x22A9,  // forces
-    0x26C8,
+    0x26D2,
     0x22AB,  // double vertical bar double right turnstile
-    0x26CE,
+    0x26D8,
     0x22B2,  // normal subgroup of
-    0x26D4,
+    0x26DE,
     0x22B3,  // contains as normal subgroup
-    0x26DA,
+    0x26E4,
     0x22B4,  // normal subgroup of or equal to
-    0x26E0,
+    0x26EA,
     0x22B5,  // contains as normal subgroup or equal to
-    0x26E6,
+    0x26F0,
     0x2ADD,  // nonforking
-    0x26EC,
+    0x26F6,
     //   leaf character table
     0x0000,          // number of entries
     //   internal dead_key table
@@ -543,7 +553,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0206:
+    // offset 0x0210:
     //   prefix:
     //     Compose
     //     <space>
@@ -578,14 +588,14 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0220:
+    // offset 0x022A:
     //   prefix:
     //     Compose
     //     <exclamation mark>
     //   internal character table
     0x0001,          // number of entries
     0x002B,  // plus sign
-    0x027E,
+    0x0288,
     //   leaf character table
     0x002B,          // number of entries
     0x0021,  // exclamation mark
@@ -677,11 +687,11 @@ static const uint16_t kCompositionsTree[] = {
     //   internal dead_key table
     0x0001,          // number of entries
     0x031B,  // combining horn
-    0x028A,
+    0x0294,
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x027E:
+    // offset 0x0288:
     //   prefix:
     //     Compose
     //     <exclamation mark>
@@ -703,7 +713,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x028A:
+    // offset 0x0294:
     //   prefix:
     //     Compose
     //     <exclamation mark>
@@ -725,20 +735,20 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0296:
+    // offset 0x02A0:
     //   prefix:
     //     Compose
     //     <quotation mark>
     //   internal character table
     0x0004,          // number of entries
     0x0027,  // apostrophe
-    0x0324,
-    0x005F,  // low line
     0x032E,
+    0x005F,  // low line
+    0x0338,
     0x007E,  // tilde
-    0x0336,
+    0x0340,
     0x00AF,  // macron
-    0x033E,
+    0x0348,
     //   leaf character table
     0x003E,          // number of entries
     0x0022,  // quotation mark
@@ -868,15 +878,15 @@ static const uint16_t kCompositionsTree[] = {
     //   internal dead_key table
     0x0002,          // number of entries
     0x0303,  // combining tilde
-    0x0346,
+    0x0350,
     0x0304,  // combining macron
-    0x034E,
+    0x0358,
     //   leaf dead_key table
     0x0001,          // number of entries
     0x0301,  // combining acute accent
     0x0344,  // -> combining greek dialytika tonos
 
-    // offset 0x0324:
+    // offset 0x032E:
     //   prefix:
     //     Compose
     //     <quotation mark>
@@ -896,7 +906,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x032E:
+    // offset 0x0338:
     //   prefix:
     //     Compose
     //     <quotation mark>
@@ -914,7 +924,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0336:
+    // offset 0x0340:
     //   prefix:
     //     Compose
     //     <quotation mark>
@@ -932,7 +942,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x033E:
+    // offset 0x0348:
     //   prefix:
     //     Compose
     //     <quotation mark>
@@ -950,7 +960,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0346:
+    // offset 0x0350:
     //   prefix:
     //     Compose
     //     <quotation mark>
@@ -968,7 +978,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x034E:
+    // offset 0x0358:
     //   prefix:
     //     Compose
     //     <quotation mark>
@@ -986,7 +996,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0356:
+    // offset 0x0360:
     //   prefix:
     //     Compose
     //     <number sign>
@@ -1005,7 +1015,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0360:
+    // offset 0x036A:
     //   prefix:
     //     Compose
     //     <percent sign>
@@ -1020,34 +1030,34 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0366:
+    // offset 0x0370:
     //   prefix:
     //     Compose
     //     <apostrophe>
     //   internal character table
     0x000B,          // number of entries
     0x0022,  // quotation mark
-    0x0478,
+    0x0482,
     0x0028,  // left parenthesis
-    0x048A,
+    0x0494,
     0x0029,  // right parenthesis
-    0x04AA,
+    0x04B4,
     0x002B,  // plus sign
-    0x04C8,
+    0x04D2,
     0x002F,  // solidus
-    0x04D4,
+    0x04DE,
     0x005E,  // circumflex accent
-    0x04DC,
+    0x04E6,
     0x005F,  // low line
-    0x04EC,
+    0x04F6,
     0x0062,  // letter b
-    0x04F8,
+    0x0502,
     0x007E,  // tilde
-    0x0500,
+    0x050A,
     0x00AF,  // macron
-    0x050C,
+    0x0516,
     0x00B8,  // cedilla
-    0x0518,
+    0x0522,
     //   leaf character table
     0x0072,          // number of entries
     0x0020,  // space
@@ -1281,29 +1291,29 @@ static const uint16_t kCompositionsTree[] = {
     //   internal dead_key table
     0x000A,          // number of entries
     0x0302,  // combining circumflex accent
-    0x0520,
+    0x052A,
     0x0303,  // combining tilde
-    0x0530,
+    0x053A,
     0x0304,  // combining macron
-    0x053C,
+    0x0546,
     0x0306,  // combining breve
-    0x0548,
+    0x0552,
     0x0308,  // combining diaeresis
-    0x0550,
+    0x055A,
     0x030A,  // combining ring above
-    0x0560,
+    0x056A,
     0x0313,  // combining comma above
-    0x0568,
+    0x0572,
     0x0314,  // combining reversed comma above
-    0x0586,
+    0x0590,
     0x031B,  // combining horn
-    0x05A6,
+    0x05B0,
     0x0327,  // combining cedilla
-    0x05B2,
+    0x05BC,
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0478:
+    // offset 0x0482:
     //   prefix:
     //     Compose
     //     <apostrophe>
@@ -1331,7 +1341,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x048A:
+    // offset 0x0494:
     //   prefix:
     //     Compose
     //     <apostrophe>
@@ -1373,7 +1383,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x04AA:
+    // offset 0x04B4:
     //   prefix:
     //     Compose
     //     <apostrophe>
@@ -1413,7 +1423,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x04C8:
+    // offset 0x04D2:
     //   prefix:
     //     Compose
     //     <apostrophe>
@@ -1435,7 +1445,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x04D4:
+    // offset 0x04DE:
     //   prefix:
     //     Compose
     //     <apostrophe>
@@ -1453,7 +1463,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x04DC:
+    // offset 0x04E6:
     //   prefix:
     //     Compose
     //     <apostrophe>
@@ -1479,7 +1489,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x04EC:
+    // offset 0x04F6:
     //   prefix:
     //     Compose
     //     <apostrophe>
@@ -1501,7 +1511,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x04F8:
+    // offset 0x0502:
     //   prefix:
     //     Compose
     //     <apostrophe>
@@ -1519,7 +1529,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0500:
+    // offset 0x050A:
     //   prefix:
     //     Compose
     //     <apostrophe>
@@ -1541,7 +1551,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x050C:
+    // offset 0x0516:
     //   prefix:
     //     Compose
     //     <apostrophe>
@@ -1563,7 +1573,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0518:
+    // offset 0x0522:
     //   prefix:
     //     Compose
     //     <apostrophe>
@@ -1581,7 +1591,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0520:
+    // offset 0x052A:
     //   prefix:
     //     Compose
     //     <apostrophe>
@@ -1607,7 +1617,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0530:
+    // offset 0x053A:
     //   prefix:
     //     Compose
     //     <apostrophe>
@@ -1629,7 +1639,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x053C:
+    // offset 0x0546:
     //   prefix:
     //     Compose
     //     <apostrophe>
@@ -1651,7 +1661,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0548:
+    // offset 0x0552:
     //   prefix:
     //     Compose
     //     <apostrophe>
@@ -1669,7 +1679,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0550:
+    // offset 0x055A:
     //   prefix:
     //     Compose
     //     <apostrophe>
@@ -1695,7 +1705,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0560:
+    // offset 0x056A:
     //   prefix:
     //     Compose
     //     <apostrophe>
@@ -1713,7 +1723,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0568:
+    // offset 0x0572:
     //   prefix:
     //     Compose
     //     <apostrophe>
@@ -1753,7 +1763,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0586:
+    // offset 0x0590:
     //   prefix:
     //     Compose
     //     <apostrophe>
@@ -1795,7 +1805,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x05A6:
+    // offset 0x05B0:
     //   prefix:
     //     Compose
     //     <apostrophe>
@@ -1817,7 +1827,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x05B2:
+    // offset 0x05BC:
     //   prefix:
     //     Compose
     //     <apostrophe>
@@ -1835,358 +1845,358 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x05BA:
+    // offset 0x05C4:
     //   prefix:
     //     Compose
     //     <left parenthesis>
     //   internal character table
     0x00AD,          // number of entries
     0x0020,  // space
-    0x074A,
+    0x0754,
     0x0030,  // digit zero
-    0x07A8,
+    0x07B2,
     0x0031,  // digit one
-    0x07AE,
+    0x07B8,
     0x0032,  // digit two
-    0x080C,
+    0x0816,
     0x0033,  // digit three
-    0x086A,
+    0x0874,
     0x0034,  // digit four
-    0x08C8,
+    0x08D2,
     0x0035,  // digit five
-    0x0926,
+    0x0930,
     0x0036,  // digit six
-    0x0934,
+    0x093E,
     0x0037,  // digit seven
-    0x093A,
+    0x0944,
     0x0038,  // digit eight
-    0x0940,
+    0x094A,
     0x0039,  // digit nine
-    0x0946,
+    0x0950,
     0x0041,  // capital a
-    0x094C,
+    0x0956,
     0x0042,  // capital b
-    0x0952,
+    0x095C,
     0x0043,  // capital c
-    0x0958,
+    0x0962,
     0x0044,  // capital d
-    0x095E,
+    0x0968,
     0x0045,  // capital e
-    0x0964,
+    0x096E,
     0x0046,  // capital f
-    0x096A,
+    0x0974,
     0x0047,  // capital g
-    0x0970,
+    0x097A,
     0x0048,  // capital h
-    0x0976,
+    0x0980,
     0x0049,  // capital i
-    0x097C,
+    0x0986,
     0x004A,  // capital j
-    0x0982,
+    0x098C,
     0x004B,  // capital k
-    0x0988,
+    0x0992,
     0x004C,  // capital l
-    0x098E,
+    0x0998,
     0x004D,  // capital m
-    0x0994,
+    0x099E,
     0x004E,  // capital n
-    0x099A,
+    0x09A4,
     0x004F,  // capital o
-    0x09A0,
+    0x09AA,
     0x0050,  // capital p
-    0x09A6,
+    0x09B0,
     0x0051,  // capital q
-    0x09AC,
+    0x09B6,
     0x0052,  // capital r
-    0x09B2,
+    0x09BC,
     0x0053,  // capital s
-    0x09B8,
+    0x09C2,
     0x0054,  // capital t
-    0x09BE,
+    0x09C8,
     0x0055,  // capital u
-    0x09C4,
+    0x09CE,
     0x0056,  // capital v
-    0x09CA,
+    0x09D4,
     0x0057,  // capital w
-    0x09D0,
+    0x09DA,
     0x0058,  // capital x
-    0x09D6,
+    0x09E0,
     0x0059,  // capital y
-    0x09DC,
+    0x09E6,
     0x005A,  // capital z
-    0x09E2,
+    0x09EC,
     0x0061,  // letter a
-    0x09E8,
+    0x09F2,
     0x0062,  // letter b
-    0x09EE,
+    0x09F8,
     0x0063,  // letter c
-    0x09F4,
+    0x09FE,
     0x0064,  // letter d
-    0x09FA,
+    0x0A04,
     0x0065,  // letter e
-    0x0A00,
+    0x0A0A,
     0x0066,  // letter f
-    0x0A06,
+    0x0A10,
     0x0067,  // letter g
-    0x0A0C,
+    0x0A16,
     0x0068,  // letter h
-    0x0A12,
+    0x0A1C,
     0x0069,  // letter i
-    0x0A18,
+    0x0A22,
     0x006A,  // letter j
-    0x0A1E,
+    0x0A28,
     0x006B,  // letter k
-    0x0A24,
+    0x0A2E,
     0x006C,  // letter l
-    0x0A2A,
+    0x0A34,
     0x006D,  // letter m
-    0x0A30,
+    0x0A3A,
     0x006E,  // letter n
-    0x0A36,
+    0x0A40,
     0x006F,  // letter o
-    0x0A3C,
+    0x0A46,
     0x0070,  // letter p
-    0x0A42,
+    0x0A4C,
     0x0071,  // letter q
-    0x0A48,
+    0x0A52,
     0x0072,  // letter r
-    0x0A4E,
+    0x0A58,
     0x0073,  // letter s
-    0x0A54,
+    0x0A5E,
     0x0074,  // letter t
-    0x0A5A,
+    0x0A64,
     0x0075,  // letter u
-    0x0A60,
+    0x0A6A,
     0x0076,  // letter v
-    0x0A66,
+    0x0A70,
     0x0077,  // letter w
-    0x0A6C,
+    0x0A76,
     0x0078,  // letter x
-    0x0A72,
+    0x0A7C,
     0x0079,  // letter y
-    0x0A78,
+    0x0A82,
     0x007A,  // letter z
-    0x0A7E,
+    0x0A88,
     0x1100,  // hangul choseong kiyeok
-    0x0A84,
+    0x0A8E,
     0x1102,  // hangul choseong nieun
-    0x0A92,
+    0x0A9C,
     0x1103,  // hangul choseong tikeut
-    0x0AA0,
+    0x0AAA,
     0x1105,  // hangul choseong rieul
-    0x0AAE,
+    0x0AB8,
     0x1106,  // hangul choseong mieum
-    0x0ABC,
+    0x0AC6,
     0x1107,  // hangul choseong pieup
-    0x0ACA,
+    0x0AD4,
     0x1109,  // hangul choseong sios
-    0x0AD8,
+    0x0AE2,
     0x110B,  // hangul choseong ieung
-    0x0AE6,
+    0x0AF0,
     0x110C,  // hangul choseong cieuc
-    0x0AF4,
+    0x0AFE,
     0x110E,  // hangul choseong chieuch
-    0x0B02,
+    0x0B0C,
     0x110F,  // hangul choseong khieukh
-    0x0B10,
+    0x0B1A,
     0x1110,  // hangul choseong thieuth
-    0x0B1E,
+    0x0B28,
     0x1111,  // hangul choseong phieuph
-    0x0B2C,
+    0x0B36,
     0x1112,  // hangul choseong hieuh
-    0x0B3A,
+    0x0B44,
     0x30A2,  // katakana a
-    0x0B48,
+    0x0B52,
     0x30A4,  // katakana i
-    0x0B4E,
+    0x0B58,
     0x30A6,  // katakana u
-    0x0B54,
+    0x0B5E,
     0x30A8,  // katakana e
-    0x0B5A,
+    0x0B64,
     0x30AA,  // katakana o
-    0x0B60,
+    0x0B6A,
     0x30AB,  // katakana ka
-    0x0B66,
+    0x0B70,
     0x30AD,  // katakana ki
-    0x0B6C,
+    0x0B76,
     0x30AF,  // katakana ku
-    0x0B72,
+    0x0B7C,
     0x30B1,  // katakana ke
-    0x0B78,
+    0x0B82,
     0x30B3,  // katakana ko
-    0x0B7E,
+    0x0B88,
     0x30B5,  // katakana sa
-    0x0B84,
+    0x0B8E,
     0x30B7,  // katakana si
-    0x0B8A,
+    0x0B94,
     0x30B9,  // katakana su
-    0x0B90,
+    0x0B9A,
     0x30BB,  // katakana se
-    0x0B96,
+    0x0BA0,
     0x30BD,  // katakana so
-    0x0B9C,
+    0x0BA6,
     0x30BF,  // katakana ta
-    0x0BA2,
+    0x0BAC,
     0x30C1,  // katakana ti
-    0x0BA8,
+    0x0BB2,
     0x30C4,  // katakana tu
-    0x0BAE,
+    0x0BB8,
     0x30C6,  // katakana te
-    0x0BB4,
+    0x0BBE,
     0x30C8,  // katakana to
-    0x0BBA,
+    0x0BC4,
     0x30CA,  // katakana na
-    0x0BC0,
+    0x0BCA,
     0x30CB,  // katakana ni
-    0x0BC6,
+    0x0BD0,
     0x30CC,  // katakana nu
-    0x0BCC,
+    0x0BD6,
     0x30CD,  // katakana ne
-    0x0BD2,
+    0x0BDC,
     0x30CE,  // katakana no
-    0x0BD8,
+    0x0BE2,
     0x30CF,  // katakana ha
-    0x0BDE,
+    0x0BE8,
     0x30D2,  // katakana hi
-    0x0BE4,
+    0x0BEE,
     0x30D5,  // katakana hu
-    0x0BEA,
+    0x0BF4,
     0x30D8,  // katakana he
-    0x0BF0,
+    0x0BFA,
     0x30DB,  // katakana ho
-    0x0BF6,
+    0x0C00,
     0x30DE,  // katakana ma
-    0x0BFC,
+    0x0C06,
     0x30DF,  // katakana mi
-    0x0C02,
+    0x0C0C,
     0x30E0,  // katakana mu
-    0x0C08,
+    0x0C12,
     0x30E1,  // katakana me
-    0x0C0E,
+    0x0C18,
     0x30E2,  // katakana mo
-    0x0C14,
+    0x0C1E,
     0x30E4,  // katakana ya
-    0x0C1A,
+    0x0C24,
     0x30E6,  // katakana yu
-    0x0C20,
+    0x0C2A,
     0x30E8,  // katakana yo
-    0x0C26,
+    0x0C30,
     0x30E9,  // katakana ra
-    0x0C2C,
+    0x0C36,
     0x30EA,  // katakana ri
-    0x0C32,
+    0x0C3C,
     0x30EB,  // katakana ru
-    0x0C38,
+    0x0C42,
     0x30EC,  // katakana re
-    0x0C3E,
+    0x0C48,
     0x30ED,  // katakana ro
-    0x0C44,
+    0x0C4E,
     0x30EF,  // katakana wa
-    0x0C4A,
+    0x0C54,
     0x30F0,  // katakana wi
-    0x0C50,
+    0x0C5A,
     0x30F1,  // katakana we
-    0x0C56,
+    0x0C60,
     0x30F2,  // katakana wo
-    0x0C5C,
+    0x0C66,
     0x4E00,  // cjk unified ideograph-4e00
-    0x0C62,
+    0x0C6C,
     0x4E03,  // cjk unified ideograph-4e03
-    0x0C68,
+    0x0C72,
     0x4E09,  // cjk unified ideograph-4e09
-    0x0C6E,
+    0x0C78,
     0x4E0A,  // cjk unified ideograph-4e0a
-    0x0C74,
+    0x0C7E,
     0x4E0B,  // cjk unified ideograph-4e0b
-    0x0C7A,
+    0x0C84,
     0x4E2D,  // cjk unified ideograph-4e2d
-    0x0C80,
+    0x0C8A,
     0x4E5D,  // cjk unified ideograph-4e5d
-    0x0C86,
+    0x0C90,
     0x4E8C,  // cjk unified ideograph-4e8c
-    0x0C8C,
+    0x0C96,
     0x4E94,  // cjk unified ideograph-4e94
-    0x0C92,
+    0x0C9C,
     0x4F01,  // cjk unified ideograph-4f01
-    0x0C98,
+    0x0CA2,
     0x4F11,  // cjk unified ideograph-4f11
-    0x0C9E,
+    0x0CA8,
     0x512A,  // cjk unified ideograph-512a
-    0x0CA4,
+    0x0CAE,
     0x516B,  // cjk unified ideograph-516b
-    0x0CAA,
+    0x0CB4,
     0x516D,  // cjk unified ideograph-516d
-    0x0CB0,
+    0x0CBA,
     0x5199,  // cjk unified ideograph-5199
-    0x0CB6,
+    0x0CC0,
     0x52B4,  // cjk unified ideograph-52b4
-    0x0CBC,
+    0x0CC6,
     0x533B,  // cjk unified ideograph-533b
-    0x0CC2,
+    0x0CCC,
     0x5341,  // cjk unified ideograph-5341
-    0x0CC8,
+    0x0CD2,
     0x5354,  // cjk unified ideograph-5354
-    0x0CCE,
+    0x0CD8,
     0x5370,  // cjk unified ideograph-5370
-    0x0CD4,
+    0x0CDE,
     0x53F3,  // cjk unified ideograph-53f3
-    0x0CDA,
+    0x0CE4,
     0x540D,  // cjk unified ideograph-540d
-    0x0CE0,
+    0x0CEA,
     0x56DB,  // cjk unified ideograph-56db
-    0x0CE6,
+    0x0CF0,
     0x571F,  // cjk unified ideograph-571f
-    0x0CEC,
+    0x0CF6,
     0x591C,  // cjk unified ideograph-591c
-    0x0CF2,
+    0x0CFC,
     0x5973,  // cjk unified ideograph-5973
-    0x0CF8,
+    0x0D02,
     0x5B66,  // cjk unified ideograph-5b66
-    0x0CFE,
+    0x0D08,
     0x5B97,  // cjk unified ideograph-5b97
-    0x0D04,
+    0x0D0E,
     0x5DE6,  // cjk unified ideograph-5de6
-    0x0D0A,
+    0x0D14,
     0x65E5,  // cjk unified ideograph-65e5
-    0x0D10,
+    0x0D1A,
     0x6708,  // cjk unified ideograph-6708
-    0x0D16,
+    0x0D20,
     0x6709,  // cjk unified ideograph-6709
-    0x0D1C,
+    0x0D26,
     0x6728,  // cjk unified ideograph-6728
-    0x0D22,
+    0x0D2C,
     0x682A,  // cjk unified ideograph-682a
-    0x0D28,
+    0x0D32,
     0x6B63,  // cjk unified ideograph-6b63
-    0x0D2E,
+    0x0D38,
     0x6C34,  // cjk unified ideograph-6c34
-    0x0D34,
+    0x0D3E,
     0x6CE8,  // cjk unified ideograph-6ce8
-    0x0D3A,
+    0x0D44,
     0x706B,  // cjk unified ideograph-706b
-    0x0D40,
+    0x0D4A,
     0x7279,  // cjk unified ideograph-7279
-    0x0D46,
+    0x0D50,
     0x7537,  // cjk unified ideograph-7537
-    0x0D4C,
+    0x0D56,
     0x76E3,  // cjk unified ideograph-76e3
-    0x0D52,
+    0x0D5C,
     0x793E,  // cjk unified ideograph-793e
-    0x0D58,
+    0x0D62,
     0x795D,  // cjk unified ideograph-795d
-    0x0D5E,
+    0x0D68,
     0x79D8,  // cjk unified ideograph-79d8
-    0x0D64,
+    0x0D6E,
     0x8CA1,  // cjk unified ideograph-8ca1
-    0x0D6A,
+    0x0D74,
     0x8CC7,  // cjk unified ideograph-8cc7
-    0x0D70,
+    0x0D7A,
     0x9069,  // cjk unified ideograph-9069
-    0x0D76,
+    0x0D80,
     0x91D1,  // cjk unified ideograph-91d1
-    0x0D7C,
+    0x0D86,
     0x9805,  // cjk unified ideograph-9805
-    0x0D82,
+    0x0D8C,
     //   leaf character table
     0x0019,          // number of entries
     0x0020,  // space
@@ -2244,7 +2254,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x074A:
+    // offset 0x0754:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -2252,27 +2262,27 @@ static const uint16_t kCompositionsTree[] = {
     //   internal character table
     0x000B,          // number of entries
     0x0020,  // space
-    0x0766,
+    0x0770,
     0x0030,  // digit zero
-    0x076C,
+    0x0776,
     0x0031,  // digit one
-    0x0772,
+    0x077C,
     0x0032,  // digit two
-    0x0778,
+    0x0782,
     0x0033,  // digit three
-    0x077E,
+    0x0788,
     0x0034,  // digit four
-    0x0784,
+    0x078E,
     0x0035,  // digit five
-    0x078A,
+    0x0794,
     0x0036,  // digit six
-    0x0790,
+    0x079A,
     0x0037,  // digit seven
-    0x0796,
+    0x07A0,
     0x0038,  // digit eight
-    0x079C,
+    0x07A6,
     0x0039,  // digit nine
-    0x07A2,
+    0x07AC,
     //   leaf character table
     0x0001,          // number of entries
     0x0029,  // right parenthesis
@@ -2282,7 +2292,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0766:
+    // offset 0x0770:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -2299,7 +2309,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x076C:
+    // offset 0x0776:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -2316,7 +2326,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0772:
+    // offset 0x077C:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -2333,7 +2343,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0778:
+    // offset 0x0782:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -2350,7 +2360,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x077E:
+    // offset 0x0788:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -2367,7 +2377,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0784:
+    // offset 0x078E:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -2384,7 +2394,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x078A:
+    // offset 0x0794:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -2401,7 +2411,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0790:
+    // offset 0x079A:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -2418,7 +2428,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0796:
+    // offset 0x07A0:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -2435,7 +2445,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x079C:
+    // offset 0x07A6:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -2452,7 +2462,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x07A2:
+    // offset 0x07AC:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -2469,7 +2479,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x07A8:
+    // offset 0x07B2:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -2485,7 +2495,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x07AE:
+    // offset 0x07B8:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -2493,27 +2503,27 @@ static const uint16_t kCompositionsTree[] = {
     //   internal character table
     0x000B,          // number of entries
     0x0020,  // space
-    0x07CA,
+    0x07D4,
     0x0030,  // digit zero
-    0x07D0,
+    0x07DA,
     0x0031,  // digit one
-    0x07D6,
+    0x07E0,
     0x0032,  // digit two
-    0x07DC,
+    0x07E6,
     0x0033,  // digit three
-    0x07E2,
+    0x07EC,
     0x0034,  // digit four
-    0x07E8,
+    0x07F2,
     0x0035,  // digit five
-    0x07EE,
+    0x07F8,
     0x0036,  // digit six
-    0x07F4,
+    0x07FE,
     0x0037,  // digit seven
-    0x07FA,
+    0x0804,
     0x0038,  // digit eight
-    0x0800,
+    0x080A,
     0x0039,  // digit nine
-    0x0806,
+    0x0810,
     //   leaf character table
     0x0001,          // number of entries
     0x0029,  // right parenthesis
@@ -2523,7 +2533,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x07CA:
+    // offset 0x07D4:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -2540,7 +2550,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x07D0:
+    // offset 0x07DA:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -2557,7 +2567,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x07D6:
+    // offset 0x07E0:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -2574,7 +2584,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x07DC:
+    // offset 0x07E6:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -2591,7 +2601,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x07E2:
+    // offset 0x07EC:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -2608,7 +2618,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x07E8:
+    // offset 0x07F2:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -2625,7 +2635,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x07EE:
+    // offset 0x07F8:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -2642,7 +2652,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x07F4:
+    // offset 0x07FE:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -2659,7 +2669,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x07FA:
+    // offset 0x0804:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -2676,7 +2686,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0800:
+    // offset 0x080A:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -2693,7 +2703,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0806:
+    // offset 0x0810:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -2710,7 +2720,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x080C:
+    // offset 0x0816:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -2718,27 +2728,27 @@ static const uint16_t kCompositionsTree[] = {
     //   internal character table
     0x000B,          // number of entries
     0x0020,  // space
-    0x0828,
+    0x0832,
     0x0030,  // digit zero
-    0x082E,
+    0x0838,
     0x0031,  // digit one
-    0x0834,
+    0x083E,
     0x0032,  // digit two
-    0x083A,
+    0x0844,
     0x0033,  // digit three
-    0x0840,
+    0x084A,
     0x0034,  // digit four
-    0x0846,
+    0x0850,
     0x0035,  // digit five
-    0x084C,
+    0x0856,
     0x0036,  // digit six
-    0x0852,
+    0x085C,
     0x0037,  // digit seven
-    0x0858,
+    0x0862,
     0x0038,  // digit eight
-    0x085E,
+    0x0868,
     0x0039,  // digit nine
-    0x0864,
+    0x086E,
     //   leaf character table
     0x0001,          // number of entries
     0x0029,  // right parenthesis
@@ -2748,7 +2758,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0828:
+    // offset 0x0832:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -2765,7 +2775,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x082E:
+    // offset 0x0838:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -2782,7 +2792,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0834:
+    // offset 0x083E:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -2799,7 +2809,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x083A:
+    // offset 0x0844:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -2816,7 +2826,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0840:
+    // offset 0x084A:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -2833,7 +2843,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0846:
+    // offset 0x0850:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -2850,7 +2860,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x084C:
+    // offset 0x0856:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -2867,7 +2877,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0852:
+    // offset 0x085C:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -2884,7 +2894,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0858:
+    // offset 0x0862:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -2901,7 +2911,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x085E:
+    // offset 0x0868:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -2918,7 +2928,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0864:
+    // offset 0x086E:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -2935,7 +2945,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x086A:
+    // offset 0x0874:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -2943,27 +2953,27 @@ static const uint16_t kCompositionsTree[] = {
     //   internal character table
     0x000B,          // number of entries
     0x0020,  // space
-    0x0886,
+    0x0890,
     0x0030,  // digit zero
-    0x088C,
+    0x0896,
     0x0031,  // digit one
-    0x0892,
+    0x089C,
     0x0032,  // digit two
-    0x0898,
+    0x08A2,
     0x0033,  // digit three
-    0x089E,
+    0x08A8,
     0x0034,  // digit four
-    0x08A4,
+    0x08AE,
     0x0035,  // digit five
-    0x08AA,
+    0x08B4,
     0x0036,  // digit six
-    0x08B0,
+    0x08BA,
     0x0037,  // digit seven
-    0x08B6,
+    0x08C0,
     0x0038,  // digit eight
-    0x08BC,
+    0x08C6,
     0x0039,  // digit nine
-    0x08C2,
+    0x08CC,
     //   leaf character table
     0x0001,          // number of entries
     0x0029,  // right parenthesis
@@ -2973,7 +2983,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0886:
+    // offset 0x0890:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -2990,7 +3000,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x088C:
+    // offset 0x0896:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3007,7 +3017,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0892:
+    // offset 0x089C:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3024,7 +3034,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0898:
+    // offset 0x08A2:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3041,7 +3051,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x089E:
+    // offset 0x08A8:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3058,7 +3068,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x08A4:
+    // offset 0x08AE:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3075,7 +3085,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x08AA:
+    // offset 0x08B4:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3092,7 +3102,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x08B0:
+    // offset 0x08BA:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3109,7 +3119,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x08B6:
+    // offset 0x08C0:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3126,7 +3136,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x08BC:
+    // offset 0x08C6:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3143,7 +3153,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x08C2:
+    // offset 0x08CC:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3160,7 +3170,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x08C8:
+    // offset 0x08D2:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3168,27 +3178,27 @@ static const uint16_t kCompositionsTree[] = {
     //   internal character table
     0x000B,          // number of entries
     0x0020,  // space
-    0x08E4,
+    0x08EE,
     0x0030,  // digit zero
-    0x08EA,
+    0x08F4,
     0x0031,  // digit one
-    0x08F0,
+    0x08FA,
     0x0032,  // digit two
-    0x08F6,
+    0x0900,
     0x0033,  // digit three
-    0x08FC,
+    0x0906,
     0x0034,  // digit four
-    0x0902,
+    0x090C,
     0x0035,  // digit five
-    0x0908,
+    0x0912,
     0x0036,  // digit six
-    0x090E,
+    0x0918,
     0x0037,  // digit seven
-    0x0914,
+    0x091E,
     0x0038,  // digit eight
-    0x091A,
+    0x0924,
     0x0039,  // digit nine
-    0x0920,
+    0x092A,
     //   leaf character table
     0x0001,          // number of entries
     0x0029,  // right parenthesis
@@ -3198,7 +3208,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x08E4:
+    // offset 0x08EE:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3215,7 +3225,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x08EA:
+    // offset 0x08F4:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3232,7 +3242,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x08F0:
+    // offset 0x08FA:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3249,7 +3259,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x08F6:
+    // offset 0x0900:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3266,7 +3276,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x08FC:
+    // offset 0x0906:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3283,7 +3293,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0902:
+    // offset 0x090C:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3300,7 +3310,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0908:
+    // offset 0x0912:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3317,7 +3327,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x090E:
+    // offset 0x0918:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3334,7 +3344,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0914:
+    // offset 0x091E:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3351,7 +3361,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x091A:
+    // offset 0x0924:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3368,7 +3378,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0920:
+    // offset 0x092A:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3385,7 +3395,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0926:
+    // offset 0x0930:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3393,7 +3403,7 @@ static const uint16_t kCompositionsTree[] = {
     //   internal character table
     0x0001,          // number of entries
     0x0030,  // digit zero
-    0x092E,
+    0x0938,
     //   leaf character table
     0x0001,          // number of entries
     0x0029,  // right parenthesis
@@ -3403,7 +3413,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x092E:
+    // offset 0x0938:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3420,7 +3430,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0934:
+    // offset 0x093E:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3436,7 +3446,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x093A:
+    // offset 0x0944:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3452,7 +3462,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0940:
+    // offset 0x094A:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3468,7 +3478,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0946:
+    // offset 0x0950:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3484,7 +3494,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x094C:
+    // offset 0x0956:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3500,7 +3510,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0952:
+    // offset 0x095C:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3516,7 +3526,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0958:
+    // offset 0x0962:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3532,7 +3542,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x095E:
+    // offset 0x0968:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3548,7 +3558,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0964:
+    // offset 0x096E:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3564,7 +3574,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x096A:
+    // offset 0x0974:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3580,7 +3590,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0970:
+    // offset 0x097A:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3596,7 +3606,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0976:
+    // offset 0x0980:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3612,7 +3622,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x097C:
+    // offset 0x0986:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3628,7 +3638,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0982:
+    // offset 0x098C:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3644,7 +3654,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0988:
+    // offset 0x0992:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3660,7 +3670,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x098E:
+    // offset 0x0998:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3676,7 +3686,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0994:
+    // offset 0x099E:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3692,7 +3702,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x099A:
+    // offset 0x09A4:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3708,7 +3718,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x09A0:
+    // offset 0x09AA:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3724,7 +3734,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x09A6:
+    // offset 0x09B0:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3740,7 +3750,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x09AC:
+    // offset 0x09B6:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3756,7 +3766,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x09B2:
+    // offset 0x09BC:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3772,7 +3782,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x09B8:
+    // offset 0x09C2:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3788,7 +3798,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x09BE:
+    // offset 0x09C8:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3804,7 +3814,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x09C4:
+    // offset 0x09CE:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3820,7 +3830,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x09CA:
+    // offset 0x09D4:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3836,7 +3846,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x09D0:
+    // offset 0x09DA:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3852,7 +3862,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x09D6:
+    // offset 0x09E0:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3868,7 +3878,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x09DC:
+    // offset 0x09E6:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3884,7 +3894,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x09E2:
+    // offset 0x09EC:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3900,7 +3910,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x09E8:
+    // offset 0x09F2:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3916,7 +3926,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x09EE:
+    // offset 0x09F8:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3932,7 +3942,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x09F4:
+    // offset 0x09FE:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3948,7 +3958,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x09FA:
+    // offset 0x0A04:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3964,7 +3974,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0A00:
+    // offset 0x0A0A:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3980,7 +3990,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0A06:
+    // offset 0x0A10:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -3996,7 +4006,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0A0C:
+    // offset 0x0A16:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4012,7 +4022,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0A12:
+    // offset 0x0A1C:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4028,7 +4038,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0A18:
+    // offset 0x0A22:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4044,7 +4054,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0A1E:
+    // offset 0x0A28:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4060,7 +4070,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0A24:
+    // offset 0x0A2E:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4076,7 +4086,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0A2A:
+    // offset 0x0A34:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4092,7 +4102,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0A30:
+    // offset 0x0A3A:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4108,7 +4118,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0A36:
+    // offset 0x0A40:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4124,7 +4134,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0A3C:
+    // offset 0x0A46:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4140,7 +4150,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0A42:
+    // offset 0x0A4C:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4156,7 +4166,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0A48:
+    // offset 0x0A52:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4172,7 +4182,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0A4E:
+    // offset 0x0A58:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4188,7 +4198,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0A54:
+    // offset 0x0A5E:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4204,7 +4214,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0A5A:
+    // offset 0x0A64:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4220,7 +4230,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0A60:
+    // offset 0x0A6A:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4236,7 +4246,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0A66:
+    // offset 0x0A70:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4252,7 +4262,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0A6C:
+    // offset 0x0A76:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4268,7 +4278,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0A72:
+    // offset 0x0A7C:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4284,7 +4294,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0A78:
+    // offset 0x0A82:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4300,7 +4310,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0A7E:
+    // offset 0x0A88:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4316,7 +4326,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0A84:
+    // offset 0x0A8E:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4324,7 +4334,7 @@ static const uint16_t kCompositionsTree[] = {
     //   internal character table
     0x0001,          // number of entries
     0x1161,  // hangul jungseong a
-    0x0A8C,
+    0x0A96,
     //   leaf character table
     0x0001,          // number of entries
     0x0029,  // right parenthesis
@@ -4334,7 +4344,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0A8C:
+    // offset 0x0A96:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4351,7 +4361,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0A92:
+    // offset 0x0A9C:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4359,7 +4369,7 @@ static const uint16_t kCompositionsTree[] = {
     //   internal character table
     0x0001,          // number of entries
     0x1161,  // hangul jungseong a
-    0x0A9A,
+    0x0AA4,
     //   leaf character table
     0x0001,          // number of entries
     0x0029,  // right parenthesis
@@ -4369,7 +4379,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0A9A:
+    // offset 0x0AA4:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4386,7 +4396,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0AA0:
+    // offset 0x0AAA:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4394,7 +4404,7 @@ static const uint16_t kCompositionsTree[] = {
     //   internal character table
     0x0001,          // number of entries
     0x1161,  // hangul jungseong a
-    0x0AA8,
+    0x0AB2,
     //   leaf character table
     0x0001,          // number of entries
     0x0029,  // right parenthesis
@@ -4404,7 +4414,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0AA8:
+    // offset 0x0AB2:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4421,7 +4431,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0AAE:
+    // offset 0x0AB8:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4429,7 +4439,7 @@ static const uint16_t kCompositionsTree[] = {
     //   internal character table
     0x0001,          // number of entries
     0x1161,  // hangul jungseong a
-    0x0AB6,
+    0x0AC0,
     //   leaf character table
     0x0001,          // number of entries
     0x0029,  // right parenthesis
@@ -4439,7 +4449,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0AB6:
+    // offset 0x0AC0:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4456,7 +4466,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0ABC:
+    // offset 0x0AC6:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4464,7 +4474,7 @@ static const uint16_t kCompositionsTree[] = {
     //   internal character table
     0x0001,          // number of entries
     0x1161,  // hangul jungseong a
-    0x0AC4,
+    0x0ACE,
     //   leaf character table
     0x0001,          // number of entries
     0x0029,  // right parenthesis
@@ -4474,7 +4484,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0AC4:
+    // offset 0x0ACE:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4491,7 +4501,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0ACA:
+    // offset 0x0AD4:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4499,7 +4509,7 @@ static const uint16_t kCompositionsTree[] = {
     //   internal character table
     0x0001,          // number of entries
     0x1161,  // hangul jungseong a
-    0x0AD2,
+    0x0ADC,
     //   leaf character table
     0x0001,          // number of entries
     0x0029,  // right parenthesis
@@ -4509,7 +4519,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0AD2:
+    // offset 0x0ADC:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4526,7 +4536,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0AD8:
+    // offset 0x0AE2:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4534,7 +4544,7 @@ static const uint16_t kCompositionsTree[] = {
     //   internal character table
     0x0001,          // number of entries
     0x1161,  // hangul jungseong a
-    0x0AE0,
+    0x0AEA,
     //   leaf character table
     0x0001,          // number of entries
     0x0029,  // right parenthesis
@@ -4544,7 +4554,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0AE0:
+    // offset 0x0AEA:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4561,7 +4571,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0AE6:
+    // offset 0x0AF0:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4569,7 +4579,7 @@ static const uint16_t kCompositionsTree[] = {
     //   internal character table
     0x0001,          // number of entries
     0x1161,  // hangul jungseong a
-    0x0AEE,
+    0x0AF8,
     //   leaf character table
     0x0001,          // number of entries
     0x0029,  // right parenthesis
@@ -4579,7 +4589,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0AEE:
+    // offset 0x0AF8:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4596,7 +4606,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0AF4:
+    // offset 0x0AFE:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4604,7 +4614,7 @@ static const uint16_t kCompositionsTree[] = {
     //   internal character table
     0x0001,          // number of entries
     0x1161,  // hangul jungseong a
-    0x0AFC,
+    0x0B06,
     //   leaf character table
     0x0001,          // number of entries
     0x0029,  // right parenthesis
@@ -4614,7 +4624,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0AFC:
+    // offset 0x0B06:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4631,7 +4641,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0B02:
+    // offset 0x0B0C:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4639,7 +4649,7 @@ static const uint16_t kCompositionsTree[] = {
     //   internal character table
     0x0001,          // number of entries
     0x1161,  // hangul jungseong a
-    0x0B0A,
+    0x0B14,
     //   leaf character table
     0x0001,          // number of entries
     0x0029,  // right parenthesis
@@ -4649,7 +4659,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0B0A:
+    // offset 0x0B14:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4666,7 +4676,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0B10:
+    // offset 0x0B1A:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4674,7 +4684,7 @@ static const uint16_t kCompositionsTree[] = {
     //   internal character table
     0x0001,          // number of entries
     0x1161,  // hangul jungseong a
-    0x0B18,
+    0x0B22,
     //   leaf character table
     0x0001,          // number of entries
     0x0029,  // right parenthesis
@@ -4684,7 +4694,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0B18:
+    // offset 0x0B22:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4701,7 +4711,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0B1E:
+    // offset 0x0B28:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4709,7 +4719,7 @@ static const uint16_t kCompositionsTree[] = {
     //   internal character table
     0x0001,          // number of entries
     0x1161,  // hangul jungseong a
-    0x0B26,
+    0x0B30,
     //   leaf character table
     0x0001,          // number of entries
     0x0029,  // right parenthesis
@@ -4719,7 +4729,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0B26:
+    // offset 0x0B30:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4736,7 +4746,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0B2C:
+    // offset 0x0B36:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4744,7 +4754,7 @@ static const uint16_t kCompositionsTree[] = {
     //   internal character table
     0x0001,          // number of entries
     0x1161,  // hangul jungseong a
-    0x0B34,
+    0x0B3E,
     //   leaf character table
     0x0001,          // number of entries
     0x0029,  // right parenthesis
@@ -4754,7 +4764,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0B34:
+    // offset 0x0B3E:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4771,7 +4781,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0B3A:
+    // offset 0x0B44:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4779,7 +4789,7 @@ static const uint16_t kCompositionsTree[] = {
     //   internal character table
     0x0001,          // number of entries
     0x1161,  // hangul jungseong a
-    0x0B42,
+    0x0B4C,
     //   leaf character table
     0x0001,          // number of entries
     0x0029,  // right parenthesis
@@ -4789,7 +4799,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0B42:
+    // offset 0x0B4C:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4806,7 +4816,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0B48:
+    // offset 0x0B52:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4822,7 +4832,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0B4E:
+    // offset 0x0B58:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4838,7 +4848,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0B54:
+    // offset 0x0B5E:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4854,7 +4864,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0B5A:
+    // offset 0x0B64:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4870,7 +4880,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0B60:
+    // offset 0x0B6A:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4886,7 +4896,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0B66:
+    // offset 0x0B70:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4902,7 +4912,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0B6C:
+    // offset 0x0B76:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4918,7 +4928,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0B72:
+    // offset 0x0B7C:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4934,7 +4944,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0B78:
+    // offset 0x0B82:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4950,7 +4960,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0B7E:
+    // offset 0x0B88:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4966,7 +4976,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0B84:
+    // offset 0x0B8E:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4982,7 +4992,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0B8A:
+    // offset 0x0B94:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -4998,7 +5008,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0B90:
+    // offset 0x0B9A:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5014,7 +5024,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0B96:
+    // offset 0x0BA0:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5030,7 +5040,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0B9C:
+    // offset 0x0BA6:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5046,7 +5056,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0BA2:
+    // offset 0x0BAC:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5062,7 +5072,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0BA8:
+    // offset 0x0BB2:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5078,7 +5088,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0BAE:
+    // offset 0x0BB8:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5094,7 +5104,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0BB4:
+    // offset 0x0BBE:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5110,7 +5120,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0BBA:
+    // offset 0x0BC4:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5126,7 +5136,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0BC0:
+    // offset 0x0BCA:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5142,7 +5152,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0BC6:
+    // offset 0x0BD0:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5158,7 +5168,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0BCC:
+    // offset 0x0BD6:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5174,7 +5184,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0BD2:
+    // offset 0x0BDC:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5190,7 +5200,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0BD8:
+    // offset 0x0BE2:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5206,7 +5216,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0BDE:
+    // offset 0x0BE8:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5222,7 +5232,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0BE4:
+    // offset 0x0BEE:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5238,7 +5248,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0BEA:
+    // offset 0x0BF4:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5254,7 +5264,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0BF0:
+    // offset 0x0BFA:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5270,7 +5280,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0BF6:
+    // offset 0x0C00:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5286,7 +5296,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0BFC:
+    // offset 0x0C06:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5302,7 +5312,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0C02:
+    // offset 0x0C0C:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5318,7 +5328,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0C08:
+    // offset 0x0C12:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5334,7 +5344,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0C0E:
+    // offset 0x0C18:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5350,7 +5360,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0C14:
+    // offset 0x0C1E:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5366,7 +5376,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0C1A:
+    // offset 0x0C24:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5382,7 +5392,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0C20:
+    // offset 0x0C2A:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5398,7 +5408,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0C26:
+    // offset 0x0C30:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5414,7 +5424,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0C2C:
+    // offset 0x0C36:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5430,7 +5440,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0C32:
+    // offset 0x0C3C:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5446,7 +5456,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0C38:
+    // offset 0x0C42:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5462,7 +5472,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0C3E:
+    // offset 0x0C48:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5478,7 +5488,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0C44:
+    // offset 0x0C4E:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5494,7 +5504,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0C4A:
+    // offset 0x0C54:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5510,7 +5520,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0C50:
+    // offset 0x0C5A:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5526,7 +5536,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0C56:
+    // offset 0x0C60:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5542,7 +5552,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0C5C:
+    // offset 0x0C66:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5558,7 +5568,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0C62:
+    // offset 0x0C6C:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5574,7 +5584,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0C68:
+    // offset 0x0C72:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5590,7 +5600,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0C6E:
+    // offset 0x0C78:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5606,7 +5616,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0C74:
+    // offset 0x0C7E:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5622,7 +5632,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0C7A:
+    // offset 0x0C84:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5638,7 +5648,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0C80:
+    // offset 0x0C8A:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5654,7 +5664,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0C86:
+    // offset 0x0C90:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5670,7 +5680,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0C8C:
+    // offset 0x0C96:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5686,7 +5696,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0C92:
+    // offset 0x0C9C:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5702,7 +5712,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0C98:
+    // offset 0x0CA2:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5718,7 +5728,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0C9E:
+    // offset 0x0CA8:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5734,7 +5744,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0CA4:
+    // offset 0x0CAE:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5750,7 +5760,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0CAA:
+    // offset 0x0CB4:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5766,7 +5776,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0CB0:
+    // offset 0x0CBA:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5782,7 +5792,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0CB6:
+    // offset 0x0CC0:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5798,7 +5808,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0CBC:
+    // offset 0x0CC6:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5814,7 +5824,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0CC2:
+    // offset 0x0CCC:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5830,7 +5840,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0CC8:
+    // offset 0x0CD2:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5846,7 +5856,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0CCE:
+    // offset 0x0CD8:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5862,7 +5872,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0CD4:
+    // offset 0x0CDE:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5878,7 +5888,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0CDA:
+    // offset 0x0CE4:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5894,7 +5904,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0CE0:
+    // offset 0x0CEA:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5910,7 +5920,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0CE6:
+    // offset 0x0CF0:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5926,7 +5936,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0CEC:
+    // offset 0x0CF6:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5942,7 +5952,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0CF2:
+    // offset 0x0CFC:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5958,7 +5968,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0CF8:
+    // offset 0x0D02:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5974,7 +5984,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0CFE:
+    // offset 0x0D08:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -5990,7 +6000,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0D04:
+    // offset 0x0D0E:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -6006,7 +6016,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0D0A:
+    // offset 0x0D14:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -6022,7 +6032,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0D10:
+    // offset 0x0D1A:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -6038,7 +6048,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0D16:
+    // offset 0x0D20:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -6054,7 +6064,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0D1C:
+    // offset 0x0D26:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -6070,7 +6080,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0D22:
+    // offset 0x0D2C:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -6086,7 +6096,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0D28:
+    // offset 0x0D32:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -6102,7 +6112,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0D2E:
+    // offset 0x0D38:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -6118,7 +6128,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0D34:
+    // offset 0x0D3E:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -6134,7 +6144,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0D3A:
+    // offset 0x0D44:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -6150,7 +6160,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0D40:
+    // offset 0x0D4A:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -6166,7 +6176,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0D46:
+    // offset 0x0D50:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -6182,7 +6192,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0D4C:
+    // offset 0x0D56:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -6198,7 +6208,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0D52:
+    // offset 0x0D5C:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -6214,7 +6224,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0D58:
+    // offset 0x0D62:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -6230,7 +6240,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0D5E:
+    // offset 0x0D68:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -6246,7 +6256,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0D64:
+    // offset 0x0D6E:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -6262,7 +6272,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0D6A:
+    // offset 0x0D74:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -6278,7 +6288,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0D70:
+    // offset 0x0D7A:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -6294,7 +6304,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0D76:
+    // offset 0x0D80:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -6310,7 +6320,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0D7C:
+    // offset 0x0D86:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -6326,7 +6336,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0D82:
+    // offset 0x0D8C:
     //   prefix:
     //     Compose
     //     <left parenthesis>
@@ -6342,7 +6352,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0D88:
+    // offset 0x0D92:
     //   prefix:
     //     Compose
     //     <right parenthesis>
@@ -6387,7 +6397,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0DAC:
+    // offset 0x0DB6:
     //   prefix:
     //     Compose
     //     <asterisk>
@@ -6410,7 +6420,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0DBA:
+    // offset 0x0DC4:
     //   prefix:
     //     Compose
     //     <plus sign>
@@ -6435,7 +6445,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0DCA:
+    // offset 0x0DD4:
     //   prefix:
     //     Compose
     //     <comma>
@@ -6514,14 +6524,14 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0E10:
+    // offset 0x0E1A:
     //   prefix:
     //     Compose
     //     <hyphen-minus>
     //   internal character table
     0x0001,          // number of entries
     0x002D,  // hyphen-minus
-    0x0E4A,
+    0x0E54,
     //   leaf character table
     0x001A,          // number of entries
     0x0020,  // space
@@ -6581,7 +6591,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0E4A:
+    // offset 0x0E54:
     //   prefix:
     //     Compose
     //     <hyphen-minus>
@@ -6601,18 +6611,18 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0E54:
+    // offset 0x0E5E:
     //   prefix:
     //     Compose
     //     <full stop>
     //   internal character table
     0x0003,          // number of entries
     0x0021,  // exclamation mark
-    0x0ECE,
+    0x0ED8,
     0x0027,  // apostrophe
-    0x0ED6,
+    0x0EE0,
     0x00B4,  // acute accent
-    0x0EDE,
+    0x0EE8,
     //   leaf character table
     0x0035,          // number of entries
     0x002D,  // hyphen-minus
@@ -6724,15 +6734,15 @@ static const uint16_t kCompositionsTree[] = {
     //   internal dead_key table
     0x0003,          // number of entries
     0x0301,  // combining acute accent
-    0x0EE6,
+    0x0EF0,
     0x030C,  // combining caron
-    0x0EEE,
+    0x0EF8,
     0x0323,  // combining dot below
-    0x0EF6,
+    0x0F00,
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0ECE:
+    // offset 0x0ED8:
     //   prefix:
     //     Compose
     //     <full stop>
@@ -6750,7 +6760,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0ED6:
+    // offset 0x0EE0:
     //   prefix:
     //     Compose
     //     <full stop>
@@ -6768,7 +6778,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0EDE:
+    // offset 0x0EE8:
     //   prefix:
     //     Compose
     //     <full stop>
@@ -6786,7 +6796,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0EE6:
+    // offset 0x0EF0:
     //   prefix:
     //     Compose
     //     <full stop>
@@ -6804,7 +6814,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0EEE:
+    // offset 0x0EF8:
     //   prefix:
     //     Compose
     //     <full stop>
@@ -6822,7 +6832,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0EF6:
+    // offset 0x0F00:
     //   prefix:
     //     Compose
     //     <full stop>
@@ -6840,7 +6850,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0EFE:
+    // offset 0x0F08:
     //   prefix:
     //     Compose
     //     <solidus>
@@ -6925,7 +6935,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0F4A:
+    // offset 0x0F54:
     //   prefix:
     //     Compose
     //     <digit zero>
@@ -6954,7 +6964,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0F5E:
+    // offset 0x0F68:
     //   prefix:
     //     Compose
     //     <digit one>
@@ -6985,7 +6995,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0F74:
+    // offset 0x0F7E:
     //   prefix:
     //     Compose
     //     <digit two>
@@ -7008,7 +7018,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0F82:
+    // offset 0x0F8C:
     //   prefix:
     //     Compose
     //     <digit three>
@@ -7033,7 +7043,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0F92:
+    // offset 0x0F9C:
     //   prefix:
     //     Compose
     //     <digit four>
@@ -7048,7 +7058,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0F98:
+    // offset 0x0FA2:
     //   prefix:
     //     Compose
     //     <digit five>
@@ -7065,7 +7075,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0FA0:
+    // offset 0x0FAA:
     //   prefix:
     //     Compose
     //     <digit seven>
@@ -7080,7 +7090,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0FA6:
+    // offset 0x0FB0:
     //   prefix:
     //     Compose
     //     <colon>
@@ -7099,7 +7109,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0FB0:
+    // offset 0x0FBA:
     //   prefix:
     //     Compose
     //     <semicolon>
@@ -7132,7 +7142,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x0FC8:
+    // offset 0x0FD2:
     //   prefix:
     //     Compose
     //     <less-than sign>
@@ -7199,7 +7209,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1002:
+    // offset 0x100C:
     //   prefix:
     //     Compose
     //     <equals sign>
@@ -7252,7 +7262,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x102E:
+    // offset 0x1038:
     //   prefix:
     //     Compose
     //     <greater-than sign>
@@ -7297,18 +7307,18 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1052:
+    // offset 0x105C:
     //   prefix:
     //     Compose
     //     <question mark>
     //   internal character table
     0x0003,          // number of entries
     0x002B,  // plus sign
-    0x108E,
+    0x1098,
     0x005E,  // circumflex accent
-    0x109A,
+    0x10A4,
     0x0062,  // letter b
-    0x10AA,
+    0x10B4,
     //   leaf character table
     0x0016,          // number of entries
     0x0021,  // exclamation mark
@@ -7358,15 +7368,15 @@ static const uint16_t kCompositionsTree[] = {
     //   internal dead_key table
     0x0003,          // number of entries
     0x0302,  // combining circumflex accent
-    0x10B2,
+    0x10BC,
     0x0306,  // combining breve
-    0x10C2,
+    0x10CC,
     0x031B,  // combining horn
-    0x10CA,
+    0x10D4,
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x108E:
+    // offset 0x1098:
     //   prefix:
     //     Compose
     //     <question mark>
@@ -7388,7 +7398,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x109A:
+    // offset 0x10A4:
     //   prefix:
     //     Compose
     //     <question mark>
@@ -7414,7 +7424,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x10AA:
+    // offset 0x10B4:
     //   prefix:
     //     Compose
     //     <question mark>
@@ -7432,7 +7442,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x10B2:
+    // offset 0x10BC:
     //   prefix:
     //     Compose
     //     <question mark>
@@ -7458,7 +7468,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x10C2:
+    // offset 0x10CC:
     //   prefix:
     //     Compose
     //     <question mark>
@@ -7476,7 +7486,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x10CA:
+    // offset 0x10D4:
     //   prefix:
     //     Compose
     //     <question mark>
@@ -7498,7 +7508,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x10D6:
+    // offset 0x10E0:
     //   prefix:
     //     Compose
     //     <latin capital letter a>
@@ -7543,7 +7553,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x10FA:
+    // offset 0x1104:
     //   prefix:
     //     Compose
     //     <latin capital letter b>
@@ -7558,14 +7568,14 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1100:
+    // offset 0x110A:
     //   prefix:
     //     Compose
     //     <latin capital letter c>
     //   internal character table
     0x0001,          // number of entries
     0x0043,  // capital c
-    0x111E,
+    0x1128,
     //   leaf character table
     0x000C,          // number of entries
     0x0027,  // apostrophe
@@ -7597,7 +7607,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x111E:
+    // offset 0x1128:
     //   prefix:
     //     Compose
     //     <latin capital letter c>
@@ -7605,7 +7615,7 @@ static const uint16_t kCompositionsTree[] = {
     //   internal character table
     0x0001,          // number of entries
     0x0043,  // capital c
-    0x1124,
+    0x112E,
     //   leaf character table
     0x0000,          // number of entries
     //   internal dead_key table
@@ -7613,7 +7623,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1124:
+    // offset 0x112E:
     //   prefix:
     //     Compose
     //     <latin capital letter c>
@@ -7630,7 +7640,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x112A:
+    // offset 0x1134:
     //   prefix:
     //     Compose
     //     <latin capital letter d>
@@ -7651,7 +7661,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1136:
+    // offset 0x1140:
     //   prefix:
     //     Compose
     //     <latin capital letter e>
@@ -7690,7 +7700,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1154:
+    // offset 0x115E:
     //   prefix:
     //     Compose
     //     <latin capital letter f>
@@ -7707,7 +7717,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x115C:
+    // offset 0x1166:
     //   prefix:
     //     Compose
     //     <latin capital letter g>
@@ -7730,7 +7740,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x116A:
+    // offset 0x1174:
     //   prefix:
     //     Compose
     //     <latin capital letter i>
@@ -7767,7 +7777,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1186:
+    // offset 0x1190:
     //   prefix:
     //     Compose
     //     <latin capital letter k>
@@ -7782,7 +7792,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x118C:
+    // offset 0x1196:
     //   prefix:
     //     Compose
     //     <latin capital letter l>
@@ -7809,7 +7819,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x119E:
+    // offset 0x11A8:
     //   prefix:
     //     Compose
     //     <latin capital letter m>
@@ -7824,7 +7834,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x11A4:
+    // offset 0x11AE:
     //   prefix:
     //     Compose
     //     <latin capital letter n>
@@ -7855,7 +7865,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x11BA:
+    // offset 0x11C4:
     //   prefix:
     //     Compose
     //     <latin capital letter o>
@@ -7908,7 +7918,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x11E6:
+    // offset 0x11F0:
     //   prefix:
     //     Compose
     //     <latin capital letter p>
@@ -7929,7 +7939,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x11F2:
+    // offset 0x11FC:
     //   prefix:
     //     Compose
     //     <latin capital letter r>
@@ -7952,7 +7962,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1200:
+    // offset 0x120A:
     //   prefix:
     //     Compose
     //     <latin capital letter s>
@@ -7993,7 +8003,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1220:
+    // offset 0x122A:
     //   prefix:
     //     Compose
     //     <latin capital letter t>
@@ -8020,18 +8030,18 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1232:
+    // offset 0x123C:
     //   prefix:
     //     Compose
     //     <latin capital letter u>
     //   internal character table
     0x0003,          // number of entries
     0x0021,  // exclamation mark
-    0x129A,
+    0x12A4,
     0x002C,  // comma
-    0x12A2,
+    0x12AC,
     0x00B8,  // cedilla
-    0x12AA,
+    0x12B4,
     //   leaf character table
     0x002D,          // number of entries
     0x0022,  // quotation mark
@@ -8127,13 +8137,13 @@ static const uint16_t kCompositionsTree[] = {
     //   internal dead_key table
     0x0002,          // number of entries
     0x0323,  // combining dot below
-    0x12B2,
+    0x12BC,
     0x0327,  // combining cedilla
-    0x12BA,
+    0x12C4,
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x129A:
+    // offset 0x12A4:
     //   prefix:
     //     Compose
     //     <latin capital letter u>
@@ -8151,7 +8161,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x12A2:
+    // offset 0x12AC:
     //   prefix:
     //     Compose
     //     <latin capital letter u>
@@ -8169,7 +8179,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x12AA:
+    // offset 0x12B4:
     //   prefix:
     //     Compose
     //     <latin capital letter u>
@@ -8187,7 +8197,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x12B2:
+    // offset 0x12BC:
     //   prefix:
     //     Compose
     //     <latin capital letter u>
@@ -8205,7 +8215,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x12BA:
+    // offset 0x12C4:
     //   prefix:
     //     Compose
     //     <latin capital letter u>
@@ -8223,7 +8233,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x12C2:
+    // offset 0x12CC:
     //   prefix:
     //     Compose
     //     <latin capital letter v>
@@ -8238,7 +8248,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x12C8:
+    // offset 0x12D2:
     //   prefix:
     //     Compose
     //     <latin capital letter w>
@@ -8255,7 +8265,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x12D0:
+    // offset 0x12DA:
     //   prefix:
     //     Compose
     //     <latin capital letter x>
@@ -8274,7 +8284,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x12DA:
+    // offset 0x12E4:
     //   prefix:
     //     Compose
     //     <latin capital letter y>
@@ -8301,7 +8311,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x12EC:
+    // offset 0x12F6:
     //   prefix:
     //     Compose
     //     <latin capital letter z>
@@ -8320,16 +8330,16 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x12F6:
+    // offset 0x1300:
     //   prefix:
     //     Compose
     //     <circumflex accent>
     //   internal character table
     0x0002,          // number of entries
     0x0021,  // exclamation mark
-    0x1384,
+    0x138E,
     0x005F,  // low line
-    0x1394,
+    0x139E,
     //   leaf character table
     0x0042,          // number of entries
     0x0020,  // space
@@ -8467,11 +8477,11 @@ static const uint16_t kCompositionsTree[] = {
     //   internal dead_key table
     0x0001,          // number of entries
     0x0323,  // combining dot below
-    0x13BC,
+    0x13C6,
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1384:
+    // offset 0x138E:
     //   prefix:
     //     Compose
     //     <circumflex accent>
@@ -8497,7 +8507,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1394:
+    // offset 0x139E:
     //   prefix:
     //     Compose
     //     <circumflex accent>
@@ -8547,7 +8557,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x13BC:
+    // offset 0x13C6:
     //   prefix:
     //     Compose
     //     <circumflex accent>
@@ -8573,22 +8583,22 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x13CC:
+    // offset 0x13D6:
     //   prefix:
     //     Compose
     //     <low line>
     //   internal character table
     0x0005,          // number of entries
     0x0021,  // exclamation mark
-    0x1464,
+    0x146E,
     0x0022,  // quotation mark
-    0x1470,
+    0x147A,
     0x002E,  // full stop
-    0x1480,
+    0x148A,
     0x003B,  // semicolon
-    0x148C,
+    0x1496,
     0x007E,  // tilde
-    0x1494,
+    0x149E,
     //   leaf character table
     0x0040,          // number of entries
     0x0020,  // space
@@ -8722,19 +8732,19 @@ static const uint16_t kCompositionsTree[] = {
     //   internal dead_key table
     0x0005,          // number of entries
     0x0303,  // combining tilde
-    0x149C,
+    0x14A6,
     0x0307,  // combining dot above
-    0x14A4,
+    0x14AE,
     0x0308,  // combining diaeresis
-    0x14B0,
+    0x14BA,
     0x0323,  // combining dot below
-    0x14C0,
+    0x14CA,
     0x0328,  // combining ogonek
-    0x14CC,
+    0x14D6,
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1464:
+    // offset 0x146E:
     //   prefix:
     //     Compose
     //     <low line>
@@ -8756,7 +8766,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1470:
+    // offset 0x147A:
     //   prefix:
     //     Compose
     //     <low line>
@@ -8782,7 +8792,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1480:
+    // offset 0x148A:
     //   prefix:
     //     Compose
     //     <low line>
@@ -8804,7 +8814,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x148C:
+    // offset 0x1496:
     //   prefix:
     //     Compose
     //     <low line>
@@ -8822,7 +8832,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1494:
+    // offset 0x149E:
     //   prefix:
     //     Compose
     //     <low line>
@@ -8840,7 +8850,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x149C:
+    // offset 0x14A6:
     //   prefix:
     //     Compose
     //     <low line>
@@ -8858,7 +8868,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x14A4:
+    // offset 0x14AE:
     //   prefix:
     //     Compose
     //     <low line>
@@ -8880,7 +8890,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x14B0:
+    // offset 0x14BA:
     //   prefix:
     //     Compose
     //     <low line>
@@ -8906,7 +8916,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x14C0:
+    // offset 0x14CA:
     //   prefix:
     //     Compose
     //     <low line>
@@ -8928,7 +8938,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x14CC:
+    // offset 0x14D6:
     //   prefix:
     //     Compose
     //     <low line>
@@ -8946,28 +8956,28 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x14D4:
+    // offset 0x14DE:
     //   prefix:
     //     Compose
     //     <grave accent>
     //   internal character table
     0x0008,          // number of entries
     0x0022,  // quotation mark
-    0x1592,
+    0x159C,
     0x0028,  // left parenthesis
-    0x159E,
+    0x15A8,
     0x0029,  // right parenthesis
-    0x15BE,
+    0x15C8,
     0x002B,  // plus sign
-    0x15DC,
+    0x15E6,
     0x005E,  // circumflex accent
-    0x15E8,
+    0x15F2,
     0x005F,  // low line
-    0x15F8,
+    0x1602,
     0x0062,  // letter b
-    0x1604,
+    0x160E,
     0x00AF,  // macron
-    0x160C,
+    0x1616,
     //   leaf character table
     0x004E,          // number of entries
     0x0020,  // space
@@ -9129,23 +9139,23 @@ static const uint16_t kCompositionsTree[] = {
     //   internal dead_key table
     0x0007,          // number of entries
     0x0302,  // combining circumflex accent
-    0x1618,
+    0x1622,
     0x0304,  // combining macron
-    0x1628,
+    0x1632,
     0x0306,  // combining breve
-    0x1634,
+    0x163E,
     0x0308,  // combining diaeresis
-    0x163C,
+    0x1646,
     0x0313,  // combining comma above
-    0x1648,
+    0x1652,
     0x0314,  // combining reversed comma above
-    0x1666,
+    0x1670,
     0x031B,  // combining horn
-    0x1686,
+    0x1690,
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1592:
+    // offset 0x159C:
     //   prefix:
     //     Compose
     //     <grave accent>
@@ -9167,7 +9177,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x159E:
+    // offset 0x15A8:
     //   prefix:
     //     Compose
     //     <grave accent>
@@ -9209,7 +9219,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x15BE:
+    // offset 0x15C8:
     //   prefix:
     //     Compose
     //     <grave accent>
@@ -9249,7 +9259,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x15DC:
+    // offset 0x15E6:
     //   prefix:
     //     Compose
     //     <grave accent>
@@ -9271,7 +9281,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x15E8:
+    // offset 0x15F2:
     //   prefix:
     //     Compose
     //     <grave accent>
@@ -9297,7 +9307,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x15F8:
+    // offset 0x1602:
     //   prefix:
     //     Compose
     //     <grave accent>
@@ -9319,7 +9329,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1604:
+    // offset 0x160E:
     //   prefix:
     //     Compose
     //     <grave accent>
@@ -9337,7 +9347,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x160C:
+    // offset 0x1616:
     //   prefix:
     //     Compose
     //     <grave accent>
@@ -9359,7 +9369,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1618:
+    // offset 0x1622:
     //   prefix:
     //     Compose
     //     <grave accent>
@@ -9385,7 +9395,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1628:
+    // offset 0x1632:
     //   prefix:
     //     Compose
     //     <grave accent>
@@ -9407,7 +9417,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1634:
+    // offset 0x163E:
     //   prefix:
     //     Compose
     //     <grave accent>
@@ -9425,7 +9435,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x163C:
+    // offset 0x1646:
     //   prefix:
     //     Compose
     //     <grave accent>
@@ -9447,7 +9457,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1648:
+    // offset 0x1652:
     //   prefix:
     //     Compose
     //     <grave accent>
@@ -9487,7 +9497,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1666:
+    // offset 0x1670:
     //   prefix:
     //     Compose
     //     <grave accent>
@@ -9529,7 +9539,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1686:
+    // offset 0x1690:
     //   prefix:
     //     Compose
     //     <grave accent>
@@ -9551,7 +9561,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1692:
+    // offset 0x169C:
     //   prefix:
     //     Compose
     //     <latin small letter a>
@@ -9594,18 +9604,18 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x16B4:
+    // offset 0x16BE:
     //   prefix:
     //     Compose
     //     <latin small letter b>
     //   internal character table
     0x0003,          // number of entries
     0x0021,  // exclamation mark
-    0x1704,
+    0x170E,
     0x002C,  // comma
-    0x170C,
+    0x1716,
     0x00B8,  // cedilla
-    0x1714,
+    0x171E,
     //   leaf character table
     0x0021,          // number of entries
     0x002E,  // full stop
@@ -9677,13 +9687,13 @@ static const uint16_t kCompositionsTree[] = {
     //   internal dead_key table
     0x0002,          // number of entries
     0x0323,  // combining dot below
-    0x171C,
+    0x1726,
     0x0327,  // combining cedilla
-    0x1724,
+    0x172E,
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1704:
+    // offset 0x170E:
     //   prefix:
     //     Compose
     //     <latin small letter b>
@@ -9701,7 +9711,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x170C:
+    // offset 0x1716:
     //   prefix:
     //     Compose
     //     <latin small letter b>
@@ -9719,7 +9729,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1714:
+    // offset 0x171E:
     //   prefix:
     //     Compose
     //     <latin small letter b>
@@ -9737,7 +9747,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x171C:
+    // offset 0x1726:
     //   prefix:
     //     Compose
     //     <latin small letter b>
@@ -9755,7 +9765,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1724:
+    // offset 0x172E:
     //   prefix:
     //     Compose
     //     <latin small letter b>
@@ -9773,14 +9783,14 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x172C:
+    // offset 0x1736:
     //   prefix:
     //     Compose
     //     <latin small letter c>
     //   internal character table
     0x0001,          // number of entries
     0x0022,  // quotation mark
-    0x178E,
+    0x1798,
     //   leaf character table
     0x002D,          // number of entries
     0x0027,  // apostrophe
@@ -9876,11 +9886,11 @@ static const uint16_t kCompositionsTree[] = {
     //   internal dead_key table
     0x0001,          // number of entries
     0x0308,  // combining diaeresis
-    0x1796,
+    0x17A0,
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x178E:
+    // offset 0x1798:
     //   prefix:
     //     Compose
     //     <latin small letter c>
@@ -9898,7 +9908,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1796:
+    // offset 0x17A0:
     //   prefix:
     //     Compose
     //     <latin small letter c>
@@ -9916,7 +9926,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x179E:
+    // offset 0x17A8:
     //   prefix:
     //     Compose
     //     <latin small letter d>
@@ -9937,7 +9947,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x17AA:
+    // offset 0x17B4:
     //   prefix:
     //     Compose
     //     <latin small letter e>
@@ -9978,7 +9988,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x17CA:
+    // offset 0x17D4:
     //   prefix:
     //     Compose
     //     <latin small letter f>
@@ -9997,7 +10007,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x17D4:
+    // offset 0x17DE:
     //   prefix:
     //     Compose
     //     <latin small letter g>
@@ -10020,7 +10030,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x17E2:
+    // offset 0x17EC:
     //   prefix:
     //     Compose
     //     <latin small letter i>
@@ -10057,7 +10067,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x17FE:
+    // offset 0x1808:
     //   prefix:
     //     Compose
     //     <latin small letter k>
@@ -10074,7 +10084,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1806:
+    // offset 0x1810:
     //   prefix:
     //     Compose
     //     <latin small letter l>
@@ -10101,7 +10111,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1818:
+    // offset 0x1822:
     //   prefix:
     //     Compose
     //     <latin small letter m>
@@ -10120,7 +10130,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1822:
+    // offset 0x182C:
     //   prefix:
     //     Compose
     //     <latin small letter n>
@@ -10145,14 +10155,14 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1832:
+    // offset 0x183C:
     //   prefix:
     //     Compose
     //     <latin small letter o>
     //   internal character table
     0x0001,          // number of entries
     0x0027,  // apostrophe
-    0x186C,
+    0x1876,
     //   leaf character table
     0x001A,          // number of entries
     0x0022,  // quotation mark
@@ -10212,7 +10222,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x186C:
+    // offset 0x1876:
     //   prefix:
     //     Compose
     //     <latin small letter o>
@@ -10230,7 +10240,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1874:
+    // offset 0x187E:
     //   prefix:
     //     Compose
     //     <latin small letter p>
@@ -10247,7 +10257,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x187C:
+    // offset 0x1886:
     //   prefix:
     //     Compose
     //     <latin small letter r>
@@ -10266,7 +10276,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1886:
+    // offset 0x1890:
     //   prefix:
     //     Compose
     //     <latin small letter s>
@@ -10307,7 +10317,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x18A6:
+    // offset 0x18B0:
     //   prefix:
     //     Compose
     //     <latin small letter t>
@@ -10334,7 +10344,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x18B8:
+    // offset 0x18C2:
     //   prefix:
     //     Compose
     //     <latin small letter u>
@@ -10375,7 +10385,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x18D8:
+    // offset 0x18E2:
     //   prefix:
     //     Compose
     //     <latin small letter v>
@@ -10394,7 +10404,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x18E2:
+    // offset 0x18EC:
     //   prefix:
     //     Compose
     //     <latin small letter w>
@@ -10409,7 +10419,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x18E8:
+    // offset 0x18F2:
     //   prefix:
     //     Compose
     //     <latin small letter x>
@@ -10430,7 +10440,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x18F4:
+    // offset 0x18FE:
     //   prefix:
     //     Compose
     //     <latin small letter y>
@@ -10457,7 +10467,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1906:
+    // offset 0x1910:
     //   prefix:
     //     Compose
     //     <latin small letter z>
@@ -10476,7 +10486,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1910:
+    // offset 0x191A:
     //   prefix:
     //     Compose
     //     <vertical line>
@@ -10493,24 +10503,24 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1918:
+    // offset 0x1922:
     //   prefix:
     //     Compose
     //     <tilde>
     //   internal character table
     0x0006,          // number of entries
     0x0022,  // quotation mark
-    0x199A,
+    0x19A4,
     0x0028,  // left parenthesis
-    0x19A2,
+    0x19AC,
     0x0029,  // right parenthesis
-    0x19BA,
+    0x19C4,
     0x002B,  // plus sign
-    0x19D0,
+    0x19DA,
     0x005E,  // circumflex accent
-    0x19DC,
+    0x19E6,
     0x0062,  // letter b
-    0x19EC,
+    0x19F6,
     //   leaf character table
     0x0033,          // number of entries
     0x0020,  // space
@@ -10618,21 +10628,21 @@ static const uint16_t kCompositionsTree[] = {
     //   internal dead_key table
     0x0006,          // number of entries
     0x0302,  // combining circumflex accent
-    0x19F4,
+    0x19FE,
     0x0306,  // combining breve
-    0x1A04,
+    0x1A0E,
     0x0308,  // combining diaeresis
-    0x1A0C,
+    0x1A16,
     0x0313,  // combining comma above
-    0x1A14,
+    0x1A1E,
     0x0314,  // combining reversed comma above
-    0x1A2A,
+    0x1A34,
     0x031B,  // combining horn
-    0x1A42,
+    0x1A4C,
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x199A:
+    // offset 0x19A4:
     //   prefix:
     //     Compose
     //     <tilde>
@@ -10650,7 +10660,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x19A2:
+    // offset 0x19AC:
     //   prefix:
     //     Compose
     //     <tilde>
@@ -10684,7 +10694,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x19BA:
+    // offset 0x19C4:
     //   prefix:
     //     Compose
     //     <tilde>
@@ -10716,7 +10726,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x19D0:
+    // offset 0x19DA:
     //   prefix:
     //     Compose
     //     <tilde>
@@ -10738,7 +10748,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x19DC:
+    // offset 0x19E6:
     //   prefix:
     //     Compose
     //     <tilde>
@@ -10764,7 +10774,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x19EC:
+    // offset 0x19F6:
     //   prefix:
     //     Compose
     //     <tilde>
@@ -10782,7 +10792,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x19F4:
+    // offset 0x19FE:
     //   prefix:
     //     Compose
     //     <tilde>
@@ -10808,7 +10818,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1A04:
+    // offset 0x1A0E:
     //   prefix:
     //     Compose
     //     <tilde>
@@ -10826,7 +10836,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1A0C:
+    // offset 0x1A16:
     //   prefix:
     //     Compose
     //     <tilde>
@@ -10844,7 +10854,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1A14:
+    // offset 0x1A1E:
     //   prefix:
     //     Compose
     //     <tilde>
@@ -10876,7 +10886,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1A2A:
+    // offset 0x1A34:
     //   prefix:
     //     Compose
     //     <tilde>
@@ -10910,7 +10920,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1A42:
+    // offset 0x1A4C:
     //   prefix:
     //     Compose
     //     <tilde>
@@ -10932,7 +10942,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1A4E:
+    // offset 0x1A58:
     //   prefix:
     //     Compose
     //     <diaeresis>
@@ -10983,22 +10993,22 @@ static const uint16_t kCompositionsTree[] = {
     0x0303,  // combining tilde
     0x1FC1,  // -> dialytika and perispomeni
 
-    // offset 0x1A78:
+    // offset 0x1A82:
     //   prefix:
     //     Compose
     //     <macron>
     //   internal character table
     0x0005,          // number of entries
     0x0021,  // exclamation mark
-    0x1AE8,
+    0x1AF2,
     0x0022,  // quotation mark
-    0x1AF4,
+    0x1AFE,
     0x002E,  // full stop
-    0x1B04,
+    0x1B0E,
     0x003B,  // semicolon
-    0x1B10,
+    0x1B1A,
     0x007E,  // tilde
-    0x1B18,
+    0x1B22,
     //   leaf character table
     0x002C,          // number of entries
     0x0041,  // capital a
@@ -11092,19 +11102,19 @@ static const uint16_t kCompositionsTree[] = {
     //   internal dead_key table
     0x0005,          // number of entries
     0x0303,  // combining tilde
-    0x1B20,
+    0x1B2A,
     0x0307,  // combining dot above
-    0x1B28,
+    0x1B32,
     0x0308,  // combining diaeresis
-    0x1B34,
+    0x1B3E,
     0x0323,  // combining dot below
-    0x1B44,
+    0x1B4E,
     0x0328,  // combining ogonek
-    0x1B50,
+    0x1B5A,
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1AE8:
+    // offset 0x1AF2:
     //   prefix:
     //     Compose
     //     <macron>
@@ -11126,7 +11136,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1AF4:
+    // offset 0x1AFE:
     //   prefix:
     //     Compose
     //     <macron>
@@ -11152,7 +11162,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1B04:
+    // offset 0x1B0E:
     //   prefix:
     //     Compose
     //     <macron>
@@ -11174,7 +11184,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1B10:
+    // offset 0x1B1A:
     //   prefix:
     //     Compose
     //     <macron>
@@ -11192,7 +11202,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1B18:
+    // offset 0x1B22:
     //   prefix:
     //     Compose
     //     <macron>
@@ -11210,7 +11220,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1B20:
+    // offset 0x1B2A:
     //   prefix:
     //     Compose
     //     <macron>
@@ -11228,7 +11238,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1B28:
+    // offset 0x1B32:
     //   prefix:
     //     Compose
     //     <macron>
@@ -11250,7 +11260,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1B34:
+    // offset 0x1B3E:
     //   prefix:
     //     Compose
     //     <macron>
@@ -11276,7 +11286,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1B44:
+    // offset 0x1B4E:
     //   prefix:
     //     Compose
     //     <macron>
@@ -11298,7 +11308,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1B50:
+    // offset 0x1B5A:
     //   prefix:
     //     Compose
     //     <macron>
@@ -11316,36 +11326,36 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1B58:
+    // offset 0x1B62:
     //   prefix:
     //     Compose
     //     <acute accent>
     //   internal character table
     0x000C,          // number of entries
     0x0022,  // quotation mark
-    0x1C62,
+    0x1C6C,
     0x0028,  // left parenthesis
-    0x1C72,
+    0x1C7C,
     0x0029,  // right parenthesis
-    0x1C92,
+    0x1C9C,
     0x002B,  // plus sign
-    0x1CB0,
+    0x1CBA,
     0x002C,  // comma
-    0x1CBC,
+    0x1CC6,
     0x002F,  // solidus
-    0x1CC4,
+    0x1CCE,
     0x005E,  // circumflex accent
-    0x1CCC,
+    0x1CD6,
     0x005F,  // low line
-    0x1CDC,
+    0x1CE6,
     0x0062,  // letter b
-    0x1CE8,
+    0x1CF2,
     0x007E,  // tilde
-    0x1CF0,
+    0x1CFA,
     0x00AF,  // macron
-    0x1CFC,
+    0x1D06,
     0x00B8,  // cedilla
-    0x1D08,
+    0x1D12,
     //   leaf character table
     0x006D,          // number of entries
     0x0041,  // capital a
@@ -11569,29 +11579,29 @@ static const uint16_t kCompositionsTree[] = {
     //   internal dead_key table
     0x000A,          // number of entries
     0x0302,  // combining circumflex accent
-    0x1D10,
+    0x1D1A,
     0x0303,  // combining tilde
-    0x1D20,
+    0x1D2A,
     0x0304,  // combining macron
-    0x1D2C,
+    0x1D36,
     0x0306,  // combining breve
-    0x1D38,
+    0x1D42,
     0x0308,  // combining diaeresis
-    0x1D40,
+    0x1D4A,
     0x030A,  // combining ring above
-    0x1D50,
+    0x1D5A,
     0x0313,  // combining comma above
-    0x1D58,
+    0x1D62,
     0x0314,  // combining reversed comma above
-    0x1D76,
+    0x1D80,
     0x031B,  // combining horn
-    0x1D96,
+    0x1DA0,
     0x0327,  // combining cedilla
-    0x1DA2,
+    0x1DAC,
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1C62:
+    // offset 0x1C6C:
     //   prefix:
     //     Compose
     //     <acute accent>
@@ -11617,7 +11627,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1C72:
+    // offset 0x1C7C:
     //   prefix:
     //     Compose
     //     <acute accent>
@@ -11659,7 +11669,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1C92:
+    // offset 0x1C9C:
     //   prefix:
     //     Compose
     //     <acute accent>
@@ -11699,7 +11709,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1CB0:
+    // offset 0x1CBA:
     //   prefix:
     //     Compose
     //     <acute accent>
@@ -11721,7 +11731,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1CBC:
+    // offset 0x1CC6:
     //   prefix:
     //     Compose
     //     <acute accent>
@@ -11739,7 +11749,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1CC4:
+    // offset 0x1CCE:
     //   prefix:
     //     Compose
     //     <acute accent>
@@ -11757,7 +11767,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1CCC:
+    // offset 0x1CD6:
     //   prefix:
     //     Compose
     //     <acute accent>
@@ -11783,7 +11793,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1CDC:
+    // offset 0x1CE6:
     //   prefix:
     //     Compose
     //     <acute accent>
@@ -11805,7 +11815,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1CE8:
+    // offset 0x1CF2:
     //   prefix:
     //     Compose
     //     <acute accent>
@@ -11823,7 +11833,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1CF0:
+    // offset 0x1CFA:
     //   prefix:
     //     Compose
     //     <acute accent>
@@ -11845,7 +11855,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1CFC:
+    // offset 0x1D06:
     //   prefix:
     //     Compose
     //     <acute accent>
@@ -11867,7 +11877,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1D08:
+    // offset 0x1D12:
     //   prefix:
     //     Compose
     //     <acute accent>
@@ -11885,7 +11895,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1D10:
+    // offset 0x1D1A:
     //   prefix:
     //     Compose
     //     <acute accent>
@@ -11911,7 +11921,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1D20:
+    // offset 0x1D2A:
     //   prefix:
     //     Compose
     //     <acute accent>
@@ -11933,7 +11943,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1D2C:
+    // offset 0x1D36:
     //   prefix:
     //     Compose
     //     <acute accent>
@@ -11955,7 +11965,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1D38:
+    // offset 0x1D42:
     //   prefix:
     //     Compose
     //     <acute accent>
@@ -11973,7 +11983,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1D40:
+    // offset 0x1D4A:
     //   prefix:
     //     Compose
     //     <acute accent>
@@ -11999,7 +12009,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1D50:
+    // offset 0x1D5A:
     //   prefix:
     //     Compose
     //     <acute accent>
@@ -12017,7 +12027,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1D58:
+    // offset 0x1D62:
     //   prefix:
     //     Compose
     //     <acute accent>
@@ -12057,7 +12067,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1D76:
+    // offset 0x1D80:
     //   prefix:
     //     Compose
     //     <acute accent>
@@ -12099,7 +12109,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1D96:
+    // offset 0x1DA0:
     //   prefix:
     //     Compose
     //     <acute accent>
@@ -12121,7 +12131,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1DA2:
+    // offset 0x1DAC:
     //   prefix:
     //     Compose
     //     <acute accent>
@@ -12139,7 +12149,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1DAA:
+    // offset 0x1DB4:
     //   prefix:
     //     Compose
     //     <cedilla>
@@ -12196,7 +12206,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1DDA:
+    // offset 0x1DE4:
     //   prefix:
     //     Compose
     //     <breve>
@@ -12213,7 +12223,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1DE2:
+    // offset 0x1DEC:
     //   prefix:
     //     Compose
     //     <greek capital letter alpha>
@@ -12228,7 +12238,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1DE8:
+    // offset 0x1DF2:
     //   prefix:
     //     Compose
     //     <greek capital letter epsilon>
@@ -12243,7 +12253,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1DEE:
+    // offset 0x1DF8:
     //   prefix:
     //     Compose
     //     <greek capital letter eta>
@@ -12258,7 +12268,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1DF4:
+    // offset 0x1DFE:
     //   prefix:
     //     Compose
     //     <greek capital letter iota>
@@ -12275,7 +12285,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1DFC:
+    // offset 0x1E06:
     //   prefix:
     //     Compose
     //     <greek capital letter omicron>
@@ -12290,7 +12300,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1E02:
+    // offset 0x1E0C:
     //   prefix:
     //     Compose
     //     <greek capital letter upsilon>
@@ -12307,7 +12317,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1E0A:
+    // offset 0x1E14:
     //   prefix:
     //     Compose
     //     <greek capital letter omega>
@@ -12322,7 +12332,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1E10:
+    // offset 0x1E1A:
     //   prefix:
     //     Compose
     //     <greek small letter alpha>
@@ -12337,7 +12347,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1E16:
+    // offset 0x1E20:
     //   prefix:
     //     Compose
     //     <greek small letter epsilon>
@@ -12352,7 +12362,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1E1C:
+    // offset 0x1E26:
     //   prefix:
     //     Compose
     //     <greek small letter eta>
@@ -12367,24 +12377,24 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1E22:
+    // offset 0x1E2C:
     //   prefix:
     //     Compose
     //     <greek small letter iota>
     //   internal character table
     0x0006,          // number of entries
     0x0027,  // apostrophe
-    0x1EBE,
+    0x1EC8,
     0x0028,  // left parenthesis
-    0x1F28,
+    0x1F32,
     0x0029,  // right parenthesis
-    0x1F38,
+    0x1F42,
     0x0060,  // grave accent
-    0x1F48,
+    0x1F52,
     0x007E,  // tilde
-    0x1FB2,
+    0x1FBC,
     0x00B4,  // acute accent
-    0x201C,
+    0x2026,
     //   leaf character table
     0x0041,          // number of entries
     0x0022,  // quotation mark
@@ -12520,19 +12530,19 @@ static const uint16_t kCompositionsTree[] = {
     //   internal dead_key table
     0x0005,          // number of entries
     0x0300,  // combining grave accent
-    0x2086,
+    0x2090,
     0x0301,  // combining acute accent
-    0x20F0,
+    0x20FA,
     0x0303,  // combining tilde
-    0x215A,
+    0x2164,
     0x0313,  // combining comma above
-    0x21C2,
+    0x21CC,
     0x0314,  // combining reversed comma above
-    0x21D2,
+    0x21DC,
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1EBE:
+    // offset 0x1EC8:
     //   prefix:
     //     Compose
     //     <greek small letter iota>
@@ -12540,9 +12550,9 @@ static const uint16_t kCompositionsTree[] = {
     //   internal character table
     0x0002,          // number of entries
     0x0028,  // left parenthesis
-    0x1EE8,
+    0x1EF2,
     0x0029,  // right parenthesis
-    0x1EF8,
+    0x1F02,
     //   leaf character table
     0x000F,          // number of entries
     0x03B1,  // letter alpha
@@ -12578,13 +12588,13 @@ static const uint16_t kCompositionsTree[] = {
     //   internal dead_key table
     0x0002,          // number of entries
     0x0313,  // combining comma above
-    0x1F08,
+    0x1F12,
     0x0314,  // combining reversed comma above
-    0x1F18,
+    0x1F22,
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1EE8:
+    // offset 0x1EF2:
     //   prefix:
     //     Compose
     //     <greek small letter iota>
@@ -12611,7 +12621,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1EF8:
+    // offset 0x1F02:
     //   prefix:
     //     Compose
     //     <greek small letter iota>
@@ -12638,7 +12648,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1F08:
+    // offset 0x1F12:
     //   prefix:
     //     Compose
     //     <greek small letter iota>
@@ -12665,7 +12675,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1F18:
+    // offset 0x1F22:
     //   prefix:
     //     Compose
     //     <greek small letter iota>
@@ -12692,7 +12702,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1F28:
+    // offset 0x1F32:
     //   prefix:
     //     Compose
     //     <greek small letter iota>
@@ -12718,7 +12728,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1F38:
+    // offset 0x1F42:
     //   prefix:
     //     Compose
     //     <greek small letter iota>
@@ -12744,7 +12754,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1F48:
+    // offset 0x1F52:
     //   prefix:
     //     Compose
     //     <greek small letter iota>
@@ -12752,9 +12762,9 @@ static const uint16_t kCompositionsTree[] = {
     //   internal character table
     0x0002,          // number of entries
     0x0028,  // left parenthesis
-    0x1F72,
+    0x1F7C,
     0x0029,  // right parenthesis
-    0x1F82,
+    0x1F8C,
     //   leaf character table
     0x000F,          // number of entries
     0x03B1,  // letter alpha
@@ -12790,13 +12800,13 @@ static const uint16_t kCompositionsTree[] = {
     //   internal dead_key table
     0x0002,          // number of entries
     0x0313,  // combining comma above
-    0x1F92,
+    0x1F9C,
     0x0314,  // combining reversed comma above
-    0x1FA2,
+    0x1FAC,
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1F72:
+    // offset 0x1F7C:
     //   prefix:
     //     Compose
     //     <greek small letter iota>
@@ -12823,7 +12833,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1F82:
+    // offset 0x1F8C:
     //   prefix:
     //     Compose
     //     <greek small letter iota>
@@ -12850,7 +12860,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1F92:
+    // offset 0x1F9C:
     //   prefix:
     //     Compose
     //     <greek small letter iota>
@@ -12877,7 +12887,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1FA2:
+    // offset 0x1FAC:
     //   prefix:
     //     Compose
     //     <greek small letter iota>
@@ -12904,7 +12914,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1FB2:
+    // offset 0x1FBC:
     //   prefix:
     //     Compose
     //     <greek small letter iota>
@@ -12912,9 +12922,9 @@ static const uint16_t kCompositionsTree[] = {
     //   internal character table
     0x0002,          // number of entries
     0x0028,  // left parenthesis
-    0x1FDC,
+    0x1FE6,
     0x0029,  // right parenthesis
-    0x1FEC,
+    0x1FF6,
     //   leaf character table
     0x000F,          // number of entries
     0x03B1,  // letter alpha
@@ -12950,13 +12960,13 @@ static const uint16_t kCompositionsTree[] = {
     //   internal dead_key table
     0x0002,          // number of entries
     0x0313,  // combining comma above
-    0x1FFC,
+    0x2006,
     0x0314,  // combining reversed comma above
-    0x200C,
+    0x2016,
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1FDC:
+    // offset 0x1FE6:
     //   prefix:
     //     Compose
     //     <greek small letter iota>
@@ -12983,7 +12993,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1FEC:
+    // offset 0x1FF6:
     //   prefix:
     //     Compose
     //     <greek small letter iota>
@@ -13010,7 +13020,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x1FFC:
+    // offset 0x2006:
     //   prefix:
     //     Compose
     //     <greek small letter iota>
@@ -13037,7 +13047,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x200C:
+    // offset 0x2016:
     //   prefix:
     //     Compose
     //     <greek small letter iota>
@@ -13064,7 +13074,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x201C:
+    // offset 0x2026:
     //   prefix:
     //     Compose
     //     <greek small letter iota>
@@ -13072,9 +13082,9 @@ static const uint16_t kCompositionsTree[] = {
     //   internal character table
     0x0002,          // number of entries
     0x0028,  // left parenthesis
-    0x2046,
+    0x2050,
     0x0029,  // right parenthesis
-    0x2056,
+    0x2060,
     //   leaf character table
     0x000F,          // number of entries
     0x03B1,  // letter alpha
@@ -13110,13 +13120,13 @@ static const uint16_t kCompositionsTree[] = {
     //   internal dead_key table
     0x0002,          // number of entries
     0x0313,  // combining comma above
-    0x2066,
+    0x2070,
     0x0314,  // combining reversed comma above
-    0x2076,
+    0x2080,
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2046:
+    // offset 0x2050:
     //   prefix:
     //     Compose
     //     <greek small letter iota>
@@ -13143,7 +13153,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2056:
+    // offset 0x2060:
     //   prefix:
     //     Compose
     //     <greek small letter iota>
@@ -13170,7 +13180,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2066:
+    // offset 0x2070:
     //   prefix:
     //     Compose
     //     <greek small letter iota>
@@ -13197,7 +13207,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2076:
+    // offset 0x2080:
     //   prefix:
     //     Compose
     //     <greek small letter iota>
@@ -13224,7 +13234,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2086:
+    // offset 0x2090:
     //   prefix:
     //     Compose
     //     <greek small letter iota>
@@ -13232,9 +13242,9 @@ static const uint16_t kCompositionsTree[] = {
     //   internal character table
     0x0002,          // number of entries
     0x0028,  // left parenthesis
-    0x20B0,
+    0x20BA,
     0x0029,  // right parenthesis
-    0x20C0,
+    0x20CA,
     //   leaf character table
     0x000F,          // number of entries
     0x03B1,  // letter alpha
@@ -13270,13 +13280,13 @@ static const uint16_t kCompositionsTree[] = {
     //   internal dead_key table
     0x0002,          // number of entries
     0x0313,  // combining comma above
-    0x20D0,
+    0x20DA,
     0x0314,  // combining reversed comma above
-    0x20E0,
+    0x20EA,
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x20B0:
+    // offset 0x20BA:
     //   prefix:
     //     Compose
     //     <greek small letter iota>
@@ -13303,7 +13313,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x20C0:
+    // offset 0x20CA:
     //   prefix:
     //     Compose
     //     <greek small letter iota>
@@ -13330,7 +13340,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x20D0:
+    // offset 0x20DA:
     //   prefix:
     //     Compose
     //     <greek small letter iota>
@@ -13357,7 +13367,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x20E0:
+    // offset 0x20EA:
     //   prefix:
     //     Compose
     //     <greek small letter iota>
@@ -13384,7 +13394,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x20F0:
+    // offset 0x20FA:
     //   prefix:
     //     Compose
     //     <greek small letter iota>
@@ -13392,9 +13402,9 @@ static const uint16_t kCompositionsTree[] = {
     //   internal character table
     0x0002,          // number of entries
     0x0028,  // left parenthesis
-    0x211A,
+    0x2124,
     0x0029,  // right parenthesis
-    0x212A,
+    0x2134,
     //   leaf character table
     0x000F,          // number of entries
     0x03B1,  // letter alpha
@@ -13430,13 +13440,13 @@ static const uint16_t kCompositionsTree[] = {
     //   internal dead_key table
     0x0002,          // number of entries
     0x0313,  // combining comma above
-    0x213A,
+    0x2144,
     0x0314,  // combining reversed comma above
-    0x214A,
+    0x2154,
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x211A:
+    // offset 0x2124:
     //   prefix:
     //     Compose
     //     <greek small letter iota>
@@ -13463,7 +13473,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x212A:
+    // offset 0x2134:
     //   prefix:
     //     Compose
     //     <greek small letter iota>
@@ -13490,7 +13500,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x213A:
+    // offset 0x2144:
     //   prefix:
     //     Compose
     //     <greek small letter iota>
@@ -13517,7 +13527,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x214A:
+    // offset 0x2154:
     //   prefix:
     //     Compose
     //     <greek small letter iota>
@@ -13544,7 +13554,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x215A:
+    // offset 0x2164:
     //   prefix:
     //     Compose
     //     <greek small letter iota>
@@ -13552,9 +13562,9 @@ static const uint16_t kCompositionsTree[] = {
     //   internal character table
     0x0002,          // number of entries
     0x0028,  // left parenthesis
-    0x2184,
+    0x218E,
     0x0029,  // right parenthesis
-    0x2194,
+    0x219E,
     //   leaf character table
     0x000F,          // number of entries
     0x03B1,  // letter alpha
@@ -13590,13 +13600,13 @@ static const uint16_t kCompositionsTree[] = {
     //   internal dead_key table
     0x0002,          // number of entries
     0x0313,  // combining comma above
-    0x21A4,
+    0x21AE,
     0x0314,  // combining reversed comma above
-    0x21B4,
+    0x21BE,
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2184:
+    // offset 0x218E:
     //   prefix:
     //     Compose
     //     <greek small letter iota>
@@ -13623,7 +13633,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2194:
+    // offset 0x219E:
     //   prefix:
     //     Compose
     //     <greek small letter iota>
@@ -13650,7 +13660,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x21A4:
+    // offset 0x21AE:
     //   prefix:
     //     Compose
     //     <greek small letter iota>
@@ -13677,7 +13687,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x21B4:
+    // offset 0x21BE:
     //   prefix:
     //     Compose
     //     <greek small letter iota>
@@ -13702,7 +13712,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x21C2:
+    // offset 0x21CC:
     //   prefix:
     //     Compose
     //     <greek small letter iota>
@@ -13728,7 +13738,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x21D2:
+    // offset 0x21DC:
     //   prefix:
     //     Compose
     //     <greek small letter iota>
@@ -13754,7 +13764,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x21E2:
+    // offset 0x21EC:
     //   prefix:
     //     Compose
     //     <greek small letter omicron>
@@ -13769,7 +13779,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x21E8:
+    // offset 0x21F2:
     //   prefix:
     //     Compose
     //     <greek small letter upsilon>
@@ -13786,7 +13796,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x21F0:
+    // offset 0x21FA:
     //   prefix:
     //     Compose
     //     <greek small letter omega>
@@ -13801,7 +13811,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x21F6:
+    // offset 0x2200:
     //   prefix:
     //     Compose
     //     <cyrillic capital letter ie>
@@ -13816,7 +13826,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x21FC:
+    // offset 0x2206:
     //   prefix:
     //     Compose
     //     <cyrillic capital letter en>
@@ -13833,7 +13843,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2204:
+    // offset 0x220E:
     //   prefix:
     //     Compose
     //     <cyrillic capital letter es>
@@ -13848,7 +13858,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x220A:
+    // offset 0x2214:
     //   prefix:
     //     Compose
     //     <cyrillic small letter pe>
@@ -13863,7 +13873,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2210:
+    // offset 0x221A:
     //   prefix:
     //     Compose
     //     <hebrew point hiriq>
@@ -13878,7 +13888,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2216:
+    // offset 0x2220:
     //   prefix:
     //     Compose
     //     <hebrew point patah>
@@ -13895,7 +13905,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x221E:
+    // offset 0x2228:
     //   prefix:
     //     Compose
     //     <hebrew point qamats>
@@ -13910,7 +13920,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2224:
+    // offset 0x222E:
     //   prefix:
     //     Compose
     //     <hebrew point holam>
@@ -13925,7 +13935,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x222A:
+    // offset 0x2234:
     //   prefix:
     //     Compose
     //     <hebrew point dagesh or mapiq>
@@ -13982,7 +13992,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x225A:
+    // offset 0x2264:
     //   prefix:
     //     Compose
     //     <arabic question mark>
@@ -14001,14 +14011,14 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2264:
+    // offset 0x226E:
     //   prefix:
     //     Compose
     //     <arabic letter hamza>
     //   internal character table
     0x0001,          // number of entries
     0x05BC,  // hebrew point dagesh or mapiq
-    0x226E,
+    0x2278,
     //   leaf character table
     0x0002,          // number of entries
     0x05E9,  // hebrew shin
@@ -14020,7 +14030,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x226E:
+    // offset 0x2278:
     //   prefix:
     //     Compose
     //     <arabic letter hamza>
@@ -14036,14 +14046,14 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2274:
+    // offset 0x227E:
     //   prefix:
     //     Compose
     //     <arabic letter alef with madda above>
     //   internal character table
     0x0001,          // number of entries
     0x05BC,  // hebrew point dagesh or mapiq
-    0x227E,
+    0x2288,
     //   leaf character table
     0x0002,          // number of entries
     0x05E9,  // hebrew shin
@@ -14055,7 +14065,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x227E:
+    // offset 0x2288:
     //   prefix:
     //     Compose
     //     <arabic letter alef with madda above>
@@ -14071,7 +14081,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2284:
+    // offset 0x228E:
     //   prefix:
     //     Compose
     //     <arabic maddah above>
@@ -14086,7 +14096,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x228A:
+    // offset 0x2294:
     //   prefix:
     //     Compose
     //     <arabic hamza above>
@@ -14111,7 +14121,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x229A:
+    // offset 0x22A4:
     //   prefix:
     //     Compose
     //     <arabic hamza below>
@@ -14126,7 +14136,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x22A0:
+    // offset 0x22AA:
     //   prefix:
     //     Compose
     //     <devanagari sign nukta>
@@ -14161,7 +14171,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x22BA:
+    // offset 0x22C4:
     //   prefix:
     //     Compose
     //     <bengali sign nukta>
@@ -14180,7 +14190,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x22C4:
+    // offset 0x22CE:
     //   prefix:
     //     Compose
     //     <bengali vowel sign e>
@@ -14197,7 +14207,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x22CC:
+    // offset 0x22D6:
     //   prefix:
     //     Compose
     //     <gurmukhi sign nukta>
@@ -14222,7 +14232,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x22DC:
+    // offset 0x22E6:
     //   prefix:
     //     Compose
     //     <oriya sign nukta>
@@ -14239,7 +14249,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x22E4:
+    // offset 0x22EE:
     //   prefix:
     //     Compose
     //     <oriya vowel sign e>
@@ -14258,7 +14268,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x22EE:
+    // offset 0x22F8:
     //   prefix:
     //     Compose
     //     <tamil vowel sign ee>
@@ -14273,7 +14283,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x22F4:
+    // offset 0x22FE:
     //   prefix:
     //     Compose
     //     <tamil au length mark>
@@ -14288,7 +14298,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x22FA:
+    // offset 0x2304:
     //   prefix:
     //     Compose
     //     <telugu vowel sign e>
@@ -14303,7 +14313,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2300:
+    // offset 0x230A:
     //   prefix:
     //     Compose
     //     <kannada vowel sign i>
@@ -14318,7 +14328,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2306:
+    // offset 0x2310:
     //   prefix:
     //     Compose
     //     <kannada vowel sign e>
@@ -14337,7 +14347,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2310:
+    // offset 0x231A:
     //   prefix:
     //     Compose
     //     <kannada vowel sign o>
@@ -14352,7 +14362,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2316:
+    // offset 0x2320:
     //   prefix:
     //     Compose
     //     <malayalam vowel sign e>
@@ -14369,7 +14379,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x231E:
+    // offset 0x2328:
     //   prefix:
     //     Compose
     //     <malayalam vowel sign ee>
@@ -14384,7 +14394,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2324:
+    // offset 0x232E:
     //   prefix:
     //     Compose
     //     <sinhala vowel sign kombuva haa aela-pilla>
@@ -14399,7 +14409,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x232A:
+    // offset 0x2334:
     //   prefix:
     //     Compose
     //     <thai character sara uu>
@@ -14418,7 +14428,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2334:
+    // offset 0x233E:
     //   prefix:
     //     Compose
     //     <tibetan vowel sign aa>
@@ -14437,7 +14447,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x233E:
+    // offset 0x2348:
     //   prefix:
     //     Compose
     //     <tibetan subjoined letter ka>
@@ -14452,7 +14462,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2344:
+    // offset 0x234E:
     //   prefix:
     //     Compose
     //     <tibetan subjoined letter ga>
@@ -14467,7 +14477,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x234A:
+    // offset 0x2354:
     //   prefix:
     //     Compose
     //     <tibetan subjoined letter dda>
@@ -14482,7 +14492,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2350:
+    // offset 0x235A:
     //   prefix:
     //     Compose
     //     <tibetan subjoined letter da>
@@ -14497,7 +14507,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2356:
+    // offset 0x2360:
     //   prefix:
     //     Compose
     //     <tibetan subjoined letter ba>
@@ -14512,7 +14522,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x235C:
+    // offset 0x2366:
     //   prefix:
     //     Compose
     //     <tibetan subjoined letter dza>
@@ -14527,7 +14537,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2362:
+    // offset 0x236C:
     //   prefix:
     //     Compose
     //     <tibetan subjoined letter ra>
@@ -14542,7 +14552,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2368:
+    // offset 0x2372:
     //   prefix:
     //     Compose
     //     <tibetan subjoined letter la>
@@ -14557,7 +14567,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x236E:
+    // offset 0x2378:
     //   prefix:
     //     Compose
     //     <tibetan subjoined letter ssa>
@@ -14572,7 +14582,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2374:
+    // offset 0x237E:
     //   prefix:
     //     Compose
     //     <tibetan subjoined letter ha>
@@ -14595,7 +14605,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2382:
+    // offset 0x238C:
     //   prefix:
     //     Compose
     //     <myanmar vowel sign ii>
@@ -14610,7 +14620,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2388:
+    // offset 0x2392:
     //   prefix:
     //     Compose
     //     <hangul choseong kiyeok>
@@ -14625,7 +14635,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x238E:
+    // offset 0x2398:
     //   prefix:
     //     Compose
     //     <hangul choseong nieun>
@@ -14646,7 +14656,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x239A:
+    // offset 0x23A4:
     //   prefix:
     //     Compose
     //     <hangul choseong tikeut>
@@ -14663,7 +14673,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x23A2:
+    // offset 0x23AC:
     //   prefix:
     //     Compose
     //     <hangul choseong rieul>
@@ -14684,7 +14694,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x23AE:
+    // offset 0x23B8:
     //   prefix:
     //     Compose
     //     <hangul choseong mieum>
@@ -14701,7 +14711,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x23B6:
+    // offset 0x23C0:
     //   prefix:
     //     Compose
     //     <hangul choseong pieup>
@@ -14746,7 +14756,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x23DA:
+    // offset 0x23E4:
     //   prefix:
     //     Compose
     //     <hangul choseong ssangpieup>
@@ -14761,7 +14771,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x23E0:
+    // offset 0x23EA:
     //   prefix:
     //     Compose
     //     <hangul choseong sios>
@@ -14806,7 +14816,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2404:
+    // offset 0x240E:
     //   prefix:
     //     Compose
     //     <hangul choseong ssangsios>
@@ -14821,7 +14831,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x240A:
+    // offset 0x2414:
     //   prefix:
     //     Compose
     //     <hangul choseong ieung>
@@ -14856,7 +14866,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2424:
+    // offset 0x242E:
     //   prefix:
     //     Compose
     //     <hangul choseong cieuc>
@@ -14873,7 +14883,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x242C:
+    // offset 0x2436:
     //   prefix:
     //     Compose
     //     <hangul choseong chieuch>
@@ -14890,7 +14900,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2434:
+    // offset 0x243E:
     //   prefix:
     //     Compose
     //     <hangul choseong phieuph>
@@ -14907,7 +14917,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x243C:
+    // offset 0x2446:
     //   prefix:
     //     Compose
     //     <hangul choseong hieuh>
@@ -14922,7 +14932,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2442:
+    // offset 0x244C:
     //   prefix:
     //     Compose
     //     <hangul choseong pieup-sios>
@@ -14945,7 +14955,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2450:
+    // offset 0x245A:
     //   prefix:
     //     Compose
     //     <hangul choseong sios-pieup>
@@ -14960,7 +14970,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2456:
+    // offset 0x2460:
     //   prefix:
     //     Compose
     //     <hangul choseong chitueumsios>
@@ -14975,7 +14985,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x245C:
+    // offset 0x2466:
     //   prefix:
     //     Compose
     //     <hangul choseong ceongchieumsios>
@@ -14990,7 +15000,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2462:
+    // offset 0x246C:
     //   prefix:
     //     Compose
     //     <hangul choseong chitueumcieuc>
@@ -15005,7 +15015,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2468:
+    // offset 0x2472:
     //   prefix:
     //     Compose
     //     <hangul choseong ceongchieumcieuc>
@@ -15020,7 +15030,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x246E:
+    // offset 0x2478:
     //   prefix:
     //     Compose
     //     <hangul jungseong a>
@@ -15039,7 +15049,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2478:
+    // offset 0x2482:
     //   prefix:
     //     Compose
     //     <hangul jungseong ya>
@@ -15058,7 +15068,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2482:
+    // offset 0x248C:
     //   prefix:
     //     Compose
     //     <hangul jungseong eo>
@@ -15079,7 +15089,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x248E:
+    // offset 0x2498:
     //   prefix:
     //     Compose
     //     <hangul jungseong yeo>
@@ -15098,7 +15108,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2498:
+    // offset 0x24A2:
     //   prefix:
     //     Compose
     //     <hangul jungseong o>
@@ -15127,7 +15137,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x24AC:
+    // offset 0x24B6:
     //   prefix:
     //     Compose
     //     <hangul jungseong wa>
@@ -15142,7 +15152,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x24B2:
+    // offset 0x24BC:
     //   prefix:
     //     Compose
     //     <hangul jungseong yo>
@@ -15165,7 +15175,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x24C0:
+    // offset 0x24CA:
     //   prefix:
     //     Compose
     //     <hangul jungseong u>
@@ -15194,7 +15204,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x24D4:
+    // offset 0x24DE:
     //   prefix:
     //     Compose
     //     <hangul jungseong weo>
@@ -15211,7 +15221,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x24DC:
+    // offset 0x24E6:
     //   prefix:
     //     Compose
     //     <hangul jungseong yu>
@@ -15238,7 +15248,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x24EE:
+    // offset 0x24F8:
     //   prefix:
     //     Compose
     //     <hangul jungseong eu>
@@ -15257,7 +15267,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x24F8:
+    // offset 0x2502:
     //   prefix:
     //     Compose
     //     <hangul jungseong yi>
@@ -15272,7 +15282,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x24FE:
+    // offset 0x2508:
     //   prefix:
     //     Compose
     //     <hangul jungseong i>
@@ -15297,7 +15307,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x250E:
+    // offset 0x2518:
     //   prefix:
     //     Compose
     //     <hangul jungseong araea>
@@ -15318,7 +15328,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x251A:
+    // offset 0x2524:
     //   prefix:
     //     Compose
     //     <hangul jongseong kiyeok>
@@ -15339,7 +15349,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2526:
+    // offset 0x2530:
     //   prefix:
     //     Compose
     //     <hangul jongseong kiyeok-sios>
@@ -15354,7 +15364,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x252C:
+    // offset 0x2536:
     //   prefix:
     //     Compose
     //     <hangul jongseong nieun>
@@ -15381,7 +15391,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x253E:
+    // offset 0x2548:
     //   prefix:
     //     Compose
     //     <hangul jongseong tikeut>
@@ -15398,7 +15408,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2546:
+    // offset 0x2550:
     //   prefix:
     //     Compose
     //     <hangul jongseong rieul>
@@ -15451,7 +15461,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2572:
+    // offset 0x257C:
     //   prefix:
     //     Compose
     //     <hangul jongseong rieul-kiyeok>
@@ -15466,7 +15476,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2578:
+    // offset 0x2582:
     //   prefix:
     //     Compose
     //     <hangul jongseong rieul-mieum>
@@ -15483,7 +15493,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2580:
+    // offset 0x258A:
     //   prefix:
     //     Compose
     //     <hangul jongseong rieul-pieup>
@@ -15502,7 +15512,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x258A:
+    // offset 0x2594:
     //   prefix:
     //     Compose
     //     <hangul jongseong rieul-sios>
@@ -15517,7 +15527,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2590:
+    // offset 0x259A:
     //   prefix:
     //     Compose
     //     <hangul jongseong mieum>
@@ -15548,7 +15558,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x25A6:
+    // offset 0x25B0:
     //   prefix:
     //     Compose
     //     <hangul jongseong pieup>
@@ -15571,7 +15581,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x25B4:
+    // offset 0x25BE:
     //   prefix:
     //     Compose
     //     <hangul jongseong sios>
@@ -15594,7 +15604,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x25C2:
+    // offset 0x25CC:
     //   prefix:
     //     Compose
     //     <hangul jongseong ieung>
@@ -15615,7 +15625,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x25CE:
+    // offset 0x25D8:
     //   prefix:
     //     Compose
     //     <hangul jongseong phieuph>
@@ -15632,7 +15642,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x25D6:
+    // offset 0x25E0:
     //   prefix:
     //     Compose
     //     <hangul jongseong hieuh>
@@ -15653,7 +15663,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x25E2:
+    // offset 0x25EC:
     //   prefix:
     //     Compose
     //     <hangul jongseong rieul-tikeut>
@@ -15668,7 +15678,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x25E8:
+    // offset 0x25F2:
     //   prefix:
     //     Compose
     //     <hangul jongseong mieum-sios>
@@ -15683,7 +15693,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x25EE:
+    // offset 0x25F8:
     //   prefix:
     //     Compose
     //     <hangul jongseong ieung-kiyeok>
@@ -15698,7 +15708,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x25F4:
+    // offset 0x25FE:
     //   prefix:
     //     Compose
     //     <hangul jongseong yesieung>
@@ -15715,7 +15725,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x25FC:
+    // offset 0x2606:
     //   prefix:
     //     Compose
     //     <greek psili>
@@ -15742,7 +15752,7 @@ static const uint16_t kCompositionsTree[] = {
     0x0303,  // combining tilde
     0x1FCF,  // -> psili and perispomeni
 
-    // offset 0x260E:
+    // offset 0x2618:
     //   prefix:
     //     Compose
     //     <greek dasia>
@@ -15769,7 +15779,7 @@ static const uint16_t kCompositionsTree[] = {
     0x0303,  // combining tilde
     0x1FDF,  // -> dasia and perispomeni
 
-    // offset 0x2620:
+    // offset 0x262A:
     //   prefix:
     //     Compose
     //     <there exists>
@@ -15784,7 +15794,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2626:
+    // offset 0x2630:
     //   prefix:
     //     Compose
     //     <element of>
@@ -15799,7 +15809,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x262C:
+    // offset 0x2636:
     //   prefix:
     //     Compose
     //     <contains as member>
@@ -15814,7 +15824,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2632:
+    // offset 0x263C:
     //   prefix:
     //     Compose
     //     <divides>
@@ -15829,7 +15839,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2638:
+    // offset 0x2642:
     //   prefix:
     //     Compose
     //     <parallel to>
@@ -15844,7 +15854,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x263E:
+    // offset 0x2648:
     //   prefix:
     //     Compose
     //     <tilde operator>
@@ -15859,7 +15869,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2644:
+    // offset 0x264E:
     //   prefix:
     //     Compose
     //     <asymptotically equal to>
@@ -15874,7 +15884,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x264A:
+    // offset 0x2654:
     //   prefix:
     //     Compose
     //     <almost equal to>
@@ -15889,7 +15899,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2650:
+    // offset 0x265A:
     //   prefix:
     //     Compose
     //     <equivalent to>
@@ -15904,7 +15914,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2656:
+    // offset 0x2660:
     //   prefix:
     //     Compose
     //     <identical to>
@@ -15919,7 +15929,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x265C:
+    // offset 0x2666:
     //   prefix:
     //     Compose
     //     <less-than or equal to>
@@ -15934,7 +15944,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2662:
+    // offset 0x266C:
     //   prefix:
     //     Compose
     //     <greater-than or equal to>
@@ -15949,7 +15959,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2668:
+    // offset 0x2672:
     //   prefix:
     //     Compose
     //     <less-than or equivalent to>
@@ -15964,7 +15974,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x266E:
+    // offset 0x2678:
     //   prefix:
     //     Compose
     //     <greater-than or equivalent to>
@@ -15979,7 +15989,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2674:
+    // offset 0x267E:
     //   prefix:
     //     Compose
     //     <less-than or greater-than>
@@ -15994,7 +16004,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x267A:
+    // offset 0x2684:
     //   prefix:
     //     Compose
     //     <greater-than or less-than>
@@ -16009,7 +16019,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2680:
+    // offset 0x268A:
     //   prefix:
     //     Compose
     //     <precedes>
@@ -16024,7 +16034,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2686:
+    // offset 0x2690:
     //   prefix:
     //     Compose
     //     <succeeds>
@@ -16039,7 +16049,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x268C:
+    // offset 0x2696:
     //   prefix:
     //     Compose
     //     <precedes or equal to>
@@ -16054,7 +16064,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2692:
+    // offset 0x269C:
     //   prefix:
     //     Compose
     //     <succeeds or equal to>
@@ -16069,7 +16079,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2698:
+    // offset 0x26A2:
     //   prefix:
     //     Compose
     //     <subset of>
@@ -16084,7 +16094,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x269E:
+    // offset 0x26A8:
     //   prefix:
     //     Compose
     //     <superset of>
@@ -16099,7 +16109,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x26A4:
+    // offset 0x26AE:
     //   prefix:
     //     Compose
     //     <subset of or equal to>
@@ -16114,7 +16124,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x26AA:
+    // offset 0x26B4:
     //   prefix:
     //     Compose
     //     <superset of or equal to>
@@ -16129,7 +16139,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x26B0:
+    // offset 0x26BA:
     //   prefix:
     //     Compose
     //     <square image of or equal to>
@@ -16144,7 +16154,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x26B6:
+    // offset 0x26C0:
     //   prefix:
     //     Compose
     //     <square original of or equal to>
@@ -16159,7 +16169,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x26BC:
+    // offset 0x26C6:
     //   prefix:
     //     Compose
     //     <right tack>
@@ -16174,7 +16184,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x26C2:
+    // offset 0x26CC:
     //   prefix:
     //     Compose
     //     <true>
@@ -16189,7 +16199,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x26C8:
+    // offset 0x26D2:
     //   prefix:
     //     Compose
     //     <forces>
@@ -16204,7 +16214,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x26CE:
+    // offset 0x26D8:
     //   prefix:
     //     Compose
     //     <double vertical bar double right turnstile>
@@ -16219,7 +16229,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x26D4:
+    // offset 0x26DE:
     //   prefix:
     //     Compose
     //     <normal subgroup of>
@@ -16234,7 +16244,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x26DA:
+    // offset 0x26E4:
     //   prefix:
     //     Compose
     //     <contains as normal subgroup>
@@ -16249,7 +16259,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x26E0:
+    // offset 0x26EA:
     //   prefix:
     //     Compose
     //     <normal subgroup of or equal to>
@@ -16264,7 +16274,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x26E6:
+    // offset 0x26F0:
     //   prefix:
     //     Compose
     //     <contains as normal subgroup or equal to>
@@ -16279,7 +16289,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x26EC:
+    // offset 0x26F6:
     //   prefix:
     //     Compose
     //     <nonforking>
@@ -16294,7 +16304,169 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x26F2:
+    // offset 0x26FC:
+    //   prefix:
+    //     Dead<quotation mark>
+    //   internal character table
+    0x0000,          // number of entries
+    //   leaf character table
+    0x000B,          // number of entries
+    0x0020,  // space
+    0x0022,  // -> quotation mark
+    0x0041,  // capital a
+    0x00C4,  // -> capital a with diaeresis
+    0x0045,  // capital e
+    0x00CB,  // -> capital e with diaeresis
+    0x0049,  // capital i
+    0x00CF,  // -> capital i with diaeresis
+    0x004F,  // capital o
+    0x00D6,  // -> capital o with diaeresis
+    0x0055,  // capital u
+    0x00DC,  // -> capital u with diaeresis
+    0x0061,  // letter a
+    0x00E4,  // -> letter a with diaeresis
+    0x0065,  // letter e
+    0x00EB,  // -> letter e with diaeresis
+    0x0069,  // letter i
+    0x00EF,  // -> letter i with diaeresis
+    0x006F,  // letter o
+    0x00F6,  // -> letter o with diaeresis
+    0x0075,  // letter u
+    0x00FC,  // -> letter u with diaeresis
+    //   internal dead_key table
+    0x0000,          // number of entries
+    //   leaf dead_key table
+    0x0000,          // number of entries
+
+    // offset 0x2716:
+    //   prefix:
+    //     Dead<apostrophe>
+    //   internal character table
+    0x0000,          // number of entries
+    //   leaf character table
+    0x000F,          // number of entries
+    0x0020,  // space
+    0x0027,  // -> apostrophe
+    0x0041,  // capital a
+    0x00C1,  // -> capital a with acute
+    0x0043,  // capital c
+    0x00C7,  // -> capital c with cedilla
+    0x0045,  // capital e
+    0x00C9,  // -> capital e with acute
+    0x0049,  // capital i
+    0x00CD,  // -> capital i with acute
+    0x004F,  // capital o
+    0x00D3,  // -> capital o with acute
+    0x0055,  // capital u
+    0x00DA,  // -> capital u with acute
+    0x0059,  // capital y
+    0x00DD,  // -> capital y with acute
+    0x0061,  // letter a
+    0x00E1,  // -> letter a with acute
+    0x0063,  // letter c
+    0x00E7,  // -> letter c with cedilla
+    0x0065,  // letter e
+    0x00E9,  // -> letter e with acute
+    0x0069,  // letter i
+    0x00ED,  // -> letter i with acute
+    0x006F,  // letter o
+    0x00F3,  // -> letter o with acute
+    0x0075,  // letter u
+    0x00FA,  // -> letter u with acute
+    0x0079,  // letter y
+    0x00FD,  // -> letter y with acute
+    //   internal dead_key table
+    0x0000,          // number of entries
+    //   leaf dead_key table
+    0x0000,          // number of entries
+
+    // offset 0x2738:
+    //   prefix:
+    //     Dead<circumflex accent>
+    //   internal character table
+    0x0000,          // number of entries
+    //   leaf character table
+    0x000B,          // number of entries
+    0x0020,  // space
+    0x005E,  // -> circumflex accent
+    0x0041,  // capital a
+    0x00C2,  // -> capital a with circumflex
+    0x0045,  // capital e
+    0x00CA,  // -> capital e with circumflex
+    0x0049,  // capital i
+    0x00CE,  // -> capital i with circumflex
+    0x004F,  // capital o
+    0x00D4,  // -> capital o with circumflex
+    0x0055,  // capital u
+    0x00DB,  // -> capital u with circumflex
+    0x0061,  // letter a
+    0x00E2,  // -> letter a with circumflex
+    0x0065,  // letter e
+    0x00EA,  // -> letter e with circumflex
+    0x0069,  // letter i
+    0x00EE,  // -> letter i with circumflex
+    0x006F,  // letter o
+    0x00F4,  // -> letter o with circumflex
+    0x0075,  // letter u
+    0x00FB,  // -> letter u with circumflex
+    //   internal dead_key table
+    0x0000,          // number of entries
+    //   leaf dead_key table
+    0x0000,          // number of entries
+
+    // offset 0x2752:
+    //   prefix:
+    //     Dead<grave accent>
+    //   internal character table
+    0x0000,          // number of entries
+    //   leaf character table
+    0x0009,          // number of entries
+    0x0020,  // space
+    0x0060,  // -> grave accent
+    0x0045,  // capital e
+    0x00C8,  // -> capital e with grave
+    0x0049,  // capital i
+    0x00CC,  // -> capital i with grave
+    0x004F,  // capital o
+    0x00D2,  // -> capital o with grave
+    0x0055,  // capital u
+    0x00D9,  // -> capital u with grave
+    0x0065,  // letter e
+    0x00E8,  // -> letter e with grave
+    0x0069,  // letter i
+    0x00EC,  // -> letter i with grave
+    0x006F,  // letter o
+    0x00F2,  // -> letter o with grave
+    0x0075,  // letter u
+    0x00F9,  // -> letter u with grave
+    //   internal dead_key table
+    0x0000,          // number of entries
+    //   leaf dead_key table
+    0x0000,          // number of entries
+
+    // offset 0x2768:
+    //   prefix:
+    //     Dead<tilde>
+    //   internal character table
+    0x0000,          // number of entries
+    //   leaf character table
+    0x0005,          // number of entries
+    0x0020,  // space
+    0x007E,  // -> tilde
+    0x004E,  // capital n
+    0x00D1,  // -> capital n with tilde
+    0x004F,  // capital o
+    0x00D5,  // -> capital o with tilde
+    0x006E,  // letter n
+    0x00F1,  // -> letter n with tilde
+    0x006F,  // letter o
+    0x00F5,  // -> letter o with tilde
+    //   internal dead_key table
+    0x0000,          // number of entries
+    //   leaf dead_key table
+    0x0000,          // number of entries
+
+    // offset 0x2776:
     //   prefix:
     //     Dead<combining grave accent>
     //   internal character table
@@ -16474,50 +16646,50 @@ static const uint16_t kCompositionsTree[] = {
     //   internal dead_key table
     0x0008,          // number of entries
     0x0000,  // U+0000
-    0x27B2,
+    0x2836,
     0x0302,  // combining circumflex accent
-    0x2856,
+    0x28DA,
     0x0304,  // combining macron
-    0x2866,
+    0x28EA,
     0x0306,  // combining breve
-    0x2872,
+    0x28F6,
     0x0308,  // combining diaeresis
-    0x287A,
+    0x28FE,
     0x0313,  // combining comma above
-    0x2886,
+    0x290A,
     0x0314,  // combining reversed comma above
-    0x28A4,
+    0x2928,
     0x031B,  // combining horn
-    0x28C4,
+    0x2948,
     //   leaf dead_key table
     0x0001,          // number of entries
     0x0300,  // combining grave accent
     0x0060,  // -> grave accent
 
-    // offset 0x27B2:
+    // offset 0x2836:
     //   prefix:
     //     Dead<combining grave accent>
     //     Compose
     //   internal character table
     0x0009,          // number of entries
     0x0022,  // quotation mark
-    0x27C8,
+    0x284C,
     0x0028,  // left parenthesis
-    0x27D4,
+    0x2858,
     0x0029,  // right parenthesis
-    0x27F4,
+    0x2878,
     0x002B,  // plus sign
-    0x2812,
+    0x2896,
     0x0055,  // capital u
-    0x281E,
+    0x28A2,
     0x005E,  // circumflex accent
-    0x2826,
+    0x28AA,
     0x005F,  // low line
-    0x2836,
+    0x28BA,
     0x0062,  // letter b
-    0x2842,
+    0x28C6,
     0x00AF,  // macron
-    0x284A,
+    0x28CE,
     //   leaf character table
     0x0000,          // number of entries
     //   internal dead_key table
@@ -16525,7 +16697,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x27C8:
+    // offset 0x284C:
     //   prefix:
     //     Dead<combining grave accent>
     //     Compose
@@ -16547,7 +16719,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x27D4:
+    // offset 0x2858:
     //   prefix:
     //     Dead<combining grave accent>
     //     Compose
@@ -16589,7 +16761,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x27F4:
+    // offset 0x2878:
     //   prefix:
     //     Dead<combining grave accent>
     //     Compose
@@ -16629,7 +16801,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2812:
+    // offset 0x2896:
     //   prefix:
     //     Dead<combining grave accent>
     //     Compose
@@ -16651,7 +16823,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x281E:
+    // offset 0x28A2:
     //   prefix:
     //     Dead<combining grave accent>
     //     Compose
@@ -16669,7 +16841,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2826:
+    // offset 0x28AA:
     //   prefix:
     //     Dead<combining grave accent>
     //     Compose
@@ -16695,7 +16867,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2836:
+    // offset 0x28BA:
     //   prefix:
     //     Dead<combining grave accent>
     //     Compose
@@ -16717,7 +16889,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2842:
+    // offset 0x28C6:
     //   prefix:
     //     Dead<combining grave accent>
     //     Compose
@@ -16735,7 +16907,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x284A:
+    // offset 0x28CE:
     //   prefix:
     //     Dead<combining grave accent>
     //     Compose
@@ -16757,7 +16929,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2856:
+    // offset 0x28DA:
     //   prefix:
     //     Dead<combining grave accent>
     //     Dead<combining circumflex accent>
@@ -16782,7 +16954,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2866:
+    // offset 0x28EA:
     //   prefix:
     //     Dead<combining grave accent>
     //     Dead<combining macron>
@@ -16803,7 +16975,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2872:
+    // offset 0x28F6:
     //   prefix:
     //     Dead<combining grave accent>
     //     Dead<combining breve>
@@ -16820,7 +16992,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x287A:
+    // offset 0x28FE:
     //   prefix:
     //     Dead<combining grave accent>
     //     Dead<combining diaeresis>
@@ -16841,7 +17013,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2886:
+    // offset 0x290A:
     //   prefix:
     //     Dead<combining grave accent>
     //     Dead<combining comma above>
@@ -16880,7 +17052,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x28A4:
+    // offset 0x2928:
     //   prefix:
     //     Dead<combining grave accent>
     //     Dead<combining reversed comma above>
@@ -16921,7 +17093,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x28C4:
+    // offset 0x2948:
     //   prefix:
     //     Dead<combining grave accent>
     //     Dead<combining horn>
@@ -16942,7 +17114,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x28D0:
+    // offset 0x2954:
     //   prefix:
     //     Dead<combining acute accent>
     //   internal character table
@@ -17184,70 +17356,70 @@ static const uint16_t kCompositionsTree[] = {
     //   internal dead_key table
     0x000D,          // number of entries
     0x0000,  // U+0000
-    0x29D8,
+    0x2A5C,
     0x0302,  // combining circumflex accent
-    0x2AB6,
+    0x2B3A,
     0x0303,  // combining tilde
-    0x2AC6,
+    0x2B4A,
     0x0304,  // combining macron
-    0x2AD2,
+    0x2B56,
     0x0306,  // combining breve
-    0x2ADE,
+    0x2B62,
     0x0307,  // combining dot above
-    0x2AE6,
+    0x2B6A,
     0x0308,  // combining diaeresis
-    0x2AEE,
+    0x2B72,
     0x030A,  // combining ring above
-    0x2B00,
+    0x2B84,
     0x0313,  // combining comma above
-    0x2B08,
+    0x2B8C,
     0x0314,  // combining reversed comma above
-    0x2B26,
+    0x2BAA,
     0x031B,  // combining horn
-    0x2B46,
+    0x2BCA,
     0x0327,  // combining cedilla
-    0x2B52,
+    0x2BD6,
     0x0338,  // combining long solidus overlay
-    0x2B5A,
+    0x2BDE,
     //   leaf dead_key table
     0x0001,          // number of entries
     0x0301,  // combining acute accent
     0x00B4,  // -> acute accent
 
-    // offset 0x29D8:
+    // offset 0x2A5C:
     //   prefix:
     //     Dead<combining acute accent>
     //     Compose
     //   internal character table
     0x000E,          // number of entries
     0x0022,  // quotation mark
-    0x29F8,
+    0x2A7C,
     0x0028,  // left parenthesis
-    0x2A08,
+    0x2A8C,
     0x0029,  // right parenthesis
-    0x2A28,
+    0x2AAC,
     0x002B,  // plus sign
-    0x2A46,
+    0x2ACA,
     0x002C,  // comma
-    0x2A52,
+    0x2AD6,
     0x002F,  // solidus
-    0x2A5A,
+    0x2ADE,
     0x0055,  // capital u
-    0x2A62,
+    0x2AE6,
     0x005E,  // circumflex accent
-    0x2A6A,
+    0x2AEE,
     0x005F,  // low line
-    0x2A7A,
+    0x2AFE,
     0x0062,  // letter b
-    0x2A86,
+    0x2B0A,
     0x006F,  // letter o
-    0x2A8E,
+    0x2B12,
     0x007E,  // tilde
-    0x2A96,
+    0x2B1A,
     0x00AF,  // macron
-    0x2AA2,
+    0x2B26,
     0x00B8,  // cedilla
-    0x2AAE,
+    0x2B32,
     //   leaf character table
     0x0000,          // number of entries
     //   internal dead_key table
@@ -17255,7 +17427,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x29F8:
+    // offset 0x2A7C:
     //   prefix:
     //     Dead<combining acute accent>
     //     Compose
@@ -17281,7 +17453,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2A08:
+    // offset 0x2A8C:
     //   prefix:
     //     Dead<combining acute accent>
     //     Compose
@@ -17323,7 +17495,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2A28:
+    // offset 0x2AAC:
     //   prefix:
     //     Dead<combining acute accent>
     //     Compose
@@ -17363,7 +17535,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2A46:
+    // offset 0x2ACA:
     //   prefix:
     //     Dead<combining acute accent>
     //     Compose
@@ -17385,7 +17557,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2A52:
+    // offset 0x2AD6:
     //   prefix:
     //     Dead<combining acute accent>
     //     Compose
@@ -17403,7 +17575,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2A5A:
+    // offset 0x2ADE:
     //   prefix:
     //     Dead<combining acute accent>
     //     Compose
@@ -17421,7 +17593,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2A62:
+    // offset 0x2AE6:
     //   prefix:
     //     Dead<combining acute accent>
     //     Compose
@@ -17439,7 +17611,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2A6A:
+    // offset 0x2AEE:
     //   prefix:
     //     Dead<combining acute accent>
     //     Compose
@@ -17465,7 +17637,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2A7A:
+    // offset 0x2AFE:
     //   prefix:
     //     Dead<combining acute accent>
     //     Compose
@@ -17487,7 +17659,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2A86:
+    // offset 0x2B0A:
     //   prefix:
     //     Dead<combining acute accent>
     //     Compose
@@ -17505,7 +17677,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2A8E:
+    // offset 0x2B12:
     //   prefix:
     //     Dead<combining acute accent>
     //     Compose
@@ -17523,7 +17695,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2A96:
+    // offset 0x2B1A:
     //   prefix:
     //     Dead<combining acute accent>
     //     Compose
@@ -17545,7 +17717,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2AA2:
+    // offset 0x2B26:
     //   prefix:
     //     Dead<combining acute accent>
     //     Compose
@@ -17567,7 +17739,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2AAE:
+    // offset 0x2B32:
     //   prefix:
     //     Dead<combining acute accent>
     //     Compose
@@ -17585,7 +17757,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2AB6:
+    // offset 0x2B3A:
     //   prefix:
     //     Dead<combining acute accent>
     //     Dead<combining circumflex accent>
@@ -17610,7 +17782,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2AC6:
+    // offset 0x2B4A:
     //   prefix:
     //     Dead<combining acute accent>
     //     Dead<combining tilde>
@@ -17631,7 +17803,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2AD2:
+    // offset 0x2B56:
     //   prefix:
     //     Dead<combining acute accent>
     //     Dead<combining macron>
@@ -17652,7 +17824,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2ADE:
+    // offset 0x2B62:
     //   prefix:
     //     Dead<combining acute accent>
     //     Dead<combining breve>
@@ -17669,7 +17841,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2AE6:
+    // offset 0x2B6A:
     //   prefix:
     //     Dead<combining acute accent>
     //     Dead<combining dot above>
@@ -17686,7 +17858,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2AEE:
+    // offset 0x2B72:
     //   prefix:
     //     Dead<combining acute accent>
     //     Dead<combining diaeresis>
@@ -17713,7 +17885,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2B00:
+    // offset 0x2B84:
     //   prefix:
     //     Dead<combining acute accent>
     //     Dead<combining ring above>
@@ -17730,7 +17902,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2B08:
+    // offset 0x2B8C:
     //   prefix:
     //     Dead<combining acute accent>
     //     Dead<combining comma above>
@@ -17769,7 +17941,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2B26:
+    // offset 0x2BAA:
     //   prefix:
     //     Dead<combining acute accent>
     //     Dead<combining reversed comma above>
@@ -17810,7 +17982,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2B46:
+    // offset 0x2BCA:
     //   prefix:
     //     Dead<combining acute accent>
     //     Dead<combining horn>
@@ -17831,7 +18003,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2B52:
+    // offset 0x2BD6:
     //   prefix:
     //     Dead<combining acute accent>
     //     Dead<combining cedilla>
@@ -17848,7 +18020,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2B5A:
+    // offset 0x2BDE:
     //   prefix:
     //     Dead<combining acute accent>
     //     Dead<combining long solidus overlay>
@@ -17865,7 +18037,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2B62:
+    // offset 0x2BE6:
     //   prefix:
     //     Dead<combining circumflex accent>
     //   internal character table
@@ -18035,40 +18207,40 @@ static const uint16_t kCompositionsTree[] = {
     //   internal dead_key table
     0x0006,          // number of entries
     0x0000,  // U+0000
-    0x2C14,
+    0x2C98,
     0x0300,  // combining grave accent
-    0x2C7C,
+    0x2D00,
     0x0301,  // combining acute accent
-    0x2C8C,
+    0x2D10,
     0x0303,  // combining tilde
-    0x2C9C,
+    0x2D20,
     0x0309,  // combining hook above
-    0x2CAC,
+    0x2D30,
     0x0323,  // combining dot below
-    0x2CBC,
+    0x2D40,
     //   leaf dead_key table
     0x0001,          // number of entries
     0x0302,  // combining circumflex accent
     0x005E,  // -> circumflex accent
 
-    // offset 0x2C14:
+    // offset 0x2C98:
     //   prefix:
     //     Dead<combining circumflex accent>
     //     Compose
     //   internal character table
     0x0006,          // number of entries
     0x0021,  // exclamation mark
-    0x2C24,
+    0x2CA8,
     0x0053,  // capital s
-    0x2C34,
+    0x2CB8,
     0x0054,  // capital t
-    0x2C3C,
+    0x2CC0,
     0x005F,  // low line
-    0x2C44,
+    0x2CC8,
     0x0073,  // letter s
-    0x2C6C,
+    0x2CF0,
     0x0074,  // letter t
-    0x2C74,
+    0x2CF8,
     //   leaf character table
     0x0000,          // number of entries
     //   internal dead_key table
@@ -18076,7 +18248,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2C24:
+    // offset 0x2CA8:
     //   prefix:
     //     Dead<combining circumflex accent>
     //     Compose
@@ -18102,7 +18274,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2C34:
+    // offset 0x2CB8:
     //   prefix:
     //     Dead<combining circumflex accent>
     //     Compose
@@ -18120,7 +18292,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2C3C:
+    // offset 0x2CC0:
     //   prefix:
     //     Dead<combining circumflex accent>
     //     Compose
@@ -18138,7 +18310,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2C44:
+    // offset 0x2CC8:
     //   prefix:
     //     Dead<combining circumflex accent>
     //     Compose
@@ -18188,7 +18360,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2C6C:
+    // offset 0x2CF0:
     //   prefix:
     //     Dead<combining circumflex accent>
     //     Compose
@@ -18206,7 +18378,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2C74:
+    // offset 0x2CF8:
     //   prefix:
     //     Dead<combining circumflex accent>
     //     Compose
@@ -18224,7 +18396,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2C7C:
+    // offset 0x2D00:
     //   prefix:
     //     Dead<combining circumflex accent>
     //     Dead<combining grave accent>
@@ -18249,7 +18421,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2C8C:
+    // offset 0x2D10:
     //   prefix:
     //     Dead<combining circumflex accent>
     //     Dead<combining acute accent>
@@ -18274,7 +18446,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2C9C:
+    // offset 0x2D20:
     //   prefix:
     //     Dead<combining circumflex accent>
     //     Dead<combining tilde>
@@ -18299,7 +18471,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2CAC:
+    // offset 0x2D30:
     //   prefix:
     //     Dead<combining circumflex accent>
     //     Dead<combining hook above>
@@ -18324,7 +18496,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2CBC:
+    // offset 0x2D40:
     //   prefix:
     //     Dead<combining circumflex accent>
     //     Dead<combining dot below>
@@ -18349,7 +18521,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2CCC:
+    // offset 0x2D50:
     //   prefix:
     //     Dead<combining tilde>
     //   internal character table
@@ -18493,48 +18665,48 @@ static const uint16_t kCompositionsTree[] = {
     //   internal dead_key table
     0x0009,          // number of entries
     0x0000,  // U+0000
-    0x2D6A,
+    0x2DEE,
     0x0301,  // combining acute accent
-    0x2DDE,
+    0x2E62,
     0x0302,  // combining circumflex accent
-    0x2DEA,
+    0x2E6E,
     0x0304,  // combining macron
-    0x2DFA,
+    0x2E7E,
     0x0306,  // combining breve
-    0x2E02,
+    0x2E86,
     0x0308,  // combining diaeresis
-    0x2E0A,
+    0x2E8E,
     0x0313,  // combining comma above
-    0x2E16,
+    0x2E9A,
     0x0314,  // combining reversed comma above
-    0x2E2C,
+    0x2EB0,
     0x031B,  // combining horn
-    0x2E44,
+    0x2EC8,
     //   leaf dead_key table
     0x0001,          // number of entries
     0x0303,  // combining tilde
     0x007E,  // -> tilde
 
-    // offset 0x2D6A:
+    // offset 0x2DEE:
     //   prefix:
     //     Dead<combining tilde>
     //     Compose
     //   internal character table
     0x0007,          // number of entries
     0x0022,  // quotation mark
-    0x2D7C,
+    0x2E00,
     0x0028,  // left parenthesis
-    0x2D84,
+    0x2E08,
     0x0029,  // right parenthesis
-    0x2D9C,
+    0x2E20,
     0x002B,  // plus sign
-    0x2DB2,
+    0x2E36,
     0x0055,  // capital u
-    0x2DBE,
+    0x2E42,
     0x005E,  // circumflex accent
-    0x2DC6,
+    0x2E4A,
     0x0062,  // letter b
-    0x2DD6,
+    0x2E5A,
     //   leaf character table
     0x0000,          // number of entries
     //   internal dead_key table
@@ -18542,7 +18714,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2D7C:
+    // offset 0x2E00:
     //   prefix:
     //     Dead<combining tilde>
     //     Compose
@@ -18560,7 +18732,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2D84:
+    // offset 0x2E08:
     //   prefix:
     //     Dead<combining tilde>
     //     Compose
@@ -18594,7 +18766,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2D9C:
+    // offset 0x2E20:
     //   prefix:
     //     Dead<combining tilde>
     //     Compose
@@ -18626,7 +18798,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2DB2:
+    // offset 0x2E36:
     //   prefix:
     //     Dead<combining tilde>
     //     Compose
@@ -18648,7 +18820,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2DBE:
+    // offset 0x2E42:
     //   prefix:
     //     Dead<combining tilde>
     //     Compose
@@ -18666,7 +18838,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2DC6:
+    // offset 0x2E4A:
     //   prefix:
     //     Dead<combining tilde>
     //     Compose
@@ -18692,7 +18864,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2DD6:
+    // offset 0x2E5A:
     //   prefix:
     //     Dead<combining tilde>
     //     Compose
@@ -18710,7 +18882,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2DDE:
+    // offset 0x2E62:
     //   prefix:
     //     Dead<combining tilde>
     //     Dead<combining acute accent>
@@ -18731,7 +18903,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2DEA:
+    // offset 0x2E6E:
     //   prefix:
     //     Dead<combining tilde>
     //     Dead<combining circumflex accent>
@@ -18756,7 +18928,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2DFA:
+    // offset 0x2E7E:
     //   prefix:
     //     Dead<combining tilde>
     //     Dead<combining macron>
@@ -18773,7 +18945,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2E02:
+    // offset 0x2E86:
     //   prefix:
     //     Dead<combining tilde>
     //     Dead<combining breve>
@@ -18790,7 +18962,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2E0A:
+    // offset 0x2E8E:
     //   prefix:
     //     Dead<combining tilde>
     //     Dead<combining diaeresis>
@@ -18811,7 +18983,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2E16:
+    // offset 0x2E9A:
     //   prefix:
     //     Dead<combining tilde>
     //     Dead<combining comma above>
@@ -18842,7 +19014,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2E2C:
+    // offset 0x2EB0:
     //   prefix:
     //     Dead<combining tilde>
     //     Dead<combining reversed comma above>
@@ -18875,7 +19047,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2E44:
+    // offset 0x2EC8:
     //   prefix:
     //     Dead<combining tilde>
     //     Dead<combining horn>
@@ -18896,7 +19068,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2E50:
+    // offset 0x2ED4:
     //   prefix:
     //     Dead<combining macron>
     //   internal character table
@@ -19018,42 +19190,42 @@ static const uint16_t kCompositionsTree[] = {
     //   internal dead_key table
     0x0008,          // number of entries
     0x0000,  // U+0000
-    0x2ED6,
+    0x2F5A,
     0x0300,  // combining grave accent
-    0x2F1C,
+    0x2FA0,
     0x0301,  // combining acute accent
-    0x2F28,
+    0x2FAC,
     0x0303,  // combining tilde
-    0x2F34,
+    0x2FB8,
     0x0307,  // combining dot above
-    0x2F3C,
+    0x2FC0,
     0x0308,  // combining diaeresis
-    0x2F48,
+    0x2FCC,
     0x0323,  // combining dot below
-    0x2F58,
+    0x2FDC,
     0x0328,  // combining ogonek
-    0x2F64,
+    0x2FE8,
     //   leaf dead_key table
     0x0001,          // number of entries
     0x0304,  // combining macron
     0x00AF,  // -> macron
 
-    // offset 0x2ED6:
+    // offset 0x2F5A:
     //   prefix:
     //     Dead<combining macron>
     //     Compose
     //   internal character table
     0x0005,          // number of entries
     0x0021,  // exclamation mark
-    0x2EE4,
+    0x2F68,
     0x0022,  // quotation mark
-    0x2EF0,
+    0x2F74,
     0x002E,  // full stop
-    0x2F00,
+    0x2F84,
     0x003B,  // semicolon
-    0x2F0C,
+    0x2F90,
     0x007E,  // tilde
-    0x2F14,
+    0x2F98,
     //   leaf character table
     0x0000,          // number of entries
     //   internal dead_key table
@@ -19061,7 +19233,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2EE4:
+    // offset 0x2F68:
     //   prefix:
     //     Dead<combining macron>
     //     Compose
@@ -19083,7 +19255,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2EF0:
+    // offset 0x2F74:
     //   prefix:
     //     Dead<combining macron>
     //     Compose
@@ -19109,7 +19281,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2F00:
+    // offset 0x2F84:
     //   prefix:
     //     Dead<combining macron>
     //     Compose
@@ -19131,7 +19303,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2F0C:
+    // offset 0x2F90:
     //   prefix:
     //     Dead<combining macron>
     //     Compose
@@ -19149,7 +19321,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2F14:
+    // offset 0x2F98:
     //   prefix:
     //     Dead<combining macron>
     //     Compose
@@ -19167,7 +19339,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2F1C:
+    // offset 0x2FA0:
     //   prefix:
     //     Dead<combining macron>
     //     Dead<combining grave accent>
@@ -19188,7 +19360,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2F28:
+    // offset 0x2FAC:
     //   prefix:
     //     Dead<combining macron>
     //     Dead<combining acute accent>
@@ -19209,7 +19381,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2F34:
+    // offset 0x2FB8:
     //   prefix:
     //     Dead<combining macron>
     //     Dead<combining tilde>
@@ -19226,7 +19398,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2F3C:
+    // offset 0x2FC0:
     //   prefix:
     //     Dead<combining macron>
     //     Dead<combining dot above>
@@ -19247,7 +19419,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2F48:
+    // offset 0x2FCC:
     //   prefix:
     //     Dead<combining macron>
     //     Dead<combining diaeresis>
@@ -19272,7 +19444,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2F58:
+    // offset 0x2FDC:
     //   prefix:
     //     Dead<combining macron>
     //     Dead<combining dot below>
@@ -19293,7 +19465,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2F64:
+    // offset 0x2FE8:
     //   prefix:
     //     Dead<combining macron>
     //     Dead<combining ogonek>
@@ -19310,7 +19482,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2F6C:
+    // offset 0x2FF0:
     //   prefix:
     //     Dead<combining breve>
     //   internal character table
@@ -19400,36 +19572,36 @@ static const uint16_t kCompositionsTree[] = {
     //   internal dead_key table
     0x0007,          // number of entries
     0x0000,  // U+0000
-    0x2FD0,
+    0x3054,
     0x0300,  // combining grave accent
-    0x2FF2,
+    0x3076,
     0x0301,  // combining acute accent
-    0x2FFA,
+    0x307E,
     0x0303,  // combining tilde
-    0x3002,
+    0x3086,
     0x0309,  // combining hook above
-    0x300A,
+    0x308E,
     0x0323,  // combining dot below
-    0x3012,
+    0x3096,
     0x0327,  // combining cedilla
-    0x301A,
+    0x309E,
     //   leaf dead_key table
     0x0001,          // number of entries
     0x0306,  // combining breve
     0x02D8,  // -> breve
 
-    // offset 0x2FD0:
+    // offset 0x3054:
     //   prefix:
     //     Dead<combining breve>
     //     Compose
     //   internal character table
     0x0003,          // number of entries
     0x0021,  // exclamation mark
-    0x2FDA,
+    0x305E,
     0x002C,  // comma
-    0x2FE2,
+    0x3066,
     0x00B8,  // cedilla
-    0x2FEA,
+    0x306E,
     //   leaf character table
     0x0000,          // number of entries
     //   internal dead_key table
@@ -19437,7 +19609,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2FDA:
+    // offset 0x305E:
     //   prefix:
     //     Dead<combining breve>
     //     Compose
@@ -19455,7 +19627,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2FE2:
+    // offset 0x3066:
     //   prefix:
     //     Dead<combining breve>
     //     Compose
@@ -19473,7 +19645,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2FEA:
+    // offset 0x306E:
     //   prefix:
     //     Dead<combining breve>
     //     Compose
@@ -19491,7 +19663,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2FF2:
+    // offset 0x3076:
     //   prefix:
     //     Dead<combining breve>
     //     Dead<combining grave accent>
@@ -19508,7 +19680,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x2FFA:
+    // offset 0x307E:
     //   prefix:
     //     Dead<combining breve>
     //     Dead<combining acute accent>
@@ -19525,7 +19697,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x3002:
+    // offset 0x3086:
     //   prefix:
     //     Dead<combining breve>
     //     Dead<combining tilde>
@@ -19542,7 +19714,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x300A:
+    // offset 0x308E:
     //   prefix:
     //     Dead<combining breve>
     //     Dead<combining hook above>
@@ -19559,7 +19731,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x3012:
+    // offset 0x3096:
     //   prefix:
     //     Dead<combining breve>
     //     Dead<combining dot below>
@@ -19576,7 +19748,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x301A:
+    // offset 0x309E:
     //   prefix:
     //     Dead<combining breve>
     //     Dead<combining cedilla>
@@ -19593,7 +19765,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x3022:
+    // offset 0x30A6:
     //   prefix:
     //     Dead<combining dot above>
     //   internal character table
@@ -19715,36 +19887,36 @@ static const uint16_t kCompositionsTree[] = {
     //   internal dead_key table
     0x0006,          // number of entries
     0x0000,  // U+0000
-    0x30A4,
+    0x3128,
     0x0301,  // combining acute accent
-    0x30D0,
+    0x3154,
     0x0304,  // combining macron
-    0x30D8,
+    0x315C,
     0x030C,  // combining caron
-    0x30E4,
+    0x3168,
     0x0323,  // combining dot below
-    0x30EC,
+    0x3170,
     0x0338,  // combining long solidus overlay
-    0x30F4,
+    0x3178,
     //   leaf dead_key table
     0x0001,          // number of entries
     0x0307,  // combining dot above
     0x02D9,  // -> dot above
 
-    // offset 0x30A4:
+    // offset 0x3128:
     //   prefix:
     //     Dead<combining dot above>
     //     Compose
     //   internal character table
     0x0004,          // number of entries
     0x0021,  // exclamation mark
-    0x30B0,
+    0x3134,
     0x0027,  // apostrophe
-    0x30B8,
+    0x313C,
     0x0063,  // letter c
-    0x30C0,
+    0x3144,
     0x00B4,  // acute accent
-    0x30C8,
+    0x314C,
     //   leaf character table
     0x0000,          // number of entries
     //   internal dead_key table
@@ -19752,7 +19924,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x30B0:
+    // offset 0x3134:
     //   prefix:
     //     Dead<combining dot above>
     //     Compose
@@ -19770,7 +19942,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x30B8:
+    // offset 0x313C:
     //   prefix:
     //     Dead<combining dot above>
     //     Compose
@@ -19788,7 +19960,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x30C0:
+    // offset 0x3144:
     //   prefix:
     //     Dead<combining dot above>
     //     Compose
@@ -19806,7 +19978,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x30C8:
+    // offset 0x314C:
     //   prefix:
     //     Dead<combining dot above>
     //     Compose
@@ -19824,7 +19996,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x30D0:
+    // offset 0x3154:
     //   prefix:
     //     Dead<combining dot above>
     //     Dead<combining acute accent>
@@ -19841,7 +20013,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x30D8:
+    // offset 0x315C:
     //   prefix:
     //     Dead<combining dot above>
     //     Dead<combining macron>
@@ -19862,7 +20034,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x30E4:
+    // offset 0x3168:
     //   prefix:
     //     Dead<combining dot above>
     //     Dead<combining caron>
@@ -19879,7 +20051,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x30EC:
+    // offset 0x3170:
     //   prefix:
     //     Dead<combining dot above>
     //     Dead<combining dot below>
@@ -19896,7 +20068,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x30F4:
+    // offset 0x3178:
     //   prefix:
     //     Dead<combining dot above>
     //     Dead<combining long solidus overlay>
@@ -19911,7 +20083,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x30FA:
+    // offset 0x317E:
     //   prefix:
     //     Dead<combining diaeresis>
     //   internal character table
@@ -20059,34 +20231,34 @@ static const uint16_t kCompositionsTree[] = {
     //   internal dead_key table
     0x0006,          // number of entries
     0x0000,  // U+0000
-    0x3196,
+    0x321A,
     0x0300,  // combining grave accent
-    0x31B8,
+    0x323C,
     0x0301,  // combining acute accent
-    0x31C0,
+    0x3244,
     0x0303,  // combining tilde
-    0x31D2,
+    0x3256,
     0x0304,  // combining macron
-    0x31DA,
+    0x325E,
     0x030C,  // combining caron
-    0x31EA,
+    0x326E,
     //   leaf dead_key table
     0x0001,          // number of entries
     0x0308,  // combining diaeresis
     0x00A8,  // -> diaeresis
 
-    // offset 0x3196:
+    // offset 0x321A:
     //   prefix:
     //     Dead<combining diaeresis>
     //     Compose
     //   internal character table
     0x0003,          // number of entries
     0x005F,  // low line
-    0x31A0,
+    0x3224,
     0x007E,  // tilde
-    0x31A8,
+    0x322C,
     0x00AF,  // macron
-    0x31B0,
+    0x3234,
     //   leaf character table
     0x0000,          // number of entries
     //   internal dead_key table
@@ -20094,7 +20266,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x31A0:
+    // offset 0x3224:
     //   prefix:
     //     Dead<combining diaeresis>
     //     Compose
@@ -20112,7 +20284,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x31A8:
+    // offset 0x322C:
     //   prefix:
     //     Dead<combining diaeresis>
     //     Compose
@@ -20130,7 +20302,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x31B0:
+    // offset 0x3234:
     //   prefix:
     //     Dead<combining diaeresis>
     //     Compose
@@ -20148,7 +20320,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x31B8:
+    // offset 0x323C:
     //   prefix:
     //     Dead<combining diaeresis>
     //     Dead<combining grave accent>
@@ -20165,7 +20337,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x31C0:
+    // offset 0x3244:
     //   prefix:
     //     Dead<combining diaeresis>
     //     Dead<combining acute accent>
@@ -20192,7 +20364,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x31D2:
+    // offset 0x3256:
     //   prefix:
     //     Dead<combining diaeresis>
     //     Dead<combining tilde>
@@ -20209,7 +20381,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x31DA:
+    // offset 0x325E:
     //   prefix:
     //     Dead<combining diaeresis>
     //     Dead<combining macron>
@@ -20234,7 +20406,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x31EA:
+    // offset 0x326E:
     //   prefix:
     //     Dead<combining diaeresis>
     //     Dead<combining caron>
@@ -20251,7 +20423,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x31F2:
+    // offset 0x3276:
     //   prefix:
     //     Dead<combining hook above>
     //   internal character table
@@ -20379,32 +20551,32 @@ static const uint16_t kCompositionsTree[] = {
     //   internal dead_key table
     0x0004,          // number of entries
     0x0000,  // U+0000
-    0x3276,
+    0x32FA,
     0x0302,  // combining circumflex accent
-    0x32AE,
+    0x3332,
     0x0306,  // combining breve
-    0x32BE,
+    0x3342,
     0x031B,  // combining horn
-    0x32C6,
+    0x334A,
     //   leaf dead_key table
     0x0001,          // number of entries
     0x0309,  // combining hook above
     0x0309,  // -> combining hook above
 
-    // offset 0x3276:
+    // offset 0x32FA:
     //   prefix:
     //     Dead<combining hook above>
     //     Compose
     //   internal character table
     0x0004,          // number of entries
     0x002B,  // plus sign
-    0x3282,
+    0x3306,
     0x0055,  // capital u
-    0x328E,
+    0x3312,
     0x005E,  // circumflex accent
-    0x3296,
+    0x331A,
     0x0062,  // letter b
-    0x32A6,
+    0x332A,
     //   leaf character table
     0x0000,          // number of entries
     //   internal dead_key table
@@ -20412,7 +20584,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x3282:
+    // offset 0x3306:
     //   prefix:
     //     Dead<combining hook above>
     //     Compose
@@ -20434,7 +20606,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x328E:
+    // offset 0x3312:
     //   prefix:
     //     Dead<combining hook above>
     //     Compose
@@ -20452,7 +20624,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x3296:
+    // offset 0x331A:
     //   prefix:
     //     Dead<combining hook above>
     //     Compose
@@ -20478,7 +20650,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x32A6:
+    // offset 0x332A:
     //   prefix:
     //     Dead<combining hook above>
     //     Compose
@@ -20496,7 +20668,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x32AE:
+    // offset 0x3332:
     //   prefix:
     //     Dead<combining hook above>
     //     Dead<combining circumflex accent>
@@ -20521,7 +20693,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x32BE:
+    // offset 0x3342:
     //   prefix:
     //     Dead<combining hook above>
     //     Dead<combining breve>
@@ -20538,7 +20710,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x32C6:
+    // offset 0x334A:
     //   prefix:
     //     Dead<combining hook above>
     //     Dead<combining horn>
@@ -20559,7 +20731,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x32D2:
+    // offset 0x3356:
     //   prefix:
     //     Dead<combining ring above>
     //   internal character table
@@ -20589,13 +20761,13 @@ static const uint16_t kCompositionsTree[] = {
     //   internal dead_key table
     0x0001,          // number of entries
     0x0301,  // combining acute accent
-    0x32EE,
+    0x3372,
     //   leaf dead_key table
     0x0001,          // number of entries
     0x030A,  // combining ring above
     0x00B0,  // -> degree sign
 
-    // offset 0x32EE:
+    // offset 0x3372:
     //   prefix:
     //     Dead<combining ring above>
     //     Dead<combining acute accent>
@@ -20612,7 +20784,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x32F6:
+    // offset 0x337A:
     //   prefix:
     //     Dead<combining double acute accent>
     //   internal character table
@@ -20642,7 +20814,7 @@ static const uint16_t kCompositionsTree[] = {
     0x030B,  // combining double acute accent
     0x02DD,  // -> double acute accent
 
-    // offset 0x330C:
+    // offset 0x3390:
     //   prefix:
     //     Dead<combining caron>
     //   internal character table
@@ -20766,24 +20938,24 @@ static const uint16_t kCompositionsTree[] = {
     //   internal dead_key table
     0x0003,          // number of entries
     0x0000,  // U+0000
-    0x338A,
+    0x340E,
     0x0307,  // combining dot above
-    0x3398,
+    0x341C,
     0x0308,  // combining diaeresis
-    0x33A0,
+    0x3424,
     //   leaf dead_key table
     0x0001,          // number of entries
     0x030C,  // combining caron
     0x02C7,  // -> caron
 
-    // offset 0x338A:
+    // offset 0x340E:
     //   prefix:
     //     Dead<combining caron>
     //     Compose
     //   internal character table
     0x0001,          // number of entries
     0x0022,  // quotation mark
-    0x3390,
+    0x3414,
     //   leaf character table
     0x0000,          // number of entries
     //   internal dead_key table
@@ -20791,7 +20963,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x3390:
+    // offset 0x3414:
     //   prefix:
     //     Dead<combining caron>
     //     Compose
@@ -20809,7 +20981,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x3398:
+    // offset 0x341C:
     //   prefix:
     //     Dead<combining caron>
     //     Dead<combining dot above>
@@ -20826,7 +20998,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x33A0:
+    // offset 0x3424:
     //   prefix:
     //     Dead<combining caron>
     //     Dead<combining diaeresis>
@@ -20843,7 +21015,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x33A8:
+    // offset 0x342C:
     //   prefix:
     //     Dead<combining double grave accent>
     //   internal character table
@@ -20883,7 +21055,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x33C8:
+    // offset 0x344C:
     //   prefix:
     //     Dead<combining inverted breve>
     //   internal character table
@@ -20919,7 +21091,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x33E4:
+    // offset 0x3468:
     //   prefix:
     //     Dead<combining comma above>
     //   internal character table
@@ -20959,7 +21131,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x3404:
+    // offset 0x3488:
     //   prefix:
     //     Dead<combining reversed comma above>
     //   internal character table
@@ -21003,7 +21175,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x3428:
+    // offset 0x34AC:
     //   prefix:
     //     Dead<combining horn>
     //   internal character table
@@ -21049,21 +21221,21 @@ static const uint16_t kCompositionsTree[] = {
     //   internal dead_key table
     0x0005,          // number of entries
     0x0300,  // combining grave accent
-    0x345C,
+    0x34E0,
     0x0301,  // combining acute accent
-    0x3468,
+    0x34EC,
     0x0303,  // combining tilde
-    0x3474,
+    0x34F8,
     0x0309,  // combining hook above
-    0x3480,
+    0x3504,
     0x0323,  // combining dot below
-    0x348C,
+    0x3510,
     //   leaf dead_key table
     0x0001,          // number of entries
     0x031B,  // combining horn
     0x031B,  // -> combining horn
 
-    // offset 0x345C:
+    // offset 0x34E0:
     //   prefix:
     //     Dead<combining horn>
     //     Dead<combining grave accent>
@@ -21084,7 +21256,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x3468:
+    // offset 0x34EC:
     //   prefix:
     //     Dead<combining horn>
     //     Dead<combining acute accent>
@@ -21105,7 +21277,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x3474:
+    // offset 0x34F8:
     //   prefix:
     //     Dead<combining horn>
     //     Dead<combining tilde>
@@ -21126,7 +21298,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x3480:
+    // offset 0x3504:
     //   prefix:
     //     Dead<combining horn>
     //     Dead<combining hook above>
@@ -21147,7 +21319,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x348C:
+    // offset 0x3510:
     //   prefix:
     //     Dead<combining horn>
     //     Dead<combining dot below>
@@ -21168,7 +21340,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x3498:
+    // offset 0x351C:
     //   prefix:
     //     Dead<combining dot below>
     //   internal character table
@@ -21288,30 +21460,30 @@ static const uint16_t kCompositionsTree[] = {
     //   internal dead_key table
     0x0006,          // number of entries
     0x0000,  // U+0000
-    0x3518,
+    0x359C,
     0x0302,  // combining circumflex accent
-    0x352A,
+    0x35AE,
     0x0304,  // combining macron
-    0x353A,
+    0x35BE,
     0x0306,  // combining breve
-    0x3546,
+    0x35CA,
     0x0307,  // combining dot above
-    0x354E,
+    0x35D2,
     0x031B,  // combining horn
-    0x3556,
+    0x35DA,
     //   leaf dead_key table
     0x0001,          // number of entries
     0x0323,  // combining dot below
     0x0323,  // -> combining dot below
 
-    // offset 0x3518:
+    // offset 0x359C:
     //   prefix:
     //     Dead<combining dot below>
     //     Compose
     //   internal character table
     0x0001,          // number of entries
     0x002B,  // plus sign
-    0x351E,
+    0x35A2,
     //   leaf character table
     0x0000,          // number of entries
     //   internal dead_key table
@@ -21319,7 +21491,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x351E:
+    // offset 0x35A2:
     //   prefix:
     //     Dead<combining dot below>
     //     Compose
@@ -21341,7 +21513,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x352A:
+    // offset 0x35AE:
     //   prefix:
     //     Dead<combining dot below>
     //     Dead<combining circumflex accent>
@@ -21366,7 +21538,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x353A:
+    // offset 0x35BE:
     //   prefix:
     //     Dead<combining dot below>
     //     Dead<combining macron>
@@ -21387,7 +21559,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x3546:
+    // offset 0x35CA:
     //   prefix:
     //     Dead<combining dot below>
     //     Dead<combining breve>
@@ -21404,7 +21576,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x354E:
+    // offset 0x35D2:
     //   prefix:
     //     Dead<combining dot below>
     //     Dead<combining dot above>
@@ -21421,7 +21593,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x3556:
+    // offset 0x35DA:
     //   prefix:
     //     Dead<combining dot below>
     //     Dead<combining horn>
@@ -21442,7 +21614,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x3562:
+    // offset 0x35E6:
     //   prefix:
     //     Dead<combining cedilla>
     //   internal character table
@@ -21510,15 +21682,15 @@ static const uint16_t kCompositionsTree[] = {
     //   internal dead_key table
     0x0002,          // number of entries
     0x0301,  // combining acute accent
-    0x35A6,
+    0x362A,
     0x0306,  // combining breve
-    0x35AE,
+    0x3632,
     //   leaf dead_key table
     0x0001,          // number of entries
     0x0327,  // combining cedilla
     0x00B8,  // -> cedilla
 
-    // offset 0x35A6:
+    // offset 0x362A:
     //   prefix:
     //     Dead<combining cedilla>
     //     Dead<combining acute accent>
@@ -21535,7 +21707,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x35AE:
+    // offset 0x3632:
     //   prefix:
     //     Dead<combining cedilla>
     //     Dead<combining breve>
@@ -21552,7 +21724,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x35B6:
+    // offset 0x363A:
     //   prefix:
     //     Dead<combining ogonek>
     //   internal character table
@@ -21590,13 +21762,13 @@ static const uint16_t kCompositionsTree[] = {
     //   internal dead_key table
     0x0001,          // number of entries
     0x0304,  // combining macron
-    0x35DA,
+    0x365E,
     //   leaf dead_key table
     0x0001,          // number of entries
     0x0328,  // combining ogonek
     0x02DB,  // -> ogonek
 
-    // offset 0x35DA:
+    // offset 0x365E:
     //   prefix:
     //     Dead<combining ogonek>
     //     Dead<combining macron>
@@ -21613,7 +21785,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x35E2:
+    // offset 0x3666:
     //   prefix:
     //     Dead<combining long solidus overlay>
     //   internal character table
@@ -21715,15 +21887,15 @@ static const uint16_t kCompositionsTree[] = {
     //   internal dead_key table
     0x0002,          // number of entries
     0x0301,  // combining acute accent
-    0x3648,
+    0x36CC,
     0x0307,  // combining dot above
-    0x3650,
+    0x36D4,
     //   leaf dead_key table
     0x0001,          // number of entries
     0x0338,  // combining long solidus overlay
     0x002F,  // -> solidus
 
-    // offset 0x3648:
+    // offset 0x36CC:
     //   prefix:
     //     Dead<combining long solidus overlay>
     //     Dead<combining acute accent>
@@ -21740,7 +21912,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x3650:
+    // offset 0x36D4:
     //   prefix:
     //     Dead<combining long solidus overlay>
     //     Dead<combining dot above>
@@ -21755,7 +21927,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x3656:
+    // offset 0x36DA:
     //   prefix:
     //     Dead<combining greek ypogegrammeni>
     //   internal character table
@@ -21893,40 +22065,40 @@ static const uint16_t kCompositionsTree[] = {
     //   internal dead_key table
     0x0006,          // number of entries
     0x0000,  // U+0000
-    0x36E8,
+    0x376C,
     0x0300,  // combining grave accent
-    0x38C0,
+    0x3944,
     0x0301,  // combining acute accent
-    0x3930,
+    0x39B4,
     0x0303,  // combining tilde
-    0x39A0,
+    0x3A24,
     0x0313,  // combining comma above
-    0x3A10,
+    0x3A94,
     0x0314,  // combining reversed comma above
-    0x3A20,
+    0x3AA4,
     //   leaf dead_key table
     0x0001,          // number of entries
     0x0345,  // combining greek ypogegrammeni
     0x037A,  // -> ypogegrammeni
 
-    // offset 0x36E8:
+    // offset 0x376C:
     //   prefix:
     //     Dead<combining greek ypogegrammeni>
     //     Compose
     //   internal character table
     0x0006,          // number of entries
     0x0027,  // apostrophe
-    0x36F8,
+    0x377C,
     0x0028,  // left parenthesis
-    0x3762,
+    0x37E6,
     0x0029,  // right parenthesis
-    0x3772,
+    0x37F6,
     0x0060,  // grave accent
-    0x3782,
+    0x3806,
     0x007E,  // tilde
-    0x37EC,
+    0x3870,
     0x00B4,  // acute accent
-    0x3856,
+    0x38DA,
     //   leaf character table
     0x0000,          // number of entries
     //   internal dead_key table
@@ -21934,7 +22106,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x36F8:
+    // offset 0x377C:
     //   prefix:
     //     Dead<combining greek ypogegrammeni>
     //     Compose
@@ -21942,9 +22114,9 @@ static const uint16_t kCompositionsTree[] = {
     //   internal character table
     0x0002,          // number of entries
     0x0028,  // left parenthesis
-    0x3722,
+    0x37A6,
     0x0029,  // right parenthesis
-    0x3732,
+    0x37B6,
     //   leaf character table
     0x000F,          // number of entries
     0x03B1,  // letter alpha
@@ -21980,13 +22152,13 @@ static const uint16_t kCompositionsTree[] = {
     //   internal dead_key table
     0x0002,          // number of entries
     0x0313,  // combining comma above
-    0x3742,
+    0x37C6,
     0x0314,  // combining reversed comma above
-    0x3752,
+    0x37D6,
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x3722:
+    // offset 0x37A6:
     //   prefix:
     //     Dead<combining greek ypogegrammeni>
     //     Compose
@@ -22013,7 +22185,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x3732:
+    // offset 0x37B6:
     //   prefix:
     //     Dead<combining greek ypogegrammeni>
     //     Compose
@@ -22040,7 +22212,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x3742:
+    // offset 0x37C6:
     //   prefix:
     //     Dead<combining greek ypogegrammeni>
     //     Compose
@@ -22067,7 +22239,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x3752:
+    // offset 0x37D6:
     //   prefix:
     //     Dead<combining greek ypogegrammeni>
     //     Compose
@@ -22094,7 +22266,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x3762:
+    // offset 0x37E6:
     //   prefix:
     //     Dead<combining greek ypogegrammeni>
     //     Compose
@@ -22120,7 +22292,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x3772:
+    // offset 0x37F6:
     //   prefix:
     //     Dead<combining greek ypogegrammeni>
     //     Compose
@@ -22146,7 +22318,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x3782:
+    // offset 0x3806:
     //   prefix:
     //     Dead<combining greek ypogegrammeni>
     //     Compose
@@ -22154,9 +22326,9 @@ static const uint16_t kCompositionsTree[] = {
     //   internal character table
     0x0002,          // number of entries
     0x0028,  // left parenthesis
-    0x37AC,
+    0x3830,
     0x0029,  // right parenthesis
-    0x37BC,
+    0x3840,
     //   leaf character table
     0x000F,          // number of entries
     0x03B1,  // letter alpha
@@ -22192,13 +22364,13 @@ static const uint16_t kCompositionsTree[] = {
     //   internal dead_key table
     0x0002,          // number of entries
     0x0313,  // combining comma above
-    0x37CC,
+    0x3850,
     0x0314,  // combining reversed comma above
-    0x37DC,
+    0x3860,
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x37AC:
+    // offset 0x3830:
     //   prefix:
     //     Dead<combining greek ypogegrammeni>
     //     Compose
@@ -22225,7 +22397,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x37BC:
+    // offset 0x3840:
     //   prefix:
     //     Dead<combining greek ypogegrammeni>
     //     Compose
@@ -22252,7 +22424,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x37CC:
+    // offset 0x3850:
     //   prefix:
     //     Dead<combining greek ypogegrammeni>
     //     Compose
@@ -22279,7 +22451,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x37DC:
+    // offset 0x3860:
     //   prefix:
     //     Dead<combining greek ypogegrammeni>
     //     Compose
@@ -22306,7 +22478,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x37EC:
+    // offset 0x3870:
     //   prefix:
     //     Dead<combining greek ypogegrammeni>
     //     Compose
@@ -22314,9 +22486,9 @@ static const uint16_t kCompositionsTree[] = {
     //   internal character table
     0x0002,          // number of entries
     0x0028,  // left parenthesis
-    0x3816,
+    0x389A,
     0x0029,  // right parenthesis
-    0x3826,
+    0x38AA,
     //   leaf character table
     0x000F,          // number of entries
     0x03B1,  // letter alpha
@@ -22352,13 +22524,13 @@ static const uint16_t kCompositionsTree[] = {
     //   internal dead_key table
     0x0002,          // number of entries
     0x0313,  // combining comma above
-    0x3836,
+    0x38BA,
     0x0314,  // combining reversed comma above
-    0x3846,
+    0x38CA,
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x3816:
+    // offset 0x389A:
     //   prefix:
     //     Dead<combining greek ypogegrammeni>
     //     Compose
@@ -22385,7 +22557,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x3826:
+    // offset 0x38AA:
     //   prefix:
     //     Dead<combining greek ypogegrammeni>
     //     Compose
@@ -22412,7 +22584,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x3836:
+    // offset 0x38BA:
     //   prefix:
     //     Dead<combining greek ypogegrammeni>
     //     Compose
@@ -22439,7 +22611,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x3846:
+    // offset 0x38CA:
     //   prefix:
     //     Dead<combining greek ypogegrammeni>
     //     Compose
@@ -22466,7 +22638,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x3856:
+    // offset 0x38DA:
     //   prefix:
     //     Dead<combining greek ypogegrammeni>
     //     Compose
@@ -22474,9 +22646,9 @@ static const uint16_t kCompositionsTree[] = {
     //   internal character table
     0x0002,          // number of entries
     0x0028,  // left parenthesis
-    0x3880,
+    0x3904,
     0x0029,  // right parenthesis
-    0x3890,
+    0x3914,
     //   leaf character table
     0x000F,          // number of entries
     0x03B1,  // letter alpha
@@ -22512,13 +22684,13 @@ static const uint16_t kCompositionsTree[] = {
     //   internal dead_key table
     0x0002,          // number of entries
     0x0313,  // combining comma above
-    0x38A0,
+    0x3924,
     0x0314,  // combining reversed comma above
-    0x38B0,
+    0x3934,
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x3880:
+    // offset 0x3904:
     //   prefix:
     //     Dead<combining greek ypogegrammeni>
     //     Compose
@@ -22545,7 +22717,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x3890:
+    // offset 0x3914:
     //   prefix:
     //     Dead<combining greek ypogegrammeni>
     //     Compose
@@ -22572,7 +22744,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x38A0:
+    // offset 0x3924:
     //   prefix:
     //     Dead<combining greek ypogegrammeni>
     //     Compose
@@ -22599,7 +22771,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x38B0:
+    // offset 0x3934:
     //   prefix:
     //     Dead<combining greek ypogegrammeni>
     //     Compose
@@ -22626,7 +22798,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x38C0:
+    // offset 0x3944:
     //   prefix:
     //     Dead<combining greek ypogegrammeni>
     //     Dead<combining grave accent>
@@ -22667,15 +22839,15 @@ static const uint16_t kCompositionsTree[] = {
     //   internal dead_key table
     0x0003,          // number of entries
     0x0000,  // U+0000
-    0x38E8,
+    0x396C,
     0x0313,  // combining comma above
-    0x3910,
+    0x3994,
     0x0314,  // combining reversed comma above
-    0x3920,
+    0x39A4,
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x38E8:
+    // offset 0x396C:
     //   prefix:
     //     Dead<combining greek ypogegrammeni>
     //     Dead<combining grave accent>
@@ -22683,9 +22855,9 @@ static const uint16_t kCompositionsTree[] = {
     //   internal character table
     0x0002,          // number of entries
     0x0028,  // left parenthesis
-    0x38F0,
+    0x3974,
     0x0029,  // right parenthesis
-    0x3900,
+    0x3984,
     //   leaf character table
     0x0000,          // number of entries
     //   internal dead_key table
@@ -22693,7 +22865,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x38F0:
+    // offset 0x3974:
     //   prefix:
     //     Dead<combining greek ypogegrammeni>
     //     Dead<combining grave accent>
@@ -22720,7 +22892,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x3900:
+    // offset 0x3984:
     //   prefix:
     //     Dead<combining greek ypogegrammeni>
     //     Dead<combining grave accent>
@@ -22747,7 +22919,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x3910:
+    // offset 0x3994:
     //   prefix:
     //     Dead<combining greek ypogegrammeni>
     //     Dead<combining grave accent>
@@ -22773,7 +22945,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x3920:
+    // offset 0x39A4:
     //   prefix:
     //     Dead<combining greek ypogegrammeni>
     //     Dead<combining grave accent>
@@ -22799,7 +22971,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x3930:
+    // offset 0x39B4:
     //   prefix:
     //     Dead<combining greek ypogegrammeni>
     //     Dead<combining acute accent>
@@ -22840,15 +23012,15 @@ static const uint16_t kCompositionsTree[] = {
     //   internal dead_key table
     0x0003,          // number of entries
     0x0000,  // U+0000
-    0x3958,
+    0x39DC,
     0x0313,  // combining comma above
-    0x3980,
+    0x3A04,
     0x0314,  // combining reversed comma above
-    0x3990,
+    0x3A14,
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x3958:
+    // offset 0x39DC:
     //   prefix:
     //     Dead<combining greek ypogegrammeni>
     //     Dead<combining acute accent>
@@ -22856,9 +23028,9 @@ static const uint16_t kCompositionsTree[] = {
     //   internal character table
     0x0002,          // number of entries
     0x0028,  // left parenthesis
-    0x3960,
+    0x39E4,
     0x0029,  // right parenthesis
-    0x3970,
+    0x39F4,
     //   leaf character table
     0x0000,          // number of entries
     //   internal dead_key table
@@ -22866,7 +23038,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x3960:
+    // offset 0x39E4:
     //   prefix:
     //     Dead<combining greek ypogegrammeni>
     //     Dead<combining acute accent>
@@ -22893,7 +23065,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x3970:
+    // offset 0x39F4:
     //   prefix:
     //     Dead<combining greek ypogegrammeni>
     //     Dead<combining acute accent>
@@ -22920,7 +23092,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x3980:
+    // offset 0x3A04:
     //   prefix:
     //     Dead<combining greek ypogegrammeni>
     //     Dead<combining acute accent>
@@ -22946,7 +23118,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x3990:
+    // offset 0x3A14:
     //   prefix:
     //     Dead<combining greek ypogegrammeni>
     //     Dead<combining acute accent>
@@ -22972,7 +23144,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x39A0:
+    // offset 0x3A24:
     //   prefix:
     //     Dead<combining greek ypogegrammeni>
     //     Dead<combining tilde>
@@ -23013,15 +23185,15 @@ static const uint16_t kCompositionsTree[] = {
     //   internal dead_key table
     0x0003,          // number of entries
     0x0000,  // U+0000
-    0x39C8,
+    0x3A4C,
     0x0313,  // combining comma above
-    0x39F0,
+    0x3A74,
     0x0314,  // combining reversed comma above
-    0x3A00,
+    0x3A84,
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x39C8:
+    // offset 0x3A4C:
     //   prefix:
     //     Dead<combining greek ypogegrammeni>
     //     Dead<combining tilde>
@@ -23029,9 +23201,9 @@ static const uint16_t kCompositionsTree[] = {
     //   internal character table
     0x0002,          // number of entries
     0x0028,  // left parenthesis
-    0x39D0,
+    0x3A54,
     0x0029,  // right parenthesis
-    0x39E0,
+    0x3A64,
     //   leaf character table
     0x0000,          // number of entries
     //   internal dead_key table
@@ -23039,7 +23211,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x39D0:
+    // offset 0x3A54:
     //   prefix:
     //     Dead<combining greek ypogegrammeni>
     //     Dead<combining tilde>
@@ -23066,7 +23238,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x39E0:
+    // offset 0x3A64:
     //   prefix:
     //     Dead<combining greek ypogegrammeni>
     //     Dead<combining tilde>
@@ -23093,7 +23265,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x39F0:
+    // offset 0x3A74:
     //   prefix:
     //     Dead<combining greek ypogegrammeni>
     //     Dead<combining tilde>
@@ -23119,7 +23291,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x3A00:
+    // offset 0x3A84:
     //   prefix:
     //     Dead<combining greek ypogegrammeni>
     //     Dead<combining tilde>
@@ -23145,7 +23317,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x3A10:
+    // offset 0x3A94:
     //   prefix:
     //     Dead<combining greek ypogegrammeni>
     //     Dead<combining comma above>
@@ -23170,7 +23342,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x3A20:
+    // offset 0x3AA4:
     //   prefix:
     //     Dead<combining greek ypogegrammeni>
     //     Dead<combining reversed comma above>
@@ -23195,7 +23367,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x3A30:
+    // offset 0x3AB4:
     //   prefix:
     //     Dead<combining katakana-hiragana voiced sound mark>
     //   internal character table
@@ -23303,7 +23475,7 @@ static const uint16_t kCompositionsTree[] = {
     //   leaf dead_key table
     0x0000,          // number of entries
 
-    // offset 0x3A94:
+    // offset 0x3B18:
     //   prefix:
     //     Dead<combining katakana-hiragana semi-voiced sound mark>
     //   internal character table
@@ -23338,7 +23510,7 @@ static const uint16_t kCompositionsTree[] = {
 
 static const ui::TreeComposeChecker::CompositionData kCompositions = {
   5, // maximum sequence length
-  15020, // tree array entries
+  15152, // tree array entries
   kCompositionsTree
 };
 
