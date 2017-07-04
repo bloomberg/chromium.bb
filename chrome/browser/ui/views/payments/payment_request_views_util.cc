@@ -227,6 +227,8 @@ std::unique_ptr<views::View> CreateSheetHeaderView(
   views::Label* title_label =
       new views::Label(title, views::style::CONTEXT_DIALOG_TITLE);
   title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  title_label->set_id(static_cast<int>(DialogViewID::SHEET_TITLE));
+  title_label->SetFocusBehavior(views::View::FocusBehavior::ACCESSIBLE_ONLY);
   layout->AddView(title_label);
 
   return container;

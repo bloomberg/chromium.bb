@@ -48,6 +48,9 @@ enum class DialogViewID : int {
   ORDER_SUMMARY_LINE_ITEM_3,
   DATA_SOURCE_LABEL,
 
+  // This is the title used at the top of each sheet.
+  SHEET_TITLE,
+
   // The following are Label objects.
   SHIPPING_OPTION_DESCRIPTION,
   SHIPPING_OPTION_AMOUNT,

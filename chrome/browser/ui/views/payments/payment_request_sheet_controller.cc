@@ -72,6 +72,20 @@ class SheetView : public views::View, public views::FocusTraversable {
   views::FocusTraversable* GetPaneFocusTraversable() override { return this; }
 
   void RequestFocus() override {
+    // In accessibility contexts, we want to focus the title of the sheet.
+    views::View* title =
+        GetViewByID(static_cast<int>(DialogViewID::SHEET_TITLE));
+    views::FocusManager* focus = GetFocusManager();
+    DCHECK(focus);
+
+    title->RequestFocus();
+
+    // RequestFocus only works if we are in an accessible context, and is a
+    // no-op otherwise. Thus, if the focused view didn't change, we need to
+    // proceed with setting the focus for standard usage.
+    if (focus->GetFocusedView() == title)
+      return;
+
     views::View* first_focusable = first_focusable_;
 
     if (!first_focusable) {
