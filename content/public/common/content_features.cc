@@ -135,11 +135,6 @@ const base::Feature kLazyParseCSS{"LazyParseCSS",
 const base::Feature kLoadingWithMojo{"LoadingWithMojo",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Experimental feature to trigger hard-reload on Location.reload().
-// crbug.com/716339
-const base::Feature kLocationHardReload{"LocationHardReload",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
-
 // FeatureList definition for trials to enable the download button on
 // MediaDocument.
 const base::Feature kMediaDocumentDownloadButton{

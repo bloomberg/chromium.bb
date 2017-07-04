@@ -388,9 +388,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
     WebRuntimeFeatures::EnableAutoplayMutedVideos(true);
   }
 
-  WebRuntimeFeatures::EnableLocationHardReload(
-      base::FeatureList::IsEnabled(features::kLocationHardReload));
-
   if (!base::FeatureList::IsEnabled(features::kWebAuth) &&
       !enableExperimentalWebPlatformFeatures)
     WebRuntimeFeatures::EnableWebAuth(false);

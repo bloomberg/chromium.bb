@@ -428,9 +428,6 @@ extern const char kLcdTextDescription[];
 extern const char kLoadMediaRouterComponentExtensionName[];
 extern const char kLoadMediaRouterComponentExtensionDescription[];
 
-extern const char kLocationHardReloadName[];
-extern const char kLocationHardReloadDescription[];
-
 extern const char kManualPasswordGenerationName[];
 extern const char kManualPasswordGenerationDescription[];
 

@@ -3228,13 +3228,6 @@ const char kUseSuggestionsEvenIfFewFeatureDescription[] =
     "Request server-side suggestions even if there are only very few of them "
     "and use them for tiles on the New Tab Page.";
 
-const char kLocationHardReloadName[] =
-    "Experimental change for Location.reload() to trigger a hard-reload.";
-
-const char kLocationHardReloadDescription[] =
-    "Enable an experimental change for Location.reload() to trigger a "
-    "hard-reload.";
-
 const char kCaptureThumbnailOnLoadFinishedName[] =
     "Capture page thumbnail on load finished";
 

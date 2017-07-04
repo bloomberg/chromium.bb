@@ -406,10 +406,6 @@ void WebRuntimeFeatures::EnableMediaControlsOverlayPlayButton(bool enable) {
   RuntimeEnabledFeatures::SetMediaControlsOverlayPlayButtonEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableLocationHardReload(bool enable) {
-  RuntimeEnabledFeatures::SetLocationHardReloadEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableRemotePlaybackBackend(bool enable) {
   RuntimeEnabledFeatures::SetRemotePlaybackBackendEnabled(enable);
 }
