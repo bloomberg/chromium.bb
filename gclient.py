@@ -909,7 +909,8 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     if self.recursion_limit:
       # Parse the dependencies of this dependency.
       for s in self.dependencies:
-        work_queue.enqueue(s)
+        if s.should_process:
+          work_queue.enqueue(s)
 
     if command == 'recurse':
       # Skip file only checkout.
@@ -1458,7 +1459,8 @@ it or fix the checkout.
         self._options.jobs, pm, ignore_requirements=ignore_requirements,
         verbose=self._options.verbose)
     for s in self.dependencies:
-      work_queue.enqueue(s)
+      if s.should_process:
+        work_queue.enqueue(s)
     work_queue.flush(revision_overrides, command, args, options=self._options)
     if revision_overrides:
       print('Please fix your script, having invalid --revision flags will soon '
@@ -1570,7 +1572,8 @@ it or fix the checkout.
     work_queue = gclient_utils.ExecutionQueue(
         self._options.jobs, None, False, verbose=self._options.verbose)
     for s in self.dependencies:
-      work_queue.enqueue(s)
+      if s.should_process:
+        work_queue.enqueue(s)
     work_queue.flush({}, None, [], options=self._options)
 
     def GetURLAndRev(dep):
