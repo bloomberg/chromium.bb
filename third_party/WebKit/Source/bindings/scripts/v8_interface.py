@@ -366,7 +366,7 @@ def interface_context(interface, interfaces):
     has_ce_reactions = any(setter_or_deleter and 'CEReactions' in setter_or_deleter.extended_attributes
                            for setter_or_deleter in setter_or_deleters)
     if has_ce_reactions:
-        includes.add('core/dom/custom/CEReactionsScope.h')
+        includes.add('core/html/custom/CEReactionsScope.h')
 
     context.update({
         'constructors': constructors,

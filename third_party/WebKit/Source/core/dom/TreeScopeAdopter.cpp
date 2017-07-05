@@ -32,7 +32,7 @@
 #include "core/dom/NodeRareData.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/ShadowRoot.h"
-#include "core/dom/custom/CustomElement.h"
+#include "core/html/custom/CustomElement.h"
 
 namespace blink {
 

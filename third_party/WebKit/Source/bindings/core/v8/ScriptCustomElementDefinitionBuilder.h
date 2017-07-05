@@ -6,7 +6,7 @@
 #define ScriptCustomElementDefinitionBuilder_h
 
 #include "core/CoreExport.h"
-#include "core/dom/custom/CustomElementDefinitionBuilder.h"
+#include "core/html/custom/CustomElementDefinitionBuilder.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/HashSet.h"

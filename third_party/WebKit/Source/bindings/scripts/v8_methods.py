@@ -139,10 +139,10 @@ def method_context(interface, method, is_visible=True):
 
     is_ce_reactions = 'CEReactions' in extended_attributes
     if is_ce_reactions:
-        includes.add('core/dom/custom/CEReactionsScope.h')
+        includes.add('core/html/custom/CEReactionsScope.h')
     is_custom_element_callbacks = 'CustomElementCallbacks' in extended_attributes
     if is_custom_element_callbacks:
-        includes.add('core/dom/custom/V0CustomElementProcessingStack.h')
+        includes.add('core/html/custom/V0CustomElementProcessingStack.h')
 
     is_raises_exception = 'RaisesException' in extended_attributes
     is_custom_call_prologue = has_extended_attribute_value(method, 'Custom', 'CallPrologue')

@@ -30,9 +30,9 @@
 #include "core/dom/DocumentInit.h"
 
 #include "core/dom/Document.h"
-#include "core/dom/custom/V0CustomElementRegistrationContext.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFrameOwnerElement.h"
+#include "core/html/custom/V0CustomElementRegistrationContext.h"
 #include "core/html/imports/HTMLImportsController.h"
 #include "core/loader/DocumentLoader.h"
 #include "platform/RuntimeEnabledFeatures.h"

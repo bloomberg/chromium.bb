@@ -33,7 +33,7 @@
 #include "core/CoreExport.h"
 #include "core/dom/SandboxFlags.h"
 #include "core/dom/SecurityContext.h"
-#include "core/dom/custom/V0CustomElementRegistrationContext.h"
+#include "core/html/custom/V0CustomElementRegistrationContext.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebInsecureRequestPolicy.h"

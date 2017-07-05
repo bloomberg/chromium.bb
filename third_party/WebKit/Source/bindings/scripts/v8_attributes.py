@@ -87,12 +87,12 @@ def attribute_context(interface, attribute, interfaces):
     # [CEReactions]
     is_ce_reactions = 'CEReactions' in extended_attributes
     if is_ce_reactions:
-        includes.add('core/dom/custom/CEReactionsScope.h')
+        includes.add('core/html/custom/CEReactionsScope.h')
     # [CustomElementCallbacks], [Reflect]
     is_custom_element_callbacks = 'CustomElementCallbacks' in extended_attributes
     is_reflect = 'Reflect' in extended_attributes
     if is_custom_element_callbacks or is_reflect:
-        includes.add('core/dom/custom/V0CustomElementProcessingStack.h')
+        includes.add('core/html/custom/V0CustomElementProcessingStack.h')
     # [PerWorldBindings]
     if 'PerWorldBindings' in extended_attributes:
         assert idl_type.is_wrapper_type or 'LogActivity' in extended_attributes, '[PerWorldBindings] should only be used with wrapper types: %s.%s' % (interface.name, attribute.name)

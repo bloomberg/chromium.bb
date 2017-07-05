@@ -30,7 +30,7 @@
 
 #include "public/web/WebCustomElement.h"
 
-#include "core/dom/custom/V0CustomElement.h"
+#include "core/html/custom/V0CustomElement.h"
 #include "public/platform/WebString.h"
 
 namespace blink {
