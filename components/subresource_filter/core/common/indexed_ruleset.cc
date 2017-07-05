@@ -16,7 +16,7 @@ namespace proto = url_pattern_index::proto;
 // RulesetIndexer --------------------------------------------------------------
 
 // static
-const int RulesetIndexer::kIndexedFormatVersion = 17;
+const int RulesetIndexer::kIndexedFormatVersion = 18;
 
 RulesetIndexer::RulesetIndexer()
     : blacklist_(&builder_), whitelist_(&builder_), deactivation_(&builder_) {}

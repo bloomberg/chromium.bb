@@ -8,6 +8,7 @@
 #include <limits>
 #include <string>
 
+#include "base/containers/flat_map.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_piece.h"
@@ -25,6 +26,55 @@ using FlatStringOffset = flatbuffers::Offset<flatbuffers::String>;
 using FlatDomains = flatbuffers::Vector<FlatStringOffset>;
 using FlatDomainsOffset = flatbuffers::Offset<FlatDomains>;
 
+// Maps proto::ActivationType to flat::ActivationType.
+const base::flat_map<proto::ActivationType, flat::ActivationType>
+    kActivationTypeMap(
+        {
+            {proto::ACTIVATION_TYPE_UNSPECIFIED, flat::ActivationType_NONE},
+            {proto::ACTIVATION_TYPE_DOCUMENT, flat::ActivationType_DOCUMENT},
+            // ELEMHIDE is not supported.
+            {proto::ACTIVATION_TYPE_ELEMHIDE, flat::ActivationType_NONE},
+            // GENERICHIDE is not supported.
+            {proto::ACTIVATION_TYPE_GENERICHIDE, flat::ActivationType_NONE},
+            {proto::ACTIVATION_TYPE_GENERICBLOCK,
+             flat::ActivationType_GENERIC_BLOCK},
+        },
+        base::KEEP_FIRST_OF_DUPES);
+
+// Maps proto::ElementType to flat::ElementType.
+const base::flat_map<proto::ElementType, flat::ElementType> kElementTypeMap(
+    {
+        {proto::ELEMENT_TYPE_UNSPECIFIED, flat::ElementType_NONE},
+        {proto::ELEMENT_TYPE_OTHER, flat::ElementType_OTHER},
+        {proto::ELEMENT_TYPE_SCRIPT, flat::ElementType_SCRIPT},
+        {proto::ELEMENT_TYPE_IMAGE, flat::ElementType_IMAGE},
+        {proto::ELEMENT_TYPE_STYLESHEET, flat::ElementType_STYLESHEET},
+        {proto::ELEMENT_TYPE_OBJECT, flat::ElementType_OBJECT},
+        {proto::ELEMENT_TYPE_XMLHTTPREQUEST, flat::ElementType_XMLHTTPREQUEST},
+        {proto::ELEMENT_TYPE_OBJECT_SUBREQUEST,
+         flat::ElementType_OBJECT_SUBREQUEST},
+        {proto::ELEMENT_TYPE_SUBDOCUMENT, flat::ElementType_SUBDOCUMENT},
+        {proto::ELEMENT_TYPE_PING, flat::ElementType_PING},
+        {proto::ELEMENT_TYPE_MEDIA, flat::ElementType_MEDIA},
+        {proto::ELEMENT_TYPE_FONT, flat::ElementType_FONT},
+        // Filtering popups is not supported.
+        {proto::ELEMENT_TYPE_POPUP, flat::ElementType_NONE},
+        {proto::ELEMENT_TYPE_WEBSOCKET, flat::ElementType_WEBSOCKET},
+    },
+    base::KEEP_FIRST_OF_DUPES);
+
+flat::ActivationType ProtoToFlatActivationType(proto::ActivationType type) {
+  const auto it = kActivationTypeMap.find(type);
+  DCHECK(it != kActivationTypeMap.end());
+  return it->second;
+}
+
+flat::ElementType ProtoToFlatElementType(proto::ElementType type) {
+  const auto it = kElementTypeMap.find(type);
+  DCHECK(it != kElementTypeMap.end());
+  return it->second;
+}
+
 base::StringPiece ToStringPiece(const flatbuffers::String* string) {
   DCHECK(string);
   return base::StringPiece(string->c_str(), string->size());
@@ -41,6 +91,15 @@ int CompareDomains(base::StringPiece lhs_domain, base::StringPiece rhs_domain) {
 bool HasNoUpperAscii(base::StringPiece string) {
   return std::none_of(string.begin(), string.end(),
                       [](char c) { return base::IsAsciiUpper(c); });
+}
+
+// Returns a bitmask of all the keys of the |map| passed.
+template <typename T>
+int GetKeysMask(const T& map) {
+  int mask = 0;
+  for (const auto& pair : map)
+    mask |= pair.first;
+  return mask;
 }
 
 // Checks whether a URL |rule| can be converted to its FlatBuffers equivalent,
@@ -142,6 +201,9 @@ class UrlRuleFlatBufferConverter {
   }
 
   bool InitializeOptions() {
+    static_assert(flat::OptionFlag_ANY <= std::numeric_limits<uint8_t>::max(),
+                  "Option flags can not be stored in uint8_t.");
+
     if (rule_.semantics() == proto::RULE_SEMANTICS_WHITELIST) {
       options_ |= flat::OptionFlag_IS_WHITELIST;
     } else if (rule_.semantics() != proto::RULE_SEMANTICS_BLACKLIST) {
@@ -170,33 +232,41 @@ class UrlRuleFlatBufferConverter {
   }
 
   bool InitializeElementTypes() {
-    static_assert(
-        proto::ELEMENT_TYPE_ALL <= std::numeric_limits<uint16_t>::max(),
-        "Element types can not be stored in uint16_t.");
-    element_types_ = static_cast<uint16_t>(rule_.element_types());
+    static_assert(flat::ElementType_ANY <= std::numeric_limits<uint16_t>::max(),
+                  "Element types can not be stored in uint16_t.");
 
-    // Note: Normally we can not distinguish between the main plugin resource
-    // and any other loads it makes. We treat them both as OBJECT requests.
-    if (element_types_ & proto::ELEMENT_TYPE_OBJECT_SUBREQUEST)
-      element_types_ |= proto::ELEMENT_TYPE_OBJECT;
+    // Ensure all proto::ElementType(s) are mapped in |kElementTypeMap|.
+    DCHECK_EQ(proto::ELEMENT_TYPE_ALL, GetKeysMask(kElementTypeMap));
 
-    // Ignore unknown element types.
-    element_types_ &= proto::ELEMENT_TYPE_ALL;
-    // Filtering popups is not supported.
-    element_types_ &= ~proto::ELEMENT_TYPE_POPUP;
+    element_types_ = flat::ElementType_NONE;
+
+    for (const auto& pair : kElementTypeMap)
+      if (rule_.element_types() & pair.first)
+        element_types_ |= pair.second;
+
+    // Normally we can not distinguish between the main plugin resource and any
+    // other loads it makes. We treat them both as OBJECT requests. Hence an
+    // OBJECT request would also match OBJECT_SUBREQUEST rules, but not the
+    // the other way round.
+    if (element_types_ & flat::ElementType_OBJECT_SUBREQUEST)
+      element_types_ |= flat::ElementType_OBJECT;
 
     return true;
   }
 
   bool InitializeActivationTypes() {
     static_assert(
-        proto::ACTIVATION_TYPE_ALL <= std::numeric_limits<uint8_t>::max(),
+        flat::ActivationType_ANY <= std::numeric_limits<uint8_t>::max(),
         "Activation types can not be stored in uint8_t.");
-    activation_types_ = static_cast<uint8_t>(rule_.activation_types());
 
-    // Only the following activation types are supported, ignore the others.
-    activation_types_ &=
-        proto::ACTIVATION_TYPE_DOCUMENT | proto::ACTIVATION_TYPE_GENERICBLOCK;
+    // Ensure all proto::ActivationType(s) are mapped in |kActivationTypeMap|.
+    DCHECK_EQ(proto::ACTIVATION_TYPE_ALL, GetKeysMask(kActivationTypeMap));
+
+    activation_types_ = flat::ActivationType_NONE;
+
+    for (const auto& pair : kActivationTypeMap)
+      if (rule_.activation_types() & pair.first)
+        activation_types_ |= pair.second;
 
     return true;
   }
@@ -430,21 +500,21 @@ bool DoesOriginMatchDomainList(const url::Origin& origin,
 
 // Returns whether the request matches flags of the specified URL |rule|. Takes
 // into account:
-//  - |element_type| of the requested resource, if not *_UNSPECIFIED.
-//  - |activation_type| for a subdocument request, if not *_UNSPECIFIED.
+//  - |element_type| of the requested resource, if not *_NONE.
+//  - |activation_type| for a subdocument request, if not *_NONE.
 //  - Whether the resource |is_third_party| w.r.t. its embedding document.
 bool DoesRuleFlagsMatch(const flat::UrlRule& rule,
-                        proto::ElementType element_type,
-                        proto::ActivationType activation_type,
+                        flat::ElementType element_type,
+                        flat::ActivationType activation_type,
                         bool is_third_party) {
-  DCHECK((element_type == proto::ELEMENT_TYPE_UNSPECIFIED) !=
-         (activation_type == proto::ACTIVATION_TYPE_UNSPECIFIED));
+  DCHECK((element_type == flat::ElementType_NONE) !=
+         (activation_type == flat::ActivationType_NONE));
 
-  if (element_type != proto::ELEMENT_TYPE_UNSPECIFIED &&
+  if (element_type != flat::ElementType_NONE &&
       !(rule.element_types() & element_type)) {
     return false;
   }
-  if (activation_type != proto::ACTIVATION_TYPE_UNSPECIFIED &&
+  if (activation_type != flat::ActivationType_NONE &&
       !(rule.activation_types() & activation_type)) {
     return false;
   }
@@ -465,8 +535,8 @@ const flat::UrlRule* FindMatchAmongCandidates(
     const FlatUrlRuleList* candidates,
     const GURL& url,
     const url::Origin& document_origin,
-    proto::ElementType element_type,
-    proto::ActivationType activation_type,
+    flat::ElementType element_type,
+    flat::ActivationType activation_type,
     bool is_third_party,
     bool disable_generic_rules) {
   if (!candidates)
@@ -497,8 +567,8 @@ const flat::UrlRule* FindMatchInFlatUrlPatternIndex(
     const flat::UrlPatternIndex& index,
     const GURL& url,
     const url::Origin& document_origin,
-    proto::ElementType element_type,
-    proto::ActivationType activation_type,
+    flat::ElementType element_type,
+    flat::ActivationType activation_type,
     bool is_third_party,
     bool disable_generic_rules) {
   const FlatNGramIndex* hash_table = index.ngram_index();
@@ -552,10 +622,23 @@ const flat::UrlRule* UrlPatternIndexMatcher::FindMatch(
     proto::ActivationType activation_type,
     bool is_third_party,
     bool disable_generic_rules) const {
+  return FindMatch(url, first_party_origin,
+                   ProtoToFlatElementType(element_type),
+                   ProtoToFlatActivationType(activation_type), is_third_party,
+                   disable_generic_rules);
+}
+
+const flat::UrlRule* UrlPatternIndexMatcher::FindMatch(
+    const GURL& url,
+    const url::Origin& first_party_origin,
+    flat::ElementType element_type,
+    flat::ActivationType activation_type,
+    bool is_third_party,
+    bool disable_generic_rules) const {
   if (!flat_index_ || !url.is_valid())
     return nullptr;
-  if ((element_type == proto::ELEMENT_TYPE_UNSPECIFIED) ==
-      (activation_type == proto::ACTIVATION_TYPE_UNSPECIFIED)) {
+  if ((element_type == flat::ElementType_NONE) ==
+      (activation_type == flat::ActivationType_NONE)) {
     return nullptr;
   }
 

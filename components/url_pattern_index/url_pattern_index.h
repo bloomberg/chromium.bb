@@ -124,6 +124,16 @@ class UrlPatternIndexMatcher {
                                  bool disable_generic_rules) const;
 
  private:
+  // Helper function to work with flat::*Type(s). If the index contains one or
+  // more UrlRules that match the request, returns one of them (it is undefined
+  // which one). Otherwise, returns nullptr.
+  const flat::UrlRule* FindMatch(const GURL& url,
+                                 const url::Origin& first_party_origin,
+                                 flat::ElementType element_type,
+                                 flat::ActivationType activation_type,
+                                 bool is_third_party,
+                                 bool disable_generic_rules) const;
+
   // Must outlive this instance.
   const flat::UrlPatternIndex* flat_index_;
 
