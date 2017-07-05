@@ -203,19 +203,23 @@ that crashed was built. When building locally, these are found in:
 
 ```shell
 out/Default/apks/ChromePublic.apk.mapping
-out/Default/apks/Chrome.apk.mapping
+out/Default/apks/ChromeModernPublic.apk.mapping
+etc.
 ```
 
-To deobfuscate a stack trace from a file, run
+Build the `java_deobfuscate` tool:
 
 ```shell
-build/android/stacktrace/java_deobfuscate.py PROGUARD_MAPPING_FILE.mapping --stacktrace STACKTRACE_FILE
+ninja -C out/Default java_deobfuscate
 ```
 
-Deobfuscation also works from `stdin`:
+Then run it via:
 
 ```shell
-adb logcat -d | build/android/stacktrace/java_deobfuscate.py PROGUARD_MAPPING_FILE.mapping
+# For a file:
+out/Default/bin/java_deobfuscate PROGUARD_MAPPING_FILE.mapping < FILE
+# For logcat:
+adb logcat | out/Default/bin/java_deobfuscate PROGUARD_MAPPING_FILE.mapping
 ```
 
 ## Get WebKit code to output to the adb log
