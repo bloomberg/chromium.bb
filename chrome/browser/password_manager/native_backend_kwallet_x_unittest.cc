@@ -16,7 +16,6 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/pickle.h"
-#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"

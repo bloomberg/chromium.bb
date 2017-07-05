@@ -35,6 +35,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_renderer_host.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -165,10 +166,7 @@ base::WeakPtr<PasswordManagerDriver> TestCredentialManagerImpl::GetDriver() {
 }
 
 void RunAllPendingTasks() {
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
-  run_loop.Run();
+  content::RunAllBlockingPoolTasksUntilIdle();
 }
 
 class SlightlyLessStubbyPasswordManagerDriver
