@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_MUTABLE_NETWORK_TRAFFIC_ANNOTATION_PARAM_TRAITS_H_
-#define CONTENT_COMMON_MUTABLE_NETWORK_TRAFFIC_ANNOTATION_PARAM_TRAITS_H_
+#ifndef CONTENT_PUBLIC_COMMON_MUTABLE_NETWORK_TRAFFIC_ANNOTATION_PARAM_TRAITS_H_
+#define CONTENT_PUBLIC_COMMON_MUTABLE_NETWORK_TRAFFIC_ANNOTATION_PARAM_TRAITS_H_
 
-#include "content/common/mutable_network_traffic_annotation_tag.mojom.h"
+#include "content/public/common/mutable_network_traffic_annotation_tag.mojom.h"
 #include "mojo/common/common_custom_types_struct_traits.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
@@ -28,4 +28,4 @@ struct StructTraits<content::mojom::MutableNetworkTrafficAnnotationTagDataView,
 
 }  // namespace mojo
 
-#endif  // CONTENT_COMMON_MUTABLE_NETWORK_TRAFFIC_ANNOTATION_PARAM_TRAITS_H_
+#endif  // CONTENT_PUBLIC_COMMON_MUTABLE_NETWORK_TRAFFIC_ANNOTATION_PARAM_TRAITS_H_

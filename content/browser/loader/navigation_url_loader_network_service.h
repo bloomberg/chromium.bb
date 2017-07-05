@@ -8,8 +8,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/loader/navigation_url_loader.h"
-#include "content/common/url_loader.mojom.h"
 #include "content/public/browser/ssl_status.h"
+#include "content/public/common/url_loader.mojom.h"
 
 namespace net {
 struct RedirectInfo;

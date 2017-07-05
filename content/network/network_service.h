@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "content/common/content_export.h"
-#include "content/common/network_service.mojom.h"
+#include "content/public/common/network_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"

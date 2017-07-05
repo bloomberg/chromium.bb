@@ -10,10 +10,10 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "content/common/resource_request_completion_status.h"
-#include "content/common/url_loader.mojom.h"
-#include "content/common/url_loader_factory.mojom.h"
+#include "content/public/common/resource_request_completion_status.h"
 #include "content/public/common/resource_response.h"
+#include "content/public/common/url_loader.mojom.h"
+#include "content/public/common/url_loader_factory.mojom.h"
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/url_request/redirect_info.h"

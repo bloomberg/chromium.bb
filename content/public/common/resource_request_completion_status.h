@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_RESOURCE_REQUEST_COMPLETION_STATUS_H_
-#define CONTENT_COMMON_RESOURCE_REQUEST_COMPLETION_STATUS_H_
+#ifndef CONTENT_PUBLIC_COMMON_RESOURCE_REQUEST_COMPLETION_STATUS_H_
+#define CONTENT_PUBLIC_COMMON_RESOURCE_REQUEST_COMPLETION_STATUS_H_
 
 #include <stdint.h>
 #include <string>
@@ -46,4 +46,4 @@ struct CONTENT_EXPORT ResourceRequestCompletionStatus {
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_RESOURCE_REQUEST_COMPLETION_STATUS_H_
+#endif  // CONTENT_PUBLIC_COMMON_RESOURCE_REQUEST_COMPLETION_STATUS_H_

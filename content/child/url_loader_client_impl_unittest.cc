@@ -10,7 +10,7 @@
 #include "base/run_loop.h"
 #include "content/child/resource_dispatcher.h"
 #include "content/child/test_request_peer.h"
-#include "content/common/url_loader_factory.mojom.h"
+#include "content/public/common/url_loader_factory.mojom.h"
 #include "ipc/ipc_sender.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/binding.h"

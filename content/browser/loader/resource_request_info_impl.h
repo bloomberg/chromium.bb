@@ -16,13 +16,13 @@
 #include "base/supports_user_data.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/loader/resource_requester_info.h"
-#include "content/common/url_loader.mojom.h"
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/resource_request_body.h"
 #include "content/public/common/resource_type.h"
+#include "content/public/common/url_loader.mojom.h"
 #include "net/base/load_states.h"
 
 namespace content {

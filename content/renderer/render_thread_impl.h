@@ -42,7 +42,7 @@
 #include "content/common/renderer.mojom.h"
 #include "content/common/renderer_host.mojom.h"
 #include "content/common/storage_partition_service.mojom.h"
-#include "content/common/url_loader_factory.mojom.h"
+#include "content/public/common/url_loader_factory.mojom.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/gpu/compositor_dependencies.h"
 #include "content/renderer/layout_test_dependencies.h"

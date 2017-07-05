@@ -9,7 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
-#include "content/common/url_loader_factory.mojom.h"
+#include "content/public/common/url_loader_factory.mojom.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace content {

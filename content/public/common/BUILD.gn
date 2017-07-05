@@ -170,6 +170,7 @@ source_set("common_sources") {
     "mhtml_generation_params.h",
     "mojo_channel_switches.cc",
     "mojo_channel_switches.h",
+    "mutable_network_traffic_annotation_tag_struct_traits.h",
     "notification_resources.cc",
     "notification_resources.h",
     "origin_trial_policy.cc",
@@ -208,6 +209,8 @@ source_set("common_sources") {
     "resource_request.h",
     "resource_request_body.cc",
     "resource_request_body.h",
+    "resource_request_completion_status.cc",
+    "resource_request_completion_status.h",
     "resource_response.cc",
     "resource_response.h",
     "resource_response_info.cc",
@@ -259,9 +262,9 @@ source_set("common_sources") {
   public_configs = [ "//v8:external_startup_data" ]
 
   public_deps = [
+    ":interfaces",
     ":service_names",
     "//content/common",
-    "//content/public/common:interfaces",
     "//ipc",
     "//mojo/edk/system",
     "//mojo/public/cpp/bindings",
@@ -304,6 +307,7 @@ source_set("common_sources") {
 
   # //content/common needs to include public headers.
   allow_circular_includes_from = [
+    ":interfaces",
     "//content/common",
     "//content/common:mojo_bindings",
   ]
@@ -341,10 +345,31 @@ source_set("feature_h264_with_openh264_ffmpeg") {
 }
 
 mojom("interfaces") {
+  # Must depend on //content/public/common/ instead, for component build.
+  visibility = [
+    ":common_sources",
+    "//content/common/*",
+  ]
+
   sources = [
+    "mutable_network_traffic_annotation_tag.mojom",
+    "network_service.mojom",
     "network_service_test.mojom",
+    "url_loader.mojom",
+    "url_loader_factory.mojom",
     "window_container_type.mojom",
   ]
+
+  public_deps = [
+    "//mojo/common:common_custom_types",
+    "//url/mojo:url_mojom_gurl",
+    "//url/mojo:url_mojom_origin",
+  ]
+
+  component_output_prefix = "content_public_common_mojo_bindings"
+  export_class_attribute = "CONTENT_EXPORT"
+  export_define = "CONTENT_IMPLEMENTATION=1"
+  export_header = "content/common/content_export.h"
 }
 
 mojom("service_names") {

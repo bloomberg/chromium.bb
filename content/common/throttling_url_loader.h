@@ -12,8 +12,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/common/content_export.h"
 #include "content/common/possibly_associated_interface_ptr.h"
-#include "content/common/url_loader.mojom.h"
-#include "content/common/url_loader_factory.mojom.h"
+#include "content/public/common/url_loader.mojom.h"
+#include "content/public/common/url_loader_factory.mojom.h"
 #include "content/public/common/url_loader_throttle.h"
 #include "mojo/public/cpp/bindings/binding.h"
 

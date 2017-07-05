@@ -604,7 +604,7 @@ and add a typemap like [url_request.typemap](https://cs.chromium.org/chromium/sr
 to define the mapping:
 
 ```
-mojom = "//content/common/url_loader.mojom"
+mojom = "//content/public/common/url_loader.mojom"
 public_headers = [ "//content/common/resource_request.h" ]
 traits_headers = [ "//content/common/resource_messages.h" ]
 ...

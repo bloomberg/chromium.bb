@@ -12,8 +12,8 @@
 
 #include "base/macros.h"
 #include "content/common/content_export.h"
-#include "content/common/network_service.mojom.h"
-#include "content/common/url_loader_factory.mojom.h"
+#include "content/public/common/network_service.mojom.h"
+#include "content/public/common/url_loader_factory.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 

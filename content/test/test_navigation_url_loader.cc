@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "content/browser/loader/navigation_url_loader_delegate.h"
-#include "content/common/url_loader_factory.mojom.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_data.h"
 #include "content/public/browser/render_process_host.h"
@@ -16,6 +15,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/resource_response.h"
+#include "content/public/common/url_loader_factory.mojom.h"
 #include "net/url_request/redirect_info.h"
 
 namespace content {

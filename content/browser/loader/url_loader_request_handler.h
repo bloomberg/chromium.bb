@@ -8,8 +8,8 @@
 #include <memory>
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "content/common/url_loader.mojom.h"
-#include "content/common/url_loader_factory.mojom.h"
+#include "content/public/common/url_loader.mojom.h"
+#include "content/public/common/url_loader_factory.mojom.h"
 
 namespace content {
 

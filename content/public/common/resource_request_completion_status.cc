@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/resource_request_completion_status.h"
+#include "content/public/common/resource_request_completion_status.h"
 
 #include "net/base/net_errors.h"
 

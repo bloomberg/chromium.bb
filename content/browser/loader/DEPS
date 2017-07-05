@@ -29,15 +29,15 @@ specific_include_rules = {
 
     # TODO: To be replaced by mojo.
     "+content/common/resource_messages.h",
-    "+content/common/resource_request_completion_status.h",
     "+content/common/view_messages.h",
+    "+content/public/common/resource_request_completion_status.h",
   ],
   "downloaded_temp_file_impl\.(cc|h)": [
     "-content",
     "+content/browser/loader/downloaded_temp_file_impl.h",
     "+content/browser/loader/resource_dispatcher_host_impl.h",
     "+content/common/content_export.h",
-    "+content/common/url_loader_factory.mojom.h"
+    "+content/public/common/url_loader_factory.mojom.h"
   ],
   "resource_buffer.*\.(cc|h)": [
     "-content",
@@ -67,11 +67,11 @@ specific_include_rules = {
     "+content/browser/loader/resource_scheduler.h",
     "+content/browser/loader/upload_progress_tracker.h",
     "+content/common/content_export.h",
-    "+content/common/resource_request_completion_status.h",
-    "+content/common/url_loader.mojom.h",
     "+content/public/browser/global_request_id.h",
+    "+content/public/common/resource_request_completion_status.h",
     "+content/public/common/resource_response.h",
     "+content/public/common/resource_type.h",
+    "+content/public/common/url_loader.mojom.h",
   ],
   "mojo_async_resource_handler_unittest\.cc": [
     "-content",
@@ -82,9 +82,6 @@ specific_include_rules = {
     "+content/browser/loader/resource_dispatcher_host_impl.h",
     "+content/browser/loader/resource_request_info_impl.h",
     "+content/browser/loader/resource_scheduler.h",
-    "+content/common/resource_request_completion_status.h",
-    "+content/common/url_loader.mojom.h",
-    "+content/common/url_loader_factory.mojom.h",
     "+content/public/browser/appcache_service.h",
     "+content/public/browser/navigation_data.h",
     "+content/public/browser/resource_context.h",
@@ -93,8 +90,11 @@ specific_include_rules = {
     "+content/public/browser/stream_info.h",
     "+content/public/common/previews_state.h",
     "+content/public/common/resource_request.h",
+    "+content/public/common/resource_request_completion_status.h",
     "+content/public/common/resource_response.h",
     "+content/public/common/resource_type.h",
+    "+content/public/common/url_loader.mojom.h",
+    "+content/public/common/url_loader_factory.mojom.h",
     "+content/public/test/test_browser_context.h",
     "+content/public/test/test_browser_thread_bundle.h",
   ],
@@ -127,7 +127,6 @@ specific_include_rules = {
     "+content/browser/loader/throttling_resource_handler.h",
     "+content/browser/loader/wake_lock_resource_throttle.h",
     "+content/common/resource_request_body.h",
-    "+content/common/url_loader.mojom.h",
     "+content/public/browser/global_request_id.h",
     "+content/public/browser/resource_dispatcher_host.h",
     "+content/public/browser/resource_dispatcher_host_delegate.h",
@@ -135,6 +134,7 @@ specific_include_rules = {
     "+content/public/browser/resource_throttle.h",
     "+content/public/common/previews_state.h",
     "+content/public/common/resource_request_body.h",
+    "+content/public/common/url_loader.mojom.h",
 
     # TODO: These all have to be removed.
     "+content/browser/appcache/appcache_interceptor.h",
@@ -180,9 +180,9 @@ specific_include_rules = {
 
     # TODO: To be replaced by mojo.
     "+content/common/resource_messages.h",
-    "+content/common/resource_request_completion_status.h",
     "+content/common/view_messages.h",
     "+content/public/common/resource_request.h",
+    "+content/public/common/resource_request_completion_status.h",
   ],
   "resource_handler\.(cc|h)": [
     "-content",
@@ -230,13 +230,13 @@ specific_include_rules = {
     "+content/browser/loader/resource_request_info_impl.h",
     "+content/browser/loader/resource_requester_info.h",
     "+content/common/content_export.h",
-    "+content/common/url_loader.mojom.h",
     "+content/public/browser/global_request_id.h",
     "+content/public/browser/resource_request_info.h",
     "+content/public/common/previews_state.h",
     "+content/public/common/referrer.h",
     "+content/public/common/resource_request_body.h",
     "+content/public/common/resource_type.h",
+    "+content/public/common/url_loader.mojom.h",
 
     # TODO: these all have to be removed.
     "+content/browser/frame_host/frame_tree_node.h",
@@ -304,10 +304,10 @@ specific_include_rules = {
   "test_url_loader_client\.(cc|h)": [
     "-content",
     "+content/browser/loader/test_url_loader_client.h",
-    "+content/common/resource_request_completion_status.h",
-    "+content/common/url_loader.mojom.h",
-    "+content/common/url_loader_factory.mojom.h",
+    "+content/public/common/resource_request_completion_status.h",
     "+content/public/common/resource_response.h",
+    "+content/public/common/url_loader.mojom.h",
+    "+content/public/common/url_loader_factory.mojom.h",
   ],
   "upload_progress_tracker\.(cc|h)": [
     "-content",
@@ -320,9 +320,9 @@ specific_include_rules = {
     "+content/browser/loader/resource_requester_info.h",
     "+content/browser/loader/url_loader_factory_impl.h",
     "+content/common/content_export.h",
-    "+content/common/url_loader.mojom.h",
-    "+content/common/url_loader_factory.mojom.h",
     "+content/public/common/resource_request.h",
+    "+content/public/common/url_loader.mojom.h",
+    "+content/public/common/url_loader_factory.mojom.h",
   ],
   "url_loader_factory_impl_unittest\.cc": [
     "-content",
@@ -334,13 +334,13 @@ specific_include_rules = {
     "+content/browser/loader/resource_request_info_impl.h",
     "+content/browser/loader/url_loader_factory_impl.h",
     "+content/browser/loader_delegate_impl.h",
-    "+content/common/resource_request_completion_status.h",
-    "+content/common/url_loader.mojom.h",
-    "+content/common/url_loader_factory.mojom.h",
     "+content/public/browser/resource_context.h",
     "+content/public/browser/resource_dispatcher_host_delegate.h",
     "+content/public/common/content_paths.h",
     "+content/public/common/resource_request.h",
+    "+content/public/common/resource_request_completion_status.h",
+    "+content/public/common/url_loader.mojom.h",
+    "+content/public/common/url_loader_factory.mojom.h",
     "+content/public/test/test_browser_context.h",
     "+content/public/test/test_browser_thread_bundle.h",
 
