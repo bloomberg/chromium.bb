@@ -550,7 +550,7 @@ class PasswordFormManager : public FormFetcher::Consumer {
   bool is_main_frame_secure_ = false;
 
   // Takes care of recording metrics and events for this PasswordFormManager.
-  PasswordFormMetricsRecorder metrics_recorder_;
+  const scoped_refptr<PasswordFormMetricsRecorder> metrics_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordFormManager);
 };

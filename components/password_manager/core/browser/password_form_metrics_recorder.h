@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_form_user_action.h"
 #include "components/ukm/public/ukm_recorder.h"
@@ -40,9 +41,20 @@ constexpr char kUkmSubmissionFormType[] = "Submission.SubmittedFormType";
 class FormFetcher;
 
 // The pupose of this class is to record various types of metrics about the
-// behavior of the PasswordFormManager and its interaction with the user and the
-// page.
-class PasswordFormMetricsRecorder {
+// behavior of the PasswordFormManager and its interaction with the user and
+// the page. The recorder tracks events tied to the logical life of a password
+// form, from parsing to having been saved. These events happen on different
+// places in the code and the logical password form can be captured by multiple
+// instances of real objects. To allow sharing the single recorder object among
+// those, this class is refcounted. Reporting happens on destruction of the
+// metrics recorder. Note that UKM metrics are reported for intervals of length
+// metrics::GetUploadInterval(). Only metrics that are reported from the time
+// of creating the PasswordFormMetricsRecorder until the end of current upload
+// interval are recorded. Everything after the end of the current upload
+// interval is discarded. For this reason, it is essential that references are
+// not just kept until browser shutdown.
+class PasswordFormMetricsRecorder
+    : public base::RefCounted<PasswordFormMetricsRecorder> {
  public:
   // |ukm_entry_builder| is the destination into which UKM metrics are recorded.
   // It may be nullptr, in which case no UKM metrics are recorded. This should
@@ -50,7 +62,6 @@ class PasswordFormMetricsRecorder {
   PasswordFormMetricsRecorder(
       bool is_main_frame_secure,
       std::unique_ptr<ukm::UkmEntryBuilder> ukm_entry_builder);
-  ~PasswordFormMetricsRecorder();
 
   // Creates a UkmEntryBuilder that can be used to record metrics into the event
   // "PasswordForm". |source_id| should be bound the the correct URL in the
@@ -173,6 +184,12 @@ class PasswordFormMetricsRecorder {
   int GetActionsTakenNew() const;
 
  private:
+  friend class base::RefCounted<PasswordFormMetricsRecorder>;
+
+  // Destructor reports a couple of UMA metrics as well as calls
+  // RecordUkmMetric.
+  ~PasswordFormMetricsRecorder();
+
   // Converts the "ActionsTaken" fields into an int so they can be logged to
   // UMA.
   int GetActionsTaken() const;

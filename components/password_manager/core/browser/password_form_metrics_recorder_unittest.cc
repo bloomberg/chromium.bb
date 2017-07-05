@@ -86,21 +86,21 @@ TEST(PasswordFormMetricsRecorder, Generation) {
     // Use a scoped PasswordFromMetricsRecorder because some metrics are recored
     // on destruction.
     {
-      PasswordFormMetricsRecorder recorder(
+      auto recorder = base::MakeRefCounted<PasswordFormMetricsRecorder>(
           /*is_main_frame_secure*/ true,
           CreateUkmEntryBuilder(&test_ukm_recorder));
       if (test.generation_available)
-        recorder.MarkGenerationAvailable();
-      recorder.SetHasGeneratedPassword(test.has_generated_password);
+        recorder->MarkGenerationAvailable();
+      recorder->SetHasGeneratedPassword(test.has_generated_password);
       switch (test.submission) {
         case PasswordFormMetricsRecorder::kSubmitResultNotSubmitted:
           // Do nothing.
           break;
         case PasswordFormMetricsRecorder::kSubmitResultFailed:
-          recorder.LogSubmitFailed();
+          recorder->LogSubmitFailed();
           break;
         case PasswordFormMetricsRecorder::kSubmitResultPassed:
-          recorder.LogSubmitPassed();
+          recorder->LogSubmitPassed();
           break;
         case PasswordFormMetricsRecorder::kSubmitResultMax:
           NOTREACHED();
@@ -245,20 +245,21 @@ TEST(PasswordFormMetricsRecorder, Actions) {
     // Use a scoped PasswordFromMetricsRecorder because some metrics are recored
     // on destruction.
     {
-      PasswordFormMetricsRecorder recorder(test.is_main_frame_secure, nullptr);
+      auto recorder = base::MakeRefCounted<PasswordFormMetricsRecorder>(
+          test.is_main_frame_secure, nullptr);
 
-      recorder.SetManagerAction(test.manager_action);
+      recorder->SetManagerAction(test.manager_action);
       if (test.user_action != UserAction::kNone)
-        recorder.SetUserAction(test.user_action);
+        recorder->SetUserAction(test.user_action);
       if (test.submit_result ==
           PasswordFormMetricsRecorder::kSubmitResultFailed) {
-        recorder.LogSubmitFailed();
+        recorder->LogSubmitFailed();
       } else if (test.submit_result ==
                  PasswordFormMetricsRecorder::kSubmitResultPassed) {
-        recorder.LogSubmitPassed();
+        recorder->LogSubmitPassed();
       }
 
-      EXPECT_EQ(test.actions_taken_new, recorder.GetActionsTakenNew());
+      EXPECT_EQ(test.actions_taken_new, recorder->GetActionsTakenNew());
     }
 
     EXPECT_THAT(
@@ -305,14 +306,14 @@ TEST(PasswordFormMetricsRecorder, ActionSequence) {
   // Use a scoped PasswordFromMetricsRecorder because some metrics are recored
   // on destruction.
   {
-    PasswordFormMetricsRecorder recorder(
+    auto recorder = base::MakeRefCounted<PasswordFormMetricsRecorder>(
         /*is_main_frame_secure*/ true,
         CreateUkmEntryBuilder(&test_ukm_recorder));
-    recorder.SetManagerAction(
+    recorder->SetManagerAction(
         PasswordFormMetricsRecorder::kManagerActionAutofilled);
-    recorder.SetUserAction(UserAction::kChoosePslMatch);
-    recorder.SetUserAction(UserAction::kOverrideUsernameAndPassword);
-    recorder.LogSubmitPassed();
+    recorder->SetUserAction(UserAction::kChoosePslMatch);
+    recorder->SetUserAction(UserAction::kOverrideUsernameAndPassword);
+    recorder->LogSubmitPassed();
   }
 
   EXPECT_THAT(histogram_tester.GetAllSamples("PasswordManager.ActionsTakenV3"),
@@ -351,9 +352,9 @@ TEST(PasswordFormMetricsRecorder, SubmittedFormType) {
     // Use a scoped PasswordFromMetricsRecorder because some metrics are recored
     // on destruction.
     {
-      PasswordFormMetricsRecorder recorder(
+      auto recorder = base::MakeRefCounted<PasswordFormMetricsRecorder>(
           test.is_main_frame_secure, CreateUkmEntryBuilder(&test_ukm_recorder));
-      recorder.SetSubmittedFormType(test.form_type);
+      recorder->SetSubmittedFormType(test.form_type);
     }
 
     if (test.form_type !=
