@@ -11,8 +11,10 @@
 
 namespace blink {
 
+class ChromeClient;
 class Element;
-class WebViewBase;
+class LocalFrameView;
+class Page;
 
 // A ValidationMessageOverlayDelegate is responsible for rendering a form
 // validation message bubble.
@@ -24,25 +26,35 @@ class WebViewBase;
 class ValidationMessageOverlayDelegate : public PageOverlay::Delegate {
  public:
   static std::unique_ptr<ValidationMessageOverlayDelegate> Create(
-      WebViewBase&,
+      Page&,
       const Element& anchor,
       const String& message,
       TextDirection message_dir,
       const String& sub_message,
       TextDirection sub_message_dir);
-  ~ValidationMessageOverlayDelegate() override {}
+  ~ValidationMessageOverlayDelegate() override;
 
   void PaintPageOverlay(const PageOverlay&,
                         GraphicsContext&,
                         const WebSize& view_size) const override;
 
  private:
-  ValidationMessageOverlayDelegate(WebViewBase&,
+  ValidationMessageOverlayDelegate(Page&,
                                    const Element& anchor,
                                    const String& message,
                                    TextDirection message_dir,
                                    const String& sub_message,
                                    TextDirection sub_message_dir);
+  LocalFrameView& FrameView() const;
+  void UpdateFrameViewState(const PageOverlay&, const IntSize& view_size);
+  void EnsurePage(const PageOverlay&, const IntSize& view_size);
+
+  // An internal Page and a ChromeClient for it.
+  Persistent<Page> page_;
+  Persistent<ChromeClient> chrome_client_;
+
+  // A page which triggered this validation message.
+  Persistent<Page> main_page_;
 };
 
 }  // namespace blink
