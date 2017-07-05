@@ -44,6 +44,7 @@ class MockBaseFetchContext final : public BaseFetchContext {
   ~MockBaseFetchContext() override {}
 
   // BaseFetchContext overrides:
+  KURL GetFirstPartyForCookies() const override { return KURL(); }
   ContentSettingsClient* GetContentSettingsClient() const override {
     return nullptr;
   }

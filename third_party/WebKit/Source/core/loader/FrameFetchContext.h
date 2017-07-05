@@ -179,6 +179,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   RefPtr<WebTaskRunner> GetTaskRunner() const;
 
   // BaseFetchContext overrides:
+  KURL GetFirstPartyForCookies() const override;
   ContentSettingsClient* GetContentSettingsClient() const override;
   Settings* GetSettings() const override;
   SubresourceFilter* GetSubresourceFilter() const override;
@@ -206,7 +207,6 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   void AddConsoleMessage(ConsoleMessage*) const override;
 
   String GetUserAgent() const;
-  KURL GetFirstPartyForCookies() const;
   RefPtr<SecurityOrigin> GetRequestorOrigin();
   RefPtr<SecurityOrigin> GetRequestorOriginForFrameLoading();
   ClientHintsPreferences GetClientHintsPreferences() const;

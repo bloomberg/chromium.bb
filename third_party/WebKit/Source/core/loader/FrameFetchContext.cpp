@@ -252,6 +252,16 @@ RefPtr<WebTaskRunner> FrameFetchContext::GetTaskRunner() const {
   return GetFrame()->FrameScheduler()->LoadingTaskRunner();
 }
 
+KURL FrameFetchContext::GetFirstPartyForCookies() const {
+  if (IsDetached())
+    return frozen_state_->first_party_for_cookies;
+
+  // Use document_ for subresource or nested frame cases,
+  // GetFrame()->GetDocument() otherwise.
+  Document* document = document_ ? document_.Get() : GetFrame()->GetDocument();
+  return document->FirstPartyForCookies();
+}
+
 LocalFrame* FrameFetchContext::GetFrame() const {
   if (!document_loader_)
     return FrameOfImportsController();
@@ -1031,16 +1041,6 @@ String FrameFetchContext::GetUserAgent() const {
   if (IsDetached())
     return frozen_state_->user_agent;
   return GetFrame()->Loader().UserAgent();
-}
-
-KURL FrameFetchContext::GetFirstPartyForCookies() const {
-  if (IsDetached())
-    return frozen_state_->first_party_for_cookies;
-
-  // Use document_ for subresource or nested frame cases,
-  // GetFrame()->GetDocument() otherwise.
-  Document* document = document_ ? document_.Get() : GetFrame()->GetDocument();
-  return document->FirstPartyForCookies();
 }
 
 RefPtr<SecurityOrigin> FrameFetchContext::GetRequestorOrigin() {

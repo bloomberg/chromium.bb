@@ -96,7 +96,7 @@ ResourceFetcher* WorkerFetchContext::GetResourceFetcher() {
   return resource_fetcher_;
 }
 
-KURL WorkerFetchContext::FirstPartyForCookies() const {
+KURL WorkerFetchContext::GetFirstPartyForCookies() const {
   return web_context_->FirstPartyForCookies();
 }
 
@@ -332,7 +332,7 @@ void WorkerFetchContext::PopulateResourceRequest(
 void WorkerFetchContext::SetFirstPartyCookieAndRequestorOrigin(
     ResourceRequest& out_request) {
   if (out_request.FirstPartyForCookies().IsNull())
-    out_request.SetFirstPartyForCookies(FirstPartyForCookies());
+    out_request.SetFirstPartyForCookies(GetFirstPartyForCookies());
   if (!out_request.RequestorOrigin())
     out_request.SetRequestorOrigin(GetSecurityOrigin());
 }
