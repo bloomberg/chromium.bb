@@ -13,12 +13,12 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/payments/core/currency_formatter.h"
+#include "components/payments/core/payment_prefs.h"
 #include "components/payments/core/strings_util.h"
-#include "components/signin/core/browser/signin_manager.h"
+#include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #include "ios/chrome/browser/payments/payment_request_util.h"
-#include "ios/chrome/browser/signin/signin_manager_factory.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_detail_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
@@ -50,8 +50,6 @@ using ::payment_request_util::GetShippingSectionTitle;
 
 @interface PaymentRequestMediator ()
 
-@property(nonatomic, assign) ios::ChromeBrowserState* browserState;
-
 // The PaymentRequest object owning an instance of web::PaymentRequest as
 // provided by the page invoking the Payment Request API. This is a weak
 // pointer and should outlive this class.
@@ -62,15 +60,11 @@ using ::payment_request_util::GetShippingSectionTitle;
 @implementation PaymentRequestMediator
 
 @synthesize totalValueChanged = _totalValueChanged;
-@synthesize browserState = _browserState;
 @synthesize paymentRequest = _paymentRequest;
 
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                      paymentRequest:(PaymentRequest*)paymentRequest {
-  DCHECK(browserState);
+- (instancetype)initWithPaymentRequest:(PaymentRequest*)paymentRequest {
   self = [super init];
   if (self) {
-    _browserState = browserState;
     _paymentRequest = paymentRequest;
   }
   return self;
@@ -258,35 +252,28 @@ using ::payment_request_util::GetShippingSectionTitle;
 - (CollectionViewFooterItem*)footerItem {
   CollectionViewFooterItem* item = [[CollectionViewFooterItem alloc] init];
 
-  // TODO(crbug.com/602666): Find out if the first payment has completed.
-  BOOL firstPaymentCompleted = YES;
-  if (!firstPaymentCompleted) {
+  // If no transaction has been completed so far, choose which string to display
+  // as a function of the profile's signed in state. Otherwise, always show the
+  // same string.
+  const bool firstTransactionCompleted =
+      _paymentRequest->GetPrefService()->GetBoolean(
+          payments::kPaymentsFirstTransactionCompleted);
+  if (firstTransactionCompleted) {
     item.text = l10n_util::GetNSString(IDS_PAYMENTS_CARD_AND_ADDRESS_SETTINGS);
-  } else if ([[self authenticatedAccountName] length]) {
-    const base::string16 accountName =
-        base::SysNSStringToUTF16([self authenticatedAccountName]);
-    const std::string formattedString = l10n_util::GetStringFUTF8(
-        IDS_PAYMENTS_CARD_AND_ADDRESS_SETTINGS_SIGNED_IN, accountName);
-    item.text = base::SysUTF8ToNSString(formattedString);
   } else {
-    item.text = l10n_util::GetNSString(
-        IDS_PAYMENTS_CARD_AND_ADDRESS_SETTINGS_SIGNED_OUT);
+    const std::string email = _paymentRequest->GetAuthenticatedEmail();
+    if (!email.empty()) {
+      const std::string formattedString = l10n_util::GetStringFUTF8(
+          IDS_PAYMENTS_CARD_AND_ADDRESS_SETTINGS_SIGNED_IN,
+          base::UTF8ToUTF16(email));
+      item.text = base::SysUTF8ToNSString(formattedString);
+    } else {
+      item.text = l10n_util::GetNSString(
+          IDS_PAYMENTS_CARD_AND_ADDRESS_SETTINGS_SIGNED_OUT);
+    }
   }
   item.linkURL = GURL(kSettingsURL);
   return item;
-}
-
-#pragma mark - Helper methods
-
-// Returns the authenticated account name, or nil if user is not authenticated.
-- (NSString*)authenticatedAccountName {
-  const SigninManager* signinManager =
-      ios::SigninManagerFactory::GetForBrowserStateIfExists(self.browserState);
-  if (signinManager && signinManager->IsAuthenticated()) {
-    return base::SysUTF8ToNSString(
-        signinManager->GetAuthenticatedAccountInfo().email);
-  }
-  return nil;
 }
 
 @end

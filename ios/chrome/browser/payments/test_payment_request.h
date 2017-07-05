@@ -26,6 +26,8 @@ class PaymentRequest;
 class PaymentShippingOption;
 }  // namespace web
 
+class PrefService;
+
 // PaymentRequest for use in tests.
 class TestPaymentRequest : public PaymentRequest {
  public:
@@ -39,7 +41,16 @@ class TestPaymentRequest : public PaymentRequest {
                        personal_data_manager,
                        payment_request_ui_delegate),
         region_data_loader_(nullptr),
+        pref_service_(nullptr),
         profile_comparator_(nullptr) {}
+
+  TestPaymentRequest(const web::PaymentRequest& web_payment_request,
+                     ios::ChromeBrowserState* browser_state,
+                     autofill::PersonalDataManager* personal_data_manager)
+      : TestPaymentRequest(web_payment_request,
+                           browser_state,
+                           personal_data_manager,
+                           nil) {}
 
   TestPaymentRequest(const web::PaymentRequest& web_payment_request,
                      autofill::PersonalDataManager* personal_data_manager)
@@ -52,6 +63,10 @@ class TestPaymentRequest : public PaymentRequest {
 
   void SetRegionDataLoader(autofill::RegionDataLoader* region_data_loader) {
     region_data_loader_ = region_data_loader;
+  }
+
+  void SetPrefService(PrefService* pref_service) {
+    pref_service_ = pref_service;
   }
 
   void SetProfileComparator(
@@ -79,11 +94,15 @@ class TestPaymentRequest : public PaymentRequest {
 
   // PaymentRequest
   autofill::RegionDataLoader* GetRegionDataLoader() override;
+  PrefService* GetPrefService() override;
   payments::PaymentsProfileComparator* profile_comparator() override;
 
  private:
   // Not owned and must outlive this object.
   autofill::RegionDataLoader* region_data_loader_;
+
+  // Not owned and must outlive this object.
+  PrefService* pref_service_;
 
   // Not owned and must outlive this object.
   payments::PaymentsProfileComparator* profile_comparator_;

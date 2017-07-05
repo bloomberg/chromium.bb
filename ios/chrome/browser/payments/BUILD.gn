@@ -19,10 +19,13 @@ source_set("payments") {
     "//components/autofill/core/browser",
     "//components/keyed_service/ios",
     "//components/payments/core",
+    "//components/prefs",
+    "//components/signin/core/browser",
     "//components/strings:components_strings_grit",
     "//ios/chrome/browser",
     "//ios/chrome/browser/autofill",
     "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/signin",
     "//ios/web",
     "//ui/base",
   ]
@@ -63,7 +66,9 @@ source_set("test_support") {
     ":payments",
     "//base",
     "//components/autofill/core/browser",
+    "//components/autofill/core/browser:test_support",
     "//components/payments/core",
+    "//components/prefs",
     "//ios/web",
   ]
 }

@@ -61,6 +61,8 @@ static_library("core") {
 static_library("test_support") {
   testonly = true
   sources = [
+    "payments_test_util.cc",
+    "payments_test_util.h",
     "test_address_normalizer.cc",
     "test_address_normalizer.h",
     "test_payment_request_delegate.cc",
@@ -71,6 +73,9 @@ static_library("test_support") {
     ":core",
     "//base",
     "//components/autofill/core/browser",
+    "//components/autofill/core/browser:test_support",
+    "//components/pref_registry",
+    "//components/prefs",
   ]
 }
 

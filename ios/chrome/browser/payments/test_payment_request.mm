@@ -7,6 +7,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/region_data_loader.h"
 #include "components/payments/core/payments_profile_comparator.h"
+#include "components/prefs/pref_service.h"
 #include "ios/web/public/payments/payment_request.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -29,6 +30,12 @@ autofill::RegionDataLoader* TestPaymentRequest::GetRegionDataLoader() {
   if (region_data_loader_)
     return region_data_loader_;
   return PaymentRequest::GetRegionDataLoader();
+}
+
+PrefService* TestPaymentRequest::GetPrefService() {
+  if (pref_service_)
+    return pref_service_;
+  return PaymentRequest::GetPrefService();
 }
 
 payments::PaymentsProfileComparator* TestPaymentRequest::profile_comparator() {
