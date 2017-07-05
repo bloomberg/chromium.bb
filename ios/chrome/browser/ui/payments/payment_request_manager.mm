@@ -24,8 +24,10 @@
 #include "components/payments/core/address_normalization_manager.h"
 #include "components/payments/core/can_make_payment_query.h"
 #include "components/payments/core/payment_address.h"
+#include "components/payments/core/payment_prefs.h"
 #include "components/payments/core/payment_request_base_delegate.h"
 #include "components/payments/core/payment_request_data_util.h"
+#include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/autofill/validation_rules_storage_factory.h"
@@ -777,6 +779,9 @@ struct PendingPaymentResponse {
   }
 
   _paymentRequest->RecordUseStats();
+
+  _paymentRequest->GetPrefService()->SetBoolean(
+      payments::kPaymentsFirstTransactionCompleted, true);
 
   [_paymentRequestJsManager
       resolveRequestPromiseWithPaymentResponse:paymentResponse

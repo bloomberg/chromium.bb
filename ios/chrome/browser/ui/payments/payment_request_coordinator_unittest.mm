@@ -13,10 +13,14 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/payments/core/payment_address.h"
+#include "components/payments/core/payments_test_util.h"
+#include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #include "ios/chrome/browser/payments/payment_request_test_util.h"
 #include "ios/chrome/browser/payments/test_payment_request.h"
+#include "ios/chrome/browser/signin/fake_signin_manager_builder.h"
+#include "ios/chrome/browser/signin/signin_manager_factory.h"
 #import "ios/chrome/browser/ui/payments/payment_request_view_controller.h"
 #import "ios/chrome/test/scoped_key_window.h"
 #import "ios/testing/ocmock_complex_type_helper.h"
@@ -81,21 +85,26 @@ class PaymentRequestCoordinatorTest : public PlatformTest {
  protected:
   PaymentRequestCoordinatorTest()
       : autofill_profile_(autofill::test::GetFullProfile()),
-        credit_card_(autofill::test::GetCreditCard()) {
+        credit_card_(autofill::test::GetCreditCard()),
+        pref_service_(payments::test::PrefServiceForTesting()) {
     // Add testing profile and credit card to autofill::TestPersonalDataManager.
     personal_data_manager_.AddTestingProfile(&autofill_profile_);
     personal_data_manager_.AddTestingCreditCard(&credit_card_);
 
+    TestChromeBrowserState::Builder test_cbs_builder;
+    test_cbs_builder.AddTestingFactory(ios::SigninManagerFactory::GetInstance(),
+                                       &ios::BuildFakeSigninManager);
+    browser_state_ = test_cbs_builder.Build();
+
     payment_request_ = base::MakeUnique<TestPaymentRequest>(
         payment_request_test_util::CreateTestWebPaymentRequest(),
-        &personal_data_manager_);
-
-    TestChromeBrowserState::Builder test_cbs_builder;
-    browser_state_ = test_cbs_builder.Build();
+        browser_state_.get(), &personal_data_manager_);
+    payment_request_->SetPrefService(pref_service_.get());
   }
 
   autofill::AutofillProfile autofill_profile_;
   autofill::CreditCard credit_card_;
+  std::unique_ptr<PrefService> pref_service_;
   autofill::TestPersonalDataManager personal_data_manager_;
   std::unique_ptr<TestPaymentRequest> payment_request_;
   std::unique_ptr<ios::ChromeBrowserState> browser_state_;

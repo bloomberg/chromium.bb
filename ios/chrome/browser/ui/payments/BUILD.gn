@@ -181,6 +181,7 @@ source_set("unit_tests") {
     "//components/autofill/core/browser:test_support",
     "//components/autofill/ios/browser",
     "//components/payments/core",
+    "//components/payments/core:test_support",
     "//components/prefs:prefs",
     "//components/signin/core/browser",
     "//components/strings",

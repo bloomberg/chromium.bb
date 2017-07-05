@@ -7,10 +7,6 @@
 
 #import "ios/chrome/browser/ui/payments/payment_request_view_controller_data_source.h"
 
-namespace ios {
-class ChromeBrowserState;
-}  // namespace ios
-
 class PaymentRequest;
 
 // A mediator object that provides data for a PaymentRequestViewController.
@@ -20,12 +16,10 @@ class PaymentRequest;
 // Whether or not the total price value was changed by the merchant.
 @property(nonatomic, assign) BOOL totalValueChanged;
 
-// Initializes this object with an instance of ios::ChromeBrowserState and an
-// instance of PaymentRequest which has a copy of web::PaymentRequest as
-// provided by the page invoking the Payment Request API. This object will not
-// take ownership of |browserState| or |paymentRequest|.
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                      paymentRequest:(PaymentRequest*)paymentRequest
+// Initializes this object with an instance of PaymentRequest which has a copy
+// of web::PaymentRequest as provided by the page invoking the Payment Request
+// API. This object will not take ownership of |paymentRequest|.
+- (instancetype)initWithPaymentRequest:(PaymentRequest*)paymentRequest
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;

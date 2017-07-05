@@ -35,7 +35,12 @@ namespace test {
 std::unique_ptr<PrefService> PrefServiceForTesting() {
   scoped_refptr<user_prefs::PrefRegistrySyncable> registry(
       new user_prefs::PrefRegistrySyncable());
-  AutofillManager::RegisterProfilePrefs(registry.get());
+  return PrefServiceForTesting(registry.get());
+}
+
+std::unique_ptr<PrefService> PrefServiceForTesting(
+    user_prefs::PrefRegistrySyncable* registry) {
+  AutofillManager::RegisterProfilePrefs(registry);
 
   // PDM depends on these prefs, which are normally registered in
   // SigninManagerFactory.
@@ -59,7 +64,7 @@ std::unique_ptr<PrefService> PrefServiceForTesting() {
 
   PrefServiceFactory factory;
   factory.set_user_prefs(make_scoped_refptr(new TestingPrefStore()));
-  return factory.Create(registry.get());
+  return factory.Create(registry);
 }
 
 void CreateTestFormField(const char* label,

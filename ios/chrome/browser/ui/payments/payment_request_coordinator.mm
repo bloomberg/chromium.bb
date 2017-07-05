@@ -61,8 +61,7 @@ const NSTimeInterval kUpdatePaymentSummaryItemIntervalSeconds = 10.0;
 
 - (void)start {
   _mediator =
-      [[PaymentRequestMediator alloc] initWithBrowserState:_browserState
-                                            paymentRequest:_paymentRequest];
+      [[PaymentRequestMediator alloc] initWithPaymentRequest:_paymentRequest];
 
   _viewController = [[PaymentRequestViewController alloc] init];
   [_viewController setPageFavicon:_pageFavicon];
