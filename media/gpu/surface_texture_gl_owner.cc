@@ -32,7 +32,10 @@ struct FrameAvailableEvent
 
 SurfaceTextureGLOwner::SurfaceTextureGLOwner()
     : base::RefCountedDeleteOnSequence<SurfaceTextureGLOwner>(
-          base::ThreadTaskRunnerHandle::Get()) {}
+          base::ThreadTaskRunnerHandle::Get()),
+      task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
+
+SurfaceTextureGLOwner::~SurfaceTextureGLOwner() = default;
 
 scoped_refptr<SurfaceTextureGLOwner> SurfaceTextureGLOwnerImpl::Create() {
   GLuint texture_id;
@@ -89,7 +92,6 @@ GLuint SurfaceTextureGLOwnerImpl::GetTextureId() const {
 }
 
 gl::ScopedJavaSurface SurfaceTextureGLOwnerImpl::CreateJavaSurface() const {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return gl::ScopedJavaSurface(surface_texture_.get());
 }
 
