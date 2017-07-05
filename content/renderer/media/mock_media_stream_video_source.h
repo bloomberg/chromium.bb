@@ -57,8 +57,7 @@ class MockMediaStreamVideoSource : public MediaStreamVideoSource {
   void StartSourceImpl(
       const VideoCaptureDeliverFrameCB& frame_callback) override;
   void StopSourceImpl() override;
-  base::Optional<media::VideoCaptureFormat> GetCurrentFormatImpl()
-      const override;
+  base::Optional<media::VideoCaptureFormat> GetCurrentFormat() const override;
 
  private:
   media::VideoCaptureFormat format_;

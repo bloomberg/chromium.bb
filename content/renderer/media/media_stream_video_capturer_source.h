@@ -51,8 +51,7 @@ class CONTENT_EXPORT MediaStreamVideoCapturerSource
   void StartSourceImpl(
       const VideoCaptureDeliverFrameCB& frame_callback) override;
   void StopSourceImpl() override;
-  base::Optional<media::VideoCaptureFormat> GetCurrentFormatImpl()
-      const override;
+  base::Optional<media::VideoCaptureFormat> GetCurrentFormat() const override;
 
   // RenderFrameObserver implementation.
   void OnDestruct() final {}

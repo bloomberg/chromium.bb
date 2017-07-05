@@ -211,7 +211,7 @@ void MediaStreamVideoCapturerSource::StopSourceImpl() {
 }
 
 base::Optional<media::VideoCaptureFormat>
-MediaStreamVideoCapturerSource::GetCurrentFormatImpl() const {
+MediaStreamVideoCapturerSource::GetCurrentFormat() const {
   return base::Optional<media::VideoCaptureFormat>(
       capture_params_.requested_format);
 }

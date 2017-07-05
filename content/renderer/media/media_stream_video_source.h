@@ -78,7 +78,8 @@ class CONTENT_EXPORT MediaStreamVideoSource : public MediaStreamSource {
   // Returns the task runner where video frames will be delivered on.
   base::SingleThreadTaskRunner* io_task_runner() const;
 
-  base::Optional<media::VideoCaptureFormat> GetCurrentFormat() const;
+  // Implementations must return the capture format if available.
+  virtual base::Optional<media::VideoCaptureFormat> GetCurrentFormat() const;
 
   base::WeakPtr<MediaStreamVideoSource> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
@@ -92,10 +93,6 @@ class CONTENT_EXPORT MediaStreamVideoSource : public MediaStreamSource {
 
   // Sets muted state and notifies it to all registered tracks.
   virtual void SetMutedState(bool state);
-
-  // An implementation must return its capture format if available.
-  virtual base::Optional<media::VideoCaptureFormat> GetCurrentFormatImpl()
-      const;
 
   // An implementation must start capturing frames after this method is called.
   // When the source has started or failed to start OnStartDone must be called.

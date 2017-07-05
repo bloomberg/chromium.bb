@@ -428,8 +428,7 @@ class PepperMediaStreamVideoTrackHost::VideoSource final
   }
 
  private:
-  base::Optional<media::VideoCaptureFormat> GetCurrentFormatImpl()
-      const override {
+  base::Optional<media::VideoCaptureFormat> GetCurrentFormat() const override {
     if (host_) {
       return base::Optional<media::VideoCaptureFormat>(
           media::VideoCaptureFormat(
