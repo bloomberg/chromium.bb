@@ -15,8 +15,6 @@
 class CSSParserLocalContext;
 namespace blink {
 
-using CSSCounterValue = cssvalue::CSSCounterValue;
-
 namespace {
 
 CSSValue* ConsumeAttr(CSSParserTokenRange args,
@@ -67,7 +65,7 @@ CSSValue* ConsumeCounterContent(CSSParserTokenRange args, bool counters) {
 
   if (!args.AtEnd())
     return nullptr;
-  return blink::CSSCounterValue::Create(identifier, list_style, separator);
+  return cssvalue::CSSCounterValue::Create(identifier, list_style, separator);
 }
 
 }  // namespace
