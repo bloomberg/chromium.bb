@@ -87656,6 +87656,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WinJumplist.NotificationTimeInterval" units="ms">
+  <owner>chengx@chromium.org</owner>
+  <summary>
+    The time interval between two adjacent update notifications if it's less
+    than 3500 ms.
+  </summary>
+</histogram>
+
 <histogram name="WinJumplist.OnFaviconDataAvailableDuration" units="ms">
   <obsolete>
     Obsolete 06/22/2017 as it's no longer needed.
