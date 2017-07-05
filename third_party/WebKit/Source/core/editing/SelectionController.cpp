@@ -164,6 +164,48 @@ static PositionInFlatTree AdjustPositionRespectUserSelectAll(
   return position;
 }
 
+static SelectionInFlatTree ExtendSelectionAsDirectional(
+    const PositionInFlatTree& position,
+    const VisibleSelectionInFlatTree& selection,
+    TextGranularity granularity) {
+  DCHECK(!selection.IsNone());
+  DCHECK(position.IsNotNull());
+  return SelectionInFlatTree::Builder()
+      .SetBaseAndExtent(selection.Base(), position)
+      .SetGranularity(granularity)
+      .Build();
+}
+
+static SelectionInFlatTree ExtendSelectionAsNonDirectional(
+    const PositionInFlatTree& position,
+    const VisibleSelectionInFlatTree& selection,
+    TextGranularity granularity) {
+  DCHECK(!selection.IsNone());
+  DCHECK(position.IsNotNull());
+  // Shift+Click deselects when selection was created right-to-left
+  const PositionInFlatTree& start = selection.Start();
+  const PositionInFlatTree& end = selection.End();
+  if (position < start) {
+    return SelectionInFlatTree::Builder()
+        .SetBaseAndExtent(end, position)
+        .SetGranularity(granularity)
+        .Build();
+  }
+  if (end < position) {
+    return SelectionInFlatTree::Builder()
+        .SetBaseAndExtent(start, position)
+        .SetGranularity(granularity)
+        .Build();
+  }
+  const int distance_to_start = TextDistance(start, position);
+  const int distance_to_end = TextDistance(position, end);
+  return SelectionInFlatTree::Builder()
+      .SetBaseAndExtent(distance_to_start <= distance_to_end ? end : start,
+                        position)
+      .SetGranularity(granularity)
+      .Build();
+}
+
 // Updating the selection is considered side-effect of the event and so it
 // doesn't impact the handled state.
 bool SelectionController::HandleSingleClick(
@@ -221,33 +263,19 @@ bool SelectionController::HandleSingleClick(
     const PositionInFlatTree& pos = AdjustPositionRespectUserSelectAll(
         inner_node, selection.Start(), selection.End(),
         visible_pos.DeepEquivalent());
-    SelectionInFlatTree::Builder builder;
-    builder.SetGranularity(this->Selection().Granularity());
-    if (frame_->GetEditor().Behavior().ShouldConsiderSelectionAsDirectional()) {
-      builder.SetBaseAndExtent(selection.Base(), pos);
-    } else if (pos.IsNull()) {
-      builder.SetBaseAndExtent(selection.Base(), selection.Extent());
-    } else {
-      // Shift+Click deselects when selection was created right-to-left
-      const PositionInFlatTree& start = selection.Start();
-      const PositionInFlatTree& end = selection.End();
-      if (pos < start) {
-        // |distance_to_start < distance_to_end|.
-        builder.SetBaseAndExtent(end, pos);
-      } else if (end < pos) {
-        // |distance_to_start > distance_to_end|.
-        builder.SetBaseAndExtent(start, pos);
-      } else {
-        const int distance_to_start = TextDistance(start, pos);
-        const int distance_to_end = TextDistance(pos, end);
-        builder.SetBaseAndExtent(
-            distance_to_start <= distance_to_end ? end : start, pos);
-      }
+    const TextGranularity granularity = Selection().Granularity();
+    if (pos.IsNull()) {
+      UpdateSelectionForMouseDownDispatchingSelectStart(
+          inner_node, selection.AsSelection(), granularity,
+          HandleVisibility::kNotVisible);
+      return false;
     }
-
     UpdateSelectionForMouseDownDispatchingSelectStart(
-        inner_node, builder.Build(), this->Selection().Granularity(),
-        HandleVisibility::kNotVisible);
+        inner_node,
+        frame_->GetEditor().Behavior().ShouldConsiderSelectionAsDirectional()
+            ? ExtendSelectionAsDirectional(pos, selection, granularity)
+            : ExtendSelectionAsNonDirectional(pos, selection, granularity),
+        granularity, HandleVisibility::kNotVisible);
     return false;
   }
 
