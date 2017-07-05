@@ -109,32 +109,44 @@ LayoutSelection::LayoutSelection(FrameSelection& frame_selection)
       has_pending_selection_(false),
       paint_range_(SelectionPaintRange()) {}
 
-static bool ShouldShowBlockCursor(const FrameSelection& frame_selection,
-                                  const VisibleSelectionInFlatTree& selection) {
+enum class SelectionMode {
+  kNone,
+  kRange,
+  kBlockCursor,
+};
+static SelectionMode ComputeSelectionMode(
+    const FrameSelection& frame_selection,
+    const VisibleSelectionInFlatTree& selection) {
+  if (selection.IsRange())
+    return SelectionMode::kRange;
   if (!frame_selection.ShouldShowBlockCursor())
-    return false;
-  if (selection.GetSelectionType() != SelectionType::kCaretSelection)
-    return false;
-  if (IsLogicalEndOfLine(selection.VisibleEnd()))
-    return false;
-  return true;
+    return SelectionMode::kNone;
+  if (IsLogicalEndOfLine(selection.VisibleStart()))
+    return SelectionMode::kNone;
+  return SelectionMode::kBlockCursor;
 }
 
 static EphemeralRangeInFlatTree CalcSelection(
     const FrameSelection& frame_selection) {
   const VisibleSelectionInFlatTree& original_selection =
       frame_selection.ComputeVisibleSelectionInFlatTree();
-
-  if (!ShouldShowBlockCursor(frame_selection, original_selection))
-    return {original_selection.Start(), original_selection.End()};
-
-  const PositionInFlatTree end_position = NextPositionOf(
-      original_selection.Start(), PositionMoveType::kGraphemeCluster);
-  const VisibleSelectionInFlatTree& block_cursor = CreateVisibleSelection(
-      SelectionInFlatTree::Builder()
-          .SetBaseAndExtent(original_selection.Start(), end_position)
-          .Build());
-  return {block_cursor.Start(), block_cursor.End()};
+  switch (ComputeSelectionMode(frame_selection, original_selection)) {
+    case SelectionMode::kNone:
+      return {};
+    case SelectionMode::kRange:
+      return {original_selection.Start(), original_selection.End()};
+    case SelectionMode::kBlockCursor: {
+      const PositionInFlatTree end_position = NextPositionOf(
+          original_selection.Start(), PositionMoveType::kGraphemeCluster);
+      const VisibleSelectionInFlatTree& block_cursor = CreateVisibleSelection(
+          SelectionInFlatTree::Builder()
+              .SetBaseAndExtent(original_selection.Start(), end_position)
+              .Build());
+      return {block_cursor.Start(), block_cursor.End()};
+    }
+  }
+  NOTREACHED();
+  return {};
 }
 
 // Objects each have a single selection rect to examine.
