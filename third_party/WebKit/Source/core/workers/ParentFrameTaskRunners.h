@@ -20,12 +20,9 @@ class LocalFrame;
 class WebTaskRunner;
 
 // Represents a set of task runners of the parent (or associated) document's
-// frame. This could be accessed from worker thread(s) and must be initialized
-// on the parent context thread (i.e. MainThread) on construction time, rather
-// than being done lazily.
+// frame, or default task runners of the main thread.
 //
-// This observes LocalFrame lifecycle only for in-process worker cases (i.e.
-// only when a non-null LocalFrame is given).
+// This observes LocalFrame lifecycle only when this is created with LocalFrame.
 class CORE_EXPORT ParentFrameTaskRunners final
     : public GarbageCollectedFinalized<ParentFrameTaskRunners>,
       public ContextLifecycleObserver {
@@ -33,11 +30,18 @@ class CORE_EXPORT ParentFrameTaskRunners final
   WTF_MAKE_NONCOPYABLE(ParentFrameTaskRunners);
 
  public:
-  static ParentFrameTaskRunners* Create(LocalFrame* frame) {
-    return new ParentFrameTaskRunners(frame);
-  }
+  // Returns task runners associated with a given frame. This must be called on
+  // the frame's context thread, that is, the main thread. The given frame must
+  // have a valid execution context.
+  static ParentFrameTaskRunners* Create(LocalFrame&);
 
-  // Might return nullptr for unsupported task types.
+  // Returns default task runners of the main thread. This can be called from
+  // any threads. This must be used only for shared workers, service workers and
+  // tests that don't have a parent frame.
+  static ParentFrameTaskRunners* Create();
+
+  // Might return nullptr for unsupported task types. This can be called from
+  // any threads.
   RefPtr<WebTaskRunner> Get(TaskType);
 
   DECLARE_VIRTUAL_TRACE();

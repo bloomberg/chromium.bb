@@ -507,10 +507,9 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
 
   // We have a dummy document here for loading but it doesn't really represent
   // the document/frame of associated document(s) for this worker. Here we
-  // populate the task runners with null document not to confuse the frame
-  // scheduler (which will end up using the thread's default task runner).
+  // populate the task runners with default task runners of the main thread.
   worker_thread_->Start(std::move(startup_data),
-                        ParentFrameTaskRunners::Create(nullptr));
+                        ParentFrameTaskRunners::Create());
 
   worker_inspector_proxy_->WorkerThreadCreated(document, worker_thread_.get(),
                                                worker_start_data_.script_url);

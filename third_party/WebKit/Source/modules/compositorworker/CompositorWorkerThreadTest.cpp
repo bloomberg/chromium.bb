@@ -96,7 +96,7 @@ class CompositorWorkerThreadTest : public ::testing::Test {
  public:
   void SetUp() override {
     CompositorWorkerThread::CreateSharedBackingThreadForTest();
-    parent_frame_task_runners_ = ParentFrameTaskRunners::Create(nullptr);
+    parent_frame_task_runners_ = ParentFrameTaskRunners::Create();
     object_proxy_ = TestCompositorWorkerObjectProxy::Create(
         parent_frame_task_runners_.Get());
     security_origin_ =

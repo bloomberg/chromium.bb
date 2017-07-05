@@ -79,17 +79,17 @@ class WorkerThreadTest : public ::testing::Test {
   void TearDown() override {}
 
   void Start() {
-    worker_thread_->StartWithSourceCode(
-        security_origin_.Get(), "//fake source code",
-        ParentFrameTaskRunners::Create(nullptr));
+    worker_thread_->StartWithSourceCode(security_origin_.Get(),
+                                        "//fake source code",
+                                        ParentFrameTaskRunners::Create());
   }
 
   void StartWithSourceCodeNotToFinish() {
     // Use a JavaScript source code that makes an infinite loop so that we
     // can catch some kind of issues as a timeout.
-    worker_thread_->StartWithSourceCode(
-        security_origin_.Get(), "while(true) {}",
-        ParentFrameTaskRunners::Create(nullptr));
+    worker_thread_->StartWithSourceCode(security_origin_.Get(),
+                                        "while(true) {}",
+                                        ParentFrameTaskRunners::Create());
   }
 
   void SetForcibleTerminationDelayInMs(
@@ -308,7 +308,7 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization) {
           kWebAddressSpaceLocal, nullptr /* originTrialToken */,
           nullptr /* WorkerSettings */, WorkerV8Settings::Default());
   worker_thread_->Start(std::move(startup_data),
-                        ParentFrameTaskRunners::Create(nullptr));
+                        ParentFrameTaskRunners::Create());
 
   // Used to wait for worker thread termination in a debugger task on the
   // worker thread.

@@ -235,7 +235,7 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper {
     reporting_proxy_ = WTF::MakeUnique<WorkerReportingProxy>();
     security_origin_ = GetDocument().GetSecurityOrigin();
     parent_frame_task_runners_ =
-        ParentFrameTaskRunners::Create(&dummy_page_holder_->GetFrame());
+        ParentFrameTaskRunners::Create(dummy_page_holder_->GetFrame());
     worker_thread_ = WTF::MakeUnique<WorkerThreadForTest>(
         ThreadableLoadingContext::Create(GetDocument()), *reporting_proxy_);
 

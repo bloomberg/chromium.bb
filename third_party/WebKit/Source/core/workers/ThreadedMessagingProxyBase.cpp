@@ -34,7 +34,7 @@ ThreadedMessagingProxyBase::ThreadedMessagingProxyBase(
       worker_clients_(worker_clients),
       worker_inspector_proxy_(WorkerInspectorProxy::Create()),
       parent_frame_task_runners_(ParentFrameTaskRunners::Create(
-          ToDocument(execution_context_.Get())->GetFrame())),
+          *ToDocument(execution_context_.Get())->GetFrame())),
       asked_to_terminate_(false),
       keep_alive_(this) {
   DCHECK(IsParentContextThread());
