@@ -350,10 +350,6 @@ cr.define('print_preview', function() {
       var nativeLayerEventTarget = this.nativeLayer_.getEventTarget();
       this.tracker.add(
           nativeLayerEventTarget,
-          print_preview.NativeLayer.EventType.SETTINGS_INVALID,
-          this.onSettingsInvalid_.bind(this));
-      this.tracker.add(
-          nativeLayerEventTarget,
           print_preview.NativeLayer.EventType.PRINT_PRESET_OPTIONS,
           this.onPrintPresetOptionsFromDocument_.bind(this));
       this.tracker.add(
@@ -392,6 +388,10 @@ cr.define('print_preview', function() {
           this.previewArea_,
           print_preview.PreviewArea.EventType.OPEN_SYSTEM_DIALOG_CLICK,
           this.openSystemPrintDialog_.bind(this));
+      this.tracker.add(
+          this.previewArea_,
+          print_preview.PreviewArea.EventType.SETTINGS_INVALID,
+          this.onSettingsInvalid_.bind(this));
 
       this.tracker.add(
           this.destinationStore_,
@@ -955,9 +955,6 @@ cr.define('print_preview', function() {
       this.uiState_ = PrintPreviewUiState_.ERROR;
       this.isPreviewGenerationInProgress_ = false;
       this.printHeader_.isPrintButtonEnabled = false;
-      this.previewArea_.cancelTimeout();
-      this.previewArea_.showCustomMessage(
-          loadTimeData.getString('invalidPrinterSettings'));
     },
 
     /**

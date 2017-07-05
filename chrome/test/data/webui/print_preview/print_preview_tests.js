@@ -274,7 +274,7 @@ cr.define('print_preview_test', function() {
 
       print_preview.PreviewArea.prototype.checkPluginCompatibility_ =
           function() {
-        return false;
+        return true;
       };
     });
 
@@ -302,6 +302,7 @@ cr.define('print_preview_test', function() {
       print_preview.NativeLayer.setInstance(nativeLayer);
       printPreview = new print_preview.PrintPreview();
       previewArea = printPreview.getPreviewArea();
+      previewArea.setIsBrowserTest(true);
     });
 
     // Test some basic assumptions about the print preview WebUI.
@@ -1079,13 +1080,14 @@ cr.define('print_preview_test', function() {
 
     // Test that changing the selected printer updates the preview.
     test('PrinterChangeUpdatesPreview', function() {
-      return setupSettingsAndDestinationsWithCapabilities().then(function() {
-        var previewGenerator = mock(print_preview.PreviewGenerator);
-        previewArea.previewGenerator_ = previewGenerator.proxy();
-
-        // The number of settings that can change due to a change in the
-        // destination that will therefore dispatch ticket item change events.
-        previewGenerator.expects(exactly(9)).requestPreview();
+      return Promise.all([
+          setupSettingsAndDestinationsWithCapabilities(),
+          nativeLayer.whenCalled('getPreview'),
+      ]).then(function(args) {
+        expectEquals(0, args[1].requestId);
+        expectEquals('FooDevice', args[1].destination.id);
+        nativeLayer.resetResolver('getPrinterCapabilities');
+        nativeLayer.resetResolver('getPreview');
 
         // Setup capabilities for BarDevice.
         var device = getCddTemplate('BarDevice');
@@ -1095,7 +1097,6 @@ cr.define('print_preview_test', function() {
           ]
         };
         nativeLayer.setLocalDestinationCapabilities(device);
-
         // Select BarDevice
         var barDestination =
             printPreview.destinationStore_.destinations().find(
@@ -1103,14 +1104,21 @@ cr.define('print_preview_test', function() {
                   return d.id == 'BarDevice';
                 });
         printPreview.destinationStore_.selectDestination(barDestination);
-        return nativeLayer.whenCalled('getPrinterCapabilities', 'BarDevice');
-      }).then(function(){
-        return whenAnimationDone('more-settings');
+        return Promise.all([
+            nativeLayer.whenCalled('getPrinterCapabilities'),
+            nativeLayer.whenCalled('getPreview'),
+        ]);
+      }).then(function(args) {
+        expectEquals(1, args[1].requestId);
+        expectEquals('BarDevice', args[1].destination.id);
       });
     });
 
     // Test that error message is displayed when plugin doesn't exist.
     test('NoPDFPluginErrorMessage', function() {
+      previewArea.checkPluginCompatibility_ = function() {
+        return false;
+      }
       nativeLayer.setLocalDestinationCapabilities(getCddTemplate('FooDevice'));
       setInitialSettings();
       return nativeLayer.whenCalled('getInitialSettings').then(function() {
@@ -1247,22 +1255,21 @@ cr.define('print_preview_test', function() {
       nativeLayer.setLocalDestinationCapabilities(getCddTemplate('ID2'))
       nativeLayer.setLocalDestinationCapabilities(getCddTemplate('ID3'));
 
-      // Use a real preview generator.
-      previewArea.previewGenerator_ =
-          new print_preview.PreviewGenerator(printPreview.destinationStore_,
-            printPreview.printTicketStore_, nativeLayer,
-            printPreview.documentInfo_);
-
-      // Preview generator starts out with inFlightRequestId_ == -1. The id
-      // increments by 1 for each startGetPreview call it makes. It should only
-      // make one such call during initialization or there will be a race; see
-      // crbug.com/666595
-      expectEquals(-1, previewArea.previewGenerator_.inFlightRequestId_);
+      // For crbug.com/666595. If multiple destinations are fetched there may
+      // be multiple preview requests. This verifies the first fetch is for
+      // ID1, which ensures no other destinations are fetched earlier. The last
+      // destination retrieved before timeout will end up in the preview
+      // request. Ensure this is also ID1.
       setInitialSettings();
-      return nativeLayer.whenCalled('getInitialSettings').then(function() {
-        return nativeLayer.whenCalled('getPrinterCapabilities', 'ID1');
-      }).then(function() {
-        expectEquals(0, previewArea.previewGenerator_.inFlightRequestId_);
+      var initialSettingsSet = nativeLayer.whenCalled('getInitialSettings');
+      return initialSettingsSet.then(function() {
+        return nativeLayer.whenCalled('getPrinterCapabilities');
+      }).then(function(id) {
+        expectEquals('ID1', id);
+        return nativeLayer.whenCalled('getPreview');
+      }).then(function(previewArgs) {
+        expectEquals(0, previewArgs.requestId);
+        expectEquals('ID1', previewArgs.destination.id);
       });
     });
 
@@ -1270,14 +1277,18 @@ cr.define('print_preview_test', function() {
     // an error and that the preview dialog can be recovered by selecting a
     // new destination.
     test('InvalidSettingsError', function() {
-      return setupSettingsAndDestinationsWithCapabilities().then(function() {
-        // Manually enable the print header. This is needed since there is no
-        // plugin during test, so it will be set as disabled normally.
-        printPreview.printHeader_.isEnabled = true;
+      var barDevice = getCddTemplate('BarDevice');
+      nativeLayer.setLocalDestinationCapabilities(barDevice);
 
-        // There will be an error message in the preview area since the plugin
-        // is not running. However, it should not be the invalid settings
-        // error.
+      // FooDevice is the default printer, so will be selected for the initial
+      // preview request.
+      nativeLayer.setInvalidPrinterId('FooDevice');
+      return Promise.all([
+          setupSettingsAndDestinationsWithCapabilities(),
+          nativeLayer.whenCalled('getPreview'),
+      ]).then(function() {
+        // Print preview should have failed with invalid settings, since
+        // FooDevice was set as an invalid printer.
         var previewAreaEl = $('preview-area');
         var customMessageEl =
             previewAreaEl.
@@ -1285,26 +1296,17 @@ cr.define('print_preview_test', function() {
         expectFalse(customMessageEl.hidden);
         var expectedMessageStart = 'The selected printer is not available or '
             + 'not installed correctly.'
-        expectFalse(customMessageEl.textContent.includes(
-            expectedMessageStart));
-
-        // Verify that the print button is enabled.
-        var printHeader = $('print-header');
-        var printButton = printHeader.querySelector('button.print');
-        checkElementDisplayed(printButton, true);
-        expectFalse(printButton.disabled);
-
-        // Report invalid settings error.
-        var invalidSettingsEvent =
-            new Event(print_preview.NativeLayer.EventType.SETTINGS_INVALID);
-        nativeLayer.getEventTarget().dispatchEvent(invalidSettingsEvent);
-
-        // Should be in an error state, print button disabled, invalid custom
-        // error message shown.
-        expectFalse(customMessageEl.hidden);
         expectTrue(customMessageEl.textContent.includes(
             expectedMessageStart));
+
+        // Verify that the print button is disabled
+        var printButton = $('print-header').querySelector('button.print');
+        checkElementDisplayed(printButton, true);
         expectTrue(printButton.disabled);
+
+        // Reset
+        nativeLayer.resetResolver('getPrinterCapabilities');
+        nativeLayer.resetResolver('getPreview');
 
         // Select a new destination
         var barDestination =
@@ -1312,73 +1314,74 @@ cr.define('print_preview_test', function() {
                 function(d) {
                   return d.id == 'BarDevice';
                 });
-
-        var barDevice = getCddTemplate('BarDevice');
-        nativeLayer.setLocalDestinationCapabilities(barDevice);
         printPreview.destinationStore_.selectDestination(barDestination);
-
-        return nativeLayer.whenCalled('getPrinterCapabilities', 'BarDevice')
-            .then(function() {
-              // Dispatch event indicating new preview has loaded.
-              var previewDoneEvent = new Event(
-                  print_preview.PreviewArea.EventType.PREVIEW_GENERATION_DONE);
-              previewArea.dispatchEvent(previewDoneEvent);
-
-              // Has active print button and successfully 'prints', indicating
-              // recovery from error state.
-              expectFalse(printButton.disabled);
-              printButton.click();
-              // This should result in a call to print.
-              return nativeLayer.whenCalled('print').then(
-                  /**
-                   * @param {{destination: !print_preview.Destination,
-                   *          printTicketStore: !print_preview.PrintTicketStore,
-                   *          cloudPrintInterface: print_preview
-                   *                                  .CloudPrintInterface,
-                   *          documentInfo: print_preview.DocumentInfo}} args
-                   *      The arguments that print() was called with.
-                   */
-                  function(args) {
-                    // Sanity check some printing argument values.
-                    var printTicketStore = args.printTicketStore;
-                    expectEquals(barDevice.printerId, args.destination.id);
-                    expectEquals(
-                        getDefaultOrientation(barDevice) == 'LANDSCAPE',
-                        printTicketStore.landscape.getValue());
-                    expectEquals(1, printTicketStore.copies.getValueAsNumber());
-                    var mediaDefault = getDefaultMediaSize(barDevice);
-                    expectEquals(
-                        mediaDefault.width_microns,
-                        printTicketStore.mediaSize.getValue().width_microns);
-                    expectEquals(
-                        mediaDefault.height_microns,
-                        printTicketStore.mediaSize.getValue().height_microns);
-                  });
-            });
-      });
+        return Promise.all([
+            nativeLayer.whenCalled('getPrinterCapabilities'),
+            nativeLayer.whenCalled('getPreview'),
+        ]);
+      }).then(function() {
+        // Has active print button and successfully 'prints', indicating
+        // recovery from error state.
+        var printButton = $('print-header').querySelector('button.print');
+        expectFalse(printButton.disabled);
+        printButton.click();
+        // This should result in a call to print.
+        return nativeLayer.whenCalled('print');
+      }).then(
+          /**
+           * @param {{destination: !print_preview.Destination,
+           *          printTicketStore: !print_preview.PrintTicketStore,
+           *          cloudPrintInterface: print_preview
+           *                                  .CloudPrintInterface,
+           *          documentInfo: print_preview.DocumentInfo}} args
+           *      The arguments that print() was called with.
+           */
+          function(args) {
+            // Sanity check some printing argument values.
+            var printTicketStore = args.printTicketStore;
+            expectEquals(barDevice.printerId, args.destination.id);
+            expectEquals(
+                getDefaultOrientation(barDevice) == 'LANDSCAPE',
+                printTicketStore.landscape.getValue());
+            expectEquals(1, printTicketStore.copies.getValueAsNumber());
+            var mediaDefault = getDefaultMediaSize(barDevice);
+            expectEquals(
+                mediaDefault.width_microns,
+                printTicketStore.mediaSize.getValue().width_microns);
+            expectEquals(
+                mediaDefault.height_microns,
+                printTicketStore.mediaSize.getValue().height_microns);
+          });
     });
 
     // Test the preview generator to make sure the generate draft parameter is
     // set correctly. It should be false if the only change is the page range.
     test('GenerateDraft', function() {
-      // Use a real preview generator.
-      previewArea.previewGenerator_ =
-          new print_preview.PreviewGenerator(printPreview.destinationStore_,
-              printPreview.printTicketStore_, nativeLayer,
-              printPreview.documentInfo_);
-      return setupSettingsAndDestinationsWithCapabilities().then(function() {
+      return Promise.all([
+          setupSettingsAndDestinationsWithCapabilities(),
+          nativeLayer.whenCalled('getPreview'),
+      ]).then(function(args) {
         // The first request should generate draft because there was no
         // previous print preview draft.
-        expectTrue(nativeLayer.generateDraft());
+        expectTrue(args[1].generateDraft);
+        expectEquals(0, args[1].requestId);
+        nativeLayer.resetResolver('getPreview');
 
         // Change the page range - no new draft needed.
         printPreview.printTicketStore_.pageRange.updateValue('2');
-        expectFalse(nativeLayer.generateDraft());
+        return nativeLayer.whenCalled('getPreview');
+      }).then(function(args) {
+        expectFalse(args.generateDraft);
+        expectEquals(1, args.requestId);
+        nativeLayer.resetResolver('getPreview');
 
         // Change the margin type - need to regenerate again.
         printPreview.printTicketStore_.marginsType.updateValue(
             print_preview.ticket_items.MarginsTypeValue.NO_MARGINS);
-        expectTrue(nativeLayer.generateDraft());
+        return nativeLayer.whenCalled('getPreview');
+      }).then(function(args) {
+        expectTrue(args.generateDraft);
+        expectEquals(2, args.requestId);
       });
     });
 

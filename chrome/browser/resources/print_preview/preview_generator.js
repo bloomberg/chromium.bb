@@ -173,20 +173,23 @@ cr.define('print_preview', function() {
     /**
      * Request that new preview be generated. A preview request will not be
      * generated if the print ticket has not changed sufficiently.
-     * @return {boolean} Whether a new preview was actually requested.
+     * @return {{id: number,
+     *           request: Promise}} The preview request id, or -1 if no preview
+     *     was requested, and a promise that will resolve when the preview is
+     *     complete (null if no preview was actually requested).
      */
     requestPreview: function() {
       if (!this.printTicketStore_.isTicketValidForPreview() ||
           !this.printTicketStore_.isInitialized ||
           !this.destinationStore_.selectedDestination) {
-        return false;
+        return {id: -1, request: null};
       }
       var previewChanged = this.hasPreviewChanged_();
       if (!previewChanged && !this.hasPreviewPageRangeChanged_()) {
         // Changes to these ticket items might not trigger a new preview, but
         // they still need to be recorded.
         this.marginsType_ = this.printTicketStore_.marginsType.getValue();
-        return false;
+        return {id: -1, request: null};
       }
       this.mediaSize_ = this.printTicketStore_.mediaSize.getValue();
       this.isLandscapeEnabled_ = this.printTicketStore_.landscape.getValue();
@@ -205,10 +208,12 @@ cr.define('print_preview', function() {
 
       this.inFlightRequestId_++;
       this.generateDraft_ = this.documentInfo_.isModifiable && previewChanged;
-      this.nativeLayer_.startGetPreview(
-          this.destinationStore_.selectedDestination, this.printTicketStore_,
-          this.documentInfo_, this.generateDraft_, this.inFlightRequestId_);
-      return true;
+      return {
+        id: this.inFlightRequestId_,
+        request: this.nativeLayer_.getPreview(
+            this.destinationStore_.selectedDestination, this.printTicketStore_,
+            this.documentInfo_, this.generateDraft_, this.inFlightRequestId_),
+      };
     },
 
     /** Removes all event listeners that the preview generator has attached. */
@@ -234,14 +239,6 @@ cr.define('print_preview', function() {
           nativeLayerEventTarget,
           print_preview.NativeLayer.EventType.PAGE_PREVIEW_READY,
           this.onPagePreviewReady_.bind(this));
-      this.tracker_.add(
-          nativeLayerEventTarget,
-          print_preview.NativeLayer.EventType.PREVIEW_GENERATION_DONE,
-          this.onPreviewGenerationDone_.bind(this));
-      this.tracker_.add(
-          nativeLayerEventTarget,
-          print_preview.NativeLayer.EventType.PREVIEW_GENERATION_FAIL,
-          this.onPreviewGenerationFail_.bind(this));
     },
 
     /**
@@ -395,18 +392,18 @@ cr.define('print_preview', function() {
     /**
      * Called when the preview generation is complete. Dispatches a
      * DOCUMENT_READY event.
-     * @param {Event} event Contains the preview UID and response ID.
-     * @private
+     * @param {number} previewResponseId
+     * @param {number} previewUid
      */
-    onPreviewGenerationDone_: function(event) {
-      if (this.inFlightRequestId_ != event.previewResponseId) {
+    onPreviewGenerationDone: function(previewResponseId, previewUid) {
+      if (this.inFlightRequestId_ != previewResponseId) {
         return;  // Ignore old response.
       }
       if (!this.generateDraft_) {
         // Dispatch a PREVIEW_START event since not generating a draft PDF,
         // which includes print preview for non-modifiable documents, does not
         // trigger PAGE_READY events.
-        this.dispatchPreviewStartEvent_(event.previewUid, 0);
+        this.dispatchPreviewStartEvent_(previewUid, 0);
       }
       cr.dispatchSimpleEvent(this, PreviewGenerator.EventType.DOCUMENT_READY);
     },

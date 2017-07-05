@@ -542,6 +542,10 @@ void PrintPreviewUI::OnInitiatorClosed() {
     OnClosePrintPreviewDialog();
 }
 
+void PrintPreviewUI::OnPrintPreviewCancelled() {
+  handler_->OnPrintPreviewCancelled();
+}
+
 void PrintPreviewUI::OnPrintPreviewRequest(int request_id) {
   if (!initial_preview_start_time_.is_null()) {
     UMA_HISTOGRAM_TIMES("PrintPreview.InitializationTime",
@@ -619,10 +623,7 @@ void PrintPreviewUI::OnPreviewDataIsAvailable(int expected_pages_count,
         handler_->regenerate_preview_request_count());
     initial_preview_start_time_ = base::TimeTicks();
   }
-  base::Value ui_identifier(id_);
-  base::Value ui_preview_request_id(preview_request_id);
-  web_ui()->CallJavascriptFunctionUnsafe("updatePrintPreview", ui_identifier,
-                                         ui_preview_request_id);
+  handler_->OnPrintPreviewReady(id_, preview_request_id);
 }
 
 void PrintPreviewUI::OnCancelPendingPreviewRequest() {
@@ -631,11 +632,10 @@ void PrintPreviewUI::OnCancelPendingPreviewRequest() {
 
 void PrintPreviewUI::OnPrintPreviewFailed() {
   handler_->OnPrintPreviewFailed();
-  web_ui()->CallJavascriptFunctionUnsafe("printPreviewFailed");
 }
 
 void PrintPreviewUI::OnInvalidPrinterSettings() {
-  web_ui()->CallJavascriptFunctionUnsafe("invalidPrinterSettings");
+  handler_->OnInvalidPrinterSettings();
 }
 
 void PrintPreviewUI::OnHidePreviewDialog() {

@@ -782,18 +782,23 @@ void PrintPreviewHandler::HandleGetExtensionPrinterCapabilities(
 }
 
 void PrintPreviewHandler::HandleGetPreview(const base::ListValue* args) {
-  DCHECK_EQ(2U, args->GetSize());
+  DCHECK_EQ(3U, args->GetSize());
+  std::string callback_id;
   std::string json_str;
-  if (!args->GetString(0, &json_str))
-    return;
+
+  // All of the conditions below should be guaranteed by the print preview
+  // javascript.
+  args->GetString(0, &callback_id);
+  CHECK(!callback_id.empty());
+  args->GetString(1, &json_str);
   std::unique_ptr<base::DictionaryValue> settings =
       GetSettingsDictionary(json_str);
-  if (!settings)
-    return;
+  CHECK(settings);
   int request_id = -1;
-  if (!settings->GetInteger(printing::kPreviewRequestID, &request_id))
-    return;
+  settings->GetInteger(printing::kPreviewRequestID, &request_id);
+  CHECK_GT(request_id, -1);
 
+  preview_callbacks_.push(callback_id);
   print_preview_ui()->OnPrintPreviewRequest(request_id);
   // Add an additional key in order to identify |print_preview_ui| later on
   // when calling PrintPreviewUI::GetCurrentPrintPreviewStatus() on the IO
@@ -844,7 +849,7 @@ void PrintPreviewHandler::HandleGetPreview(const base::ListValue* args) {
 
   if (!generate_draft_data) {
     int page_count = -1;
-    success = args->GetInteger(1, &page_count);
+    success = args->GetInteger(2, &page_count);
     DCHECK(success);
 
     if (page_count != -1) {
@@ -1525,11 +1530,38 @@ void PrintPreviewHandler::OnGotUniqueFileName(const base::FilePath& path) {
   FileSelected(path, 0, nullptr);
 }
 
-void PrintPreviewHandler::OnPrintPreviewFailed() {
-  if (reported_failed_preview_)
+void PrintPreviewHandler::OnPrintPreviewReady(int preview_uid, int request_id) {
+  if (request_id < 0)  // invalid ID.
     return;
-  reported_failed_preview_ = true;
-  ReportUserActionHistogram(PREVIEW_FAILED);
+  CHECK(!preview_callbacks_.empty());
+  ResolveJavascriptCallback(base::Value(preview_callbacks_.front()),
+                            base::Value(preview_uid));
+  preview_callbacks_.pop();
+}
+
+void PrintPreviewHandler::OnPrintPreviewFailed() {
+  CHECK(!preview_callbacks_.empty());
+  if (!reported_failed_preview_) {
+    reported_failed_preview_ = true;
+    ReportUserActionHistogram(PREVIEW_FAILED);
+  }
+  RejectJavascriptCallback(base::Value(preview_callbacks_.front()),
+                           base::Value("PREVIEW_FAILED"));
+  preview_callbacks_.pop();
+}
+
+void PrintPreviewHandler::OnInvalidPrinterSettings() {
+  CHECK(!preview_callbacks_.empty());
+  RejectJavascriptCallback(base::Value(preview_callbacks_.front()),
+                           base::Value("SETTINGS_INVALID"));
+  preview_callbacks_.pop();
+}
+
+void PrintPreviewHandler::OnPrintPreviewCancelled() {
+  CHECK(!preview_callbacks_.empty());
+  RejectJavascriptCallback(base::Value(preview_callbacks_.front()),
+                           base::Value("CANCELLED"));
+  preview_callbacks_.pop();
 }
 
 #if BUILDFLAG(ENABLE_BASIC_PRINT_DIALOG)

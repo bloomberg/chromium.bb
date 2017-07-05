@@ -190,6 +190,12 @@ void PrintPreviewMessageHandler::OnDidGetDefaultPageLayout(
 void PrintPreviewMessageHandler::OnPrintPreviewCancelled(int document_cookie) {
   // Always need to stop the worker.
   StopWorker(document_cookie);
+
+  // Notify UI
+  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI();
+  if (!print_preview_ui)
+    return;
+  print_preview_ui->OnPrintPreviewCancelled();
 }
 
 void PrintPreviewMessageHandler::OnInvalidPrinterSettings(int document_cookie) {

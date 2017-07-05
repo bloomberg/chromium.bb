@@ -1187,13 +1187,10 @@ void PrintWebViewHelper::OnPrintPreview(const base::DictionaryValue& settings) {
   if (!UpdatePrintSettings(print_preview_context_.source_frame(),
                            print_preview_context_.source_node(), settings)) {
     if (print_preview_context_.last_error() != PREVIEW_ERROR_BAD_SETTING) {
-      Send(new PrintHostMsg_PrintPreviewInvalidPrinterSettings(
-          routing_id(), print_pages_params_
-                            ? print_pages_params_->params.document_cookie
-                            : 0));
-      notify_browser_of_print_failure_ = false;  // Already sent.
+      DidFinishPrinting(INVALID_SETTINGS);
+    } else {
+      DidFinishPrinting(FAIL_PREVIEW);
     }
-    DidFinishPrinting(FAIL_PREVIEW);
     return;
   }
 
@@ -1557,6 +1554,8 @@ void PrintWebViewHelper::Print(blink::WebLocalFrame* frame,
 #endif  // BUILDFLAG(ENABLE_BASIC_PRINTING)
 
 void PrintWebViewHelper::DidFinishPrinting(PrintingResult result) {
+  int cookie =
+      print_pages_params_ ? print_pages_params_->params.document_cookie : 0;
   switch (result) {
     case OK:
       break;
@@ -1567,15 +1566,12 @@ void PrintWebViewHelper::DidFinishPrinting(PrintingResult result) {
 
     case FAIL_PRINT:
       if (notify_browser_of_print_failure_ && print_pages_params_) {
-        int cookie = print_pages_params_->params.document_cookie;
         Send(new PrintHostMsg_PrintingFailed(routing_id(), cookie));
       }
       break;
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
     case FAIL_PREVIEW:
-      int cookie =
-          print_pages_params_ ? print_pages_params_->params.document_cookie : 0;
       if (notify_browser_of_print_failure_) {
         LOG(ERROR) << "CreatePreviewDocument failed";
         Send(new PrintHostMsg_PrintPreviewFailed(routing_id(), cookie));
@@ -1583,6 +1579,11 @@ void PrintWebViewHelper::DidFinishPrinting(PrintingResult result) {
         Send(new PrintHostMsg_PrintPreviewCancelled(routing_id(), cookie));
       }
       print_preview_context_.Failed(notify_browser_of_print_failure_);
+      break;
+    case INVALID_SETTINGS:
+      Send(new PrintHostMsg_PrintPreviewInvalidPrinterSettings(routing_id(),
+                                                               cookie));
+      print_preview_context_.Failed(false);
       break;
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
   }

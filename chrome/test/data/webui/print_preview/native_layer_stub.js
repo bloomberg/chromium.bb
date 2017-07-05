@@ -13,6 +13,7 @@ cr.define('print_preview', function() {
         'getInitialSettings',
         'getPrinters',
         'getExtensionPrinters',
+        'getPreview',
         'getPrivetPrinters',
         'getPrinterCapabilities',
         'print',
@@ -24,12 +25,6 @@ cr.define('print_preview', function() {
      *     receiving events.
      */
     this.eventTarget_ = new cr.EventTarget();
-
-    /**
-     * @private {boolean} Whether the native layer has set the generate draft
-     *      parameter when requesting an updated preview.
-     */
-    this.generateDraft_ = false;
 
     /**
      * @private {!print_preview.NativeInitialSettings} The initial settings
@@ -62,6 +57,11 @@ cr.define('print_preview', function() {
      * @private {boolean} Whether the printer setup request should be rejected.
      */
     this.shouldRejectPrinterSetup_ = false;
+
+    /**
+     * @private {string} The ID of a printer with a bad driver.
+     */
+    this.badPrinterId_ = '';
   }
 
   NativeLayerStub.prototype = {
@@ -83,6 +83,24 @@ cr.define('print_preview', function() {
     getExtensionPrinters: function() {
       this.methodCalled('getExtensionPrinters');
       return Promise.resolve(true);
+    },
+
+    /** @override */
+    getPreview: function(
+        destination, printTicketStore, documentInfo, generateDraft, requestId) {
+      this.methodCalled('getPreview', {
+        destination: destination,
+        printTicketStore: printTicketStore,
+        documentInfo: documentInfo,
+        generateDraft: generateDraft,
+        requestId: requestId,
+      });
+      var rejectString = print_preview.PreviewArea.EventType.SETTINGS_INVALID;
+      rejectString = rejectString.substring(
+          rejectString.lastIndexOf(".") + 1, rejectString.length);
+      return destination.id == this.badPrinterId_ ?
+          Promise.reject(rejectString) :
+          Promise.resolve(requestId);
     },
 
     /** @override */
@@ -119,11 +137,6 @@ cr.define('print_preview', function() {
 
     /** Stubs for |print_preview.NativeLayer| methods that call C++ handlers. */
     previewReadyForTest: function() {},
-
-    startGetPreview: function(destination, printTicketStore, documentInfo,
-                              generateDraft, requestId) {
-      this.generateDraft_ = generateDraft;
-    },
     startHideDialog: function () {},
 
     /** @return {!cr.EventTarget} The native layer event target. */
@@ -133,9 +146,6 @@ cr.define('print_preview', function() {
     setEventTarget: function(eventTarget) {
       this.eventTarget_ = eventTarget;
     },
-
-    /** @return {boolean} Whether a new draft was requested for preview. */
-    generateDraft: function() { return this.generateDraft_; },
 
     /**
      * @param {!print_preview.NativeInitialSettings} settings The settings
@@ -173,6 +183,15 @@ cr.define('print_preview', function() {
     setSetupPrinterResponse: function(reject, response) {
       this.shouldRejectPrinterSetup_ = reject;
       this.setupPrinterResponse_ = response;
+    },
+
+    /**
+     * @param {string} bad_id The printer ID that should cause an
+     *     SETTINGS_INVALID error in response to a preview request. Models a
+     *     bad printer driver.
+     */
+    setInvalidPrinterId: function(id) {
+      this.badPrinterId_ = id;
     },
   };
 

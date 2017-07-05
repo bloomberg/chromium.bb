@@ -129,7 +129,8 @@ class DidPreviewPageListener : public IPC::Listener {
   bool OnMessageReceived(const IPC::Message& message) override {
     if (message.type() == PrintHostMsg_MetafileReadyForPrinting::ID ||
         message.type() == PrintHostMsg_PrintPreviewFailed::ID ||
-        message.type() == PrintHostMsg_PrintPreviewCancelled::ID)
+        message.type() == PrintHostMsg_PrintPreviewCancelled::ID ||
+        message.type() == PrintHostMsg_PrintPreviewInvalidPrinterSettings::ID)
       run_loop_->Quit();
     return false;
   }

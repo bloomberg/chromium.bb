@@ -154,6 +154,7 @@ class PrintWebViewHelper
     FAIL_PRINT,
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
     FAIL_PREVIEW,
+    INVALID_SETTINGS,
 #endif
   };
 
