@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
     <head>
         <title>Selection painting test</title>
@@ -17,7 +17,9 @@
             <span>between</span> <span>words</span>.
         </div>
         <script>
-            window.getSelection().selectAllChildren(document.body.firstElementChild);
+            const div = document.querySelector('div');
+            // Select from before |<span>There</span>| to after |<span>words</span>.|.
+            window.getSelection().setBaseAndExtent(div.firstChild, div.firstChild.length, div.lastChild, 1);
         </script>
     </body>
 </html>
