@@ -14,6 +14,8 @@
 - (CGFloat)pinnedOffsetY;
 // Whether the omnibox is currently focused.
 - (BOOL)isOmniboxFocused;
+// Returns the height of the header.
+- (CGFloat)headerHeight;
 
 @end
 
