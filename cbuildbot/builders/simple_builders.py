@@ -104,8 +104,10 @@ class SimpleBuilder(generic_builders.Builder):
     if builder_run.config.models:
       models = builder_run.config.models
 
-    for model in models:
-      for suite_config in builder_run.config.hw_tests:
+    for suite_config in builder_run.config.hw_tests:
+      # Even for blocking stages, all models can still be run in parallel since
+      # it will still block the next stage from executing.
+      for model in models:
         stage_class = None
         if suite_config.async:
           stage_class = test_stages.ASyncHWTestStage
@@ -120,11 +122,12 @@ class SimpleBuilder(generic_builders.Builder):
                                            suite_config,
                                            builder_run=builder_run)
         parallel_stages.append(new_stage)
-        # Please see docstring for blocking in the HWTestConfig for more
-        # information on this behavior.
-        if suite_config.blocking:
-          self._RunParallelStages(parallel_stages)
-          parallel_stages = []
+
+      # Please see docstring for blocking in the HWTestConfig for more
+      # information on this behavior.
+      if suite_config.blocking:
+        self._RunParallelStages(parallel_stages)
+        parallel_stages = []
 
     if parallel_stages:
       self._RunParallelStages(parallel_stages)
