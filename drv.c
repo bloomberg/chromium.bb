@@ -479,10 +479,10 @@ uint32_t drv_bo_get_format(struct bo *bo)
 	return bo->format;
 }
 
-uint32_t drv_resolve_format(struct driver *drv, uint32_t format)
+uint32_t drv_resolve_format(struct driver *drv, uint32_t format, uint64_t usage)
 {
 	if (drv->backend->resolve_format)
-		return drv->backend->resolve_format(format);
+		return drv->backend->resolve_format(format, usage);
 
 	return format;
 }

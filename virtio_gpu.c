@@ -47,7 +47,7 @@ static int virtio_gpu_bo_create(struct bo *bo, uint32_t width, uint32_t height, 
 	return drv_dumb_bo_create(bo, width, height, format, flags);
 }
 
-static uint32_t virtio_gpu_resolve_format(uint32_t format)
+static uint32_t virtio_gpu_resolve_format(uint32_t format, uint64_t usage)
 {
 	switch (format) {
 	case DRM_FORMAT_FLEX_IMPLEMENTATION_DEFINED:

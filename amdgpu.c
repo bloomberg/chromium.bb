@@ -419,7 +419,7 @@ static void *amdgpu_bo_map(struct bo *bo, struct map_info *data, size_t plane)
 		    gem_map.out.addr_ptr);
 }
 
-static uint32_t amdgpu_resolve_format(uint32_t format)
+static uint32_t amdgpu_resolve_format(uint32_t format, uint64_t usage)
 {
 	switch (format) {
 	case DRM_FORMAT_FLEX_YCbCr_420_888:

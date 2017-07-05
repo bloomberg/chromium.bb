@@ -77,8 +77,9 @@ int32_t cros_gralloc_driver::init()
 bool cros_gralloc_driver::is_supported(const struct cros_gralloc_buffer_descriptor *descriptor)
 {
 	struct combination *combo;
-	combo = drv_get_combination(drv_, drv_resolve_format(drv_, descriptor->drm_format),
-				    descriptor->drv_usage);
+	uint32_t resolved_format;
+	resolved_format = drv_resolve_format(drv_, descriptor->drm_format, descriptor->drv_usage);
+	combo = drv_get_combination(drv_, resolved_format, descriptor->drv_usage);
 	return (combo != nullptr);
 }
 
@@ -88,12 +89,14 @@ int32_t cros_gralloc_driver::allocate(const struct cros_gralloc_buffer_descripto
 	uint32_t id;
 	uint64_t mod;
 	size_t num_planes;
+	uint32_t resolved_format;
 
 	struct bo *bo;
 	struct cros_gralloc_handle *hnd;
 
-	bo = drv_bo_create(drv_, descriptor->width, descriptor->height,
-			   drv_resolve_format(drv_, descriptor->drm_format), descriptor->drv_usage);
+	resolved_format = drv_resolve_format(drv_, descriptor->drm_format, descriptor->drv_usage);
+	bo = drv_bo_create(drv_, descriptor->width, descriptor->height, resolved_format,
+			   descriptor->drv_usage);
 	if (!bo) {
 		cros_gralloc_error("Failed to create bo.");
 		return CROS_GRALLOC_ERROR_NO_RESOURCES;

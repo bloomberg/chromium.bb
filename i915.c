@@ -427,7 +427,7 @@ static int i915_bo_unmap(struct bo *bo, struct map_info *data)
 	return munmap(data->addr, data->length);
 }
 
-static uint32_t i915_resolve_format(uint32_t format)
+static uint32_t i915_resolve_format(uint32_t format, uint64_t usage)
 {
 	switch (format) {
 	case DRM_FORMAT_FLEX_IMPLEMENTATION_DEFINED:

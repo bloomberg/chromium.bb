@@ -250,7 +250,7 @@ static void *rockchip_bo_map(struct bo *bo, struct map_info *data, size_t plane)
 		    gem_map.offset);
 }
 
-static uint32_t rockchip_resolve_format(uint32_t format)
+static uint32_t rockchip_resolve_format(uint32_t format, uint64_t usage)
 {
 	switch (format) {
 	case DRM_FORMAT_FLEX_IMPLEMENTATION_DEFINED:
