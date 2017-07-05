@@ -36,11 +36,11 @@
 
 ### *recipe_modules* / [bot\_update](/recipes/recipe_modules/bot_update)
 
-[DEPS](/recipes/recipe_modules/bot_update/__init__.py#1): [depot_tools](#recipe_modules-depot_tools), [gclient](#recipe_modules-gclient), [rietveld](#recipe_modules-rietveld), [tryserver](#recipe_modules-tryserver), [context](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--context), [json](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--json), [path](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--path), [platform](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--platform), [properties](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--properties), [python](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--python), [raw_io](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--raw_io), [step](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--step)
+[DEPS](/recipes/recipe_modules/bot_update/__init__.py#1): [rietveld](#recipe_modules-rietveld), [tryserver](#recipe_modules-tryserver), [recipe_engine/raw_io](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--raw_io), [depot_tools](#recipe_modules-depot_tools), [recipe_engine/step](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--step), [gclient](#recipe_modules-gclient), [recipe_engine/path](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--path), [recipe_engine/json](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--json), [recipe_engine/platform](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--platform), [recipe_engine/properties](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--properties), [recipe_engine/context](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--context), [recipe_engine/python](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--python)
 
 Recipe module to ensure a checkout is consistent on a bot.
 
-#### **class [BotUpdateApi](/recipes/recipe_modules/bot_update/api.py#11)([RecipeApi](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/recipe_engine/recipe_api.py#L884)):**
+#### **class [BotUpdateApi](/recipes/recipe_modules/bot_update/api.py#11)([RecipeApi](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/recipe_engine/recipe_api.py#L884)):**
 
 &mdash; **def [\_\_call\_\_](/recipes/recipe_modules/bot_update/api.py#31)(self, name, cmd, \*\*kwargs):**
 
@@ -89,9 +89,9 @@ Returns (list of str): All properties that'll hold the checked-out revision
 &emsp; **@property**<br>&mdash; **def [last\_returned\_properties](/recipes/recipe_modules/bot_update/api.py#43)(self):**
 ### *recipe_modules* / [cipd](/recipes/recipe_modules/cipd)
 
-[DEPS](/recipes/recipe_modules/cipd/__init__.py#1): [infra_paths](#recipe_modules-infra_paths), [json](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--json), [path](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--path), [platform](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--platform), [properties](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--properties), [python](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--python), [raw_io](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--raw_io), [step](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--step)
+[DEPS](/recipes/recipe_modules/cipd/__init__.py#1): [recipe_engine/python](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--python), [recipe_engine/properties](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--properties), [recipe_engine/platform](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--platform), [recipe_engine/json](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--json), [recipe_engine/path](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--path), [recipe_engine/raw_io](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--raw_io), [recipe_engine/step](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--step), [infra_paths](#recipe_modules-infra_paths)
 
-#### **class [CIPDApi](/recipes/recipe_modules/cipd/api.py#148)([RecipeApi](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/recipe_engine/recipe_api.py#L884)):**
+#### **class [CIPDApi](/recipes/recipe_modules/cipd/api.py#148)([RecipeApi](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/recipe_engine/recipe_api.py#L884)):**
 
 CIPDApi provides basic support for CIPD.
 
@@ -187,9 +187,9 @@ Example:
 &mdash; **def [set\_tag](/recipes/recipe_modules/cipd/api.py#338)(self, package_name, version, tags):**
 ### *recipe_modules* / [depot\_tools](/recipes/recipe_modules/depot_tools)
 
-[DEPS](/recipes/recipe_modules/depot_tools/__init__.py#1): [platform](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--platform)
+[DEPS](/recipes/recipe_modules/depot_tools/__init__.py#1): [recipe_engine/platform](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--platform)
 
-#### **class [DepotToolsApi](/recipes/recipe_modules/depot_tools/api.py#7)([RecipeApi](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/recipe_engine/recipe_api.py#L884)):**
+#### **class [DepotToolsApi](/recipes/recipe_modules/depot_tools/api.py#7)([RecipeApi](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/recipe_engine/recipe_api.py#L884)):**
 
 &emsp; **@property**<br>&mdash; **def [cros\_path](/recipes/recipe_modules/depot_tools/api.py#21)(self):**
 
@@ -210,9 +210,9 @@ Returns (Path): The "depot_tools" root directory.
 &emsp; **@property**<br>&mdash; **def [upload\_to\_google\_storage\_path](/recipes/recipe_modules/depot_tools/api.py#12)(self):**
 ### *recipe_modules* / [gclient](/recipes/recipe_modules/gclient)
 
-[DEPS](/recipes/recipe_modules/gclient/__init__.py#1): [infra_paths](#recipe_modules-infra_paths), [tryserver](#recipe_modules-tryserver), [context](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--context), [json](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--json), [path](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--path), [platform](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--platform), [properties](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--properties), [python](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--python), [step](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--step)
+[DEPS](/recipes/recipe_modules/gclient/__init__.py#1): [infra_paths](#recipe_modules-infra_paths), [tryserver](#recipe_modules-tryserver), [recipe_engine/python](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--python), [recipe_engine/step](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--step), [recipe_engine/properties](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--properties), [recipe_engine/platform](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--platform), [recipe_engine/path](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--path), [recipe_engine/json](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--json), [recipe_engine/context](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--context)
 
-#### **class [GclientApi](/recipes/recipe_modules/gclient/api.py#65)([RecipeApi](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/recipe_engine/recipe_api.py#L884)):**
+#### **class [GclientApi](/recipes/recipe_modules/gclient/api.py#65)([RecipeApi](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/recipe_engine/recipe_api.py#L884)):**
 
 &mdash; **def [\_\_call\_\_](/recipes/recipe_modules/gclient/api.py#75)(self, name, cmd, infra_step=True, \*\*kwargs):**
 
@@ -295,9 +295,9 @@ revision map. This doesn't overwrite the revision if it was already set.
 &emsp; **@use_mirror.setter**<br>&mdash; **def [use\_mirror](/recipes/recipe_modules/gclient/api.py#102)(self, val):**
 ### *recipe_modules* / [gerrit](/recipes/recipe_modules/gerrit)
 
-[DEPS](/recipes/recipe_modules/gerrit/__init__.py#1): [context](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--context), [json](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--json), [path](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--path), [python](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--python), [raw_io](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--raw_io), [step](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--step)
+[DEPS](/recipes/recipe_modules/gerrit/__init__.py#1): [recipe_engine/json](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--json), [recipe_engine/step](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--step), [recipe_engine/raw_io](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--raw_io), [recipe_engine/python](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--python), [recipe_engine/path](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--path), [recipe_engine/context](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--context)
 
-#### **class [GerritApi](/recipes/recipe_modules/gerrit/api.py#7)([RecipeApi](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/recipe_engine/recipe_api.py#L884)):**
+#### **class [GerritApi](/recipes/recipe_modules/gerrit/api.py#7)([RecipeApi](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/recipe_engine/recipe_api.py#L884)):**
 
 Module for interact with gerrit endpoints
 
@@ -320,9 +320,9 @@ Returns:
   the revision of the branch
 ### *recipe_modules* / [git](/recipes/recipe_modules/git)
 
-[DEPS](/recipes/recipe_modules/git/__init__.py#1): [infra_paths](#recipe_modules-infra_paths), [context](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--context), [path](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--path), [platform](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--platform), [properties](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--properties), [python](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--python), [raw_io](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--raw_io), [step](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--step)
+[DEPS](/recipes/recipe_modules/git/__init__.py#1): [infra_paths](#recipe_modules-infra_paths), [recipe_engine/step](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--step), [recipe_engine/raw_io](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--raw_io), [recipe_engine/python](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--python), [recipe_engine/properties](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--properties), [recipe_engine/context](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--context), [recipe_engine/path](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--path), [recipe_engine/platform](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--platform)
 
-#### **class [GitApi](/recipes/recipe_modules/git/api.py#10)([RecipeApi](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/recipe_engine/recipe_api.py#L884)):**
+#### **class [GitApi](/recipes/recipe_modules/git/api.py#10)([RecipeApi](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/recipe_engine/recipe_api.py#L884)):**
 
 &mdash; **def [\_\_call\_\_](/recipes/recipe_modules/git/api.py#17)(self, \*args, \*\*kwargs):**
 
@@ -442,9 +442,9 @@ dir_path (Path): directory to clone into
 remote_name (str): the remote name to rebase from if not origin
 ### *recipe_modules* / [git\_cl](/recipes/recipe_modules/git_cl)
 
-[DEPS](/recipes/recipe_modules/git_cl/__init__.py#1): [context](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--context), [raw_io](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--raw_io), [step](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--step)
+[DEPS](/recipes/recipe_modules/git_cl/__init__.py#1): [recipe_engine/step](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--step), [recipe_engine/raw_io](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--raw_io), [recipe_engine/context](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--context)
 
-#### **class [GitClApi](/recipes/recipe_modules/git_cl/api.py#9)([RecipeApi](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/recipe_engine/recipe_api.py#L884)):**
+#### **class [GitClApi](/recipes/recipe_modules/git_cl/api.py#9)([RecipeApi](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/recipe_engine/recipe_api.py#L884)):**
 
 &mdash; **def [\_\_call\_\_](/recipes/recipe_modules/git_cl/api.py#10)(self, subcmd, args, name=None, \*\*kwargs):**
 
@@ -457,9 +457,9 @@ remote_name (str): the remote name to rebase from if not origin
 &mdash; **def [upload](/recipes/recipe_modules/git_cl/api.py#44)(self, message, upload_args=None, \*\*kwargs):**
 ### *recipe_modules* / [gitiles](/recipes/recipe_modules/gitiles)
 
-[DEPS](/recipes/recipe_modules/gitiles/__init__.py#1): [json](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--json), [path](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--path), [python](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--python), [raw_io](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--raw_io), [url](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--url)
+[DEPS](/recipes/recipe_modules/gitiles/__init__.py#1): [recipe_engine/path](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--path), [recipe_engine/url](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--url), [recipe_engine/raw_io](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--raw_io), [recipe_engine/json](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--json), [recipe_engine/python](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--python)
 
-#### **class [Gitiles](/recipes/recipe_modules/gitiles/api.py#10)([RecipeApi](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/recipe_engine/recipe_api.py#L884)):**
+#### **class [Gitiles](/recipes/recipe_modules/gitiles/api.py#10)([RecipeApi](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/recipe_engine/recipe_api.py#L884)):**
 
 Module for polling a git repository using the Gitiles web interface.
 
@@ -515,9 +515,9 @@ Returns:
 Returns a list of refs in the remote repository.
 ### *recipe_modules* / [gsutil](/recipes/recipe_modules/gsutil)
 
-[DEPS](/recipes/recipe_modules/gsutil/__init__.py#1): [path](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--path), [python](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--python)
+[DEPS](/recipes/recipe_modules/gsutil/__init__.py#1): [recipe_engine/python](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--python), [recipe_engine/path](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--path)
 
-#### **class [GSUtilApi](/recipes/recipe_modules/gsutil/api.py#9)([RecipeApi](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/recipe_engine/recipe_api.py#L884)):**
+#### **class [GSUtilApi](/recipes/recipe_modules/gsutil/api.py#9)([RecipeApi](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/recipe_engine/recipe_api.py#L884)):**
 
 &mdash; **def [\_\_call\_\_](/recipes/recipe_modules/gsutil/api.py#14)(self, cmd, name=None, use_retry_wrapper=True, version=None, parallel_upload=False, multithreaded=False, \*\*kwargs):**
 
@@ -555,9 +555,9 @@ Arguments:
 &mdash; **def [upload](/recipes/recipe_modules/gsutil/api.py#68)(self, source, bucket, dest, args=None, link_name='gsutil.upload', metadata=None, unauthenticated_url=False, \*\*kwargs):**
 ### *recipe_modules* / [infra\_paths](/recipes/recipe_modules/infra_paths)
 
-[DEPS](/recipes/recipe_modules/infra_paths/__init__.py#1): [path](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--path), [properties](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--properties)
+[DEPS](/recipes/recipe_modules/infra_paths/__init__.py#1): [recipe_engine/properties](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--properties), [recipe_engine/path](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--path)
 
-#### **class [InfraPathsApi](/recipes/recipe_modules/infra_paths/api.py#8)([RecipeApi](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/recipe_engine/recipe_api.py#L884)):**
+#### **class [InfraPathsApi](/recipes/recipe_modules/infra_paths/api.py#8)([RecipeApi](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/recipe_engine/recipe_api.py#L884)):**
 
 infra_paths module is glue for design mistakes. It will be removed.
 
@@ -573,9 +573,9 @@ uses the more generic [CACHE]/git path (LUCI world).
 &mdash; **def [initialize](/recipes/recipe_modules/infra_paths/api.py#11)(self):**
 ### *recipe_modules* / [presubmit](/recipes/recipe_modules/presubmit)
 
-[DEPS](/recipes/recipe_modules/presubmit/__init__.py#1): [context](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--context), [path](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--path), [python](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--python), [step](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--step)
+[DEPS](/recipes/recipe_modules/presubmit/__init__.py#1): [recipe_engine/step](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--step), [recipe_engine/python](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--python), [recipe_engine/path](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--path), [recipe_engine/context](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--context)
 
-#### **class [PresubmitApi](/recipes/recipe_modules/presubmit/api.py#7)([RecipeApi](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/recipe_engine/recipe_api.py#L884)):**
+#### **class [PresubmitApi](/recipes/recipe_modules/presubmit/api.py#7)([RecipeApi](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/recipe_engine/recipe_api.py#L884)):**
 
 &mdash; **def [\_\_call\_\_](/recipes/recipe_modules/presubmit/api.py#12)(self, \*args, \*\*kwargs):**
 
@@ -584,9 +584,9 @@ Return a presubmit step.
 &emsp; **@property**<br>&mdash; **def [presubmit\_support\_path](/recipes/recipe_modules/presubmit/api.py#8)(self):**
 ### *recipe_modules* / [rietveld](/recipes/recipe_modules/rietveld)
 
-[DEPS](/recipes/recipe_modules/rietveld/__init__.py#1): [path](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--path), [properties](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--properties), [python](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--python), [step](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--step)
+[DEPS](/recipes/recipe_modules/rietveld/__init__.py#1): [recipe_engine/path](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--path), [recipe_engine/properties](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--properties), [recipe_engine/python](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--python), [recipe_engine/step](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--step)
 
-#### **class [RietveldApi](/recipes/recipe_modules/rietveld/api.py#10)([RecipeApi](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/recipe_engine/recipe_api.py#L884)):**
+#### **class [RietveldApi](/recipes/recipe_modules/rietveld/api.py#10)([RecipeApi](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/recipe_engine/recipe_api.py#L884)):**
 
 &mdash; **def [apply\_issue](/recipes/recipe_modules/rietveld/api.py#53)(self, \*root_pieces, \*\*kwargs):**
 
@@ -618,9 +618,9 @@ Returns:
   given is unknown.
 ### *recipe_modules* / [tryserver](/recipes/recipe_modules/tryserver)
 
-[DEPS](/recipes/recipe_modules/tryserver/__init__.py#5): [git](#recipe_modules-git), [git_cl](#recipe_modules-git_cl), [rietveld](#recipe_modules-rietveld), [context](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--context), [json](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--json), [path](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--path), [platform](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--platform), [properties](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--properties), [python](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--python), [raw_io](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--raw_io), [step](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--step)
+[DEPS](/recipes/recipe_modules/tryserver/__init__.py#5): [recipe_engine/platform](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--platform), [git](#recipe_modules-git), [git_cl](#recipe_modules-git_cl), [rietveld](#recipe_modules-rietveld), [recipe_engine/step](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--step), [recipe_engine/raw_io](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--raw_io), [recipe_engine/python](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--python), [recipe_engine/properties](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--properties), [recipe_engine/context](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--context), [recipe_engine/path](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--path), [recipe_engine/json](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--json)
 
-#### **class [TryserverApi](/recipes/recipe_modules/tryserver/api.py#16)([RecipeApi](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/recipe_engine/recipe_api.py#L884)):**
+#### **class [TryserverApi](/recipes/recipe_modules/tryserver/api.py#16)([RecipeApi](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/recipe_engine/recipe_api.py#L884)):**
 
 &mdash; **def [\_\_init\_\_](/recipes/recipe_modules/tryserver/api.py#17)(self, \*args, \*\*kwargs):**
 
@@ -729,27 +729,27 @@ like checkout or compile), and some of these tests have failed.
 
 ### *recipes* / [bot\_update:examples/full](/recipes/recipe_modules/bot_update/examples/full.py)
 
-[DEPS](/recipes/recipe_modules/bot_update/examples/full.py#5): [bot_update](#recipe_modules-bot_update), [gclient](#recipe_modules-gclient), [path](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--path), [platform](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--platform), [properties](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--properties)
+[DEPS](/recipes/recipe_modules/bot_update/examples/full.py#5): [recipe_engine/path](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--path), [recipe_engine/platform](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--platform), [recipe_engine/properties](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--properties), [bot_update](#recipe_modules-bot_update), [gclient](#recipe_modules-gclient)
 
 &mdash; **def [RunSteps](/recipes/recipe_modules/bot_update/examples/full.py#13)(api):**
 ### *recipes* / [cipd:examples/full](/recipes/recipe_modules/cipd/examples/full.py)
 
-[DEPS](/recipes/recipe_modules/cipd/examples/full.py#8): [cipd](#recipe_modules-cipd), [path](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--path), [platform](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--platform), [properties](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--properties), [step](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--step)
+[DEPS](/recipes/recipe_modules/cipd/examples/full.py#8): [recipe_engine/path](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--path), [recipe_engine/platform](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--platform), [recipe_engine/properties](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--properties), [recipe_engine/step](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--step), [cipd](#recipe_modules-cipd)
 
 &mdash; **def [RunSteps](/recipes/recipe_modules/cipd/examples/full.py#27)(api, use_pkg, pkg_files, pkg_dirs, ver_files, install_mode):**
 ### *recipes* / [depot\_tools:examples/full](/recipes/recipe_modules/depot_tools/examples/full.py)
 
-[DEPS](/recipes/recipe_modules/depot_tools/examples/full.py#5): [depot_tools](#recipe_modules-depot_tools), [path](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--path), [platform](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--platform), [step](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--step)
+[DEPS](/recipes/recipe_modules/depot_tools/examples/full.py#5): [recipe_engine/path](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--path), [recipe_engine/platform](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--platform), [recipe_engine/step](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--step), [depot_tools](#recipe_modules-depot_tools)
 
 &mdash; **def [RunSteps](/recipes/recipe_modules/depot_tools/examples/full.py#13)(api):**
 ### *recipes* / [gclient:examples/full](/recipes/recipe_modules/gclient/examples/full.py)
 
-[DEPS](/recipes/recipe_modules/gclient/examples/full.py#5): [gclient](#recipe_modules-gclient), [context](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--context), [path](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--path), [properties](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--properties), [step](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--step)
+[DEPS](/recipes/recipe_modules/gclient/examples/full.py#5): [recipe_engine/context](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--context), [recipe_engine/path](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--path), [recipe_engine/properties](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--properties), [recipe_engine/step](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--step), [gclient](#recipe_modules-gclient)
 
 &mdash; **def [RunSteps](/recipes/recipe_modules/gclient/examples/full.py#45)(api):**
 ### *recipes* / [gclient:tests/patch\_project](/recipes/recipe_modules/gclient/tests/patch_project.py)
 
-[DEPS](/recipes/recipe_modules/gclient/tests/patch_project.py#9): [gclient](#recipe_modules-gclient), [properties](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--properties)
+[DEPS](/recipes/recipe_modules/gclient/tests/patch_project.py#9): [gclient](#recipe_modules-gclient), [recipe_engine/properties](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--properties)
 
 &mdash; **def [RunSteps](/recipes/recipe_modules/gclient/tests/patch_project.py#20)(api, patch_project):**
 ### *recipes* / [gerrit:examples/full](/recipes/recipe_modules/gerrit/examples/full.py)
@@ -759,29 +759,29 @@ like checkout or compile), and some of these tests have failed.
 &mdash; **def [RunSteps](/recipes/recipe_modules/gerrit/examples/full.py#10)(api):**
 ### *recipes* / [git:examples/full](/recipes/recipe_modules/git/examples/full.py)
 
-[DEPS](/recipes/recipe_modules/git/examples/full.py#5): [git](#recipe_modules-git), [context](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--context), [path](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--path), [platform](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--platform), [properties](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--properties), [raw_io](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--raw_io), [step](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--step)
+[DEPS](/recipes/recipe_modules/git/examples/full.py#5): [recipe_engine/path](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--path), [recipe_engine/platform](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--platform), [recipe_engine/context](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--context), [recipe_engine/raw_io](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--raw_io), [recipe_engine/step](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--step), [git](#recipe_modules-git), [recipe_engine/properties](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--properties)
 
 &mdash; **def [RunSteps](/recipes/recipe_modules/git/examples/full.py#16)(api):**
 ### *recipes* / [git\_cl:examples/full](/recipes/recipe_modules/git_cl/examples/full.py)
 
-[DEPS](/recipes/recipe_modules/git_cl/examples/full.py#9): [git_cl](#recipe_modules-git_cl), [path](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--path), [raw_io](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--raw_io), [step](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--step)
+[DEPS](/recipes/recipe_modules/git_cl/examples/full.py#9): [recipe_engine/path](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--path), [recipe_engine/raw_io](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--raw_io), [recipe_engine/step](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--step), [git_cl](#recipe_modules-git_cl)
 
 &mdash; **def [RunSteps](/recipes/recipe_modules/git_cl/examples/full.py#17)(api):**
 ### *recipes* / [gitiles:examples/full](/recipes/recipe_modules/gitiles/examples/full.py)
 
-[DEPS](/recipes/recipe_modules/gitiles/examples/full.py#5): [gitiles](#recipe_modules-gitiles), [properties](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--properties)
+[DEPS](/recipes/recipe_modules/gitiles/examples/full.py#5): [recipe_engine/properties](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--properties), [gitiles](#recipe_modules-gitiles)
 
 &mdash; **def [RunSteps](/recipes/recipe_modules/gitiles/examples/full.py#11)(api):**
 ### *recipes* / [gsutil:examples/full](/recipes/recipe_modules/gsutil/examples/full.py)
 
-[DEPS](/recipes/recipe_modules/gsutil/examples/full.py#5): [gsutil](#recipe_modules-gsutil), [path](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--path)
+[DEPS](/recipes/recipe_modules/gsutil/examples/full.py#5): [gsutil](#recipe_modules-gsutil), [recipe_engine/path](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--path)
 
 &mdash; **def [RunSteps](/recipes/recipe_modules/gsutil/examples/full.py#11)(api):**
 
 Move things around in a loop!
 ### *recipes* / [infra\_paths:examples/full](/recipes/recipe_modules/infra_paths/examples/full.py)
 
-[DEPS](/recipes/recipe_modules/infra_paths/examples/full.py#7): [infra_paths](#recipe_modules-infra_paths), [path](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--path), [platform](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--platform), [properties](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--properties), [step](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--step)
+[DEPS](/recipes/recipe_modules/infra_paths/examples/full.py#7): [recipe_engine/properties](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--properties), [recipe_engine/step](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--step), [infra_paths](#recipe_modules-infra_paths), [recipe_engine/path](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--path), [recipe_engine/platform](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--platform)
 
 &mdash; **def [RunSteps](/recipes/recipe_modules/infra_paths/examples/full.py#16)(api):**
 ### *recipes* / [presubmit:examples/full](/recipes/recipe_modules/presubmit/examples/full.py)
@@ -791,11 +791,11 @@ Move things around in a loop!
 &mdash; **def [RunSteps](/recipes/recipe_modules/presubmit/examples/full.py#10)(api):**
 ### *recipes* / [rietveld:examples/full](/recipes/recipe_modules/rietveld/examples/full.py)
 
-[DEPS](/recipes/recipe_modules/rietveld/examples/full.py#5): [infra_paths](#recipe_modules-infra_paths), [rietveld](#recipe_modules-rietveld), [path](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--path), [properties](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--properties), [step](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--step)
+[DEPS](/recipes/recipe_modules/rietveld/examples/full.py#5): [rietveld](#recipe_modules-rietveld), [infra_paths](#recipe_modules-infra_paths), [recipe_engine/path](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--path), [recipe_engine/step](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--step), [recipe_engine/properties](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--properties)
 
 &mdash; **def [RunSteps](/recipes/recipe_modules/rietveld/examples/full.py#13)(api):**
 ### *recipes* / [tryserver:examples/full](/recipes/recipe_modules/tryserver/examples/full.py)
 
-[DEPS](/recipes/recipe_modules/tryserver/examples/full.py#5): [tryserver](#recipe_modules-tryserver), [json](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--json), [path](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--path), [platform](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--platform), [properties](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--properties), [python](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--python), [raw_io](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--raw_io), [step](https://github.com/luci/recipes-py/blob/3ac778ec88ee4a878bd75ab8a89162c848b3d1db/README.recipes.md#recipe_modules--step)
+[DEPS](/recipes/recipe_modules/tryserver/examples/full.py#5): [recipe_engine/json](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--json), [recipe_engine/path](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--path), [recipe_engine/platform](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--platform), [recipe_engine/properties](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--properties), [recipe_engine/python](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--python), [recipe_engine/raw_io](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--raw_io), [recipe_engine/step](https://github.com/luci/recipes-py/blob/4b6b21e529889fcb3f4b1128ddd0fb941210012a/README.recipes.md#recipe_modules--step), [tryserver](#recipe_modules-tryserver)
 
 &mdash; **def [RunSteps](/recipes/recipe_modules/tryserver/examples/full.py#17)(api):**
