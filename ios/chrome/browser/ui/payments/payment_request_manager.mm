@@ -776,6 +776,8 @@ struct PendingPaymentResponse {
             autofill::PHONE_HOME_WHOLE_NUMBER);
   }
 
+  _paymentRequest->RecordUseStats();
+
   [_paymentRequestJsManager
       resolveRequestPromiseWithPaymentResponse:paymentResponse
                              completionHandler:nil];

@@ -16,11 +16,27 @@
 #include "ios/chrome/browser/payments/payment_request_test_util.h"
 #include "ios/chrome/browser/payments/test_payment_request.h"
 #include "ios/web/public/payments/payment_request.h"
+#include "testing/gmock/include/gmock/gmock-matchers.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+
+class MockTestPersonalDataManager : public autofill::TestPersonalDataManager {
+ public:
+  MockTestPersonalDataManager() : TestPersonalDataManager() {}
+  MOCK_METHOD1(RecordUseOf, void(const autofill::AutofillDataModel&));
+};
+
+MATCHER_P(GuidMatches, guid, "") {
+  return arg.guid() == guid;
+}
+
+}  // namespace
 
 class PaymentRequestTest : public testing::Test {
  protected:
@@ -543,4 +559,170 @@ TEST_F(PaymentRequestTest, SelectedPaymentMethod_Incomplete) {
   TestPaymentRequest payment_request(web_payment_request,
                                      &personal_data_manager);
   EXPECT_EQ(credit_card.guid(), payment_request.selected_credit_card()->guid());
+}
+
+// Test that the use counts of the data models are updated as expected when
+// different autofill profiles are used as the shipping address and the contact
+// info.
+TEST_F(PaymentRequestTest, RecordUseStats_RequestShippingAndContactInfo) {
+  MockTestPersonalDataManager personal_data_manager;
+  // Add a profile that is incomplete for a contact info, but is used more
+  // frequently so is selected as the default shipping address.
+  autofill::AutofillProfile address = autofill::test::GetFullProfile();
+  address.SetInfo(autofill::AutofillType(autofill::EMAIL_ADDRESS),
+                  base::string16(), "en-US");
+  address.set_use_count(10U);
+  personal_data_manager.AddTestingProfile(&address);
+  autofill::AutofillProfile contact_info = autofill::test::GetFullProfile2();
+  contact_info.set_use_count(5U);
+  personal_data_manager.AddTestingProfile(&contact_info);
+  autofill::CreditCard credit_card = autofill::test::GetCreditCard();
+  personal_data_manager.AddTestingCreditCard(&credit_card);
+  credit_card.set_billing_address_id(address.guid());
+
+  web::PaymentRequest web_payment_request =
+      payment_request_test_util::CreateTestWebPaymentRequest();
+
+  TestPaymentRequest payment_request(web_payment_request,
+                                     &personal_data_manager);
+  EXPECT_EQ(address.guid(),
+            payment_request.selected_shipping_profile()->guid());
+  EXPECT_EQ(contact_info.guid(),
+            payment_request.selected_contact_profile()->guid());
+  EXPECT_EQ(credit_card.guid(), payment_request.selected_credit_card()->guid());
+
+  EXPECT_CALL(personal_data_manager, RecordUseOf(GuidMatches(address.guid())))
+      .Times(1);
+  EXPECT_CALL(personal_data_manager,
+              RecordUseOf(GuidMatches(contact_info.guid())))
+      .Times(1);
+  EXPECT_CALL(personal_data_manager,
+              RecordUseOf(GuidMatches(credit_card.guid())))
+      .Times(1);
+
+  payment_request.RecordUseStats();
+}
+
+// Test that the use counts of the data models are updated as expected when the
+// same autofill profile is used as the shipping address and the contact info.
+TEST_F(PaymentRequestTest, RecordUseStats_SameShippingAndContactInfoProfile) {
+  MockTestPersonalDataManager personal_data_manager;
+  autofill::AutofillProfile address = autofill::test::GetFullProfile();
+  personal_data_manager.AddTestingProfile(&address);
+  autofill::CreditCard credit_card = autofill::test::GetCreditCard();
+  personal_data_manager.AddTestingCreditCard(&credit_card);
+  credit_card.set_billing_address_id(address.guid());
+
+  web::PaymentRequest web_payment_request =
+      payment_request_test_util::CreateTestWebPaymentRequest();
+
+  TestPaymentRequest payment_request(web_payment_request,
+                                     &personal_data_manager);
+  EXPECT_EQ(address.guid(),
+            payment_request.selected_shipping_profile()->guid());
+  EXPECT_EQ(address.guid(), payment_request.selected_contact_profile()->guid());
+  EXPECT_EQ(credit_card.guid(), payment_request.selected_credit_card()->guid());
+
+  // Even though |address| is used for contact info, shipping address, and
+  // credit_card's billing address, the stats should be updated only once.
+  EXPECT_CALL(personal_data_manager, RecordUseOf(GuidMatches(address.guid())))
+      .Times(1);
+  EXPECT_CALL(personal_data_manager,
+              RecordUseOf(GuidMatches(credit_card.guid())))
+      .Times(1);
+
+  payment_request.RecordUseStats();
+}
+
+// Test that the use counts of the data models are updated as expected when no
+// contact information is requested.
+TEST_F(PaymentRequestTest, RecordUseStats_RequestShippingOnly) {
+  MockTestPersonalDataManager personal_data_manager;
+  autofill::AutofillProfile address = autofill::test::GetFullProfile();
+  personal_data_manager.AddTestingProfile(&address);
+  autofill::CreditCard credit_card = autofill::test::GetCreditCard();
+  personal_data_manager.AddTestingCreditCard(&credit_card);
+  credit_card.set_billing_address_id(address.guid());
+
+  web::PaymentRequest web_payment_request =
+      payment_request_test_util::CreateTestWebPaymentRequest();
+  web_payment_request.options.request_payer_name = false;
+  web_payment_request.options.request_payer_email = false;
+  web_payment_request.options.request_payer_phone = false;
+
+  TestPaymentRequest payment_request(web_payment_request,
+                                     &personal_data_manager);
+  EXPECT_EQ(address.guid(),
+            payment_request.selected_shipping_profile()->guid());
+  EXPECT_EQ(nullptr, payment_request.selected_contact_profile());
+  EXPECT_EQ(credit_card.guid(), payment_request.selected_credit_card()->guid());
+
+  EXPECT_CALL(personal_data_manager, RecordUseOf(GuidMatches(address.guid())))
+      .Times(1);
+  EXPECT_CALL(personal_data_manager,
+              RecordUseOf(GuidMatches(credit_card.guid())))
+      .Times(1);
+
+  payment_request.RecordUseStats();
+}
+
+// Test that the use counts of the data models are updated as expected when no
+// shipping information is requested.
+TEST_F(PaymentRequestTest, RecordUseStats_RequestContactInfoOnly) {
+  MockTestPersonalDataManager personal_data_manager;
+  autofill::AutofillProfile address = autofill::test::GetFullProfile();
+  personal_data_manager.AddTestingProfile(&address);
+  autofill::CreditCard credit_card = autofill::test::GetCreditCard();
+  personal_data_manager.AddTestingCreditCard(&credit_card);
+  credit_card.set_billing_address_id(address.guid());
+
+  web::PaymentRequest web_payment_request =
+      payment_request_test_util::CreateTestWebPaymentRequest();
+  web_payment_request.options.request_shipping = false;
+
+  TestPaymentRequest payment_request(web_payment_request,
+                                     &personal_data_manager);
+  EXPECT_EQ(nullptr, payment_request.selected_shipping_profile());
+  EXPECT_EQ(address.guid(), payment_request.selected_contact_profile()->guid());
+  EXPECT_EQ(credit_card.guid(), payment_request.selected_credit_card()->guid());
+
+  EXPECT_CALL(personal_data_manager, RecordUseOf(GuidMatches(address.guid())))
+      .Times(1);
+  EXPECT_CALL(personal_data_manager,
+              RecordUseOf(GuidMatches(credit_card.guid())))
+      .Times(1);
+
+  payment_request.RecordUseStats();
+}
+
+// Test that the use counts of the data models are updated as expected when no
+// shipping or contact information is requested.
+TEST_F(PaymentRequestTest, RecordUseStats_NoShippingOrContactInfoRequested) {
+  MockTestPersonalDataManager personal_data_manager;
+  autofill::AutofillProfile address = autofill::test::GetFullProfile();
+  personal_data_manager.AddTestingProfile(&address);
+  autofill::CreditCard credit_card = autofill::test::GetCreditCard();
+  personal_data_manager.AddTestingCreditCard(&credit_card);
+  credit_card.set_billing_address_id(address.guid());
+
+  web::PaymentRequest web_payment_request =
+      payment_request_test_util::CreateTestWebPaymentRequest();
+  web_payment_request.options.request_shipping = false;
+  web_payment_request.options.request_payer_name = false;
+  web_payment_request.options.request_payer_email = false;
+  web_payment_request.options.request_payer_phone = false;
+
+  TestPaymentRequest payment_request(web_payment_request,
+                                     &personal_data_manager);
+  EXPECT_EQ(nullptr, payment_request.selected_shipping_profile());
+  EXPECT_EQ(nullptr, payment_request.selected_contact_profile());
+  EXPECT_EQ(credit_card.guid(), payment_request.selected_credit_card()->guid());
+
+  EXPECT_CALL(personal_data_manager, RecordUseOf(GuidMatches(address.guid())))
+      .Times(0);
+  EXPECT_CALL(personal_data_manager,
+              RecordUseOf(GuidMatches(credit_card.guid())))
+      .Times(1);
+
+  payment_request.RecordUseStats();
 }
