@@ -5,6 +5,9 @@
 #include "media/gpu/mojo/jpeg_decoder_typemap_traits.h"
 
 #include "base/logging.h"
+#include "media/base/ipc/media_param_traits_macros.h"
+#include "mojo/common/common_custom_types_struct_traits.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 
 namespace mojo {
 
@@ -57,6 +60,54 @@ bool EnumTraits<media::mojom::DecodeError,
   }
   NOTREACHED();
   return false;
+}
+
+// static
+mojo::ScopedSharedBufferHandle
+StructTraits<media::mojom::BitstreamBufferDataView, media::BitstreamBuffer>::
+    memory_handle(const media::BitstreamBuffer& input) {
+  return mojo::WrapSharedMemoryHandle(input.handle(), input.handle().GetSize(),
+                                      false);
+}
+
+// static
+bool StructTraits<
+    media::mojom::BitstreamBufferDataView,
+    media::BitstreamBuffer>::Read(media::mojom::BitstreamBufferDataView input,
+                                  media::BitstreamBuffer* output) {
+  base::TimeDelta timestamp;
+  if (!input.ReadTimestamp(&timestamp))
+    return false;
+
+  std::string key_id;
+  if (!input.ReadKeyId(&key_id))
+    return false;
+
+  std::string iv;
+  if (!input.ReadIv(&iv))
+    return false;
+
+  std::vector<media::SubsampleEntry> subsamples;
+  if (!input.ReadSubsamples(&subsamples))
+    return false;
+
+  mojo::ScopedSharedBufferHandle handle = input.TakeMemoryHandle();
+  if (!handle.is_valid())
+    return false;
+
+  base::SharedMemoryHandle memory_handle;
+  MojoResult unwrap_result = mojo::UnwrapSharedMemoryHandle(
+      std::move(handle), &memory_handle, nullptr, nullptr);
+  if (unwrap_result != MOJO_RESULT_OK)
+    return false;
+
+  media::BitstreamBuffer bitstream_buffer(
+      input.id(), memory_handle, input.size(), input.offset(), timestamp);
+  bitstream_buffer.SetDecryptConfig(
+      media::DecryptConfig(key_id, iv, subsamples));
+  *output = bitstream_buffer;
+
+  return true;
 }
 
 }  // namespace mojo

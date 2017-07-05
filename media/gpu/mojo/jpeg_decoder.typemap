@@ -4,7 +4,10 @@
 
 mojom = "//media/gpu/mojo/jpeg_decoder.mojom"
 
-public_headers = [ "//media/video/jpeg_decode_accelerator.h" ]
+public_headers = [
+  "//media/base/bitstream_buffer.h",
+  "//media/video/jpeg_decode_accelerator.h",
+]
 
 traits_headers = [ "//media/gpu/mojo/jpeg_decoder_typemap_traits.h" ]
 
@@ -14,7 +17,12 @@ sources = [
 
 deps = [
   "//base",
+  "//media",
+  "//media/base/ipc",
+  "//mojo/common:struct_traits",
 ]
 
-type_mappings =
-    [ "media.mojom.DecodeError=media::JpegDecodeAccelerator::Error" ]
+type_mappings = [
+  "media.mojom.BitstreamBuffer=media::BitstreamBuffer",
+  "media.mojom.DecodeError=media::JpegDecodeAccelerator::Error",
+]

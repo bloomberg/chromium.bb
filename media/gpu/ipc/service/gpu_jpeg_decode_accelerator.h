@@ -61,7 +61,7 @@ class GpuJpegDecodeAccelerator
 
   // mojom::GpuJpegDecodeAccelerator implementation.
   void Initialize(InitializeCallback callback) override;
-  void Decode(mojom::BitstreamBufferPtr input_buffer,
+  void Decode(const BitstreamBuffer& input_buffer,
               const gfx::Size& coded_size,
               mojo::ScopedSharedBufferHandle output_handle,
               uint32_t output_buffer_size,
