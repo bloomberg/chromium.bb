@@ -1,6 +1,7 @@
 include_rules = [
     "+..",
     "+bindings",
+    "+controller",
     "+core",
     "+gin/public",
     "+modules",

@@ -18,6 +18,7 @@ group("blink") {
     ":blink_headers",
   ]
   deps = [
+    "//third_party/WebKit/Source/controller",
     "//third_party/WebKit/Source/core",
     "//third_party/WebKit/Source/modules",
     "//third_party/WebKit/Source/platform",
@@ -39,6 +40,7 @@ group("all_blink") {
   testonly = true
 
   public_deps = [
+    "//third_party/WebKit/Source/controller",
     "//third_party/WebKit/Source/core",
     "//third_party/WebKit/Source/modules",
     "//third_party/WebKit/Source/platform:blink_platform_unittests",
