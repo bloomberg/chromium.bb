@@ -174,8 +174,8 @@ void PasswordStoreWin::DBHandler::OnWebDataServiceRequestDone(
 }
 
 PasswordStoreWin::PasswordStoreWin(
-    scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
+    scoped_refptr<base::SequencedTaskRunner> main_thread_runner,
+    scoped_refptr<base::SequencedTaskRunner> db_thread_runner,
     std::unique_ptr<password_manager::LoginDatabase> login_db,
     const scoped_refptr<PasswordWebDataService>& web_data_service)
     : PasswordStoreDefault(main_thread_runner,

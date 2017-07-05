@@ -21,7 +21,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/scoped_task_environment.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliated_match_helper.h"
@@ -140,7 +140,8 @@ class PasswordStoreTest : public testing::Test {
 
 TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
+      base::SequencedTaskRunnerHandle::Get(),
+      base::SequencedTaskRunnerHandle::Get(),
       base::MakeUnique<LoginDatabase>(test_login_db_file_path())));
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
@@ -234,7 +235,8 @@ TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
 
 TEST_F(PasswordStoreTest, StartSyncFlare) {
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
+      base::SequencedTaskRunnerHandle::Get(),
+      base::SequencedTaskRunnerHandle::Get(),
       base::MakeUnique<LoginDatabase>(test_login_db_file_path())));
   StartSyncFlareMock mock;
   store->Init(
@@ -264,7 +266,8 @@ TEST_F(PasswordStoreTest, GetLoginImpl) {
   /* clang-format on */
 
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
+      base::SequencedTaskRunnerHandle::Get(),
+      base::SequencedTaskRunnerHandle::Get(),
       base::MakeUnique<LoginDatabase>(test_login_db_file_path())));
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
@@ -327,7 +330,8 @@ TEST_F(PasswordStoreTest, UpdateLoginPrimaryKeyFields) {
   /* clang-format on */
 
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
+      base::SequencedTaskRunnerHandle::Get(),
+      base::SequencedTaskRunnerHandle::Get(),
       base::MakeUnique<LoginDatabase>(test_login_db_file_path())));
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
@@ -380,7 +384,8 @@ TEST_F(PasswordStoreTest, RemoveLoginsCreatedBetweenCallbackIsCalled) {
   /* clang-format on */
 
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
+      base::SequencedTaskRunnerHandle::Get(),
+      base::SequencedTaskRunnerHandle::Get(),
       base::WrapUnique(new LoginDatabase(test_login_db_file_path()))));
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
@@ -433,7 +438,8 @@ TEST_F(PasswordStoreTest, GetLoginsWithoutAffiliations) {
   /* clang-format on */
 
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
+      base::SequencedTaskRunnerHandle::Get(),
+      base::SequencedTaskRunnerHandle::Get(),
       base::WrapUnique(new LoginDatabase(test_login_db_file_path()))));
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
@@ -538,7 +544,8 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliations) {
   /* clang-format on */
 
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
+      base::SequencedTaskRunnerHandle::Get(),
+      base::SequencedTaskRunnerHandle::Get(),
       base::WrapUnique(new LoginDatabase(test_login_db_file_path()))));
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
@@ -721,8 +728,8 @@ TEST_F(PasswordStoreTest, MAYBE_UpdatePasswordsStoredForAffiliatedWebsites) {
                    << test_remove_and_add_login);
 
       scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-          base::ThreadTaskRunnerHandle::Get(),
-          base::ThreadTaskRunnerHandle::Get(),
+          base::SequencedTaskRunnerHandle::Get(),
+          base::SequencedTaskRunnerHandle::Get(),
           base::WrapUnique(new LoginDatabase(test_login_db_file_path()))));
       store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
       store->RemoveLoginsCreatedBetween(base::Time(), base::Time::Max(),
@@ -830,8 +837,8 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliatedRealms) {
   for (bool blacklisted : kFalseTrue) {
     SCOPED_TRACE(testing::Message("use blacklisted logins: ") << blacklisted);
     scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-        base::ThreadTaskRunnerHandle::Get(),
-        base::ThreadTaskRunnerHandle::Get(),
+        base::SequencedTaskRunnerHandle::Get(),
+        base::SequencedTaskRunnerHandle::Get(),
         base::MakeUnique<LoginDatabase>(test_login_db_file_path())));
     store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
     store->RemoveLoginsCreatedBetween(base::Time(), base::Time::Max(),
@@ -912,7 +919,8 @@ TEST_F(PasswordStoreTest, GetLoginsForSameOrganizationName) {
        L"username_value_6", L"", true, 1}};
 
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
+      base::SequencedTaskRunnerHandle::Get(),
+      base::SequencedTaskRunnerHandle::Get(),
       base::MakeUnique<LoginDatabase>(test_login_db_file_path())));
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
@@ -947,7 +955,8 @@ TEST_F(PasswordStoreTest, CheckPasswordReuse) {
        "https://facebook.com", "", L"", L"", L"", L"", L"topsecret", true, 1}};
 
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
+      base::SequencedTaskRunnerHandle::Get(),
+      base::SequencedTaskRunnerHandle::Get(),
       base::MakeUnique<LoginDatabase>(test_login_db_file_path())));
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
@@ -990,7 +999,8 @@ TEST_F(PasswordStoreTest, CheckPasswordReuse) {
 #if !defined(OS_CHROMEOS)
 TEST_F(PasswordStoreTest, SavingClearingSyncPassword) {
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
+      base::SequencedTaskRunnerHandle::Get(),
+      base::SequencedTaskRunnerHandle::Get(),
       base::MakeUnique<LoginDatabase>(test_login_db_file_path())));
 
   TestingPrefServiceSimple prefs;
@@ -1024,7 +1034,8 @@ TEST_F(PasswordStoreTest, SavingClearingSyncPassword) {
 
 TEST_F(PasswordStoreTest, SubscriptionAndUnsubscriptionFromSignInEvents) {
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
+      base::SequencedTaskRunnerHandle::Get(),
+      base::SequencedTaskRunnerHandle::Get(),
       base::MakeUnique<LoginDatabase>(test_login_db_file_path())));
 
   std::unique_ptr<MockPasswordStoreSigninNotifier> notifier =

@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "components/password_manager/core/browser/password_store_default.h"
 
 class PasswordWebDataService;
@@ -25,8 +25,8 @@ class PasswordStoreWin : public password_manager::PasswordStoreDefault {
   // a deferred manner on the DB thread. The |web_data_service| is only used for
   // IE7 password fetching.
   PasswordStoreWin(
-      scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
+      scoped_refptr<base::SequencedTaskRunner> main_thread_runner,
+      scoped_refptr<base::SequencedTaskRunner> db_thread_runner,
       std::unique_ptr<password_manager::LoginDatabase> login_db,
       const scoped_refptr<PasswordWebDataService>& web_data_service);
 

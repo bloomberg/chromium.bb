@@ -53,7 +53,7 @@ HttpPasswordStoreMigrator::~HttpPasswordStoreMigrator() = default;
 
 void HttpPasswordStoreMigrator::OnGetPasswordStoreResults(
     std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   results_ = std::move(results);
   got_password_store_results_ = true;
 
@@ -62,7 +62,7 @@ void HttpPasswordStoreMigrator::OnGetPasswordStoreResults(
 }
 
 void HttpPasswordStoreMigrator::OnHSTSQueryResult(bool is_hsts) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   mode_ = is_hsts ? MigrationMode::MOVE : MigrationMode::COPY;
   got_hsts_query_result_ = true;
 

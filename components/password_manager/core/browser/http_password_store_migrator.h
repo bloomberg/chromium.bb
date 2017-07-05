@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/threading/thread_checker.h"
+#include "base/sequence_checker.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "url/gurl.h"
 
@@ -76,7 +76,7 @@ class HttpPasswordStoreMigrator : public PasswordStoreConsumer {
   MigrationMode mode_;
   std::vector<std::unique_ptr<autofill::PasswordForm>> results_;
   GURL http_origin_domain_;
-  base::ThreadChecker thread_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(HttpPasswordStoreMigrator);
 };

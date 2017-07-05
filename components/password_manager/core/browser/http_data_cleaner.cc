@@ -203,11 +203,11 @@ void WaitUntilCleaningIsDone(std::unique_ptr<ObsoleteHttpCleaner> cleaner,
   // round trip of tasks will be scheduled. Finally, when no weak ptrs remain,
   // this method sets a boolean preference flag and returns.
   if (cleaner->HasWeakPtrs()) {
-    scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner =
-        base::ThreadTaskRunnerHandle::Get();
+    scoped_refptr<base::SequencedTaskRunner> main_thread_runner =
+        base::SequencedTaskRunnerHandle::Get();
     const auto post_to_thread =
         [](std::unique_ptr<ObsoleteHttpCleaner> cleaner, PrefService* prefs,
-           scoped_refptr<base::SingleThreadTaskRunner> thread_runner) {
+           scoped_refptr<base::SequencedTaskRunner> thread_runner) {
           thread_runner->PostTask(
               FROM_HERE, base::Bind(&WaitUntilCleaningIsDone,
                                     base::Passed(std::move(cleaner)), prefs));
@@ -243,7 +243,7 @@ void DelayCleanObsoleteHttpDataForPasswordStoreAndPrefsImpl(
     int delay_in_seconds) {
   if (!prefs->GetBoolean(
           password_manager::prefs::kWasObsoleteHttpDataCleaned)) {
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&InitiateCleaning, make_scoped_refptr(store), prefs,
                    request_context),

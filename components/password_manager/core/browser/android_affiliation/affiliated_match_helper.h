@@ -142,7 +142,6 @@ class AffiliatedMatchHelper : public PasswordStore::Observer,
       std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
 
   PasswordStore* const password_store_;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_waiting_;
 
   // Being the sole consumer of AffiliationService, |this| owns the service.
   std::unique_ptr<AffiliationService> affiliation_service_;

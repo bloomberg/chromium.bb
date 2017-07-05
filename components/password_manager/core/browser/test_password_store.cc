@@ -7,7 +7,7 @@
 #include <stddef.h>
 
 #include "base/memory/ptr_util.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/psl_matching_helper.h"
 #include "components/password_manager/core/browser/statistics_table.h"
@@ -15,9 +15,8 @@
 namespace password_manager {
 
 TestPasswordStore::TestPasswordStore()
-    : PasswordStore(base::ThreadTaskRunnerHandle::Get(),
-                    base::ThreadTaskRunnerHandle::Get()) {
-}
+    : PasswordStore(base::SequencedTaskRunnerHandle::Get(),
+                    base::SequencedTaskRunnerHandle::Get()) {}
 
 TestPasswordStore::~TestPasswordStore() {
 }

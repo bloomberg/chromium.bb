@@ -61,8 +61,8 @@ bool RemoveLoginsByURLAndTimeFromBackend(
 }  // namespace
 
 PasswordStoreX::PasswordStoreX(
-    scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
+    scoped_refptr<base::SequencedTaskRunner> main_thread_runner,
+    scoped_refptr<base::SequencedTaskRunner> db_thread_runner,
     std::unique_ptr<password_manager::LoginDatabase> login_db,
     NativeBackend* backend)
     : PasswordStoreDefault(main_thread_runner,

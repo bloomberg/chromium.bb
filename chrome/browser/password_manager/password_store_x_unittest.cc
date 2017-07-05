@@ -18,7 +18,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
@@ -333,8 +333,8 @@ class PasswordStoreXTestDelegate {
 PasswordStoreXTestDelegate::PasswordStoreXTestDelegate(BackendType backend_type)
     : backend_type_(backend_type) {
   SetupTempDir();
-  store_ = new PasswordStoreX(base::ThreadTaskRunnerHandle::Get(),
-                              base::ThreadTaskRunnerHandle::Get(),
+  store_ = new PasswordStoreX(base::SequencedTaskRunnerHandle::Get(),
+                              base::SequencedTaskRunnerHandle::Get(),
                               base::MakeUnique<password_manager::LoginDatabase>(
                                   test_login_db_file_path()),
                               GetBackend(backend_type_));
@@ -402,9 +402,10 @@ class PasswordStoreXTest : public testing::TestWithParam<BackendType> {
 TEST_P(PasswordStoreXTest, Notifications) {
   std::unique_ptr<password_manager::LoginDatabase> login_db(
       new password_manager::LoginDatabase(test_login_db_file_path()));
-  scoped_refptr<PasswordStoreX> store(new PasswordStoreX(
-      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
-      std::move(login_db), GetBackend(GetParam())));
+  scoped_refptr<PasswordStoreX> store(
+      new PasswordStoreX(base::SequencedTaskRunnerHandle::Get(),
+                         base::SequencedTaskRunnerHandle::Get(),
+                         std::move(login_db), GetBackend(GetParam())));
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
   password_manager::PasswordFormData form_data = {
@@ -508,9 +509,10 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
 
   // Initializing the PasswordStore shouldn't trigger a native migration (yet).
   login_db.reset(new password_manager::LoginDatabase(login_db_file));
-  scoped_refptr<PasswordStoreX> store(new PasswordStoreX(
-      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
-      std::move(login_db), GetBackend(GetParam())));
+  scoped_refptr<PasswordStoreX> store(
+      new PasswordStoreX(base::SequencedTaskRunnerHandle::Get(),
+                         base::SequencedTaskRunnerHandle::Get(),
+                         std::move(login_db), GetBackend(GetParam())));
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
   MockPasswordStoreConsumer consumer;

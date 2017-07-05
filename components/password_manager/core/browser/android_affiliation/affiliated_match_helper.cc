@@ -9,8 +9,7 @@
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_service.h"
 
@@ -50,7 +49,7 @@ AffiliatedMatchHelper::~AffiliatedMatchHelper() {
 void AffiliatedMatchHelper::Initialize() {
   DCHECK(password_store_);
   DCHECK(affiliation_service_);
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&AffiliatedMatchHelper::DoDeferredInitialization,
                  weak_ptr_factory_.GetWeakPtr()),

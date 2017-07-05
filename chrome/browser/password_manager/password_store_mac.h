@@ -20,17 +20,15 @@ class LoginDatabase;
 // Password store for Mac. It creates a dedicated background thread
 class PasswordStoreMac : public password_manager::PasswordStoreDefault {
  public:
-  PasswordStoreMac(
-      scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
-      std::unique_ptr<password_manager::LoginDatabase> login_db,
-      PrefService* prefs);
+  PasswordStoreMac(scoped_refptr<base::SequencedTaskRunner> main_thread_runner,
+                   std::unique_ptr<password_manager::LoginDatabase> login_db,
+                   PrefService* prefs);
 
   // PasswordStore:
   bool Init(const syncer::SyncableService::StartSyncFlare& flare,
             PrefService* prefs) override;
   void ShutdownOnUIThread() override;
-  scoped_refptr<base::SingleThreadTaskRunner> GetBackgroundTaskRunner()
-      override;
+  scoped_refptr<base::SequencedTaskRunner> GetBackgroundTaskRunner() override;
 
 #if defined(UNIT_TEST)
   password_manager::LoginDatabase* login_metadata_db() { return login_db(); }

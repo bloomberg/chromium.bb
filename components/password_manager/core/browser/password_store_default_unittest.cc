@@ -16,7 +16,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/password_manager/core/browser/login_database.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
@@ -143,8 +143,8 @@ scoped_refptr<PasswordStoreDefault>
 PasswordStoreDefaultTestDelegate::CreateInitializedStore(
     std::unique_ptr<LoginDatabase> database) {
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
-      std::move(database)));
+      base::SequencedTaskRunnerHandle::Get(),
+      base::SequencedTaskRunnerHandle::Get(), std::move(database)));
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
   return store;

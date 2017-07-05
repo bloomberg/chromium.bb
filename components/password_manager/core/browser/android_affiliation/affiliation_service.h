@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/thread_checker.h"
+#include "base/sequence_checker.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
 
@@ -153,7 +153,7 @@ class AffiliationService : public KeyedService {
   // TaskRunner to be used to run the |backend_| (usually the DB thread).
   scoped_refptr<base::SingleThreadTaskRunner> backend_task_runner_;
 
-  base::ThreadChecker thread_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<AffiliationService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AffiliationService);

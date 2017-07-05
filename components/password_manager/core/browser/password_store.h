@@ -14,7 +14,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/observer_list_threadsafe.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "components/keyed_service/core/refcounted_keyed_service.h"
 #include "components/password_manager/core/browser/password_store_change.h"
@@ -90,8 +90,8 @@ class PasswordStore : protected PasswordStoreSync,
     GURL origin;
   };
 
-  PasswordStore(scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
-                scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner);
+  PasswordStore(scoped_refptr<base::SequencedTaskRunner> main_thread_runner,
+                scoped_refptr<base::SequencedTaskRunner> db_thread_runner);
 
   // Reimplement this to add custom initialization. Always call this too.
   virtual bool Init(const syncer::SyncableService::StartSyncFlare& flare,
@@ -298,7 +298,7 @@ class PasswordStore : protected PasswordStoreSync,
     // See GetLogins(). Logins older than this will be removed from the reply.
     base::Time ignore_logins_cutoff_;
 
-    scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner_;
+    scoped_refptr<base::SequencedTaskRunner> origin_task_runner_;
     base::WeakPtr<PasswordStoreConsumer> consumer_weak_;
 
     DISALLOW_COPY_AND_ASSIGN(GetLoginsRequest);
@@ -322,7 +322,7 @@ class PasswordStore : protected PasswordStoreSync,
                       int number_matches) override;
 
    private:
-    const scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner_;
+    const scoped_refptr<base::SequencedTaskRunner> origin_task_runner_;
     const base::WeakPtr<PasswordReuseDetectorConsumer> consumer_weak_;
 
     DISALLOW_COPY_AND_ASSIGN(CheckReuseRequest);
@@ -332,9 +332,9 @@ class PasswordStore : protected PasswordStoreSync,
   ~PasswordStore() override;
 
   // Get the TaskRunner to use for PasswordStore background tasks.
-  // By default, a SingleThreadTaskRunner on the DB thread is used, but
+  // By default, a SequencedTaskRunner on the DB thread is used, but
   // subclasses can override.
-  virtual scoped_refptr<base::SingleThreadTaskRunner> GetBackgroundTaskRunner();
+  virtual scoped_refptr<base::SequencedTaskRunner> GetBackgroundTaskRunner();
 
   // Methods below will be run in PasswordStore's own thread.
   // Synchronous implementation that reports usage metrics.
@@ -443,11 +443,11 @@ class PasswordStore : protected PasswordStoreSync,
 #endif
 
   // TaskRunner for tasks that run on the main thread (usually the UI thread).
-  scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner_;
+  scoped_refptr<base::SequencedTaskRunner> main_thread_runner_;
 
   // TaskRunner for the DB thread. By default, this is the task runner used for
   // background tasks -- see |GetBackgroundTaskRunner|.
-  scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner_;
+  scoped_refptr<base::SequencedTaskRunner> db_thread_runner_;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(PasswordStoreTest, GetLoginImpl);
