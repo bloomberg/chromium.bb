@@ -6,6 +6,8 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/thumbnails/thumbnail_service.h"
 #include "chrome/browser/thumbnails/thumbnail_service_factory.h"
@@ -22,6 +24,27 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/scrollbar_size.h"
+
+using thumbnails::ThumbnailingContext;
+using thumbnails::ThumbnailingAlgorithm;
+
+namespace {
+
+void ComputeThumbnailScore(const SkBitmap& thumbnail,
+                           scoped_refptr<ThumbnailingContext> context) {
+  base::TimeTicks process_bitmap_start_time = base::TimeTicks::Now();
+
+  context->score.boring_score = color_utils::CalculateBoringScore(thumbnail);
+
+  context->score.good_clipping =
+      thumbnails::IsGoodClipping(context->clip_result);
+
+  base::TimeDelta process_bitmap_time =
+      base::TimeTicks::Now() - process_bitmap_start_time;
+  UMA_HISTOGRAM_TIMES("Thumbnails.ProcessBitmapTime", process_bitmap_time);
+}
+
+}  // namespace
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(ThumbnailTabHelper);
 
@@ -40,9 +63,6 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(ThumbnailTabHelper);
 //    If features::kCaptureThumbnailOnLoadFinished is enabled, then a thumbnail
 //    may also be captured when a page load finishes (subject to the same
 //    heuristics).
-
-using thumbnails::ThumbnailingContext;
-using thumbnails::ThumbnailingAlgorithm;
 
 ThumbnailTabHelper::ThumbnailTabHelper(content::WebContents* contents)
     : content::WebContentsObserver(contents),
@@ -222,20 +242,13 @@ void ThumbnailTabHelper::ProcessCapturedBitmap(
   if (response == content::READBACK_SUCCESS) {
     // On success, we must be on the UI thread.
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    base::TimeTicks process_bitmap_start_time = base::TimeTicks::Now();
-    if (!bitmap.isNull() && !bitmap.empty()) {
-      // TODO(treib): Move this off the UI thread. crbug.com/737396
-      thumbnailing_context_->score.boring_score =
-          color_utils::CalculateBoringScore(bitmap);
-
-      thumbnailing_context_->score.good_clipping =
-          thumbnails::IsGoodClipping(thumbnailing_context_->clip_result);
-    }
-    base::TimeDelta process_bitmap_time =
-        base::TimeTicks::Now() - process_bitmap_start_time;
-    UMA_HISTOGRAM_TIMES("Thumbnails.ProcessBitmapTime", process_bitmap_time);
-
-    UpdateThumbnail(bitmap);
+    base::PostTaskWithTraitsAndReply(
+        FROM_HERE,
+        {base::TaskPriority::BACKGROUND,
+         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+        base::Bind(&ComputeThumbnailScore, bitmap, thumbnailing_context_),
+        base::Bind(&ThumbnailTabHelper::UpdateThumbnail,
+                   weak_factory_.GetWeakPtr(), bitmap));
   } else {
     // On failure because of shutdown we are not on the UI thread, so ensure
     // that cleanup happens on that thread.
