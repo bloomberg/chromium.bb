@@ -681,7 +681,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         mVrShell.setWebVrModeEnabled(webVrMode, false);
 
         // We're entering VR, but not in WebVr mode.
-        mVrBrowserUsed = !webVrMode;
+        mVrBrowserUsed = !webVrMode && !mAutopresentWebVr;
 
         // onResume needs to be called on GvrLayout after initialization to make sure DON flow works
         // properly.
