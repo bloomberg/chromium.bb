@@ -29,7 +29,7 @@ void TexturedElement::Initialize() {
 }
 
 void TexturedElement::UpdateTexture() {
-  if (!initialized_ || !GetTexture()->dirty() || !IsVisible())
+  if (!initialized_ || !GetTexture()->dirty())
     return;
   sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(
       texture_size_.width(), texture_size_.height());
@@ -50,7 +50,6 @@ void TexturedElement::Render(UiElementRenderer* renderer,
                              gfx::Transform view_proj_matrix) const {
   if (!initialized_)
     return;
-  DCHECK(!GetTexture()->dirty());
   gfx::SizeF drawn_size = GetTexture()->GetDrawnSize();
   gfx::RectF copy_rect(0, 0, drawn_size.width() / texture_size_.width(),
                        drawn_size.height() / texture_size_.height());
@@ -75,10 +74,6 @@ void TexturedElement::Flush(SkSurface* surface) {
 
 void TexturedElement::OnSetMode() {
   GetTexture()->SetMode(mode());
-  UpdateTexture();
-}
-
-void TexturedElement::OnBeginFrame(const base::TimeTicks& begin_frame_time) {
   UpdateTexture();
 }
 
