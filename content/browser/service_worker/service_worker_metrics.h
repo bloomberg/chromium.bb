@@ -15,6 +15,7 @@
 #include "content/browser/service_worker/service_worker_database.h"
 #include "content/common/service_worker/embedded_worker.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/public/common/service_worker_modes.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerResponseError.h"
 #include "ui/base/page_transition_types.h"
 

@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_APPCACHE_APPCACHE_URL_LOADER_REQUEST_H_
 
 #include "content/browser/appcache/appcache_request.h"
-#include "content/common/resource_request.h"
+#include "content/public/common/resource_request.h"
 
 namespace content {
 

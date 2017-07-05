@@ -8,11 +8,11 @@
 #include <string>
 
 #include "content/common/content_export.h"
-#include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/request_context_frame_type.h"
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_request_body.h"
 #include "content/public/common/resource_type.h"
+#include "content/public/common/service_worker_modes.h"
 #include "third_party/WebKit/public/platform/WebMixedContentContextType.h"
 
 namespace blink {

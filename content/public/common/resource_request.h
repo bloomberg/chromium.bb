@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_RESOURCE_REQUEST_H_
-#define CONTENT_COMMON_RESOURCE_REQUEST_H_
+#ifndef CONTENT_PUBLIC_COMMON_RESOURCE_REQUEST_H_
+#define CONTENT_PUBLIC_COMMON_RESOURCE_REQUEST_H_
 
 #include <stdint.h>
 #include <string>
@@ -11,14 +11,13 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "content/common/content_export.h"
-#include "content/common/navigation_params.h"
-#include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/appcache_info.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/request_context_frame_type.h"
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_request_body.h"
 #include "content/public/common/resource_type.h"
+#include "content/public/common/service_worker_modes.h"
 #include "net/base/request_priority.h"
 #include "third_party/WebKit/public/platform/WebMixedContentContextType.h"
 #include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
@@ -200,4 +199,4 @@ struct CONTENT_EXPORT ResourceRequest {
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_RESOURCE_REQUEST_H_
+#endif  // CONTENT_PUBLIC_COMMON_RESOURCE_REQUEST_H_

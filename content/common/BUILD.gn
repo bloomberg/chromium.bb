@@ -278,8 +278,6 @@ source_set("common") {
     "resize_params.h",
     "resource_messages.cc",
     "resource_messages.h",
-    "resource_request.cc",
-    "resource_request.h",
     "resource_request_completion_status.cc",
     "resource_request_completion_status.h",
     "sandbox_init_mac.cc",

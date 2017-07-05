@@ -82,7 +82,6 @@ specific_include_rules = {
     "+content/browser/loader/resource_dispatcher_host_impl.h",
     "+content/browser/loader/resource_request_info_impl.h",
     "+content/browser/loader/resource_scheduler.h",
-    "+content/common/resource_request.h",
     "+content/common/resource_request_completion_status.h",
     "+content/common/url_loader.mojom.h",
     "+content/common/url_loader_factory.mojom.h",
@@ -93,6 +92,7 @@ specific_include_rules = {
     "+content/public/browser/resource_throttle.h",
     "+content/public/browser/stream_info.h",
     "+content/public/common/previews_state.h",
+    "+content/public/common/resource_request.h",
     "+content/public/common/resource_response.h",
     "+content/public/common/resource_type.h",
     "+content/public/test/test_browser_context.h",
@@ -180,9 +180,9 @@ specific_include_rules = {
 
     # TODO: To be replaced by mojo.
     "+content/common/resource_messages.h",
-    "+content/common/resource_request.h",
     "+content/common/resource_request_completion_status.h",
     "+content/common/view_messages.h",
+    "+content/public/common/resource_request.h",
   ],
   "resource_handler\.(cc|h)": [
     "-content",
@@ -320,9 +320,9 @@ specific_include_rules = {
     "+content/browser/loader/resource_requester_info.h",
     "+content/browser/loader/url_loader_factory_impl.h",
     "+content/common/content_export.h",
-    "+content/common/resource_request.h",
     "+content/common/url_loader.mojom.h",
     "+content/common/url_loader_factory.mojom.h",
+    "+content/public/common/resource_request.h",
   ],
   "url_loader_factory_impl_unittest\.cc": [
     "-content",
@@ -334,13 +334,13 @@ specific_include_rules = {
     "+content/browser/loader/resource_request_info_impl.h",
     "+content/browser/loader/url_loader_factory_impl.h",
     "+content/browser/loader_delegate_impl.h",
-    "+content/common/resource_request.h",
     "+content/common/resource_request_completion_status.h",
     "+content/common/url_loader.mojom.h",
     "+content/common/url_loader_factory.mojom.h",
     "+content/public/browser/resource_context.h",
     "+content/public/browser/resource_dispatcher_host_delegate.h",
     "+content/public/common/content_paths.h",
+    "+content/public/common/resource_request.h",
     "+content/public/test/test_browser_context.h",
     "+content/public/test/test_browser_thread_bundle.h",
 

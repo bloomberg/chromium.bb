@@ -19,6 +19,7 @@
 #include "content/public/common/request_context_frame_type.h"
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
+#include "content/public/common/service_worker_modes.h"
 #include "net/url_request/url_request_job_factory.h"
 
 namespace net {

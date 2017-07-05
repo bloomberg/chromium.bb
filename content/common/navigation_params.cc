@@ -9,6 +9,7 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/appcache_info.h"
 #include "content/public/common/browser_side_navigation_policy.h"
+#include "content/public/common/service_worker_modes.h"
 #include "content/public/common/url_constants.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
