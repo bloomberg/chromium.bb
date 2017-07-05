@@ -192,7 +192,7 @@
     {
       name: "VerticalAlign",
       field_template: "storage_only",
-      field_size: 4,
+      keywords: ["baseline", "sub", "super", "text-top", "text-bottom", "middle", "top", "bottom", "length"],
       default_value: "EVerticalAlign::kBaseline",
       type_name: "EVerticalAlign",
     },

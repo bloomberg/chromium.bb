@@ -349,7 +349,17 @@ def _create_property_field(property_):
     elif property_['field_template'] == 'storage_only':
         type_name = property_['type_name']
         default_value = property_['default_value']
-        size = 1 if type_name == 'bool' else property_['field_size']
+        size = None
+        if type_name == 'bool':
+            size = 1
+        elif len(property_["keywords"]) > 0 and len(property_["include_paths"]) == 0:
+            # Assume that no property will ever have one keyword.
+            assert len(property_['keywords']) > 1, "There must be more than 1 keywords in a CSS property"
+            # Each keyword is represented as a number and the number of bit
+            # to represent the maximum number is calculated here
+            size = int(math.ceil(math.log(len(property_['keywords']), 2)))
+        else:
+            size = property_["field_size"]
     elif property_['field_template'] == 'external':
         type_name = property_['type_name']
         default_value = property_['default_value']
