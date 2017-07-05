@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "content/common/content_export.h"
-#include "content/public/browser/stored_payment_instrument.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "url/origin.h"
 
@@ -33,8 +32,8 @@ struct CONTENT_EXPORT StoredPaymentApp {
   // Decoded icon for this payment app.
   std::unique_ptr<SkBitmap> icon;
 
-  // A list of one or more payment instruments in this payment app.
-  std::vector<std::unique_ptr<StoredPaymentInstrument>> instruments;
+  // A list of one or more enabled payment methods in this payment app.
+  std::vector<std::string> enabled_methods;
 };
 
 }  // namespace content
