@@ -12,6 +12,7 @@ from chromite.cbuildbot.stages import artifact_stages
 from chromite.lib import builder_status_lib
 from chromite.lib import clactions
 from chromite.lib import constants
+from chromite.lib import config_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import patch as cros_patch
@@ -21,6 +22,9 @@ from chromite.lib import triage_lib
 # Limit (hours) for looking back cl actions in the history for history-aware
 # submission.
 CLACTION_LOOKBACK_LIMIT_HOUR = 48
+
+
+site_config = config_lib.GetConfig()
 
 
 class RelevantChanges(object):
@@ -700,8 +704,10 @@ class TriageRelevantChanges(object):
   def _AllCompletedSlavesPassedUploadPrebuiltsStage(self):
     """Check if all completed slaves have passed the UploadPrebuiltsStage."""
     for build_config in self.completed_builds:
-      if not self.PassedAnyOfStages(self.slave_stages_dict[build_config],
-                                    {self.STAGE_UPLOAD_PREBUILTS}):
+      # compilecheck builds don't run UploadPrebuiltsStage
+      if (not site_config[build_config].compilecheck and
+          not self.PassedAnyOfStages(self.slave_stages_dict[build_config],
+                                     {self.STAGE_UPLOAD_PREBUILTS})):
         logging.info("Completed build %s didn't pass stage %s. "
                      "The master can't publish uprevs now.",
                      build_config, self.STAGE_UPLOAD_PREBUILTS)
@@ -712,8 +718,10 @@ class TriageRelevantChanges(object):
   def _AllUncompletedSlavesPassedUploadPrebuiltsStage(self):
     """Check if all uncompleted slaves have passed the UploadPrebuiltsStage."""
     for build_config in set(self.builders_array) - self.completed_builds:
-      if not self.PassedAnyOfStages(self.slave_stages_dict[build_config],
-                                    {self.STAGE_UPLOAD_PREBUILTS}):
+      # compilecheck builds don't run UploadPrebuiltsStage
+      if (not site_config[build_config].compilecheck and
+          not self.PassedAnyOfStages(self.slave_stages_dict[build_config],
+                                     {self.STAGE_UPLOAD_PREBUILTS})):
         logging.info("Uncompleted build %s haven't passed stage %s. "
                      "The master can't publish uprevs now.",
                      build_config, self.STAGE_UPLOAD_PREBUILTS)
