@@ -23,6 +23,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_scheduler/task_scheduler.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/window.h"
@@ -105,6 +106,28 @@ void RunAllTasksUntilIdle() {
       break;
   }
 }
+
+// A test implementation of the WallpaperObserver mojo interface.
+class TestWallpaperObserver : public mojom::WallpaperObserver {
+ public:
+  TestWallpaperObserver() = default;
+  ~TestWallpaperObserver() override = default;
+
+  // mojom::WallpaperObserver:
+  void OnWallpaperColorsChanged(
+      const std::vector<SkColor>& prominent_colors) override {
+    ++wallpaper_colors_changed_count_;
+  }
+
+  int wallpaper_colors_changed_count() const {
+    return wallpaper_colors_changed_count_;
+  }
+
+ private:
+  int wallpaper_colors_changed_count_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(TestWallpaperObserver);
+};
 
 }  // namespace
 
@@ -527,6 +550,27 @@ TEST_F(WallpaperControllerTest, ShouldCalculateColorsBasedOnSessionState) {
 
   SetSessionState(SessionState::LOGIN_SECONDARY);
   EXPECT_FALSE(ShouldCalculateColors());
+}
+
+TEST_F(WallpaperControllerTest, MojoWallpaperObserverTest) {
+  TestWallpaperObserver observer;
+  mojom::WallpaperObserverAssociatedPtr observer_ptr;
+  mojo::AssociatedBinding<mojom::WallpaperObserver> binding(
+      &observer, mojo::MakeIsolatedRequest(&observer_ptr));
+  controller_->AddObserver(observer_ptr.PassInterface());
+
+  // Mojo observer will asynchronously receive the observed event, thus a run
+  // loop needs to be spinned.
+  base::RunLoop().RunUntilIdle();
+  // When adding observer, OnWallpaperColorsChanged() is fired so that we start
+  // with count equals 1.
+  EXPECT_EQ(1, observer.wallpaper_colors_changed_count());
+
+  // Enable shelf coloring will set a customized wallpaper image and change
+  // session state to ACTIVE, which will trigger wallpaper colors calculation.
+  EnableShelfColoring();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(2, observer.wallpaper_colors_changed_count());
 }
 
 }  // namespace ash

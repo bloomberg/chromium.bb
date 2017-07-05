@@ -8,6 +8,7 @@ component("wallpaper") {
     "wallpaper_color_calculator.h",
     "wallpaper_color_calculator_observer.h",
     "wallpaper_color_extraction_result.h",
+    "wallpaper_color_profile.h",
     "wallpaper_files_id.cc",
     "wallpaper_files_id.h",
     "wallpaper_layout.h",

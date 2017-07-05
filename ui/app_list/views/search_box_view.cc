@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
+#include "components/wallpaper/wallpaper_color_profile.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_model.h"
@@ -26,6 +27,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/shadow_value.h"
@@ -39,6 +41,8 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/shadow_border.h"
 #include "ui/views/widget/widget.h"
+
+using wallpaper::ColorProfileType;
 
 namespace app_list {
 
@@ -62,14 +66,17 @@ constexpr int kMicIconSize = 24;
 constexpr SkColor kDefaultSearchboxColor =
     SkColorSetARGBMacro(0xDE, 0x00, 0x00, 0x00);
 
+constexpr int kLightVibrantBlendAlpha = 0xB3;
+
 // A background that paints a solid white rounded rect with a thin grey border.
 class SearchBoxBackground : public views::Background {
  public:
-  SearchBoxBackground()
+  explicit SearchBoxBackground(SkColor color)
       : background_border_corner_radius_(
             features::IsFullscreenAppListEnabled()
                 ? kBackgroundBorderCornerRadiusFullscreen
-                : kBackgroundBorderCornerRadius) {}
+                : kBackgroundBorderCornerRadius),
+        color_(color) {}
   ~SearchBoxBackground() override {}
 
  private:
@@ -79,11 +86,12 @@ class SearchBoxBackground : public views::Background {
 
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
-    flags.setColor(kSearchBoxBackgroundDefault);
+    flags.setColor(color_);
     canvas->DrawRoundRect(bounds, background_border_corner_radius_, flags);
   }
 
   const int background_border_corner_radius_;
+  const SkColor color_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchBoxBackground);
 };
@@ -156,7 +164,8 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
   AddChildView(content_container_);
 
   SetShadow(GetShadowForZHeight(2));
-  content_container_->SetBackground(base::MakeUnique<SearchBoxBackground>());
+  content_container_->SetBackground(
+      base::MakeUnique<SearchBoxBackground>(kSearchBoxBackgroundDefault));
 
   views::BoxLayout* layout = new views::BoxLayout(
       views::BoxLayout::kHorizontal, gfx::Insets(0, kPadding),
@@ -216,6 +225,7 @@ void SearchBoxView::ModelChanged() {
   model_->search_box()->AddObserver(this);
   SpeechRecognitionButtonPropChanged();
   HintTextChanged();
+  WallpaperProminentColorsChanged();
 }
 
 bool SearchBoxView::HasSearch() const {
@@ -496,6 +506,46 @@ void SearchBoxView::SelectionModelChanged() {
 void SearchBoxView::Update() {
   search_box_->SetText(model_->search_box()->text());
   NotifyQueryChanged();
+}
+
+void SearchBoxView::WallpaperProminentColorsChanged() {
+  if (!is_fullscreen_app_list_enabled_)
+    return;
+
+  const std::vector<SkColor> prominent_colors =
+      model_->search_box()->wallpaper_prominent_colors();
+  if (prominent_colors.empty())
+    return;
+
+  DCHECK_EQ(static_cast<size_t>(ColorProfileType::NUM_OF_COLOR_PROFILES),
+            prominent_colors.size());
+  const SkColor dark_muted =
+      prominent_colors[static_cast<int>(ColorProfileType::DARK_MUTED)];
+  const bool dark_muted_available = SK_ColorTRANSPARENT != dark_muted;
+  google_icon_->SetImage(gfx::CreateVectorIcon(
+      kIcGoogleBlackIcon, kGoogleIconSize,
+      dark_muted_available ? dark_muted : kDefaultSearchboxColor));
+  speech_button_->SetImage(
+      views::Button::STATE_NORMAL,
+      gfx::CreateVectorIcon(
+          kIcMicBlackIcon, kMicIconSize,
+          dark_muted_available ? dark_muted : kDefaultSearchboxColor));
+  search_box_->set_placeholder_text_color(
+      dark_muted_available ? dark_muted : kDefaultSearchboxColor);
+
+  const SkColor light_vibrant =
+      prominent_colors[static_cast<int>(ColorProfileType::LIGHT_VIBRANT)];
+  const SkColor light_vibrant_mixed = color_utils::AlphaBlend(
+      SK_ColorWHITE, light_vibrant, kLightVibrantBlendAlpha);
+  const bool light_vibrant_available = SK_ColorTRANSPARENT != light_vibrant;
+  content_container_->SetBackground(base::MakeUnique<SearchBoxBackground>(
+      light_vibrant_available ? light_vibrant_mixed
+                              : kSearchBoxBackgroundDefault));
+  search_box_->SetBackgroundColor(light_vibrant_available
+                                      ? light_vibrant_mixed
+                                      : kSearchBoxBackgroundDefault);
+
+  SchedulePaint();
 }
 
 void SearchBoxView::OnSpeechRecognitionStateChanged(

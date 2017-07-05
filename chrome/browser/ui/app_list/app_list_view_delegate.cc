@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include "ash/public/interfaces/constants.mojom.h"
 #include "base/command_line.h"
 #include "base/metrics/user_metrics.h"
 #include "base/profiler/scoped_tracker.h"
@@ -38,11 +39,13 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/speech_recognition_session_preamble.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/service_manager_connection.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/launcher_page_info.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/search_box_model.h"
 #include "ui/app_list/search_controller.h"
@@ -105,9 +108,11 @@ void GetCustomLauncherPageUrls(content::BrowserContext* browser_context,
 
 AppListViewDelegate::AppListViewDelegate(AppListControllerDelegate* controller)
     : controller_(controller),
-      profile_(NULL),
-      model_(NULL),
-      template_url_service_observer_(this) {
+      profile_(nullptr),
+      model_(nullptr),
+      template_url_service_observer_(this),
+      observer_binding_(this),
+      weak_ptr_factory_(this) {
   CHECK(controller_);
   speech_ui_.reset(new app_list::SpeechUIModel);
 
@@ -127,6 +132,13 @@ AppListViewDelegate::AppListViewDelegate(AppListControllerDelegate* controller)
   registrar_.Add(this,
                  chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
+
+  content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->BindInterface(ash::mojom::kServiceName, &wallpaper_controller_ptr_);
+  ash::mojom::WallpaperObserverAssociatedPtrInfo ptr_info;
+  observer_binding_.Bind(mojo::MakeRequest(&ptr_info));
+  wallpaper_controller_ptr_->AddObserver(std::move(ptr_info));
 }
 
 AppListViewDelegate::~AppListViewDelegate() {
@@ -183,6 +195,12 @@ void AppListViewDelegate::SetProfile(Profile* new_profile) {
     model_ = app_list::AppListSyncableServiceFactory::GetForProfile(profile_)
                  ->GetModel();
 
+    // After |model_| is initialized, make a GetWallpaperColors mojo call to set
+    // wallpaper colors for |model_|.
+    wallpaper_controller_ptr_->GetWallpaperColors(
+        base::Bind(&AppListViewDelegate::OnGetWallpaperColorsCallback,
+                   weak_ptr_factory_.GetWeakPtr()));
+
     app_sync_ui_state_watcher_.reset(
         new AppSyncUIStateWatcher(profile_, model_));
 
@@ -193,6 +211,11 @@ void AppListViewDelegate::SetProfile(Profile* new_profile) {
 
   // Clear search query.
   model_->search_box()->Update(base::string16(), false);
+}
+
+void AppListViewDelegate::OnGetWallpaperColorsCallback(
+    const std::vector<SkColor>& colors) {
+  OnWallpaperColorsChanged(colors);
 }
 
 void AppListViewDelegate::SetUpSearchUI() {
@@ -239,6 +262,14 @@ void AppListViewDelegate::SetUpCustomLauncherPages() {
   launcher_page_event_dispatcher_.reset(
       new app_list::LauncherPageEventDispatcher(profile_,
                                                 first_launcher_page_app_id));
+}
+
+void AppListViewDelegate::OnWallpaperColorsChanged(
+    const std::vector<SkColor>& prominent_colors) {
+  if (!model_)
+    return;
+
+  model_->search_box()->SetWallpaperProminentColors(prominent_colors);
 }
 
 void AppListViewDelegate::OnHotwordStateChanged(bool started) {

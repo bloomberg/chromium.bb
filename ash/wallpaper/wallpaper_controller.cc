@@ -23,6 +23,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task_scheduler/post_task.h"
 #include "components/wallpaper/wallpaper_color_calculator.h"
+#include "components/wallpaper/wallpaper_color_profile.h"
 #include "components/wallpaper/wallpaper_resizer.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
@@ -34,6 +35,7 @@
 using color_utils::ColorProfile;
 using color_utils::LumaRange;
 using color_utils::SaturationRange;
+using wallpaper::ColorProfileType;
 
 namespace ash {
 
@@ -44,17 +46,6 @@ constexpr int kWallpaperReloadDelayMs = 100;
 
 // How long to wait for resizing of the the wallpaper.
 constexpr int kCompositorLockTimeoutMs = 750;
-
-// This enum is used to get the corresponding prominent color from the
-// calculation results.
-enum ColorProfileIndex {
-  COLOR_PROFILE_INDEX_DARK_VIBRANT = 0,
-  COLOR_PROFILE_INDEX_NORMAL_VIBRANT,
-  COLOR_PROFILE_INDEX_LIGHT_VIBRANT,
-  COLOR_PROFILE_INDEX_DARK_MUTED,
-  COLOR_PROFILE_INDEX_NORMAL_MUTED,
-  COLOR_PROFILE_INDEX_LIGHT_MUTED,
-};
 
 // Returns true if a color should be extracted from the wallpaper based on the
 // command kAshShelfColor line arg.
@@ -90,30 +81,30 @@ std::vector<ColorProfile> GetProminentColorProfiles() {
           ColorProfile(LumaRange::LIGHT, SaturationRange::MUTED)};
 }
 
-// Gets the corresponding color profile index based on the given
+// Gets the corresponding color profile type based on the given
 // |color_profile|.
-ColorProfileIndex GetColorProfileIndex(ColorProfile color_profile) {
+ColorProfileType GetColorProfileType(ColorProfile color_profile) {
   if (color_profile.saturation == SaturationRange::VIBRANT) {
     switch (color_profile.luma) {
       case LumaRange::DARK:
-        return COLOR_PROFILE_INDEX_DARK_VIBRANT;
+        return ColorProfileType::DARK_VIBRANT;
       case LumaRange::NORMAL:
-        return COLOR_PROFILE_INDEX_NORMAL_VIBRANT;
+        return ColorProfileType::NORMAL_VIBRANT;
       case LumaRange::LIGHT:
-        return COLOR_PROFILE_INDEX_LIGHT_VIBRANT;
+        return ColorProfileType::LIGHT_VIBRANT;
     }
   } else {
     switch (color_profile.luma) {
       case LumaRange::DARK:
-        return COLOR_PROFILE_INDEX_DARK_MUTED;
+        return ColorProfileType::DARK_MUTED;
       case LumaRange::NORMAL:
-        return COLOR_PROFILE_INDEX_NORMAL_MUTED;
+        return ColorProfileType::NORMAL_MUTED;
       case LumaRange::LIGHT:
-        return COLOR_PROFILE_INDEX_LIGHT_MUTED;
+        return ColorProfileType::LIGHT_MUTED;
     }
   }
   NOTREACHED();
-  return COLOR_PROFILE_INDEX_DARK_MUTED;
+  return ColorProfileType::DARK_MUTED;
 }
 
 }  // namespace
@@ -173,8 +164,8 @@ void WallpaperController::RemoveObserver(
 
 SkColor WallpaperController::GetProminentColor(
     ColorProfile color_profile) const {
-  ColorProfileIndex index = GetColorProfileIndex(color_profile);
-  return prominent_colors_[index];
+  ColorProfileType type = GetColorProfileType(color_profile);
+  return prominent_colors_[static_cast<int>(type)];
 }
 
 wallpaper::WallpaperLayout WallpaperController::GetWallpaperLayout() const {
@@ -305,6 +296,14 @@ void WallpaperController::OpenSetWallpaperPage() {
   }
 }
 
+void WallpaperController::AddObserver(
+    mojom::WallpaperObserverAssociatedPtrInfo observer) {
+  mojom::WallpaperObserverAssociatedPtr observer_ptr;
+  observer_ptr.Bind(std::move(observer));
+  observer_ptr->OnWallpaperColorsChanged(prominent_colors_);
+  mojo_observers_.AddPtr(std::move(observer_ptr));
+}
+
 void WallpaperController::SetWallpaperPicker(mojom::WallpaperPickerPtr picker) {
   wallpaper_picker_ = std::move(picker);
 }
@@ -315,6 +314,11 @@ void WallpaperController::SetWallpaper(const SkBitmap& wallpaper,
     return;
 
   SetWallpaperImage(gfx::ImageSkia::CreateFrom1xBitmap(wallpaper), layout);
+}
+
+void WallpaperController::GetWallpaperColors(
+    GetWallpaperColorsCallback callback) {
+  std::move(callback).Run(prominent_colors_);
 }
 
 void WallpaperController::OnWallpaperResized() {
@@ -403,6 +407,9 @@ void WallpaperController::SetProminentColors(
   prominent_colors_ = colors;
   for (auto& observer : observers_)
     observer.OnWallpaperColorsChanged();
+  mojo_observers_.ForAllPtrs([this](mojom::WallpaperObserver* observer) {
+    observer->OnWallpaperColorsChanged(prominent_colors_);
+  });
 }
 
 void WallpaperController::CalculateWallpaperColors() {
