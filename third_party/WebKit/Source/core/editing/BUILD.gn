@@ -287,6 +287,13 @@ blink_core_sources("editing") {
     sources += [ "commands/SmartReplaceCF.cpp" ]
   }
 
+  if (is_mac) {
+    jumbo_excluded_sources = [
+      # Using "using blink" in global scope.
+      "WebSubstringUtil.mm",
+    ]
+  }
+
   configs += [
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     "//build/config/compiler:no_size_t_to_int_warning",
