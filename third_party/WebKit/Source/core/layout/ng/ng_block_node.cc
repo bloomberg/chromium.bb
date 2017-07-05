@@ -255,6 +255,22 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
   intrinsic_logical_height -= border_scrollbar_padding.BlockSum();
   box_->SetIntrinsicContentLogicalHeight(intrinsic_logical_height);
 
+  // LayoutBox::Margin*() should be used value, while we set computed value
+  // here. This is not entirely correct, but these values are not used for
+  // layout purpose.
+  // BaselinePosition() relies on margins set to the box, and computed value is
+  // good enough for it to work correctly.
+  // Set this only for atomic inlines, or we end up adding margins twice.
+  if (box_->IsAtomicInlineLevel()) {
+    NGBoxStrut margins =
+        ComputeMargins(constraint_space, Style(),
+                       constraint_space.WritingMode(), Style().Direction());
+    box_->SetMarginBefore(margins.block_start);
+    box_->SetMarginAfter(margins.block_end);
+    box_->SetMarginStart(margins.inline_start);
+    box_->SetMarginEnd(margins.inline_end);
+  }
+
   // TODO(ikilpatrick) is this the right thing to do?
   if (box_->IsLayoutBlockFlow()) {
     ToLayoutBlockFlow(box_)->RemoveFloatingObjects();

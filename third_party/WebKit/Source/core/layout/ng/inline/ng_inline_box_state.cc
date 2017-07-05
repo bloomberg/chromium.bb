@@ -86,7 +86,8 @@ NGInlineBoxState* NGInlineLayoutStateStack::OnOpenTag(
 
   // Compute box properties regardless of needs_box_fragment since close tag may
   // also set needs_box_fragment.
-  box->line_left_position = position + item_result.margins.inline_start;
+  box->line_left_position =
+      position + item_result.margins.LineLeft(item.Style()->Direction());
   box->borders_paddings_block_start = item_result.borders_paddings_block_start;
   box->borders_paddings_block_end = item_result.borders_paddings_block_end;
   return box;
@@ -155,7 +156,8 @@ void NGInlineBoxState::SetLineRightForBoxFragment(
     const NGInlineItemResult& item_result,
     LayoutUnit position) {
   DCHECK(needs_box_fragment);
-  line_right_position = position - item_result.margins.inline_end;
+  line_right_position =
+      position - item_result.margins.LineRight(item.Style()->Direction());
   // We have right edge on close tag, and if the box does not have a
   // continuation.
   // TODO(kojii): Needs review when we change SplitInlines().
