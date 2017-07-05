@@ -43,6 +43,7 @@ class ServiceWorkerUtils {
                                           std::string* error_message);
 
   static bool IsMojoForServiceWorkerEnabled();
+  static bool IsScriptStreamingEnabled();
 
   // Returns true if all members of |urls| have the same origin, and
   // OriginCanAccessServiceWorkers is true for this origin.
