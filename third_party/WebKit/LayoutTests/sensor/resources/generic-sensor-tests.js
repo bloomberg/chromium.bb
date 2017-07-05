@@ -411,4 +411,31 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
     sensor.mockSensorProvider.setContinuousReportingMode();
     return checkFrequencyHintWorks(sensor);
   }, prefix + 'Test that frequency hint works (continuous reporting).');
+
+  promise_test(() => {
+    return new Promise((resolve,reject) => {
+      let iframe = document.createElement('iframe');
+      iframe.srcdoc = '<script>' +
+                      '  window.onmessage = message => {' +
+                      '    if (message.data === "LOADED") {' +
+                      '      try {' +
+                      '        new ' + sensorType.name + '();' +
+                      '        parent.postMessage("FAIL", "*");' +
+                      '      } catch (e) {' +
+                      '        parent.postMessage("PASS", "*");' +
+                      '      }' +
+                      '    }' +
+                      '   };' +
+                      '<\/script>';
+      iframe.onload = () => iframe.contentWindow.postMessage('LOADED', '*');
+      document.body.appendChild(iframe);
+      window.onmessage = message => {
+        if (message.data == 'PASS') {
+          resolve();
+        } else if (message.data == 'FAIL') {
+          reject();
+        }
+      }
+    });
+  }, prefix + 'Test that sensor cannot be constructed within iframe.');
 }
