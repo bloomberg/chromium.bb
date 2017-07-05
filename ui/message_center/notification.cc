@@ -32,19 +32,7 @@ ButtonInfo::~ButtonInfo() = default;
 
 ButtonInfo& ButtonInfo::operator=(const ButtonInfo& other) = default;
 
-RichNotificationData::RichNotificationData()
-    : priority(DEFAULT_PRIORITY),
-      never_timeout(false),
-      timestamp(base::Time::Now()),
-      context_message(base::string16()),
-      progress(0),
-      should_make_spoken_feedback_for_popup_updates(true),
-      clickable(true),
-#if defined(OS_CHROMEOS)
-      pinned(false),
-#endif  // defined(OS_CHROMEOS)
-      renotify(false),
-      silent(false) {}
+RichNotificationData::RichNotificationData() : timestamp(base::Time::Now()) {}
 
 RichNotificationData::RichNotificationData(const RichNotificationData& other)
     : priority(other.priority),
@@ -67,9 +55,9 @@ RichNotificationData::RichNotificationData(const RichNotificationData& other)
       silent(other.silent),
       accessible_name(other.accessible_name) {}
 
-RichNotificationData::~RichNotificationData() {}
+RichNotificationData::~RichNotificationData() = default;
 
-Notification::Notification() {}
+Notification::Notification() = default;
 
 Notification::Notification(NotificationType type,
                            const std::string& id,
@@ -143,7 +131,7 @@ Notification& Notification::operator=(const Notification& other) {
   return *this;
 }
 
-Notification::~Notification() {}
+Notification::~Notification() = default;
 
 bool Notification::IsRead() const {
   return is_read_ || optional_fields_.priority == MIN_PRIORITY;
