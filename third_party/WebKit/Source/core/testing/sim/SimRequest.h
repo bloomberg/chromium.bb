@@ -12,7 +12,6 @@
 namespace blink {
 
 class SimNetwork;
-class WebURLLoader;
 class WebURLLoaderClient;
 
 // Simulates a single request for a resource from the server. Requires a
@@ -51,7 +50,6 @@ class SimRequest final {
   void DidFail(const WebURLError&);
 
   String url_;
-  WebURLLoader* loader_;
   WebURLResponse response_;
   WebURLError error_;
   WebURLLoaderClient* client_;
