@@ -36,17 +36,26 @@ class OfflinePageSuggestedArticlesObserverTest : public testing::Test {
  public:
   OfflinePageSuggestedArticlesObserverTest()
       : task_runner_(new base::TestSimpleTaskRunner),
-        task_runner_handle_(task_runner_) {
+        task_runner_handle_(task_runner_) {}
+
+  void SetUp() override {
+    prefetch_service_test_taco_ = base::MakeUnique<PrefetchServiceTestTaco>();
     test_prefetch_dispatcher_ = new TestPrefetchDispatcher();
-    prefetch_service_test_taco_.SetPrefetchDispatcher(
+    prefetch_service_test_taco_->SetPrefetchDispatcher(
         base::WrapUnique(test_prefetch_dispatcher_));
-    prefetch_service_test_taco_.SetSuggestedArticlesObserver(
+    prefetch_service_test_taco_->SetSuggestedArticlesObserver(
         base::MakeUnique<SuggestedArticlesObserver>());
-    prefetch_service_test_taco_.CreatePrefetchService();
+    prefetch_service_test_taco_->CreatePrefetchService();
+  }
+
+  void TearDown() override {
+    // Ensure the store can be properly disposed off.
+    prefetch_service_test_taco_.reset();
+    task_runner_->RunUntilIdle();
   }
 
   SuggestedArticlesObserver* observer() {
-    return prefetch_service_test_taco_.prefetch_service()
+    return prefetch_service_test_taco_->prefetch_service()
         ->GetSuggestedArticlesObserver();
   }
 
@@ -61,7 +70,7 @@ class OfflinePageSuggestedArticlesObserverTest : public testing::Test {
  private:
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
-  PrefetchServiceTestTaco prefetch_service_test_taco_;
+  std::unique_ptr<PrefetchServiceTestTaco> prefetch_service_test_taco_;
 
   // Owned by the PrefetchServiceTestTaco.
   TestPrefetchDispatcher* test_prefetch_dispatcher_;

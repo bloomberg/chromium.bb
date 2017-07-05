@@ -141,14 +141,21 @@ class PrefetchDownloaderTest : public testing::Test {
         task_runner_handle_(task_runner_) {}
 
   void SetUp() override {
+    prefetch_service_taco_.reset(new PrefetchServiceTestTaco);
+
     auto downloader =
         base::MakeUnique<PrefetchDownloader>(&download_service_, kTestChannel);
     download_service_.set_prefetch_downloader(downloader.get());
-    prefetch_service_taco_.SetPrefetchDownloader(std::move(downloader));
+    prefetch_service_taco_->SetPrefetchDownloader(std::move(downloader));
 
-    prefetch_service_taco_.CreatePrefetchService();
+    prefetch_service_taco_->CreatePrefetchService();
     GetPrefetchDownloader()->SetCompletedCallback(base::Bind(
         &PrefetchDownloaderTest::OnDownloadCompleted, base::Unretained(this)));
+  }
+
+  void TearDown() override {
+    prefetch_service_taco_.reset();
+    PumpLoop();
   }
 
   void SetDownloadServiceReady(bool ready) {
@@ -184,13 +191,13 @@ class PrefetchDownloaderTest : public testing::Test {
   }
 
   PrefetchDownloader* GetPrefetchDownloader() const {
-    return prefetch_service_taco_.prefetch_service()->GetPrefetchDownloader();
+    return prefetch_service_taco_->prefetch_service()->GetPrefetchDownloader();
   }
 
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
   download::TestDownloadService download_service_;
-  PrefetchServiceTestTaco prefetch_service_taco_;
+  std::unique_ptr<PrefetchServiceTestTaco> prefetch_service_taco_;
   std::vector<PrefetchDownloadResult> completed_downloads_;
 };
 
@@ -209,6 +216,7 @@ TEST_F(PrefetchDownloaderTest, DownloadParams) {
   std::string alt_value;
   EXPECT_TRUE(net::GetValueForKeyInQuery(download_url, "alt", &alt_value));
   EXPECT_EQ("media", alt_value);
+  PumpLoop();
 }
 
 TEST_F(PrefetchDownloaderTest, StartDownloadBeforeServiceReady) {

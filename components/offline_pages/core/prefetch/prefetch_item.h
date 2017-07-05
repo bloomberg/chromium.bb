@@ -28,6 +28,10 @@ struct PrefetchItem {
   bool operator==(const PrefetchItem& other) const;
   bool operator!=(const PrefetchItem& other) const;
 
+  // Primary key that stays consistent between prefetch item, request and
+  // offline page.
+  int64_t offline_id = 0;
+
   // Primary key/ID for this prefetch item (See |base::GenerateGUID()|). This
   // value will be reused when communicating with other systems accepting GUID
   // identifiers for operations linked to this item.

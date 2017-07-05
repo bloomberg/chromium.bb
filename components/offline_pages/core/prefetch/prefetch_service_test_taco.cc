@@ -13,6 +13,8 @@
 #include "components/offline_pages/core/prefetch/prefetch_downloader.h"
 #include "components/offline_pages/core/prefetch/prefetch_gcm_handler.h"
 #include "components/offline_pages/core/prefetch/prefetch_service_impl.h"
+#include "components/offline_pages/core/prefetch/store/prefetch_store.h"
+#include "components/offline_pages/core/prefetch/store/prefetch_store_test_util.h"
 #include "components/offline_pages/core/prefetch/suggested_articles_observer.h"
 #include "components/offline_pages/core/prefetch/test_offline_metrics_collector.h"
 #include "components/offline_pages/core/prefetch/test_prefetch_dispatcher.h"
@@ -31,6 +33,10 @@ PrefetchServiceTestTaco::PrefetchServiceTestTaco() {
   gcm_handler_ = base::MakeUnique<TestPrefetchGCMHandler>();
   network_request_factory_ =
       base::MakeUnique<TestPrefetchNetworkRequestFactory>();
+
+  PrefetchStoreTestUtil store_test_util;
+  store_test_util.BuildStoreInMemory();
+  prefetch_store_sql_ = store_test_util.ReleaseStore();
 
   suggested_articles_observer_ = base::MakeUnique<SuggestedArticlesObserver>();
   prefetch_downloader_ = base::WrapUnique(new PrefetchDownloader(kTestChannel));
@@ -65,6 +71,12 @@ void PrefetchServiceTestTaco::SetPrefetchNetworkRequestFactory(
   network_request_factory_ = std::move(network_request_factory);
 }
 
+void PrefetchServiceTestTaco::SetPrefetchStoreSql(
+    std::unique_ptr<PrefetchStore> prefetch_store_sql) {
+  CHECK(!prefetch_service_);
+  prefetch_store_sql_ = std::move(prefetch_store_sql);
+}
+
 void PrefetchServiceTestTaco::SetSuggestedArticlesObserver(
     std::unique_ptr<SuggestedArticlesObserver> suggested_articles_observer) {
   CHECK(!prefetch_service_);
@@ -79,12 +91,14 @@ void PrefetchServiceTestTaco::SetPrefetchDownloader(
 
 void PrefetchServiceTestTaco::CreatePrefetchService() {
   CHECK(metrics_collector_ && dispatcher_ && gcm_handler_ &&
-        suggested_articles_observer_ && network_request_factory_ &&
-        prefetch_downloader_);
+        network_request_factory_ && prefetch_store_sql_ &&
+        suggested_articles_observer_ && prefetch_downloader_);
+
   prefetch_service_ = base::MakeUnique<PrefetchServiceImpl>(
       std::move(metrics_collector_), std::move(dispatcher_),
       std::move(gcm_handler_), std::move(network_request_factory_),
-      std::move(suggested_articles_observer_), std::move(prefetch_downloader_));
+      std::move(prefetch_store_sql_), std::move(suggested_articles_observer_),
+      std::move(prefetch_downloader_));
 }
 
 std::unique_ptr<PrefetchService>
