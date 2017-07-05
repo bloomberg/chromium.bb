@@ -24,6 +24,7 @@
 
 #include "platform/bindings/V8ObjectConstructor.h"
 
+#include "platform/bindings/RuntimeCallStats.h"
 #include "platform/bindings/V8Binding.h"
 #include "platform/bindings/V8ThrowException.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
@@ -37,6 +38,7 @@ v8::MaybeLocal<v8::Object> V8ObjectConstructor::NewInstance(
     v8::Local<v8::Value> argv[]) {
   DCHECK(!function.IsEmpty());
   TRACE_EVENT0("v8", "v8.newInstance");
+  RUNTIME_CALL_TIMER_SCOPE(isolate, RuntimeCallStats::CounterId::kV8);
   ConstructorMode constructor_mode(isolate);
   v8::MicrotasksScope microtasks_scope(
       isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);

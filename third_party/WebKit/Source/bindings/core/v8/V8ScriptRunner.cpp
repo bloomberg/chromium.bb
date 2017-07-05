@@ -555,6 +555,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::RunCompiledScript(
                TRACE_STR_COPY(*v8::String::Utf8Value(
                    script->GetUnboundScript()->GetScriptName())));
   RuntimeCallStatsScopedTracer rcs_scoped_tracer(isolate);
+  RUNTIME_CALL_TIMER_SCOPE(isolate, RuntimeCallStats::CounterId::kV8);
 
   if (v8::MicrotasksScope::GetCurrentDepth(isolate) >= kMaxRecursionDepth)
     return ThrowStackOverflowExceptionIfNeeded(isolate);
@@ -592,6 +593,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::CompileAndRunInternalScript(
 
   TRACE_EVENT0("v8", "v8.run");
   RuntimeCallStatsScopedTracer rcs_scoped_tracer(isolate);
+  RUNTIME_CALL_TIMER_SCOPE(isolate, RuntimeCallStats::CounterId::kV8);
   v8::MicrotasksScope microtasks_scope(
       isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
   v8::MaybeLocal<v8::Value> result = script->Run(isolate->GetCurrentContext());
@@ -604,6 +606,8 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::RunCompiledInternalScript(
     v8::Local<v8::Script> script) {
   TRACE_EVENT0("v8", "v8.run");
   RuntimeCallStatsScopedTracer rcs_scoped_tracer(isolate);
+  RUNTIME_CALL_TIMER_SCOPE(isolate, RuntimeCallStats::CounterId::kV8);
+
   v8::MicrotasksScope microtasks_scope(
       isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
   v8::MaybeLocal<v8::Value> result = script->Run(isolate->GetCurrentContext());
@@ -618,6 +622,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::CallAsConstructor(
     int argc,
     v8::Local<v8::Value> argv[]) {
   TRACE_EVENT0("v8", "v8.callAsConstructor");
+  RUNTIME_CALL_TIMER_SCOPE(isolate, RuntimeCallStats::CounterId::kV8);
 
   int depth = v8::MicrotasksScope::GetCurrentDepth(isolate);
   if (depth >= kMaxRecursionDepth)
@@ -659,6 +664,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::CallFunction(
   ScopedFrameBlamer frame_blamer(frame);
   TRACE_EVENT0("v8", "v8.callFunction");
   RuntimeCallStatsScopedTracer rcs_scoped_tracer(isolate);
+  RUNTIME_CALL_TIMER_SCOPE(isolate, RuntimeCallStats::CounterId::kV8);
 
   int depth = v8::MicrotasksScope::GetCurrentDepth(isolate);
   if (depth >= kMaxRecursionDepth)
@@ -694,6 +700,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::CallInternalFunction(
     v8::Isolate* isolate) {
   TRACE_EVENT0("v8", "v8.callFunction");
   RuntimeCallStatsScopedTracer rcs_scoped_tracer(isolate);
+  RUNTIME_CALL_TIMER_SCOPE(isolate, RuntimeCallStats::CounterId::kV8);
 
   CHECK(!ThreadState::Current()->IsWrapperTracingForbidden());
   v8::MicrotasksScope microtasks_scope(
@@ -709,6 +716,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::EvaluateModule(
     v8::Local<v8::Context> context,
     v8::Isolate* isolate) {
   TRACE_EVENT0("v8", "v8.evaluateModule");
+  RUNTIME_CALL_TIMER_SCOPE(isolate, RuntimeCallStats::CounterId::kV8);
   v8::MicrotasksScope microtasks_scope(isolate,
                                        v8::MicrotasksScope::kRunMicrotasks);
   return module->Evaluate(context);

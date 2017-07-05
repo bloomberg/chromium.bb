@@ -186,6 +186,7 @@ class PLATFORM_EXPORT RuntimeCallStats {
   V(UpdateStyle)                                                        \
   V(SetReturnValueFromStringSlow)                                       \
   V(V8ExternalStringSlow)                                               \
+  V(V8)                                                                 \
   BINDINGS_METHOD(V, EventTargetDispatchEvent)                          \
   BINDINGS_METHOD(V, HTMLElementClick)                                  \
   BINDINGS_METHOD(V, WindowSetTimeout)                                  \
@@ -262,9 +263,15 @@ class PLATFORM_EXPORT RuntimeCallTimerScope {
   RuntimeCallTimer timer_;
 };
 
+// Creates scoped begin and end trace events. The end trace event also contains
+// a dump of RuntimeCallStats collected to that point (and the stats are reset
+// before sending a begin event). Use this to define regions where
+// RuntimeCallStats data is collected and dumped through tracing.
+// NOTE: Nested scoped tracers will not send events of their own, the stats
+// collected in their scopes will be dumped by the root tracer scope.
 class PLATFORM_EXPORT RuntimeCallStatsScopedTracer {
  public:
-  RuntimeCallStatsScopedTracer(v8::Isolate* isolate) {
+  explicit RuntimeCallStatsScopedTracer(v8::Isolate* isolate) {
     bool category_group_enabled;
     TRACE_EVENT_CATEGORY_GROUP_ENABLED(s_category_group_,
                                        &category_group_enabled);
