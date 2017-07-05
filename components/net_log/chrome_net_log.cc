@@ -24,41 +24,7 @@
 
 namespace net_log {
 
-ChromeNetLog::ChromeNetLog(
-    const base::FilePath& log_file,
-    net::NetLogCaptureMode log_file_mode,
-    const base::CommandLine::StringType& command_line_string,
-    const std::string& channel_string)
-    : net_log_file_writer_(new NetLogFileWriter(this)) {
-  if (!log_file.empty()) {
-    // Much like logging.h, bypass threading restrictions by using fopen
-    // directly.  Have to write on a thread that's shutdown to handle events on
-    // shutdown properly, and posting events to another thread as they occur
-    // would result in an unbounded buffer size, so not much can be gained by
-    // doing this on another thread.  It's only used when debugging Chrome, so
-    // performance is not a big concern.
-    base::ScopedFILE file;
-#if defined(OS_WIN)
-    file.reset(_wfopen(log_file.value().c_str(), L"w"));
-#elif defined(OS_POSIX)
-    file.reset(fopen(log_file.value().c_str(), "w"));
-#endif
-
-    if (!file) {
-      LOG(ERROR) << "Could not open file " << log_file.value()
-                 << " for net logging";
-    } else {
-      std::unique_ptr<base::Value> constants(
-          GetConstants(command_line_string, channel_string));
-      write_to_file_observer_.reset(new net::WriteToFileNetLogObserver());
-
-      write_to_file_observer_->set_capture_mode(log_file_mode);
-
-      write_to_file_observer_->StartObserving(this, std::move(file),
-                                              constants.get(), nullptr);
-    }
-  }
-
+ChromeNetLog::ChromeNetLog() {
   trace_net_log_observer_.reset(new net::TraceNetLogObserver());
   trace_net_log_observer_->WatchForTraceStart(this);
 }
@@ -70,6 +36,43 @@ ChromeNetLog::~ChromeNetLog() {
     write_to_file_observer_->StopObserving(nullptr);
   if (trace_net_log_observer_)
     trace_net_log_observer_->StopWatchForTraceStart();
+}
+
+void ChromeNetLog::StartWritingToFile(
+    const base::FilePath& log_file,
+    net::NetLogCaptureMode log_file_mode,
+    const base::CommandLine::StringType& command_line_string,
+    const std::string& channel_string) {
+  DCHECK(!log_file.empty());
+
+  // TODO(716570): Use common code to write NetLog to file.
+
+  // Much like logging.h, bypass threading restrictions by using fopen
+  // directly.  Have to write on a thread that's shutdown to handle events on
+  // shutdown properly, and posting events to another thread as they occur
+  // would result in an unbounded buffer size, so not much can be gained by
+  // doing this on another thread.  It's only used when debugging Chrome, so
+  // performance is not a big concern.
+  base::ScopedFILE file;
+#if defined(OS_WIN)
+  file.reset(_wfopen(log_file.value().c_str(), L"w"));
+#elif defined(OS_POSIX)
+  file.reset(fopen(log_file.value().c_str(), "w"));
+#endif
+
+  if (!file) {
+    LOG(ERROR) << "Could not open file " << log_file.value()
+               << " for net logging";
+  } else {
+    std::unique_ptr<base::Value> constants(
+        GetConstants(command_line_string, channel_string));
+    write_to_file_observer_.reset(new net::WriteToFileNetLogObserver());
+
+    write_to_file_observer_->set_capture_mode(log_file_mode);
+
+    write_to_file_observer_->StartObserving(this, std::move(file),
+                                            constants.get(), nullptr);
+  }
 }
 
 NetLogFileWriter* ChromeNetLog::net_log_file_writer() {

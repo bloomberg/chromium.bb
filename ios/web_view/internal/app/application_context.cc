@@ -32,11 +32,7 @@ ApplicationContext::ApplicationContext()
     : local_state_task_runner_(JsonPrefStore::GetTaskRunnerForFile(
           GetLocalStatePath(),
           web::WebThread::GetBlockingPool())) {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-
-  net_log_ = base::MakeUnique<net_log::ChromeNetLog>(
-      base::FilePath(), net::NetLogCaptureMode::Default(),
-      command_line->GetCommandLineString(), std::string());
+  net_log_ = base::MakeUnique<net_log::ChromeNetLog>();
 
   SetApplicationLocale(l10n_util::GetLocaleOverride());
 }
