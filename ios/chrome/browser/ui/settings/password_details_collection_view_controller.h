@@ -5,18 +5,14 @@
 #ifndef IOS_CHROME_BROWSER_UI_SETTINGS_PASSWORD_DETAILS_COLLECTION_VIEW_CONTROLLER_H_
 #define IOS_CHROME_BROWSER_UI_SETTINGS_PASSWORD_DETAILS_COLLECTION_VIEW_CONTROLLER_H_
 
+#import "ios/chrome/browser/ui/settings/password_details_collection_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/settings/settings_root_collection_view_controller.h"
 
 namespace autofill {
 struct PasswordForm;
 }  // namespace autofill
+
 @protocol ReauthenticationProtocol;
-
-@protocol PasswordDetailsCollectionViewControllerDelegate<NSObject>
-
-- (void)deletePassword:(const autofill::PasswordForm&)passwordForm;
-
-@end
 
 @interface PasswordDetailsCollectionViewController
     : SettingsRootCollectionViewController
