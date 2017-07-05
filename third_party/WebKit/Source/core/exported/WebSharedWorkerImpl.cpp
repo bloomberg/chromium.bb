@@ -369,12 +369,11 @@ void WebSharedWorkerImpl::OnScriptLoaderFinished() {
 
   // SharedWorker can sometimes run tasks that are initiated by/associated with
   // a document's frame but these documents can be from a different process. So
-  // we intentionally populate the task runners with null document in order to
-  // use the thread's default task runner. Note that |m_document| should not be
-  // used as it's a dummy document for loading that doesn't represent the frame
-  // of any associated document.
-  ParentFrameTaskRunners* task_runners =
-      ParentFrameTaskRunners::Create(nullptr);
+  // we intentionally populate the task runners with default task runners of the
+  // main thread. Note that |m_document| should not be used as it's a dummy
+  // document for loading that doesn't represent the frame of any associated
+  // document.
+  ParentFrameTaskRunners* task_runners = ParentFrameTaskRunners::Create();
 
   reporting_proxy_ = new SharedWorkerReportingProxy(this, task_runners);
   worker_thread_ = WTF::MakeUnique<SharedWorkerThread>(

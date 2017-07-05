@@ -584,9 +584,9 @@ ServiceWorkerGlobalScopeProxy::ServiceWorkerGlobalScopeProxy(
       worker_global_scope_(nullptr) {
   // ServiceWorker can sometimes run tasks that are initiated by/associated with
   // a document's frame but these documents can be from a different process. So
-  // we intentionally populate the task runners with null document in order to
-  // use the thread's default task runner.
-  parent_frame_task_runners_ = ParentFrameTaskRunners::Create(nullptr);
+  // we intentionally populate the task runners with default task runners of the
+  // main thread.
+  parent_frame_task_runners_ = ParentFrameTaskRunners::Create();
 }
 
 void ServiceWorkerGlobalScopeProxy::Detach() {

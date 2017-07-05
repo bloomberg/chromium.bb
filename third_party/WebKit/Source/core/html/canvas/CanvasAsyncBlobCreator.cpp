@@ -194,7 +194,7 @@ CanvasAsyncBlobCreator::CanvasAsyncBlobCreator(DOMUint8ClampedArray* data,
   num_rows_completed_ = 0;
   if (document) {
     parent_frame_task_runner_ =
-        ParentFrameTaskRunners::Create(document->GetFrame());
+        ParentFrameTaskRunners::Create(*document->GetFrame());
   }
   if (script_promise_resolver_) {
     function_type_ = kOffscreenCanvasToBlobPromise;

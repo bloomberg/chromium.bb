@@ -57,7 +57,7 @@ class AudioWorkletGlobalScopeTest : public ::testing::Test {
             nullptr, kDontPauseWorkerGlobalScopeOnStart, nullptr, "",
             security_origin_.Get(), nullptr, kWebAddressSpaceLocal, nullptr,
             nullptr, WorkerV8Settings::Default()),
-        ParentFrameTaskRunners::Create(nullptr));
+        ParentFrameTaskRunners::Create());
     return thread;
   }
 

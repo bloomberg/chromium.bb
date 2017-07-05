@@ -12,17 +12,28 @@
 
 namespace blink {
 
+ParentFrameTaskRunners* ParentFrameTaskRunners::Create(LocalFrame& frame) {
+  DCHECK(frame.GetDocument());
+  DCHECK(frame.GetDocument()->IsContextThread());
+  DCHECK(IsMainThread());
+  return new ParentFrameTaskRunners(&frame);
+}
+
+ParentFrameTaskRunners* ParentFrameTaskRunners::Create() {
+  return new ParentFrameTaskRunners(nullptr);
+}
+
 ParentFrameTaskRunners::ParentFrameTaskRunners(LocalFrame* frame)
     : ContextLifecycleObserver(frame ? frame->GetDocument() : nullptr) {
-  if (frame && frame->GetDocument())
-    DCHECK(frame->GetDocument()->IsContextThread());
-
   // For now we only support very limited task types.
   for (auto type :
        {TaskType::kUnspecedTimer, TaskType::kUnspecedLoading,
         TaskType::kNetworking, TaskType::kPostedMessage,
         TaskType::kCanvasBlobSerialization, TaskType::kUnthrottled}) {
-    task_runners_.insert(type, TaskRunnerHelper::Get(type, frame));
+    auto task_runner =
+        frame ? TaskRunnerHelper::Get(type, frame)
+              : Platform::Current()->MainThread()->GetWebTaskRunner();
+    task_runners_.insert(type, std::move(task_runner));
   }
 }
 
