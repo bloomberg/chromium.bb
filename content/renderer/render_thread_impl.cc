@@ -2517,11 +2517,13 @@ void RenderThreadImpl::OnSyncMemoryPressure(
   v8::MemoryPressureLevel v8_memory_pressure_level =
       static_cast<v8::MemoryPressureLevel>(memory_pressure_level);
 
+#if !BUILDFLAG(ALLOW_CRITICAL_MEMORY_PRESSURE_HANDLING_IN_FOREGROUND)
   // In order to reduce performance impact, translate critical level to
-  // moderate level for foregroud renderer.
+  // moderate level for foreground renderer.
   if (!RendererIsHidden() &&
       v8_memory_pressure_level == v8::MemoryPressureLevel::kCritical)
     v8_memory_pressure_level = v8::MemoryPressureLevel::kModerate;
+#endif  // !BUILDFLAG(ALLOW_CRITICAL_MEMORY_PRESSURE_HANDLING_IN_FOREGROUND)
 
   blink::MainThreadIsolate()->MemoryPressureNotification(
       v8_memory_pressure_level);
