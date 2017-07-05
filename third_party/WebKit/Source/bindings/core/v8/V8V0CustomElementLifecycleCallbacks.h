@@ -33,7 +33,7 @@
 
 #include <memory>
 
-#include "core/dom/custom/V0CustomElementLifecycleCallbacks.h"
+#include "core/html/custom/V0CustomElementLifecycleCallbacks.h"
 #include "platform/bindings/ScopedPersistent.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/wtf/PassRefPtr.h"

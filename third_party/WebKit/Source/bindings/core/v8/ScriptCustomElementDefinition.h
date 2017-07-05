@@ -6,7 +6,7 @@
 #define ScriptCustomElementDefinition_h
 
 #include "core/CoreExport.h"
-#include "core/dom/custom/CustomElementDefinition.h"
+#include "core/html/custom/CustomElementDefinition.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/TraceWrapperV8Reference.h"
 #include "platform/wtf/Noncopyable.h"

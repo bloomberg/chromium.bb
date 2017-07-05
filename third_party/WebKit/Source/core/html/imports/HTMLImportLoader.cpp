@@ -30,16 +30,16 @@
 
 #include "core/html/imports/HTMLImportLoader.h"
 
+#include <memory>
 #include "core/dom/Document.h"
 #include "core/dom/DocumentParser.h"
 #include "core/dom/StyleEngine.h"
-#include "core/dom/custom/V0CustomElementSyncMicrotaskQueue.h"
 #include "core/html/HTMLDocument.h"
+#include "core/html/custom/V0CustomElementSyncMicrotaskQueue.h"
 #include "core/html/imports/HTMLImportChild.h"
 #include "core/html/imports/HTMLImportsController.h"
 #include "core/loader/DocumentWriter.h"
 #include "platform/network/ContentSecurityPolicyResponseHeaders.h"
-#include <memory>
 
 namespace blink {
 

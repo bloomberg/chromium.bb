@@ -34,8 +34,8 @@
 #include "core/dom/MutationRecord.h"
 #include "core/dom/StyleChangeReason.h"
 #include "core/dom/StyleEngine.h"
-#include "core/dom/custom/CustomElement.h"
-#include "core/dom/custom/CustomElementDefinition.h"
+#include "core/html/custom/CustomElement.h"
+#include "core/html/custom/CustomElementDefinition.h"
 #include "core/probe/CoreProbes.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
