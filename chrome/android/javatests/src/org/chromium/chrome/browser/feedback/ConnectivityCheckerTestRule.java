@@ -9,7 +9,7 @@ import android.support.test.InstrumentationRegistry;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
-import org.chromium.content.browser.test.NativeLibraryTestRule;
+import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.net.test.EmbeddedTestServer;
 
 /**
@@ -18,7 +18,7 @@ import org.chromium.net.test.EmbeddedTestServer;
  * It includes a {@link ConnectivityTestServer} which is set up and torn down automatically
  * for tests.
  */
-public class ConnectivityCheckerTestRule extends NativeLibraryTestRule {
+public class ConnectivityCheckerTestRule extends ChromeBrowserTestRule {
     public static final int TIMEOUT_MS = 5000;
 
     private EmbeddedTestServer mTestServer;
@@ -34,8 +34,11 @@ public class ConnectivityCheckerTestRule extends NativeLibraryTestRule {
             @Override
             public void evaluate() throws Throwable {
                 setUp();
-                base.evaluate();
-                tearDown();
+                try {
+                    base.evaluate();
+                } finally {
+                    tearDown();
+                }
             }
         }, description);
     }
@@ -57,7 +60,6 @@ public class ConnectivityCheckerTestRule extends NativeLibraryTestRule {
     }
 
     private void setUp() throws Exception {
-        loadNativeLibraryAndInitBrowserProcess();
         mTestServer = EmbeddedTestServer.createAndStartServer(
                 InstrumentationRegistry.getInstrumentation().getContext());
         mGenerated200Url = mTestServer.getURL("/echo?status=200");

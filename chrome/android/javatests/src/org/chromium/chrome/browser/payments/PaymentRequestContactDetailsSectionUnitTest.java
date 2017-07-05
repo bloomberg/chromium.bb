@@ -8,9 +8,9 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
@@ -19,8 +19,8 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.payments.ui.ContactDetailsSection;
 import org.chromium.chrome.browser.payments.ui.PaymentOption;
 import org.chromium.chrome.browser.payments.ui.SectionInformation;
-import org.chromium.chrome.test.util.ApplicationData;
-import org.chromium.content.browser.test.NativeLibraryTestRule;
+import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
+import org.chromium.chrome.browser.test.ClearAppDataTestRule;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,17 +31,11 @@ import java.util.List;
 @RunWith(BaseJUnit4ClassRunner.class)
 public class PaymentRequestContactDetailsSectionUnitTest {
     @Rule
-    public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
+    public final RuleChain mChain =
+            RuleChain.outerRule(new ClearAppDataTestRule()).around(new ChromeBrowserTestRule());
 
     private ContactEditor mContactEditor;
     private ContactDetailsSection mContactDetailsSection;
-
-    @Before
-    public void setUp() throws Exception {
-        ApplicationData.clearAppData(
-                InstrumentationRegistry.getInstrumentation().getTargetContext());
-        mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();
-    }
 
     private void createContactDetailsSectionWithProfiles(List<AutofillProfile> autofillProfiles,
             boolean requestPayerName, boolean requestPayerPhone, boolean requestPayerEmail) {

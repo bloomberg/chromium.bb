@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.dom_distiller;
 
 import android.support.test.InstrumentationRegistry;
+import android.support.test.annotation.UiThreadTest;
 import android.support.test.filters.SmallTest;
 import android.support.test.rule.UiThreadTestRule;
 
@@ -12,6 +13,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
@@ -19,11 +21,11 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.components.dom_distiller.core.DistilledPagePrefs;
 import org.chromium.components.dom_distiller.core.DomDistillerService;
 import org.chromium.components.dom_distiller.core.FontFamily;
 import org.chromium.components.dom_distiller.core.Theme;
-import org.chromium.content.browser.test.NativeLibraryTestRule;
 import org.chromium.content.browser.test.util.UiUtils;
 
 /**
@@ -32,10 +34,8 @@ import org.chromium.content.browser.test.util.UiUtils;
 @RunWith(BaseJUnit4ClassRunner.class)
 public class DistilledPagePrefsTest {
     @Rule
-    public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
-
-    @Rule
-    public UiThreadTestRule mUiThreadTestRule = new UiThreadTestRule();
+    public final RuleChain mChain =
+            RuleChain.outerRule(new ChromeBrowserTestRule()).around(new UiThreadTestRule());
 
     private DistilledPagePrefs mDistilledPagePrefs;
 
@@ -43,7 +43,6 @@ public class DistilledPagePrefsTest {
 
     @Before
     public void setUp() throws Exception {
-        mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();
         getDistilledPagePrefs();
     }
 
@@ -60,22 +59,18 @@ public class DistilledPagePrefsTest {
 
     @Test
     @SmallTest
+    @UiThreadTest
     @Feature({"DomDistiller"})
     public void testGetAndSetTheme() throws Throwable {
-        mUiThreadTestRule.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                // Check the default theme.
-                Assert.assertEquals(Theme.LIGHT, mDistilledPagePrefs.getTheme());
-                // Check that theme can be correctly set.
-                setTheme(Theme.DARK);
-                Assert.assertEquals(Theme.DARK, mDistilledPagePrefs.getTheme());
-                setTheme(Theme.LIGHT);
-                Assert.assertEquals(Theme.LIGHT, mDistilledPagePrefs.getTheme());
-                setTheme(Theme.SEPIA);
-                Assert.assertEquals(Theme.SEPIA, mDistilledPagePrefs.getTheme());
-            }
-        });
+        // Check the default theme.
+        Assert.assertEquals(Theme.LIGHT, mDistilledPagePrefs.getTheme());
+        // Check that theme can be correctly set.
+        setTheme(Theme.DARK);
+        Assert.assertEquals(Theme.DARK, mDistilledPagePrefs.getTheme());
+        setTheme(Theme.LIGHT);
+        Assert.assertEquals(Theme.LIGHT, mDistilledPagePrefs.getTheme());
+        setTheme(Theme.SEPIA);
+        Assert.assertEquals(Theme.SEPIA, mDistilledPagePrefs.getTheme());
     }
 
     /*
@@ -125,18 +120,14 @@ public class DistilledPagePrefsTest {
 
     @Test
     @SmallTest
+    @UiThreadTest
     @Feature({"DomDistiller"})
     public void testGetAndSetFontFamily() throws Throwable {
-        mUiThreadTestRule.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                // Check the default font family.
-                Assert.assertEquals(FontFamily.SANS_SERIF, mDistilledPagePrefs.getFontFamily());
-                // Check that font family can be correctly set.
-                setFontFamily(FontFamily.SERIF);
-                Assert.assertEquals(FontFamily.SERIF, mDistilledPagePrefs.getFontFamily());
-            }
-        });
+        // Check the default font family.
+        Assert.assertEquals(FontFamily.SANS_SERIF, mDistilledPagePrefs.getFontFamily());
+        // Check that font family can be correctly set.
+        setFontFamily(FontFamily.SERIF);
+        Assert.assertEquals(FontFamily.SERIF, mDistilledPagePrefs.getFontFamily());
     }
 
     /*
@@ -188,18 +179,14 @@ public class DistilledPagePrefsTest {
 
     @Test
     @SmallTest
+    @UiThreadTest
     @Feature({"DomDistiller"})
     public void testGetAndSetFontScaling() throws Throwable {
-        mUiThreadTestRule.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                // Check the default font scaling.
-                Assert.assertEquals(1.0, mDistilledPagePrefs.getFontScaling(), EPSILON);
-                // Check that font scaling can be correctly set.
-                setFontScaling(1.2f);
-                Assert.assertEquals(1.2, mDistilledPagePrefs.getFontScaling(), EPSILON);
-            }
-        });
+        // Check the default font scaling.
+        Assert.assertEquals(1.0, mDistilledPagePrefs.getFontScaling(), EPSILON);
+        // Check that font scaling can be correctly set.
+        setFontScaling(1.2f);
+        Assert.assertEquals(1.2, mDistilledPagePrefs.getFontScaling(), EPSILON);
     }
 
     /*

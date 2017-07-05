@@ -23,7 +23,7 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.content.browser.test.NativeLibraryTestRule;
+import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.WebContents;
@@ -35,11 +35,15 @@ import java.util.concurrent.Callable;
 @RunWith(BaseJUnit4ClassRunner.class)
 public class ExternalPrerenderHandlerTest {
     @Rule
-    public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
+    public final ChromeBrowserTestRule mBrowserTestRule = new ChromeBrowserTestRule();
 
     private static final String TEST_PAGE = "/chrome/test/data/android/google.html";
     private static final String TEST_PAGE2 = "/chrome/test/data/android/about.html";
+
     private static final int PRERENDER_DELAY_MS = 500;
+    private static final int ENSURE_COMPLETED_PRERENDER_RETRIES = 10;
+    private static final int ENSURE_COMPLETED_PRERENDER_TIMEOUT_MS =
+            ENSURE_COMPLETED_PRERENDER_RETRIES * PRERENDER_DELAY_MS;
 
     private ExternalPrerenderHandler mExternalPrerenderHandler;
     private Profile mProfile;
@@ -49,7 +53,6 @@ public class ExternalPrerenderHandlerTest {
 
     @Before
     public void setUp() throws Exception {
-        mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();
         mExternalPrerenderHandler = new ExternalPrerenderHandler();
 
         final Callable<Profile> profileCallable = new Callable<Profile>() {
@@ -109,7 +112,8 @@ public class ExternalPrerenderHandlerTest {
     @SmallTest
     public void testAddSeveralPrerenders() throws Exception {
         WebContents webContents = ensureStartedPrerenderForUrl(mTestPage);
-        Thread.sleep(PRERENDER_DELAY_MS);
+        ensureCompletedPrerenderForUrl(webContents, mTestPage);
+
         final WebContents webContents2 = ensureStartedPrerenderForUrl(mTestPage2);
 
         // Make sure that the second one didn't remove the first one.
@@ -120,7 +124,6 @@ public class ExternalPrerenderHandlerTest {
                         mProfile, mTestPage2, webContents2));
             }
         });
-        ensureCompletedPrerenderForUrl(webContents, mTestPage);
         ensureCompletedPrerenderForUrl(webContents2, mTestPage2);
     }
 
@@ -130,6 +133,7 @@ public class ExternalPrerenderHandlerTest {
             public WebContents call() {
                 Pair<WebContents, WebContents> webContents =
                         mExternalPrerenderHandler.addPrerender(mProfile, url, "", new Rect(), true);
+
                 Assert.assertNotNull(webContents);
                 Assert.assertNotNull(webContents.first);
                 Assert.assertNotNull(webContents.second);
@@ -148,6 +152,6 @@ public class ExternalPrerenderHandlerTest {
                 return ExternalPrerenderHandler.hasPrerenderedAndFinishedLoadingUrl(
                         mProfile, url, webContents);
             }
-        });
+        }, ENSURE_COMPLETED_PRERENDER_TIMEOUT_MS, PRERENDER_DELAY_MS);
     }
 }

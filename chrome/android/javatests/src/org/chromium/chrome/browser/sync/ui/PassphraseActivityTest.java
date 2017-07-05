@@ -17,6 +17,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
@@ -25,10 +26,10 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.sync.FakeProfileSyncService;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
-import org.chromium.chrome.test.util.ApplicationData;
+import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
+import org.chromium.chrome.browser.test.ClearAppDataTestRule;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.components.signin.ChromeSigninController;
-import org.chromium.content.browser.test.NativeLibraryTestRule;
 
 /**
  * Tests for PassphraseActivity.
@@ -36,24 +37,20 @@ import org.chromium.content.browser.test.NativeLibraryTestRule;
 @RunWith(BaseJUnit4ClassRunner.class)
 public class PassphraseActivityTest {
     @Rule
-    public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
+    public final RuleChain mChain =
+            RuleChain.outerRule(new ClearAppDataTestRule()).around(new ChromeBrowserTestRule());
 
     private Context mContext;
 
     @Before
     public void setUp() throws Exception {
         mContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        SigninTestUtil.setUpAuthForTest(InstrumentationRegistry.getInstrumentation());
-        ApplicationData.clearAppData(mContext);
-        mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();
     }
 
     @After
     public void tearDown() throws Exception {
         // Clear ProfileSyncService in case it was mocked.
         ProfileSyncService.overrideForTests(null);
-        SigninTestUtil.resetSigninState();
-        SigninTestUtil.tearDownAuthForTest();
     }
 
     /**

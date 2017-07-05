@@ -15,7 +15,6 @@ import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.tab.Tab;
@@ -32,11 +31,11 @@ import java.util.concurrent.TimeoutException;
 @RunWith(BaseJUnit4ClassRunner.class)
 public class TabModelSelectorTabModelObserverTest {
     // Do not add @Rule to this, it's already added to RuleChain
-    private TabModelSelectorObserverTestRule mTestRule = new TabModelSelectorObserverTestRule();
+    private final TabModelSelectorObserverTestRule mTestRule =
+            new TabModelSelectorObserverTestRule();
 
-    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     @Rule
-    public RuleChain mChain = RuleChain.outerRule(mTestRule).around(new UiThreadTestRule());
+    public final RuleChain mChain = RuleChain.outerRule(mTestRule).around(new UiThreadTestRule());
 
     private TabModelSelectorBase mSelector;
 

@@ -4,9 +4,12 @@
 
 package org.chromium.chrome.browser.precache;
 
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,6 +20,7 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MetricsUtils.HistogramDelta;
 import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.content.browser.test.NativeLibraryTestRule;
 
 import java.util.ArrayList;
@@ -30,6 +34,20 @@ import java.util.List;
 public class PrecacheUMATest {
     @Rule
     public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
+
+    @Before
+    public void setUp() {
+        // TODO (thildebr): This is just copied from the ChromeBrowserTestRule because we need to
+        // be selective of when we load the native library, so we can't just use the rule.
+        SigninTestUtil.setUpAuthForTest(InstrumentationRegistry.getInstrumentation());
+    }
+
+    @After
+    public void tearDown() {
+        // TODO (thildebr): Also copied from ChromeBrowserTestRule until there's a better way.
+        SigninTestUtil.resetSigninState();
+        SigninTestUtil.tearDownAuthForTest();
+    }
 
     @Test
     @SmallTest

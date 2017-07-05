@@ -53,8 +53,7 @@ import java.util.concurrent.Callable;
 @RunWith(BaseJUnit4ClassRunner.class)
 public class TabPersistentStoreTest {
     @Rule
-    public final ChromeBrowserTestRule mBrowserTestRule =
-            new ChromeBrowserTestRule(true /* initBrowserProcess */);
+    public final ChromeBrowserTestRule mBrowserTestRule = new ChromeBrowserTestRule();
 
     private ChromeActivity mChromeActivity;
 

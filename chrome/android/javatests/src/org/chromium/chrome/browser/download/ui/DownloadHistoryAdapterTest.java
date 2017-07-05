@@ -26,7 +26,7 @@ import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.ui.StubbedProvider.StubbedDownloadDelegate;
 import org.chromium.chrome.browser.download.ui.StubbedProvider.StubbedOfflinePageDelegate;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadItem;
-import org.chromium.content.browser.test.NativeLibraryTestRule;
+import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.content_public.browser.DownloadState;
 
 import java.util.Set;
@@ -37,7 +37,7 @@ import java.util.Set;
 @RunWith(BaseJUnit4ClassRunner.class)
 public class DownloadHistoryAdapterTest {
     @Rule
-    public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
+    public final ChromeBrowserTestRule mBrowserTestRule = new ChromeBrowserTestRule();
 
     private static class Observer extends RecyclerView.AdapterDataObserver
             implements DownloadHistoryAdapter.TestObserver {
@@ -83,7 +83,6 @@ public class DownloadHistoryAdapterTest {
 
     @Before
     public void setUp() throws Exception {
-        mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();
         mBackendProvider = new StubbedProvider();
         mDownloadDelegate = mBackendProvider.getDownloadDelegate();
         mOfflineDelegate = mBackendProvider.getOfflinePageBridge();

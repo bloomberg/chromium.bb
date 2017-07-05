@@ -15,7 +15,7 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
-import org.chromium.content.browser.test.NativeLibraryTestRule;
+import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -25,7 +25,7 @@ import java.util.Set;
 /**
  * Basis for testing tab model selector observers.
  */
-public class TabModelSelectorObserverTestRule extends NativeLibraryTestRule {
+public class TabModelSelectorObserverTestRule extends ChromeBrowserTestRule {
     private TabModelSelectorBase mSelector;
     private TabModelSelectorTestTabModel mNormalTabModel;
     private TabModelSelectorTestTabModel mIncognitoTabModel;
@@ -50,6 +50,7 @@ public class TabModelSelectorObserverTestRule extends NativeLibraryTestRule {
 
     @Override
     public Statement apply(final Statement base, Description description) {
+        CommandLine.init(null);
         return super.apply(new Statement() {
             @Override
             public void evaluate() throws Throwable {
@@ -60,9 +61,6 @@ public class TabModelSelectorObserverTestRule extends NativeLibraryTestRule {
     }
 
     private void setUp() throws Exception {
-        CommandLine.init(null);
-        loadNativeLibraryAndInitBrowserProcess();
-
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {

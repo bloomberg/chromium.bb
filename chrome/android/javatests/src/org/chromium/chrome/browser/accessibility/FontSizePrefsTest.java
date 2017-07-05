@@ -9,7 +9,6 @@ import android.content.SharedPreferences;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -21,7 +20,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.accessibility.FontSizePrefs.FontSizePrefsObserver;
-import org.chromium.content.browser.test.NativeLibraryTestRule;
+import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 
 import java.util.concurrent.Callable;
 
@@ -31,23 +30,17 @@ import java.util.concurrent.Callable;
 @RunWith(BaseJUnit4ClassRunner.class)
 public class FontSizePrefsTest {
     @Rule
-    public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
+    public final ChromeBrowserTestRule mBrowserTestRule = new ChromeBrowserTestRule();
 
     private static final float EPSILON = 0.001f;
     private FontSizePrefs mFontSizePrefs;
 
     @Before
     public void setUp() throws Exception {
-        mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();
         resetSharedPrefs();
         Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         mFontSizePrefs = getFontSizePrefs(context);
         setSystemFontScaleForTest(1.0f);
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        resetSharedPrefs();
     }
 
     private void resetSharedPrefs() {

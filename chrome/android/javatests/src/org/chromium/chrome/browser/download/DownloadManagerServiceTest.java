@@ -28,10 +28,10 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.download.DownloadInfo.Builder;
 import org.chromium.chrome.browser.download.DownloadManagerServiceTest.MockDownloadNotifier.MethodID;
+import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.OfflineItem.Progress;
 import org.chromium.components.offline_items_collection.OfflineItemProgressUnit;
-import org.chromium.content.browser.test.NativeLibraryTestRule;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.net.ConnectionType;
@@ -39,7 +39,6 @@ import org.chromium.net.ConnectionType;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Queue;
-import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -49,13 +48,11 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 @RunWith(BaseJUnit4ClassRunner.class)
 public class DownloadManagerServiceTest {
     @Rule
-    public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
+    public final ChromeBrowserTestRule mBrowserTestRule = new ChromeBrowserTestRule();
 
     private static final int UPDATE_DELAY_FOR_TEST = 1;
     private static final int DELAY_BETWEEN_CALLS = 10;
     private static final int LONG_UPDATE_DELAY_FOR_TEST = 500;
-    private static final String INSTALL_NOTIFY_URI = "http://test/test";
-    private final Random mRandom = new Random();
 
     /**
      * The MockDownloadNotifier. Currently there is no support for creating mock objects this is a
@@ -295,7 +292,6 @@ public class DownloadManagerServiceTest {
     @Before
     public void setUp() throws Exception {
         RecordHistogram.setDisabledForTests(true);
-        mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();
     }
 
     @After

@@ -10,6 +10,7 @@ import android.support.test.InstrumentationRegistry;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
+import org.chromium.chrome.test.util.ApplicationData;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.content.browser.test.NativeLibraryTestRule;
 
@@ -18,24 +19,16 @@ import org.chromium.content.browser.test.NativeLibraryTestRule;
  * initializing the AccountManagerHelper.
  */
 public class ChromeBrowserTestRule extends NativeLibraryTestRule {
-    private final boolean mInitBrowserProcess;
-
-    public ChromeBrowserTestRule(boolean initBrowserProcess) {
-        mInitBrowserProcess = initBrowserProcess;
-    }
-
-    void initialize(final boolean initBrowserProcess, Instrumentation instrumentation) {
+    private void setUp(Instrumentation instrumentation) {
+        ApplicationData.clearAppData(
+                InstrumentationRegistry.getInstrumentation().getTargetContext());
         SigninTestUtil.setUpAuthForTest(instrumentation);
-        if (initBrowserProcess) {
-            loadNativeLibraryAndInitBrowserProcess();
-        } else {
-            loadNativeLibraryNoBrowserProcess();
-        }
+        loadNativeLibraryAndInitBrowserProcess();
     }
 
     @Override
     public Statement apply(final Statement base, Description description) {
-        return new Statement() {
+        return super.apply(new Statement() {
             @Override
             public void evaluate() throws Throwable {
                 /**
@@ -43,17 +36,17 @@ public class ChromeBrowserTestRule extends NativeLibraryTestRule {
                  * UI thread).  After loading the library, this will initialize the browser process
                  * if necessary.
                  */
-                initialize(mInitBrowserProcess, InstrumentationRegistry.getInstrumentation());
+                setUp(InstrumentationRegistry.getInstrumentation());
                 try {
                     base.evaluate();
                 } finally {
                     tearDown();
                 }
             }
-        };
+        }, description);
     }
 
-    public void tearDown() {
+    private void tearDown() {
         SigninTestUtil.resetSigninState();
         SigninTestUtil.tearDownAuthForTest();
     }

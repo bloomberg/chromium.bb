@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.test;
 
-import android.content.Context;
+import android.support.test.InstrumentationRegistry;
 
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
@@ -18,18 +18,12 @@ import org.chromium.chrome.test.util.ApplicationData;
  * prior to launching the browser process.
  */
 public class ClearAppDataTestRule implements TestRule {
-    Context mContext;
-
-    public ClearAppDataTestRule(Context context) {
-        mContext = context;
-    }
-
     @Override
     public Statement apply(final Statement base, Description description) {
         return new Statement() {
             @Override
             public void evaluate() throws Throwable {
-                ApplicationData.clearAppData(mContext);
+                ApplicationData.clearAppData(InstrumentationRegistry.getContext());
             }
         };
     }
