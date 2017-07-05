@@ -6,14 +6,15 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
+#include "content/browser/browser_main_loop.h"
 #include "content/browser/compositor/image_transport_factory.h"
-#include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/common/gpu_stream_constants.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/gpu_utils.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/content_browser_test.h"
+#include "gpu/ipc/client/gpu_channel_host.h"
 #include "services/ui/gpu/interfaces/gpu_service.mojom.h"
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -59,11 +60,9 @@ class EstablishGpuChannelHelper {
   ~EstablishGpuChannelHelper() {}
 
   scoped_refptr<gpu::GpuChannelHost> EstablishGpuChannelSyncRunLoop() {
-    if (!content::BrowserGpuChannelHostFactory::instance())
-      content::BrowserGpuChannelHostFactory::Initialize(true);
-
-    content::BrowserGpuChannelHostFactory* factory =
-        content::BrowserGpuChannelHostFactory::instance();
+    gpu::GpuChannelEstablishFactory* factory =
+        content::BrowserMainLoop::GetInstance()
+            ->gpu_channel_establish_factory();
     CHECK(factory);
     base::RunLoop run_loop;
     factory->EstablishGpuChannel(base::Bind(
@@ -82,7 +81,7 @@ class ContextTestBase : public content::ContentBrowserTest {
   void SetUpOnMainThread() override {
     // This may leave the provider_ null in some cases, so tests need to early
     // out.
-    if (!content::BrowserGpuChannelHostFactory::CanUseForTesting())
+    if (!content::GpuDataManager::GetInstance()->GpuAccessAllowed(nullptr))
       return;
 
     EstablishGpuChannelHelper helper;
@@ -124,15 +123,9 @@ namespace content {
 class BrowserGpuChannelHostFactoryTest : public ContentBrowserTest {
  public:
   void SetUpOnMainThread() override {
-    if (!BrowserGpuChannelHostFactory::CanUseForTesting())
+    if (!GpuDataManager::GetInstance()->GpuAccessAllowed(nullptr))
       return;
-
-    // Start all tests without a gpu channel so that the tests exercise a
-    // consistent codepath.
-    if (!BrowserGpuChannelHostFactory::instance())
-      BrowserGpuChannelHostFactory::Initialize(false);
     CHECK(GetFactory());
-
     ContentBrowserTest::SetUpOnMainThread();
   }
 
@@ -155,8 +148,8 @@ class BrowserGpuChannelHostFactoryTest : public ContentBrowserTest {
   }
 
  protected:
-  BrowserGpuChannelHostFactory* GetFactory() {
-    return BrowserGpuChannelHostFactory::instance();
+  gpu::GpuChannelEstablishFactory* GetFactory() {
+    return BrowserMainLoop::GetInstance()->gpu_channel_establish_factory();
   }
 
   bool IsChannelEstablished() {

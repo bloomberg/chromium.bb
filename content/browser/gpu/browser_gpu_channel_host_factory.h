@@ -44,9 +44,6 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
   // thread stops.
   void CloseChannel();
 
-  // Used to skip GpuChannelHost tests when there can be no GPU process.
-  static bool CanUseForTesting();
-
   // Overridden from gpu::GpuChannelEstablishFactory:
   // The factory will return a null GpuChannelHost in the callback during
   // shutdown.

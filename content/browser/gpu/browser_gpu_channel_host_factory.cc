@@ -182,10 +182,6 @@ void BrowserGpuChannelHostFactory::CloseChannel() {
   }
 }
 
-bool BrowserGpuChannelHostFactory::CanUseForTesting() {
-  return GpuDataManager::GetInstance()->GpuAccessAllowed(NULL);
-}
-
 void BrowserGpuChannelHostFactory::Initialize(bool establish_gpu_channel) {
   DCHECK(!instance_);
   instance_ = new BrowserGpuChannelHostFactory();

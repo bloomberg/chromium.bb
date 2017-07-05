@@ -15,10 +15,11 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "content/browser/gpu/browser_gpu_channel_host_factory.h"
+#include "content/browser/browser_main_loop.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
+#include "gpu/ipc/client/gpu_channel_host.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_frame.h"
 #include "media/gpu/ipc/client/gpu_jpeg_decode_accelerator_host.h"
@@ -250,11 +251,12 @@ void VideoCaptureGpuJpegDecoder::EstablishGpuChannelOnUIThread(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     base::WeakPtr<VideoCaptureGpuJpegDecoder> weak_this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(BrowserGpuChannelHostFactory::instance());
 
-  BrowserGpuChannelHostFactory::instance()->EstablishGpuChannel(
-      base::Bind(&VideoCaptureGpuJpegDecoder::GpuChannelEstablishedOnUIThread,
-                 task_runner, weak_this));
+  BrowserMainLoop::GetInstance()
+      ->gpu_channel_establish_factory()
+      ->EstablishGpuChannel(base::Bind(
+          &VideoCaptureGpuJpegDecoder::GpuChannelEstablishedOnUIThread,
+          task_runner, weak_this));
 }
 
 // static
@@ -279,7 +281,7 @@ void VideoCaptureGpuJpegDecoder::FinishInitialization(
   } else if (gpu_channel_host->gpu_info().jpeg_decode_accelerator_supported) {
     gpu_channel_host_ = std::move(gpu_channel_host);
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
-        BrowserGpuChannelHostFactory::instance()->GetIOThreadTaskRunner();
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
 
     int32_t route_id = gpu_channel_host_->GenerateRouteID();
     std::unique_ptr<media::GpuJpegDecodeAcceleratorHost> decoder(

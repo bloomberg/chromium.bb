@@ -43,6 +43,10 @@ namespace discardable_memory {
 class DiscardableSharedMemoryManager;
 }
 
+namespace gpu {
+class GpuChannelEstablishFactory;
+}
+
 namespace media {
 class AudioManager;
 class AudioSystem;
@@ -169,6 +173,8 @@ class CONTENT_EXPORT BrowserMainLoop {
   const base::FilePath& startup_trace_file() const {
     return startup_trace_file_;
   }
+
+  gpu::GpuChannelEstablishFactory* gpu_channel_establish_factory() const;
 
 #if defined(OS_ANDROID)
   void SynchronouslyFlushStartupTasks();

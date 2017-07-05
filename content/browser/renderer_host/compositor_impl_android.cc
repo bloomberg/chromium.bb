@@ -51,8 +51,8 @@
 #include "components/viz/service/display_embedder/compositor_overlay_candidate_validator_android.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
+#include "content/browser/browser_main_loop.h"
 #include "content/browser/compositor/surface_utils.h"
-#include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -411,9 +411,11 @@ void Compositor::CreateContextProvider(
     gpu::SharedMemoryLimits shared_memory_limits,
     ContextProviderCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  BrowserGpuChannelHostFactory::instance()->EstablishGpuChannel(
-      base::Bind(&CreateContextProviderAfterGpuChannelEstablished, handle,
-                 attributes, shared_memory_limits, callback));
+  BrowserMainLoop::GetInstance()
+      ->gpu_channel_establish_factory()
+      ->EstablishGpuChannel(
+          base::Bind(&CreateContextProviderAfterGpuChannelEstablished, handle,
+                     attributes, shared_memory_limits, callback));
 }
 
 // static
@@ -687,8 +689,10 @@ void CompositorImpl::HandlePendingLayerTreeFrameSinkRequest() {
       this, &CompositorImpl::OnGpuChannelTimeout);
 
   DCHECK(surface_handle_ != gpu::kNullSurfaceHandle);
-  BrowserGpuChannelHostFactory::instance()->EstablishGpuChannel(base::Bind(
-      &CompositorImpl::OnGpuChannelEstablished, weak_factory_.GetWeakPtr()));
+  BrowserMainLoop::GetInstance()
+      ->gpu_channel_establish_factory()
+      ->EstablishGpuChannel(base::Bind(&CompositorImpl::OnGpuChannelEstablished,
+                                       weak_factory_.GetWeakPtr()));
 }
 
 void CompositorImpl::OnGpuChannelTimeout() {
