@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "components/arc/arc_service.h"
 #include "components/arc/common/file_system.mojom.h"
@@ -17,6 +18,7 @@
 
 namespace base {
 class FilePath;
+class SequencedTaskRunner;
 }  // namespace base
 
 namespace arc {
@@ -48,6 +50,8 @@ class ArcDownloadsWatcherService
   void OnDownloadsChanged(const std::vector<std::string>& paths);
 
   std::unique_ptr<DownloadsWatcher> watcher_;
+
+  scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.

@@ -17,8 +17,11 @@
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
 #include "base/memory/ptr_util.h"
+#include "base/sequence_checker.h"
 #include "base/strings/string_util.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -217,6 +220,8 @@ class ArcDownloadsWatcherService::DownloadsWatcher {
   // Whether or not there is an outstanding task to update last_timestamp_map_.
   bool outstanding_task_;
 
+  SEQUENCE_CHECKER(sequence_checker_);
+
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.
   base::WeakPtrFactory<DownloadsWatcher> weak_ptr_factory_;
@@ -231,6 +236,7 @@ ArcDownloadsWatcherService::DownloadsWatcher::DownloadsWatcher(
       outstanding_task_(false),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DETACH_FROM_SEQUENCE(sequence_checker_);
 
   downloads_dir_ = DownloadPrefs(ProfileManager::GetActiveUserProfile())
                        .GetDefaultDownloadDirectoryForProfile()
@@ -238,11 +244,11 @@ ArcDownloadsWatcherService::DownloadsWatcher::DownloadsWatcher(
 }
 
 ArcDownloadsWatcherService::DownloadsWatcher::~DownloadsWatcher() {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 void ArcDownloadsWatcherService::DownloadsWatcher::Start() {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Initialize with the current timestamp map and avoid initial notification.
   // It is not needed since MediaProvider scans whole storage area on boot.
@@ -261,11 +267,11 @@ void ArcDownloadsWatcherService::DownloadsWatcher::OnFilePathChanged(
     bool error) {
   // On Linux, |error| is always false. Also, |path| is always the same path
   // as one given to FilePathWatcher::Watch().
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!outstanding_task_) {
     outstanding_task_ = true;
-    BrowserThread::PostDelayedTask(
-        BrowserThread::FILE, FROM_HERE,
+    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
         base::BindOnce(&DownloadsWatcher::DelayBuildTimestampMap,
                        weak_ptr_factory_.GetWeakPtr()),
         kBuildTimestampMapDelay);
@@ -275,7 +281,7 @@ void ArcDownloadsWatcherService::DownloadsWatcher::OnFilePathChanged(
 }
 
 void ArcDownloadsWatcherService::DownloadsWatcher::DelayBuildTimestampMap() {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(outstanding_task_);
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock()},
@@ -286,7 +292,7 @@ void ArcDownloadsWatcherService::DownloadsWatcher::DelayBuildTimestampMap() {
 
 void ArcDownloadsWatcherService::DownloadsWatcher::OnBuildTimestampMap(
     std::pair<base::TimeTicks, TimestampMap> timestamp_and_map) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(outstanding_task_);
   base::TimeTicks snapshot_time = timestamp_and_map.first;
   TimestampMap current_timestamp_map = std::move(timestamp_and_map.second);
@@ -310,7 +316,10 @@ void ArcDownloadsWatcherService::DownloadsWatcher::OnBuildTimestampMap(
 
 ArcDownloadsWatcherService::ArcDownloadsWatcherService(
     ArcBridgeService* bridge_service)
-    : ArcService(bridge_service), weak_ptr_factory_(this) {
+    : ArcService(bridge_service),
+      file_task_runner_(
+          base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()})),
+      weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   arc_bridge_service()->file_system()->AddObserver(this);
 }
@@ -339,17 +348,15 @@ void ArcDownloadsWatcherService::StartWatchingDownloads() {
   watcher_ = base::MakeUnique<DownloadsWatcher>(
       base::Bind(&ArcDownloadsWatcherService::OnDownloadsChanged,
                  weak_ptr_factory_.GetWeakPtr()));
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          base::BindOnce(&DownloadsWatcher::Start,
-                                         base::Unretained(watcher_.get())));
+  file_task_runner_->PostTask(FROM_HERE,
+                              base::BindOnce(&DownloadsWatcher::Start,
+                                             base::Unretained(watcher_.get())));
 }
 
 void ArcDownloadsWatcherService::StopWatchingDownloads() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (watcher_) {
-    BrowserThread::DeleteSoon(BrowserThread::FILE, FROM_HERE,
-                              watcher_.release());
-  }
+  if (watcher_)
+    file_task_runner_->DeleteSoon(FROM_HERE, watcher_.release());
 }
 
 void ArcDownloadsWatcherService::OnDownloadsChanged(
