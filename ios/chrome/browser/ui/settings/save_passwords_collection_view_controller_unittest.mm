@@ -5,8 +5,10 @@
 #import "ios/chrome/browser/ui/settings/save_passwords_collection_view_controller.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/compiler_specific.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "components/autofill/core/common/password_form.h"
@@ -26,12 +28,6 @@
 #endif
 
 using password_manager::MockPasswordStore;
-
-@interface SavePasswordsCollectionViewController (
-    InternalMethods)<PasswordDetailsCollectionViewControllerDelegate>
-- (void)onGetPasswordStoreResults:
-    (const std::vector<autofill::PasswordForm*>&)result;
-@end
 
 namespace {
 
@@ -65,17 +61,17 @@ class SavePasswordsCollectionViewControllerTest
   }
 
   // Adds a form to SavePasswordsTableViewController.
-  void AddPasswordForm(autofill::PasswordForm* form) {
+  void AddPasswordForm(std::unique_ptr<autofill::PasswordForm> form) {
     SavePasswordsCollectionViewController* save_password_controller =
         static_cast<SavePasswordsCollectionViewController*>(controller());
-    std::vector<autofill::PasswordForm*> passwords;
-    passwords.push_back(form);
+    std::vector<std::unique_ptr<autofill::PasswordForm>> passwords;
+    passwords.push_back(std::move(form));
     [save_password_controller onGetPasswordStoreResults:passwords];
   }
 
   // Creates and adds a saved password form.
   void AddSavedForm() {
-    autofill::PasswordForm* form = new autofill::PasswordForm();
+    auto form = base::MakeUnique<autofill::PasswordForm>();
     form->origin = GURL("http://www.example.com/accounts/LoginAuth");
     form->action = GURL("http://www.example.com/accounts/Login");
     form->username_element = base::ASCIIToUTF16("Email");
@@ -87,13 +83,13 @@ class SavePasswordsCollectionViewControllerTest
     form->preferred = false;
     form->scheme = autofill::PasswordForm::SCHEME_HTML;
     form->blacklisted_by_user = false;
-    AddPasswordForm(form);
+    AddPasswordForm(std::move(form));
   }
 
   // Creates and adds a blacklisted site form to never offer to save
   // user's password to those sites.
   void AddBlacklistedForm1() {
-    autofill::PasswordForm* form = new autofill::PasswordForm();
+    auto form = base::MakeUnique<autofill::PasswordForm>();
     form->origin = GURL("http://www.secret.com/login");
     form->action = GURL("http://www.secret.com/action");
     form->username_element = base::ASCIIToUTF16("email");
@@ -105,13 +101,13 @@ class SavePasswordsCollectionViewControllerTest
     form->preferred = false;
     form->scheme = autofill::PasswordForm::SCHEME_HTML;
     form->blacklisted_by_user = true;
-    AddPasswordForm(form);
+    AddPasswordForm(std::move(form));
   }
 
   // Creates and adds another blacklisted site form to never offer to save
   // user's password to those sites.
   void AddBlacklistedForm2() {
-    autofill::PasswordForm* form = new autofill::PasswordForm();
+    auto form = base::MakeUnique<autofill::PasswordForm>();
     form->origin = GURL("http://www.secret2.com/login");
     form->action = GURL("http://www.secret2.com/action");
     form->username_element = base::ASCIIToUTF16("email");
@@ -123,7 +119,7 @@ class SavePasswordsCollectionViewControllerTest
     form->preferred = false;
     form->scheme = autofill::PasswordForm::SCHEME_HTML;
     form->blacklisted_by_user = true;
-    AddPasswordForm(form);
+    AddPasswordForm(std::move(form));
   }
 
   web::TestWebThreadBundle thread_bundle_;

@@ -4,9 +4,6 @@
 
 #import "ios/chrome/browser/ui/settings/save_passwords_collection_view_controller.h"
 
-#include <memory>
-#include <vector>
-
 #include "base/ios/ios_util.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
@@ -38,6 +35,7 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/settings/password_details_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/password_details_collection_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/settings/reauthentication_module.h"
 #import "ios/chrome/browser/ui/settings/settings_utils.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
@@ -80,13 +78,6 @@ std::string GetHumanReadableOriginCopy(
 }
 
 }  // namespace
-
-@interface SavePasswordsCollectionViewController (UsedBySavePasswordsConsumer)
-// Callback called when the async request launched from
-// |getLoginsFromPasswordStore| finishes.
-- (void)onGetPasswordStoreResults:
-    (const std::vector<std::unique_ptr<autofill::PasswordForm>>&)result;
-@end
 
 namespace password_manager {
 // A bridge C++ class passing notification about finished password store
