@@ -83,6 +83,10 @@ class GPU_EXPORT ProgramCache {
        const std::vector<std::string>& transform_feedback_varyings,
        GLenum transform_feedback_buffer_mode);
 
+  // Discards excess cache contents to a fixed upper limit.
+  // Returns the number of bytes of memory freed.
+  virtual size_t Trim(size_t limit) = 0;
+
  protected:
   // called by implementing class after a shader was successfully cached
   void LinkedProgramCacheSuccess(const std::string& program_hash);

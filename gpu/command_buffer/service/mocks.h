@@ -139,6 +139,7 @@ class MockProgramCache : public ProgramCache {
                     GLenum transform_feedback_buffer_mode,
                     GLES2DecoderClient* client));
   MOCK_METHOD1(LoadProgram, void(const std::string&));
+  MOCK_METHOD1(Trim, size_t(size_t));
 
  private:
   MOCK_METHOD0(ClearBackend, void());
