@@ -926,6 +926,11 @@ void BrowserMainLoop::CreateStartupTasks() {
 #endif
 }
 
+gpu::GpuChannelEstablishFactory*
+BrowserMainLoop::gpu_channel_establish_factory() const {
+  return BrowserGpuChannelHostFactory::instance();
+}
+
 #if defined(OS_ANDROID)
 void BrowserMainLoop::SynchronouslyFlushStartupTasks() {
   startup_task_runner_->RunAllTasksNow();
