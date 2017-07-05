@@ -203,7 +203,7 @@ class TabManager : public TabStripModelObserver,
 
   // The min/max time to purge ratio. The max time to purge is set to be
   // min time to purge times this value.
-  const int kMinMaxTimeToPurgeRatio = 2;
+  const int kDefaultMinMaxTimeToPurgeRatio = 2;
 
   // This is needed so WebContentsData can call OnDiscardedStateChange, and
   // can use PurgeState.
@@ -259,8 +259,9 @@ class TabManager : public TabStripModelObserver,
   content::WebContents* GetWebContentsById(int64_t tab_contents_id) const;
 
   // Returns a random time-to-purge whose min value is min_time_to_purge and max
-  // value is min_time_to_purge * kMinMaxTimeToPurgeRatio.
-  base::TimeDelta GetTimeToPurge(base::TimeDelta min_time_to_purge) const;
+  // value is max_time_to_purge.
+  base::TimeDelta GetTimeToPurge(base::TimeDelta min_time_to_purge,
+                                 base::TimeDelta max_time_to_purge) const;
 
   // Returns true if the tab specified by |content| is now eligible to have
   // its memory purged.
@@ -373,8 +374,10 @@ class TabManager : public TabStripModelObserver,
   // backgrounded.
   base::TimeDelta minimum_protection_time_;
 
-  // A backgrounded renderer will be purged when this time passes.
+  // A backgrounded renderer will be purged between min_time_to_purge_ and
+  // max_time_to_purge_.
   base::TimeDelta min_time_to_purge_;
+  base::TimeDelta max_time_to_purge_;
 
 #if defined(OS_CHROMEOS)
   std::unique_ptr<TabManagerDelegate> delegate_;
