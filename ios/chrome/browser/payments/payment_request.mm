@@ -73,18 +73,22 @@ PaymentRequest::PaymentRequest(
 
   SetSelectedShippingOption();
 
-  // If the merchant provided a default shipping option, and the highest-ranking
-  // shipping profile is usable, select it.
-  if (selected_shipping_option_ && !shipping_profiles_.empty() &&
-      profile_comparator_.IsShippingComplete(shipping_profiles_[0])) {
-    selected_shipping_profile_ = shipping_profiles_[0];
+  if (request_shipping()) {
+    // If the merchant provided a default shipping option, and the
+    // highest-ranking shipping profile is usable, select it.
+    if (selected_shipping_option_ && !shipping_profiles_.empty() &&
+        profile_comparator_.IsShippingComplete(shipping_profiles_[0])) {
+      selected_shipping_profile_ = shipping_profiles_[0];
+    }
   }
 
-  // If the highest-ranking contact profile is usable, select it. Otherwise,
-  // select none.
-  if (!contact_profiles_.empty() &&
-      profile_comparator_.IsContactInfoComplete(contact_profiles_[0])) {
-    selected_contact_profile_ = contact_profiles_[0];
+  if (request_payer_name() || request_payer_email() || request_payer_phone()) {
+    // If the highest-ranking contact profile is usable, select it. Otherwise,
+    // select none.
+    if (!contact_profiles_.empty() &&
+        profile_comparator_.IsContactInfoComplete(contact_profiles_[0])) {
+      selected_contact_profile_ = contact_profiles_[0];
+    }
   }
 
   // TODO(crbug.com/702063): Change this code to prioritize credit cards by use
@@ -271,6 +275,26 @@ bool PaymentRequest::CanMakePayment() const {
              status & autofill::CREDIT_CARD_NO_NUMBER);
   }
   return false;
+}
+
+void PaymentRequest::RecordUseStats() {
+  if (request_shipping()) {
+    DCHECK(selected_shipping_profile_);
+    personal_data_manager_->RecordUseOf(*selected_shipping_profile_);
+  }
+
+  if (request_payer_name() || request_payer_email() || request_payer_phone()) {
+    DCHECK(selected_contact_profile_);
+    // If the same address was used for both contact and shipping, the stats
+    // should be updated only once.
+    if (!request_shipping() || (selected_shipping_profile_->guid() !=
+                                selected_contact_profile_->guid())) {
+      personal_data_manager_->RecordUseOf(*selected_contact_profile_);
+    }
+  }
+
+  DCHECK(selected_credit_card_);
+  personal_data_manager_->RecordUseOf(*selected_credit_card_);
 }
 
 void PaymentRequest::PopulateCreditCardCache() {

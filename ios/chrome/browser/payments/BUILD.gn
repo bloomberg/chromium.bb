@@ -45,6 +45,7 @@ source_set("unit_tests") {
     "//components/payments/core",
     "//ios/chrome/browser",
     "//ios/web",
+    "//testing/gmock",
     "//testing/gtest",
   ]
 }
