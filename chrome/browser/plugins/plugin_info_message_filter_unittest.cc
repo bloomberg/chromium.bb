@@ -134,7 +134,7 @@ class PluginInfoMessageFilterTest : public ::testing::Test {
 #endif
     base::RunLoop run_loop;
     PluginService::GetInstance()->GetPlugins(
-        base::Bind(&PluginsLoaded, run_loop.QuitClosure()));
+        base::BindOnce(&PluginsLoaded, run_loop.QuitClosure()));
     run_loop.Run();
 #if !defined(OS_WIN)
     content::RenderProcessHost::SetRunRendererInProcess(false);
