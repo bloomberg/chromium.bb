@@ -67,9 +67,7 @@ ApplicationContextImpl::ApplicationContextImpl(
   DCHECK(!GetApplicationContext());
   SetApplicationContext(this);
 
-  net_log_.reset(new net_log::ChromeNetLog(
-      base::FilePath(), net::NetLogCaptureMode::Default(),
-      command_line.GetCommandLineString(), GetChannelString()));
+  net_log_.reset(new net_log::ChromeNetLog());
 
   SetApplicationLocale(locale);
 

@@ -236,12 +236,14 @@ BrowserProcessImpl::BrowserProcessImpl(
   print_job_manager_.reset(new printing::PrintJobManager);
 #endif
 
-  base::FilePath net_log_path;
-  if (command_line.HasSwitch(switches::kLogNetLog))
-    net_log_path = command_line.GetSwitchValuePath(switches::kLogNetLog);
-  net_log_.reset(new net_log::ChromeNetLog(
-      net_log_path, GetNetCaptureModeFromCommandLine(command_line),
-      command_line.GetCommandLineString(), chrome::GetChannelString()));
+  net_log_ = base::MakeUnique<net_log::ChromeNetLog>();
+
+  if (command_line.HasSwitch(switches::kLogNetLog)) {
+    net_log_->StartWritingToFile(
+        command_line.GetSwitchValuePath(switches::kLogNetLog),
+        GetNetCaptureModeFromCommandLine(command_line),
+        command_line.GetCommandLineString(), chrome::GetChannelString());
+  }
 
   ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(
       chrome::kChromeSearchScheme);

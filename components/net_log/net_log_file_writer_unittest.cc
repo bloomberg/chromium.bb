@@ -255,11 +255,7 @@ class NetLogFileWriterTest : public ::testing::Test {
       std::vector<scoped_refptr<net::URLRequestContextGetter>>;
 
   NetLogFileWriterTest()
-      : net_log_(base::FilePath(),
-                 net::NetLogCaptureMode::Default(),
-                 base::CommandLine::StringType(),
-                 kChannelString),
-        net_log_file_writer_(&net_log_),
+      : net_log_file_writer_(&net_log_),
         file_thread_("NetLogFileWriter file thread"),
         net_thread_("NetLogFileWriter net thread") {}
 

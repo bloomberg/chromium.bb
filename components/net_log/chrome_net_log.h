@@ -26,25 +26,23 @@ namespace net_log {
 
 class NetLogFileWriter;
 
-// ChromeNetLog is an implementation of NetLog that adds file loggers
-// as its observers.
+// ChromeNetLog is an implementation of NetLog that manages common observers
+// (for --log-net-log, chrome://net-export/, tracing), as well as acting as the
+// entry point for other consumers.
 class ChromeNetLog : public net::NetLog {
  public:
-  // The parameters to the constructor are only used for command-line based
-  // NetLog writing (which starts immediately after construction).
-  //
-  // TODO(eroman): This would be clearer as a separate method to configure and
-  //               start this logging mode.
-  //
-  // The log is saved to |log_file|.
-  // |log_file_mode| is the mode used to log in |log_file|.
-  // If |log_file| is empty, only a temporary log is created, and
-  // |log_file_mode| is not used.
-  ChromeNetLog(const base::FilePath& log_file,
-               net::NetLogCaptureMode log_file_mode,
-               const base::CommandLine::StringType& command_line_string,
-               const std::string& channel_string);
+  ChromeNetLog();
   ~ChromeNetLog() override;
+
+  // Starts streaming the NetLog events to a file on disk. This will continue
+  // until the application shuts down.
+  // * |log_file| - path to write the file.
+  // * |log_file_mode| - capture mode for event granularity.
+  void StartWritingToFile(
+      const base::FilePath& log_file,
+      net::NetLogCaptureMode log_file_mode,
+      const base::CommandLine::StringType& command_line_string,
+      const std::string& channel_string);
 
   // TODO(eroman): Rename this to something clearer. Perhaps
   //               |net_export_file_writer()|.
