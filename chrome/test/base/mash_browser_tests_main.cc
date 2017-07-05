@@ -28,6 +28,7 @@
 #include "chrome/test/base/mojo_test_connector.h"
 #include "content/public/app/content_main.h"
 #include "content/public/common/service_manager_connection.h"
+#include "content/public/common/service_names.mojom.h"
 #include "content/public/test/test_launcher.h"
 #include "mash/session/public/interfaces/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -178,6 +179,20 @@ bool RunMashBrowserTests(int argc, char** argv, int* exit_code) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch("run-in-mash") &&
       !command_line->HasSwitch("run-in-mus")) {
+    // Currently launching content_package_services via the browser_tests binary
+    // will lead to a nested test suite, trying to run all tests again. However
+    // they will be in a strange mixed mode, of a local-Ash, but non-local Aura.
+    //
+    // This leads to continuous crashes in OzonePlatform.
+    //
+    // For now disable this launch until the requesting site can be identified.
+    //
+    // TODO(jonross): find an appropriate way to launch content_package_services
+    // within the mash_browser_tests (crbug.com/738449)
+    if (command_line->GetSwitchValueASCII("service-name") ==
+        content::mojom::kPackagedServicesServiceName) {
+      return true;
+    }
     return false;
   }
 
