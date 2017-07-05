@@ -7,6 +7,8 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSPrimitiveValue.h"
+#include "core/css/cssom/CSSUnitValue.h"
+#include "core/geometry/DOMMatrix.h"
 
 namespace blink {
 
@@ -124,23 +126,33 @@ void CSSRotation::setAngle(CSSNumericValue* angle,
   angle_ = angle;
 }
 
+DOMMatrix* CSSRotation::AsMatrix() const {
+  DOMMatrix* matrix = DOMMatrix::Create();
+  CSSUnitValue* angle = angle_->to(CSSPrimitiveValue::UnitType::kDegrees);
+  if (is2D()) {
+    matrix->rotateAxisAngleSelf(0, 0, 1, angle->value());
+  } else {
+    matrix->rotateAxisAngleSelf(x_, y_, z_, angle->value());
+  }
+  return matrix;
+}
+
 CSSFunctionValue* CSSRotation::ToCSSValue() const {
-  return nullptr;
-  // TODO(meade): Re-implement this when we finish rewriting number/length
-  // types.
-  // CSSFunctionValue* result =
-  //     CSSFunctionValue::Create(is2D() ? CSSValueRotate : CSSValueRotate3d);
-  // if (!is2D()) {
-  //   result->Append(
-  //      *CSSPrimitiveValue::Create(x_, CSSPrimitiveValue::UnitType::kNumber));
-  //   result->Append(
-  //      *CSSPrimitiveValue::Create(y_, CSSPrimitiveValue::UnitType::kNumber));
-  //   result->Append(
-  //      *CSSPrimitiveValue::Create(z_, CSSPrimitiveValue::UnitType::kNumber));
-  // }
-  // result->Append(*CSSPrimitiveValue::Create(angle_->Value(),
-  //                                           angle_->Unit()));
-  // return result;
+  // TODO(meade): Handle calc angles.
+  CSSUnitValue* angle = ToCSSUnitValue(angle_);
+  CSSFunctionValue* result =
+      CSSFunctionValue::Create(is2D() ? CSSValueRotate : CSSValueRotate3d);
+  if (!is2D()) {
+    result->Append(
+        *CSSPrimitiveValue::Create(x_, CSSPrimitiveValue::UnitType::kNumber));
+    result->Append(
+        *CSSPrimitiveValue::Create(y_, CSSPrimitiveValue::UnitType::kNumber));
+    result->Append(
+        *CSSPrimitiveValue::Create(z_, CSSPrimitiveValue::UnitType::kNumber));
+  }
+  result->Append(
+      *CSSPrimitiveValue::Create(angle->value(), angle->GetInternalUnit()));
+  return result;
 }
 
 }  // namespace blink

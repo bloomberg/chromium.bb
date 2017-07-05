@@ -49,16 +49,7 @@ class CORE_EXPORT CSSRotation final : public CSSTransformComponent {
 
   // Internal methods - from CSSTransformComponent.
   TransformComponentType GetType() const final { return kRotationType; }
-  DOMMatrix* AsMatrix() const final {
-    return nullptr;
-    // TODO(meade): Implement.
-    // return z_ == 1 ?
-    //           ? CSSMatrixComponent::Rotate(
-    //              angle_->to(CSSPrimitiveValue::UnitType::kDegrees)->value())
-    //           : CSSMatrixComponent::Rotate3d(
-    //              angle_->to(CSSPrimitiveValue::UnitType::kDegrees)->value(),
-    //                 x_, y_, z_);
-  }
+  DOMMatrix* AsMatrix() const final;
   CSSFunctionValue* ToCSSValue() const final;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
