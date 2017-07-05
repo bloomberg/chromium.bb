@@ -89,9 +89,18 @@ bool PasswordReuseDetector::CheckSyncPasswordReuse(
   if (Origin(GURL(domain)).IsSameOriginWith(gaia_origin))
     return false;
 
-  // TODO(crbug.com/657041): Implement checking a hash of |input| with
-  // |sync_password_data_|.
+  if (input.size() < sync_password_data_->length)
+    return false;
 
+  size_t offset = input.size() - sync_password_data_->length;
+  base::string16 reuse_candidate = input.substr(offset);
+
+  if (password_manager_util::CalculateSyncPasswordHash(
+          reuse_candidate, sync_password_data_->salt) ==
+      sync_password_data_->hash) {
+    consumer->OnReuseFound(reuse_candidate, kSyncPasswordDomain, 1, 0);
+    return true;
+  }
   return false;
 }
 
