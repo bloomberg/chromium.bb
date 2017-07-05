@@ -139,15 +139,46 @@ for (let params of testParams) {
   }, "toString value is correct for " + params.cssText);
 }
 
+test(() => {
+  let rotation = new CSSRotation(1, 2, 3, CSS.deg(10));
+  assert_equals(rotation.toString(), 'rotate3d(1, 2, 3, 10deg)');
+  rotation.is2D = true;
+  assert_true(rotation.is2D);
+  assert_equals(rotation.toString(), 'rotate(10deg)');
+}, "x, y, and z components are not included in toString when is2D is true");
+
 for (let params of testParams) {
-  var input = params.input;
+  let input = params.input;
   test(() => {
     var transformValue = new CSSTransformValue([input]);
     var result = transformValue.toMatrix();
-    assert_equals(result.is2D, input.is2D, 'is2D');
     assert_matrix_approx_equals(result, params.asMatrix, EPSILON);
-  }, "toMatrix works for " + params.cssText);
+  }, "toMatrix works for " + params.cssText + " in a CSSTransformValue");
 }
+
+test(() => {
+  // Obtained by doing the following in a console:
+  // $0.style.transform = 'rotate3d(1, 2, 3, 10rad)';
+  // getComputedStyle($0).transform
+  let expected3DMatrix = new DOMMatrixReadOnly(
+      [-0.707709, -0.173463, 0.684878, 0,
+      0.698912, -0.313623, 0.642778, 0,
+      0.103295, 0.933569, 0.343189, 0,
+      0, 0, 0, 1]);
+  let expected2DMatrix = new DOMMatrixReadOnly(
+      [Math.cos(10), Math.sin(10), -Math.sin(10), Math.cos(10), 0, 0]);
+
+  let rotation = new CSSRotation(1, 2, 3, CSS.rad(10));
+  let transformValue = new CSSTransformValue([rotation]);
+
+  assert_matrix_approx_equals(
+      transformValue.toMatrix(), expected3DMatrix, EPSILON);
+
+  rotation.is2D = true;
+
+  assert_matrix_approx_equals(
+      transformValue.toMatrix(), expected2DMatrix, EPSILON);
+}, "x, y, and z attributes have no effect on toMatrix if is2D is set to true");
 
 for (let attribute of ["x", "y", "z"]) {
   test(() => {
