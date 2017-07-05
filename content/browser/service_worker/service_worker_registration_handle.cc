@@ -8,6 +8,7 @@
 #include "content/browser/service_worker/service_worker_handle.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/public/common/service_worker_modes.h"
 
 namespace content {
 

@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "content/common/resource_messages.h"
-#include "content/common/resource_request.h"
+#include "content/public/common/resource_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/scheduler/test/fake_renderer_scheduler.h"
 
