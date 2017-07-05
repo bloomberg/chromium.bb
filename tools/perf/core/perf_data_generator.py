@@ -23,8 +23,9 @@ from core import path_util
 path_util.AddTelemetryToPath()
 
 from telemetry import benchmark as benchmark_module
-from telemetry.core import discover
 from telemetry import decorators
+
+from py_utils import discover
 
 from core.sharding_map_generator import load_benchmark_sharding_map
 
