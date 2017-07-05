@@ -29,10 +29,9 @@
       default: true,
     },
 
-    // - longhands: "property;other-property"
+    // - longhands: ["property", "other-property"]
     // The property is a shorthand for several other properties.
     longhands: {
-      default: '',
     },
 
     // - api_class: true|"classname"
@@ -2532,7 +2531,7 @@
     {
       name: "text-decoration",
       api_class: true,
-      longhands: "text-decoration-line;text-decoration-style;text-decoration-color",
+      longhands: ["text-decoration-line", "text-decoration-style", "text-decoration-color"],
       use_handlers_for: "CSSPropertyTextDecorationLine",
     },
     {
@@ -3666,287 +3665,287 @@
 
     {
       name: "animation",
-      longhands: "animation-name;animation-duration;animation-timing-function;animation-delay;animation-iteration-count;animation-direction;animation-fill-mode;animation-play-state",
+      longhands: ["animation-name", "animation-duration", "animation-timing-function", "animation-delay", "animation-iteration-count", "animation-direction", "animation-fill-mode", "animation-play-state"],
       api_class: true,
       api_methods: ["parseShorthand"],
     },
     {
       name: "background",
-      longhands: "background-image;background-position-x;background-position-y;background-size;background-repeat-x;background-repeat-y;background-attachment;background-origin;background-clip;background-color",
+      longhands: ["background-image", "background-position-x", "background-position-y", "background-size", "background-repeat-x", "background-repeat-y", "background-attachment", "background-origin", "background-clip", "background-color"],
     },
     {
       name: "background-position",
-      longhands: "background-position-x;background-position-y",
+      longhands: ["background-position-x", "background-position-y"],
     },
     {
       name: "background-repeat",
-      longhands: "background-repeat-x;background-repeat-y",
+      longhands: ["background-repeat-x", "background-repeat-y"],
     },
     {
       name: "border",
-      longhands: "border-top-color;border-top-style;border-top-width;border-right-color;border-right-style;border-right-width;border-bottom-color;border-bottom-style;border-bottom-width;border-left-color;border-left-style;border-left-width;border-image-source;border-image-slice;border-image-width;border-image-outset;border-image-repeat",
+      longhands: ["border-top-color", "border-top-style", "border-top-width", "border-right-color", "border-right-style", "border-right-width", "border-bottom-color", "border-bottom-style", "border-bottom-width", "border-left-color", "border-left-style", "border-left-width", "border-image-source", "border-image-slice", "border-image-width", "border-image-outset", "border-image-repeat"],
     },
     {
       name: "border-bottom",
-      longhands: "border-bottom-width;border-bottom-style;border-bottom-color",
+      longhands: ["border-bottom-width", "border-bottom-style", "border-bottom-color"],
     },
     {
       name: "border-color",
-      longhands: "border-top-color;border-right-color;border-bottom-color;border-left-color",
+      longhands: ["border-top-color", "border-right-color", "border-bottom-color", "border-left-color"],
     },
     {
       name: "border-image",
-      longhands: "border-image-source;border-image-slice;border-image-width;border-image-outset;border-image-repeat",
+      longhands: ["border-image-source", "border-image-slice", "border-image-width", "border-image-outset", "border-image-repeat"],
     },
     {
       name: "border-left",
-      longhands: "border-left-width;border-left-style;border-left-color",
+      longhands: ["border-left-width", "border-left-style", "border-left-color"],
     },
     {
       name: "border-radius",
-      longhands: "border-top-left-radius;border-top-right-radius;border-bottom-right-radius;border-bottom-left-radius",
+      longhands: ["border-top-left-radius", "border-top-right-radius", "border-bottom-right-radius", "border-bottom-left-radius"],
       api_class: true,
       api_methods: ["parseShorthand"],
     },
     {
       name: "border-right",
-      longhands: "border-right-width;border-right-style;border-right-color",
+      longhands: ["border-right-width", "border-right-style", "border-right-color"],
     },
     {
       name: "border-spacing",
-      longhands: "-webkit-border-horizontal-spacing;-webkit-border-vertical-spacing",
+      longhands: ["-webkit-border-horizontal-spacing", "-webkit-border-vertical-spacing"],
       api_class: true,
       api_methods: ["parseShorthand"],
     },
     {
       name: "border-style",
-      longhands: "border-top-style;border-right-style;border-bottom-style;border-left-style",
+      longhands: ["border-top-style", "border-right-style", "border-bottom-style", "border-left-style"],
       keywords: ["none"],
       typedom_types: ["Image"],
     },
     {
       name: "border-top",
-      longhands: "border-top-width;border-top-style;border-top-color",
+      longhands: ["border-top-width", "border-top-style", "border-top-color"],
     },
     {
       name: "border-width",
-      longhands: "border-top-width;border-right-width;border-bottom-width;border-left-width",
+      longhands: ["border-top-width", "border-right-width", "border-bottom-width", "border-left-width"],
     },
     {
       name: "flex",
-      longhands: "flex-grow;flex-shrink;flex-basis",
+      longhands: ["flex-grow", "flex-shrink", "flex-basis"],
       api_class: true,
       api_methods: ["parseShorthand"],
     },
     {
       name: "flex-flow",
-      longhands: "flex-direction;flex-wrap",
+      longhands: ["flex-direction", "flex-wrap"],
     },
     {
       name: "font",
-      longhands: "font-style;font-variant-ligatures;font-variant-caps;font-variant-numeric;font-weight;font-stretch;font-size;line-height;font-family",
+      longhands: ["font-style", "font-variant-ligatures", "font-variant-caps", "font-variant-numeric", "font-weight", "font-stretch", "font-size", "line-height", "font-family"],
       api_class: true,
       api_methods: ["parseShorthand"],
     },
     {
       name: "font-variant",
-      longhands: "font-variant-ligatures;font-variant-caps;font-variant-numeric",
+      longhands: ["font-variant-ligatures", "font-variant-caps", "font-variant-numeric"],
       api_class: true,
       api_methods: ["parseShorthand"],
       is_descriptor: true,
     },
     {
       name: "grid",
-      longhands: "grid-template-rows;grid-template-columns;grid-template-areas;grid-auto-flow;grid-auto-rows;grid-auto-columns;grid-column-gap;grid-row-gap",
+      longhands: ["grid-template-rows", "grid-template-columns", "grid-template-areas", "grid-auto-flow", "grid-auto-rows", "grid-auto-columns", "grid-column-gap", "grid-row-gap"],
       runtime_flag: "CSSGridLayout",
     },
     {
       name: "place-content",
-      longhands: "align-content;justify-content",
+      longhands: ["align-content", "justify-content"],
       runtime_flag: "CSSGridLayout",
     },
     {
       name: "place-items",
-      longhands: "align-items;justify-items",
+      longhands: ["align-items", "justify-items"],
       runtime_flag: "CSSGridLayout",
     },
     {
       name: "place-self",
-      longhands: "align-self;justify-self",
+      longhands: ["align-self", "justify-self"],
       runtime_flag: "CSSGridLayout",
     },
     {
       name: "grid-area",
-      longhands: "grid-row-start;grid-column-start;grid-row-end;grid-column-end",
+      longhands: ["grid-row-start", "grid-column-start", "grid-row-end", "grid-column-end"],
       runtime_flag: "CSSGridLayout",
     },
     {
       name: "grid-column",
-      longhands: "grid-column-start;grid-column-end",
+      longhands: ["grid-column-start", "grid-column-end"],
       runtime_flag: "CSSGridLayout",
     },
     {
       name: "grid-gap",
-      longhands: "grid-row-gap;grid-column-gap",
+      longhands: ["grid-row-gap", "grid-column-gap"],
       runtime_flag: "CSSGridLayout",
     },
     {
       name: "grid-row",
-      longhands: "grid-row-start;grid-row-end",
+      longhands: ["grid-row-start", "grid-row-end"],
       runtime_flag: "CSSGridLayout",
     },
     {
       name: "grid-template",
-      longhands: "grid-template-rows;grid-template-columns;grid-template-areas",
+      longhands: ["grid-template-rows", "grid-template-columns", "grid-template-areas"],
       runtime_flag: "CSSGridLayout",
     },
     {
       name: "list-style",
-      longhands: "list-style-type;list-style-position;list-style-image",
+      longhands: ["list-style-type", "list-style-position", "list-style-image"],
     },
     {
       name: "margin",
-      longhands: "margin-top;margin-right;margin-bottom;margin-left",
+      longhands: ["margin-top", "margin-right", "margin-bottom", "margin-left"],
     },
     {
       name: "marker",
-      longhands: "marker-start;marker-mid;marker-end",
+      longhands: ["marker-start", "marker-mid", "marker-end"],
     },
     {
       name: "offset",
-      longhands: "offset-position;offset-path;offset-distance;offset-rotate;offset-anchor",
+      longhands: ["offset-position", "offset-path", "offset-distance", "offset-rotate", "offset-anchor"],
       api_class: true,
       api_methods: ["parseShorthand"],
     },
     {
       name: "outline",
-      longhands: "outline-color;outline-style;outline-width",
+      longhands: ["outline-color", "outline-style", "outline-width"],
     },
     {
       name: "overflow",
-      longhands: "overflow-x;overflow-y",
+      longhands: ["overflow-x", "overflow-y"],
       api_class: true,
       api_methods: ["parseShorthand"],
     },
     {
       name: "padding",
-      longhands: "padding-top;padding-right;padding-bottom;padding-left",
+      longhands: ["padding-top", "padding-right", "padding-bottom", "padding-left"],
     },
     {
       name: "page-break-after",
-      longhands: "break-after",
+      longhands: ["break-after"],
     },
     {
       name: "page-break-before",
-      longhands: "break-before",
+      longhands: ["break-before"],
     },
     {
       name: "page-break-inside",
-      longhands: "break-inside",
+      longhands: ["break-inside"],
     },
     {
       name: "scroll-padding",
-      longhands: "scroll-padding-top;scroll-padding-right;scroll-padding-bottom;scroll-padding-left",
+      longhands: ["scroll-padding-top", "scroll-padding-right", "scroll-padding-bottom", "scroll-padding-left"],
       runtime_flag: "CSSScrollSnapPoints",
     },
     {
       name: "scroll-padding-block",
-      longhands: "scroll-padding-block-start;scroll-padding-block-end",
+      longhands: ["scroll-padding-block-start", "scroll-padding-block-end"],
       runtime_flag: "CSSScrollSnapPoints",
     },
     {
       name: "scroll-padding-inline",
-      longhands: "scroll-padding-inline-start;scroll-padding-inline-end",
+      longhands: ["scroll-padding-inline-start", "scroll-padding-inline-end"],
       runtime_flag: "CSSScrollSnapPoints",
     },
     {
       name: "scroll-snap-margin",
-      longhands: "scroll-snap-margin-top;scroll-snap-margin-right;scroll-snap-margin-bottom;scroll-snap-margin-left",
+      longhands: ["scroll-snap-margin-top", "scroll-snap-margin-right", "scroll-snap-margin-bottom", "scroll-snap-margin-left"],
       runtime_flag: "CSSScrollSnapPoints",
     },
     {
       name: "scroll-snap-margin-block",
-      longhands: "scroll-snap-margin-block-start;scroll-snap-margin-block-end",
+      longhands: ["scroll-snap-margin-block-start", "scroll-snap-margin-block-end"],
       runtime_flag: "CSSScrollSnapPoints",
     },
     {
       name: "scroll-snap-margin-inline",
-      longhands: "scroll-snap-margin-inline-start;scroll-snap-margin-inline-end",
+      longhands: ["scroll-snap-margin-inline-start", "scroll-snap-margin-inline-end"],
       runtime_flag: "CSSScrollSnapPoints",
     },
     {
       name: "transition",
-      longhands: "transition-property;transition-duration;transition-timing-function;transition-delay",
+      longhands: ["transition-property", "transition-duration", "transition-timing-function", "transition-delay"],
       api_class: true,
       api_methods: ["parseShorthand"],
     },
     {
       name: "-webkit-border-after",
-      longhands: "-webkit-border-after-width;-webkit-border-after-style;-webkit-border-after-color",
+      longhands: ["-webkit-border-after-width", "-webkit-border-after-style", "-webkit-border-after-color"],
     },
     {
       name: "-webkit-border-before",
-      longhands: "-webkit-border-before-width;-webkit-border-before-style;-webkit-border-before-color",
+      longhands: ["-webkit-border-before-width", "-webkit-border-before-style", "-webkit-border-before-color"],
     },
     {
       name: "-webkit-border-end",
-      longhands: "-webkit-border-end-width;-webkit-border-end-style;-webkit-border-end-color",
+      longhands: ["-webkit-border-end-width", "-webkit-border-end-style", "-webkit-border-end-color"],
     },
     {
       name: "-webkit-border-start",
-      longhands: "-webkit-border-start-width;-webkit-border-start-style;-webkit-border-start-color",
+      longhands: ["-webkit-border-start-width", "-webkit-border-start-style", "-webkit-border-start-color"],
     },
     {
       name: "-webkit-column-break-after",
-      longhands: "break-after",
+      longhands: ["break-after"],
     },
     {
       name: "-webkit-column-break-before",
-      longhands: "break-before",
+      longhands: ["break-before"],
     },
     {
       name: "-webkit-column-break-inside",
-      longhands: "break-inside",
+      longhands: ["break-inside"],
     },
     {
       name: "column-rule",
-      longhands: "column-rule-width;column-rule-style;column-rule-color",
+      longhands: ["column-rule-width", "column-rule-style", "column-rule-color"],
     },
     {
       name: "columns",
-      longhands: "column-width;column-count",
+      longhands: ["column-width", "column-count"],
       api_class: true,
       api_methods: ["parseShorthand"],
     },
     {
       name: "-webkit-margin-collapse",
-      longhands: "-webkit-margin-before-collapse;-webkit-margin-after-collapse",
+      longhands: ["-webkit-margin-before-collapse", "-webkit-margin-after-collapse"],
       api_class: true,
       api_methods: ["parseShorthand"],
     },
     {
       name: "-webkit-mask",
-      longhands: "-webkit-mask-image;-webkit-mask-position-x;-webkit-mask-position-y;-webkit-mask-size;-webkit-mask-repeat-x;-webkit-mask-repeat-y;-webkit-mask-origin;-webkit-mask-clip",
+      longhands: ["-webkit-mask-image", "-webkit-mask-position-x", "-webkit-mask-position-y", "-webkit-mask-size", "-webkit-mask-repeat-x", "-webkit-mask-repeat-y", "-webkit-mask-origin", "-webkit-mask-clip"],
     },
     {
       name: "-webkit-mask-box-image",
-      longhands: "-webkit-mask-box-image-source;-webkit-mask-box-image-slice;-webkit-mask-box-image-width;-webkit-mask-box-image-outset;-webkit-mask-box-image-repeat",
+      longhands: ["-webkit-mask-box-image-source", "-webkit-mask-box-image-slice", "-webkit-mask-box-image-width", "-webkit-mask-box-image-outset", "-webkit-mask-box-image-repeat"],
     },
     {
       name: "-webkit-mask-position",
-      longhands: "-webkit-mask-position-x;-webkit-mask-position-y",
+      longhands: ["-webkit-mask-position-x", "-webkit-mask-position-y"],
     },
     {
       name: "-webkit-mask-repeat",
-      longhands: "-webkit-mask-repeat-x;-webkit-mask-repeat-y",
+      longhands: ["-webkit-mask-repeat-x", "-webkit-mask-repeat-y"],
     },
     {
       name: "-webkit-text-emphasis",
-      longhands: "-webkit-text-emphasis-style;-webkit-text-emphasis-color",
+      longhands: ["-webkit-text-emphasis-style", "-webkit-text-emphasis-color"],
     },
     {
       name: "-webkit-text-stroke",
-      longhands: "-webkit-text-stroke-width;-webkit-text-stroke-color",
+      longhands: ["-webkit-text-stroke-width", "-webkit-text-stroke-color"],
     },
 
     // Aliases; these map to the same CSSPropertyID
