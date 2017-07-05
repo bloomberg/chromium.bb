@@ -271,9 +271,13 @@ void PasswordProtectionRequest::Finish(
     std::unique_ptr<LoginReputationClientResponse> response) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   tracker_.TryCancelAll();
-
+  bool is_sync_password =
+      saved_domain_ == std::string(password_manager::kSyncPasswordDomain);
   if (trigger_type_ == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE) {
     UMA_HISTOGRAM_ENUMERATION(kPasswordOnFocusRequestOutcomeHistogramName,
+                              outcome, PasswordProtectionService::MAX_OUTCOME);
+  } else if (is_sync_password) {
+    UMA_HISTOGRAM_ENUMERATION(kSyncPasswordEntryRequestOutcomeHistogramName,
                               outcome, PasswordProtectionService::MAX_OUTCOME);
   } else {
     UMA_HISTOGRAM_ENUMERATION(kPasswordEntryRequestOutcomeHistogramName,
@@ -289,10 +293,17 @@ void PasswordProtectionRequest::Finish(
             LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1);
         break;
       case LoginReputationClientRequest::PASSWORD_REUSE_EVENT:
-        UMA_HISTOGRAM_ENUMERATION(
-            "PasswordProtection.Verdict.ProtectedPasswordEntry",
-            response->verdict_type(),
-            LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1);
+        if (is_sync_password) {
+          UMA_HISTOGRAM_ENUMERATION(
+              "PasswordProtection.Verdict.SyncProtectedPasswordEntry",
+              response->verdict_type(),
+              LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1);
+        } else {
+          UMA_HISTOGRAM_ENUMERATION(
+              "PasswordProtection.Verdict.ProtectedPasswordEntry",
+              response->verdict_type(),
+              LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1);
+        }
         break;
       default:
         NOTREACHED();

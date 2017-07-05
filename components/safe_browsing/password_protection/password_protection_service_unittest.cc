@@ -29,8 +29,6 @@ const char kFormActionUrl[] = "https://form_action.com/";
 const char kPasswordFrameUrl[] = "https://password_frame.com/";
 const char kSavedDomain[] = "saved_domain.com";
 const char kTargetUrl[] = "http://foo.com/";
-const char kVerdictHistogramName[] =
-    "PasswordProtection.Verdict.PasswordFieldOnFocus";
 
 }  // namespace
 
@@ -635,7 +633,8 @@ TEST_F(PasswordProtectionServiceTest, TestRequestTimedout) {
       ElementsAre(base::Bucket(3 /* TIMEDOUT */, 1)));
 }
 
-TEST_F(PasswordProtectionServiceTest, TestRequestAndResponseSuccessfull) {
+TEST_F(PasswordProtectionServiceTest,
+       TestPasswordOnFocusRequestAndResponseSuccessfull) {
   histograms_.ExpectTotalCount(kPasswordOnFocusRequestOutcomeHistogramName, 0);
   // Set up valid response.
   net::TestURLFetcher fetcher(0, GURL("http://bar.com"), nullptr);
@@ -653,7 +652,8 @@ TEST_F(PasswordProtectionServiceTest, TestRequestAndResponseSuccessfull) {
   EXPECT_THAT(
       histograms_.GetAllSamples(kPasswordOnFocusRequestOutcomeHistogramName),
       ElementsAre(base::Bucket(1 /* SUCCEEDED */, 1)));
-  EXPECT_THAT(histograms_.GetAllSamples(kVerdictHistogramName),
+  EXPECT_THAT(histograms_.GetAllSamples(
+                  "PasswordProtection.Verdict.PasswordFieldOnFocus"),
               ElementsAre(base::Bucket(3 /* PHISHING */, 1)));
   LoginReputationClientResponse* actual_response =
       password_protection_service_->latest_response();
@@ -662,6 +662,54 @@ TEST_F(PasswordProtectionServiceTest, TestRequestAndResponseSuccessfull) {
             actual_response->cache_expression());
   EXPECT_EQ(expected_response.cache_duration_sec(),
             actual_response->cache_duration_sec());
+}
+
+TEST_F(PasswordProtectionServiceTest,
+       TestPasswordEntryRequestAndResponseSuccessfull) {
+  histograms_.ExpectTotalCount(kPasswordEntryRequestOutcomeHistogramName, 0);
+  histograms_.ExpectTotalCount(kSyncPasswordEntryRequestOutcomeHistogramName,
+                               0);
+  // Set up valid response.
+  net::TestURLFetcher fetcher(0, GURL("http://bar.com"), nullptr);
+  fetcher.set_status(
+      net::URLRequestStatus(net::URLRequestStatus::SUCCESS, net::OK));
+  fetcher.set_response_code(200);
+  LoginReputationClientResponse expected_response = CreateVerdictProto(
+      LoginReputationClientResponse::PHISHING, 600, GURL(kTargetUrl).host());
+  fetcher.SetResponseString(expected_response.SerializeAsString());
+
+  // Initiate a saved password entry request.
+  InitializeAndStartPasswordEntryRequest(
+      "example.com", false /* match whitelist */, 10000 /* timeout in ms*/);
+  request_->OnURLFetchComplete(&fetcher);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(
+      histograms_.GetAllSamples(kPasswordEntryRequestOutcomeHistogramName),
+      ElementsAre(base::Bucket(1 /* SUCCEEDED */, 1)));
+  EXPECT_THAT(histograms_.GetAllSamples(
+                  "PasswordProtection.Verdict.ProtectedPasswordEntry"),
+              ElementsAre(base::Bucket(3 /* PHISHING */, 1)));
+  histograms_.ExpectTotalCount(kSyncPasswordEntryRequestOutcomeHistogramName,
+                               0);
+
+  // Initiate a sync password entry request.
+  InitializeAndStartPasswordEntryRequest(password_manager::kSyncPasswordDomain,
+                                         false /* match whitelist */,
+                                         10000 /* timeout in ms*/);
+  request_->OnURLFetchComplete(&fetcher);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(
+      histograms_.GetAllSamples(kSyncPasswordEntryRequestOutcomeHistogramName),
+      ElementsAre(base::Bucket(1 /* SUCCEEDED */, 1)));
+  EXPECT_THAT(
+      histograms_.GetAllSamples(kPasswordEntryRequestOutcomeHistogramName),
+      ElementsAre(base::Bucket(1 /* SUCCEEDED */, 1)));
+  EXPECT_THAT(histograms_.GetAllSamples(
+                  "PasswordProtection.Verdict.SyncProtectedPasswordEntry"),
+              ElementsAre(base::Bucket(3 /* PHISHING */, 1)));
+  EXPECT_THAT(histograms_.GetAllSamples(
+                  "PasswordProtection.Verdict.ProtectedPasswordEntry"),
+              ElementsAre(base::Bucket(3 /* PHISHING */, 1)));
 }
 
 TEST_F(PasswordProtectionServiceTest, TestTearDownWithPendingRequests) {
