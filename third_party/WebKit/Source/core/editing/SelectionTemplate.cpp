@@ -15,7 +15,6 @@ SelectionTemplate<Strategy>::SelectionTemplate(const SelectionTemplate& other)
       extent_(other.extent_),
       affinity_(other.affinity_),
       granularity_(other.granularity_),
-      has_trailing_whitespace_(other.has_trailing_whitespace_),
       is_directional_(other.is_directional_),
       is_handle_visible_(other.is_handle_visible_)
 #if DCHECK_IS_ON()
@@ -24,9 +23,6 @@ SelectionTemplate<Strategy>::SelectionTemplate(const SelectionTemplate& other)
 #endif
 {
   DCHECK(other.AssertValid());
-  if (!has_trailing_whitespace_)
-    return;
-  DCHECK_EQ(granularity_, kWordGranularity) << *this;
 }
 
 template <typename Strategy>
@@ -44,7 +40,6 @@ bool SelectionTemplate<Strategy>::operator==(
   DCHECK_EQ(base_.GetDocument(), other.GetDocument()) << *this << ' ' << other;
   return base_ == other.base_ && extent_ == other.extent_ &&
          affinity_ == other.affinity_ && granularity_ == other.granularity_ &&
-         has_trailing_whitespace_ == other.has_trailing_whitespace_ &&
          is_directional_ == other.is_directional_ &&
          is_handle_visible_ == other.is_handle_visible_;
 }
@@ -312,14 +307,6 @@ typename SelectionTemplate<Strategy>::Builder&
 SelectionTemplate<Strategy>::Builder::SetGranularity(
     TextGranularity granularity) {
   selection_.granularity_ = granularity;
-  return *this;
-}
-
-template <typename Strategy>
-typename SelectionTemplate<Strategy>::Builder&
-SelectionTemplate<Strategy>::Builder::SetHasTrailingWhitespace(
-    bool has_trailing_whitespace) {
-  selection_.has_trailing_whitespace_ = has_trailing_whitespace;
   return *this;
 }
 

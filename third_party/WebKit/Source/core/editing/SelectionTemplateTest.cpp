@@ -16,7 +16,6 @@ TEST_F(SelectionTest, defaultConstructor) {
 
   EXPECT_EQ(TextAffinity::kDownstream, selection.Affinity());
   EXPECT_EQ(kCharacterGranularity, selection.Granularity());
-  EXPECT_FALSE(selection.HasTrailingWhitespace());
   EXPECT_FALSE(selection.IsDirectional());
   EXPECT_FALSE(selection.IsHandleVisible());
   EXPECT_TRUE(selection.IsNone());
@@ -35,7 +34,6 @@ TEST_F(SelectionTest, caret) {
 
   EXPECT_EQ(TextAffinity::kDownstream, selection.Affinity());
   EXPECT_EQ(kCharacterGranularity, selection.Granularity());
-  EXPECT_FALSE(selection.HasTrailingWhitespace());
   EXPECT_FALSE(selection.IsDirectional());
   EXPECT_FALSE(selection.IsHandleVisible());
   EXPECT_FALSE(selection.IsNone());
@@ -56,7 +54,6 @@ TEST_F(SelectionTest, range) {
 
   EXPECT_EQ(TextAffinity::kDownstream, selection.Affinity());
   EXPECT_EQ(kCharacterGranularity, selection.Granularity());
-  EXPECT_FALSE(selection.HasTrailingWhitespace());
   EXPECT_FALSE(selection.IsDirectional());
   EXPECT_FALSE(selection.IsHandleVisible());
   EXPECT_FALSE(selection.IsNone());

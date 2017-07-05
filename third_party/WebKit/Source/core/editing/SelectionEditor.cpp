@@ -415,7 +415,6 @@ void SelectionEditor::UpdateCachedVisibleSelectionInFlatTreeIfNeeded() const {
   else if (extent.IsNotNull())
     builder.Collapse(extent);
   builder.SetAffinity(selection_.Affinity())
-      .SetHasTrailingWhitespace(selection_.HasTrailingWhitespace())
       .SetGranularity(selection_.Granularity())
       .SetIsDirectional(selection_.IsDirectional());
   cached_visible_selection_in_flat_tree_ =
