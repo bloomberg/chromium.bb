@@ -29,11 +29,12 @@ import org.chromium.content_public.browser.LoadUrlParams;
 @RunWith(BaseJUnit4ClassRunner.class)
 public class TabModelSelectorTabObserverTest {
     // Do not add @Rule to this, it's already added to RuleChain
-    private TabModelSelectorObserverTestRule mTestRule = new TabModelSelectorObserverTestRule();
+    private final TabModelSelectorObserverTestRule mTestRule =
+            new TabModelSelectorObserverTestRule();
 
     @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     @Rule
-    public RuleChain mChain = RuleChain.outerRule(mTestRule).around(new UiThreadTestRule());
+    public final RuleChain mChain = RuleChain.outerRule(mTestRule).around(new UiThreadTestRule());
 
     @Test
     @UiThreadTest

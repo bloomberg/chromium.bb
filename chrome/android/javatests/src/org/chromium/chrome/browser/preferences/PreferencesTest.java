@@ -15,7 +15,6 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,7 +33,7 @@ import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.LoadListener;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrl;
-import org.chromium.content.browser.test.NativeLibraryTestRule;
+import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.content.browser.test.util.UiUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -48,12 +47,7 @@ import java.util.List;
 @RunWith(BaseJUnit4ClassRunner.class)
 public class PreferencesTest {
     @Rule
-    public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
-
-    @Before
-    public void setUp() throws Exception {
-        mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();
-    }
+    public final ChromeBrowserTestRule mBrowserTestRule = new ChromeBrowserTestRule();
 
     /**
      * Launches the preferences menu and starts the preferences activity named fragmentName.
@@ -106,16 +100,8 @@ public class PreferencesTest {
                 SearchEnginePreference pref =
                         (SearchEnginePreference) prefActivity.getFragmentForTest();
                 pref.setValueForTesting("1");
-            }
-        });
 
-
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
                 // Ensure that the second search engine in the list is selected.
-                SearchEnginePreference pref =
-                        (SearchEnginePreference) prefActivity.getFragmentForTest();
                 Assert.assertNotNull(pref);
                 Assert.assertEquals("1", pref.getValueForTesting());
 

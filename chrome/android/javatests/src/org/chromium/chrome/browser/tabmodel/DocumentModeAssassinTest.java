@@ -6,14 +6,22 @@ package org.chromium.chrome.browser.tabmodel;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
-import android.test.MoreAsserts;
+
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.DisabledTest;
@@ -29,8 +37,9 @@ import org.chromium.chrome.browser.tabmodel.document.ActivityDelegate;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModel;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelImpl;
 import org.chromium.chrome.browser.tabmodel.document.MockDocumentTabModel;
+import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.chrome.test.util.browser.tabmodel.document.MockActivityDelegate;
-import org.chromium.content.browser.test.NativeLibraryTestBase;
+import org.chromium.content.browser.test.NativeLibraryTestRule;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -48,7 +57,11 @@ import javax.annotation.Nullable;
  * This test is meant to run without the native library loaded, only loading it when confirming
  * that files have been written correctly.
  */
-public class DocumentModeAssassinTest extends NativeLibraryTestBase {
+@RunWith(BaseJUnit4ClassRunner.class)
+public class DocumentModeAssassinTest {
+    @Rule
+    public final NativeLibraryTestRule mTestRule = new NativeLibraryTestRule();
+
     private static final String TAG = "DocumentModeAssassin";
 
     private static final String DOCUMENT_MODE_DIRECTORY_NAME = "ChromeDocumentActivity";
@@ -66,10 +79,10 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
     private CallbackHelper mFinishAllDocumentActivitiesCallback;
     private MockDocumentTabModel mTestTabModel;
 
-    @Override
+    @Before
     public void setUp() throws Exception {
-        super.setUp();
-        mContext = new AdvancedMockContext(getInstrumentation().getTargetContext());
+        mContext = new AdvancedMockContext(
+                InstrumentationRegistry.getInstrumentation().getTargetContext());
         mDocumentModeDirectory = new TestTabModelDirectory(
                 mContext, DOCUMENT_MODE_DIRECTORY_NAME, null);
         mTabbedModeDirectory = new TestTabModelDirectory(
@@ -103,7 +116,7 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
                 for (int i = 0; i < TEST_INFO.contents.length; i++) {
                     if (TEST_INFO.selectedTabId == TEST_INFO.contents[i].tabId) return i;
                 }
-                fail();
+                Assert.fail();
                 return TabModel.INVALID_TAB_INDEX;
             }
 
@@ -114,13 +127,13 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
                         return TAB_STATE_INFO[i].url;
                     }
                 }
-                fail();
+                Assert.fail();
                 return null;
             }
         };
     }
 
-    @Override
+    @After
     public void tearDown() throws Exception {
         try {
             if (mDocumentModeDirectory != null) mDocumentModeDirectory.tearDown();
@@ -133,8 +146,6 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
         } catch (Exception e) {
             Log.e(TAG, "Failed to clean up tabbed mode directory.");
         }
-
-        super.tearDown();
     }
 
     private void writeUselessFileToDirectory(File directory, String filename) {
@@ -151,6 +162,7 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
     }
 
     /** Tests that migration finishes immediately if migration isn't necessary. */
+    @Test
     @SmallTest
     public void testMigrationSkippedIfUnneeded() throws Exception {
         final CallbackHelper doneCallback = new CallbackHelper();
@@ -160,7 +172,7 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
                 if (newStage == DocumentModeAssassin.STAGE_DONE) {
                     doneCallback.notifyCalled();
                 } else {
-                    fail("Unexpected stage: " + newStage);
+                    Assert.fail("Unexpected stage: " + newStage);
                 }
             }
         };
@@ -171,7 +183,7 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
             @Override
             public void run() {
                 assassin.addObserver(observer);
-                assertEquals(0, doneCallback.getCallCount());
+                Assert.assertEquals(0, doneCallback.getCallCount());
                 assassin.migrateFromDocumentToTabbedMode();
             }
         });
@@ -182,6 +194,7 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
     /** Tests the full pathway. */
     // Flaky, see http://crbug/666815.
     // @MediumTest
+    @Test
     @DisabledTest
     public void testFullMigration() throws Exception {
         final CallbackHelper copyStartedCallback = new CallbackHelper();
@@ -230,14 +243,14 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
             @Override
             public void run() {
                 assassin.addObserver(observer);
-                assertEquals(0, copyStartedCallback.getCallCount());
-                assertEquals(0, copyDoneCallback.getCallCount());
-                assertEquals(0, writeStartedCallback.getCallCount());
-                assertEquals(0, writeDoneCallback.getCallCount());
-                assertEquals(0, changeStartedCallback.getCallCount());
-                assertEquals(0, changeDoneCallback.getCallCount());
-                assertEquals(0, deletionStartedCallback.getCallCount());
-                assertEquals(0, deletionDoneCallback.getCallCount());
+                Assert.assertEquals(0, copyStartedCallback.getCallCount());
+                Assert.assertEquals(0, copyDoneCallback.getCallCount());
+                Assert.assertEquals(0, writeStartedCallback.getCallCount());
+                Assert.assertEquals(0, writeDoneCallback.getCallCount());
+                Assert.assertEquals(0, changeStartedCallback.getCallCount());
+                Assert.assertEquals(0, changeDoneCallback.getCallCount());
+                Assert.assertEquals(0, deletionStartedCallback.getCallCount());
+                Assert.assertEquals(0, deletionDoneCallback.getCallCount());
                 assassin.migrateFromDocumentToTabbedMode();
             }
         });
@@ -251,8 +264,8 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
         writeStartedCallback.waitForCallback(0);
         writeDoneCallback.waitForCallback(0);
         File[] tabbedModeFilesAfter = mTabbedModeDirectory.getDataDirectory().listFiles();
-        assertNotNull(tabbedModeFilesAfter);
-        assertEquals(copiedIds.size() + 1, tabbedModeFilesAfter.length);
+        Assert.assertNotNull(tabbedModeFilesAfter);
+        Assert.assertEquals(copiedIds.size() + 1, tabbedModeFilesAfter.length);
 
         // Confirm that the user got moved into tabbed mode.
         changeStartedCallback.waitForCallback(0);
@@ -263,7 +276,7 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
         // Confirm that the document mode directory got nuked.
         deletionStartedCallback.waitForCallback(0);
         deletionDoneCallback.waitForCallback(0);
-        assertFalse(mDocumentModeDirectory.getDataDirectory().exists());
+        Assert.assertFalse(mDocumentModeDirectory.getDataDirectory().exists());
 
         // Confirm that the TabModelMetadata file is correct.  This is done after the pipeline
         // completes to avoid loading the native library.
@@ -271,6 +284,7 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
     }
 
     /** Tests the fallback pathway, triggered when the user has failed to migrate too many times. */
+    @Test
     @MediumTest
     @RetryOnFailure
     public void testForceMigrationAfterFailures() throws Exception {
@@ -285,7 +299,7 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
                 if (newStage == DocumentModeAssassin.STAGE_COPY_TAB_STATES_STARTED
                         || newStage == DocumentModeAssassin.STAGE_COPY_TAB_STATES_DONE
                         || newStage == DocumentModeAssassin.STAGE_WRITE_TABMODEL_METADATA_STARTED) {
-                    fail();
+                    Assert.fail();
                 } else if (newStage == DocumentModeAssassin.STAGE_WRITE_TABMODEL_METADATA_DONE) {
                     writeDoneCallback.notifyCalled();
                 } else if (newStage == DocumentModeAssassin.STAGE_CHANGE_SETTINGS_STARTED) {
@@ -314,11 +328,11 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
             @Override
             public void run() {
                 assassin.addObserver(observer);
-                assertEquals(0, writeDoneCallback.getCallCount());
-                assertEquals(0, changeStartedCallback.getCallCount());
-                assertEquals(0, changeDoneCallback.getCallCount());
-                assertEquals(0, deletionStartedCallback.getCallCount());
-                assertEquals(0, deletionDoneCallback.getCallCount());
+                Assert.assertEquals(0, writeDoneCallback.getCallCount());
+                Assert.assertEquals(0, changeStartedCallback.getCallCount());
+                Assert.assertEquals(0, changeDoneCallback.getCallCount());
+                Assert.assertEquals(0, deletionStartedCallback.getCallCount());
+                Assert.assertEquals(0, deletionDoneCallback.getCallCount());
                 assassin.migrateFromDocumentToTabbedMode();
             }
         });
@@ -333,12 +347,13 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
         // Confirm that the document mode directory got nuked.
         deletionStartedCallback.waitForCallback(0);
         deletionDoneCallback.waitForCallback(0);
-        assertFalse(mDocumentModeDirectory.getDataDirectory().exists());
+        Assert.assertFalse(mDocumentModeDirectory.getDataDirectory().exists());
     }
 
     /**
      * Tests that the preference to knock a user out of document mode is properly set.
      */
+    @Test
     @SmallTest
     public void testForceToTabbedMode() throws Exception {
         final CallbackHelper changeStartedCallback = new CallbackHelper();
@@ -361,8 +376,8 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
             @Override
             public void run() {
                 assassin.addObserver(observer);
-                assertEquals(0, changeStartedCallback.getCallCount());
-                assertEquals(0, changeDoneCallback.getCallCount());
+                Assert.assertEquals(0, changeStartedCallback.getCallCount());
+                Assert.assertEquals(0, changeDoneCallback.getCallCount());
                 assassin.switchToTabbedMode();
             }
         });
@@ -377,7 +392,7 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                assertTrue(DocumentModeAssassin.isOptedOutOfDocumentMode());
+                Assert.assertTrue(DocumentModeAssassin.isOptedOutOfDocumentMode());
             }
         });
     }
@@ -386,6 +401,9 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
      * Tests that the {@link DocumentTabModel}'s data is properly saved out for a
      * {@link TabModelImpl}.
      */
+    // TODO (thildebr): Test disabled for now, used to crash because of AccountManagerHelper, but
+    // now fails because the tab model metadata file is actually incorrect.
+    @Test
     @MediumTest
     public void testWriteTabModelMetadata() throws Exception {
         // Write the TabState files into the tabbed mode directory directly, but fail to copy just
@@ -416,14 +434,14 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
         };
 
         File[] tabbedModeFilesBefore = mTabbedModeDirectory.getDataDirectory().listFiles();
-        assertNotNull(tabbedModeFilesBefore);
+        Assert.assertNotNull(tabbedModeFilesBefore);
         int numFilesBefore = tabbedModeFilesBefore.length;
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 assassin.addObserver(observer);
-                assertEquals(0, writeStartedCallback.getCallCount());
-                assertEquals(0, writeDoneCallback.getCallCount());
+                Assert.assertEquals(0, writeStartedCallback.getCallCount());
+                Assert.assertEquals(0, writeDoneCallback.getCallCount());
                 assassin.writeTabModelMetadata(migratedTabIds);
             }
         });
@@ -432,8 +450,8 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
         writeStartedCallback.waitForCallback(0);
         writeDoneCallback.waitForCallback(0);
         File[] tabbedModeFilesAfter = mTabbedModeDirectory.getDataDirectory().listFiles();
-        assertNotNull(tabbedModeFilesAfter);
-        assertEquals(numFilesBefore + 1, tabbedModeFilesAfter.length);
+        Assert.assertNotNull(tabbedModeFilesAfter);
+        Assert.assertEquals(numFilesBefore + 1, tabbedModeFilesAfter.length);
         confirmTabModelMetadataFileIsCorrect(failureCase);
     }
 
@@ -441,27 +459,33 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
             throws Exception {
         // Load up the metadata file via a TabPersistentStore to make sure that it contains all of
         // the migrated tab information.
-        loadNativeLibraryAndInitBrowserProcess();
+        SigninTestUtil.setUpAuthForTest(InstrumentationRegistry.getInstrumentation());
+        mTestRule.loadNativeLibraryAndInitBrowserProcess();
         TabPersistentStore.setBaseStateDirectoryForTests(mTabbedModeDirectory.getBaseDirectory());
 
         TestTabModelSelector selector = new TestTabModelSelector();
-        TabPersistentStore store = selector.mTabPersistentStore;
+        final TabPersistentStore store = selector.mTabPersistentStore;
         MockTabPersistentStoreObserver mockObserver = selector.mTabPersistentStoreObserver;
 
         // Load up the TabModel metadata.
         int numExpectedTabs = TEST_INFO.numRegularTabs + TEST_INFO.numIncognitoTabs;
         store.loadState(false /* ignoreIncognitoFiles */);
         mockObserver.initializedCallback.waitForCallback(0, 1);
-        assertEquals(numExpectedTabs, mockObserver.mTabCountAtStartup);
+        Assert.assertEquals(numExpectedTabs, mockObserver.mTabCountAtStartup);
         mockObserver.detailsReadCallback.waitForCallback(0, TEST_INFO.contents.length);
-        assertEquals(numExpectedTabs, mockObserver.details.size());
+        Assert.assertEquals(numExpectedTabs, mockObserver.details.size());
 
         // Restore the TabStates, then confirm that things were restored correctly, in the right tab
         // order and with the right URLs.
-        store.restoreTabs(true);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                store.restoreTabs(true);
+            }
+        });
         mockObserver.stateLoadedCallback.waitForCallback(0, 1);
-        assertEquals(TEST_INFO.numRegularTabs, selector.getModel(false).getCount());
-        assertEquals(TEST_INFO.numIncognitoTabs, selector.getModel(true).getCount());
+        Assert.assertEquals(TEST_INFO.numRegularTabs, selector.getModel(false).getCount());
+        Assert.assertEquals(TEST_INFO.numIncognitoTabs, selector.getModel(true).getCount());
 
         for (int i = 0; i < numExpectedTabs; i++) {
             int savedTabId = TEST_INFO.contents[i].tabId;
@@ -469,10 +493,10 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
 
             if (failureCase != null && failureCase.tabId == savedTabId) {
                 // The Tab without a written TabState file will get a new Tab ID.
-                MoreAsserts.assertNotEqual(failureCase.tabId, restoredId);
+                Assert.assertNotEquals(failureCase.tabId, restoredId);
             } else {
                 // Restored Tabs get the ID that they expected.
-                assertEquals(savedTabId, restoredId);
+                Assert.assertEquals(savedTabId, restoredId);
             }
 
             // The URL wasn't written into the metadata file, so this will be correct only if
@@ -480,17 +504,23 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
             // In the case where we intentionally didn't copy the TabState file, the metadata file
             // will contain the URL that the DocumentActivity was initially launched for, which gets
             // used as the fallback.
-            assertEquals(TEST_INFO.contents[i].url, selector.getModel(false).getTabAt(i).getUrl());
+            Assert.assertEquals(
+                    TEST_INFO.contents[i].url, selector.getModel(false).getTabAt(i).getUrl());
         }
+
+        SigninTestUtil.resetSigninState();
+        SigninTestUtil.tearDownAuthForTest();
     }
 
     /** Checks that all TabState files are copied successfully. */
+    @Test
     @MediumTest
     public void testCopyTabStateFiles() throws Exception {
         performCopyTest(Tab.INVALID_TAB_ID);
     }
 
     /** Confirms that the selected tab's TabState file is copied before all the other ones. */
+    @Test
     @MediumTest
     public void testSelectedTabCopiedFirst() throws Exception {
         performCopyTest(TestTabModelDirectory.V2_HAARETZ.tabId);
@@ -528,9 +558,9 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
             @Override
             public void run() {
                 assassin.addObserver(observer);
-                assertEquals(0, copyStartedCallback.getCallCount());
-                assertEquals(0, copyDoneCallback.getCallCount());
-                assertEquals(0, copyCallback.getCallCount());
+                Assert.assertEquals(0, copyStartedCallback.getCallCount());
+                Assert.assertEquals(0, copyDoneCallback.getCallCount());
+                Assert.assertEquals(0, copyCallback.getCallCount());
                 assassin.copyTabStateFiles(selectedTabId);
             }
         });
@@ -538,7 +568,9 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
 
         // Confirm that the first TabState file copied back is the selected one.
         copyCallback.waitForCallback(0);
-        if (selectedTabId != Tab.INVALID_TAB_ID) assertEquals(selectedTabId, firstCopiedId.get());
+        if (selectedTabId != Tab.INVALID_TAB_ID) {
+            Assert.assertEquals(selectedTabId, firstCopiedId.get());
+        }
 
         copyDoneCallback.waitForCallback(0);
         confirmCopySuccessful(copyCallback, copiedIds);
@@ -546,28 +578,29 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
 
     private void confirmCopySuccessful(CallbackHelper copyCallback, ArrayList<Integer> copiedIds) {
         // Confirm that all the TabState files were copied over.
-        assertEquals(TAB_STATE_INFO.length, copyCallback.getCallCount());
-        assertEquals(TAB_STATE_INFO.length, copiedIds.size());
+        Assert.assertEquals(TAB_STATE_INFO.length, copyCallback.getCallCount());
+        Assert.assertEquals(TAB_STATE_INFO.length, copiedIds.size());
         for (int i = 0; i < TAB_STATE_INFO.length; i++) {
-            assertTrue(copiedIds.contains(TAB_STATE_INFO[i].tabId));
+            Assert.assertTrue(copiedIds.contains(TAB_STATE_INFO[i].tabId));
         }
 
         // Confirm that the legitimate TabState files were all copied over.
         File[] tabbedModeFilesAfter = mTabbedModeDirectory.getDataDirectory().listFiles();
-        assertNotNull(tabbedModeFilesAfter);
+        Assert.assertNotNull(tabbedModeFilesAfter);
         // +1 is for the original tab_state file in the tabbed directory.
-        assertEquals(TAB_STATE_INFO.length + 1, tabbedModeFilesAfter.length);
+        Assert.assertEquals(TAB_STATE_INFO.length + 1, tabbedModeFilesAfter.length);
 
         for (int i = 0; i < TAB_STATE_INFO.length; i++) {
             boolean found = false;
             for (int j = 0; j < tabbedModeFilesAfter.length && !found; j++) {
                 found |= TAB_STATE_INFO[i].filename.equals(tabbedModeFilesAfter[j].getName());
             }
-            assertTrue("Couldn't find file: " + TAB_STATE_INFO[i].filename, found);
+            Assert.assertTrue("Couldn't find file: " + TAB_STATE_INFO[i].filename, found);
         }
     }
 
     /** Confirms that document mode data gets completely deleted. */
+    @Test
     @MediumTest
     public void testDeleteDocumentData() throws Exception {
         final CallbackHelper deleteStartedCallback = new CallbackHelper();
@@ -584,7 +617,7 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
 
             @Override
             public void onTabStateFileCopied(int copiedId) {
-                fail();
+                Assert.fail();
             }
         };
 
@@ -604,8 +637,8 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
             @Override
             public void run() {
                 assassin.addObserver(observer);
-                assertEquals(0, deleteStartedCallback.getCallCount());
-                assertEquals(0, deleteDoneCallback.getCallCount());
+                Assert.assertEquals(0, deleteStartedCallback.getCallCount());
+                Assert.assertEquals(0, deleteDoneCallback.getCallCount());
                 assassin.deleteDocumentModeData();
             }
         });
@@ -613,10 +646,11 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
         // Make sure the directory is gone and that the prefs are cleared.
         deleteStartedCallback.waitForCallback(0);
         deleteDoneCallback.waitForCallback(0);
-        assertFalse(mDocumentModeDirectory.getDataDirectory().exists());
-        assertFalse(prefs.contains(keyToBeDeleted));
+        Assert.assertFalse(mDocumentModeDirectory.getDataDirectory().exists());
+        Assert.assertFalse(prefs.contains(keyToBeDeleted));
     }
 
+    @Test
     @SmallTest
     public void testIsOptedOutOfDocumentModeMigration() throws Exception {
         TabPersistentStore.setBaseStateDirectoryForTests(mTabbedModeDirectory.getBaseDirectory());
@@ -627,7 +661,7 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
         sharedPreferencesEditor.remove(DocumentModeAssassin.MIGRATION_ON_UPGRADE_ATTEMPTED);
         sharedPreferencesEditor.remove(DocumentModeAssassin.OPT_OUT_STATE);
         sharedPreferencesEditor.apply();
-        assertTrue(DocumentModeAssassin.isOptedOutOfDocumentMode());
+        Assert.assertTrue(DocumentModeAssassin.isOptedOutOfDocumentMode());
 
         // If the preference for opting out of document mode is set, the user is not in document
         // mode.
@@ -635,7 +669,7 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
         sharedPreferencesEditor.putInt(DocumentModeAssassin.OPT_OUT_STATE,
                 DocumentModeAssassin.OPTED_OUT_OF_DOCUMENT_MODE);
         sharedPreferencesEditor.apply();
-        assertTrue(DocumentModeAssassin.isOptedOutOfDocumentMode());
+        Assert.assertTrue(DocumentModeAssassin.isOptedOutOfDocumentMode());
 
         // If the user has been migrated into document mode and no preference has been set for
         // OPT_OUT_STATE, the user should still be in document mode.
@@ -643,7 +677,7 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
                 true);
         sharedPreferencesEditor.remove(DocumentModeAssassin.OPT_OUT_STATE);
         sharedPreferencesEditor.apply();
-        assertFalse(DocumentModeAssassin.isOptedOutOfDocumentMode());
+        Assert.assertFalse(DocumentModeAssassin.isOptedOutOfDocumentMode());
 
         // If the user has been migrated into document mode and no preference has been set for
         // OPT_OUT_STATE, but a "new" tabbed mode metadata file exists, migration has already been
@@ -653,7 +687,7 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
         sharedPreferencesEditor.remove(DocumentModeAssassin.OPT_OUT_STATE);
         sharedPreferencesEditor.apply();
         mTabbedModeDirectory.writeTabModelFiles(TestTabModelDirectory.TAB_MODEL_METADATA_V5, false);
-        assertTrue(DocumentModeAssassin.isOptedOutOfDocumentMode());
+        Assert.assertTrue(DocumentModeAssassin.isOptedOutOfDocumentMode());
     }
 
     /** Creates a DocumentModeAssassin with all of its calls pointing at our mocked classes.

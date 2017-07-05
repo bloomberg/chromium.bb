@@ -6,21 +6,22 @@ package org.chromium.chrome.browser.omnibox;
 
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
+import android.support.test.annotation.UiThreadTest;
 import android.support.test.filters.SmallTest;
+import android.support.test.rule.UiThreadTestRule;
 import android.text.TextUtils;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestion.MatchClassification;
 import org.chromium.chrome.browser.omnibox.VoiceSuggestionProvider.VoiceResult;
-import org.chromium.content.browser.test.NativeLibraryTestRule;
+import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,12 +34,8 @@ import java.util.List;
 @RunWith(BaseJUnit4ClassRunner.class)
 public class VoiceSuggestionProviderTest {
     @Rule
-    public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
-
-    @Before
-    public void setUp() throws Exception {
-        mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();
-    }
+    public final RuleChain mChain =
+            RuleChain.outerRule(new ChromeBrowserTestRule()).around(new UiThreadTestRule());
 
     private static OmniboxSuggestion createDummySuggestion(String text) {
         List<MatchClassification> classifications = new ArrayList<>();
@@ -132,300 +129,229 @@ public class VoiceSuggestionProviderTest {
 
     @Test
     @SmallTest
+    @UiThreadTest
     @Feature({"Omnibox"})
     public void testParseEmptyBundle() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                VoiceSuggestionProvider provider = new VoiceSuggestionProvider(0.0f, 1.1f);
+        VoiceSuggestionProvider provider = new VoiceSuggestionProvider(0.0f, 1.1f);
 
-                provider.setVoiceResultsFromIntentBundle(new Bundle());
+        provider.setVoiceResultsFromIntentBundle(new Bundle());
 
-                Assert.assertNotNull("Results is null", provider.getResults());
-                Assert.assertEquals("SuggestionProvider added invalid results", 0,
-                        provider.getResults().size());
+        Assert.assertNotNull("Results is null", provider.getResults());
+        Assert.assertEquals(
+                "SuggestionProvider added invalid results", 0, provider.getResults().size());
 
-                provider.addVoiceSuggestions(null, 3);
-            }
-        });
+        provider.addVoiceSuggestions(null, 3);
     }
 
     @Test
     @SmallTest
+    @UiThreadTest
     @Feature({"Omnibox"})
     public void testParseBundle() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                VoiceSuggestionProvider provider = new VoiceSuggestionProvider(0.0f, 1.1f);
+        VoiceSuggestionProvider provider = new VoiceSuggestionProvider(0.0f, 1.1f);
 
-                String[] texts = new String[] { "a", "b", "c" };
-                float[] confidences = new float[] { 0.8f, 1.0f, 1.0f };
+        String[] texts = new String[] {"a", "b", "c"};
+        float[] confidences = new float[] {0.8f, 1.0f, 1.0f};
 
-                provider.setVoiceResultsFromIntentBundle(createDummyBundle(texts, confidences));
+        provider.setVoiceResultsFromIntentBundle(createDummyBundle(texts, confidences));
 
-                assertVoiceResultsAreEqual(provider.getResults(), texts, confidences);
-            }
-        });
+        assertVoiceResultsAreEqual(provider.getResults(), texts, confidences);
     }
 
     @Test
     @SmallTest
+    @UiThreadTest
     @Feature({"Omnibox"})
     public void testNoSuggestions() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                VoiceSuggestionProvider provider = new VoiceSuggestionProvider(0.0f, 1.1f);
-                List<OmniboxSuggestion> suggestions =
-                        createDummySuggestions("a", "b", "c");
-                List<OmniboxSuggestion> updatedSuggestions =
-                        provider.addVoiceSuggestions(suggestions, 10);
+        VoiceSuggestionProvider provider = new VoiceSuggestionProvider(0.0f, 1.1f);
+        List<OmniboxSuggestion> suggestions = createDummySuggestions("a", "b", "c");
+        List<OmniboxSuggestion> updatedSuggestions = provider.addVoiceSuggestions(suggestions, 10);
 
-                android.test.MoreAsserts.assertEquals(
-                        suggestions.toArray(), updatedSuggestions.toArray());
-            }
-        });
+        android.test.MoreAsserts.assertEquals(suggestions.toArray(), updatedSuggestions.toArray());
     }
 
     @Test
     @SmallTest
-    @Feature({"Omnibox"})
+    @UiThreadTest
     public void testClearVoiceResults() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                VoiceSuggestionProvider provider = new VoiceSuggestionProvider(0.0f, 1.1f);
+        VoiceSuggestionProvider provider = new VoiceSuggestionProvider(0.0f, 1.1f);
 
-                String[] texts = new String[] { "a", "b", "c" };
-                float[] confidences = new float[] { 1.0f, 0.99f, 0.98f };
+        String[] texts = new String[] {"a", "b", "c"};
+        float[] confidences = new float[] {1.0f, 0.99f, 0.98f};
 
-                provider.setVoiceResultsFromIntentBundle(createDummyBundle(texts, confidences));
+        provider.setVoiceResultsFromIntentBundle(createDummyBundle(texts, confidences));
 
-                Assert.assertNotNull(provider.getResults());
-                Assert.assertEquals(
-                        "Invalid number of results", texts.length, provider.getResults().size());
+        Assert.assertNotNull(provider.getResults());
+        Assert.assertEquals(
+                "Invalid number of results", texts.length, provider.getResults().size());
 
-                provider.clearVoiceSearchResults();
+        provider.clearVoiceSearchResults();
 
-                Assert.assertEquals(0, provider.getResults().size());
-            }
-        });
+        Assert.assertEquals(0, provider.getResults().size());
     }
 
     @Test
     @SmallTest
+    @UiThreadTest
     @Feature({"Omnibox"})
     public void testAddToEmtpyResultsCase() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                VoiceSuggestionProvider provider = new VoiceSuggestionProvider(0.0f, 1.1f);
+        VoiceSuggestionProvider provider = new VoiceSuggestionProvider(0.0f, 1.1f);
 
-                String[] texts = new String[] { "a", "b", "c" };
-                float[] confidences = new float[] { 1.0f, 1.0f, 1.0f };
+        String[] texts = new String[] {"a", "b", "c"};
+        float[] confidences = new float[] {1.0f, 1.0f, 1.0f};
 
-                provider.setVoiceResultsFromIntentBundle(createDummyBundle(texts, confidences));
-                assertVoiceResultsAreEqual(provider.getResults(), texts, confidences);
-                List<OmniboxSuggestion> suggestions =
-                        provider.addVoiceSuggestions(null, texts.length);
-                assertArrayEndsWith(suggestions, provider.getResults(), texts.length);
-            }
-        });
+        provider.setVoiceResultsFromIntentBundle(createDummyBundle(texts, confidences));
+        assertVoiceResultsAreEqual(provider.getResults(), texts, confidences);
+        List<OmniboxSuggestion> suggestions = provider.addVoiceSuggestions(null, texts.length);
+        assertArrayEndsWith(suggestions, provider.getResults(), texts.length);
     }
 
     @Test
     @SmallTest
+    @UiThreadTest
     @Feature({"Omnibox"})
     public void testAddToEmptyOverflowCase() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                VoiceSuggestionProvider provider = new VoiceSuggestionProvider(0.0f, 1.1f);
+        VoiceSuggestionProvider provider = new VoiceSuggestionProvider(0.0f, 1.1f);
 
-                String[] texts = new String[] { "a", "b", "c" };
-                float[] confidences = new float[] { 1.0f, 1.0f, 1.0f };
+        String[] texts = new String[] {"a", "b", "c"};
+        float[] confidences = new float[] {1.0f, 1.0f, 1.0f};
 
-                provider.setVoiceResultsFromIntentBundle(createDummyBundle(texts, confidences));
-                assertVoiceResultsAreEqual(provider.getResults(), texts, confidences);
+        provider.setVoiceResultsFromIntentBundle(createDummyBundle(texts, confidences));
+        assertVoiceResultsAreEqual(provider.getResults(), texts, confidences);
 
-                List<OmniboxSuggestion> suggestions = provider.addVoiceSuggestions(null, 2);
-                assertArrayEndsWith(suggestions, provider.getResults(), 2);
-            }
-        });
+        List<OmniboxSuggestion> suggestions = provider.addVoiceSuggestions(null, 2);
+        assertArrayEndsWith(suggestions, provider.getResults(), 2);
     }
 
     @Test
     @SmallTest
-    @Feature({"Omnibox"})
+    @UiThreadTest
     public void testAddToResultsCase() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                VoiceSuggestionProvider provider = new VoiceSuggestionProvider(0.0f, 1.1f);
+        VoiceSuggestionProvider provider = new VoiceSuggestionProvider(0.0f, 1.1f);
 
-                String[] texts = new String[] { "a", "b", "c" };
-                float[] confidences = new float[] { 1.0f, 1.0f, 1.0f };
+        String[] texts = new String[] {"a", "b", "c"};
+        float[] confidences = new float[] {1.0f, 1.0f, 1.0f};
 
-                provider.setVoiceResultsFromIntentBundle(createDummyBundle(texts, confidences));
+        provider.setVoiceResultsFromIntentBundle(createDummyBundle(texts, confidences));
 
-                List<OmniboxSuggestion> suggestions =
-                        createDummySuggestions("oa", "ob", "oc");
-                List<OmniboxSuggestion> updatedSuggestions =
-                        provider.addVoiceSuggestions(suggestions, texts.length);
+        List<OmniboxSuggestion> suggestions = createDummySuggestions("oa", "ob", "oc");
+        List<OmniboxSuggestion> updatedSuggestions =
+                provider.addVoiceSuggestions(suggestions, texts.length);
 
-                assertArrayStartsWith(updatedSuggestions, suggestions);
-                assertArrayEndsWith(updatedSuggestions, provider.getResults(), texts.length);
-            }
-        });
+        assertArrayStartsWith(updatedSuggestions, suggestions);
+        assertArrayEndsWith(updatedSuggestions, provider.getResults(), texts.length);
     }
 
     @Test
     @SmallTest
+    @UiThreadTest
     @Feature({"Omnibox"})
     public void testAddToResultsOverflowCase() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                VoiceSuggestionProvider provider = new VoiceSuggestionProvider(0.0f, 1.1f);
+        VoiceSuggestionProvider provider = new VoiceSuggestionProvider(0.0f, 1.1f);
 
-                String[] texts = new String[] { "a", "b", "c" };
-                float[] confidences = new float[] { 1.0f, 1.0f, 1.0f };
+        String[] texts = new String[] {"a", "b", "c"};
+        float[] confidences = new float[] {1.0f, 1.0f, 1.0f};
 
-                provider.setVoiceResultsFromIntentBundle(createDummyBundle(texts, confidences));
+        provider.setVoiceResultsFromIntentBundle(createDummyBundle(texts, confidences));
 
-                List<OmniboxSuggestion> suggestions =
-                        createDummySuggestions("oa", "ob", "oc");
-                List<OmniboxSuggestion> updatedSuggestions =
-                        provider.addVoiceSuggestions(suggestions, 2);
+        List<OmniboxSuggestion> suggestions = createDummySuggestions("oa", "ob", "oc");
+        List<OmniboxSuggestion> updatedSuggestions = provider.addVoiceSuggestions(suggestions, 2);
 
-                assertArrayStartsWith(updatedSuggestions, suggestions);
-                assertArrayEndsWith(updatedSuggestions, provider.getResults(), 2);
-            }
-        });
+        assertArrayStartsWith(updatedSuggestions, suggestions);
+        assertArrayEndsWith(updatedSuggestions, provider.getResults(), 2);
     }
 
     @Test
     @SmallTest
+    @UiThreadTest
     @Feature({"Omnibox"})
     public void testAddDuplicateToResultsCase() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                VoiceSuggestionProvider provider = new VoiceSuggestionProvider(0.0f, 1.1f);
+        VoiceSuggestionProvider provider = new VoiceSuggestionProvider(0.0f, 1.1f);
 
-                String[] texts = new String[] { "a", "b", "c" };
-                float[] confidences = new float[] { 1.0f, 1.0f, 1.0f };
-                provider.setVoiceResultsFromIntentBundle(createDummyBundle(texts, confidences));
+        String[] texts = new String[] {"a", "b", "c"};
+        float[] confidences = new float[] {1.0f, 1.0f, 1.0f};
+        provider.setVoiceResultsFromIntentBundle(createDummyBundle(texts, confidences));
 
-                List<OmniboxSuggestion> suggestions =
-                        createDummySuggestions("oa", "b", "oc");
-                List<OmniboxSuggestion> updatedSuggestions =
-                        provider.addVoiceSuggestions(suggestions, texts.length);
+        List<OmniboxSuggestion> suggestions = createDummySuggestions("oa", "b", "oc");
+        List<OmniboxSuggestion> updatedSuggestions =
+                provider.addVoiceSuggestions(suggestions, texts.length);
 
-                Assert.assertEquals(provider.getResults().get(0).getMatch(), texts[0]);
-                Assert.assertTrue("Result 'a' was not found.",
-                        isVoiceResultInSuggestions(
-                                updatedSuggestions, provider.getResults().get(0)));
-                Assert.assertEquals(provider.getResults().get(1).getMatch(), texts[1]);
-                Assert.assertFalse("Result 'b' was found.",
-                        isVoiceResultInSuggestions(
-                                updatedSuggestions, provider.getResults().get(1)));
-                Assert.assertEquals(provider.getResults().get(2).getMatch(), texts[2]);
-                Assert.assertTrue("Result 'c' was not found.",
-                        isVoiceResultInSuggestions(
-                                updatedSuggestions, provider.getResults().get(2)));
-            }
-        });
+        Assert.assertEquals(provider.getResults().get(0).getMatch(), texts[0]);
+        Assert.assertTrue("Result 'a' was not found.",
+                isVoiceResultInSuggestions(updatedSuggestions, provider.getResults().get(0)));
+        Assert.assertEquals(provider.getResults().get(1).getMatch(), texts[1]);
+        Assert.assertFalse("Result 'b' was found.",
+                isVoiceResultInSuggestions(updatedSuggestions, provider.getResults().get(1)));
+        Assert.assertEquals(provider.getResults().get(2).getMatch(), texts[2]);
+        Assert.assertTrue("Result 'c' was not found.",
+                isVoiceResultInSuggestions(updatedSuggestions, provider.getResults().get(2)));
     }
 
     @Test
     @SmallTest
+    @UiThreadTest
     @Feature({"Omnibox"})
     public void testConfidenceThresholdHideLowConfidence() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                VoiceSuggestionProvider provider = new VoiceSuggestionProvider(0.5f, 1.1f);
+        VoiceSuggestionProvider provider = new VoiceSuggestionProvider(0.5f, 1.1f);
 
-                String[] texts = new String[] { "a", "b", "c" };
-                float[] confidences = new float[] { 1.0f, 0.6f, 0.3f };
-                provider.setVoiceResultsFromIntentBundle(createDummyBundle(texts, confidences));
+        String[] texts = new String[] {"a", "b", "c"};
+        float[] confidences = new float[] {1.0f, 0.6f, 0.3f};
+        provider.setVoiceResultsFromIntentBundle(createDummyBundle(texts, confidences));
 
-                List<OmniboxSuggestion> suggestions =
-                        createDummySuggestions("oa", "ob", "oc");
-                List<OmniboxSuggestion> updatedSuggestions =
-                        provider.addVoiceSuggestions(suggestions, texts.length);
+        List<OmniboxSuggestion> suggestions = createDummySuggestions("oa", "ob", "oc");
+        List<OmniboxSuggestion> updatedSuggestions =
+                provider.addVoiceSuggestions(suggestions, texts.length);
 
-                Assert.assertEquals(provider.getResults().get(0).getMatch(), texts[0]);
-                Assert.assertTrue("Result 'a' was not found.",
-                        isVoiceResultInSuggestions(
-                                updatedSuggestions, provider.getResults().get(0)));
-                Assert.assertEquals(provider.getResults().get(1).getMatch(), texts[1]);
-                Assert.assertTrue("Result 'b' was not found.",
-                        isVoiceResultInSuggestions(
-                                updatedSuggestions, provider.getResults().get(1)));
-                Assert.assertEquals(provider.getResults().get(2).getMatch(), texts[2]);
-                Assert.assertFalse("Result 'c' was found.",
-                        isVoiceResultInSuggestions(
-                                updatedSuggestions, provider.getResults().get(2)));
-            }
-        });
+        Assert.assertEquals(provider.getResults().get(0).getMatch(), texts[0]);
+        Assert.assertTrue("Result 'a' was not found.",
+                isVoiceResultInSuggestions(updatedSuggestions, provider.getResults().get(0)));
+        Assert.assertEquals(provider.getResults().get(1).getMatch(), texts[1]);
+        Assert.assertTrue("Result 'b' was not found.",
+                isVoiceResultInSuggestions(updatedSuggestions, provider.getResults().get(1)));
+        Assert.assertEquals(provider.getResults().get(2).getMatch(), texts[2]);
+        Assert.assertFalse("Result 'c' was found.",
+                isVoiceResultInSuggestions(updatedSuggestions, provider.getResults().get(2)));
     }
 
     @Test
     @SmallTest
+    @UiThreadTest
     @Feature({"Omnibox"})
     public void testConfidenceThresholdHideAlts() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                VoiceSuggestionProvider provider = new VoiceSuggestionProvider(0.5f, 0.5f);
+        VoiceSuggestionProvider provider = new VoiceSuggestionProvider(0.5f, 0.5f);
 
-                String[] texts = new String[] { "a", "b", "c" };
-                float[] confidences = new float[] { 0.8f, 1.0f, 1.0f };
-                provider.setVoiceResultsFromIntentBundle(createDummyBundle(texts, confidences));
+        String[] texts = new String[] {"a", "b", "c"};
+        float[] confidences = new float[] {0.8f, 1.0f, 1.0f};
+        provider.setVoiceResultsFromIntentBundle(createDummyBundle(texts, confidences));
 
-                List<OmniboxSuggestion> suggestions =
-                        createDummySuggestions("oa", "ob", "oc");
-                List<OmniboxSuggestion> updatedSuggestions =
-                        provider.addVoiceSuggestions(suggestions, texts.length);
+        List<OmniboxSuggestion> suggestions = createDummySuggestions("oa", "ob", "oc");
+        List<OmniboxSuggestion> updatedSuggestions =
+                provider.addVoiceSuggestions(suggestions, texts.length);
 
-                Assert.assertEquals(provider.getResults().get(0).getMatch(), texts[0]);
-                Assert.assertTrue("Result 'a' was not found (First entry.  Must be shown).",
-                        isVoiceResultInSuggestions(
-                                updatedSuggestions, provider.getResults().get(0)));
-                Assert.assertEquals(provider.getResults().get(1).getMatch(), texts[1]);
-                Assert.assertFalse("Result 'b' was found.",
-                        isVoiceResultInSuggestions(
-                                updatedSuggestions, provider.getResults().get(1)));
-                Assert.assertEquals(provider.getResults().get(2).getMatch(), texts[2]);
-                Assert.assertFalse("Result 'c' was found.",
-                        isVoiceResultInSuggestions(
-                                updatedSuggestions, provider.getResults().get(2)));
-            }
-        });
+        Assert.assertEquals(provider.getResults().get(0).getMatch(), texts[0]);
+        Assert.assertTrue("Result 'a' was not found (First entry.  Must be shown).",
+                isVoiceResultInSuggestions(updatedSuggestions, provider.getResults().get(0)));
+        Assert.assertEquals(provider.getResults().get(1).getMatch(), texts[1]);
+        Assert.assertFalse("Result 'b' was found.",
+                isVoiceResultInSuggestions(updatedSuggestions, provider.getResults().get(1)));
+        Assert.assertEquals(provider.getResults().get(2).getMatch(), texts[2]);
+        Assert.assertFalse("Result 'c' was found.",
+                isVoiceResultInSuggestions(updatedSuggestions, provider.getResults().get(2)));
     }
 
     @Test
     @SmallTest
+    @UiThreadTest
     @Feature({"Omnibox"})
     public void testVoiceResponseURLConversion() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                VoiceSuggestionProvider provider = new VoiceSuggestionProvider();
+        VoiceSuggestionProvider provider = new VoiceSuggestionProvider();
 
-                String[] texts =
-                        new String[] { "a", "www. b .co .uk", "engadget .com", "www.google.com" };
-                float[] confidences = new float[] { 1.0f, 1.0f, 1.0f, 1.0f };
-                provider.setVoiceResultsFromIntentBundle(createDummyBundle(texts, confidences));
+        String[] texts = new String[] {"a", "www. b .co .uk", "engadget .com", "www.google.com"};
+        float[] confidences = new float[] {1.0f, 1.0f, 1.0f, 1.0f};
+        provider.setVoiceResultsFromIntentBundle(createDummyBundle(texts, confidences));
 
-                assertVoiceResultsAreEqual(
-                        provider.getResults(),
-                        new String[] {"a", "www.b.co.uk", "engadget.com", "www.google.com"},
-                        new float[] {1.0f, 1.0f, 1.0f, 1.0f});
-            }
-        });
+        assertVoiceResultsAreEqual(provider.getResults(),
+                new String[] {"a", "www.b.co.uk", "engadget.com", "www.google.com"},
+                new float[] {1.0f, 1.0f, 1.0f, 1.0f});
     }
 }

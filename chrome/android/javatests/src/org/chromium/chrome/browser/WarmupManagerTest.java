@@ -9,6 +9,7 @@ import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_E
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.annotation.UiThreadTest;
 import android.support.test.filters.SmallTest;
 import android.support.test.rule.UiThreadTestRule;
 
@@ -17,6 +18,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
@@ -24,7 +26,7 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.MetricsUtils;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
-import org.chromium.content.browser.test.NativeLibraryTestRule;
+import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.WebContents;
@@ -37,16 +39,13 @@ import java.util.concurrent.atomic.AtomicReference;
 @RunWith(BaseJUnit4ClassRunner.class)
 public class WarmupManagerTest {
     @Rule
-    public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
-
-    @Rule
-    public UiThreadTestRule mUiThreadTestRule = new UiThreadTestRule();
+    public final RuleChain mChain =
+            RuleChain.outerRule(new ChromeBrowserTestRule()).around(new UiThreadTestRule());
 
     private WarmupManager mWarmupManager;
 
     @Before
     public void setUp() throws Exception {
-        mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -67,15 +66,11 @@ public class WarmupManagerTest {
 
     @Test
     @SmallTest
+    @UiThreadTest
     @Restriction(RESTRICTION_TYPE_LOW_END_DEVICE)
     public void testNoSpareRendererOnLowEndDevices() throws Throwable {
-        mUiThreadTestRule.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mWarmupManager.createSpareWebContents();
-                Assert.assertFalse(mWarmupManager.hasSpareWebContents());
-            }
-        });
+        mWarmupManager.createSpareWebContents();
+        Assert.assertFalse(mWarmupManager.hasSpareWebContents());
     }
 
     @Test
@@ -123,104 +118,84 @@ public class WarmupManagerTest {
     /** Tests that taking a spare WebContents makes it unavailable to subsequent callers. */
     @Test
     @SmallTest
+    @UiThreadTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testTakeSpareWebContents() throws Throwable {
-        mUiThreadTestRule.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mWarmupManager.createSpareWebContents();
-                WebContents webContents = mWarmupManager.takeSpareWebContents(false, false);
-                Assert.assertNotNull(webContents);
-                Assert.assertFalse(mWarmupManager.hasSpareWebContents());
-                webContents.destroy();
-            }
-        });
+        mWarmupManager.createSpareWebContents();
+        WebContents webContents = mWarmupManager.takeSpareWebContents(false, false);
+        Assert.assertNotNull(webContents);
+        Assert.assertFalse(mWarmupManager.hasSpareWebContents());
+        webContents.destroy();
     }
 
     @Test
     @SmallTest
+    @UiThreadTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testTakeSpareWebContentsChecksArguments() throws Throwable {
-        mUiThreadTestRule.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mWarmupManager.createSpareWebContents();
-                Assert.assertNull(mWarmupManager.takeSpareWebContents(true, false));
-                Assert.assertNull(mWarmupManager.takeSpareWebContents(false, true));
-                Assert.assertNull(mWarmupManager.takeSpareWebContents(true, true));
-                Assert.assertTrue(mWarmupManager.hasSpareWebContents());
-            }
-        });
+        mWarmupManager.createSpareWebContents();
+        Assert.assertNull(mWarmupManager.takeSpareWebContents(true, false));
+        Assert.assertNull(mWarmupManager.takeSpareWebContents(false, true));
+        Assert.assertNull(mWarmupManager.takeSpareWebContents(true, true));
+        Assert.assertTrue(mWarmupManager.hasSpareWebContents());
     }
 
     @Test
     @SmallTest
+    @UiThreadTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testClearsDeadWebContents() throws Throwable {
-        mUiThreadTestRule.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mWarmupManager.createSpareWebContents();
-                mWarmupManager.mSpareWebContents.simulateRendererKilledForTesting(false);
-                Assert.assertNull(mWarmupManager.takeSpareWebContents(false, false));
-            }
-        });
+        mWarmupManager.createSpareWebContents();
+        mWarmupManager.mSpareWebContents.simulateRendererKilledForTesting(false);
+        Assert.assertNull(mWarmupManager.takeSpareWebContents(false, false));
     }
 
     @Test
     @SmallTest
+    @UiThreadTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testRecordSpareWebContentsStatus() throws Throwable {
-        mUiThreadTestRule.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                String name = WarmupManager.WEBCONTENTS_STATUS_HISTOGRAM;
-                MetricsUtils.HistogramDelta createdDelta = new MetricsUtils.HistogramDelta(
-                        name, WarmupManager.WEBCONTENTS_STATUS_CREATED);
-                MetricsUtils.HistogramDelta usedDelta = new MetricsUtils.HistogramDelta(
-                        name, WarmupManager.WEBCONTENTS_STATUS_USED);
-                MetricsUtils.HistogramDelta killedDelta = new MetricsUtils.HistogramDelta(
-                        name, WarmupManager.WEBCONTENTS_STATUS_KILLED);
-                MetricsUtils.HistogramDelta destroyedDelta = new MetricsUtils.HistogramDelta(
-                        name, WarmupManager.WEBCONTENTS_STATUS_DESTROYED);
+        String name = WarmupManager.WEBCONTENTS_STATUS_HISTOGRAM;
+        MetricsUtils.HistogramDelta createdDelta =
+                new MetricsUtils.HistogramDelta(name, WarmupManager.WEBCONTENTS_STATUS_CREATED);
+        MetricsUtils.HistogramDelta usedDelta =
+                new MetricsUtils.HistogramDelta(name, WarmupManager.WEBCONTENTS_STATUS_USED);
+        MetricsUtils.HistogramDelta killedDelta =
+                new MetricsUtils.HistogramDelta(name, WarmupManager.WEBCONTENTS_STATUS_KILLED);
+        MetricsUtils.HistogramDelta destroyedDelta =
+                new MetricsUtils.HistogramDelta(name, WarmupManager.WEBCONTENTS_STATUS_DESTROYED);
 
-                // Created, used.
-                mWarmupManager.createSpareWebContents();
-                Assert.assertEquals(1, createdDelta.getDelta());
-                Assert.assertNotNull(mWarmupManager.takeSpareWebContents(false, false));
-                Assert.assertEquals(1, usedDelta.getDelta());
+        // Created, used.
+        mWarmupManager.createSpareWebContents();
+        Assert.assertEquals(1, createdDelta.getDelta());
+        Assert.assertNotNull(mWarmupManager.takeSpareWebContents(false, false));
+        Assert.assertEquals(1, usedDelta.getDelta());
 
-                // Created, killed.
-                mWarmupManager.createSpareWebContents();
-                Assert.assertEquals(2, createdDelta.getDelta());
-                Assert.assertNotNull(mWarmupManager.mSpareWebContents);
-                mWarmupManager.mSpareWebContents.simulateRendererKilledForTesting(false);
-                Assert.assertEquals(1, killedDelta.getDelta());
-                Assert.assertNull(mWarmupManager.takeSpareWebContents(false, false));
+        // Created, killed.
+        mWarmupManager.createSpareWebContents();
+        Assert.assertEquals(2, createdDelta.getDelta());
+        Assert.assertNotNull(mWarmupManager.mSpareWebContents);
+        mWarmupManager.mSpareWebContents.simulateRendererKilledForTesting(false);
+        Assert.assertEquals(1, killedDelta.getDelta());
+        Assert.assertNull(mWarmupManager.takeSpareWebContents(false, false));
 
-                // Created, destroyed.
-                mWarmupManager.createSpareWebContents();
-                Assert.assertEquals(3, createdDelta.getDelta());
-                Assert.assertNotNull(mWarmupManager.mSpareWebContents);
-                mWarmupManager.destroySpareWebContents();
-                Assert.assertEquals(1, destroyedDelta.getDelta());
-            }
-        });
+        // Created, destroyed.
+        mWarmupManager.createSpareWebContents();
+        Assert.assertEquals(3, createdDelta.getDelta());
+        Assert.assertNotNull(mWarmupManager.mSpareWebContents);
+        mWarmupManager.destroySpareWebContents();
+        Assert.assertEquals(1, destroyedDelta.getDelta());
     }
 
     /** Checks that the View inflation works. */
     @Test
     @SmallTest
+    @UiThreadTest
     public void testInflateLayout() throws Throwable {
-        mUiThreadTestRule.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                int layoutId = R.layout.custom_tabs_control_container;
-                int toolbarId = R.layout.custom_tabs_toolbar;
-                Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
-                mWarmupManager.initializeViewHierarchy(context, layoutId, toolbarId);
-                Assert.assertTrue(mWarmupManager.hasViewHierarchyWithToolbar(layoutId));
-            }
-        });
+        int layoutId = R.layout.custom_tabs_control_container;
+        int toolbarId = R.layout.custom_tabs_toolbar;
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        mWarmupManager.initializeViewHierarchy(context, layoutId, toolbarId);
+        Assert.assertTrue(mWarmupManager.hasViewHierarchyWithToolbar(layoutId));
     }
 }

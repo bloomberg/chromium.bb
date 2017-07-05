@@ -14,7 +14,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.CommandLine;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
-import org.chromium.content.browser.test.NativeLibraryTestRule;
+import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 
 /**
  * Tests for WebsiteAddress.
@@ -22,7 +22,7 @@ import org.chromium.content.browser.test.NativeLibraryTestRule;
 @RunWith(BaseJUnit4ClassRunner.class)
 public class WebsiteAddressTest {
     @Rule
-    public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
+    public final ChromeBrowserTestRule mBrowserTestRule = new ChromeBrowserTestRule();
 
     @Test
     @SmallTest
@@ -62,7 +62,6 @@ public class WebsiteAddressTest {
     @Feature({"Preferences"})
     public void testEqualsHashCodeCompareTo() {
         CommandLine.init(null);
-        mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();
 
         Object[][] testData = {
             { 0, "http://google.com", "http://google.com" },

@@ -7,17 +7,16 @@ package org.chromium.chrome.browser.share;
 import android.app.Activity;
 import android.content.Intent;
 import android.support.test.filters.SmallTest;
-import android.support.test.rule.UiThreadTestRule;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
-import org.chromium.content.browser.test.NativeLibraryTestRule;
 
 /**
  * Tests sharing URLs in reader mode (DOM distiller)
@@ -25,22 +24,14 @@ import org.chromium.content.browser.test.NativeLibraryTestRule;
 @RunWith(BaseJUnit4ClassRunner.class)
 public class ShareUrlTest {
     @Rule
-    public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
-
-    @Rule
-    public UiThreadTestRule mUiThreadTestRule = new UiThreadTestRule();
+    public final ChromeBrowserTestRule mBrowserTestRule = new ChromeBrowserTestRule();
 
     private static final String HTTP_URL = "http://www.google.com/";
     private static final String HTTPS_URL = "https://www.google.com/";
 
-    @Before
-    public void setUp() throws Exception {
-        mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();
-    }
-
     private void assertCorrectUrl(final String originalUrl, final String sharedUrl)
             throws Throwable {
-        mUiThreadTestRule.runOnUiThread(new Runnable() {
+        ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 ShareParams params =

@@ -15,7 +15,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.CommandLine;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
-import org.chromium.content.browser.test.NativeLibraryTestRule;
+import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 
 /**
  * Unit tests for RoundedIconGenerator.
@@ -23,7 +23,7 @@ import org.chromium.content.browser.test.NativeLibraryTestRule;
 @RunWith(BaseJUnit4ClassRunner.class)
 public class RoundedIconGeneratorTest {
     @Rule
-    public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
+    public final ChromeBrowserTestRule mBrowserTestRule = new ChromeBrowserTestRule();
 
     private String getIconTextForUrl(String url, boolean includePrivateRegistries) {
         return RoundedIconGenerator.getIconTextForUrl(url, includePrivateRegistries);
@@ -32,7 +32,6 @@ public class RoundedIconGeneratorTest {
     @Before
     public void setUp() throws Exception {
         CommandLine.init(null);
-        mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();
     }
 
     /**

@@ -26,8 +26,8 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.download.DownloadManagerDelegate.DownloadQueryCallback;
 import org.chromium.chrome.browser.download.DownloadManagerDelegate.DownloadQueryResult;
 import org.chromium.chrome.browser.download.OMADownloadHandler.OMAInfo;
+import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.content.browser.test.NativeLibraryTestRule;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -43,7 +43,7 @@ import java.util.Set;
 @RunWith(ChromeJUnit4ClassRunner.class)
 public class OMADownloadHandlerTest {
     @Rule
-    public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
+    public final ChromeBrowserTestRule mBrowserTestRule = new ChromeBrowserTestRule();
 
     private static final String PENDING_OMA_DOWNLOADS = "PendingOMADownloads";
     private static final String INSTALL_NOTIFY_URI = "http://test/test";
@@ -372,7 +372,6 @@ public class OMADownloadHandlerTest {
         EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartServer(
                 InstrumentationRegistry.getInstrumentation().getContext());
         Context context = getTestContext();
-        mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();
 
         OMADownloadHandler.OMAInfo omaInfo = new OMAInfo();
         omaInfo.addAttributeValue(OMADownloadHandler.OMA_NAME, "test.gzip");

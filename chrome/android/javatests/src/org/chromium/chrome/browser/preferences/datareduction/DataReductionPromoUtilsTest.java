@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.preferences.datareduction;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.annotation.UiThreadTest;
 import android.support.test.filters.SmallTest;
 import android.support.test.rule.UiThreadTestRule;
 
@@ -13,6 +14,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
@@ -23,7 +25,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge.AboutVersionStrings;
-import org.chromium.content.browser.test.NativeLibraryTestRule;
+import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 
 /**
  * Unit test suite for DataReductionPromoUtils.
@@ -31,10 +33,8 @@ import org.chromium.content.browser.test.NativeLibraryTestRule;
 @RunWith(BaseJUnit4ClassRunner.class)
 public class DataReductionPromoUtilsTest {
     @Rule
-    public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
-
-    @Rule
-    public UiThreadTestRule mUiThreadTestRule = new UiThreadTestRule();
+    public final RuleChain mChain =
+            RuleChain.outerRule(new ChromeBrowserTestRule()).around(new UiThreadTestRule());
 
     private static final String SHARED_PREF_DISPLAYED_INFOBAR_PROMO_VERSION =
             "displayed_data_reduction_infobar_promo_version";
@@ -43,7 +43,6 @@ public class DataReductionPromoUtilsTest {
 
     @Before
     public void setUp() throws Exception {
-        mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();
         // Using an AdvancedMockContext allows us to use a fresh in-memory SharedPreference.
         mContext = new AdvancedMockContext(InstrumentationRegistry.getInstrumentation()
                                                    .getTargetContext()
@@ -56,21 +55,15 @@ public class DataReductionPromoUtilsTest {
      */
     @Test
     @SmallTest
+    @UiThreadTest
     @CommandLineFlags.Add("force-fieldtrials=DataCompressionProxyPromoVisibility/Enabled")
     @Feature({"DataReduction"})
     public void testCanShowPromos() throws Throwable {
-        mUiThreadTestRule.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if (DataReductionProxySettings.getInstance().isDataReductionProxyManaged()) return;
-                Assert.assertFalse(
-                        DataReductionProxySettings.getInstance().isDataReductionProxyEnabled());
-                Assert.assertTrue(DataReductionPromoUtils.canShowPromos());
-                DataReductionProxySettings.getInstance().setDataReductionProxyEnabled(
-                        mContext, true);
-                Assert.assertFalse(DataReductionPromoUtils.canShowPromos());
-            }
-        });
+        if (DataReductionProxySettings.getInstance().isDataReductionProxyManaged()) return;
+        Assert.assertFalse(DataReductionProxySettings.getInstance().isDataReductionProxyEnabled());
+        Assert.assertTrue(DataReductionPromoUtils.canShowPromos());
+        DataReductionProxySettings.getInstance().setDataReductionProxyEnabled(mContext, true);
+        Assert.assertFalse(DataReductionPromoUtils.canShowPromos());
     }
 
     /**
@@ -80,26 +73,22 @@ public class DataReductionPromoUtilsTest {
      */
     @Test
     @SmallTest
+    @UiThreadTest
     @Feature({"DataReduction"})
     public void testFreOrSecondRunPromoDisplayed() throws Throwable {
-        mUiThreadTestRule.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                AboutVersionStrings versionStrings =
-                        PrefServiceBridge.getInstance().getAboutVersionStrings();
+        AboutVersionStrings versionStrings =
+                PrefServiceBridge.getInstance().getAboutVersionStrings();
 
-                // The first run experience or second run promo should not have been shown yet.
-                Assert.assertFalse(DataReductionPromoUtils.getDisplayedFreOrSecondRunPromo());
+        // The first run experience or second run promo should not have been shown yet.
+        Assert.assertFalse(DataReductionPromoUtils.getDisplayedFreOrSecondRunPromo());
 
-                // Save that the first run experience or second run promo has been displayed.
-                DataReductionPromoUtils.saveFreOrSecondRunPromoDisplayed();
-                Assert.assertTrue(DataReductionPromoUtils.getDisplayedFreOrSecondRunPromo());
-                Assert.assertFalse(DataReductionPromoUtils.getDisplayedInfoBarPromo());
-                Assert.assertFalse(DataReductionPromoUtils.getOptedOutOnFrePromo());
-                Assert.assertEquals(versionStrings.getApplicationVersion(),
-                        DataReductionPromoUtils.getDisplayedFreOrSecondRunPromoVersion());
-            }
-        });
+        // Save that the first run experience or second run promo has been displayed.
+        DataReductionPromoUtils.saveFreOrSecondRunPromoDisplayed();
+        Assert.assertTrue(DataReductionPromoUtils.getDisplayedFreOrSecondRunPromo());
+        Assert.assertFalse(DataReductionPromoUtils.getDisplayedInfoBarPromo());
+        Assert.assertFalse(DataReductionPromoUtils.getOptedOutOnFrePromo());
+        Assert.assertEquals(versionStrings.getApplicationVersion(),
+                DataReductionPromoUtils.getDisplayedFreOrSecondRunPromoVersion());
     }
 
     /**
@@ -107,20 +96,16 @@ public class DataReductionPromoUtilsTest {
      */
     @Test
     @SmallTest
+    @UiThreadTest
     @Feature({"DataReduction"})
     public void testFrePromoOptOut() throws Throwable {
-        mUiThreadTestRule.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                // Save that the user opted out of the first run experience.
-                DataReductionPromoUtils.saveFrePromoOptOut(true);
-                Assert.assertTrue(DataReductionPromoUtils.getOptedOutOnFrePromo());
+        // Save that the user opted out of the first run experience.
+        DataReductionPromoUtils.saveFrePromoOptOut(true);
+        Assert.assertTrue(DataReductionPromoUtils.getOptedOutOnFrePromo());
 
-                // Save that the user did not opt out of the first run experience.
-                DataReductionPromoUtils.saveFrePromoOptOut(false);
-                Assert.assertFalse(DataReductionPromoUtils.getOptedOutOnFrePromo());
-            }
-        });
+        // Save that the user did not opt out of the first run experience.
+        DataReductionPromoUtils.saveFrePromoOptOut(false);
+        Assert.assertFalse(DataReductionPromoUtils.getOptedOutOnFrePromo());
     }
 
     /**
@@ -129,26 +114,22 @@ public class DataReductionPromoUtilsTest {
      */
     @Test
     @SmallTest
+    @UiThreadTest
     @Feature({"DataReduction"})
     public void testInfoBarPromoDisplayed() throws Throwable {
-        mUiThreadTestRule.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                AboutVersionStrings versionStrings =
-                        PrefServiceBridge.getInstance().getAboutVersionStrings();
+        AboutVersionStrings versionStrings =
+                PrefServiceBridge.getInstance().getAboutVersionStrings();
 
-                // The infobar should not have been shown yet.
-                Assert.assertFalse(DataReductionPromoUtils.getDisplayedInfoBarPromo());
+        // The infobar should not have been shown yet.
+        Assert.assertFalse(DataReductionPromoUtils.getDisplayedInfoBarPromo());
 
-                // Save that the infobar promo has been displayed.
-                DataReductionPromoUtils.saveInfoBarPromoDisplayed();
-                Assert.assertFalse(DataReductionPromoUtils.getDisplayedFreOrSecondRunPromo());
-                Assert.assertTrue(DataReductionPromoUtils.getDisplayedInfoBarPromo());
-                Assert.assertFalse(DataReductionPromoUtils.getOptedOutOnFrePromo());
-                Assert.assertEquals(versionStrings.getApplicationVersion(),
-                        ContextUtils.getAppSharedPreferences().getString(
-                                SHARED_PREF_DISPLAYED_INFOBAR_PROMO_VERSION, ""));
-            }
-        });
+        // Save that the infobar promo has been displayed.
+        DataReductionPromoUtils.saveInfoBarPromoDisplayed();
+        Assert.assertFalse(DataReductionPromoUtils.getDisplayedFreOrSecondRunPromo());
+        Assert.assertTrue(DataReductionPromoUtils.getDisplayedInfoBarPromo());
+        Assert.assertFalse(DataReductionPromoUtils.getOptedOutOnFrePromo());
+        Assert.assertEquals(versionStrings.getApplicationVersion(),
+                ContextUtils.getAppSharedPreferences().getString(
+                        SHARED_PREF_DISPLAYED_INFOBAR_PROMO_VERSION, ""));
     }
 }

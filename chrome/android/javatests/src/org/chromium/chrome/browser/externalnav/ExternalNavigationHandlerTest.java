@@ -28,6 +28,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.banners.InstallerDelegateTest.TestPackageManager;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
@@ -48,8 +49,7 @@ import java.util.List;
 @RunWith(BaseJUnit4ClassRunner.class)
 public class ExternalNavigationHandlerTest {
     @Rule
-    public final ChromeBrowserTestRule mBrowserTestRule =
-            new ChromeBrowserTestRule(true /* initBrowserProcess */);
+    public final ChromeBrowserTestRule mBrowserTestRule = new ChromeBrowserTestRule();
 
     // Expectations
     private static final int IGNORE = 0x0;

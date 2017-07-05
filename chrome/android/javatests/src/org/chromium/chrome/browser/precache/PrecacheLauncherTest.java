@@ -26,7 +26,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
-import org.chromium.content.browser.test.NativeLibraryTestRule;
+import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 
 import java.util.EnumSet;
 import java.util.concurrent.Callable;
@@ -39,7 +39,7 @@ import java.util.concurrent.Callable;
 @RunWith(BaseJUnit4ClassRunner.class)
 public class PrecacheLauncherTest {
     @Rule
-    public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
+    public final ChromeBrowserTestRule mBrowserTestRule = new ChromeBrowserTestRule();
 
     private StubProfileSyncService mSync;
     private PrecacheLauncherUnderTest mLauncher;
@@ -111,9 +111,6 @@ public class PrecacheLauncherTest {
         // tests. We reset the is_precaching_enabled pref to false to make the test run consistent,
         // in case another test class has modified this pref.
         PrecacheController.setIsPrecachingEnabled(getTargetContext(), false);
-
-        // ProfileSyncService needs the browser process to be running.
-        mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();
 
         // ProfileSyncService must be initialized on the UI thread. Oddly, even though
         // ThreadUtils.runningOnUiThread() is true here, it's, no, not really, no.

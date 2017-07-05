@@ -16,7 +16,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.chrome.browser.tabmodel.TestTabModelDirectory;
-import org.chromium.content.browser.test.NativeLibraryTestRule;
+import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 
 import java.io.File;
 
@@ -27,13 +27,12 @@ import java.io.File;
 @RunWith(BaseJUnit4ClassRunner.class)
 public class TabStateTest {
     @Rule
-    public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
+    public final ChromeBrowserTestRule mBrowserTestRule = new ChromeBrowserTestRule();
 
     private TestTabModelDirectory mTestTabModelDirectory;
 
     @Before
     public void setUp() throws Exception {
-        mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();
         mTestTabModelDirectory = new TestTabModelDirectory(
                 InstrumentationRegistry.getInstrumentation().getTargetContext(), "TabStateTest",
                 null);
