@@ -27,7 +27,7 @@ class TranslateErrors {
     IDENTICAL_LANGUAGES,      // The original and target languages are the same.
     TRANSLATION_ERROR,        // An error was reported by the translation script
                               // during translation.
-    TRANSLATION_TIMEOUT,      // The library doesn't finish the translation.
+    TRANSLATION_TIMEOUT,      // The library doesn't finish initialization.
     UNEXPECTED_SCRIPT_ERROR,  // The library raises an unexpected exception.
     BAD_ORIGIN,               // The library is blocked because of bad origin.
     SCRIPT_LOAD_ERROR,        // Loader fails to load a dependent JavaScript.

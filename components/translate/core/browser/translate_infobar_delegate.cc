@@ -228,6 +228,10 @@ base::string16 TranslateInfoBarDelegate::GetMessageInfoBarText() {
           IDS_TRANSLATE_INFOBAR_ERROR_CANT_CONNECT);
     case TranslateErrors::INITIALIZATION_ERROR:
     case TranslateErrors::TRANSLATION_ERROR:
+    case TranslateErrors::TRANSLATION_TIMEOUT:
+    case TranslateErrors::UNEXPECTED_SCRIPT_ERROR:
+    case TranslateErrors::BAD_ORIGIN:
+    case TranslateErrors::SCRIPT_LOAD_ERROR:
       return l10n_util::GetStringUTF16(
           IDS_TRANSLATE_INFOBAR_ERROR_CANT_TRANSLATE);
     case TranslateErrors::UNKNOWN_LANGUAGE:

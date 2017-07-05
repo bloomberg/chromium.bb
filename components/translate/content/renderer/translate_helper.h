@@ -65,6 +65,9 @@ class TranslateHelper : public content::RenderFrameObserver,
   // translation.
   virtual bool HasTranslationFailed();
 
+  // Returns the error code generated in translate library.
+  virtual int64_t GetErrorCode();
+
   // Starts the translation by calling the translate library.  This method
   // should only be called when the translate script has been injected in the
   // page.  Returns false if the call failed immediately.
@@ -98,6 +101,11 @@ class TranslateHelper : public content::RenderFrameObserver,
   // and returns the number returned by the script evaluation if the script was
   // run successfully. Otherwise, returns 0.0.
   virtual double ExecuteScriptAndGetDoubleResult(const std::string& script);
+
+  // Executes the JavaScript code in |script| in the main frame of RenderView.
+  // and returns the integer value returned by the script evaluation if the
+  // script was run successfully. Otherwise, returns 0.
+  virtual int64_t ExecuteScriptAndGetIntegerResult(const std::string& script);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest, TestBuildTranslationScript);
