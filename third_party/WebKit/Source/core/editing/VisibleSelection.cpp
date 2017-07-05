@@ -46,8 +46,7 @@ VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate()
       selection_type_(kNoSelection),
       base_is_first_(true),
       is_directional_(false),
-      granularity_(kCharacterGranularity),
-      has_trailing_whitespace_(false) {}
+      granularity_(kCharacterGranularity) {}
 
 template <typename Strategy>
 VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate(
@@ -57,8 +56,7 @@ VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate(
       affinity_(selection.Affinity()),
       selection_type_(kNoSelection),
       is_directional_(selection.IsDirectional()),
-      granularity_(selection.Granularity()),
-      has_trailing_whitespace_(selection.HasTrailingWhitespace()) {
+      granularity_(selection.Granularity()) {
   Validate(granularity_);
 }
 
@@ -104,8 +102,7 @@ VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate(
       selection_type_(other.selection_type_),
       base_is_first_(other.base_is_first_),
       is_directional_(other.is_directional_),
-      granularity_(other.granularity_),
-      has_trailing_whitespace_(other.has_trailing_whitespace_) {}
+      granularity_(other.granularity_) {}
 
 template <typename Strategy>
 VisibleSelectionTemplate<Strategy>& VisibleSelectionTemplate<Strategy>::
@@ -119,7 +116,6 @@ operator=(const VisibleSelectionTemplate<Strategy>& other) {
   base_is_first_ = other.base_is_first_;
   is_directional_ = other.is_directional_;
   granularity_ = other.granularity_;
-  has_trailing_whitespace_ = other.has_trailing_whitespace_;
   return *this;
 }
 
@@ -132,7 +128,6 @@ SelectionTemplate<Strategy> VisibleSelectionTemplate<Strategy>::AsSelection()
   return builder.SetAffinity(affinity_)
       .SetGranularity(granularity_)
       .SetIsDirectional(is_directional_)
-      .SetHasTrailingWhitespace(has_trailing_whitespace_)
       .Build();
 }
 
@@ -191,7 +186,6 @@ VisibleSelectionTemplate<Strategy>::AppendTrailingWhitespace() const {
   if (end_ == new_end)
     return *this;
   VisibleSelectionTemplate<Strategy> result = *this;
-  result.has_trailing_whitespace_ = true;
   result.end_ = new_end;
   return result;
 }
@@ -413,9 +407,6 @@ void VisibleSelectionTemplate<Strategy>::Validate(TextGranularity granularity) {
   DCHECK(!NeedsLayoutTreeUpdate(extent_));
   // TODO(xiaochengh): Add a DocumentLifecycle::DisallowTransitionScope here.
 
-  granularity_ = granularity;
-  if (granularity_ != kWordGranularity)
-    has_trailing_whitespace_ = false;
   SetBaseAndExtentToDeepEquivalents();
   if (base_.IsNull() || extent_.IsNull()) {
     base_ = extent_ = start_ = end_ = PositionTemplate<Strategy>();
@@ -453,9 +444,6 @@ void VisibleSelectionTemplate<Strategy>::Validate(TextGranularity granularity) {
     start_ = MostForwardCaretPosition(start_);
     end_ = MostBackwardCaretPosition(end_);
   }
-  if (!has_trailing_whitespace_)
-    return;
-  *this = AppendTrailingWhitespace();
 }
 
 template <typename Strategy>

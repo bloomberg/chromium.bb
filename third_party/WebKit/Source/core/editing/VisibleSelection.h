@@ -178,11 +178,6 @@ class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate {
   bool is_directional_ : 1;
 
   TextGranularity granularity_;
-  // |updateIfNeeded()| uses |m_hasTrailingWhitespace| for word granularity.
-  // |m_hasTrailingWhitespace| is set by |appendTrailingWhitespace()|.
-  // TODO(yosin): Once we unify start/end and base/extent, we should get rid
-  // of |m_hasTrailingWhitespace|.
-  bool has_trailing_whitespace_ : 1;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT
