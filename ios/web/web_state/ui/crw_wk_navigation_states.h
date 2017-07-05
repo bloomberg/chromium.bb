@@ -60,7 +60,11 @@ enum class WKNavigationState : int {
 - (web::WKNavigationState)stateForNavigation:(WKNavigation*)navigation;
 
 // Removes given |navigation|. Fails if |navigation| does not exist.
-// |navigation| can be null.
+// |navigation| can be null. Cliens don't have to call this method for non-null
+// navigations because non-null navigations are weak and will be automatically
+// removed when system releases finished navigaitons. This method must always be
+// called for completed null navigations because they are not removed
+// automatically.
 - (void)removeNavigation:(WKNavigation*)navigation;
 
 // Adds a new navigation if it was not added yet. If navigation was already
