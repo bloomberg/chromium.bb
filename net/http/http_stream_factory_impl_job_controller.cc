@@ -1168,6 +1168,12 @@ HttpStreamFactoryImpl::JobController::GetAlternativeServiceInfoInternal(
     if (!original_url.SchemeIs(url::kHttpsScheme))
       continue;
 
+    // If there is no QUIC version in the advertised versions supported by
+    // the net stack, ignore this entry.
+    if (SelectQuicVersion(alternative_service_info.advertised_versions()) ==
+        QUIC_VERSION_UNSUPPORTED)
+      continue;
+
     // Check whether there is an existing QUIC session to use for this origin.
     HostPortPair mapped_origin(origin.host(), origin.port());
     ignore_result(ApplyHostMappingRules(original_url, &mapped_origin));
@@ -1193,6 +1199,25 @@ HttpStreamFactoryImpl::JobController::GetAlternativeServiceInfoInternal(
     delegate->OnQuicBroken();
 
   return first_alternative_service_info;
+}
+
+QuicVersion HttpStreamFactoryImpl::JobController::SelectQuicVersion(
+    const QuicVersionVector& advertised_versions) {
+  const QuicVersionVector& supported_versions =
+      session_->params().quic_supported_versions;
+  if (advertised_versions.empty())
+    return supported_versions[0];
+
+  for (const QuicVersion& supported : supported_versions) {
+    for (const QuicVersion& advertised : advertised_versions) {
+      if (supported == advertised) {
+        DCHECK_NE(QUIC_VERSION_UNSUPPORTED, supported);
+        return supported;
+      }
+    }
+  }
+
+  return QUIC_VERSION_UNSUPPORTED;
 }
 
 bool HttpStreamFactoryImpl::JobController::
