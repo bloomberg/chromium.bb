@@ -266,7 +266,7 @@
             <include name="IDR_MD_BOOKMARKS_ACTIONS_JS" file="resources\md_bookmarks\actions.js" type="BINDATA" />
             <include name="IDR_MD_BOOKMARKS_API_LISTENER_HTML" file="resources\md_bookmarks\api_listener.html" type="BINDATA" />
             <include name="IDR_MD_BOOKMARKS_API_LISTENER_JS" file="resources\md_bookmarks\api_listener.js" type="BINDATA" />
-            <include name="IDR_MD_BOOKMARKS_APP_HTML" file="resources\md_bookmarks\app.html" type="BINDATA" />
+            <include name="IDR_MD_BOOKMARKS_APP_HTML" file="resources\md_bookmarks\app.html" type="BINDATA" flattenhtml="true" />
             <include name="IDR_MD_BOOKMARKS_APP_JS" file="resources\md_bookmarks\app.js" type="BINDATA" />
             <include name="IDR_MD_BOOKMARKS_BOOKMARKS_HTML" file="resources\md_bookmarks\bookmarks.html" type="BINDATA" />
             <include name="IDR_MD_BOOKMARKS_COMMAND_MANAGER_HTML" file="resources\md_bookmarks\command_manager.html" type="BINDATA" />

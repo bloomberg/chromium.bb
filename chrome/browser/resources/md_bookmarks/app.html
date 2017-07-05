@@ -34,7 +34,11 @@
 
       #splitter {
         box-sizing: border-box;
+        cursor: col-resize;
+<if expr="is_win">
+        /* Unlike other platforms, e-resize is a two-way arrow on Windows. */
         cursor: e-resize;
+</if>
         flex: 0 0 var(--splitter-width);
         opacity: 0;
       }
@@ -44,10 +48,6 @@
         -webkit-border-start: 1px solid rgba(0, 0, 0, 0.1);
         opacity: 1;
         transition: opacity 100ms ease-out;
-      }
-
-      :host-context([dir='rtl']) #splitter {
-        cursor: w-resize;
       }
 
       #sidebar {
