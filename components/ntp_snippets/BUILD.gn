@@ -160,6 +160,7 @@ source_set("unit_tests") {
   sources = [
     "bookmarks/bookmark_last_visit_utils_unittest.cc",
     "bookmarks/bookmark_suggestions_provider_unittest.cc",
+    "breaking_news/breaking_news_suggestions_provider_unittest.cc",
     "breaking_news/subscription_json_request_unittest.cc",
     "breaking_news/subscription_manager_unittest.cc",
     "category_rankers/click_based_category_ranker_unittest.cc",

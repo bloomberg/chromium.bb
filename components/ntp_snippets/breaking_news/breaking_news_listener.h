@@ -17,6 +17,8 @@ class BreakingNewsListener {
   using OnNewContentCallback =
       base::Callback<void(std::unique_ptr<base::Value> content)>;
 
+  virtual ~BreakingNewsListener() = default;
+
   // Subscribe to the breaking news service and start listening for pushed
   // breaking news. Must not be called if already listening.
   virtual void StartListening(OnNewContentCallback on_new_content_callback) = 0;
