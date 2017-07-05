@@ -253,8 +253,7 @@ class FrameProcessorTest : public testing::TestWithParam<bool> {
   // thereof of new coded frame group by the FrameProcessor. See
   // https://crbug.com/580613.
   bool in_coded_frame_group() {
-    return frame_processor_->coded_frame_group_last_dts_ !=
-           kNoDecodeTimestamp();
+    return !frame_processor_->pending_notify_all_group_start_;
   }
 
   void seek(ChunkDemuxerStream* stream, base::TimeDelta seek_time) {
@@ -652,7 +651,15 @@ TEST_P(FrameProcessorTest, AudioVideo_Discontinuity_TimestampOffset) {
     // This causes [55,85) to merge with [100,230) here for audio, and similar
     // for video. See also https://crbug.com/620523.
     CheckExpectedRangesByTimestamp(audio_.get(), "{ [55,230) }");
-    CheckExpectedRangesByTimestamp(video_.get(), "{ [55,240) }");
+    // Note that 'sequence' mode group start signalling (if the decode time goes
+    // into the past) is per-track after the first frame has been processed.
+    // Hence 65, not 55 here. Similarly, 'segments' mode muxed tracks where
+    // discontinuity is followed by tracks whose first frames decrease in DTS
+    // relative to each other (allowed since media segments are not required to
+    // contain frames for every track) could result in decreasing range start
+    // times for those later tracks. See
+    // AudioVideo_OutOfSequence_After_Discontinuity for deeper verification.
+    CheckExpectedRangesByTimestamp(video_.get(), "{ [65,240) }");
   } else {
     CheckExpectedRangesByTimestamp(audio_.get(),
                                    "{ [55,85) [100,130) [200,230) }");
@@ -688,6 +695,124 @@ TEST_P(FrameProcessorTest, AudioVideo_Discontinuity_TimestampOffset) {
     seek(video_.get(), frame_duration_ * 20);
     CheckReadsThenReadStalls(audio_.get(), "200:0 210:10 220:20");
     CheckReadsThenReadStalls(video_.get(), "210:10 220:20 230:30");
+  }
+}
+
+TEST_P(FrameProcessorTest, AudioVideo_OutOfSequence_After_Discontinuity) {
+  // Once a discontinuity is detected (and all tracks drop everything until the
+  // next keyframe per each track), we should gracefully handle the case where
+  // some tracks' first keyframe after the discontinuity are appended after, but
+  // end up earlier in timeline than some other track(s). In particular, we
+  // shouldn't notify all tracks that a new coded frame group is starting and
+  // begin dropping leading non-keyframes from all tracks.  Rather, we should
+  // notify just the track encountering this new type of discontinuity.  Since
+  // MSE doesn't require all media segments to contain media from every track,
+  // these append sequences can occur.
+  InSequence s;
+  AddTestTracks(HAS_AUDIO | HAS_VIDEO);
+  bool using_sequence_mode = GetParam();
+  frame_processor_->SetSequenceMode(using_sequence_mode);
+
+  // Begin with a simple set of appends for all tracks.
+  if (using_sequence_mode) {
+    // Allow room in the timeline for the last audio append (50K, below) in this
+    // test to remain within default append window [0, +Infinity]. Moving the
+    // sequence mode appends to begin at time 100ms, the same time as the first
+    // append, below, results in a -20ms offset (instead of a -120ms offset)
+    // applied to frames beginning at the first frame after the discontinuity
+    // caused by the video append at 160K, below.
+    SetTimestampOffset(frame_duration_ * 10);
+  }
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_ * 14));
+  ProcessFrames("100K 110K 120K", "110K 120K 130K");
+  EXPECT_TRUE(in_coded_frame_group());
+  EXPECT_EQ(base::TimeDelta(), timestamp_offset_);
+  CheckExpectedRangesByTimestamp(audio_.get(), "{ [100,130) }");
+  CheckExpectedRangesByTimestamp(video_.get(), "{ [100,140) }");
+
+  // Trigger (normal) discontinuity with one track (video).
+  if (using_sequence_mode)
+    EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_ * 15));
+  else
+    EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_ * 17));
+
+  ProcessFrames("", "160K");
+  EXPECT_TRUE(in_coded_frame_group());
+
+  if (using_sequence_mode) {
+    // The new video buffer is relocated into [140,150).
+    EXPECT_EQ(frame_duration_ * -2, timestamp_offset_);
+    CheckExpectedRangesByTimestamp(audio_.get(), "{ [100,130) }");
+    CheckExpectedRangesByTimestamp(video_.get(), "{ [100,150) }");
+  } else {
+    // The new video buffer is at [160,170).
+    EXPECT_EQ(base::TimeDelta(), timestamp_offset_);
+    CheckExpectedRangesByTimestamp(audio_.get(), "{ [100,130) }");
+    CheckExpectedRangesByTimestamp(video_.get(), "{ [100,140) [160,170) }");
+  }
+
+  // Append to the other track (audio) with lower time than the video frame we
+  // just appended. Append with a timestamp such that segments mode demonstrates
+  // we don't retroactively extend the new video buffer appended above's range
+  // start back to this audio start time.
+  if (using_sequence_mode)
+    EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_ * 15));
+  else
+    EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_ * 17));
+
+  ProcessFrames("50K", "");
+  EXPECT_TRUE(in_coded_frame_group());
+
+  // Because this is the first audio buffer appended following the discontinuity
+  // detected while appending the video frame, above, a new coded frame group
+  // for video is not triggered.
+  if (using_sequence_mode) {
+    // The new audio buffer is relocated into [30,40). Note the muxed 'sequence'
+    // mode append mode results in a buffered range gap in this case.
+    EXPECT_EQ(frame_duration_ * -2, timestamp_offset_);
+    CheckExpectedRangesByTimestamp(audio_.get(), "{ [30,40) [100,130) }");
+    CheckExpectedRangesByTimestamp(video_.get(), "{ [100,150) }");
+  } else {
+    EXPECT_EQ(base::TimeDelta(), timestamp_offset_);
+    CheckExpectedRangesByTimestamp(audio_.get(), "{ [50,60) [100,130) }");
+    CheckExpectedRangesByTimestamp(video_.get(), "{ [100,140) [160,170) }");
+  }
+
+  // Finally, append a non-keyframe to the first track (video), to continue the
+  // GOP that started the normal discontinuity on the previous video append.
+  if (using_sequence_mode)
+    EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_ * 16));
+  else
+    EXPECT_CALL(callbacks_, PossibleDurationIncrease(frame_duration_ * 18));
+
+  ProcessFrames("", "170");
+  EXPECT_TRUE(in_coded_frame_group());
+
+  // Verify the final buffers. First, re-seek audio since we appended data
+  // earlier than what already satisfied our initial seek to start. We satisfy
+  // the seek with the first buffer in [0,1000).
+  seek(audio_.get(), base::TimeDelta());
+  if (using_sequence_mode) {
+    // The new video buffer is relocated into [150,160).
+    EXPECT_EQ(frame_duration_ * -2, timestamp_offset_);
+    CheckExpectedRangesByTimestamp(audio_.get(), "{ [30,40) [100,130) }");
+    CheckReadsThenReadStalls(audio_.get(), "30:50");
+    seek(audio_.get(), 10 * frame_duration_);
+    CheckReadsThenReadStalls(audio_.get(), "100 110 120");
+
+    CheckExpectedRangesByTimestamp(video_.get(), "{ [100,160) }");
+    CheckReadsThenReadStalls(video_.get(), "110 120 130 140:160 150:170");
+  } else {
+    EXPECT_EQ(base::TimeDelta(), timestamp_offset_);
+    CheckExpectedRangesByTimestamp(audio_.get(), "{ [50,60) [100,130) }");
+    CheckReadsThenReadStalls(audio_.get(), "50");
+    seek(audio_.get(), 10 * frame_duration_);
+    CheckReadsThenReadStalls(audio_.get(), "100 110 120");
+
+    CheckExpectedRangesByTimestamp(video_.get(), "{ [100,140) [160,180) }");
+    CheckReadsThenReadStalls(video_.get(), "110 120 130");
+    seek(video_.get(), 16 * frame_duration_);
+    CheckReadsThenReadStalls(video_.get(), "160 170");
   }
 }
 
