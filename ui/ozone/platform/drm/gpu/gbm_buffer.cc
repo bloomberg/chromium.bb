@@ -155,7 +155,6 @@ uint32_t GbmBuffer::GetOpaqueFramebufferPixelFormat() const {
 }
 
 uint64_t GbmBuffer::GetFormatModifier() const {
-  DCHECK(framebuffer_);
   return format_modifier_;
 }
 
