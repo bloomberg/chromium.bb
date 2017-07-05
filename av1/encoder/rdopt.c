@@ -4636,6 +4636,7 @@ static int64_t select_tx_size_fix_type(const AV1_COMP *cpi, MACROBLOCK *x,
       mbmi->min_tx_size = AOMMIN(
           mbmi->min_tx_size, get_min_tx_size(mbmi->inter_tx_size[row][col]));
 
+#if !CONFIG_TXK_SEL
 #if CONFIG_EXT_TX
   if (get_ext_tx_types(mbmi->min_tx_size, bsize, is_inter,
                        cm->reduced_tx_set_used) > 1 &&
@@ -4655,13 +4656,12 @@ static int64_t select_tx_size_fix_type(const AV1_COMP *cpi, MACROBLOCK *x,
                                     [mbmi->tx_type];
     }
   }
-#else  // CONFIG_EXT_TX
-#if !CONFIG_TXK_SEL
+#else
   if (mbmi->min_tx_size < TX_32X32 && !xd->lossless[xd->mi[0]->mbmi.segment_id])
     rd_stats->rate +=
         cpi->inter_tx_type_costs[mbmi->min_tx_size][mbmi->tx_type];
-#endif
 #endif  // CONFIG_EXT_TX
+#endif  // CONFIG_TXK_SEL
 
   if (rd_stats->skip)
     rd = RDCOST(x->rdmult, s1, rd_stats->sse);
