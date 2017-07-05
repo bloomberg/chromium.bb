@@ -309,6 +309,10 @@ void JumpList::InitializeTimerForUpdate() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (timer_.IsRunning()) {
+    // TODO(chengx): Remove the UMA histogram below after fixing crbug/733034.
+    UMA_HISTOGRAM_COUNTS_10000(
+        "WinJumplist.NotificationTimeInterval",
+        (timer_.desired_run_time() - base::TimeTicks::Now()).InMilliseconds());
     timer_.Reset();
   } else {
     // base::Unretained is safe since |this| is guaranteed to outlive timer_.
