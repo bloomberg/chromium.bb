@@ -21,6 +21,9 @@ const char kDisableAppListDismissOnBlur[] = "disable-app-list-dismiss-on-blur";
 // If set, the app list will be enabled as if enabled from CWS.
 const char kEnableAppList[] = "enable-app-list";
 
+// If set, fullscreen app list will be enabled as if the feature flag was set.
+const char kEnableFullscreenAppList[] = "enable-fullscreen-app-list";
+
 // Enable/disable syncing of the app list independent of extensions.
 const char kEnableSyncAppList[] = "enable-sync-app-list";
 const char kDisableSyncAppList[] = "disable-sync-app-list";
@@ -39,6 +42,11 @@ const char kResetAppListInstallState[] = "reset-app-list-install-state";
 bool IsAppListSyncEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       kDisableSyncAppList);
+}
+
+bool IsFullscreenAppListEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kEnableFullscreenAppList);
 }
 
 bool IsFolderUIEnabled() {

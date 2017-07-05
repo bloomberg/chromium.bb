@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "ui/app_list/app_list_switches.h"
 
 namespace app_list {
 namespace features {
@@ -32,7 +33,8 @@ bool IsAnswerCardDarkRunEnabled() {
 
 bool IsFullscreenAppListEnabled() {
   // Not using local static variable to allow tests to change this value.
-  return base::FeatureList::IsEnabled(kEnableFullscreenAppList);
+  return switches::IsFullscreenAppListEnabled() ||
+         base::FeatureList::IsEnabled(kEnableFullscreenAppList);
 }
 
 bool IsSearchResultsNewDesignEnabled() {
