@@ -224,6 +224,20 @@ void TabManager::Start() {
     min_time_to_purge_ = kDefaultMinTimeToPurge;
   else
     min_time_to_purge_ = base::TimeDelta::FromSeconds(min_time_to_purge_sec);
+
+  std::string max_purge_and_suspend_time = variations::GetVariationParamValue(
+      "PurgeAndSuspend", "max-purge-and-suspend-time");
+  unsigned int max_time_to_purge_sec = 0;
+  // If max-purge-and-suspend-time is not specified or
+  // max-purge-and-suspend-time is not valid (not number or smaller than
+  // min-purge-and-suspend-time), use default max-time-to-purge, i.e.
+  // min-time-to-purge times kDefaultMinMaxTimeToPurgeRatio.
+  if (max_purge_and_suspend_time.empty() ||
+      !base::StringToUint(max_purge_and_suspend_time, &max_time_to_purge_sec) ||
+      max_time_to_purge_sec < min_time_to_purge_.InSeconds())
+    max_time_to_purge_ = min_time_to_purge_ * kDefaultMinMaxTimeToPurgeRatio;
+  else
+    max_time_to_purge_ = base::TimeDelta::FromSeconds(max_time_to_purge_sec);
 }
 
 void TabManager::Stop() {
@@ -670,10 +684,10 @@ void TabManager::UpdateTimerCallback() {
 }
 
 base::TimeDelta TabManager::GetTimeToPurge(
-    base::TimeDelta min_time_to_purge) const {
-  return base::TimeDelta::FromSeconds(
-      base::RandInt(min_time_to_purge.InSeconds(),
-                    min_time_to_purge.InSeconds() * kMinMaxTimeToPurgeRatio));
+    base::TimeDelta min_time_to_purge,
+    base::TimeDelta max_time_to_purge) const {
+  return base::TimeDelta::FromSeconds(base::RandInt(
+      min_time_to_purge.InSeconds(), max_time_to_purge.InSeconds()));
 }
 
 bool TabManager::ShouldPurgeNow(content::WebContents* content) const {
@@ -812,7 +826,8 @@ void TabManager::ActiveTabChanged(content::WebContents* old_contents,
     GetWebContentsData(old_contents)->SetLastInactiveTime(NowTicks());
     // Re-setting time-to-purge every time a tab becomes inactive.
     GetWebContentsData(old_contents)
-        ->set_time_to_purge(GetTimeToPurge(min_time_to_purge_));
+        ->set_time_to_purge(
+            GetTimeToPurge(min_time_to_purge_, max_time_to_purge_));
     // Only record switch-to-tab metrics when a switch happens, i.e.
     // |old_contents| is set.
     RecordSwitchToTab(new_contents);
@@ -842,7 +857,7 @@ void TabManager::TabInsertedAt(TabStripModel* tab_strip_model,
   GetWebContentsData(contents)->SetLastInactiveTime(NowTicks());
   // Re-setting time-to-purge every time a tab becomes inactive.
   GetWebContentsData(contents)->set_time_to_purge(
-      GetTimeToPurge(min_time_to_purge_));
+      GetTimeToPurge(min_time_to_purge_, max_time_to_purge_));
 }
 
 void TabManager::OnBrowserSetLastActive(Browser* browser) {

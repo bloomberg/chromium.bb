@@ -415,7 +415,8 @@ TEST_F(TabManagerTest, CanOnlyDiscardOnce) {
 TEST_F(TabManagerTest, DefaultTimeToPurgeInCorrectRange) {
   TabManager tab_manager;
   base::TimeDelta time_to_purge =
-      tab_manager.GetTimeToPurge(TabManager::kDefaultMinTimeToPurge);
+      tab_manager.GetTimeToPurge(TabManager::kDefaultMinTimeToPurge,
+                                 TabManager::kDefaultMinTimeToPurge * 2);
   EXPECT_GE(time_to_purge, base::TimeDelta::FromMinutes(30));
   EXPECT_LT(time_to_purge, base::TimeDelta::FromMinutes(60));
 }
