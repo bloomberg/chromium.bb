@@ -826,8 +826,9 @@ class QuicConnectionTest : public QuicTestWithParam<TestParams> {
     QuicPacketHeader header;
     QuicPacketCreatorPeer::FillPacketHeader(&peer_creator_, &header);
     char encrypted_buffer[kMaxPacketSize];
+    // TODO(fayang): Use data producer to produce data.
     size_t length = peer_framer_.BuildDataPacket(
-        header, frames, encrypted_buffer, kMaxPacketSize);
+        header, frames, encrypted_buffer, kMaxPacketSize, nullptr);
     DCHECK_GT(length, 0u);
 
     const size_t encrypted_length = peer_framer_.EncryptInPlace(
@@ -1907,13 +1908,13 @@ TEST_P(QuicConnectionTest, FramePackingSendv) {
   // using writev.
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _));
 
-  char data[] = "ABCD";
+  char data[] = "ABCDEF";
   struct iovec iov[2];
   iov[0].iov_base = data;
-  iov[0].iov_len = 2;
-  iov[1].iov_base = data + 2;
+  iov[0].iov_len = 4;
+  iov[1].iov_base = data + 4;
   iov[1].iov_len = 2;
-  connection_.SendStreamData(1, QuicIOVector(iov, 2, 4), 0, NO_FIN, nullptr);
+  connection_.SendStreamData(1, QuicIOVector(iov, 2, 6), 0, NO_FIN, nullptr);
 
   EXPECT_EQ(0u, connection_.NumQueuedPackets());
   EXPECT_FALSE(connection_.HasQueuedData());
@@ -1925,7 +1926,7 @@ TEST_P(QuicConnectionTest, FramePackingSendv) {
   EXPECT_EQ(1u, writer_->padding_frames().size());
   QuicStreamFrame* frame = writer_->stream_frames()[0].get();
   EXPECT_EQ(1u, frame->stream_id);
-  EXPECT_EQ("ABCD", QuicStringPiece(frame->data_buffer, frame->data_length));
+  EXPECT_EQ("ABCDEF", QuicStringPiece(frame->data_buffer, frame->data_length));
 }
 
 TEST_P(QuicConnectionTest, FramePackingSendvQueued) {
@@ -1933,13 +1934,13 @@ TEST_P(QuicConnectionTest, FramePackingSendvQueued) {
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _));
 
   BlockOnNextWrite();
-  char data[] = "ABCD";
+  char data[] = "ABCDEF";
   struct iovec iov[2];
   iov[0].iov_base = data;
-  iov[0].iov_len = 2;
-  iov[1].iov_base = data + 2;
+  iov[0].iov_len = 4;
+  iov[1].iov_base = data + 4;
   iov[1].iov_len = 2;
-  connection_.SendStreamData(1, QuicIOVector(iov, 2, 4), 0, NO_FIN, nullptr);
+  connection_.SendStreamData(1, QuicIOVector(iov, 2, 6), 0, NO_FIN, nullptr);
 
   EXPECT_EQ(1u, connection_.NumQueuedPackets());
   EXPECT_TRUE(connection_.HasQueuedData());
@@ -3099,7 +3100,8 @@ TEST_P(QuicConnectionTest, MtuDiscoveryEnabled) {
 
   // Send more packets, and ensure that none of them sets the alarm.
   for (QuicPacketCount i = 0; i < 4 * kPacketsBetweenMtuProbesBase; i++) {
-    SendStreamDataToPeer(3, ".", i, NO_FIN, nullptr);
+    SendStreamDataToPeer(3, ".", kPacketsBetweenMtuProbesBase + 1 + i, NO_FIN,
+                         nullptr);
     ASSERT_FALSE(connection_.GetMtuDiscoveryAlarm()->IsSet());
   }
 
@@ -3228,7 +3230,8 @@ TEST_P(QuicConnectionTest, MtuDiscoveryWriterLimited) {
 
   // Send more packets, and ensure that none of them sets the alarm.
   for (QuicPacketCount i = 0; i < 4 * kPacketsBetweenMtuProbesBase; i++) {
-    SendStreamDataToPeer(3, ".", i, NO_FIN, nullptr);
+    SendStreamDataToPeer(3, ".", kPacketsBetweenMtuProbesBase + 1 + i, NO_FIN,
+                         nullptr);
     ASSERT_FALSE(connection_.GetMtuDiscoveryAlarm()->IsSet());
   }
 
@@ -3327,7 +3330,7 @@ TEST_P(QuicConnectionTest, TimeoutAfterSend) {
   // Now send more data. This will not move the timeout becase
   // no data has been recieved since the previous write.
   clock_.AdvanceTime(five_ms);
-  SendStreamDataToPeer(kClientDataStreamId1, "foo", 0, FIN, nullptr);
+  SendStreamDataToPeer(kClientDataStreamId1, "foo", 3, FIN, nullptr);
   EXPECT_EQ(default_timeout, connection_.GetTimeoutAlarm()->deadline());
 
   // The original alarm will fire.  We should not time out because we had a
@@ -3466,7 +3469,7 @@ TEST_P(QuicConnectionTest, NewTimeoutAfterSendSilentClose) {
   // Now send more data. This will not move the timeout becase
   // no data has been recieved since the previous write.
   clock_.AdvanceTime(five_ms);
-  SendStreamDataToPeer(kClientDataStreamId1, "foo", 0, FIN, nullptr);
+  SendStreamDataToPeer(kClientDataStreamId1, "foo", 3, FIN, nullptr);
   EXPECT_EQ(default_timeout, connection_.GetTimeoutAlarm()->deadline());
 
   // The original alarm will fire.  We should not time out because we had a
