@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -80,6 +81,9 @@ GpuChannelManager::GpuChannelManager(
 #endif
       exiting_for_lost_context_(false),
       activity_flags_(std::move(activity_flags)),
+      memory_pressure_listener_(
+          base::Bind(&GpuChannelManager::HandleMemoryPressure,
+                     base::Unretained(this))),
       weak_factory_(this) {
   // |application_status_listener_| must be created on the right task runner.
   DCHECK(task_runner->BelongsToCurrentThread());
@@ -277,5 +281,26 @@ void GpuChannelManager::OnApplicationStateChange(
   program_cache_.reset();
 }
 #endif
+
+void GpuChannelManager::HandleMemoryPressure(
+    base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
+  // Set a low limit on cache size for MEMORY_PRESSURE_LEVEL_MODERATE.
+  size_t limit = gpu_preferences_.gpu_program_cache_size / 4;
+  if (memory_pressure_level ==
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL) {
+    limit = 0;
+  }
+
+  if (!program_cache_) {
+    return;
+  }
+
+  size_t bytes_freed = program_cache_->Trim(limit);
+  if (bytes_freed > 0) {
+    UMA_HISTOGRAM_COUNTS_100000(
+        "GPU.ProgramCache.MemoryReleasedOnPressure",
+        static_cast<base::HistogramBase::Sample>(bytes_freed) / 1024);
+  }
+}
 
 }  // namespace gpu

@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
@@ -152,6 +153,9 @@ class GPU_EXPORT GpuChannelManager {
   void DoWakeUpGpu();
 #endif
 
+  void HandleMemoryPressure(
+      base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
+
   // These objects manage channels to individual renderer processes. There is
   // one channel for each renderer process that has connected to this GPU
   // process.
@@ -199,6 +203,8 @@ class GPU_EXPORT GpuChannelManager {
   // Flags which indicate GPU process activity. Read by the browser process
   // on GPU process crash.
   GpuProcessActivityFlags activity_flags_;
+
+  base::MemoryPressureListener memory_pressure_listener_;
 
   // Member variables should appear before the WeakPtrFactory, to ensure
   // that any WeakPtrs to Controller are invalidated before its members

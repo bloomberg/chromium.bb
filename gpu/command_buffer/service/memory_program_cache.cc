@@ -222,10 +222,7 @@ MemoryProgramCache::MemoryProgramCache(
           disable_program_caching_for_transform_feedback),
       curr_size_bytes_(0),
       store_(ProgramMRUCache::NO_AUTO_EVICT),
-      activity_flags_(activity_flags),
-      memory_pressure_listener_(
-          base::Bind(&MemoryProgramCache::HandleMemoryPressure,
-                     base::Unretained(this))) {}
+      activity_flags_(activity_flags) {}
 
 MemoryProgramCache::~MemoryProgramCache() {}
 
@@ -476,21 +473,13 @@ void MemoryProgramCache::LoadProgram(const std::string& program) {
   }
 }
 
-void MemoryProgramCache::HandleMemoryPressure(
-    base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
-  // Set a low limit on cache size for MEMORY_PRESSURE_LEVEL_MODERATE.
-  size_t limit = max_size_bytes_ / 4;
-  if (memory_pressure_level ==
-      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL) {
-    limit = 0;
-  }
+size_t MemoryProgramCache::Trim(size_t limit) {
   if (curr_size_bytes_ <= limit)
-    return;
+    return 0;
   size_t initial_size = curr_size_bytes_;
   while (curr_size_bytes_ > limit && !store_.empty())
     store_.Erase(store_.rbegin());
-  UMA_HISTOGRAM_COUNTS_100000("GPU.ProgramCache.MemoryReleasedOnPressure",
-                              (initial_size - curr_size_bytes_) / 1024);
+  return (initial_size - curr_size_bytes_);
 }
 
 MemoryProgramCache::ProgramCacheValue::ProgramCacheValue(

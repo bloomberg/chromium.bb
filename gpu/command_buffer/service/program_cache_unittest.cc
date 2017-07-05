@@ -84,6 +84,8 @@ class NoBackendProgramCache : public ProgramCache {
   void Evict(const std::string& program_hash) {
     ProgramCache::Evict(program_hash);
   }
+
+  size_t Trim(size_t limit) override { return 0; }
 };
 
 class ProgramCacheTest : public testing::Test {
