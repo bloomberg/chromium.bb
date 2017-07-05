@@ -80,7 +80,7 @@ void NotificationControlButtonsView::ShowSettingsButton(bool show) {
     // Add the button at the first.
     DCHECK_LE(child_count(), 1);
     AddChildViewAt(settings_button_, 0);
-  } else if (!show && close_button_) {
+  } else if (!show && settings_button_) {
     RemoveChildView(settings_button_);
     settings_button_ = nullptr;
   }
