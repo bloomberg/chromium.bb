@@ -19,8 +19,7 @@ const char kBreakingNewsGCMAppID[] = "com.google.breakingnews.gcm";
 
 // The sender ID is used in the registration process.
 // See: https://developers.google.com/cloud-messaging/gcm#senderid
-// TODO(mamir): use proper sender Id.
-const char kBreakingNewsGCMSenderId[] = "128223710667";
+const char kBreakingNewsGCMSenderId[] = "667617379155";
 
 // OAuth2 Scope passed to getToken to obtain GCM registration tokens.
 // Must match Java GoogleCloudMessaging.INSTANCE_ID_SCOPE.
