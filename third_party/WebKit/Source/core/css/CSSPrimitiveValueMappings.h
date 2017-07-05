@@ -96,10 +96,10 @@ inline CSSPrimitiveValue::CSSPrimitiveValue(LineClampValue i)
 template <>
 inline LineClampValue CSSPrimitiveValue::ConvertTo() const {
   if (GetType() == UnitType::kInteger)
-    return LineClampValue(clampTo<int>(value_.num), kLineClampLineCount);
+    return LineClampValue(clampTo<int>(value_.num), LineClampType::kLineCount);
 
   if (GetType() == UnitType::kPercentage)
-    return LineClampValue(clampTo<int>(value_.num), kLineClampPercentage);
+    return LineClampValue(clampTo<int>(value_.num), LineClampType::kPercentage);
 
   NOTREACHED();
   return LineClampValue();
