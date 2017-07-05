@@ -259,7 +259,7 @@ external/wpt/dom [ Pass ]
 # external/wpt/domxpath [ Pass ]
 external/wpt/dpub-aam [ Skip ]
 external/wpt/dpub-aria [ Skip ]
-## Owners: dom-dev@chromium.org
+## Owners: editing-dev@chromium.org
 # external/wpt/editing [ Pass ]
 ## Owners: jsbell@chromium.org
 # external/wpt/encoding [ Pass ]
@@ -364,7 +364,7 @@ external/wpt/resources/webidl2/test [ Skip ]
 # external/wpt/screen-orientation [ Pass ]
 ## Owners: mkwst@chromium.org
 # external/wpt/secure-contexts [ Pass ]
-## Owners: dom-dev@chromium.org
+## Owners: editing-dev@chromium.org
 # external/wpt/selection [ Pass ]
 ## Owners: style-dev@chromium.org
 # external/wpt/selectors [ Pass ]
