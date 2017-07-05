@@ -74,12 +74,6 @@ class CanvasCaptureHandlerTest
     DoOnDeliverFrame(video_frame, estimated_capture_time);
   }
 
-  MOCK_METHOD1(DoOnVideoCaptureDeviceFormats,
-               void(const media::VideoCaptureFormats&));
-  void OnVideoCaptureDeviceFormats(const media::VideoCaptureFormats& formats) {
-    DoOnVideoCaptureDeviceFormats(formats);
-  }
-
   MOCK_METHOD1(DoOnRunning, void(bool));
   void OnRunning(bool state) { DoOnRunning(state); }
 
@@ -174,16 +168,7 @@ TEST_P(CanvasCaptureHandlerTest, GetFormatsStartAndStop) {
   media::VideoCapturerSource* source = GetVideoCapturerSource(ms_source);
   EXPECT_TRUE(source != nullptr);
 
-  media::VideoCaptureFormats formats;
-  EXPECT_CALL(*this, DoOnVideoCaptureDeviceFormats(_))
-      .Times(1)
-      .WillOnce(SaveArg<0>(&formats));
-  source->GetCurrentSupportedFormats(
-      media::limits::kMaxCanvas /* max_requesteed_width */,
-      media::limits::kMaxCanvas /* max_requesteed_height */,
-      media::limits::kMaxFramesPerSecond /* max_requested_frame_rate */,
-      base::Bind(&CanvasCaptureHandlerTest::OnVideoCaptureDeviceFormats,
-                 base::Unretained(this)));
+  media::VideoCaptureFormats formats = source->GetPreferredFormats();
   ASSERT_EQ(2u, formats.size());
   EXPECT_EQ(kTestCanvasCaptureWidth, formats[0].frame_size.width());
   EXPECT_EQ(kTestCanvasCaptureHeight, formats[0].frame_size.height());

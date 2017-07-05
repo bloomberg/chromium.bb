@@ -99,12 +99,6 @@ class HTMLVideoElementCapturerSourceTest : public testing::Test {
     DoOnDeliverFrame(video_frame, estimated_capture_time);
   }
 
-  MOCK_METHOD1(DoOnVideoCaptureDeviceFormats,
-               void(const media::VideoCaptureFormats&));
-  void OnVideoCaptureDeviceFormats(const media::VideoCaptureFormats& formats) {
-    DoOnVideoCaptureDeviceFormats(formats);
-  }
-
   MOCK_METHOD1(DoOnRunning, void(bool));
   void OnRunning(bool state) { DoOnRunning(state); }
 
@@ -126,18 +120,8 @@ TEST_F(HTMLVideoElementCapturerSourceTest, ConstructAndDestruct) {}
 // frames.
 TEST_F(HTMLVideoElementCapturerSourceTest, GetFormatsAndStartAndStop) {
   InSequence s;
-  media::VideoCaptureFormats formats;
-  EXPECT_CALL(*this, DoOnVideoCaptureDeviceFormats(_))
-      .Times(1)
-      .WillOnce(SaveArg<0>(&formats));
-
-  html_video_capturer_->GetCurrentSupportedFormats(
-      media::limits::kMaxCanvas /* max_requesteed_width */,
-      media::limits::kMaxCanvas /* max_requesteed_height */,
-      media::limits::kMaxFramesPerSecond /* max_requested_frame_rate */,
-      base::Bind(
-          &HTMLVideoElementCapturerSourceTest::OnVideoCaptureDeviceFormats,
-          base::Unretained(this)));
+  media::VideoCaptureFormats formats =
+      html_video_capturer_->GetPreferredFormats();
   ASSERT_EQ(1u, formats.size());
   EXPECT_EQ(web_media_player_->NaturalSize().width,
             formats[0].frame_size.width());
