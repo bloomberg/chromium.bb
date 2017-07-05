@@ -933,9 +933,6 @@
       status: "stable",
     },
     {
-      name: "ServiceWorkerScriptStreaming",
-    },
-    {
       name: "SetRootScroller",
       status: "experimental",
     },

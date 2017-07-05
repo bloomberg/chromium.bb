@@ -105,6 +105,9 @@ WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(
         installed_scripts_manager,
     std::unique_ptr<WebContentSettingsClient> content_settings_client)
     : worker_context_client_(std::move(client)),
+      installed_scripts_manager_(
+          WTF::MakeUnique<ServiceWorkerInstalledScriptsManager>(
+              std::move(installed_scripts_manager))),
       content_settings_client_(std::move(content_settings_client)),
       worker_inspector_proxy_(WorkerInspectorProxy::Create()),
       web_view_(nullptr),
@@ -114,13 +117,6 @@ WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(
       pause_after_download_state_(kDontPauseAfterDownload),
       waiting_for_debugger_state_(kNotWaitingForDebugger) {
   RunningWorkerInstances().insert(this);
-
-  if (RuntimeEnabledFeatures::ServiceWorkerScriptStreamingEnabled()) {
-    DCHECK(installed_scripts_manager);
-    installed_scripts_manager_ =
-        WTF::MakeUnique<ServiceWorkerInstalledScriptsManager>(
-            std::move(installed_scripts_manager));
-  }
 }
 
 WebEmbeddedWorkerImpl::~WebEmbeddedWorkerImpl() {
@@ -343,8 +339,7 @@ void WebEmbeddedWorkerImpl::DidFinishDocumentLoad() {
 
   // Kickstart the worker before loading the script when the script has been
   // installed.
-  if (RuntimeEnabledFeatures::ServiceWorkerScriptStreamingEnabled() &&
-      installed_scripts_manager_->IsScriptInstalled(
+  if (installed_scripts_manager_->IsScriptInstalled(
           worker_start_data_.script_url)) {
     // TODO(shimazu): Move WorkerScriptLoaded to the correct place which is
     // after InstalledScriptsManager::GetScriptData() called at

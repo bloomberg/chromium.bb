@@ -46,7 +46,6 @@
 #include "core/workers/WorkerThreadStartupData.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/Histogram.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/WaitableEvent.h"
 #include "platform/WebThreadSupportingGC.h"
 #include "platform/bindings/Microtask.h"
@@ -448,8 +447,7 @@ void WorkerThread::InitializeOnWorkerThread(
 
   String source_code;
   std::unique_ptr<Vector<char>> cached_meta_data;
-  if (RuntimeEnabledFeatures::ServiceWorkerScriptStreamingEnabled() &&
-      GetInstalledScriptsManager() &&
+  if (GetInstalledScriptsManager() &&
       GetInstalledScriptsManager()->IsScriptInstalled(script_url)) {
     // TODO(shimazu): Set ContentSecurityPolicy, ReferrerPolicy and
     // OriginTrialTokens to |startup_data|.
