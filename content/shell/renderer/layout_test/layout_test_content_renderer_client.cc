@@ -217,11 +217,9 @@ LayoutTestContentRendererClient::OverrideCreateAudioDevice(
           media::AudioLatency::GetHighLatencyBufferSize(hw_sample_rate, 0);
       break;
     case blink::WebAudioLatencyHint::kCategoryExact:
-      // TODO(andrew.macpherson@soundtrap.com): http://crbug.com/708917
-      buffer_size = std::min(
-          4096, media::AudioLatency::GetExactBufferSize(
-                    base::TimeDelta::FromSecondsD(latency_hint.Seconds()),
-                    hw_sample_rate, hw_buffer_size));
+      buffer_size = media::AudioLatency::GetExactBufferSize(
+          base::TimeDelta::FromSecondsD(latency_hint.Seconds()), hw_sample_rate,
+          hw_buffer_size);
       break;
     default:
       NOTREACHED();
