@@ -196,6 +196,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   class StartTask;
   class WorkerProcessHandle;
   friend class EmbeddedWorkerRegistry;
+  friend class EmbeddedWorkerInstanceTest;
   FRIEND_TEST_ALL_PREFIXES(EmbeddedWorkerInstanceTest, StartAndStop);
   FRIEND_TEST_ALL_PREFIXES(EmbeddedWorkerInstanceTest, DetachDuringStart);
   FRIEND_TEST_ALL_PREFIXES(EmbeddedWorkerInstanceTest, StopDuringStart);
