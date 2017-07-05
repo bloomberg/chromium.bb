@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_PRINT_PREVIEW_PRINT_PREVIEW_HANDLER_H_
 
 #include <memory>
+#include <queue>
 #include <string>
 
 #include "base/files/file_path.h"
@@ -75,6 +76,15 @@ class PrintPreviewHandler
 
   // Called when print preview failed.
   void OnPrintPreviewFailed();
+
+  // Called when print preview is cancelled due to a new request.
+  void OnPrintPreviewCancelled();
+
+  // Called when printer settings were invalid.
+  void OnInvalidPrinterSettings();
+
+  // Called when print preview is ready.
+  void OnPrintPreviewReady(int preview_uid, int request_id);
 
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
   // Called when the user press ctrl+shift+p to display the native system
@@ -420,6 +430,8 @@ class PrintPreviewHandler
   // Notifies tests that want to know if the PDF has been saved. This doesn't
   // notify the test if it was a successful save, only that it was attempted.
   base::Closure pdf_file_saved_closure_;
+
+  std::queue<std::string> preview_callbacks_;
 
 #if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
   // Callback ID to be used to notify UI that privet search is finished.

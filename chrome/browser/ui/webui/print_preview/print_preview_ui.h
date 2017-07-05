@@ -115,6 +115,9 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
   // closed, which may occur for several reasons, e.g. tab closure or crash.
   void OnPrintPreviewDialogClosed();
 
+  // Notifies the Web UI that the preview request was cancelled.
+  void OnPrintPreviewCancelled();
+
   // Notifies the Web UI that initiator is closed, so we can disable all the
   // controls that need the initiator for generating the preview data.
   void OnInitiatorClosed();

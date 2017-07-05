@@ -171,6 +171,12 @@ cr.define('print_preview', function() {
      * @private
      */
     this.openSystemDialogButton_ = null;
+
+    /**
+     * If this is in a browser test (fake plugin).
+     * @private {boolean}
+     */
+    this.isBrowserTest_ = false;
   }
 
   /**
@@ -192,7 +198,10 @@ cr.define('print_preview', function() {
 
     // Dispatched when a new document preview is being generated.
     PREVIEW_GENERATION_IN_PROGRESS:
-        'print_preview.PreviewArea.PREVIEW_GENERATION_IN_PROGRESS'
+        'print_preview.PreviewArea.PREVIEW_GENERATION_IN_PROGRESS',
+
+    // Dispatched when invalid printer settings are detected.
+    SETTINGS_INVALID: 'print_preview.PreviewArea.SETTINGS_INVALID'
   };
 
   /**
@@ -349,10 +358,6 @@ cr.define('print_preview', function() {
             this.previewGenerator_,
             print_preview.PreviewGenerator.EventType.PAGE_READY,
             this.onPagePreviewReady_.bind(this));
-        this.tracker.add(
-            this.previewGenerator_,
-            print_preview.PreviewGenerator.EventType.FAIL,
-            this.onPreviewGenerationFail_.bind(this));
         this.tracker.add(
             this.previewGenerator_,
             print_preview.PreviewGenerator.EventType.DOCUMENT_READY,
@@ -523,7 +528,10 @@ cr.define('print_preview', function() {
      * @private
      */
     onTicketChange_: function() {
-      if (this.previewGenerator_ && this.previewGenerator_.requestPreview()) {
+      if (!this.previewGenerator_)
+        return;
+      var previewRequest = this.previewGenerator_.requestPreview();
+      if (previewRequest.id > -1) {
         cr.dispatchSimpleEvent(
             this, PreviewArea.EventType.PREVIEW_GENERATION_IN_PROGRESS);
         if (this.loadingTimeout_ == null) {
@@ -532,6 +540,29 @@ cr.define('print_preview', function() {
                   this, print_preview.PreviewAreaMessageId_.LOADING),
               PreviewArea.LOADING_TIMEOUT_);
         }
+        previewRequest.request.then(
+            /** @param {number} previewUid The unique id of the preview. */
+            function(previewUid) {
+              this.previewGenerator_.onPreviewGenerationDone(
+                  previewRequest.id, previewUid);
+            }.bind(this),
+            /**
+             * @param {*} type The type of print preview failure that
+             *     occurred.
+             */
+            function(type) {
+              if (/** @type{string} */ (type) == 'CANCELLED')
+                return;  // overriden by a new request, do nothing.
+              else if (/** @type{string} */ (type) == 'SETTINGS_INVALID') {
+                this.cancelTimeout();
+                this.showCustomMessage(
+                    loadTimeData.getString('invalidPrinterSettings'));
+                cr.dispatchSimpleEvent(
+                    this, PreviewArea.EventType.SETTINGS_INVALID);
+              } else {
+                this.onPreviewGenerationFail_();
+              }
+            }.bind(this));
       } else {
         this.marginControlContainer_.showMarginControlsIfNeeded();
       }
@@ -574,6 +605,8 @@ cr.define('print_preview', function() {
      */
     onDocumentReady_: function(event) {
       this.isDocumentReady_ = true;
+      if (this.isBrowserTest_)
+        this.isPluginReloaded_ = true;
       this.dispatchPreviewGenerationDoneIfReady_();
     },
 
@@ -641,6 +674,11 @@ cr.define('print_preview', function() {
       // we don't want this to happen as it can cause the margin to stop
       // being draggable.
       this.plugin_.style.pointerEvents = isDragging ? 'none' : 'auto';
+    },
+
+    /** @param {boolean} isTest Whether this instance is in a browser test. */
+    setIsBrowserTest: function(isTest) {
+      this.isBrowserTest_ = isTest;
     }
   };
 

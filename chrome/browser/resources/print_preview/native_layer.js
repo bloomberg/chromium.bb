@@ -87,13 +87,10 @@ cr.define('print_preview', function() {
   function NativeLayer() {
     // Bind global handlers
     global.reloadPrintersList = this.onReloadPrintersList_.bind(this);
-    global.printPreviewFailed = this.onPrintPreviewFailed_.bind(this);
-    global.invalidPrinterSettings = this.onInvalidPrinterSettings_.bind(this);
     global.onDidGetDefaultPageLayout =
         this.onDidGetDefaultPageLayout_.bind(this);
     global.onDidGetPreviewPageCount = this.onDidGetPreviewPageCount_.bind(this);
     global.onDidPreviewPage = this.onDidPreviewPage_.bind(this);
-    global.updatePrintPreview = this.onUpdatePrintPreview_.bind(this);
     global.onEnableManipulateSettingsForTest =
         this.onEnableManipulateSettingsForTest_.bind(this);
     global.printPresetOptionsFromDocument =
@@ -330,8 +327,10 @@ cr.define('print_preview', function() {
      * @param {!print_preview.DocumentInfo} documentInfo Document data model.
      * @param {boolean} generateDraft Tell the renderer to re-render.
      * @param {number} requestId ID of the preview request.
+     * @return {!Promise<number>} Promise that resolves with the unique ID of
+     *     the preview UI when the preview has been generated.
      */
-    startGetPreview: function(
+    getPreview: function(
         destination, printTicketStore, documentInfo, generateDraft, requestId) {
       assert(
           printTicketStore.isTicketValidForPreview(),
@@ -394,9 +393,9 @@ cr.define('print_preview', function() {
         };
       }
 
-      chrome.send('getPreview', [
-        JSON.stringify(ticket), requestId > 0 ? documentInfo.pageCount : -1
-      ]);
+      return cr.sendWithPromise(
+          'getPreview', JSON.stringify(ticket),
+          requestId > 0 ? documentInfo.pageCount : -1);
     },
 
     /**
@@ -559,26 +558,6 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * Display an error message when print preview fails.
-     * Called from PrintPreviewMessageHandler::OnPrintPreviewFailed().
-     * @private
-     */
-    onPrintPreviewFailed_: function() {
-      cr.dispatchSimpleEvent(
-          this.eventTarget_, NativeLayer.EventType.PREVIEW_GENERATION_FAIL);
-    },
-
-    /**
-     * Display an error message when encountered invalid printer settings.
-     * Called from PrintPreviewMessageHandler::OnInvalidPrinterSettings().
-     * @private
-     */
-    onInvalidPrinterSettings_: function() {
-      cr.dispatchSimpleEvent(
-          this.eventTarget_, NativeLayer.EventType.SETTINGS_INVALID);
-    },
-
-    /**
      * @param {{contentWidth: number, contentHeight: number, marginLeft: number,
      *          marginRight: number, marginTop: number, marginBottom: number,
      *          printableAreaX: number, printableAreaY: number,
@@ -633,23 +612,6 @@ cr.define('print_preview', function() {
       pagePreviewGenEvent.previewUid = previewUid;
       pagePreviewGenEvent.previewResponseId = previewResponseId;
       this.eventTarget_.dispatchEvent(pagePreviewGenEvent);
-    },
-
-    /**
-     * Update the print preview when new preview data is available.
-     * Create the PDF plugin as needed.
-     * Called from PrintPreviewUI::PreviewDataIsAvailable().
-     * @param {number} previewUid Preview unique identifier.
-     * @param {number} previewResponseId The preview request id that resulted in
-     *     this response.
-     * @private
-     */
-    onUpdatePrintPreview_: function(previewUid, previewResponseId) {
-      var previewGenDoneEvent =
-          new Event(NativeLayer.EventType.PREVIEW_GENERATION_DONE);
-      previewGenDoneEvent.previewUid = previewUid;
-      previewGenDoneEvent.previewResponseId = previewResponseId;
-      this.eventTarget_.dispatchEvent(previewGenDoneEvent);
     },
 
     /**
