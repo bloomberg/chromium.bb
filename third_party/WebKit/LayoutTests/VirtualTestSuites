@@ -124,6 +124,11 @@
   },
   {
     "prefix": "off-main-thread-fetch",
+    "base": "external/wpt/html/browsers/offline/appcache/workers",
+    "args": ["--enable-features=OffMainThreadFetch"]
+  },
+  {
+    "prefix": "off-main-thread-fetch",
     "base": "external/wpt/service-workers",
     "args": ["--enable-features=OffMainThreadFetch"]
   },

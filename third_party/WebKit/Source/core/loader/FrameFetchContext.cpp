@@ -84,6 +84,7 @@
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/wtf/Vector.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebApplicationCacheHost.h"
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerNetworkProvider.h"
@@ -669,6 +670,12 @@ int64_t FrameFetchContext::ServiceWorkerID() const {
   return service_worker_network_provider
              ? service_worker_network_provider->ServiceWorkerID()
              : -1;
+}
+
+int FrameFetchContext::ApplicationCacheHostID() const {
+  if (!document_loader_)
+    return WebApplicationCacheHost::kAppCacheNoHostId;
+  return document_loader_->GetApplicationCacheHost()->GetHostID();
 }
 
 bool FrameFetchContext::IsMainFrame() const {

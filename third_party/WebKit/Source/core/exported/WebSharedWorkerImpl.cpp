@@ -56,6 +56,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/Persistent.h"
+#include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "platform/weborigin/KURL.h"
@@ -339,8 +340,12 @@ void WebSharedWorkerImpl::OnScriptLoaderFinished() {
                 ->DataSource()
                 ->GetServiceWorkerNetworkProvider());
     DCHECK(web_worker_fetch_context);
-    // TODO(horo): Set more information about the context (ex: AppCacheHostID)
-    // to |web_worker_fetch_context|.
+    web_worker_fetch_context->SetApplicationCacheHostID(
+        main_frame_->GetFrame()
+            ->GetDocument()
+            ->Fetcher()
+            ->Context()
+            .ApplicationCacheHostID());
     web_worker_fetch_context->SetDataSaverEnabled(
         main_frame_->GetFrame()->GetSettings()->GetDataSaverEnabled());
     ProvideWorkerFetchContextToWorker(worker_clients,

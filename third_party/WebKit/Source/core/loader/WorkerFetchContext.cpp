@@ -227,6 +227,10 @@ bool WorkerFetchContext::IsControlledByServiceWorker() const {
   return web_context_->IsControlledByServiceWorker();
 }
 
+int WorkerFetchContext::ApplicationCacheHostID() const {
+  return web_context_->ApplicationCacheHostID();
+}
+
 void WorkerFetchContext::PrepareRequest(ResourceRequest& request,
                                         RedirectType) {
   String user_agent = global_scope_->UserAgent();

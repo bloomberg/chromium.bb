@@ -312,6 +312,10 @@ void WebApplicationCacheHostImpl::GetAssociatedCacheInfo(
   info->total_size = cache_info_.size;
 }
 
+int WebApplicationCacheHostImpl::GetHostID() const {
+  return host_id_;
+}
+
 void WebApplicationCacheHostImpl::GetResourceList(
     WebVector<ResourceInfo>* resources) {
   if (!cache_info_.is_complete)

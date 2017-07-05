@@ -15,6 +15,7 @@
 #include "core/workers/WorkerInspectorProxy.h"
 #include "core/workers/WorkerThreadStartupData.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/wtf/CurrentTime.h"
 #include "public/platform/WebWorkerFetchContext.h"
 #include "public/web/WebFrameClient.h"
@@ -47,8 +48,8 @@ ThreadedMessagingProxyBase::ThreadedMessagingProxyBase(
     std::unique_ptr<WebWorkerFetchContext> web_worker_fetch_context =
         web_frame->Client()->CreateWorkerFetchContext();
     DCHECK(web_worker_fetch_context);
-    // TODO(horo): Set more information about the context (ex:
-    // AppCacheHostID) to |web_worker_fetch_context|.
+    web_worker_fetch_context->SetApplicationCacheHostID(
+        document->Fetcher()->Context().ApplicationCacheHostID());
     web_worker_fetch_context->SetDataSaverEnabled(
         document->GetFrame()->GetSettings()->GetDataSaverEnabled());
     ProvideWorkerFetchContextToWorker(worker_clients,
