@@ -82673,6 +82673,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="VirtualKeyboard.ControllerStateTransition"
+    enum="VirtualKeyboardControllerStateTransition">
+  <owner>oka@chromium.org</owner>
+  <summary>
+    An integer representing a state transition from x to y in the form of x *
+    1000 + y. If the transition is not expected, the value is negated. For
+    example an expected transition from SHOWING (= 2) to SHOWN (= 1) is denoted
+    as 2001, and an unexpected transition from SHOWING to SHOWING is denoted as
+    -2002. See KeyboardControllerState for the correspondence between the number
+    and the enum.
+  </summary>
+</histogram>
+
+<histogram name="VirtualKeyboard.ControllerStateTransitionIsValid"
+    enum="BooleanValid">
+  <owner>oka@chromium.org</owner>
+  <summary>
+    Validity of a state transtion. This is equivalent to the positiveness of
+    VirtualKeyboard.ControllerStateTransition.
+  </summary>
+</histogram>
+
 <histogram name="VirtualKeyboard.InitLatency.FirstLoad" units="ms">
   <owner>oka@chromium.org</owner>
   <summary>Latency of the keyboard being loaded for the first time.</summary>
@@ -86209,16 +86231,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="WebRTC.Video.InterframeDelayInMs" units="ms">
   <owner>ilnik@chromium.org</owner>
   <summary>
-    The average interframe delay for a received video stream. Recorded
-    when a stream is removed.
+    The average interframe delay for a received video stream. Recorded when a
+    stream is removed.
   </summary>
 </histogram>
 
 <histogram name="WebRTC.Video.InterframeDelayMaxInMs" units="ms">
   <owner>ilnik@chromium.org</owner>
   <summary>
-    The maximum interframe delay for a received video stream. Recorded
-    when a stream is removed.
+    The maximum interframe delay for a received video stream. Recorded when a
+    stream is removed.
   </summary>
 </histogram>
 

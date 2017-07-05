@@ -47,23 +47,25 @@ enum KeyboardMode {
 };
 
 // Represents the current state of the keyboard managed by the controller.
+// Don't change the numeric value of the members because they are used in UMA
+// VirtualKeyboard.ControllerStateTransition.
 enum class KeyboardControllerState {
   UNKNOWN = 0,
-  // Keyboard is shown.
-  SHOWN,
-  // Keyboard is being shown via animation.
-  SHOWING,
+  // Keyboard has never been shown.
+  INITIAL = 1,
   // Waiting for an extension to be loaded and then move to SHOWING.
-  LOADING_EXTENSION,
+  LOADING_EXTENSION = 2,
+  // Keyboard is being shown via animation.
+  SHOWING = 3,
+  // Keyboard is shown.
+  SHOWN = 4,
   // Keyboard is still shown, but will move to HIDING in a short period, or if
   // an input element gets focused again, will move to SHOWN.
-  WILL_HIDE,
+  WILL_HIDE = 5,
   // Keyboard is being hidden via animation.
-  HIDING,
+  HIDING = 6,
   // Keyboard is hidden, but has shown at least once.
-  HIDDEN,
-  // Keyboard has never been shown.
-  INITIAL,
+  HIDDEN = 7,
 };
 
 // Provides control of the virtual keyboard, including providing a container
