@@ -167,6 +167,13 @@ bool TranslateHelper::HasTranslationFailed() {
   return ExecuteScriptAndGetBoolResult("cr.googleTranslate.error", true);
 }
 
+int64_t TranslateHelper::GetErrorCode() {
+  int64_t error_code =
+      ExecuteScriptAndGetIntegerResult("cr.googleTranslate.errorCode");
+  DCHECK_LT(error_code, static_cast<int>(TranslateErrors::TRANSLATE_ERROR_MAX));
+  return error_code;
+}
+
 bool TranslateHelper::StartTranslation() {
   return ExecuteScriptAndGetBoolResult(
       BuildTranslationScript(source_lang_, target_lang_), false);
@@ -249,6 +256,24 @@ double TranslateHelper::ExecuteScriptAndGetDoubleResult(
   return results[0]->NumberValue();
 }
 
+int64_t TranslateHelper::ExecuteScriptAndGetIntegerResult(
+    const std::string& script) {
+  WebLocalFrame* main_frame = render_frame()->GetWebFrame();
+  if (!main_frame)
+    return 0;
+
+  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
+  WebVector<v8::Local<v8::Value>> results;
+  WebScriptSource source = WebScriptSource(WebString::FromASCII(script));
+  main_frame->ExecuteScriptInIsolatedWorld(world_id_, &source, 1, &results);
+  if (results.size() != 1 || results[0].IsEmpty() || !results[0]->IsNumber()) {
+    NOTREACHED();
+    return 0;
+  }
+
+  return results[0]->IntegerValue();
+}
+
 // mojom::Page implementations.
 void TranslateHelper::Translate(const std::string& translate_script,
                                 const std::string& source_lang,
@@ -322,8 +347,8 @@ void TranslateHelper::RevertTranslation() {
 void TranslateHelper::CheckTranslateStatus() {
   // First check if there was an error.
   if (HasTranslationFailed()) {
-    // TODO(toyoshim): Check |errorCode| of translate.js and notify it here.
-    NotifyBrowserTranslationFailed(TranslateErrors::TRANSLATION_ERROR);
+    NotifyBrowserTranslationFailed(
+        static_cast<translate::TranslateErrors::Type>(GetErrorCode()));
     return;  // There was an error.
   }
 
@@ -369,10 +394,18 @@ void TranslateHelper::CheckTranslateStatus() {
 void TranslateHelper::TranslatePageImpl(int count) {
   DCHECK_LT(count, kMaxTranslateInitCheckAttempts);
   if (!IsTranslateLibReady()) {
+    // There was an error during initialization of library.
+    TranslateErrors::Type error =
+        static_cast<translate::TranslateErrors::Type>(GetErrorCode());
+    if (error != TranslateErrors::NONE) {
+      NotifyBrowserTranslationFailed(error);
+      return;
+    }
+
     // The library is not ready, try again later, unless we have tried several
     // times unsuccessfully already.
     if (++count >= kMaxTranslateInitCheckAttempts) {
-      NotifyBrowserTranslationFailed(TranslateErrors::INITIALIZATION_ERROR);
+      NotifyBrowserTranslationFailed(TranslateErrors::TRANSLATION_TIMEOUT);
       return;
     }
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
@@ -390,7 +423,7 @@ void TranslateHelper::TranslatePageImpl(int count) {
       ExecuteScriptAndGetDoubleResult("cr.googleTranslate.loadTime"));
 
   if (!StartTranslation()) {
-    NotifyBrowserTranslationFailed(TranslateErrors::TRANSLATION_ERROR);
+    CheckTranslateStatus();
     return;
   }
   // Check the status of the translation.
