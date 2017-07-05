@@ -247,11 +247,10 @@ bool WallpaperPrivateSetWallpaperIfExistsFunction::RunAsync() {
                   wallpaper::kWallpaperSequenceTokenName),
               base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
 
-  task_runner->PostTask(FROM_HERE,
-      base::Bind(
-          &WallpaperPrivateSetWallpaperIfExistsFunction::
-              ReadFileAndInitiateStartDecode,
-          this, wallpaper_path, fallback_path));
+  task_runner->PostTask(
+      FROM_HERE, base::BindOnce(&WallpaperPrivateSetWallpaperIfExistsFunction::
+                                    ReadFileAndInitiateStartDecode,
+                                this, wallpaper_path, fallback_path));
   return true;
 }
 
@@ -269,8 +268,9 @@ void WallpaperPrivateSetWallpaperIfExistsFunction::
       base::ReadFileToString(path, &data)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&WallpaperPrivateSetWallpaperIfExistsFunction::StartDecode,
-                   this, std::vector<char>(data.begin(), data.end())));
+        base::BindOnce(
+            &WallpaperPrivateSetWallpaperIfExistsFunction::StartDecode, this,
+            std::vector<char>(data.begin(), data.end())));
     return;
   }
   std::string error = base::StringPrintf(
@@ -278,8 +278,9 @@ void WallpaperPrivateSetWallpaperIfExistsFunction::
         path.BaseName().value().c_str());
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&WallpaperPrivateSetWallpaperIfExistsFunction::OnFileNotExists,
-                 this, error));
+      base::BindOnce(
+          &WallpaperPrivateSetWallpaperIfExistsFunction::OnFileNotExists, this,
+          error));
 }
 
 void WallpaperPrivateSetWallpaperIfExistsFunction::OnWallpaperDecoded(
@@ -352,8 +353,9 @@ void WallpaperPrivateSetWallpaperFunction::OnWallpaperDecoded(
                   wallpaper::kWallpaperSequenceTokenName),
               base::SequencedWorkerPool::BLOCK_SHUTDOWN);
 
-  task_runner->PostTask(FROM_HERE,
-      base::Bind(&WallpaperPrivateSetWallpaperFunction::SaveToFile, this));
+  task_runner->PostTask(
+      FROM_HERE,
+      base::BindOnce(&WallpaperPrivateSetWallpaperFunction::SaveToFile, this));
 }
 
 void WallpaperPrivateSetWallpaperFunction::SaveToFile() {
@@ -366,8 +368,9 @@ void WallpaperPrivateSetWallpaperFunction::SaveToFile() {
     // post to another thread.
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&WallpaperPrivateSetWallpaperFunction::SetDecodedWallpaper,
-                   this, base::Passed(std::move(deep_copy))));
+        base::BindOnce(
+            &WallpaperPrivateSetWallpaperFunction::SetDecodedWallpaper, this,
+            std::move(deep_copy)));
 
     base::FilePath wallpaper_dir;
     CHECK(PathService::Get(chrome::DIR_CHROMEOS_WALLPAPERS, &wallpaper_dir));
@@ -387,8 +390,8 @@ void WallpaperPrivateSetWallpaperFunction::SaveToFile() {
         "Failed to create/write wallpaper to %s.", file_name.c_str());
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&WallpaperPrivateSetWallpaperFunction::OnFailure,
-                   this, error));
+        base::BindOnce(&WallpaperPrivateSetWallpaperFunction::OnFailure, this,
+                       error));
   }
 }
 
@@ -502,10 +505,11 @@ void WallpaperPrivateSetCustomWallpaperFunction::OnWallpaperDecoded(
     std::unique_ptr<gfx::ImageSkia> deep_copy(image.DeepCopy());
     // Generates thumbnail before call api function callback. We can then
     // request thumbnail in the javascript callback.
-    task_runner->PostTask(FROM_HERE,
-        base::Bind(
+    task_runner->PostTask(
+        FROM_HERE,
+        base::BindOnce(
             &WallpaperPrivateSetCustomWallpaperFunction::GenerateThumbnail,
-            this, thumbnail_path, base::Passed(&deep_copy)));
+            this, thumbnail_path, std::move(deep_copy)));
   } else {
     SendResponse(true);
   }
@@ -525,7 +529,7 @@ void WallpaperPrivateSetCustomWallpaperFunction::GenerateThumbnail(
       &data, NULL);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &WallpaperPrivateSetCustomWallpaperFunction::ThumbnailGenerated, this,
           base::RetainedRef(data)));
 }
@@ -638,9 +642,9 @@ bool WallpaperPrivateGetThumbnailFunction::RunAsync() {
                   wallpaper::kWallpaperSequenceTokenName),
               base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
 
-  task_runner->PostTask(FROM_HERE,
-      base::Bind(&WallpaperPrivateGetThumbnailFunction::Get, this,
-                 thumbnail_path));
+  task_runner->PostTask(
+      FROM_HERE, base::BindOnce(&WallpaperPrivateGetThumbnailFunction::Get,
+                                this, thumbnail_path));
   return true;
 }
 
@@ -667,19 +671,20 @@ void WallpaperPrivateGetThumbnailFunction::Get(const base::FilePath& path) {
   if (GetData(path, &data)) {
     if (data.empty()) {
       BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&WallpaperPrivateGetThumbnailFunction::FileNotLoaded, this));
+          BrowserThread::UI, FROM_HERE,
+          base::BindOnce(&WallpaperPrivateGetThumbnailFunction::FileNotLoaded,
+                         this));
     } else {
       BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&WallpaperPrivateGetThumbnailFunction::FileLoaded, this,
-                   data));
+          BrowserThread::UI, FROM_HERE,
+          base::BindOnce(&WallpaperPrivateGetThumbnailFunction::FileLoaded,
+                         this, data));
     }
   } else {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&WallpaperPrivateGetThumbnailFunction::Failure, this,
-                   path.BaseName().value()));
+        base::BindOnce(&WallpaperPrivateGetThumbnailFunction::Failure, this,
+                       path.BaseName().value()));
   }
 }
 
@@ -701,9 +706,10 @@ bool WallpaperPrivateSaveThumbnailFunction::RunAsync() {
                   wallpaper::kWallpaperSequenceTokenName),
               base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
 
-  task_runner->PostTask(FROM_HERE,
-      base::Bind(&WallpaperPrivateSaveThumbnailFunction::Save,
-                 this, params->data, GURL(params->url).ExtractFileName()));
+  task_runner->PostTask(
+      FROM_HERE,
+      base::BindOnce(&WallpaperPrivateSaveThumbnailFunction::Save, this,
+                     params->data, GURL(params->url).ExtractFileName()));
   return true;
 }
 
@@ -723,13 +729,13 @@ void WallpaperPrivateSaveThumbnailFunction::Save(const std::vector<char>& data,
   wallpaper::AssertCalledOnWallpaperSequence();
   if (SaveData(chrome::DIR_CHROMEOS_WALLPAPER_THUMBNAILS, file_name, data)) {
     BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&WallpaperPrivateSaveThumbnailFunction::Success, this));
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&WallpaperPrivateSaveThumbnailFunction::Success, this));
   } else {
     BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          base::Bind(&WallpaperPrivateSaveThumbnailFunction::Failure,
-                     this, file_name));
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&WallpaperPrivateSaveThumbnailFunction::Failure, this,
+                       file_name));
   }
 }
 
@@ -749,9 +755,10 @@ bool WallpaperPrivateGetOfflineWallpaperListFunction::RunAsync() {
                   wallpaper::kWallpaperSequenceTokenName),
               base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
 
-  task_runner->PostTask(FROM_HERE,
-      base::Bind(&WallpaperPrivateGetOfflineWallpaperListFunction::GetList,
-                 this));
+  task_runner->PostTask(
+      FROM_HERE,
+      base::BindOnce(&WallpaperPrivateGetOfflineWallpaperListFunction::GetList,
+                     this));
   return true;
 }
 
@@ -774,8 +781,9 @@ void WallpaperPrivateGetOfflineWallpaperListFunction::GetList() {
   }
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&WallpaperPrivateGetOfflineWallpaperListFunction::OnComplete,
-                 this, file_list));
+      base::BindOnce(
+          &WallpaperPrivateGetOfflineWallpaperListFunction::OnComplete, this,
+          file_list));
 }
 
 void WallpaperPrivateGetOfflineWallpaperListFunction::OnComplete(
