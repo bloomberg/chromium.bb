@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
+import android.text.TextUtils;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -152,7 +153,11 @@ public class AddToHomescreenManagerTest {
         public void showDialog() {
             AddToHomescreenManager.Observer observer = new AddToHomescreenManager.Observer() {
                 @Override
-                public void onUserTitleAvailable(String title) {}
+                public void onUserTitleAvailable(String title) {
+                    if (TextUtils.isEmpty(mTitle)) {
+                        mTitle = title;
+                    }
+                }
 
                 @Override
                 public void onReadyToAdd(Bitmap icon) {

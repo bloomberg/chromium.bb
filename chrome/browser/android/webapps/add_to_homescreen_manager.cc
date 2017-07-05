@@ -74,8 +74,7 @@ void AddToHomescreenManager::AddShortcut(
 
   base::string16 user_title =
       base::android::ConvertJavaStringToUTF16(env, j_user_title);
-  if (!user_title.empty())
-    data_fetcher_->shortcut_info().user_title = user_title;
+  data_fetcher_->shortcut_info().user_title = user_title;
 
   RecordAddToHomescreen();
   ShortcutHelper::AddToLauncherWithSkBitmap(web_contents,
