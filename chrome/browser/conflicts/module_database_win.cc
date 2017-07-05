@@ -201,6 +201,10 @@ void ModuleDatabase::RemoveObserver(ModuleDatabaseObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
+void ModuleDatabase::IncreaseInspectionPriority() {
+  module_inspector_.IncreaseInspectionPriority();
+}
+
 // static
 uint32_t ModuleDatabase::ProcessTypeToBit(content::ProcessType process_type) {
   uint32_t bit_index =

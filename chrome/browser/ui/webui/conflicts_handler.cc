@@ -26,23 +26,28 @@ void ConflictsHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
+void ConflictsHandler::OnScanCompleted() {
+  SendModuleList();
+  observer_.Remove(EnumerateModulesModel::GetInstance());
+}
+
 void ConflictsHandler::HandleRequestModuleList(const base::ListValue* args) {
+  auto* model = EnumerateModulesModel::GetInstance();
+  // Make sure the JS doesn't call 'requestModuleList' more than once.
+  // TODO(739291): It would be better to kill the renderer instead of the
+  // browser for malformed messages.
+  CHECK(!observer_.IsObserving(model));
+
   CHECK_EQ(1U, args->GetSize());
   CHECK(args->GetString(0, &module_list_callback_id_));
 
   // The request is handled asynchronously, and will callback via
   // OnScanCompleted on completion.
-  auto* model = EnumerateModulesModel::GetInstance();
+  observer_.Add(model);
 
-  // The JS shouldn't be abusive and call 'requestModuleList' twice, but it's
-  // easy enough to defend against this.
-  if (!observer_.IsObserving(model)) {
-    observer_.Add(model);
-
-    // Ask the scan to be performed immediately, and not in background mode.
-    // This ensures the results are available ASAP for the UI.
-    model->ScanNow(false);
-  }
+  // Ask the scan to be performed immediately, and not in background mode.
+  // This ensures the results are available ASAP for the UI.
+  model->ScanNow(false);
 }
 
 void ConflictsHandler::SendModuleList() {
@@ -69,9 +74,4 @@ void ConflictsHandler::SendModuleList() {
 
   AllowJavascript();
   ResolveJavascriptCallback(base::Value(module_list_callback_id_), results);
-}
-
-void ConflictsHandler::OnScanCompleted() {
-  SendModuleList();
-  observer_.Remove(EnumerateModulesModel::GetInstance());
 }

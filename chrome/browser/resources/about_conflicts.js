@@ -38,9 +38,8 @@ function renderTemplate(moduleListData) {
 }
 
 /**
- * Asks the C++ ConflictsDOMHandler to get details about the available modules
- * and return detailed data about the configuration. The ConflictsDOMHandler
- * should reply to returnModuleList() (below).
+ * Asks the C++ ConflictsHandler to get details about the available modules
+ * and return detailed data about the configuration.
  */
 function requestModuleListData() {
   cr.sendWithPromise('requestModuleList').then(returnModuleList);
