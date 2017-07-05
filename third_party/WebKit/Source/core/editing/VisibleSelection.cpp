@@ -217,7 +217,7 @@ void VisibleSelectionTemplate<Strategy>::SetBaseAndExtentToDeepEquivalents() {
 }
 
 template <typename Strategy>
-static PositionTemplate<Strategy> ComputeStartRespectingGranularity(
+static PositionTemplate<Strategy> ComputeStartRespectingGranularityAlgorithm(
     const PositionWithAffinityTemplate<Strategy>& passed_start,
     TextGranularity granularity) {
   DCHECK(passed_start.IsNotNull());
@@ -276,8 +276,20 @@ static PositionTemplate<Strategy> ComputeStartRespectingGranularity(
   return passed_start.GetPosition();
 }
 
+static Position ComputeStartRespectingGranularity(
+    const PositionWithAffinity& start,
+    TextGranularity granularity) {
+  return ComputeStartRespectingGranularityAlgorithm(start, granularity);
+}
+
+PositionInFlatTree ComputeStartRespectingGranularity(
+    const PositionInFlatTreeWithAffinity& start,
+    TextGranularity granularity) {
+  return ComputeStartRespectingGranularityAlgorithm(start, granularity);
+}
+
 template <typename Strategy>
-static PositionTemplate<Strategy> ComputeEndRespectingGranularity(
+static PositionTemplate<Strategy> ComputeEndRespectingGranularityAlgorithm(
     const PositionTemplate<Strategy>& start,
     const PositionWithAffinityTemplate<Strategy>& passed_end,
     TextGranularity granularity) {
@@ -390,6 +402,19 @@ static PositionTemplate<Strategy> ComputeEndRespectingGranularity(
   }
   NOTREACHED();
   return passed_end.GetPosition();
+}
+
+static Position ComputeEndRespectingGranularity(const Position& start,
+                                                const PositionWithAffinity& end,
+                                                TextGranularity granularity) {
+  return ComputeEndRespectingGranularityAlgorithm(start, end, granularity);
+}
+
+PositionInFlatTree ComputeEndRespectingGranularity(
+    const PositionInFlatTree& start,
+    const PositionInFlatTreeWithAffinity& end,
+    TextGranularity granularity) {
+  return ComputeEndRespectingGranularityAlgorithm(start, end, granularity);
 }
 
 template <typename Strategy>

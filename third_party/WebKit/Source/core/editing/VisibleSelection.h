@@ -201,6 +201,15 @@ CORE_EXPORT std::ostream& operator<<(std::ostream&, const VisibleSelection&);
 CORE_EXPORT std::ostream& operator<<(std::ostream&,
                                      const VisibleSelectionInFlatTree&);
 
+PositionInFlatTree ComputeStartRespectingGranularity(
+    const PositionInFlatTreeWithAffinity&,
+    TextGranularity);
+
+PositionInFlatTree ComputeEndRespectingGranularity(
+    const PositionInFlatTree&,
+    const PositionInFlatTreeWithAffinity&,
+    TextGranularity);
+
 }  // namespace blink
 
 #ifndef NDEBUG
