@@ -32,52 +32,114 @@ class NotificationDataView;
 }
 #endif
 
+// Represents an individual item in NOTIFICATION_TYPE_MULTIPLE notifications.
 struct MESSAGE_CENTER_EXPORT NotificationItem {
+  NotificationItem(const base::string16& title, const base::string16& message);
+
   base::string16 title;
   base::string16 message;
-
-  NotificationItem(const base::string16& title, const base::string16& message);
 };
 
-enum class ButtonType { BUTTON, TEXT };
+enum class ButtonType {
+  // A simple button having an icon and a title that the user can click on.
+  BUTTON,
 
+  // A button having an icon and a title that should also enable the user to
+  // input text, enabling them to quickly respond from the notification.
+  TEXT
+};
+
+// Represents a button to be shown as part of a notification.
 struct MESSAGE_CENTER_EXPORT ButtonInfo {
-  base::string16 title;
-  gfx::Image icon;
-  ButtonType type = ButtonType::BUTTON;
-  base::string16 placeholder;
-
   explicit ButtonInfo(const base::string16& title);
   ButtonInfo(const ButtonInfo& other);
   ~ButtonInfo();
   ButtonInfo& operator=(const ButtonInfo& other);
+
+  // Title that should be displayed on the notification button.
+  base::string16 title;
+
+  // Icon that should be displayed on the notification button. Optional. On some
+  // platforms, a mask will be applied to the icon, to match the visual
+  // requirements of the notification.
+  gfx::Image icon;
+
+  // Type of this button.
+  ButtonType type = ButtonType::BUTTON;
+
+  // The placeholder string that should be displayed in the input field for TEXT
+  // type buttons until the user has entered a response themselves.
+  base::string16 placeholder;
 };
 
+// Represents rich features available for notifications.
 class MESSAGE_CENTER_EXPORT RichNotificationData {
  public:
   RichNotificationData();
   RichNotificationData(const RichNotificationData& other);
   ~RichNotificationData();
 
-  int priority;
-  bool never_timeout;
+  // Priority of the notification. This must be one of the NotificationPriority
+  // values defined in notification_types.h.
+  int priority = DEFAULT_PRIORITY;
+
+  // Whether the notification should remain on screen indefinitely.
+  bool never_timeout = false;
+
+  // Time indicating when the notification was shown. Defaults to the time at
+  // which the RichNotificationData instance is constructed.
   base::Time timestamp;
+
+  // Context message to display below the notification's content. Optional. May
+  // not be used for notifications that have an explicit origin URL set.
   base::string16 context_message;
+
+  // Large image to display on the notification. Optional.
   gfx::Image image;
+
+  // Small badge to display on the notification to illustrate the source of the
+  // notification. Optional.
   gfx::Image small_image;
+
+  // Items to display on the notification. Only applicable for notifications
+  // that have type NOTIFICATION_TYPE_MULTIPLE.
   std::vector<NotificationItem> items;
-  int progress;
+
+  // Progress, in range of [0-100], of NOTIFICATION_TYPE_PROGRESS notifications.
+  int progress = 0;
+
+  // Buttons that should show up on the notification. A maximum of 16 buttons
+  // is supported by the current implementation, but this may differ between
+  // platforms.
   std::vector<ButtonInfo> buttons;
-  bool should_make_spoken_feedback_for_popup_updates;
-  bool clickable;
+
+  // Whether updates to the visible notification should be announced to users
+  // depending on visual assistance systems.
+  bool should_make_spoken_feedback_for_popup_updates = true;
+
+  // Whether it should be possible for the user to click on the notification.
+  bool clickable = true;
+
 #if defined(OS_CHROMEOS)
   // Flag if the notification is pinned. If true, the notification is pinned
-  // and user can't remove it.
-  bool pinned;
+  // and the user can't remove it.
+  bool pinned = false;
 #endif  // defined(OS_CHROMEOS)
+
+  // Vibration pattern to play when displaying the notification. There must be
+  // an odd number of entries in this pattern when it's set: numbers of
+  // milliseconds to vibrate separated by numbers of milliseconds to pause.
   std::vector<int> vibration_pattern;
-  bool renotify;
-  bool silent;
+
+  // Whether the vibration pattern and other applicable announcement mechanisms
+  // should be considered when updating the notification.
+  bool renotify = false;
+
+  // Whether all announcement mechansims should be suppressed when displaying
+  // the notification.
+  bool silent = false;
+
+  // An accessible description of the notification's contents.
   base::string16 accessible_name;
 };
 
@@ -86,6 +148,24 @@ class MESSAGE_CENTER_EXPORT Notification {
   // Default constructor needed for generated mojom files
   Notification();
 
+  // Creates a new notification.
+  //
+  // |type|: Type of the notification that dictates the layout.
+  // |id|: Identifier of the notification. Showing a notification that shares
+  //       its profile and identifier with an already visible notification will
+  //       replace the former one
+  // |title|: Title of the notification.
+  // |message|: Body text of the notification. May not be used for certain
+  //            values of |type|, for example list-style notifications.
+  // |icon|: Icon to show alongside of the notification.
+  // |display_source|: Textual representation of who's shown the notification.
+  // |origin_url|: URL of the website responsible for showing the notification.
+  // |notifier_id|: NotifierId instance representing the system responsible for
+  //                showing the notification.
+  // |optional_fields|: Rich data that can be used to assign more elaborate
+  //                    features to notifications.
+  // |delegate|: Delegate that will influence the behaviour of this notification
+  //             and receives events on its behalf.
   Notification(NotificationType type,
                const std::string& id,
                const base::string16& title,
@@ -97,8 +177,13 @@ class MESSAGE_CENTER_EXPORT Notification {
                const RichNotificationData& optional_fields,
                NotificationDelegate* delegate);
 
+  // Creates a copy of the |other| notification. The delegate, if any, will be
+  // identical for both the Notification instances. The |id| of the notification
+  // will be replaced by the given value.
   Notification(const std::string& id, const Notification& other);
 
+  // Creates a copy of the |other| notification. The delegate, if any, will be
+  // identical for both the Notification instances.
   Notification(const Notification& other);
 
   Notification& operator=(const Notification& other);
