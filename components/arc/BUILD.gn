@@ -61,6 +61,8 @@ static_library("arc") {
     "storage_manager/arc_storage_manager.h",
     "video_accelerator/video_accelerator_struct_traits.cc",
     "video_accelerator/video_accelerator_struct_traits.h",
+    "volume_mounter/arc_volume_mounter_bridge.cc",
+    "volume_mounter/arc_volume_mounter_bridge.h",
   ]
 
   public_deps = [
@@ -165,6 +167,7 @@ mojom("arc_bindings") {
     "common/video_encode_accelerator.mojom",
     "common/voice_interaction_arc_home.mojom",
     "common/voice_interaction_framework.mojom",
+    "common/volume_mounter.mojom",
     "common/wallpaper.mojom",
   ]
 

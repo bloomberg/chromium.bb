@@ -78,6 +78,8 @@ class ArcBridgeHostImpl : public mojom::ArcBridgeHost {
       mojom::VoiceInteractionArcHomeInstancePtr home_ptr) override;
   void OnVoiceInteractionFrameworkInstanceReady(
       mojom::VoiceInteractionFrameworkInstancePtr framework_ptr) override;
+  void OnVolumeMounterInstanceReady(
+      mojom::VolumeMounterInstancePtr volume_mounter_ptr) override;
   void OnWallpaperInstanceReady(
       mojom::WallpaperInstancePtr wallpaper_ptr) override;
 

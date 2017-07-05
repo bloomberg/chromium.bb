@@ -41,6 +41,7 @@ class TtsInstance;
 class VideoInstance;
 class VoiceInteractionArcHomeInstance;
 class VoiceInteractionFrameworkInstance;
+class VolumeMounterInstance;
 class WallpaperInstance;
 
 }  // namespace mojom
@@ -103,6 +104,9 @@ class ArcBridgeService {
   voice_interaction_framework() {
     return &voice_interaction_framework_;
   }
+  InstanceHolder<mojom::VolumeMounterInstance>* volume_mounter() {
+    return &volume_mounter_;
+  }
   InstanceHolder<mojom::WallpaperInstance>* wallpaper() { return &wallpaper_; }
 
  private:
@@ -135,6 +139,7 @@ class ArcBridgeService {
       voice_interaction_arc_home_;
   InstanceHolder<mojom::VoiceInteractionFrameworkInstance>
       voice_interaction_framework_;
+  InstanceHolder<mojom::VolumeMounterInstance> volume_mounter_;
   InstanceHolder<mojom::WallpaperInstance> wallpaper_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcBridgeService);
