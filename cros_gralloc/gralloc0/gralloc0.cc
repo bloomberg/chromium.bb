@@ -296,6 +296,8 @@ static int gralloc0_lock_ycbcr(struct gralloc_module_t const *module, buffer_han
 	fence = -1;
 	flags = gralloc0_convert_flags(usage);
 	ret = mod->driver->lock(handle, fence, flags, addr);
+	if (ret)
+		return ret;
 
 	switch (hnd->format) {
 	case DRM_FORMAT_NV12:
@@ -316,6 +318,7 @@ static int gralloc0_lock_ycbcr(struct gralloc_module_t const *module, buffer_han
 		ycbcr->chroma_step = 1;
 		break;
 	default:
+		mod->driver->unlock(handle);
 		return CROS_GRALLOC_ERROR_UNSUPPORTED;
 	}
 
