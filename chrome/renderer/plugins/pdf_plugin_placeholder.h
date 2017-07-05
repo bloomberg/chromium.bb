@@ -30,6 +30,11 @@ class PDFPluginPlaceholder : public plugins::PluginPlaceholderBase,
 
   // WebViewPlugin::Delegate methods:
   v8::Local<v8::Value> GetV8Handle(v8::Isolate* isolate) final;
+
+  gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
+      v8::Isolate* isolate) final;
+
+  void DownloadPDFCallback();
 };
 
 #endif  // CHROME_RENDERER_PLUGINS_PDF_PLUGIN_PLACEHOLDER_H_
