@@ -37,6 +37,7 @@
 namespace blink {
 
 class LocalFrameView;
+class PageOverlay;
 class WebViewBase;
 
 class CORE_EXPORT ValidationMessageClientImpl final
@@ -65,6 +66,8 @@ class CORE_EXPORT ValidationMessageClientImpl final
   bool IsValidationMessageVisible(const Element& anchor) override;
   void DocumentDetached(const Document&) override;
   void WillBeDestroyed() override;
+  void LayoutOverlay() override;
+  void PaintOverlay() override;
 
   // PopupOpeningObserver function
   void WillOpenPopup() override;
@@ -76,6 +79,7 @@ class CORE_EXPORT ValidationMessageClientImpl final
   float last_page_scale_factor_;
   double finish_time_;
   std::unique_ptr<TimerBase> timer_;
+  std::unique_ptr<PageOverlay> overlay_;
 };
 
 }  // namespace blink

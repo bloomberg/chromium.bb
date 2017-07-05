@@ -61,6 +61,7 @@
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/page/PointerLockController.h"
+#include "core/page/ValidationMessageClient.h"
 #include "modules/compositorworker/AnimationWorkletProxyClientImpl.h"
 #include "modules/compositorworker/CompositorWorkerProxyClientImpl.h"
 #include "platform/KeyboardCodes.h"
@@ -250,6 +251,7 @@ void WebFrameWidgetImpl::BeginFrame(double last_frame_time_monotonic) {
                last_frame_time_monotonic);
   DCHECK(last_frame_time_monotonic);
   PageWidgetDelegate::Animate(*GetPage(), last_frame_time_monotonic);
+  GetPage()->GetValidationMessageClient().LayoutOverlay();
 }
 
 void WebFrameWidgetImpl::UpdateAllLifecyclePhases() {

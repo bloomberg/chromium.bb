@@ -71,6 +71,8 @@ blink_core_sources("page") {
     "ValidationMessageClient.h",
     "ValidationMessageClientImpl.cpp",
     "ValidationMessageClientImpl.h",
+    "ValidationMessageOverlayDelegate.cpp",
+    "ValidationMessageOverlayDelegate.h",
     "scrolling/OverscrollController.cpp",
     "scrolling/OverscrollController.h",
     "scrolling/RootScrollerController.cpp",

@@ -60,6 +60,9 @@ class ValidationMessageClient : public GarbageCollectedMixin {
 
   virtual void WillBeDestroyed() = 0;
 
+  virtual void LayoutOverlay() {}
+  virtual void PaintOverlay() {}
+
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 };
 

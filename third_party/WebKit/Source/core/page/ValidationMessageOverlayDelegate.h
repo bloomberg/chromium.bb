@@ -1,0 +1,49 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef ValidationMessageOverlayDelegate_h
+#define ValidationMessageOverlayDelegate_h
+
+#include "core/page/PageOverlay.h"
+#include "platform/text/TextDirection.h"
+#include "platform/wtf/Forward.h"
+
+namespace blink {
+
+class Element;
+class WebViewBase;
+
+// A ValidationMessageOverlayDelegate is responsible for rendering a form
+// validation message bubble.
+//
+// Lifetime: An instance is created by a ValidationMessageClientImpl when a
+// bubble is shown, and deleted when the bubble is closed.
+//
+// Ownership: A PageOverlay instance owns a ValidationMessageOverlayDelegate.
+class ValidationMessageOverlayDelegate : public PageOverlay::Delegate {
+ public:
+  static std::unique_ptr<ValidationMessageOverlayDelegate> Create(
+      WebViewBase&,
+      const Element& anchor,
+      const String& message,
+      TextDirection message_dir,
+      const String& sub_message,
+      TextDirection sub_message_dir);
+  ~ValidationMessageOverlayDelegate() override {}
+
+  void PaintPageOverlay(const PageOverlay&,
+                        GraphicsContext&,
+                        const WebSize& view_size) const override;
+
+ private:
+  ValidationMessageOverlayDelegate(WebViewBase&,
+                                   const Element& anchor,
+                                   const String& message,
+                                   TextDirection message_dir,
+                                   const String& sub_message,
+                                   TextDirection sub_message_dir);
+};
+
+}  // namespace blink
+#endif  // ValidationMessageOverlayDelegate_h
