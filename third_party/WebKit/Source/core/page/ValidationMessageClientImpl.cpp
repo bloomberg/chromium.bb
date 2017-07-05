@@ -29,7 +29,9 @@
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/exported/WebViewBase.h"
 #include "core/frame/LocalFrameView.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "core/page/ChromeClient.h"
+#include "core/page/ValidationMessageOverlayDelegate.h"
 #include "platform/PlatformChromeClient.h"
 #include "platform/wtf/CurrentTime.h"
 #include "public/platform/WebRect.h"
@@ -80,23 +82,38 @@ void ValidationMessageClientImpl::ShowValidationMessage(
   message_ = message;
   const double kMinimumSecondToShowValidationMessage = 5.0;
   const double kSecondPerCharacter = 0.05;
-  const double kStatusCheckInterval = 0.1;
-
-  web_view_.Client()->ShowValidationMessage(
-      anchor_in_viewport, message_, ToWebTextDirection(message_dir),
-      sub_message, ToWebTextDirection(sub_message_dir));
-  web_view_.GetChromeClient().RegisterPopupOpeningObserver(this);
-
   finish_time_ =
       MonotonicallyIncreasingTime() +
       std::max(kMinimumSecondToShowValidationMessage,
                (message.length() + sub_message.length()) * kSecondPerCharacter);
-  // FIXME: We should invoke checkAnchorStatus actively when layout, scroll,
-  // or page scale change happen.
-  timer_ = WTF::MakeUnique<TaskRunnerTimer<ValidationMessageClientImpl>>(
-      TaskRunnerHelper::Get(TaskType::kUnspecedTimer, &anchor.GetDocument()),
-      this, &ValidationMessageClientImpl::CheckAnchorStatus);
-  timer_->StartRepeating(kStatusCheckInterval, BLINK_FROM_HERE);
+
+  if (!RuntimeEnabledFeatures::ValidationBubbleInRendererEnabled()) {
+    web_view_.Client()->ShowValidationMessage(
+        anchor_in_viewport, message_, ToWebTextDirection(message_dir),
+        sub_message, ToWebTextDirection(sub_message_dir));
+    web_view_.GetChromeClient().RegisterPopupOpeningObserver(this);
+
+    // FIXME: We should invoke checkAnchorStatus actively when layout, scroll,
+    // or page scale change happen.
+    const double kStatusCheckInterval = 0.1;
+    timer_ = WTF::MakeUnique<TaskRunnerTimer<ValidationMessageClientImpl>>(
+        TaskRunnerHelper::Get(TaskType::kUnspecedTimer, &anchor.GetDocument()),
+        this, &ValidationMessageClientImpl::CheckAnchorStatus);
+    timer_->StartRepeating(kStatusCheckInterval, BLINK_FROM_HERE);
+    return;
+  }
+  auto* target_frame =
+      web_view_.MainFrameImpl()
+          ? web_view_.MainFrameImpl()
+          : WebLocalFrameBase::FromFrame(anchor.GetDocument().GetFrame());
+  overlay_ = PageOverlay::Create(
+      target_frame, ValidationMessageOverlayDelegate::Create(
+                        web_view_, anchor, message_, message_dir, sub_message,
+                        sub_message_dir));
+  target_frame->GetFrameView()
+      ->UpdateLifecycleToCompositingCleanPlusScrolling();
+  web_view_.GetChromeClient().RegisterPopupOpeningObserver(this);
+  LayoutOverlay();
 }
 
 void ValidationMessageClientImpl::HideValidationMessage(const Element& anchor) {
@@ -106,7 +123,9 @@ void ValidationMessageClientImpl::HideValidationMessage(const Element& anchor) {
   current_anchor_ = nullptr;
   message_ = String();
   finish_time_ = 0;
-  web_view_.Client()->HideValidationMessage();
+  if (!RuntimeEnabledFeatures::ValidationBubbleInRendererEnabled())
+    web_view_.Client()->HideValidationMessage();
+  overlay_ = nullptr;
   web_view_.GetChromeClient().UnregisterPopupOpeningObserver(this);
 }
 
@@ -134,6 +153,8 @@ void ValidationMessageClientImpl::CheckAnchorStatus(TimerBase*) {
     return;
   }
 
+  if (RuntimeEnabledFeatures::ValidationBubbleInRendererEnabled())
+    return;
   IntRect new_anchor_rect_in_viewport_in_screen =
       CurrentView()->GetChromeClient()->ViewportToScreen(
           new_anchor_rect_in_viewport, CurrentView());
@@ -153,6 +174,19 @@ void ValidationMessageClientImpl::WillBeDestroyed() {
 void ValidationMessageClientImpl::WillOpenPopup() {
   if (current_anchor_)
     HideValidationMessage(*current_anchor_);
+}
+
+void ValidationMessageClientImpl::LayoutOverlay() {
+  if (!overlay_)
+    return;
+  CheckAnchorStatus(nullptr);
+  if (overlay_)
+    overlay_->Update();
+}
+
+void ValidationMessageClientImpl::PaintOverlay() {
+  if (overlay_)
+    overlay_->GetGraphicsLayer()->Paint(nullptr);
 }
 
 DEFINE_TRACE(ValidationMessageClientImpl) {

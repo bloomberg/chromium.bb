@@ -415,6 +415,10 @@ WebViewImpl::~WebViewImpl() {
   DCHECK(link_highlights_.IsEmpty());
 }
 
+ValidationMessageClient* WebViewImpl::GetValidationMessageClient() const {
+  return page_ ? &page_->GetValidationMessageClient() : nullptr;
+}
+
 WebDevToolsAgentImpl* WebViewImpl::MainFrameDevToolsAgentImpl() {
   WebLocalFrameBase* main_frame = MainFrameImpl();
   return main_frame ? main_frame->DevToolsAgentImpl() : nullptr;
@@ -2005,6 +2009,8 @@ void WebViewImpl::BeginFrame(double last_frame_time_monotonic) {
   DocumentLifecycle::AllowThrottlingScope throttling_scope(
       MainFrameImpl()->GetFrame()->GetDocument()->Lifecycle());
   PageWidgetDelegate::Animate(*page_, last_frame_time_monotonic);
+  if (auto* client = GetValidationMessageClient())
+    client->LayoutOverlay();
 }
 
 void WebViewImpl::UpdateAllLifecyclePhases() {
@@ -2019,6 +2025,8 @@ void WebViewImpl::UpdateAllLifecyclePhases() {
                                                *MainFrameImpl()->GetFrame());
   UpdateLayerTreeBackgroundColor();
 
+  if (auto* client = GetValidationMessageClient())
+    client->PaintOverlay();
   if (WebDevToolsAgentImpl* devtools = MainFrameDevToolsAgentImpl())
     devtools->PaintOverlay();
   if (page_color_overlay_)
@@ -4110,6 +4118,8 @@ AnimationWorkletProxyClient* WebViewImpl::CreateAnimationWorkletProxyClient() {
 void WebViewImpl::UpdatePageOverlays() {
   if (page_color_overlay_)
     page_color_overlay_->Update();
+  if (auto* client = GetValidationMessageClient())
+    client->LayoutOverlay();
   if (WebDevToolsAgentImpl* devtools = MainFrameDevToolsAgentImpl())
     devtools->LayoutOverlay();
 }
