@@ -440,6 +440,7 @@ NotifierSettingsView::NotifierSettingsView(NotifierSettingsProvider* provider)
   AddChildView(title_label_);
 
   scroller_ = new views::ScrollView();
+  scroller_->SetBackgroundColor(kMessageCenterBackgroundColor);
   scroller_->SetVerticalScrollBar(new views::OverlayScrollBar(false));
   scroller_->SetHorizontalScrollBar(new views::OverlayScrollBar(true));
   AddChildView(scroller_);
