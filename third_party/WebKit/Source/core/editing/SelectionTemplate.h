@@ -65,7 +65,6 @@ class CORE_EXPORT SelectionTemplate final {
 
     Builder& SetAffinity(TextAffinity);
     Builder& SetGranularity(TextGranularity);
-    Builder& SetHasTrailingWhitespace(bool);
     Builder& SetIsDirectional(bool);
     Builder& SetIsHandleVisible(bool);
 
@@ -87,7 +86,6 @@ class CORE_EXPORT SelectionTemplate final {
   const PositionTemplate<Strategy>& Extent() const;
   TextAffinity Affinity() const { return affinity_; }
   TextGranularity Granularity() const { return granularity_; }
-  bool HasTrailingWhitespace() const { return has_trailing_whitespace_; }
   bool IsCaret() const;
   bool IsDirectional() const { return is_directional_; }
   bool IsHandleVisible() const { return is_handle_visible_; }
@@ -125,7 +123,6 @@ class CORE_EXPORT SelectionTemplate final {
   PositionTemplate<Strategy> extent_;
   TextAffinity affinity_ = TextAffinity::kDownstream;
   TextGranularity granularity_ = kCharacterGranularity;
-  bool has_trailing_whitespace_ = false;
   bool is_directional_ = false;
   bool is_handle_visible_ = false;
 #if DCHECK_IS_ON()

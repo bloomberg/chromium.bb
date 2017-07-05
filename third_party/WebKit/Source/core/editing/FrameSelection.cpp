@@ -305,8 +305,7 @@ void FrameSelection::SetSelection(const SelectionInFlatTree& new_selection,
                         ToPositionInDOMTree(new_selection.Extent()))
       .SetGranularity(new_selection.Granularity())
       .SetIsDirectional(new_selection.IsDirectional())
-      .SetIsHandleVisible(new_selection.IsHandleVisible())
-      .SetHasTrailingWhitespace(new_selection.HasTrailingWhitespace());
+      .SetIsHandleVisible(new_selection.IsHandleVisible());
   return SetSelection(builder.Build(), options, align, granularity);
 }
 
