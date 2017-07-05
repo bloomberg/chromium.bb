@@ -407,17 +407,17 @@ bool ArcSessionManager::IsAllowed() const {
 
 void ArcSessionManager::SetProfile(Profile* profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(IsArcAllowedForProfile(profile));
-
-  // TODO(hidehiko): Remove this condition, and following Shutdown().
-  // Do not expect that SetProfile() is called for various Profile instances.
-  // At the moment, it is used for testing purposes.
-  DCHECK(profile != profile_);
-  // TODO(yusukes): Once Shutdown() is removed, always call RequestStop() with
-  // |true|. We can actually remove the boolean parameter then.
-  Shutdown();
-
+  DCHECK(!profile || !profile_);
+  DCHECK(!profile || IsArcAllowedForProfile(profile));
   profile_ = profile;
+}
+
+void ArcSessionManager::Initialize() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(profile_);
+
+  DCHECK_EQ(state_, State::NOT_INITIALIZED);
+  state_ = State::STOPPED;
 
   // Create the support host at initialization. Note that, practically,
   // ARC support Chrome app is rarely used (only opt-in and re-auth flow).
@@ -434,9 +434,6 @@ void ArcSessionManager::SetProfile(Profile* profile) {
     support_host_ = base::MakeUnique<ArcSupportHost>(profile_);
     support_host_->SetErrorDelegate(this);
   }
-
-  DCHECK_EQ(State::NOT_INITIALIZED, state_);
-  state_ = State::STOPPED;
 
   context_ = base::MakeUnique<ArcAuthContext>(profile_);
 
@@ -493,6 +490,10 @@ void ArcSessionManager::ShutdownSession() {
       break;
     case State::ACTIVE:
       // Request to stop the ARC. |state_| will be set to STOPPED eventually.
+      // TODO(yusukes): Once Shutdown() in
+      // ArcServiceLauncher::OnPrimaryUserProfilePrepared() is removed, always
+      // call RequestStop() with |true|. We can actually remove the boolean
+      // parameter then.
       arc_session_runner_->RequestStop(false);
       state_ = State::STOPPING;
       break;
@@ -1052,7 +1053,7 @@ void ArcSessionManager::OnRetryClicked() {
     // ERROR_WITH_FEEDBACK is set in OnSignInFailed(). In the case, stopping
     // ARC was postponed to contain its internal state into the report.
     // Here, on retry, stop it, then restart.
-    DCHECK_EQ(State::ACTIVE, state_);
+    DCHECK_EQ(state_, State::ACTIVE);
     support_host_->ShowArcLoading();
     ShutdownSession();
     reenable_arc_ = true;

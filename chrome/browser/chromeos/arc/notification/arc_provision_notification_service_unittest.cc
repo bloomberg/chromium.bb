@@ -152,6 +152,7 @@ TEST_F(ArcProvisionNotificationServiceTest,
       prefs::kArcLocationServiceEnabled, base::MakeUnique<base::Value>(false));
 
   arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->Initialize();
 
   // Trigger opt-in flow. The notification gets shown.
   EXPECT_CALL(*arc_provision_notification_service_delegate(),
@@ -195,6 +196,7 @@ TEST_F(ArcProvisionNotificationServiceTest,
   profile()->GetPrefs()->SetBoolean(prefs::kArcSignedIn, true);
 
   arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->Initialize();
 
   // Enable ARC. The opt-in flow doesn't take place, and no notification is
   // shown.
@@ -216,6 +218,7 @@ TEST_F(ArcProvisionNotificationServiceTest,
       prefs::kArcLocationServiceEnabled, base::MakeUnique<base::Value>(false));
 
   arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->Initialize();
 
   // Trigger opt-in flow. The notification gets shown.
   EXPECT_CALL(*arc_provision_notification_service_delegate(),
@@ -252,6 +255,7 @@ TEST_F(ArcProvisionNotificationServiceTest,
       prefs::kArcLocationServiceEnabled, base::MakeUnique<base::Value>(false));
 
   arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->Initialize();
 
   // Trigger opt-in flow. The notification gets shown.
   EXPECT_CALL(*arc_provision_notification_service_delegate(),
@@ -290,6 +294,7 @@ TEST_F(ArcProvisionNotificationServiceTest,
       prefs::kArcEnabled, base::MakeUnique<base::Value>(true));
 
   arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->Initialize();
 
   // Trigger opt-in flow. The notification is not shown.
   arc_session_manager()->RequestEnable();

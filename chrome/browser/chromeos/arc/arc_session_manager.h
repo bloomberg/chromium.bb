@@ -151,12 +151,15 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   // has different meaning. Clean this up.
   bool IsAllowed() const;
 
+  // Initializes ArcSessionManager. Before this runs, Profile must be set
+  // via SetProfile().
+  void Initialize();
+
   void Shutdown();
 
   // Sets the |profile|, and sets up Profile related fields in this instance.
   // IsArcAllowedForProfile() must return true for the given |profile|.
   void SetProfile(Profile* profile);
-
   Profile* profile() { return profile_; }
   const Profile* profile() const { return profile_; }
 
