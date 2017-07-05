@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "content/common/content_export.h"
-#include "content/common/url_loader_factory.mojom.h"
+#include "content/public/common/url_loader_factory.mojom.h"
 
 namespace content {
 

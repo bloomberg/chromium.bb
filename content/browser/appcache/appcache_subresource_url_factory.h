@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_APPCACHE_APPCACHE_SUBRESOURCE_URL_FACTORY_H_
 
 #include "base/memory/ref_counted.h"
-#include "content/common/url_loader_factory.mojom.h"
+#include "content/public/common/url_loader_factory.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "url/gurl.h"

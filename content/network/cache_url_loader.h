@@ -5,7 +5,7 @@
 #ifndef CONTENT_NETWORK_CACHE_URL_LOADER_H_
 #define CONTENT_NETWORK_CACHE_URL_LOADER_H_
 
-#include "content/common/url_loader.mojom.h"
+#include "content/public/common/url_loader.mojom.h"
 
 namespace net {
 class URLRequestContext;

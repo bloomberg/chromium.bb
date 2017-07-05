@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_WEBUI_NETWORK_ERROR_URL_LOADER_H_
 #define CONTENT_BROWSER_WEBUI_NETWORK_ERROR_URL_LOADER_H_
 
-#include "content/common/url_loader.mojom.h"
+#include "content/public/common/url_loader.mojom.h"
 
 namespace content {
 

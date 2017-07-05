@@ -5,7 +5,7 @@
 #ifndef CONTENT_COMMON_URL_REQUEST_STRUCT_TRAITS_H_
 #define CONTENT_COMMON_URL_REQUEST_STRUCT_TRAITS_H_
 
-#include "content/common/url_loader.mojom.h"
+#include "content/public/common/url_loader.mojom.h"
 #include "mojo/public/cpp/bindings/enum_traits.h"
 #include "net/base/request_priority.h"
 

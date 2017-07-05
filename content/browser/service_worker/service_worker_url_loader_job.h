@@ -13,7 +13,7 @@
 #include "content/browser/service_worker/service_worker_url_job_wrapper.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "content/common/url_loader.mojom.h"
+#include "content/public/common/url_loader.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_stream_handle.mojom.h"

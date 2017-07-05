@@ -7,8 +7,8 @@
 #include "base/memory/ptr_util.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_requester_info.h"
-#include "content/common/url_loader.mojom.h"
 #include "content/public/common/resource_request.h"
+#include "content/public/common/url_loader.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace content {

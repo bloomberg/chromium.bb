@@ -4,7 +4,7 @@
 
 module content.mojom;
 
-import "url_loader_factory.mojom";
+import "content/public/common/url_loader_factory.mojom";
 
 // A renderer-side interface that is returned by CreateWorkerFetchContext for
 // the browser to notify the renderer process when there's a controller change.

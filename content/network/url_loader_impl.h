@@ -11,7 +11,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
-#include "content/common/url_loader.mojom.h"
+#include "content/public/common/url_loader.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"

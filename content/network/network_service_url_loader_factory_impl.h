@@ -6,7 +6,7 @@
 #define CONTENT_NETWORK_NETWORK_SERVICE_URL_LOADER_FACTORY_IMPL_H_
 
 #include "base/macros.h"
-#include "content/common/url_loader_factory.mojom.h"
+#include "content/public/common/url_loader_factory.mojom.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace content {
