@@ -26,6 +26,7 @@ import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.signin.AccountManagerHelper;
+import org.chromium.components.signin.test.util.AccountHolder;
 import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
 
 import java.util.ArrayList;
@@ -115,18 +116,6 @@ public class FeatureUtilitiesTest {
         }
 
         @Override
-        public Account[] getAccountsByType(String accountType) {
-            if (accountType.equals(mAccountType)) {
-                // Calling function uses length of array to determine if
-                // accounts of the requested type are available, so return
-                // a non-empty array to indicate the account type is correct.
-                return new Account[] { AccountManagerHelper.createAccountFromName("Dummy") };
-            }
-
-            return new Account[0];
-        }
-
-        @Override
         public AuthenticatorDescription[] getAuthenticatorTypes() {
             AuthenticatorDescription googleAuthenticator =
                     new AuthenticatorDescription(mAccountType, "p1", 0, 0, 0, 0);
@@ -149,12 +138,15 @@ public class FeatureUtilitiesTest {
             });
     }
 
-    private void setUpAccount(final String accountType) {
-        mAccountManager = new FakeAuthenticationAccountManager(
-                mAccountTestingContext, accountType, mTestAccount);
-
+    private void setUpAccountManager(String accountType) {
+        mAccountManager = new FakeAuthenticationAccountManager(mAccountTestingContext, accountType);
         AccountManagerHelper.overrideAccountManagerHelperForTests(
                 mAccountTestingContext, mAccountManager);
+    }
+
+    private void addTestAccount() {
+        mAccountManager.addAccountHolderExplicitly(
+                AccountHolder.builder(mTestAccount).alwaysAccept(true).build());
     }
 
     @Test
@@ -220,7 +212,8 @@ public class FeatureUtilitiesTest {
     public void testHasGoogleAccountCorrectlyDetected() {
         // Set up an account manager mock that returns Google account types
         // when queried.
-        setUpAccount(AccountManagerHelper.GOOGLE_ACCOUNT_TYPE);
+        setUpAccountManager(AccountManagerHelper.GOOGLE_ACCOUNT_TYPE);
+        addTestAccount();
 
         boolean hasAccounts = FeatureUtilities.hasGoogleAccounts(
                 mAccountTestingContext);
@@ -242,9 +235,9 @@ public class FeatureUtilitiesTest {
     @SmallTest
     @Feature({"FeatureUtilities", "GoogleAccounts"})
     public void testHasNoGoogleAccountCorrectlyDetected() {
-        // Set up an account manager mock that doesn't return Google account
-        // types when queried.
-        setUpAccount("Not A Google Account");
+        // Set up an account manager mock that doesn't have any accounts and doesn't have Google
+        // account authenticator.
+        setUpAccountManager("Not A Google Account");
 
         boolean hasAccounts = FeatureUtilities.hasGoogleAccounts(
                 mAccountTestingContext);

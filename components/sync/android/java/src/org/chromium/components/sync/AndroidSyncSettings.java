@@ -252,7 +252,7 @@ public class AndroidSyncSettings {
         ThreadUtils.postOnUiThread(new Runnable() {
             @Override
             public void run() {
-                AccountManagerHelper.get().getGoogleAccounts(new Callback<Account[]>() {
+                AccountManagerHelper.get().tryGetGoogleAccounts(new Callback<Account[]>() {
                     @Override
                     public void onResult(Account[] accounts) {
                         synchronized (mLock) {

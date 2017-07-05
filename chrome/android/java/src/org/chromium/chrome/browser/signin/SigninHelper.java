@@ -146,7 +146,7 @@ public class SigninHelper {
             if (lastSyncAccountName != null && !lastSyncAccountName.isEmpty()) return;
 
             if (!chromePreferenceManager.getSigninPromoShown()
-                    && AccountManagerHelper.get().getGoogleAccountNames().size() > 0) {
+                    && AccountManagerHelper.get().tryGetGoogleAccountNames().size() > 0) {
                 chromePreferenceManager.setShowSigninPromo(true);
             }
 
@@ -257,7 +257,7 @@ public class SigninHelper {
     }
 
     private static boolean accountExists(Context context, Account account) {
-        Account[] accounts = AccountManagerHelper.get().getGoogleAccounts();
+        Account[] accounts = AccountManagerHelper.get().tryGetGoogleAccounts();
         for (Account a : accounts) {
             if (a.equals(account)) {
                 return true;

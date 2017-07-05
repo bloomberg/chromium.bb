@@ -335,7 +335,7 @@ public class SyncCustomizationFragment extends PreferenceFragment
         // We remove the the SyncedAccountPreference if there's only 1 account on the device, so
         // it's possible for accountList to be null
         if (accountList != null) {
-            Account[] accounts = AccountManagerHelper.get().getGoogleAccounts();
+            Account[] accounts = AccountManagerHelper.get().tryGetGoogleAccounts();
             if (accounts.length <= 1) {
                 getPreferenceScreen().removePreference(accountList);
             } else {

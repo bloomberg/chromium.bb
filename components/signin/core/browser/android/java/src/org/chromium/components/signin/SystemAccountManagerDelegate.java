@@ -61,6 +61,11 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
     }
 
     @Override
+    public Account[] getAccountsSync() throws AccountManagerDelegateException {
+        return getAccountsByType(GoogleAuthUtil.GOOGLE_ACCOUNT_TYPE);
+    }
+
+    @Override
     public String getAuthToken(Account account, String authTokenScope) throws AuthException {
         assert !ThreadUtils.runningOnUiThread();
         assert AccountManagerHelper.GOOGLE_ACCOUNT_TYPE.equals(account.type);

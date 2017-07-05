@@ -109,7 +109,7 @@ public final class OAuth2TokenService
     @CalledByNative
     public static String[] getSystemAccountNames() {
         AccountManagerHelper accountManagerHelper = AccountManagerHelper.get();
-        java.util.List<String> accountNames = accountManagerHelper.getGoogleAccountNames();
+        java.util.List<String> accountNames = accountManagerHelper.tryGetGoogleAccountNames();
         return accountNames.toArray(new String[accountNames.size()]);
     }
 

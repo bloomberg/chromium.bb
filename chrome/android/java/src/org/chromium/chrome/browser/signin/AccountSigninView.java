@@ -253,7 +253,7 @@ public class AccountSigninView extends FrameLayout {
             updatingGmsDialog = null;
         }
 
-        mAccountManagerHelper.getGoogleAccountNames(new Callback<List<String>>() {
+        mAccountManagerHelper.tryGetGoogleAccountNames(new Callback<List<String>>() {
             @Override
             public void onResult(List<String> result) {
                 if (updatingGmsDialog != null) {

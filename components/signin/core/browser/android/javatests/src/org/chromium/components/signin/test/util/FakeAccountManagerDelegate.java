@@ -16,6 +16,7 @@ import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.components.signin.AccountManagerDelegate;
+import org.chromium.components.signin.AccountManagerDelegateException;
 import org.chromium.components.signin.AccountManagerHelper;
 
 import java.util.ArrayList;
@@ -66,6 +67,19 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
             }
         }
         return validAccounts.toArray(new Account[0]);
+    }
+
+    @Override
+    public Account[] getAccountsSync() throws AccountManagerDelegateException {
+        return getAccountsSyncNoThrow();
+    }
+
+    public Account[] getAccountsSyncNoThrow() {
+        ArrayList<Account> result = new ArrayList<>();
+        for (AccountHolder ah : mAccounts) {
+            result.add(ah.getAccount());
+        }
+        return result.toArray(new Account[0]);
     }
 
     /**

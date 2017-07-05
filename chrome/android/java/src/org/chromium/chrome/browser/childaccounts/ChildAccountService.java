@@ -42,7 +42,7 @@ public class ChildAccountService {
     public static void checkHasChildAccount(Context context, final Callback<Boolean> callback) {
         ThreadUtils.assertOnUiThread();
         final AccountManagerHelper helper = AccountManagerHelper.get();
-        helper.getGoogleAccounts(new Callback<Account[]>() {
+        helper.tryGetGoogleAccounts(new Callback<Account[]>() {
             @Override
             public void onResult(Account[] accounts) {
                 if (accounts.length != 1) {

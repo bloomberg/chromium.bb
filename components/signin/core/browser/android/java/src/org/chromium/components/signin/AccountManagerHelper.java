@@ -140,12 +140,13 @@ public class AccountManagerHelper {
     }
 
     /**
-     * This method is deprecated; please use the asynchronous version below instead.
+     * Retrieves a list of the Google account names on the device.
      *
-     * See http://crbug.com/517697 for details.
+     * @throws AccountManagerDelegateException if Google Play Services are out of date,
+     *         Chrome lacks necessary permissions, etc.
      */
     @WorkerThread
-    public List<String> getGoogleAccountNames() {
+    public List<String> getGoogleAccountNames() throws AccountManagerDelegateException {
         List<String> accountNames = new ArrayList<>();
         for (Account account : getGoogleAccounts()) {
             accountNames.add(account.name);
@@ -154,11 +155,24 @@ public class AccountManagerHelper {
     }
 
     /**
-     * Retrieves a list of the Google account names on the device asynchronously.
+     * Retrieves a list of the Google account names on the device.
+     * Returns an empty list if Google Play Services aren't available or out of date.
+     */
+    @WorkerThread
+    public List<String> tryGetGoogleAccountNames() {
+        List<String> accountNames = new ArrayList<>();
+        for (Account account : tryGetGoogleAccounts()) {
+            accountNames.add(account.name);
+        }
+        return accountNames;
+    }
+
+    /**
+     * Asynchronous version of {@link #tryGetGoogleAccountNames()}.
      */
     @MainThread
-    public void getGoogleAccountNames(final Callback<List<String>> callback) {
-        getGoogleAccounts(new Callback<Account[]>() {
+    public void tryGetGoogleAccountNames(final Callback<List<String>> callback) {
+        tryGetGoogleAccounts(new Callback<Account[]>() {
             @Override
             public void onResult(Account[] accounts) {
                 List<String> accountNames = new ArrayList<>();
@@ -171,25 +185,39 @@ public class AccountManagerHelper {
     }
 
     /**
-     * This method is deprecated; please use the asynchronous version below instead.
+     * Retrieves all Google accounts on the device.
      *
-     * See http://crbug.com/517697 for details.
+     * @throws AccountManagerDelegateException if Google Play Services are out of date,
+     *         Chrome lacks necessary permissions, etc.
      */
     @WorkerThread
-    public Account[] getGoogleAccounts() {
-        return mDelegate.getAccountsByType(GOOGLE_ACCOUNT_TYPE);
+    public Account[] getGoogleAccounts() throws AccountManagerDelegateException {
+        return mDelegate.getAccountsSync();
     }
 
     /**
-     * Retrieves all Google accounts on the device asynchronously.
+     * Retrieves all Google accounts on the device.
+     * Returns an empty array if an error occurs while getting account list.
+     */
+    @WorkerThread
+    public Account[] tryGetGoogleAccounts() {
+        try {
+            return getGoogleAccounts();
+        } catch (AccountManagerDelegateException e) {
+            return new Account[0];
+        }
+    }
+
+    /**
+     * Asynchronous version of {@link #tryGetGoogleAccounts()}.
      */
     @MainThread
-    public void getGoogleAccounts(final Callback<Account[]> callback) {
+    public void tryGetGoogleAccounts(final Callback<Account[]> callback) {
         ThreadUtils.assertOnUiThread();
         new AsyncTask<Void, Void, Account[]>() {
             @Override
             protected Account[] doInBackground(Void... params) {
-                return getGoogleAccounts();
+                return tryGetGoogleAccounts();
             }
 
             @Override
@@ -200,21 +228,29 @@ public class AccountManagerHelper {
     }
 
     /**
-     * This method is deprecated; please use the asynchronous version below instead.
-     *
-     * See http://crbug.com/517697 for details.
+     * This method is deprecated and will be removed soon.
      */
-    @WorkerThread
-    public boolean hasGoogleAccounts() {
-        return getGoogleAccounts().length > 0;
+    // TODO(bsazonov) remove this method after fixing internal usages.
+    @MainThread
+    public void getGoogleAccounts(final Callback<Account[]> callback) {
+        tryGetGoogleAccounts(callback);
     }
 
     /**
-     * Asynchronously determine whether any Google accounts have been added.
+     * Determine whether there are any Google accounts on the device.
+     * Returns false if an error occurs while getting account list.
+     */
+    @WorkerThread
+    public boolean hasGoogleAccounts() {
+        return tryGetGoogleAccounts().length > 0;
+    }
+
+    /**
+     * Asynchronous version of {@link #hasGoogleAccounts()}.
      */
     @MainThread
     public void hasGoogleAccounts(final Callback<Boolean> callback) {
-        getGoogleAccounts(new Callback<Account[]>() {
+        tryGetGoogleAccounts(new Callback<Account[]>() {
             @Override
             public void onResult(Account[] accounts) {
                 callback.onResult(accounts.length > 0);
@@ -236,14 +272,13 @@ public class AccountManagerHelper {
     }
 
     /**
-     * This method is deprecated; please use the asynchronous version below instead.
-     *
-     * See http://crbug.com/517697 for details.
+     * Returns the account if it exists; null if account doesn't exists or an error occurs
+     * while getting account list.
      */
     @WorkerThread
     public Account getAccountFromName(String accountName) {
         String canonicalName = canonicalizeName(accountName);
-        Account[] accounts = getGoogleAccounts();
+        Account[] accounts = tryGetGoogleAccounts();
         for (Account account : accounts) {
             if (canonicalizeName(account.name).equals(canonicalName)) {
                 return account;
@@ -253,12 +288,12 @@ public class AccountManagerHelper {
     }
 
     /**
-     * Asynchronously returns the account if it exists; null otherwise.
+     * Asynchronous version of {@link #getAccountFromName(String)}.
      */
     @MainThread
     public void getAccountFromName(String accountName, final Callback<Account> callback) {
         final String canonicalName = canonicalizeName(accountName);
-        getGoogleAccounts(new Callback<Account[]>() {
+        tryGetGoogleAccounts(new Callback<Account[]>() {
             @Override
             public void onResult(Account[] accounts) {
                 Account accountForName = null;
@@ -274,9 +309,8 @@ public class AccountManagerHelper {
     }
 
     /**
-     * This method is deprecated; please use the asynchronous version below instead.
-     *
-     * See http://crbug.com/517697 for details.
+     * Returns whether an account exists with the given name.
+     * Returns false if an error occurs while getting account list.
      */
     @WorkerThread
     public boolean hasAccountForName(String accountName) {
@@ -284,7 +318,7 @@ public class AccountManagerHelper {
     }
 
     /**
-     * Asynchronously returns whether an account exists with the given name.
+     * Asynchronous version of {@link #hasAccountForName(String)}.
      */
     // TODO(maxbogue): Remove once this function is used outside of tests.
     @VisibleForTesting

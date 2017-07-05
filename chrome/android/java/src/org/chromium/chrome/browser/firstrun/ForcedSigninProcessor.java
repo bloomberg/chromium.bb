@@ -75,7 +75,7 @@ public final class ForcedSigninProcessor {
             Log.d(TAG, "Sign in disallowed");
             return;
         }
-        AccountManagerHelper.get().getGoogleAccounts(new Callback<Account[]>() {
+        AccountManagerHelper.get().tryGetGoogleAccounts(new Callback<Account[]>() {
             @Override
             public void onResult(Account[] accounts) {
                 if (accounts.length != 1) {

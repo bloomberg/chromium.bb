@@ -38,6 +38,7 @@ import org.chromium.chrome.browser.DisableHistogramsRule;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.superviseduser.SupervisedUserContentProvider.SupervisedUserQueryReply;
 import org.chromium.components.signin.AccountManagerDelegate;
+import org.chromium.components.signin.AccountManagerDelegateException;
 import org.chromium.components.signin.AccountManagerHelper;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.webrestrictions.browser.WebRestrictionsContentProvider.WebRestrictionsResult;
@@ -214,7 +215,8 @@ public class SupervisedUserContentProviderUnitTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void testShouldProceed_notSignedIn() throws ProcessInitException {
+    public void testShouldProceed_notSignedIn()
+            throws ProcessInitException, AccountManagerDelegateException {
         // Mock things called during startup
         ChromeBrowserInitializer mockBrowserInitializer = mock(ChromeBrowserInitializer.class);
         ChromeBrowserInitializer.setForTesting(mockBrowserInitializer);
@@ -222,7 +224,7 @@ public class SupervisedUserContentProviderUnitTest {
         AccountManagerHelper.overrideAccountManagerHelperForTests(
                 RuntimeEnvironment.application, mockDelegate);
         Account account = new Account("Google", "Dummy");
-        when(mockDelegate.getAccountsByType("Google")).thenReturn(new Account[] {account});
+        when(mockDelegate.getAccountsSync()).thenReturn(new Account[] {account});
 
         WebRestrictionsResult result =
                 mSupervisedUserContentProvider.shouldProceed(DEFAULT_CALLING_PACKAGE, "url");
@@ -242,7 +244,7 @@ public class SupervisedUserContentProviderUnitTest {
     }
 
     @Test
-    public void testShouldProceed_cannotSignIn() {
+    public void testShouldProceed_cannotSignIn() throws AccountManagerDelegateException {
         // Mock things called during startup
         ChromeBrowserInitializer mockBrowserInitializer = mock(ChromeBrowserInitializer.class);
         ChromeBrowserInitializer.setForTesting(mockBrowserInitializer);
@@ -250,7 +252,7 @@ public class SupervisedUserContentProviderUnitTest {
         AccountManagerHelper.overrideAccountManagerHelperForTests(
                 RuntimeEnvironment.application, mockDelegate);
         Account account = new Account("Google", "Dummy");
-        when(mockDelegate.getAccountsByType("Google")).thenReturn(new Account[] {account});
+        when(mockDelegate.getAccountsSync()).thenReturn(new Account[] {account});
 
         // Change the behavior of the forced sign-in processor to not sign in.
         doAnswer(new Answer<Void>() {
