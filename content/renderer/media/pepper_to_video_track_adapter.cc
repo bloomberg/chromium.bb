@@ -46,11 +46,6 @@ class PpFrameWriter : public MediaStreamVideoSource,
 
  protected:
   // MediaStreamVideoSource implementation.
-  void GetCurrentSupportedFormats(
-      int max_requested_width,
-      int max_requested_height,
-      double max_requested_frame_rate,
-      const VideoCaptureDeviceFormatsCB& callback) override;
   void StartSourceImpl(
       const media::VideoCaptureFormat& format,
       const blink::WebMediaConstraints& constraints,
@@ -114,19 +109,6 @@ PpFrameWriter::PpFrameWriter() {
 
 PpFrameWriter::~PpFrameWriter() {
   DVLOG(3) << "PpFrameWriter dtor";
-}
-
-void PpFrameWriter::GetCurrentSupportedFormats(
-    int max_requested_width,
-    int max_requested_height,
-    double max_requested_frame_rate,
-    const VideoCaptureDeviceFormatsCB& callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DVLOG(3) << "PpFrameWriter::GetCurrentSupportedFormats()";
-  // Since the input is free to change the resolution at any point in time
-  // the supported formats are unknown.
-  media::VideoCaptureFormats formats;
-  callback.Run(formats);
 }
 
 void PpFrameWriter::StartSourceImpl(

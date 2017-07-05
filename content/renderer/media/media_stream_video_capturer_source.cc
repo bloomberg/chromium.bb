@@ -197,18 +197,6 @@ void MediaStreamVideoCapturerSource::OnCapturingLinkSecured(bool is_secure) {
       device_info().session_id, device_info().device.type, is_secure));
 }
 
-void MediaStreamVideoCapturerSource::GetCurrentSupportedFormats(
-    int max_requested_width,
-    int max_requested_height,
-    double max_requested_frame_rate,
-    const VideoCaptureDeviceFormatsCB& callback) {
-  source_->GetCurrentSupportedFormats(
-      max_requested_width,
-      max_requested_height,
-      max_requested_frame_rate,
-      callback);
-}
-
 void MediaStreamVideoCapturerSource::StartSourceImpl(
     const media::VideoCaptureFormat& format,
     const blink::WebMediaConstraints& constraints,

@@ -61,8 +61,7 @@ class VideoTrackRecorderTest
     : public TestWithParam<
           testing::tuple<VideoTrackRecorder::CodecId, gfx::Size, bool>> {
  public:
-  VideoTrackRecorderTest()
-      : mock_source_(new MockMediaStreamVideoSource(false)) {
+  VideoTrackRecorderTest() : mock_source_(new MockMediaStreamVideoSource()) {
     const blink::WebString webkit_track_id(
         blink::WebString::FromASCII("dummy"));
     blink_source_.Initialize(webkit_track_id,

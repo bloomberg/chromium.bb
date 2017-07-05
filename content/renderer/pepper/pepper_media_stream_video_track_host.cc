@@ -414,20 +414,6 @@ class PepperMediaStreamVideoTrackHost::VideoSource final
 
   ~VideoSource() final { StopSourceImpl(); }
 
-  void GetCurrentSupportedFormats(
-      int max_requested_width, int max_requested_height,
-      double max_requested_frame_rate,
-      const VideoCaptureDeviceFormatsCB& callback) final {
-    media::VideoCaptureFormats formats;
-    if (host_) {
-      formats.push_back(media::VideoCaptureFormat(
-          host_->plugin_frame_size_,
-          kDefaultOutputFrameRate,
-          ToPixelFormat(host_->plugin_frame_format_)));
-    }
-    callback.Run(formats);
-  }
-
   void StartSourceImpl(
       const media::VideoCaptureFormat& format,
       const blink::WebMediaConstraints& constraints,

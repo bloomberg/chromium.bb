@@ -83,8 +83,7 @@ class WebRtcMediaStreamAdapterTest : public ::testing::Test {
       blink::WebMediaStreamSource video_source;
       video_source.Initialize("video", blink::WebMediaStreamSource::kTypeVideo,
                               "video", false /* remote */);
-      MediaStreamVideoSource* native_source =
-          new MockMediaStreamVideoSource(false);
+      MediaStreamVideoSource* native_source = new MockMediaStreamVideoSource();
       video_source.SetExtraData(native_source);
       video_track_vector[0] = MediaStreamVideoTrack::CreateVideoTrack(
           native_source, MediaStreamVideoSource::ConstraintsCallback(), true);

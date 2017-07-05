@@ -66,8 +66,7 @@ void MockMediaStreamRegistry::AddVideoTrack(
   blink_source.Initialize("mock video source id",
                           blink::WebMediaStreamSource::kTypeVideo,
                           "mock video source name", false /* remote */);
-  MockMediaStreamVideoSource* native_source =
-      new MockMediaStreamVideoSource(false /* manual get supported formats */);
+  MockMediaStreamVideoSource* native_source = new MockMediaStreamVideoSource();
   blink_source.SetExtraData(native_source);
   blink::WebMediaStreamTrack blink_track;
   blink_track.Initialize(blink::WebString::FromUTF8(track_id), blink_source);
