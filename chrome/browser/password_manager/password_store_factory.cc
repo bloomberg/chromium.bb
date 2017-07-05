@@ -106,8 +106,7 @@ void PasswordStoreFactory::OnPasswordsSyncedStatePotentiallyChanged(
 
   password_manager::ToggleAffiliationBasedMatchingBasedOnPasswordSyncedState(
       password_store.get(), sync_service, request_context_getter,
-      profile->GetPath(), content::BrowserThread::GetTaskRunnerForThread(
-                              content::BrowserThread::DB));
+      profile->GetPath());
 }
 
 PasswordStoreFactory::PasswordStoreFactory()

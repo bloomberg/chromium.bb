@@ -17,7 +17,7 @@
 
 namespace base {
 class FilePath;
-class SingleThreadTaskRunner;
+class SequencedTaskRunner;
 }  // namespace base
 
 namespace net {
@@ -98,8 +98,8 @@ class AffiliationService : public KeyedService {
 
   // The |backend_task_runner| should be a task runner corresponding to a thread
   // that can take blocking I/O, and is normally Chrome's DB thread.
-  AffiliationService(
-      scoped_refptr<base::SingleThreadTaskRunner> backend_task_runner);
+  explicit AffiliationService(
+      scoped_refptr<base::SequencedTaskRunner> backend_task_runner);
   ~AffiliationService() override;
 
   // Initializes the service by creating its backend and transferring it to the
@@ -150,8 +150,8 @@ class AffiliationService : public KeyedService {
   // thread, so it will outlive |this| along with all its in-flight tasks.
   AffiliationBackend* backend_;
 
-  // TaskRunner to be used to run the |backend_| (usually the DB thread).
-  scoped_refptr<base::SingleThreadTaskRunner> backend_task_runner_;
+  // TaskRunner to be used to run the |backend_|.
+  scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
 
   SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<AffiliationService> weak_ptr_factory_;

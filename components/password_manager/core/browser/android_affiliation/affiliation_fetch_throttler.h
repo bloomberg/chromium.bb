@@ -18,7 +18,7 @@
 
 namespace base {
 class TickClock;
-class SingleThreadTaskRunner;
+class SequencedTaskRunner;
 }  // namespace base
 
 namespace password_manager {
@@ -57,7 +57,7 @@ class AffiliationFetchThrottler
   // |delegate| and |tick_clock| should outlive the throttler.
   AffiliationFetchThrottler(
       AffiliationFetchThrottlerDelegate* delegate,
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner,
       base::TickClock* tick_clock);
   ~AffiliationFetchThrottler() override;
 
@@ -118,7 +118,7 @@ class AffiliationFetchThrottler
   void OnConnectionTypeChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
 
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
   base::TickClock* tick_clock_;
   State state_;
   bool has_network_connectivity_;
