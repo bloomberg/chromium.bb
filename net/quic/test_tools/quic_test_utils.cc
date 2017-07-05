@@ -72,7 +72,8 @@ QuicPacket* BuildUnsizedDataPacket(QuicFramer* framer,
                                    const QuicFrames& frames,
                                    size_t packet_size) {
   char* buffer = new char[packet_size];
-  size_t length = framer->BuildDataPacket(header, frames, buffer, packet_size);
+  size_t length =
+      framer->BuildDataPacket(header, frames, buffer, packet_size, nullptr);
   DCHECK_NE(0u, length);
   // Re-construct the data packet with data ownership.
   return new QuicPacket(buffer, length, /* owns_buffer */ true,
@@ -210,6 +211,20 @@ bool NoOpFramerVisitor::OnBlockedFrame(const QuicBlockedFrame& frame) {
 MockQuicConnectionVisitor::MockQuicConnectionVisitor() {}
 
 MockQuicConnectionVisitor::~MockQuicConnectionVisitor() {}
+
+void MockQuicConnectionVisitor::SaveStreamData(QuicStreamId id,
+                                               QuicIOVector iov,
+                                               size_t iov_offset,
+                                               QuicStreamOffset offset,
+                                               QuicByteCount data_length) {
+  producer_.SaveStreamData(id, iov, iov_offset, offset, data_length);
+}
+bool MockQuicConnectionVisitor::WriteStreamData(QuicStreamId id,
+                                                QuicStreamOffset offset,
+                                                QuicByteCount data_length,
+                                                QuicDataWriter* writer) {
+  return producer_.WriteStreamData(id, offset, data_length, writer);
+}
 
 MockQuicConnectionHelper::MockQuicConnectionHelper() {}
 
@@ -379,6 +394,21 @@ QuicConsumedData MockQuicSession::ConsumeAllData(
   return QuicConsumedData(data.total_length, state != NO_FIN);
 }
 
+QuicConsumedData MockQuicSession::ConsumeAndSaveAllData(
+    QuicStream* stream,
+    QuicStreamId id,
+    const QuicIOVector& data,
+    QuicStreamOffset offset,
+    StreamSendingState state,
+    const QuicReferenceCountedPointer<QuicAckListenerInterface>& ack_listener) {
+  QuicConsumedData consumed =
+      QuicConsumedData(data.total_length, state != NO_FIN);
+  if (streams_own_data() && data.total_length > 0) {
+    SaveStreamData(id, data, 0, offset, data.total_length);
+  }
+  return consumed;
+}
+
 MockQuicCryptoStream::MockQuicCryptoStream(QuicSession* session)
     : QuicCryptoStream(session), params_(new QuicCryptoNegotiatedParameters) {}
 
@@ -425,6 +455,21 @@ size_t MockQuicSpdySession::WriteHeaders(
     QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
   write_headers_ = std::move(headers);
   return WriteHeadersMock(id, write_headers_, fin, priority, ack_listener);
+}
+
+QuicConsumedData MockQuicSpdySession::ConsumeAndSaveAllData(
+    QuicStream* stream,
+    QuicStreamId id,
+    const QuicIOVector& data,
+    QuicStreamOffset offset,
+    StreamSendingState state,
+    const QuicReferenceCountedPointer<QuicAckListenerInterface>& ack_listener) {
+  QuicConsumedData consumed =
+      QuicConsumedData(data.total_length, state != NO_FIN);
+  if (streams_own_data() && data.total_length > 0) {
+    SaveStreamData(id, data, 0, offset, data.total_length);
+  }
+  return consumed;
 }
 
 TestQuicSpdyServerSession::TestQuicSpdyServerSession(
@@ -810,6 +855,24 @@ MockReceivedPacketManager::~MockReceivedPacketManager() {}
 MockConnectionCloseDelegate::MockConnectionCloseDelegate() {}
 
 MockConnectionCloseDelegate::~MockConnectionCloseDelegate() {}
+
+MockPacketCreatorDelegate::MockPacketCreatorDelegate() {}
+MockPacketCreatorDelegate::~MockPacketCreatorDelegate() {}
+
+void MockPacketCreatorDelegate::SaveStreamData(QuicStreamId id,
+                                               QuicIOVector iov,
+                                               size_t iov_offset,
+                                               QuicStreamOffset offset,
+                                               QuicByteCount data_length) {
+  producer_.SaveStreamData(id, iov, iov_offset, offset, data_length);
+}
+
+bool MockPacketCreatorDelegate::WriteStreamData(QuicStreamId id,
+                                                QuicStreamOffset offset,
+                                                QuicByteCount data_length,
+                                                QuicDataWriter* writer) {
+  return producer_.WriteStreamData(id, offset, data_length, writer);
+}
 
 void CreateClientSessionForTest(QuicServerId server_id,
                                 bool supports_stateless_rejects,
