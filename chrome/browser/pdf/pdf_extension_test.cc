@@ -776,168 +776,6 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilityTextRunCrash) {
 }
 #endif
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkCtrlLeftClick) {
-  GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test-link.pdf"));
-  WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
-  ASSERT_TRUE(guest_contents);
-
-  // The link position of the test-link.pdf in page coordinates is (110, 110).
-  // Convert the link position from page coordinates to screen coordinates.
-  gfx::Point link_position(110, 110);
-  ConvertPageCoordToScreenCoord(guest_contents, &link_position);
-
-  WebContents* web_contents = GetActiveWebContents();
-
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_TAB_ADDED,
-      content::NotificationService::AllSources());
-  content::SimulateMouseClickAt(web_contents, kDefaultKeyModifier,
-                                blink::WebMouseEvent::Button::kLeft,
-                                link_position);
-  observer.Wait();
-
-  int tab_count = browser()->tab_strip_model()->count();
-  ASSERT_EQ(2, tab_count);
-
-  WebContents* active_web_contents = GetActiveWebContents();
-  ASSERT_EQ(web_contents, active_web_contents);
-
-  WebContents* new_web_contents =
-      browser()->tab_strip_model()->GetWebContentsAt(1);
-  ASSERT_TRUE(new_web_contents);
-  ASSERT_NE(web_contents, new_web_contents);
-
-  const GURL& url = new_web_contents->GetURL();
-  ASSERT_EQ(std::string("http://www.example.com/"), url.spec());
-}
-
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkMiddleClick) {
-  GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test-link.pdf"));
-  WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
-  ASSERT_TRUE(guest_contents);
-
-  // The link position of the test-link.pdf in page coordinates is (110, 110).
-  // Convert the link position from page coordinates to screen coordinates.
-  gfx::Point link_position(110, 110);
-  ConvertPageCoordToScreenCoord(guest_contents, &link_position);
-
-  WebContents* web_contents = GetActiveWebContents();
-
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_TAB_ADDED,
-      content::NotificationService::AllSources());
-  content::SimulateMouseClickAt(
-      web_contents, 0, blink::WebMouseEvent::Button::kMiddle, link_position);
-  observer.Wait();
-
-  int tab_count = browser()->tab_strip_model()->count();
-  ASSERT_EQ(2, tab_count);
-
-  WebContents* active_web_contents = GetActiveWebContents();
-  ASSERT_EQ(web_contents, active_web_contents);
-
-  WebContents* new_web_contents =
-      browser()->tab_strip_model()->GetWebContentsAt(1);
-  ASSERT_TRUE(new_web_contents);
-  ASSERT_NE(web_contents, new_web_contents);
-
-  const GURL& url = new_web_contents->GetURL();
-  ASSERT_EQ(std::string("http://www.example.com/"), url.spec());
-}
-
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkCtrlShiftLeftClick) {
-  GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test-link.pdf"));
-  WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
-  ASSERT_TRUE(guest_contents);
-
-  // The link position of the test-link.pdf in page coordinates is (110, 110).
-  // Convert the link position from page coordinates to screen coordinates.
-  gfx::Point link_position(110, 110);
-  ConvertPageCoordToScreenCoord(guest_contents, &link_position);
-
-  WebContents* web_contents = GetActiveWebContents();
-
-  int modifiers = blink::WebInputEvent::kShiftKey | kDefaultKeyModifier;
-
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_TAB_ADDED,
-      content::NotificationService::AllSources());
-  content::SimulateMouseClickAt(web_contents, modifiers,
-                                blink::WebMouseEvent::Button::kLeft,
-                                link_position);
-  observer.Wait();
-
-  int tab_count = browser()->tab_strip_model()->count();
-  ASSERT_EQ(2, tab_count);
-
-  WebContents* active_web_contents = GetActiveWebContents();
-  ASSERT_NE(web_contents, active_web_contents);
-
-  const GURL& url = active_web_contents->GetURL();
-  ASSERT_EQ(std::string("http://www.example.com/"), url.spec());
-}
-
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkShiftMiddleClick) {
-  GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test-link.pdf"));
-  WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
-  ASSERT_TRUE(guest_contents);
-
-  // The link position of the test-link.pdf in page coordinates is (110, 110).
-  // Convert the link position from page coordinates to screen coordinates.
-  gfx::Point link_position(110, 110);
-  ConvertPageCoordToScreenCoord(guest_contents, &link_position);
-
-  WebContents* web_contents = GetActiveWebContents();
-
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_TAB_ADDED,
-      content::NotificationService::AllSources());
-  content::SimulateMouseClickAt(web_contents, blink::WebInputEvent::kShiftKey,
-                                blink::WebMouseEvent::Button::kMiddle,
-                                link_position);
-  observer.Wait();
-
-  int tab_count = browser()->tab_strip_model()->count();
-  ASSERT_EQ(2, tab_count);
-
-  WebContents* active_web_contents = GetActiveWebContents();
-  ASSERT_NE(web_contents, active_web_contents);
-
-  const GURL& url = active_web_contents->GetURL();
-  ASSERT_EQ(std::string("http://www.example.com/"), url.spec());
-}
-
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkShiftLeftClick) {
-  GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test-link.pdf"));
-  WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
-  ASSERT_TRUE(guest_contents);
-  ASSERT_EQ(1U, chrome::GetTotalBrowserCount());
-
-  // The link position of the test-link.pdf in page coordinates is (110, 110).
-  // Convert the link position from page coordinates to screen coordinates.
-  gfx::Point link_position(110, 110);
-  ConvertPageCoordToScreenCoord(guest_contents, &link_position);
-
-  WebContents* web_contents = GetActiveWebContents();
-
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_BROWSER_WINDOW_READY,
-      content::NotificationService::AllSources());
-  content::SimulateMouseClickAt(web_contents, blink::WebInputEvent::kShiftKey,
-                                blink::WebMouseEvent::Button::kLeft,
-                                link_position);
-  observer.Wait();
-
-  ASSERT_EQ(2U, chrome::GetTotalBrowserCount());
-
-  WebContents* active_web_contents =
-      chrome::FindLastActive()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_NE(web_contents, active_web_contents);
-
-  const GURL& url = active_web_contents->GetURL();
-  ASSERT_EQ(std::string("http://www.example.com/"), url.spec());
-}
-
 // Test that if the plugin tries to load a URL that redirects then it will fail
 // to load. This is to avoid the source origin of the document changing during
 // the redirect, which can have security implications. https://crbug.com/653749.
@@ -954,8 +792,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, NavigationOnCorrectTab) {
   WebContents* web_contents = GetActiveWebContents();
 
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL("about:blank"),
-      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      browser(), GURL("about:blank"), WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
           ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   WebContents* active_web_contents = GetActiveWebContents();
@@ -970,11 +807,187 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, NavigationOnCorrectTab) {
   EXPECT_FALSE(active_web_contents->GetController().GetPendingEntry());
 }
 
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, OpenFromFTP) {
+  net::SpawnedTestServer ftp_server(
+      net::SpawnedTestServer::TYPE_FTP, net::SpawnedTestServer::kLocalhost,
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data/pdf")));
+  ASSERT_TRUE(ftp_server.Start());
+
+  GURL url(ftp_server.GetURL("/test.pdf"));
+  ASSERT_TRUE(LoadPdf(url));
+  EXPECT_EQ(base::ASCIIToUTF16("test.pdf"), GetActiveWebContents()->GetTitle());
+}
+
+class PDFExtensionLinkClickTest : public PDFExtensionTest {
+ public:
+  PDFExtensionLinkClickTest() : guest_contents_(nullptr) {}
+  ~PDFExtensionLinkClickTest() override {}
+
+ protected:
+  void LoadTestLinkPdfGetGuestContents() {
+    GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test-link.pdf"));
+    guest_contents_ = LoadPdfGetGuestContents(test_pdf_url);
+    ASSERT_TRUE(guest_contents_);
+  }
+
+  // The rectangle of the link in test-link.pdf is [72 706 164 719] in PDF user
+  // space. To calculate a position inside this rectangle, several
+  // transformations have to be applied:
+  // [a] (110, 110) in Blink page coordinates ->
+  // [b] (219, 169) in Blink screen coordinates ->
+  // [c] (115, 169) in PDF Device space coordinates ->
+  // [d] (82.5, 709.5) in PDF user space coordinates.
+  // This performs the [a] to [b] transformation, since that is the coordinate
+  // space content::SimulateMouseClickAt() needs.
+  gfx::Point GetLinkPosition() {
+    gfx::Point link_position(110, 110);
+    ConvertPageCoordToScreenCoord(guest_contents_, &link_position);
+    return link_position;
+  }
+
+  void SetGuestContents(WebContents* guest_contents) {
+    ASSERT_TRUE(guest_contents);
+    guest_contents_ = guest_contents;
+  }
+
+ private:
+  WebContents* guest_contents_;
+};
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionLinkClickTest, CtrlLeft) {
+  LoadTestLinkPdfGetGuestContents();
+
+  WebContents* web_contents = GetActiveWebContents();
+
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_TAB_ADDED,
+      content::NotificationService::AllSources());
+  content::SimulateMouseClickAt(web_contents, kDefaultKeyModifier,
+                                blink::WebMouseEvent::Button::kLeft,
+                                GetLinkPosition());
+  observer.Wait();
+
+  int tab_count = browser()->tab_strip_model()->count();
+  ASSERT_EQ(2, tab_count);
+
+  WebContents* active_web_contents = GetActiveWebContents();
+  ASSERT_EQ(web_contents, active_web_contents);
+
+  WebContents* new_web_contents =
+      browser()->tab_strip_model()->GetWebContentsAt(1);
+  ASSERT_TRUE(new_web_contents);
+  ASSERT_NE(web_contents, new_web_contents);
+
+  const GURL& url = new_web_contents->GetURL();
+  EXPECT_EQ("http://www.example.com/", url.spec());
+}
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionLinkClickTest, Middle) {
+  LoadTestLinkPdfGetGuestContents();
+
+  WebContents* web_contents = GetActiveWebContents();
+
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_TAB_ADDED,
+      content::NotificationService::AllSources());
+  content::SimulateMouseClickAt(web_contents, 0,
+                                blink::WebMouseEvent::Button::kMiddle,
+                                GetLinkPosition());
+  observer.Wait();
+
+  int tab_count = browser()->tab_strip_model()->count();
+  ASSERT_EQ(2, tab_count);
+
+  WebContents* active_web_contents = GetActiveWebContents();
+  ASSERT_EQ(web_contents, active_web_contents);
+
+  WebContents* new_web_contents =
+      browser()->tab_strip_model()->GetWebContentsAt(1);
+  ASSERT_TRUE(new_web_contents);
+  ASSERT_NE(web_contents, new_web_contents);
+
+  const GURL& url = new_web_contents->GetURL();
+  EXPECT_EQ("http://www.example.com/", url.spec());
+}
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionLinkClickTest, CtrlShiftLeft) {
+  LoadTestLinkPdfGetGuestContents();
+
+  WebContents* web_contents = GetActiveWebContents();
+
+  const int modifiers = blink::WebInputEvent::kShiftKey | kDefaultKeyModifier;
+
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_TAB_ADDED,
+      content::NotificationService::AllSources());
+  content::SimulateMouseClickAt(web_contents, modifiers,
+                                blink::WebMouseEvent::Button::kLeft,
+                                GetLinkPosition());
+  observer.Wait();
+
+  int tab_count = browser()->tab_strip_model()->count();
+  ASSERT_EQ(2, tab_count);
+
+  WebContents* active_web_contents = GetActiveWebContents();
+  ASSERT_NE(web_contents, active_web_contents);
+
+  const GURL& url = active_web_contents->GetURL();
+  EXPECT_EQ("http://www.example.com/", url.spec());
+}
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionLinkClickTest, ShiftMiddle) {
+  LoadTestLinkPdfGetGuestContents();
+
+  WebContents* web_contents = GetActiveWebContents();
+
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_TAB_ADDED,
+      content::NotificationService::AllSources());
+  content::SimulateMouseClickAt(web_contents, blink::WebInputEvent::kShiftKey,
+                                blink::WebMouseEvent::Button::kMiddle,
+                                GetLinkPosition());
+  observer.Wait();
+
+  int tab_count = browser()->tab_strip_model()->count();
+  ASSERT_EQ(2, tab_count);
+
+  WebContents* active_web_contents = GetActiveWebContents();
+  ASSERT_NE(web_contents, active_web_contents);
+
+  const GURL& url = active_web_contents->GetURL();
+  EXPECT_EQ("http://www.example.com/", url.spec());
+}
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionLinkClickTest, ShiftLeft) {
+  LoadTestLinkPdfGetGuestContents();
+
+  ASSERT_EQ(1U, chrome::GetTotalBrowserCount());
+
+  WebContents* web_contents = GetActiveWebContents();
+
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_BROWSER_WINDOW_READY,
+      content::NotificationService::AllSources());
+  content::SimulateMouseClickAt(web_contents, blink::WebInputEvent::kShiftKey,
+                                blink::WebMouseEvent::Button::kLeft,
+                                GetLinkPosition());
+  observer.Wait();
+
+  ASSERT_EQ(2U, chrome::GetTotalBrowserCount());
+
+  WebContents* active_web_contents =
+      chrome::FindLastActive()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_NE(web_contents, active_web_contents);
+
+  const GURL& url = active_web_contents->GetURL();
+  EXPECT_EQ("http://www.example.com/", url.spec());
+}
+
 // This test opens a PDF by clicking a link via javascript and verifies that
 // the PDF is loaded and functional by clicking a link in the PDF. The link
 // click in the PDF opens a new tab. The main page handles the pageShow event
 // and updates the history state.
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, OpenPDFOnLinkClickWithReplaceState) {
+IN_PROC_BROWSER_TEST_F(PDFExtensionLinkClickTest, OpenPDFWithReplaceState) {
   // Navigate to the main page.
   GURL test_url(
       embedded_test_server()->GetURL("/pdf/pdf_href_replace_state.html"));
@@ -997,19 +1010,14 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, OpenPDFOnLinkClickWithReplaceState) {
   // tab.
   content::BrowserPluginGuestManager* guest_manager =
       web_contents->GetBrowserContext()->GetGuestManager();
-  WebContents* guest_contents = guest_manager->GetFullPageGuest(web_contents);
-  ASSERT_TRUE(guest_contents);
-  // The link position of the test-link.pdf in page coordinates is (110, 110).
-  // Convert the link position from page coordinates to screen coordinates.
-  gfx::Point link_position(110, 110);
-  ConvertPageCoordToScreenCoord(guest_contents, &link_position);
+  SetGuestContents(guest_manager->GetFullPageGuest(web_contents));
 
   content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_TAB_ADDED,
       content::NotificationService::AllSources());
   content::SimulateMouseClickAt(web_contents, kDefaultKeyModifier,
                                 blink::WebMouseEvent::Button::kLeft,
-                                link_position);
+                                GetLinkPosition());
   observer.Wait();
 
   // We should have two tabs now. One with the PDF and the second for
@@ -1026,16 +1034,5 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, OpenPDFOnLinkClickWithReplaceState) {
   ASSERT_NE(web_contents, new_web_contents);
 
   const GURL& url = new_web_contents->GetURL();
-  ASSERT_EQ(GURL("http://www.example.com"), url);
-}
-
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, OpenFromFTP) {
-  net::SpawnedTestServer ftp_server(
-      net::SpawnedTestServer::TYPE_FTP, net::SpawnedTestServer::kLocalhost,
-      base::FilePath(FILE_PATH_LITERAL("chrome/test/data/pdf")));
-  ASSERT_TRUE(ftp_server.Start());
-
-  GURL url(ftp_server.GetURL("/test.pdf"));
-  ASSERT_TRUE(LoadPdf(url));
-  EXPECT_EQ(base::ASCIIToUTF16("test.pdf"), GetActiveWebContents()->GetTitle());
+  EXPECT_EQ("http://www.example.com/", url.spec());
 }
