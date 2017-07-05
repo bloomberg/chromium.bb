@@ -108,8 +108,8 @@ void ValidationMessageClientImpl::ShowValidationMessage(
           : WebLocalFrameBase::FromFrame(anchor.GetDocument().GetFrame());
   overlay_ = PageOverlay::Create(
       target_frame, ValidationMessageOverlayDelegate::Create(
-                        web_view_, anchor, message_, message_dir, sub_message,
-                        sub_message_dir));
+                        *web_view_.GetPage(), anchor, message_, message_dir,
+                        sub_message, sub_message_dir));
   target_frame->GetFrameView()
       ->UpdateLifecycleToCompositingCleanPlusScrolling();
   web_view_.GetChromeClient().RegisterPopupOpeningObserver(this);
