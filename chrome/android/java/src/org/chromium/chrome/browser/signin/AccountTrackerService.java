@@ -113,7 +113,7 @@ public class AccountTrackerService {
             mSystemAccountsSeedingStatus = SystemAccountsSeedingStatus.SEEDING_NOT_STARTED;
             return;
         }
-        AccountManagerHelper.get().getGoogleAccounts(new Callback<Account[]>() {
+        AccountManagerHelper.get().tryGetGoogleAccounts(new Callback<Account[]>() {
             @Override
             public void onResult(final Account[] accounts) {
                 new AsyncTask<Void, Void, String[][]>() {
@@ -199,7 +199,7 @@ public class AccountTrackerService {
         }
 
         mSystemAccountsSeedingStatus = SystemAccountsSeedingStatus.SEEDING_VALIDATING;
-        AccountManagerHelper.get().getGoogleAccounts(new Callback<Account[]>() {
+        AccountManagerHelper.get().tryGetGoogleAccounts(new Callback<Account[]>() {
             @Override
             public void onResult(final Account[] accounts) {
                 if (mSystemAccountsChanged

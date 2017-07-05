@@ -47,7 +47,7 @@ public class SyncedAccountPreference extends ListPreference {
             // signed in account
         }
 
-        Account[] accounts = AccountManagerHelper.get().getGoogleAccounts();
+        Account[] accounts = AccountManagerHelper.get().tryGetGoogleAccounts();
         String[] accountNames = new String[accounts.length];
         String[] accountValues = new String[accounts.length];
 

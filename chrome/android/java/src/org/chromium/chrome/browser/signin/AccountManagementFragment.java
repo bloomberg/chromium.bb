@@ -195,7 +195,7 @@ public class AccountManagementFragment extends PreferenceFragment
      * @param profile Profile to use.
      */
     private static void startFetchingAccountsInformation(Context context, Profile profile) {
-        Account[] accounts = AccountManagerHelper.get().getGoogleAccounts();
+        Account[] accounts = AccountManagerHelper.get().tryGetGoogleAccounts();
         for (Account account : accounts) {
             startFetchingAccountInformation(context, profile, account.name);
         }
@@ -381,7 +381,7 @@ public class AccountManagementFragment extends PreferenceFragment
         accountsCategory.removeAll();
 
         boolean isChildAccount = mProfile.isChild();
-        Account[] accounts = AccountManagerHelper.get().getGoogleAccounts();
+        Account[] accounts = AccountManagerHelper.get().tryGetGoogleAccounts();
         for (final Account account : accounts) {
             Preference pref = new Preference(getActivity());
             pref.setLayoutResource(R.layout.account_management_account_row);

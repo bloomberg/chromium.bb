@@ -115,7 +115,7 @@ public abstract class FirstRunFlowSequencer  {
 
     @VisibleForTesting
     protected Account[] getGoogleAccounts() {
-        return AccountManagerHelper.get().getGoogleAccounts();
+        return AccountManagerHelper.get().tryGetGoogleAccounts();
     }
 
     @VisibleForTesting

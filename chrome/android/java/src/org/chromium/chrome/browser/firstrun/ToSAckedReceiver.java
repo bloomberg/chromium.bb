@@ -57,7 +57,7 @@ public class ToSAckedReceiver extends BroadcastReceiver {
                         TOS_ACKED_ACCOUNTS, null);
         if (toSAckedAccounts == null || toSAckedAccounts.isEmpty()) return false;
         AccountManagerHelper accountHelper = AccountManagerHelper.get();
-        List<String> accountNames = accountHelper.getGoogleAccountNames();
+        List<String> accountNames = accountHelper.tryGetGoogleAccountNames();
         if (accountNames.isEmpty()) return false;
         for (int k = 0; k < accountNames.size(); k++) {
             if (toSAckedAccounts.contains(accountNames.get(k))) return true;
