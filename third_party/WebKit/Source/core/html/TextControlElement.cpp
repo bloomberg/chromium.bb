@@ -503,7 +503,7 @@ unsigned TextControlElement::ComputeSelectionStart() const {
         GetDocument().Lifecycle());
     const SelectionInDOMTree& selection =
         frame->Selection().GetSelectionInDOMTree();
-    if (selection.Granularity() == kCharacterGranularity) {
+    if (frame->Selection().Granularity() == kCharacterGranularity) {
       return IndexForPosition(InnerEditorElement(),
                               selection.ComputeStartPosition());
     }
@@ -534,7 +534,7 @@ unsigned TextControlElement::ComputeSelectionEnd() const {
         GetDocument().Lifecycle());
     const SelectionInDOMTree& selection =
         frame->Selection().GetSelectionInDOMTree();
-    if (selection.Granularity() == kCharacterGranularity) {
+    if (frame->Selection().Granularity() == kCharacterGranularity) {
       return IndexForPosition(InnerEditorElement(),
                               selection.ComputeEndPosition());
     }
