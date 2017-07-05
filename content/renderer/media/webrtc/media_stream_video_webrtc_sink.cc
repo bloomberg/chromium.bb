@@ -266,51 +266,12 @@ MediaStreamVideoWebRtcSink::MediaStreamVideoWebRtcSink(
   MediaStreamVideoTrack* video_track =
       MediaStreamVideoTrack::GetVideoTrack(track);
   DCHECK(video_track);
-  rtc::Optional<bool> needs_denoising;
-  bool is_screencast = false;
-  base::Optional<double> min_frame_rate;
-  base::Optional<double> max_frame_rate;
 
-  if (IsOldVideoConstraints()) {
-    const blink::WebMediaConstraints& constraints = video_track->constraints();
-
-    // Check for presence of mediaStreamSource constraint. The value is ignored.
-    std::string value;
-    is_screencast = GetConstraintValueAsString(
-        constraints, &blink::WebMediaTrackConstraintSet::media_stream_source,
-        &value);
-
-    // Extract denoising preference, if no value is set this currently falls
-    // back to a codec-specific default inside webrtc, hence the tri-state of
-    // {on, off unset}.
-    // TODO(pbos): Add tests that make sure that googNoiseReduction has properly
-    // propagated from getUserMedia down to a VideoTrackSource.
-    bool denoising_value;
-    if (GetConstraintValueAsBoolean(
-            constraints,
-            &blink::WebMediaTrackConstraintSet::goog_noise_reduction,
-            &denoising_value)) {
-      needs_denoising = rtc::Optional<bool>(denoising_value);
-    }
-    double frame_rate_value;
-    if (GetConstraintMinAsDouble(constraints,
-                                 &blink::WebMediaTrackConstraintSet::frame_rate,
-                                 &frame_rate_value) &&
-        frame_rate_value >= 0.0) {
-      min_frame_rate = frame_rate_value;
-    }
-    if (GetConstraintMaxAsDouble(constraints,
-                                 &blink::WebMediaTrackConstraintSet::frame_rate,
-                                 &frame_rate_value) &&
-        frame_rate_value >= 0.0) {
-      max_frame_rate = frame_rate_value;
-    }
-  } else {
-    needs_denoising = ToRtcOptional(video_track->noise_reduction());
-    is_screencast = video_track->is_screencast();
-    min_frame_rate = video_track->min_frame_rate();
-    max_frame_rate = video_track->max_frame_rate();
-  }
+  rtc::Optional<bool> needs_denoising =
+      ToRtcOptional(video_track->noise_reduction());
+  bool is_screencast = is_screencast = video_track->is_screencast();
+  base::Optional<double> min_frame_rate = video_track->min_frame_rate();
+  base::Optional<double> max_frame_rate = video_track->max_frame_rate();
 
   // Enable automatic frame refreshes for the screen capture sources, which will
   // stop producing frames whenever screen content is not changing. Check the

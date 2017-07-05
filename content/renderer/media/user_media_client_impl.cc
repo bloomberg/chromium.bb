@@ -1010,11 +1010,6 @@ MediaStreamVideoSource* UserMediaClientImpl::CreateVideoSource(
     const MediaStreamSource::SourceStoppedCallback& stop_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(current_request_info_);
-  if (IsOldVideoConstraints()) {
-    return new MediaStreamVideoCapturerSource(stop_callback, device,
-                                              render_frame());
-  }
-
   DCHECK(current_request_info_->video_capture_settings().HasValue());
   return new MediaStreamVideoCapturerSource(
       stop_callback, device,
@@ -1484,13 +1479,6 @@ UserMediaClientImpl::UserMediaRequestInfo::CreateAndStartVideoTrack(
   DCHECK(native_source);
   sources_.push_back(source);
   sources_waiting_for_callback_.push_back(native_source);
-  if (IsOldVideoConstraints()) {
-    return MediaStreamVideoTrack::CreateVideoTrack(
-        native_source, request_.VideoConstraints(),
-        base::Bind(&UserMediaClientImpl::UserMediaRequestInfo::OnTrackStarted,
-                   AsWeakPtr()),
-        true);
-  }
   return MediaStreamVideoTrack::CreateVideoTrack(
       native_source, video_capture_settings_.track_adapter_settings(),
       video_capture_settings_.noise_reduction(), is_video_content_capture_,

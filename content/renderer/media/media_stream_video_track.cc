@@ -200,20 +200,6 @@ MediaStreamVideoTrack::FrameDeliverer::GetBlackFrame(
 // static
 blink::WebMediaStreamTrack MediaStreamVideoTrack::CreateVideoTrack(
     MediaStreamVideoSource* source,
-    const blink::WebMediaConstraints& constraints,
-    const MediaStreamVideoSource::ConstraintsCallback& callback,
-    bool enabled) {
-  DCHECK(IsOldVideoConstraints());
-  blink::WebMediaStreamTrack track;
-  track.Initialize(source->Owner());
-  track.SetTrackData(
-      new MediaStreamVideoTrack(source, constraints, callback, enabled));
-  return track;
-}
-
-// static
-blink::WebMediaStreamTrack MediaStreamVideoTrack::CreateVideoTrack(
-    MediaStreamVideoSource* source,
     const MediaStreamVideoSource::ConstraintsCallback& callback,
     bool enabled) {
   blink::WebMediaStreamTrack track;
@@ -261,41 +247,11 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
           VideoTrackAdapterSettings())),
       is_screencast_(false),
       source_(source->GetWeakPtr()) {
-  if (IsOldVideoConstraints()) {
-    blink::WebMediaConstraints constraints;
-    constraints.Initialize();
-    source->AddTrackLegacy(
-        this,
-        base::Bind(&MediaStreamVideoTrack::FrameDeliverer::DeliverFrameOnIO,
-                   frame_deliverer_),
-        constraints, callback);
-  } else {
-    source->AddTrack(
-        this, VideoTrackAdapterSettings(),
-        base::Bind(&MediaStreamVideoTrack::FrameDeliverer::DeliverFrameOnIO,
-                   frame_deliverer_),
-        callback);
-  }
-}
-
-MediaStreamVideoTrack::MediaStreamVideoTrack(
-    MediaStreamVideoSource* source,
-    const blink::WebMediaConstraints& constraints,
-    const MediaStreamVideoSource::ConstraintsCallback& callback,
-    bool enabled)
-    : MediaStreamTrack(true),
-      frame_deliverer_(
-          new MediaStreamVideoTrack::FrameDeliverer(source->io_task_runner(),
-                                                    enabled)),
-      constraints_(constraints),
-      source_(source->GetWeakPtr()) {
-  DCHECK(IsOldVideoConstraints());
-  DCHECK(!constraints.IsNull());
-  source->AddTrackLegacy(
-      this,
+  source->AddTrack(
+      this, VideoTrackAdapterSettings(),
       base::Bind(&MediaStreamVideoTrack::FrameDeliverer::DeliverFrameOnIO,
                  frame_deliverer_),
-      constraints, callback);
+      callback);
 }
 
 MediaStreamVideoTrack::MediaStreamVideoTrack(
@@ -316,7 +272,6 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
       is_screencast_(is_screen_cast),
       min_frame_rate_(min_frame_rate),
       source_(source->GetWeakPtr()) {
-  DCHECK(!IsOldVideoConstraints());
   source->AddTrack(
       this, adapter_settings,
       base::Bind(&MediaStreamVideoTrack::FrameDeliverer::DeliverFrameOnIO,

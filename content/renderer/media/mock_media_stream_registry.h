@@ -10,10 +10,6 @@
 #include "base/optional.h"
 #include "content/renderer/media/media_stream_registry_interface.h"
 
-namespace blink {
-class WebMediaConstraints;
-}
-
 namespace content {
 
 struct VideoTrackAdapterSettings;
@@ -26,9 +22,6 @@ class MockMediaStreamRegistry final : public MediaStreamRegistryInterface {
   MockMediaStreamRegistry();
 
   void Init(const std::string& stream_url);
-  // TODO(guidou): Remove this method. http://crbug.com/706408
-  void AddVideoTrack(const std::string& track_id,
-                     const blink::WebMediaConstraints& constraints);
   void AddVideoTrack(const std::string& track_id,
                      const VideoTrackAdapterSettings& adapter_settings,
                      const base::Optional<bool>& noise_reduction,

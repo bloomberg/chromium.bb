@@ -32,10 +32,6 @@ class CONTENT_EXPORT MediaStreamVideoCapturerSource
   MediaStreamVideoCapturerSource(
       const SourceStoppedCallback& stop_callback,
       std::unique_ptr<media::VideoCapturerSource> source);
-  // TODO(guidou): Remove this constructor. http://crbug.com/706408
-  MediaStreamVideoCapturerSource(const SourceStoppedCallback& stop_callback,
-                                 const StreamDeviceInfo& device_info,
-                                 RenderFrame* render_frame);
   MediaStreamVideoCapturerSource(
       const SourceStoppedCallback& stop_callback,
       const StreamDeviceInfo& device_info,
@@ -70,8 +66,6 @@ class CONTENT_EXPORT MediaStreamVideoCapturerSource
 
   // Method to bind as RunningCallback in VideoCapturerSource::StartCapture().
   void OnRunStateChanged(bool is_running);
-
-  const char* GetPowerLineFrequencyForTesting() const;
 
   // The source that provides video frames.
   const std::unique_ptr<media::VideoCapturerSource> source_;

@@ -36,15 +36,8 @@ class CONTENT_EXPORT MediaStreamVideoTrack : public MediaStreamTrack {
   // or if the source fails to provide video frames.
   // If |enabled| is true, sinks added to the track will
   // receive video frames when the source delivers frames to the track.
-  // TODO(guidou): Remove the variant that takes a |constraints| argument.
-  // http://crbug.com/706408
   static blink::WebMediaStreamTrack CreateVideoTrack(
       MediaStreamVideoSource* source,
-      const MediaStreamVideoSource::ConstraintsCallback& callback,
-      bool enabled);
-  static blink::WebMediaStreamTrack CreateVideoTrack(
-      MediaStreamVideoSource* source,
-      const blink::WebMediaConstraints& constraints,
       const MediaStreamVideoSource::ConstraintsCallback& callback,
       bool enabled);
   static blink::WebMediaStreamTrack CreateVideoTrack(
@@ -60,15 +53,8 @@ class CONTENT_EXPORT MediaStreamVideoTrack : public MediaStreamTrack {
       const blink::WebMediaStreamTrack& track);
 
   // Constructors for video tracks.
-  // TODO(guidou): Remove the variant that takes a |constraints| argument.
-  // http://crbug.com/706408
   MediaStreamVideoTrack(
       MediaStreamVideoSource* source,
-      const MediaStreamVideoSource::ConstraintsCallback& callback,
-      bool enabled);
-  MediaStreamVideoTrack(
-      MediaStreamVideoSource* source,
-      const blink::WebMediaConstraints& constraints,
       const MediaStreamVideoSource::ConstraintsCallback& callback,
       bool enabled);
   MediaStreamVideoTrack(
@@ -90,28 +76,19 @@ class CONTENT_EXPORT MediaStreamVideoTrack : public MediaStreamTrack {
 
   void OnReadyStateChanged(blink::WebMediaStreamSource::ReadyState state);
 
-  const blink::WebMediaConstraints& constraints() const {
-    DCHECK(IsOldVideoConstraints());
-    return constraints_;
-  }
   const base::Optional<bool>& noise_reduction() const {
-    DCHECK(!IsOldVideoConstraints());
     return noise_reduction_;
   }
   bool is_screencast() const {
-    DCHECK(!IsOldVideoConstraints());
     return is_screencast_;
   }
   const base::Optional<double>& min_frame_rate() const {
-    DCHECK(!IsOldVideoConstraints());
     return min_frame_rate_;
   }
   const base::Optional<double>& max_frame_rate() const {
-    DCHECK(!IsOldVideoConstraints());
     return max_frame_rate_;
   }
   const VideoTrackAdapterSettings& adapter_settings() const {
-    DCHECK(!IsOldVideoConstraints());
     return *adapter_settings_;
   }
 
@@ -148,9 +125,6 @@ class CONTENT_EXPORT MediaStreamVideoTrack : public MediaStreamTrack {
   // frames on the IO-thread using callbacks to all registered tracks.
   class FrameDeliverer;
   const scoped_refptr<FrameDeliverer> frame_deliverer_;
-
-  // TODO(guidou): remove this field. http://crbug.com/706408
-  const blink::WebMediaConstraints constraints_;
 
   // TODO(guidou): Make this field a regular field instead of a unique_ptr.
   std::unique_ptr<VideoTrackAdapterSettings> adapter_settings_;
