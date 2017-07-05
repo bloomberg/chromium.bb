@@ -51,12 +51,9 @@ class MESSAGE_CENTER_EXPORT NotificationControlButtonsView
   // close button, false otherwise.
   bool IsSettingsButtonFocused() const;
 
-  message_center::PaddedButton* close_button_for_testing() const {
-    return close_button_;
-  }
-  message_center::PaddedButton* settings_button_for_testing() const {
-    return settings_button_;
-  }
+  // Methods for testing.
+  message_center::PaddedButton* close_button_for_testing() const;
+  message_center::PaddedButton* settings_button_for_testing() const;
 
   // views::View
   const char* GetClassName() const override;
@@ -72,8 +69,8 @@ class MESSAGE_CENTER_EXPORT NotificationControlButtonsView
  private:
   MessageView* message_view_;
 
-  message_center::PaddedButton* close_button_ = nullptr;
-  message_center::PaddedButton* settings_button_ = nullptr;
+  std::unique_ptr<message_center::PaddedButton> close_button_;
+  std::unique_ptr<message_center::PaddedButton> settings_button_;
 
   std::unique_ptr<gfx::LinearAnimation> bgcolor_animation_;
   SkColor bgcolor_origin_;
