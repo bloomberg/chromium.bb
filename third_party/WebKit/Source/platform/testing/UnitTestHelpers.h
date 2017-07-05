@@ -26,6 +26,7 @@
 #ifndef UnitTestHelpers_h
 #define UnitTestHelpers_h
 
+#include "platform/Timer.h"
 #include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/text/WTFString.h"
 
@@ -39,9 +40,8 @@ namespace testing {
 // provides runUntilIdle() method that can work with WebURLLoaderMockFactory.
 void RunPendingTasks();
 
-// Waits for delayed task to complete or timers to fire for |delayMs|
-// milliseconds.
-void RunDelayedTasks(double delay_ms);
+// Waits for delayed task to complete or timers to fire for |delay|.
+void RunDelayedTasks(TimeDelta delay);
 
 void EnterRunLoop();
 void ExitRunLoop();

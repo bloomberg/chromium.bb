@@ -124,8 +124,10 @@ class MediaControlsOrientationLockDelegateTest : public ::testing::Test {
  protected:
   using DeviceOrientationType =
       MediaControlsOrientationLockDelegate::DeviceOrientationType;
-  static constexpr int kUnlockDelayMs =
-      MediaControlsOrientationLockDelegate::kUnlockDelayMs;
+
+  static constexpr TimeDelta GetUnlockDelay() {
+    return MediaControlsOrientationLockDelegate::kUnlockDelay;
+  }
 
   void SetUp() override {
     chrome_client_ = new MockChromeClient();
@@ -782,7 +784,7 @@ TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
   // Device orientation events received by MediaControlsOrientationLockDelegate
   // will confirm that the device is already landscape.
   RotateDeviceTo(90 /* landscape primary */);
-  testing::RunDelayedTasks(kUnlockDelayMs);
+  testing::RunDelayedTasks(GetUnlockDelay());
 
   // MediaControlsOrientationLockDelegate should unlock orientation.
   CheckStatePendingFullscreen();
@@ -817,7 +819,7 @@ TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
 
   // Even though the device is still held in portrait.
   RotateDeviceTo(0 /* portrait primary */);
-  testing::RunDelayedTasks(kUnlockDelayMs);
+  testing::RunDelayedTasks(GetUnlockDelay());
 
   // MediaControlsOrientationLockDelegate should remain locked to landscape.
   CheckStateMaybeLockedFullscreen();
@@ -843,7 +845,7 @@ TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
   // Simulate user rotating their device to landscape (matching the screen
   // orientation lock).
   RotateDeviceTo(90 /* landscape primary */);
-  testing::RunDelayedTasks(kUnlockDelayMs);
+  testing::RunDelayedTasks(GetUnlockDelay());
 
   // MediaControlsOrientationLockDelegate should unlock orientation.
   CheckStatePendingFullscreen();
@@ -913,7 +915,7 @@ TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
   // orientation change.
   ASSERT_NO_FATAL_FAILURE(
       RotateScreenTo(kWebScreenOrientationPortraitPrimary, 0));
-  testing::RunDelayedTasks(kUnlockDelayMs);
+  testing::RunDelayedTasks(GetUnlockDelay());
 
   // Video should remain inline, unlocked.
   CheckStatePendingFullscreen();
@@ -947,7 +949,7 @@ TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
   // Device orientation events received by MediaControlsOrientationLockDelegate
   // will confirm that the device is already landscape.
   RotateDeviceTo(90 /* landscape primary */);
-  testing::RunDelayedTasks(kUnlockDelayMs);
+  testing::RunDelayedTasks(GetUnlockDelay());
 
   // MediaControlsOrientationLockDelegate should unlock orientation.
   CheckStatePendingFullscreen();
@@ -966,7 +968,7 @@ TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
   // Initially fullscreen, unlocked orientation.
   SimulateEnterFullscreen();
   RotateDeviceTo(90 /* landscape primary */);
-  testing::RunDelayedTasks(kUnlockDelayMs);
+  testing::RunDelayedTasks(GetUnlockDelay());
   ASSERT_TRUE(Video().IsFullscreen());
   CheckStatePendingFullscreen();
   EXPECT_FALSE(DelegateWillUnlockFullscreen());
@@ -975,7 +977,7 @@ TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
   // orientation change.
   ASSERT_NO_FATAL_FAILURE(
       RotateScreenTo(kWebScreenOrientationPortraitPrimary, 0));
-  testing::RunDelayedTasks(kUnlockDelayMs);
+  testing::RunDelayedTasks(GetUnlockDelay());
 
   // MediaControlsRotateToFullscreenDelegate should exit fullscreen.
   EXPECT_FALSE(Video().IsFullscreen());
@@ -997,7 +999,7 @@ TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
   // Initially fullscreen, unlocked orientation.
   SimulateEnterFullscreen();
   RotateDeviceTo(90 /* landscape primary */);
-  testing::RunDelayedTasks(kUnlockDelayMs);
+  testing::RunDelayedTasks(GetUnlockDelay());
   ASSERT_TRUE(Video().IsFullscreen());
   CheckStatePendingFullscreen();
   EXPECT_FALSE(DelegateWillUnlockFullscreen());
@@ -1042,7 +1044,7 @@ TEST_F(
 
   // Even though the device is still held in portrait.
   RotateDeviceTo(0 /* portrait primary */);
-  testing::RunDelayedTasks(kUnlockDelayMs);
+  testing::RunDelayedTasks(GetUnlockDelay());
 
   // MediaControlsOrientationLockDelegate should remain locked to landscape.
   CheckStateMaybeLockedFullscreen();
@@ -1071,7 +1073,7 @@ TEST_F(
   // Simulate user rotating their device to landscape (matching the screen
   // orientation lock).
   RotateDeviceTo(90 /* landscape primary */);
-  testing::RunDelayedTasks(kUnlockDelayMs);
+  testing::RunDelayedTasks(GetUnlockDelay());
 
   // MediaControlsOrientationLockDelegate should remain locked to landscape even
   // though the screen orientation is now landscape, since the user has disabled
@@ -1152,7 +1154,7 @@ TEST_F(
   // rotation lock, but perpendicular to MediaControlsOrientationLockDelegate's
   // screen orientation lock which overrides it).
   RotateDeviceTo(0 /* portrait primary */);
-  testing::RunDelayedTasks(kUnlockDelayMs);
+  testing::RunDelayedTasks(GetUnlockDelay());
 
   // Video should remain locked and fullscreen. This may disappoint users who
   // expect MediaControlsRotateToFullscreenDelegate to let them always leave
@@ -1245,7 +1247,7 @@ TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
   // Device orientation events received by MediaControlsOrientationLockDelegate
   // will confirm that the device is already portrait.
   RotateDeviceTo(0 /* portrait primary */);
-  testing::RunDelayedTasks(kUnlockDelayMs);
+  testing::RunDelayedTasks(GetUnlockDelay());
 
   // MediaControlsOrientationLockDelegate should unlock orientation.
   CheckStatePendingFullscreen();
@@ -1296,7 +1298,7 @@ TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
   // Device orientation events received by MediaControlsOrientationLockDelegate
   // will confirm that the device is already landscape.
   RotateDeviceTo(0 /* landscape primary */);
-  testing::RunDelayedTasks(kUnlockDelayMs);
+  testing::RunDelayedTasks(GetUnlockDelay());
 
   // MediaControlsOrientationLockDelegate should unlock orientation.
   CheckStatePendingFullscreen();
@@ -1347,7 +1349,7 @@ TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
 
   // MediaControlsOrientationLockDelegate should remain locked to landscape
   // indefinitely.
-  testing::RunDelayedTasks(kUnlockDelayMs);
+  testing::RunDelayedTasks(GetUnlockDelay());
   CheckStateMaybeLockedFullscreen();
   EXPECT_EQ(kWebScreenOrientationLockLandscape, DelegateOrientationLock());
 
@@ -1367,15 +1369,15 @@ TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
   // delegate unlocks the screen orientation, so Android changes the screen
   // orientation back to portrait because it hasn't yet processed the device
   // orientation change to landscape.
-  constexpr int kMinUnlockDelayMs = 249;
-  static_assert(kUnlockDelayMs > kMinUnlockDelayMs,
-                "kUnlockDelayMs should significantly exceed kMinUnlockDelayMs");
-  testing::RunDelayedTasks(kMinUnlockDelayMs);
+  constexpr TimeDelta kMinUnlockDelay = TimeDelta::FromMilliseconds(249);
+  static_assert(GetUnlockDelay() > kMinUnlockDelay,
+                "GetUnlockDelay() should significantly exceed kMinUnlockDelay");
+  testing::RunDelayedTasks(kMinUnlockDelay);
   CheckStateMaybeLockedFullscreen();
   EXPECT_EQ(kWebScreenOrientationLockLandscape, DelegateOrientationLock());
 
   // Simulate the OS processing the device orientation change after a delay of
-  // `kMinUnlockDelayMs` and hence changing the screen orientation.
+  // `kMinUnlockDelay` and hence changing the screen orientation.
   ASSERT_NO_FATAL_FAILURE(
       RotateScreenTo(kWebScreenOrientationLandscapeSecondary, 270));
 
@@ -1384,7 +1386,7 @@ TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
   EXPECT_EQ(kWebScreenOrientationLockLandscape, DelegateOrientationLock());
 
   // Wait for the rest of the unlock delay.
-  testing::RunDelayedTasks(kUnlockDelayMs - kMinUnlockDelayMs);
+  testing::RunDelayedTasks(GetUnlockDelay() - kMinUnlockDelay);
 
   // MediaControlsOrientationLockDelegate should now have unlocked.
   CheckStatePendingFullscreen();

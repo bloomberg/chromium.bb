@@ -182,7 +182,7 @@ TEST_F(LinkSelectionTest, HandCursorDuringLinkDrag) {
       ->LocalFrameRoot()
       .GetEventHandler()
       .ScheduleCursorUpdate();
-  testing::RunDelayedTasks(50);
+  testing::RunDelayedTasks(TimeDelta::FromMilliseconds(50));
   const auto& cursor =
       main_frame_->GetFrame()->GetChromeClient().LastSetCursorForTesting();
   EXPECT_EQ(Cursor::kHand, cursor.GetType());
@@ -195,7 +195,7 @@ TEST_F(LinkSelectionTest, CaretCursorOverLinkDuringSelection) {
       ->LocalFrameRoot()
       .GetEventHandler()
       .ScheduleCursorUpdate();
-  testing::RunDelayedTasks(50);
+  testing::RunDelayedTasks(TimeDelta::FromMilliseconds(50));
   const auto& cursor =
       main_frame_->GetFrame()->GetChromeClient().LastSetCursorForTesting();
   EXPECT_EQ(Cursor::kIBeam, cursor.GetType());
@@ -214,7 +214,7 @@ TEST_F(LinkSelectionTest, HandCursorOverLinkAfterContextMenu) {
   frame->GetPage()->GetContextMenuController().ClearContextMenu();
 
   frame->LocalFrameRoot().GetEventHandler().ScheduleCursorUpdate();
-  testing::RunDelayedTasks(50);
+  testing::RunDelayedTasks(TimeDelta::FromMilliseconds(50));
   const auto& cursor =
       main_frame_->GetFrame()->GetChromeClient().LastSetCursorForTesting();
   EXPECT_EQ(Cursor::kHand, cursor.GetType());

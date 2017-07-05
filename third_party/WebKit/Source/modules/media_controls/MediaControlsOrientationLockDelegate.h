@@ -118,7 +118,8 @@ class MediaControlsOrientationLockDelegate final : public EventListener {
   // Delay before unlocking - see `MaybeUnlockIfDeviceOrientationMatchesVideo`.
   // Emprically, 200ms is too short, but 250ms avoids glitches. 500ms gives us
   // a 2x margin in case the device is running slow, without being noticeable.
-  static constexpr int kUnlockDelayMs = 500;
+  MODULES_EXPORT static constexpr TimeDelta kUnlockDelay =
+      TimeDelta::FromMilliseconds(500);
 
   // Current state of the object. See comment at the top of the file for a
   // detailed description.

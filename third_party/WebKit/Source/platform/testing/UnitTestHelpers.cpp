@@ -31,7 +31,6 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "platform/SharedBuffer.h"
-#include "platform/Timer.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/text/StringUTF8Adaptor.h"
@@ -66,10 +65,9 @@ void RunPendingTasks() {
   ThreadState::Current()->LeaveGCForbiddenScope();
 }
 
-void RunDelayedTasks(double delay_ms) {
+void RunDelayedTasks(TimeDelta delay) {
   Platform::Current()->CurrentThread()->GetWebTaskRunner()->PostDelayedTask(
-      BLINK_FROM_HERE, WTF::Bind(&ExitRunLoop),
-      TimeDelta::FromMillisecondsD(delay_ms));
+      BLINK_FROM_HERE, WTF::Bind(&ExitRunLoop), delay);
   EnterRunLoop();
 }
 
