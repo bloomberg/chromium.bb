@@ -58,6 +58,8 @@ static_library("ntp_snippets") {
     "pref_util.h",
     "reading_list/reading_list_suggestions_provider.cc",
     "reading_list/reading_list_suggestions_provider.h",
+    "remote/cached_image_fetcher.cc",
+    "remote/cached_image_fetcher.h",
     "remote/json_request.cc",
     "remote/json_request.h",
     "remote/json_to_categories.cc",
