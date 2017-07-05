@@ -11,6 +11,7 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/DOMException.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "modules/payments/PaymentInstrument.h"
 #include "modules/payments/PaymentManager.h"
 #include "platform/wtf/Vector.h"
@@ -46,6 +47,21 @@ bool rejectError(ScriptPromiseResolver* resolver,
       resolver->Reject(DOMException::Create(
           kNotFoundError, "Fetch or decode instrument icon failed"));
       return true;
+    case payments::mojom::blink::PaymentHandlerStatus::
+        FETCH_PAYMENT_APP_INFO_FAILED:
+      // FETCH_PAYMENT_APP_INFO_FAILED indicates everything works well except
+      // fetching payment handler's name and/or icon from its web app manifest.
+      // The origin or name will be used to label this payment handler in
+      // UI in this case, so only show warnning message instead of reject the
+      // promise.
+      ExecutionContext* context =
+          ExecutionContext::From(resolver->GetScriptState());
+      context->AddConsoleMessage(ConsoleMessage::Create(
+          kJSMessageSource, kWarningMessageLevel,
+          "Unable to fetch payment handler's name and icon from its web app "
+          "manifest. User may not recognize this payment handler in UI, "
+          "because it will be labeled only by its origin."));
+      return false;
   }
   NOTREACHED();
   return false;

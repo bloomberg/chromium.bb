@@ -18,12 +18,18 @@ message StoredPaymentInstrumentImageObject {
 }
 
 message StoredPaymentInstrumentProto {
+  optional string instrument_key = 1;
+  optional string origin = 2;
+  optional string name = 3;
+  repeated string enabled_methods = 4;
+  optional string stringified_capabilities = 5;
+  repeated StoredPaymentInstrumentImageObject icons = 6;
+  optional string decoded_instrument_icon = 7;
+}
+
+message StoredPaymentAppProto {
   optional int64 registration_id = 1;
-  optional string instrument_key = 2;
-  optional string origin = 3;
-  optional string name = 4;
-  repeated string enabled_methods = 5;
-  optional string stringified_capabilities = 6;
-  repeated StoredPaymentInstrumentImageObject icons = 7;
-  optional string decoded_instrument_icon = 8;
+  optional string origin = 2;
+  optional string name = 3;
+  optional string icon = 4;
 }

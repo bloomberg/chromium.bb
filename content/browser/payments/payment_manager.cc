@@ -34,8 +34,11 @@ PaymentManager::PaymentManager(
       base::Bind(&PaymentManager::OnConnectionError, base::Unretained(this)));
 }
 
-void PaymentManager::Init(const std::string& scope) {
+void PaymentManager::Init(const std::string& context,
+                          const std::string& scope) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  should_set_payment_app_info_ = true;
+  context_ = GURL(context);
   scope_ = GURL(scope);
 }
 
@@ -80,8 +83,32 @@ void PaymentManager::SetPaymentInstrument(
     PaymentManager::SetPaymentInstrumentCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  payment_app_context_->payment_app_database()->WritePaymentInstrument(
-      scope_, instrument_key, std::move(details), std::move(callback));
+  if (should_set_payment_app_info_) {
+    payment_app_context_->payment_app_database()->WritePaymentInstrument(
+        scope_, instrument_key, std::move(details),
+        base::BindOnce(
+            &PaymentManager::SetPaymentInstrumentIntermediateCallback,
+            weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  } else {
+    payment_app_context_->payment_app_database()->WritePaymentInstrument(
+        scope_, instrument_key, std::move(details), std::move(callback));
+  }
+}
+
+void PaymentManager::SetPaymentInstrumentIntermediateCallback(
+    PaymentManager::SetPaymentInstrumentCallback callback,
+    payments::mojom::PaymentHandlerStatus status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (status != payments::mojom::PaymentHandlerStatus::SUCCESS ||
+      !should_set_payment_app_info_) {
+    std::move(callback).Run(status);
+    return;
+  }
+
+  payment_app_context_->payment_app_database()->FetchAndWritePaymentAppInfo(
+      context_, scope_, std::move(callback));
+  should_set_payment_app_info_ = false;
 }
 
 void PaymentManager::ClearPaymentInstruments(

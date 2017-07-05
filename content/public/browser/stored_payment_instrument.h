@@ -20,9 +20,6 @@ struct CONTENT_EXPORT StoredPaymentInstrument {
   StoredPaymentInstrument();
   ~StoredPaymentInstrument();
 
-  // Id of the service worker registration this instrument is associated with.
-  int64_t registration_id = 0;
-
   // Id of this payment instrument. This key will be passed to the payment
   // handler to indicate the instrument selected by the user.
   std::string instrument_key;

@@ -104,12 +104,12 @@ TEST_F(PaymentAppProviderTest, InvokePaymentAppTest) {
   event_data->total->amount = payments::mojom::PaymentCurrencyAmount::New();
 
   bool called = false;
-  InvokePaymentApp(apps[GURL("https://hellopay.com/")][0]->registration_id,
+  InvokePaymentApp(apps[GURL("https://hellopay.com/")]->registration_id,
                    std::move(event_data),
                    base::Bind(&InvokePaymentAppCallback, &called));
   ASSERT_TRUE(called);
 
-  EXPECT_EQ(apps[GURL("https://hellopay.com/")][0]->registration_id,
+  EXPECT_EQ(apps[GURL("https://hellopay.com/")]->registration_id,
             last_sw_registration_id());
 }
 
@@ -131,8 +131,8 @@ TEST_F(PaymentAppProviderTest, GetAllPaymentAppsTest) {
   GetAllPaymentApps(base::Bind(&GetAllPaymentAppsCallback, &apps));
 
   ASSERT_EQ(2U, apps.size());
-  ASSERT_EQ(1U, apps[GURL("https://hellopay.com/")].size());
-  ASSERT_EQ(2U, apps[GURL("https://bobpay.com/")].size());
+  ASSERT_EQ(1U, apps[GURL("https://hellopay.com/")]->instruments.size());
+  ASSERT_EQ(2U, apps[GURL("https://bobpay.com/")]->instruments.size());
 }
 
 }  // namespace content

@@ -135,6 +135,11 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   void HasMainFrameProviderHost(const GURL& origin,
                                 const BoolCallback& callback) const;
 
+  // Returns all render process ids and frame ids for the given |origin|.
+  std::unique_ptr<
+      std::vector<std::pair<int /* render process id */, int /* frame id */>>>
+  GetProviderHostIds(const GURL& origin) const;
+
   // Returns the registration whose scope longest matches |document_url|. It is
   // guaranteed that the returned registration has the activated worker.
   //

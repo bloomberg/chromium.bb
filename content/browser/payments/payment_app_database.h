@@ -11,12 +11,13 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "content/browser/payments/payment_app_info_fetcher.h"
 #include "content/browser/payments/payment_instrument_icon_fetcher.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_status_code.h"
-#include "content/public/browser/stored_payment_instrument.h"
+#include "content/public/browser/stored_payment_app.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/WebKit/public/platform/modules/payments/payment_app.mojom.h"
 
@@ -26,8 +27,7 @@ class ServiceWorkerRegistration;
 
 class CONTENT_EXPORT PaymentAppDatabase {
  public:
-  using Instruments = std::vector<std::unique_ptr<StoredPaymentInstrument>>;
-  using PaymentApps = std::map<GURL, Instruments>;
+  using PaymentApps = std::map<GURL, std::unique_ptr<StoredPaymentApp>>;
   using ReadAllPaymentAppsCallback = base::OnceCallback<void(PaymentApps)>;
 
   using DeletePaymentInstrumentCallback =
@@ -41,6 +41,8 @@ class CONTENT_EXPORT PaymentAppDatabase {
   using HasPaymentInstrumentCallback =
       base::OnceCallback<void(payments::mojom::PaymentHandlerStatus)>;
   using WritePaymentInstrumentCallback =
+      base::OnceCallback<void(payments::mojom::PaymentHandlerStatus)>;
+  using FetchAndWritePaymentAppInfoCallback =
       base::OnceCallback<void(payments::mojom::PaymentHandlerStatus)>;
   using ClearPaymentInstrumentsCallback =
       base::OnceCallback<void(payments::mojom::PaymentHandlerStatus)>;
@@ -66,12 +68,21 @@ class CONTENT_EXPORT PaymentAppDatabase {
                               const std::string& instrument_key,
                               payments::mojom::PaymentInstrumentPtr instrument,
                               WritePaymentInstrumentCallback callback);
+  void FetchAndWritePaymentAppInfo(
+      const GURL& context,
+      const GURL& scope,
+      FetchAndWritePaymentAppInfoCallback callback);
   void ClearPaymentInstruments(const GURL& scope,
                                ClearPaymentInstrumentsCallback callback);
 
  private:
   // ReadAllPaymentApps callbacks
   void DidReadAllPaymentApps(
+      ReadAllPaymentAppsCallback callback,
+      const std::vector<std::pair<int64_t, std::string>>& raw_data,
+      ServiceWorkerStatusCode status);
+  void DidReadAllPaymentInstruments(
+      PaymentApps apps,
       ReadAllPaymentAppsCallback callback,
       const std::vector<std::pair<int64_t, std::string>>& raw_data,
       ServiceWorkerStatusCode status);
@@ -130,6 +141,21 @@ class CONTENT_EXPORT PaymentAppDatabase {
   void DidWritePaymentInstrument(WritePaymentInstrumentCallback callback,
                                  ServiceWorkerStatusCode status);
 
+  // FetchAndWritePaymentAppInfo callbacks.
+  void FetchPaymentAppInfoCallback(const GURL& scope,
+                                   FetchAndWritePaymentAppInfoCallback callback,
+                                   const std::string& name,
+                                   const std::string& icon);
+  void DidFindRegistrationToWritePaymentAppInfo(
+      FetchAndWritePaymentAppInfoCallback callback,
+      const std::string& name,
+      const std::string& icon,
+      ServiceWorkerStatusCode status,
+      scoped_refptr<ServiceWorkerRegistration> registration);
+  void DidWritePaymentApp(FetchAndWritePaymentAppInfoCallback callback,
+                          bool fetch_app_info_failed,
+                          ServiceWorkerStatusCode status);
+
   // PaymentInstrumentIconFetcherCallback.
   void DidFetchedPaymentInstrumentIcon(
       const GURL& scope,
@@ -145,13 +171,14 @@ class CONTENT_EXPORT PaymentAppDatabase {
       ServiceWorkerStatusCode status,
       scoped_refptr<ServiceWorkerRegistration> registration);
   void DidGetKeysToClearPaymentInstruments(
-      int64_t registration_id,
+      scoped_refptr<ServiceWorkerRegistration> registration,
       ClearPaymentInstrumentsCallback callback,
       const std::vector<std::string>& keys,
       payments::mojom::PaymentHandlerStatus status);
   void DidClearPaymentInstruments(ClearPaymentInstrumentsCallback callback,
                                   ServiceWorkerStatusCode status);
 
+  scoped_refptr<PaymentAppInfoFetcher> payment_app_info_fetcher_;
   scoped_refptr<PaymentInstrumentIconFetcher> instrument_icon_fetcher_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
   base::WeakPtrFactory<PaymentAppDatabase> weak_ptr_factory_;

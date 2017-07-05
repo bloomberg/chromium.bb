@@ -17,8 +17,11 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/stored_payment_instrument.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 namespace {
@@ -27,8 +30,13 @@ using ::payments::mojom::PaymentHandlerStatus;
 using ::payments::mojom::PaymentInstrument;
 using ::payments::mojom::PaymentInstrumentPtr;
 
+const char kPaymentAppPrefix[] = "PaymentApp:";
 const char kPaymentInstrumentPrefix[] = "PaymentInstrument:";
 const char kPaymentInstrumentKeyInfoPrefix[] = "PaymentInstrumentKeyInfo:";
+
+std::string CreatePaymentAppKey(const std::string& origin) {
+  return kPaymentAppPrefix + origin;
+}
 
 std::string CreatePaymentInstrumentKey(const std::string& instrument_key) {
   return kPaymentInstrumentPrefix + instrument_key;
@@ -73,6 +81,30 @@ PaymentInstrumentPtr ToPaymentInstrumentForMojo(const std::string& input) {
   return instrument;
 }
 
+std::unique_ptr<StoredPaymentApp> ToStoredPaymentApp(const std::string& input) {
+  StoredPaymentAppProto app_proto;
+  if (!app_proto.ParseFromString(input))
+    return std::unique_ptr<StoredPaymentApp>();
+
+  std::unique_ptr<StoredPaymentApp> app = base::MakeUnique<StoredPaymentApp>();
+  app->registration_id = app_proto.registration_id();
+  app->origin = url::Origin(GURL(app_proto.origin()));
+  app->name = app_proto.name();
+
+  if (!app_proto.icon().empty()) {
+    std::string icon_raw_data;
+    base::Base64Decode(app_proto.icon(), &icon_raw_data);
+    // Note that the icon has been decoded to PNG raw data regardless of the
+    // original icon format that was downloaded.
+    gfx::Image icon_image = gfx::Image::CreateFrom1xPNGBytes(
+        reinterpret_cast<const unsigned char*>(icon_raw_data.data()),
+        icon_raw_data.size());
+    app->icon = base::MakeUnique<SkBitmap>(icon_image.AsBitmap());
+  }
+
+  return app;
+}
+
 std::unique_ptr<StoredPaymentInstrument> ToStoredPaymentInstrument(
     const std::string& input) {
   StoredPaymentInstrumentProto instrument_proto;
@@ -81,7 +113,6 @@ std::unique_ptr<StoredPaymentInstrument> ToStoredPaymentInstrument(
 
   std::unique_ptr<StoredPaymentInstrument> instrument =
       base::MakeUnique<StoredPaymentInstrument>();
-  instrument->registration_id = instrument_proto.registration_id();
   instrument->instrument_key = instrument_proto.instrument_key();
   instrument->origin = GURL(instrument_proto.origin());
   instrument->name = instrument_proto.name();
@@ -120,10 +151,9 @@ void PaymentAppDatabase::ReadAllPaymentApps(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   service_worker_context_->GetUserDataForAllRegistrationsByKeyPrefix(
-      kPaymentInstrumentPrefix,
-      base::Bind(&PaymentAppDatabase::DidReadAllPaymentApps,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(std::move(callback))));
+      kPaymentAppPrefix, base::Bind(&PaymentAppDatabase::DidReadAllPaymentApps,
+                                    weak_ptr_factory_.GetWeakPtr(),
+                                    base::Passed(std::move(callback))));
 }
 
 void PaymentAppDatabase::DeletePaymentInstrument(
@@ -228,6 +258,84 @@ void PaymentAppDatabase::DidFetchedPaymentInstrumentIcon(
           base::Passed(std::move(callback))));
 }
 
+void PaymentAppDatabase::FetchAndWritePaymentAppInfo(
+    const GURL& context,
+    const GURL& scope,
+    FetchAndWritePaymentAppInfoCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  payment_app_info_fetcher_ = new PaymentAppInfoFetcher();
+  payment_app_info_fetcher_->Start(
+      context, service_worker_context_,
+      base::BindOnce(&PaymentAppDatabase::FetchPaymentAppInfoCallback,
+                     weak_ptr_factory_.GetWeakPtr(), scope,
+                     std::move(callback)));
+}
+
+void PaymentAppDatabase::FetchPaymentAppInfoCallback(
+    const GURL& scope,
+    FetchAndWritePaymentAppInfoCallback callback,
+    const std::string& name,
+    const std::string& icon) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  payment_app_info_fetcher_ = nullptr;
+
+  service_worker_context_->FindReadyRegistrationForPattern(
+      scope,
+      base::Bind(&PaymentAppDatabase::DidFindRegistrationToWritePaymentAppInfo,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(std::move(callback)), name, icon));
+}
+
+void PaymentAppDatabase::DidFindRegistrationToWritePaymentAppInfo(
+    FetchAndWritePaymentAppInfoCallback callback,
+    const std::string& name,
+    const std::string& icon,
+    ServiceWorkerStatusCode status,
+    scoped_refptr<ServiceWorkerRegistration> registration) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (status != SERVICE_WORKER_OK) {
+    std::move(callback).Run(PaymentHandlerStatus::NO_ACTIVE_WORKER);
+    return;
+  }
+
+  StoredPaymentAppProto payment_app_proto;
+  payment_app_proto.set_registration_id(registration->id());
+  payment_app_proto.set_origin(registration->pattern().GetOrigin().spec());
+  payment_app_proto.set_name(name.empty() ? payment_app_proto.origin() : name);
+  payment_app_proto.set_icon(icon);
+
+  std::string serialized_payment_app;
+  bool success = payment_app_proto.SerializeToString(&serialized_payment_app);
+  DCHECK(success);
+
+  service_worker_context_->StoreRegistrationUserData(
+      registration->id(), registration->pattern().GetOrigin(),
+      {{CreatePaymentAppKey(registration->pattern().GetOrigin().spec()),
+        serialized_payment_app}},
+      base::Bind(&PaymentAppDatabase::DidWritePaymentApp,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(std::move(callback)),
+                 name.empty() | icon.empty()));
+}
+
+void PaymentAppDatabase::DidWritePaymentApp(
+    FetchAndWritePaymentAppInfoCallback callback,
+    bool fetch_app_info_failed,
+    ServiceWorkerStatusCode status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  PaymentHandlerStatus handler_status =
+      fetch_app_info_failed
+          ? PaymentHandlerStatus::FETCH_PAYMENT_APP_INFO_FAILED
+          : PaymentHandlerStatus::SUCCESS;
+  handler_status = status == SERVICE_WORKER_OK
+                       ? handler_status
+                       : PaymentHandlerStatus::STORAGE_OPERATION_FAILED;
+  return std::move(callback).Run(handler_status);
+}
+
 void PaymentAppDatabase::ClearPaymentInstruments(
     const GURL& scope,
     ClearPaymentInstrumentsCallback callback) {
@@ -253,13 +361,41 @@ void PaymentAppDatabase::DidReadAllPaymentApps(
 
   PaymentApps apps;
   for (const auto& item_of_raw_data : raw_data) {
+    std::unique_ptr<StoredPaymentApp> app =
+        ToStoredPaymentApp(item_of_raw_data.second);
+    if (app)
+      apps[app->origin.GetURL()] = std::move(app);
+  }
+
+  if (apps.size() == 0U) {
+    std::move(callback).Run(PaymentApps());
+    return;
+  }
+
+  service_worker_context_->GetUserDataForAllRegistrationsByKeyPrefix(
+      kPaymentInstrumentPrefix,
+      base::Bind(&PaymentAppDatabase::DidReadAllPaymentInstruments,
+                 weak_ptr_factory_.GetWeakPtr(), base::Passed(std::move(apps)),
+                 base::Passed(std::move(callback))));
+}
+
+void PaymentAppDatabase::DidReadAllPaymentInstruments(
+    PaymentApps apps,
+    ReadAllPaymentAppsCallback callback,
+    const std::vector<std::pair<int64_t, std::string>>& raw_data,
+    ServiceWorkerStatusCode status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (status != SERVICE_WORKER_OK) {
+    std::move(callback).Run(std::move(apps));
+    return;
+  }
+
+  for (const auto& item_of_raw_data : raw_data) {
     std::unique_ptr<StoredPaymentInstrument> instrument =
         ToStoredPaymentInstrument(item_of_raw_data.second);
-    if (!instrument)
+    if (!instrument || !base::ContainsKey(apps, instrument->origin))
       continue;
-    if (!base::ContainsKey(apps, instrument->origin))
-      apps.insert(std::make_pair(instrument->origin, Instruments()));
-    apps[instrument->origin].push_back(std::move(instrument));
+    apps[instrument->origin]->instruments.push_back(std::move(instrument));
   }
 
   std::move(callback).Run(std::move(apps));
@@ -436,7 +572,6 @@ void PaymentAppDatabase::DidFindRegistrationToWritePaymentInstrument(
 
   StoredPaymentInstrumentProto instrument_proto;
   instrument_proto.set_decoded_instrument_icon(decoded_instrument_icon);
-  instrument_proto.set_registration_id(registration->id());
   instrument_proto.set_instrument_key(instrument_key);
   instrument_proto.set_origin(registration->pattern().GetOrigin().spec());
   instrument_proto.set_name(instrument->name);
@@ -498,12 +633,12 @@ void PaymentAppDatabase::DidFindRegistrationToClearPaymentInstruments(
   KeysOfPaymentInstruments(
       scope,
       base::BindOnce(&PaymentAppDatabase::DidGetKeysToClearPaymentInstruments,
-                     weak_ptr_factory_.GetWeakPtr(), registration->id(),
+                     weak_ptr_factory_.GetWeakPtr(), std::move(registration),
                      std::move(callback)));
 }
 
 void PaymentAppDatabase::DidGetKeysToClearPaymentInstruments(
-    int64_t registration_id,
+    scoped_refptr<ServiceWorkerRegistration> registration,
     ClearPaymentInstrumentsCallback callback,
     const std::vector<std::string>& keys,
     PaymentHandlerStatus status) {
@@ -520,8 +655,12 @@ void PaymentAppDatabase::DidGetKeysToClearPaymentInstruments(
     keys_with_prefix.push_back(CreatePaymentInstrumentKeyInfoKey(key));
   }
 
+  // Clear payment app info after clearing all payment instruments.
+  keys_with_prefix.push_back(
+      CreatePaymentAppKey(registration->pattern().GetOrigin().spec()));
+
   service_worker_context_->ClearRegistrationUserData(
-      registration_id, keys_with_prefix,
+      registration->id(), keys_with_prefix,
       base::Bind(&PaymentAppDatabase::DidClearPaymentInstruments,
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Passed(std::move(callback))));

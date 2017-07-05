@@ -604,6 +604,24 @@ void ServiceWorkerContextWrapper::HasMainFrameProviderHost(
   context_core_->HasMainFrameProviderHost(origin, callback);
 }
 
+std::unique_ptr<std::vector<std::pair<int, int>>>
+ServiceWorkerContextWrapper::GetProviderHostIds(const GURL& origin) const {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  std::unique_ptr<std::vector<std::pair<int, int>>> provider_host_ids(
+      new std::vector<std::pair<int, int>>());
+
+  for (std::unique_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
+           context_core_->GetClientProviderHostIterator(origin);
+       !it->IsAtEnd(); it->Advance()) {
+    ServiceWorkerProviderHost* provider_host = it->GetProviderHost();
+    provider_host_ids->push_back(
+        std::make_pair(provider_host->process_id(), provider_host->frame_id()));
+  }
+
+  return provider_host_ids;
+}
+
 void ServiceWorkerContextWrapper::FindReadyRegistrationForDocument(
     const GURL& document_url,
     const FindRegistrationCallback& callback) {

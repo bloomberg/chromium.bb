@@ -53,7 +53,8 @@ PaymentManager::PaymentManager(ServiceWorkerRegistration* registration)
 
   manager_.set_connection_error_handler(ConvertToBaseCallback(WTF::Bind(
       &PaymentManager::OnServiceConnectionError, WrapWeakPersistent(this))));
-  manager_->Init(registration_->scope());
+  manager_->Init(registration_->GetExecutionContext()->Url().GetString(),
+                 registration_->scope());
 }
 
 void PaymentManager::OnServiceConnectionError() {
