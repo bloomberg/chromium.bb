@@ -1018,15 +1018,22 @@ TEST_F(PasswordStoreTest, SavingClearingSyncPassword) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(prefs.HasPrefPath(prefs::kSyncPasswordHash));
 
-  // TODO(crbug.com/657041): Check that password reuse works when sync hash
-  // calculation is implemented.
+  // Check that sync password reuse is found.
+  MockPasswordReuseDetectorConsumer mock_consumer;
+  EXPECT_CALL(
+      mock_consumer,
+      OnReuseFound(sync_password, std::string(kSyncPasswordDomain), 1, 0));
+  store->CheckReuse(input, "https://facebook.com", &mock_consumer);
+  base::RunLoop().RunUntilIdle();
+  testing::Mock::VerifyAndClearExpectations(&mock_consumer);
 
   // Check that no sync password reuse is found after clearing the saved sync
   // password hash.
   store->ClearSyncPasswordHash();
   EXPECT_FALSE(prefs.HasPrefPath(prefs::kSyncPasswordHash));
-  // TODO(crbug.com/657041): Check that no password reuse happens here when sync
-  // hash calculation is implemented.
+  EXPECT_CALL(mock_consumer, OnReuseFound(_, _, _, _)).Times(0);
+  store->CheckReuse(input, "https://facebook.com", &mock_consumer);
+  base::RunLoop().RunUntilIdle();
 
   store->ShutdownOnUIThread();
   base::RunLoop().RunUntilIdle();

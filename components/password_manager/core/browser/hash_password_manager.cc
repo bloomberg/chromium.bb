@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/os_crypt/os_crypt.h"
+#include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "crypto/random.h"
@@ -24,8 +25,9 @@ bool HashPasswordManager::SavePasswordHash(const base::string16& password) {
     return false;
 
   std::string salt = CreateRandomSalt();
-  // TODO(crbug.com/657041) Implement hash calculation.
-  prefs_->SetString(prefs::kSyncPasswordHash, std::string());
+  std::string hash = base::Uint64ToString(
+      password_manager_util::CalculateSyncPasswordHash(password, salt));
+  EncryptAndSaveToPrefs(prefs::kSyncPasswordHash, hash);
 
   // Password length and salt are stored together.
   std::string length_salt = LengthAndSaltToString(salt, password.size());
@@ -40,15 +42,13 @@ void HashPasswordManager::ClearSavedPasswordHash() {
 
 base::Optional<SyncPasswordData> HashPasswordManager::RetrievePasswordHash() {
   if (!prefs_ || !prefs_->HasPrefPath(prefs::kSyncPasswordHash))
-    return base::Optional<SyncPasswordData>();
+    return base::nullopt;
 
   SyncPasswordData result;
   std::string hash_str =
       RetrivedDecryptedStringFromPrefs(prefs::kSyncPasswordHash);
-  // TODO(crbug.com/657041) Add checking of hash correctness retrieving when
-  // hash calculation is implemented.
   if (!base::StringToUint64(hash_str, &result.hash))
-    result.hash = 0;
+    return base::nullopt;
 
   StringToLengthAndSalt(
       RetrivedDecryptedStringFromPrefs(prefs::kSyncPasswordLengthAndHashSalt),
