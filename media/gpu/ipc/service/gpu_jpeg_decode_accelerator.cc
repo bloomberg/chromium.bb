@@ -389,7 +389,7 @@ void GpuJpegDecodeAccelerator::Initialize(InitializeCallback callback) {
 }
 
 void GpuJpegDecodeAccelerator::Decode(
-    mojom::BitstreamBufferPtr input_buffer,
+    const BitstreamBuffer& input_buffer,
     const gfx::Size& coded_size,
     mojo::ScopedSharedBufferHandle output_handle,
     uint32_t output_buffer_size,
