@@ -144,6 +144,7 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule
   CollectionViewTextItem* siteHeader =
       [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader];
   siteHeader.text = l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_SITE);
+  siteHeader.textColor = [[MDCPalette greyPalette] tint500];
   [model setHeader:siteHeader forSectionWithIdentifier:SectionIdentifierSite];
   PasswordDetailsItem* siteItem =
       [[PasswordDetailsItem alloc] initWithType:ItemTypeSite];
