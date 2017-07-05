@@ -6715,13 +6715,18 @@ std::unique_ptr<blink::WebURLLoader> RenderFrameImpl::CreateURLLoader(
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableNetworkService);
   if (network_service_enabled && child_thread) {
+    // Use if per-frame or per-scheme URLLoaderFactory is given.
     mojom::URLLoaderFactory* factory = url_loader_factory_.get();
 
     if (request.Url().ProtocolIs(url::kBlobScheme))
       factory = RenderThreadImpl::current()->GetBlobURLLoaderFactory();
 
-    return base::MakeUnique<WebURLLoaderImpl>(
-        child_thread->resource_dispatcher(), task_runner, factory);
+    if (factory) {
+      return base::MakeUnique<WebURLLoaderImpl>(
+          child_thread->resource_dispatcher(), task_runner, factory);
+    }
+    // Otherwise fallback to the platform one, which will use the default
+    // network service's URLLoaderFactory.
   }
 
   return RenderThreadImpl::current()->blink_platform_impl()->CreateURLLoader(
