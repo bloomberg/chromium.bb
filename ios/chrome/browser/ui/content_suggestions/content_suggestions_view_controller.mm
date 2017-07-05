@@ -333,10 +333,9 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
                              layout:
                                  (UICollectionViewLayout*)collectionViewLayout
     referenceSizeForHeaderInSection:(NSInteger)section {
-  // TODO(crbug.com/635604): Once the headers support dynamic sizing, use it
-  // instead of this.
-  if ([self.collectionUpdater isHeaderSection:section])
-    return CGSizeMake(0, 258);
+  if ([self.collectionUpdater isHeaderSection:section]) {
+    return CGSizeMake(0, [self.suggestionsDelegate headerHeight]);
+  }
   return [super collectionView:collectionView
                                layout:collectionViewLayout
       referenceSizeForHeaderInSection:section];

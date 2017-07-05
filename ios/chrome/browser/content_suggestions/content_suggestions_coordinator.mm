@@ -307,6 +307,12 @@
   return [self.headerController isOmniboxFocused];
 }
 
+- (CGFloat)headerHeight {
+  return content_suggestions::heightForLogoHeader(
+      self.headerController.logoIsShowing,
+      [self.contentSuggestionsMediator notificationPromo]->CanShow());
+}
+
 #pragma mark - ContentSuggestionsViewControllerAudience
 
 - (void)contentSuggestionsDidScroll {

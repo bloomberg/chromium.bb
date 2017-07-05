@@ -78,7 +78,7 @@ layoutAttributesForSupplementaryViewOfKind:(NSString*)kind
 
 - (CGSize)collectionViewContentSize {
   CGFloat collectionViewHeight = self.collectionView.bounds.size.height;
-  CGFloat headerHeight = [self headerReferenceSize].height;
+  CGFloat headerHeight = [self firstHeaderHeight];
 
   // The minimum height for the collection view content should be the height of
   // the header plus the height of the collection view minus the height of the
@@ -94,6 +94,19 @@ layoutAttributesForSupplementaryViewOfKind:(NSString*)kind
     contentSize.height = minimumHeight;
   }
   return contentSize;
+}
+
+#pragma mark - Private.
+
+// Returns the height of the header of the first section.
+- (CGFloat)firstHeaderHeight {
+  id<UICollectionViewDelegateFlowLayout> delegate =
+      static_cast<id<UICollectionViewDelegateFlowLayout>>(
+          self.collectionView.delegate);
+  return [delegate collectionView:self.collectionView
+                                      layout:self
+             referenceSizeForHeaderInSection:0]
+      .height;
 }
 
 @end
