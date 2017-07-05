@@ -1869,6 +1869,7 @@ int64_t av1_search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   TX_TYPE txk_end = TX_TYPES - 1;
   TX_TYPE best_tx_type = txk_start;
   int64_t best_rd = INT64_MAX;
+  uint8_t best_eob = 0;
   const int coeff_ctx = combine_entropy_contexts(*a, *l);
   RD_STATS best_rd_stats;
   TX_TYPE tx_type;
@@ -1910,20 +1911,22 @@ int64_t av1_search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
       best_rd = rd;
       best_rd_stats = this_rd_stats;
       best_tx_type = tx_type;
+      best_eob = x->plane[plane].txb_entropy_ctx[block];
     }
   }
 
   av1_merge_rd_stats(rd_stats, &best_rd_stats);
 
   if (plane == 0) mbmi->txk_type[block] = best_tx_type;
-  // TODO(angiebird): Instead of re-call av1_xform_quant and av1_optimize_b,
-  // copy the best result in the above tx_type search for loop
-  av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
-                  coeff_ctx, AV1_XFORM_QUANT_FP);
-  av1_optimize_b(cm, x, plane, block, plane_bsize, tx_size, a, l);
+  x->plane[plane].txb_entropy_ctx[block] = best_eob;
+
   if (!is_inter_block(mbmi)) {
     // intra mode needs decoded result such that the next transform block
     // can use it for prediction.
+    av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
+                    coeff_ctx, AV1_XFORM_QUANT_FP);
+    av1_optimize_b(cm, x, plane, block, plane_bsize, tx_size, a, l);
+
     av1_inverse_transform_block_facade(xd, plane, block, blk_row, blk_col,
                                        x->plane[plane].eobs[block]);
   }
