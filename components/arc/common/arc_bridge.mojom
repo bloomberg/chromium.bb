@@ -31,11 +31,12 @@ import "tts.mojom";
 import "video.mojom";
 import "voice_interaction_arc_home.mojom";
 import "voice_interaction_framework.mojom";
+import "volume_mounter.mojom";
 import "wallpaper.mojom";
 
-// Next MinVersion: 25
+// Next MinVersion: 26
 // Deprecated method IDs: 101, 105
-// Next method ID: 131
+// Next method ID: 132
 interface ArcBridgeHost {
   // Keep the entries alphabetical. In order to do so without breaking
   // compatibility with the ARC instance, explicitly assign each interface a
@@ -129,6 +130,9 @@ interface ArcBridgeHost {
   // Notifies Chrome that the VoiceInteractionFrameworkInstance is ready.
   [MinVersion=23] OnVoiceInteractionFrameworkInstanceReady@129(
                       VoiceInteractionFrameworkInstance instance_ptr);
+
+  // Notifies Chrome that the VolumeMounter interface is ready.
+  [MinVersion=25] OnVolumeMounterInstanceReady@131(VolumeMounterInstance instance_ptr);
 
   // Notifies Chrome that the WallpaperInstance interface is ready.
   [MinVersion=18] OnWallpaperInstanceReady@124(WallpaperInstance instance_ptr);

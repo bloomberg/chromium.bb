@@ -53,6 +53,7 @@
 #include "components/arc/obb_mounter/arc_obb_mounter_bridge.h"
 #include "components/arc/power/arc_power_bridge.h"
 #include "components/arc/storage_manager/arc_storage_manager.h"
+#include "components/arc/volume_mounter/arc_volume_mounter_bridge.h"
 #include "components/prefs/pref_member.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -156,6 +157,8 @@ void ArcServiceLauncher::Initialize() {
         base::MakeUnique<ArcVoiceInteractionArcHomeService>(
             arc_bridge_service));
   }
+  arc_service_manager_->AddService(
+      base::MakeUnique<ArcVolumeMounterBridge>(arc_bridge_service));
   arc_service_manager_->AddService(
       base::MakeUnique<ArcWallpaperService>(arc_bridge_service));
   arc_service_manager_->AddService(
