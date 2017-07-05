@@ -702,8 +702,9 @@ class TriageRelevantChanges(object):
     for build_config in self.completed_builds:
       if not self.PassedAnyOfStages(self.slave_stages_dict[build_config],
                                     {self.STAGE_UPLOAD_PREBUILTS}):
-        logging.info('Build %s completed but did\'t pass the upload prebuilts '
-                     'stage, should not wait.', build_config)
+        logging.info("Completed build %s didn't pass stage %s. "
+                     "The master can't publish uprevs now.",
+                     build_config, self.STAGE_UPLOAD_PREBUILTS)
         return False
 
     return True
@@ -713,8 +714,9 @@ class TriageRelevantChanges(object):
     for build_config in set(self.builders_array) - self.completed_builds:
       if not self.PassedAnyOfStages(self.slave_stages_dict[build_config],
                                     {self.STAGE_UPLOAD_PREBUILTS}):
-        logging.info('Build %s completed but did\'t pass the upload prebuilts '
-                     'stage, should not wait.', build_config)
+        logging.info("Uncompleted build %s haven't passed stage %s. "
+                     "The master can't publish uprevs now.",
+                     build_config, self.STAGE_UPLOAD_PREBUILTS)
         return False
 
     return True
