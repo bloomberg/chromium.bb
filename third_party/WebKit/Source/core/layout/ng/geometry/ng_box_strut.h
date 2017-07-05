@@ -26,6 +26,13 @@ struct CORE_EXPORT NGBoxStrut {
         block_start(block_start),
         block_end(block_end) {}
 
+  LayoutUnit LineLeft(TextDirection direction) const {
+    return IsLtr(direction) ? inline_start : inline_end;
+  }
+  LayoutUnit LineRight(TextDirection direction) const {
+    return IsLtr(direction) ? inline_end : inline_start;
+  }
+
   LayoutUnit InlineSum() const { return inline_start + inline_end; }
   LayoutUnit BlockSum() const { return block_start + block_end; }
 

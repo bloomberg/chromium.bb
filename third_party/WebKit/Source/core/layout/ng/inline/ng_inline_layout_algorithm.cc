@@ -282,6 +282,11 @@ NGInlineBoxState* NGInlineLayoutAlgorithm::PlaceAtomicInline(
     NGTextFragmentBuilder* text_builder) {
   DCHECK(item_result->layout_result);
 
+  // The input |position| is the line-left edge of the margin box.
+  // Adjust it to the border box by adding the line-left margin.
+  const ComputedStyle& style = *item.Style();
+  position += item_result->margins.LineLeft(style.Direction());
+
   NGInlineBoxState* box =
       box_states_.OnOpenTag(item, *item_result, line_box, position);
 
@@ -312,7 +317,7 @@ NGInlineBoxState* NGInlineLayoutAlgorithm::PlaceAtomicInline(
   // TODO(kojii): Try to eliminate the wrapping text fragment and use the
   // |fragment| directly. Currently |CopyFragmentDataToLayoutBlockFlow|
   // requires a text fragment.
-  text_builder->SetDirection(item.Style()->Direction());
+  text_builder->SetDirection(style.Direction());
   text_builder->SetSize({fragment.InlineSize(), block_size});
   LayoutUnit line_top = item_result->margins.block_start - metrics.ascent;
   RefPtr<NGPhysicalTextFragment> text_fragment = text_builder->ToTextFragment(

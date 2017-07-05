@@ -402,7 +402,7 @@ crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/inline-formatti
 crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/vertical-align-sub-001.xht [ Failure ]
 crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/vertical-align-super-001.xht [ Failure ]
 
-# Atomic inline margins.
+# Inline: abspos inline static positions.
 crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/vertical-align-baseline-004a.xht [ Failure ]
 crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/vertical-align-baseline-005a.xht [ Failure ]
 
@@ -429,9 +429,6 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-in-in
 # Inline: vertical-align.
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/block-non-replaced-height-005.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-table-zorder-005.xht [ Failure ]
-
-# Inline: atomic inline margins.
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-block-non-replaced-height-002.xht [ Failure ]
 
 # Inline: atomic inline preferred width.
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-block-valign-001.xht [ Failure ]
