@@ -52,6 +52,10 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
 
   DECLARE_VIRTUAL_TRACE();
 
+  virtual KURL GetFirstPartyForCookies() const = 0;
+  virtual void CountUsage(WebFeature) const = 0;
+  virtual void CountDeprecation(WebFeature) const = 0;
+
  protected:
   // Used for security checks. It is valid that they return nullptr,
   // while returning nullptr may result in disable some security checks.
@@ -68,8 +72,6 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
                                        ResourceRequestBlockedReason) const = 0;
   virtual bool ShouldBypassMainWorldCSP() const = 0;
   virtual bool IsSVGImageChromeClient() const = 0;
-  virtual void CountUsage(WebFeature) const = 0;
-  virtual void CountDeprecation(WebFeature) const = 0;
   virtual bool ShouldBlockFetchByMixedContentCheck(
       const ResourceRequest&,
       const KURL&,
