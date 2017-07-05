@@ -3934,7 +3934,6 @@ crbug.com/591099 editing/selection/select_all/select_all_readonly_textarea.html 
 crbug.com/591099 editing/selection/select_all/select_all_textarea.html [ Crash ]
 crbug.com/591099 editing/selection/select_all/select_all_user_select_none.html [ Failure ]
 crbug.com/591099 editing/selection/selection-3748164-fix.html [ Failure ]
-crbug.com/591099 editing/selection/selection-actions.html [ Failure ]
 crbug.com/591099 editing/selection/selection-background.html [ Failure ]
 crbug.com/591099 editing/selection/selection-button-text.html [ Failure ]
 crbug.com/591099 editing/selection/selection-crash.html [ Crash ]
