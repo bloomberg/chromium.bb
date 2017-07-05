@@ -34,7 +34,6 @@ class BreakingNewsSuggestionsProvider final
       std::unique_ptr<RemoteSuggestionsDatabase> database);
   ~BreakingNewsSuggestionsProvider() override;
 
- private:
   // ContentSuggestionsProvider implementation.
   CategoryStatus GetCategoryStatus(Category category) override;
   CategoryInfo GetCategoryInfo(Category category) override;
@@ -54,6 +53,7 @@ class BreakingNewsSuggestionsProvider final
       const DismissedSuggestionsCallback& callback) override;
   void ClearDismissedSuggestionsForDebugging(Category category) override;
 
+ private:
   // Callback called from the breaking news listener when new content has been
   // pushed from the server.
   void OnNewContentSuggestion(std::unique_ptr<base::Value> content);
