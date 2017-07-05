@@ -495,6 +495,7 @@
 
           Jika kebijakan ini dibiarkan tidak disetel, setelan tersebut akan diaktifkan.</translation>
 <translation id="2824715612115726353">Aktifkan mode Penyamaran</translation>
+<translation id="2838830882081735096">Jangan izinkan migrasi data dan ARC</translation>
 <translation id="2844404652289407061">Mengaktifkan ketersediaan Sentuh untuk Menelusuri di tampilan konten <ph name="PRODUCT_NAME" />.
 
       Jika Anda mengaktifkan setelan ini, Sentuh untuk Menelusuri akan tersedia untuk pengguna dan mereka dapat memilih untuk mengaktifkan atau menonaktifkannya.
@@ -667,13 +668,6 @@
           Kebijakan ini hanya dipatuhi jika kebijakan 'DefaultSearchProviderEnabled' diaktifkan.</translation>
 <translation id="350797926066071931">Aktifkan Terjemahan</translation>
 <translation id="3528000905991875314">Mengaktifkan laman kesalahan alternatif</translation>
-<translation id="3538538104630456270">Setelan terkait telah digunakan sebelum proses autentikasi ulang lihat sandi diperkenalkan. Oleh karena itu, setelan dan kebijakan ini tidak berpengaruh pada perilaku Chrome. Perilaku Chrome saat ini sama seperti ketika kebijakan ini disetel untuk berhenti menampilkan teks sandi di laman setelan pengelola sandi. Artinya, laman setelan tersebut hanya berisi placeholder, dan Chrome hanya akan menampilkan sandi saat pengguna mengeklik "Tampilkan" (dan mengautentikasi ulang, jika berlaku). Deskripsi awal untuk kebijakan ini tercantum di bawah.
-
-          Mengontrol apakah pengguna dapat menampilkan sandi dalam teks yang jelas di pengelola sandi atau tidak.
-
-          Jika Anda menonaktifkan setelan ini, pengelola sandi tidak mengizinkan sandi untuk ditampilkan dalam teks yang jelas di jendela pengelola sandi.
-
-          Jika Anda mengaktifkan atau tidak menyetel kebijakan ini, pengguna dapat melihat sandi dalam teks yang jelas di pengelola sandi.</translation>
 <translation id="3547954654003013442">Setelan proxy</translation>
 <translation id="3591584750136265240">Mengonfigurasi perilaku autentikasi proses masuk</translation>
 <translation id="3627678165642179114">Mengaktifkan atau menonaktifkan layanan web memeriksa ejaan</translation>
@@ -864,23 +858,6 @@
 <translation id="4239720644496144453">Cache tidak digunakan untuk aplikasi Android. Jika beberapa pengguna memasang aplikasi Android yang sama, aplikasi akan didownload lagi untuk setiap pengguna.</translation>
 <translation id="4250680216510889253">Tidak</translation>
 <translation id="4261820385751181068">Lokal layar login perangkat</translation>
-<translation id="4275782538576261754">Mengonfigurasi jenis download yang sepenuhnya akan diblokir oleh <ph name="PRODUCT_NAME" />, tanpa perlu mengizinkan pengguna mengganti keputusan keamanan.
-
-      Jika Anda menyetel kebijakan ini, <ph name="PRODUCT_NAME" /> akan mencegah jenis download tertentu, dan tidak akan mengizinkan pengguna mengabaikan peringatan keamanan.
-
-      Jika opsi 'Blokir download yang berbahaya' dipilih, semua download akan diizinkan, kecuali yang menyertakan peringatan SafeBrowsing.
-
-      Jika opsi 'Blokir download yang berpotensi berbahaya' dipilih, semua download akan diizinkan, kecuali yang menyertakan peringatan SafeBrowsing terkait download yang berpotensi berbahaya.
-
-      Jika opsi 'Blokir semua download' dipilih, semua download akan diblokir.
-
-      Jika kebijakan ini tidak disetel, (atau opsi 'Tidak ada batasan khusus' dipilih), download akan melewati batasan kebijakan seperti biasanya berdasarkan hasil analisis SafeBrowsing.
-
-      Perhatikan bahwa batasan ini akan diterapkan untuk download yang dipicu dari konten halaman web, serta opsi menu konteks 'download link...'.
-
-      Batasan ini tidak akan diterapkan untuk penyimpanan/proses download dari halaman yang sedang ditampilkan, atau tidak akan diterapkan untuk penyimpanan sebagai PDF dari opsi pencetakan.
-
-      Lihat https://developers.google.com/safe-browsing untuk mendapatkan informasi selengkapnya terkait SafeBrowsing.</translation>
 <translation id="427632463972968153">Menentukan parameter yang digunakan saat melakukan penelusuran gambar dengan POST. Berisi pasangan nama/nilai yang dipisahkan koma. Jika nilai adalah parameter template, seperti {imageGambar kecil} contoh di atas, akan diganti dengan data thumbnail gambar nyata.
 
           Kebijakan ini bersifat opsional. Jika tidak disetel, permintaan penelusuran akan dikirim menggunakan metode GET.
@@ -906,6 +883,7 @@
 <translation id="436581050240847513">Melaporkan antarmuka jaringan perangkat</translation>
 <translation id="4372704773119750918">Jangan izinkan pengguna perusahaan untuk menjadi bagian dari multiprofil (primer atau sekunder)</translation>
 <translation id="4377599627073874279">Izinkan semua situs menampilkan semua gambar</translation>
+<translation id="437791893267799639">Kebijakan tidak disetel, jangan izinkan migrasi data dan ARC</translation>
 <translation id="4389091865841123886">Mengonfigurasi pengesahan jarak jauh dengan mekanisme TPM.</translation>
 <translation id="4418726081189202489">Menyetel kebijakan ini ke false akan menghentikan <ph name="PRODUCT_NAME" /> yang terkadang mengirim kueri ke server Google, untuk mengambil stempel waktu yang akurat. Kueri ini akan diaktifkan jika kebijakan disetel ke True atau tidak disetel.</translation>
 <translation id="4423597592074154136">Tentukan setelan proxy secara manual</translation>
@@ -1189,6 +1167,7 @@
 <translation id="5586942249556966598">Tidak melakukan apa-apa</translation>
 <translation id="5630352020869108293">Mengembalikan sesi terakhir</translation>
 <translation id="5645779841392247734">Izinkan cookie di situs ini</translation>
+<translation id="5693469654327063861">Izinkan migrasi data</translation>
 <translation id="5694594914843889579">Jika kebijakan ini disetel ke true, penyimpanan eksternal tidak akan tersedia di browser file.
 
       Kebijakan ini memengaruhi semua jenis media penyimpanan. Misalnya: flash drive USB, hard drive eksternal, SD dan kartu memori lainnya, penyimpanan optik, dll. Penyimpanan internal tidak terpengaruh, sehingga file yang disimpan di folder Download tetap dapat diakses. Google Drive juga tidak terpengaruh oleh kebijakan ini.
@@ -1289,13 +1268,13 @@
 
       Jika Anda mengaktifkan setelan ini, Safe Browsing akan selalu aktif.
 
-      Jika Anda menonaktifkan setelan ini, Safe Browsing tidak akan pernah aktif.
+      Jika Anda menonaktifkan setelan ini, Safe Browsing akan selalu tidak aktif.
 
       Jika Anda mengaktifkan atau menonaktifkan setelan ini, pengguna tidak dapat mengubah atau mengganti setelan "Aktifkan perlindungan terhadap phishing dan malware" di <ph name="PRODUCT_NAME" />.
 
       Jika kebijakan ini dibiarkan tidak disetel, kebijakan akan diizinkan tetapi pengguna dapat mengubahnya.
 
-      Lihat https://developers.google.com/safe-browsing untuk mendapatkan informasi selengkapnya terkait SafeBrowsing.</translation>
+      Lihat https://developers.google.com/safe-browsing untuk mendapatkan informasi selengkapnya mengenai SafeBrowsing.</translation>
 <translation id="6017568866726630990">Tampilkan dialog cetak sistem, bukan pratinjau cetak.
 
       Jika setelan ini diaktifkan, <ph name="PRODUCT_NAME" /> akan membuka dialog cetak sistem, bukan pratinjau cetak yang ada di dalamnya saat pengguna meminta laman agar dicetak.
@@ -1413,6 +1392,7 @@
           Nilai kebijakan ini harus ditentukan dalam milidetik. Nilai dijepit menjadi lebih sedikit dari penundaan waktu menganggur.</translation>
 <translation id="6536600139108165863">Booting ulang otomatis saat mematikan perangkat</translation>
 <translation id="6539246272469751178">Kebijakan ini tidak memengaruhi aplikasi Android. Aplikasi Android selalu menggunakan direktori download default dan tidak dapat mengakses file apa pun yang didownload oleh <ph name="PRODUCT_OS_NAME" /> ke direktori download non-default.</translation>
+<translation id="654303922206238013">Strategi migrasi untuk ecryptfs</translation>
 <translation id="6544897973797372144">Jika kebijakan ini disetel ke True dan kebijakan ChromeOsReleaseChannel tidak ditentukan, maka pengguna domain yang mendaftar akan diizinkan mengubah saluran rilis perangkat. Jika kebijakan ini disetel ke false, perangkat akan dikunci pada saluran apa pun yang disetel terakhir kali.
 
       Saluran yang dipilih pengguna akan ditimpa oleh kebijakan ChromeOsReleaseChannel, namun jika saluran kebijakan lebih stabil dari saluran kebijakan yang telah terpasang pada perangkat, maka saluran ini hanya akan beralih setelah versi saluran yang lebih stabil mencapai jumlah versi yang lebih tinggi dari saluran kebijakan yang telah terpasang pada perangkat.</translation>
@@ -1587,6 +1567,13 @@
 
           Kebijakan ini hanya diterapkan jika kebijakan 'DefaultSearchProviderEnabled' diaktifkan.</translation>
 <translation id="7302043767260300182">Penundaan kunci layar saat menggunakan daya AC</translation>
+<translation id="7309839952828354215">Menentukan perilaku perangkat yang memiliki ecryptfs dan memerlukan transisi ke enkripsi ext4.
+
+      Jika Anda menyetel kebijakan ke 'DisallowArc', aplikasi Android akan dinonaktifkan untuk semua pengguna di perangkat (termasuk yang telah memiliki enkripsi ext4) dan tidak akan ada migrasi dari ecryptfs ke enkripsi ext4 yang ditawarkan kepada semua pengguna.
+
+      Jika Anda menyetel kebijakan ini ke 'AllowMigration', pengguna dengan direktori beranda ecryptfs akan menawarkan migrasi ke enkripsi ext4 seperlunya (saat ini ketika Android N tersedia di perangkat).
+
+      Jika kebijakan tidak disetel, perangkat akan berperilaku seolah-olah kebijakan 'DisallowArc' yang dipilih.</translation>
 <translation id="7311458740754205918">Jika kebijakan ini disetel ke true atau tidak disetel, laman Tab Baru dapat menampilkan saran konten berdasarkan riwayat penjelajahan, minat, dan lokasi pengguna.
 
       Jika kebijakan disetel ke false, saran konten yang dibuat secara otomatis tidak akan ditampilkan di laman Tab Baru.</translation>
@@ -1951,8 +1938,6 @@
 
       Jika setelan ini dinonaktifkan, riwayat penjelajahan dan download tidak dapat dihapus.</translation>
 <translation id="8764119899999036911">Menentukan apakah Kerberos SPN yang dihasilkan didasarkan pada nama DNS kanonik atau nama asli yang dimasukkan. Jika Anda mengaktifkan setelan ini, pencarian CNAME akan dilewati dan nama server akan digunakan seperti saat dimasukkan. Jika Anda menonaktifkan setelan ini atau membiarkannya tidak disetel, nama kanonik server akan ditentukan melalui pencarian CNAME.</translation>
-<translation id="8774131509736383471">Jika kebijakan ini disetel ke True, <ph name="PRODUCT_NAME" /> akan memaksimalkan jendela yang ditampilkan pada percobaan pertama tanpa syarat.
-      Jika kebijakan ini disetel ke False atau tidak dikonfigurasi, keputusan untuk memaksimalkan jendela pertama akan ditampilkan menurut ukuran layar.</translation>
 <translation id="87812015706645271">Mewajibkan nama pengguna lokal cocok dengan  pemilik host akses jarak jauh</translation>
 <translation id="8782750230688364867">Menentukan persentase yang digunakan untuk menskalakan penundaan layar redup saat perangkat dalam mode presentasi.
 

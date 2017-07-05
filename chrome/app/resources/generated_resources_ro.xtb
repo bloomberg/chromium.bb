@@ -499,7 +499,6 @@
 <translation id="1709106626015023981"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (nativă)</translation>
 <translation id="1711973684025117106">Arhivarea nu a reușit, eroare neașteptată: $1</translation>
 <translation id="1712349894969001173">Obține parola pe iPhone</translation>
-<translation id="1719028357511747483">Caută pe <ph name="DEVICE_TYPE" />, în aplicații, pe web...</translation>
 <translation id="1719312230114180055">Notă: este posibil ca amprenta să fie mai puțin sigură decât o parolă sau un cod PIN puternic.</translation>
 <translation id="1720318856472900922">Autentificarea serverului TLS WWW</translation>
 <translation id="1720372306711178108">Desktop extins</translation>
@@ -1525,7 +1524,7 @@ Pentru instrucțiuni suplimentare, verifică e-mailurile la adresa <ph name="ACC
 <translation id="3222066309010235055">Program de redare în avans: <ph name="PRERENDER_CONTENTS_NAME" /></translation>
 <translation id="3225084153129302039">Avatar violet prestabilit</translation>
 <translation id="3225319735946384299">Semnarea codului</translation>
-<translation id="3227137524299004712">Microfonul</translation>
+<translation id="3227137524299004712">Microfon</translation>
 <translation id="32279126412636473">Reîncărcați (⌘R)</translation>
 <translation id="3228679360002431295">Se conectează și se verifică<ph name="ANIMATED_ELLIPSIS" /></translation>
 <translation id="3232318083971127729">Valoare:</translation>

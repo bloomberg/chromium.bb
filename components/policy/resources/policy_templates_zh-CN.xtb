@@ -476,6 +476,7 @@
 
           如果此政策未设置，系统将启用此政策。</translation>
 <translation id="2824715612115726353">启用隐身模式</translation>
+<translation id="2838830882081735096">禁止数据迁移和 ARC</translation>
 <translation id="2844404652289407061">在 <ph name="PRODUCT_NAME" /> 的内容视图中启用“触摸搜索”功能。
 
       如果您启用了此设置，用户将能够使用“触摸搜索”功能，并可以启用或停用该功能。
@@ -645,13 +646,6 @@
           此政策只在启用了“DefaultSearchProviderEnabled”政策的前提下才会生效。</translation>
 <translation id="350797926066071931">启用翻译</translation>
 <translation id="3528000905991875314">启用备用的错误页面</translation>
-<translation id="3538538104630456270">在我们推出“查看密码时需重新验证”这一规定之前，我们是使用相关的设置来控制用户能否查看密码。自这一规定推出后，相关设置以及此政策便不再对 Chrome 的行为有任何影响。Chrome 的当前行为等同于此政策设为在密码管理器设置页面中禁止以明文形式显示密码。这意味着，设置页面中包含的只是一个占位符，仅当用户点击“显示”（并进行重新验证，如果适用的话）后，Chrome 才会显示相应密码。此政策的原始描述如下所示：
-
-          控制用户是否可以在密码管理器中以明文形式显示密码。
-
-          如果您停用了此设置，密码管理器将不允许在密码管理器窗口中以明文形式显示存储的密码。
-
-          如果您启用了此政策或未设置此政策，用户将可以在密码管理器中查看以明文形式显示的密码。</translation>
 <translation id="3547954654003013442">代理设置</translation>
 <translation id="3591584750136265240">配置登录身份验证行为</translation>
 <translation id="3627678165642179114">启用或停用拼写检查网络服务</translation>
@@ -836,23 +830,6 @@
 <translation id="4239720644496144453">缓存不适用于 Android 应用。如果多个用户都想安装同一款 Android 应用，系统便会分别为每个用户重新下载相应的 Android 应用。</translation>
 <translation id="4250680216510889253">否</translation>
 <translation id="4261820385751181068">设备登录屏幕语言区域</translation>
-<translation id="4275782538576261754">配置 <ph name="PRODUCT_NAME" /> 将全面拦截的下载内容类型，而不允许用户替换安全政策。
-
-      如果您设置此政策，<ph name="PRODUCT_NAME" /> 将拦截特定类型的下载内容，并且不允许用户忽略安全警告。
-
-      选择“拦截有危险的下载内容”选项后，系统将允许所有下载内容，但触发了安全浏览警告的下载内容除外。
-
-      选择“拦截可能有危险的下载内容”选项后，系统将允许所有下载内容，但触发了安全浏览警告（指示可能有危险的下载内容）的下载内容除外。
-
-      选择“拦截所有下载内容”选项后，系统将拦截所有下载内容。
-
-      如果未设置此政策（或者选择了“无特殊限制”选项），系统将根据安全浏览分析结果检查下载内容是否符合常规安全限制。
-
-      请注意，这些限制适用于从网页内容以及“下载链接...”上下文菜单选项触发的下载内容。
-
-      这些限制不适用于如下操作：保存/下载当前显示的页面；通过打印选项另存为 PDF 文件。
-
-      要详细了解安全浏览功能，请访问 https://developers.google.com/safe-browsing。</translation>
 <translation id="427632463972968153">指定通过 POST 执行图片搜索时使用的参数。该参数由以英文逗号分隔的名称/值对组成。如果值为模板参数（例如上例中的 {imageThumbnail}），那么系统会将其替换成真正的缩略图数据。
 
           此为可选政策。如果未设置此政策，系统将使用 GET 方法发送图片搜索请求。
@@ -878,6 +855,7 @@
 <translation id="436581050240847513">报告设备网络接口</translation>
 <translation id="4372704773119750918">不允许企业用户成为多用户配置的用户（一级或二级）</translation>
 <translation id="4377599627073874279">允许所有网站显示所有图片</translation>
+<translation id="437791893267799639">政策未设置，禁止数据迁移和 ARC</translation>
 <translation id="4389091865841123886">通过 TPM 机制配置远程认证。</translation>
 <translation id="4418726081189202489">如果将此政策设为 False，<ph name="PRODUCT_NAME" /> 将无法不定期向 Google 服务器发出查询来检索准确的时间戳。如果此政策设为 True 或未设置，这样的查询将能够发送到 Google 服务器。</translation>
 <translation id="4423597592074154136">手动指定代理设置</translation>
@@ -1157,6 +1135,7 @@
 <translation id="5586942249556966598">不执行任何操作</translation>
 <translation id="5630352020869108293">恢复上次的会话</translation>
 <translation id="5645779841392247734">在这些网站上允许 Cookie</translation>
+<translation id="5693469654327063861">允许数据迁移</translation>
 <translation id="5694594914843889579">如果此政策设为 True，用户便无法在文件浏览器中使用外部存储设备。
 
       此政策会影响所有类型的存储媒介。例如：USB 闪存驱动器、外部硬盘、SD 卡和其他存储卡、光存储器等。内部存储不会受到影响，因此用户仍然可以访问存储在“下载”文件夹中的文件。Google 云端硬盘也不会受此政策影响。
@@ -1380,6 +1359,7 @@
           指定的政策值应以毫秒为单位，并且必须少于闲置延迟时间。</translation>
 <translation id="6536600139108165863">设备关机后自动重新启动</translation>
 <translation id="6539246272469751178">此政策对 Android 应用没有任何影响。Android 应用始终都会使用默认下载目录，并且无法访问由 <ph name="PRODUCT_OS_NAME" />下载到非默认下载目录中的任何文件。</translation>
+<translation id="654303922206238013">ecryptfs 迁移策略</translation>
 <translation id="6544897973797372144">如果该策略设置为 True，且未指定 ChromeOsReleaseChannel 策略，那么注册域的用户将可以更改设备的发布版。如果该策略设置为 False，那么设备就会锁定最后设置的任何版本。
 
      ChromeOsReleaseChannel 策略将会覆盖用户选择的版本，但是，如果该策略版本比设备上已安装的版本更稳定，那么仅当较稳定版本的版本值高于设备上已安装版本时，系统才会切换版本。</translation>
@@ -1552,6 +1532,13 @@
 
           要实施此策略，必须启用“DefaultSearchProviderEnabled”策略。</translation>
 <translation id="7302043767260300182">使用交流电源供电时的屏幕锁定延迟时间</translation>
+<translation id="7309839952828354215">用于指定内置了 ecryptfs 且需要转换为采用 ext4 加密功能的设备的行为方式。
+
+      如果您将此政策设为“DisallowArc”，相应设备将会禁止所有用户（包括已采用 ext4 加密功能的用户）在其上使用 Android 应用，且不会主动为任何用户提供从 ecryptfs 到 ext4 加密功能的迁移服务。
+
+      如果您将此政策设为“AllowMigration”，相应设备便会在必要时（目前是指可在该设备上使用 Android N 时）主动向使用 ecryptfs 主目录的用户提供将这些主目录改为采用 ext4 加密功能的服务。
+
+      如果此政策未设置，相应设备则会具有与将此政策设为“DisallowArc”时相同的行为方式。</translation>
 <translation id="7311458740754205918">如果此政策设为 true 或未设置，“打开新的标签页”页面可能会根据用户的浏览记录、兴趣或位置信息显示内容建议。
 
       如果此政策设为 false，“打开新的标签页”页面上不会显示自动生成的内容建议。</translation>
@@ -1907,8 +1894,6 @@
 
       如果停用了此设置，则不能删除浏览和下载记录。</translation>
 <translation id="8764119899999036911">指定 Kerberos SPN 是基于规范 DNS 名称还是基于输入的原始名称。如果您启用了此设置，系统将跳过 CNAME 查找步骤，并使用输入的服务器名称。如果您停用或未配置此设置，系统将通过 CNAME 查找来确定服务器的规范名称。</translation>
-<translation id="8774131509736383471">如果此政策设为 true，<ph name="PRODUCT_NAME" /> 将在首次运行时一律将显示的第一个窗口最大化。
-      如果此政策设为 false 或未配置，系统将根据屏幕尺寸决定是否将显示的第一个窗口最大化。</translation>
 <translation id="87812015706645271">本地用户的名称和远程访问主机所有者的名称必须一致</translation>
 <translation id="8782750230688364867">指定设备处于演示模式时屏幕变暗延迟时间的调整幅度（百分比）。
 

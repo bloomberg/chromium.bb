@@ -69,7 +69,6 @@
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1623104350909869708">Заборонити цій сторінці створювати додаткові діалогові вікна</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Вилучити 1 вибраний елемент}one{Вилучити # вибраний елемент}few{Вилучити # вибрані елементи}many{Вилучити # вибраних елементів}other{Вилучити # вибраного елемента}}</translation>
-<translation id="1629390138158333592">Пошук в Інтернеті</translation>
 <translation id="1641113438599504367">Безпечний перегляд</translation>
 <translation id="164269334534774161">Ви переглядаєте офлайн-копію цієї сторінки, створену <ph name="CREATION_TIME" /></translation>
 <translation id="1643702317193804718">Сторінка перекладається такою мовою: <ph name="SOURCE_LANGUAGE" />…</translation>
@@ -330,7 +329,6 @@
 <translation id="4307992518367153382">Основні</translation>
 <translation id="4351244548802238354">Закрити діалогове вікно</translation>
 <translation id="4378154925671717803">Телефон</translation>
-<translation id="4381206798889118664">Пошук… рецепти</translation>
 <translation id="4384468725000734951">Пошук за допомогою Sogou</translation>
 <translation id="4412992751769744546">Дозволити сторонні файли cookie</translation>
 <translation id="4432792777822557199">Надалі сторінки цією мовою (<ph name="SOURCE_LANGUAGE" />) перекладатимуться такою мовою: <ph name="TARGET_LANGUAGE" /></translation>
@@ -376,7 +374,6 @@
 <translation id="4837753911714442426">Відкрити налаштування друку сторінки</translation>
 <translation id="4850886885716139402">Перегляд</translation>
 <translation id="4860895144060829044">Зателефонувати</translation>
-<translation id="4869862470313079745">Пошук… новини</translation>
 <translation id="4881695831933465202">Відкрити</translation>
 <translation id="4885273946141277891">Забагато копій Chrome.</translation>
 <translation id="4910889077668685004">Додатки для платежів</translation>
@@ -406,7 +403,6 @@
 <translation id="5161254044473106830">Введіть назву</translation>
 <translation id="5164482624172255778">Хочете, щоб Google Chrome наступного разу пропонував перекласти сторінки цього сайту, написані такою мовою: <ph name="LANGUAGE" />?</translation>
 <translation id="5168917394043976756">Відкрити панель навігації</translation>
-<translation id="5171045022955879922">Знайдіть або введіть URL-адресу</translation>
 <translation id="5184329579814168207">Відкрити в Chrome</translation>
 <translation id="5199929503336119739">Робочий профіль</translation>
 <translation id="5209320130288484488">Пристрої не знайдено.</translation>
@@ -510,7 +506,6 @@
 <translation id="6042308850641462728">Більше</translation>
 <translation id="604996488070107836">Не вдалося завантажити файл <ph name="FILE_NAME" />. Сталася невідома помилка.</translation>
 <translation id="605721222689873409">РР</translation>
-<translation id="6066049505142453066">Пошук… прогноз погоди</translation>
 <translation id="6075798973483050474">Змінити домашню сторінку</translation>
 <translation id="60923314841986378">Залишилося <ph name="HOURS" /> год</translation>
 <translation id="60924377787140961">Згодом тут з’являться інші статті. Гарного дня.</translation>
@@ -604,7 +599,6 @@
 <translation id="688738109438487280">Додати наявні дані в обліковий запис <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d відкрита вкладка}one{%1$d відкрита вкладка}few{%1$d відкриті вкладки}many{%1$d відкритих вкладок}other{%1$d відкритої вкладки}}</translation>
 <translation id="6896758677409633944">Копіювати</translation>
-<translation id="6932129181739884535">Знайдіть або введіть назву веб-сайту</translation>
 <translation id="6945221475159498467">Вибрати</translation>
 <translation id="6963766334940102469">Видалити закладки</translation>
 <translation id="6965382102122355670">ТАК</translation>
@@ -825,7 +819,6 @@
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Показати оригінал</translation>
 <translation id="9139068048179869749">Запитувати, перш ніж дозволити сайтам надсилати сповіщення (рекомендується)</translation>
-<translation id="9187067407629017315">Введіть пошуковий запит або адресу сайту</translation>
 <translation id="9187199695613236444">Режим для мобільних телефонів</translation>
 <translation id="9188680907066685419">Вийти з керованого облікового запису</translation>
 <translation id="9204836675896933765">Залишився 1 файл</translation>

@@ -290,7 +290,7 @@
 <translation id="3270847123878663523">&amp;Deshacer Reorganizar</translation>
 <translation id="3282497668470633863">Agregar el nombre en la tarjeta</translation>
 <translation id="3286538390144397061">Reiniciar ahora</translation>
-<translation id="3287510313208355388">Descargar cuando esté conectado</translation>
+<translation id="3287510313208355388">Descargar cuando haya conexión</translation>
 <translation id="3303855915957856445">No se encontraron resultados en la búsqueda</translation>
 <translation id="3305707030755673451">Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph name="TIME" />. Debes ingresarla para iniciar la sincronización.</translation>
 <translation id="3320021301628644560">Agregar dirección de facturación</translation>
@@ -537,7 +537,7 @@
 <translation id="5455790498993699893"><ph name="ACTIVE_MATCH" /> de <ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="5457113250005438886">Sin validez</translation>
 <translation id="5470861586879999274">&amp;Rehacer Editar</translation>
-<translation id="5481076368049295676">Es posible que este contenido intente instalar en tu dispositivo software peligroso que robe o borre tu información. <ph name="BEGIN_LINK" />Mostrar de todos modos<ph name="END_LINK" /></translation>
+<translation id="5481076368049295676">Es posible que este contenido intente instalar software peligroso que robe o borre tu información en tu dispositivo . <ph name="BEGIN_LINK" />Mostrar de todos modos<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Agregar una dirección válida</translation>
 <translation id="5492298309214877701">En la intranet de la compañía, organización o escuela, este sitio tiene la misma URL que un sitio web externo
     <ph name="LINE_BREAK" />

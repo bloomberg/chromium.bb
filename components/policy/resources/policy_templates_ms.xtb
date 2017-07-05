@@ -519,6 +519,7 @@
 
           Jika dasar ini dibiarkan tanpa ditetapkan, tetapan ini akan didayakan.</translation>
 <translation id="2824715612115726353">Dayakan mod Inkognito</translation>
+<translation id="2838830882081735096">Tidak membenarkan penghijrahan data dan ARC</translation>
 <translation id="2844404652289407061">Mendayakan ketersediaan Sentuh untuk Cari dalam paparan kandungan <ph name="PRODUCT_NAME" />.
 
       Jika anda mendayakan tetapan ini, Sentuh untuk Cari akan tersedia kepada pengguna dan mereka boleh memilih untuk menghidupkan atau mematikan ciri tersebut.
@@ -701,13 +702,6 @@
           Dasar ini hanya dipatuhi jika dasar 'DefaultSearchProviderEnabled' didayakan.</translation>
 <translation id="350797926066071931">Dayakan Terjemahan</translation>
 <translation id="3528000905991875314">Dayakan halaman ralat ganti</translation>
-<translation id="3538538104630456270">Tetapan yang berkaitan telah digunakan sebelum pengesahan semula bagi melihat kata laluan diperkenalkan. Sejak itu, tetapan dan dasar ini tidak memberi kesan terhadap gelagat Chrome. Kini, gelagat semasa Chrome adalah sama seperti jika dasar ditetapkan untuk melumpuhkan paparan kata laluan dalam teks yang jelas dalam halaman tetapan pengurus kata laluan. Ini bermakna halaman tetapan hanya mengandungi pemegang tempat dan Chrome menunjukkan kata laluan hanya apabila pengguna mengklik "Tunjukkan" (dan melakukan pengesahan semula jika berkenaan). Perihalan asal adalah seperti d bawah.
-
-          Mengawal sama ada pengguna boleh menunjukkan kata laluan dalam teks jelas dalam pengurus kata laluan.
-
-          Jika anda melumpuhkan tetapan ini, pengurus kata laluan tidak membenarkan anda menunjukkan kata laluan yang disimpan dalam teks yang jelas dalam tetingkap pengurus kata laluan.
-
-          Jika anda mendayakan atau tidak menetapkan dasar ini, pengguna boleh melihat kata laluan mereka dalam teks yang jelas dalam pengurus kata laluan.</translation>
 <translation id="3547954654003013442">Tetapan proksi</translation>
 <translation id="3591584750136265240">Konfigurasikan gelagat pengesahan log masuk</translation>
 <translation id="3627678165642179114">Dayakan atau lumpuhkan perkhidmatan web penyemakan ejaan</translation>
@@ -718,7 +712,7 @@
 
       Jika tetapan ini dilumpuhkan atau tidak dikonfigurasi, maka pengguna boleh memilih untuk meneruskan ke tapak yang dibenderakan selepas amaran dipaparkan.
 
-      Lihat https://developers.google.com/safe-browsing untuk mendapatkan maklumat lanjut tentang Penyemakan Imbas Selamat</translation>
+      Lihat https://developers.google.com/safe-browsing untuk mendapatkan maklumat lanjut tentang Penyemakan Imbas Selamat.</translation>
 <translation id="3709266154059827597">Konfigurasi senarai hitam pemasangan sambungan</translation>
 <translation id="3711895659073496551">Gantung</translation>
 <translation id="3736879847913515635">Dayakan tambah orang dalam pengurus pengguna</translation>
@@ -906,23 +900,6 @@
 <translation id="4239720644496144453">Cache tidak digunakan untuk apl Android. Jika beberapa orang pengguna memasang apl Android yang sama, apl yang baharu akan dimuat turun untuk setiap pengguna.</translation>
 <translation id="4250680216510889253">Tidak</translation>
 <translation id="4261820385751181068">Tempat peristiwa skrin log masuk peranti</translation>
-<translation id="4275782538576261754">Mengkonfigurasi jenis muat turun yang akan disekat sepenuhnya oleh <ph name="PRODUCT_NAME" /> tanpa membenarkan pengguna mengatasi keputusan keselamatan.
-
-      Jika anda menetapkan dasar ini, <ph name="PRODUCT_NAME" /> akan menghalang jenis muat turun tertentu dan tidak akan membenarkan pengguna memintas amaran keselamatan.
-
-      Apabila pilihan 'Sekat muat turun berbahaya' dipilih, semua muat turun dibenarkan kecuali muat turun yang mengandungi amaran Penyemakan Imbas Selamat.
-
-      Apabila pilihan 'Sekat muat turun yang mungkin berbahaya' dipilih, semua muat turun dibenarkan kecuali  muat turun yang mengandungi amaran Penyemakan Imbas Selamat terhadap muat turun yang mungkin berbahaya.
-
-      Apabila pilihan 'Sekat semua muat turun' dipilih, semua muat turun disekat.
-
-      Apabila dasar ini tidak ditetapkan (atau pilihan 'Tiada sekatan khas' dipilih), muat turun akan melalui sekatan keselamatan biasa bardasarkan keputusan analisis Penyemakan Imbas Selamat.
-
-      Sila ambil perhatian bahawa sekatan ini hanya dikenakan terhadap muat turun yang dicetus daripada kandungan halaman web serta pilihan menu konteks 'muat turun pautan...'.
-
-      Sekatan ini tidak dikenakan terhadap penyimpanan / muat turun halaman yang sedang dipaparkan dan turut tidak dikenakan terhadap penyimpanan sebagai PDF daripada pilihan pencetakan.
-
-      Lihat https://developers.google.com/safe-browsing untuk mendapatkan maklumat lanjut tentang Penyemakan Imbas Selamat.</translation>
 <translation id="427632463972968153">Menentukan parameter yang digunakan apabila melakukan carian imej dengan POST. Parameter ini mengandungi pasangan nama/nilai yang dipisahkan koma. Jika nilai merupakan parameter templat, seperti {imageThumbnail} dalam contoh di atas, nilai ini akan digantikan dengan data lakaran kecil imej yang sebenar.
 
           Dasar ini tidak wajib. Jika tidak ditetapkan, permintaan carian imej akan dihantar menggunakan kaedah GET.
@@ -948,6 +925,7 @@
 <translation id="436581050240847513">Laporkan antara muka rangkaian peranti</translation>
 <translation id="4372704773119750918">Jangan benarkan pengguna perusahaan menjadi sebahagian daripada berbilang profil (utama atau kedua)</translation>
 <translation id="4377599627073874279">Benarkan semua tapak untuk menunjukkan semua imej</translation>
+<translation id="437791893267799639">Dasar tidak ditetapkan, tidak membenarkan penghijrahan data dan ARC</translation>
 <translation id="4389091865841123886">Konfigurasikan pembuktian jauh dengan mekanisme TPM.</translation>
 <translation id="4418726081189202489">Apabila dasar ini ditetapkan kepada palsu, dsaar ini akan menghentikan <ph name="PRODUCT_NAME" /> daripada menghantar sekali sekala pertanyaan kepada pelayan Google untuk mendapatkan cap masa yang tepat. Pertanyaan ini akan didayakan jika dasar ini ditetapkan kepada Benar atau tidak ditetapkan.</translation>
 <translation id="4423597592074154136">Menentukan tetapan proksi secara manual</translation>
@@ -1263,6 +1241,7 @@
 <translation id="5586942249556966598">Jangan buat apa-apa</translation>
 <translation id="5630352020869108293">Pulihkan sesi terakhir</translation>
 <translation id="5645779841392247734">Benarkan kuki pada tapak ini</translation>
+<translation id="5693469654327063861">Benarkan penghijrahan data</translation>
 <translation id="5694594914843889579">Apabila dasar ini ditetapkan kepada benar, storan luaran tidak akan tersedia dalam penyemak imbas fail.
 
       Dasar ini mempengaruhi semua jenis media storan. Contohnya: pemacu kilat USB, pemacu keras luaran, kad SD dan kad memori lain, storan optik dsb. Storan dalaman tidak terjejas, oleh itu, fail yang disimpan dalam folder Muat Turun masih boleh diakses. Google Drive turut tidak terjejas oleh dasar ini.
@@ -1506,6 +1485,7 @@
           Nilai dasar ini harus dinyatakan dalam milisaat. Nilai diapit kepada kurang daripada kelewatan melahu.</translation>
 <translation id="6536600139108165863">But semula automatik semasa penutupan peranti</translation>
 <translation id="6539246272469751178">Dasar ini tidak berkesan terhadap apl Android. Apl Android sentiasa menggunakan direktori muat turun lalai dan tidak boleh mengakses mana-mana fail yang dimuat turun oleh <ph name="PRODUCT_OS_NAME" /> ke dalam direktori muat turun bukan lalai.</translation>
+<translation id="654303922206238013">Strategi penghijrahan untuk ecryptfs</translation>
 <translation id="6544897973797372144">Jika dasar ini ditetapkan kepada Benar dan dasar ChromeOsReleaseChannel tidak ditentukan, maka pengguna domain yang mendaftar akan dibenarkan untuk mengubah saluran pelepasan peranti tersebut. Jika dasar ini ditetapkan kepada palsu, peranti akan dikunci dalam apa jua saluran terakhir yang ditetapkan.
 
       Saluran pilihan pengguna akan diatasi oleh dasar ChromeOsReleaseChannel, tetapi jika saluran dasar lebih stabil daripada yang dipasang pada peranti, maka saluran hanya akan ditukar selepas versi saluran yang lebih stabil mencapai nombor versi yang lebih tinggi daripada versi yang dipasang pada peranti.</translation>
@@ -1695,6 +1675,13 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
           Dasar ini hanya dihormati jika dasar 'DefaultSearchProviderEnabled' didayakan.</translation>
 <translation id="7302043767260300182">Kelewatan kunci skrin apabila dijalankan dengan kuasa AC</translation>
+<translation id="7309839952828354215">Menentukan gelagat peranti yang dihantar dengan ecryptfs dan memerlukan peralihan kepada penyulitan ext4.
+
+      Jika anda menetapkan dasar ini kepada 'DisallowArc', apl Android akan dilumpuhkan untuk semua pengguna pada peranti tersebut (termasuk yang sudah mempunyai penyulitan ext4) dan penghijarahan daripada ecryptfs kepada penyulitan ext4 tidak akan ditawarkan kepada mana-mana pengguna.
+
+      Jika anda menetapkan dasar ini kepada 'AllowMigration', pengguna dengan direktori laman utama ecryptfs akan diberi tawaran untuk menghijrahkan direktori ini ke penyulitan ext4 mengikut keperluan (pada masa ini apabila Android N tersedia pada peranti tersebut).
+
+      Jika dasar ini dibiarkan tanpa ditetapkan, peranti akan berkelakuan seolah-olah 'DisallowArc' telah dipilih.</translation>
 <translation id="7311458740754205918">Jika dasar ini ditetapkan kepada benar atau tidak ditetapkan, halaman Tab Baharu boleh menunjukkan cadangan kandungan berdasarkan sejarah penyemakan imbas, minat atau lokasi pengguna.
 
       Jika dasar ini ditetapkan kepada palsu, cadangan kandungan yang dihasilkan secara automatik tidak ditunjukkan pada halaman Tab Baharu.</translation>
@@ -2091,8 +2078,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
           Jika anda mendayakan tetapan ini, carian CNAME akan dilangkau dan nama pelayan akan digunakan seperti mana ia dimasukkan.
 
           Jika anda melumpuhkan tetapan ini atau membiarkannya tanpa ditetapkan, nama berkanun pelayan akan ditentukan melalui carian CNAME.</translation>
-<translation id="8774131509736383471">Jika dasar ini ditetapkan kepada benar, <ph name="PRODUCT_NAME" /> akan memaksimumkan tetingkap pertama yang dipaparkan pada kendalian pertama tanpa syarat.
-     Jika dasar ini ditetapkan kepada palsu atau tidak dikonfigurasi, keputusan sama ada untuk memaksimumkan tetingkap pertama yang ditunjukkan akan berdasarkan saiz skrin.</translation>
 <translation id="87812015706645271">Memerlukan nama pengguna setempat dan pemilik hos akses jauh yang sepadan</translation>
 <translation id="8782750230688364867">Menyatakan peratusan skala kelewatan melahu apabila peranti berada dalam mod penyampaian.
 

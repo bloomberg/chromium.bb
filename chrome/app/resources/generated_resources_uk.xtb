@@ -499,7 +499,6 @@
 <translation id="1709106626015023981"><ph name="WIDTH" />x<ph name="HEIGHT" /> (оригінальна)</translation>
 <translation id="1711973684025117106">Неочікувана помилка архівування: $1</translation>
 <translation id="1712349894969001173">Отримайте цей пароль на своєму пристрої iPhone</translation>
-<translation id="1719028357511747483">Пошук на пристрої <ph name="DEVICE_TYPE" />, у додатках, Інтернеті…</translation>
 <translation id="1719312230114180055">Примітка. Відбиток пальця може бути менш надійним, ніж пароль чи PIN-код.</translation>
 <translation id="1720318856472900922">Автентифікація сервера TLS WWW</translation>
 <translation id="1720372306711178108">Розширений робочий стіл</translation>
@@ -1035,7 +1034,7 @@
 <translation id="2534460670861217804">Захищений проксі-сервер HTTP</translation>
 <translation id="253557089021624350">Кількість процесів, які використовуються розширеннями</translation>
 <translation id="2539110682392681234">Проксі-сервер примусово застосовується вашим адміністратором.</translation>
-<translation id="2540384386570049483">Дозволити оголошення на цьому сайті</translation>
+<translation id="2540384386570049483">Дозволити рекламу на цьому сайті</translation>
 <translation id="2541423446708352368">Показати всі завантаження</translation>
 <translation id="2542049655219295786">Таблиця Google</translation>
 <translation id="2544853746127077729">Сертифікат автентифікації відхилений мережею</translation>
@@ -2086,7 +2085,7 @@
 <translation id="4071770069230198275"><ph name="PROFILE_NAME" />: помилка входу</translation>
 <translation id="4074900173531346617">Сертифікат підписувача електронної пошти</translation>
 <translation id="407520071244661467">Масштаб</translation>
-<translation id="4077917118009885966">На цьому сайті заблоковано показ оголошень</translation>
+<translation id="4077917118009885966">На цьому сайті заблоковано показ реклами</translation>
 <translation id="4084682180776658562">Закладка</translation>
 <translation id="4084835346725913160">Закрити вкладку "<ph name="TAB_NAME" />"</translation>
 <translation id="4085298594534903246">На цій сторінці JavaScript заблоковано.</translation>
@@ -4785,7 +4784,7 @@
 <translation id="8261506727792406068">Видалити</translation>
 <translation id="8261580862248730866">Винятки для мікрофона</translation>
 <translation id="8261673729476082470">Імпортування <ph name="FILE_COUNT" /> фото на <ph name="BEGIN_LINK" />Google Диск<ph name="END_LINK" /></translation>
-<translation id="826246685091802258"><ph name="BAD_FLAG" /> не підтримується в цьому складанні.</translation>
+<translation id="826246685091802258"><ph name="BAD_FLAG" /> не підтримується в цій версії складання.</translation>
 <translation id="8263231521757761563">Активні обробники протоколів</translation>
 <translation id="8263744495942430914">Сторінка <ph name="FULLSCREEN_ORIGIN" /> вимкнула курсор миші.</translation>
 <translation id="8264718194193514834">Розширення "<ph name="EXTENSION_NAME" />" запустило повноекранний режим.</translation>
@@ -5187,7 +5186,7 @@
 <translation id="8916476537757519021">Додатковий анонімний фрейм: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8919034266226953085">Конвертер растру PWG</translation>
 <translation id="89217462949994770">Неправильний PIN-код введено забагато разів. Зв’яжіться з <ph name="CARRIER_ID" />, щоб отримати новий 8-значний ключ для розблокування PIN-коду.</translation>
-<translation id="8922013791253848639">Завжди дозволяти показ оголошень на цьому сайті</translation>
+<translation id="8922013791253848639">Завжди дозволяти показ реклами на цьому сайті</translation>
 <translation id="8925458182817574960">&amp;Налаштування</translation>
 <translation id="8926389886865778422">Не запитувати знову</translation>
 <translation id="8926518602592448999">Вимкнути розширення в режимі розробника</translation>

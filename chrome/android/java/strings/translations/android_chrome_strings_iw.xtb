@@ -69,7 +69,6 @@
 <translation id="1620510694547887537">מצלמה</translation>
 <translation id="1623104350909869708">מנע מהדף זה ליצור תיבות דו-שיח נוספות</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{הסר פריט אחד שנבחר}two{הסר # פריטים שנבחרו}many{הסר # פריטים שנבחרו}other{הסר # פריטים שנבחרו}}</translation>
-<translation id="1629390138158333592">חפש באינטרנט</translation>
 <translation id="1641113438599504367">גלישה בטוחה</translation>
 <translation id="164269334534774161">אתה מציג עותק לא מקוון של הדף הזה מ-<ph name="CREATION_TIME" /></translation>
 <translation id="1643702317193804718">מתרגם את הדף ל<ph name="SOURCE_LANGUAGE" />...</translation>
@@ -234,7 +233,7 @@
 <translation id="3386292677130313581">שאל לפני שתאפשר לאתרים לדעת מה המיקום שלך (מומלץ)</translation>
 <translation id="3387650086002190359">הורדת <ph name="FILE_NAME" /> נכשלה עקב שגיאות במערכת הקבצים.</translation>
 <translation id="3391904733075904777">כדי להציג ולהעתיק סיסמאות, עליך להגדיר נעילת מכשיר בהגדרות האבטחה של המכשיר.</translation>
-<translation id="339329030417445648">האתר הזה נוטה להציג מודעות מפריעות</translation>
+<translation id="339329030417445648">האתר הזה נוטה להציג מודעות שמפריעות</translation>
 <translation id="3398320232533725830">פתח את מנהל הסימניות</translation>
 <translation id="3414952576877147120">גודל:</translation>
 <translation id="3443221991560634068">טען מחדש את הדף הנוכחי</translation>
@@ -330,7 +329,6 @@
 <translation id="4307992518367153382">היסודות</translation>
 <translation id="4351244548802238354">סגור את תיבת הדו-שיח</translation>
 <translation id="4378154925671717803">טלפון</translation>
-<translation id="4381206798889118664">חפש... מתכונים</translation>
 <translation id="4384468725000734951">‏שימוש ב-Sogou לחיפוש</translation>
 <translation id="4412992751769744546">‏התר קובצי Cookie של צד שלישי</translation>
 <translation id="4432792777822557199">דפים ב<ph name="SOURCE_LANGUAGE" /> יתורגמו ל<ph name="TARGET_LANGUAGE" /> מעכשיו והלאה</translation>
@@ -376,7 +374,6 @@
 <translation id="4837753911714442426">פתח אפשרויות להדפסת דפים</translation>
 <translation id="4850886885716139402">הצג</translation>
 <translation id="4860895144060829044">התקשר</translation>
-<translation id="4869862470313079745">חפש... חדשות</translation>
 <translation id="4881695831933465202">פתח</translation>
 <translation id="4885273946141277891">‏מספר בלתי נתמך של מופעי Chrome.</translation>
 <translation id="4910889077668685004">אפליקציות תשלום</translation>
@@ -406,7 +403,6 @@
 <translation id="5161254044473106830">יש להזין כותרת</translation>
 <translation id="5164482624172255778">‏האם ברצונך ש-Google Chrome יציע בפעם הבאה לתרגם דפים בשפה <ph name="LANGUAGE" /> מאתר זה?</translation>
 <translation id="5168917394043976756">פתח את חלונית ההזזה לניווט</translation>
-<translation id="5171045022955879922">חפש או הקלד כתובת אתר</translation>
 <translation id="5184329579814168207">‏פתח ב-Chrome</translation>
 <translation id="5199929503336119739">פרופיל עבודה</translation>
 <translation id="5209320130288484488">לא נמצאו מכשירים</translation>
@@ -493,7 +489,7 @@
 <translation id="5858741533101922242">‏לא ניתן להפעיל ב-Chrome את מתאם Bluetooth</translation>
 <translation id="5860033963881614850">כבוי</translation>
 <translation id="5869522115854928033">סיסמאות שמורות</translation>
-<translation id="5878455346526065919">חסום מודעות מאתרים שנוטים להציג מודעות מפריעות</translation>
+<translation id="5878455346526065919">חסום מודעות מאתרים שנוטים להציג מודעות שמפריעות</translation>
 <translation id="5902828464777634901">‏כל הנתונים המקומיים המאוחסנים על ידי האתר הזה יימחקו, כולל קובצי Cookie.</translation>
 <translation id="5911030830365207728">Google Translate</translation>
 <translation id="5916664084637901428">פועל</translation>
@@ -510,7 +506,6 @@
 <translation id="6042308850641462728">עוד</translation>
 <translation id="604996488070107836">הורדת <ph name="FILE_NAME" /> נכשלה עקב שגיאה לא ידועה.</translation>
 <translation id="605721222689873409">YY</translation>
-<translation id="6066049505142453066">חפש... מזג אוויר</translation>
 <translation id="6075798973483050474">עריכת דף הבית</translation>
 <translation id="60923314841986378">נותרו <ph name="HOURS" /> שעות</translation>
 <translation id="60924377787140961">בקרוב יופיעו מאמרים נוספים. שיהיה לך המשך יום נפלא!</translation>
@@ -604,7 +599,6 @@
 <translation id="688738109438487280">הוסף נתונים קיימים אל <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{כרטיסייה פתוחה אחת}two{שתי כרטיסיות פתוחות}many{‏%1$d כרטיסיות פתוחות}other{‏%1$d כרטיסיות פתוחות}}</translation>
 <translation id="6896758677409633944">העתק</translation>
-<translation id="6932129181739884535">חפש או הקלד שם של אתר</translation>
 <translation id="6945221475159498467">בחר</translation>
 <translation id="6963766334940102469">מחק סימניות</translation>
 <translation id="6965382102122355670">אישור</translation>
@@ -823,7 +817,6 @@
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">הצג מקור</translation>
 <translation id="9139068048179869749">שאל לפני שתאפשר לאתרים לשלוח הודעות (מומלץ)</translation>
-<translation id="9187067407629017315">הזן או חפש אתר</translation>
 <translation id="9187199695613236444">תצוגה מותאמת למכשירים ניידים</translation>
 <translation id="9188680907066685419">צא מהחשבון המנוהל</translation>
 <translation id="9204836675896933765">נותר קובץ אחד</translation>

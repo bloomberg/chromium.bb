@@ -519,6 +519,7 @@
 
           Als dit beleid niet wordt ingesteld, wordt de instelling ingeschakeld.</translation>
 <translation id="2824715612115726353">Incognitomodus inschakelen</translation>
+<translation id="2838830882081735096">Gegevensmigratie en ARC niet toestaan</translation>
 <translation id="2844404652289407061">Hiermee wordt de beschikbaarheid van 'Tikken om te zoeken' ingeschakeld in de inhoudsweergave van <ph name="PRODUCT_NAME" />.
 
       Als je deze instelling inschakelt, is 'Tikken om te zoeken' beschikbaar voor de gebruiker en kan de gebruiker de functie in- of uitschakelen.
@@ -701,13 +702,6 @@
           Dit beleid wordt alleen gerespecteerd als het beleid 'DefaultSearchProviderEnabled' is ingeschakeld.</translation>
 <translation id="350797926066071931">Vertalen inschakelen</translation>
 <translation id="3528000905991875314">Alternatieve foutpagina's inschakelen</translation>
-<translation id="3538538104630456270">De bijbehorende instelling werd gebruikt voordat hernieuwde verificatie voor het weergeven van wachtwoorden werd geïntroduceerd. Sindsdien hebben de instelling en dit beleid geen invloed gehad op het gedrag van Chrome. Het huidige gedrag van Chrome is nu hetzelfde alsof het beleid was ingesteld om het weergeven van wachtwoorden als leesbare tekst op de pagina met instellingen voor Wachtwoordbeheer uit te schakelen. Dat betekent dat de pagina met instellingen alleen een tijdelijke aanduiding bevat. Chrome laat het wachtwoord alleen zien als de gebruiker op Weergeven klikt (en zo nodig de hernieuwde verificatie uitvoert). De oorspronkelijke beschrijving van het beleid volgt hieronder.
-
-          Hiermee wordt bepaald of de gebruiker wachtwoorden als leesbare tekst mag weergeven in Wachtwoordbeheer.
-
-          Als je deze instelling uitschakelt, staat Wachtwoordbeheer de gebruiker niet toe opgeslagen wachtwoorden als leesbare tekst weer te geven in het venster van Wachtwoordbeheer.
-
-          Als je deze instelling inschakelt of niet configureert, kunnen gebruikers hun wachtwoorden als leesbare tekst bekijken in Wachtwoordbeheer.</translation>
 <translation id="3547954654003013442">Proxyinstellingen</translation>
 <translation id="3591584750136265240">Het verificatiegedrag voor inloggen configureren</translation>
 <translation id="3627678165642179114">Webservice voor spellingcontrole in- of uitschakelen</translation>
@@ -906,23 +900,6 @@
 <translation id="4239720644496144453">Het cachegeheugen wordt niet gebruikt voor Android-apps. Als meerdere gebruikers dezelfde Android-app installeren, wordt deze voor elke gebruiker opnieuw gedownload.</translation>
 <translation id="4250680216510889253">Nee</translation>
 <translation id="4261820385751181068">Taal voor inlogscherm van apparaat</translation>
-<translation id="4275782538576261754">Hiermee stel je in welk type downloads volledig door <ph name="PRODUCT_NAME" /> worden geblokkeerd, zonder dat gebruikers het beveiligingsbesluit kunnen overschrijven.
-
-      Als je dit beleid instelt, voorkomt <ph name="PRODUCT_NAME" /> bepaalde typen downloads en kan de gebruiker de beveiligingswaarschuwingen niet omzeilen.
-
-      Als de optie 'Gevaarlijke downloads blokkeren' is gekozen, zijn alle downloads toegestaan, met uitzondering van de downloads die zijn voorzien van Safe Browsing-waarschuwingen.
-
-      Als de optie 'Potentieel gevaarlijke downloads blokkeren' is gekozen, zijn alle downloads toegestaan, met uitzondering van de downloads die zijn voorzien van Safe Browsing-waarschuwingen voor potentieel gevaarlijke downloads.
-
-      Als de optie 'Alle downloads blokkeren' is gekozen, worden alle downloads geblokkeerd.
-
-      Als dit beleid niet is ingesteld (of als de optie 'Geen speciale beperkingen' is gekozen), worden op basis van de Safe Browsing-analyse de gebruikelijke beveiligingsbeperkingen toegepast.
-
-      Houd er rekening mee dat deze beperkingen zowel van toepassing zijn op downloads die zijn geactiveerd via de webpaginacontent als op downloads via de contextmenuoptie 'Link downloaden...'.
-
-      Deze beperkingen zijn niet van toepassing op het opslaan/downloaden van de huidige pagina die wordt weergegeven, of op de afdrukoptie 'Opslaan als pdf'.
-
-      Zie https://developers.google.com/safe-browsing voor meer informatie over Safe Browsing.</translation>
 <translation id="427632463972968153">Specificeert de parameters die worden gebruikt voor het uitvoeren van een zoekopdracht naar afbeeldingen met POST. Het bestaat uit door komma's gescheiden naam/waarde-paren. Als een waarde een templateparameter, zoals {imageThumbnail} in het bovenstaande voorbeeld, is, wordt de waarde vervangen door echte afbeeldingsminiatuurgegevens.
 
           Dit beleid is optioneel. Als het beleid niet is ingesteld, wordt de voorgestelde zoekopdracht verzonden met de GET-methode.
@@ -948,6 +925,7 @@
 <translation id="436581050240847513">Apparaatnetwerkinterface rapporteren</translation>
 <translation id="4372704773119750918">Zakelijke gebruikers niet toestaan deel uit te maken van multiprofielen (primair of secundair)</translation>
 <translation id="4377599627073874279">Alle sites toestaan afbeeldingen weer te geven</translation>
+<translation id="437791893267799639">Beleid niet ingesteld, gegevensmigratie en ARC niet toestaan</translation>
 <translation id="4389091865841123886">De externe bevestiging configureren met een TPM-mechanisme.</translation>
 <translation id="4418726081189202489">Als dit beleid wordt ingesteld op Onwaar, is het <ph name="PRODUCT_NAME" /> niet toegestaan om af en toe query's naar een Google-server verzenden om een nauwkeurig tijdstempel op te halen. Als het beleid is ingesteld op Waar of niet is ingesteld, zijn deze query's ingeschakeld.</translation>
 <translation id="4423597592074154136">Proxyinstellingen handmatig specificeren</translation>
@@ -1262,6 +1240,7 @@
 <translation id="5586942249556966598">Niets doen</translation>
 <translation id="5630352020869108293">De laatste sessie herstellen</translation>
 <translation id="5645779841392247734">Cookies toestaan op deze sites</translation>
+<translation id="5693469654327063861">Gegevensmigratie toestaan</translation>
 <translation id="5694594914843889579">Wanneer de instelling is ingesteld op 'waar', is externe opslag niet beschikbaar in de bestandsbrowser.
 
       Deze instelling is van toepassing op alle typen opslagmedia. Bijvoorbeeld: USB-flashdrives, externe harde schijven, SD-kaarten en andere geheugenkaarten, optische opslag, enzovoort. Deze is niet van toepassing op interne opslag, dus bestanden die zijn opgeslagen in de downloadmap, zijn nog steeds toegankelijk. De instelling is ook niet van toepassing op Google Drive.
@@ -1450,9 +1429,9 @@
 <translation id="6281043242780654992">Configureert beleid voor systeemeigen berichten. Hosts voor systeemeigen berichten op de zwarte lijst worden niet toegestaan, tenzij ze op de witte lijst worden gezet.</translation>
 <translation id="6282799760374509080">Het opnemen van audio toestaan of weigeren</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6287694548537067861">Hiermee schakel je onderdelenupdates voor alle onderdelen in <ph name="PRODUCT_NAME" /> in wanneer de optie niet is ingesteld of is ingesteld op Waar (True).
+<translation id="6287694548537067861">Hiermee schakel je onderdelenupdates voor alle onderdelen in <ph name="PRODUCT_NAME" /> in wanneer de optie niet is ingesteld of is ingesteld op true (waar).
 
-      Als deze optie is ingesteld op Onwaar (False), zijn de updates voor onderdelen uitgeschakeld. Bepaalde onderdelen worden echter uitgesloten van dit beleid: updates voor onderdelen worden niet uitgeschakeld als deze geen uitvoerbare code bevatten, het gedrag van de browser niet aanzienlijk veranderen of essentieel zijn voor de beveiliging.
+      Als deze optie is ingesteld op false (onwaar), zijn de updates voor onderdelen uitgeschakeld. Bepaalde onderdelen worden echter uitgesloten van dit beleid: updates voor onderdelen worden niet uitgeschakeld als deze geen uitvoerbare code bevatten, het gedrag van de browser niet aanzienlijk veranderen of essentieel zijn voor de beveiliging.
       Voorbeelden van dergelijk onderdelen zijn Certificate Revocation Lists en de Safe Browsing-gegevens.
       Zie https://developers.google.com/safe-browsing voor meer informatie over Safe Browsing.</translation>
 <translation id="6310223829319187614">Automatisch aanvullen van domeinnaam bij inloggen van gebruiker inschakelen</translation>
@@ -1505,6 +1484,7 @@
           De beleidswaarde moet worden opgegeven in milliseconden. Waarden moeten lager zijn dan de inactieve vertraging.</translation>
 <translation id="6536600139108165863">Automatisch opnieuw opstarten wanneer apparaat wordt afgesloten</translation>
 <translation id="6539246272469751178">Dit beleid is niet van invloed op Android-apps. Android-apps gebruiken altijd de standaardmap voor downloads en hebben geen toegang tot bestanden die door <ph name="PRODUCT_OS_NAME" /> zijn gedownload naar een niet-standaard downloadmap.</translation>
+<translation id="654303922206238013">Migratiestrategie voor eCryptfs</translation>
 <translation id="6544897973797372144">Als dit beleid is ingesteld op 'Waar' en het beleid ChromeOsReleaseChannel niet is ingesteld, mogen gebruikers van het registrerende domein het releasekanaal van het apparaat wijzigen. Als dit beleid is ingesteld op 'Onwaar', wordt het apparaat vergrendeld op het laatst ingestelde kanaal.
 
       Het door de gebruiker geselecteerde kanaal wordt overschreven door het beleid ChromeOsReleaseChannel. Als het beleidskanaal echter stabieler is dan het kanaal dat is geïnstalleerd op het apparaat, wordt het kanaal pas gewijzigd nadat de versie van het stabielere kanaal een hoger versienummer bereikt dan de versie die op het apparaat is geïnstalleerd.</translation>
@@ -1693,6 +1673,13 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
           Dit beleid wordt alleen gerespecteerd als het beleid 'DefaultSearchProviderEnabled' is ingeschakeld.</translation>
 <translation id="7302043767260300182">Vertraging van schermvergrendeling wanneer op netstroom wordt gewerkt</translation>
+<translation id="7309839952828354215">Geeft aan hoe een apparaat zich moet gedragen dat is geleverd met eCryptfs en moet worden overgezet naar ext4-versleuteling.
+
+      Als je dit beleid instelt op 'DisallowArc', worden Android-apps uitgeschakeld voor alle gebruikers op het apparaat (waaronder gebruikers die al beschikken over ext4-versleuteling) en wordt er geen migratie van eCryptfs naar ext4-versleuteling aangeboden aan gebruikers.
+
+      Als je dit beleid instelt op 'AllowMigration', wordt aan gebruikers met eCryptfs-hoofdmappen aangeboden deze te migreren naar ext4-versleuteling indien nodig (momenteel is dit het geval wanneer Android N beschikbaar komt op het apparaat).
+
+      Als dit beleid niet wordt ingesteld, gedraagt het apparaat zich alsof 'DisallowArc' is gekozen.</translation>
 <translation id="7311458740754205918">Als dit beleid is ingesteld op 'waar' of niet is ingesteld, kunnen op de nieuwe tabbladpagina contentsuggesties worden weergegeven op basis van de browsegeschiedenis, interesses en locatie van de gebruiker.
 
       Als dit is ingesteld op 'onwaar', worden er geen automatisch gegenereerde contentsuggesties weergegeven op de nieuwe tabbladpagina.</translation>
@@ -2088,8 +2075,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
           Als je deze instelling inschakelt, wordt de CNAME-lookup overgeslagen en wordt de servernaam gebruikt zoals deze is opgegeven.
 
           Als je deze instelling uitschakelt of niet instelt, wordt de canonieke naam van de server bepaald aan de hand van de CNAME-lookup.</translation>
-<translation id="8774131509736383471">Als dit beleid is ingesteld op 'waar', maximaliseert <ph name="PRODUCT_NAME" /> automatisch het eerste venster dat bij eerste uitvoering wordt weergegeven.
-      Als dit beleid is ingesteld op 'onwaar' of niet is geconfigureerd, wordt op basis van de schermgrootte bepaald of het eerste venster moet worden gemaximaliseerd.</translation>
 <translation id="87812015706645271">Vereist dat de naam van de lokale gebruiker en de eigenaar van de host voor externe toegang met elkaar overeenkomen</translation>
 <translation id="8782750230688364867">Hiermee wordt het percentage gespecificeerd waarmee de inactieve vertraging wordt geschaald als het apparaat zich in presentatiemodus bevindt.
 

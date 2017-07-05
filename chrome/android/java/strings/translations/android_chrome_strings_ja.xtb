@@ -69,7 +69,6 @@
 <translation id="1620510694547887537">カメラ</translation>
 <translation id="1623104350909869708">このページで追加のダイアログが作成されないようにする</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{選択された 1 件のアイテムを削除します}other{選択された # 件のアイテムを削除します}}</translation>
-<translation id="1629390138158333592">ウェブ検索</translation>
 <translation id="1641113438599504367">セーフ ブラウジング</translation>
 <translation id="164269334534774161">このページの <ph name="CREATION_TIME" /> のオフライン コピーを表示しています</translation>
 <translation id="1643702317193804718">ページを<ph name="SOURCE_LANGUAGE" />に翻訳しています...</translation>
@@ -330,7 +329,6 @@
 <translation id="4307992518367153382">基本設定</translation>
 <translation id="4351244548802238354">ダイアログを閉じる</translation>
 <translation id="4378154925671717803">電話番号</translation>
-<translation id="4381206798889118664">検索… レシピ</translation>
 <translation id="4384468725000734951">検索に Sogou を使用します</translation>
 <translation id="4412992751769744546">サードパーティの Cookie を許可</translation>
 <translation id="4432792777822557199">今後、<ph name="SOURCE_LANGUAGE" />のページは<ph name="TARGET_LANGUAGE" />に翻訳されます</translation>
@@ -376,7 +374,6 @@
 <translation id="4837753911714442426">ページの印刷オプションを開く</translation>
 <translation id="4850886885716139402">表示</translation>
 <translation id="4860895144060829044">通話</translation>
-<translation id="4869862470313079745">検索… ニュース</translation>
 <translation id="4881695831933465202">開く</translation>
 <translation id="4885273946141277891">Chrome のインスタンス数の上限を超えています。</translation>
 <translation id="4910889077668685004">お支払いアプリ</translation>
@@ -406,7 +403,6 @@
 <translation id="5161254044473106830">タイトルが必要です</translation>
 <translation id="5164482624172255778">次回から Google Chrome でこのサイトの<ph name="LANGUAGE" />ページの翻訳を表示しますか？</translation>
 <translation id="5168917394043976756">操作パネルを開く</translation>
-<translation id="5171045022955879922">検索または URL を入力</translation>
 <translation id="5184329579814168207">Chromeで開く</translation>
 <translation id="5199929503336119739">仕事用プロファイル</translation>
 <translation id="5209320130288484488">デバイスが見つかりませんでした</translation>
@@ -510,7 +506,6 @@
 <translation id="6042308850641462728">もっと見る</translation>
 <translation id="604996488070107836">不明なエラーが発生したため、<ph name="FILE_NAME" /> をダウンロードできませんでした。</translation>
 <translation id="605721222689873409">YY</translation>
-<translation id="6066049505142453066">検索… 天気</translation>
 <translation id="6075798973483050474">ホームページの編集</translation>
 <translation id="60923314841986378">残り <ph name="HOURS" /> 時間</translation>
 <translation id="60924377787140961">記事は随時更新されます。また後でご覧ください。</translation>
@@ -604,7 +599,6 @@
 <translation id="688738109438487280">既存のデータを <ph name="TO_ACCOUNT" /> に追加します。</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d 個の開いているタブ}other{%1$d 個の開いているタブ}}</translation>
 <translation id="6896758677409633944">コピー</translation>
-<translation id="6932129181739884535">検索語句またはウェブサイト名を入力</translation>
 <translation id="6945221475159498467">選択</translation>
 <translation id="6963766334940102469">ブックマークを削除</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -825,7 +819,6 @@
 <translation id="9133703968756164531"><ph name="ITEM_NAME" />（<ph name="ITEM_ID" />）</translation>
 <translation id="9137013805542155359">原文のページを表示</translation>
 <translation id="9139068048179869749">サイトに通知の送信を許可する前に確認する（推奨）</translation>
-<translation id="9187067407629017315">検索語句またはウェブサイトを入力</translation>
 <translation id="9187199695613236444">モバイル向け表示</translation>
 <translation id="9188680907066685419">管理対象アカウントからログアウトする</translation>
 <translation id="9204836675896933765">残り 1 ファイル</translation>

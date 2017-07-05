@@ -521,6 +521,7 @@
 
           Nenustačius šios politikos nustatymas bus įgalintas.</translation>
 <translation id="2824715612115726353">Įgalinti inkognito režimą</translation>
+<translation id="2838830882081735096">Neleisti perkelti duomenų ir ARC</translation>
 <translation id="2844404652289407061">Įgalinamas paieškos palietus pasiekiamumas „<ph name="PRODUCT_NAME" />“ turinio rodinyje.
 
       Jei įgalinsite šį nustatymą, naudotojui bus pasiekiama paieška palietus ir jis galės pasirinkti įjungti arba išjungti funkciją.
@@ -703,13 +704,6 @@
           Šios politikos laikomasi, tik jei įgalinta politika „DefaultSearchProviderEnabled“.</translation>
 <translation id="350797926066071931">Įgalinti vertimą</translation>
 <translation id="3528000905991875314">Įgalinti kitus klaidų puslapius</translation>
-<translation id="3538538104630456270">Susijęs nustatymas buvo naudojamas anksčiau, prieš įvedant pakartotinį autentifikavimą norint matyti slaptažodžius. Nuo tada nustatymas ir ši politika neturi jokio poveikio „Chrome“ elgsenai. Dabar „Chrome“ veikia taip, tarsi politika būtų nustatyta išjungti slaptažodžių rodymą nešifruotu tekstu slaptažodžių tvarkytuvės puslapyje. Tai reiškia, kad nustatymų puslapyje yra tik rezervuota vieta, o „Chrome“ slaptažodį rodo tik tada, kai naudotojas spustelėja „Rodyti“ (ir atlieka pakartotinį autentifikavimą, jei taikoma). Toliau pateiktas originalus politikos aprašas.
-
-          Valdo, ar naudotojas gali rodyti slaptažodžius nešifruotu tekstu slaptažodžių tvarkytuvėje.
-
-          Jei išjungsite šį nustatymą, slaptažodžių tvarkytuvė neleis rodyti išsaugotų slaptažodžių nešifruotu tekstu slaptažodžių tvarkytuvės lange.
-
-          Jei įgalinsite šią politiką ar jos nenustatysite, naudotojai galės peržiūrėti savo slaptažodžius nešifruotu tekstu slaptažodžių tvarkytuvėje.</translation>
 <translation id="3547954654003013442">Įgaliotojo serverio nustatymai</translation>
 <translation id="3591584750136265240">Konfigūruoti prisijungimo autentifikavimo elgseną</translation>
 <translation id="3627678165642179114">Įgalinti rašybos tikrinimo žiniatinklio paslaugą arba jos neleisti</translation>
@@ -909,23 +903,6 @@
 <translation id="4239720644496144453">Talpykla nenaudojama „Android“ programose. Jei keli naudotojai įdiegs tą pačią „Android“ programą, kiekvienam naudotojui bus atsisiųsta nauja programa.</translation>
 <translation id="4250680216510889253">Ne</translation>
 <translation id="4261820385751181068">Įrenginio prisijungimo ekrano lokalė</translation>
-<translation id="4275782538576261754">Konfigūruojamas atsisiuntimų, kuriuos „<ph name="PRODUCT_NAME" />“ visiškai blokuos, neleisdama naudotojams nepaisyti sprendimo dėl saugos, tipas.
-
-      Jei nustatysite šią politiką, „<ph name="PRODUCT_NAME" />“ neleis tam tikrų tipų atsisiuntimų ir neleis naudotojui apeiti saugos įspėjimų.
-
-      Kai pasirinkta parinktis „Blokuoti pavojingus atsisiuntimus“, leidžiami visi atsisiuntimai, išskyrus atsisiuntimus su Saugaus naršymo įspėjimais.
-
-      Kai pasirinkta parinktis „Blokuoti potencialiai pavojingus atsisiuntimus“, leidžiami visi atsisiuntimai, išskyrus atsisiuntimus su Saugaus naršymo įspėjimais apie potencialiai pavojingus atsisiuntimus.
-
-      Kai pasirinkta parinktis „Blokuoti visus atsisiuntimus“, blokuojami visi atsisiuntimai.
-
-      Kai ši politika nenustatyta (arba pasirinkta parinktis „Nėra specialių apribojimų“), atsisiuntimams taikomi įprasti saugos apribojimai pagal Saugaus naršymo analizės rezultatus.
-
-      Atminkite, kad šie apribojimai taikomi atsisiuntimams, suaktyvintiems iš tinklalapio turinio bei pasirinkus kontekstinio meniu parinktį „atsisiųsti nuorodą...“.
-
-      Šie apribojimai netaikomi išsaugant / atsisiunčiant šiuo metu pateiktą puslapį ar išsaugant jį kaip PDF naudojant spausdinimo parinktis.
-
-      Daugiau informacijos apie Saugų naršymą rasite adresu https://developers.google.com/safe-browsing.</translation>
 <translation id="427632463972968153">Nurodomi parametrai, naudojami atliekant vaizdų paiešką naudojant POST. Jie sudaryti iš kableliais atskirtų pavadinimų / verčių porų. Jei vertė yra šablono parametras, pvz., {imageThumbnail} anksčiau pateiktame pavyzdyje, ji pakeičiama realiais vaizdo miniatiūros duomenimis.
 
           Ši politika pasirenkama. Jei nenustatyta, vaizdų paieškos užklausa siunčiama naudojant GET metodą.
@@ -951,6 +928,7 @@
 <translation id="436581050240847513">Pateikti įrenginio tinklo sąsajų ataskaitą</translation>
 <translation id="4372704773119750918">Neleisti įmonės naudotojui būti kelių profilių dalimi (pirminiu ar antriniu naudotoju)</translation>
 <translation id="4377599627073874279">Leisti visose svetainėse rodyti visus vaizdus</translation>
+<translation id="437791893267799639">Politika nenustatyta, neleisti perkelti duomenų ir ARC</translation>
 <translation id="4389091865841123886">Konfigūruojamas nuotolinis patvirtinimas naudojant TPM mechanizmą.</translation>
 <translation id="4418726081189202489">Nustačius šią politiką į „False“, „<ph name="PRODUCT_NAME" />“ nebesiunčia retkarčiais teikiamų užklausų į „Google“ serverį, kad gautų tikslią laiko žymę. Šios užklausos bus įgalintos, jei ši politika bus nustatyta į „True“ arba nenustatyta.</translation>
 <translation id="4423597592074154136">Pačiam nurodyti tarpinio serverio nustatymus</translation>
@@ -1270,6 +1248,7 @@
 <translation id="5586942249556966598">Nieko nedaryti</translation>
 <translation id="5630352020869108293">Atkurti paskutinę sesiją</translation>
 <translation id="5645779841392247734">Leisti slapukus šiose svetainėse</translation>
+<translation id="5693469654327063861">Leisti perkelti duomenis</translation>
 <translation id="5694594914843889579">Kai ši politika nustatyta į „true“, išorinė saugykla nepasiekiama failų naršyklėje.
 
       Ši politika turi įtakos visų tipų saugyklos medijai. Pvz., USB atmintinėms, išoriniams standiesiems diskams, SD ir kitoms atminties kortelėms, optinei saugyklai ir kt. Vidinė saugykla nepaveikiama, todėl atsisiuntimų aplanke išsaugotus failus vis tiek galima pasiekti. Be to, ši politika neturi įtakos „Google“ diskui.
@@ -1371,9 +1350,9 @@
 <translation id="5966615072639944554">Plėtiniams leidžiama naudoti nuotolinio patvirtinimo API</translation>
 <translation id="5983708779415553259">Numatytoji elgsena, skirta svetainėms, neesančioms turinio paketuose</translation>
 <translation id="5997543603646547632">Naudoti 24 val. laikrodį pagal numatytuosius nustatymus</translation>
-<translation id="6005179188836322782">Įgalinama „<ph name="PRODUCT_NAME" />“ saugaus naršymo funkcija ir naudotojams neleidžiama keisti šio nustatymo.
+<translation id="6005179188836322782">Įgalinama „<ph name="PRODUCT_NAME" />“ Saugaus naršymo funkcija ir naudotojams neleidžiama keisti šio nustatymo.
 
-      Jei įgalinsite ši nustatymą, Saugus naršymas visada bus aktyvus.
+      Jei įgalinsite šį nustatymą, Saugus naršymas visada bus aktyvus.
 
       Jei išjungsite šį nustatymą, Saugus naršymas neveiks.
 
@@ -1511,6 +1490,7 @@
           Politikos vertė turėtų būti nurodyta milisekundėmis. Vertės sumažinamos, kad neviršytų neveikos delsos laiko.</translation>
 <translation id="6536600139108165863">Automatinis paleidimas iš naujo, kai išjungiamas įrenginys</translation>
 <translation id="6539246272469751178">Ši politika neturi įtakos „Android“ programoms. „Android“ programos visada naudoja numatytąjį atsisiuntimų katalogą ir negali pasiekti „<ph name="PRODUCT_OS_NAME" />“ atsisiųstų failų į nenumatytą atsisiuntimų katalogą.</translation>
+<translation id="654303922206238013">Failų sistemos „eCryptfs“ perkėlimo strategija</translation>
 <translation id="6544897973797372144">Jei šios politikos nustatymas yra „True“ (tiesa) ir politika „ChromeOsReleaseChannel“ („Chrome“ OS paleidimo kanalas) nenurodyta, tada užregistruoto domeno naudotojams leidžiama keisti įrenginio paleidimo kanalą. Jei šios politikos nustatymas yra „False“ (netiesa), įrenginys užrakinamas bet kuriame kanale, kuriame paskutinį kartą buvo nustatytas.
 
       Naudotojo (-os) pasirinktas kanalas bus pakeistas taikant politiką „ChromeOsReleaseChannel“ („Chrome“ OS paleidimo kanalas), bet jei politikos kanalas stabilesnis nei tas, kuris įdiegtas įrenginyje, kanalas perjungiamas, tik kai stabilesnio kanalo versija yra naujesnė nei įdiegta įrenginyje.</translation>
@@ -1701,6 +1681,13 @@
 
           Ši politika taikoma, tik jei įgalinta politika „DefaultSearchProviderEnabled“.</translation>
 <translation id="7302043767260300182">Ekrano užrakto delsa, kai naudojama kintamosios srovės energija</translation>
+<translation id="7309839952828354215">Nurodoma, kokie veiksmai turi būti atliekami įrenginyje, kuris buvo pristatytas su failų sistema „eCryptfs“ ir kuriame reikia pereiti į „ext4“ šifruotę.
+
+      Jei nustatysite šią politiką į „DisallowArc“, „Android“ programos bus išjungtos visiems naudotojams įrenginyje (įskaitant tuos, kurie jau turi „ext4“ šifruotę) ir jokiems naudotojams nebus siūloma perkelti iš „eCryptfs“ į „ext4“ šifruotę.
+
+      Jei nustatysite šią politiką į „AllowMigration“, naudotojams, turintiems „eCryptfs“ pagrindinius katalogus, bus siūloma perkelti juos į „ext4“ šifruotę, jei reikia (šiuo metu tai atliekama, kai „Android N“ tampa pasiekiama įrenginyje).
+
+      Jei nenustatysite šios politikos, įrenginys veiks taip, kaip pasirinkus „DisallowArc“.</translation>
 <translation id="7311458740754205918">Jei ši politika nustatyta kaip „true“ arba nenustatyta, naujo skirtuko puslapyje gali būti rodomi turinio pasiūlymai pagal naudotojo naršymo istoriją, pomėgius ir vietovę.
 
       Jei ši politika nustatyta kaip „false“, automatiškai sugeneruoti turinio pasiūlymai naujo skirtuko puslapyje nerodomi.</translation>
@@ -2096,8 +2083,6 @@
           Jei įgalinsite šį nustatymą, CNAME paieška bus praleista ir bus naudojamas įvestas serverio pavadinimas.
 
           Jei neleisite šio nustatymo arba jo nenustatysite, kanoninis serverio pavadinimas bus nustatytas naudojant CNAME paiešką.</translation>
-<translation id="8774131509736383471">Jei ši politika nustatyta į „true“, „<ph name="PRODUCT_NAME" />“ besąlygiškai padidins pirmą langą, rodomą pirmą kartą paleidus programą.
-      Jei ši politika nustatyta į „false“ arba yra nesukonfigūruota, sprendimas, ar bus padidintas pirmas rodomas langas, bus priimtas atsižvelgiant į ekrano dydį.</translation>
 <translation id="87812015706645271">Reikalaujama, kad vietinio naudotojo ir nuotolinės prieigos prieglobos serverio savininko vardai atitiktų</translation>
 <translation id="8782750230688364867">Nurodomas procentas, pagal kurį bus keičiamas ekrano užtemdymo delsos mastelis, kai įrenginyje veikia pristatymo režimas.
 

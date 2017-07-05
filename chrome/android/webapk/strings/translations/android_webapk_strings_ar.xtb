@@ -1,7 +1,5 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ar">
-<translation id="5095487927081109870"><ph name="WEBAPK_SITE" /> يتطلّب متصفّح ويب لتشغيله</translation>
 <translation id="7671141431838911305">تثبيت</translation>
-<translation id="8307642646779885758">يُرجى تحديد المتصفح الذي ترغب في استخدامه لتشغيل <ph name="WEBAPK_SITE" /></translation>
 </translationbundle>

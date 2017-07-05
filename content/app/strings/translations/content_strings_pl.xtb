@@ -10,7 +10,6 @@
 <translation id="1188858454923323853">pomocniczy</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1206693055195146388">suwak</translation>
-<translation id="1235745349614807883">Wyczyść ostatnie wyszukiwania</translation>
 <translation id="1281252709823657822">okno dialogowe</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">baner</translation>
@@ -39,7 +38,6 @@
 <translation id="248395913932153421">Dzień</translation>
 <translation id="2507943997699731163">Wypełnij to pole.</translation>
 <translation id="2508569020611168319">lista kart</translation>
-<translation id="2548326553472216322">Brak ostatnich wyszukiwań</translation>
 <translation id="2561842179657104141">pokaż więcej opcji sterowania multimediami</translation>
 <translation id="2572483411312390101">odtwórz</translation>
 <translation id="2613802280814924224">Podaj prawidłową wartość. Najbliższa prawidłowa wartość to <ph name="VALID_VALUE" />.</translation>
@@ -51,7 +49,6 @@
 <translation id="2759744352195237655">przycisk wyskakującego okienka</translation>
 <translation id="2761667185364618470">Zaznacz to pole, jeśli chcesz kontynuować.</translation>
 <translation id="2896972712917208084">grupa przycisków opcji</translation>
-<translation id="2901282870647571346">bieżący stan filmu</translation>
 <translation id="2908441821576996758">Podaj listę adresów e-mail rozdzielonych przecinkami.</translation>
 <translation id="2940813599313844715">obiekt</translation>
 <translation id="2942448076852699108">wyróżniona treść</translation>
@@ -95,7 +92,6 @@
 <translation id="4992066212339426712">Wyłącz wyciszenie</translation>
 <translation id="49969490063480558">Podaj część po znaku „<ph name="ATSIGN" />”. Adres „<ph name="INVALIDADDRESS" />” jest niepełny.</translation>
 <translation id="5034860022980953847">wskaźnik postępu</translation>
-<translation id="5048533449481078685">znacznik listy</translation>
 <translation id="5117590920725113268">Pokaż przyszły miesiąc</translation>
 <translation id="512758898067543763">nagłówek wiersza</translation>
 <translation id="5164977714490026579">Wartość nie może być mniejsza niż <ph name="MINIMUM" />.</translation>
@@ -113,7 +109,6 @@
 <translation id="5643186887447432888">przycisk</translation>
 <translation id="5677946354068040947">więcej opcji</translation>
 <translation id="57838592816432529">Wycisz</translation>
-<translation id="5843503607508392247">Inny...</translation>
 <translation id="5860033963881614850">Wyłączone</translation>
 <translation id="588258955323874662">Pełny ekran</translation>
 <translation id="5939518447894949180">Resetuj</translation>
@@ -123,8 +118,6 @@
 <translation id="6023896073578205740">pole listy</translation>
 <translation id="6101327004457443354">wyłącz wyciszenie ścieżki dźwiękowej</translation>
 <translation id="6164829606128959761">miernik</translation>
-<translation id="6270583010843788609">miniatura osi czasu filmu</translation>
-<translation id="6359256949422175976">miniatura paska czasu odtwarzania filmu</translation>
 <translation id="6398862346408813489">Pokaż panel wyboru miesiąca</translation>
 <translation id="6404546809543547843">pasek czasu odtwarzania dźwięku</translation>
 <translation id="648732519525291180">selektor godziny</translation>
@@ -132,7 +125,6 @@
 <translation id="663493177488814956">kanał</translation>
 <translation id="6637586476836377253">dziennik</translation>
 <translation id="6643016212128521049">Wyczyść</translation>
-<translation id="6663448176199120256">Ostatnie wyszukiwania</translation>
 <translation id="668171684555832681">Inny...</translation>
 <translation id="6692633176391053278">element kroczący</translation>
 <translation id="6739588121953935928">linijka</translation>
@@ -145,7 +137,6 @@
 <translation id="6934078000481955284">cytat blokowy</translation>
 <translation id="6941933287844615239">pobierz multimedia</translation>
 <translation id="6989848892321993519">Wydłuż ten tekst co najmniej do <ph name="MIN_CHARACTERS" /> znaków (teraz używasz jednego znaku).</translation>
-<translation id="7057186640035488495">czas filmu</translation>
 <translation id="709897737746224366">Podaj wartość w wymaganym formacie.</translation>
 <translation id="7223624360433298498">upłynęło czasu</translation>
 <translation id="7263440858009898357">Wybierz element z listy.</translation>
@@ -166,10 +157,8 @@
 <translation id="8053789581856978548">pole tekstowe wyszukiwania</translation>
 <translation id="8115662671911883373">zacznij pokazywać napisy</translation>
 <translation id="8117451130807776954">W tym tygodniu</translation>
-<translation id="8141602879876242471">Ten indeks można przeszukiwać. Wprowadź wyszukiwane słowa kluczowe:</translation>
 <translation id="819205353528511139">odtwórz film w trybie pełnoekranowym</translation>
 <translation id="8199524924445686405">rrrr</translation>
-<translation id="8244226242650769279">mapa grafiki</translation>
 <translation id="8284326494547611709">Napisy</translation>
 <translation id="835897206747267392">Nieprawidłowa wartość.</translation>
 <translation id="8433900881053900389">pasek narzędzi</translation>

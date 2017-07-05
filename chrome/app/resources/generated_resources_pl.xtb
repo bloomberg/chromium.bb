@@ -499,7 +499,6 @@
 <translation id="1709106626015023981"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (natywna)</translation>
 <translation id="1711973684025117106">Pakowanie nie powiodło się, nieoczekiwany błąd: $1</translation>
 <translation id="1712349894969001173">Pobierz to hasło na iPhone'a</translation>
-<translation id="1719028357511747483">Przeszukaj swoje urządzenie <ph name="DEVICE_TYPE" />, aplikacje, sieć…</translation>
 <translation id="1719312230114180055">Uwaga: odcisk palca może być mniej bezpieczny niż silne hasło czy kod PIN.</translation>
 <translation id="1720318856472900922">Uwierzytelnianie serwera WWW TLS</translation>
 <translation id="1720372306711178108">Rozszerzony pulpit</translation>
@@ -1096,7 +1095,7 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="2624142942574147739">Ta strona ma dostęp do kamery i mikrofonu.</translation>
 <translation id="2626799779920242286">Spróbuj ponownie później.</translation>
 <translation id="2630681426381349926">Połącz się z Wi-Fi, aby rozpocząć</translation>
-<translation id="2631006050119455616">Zapisano</translation>
+<translation id="2631006050119455616">Zaoszczędzono</translation>
 <translation id="2631498379019108537">Pokaż opcje wprowadzania na półce</translation>
 <translation id="2633199387167390344">Aplikacja <ph name="NAME" /> używa <ph name="USAGE" /> MB na dysku.</translation>
 <translation id="2633212996805280240">Usunąć „<ph name="EXTENSION_NAME" />”?</translation>
@@ -2355,7 +2354,7 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="4546308221697447294">Szybkie przeglądanie dzięki Google Chrome</translation>
 <translation id="4547659257713117923">Brak kart z innych urządzeń</translation>
 <translation id="4547992677060857254">Wybrany folder zawiera poufne pliki. Czy na pewno chcesz, by aplikacja „$1” miała do niego stały dostęp z uprawnieniami do zapisu?</translation>
-<translation id="4552031286893852992">Chrome zablokował reklamy, które wyświetla ta strona, ponieważ są one uciążliwe.</translation>
+<translation id="4552031286893852992">Chrome blokuje reklamy, które wyświetla ta strona, ponieważ są one uciążliwe.</translation>
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4552495056028768700">Dostęp do strony</translation>
 <translation id="4552678318981539154">Kup więcej miejsca</translation>
@@ -4009,7 +4008,7 @@ Używaj jej tylko w przypadku kont, którym ufasz.</translation>
 <translation id="707392107419594760">Wybierz klawiaturę:</translation>
 <translation id="7075513071073410194">PKCS #1, MD5 z szyfrowaniem RSA</translation>
 <translation id="7075625805486468288">Zarządzanie certyfikatami i ustawieniami HTTPS/SSL</translation>
-<translation id="7076293881109082629">Logowanie</translation>
+<translation id="7076293881109082629">Loguję</translation>
 <translation id="7077829361966535409">Nie można wczytać strony logowania przy bieżących ustawieniach serwera proxy. <ph name="GAIA_RELOAD_LINK_START" />Zaloguj się jeszcze raz<ph name="GAIA_RELOAD_LINK_END" /> lub użyj innych <ph name="PROXY_SETTINGS_LINK_START" />ustawień serwera proxy<ph name="PROXY_SETTINGS_LINK_END" />.</translation>
 <translation id="7077872827894353012">Ignorowane moduły obsługi</translation>
 <translation id="7078120482318506217">Wszystkie sieci</translation>
@@ -4745,7 +4744,7 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8226619461731305576">Kolejka</translation>
 <translation id="8226742006292257240">Poniżej znajduje się losowo wygenerowane hasło modułu TPM, które zostało przypisane do Twojego komputera:</translation>
 <translation id="8227119283605456246">Załącz plik</translation>
-<translation id="8234795456569844941">Pomóż naszym inżynierom rozwiązać ten problem. Powiedz nam, co się działo tuż przed wyświetleniem komunikatu o błędzie profilu:</translation>
+<translation id="8234795456569844941">Pomóż naszym inżynierom rozwiązać ten problem. Powiedz nam, co się działo tuż przed wyświetleniem się komunikatu o błędzie profilu:</translation>
 <translation id="8238649969398088015">Wskazówka pomocy</translation>
 <translation id="8240697550402899963">Użyj motywu klasycznego</translation>
 <translation id="8241040075392580210">Zacieniony</translation>
@@ -4925,7 +4924,7 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8524066305376229396">Stała przestrzeń dyskowa:</translation>
 <translation id="8525306231823319788">Pełny ekran</translation>
 <translation id="8528074251912154910">Dodaj języki</translation>
-<translation id="8528962588711550376">Logowanie</translation>
+<translation id="8528962588711550376">Loguję.</translation>
 <translation id="8529925957403338845">Nie udało się nawiązać błyskawicznego połączenia w tetheringu</translation>
 <translation id="8535005006684281994">Adres URL odnowienia certyfikatu firmy Netscape</translation>
 <translation id="8539727552378197395">Nie (HttpOnly)</translation>
@@ -5197,7 +5196,7 @@ Kolejne powiadomienia, okna i okna dialogowe mogą być dzielone między pulpita
 <translation id="8946359700442089734">Funkcje debugowania nie zostały w pełni włączone na urządzeniu <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="8948677146203372548">Zaktualizowano. Teraz możesz używać aplikacji na Androida.</translation>
 <translation id="894871326938397531">Zamknąć tryb incognito?</translation>
-<translation id="895347679606913382">Rozpoczynanie...</translation>
+<translation id="895347679606913382">Zaczynam...</translation>
 <translation id="8954952943849489823">Przenoszenie nie powiodło się, nieoczekiwany błąd: $1</translation>
 <translation id="895586998699996576">Plik graficzny ($1)</translation>
 <translation id="8957210676456822347">Autoryzacja portalu przechwytującego</translation>

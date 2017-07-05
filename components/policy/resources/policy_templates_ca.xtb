@@ -492,6 +492,7 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
 
           Si aquesta política no es defineix, la configuració s'activarà.</translation>
 <translation id="2824715612115726353">Activa el mode d'incògnit</translation>
+<translation id="2838830882081735096">No permetis la migració de dades i ARC</translation>
 <translation id="2844404652289407061">Permet que la funció Toca per cercar estigui disponible a la visualització de contingut de <ph name="PRODUCT_NAME" />.
 
       Si activeu aquesta opció de configuració, l'usuari tindrà a la seva disposició la funció Toca per cercar i podrà activar-la i desactivar-la.
@@ -663,13 +664,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
           Aquesta política només es respecta si la política "DefaultSearchProviderEnabled" està activada.</translation>
 <translation id="350797926066071931">Activa Google Traductor</translation>
 <translation id="3528000905991875314">Activa les pàgines d'error alternatives</translation>
-<translation id="3538538104630456270">L'opció de configuració associada s'utilitzava abans d'introduir la reautenticació en veure contrasenyes. Des de llavors, aquesta opció i, per tant, aquesta política no afectaven el comportament de Chrome. Actualment, es comporta igual que si la política s'hagués establert per desactivar la visualització de contrasenyes en text no xifrat a la pàgina de configuració del gestor de contrasenyes. Això vol dir que la pàgina de configuració conté només un espai reservat i que Chrome només revela la contrasenya quan l'usuari fa clic a Mostra (i es torna a autenticar, si escau). A continuació teniu la descripció original de la política.
-
-          Controla si l'usuari pot mostrar les contrasenyes en text no xifrat al gestor de contrasenyes.
-
-          Si desactiveu aquesta opció de configuració, el gestor de contrasenyes no permetrà mostrar les contrasenyes emmagatzemades en text no xifrat a la finestra del gestor de contrasenyes.
-
-          Si activeu aquesta política o si no la definiu, els usuaris podran veure les seves contrasenyes en text no xifrat al gestor de contrasenyes.</translation>
 <translation id="3547954654003013442">Configuració del servidor intermediari</translation>
 <translation id="3591584750136265240">Configura el comportament de l'autenticació d'inici de sessió</translation>
 <translation id="3627678165642179114">Activació o desactivació del servei web de correcció ortogràfica</translation>
@@ -678,7 +672,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="3660562134618097814">Transfereix les galetes del proveïdor d'identitat SAML durant l'inici de sessió</translation>
 <translation id="3687282113223807271">El servei Navegació segura mostra una pàgina d'advertiment quan els usuaris naveguen a llocs marcats com a potencialment maliciosos. En activar aquesta opció de configuració, els usuaris no poden accedir de cap manera a un lloc maliciós des del lloc web d'advertiment.
 
-      Si aquesta opció de configuració es desactiva o no es defineix, els usuaris podran decidir si volen accedir al lloc marcat després de veure l'advertiment.
+      Si aquesta opció de configuració es desactiva o no es defineix, els usuaris poden decidir si volen accedir al lloc marcat després de veure l'advertiment.
 
       Per obtenir més informació sobre Navegació segura, consulta https://developers.google.com/safe-browsing.</translation>
 <translation id="3709266154059827597">Configura la llista negra d'instal·lació d'extensions</translation>
@@ -762,7 +756,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
      Especifica les extensions que s'instal·len automàticament per a l'usuari de la demostració en els dispositius en mode de venda. Aquestes extensions es desen al dispositiu i es poden instal·lar fora de línia, després de la instal·lació.
 
       Cada entrada de la llista conté un diccionari que ha d'incloure l'identificador de l'extensió al camp "extension-id" i l'URL d'actualització al camp "update-url".</translation>
-<translation id="3877517141460819966">Mode d'autenticació de segon factor integrat</translation>
+<translation id="3877517141460819966">Mode d'autenticació de dos factors integrat</translation>
 <translation id="388237772682176890">Aquesta política es considera obsoleta a M53 i s'ha suprimit a M54, perquè el protocol SPDY/3.1 ja no s'admet.
 
       Desactiva l'ús del protocol SPDY a <ph name="PRODUCT_NAME" />.
@@ -857,23 +851,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="4239720644496144453">La memòria cau no s'utilitza a les aplicacions per a Android. Si diversos usuaris instal·len la mateixa aplicació per a Android, es baixarà de nou en cada cas.</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="4261820385751181068">Configuració regional de la pantalla d'inici de sessió del dispositiu</translation>
-<translation id="4275782538576261754">Configura el tipus de baixades que <ph name="PRODUCT_NAME" /> bloquejarà completament sense permetre que els usuaris substitueixin la decisió de seguretat.
-
-      Si estableixes aquesta política, <ph name="PRODUCT_NAME" /> impedirà certs tipus de baixades i no permetrà que l'usuari esquivi els advertiments de seguretat.
-
-      Quan es tria l'opció Bloqueja baixades perilloses, es permeten totes les baixades excepte les que contenen advertiments de Navegació segura.
-
-      Quan es tria l'opció Bloqueja baixades potencialment perilloses, es permeten totes les baixades excepte les que contenen advertiments de Navegació segura de baixades potencialment perilloses.
-
-      Quan es tria l'opció Bloqueja totes les baixades, es bloquegen totes les baixades.
-
-      Quan aquesta política no es defineix (o es tria l'opció Sense restriccions especials), les baixades passaran per les restriccions de seguretat habituals en funció dels resultats de l'anàlisi de Navegació segura.
-
-      Tingues en compte que aquestes restriccions s'apliquen a baixades activades des del contingut de la pàgina web, així com des de l'opció de menú contextual Enllaç de baixada.
-
-      Aquestes restriccions no s'apliquen a l'opció de desar o baixar la pàgina mostrada actualment ni a l'opció de desar com a PDF que s'inclou a les opcions d'impressió.
-
-      Consulta https://developers.google.com/safe-browsing per obtenir més informació sobre Navegació segura.</translation>
 <translation id="427632463972968153">Especifica els paràmetres utilitzats en cercar imatges amb POST. Consisteix en parelles de nom/valor separades per comes. Si un valor és un paràmetre de plantilla, com ara {imageThumbnail} a l'exemple anterior, se substituirà per dades de la miniatura de la imatge real.
 
           Aquesta política és opcional. Si no es defineix, la sol·licitud de cerca d'imatges s'enviarà mitjançant el mètode GET.
@@ -899,6 +876,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="436581050240847513">Informe de les interfícies de xarxa del dispositiu</translation>
 <translation id="4372704773119750918">No permetis que l'usuari empresarial formi part dels perfils múltiples (com a usuari principal o secundari)</translation>
 <translation id="4377599627073874279">Permet que tots els llocs mostrin totes les imatges</translation>
+<translation id="437791893267799639">La política no està definida; no permetis la migració de dades i ARC</translation>
 <translation id="4389091865841123886">Configura el testimoni remot amb el mecanisme TPM.</translation>
 <translation id="4418726081189202489">Si aquesta política es defineix en "false", impedeix que <ph name="PRODUCT_NAME" /> enviï de tant en tant consultes a un servidor de Google per recuperar una marca de temps precisa. Aquestes consultes s'activaran si la política es defineix en "true" o si no es defineix.</translation>
 <translation id="4423597592074154136">Especifica manualment la configuració del servidor intermediari</translation>
@@ -1179,6 +1157,7 @@ Si la política no es defineix, els usuaris podran triar si el prestatge s'ha d'
 <translation id="5586942249556966598">No facis res</translation>
 <translation id="5630352020869108293">Restaura l'última sessió</translation>
 <translation id="5645779841392247734">Permet les galetes en aquests llocs</translation>
+<translation id="5693469654327063861">Permet la migració de dades</translation>
 <translation id="5694594914843889579">Quan aquesta política s'estableixi en "true", l'emmagatzematge extern no estarà disponible al navegador de fitxers.
 
       Aquesta política afecta tots els tipus de mitjans d'emmagatzematge. Per exemple: unitats flaix USB, unitats de disc dur externes, SD i altres targetes de memòria, emmagatzematge òptic, etc. Aquesta política no afecta l'emmagatzematge intern, de manera que podràs continuar accedint als fitxers desats a la carpeta Baixades. Aquesta política tampoc no afecta Google Drive.
@@ -1276,11 +1255,11 @@ Si desactiveu aquest paràmetre o si no definiu cap valor, SafeSearch de Cerca d
 <translation id="5997543603646547632">Ús del rellotge de 24 hores de manera predeterminada</translation>
 <translation id="6005179188836322782">Activa la funció Navegació segura a <ph name="PRODUCT_NAME" /> i impedeix que els usuaris canviïn la configuració.
 
-      Si actives aquesta configuració, Navegació segura sempre estarà activa.
+      Si actives aquesta opció de configuració, Navegació segura sempre estarà activa.
 
-      Si desactives aquesta configuració, Navegació segura no estarà mai activa.
+      Si desactives aquesta opció, Navegació segura no estarà mai activa.
 
-      Si actives o desactives aquesta configuració, els usuaris no podran canviar ni ignorar la configuració "Activa la protecció contra pesca i programari maliciós" a <ph name="PRODUCT_NAME" />.
+      Si actives o desactives aquesta opció, els usuaris no podran canviar ni substituir la configuració "Activa la protecció contra pesca i programari maliciós" a <ph name="PRODUCT_NAME" />.
 
       Si aquesta política no s'estableix, aquesta configuració s'activarà, però l'usuari podrà canviar-la.
 
@@ -1355,7 +1334,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6284362063448764300">TLS 1.1</translation>
 <translation id="6287694548537067861">Si no s'estableix cap valor o s'estableix en "true", activa les actualitzacions de tots els components a <ph name="PRODUCT_NAME" />.
 
-      Si s'estableix en "false", les actualitzacions dels components es desactiven. Tanmateix, aquesta política no afecta tots els components, com ara els que no contenen codi executable, els que no afecten de manera considerable el funcionament del navegador o els que són essencials per protegir-se.
+      Si s'estableix en "false", les actualitzacions dels components es desactiven. Tanmateix, aquesta política no afecta tots els components, com ara els que no contenen codi executable, els que no afecten de manera considerable el funcionament del navegador o els que són essencials per protegir-lo.
       Aquests components inclouen, entre d'altres, les llistes de revocació de certificats i les dades de navegació segura.
       Per obtenir més informació sobre Navegació segura, consulta https://developers.google.com/safe-browsing.</translation>
 <translation id="6310223829319187614">Activa la funció de compleció automàtica del nom de domini durant l'inici de sessió de l'usuari</translation>
@@ -1402,6 +1381,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
           El valor de la política s'ha d'indicar en mil·lisegons i es limita perquè sigui inferior al retard d'inactivitat.</translation>
 <translation id="6536600139108165863">Reinicia automàticament en apagar el dispositiu</translation>
 <translation id="6539246272469751178">Aquesta política no té cap efecte a les aplicacions per a Android. Aquestes aplicacions utilitzen sempre el directori de baixades predeterminat i no poden accedir a cap fitxer que <ph name="PRODUCT_OS_NAME" /> baixi a un altre directori.</translation>
+<translation id="654303922206238013">Estratègia de migració per a eCryptfs</translation>
 <translation id="6544897973797372144">Si aquesta política s'estableix com a certa i no s'especifica la política ChromeOsReleaseChannel, els usuaris del domini de vinculació podran canviar el canal de llançament del dispositiu. Si aquesta política s'estableix com a falsa, el dispositiu es bloquejarà a tots els canals on s'hagi establert per darrera vegada.
 
       La política ChromeOsReleaseChannel anul·larà el canal seleccionat per l'usuari, però si el canal de la política és més estable que el que s'ha instal·lat al dispositiu, el canal només canviarà un cop la versió del canal més estable passi a un número de versió superior a l'instal·lat al dispositiu.</translation>
@@ -1576,6 +1556,13 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
           Aquesta política només es respecta si la política "DefaultSearchProviderEnabled" està activada.</translation>
 <translation id="7302043767260300182">Retard del bloqueig de pantalla quan s'utilitza alimentació</translation>
+<translation id="7309839952828354215">Especifica com s'ha de comportar un dispositiu que conté eCryptfs i que ha de fer una transició a encriptació ext4.
+
+      Si defineixes aquesta política en "DisallowArc", les aplicacions d'Android es desactivaran per a tots els usuaris del dispositiu (fins i tot per a aquells que ja tinguin encriptació ext4) i no se'ls oferirà cap tipus de migració d'eCryptfs a encriptació ext4.
+
+      Si defineixes aquesta política en "AllowMigration", s'oferirà als usuaris amb directoris d'inici eCryptfs la possibilitat de migrar-los a encriptació ext4 si és necessari (en concret, quan Android N estigui disponible al dispositiu).
+
+      Si aquesta política no es defineix, el dispositiu es comportarà com si la política s'hagués establert en "DisallowArc".</translation>
 <translation id="7311458740754205918">Si s'estableix en "true" o no s'estableix cap valor, és possible que a la pàgina Pestanya nova es mostrin suggeriments de contingut basats en l'historial de navegació, en els interessos o en la ubicació de l'usuari.
 
       Si s'estableix en "false", a la pàgina Pestanya nova no es mostraran suggeriments de contingut generats automàticament.</translation>
@@ -1941,8 +1928,6 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 
       Si es desactiva aquesta configuració, l'historial de navegació i de baixades no es pot suprimir.</translation>
 <translation id="8764119899999036911">Especifica si l'SPN de Kerberos que es genera es basa en el nom del DNS canònic o en el nom original introduït. Si activeu aquest paràmetre, s'ometrà la cerca de CNAME i el nom del servidor s'utilitzarà tal com s'ha introduït. Si desactiveu aquest paràmetre o el deixeu sense definir, el nom canònic del servidor es determinarà a través de la cerca de CNAME.</translation>
-<translation id="8774131509736383471">Si aquesta política s'estableix en "true", <ph name="PRODUCT_NAME" /> maximitzarà sense condicions la primera finestra que es mostra en iniciar el navegador per primera vegada.
-      Si s'estableix en "false" o no es configura, la decisió de maximitzar la primera finestra mostrada es basarà en la mida de la pantalla.</translation>
 <translation id="87812015706645271">Requereix que el nom de l'usuari local i el propietari de l'amfitrió d'accés remot coincideixin</translation>
 <translation id="8782750230688364867">Especifica el percentatge d'ajust del temps d'espera d'inactivitat de la pantalla quan el dispositiu estigui en mode de presentació.
 

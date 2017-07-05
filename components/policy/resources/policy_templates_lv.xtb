@@ -524,6 +524,7 @@
 
           Ja šī politika netiek iestatīta, iestatījums tiek iespējots.</translation>
 <translation id="2824715612115726353">Iespējo inkognito režīmu</translation>
+<translation id="2838830882081735096">Aizliegt datu migrēšanu un ARC</translation>
 <translation id="2844404652289407061">Izmantojot šo politiku, pārlūka <ph name="PRODUCT_NAME" /> satura skatā var iespējot funkciju “Meklēšana pieskaroties”.
 
       Ja šis iestatījums ir iespējots, funkcija “Meklēšana pieskaroties” ir pieejama lietotājam un lietotājs to var ieslēgt vai izslēgt.
@@ -567,7 +568,7 @@
       Ja iespējosiet šo iestatījumu, visas caurlaides lapu autentifikācijas lapas (t.i., visas tīmekļa lapas no caurlaides lapas pierakstīšanās lapas līdz brīdim, kad pārlūkā <ph name="PRODUCT_NAME" /> būs konstatēts sekmīgi izveidots interneta savienojums) tiks parādītas atsevišķā logā, ignorējot visus pašreizējam lietotājam piemērotos politiku iestatījumus un ierobežojumus.
 
       Ja atspējosiet šo iestatījumu vai atstāsiet to neiestatītu, visas caurlaides lapas autentifikācijas lapas tiks rādītās (parastā) jaunā pārlūka cilnē, izmantojot pašreizējos lietotāja starpniekservera iestatījumus.</translation>
-<translation id="3001534538097271560">Ja šai politikai ir iestatīta vērtība “Nepatiesa”, lietotājiem tiek liegta iespēja nosūtīt sistēmas informāciju un lapu saturu Google serveriem. Ja šī vērtība ir “Patiesa” vai nav konfigurēta, lietotāji varēs nosūtīt sistēmas informāciju un lapu saturu funkcijai Droša pārlūkošana, lai palīdzētu noteikt bīstamas lietotnes un vietnes.
+<translation id="3001534538097271560">Ja šai politikai ir iestatīta vērtība “False”, lietotājiem tiek liegta iespēja nosūtīt sistēmas informāciju un lapu saturu Google serveriem. Ja šī vērtība ir “True” vai nav konfigurēta, lietotāji varēs nosūtīt sistēmas informāciju un lapu saturu funkcijai Droša pārlūkošana, lai palīdzētu noteikt bīstamas lietotnes un vietnes.
 
       Plašāku informāciju par funkciju Droša pārlūkošana skatiet vietnē https://developers.google.com/safe-browsing.</translation>
 <translation id="3021409116652377124">Atspējo spraudņu meklētāju</translation>
@@ -704,13 +705,6 @@ Ja šim iestatījumam ir izvēlēta vērtība “Izslēgts” vai vērtība nav 
           Šī politika ir spēkā tikai tad, ja ir iespējota politika “DefaultSearchProviderEnabled”.</translation>
 <translation id="350797926066071931">Iespējo Tulkotāju</translation>
 <translation id="3528000905991875314">Iespējo alternatīvas kļūdu lapas</translation>
-<translation id="3538538104630456270">Šis saistītais iestatījums tika izmantots, pirms tika ieviesta atkārtotā autentifikācija paroļu skatīšanai. Tāpēc šis iestatījums un šī politika neietekmē Chrome darbību. Pašlaik Chrome darbojas tā, it kā politika būtu iestatīta nerādīt paroles nešifrētā tekstā paroļu pārvaldnieka iestatījumu lapā. Tas nozīmē, ka iestatījumu lapā ir redzams tikai vietturis, un Chrome parāda paroli tikai tad, ja lietotājs noklikšķina uz “Rādīt” (un atkārtoti autentificējas, ja piemērojams). Tālāk redzams sākotnējais politikas apraksts.
-
-          Nosaka, vai paroles paroļu pārvaldniekā ir redzamas nešifrētā tekstā.
-
-          Ja šis iestatījums ir atspējots, paroļu pārvaldnieks neļauj paroļu pārvaldnieka logā rādīt saglabātās paroles nešifrētā tekstā.
-
-          Ja šī politika ir iespējota vai nav iestatīta, paroles paroļu pārvaldniekā ir redzamas nešifrētā tekstā.</translation>
 <translation id="3547954654003013442">Starpniekservera iestatījumi</translation>
 <translation id="3591584750136265240">Pieteikšanās autentifikācijas darbības konfigurēšana</translation>
 <translation id="3627678165642179114">Pareizrakstības pārbaudes tīmekļa pakalpojuma iespējošana vai atspējošana</translation>
@@ -907,23 +901,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="4239720644496144453">Android lietotnēs netiek izmantota kešatmiņa. Ja vairāki lietotāji instalē vienu Android lietotni, tā tiks no jauna lejupielādēta katram lietotājam.</translation>
 <translation id="4250680216510889253">Nē</translation>
 <translation id="4261820385751181068">Ierīces pierakstīšanās ekrāna lokalizācija</translation>
-<translation id="4275782538576261754">Konfigurē to lejupielāžu veidu, ko produkts <ph name="PRODUCT_NAME" /> bloķēs pilnīgi, liedzot lietotājiem ignorēt šo drošības iestatījumu.
-
-      Ja šī politika tiek iestatīta, produkts <ph name="PRODUCT_NAME" /> liegs noteikta veida lejupielādes un neļaus lietotājam apiet drošības brīdinājumus.
-
-      Ja ir atlasīta opcija “Bloķēt bīstamas lejupielādes”, tiek liegtas tikai tās lejupielādes, pirms kurām tiek parādīts funkcijas Droša pārlūkošana brīdinājums.
-
-      Ja ir atlasīta opcija “Bloķēt iespējami bīstamas lejupielādes”, tiek liegtas tikai tās lejupielādes, pirms kurām tiek parādīts funkcijas Droša pārlūkošana brīdinājums par potenciāli bīstamu lejupielādi.
-
-      Ja ir atlasīta opcija “Bloķēt visas lejupielādes”, visas lejupielādes tiks bloķētas.
-
-      Ja šī politika nav iestatīta (vai ir atlasīta opcija “Nav specifisku ierobežojumu”), lejupielādēm atbilstoši funkcijas Droša pārlūkošana analīzes rezultātiem tiks piemēroti standarta drošības ierobežojumi.
-
-      Ņemiet vērā, ka šie ierobežojumi tiek piemēroti lejupielādēm, kas tiek sāktas, izmantojot tīmekļa lapas saturu vai kādu kontekstizvēlnes “Lejupielādēt saiti” opciju.
-
-      Šie ierobežojumi netiek piemēroti pašreiz atvērtās lapas saglabāšanai vai lejupielādei, kā arī PDF saglabāšanai, izmantojot drukāšanas opcijas.
-
-      Plašāku informāciju par funkciju Droša pārlūkošana skatiet vietnē https://developers.google.com/safe-browsing.</translation>
 <translation id="427632463972968153">Norāda parametrus, kas tiek izmantoti, veicot attēlu meklēšanu ar metodi POST. Izmantojot šo metodi, tiek meklēti ar komatu atdalītu vārdu/vērtību pāri. Ja vērtība ir veidnes parametrs, piemēram, {imageThumbnail} (iepriekšējā piemērā), tas tiks aizstāts ar īstiem attēla sīktēla datiem.
 
           Šī politika nav obligāta. Ja tā nav iestatīta, attēla meklēšanas pieprasījums tiks nosūtīts, izmantojot metodi GET.
@@ -949,6 +926,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="436581050240847513">Ziņot par ierīču tīkla saskarnēm</translation>
 <translation id="4372704773119750918">Neatļaut korporatīvajam lietotājam piedalīties vairākprofilu sesijā (ne kā primārajam, ne sekundārajam lietotājam)</translation>
 <translation id="4377599627073874279">Atļauj visām vietnēm rādīt visus attēlus</translation>
+<translation id="437791893267799639">Politika nav iestatīta, aizliegt datu migrēšanu un ARC</translation>
 <translation id="4389091865841123886">Konfigurē attālināto apstiprināšanu, izmantojot TPM mehānismu.</translation>
 <translation id="4418726081189202489">Iestatot šo politiku kā nepatiesu, tiek pārtraukta neregulāra vaicājumu sūtīšana no <ph name="PRODUCT_NAME" /> uz Google serveri, lai izgūtu precīzu laikspiedolu. Šie vaicājumi tiks iespējoti, ja šī politika tiks iestatīta kā patiesa vai netiks iestatīta.</translation>
 <translation id="4423597592074154136">Manuāli norādīt starpniekservera iestatījumus</translation>
@@ -1270,6 +1248,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="5586942249556966598">Nedarīt neko</translation>
 <translation id="5630352020869108293">Atjaunot pēdējo sesiju</translation>
 <translation id="5645779841392247734">Atļauj sīkfailus šajās vietnēs</translation>
+<translation id="5693469654327063861">Atļaut datu migrēšanu</translation>
 <translation id="5694594914843889579">Ja politika ir iestatīta kā patiesa, ārējā krātuve nav pieejama failu pārlūkā.
 
       Šī politika attiecas uz visiem datu nesēju veidiem, piemēram, USB zibatmiņas diskiem, ārējiem cietajiem diskiem, SD un citām atmiņas kartēm, optiskajām krātuvēm u. c. Uz iekšējo krātuvi politika neattiecas, tādēļ failiem, kas saglabāti mapē Lejupielādes, joprojām var piekļūt. Šī politika neattiecas arī uz pakalpojumu Google disks.
@@ -1453,9 +1432,9 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="6281043242780654992">Konfigurējiet vietējās ziņojumapmaiņas politikas. Melnajā sarakstā iekļauto vietējās ziņojumapmaiņas saimniekdatoru darbība netiks atļauta, ja vien tie nebūs iekļauti baltajā sarakstā.</translation>
 <translation id="6282799760374509080">Audio tveršanas ļaušana vai noraidīšana</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6287694548537067861">Iespējo komponentu atjauninājumus visiem produkta <ph name="PRODUCT_NAME" /> komponentiem, ja šī politika nav iestatīta vai tās iestatījums ir “Patiesa”.
+<translation id="6287694548537067861">Iespējo komponentu atjauninājumus visiem produkta <ph name="PRODUCT_NAME" /> komponentiem, ja šī politika nav iestatīta vai tās iestatījums ir “True”.
 
-      Ja šīs politikas iestatījums ir “Nepatiesa”, komponentu atjauninājumi ir atspējoti. Tomēr uz dažiem komponentiem šī politika neattiecas: netiks atspējoti atjauninājumi tiem komponentiem, kas nesatur izpildāmu kodu, būtiski nemaina pārlūka darbību vai kas ir kritiski nepieciešami.
+      Ja šīs politikas iestatījums ir “False”, komponentu atjauninājumi ir atspējoti. Tomēr uz dažiem komponentiem šī politika neattiecas: netiks atspējoti atjauninājumi tiem komponentiem, kas nesatur izpildāmu kodu, būtiski nemaina pārlūka darbību vai kas ir kritiski nepieciešami.
       Šādu komponentu piemēri: sertifikātu atsaukšanas saraksti un drošas pārlūkošanas dati.
       Plašāku informāciju par funkciju Droša pārlūkošana skatiet vietnē https://developers.google.com/safe-browsing.</translation>
 <translation id="6310223829319187614">Domēna nosaukuma automātiskās pabeigšanas iespējošana lietotāja pierakstīšanās laikā</translation>
@@ -1508,6 +1487,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
           Politikas vērtību nedrīkst norādīt milisekundēs. Ir jānorāda vērtības, kas ir mazākas par aizkavi līdz dīkstāvei.</translation>
 <translation id="6536600139108165863">Automātiska restartēšana, izslēdzot ierīci</translation>
 <translation id="6539246272469751178">Šī politika neietekmē Android lietotnes. Android lietotnes vienmēr izmanto lejupielāžu noklusējuma direktoriju un nevar piekļūt failiem, ko <ph name="PRODUCT_OS_NAME" /> lejupielādēja lejupielāžu direktorijā, kas nav noklusējuma direktorijs.</translation>
+<translation id="654303922206238013">eCryptfs migrēšanas stratēģija</translation>
 <translation id="6544897973797372144">Ja šai politikai ir iestatīta vērtība Patiesa un politika ChromeOsReleaseChannel nav norādīta, reģistrēšanas domēna lietotājiem ir atļauts mainīt ierīces izlaišanas kanālu. Ja šī politika ir iestatīta uz Aplama, ierīce tiek bloķēta neatkarīgi no kanāla, kurā tā tika iestatīta pēdējo reizi.
 
       Iestatot politiku ChromeOsReleaseChannel, tiks ignorēts lietotāja atlasītais kanāls, bet, ja politikas kanāls būs stabilāks par to, kas instalēts ierīcē, kanāla pārslēgšana notiks tikai pēc tam, kad stabilākais kanāls sasniegs skaitli, kas ir lielāks par ierīcē instalēto skaitli.</translation>
@@ -1698,6 +1678,13 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
           Šī politika tiek lietota tikai tad, ja ir iespējota politika DefaultSearchProviderEnabled.</translation>
 <translation id="7302043767260300182">Aizkave līdz ekrāna bloķēšanai, ja ierīce darbojas ar maiņstrāvu</translation>
+<translation id="7309839952828354215">Norāda ierīces darbību gadījumos, kad tajā uzstādīta sistēma eCryptfs un jāpāriet uz ext4 šifrēšanu.
+
+      Ja politikai iestatīsiet vērtību “DisallowArc”, visiem lietotājiem ierīcē būs atspējotas Android lietotnes (tostarp tiem lietotājiem, kuri jau izmanto ext4 šifrēšanu) un lietotājiem netiks piedāvāta migrēšana no eCryptfs uz ext4 šifrēšanu.
+
+      Ja politikai iestatīsiet vērtību “AllowMigration”, lietotājiem ar eCryptfs sākumdirektorijiem nepieciešamības gadījumā tiks piedāvāts migrēt uz ext4 šifrēšanu (kad ierīcē būs pieejama operētājsistēma Android N).
+
+      Ja politika netiks iestatīta, ierīce darbosies tā, it kā būtu izvēlēta vērtība “DisallowArc”.</translation>
 <translation id="7311458740754205918">Ja šai politikai ir iestatīta vērtība “Patiesa” vai tā nav iestatīta, lapā “Jauna cilne” var tikt rādīti satura ieteikumi, pamatojoties uz lietotāja pārlūkošanas vēsturi, interesēm vai atrašanās vietu.
 
       Ja šai politikai ir iestatīta vērtība “Nepatiesa”, lapā “Jauna cilne” netiek rādīti automātiski veidoti satura ieteikumi.</translation>
@@ -2093,8 +2080,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
           Ja šis iestatījums ir iespējots, tiks izlaista CNAME meklēšana un tiks izmantots faktiski ievadītais servera nosaukums.
 
           Ja šis iestatījums ir atspējots vai nav iestatīts, servera kanoniskais nosaukums tiks noteikts, izmantojot CNAME meklēšanu.</translation>
-<translation id="8774131509736383471">Ja šai politikai ir iestatīta vērtība Patiesa, pirmajā palaišanas reizē pārlūkā <ph name="PRODUCT_NAME" /> vienmēr tiek maksimizēts pirmais parādītais logs.
-      Ja šai politikai ir iestatīta vērtība Nepatiesa vai ja politika nav konfigurēta, pirmā parādītā loga maksimizēšana būs atkarīga no ekrāna izmēra.</translation>
 <translation id="87812015706645271">Lokālā lietotāja vārda un attālās piekļuves saimniekdatora īpašnieka vārda atbilstības pieprasīšana</translation>
 <translation id="8782750230688364867">Norāda aizkavi ekrāna aptumšošanai procentos, kad ierīce darbojas prezentācijas režīmā.
 

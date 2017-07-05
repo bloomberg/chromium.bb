@@ -488,6 +488,7 @@
 
           Si esta política no se establece, la configuración estará habilitada.</translation>
 <translation id="2824715612115726353">Activar el modo de incógnito</translation>
+<translation id="2838830882081735096">No permitir la migración de datos y ARC</translation>
 <translation id="2844404652289407061">Habilita la disponibilidad de Tocar para buscar en la vista de contenido de <ph name="PRODUCT_NAME" />.
 
       Si se habilita esta configuración, Tocar para buscar estará disponible para el usuario, quien podrá elegir activar o desactivar la función.
@@ -659,13 +660,6 @@
           Esta política solo se respeta si se habilita la política "DefaultSearchProviderEnabled".</translation>
 <translation id="350797926066071931">Habilitar Traductor de Google</translation>
 <translation id="3528000905991875314">Habilitar páginas de error alternativas</translation>
-<translation id="3538538104630456270">La configuración asociada se usó antes de implementar la reautenticación para ver contraseñas. A partir de ese momento, la configuración y, por lo tanto, esta política no tienen efecto en el comportamiento de Chrome. El comportamiento actual de Chrome es como si la política se hubiera establecido para no ver las contraseñas en texto claro en las páginas de configuración del administrador de contraseñas. Esto significa que la página de configuración contiene solo un marcador de posición y Chrome mostrará la contraseña después de que el usuario haga clic en "Mostrar" (e implemente la reautenticación, si corresponde). A continuación, se muestra la descripción original de la política.
-
-          Controla si el usuario puede mostrar contraseñas en texto claro en el administrador de contraseñas.
-
-          Si inhabilitas esta configuración, el administrador de contraseñas no permite mostrar contraseñas guardadas en texto claro en la ventana del administrador de contraseñas.
-
-          Si habilitas esta configuración o no estableces esta política, los usuarios pueden ver las contraseñas en texto claro en el administrador de contraseñas.</translation>
 <translation id="3547954654003013442">Configuración de proxy</translation>
 <translation id="3591584750136265240">Configurar el comportamiento de autenticación en el acceso</translation>
 <translation id="3627678165642179114">Habilita o inhabilita el servicio web de revisión ortográfica.</translation>
@@ -856,23 +850,6 @@
 <translation id="4239720644496144453">Las apps de Android no usan caché. Si varios usuarios instalan la misma app de Android, se descargará una para cada usuario.</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="4261820385751181068">Configuración regional de la pantalla de acceso del dispositivo</translation>
-<translation id="4275782538576261754">Configura el tipo de descarga que <ph name="PRODUCT_NAME" /> bloqueará por completo, sin permitir que los usuarios anulen la decisión de seguridad.
-
-      Si configuras esta política, <ph name="PRODUCT_NAME" /> evitará determinados tipos de descargas y no permitirá que los usuarios omitan las advertencias de seguridad.
-
-      Cuando se elige la opción "Bloquear las descargas peligrosas", se permiten todas las descargas, excepto aquellas con advertencias de Navegación segura.
-
-      Cuando se elige la opción "Bloquear las descargas potencialmente peligrosas", se permiten todas las descargas, excepto aquellas con advertencias de Navegación segura sobre descargas potencialmente peligrosas.
-
-      Cuando se elige la opción "Bloquear todas las descargas", se bloquean todas las descargas.
-
-      Cuando no se configura esta política (o cuando se elige la opción "Sin restricciones especiales"), se aplicarán las restricciones usuales de seguridad a las descargas, de acuerdo con los resultados del análisis de Navegación segura.
-
-      Ten en cuenta que estas restricciones se aplican a las descargas que se inician desde el contenido de páginas web, así como la opción "Vínculo de descarga" del menú contextual.
-
-      Estas restricciones no se aplican a las acciones de guardar o descargar la página que se muestra actualmente, ni tampoco a la opción para guardar como PDF desde las opciones de impresión.
-
-      Consulta https://developers.google.com/safe-browsing para obtener más información sobre Navegación segura.</translation>
 <translation id="427632463972968153">Especifica los parámetros utilizados al realizar una búsqueda de imágenes con POST. Se compone de pares de nombre/valor separados por coma. Si un valor es un parámetro de plantilla, como {imageThumbnail} en el ejemplo anterior, se reemplazará por datos de miniaturas de imágenes reales.
 
           Esta política es opcional. Si no se establece, la solicitud de búsqueda de imágenes se enviará mediante el método GET.
@@ -898,6 +875,7 @@
 <translation id="436581050240847513">Informar interfaces de red del dispositivo</translation>
 <translation id="4372704773119750918">No permitir que el usuario de empresa forme parte de la función de varios perfiles (usuario principal o secundario)</translation>
 <translation id="4377599627073874279">Permitir a todos los sitios que muestren todas las imágenes</translation>
+<translation id="437791893267799639">No se estableció la política; no permitir la migración de datos y ARC</translation>
 <translation id="4389091865841123886">Permite configurar la atestación remota con el mecanismo de TPM.</translation>
 <translation id="4418726081189202489">Si esta política se establece como falsa, evita que <ph name="PRODUCT_NAME" /> envíe de forma ocasional consultas a un servidor de Google para obtener una marca de tiempo exacta. Estas consultas se habilitarán si esta política se establece como verdadera o no se establece.</translation>
 <translation id="4423597592074154136">Especificar manualmente la configuración del proxy</translation>
@@ -1177,6 +1155,7 @@
 <translation id="5586942249556966598">No hacer nada</translation>
 <translation id="5630352020869108293">Restaurar la última sesión</translation>
 <translation id="5645779841392247734">Permitir cookies en estos sitios</translation>
+<translation id="5693469654327063861">Permitir la migración de datos</translation>
 <translation id="5694594914843889579">Cuando esta política se establece como verdadera, el almacenamiento externo no estará disponible en el navegador de archivos.
 
       Esta política afecta todos los tipos de medios de almacenamiento, p. ej., memorias USB, discos rígidos externos, tarjetas de memoria SD y de otros tipos, almacenamiento óptico, etc. El almacenamiento interno no se ve afectado, por lo que aún se puede acceder a los archivos guardados en la carpeta de Descargas. Esta política tampoco afecta a Google Drive.
@@ -1280,7 +1259,7 @@
 
       Si inhabilitas esta configuración, la función de Navegación segura nunca estará activa.
 
-      Si habilitas o inhabilitas esta configuración, los usuarios no pueden cambiar ni anular la configuración para habilitar la protección contra software malicioso y phishing en <ph name="PRODUCT_NAME" />.
+      Si habilitas o inhabilitas esta configuración, los usuarios no pueden cambiar ni anular la configuración para habilitar la protección contra software malicioso y suplantación de identidad (phishing) en <ph name="PRODUCT_NAME" />.
 
       Si esta política no se configura, se habilitará, pero el usuario podrá cambiarla.
 
@@ -1402,6 +1381,7 @@
           El valor de la política debe especificarse en milisegundos. Los valores se establecerán para que sean inferiores a la demora de inactividad.</translation>
 <translation id="6536600139108165863">Reinicio automático cuando se apaga el dispositivo</translation>
 <translation id="6539246272469751178">Esta política no tiene efecto en las apps de Android. Estas apps siempre usan el directorio de descargas predeterminado y no pueden acceder a ningún archivo que haya descargado <ph name="PRODUCT_OS_NAME" /> en un directorio de descargas no predeterminado.</translation>
+<translation id="654303922206238013">Estrategia de migración para eCryptfs</translation>
 <translation id="6544897973797372144">Si esta política se establece en Verdadera y la política ChromeOsReleaseChannel no se especifica, los usuarios del dominio de inscripción podrán cambiar el canal de versiones del dispositivo. Si esta política se establece en Falsa, el dispositivo se bloqueará en cualquier canal que se haya establecido anteriormente.
 
       El canal seleccionado por el usuario será reemplazado por la política ChromeOsReleaseChannel, pero si el canal de la política es más estable que el que fue instalado en el dispositivo, el canal solo cambiará después de que la versión del canal más estable alcance un número de versión más alto que la instalada en el dispositivo.</translation>
@@ -1548,7 +1528,7 @@
           Se debe tener en cuenta que si <ph name="PRODUCT_NAME" /> se está ejecutando en "modo en segundo plano", es posible que la sesión no se cierre cuando se cierre la última ventana del navegador, sino que se mantendrá activa hasta que se cierre el navegador. Para obtener más información acerca de la configuración de este comportamiento, se puede consultar la política "BackgroundModeEnabled".
 
           Si la política "RestoreOnStartup" se establece en la opción de restaurar las URL de las sesiones anteriores, esta política no se respetará y las cookies se almacenarán de forma permanente para esos sitios.</translation>
-<translation id="7202925763179776247">Permitir la descarga de restricciones</translation>
+<translation id="7202925763179776247">Permitir las restricciones de descarga</translation>
 <translation id="7207095846245296855">Forzar Google SafeSearch</translation>
 <translation id="7216442368414164495">Permitir que los usuarios acepten informes extendidos de navegación segura</translation>
 <translation id="7234280155140786597">Nombres de los hosts de mensajería nativa prohibidos (o * para todos)</translation>
@@ -1576,6 +1556,13 @@
 
           Esta política solo se respeta si la política "DefaultSearchProviderEnabled" está habilitada.</translation>
 <translation id="7302043767260300182">Demora de bloqueo de pantalla con alimentación de CA</translation>
+<translation id="7309839952828354215">Especifica el comportamiento de un dispositivo que se ha enviado con eCryptfs y necesita una transición a la encriptación ext4.
+
+      Si estableces esta política como "DisallowArc", se inhabilitarán las apps de Android para todos los usuarios en el dispositivo (incluidos los que ya tienen la encriptación ext4) y no se le ofrecerá a ningún usuario la posibilidad de migrar de la encriptación eCryptfs a la ext4.
+
+      Si estableces esta política como "AllowMigration", los usuarios que tengan directorios principales con eCryptfs podrán migrarlos a la encriptación ext4 en caso de ser necesario (actualmente, cuando está disponible Android N en el dispositivo).
+
+      Si esta política no se establece, el dispositivo se comportará como cuando se elige "DisallowArc".</translation>
 <translation id="7311458740754205918">Si esta política se establece como verdadera o no se establece, la página Nueva pestaña mostrará sugerencias de contenido basadas en la ubicación, los intereses o el historial de navegación del usuario.
 
       Si se establece como falsa, la página Nueva pestaña no mostrará sugerencias de contenido generadas de forma automática.</translation>
@@ -1669,7 +1656,7 @@
 
           Esta política es para uso interno de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7712109699186360774">Preguntar siempre que un sitio quiera acceder a la cámara o al micrófono</translation>
-<translation id="7713608076604149344">Descargar restricciones</translation>
+<translation id="7713608076604149344">Restricciones de descarga</translation>
 <translation id="7715711044277116530">Indica el porcentaje en el que debe ajustarse la demora de inactividad de la pantalla en el modo de presentación.</translation>
 <translation id="7717938661004793600">Permite configurar las funciones de accesibilidad de <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7719251660743813569">Controla el envío de informes sobre estadísticas de uso a Google. Si el valor se establece en "true", <ph name="PRODUCT_OS_NAME" /> enviará informes sobre estadísticas de uso. Si no se configura o se establece en "false", se desactivarán los informes estadísticos.</translation>
@@ -1944,8 +1931,6 @@
 
       Si esta opción está inhabilitada, no se pueden eliminar el historial de navegación ni el de descargas.</translation>
 <translation id="8764119899999036911">Especifica si el SPN de Kerberos generado se basa en el nombre canónico DNS o en el nombre original introducido. Si se habilita esta configuración, se salteará la búsqueda de CNAME y se usará el nombre del servidor que se haya introducido. Si se inhabilita esta opción o si no se configura, el nombre canónico del servidor se determinará a través de una búsqueda de CNAME.</translation>
-<translation id="8774131509736383471">Si esta política se establece en true, <ph name="PRODUCT_NAME" /> maximizará incondicionalmente la primera ventana que se muestre en la primera ejecución.
-      Si esta política se establece en false o no se configura, se tomará la decisión de maximizar la primera ventana que se muestre en función del tamaño de la pantalla.</translation>
 <translation id="87812015706645271">Requiere que el nombre del usuario local y el propietario del host de acceso remoto coincidan</translation>
 <translation id="8782750230688364867">Especifica el porcentaje de ajuste del tiempo de espera de inactividad de la pantalla cuando el dispositivo se encuentra en modo de presentación.
 

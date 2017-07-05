@@ -69,7 +69,6 @@
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Tej strani prepreči, da bi ustvarila dodatna pogovorna okna</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Odstranitev 1 izbranega elementa}one{Odstranitev # izbranega elementa}two{Odstranitev # izbranih elementov}few{Odstranitev # izbranih elementov}other{Odstranitev # izbranih elementov}}</translation>
-<translation id="1629390138158333592">Iskanje v spletu</translation>
 <translation id="1641113438599504367">Varno brskanje</translation>
 <translation id="164269334534774161">Ogledujete si kopijo te strani brez povezave z dne <ph name="CREATION_TIME" /></translation>
 <translation id="1643702317193804718">Prevajanje strani v jezik <ph name="SOURCE_LANGUAGE" /> ...</translation>
@@ -330,7 +329,6 @@
 <translation id="4307992518367153382">Osnove</translation>
 <translation id="4351244548802238354">Zapri pogovorno okno</translation>
 <translation id="4378154925671717803">Telefon</translation>
-<translation id="4381206798889118664">Iščite … recepte</translation>
 <translation id="4384468725000734951">Uporaba iskalnika Sogou za iskanje</translation>
 <translation id="4412992751769744546">Omogočanje piškotkov drugih spletnih mest</translation>
 <translation id="4432792777822557199">Strani v jeziku <ph name="SOURCE_LANGUAGE" /> bodo od zdaj naprej prevedene v jezik <ph name="TARGET_LANGUAGE" /></translation>
@@ -376,7 +374,6 @@
 <translation id="4837753911714442426">Odpiranje možnosti za tiskanje strani</translation>
 <translation id="4850886885716139402">Pogled</translation>
 <translation id="4860895144060829044">Pokličite</translation>
-<translation id="4869862470313079745">Iščite … novice</translation>
 <translation id="4881695831933465202">Odpri</translation>
 <translation id="4885273946141277891">To število primerkov Chroma ni podprto.</translation>
 <translation id="4910889077668685004">Aplikacije za plačevanje</translation>
@@ -406,7 +403,6 @@
 <translation id="5161254044473106830">Naslov je obvezen</translation>
 <translation id="5164482624172255778">Želite, da Google Chrome naslednjič ponudi prevod strani v jeziku <ph name="LANGUAGE" /> s tega spletnega mesta?</translation>
 <translation id="5168917394043976756">Odpri predal za krmarjenje</translation>
-<translation id="5171045022955879922">Poiščite ali vnesite URL</translation>
 <translation id="5184329579814168207">Odpri v Chromu</translation>
 <translation id="5199929503336119739">Delovni profil</translation>
 <translation id="5209320130288484488">Najti ni mogoče nobene naprave</translation>
@@ -510,7 +506,6 @@ Kljub temu niste nevidni. Če uporabljate način brez beleženja zgodovine, ne s
 <translation id="6042308850641462728">Več</translation>
 <translation id="604996488070107836">Prenos datoteke <ph name="FILE_NAME" /> ni uspel zaradi neznane napake.</translation>
 <translation id="605721222689873409">LL</translation>
-<translation id="6066049505142453066">Iščite … vreme</translation>
 <translation id="6075798973483050474">Urejanje domače strani</translation>
 <translation id="60923314841986378">Še <ph name="HOURS" /> h</translation>
 <translation id="60924377787140961">Kmalu bo prikazanih več člankov. Prijetno popoldne.</translation>
@@ -604,7 +599,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="688738109438487280">Dodajanje obstoječih podatkov v račun <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d odprt zavihek}one{%1$d odprt zavihek}two{%1$d odprta zavihka}few{%1$d odprti zavihki}other{%1$d odprtih zavihkov}}</translation>
 <translation id="6896758677409633944">Kopiraj</translation>
-<translation id="6932129181739884535">Iščite ali vnesite ime spletnega mesta</translation>
 <translation id="6945221475159498467">Izberi</translation>
 <translation id="6963766334940102469">Izbriši zaznamke</translation>
 <translation id="6965382102122355670">V redu</translation>
@@ -825,7 +819,6 @@ Nove licence dobite tako, da se povežete v internet in predvajate preneseno vse
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Pokaži izvirno besedilo</translation>
 <translation id="9139068048179869749">Poziv, preden se spletnim mestom dovoli pošiljanje obvestil (priporočeno)</translation>
-<translation id="9187067407629017315">Vnesite poizvedbo ali spletno mesto</translation>
 <translation id="9187199695613236444">Pogled, prilagojen za mobilne naprave</translation>
 <translation id="9188680907066685419">Odjava iz upravljanega računa</translation>
 <translation id="9204836675896933765">Še 1 datoteka</translation>

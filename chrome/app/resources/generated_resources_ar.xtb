@@ -65,7 +65,7 @@
 <translation id="1097507499312291972"><ph name="BEGIN_SIGN_IN_LINK" />سجّل الدخول<ph name="END_SIGN_IN_LINK" /> للتحكم في مواقع الويب التي يزورها هذا الشخص وعرضها.</translation>
 <translation id="1097658378307015415">قبل تسجيل الدخول، الرجاء الدخول كضيف لتنشيط الشبكة <ph name="NETWORK_ID" /></translation>
 <translation id="1108600514891325577">إي&amp;قاف</translation>
-<translation id="110918622319006905">الشبكة الظاهرية الخاصة لطرف ثالث</translation>
+<translation id="110918622319006905">الشبكة الافتراضية الخاصة لطرف ثالث</translation>
 <translation id="1110155001042129815">انتظار</translation>
 <translation id="1110753181581583968">{NUM_DOWNLOAD,plural, =1{متابعة التنزيل}zero{متابعة التنزيلات}two{متابعة التنزيلين}few{متابعة التنزيلات}many{متابعة التنزيلات}other{متابعة التنزيلات}}</translation>
 <translation id="1110772031432362678">لم يتم العثور على شبكات.</translation>
@@ -500,7 +500,6 @@
 <translation id="1709106626015023981">‏<ph name="WIDTH" /> x <ph name="HEIGHT" /> (الأصلي)</translation>
 <translation id="1711973684025117106">تعذّر الضغط، خطأ غير متوقع: $1</translation>
 <translation id="1712349894969001173">‏الحصول على كلمة المرور هذه على جهاز iPhone</translation>
-<translation id="1719028357511747483">البحث في <ph name="DEVICE_TYPE" />، التطبيقات، الويب...</translation>
 <translation id="1719312230114180055">ملاحظة: قد يكون استخدام ميزة بصمة الإصبع أقل أمانًا من استخدام كلمة مرور أو رقم تعريف شخصي قوي.</translation>
 <translation id="1720318856472900922">‏مصادقة TLS (بروتوكول أمان طبقة النقل) للخادم WWW</translation>
 <translation id="1720372306711178108">سطح المكتب الموسّع</translation>
@@ -2081,7 +2080,7 @@
 <translation id="4071770069230198275"><ph name="PROFILE_NAME" />: خطأ في تسجيل الدخول</translation>
 <translation id="4074900173531346617">شهادة توقيع البريد الإلكتروني</translation>
 <translation id="407520071244661467">تغيير الحجم</translation>
-<translation id="4077917118009885966">الإعلانات المحظورة على هذا الموقع</translation>
+<translation id="4077917118009885966">حظر الإعلانات على هذا الموقع</translation>
 <translation id="4084682180776658562">إشارة</translation>
 <translation id="4084835346725913160">غلق <ph name="TAB_NAME" /></translation>
 <translation id="4085298594534903246">تم منع تشغيل جافا سكريبت في هذه الصفحة.</translation>
@@ -4166,7 +4165,7 @@
 <translation id="7348093485538360975">لوحة المفاتيح على الشاشة</translation>
 <translation id="7352651011704765696">حدث خطأ ما</translation>
 <translation id="73534262421337222">جارٍ تثبيت تحديث مهمّ</translation>
-<translation id="735745346212279324">تم قطع اتصال الشبكة الظاهرية الخاصة</translation>
+<translation id="735745346212279324">تم قطع اتصال الشبكة الافتراضية الخاصة</translation>
 <translation id="7359588939039777303">تم حظر الإعلانات.</translation>
 <translation id="7360183604634508679">قائمة الإشارات</translation>
 <translation id="7360233684753165754"><ph name="PAGE_NUMBER" /> صفحة على <ph name="PRINTER_NAME" /></translation>

@@ -10,7 +10,6 @@
 <translation id="1188858454923323853">dopolnilno</translation>
 <translation id="1206619573307042055">potujoči napis</translation>
 <translation id="1206693055195146388">drsnik</translation>
-<translation id="1235745349614807883">Počisti zadnja iskanja</translation>
 <translation id="1281252709823657822">pogovorno okno</translation>
 <translation id="1342835525016946179">člnk</translation>
 <translation id="1359897965706325498">pasica</translation>
@@ -39,7 +38,6 @@
 <translation id="248395913932153421">Dan</translation>
 <translation id="2507943997699731163">Izpolnite to polje</translation>
 <translation id="2508569020611168319">seznam zavihkov</translation>
-<translation id="2548326553472216322">Ni zadnjih iskanj</translation>
 <translation id="2561842179657104141">prikaz več kontrolnikov za predstavnost</translation>
 <translation id="2572483411312390101">predvajanje</translation>
 <translation id="2613802280814924224">Vnesite veljavno vrednost. Najbližja veljavna vrednost je <ph name="VALID_VALUE" />.</translation>
@@ -51,7 +49,6 @@
 <translation id="2759744352195237655">pojavni gumb</translation>
 <translation id="2761667185364618470">Potrdite to polje, če želite nadaljevati.</translation>
 <translation id="2896972712917208084">skupina izbirnih gumbov</translation>
-<translation id="2901282870647571346">trenutno stanje filma</translation>
 <translation id="2908441821576996758">Vnesite seznam e-poštnih naslovov, ločenih z vejicami</translation>
 <translation id="2940813599313844715">predmet</translation>
 <translation id="2942448076852699108">označena vsebina</translation>
@@ -95,7 +92,6 @@
 <translation id="4992066212339426712">Vklopi zvok</translation>
 <translation id="49969490063480558">Vnesite nekaj po znaku »<ph name="ATSIGN" />«. Naslov »<ph name="INVALIDADDRESS" />« je nepopoln.</translation>
 <translation id="5034860022980953847">kazalnik poteka</translation>
-<translation id="5048533449481078685">označevalnik seznama</translation>
 <translation id="5117590920725113268">Prikaz naslednjega meseca</translation>
 <translation id="512758898067543763">glava vrstice</translation>
 <translation id="5164977714490026579">Vrednost mora biti večja od <ph name="MINIMUM" /> ali enaka.</translation>
@@ -113,7 +109,6 @@
 <translation id="5643186887447432888">gumb</translation>
 <translation id="5677946354068040947">več možnosti</translation>
 <translation id="57838592816432529">Izklopi zvok</translation>
-<translation id="5843503607508392247">Drugo ...</translation>
 <translation id="5860033963881614850">Izklopljeno</translation>
 <translation id="588258955323874662">Celozaslonsko</translation>
 <translation id="5939518447894949180">Ponastavi</translation>
@@ -123,8 +118,6 @@
 <translation id="6023896073578205740">polje s seznamom</translation>
 <translation id="6101327004457443354">vklop zvoka za zvočni posnetek</translation>
 <translation id="6164829606128959761">merilnik</translation>
-<translation id="6270583010843788609">sličica časovne premice filma</translation>
-<translation id="6359256949422175976">sličica časovnega krmilnika za predvajanje filma</translation>
 <translation id="6398862346408813489">Prikaz podokna za izbiro meseca</translation>
 <translation id="6404546809543547843">časovni krmilnik za predvajanje zvoka</translation>
 <translation id="648732519525291180">izbirnik ure</translation>
@@ -132,7 +125,6 @@
 <translation id="663493177488814956">vir</translation>
 <translation id="6637586476836377253">dnevn</translation>
 <translation id="6643016212128521049">Počisti</translation>
-<translation id="6663448176199120256">Zadnja iskanja</translation>
 <translation id="668171684555832681">Drugo ...</translation>
 <translation id="6692633176391053278">kontrolnik</translation>
 <translation id="6739588121953935928">ravnilo</translation>
@@ -145,7 +137,6 @@
 <translation id="6934078000481955284">daljši citat</translation>
 <translation id="6941933287844615239">prenos predstavnosti</translation>
 <translation id="6989848892321993519">Podaljšajte to besedilo na toliko znakov ali več: <ph name="MIN_CHARACTERS" /> (trenutno uporabljate en znak).</translation>
-<translation id="7057186640035488495">čas filma</translation>
 <translation id="709897737746224366">Poskrbite za ujemanje z zahtevano obliko.</translation>
 <translation id="7223624360433298498">pretečeni čas</translation>
 <translation id="7263440858009898357">Izberite element s seznama.</translation>
@@ -166,10 +157,8 @@
 <translation id="8053789581856978548">besedilno polje za iskanje</translation>
 <translation id="8115662671911883373">začetek predvajanja podnapisov</translation>
 <translation id="8117451130807776954">Ta teden</translation>
-<translation id="8141602879876242471">To je kazalo, ki omogoča iskanje. Vnesite ključne besede za iskanje:</translation>
 <translation id="819205353528511139">predvajanje filma v celozaslonskem načinu</translation>
 <translation id="8199524924445686405">llll</translation>
-<translation id="8244226242650769279">slikovni zemljevid</translation>
 <translation id="8284326494547611709">Napisi</translation>
 <translation id="835897206747267392">Neveljavna vrednost.</translation>
 <translation id="8433900881053900389">orodna vrstica</translation>

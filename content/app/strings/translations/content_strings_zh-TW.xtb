@@ -10,7 +10,6 @@
 <translation id="1188858454923323853">補充</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1206693055195146388">滑桿</translation>
-<translation id="1235745349614807883">清除最近的搜尋紀錄</translation>
 <translation id="1281252709823657822">對話方塊</translation>
 <translation id="1342835525016946179">文章</translation>
 <translation id="1359897965706325498">橫幅</translation>
@@ -39,7 +38,6 @@
 <translation id="248395913932153421">日</translation>
 <translation id="2507943997699731163">請填寫這個欄位。</translation>
 <translation id="2508569020611168319">分頁清單</translation>
-<translation id="2548326553472216322">沒有近期的搜尋</translation>
 <translation id="2561842179657104141">顯示更多媒體控制項</translation>
 <translation id="2572483411312390101">播放</translation>
 <translation id="2613802280814924224">請輸入有效值。最接近的有效值是 <ph name="VALID_VALUE" />。</translation>
@@ -51,7 +49,6 @@
 <translation id="2759744352195237655">彈出式按鈕</translation>
 <translation id="2761667185364618470">如果你要繼續執行，請勾選這個核取方塊。</translation>
 <translation id="2896972712917208084">圓形按鈕群組</translation>
-<translation id="2901282870647571346">目前電影狀態</translation>
 <translation id="2908441821576996758">請輸入以逗號分隔的電子郵件地址清單。</translation>
 <translation id="2940813599313844715">物件</translation>
 <translation id="2942448076852699108">醒目顯示的內容</translation>
@@ -95,7 +92,6 @@
 <translation id="4992066212339426712">取消靜音</translation>
 <translation id="49969490063480558">請輸入「<ph name="ATSIGN" />」後面的部分。「<ph name="INVALIDADDRESS" />」不是完整值。</translation>
 <translation id="5034860022980953847">進度指標</translation>
-<translation id="5048533449481078685">清單標記</translation>
 <translation id="5117590920725113268">顯示下一個月</translation>
 <translation id="512758898067543763">列標題</translation>
 <translation id="5164977714490026579">值必須大於或等於 <ph name="MINIMUM" />。</translation>
@@ -113,7 +109,6 @@
 <translation id="5643186887447432888">按鈕</translation>
 <translation id="5677946354068040947">更多選項</translation>
 <translation id="57838592816432529">靜音</translation>
-<translation id="5843503607508392247">其他...</translation>
 <translation id="5860033963881614850">關閉</translation>
 <translation id="588258955323874662">全螢幕</translation>
 <translation id="5939518447894949180">重設</translation>
@@ -123,8 +118,6 @@
 <translation id="6023896073578205740">清單方塊</translation>
 <translation id="6101327004457443354">取消音軌靜音</translation>
 <translation id="6164829606128959761">計量器</translation>
-<translation id="6270583010843788609">電影時間軸捲動方塊</translation>
-<translation id="6359256949422175976">影片時間拖曳工具捲動方塊</translation>
 <translation id="6398862346408813489">顯示月份選取面板</translation>
 <translation id="6404546809543547843">音訊時間點拖曳工具</translation>
 <translation id="648732519525291180">時間選擇器</translation>
@@ -132,7 +125,6 @@
 <translation id="663493177488814956">資訊提供</translation>
 <translation id="6637586476836377253">紀錄</translation>
 <translation id="6643016212128521049">清除</translation>
-<translation id="6663448176199120256">最近的搜尋</translation>
 <translation id="668171684555832681">其他...</translation>
 <translation id="6692633176391053278">步進器</translation>
 <translation id="6739588121953935928">尺規</translation>
@@ -145,7 +137,6 @@
 <translation id="6934078000481955284">引用標記</translation>
 <translation id="6941933287844615239">下載媒體</translation>
 <translation id="6989848892321993519">請將這段文字加長到 <ph name="MIN_CHARACTERS" /> 個字元以上 (目前已有 1 個字元)。</translation>
-<translation id="7057186640035488495">電影時間</translation>
 <translation id="709897737746224366">請符合要求的格式。</translation>
 <translation id="7223624360433298498">已播放時間</translation>
 <translation id="7263440858009898357">請選取一個清單中的項目。</translation>
@@ -166,10 +157,8 @@
 <translation id="8053789581856978548">搜尋文字欄位</translation>
 <translation id="8115662671911883373">開始顯示字幕</translation>
 <translation id="8117451130807776954">本週</translation>
-<translation id="8141602879876242471">這是可搜尋的索引，輸入搜尋關鍵字：</translation>
 <translation id="819205353528511139">使用全螢幕模式播放電影</translation>
 <translation id="8199524924445686405"> 年 </translation>
-<translation id="8244226242650769279">圖片點擊區</translation>
 <translation id="8284326494547611709">字幕</translation>
 <translation id="835897206747267392">無效的值。</translation>
 <translation id="8433900881053900389">工具列</translation>

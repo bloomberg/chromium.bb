@@ -508,6 +508,7 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
 
           Ikiwa sera hii itaachwa bila kuwekwa mpangilio utawashwa.</translation>
 <translation id="2824715612115726353">Washa hali Fiche</translation>
+<translation id="2838830882081735096">Usiruhusu uhamishaji data na ARC</translation>
 <translation id="2844404652289407061">Huwasha kipengele cha Gusa ili Utafute katika mwonekano wa maudhui ya <ph name="PRODUCT_NAME" />.
 
       Ukiwasha mipangilio hii, kipengele cha Gusa ili Utafute kitapatikana kwa mtumiaji na anaweza kuamua kukiwasha au kukizima.
@@ -553,7 +554,7 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
      Ukizima mipangilio hii au uiache bila kuiweka, kurasa zozote za kwanza za kuthibitisha kuingia kwenye wavuti zitaonyeshwa katika kichupo kipya cha kivinjari (cha kawaida), kwa kutumia mipangilio ya sasa ya seva mbadala ya mtumiaji.</translation>
 <translation id="3001534538097271560">Kuweka sera hii kuwa sivyo kunazuia watumiaji kuchagua kutuma baadhi ya maelezo ya mfumo na maudhui ya ukurasa kwenye seva za Google. Ikiwa mipangilio hii imewekwa kuwa ndivyo au haijawekwa, basi watumiaji wataruhusiwa kutuma baadhi ya maelezo ya mfumo na maudhui ya ukurasa kwenye Kuvinjari Salama ili kusaidia kugundua programu na tovuti hatari.
 
-      Angalia https://developers.google.com/safe-browsing kwa maelezo zaidi  SafeBrowsing.</translation>
+      Angalia https://developers.google.com/safe-browsing kwa maelezo zaidi kuhusu  SafeBrowsing.</translation>
 <translation id="3021409116652377124">Lemaza kipataji cha programu jalizi</translation>
 <translation id="3030000825273123558">Wezesha kuripoti kwa metriki</translation>
 <translation id="3034580675120919256">Inakuruhusu kuweka iwapo tovuti zinaruhusiwa kuendesha JavaScript. Kuendesha JavaScript kunaweza kuruhusiwa kwa tovuti zote au kukataliwa kwa tovuti zote.
@@ -691,13 +692,6 @@ Sera hii inatumika tu kama sera ya 'DefaultSearchProviderEnabled' imewashwa.</tr
           Sera hii itatumika tu endapo sera ya 'DefaultSearchProviderEnabled' imewashwa.</translation>
 <translation id="350797926066071931">Wezesha Tafsiri</translation>
 <translation id="3528000905991875314">Wezesha kurasa badala za hitilafu</translation>
-<translation id="3538538104630456270">Mipangilio husika ilitumiwa kabla ya kuanzishwa kwa uthibitishaji upya wa kuangalia manenosiri. Tangu wakati huo, mipangilio na sera hii haijaathiri utendaji wa Chrome. Utendaji wa sasa wa Chrome ni sawa na kana kwamba sera iliwekwa ili kuzima kipengele cha kuonyesha manenosiri katika maandishi yanayosomeka katika ukurasa wa mipangilio ya kidhibiti cha manenosiri. Hii inamaanisha kwamba ukurasa wa mipangilio una kishikilia nafasi pekee, na Chrome huonyesha nenosiri wakati mtumiaji anapobofya "Onyesha" (na kuthibitisha upya, iwapo kunatumika). Maelezo ya asili ya sera yanafuata hapa chini.
-
-          Hudhibiti iwapo mtumiaji anaweza kuonyesha manenosiri katika maandishi yanayosomeka katika kidhibiti cha manenosiri.
-
-          Ukiizima mipangilio hii, kidhibiti cha manenosiri hakiruhusu kuonyesha manenosiri yaliyohifadhiwa katika maandishi yanayosomeka katika dirisha la kidhibiti cha manenosiri.
-
-         Ukiwasha au usipoweka sera hii, watumiaji wanaweza kuona manenosiri yao katika maandishi yanayosomeka katika kidhibiti cha manenosiri.</translation>
 <translation id="3547954654003013442">Mipangilio ya proksi</translation>
 <translation id="3591584750136265240">Weka mipangilio ya tabia ya kithibitishaji cha kuingia katika akaunti</translation>
 <translation id="3627678165642179114">Wezesha au lemaza huduma ya wavuti ya ukaguzi tahajia</translation>
@@ -896,23 +890,6 @@ Thamani ya sera inapaswa kubainishwa katika sekunde. Thamani huwekwa pamoja ili 
 <translation id="4239720644496144453">Akiba hii haitumiwi na programu za Android. Ikiwa watumiaji wengi watasakinisha programu sawa ya Android, itapakuliwa upya kwa kila mtumiaji.</translation>
 <translation id="4250680216510889253">La</translation>
 <translation id="4261820385751181068">Lugha ya skrini ya kuingia katika kifaa</translation>
-<translation id="4275782538576261754">Huweka mipangilio aina ya vipakuliwa ambavyo vitazuiwa kabisa na <ph name="PRODUCT_NAME" />, bila watumiaji kubatilisha hatua ya usalama.
-
-      Ukiiweka sera hii, vipakuliwa vya aina fulani vitazuiwa na <ph name="PRODUCT_NAME" /> na haitamruhusu mtumiaji kubatilisha maonyo ya usalama.
-
-      Ukichagua 'Zuia vipakuliwa hatari', utapakua vipakuliwa vyote isipokuwa vilivyo na maonyo ya SafeBrowsing.
-
-      Ukichagua 'Zuia vipakuliwa vinavyoweza kuwa hatari', utapakua vipakuliwa vyote isipokuwa vilivyo na maonyo ya vipakuliwa vinavyoweza kuwa hatari vya SafeBrowsing.
-
-     Ukichagua 'Zuia vipakuliwa vyote', vipakuliwa vyote vitazuiwa.
-
-      Usipoiweka sera hii, (au uchague 'Ondoa vikwazo maalum'), vipakuliwa vitawekewa vikwazo vya usalama vya kawaida kulingana na matokeo ya uchanganuzi ya SafeBrowsing.
-
-      Kumbuka kuwa vikwazo hivi vitawekewa vipakuliwa vinavyotokana na maudhui ya ukurasa wa wavuti na pia chaguo la menyu la 'kiungo cha kupakua...'.
-
-      Vikwazo hivi havitawekewa kipengele cha kuhifadhi au kupakua cha ukurasa unaoonyeshwa wala kipengele cha hifadhi kama PDF kutoka kwenye chaguo za kuchapisha.
-
-      Angalia https://developers.google.com/safe-browsing kwa maelezo zaidi kuhusu SafeBrowsing.</translation>
 <translation id="427632463972968153">Hubainisha vigezo vinavyotumika wakati wa kufanya utafutaji kwa picha kutumia POST. Ina vikundi vya jina/thamani vinavyotenganishwa na koma. Kama thamani ni kigezo cha kiolezo, kama {Kijipicha} katika mfano hapo juu, itabadilishwa na data ya kijipicha cha picha halisi.
 
 
@@ -939,6 +916,7 @@ Thamani ya sera inapaswa kubainishwa katika sekunde. Thamani huwekwa pamoja ili 
 <translation id="436581050240847513">Ripoti violesura vya mtandao wa kifaa</translation>
 <translation id="4372704773119750918">Usiruhusu mtumiaji wa biashara kuwa sehemu ya wasifu nyingi (ya msingi au ya pili)</translation>
 <translation id="4377599627073874279">Ruhusu tovuti zote kuonyesha picha zote</translation>
+<translation id="437791893267799639">Sera haijawekwa, usiruhusu uhamishaji data na ARC</translation>
 <translation id="4389091865841123886">Sanidi uthibitishaji wa mbali unaotumia mfumo wa TPM.</translation>
 <translation id="4418726081189202489">Kuiweka sera hii kuwa sivyo kutasimamisha <ph name="PRODUCT_NAME" /> kutuma hoja mara kwa mara kwenye seva ya Google ili kurejesha muhuri sahihi wa muda. Hoja hizi zitawashwa iwapo sera hii itawekwa kuwa ndivyo au haitawekwa.</translation>
 <translation id="4423597592074154136">Bainisha mipangilio ya proksi mwenyewe</translation>
@@ -1253,6 +1231,7 @@ Iwapo sera hii haijawekwa, kiteuzi kikubwa kitazimwa mwanzoni lakini kitawashwa 
 <translation id="5586942249556966598">Usifanye chochote</translation>
 <translation id="5630352020869108293">Rejesha kipindi kilichopita</translation>
 <translation id="5645779841392247734">Ruhusu vidakuzi kwenye tovuti hizi</translation>
+<translation id="5693469654327063861">Ruhusu uhamishaji data</translation>
 <translation id="5694594914843889579">Sera hii ikiwekwa kuwa ndivyo, hifadhi ya nje haitapatikana katika kivinjari cha faili.
 
       Sera hii inaathiri aina zote za maudhui ya hifadhi. Kwa mfano: hifadhi za USB ya mwako, diski kuu za nje, kadi ya SD na kadi nyingine za hifadhi, hifadhi ya optiki n.k. Hifadhi ya ndani haiathiriwi, kwa hvyo faili zilizohifadhiwa kwenye folda ya Vipakuliwa bado zinaweza kufikiwa. Hifadhi ya Google pia haiathiriwi na sera hii.
@@ -1490,6 +1469,7 @@ Thamani ya sera inapaswa kubainishwa katika milisekunde. Thamani huwekwa pamoja 
           Sera ya thamani inastahili kubainishwa kwa nukta. Thamani zinabanwa ili kuwa chini ya ucheleweshaji wa kutokuwa na shughuli.</translation>
 <translation id="6536600139108165863">Uwashaji tena kiotomatiki baada ya kuzima kifaa</translation>
 <translation id="6539246272469751178">Sera hii haiathiri programu za Android. Programu za Android hutumia saraka chaguo-msingi ya vipakuliwa wakati wote na haziwezi kufikia faili zozote zilizopakuliwa na <ph name="PRODUCT_OS_NAME" /> katika saraka ya vipakuliwa ambayo si chaguo-msingi.</translation>
+<translation id="654303922206238013">Mkakati wa uhamishaji wa ecryptfs</translation>
 <translation id="6544897973797372144">Ikiwa sera hii itawekwa kuwa Ndivyo na sera ya ChromeOsReleaseChannel haijabainishwa basi watumiaji wa kikoa cha uandikishaji kitaruhusiwa kubadilisha kituo cha kutoa cha kifaa. Ikiwa sera hii itawekwa kuwa siyo Ndivyo kifaa kitafungwa katika kituo chochote ambapo kilikuwa kimewekwa mwisho.
 
       Kituo kilichoteuliwa na mtumiaji kitafutwa kwa sera ya ChromeOsReleaseChannel, lakini ikiwa kituo cha sera ni thabiti zaidi kuliko kile ambacho kilikuwa kimesakinishwa kwenye kifaa, hivyo basi kituo kitabadili tu baada ya toleo la kituo thabiti zaidi kinachofikia idadi ya juu zaidi ya toleo kuliko lililosakinishwa kwenye kifaa.</translation>
@@ -1678,6 +1658,13 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
 
           Sera hii inazingatiwa tu iwapo sera ya 'DefaultSearchProviderEnabled' imewashwa.</translation>
 <translation id="7302043767260300182">Ufungaji wa skrini unachelewa wakati nishati ya AC inapotimika</translation>
+<translation id="7309839952828354215">Hubainisha jinsi kifaa kilicholetwa kikiwa na ecryptfs na kinahitaji kupata usimbaji fiche wa ex4 kinavyopaswa kufanya kazi.
+
+      Ukiiweka sera hii kuwa 'DisallowArc', watumiaji wote wa kifaa hawataweza kuzitumia programu za Android (wakiwemo wanaotumia usimbaji fiche wa ext4) na kuzihamisha faili zenye ecrypfts kuwa usimbaji fiche wa ext4.
+
+      Ukiiweka sera hii kuwa 'AllowMigration', watumiaji wenye saraka za nyumbani zenye ecryptfs wataweza kuzihamishia kwa usimbaji fiche wa ext4 inavyotakiwa (wakati anapotumia Android N kwenye kifaa).
+
+      Usipoiweka sera hii, kifaa hiki kitafanya kazi kana kwamba umechagua 'DisallowArc'.</translation>
 <translation id="7311458740754205918">Sera hii ikiwekwa kuwa ndivyo au isipowekwa, ukurasa wa Kichupo Kipya utaonyesha mapendekezo ya maudhui kulingana na historia ya kuvinjari, mambo yanayovutia, au mahali alipo mtumiaji.
 
       Sera hii ikiwekwa kuwa sivyo, mapendekezo ya maudhui yanayozalishwa kiotomatiki hayataonyeshwa katika ukurasa wa Kichupo Kipya.</translation>
@@ -2064,8 +2051,6 @@ Kama sera hii haitawekwa, hali ya juu ya utofautishaji itazimwa mwanzoni lakini 
           Ukiwezesha mpangilio huu, kidokezo cha CNAME kitaachwa na jina la seva litatumiwa kama lilivyoingizwa.
 
           Ukilemaza mpangilio huu au uuache bila kuuweka, jina la kanuni la seva litathibitishwa kupitia kidokezo cha CNAME.</translation>
-<translation id="8774131509736383471">Sera hii ikiwekwa kuwa ndivyo, <ph name="PRODUCT_NAME" /> itatanua dirisha la kwanza linaloonekana inapofungua mara ya kwanza bila masharti.
-      Sera hii ikiwekwa kuwa sivyo au isipowekwa, mtumiaji ataamua iwapo atanue dirisha la kwanza linaloonekana, kulingana na ukubwa wa skrini.</translation>
 <translation id="87812015706645271">Inahitaji jina la mtumiaji wa ndani na mmiliki wa seva pangishi ya uwezo wa kufikia kwa mbali vilingane</translation>
 <translation id="8782750230688364867">Hubainisha asilimia ambayo kuchelewa kwa mwangaza wa skrini huongezwa wakati kifaa kiko katika hali ya wasilisho.
 

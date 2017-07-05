@@ -69,7 +69,6 @@ Chcete-li fyzický web používat, je třeba aktivovat Bluetooth a určování 
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Bránit této stránce ve vytváření dalších dialogových oken</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Odstranit jednu vybranou položku}few{Odstranit # vybrané položky}many{Odstranit # vybrané položky}other{Odstranit # vybraných položek}}</translation>
-<translation id="1629390138158333592">Vyhledávat na webu</translation>
 <translation id="1641113438599504367">Bezpečné prohlížení</translation>
 <translation id="164269334534774161">Prohlížíte si offline kopii této stránky z <ph name="CREATION_TIME" /></translation>
 <translation id="1643702317193804718">Překlad stránky do jazyka: <ph name="SOURCE_LANGUAGE" />…</translation>
@@ -330,7 +329,6 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="4307992518367153382">Základy</translation>
 <translation id="4351244548802238354">Zavřít dialogové okno</translation>
 <translation id="4378154925671717803">Telefon</translation>
-<translation id="4381206798889118664">Hledat… recepty</translation>
 <translation id="4384468725000734951">K vyhledávání se používá služba Sogou</translation>
 <translation id="4412992751769744546">Povolit cookies třetích stran</translation>
 <translation id="4432792777822557199">Stránky v jazyce <ph name="SOURCE_LANGUAGE" /> od teď budou překládány do jazyka <ph name="TARGET_LANGUAGE" /></translation>
@@ -376,7 +374,6 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="4837753911714442426">Otevřít možnosti tisku stránky</translation>
 <translation id="4850886885716139402">Zobrazit</translation>
 <translation id="4860895144060829044">Volat</translation>
-<translation id="4869862470313079745">Hledat… zprávy</translation>
 <translation id="4881695831933465202">Otevřít</translation>
 <translation id="4885273946141277891">Nepodporovaný počet instancí Chromu.</translation>
 <translation id="4910889077668685004">Platební aplikace</translation>
@@ -406,7 +403,6 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="5161254044473106830">Je požadován název</translation>
 <translation id="5164482624172255778">Chcete, aby Google Chrome při příští návštěvě nabízel překlad stránek v jazyce <ph name="LANGUAGE" /> z tohoto webu?</translation>
 <translation id="5168917394043976756">Otevřít vysouvací panel navigace</translation>
-<translation id="5171045022955879922">Vyhledávejte či zadejte URL</translation>
 <translation id="5184329579814168207">Otevřít v Chromu</translation>
 <translation id="5199929503336119739">Pracovní profil</translation>
 <translation id="5209320130288484488">Nebyla nalezena žádná zařízení</translation>
@@ -510,7 +506,6 @@ Nejste však neviditelní. Anonymní režim neskryje vaši aktivitu před zaměs
 <translation id="6042308850641462728">Více</translation>
 <translation id="604996488070107836">Stažení souboru <ph name="FILE_NAME" /> se nezdařilo z důvodu neznámé chyby.</translation>
 <translation id="605721222689873409">RR</translation>
-<translation id="6066049505142453066">Hledat… počasí</translation>
 <translation id="6075798973483050474">Upravit domovskou stránku</translation>
 <translation id="60923314841986378">Zbývá: <ph name="HOURS" /> h</translation>
 <translation id="60924377787140961">Brzy se zobrazí další články. Užijte si odpoledne.</translation>
@@ -604,7 +599,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="688738109438487280">Přidat existující data do účtu <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d otevřená karta}few{%1$d otevřené karty}many{%1$d otevřené karty}other{%1$d otevřených karet}}</translation>
 <translation id="6896758677409633944">Kopírovat</translation>
-<translation id="6932129181739884535">Hledejte nebo zadejte název webu</translation>
 <translation id="6945221475159498467">Vybrat</translation>
 <translation id="6963766334940102469">Smazat záložky</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -825,7 +819,6 @@ Chcete-li získat nové licence, připojte se k internetu a přehrajte stažen
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Zobrazit originál</translation>
 <translation id="9139068048179869749">Pokud web bude chtít odesílat oznámení, zobrazit dotaz (doporučeno)</translation>
-<translation id="9187067407629017315">Zadejte vyhledávací dotaz nebo web</translation>
 <translation id="9187199695613236444">Zobrazení optimalizované pro mobily</translation>
 <translation id="9188680907066685419">Odhlásit se ze spravovaného účtu</translation>
 <translation id="9204836675896933765">Zbývá 1 soubor</translation>

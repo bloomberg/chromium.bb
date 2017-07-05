@@ -10,7 +10,6 @@
 <translation id="1188858454923323853">കോംപ്ലിമെന്ററി</translation>
 <translation id="1206619573307042055">മാർക്യൂ</translation>
 <translation id="1206693055195146388">സ്ലൈഡർ</translation>
-<translation id="1235745349614807883">അടുത്തിടെയുള്ള തിരയലുകള്‍ മായ്ക്കുക</translation>
 <translation id="1281252709823657822">ഡയലോഗ്</translation>
 <translation id="1342835525016946179">ലേഖനം</translation>
 <translation id="1359897965706325498">ബാനർ</translation>
@@ -39,7 +38,6 @@
 <translation id="248395913932153421">ദിവസം</translation>
 <translation id="2507943997699731163">ദയവായി ഈ ഫീല്‍ഡ് പൂരിപ്പിക്കുക.</translation>
 <translation id="2508569020611168319">ടാബ് ലിസ്റ്റ്</translation>
-<translation id="2548326553472216322">സമീപകാല തിരയലുകള്‍ ഇല്ല</translation>
 <translation id="2561842179657104141">കൂടുതൽ മീഡിയ നിയന്ത്രണങ്ങൾ കാണിക്കുക</translation>
 <translation id="2572483411312390101">പ്ലേ ചെയ്യുക</translation>
 <translation id="2613802280814924224">സാധുവായ ഒരു മൂല്യം നൽകുക. ഏറ്റവുമടുത്ത സാധുവായ മൂല്യം <ph name="VALID_VALUE" /> ആണ്.</translation>
@@ -51,7 +49,6 @@
 <translation id="2759744352195237655">പോപ്പ് അപ്പ് ബട്ടൺ</translation>
 <translation id="2761667185364618470">നിങ്ങള്‍ തുടരാന്‍ താല്‍പ്പര്യപ്പെടുന്നെങ്കില്‍ ഈ ബോക്സ് ദയവായി പരിശോധിക്കുക.</translation>
 <translation id="2896972712917208084">റേഡിയോ ഗ്രൂപ്പ്</translation>
-<translation id="2901282870647571346">നിലവിലെ മൂവി നില</translation>
 <translation id="2908441821576996758">ഇമെയില്‍ വിലാസങ്ങളുടെ കോമയാല്‍ വേര്‍തിരിച്ച ഒരു പട്ടിക ദയവായി നല്‍കുക.</translation>
 <translation id="2940813599313844715">ഒബ്‌ജക്‌റ്റ്</translation>
 <translation id="2942448076852699108">ഹൈലൈറ്റുചെയ്‌തിരിക്കുന്ന ഉള്ളടക്കം</translation>
@@ -95,7 +92,6 @@
 <translation id="4992066212339426712">അൺമ്യൂട്ടുചെയ്യുക</translation>
 <translation id="49969490063480558">'<ph name="ATSIGN" />' എന്നതിനുശേഷം ഒരു ഭാഗം നൽകുക.'<ph name="INVALIDADDRESS" />' അപൂർണ്ണമാണ്.</translation>
 <translation id="5034860022980953847">'പ്രോഗ്രസ്' ഇൻഡിക്കേറ്റർ</translation>
-<translation id="5048533449481078685">പട്ടിക മാര്‍ക്കര്‍</translation>
 <translation id="5117590920725113268">അടുത്ത മാസം കാണിക്കുക</translation>
 <translation id="512758898067543763">വരി ശീർഷകം</translation>
 <translation id="5164977714490026579">മൂല്യം <ph name="MINIMUM" /> എന്നതില്‍ കൂടുതലോ സമമോ ആയിരിക്കണം.</translation>
@@ -113,7 +109,6 @@
 <translation id="5643186887447432888">ബട്ടൺ</translation>
 <translation id="5677946354068040947">കൂടുതൽ ഓപ്‌ഷനുകൾ</translation>
 <translation id="57838592816432529">മ്യൂട്ടുചെയ്യുക</translation>
-<translation id="5843503607508392247">മറ്റുള്ളവ...</translation>
 <translation id="5860033963881614850">ഓഫാക്കുക</translation>
 <translation id="588258955323874662">പൂര്‍‌ണ്ണസ്‌ക്രീന്‍</translation>
 <translation id="5939518447894949180">വീണ്ടും സജ്ജീകരിക്കുക</translation>
@@ -123,8 +118,6 @@
 <translation id="6023896073578205740">ലിസ്റ്റ് ബോക്‌സ്</translation>
 <translation id="6101327004457443354">ഓഡിയോ ട്രാക്ക് ശബ്‌ദമുള്ളതാക്കുക</translation>
 <translation id="6164829606128959761">മീറ്റർ</translation>
-<translation id="6270583010843788609">മൂവി ടൈംലൈൻ തമ്പ്</translation>
-<translation id="6359256949422175976">മൂവി ടൈം സ്‌ക്രബ്ബർ തമ്പ്</translation>
 <translation id="6398862346408813489">മാസം തിരഞ്ഞെടുക്കുന്ന പാനൽ കാണിക്കുക</translation>
 <translation id="6404546809543547843">ഓഡിയോ സമയ സ്‌ക്രബർ</translation>
 <translation id="648732519525291180">സമയ പിക്കർ</translation>
@@ -132,7 +125,6 @@
 <translation id="663493177488814956">ഫീഡ്</translation>
 <translation id="6637586476836377253">ലോഗ്</translation>
 <translation id="6643016212128521049">മായ്‌ക്കുക</translation>
-<translation id="6663448176199120256">സമീപകാല തിരയലുകള്‍</translation>
 <translation id="668171684555832681">മറ്റുള്ളവ...</translation>
 <translation id="6692633176391053278">സ്റ്റെപ്പർ</translation>
 <translation id="6739588121953935928">റൂളർ</translation>
@@ -145,7 +137,6 @@
 <translation id="6934078000481955284">ബ്ലോക്ക്‌കോട്ട്</translation>
 <translation id="6941933287844615239">മീഡിയ ഡൗൺലോഡുചെയ്യുക</translation>
 <translation id="6989848892321993519">ഈ ടെക്‌സ്റ്റിന്റെ ദൈർഘ്യം <ph name="MIN_CHARACTERS" /> പ്രതീകങ്ങളോ അതിൽ കൂടുതലോ ആയി വർദ്ധിപ്പിക്കുക (നിങ്ങൾ നിലവിൽ ഒരു പ്രതീകം മാത്രമേ ഉപയോഗിക്കുന്നുള്ളൂ).</translation>
-<translation id="7057186640035488495">മൂവി ടൈം</translation>
 <translation id="709897737746224366">അഭ്യര്‍ത്ഥി ച്ചഫോര്‍മാറ്റ് ദയവായി പൊരുത്തപ്പെടുത്തുക.</translation>
 <translation id="7223624360433298498">കഴിഞ്ഞ സമയം</translation>
 <translation id="7263440858009898357">പട്ടികയിലെ ഒരു ഇനം ദയവായി തിരഞ്ഞെടുക്കുക</translation>
@@ -166,10 +157,8 @@
 <translation id="8053789581856978548">തിരയൽ ടെക്‌സ്റ്റ് ഫീൽഡ്</translation>
 <translation id="8115662671911883373">അടച്ച അടിക്കുറിപ്പുകൾ പ്രദർശിപ്പിക്കുന്നത് ആരംഭിക്കുക</translation>
 <translation id="8117451130807776954">ഈ ആഴ്‌ച</translation>
-<translation id="8141602879876242471">ഇത് തിരയാവുന്ന സൂചികയാണ്. തിരയൽ കീവേഡുകള്‍ നല്‍കുക:</translation>
 <translation id="819205353528511139">പൂർണ്ണ സ്‌ക്രീൻ മോഡിൽ മൂവി പ്ലേ ചെയ്യുക</translation>
 <translation id="8199524924445686405">വർഷം</translation>
-<translation id="8244226242650769279">ഇമേജ് മാപ്പ്</translation>
 <translation id="8284326494547611709">അടിക്കുറിപ്പുകൾ</translation>
 <translation id="835897206747267392">അസാധുവായ മൂല്യം.</translation>
 <translation id="8433900881053900389">ടൂൾബാർ</translation>

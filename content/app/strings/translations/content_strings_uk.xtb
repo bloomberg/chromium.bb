@@ -10,7 +10,6 @@
 <translation id="1188858454923323853">додатково</translation>
 <translation id="1206619573307042055">область виділення</translation>
 <translation id="1206693055195146388">повзунок</translation>
-<translation id="1235745349614807883">Очистити останні пошуки</translation>
 <translation id="1281252709823657822">діалогове вікно</translation>
 <translation id="1342835525016946179">стаття</translation>
 <translation id="1359897965706325498">банер</translation>
@@ -39,7 +38,6 @@
 <translation id="248395913932153421">День</translation>
 <translation id="2507943997699731163">Заповніть це поле.</translation>
 <translation id="2508569020611168319">cписок вкладок</translation>
-<translation id="2548326553472216322">Немає останніх пошуків</translation>
 <translation id="2561842179657104141">показати більше елементів керування мультимедійним вмістом</translation>
 <translation id="2572483411312390101">відтворити</translation>
 <translation id="2613802280814924224">Введіть дійсне значення. Найближче дійсне значення: <ph name="VALID_VALUE" />.</translation>
@@ -51,7 +49,6 @@
 <translation id="2759744352195237655">кнопка спливаючої підказки</translation>
 <translation id="2761667185364618470">Поставте тут прапорець, якщо хочете продовжити.</translation>
 <translation id="2896972712917208084">група перемикачів</translation>
-<translation id="2901282870647571346">поточний статус фільму</translation>
 <translation id="2908441821576996758">Введіть список електронних адрес, розділених комою.</translation>
 <translation id="2940813599313844715">об’єкт</translation>
 <translation id="2942448076852699108">виділений вміст</translation>
@@ -95,7 +92,6 @@
 <translation id="4992066212339426712">Увімкнути звук</translation>
 <translation id="49969490063480558">Введіть частину електронної адреси після знака "<ph name="ATSIGN" />". Електронна адреса "<ph name="INVALIDADDRESS" />" неповна.</translation>
 <translation id="5034860022980953847">індикатор перебігу</translation>
-<translation id="5048533449481078685">маркер списку</translation>
 <translation id="5117590920725113268">Показати наступний місяць</translation>
 <translation id="512758898067543763">заголовок рядка</translation>
 <translation id="5164977714490026579">Значення має бути більшим або дорівнювати <ph name="MINIMUM" />.</translation>
@@ -113,7 +109,6 @@
 <translation id="5643186887447432888">кнопка</translation>
 <translation id="5677946354068040947">більше опцій</translation>
 <translation id="57838592816432529">Вимкнути звук</translation>
-<translation id="5843503607508392247">Інші...</translation>
 <translation id="5860033963881614850">Вимк.</translation>
 <translation id="588258955323874662">Повноекранний режим</translation>
 <translation id="5939518447894949180">Скинути</translation>
@@ -123,8 +118,6 @@
 <translation id="6023896073578205740">вікно списку</translation>
 <translation id="6101327004457443354">увімкнути звукову доріжку</translation>
 <translation id="6164829606128959761">вимірювач</translation>
-<translation id="6270583010843788609">ескіз на часовій шкалі фільму</translation>
-<translation id="6359256949422175976">ескіз на повзунку перебігу фільму</translation>
 <translation id="6398862346408813489">Показати панель вибору місяців</translation>
 <translation id="6404546809543547843">повзунок часу відтворення аудіо</translation>
 <translation id="648732519525291180">засіб вибору часу</translation>
@@ -132,7 +125,6 @@
 <translation id="663493177488814956">стрічка</translation>
 <translation id="6637586476836377253">журнал</translation>
 <translation id="6643016212128521049">Очистити</translation>
-<translation id="6663448176199120256">Останні пошуки</translation>
 <translation id="668171684555832681">Інший...</translation>
 <translation id="6692633176391053278">повторювач stepper</translation>
 <translation id="6739588121953935928">лінійка</translation>
@@ -145,7 +137,6 @@
 <translation id="6934078000481955284">цитата</translation>
 <translation id="6941933287844615239">завантажити медіафайл</translation>
 <translation id="6989848892321993519">У тексті має бути не менше стількох символів: <ph name="MIN_CHARACTERS" />. Наразі ви ввели 1 символ.</translation>
-<translation id="7057186640035488495">тривалість фільму</translation>
 <translation id="709897737746224366">Виберіть потрібний формат.</translation>
 <translation id="7223624360433298498">минуло часу</translation>
 <translation id="7263440858009898357">Виберіть елемент зі списку.</translation>
@@ -166,10 +157,8 @@
 <translation id="8053789581856978548">текстове поле пошуку</translation>
 <translation id="8115662671911883373">показати приховані субтитри</translation>
 <translation id="8117451130807776954">Цей тиждень</translation>
-<translation id="8141602879876242471">Цей доступний для пошуку індекс. Введіть ключові слова пошуку:</translation>
 <translation id="819205353528511139">відтворити фільм у повноекранному режимі</translation>
 <translation id="8199524924445686405">рррр</translation>
-<translation id="8244226242650769279">мапа зображення</translation>
 <translation id="8284326494547611709">Субтитри</translation>
 <translation id="835897206747267392">Недійсне значення</translation>
 <translation id="8433900881053900389">панель інструментів</translation>

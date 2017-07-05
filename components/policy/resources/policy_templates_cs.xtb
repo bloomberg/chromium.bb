@@ -500,6 +500,7 @@ Pokud je zásada nastavena na hodnotu False nebo nastavena není, budou ikony vi
 
           Pokud tato zásada není nastavena, bude nastavení aktivováno.</translation>
 <translation id="2824715612115726353">Povolit anonymní režim</translation>
+<translation id="2838830882081735096">Zakázat migraci dat a rozšíření ARC</translation>
 <translation id="2844404652289407061">Aktivuje dostupnost Vyhledání klepnutím v zobrazení obsahu prohlížeče <ph name="PRODUCT_NAME" />.
 
 Pokud toto nastavení aktivujete, Vyhledání klepnutím bude pro uživatele dostupné (uživatel jej bude moci zapnout nebo vypnout).
@@ -680,13 +681,6 @@ Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky glob�
           Tato zásada je respektována pouze v případě, že je aktivována zásada DefaultSearchProviderEnabled.</translation>
 <translation id="350797926066071931">Aktivovat Překladač</translation>
 <translation id="3528000905991875314">Aktivovat alternativní chybové stránky</translation>
-<translation id="3538538104630456270">Přidružené nastavení bylo používáno před zavedením opětovného ověření při zobrazení hesel. Od té doby nemá toto nastavení a tedy ani tato zásada na chování Chromu žádný vliv. Chrome se nyní chová stejně, jako kdyby v této zásadě bylo zobrazení hesel v čitelné podobě na stránce správce hesel zakázáno. To znamená, že stránka nastavení obsahuje pouze zástupný symbol a Chrome heslo zobrazí, jen když uživatel klikne na Zobrazit (a případně také provede opětovné ověření). Níže uvádíme původní popis zásady.
-          
-Určuje, zda mohou uživatelé ve správci hesel zobrazit hesla jako čitelný text.
-          
-Pokud toto nastavení deaktivujete, v okně správce hesel nebude možné zobrazit uložená hesla jako čitelný text.
-
-Pokud tuto zásadu aktivujete nebo ji nenastavíte, uživatelé budou ve správci hesel moci zobrazit uložená hesla jako čitelný text.</translation>
 <translation id="3547954654003013442">Nastavení proxy serveru</translation>
 <translation id="3591584750136265240">Konfigurace chování přihlašovacího ověření</translation>
 <translation id="3627678165642179114">Povolit nebo zakázat webovou službu kontroly pravopisu</translation>
@@ -881,23 +875,6 @@ Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky glob�
 <translation id="4239720644496144453">Pro aplikace Android se mezipaměť nepoužívá. Pokud několik uživatelů nainstaluje stejnou aplikaci Android, stáhne se aplikace pro každého uživatele znovu.</translation>
 <translation id="4250680216510889253">Ne</translation>
 <translation id="4261820385751181068">Jazyk přihlašovací obrazovky zařízení</translation>
-<translation id="4275782538576261754">Určuje, jaký typ stahování bude prohlížeč <ph name="PRODUCT_NAME" /> zcela blokovat, aniž by uživatelům umožnil bezpečnostní rozhodnutí přepsat.
-
-      Pokud nastavíte tuto zásadu, bude prohlížeč <ph name="PRODUCT_NAME" /> určitým typům stahování bránit a nenechá uživatele bezpečnostní upozornění obejít.
-
-      Když je vybrána možnost Blokovat nebezpečná stahování, jsou povolena všechna stahování s výjimkou těch, u nichž se zobrazují upozornění Bezpečného prohlížení.
-
-      Když je vybrána možnost Blokovat potenciálně nebezpečná stahování, jsou povolena všechna stahování s výjimkou těch, u nichž se zobrazují upozornění Bezpečného prohlížení o potenciálně nebezpečném stahování.
-
-      Když je vybrána možnost Blokovat veškerá stahování, jsou blokována veškerá stahování.
-
-      Když tato zásada není nastavena (nebo je vybrána možnost Bez zvláštních omezení), použijí se na stahování běžná bezpečnostní omezení založená na výsledcích analýzy Bezpečného prohlížení.
-
-      Tato omezení se vztahují na stahování spuštěná z obsahu webových stránek i pomocí možnosti Uložit odkaz v kontextové nabídce.
-
-      Tato omezení se nevztahují na uložení či stažení aktuálně zobrazené stránky ani na uložení do souboru PDF v možnostech tisku.
-
-      Další informace o Bezpečném prohlížení najdete na stránce https://developers.google.com/safe-browsing.</translation>
 <translation id="427632463972968153">Udává parametry, které se použijí při vyhledávání podle obrázku pomocí metody POST. Sestává z párů název–hodnota oddělených čárkou. Pokud je hodnotou parametr šablony (např. {imageThumbnail} v příkladu výše), bude nahrazen skutečnými údaji vyhledávacích dotazů.
 
           Tato zásada je nepovinná. Pokud není nastavena, požadavek na vyhledávání podle obrázku bude odeslán pomocí metody GET.
@@ -923,6 +900,7 @@ Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky glob�
 <translation id="436581050240847513">Odesílat informace o síťových rozhraních zařízení</translation>
 <translation id="4372704773119750918">Nepovolí podnikovým uživatelům být součástí multiprofilu (primárního či sekundárního)</translation>
 <translation id="4377599627073874279">Povolit všem webům zobrazování všech obrázků</translation>
+<translation id="437791893267799639">Zásada nenastavena, zakázat migraci dat a rozšíření ARC</translation>
 <translation id="4389091865841123886">Konfiguruje vzdálené ověření identity pomocí mechanismu TPM.</translation>
 <translation id="4418726081189202489">Pokud tuto zásadu nastavíte na hodnotu False, přestane <ph name="PRODUCT_NAME" /> odesílat příležitostné dotazy na server Google k získání přesného časového razítka. Pokud tato zásada bude nastavena na hodnotu True nebo nebude nastavena, budou tyto dotazy povoleny.</translation>
 <translation id="4423597592074154136">Zadat nastavení proxy serveru ručně</translation>
@@ -1238,6 +1216,7 @@ Pokud tuto zásadu ponecháte nenastavenou, uživatelé budou moci nastavit auto
 <translation id="5586942249556966598">Nedělat nic</translation>
 <translation id="5630352020869108293">Obnovit poslední relaci</translation>
 <translation id="5645779841392247734">Povolit soubory cookie na těchto stránkách</translation>
+<translation id="5693469654327063861">Povolit migraci dat</translation>
 <translation id="5694594914843889579">Když je tato zásada nastavena na hodnotu True, externí úložiště nebude k dispozici v prohlížeči souborů.
 
       Tato zásada má vliv na všechny typy úložných médií. Jedná se například o jednotky USB flash, externí pevné disky, paměťové karty SD a další paměťové karty, optická úložiště apod. Na interní úložiště tato zásada vliv nemá. Soubory ve složce Stažené zůstanou přístupné. Tato zásada nemá vliv ani na Disk Google.
@@ -1480,6 +1459,7 @@ Nastavením této zásady na hodnotu False přeskočení stránky s upozorněn�
           Hodnotu zásady zadávejte v milisekundách. Maximální hodnota je nižší než prodleva režimu spánku.</translation>
 <translation id="6536600139108165863">Automaticky restartovat po vypnutí zařízení</translation>
 <translation id="6539246272469751178">Na aplikace Android tato zásada nemá vliv. Aplikace Android používají pro stažené soubory vždy výchozí adresář a k souborům, které systém <ph name="PRODUCT_OS_NAME" /> stáhl do jiného než výchozího adresáře, nemají přístup.</translation>
+<translation id="654303922206238013">Strategie migrace pro šifrování ecryptfs</translation>
 <translation id="6544897973797372144">Pokud je tato zásada nastavena na hodnotu True a zásada ChromeOsReleaseChannel není určena, uživatelé smějí v zařízení změnit kanál verzí. Pokud je tato zásada nastavena hodnotu False, zařízení je uzamčeno v kanálu, ve kterém bylo naposledy nastaveno.
 
       Kanál vybraný uživatelem bude přepsán zásadou ChromeOsReleaseChannel, avšak je-li kanál zásady stabilnější než kanál nainstalovaný v zařízení, změní se kanál až ve chvíli, kdy bude pro stabilnější kanál k dispozici vyšší verze než pro kanál nainstalovaný k zařízení.</translation>
@@ -1666,6 +1646,13 @@ Pokud tuto zásadu nenastavíte, bude při prvním zobrazení přihlašovací ob
 
           Tato zásada platí pouze v případě, že je aktivována zásada DefaultSearchProviderEnabled.</translation>
 <translation id="7302043767260300182">Prodleva uzamčení obrazovky při napájení ze sítě</translation>
+<translation id="7309839952828354215">Určuje, jak se má chovat zařízení dodané s šifrováním ecryptfs, které potřebuje přejít na šifrování ext4.
+
+      Pokud tuto zásadu nastavíte na hodnotu DisallowArc, aplikace pro Android budou zakázány u všech uživatelů zařízení (včetně těch, kteří již šifrování ext4 mají) a žádným uživatelům nebude nabídnuta migrace z šifrování ecryptfs na ext4.
+
+      Pokud tuto zásadu nastavíte na hodnotu AllowMigration, uživatelům s domovskými adresáři šifrovanými pomocí ecryptfs bude podle potřeby nabízena migrace adresářů na šifrování ext4 (momentálně ve chvíli, kdy v zařízení bude dostupný systém Android N).
+
+      Pokud tato zásada nebude nastavena, zařízení se bude chovat, jako kdyby byla vybrána hodnota DisallowArc.</translation>
 <translation id="7311458740754205918">Pokud je tato zásada nastavena na hodnotu True nebo je ponechána nenastavená, na stránce Nová karta se mohou zobrazovat návrhy obsahu na základě historie procházení, zájmů nebo polohy uživatele.
 
       Pokud je tato zásada nastavena na hodnotu False, automaticky generované návrhy obsahu se na stránce Nová karta nezobrazují.</translation>
@@ -2049,8 +2036,6 @@ Pokud zásada zůstane nenastavena, pokusí se <ph name="PRODUCT_NAME" /> zjisti
         Pokud toto nastavení aktivujete, vyhledávání záznamů CNAME bude přeskočeno a bude použit zadaný název serveru.
        
         Pokud toto nastavení deaktivujete nebo nenastavíte, určí se kanonický název serveru prostřednictvím vyhledávání záznamů CNAME.</translation>
-<translation id="8774131509736383471">Pokud je tato zásada nastavena na hodnotu true, <ph name="PRODUCT_NAME" /> při prvním spuštění bezpodmínečně maximalizuje první zobrazené okno.
-      Pokud je tato zásada nastavena na hodnotu false nebo není nakonfigurována, o maximalizaci prvního zobrazeného okna bude rozhodnuto podle velikosti obrazovky.</translation>
 <translation id="87812015706645271">Vyžaduje shodu jména místního uživatele a vlastníka hostitele vzdáleného přístupu</translation>
 <translation id="8782750230688364867">Určuje, na kolik procent bude prodloužena prodleva ztmavení obrazovky, pokud je zařízení v režimu prezentace.
 

@@ -10,7 +10,6 @@
 <translation id="1188858454923323853">supplerende</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1206693055195146388">skyder</translation>
-<translation id="1235745349614807883">Slet nylige søgninger</translation>
 <translation id="1281252709823657822">dialogboks</translation>
 <translation id="1342835525016946179">artikel</translation>
 <translation id="1359897965706325498">banner</translation>
@@ -39,7 +38,6 @@
 <translation id="248395913932153421">Dag</translation>
 <translation id="2507943997699731163">Udfyld dette felt.</translation>
 <translation id="2508569020611168319">faneliste</translation>
-<translation id="2548326553472216322">Ingen nylige søgninger</translation>
 <translation id="2561842179657104141">vis flere mediekontrolelementer</translation>
 <translation id="2572483411312390101">afspil</translation>
 <translation id="2613802280814924224">Angiv en gyldig værdi. Den nærmeste gyldige værdi er <ph name="VALID_VALUE" />.</translation>
@@ -51,7 +49,6 @@
 <translation id="2759744352195237655">pop op-knap</translation>
 <translation id="2761667185364618470">Markér dette felt, hvis du vil fortsætte.</translation>
 <translation id="2896972712917208084">gruppe af alternativknapper</translation>
-<translation id="2901282870647571346">aktuel filmstatus</translation>
 <translation id="2908441821576996758">Angiv en kommasepareret liste over mailadresser.</translation>
 <translation id="2940813599313844715">objekt</translation>
 <translation id="2942448076852699108">fremhævet indhold</translation>
@@ -95,7 +92,6 @@
 <translation id="4992066212339426712">Slå lyden til</translation>
 <translation id="49969490063480558">Angiv den del, der kommer efter "<ph name="ATSIGN" />". "<ph name="INVALIDADDRESS" />" er ufuldstændig.</translation>
 <translation id="5034860022980953847">statusindikator</translation>
-<translation id="5048533449481078685">listemarkering</translation>
 <translation id="5117590920725113268">Vis næste måned</translation>
 <translation id="512758898067543763">rækkeoverskrift</translation>
 <translation id="5164977714490026579">Værdien skal være større end eller lig med <ph name="MINIMUM" />.</translation>
@@ -113,7 +109,6 @@
 <translation id="5643186887447432888">knap</translation>
 <translation id="5677946354068040947">flere valgmuligheder</translation>
 <translation id="57838592816432529">Slå lyden fra</translation>
-<translation id="5843503607508392247">Andet...</translation>
 <translation id="5860033963881614850">Fra</translation>
 <translation id="588258955323874662">Fuld skærm</translation>
 <translation id="5939518447894949180">Nulstil</translation>
@@ -123,8 +118,6 @@
 <translation id="6023896073578205740">listefelt</translation>
 <translation id="6101327004457443354">slå lydspor til</translation>
 <translation id="6164829606128959761">måler</translation>
-<translation id="6270583010843788609">miniature for tidslinje</translation>
-<translation id="6359256949422175976">miniature for filmtidsskyder</translation>
 <translation id="6398862346408813489">Vis panel til valg af måned</translation>
 <translation id="6404546809543547843">afspilningsbjælke for lyd</translation>
 <translation id="648732519525291180">tidsvælger</translation>
@@ -132,7 +125,6 @@
 <translation id="663493177488814956">feed</translation>
 <translation id="6637586476836377253">log</translation>
 <translation id="6643016212128521049">Ryd</translation>
-<translation id="6663448176199120256">Nylige søgninger</translation>
 <translation id="668171684555832681">Andre...</translation>
 <translation id="6692633176391053278">stepper</translation>
 <translation id="6739588121953935928">lineal</translation>
@@ -145,7 +137,6 @@
 <translation id="6934078000481955284">blockquote</translation>
 <translation id="6941933287844615239">download medier</translation>
 <translation id="6989848892321993519">Forlæng denne tekst til <ph name="MIN_CHARACTERS" /> eller flere tegn (du bruger i øjeblikket ét tegn).</translation>
-<translation id="7057186640035488495">filmtid</translation>
 <translation id="709897737746224366">Find et match til det anmodede format.</translation>
 <translation id="7223624360433298498">forløbet tid</translation>
 <translation id="7263440858009898357">Vælg et punkt på listen.</translation>
@@ -166,10 +157,8 @@
 <translation id="8053789581856978548">tekstfelt til søgning</translation>
 <translation id="8115662671911883373">start visning af undertekster</translation>
 <translation id="8117451130807776954">Denne uge</translation>
-<translation id="8141602879876242471">Der kan søges i dette indeks. Indtast søge-nøgleord:</translation>
 <translation id="819205353528511139">afspil film i fuld skærm</translation>
 <translation id="8199524924445686405">åååå</translation>
-<translation id="8244226242650769279">billedekort</translation>
 <translation id="8284326494547611709">Undertekster</translation>
 <translation id="835897206747267392">Ugyldig værdi.</translation>
 <translation id="8433900881053900389">værktøjslinje</translation>

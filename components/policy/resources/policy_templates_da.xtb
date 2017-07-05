@@ -495,6 +495,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
  
           Hvis denne politik ikke er angivet, aktiveres denne indstilling.</translation>
 <translation id="2824715612115726353">Aktiver inkognitotilstand</translation>
+<translation id="2838830882081735096">Tillad ikke datamigrering og ARC</translation>
 <translation id="2844404652289407061">Aktiverer tilgængeligheden af funktionen "Tryk for at søge" i indholdsvisningen i <ph name="PRODUCT_NAME" />.
 
       Hvis du aktiverer denne indstilling, er "Tryk for at søge" tilgængelig for brugerne, og de kan vælge at slå funktionen til eller fra.
@@ -669,13 +670,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
           Denne politik respekteres, hvis politikken "DefaultSearchProviderEnabled" er aktiveret.</translation>
 <translation id="350797926066071931">Aktiver Oversæt</translation>
 <translation id="3528000905991875314">Aktiver alternative fejlsider</translation>
-<translation id="3538538104630456270">Den tilknyttede indstilling blev brugt før ny godkendelse ved visning af adgangskoder blev indført. Siden da har indstillingen og dermed denne politik ikke påvirket Chromes adfærd. Chromes nuværende adfærd er nu den samme, som hvis politikken var konfigureret til at deaktivere visning af adgangskoder i tydelig tekst på siden med indstillinger for adgangskodeadministratoren. Det betyder, at siden med indstillinger kun indeholder en pladsholder, og Chrome viser kun adgangskoden, når brugeren klikker på "Vis" (og ny godkendelse, hvis det er relevant). Den oprindelige beskrivelse af politikken er angivet nedenfor.
-
-          Kontrollerer, om brugeren kan se adgangskoder i tydelig tekst i adgangskodeadministratoren.
-
-          Hvis du deaktiverer denne indstilling, tillader adgangskodeadministratoren ikke visning af gemte adgangskoder i tydelig tekst i vinduet for adgangskodeadministratoren.
-
-          Hvis du aktiverer eller ikke angiver denne politik, kan brugerne se deres adgangskoder i tydelig tekst i adgangskodeadministratoren.</translation>
 <translation id="3547954654003013442">Proxyindstillinger</translation>
 <translation id="3591584750136265240">Konfigurer adfærden for logingodkendelse</translation>
 <translation id="3627678165642179114">Aktivér eller deaktiver webtjenesten stavekontrol</translation>
@@ -867,7 +861,6 @@ Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME" /> tillade b
 <translation id="4239720644496144453">Cachen bruges ikke til Android-apps. Hvis flere brugere installerer den samme Android-app, downloades den på ny for hver bruger.</translation>
 <translation id="4250680216510889253">Nej</translation>
 <translation id="4261820385751181068">Landestandard for loginskærme på enheder</translation>
-<translation id="4275782538576261754">Konfigurerer typen af downloads, som <ph name="PRODUCT_NAME" /> vil blokere fuldstændig, uden at give brugerne mulighed for at tilsidesætte sikkerhedsbeslutningen. Hvis du angiver denne politik, vil <ph name="PRODUCT_NAME" /> forhindre visse typer downloads, og brugerne kan ikke omgå sikkerhedsadvarslerne. Når muligheden "Bloker farlige downloads" er valgt, tillades alle downloads undtagen dem, der har Beskyttet browsing-advarsler. Når muligheden "Bloker potentielt farlige downloads" er valgt, tillades alle downloads undtagen dem, der har Beskyttet browsing-advarsler om potentielt farlige downloads. Når muligheden "Bloker alle downloads" er valgt, blokeres alle downloads. Hvis denne politik ikke er angivet (eller muligheden "Ingen særlige begrænsninger" er valgt), går downloads gennem de sædvanlige sikkerhedsbegrænsninger baseret på analyseresultater fra Beskyttet browsing. Bemærk, at disse begrænsninger gælder for downloads, der udløses af websiteindhold, såvel som genvejsmenuvalget "download link...". Disse begrænsninger gælder ikke i forbindelse med muligheden for at gemme/downloade den aktuelle side. De gælder heller ikke, når der gemmes som PDF-fil fra udskrivningsmulighederne. Få flere oplysninger om Beskyttet browsing på https://developers.google.com/safe-browsing.</translation>
 <translation id="427632463972968153">Angiver de parametre, der anvendes ved billedsøgning med POST. De består af kommaseparerede navne/værdipar. Hvis en værdi er en skabelonparameter såsom {imageThumbnail} i ovenstående eksempel, bliver den erstattet af data om rigtige miniaturebilleder.
 
           Denne politik er valgfri. Hvis den ikke er angivet, sendes anmodninger om billedsøgninger ved hjælp af GET-metoden.
@@ -893,6 +886,7 @@ Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME" /> tillade b
 <translation id="436581050240847513">Rapportér enhedens netværksgrænseflader</translation>
 <translation id="4372704773119750918">Tillad ikke, at virksomhedsbrugere er en del af en multiprofil (primær eller sekundær)</translation>
 <translation id="4377599627073874279">Tillad alle websites at vise alle billeder</translation>
+<translation id="437791893267799639">Hvis der ikke angives noget for politikken, tillades datamigrering og ARC ikke</translation>
 <translation id="4389091865841123886">Konfigurer fjernattestering med TPM-mekanismen</translation>
 <translation id="4418726081189202489">Hvis du angiver denne politik til Falsk, stopper <ph name="PRODUCT_NAME" /> med af og til at sende forespørgsler til en Google-server for at hente et nøjagtigt tidsstempel. Forespørgslerne aktiveres, hvis denne politik angives til Sand eller ikke angives.</translation>
 <translation id="4423597592074154136">Angiv proxyindstillingerne manuelt</translation>
@@ -1175,6 +1169,7 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 <translation id="5586942249556966598">Gør ingenting</translation>
 <translation id="5630352020869108293">Gendan den seneste session</translation>
 <translation id="5645779841392247734">Tillad cookies på disse websites</translation>
+<translation id="5693469654327063861">Tillad datamigrering</translation>
 <translation id="5694594914843889579">Hvis denne politik er indstillet til Sand, vil eksternt lager ikke være tilgængelig i filbrowseren.
 
       Denne politik omfatter alle typer lagermedier, f.eks. USB-nøgler, eksterne harddiske, SD- og andre hukommelseskort, optisk lagring m.v. Det interne lager påvirkes ikke, derfor er der stadig adgang til filer, der er gemt i mappen Download. Google Drev er heller ikke omfattet af denne politik.
@@ -1385,6 +1380,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
           Politikkens værdi skal angives i millisekunder. Værdierne reduceres, så de er mindre end inaktivitetsforsinkelsen.</translation>
 <translation id="6536600139108165863">Automatisk genstart, når enheden lukker ned</translation>
 <translation id="6539246272469751178">Denne politik påvirker ikke Android-apps. Android-apps anvender altid standardmappen for download og har ikke adgang til filer, som <ph name="PRODUCT_OS_NAME" /> har downloadet til en ikke-standardmappe for download.</translation>
+<translation id="654303922206238013">Migreringsstrategi for eCryptfs</translation>
 <translation id="6544897973797372144">Hvis denne politik er indstillet til Sand, og politikken ChromeOsReleaseChannel ikke er specificeret, kan brugerne af tilmeldelsesdomænet ændre udgivelseskanalen for enheden. Hvis denne politik indstillet til Falsk, vil enheden blive låst på den kanal, den sidst blev indstillet til.
 
       Den valgte kanal tilsidesættes af politikken ChromeOsReleaseChannel, men hvis politikkanalen er mere stabil end den, der blev installeret på enheden, vil kanalen kun skifte, når versionen af den mere stabile kanalen når et højere versionsnummer end den, der er installeret på enheden.</translation>
@@ -1559,6 +1555,13 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 
            Denne politik respekteres kun, hvis politikken "DefaultSearchProviderEnabled" er aktiveret.</translation>
 <translation id="7302043767260300182">Skærmlåsforsinkelse, når strømforsyning er tilsluttet</translation>
+<translation id="7309839952828354215">Angiver, hvordan en enhed, der hidtil har sendt via eCryptfs og kræver en overgang til ext4-kryptering, skal opføre sig.
+
+      Hvis du angiver "DisallowArc" for politikken, deaktiveres Android-apps for alle brugere på enheden (bl.a. dem der allerede har ext4-kryptering), og ingen af brugerne får tilbudt nogen migrering fra eCryptfs til ext4-kryptering.
+
+      Hvis du angiver "AllowMigration" for politikken, får brugere med eCryptfs-hovedmapper tilbudt at migrere disse til ext4-kryptering, når det er nødvendigt (hvilket det i øjeblikket er, når Android N bliver tilgængelig på enheden).
+
+      Hvis der ikke angives noget for politikken, opfører enheden sig som om, "DisallowArc" er valgt.</translation>
 <translation id="7311458740754205918">Hvis denne politik er angivet som Sand eller ikke er angivet, viser siden Ny fane muligvis forslag til indhold baseret på brugerens browserhistorik, interesser eller placering.
 
       Hvis politikken er angivet som Falsk, vises automatisk genererede forslag til indhold ikke på siden Ny fane.</translation>
@@ -1908,7 +1911,7 @@ Dynamisk opdatering af denne politik understøttes i M56 og nyere versioner.</tr
 
           Hvis denne politik ikke indstilles, prøver <ph name="PRODUCT_NAME" /> at registrere, om der er en server på intranettet, og kun i det tilfælde reageres der på IWA-anmodninger. Hvis en server registreres som internet, ignoreres IWA-anmodninger af <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8672321184841719703">Målversion for automatiske opdateringer</translation>
-<translation id="867410340948518937">Universel sekundær faktor (U2F, Universal Second Factor)</translation>
+<translation id="867410340948518937">U2F (Universal Second Factor)</translation>
 <translation id="8693243869659262736">Brug den indbyggede DNS-klient</translation>
 <translation id="8704831857353097849">Liste over deaktiverede plugins</translation>
 <translation id="8711086062295757690">Angiver det nøgleord, som er den genvej, der bruges i omnifeltet til at udløse søgningen for denne udbyder. Denne politik er valgfri. Hvis den ikke angives, vil ingen søgeord aktivere søgemaskinen. Denne politik tages kun i betragtning, hvis politikken "DefaultSearchProviderEnabled" er aktiveret.</translation>
@@ -1922,8 +1925,6 @@ Dynamisk opdatering af denne politik understøttes i M56 og nyere versioner.</tr
 
       Hvis denne indstilling er deaktiveret, kan browser- og downloadhistorik ikke slettes.</translation>
 <translation id="8764119899999036911">Angiver, om den genererede Kerberos SPN er baseret på det kanoniske DNS-navn eller det navn, der oprindeligt blev indtastet. Hvis du aktiverer denne indstilling, springes CNAME-opslag over, og servernavnet anvendes, sådan som det er indtastet. Hvis du deaktiverer denne indstilling eller ikke angiver den, vil det kanoniske navn på den pågældende server blive fastlagt via CNAME-opslag.</translation>
-<translation id="8774131509736383471">Hvis denne politik er angivet til Sand, maksimerer <ph name="PRODUCT_NAME" /> ubetinget det første vindue, der vises ved den første kørsel.
-      Hvis denne politik er angivet til Falsk eller ikke er konfigureret, besluttes det ud fra skærmstørrelsen, om det første vindue, der vises, skal maksimeres.</translation>
 <translation id="87812015706645271">Kræver, at navnet på den lokale bruger og ejeren af hosten for fjernadgang stemmer overens</translation>
 <translation id="8782750230688364867">Angiver den procentdel, som nedtoningsforsinkelsen på skærmen skaleres, når enheden er i præsentationstilstand.
 

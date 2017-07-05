@@ -11,7 +11,7 @@
 <translation id="1137305377394488060">z ostatniej godziny</translation>
 <translation id="1145536944570833626">Usuń istniejące dane.</translation>
 <translation id="1146678959555564648">Włącz tryb VR</translation>
-<translation id="116280672541001035">Użyte</translation>
+<translation id="116280672541001035">Użyto</translation>
 <translation id="1178581264944972037">Wstrzymaj</translation>
 <translation id="1181037720776840403">Usuń</translation>
 <translation id="1197267115302279827">Przenieś zakładki</translation>
@@ -69,7 +69,6 @@ Aby korzystać z internetu rzeczy, musisz włączyć Bluetooth i Lokalizację.</
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Zapobiegaj wyświetlaniu dodatkowych okien dialogowych na tej stronie</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Usuń 1 wybrany element}few{Usuń # wybrane elementy}many{Usuń # wybranych elementów}other{Usuń # wybranego elementu}}</translation>
-<translation id="1629390138158333592">Szukaj w internecie</translation>
 <translation id="1641113438599504367">Bezpieczne przeglądanie</translation>
 <translation id="164269334534774161">Oglądasz kopię offline tej strony z <ph name="CREATION_TIME" /></translation>
 <translation id="1643702317193804718">Tłumaczę stronę na <ph name="SOURCE_LANGUAGE" />…</translation>
@@ -166,7 +165,7 @@ Aby korzystać z internetu rzeczy, musisz włączyć Bluetooth i Lokalizację.</
 <translation id="2612676031748830579">Numer karty</translation>
 <translation id="2621115761605608342">Zezwól na użycie JavaScriptu w określonej witrynie.</translation>
 <translation id="2625189173221582860">Hasło zostało skopiowane</translation>
-<translation id="2631006050119455616">Zapisano</translation>
+<translation id="2631006050119455616">Zaoszczędzono</translation>
 <translation id="2653659639078652383">Prześlij</translation>
 <translation id="266290525248308397">Potwierdź metodę odblokowywania ekranu</translation>
 <translation id="2677748264148917807">Wyjdź</translation>
@@ -330,7 +329,6 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="4307992518367153382">Podstawowe</translation>
 <translation id="4351244548802238354">Zamknij okno</translation>
 <translation id="4378154925671717803">Telefon</translation>
-<translation id="4381206798889118664">Szukaj… przepisów</translation>
 <translation id="4384468725000734951">Korzystam z wyszukiwarki Sogou</translation>
 <translation id="4412992751769744546">Zezwalaj na pliki cookie innych firm</translation>
 <translation id="4432792777822557199">Od teraz strony, których językiem jest <ph name="SOURCE_LANGUAGE" />, będą tłumaczone na <ph name="TARGET_LANGUAGE" /></translation>
@@ -376,7 +374,6 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="4837753911714442426">Otwórz opcje drukowania strony</translation>
 <translation id="4850886885716139402">Widok</translation>
 <translation id="4860895144060829044">Zadzwoń</translation>
-<translation id="4869862470313079745">Szukaj… wiadomości</translation>
 <translation id="4881695831933465202">Otwórz</translation>
 <translation id="4885273946141277891">Nieobsługiwana liczba wystąpień Chrome.</translation>
 <translation id="4910889077668685004">Aplikacje do płatności</translation>
@@ -406,7 +403,6 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="5161254044473106830">Tytuł jest wymagany</translation>
 <translation id="5164482624172255778">Czy chcesz, aby następnym razem przeglądarka Google Chrome zaoferowała tłumaczenie stron z tej witryny, których język to <ph name="LANGUAGE" />?</translation>
 <translation id="5168917394043976756">Otwórz panel nawigacji</translation>
-<translation id="5171045022955879922">Wyszukaj lub wpisz URL</translation>
 <translation id="5184329579814168207">Otwórz w Chrome</translation>
 <translation id="5199929503336119739">Profil do pracy</translation>
 <translation id="5209320130288484488">Nie znaleziono urządzeń</translation>
@@ -510,7 +506,6 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incogni
 <translation id="6042308850641462728">Więcej</translation>
 <translation id="604996488070107836">Nie udało się pobrać pliku <ph name="FILE_NAME" /> z powodu nieznanego błędu.</translation>
 <translation id="605721222689873409">RR</translation>
-<translation id="6066049505142453066">Szukaj… prognozy pogody</translation>
 <translation id="6075798973483050474">Edytuj stronę główną</translation>
 <translation id="60923314841986378">Pozostało: <ph name="HOURS" /> godz.</translation>
 <translation id="60924377787140961">Wkrótce pojawi się więcej artykułów. Życzymy miłego popołudnia.</translation>
@@ -604,7 +599,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="688738109438487280">Dodaj istniejące dane do konta <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d otwarta karta}few{%1$d otwarte karty}many{%1$d otwartych kart}other{%1$d otwartej karty}}</translation>
 <translation id="6896758677409633944">Kopiuj</translation>
-<translation id="6932129181739884535">Wyszukaj lub wpisz nazwę strony</translation>
 <translation id="6945221475159498467">Wybierz</translation>
 <translation id="6963766334940102469">Usuń zakładki</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -825,7 +819,6 @@ Aby otrzymać nowe licencje, połącz się z internetem i odtwórz pobrane treś
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Pokaż tekst oryginalny</translation>
 <translation id="9139068048179869749">Pytaj, zanim zezwolisz stronom na wysyłanie powiadomień (zalecane)</translation>
-<translation id="9187067407629017315">Wpisz zapytanie lub adres strony</translation>
 <translation id="9187199695613236444">Wersja na urządzenia mobilne</translation>
 <translation id="9188680907066685419">Wyloguj się z konta zarządzanego</translation>
 <translation id="9204836675896933765">Pozostał jeden plik</translation>

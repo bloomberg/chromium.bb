@@ -500,7 +500,6 @@
 <translation id="1709106626015023981"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (Gốc)</translation>
 <translation id="1711973684025117106">Nén không thành công, lỗi không mong đợi: $1</translation>
 <translation id="1712349894969001173">Nhận mật khẩu này trên iPhone của bạn</translation>
-<translation id="1719028357511747483">Tìm kiếm ứng dụng, web, <ph name="DEVICE_TYPE" /> của bạn, v.v.</translation>
 <translation id="1719312230114180055">Lưu ý: Vân tay của bạn có thể kém an toàn hơn so với việc dùng mã PIN hoặc mật khẩu mạnh.</translation>
 <translation id="1720318856472900922">Xác thực Máy chủ TLS WWW</translation>
 <translation id="1720372306711178108">Màn hình mở rộng</translation>
@@ -1098,7 +1097,7 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="2624142942574147739">Trang này đang truy cập máy ảnh và micrô của bạn.</translation>
 <translation id="2626799779920242286">Vui lòng thử lại sau.</translation>
 <translation id="2630681426381349926">Kết nối với Wi-Fi để bắt đầu</translation>
-<translation id="2631006050119455616">Đã lưu</translation>
+<translation id="2631006050119455616">Đã tiết kiệm</translation>
 <translation id="2631498379019108537">Hiển thị tùy chọn nhập trong giá</translation>
 <translation id="2633199387167390344"><ph name="NAME" /> đang sử dụng <ph name="USAGE" /> MB dung lượng đĩa.</translation>
 <translation id="2633212996805280240">Xóa "<ph name="EXTENSION_NAME" />"?</translation>
@@ -3249,7 +3248,7 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="5895138241574237353">Khởi động lại</translation>
 <translation id="5895187275912066135">Cấp vào</translation>
 <translation id="5900302528761731119">Ảnh hồ sơ trên Google</translation>
-<translation id="590253956165195626">Đề xuất dịch các trang tiếng nước ngoài mà bạn không hiểu </translation>
+<translation id="590253956165195626">Đề xuất dịch các trang không phải bằng ngôn ngữ bạn đã đọc</translation>
 <translation id="5904093760909470684">Cấu hình Proxy</translation>
 <translation id="5906065664303289925">Địa chỉ phần cứng:</translation>
 <translation id="5906655207909574370">Gần được cập nhật! Hãy khởi động lại thiết bị của bạn để hoàn tất cập nhật.</translation>

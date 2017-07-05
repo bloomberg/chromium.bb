@@ -10,7 +10,6 @@
 <translation id="1188858454923323853">complementar</translation>
 <translation id="1206619573307042055">text derulant</translation>
 <translation id="1206693055195146388">glisor</translation>
-<translation id="1235745349614807883">Șterge căutările recente</translation>
 <translation id="1281252709823657822">dialog</translation>
 <translation id="1342835525016946179">articol</translation>
 <translation id="1359897965706325498">banner</translation>
@@ -39,7 +38,6 @@
 <translation id="248395913932153421">Zi</translation>
 <translation id="2507943997699731163">Completează acest câmp.</translation>
 <translation id="2508569020611168319">listă de file</translation>
-<translation id="2548326553472216322">Nicio căutare recentă</translation>
 <translation id="2561842179657104141">afișează mai multe comenzi media</translation>
 <translation id="2572483411312390101">redați</translation>
 <translation id="2613802280814924224">Introduceți o valoare validă. Cea mai apropiată valoare validă este <ph name="VALID_VALUE" />.</translation>
@@ -51,7 +49,6 @@
 <translation id="2759744352195237655">buton pop-up</translation>
 <translation id="2761667185364618470">Bifeză caseta dacă vrei să continui.</translation>
 <translation id="2896972712917208084">grup butoane radio</translation>
-<translation id="2901282870647571346">starea actuală a filmului</translation>
 <translation id="2908441821576996758">Introdu o listă de adrese de e-mail separate prin virgulă.</translation>
 <translation id="2940813599313844715">obiect</translation>
 <translation id="2942448076852699108">conținut evidențiat</translation>
@@ -95,7 +92,6 @@
 <translation id="4992066212339426712">Activează sunetul</translation>
 <translation id="49969490063480558">Introduceți o valoare după semnul „<ph name="ATSIGN" />”. Adresa „<ph name="INVALIDADDRESS" />” nu este completă.</translation>
 <translation id="5034860022980953847">indicator de progres</translation>
-<translation id="5048533449481078685">marcator de listă</translation>
 <translation id="5117590920725113268">Afișează luna următoare</translation>
 <translation id="512758898067543763">antet rând</translation>
 <translation id="5164977714490026579">Valoarea trebuie să fie mai mare sau egală cu <ph name="MINIMUM" />.</translation>
@@ -113,7 +109,6 @@
 <translation id="5643186887447432888">buton</translation>
 <translation id="5677946354068040947">mai multe opțiuni</translation>
 <translation id="57838592816432529">Dezactivează sunetul</translation>
-<translation id="5843503607508392247">Altele...</translation>
 <translation id="5860033963881614850">Dezactivat</translation>
 <translation id="588258955323874662">Ecran complet</translation>
 <translation id="5939518447894949180">Resetează</translation>
@@ -123,8 +118,6 @@
 <translation id="6023896073578205740">casetă listă</translation>
 <translation id="6101327004457443354">activați sunetul înregistrării audio</translation>
 <translation id="6164829606128959761">instrument de măsurare</translation>
-<translation id="6270583010843788609">miniatură cronologie film</translation>
-<translation id="6359256949422175976">miniatură glisor redare film</translation>
 <translation id="6398862346408813489">Afișează panoul de selectare a lunii</translation>
 <translation id="6404546809543547843">glisor redare audio</translation>
 <translation id="648732519525291180">selector oră</translation>
@@ -132,7 +125,6 @@
 <translation id="663493177488814956">feed</translation>
 <translation id="6637586476836377253">jurnal</translation>
 <translation id="6643016212128521049">Ștergeți</translation>
-<translation id="6663448176199120256">Căutări recente</translation>
 <translation id="668171684555832681">Altele...</translation>
 <translation id="6692633176391053278">control numeric cu incrementare/decrementare</translation>
 <translation id="6739588121953935928">riglă</translation>
@@ -145,7 +137,6 @@
 <translation id="6934078000481955284">blockquote</translation>
 <translation id="6941933287844615239">descarcă conținut media</translation>
 <translation id="6989848892321993519">Mărește acest text la cel puțin <ph name="MIN_CHARACTERS" /> caractere (în prezent folosești 1 caracter).</translation>
-<translation id="7057186640035488495">durată film</translation>
 <translation id="709897737746224366">Respectă formatul solicitat.</translation>
 <translation id="7223624360433298498">timp scurs</translation>
 <translation id="7263440858009898357">Selectează un articol din listă.</translation>
@@ -166,10 +157,8 @@
 <translation id="8053789581856978548">câmp pentru căutarea textului</translation>
 <translation id="8115662671911883373">începeți să afișați subtitrările</translation>
 <translation id="8117451130807776954">Săptămâna aceasta</translation>
-<translation id="8141602879876242471">Acesta este un index în care se poate căuta. Introdu cuvintele cheie pentru căutare:</translation>
 <translation id="819205353528511139">redați filmul în modul ecran complet</translation>
 <translation id="8199524924445686405">aaaa</translation>
-<translation id="8244226242650769279">hartă imagine</translation>
 <translation id="8284326494547611709">Subtitrări</translation>
 <translation id="835897206747267392">Valoare nevalidă.</translation>
 <translation id="8433900881053900389">bară de instrumente</translation>

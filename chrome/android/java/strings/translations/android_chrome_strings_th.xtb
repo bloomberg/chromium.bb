@@ -69,7 +69,6 @@
 <translation id="1620510694547887537">กล้องถ่ายรูป</translation>
 <translation id="1623104350909869708">ป้องกันหน้าเว็บนี้จากการสร้างการโต้ตอบเพิ่มเติม</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{นำ 1 รายการที่เลือกออก}other{นำ # รายการที่เลือกออก}}</translation>
-<translation id="1629390138158333592">ค้นหาเว็บ</translation>
 <translation id="1641113438599504367">Safe Browsing</translation>
 <translation id="164269334534774161">คุณกำลังดูสำเนาออฟไลน์ของหน้านี้จากวันที่ <ph name="CREATION_TIME" /></translation>
 <translation id="1643702317193804718">กำลังแปลหน้าเป็นภาษา<ph name="SOURCE_LANGUAGE" />…</translation>
@@ -166,7 +165,7 @@
 <translation id="2612676031748830579">หมายเลขบัตร</translation>
 <translation id="2621115761605608342">อนุญาต JavaScript สำหรับเว็บไซต์ใดเว็บไซต์หนึ่ง</translation>
 <translation id="2625189173221582860">คัดลอกรหัสผ่านแล้ว</translation>
-<translation id="2631006050119455616">บันทึกแล้ว</translation>
+<translation id="2631006050119455616">ประหยัดได้</translation>
 <translation id="2653659639078652383">ส่ง</translation>
 <translation id="266290525248308397">ยืนยันการล็อกหน้าจอ</translation>
 <translation id="2677748264148917807">ออก</translation>
@@ -330,7 +329,6 @@
 <translation id="4307992518367153382">พื้นฐาน</translation>
 <translation id="4351244548802238354">ปิดหน้าต่างโต้ตอบ</translation>
 <translation id="4378154925671717803">โทรศัพท์</translation>
-<translation id="4381206798889118664">ค้นหา… สูตร</translation>
 <translation id="4384468725000734951">กำลังใช้ Sogou ในการค้นหา</translation>
 <translation id="4412992751769744546">อนุญาตคุกกี้ของบุคคลที่สาม</translation>
 <translation id="4432792777822557199">จากนี้ไประบบจะแปลหน้าภาษา<ph name="SOURCE_LANGUAGE" />เป็นภาษา<ph name="TARGET_LANGUAGE" /></translation>
@@ -376,7 +374,6 @@
 <translation id="4837753911714442426">เปิดตัวเลือกในการพิมพ์หน้า</translation>
 <translation id="4850886885716139402">มุมมอง</translation>
 <translation id="4860895144060829044">โทร</translation>
-<translation id="4869862470313079745">ค้นหา… ข่าวสาร</translation>
 <translation id="4881695831933465202">เปิด</translation>
 <translation id="4885273946141277891">อินสแตนซ์ของ Chrome เกินจำนวนที่สนับสนุน</translation>
 <translation id="4910889077668685004">แอปชำระเงิน</translation>
@@ -406,7 +403,6 @@
 <translation id="5161254044473106830">ต้องระบุชื่อ</translation>
 <translation id="5164482624172255778">คุณต้องการให้ Google Chrome เสนอการแปลหน้าเว็บภาษา<ph name="LANGUAGE" />จากไซต์นี้ในครั้งต่อไปไหม</translation>
 <translation id="5168917394043976756">เปิดลิ้นชักการนำทาง</translation>
-<translation id="5171045022955879922">ค้นหาหรือพิมพ์ URL</translation>
 <translation id="5184329579814168207">เปิดใน Chrome</translation>
 <translation id="5199929503336119739">โปรไฟล์งาน</translation>
 <translation id="5209320130288484488">ไม่พบอุปกรณ์</translation>
@@ -510,7 +506,6 @@
 <translation id="6042308850641462728">เพิ่มเติม</translation>
 <translation id="604996488070107836">การดาวน์โหลด <ph name="FILE_NAME" /> ล้มเหลวเนื่องจากข้อผิดพลาดที่ไม่รู้จัก</translation>
 <translation id="605721222689873409">ปป</translation>
-<translation id="6066049505142453066">ค้นหา… สภาพอากาศ</translation>
 <translation id="6075798973483050474">แก้ไขหน้าแรก</translation>
 <translation id="60923314841986378">เหลือ <ph name="HOURS" /> ชั่วโมง</translation>
 <translation id="60924377787140961">บทความอื่นๆ จะปรากฏขึ้นในอีกไม่ช้า ขอให้เพลิดเพลินกับยามบ่าย</translation>
@@ -604,7 +599,6 @@
 <translation id="688738109438487280">เพิ่มข้อมูลที่มีอยู่ลงใน <ph name="TO_ACCOUNT" /></translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{แท็บที่เปิดอยู่ %1$d แท็บ}other{แท็บที่เปิดอยู่ %1$d แท็บ}}</translation>
 <translation id="6896758677409633944">คัดลอก</translation>
-<translation id="6932129181739884535">ค้นหาหรือพิมพ์ชื่อเว็บไซต์</translation>
 <translation id="6945221475159498467">เลือก</translation>
 <translation id="6963766334940102469">ลบบุ๊กมาร์ก</translation>
 <translation id="6965382102122355670">ตกลง</translation>
@@ -825,7 +819,6 @@
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">แสดงหน้าเว็บเดิม</translation>
 <translation id="9139068048179869749">ถามก่อน ก่อนที่จะอนุญาตให้เว็บไซต์ส่งการแจ้งเตือน (แนะนำ)</translation>
-<translation id="9187067407629017315">ป้อนคำค้นหาหรือเว็บไซต์</translation>
 <translation id="9187199695613236444">มุมมองสำหรับอุปกรณ์เคลื่อนที่</translation>
 <translation id="9188680907066685419">ออกจากระบบบัญชีที่มีการจัดการ</translation>
 <translation id="9204836675896933765">เหลืออีก 1 ไฟล์</translation>

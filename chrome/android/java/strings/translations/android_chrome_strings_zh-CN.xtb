@@ -69,7 +69,6 @@
 <translation id="1620510694547887537">摄像头</translation>
 <translation id="1623104350909869708">阻止此页创建其他对话框</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{移除 1 个所选项}other{移除 # 个所选项}}</translation>
-<translation id="1629390138158333592">搜索网络</translation>
 <translation id="1641113438599504367">安全浏览</translation>
 <translation id="164269334534774161">您目前浏览的是此网页的离线副本（创建时间：<ph name="CREATION_TIME" />）</translation>
 <translation id="1643702317193804718">正在将网页翻译成<ph name="SOURCE_LANGUAGE" />…</translation>
@@ -105,7 +104,7 @@
 <translation id="1984937141057606926">允许（第三方除外）</translation>
 <translation id="1993768208584545658"><ph name="SITE" /> 希望与以下所选设备配对：</translation>
 <translation id="1994173015038366702">网站网址</translation>
-<translation id="2000271276660256125">出于安全考虑，您需要确认自己的屏幕锁定图案才能查看密码。</translation>
+<translation id="2000271276660256125">出于安全考虑，您需要解除屏幕锁定才能查看密码。</translation>
 <translation id="200815880754187296">其他应用已占用的空间：<ph name="KILOBYTES" /> KB</translation>
 <translation id="2017836877785168846">清除历史记录和地址栏中的自动填充项。</translation>
 <translation id="2020525020270327736">复制网站</translation>
@@ -330,7 +329,6 @@
 <translation id="4307992518367153382">基本设置</translation>
 <translation id="4351244548802238354">关闭对话框</translation>
 <translation id="4378154925671717803">电话</translation>
-<translation id="4381206798889118664">搜索…食谱</translation>
 <translation id="4384468725000734951">目前使用的搜索引擎是搜狗</translation>
 <translation id="4412992751769744546">允许第三方 Cookie</translation>
 <translation id="4432792777822557199">从现在开始，源语言为<ph name="SOURCE_LANGUAGE" />的网页一律会被翻译成<ph name="TARGET_LANGUAGE" /></translation>
@@ -376,7 +374,6 @@
 <translation id="4837753911714442426">打开选项以打印网页</translation>
 <translation id="4850886885716139402">视图</translation>
 <translation id="4860895144060829044">拨打</translation>
-<translation id="4869862470313079745">搜索…新闻</translation>
 <translation id="4881695831933465202">打开</translation>
 <translation id="4885273946141277891">Chrome 实例数量已超出上限。</translation>
 <translation id="4910889077668685004">付款应用</translation>
@@ -406,7 +403,6 @@
 <translation id="5161254044473106830">必须提供标题</translation>
 <translation id="5164482624172255778">下次访问这个网站时，您希望 Google Chrome 翻译此网站的<ph name="LANGUAGE" />网页吗？</translation>
 <translation id="5168917394043976756">打开抽屉式导航栏</translation>
-<translation id="5171045022955879922">搜索或输入网址</translation>
 <translation id="5184329579814168207">在 Chrome 中打开</translation>
 <translation id="5199929503336119739">工作资料</translation>
 <translation id="5209320130288484488">未找到任何设备</translation>
@@ -510,7 +506,6 @@
 <translation id="6042308850641462728">更多</translation>
 <translation id="604996488070107836">出现未知错误，未能下载 <ph name="FILE_NAME" />。</translation>
 <translation id="605721222689873409">YY</translation>
-<translation id="6066049505142453066">搜索…天气</translation>
 <translation id="6075798973483050474">修改主页</translation>
 <translation id="60923314841986378">还剩 <ph name="HOURS" /> 小时</translation>
 <translation id="60924377787140961">我们很快将会为您奉上更多文章，伴您度过美好的午后时光！</translation>
@@ -604,7 +599,6 @@
 <translation id="688738109438487280">将现有数据添加到 <ph name="TO_ACCOUNT" />。</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d 个打开的标签页}other{%1$d 个打开的标签页}}</translation>
 <translation id="6896758677409633944">复制</translation>
-<translation id="6932129181739884535">搜索或输入网站名称</translation>
 <translation id="6945221475159498467">选择</translation>
 <translation id="6963766334940102469">删除书签</translation>
 <translation id="6965382102122355670">确定</translation>
@@ -825,7 +819,6 @@
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">显示原始网页</translation>
 <translation id="9139068048179869749">在允许网站发送通知前先询问（推荐）</translation>
-<translation id="9187067407629017315">输入搜索查询或网站网址</translation>
 <translation id="9187199695613236444">适合在移动设备上浏览的视图</translation>
 <translation id="9188680907066685419">退出受管理的帐号</translation>
 <translation id="9204836675896933765">还剩 1 个文件</translation>

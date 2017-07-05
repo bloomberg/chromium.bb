@@ -69,7 +69,6 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Undgå, at denne side opretter yderligere dialogbokse</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Fjern 1 valgt element}one{Fjern # valgt element}other{Fjern # valgte elementer}}</translation>
-<translation id="1629390138158333592">Søg på nettet</translation>
 <translation id="1641113438599504367">Beskyttet browsing</translation>
 <translation id="164269334534774161">Du ser en offlinekopi af denne side fra <ph name="CREATION_TIME" /></translation>
 <translation id="1643702317193804718">Oversætter siden til <ph name="SOURCE_LANGUAGE" />…</translation>
@@ -330,7 +329,6 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4307992518367153382">Grundlæggende valgmuligheder</translation>
 <translation id="4351244548802238354">Luk dialogboksen</translation>
 <translation id="4378154925671717803">Telefon</translation>
-<translation id="4381206798889118664">Søg efter… opskrifter</translation>
 <translation id="4384468725000734951">Søgning via Sogou</translation>
 <translation id="4412992751769744546">Tillad tredjepartscookies</translation>
 <translation id="4432792777822557199">Sider på <ph name="SOURCE_LANGUAGE" /> oversættes fremover til <ph name="TARGET_LANGUAGE" /></translation>
@@ -376,7 +374,6 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4837753911714442426">Åbn valgmuligheder for udskrivning af siden</translation>
 <translation id="4850886885716139402">Vis</translation>
 <translation id="4860895144060829044">Ring op</translation>
-<translation id="4869862470313079745">Søg efter… nyheder</translation>
 <translation id="4881695831933465202">Åbn</translation>
 <translation id="4885273946141277891">Der er flere forekomster af Chrome, end der understøttes.</translation>
 <translation id="4910889077668685004">Betalingsapps</translation>
@@ -406,7 +403,6 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="5161254044473106830">Der skal angives en titel</translation>
 <translation id="5164482624172255778">Skal Google Chrome tilbyde at oversætte sider på <ph name="LANGUAGE" /> fra dette website næste gang?</translation>
 <translation id="5168917394043976756">Åbn sidemenuen</translation>
-<translation id="5171045022955879922">Søg, eller indtast webadresse</translation>
 <translation id="5184329579814168207">Åbn i Chrome</translation>
 <translation id="5199929503336119739">Arbejdsprofil</translation>
 <translation id="5209320130288484488">Der blev ikke fundet nogen enheder</translation>
@@ -510,7 +506,6 @@ Du er dog ikke usynlig. Inkognitotilstanden skjuler ikke dine søgninger fra din
 <translation id="6042308850641462728">Mere</translation>
 <translation id="604996488070107836"><ph name="FILE_NAME" /> kunne ikke downloades, da der opstod en ukendt fejl.</translation>
 <translation id="605721222689873409">ÅÅ</translation>
-<translation id="6066049505142453066">Søg efter… vejret</translation>
 <translation id="6075798973483050474">Rediger startside</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> timer tilbage</translation>
 <translation id="60924377787140961">Der vises snart flere artikler. Hav en god eftermiddag!</translation>
@@ -604,7 +599,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="688738109438487280">Føj eksisterende data til <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d åben fane}one{%1$d åben fane}other{%1$d åbne faner}}</translation>
 <translation id="6896758677409633944">Kopiér</translation>
-<translation id="6932129181739884535">Søg, eller indtast navnet på et website</translation>
 <translation id="6945221475159498467">Vælg</translation>
 <translation id="6963766334940102469">Slet bogmærker</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -825,7 +819,6 @@ Du kan få nye licenser ved at oprette forbindelse til internettet og afspille d
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Vis oprindelig</translation>
 <translation id="9139068048179869749">Spørg om tilladelse, før websites sender underretninger (anbefales)</translation>
-<translation id="9187067407629017315">Angiv en søgeterm eller et website</translation>
 <translation id="9187199695613236444">Mobilvenlig visning</translation>
 <translation id="9188680907066685419">Log ud af den administrerede konto</translation>
 <translation id="9204836675896933765">1 fil tilbage</translation>

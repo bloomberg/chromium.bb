@@ -10,7 +10,6 @@
 <translation id="1188858454923323853">elementi complementari</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1206693055195146388">dispositivo di scorrimento</translation>
-<translation id="1235745349614807883">Cancella ricerche recenti</translation>
 <translation id="1281252709823657822">finestra di dialogo</translation>
 <translation id="1342835525016946179">articolo</translation>
 <translation id="1359897965706325498">banner</translation>
@@ -39,7 +38,6 @@
 <translation id="248395913932153421">Giorno</translation>
 <translation id="2507943997699731163">Compila questo campo.</translation>
 <translation id="2508569020611168319">elenco schede</translation>
-<translation id="2548326553472216322">Nessuna ricerca recente</translation>
 <translation id="2561842179657104141">mostra altri controlli multimediali</translation>
 <translation id="2572483411312390101">riproduci</translation>
 <translation id="2613802280814924224">Inserisci un valore valido. Il valore valido più vicino è <ph name="VALID_VALUE" />.</translation>
@@ -51,7 +49,6 @@
 <translation id="2759744352195237655">pulsante popup</translation>
 <translation id="2761667185364618470">Seleziona questa casella se intendi procedere.</translation>
 <translation id="2896972712917208084">gruppo pulsanti di opzione</translation>
-<translation id="2901282870647571346">stato corrente del filmato</translation>
 <translation id="2908441821576996758">Inserisci un elenco di indirizzi email separati da virgola.</translation>
 <translation id="2940813599313844715">oggetto</translation>
 <translation id="2942448076852699108">contenuti evidenziati</translation>
@@ -95,7 +92,6 @@
 <translation id="4992066212339426712">Riattiva audio</translation>
 <translation id="49969490063480558">Inserisci una parte dopo "<ph name="ATSIGN" />". Il valore "<ph name="INVALIDADDRESS" />" è incompleto.</translation>
 <translation id="5034860022980953847">indicatore di avanzamento</translation>
-<translation id="5048533449481078685">indicatore elenco</translation>
 <translation id="5117590920725113268">Mostra mese successivo</translation>
 <translation id="512758898067543763">intestazione di riga</translation>
 <translation id="5164977714490026579">Il valore deve essere superiore o uguale a <ph name="MINIMUM" />.</translation>
@@ -113,7 +109,6 @@
 <translation id="5643186887447432888">pulsante</translation>
 <translation id="5677946354068040947">altre opzioni</translation>
 <translation id="57838592816432529">Disattiva audio</translation>
-<translation id="5843503607508392247">Altro...</translation>
 <translation id="5860033963881614850">Off</translation>
 <translation id="588258955323874662">Schermo intero</translation>
 <translation id="5939518447894949180">Ripristina</translation>
@@ -123,8 +118,6 @@
 <translation id="6023896073578205740">casella di riepilogo</translation>
 <translation id="6101327004457443354">riattiva traccia audio</translation>
 <translation id="6164829606128959761">indicatore</translation>
-<translation id="6270583010843788609">cursore sequenza temporale filmato</translation>
-<translation id="6359256949422175976">cursore dispositivo di scorrimento tempo filmato</translation>
 <translation id="6398862346408813489">Mostra il riquadro di selezione del mese</translation>
 <translation id="6404546809543547843">dispositivo di scorrimento durata audio</translation>
 <translation id="648732519525291180">selettore di ora</translation>
@@ -132,7 +125,6 @@
 <translation id="663493177488814956">feed</translation>
 <translation id="6637586476836377253">log</translation>
 <translation id="6643016212128521049">Cancella</translation>
-<translation id="6663448176199120256">Ricerche recenti</translation>
 <translation id="668171684555832681">Altro...</translation>
 <translation id="6692633176391053278">stepper</translation>
 <translation id="6739588121953935928">righello</translation>
@@ -145,7 +137,6 @@
 <translation id="6934078000481955284">citazione lunga</translation>
 <translation id="6941933287844615239">scarica contenuti multimediali</translation>
 <translation id="6989848892321993519">Prolunga questo testo a <ph name="MIN_CHARACTERS" /> o più caratteri (al momento stai utilizzando 1 carattere).</translation>
-<translation id="7057186640035488495">tempo filmato</translation>
 <translation id="709897737746224366">Rispetta il formato richiesto.</translation>
 <translation id="7223624360433298498">tempo trascorso</translation>
 <translation id="7263440858009898357">Seleziona un elemento nell'elenco.</translation>
@@ -166,10 +157,8 @@
 <translation id="8053789581856978548">campo di testo della ricerca</translation>
 <translation id="8115662671911883373">avvia la visualizzazione dei sottotitoli</translation>
 <translation id="8117451130807776954">Questa settimana</translation>
-<translation id="8141602879876242471">Questo è un indice di ricerca. Inserisci le parole chiave di ricerca:</translation>
 <translation id="819205353528511139">riproduci filmato in modalità a schermo intero</translation>
 <translation id="8199524924445686405">aaaa</translation>
-<translation id="8244226242650769279">image map</translation>
 <translation id="8284326494547611709">Sottotitoli</translation>
 <translation id="835897206747267392">Valore non valido.</translation>
 <translation id="8433900881053900389">barra degli strumenti</translation>

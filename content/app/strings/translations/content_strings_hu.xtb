@@ -10,7 +10,6 @@
 <translation id="1188858454923323853">kiegészítő</translation>
 <translation id="1206619573307042055">fényújság</translation>
 <translation id="1206693055195146388">csúszka</translation>
-<translation id="1235745349614807883">Friss keresések törlése</translation>
 <translation id="1281252709823657822">párbeszédpanel</translation>
 <translation id="1342835525016946179">cikk</translation>
 <translation id="1359897965706325498">szalaghirdetés</translation>
@@ -39,7 +38,6 @@
 <translation id="248395913932153421">nap</translation>
 <translation id="2507943997699731163">Kérjük, töltse ki ezt a mezőt.</translation>
 <translation id="2508569020611168319">laplista</translation>
-<translation id="2548326553472216322">Nincsenek friss keresések</translation>
 <translation id="2561842179657104141">további médiavezérlők megjelenítése</translation>
 <translation id="2572483411312390101">lejátszás</translation>
 <translation id="2613802280814924224">Kérjük, érvényes értéket adjon meg. A legközelebbi érvényes érték <ph name="VALID_VALUE" />.</translation>
@@ -51,7 +49,6 @@
 <translation id="2759744352195237655">előugró gomb</translation>
 <translation id="2761667185364618470">Kérjük, jelölje be ezt a jelölőnégyzetet, ha tovább kíván haladni.</translation>
 <translation id="2896972712917208084">választógombcsoport</translation>
-<translation id="2901282870647571346">a jelenlegi film állapota</translation>
 <translation id="2908441821576996758">Kérjük, adjon meg egy vesszőkkel elválasztott e-mail címlistát.</translation>
 <translation id="2940813599313844715">objektum</translation>
 <translation id="2942448076852699108">kijelölt tartalom</translation>
@@ -95,7 +92,6 @@
 <translation id="4992066212339426712">Némítás feloldása</translation>
 <translation id="49969490063480558">Kérjük, adja meg a „<ph name="ATSIGN" />” utáni részt is. A(z) „<ph name="INVALIDADDRESS" />” cím nem teljes.</translation>
 <translation id="5034860022980953847">folyamatjelző</translation>
-<translation id="5048533449481078685">listajelölő</translation>
 <translation id="5117590920725113268">A következő hónap megjelenítése</translation>
 <translation id="512758898067543763">sorfejléc</translation>
 <translation id="5164977714490026579">Az érték legyen nagyobb vagy egyenlő, mint <ph name="MINIMUM" />.</translation>
@@ -113,7 +109,6 @@
 <translation id="5643186887447432888">gomb</translation>
 <translation id="5677946354068040947">további beállítások</translation>
 <translation id="57838592816432529">Némítás</translation>
-<translation id="5843503607508392247">Más...</translation>
 <translation id="5860033963881614850">Kikapcsolva</translation>
 <translation id="588258955323874662">Teljes képernyő</translation>
 <translation id="5939518447894949180">Visszaállítás</translation>
@@ -123,8 +118,6 @@
 <translation id="6023896073578205740">listamező</translation>
 <translation id="6101327004457443354">hangsáv némításának feloldása</translation>
 <translation id="6164829606128959761">mérő</translation>
-<translation id="6270583010843788609">film idővonalának indexképe</translation>
-<translation id="6359256949422175976">a filmidővezérlő indexképe</translation>
 <translation id="6398862346408813489">A hónapválasztási panel megjelenítése</translation>
 <translation id="6404546809543547843">hang idővonalának vezérlője</translation>
 <translation id="648732519525291180">időválasztó</translation>
@@ -132,7 +125,6 @@
 <translation id="663493177488814956">hírcsatorna</translation>
 <translation id="6637586476836377253">napló</translation>
 <translation id="6643016212128521049">Törlés</translation>
-<translation id="6663448176199120256">Friss keresések</translation>
 <translation id="668171684555832681">Egyéb...</translation>
 <translation id="6692633176391053278">léptető</translation>
 <translation id="6739588121953935928">vonalzó</translation>
@@ -145,7 +137,6 @@
 <translation id="6934078000481955284">bekezdésszintű idézet</translation>
 <translation id="6941933287844615239">médiafájlok letöltése</translation>
 <translation id="6989848892321993519">Legalább <ph name="MIN_CHARACTERS" /> karakter hosszú szöveget adjon meg (jelenleg 1 karaktert használ).</translation>
-<translation id="7057186640035488495">film ideje</translation>
 <translation id="709897737746224366">Kérjük, tartsa magát a kívánt formátumhoz.</translation>
 <translation id="7223624360433298498">eltelt idő</translation>
 <translation id="7263440858009898357">Kérjük, válasszon egyet a lista elemei közül.</translation>
@@ -166,10 +157,8 @@
 <translation id="8053789581856978548">keresés a szövegmezőben</translation>
 <translation id="8115662671911883373">feliratok megjelenítése</translation>
 <translation id="8117451130807776954">Ezen a héten</translation>
-<translation id="8141602879876242471">Ez egy kereshető index. Írjon be keresési kulcsszavakat:</translation>
 <translation id="819205353528511139">film lejátszása teljes képernyős nézetben</translation>
 <translation id="8199524924445686405">éééé</translation>
-<translation id="8244226242650769279">interaktív kép</translation>
 <translation id="8284326494547611709">Feliratok</translation>
 <translation id="835897206747267392">Érvénytelen érték.</translation>
 <translation id="8433900881053900389">eszköztár</translation>

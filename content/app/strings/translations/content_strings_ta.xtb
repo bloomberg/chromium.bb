@@ -10,7 +10,6 @@
 <translation id="1188858454923323853">ஈடுசெய்யக்கூடியது</translation>
 <translation id="1206619573307042055">மார்கியூ</translation>
 <translation id="1206693055195146388">ஸ்லைடர்</translation>
-<translation id="1235745349614807883">சமீபத்திய தேடல்களை சுத்தமாக்கு</translation>
 <translation id="1281252709823657822">உரையாடல்</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">பேனர்</translation>
@@ -39,7 +38,6 @@
 <translation id="248395913932153421">நாள்</translation>
 <translation id="2507943997699731163">இந்தப் புலத்தை நிரப்புக.</translation>
 <translation id="2508569020611168319">தாவல் பட்டியல்</translation>
-<translation id="2548326553472216322">சமீபத்திய தேடல்கள் எதுவுமில்லை</translation>
 <translation id="2561842179657104141">மேலும் மீடியா கட்டுப்பாடுகளைக் காட்டு</translation>
 <translation id="2572483411312390101">இயக்கு</translation>
 <translation id="2613802280814924224">சரியான மதிப்பை உள்ளிடவும்.  <ph name="VALID_VALUE" /> என்பது நெருக்கமாக உள்ள சரியான மதிப்பாகும்.</translation>
@@ -51,7 +49,6 @@
 <translation id="2759744352195237655">பாப்-அப் பொத்தான்</translation>
 <translation id="2761667185364618470">தொடர விரும்பினால், இந்தப் பெட்டியைத் தேர்ந்தெடுங்கள்.</translation>
 <translation id="2896972712917208084">ரேடியோ குழு</translation>
-<translation id="2901282870647571346">மூவியின் நடப்பு நிலை</translation>
 <translation id="2908441821576996758">காற்புள்ளியால் பிரிக்கப்பட்ட மின்னஞ்சல் முகவரிகளின் பட்டியலை உள்ளிடுக.</translation>
 <translation id="2940813599313844715">பொருள்</translation>
 <translation id="2942448076852699108">தனிப்படுத்தப்பட்ட உள்ளடக்கம்</translation>
@@ -95,7 +92,6 @@
 <translation id="4992066212339426712">ஒலி இயக்கு</translation>
 <translation id="49969490063480558">'<ph name="ATSIGN" />' ஐத் தொடர்ந்து ஒரு பகுதியை உள்ளிடவும். '<ph name="INVALIDADDRESS" />' முழுமைப்பெறாமல் உள்ளது.</translation>
 <translation id="5034860022980953847">செயல்நிலை காட்டி</translation>
-<translation id="5048533449481078685">பட்டியல் குறிப்பான்</translation>
 <translation id="5117590920725113268">அடுத்த மாதத்தைக் காட்டு</translation>
 <translation id="512758898067543763">வரிசை மேற்தலைப்பு</translation>
 <translation id="5164977714490026579">மதிப்பானது, கண்டிப்பாக <ph name="MINIMUM" /> ஐ விட அதிகமாக அல்லது அதற்குச் சமமாக இருக்க வேண்டும்.</translation>
@@ -113,7 +109,6 @@
 <translation id="5643186887447432888">பொத்தான்</translation>
 <translation id="5677946354068040947">கூடுதல் விருப்பங்கள் பொத்தான்</translation>
 <translation id="57838592816432529">ஒலியடக்கு</translation>
-<translation id="5843503607508392247">மற்றவை…</translation>
 <translation id="5860033963881614850">ஆஃப்</translation>
 <translation id="588258955323874662">முழுத்திரை</translation>
 <translation id="5939518447894949180">மீட்டமை</translation>
@@ -123,8 +118,6 @@
 <translation id="6023896073578205740">பட்டியல் பெட்டி</translation>
 <translation id="6101327004457443354">ஆடியோ டிராக்கை இயக்கு</translation>
 <translation id="6164829606128959761">மீட்டர்</translation>
-<translation id="6270583010843788609">மூவி டைம்லைன் சிறுபடம்</translation>
-<translation id="6359256949422175976">மூவி நேர ஸ்க்ரப்பர் சிறுபடம்</translation>
 <translation id="6398862346408813489">மாதம் தேர்ந்தெடுப்புப் பலகத்தைக் காட்டு</translation>
 <translation id="6404546809543547843">ஆடியோ நேர ஸ்கிரப்பர்</translation>
 <translation id="648732519525291180">நேரம் தேர்ந்தெடுப்பான்</translation>
@@ -132,7 +125,6 @@
 <translation id="663493177488814956">ஊட்டம்</translation>
 <translation id="6637586476836377253">பதிவு</translation>
 <translation id="6643016212128521049">அழி</translation>
-<translation id="6663448176199120256">சமீபத்திய தேடல்கள்</translation>
 <translation id="668171684555832681">மற்றவை…</translation>
 <translation id="6692633176391053278">ஸ்டெப்பர்</translation>
 <translation id="6739588121953935928">அளவுகோல்</translation>
@@ -145,7 +137,6 @@
 <translation id="6934078000481955284">பிளாக்கோட்</translation>
 <translation id="6941933287844615239">மீடியாவைப் பதிவிறக்கு</translation>
 <translation id="6989848892321993519">இந்த உரையில் <ph name="MIN_CHARACTERS" /> அல்லது அதற்கு மேற்பட்ட எழுத்துக்குறிகளைப் பயன்படுத்தவும் (தற்போது 1 எழுத்துக்குறியைப் பயன்படுத்துகிறீர்கள்).</translation>
-<translation id="7057186640035488495">மூவி நேரம்</translation>
 <translation id="709897737746224366">கோரிய வடிவமைப்பில் தருக.</translation>
 <translation id="7223624360433298498">முடிவடைந்த நேரம்</translation>
 <translation id="7263440858009898357">பட்டியலிலிருந்து ஒரு உருப்படியைத் தேர்ந்தெடுங்கள்.</translation>
@@ -166,10 +157,8 @@
 <translation id="8053789581856978548">தேடல் உரைப் புலம்</translation>
 <translation id="8115662671911883373">மூடப்பட்ட தலைப்புகளைக் காட்டுவதைத் தொடங்கு</translation>
 <translation id="8117451130807776954">இந்த வாரம்</translation>
-<translation id="8141602879876242471">இது தேடக்கூடிய பொருளடக்கம். தேடல் சொற்களை உள்ளிடுக:</translation>
 <translation id="819205353528511139">மூவியை முழுத்திரைப் பயன்முறையில் இயக்கு</translation>
 <translation id="8199524924445686405">yyyy</translation>
-<translation id="8244226242650769279">பட மேப்</translation>
 <translation id="8284326494547611709">வசனங்கள்</translation>
 <translation id="835897206747267392">செல்லாத மதிப்பு.</translation>
 <translation id="8433900881053900389">கருவிப்பட்டி</translation>

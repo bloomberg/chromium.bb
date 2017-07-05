@@ -497,7 +497,6 @@
 <translation id="1709106626015023981"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (Основна)</translation>
 <translation id="1711973684025117106">Додавање у zip датотеку није успело, неочекивана грешка: $1</translation>
 <translation id="1712349894969001173">Користите ову лозинку на iPhone-у</translation>
-<translation id="1719028357511747483">Претражите <ph name="DEVICE_TYPE" />, апликације, веб...</translation>
 <translation id="1719312230114180055">Напомена: дигитални отисак може да буде мање безбедан од јаке лозинке или PIN-а.</translation>
 <translation id="1720318856472900922">TLS WWW потврда идентитета сервера</translation>
 <translation id="1720372306711178108">Проширена радна површина</translation>
@@ -2353,7 +2352,7 @@
 <translation id="4546308221697447294">Прегледајте брзо уз Google Chrome</translation>
 <translation id="4547659257713117923">Нема картица са других уређаја</translation>
 <translation id="4547992677060857254">Директоријум који сте изабрали садржи осетљиве датотеке. Јесте ли сигурни да желите да одобрите апликацији „$1“ сталан приступ за уписивање за овај директоријум?</translation>
-<translation id="4552031286893852992">Chrome је блокирао огласе на овом сајту зато што он приказује огласе који ометају.</translation>
+<translation id="4552031286893852992">Chrome је блокирао огласе на овом сајту јер сајт приказује огласе који ометају.</translation>
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4552495056028768700">Приступ страници</translation>
 <translation id="4552678318981539154">Купи још меморијског простора</translation>
