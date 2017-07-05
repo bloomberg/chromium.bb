@@ -268,7 +268,7 @@ crbug.com/480769 http/tests/inspector/service-workers/service-workers-redundant.
 crbug.com/480769 virtual/mojo-loading/http/tests/inspector/service-workers/service-workers-redundant.html [ Slow ]
 crbug.com/480769 http/tests/inspector/service-workers/service-worker-agents.html [ Slow ]
 crbug.com/480769 virtual/mojo-loading/http/tests/inspector/service-workers/service-worker-agents.html [ Slow ]
-crbug.com/504703 inspector-protocol/debugger/debugger-step-into-dedicated-worker.html [ Slow ]
+crbug.com/504703 inspector-protocol/debugger/debugger-step-into-dedicated-worker.js [ Slow ]
 crbug.com/535478 [ Win ] virtual/threaded/inspector/tracing/decode-resize.html [ Slow ]
 crbug.com/548765 http/tests/inspector/console-fetch-logging.html [ Slow ]
 crbug.com/548765 virtual/mojo-loading/http/tests/inspector/console-fetch-logging.html [ Slow ]
