@@ -254,6 +254,18 @@ int put_str(char *buffer, const char *str) {
   return i;
 }
 
+int put_str_with_escape(char *buffer, const char *str) {
+  int i;
+  int j = 0;
+  for (i = 0; str[i] != '\0'; i++) {
+    if (str[i] == '"') {
+      buffer[j++] = '\\';
+    }
+    buffer[j++] = str[i];
+  }
+  return j;
+}
+
 int put_num(char *buffer, char prefix, int num, char suffix) {
   int i = 0;
   char *buf = buffer;
@@ -541,8 +553,9 @@ void inspect(void *pbi, void *data) {
   buf += put_str(buf, "  \"config\": {");
   buf += put_map(buf, config_map);
   buf += put_str(buf, "},\n");
-  buf += snprintf(buf, MAX_BUFFER, "  \"configString\": \"%s\"\n",
-                  aom_codec_build_config());
+  buf += put_str(buf, "  \"configString\": \"");
+  buf += put_str_with_escape(buf, aom_codec_build_config());
+  buf += put_str(buf, "\"\n");
   decoded_frame_count++;
   buf += put_str(buf, "},\n");
   *(buf++) = 0;
