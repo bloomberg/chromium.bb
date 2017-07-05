@@ -6,6 +6,7 @@
 #define WebFactoryImpl_h
 
 #include "core/exported/WebFactory.h"
+#include "web/WebExport.h"
 
 namespace blink {
 
@@ -15,7 +16,7 @@ class WebFactoryImpl : public WebFactory {
   ~WebFactoryImpl() {}
 
   // Sets WebFactory to have a new instance of WebFactoryImpl.
-  static void Initialize();
+  WEB_EXPORT static void Initialize();
 
   ChromeClient* CreateChromeClient(WebViewBase*) const override;
   WebViewBase* CreateWebViewBase(WebViewClient*,
