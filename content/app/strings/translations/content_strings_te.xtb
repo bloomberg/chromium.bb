@@ -10,7 +10,6 @@
 <translation id="1188858454923323853">బహుమానపూర్వకం</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1206693055195146388">స్లయిడర్</translation>
-<translation id="1235745349614807883">ఇటీవల శోధనలను క్లియర్ చెయ్యి</translation>
 <translation id="1281252709823657822">డైలాగ్</translation>
 <translation id="1342835525016946179">కథనం</translation>
 <translation id="1359897965706325498">బ్యానర్</translation>
@@ -39,7 +38,6 @@
 <translation id="248395913932153421">రోజు</translation>
 <translation id="2507943997699731163">దయచేసి ఈ ఫీల్డ్‌ని పూర్తి చెయ్యండి.</translation>
 <translation id="2508569020611168319">ట్యాబ్ జాబితా</translation>
-<translation id="2548326553472216322">ఇటీవల శోధనలు లేవు</translation>
 <translation id="2561842179657104141">మరిన్ని మీడియా నియంత్రణలను చూపు</translation>
 <translation id="2572483411312390101">ప్లే చేయి</translation>
 <translation id="2613802280814924224">దయచేసి చెల్లుబాటు అయ్యే విలువను నమోదు చేయండి. <ph name="VALID_VALUE" /> అనేది సమీప చెల్లుబాటు విలువ.</translation>
@@ -51,7 +49,6 @@
 <translation id="2759744352195237655">పాప్ అప్ బటన్</translation>
 <translation id="2761667185364618470">దయచేసి మీరు కొనసాగాలనుకుంటే ఈ బాక్స్‌కి టిక్కు పెట్టండి.</translation>
 <translation id="2896972712917208084">రేడియో సమూహం</translation>
-<translation id="2901282870647571346">ప్రస్తుతం చలనచిత్ర స్థితి</translation>
 <translation id="2908441821576996758">దయచేసి కామాతో వేరు చేసిన ఇమెయిల్ చిరునామాల జాబితాను ఎంటర్ చెయ్యండి.</translation>
 <translation id="2940813599313844715">ఆబ్జెక్ట్</translation>
 <translation id="2942448076852699108">ప్రముఖంగా చూపిన కంటెంట్</translation>
@@ -95,7 +92,6 @@
 <translation id="4992066212339426712">అన్‌మ్యూట్ చేయి</translation>
 <translation id="49969490063480558">దయచేసి '<ph name="ATSIGN" />'కి తర్వాత ఉన్న భాగాన్ని నమోదు చేయండి. '<ph name="INVALIDADDRESS" />' అసంపూర్ణంగా ఉంది.</translation>
 <translation id="5034860022980953847">ప్రోగ్రెస్ సూచిక</translation>
-<translation id="5048533449481078685">జాబితా మార్కర్</translation>
 <translation id="5117590920725113268">తదుపరి నెలను చూపుతుంది</translation>
 <translation id="512758898067543763">అడ్డు వరుస శీర్షిక</translation>
 <translation id="5164977714490026579">విలువ ఖచ్చితంగా <ph name="MINIMUM" /> కంటే ఎక్కువగా లేదా సమానంగా ఉండాలి.</translation>
@@ -113,7 +109,6 @@
 <translation id="5643186887447432888">బటన్</translation>
 <translation id="5677946354068040947">మరిన్ని ఎంపికలు</translation>
 <translation id="57838592816432529">మ్యూట్ చేయి</translation>
-<translation id="5843503607508392247">ఇతర...</translation>
 <translation id="5860033963881614850">ఆఫ్ అయ్యింది</translation>
 <translation id="588258955323874662">పూర్తితెర</translation>
 <translation id="5939518447894949180">రీసెట్ చేయి</translation>
@@ -123,8 +118,6 @@
 <translation id="6023896073578205740">జాబితా పెట్టె</translation>
 <translation id="6101327004457443354">ఆడియో ట్రాక్‌ను అన్‌మ్యూట్ చేయి</translation>
 <translation id="6164829606128959761">మీటర్</translation>
-<translation id="6270583010843788609">చలనచిత్ర టైమ్‌లైన్ సూక్ష్మచిత్రం</translation>
-<translation id="6359256949422175976">చలనచిత్ర సమయ స్క్రబ్బర్ సూక్ష్మచిత్రం</translation>
 <translation id="6398862346408813489">నెల ఎంపిక ప్యానెల్‌ను చూపుతుంది</translation>
 <translation id="6404546809543547843">ఆడియో సమయ స్క్రబ్బర్</translation>
 <translation id="648732519525291180">సమయం ఎంపిక</translation>
@@ -132,7 +125,6 @@
 <translation id="663493177488814956">ఫీడ్</translation>
 <translation id="6637586476836377253">log</translation>
 <translation id="6643016212128521049">క్లియర్ చేయి</translation>
-<translation id="6663448176199120256">ఇటీవల శోధనలు</translation>
 <translation id="668171684555832681">ఇతర...</translation>
 <translation id="6692633176391053278">స్టెప్పర్</translation>
 <translation id="6739588121953935928">రూలర్</translation>
@@ -145,7 +137,6 @@
 <translation id="6934078000481955284">బ్లాక్‌కోట్</translation>
 <translation id="6941933287844615239">మీడియా అంశం డౌన్‌లోడ్ చేయి</translation>
 <translation id="6989848892321993519">దయచేసి ఈ వచనాన్ని <ph name="MIN_CHARACTERS" /> లేదా అంతకంటే ఎక్కువ అక్షరాలకు పొడిగించండి (ప్రస్తుతం మీరు 1 అక్షరాన్ని ఉపయోగిస్తున్నారు).</translation>
-<translation id="7057186640035488495">చలనచిత్ర నిడివి</translation>
 <translation id="709897737746224366">దయచేసి అభ్యర్థించిన ఆకృతీకరణను సరిపోల్చండి.</translation>
 <translation id="7223624360433298498">గడిచిన సమయం</translation>
 <translation id="7263440858009898357">దయచేసి జాబితాలోని ఒక అంశాన్ని ఎంచుకోండి.</translation>
@@ -166,10 +157,8 @@
 <translation id="8053789581856978548">శోధన వచనం ఫీల్డ్</translation>
 <translation id="8115662671911883373">సంవృత శీర్షికలను ప్రదర్శించడం ప్రారంభించు</translation>
 <translation id="8117451130807776954">ఈ వారం</translation>
-<translation id="8141602879876242471">ఇది ఒక శోధించగల సూచిక. శోధన కీవర్డ్‌లను ఎంటర్ చెయ్యండి:</translation>
 <translation id="819205353528511139">చలనచిత్రాన్ని పూర్తి స్క్రీన్ మోడ్‌లో ప్లే చేయి</translation>
 <translation id="8199524924445686405">yyyy</translation>
-<translation id="8244226242650769279">చిత్రం మ్యాప్‌</translation>
 <translation id="8284326494547611709">ఉపశీర్షికలు</translation>
 <translation id="835897206747267392">చెల్లని విలువ.</translation>
 <translation id="8433900881053900389">సాధన పట్టీ</translation>

@@ -69,7 +69,6 @@
 <translation id="1620510694547887537">Κάμερα</translation>
 <translation id="1623104350909869708">Αποτροπή δημιουργίας πρόσθετων παραθύρων διαλόγου από αυτήν τη σελίδα</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Κατάργηση 1 επιλεγμένου στοιχείου}other{Κατάργηση # επιλεγμένων στοιχείων}}</translation>
-<translation id="1629390138158333592">Αναζήτηση στον ιστό</translation>
 <translation id="1641113438599504367">Ασφαλής περιήγηση</translation>
 <translation id="164269334534774161">Βλέπετε ένα αντίγραφο εκτός σύνδεσης αυτής της σελίδας από <ph name="CREATION_TIME" /></translation>
 <translation id="1643702317193804718">Μετάφραση σελίδας στα <ph name="SOURCE_LANGUAGE" />…</translation>
@@ -330,7 +329,6 @@
 <translation id="4307992518367153382">Βασικά στοιχεία</translation>
 <translation id="4351244548802238354">Κλείσιμο παραθύρου διαλόγου</translation>
 <translation id="4378154925671717803">Τηλέφωνο</translation>
-<translation id="4381206798889118664">Αναζητήστε… συνταγές</translation>
 <translation id="4384468725000734951">Χρήση του Sogou για αναζήτηση</translation>
 <translation id="4412992751769744546">Αποδοχή cookie τρίτου μέρους</translation>
 <translation id="4432792777822557199">Από εδώ και στο εξής, οι σελίδες στα <ph name="SOURCE_LANGUAGE" /> θα μεταφράζονται στα <ph name="TARGET_LANGUAGE" /></translation>
@@ -376,7 +374,6 @@
 <translation id="4837753911714442426">Άνοιγμα επιλογών για την εκτύπωση της σελίδας</translation>
 <translation id="4850886885716139402">Προβολή</translation>
 <translation id="4860895144060829044">Κλήση</translation>
-<translation id="4869862470313079745">Αναζητήστε… ειδήσεις</translation>
 <translation id="4881695831933465202">Άνοιγμα</translation>
 <translation id="4885273946141277891">Μη υποστηριζόμενος αριθμός παρουσιών Chrome.</translation>
 <translation id="4910889077668685004">Εφαρμογές πληρωμών</translation>
@@ -406,7 +403,6 @@
 <translation id="5161254044473106830">Απαιτείται τίτλος</translation>
 <translation id="5164482624172255778">Θέλετε το Google Chrome να προσφέρεται να μεταφράσει τις σελίδες <ph name="LANGUAGE" /> από αυτόν τον ιστότοπο την επόμενη φορά;</translation>
 <translation id="5168917394043976756">Άνοιγμα συρταριού πλοήγησης</translation>
-<translation id="5171045022955879922">Αναζήτηση ή πληκτρολόγηση διεύθυνσης URL</translation>
 <translation id="5184329579814168207">Άνοιγμα στο Chrome</translation>
 <translation id="5199929503336119739">Προφίλ εργασίας</translation>
 <translation id="5209320130288484488">Δεν βρέθηκαν συσκευές</translation>
@@ -510,7 +506,6 @@
 <translation id="6042308850641462728">Περισσότερα</translation>
 <translation id="604996488070107836">Η λήψη του αρχείου <ph name="FILE_NAME" /> απέτυχε λόγω άγνωστου σφάλματος.</translation>
 <translation id="605721222689873409">ΕΕ</translation>
-<translation id="6066049505142453066">Αναζητήστε… καιρός</translation>
 <translation id="6075798973483050474">Επεξεργασία αρχικής σελίδας</translation>
 <translation id="60923314841986378">Απομένουν <ph name="HOURS" /> ώρες</translation>
 <translation id="60924377787140961">Περισσότερα άρθρα θα εμφανιστούν σύντομα. Απολαύστε το απόγευμά σας!</translation>
@@ -604,7 +599,6 @@
 <translation id="688738109438487280">Προσθήκη υπαρχόντων δεδομένων στον λογαριασμό <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d ανοικτή καρτέλα}other{%1$d ανοικτές καρτέλες}}</translation>
 <translation id="6896758677409633944">Αντιγραφή</translation>
-<translation id="6932129181739884535">Αναζητήστε/πληκτρολογήστε τον ιστότοπο</translation>
 <translation id="6945221475159498467">Επιλογή</translation>
 <translation id="6963766334940102469">Διαγραφή σελιδοδεικτών</translation>
 <translation id="6965382102122355670">ΕΝΤΑΞΕΙ</translation>
@@ -825,7 +819,6 @@
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Εμφάνιση πρωτοτύπου</translation>
 <translation id="9139068048179869749">Να γίνεται ερώτηση προτού επιτραπεί στους ιστότοπους να στέλνουν ειδοποιήσεις (συνιστάται)</translation>
-<translation id="9187067407629017315">Εισαγάγετε όρο αναζήτησης ή ιστότοπο</translation>
 <translation id="9187199695613236444">Προβολή για κινητά</translation>
 <translation id="9188680907066685419">Αποσύνδεση από διαχειριζόμενο λογαριασμό</translation>
 <translation id="9204836675896933765">1 αρχείο απομένει</translation>

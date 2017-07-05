@@ -69,7 +69,6 @@
 <translation id="1620510694547887537">कैमरा</translation>
 <translation id="1623104350909869708">इस पेज को अतिरिक्त डॉयलॉग बनाने से रोकें</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{1 चयनित आइटम निकालें}one{# चयनित आइटम निकालें}other{# चयनित आइटम निकालें}}</translation>
-<translation id="1629390138158333592">वेब पर खोजें</translation>
 <translation id="1641113438599504367">सुरक्षित ब्राउज़िंग</translation>
 <translation id="164269334534774161">आप <ph name="CREATION_TIME" /> से इस पेज की ऑफ़लाइन कॉपी देख रहे हैं</translation>
 <translation id="1643702317193804718">पृष्‍ठ का <ph name="SOURCE_LANGUAGE" /> में अनुवाद हो रहा है…</translation>
@@ -233,7 +232,7 @@
 <translation id="3384347053049321195">चित्र साझा करें</translation>
 <translation id="3386292677130313581">साइट को अपना स्थान जानने देने से पहले अनुमति लेना आवश्यक बनाएं (अनुशंसित)</translation>
 <translation id="3387650086002190359">सिस्‍टम त्रुटियों के कारण <ph name="FILE_NAME" /> डाउनलोड विफल रहा.</translation>
-<translation id="3391904733075904777">पासवर्ड देखने और कॉपी करने के लिए आपको अपने डिवाइस की सुरक्षा सेटिंग में डिवाइस लॉक सेट अप करना ज़रूरी है.</translation>
+<translation id="3391904733075904777">पासवर्ड देखने और कॉपी करने के लिए आपको अपने डिवाइस की सुरक्षा सेटिंग में डिवाइस लॉक सेट अप करना होगा.</translation>
 <translation id="339329030417445648">यह साइट तंग करने वाले विज्ञापन दिखाने के लिए जानी जाती है</translation>
 <translation id="3398320232533725830">बुकमार्क प्रबंधक खोलें</translation>
 <translation id="3414952576877147120">आकार:</translation>
@@ -330,7 +329,6 @@
 <translation id="4307992518367153382">आधारभूत बातें</translation>
 <translation id="4351244548802238354">संवाद बंद करें</translation>
 <translation id="4378154925671717803">फ़ोन</translation>
-<translation id="4381206798889118664">खोजें… रेसिपी</translation>
 <translation id="4384468725000734951">खोजने के लिए Sogou का उपयोग करना</translation>
 <translation id="4412992751769744546">तृतीय-पक्ष कुकी को अनुमति दें</translation>
 <translation id="4432792777822557199">अब से <ph name="SOURCE_LANGUAGE" /> भाषा के पेज का अनुवाद <ph name="TARGET_LANGUAGE" /> भाषा में किया जाएगा</translation>
@@ -376,7 +374,6 @@
 <translation id="4837753911714442426">पेज प्रिंट करने के विकल्प खोलें</translation>
 <translation id="4850886885716139402">देखें</translation>
 <translation id="4860895144060829044">कॉल करें</translation>
-<translation id="4869862470313079745">खोजें… समाचार</translation>
 <translation id="4881695831933465202">खोलें</translation>
 <translation id="4885273946141277891">Chrome इंस्टेंस की असमर्थित संख्या.</translation>
 <translation id="4910889077668685004">भुगतान ऐप्लिकेशन</translation>
@@ -406,7 +403,6 @@
 <translation id="5161254044473106830">शीर्षक आवश्‍यक</translation>
 <translation id="5164482624172255778">क्या आप चाहते हैं कि Google Chrome अगली बार इस साइट के <ph name="LANGUAGE" /> पृष्ठों का अनुवाद करने का ऑफ़र दे?</translation>
 <translation id="5168917394043976756">मार्गदर्शक ड्रॉवर खोलें</translation>
-<translation id="5171045022955879922">URL खोजें या लिखें</translation>
 <translation id="5184329579814168207">Chrome में खोलें</translation>
 <translation id="5199929503336119739">कार्य प्रोफ़ाइल</translation>
 <translation id="5209320130288484488">कोई डिवाइस नहीं मि‍ला</translation>
@@ -510,7 +506,6 @@
 <translation id="6042308850641462728">अधिक</translation>
 <translation id="604996488070107836">किसी अज्ञात गड़बड़ी के कारण <ph name="FILE_NAME" /> का डाउनलोड विफल रहा.</translation>
 <translation id="605721222689873409">YY</translation>
-<translation id="6066049505142453066">खोजें… मौसम</translation>
 <translation id="6075798973483050474">मुखपृष्ठ संपादित करें</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> घंटे शेष</translation>
 <translation id="60924377787140961">जल्द ही और लेख दिखाई देंगे. अपनी दोपहर का आनंद लें!</translation>
@@ -604,7 +599,6 @@
 <translation id="688738109438487280">मौजूदा डेटा <ph name="TO_ACCOUNT" /> में जोड़ें.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d खुला टैब}one{%1$d खुले टैब}other{%1$d खुले टैब}}</translation>
 <translation id="6896758677409633944">प्रतिलिपि बनाएं</translation>
-<translation id="6932129181739884535">खोजें या वेबसाइट का नाम लिखें</translation>
 <translation id="6945221475159498467">चुनें</translation>
 <translation id="6963766334940102469">बुकमार्क हटाएं</translation>
 <translation id="6965382102122355670">ठीक</translation>
@@ -825,7 +819,6 @@
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">मूल दिखाएं</translation>
 <translation id="9139068048179869749">साइट को नोटिफ़िकेशन भेजने देने से पहले अनुमति लेना आवश्यक बनाएं (अनुशंसित)</translation>
-<translation id="9187067407629017315">खोज या वेबसाइट डालें</translation>
 <translation id="9187199695613236444">मोबाइल के अनुकूल दृश्‍य</translation>
 <translation id="9188680907066685419">प्रबंधित खाते से प्रस्थान करें</translation>
 <translation id="9204836675896933765">1 फ़ाइल बची है</translation>

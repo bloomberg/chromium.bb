@@ -529,6 +529,7 @@ Si cette règle est définie sur "False", les utilisateurs ne pourront pas jouer
 
           Si cette règle n'est pas configurée, le paramètre est activé.</translation>
 <translation id="2824715612115726353">Activer le mode navigation privée</translation>
+<translation id="2838830882081735096">Interdire la migration de données et ARC</translation>
 <translation id="2844404652289407061">Active la fonctionnalité Appuyer pour rechercher dans l'affichage du contenu de <ph name="PRODUCT_NAME" />.
 
       Si vous activez ce paramètre, l'utilisateur sera en mesure d'activer ou de désactiver la fonctionnalité Appuyer pour rechercher.
@@ -711,13 +712,6 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
           Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" est activée.</translation>
 <translation id="350797926066071931">Activer Google Traduction</translation>
 <translation id="3528000905991875314">Activer les pages d'erreur alternatives</translation>
-<translation id="3538538104630456270">Le paramètre associé était utilisé avant la mise en œuvre de la nouvelle authentification lors de la consultation des mots de passe. Depuis lors, le paramètre et la règle correspondante sont sans effet sur le fonctionnement de Chrome. Le fonctionnement actuel de Chrome est le même que si cette règle était définie sur la désactivation de l'affichage des mots de passe en texte clair dans la page des paramètres du gestionnaire de mots de passe. Cela signifie que la page des paramètres contient seulement un espace réservé, et que l'utilisateur doit cliquer sur "Afficher" (et saisir une nouvelle fois son mot de passe, si nécessaire) pour que Chrome affiche le mot de passe. La description initiale de la règle suit.
-
-          Détermine si l'utilisateur peut afficher les mots de passe en texte clair dans le gestionnaire de mots de passe.
-
-          Si vous désactivez cette règle, le gestionnaire de mots de passe n'autorisera pas l'affichage des mots de passe enregistrés en texte clair dans la fenêtre du gestionnaire de mots de passe.
-
-          Si vous activez ou si vous ne configurez pas cette règle, les utilisateurs pourront voir leurs mots de passe en texte clair dans le gestionnaire de mots de passe.</translation>
 <translation id="3547954654003013442">Paramètres de proxy</translation>
 <translation id="3591584750136265240">Configurer le mode d'authentification lors de la connexion</translation>
 <translation id="3627678165642179114">Activer ou désactiver le service Web de correction orthographique</translation>
@@ -918,23 +912,6 @@ Cette option est habituellement désactivée dans le cadre de la protection cont
 <translation id="4239720644496144453">Le cache n'est pas utilisé pour les applications Android. Si plusieurs utilisateurs installent la même application Android, celle-ci sera à nouveau téléchargée pour chacun d'eux.</translation>
 <translation id="4250680216510889253">Non</translation>
 <translation id="4261820385751181068">Paramètres régionaux de l'écran de connexion de l'appareil</translation>
-<translation id="4275782538576261754">Permet de configurer le type de téléchargements qui seront complètement bloqués par <ph name="PRODUCT_NAME" />, et pour lesquels les utilisateurs ne sont pas autorisés à contourner l'avertissement de sécurité.
-
-      Si vous définissez cette règle, <ph name="PRODUCT_NAME" /> empêchera certains types de téléchargements, et ne permettra pas aux utilisateurs d'ignorer les avertissements de sécurité.
-
-      Si vous sélectionnez l'option "Bloquer les téléchargements dangereux", tous les téléchargements sont autorisés, sauf ceux déclenchant un avertissement de sécurité.
-
-      Si vous sélectionnez l'option "Bloquer les téléchargements potentiellement dangereux", tous les téléchargements sont autorisés, sauf ceux déclenchant un avertissement de sécurité "téléchargement potentiellement dangereux".
-
-      Si vous sélectionnez l'option "Bloquer tous les téléchargements", tous les téléchargements sont bloqués.
-
-      Si vous ne définissez pas cette règle, ou si vous sélectionnez l'option "Aucune restriction particulière", les restrictions de sécurité habituelle basées sur les résultats de l'analyse de la navigation sécurisée s'appliquent aux téléchargements.
-
-      Notez que ces restrictions s'appliquent aux téléchargements déclenchés par le contenu d'une page Web, ainsi qu'à l'option de menu contextuel "Télécharger le lien".
-
-      Ces restrictions ne s'appliquent pas à l'enregistrement ou au téléchargement de la page actuellement affichée, ni à l'enregistrement au format PDF depuis les options d'impression.
-
-      Consultez la page https://developers.google.com/safe-browsing pour en savoir plus sur la navigation sécurisée.</translation>
 <translation id="427632463972968153">Spécifie les paramètres utilisés pour la recherche d'image avec POST. Il s'agit de paires de noms et de valeurs séparées par une virgule. Si une valeur est équivalente à un paramètre modèle, comme "{imageThumbnail}" dans l'exemple ci-dessus, elle est remplacée par des miniatures d'images réelles.
 
           Cette règle est facultative. Si elle n'est pas définie, la suggestion de requête de recherche d'image sera envoyée à l'aide la méthode GET.
@@ -960,6 +937,7 @@ Cette option est habituellement désactivée dans le cadre de la protection cont
 <translation id="436581050240847513">Générer un rapport sur les interfaces réseau de l'appareil</translation>
 <translation id="4372704773119750918">Ne pas autoriser l'utilisateur d'entreprise à participer aux sessions à plusieurs profils, que ce soit en tant qu'utilisateur principal ou secondaire</translation>
 <translation id="4377599627073874279">Autoriser tous les sites à afficher toutes les images</translation>
+<translation id="437791893267799639">Règle non définie, interdire la migration de données et ARC</translation>
 <translation id="4389091865841123886">Configurer l'attestation à distance avec le mécanisme TPM</translation>
 <translation id="4418726081189202489">Si cette règle est définie sur "False", <ph name="PRODUCT_NAME" /> cesse d'envoyer occasionnellement des requêtes à un serveur Google en vue d'obtenir un horodatage précis. En revanche, si elle est définie sur "True" ou si elle n'est pas définie, ces requêtes pourront être envoyées.</translation>
 <translation id="4423597592074154136">Spécifier manuellement les paramètres de proxy</translation>
@@ -1280,6 +1258,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 <translation id="5586942249556966598">Ne rien faire</translation>
 <translation id="5630352020869108293">Restaurer la dernière session</translation>
 <translation id="5645779841392247734">Autoriser les cookies sur ces sites</translation>
+<translation id="5693469654327063861">Autoriser la migration de données</translation>
 <translation id="5694594914843889579">Lorsque cette règle est définie sur "True", le navigateur de fichiers n'offre pas la possibilité de procéder à un stockage externe.
 
       Cette règle concerne tous les types de support de stockage (clés USB, disques durs externes, cartes SD, autres cartes mémoire, etc.). Elle ne concerne pas Google Drive ni le stockage interne. Dès lors, les fichiers enregistrés dans le dossier de téléchargement restent accessibles.
@@ -1523,6 +1502,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale est utilis�
           La valeur de cette règle doit être indiquée en millisecondes. Les valeurs doivent être inférieures au délai d'inactivité.</translation>
 <translation id="6536600139108165863">Redémarrer automatiquement à l'arrêt de l'appareil</translation>
 <translation id="6539246272469751178">Cette règle n'a aucun effet sur les applications Android. Celles-ci se servent toujours du répertoire de téléchargements par défaut. Elles ne peuvent pas accéder aux fichiers téléchargés par <ph name="PRODUCT_OS_NAME" /> dans un autre répertoire de téléchargements.</translation>
+<translation id="654303922206238013">Stratégie de migration pour eCryptfs</translation>
 <translation id="6544897973797372144">Si cette règle est définie sur "True", et si la règle ChromeOsReleaseChannel n'est pas spécifiée, les utilisateurs du domaine correspondant sont autorisés à modifier la version de l'appareil. Si elle est définie sur "False", l'appareil est verrouillé sur la dernière version configurée.
 
       La règle ChromeOsReleaseChannel prévaut sur la version sélectionnée par l'utilisateur. Toutefois, si cette dernière est plus stable que la version installée sur l'appareil, elle n'est remplacée qu'une fois que la version la plus stable atteint un numéro supérieur à celui de la version installée sur l'appareil.</translation>
@@ -1713,6 +1693,13 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 
           Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" est activée.</translation>
 <translation id="7302043767260300182">Délai de verrouillage de l'écran (secteur)</translation>
+<translation id="7309839952828354215">Indique le comportement à adopter par un appareil qui a été fourni avec eCryptfs et qui doit faire la transition vers un chiffrement ext4.
+
+      Si cette règle est définie sur "DisallowArc", les applications Android seront désactivées pour tous les utilisateurs de l'appareil (y compris ceux utilisant déjà le chiffrement ext4) et la migration d'eCryptfs vers ext4 ne sera proposée à aucun utilisateur.
+
+      Si cette règle est définie sur "AllowMigration", les utilisateurs disposant d'un répertoire d'accueil eCryptfs pourront le faire migrer vers un chiffrement ext4 si nécessaire (à l'heure actuelle, proposé lorsqu'Android N est disponible sur l'appareil).
+
+      Si cette règle n'est pas définie, l'appareil se comportera par défaut comme si elle était définie sur "DisallowArc".</translation>
 <translation id="7311458740754205918">Si cette règle est définie sur "True" ou n'est pas définie, la page "Nouvel onglet" peut proposer des recommandations de contenus en fonction de l'historique de navigation, des centres d'intérêt ou de la position de l'utilisateur.
 
       Si cette règle est définie sur "False", aucune recommandation de contenus générée automatiquement ne s'affiche sur la page "Nouvel onglet".</translation>
@@ -2109,8 +2096,6 @@ Cette règle n'est prise en compte que si la règle "DefaultSearchProviderEnable
 Si vous activez ce paramètre, la recherche du CNAME sera ignorée et le nom du serveur sera utilisé tel qu'il a été saisi. 
 
 Si vous désactivez ce paramètre ou s'il n'est pas défini, le nom canonique du serveur sera déterminé par le biais de la recherche du CNAME.</translation>
-<translation id="8774131509736383471">Si cette règle est définie sur "True",  la première fenêtre affichée lors de la première exécution est automatiquement agrandie dans <ph name="PRODUCT_NAME" />.
-      Si cette règle est définie sur "False" ou si elle n'est pas configurée, la décision d'agrandir ou non la première fenêtre affichée dépend de la taille de l'écran.</translation>
 <translation id="87812015706645271">Exiger que le nom de l'utilisateur local corresponde à celui du propriétaire de l'hôte d'accès à distance.</translation>
 <translation id="8782750230688364867">Indique le pourcentage d'adaptation du délai d'assombrissement de l'écran lorsque l'appareil est en mode Présentation.
 

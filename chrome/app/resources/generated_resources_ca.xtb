@@ -183,7 +183,7 @@
 <translation id="127668050356036882">Tanca totes les finestres</translation>
 <translation id="1277908057200820621">Mostra la llista de dispositius</translation>
 <translation id="1278049586634282054">Inspecciona les visualitzacions:</translation>
-<translation id="1280820357415527819">S'estan cercant xarxes de telefonia mòbil</translation>
+<translation id="1280820357415527819">S'estan cercant xarxes mòbils</translation>
 <translation id="1285320974508926690">No tradueixis mai aquest lloc</translation>
 <translation id="1285484354230578868">Emmagatzema les dades al compte de Google Drive</translation>
 <translation id="1293509594570842875">No s'ha pogut crear l'usuari supervisat. Comproveu la connexió a la xarxa i torneu-ho a provar més tard.</translation>
@@ -415,7 +415,7 @@
 <translation id="1600857548979126453">Accedir al servidor de depuració de pàgina</translation>
 <translation id="1601560923496285236">Aplica</translation>
 <translation id="1603914832182249871">(Incògnit)</translation>
-<translation id="1607220950420093847">Pot ser que el compte s'hagi suprimit o desactivat. Tanqueu la sessió.</translation>
+<translation id="1607220950420093847">Pot ser que el compte s'hagi suprimit o desactivat. Tanca la sessió.</translation>
 <translation id="1608626060424371292">Suprimeix aquest usuari</translation>
 <translation id="1609170755653088773">Sincronitza aquesta contrasenya amb el dispositiu iPhone</translation>
 <translation id="1609862759711084604">Usuari anterior</translation>
@@ -463,7 +463,7 @@
 <translation id="1661245713600520330">En aquesta pàgina s'enumeren tots els mòduls carregats al procés principal i els mòduls registrats per carregar-se més endavant.</translation>
 <translation id="166179487779922818">La contrasenya és massa curta.</translation>
 <translation id="1661867754829461514">Falta el PIN</translation>
-<translation id="16620462294541761">No s'ha pogut verificar la vostra contrasenya. Torneu-ho a provar.</translation>
+<translation id="16620462294541761">No s'ha pogut verificar la teva contrasenya. Torna-ho a provar.</translation>
 <translation id="166278006618318542">Algoritme de clau pública del subjecte</translation>
 <translation id="1662837784918284394">(cap)</translation>
 <translation id="1663298465081438178">Avantatges sense complicacions</translation>
@@ -499,7 +499,6 @@
 <translation id="1709106626015023981"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (nativa)</translation>
 <translation id="1711973684025117106">S'ha produït un error en la compressió; error inesperat: $1</translation>
 <translation id="1712349894969001173">Obtén aquesta contrasenya al dispositiu iPhone</translation>
-<translation id="1719028357511747483">Cerca a <ph name="DEVICE_TYPE" />, en aplicacions, al web...</translation>
 <translation id="1719312230114180055">Nota: és possible que fer servir una empremta digital sigui menys segur que utilitzar una contrasenya segura o un PIN.</translation>
 <translation id="1720318856472900922">Autenticació de servidor WWW de TLS</translation>
 <translation id="1720372306711178108">Escriptori ampliat</translation>
@@ -1026,7 +1025,7 @@ No crec que calgui bloquejar aquest lloc.</translation>
 <translation id="2523966157338854187">Obre una pàgina o un conjunt de pàgines determinat</translation>
 <translation id="2525250408503682495">S'ha produït un error. No s'ha pogut muntar el cryptohome de l'aplicació de quiosc.</translation>
 <translation id="2526590354069164005">Escriptori</translation>
-<translation id="2526619973349913024">Comprova actualitzacions</translation>
+<translation id="2526619973349913024">Cerca actualitzacions</translation>
 <translation id="2527167509808613699">Qualsevol tipus de connexió</translation>
 <translation id="2527591341887670429">Ús de la bateria: <ph name="PRECENTAGE" />%</translation>
 <translation id="2532026602297547439">El sensor està brut</translation>
@@ -1298,7 +1297,7 @@ No crec que calgui bloquejar aquest lloc.</translation>
 <translation id="2890624088306605051">Recupera només la configuració i les dades sincronitzades</translation>
 <translation id="2890678560483811744">La pàgina indicada no respecta el límit</translation>
 <translation id="2893168226686371498">Navegador predeterminat</translation>
-<translation id="289426338439836048">Altres xarxes de telefonia mòbil...</translation>
+<translation id="289426338439836048">Altres xarxes mòbils...</translation>
 <translation id="289644616180464099">La targeta SIM està bloquejada</translation>
 <translation id="289695669188700754">Identificador de clau: <ph name="KEY_ID" /></translation>
 <translation id="2897878306272793870">Confirmes que vols obrir <ph name="TAB_COUNT" /> pestanyes?</translation>
@@ -1313,7 +1312,7 @@ No crec que calgui bloquejar aquest lloc.</translation>
 <translation id="2908162660801918428">Addició d'una galeria multimèdia per directori</translation>
 <translation id="2908789530129661844">Allunya la pantalla</translation>
 <translation id="2912905526406334195"><ph name="HOST" /> vol utilitzar el micròfon.</translation>
-<translation id="2913331724188855103">Permet que els llocs desin i llegeixin les dades de les galetes (recomanat)</translation>
+<translation id="2913331724188855103">Permet que els llocs web desin i llegeixin les dades de les galetes (recomanat)</translation>
 <translation id="2914303854539667666">Genera una contrasenya</translation>
 <translation id="2916073183900451334">Si premeu la tecla de tabulació en una pàgina web, es ressalten els enllaços i els camps de formulari</translation>
 <translation id="2916745397441987255">Cerca extensions</translation>
@@ -1385,7 +1384,7 @@ No crec que calgui bloquejar aquest lloc.</translation>
 <translation id="3015992588037997514">Aquest codi es mostra a la pantalla de Chromebox?</translation>
 <translation id="3016641847947582299">Component actualitzat</translation>
 <translation id="3016780570757425217">Saber la vostra ubicació</translation>
-<translation id="3018346972744622514">Afegeix una altra xarxa de telefonia mòbil</translation>
+<translation id="3018346972744622514">Afegeix una altra xarxa mòbil</translation>
 <translation id="302014277942214887">Introduïu l'ID d'aplicació o l'URL del Web Store.</translation>
 <translation id="3020990233660977256">Número de sèrie: <ph name="SERIAL_NUMBER" /></translation>
 <translation id="3021678814754966447">&amp;Visualitza l'origen del marc</translation>
@@ -2814,7 +2813,7 @@ Premeu qualsevol tecla per continuar explorant.</translation>
 <translation id="5254368820972107711">Mostra els fitxers que cal suprimir</translation>
 <translation id="52550593576409946">L'aplicació Quiosc no es pot iniciar.</translation>
 <translation id="5255315797444241226">La frase de contrasenya que heu introduït no és correcta.</translation>
-<translation id="5260508466980570042">No s'ha pogut verificar el correu electrònic o la contrasenya. Torneu-ho a provar.</translation>
+<translation id="5260508466980570042">No s'ha pogut verificar el correu electrònic o la contrasenya. Torna-ho a provar.</translation>
 <translation id="5261683757250193089">Obre a Web Store</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />Accediu a fitxers des de qualsevol lloc, fins i tot sense connexió.<ph name="MARKUP_2" />
     Els fitxers que són a Google Drive estan actualitzats i disponibles des de qualsevol dispositiu.<ph name="MARKUP_3" />
@@ -3062,7 +3061,7 @@ Premeu qualsevol tecla per continuar explorant.</translation>
 <translation id="5606674617204776232">El connector <ph name="PEPPER_PLUGIN_NAME" /> de <ph name="PEPPER_PLUGIN_DOMAIN" /> vol accedir al vostre dispositiu.</translation>
 <translation id="5608580678041221894">Toca aquestes tecles per ajustar o moure l'àrea per retallar</translation>
 <translation id="5609231933459083978">Sembla que l'aplicació no és vàlida.</translation>
-<translation id="5612734644261457353">Encara no s'ha pogut verificar la contrasenya. Nota: Si l'heu canviat fa poc, la contrasenya nova s'aplicarà un cop hàgiu tancat la sessió. Feu servir la contrasenya anterior aquí.</translation>
+<translation id="5612734644261457353">Encara no s'ha pogut verificar la contrasenya. Nota: Si l'has canviat fa poc, la contrasenya nova s'aplicarà un cop hagis tancat la sessió. Fes servir la contrasenya anterior aquí.</translation>
 <translation id="5613695965848159202">Identitat anònima:</translation>
 <translation id="5614190747811328134">Avís per a l'usuari </translation>
 <translation id="5618075537869101857">No s'ha pogut iniciar l'aplicació de quiosc.</translation>
@@ -4046,7 +4045,7 @@ Utilitza aquesta funció només amb comptes de confiança.</translation>
 <translation id="7136694880210472378">Estableix com a predeterminat</translation>
 <translation id="7136984461011502314">Benvingut a <ph name="PRODUCT_NAME" /></translation>
 <translation id="7138678301420049075">Altres</translation>
-<translation id="713888829801648570">La contrasenya no s'ha pogut verificar perquè no esteu connectat a Internet.</translation>
+<translation id="713888829801648570">La contrasenya no s'ha pogut verificar perquè no estàs connectat a Internet.</translation>
 <translation id="7140928199327930795">No hi ha cap altre dispositiu disponible.</translation>
 <translation id="7141105143012495934">S'ha produït un problema en iniciar la sessió perquè no s'ha pogut recuperar la informació del compte. Contacteu amb l'administrador o torneu a provar-ho.</translation>
 <translation id="7143207342074048698">S'està connectant</translation>
@@ -4366,7 +4365,7 @@ Utilitza aquesta funció només amb comptes de confiança.</translation>
 <translation id="7654941827281939388">Aquest compte ja s'està utilitzant en aquest ordinador.</translation>
 <translation id="7658239707568436148">Cancel·la</translation>
 <translation id="7659584679870740384">No teniu autorització per fer servir aquest dispositiu. Contacteu amb l'administrador per obtenir el permís d'inici de sessió.</translation>
-<translation id="7661259717474717992">Permet que els llocs desin i llegeixin les dades de les galetes</translation>
+<translation id="7661259717474717992">Permet que els llocs web desin i llegeixin les dades de les galetes</translation>
 <translation id="7661451191293163002">No s'ha pogut obtenir un certificat de registre.</translation>
 <translation id="7662283695561029522">Toca per configurar</translation>
 <translation id="7663719505383602579">Receptor: <ph name="ARC_PROCESS_NAME" /></translation>
@@ -4926,7 +4925,7 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8535005006684281994">URL de renovació de certificat de Netscape</translation>
 <translation id="8539727552378197395">No (Només HTTP)</translation>
 <translation id="8545107379349809705">Amaga la informació...</translation>
-<translation id="8545575359873600875">No s'ha pogut verificar la vostra contrasenya. Pot ser que l'administrador d'aquest usuari supervisat l'hagi canviat recentment. Si és així, la contrasenya nova s'aplicarà la propera vegada que inicieu la sessió. Proveu d'utilitzar la contrasenya anterior.</translation>
+<translation id="8545575359873600875">No s'ha pogut verificar la teva contrasenya. Pot ser que l'administrador d'aquest usuari supervisat l'hagi canviat recentment. Si és així, la contrasenya nova s'aplicarà la propera vegada que iniciïs la sessió. Prova d'utilitzar la contrasenya anterior.</translation>
 <translation id="8546186510985480118">Queda poc espai al dispositiu</translation>
 <translation id="8546306075665861288">Memòria cau d'imatges</translation>
 <translation id="8546541260734613940">[*.]example.com</translation>
@@ -5284,7 +5283,7 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9074836595010225693">Ratolí USB connectat</translation>
-<translation id="9076523132036239772">No s'ha pogut verificar el correu electrònic o la contrasenya. Proveu de connectar-vos primer a una xarxa.</translation>
+<translation id="9076523132036239772">No s'ha pogut verificar el correu electrònic o la contrasenya. Prova de connectar-te primer a una xarxa.</translation>
 <translation id="907841381057066561">No s'ha pogut crear el fitxer ZIP temporal durant l'empaquetament.</translation>
 <translation id="9084064520949870008">Obre com a finestra</translation>
 <translation id="9086302186042011942">Sincronització</translation>

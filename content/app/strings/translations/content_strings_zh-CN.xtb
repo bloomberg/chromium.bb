@@ -10,7 +10,6 @@
 <translation id="1188858454923323853">补充内容</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1206693055195146388">滑块</translation>
-<translation id="1235745349614807883">清除最近的搜索</translation>
 <translation id="1281252709823657822">对话框</translation>
 <translation id="1342835525016946179">文章标记</translation>
 <translation id="1359897965706325498">横幅</translation>
@@ -39,7 +38,6 @@
 <translation id="248395913932153421">日</translation>
 <translation id="2507943997699731163">请填写此字段。</translation>
 <translation id="2508569020611168319">标签列表</translation>
-<translation id="2548326553472216322">最近未执行搜索</translation>
 <translation id="2561842179657104141">显示更多媒体控件</translation>
 <translation id="2572483411312390101">播放</translation>
 <translation id="2613802280814924224">请输入有效值。最接近的有效值为<ph name="VALID_VALUE" />。</translation>
@@ -51,7 +49,6 @@
 <translation id="2759744352195237655">弹出式按钮</translation>
 <translation id="2761667185364618470">如果要继续，请选中此框。</translation>
 <translation id="2896972712917208084">单选按钮组</translation>
-<translation id="2901282870647571346">当前电影状态</translation>
 <translation id="2908441821576996758">请输入用逗号分隔的电子邮件地址的列表。</translation>
 <translation id="2940813599313844715">对象</translation>
 <translation id="2942448076852699108">突出显示的内容</translation>
@@ -95,7 +92,6 @@
 <translation id="4992066212339426712">取消静音</translation>
 <translation id="49969490063480558">请在“<ph name="ATSIGN" />”后面输入内容。“<ph name="INVALIDADDRESS" />”不完整。</translation>
 <translation id="5034860022980953847">进度指示器</translation>
-<translation id="5048533449481078685">列表标记</translation>
 <translation id="5117590920725113268">显示下一个月</translation>
 <translation id="512758898067543763">行标题</translation>
 <translation id="5164977714490026579">值必须大于或等于 <ph name="MINIMUM" />。</translation>
@@ -113,7 +109,6 @@
 <translation id="5643186887447432888">按钮</translation>
 <translation id="5677946354068040947">更多选项</translation>
 <translation id="57838592816432529">静音</translation>
-<translation id="5843503607508392247">其他...</translation>
 <translation id="5860033963881614850">关闭</translation>
 <translation id="588258955323874662">全屏</translation>
 <translation id="5939518447894949180">重置</translation>
@@ -123,8 +118,6 @@
 <translation id="6023896073578205740">列表框</translation>
 <translation id="6101327004457443354">取消对音轨静音</translation>
 <translation id="6164829606128959761">计量条</translation>
-<translation id="6270583010843788609">电影时间轴缩略图</translation>
-<translation id="6359256949422175976">电影时间进度条缩略图</translation>
 <translation id="6398862346408813489">显示月份选择面板</translation>
 <translation id="6404546809543547843">音频时间进度条</translation>
 <translation id="648732519525291180">时间选择器</translation>
@@ -132,7 +125,6 @@
 <translation id="663493177488814956">Feed</translation>
 <translation id="6637586476836377253">日志</translation>
 <translation id="6643016212128521049">清除</translation>
-<translation id="6663448176199120256">近期搜索</translation>
 <translation id="668171684555832681">其他...</translation>
 <translation id="6692633176391053278">步进器</translation>
 <translation id="6739588121953935928">标尺</translation>
@@ -145,7 +137,6 @@
 <translation id="6934078000481955284">引用标记</translation>
 <translation id="6941933287844615239">下载媒体</translation>
 <translation id="6989848892321993519">请将该内容增加到 <ph name="MIN_CHARACTERS" /> 个或更多字符（目前您使用了 1 个字符）。</translation>
-<translation id="7057186640035488495">电影时间</translation>
 <translation id="709897737746224366">请与所请求的格式保持一致。</translation>
 <translation id="7223624360433298498">已播放时间</translation>
 <translation id="7263440858009898357">请在列表中选择一项。</translation>
@@ -166,10 +157,8 @@
 <translation id="8053789581856978548">搜索文本字段</translation>
 <translation id="8115662671911883373">开始显示可选字幕</translation>
 <translation id="8117451130807776954">本周</translation>
-<translation id="8141602879876242471">这是一个可搜索的索引。请输入搜索关键字：</translation>
 <translation id="819205353528511139">在全屏模式下播放电影</translation>
 <translation id="8199524924445686405"> 年 </translation>
-<translation id="8244226242650769279">图片映射</translation>
 <translation id="8284326494547611709">字幕</translation>
 <translation id="835897206747267392">值无效。</translation>
 <translation id="8433900881053900389">工具栏</translation>

@@ -500,7 +500,6 @@
 <translation id="1709106626015023981"><ph name="WIDTH" />x<ph name="HEIGHT" />(기본)</translation>
 <translation id="1711973684025117106">압축에 실패했습니다. 예기치 않은 오류: $1</translation>
 <translation id="1712349894969001173">iPhone에 이 비밀번호 받기</translation>
-<translation id="1719028357511747483"><ph name="DEVICE_TYPE" />, 앱, 웹에서 검색합니다...</translation>
 <translation id="1719312230114180055">참고: 지문은 안전한 비밀번호 또는 PIN보다 보안 수준이 낮을 수도 있습니다.</translation>
 <translation id="1720318856472900922">TLS WWW 서버 인증</translation>
 <translation id="1720372306711178108">확장 데스크톱</translation>
@@ -1025,7 +1024,7 @@
 <translation id="2518024842978892609">클라이언트 인증서 사용</translation>
 <translation id="2520644704042891903">사용 가능한 소켓 대기 중...</translation>
 <translation id="252219247728877310">구성요소가 업데이트되지 않음</translation>
-<translation id="2523966157338854187">특정 페이지 또는 페이지 집합 열기.</translation>
+<translation id="2523966157338854187">특정 페이지 또는 페이지 모음 열기</translation>
 <translation id="2525250408503682495">키오스크 애플리케이션에 대한 cryptohome을 마운트할 수 없습니다.</translation>
 <translation id="2526590354069164005">데스크톱</translation>
 <translation id="2526619973349913024">업데이트 상태 확인</translation>
@@ -1098,7 +1097,7 @@
 <translation id="2624142942574147739">카메라와 마이크에 액세스하는 페이지입니다.</translation>
 <translation id="2626799779920242286">나중에 다시 시도해 주세요.</translation>
 <translation id="2630681426381349926">Wi-Fi에 연결하여 시작</translation>
-<translation id="2631006050119455616">저장됨</translation>
+<translation id="2631006050119455616">절약</translation>
 <translation id="2631498379019108537">실행기에 입력 옵션 표시</translation>
 <translation id="2633199387167390344"><ph name="NAME" />에서 <ph name="USAGE" />MB의 디스크 공간을 사용하고 있습니다.</translation>
 <translation id="2633212996805280240">'<ph name="EXTENSION_NAME" />'을(를) 삭제하시겠습니까?</translation>
@@ -3055,7 +3054,7 @@
 <translation id="5583370583559395927">남은 시간: <ph name="TIME_REMAINING" /></translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5585118885427931890">북마크 폴더를 만들지 못했습니다.</translation>
-<translation id="558563010977877295">특정 페이지 또는 페이지 집합 열기</translation>
+<translation id="558563010977877295">특정 페이지 또는 페이지 모음 열기</translation>
 <translation id="5585912436068747822">포맷 실패</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />개)</translation>
 <translation id="558918721941304263">앱 로드 중...</translation>

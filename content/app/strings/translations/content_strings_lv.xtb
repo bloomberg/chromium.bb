@@ -10,7 +10,6 @@
 <translation id="1188858454923323853">papildu</translation>
 <translation id="1206619573307042055">slīdošais teksts</translation>
 <translation id="1206693055195146388">slīdnis</translation>
-<translation id="1235745349614807883">Dzēst nesenos meklējumus</translation>
 <translation id="1281252709823657822">dialoglodziņš</translation>
 <translation id="1342835525016946179">raksts</translation>
 <translation id="1359897965706325498">reklāmkarogs</translation>
@@ -39,7 +38,6 @@
 <translation id="248395913932153421">Diena</translation>
 <translation id="2507943997699731163">Aizpildiet šo lauku.</translation>
 <translation id="2508569020611168319">ciļņu saraksts</translation>
-<translation id="2548326553472216322">Nav nesenu meklējumu</translation>
 <translation id="2561842179657104141">rādīt citas multivides vadīklas</translation>
 <translation id="2572483411312390101">atskaņot</translation>
 <translation id="2613802280814924224">Lūdzu, ievadiet derīgu vērtību. Tuvākā derīgā vērtība ir <ph name="VALID_VALUE" />.</translation>
@@ -51,7 +49,6 @@
 <translation id="2759744352195237655">uznirstoša poga</translation>
 <translation id="2761667185364618470">Lai turpinātu, atzīmējiet šo izvēles rūtiņu.</translation>
 <translation id="2896972712917208084">radiopogu grupa</translation>
-<translation id="2901282870647571346">pašreizējais filmas statuss</translation>
 <translation id="2908441821576996758">Lūdzu, ievadiet ar komatu atdalītu e-pasta adrešu sarakstu.</translation>
 <translation id="2940813599313844715">objekts</translation>
 <translation id="2942448076852699108">iezīmētais saturs</translation>
@@ -95,7 +92,6 @@
 <translation id="4992066212339426712">Ieslēgt skaņu</translation>
 <translation id="49969490063480558">Lūdzu, ievadiet daļu, kas atrodas aiz zīmes <ph name="ATSIGN" />. “<ph name="INVALIDADDRESS" />” ir nepilna adrese.</translation>
 <translation id="5034860022980953847">norises indikators</translation>
-<translation id="5048533449481078685">sarakstu marķieris</translation>
 <translation id="5117590920725113268">Rādīt nākamo mēnesi</translation>
 <translation id="512758898067543763">rindas virsraksts</translation>
 <translation id="5164977714490026579">Vērtībai ir jābūt lielākai vai vienādai ar <ph name="MINIMUM" />.</translation>
@@ -113,7 +109,6 @@
 <translation id="5643186887447432888">poga</translation>
 <translation id="5677946354068040947">citas opcijas</translation>
 <translation id="57838592816432529">Izslēgt skaņu</translation>
-<translation id="5843503607508392247">Cits...</translation>
 <translation id="5860033963881614850">Izsl.</translation>
 <translation id="588258955323874662">Pilnekrāna</translation>
 <translation id="5939518447894949180">Atiestatīt</translation>
@@ -123,8 +118,6 @@
 <translation id="6023896073578205740">sarakstlodziņš</translation>
 <translation id="6101327004457443354">ieslēgt audio ieraksta skaņu</translation>
 <translation id="6164829606128959761">mērītājs</translation>
-<translation id="6270583010843788609">filmas laika skalas sīktēls</translation>
-<translation id="6359256949422175976">filmas laika skalas slīdņa sīktēls</translation>
 <translation id="6398862346408813489">Rādīt mēneša atlases paneli</translation>
 <translation id="6404546809543547843">audio laika skalas slīdnis</translation>
 <translation id="648732519525291180">laika atlasītājs</translation>
@@ -132,7 +125,6 @@
 <translation id="663493177488814956">plūsma</translation>
 <translation id="6637586476836377253">žurnāls</translation>
 <translation id="6643016212128521049">Notīrīt</translation>
-<translation id="6663448176199120256">Neseni meklējumi</translation>
 <translation id="668171684555832681">Cits</translation>
 <translation id="6692633176391053278">pārslēdzējs</translation>
 <translation id="6739588121953935928">lineāls</translation>
@@ -145,7 +137,6 @@
 <translation id="6934078000481955284">citāta bloks</translation>
 <translation id="6941933287844615239">lejupielādēt multivides failus</translation>
 <translation id="6989848892321993519">Lūdzu, papildiniet šo tekstu līdz vismaz <ph name="MIN_CHARACTERS" /> rakstzīmēm (pašlaik tas ietver 1 rakstzīmi).</translation>
-<translation id="7057186640035488495">filmas laiks</translation>
 <translation id="709897737746224366">Pieskaņojiet vērtību prasītajam formātam.</translation>
 <translation id="7223624360433298498">pagājušais laiks</translation>
 <translation id="7263440858009898357">Atlasiet vienumu sarakstā.</translation>
@@ -166,10 +157,8 @@
 <translation id="8053789581856978548">meklēšanas teksta lauks</translation>
 <translation id="8115662671911883373">sākt slēgto parakstu rādīšanu</translation>
 <translation id="8117451130807776954">Šī nedēļa</translation>
-<translation id="8141602879876242471">Šis ir indekss ar meklēšanas iespējām. Ievadīt meklēšanas atslēgvārdus:</translation>
 <translation id="819205353528511139">atskaņot filmu pilnekrāna režīmā</translation>
 <translation id="8199524924445686405">gggg</translation>
-<translation id="8244226242650769279">attēlu karte</translation>
 <translation id="8284326494547611709">Paraksti</translation>
 <translation id="835897206747267392">Nederīga vērtība.</translation>
 <translation id="8433900881053900389">rīkjosla</translation>

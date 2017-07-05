@@ -10,7 +10,6 @@
 <translation id="1188858454923323853">papildomas</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1206693055195146388">šliaužiklis</translation>
-<translation id="1235745349614807883">Išvalyti pastarąsias paieškas</translation>
 <translation id="1281252709823657822">dialogo langas</translation>
 <translation id="1342835525016946179">artikelis</translation>
 <translation id="1359897965706325498">reklamjuostė</translation>
@@ -39,7 +38,6 @@
 <translation id="248395913932153421">Diena</translation>
 <translation id="2507943997699731163">Užpildykite šį lauką.</translation>
 <translation id="2508569020611168319">skirtukų sąrašas</translation>
-<translation id="2548326553472216322">Pastaruoju metu paieškų nevykdyta</translation>
 <translation id="2561842179657104141">rodyti daugiau medijos valdiklių</translation>
 <translation id="2572483411312390101">paleisti</translation>
 <translation id="2613802280814924224">Įveskite tinkamą vertę. Artimiausia tinkama vertė yra <ph name="VALID_VALUE" />.</translation>
@@ -51,7 +49,6 @@
 <translation id="2759744352195237655">Iššokantysis mygtukas</translation>
 <translation id="2761667185364618470">Jei norite tęsti, pažymėkite šį laukelį.</translation>
 <translation id="2896972712917208084">akučių grupė</translation>
-<translation id="2901282870647571346">dabartinė filmo būsena</translation>
 <translation id="2908441821576996758">Įveskite kableliais atskirtą el. pašto adresų sąrašą.</translation>
 <translation id="2940813599313844715">objektas</translation>
 <translation id="2942448076852699108">paryškintas turinys</translation>
@@ -95,7 +92,6 @@
 <translation id="4992066212339426712">Įjungti garsą</translation>
 <translation id="49969490063480558">Įveskite dalį po „<ph name="ATSIGN" />“. „<ph name="INVALIDADDRESS" />“ nėra visas el. pašto adresas.</translation>
 <translation id="5034860022980953847">eigos indikatorius</translation>
-<translation id="5048533449481078685">sąrašo žymeklis</translation>
 <translation id="5117590920725113268">Rodyti kitą mėnesį</translation>
 <translation id="512758898067543763">eilutės antraštė</translation>
 <translation id="5164977714490026579">Vertė turi būti <ph name="MINIMUM" /> arba didesnė.</translation>
@@ -113,7 +109,6 @@
 <translation id="5643186887447432888">mygtukas</translation>
 <translation id="5677946354068040947">daugiau parinkčių</translation>
 <translation id="57838592816432529">Nutildyti</translation>
-<translation id="5843503607508392247">Kita...</translation>
 <translation id="5860033963881614850">Išjungta</translation>
 <translation id="588258955323874662">Visas ekranas</translation>
 <translation id="5939518447894949180">Nustatyti iš naujo</translation>
@@ -123,8 +118,6 @@
 <translation id="6023896073578205740">sąrašo laukelis</translation>
 <translation id="6101327004457443354">įjungti garso įrašo takelio garsą</translation>
 <translation id="6164829606128959761">matuoklis</translation>
-<translation id="6270583010843788609">filmo laiko juostos miniatiūra</translation>
-<translation id="6359256949422175976">filmo laiko valdiklio miniatiūra</translation>
 <translation id="6398862346408813489">Rodyti mėnesio pasirinkimo skydelį</translation>
 <translation id="6404546809543547843">garso laiko valdiklis</translation>
 <translation id="648732519525291180">laiko rinkiklis</translation>
@@ -132,7 +125,6 @@
 <translation id="663493177488814956">sklaidos kanalas</translation>
 <translation id="6637586476836377253">log</translation>
 <translation id="6643016212128521049">Išvalyti</translation>
-<translation id="6663448176199120256">Naujausios paieškos</translation>
 <translation id="668171684555832681">Kita...</translation>
 <translation id="6692633176391053278">ėjimo aukštyn / žemyn valdiklis</translation>
 <translation id="6739588121953935928">liniuotė</translation>
@@ -145,7 +137,6 @@
 <translation id="6934078000481955284">citata</translation>
 <translation id="6941933287844615239">atsisiųsti mediją</translation>
 <translation id="6989848892321993519">Pailginkite šį tekstą iki <ph name="MIN_CHARACTERS" /> simb. ar daugiau (šiuo metu naudojate 1 simbolį).</translation>
-<translation id="7057186640035488495">filmo laikas</translation>
 <translation id="709897737746224366">Priderinkite reikalaujamą formatą.</translation>
 <translation id="7223624360433298498">praėjęs laikas</translation>
 <translation id="7263440858009898357">Pasirinkite sąraše pateiktą elementą.</translation>
@@ -166,10 +157,8 @@
 <translation id="8053789581856978548">paieškos teksto laukas</translation>
 <translation id="8115662671911883373">pateikti subtitrus</translation>
 <translation id="8117451130807776954">Ši savaitė</translation>
-<translation id="8141602879876242471">Tai yra ieškotinas indeksas. Įveskite paieškos raktinių žodžių:</translation>
 <translation id="819205353528511139">paleisti filmą viso ekrano režimu</translation>
 <translation id="8199524924445686405">mmmm</translation>
-<translation id="8244226242650769279">paveikslėlio žemėlapis</translation>
 <translation id="8284326494547611709">Subtitrai</translation>
 <translation id="835897206747267392">Neteisinga vertė.</translation>
 <translation id="8433900881053900389">įrankių juosta</translation>

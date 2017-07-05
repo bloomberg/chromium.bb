@@ -142,7 +142,7 @@
       如果停用或未設定這項政策，企業使用者將
       無法使用 ARC。</translation>
 <translation id="1561424797596341174">針對遠端存取主機的偵錯版本覆寫政策</translation>
-<translation id="1561967320164410511">用於個別證明的 U2F 和擴充功能</translation>
+<translation id="1561967320164410511">用於個人認證的 U2F 和擴充功能</translation>
 <translation id="1583248206450240930">根據預設使用 <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="1608755754295374538">系統會直接授權存取音訊擷取裝置而不需提示的網址</translation>
 <translation id="1617235075406854669">啟用刪除瀏覽器和下載紀錄</translation>
@@ -495,6 +495,7 @@
 
           如果未設定這項政策，系統會啟用這項設定。</translation>
 <translation id="2824715612115726353">啟用無痕模式</translation>
+<translation id="2838830882081735096">不允許資料遷移和 ARC</translation>
 <translation id="2844404652289407061">在 <ph name="PRODUCT_NAME" /> 的內容畫面中啟用「輕觸搜尋」功能。
 
       如果您啟用這項設定，使用者即可使用「輕觸搜尋」功能，並可自行選擇開啟或關閉這項功能。
@@ -538,9 +539,9 @@
       如果您啟用這項設定，所有監控式入口網站驗證網頁 (亦即 <ph name="PRODUCT_NAME" /> 偵測到成功的網際網路連線之前，所有從監控式入口網站登入網頁起始的網頁) 都會另外顯示在新視窗中 (忽略目前使用者的所有政策設定和限制)。
 
       如果您停用這項設定或不予設定，則所有監控式入口網站驗證網頁都會顯示在一般的瀏覽器新分頁中 (套用目前使用者的 Proxy 設定)。</translation>
-<translation id="3001534538097271560">將這項政策設為 False 會禁止使用者選擇傳送部分系統資訊和網頁內容給 Google 伺服器。如果這項設定為 True 或未設定，則使用者可傳送部分系統資訊和網頁內容給「安全瀏覽」，協助我們偵測危險的應用程式和網站。
+<translation id="3001534538097271560">如果將此政策設為 False，使用者將無法選擇向 Google 伺服器傳送一些系統資訊和網頁內容；如果設為 True 或未設定，使用者就可以向「安全瀏覽」服務傳送一些系統資訊和網頁內容，協助我們偵測危險的應用程式和網站。
 
-      如需更多「安全瀏覽」相關資訊，請參閱 https://developers.google.com/safe-browsing。</translation>
+      如需進一步瞭解「安全瀏覽」功能，請參閱 https://developers.google.com/safe-browsing。</translation>
 <translation id="3021409116652377124">停用外掛程式尋找工具</translation>
 <translation id="3030000825273123558">啟用計量報告</translation>
 <translation id="3034580675120919256">允許你設定是否要讓網站執行 JavaScript。你可以允許或禁止所有網站執行 JavaScript。如果未設定這項政策，系統會使用「AllowJavaScript」，不過使用者可以變更設定。</translation>
@@ -667,24 +668,17 @@
           只有在啟用「DefaultSearchProviderEnabled」政策時，系統才會遵循這項政策。</translation>
 <translation id="350797926066071931">啟用翻譯</translation>
 <translation id="3528000905991875314">啟用替代的錯誤網頁</translation>
-<translation id="3538538104630456270">先前我們以類似設定來控制使用者是否可查看密碼，不過在新增重新驗證功能後，該設定與這項政策已不再適用於 Chrome 的運作方式。目前 Chrome 的運作方式等同在密碼管理員設定頁面中設定停止以純文字顯示密碼的政策。也就是說，設定頁面只會顯示預留位置，使用者必須點選 [顯示] 並重新驗證 (如果適用)，Chrome 才會顯示密碼。這項政策的原始說明如下：
-
-          控管使用者是否能在密碼管理員中看到實際的密碼內容。
-
-          如果您停用這項設定，密碼管理員就會禁止在密碼管理員視窗中以純文字顯示儲存的密碼。
-
-          如果您啟用或未設定這項政策，使用者即可在密碼管理員中看到實際的密碼內容。</translation>
 <translation id="3547954654003013442">Proxy 設定</translation>
 <translation id="3591584750136265240">設定登入驗證行為</translation>
 <translation id="3627678165642179114">啟用或停用拼字檢查網路服務</translation>
 <translation id="3646859102161347133">設定螢幕放大鏡類型</translation>
 <translation id="3653237928288822292">預設搜尋引擎圖示</translation>
 <translation id="3660562134618097814">登入時移轉 SAML IdP Cookie</translation>
-<translation id="3687282113223807271">「安全瀏覽」服務會在使用者瀏覽遭檢舉為有惡意風險的網站時顯示警告網頁。如果你啟用這項設定，就能防止使用者略過警告網頁，繼續前往惡意網站。
+<translation id="3687282113223807271">當使用者瀏覽遭檢舉為有惡意風險的網站時，「安全瀏覽」服務會顯示警告網頁。如果你啟用這項設定，就能防止使用者略過警告網頁，繼續前往惡意網站。
 
-      如果你停用這項設定或未進行設置，則使用者可以選擇在系統顯示警告之後，繼續前往遭檢舉的網站。
+      如果你停用這項設定或未進行設定，則使用者可以選擇在系統顯示警告之後，繼續前往遭檢舉的網站。
 
-      如需更多「安全瀏覽」相關資訊，請參閱 https://developers.google.com/safe-browsing。</translation>
+      如需進一步瞭解「安全瀏覽」功能，請參閱 https://developers.google.com/safe-browsing。</translation>
 <translation id="3709266154059827597">設定擴充功能安裝黑名單</translation>
 <translation id="3711895659073496551">暫停</translation>
 <translation id="3736879847913515635">允許在使用者管理工具中新增使用者</translation>
@@ -862,23 +856,6 @@
 <translation id="4239720644496144453">這個快取不會供 Android 應用程式使用。如有多位使用者安裝同一個 Android 應用程式，則會針對每位使用者重新下載快取。</translation>
 <translation id="4250680216510889253">否</translation>
 <translation id="4261820385751181068">裝置登入畫面語言代碼</translation>
-<translation id="4275782538576261754">設定 <ph name="PRODUCT_NAME" /> 將完全封鎖的下載作業類型，不讓使用者覆寫這項安全決策。
-
-      如果設定了這項政策，<ph name="PRODUCT_NAME" /> 就會禁止特定類型的下載作業，不讓使用者略過安全性警告。
-
-      選擇 [封鎖危險下載作業] 選項時，除了會引發「安全瀏覽」警告的下載作業外，其他下載作業均可正常執行。
-
-      選擇 [封鎖有安全疑慮的下載作業] 選項時，除了有安全疑慮，且會引發「安全瀏覽」警告的下載作業外，其他下載作業都可正常執行。
-
-      選擇 [封鎖所有下載作業] 選項時，所有下載作業都會受到禁止。
-
-      如未設定這項政策 (或選擇了 [無特殊限制] 選項)，系統就會根據「安全瀏覽」分析結果對下載作業套用一般的安全性限制。
-
-      請注意，這些限制適用於由網頁內容以及 [下載連結...] 內容選單選項所觸發的下載作業。
-
-      這些限制不適用於目前顯示網頁的儲存/下載作業，或是透過列印選項儲存為 PDF 檔的作業。
-
-      如需更多「安全瀏覽」相關資訊，請參閱 https://developers.google.com/safe-browsing。</translation>
 <translation id="427632463972968153">指定使用 POST 執行圖片搜尋時所用的參數，其包含以逗號分隔的名稱/數值配對。如果數值為範本參數 (例如上例中的 {imageThumbnail})，系統將會以實際圖片的縮圖資料替代這個數值。
 
           這項政策是選擇性的，如果未設定，系統將使用 GET 方法圖片搜尋要求。
@@ -904,6 +881,7 @@
 <translation id="436581050240847513">回報裝置網路介面</translation>
 <translation id="4372704773119750918">不允許企業使用者使用多重設定檔 (主要或次要)</translation>
 <translation id="4377599627073874279">允許所有網站顯示所有圖片</translation>
+<translation id="437791893267799639">未設定政策，不允許資料遷移和 ARC</translation>
 <translation id="4389091865841123886">使用 TPM 機制設定遠端證明。</translation>
 <translation id="4418726081189202489">將這項政策設為 False 後，<ph name="PRODUCT_NAME" /> 就無法為了擷取精確時間戳記而不定期傳送查詢給 Google 伺服器。如果將這項政策設為 True 或不予設定，則會允許傳送這類查詢。</translation>
 <translation id="4423597592074154136">手動指定 Proxy 設定</translation>
@@ -1187,6 +1165,7 @@
 <translation id="5586942249556966598">不要處理</translation>
 <translation id="5630352020869108293">還原上次工作階段</translation>
 <translation id="5645779841392247734">允許這些網站的 Cookie</translation>
+<translation id="5693469654327063861">允許資料遷移</translation>
 <translation id="5694594914843889579">將這項政策設為 true 時，無法在檔案瀏覽器中存取外部儲存裝置。
 
       這項政策會影響所有類型的儲存媒體 (例如 USB 隨身碟、外接硬碟、SD 卡和其他記憶卡、光學儲存裝置等等)，內部儲存空間則不受影響，因此儲存在「下載」資料夾中的檔案仍可供存取。此外，Google 雲端硬碟不受這項政策影響。
@@ -1293,7 +1272,7 @@
 
       如果未設定這項政策，系統會啟用這項功能，不過使用者可以變更設定。
 
-      如需更多「安全瀏覽」相關資訊，請參閱 https://developers.google.com/safe-browsing。</translation>
+      如需進一步瞭解「安全瀏覽」功能，請參閱 https://developers.google.com/safe-browsing。</translation>
 <translation id="6017568866726630990">顯示系統列印對話方塊 (而不是列印預覽)。
 
       如果你啟用這項設定，當使用者要求列印網頁時，<ph name="PRODUCT_NAME" /> 就會開啟系統列印對話方塊，而不是內建的列印預覽。
@@ -1362,11 +1341,11 @@
 <translation id="6281043242780654992">設定內建訊息傳遞政策。如要允許列入黑名單的內建訊息傳遞主機，必須將其加入許可清單。</translation>
 <translation id="6282799760374509080">允許或拒絕擷取音訊</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6287694548537067861">未設定或設為 True 時，允許更新 <ph name="PRODUCT_NAME" /> 的所有元件。
+<translation id="6287694548537067861">如果這項政策未設定或設為 True 時，允許更新 <ph name="PRODUCT_NAME" /> 的所有元件。
 
       如果設為 False，則禁止更新元件。不過，部分元件不受這項政策規範：只要元件更新不含可執行的程式碼、不大幅變更瀏覽器的行為，或是對元件安全性至關重要，就不會遭到禁止。
       這類元件的範例包括憑證撤銷清單和安全瀏覽資料。
-      如需更多「安全瀏覽」相關資訊，請參閱 https://developers.google.com/safe-browsing。</translation>
+      如需進一步瞭解「安全瀏覽」功能，請參閱 https://developers.google.com/safe-browsing。</translation>
 <translation id="6310223829319187614">允許在使用者登入過程中以自動完成功能填入網域名稱</translation>
 <translation id="6315673513957120120">當使用者瀏覽出現 SSL 錯誤的網站，Chrome 會顯示警告網頁。在預設或政策設為 True 的情況下，使用者可以忽略這類警告網頁，繼續前往原先指定的頁面。
       這項政策設為 False 時，系統會禁止使用者忽略任何警告網頁。</translation>
@@ -1411,6 +1390,7 @@
           指定政策值時需以毫秒為單位。該值需小於閒置延遲時間。</translation>
 <translation id="6536600139108165863">裝置關機時自動重新啟動</translation>
 <translation id="6539246272469751178">這項政策對 Android 應用程式沒有影響。Android 應用程式會一律使用預設的下載目錄，無法存取任何由 <ph name="PRODUCT_OS_NAME" />下載到非預設下載目錄的檔案。</translation>
+<translation id="654303922206238013">eCryptfs 遷移策略</translation>
 <translation id="6544897973797372144">如果你將這項政策設為「True」，且並未指定 ChromeOsReleaseChannel 政策，則註冊網域的使用者將可變更裝置的發佈頻道。如果你將這項政策設為「False」，則系統會將裝置鎖定為先前設定的任何頻道。
 
       ChromeOsReleaseChannel 政策會覆寫使用者選取的頻道，但如果政策設定的頻道比裝置原本安裝的頻道更穩定，則系統只會在更穩定的頻道發佈比裝置上安裝的頻道更高的版本時，才會切換至該版本。</translation>
@@ -1583,6 +1563,13 @@
 
           只有在啟用「DefaultSearchProviderEnabled」政策時，系統才會遵循這項政策。</translation>
 <translation id="7302043767260300182">在 AC 供電環境下執行時的螢幕鎖定延遲時間</translation>
+<translation id="7309839952828354215">針對採用 eCryptfs 檔案系統且需要轉換成 Ext4 加密系統的裝置指定相關行為。
+
+      如果將這項政策設為「DisallowArc」，裝置上的所有使用者 (包括已採用 Ext4 加密者) 均無法使用 Android 應用程式，也無法從 eCryptfs 檔案系統遷移至 Ext4 加密系統。
+
+      如果將這項政策設為「AllowMigration」，擁有 eCryptfs 檔案系統主目錄的使用者可視需要將主目錄遷移至 Ext4 加密系統 (目前是當裝置可下載 Android N 時)。
+
+      如果未設定這項政策，裝置行為會與選擇「DisallowArc」時相同。</translation>
 <translation id="7311458740754205918">如果將這項政策設為 true 或未設定這項政策，系統可能會根據使用者的瀏覽紀錄、興趣或位置在新分頁顯示內容建議。
 
       如果將這項政策設為 false，新分頁就不會顯示系統自動產生的內容建議。</translation>
@@ -1938,8 +1925,6 @@
 
       如果停用這項政策，則使用者無法刪除瀏覽和下載紀錄項目。</translation>
 <translation id="8764119899999036911">指定是否要根據標準 DNS 名稱或輸入的原始名稱來產生 Kerberos SPN。如果啟用這項設定，系統會略過 CNAME 查詢，並且使用先前輸入的伺服器名稱。如果你停用或未調整這項設定，伺服器的標準名稱會透過 CNAME 查詢決定。</translation>
-<translation id="8774131509736383471">如果將這項政策設為 True，<ph name="PRODUCT_NAME" /> 會在首次執行時一律將第一個顯示的視窗最大化。
-      如果將這項政策設為 False 或不予設定，系統會根據螢幕尺寸決定是否將顯示的第一個視窗最大化。</translation>
 <translation id="87812015706645271">要求比對本機使用者和遠端存取主機擁有者的名稱</translation>
 <translation id="8782750230688364867">指定裝置處於簡報模式時的調暗延遲時間延長百分比。
 

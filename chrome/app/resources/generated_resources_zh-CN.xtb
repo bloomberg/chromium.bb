@@ -496,7 +496,6 @@
 <translation id="1709106626015023981"><ph name="WIDTH" /> x <ph name="HEIGHT" />（原生）</translation>
 <translation id="1711973684025117106">压缩失败，发生意外错误：$1</translation>
 <translation id="1712349894969001173">通过您的 iPhone 获取此密码</translation>
-<translation id="1719028357511747483">搜索您的 <ph name="DEVICE_TYPE" />、应用、网站…</translation>
 <translation id="1719312230114180055">请注意：指纹识别的安全性可能不及安全系数高的密码或 PIN 码。</translation>
 <translation id="1720318856472900922">TLS WWW 服务器身份验证</translation>
 <translation id="1720372306711178108">扩展桌面</translation>

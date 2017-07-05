@@ -99,7 +99,7 @@
 <translation id="6808150112686056157">Media stoppen</translation>
 <translation id="6845383723252244143">Map selecteren</translation>
 <translation id="6845533974506654842">Indrukken</translation>
-<translation id="6863590663815976734">{HOURS,plural, =1{1 uur geleden}other{# uur geleden}}</translation>
+<translation id="6863590663815976734">{HOURS,plural, =1{Nog 1 uur}other{Nog # uur}}</translation>
 <translation id="688711909580084195">Naamloze webpagina</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/s</translation>
 <translation id="6917971086528278418">{YEARS,plural, =1{Nog 1 jaar}other{Nog # jaar}}</translation>

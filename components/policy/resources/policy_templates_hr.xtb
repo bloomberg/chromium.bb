@@ -495,6 +495,7 @@
 
           Ako ovo pravilo nije postavljeno, postavka će biti omogućena.</translation>
 <translation id="2824715612115726353">Omogući anonimni način</translation>
+<translation id="2838830882081735096">Onemogući premještanje podataka i ARC</translation>
 <translation id="2844404652289407061">Omogućuje dostupnost značajke Dodirnite za pretraživanje u prikazu sadržaja preglednika <ph name="PRODUCT_NAME" />.
 
       Ako omogućite tu postavku, korisniku će biti dostupna značajka Dodirnite za pretraživanje i moći će je samostalno uključiti ili isključiti.
@@ -664,13 +665,6 @@
           To se pravilo poštuje samo ako je omogućeno pravilo "DefaultSearchProviderEnabled".</translation>
 <translation id="350797926066071931">Omogući Prevoditelj</translation>
 <translation id="3528000905991875314">Omogući alternativne stranice pogrešaka</translation>
-<translation id="3538538104630456270">Povezana postavka upotrijebljena je prije uvođenja ponovne autentifikacije za prikaz zaporki. Od tada ta postavka pa ni ovo pravilo nisu utjecali na ponašanje Chromea. Trenutačno ponašanje Chromea sada je isto kao da se tim pravilom onemogućuje prikaz čitljivog teksta zaporki na stranici postavki upravitelja zaporki. To znači da stranica postavki sadrži samo rezervirano mjesto, a Chrome će prikazati zaporku tek kad korisnik klikne "Prikaži" (i izvrši ponovnu autentifikaciju ako je primjenjivo). Izvorni opis pravila naveden je u nastavku.
-
-          Upravlja time može li korisnik prikazati zaporke čitljivim tekstom u upravitelju zaporki.
-
-          Ako onemogućite tu postavku, upravitelj zaporki ne dopušta prikaz spremljenih zaporki čitljivim tekstom u prozoru upravitelja zaporki.
-
-          Ako omogućite tu postavku ili ne postavite pravilo, korisnicima se zaporke u upravitelju zaporki prikazuju čitljivim tekstom.</translation>
 <translation id="3547954654003013442">Proxy postavke</translation>
 <translation id="3591584750136265240">Konfiguriraj ponašanje autentifikacije tijekom prijave</translation>
 <translation id="3627678165642179114">Omogući ili onemogući web-uslugu provjere pravopisa</translation>
@@ -860,23 +854,6 @@
 <translation id="4239720644496144453">Za Android aplikacije ne upotrebljava se predmemorija. Ako više korisnika instalira istu Android aplikaciju, ta će se aplikacija preuzeti iznova za svakog korisnika.</translation>
 <translation id="4250680216510889253">Ne</translation>
 <translation id="4261820385751181068">Oznaka zemlje/jezika za zaslon za prijavu na uređaju</translation>
-<translation id="4275782538576261754">Konfigurira vrste preuzimanja koje će <ph name="PRODUCT_NAME" /> potpuno blokirati, bez omogućivanja korisnicima da nadjačaju sigurnosnu odluku.
-
-      Ako postavite to pravilo, usluga <ph name="PRODUCT_NAME" /> spriječit će određene vrste preuzimanja i neće dopustiti da korisnici zaobiđu sigurnosna upozorenja.
-
-      Kada je odabrana opcija "Blokiraj opasna preuzimanja", dopuštena su sva preuzimanja osim onih koja imaju upozorenja Sigurnog pregledavanja.
-
-      Kada je odabrana opcija "Blokiraj potencijalno opasna preuzimanja", dopuštena su sva preuzimanja osim onih koja imaju upozorenja Sigurnog pregledavanja o potencijalno opasnim preuzimanjima.
-
-      Kada je odabrana opcija "Blokiraj sva preuzimanja", blokirana su sva preuzimanja.
-
-      Kada se to pravilo ne postavi (ili se odabere opcija "Nema posebnih ograničenja"), preuzimanja će prolaziti kroz uobičajena sigurnosna ograničenja na temelju rezultata analize Sigurnog pregledavanja.
-
-      Napominjemo da se ta ograničenja primjenjuju na preuzimanja aktivirana iz sadržaja web-stranice, kao i putem opcije kontekstnog izbornika "Preuzmi vezu...".
-
-      Ta se ograničenja ne primjenjuju na spremanje ili preuzimanje trenutačno prikazane stranice ni na spremanje u obliku PDF-a u opcijama ispisa.
-
-      Više informacija o Sigurnom pregledavanju potražite na stranici https://developers.google.com/safe-browsing.</translation>
 <translation id="427632463972968153">Određuje parametre koji se upotrebljavaju prilikom pretraživanja slika pomoću POST metode. Sastoji se od zarezom odvojenih parova naziv/vrijednost. Ako je vrijednost parametar predloška, primjerice {imageThumbnail} u gornjem primjeru, zamijenit će se podacima stvarne minijature slike.
 
           To je pravilo izborno. Ako nije postavljeno, zahtjev za pretraživanje slika poslat će se pomoću GET metode.
@@ -902,6 +879,7 @@
 <translation id="436581050240847513">Izvješća o mrežnim sučeljima uređaja</translation>
 <translation id="4372704773119750918">Ne dopusti poslovnom korisniku da bude dio višestrukog profila (primarnom ili sekundarnom)</translation>
 <translation id="4377599627073874279">Dopusti svim web-lokacijama prikazivanje svih slika</translation>
+<translation id="437791893267799639">Postavljanje pravila poništeno, onemogući premještanje podataka i ARC</translation>
 <translation id="4389091865841123886">Konfiguriranje daljinskog atestiranja TPM mehanizmom.</translation>
 <translation id="4418726081189202489">Ako se to pravilo postavi na netočno, <ph name="PRODUCT_NAME" /> neće povremeno slati upite Googleovu poslužitelju radi dohvaćanja točne vremenske oznake. Ti će se upiti omogućiti ako se pravilo postavi na točno ili se ne postavi.</translation>
 <translation id="4423597592074154136">Ručno određivanje proxy postavki</translation>
@@ -1190,6 +1168,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="5586942249556966598">Ne radi ništa</translation>
 <translation id="5630352020869108293">Vrati posljednju sesiju</translation>
 <translation id="5645779841392247734">Dopusti kolačiće na ovim web-lokacijama</translation>
+<translation id="5693469654327063861">Dopusti premještanje podataka</translation>
 <translation id="5694594914843889579">Kada se to pravilo postavi na True, vanjska pohrana neće biti dostupna u pregledniku datoteka.
 
       To pravilo utječe na sve vrste medija za pohranu, na primjer USB flash pogone, vanjske tvrde diskove, SD i ostale memorijske kartice, optičku pohranu itd. Ne utječe na unutarnju pohranu, pa se i dalje može pristupati datotekama spremljenima u mapu Preuzimanja. To pravilo ne utječe ni na Google disk.
@@ -1414,6 +1393,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
           Vrijednost pravila treba navesti u milisekundama. Vrijednosti su ograničene na vrijeme kraće od odgode neaktivnosti.</translation>
 <translation id="6536600139108165863">Automatsko ponovno pokretanje nakon isključivanja uređaja</translation>
 <translation id="6539246272469751178">To pravilo nema utjecaja na Android aplikacije. One uvijek upotrebljavaju zadani direktorij za preuzimanja i ne mogu pristupiti nijednoj datoteci koju je sustav <ph name="PRODUCT_OS_NAME" /> preuzeo u direktorij za preuzimanje koji nije zadan.</translation>
+<translation id="654303922206238013">Strategija premještanja za ecryptfs</translation>
 <translation id="6544897973797372144">Ako je to pravilo postavljeno na True, a pravilo ChromeOsReleaseChannel nije određeno, korisnicima domene koja se prijavljuje bit će dopušteno da mijenjaju kanal izdanja na uređaju. Ako je to pravilo postavljeno na False, uređaj će biti zaključan na posljednji postavljeni kanal.
 
       Pravilo ChromeOsReleaseChannel premostit će kanal koji je odabrao korisnik, ali ako je kanal određen pravilom stabilniji od kanala instaliranog na uređaj, kanal će se promijeniti samo nakon što verzija stabilnijeg kanala dosegne viši broj verzije od verzije koja je instalirana na uređaj.</translation>
@@ -1586,6 +1566,13 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 
           Ovo se pravilo primjenjuje samo ako je omogućeno pravilo 'DefaultSearchProviderEnabled'.</translation>
 <translation id="7302043767260300182">Odgoda zaključavanja zaslona za vrijeme napajanja izmjeničnom strujom</translation>
+<translation id="7309839952828354215">Određuje kako se treba ponašati uređaj koji je isporučen s enkripcijom ecryptfs, a treba se prebaciti na enkripciju ext4.
+
+      Ako to pravilo postavite na "DisallowArc", Android aplikacije bit će onemogućene za sve korisnike na uređaju (uključujući one koji već imaju enkripciju ext4) i korisnicima se neće nuditi prebacivanje s enkripcije ecryptfs na enkripciju ext4.
+
+      Ako to pravilo postavite na "AllowMigration", korisnicima koji imaju korisničke direktorije s enkripcijom ecryptfs ponudit će se prebacivanje na enkripciju ext4 prema potrebi (trenutačno kada Android N postane dostupan na uređaju).
+
+      Ako se to pravilo ne postavi, uređaj će se ponašati kao da je odabrano "DisallowArc".</translation>
 <translation id="7311458740754205918">Ako se ovo pravilo postavi na istinito ili se ne postavi, web-stranica nove kartice može prikazivati preporuke sadržaja na temelju korisnikove povijesti pretraživanja, interesa ili lokacije.
 
       Ako se postavi na neistinito, automatski generirani prijedlozi sadržaja neće se prikazivati na web-stranici nove kartice.</translation>
@@ -1950,8 +1937,6 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 
       Ako je ova postavka onemogućena, povijest pregledavanja i preuzimanja nije moguće izbrisati.</translation>
 <translation id="8764119899999036911">Određuje temelji li se generirani Kerberos SPN na kanonskom DNS imenu ili unesenom izvornom imenu. Ako omogućite ovu postavku, CNAME pretraživanje bit će preskočeno, a upotrijebit će se uneseni naziv poslužitelja. Ako onemogućite ovu postavku ili ju ne postavite, kanonski naziv poslužitelja bit će utvrđen putem CNAME pretraživanja.</translation>
-<translation id="8774131509736383471">Ako se pravilo postavi na "True", <ph name="PRODUCT_NAME" /> bezuvjetno će maksimizirati prvi prozor koji se prikazuje prilikom prvog pokretanja.
-      Ako se pravilo postavi na "False" ili se ne konfigurira, odluka o maksimiziranju prvog prozora temeljit će se na veličini zaslona.</translation>
 <translation id="87812015706645271">Zahtijeva podudaranje imena lokalnog korisnika i vlasnika hosta daljinskog pristupa</translation>
 <translation id="8782750230688364867">Određuje postotak skaliranja odgode zatamnjivanja zaslona kada je uređaj u načinu prezentacije.
 

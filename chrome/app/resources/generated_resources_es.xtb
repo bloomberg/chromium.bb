@@ -499,7 +499,6 @@
 <translation id="1709106626015023981"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (resolución nativa)</translation>
 <translation id="1711973684025117106">Error al comprimir: error inesperado ($1)</translation>
 <translation id="1712349894969001173">Recibe esta contraseña en tu iPhone</translation>
-<translation id="1719028357511747483">Busca tu <ph name="DEVICE_TYPE" />, aplicaciones, web...</translation>
 <translation id="1719312230114180055">Nota: Tu huella digital puede ser menos segura que una buena contraseña o un buen PIN.</translation>
 <translation id="1720318856472900922">Autenticación de servidor WWW TLS</translation>
 <translation id="1720372306711178108">Escritorio ampliado</translation>
@@ -2355,7 +2354,7 @@ Pulsa cualquier tecla para seguir con la exploración.</translation>
 <translation id="4546308221697447294">Navega de forma rápida con Google Chrome</translation>
 <translation id="4547659257713117923">No hay pestañas de otros dispositivos</translation>
 <translation id="4547992677060857254">La carpeta que has seleccionado contiene archivos confidenciales. ¿Seguro que quieres conceder a "$1" acceso de escritura permanente a esta carpeta?</translation>
-<translation id="4552031286893852992">Chrome ha bloqueado los anuncios en este sitio web porque suele mostrar anuncios invasivos</translation>
+<translation id="4552031286893852992">Chrome ha bloqueado los anuncios en este sitio web porque suele mostrar anuncios invasivos.</translation>
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4552495056028768700">Acceso a página</translation>
 <translation id="4552678318981539154">Comprar más almacenamiento</translation>

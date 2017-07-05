@@ -10,7 +10,6 @@
 <translation id="1188858454923323853">complementar</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1206693055195146388">controle deslizante</translation>
-<translation id="1235745349614807883">Limpar pesquisas recentes</translation>
 <translation id="1281252709823657822">caixa de diálogo</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">banner</translation>
@@ -39,7 +38,6 @@
 <translation id="248395913932153421">Dia</translation>
 <translation id="2507943997699731163">Preencha este campo.</translation>
 <translation id="2508569020611168319">lista de guias</translation>
-<translation id="2548326553472216322">Nenhuma pesquisa recente</translation>
 <translation id="2561842179657104141">mostrar mais controles de mídia</translation>
 <translation id="2572483411312390101">reproduzir</translation>
 <translation id="2613802280814924224">Insira um valor válido. O valor válido mais próximo é <ph name="VALID_VALUE" />.</translation>
@@ -51,7 +49,6 @@
 <translation id="2759744352195237655">botão pop-up</translation>
 <translation id="2761667185364618470">Marque esta caixa se deseja continuar.</translation>
 <translation id="2896972712917208084">grupo de rádio</translation>
-<translation id="2901282870647571346">status atual do filme</translation>
 <translation id="2908441821576996758">Insira uma lista de endereços de e-mail separados por vírgula.</translation>
 <translation id="2940813599313844715">objeto</translation>
 <translation id="2942448076852699108">conteúdo destacado</translation>
@@ -95,7 +92,6 @@
 <translation id="4992066212339426712">Ativar som</translation>
 <translation id="49969490063480558">Insira uma parte depois de "<ph name="ATSIGN" />". "<ph name="INVALIDADDRESS" />" está incompleto.</translation>
 <translation id="5034860022980953847">indicador de progresso</translation>
-<translation id="5048533449481078685">marcador de lista</translation>
 <translation id="5117590920725113268">Mostrar próximo mês</translation>
 <translation id="512758898067543763">cabeçalho de linha</translation>
 <translation id="5164977714490026579">O valor deve ser maior ou igual a <ph name="MINIMUM" />.</translation>
@@ -113,7 +109,6 @@
 <translation id="5643186887447432888">botão</translation>
 <translation id="5677946354068040947">mais opções</translation>
 <translation id="57838592816432529">Desativar som</translation>
-<translation id="5843503607508392247">Outras...</translation>
 <translation id="5860033963881614850">Desativado</translation>
 <translation id="588258955323874662">Tela inteira</translation>
 <translation id="5939518447894949180">Redefinir</translation>
@@ -123,8 +118,6 @@
 <translation id="6023896073578205740">caixa de listagem</translation>
 <translation id="6101327004457443354">ativar som da faixa de áudio</translation>
 <translation id="6164829606128959761">medidor</translation>
-<translation id="6270583010843788609">miniatura da barra de progressão do filme</translation>
-<translation id="6359256949422175976">miniatura da barra de progressão do filme</translation>
 <translation id="6398862346408813489">Mostrar painel de seleção de mês</translation>
 <translation id="6404546809543547843">barra de progressão do áudio</translation>
 <translation id="648732519525291180">seletor de hora</translation>
@@ -132,7 +125,6 @@
 <translation id="663493177488814956">feed</translation>
 <translation id="6637586476836377253">log</translation>
 <translation id="6643016212128521049">Limpar</translation>
-<translation id="6663448176199120256">Pesquisas recentes</translation>
 <translation id="668171684555832681">Outro...</translation>
 <translation id="6692633176391053278">stepper</translation>
 <translation id="6739588121953935928">régua</translation>
@@ -145,7 +137,6 @@
 <translation id="6934078000481955284">bloco de texto</translation>
 <translation id="6941933287844615239">fazer o download da mídia</translation>
 <translation id="6989848892321993519">Aumente esse texto para <ph name="MIN_CHARACTERS" /> caracteres ou mais. No momento, você está usando 1 caractere.</translation>
-<translation id="7057186640035488495">tempo de filme</translation>
 <translation id="709897737746224366">É preciso que o formato corresponda ao exigido.</translation>
 <translation id="7223624360433298498">tempo decorrido</translation>
 <translation id="7263440858009898357">Selecione um item da lista.</translation>
@@ -166,10 +157,8 @@
 <translation id="8053789581856978548">campo de texto da pesquisa</translation>
 <translation id="8115662671911883373">começar a exibir legendas ocultas</translation>
 <translation id="8117451130807776954">Esta semana</translation>
-<translation id="8141602879876242471">Este é um índice pesquisável. Insira palavras-chave de pesquisa:</translation>
 <translation id="819205353528511139">reproduzir filme em tela cheia</translation>
 <translation id="8199524924445686405">aaaa</translation>
-<translation id="8244226242650769279">mapa de imagens</translation>
 <translation id="8284326494547611709">Legendas</translation>
 <translation id="835897206747267392">Valor inválido.</translation>
 <translation id="8433900881053900389">barra de ferramentas</translation>

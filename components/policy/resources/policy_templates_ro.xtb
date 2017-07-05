@@ -498,6 +498,7 @@
 
           Dacă politica nu este configurată, setarea va fi activată.</translation>
 <translation id="2824715612115726353">Activează modul incognito</translation>
+<translation id="2838830882081735096">Nu permite migrarea datelor și ARC</translation>
 <translation id="2844404652289407061">Activează disponibilitatea funcției Atinge pentru a căuta în timpul afișării conținutului din <ph name="PRODUCT_NAME" />.
 
       Dacă activezi această setare, funcția Atinge pentru a căuta va fi disponibilă utilizatorului și acesta va putea activa sau dezactiva funcția.
@@ -670,13 +671,6 @@
           Această politică este urmată numai dacă este activată politica „DefaultSearchProviderEnabled”.</translation>
 <translation id="350797926066071931">Activează Google Traducere</translation>
 <translation id="3528000905991875314">Activează pagini de eroare alternative</translation>
-<translation id="3538538104630456270">Setarea asociată a fost folosită înainte să fie introdusă reautentificarea la afișarea parolelor. De atunci, setarea și, prin urmare, această politică nu au avut niciun efect asupra comportamentului browserului Chrome. Browserul Chrome se comportă în prezent ca și când politica a fost setată astfel încât să se dezactiveze afișarea parolelor în text clar pe pagina de setări a managerului de parole. Acest lucru înseamnă că pagina de setări include numai un substituent, iar Chrome afișează parola numai dacă utilizatorul dă clic pe „Afișează” (și se reautentifică, dacă este cazul). Mai jos, urmează descrierea originală a politicii.
-
-          Stabilește dacă utilizatorul poate afișa parolele în text clar în managerul de parole.
-
-          Dacă dezactivezi această setare, managerul de parole nu permite afișarea în text clar în fereastra managerului de parole a parolelor stocate.
-
-          Dacă activezi sau nu configurezi această politică, utilizatorii pot vedea parolele în text clar în managerul de parole.</translation>
 <translation id="3547954654003013442">Setări proxy</translation>
 <translation id="3591584750136265240">Configurează comportamentul de autentificare la conectare</translation>
 <translation id="3627678165642179114">Activați sau dezactivați serviciul web de verificare a ortografiei</translation>
@@ -872,23 +866,6 @@
 <translation id="4239720644496144453">Memoria cache nu este folosită pentru aplicațiile Android. Dacă mai mulți utilizatori instalează aceeași aplicație Android, aceasta va fi descărcată din nou pentru fiecare utilizator.</translation>
 <translation id="4250680216510889253">Nu</translation>
 <translation id="4261820385751181068">Limba de pe ecranul de conectare al dispozitivului</translation>
-<translation id="4275782538576261754">Configurează tipul descărcărilor pe care <ph name="PRODUCT_NAME" /> le va bloca complet, fără a permite utilizatorilor să ignore decizia privind securitatea.
-
-      Dacă setezi această politică, <ph name="PRODUCT_NAME" /> va împiedica anumite tipuri de descărcări și nu va permite utilizatorului să ocolească avertismentele de securitate.
-
-      Când este aleasă opțiunea „Blochează descărcările periculoase”, sunt permise toate descărcările, cu excepția celor care au avertismente de la Navigarea sigură.
-
-      Când este aleasă opțiunea „Blochează descărcările potențial periculoase”, sunt permise toate descărcările, cu excepția celor care au avertismente de la Navigarea sigură privind descărcările potențial periculoase.
-
-      Când este aleasă opțiunea „Blochează toate descărcările”, sunt blocate toate descărcările.
-
-      Când această politică nu este configurată, (sau este aleasă opțiunea „Fără restricții speciale”), descărcările vor trece de restricțiile de securitate obișnuite pe baza rezultatelor analizei de la Navigarea sigură.
-
-      Reține că aceste restricții se aplică descărcărilor declanșate din conținutul paginii web și din opțiunea meniului contextual „descarcă linkul...”.
-
-      Aceste restricții nu se aplică la salvarea/descărcarea paginii afișate sau la salvarea ca PDF din opțiunile de printare.
-
-      Consultă https://developers.google.com/safe-browsing pentru mai multe informații despre Navigarea sigură.</translation>
 <translation id="427632463972968153">Specifică parametrii utilizați la căutarea de imagini cu POST. Politica este alcătuită din perechi nume/valoare separate prin virgulă. Dacă o valoare este un parametru șablon, precum {imageThumbnail} din exemplul de mai sus, acesta va fi înlocuit cu datele miniaturii imaginii reale.
 
           Această politică este opțională. Dacă nu este setată, solicitarea de căutare a imaginilor va fi trimisă prin metoda GET.
@@ -914,6 +891,7 @@
 <translation id="436581050240847513">Raportează interfețele de rețea pentru dispozitiv</translation>
 <translation id="4372704773119750918">Nu permite ca utilizatorul întreprindere să facă parte din profilul multiplu (principal sau secundar)</translation>
 <translation id="4377599627073874279">Permite tuturor site-urilor să afișeze toate imaginile</translation>
+<translation id="437791893267799639">Politica nu este configurată; nu se permite migrarea datelor și ARC</translation>
 <translation id="4389091865841123886">Configurați atestarea la distanță cu mecanismul TPM.</translation>
 <translation id="4418726081189202489">Dacă dezactivezi această politică, <ph name="PRODUCT_NAME" /> nu mai trimite ocazional interogări către un server Google pentru a prelua un marcaj temporal precis. Dacă politica este activată sau nu este configurată, aceste interogări vor fi activate.</translation>
 <translation id="4423597592074154136">Specifică manual setările proxy</translation>
@@ -1201,6 +1179,7 @@
 <translation id="5586942249556966598">Nicio acțiune</translation>
 <translation id="5630352020869108293">Restabiliți ultima sesiune</translation>
 <translation id="5645779841392247734">Permite cookie-uri de pe aceste site-uri</translation>
+<translation id="5693469654327063861">Permite migrarea datelor</translation>
 <translation id="5694594914843889579">Dacă această politică este activată, stocarea externă nu va fi disponibilă în browserul de fișiere.
 
       Această politică afectează toate tipurile de suporturi de stocare. De exemplu: unități flash USB, hard diskuri externe, carduri SD și alte carduri de memorie, stocarea optică etc. Stocarea internă nu este afectată. Prin urmare, fișierele salvate în dosarul Descărcări pot fi în continuare accesate. Nici Google Drive nu este afectat de această politică.
@@ -1376,10 +1355,10 @@
 <translation id="6281043242780654992">Configurează politicile pentru Mesageria nativă. Gazdele de mesagerie nativă trecute în lista neagră vor fi permise doar dacă sunt trecute în lista albă.</translation>
 <translation id="6282799760374509080">Permiteți sau refuzați preluarea conținutului audio</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6287694548537067861">Când nu este configurată sau este activată, permite actualizările componentelor pentru toate componentele din <ph name="PRODUCT_NAME" />.
+<translation id="6287694548537067861">Când nu este configurată sau este activată, permite actualizările tuturor componentelor din <ph name="PRODUCT_NAME" />.
 
       Dacă este dezactivată, actualizările componentelor sunt dezactivate. Totuși, anumite componente nu se supun acestei politici: nu vor fi dezactivate actualizările oricărei componente care nu conține un cod executabil sau care nu modifică semnificativ comportamentul browserului ori care este critică pentru securitatea sa.
-      Exemplele unor componente includ listele de revocare a certificatelor și datele de navigare sigură.
+      Printre exemple se numără listele de revocare a certificatelor și datele de navigare sigură.
       Consultă https://developers.google.com/safe-browsing pentru mai multe informații despre Navigarea sigură.</translation>
 <translation id="6310223829319187614">Activează completarea automată a numelui de domeniu la conectarea utilizatorului</translation>
 <translation id="6315673513957120120">Chrome afișează o pagină de avertisment atunci când utilizatorii accesează site-uri care au erori SSL. În mod prestabilit sau atunci când această politică este activată, utilizatorii au permisiunea să-și continue navigarea dând clic pe aceste pagini de avertisment.
@@ -1425,6 +1404,7 @@
           Valoarea politicii trebuie specificată în milisecunde. Valorile trebuie să fie mai mici decât intervalul de inactivitate.</translation>
 <translation id="6536600139108165863">Repornire automată la închiderea dispozitivului</translation>
 <translation id="6539246272469751178">Această politică nu afectează aplicațiile Android. Acestea folosesc întotdeauna directorul prestabilit pentru descărcări și nu pot accesa niciun fișier descărcat de <ph name="PRODUCT_OS_NAME" /> într-un director care nu este prestabilit pentru descărcări.</translation>
+<translation id="654303922206238013">Strategia de migrare pentru ecryptfs</translation>
 <translation id="6544897973797372144">Dacă această politică este activată, iar politica ChromeOsReleaseChannel nu este specificată, atunci utilizatorii domeniului de înregistrare vor putea să schimbe canalul de lansare al dispozitivului. Dacă această politică este dezactivată, dispozitivul va fi blocat pe canalul setat cel mai recent.
 
       Canalul selectat de utilizator va fi înlocuit de politica ChromeOsReleaseChannel. Totuși, în cazul în care canalul specificat de politică este mai stabil decât cel instalat pe dispozitiv, canalul se va schimba numai după ce versiunea canalului mai stabil ajunge la un număr de versiune superior celui instalat pe dispozitiv.</translation>
@@ -1600,6 +1580,13 @@ nu poate fi stabilit de utilizator din setările browserului.
 
           Această politică este respectată numai dacă este activată politica „DefaultSearchProviderEnabled”.</translation>
 <translation id="7302043767260300182">Interval până la blocarea ecranului la funcționarea pe c.a.</translation>
+<translation id="7309839952828354215">Specifică modul în care trebuie să se comporte un dispozitiv care a fost livrat cu ecryptfs și necesită trecerea la criptarea ext4.
+
+      Dacă setezi politica la „DisallowArc”, aplicațiile Android vor fi dezactivate pentru toți utilizatorii de pe dispozitiv (inclusiv pentru cei care folosesc deja criptarea ext4). Niciunui utilizator nu i se va oferi migrarea de la ecryptfs la criptarea ext4.
+
+      Dacă setezi politica la „AllowMigration”, utilizatorilor cu directoare principale ecryptfs li se va oferi posibilitatea să migreze la criptarea ext4, după cum este necesar (când Android N devine disponibil pe dispozitiv).
+
+      Dacă politica nu este configurată, dispozitivul se comportă ca și cum ar fi aleasă opțiunea „DisallowArc”.</translation>
 <translation id="7311458740754205918">Dacă politica este activată sau nu este configurată, este posibil ca pagina Filă nouă să afișeze sugestii privind conținutul pe baza istoricului de navigare, a intereselor și a locației utilizatorului.
 
       Dacă politica este dezactivată, sugestiile generate automat privind conținutul nu sunt afișate pe pagina Filă nouă.</translation>
@@ -1963,8 +1950,6 @@ nu poate fi stabilit de utilizator din setările browserului.
 
       Dacă această setare este dezactivată, istoricul navigării și istoricul descărcărilor nu pot fi șterse.</translation>
 <translation id="8764119899999036911">Specifică dacă numele SPN generat în protocolul Kerberos are la bază numele DNS canonic sau numele inițial introdus. Dacă activați această setare, căutarea CNAME va fi ignorată, iar numele serverului va fi utilizat așa cum este introdus. Dacă dezactivați această setare sau o lăsați nesetată, numele canonic al serverului va fi determinat prin intermediul căutării CNAME.</translation>
-<translation id="8774131509736383471">Dacă această politică este activată, <ph name="PRODUCT_NAME" /> va maximiza necondiționat prima fereastră afișată la prima rulare.
-      Dacă această politică este dezactivată sau nu este configurată, decizia privind maximizarea primei ferestre afișate se va baza pe dimensiunea ecranului.</translation>
 <translation id="87812015706645271">Este necesar ca numele utilizatorului local și numele proprietarului gazdei de acces la distanță să corespundă</translation>
 <translation id="8782750230688364867">Specifică procentul cu care este ajustat intervalul până la reducerea luminozității ecranului atunci când dispozitivul este în modul de prezentare.
 

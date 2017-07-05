@@ -520,6 +520,7 @@
 
           Kui jätate selle reegli määramata, siis seade lubatakse.</translation>
 <translation id="2824715612115726353">Luba inkognitorežiim</translation>
+<translation id="2838830882081735096">Keela andmete üleviimine ja ARC</translation>
 <translation id="2844404652289407061">Lubab teenuse <ph name="PRODUCT_NAME" /> sisu vaates funktsiooni Puuduta otsimiseks.
 
       Kui selle seade lubate, on funktsioon Puuduta otsimiseks kasutaja jaoks saadaval ja ta saab selle sisse või välja lülitada.
@@ -695,13 +696,6 @@
           Reeglit järgitakse ainult siis, kui lubatud on reegel „DefaultSearchProviderEnabled”.</translation>
 <translation id="350797926066071931">Luba Tõlge</translation>
 <translation id="3528000905991875314">Luba alternatiivsed vealehed</translation>
-<translation id="3538538104630456270">Seotud seadet kasutati enne, kui uuesti autentimine paroolide vaatamisel kasutusele võeti. Alates sellest ei mõjutanud see seade ja sellest tulenevalt ka see reegel käitumist Chrome'is. Chrome'i praegune käitumine on sama, nagu keelaks see reegel paroolide kuvamise tavatekstina paroolihalduri seadete lehel. See tähendab, et seadete leht sisaldab ainult kohahoidjat ja Chrome kuvab parooli ainult siis, kui kasutaja klõpsab käsul „Kuva” (ning autendib uuesti, kui see on kohaldatav). Allpool on reegli algne kirjeldus.
-
-          Juhib seda, kas kasutaja võib paroolihalduris paroole tavatekstina kuvada.
-
-          Seade keelamisel ei luba paroolihaldur salvestatud paroole paroolihalduri aknas tavatekstina kuvada.
-
-          Kui lubate reegli või jätate selle määramata, siis saavad kasutajad paroolihalduris paroole tavatekstina vaadata.</translation>
 <translation id="3547954654003013442">Puhverserveri seaded</translation>
 <translation id="3591584750136265240">Sisselogimise autentimise käitumise seadistamine</translation>
 <translation id="3627678165642179114">Õigekirjakontrolli veebiteenuse lubamine või keelamine</translation>
@@ -895,23 +889,6 @@
 <translation id="4239720644496144453">Androidi rakenduste jaoks vahemälu ei kasutata. Kui mitu kasutajat installivad sama Androidi rakenduse, laaditakse see iga kasutaja puhul uuena alla.</translation>
 <translation id="4250680216510889253">Ei</translation>
 <translation id="4261820385751181068">Seadme sisselogimisekraani lokaat</translation>
-<translation id="4275782538576261754">Seadistab allalaadimiste tüübid, mille <ph name="PRODUCT_NAME" /> täielikult blokeerib, lubamata kasutajal turvaotsust alistada.
-
-      Kui määrate selle reegli, blokeerib <ph name="PRODUCT_NAME" /> teatud tüüpi allalaadimised ega luba kasutajal turvahoiatusi eirata.
-
-      Kui valitud on seade „Blokeeri ohtlikud allalaadimised”, on lubatud kõik allalaadimised peale ohutu sirvimise hoiatusega sisu.
-
-      Kui valitud on seade „Blokeeri potentsiaalselt ohtlikud allalaadimised”, on lubatud kõik allalaadimised peale sisu, mida ohutu sirvimine peab potentsiaalselt ohtlikuks.
-
-      Kui valitud on seade „Blokeeri kõik allalaadimised”, on kõik allalaadimised blokeeritud.
-
-      Kui jätate reegli määramata (või valite seade „Eripiirangud puuduvad”), kehtivad allalaadimiste puhul tavapärased turvapiirangud, mis põhinevad ohutu sirvimise analüüsi tulemustel.
-
-      Pange tähele, et piirangud kehtivad nii veebilehe sisu kui ka kontekstimenüü valiku „Laadi alla link …” kaudu käivitatud allalaadimiste puhul.
-
-      Piirangud ei kehti praegu kuvatava lehe sisu salvestamise/allalaadimise puhul ega printimisvalikutes PDF-failina salvestamisel.
-
-      Vaadake lisateavet ohutu sirvimise kohta aadressilt https://developers.google.com/safe-browsing.</translation>
 <translation id="427632463972968153">Täpsustab parameetri, mida kasutatakse POST-meetodiga soovituse otsingu tegemisel. See koosneb komaga eraldatud nime/väärtuse paaridest. Kui väärtus on malliparameeter, nt {imageThumbnail} ülalolevas näites, siis asendatakse see pisipildi andmetega.
 
           See reegel on valikuline. Kui see pole määratud, siis saadetakse soovituse otsingu taotlus GET-meetodiga.
@@ -937,6 +914,7 @@
 <translation id="436581050240847513">Seadme võrguliidestest teatamine</translation>
 <translation id="4372704773119750918">Ärge lubage ettevõtte kasutajal olla osa multiprofiilist (esmane või teisene)</translation>
 <translation id="4377599627073874279">Luba kõikidel saitidel kõikide kujutiste kuvamine</translation>
+<translation id="437791893267799639">Reegel on määramata, keela andmete üleviimine ja ARC</translation>
 <translation id="4389091865841123886">Kaugatesteerimine konfigureeritakse TPM-mehhanismi abil.</translation>
 <translation id="4418726081189202489">Kui selle reegli väärtuseks määratakse Väär, peatatakse teenusest <ph name="PRODUCT_NAME" /> päringute saatmine Google'i serverile täpse ajatempli saamiseks. Need päringud lubatakse, kui reegli väärtuseks on määratud Tõene või see on määramata.</translation>
 <translation id="4423597592074154136">Puhverserveri seadete määramine käsitsi</translation>
@@ -1254,6 +1232,7 @@
 <translation id="5586942249556966598">Ära tee midagi</translation>
 <translation id="5630352020869108293">Viimase seansi taastamine</translation>
 <translation id="5645779841392247734">Luba küpsised nendel saitidel</translation>
+<translation id="5693469654327063861">Luba andmete üleviimine</translation>
 <translation id="5694594914843889579">Kui reegli väärtuseks on määratud Tõene, siis ei ole väline salvestusseade failibrauseris saadaval.
 
       Reegel kehtib kõigile salvestusseadmete tüüpidele, näiteks USB-välkmäludraivid, välised kõvakettad, SD-kaardid jm mälukaardid, optilised salvestusseadmed jne. See ei kehti sisemälu kohta, mistõttu kausta Allalaadimised salvestatud failidele on juurdepääs olemas. Reegel ei kehti ka Google Drive'ile.
@@ -1496,6 +1475,7 @@
           Reegli väärtus tuleb määrata millisekundites. Väärtused tuleb kinnitada väiksematena kui jõudeoleku viiteaeg.</translation>
 <translation id="6536600139108165863">Automaatne taaskäivitamine seadme väljalülitamisel</translation>
 <translation id="6539246272469751178">See reegel ei mõjuta Androidi rakendusi. Androidi rakendused kasutavad alati allalaadimiste vaikekataloogi ega pääse juurde ühelegi failile, mille operatsioonisüsteem <ph name="PRODUCT_OS_NAME" /> on alla laadinud kataloogi, mis pole allalaadimiste vaikekataloog.</translation>
+<translation id="654303922206238013">Süsteemi eCryptfs üleviimisstrateegia</translation>
 <translation id="6544897973797372144">Kui reeglile on määratud olek True ja reeglit ChromeOsReleaseChannel pole määratud, siis on registreerumisdomeeni kanali kasutajatel lubatud seadme versiooni kanalit muuta. Kui reeglile on määratud olek False, siis lukustatakse seade mis tahes viimati määratud kanalil.
 
       Kasutaja valitud kanali alistab reegel ChromeOsReleaseChannel. Kui aga reegli kanal on stabiilsem kui seadmesse installitud kanal, siis lülitub see sisse alles pärast seda, kui stabiilsem kanal jõuab seadmesse installitud kanalist kõrgema versiooninumbrini.</translation>
@@ -1687,6 +1667,13 @@
 
           See reegel kehtib vaid siis, kui reegel „DefaultSearchProviderEnabled” on lubatud.</translation>
 <translation id="7302043767260300182">Ekraani lukustamise viiteaeg võrgutoite kasutamisel</translation>
+<translation id="7309839952828354215">Määrab, kuidas peaks käituma süsteemiga eCryptfs tarnitud seade, mis on vaja üle viia krüpteerimissüsteemile ext4.
+
+      Kui määrate reegli väärtuseks „DisallowArc”, on Androidi rakendused kõigi seadme kasutajate jaoks keelatud (sh rakendused, mis põhinevad juba krüpteerimissüsteemil ext4) ja ühelegi kasutajale ei pakuta üleminekut krüpteerimissüsteemilt eCryptfs süsteemile ext4.
+
+      Kui määrate reegli väärtuseks „AllowMigration”, pakutakse kasutajatele, kelle juurkataloog põhineb süsteemil eCryptfs, vajaduse korral (praegu siis, kui Android N tuleb seadmes saadavale) võimalust üle minna krüpteerimissüsteemile ext4.
+
+      Kui jätate reegli määramata, käitub seade nii, nagu oleks valitud väärtus „DisallowArc”.</translation>
 <translation id="7311458740754205918">Kui selle väärtuseks määratakse Tõene või seda ei määrata, võidakse uuel vahelehel näidata sisu soovitusi kasutaja sirvimisajaloo, huvide või asukoha põhjal.
 
       Kui selle väärtuseks määratakse Väär, ei näidata uuel vahelehel automaatselt loodud sisu soovitusi.</translation>
@@ -2082,8 +2069,6 @@
           Seade lubamisel jäetakse CNAME-i otsimine vahele ja serveri nime kasutatakse sisestatud kujul.
 
           Kui keelate seade või jätate selle määramata, siis määratakse serveri tavapärane nimi CNAME-i abil.</translation>
-<translation id="8774131509736383471">Kui selle reegli väärtuseks määratakse Tõene, maksimeerib teenus <ph name="PRODUCT_NAME" /> tingimusteta esmasel käivitamisel kuvatava esimese akna.
-      Kui selle reegli väärtuseks määratakse Väär või seda ei määrata, tehakse otsus esimese kuvatava akna maksimeerimiseks ekraani suuruse põhjal.</translation>
 <translation id="87812015706645271">Kohaliku kasutaja ja kaugjuurdepääsuhosti omaniku nimed peavad ühtima</translation>
 <translation id="8782750230688364867">Määrab ekraani tumenduse viivituse skaleerimismäära protsentides, kui seade on esitlusrežiimis.
 

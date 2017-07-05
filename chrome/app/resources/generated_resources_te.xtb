@@ -629,6 +629,7 @@
 <translation id="1916502483199172559">డిఫాల్ట్ ఎరుపు రంగు అవతార్</translation>
 <translation id="191688485499383649">"<ph name="DEVICE_NAME" />"కు కనెక్ట్ చేయడానికి ప్రయత్నిస్తున్నప్పుడు తెలియని లోపం సంభవించింది.</translation>
 <translation id="1918141783557917887">&amp;చిన్నగా</translation>
+<translation id="1919345977826869612">ప్రకటనలు</translation>
 <translation id="1921584744613111023"><ph name="DPI" /> dpi</translation>
 <translation id="192494336144674234">దీనితో తెరువు</translation>
 <translation id="1925021887439448749">అనుకూల వెబ్ చిరునామాను నమోదు చేయండి</translation>
@@ -1033,6 +1034,7 @@
 <translation id="2534460670861217804">సురక్షిత HTTP ప్రాక్సీ</translation>
 <translation id="253557089021624350">సక్రియ కార్యాచరణల గణన</translation>
 <translation id="2539110682392681234">ప్రాక్సీ మీ నిర్వాహకుని ద్వారా అమలు చేయబడుతుంది.</translation>
+<translation id="2540384386570049483">ఈ సైట్‌లో ప్రకటనలను అనుమతించండి</translation>
 <translation id="2541423446708352368">అన్ని డౌన్‌లోడ్‌లను చూపించు</translation>
 <translation id="2542049655219295786">Google పట్టిక</translation>
 <translation id="2544853746127077729">ప్రామాణీకరణ ప్రమాణపత్రం నెట్‌వర్క్ ద్వారా తిరస్కరించబడింది</translation>
@@ -1333,6 +1335,7 @@
 <translation id="2946119680249604491">కనెక్షన్‌ని జోడించండి</translation>
 <translation id="2946640296642327832">Bluetoothని ప్రారంభించు</translation>
 <translation id="2948300991547862301"><ph name="PAGE_TITLE" />కు వెళ్లండి</translation>
+<translation id="2948320633360386059">అనుచితమైన ప్రకటనలను చూపడానికి ప్రయత్నించిన సైట్‌లలో బ్లాక్ చేయబడ్డాయి</translation>
 <translation id="29488703364906173">ఆధునిక వెబ్ కోసం రూపొందించబడిన వేగవంతమైన, సరళమైన మరియు సురక్షితమైన వెబ్ బ్రౌజర్.</translation>
 <translation id="2949037475046662832">ఇది అన్ని సైట్‌ల కోసం కుక్కీలను మరియు సైట్ డేటాను తొలగిస్తుంది, వీటితో సహా</translation>
 <translation id="2951247061394563839">విండోను మధ్యలో ఉంచు</translation>
@@ -2082,6 +2085,7 @@
 <translation id="4071770069230198275"><ph name="PROFILE_NAME" />: సైన్ ఇన్ లోపం</translation>
 <translation id="4074900173531346617">ఇమెయిల్ సైన్ చేసినవారి సర్టిఫికెట్</translation>
 <translation id="407520071244661467">ప్రమాణం</translation>
+<translation id="4077917118009885966">ఈ సైట్‌లో ప్రకటనలు బ్లాక్ చేయబడ్డాయి</translation>
 <translation id="4084682180776658562">బుక్‌మార్క్ చెయ్యి</translation>
 <translation id="4084835346725913160"><ph name="TAB_NAME" />ని మూసివేయి</translation>
 <translation id="4085298594534903246">ఈ పేజీపై JavaScript నిరోధించబడింది.</translation>
@@ -2350,6 +2354,7 @@
 <translation id="4546308221697447294">Google Chromeతో వేగంగా బ్రౌజ్ చేయండి</translation>
 <translation id="4547659257713117923">ఇతర పరికరాల నుండి ట్యాబ్‌లు లేవు</translation>
 <translation id="4547992677060857254">మీరు ఎంచుకున్న ఫోల్డర్‌లో ముఖ్యమైన ఫైల్‌లు ఉన్నాయి. మీరు ఖచ్చితంగా ఈ ఫోల్డర్ కోసం "$1"కు శాశ్వతంగా వ్రాయగల ప్రాప్యతను మంజూరు చేయాలనుకుంటున్నారా?</translation>
+<translation id="4552031286893852992">ఈ సైట్ అనుచితమైన ప్రకటనలను చూపడానికి ప్రయత్నించిన కారణంగా ఈ సైట్‌లో ప్రకటనలను Chrome బ్లాక్ చేసింది.</translation>
 <translation id="4552089082226364758">ఫ్లాష్</translation>
 <translation id="4552495056028768700">పేజీ ప్రాప్యత</translation>
 <translation id="4552678318981539154">మరింత నిల్వని కొనుగోలు చేయండి</translation>
@@ -2585,6 +2590,7 @@
 <translation id="4893336867552636863">దీని వలన మీ బ్రౌజింగ్ డేటా ఈ పరికరం నుండి శాశ్వతంగా తొలగించబడుతుంది.</translation>
 <translation id="4898011734382862273">ప్రమాణపత్రం "<ph name="CERTIFICATE_NAME" />" ప్రమాణపత్రాలను మంజూరు చేసే సంస్థను సూచిస్తోంది</translation>
 <translation id="4899376560703610051">మీ <ph name="DEVICE_TYPE" /> మాన్యువల్‌గా లాక్ చేయబడింది. మీరు ప్రవేశించడానికి మీ పాస్‌వర్డ్‌ను టైప్ చేయాలి.</translation>
+<translation id="489985760463306091">హానికరమైన సాఫ్ట్‌వేర్ తొలగింపును పూర్తి చేసేందుకు, మీ కంప్యూటర్‌ను పునఃప్రారంభించాలి</translation>
 <translation id="4900392736118574277">మా ప్రారంభ పేజీ <ph name="URL" />కి మార్చబడింది.</translation>
 <translation id="490074449735753175">అక్షరక్రమ లోపాలను పరిష్కరించడానికి సహాయం కోసం వెబ్ సేవను ఉపయోగించండి</translation>
 <translation id="49027928311173603">సర్వర్ నుండి డౌన్‌లోడ్ చేయబడిన విధానం చెల్లదు: <ph name="VALIDATION_ERROR" />.</translation>
@@ -2918,6 +2924,7 @@
 <translation id="5396126354477659676"><ph name="PEPPER_PLUGIN_DOMAIN" />లో <ph name="PEPPER_PLUGIN_NAME" /> మీ కంప్యూటర్‌ను ప్రాప్యత చేయాలనుకుంటోంది.</translation>
 <translation id="5397794290049113714">మీరు</translation>
 <translation id="5398572795982417028">పేజీ సూచన పరిమితిని దాటిపోయారు, పరిమితి <ph name="MAXIMUM_PAGE" /></translation>
+<translation id="5398772614898833570">ప్రకటనలు బ్లాక్ చేయబడ్డాయి</translation>
 <translation id="5399158067281117682">పిన్‌లు సరిపోలడం లేదు!</translation>
 <translation id="5400640815024374115">నమ్మకమైన ప్లాట్‌ఫామ్ మాడ్యూల్ (TPM) చిప్ ఆపివెయ్యబడింది లేదా హాజరు కాలేదు.</translation>
 <translation id="5402815541704507626">మొబైల్ డేటా ఉపయోగించి నవీకరణను డౌన్‌లోడ్ చేయండి</translation>
@@ -4164,6 +4171,7 @@
 <translation id="7352651011704765696">ఏదో తప్పు జరిగింది</translation>
 <translation id="73534262421337222">కీలకమైన అప్‌డేట్‌ను ఇన్‌స్టాల్ చేస్తోంది</translation>
 <translation id="735745346212279324">VPN డిస్‌కనెక్ట్ చేయబడింది</translation>
+<translation id="7359588939039777303">ప్రకటనలు బ్లాక్ చేయబడ్డాయి.</translation>
 <translation id="7360183604634508679">బుక్‌మార్క్‌ల మెను</translation>
 <translation id="7360233684753165754"><ph name="PRINTER_NAME" />కు <ph name="PAGE_NUMBER" /> పేజీలు</translation>
 <translation id="7361039089383199231">$1 బైట్‌లు</translation>
@@ -4176,6 +4184,7 @@
 <translation id="7366762109661450129">స్క్రీన్ ఆన్‌లో ఉండి, అన్‌లాక్ చేయబడి ఉన్నప్పుడు "Ok Google" చెప్పండి.</translation>
 <translation id="7366909168761621528">బ్రౌజింగ్ డేటా</translation>
 <translation id="7369521049655330548">ఈ పేజీలో క్రింది ప్లగిన్‌లు బ్లాక్ చేయబడ్డాయి:</translation>
+<translation id="7371006317849674875">ప్రారంభ సమయం</translation>
 <translation id="7373789336584437724">ఈ పరికరం ప్రస్తుతం విశ్లేషణ మరియు వినియోగ డేటాను Googleకు పంపుతుంది. మీరు దీన్ని మీ పరికర <ph name="BEGIN_LINK1" />సెట్టింగ్‌ల<ph name="END_LINK1" />లో ఎప్పుడైనా మార్చవచ్చు. <ph name="BEGIN_LINK2" />మరింత తెలుసుకోండి<ph name="END_LINK2" /></translation>
 <translation id="7374461526650987610">ప్రోటోకాల్ నిర్వాహకులు</translation>
 <translation id="7375053625150546623">EAP</translation>
@@ -4479,6 +4488,7 @@
 <translation id="7831368056091621108">ఈ పొడిగింపును, మీ చరిత్రను మరియు ఇతర Chrome సెట్టింగ్‌లను మీ అన్ని పరికరాల్లో పొందడానికి.</translation>
 <translation id="7831493768366098287">Google ముద్రణ</translation>
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
+<translation id="7832084384634357321">ముగింపు సమయం</translation>
 <translation id="7833720883933317473">సేవ్ చేసిన అనుకూల పదాలు ఇక్కడ కనిపిస్తాయి</translation>
 <translation id="7837776265184002579">మీ హోమ్‌పేజీ <ph name="URL" />కి మార్చబడింది.</translation>
 <translation id="7839051173341654115">మీడియాను వీక్షించండి/బ్యాకప్ చేయండి</translation>
@@ -4740,6 +4750,7 @@
 <translation id="8226619461731305576">క్రమ వరుస</translation>
 <translation id="8226742006292257240">క్రింద యాదృచ్ఛికంగా సృష్టించబడిన TPM పాస్‌వర్డ్‌లు మీ కంప్యూటర్‌కు సూచించబడ్డాయి:</translation>
 <translation id="8227119283605456246">ఫైల్‌ను జోడించు</translation>
+<translation id="8234795456569844941">దయచేసి ఈ సమస్యను పరిష్కరించడంలో మా ఇంజినీర్‌లకు సహాయపడండి. మీకు ప్రొఫైల్ లోప సందేశం ఎదురుకావడం కంటే ముందు ఏమి జరిగిందో మాకు తెలియజేయండి:</translation>
 <translation id="8238649969398088015">సహాయ చిట్కా</translation>
 <translation id="8240697550402899963">క్లాసిక్ థీమ్‌ని ఉపయోగించు</translation>
 <translation id="8241040075392580210">షేడీ</translation>
@@ -4769,6 +4780,7 @@
 <translation id="8261506727792406068">తొలగించు</translation>
 <translation id="8261580862248730866">మైక్రోఫోన్ మినహాయింపులు</translation>
 <translation id="8261673729476082470"><ph name="FILE_COUNT" /> ఫోటోలను <ph name="BEGIN_LINK" />Google డిస్క్<ph name="END_LINK" />కి బ్యాకప్ చేస్తోంది</translation>
+<translation id="826246685091802258">ఈ బిల్డ్‌లో <ph name="BAD_FLAG" /> అమలు చేయబడలేదు.</translation>
 <translation id="8263231521757761563">క్రియాశీల ప్రోటోకాల్ హ్యాండ్లెర్స్</translation>
 <translation id="8263744495942430914"><ph name="FULLSCREEN_ORIGIN" /> మీ మౌస్ కర్సర్‌ను ఆపివేసింది.</translation>
 <translation id="8264718194193514834"><ph name="EXTENSION_NAME" /> పూర్తి స్క్రీన్‌ని ప్రారంభించింది.</translation>
@@ -5097,6 +5109,7 @@
 <translation id="8800004011501252845">దీని కోసం గమ్యస్థానాలను చూపుతోంది</translation>
 <translation id="8800420788467349919">శబ్దం: <ph name="PRECENTAGE" />%</translation>
 <translation id="8804398419035066391">సహకరిస్తున్న వెబ్‌సైట్‌లతో కమ్యూనికేట్ చేయండి</translation>
+<translation id="8805140816472474147">సమకాలీకరణను ప్రారంభించడం కోసం సమకాలీకరణ సెట్టింగ్‌లను నిర్ధారించండి.</translation>
 <translation id="8807632654848257479">స్థిరత్వం</translation>
 <translation id="8808478386290700967">వెబ్ స్టోర్</translation>
 <translation id="8808686172382650546">పిల్లి</translation>
@@ -5169,6 +5182,7 @@
 <translation id="8916476537757519021">అజ్ఞాత సబ్‌ఫ్రేమ్: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8919034266226953085">PWG రాస్టర్ కన్వర్టర్</translation>
 <translation id="89217462949994770">మీరు చాలసార్లు సరికానటువంటి PIN ఎంటర్ చేశారు. దయచేసి క్రొత్త 8-అంకెల PIN అన్‌లాకింగ్‌ కీను సంగ్రహించడానికి <ph name="CARRIER_ID" />ను సంప్రదించండి.</translation>
+<translation id="8922013791253848639">ఎల్లప్పుడూ ఈ సైట్‌లోని ప్రకటనలను అనుమతించు</translation>
 <translation id="8925458182817574960">&amp;సెట్టింగ్‌లు</translation>
 <translation id="8926389886865778422">మళ్ళి అడగవద్దు</translation>
 <translation id="8926518602592448999">డెవలపర్ మోడ్ పొడిగింపులను నిలిపివేయండి</translation>

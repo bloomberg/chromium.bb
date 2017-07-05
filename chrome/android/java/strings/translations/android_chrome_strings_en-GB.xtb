@@ -69,7 +69,6 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="1620510694547887537">Camera</translation>
 <translation id="1623104350909869708">Prevent this page from creating additional dialogues</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Remove 1 selected item}other{Remove # selected items}}</translation>
-<translation id="1629390138158333592">Search the web</translation>
 <translation id="1641113438599504367">Safe Browsing</translation>
 <translation id="164269334534774161">You are viewing an offline copy of this page from <ph name="CREATION_TIME" /></translation>
 <translation id="1643702317193804718">Translating page to <ph name="SOURCE_LANGUAGE" />…</translation>
@@ -330,7 +329,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4307992518367153382">Basics</translation>
 <translation id="4351244548802238354">Close dialogue</translation>
 <translation id="4378154925671717803">Phone</translation>
-<translation id="4381206798889118664">Search… recipes</translation>
 <translation id="4384468725000734951">Using Sogou for search</translation>
 <translation id="4412992751769744546">Allow third-party cookies</translation>
 <translation id="4432792777822557199">Pages in <ph name="SOURCE_LANGUAGE" /> will be translated to <ph name="TARGET_LANGUAGE" /> from now on</translation>
@@ -376,7 +374,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4837753911714442426">Open options to print page</translation>
 <translation id="4850886885716139402">View</translation>
 <translation id="4860895144060829044">Call</translation>
-<translation id="4869862470313079745">Search… news</translation>
 <translation id="4881695831933465202">Open</translation>
 <translation id="4885273946141277891">Unsupported number of Chrome instances.</translation>
 <translation id="4910889077668685004">Payment apps</translation>
@@ -406,7 +403,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="5161254044473106830">Title required</translation>
 <translation id="5164482624172255778">Would you like Google Chrome to offer to translate <ph name="LANGUAGE" /> pages from this site next time?</translation>
 <translation id="5168917394043976756">Open navigation drawer</translation>
-<translation id="5171045022955879922">Search or type URL</translation>
 <translation id="5184329579814168207">Open in Chrome</translation>
 <translation id="5199929503336119739">Work profile</translation>
 <translation id="5209320130288484488">No devices found</translation>
@@ -510,7 +506,6 @@ However, you aren't invisible. Going incognito doesn't hide your browsing from y
 <translation id="6042308850641462728">More</translation>
 <translation id="604996488070107836"><ph name="FILE_NAME" /> download failed due to an unknown error.</translation>
 <translation id="605721222689873409">YY</translation>
-<translation id="6066049505142453066">Search… weather</translation>
 <translation id="6075798973483050474">Edit home page</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> hours left</translation>
 <translation id="60924377787140961">More articles will appear soon. Enjoy your afternoon!</translation>
@@ -604,7 +599,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="688738109438487280">Add existing data to <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d open tab}other{%1$d open tabs}}</translation>
 <translation id="6896758677409633944">Copy</translation>
-<translation id="6932129181739884535">Search or type website name</translation>
 <translation id="6945221475159498467">Select</translation>
 <translation id="6963766334940102469">Delete bookmarks</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -667,7 +661,7 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7562080006725997899">Clear browsing data</translation>
 <translation id="756809126120519699">Cleared Chrome data</translation>
-<translation id="7588950540487816470">Physical web</translation>
+<translation id="7588950540487816470">Physical Web</translation>
 <translation id="7589445247086920869">Block for current search engine</translation>
 <translation id="7593557518625677601">Open Android settings and re-enable Android system sync to start Chrome sync</translation>
 <translation id="7596558890252710462">Operating system</translation>
@@ -823,7 +817,6 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Show original</translation>
 <translation id="9139068048179869749">Ask before allowing sites to send notifications (recommended)</translation>
-<translation id="9187067407629017315">Enter a search or website</translation>
 <translation id="9187199695613236444">Mobile-friendly view</translation>
 <translation id="9188680907066685419">Sign out of managed account</translation>
 <translation id="9204836675896933765">1 file left</translation>

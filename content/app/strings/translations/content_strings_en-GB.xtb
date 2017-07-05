@@ -10,7 +10,6 @@
 <translation id="1188858454923323853">complementary</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1206693055195146388">slider</translation>
-<translation id="1235745349614807883">Clear Recent Searches</translation>
 <translation id="1281252709823657822">dialogue</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">banner</translation>
@@ -39,7 +38,6 @@
 <translation id="248395913932153421">Day</translation>
 <translation id="2507943997699731163">Please fill in this field.</translation>
 <translation id="2508569020611168319">tab list</translation>
-<translation id="2548326553472216322">No recent searches</translation>
 <translation id="2561842179657104141">show more media controls</translation>
 <translation id="2572483411312390101">play</translation>
 <translation id="2613802280814924224">Please enter a valid value. The nearest valid value is <ph name="VALID_VALUE" />.</translation>
@@ -51,7 +49,6 @@
 <translation id="2759744352195237655">pop-up button</translation>
 <translation id="2761667185364618470">Please tick this box if you want to proceed.</translation>
 <translation id="2896972712917208084">radio group</translation>
-<translation id="2901282870647571346">current film status</translation>
 <translation id="2908441821576996758">Please enter a comma-separated list of email addresses.</translation>
 <translation id="2940813599313844715">object</translation>
 <translation id="2942448076852699108">highlighted content</translation>
@@ -95,7 +92,6 @@
 <translation id="4992066212339426712">Unmute</translation>
 <translation id="49969490063480558">Please enter a part following '<ph name="ATSIGN" />'. '<ph name="INVALIDADDRESS" />' is incomplete.</translation>
 <translation id="5034860022980953847">progress indicator</translation>
-<translation id="5048533449481078685">list marker</translation>
 <translation id="5117590920725113268">Show next month</translation>
 <translation id="512758898067543763">row header</translation>
 <translation id="5164977714490026579">Value must be greater than or equal to <ph name="MINIMUM" />.</translation>
@@ -113,7 +109,6 @@
 <translation id="5643186887447432888">button</translation>
 <translation id="5677946354068040947">more options</translation>
 <translation id="57838592816432529">Mute</translation>
-<translation id="5843503607508392247">Other...</translation>
 <translation id="5860033963881614850">Off</translation>
 <translation id="588258955323874662">Full screen</translation>
 <translation id="5939518447894949180">Reset</translation>
@@ -123,8 +118,6 @@
 <translation id="6023896073578205740">list box</translation>
 <translation id="6101327004457443354">un-mute audio track</translation>
 <translation id="6164829606128959761">meter</translation>
-<translation id="6270583010843788609">film timeline thumb</translation>
-<translation id="6359256949422175976">film time scrubber thumb</translation>
 <translation id="6398862346408813489">Show month selection panel</translation>
 <translation id="6404546809543547843">audio time scrubber</translation>
 <translation id="648732519525291180">time picker</translation>
@@ -132,7 +125,6 @@
 <translation id="663493177488814956">feed</translation>
 <translation id="6637586476836377253">log</translation>
 <translation id="6643016212128521049">Clear</translation>
-<translation id="6663448176199120256">Recent Searches</translation>
 <translation id="668171684555832681">Other...</translation>
 <translation id="6692633176391053278">stepper</translation>
 <translation id="6739588121953935928">ruler</translation>
@@ -145,7 +137,6 @@
 <translation id="6934078000481955284">blockquote</translation>
 <translation id="6941933287844615239">download media</translation>
 <translation id="6989848892321993519">Please lengthen this text to <ph name="MIN_CHARACTERS" /> characters or more (you are currently using 1 character).</translation>
-<translation id="7057186640035488495">film time</translation>
 <translation id="709897737746224366">Please match the format requested.</translation>
 <translation id="7223624360433298498">elapsed time</translation>
 <translation id="7263440858009898357">Please select an item in the list.</translation>
@@ -166,10 +157,8 @@
 <translation id="8053789581856978548">search text field</translation>
 <translation id="8115662671911883373">start displaying closed captions</translation>
 <translation id="8117451130807776954">This week</translation>
-<translation id="8141602879876242471">This is a searchable index. Enter search keywords:</translation>
 <translation id="819205353528511139">play film in full screen mode</translation>
 <translation id="8199524924445686405">yyyy</translation>
-<translation id="8244226242650769279">image map</translation>
 <translation id="8284326494547611709">Captions</translation>
 <translation id="835897206747267392">Invalid value.</translation>
 <translation id="8433900881053900389">toolbar</translation>

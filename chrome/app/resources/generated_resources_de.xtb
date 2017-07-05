@@ -496,7 +496,6 @@
 <translation id="1709106626015023981"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (nativ)</translation>
 <translation id="1711973684025117106">Fehler beim Zippen, unerwarteter Fehler: $1</translation>
 <translation id="1712349894969001173">Dieses Passwort auf dem iPhone abrufen</translation>
-<translation id="1719028357511747483"><ph name="DEVICE_TYPE" />, Apps, Web etc. durchsuchen</translation>
 <translation id="1719312230114180055">Hinweis: Ihr Fingerabdruck ist möglicherweise nicht so sicher wie ein starkes Passwort oder eine PIN.</translation>
 <translation id="1720318856472900922">TLS-WWW-Serverauthentifizierung</translation>
 <translation id="1720372306711178108">Erweiterter Desktop</translation>
@@ -2306,7 +2305,7 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="4452426408005428395">Abbrechen</translation>
 <translation id="4454939697743986778">Dieses Zertifikat wurde von Ihrem Systemadministrator installiert.</translation>
 <translation id="445891990714234385">ChromeVox-Einstellungen</translation>
-<translation id="445923051607553918">Mit WLAN-Netzwerk verbinden</translation>
+<translation id="445923051607553918">Mit WLAN verbinden</translation>
 <translation id="4462159676511157176">Benutzerdefinierte Nameserver</translation>
 <translation id="4467100756425880649">Chrome Web Store-Galerie</translation>
 <translation id="4474155171896946103">Alle Tabs als Lesezeichen speichern...</translation>
@@ -2351,7 +2350,7 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="4546308221697447294">Schnell surfen mit Google Chrome</translation>
 <translation id="4547659257713117923">Keine Tabs von anderen Geräten</translation>
 <translation id="4547992677060857254">Der ausgewählte Ordner enthält sensible Dateien. Möchten Sie "$1" wirklich dauerhaft Schreibzugriff auf diesen Ordner gewähren?</translation>
-<translation id="4552031286893852992">Chrome hat Werbung auf dieser Website blockiert, da sie für gewöhnlich aufdringliche Werbeanzeigen anzeigt.</translation>
+<translation id="4552031286893852992">Chrome hat Werbeanzeigen auf dieser Website blockiert, da die Anzeigen häufig besonders aufdringlich sind.</translation>
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4552495056028768700">Seitenzugriff</translation>
 <translation id="4552678318981539154">Mehr Speicherplatz erwerben</translation>
@@ -2584,7 +2583,7 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="4893336867552636863">Dadurch werden die Browserdaten dauerhaft von diesem Gerät gelöscht.</translation>
 <translation id="4898011734382862273">Das Zertifikat "<ph name="CERTIFICATE_NAME" />" repräsentiert eine Zertifizierungsstelle</translation>
 <translation id="4899376560703610051">Ihr <ph name="DEVICE_TYPE" /> wurde manuell gesperrt. Geben Sie zum Fortfahren Ihr Passwort ein.</translation>
-<translation id="489985760463306091">Starten Sie Ihren Computer neu, um die Entfernung schädlicher Software abzuschließen</translation>
+<translation id="489985760463306091">Starten Sie Ihren Computer neu, um das Entfernen schädlicher Software abzuschließen.</translation>
 <translation id="4900392736118574277">Ihre "Beim Start"-Seite wurde in <ph name="URL" /> geändert.</translation>
 <translation id="490074449735753175">Rechtschreibfehler mithilfe eines Webdienstes korrigieren</translation>
 <translation id="49027928311173603">Die vom Server heruntergeladene Richtlinie ist ungültig: <ph name="VALIDATION_ERROR" />.</translation>
@@ -3021,7 +3020,7 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="5553089923092577885">Zuordnungen von Zertifikatrichtlinien</translation>
 <translation id="5553784454066145694">Neue PIN auswählen</translation>
 <translation id="5554489410841842733">Dieses Symbol wird eingeblendet, wenn die Erweiterung auf die aktuelle Seite angewendet werden kann.</translation>
-<translation id="5554573843028719904">Anderes WLAN-Netzwerk...</translation>
+<translation id="5554573843028719904">Anderes WLAN...</translation>
 <translation id="5554720593229208774">E-Mail-Zertifizierungsstelle</translation>
 <translation id="5556206011531515970">Klicken Sie auf "Weiter", um Ihren Standardbrowser zu wählen.</translation>
 <translation id="5556459405103347317">Neu laden</translation>
@@ -3454,7 +3453,7 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="6251870443722440887">GDI-Handles</translation>
 <translation id="6251889282623539337">Nutzungsbedingungen für <ph name="DOMAIN" /></translation>
 <translation id="6254503684448816922">Kompromittierung des Schlüssels</translation>
-<translation id="6256079118265363670">Google Play Store auf Chromebook aktivieren</translation>
+<translation id="6256079118265363670">Google Play Store auf dem Chromebook aktivieren</translation>
 <translation id="6259104249628300056">Geräte in Ihrem lokalen Netzwerk finden</translation>
 <translation id="6263082573641595914">Microsoft - Version der Zertifizierungsstelle</translation>
 <translation id="6263284346895336537">Nicht kritisch</translation>
@@ -5399,7 +5398,7 @@ Nachfolgende Benachrichtigungen, Fenster und Dialogfenster werden unter Umständ
 <translation id="958515377357646513">Zum Weitergehen tippen.</translation>
 <translation id="960719561871045870">Betreibercode</translation>
 <translation id="960987915827980018">Noch etwa 1 Stunde</translation>
-<translation id="96421021576709873">WLAN-Netzwerk</translation>
+<translation id="96421021576709873">WLAN</translation>
 <translation id="968174221497644223">Cache</translation>
 <translation id="970047733946999531">{NUM_TABS,plural, =1{1 Tab}other{# Tabs}}</translation>
 <translation id="970794034573172516">Sprach- &amp; Audioaktivitäten aktivieren</translation>

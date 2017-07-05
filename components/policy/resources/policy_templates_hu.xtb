@@ -494,6 +494,7 @@
 
           Ha a házirend nincs beállítva, akkor a rendszer engedélyezi a beállítást.</translation>
 <translation id="2824715612115726353">Inkognitómód engedélyezése</translation>
+<translation id="2838830882081735096">Adatmigráció és ARC letiltása</translation>
 <translation id="2844404652289407061">Lehetővé teszi az Érintéssel keresés funkció használatát a <ph name="PRODUCT_NAME" /> tartalomnézetében.
 
       Ha aktiválja ezt a beállítást, akkor a felhasználó használhatja az Érintéssel keresés funkciót, és saját maga döntheti el, hogy be- vagy kikapcsolja-e azt.
@@ -664,13 +665,6 @@
           A házirend csak akkor érvényesül, ha a „DefaultSearchProviderEnabled” házirend engedélyezve van.</translation>
 <translation id="350797926066071931">Fordítás engedélyezése</translation>
 <translation id="3528000905991875314">Alternatív hibaoldalak engedélyezése</translation>
-<translation id="3538538104630456270">A kapcsolódó beállítás még azelőtt volt használatban, hogy a jelszavak megtekintésénél való újrahitelesítést bevezettük. A módosítás óta a beállítás nem volt hatással a Chrome viselkedésére (ennek következtében a házirend sem). A Chrome jelenlegi viselkedése ugyanaz, mintha a házirendnél az lenne beállítva, hogy nem jelenhetnek meg a jelszavak látható szövegként a jelszókezelő beállításainak oldalán. Ez azt jelenti, hogy a beállítások oldala csak egy helyőrzőt tartalmaz, és a Chrome csak akkor jeleníti meg a jelszót, ha a felhasználó rákattint a „Megjelenítés” lehetőségre (és szükség esetén újrahitelesít). A házirend eredeti leírása alább látható.
-
-          Azt szabályozza, hogy a felhasználók megjeleníthetik-e jelszavaikat egyszerű szövegként a jelszókezelőben.
-
-          Ha kikapcsolja ezt a beállítást, a jelszókezelő nem engedi a tárolt jelszavak egyszerű szövegként való megjelenítését a jelszókezelő ablakában..
-
-          Ha bekapcsolja, vagy nem állítja be ezt a beállítást, a felhasználók megtekinthetik egyszerű szövegként a tárolt jelszavakat a jelszókezelőben.</translation>
 <translation id="3547954654003013442">Proxybeállítások</translation>
 <translation id="3591584750136265240">Bejelentkezési hitelesítési viselkedés konfigurálása</translation>
 <translation id="3627678165642179114">Engedélyezi vagy letiltja az internetes helyesírás-ellenőrző szolgáltatást</translation>
@@ -857,23 +851,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="4239720644496144453">Az Android-alkalmazások nem használják a gyorsítótárat. Ha több felhasználó telepíti ugyanazt az Android-alkalmazást, akkor az mindegyik felhasználó számára újonnan töltődik le.</translation>
 <translation id="4250680216510889253">Nem</translation>
 <translation id="4261820385751181068">Az eszköz bejelentkezési képernyőjének nyelv- és országkódja</translation>
-<translation id="4275782538576261754">Konfigurálja azokat a letöltéseket, amelyeket a(z) <ph name="PRODUCT_NAME" /> teljeskörűen letilt; anélkül, hogy megadná a felhasználóknak a biztonsági döntés felülbírálásának lehetőségét.
-
-      A házirend beállítása esetén a(z) <ph name="PRODUCT_NAME" /> megakadályoz bizonyos típusú letöltéseket, és nem hagyja, hogy a felhasználók elvessék a biztonsági figyelmeztetéseket.
-
-      A „Veszélyes letöltések letiltása” beállítás kiválasztása esetén minden letöltés engedélyezett azokon kívül, amelyek a Biztonságos Böngészés figyelmeztetéseit jelenítik meg.
-
-      A „Potenciálisan veszélyes letöltések letiltása” beállítás kiválasztása esetén minden letöltés engedélyezett, kivéve azokat, amelyek a Biztonságos Böngészés potenciálisan veszélyes letöltésekre vonatkozó figyelmeztetéseit jelenítik meg.
-
-      „Az összes letöltés letiltása” lehetőség kiválasztása esetén az összes letöltést letiltja a rendszer.
-
-      Ha ez a házirend nincs beállítva (vagy a „Speciális korlátozás nélkül” beállítás van kiválasztva), akkor a letöltésekre a szokásos biztonsági korlátozások érvényesek a Biztonságos Böngészés elemzésének eredményei alapján.
-
-      Kérjük, vegye figyelembe, hogy ezek a korlátozások érvényesek a weboldaltartalmak által indított letöltésekre, valamint a „link letöltése…” helyi menüpont letöltéseire is.
-
-      Ezek a korlátozások nem érvényesek az aktuálisan megjelenített oldal mentésére és letöltésére, illetve a PDF-ként való mentésre a nyomtatási beállítások között.
-
-      Ha további információt szeretne kapni a Biztonságos Böngészésről, látogasson el a https://developers.google.com/safe-browsing oldalra.</translation>
 <translation id="427632463972968153">Megadja a POST segítségével történő képkeresésekor használt paramétereket. Vesszővel elválasztott név–érték párokat tartalmaz. Ha az egyik érték egy sablonparaméter, ami a fenti példában az {imageThumbnail}, valódi indexképadatok kerülnek a helyére.
 
           Ez egy opcionális házirend. Ha nincs beállítva, a képkeresési kérelmet a rendszer a GET metódus segítségével továbbítja.
@@ -899,6 +876,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="436581050240847513">Hálózati eszközinterfészek bejelentése</translation>
 <translation id="4372704773119750918">A vállalati felhasználó ne használhassa a többprofilos módot (elsődleges vagy másodlagos)</translation>
 <translation id="4377599627073874279">Az összes kép megjelenítésének engedélyezése valamennyi webhely számára</translation>
+<translation id="437791893267799639">Házirend nincs beállítva, adatmigráció és ARC letiltása</translation>
 <translation id="4389091865841123886">TPM mechanizmussal történő távoli tanúsítás konfigurálása.</translation>
 <translation id="4418726081189202489">Ha a házirend értéke hamis, akkor a(z) <ph name="PRODUCT_NAME" /> nem küldhet véletlenszerűen lekérdezéseket Google-szervereknek pontos időbélyeg kéréséhez. A lekérdezések akkor engedélyezettek, ha a házirend értéke igaz, vagy ha nincs beállítva.</translation>
 <translation id="4423597592074154136">Proxybeállítások manuális megadása</translation>
@@ -1182,6 +1160,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="5586942249556966598">Ne tegyen semmit</translation>
 <translation id="5630352020869108293">Utolsó munkamenet visszaállítása</translation>
 <translation id="5645779841392247734">Cookie-k engedélyezése ezeken a webhelyeken</translation>
+<translation id="5693469654327063861">Adatmigráció engedélyezése</translation>
 <translation id="5694594914843889579">Ha a házirend értéke Igaz, a külső tárhely nem lesz hozzáférhető a fájlböngészőben.
 
       A házirend minden adathordozóra vonatkozik, például USB-tárra, külső merevlemezre, SD- és egyéb memóriakártyákra, optikai tárhelyre stb. A belső tárhelyre nincs hatással, így a Letöltések mappában mentett fájlok továbbra is elérhetők lesznek. A Google Drive-ra szintén nem érvényes ez a házirend.
@@ -1407,6 +1386,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
           A házirend értékét ezredmásodpercben kell megadni. Az értéknek kevesebbnek kell lennie a tétlenségi késleltetésnél.</translation>
 <translation id="6536600139108165863">Automatikus újraindítás az eszköz leállításakor</translation>
 <translation id="6539246272469751178">Ez a házirend nem vonatkozik az Android-alkalmazásokra. Az Android-alkalmazások mindig az alapértelmezés szerinti letöltési könyvtárat használják, és nem férhetnek hozzá a(z) <ph name="PRODUCT_OS_NAME" /> által a nem alapértelmezés szerinti letöltési könyvtárba letöltött fájlokhoz.</translation>
+<translation id="654303922206238013">Migrációs stratégia a következőhöz: ecryptfs</translation>
 <translation id="6544897973797372144">Ha a házirend értéke Igaz, és a ChromeOsReleaseChannel házirend nincs megadva, akkor a részt vevő domain felhasználói megváltoztathatják az eszköz kiadási csatornáját. Ha a házirend értéke Hamis, akkor az eszköz csak az utoljára beállított csatornát használhatja.
 
       A felhasználó által kiválasztott csatornát felülírja a ChromeOsReleaseChannel házirend, de ha a házirend csatornája stabilabb, mint az eszközön telepített csatorna, akkor a csatornaváltás csak azt követően történik meg, hogy a stabilabb csatorna verziója magasabb számot ért el, mint a korábban az eszközre telepített csatorna verziószáma.</translation>
@@ -1581,6 +1561,13 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
           Az alkalmazás csak akkor veszi figyelembe ezt a házirendet, ha a „DefaultSearchProviderEnabled” házirend is engedélyezve van.</translation>
 <translation id="7302043767260300182">Képernyőzár késleltetése hálózati áramról való működés során</translation>
+<translation id="7309839952828354215">Meghatározza, hogy hogyan viselkedjenek az olyan eszközök, amelyek ecryptfs titkosítással rendelkeznek, és amelyeket át kell ültetni ext4 titkosításra.
+
+      Ha a házirend beállítása „DisallowArc”, akkor az Android-alkalmazások az eszköz összes felhasználója számára le lesznek tiltva (beleértve azokat is, akik már rendelkeznek ext4 titkosítással), és a rendszer nem ajánlja fel a felhasználóknak az ecryptfs titkosításról az ext4 titkosításra történő migrációt.
+
+      Ha a házirend beállítása „AllowMigration”, a rendszer felajánlja az ecryptfs kezdőkönyvtárakkal rendelkező felhasználóknak, hogy ezeket szükség esetén ext4 titkosításra migrálja (jelenleg akkor, amikor az Android N hozzáférhetővé válik az eszközön.
+
+      Ha nincs beállítva a házirend, az eszköz úgy viselkedik, mintha a „DisallowArc” lenne kiválasztva.</translation>
 <translation id="7311458740754205918">Ha igazra van állítva, vagy ha nincs beállítva, az Új lap oldalon megjelenhetnek javaslatok a felhasználó böngészési előzményei, érdeklődési körei vagy tartózkodási helye alapján.
 
       Ha a beállítás hamis, akkor nem jelennek meg automatikusan generált tartalomjavaslatok az Új lap oldalon.</translation>
@@ -1945,8 +1932,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
       Ha a beállítás le van tiltva, a böngészési és letöltési előzmények nem törölhetők.</translation>
 <translation id="8764119899999036911">Meghatározza, hogy a generált Kerberos SPN a kanonikus DNS-néven vagy az eredetileg beírt néven alapul-e. Ha engedélyezi ezt a beállítást, a CNAME keresés kimarad, és a rendszer a szerver beírt nevét fogja használni. Ha letiltja vagy konfigurálatlanul hagyja ezt a beállítást, a rendszer a szerver kanonikus nevét CNAME kereséssel fogja meghatározni.</translation>
-<translation id="8774131509736383471">Ha ez a házirend igaz értékre van állítva, akkor a <ph name="PRODUCT_NAME" /> feltétel nélkül nagy méretűre állítja az első indításkor megjelenő első ablakot.
-      Ha a házirend hamis értékre van állítva, illetve nincs beállítva, akkor a képernyő mérete alapján a böngésző dönti el, hogy az első megjelenő ablakot nagy méretűre állítsa-e.</translation>
 <translation id="87812015706645271">Megköveteli, hogy a helyi felhasználónak és a távoli hozzáférésű gazdagép tulajdonosának a neve egyezzen</translation>
 <translation id="8782750230688364867">Megadja azt a százalékot, amelynek alapján a képernyő-elsötétítési késleltetés skálázódik, amikor az eszköz prezentációs módban van.
 

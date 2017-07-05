@@ -517,6 +517,7 @@
 
           Kung iniwang hindi nakatakda ang patakarang ito, i-e-enable ang setting.</translation>
 <translation id="2824715612115726353">Paganahin ang Incognito mode</translation>
+<translation id="2838830882081735096">Huwag payagan ang paglipat ng data at ARC</translation>
 <translation id="2844404652289407061">Ine-enable ang availability ng Pindutin upang Hanapin sa view ng content ng <ph name="PRODUCT_NAME" />.
 
       Kung ie-enable mo ang setting na ito, magagamit ng user ang Pindutin upang Hanapin at magagawa niyang i-on o i-off ang feature.
@@ -698,13 +699,6 @@
           Iginagalang lang ang patakarang ito kung naka-enable ang patakarang 'DefaultSearchProviderEnabled.'</translation>
 <translation id="350797926066071931">Paganahin ang I-translate</translation>
 <translation id="3528000905991875314">Paganahin ang mga kahaliling pahina ng error</translation>
-<translation id="3538538104630456270">Ang nauugnay na setting ay ginamit bago ipinatupad ang muling pagpapatotoo sa pagtingin ng mga password. Mula noon, walang naging epekto ang setting at ang patakaran na ito sa gawi ng Chrome. Sa ngayon, ang kasalukuyang gawi ng Chrome ay parang itinakda ang patakaran na i-disable ang pagpapakita ng mga password sa malinaw na text sa page ng mga setting ng password manager. Ibig sabihin, ang mga page ng setting ay naglalaman lang ng placeholder at ipapakita lang ng Chrome ang password kapag na-click ng user ang "Ipakita" (at muling nagpatotoo, kung naaangkop). Nasa ibaba ang orihinal na paglalarawan ng patakaran.
-
-          Nakokontrol kung maaaring ipakita ng user ang mga password sa malinaw na text sa password manager.
-
-          Kung idi-disable mo ang setting na ito, hindi pinapayagan ng password manager na ipakita ang mga nakaimbak na password sa malinaw na text sa window ng password manager.
-
-          Kung ie-enable mo o hindi mo itatakda ang patakarang ito, makikita ng mga user ang kanilang mga password sa malinaw na text sa password manager.</translation>
 <translation id="3547954654003013442">Mga setting ng proxy</translation>
 <translation id="3591584750136265240">I-configure ang gawi sa pagpapatotoo sa pag-log in</translation>
 <translation id="3627678165642179114">Paganahin o huwag paganahin ang spell checking na serbisyo sa web</translation>
@@ -898,23 +892,6 @@
 <translation id="4239720644496144453">Hindi ginagamit ang cache para sa mga Android app. Kung ii-install ng maraming user ang parehong Android app, ida-download itong muli para sa bawat user.</translation>
 <translation id="4250680216510889253">Hindi</translation>
 <translation id="4261820385751181068">Lokal ng screen sa pag-sign in ng device</translation>
-<translation id="4275782538576261754">Kino-configure ang uri ng mga pag-download na ganap na iba-block ng <ph name="PRODUCT_NAME" />, nang hindi hinahayaan ang mga user na i-override ang pasya sa seguridad.
-
-      Kung itatakda mo ang patakarang ito, pipigilan ng <ph name="PRODUCT_NAME" /> ang ilang partikular na uri ng pag-download, at hindi hahayaan ang user na i-bypass ang mga babala sa seguridad.
-
-      Kapag pinili ang opsyong 'I-block ang mga mapanganib na pag-download,' papayagan ang lahat ng pag-download, maliban sa mga pag-download na may mga babala ng Ligtas na Pag-browse.
-
-      Kapag pinili ang opsyong 'I-block ang mga potensyal na mapanganib na pag-download,' papayagan ang lahat ng pag-download, maliban sa mga pag-download na may mga babala ng Ligtas na Pag-browse para sa mga potensyal na mapanganib na pag-download.
-
-      Kapag pinili ang opsyong 'I-block ang lahat ng pag-download,' iba-block ang lahat ng pag-download.
-
-      Kapag hindi nakatakda ang patakarang ito, (o pinili ang opsyong 'Walang espesyal na paghihigpit'), sasailalim ang mga pag-download sa mga karaniwang paghihigpit sa seguridad batay sa mga resulta ng pagsusuri ng Ligtas na Pag-browse.
-
-      Tandaan na nalalapat ang mga paghihigpit na ito sa mga pag-download na na-trigger sa content ng web page, gayundin sa opsyon sa menu ng konteksto na 'i-download ang link...'
-
-      Hindi nalalapat ang mga paghihigpit na ito sa pag-save / pag-download ng kasalukuyang ipinapakitang page, at hindi rin ito nalalapat sa pag-save bilang PDF sa mga opsyon sa pag-print.
-
-      Tingnan ang https://developers.google.com/safe-browsing para sa higit pang impormasyon tungkol sa Ligtas na Pag-browse.</translation>
 <translation id="427632463972968153">Tinutukoy ang mga parameter na ginamit kapag nagsasagawa ng paghahanap ng larawan gamit ang POST. Binubuo ito ng mga pares ng pangalan/value na pinaghihiwalay ng kuwit. Kung isang parameter ng template ang isang value, tulad ng {imageThumbnail} sa halimbawa sa itaas, papalitan ito ng data ng tunay na thumbnail ng larawan.
 
           Opsyonal ang patakarang ito. Kung hindi nakatakda, ipapadala ang kahilingan sa paghahanap ng larawan gamit ang GET na paraan.
@@ -940,6 +917,7 @@
 <translation id="436581050240847513">I-ulat ang mga interface ng network ng device</translation>
 <translation id="4372704773119750918">Hindi pinapayagan ang enterprise user na maging bahagi ng multiprofile (pangunahin o pangalawa)</translation>
 <translation id="4377599627073874279">Payagan ang lahat ng mga site na ipakita ang lahat ng mga larawan</translation>
+<translation id="437791893267799639">Hindi nakatakda ang patakaran, huwag payagan ang paglipat ng data at ARC</translation>
 <translation id="4389091865841123886">I-configure ang malayuang pagpapatunay gamit ang mekanismo ng TPM.</translation>
 <translation id="4418726081189202489">Kapag itinakda ang patakarang ito sa false, pipigilan ang <ph name="PRODUCT_NAME" /> na paminsan-minsang magpadala ng mga query sa isang server ng Google upang kumuha ng tumpak na timestamp. Ie-enable ang mga query na ito kung nakatakda sa True ang patakarang ito o kung hindi ito nakatakda.</translation>
 <translation id="4423597592074154136">Manu-manong tukuyin ang mga setting ng proxy</translation>
@@ -1256,6 +1234,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="5586942249556966598">Walang gawin</translation>
 <translation id="5630352020869108293">Ipanumbalik ang huling session</translation>
 <translation id="5645779841392247734">Payagan ang cookies sa mga site na ito</translation>
+<translation id="5693469654327063861">Payagan ang paglipat ng data</translation>
 <translation id="5694594914843889579">Kapag nakatakda sa true ang patakarang ito, hindi magiging available ang external storage sa browser ng file.
 
       Naaapektuhan ng patakarang ito ang lahat ng uri ng storage media. Halimbawa: Mga USB flash drive, external hard drive, SD at iba pang mga memory card, optical storage atbp. Hindi naaapektuhan ang internal storage, samakatuwid, maa-access pa rin ang mga file na naka-save sa folder na Download. Hindi rin naaapektuhan ng patakarang ito ang Google Drive.
@@ -1499,6 +1478,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Dapat tukuyin ang halaga ng patakaran ayon sa millisecond. Kinakailangang mas mababa kaysa sa idle delay ang mga halaga.</translation>
 <translation id="6536600139108165863">Awtomatikong pag-reboot sa pag-shutdown ng device</translation>
 <translation id="6539246272469751178">Walang epekto ang patakarang ito sa mga Android app. Palaging ginagamit ng mga Android app ang default na directory ng mga download at hindi maaaring i-access ang anumang file na na-download ng <ph name="PRODUCT_OS_NAME" /> patungo sa isang hindi default na directory ng mga download.</translation>
+<translation id="654303922206238013">Diskarte sa paglipat para sa ecryptfs</translation>
 <translation id="6544897973797372144">Kung nakatakda sa True ang patakaran at hindi tinukoy ang patakaran sa ChromeOsReleaseChannel, papayagan ang mga user ng nagpapatalang domain na baguhin ang release channel ng device. Kung nakatakda sa false ang patakarang ito, ila-lock ang device sa channel kung saan ito huling itinakda.
 
       Papalitan ng patakarang ChromeOsReleaseChannel ang channel na pinili ng user, ngunit kung mas matatag ang channel ng patakaran sa channel na na-install sa device, lilipat lang ang channel kapag naabot na ng mas matatag na channel ang numero ng bersyon na mahigit sa numerong naka-install sa device.</translation>
@@ -1689,6 +1669,13 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
           Sinusunod lang ang patakarang ito kung pinagana ang patakarang 'DefaultSearchProviderEnabled'.</translation>
 <translation id="7302043767260300182">Delay ng screen lock kapag tumatakbo habang nakasaksak sa kuryente</translation>
+<translation id="7309839952828354215">Tinutukoy kung paano dapat kumilos ang device na naipadala nang may ecryptfs at kinakailangang lumipat sa ext4 na pag-encrpyt.
+
+      Kung itatakda mo ang patakarang ito sa 'DisallowArc', idi-disable ang mga Android app para sa lahat ng user sa device (kasama iyong mga mayroon nang ext4 na pag-encrypt) at walang iaalok na paglilipat mula sa ecryptfs papuntang ext4 na pag-encrypt sa sinumang user.
+
+      Kung itatakda mo ang patakarang ito sa 'AllowMigration', aalukin ang mga user na may mga ecryptfs na directory sa tahanan na ilipat ang mga ito sa ext4 na pag-encrypt kung kinakailangan (sa kasalukuyan, kapag naging available ang Android N sa device).
+
+      Kung iniwang hindi nakatakda ang patakarang ito, kikilos ang device na parang 'DisallowArc' ang napili.</translation>
 <translation id="7311458740754205918">Kung itinakda ito sa true o hindi ito itinakda, ang page ng Bagong Tab ay maaaring magpakita ng mga suhestyon sa content batay sa history ng pagba-browse, mga interes o lokasyon ng user.
 
       Kung itinakda ito sa false, hindi makikita ang awtomatikong ginawang suhestyon sa content sa page ng Bagong Tab.</translation>
@@ -2085,8 +2072,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Kung pinagana mo ang setting na ito, lalaktawan ang paghahanap ng CNAME at gagamitin ang pangalan ng server tulad ng inilagay.
 
           Kung hindi mo pinagana ang setting na ito o hinayaan itong hindi nakatakda, tutukuyin sa pamamagitan ng paghahanap ng CNAME ang canonical na pangalan ng server.</translation>
-<translation id="8774131509736383471">Kung itatakda sa true ang patakarang ito, ima-maximize ng <ph name="PRODUCT_NAME" /> ang unang lalabas na window sa unang pagpapatakbo nang walang limitasyon.
-      Kung itatakda sa false o kung hindi iko-configure ang patakarang ito, ibabatay sa laki ng screen ang pasya tungkol sa pagma-maximize sa unang lalabas na window.</translation>
 <translation id="87812015706645271">Kinakailangan nito na nagtutugma ang pangalan ng lokal na user at ang may-ari ng host ng malayuang pag-access</translation>
 <translation id="8782750230688364867">Tinutukoy ang porsyento ng pag-scale ng pag-antala bago magdilim ang screen kapag nasa presentation mode ang device.
 

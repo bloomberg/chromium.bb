@@ -10,7 +10,6 @@
 <translation id="1188858454923323853">комплементарно</translation>
 <translation id="1206619573307042055">покретни текст</translation>
 <translation id="1206693055195146388">клизач</translation>
-<translation id="1235745349614807883">Обриши недавне претраге</translation>
 <translation id="1281252709823657822">дијалог</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">банер</translation>
@@ -39,7 +38,6 @@
 <translation id="248395913932153421">Дан</translation>
 <translation id="2507943997699731163">Попуните ово поље.</translation>
 <translation id="2508569020611168319">листа картица</translation>
-<translation id="2548326553472216322">Нема недавних претрага</translation>
 <translation id="2561842179657104141">прикажи више контрола за медије</translation>
 <translation id="2572483411312390101">пустите</translation>
 <translation id="2613802280814924224">Унесите важећу вредност. Најближа важећа вредност је <ph name="VALID_VALUE" />.</translation>
@@ -51,7 +49,6 @@
 <translation id="2759744352195237655">искачуће дугме</translation>
 <translation id="2761667185364618470">Потврдите избор у овом пољу за потврду уколико желите да наставите.</translation>
 <translation id="2896972712917208084">група дугмади за избор</translation>
-<translation id="2901282870647571346">актуелни статус филма</translation>
 <translation id="2908441821576996758">Унесите листу имејл адреса раздвојених зарезима.</translation>
 <translation id="2940813599313844715">објекат</translation>
 <translation id="2942448076852699108">истакнути садржај</translation>
@@ -95,7 +92,6 @@
 <translation id="4992066212339426712">Укључи звук</translation>
 <translation id="49969490063480558">Унесите неки део после „<ph name="ATSIGN" />“. Адреса „<ph name="INVALIDADDRESS" />“ је непотпуна.</translation>
 <translation id="5034860022980953847">индикатор напретка</translation>
-<translation id="5048533449481078685">означивач листе</translation>
 <translation id="5117590920725113268">Прикажи следећи месец</translation>
 <translation id="512758898067543763">заглавље реда</translation>
 <translation id="5164977714490026579">Вредност сме да буде најмање <ph name="MINIMUM" />.</translation>
@@ -113,7 +109,6 @@
 <translation id="5643186887447432888">дугме</translation>
 <translation id="5677946354068040947">још опција</translation>
 <translation id="57838592816432529">Искључи звук</translation>
-<translation id="5843503607508392247">Друго...</translation>
 <translation id="5860033963881614850">Искључено</translation>
 <translation id="588258955323874662">Цеo екран</translation>
 <translation id="5939518447894949180">Ресетуј</translation>
@@ -123,8 +118,6 @@
 <translation id="6023896073578205740">оквир са листом</translation>
 <translation id="6101327004457443354">укључите звук аудио снимка</translation>
 <translation id="6164829606128959761">мерач</translation>
-<translation id="6270583010843788609">клизач на временској траци филма</translation>
-<translation id="6359256949422175976">клизач за трајање филма</translation>
 <translation id="6398862346408813489">Прикажи таблу за избор месеца</translation>
 <translation id="6404546809543547843">клизач за трајање аудио-садржаја</translation>
 <translation id="648732519525291180">бирач времена</translation>
@@ -132,7 +125,6 @@
 <translation id="663493177488814956">фид</translation>
 <translation id="6637586476836377253">log</translation>
 <translation id="6643016212128521049">Обриши</translation>
-<translation id="6663448176199120256">Недавне претраге</translation>
 <translation id="668171684555832681">Друго...</translation>
 <translation id="6692633176391053278">контрола за промене у корацима</translation>
 <translation id="6739588121953935928">лењир</translation>
@@ -145,7 +137,6 @@
 <translation id="6934078000481955284">издвојени цитат</translation>
 <translation id="6941933287844615239">преузми медије</translation>
 <translation id="6989848892321993519">Продужите овај текст на бар <ph name="MIN_CHARACTERS" /> знак(ов)а (тренутно користите 1 знак).</translation>
-<translation id="7057186640035488495">трајање филма</translation>
 <translation id="709897737746224366">Изаберите захтевани формат.</translation>
 <translation id="7223624360433298498">протекло време</translation>
 <translation id="7263440858009898357">Изаберите ставку са листе.</translation>
@@ -166,10 +157,8 @@
 <translation id="8053789581856978548">поље за текст претраге</translation>
 <translation id="8115662671911883373">започните приказивање опционалног титла</translation>
 <translation id="8117451130807776954">Ова недеља</translation>
-<translation id="8141602879876242471">Ово је индекс који може да се претражује. Унесите кључне речи за претрагу:</translation>
 <translation id="819205353528511139">пустите филм у режиму целог екрана</translation>
 <translation id="8199524924445686405">гггг</translation>
-<translation id="8244226242650769279">мапа слике</translation>
 <translation id="8284326494547611709">Титл</translation>
 <translation id="835897206747267392">Неважећа вредност.</translation>
 <translation id="8433900881053900389">трака с алаткама</translation>

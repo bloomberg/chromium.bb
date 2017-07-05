@@ -495,7 +495,6 @@
 <translation id="1709106626015023981">‏<ph name="WIDTH" />‏ x ‏<ph name="HEIGHT" />‏ (מקורי)</translation>
 <translation id="1711973684025117106">הכיווץ נכשל, שגיאה לא צפויה: $1</translation>
 <translation id="1712349894969001173">‏שליחת הסיסמה למכשיר ה-iPhone</translation>
-<translation id="1719028357511747483">חפש ב-<ph name="DEVICE_TYPE" /> שלך, באפליקציות, באתרים...</translation>
 <translation id="1719312230114180055">‏הערה: ייתכן ששימוש בטביעת אצבע יעניק פחות אבטחה מסיסמה או PIN חזקים.</translation>
 <translation id="1720318856472900922">‏אימות שרת TLS WWW</translation>
 <translation id="1720372306711178108">שולחן עבודה מורחב</translation>
@@ -1332,7 +1331,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="2946119680249604491">הוסף חיבור</translation>
 <translation id="2946640296642327832">‏הפעל Bluetooth</translation>
 <translation id="2948300991547862301">עבור אל <ph name="PAGE_TITLE" /></translation>
-<translation id="2948320633360386059">חסומות באתרים שנוטים להציג מודעות מפריעות</translation>
+<translation id="2948320633360386059">חסומות באתרים שנוטים להציג מודעות שמפריעות</translation>
 <translation id="29488703364906173">דפדפן אינטרנט מהיר, פשוט ובטוח, המותאם לאינטרנט המודרני.</translation>
 <translation id="2949037475046662832">‏הפעולה הזו תגרום לניקוי קובצי ה-cookie ונתוני האתרים של כל האתרים, כולל</translation>
 <translation id="2951247061394563839">מרכז את החלון</translation>
@@ -2350,7 +2349,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4546308221697447294">‏גלישה מהירה עם Google Chrome</translation>
 <translation id="4547659257713117923">אין כרטיסיות ממכשירים אחרים</translation>
 <translation id="4547992677060857254">התיקיה שבחרת מכילה קבצים רגישים. האם אתה בטוח שברצונך להעניק ל-"$1" גישה קבועה לכתיבה בתיקיה זו?</translation>
-<translation id="4552031286893852992">‏Chrome חסם מודעות באתר הזה כי הוא נוטה להציג מודעות מפריעות.</translation>
+<translation id="4552031286893852992">‏Chrome חסם מודעות באתר הזה כי הוא נוטה להציג מודעות שמפריעות.</translation>
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4552495056028768700">גישה לדף</translation>
 <translation id="4552678318981539154">קנה עוד שטח אחסון</translation>
@@ -2586,7 +2585,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4893336867552636863">הפעולה הזו תמחק לצמיתות את נתוני הגלישה שלך במכשיר הזה.</translation>
 <translation id="4898011734382862273">האישור <ph name="CERTIFICATE_NAME" /> מייצג רשות אישורים</translation>
 <translation id="4899376560703610051">מכשיר <ph name="DEVICE_TYPE" /> שלך ננעל באופן ידני. עליך להזין את הסיסמה כדי להיכנס.</translation>
-<translation id="489985760463306091">אתחל את המחשב כדי לסיים את ההסרה של תוכנות מזיקות</translation>
+<translation id="489985760463306091">הפעל מחדש את המחשב כדי לסיים את ההסרה של תוכנות מזיקות</translation>
 <translation id="4900392736118574277">דף הפתיחה השתנה ל-<ph name="URL" />.</translation>
 <translation id="490074449735753175">השתמש בשירות אינטרנט כדי לסייע בפתרון שגיאות איות</translation>
 <translation id="49027928311173603">המדיניות שהורדה מהשרת אינה חוקית: <ph name="VALIDATION_ERROR" />.</translation>

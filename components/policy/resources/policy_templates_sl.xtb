@@ -521,6 +521,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 
           Če ta pravilnik ni nastavljen, bo nastavitev omogočena.</translation>
 <translation id="2824715612115726353">Omogoči način brez beleženja zgodovine</translation>
+<translation id="2838830882081735096">Prepoved selitve podatkov in ARC-ja</translation>
 <translation id="2844404652289407061">Omogoči razpoložljivost funkcije »Dotaknite se za iskanje« v pogledu vsebine brskalnika <ph name="PRODUCT_NAME" />.
 
       Če omogočite to nastavitev, je funkcija »Dotaknite se za iskanje« na voljo uporabniku, ki lahko to funkcijo vkopi ali izklopi.
@@ -703,13 +704,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
           Ta pravilnik se upošteva samo, če je omogočen pravilnik »DefaultSearchProviderEnabled«.</translation>
 <translation id="350797926066071931">Omogoči Google Prevajalnik</translation>
 <translation id="3528000905991875314">Omogoči nadomestne strani za napake</translation>
-<translation id="3538538104630456270">Povezana nastavitev je bila uporabljena pred uvedbo vnovičnega preverjanja pristnosti ob ogledu gesel. Od takrat nastavitev in posledično ta pravilnik nimata nobenega vpliva na način delovanja Chroma. Trenuten način delovanja Chroma je zdaj enak, kot da bi bil pravilnik nastavljen tako, da onemogoča prikaz nešifriranih gesel na strani z nastavitvami upravitelja gesel. To pomeni, da je na strani z nastavitvami samo nadomestni znak in Chrome geslo prikaže šele, ko uporabnik klikne »Pokaži« (in po vnovičnem preverjanju pristnosti, če je potrebno). Izvirni opis pravilnika je spodaj.
-
-          Določa, ali lahko uporabnik v upravitelju gesel pokaže nešifrirana gesla.
-
-          Če to nastavitev onemogočite, upravitelj gesel ne dovoli prikaza shranjenih gesel v nešifrirani obliki v oknu upravitelja gesel.
-
-          Če ta pravilnik omogočite ali ga ne nastavite, si lahko uporabniki v upravitelju gesel svoja gesla ogledajo v nešifrirani obliki.</translation>
 <translation id="3547954654003013442">Nastavitve proxyja</translation>
 <translation id="3591584750136265240">Konfiguriranje preverjanja pristnosti pri prijavi</translation>
 <translation id="3627678165642179114">Omogoči ali onemogoči spletno storitev preverjanja črkovanja</translation>
@@ -909,23 +903,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="4239720644496144453">Predpomnilnik se ne uporablja za aplikacije za Android. Če več uporabnikov namesti enako aplikacijo za Android, bo za vsakega uporabnika znova prenesena.</translation>
 <translation id="4250680216510889253">Ne</translation>
 <translation id="4261820385751181068">Jezik na zaslonu za prijavo v napravi</translation>
-<translation id="4275782538576261754">Konfigurira vrste prenosov, ki jih <ph name="PRODUCT_NAME" /> v celoti blokira, ne da bi uporabnikom omogočil preglasitev varnostne nastavitve.
-
-      Če nastavite ta pravilnik, <ph name="PRODUCT_NAME" /> prepreči nekatere vrste prenosov in ne dovoli uporabnikom zaobidenja varnostnih opozoril.
-
-      Če je izbrana možnost »Blokiraj nevarne prenose«, so dovoljeni vsi prenosi razen tistih, ki imajo opozorila Varnega brskanja.
-
-      Če je izbrana možnost »Blokiraj morebitne škodljive prenose«, so dovoljeni vsi prenosi razen tistih, ki imajo opozorila Varnega brskanja morebitnih nevarnih prenosov.
-
-      Če je izbrana možnost »Blokiraj vse prenose«, so vsi prenosi blokirani.
-
-      Če ta pravilnik ni nastavljen ali je izbrana možnost »Brez posebnih omejitev«, za prenose veljajo običajne varnostne omejitve glede na rezultate analize Varnega brskanja.
-
-      Te omejitve se uporabljajo za prenose, ki jih sproži vsebina na spletni strani, ter za možnost kontekstnega menija »povezava za prenos ...«.
-
-      Te omejitve se ne uporabljajo za shranjevanje/prenos trenutno prikazane strani ter za shranjevanje kot PDF v možnostih tiskanja.
-
-      Več informacij o Varnem brskanju je na voljo na https://developers.google.com/safe-browsing.</translation>
 <translation id="427632463972968153">Določa parametre, uporabljene pri slikovnem iskanju z metodo POST. Sestavljena je iz parov ime/vrednost, ločenih z vejico. Če je vrednost parameter predloge, kot je v zgornjih primerih {imageThumbnail}, bo zamenjana s pravimi podatki sličice slike.
 
           Ta pravilnik je izbiren. Če ni nastavljen, bo zahteva za slikovno iskanje poslana z metodo GET.
@@ -951,6 +928,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="436581050240847513">Poročanje o omrežnih vmesnikih naprave</translation>
 <translation id="4372704773119750918">Ne dovoli uporabnikom v podjetjih, da so del večkratnega profila (primarnega ali sekundarnega)</translation>
 <translation id="4377599627073874279">Dovoli vsem mestom, da pokažejo vse slike</translation>
+<translation id="437791893267799639">Preklic nastavitev pravilnika, prepoved selitve podatkov in ARC-ja</translation>
 <translation id="4389091865841123886">Konfiguriranje potrditve na daljavo z mehanizmom TPM.</translation>
 <translation id="4418726081189202489">Če onemogočite ta pravilnik, izdelku <ph name="PRODUCT_NAME" /> preprečite občasno pošiljanje poizvedb v Googlove storitve zaradi prejemanja točnega časovnega žiga. Te poizvedbe bodo omogočene, če je ta pravilnik omogočen ali ni nastavljen.</translation>
 <translation id="4423597592074154136">Ročna izbira nastavitev proxyja</translation>
@@ -1269,6 +1247,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="5586942249556966598">Ne naredi nič</translation>
 <translation id="5630352020869108293">Obnovi zadnjo sejo</translation>
 <translation id="5645779841392247734">Dovoli piškotke na teh mestih</translation>
+<translation id="5693469654327063861">Dovoljevanje selitve podatkov</translation>
 <translation id="5694594914843889579">Ko je ta pravilnik omogočen, zunanji pomnilnik ne bo na voljo za datotečni brskalnik.
 
       Ta pravilnik se uporablja za vse vrste nosilcev podatkov, kot so bliskovni pogoni USB, zunanji trdi diski, kartice SD in druge pomnilniške kartice, optični nosilci podatkov ipd. Na notranji pomnilnik to ne vpliva, zato je do datotek, shranjenih v mapi »Prenosi«, še vedno mogoče dostopati. Ta pravilnik prav tako ne vpliva na Google Drive.
@@ -1459,7 +1438,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="6287694548537067861">Omogoča posodobitve komponent za vse komponente v izdelku <ph name="PRODUCT_NAME" />, če pravilnik ni nastavljen ali je omogočen.
 
       Če pravilnik ni omogočen, so posodobitve komponent onemogočene. Vendar pa so nekatere komponente izvzete iz tega pravilnika: onemogočene niso posodobitve komponent, ki ne vsebujejo izvedljive kode, ki bistveno ne spreminjajo delovanja brskalnika ali ki so pomembne za varnost brskalnika.
-      Primera takih komponent so na primer seznami ukinjenih potrdil in podatki varnega brskanja.
+      Primeri takih komponent so na primer seznami ukinjenih potrdil in podatki varnega brskanja.
       Več informacij o Varnem brskanju je na voljo na https://developers.google.com/safe-browsing.</translation>
 <translation id="6310223829319187614">Omogočanje samodokončanja imena domene med prijavo uporabnika</translation>
 <translation id="6315673513957120120">Chrome prikaže opozorilno stran, ko uporabniki prikrmarijo na spletna mesta, na katerih so napake SSL. Uporabnikom je privzeto (ali če je ta pravilnik omogočen) dovoljeno, da s klikom opustijo te strani z opozorilom.
@@ -1511,6 +1490,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
           Vrednost pravilnika naj bo navedena v milisekundah. Vrednosti morajo biti manjše od časovnega zamika ob nedejavnosti.</translation>
 <translation id="6536600139108165863">Samodejni vnovični zagon ob zaustavitvi naprave</translation>
 <translation id="6539246272469751178">Ta pravilnik ne vpliva na aplikacije za Android. Aplikacije za Android vedno uporabljajo privzeti imenik za prenose in ne morejo dostopati do datotek, ki jih sistem <ph name="PRODUCT_OS_NAME" /> prenese v imenik za prenose, ki ni privzet.</translation>
+<translation id="654303922206238013">Strategija selitve za ecryptfs</translation>
 <translation id="6544897973797372144">Če je ta pravilnik nastavljen na »True« in pravilnik »ChromeOsReleaseChannel« ni določen, lahko uporabniki domene za včlanitev spremenijo distribucijski kanal za nove izdaje naprave. Če je pravilnik nastavljen na »False«, je naprava zaklenjena v kanalu, v katerem je bila nazadnje nastavljena.
 
       Kanal, ki ga izbere uporabnik, preglasi pravilnik ChromeOsReleaseChannel, vendar če je kanal pravilnika stabilnejši kot pravilnik, nameščen v napravi, se stabilnejši kanal uporabi, ko je številka njegove različice večja od številke različice v napravi.</translation>
@@ -1701,6 +1681,13 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
           Ta pravilnik velja le, če je omogočen pravilnik »DefaultSearchProviderEnabled«.</translation>
 <translation id="7302043767260300182">Časovni zamik zaklepa zaslona, če se napaja iz električnega omrežja</translation>
+<translation id="7309839952828354215">Določa, kako naj deluje naprava, ki je bila dobavljena z ecryptfs in mora preiti na šifriranje ext4.
+
+      Če ta pravilnik nastavite na »DisallowArc«, bodo aplikacije za Android onemogočene za vse uporabnike naprave (vključno s tistimi, ki že imajo šifriranje ext4) in nobenemu uporabniku ne bo ponujena selitev s šifriranja ecryptfs na ext4.
+
+      Če ta pravilnik nastavite na »AllowMigration«, bo uporabnikom z domačimi imeniki ecryptfs po potrebi ponujena selitev na šifriranje ext4 (trenutno, ko je za napravo na voljo Android N).
+
+      Če ta pravilnik ni nastavljen, bo naprava delovala, kot da bi bila izbrana možnost »DisallowArc«.</translation>
 <translation id="7311458740754205918">Če je ta pravilnik omogočen ali ni nastavljen, bodo na strani »Nov zavihek« morda prikazani predlogi vsebine na podlagi uporabnikove zgodovine brskanja, zanimanj ali lokacije.
 
       Če je ta pravilni onemogočen, samodejno ustvarjeni predlogi vsebine ne bodo prikazani na strani »Nov zavihek«.</translation>
@@ -2095,8 +2082,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
           Če to nastavitev omogočite, bo iskanje CNAME preskočeno in uporabljeno bo vneseno ime strežnika.
 
           Če to nastavitev onemogočite ali jo ne nastavite, bo kanonično ime strežnika določeno z iskanjem CNAME.</translation>
-<translation id="8774131509736383471">Če je ta pravilnik omogočen, <ph name="PRODUCT_NAME" /> brezpogojno poveča prvo okno, prikazano pri prvem izvajanju.
-      Če je ta pravilnik onemogočen ali ni konfiguriran, se na podlagi velikosti zaslona določi, ali se prvo prikazano okno poveča.</translation>
 <translation id="87812015706645271">Zahteva, da se ujemata ime lokalnega uporabnika in lastnika gostitelja za oddaljeni dostop</translation>
 <translation id="8782750230688364867">Določa odstotek prilagoditve časovnega zamika zatemnitve zaslona, ko je naprava v načinu predstavitve.
 

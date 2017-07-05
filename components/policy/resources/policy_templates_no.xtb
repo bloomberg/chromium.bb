@@ -509,6 +509,7 @@
 
           Hvis denne retningslinjen ikke angis, er innstillingen aktivert.</translation>
 <translation id="2824715612115726353">Aktiver inkognitomodus</translation>
+<translation id="2838830882081735096">Ikke tillat dataoverføring og ARC</translation>
 <translation id="2844404652289407061">Gjør «Trykk for å søke» tilgjengelig i innholdsvisningen i <ph name="PRODUCT_NAME" />.
 
       Hvis du slår på denne innstillingen, blir «Trykk for å søke»-funksjonen tilgjengelig for brukerne, og de kan velge om de vil slå den på eller av.
@@ -682,13 +683,6 @@
           Denne innstillingen brukes bare hvis «DefaultSearchProviderEnabled»-innstillingen er aktivert.</translation>
 <translation id="350797926066071931">Aktiver oversettelse</translation>
 <translation id="3528000905991875314">Aktiver alternative feilsider</translation>
-<translation id="3538538104630456270">Den tilknyttede innstillingen ble brukt før vi implementerte ny autentisering for visning av passord. Etter dette har ikke innstillingen – og dermed heller ikke denne regenel – hatt noen innvirkning på funksjonaliteten i Chrome. Den nåværende funksjonaliteten i Chrome er den samme som hvis denne regelen hadde vært konfigurert til å slå av visning av passord i klartekst på innstillingssiden i passordbehandlingen. Det betyr at innstillingssiden bare har en plassholder, og brukeren må klikke på «Vis» (og eventuelt utføre en ny autentisering) for å se passordet i Chrome. Den originale beskrivelsen av regelen er som følger.
-
-          Kontrollerer hvorvidt brukeren kan vise passord i klartekst i passordbehandlingen.
-
-          Hvis du slår av denne innstillingen, tillater ikke passordbehandlingen at lagrede passord vises i klartekst i vinduet til passordbehandlingen.
-
-          Hvis du slår på eller ikke angir denne regelen, kan brukerne se passordene i klartekst i passordbehandlingen.</translation>
 <translation id="3547954654003013442">Innstillinger for proxy-tjener</translation>
 <translation id="3591584750136265240">Konfigurer autentiseringsatferden ved pålogging</translation>
 <translation id="3627678165642179114">Aktiver eller deaktiver nett-tjeneste for stavekontroll</translation>
@@ -881,23 +875,6 @@
 <translation id="4239720644496144453">Bufferen brukes ikke til Android-apper. Hvis flere brukere installerer den samme Android-appen, blir den lastet ned på nytt for hver bruker.</translation>
 <translation id="4250680216510889253">Nei</translation>
 <translation id="4261820385751181068">Lokalitet for påloggingsskjermen på enheten</translation>
-<translation id="4275782538576261754">Konfigurerer hvilken type nedlasting <ph name="PRODUCT_NAME" /> skal blokkere fullstendig. Brukerne kan ikke overstyre sikkerhetsbestemmelsen.
-
-      Hvis du angir denne regelen, forhindrer <ph name="PRODUCT_NAME" /> enkelte typer nedlastinger, og brukeren kan ikke omgå sikkerhetsadvarslene.
-
-      Når «Blokkér farlige nedlastinger»-alternativet er valgt, blokkeres alle nedlastinger, bortsett fra de som er tilknyttet Safe Browsing-advarsler.
-
-      Når «Blokkér potensielt farlige nedlastinger»-alternativer er valgt, tillates alle nedlastinger, bortsett fra de som er tilknyttet Safe Browsing-advarsler om potensielt farlige nedlastinger.
-
-      Når «Blokkér alle nedlastinger»-alternativet er valgt, blokkeres alle nedlastinger.
-
-      Hvis denne regelen ikke er angitt (eller hvis «Ingen spesielle begrensninger»-alternativet er valgt, er nedlastingene underlagt de vanlige sikkerhetsbegrensningene, som er basert på Safe Browsing-analyseresultater.
-
-      Vær oppmerksom på at disse begrensningene gjelder for nedlastinger som startes via nettsideinnhold, samt «Last ned linken»-alternativet i den kontekstuelle menyen.
-
-       Disse begrensningene gjelder ikke for nedlasting/lagring av siden som i øyeblikket vises, og heller ikke for lagring av nettsteder som PDF-filer via utskriftsalternativene.
-
-      Gå til https://developers.google.com/safe-browsing for å få mer informasjon om Safe Browsing.</translation>
 <translation id="427632463972968153">Angir parameterene som brukes når du utfører et bildesøk med POST. De består av kommainndelte navn og verdi-par. Hvis en verdi er et malparameter, som {imageThumbnail} i eksempelet ovenfor, blir den erstattet med virkelige miniatyrbildedata.
 
           Denne innstillingen er valgfri. Hvis den ikke er angitt, blir forespørsler om bildesøk sendt via GET-metoden.
@@ -923,6 +900,7 @@
 <translation id="436581050240847513">Rapportér nettverksgrensesnitt for enheten</translation>
 <translation id="4372704773119750918">Ikke tilllat bedriftsbrukeren å være en del av flerprofilen (primær eller sekundær)</translation>
 <translation id="4377599627073874279">La alle nettsteder vise alle bilder</translation>
+<translation id="437791893267799639">Innstillingen er ikke angitt – ikke tillat dataoverføring og ARC</translation>
 <translation id="4389091865841123886">Konfigurer ekstern attestering med TPM-mekanisme</translation>
 <translation id="4418726081189202489">Hvis du setter denne regelen til «false» (usann), forhindres <ph name="PRODUCT_NAME" /> fra å sende sporadiske forespørsler til en Google-tjeneste for å innhente et nøyaktig tidsstempel. Slike forespørsler er aktivert hvis regelen er satt til «true» (sann) eller ikke er angitt.</translation>
 <translation id="4423597592074154136">Manuell konfigurering av mellomtjenerinnstillinger</translation>
@@ -1233,6 +1211,7 @@
 <translation id="5586942249556966598">Gjør ingenting</translation>
 <translation id="5630352020869108293">Gjenopprett den siste økten</translation>
 <translation id="5645779841392247734">Tillat informasjonskapsler på disse nettstedene</translation>
+<translation id="5693469654327063861">Tillat dataoverføring</translation>
 <translation id="5694594914843889579">Når denne regelen er angitt som «true» (sann), er ikke eksterne lagringsmedier tilgjengelige i filbehandleren.
 
       Denne regelen påvirker alle typer lagringsmedier, for eksempel USB-flashenheter, eksterne harddisker, SD-kort og andre minnekort, optisk lagring osv. Intern lagring påvirkes ikke, så filer du har lastet ned i nedlastingsmappen, er fortsatt tilgjengelige. Google Disk påvirkes heller ikke av denne regelen.
@@ -1475,6 +1454,7 @@
           Verdien for innstillingen må angis i millisekunder. Verdien er låst til å være lavere enn inaktivitetsforsinkelsen.</translation>
 <translation id="6536600139108165863">Start på nytt automatisk når enheten slås av</translation>
 <translation id="6539246272469751178">Denne regelen har ingen innvirkning på Android-apper. Android-apper bruker alltid standardkatalogen for nedlastinger og har ikke tilgang til noen filer som lastes ned av <ph name="PRODUCT_OS_NAME" /> til en annen katalog en standardkatalogen.</translation>
+<translation id="654303922206238013">Overføringsstrategi for eCryptfs</translation>
 <translation id="6544897973797372144">Hvis denne innstillingen er angitt som Sann og ChromeOsReleaseChannel-retningslinjen ikke er spesifisert, så gis brukere fra domenet som registreres, tillatelse til å endre enhetens lanseringskanal. Hvis denne retningslinjen er angitt som Usann, blir enheten låst til kanalen den sist ble tilordnet til.
 
       Den brukervalgte kanalen overstyres av ChromeOsReleaseChannel-retningslinjen, men hvis retningslinjekanalen er mer stabil enn den som ble installert på enheten, byttes kanalen bare etter at versjonen av den mer stabile kanalen når et høyere versjonsnummer enn nummeret på den som er installert på enheten.</translation>
@@ -1660,6 +1640,13 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
          Denne retningslinjen gjelder bare hvis retningslinjen DefaultSearchProviderEnabled er aktivert.</translation>
 <translation id="7302043767260300182">Skjermlåsforsinkelse når du bruker strømadapteren</translation>
+<translation id="7309839952828354215">Spesifiserer hvordan enheter som har blitt levert med eCryptfs, og som må gå over til ext4-kryptering, bør oppføre seg.
+
+      Hvis du angir denne innstillingen som «DisallowArc», blir Android-apper deaktivert for alle brukere av enheten (inkludert brukerne som allerede har ext4-kryptering), og ingen brukere får muligheten til å overføre fra eCryptfs til ext4-kryptering.
+
+      Hvis du angir denne innstillingen som «AllowMigration», har brukere med eCryptfs-hjemmekataloger muligheten til å overføre disse til ext4-kryptering der det er nødvendig (for øyeblikket når Android N blir tilgjengelig på enheten).
+
+      Hvis denne innstillingen ikke angis, oppfører enheten seg som om «DisallowArc» er valgt.</translation>
 <translation id="7311458740754205918">Hvis denne regelen er angitt som «true» (sann) eller ikke er angitt, kan nye faner vise innholdsforslag som er basert på brukerens nettleserlogg, interesser eller steder.
 
       Hvis den er angitt som «false» (usann), vises ikke automatisk genererte innholdsforslag på nye faner.</translation>
@@ -1983,7 +1970,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Når DeviceIdleLogoutTimeout er spesifisert, definerer denne retningslinjen varigheten av advarselfeltet med en nedtellingsklokke som vises til brukeren før den blir logget av.
 
       Retningslinjeverdien må angis i millisekunder.</translation>
-<translation id="8339420913453596618">Bruk av en andre faktor er slått av</translation>
+<translation id="8339420913453596618">Bruk av tofaktorautentisering er slått av</translation>
 <translation id="8344454543174932833">Importer bokmerker fra standard nettleser ved første kjøring</translation>
 <translation id="8359734107661430198">Slå på ExampleDeprecatedFeature API frem til og med 2008/09/02</translation>
 <translation id="8369602308428138533">Forsinkelse for avslått skjerm når du bruker strømadapteren</translation>
@@ -2029,7 +2016,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
           Hvis du ikke spesifiserer denne regelen, forsøker <ph name="PRODUCT_NAME" /> å oppdage om en tjener er på intranett og bare svare på IWA-forespørsler hvis den er det. Hvis en tjener registreres som Internett, ignorerer <ph name="PRODUCT_NAME" /> IWA-forespørsler fra tjeneren.</translation>
 <translation id="8672321184841719703">Målversjon for automatiske oppdateringer</translation>
-<translation id="867410340948518937">U2F (Universal Second Factor)</translation>
+<translation id="867410340948518937">Universal tofaktor-autentisering (U2F)</translation>
 <translation id="8693243869659262736">Bruk innebygd DNS-klient</translation>
 <translation id="8704831857353097849">Liste over deaktiverte programtillegg</translation>
 <translation id="8711086062295757690">Angir nøkkelordet, som er snarveien som brukes i søkefeltet for å utløse søket for denne leverandøren.
@@ -2047,8 +2034,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
       Hvis innstillingen deaktiveres, kan ikke nettleser- og nedlastingsloggen slettes.</translation>
 <translation id="8764119899999036911">Angir om generert Kerberos-SPN er basert på det kanoniske DNS-navnet eller på det angitte originalnavnet. Hvis du aktiverer denne innstillingen, droppes CNAME-oppslag, og tjenernavnet brukes som angitt. Hvis du deaktiverer denne innstillingen eller ikke angir den, bestemmes tjenerens kanoniske navn ved hjelp av CNAME-oppslag.</translation>
-<translation id="8774131509736383471">Hvis denne regelen settes til true (sann), blir det første vinduet som vises ved den første kjøringen av <ph name="PRODUCT_NAME" />, alltid maksimert.
-      Hvis denne regelen settes til false (usann) eller ikke spesifiseres, blir skjermstørrelsen brukt for å bestemme om det første vinduet som vises, skal maksimeres.</translation>
 <translation id="87812015706645271">Krever at navnet på den lokale brukeren samsvarer med verten for ekstern tilgang</translation>
 <translation id="8782750230688364867">Angir prosentandelen for hvordan forsinkelsen til skjermdemping skaleres når enheten er i presentasjonsmodus.
 

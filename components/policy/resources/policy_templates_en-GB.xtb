@@ -521,6 +521,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
           If this policy is not set, the setting will be enabled.</translation>
 <translation id="2824715612115726353">Enable Incognito mode</translation>
+<translation id="2838830882081735096">Disallow data migration and ARC</translation>
 <translation id="2844404652289407061">Enables the availability of Touch to Search in <ph name="PRODUCT_NAME" />'s content view.
 
       If you enable this setting, Touch to Search will be available to the user and they can choose to turn the feature on or off.
@@ -703,13 +704,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
 <translation id="350797926066071931">Enable Translate</translation>
 <translation id="3528000905991875314">Enable alternate error pages</translation>
-<translation id="3538538104630456270">The associated setting was used before re-authentication on viewing passwords was introduced. Since then, the setting, and hence this policy, had no effect on the behaviour of Chrome. The current behaviour of Chrome is now the same as if the the policy was set to disable showing passwords in clear text in the password manager settings page. That means that the settings page contains just a placeholder, and only upon the user clicking "Show" (and re-authenticating, if applicable) Chrome shows the password. Original description of the policy follows below.
-
-          Controls whether the user may show passwords in clear text in the password manager.
-
-          If you disable this setting, the password manager does not allow showing stored passwords in clear text in the password manager window.
-
-          If you enable or do not set this policy, users can view their passwords in clear text in the password manager.</translation>
 <translation id="3547954654003013442">Proxy settings</translation>
 <translation id="3591584750136265240">Configure the login authentication behaviour</translation>
 <translation id="3627678165642179114">Enable or disable spell checking web service</translation>
@@ -909,23 +903,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="4239720644496144453">The cache is not used for Android apps. If multiple users install the same Android app, it will be downloaded anew for each user.</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="4261820385751181068">Device sign-in screen locale</translation>
-<translation id="4275782538576261754">Configures the type of downloads that <ph name="PRODUCT_NAME" /> will completely block, without letting users override the security decision.
-
-      If you set this policy, <ph name="PRODUCT_NAME" /> will prevent certain types of downloads, and won't let user bypass the security warnings.
-
-      When the 'Block dangerous downloads' option is chosen, all downloads are allowed, except for those that carry SafeBrowsing warnings.
-
-      When the 'Block potentially dangerous downloads' option is chosen, all downloads allowed, except for those that carry SafeBrowsing warnings of potentially dangerous downloads.
-
-      When the 'Block all downloads' option is chosen, all downloads are blocked.
-
-      When this policy is not set, (or the 'No special restrictions' option is chosen), the downloads will go through the usual security restrictions based on SafeBrowsing analysis results.
-
-      Note that these restrictions apply to downloads triggered from web page content, as well as the 'download link...' context menu option.
-
-      These restrictions do not apply to the save/download of the currently displayed page, nor does it apply to saving as PDF from the printing options.
-
-      See https://developers.google.com/safe-browsing for more info on SafeBrowsing.</translation>
 <translation id="427632463972968153">Specifies the parameters used when doing image search with POST. It consists of comma-separated name/value pairs. If a value is a template parameter, like {imageThumbnail} in above example, it will be replaced with real image thumbnail data.
 
           This policy is optional. If not set, image search request will be sent using the GET method.
@@ -951,6 +928,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="436581050240847513">Report device network interfaces</translation>
 <translation id="4372704773119750918">Do not allow enterprise user to be part of multiprofile (primary or secondary)</translation>
 <translation id="4377599627073874279">Allow all sites to show all images</translation>
+<translation id="437791893267799639">Policy unset, disallow data migration and ARC</translation>
 <translation id="4389091865841123886">Configure the remote attestation with TPM mechanism.</translation>
 <translation id="4418726081189202489">Setting this policy to false stops <ph name="PRODUCT_NAME" /> from occasionally sending queries to a Google server to retrieve an accurate timestamp. These queries will be enabled if this policy is set to True or is not set.</translation>
 <translation id="4423597592074154136">Manually specify proxy settings</translation>
@@ -1271,6 +1249,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="5586942249556966598">Do nothing</translation>
 <translation id="5630352020869108293">Restore the last session</translation>
 <translation id="5645779841392247734">Allow cookies on these sites</translation>
+<translation id="5693469654327063861">Allow data migration</translation>
 <translation id="5694594914843889579">When this policy is set to true, external storage will not be available in the file browser.
 
       This policy affects all types of storage media. For example: USB flash drives, external hard drives, SD and other memory cards, optical storage, etc. Internal storage is not affected, therefore files saved in the Download folder can still be accessed. Google Drive is also not affected by this policy.
@@ -1509,6 +1488,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           The policy value should be specified in milliseconds. Values are clamped to be less than the idle delay.</translation>
 <translation id="6536600139108165863">Automatic reboot on device shutdown</translation>
 <translation id="6539246272469751178">This policy has no effect on Android apps. Android apps always use the default downloads directory and cannot access any files downloaded by <ph name="PRODUCT_OS_NAME" /> into a non-default downloads directory.</translation>
+<translation id="654303922206238013">Migration strategy for eCryptfs</translation>
 <translation id="6544897973797372144">If this policy is set to True and the ChromeOsReleaseChannel policy is not specified then users of the enrolling domain will be allowed to change the release channel of the device. If this policy is set to false the device will be locked in whatever channel it was last set.
 
       The user selected channel will be overridden by the ChromeOsReleaseChannel policy, but if the policy channel is more stable than the one that was installed on the device, then the channel will only switch after the version of the more stable channel reaches a higher version number than the one installed on the device.</translation>
@@ -1699,6 +1679,13 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
 <translation id="7302043767260300182">Screen lock delay when running on AC power</translation>
+<translation id="7309839952828354215">Specifies how a device should behave that shipped with eCryptfs and needs to transition to ext4 encryption.
+
+      If you set this policy to 'DisallowArc', Android apps will be disabled for all users on the device (including those that have ext4 encryption already) and no migration from eCryptfs to ext4 encryption will be offered to any users.
+
+      If you set this policy to 'AllowMigration', users with eCryptfs home directories will be offered to migrate these to ext4 encryption as necessary (currently when Android N becomes available on the device).
+
+      If this policy is left unset, the device will behave as if 'DisallowArc' was chosen.</translation>
 <translation id="7311458740754205918">If this is set to true or not set, the New Tab page may show content suggestions based on the user's browsing history, interests or location.
 
       If this is set to false, automatically-generated content suggestions are not shown on the New Tab page.</translation>
@@ -2094,8 +2081,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           If you enable this setting, CNAME lookup will be skipped and the server name will be used as entered.
 
           If you disable this setting or leave it unset, the canonical name of the server will be determined via CNAME lookup.</translation>
-<translation id="8774131509736383471">If this policy is set to true, <ph name="PRODUCT_NAME" /> will unconditionally maximise the the first window shown on first run.
-      If this policy is set to false or not configured, the decision whether to maximise the first window shown will be based on the screen size.</translation>
 <translation id="87812015706645271">Requires that the name of the local user and the remote access host owner match</translation>
 <translation id="8782750230688364867">Specifies the percentage by which the screen dim delay is scaled when the device is in presentation mode.
 

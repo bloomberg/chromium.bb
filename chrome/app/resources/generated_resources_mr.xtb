@@ -628,6 +628,7 @@
 <translation id="1916502483199172559">डीफॉल्ट लाल अवतार</translation>
 <translation id="191688485499383649">"<ph name="DEVICE_NAME" />" शी कनेक्ट करण्याचा प्रयत्न करताना अज्ञात त्रुटी आली.</translation>
 <translation id="1918141783557917887">&amp;जरा लहान</translation>
+<translation id="1919345977826869612">जाहिराती</translation>
 <translation id="1921584744613111023"><ph name="DPI" /> dpi</translation>
 <translation id="192494336144674234">यासह उघडा</translation>
 <translation id="1925021887439448749">सानुकूल वेब पत्ता प्रविष्ट करा</translation>
@@ -1032,6 +1033,7 @@
 <translation id="2534460670861217804">सुरक्षित HTTP प्रॉक्सी</translation>
 <translation id="253557089021624350">Keepalive गणना</translation>
 <translation id="2539110682392681234">आपल्या प्रशासकाद्वारे प्रॉक्सी प्रवर्तित करण्यात आले.</translation>
+<translation id="2540384386570049483">या साइटवर जाहिरातींना अनुमती द्या</translation>
 <translation id="2541423446708352368">सर्व डाउनलोड दर्शवा</translation>
 <translation id="2542049655219295786">Google सारणी</translation>
 <translation id="2544853746127077729">प्रमाणीकरण प्रमाणपत्र नेटवर्कद्वारे नाकारले</translation>
@@ -1332,6 +1334,7 @@
 <translation id="2946119680249604491">कनेक्शन जोडा</translation>
 <translation id="2946640296642327832">Bluetooth सक्षम करा</translation>
 <translation id="2948300991547862301"><ph name="PAGE_TITLE" /> वर जा</translation>
+<translation id="2948320633360386059">अनाहूत जाहिराती दाखवणे सुरू ठेवलेल्या साइटवर ब्लॉक केले आहे</translation>
 <translation id="29488703364906173">हे आधुनिक वेबसाठी बनविलेले जलद, सोपे आणि सुरक्षित वेब ब्राउझर आहे.</translation>
 <translation id="2949037475046662832">हे कुकी आणि सर्व साइटसाठींचा साइट डेटा साफ करेल, ज्यात असेल</translation>
 <translation id="2951247061394563839">विंडो मध्यभागी आणा</translation>
@@ -2077,6 +2080,7 @@
 <translation id="4071770069230198275"><ph name="PROFILE_NAME" />: साइन इन त्रुटी</translation>
 <translation id="4074900173531346617">ईमेल स्वाक्षरीकर्ता प्रमाणपत्र</translation>
 <translation id="407520071244661467">स्केल</translation>
+<translation id="4077917118009885966">या साइटवर जाहिराती ब्लॉक केल्या आहेत</translation>
 <translation id="4084682180776658562">बुकमार्क</translation>
 <translation id="4084835346725913160"><ph name="TAB_NAME" /> बंद करा</translation>
 <translation id="4085298594534903246">या पृष्ठावर JavaScript  अवरोधित केलेले होते.</translation>
@@ -2343,6 +2347,7 @@
 <translation id="4546308221697447294">Google Chromeसोबत जलदगतीने ब्राउझ करा</translation>
 <translation id="4547659257713117923">अन्य डिव्हाइसेसवरील कोणतेही टॅब नाहीत</translation>
 <translation id="4547992677060857254">आपण निवडलेल्या फोल्डरमध्ये संवेदनशील फायली आहेत. आपल्याला खात्री आहे की या फोल्डरवर आपण "$1" ला कायम लिहिण्याचा प्रवेश मंजूर करू इच्छिता?</translation>
+<translation id="4552031286893852992">अनाहूत जाहिराती दाखवत असल्यामुळे Chrome ने या साइटवर जाहिराती ब्लॉक केल्या आहेत.</translation>
 <translation id="4552089082226364758">फ्लॅश</translation>
 <translation id="4552495056028768700">पृष्ठ प्रवेश</translation>
 <translation id="4552678318981539154">अधिक संचयन खरेदी करा</translation>
@@ -2577,6 +2582,7 @@
 <translation id="4893336867552636863">हे या डिव्‍हाइस वरून आपला ब्राउझिंग डेटा कायमचा हटवेल.</translation>
 <translation id="4898011734382862273">प्रमाणपत्र "<ph name="CERTIFICATE_NAME" />" प्रमाणन अधिकृतता प्रस्तुत करते</translation>
 <translation id="4899376560703610051">आपले <ph name="DEVICE_TYPE" /> व्‍यक्तीचलितरित्‍या लॉक केले गेले आहे. प्रविष्‍ट करण्‍यासाठी आपल्‍याला आपला संकेतशब्द टाइप करण्‍याची आवश्‍यकता आहे.</translation>
+<translation id="489985760463306091">धोकादायक सॉफ्टवेअर काढणे पूर्ण करण्यासाठी तुमचा काँप्युटर रीस्टार्ट करा</translation>
 <translation id="4900392736118574277">आपले प्रारंभ पृष्ठ <ph name="URL" /> मध्‍ये बदलले.</translation>
 <translation id="490074449735753175">शब्दलेखन त्रुटींच्या निराकरणात मदतीसाठी वेब सेवा वापरा</translation>
 <translation id="49027928311173603">सर्व्हरवरून डाउनलोड केलेले धोरण अवैध आहे: <ph name="VALIDATION_ERROR" />.</translation>
@@ -2911,6 +2917,7 @@
 <translation id="5396126354477659676"><ph name="PEPPER_PLUGIN_DOMAIN" /> वरील <ph name="PEPPER_PLUGIN_NAME" />आपल्या संगणकावर प्रवेश करू इच्छिते.</translation>
 <translation id="5397794290049113714">आपण</translation>
 <translation id="5398572795982417028">निषिद्ध पृष्ठ संदर्भ, मर्यादा <ph name="MAXIMUM_PAGE" /> आहे</translation>
+<translation id="5398772614898833570">जाहिराती ब्लॉक केल्या</translation>
 <translation id="5399158067281117682">पिन जुळत नाहीत!</translation>
 <translation id="5400640815024374115">विश्वसनीय प्लॅटफॉर्म मॉड्यूल (TPM) चिप अक्षम किंवा अनुपस्थित आहे.</translation>
 <translation id="5402815541704507626">मोबाइल डेटा वापरून अपडेट डाउनलोड करा</translation>
@@ -4157,6 +4164,7 @@
 <translation id="7352651011704765696">काहीतरी चूक झाली</translation>
 <translation id="73534262421337222">महत्त्वाचे अपडेट इंस्टॉल करत आहे</translation>
 <translation id="735745346212279324">VPN डिस्कनेक्ट केले</translation>
+<translation id="7359588939039777303">जाहिराती ब्लॉक केल्या.</translation>
 <translation id="7360183604634508679">बुकमार्क मेनू</translation>
 <translation id="7360233684753165754"><ph name="PAGE_NUMBER" /> पेज <ph name="PRINTER_NAME" /> वर</translation>
 <translation id="7361039089383199231">$1 बाइट</translation>
@@ -4169,6 +4177,7 @@
 <translation id="7366762109661450129">स्क्रीन चालू असते आणि अनलॉक केलेली असते तेव्हा "Ok Google" म्हणा.</translation>
 <translation id="7366909168761621528">ब्राउझिंग डेटा</translation>
 <translation id="7369521049655330548">या पृष्‍ठावर खालील प्‍लगिन अवरोधित केले होते:</translation>
+<translation id="7371006317849674875">सुरू होण्‍याची वेळ</translation>
 <translation id="7373789336584437724">हे डिव्हाइस सध्या Google कडे निदान आणि वापर डेटा पाठवते. आपण आपल्या डिव्हाइस <ph name="BEGIN_LINK1" />सेटिंग्ज<ph name="END_LINK1" /> मध्ये हे कधीही बदलू शकता. <ph name="BEGIN_LINK2" />अधिक जाणून घ्या<ph name="END_LINK2" /></translation>
 <translation id="7374461526650987610">प्रोटोकॉल हँडलर</translation>
 <translation id="7375053625150546623">EAP</translation>
@@ -4471,6 +4480,7 @@
 <translation id="7831368056091621108">हा विस्तार मिळविण्यासाठी, आपल्या सर्व डिव्हाइसेसवरील आपला इतिहास आणि इतर Chrome सेटिंग्ज.</translation>
 <translation id="7831493768366098287">Google मुद्रण</translation>
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
+<translation id="7832084384634357321">संपण्याची वेळ</translation>
 <translation id="7833720883933317473">जतन केलेले सानुकूल शब्द येथे दिसून येतील</translation>
 <translation id="7837776265184002579">आपले मुख्यपृष्‍ठ <ph name="URL" /> मध्‍ये बदलले.</translation>
 <translation id="7839051173341654115">पहा/बॅकअप घ्‍या मीडिया</translation>
@@ -4735,6 +4745,7 @@
 <translation id="8226619461731305576">रांग</translation>
 <translation id="8226742006292257240">खाली यादृच्छिकपणे व्युत्पन्न केलेला TPM संकेतशब्द आहे जो आपल्‍या संगणकासाठी नियुक्त केला गेला आहे:</translation>
 <translation id="8227119283605456246">फाईल संलग्न करा</translation>
+<translation id="8234795456569844941">कृपया आमच्या इंजिनियरना ही समस्या सोडवण्यात मदत करा. तुम्हाला प्रोफाइल एरर मिळण्याआधी नेमके काय झाले ते आम्हाला सांगा:</translation>
 <translation id="8238649969398088015">मदत टीप</translation>
 <translation id="8240697550402899963">क्लासिक थीम वापरा</translation>
 <translation id="8241040075392580210">Shady</translation>
@@ -4764,6 +4775,7 @@
 <translation id="8261506727792406068">हटवा</translation>
 <translation id="8261580862248730866">मायक्रोफोन अपवाद</translation>
 <translation id="8261673729476082470"><ph name="BEGIN_LINK" />Google ड्राइव्ह<ph name="END_LINK" /> वर <ph name="FILE_COUNT" /> फोटोंचा बॅकअप घेत आहे</translation>
+<translation id="826246685091802258"><ph name="BAD_FLAG" /> ची या बिल्डमध्ये अंमलबजावणी केली नाही.</translation>
 <translation id="8263231521757761563">सक्रिय प्रोटोकॉल हँडलर</translation>
 <translation id="8263744495942430914"><ph name="FULLSCREEN_ORIGIN" /> नी आपला माउस कर्सर अक्षम केला आहे.</translation>
 <translation id="8264718194193514834">"<ph name="EXTENSION_NAME" />" प्रवर्तित पूर्णस्क्रीन.</translation>
@@ -5092,6 +5104,7 @@
 <translation id="8800004011501252845">यासाठी गंतव्ये दर्शवत आहे</translation>
 <translation id="8800420788467349919">व्हॉल्यूम: <ph name="PRECENTAGE" />%</translation>
 <translation id="8804398419035066391">वेबसाइटला सहकार्य करून संप्रेषण करा</translation>
+<translation id="8805140816472474147">सिंक करणे सुरू करण्यासाठी सिंक सेटिंग्जची पुष्टी करा.</translation>
 <translation id="8807632654848257479">स्थिर</translation>
 <translation id="8808478386290700967">वेब स्टोअर</translation>
 <translation id="8808686172382650546">मांजर</translation>
@@ -5165,6 +5178,7 @@
 <translation id="8916476537757519021">गुप्त सबफ्रेम: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8919034266226953085">PWG रास्टर रुपांतरित्र</translation>
 <translation id="89217462949994770">आपण बर्‍याच वेळा चुकीचा पिन प्रविष्ट केला आहे. कृपया नवीन 8-अंकी पिन अनलॉकिंग की प्राप्त करण्यासाठी <ph name="CARRIER_ID" /> येथे संपर्क साधा.</translation>
+<translation id="8922013791253848639">या साइटवर कायम जाहिरातींना परवानगी द्या</translation>
 <translation id="8925458182817574960">&amp;सेटिंग्ज</translation>
 <translation id="8926389886865778422">पुन्हा विचारू नका</translation>
 <translation id="8926518602592448999">विकासक मोड विस्तार अक्षम करा</translation>

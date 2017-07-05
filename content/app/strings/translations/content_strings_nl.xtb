@@ -10,7 +10,6 @@
 <translation id="1188858454923323853">aanvullend</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1206693055195146388">schuifregelaar</translation>
-<translation id="1235745349614807883">Recente zoekopdrachten wissen</translation>
 <translation id="1281252709823657822">dialoogvenster</translation>
 <translation id="1342835525016946179">artikel</translation>
 <translation id="1359897965706325498">banner</translation>
@@ -39,7 +38,6 @@
 <translation id="248395913932153421">Dag</translation>
 <translation id="2507943997699731163">Vul dit veld in.</translation>
 <translation id="2508569020611168319">tabbladlijst</translation>
-<translation id="2548326553472216322">Geen recente zoekopdrachten</translation>
 <translation id="2561842179657104141">meer mediabedieningselementen weergeven</translation>
 <translation id="2572483411312390101">afspelen</translation>
 <translation id="2613802280814924224">Geef een geldige waarde op. De dichtstbijzijnde geldige waarde is <ph name="VALID_VALUE" />.</translation>
@@ -51,7 +49,6 @@
 <translation id="2759744352195237655">pop-upknop</translation>
 <translation id="2761667185364618470">Vink dit selectievakje aan als je wilt doorgaan.</translation>
 <translation id="2896972712917208084">groep met keuzerondjes</translation>
-<translation id="2901282870647571346">huidige filmstatus</translation>
 <translation id="2908441821576996758">Voer een door komma's gescheiden lijst met e-mailadressen in.</translation>
 <translation id="2940813599313844715">object</translation>
 <translation id="2942448076852699108">gemarkeerde content</translation>
@@ -95,7 +92,6 @@
 <translation id="4992066212339426712">Dempen opheffen</translation>
 <translation id="49969490063480558">Geef een adresgedeelte op na '<ph name="ATSIGN" />'. '<ph name="INVALIDADDRESS" />' is onvolledig.</translation>
 <translation id="5034860022980953847">voortgangsindicator</translation>
-<translation id="5048533449481078685">lijstmarkering</translation>
 <translation id="5117590920725113268">Volgende maand weergeven</translation>
 <translation id="512758898067543763">rijkop</translation>
 <translation id="5164977714490026579">Waarde moet groter dan of gelijk zijn aan <ph name="MINIMUM" />.</translation>
@@ -113,7 +109,6 @@
 <translation id="5643186887447432888">knop</translation>
 <translation id="5677946354068040947">meer opties</translation>
 <translation id="57838592816432529">Dempen</translation>
-<translation id="5843503607508392247">Anders...</translation>
 <translation id="5860033963881614850">Uit</translation>
 <translation id="588258955323874662">Volledig scherm</translation>
 <translation id="5939518447894949180">Resetten</translation>
@@ -123,8 +118,6 @@
 <translation id="6023896073578205740">keuzelijst</translation>
 <translation id="6101327004457443354">dempen van audiotrack opheffen</translation>
 <translation id="6164829606128959761">meter</translation>
-<translation id="6270583010843788609">miniatuur van tijdlijn van film</translation>
-<translation id="6359256949422175976">miniatuur van scrollbar met tijd van de film</translation>
 <translation id="6398862346408813489">Deelvenster voor maandselectie weergeven</translation>
 <translation id="6404546809543547843">scrollbar met audiotijd</translation>
 <translation id="648732519525291180">tijdkiezer</translation>
@@ -132,7 +125,6 @@
 <translation id="663493177488814956">feed</translation>
 <translation id="6637586476836377253">logboek</translation>
 <translation id="6643016212128521049">Wissen</translation>
-<translation id="6663448176199120256">Recente zoekopdrachten</translation>
 <translation id="668171684555832681">Anders...</translation>
 <translation id="6692633176391053278">stappenregelaar</translation>
 <translation id="6739588121953935928">liniaal</translation>
@@ -145,7 +137,6 @@
 <translation id="6934078000481955284">blok met geciteerde tekst</translation>
 <translation id="6941933287844615239">media downloaden</translation>
 <translation id="6989848892321993519">Breid deze tekst uit tot <ph name="MIN_CHARACTERS" /> tekens of meer (je gebruikt momenteel één teken).</translation>
-<translation id="7057186640035488495">tijd van de film</translation>
 <translation id="709897737746224366">Zorg dat de indeling voldoet aan de gevraagde indeling.</translation>
 <translation id="7223624360433298498">verstreken tijd</translation>
 <translation id="7263440858009898357">Selecteer een item in de lijst.</translation>
@@ -166,10 +157,8 @@
 <translation id="8053789581856978548">zoektekstveld</translation>
 <translation id="8115662671911883373">het weergeven van ondertiteling starten</translation>
 <translation id="8117451130807776954">Deze week</translation>
-<translation id="8141602879876242471">Dit is een doorzoekbare index. Geef zoekwoorden op:</translation>
 <translation id="819205353528511139">film afspelen op volledig scherm</translation>
 <translation id="8199524924445686405">jjjj</translation>
-<translation id="8244226242650769279">image map</translation>
 <translation id="8284326494547611709">Ondertiteling</translation>
 <translation id="835897206747267392">Ongeldige waarde.</translation>
 <translation id="8433900881053900389">werkbalk</translation>

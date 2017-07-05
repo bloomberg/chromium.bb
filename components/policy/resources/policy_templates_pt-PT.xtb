@@ -495,6 +495,7 @@
 
           Se deixar esta política por definir, a definição será ativada.</translation>
 <translation id="2824715612115726353">Ativar o modo de navegação anónima</translation>
+<translation id="2838830882081735096">Não permitir a migração de dados nem ARC</translation>
 <translation id="2844404652289407061">Ativa a disponibilidade de Tocar para pesquisar na vista de conteúdo do <ph name="PRODUCT_NAME" />.
 
       Se ativar esta definição, a funcionalidade Tocar para pesquisar fica disponível para o utilizador e este pode optar por a ativar ou desativar.
@@ -538,7 +539,7 @@
       Se ativar esta definição, todas as páginas de autenticação do portal cativo (ou seja, todas as páginas Web desde a página de início de sessão do portal cativo até que o <ph name="PRODUCT_NAME" /> detete uma ligação à Internet bem-sucedida) são apresentadas numa janela separada e são ignoradas todas as restrições e definições da política para o utilizador atual.
 
       Se desativar esta definição ou não a definir, todas as páginas de autenticação do portal cativo são apresentadas num separador de navegador novo (normal), com as definições de proxy do utilizador atual.</translation>
-<translation id="3001534538097271560">Definir esta política como falsa impede os utilizadores de optarem por enviar algumas informações do sistema e conteúdo de páginas para os servidores da Google. Caso esta definição seja verdadeira ou não esteja configurada, os utilizadores podem enviar algumas informações do sistema e conteúdo de páginas para a Navegação segura, de modo a ajudar a detetar aplicações e sites perigosos.
+<translation id="3001534538097271560">Definir esta política como falsa impede os utilizadores de optarem por enviar informações do sistema e conteúdo de páginas para os servidores da Google. Caso esta definição seja verdadeira ou não esteja configurada, os utilizadores podem enviar informações do sistema e conteúdo de páginas para a Navegação segura, de modo a ajudar a detetar aplicações e sites perigosos.
 
       Veja https://developers.google.com/safe-browsing para mais informações sobre a Navegação segura.</translation>
 <translation id="3021409116652377124">Desativar localizador de plug-ins</translation>
@@ -667,13 +668,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
           Esta política só será seguida se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
 <translation id="350797926066071931">Ativar Google Tradutor</translation>
 <translation id="3528000905991875314">Ativar páginas de erro alternativas</translation>
-<translation id="3538538104630456270">A definição associada era utilizada antes de ser introduzida a reautenticação durante a visualização de palavras-passe. Depois disso, a definição e, consequentemente, esta política deixaram de afetar o comportamento do Chrome. Atualmente, o Chrome comporta-se como se a política estivesse definida para desativar a apresentação das palavras-passe em texto simples na página de definições do gestor de palavras-passe. Isto significa que a página de definições inclui apenas um marcador de posição e o Chrome só mostra a palavra-passe depois de o utilizador clicar em "Mostrar" (e efetuar a reautenticação, se aplicável). Segue-se a descrição original da política.
-
-          Controla se os utilizadores podem mostrar palavras-passe em texto simples no gestor de palavras-passe.
-
-          Se desativar esta definição, o gestor de palavras-passe não permite mostrar as palavras-passe armazenadas em texto simples na janela do gestor.
-
-          Se ativar ou não definir esta política, os utilizadores podem ver as palavras-passe em texto simples no gestor de palavras-passe.</translation>
 <translation id="3547954654003013442">Definições de proxy</translation>
 <translation id="3591584750136265240">Configurar o comportamento de autenticação de início de sessão</translation>
 <translation id="3627678165642179114">Ativar ou desativar o serviço Web de verificação ortográfica</translation>
@@ -864,23 +858,6 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="4239720644496144453">A cache não é utilizada para aplicações Android. Se vários utilizadores instalarem a mesma aplicação Android, é transferida uma nova para cada utilizador.</translation>
 <translation id="4250680216510889253">Não</translation>
 <translation id="4261820385751181068">Local do ecrã de início de sessão do dispositivo</translation>
-<translation id="4275782538576261754">Configura o tipo de transferências que o <ph name="PRODUCT_NAME" /> irá bloquear completamente, sem permitir que os utilizadores substituam a decisão de segurança.
-
-      Se definir esta política, o <ph name="PRODUCT_NAME" /> irá impedir determinados tipos de transferência e não permitirá que os utilizadores ignorem os avisos de segurança.
-
-     Se for escolhida a opção "Bloquear transferências perigosas", são permitidas todas as transferências, exceto as que tenham avisos da Navegação segura.
-
-      Se for escolhida a opção "Bloquear transferências potencialmente perigosas", são permitidas todas as transferências, exceto as que tenham avisos da Navegação segura devido a poderem ser potencialmente perigosas.
-
-      Se for escolhida a opção "Bloquear todas as transferências", são bloqueadas todas as transferências.
-
-      Se esta política não for definida (ou se for escolhida a opção "Sem restrições especiais"), as transferências são sujeitas às restrições de segurança habituais e que se baseiam nos resultados das análises da Navegação segura.
-
-      Tenha em conta que estas restrições se aplicam a transferências acionadas a partir de conteúdos de páginas Web, bem como à opção do menu de contexto "Transferir link...".
-
-      Estas restrições não se aplicam a guardar/transferir a página que está a ser apresentada no momento nem a guardar PDFs a partir das opções de impressão.
-
-      Veja https://developers.google.com/safe-browsing para mais informações sobre a Navegação segura.</translation>
 <translation id="427632463972968153">Especifica os parâmetros utilizados ao efetuar uma pesquisa de imagens com POST. Consiste em pares de nome/valor separados por vírgulas. Se um valor for o parâmetro de um modelo, como {imageThumbnail} no exemplo acima, será substituído por dados de miniatura de imagem reais.
 
           Esta política é opcional. Se não for definida, será enviado um pedido de pesquisa de imagens através do método GET.
@@ -906,6 +883,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="436581050240847513">Comunicar interfaces de rede do dispositivo</translation>
 <translation id="4372704773119750918">Não permitir que o utilizador empresarial faça parte do multiperfil (principal ou secundário)</translation>
 <translation id="4377599627073874279">Permitir que todos os sites mostrem todas as imagens</translation>
+<translation id="437791893267799639">Política não definida, não permitir a migração de dados nem ARC</translation>
 <translation id="4389091865841123886">Configura a comprovação remota através do mecanismo TPM.</translation>
 <translation id="4418726081189202489">Definir esta política como falsa impede o <ph name="PRODUCT_NAME" /> de enviar ocasionalmente consultas para um servidor da Google para obter uma data/hora exata. Estas consultas serão ativadas caso esta política esteja definida como verdadeira ou não esteja definida.</translation>
 <translation id="4423597592074154136">Especificar manualmente as definições de proxy</translation>
@@ -1189,6 +1167,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="5586942249556966598">Não fazer nada</translation>
 <translation id="5630352020869108293">Restaurar a última sessão</translation>
 <translation id="5645779841392247734">Permitir cookies nestes sites</translation>
+<translation id="5693469654327063861">Permitir a migração de dados</translation>
 <translation id="5694594914843889579">Se esta política estiver definida como verdadeira, o armazenamento externo não estará disponível no navegador de ficheiros.
 
       Esta política afeta todos os tipos de suporte de armazenamento. Por exemplo: unidades flash USB, discos rígidos externos, cartões SD e outros cartões de memória, armazenamento ótico, etc. O armazenamento interno não é afetado, pelo que continua a ser possível aceder aos ficheiros guardados na pasta Transferência. O Google Drive também não é afetado por esta política.
@@ -1287,9 +1266,9 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="5997543603646547632">Utilizar o relógio de 24 horas por predefinição</translation>
 <translation id="6005179188836322782">Ativa a funcionalidade de Navegação segura do <ph name="PRODUCT_NAME" /> e impede os utilizadores de alterarem esta definição.
 
-      Se ativar esta definição, a Navegação segura está sempre ativa.
+      Se ativar esta definição, a Navegação segura estará sempre ativa.
 
-      Se desativar esta definição, a Navegação segura nunca está ativa.
+      Se desativar esta definição, a Navegação segura nunca estará ativa.
 
       Se ativar ou desativar esta definição, os utilizadores não podem alterar nem substituir a definição "Ativar proteção contra phishing e programas maliciosos" no <ph name="PRODUCT_NAME" />.
 
@@ -1364,7 +1343,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="6281043242780654992">Configura as políticas das Mensagens nativas. Os anfitriões de mensagens nativas na lista negra não terão autorização até passarem para a lista de autorizações.</translation>
 <translation id="6282799760374509080">Permitir ou impedir a captura de áudio</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6287694548537067861">Ativa as atualizações de componentes para todos os componentes no <ph name="PRODUCT_NAME" />quando não está definida ou está definida como Verdadeira.
+<translation id="6287694548537067861">Ativa as atualizações de componentes para todos os componentes no <ph name="PRODUCT_NAME" /> quando não está definida ou está definida como Verdadeira.
 
       Se estiver definida como Falsa, as atualizações de componentes são desativadas. Contudo, alguns componentes estão isentos desta política: as atualizações de quaisquer componentes que não contenham código executável, que não alterem significativamente o comportamento do navegador ou que sejam essenciais para a respetiva segurança não são desativadas.
       Alguns exemplos destes componentes incluem as listas de revogação de certificados e os dados da navegação segura.
@@ -1413,6 +1392,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
           O valor da política deve ser especificado em milissegundos. Os valores devem ser inferiores ao atraso de inatividade.</translation>
 <translation id="6536600139108165863">Reinicialização automática no encerramento do dispositivo</translation>
 <translation id="6539246272469751178">Esta política não tem qualquer efeito em aplicações Android. As aplicações Android utilizam sempre o diretório de transferências predefinido e não podem aceder a quaisquer ficheiros transferidos pelo <ph name="PRODUCT_OS_NAME" /> para um diretório de transferências não predefinido.</translation>
+<translation id="654303922206238013">Estratégia de migração de ecryptfs</translation>
 <translation id="6544897973797372144">Se esta política for definida como Verdadeira e a política ChromeOsReleaseChannel não estiver especificada, os utilizadores do domínio inscrito serão autorizados a alterar o canal de lançamento do dispositivo. Se esta política for definida como Falsa, o dispositivo será bloqueado no último canal em que foi definido.
 
       O canal selecionado do utilizador será substituído pela política ChromeOsReleaseChannel, mas, se o canal da política for mais estável do que o instalado no dispositivo, o canal apenas mudará quando a versão do canal mais estável atingir uma versão superior à instalada no dispositivo.</translation>
@@ -1587,6 +1567,13 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 
           Esta política só é respeitada se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
 <translation id="7302043767260300182">Atraso do bloqueio do ecrã quando o dispositivo está ligado à eletricidade</translation>
+<translation id="7309839952828354215">Especifica o comportamento de um dispositivo enviado com ecryptfs e que tem de transitar para a encriptação ext4.
+
+      Se definir esta política como "DisallowArc", as aplicações Android são desativadas para todos os utilizadores no dispositivo (incluindo os que já têm a encriptação ext4) e não é oferecida qualquer migração de ecryptfs para a encriptação ext4 a nenhum utilizador.
+
+      Se definir esta política como "AllowMigration", é proposta aos utilizadores com diretórios principais ecryptfs a migração para a encriptação ext4 conforme seja necessário (atualmente, quando o Android N ficar disponível no dispositivo).
+
+      Se esta política for deixada por definir, o dispositivo comporta-se como se "DisallowArc" fosse a opção escolhida.</translation>
 <translation id="7311458740754205918">Se esta política for definida para verdadeira ou não for definida, a página Novo separador pode mostrar sugestões de conteúdo com base no histórico de navegação, nos interesses ou na localização do utilizador.
 
       Se for definida para falsa, as sugestões de conteúdo geradas automaticamente não são mostradas na página Novo separador.</translation>
@@ -1938,7 +1925,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 
           Se esta política não estiver definida, o <ph name="PRODUCT_NAME" /> tentará detetar se um servidor está na Intranet e só nesse momento irá responder a pedidos IWA. Se um servidor for detetado como Internet, os pedidos IWA serão ignorados pelo <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8672321184841719703">Versão de Atualização Automática de Destino</translation>
-<translation id="867410340948518937">U2F (Universal Second Factor, fator duplo universal)</translation>
+<translation id="867410340948518937">U2F (Universal Second Factor)</translation>
 <translation id="8693243869659262736">Utilizar cliente DNS incorporado</translation>
 <translation id="8704831857353097849">Lista de plug-ins desativados</translation>
 <translation id="8711086062295757690">Especifica a palavra-chave a utilizar como atalho na caixa geral para acionar a pesquisa para este fornecedor. Esta política é opcional. Se não for definida, não será utilizada nenhuma palavra-chave para ativar o fornecedor. Esta política é apenas considerada se a política DefaultSearchProviderEnabled" estiver ativada.</translation>
@@ -1952,8 +1939,6 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 
       Se esta definição estiver desativada, o histórico de transferências e de navegação não poderão ser eliminados.</translation>
 <translation id="8764119899999036911">Especifica se o SPN do Kerberos gerado é baseado no nome de DNS canónico ou no nome introduzido originalmente. Se ativar esta definição, a procura de CNAME será ignorada e será utilizado o nome do servidor introduzido. Se desativar esta definição ou não a definir, o nome canónico do servidor será determinado através da procura de CNAME.</translation>
-<translation id="8774131509736383471">Se esta política for definida como verdadeira, o <ph name="PRODUCT_NAME" /> maximiza incondicionalmente a primeira janela mostrada na primeira execução.
-      Se esta política for definida como falsa ou não for configurada, a decisão de maximizar a primeira janela mostrada depende do tamanho do ecrã.</translation>
 <translation id="87812015706645271">Requer que o nome do utilizador local e o proprietário do anfitrião de acesso remoto coincidam</translation>
 <translation id="8782750230688364867">Especifica a percentagem que determina a escala do atraso de esbatimento do ecrã quando o dispositivo está no modo de apresentação.
 

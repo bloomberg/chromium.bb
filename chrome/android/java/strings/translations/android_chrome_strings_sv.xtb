@@ -69,7 +69,6 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Hindra sidan från att skapa fler dialogrutor</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Ta bort 1 markerat objekt}other{Ta bort # markerade objekt}}</translation>
-<translation id="1629390138158333592">Sök på Internet</translation>
 <translation id="1641113438599504367">Säker webbsökning</translation>
 <translation id="164269334534774161">Det som visas är en offlinekopia av den här sidan från <ph name="CREATION_TIME" /></translation>
 <translation id="1643702317193804718">Översätter sidan till <ph name="SOURCE_LANGUAGE" /> …</translation>
@@ -330,7 +329,6 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="4307992518367153382">Grunderna</translation>
 <translation id="4351244548802238354">Stäng dialogrutan</translation>
 <translation id="4378154925671717803">Telefon</translation>
-<translation id="4381206798889118664">Sök efter … recept</translation>
 <translation id="4384468725000734951">Du söker med Sogou</translation>
 <translation id="4412992751769744546">Tillåt cookies från tredje part</translation>
 <translation id="4432792777822557199">Sidor på <ph name="SOURCE_LANGUAGE" /> översätts till <ph name="TARGET_LANGUAGE" /> från och med nu</translation>
@@ -376,7 +374,6 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="4837753911714442426">Öppna utskriftsalternativ</translation>
 <translation id="4850886885716139402">Visa</translation>
 <translation id="4860895144060829044">Ring</translation>
-<translation id="4869862470313079745">Sök efter … nyheter</translation>
 <translation id="4881695831933465202">Öppna</translation>
 <translation id="4885273946141277891">Fler Chrome-förekomster än det finns stöd för.</translation>
 <translation id="4910889077668685004">Betalningsappar</translation>
@@ -406,7 +403,6 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="5161254044473106830">Titel krävs</translation>
 <translation id="5164482624172255778">Vill du att alternativet att översätta sidor i Google Chrome på <ph name="LANGUAGE" /> från den här webbplatsen ska visas nästa gång?</translation>
 <translation id="5168917394043976756">Öppna navigeringspanelen</translation>
-<translation id="5171045022955879922">Ange eller sök efter webbadress</translation>
 <translation id="5184329579814168207">Öppna i Chrome</translation>
 <translation id="5199929503336119739">Jobbprofil</translation>
 <translation id="5209320130288484488">Det gick inte att hitta några enheter</translation>
@@ -510,7 +506,6 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="6042308850641462728">Mer</translation>
 <translation id="604996488070107836">Det gick inte att ladda ned <ph name="FILE_NAME" /> på grund av ett okänt fel.</translation>
 <translation id="605721222689873409">ÅÅ</translation>
-<translation id="6066049505142453066">Sök efter … väder</translation>
 <translation id="6075798973483050474">Redigera startsidan</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> timmar kvar</translation>
 <translation id="60924377787140961">Fler artiklar visas snart. Ha en bra eftermiddag!</translation>
@@ -604,7 +599,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="688738109438487280">Lägg till befintlig data i <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d öppen flik}other{%1$d öppna flikar}}</translation>
 <translation id="6896758677409633944">Kopiera</translation>
-<translation id="6932129181739884535">Sök eller skriv namnet på en webbplats</translation>
 <translation id="6945221475159498467">Välj</translation>
 <translation id="6963766334940102469">Radera bokmärken</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -825,7 +819,6 @@ Du hämtar nya licenser genom att ansluta till internet och spela upp det nedlad
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Visa original</translation>
 <translation id="9139068048179869749">Fråga innan webbplatser tillåts att skicka aviseringar (rekommenderas)</translation>
-<translation id="9187067407629017315">Skriv en sökning eller en webbplats</translation>
 <translation id="9187199695613236444">Mobilanpassad vy</translation>
 <translation id="9188680907066685419">Logga ut från hanterat konto</translation>
 <translation id="9204836675896933765">1 fil återstår</translation>

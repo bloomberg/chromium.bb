@@ -499,7 +499,6 @@
 <translation id="1709106626015023981"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (原生)</translation>
 <translation id="1711973684025117106">壓縮失敗：發生未預期的錯誤：$1</translation>
 <translation id="1712349894969001173">在 iPhone 上取得這個密碼</translation>
-<translation id="1719028357511747483">搜尋你的 <ph name="DEVICE_TYPE" />、應用程式、網頁...</translation>
 <translation id="1719312230114180055">注意：使用高強度的密碼或 PIN 碼會比感應指紋來得安全。</translation>
 <translation id="1720318856472900922">TLS WWW 伺服器驗證</translation>
 <translation id="1720372306711178108">延伸桌面</translation>
@@ -4043,7 +4042,7 @@
 <translation id="7131040479572660648">讀取你在 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> 和 <ph name="WEBSITE_3" /> 上產生的資料</translation>
 <translation id="713122686776214250">新增網頁(&amp;G)...</translation>
 <translation id="7134098520442464001">縮小文字</translation>
-<translation id="7136694880210472378">設定為預設</translation>
+<translation id="7136694880210472378">設為預設</translation>
 <translation id="7136984461011502314">歡迎使用 <ph name="PRODUCT_NAME" /></translation>
 <translation id="7138678301420049075">其他</translation>
 <translation id="713888829801648570">很抱歉，你目前處於離線狀態，因此無法驗證密碼。</translation>
@@ -4746,7 +4745,7 @@
 <translation id="8226619461731305576">佇列</translation>
 <translation id="8226742006292257240">以下是你的電腦專用的 TPM 密碼 (由系統隨機產生)：</translation>
 <translation id="8227119283605456246">附加檔案</translation>
-<translation id="8234795456569844941">為了協助我們的工程師修正這項問題，請說明你在收到設定檔錯誤訊息前執行的動作：</translation>
+<translation id="8234795456569844941">請告訴我們在你收到設定檔錯誤訊息前執行的動作，以協助工程師修正此問題：</translation>
 <translation id="8238649969398088015">說明提示</translation>
 <translation id="8240697550402899963">使用傳統主題</translation>
 <translation id="8241040075392580210">晴時多雲</translation>

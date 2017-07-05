@@ -513,6 +513,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
           Ak toto pravidlo ponecháte nenastavené, nastavenie sa povolí.</translation>
 <translation id="2824715612115726353">Povoliť režim inkognito</translation>
+<translation id="2838830882081735096">Zakázať migráciu dát a ARC</translation>
 <translation id="2844404652289407061">Povolí dostupnosť Vyhľadávania klepnutím v zobrazení obsahu v prehliadači <ph name="PRODUCT_NAME" />.
 
       Ak toto nastavenie povolíte, bude mať používateľ k dispozícii Vyhľadávanie klepnutím a bude si môcť túto funkciu vypnúť alebo zapnúť.
@@ -694,14 +695,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
           Toto pravidlo sa rešpektuje iba v prípade, ak je povolené pravidlo DefaultSearchProviderEnabled.</translation>
 <translation id="350797926066071931">Povoliť službu Translate</translation>
 <translation id="3528000905991875314">Povoliť alternatívne chybové stránky</translation>
-<translation id="3538538104630456270">Toto súvisiace nastavenie sa používalo predtým, ako bolo predstavené opätovné overenie pri zobrazovaní hesiel. Odvtedy nemalo toto nastavenie, a teda ani toto pravidlo, žiadny vplyv na správanie Chromu. Aktuálne správanie Chromu je teraz rovnaké, ako keby bolo toto pravidlo nastavené na možnosť, ktorá zakazuje zobrazovanie hesiel formou čitateľného textu na stránke s nastaveniami správcu hesiel. Znamená to, že stránka s nastaveniami obsahuje iba zástupný symbol a Chrome zobrazí heslo iba po kliknutí na možnosť Zobraziť (a po opätovnom overení, ak ho používate). Pôvodný popis tohto pravidla je uvedený nižšie.
-
-          Určuje, či môžu používatelia zobraziť heslá v správcovi hesiel formou čitateľného textu.
-
-          
-Ak toto nastavenie zakážete, v okne správcu hesiel nebude možné zobraziť uložené heslá formou čitateľného textu.
-
-          Ak toto nastavenie povolíte alebo ho nenastavíte, používatelia budú môcť v správcovi hesiel zobraziť uložené heslá formou čitateľného textu.</translation>
 <translation id="3547954654003013442">Nastavenia servera proxy</translation>
 <translation id="3591584750136265240">Konfigurácia správania pri overovaní prihlasovacích údajov</translation>
 <translation id="3627678165642179114">Povoliť alebo zakázať webovú službu kontroly pravopisu</translation>
@@ -895,23 +888,6 @@ Ak toto nastavenie zakážete, v okne správcu hesiel nebude možné zobraziť 
 <translation id="4239720644496144453">V prípade aplikácií pre Android sa nepoužíva vyrovnávacia pamäť. Ak si viacero používateľov nainštaluje rovnakú aplikáciu pre Android, stiahne sa nanovo pre každého používateľa.</translation>
 <translation id="4250680216510889253">Nie</translation>
 <translation id="4261820385751181068">Jazyk prihlasovacej obrazovky zariadenia</translation>
-<translation id="4275782538576261754">Umožňuje konfigurovať typ súborov na stiahnutie, ktoré <ph name="PRODUCT_NAME" /> úplne zablokuje, a zabráni používateľom prepísať toto bezpečnostné rozhodnutie.
-
-      Ak nastavíte toto pravidlo, <ph name="PRODUCT_NAME" /> zablokuje určité typy súborov na stiahnutie a zabráni používateľom obísť bezpečnostné upozornenia.
-
-      Keď vyberiete možnosť Blokovať nebezpečné súbory na stiahnutie, budú povolené všetky súbory na stiahnutie okrem tých, pri ktorých sa zobrazujú upozornenia Bezpečného prehliadania.
-
-      Keď vyberiete možnosť Blokovať potenciálne nebezpečné súbory na stiahnutie, budú povolené všetky súbory na stiahnutie okrem tých, pri ktorých sa zobrazujú upozornenia Bezpečného prehliadania označujúce potenciálne nebezpečné súbory na stiahnutie.
-
-      Keď vyberiete možnosť Blokovať všetky súbory na stiahnutie, budú blokované všetky súbory na stiahnutie.
-
-      Ak toto pravidlo nenastavíte (alebo vyberiete možnosť Žiadne špeciálne obmedzenia), súbory na stiahnutie budú prechádzať obvyklými bezpečnostnými obmedzeniami na základe výsledkov analýzy Bezpečného prehliadania.
-
-      Upozorňujeme, že tieto obmedzenia platia pre súbory na stiahnutie spustené z obsahu webových stránok, ako aj prostredníctvom možnosti Stiahnuť odkaz… v kontextovej ponuke.
-
-      Tieto obmedzenia neplatia pre možnosť Uložiť / stiahnuť aktuálne zobrazenej stránky ani na ukladanie položiek ako súborov PDF prostredníctvom možností tlače.
-
-      Ďalšie informácie o Bezpečnom prehliadaní získate na adrese https://developers.google.com/safe-browsing.</translation>
 <translation id="427632463972968153">Určuje parametre, ktoré sa použijú pri hľadaní obrázkov pomocou metódy POST. Pozostáva z párov názov/hodnota oddelených čiarkami. Ak je hodnota parameter šablóny, napr. hodnota {imageThumbnail} v príklade vyššie, bude nahradená údajmi skutočnej miniatúry obrázkov.
 
           Toto pravidlo je voliteľné. Ak nie je nastavené, žiadosť o vyhľadávanie obrázka sa odošle pomocou metódy GET.
@@ -937,6 +913,7 @@ Ak toto nastavenie zakážete, v okne správcu hesiel nebude možné zobraziť 
 <translation id="436581050240847513">Hlásiť sieťové rozhrania zariadenia</translation>
 <translation id="4372704773119750918">Nepovoliť podnikovému používateľovi byť súčasťou viacnásobného profilu (primárneho ani sekundárneho)</translation>
 <translation id="4377599627073874279">Povoliť všetkým stránkam zobrazovať obrázky</translation>
+<translation id="437791893267799639">Pravidlo nie je nastavené, zakázať migráciu dát a ARC</translation>
 <translation id="4389091865841123886">Konfigurácia vzdialeného overenia s použitím mechanizmu TPM.</translation>
 <translation id="4418726081189202489">Ak toto pravidlo nastavíte na hodnotu False, <ph name="PRODUCT_NAME" /> prestane odosielať príležitostné dopyty na server Google s cieľom získať presnú časovú pečiatku. Ak pravidlo nastavíte na hodnotu True alebo ju nenastavíte, tieto dopyty budú povolené.</translation>
 <translation id="4423597592074154136">Ručne určiť nastavenia servera proxy</translation>
@@ -1254,6 +1231,7 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 <translation id="5586942249556966598">Nevykonať žiadnu akciu</translation>
 <translation id="5630352020869108293">Obnoviť poslednú reláciu</translation>
 <translation id="5645779841392247734">Povoliť súbory cookie na týchto webových stránkach</translation>
+<translation id="5693469654327063861">Povoliť migráciu dát</translation>
 <translation id="5694594914843889579">Ak je toto pravidlo nastavené na hodnotu True, externé úložisko sa nezobrazí v prehliadači súborov.
 
       Toto pravidlo sa vzťahuje na všetky typy pamäťových médií, ako sú prenosné disky USB, externé pevné disky, SD karty a ďalšie typy pamäťových kariet, optické úložiská a pod. Na interné úložisko sa nevzťahuje, takže položky v priečinku Stiahnuté súbory je možné otvoriť. Toto pravidlo tiež nemá žiadny vplyv na službu Disk Google.
@@ -1356,7 +1334,7 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 <translation id="5966615072639944554">Rozšírenia s povolením používať vzdialené overenie API</translation>
 <translation id="5983708779415553259">Predvolené správanie pre webové stránky, ktoré sa nenachádzajú v žiadnom obsahovom balíku</translation>
 <translation id="5997543603646547632">Používať v predvolenom nastavení 24-hodinový formát hodín</translation>
-<translation id="6005179188836322782">Umožňuje povoliť funkciu Bezpečné prehliadania <ph name="PRODUCT_NAME" /> a zabráni používateľom zmeniť toto nastavenie.
+<translation id="6005179188836322782">Umožňuje povoliť funkciu Bezpečné prehliadanie <ph name="PRODUCT_NAME" /> a zabráni používateľom zmeniť toto nastavenie.
 
       Ak toto nastavenie povolíte, Bezpečné prehliadanie bude vždy zapnuté.
 
@@ -1442,7 +1420,7 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
 <translation id="6287694548537067861">Umožňuje povoliť aktualizácie všetkých komponentov v prehliadači <ph name="PRODUCT_NAME" />, keď nie je nastavené alebo je nastavené na možnosť True.
 
-      Ak ho nastavíte na možnosť False, aktualizácie komponentov budú zakázané. Na niektoré komponenty sa však toto pravidlo nevzťahuje: nebudú aktualizované komponenty bez spustiteľného kódu ani také, ktoré podstatne nezmenia správanie prehliadača alebo sú dôležité pre jeho zabezpečenie.
+      Ak ho nastavíte na možnosť False, aktualizácie komponentov budú zakázané. Na niektoré komponenty sa však toto pravidlo nevzťahuje: nebudú zakázané aktualizácie komponentov bez spustiteľného kódu ani také, ktoré podstatne nezmenia správanie prehliadača alebo sú dôležité pre jeho zabezpečenie.
       Medzi príklady týchto komponentov patria zoznamy zrušení certifikátov a dáta bezpečného prehliadania.
       Ďalšie informácie o Bezpečnom prehliadaní získate na adrese https://developers.google.com/safe-browsing.</translation>
 <translation id="6310223829319187614">Povolenie automatického dopĺňania názvu domény počas prihlasovania používateľa</translation>
@@ -1495,6 +1473,7 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
           Hodnota pravidla by mala byť uvedená v milisekundách. Hodnoty musia byť nižšie ako oneskorenie režimu nečinnosti.</translation>
 <translation id="6536600139108165863">Automaticky reštartovať po vypnutí zariadenia</translation>
 <translation id="6539246272469751178">Toto pravidlo nemá žiaden vplyv na aplikácie pre Android. Aplikácie pre Android vždy používajú predvolený adresár sťahovania a nemôžu pristupovať k súborom stiahnutým systémom <ph name="PRODUCT_OS_NAME" /> do iného ako predvoleného adresára.</translation>
+<translation id="654303922206238013">Stratégia migrácie pre šifrovanie ecryptfs</translation>
 <translation id="6544897973797372144">Ak je toto pravidlo nastavené na možnosť True a pravidlo ChromeOsReleaseChannel nie je určené, používatelia budú môcť v zariadení meniť kanál na vydávanie nových verzií. Ak je toto pravidlo nastavené na možnosť False, zariadenie bude uzamknuté v kanáli, v ktorom bolo naposledy nastavené.
 
       Kanál vybratý používateľom bude prepísaný pravidlom ChromeOsReleaseChannel, avšak ak je kanál pravidla stabilnejší ako kanál nainštalovaný v zariadení, kanál sa zmení až potom, čo bude stabilnejší kanál vo vyššej verzii ako kanál nainštalovaný v zariadení.</translation>
@@ -1685,6 +1664,13 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 
           Toto pravidlo sa použije iba v prípade, že je povolené pravidlo DefaultSearchProviderEnabled.</translation>
 <translation id="7302043767260300182">Oneskorenie uzamknutia obrazovky pri používaní napájacieho zdroja</translation>
+<translation id="7309839952828354215">Umožňuje určiť, ako sa má správať zariadenie, ktoré bolo dodané so šifrovaním ecryptfs a ktoré potrebuje prejsť na šifrovanie ext4.
+
+      Ak toto pravidlo nastavíte na možnosť DisallowArc, aplikácie pre Android budú zakázané pre všetkých používateľov daného zariadenia (vrátane tých, ktorí sú pripravení prejsť na šifrovanie ext4) a nikomu nebude ponúknutá možnosť migrácie zo šifrovania ecryptfs na ext4.
+
+      Ak toto pravidlo nastavíte na možnosť AllowMigration, používatelia s domácimi adresármi ecryptfs získajú v prípade potreby možnosť migrovať na šifrovanie ext4 (momentálne vtedy, keď je v zariadení sprístupnený Android N).
+
+      Ak toto pravidlo nenastavíte, zariadenie sa bude správať, akoby bola vybraná možnosť DisallowArc.</translation>
 <translation id="7311458740754205918">Ak toto pravidlo nastavíte na hodnotu True alebo ho nenastavíte, na stránke na novej karte sa môžu zobrazovať návrhy obsahu na základe používateľovej histórie prehliadania, záujmov alebo polohy.
 
       Ak toto pravidlo nastavíte na možnosť False, automaticky generované návrhy obsahu sa na stránke na novej karte nezobrazujú.</translation>
@@ -2059,7 +2045,7 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 
           Ak pravidlo zostane nenastavené, prehliadač <ph name="PRODUCT_NAME" /> sa najprv pokúsi zistiť, či sa server nachádza v sieti intranet, a až potom bude reagovať na žiadosti IWA. Ak sa zistí, že je server v sieti internet, prehliadač <ph name="PRODUCT_NAME" /> bude žiadosti IWA ignorovať.</translation>
 <translation id="8672321184841719703">Cieľová verzia automatickej aktualizácie</translation>
-<translation id="867410340948518937">U2F (Univerzálny druhý faktor)</translation>
+<translation id="867410340948518937">U2F (univerzálny druhý faktor)</translation>
 <translation id="8693243869659262736">Použiť vstavaného klienta DNS</translation>
 <translation id="8704831857353097849">Zoznam zakázaných doplnkov</translation>
 <translation id="8711086062295757690">Určuje kľúčové slovo, ktoré vo všeobecnom poli spúšťa vyhľadávanie tohto poskytovateľa. Toto pravidlo je voliteľné.
@@ -2081,8 +2067,6 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
           Ak toto nastavenie povolíte, vyhľadávanie záznamov CNAME sa preskočí a použije sa zadaný názov servera.
 
           Ak toto nastavenie zakážete alebo ho ponecháte nenastavené, kanonický názov servera sa určí prostredníctvom vyhľadávania záznamov CNAME.</translation>
-<translation id="8774131509736383471">Ak je toto pravidlo nastavené na hodnotu True, prehliadač <ph name="PRODUCT_NAME" /> sa vždy pokúsi pri prvom spustení maximalizovať prvé okno.
-      Ak je toto pravidlo nastavené na hodnotu False alebo nie je nakonfigurované, o maximalizácii prvého zobrazeného okna sa rozhodne podľa veľkosti obrazovky.</translation>
 <translation id="87812015706645271">Vyžaduje, aby sa meno miestneho používateľa a vlastníka hostiteľa vzdialeného prístupu zhodovali</translation>
 <translation id="8782750230688364867">Určuje percentuálnu hodnotu, o ktorú sa predĺži oneskorenie stmavenia obrazovky, keď je zariadenie v režime prezentácie.
 

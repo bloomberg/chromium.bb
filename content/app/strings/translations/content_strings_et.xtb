@@ -10,7 +10,6 @@
 <translation id="1188858454923323853">täiendav</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1206693055195146388">liugur</translation>
-<translation id="1235745349614807883">Kustuta viimased otsingud</translation>
 <translation id="1281252709823657822">dialoog</translation>
 <translation id="1342835525016946179">artikkel</translation>
 <translation id="1359897965706325498">bänner</translation>
@@ -39,7 +38,6 @@
 <translation id="248395913932153421">päev</translation>
 <translation id="2507943997699731163">Täitke see väli.</translation>
 <translation id="2508569020611168319">vahelehtede loend</translation>
-<translation id="2548326553472216322">Pole viimaseid otsingud</translation>
 <translation id="2561842179657104141">kuva rohkem meedia juhtnuppe</translation>
 <translation id="2572483411312390101">esitus</translation>
 <translation id="2613802280814924224">Sisestage kehtiv väärtus. Lähim kehtiv väärtus on <ph name="VALID_VALUE" />.</translation>
@@ -51,7 +49,6 @@
 <translation id="2759744352195237655">hüpikunupp</translation>
 <translation id="2761667185364618470">Märkige see ruut, kui soovite jätkata.</translation>
 <translation id="2896972712917208084">raadionuppude grupp</translation>
-<translation id="2901282870647571346">video praegune olek</translation>
 <translation id="2908441821576996758">Sisestage meiliaadresside loend komadega eraldatult.</translation>
 <translation id="2940813599313844715">objekt</translation>
 <translation id="2942448076852699108">esiletõstetud sisu</translation>
@@ -95,7 +92,6 @@
 <translation id="4992066212339426712">Tühista vaigistus</translation>
 <translation id="49969490063480558">Sisestage märgile „<ph name="ATSIGN" />” järgnev osa. Aadress „<ph name="INVALIDADDRESS" />” pole täielik.</translation>
 <translation id="5034860022980953847">edenemise näidik</translation>
-<translation id="5048533449481078685">loendilooja</translation>
 <translation id="5117590920725113268">Järgmise kuu kuvamine</translation>
 <translation id="512758898067543763">rea päis</translation>
 <translation id="5164977714490026579">Väärtus peab olema suurem või võrdne <ph name="MINIMUM" />-ga.</translation>
@@ -113,7 +109,6 @@
 <translation id="5643186887447432888">nupp</translation>
 <translation id="5677946354068040947">rohkem valikuid</translation>
 <translation id="57838592816432529">Vaigista</translation>
-<translation id="5843503607508392247">Muu ...</translation>
 <translation id="5860033963881614850">Väljas</translation>
 <translation id="588258955323874662">Täisekraan</translation>
 <translation id="5939518447894949180">Lähtesta</translation>
@@ -123,8 +118,6 @@
 <translation id="6023896073578205740">loendikast</translation>
 <translation id="6101327004457443354">heliraja vaigistamise tühistamine</translation>
 <translation id="6164829606128959761">mõõdik</translation>
-<translation id="6270583010843788609">video ajajoone pisipilt</translation>
-<translation id="6359256949422175976">video ajakursori pisipilt</translation>
 <translation id="6398862346408813489">Kuu valikupaneeli kuvamine</translation>
 <translation id="6404546809543547843">heli ajamõõdik</translation>
 <translation id="648732519525291180">kellaaja valija</translation>
@@ -132,7 +125,6 @@
 <translation id="663493177488814956">voog</translation>
 <translation id="6637586476836377253">logi</translation>
 <translation id="6643016212128521049">Tühjenda</translation>
-<translation id="6663448176199120256">Viimased otsingud</translation>
 <translation id="668171684555832681">Muu...</translation>
 <translation id="6692633176391053278">stepper</translation>
 <translation id="6739588121953935928">joonlaud</translation>
@@ -145,7 +137,6 @@
 <translation id="6934078000481955284">plokktsitaat</translation>
 <translation id="6941933287844615239">laadi meedia alla</translation>
 <translation id="6989848892321993519">Pikendage teksti vähemalt <ph name="MIN_CHARACTERS" /> tähemärgini (kasutate praegu ühte tähemärki).</translation>
-<translation id="7057186640035488495">video aeg</translation>
 <translation id="709897737746224366">Vastendage nõutav vorming.</translation>
 <translation id="7223624360433298498">möödunud aeg</translation>
 <translation id="7263440858009898357">Valige loendist element.</translation>
@@ -166,10 +157,8 @@
 <translation id="8053789581856978548">otsinguteksti väli</translation>
 <translation id="8115662671911883373">subtiitrite kuvamise alustamine</translation>
 <translation id="8117451130807776954">See nädal</translation>
-<translation id="8141602879876242471">See on otsitav indeks. Sisestage otsingu jaoks märksõnad:</translation>
 <translation id="819205353528511139">video esitus täisekraani režiimis</translation>
 <translation id="8199524924445686405">aaaa</translation>
-<translation id="8244226242650769279">hüperpilt</translation>
 <translation id="8284326494547611709">Subtiitrid</translation>
 <translation id="835897206747267392">Kehtetu väärtus.</translation>
 <translation id="8433900881053900389">tööriistariba</translation>

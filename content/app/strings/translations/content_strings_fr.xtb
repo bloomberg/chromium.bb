@@ -10,7 +10,6 @@
 <translation id="1188858454923323853">complémentaire</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1206693055195146388">curseur</translation>
-<translation id="1235745349614807883">Effacer les recherches récentes</translation>
 <translation id="1281252709823657822">boîte de dialogue</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">bannière</translation>
@@ -39,7 +38,6 @@
 <translation id="248395913932153421">Jour</translation>
 <translation id="2507943997699731163">Veuillez renseigner ce champ.</translation>
 <translation id="2508569020611168319">liste d'onglets</translation>
-<translation id="2548326553472216322">Aucune recherche récente</translation>
 <translation id="2561842179657104141">afficher plus de commandes multimédias</translation>
 <translation id="2572483411312390101">lire</translation>
 <translation id="2613802280814924224">Veuillez saisir une valeur valide. La valeur valide la plus proche est "<ph name="VALID_VALUE" />".</translation>
@@ -51,7 +49,6 @@
 <translation id="2759744352195237655">bouton pop-up</translation>
 <translation id="2761667185364618470">Veuillez cocher cette case si vous souhaitez continuer.</translation>
 <translation id="2896972712917208084">groupe de cases d'option</translation>
-<translation id="2901282870647571346">état actuel du film</translation>
 <translation id="2908441821576996758">Veuillez saisir une liste d'adresses e-mail séparées par une virgule.</translation>
 <translation id="2940813599313844715">objet</translation>
 <translation id="2942448076852699108">contenu en surbrillance</translation>
@@ -95,7 +92,6 @@
 <translation id="4992066212339426712">Réactiver le son</translation>
 <translation id="49969490063480558">Veuillez saisir la partie manquante après le symbole "<ph name="ATSIGN" />". L'adresse "<ph name="INVALIDADDRESS" />" est incomplète.</translation>
 <translation id="5034860022980953847">indicateur de progression</translation>
-<translation id="5048533449481078685">marqueur de liste</translation>
 <translation id="5117590920725113268">Afficher le mois suivant</translation>
 <translation id="512758898067543763">en-tête de ligne</translation>
 <translation id="5164977714490026579">Cette valeur doit être supérieure ou égale à <ph name="MINIMUM" />.</translation>
@@ -113,7 +109,6 @@
 <translation id="5643186887447432888">bouton</translation>
 <translation id="5677946354068040947">plus d'options</translation>
 <translation id="57838592816432529">Couper le son</translation>
-<translation id="5843503607508392247">Autre…</translation>
 <translation id="5860033963881614850">Désactivé</translation>
 <translation id="588258955323874662">Plein écran</translation>
 <translation id="5939518447894949180">Réinitialiser</translation>
@@ -123,8 +118,6 @@
 <translation id="6023896073578205740">zone de liste</translation>
 <translation id="6101327004457443354">réactiver le son de la piste audio</translation>
 <translation id="6164829606128959761">outil de mesure</translation>
-<translation id="6270583010843788609">vignette de la chronologie du film</translation>
-<translation id="6359256949422175976">vignette de la barre de défilement de la durée du film</translation>
 <translation id="6398862346408813489">Afficher le panneau de sélection du mois</translation>
 <translation id="6404546809543547843">curseur durée audio</translation>
 <translation id="648732519525291180">outil de sélection de l'heure</translation>
@@ -132,7 +125,6 @@
 <translation id="663493177488814956">flux</translation>
 <translation id="6637586476836377253">journal</translation>
 <translation id="6643016212128521049">Effacer</translation>
-<translation id="6663448176199120256">Recherches récentes</translation>
 <translation id="668171684555832681">Autre...</translation>
 <translation id="6692633176391053278">curseur</translation>
 <translation id="6739588121953935928">règle</translation>
@@ -145,7 +137,6 @@
 <translation id="6934078000481955284">bloc de citation</translation>
 <translation id="6941933287844615239">télécharger des contenus multimédias</translation>
 <translation id="6989848892321993519">Veuillez allonger ce texte pour qu'il comporte au moins <ph name="MIN_CHARACTERS" /> caractères. Il en compte actuellement un seul.</translation>
-<translation id="7057186640035488495">durée du film</translation>
 <translation id="709897737746224366">Veuillez respecter le format requis.</translation>
 <translation id="7223624360433298498">temps écoulé</translation>
 <translation id="7263440858009898357">Sélectionnez un élément dans la liste.</translation>
@@ -166,10 +157,8 @@
 <translation id="8053789581856978548">champ de recherche de texte</translation>
 <translation id="8115662671911883373">commencer à afficher les sous-titres</translation>
 <translation id="8117451130807776954">Cette semaine</translation>
-<translation id="8141602879876242471">Vous pouvez lancer des recherches dans cet index. Pour cela, entrez des mots clés de recherche :</translation>
 <translation id="819205353528511139">lire le film en mode plein écran</translation>
 <translation id="8199524924445686405">aaaa</translation>
-<translation id="8244226242650769279">image map</translation>
 <translation id="8284326494547611709">Sous-titres</translation>
 <translation id="835897206747267392">Valeur incorrecte</translation>
 <translation id="8433900881053900389">barre d'outils</translation>

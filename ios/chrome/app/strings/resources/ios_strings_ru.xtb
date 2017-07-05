@@ -187,7 +187,6 @@
 
 Данные зашифрованы с помощью кодовой фразы. Введите ее, чтобы начать синхронизацию.</translation>
 <translation id="473775607612524610">Обновление</translation>
-<translation id="4750394297954878236">Предложения</translation>
 <translation id="4773461607542755386">Открыть эту страницу в <ph name="APP_NAME" />?</translation>
 <translation id="481968316161811770">Cookie, данные сайтов</translation>
 <translation id="4860895144060829044">Позвонить</translation>
@@ -312,7 +311,7 @@
 <translation id="7131892264600713844">Показана история только с этого устройства. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Полное имя</translation>
 <translation id="7136892417564438900">Камера недоступна</translation>
-<translation id="7159472599653637159">Требуется моб. версия</translation>
+<translation id="7159472599653637159">Мобильная версия</translation>
 <translation id="7167621057293532233">Типы данных</translation>
 <translation id="7175593937868963913">Текст сообщения</translation>
 <translation id="7189598951263744875">Поделиться…</translation>

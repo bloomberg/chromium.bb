@@ -495,6 +495,7 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
 
       Jos käytäntöä ei määritetä, asetus on käytössä.</translation>
 <translation id="2824715612115726353">Ota incognito-tila käyttöön</translation>
+<translation id="2838830882081735096">Estä tietojen siirtäminen ja ARC</translation>
 <translation id="2844404652289407061">Määrittää, näyttääkö <ph name="PRODUCT_NAME" /> Koskettamalla hakemisen sisältönäkymässä.
 
       Jos asetus on käytössä, Koskettamalla hakeminen on käytettävissä ja käyttäjä voi halutessaan ottaa sen käyttöön tai poistaa käytöstä.
@@ -667,13 +668,6 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
           Käytäntö on voimassa vain, jos käytäntö DefaultSearchProviderEnabled on käytössä.</translation>
 <translation id="350797926066071931">Ota Kääntäjä käyttöön</translation>
 <translation id="3528000905991875314">Ota vaihtoehtoiset virhesivut käyttöön</translation>
-<translation id="3538538104630456270">Mainittua asetusta käytettiin ennen kuin salasanojen tarkastelun uudelleentodennus otettiin käyttöön. Siitä lähtien asetuksella ja sen myötä tällä käytännöllä ei ole ollut vaikutusta Chromen toimintaan. Chrome toimii tällä hetkellä samoin kuin jos käytäntö olisi määritetty poistamaan käytöstä salasanojen näyttäminen tekstinä salasanan hallinnan asetussivulla. Tämä tarkoittaa sitä, että asetussivu sisältää vain paikkamerkin ja Chrome näyttää salasanan vain jos käyttäjä klikkaa Näytä (ja uudelleentodennuksen yhteydessä soveltuvissa tapauksissa). Alla on käytännön alkuperäinen kuvaus.
-
-          Hallinnoi, voiko käyttäjä näyttää salasanoja tekstinä salasanan hallinnassa.
-
-          Jos poistat tämän asetuksen käytöstä, salasanan hallinta ei salli tallennettujen salasanojen näyttämistä tekstinä salasanan hallinnan ikkunassa.
-
-          Jos otat tämän käytännön käyttöön tai et määritä sitä ollenkaan, käyttäjät voivat nähdä salasanansa tekstinä salasanan hallinnassa.</translation>
 <translation id="3547954654003013442">Välityspalvelimen asetukset</translation>
 <translation id="3591584750136265240">Määritä kirjautumistodennuksen käytös.</translation>
 <translation id="3627678165642179114">Ota käyttöön tai poista käytöstä oikoluku-verkkopalvelu</translation>
@@ -864,23 +858,6 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 <translation id="4239720644496144453">Välmuistia ei käytetä Android-sovelluksille. Jos useat käyttäjät asentavat saman Android-sovelluksen, se ladataan uudelleen jokaiselle käyttäjälle.</translation>
 <translation id="4250680216510889253">Ei</translation>
 <translation id="4261820385751181068">Laitteen kirjautumisnäytön kieli- ja maa-asetus</translation>
-<translation id="4275782538576261754">Määrittää lataukset, jotka <ph name="PRODUCT_NAME" /> estää ilman, että käyttäjät voivat muuttaa tätä asetusta.
-
-      Jos tämä käytäntö on määritetty, <ph name="PRODUCT_NAME" /> estää tietyntyyppisiä latauksia eikä anna käyttäjien ohittaa turvallisuusilmoituksia.
-
-      Kun Estä vaaralliset lataukset on valittu, lataukset sallitaan, jos niihin ei liity Selaussuojan varoitusta.
-
-      Kun Estä mahdollisesti vaaralliset lataukset on valittu, lataukset sallitaan, jos niihin ei liity Selaussuojan varoitusta mahdollisesta haitallisuudesta.
-
-      Kun Estä kaikki lataukset on valittu, kaikki lataukset estetään.
-
-      Jos tälle käytännölle ei ole määritetty arvoa tai Ei erikoisrajoituksia on valittu, latauksiin sovelletaan tavallisia turvallisuusrajoituksia, jotka perustuvat Selaussuoja-tarkistuksen tuloksiin.
-
-      Nämä rajoitukset koskevat verkkosivuilla ja kontekstivalikon lataa linkki ‑valinnalla käynnistettyjä latauksia 
-
-      Nämä rajoitukset eivät koske avoimen sivun tallentamista tai lataamista tai PDF:nä tallentamista tulostusvalinnoissa.
-
-      Voit lukea lisää Selaussuojasta osoitteessa https://developers.google.com/safe-browsing.</translation>
 <translation id="427632463972968153">Määrittää parametrit, joita käytetään tehtäessä kuvahakuja POST-metodin avulla. Se koostuu pilkuilla erotetuista nimi/arvo-pareista. Jos arvo on malliparametri kuten yllä olevan esimerkin {imageThumbnail}, se korvataan oikeilla pikkukuvatiedoilla.
 
           Tämä käytäntö on valinnainen. Jos sitä ei ole määritetty, kuvahakupyyntö lähetetään GET-metodin avulla.
@@ -906,6 +883,7 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 <translation id="436581050240847513">Ilmoita laitteen verkkokäyttöliittymät</translation>
 <translation id="4372704773119750918">Älä salli yrityskäyttäjän olla osa moniprofiilia (ensisijainen tai toissijainen)</translation>
 <translation id="4377599627073874279">Salli kaikkien sivustojen näyttää kaikki kuvat</translation>
+<translation id="437791893267799639">Käytäntöä ei määritetty, estä tietojen siirtäminen ja ARC</translation>
 <translation id="4389091865841123886">Määritä etätodennus TPM-mekanismilla.</translation>
 <translation id="4418726081189202489">Jos tämän käytännön arvo on Epätosi, <ph name="PRODUCT_NAME" /> ei voi lähettää ajoittaisia kyselyjä Googlen palvelimille oikean aikaleiman saamiseksi. Jos tämän käytännön arvo on Tosi tai sillä ei ole arvoa, nämä kyselyt sallitaan.</translation>
 <translation id="4423597592074154136">Määritä välityspalvelimen asetukset manuaalisesti</translation>
@@ -1189,6 +1167,7 @@ Jos käytäntöä ei määritetä, käyttäjät voivat valita, tuleeko hylly pii
 <translation id="5586942249556966598">Ei toimia</translation>
 <translation id="5630352020869108293">Palauta edellinen käyttökerta</translation>
 <translation id="5645779841392247734">Salli evästeet näissä sivustoissa</translation>
+<translation id="5693469654327063861">Salli tietojen siirtäminen</translation>
 <translation id="5694594914843889579">Jos tämän käytännön arvoksi on määritetty tosi, ulkoista tallennustilaa ei voi käyttää tiedostoselaimessa.
 
       Käytäntö koskee kaikentyyppistä tallennustilaa, esimerkiksi USB-muistitikkuja, ulkoisia kiintolevyjä, SD- ja muita muistikortteja, optisia levyjä jne. Käytäntö ei vaikuta sisäiseen tallennustilaan, joten latauskansioon tallennettuja tiedostoja voi käyttää. Käytäntö ei myöskään koske Google Drivea.
@@ -1413,6 +1392,7 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
           Tämän käytännön arvo täytyy määrittää millisekunteina. Arvo rajoitetaan käyttämättömyysajan arvoa pienemmäksi.</translation>
 <translation id="6536600139108165863">Automaattinen uudelleenkäynnistys laitteen sammuessa</translation>
 <translation id="6539246272469751178">Tällä käytännöllä ei ole vaikutusta Android-sovelluksiin. Android-sovellukset käyttävät aina oletuslataushakemistoa, eivätkä voi käyttää kohteen <ph name="PRODUCT_OS_NAME" /> muualle kuin oletuslataushakemistoon lataamia tiedostoja.</translation>
+<translation id="654303922206238013">Ecryptfs-siirtomenettely</translation>
 <translation id="6544897973797372144">Jos käytännön arvo on Tosi ja ChromeOsReleaseChannel-käytäntöä ei ole määritetty, käyttäjät voivat vaihtaa laitteen julkaisuversiota. Jos käytännön arvo on Epätosi, laitteeseen lukitaan viimeksi määritetty julkaisuversio.
 
       ChromeOsReleaseChannel-käytäntö ohittaa käyttäjän valitseman julkaisuversion. Jos käytännössä määritetty versio on vakaampi kuin laitteelle asennettu versio, versiota vaihdetaan vasta, kun vakaamman julkaisuversion versionumero on laitteelle asennettua julkaisuversiota suurempi.</translation>
@@ -1585,6 +1565,13 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 
           Tätä käytäntöä noudatetaan vain, jos DefaultSearchProviderEnabled-käytäntö on käytössä.</translation>
 <translation id="7302043767260300182">Ruudun lukituksen viive käytettäessä laitetta verkkovirralla</translation>
+<translation id="7309839952828354215">Määrittää laitteen toiminnan, jos se toimitettiin ecryptfs-salauksen kanssa mutta on siirrettävä ext4-salaukseen.
+
+      Jos käytännön arvoksi määritetään DisallowArc, Android-sovellukset poistetaan kaikkien laitteen käyttäjien (myös niiden, joilla on jo ext4-salaus) käytöstä eikä käyttäjille tarjota lainkaan ecryptfs–ext4-siirtymistä.
+
+      Jos käytännön arvoksi määritetään AllowMigration, ext4-salaukseen siirtymistä tarjotaan tarvittaessa (tällä hetkellä Android N:n tullessa käyttöön laitteella), jos käyttäjän kotihakemisto käyttää ecryptfs-salausta.
+
+      Jos tätä käytäntöä ei määritetä, toiminta vastaa DisallowArc-valintaa.</translation>
 <translation id="7311458740754205918">Jos tämän käytännön arvo on tosi tai sitä ei ole määritetty, Uusi välilehti ‑sivulla voidaan näyttää sisältöehdotuksia käyttäjän historian, kiinnostuksen kohteiden tai sijainnin perusteella.
 
       Jos tämän käytännön arvo on epätosi, Uusi välilehti ‑sivulla ei näytetä automaattisesti luotuja sisältöehdotuksia.</translation>
@@ -1949,8 +1936,6 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
 
       Jos asetusta ei oteta käyttöön, selaus- ja lataushistoriaa ei voi poistaa.</translation>
 <translation id="8764119899999036911">Määrittää, perustuuko luotu Kerberos SPN ensisijaiseen DNS-nimeen vai annettuun alkuperäiseen nimeen. Jos otat tämän asetuksen käyttöön, CNAME-haku ohitetaan, ja palvelimen nimeä käytetään sen annetussa muodossa. Jos poistat asetuksen käytöstä tai et määritä sitä, palvelimen ensisijainen nimi määritetään CNAME-haun kautta.</translation>
-<translation id="8774131509736383471">Jos tämän käytännön arvoksi asetetaan tosi, <ph name="PRODUCT_NAME" /> suurentaa aina ensimmäisen selainikkunan käynnistyksen yhteydessä.
-      Jos käytännön arvoksi asetetaan epätosi tai sitä ei määritetä, ensimmäisen ikkunan suurentamisvalinta määritetään näytön koon perusteella.</translation>
 <translation id="87812015706645271">Edellyttää, että paikallisen käyttäjän nimi vastaa etäkäytön isännän omistajaa.</translation>
 <translation id="8782750230688364867">Määrittää prosenttimäärän, jolla näytön himmennyksen viive skaalataan, kun laite on esitystilassa.
 

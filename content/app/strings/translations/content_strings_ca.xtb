@@ -10,7 +10,6 @@
 <translation id="1188858454923323853">complementari</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1206693055195146388">control lliscant</translation>
-<translation id="1235745349614807883">Esborra les cerques recents</translation>
 <translation id="1281252709823657822">quadre de diàleg</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">bàner</translation>
@@ -39,7 +38,6 @@
 <translation id="248395913932153421">Dia</translation>
 <translation id="2507943997699731163">Empleneu aquest camp.</translation>
 <translation id="2508569020611168319">llista de pestanyes</translation>
-<translation id="2548326553472216322">No hi ha cerques recents</translation>
 <translation id="2561842179657104141">mostra més controls multimèdia</translation>
 <translation id="2572483411312390101">reprodueix</translation>
 <translation id="2613802280814924224">Introduïu un valor vàlid. El valor vàlid més proper és <ph name="VALID_VALUE" />.</translation>
@@ -51,7 +49,6 @@
 <translation id="2759744352195237655">botó emergent</translation>
 <translation id="2761667185364618470">Marqueu aquesta casella si voleu continuar.</translation>
 <translation id="2896972712917208084">grup de botons d'opció</translation>
-<translation id="2901282870647571346">estat actual de la pel·lícula</translation>
 <translation id="2908441821576996758">Introduïu una llista d'adreces electròniques separades per comes.</translation>
 <translation id="2940813599313844715">objecte</translation>
 <translation id="2942448076852699108">contingut realçat</translation>
@@ -95,7 +92,6 @@
 <translation id="4992066212339426712">Deixa de silenciar</translation>
 <translation id="49969490063480558">Introduïu un domini precedit per "<ph name="ATSIGN" />". "<ph name="INVALIDADDRESS" />" no és una adreça electrònica completa.</translation>
 <translation id="5034860022980953847">indicador de progrés</translation>
-<translation id="5048533449481078685">marcador de llistes</translation>
 <translation id="5117590920725113268">Mostra el mes següent</translation>
 <translation id="512758898067543763">capçalera de la fila</translation>
 <translation id="5164977714490026579">El valor ha de ser més gran o igual que <ph name="MINIMUM" />.</translation>
@@ -113,7 +109,6 @@
 <translation id="5643186887447432888">botó</translation>
 <translation id="5677946354068040947">més opcions</translation>
 <translation id="57838592816432529">Silencia</translation>
-<translation id="5843503607508392247">Altres...</translation>
 <translation id="5860033963881614850">Desactivat</translation>
 <translation id="588258955323874662">Pantalla completa</translation>
 <translation id="5939518447894949180">Restableix</translation>
@@ -123,8 +118,6 @@
 <translation id="6023896073578205740">quadre de llista</translation>
 <translation id="6101327004457443354">activa el so de la pista d'àudio</translation>
 <translation id="6164829606128959761">comptador</translation>
-<translation id="6270583010843788609">miniatura de cronologia de pel·lícula</translation>
-<translation id="6359256949422175976">miniatura de la barra de moment de la pel·lícula</translation>
 <translation id="6398862346408813489">Mostra el tauler de la selecció de mes</translation>
 <translation id="6404546809543547843">barra de moment de l'àudio</translation>
 <translation id="648732519525291180">selector d'hora</translation>
@@ -132,7 +125,6 @@
 <translation id="663493177488814956">El meu tauler</translation>
 <translation id="6637586476836377253">registre</translation>
 <translation id="6643016212128521049">Esborra</translation>
-<translation id="6663448176199120256">Cerques recents</translation>
 <translation id="668171684555832681">Altres...</translation>
 <translation id="6692633176391053278">desplaçador</translation>
 <translation id="6739588121953935928">regle</translation>
@@ -145,7 +137,6 @@
 <translation id="6934078000481955284">cita en bloc</translation>
 <translation id="6941933287844615239">baixa els fitxers multimèdia</translation>
 <translation id="6989848892321993519">Allarga aquest text fins a <ph name="MIN_CHARACTERS" /> caràcters o més (ara n'utilitzes 1).</translation>
-<translation id="7057186640035488495">moment de la pel·lícula</translation>
 <translation id="709897737746224366">Feu servir el format sol·licitat.</translation>
 <translation id="7223624360433298498">temps transcorregut</translation>
 <translation id="7263440858009898357">Seleccioneu un element de la llista.</translation>
@@ -166,10 +157,8 @@
 <translation id="8053789581856978548">camp de text de la cerca</translation>
 <translation id="8115662671911883373">comença a mostrar subtítols ocults</translation>
 <translation id="8117451130807776954">Aquesta setmana</translation>
-<translation id="8141602879876242471">És un índex on es poden realitzar cerques. Introdueix els termes de cerca:</translation>
 <translation id="819205353528511139">reprodueix la pel·lícula en mode de pantalla completa</translation>
 <translation id="8199524924445686405">aaaa</translation>
-<translation id="8244226242650769279">mapa d'imatges</translation>
 <translation id="8284326494547611709">Subtítols</translation>
 <translation id="835897206747267392">Valor no vàlid.</translation>
 <translation id="8433900881053900389">barra d'eines</translation>

@@ -522,6 +522,7 @@
 
           Om policyn inte har angetts är inställningen aktiverad.</translation>
 <translation id="2824715612115726353">Aktivera inkognitoläge</translation>
+<translation id="2838830882081735096">Tillåt inte datamigrering och ARC</translation>
 <translation id="2844404652289407061">Aktiverar tillgången till Tryck för att söka i innehållsvyn i <ph name="PRODUCT_NAME" />.
 
       Om inställningen aktiveras blir Tryck för att söka tillgängligt för användaren som sedan kan välja att aktivera eller inaktivera funktionen.
@@ -704,13 +705,6 @@
           Policyn följs endast om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
 <translation id="350797926066071931">Aktivera Översätt</translation>
 <translation id="3528000905991875314">Aktivera alternativa felsidor</translation>
-<translation id="3538538104630456270">Inställningen som hör ihop med den här principen användes innan vi införde systemet med att göra om autentiseringen efter att lösenorden visats. Sedan dess har inställningen – och därmed principen – inte haft någon inverkan på hur Chrome fungerar. Nu fungerar Chrome som om principen vore inställd på att inaktivera visning i klartext av lösenord på lösenordshanterarens inställningssida. Det innebär att det bara finns en platshållare på inställningssidan, och lösenordet visas bara om användaren klickar på Visa (och gör om autentiseringen i tillämpliga fall). Den ursprungliga beskrivningen av principen följer nedan.
-
-          Styr om användaren kan visa lösenord i klartext i lösenordshanteraren.
-
-          Om du inaktiverar den här inställningen går det inte att visa sparade lösenord i klartext i lösenordshanteraren.
-
-          Om du aktiverar principen eller om den inte konfigureras kan användarnas lösenord visas i klartext i lösenordshanteraren.</translation>
 <translation id="3547954654003013442">Proxyinställningar</translation>
 <translation id="3591584750136265240">Konfigurera vad som ska göras vid inloggningsautentisering</translation>
 <translation id="3627678165642179114">Aktivera eller inaktivera webbtjänsten för stavningskontroll</translation>
@@ -910,23 +904,6 @@
 <translation id="4239720644496144453">Cacheminnet används inte för Android-appar. Om flera användare installerar samma Android-app laddas den ned på nytt varje gång.</translation>
 <translation id="4250680216510889253">Nej</translation>
 <translation id="4261820385751181068">Språkkod för enhetens inloggningsskärm</translation>
-<translation id="4275782538576261754">Konfigurerar typen av nedladdningar som helt blockeras av <ph name="PRODUCT_NAME" /> utan att användarna kan åsidosätta säkerhetsinställningen.
-
-      Om du anger den här principen hindrar <ph name="PRODUCT_NAME" /> vissa typer av nedladdningar och användarna kan inte åsidosätta säkerhetsvarningarna.
-
-      När alternativet Blockera farliga nedladdningar har valts tillåts alla nedladdningar utom de med varningar från Säker webbsökning.
-
-      När alternativet Blockera potentiellt farliga nedladdningar har valts tillåts alla nedladdningar utom de med varningar om potentiellt farliga nedladdningar från Säker webbsökning.
-
-      När alternativet Blockera alla nedladdningar har valts blockeras alla nedladdningar.
-
-      När du inte har angett den här principen (eller om du har valt alternativet Inga särskilda begränsningar) går alla nedladdningar igenom de vanliga säkerhetsbegränsningarna som baseras på analysresultaten från Säker webbsökning.
-
-      Observera att begränsningarna tillämpas på nedladdningar som görs från webbsidesinnehåll och från snabbmenyalternativet för nedladdningslänken.
-
-      Begränsningarna tillämpas inte på spara/ladda ned på den aktuella sidan och inte heller på alternativet att spara som PDF i utskriftsalternativen.
-
-      Läs mer om Säker webbsökning på https://developers.google.com/safe-browsing.</translation>
 <translation id="427632463972968153">Anger parametrarna som används vid bildsökning med POST. Den består av kommaavgränsade namn-/värdepar. Om ett värde är en mallparameter, t.ex. {imageThumbnail} i ovanstående exempel, ersätts det av en riktig miniatyrbild.
 
           Den här policyn är valfri. Om den inte anges kommer begäran om bildsökning att skickas via GET-metoden.
@@ -952,6 +929,7 @@
 <translation id="436581050240847513">Rapporteringsgränssnitt för nätverk med enheter</translation>
 <translation id="4372704773119750918">Tillåt inte att företagsanvändare ingår i multiprofiler (primärt eller sekundärt)</translation>
 <translation id="4377599627073874279">Tillåt att alla bilder visas på alla webbplatser</translation>
+<translation id="437791893267799639">Princip inte angiven, tillåt inte datamigrering och ARC</translation>
 <translation id="4389091865841123886">Konfigurera fjärrattesteringen med TPM-mekanism.</translation>
 <translation id="4418726081189202489">Om principen är inställd på falskt förhindras att sökfrågor skickas från <ph name="PRODUCT_NAME" /> till en Google-server för att hämta en korrekt tidsstämpel. Dessa sökfrågor aktiveras om principen är inställd på sant eller inte inställd alls.</translation>
 <translation id="4423597592074154136">Ange proxyinställningar manuellt</translation>
@@ -1271,6 +1249,7 @@
 <translation id="5586942249556966598">Gör ingenting</translation>
 <translation id="5630352020869108293">Återställ den senaste sessionen</translation>
 <translation id="5645779841392247734">Tillåt cookies på dessa webbplatser</translation>
+<translation id="5693469654327063861">Tillåt datamigrering</translation>
 <translation id="5694594914843889579">När den här principen är inställd på sant är inte extern lagring tillgängligt i filsökaren.
 
       Principen gäller för alla typer av lagringsmedia, till exempel USB-minnen, externa hårddiskar, SD-kort och andra minneskort och optisk lagring. Den interna lagringen påverkas inte och du kan därmed komma åt filer som har sparats i mappen Hämtade filer. Google Drive påverkas inte heller av den här principen.
@@ -1514,6 +1493,7 @@
           Policyns värde ska anges i millisekunder. Värdet måste vara lägre än inaktivitetstiden.</translation>
 <translation id="6536600139108165863">Automatisk omstart vid avstängning av enhet</translation>
 <translation id="6539246272469751178">Den här principen gäller inte Android-appar. Android-appar använder alltid standardmappen för nedladdningar och har inte tillgång till filer som har laddats ned i någon annan mapp i <ph name="PRODUCT_OS_NAME" />.</translation>
+<translation id="654303922206238013">Migreringsstrategi för ecryptfs</translation>
 <translation id="6544897973797372144">Om policyn angetts som sann och policyn ChromeOsReleaseChannel inte är angiven kommer användare på den registrerade domänen att kunna ändra lanseringskanal för enheten. Om policyn angetts som falsk kommer enheten att låsas till den kanal som senast angetts.
 
       Den kanal som användaren valt kommer att åsidosättas av policyn ChromeOsReleaseChannel, men om kanalen för policyn är mer stabil än den som installerats på enheten kommer kanalen endast bytas då versionen för den mer stabila kanalen uppnått ett högre versionsnummer än det som installerats på enheten.</translation>
@@ -1703,6 +1683,13 @@
 
           Den här policyn gäller bara om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
 <translation id="7302043767260300182">Skärmlåsningstid när enheten är ansluten till elnätet</translation>
+<translation id="7309839952828354215">Anger beteendet för en enhet som skickade via ecryptfs och måste övergå till ext4-kryptering.
+
+      Om du anger DisallowArc för den här principen inaktiveras Android-appar för alla användare på enheten (inklusive sådana som redan har ext4-kryptering) och ingen kryptering från ecryptfs till ext4-kryptering erbjuds för några användare.
+
+      Om du anger AllowMigration för den här principen erbjuds användare med startkataloger i ecryptfs att migrera dessa till ext4-kryptering vid behov (för närvarande när Android N blir tillgängligt på enheten).
+
+      Om inget värde anges för principen fungerar enheten som om DisallowArc har valts.</translation>
 <translation id="7311458740754205918">Om policyn är inställd på sant eller inte inställd alls kan förslag på innehåll utifrån användarens webbhistorik, intressen eller plats visas på sidan Ny flik.
 
       Om policyn är inställd på falskt visas inte förslag på innehåll som genererats automatiskt på sidan Ny flik.</translation>
@@ -2098,8 +2085,6 @@
           Om du aktiverar inställningen hoppas CNAME-sökningen över och servernamnet som angavs används.
 
           Om du inaktiverar inställningen eller inte anger den avgörs serverns kanoniska namn av en CNAME-sökning.</translation>
-<translation id="8774131509736383471">Om principen är inställd på sant kommer <ph name="PRODUCT_NAME" /> ovillkorligen första gången den körs att maximera det först visade fönstret.
-      Om principen är inställd på falskt eller inte konfigurerad kommer skärmstorleken att avgöra om det först visade fönstret ska maximeras.</translation>
 <translation id="87812015706645271">Kräver att namnet på den lokala användaren och namnet på ägaren av fjärråtkomstvärden överensstämmer.</translation>
 <translation id="8782750230688364867">Anger den procentsats med vilken fördröjningen av skärmdämpningen skalanpassas när enheten är i presentationsläge.
 
