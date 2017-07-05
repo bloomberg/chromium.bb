@@ -92,9 +92,6 @@ void MockMediaStreamVideoSource::StartSourceImpl(
     const blink::WebMediaConstraints& constraints,
     const VideoCaptureDeliverFrameCB& frame_callback) {
   DCHECK(frame_callback_.is_null());
-  if (IsOldVideoConstraints())
-    format_ = format;
-
   attempted_to_start_ = true;
   frame_callback_ = frame_callback;
 }

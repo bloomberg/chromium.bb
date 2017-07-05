@@ -68,23 +68,9 @@ void CreateNativeVideoMediaStreamTrack(blink::WebMediaStreamTrack track) {
   MediaStreamVideoSource* native_source =
       MediaStreamVideoSource::GetVideoSource(source);
   DCHECK(native_source);
-  if (IsOldVideoConstraints()) {
-    // TODO(perkj): The constraints to use here should be passed from blink when
-    // a new track is created. For cloning, it should be the constraints of the
-    // cloned track and not the originating source.
-    // Also - source.constraints() returns an uninitialized constraint if the
-    // source is coming from a remote video track. See http://crbug/287805.
-    blink::WebMediaConstraints constraints = source.Constraints();
-    if (constraints.IsNull())
-      constraints.Initialize();
-    track.SetTrackData(new MediaStreamVideoTrack(
-        native_source, constraints,
-        MediaStreamVideoSource::ConstraintsCallback(), track.IsEnabled()));
-  } else {
-    track.SetTrackData(new MediaStreamVideoTrack(
-        native_source, MediaStreamVideoSource::ConstraintsCallback(),
-        track.IsEnabled()));
-  }
+  track.SetTrackData(new MediaStreamVideoTrack(
+      native_source, MediaStreamVideoSource::ConstraintsCallback(),
+      track.IsEnabled()));
 }
 
 void CloneNativeVideoMediaStreamTrack(
@@ -96,28 +82,14 @@ void CloneNativeVideoMediaStreamTrack(
   MediaStreamVideoSource* native_source =
       MediaStreamVideoSource::GetVideoSource(source);
   DCHECK(native_source);
-  if (IsOldVideoConstraints()) {
-    // TODO(perkj): The constraints to use here should be passed from blink when
-    // a new track is created. For cloning, it should be the constraints of the
-    // cloned track and not the originating source.
-    // Also - source.constraints() returns an uninitialized constraint if the
-    // source is coming from a remote video track. See http://crbug/287805.
-    blink::WebMediaConstraints constraints = source.Constraints();
-    if (constraints.IsNull())
-      constraints.Initialize();
-    clone.SetTrackData(new MediaStreamVideoTrack(
-        native_source, constraints,
-        MediaStreamVideoSource::ConstraintsCallback(), clone.IsEnabled()));
-  } else {
-    MediaStreamVideoTrack* original_track =
-        MediaStreamVideoTrack::GetVideoTrack(original);
-    DCHECK(original_track);
-    clone.SetTrackData(new MediaStreamVideoTrack(
-        native_source, original_track->adapter_settings(),
-        original_track->noise_reduction(), original_track->is_screencast(),
-        original_track->min_frame_rate(),
-        MediaStreamVideoSource::ConstraintsCallback(), clone.IsEnabled()));
-  }
+  MediaStreamVideoTrack* original_track =
+      MediaStreamVideoTrack::GetVideoTrack(original);
+  DCHECK(original_track);
+  clone.SetTrackData(new MediaStreamVideoTrack(
+      native_source, original_track->adapter_settings(),
+      original_track->noise_reduction(), original_track->is_screencast(),
+      original_track->min_frame_rate(),
+      MediaStreamVideoSource::ConstraintsCallback(), clone.IsEnabled()));
 }
 
 }  // namespace
