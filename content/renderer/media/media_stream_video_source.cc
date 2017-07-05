@@ -130,11 +130,6 @@ base::SingleThreadTaskRunner* MediaStreamVideoSource::io_task_runner() const {
 base::Optional<media::VideoCaptureFormat>
 MediaStreamVideoSource::GetCurrentFormat() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return GetCurrentFormatImpl();
-}
-
-base::Optional<media::VideoCaptureFormat>
-MediaStreamVideoSource::GetCurrentFormatImpl() const {
   return base::Optional<media::VideoCaptureFormat>();
 }
 

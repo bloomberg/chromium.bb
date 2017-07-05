@@ -67,7 +67,8 @@ void MockMediaStreamVideoSource::StopSourceImpl() {
 }
 
 base::Optional<media::VideoCaptureFormat>
-MockMediaStreamVideoSource::GetCurrentFormatImpl() const {
+MockMediaStreamVideoSource::GetCurrentFormat() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return base::Optional<media::VideoCaptureFormat>(format_);
 }
 
