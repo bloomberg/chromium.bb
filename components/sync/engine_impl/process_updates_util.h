@@ -42,6 +42,13 @@ void ExpireEntriesByVersion(syncable::Directory* dir,
                             ModelType type,
                             int64_t version_watermark);
 
+// Tombstones all entries of |type| whose ages are older than
+// |age_watermark_in_days| unless they are type root or unsynced/unapplied.
+void ExpireEntriesByAge(syncable::Directory* dir,
+                        syncable::ModelNeutralWriteTransaction* trans,
+                        ModelType type,
+                        int32_t age_watermark_in_days);
+
 }  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_ENGINE_IMPL_PROCESS_UPDATES_UTIL_H_
