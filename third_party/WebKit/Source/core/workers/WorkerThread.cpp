@@ -96,10 +96,7 @@ WorkerThread::~WorkerThread() {
 void WorkerThread::Start(std::unique_ptr<WorkerThreadStartupData> startup_data,
                          ParentFrameTaskRunners* parent_frame_task_runners) {
   DCHECK(IsMainThread());
-  if (requested_to_start_)
-    return;
-
-  requested_to_start_ = true;
+  DCHECK(!parent_frame_task_runners_);
   parent_frame_task_runners_ = parent_frame_task_runners;
 
   // Synchronously initialize the per-global-scope scheduler to prevent someone
@@ -120,7 +117,6 @@ void WorkerThread::Start(std::unique_ptr<WorkerThreadStartupData> startup_data,
 
 void WorkerThread::Terminate() {
   DCHECK(IsMainThread());
-  DCHECK(requested_to_start_);
 
   {
     MutexLocker lock(thread_state_mutex_);
@@ -284,8 +280,6 @@ HashSet<WorkerThread*>& WorkerThread::WorkerThreads() {
 }
 
 PlatformThreadId WorkerThread::GetPlatformThreadId() {
-  if (!requested_to_start_)
-    return 0;
   return GetWorkerBackingThread().BackingThread().PlatformThread().ThreadId();
 }
 

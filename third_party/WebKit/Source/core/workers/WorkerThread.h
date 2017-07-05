@@ -239,9 +239,6 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   // A unique identifier among all WorkerThreads.
   const int worker_thread_id_;
 
-  // Accessed only on the main thread.
-  bool requested_to_start_ = false;
-
   // Set on the main thread and checked on both the main and worker threads.
   bool requested_to_terminate_ = false;
 
