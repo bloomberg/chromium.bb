@@ -9,7 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
@@ -19,11 +19,10 @@
 namespace password_manager {
 
 AffiliationService::AffiliationService(
-    scoped_refptr<base::SingleThreadTaskRunner> backend_task_runner)
+    scoped_refptr<base::SequencedTaskRunner> backend_task_runner)
     : backend_(nullptr),
       backend_task_runner_(backend_task_runner),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 AffiliationService::~AffiliationService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

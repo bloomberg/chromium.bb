@@ -9,7 +9,6 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "base/single_thread_task_runner.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/login_database.h"
@@ -22,16 +21,14 @@ namespace password_manager {
 
 // Activates or deactivates affiliation-based matching for |password_store|,
 // depending on whether or not the |sync_service| is syncing passwords stored
-// therein. The AffiliationService will use |db_thread_runner| as its backend
-// thread, and |request_context_getter| to fetch affiliation information. This
-// function should be called whenever there is a possibility that syncing
-// passwords has just started or ended.
+// therein. The AffiliationService will use |request_context_getter| to fetch
+// affiliation information. This function should be called whenever there is a
+// possibility that syncing passwords has just started or ended.
 void ToggleAffiliationBasedMatchingBasedOnPasswordSyncedState(
     PasswordStore* password_store,
     syncer::SyncService* sync_service,
     net::URLRequestContextGetter* request_context_getter,
-    const base::FilePath& profile_path,
-    scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner);
+    const base::FilePath& profile_path);
 
 // Creates a LoginDatabase. Looks in |profile_path| for the database file.
 // Does not call LoginDatabase::Init() -- to avoid UI jank, that needs to be
