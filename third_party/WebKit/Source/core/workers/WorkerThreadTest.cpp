@@ -248,7 +248,8 @@ TEST_F(WorkerThreadTest, AsyncTerminate_WhileTaskIsRunning) {
   EXPECT_EQ(ExitCode::kNotTerminated, GetExitCode());
 
   // Wait until the force termination task runs.
-  testing::RunDelayedTasks(kForcibleTerminationDelayInMs);
+  testing::RunDelayedTasks(
+      TimeDelta::FromMilliseconds(kForcibleTerminationDelayInMs));
   worker_thread_->WaitForShutdownForTesting();
   EXPECT_EQ(ExitCode::kAsyncForciblyTerminated, GetExitCode());
 }

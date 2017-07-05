@@ -29,9 +29,9 @@ namespace {
 // activity report separately. If the intervals are very short, they are
 // notified to the main thread almost at the same time and the thread may miss
 // the second notification.
-const double kDefaultIntervalInSec = 0.01;
-const double kNextIntervalInSec = 0.01;
-const double kMaxIntervalInSec = 0.02;
+constexpr double kDefaultIntervalInSec = 0.01;
+constexpr double kNextIntervalInSec = 0.01;
+constexpr double kMaxIntervalInSec = 0.02;
 
 }  // namespace
 
@@ -384,8 +384,8 @@ TEST_F(DedicatedWorkerTest, PendingActivity_SetIntervalOnMessageEvent) {
   // pending activity until it's stopped. The delay is equal to the max
   // interval so that the pending activity timer may be able to have a chance
   // to run before the next expectation check.
-  const double kDelayInMs = kMaxIntervalInSec * 1000;
-  testing::RunDelayedTasks(kDelayInMs);
+  constexpr TimeDelta kDelay = TimeDelta::FromSecondsD(kMaxIntervalInSec);
+  testing::RunDelayedTasks(kDelay);
   EXPECT_TRUE(WorkerMessagingProxy()->HasPendingActivity());
 
   // Stop the timer.

@@ -89,6 +89,8 @@ class DummyScreenOrientationCallback : public WebLockOrientationCallback {
 
 }  // anonymous namespace
 
+constexpr TimeDelta MediaControlsOrientationLockDelegate::kUnlockDelay;
+
 MediaControlsOrientationLockDelegate::MediaControlsOrientationLockDelegate(
     HTMLVideoElement& video)
     : EventListener(kCPPEventListenerType), video_element_(video) {
@@ -436,7 +438,7 @@ void MediaControlsOrientationLockDelegate::
               WTF::Bind(
                   &MediaControlsOrientationLockDelegate::MaybeUnlockOrientation,
                   WrapPersistent(this)),
-              TimeDelta::FromMilliseconds(kUnlockDelayMs));
+              kUnlockDelay);
 }
 
 DEFINE_TRACE(MediaControlsOrientationLockDelegate) {

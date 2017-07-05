@@ -60,7 +60,7 @@ TEST_F(DisableBackgroundThrottlingIsRespectedTest,
 
   // Run delayed tasks for 1 second. All tasks should be completed
   // with throttling disabled.
-  testing::RunDelayedTasks(1000);
+  testing::RunDelayedTasks(TimeDelta::FromSeconds(1));
 
   EXPECT_THAT(ConsoleMessages(), ElementsAre("called f", "called f", "called f",
                                              "called f", "called f"));
@@ -92,7 +92,7 @@ TEST_F(BackgroundRendererThrottlingTest,
 
   // Make sure that we run a task once a second.
   for (int i = 0; i < 3; ++i) {
-    testing::RunDelayedTasks(1000);
+    testing::RunDelayedTasks(TimeDelta::FromSeconds(1));
     EXPECT_THAT(ConsoleMessages(), ElementsAre("called f"));
     ConsoleMessages().clear();
   }
