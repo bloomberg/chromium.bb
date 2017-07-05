@@ -1091,6 +1091,11 @@ void NavigationHandleImpl::RunCompleteCallback(
 }
 
 void NavigationHandleImpl::RegisterNavigationThrottles() {
+  // TODO(clamy): Remove this when we understand the root cause behind
+  // crbug.com/736658.
+  CHECK(!throttles_have_been_added_);
+  throttles_have_been_added_ = true;
+
   // Register the navigation throttles. The vector returned by
   // CreateThrottlesForNavigation is not assigned to throttles_ directly because
   // it would overwrite any throttles previously added with
