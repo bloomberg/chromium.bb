@@ -26619,6 +26619,96 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="InstantTethering.ConnectionToHostResult.Failure"
+    enum="InstantTethering_ConnectionToHostResult_Failure">
+  <owner>hansberry@chromium.com</owner>
+  <summary>
+    Provides a top-level breakdown of the times a connection to a host has
+    failed.
+
+    An &quot;unknown error&quot; is generally caused by the host returning an
+    &quot;unknown error&quot; response code. Tethering timing out and client
+    connection error and 3) are both broken down further in
+    InstantTethering.ConnectionToHostResult.Failure.TetheringTimeout and
+    InstantTethering.ConnectionToHostResult.Failure.ClientConnection,
+    respectively.
+  </summary>
+</histogram>
+
+<histogram
+    name="InstantTethering.ConnectionToHostResult.Failure.ClientConnection"
+    enum="InstantTethering_ConnectionToHostResult_Failure_ClientConnection">
+  <owner>hansberry@chromium.com</owner>
+  <summary>
+    Breaks down the reasons why the client failed to connect to the hotspot, and
+    the number of times they occurred. This histogram captures 2 reasons: 1) the
+    connection attempt to the hotspot timed out, or 2) any stage of the
+    connection attempt was canceled by a new connection attempt.
+
+    This histogram breaks down the &quot;client connection error&quot; count of
+    InstantTethering.ConnectionToHostResult.Failure.
+  </summary>
+</histogram>
+
+<histogram
+    name="InstantTethering.ConnectionToHostResult.Failure.TetheringTimeout"
+    enum="InstantTethering_ConnectionToHostResult_Failure_TetheringTimeout">
+  <owner>hansberry@chromium.com</owner>
+  <summary>
+    Captures the number of times of whether or not first-time setup was required
+    when tethering timed out.
+
+    Starting tethering on the host works like so: if first-time setup is
+    required on the host, a first-time setup UI is shown on the host; once the
+    user interacts with it, the provisioning app is called. If first-time setup
+    is not required, then the provisioning app is directly called. To be clear:
+    the provisioning app is always run.
+
+    There are two possible ways for tethering to time out: either the
+    provisioning app flaked (crashed or hung, and never called back to Instant
+    Tethering), or the user never interacted with the first-time setup UI flow
+    (assuming first-time setup was required).
+
+    Because it's very unlikely for the provisioning app to flake, we can read
+    the &quot;was first-time setup&quot; count as almost always indicative of
+    the user not interacting with the first-time setup UI. We expect the
+    &quot;was not first-time setup&quot; count to be low (because, as mentioned,
+    it's very unlikely for the provisioning app to flake).
+
+    This histogram breaks down the &quot;tethering timed out&quot; count of
+    InstantTethering.ConnectionToHostResult.Failure.
+  </summary>
+</histogram>
+
+<histogram
+    name="InstantTethering.ConnectionToHostResult.ProvisioningFailureRate"
+    enum="InstantTethering_ConnectionToHostResult_ProvisioningFailureRate">
+  <owner>hansberry@chromium.org</owner>
+  <summary>
+    Provides a breakdown of the times a connection to a host was either
+    unsuccessful due to provisioning failure (the carrier disallows tethering)
+    or &quot;other&quot; (this is captured under
+    InstantTethering.ConnectionToHostResult.SuccessRate).
+
+    This metric captures the rough percentage of connections which are
+    unsuccessful due to provisioning failure. It is separate from
+    InstantTethering.ConnectionToHostResult.SuccessRate and the metrics related
+    to it because provisioning failure is neither truly a success nor an error.
+  </summary>
+</histogram>
+
+<histogram name="InstantTethering.ConnectionToHostResult.SuccessRate"
+    enum="InstantTethering_ConnectionToHostResult_SuccessRate">
+  <owner>hansberry@chromium.com</owner>
+  <summary>
+    Captures the count of successful and failed connection attempts.
+
+    This metric provides an immediate understanding of the Instant Tethering
+    connection success rate. The counts of failure are broken down in
+    InstantTethering.ConnectionToHostResult.Failure.
+  </summary>
+</histogram>
+
 <histogram name="InterProcessTimeTicks.BrowserAhead" units="ms">
   <owner>ppi@chromium.org</owner>
   <summary>
