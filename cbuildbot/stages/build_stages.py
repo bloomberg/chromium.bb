@@ -419,8 +419,12 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
     if not self._ShouldEnableGoma():
       return None
 
+    # TODO(crbug.com/751010): Revisit to enable DepsCache for non-chrome-pfq
+    # bots, too.
+    use_goma_deps_cache = self._run.config.name.endswith('chrome-pfq')
     goma = goma_util.Goma(
-        self._run.options.goma_dir, self._run.options.goma_client_json)
+        self._run.options.goma_dir, self._run.options.goma_client_json,
+        stage_name=self.StageNamePrefix() if use_goma_deps_cache else None)
 
     # Set USE_GOMA env var so that chrome is built with goma.
     self._portage_extra_env['USE_GOMA'] = 'true'

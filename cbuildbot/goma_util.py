@@ -16,8 +16,8 @@ import tempfile
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import gs
+from chromite.lib import osutils
 from chromite.lib import path_util
-
 
 _GOMA_LOG_URL_TEMPLATE = (
     'http://chromium-build-stats.appspot.com/compiler_proxy_log/%s/%s')
@@ -54,9 +54,16 @@ class Goma(object):
       # build. (cf. crbug.com/730962)
       # TODO(shinyak): This will be removed after crbug.com/730962 is resolved.
       'GOMA_BACKEND_SOFT_STICKINESS': 'false',
+
+      # Enable DepsCache. DepsCache is a cache that holds a file list that
+      # compiler_proxy sends to goma server for each compile. This can
+      # reduces a lot of I/O and calculation.
+      # This is the base file name under GOMA_CACHE_DIR.
+      'GOMA_DEPS_CACHE_FILE': 'goma.deps',
   }
 
-  def __init__(self, goma_dir, goma_client_json, goma_tmp_dir=None):
+  def __init__(self, goma_dir, goma_client_json, goma_tmp_dir=None,
+               stage_name=None):
     """Initializes Goma instance.
 
     This ensures that |self.goma_log_dir| directory exists (if missing,
@@ -71,6 +78,9 @@ class Goma(object):
         If given, it is used. If not given, creates a directory under
         /tmp in the chroot, expecting that the directory is removed in the
         next run's clean up phase on bots.
+      stage_name: optional name of the currently running stage. E.g.
+        "build_packages" or "test_simple_chrome_workflow". If this is set
+        deps cache is enabled.
 
     Raises:
        ValueError if 1) |goma_dir| does not point to a directory, 2)
@@ -96,10 +106,15 @@ class Goma(object):
     # If goma_tmp_dir is provided, it must be an existing directory.
     if goma_tmp_dir and not os.path.isdir(goma_tmp_dir):
       raise ValueError(
-          'GOMA_TMP_DIR does not point a directory: %s' %(goma_tmp_dir,))
+          'GOMA_TMP_DIR does not point a directory: %s' % (goma_tmp_dir,))
 
     self.goma_dir = goma_dir
     self.goma_client_json = goma_client_json
+    if stage_name:
+      self.goma_cache = os.path.join(goma_dir, 'goma_cache', stage_name)
+      osutils.SafeMakedirs(self.goma_cache)
+    else:
+      self.goma_cache = None
 
     if goma_tmp_dir is None:
       # If |goma_tmp_dir| is not given, create GOMA_TMP_DIR (goma
@@ -128,20 +143,27 @@ class Goma(object):
         GLOG_log_dir=self.goma_log_dir)
     if self.goma_client_json:
       result['GOMA_SERVICE_ACCOUNT_JSON_FILE'] = self.goma_client_json
+    if self.goma_cache:
+      result['GOMA_CACHE_DIR'] = self.goma_cache
     return result
 
   def GetChrootExtraEnv(self):
     """Extra env vars set to use goma inside chroot."""
     # Note: GOMA_DIR and GOMA_SERVICE_ACCOUNT_JSON_FILE in chroot is hardcoded.
     # Please see also enter_chroot.sh.
+    goma_dir = os.path.join('/home', os.environ.get('USER'), 'goma')
     result = dict(
         Goma._DEFAULT_ENV_VARS,
-        GOMA_DIR=os.path.join('/home', os.environ.get('USER'), 'goma'),
+        GOMA_DIR=goma_dir,
         GOMA_TMP_DIR=path_util.ToChrootPath(self.goma_tmp_dir),
         GLOG_log_dir=path_util.ToChrootPath(self.goma_log_dir))
     if self.goma_client_json:
       result['GOMA_SERVICE_ACCOUNT_JSON_FILE'] = (
           '/creds/service_accounts/service-account-goma-client.json')
+
+    if self.goma_cache:
+      result['GOMA_CACHE_DIR'] = os.path.join(
+          goma_dir, os.path.relpath(self.goma_cache, self.goma_dir))
     return result
 
   def _RunGomaCtl(self, command):

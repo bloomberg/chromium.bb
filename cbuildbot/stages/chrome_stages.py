@@ -293,8 +293,13 @@ class TestSimpleChromeWorkflowStage(generic_stages.BoardSpecificBuilderStage,
       extra_args = ['--cwd', self.chrome_src, '--sdk-path',
                     self.archive_path]
       if self._ShouldEnableGoma():
-        goma = goma_util.Goma(self._run.options.goma_dir,
-                              self._run.options.goma_client_json)
+        # TODO(crbug.com/751010): Revisit to enable DepsCache for
+        # non-chrome-pfq bots, too.
+        use_goma_deps_cache = self._run.config.name.endswith('chrome-pfq')
+        goma = goma_util.Goma(
+            self._run.options.goma_dir,
+            self._run.options.goma_client_json,
+            stage_name=self.StageNamePrefix() if use_goma_deps_cache else None)
         extra_args.extend(['--nostart-goma', '--gomadir', goma.goma_dir])
         self._run.attrs.metadata.UpdateWithDict(
             {'goma_tmp_dir_for_simple_chrome': goma.goma_tmp_dir})
