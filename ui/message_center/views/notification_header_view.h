@@ -24,6 +24,7 @@ class NotificationHeaderView : public views::CustomButton {
   void SetAppName(const base::string16& name);
   void SetProgress(int progress);
   void SetOverflowIndicator(int count);
+  void SetTimestamp(base::Time past);
   void SetExpandButtonEnabled(bool enabled);
   void SetExpanded(bool expanded);
   void SetSettingsButtonEnabled(bool enabled);
@@ -31,6 +32,7 @@ class NotificationHeaderView : public views::CustomButton {
   void SetControlButtonsVisible(bool visible);
   void ClearProgress();
   void ClearOverflowIndicator();
+  void ClearTimestamp();
   bool IsExpandButtonEnabled();
   bool IsSettingsButtonEnabled();
   bool IsCloseButtonEnabled();
@@ -48,11 +50,14 @@ class NotificationHeaderView : public views::CustomButton {
 
  private:
   void UpdateControlButtonsVisibility();
+  // Update visibility for both |summary_text_view_| and |timestamp_view_|.
   void UpdateSummaryTextVisibility();
 
   views::Label* app_name_view_ = nullptr;
   views::Label* summary_text_divider_ = nullptr;
   views::Label* summary_text_view_ = nullptr;
+  views::Label* timestamp_divider_ = nullptr;
+  views::Label* timestamp_view_ = nullptr;
   views::ImageView* app_icon_view_ = nullptr;
   views::ImageView* expand_button_ = nullptr;
   PaddedButton* settings_button_ = nullptr;
@@ -63,6 +68,7 @@ class NotificationHeaderView : public views::CustomButton {
   bool is_control_buttons_visible_ = false;
   bool has_progress_ = false;
   bool has_overflow_indicator_ = false;
+  bool has_timestamp_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationHeaderView);
 };
