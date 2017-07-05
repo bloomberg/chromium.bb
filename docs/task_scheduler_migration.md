@@ -92,8 +92,10 @@ assigned files by:
 ## Relevant single-thread -> sequence mappings
 
 * base::SingleThreadTaskRunner -> base::SequencedTaskRunner
+  * SingleThreadTaskRunner::BelongsToCurrentThread() -> SeqeuenceTaskRunner::RunsTasksInCurrentSequence()
 * base::ThreadTaskRunnerHandle -> base::SequencedTaskRunnerHandle
 * base::ThreadChecker -> base::SequenceChecker
+  * ThreadChecker::CalledOnValidThread() -> DCHECK_CALLED_ON_VALID_SEQUENCE(...)
 * base::ThreadLocalStorage::Slot -> base::SequenceLocalStorageSlot
 * BrowserThread::DeleteOnThread -> base::DeleteOnTaskRunner / base::RefCountedDeleteOnSequence
 * CreateSingleThreadTaskRunnerWithTraits() -> CreateSequencedTaskRunnerWithTraits()
@@ -101,6 +103,7 @@ assigned files by:
      with a comment and ideally a bug to make it sequence when the sequence-unfriendly
      dependency is addressed (again [Prefer Sequences to
      Threads](threading_and_tasks.md#Prefer-Sequences-to-Threads)).
+
 
 ### Other relevant mappings for tests
 
