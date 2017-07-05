@@ -22,24 +22,25 @@ cr.define('extensions', function() {
    * A helper object for setting entry/exit animations. Polymer's support of
    * this is pretty limited, since it doesn't allow for things like specifying
    * hero properties or nodes.
-   * @param {!HTMLElement} element The parent element to set the animations on.
-   *     This will be used as the page in to/fromPage.
-   * @param {?HTMLElement} node The node to use for scaling and fading
-   *     animations.
-   * @constructor
    */
-  function AnimationHelper(element, node) {
-    this.element_ = element;
-    this.node_ = node;
-    element.animationConfig = {};
-  }
+  class AnimationHelper {
+    /**
+     * @param {!HTMLElement} element The parent element to set the animations
+     *     on. This will be used as the page in to/fromPage.
+     * @param {?HTMLElement} node The node to use for scaling and fading
+     *     animations.
+     */
+    constructor(element, node) {
+      this.element_ = element;
+      this.node_ = node;
+      element.animationConfig = {};
+    }
 
-  AnimationHelper.prototype = {
     /**
      * Set the entry animation for the element.
      * @param {!Array<extensions.Animation>} animations
      */
-    setEntryAnimations: function(animations) {
+    setEntryAnimations(animations) {
       var configs = [];
       for (let animation of animations) {
         switch (animation) {
@@ -56,13 +57,13 @@ cr.define('extensions', function() {
         }
       }
       this.element_.animationConfig.entry = configs;
-    },
+    }
 
     /**
      * Set the exit animation for the element.
      * @param {!Array<extensions.Animation>} animations
      */
-    setExitAnimations: function(animations) {
+    setExitAnimations(animations) {
       var configs = [];
       for (let animation of animations) {
         switch (animation) {
@@ -88,8 +89,8 @@ cr.define('extensions', function() {
         }
       }
       this.element_.animationConfig.exit = configs;
-    },
-  };
+    }
+  }
 
   return {AnimationHelper: AnimationHelper};
 });
