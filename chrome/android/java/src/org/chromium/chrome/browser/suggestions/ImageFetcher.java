@@ -253,7 +253,7 @@ public class ImageFetcher {
      */
     private void ensureIconIsAvailable(String pageUrl, String iconUrl, boolean isLargeIcon,
             boolean isTemporary, FaviconHelper.IconAvailabilityCallback callback) {
-        if (mHost.getActiveTab().getWebContents() != null) {
+        if (mHost.getActiveTab() != null && mHost.getActiveTab().getWebContents() != null) {
             getFaviconHelper().ensureIconIsAvailable(mProfile,
                     mHost.getActiveTab().getWebContents(), pageUrl, iconUrl, isLargeIcon,
                     isTemporary, callback);
