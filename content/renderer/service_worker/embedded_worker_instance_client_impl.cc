@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/child/scoped_child_process_reference.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
+#include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/content_client.h"
 #include "content/renderer/service_worker/embedded_worker_devtools_agent.h"
 #include "content/renderer/service_worker/service_worker_context_client.h"
@@ -110,8 +111,9 @@ std::unique_ptr<EmbeddedWorkerInstanceClientImpl::WorkerWrapper>
 EmbeddedWorkerInstanceClientImpl::StartWorkerContext(
     const EmbeddedWorkerStartParams& params,
     std::unique_ptr<ServiceWorkerContextClient> context_client) {
-  std::unique_ptr<blink::WebServiceWorkerInstalledScriptsManager> manager =
-      WebServiceWorkerInstalledScriptsManagerImpl::Create();
+  std::unique_ptr<blink::WebServiceWorkerInstalledScriptsManager> manager;
+  if (ServiceWorkerUtils::IsScriptStreamingEnabled())
+    manager = WebServiceWorkerInstalledScriptsManagerImpl::Create();
 
   auto wrapper = base::MakeUnique<WorkerWrapper>(
       blink::WebEmbeddedWorker::Create(std::move(context_client),
