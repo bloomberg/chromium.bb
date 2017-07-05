@@ -366,8 +366,8 @@ def GetAndroidRevisionListLink(build_branch, old_android, new_android):
     The desired URL.
   """
   return _ANDROID_VERSION_URL % {'branch': build_branch,
-                                 'old': old_android.version,
-                                 'new': new_android.version}
+                                 'old': old_android.version_no_rev,
+                                 'new': new_android.version_no_rev}
 
 
 def MarkAndroidEBuildAsStable(stable_candidate, unstable_ebuild,
@@ -485,6 +485,7 @@ def GetParser():
 
 
 def main(argv):
+  logging.EnableBuildbotMarkers()
   parser = GetParser()
   options = parser.parse_args(argv)
   options.Freeze()
