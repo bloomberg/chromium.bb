@@ -84,7 +84,8 @@ void SetupOnUI(
              bool wait_for_debugger)>& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderProcessHost* rph = RenderProcessHost::FromID(process_id);
-  // TODO(shimazu): Temporary CHECK to debug https://crbug.com/736649.
+  // TODO(falken): This CHECK is sometimes failing so it should be handled
+  // better. Consider also checking for rph->HasConnection() here.
   CHECK(rph);
   int worker_devtools_agent_route_id = rph->GetNextRoutingID();
   bool wait_for_debugger =
@@ -597,8 +598,19 @@ ServiceWorkerStatusCode EmbeddedWorkerInstance::SendStartWorker(
     std::unique_ptr<EmbeddedWorkerStartParams> params) {
   if (!context_)
     return SERVICE_WORKER_ERROR_ABORT;
-  // TODO(shimazu): Temporary CHECK to debug https://crbug.com/736649.
-  CHECK(pending_dispatcher_request_.is_pending());
+  if (!context_->GetDispatcherHost(process_id())) {
+    // Check if there's a dispatcher host, which is a good sign the process is
+    // still alive. It's possible that previously the process crashed, and the
+    // Mojo connection error via |client_| detected it and this instance was
+    // detached, but on restart ServiceWorkerProcessManager assigned us the
+    // process again before RenderProcessHostImpl itself or
+    // ServiceWorkerProcessManager knew it crashed, and by the time we get here
+    // RenderProcessHostImpl::EnableSendQueue may have been called in
+    // anticipation of the RPHI being reused for another renderer process, so
+    // Mojo doesn't consider it an error. See https://crbug.com/732729.
+    return SERVICE_WORKER_ERROR_IPC_FAILED;
+  }
+  DCHECK(pending_dispatcher_request_.is_pending());
 
   DCHECK(!instance_host_binding_.is_bound());
   mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo host_ptr_info;
