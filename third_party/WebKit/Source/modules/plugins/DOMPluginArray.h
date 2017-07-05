@@ -34,7 +34,7 @@ namespace blink {
 class LocalFrame;
 class PluginData;
 
-class DOMPluginArray final : public GarbageCollectedFinalized<DOMPluginArray>,
+class DOMPluginArray final : public GarbageCollected<DOMPluginArray>,
                              public ScriptWrappable,
                              public ContextLifecycleObserver,
                              public PluginsChangedObserver {
@@ -64,9 +64,6 @@ class DOMPluginArray final : public GarbageCollectedFinalized<DOMPluginArray>,
   void ContextDestroyed(ExecutionContext*) override;
 
   HeapVector<Member<DOMPlugin>> dom_plugins_;
-
-  // TODO(lfg): Temporary to track down https://crbug.com/731239.
-  RefPtr<const SecurityOrigin> main_frame_origin_;
 };
 
 }  // namespace blink
