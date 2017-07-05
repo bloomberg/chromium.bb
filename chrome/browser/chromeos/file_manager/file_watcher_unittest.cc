@@ -8,6 +8,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/task_scheduler/task_scheduler.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/drive/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -115,22 +116,26 @@ TEST_F(FileManagerFileWatcherTest, WatchLocalFile) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
-  // See the comment at the end of this function for why scoped_ptr is used.
-  std::unique_ptr<FileWatcher> file_watcher(new FileWatcher(kVirtualPath));
-  file_watcher->AddExtension(kExtensionId);
+  // Create a callback that will run when a change is detected.
+  bool on_change_error = false;
+  base::FilePath changed_path;
+  base::RunLoop change_run_loop;
+  base::FilePathWatcher::Callback change_callback = CreateQuitCallback(
+      &change_run_loop,
+      CreateCopyResultCallback(&changed_path, &on_change_error));
+
+  // Create a callback that will run when the watcher is started.
+  bool watcher_created = false;
+  base::RunLoop start_run_loop;
+  FileWatcher::BoolCallback start_callback = CreateQuitCallback(
+      &start_run_loop, CreateCopyResultCallback(&watcher_created));
 
   // Start watching changes in the temporary directory.
-  base::FilePath changed_path;
-  bool watcher_created = false;
-  bool on_change_error = false;
-  base::RunLoop run_loop;
-  file_watcher->WatchLocalFile(
-      temp_dir.GetPath(),
-      CreateQuitCallback(
-          &run_loop, CreateCopyResultCallback(&changed_path, &on_change_error)),
-      CreateCopyResultCallback(&watcher_created));
-  // Spin the message loop so the base::FilePathWatcher is created.
-  base::RunLoop().RunUntilIdle();
+  FileWatcher file_watcher(kVirtualPath);
+  file_watcher.AddExtension(kExtensionId);
+  file_watcher.WatchLocalFile(temp_dir.GetPath(), change_callback,
+                              start_callback);
+  start_run_loop.Run();
   ASSERT_TRUE(watcher_created);
 
   // Create a temporary file in the temporary directory. The file watcher
@@ -138,17 +143,13 @@ TEST_F(FileManagerFileWatcherTest, WatchLocalFile) {
   base::FilePath temp_file_path;
   ASSERT_TRUE(
       base::CreateTemporaryFileInDir(temp_dir.GetPath(), &temp_file_path));
-  // Wait until the directory change is notified.
-  run_loop.Run();
+  // Wait until the directory change is notified, and also flush the tasks in
+  // the message loop since |change_callback| can be called multiple times.
+  change_run_loop.Run();
+  base::RunLoop().RunUntilIdle();
+
   ASSERT_FALSE(on_change_error);
   ASSERT_EQ(temp_dir.GetPath().value(), changed_path.value());
-
-  // This is ugly, but FileWatcher should be deleted explicitly here, and
-  // spin the message loop so the base::FilePathWatcher is deleted.
-  // Otherwise, base::FilePathWatcher may detect a change when the temporary
-  // directory is deleted, which may result in crash.
-  file_watcher.reset();
-  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace
