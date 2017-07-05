@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/strings/string_piece.h"
 
 namespace sql {
 class Connection;
@@ -25,6 +26,7 @@ namespace password_manager {
 // SQLTableBuilder builder("logins");
 //
 // // First describe a couple of versions:
+// builder.AddColumnToPrimaryKey("id", "INTEGER");
 // builder.AddColumn("name", "VARCHAR");
 // builder.AddColumn("icon", "VARCHAR");
 // builder.AddColumn("password", "VARCHAR NOT NULL");
@@ -52,6 +54,11 @@ class SQLTableBuilder {
   // Adds a column in the table description, with |name| and |type|. |name|
   // must not have been added to the table in this version before.
   void AddColumn(std::string name, std::string type);
+
+  // As AddColumn but also adds column |name| to the primary key of the table.
+  // SealVersion must not have been called yet (the builder does not currently
+  // support migration code for changing the primary key between versions).
+  void AddColumnToPrimaryKey(std::string name, std::string type);
 
   // As AddColumn but also adds column |name| to the unique key of the table.
   // SealVersion must not have been called yet (the builder does not currently
@@ -105,17 +112,22 @@ class SQLTableBuilder {
   // version. The last version must be sealed.
   std::string ListAllColumnNames() const;
 
-  // Same as ListAllColumnNames, but for non-unique key names only, and with
-  // names followed by " = ?".
+  // Same as ListAllColumnNames, but for non-unique key names only (i.e. keys
+  // that are part of neither the PRIMARY KEY nor the UNIQUE constraint), and
+  // with names followed by " = ?".
   std::string ListAllNonuniqueKeyNames() const;
 
   // Same as ListAllNonuniqueKeyNames, but for unique key names and separated by
   // " AND ".
   std::string ListAllUniqueKeyNames() const;
 
-  // Returns the comma-separated list of all index names present in the last
+  // Returns a vector of all PRIMARY KEY names that are present in the last
   // version. The last version must be sealed.
-  std::string ListAllIndexNames() const;
+  std::vector<base::StringPiece> AllPrimaryKeyNames() const;
+
+  // Returns a vector of all index names that are present in the last
+  // version. The last version must be sealed.
+  std::vector<base::StringPiece> AllIndexNames() const;
 
   // Returns the number of all columns present in the last version. The last
   // version must be sealed.
@@ -177,9 +189,9 @@ class SQLTableBuilder {
 
   std::vector<Index> indices_;  // Indices of the table, across all versions.
 
-  // The "UNIQUE" part of an SQL CREATE TABLE constraint. This value is
-  // computed dring sealing the first version (0).
-  std::string unique_constraint_;
+  // The SQL CREATE TABLE constraints. This value is computed during sealing the
+  // first version (0).
+  std::string constraints_;
 
   // The name of the table.
   const std::string table_name_;
