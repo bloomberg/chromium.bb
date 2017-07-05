@@ -1293,6 +1293,9 @@ extern const char kDisableSystemTimezoneAutomaticDetectionDescription[];
 extern const char kDisplayColorCalibrationName[];
 extern const char kDisplayColorCalibrationDescription[];
 
+extern const char kEnableFullscreenAppListName[];
+extern const char kEnableFullscreenAppListDescription[];
+
 extern const char kEnableAndroidWallpapersAppName[];
 extern const char kEnableAndroidWallpapersAppDescription[];
 

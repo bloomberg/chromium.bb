@@ -2952,6 +2952,12 @@ const char kDisplayColorCalibrationDescription[] =
     "Allow color calibration of the display if the display supports the "
     "feature.";
 
+const char kEnableFullscreenAppListName[] = "Enable The Peeking Launcher";
+
+const char kEnableFullscreenAppListDescription[] =
+    "The peeking launcher UI supports touch and provides more space for upcoming "
+    "features.";
+
 const char kMemoryPressureThresholdName[] =
     "Memory discard strategy for advanced pressure handling";
 

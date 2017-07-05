@@ -1439,6 +1439,12 @@ const FeatureEntry kFeatureEntries[] = {
         flag_descriptions::kDisplayColorCalibrationDescription, kOsCrOS,
         SINGLE_DISABLE_VALUE_TYPE(::switches::kDisableDisplayColorCalibration),
     },
+    {
+        "enable-fullscreen-app-list",
+        flag_descriptions::kEnableFullscreenAppListName,
+        flag_descriptions::kEnableFullscreenAppListDescription, kOsCrOS,
+        SINGLE_VALUE_TYPE(app_list::switches::kEnableFullscreenAppList),
+    },
     {"instant-tethering", flag_descriptions::kTetherName,
      flag_descriptions::kTetherDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kInstantTethering)},
