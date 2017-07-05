@@ -76,6 +76,7 @@ component("app_list") {
     "//base/third_party/dynamic_annotations",
     "//components/keyed_service/core",
     "//components/sync",
+    "//components/wallpaper",
     "//skia",
     "//third_party/icu",
     "//ui/accessibility",

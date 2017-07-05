@@ -110,6 +110,7 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
   void HintTextChanged() override;
   void SelectionModelChanged() override;
   void Update() override;
+  void WallpaperProminentColorsChanged() override;
 
   // Overridden from SpeechUIModelObserver:
   void OnSpeechRecognitionStateChanged(
