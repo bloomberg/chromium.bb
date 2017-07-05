@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "components/password_manager/core/browser/login_database.h"
 #include "components/password_manager/core/browser/password_store.h"
 
@@ -25,8 +25,8 @@ class PasswordStoreDefault : public PasswordStore {
   // The |login_db| must not have been Init()-ed yet. It will be initialized in
   // a deferred manner on the DB thread.
   PasswordStoreDefault(
-      scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
+      scoped_refptr<base::SequencedTaskRunner> main_thread_runner,
+      scoped_refptr<base::SequencedTaskRunner> db_thread_runner,
       std::unique_ptr<LoginDatabase> login_db);
 
   bool Init(const syncer::SyncableService::StartSyncFlare& flare,

@@ -18,9 +18,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/os_crypt/ie7_password_win.h"
@@ -171,7 +171,7 @@ class PasswordStoreWinTest : public testing::Test {
 
   PasswordStoreWin* CreatePasswordStore() {
     return new PasswordStoreWin(
-        base::ThreadTaskRunnerHandle::Get(),
+        base::SequencedTaskRunnerHandle::Get(),
         BrowserThread::GetTaskRunnerForThread(BrowserThread::DB),
         base::MakeUnique<LoginDatabase>(test_login_db_file_path()), wds_.get());
   }

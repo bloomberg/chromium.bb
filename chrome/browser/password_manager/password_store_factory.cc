@@ -12,8 +12,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
-#include "base/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/sequenced_task_runner.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -158,9 +158,9 @@ PasswordStoreFactory::BuildServiceInstanceFor(
   std::unique_ptr<password_manager::LoginDatabase> login_db(
       password_manager::CreateLoginDatabase(profile->GetPath()));
 
-  scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner(
-      base::ThreadTaskRunnerHandle::Get());
-  scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner(
+  scoped_refptr<base::SequencedTaskRunner> main_thread_runner(
+      base::SequencedTaskRunnerHandle::Get());
+  scoped_refptr<base::SequencedTaskRunner> db_thread_runner(
       content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::DB));
 

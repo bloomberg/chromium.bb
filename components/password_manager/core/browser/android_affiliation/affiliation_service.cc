@@ -10,7 +10,7 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_backend.h"
@@ -26,7 +26,7 @@ AffiliationService::AffiliationService(
 }
 
 AffiliationService::~AffiliationService() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (backend_) {
     backend_task_runner_->DeleteSoon(FROM_HERE, backend_);
     backend_ = nullptr;
@@ -36,7 +36,7 @@ AffiliationService::~AffiliationService() {
 void AffiliationService::Initialize(
     net::URLRequestContextGetter* request_context_getter,
     const base::FilePath& db_path) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!backend_);
   backend_ =
       new AffiliationBackend(request_context_getter, backend_task_runner_,
@@ -53,18 +53,18 @@ void AffiliationService::GetAffiliations(
     const FacetURI& facet_uri,
     StrategyOnCacheMiss cache_miss_strategy,
     const ResultCallback& result_callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(backend_);
   backend_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&AffiliationBackend::GetAffiliations,
                  base::Unretained(backend_), facet_uri, cache_miss_strategy,
-                 result_callback, base::ThreadTaskRunnerHandle::Get()));
+                 result_callback, base::SequencedTaskRunnerHandle::Get()));
 }
 
 void AffiliationService::Prefetch(const FacetURI& facet_uri,
                                   const base::Time& keep_fresh_until) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(backend_);
   backend_task_runner_->PostTask(
       FROM_HERE,
@@ -74,7 +74,7 @@ void AffiliationService::Prefetch(const FacetURI& facet_uri,
 
 void AffiliationService::CancelPrefetch(const FacetURI& facet_uri,
                                         const base::Time& keep_fresh_until) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(backend_);
   backend_task_runner_->PostTask(
       FROM_HERE,
@@ -83,7 +83,7 @@ void AffiliationService::CancelPrefetch(const FacetURI& facet_uri,
 }
 
 void AffiliationService::TrimCacheForFacet(const FacetURI& facet_uri) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(backend_);
   backend_task_runner_->PostTask(
       FROM_HERE, base::Bind(&AffiliationBackend::TrimCacheForFacet,

@@ -9,8 +9,8 @@
 
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
-#include "base/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/sequenced_task_runner.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
@@ -79,9 +79,9 @@ IOSChromePasswordStoreFactory::BuildServiceInstanceFor(
   std::unique_ptr<password_manager::LoginDatabase> login_db(
       password_manager::CreateLoginDatabase(context->GetStatePath()));
 
-  scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner(
-      base::ThreadTaskRunnerHandle::Get());
-  scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner(
+  scoped_refptr<base::SequencedTaskRunner> main_thread_runner(
+      base::SequencedTaskRunnerHandle::Get());
+  scoped_refptr<base::SequencedTaskRunner> db_thread_runner(
       web::WebThread::GetTaskRunnerForThread(web::WebThread::DB));
 
   scoped_refptr<password_manager::PasswordStore> store =

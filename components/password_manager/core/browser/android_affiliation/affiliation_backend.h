@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_fetch_throttler_delegate.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_fetcher_delegate.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_service.h"
@@ -26,7 +27,6 @@ class Clock;
 class FilePath;
 class SingleThreadTaskRunner;
 class TaskRunner;
-class ThreadChecker;
 class TickClock;
 class Time;
 }  // namespace base
@@ -135,9 +135,9 @@ class AffiliationBackend : public FacetManagerHost,
   void SetThrottlerForTesting(
       std::unique_ptr<AffiliationFetchThrottler> throttler);
 
-  // Created in Initialize(), and ensures that all subsequent methods are called
-  // on the same thread.
-  std::unique_ptr<base::ThreadChecker> thread_checker_;
+  // Ensures that all methods, excluding construction, are called on the same
+  // sequence.
+  SEQUENCE_CHECKER(sequence_checker_);
 
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

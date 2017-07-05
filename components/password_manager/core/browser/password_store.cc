@@ -14,7 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliated_match_helper.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
@@ -33,7 +33,7 @@ namespace password_manager {
 PasswordStore::GetLoginsRequest::GetLoginsRequest(
     PasswordStoreConsumer* consumer)
     : consumer_weak_(consumer->GetWeakPtr()) {
-  origin_task_runner_ = base::ThreadTaskRunnerHandle::Get();
+  origin_task_runner_ = base::SequencedTaskRunnerHandle::Get();
 }
 
 PasswordStore::GetLoginsRequest::~GetLoginsRequest() {
@@ -64,7 +64,7 @@ void PasswordStore::GetLoginsRequest::NotifyWithSiteStatistics(
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 PasswordStore::CheckReuseRequest::CheckReuseRequest(
     PasswordReuseDetectorConsumer* consumer)
-    : origin_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+    : origin_task_runner_(base::SequencedTaskRunnerHandle::Get()),
       consumer_weak_(consumer->AsWeakPtr()) {}
 
 PasswordStore::CheckReuseRequest::~CheckReuseRequest() {}
@@ -107,8 +107,8 @@ bool PasswordStore::FormDigest::operator==(const FormDigest& other) const {
 }
 
 PasswordStore::PasswordStore(
-    scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner)
+    scoped_refptr<base::SequencedTaskRunner> main_thread_runner,
+    scoped_refptr<base::SequencedTaskRunner> db_thread_runner)
     : main_thread_runner_(main_thread_runner),
       db_thread_runner_(db_thread_runner),
       observers_(new base::ObserverListThreadSafe<Observer>()),
@@ -259,7 +259,7 @@ void PasswordStore::GetBlacklistLoginsWithAffiliatedRealms(
 
 void PasswordStore::ReportMetrics(const std::string& sync_username,
                                   bool custom_passphrase_sync_enabled) {
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner(
+  scoped_refptr<base::SequencedTaskRunner> task_runner(
       GetBackgroundTaskRunner());
   if (task_runner) {
     base::Closure task =
@@ -301,7 +301,7 @@ void PasswordStore::RemoveObserver(Observer* observer) {
 }
 
 bool PasswordStore::ScheduleTask(const base::Closure& task) {
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner(
+  scoped_refptr<base::SequencedTaskRunner> task_runner(
       GetBackgroundTaskRunner());
   if (task_runner.get())
     return task_runner->PostTask(FROM_HERE, task);
@@ -321,7 +321,7 @@ void PasswordStore::ShutdownOnUIThread() {
 
 base::WeakPtr<syncer::SyncableService>
 PasswordStore::GetPasswordSyncableService() {
-  DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
+  DCHECK(GetBackgroundTaskRunner()->RunsTasksInCurrentSequence());
   DCHECK(syncable_service_);
   return syncable_service_->AsWeakPtr();
 }
@@ -365,7 +365,7 @@ PasswordStore::~PasswordStore() {
   DCHECK(shutdown_called_);
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
+scoped_refptr<base::SequencedTaskRunner>
 PasswordStore::GetBackgroundTaskRunner() {
   return db_thread_runner_;
 }
@@ -420,7 +420,7 @@ PasswordStoreChangeList PasswordStore::RemoveLoginSync(
 
 void PasswordStore::NotifyLoginsChanged(
     const PasswordStoreChangeList& changes) {
-  DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
+  DCHECK(GetBackgroundTaskRunner()->RunsTasksInCurrentSequence());
   if (!changes.empty()) {
     observers_->Notify(FROM_HERE, &Observer::OnLoginsChanged, changes);
     if (syncable_service_)
@@ -609,7 +609,7 @@ void PasswordStore::GetLoginsWithAffiliationsImpl(
     const FormDigest& form,
     std::unique_ptr<GetLoginsRequest> request,
     const std::vector<std::string>& additional_android_realms) {
-  DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
+  DCHECK(GetBackgroundTaskRunner()->RunsTasksInCurrentSequence());
   std::vector<std::unique_ptr<PasswordForm>> results(FillMatchingLogins(form));
   for (const std::string& realm : additional_android_realms) {
     std::vector<std::unique_ptr<PasswordForm>> more_results(
@@ -649,7 +649,7 @@ void PasswordStore::ScheduleGetLoginsWithAffiliations(
 
 std::unique_ptr<PasswordForm> PasswordStore::GetLoginImpl(
     const PasswordForm& primary_key) {
-  DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
+  DCHECK(GetBackgroundTaskRunner()->RunsTasksInCurrentSequence());
   std::vector<std::unique_ptr<PasswordForm>> candidates(
       FillMatchingLogins(FormDigest(primary_key)));
   for (auto& candidate : candidates) {
@@ -683,7 +683,7 @@ void PasswordStore::ScheduleFindAndUpdateAffiliatedWebLogins(
 void PasswordStore::UpdateAffiliatedWebLoginsImpl(
     const PasswordForm& updated_android_form,
     const std::vector<std::string>& affiliated_web_realms) {
-  DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
+  DCHECK(GetBackgroundTaskRunner()->RunsTasksInCurrentSequence());
   PasswordStoreChangeList all_changes;
   for (const std::string& affiliated_web_realm : affiliated_web_realms) {
     std::vector<std::unique_ptr<PasswordForm>> web_logins(FillMatchingLogins(
@@ -769,7 +769,7 @@ void PasswordStore::ScheduleUpdateAffiliatedWebLoginsImpl(
 
 void PasswordStore::InitOnBackgroundThread(
     const syncer::SyncableService::StartSyncFlare& flare) {
-  DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
+  DCHECK(GetBackgroundTaskRunner()->RunsTasksInCurrentSequence());
   DCHECK(!syncable_service_);
   syncable_service_.reset(new PasswordSyncableService(this));
   syncable_service_->InjectStartSyncFlare(flare);
@@ -782,7 +782,7 @@ void PasswordStore::InitOnBackgroundThread(
 }
 
 void PasswordStore::DestroyOnBackgroundThread() {
-  DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
+  DCHECK(GetBackgroundTaskRunner()->RunsTasksInCurrentSequence());
   syncable_service_.reset();
 // TODO(crbug.com/706392): Fix password reuse detection for Android.
 #if !defined(OS_ANDROID) && !defined(OS_IOS)

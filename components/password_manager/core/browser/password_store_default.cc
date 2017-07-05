@@ -17,8 +17,8 @@ using autofill::PasswordForm;
 namespace password_manager {
 
 PasswordStoreDefault::PasswordStoreDefault(
-    scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
+    scoped_refptr<base::SequencedTaskRunner> main_thread_runner,
+    scoped_refptr<base::SequencedTaskRunner> db_thread_runner,
     std::unique_ptr<LoginDatabase> login_db)
     : PasswordStore(main_thread_runner, db_thread_runner),
       login_db_(std::move(login_db)) {}
@@ -39,7 +39,7 @@ void PasswordStoreDefault::ShutdownOnUIThread() {
 }
 
 void PasswordStoreDefault::InitOnDBThread() {
-  DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
+  DCHECK(GetBackgroundTaskRunner()->RunsTasksInCurrentSequence());
   DCHECK(login_db_);
   if (!login_db_->Init()) {
     login_db_.reset();
@@ -52,13 +52,13 @@ void PasswordStoreDefault::ReportMetricsImpl(
     bool custom_passphrase_sync_enabled) {
   if (!login_db_)
     return;
-  DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
+  DCHECK(GetBackgroundTaskRunner()->RunsTasksInCurrentSequence());
   login_db_->ReportMetrics(sync_username, custom_passphrase_sync_enabled);
 }
 
 PasswordStoreChangeList PasswordStoreDefault::AddLoginImpl(
     const PasswordForm& form) {
-  DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
+  DCHECK(GetBackgroundTaskRunner()->RunsTasksInCurrentSequence());
   if (!login_db_)
     return PasswordStoreChangeList();
   return login_db_->AddLogin(form);
@@ -66,7 +66,7 @@ PasswordStoreChangeList PasswordStoreDefault::AddLoginImpl(
 
 PasswordStoreChangeList PasswordStoreDefault::UpdateLoginImpl(
     const PasswordForm& form) {
-  DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
+  DCHECK(GetBackgroundTaskRunner()->RunsTasksInCurrentSequence());
   if (!login_db_)
     return PasswordStoreChangeList();
   return login_db_->UpdateLogin(form);
@@ -74,7 +74,7 @@ PasswordStoreChangeList PasswordStoreDefault::UpdateLoginImpl(
 
 PasswordStoreChangeList PasswordStoreDefault::RemoveLoginImpl(
     const PasswordForm& form) {
-  DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
+  DCHECK(GetBackgroundTaskRunner()->RunsTasksInCurrentSequence());
   PasswordStoreChangeList changes;
   if (login_db_ && login_db_->RemoveLogin(form))
     changes.push_back(PasswordStoreChange(PasswordStoreChange::REMOVE, form));
@@ -194,43 +194,43 @@ PasswordStoreDefault::FillLoginsForSameOrganizationName(
 
 bool PasswordStoreDefault::FillAutofillableLogins(
     std::vector<std::unique_ptr<PasswordForm>>* forms) {
-  DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
+  DCHECK(GetBackgroundTaskRunner()->RunsTasksInCurrentSequence());
   return login_db_ && login_db_->GetAutofillableLogins(forms);
 }
 
 bool PasswordStoreDefault::FillBlacklistLogins(
     std::vector<std::unique_ptr<PasswordForm>>* forms) {
-  DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
+  DCHECK(GetBackgroundTaskRunner()->RunsTasksInCurrentSequence());
   return login_db_ && login_db_->GetBlacklistLogins(forms);
 }
 
 void PasswordStoreDefault::AddSiteStatsImpl(const InteractionsStats& stats) {
-  DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
+  DCHECK(GetBackgroundTaskRunner()->RunsTasksInCurrentSequence());
   if (login_db_)
     login_db_->stats_table().AddRow(stats);
 }
 
 void PasswordStoreDefault::RemoveSiteStatsImpl(const GURL& origin_domain) {
-  DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
+  DCHECK(GetBackgroundTaskRunner()->RunsTasksInCurrentSequence());
   if (login_db_)
     login_db_->stats_table().RemoveRow(origin_domain);
 }
 
 std::vector<InteractionsStats> PasswordStoreDefault::GetAllSiteStatsImpl() {
-  DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
+  DCHECK(GetBackgroundTaskRunner()->RunsTasksInCurrentSequence());
   return login_db_ ? login_db_->stats_table().GetAllRows()
                    : std::vector<InteractionsStats>();
 }
 
 std::vector<InteractionsStats> PasswordStoreDefault::GetSiteStatsImpl(
     const GURL& origin_domain) {
-  DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
+  DCHECK(GetBackgroundTaskRunner()->RunsTasksInCurrentSequence());
   return login_db_ ? login_db_->stats_table().GetRows(origin_domain)
                    : std::vector<InteractionsStats>();
 }
 
 void PasswordStoreDefault::ResetLoginDB() {
-  DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
+  DCHECK(GetBackgroundTaskRunner()->RunsTasksInCurrentSequence());
   login_db_.reset();
 }
 
