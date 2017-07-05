@@ -164,18 +164,15 @@ void JourneyLogger::RecordJourneyStatsHistograms(
   has_recorded_ = true;
 
   RecordCheckoutFlowMetrics();
-
-  RecordPaymentMethodMetric();
-
-  RecordRequestedInformationMetrics();
-
-  RecordSectionSpecificStats(completion_status);
-
-  // Record the CanMakePayment metrics based on whether the transaction was
-  // completed or aborted by the user (UserAborted) or otherwise (OtherAborted).
   RecordCanMakePaymentStats(completion_status);
-
   RecordUrlKeyedMetrics(completion_status);
+
+  // These following metrics only make sense if the UI was shown to the user.
+  if (was_show_called_) {
+    RecordPaymentMethodMetric();
+    RecordRequestedInformationMetrics();
+    RecordSectionSpecificStats(completion_status);
+  }
 }
 
 void JourneyLogger::RecordCheckoutFlowMetrics() {
@@ -201,10 +198,6 @@ void JourneyLogger::RecordPaymentMethodMetric() {
 }
 
 void JourneyLogger::RecordRequestedInformationMetrics() {
-  if (!was_show_called_) {
-    return;
-  }
-
   DCHECK(requested_information_ != REQUESTED_INFORMATION_MAX);
   UMA_HISTOGRAM_ENUMERATION("PaymentRequest.RequestedInformation",
                             requested_information_, REQUESTED_INFORMATION_MAX);
