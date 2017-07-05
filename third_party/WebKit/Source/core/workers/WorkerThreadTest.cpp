@@ -92,10 +92,8 @@ class WorkerThreadTest : public ::testing::Test {
                                         ParentFrameTaskRunners::Create());
   }
 
-  void SetForcibleTerminationDelayInMs(
-      long long forcible_termination_delay_in_ms) {
-    worker_thread_->forcible_termination_delay_in_ms_ =
-        forcible_termination_delay_in_ms;
+  void SetForcibleTerminationDelay(TimeDelta forcible_termination_delay) {
+    worker_thread_->forcible_termination_delay_ = forcible_termination_delay;
   }
 
   bool IsForcibleTerminationTaskScheduled() {
@@ -230,8 +228,8 @@ TEST_F(WorkerThreadTest, SyncTerminate_ImmediatelyAfterStart) {
 }
 
 TEST_F(WorkerThreadTest, AsyncTerminate_WhileTaskIsRunning) {
-  const long long kForcibleTerminationDelayInMs = 10;
-  SetForcibleTerminationDelayInMs(kForcibleTerminationDelayInMs);
+  constexpr TimeDelta kDelay = TimeDelta::FromMilliseconds(10);
+  SetForcibleTerminationDelay(kDelay);
 
   ExpectReportingCallsForWorkerForciblyTerminated();
   StartWithSourceCodeNotToFinish();
@@ -248,8 +246,7 @@ TEST_F(WorkerThreadTest, AsyncTerminate_WhileTaskIsRunning) {
   EXPECT_EQ(ExitCode::kNotTerminated, GetExitCode());
 
   // Wait until the force termination task runs.
-  testing::RunDelayedTasks(
-      TimeDelta::FromMilliseconds(kForcibleTerminationDelayInMs));
+  testing::RunDelayedTasks(kDelay);
   worker_thread_->WaitForShutdownForTesting();
   EXPECT_EQ(ExitCode::kAsyncForciblyTerminated, GetExitCode());
 }
@@ -266,8 +263,7 @@ TEST_F(WorkerThreadTest, SyncTerminate_WhileTaskIsRunning) {
 
 TEST_F(WorkerThreadTest,
        AsyncTerminateAndThenSyncTerminate_WhileTaskIsRunning) {
-  const long long kForcibleTerminationDelayInMs = 10;
-  SetForcibleTerminationDelayInMs(kForcibleTerminationDelayInMs);
+  SetForcibleTerminationDelay(TimeDelta::FromMilliseconds(10));
 
   ExpectReportingCallsForWorkerForciblyTerminated();
   StartWithSourceCodeNotToFinish();

@@ -67,7 +67,7 @@ namespace blink {
 using ExitCode = WorkerThread::ExitCode;
 
 // TODO(nhiroki): Adjust the delay based on UMA.
-const long long kForcibleTerminationDelayInMs = 2000;  // 2 secs
+constexpr TimeDelta kForcibleTerminationDelay = TimeDelta::FromSeconds(2);
 
 static Mutex& ThreadSetMutex() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, ());
@@ -138,8 +138,7 @@ void WorkerThread::Terminate() {
                   WTF::Bind(&WorkerThread::EnsureScriptExecutionTerminates,
                             WTF::Unretained(this),
                             ExitCode::kAsyncForciblyTerminated),
-                  TimeDelta::FromMilliseconds(
-                      forcible_termination_delay_in_ms_));
+                  forcible_termination_delay_);
     }
   }
 
@@ -317,7 +316,7 @@ InterfaceProvider* WorkerThread::GetInterfaceProvider() {
 WorkerThread::WorkerThread(ThreadableLoadingContext* loading_context,
                            WorkerReportingProxy& worker_reporting_proxy)
     : worker_thread_id_(GetNextWorkerThreadId()),
-      forcible_termination_delay_in_ms_(kForcibleTerminationDelayInMs),
+      forcible_termination_delay_(kForcibleTerminationDelay),
       inspector_task_runner_(WTF::MakeUnique<InspectorTaskRunner>()),
       loading_context_(loading_context),
       worker_reporting_proxy_(worker_reporting_proxy),

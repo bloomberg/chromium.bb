@@ -251,7 +251,7 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   ThreadState thread_state_ = ThreadState::kNotStarted;
   ExitCode exit_code_ = ExitCode::kNotTerminated;
 
-  long long forcible_termination_delay_in_ms_;
+  TimeDelta forcible_termination_delay_;
 
   std::unique_ptr<InspectorTaskRunner> inspector_task_runner_;
 
