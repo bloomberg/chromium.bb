@@ -155,6 +155,7 @@ class CORE_EXPORT ApplicationCacheHost final
 
   void FillResourceList(ResourceInfoList*);
   CacheInfo ApplicationCacheInfo();
+  int GetHostID() const;
 
   DECLARE_TRACE();
 

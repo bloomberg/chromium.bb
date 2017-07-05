@@ -79,6 +79,8 @@ class WebApplicationCacheHost {
     kUnknownError
   };
 
+  static const int kAppCacheNoHostId = 0;
+
   virtual ~WebApplicationCacheHost() {}
 
   // Called for every request made within the context.
@@ -134,6 +136,7 @@ class WebApplicationCacheHost {
   virtual void GetAssociatedCacheInfo(CacheInfo*) {}
   virtual void GetResourceList(WebVector<ResourceInfo>*) {}
   virtual void DeleteAssociatedCacheGroup() {}
+  virtual int GetHostID() const { return kAppCacheNoHostId; }
 };
 
 }  // namespace blink

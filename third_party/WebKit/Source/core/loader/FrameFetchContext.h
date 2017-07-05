@@ -124,6 +124,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   bool AllowImage(bool images_enabled, const KURL&) const override;
   bool IsControlledByServiceWorker() const override;
   int64_t ServiceWorkerID() const override;
+  int ApplicationCacheHostID() const override;
 
   bool IsMainFrame() const override;
   bool DefersLoading() const override;

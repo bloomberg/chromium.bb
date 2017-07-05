@@ -9,6 +9,7 @@
 #include "content/common/worker_url_loader_factory_provider.mojom.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "third_party/WebKit/public/platform/WebApplicationCacheHost.h"
 #include "third_party/WebKit/public/platform/WebWorkerFetchContext.h"
 #include "url/gurl.h"
 
@@ -50,6 +51,8 @@ class WorkerFetchContextImpl : public blink::WebWorkerFetchContext,
   void DidRunContentWithCertificateErrors(const blink::WebURL& url) override;
   void DidDisplayContentWithCertificateErrors(
       const blink::WebURL& url) override;
+  void SetApplicationCacheHostID(int id) override;
+  int ApplicationCacheHostID() const override;
 
   // mojom::ServiceWorkerWorkerClient implementation:
   void SetControllerServiceWorker(int64_t controller_version_id) override;
@@ -88,6 +91,7 @@ class WorkerFetchContextImpl : public blink::WebWorkerFetchContext,
   int parent_frame_id_ = MSG_ROUTING_NONE;
   GURL first_party_for_cookies_;
   bool is_secure_context_ = false;
+  int appcache_host_id_ = blink::WebApplicationCacheHost::kAppCacheNoHostId;
 };
 
 }  // namespace content

@@ -69,6 +69,7 @@ class WorkerFetchContext final : public BaseFetchContext {
       const ResourceRequest&) override;
   void PrepareRequest(ResourceRequest&, RedirectType) override;
   bool IsControlledByServiceWorker() const override;
+  int ApplicationCacheHostID() const override;
   void AddAdditionalRequestHeaders(ResourceRequest&,
                                    FetchResourceType) override;
   void DispatchWillSendRequest(unsigned long,

@@ -11,11 +11,13 @@
 
 #include "base/time/time.h"
 #include "content/common/content_export.h"
+#include "third_party/WebKit/public/platform/WebApplicationCacheHost.h"
 #include "url/gurl.h"
 
 namespace content {
 
-static const int kAppCacheNoHostId = 0;
+static const int kAppCacheNoHostId =
+    blink::WebApplicationCacheHost::kAppCacheNoHostId;
 static const int64_t kAppCacheNoCacheId = 0;
 static const int64_t kAppCacheNoResponseId = 0;
 static const int64_t kAppCacheUnknownCacheId = -1;

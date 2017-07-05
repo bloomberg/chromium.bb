@@ -42,6 +42,7 @@
 #include "platform/weborigin/SecurityViolationReportingPolicy.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Noncopyable.h"
+#include "public/platform/WebApplicationCacheHost.h"
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebURLLoader.h"
 
@@ -174,6 +175,9 @@ class PLATFORM_EXPORT FetchContext
 
   virtual bool IsControlledByServiceWorker() const { return false; }
   virtual int64_t ServiceWorkerID() const { return -1; }
+  virtual int ApplicationCacheHostID() const {
+    return WebApplicationCacheHost::kAppCacheNoHostId;
+  }
 
   virtual bool IsMainFrame() const { return true; }
   virtual bool DefersLoading() const { return false; }

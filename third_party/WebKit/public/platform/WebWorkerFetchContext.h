@@ -5,6 +5,7 @@
 #ifndef WebWorkerFetchContext_h
 #define WebWorkerFetchContext_h
 
+#include "public/platform/WebApplicationCacheHost.h"
 #include "public/platform/WebURL.h"
 
 namespace base {
@@ -54,6 +55,11 @@ class WebWorkerFetchContext {
   // Reports the certificate error to the browser process.
   virtual void DidRunContentWithCertificateErrors(const WebURL& url) {}
   virtual void DidDisplayContentWithCertificateErrors(const WebURL& url) {}
+
+  virtual void SetApplicationCacheHostID(int id) {}
+  virtual int ApplicationCacheHostID() const {
+    return WebApplicationCacheHost::kAppCacheNoHostId;
+  }
 };
 
 }  // namespace blink

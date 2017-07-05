@@ -243,6 +243,12 @@ ApplicationCacheHost::CacheInfo ApplicationCacheHost::ApplicationCacheInfo() {
                    web_info.update_time, web_info.total_size);
 }
 
+int ApplicationCacheHost::GetHostID() const {
+  if (!host_)
+    return WebApplicationCacheHost::kAppCacheNoHostId;
+  return host_->GetHostID();
+}
+
 void ApplicationCacheHost::FillResourceList(ResourceInfoList* resources) {
   if (!host_)
     return;
