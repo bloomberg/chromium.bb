@@ -90,6 +90,7 @@ void ArcAppTest::SetUp(Profile* profile) {
   arc::ArcSessionManager::DisableUIForTesting();
   arc::ArcAuthNotification::DisableForTesting();
   arc_session_manager_->SetProfile(profile_);
+  arc_session_manager_->Initialize();
   arc_play_store_enabled_preference_handler_ =
       base::MakeUnique<arc::ArcPlayStoreEnabledPreferenceHandler>(
           profile_, arc_session_manager_.get());

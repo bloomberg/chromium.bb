@@ -96,6 +96,7 @@ class ArcPlayStoreEnabledPreferenceHandlerTest : public testing::Test {
 TEST_F(ArcPlayStoreEnabledPreferenceHandlerTest, PrefChangeTriggersService) {
   ASSERT_FALSE(IsArcPlayStoreEnabledForProfile(profile()));
   arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->Initialize();
   preference_handler()->Start();
 
   EXPECT_FALSE(
@@ -119,6 +120,7 @@ TEST_F(ArcPlayStoreEnabledPreferenceHandlerTest,
   SetArcPlayStoreEnabledForProfile(profile(), true);
 
   arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->Initialize();
   preference_handler()->Start();
 
   // Setting profile initiates a code fetching process.
@@ -134,6 +136,7 @@ TEST_F(ArcPlayStoreEnabledPreferenceHandlerTest, RemoveDataDir_Managed) {
   // Starting session manager with prefs::kArcEnabled off in a managed profile
   // does automatically remove Android's data folder.
   arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->Initialize();
   preference_handler()->Start();
   EXPECT_TRUE(
       profile()->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested));
