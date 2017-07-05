@@ -298,7 +298,7 @@ class FakeReposBase(object):
 
 class FakeRepos(FakeReposBase):
   """Implements populateGit()."""
-  NB_GIT_REPOS = 7
+  NB_GIT_REPOS = 8
 
   def populateGit(self):
     # Testing:
@@ -473,6 +473,7 @@ deps = {
     'url': '/repo_4',
     'condition': 'False',
   },
+  'src/repo8': '/repo_8',
 }
 deps_os ={
   'mac': {
@@ -513,6 +514,7 @@ hooks_os = {
 }
 recursedeps = [
   'src/repo2',
+  'src/repo8',
 ]""" % {
         'git_base': self.git_base,
         'hash': self.git_hashes['repo_2'][1][0][:7]
@@ -539,6 +541,19 @@ hooks = [
   },
 ]""",
       'origin': 'git/repo_7@1\n',
+    })
+
+    self._commit_git('repo_8', {
+      'DEPS': """
+deps_os ={
+  'mac': {
+    'src/recursed_os_repo': '/repo_5',
+  },
+  'unix': {
+    'src/recursed_os_repo': '/repo_5',
+  },
+}""",
+      'origin': 'git/repo_8@1\n',
     })
 
 

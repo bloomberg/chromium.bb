@@ -1825,9 +1825,7 @@ def _FlattenDep(dep, allowed_hosts, deps, deps_os, hooks, hooks_os,
 
   _AddDep(dep, allowed_hosts, deps, unpinned_deps)
 
-  for dep_os, os_deps in dep.os_dependencies.iteritems():
-    for os_dep in os_deps:
-      deps_os.setdefault(dep_os, {})[os_dep.name] = os_dep
+  _FlattenDepsOs(dep, deps_os)
 
   deps_by_name = dict((d.name, d) for d in dep.dependencies)
   for recurse_dep_name in (dep.recursedeps or []):
@@ -1860,9 +1858,27 @@ def _FlattenRecurse(dep, allowed_hosts, deps, deps_os, hooks, hooks_os,
   """
   logging.debug('_FlattenRecurse(%r)', dep)
 
+  _FlattenDepsOs(dep, deps_os)
+
   for sub_dep in dep.orig_dependencies:
     _FlattenDep(sub_dep, allowed_hosts, deps, deps_os, hooks, hooks_os,
                 pre_deps_hooks, unpinned_deps)
+
+
+def _FlattenDepsOs(dep, deps_os):
+  """Helper to add a dependency to flattened lists.
+
+  Arguments:
+    dep (Dependency): dependency to process
+
+  Out-parameters:
+    deps_os (dict): will be filled with flattened deps_os
+  """
+  logging.debug('_FlattenDepsOs(%r)', dep)
+
+  for dep_os, os_deps in dep.os_dependencies.iteritems():
+    for os_dep in os_deps:
+      deps_os.setdefault(dep_os, {})[os_dep.name] = os_dep
 
 
 def _AddDep(dep, allowed_hosts, deps, unpinned_deps):
