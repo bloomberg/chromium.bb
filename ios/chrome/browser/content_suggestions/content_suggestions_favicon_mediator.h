@@ -7,6 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
+#include "components/ntp_tiles/ntp_tile.h"
+
 namespace favicon {
 class LargeIconService;
 }
@@ -35,6 +37,10 @@ initWithContentService:
 
 // The data sink which should be notified of the changes in the items.
 @property(nonatomic, weak, nullable) id<ContentSuggestionsDataSink> dataSink;
+
+// Sets the |mostVisitedData| used to log the impression of the tiles.
+- (void)setMostVisitedDataForLogging:
+    (const ntp_tiles::NTPTilesVector&)mostVisitedData;
 
 // Fetches the favicon for this |item|.
 - (void)fetchFaviconForMostVisited:

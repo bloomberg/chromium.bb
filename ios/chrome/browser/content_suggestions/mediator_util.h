@@ -61,9 +61,6 @@ ContentSuggestionsSectionInformation* LogoSectionInformation();
 // Creates and returns a SectionInfo for the Most Visited section.
 ContentSuggestionsSectionInformation* MostVisitedSectionInformation();
 
-// Records the impression of the NTP and of all |mostVisited| tiles.
-void RecordImpression(const std::vector<ntp_tiles::NTPTile>& mostVisited);
-
 // Converts a ntp_tiles::NTPTile |tile| to a ContentSuggestionsMostVisitedItem
 // with a |sectionInfo|.
 ContentSuggestionsMostVisitedItem* ConvertNTPTile(
