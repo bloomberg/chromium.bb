@@ -61,13 +61,19 @@ class CommonTest(unittest.TestCase):
         self.assertTrue(is_exportable(commit, MockLocalWPT(), github))
 
     def test_commit_with_noexport_is_not_exportable(self):
-        commit = MockChromiumCommit(MockHost(), message='Message\nNOEXPORT=true')
+        commit = MockChromiumCommit(MockHost(), message='Message\nNo-Export: true')
         github = MockWPTGitHub(pull_requests=[])
         self.assertFalse(is_exportable(commit, MockLocalWPT(), github))
 
-        # A NOEXPORT tag in a revert CL also makes it non-exportable.
-        revert = MockChromiumCommit(MockHost(), message='Revert of Message\n> NOEXPORT=true')
+        # The older NOEXPORT tag also makes it non-exportable.
+        old_commit = MockChromiumCommit(MockHost(), message='Message\nNOEXPORT=true')
+        self.assertFalse(is_exportable(old_commit, MockLocalWPT(), github))
+
+        # No-Export/NOEXPORT in a revert CL also makes it non-exportable.
+        revert = MockChromiumCommit(MockHost(), message='Revert of Message\n> No-Export: true')
         self.assertFalse(is_exportable(revert, MockLocalWPT(), github))
+        old_revert = MockChromiumCommit(MockHost(), message='Revert of Message\n> NOEXPORT=true')
+        self.assertFalse(is_exportable(old_revert, MockLocalWPT(), github))
 
     def test_commit_that_starts_with_import_is_not_exportable(self):
         commit = MockChromiumCommit(MockHost(), message='Import message')
