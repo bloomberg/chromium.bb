@@ -6,9 +6,6 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "components/ntp_snippets/category.h"
-#include "components/ntp_tiles/metrics.h"
-#include "components/rappor/rappor_service_impl.h"
-#include "ios/chrome/browser/application_context.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_category_wrapper.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_item.h"
@@ -124,16 +121,6 @@ ContentSuggestionsSectionInformation* MostVisitedSectionInformation() {
   sectionInfo.layout = ContentSuggestionsSectionLayoutCustom;
 
   return sectionInfo;
-}
-
-void RecordImpression(const ntp_tiles::NTPTilesVector& mostVisited) {
-  int index = 0;
-  for (const ntp_tiles::NTPTile& ntpTile : mostVisited) {
-    ntp_tiles::metrics::RecordTileImpression(
-        index++, ntpTile.source, ntp_tiles::UNKNOWN_TILE_TYPE, ntpTile.url,
-        GetApplicationContext()->GetRapporServiceImpl());
-  }
-  ntp_tiles::metrics::RecordPageImpression(mostVisited.size());
 }
 
 ContentSuggestionsMostVisitedItem* ConvertNTPTile(

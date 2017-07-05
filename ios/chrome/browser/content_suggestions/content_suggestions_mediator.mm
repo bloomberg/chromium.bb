@@ -12,6 +12,7 @@
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/content_suggestion.h"
+#include "components/ntp_tiles/metrics.h"
 #include "components/ntp_tiles/most_visited_sites.h"
 #include "components/ntp_tiles/ntp_tile.h"
 #include "ios/chrome/browser/application_context.h"
@@ -391,7 +392,8 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
 
   if (mostVisited.size() && !self.recordedPageImpression) {
     self.recordedPageImpression = YES;
-    RecordImpression(mostVisited);
+    [self.faviconMediator setMostVisitedDataForLogging:mostVisited];
+    ntp_tiles::metrics::RecordPageImpression(mostVisited.size());
   }
 }
 
