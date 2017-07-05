@@ -50,18 +50,6 @@ class CAPTURE_EXPORT VideoCapturerSource {
 
   using RunningCallback = base::Callback<void(bool)>;
 
-  // Collects the formats that can currently be used.
-  // |max_requested_height|, |max_requested_width|, and
-  // |max_requested_frame_rate| is used by Tab and Screen capture to decide what
-  // resolution/framerate to generate. |callback| is triggered when the formats
-  // have been collected.
-  // TODO(guidou): Remove this method. http://crbug.com/706408
-  virtual void GetCurrentSupportedFormats(
-      int max_requested_width,
-      int max_requested_height,
-      double max_requested_frame_rate,
-      const VideoCaptureDeviceFormatsCB& callback);
-
   // Returns formats that are preferred and can currently be used. May be empty
   // if no formats are available or known.
   virtual VideoCaptureFormats GetPreferredFormats() = 0;
