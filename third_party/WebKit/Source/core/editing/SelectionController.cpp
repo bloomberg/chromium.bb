@@ -604,18 +604,18 @@ void SelectionController::SelectClosestMisspellingFromHitTestResult(
     return;
   }
 
-  Node* container_node = marker_position.ComputeContainerNode();
+  Node* const container_node = marker_position.ComputeContainerNode();
   const PositionInFlatTree start(container_node, marker->StartOffset());
   const PositionInFlatTree end(container_node, marker->EndOffset());
-  VisibleSelectionInFlatTree new_selection = CreateVisibleSelection(
+  const VisibleSelectionInFlatTree& new_selection = CreateVisibleSelection(
       SelectionInFlatTree::Builder().Collapse(start).Extend(end).Build());
-
-  if (append_trailing_whitespace == AppendTrailingWhitespace::kShouldAppend)
-    new_selection = new_selection.AppendTrailingWhitespace();
-
+  const VisibleSelectionInFlatTree& adjusted_selection =
+      append_trailing_whitespace == AppendTrailingWhitespace::kShouldAppend
+          ? new_selection.AppendTrailingWhitespace()
+          : new_selection;
   UpdateSelectionForMouseDownDispatchingSelectStart(
       inner_node,
-      ExpandSelectionToRespectUserSelectAll(inner_node, new_selection),
+      ExpandSelectionToRespectUserSelectAll(inner_node, adjusted_selection),
       kWordGranularity, HandleVisibility::kNotVisible);
 }
 
