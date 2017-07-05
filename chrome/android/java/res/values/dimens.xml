@@ -473,6 +473,7 @@
     <dimen name="context_menu_header_image_min_size">56dp</dimen>
     <dimen name="context_menu_header_image_max_size">56dp</dimen>
     <dimen name="context_menu_max_width">500dp</dimen>
+    <dimen name="context_menu_min_padding">20dp</dimen>
 
     <!-- Divider Dimensions -->
     <dimen name="divider_height">1dp</dimen>
