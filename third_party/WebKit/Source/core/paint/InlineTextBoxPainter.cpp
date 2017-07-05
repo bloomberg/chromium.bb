@@ -219,11 +219,12 @@ static void PaintDecorationsExceptLineThrough(
 
   for (const AppliedTextDecoration& decoration : decorations) {
     TextDecoration lines = decoration.Lines();
+    bool has_underline = EnumHasFlags(lines, TextDecoration::kUnderline);
+    bool has_overline = EnumHasFlags(lines, TextDecoration::kOverline);
     if (flip_underline_and_overline) {
-      lines ^= (TextDecoration::kUnderline | TextDecoration::kOverline);
+      std::swap(has_underline, has_overline);
     }
-    if (EnumHasFlags(lines, TextDecoration::kUnderline) &&
-        decoration_info.font_data) {
+    if (has_underline && decoration_info.font_data) {
       const int underline_offset = ComputeUnderlineOffset(
           underline_position, *decoration_info.style,
           decoration_info.font_data->GetFontMetrics(), &box, decorating_box,
@@ -232,7 +233,7 @@ static void PaintDecorationsExceptLineThrough(
           context, decoration_info, decoration, underline_offset,
           decoration_info.double_offset);
     }
-    if (EnumHasFlags(lines, TextDecoration::kOverline)) {
+    if (has_overline) {
       const int overline_offset = ComputeUnderlineOffsetForUnder(
           *decoration_info.style, &box, decorating_box,
           decoration_info.thickness,
