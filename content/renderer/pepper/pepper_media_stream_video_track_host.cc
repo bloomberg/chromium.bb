@@ -415,8 +415,6 @@ class PepperMediaStreamVideoTrackHost::VideoSource final
   ~VideoSource() final { StopSourceImpl(); }
 
   void StartSourceImpl(
-      const media::VideoCaptureFormat& format,
-      const blink::WebMediaConstraints& constraints,
       const VideoCaptureDeliverFrameCB& frame_callback) final {
     if (host_) {
       host_->frame_deliverer_ =

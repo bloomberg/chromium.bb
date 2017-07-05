@@ -198,8 +198,6 @@ void MediaStreamVideoCapturerSource::OnCapturingLinkSecured(bool is_secure) {
 }
 
 void MediaStreamVideoCapturerSource::StartSourceImpl(
-    const media::VideoCaptureFormat& format,
-    const blink::WebMediaConstraints& constraints,
     const VideoCaptureDeliverFrameCB& frame_callback) {
   is_capture_starting_ = true;
   source_->StartCapture(

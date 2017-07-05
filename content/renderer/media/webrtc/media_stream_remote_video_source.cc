@@ -187,8 +187,6 @@ void MediaStreamRemoteVideoSource::OnSourceTerminated() {
 }
 
 void MediaStreamRemoteVideoSource::StartSourceImpl(
-    const media::VideoCaptureFormat& format,
-    const blink::WebMediaConstraints& constraints,
     const VideoCaptureDeliverFrameCB& frame_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!delegate_.get());

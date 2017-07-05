@@ -47,8 +47,6 @@ class PpFrameWriter : public MediaStreamVideoSource,
  protected:
   // MediaStreamVideoSource implementation.
   void StartSourceImpl(
-      const media::VideoCaptureFormat& format,
-      const blink::WebMediaConstraints& constraints,
       const VideoCaptureDeliverFrameCB& frame_callback) override;
   void StopSourceImpl() override;
 
@@ -112,8 +110,6 @@ PpFrameWriter::~PpFrameWriter() {
 }
 
 void PpFrameWriter::StartSourceImpl(
-    const media::VideoCaptureFormat& format,
-    const blink::WebMediaConstraints& constraints,
     const VideoCaptureDeliverFrameCB& frame_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!delegate_.get());

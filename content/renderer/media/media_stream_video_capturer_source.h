@@ -49,8 +49,6 @@ class CONTENT_EXPORT MediaStreamVideoCapturerSource
   void OnHasConsumers(bool has_consumers) override;
   void OnCapturingLinkSecured(bool is_secure) override;
   void StartSourceImpl(
-      const media::VideoCaptureFormat& format,
-      const blink::WebMediaConstraints& constraints,
       const VideoCaptureDeliverFrameCB& frame_callback) override;
   void StopSourceImpl() override;
   base::Optional<media::VideoCaptureFormat> GetCurrentFormatImpl()
