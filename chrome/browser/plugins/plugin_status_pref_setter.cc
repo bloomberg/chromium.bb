@@ -50,8 +50,8 @@ void PluginStatusPrefSetter::Observe(
 
 void PluginStatusPrefSetter::StartUpdate() {
   PluginService::GetInstance()->GetPlugins(
-      base::Bind(&PluginStatusPrefSetter::GotPlugins, factory_.GetWeakPtr(),
-                 PluginPrefs::GetForProfile(profile_)));
+      base::BindOnce(&PluginStatusPrefSetter::GotPlugins, factory_.GetWeakPtr(),
+                     PluginPrefs::GetForProfile(profile_)));
 }
 
 void PluginStatusPrefSetter::GotPlugins(

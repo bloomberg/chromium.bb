@@ -233,7 +233,7 @@ void PluginInfoMessageFilter::OnGetPluginInfo(
     IPC::Message* reply_msg) {
   GetPluginInfo_Params params = {render_frame_id, url, main_frame_origin,
                                  mime_type};
-  PluginService::GetInstance()->GetPlugins(base::Bind(
+  PluginService::GetInstance()->GetPlugins(base::BindOnce(
       &PluginInfoMessageFilter::PluginsLoaded, this, params, reply_msg));
 }
 
