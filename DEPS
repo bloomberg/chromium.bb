@@ -932,7 +932,7 @@ hooks = [
                 '--no_resume',
                 '--no_auth',
                 '--bucket', 'chromium-android-tools/checkstyle',
-                '-s', 'src/third_party/checkstyle/checkstyle-7.6.1-all.jar.sha1'
+                '-s', 'src/third_party/checkstyle/checkstyle-8.0-all.jar.sha1'
     ],
   },
 ]
