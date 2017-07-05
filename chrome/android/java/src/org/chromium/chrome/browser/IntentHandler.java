@@ -478,9 +478,10 @@ public class IntentHandler {
     /**
      * Constructs a valid referrer using the given authority.
      * @param authority The authority to use.
-     * @return Referrer with default policy that uses the valid android app scheme.
+     * @return Referrer with default policy that uses the valid android app scheme, or null.
      */
     public static Referrer constructValidReferrerForAuthority(String authority) {
+        if (TextUtils.isEmpty(authority)) return null;
         return new Referrer(new Uri.Builder().scheme(ANDROID_APP_REFERRER_SCHEME)
                 .authority(authority).build().toString(), Referrer.REFERRER_POLICY_DEFAULT);
     }
