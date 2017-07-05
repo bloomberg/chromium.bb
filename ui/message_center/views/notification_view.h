@@ -24,6 +24,7 @@ namespace message_center {
 
 class BoundedLabel;
 class NotificationButton;
+class NotificationControlButtonsView;
 class ProportionalImageView;
 
 // View that displays all current types of notification (web, basic, image, and
@@ -57,9 +58,6 @@ class MESSAGE_CENTER_EXPORT NotificationView
   void RequestFocusOnCloseButton() override;
   void UpdateControlButtonsVisibility() override;
 
- protected:
-  views::ImageButton* close_button() { return close_button_.get(); }
-
  private:
   FRIEND_TEST_ALL_PREFIXES(NotificationViewTest, CreateOrUpdateTest);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewTest,
@@ -74,22 +72,19 @@ class MESSAGE_CENTER_EXPORT NotificationView
 
   friend class NotificationViewTest;
 
-  // views::ViewTargeterDelegate:
-  views::View* TargetForRect(views::View* root, const gfx::Rect& rect) override;
-
   void CreateOrUpdateViews(const Notification& notification);
 
   void CreateOrUpdateTitleView(const Notification& notification);
   void CreateOrUpdateMessageView(const Notification& notification);
   void CreateOrUpdateContextMessageView(const Notification& notification);
-  void CreateOrUpdateSettingsButtonView(const Notification& notification);
   void CreateOrUpdateProgressBarView(const Notification& notification);
   void CreateOrUpdateListItemViews(const Notification& notification);
   void CreateOrUpdateIconView(const Notification& notification);
   void CreateOrUpdateSmallIconView(const Notification& notification);
   void CreateOrUpdateImageView(const Notification& notification);
   void CreateOrUpdateActionButtonViews(const Notification& notification);
-  void CreateOrUpdateCloseButtonView(const Notification& notification);
+  void UpdateControlButtonsVisibilityWithNotification(
+      const Notification& notification);
 
   int GetMessageLineLimit(int title_lines, int width) const;
   int GetMessageHeight(int width, int limit) const;
@@ -108,7 +103,6 @@ class MESSAGE_CENTER_EXPORT NotificationView
   BoundedLabel* title_view_ = nullptr;
   BoundedLabel* message_view_ = nullptr;
   BoundedLabel* context_message_view_ = nullptr;
-  views::ImageButton* settings_button_view_ = nullptr;
   std::vector<views::View*> item_views_;
   ProportionalImageView* icon_view_ = nullptr;
   views::View* bottom_view_ = nullptr;
@@ -117,8 +111,8 @@ class MESSAGE_CENTER_EXPORT NotificationView
   views::ProgressBar* progress_bar_view_ = nullptr;
   std::vector<NotificationButton*> action_buttons_;
   std::vector<views::View*> separators_;
-  std::unique_ptr<views::ImageButton> close_button_ = nullptr;
   std::unique_ptr<views::ImageView> small_image_view_;
+  NotificationControlButtonsView* control_buttons_view_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationView);
 };
