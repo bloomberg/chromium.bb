@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -708,9 +709,9 @@ void KeyboardController::AdjustKeyboardBounds() {
 void KeyboardController::CheckStateTransition(KeyboardControllerState prev,
                                               KeyboardControllerState next) {
   std::stringstream error_message;
-  if (!isAllowedStateStansition(prev, next)) {
+  const bool valid_transition = isAllowedStateStansition(prev, next);
+  if (!valid_transition)
     error_message << "Unexpected transition";
-  }
   // TODO(oka): Add more condition check.
 
   // Emit log on release build too for debug.
@@ -719,6 +720,15 @@ void KeyboardController::CheckStateTransition(KeyboardControllerState prev,
       << "State: " << StateToStr(prev) << " -> " << StateToStr(next) << " "
       << error_message.str()
       << "  stack trace: " << base::debug::StackTrace(10).ToString();
+
+  // Emit UMA
+  const int transition_record =
+      (valid_transition ? 1 : -1) *
+      (static_cast<int>(prev) * 1000 + static_cast<int>(next));
+  UMA_HISTOGRAM_SPARSE_SLOWLY("VirtualKeyboard.ControllerStateTransition",
+                              transition_record);
+  UMA_HISTOGRAM_BOOLEAN("VirtualKeyboard.ControllerStateTransitionIsValid",
+                        transition_record > 0);
 }
 
 void KeyboardController::ChangeState(KeyboardControllerState state) {
