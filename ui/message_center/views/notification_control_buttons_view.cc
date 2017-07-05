@@ -46,7 +46,8 @@ NotificationControlButtonsView::~NotificationControlButtonsView() = default;
 
 void NotificationControlButtonsView::ShowCloseButton(bool show) {
   if (show && !close_button_) {
-    close_button_ = new message_center::PaddedButton(this);
+    close_button_ = base::MakeUnique<message_center::PaddedButton>(this);
+    close_button_->set_owned_by_client();
     close_button_->SetImage(views::CustomButton::STATE_NORMAL,
                             message_center::GetCloseIcon());
     close_button_->SetAccessibleName(l10n_util::GetStringUTF16(
@@ -58,16 +59,17 @@ void NotificationControlButtonsView::ShowCloseButton(bool show) {
 
     // Add the button at the last.
     DCHECK_LE(child_count(), 1);
-    AddChildView(close_button_);
+    AddChildView(close_button_.get());
   } else if (!show && close_button_) {
-    RemoveChildView(close_button_);
-    close_button_ = nullptr;
+    DCHECK(Contains(close_button_.get()));
+    close_button_.reset();
   }
 }
 
 void NotificationControlButtonsView::ShowSettingsButton(bool show) {
   if (show && !settings_button_) {
-    settings_button_ = new message_center::PaddedButton(this);
+    settings_button_ = base::MakeUnique<message_center::PaddedButton>(this);
+    settings_button_->set_owned_by_client();
     settings_button_->SetImage(views::CustomButton::STATE_NORMAL,
                                message_center::GetSettingsIcon());
     settings_button_->SetAccessibleName(l10n_util::GetStringUTF16(
@@ -79,10 +81,10 @@ void NotificationControlButtonsView::ShowSettingsButton(bool show) {
 
     // Add the button at the first.
     DCHECK_LE(child_count(), 1);
-    AddChildViewAt(settings_button_, 0);
+    AddChildViewAt(settings_button_.get(), 0);
   } else if (!show && settings_button_) {
-    RemoveChildView(settings_button_);
-    settings_button_ = nullptr;
+    DCHECK(Contains(settings_button_.get()));
+    settings_button_.reset();
   }
 }
 
@@ -113,15 +115,25 @@ bool NotificationControlButtonsView::IsSettingsButtonFocused() const {
   return settings_button_ && settings_button_->HasFocus();
 }
 
+message_center::PaddedButton*
+NotificationControlButtonsView::close_button_for_testing() const {
+  return close_button_.get();
+}
+
+message_center::PaddedButton*
+NotificationControlButtonsView::settings_button_for_testing() const {
+  return settings_button_.get();
+}
+
 const char* NotificationControlButtonsView::GetClassName() const {
   return kViewClassName;
 }
 
 void NotificationControlButtonsView::ButtonPressed(views::Button* sender,
                                                    const ui::Event& event) {
-  if (close_button_ && sender == close_button_) {
+  if (close_button_ && sender == close_button_.get()) {
     message_view_->OnCloseButtonPressed();
-  } else if (settings_button_ && sender == settings_button_) {
+  } else if (settings_button_ && sender == settings_button_.get()) {
     message_view_->OnSettingsButtonPressed();
   }
 }
