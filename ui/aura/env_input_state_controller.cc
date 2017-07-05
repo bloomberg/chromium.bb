@@ -26,8 +26,11 @@ void EnvInputStateController::UpdateStateForMouseEvent(
       break;
   }
 
+  // If a synthesized event is created from a native event (e.g. EnterNotify
+  // XEvents), then we should take the location as we would for a
+  // non-synthesized event.
   if (event.type() != ui::ET_MOUSE_CAPTURE_CHANGED &&
-      !(event.flags() & ui::EF_IS_SYNTHESIZED)) {
+      (!(event.flags() & ui::EF_IS_SYNTHESIZED) || event.HasNativeEvent())) {
     SetLastMouseLocation(window, event.root_location());
   }
 }

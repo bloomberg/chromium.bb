@@ -28,6 +28,7 @@
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "content/public/browser/overscroll_configuration.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -427,6 +428,108 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, MAYBE_OverscrollNavigation) {
 IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
                        MAYBE_OverscrollNavigationWithTouchHandler) {
   TestOverscrollNavigation(true);
+}
+
+namespace {
+// This fails the test if it sees any mouse move events.
+class SpuriousMouseMoveEventObserver
+    : public RenderWidgetHost::InputEventObserver {
+ public:
+  explicit SpuriousMouseMoveEventObserver(RenderWidgetHost* host)
+      : host_(host) {
+    host_->AddInputEventObserver(this);
+  }
+
+  ~SpuriousMouseMoveEventObserver() override {
+    host_->RemoveInputEventObserver(this);
+  }
+
+  void OnInputEvent(const blink::WebInputEvent& event) override {
+    EXPECT_NE(blink::WebInputEvent::kMouseMove, event.GetType())
+        << "Unexpected mouse move event.";
+  }
+
+ private:
+  RenderWidgetHost* host_;
+
+  DISALLOW_COPY_AND_ASSIGN(SpuriousMouseMoveEventObserver);
+};
+}  // namespace
+
+// Start an overscroll gesture and then check if the gesture is interrupted by
+// a spurious mouse event. Overscrolling may trigger mouse-move events, but
+// these should all be marked as synthesized and get dropped while the
+// overscroll gesture is in progress.
+// See crbug.com/731914
+IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
+                       OverscrollNotInterruptedBySpuriousMouseEvents) {
+  ASSERT_NO_FATAL_FAILURE(StartTestWithPage("/overscroll_navigation.html"));
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  NavigationController& controller = web_contents->GetController();
+  RenderFrameHost* main_frame = web_contents->GetMainFrame();
+
+  EXPECT_FALSE(controller.CanGoBack());
+  EXPECT_FALSE(controller.CanGoForward());
+  int index = -1;
+  std::unique_ptr<base::Value> value =
+      content::ExecuteScriptAndGetValue(main_frame, "get_current()");
+  ASSERT_TRUE(value->GetAsInteger(&index));
+  EXPECT_EQ(0, index);
+
+  ExecuteSyncJSFunction(main_frame, "navigate_next()");
+  value = content::ExecuteScriptAndGetValue(main_frame, "get_current()");
+  ASSERT_TRUE(value->GetAsInteger(&index));
+  EXPECT_EQ(1, index);
+  EXPECT_TRUE(controller.CanGoBack());
+  EXPECT_FALSE(controller.CanGoForward());
+
+  // We start an overscroll gesture, but pause mid-gesture.
+
+  // Fail the test if the following gesture produces mouse-moves that don't get
+  // dropped.
+  SpuriousMouseMoveEventObserver mouse_observer(GetRenderWidgetHost());
+
+  blink::WebGestureEvent gesture_scroll_begin(
+      blink::WebGestureEvent::kGestureScrollBegin,
+      blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::kTimeStampForTesting);
+  gesture_scroll_begin.source_device = blink::kWebGestureDeviceTouchscreen;
+  gesture_scroll_begin.data.scroll_begin.delta_hint_units =
+      blink::WebGestureEvent::ScrollUnits::kPrecisePixels;
+  gesture_scroll_begin.data.scroll_begin.delta_x_hint = 0.f;
+  gesture_scroll_begin.data.scroll_begin.delta_y_hint = 0.f;
+  GetRenderWidgetHost()->ForwardGestureEvent(gesture_scroll_begin);
+
+  blink::WebGestureEvent gesture_scroll_update(
+      blink::WebGestureEvent::kGestureScrollUpdate,
+      blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::kTimeStampForTesting);
+  gesture_scroll_update.source_device = blink::kWebGestureDeviceTouchscreen;
+  gesture_scroll_update.data.scroll_update.delta_units =
+      blink::WebGestureEvent::ScrollUnits::kPrecisePixels;
+  gesture_scroll_update.data.scroll_update.delta_y = 0.f;
+  float horiz_threshold =
+      GetOverscrollConfig(OVERSCROLL_CONFIG_HORIZ_THRESHOLD_START_TOUCHSCREEN);
+  gesture_scroll_update.data.scroll_update.delta_x = horiz_threshold + 1;
+  GetRenderWidgetHost()->ForwardGestureEvent(gesture_scroll_update);
+
+  // Wait for the overscroll gesture to start and then allow some time for the
+  // spurious mouse event. Since we're testing that an event does not happen,
+  // we just have a timeout. This could potentially result in the event
+  // happening after the timeout, which would cause the test to succeed
+  // incorrectly. That said, the event we're worried about happens almost
+  // instantly after the start of the overscroll gesture.
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+  run_loop.Run();
+
+  // Check that the overscroll gesture was not reset.
+  OverscrollController* overscroll_controller =
+      static_cast<RenderWidgetHostViewAura*>(GetRenderWidgetHostView())
+          ->overscroll_controller();
+  EXPECT_NE(OVERSCROLL_NONE, overscroll_controller->overscroll_mode());
 }
 
 // Disabled because the test always fails the first time it runs on the Win Aura

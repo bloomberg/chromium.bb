@@ -87,11 +87,8 @@ uint32_t X11Window::DispatchEvent(const PlatformEvent& event) {
   XEvent* xev = event;
   switch (xev->type) {
     case EnterNotify: {
-      // EnterNotify creates ET_MOUSE_MOVED. Mark as synthesized as this is
-      // not real mouse move event.
       MouseEvent mouse_event(xev);
       CHECK_EQ(ET_MOUSE_MOVED, mouse_event.type());
-      mouse_event.set_flags(mouse_event.flags() | EF_IS_SYNTHESIZED);
       delegate()->DispatchEvent(&mouse_event);
       break;
     }
