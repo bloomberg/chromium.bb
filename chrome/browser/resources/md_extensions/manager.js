@@ -422,18 +422,15 @@ cr.define('extensions', function() {
     }
   });
 
-  /**
-   * @param {extensions.Manager} manager
-   * @constructor
-   * @implements {extensions.SidebarListDelegate}
-   */
-  function ListHelper(manager) {
-    this.manager_ = manager;
-  }
+  /** @implements {extensions.SidebarListDelegate} */
+  class ListHelper {
+    /** @param {extensions.Manager} manager */
+    constructor(manager) {
+      this.manager_ = manager;
+    }
 
-  ListHelper.prototype = {
     /** @override */
-    showType: function(type) {
+    showType(type) {
       var items;
       switch (type) {
         case extensions.ShowingType.EXTENSIONS:
@@ -446,13 +443,13 @@ cr.define('extensions', function() {
 
       this.manager_.$ /* hack */['items-list'].set('items', assert(items));
       this.manager_.changePage({page: Page.LIST});
-    },
+    }
 
     /** @override */
-    showKeyboardShortcuts: function() {
+    showKeyboardShortcuts() {
       this.manager_.changePage({page: Page.SHORTCUTS});
-    },
-  };
+    }
+  }
 
   return {Manager: Manager};
 });
