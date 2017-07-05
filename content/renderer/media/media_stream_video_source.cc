@@ -61,9 +61,7 @@ void MediaStreamVideoSource::AddTrack(
   switch (state_) {
     case NEW: {
       state_ = STARTING;
-      blink::WebMediaConstraints ignored_constraints;
       StartSourceImpl(
-          media::VideoCaptureFormat() /* ignored */, ignored_constraints,
           base::Bind(&VideoTrackAdapter::DeliverFrameOnIO, track_adapter_));
       break;
     }

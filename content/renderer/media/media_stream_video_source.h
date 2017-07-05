@@ -93,21 +93,15 @@ class CONTENT_EXPORT MediaStreamVideoSource : public MediaStreamSource {
   // Sets muted state and notifies it to all registered tracks.
   virtual void SetMutedState(bool state);
 
-  // TODO(guidou): Rename to GetCurrentFormat. http://crbug.com/706804
+  // An implementation must return its capture format if available.
   virtual base::Optional<media::VideoCaptureFormat> GetCurrentFormatImpl()
       const;
 
-  // An implementation must start capturing frames using the requested
-  // |format|. The fulfilled |constraints| are provided as additional context,
-  // and may be used to modify the behavior of the source. When the source has
-  // started or the source failed to start OnStartDone must be called. An
-  // implementation must call |frame_callback| on the IO thread with the
+  // An implementation must start capturing frames after this method is called.
+  // When the source has started or failed to start OnStartDone must be called.
+  // An implementation must call |frame_callback| on the IO thread with the
   // captured frames.
-  // TODO(guidou): Remove |format| and |constraints| parameters.
-  // http://crbug.com/706408
   virtual void StartSourceImpl(
-      const media::VideoCaptureFormat& format,
-      const blink::WebMediaConstraints& constraints,
       const VideoCaptureDeliverFrameCB& frame_callback) = 0;
   void OnStartDone(MediaStreamRequestResult result);
 
