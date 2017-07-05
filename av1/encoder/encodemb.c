@@ -1428,11 +1428,11 @@ static int cfl_alpha_dist(const uint8_t *y_pix, int y_stride,
                           const int y_averages_q3[MAX_NUM_TXB],
                           const uint8_t *src, int src_stride, int width,
                           int height, TX_SIZE tx_size, int dc_pred,
-                          double alpha, int *dist_neg_out) {
+                          int alpha_q3, int *dist_neg_out) {
   int dist = 0;
   int diff;
 
-  if (alpha == 0.0) {
+  if (alpha_q3 == 0) {
     for (int j = 0; j < height; j++) {
       for (int i = 0; i < width; i++) {
         diff = src[i] - dc_pred;
@@ -1446,8 +1446,6 @@ static int cfl_alpha_dist(const uint8_t *y_pix, int y_stride,
     return dist;
   }
 
-  // TODO(ltrudeau) Convert alpha to fixed point
-  const int alpha_q3 = (int)(alpha * 8);
   int dist_neg = 0;
   const int tx_height = tx_size_high[tx_size];
   const int tx_width = tx_size_wide[tx_size];
@@ -1543,13 +1541,13 @@ static void cfl_compute_alpha_ind(MACROBLOCK *const x, FRAME_CONTEXT *ec_ctx,
                      width, height, tx_size, dc_pred_v, 0, NULL);
 
   for (int m = 1; m < CFL_MAGS_SIZE; m += 2) {
-    assert(cfl_alpha_mags[m + 1] == -cfl_alpha_mags[m]);
+    assert(cfl_alpha_mags_q3[m + 1] == -cfl_alpha_mags_q3[m]);
     sse[CFL_PRED_U][m] = cfl_alpha_dist(
         y_pix, MAX_SB_SIZE, y_averages_q3, src_u, src_stride_u, width, height,
-        tx_size, dc_pred_u, cfl_alpha_mags[m], &sse[CFL_PRED_U][m + 1]);
+        tx_size, dc_pred_u, cfl_alpha_mags_q3[m], &sse[CFL_PRED_U][m + 1]);
     sse[CFL_PRED_V][m] = cfl_alpha_dist(
         y_pix, MAX_SB_SIZE, y_averages_q3, src_v, src_stride_v, width, height,
-        tx_size, dc_pred_v, cfl_alpha_mags[m], &sse[CFL_PRED_V][m + 1]);
+        tx_size, dc_pred_v, cfl_alpha_mags_q3[m], &sse[CFL_PRED_V][m + 1]);
   }
 
   int dist;

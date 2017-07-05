@@ -65,9 +65,7 @@ typedef struct {
   int mi_row, mi_col;
 } CFL_CTX;
 
-static const double cfl_alpha_mags[CFL_MAGS_SIZE] = {
-  0., 0.125, -0.125, 0.25, -0.25, 0.5, -0.5
-};
+static const int cfl_alpha_mags_q3[CFL_MAGS_SIZE] = { 0, 1, -1, 2, -2, 4, -4 };
 
 static const int cfl_alpha_codes[CFL_ALPHABET_SIZE][CFL_PRED_PLANES] = {
   // barrbrain's simple 1D quant ordered by subset 3 likelihood
