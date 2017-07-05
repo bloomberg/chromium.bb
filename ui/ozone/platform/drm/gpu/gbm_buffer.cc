@@ -66,14 +66,18 @@ GbmBuffer::GbmBuffer(const scoped_refptr<GbmDevice>& gbm,
     // DRM_MODE_FB_MODIFIERS set. We only set that when we've created
     // a bo with modifiers, otherwise, we rely on the "no modifiers"
     // behavior doing the right thing.
-    drm_->AddFramebuffer2(gbm_bo_get_width(bo), gbm_bo_get_height(bo),
-                          framebuffer_pixel_format_, handles, strides, offsets,
-                          modifiers, &framebuffer_, addfb_flags);
+    bool ret = drm_->AddFramebuffer2(
+        gbm_bo_get_width(bo), gbm_bo_get_height(bo), framebuffer_pixel_format_,
+        handles, strides, offsets, modifiers, &framebuffer_, addfb_flags);
+    PLOG_IF(ERROR, !ret) << "AddFramebuffer2 failed";
+    DCHECK(ret);
     if (opaque_framebuffer_pixel_format_ != framebuffer_pixel_format_) {
-      drm_->AddFramebuffer2(gbm_bo_get_width(bo), gbm_bo_get_height(bo),
-                            opaque_framebuffer_pixel_format_, handles, strides,
-                            offsets, modifiers, &opaque_framebuffer_,
-                            addfb_flags);
+      ret = drm_->AddFramebuffer2(gbm_bo_get_width(bo), gbm_bo_get_height(bo),
+                                  opaque_framebuffer_pixel_format_, handles,
+                                  strides, offsets, modifiers,
+                                  &opaque_framebuffer_, addfb_flags);
+      PLOG_IF(ERROR, !ret) << "AddFramebuffer2 failed";
+      DCHECK(ret);
     }
   }
 }

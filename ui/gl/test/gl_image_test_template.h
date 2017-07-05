@@ -186,7 +186,9 @@ class GLImageTest : public testing::Test {
 TYPED_TEST_CASE_P(GLImageTest);
 
 TYPED_TEST_P(GLImageTest, Create) {
-  const gfx::Size small_image_size(4, 4);
+  // NOTE: On some drm devices (mediatek) the mininum width/height to add an fb
+  // for a bo must be 64.
+  const gfx::Size small_image_size(64, 64);
   const gfx::Size large_image_size(512, 512);
   const uint8_t* image_color = this->delegate_.GetImageColor();
 
