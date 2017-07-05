@@ -85,7 +85,7 @@ def _exportable_commits_since(chromium_commit_hash, host, local_wpt, wpt_github)
 def is_exportable(chromium_commit, local_wpt, wpt_github):
     """Checks whether a given patch is exportable and can be applied."""
     message = chromium_commit.message()
-    if 'NOEXPORT=true' in message or message.startswith('Import'):
+    if 'NOEXPORT=true' in message or 'No-Export: true' in message or message.startswith('Import'):
         return False
     patch = chromium_commit.format_patch()
     if not (patch and local_wpt.test_patch(patch, chromium_commit)):
