@@ -92,9 +92,12 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   void Start(std::unique_ptr<WorkerThreadStartupData>, ParentFrameTaskRunners*);
   void Terminate();
 
-  // Called on the main thread for the leak detector. Waits by *blocking* the
-  // calling thread until the workers are shut down.
-  static void TerminateAndWaitForAllWorkers();
+  // Called on the main thread for the leak detector. Forcibly terminates the
+  // script execution and waits by *blocking* the calling thread until the
+  // workers are shut down. Please be careful when using this function, because
+  // after the synchronous termination any V8 APIs may suddenly start to return
+  // empty handles and it may cause crashes.
+  static void TerminateAllWorkersForTesting();
 
   // WebThread::TaskObserver.
   void WillProcessTask() override;
@@ -188,18 +191,6 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   FRIEND_TEST_ALL_PREFIXES(WorkerThreadTest,
                            Terminate_WhileDebuggerTaskIsRunning);
 
-  enum class TerminationMode {
-    // Synchronously terminate the worker execution. Please be careful to
-    // use this mode, because after the synchronous termination any V8 APIs
-    // may suddenly start to return empty handles and it may cause crashes.
-    kForcible,
-
-    // Don't synchronously terminate the worker execution. Instead, schedule
-    // a task to terminate it in case that the shutdown sequence does not
-    // start on the worker thread in a certain time period.
-    kGraceful,
-  };
-
   // Represents the state of this worker thread. A caller may need to acquire
   // a lock |m_threadStateMutex| before accessing this:
   //   - Only the worker thread can set this with the lock.
@@ -211,24 +202,18 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
     kReadyToShutdown,
   };
 
-  void TerminateInternal(TerminationMode);
-
   // Returns true if we should synchronously terminate or schedule to
   // terminate the worker execution so that a shutdown task can be handled by
   // the thread event loop. This must be called with |m_threadStateMutex|
   // acquired.
   bool ShouldScheduleToTerminateExecution(const MutexLocker&);
 
-  // Called as a delayed task to terminate the worker execution from the main
-  // thread. This task is expected to run when the shutdown sequence does not
-  // start in a certain time period because of an inifite loop in the JS
-  // execution context etc. When the shutdown sequence is started before this
-  // task runs, the task is simply cancelled.
-  void MayForciblyTerminateExecution();
-
-  // Forcibly terminates the worker execution. This must be called with
-  // |m_threadStateMutex| acquired.
-  void ForciblyTerminateExecution(const MutexLocker&, ExitCode);
+  // Terminates worker script execution if the worker thread is running and not
+  // already shutting down. Does not terminate if a debugger task is running,
+  // because the debugger task is guaranteed to finish and it heavily uses V8
+  // API calls which would crash after forcible script termination. Called on
+  // the main thread.
+  void EnsureScriptExecutionTerminates(ExitCode);
 
   void InitializeSchedulerOnWorkerThread(WaitableEvent*);
   void InitializeOnWorkerThread(std::unique_ptr<WorkerThreadStartupData>);

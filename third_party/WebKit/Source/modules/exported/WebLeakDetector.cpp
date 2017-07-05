@@ -91,7 +91,7 @@ void WebLeakDetectorImpl::PrepareForLeakDetection(WebFrame* frame) {
   // here.
   V8PerIsolateData::From(isolate)->EnsureScriptRegexpContext();
 
-  WorkerThread::TerminateAndWaitForAllWorkers();
+  WorkerThread::TerminateAllWorkersForTesting();
   GetMemoryCache()->EvictResources();
 
   // If the spellchecker is allowed to continue issuing requests while the
