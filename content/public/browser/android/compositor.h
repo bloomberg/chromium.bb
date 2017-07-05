@@ -45,7 +45,7 @@ class CONTENT_EXPORT Compositor {
   static void Initialize();
 
   // Creates a GL context for the provided |handle|. If a null handle is passed,
-  // an offscreen context is created.
+  // an offscreen context is created. This must be called on the UI thread.
   using ContextProviderCallback =
       base::Callback<void(scoped_refptr<cc::ContextProvider>)>;
   static void CreateContextProvider(

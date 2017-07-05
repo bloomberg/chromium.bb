@@ -59,6 +59,7 @@
 #include "content/common/gpu_stream_constants.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/public/browser/android/compositor_client.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -409,6 +410,7 @@ void Compositor::CreateContextProvider(
     gpu::gles2::ContextCreationAttribHelper attributes,
     gpu::SharedMemoryLimits shared_memory_limits,
     ContextProviderCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserGpuChannelHostFactory::instance()->EstablishGpuChannel(
       base::Bind(&CreateContextProviderAfterGpuChannelEstablished, handle,
                  attributes, shared_memory_limits, callback));

@@ -9,8 +9,10 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "cc/output/context_provider.h"
 #include "content/public/browser/android/compositor.h"
+#include "content/public/browser/browser_thread.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/mailbox.h"
@@ -148,6 +150,7 @@ MailboxToSurfaceBridge::~MailboxToSurfaceBridge() {
 }
 
 void MailboxToSurfaceBridge::OnContextAvailable(
+    std::unique_ptr<gl::ScopedJavaSurface> surface,
     scoped_refptr<cc::ContextProvider> provider) {
   // Must save a reference to the ContextProvider to keep it alive,
   // otherwise the GL context created from it becomes invalid.
@@ -180,34 +183,55 @@ void MailboxToSurfaceBridge::CreateSurface(
   // Unregistering happens in the destructor.
   ANativeWindow_release(window);
 
-  // Our attributes must be compatible with the shared offscreen
-  // surface used by virtualized contexts, otherwise mailbox
-  // synchronization doesn't work properly - it assumes a shared
-  // underlying GL context. See GetCompositorContextAttributes
-  // in content/browser/renderer_host/compositor_impl_android.cc
-  // and crbug.com/699330.
-
-  gpu::gles2::ContextCreationAttribHelper attributes;
-  attributes.alpha_size = -1;
-  attributes.red_size = 8;
-  attributes.green_size = 8;
-  attributes.blue_size = 8;
-  attributes.stencil_size = 0;
-  attributes.depth_size = 0;
-  attributes.samples = 0;
-  attributes.sample_buffers = 0;
-  attributes.bind_generates_resource = false;
-  if (base::SysInfo::IsLowEndDevice()) {
-    attributes.alpha_size = 0;
-    attributes.red_size = 5;
-    attributes.green_size = 6;
-    attributes.blue_size = 5;
-  }
-
-  content::Compositor::CreateContextProvider(
-      surface_handle_, attributes, gpu::SharedMemoryLimits::ForMailboxContext(),
+  // The callback to run in this thread. It is necessary to keep |surface| alive
+  // until the context becomes available. So pass it on to the callback, so that
+  // it stays alive, and is destroyed on the same thread once done.
+  auto callback =
       base::Bind(&MailboxToSurfaceBridge::OnContextAvailable,
-                 weak_ptr_factory_.GetWeakPtr()));
+                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&surface));
+  // The callback that runs in the UI thread, and triggers |callback| to be run
+  // in this thread.
+  auto relay_callback = base::Bind(
+      [](scoped_refptr<base::SequencedTaskRunner> runner,
+         const content::Compositor::ContextProviderCallback& callback,
+         scoped_refptr<cc::ContextProvider> provider) {
+        runner->PostTask(FROM_HERE, base::Bind(callback, std::move(provider)));
+
+      },
+      base::SequencedTaskRunnerHandle::Get(), std::move(callback));
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::BindOnce(
+          [](int surface_handle,
+             const content::Compositor::ContextProviderCallback& callback) {
+            // Our attributes must be compatible with the shared
+            // offscreen surface used by virtualized contexts,
+            // otherwise mailbox synchronization doesn't work
+            // properly - it assumes a shared underlying GL context.
+            // See GetCompositorContextAttributes in
+            // content/browser/renderer_host/compositor_impl_android.cc
+            // and crbug.com/699330.
+            gpu::gles2::ContextCreationAttribHelper attributes;
+            attributes.alpha_size = -1;
+            attributes.red_size = 8;
+            attributes.green_size = 8;
+            attributes.blue_size = 8;
+            attributes.stencil_size = 0;
+            attributes.depth_size = 0;
+            attributes.samples = 0;
+            attributes.sample_buffers = 0;
+            attributes.bind_generates_resource = false;
+            if (base::SysInfo::IsLowEndDevice()) {
+              attributes.alpha_size = 0;
+              attributes.red_size = 5;
+              attributes.green_size = 6;
+              attributes.blue_size = 5;
+            }
+            content::Compositor::CreateContextProvider(
+                surface_handle, attributes,
+                gpu::SharedMemoryLimits::ForMailboxContext(), callback);
+          },
+          surface_handle_, relay_callback));
 }
 
 void MailboxToSurfaceBridge::ResizeSurface(int width, int height) {
