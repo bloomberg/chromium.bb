@@ -17,11 +17,12 @@ namespace ntp_snippets {
 
 BreakingNewsSuggestionsProvider::BreakingNewsSuggestionsProvider(
     ContentSuggestionsProvider::Observer* observer,
-    std::unique_ptr<BreakingNewsListener> breaking_news_listener,
+    std::unique_ptr<BreakingNewsListener> breaking_news_raw_data_provider,
     std::unique_ptr<base::Clock> clock,
     std::unique_ptr<RemoteSuggestionsDatabase> database)
     : ContentSuggestionsProvider(observer),
-      breaking_news_listener_(std::move(breaking_news_listener)),
+      breaking_news_raw_data_provider_(
+          std::move(breaking_news_raw_data_provider)),
       clock_(std::move(clock)),
       database_(std::move(database)),
       provided_category_(
@@ -34,13 +35,13 @@ BreakingNewsSuggestionsProvider::BreakingNewsSuggestionsProvider(
       base::Bind(&BreakingNewsSuggestionsProvider::OnDatabaseLoaded,
                  base::Unretained(this)));
   // Unretained because |this| owns |breaking_news_listener_|.
-  breaking_news_listener_->StartListening(
+  breaking_news_raw_data_provider_->StartListening(
       base::Bind(&BreakingNewsSuggestionsProvider::OnNewContentSuggestion,
                  base::Unretained(this)));
 }
 
 BreakingNewsSuggestionsProvider::~BreakingNewsSuggestionsProvider() {
-  breaking_news_listener_->StopListening();
+  breaking_news_raw_data_provider_->StopListening();
 }
 
 void BreakingNewsSuggestionsProvider::OnNewContentSuggestion(
