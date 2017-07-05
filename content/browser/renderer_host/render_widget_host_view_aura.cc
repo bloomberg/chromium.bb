@@ -557,8 +557,7 @@ void RenderWidgetHostViewAura::Show() {
 void RenderWidgetHostViewAura::Hide() {
   window_->Hide();
 
-  // TODO(wjmaclean): can host_ ever be null?
-  if (host_ && !host_->is_hidden()) {
+  if (!host_->is_hidden()) {
     host_->WasHidden();
     if (delegated_frame_host_)
       delegated_frame_host_->WasHidden();
@@ -769,7 +768,7 @@ void RenderWidgetHostViewAura::FocusedNodeTouched(
   ui::OnScreenKeyboardDisplayManager* osk_display_manager =
       ui::OnScreenKeyboardDisplayManager::GetInstance();
   DCHECK(osk_display_manager);
-  if (editable && host_ && host_->GetView() && host_->delegate()) {
+  if (editable && host_->GetView() && host_->delegate()) {
     keyboard_observer_.reset(new WinScreenKeyboardObserver(
         host_, location_dips_screen, device_scale_factor_, window_));
     virtual_keyboard_requested_ =
@@ -1229,9 +1228,8 @@ void RenderWidgetHostViewAura::InsertChar(const ui::KeyEvent& event) {
   }
 
   // Ignore character messages for VKEY_RETURN sent on CTRL+M. crbug.com/315547
-  // TODO(wjmaclean): can host_ ever be null?
-  if (host_ && (event_handler_->accept_return_character() ||
-                event.GetCharacter() != ui::VKEY_RETURN)) {
+  if (event_handler_->accept_return_character() ||
+      event.GetCharacter() != ui::VKEY_RETURN) {
     // Send a blink::WebInputEvent::Char event to |host_|.
     ForwardKeyboardEventWithLatencyInfo(
         NativeWebKeyboardEvent(event, event.GetCharacter()), *event.latency(),
@@ -1404,10 +1402,6 @@ bool RenderWidgetHostViewAura::GetTextFromRange(
 }
 
 void RenderWidgetHostViewAura::OnInputMethodChanged() {
-  // TODO(wjmaclean): can host_ ever be null?
-  if (!host_)
-    return;
-
   // TODO(suzhe): implement the newly added “locale” property of HTML DOM
   // TextEvent.
 }
