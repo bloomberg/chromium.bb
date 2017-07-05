@@ -550,7 +550,7 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
         ChromeBlobStorageContext::GetFor(context);
     BlobURLLoaderFactory::BlobContextGetter blob_getter =
         base::BindOnce(&BlobStorageContextGetter, blob_context);
-    partition->blob_url_loader_factory_ = new BlobURLLoaderFactory(
+    partition->blob_url_loader_factory_ = BlobURLLoaderFactory::Create(
         std::move(blob_getter), partition->filesystem_context_);
 
     partition->url_loader_factory_getter_ = new URLLoaderFactoryGetter();

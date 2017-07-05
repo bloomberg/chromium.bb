@@ -351,15 +351,18 @@ class BlobURLLoader : public mojom::URLLoader {
 
 }  // namespace
 
-BlobURLLoaderFactory::BlobURLLoaderFactory(
+// static
+scoped_refptr<BlobURLLoaderFactory> BlobURLLoaderFactory::Create(
     BlobContextGetter blob_storage_context_getter,
-    scoped_refptr<storage::FileSystemContext> file_system_context)
-    : file_system_context_(file_system_context) {
+    scoped_refptr<storage::FileSystemContext> file_system_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  auto factory = base::MakeRefCounted<BlobURLLoaderFactory>(
+      std::move(file_system_context));
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&BlobURLLoaderFactory::InitializeOnIO, this,
+      base::BindOnce(&BlobURLLoaderFactory::InitializeOnIO, factory,
                      std::move(blob_storage_context_getter)));
+  return factory;
 }
 
 void BlobURLLoaderFactory::HandleRequest(
@@ -369,6 +372,10 @@ void BlobURLLoaderFactory::HandleRequest(
                           base::BindOnce(&BlobURLLoaderFactory::BindOnIO, this,
                                          std::move(request)));
 }
+
+BlobURLLoaderFactory::BlobURLLoaderFactory(
+    scoped_refptr<storage::FileSystemContext> file_system_context)
+    : file_system_context_(std::move(file_system_context)) {}
 
 BlobURLLoaderFactory::~BlobURLLoaderFactory() {}
 

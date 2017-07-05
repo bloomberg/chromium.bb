@@ -30,7 +30,8 @@ class BlobURLLoaderFactory
  public:
   using BlobContextGetter =
       base::OnceCallback<base::WeakPtr<storage::BlobStorageContext>()>;
-  CONTENT_EXPORT BlobURLLoaderFactory(
+
+  static CONTENT_EXPORT scoped_refptr<BlobURLLoaderFactory> Create(
       BlobContextGetter blob_storage_context_getter,
       scoped_refptr<storage::FileSystemContext> file_system_context);
 
@@ -66,7 +67,11 @@ class BlobURLLoaderFactory
  private:
   friend class base::DeleteHelper<BlobURLLoaderFactory>;
   friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
+  template <typename T, typename... Args>
+  friend scoped_refptr<T> base::MakeRefCounted(Args&&... args);
 
+  BlobURLLoaderFactory(
+      scoped_refptr<storage::FileSystemContext> file_system_context);
   ~BlobURLLoaderFactory() override;
 
   void InitializeOnIO(BlobContextGetter blob_storage_context_getter);
