@@ -250,8 +250,6 @@ source_set("browser_sources") {
     "storage_partition.h",
     "stored_payment_app.cc",
     "stored_payment_app.h",
-    "stored_payment_instrument.cc",
-    "stored_payment_instrument.h",
     "stream_handle.h",
     "stream_info.cc",
     "stream_info.h",

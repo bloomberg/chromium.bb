@@ -17,7 +17,6 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/stored_payment_instrument.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
@@ -103,35 +102,6 @@ std::unique_ptr<StoredPaymentApp> ToStoredPaymentApp(const std::string& input) {
   }
 
   return app;
-}
-
-std::unique_ptr<StoredPaymentInstrument> ToStoredPaymentInstrument(
-    const std::string& input) {
-  StoredPaymentInstrumentProto instrument_proto;
-  if (!instrument_proto.ParseFromString(input))
-    return std::unique_ptr<StoredPaymentInstrument>();
-
-  std::unique_ptr<StoredPaymentInstrument> instrument =
-      base::MakeUnique<StoredPaymentInstrument>();
-  instrument->instrument_key = instrument_proto.instrument_key();
-  instrument->origin = GURL(instrument_proto.origin());
-  instrument->name = instrument_proto.name();
-
-  if (!instrument_proto.decoded_instrument_icon().empty()) {
-    std::string icon_raw_data;
-    base::Base64Decode(instrument_proto.decoded_instrument_icon(),
-                       &icon_raw_data);
-    // Note that the icon has been decoded to PNG raw data regardless of the
-    // original icon format that was downloaded.
-    gfx::Image icon_image = gfx::Image::CreateFrom1xPNGBytes(
-        reinterpret_cast<const unsigned char*>(icon_raw_data.data()),
-        icon_raw_data.size());
-    instrument->icon = base::MakeUnique<SkBitmap>(icon_image.AsBitmap());
-  }
-  for (const auto& method : instrument_proto.enabled_methods())
-    instrument->enabled_methods.push_back(method);
-
-  return instrument;
 }
 
 }  // namespace
@@ -391,11 +361,17 @@ void PaymentAppDatabase::DidReadAllPaymentInstruments(
   }
 
   for (const auto& item_of_raw_data : raw_data) {
-    std::unique_ptr<StoredPaymentInstrument> instrument =
-        ToStoredPaymentInstrument(item_of_raw_data.second);
-    if (!instrument || !base::ContainsKey(apps, instrument->origin))
+    StoredPaymentInstrumentProto instrument_proto;
+    if (!instrument_proto.ParseFromString(item_of_raw_data.second))
       continue;
-    apps[instrument->origin]->instruments.push_back(std::move(instrument));
+
+    GURL origin = GURL(instrument_proto.origin());
+    if (!base::ContainsKey(apps, origin))
+      continue;
+
+    for (const auto& method : instrument_proto.enabled_methods()) {
+      apps[origin]->enabled_methods.push_back(method);
+    }
   }
 
   std::move(callback).Run(std::move(apps));

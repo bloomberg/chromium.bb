@@ -4,17 +4,22 @@
 
 package org.chromium.chrome.browser.payments;
 
+import android.graphics.drawable.Drawable;
 import android.os.Handler;
 
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentItem;
 import org.chromium.payments.mojom.PaymentMethodData;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import javax.annotation.Nullable;
 
 /**
  * This app class represents a service worker based payment app.
@@ -24,9 +29,10 @@ import java.util.Set;
  *
  * @see https://w3c.github.io/webpayments-payment-handler/
  */
-public class ServiceWorkerPaymentApp implements PaymentApp {
+public class ServiceWorkerPaymentApp extends PaymentInstrument implements PaymentApp {
     private final WebContents mWebContents;
-    private final List<PaymentInstrument> mInstruments;
+    private final long mRegistrationId;
+    private final Drawable mIcon;
     private final Set<String> mMethodNames;
 
     /**
@@ -34,16 +40,22 @@ public class ServiceWorkerPaymentApp implements PaymentApp {
      *
      * @see https://w3c.github.io/webpayments-payment-handler/#structure-of-a-web-payment-app
      *
-     * @param webContents The web contents where PaymentRequest was invoked.
-     * @param instruments A list of payment instruments supported by the payment app.
+     * @param webContents       The web contents where PaymentRequest was invoked.
+     * @param registrationId    The registration id of the corresponding service worker payment app.
+     * @param label             The label of the payment app.
+     * @param icon              The drawable icon of the payment app.
+     * @param methodNames       A set of payment method names supported by the payment app.
      */
-    public ServiceWorkerPaymentApp(WebContents webContents, List<PaymentInstrument> instruments) {
+    public ServiceWorkerPaymentApp(WebContents webContents, long registrationId, String label,
+            @Nullable Drawable icon, String[] methodNames) {
+        super(Long.toString(registrationId), label, null /* sublabel */, icon);
         mWebContents = webContents;
-        mInstruments = instruments;
+        mRegistrationId = registrationId;
+        mIcon = icon;
 
         mMethodNames = new HashSet<>();
-        for (PaymentInstrument instrument : instruments) {
-            mMethodNames.addAll(instrument.getInstrumentMethodNames());
+        for (int i = 0; i < methodNames.length; i++) {
+            mMethodNames.add(methodNames[i]);
         }
     }
 
@@ -54,8 +66,9 @@ public class ServiceWorkerPaymentApp implements PaymentApp {
         new Handler().post(new Runnable() {
             @Override
             public void run() {
-                callback.onInstrumentsReady(
-                        ServiceWorkerPaymentApp.this, Collections.unmodifiableList(mInstruments));
+                List<PaymentInstrument> instruments = new ArrayList();
+                instruments.add(ServiceWorkerPaymentApp.this);
+                callback.onInstrumentsReady(ServiceWorkerPaymentApp.this, instruments);
             }
         });
     }
@@ -67,8 +80,9 @@ public class ServiceWorkerPaymentApp implements PaymentApp {
 
     @Override
     public boolean supportsMethodsAndData(Map<String, PaymentMethodData> methodsAndData) {
-        // TODO(tommyt): crbug.com/669876. Implement this for Service Worker Payment Apps.
-        return true;
+        Set<String> methodNames = new HashSet<>(methodsAndData.keySet());
+        methodNames.retainAll(mMethodNames);
+        return !methodNames.isEmpty();
     }
 
     @Override
@@ -80,4 +94,22 @@ public class ServiceWorkerPaymentApp implements PaymentApp {
     public int getAdditionalAppTextResourceId() {
         return 0;
     }
+
+    @Override
+    public Set<String> getInstrumentMethodNames() {
+        return getAppMethodNames();
+    }
+
+    @Override
+    public void invokePaymentApp(String id, String merchantName, String origin, String iframeOrigin,
+            byte[][] unusedCertificateChain, Map<String, PaymentMethodData> methodData,
+            PaymentItem total, List<PaymentItem> displayItems,
+            Map<String, PaymentDetailsModifier> modifiers, InstrumentDetailsCallback callback) {
+        ServiceWorkerPaymentAppBridge.invokePaymentApp(mWebContents, mRegistrationId, origin,
+                iframeOrigin, id, new HashSet<>(methodData.values()), total,
+                new HashSet<>(modifiers.values()), callback);
+    }
+
+    @Override
+    public void dismissInstrument() {}
 }

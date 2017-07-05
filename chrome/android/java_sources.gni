@@ -773,7 +773,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/payments/PaymentResponseHelper.java",
   "java/src/org/chromium/chrome/browser/payments/ServiceWorkerPaymentApp.java",
   "java/src/org/chromium/chrome/browser/payments/ServiceWorkerPaymentAppBridge.java",
-  "java/src/org/chromium/chrome/browser/payments/ServiceWorkerPaymentInstrument.java",
   "java/src/org/chromium/chrome/browser/payments/ShippingStrings.java",
   "java/src/org/chromium/chrome/browser/payments/SslValidityChecker.java",
   "java/src/org/chromium/chrome/browser/payments/ui/BillingAddressAdapter.java",

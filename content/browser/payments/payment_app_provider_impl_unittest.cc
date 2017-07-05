@@ -120,19 +120,27 @@ TEST_F(PaymentAppProviderTest, GetAllPaymentAppsTest) {
       GURL("https://bobpay.com/b"), GURL("https://bobpay.com/b/script.js"));
 
   PaymentHandlerStatus status;
-  SetPaymentInstrument(manager1, "test_key1", PaymentInstrument::New(),
+  PaymentInstrumentPtr instrument_1 = PaymentInstrument::New();
+  instrument_1->enabled_methods.push_back("hellopay");
+  SetPaymentInstrument(manager1, "test_key1", std::move(instrument_1),
                        base::Bind(&SetPaymentInstrumentCallback, &status));
-  SetPaymentInstrument(manager2, "test_key2", PaymentInstrument::New(),
+
+  PaymentInstrumentPtr instrument_2 = PaymentInstrument::New();
+  instrument_2->enabled_methods.push_back("hellopay");
+  SetPaymentInstrument(manager2, "test_key2", std::move(instrument_2),
                        base::Bind(&SetPaymentInstrumentCallback, &status));
-  SetPaymentInstrument(manager2, "test_key3", PaymentInstrument::New(),
+
+  PaymentInstrumentPtr instrument_3 = PaymentInstrument::New();
+  instrument_3->enabled_methods.push_back("bobpay");
+  SetPaymentInstrument(manager2, "test_key3", std::move(instrument_3),
                        base::Bind(&SetPaymentInstrumentCallback, &status));
 
   PaymentAppProvider::PaymentApps apps;
   GetAllPaymentApps(base::Bind(&GetAllPaymentAppsCallback, &apps));
 
   ASSERT_EQ(2U, apps.size());
-  ASSERT_EQ(1U, apps[GURL("https://hellopay.com/")]->instruments.size());
-  ASSERT_EQ(2U, apps[GURL("https://bobpay.com/")]->instruments.size());
+  ASSERT_EQ(1U, apps[GURL("https://hellopay.com/")]->enabled_methods.size());
+  ASSERT_EQ(2U, apps[GURL("https://bobpay.com/")]->enabled_methods.size());
 }
 
 }  // namespace content
