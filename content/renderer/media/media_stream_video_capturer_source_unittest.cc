@@ -33,35 +33,15 @@ namespace {
 
 class MockVideoCapturerSource : public media::VideoCapturerSource {
  public:
-  MockVideoCapturerSource() {
-    ON_CALL(*this, GetCurrentSupportedFormats(_, _, _, _))
-        .WillByDefault(WithArgs<3>(
-            Invoke(this, &MockVideoCapturerSource::EnumerateDeviceFormats)));
-  }
+  MockVideoCapturerSource() {}
 
   MOCK_METHOD0(RequestRefreshFrame, void());
-  MOCK_METHOD4(GetCurrentSupportedFormats,
-              void(int max_requested_width,
-                   int max_requested_height,
-                   double max_requested_frame_rate,
-                   const VideoCaptureDeviceFormatsCB& callback));
   MOCK_METHOD0(GetPreferredFormats, media::VideoCaptureFormats());
   MOCK_METHOD3(StartCapture,
                void(const media::VideoCaptureParams& params,
                     const VideoCaptureDeliverFrameCB& new_frame_callback,
                     const RunningCallback& running_callback));
   MOCK_METHOD0(StopCapture, void());
-
-  void EnumerateDeviceFormats(const VideoCaptureDeviceFormatsCB& callback) {
-    media::VideoCaptureFormat kFormatSmall(gfx::Size(640, 480), 30.0,
-                                           media::PIXEL_FORMAT_I420);
-    media::VideoCaptureFormat kFormatLarge(gfx::Size(1920, 1080), 30.0,
-                                           media::PIXEL_FORMAT_I420);
-    media::VideoCaptureFormats formats;
-    formats.push_back(kFormatSmall);
-    formats.push_back(kFormatLarge);
-    callback.Run(formats);
-  }
 };
 
 class FakeMediaStreamVideoSink : public MediaStreamVideoSink {

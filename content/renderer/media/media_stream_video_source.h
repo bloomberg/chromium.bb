@@ -37,13 +37,6 @@ struct VideoTrackAdapterSettings;
 // MediaStreaVideoSources such as local video capture, video sources received
 // on a PeerConnection or a source created in NaCl.
 // All methods calls will be done from the main render thread.
-//
-// When the first track is added to the source by calling AddTrack, the
-// MediaStreamVideoSource implementation calls GetCurrentSupportedFormats.
-// The source implementation must call OnSupportedFormats.
-// MediaStreamVideoSource then match the constraints provided in AddTrack with
-// the formats and call StartSourceImpl. The source implementation must call
-// OnStartDone when the underlying source has been started or failed to start.
 class CONTENT_EXPORT MediaStreamVideoSource : public MediaStreamSource {
  public:
   enum {
@@ -99,20 +92,6 @@ class CONTENT_EXPORT MediaStreamVideoSource : public MediaStreamSource {
 
   // Sets muted state and notifies it to all registered tracks.
   virtual void SetMutedState(bool state);
-
-  // An implementation must fetch the formats that can currently be used by
-  // the source and call OnSupportedFormats when done.
-  // |max_requested_height| and |max_requested_width| is the max height and
-  // width set as a mandatory constraint if set when calling
-  // MediaStreamVideoSource::AddTrack. If max height and max width is not set
-  // |max_requested_height| and |max_requested_width| are 0.
-  // TODO(guidou): Remove when the standard constraints code stabilizes.
-  // http://crbug.com/706408
-  virtual void GetCurrentSupportedFormats(
-      int max_requested_width,
-      int max_requested_height,
-      double max_requested_frame_rate,
-      const VideoCaptureDeviceFormatsCB& callback) = 0;
 
   // TODO(guidou): Rename to GetCurrentFormat. http://crbug.com/706804
   virtual base::Optional<media::VideoCaptureFormat> GetCurrentFormatImpl()

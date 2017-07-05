@@ -40,7 +40,7 @@ class MediaStreamVideoRendererSinkTest : public testing::Test {
  public:
   MediaStreamVideoRendererSinkTest()
       : child_process_(new ChildProcess()),
-        mock_source_(new MockMediaStreamVideoSource(false)) {
+        mock_source_(new MockMediaStreamVideoSource()) {
     blink_source_.Initialize(blink::WebString::FromASCII("dummy_source_id"),
                              blink::WebMediaStreamSource::kTypeVideo,
                              blink::WebString::FromASCII("dummy_source_name"),

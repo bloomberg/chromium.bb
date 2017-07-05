@@ -14,9 +14,8 @@ namespace content {
 
 class MockMediaStreamVideoSource : public MediaStreamVideoSource {
  public:
-  explicit MockMediaStreamVideoSource(bool manual_get_supported_formats);
-  MockMediaStreamVideoSource(bool manual_get_supported_formats,
-                             bool respond_to_request_refresh_frame);
+  MockMediaStreamVideoSource();
+  explicit MockMediaStreamVideoSource(bool respond_to_request_refresh_frame);
   MockMediaStreamVideoSource(const media::VideoCaptureFormat& format,
                              bool respond_to_request_refresh_frame);
   virtual ~MockMediaStreamVideoSource();
@@ -32,10 +31,6 @@ class MockMediaStreamVideoSource : public MediaStreamVideoSource {
   // Returns true if StartSource  has been called and StartMockedSource
   // or FailToStartMockedSource has not been called.
   bool SourceHasAttemptedToStart() { return attempted_to_start_; }
-
-  void SetSupportedFormats(const media::VideoCaptureFormats& formats) {
-    supported_formats_ = formats;
-  }
 
   // Delivers |frame| to all registered tracks on the IO thread. Its up to the
   // call to make sure MockMediaStreamVideoSource is not destroyed before the
@@ -59,11 +54,6 @@ class MockMediaStreamVideoSource : public MediaStreamVideoSource {
 
  protected:
   // Implements MediaStreamVideoSource.
-  void GetCurrentSupportedFormats(
-      int max_requested_height,
-      int max_requested_width,
-      double max_requested_frame_rate,
-      const VideoCaptureDeviceFormatsCB& callback) override;
   void StartSourceImpl(
       const media::VideoCaptureFormat& format,
       const blink::WebMediaConstraints& constraints,
@@ -74,14 +64,11 @@ class MockMediaStreamVideoSource : public MediaStreamVideoSource {
 
  private:
   media::VideoCaptureFormat format_;
-  media::VideoCaptureFormats supported_formats_;
-  bool manual_get_supported_formats_;
   bool respond_to_request_refresh_frame_;
   int max_requested_height_;
   int max_requested_width_;
   double max_requested_frame_rate_;
   bool attempted_to_start_;
-  VideoCaptureDeviceFormatsCB formats_callback_;
   VideoCaptureDeliverFrameCB frame_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(MockMediaStreamVideoSource);

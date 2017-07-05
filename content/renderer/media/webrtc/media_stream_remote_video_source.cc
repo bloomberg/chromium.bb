@@ -186,18 +186,6 @@ void MediaStreamRemoteVideoSource::OnSourceTerminated() {
   StopSourceImpl();
 }
 
-void MediaStreamRemoteVideoSource::GetCurrentSupportedFormats(
-    int max_requested_width,
-    int max_requested_height,
-    double max_requested_frame_rate,
-    const VideoCaptureDeviceFormatsCB& callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  media::VideoCaptureFormats formats;
-  // Since the remote end is free to change the resolution at any point in time
-  // the supported formats are unknown.
-  callback.Run(formats);
-}
-
 void MediaStreamRemoteVideoSource::StartSourceImpl(
     const media::VideoCaptureFormat& format,
     const blink::WebMediaConstraints& constraints,

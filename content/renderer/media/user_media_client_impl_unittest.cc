@@ -98,11 +98,10 @@ blink::WebMediaConstraints CreateFacingModeConstraints(
 
 class MockMediaStreamVideoCapturerSource : public MockMediaStreamVideoSource {
  public:
-  MockMediaStreamVideoCapturerSource(
-      const StreamDeviceInfo& device,
-      const SourceStoppedCallback& stop_callback,
-      PeerConnectionDependencyFactory* factory)
-  : MockMediaStreamVideoSource(false) {
+  MockMediaStreamVideoCapturerSource(const StreamDeviceInfo& device,
+                                     const SourceStoppedCallback& stop_callback,
+                                     PeerConnectionDependencyFactory* factory)
+      : MockMediaStreamVideoSource() {
     SetDeviceInfo(device);
     SetStopCallback(stop_callback);
   }
