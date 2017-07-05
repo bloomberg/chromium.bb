@@ -6,6 +6,8 @@
 # Both of the bugs above need to be fixed, before enabling the tests below.
 crbug.com/393285 http/tests/text-autosizing/narrow-iframe.html [ Failure ]
 crbug.com/393285 http/tests/text-autosizing/wide-iframe.html [ Failure ]
+crbug.com/393285 virtual/mojo-loading/http/tests/text-autosizing/narrow-iframe.html [ Failure ]
+crbug.com/393285 virtual/mojo-loading/http/tests/text-autosizing/wide-iframe.html [ Failure ]
 
 # https://crbug.com/710098: Tests failing because of r462933.
 crbug.com/710098 http/tests/security/document-all.html [ Failure ]
