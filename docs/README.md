@@ -294,6 +294,8 @@ git cl patch <CL number or URL>
     used to automatically set proxy settings.
 *   [Installing Chromium OS on VMWare](installation_at_vmware.md) - How to
     install Chromium OS on VMWare.
+*   [User Data Directory](user_data_dir.md) - How the user data and cache
+    directories are determined on all platforms.
 
 ### Probably Obsolete
 *   [Old ChromeOS build instructions](old_chromeos_build_instructions.md)
