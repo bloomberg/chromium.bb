@@ -20410,6 +20410,32 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="identical"/>
 </enum>
 
+<enum name="InstantTethering_ConnectionToHostResult_Failure">
+  <int value="0" label="Unknown error"/>
+  <int value="1" label="Tethering timed out"/>
+  <int value="2" label="Client connection error"/>
+</enum>
+
+<enum name="InstantTethering_ConnectionToHostResult_Failure_ClientConnection">
+  <int value="0" label="Timeout while waiting to connect"/>
+  <int value="1" label="Canceled by a new connection attempt"/>
+</enum>
+
+<enum name="InstantTethering_ConnectionToHostResult_Failure_TetheringTimeout">
+  <int value="0" label="First-time setup was required"/>
+  <int value="1" label="First-time setup was not required"/>
+</enum>
+
+<enum name="InstantTethering_ConnectionToHostResult_ProvisioningFailureRate">
+  <int value="0" label="Provisioning failed"/>
+  <int value="1" label="Other"/>
+</enum>
+
+<enum name="InstantTethering_ConnectionToHostResult_SuccessRate">
+  <int value="0" label="Success"/>
+  <int value="1" label="Failure"/>
+</enum>
+
 <enum name="IntelMaxMicroArchitecture">
   <int value="0" label="Pentium"/>
   <int value="1" label="SSE"/>
