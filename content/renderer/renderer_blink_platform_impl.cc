@@ -42,6 +42,7 @@
 #include "content/common/frame_messages.h"
 #include "content/common/gpu_stream_constants.h"
 #include "content/common/render_process_messages.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/webplugininfo.h"
@@ -311,10 +312,7 @@ std::unique_ptr<blink::WebURLLoader> RendererBlinkPlatformImpl::CreateURLLoader(
   ChildThreadImpl* child_thread = ChildThreadImpl::current();
 
   if (!url_loader_factory_ && child_thread) {
-    bool network_service_enabled =
-        base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableNetworkService);
-    if (network_service_enabled) {
+    if (base::FeatureList::IsEnabled(features::kNetworkService)) {
       mojom::URLLoaderFactoryPtr factory_ptr;
       connector_->BindInterface(mojom::kBrowserServiceName, &factory_ptr);
       url_loader_factory_ = std::move(factory_ptr);

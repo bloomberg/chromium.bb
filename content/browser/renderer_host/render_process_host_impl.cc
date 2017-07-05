@@ -1708,8 +1708,7 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
                        base::Bind(&RenderProcessHostImpl::CreateRendererHost,
                                   base::Unretained(this)));
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableNetworkService)) {
+  if (base::FeatureList::IsEnabled(features::kNetworkService)) {
     AddUIThreadInterface(
         registry.get(),
         base::Bind(&RenderProcessHostImpl::CreateURLLoaderFactory,
@@ -1759,8 +1758,7 @@ void RenderProcessHostImpl::GetAssociatedInterface(
 
 void RenderProcessHostImpl::GetBlobURLLoaderFactory(
     mojom::URLLoaderFactoryRequest request) {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableNetworkService)) {
+  if (!base::FeatureList::IsEnabled(features::kNetworkService)) {
     NOTREACHED();
     return;
   }
@@ -1814,8 +1812,7 @@ void RenderProcessHostImpl::CreateRendererHost(
 void RenderProcessHostImpl::CreateURLLoaderFactory(
     const service_manager::BindSourceInfo& source_info,
     mojom::URLLoaderFactoryRequest request) {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableNetworkService)) {
+  if (!base::FeatureList::IsEnabled(features::kNetworkService)) {
     NOTREACHED();
     return;
   }
@@ -2317,7 +2314,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableLCDText,
     switches::kEnableLogging,
     switches::kEnableNetworkInformation,
-    switches::kEnableNetworkService,
     switches::kEnablePinch,
     switches::kEnablePluginPlaceholderTesting,
     switches::kEnablePreciseMemoryInfo,

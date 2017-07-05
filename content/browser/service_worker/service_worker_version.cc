@@ -38,7 +38,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/content_switches.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/result_codes.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
@@ -909,8 +909,7 @@ void ServiceWorkerVersion::OnScriptLoaded() {
          // used to retrieve the service worker js. This should be removed once
          // that's done.
          (IsBrowserSideNavigationEnabled() &&
-          base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kEnableNetworkService)));
+          base::FeatureList::IsEnabled(features::kNetworkService)));
   if (IsInstalled(status()))
     UMA_HISTOGRAM_BOOLEAN("ServiceWorker.ScriptLoadSuccess", true);
 }

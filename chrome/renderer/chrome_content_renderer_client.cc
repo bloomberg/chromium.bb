@@ -90,6 +90,7 @@
 #include "components/visitedlink/renderer/visitedlink_slave.h"
 #include "components/web_cache/renderer/web_cache_impl.h"
 #include "content/public/common/content_constants.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
@@ -1618,10 +1619,8 @@ ChromeContentRendererClient::GetTaskSchedulerInitParams() {
 bool ChromeContentRendererClient::UsingSafeBrowsingMojoService() {
   if (safe_browsing_)
     return true;
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableNetworkService)) {
+  if (!base::FeatureList::IsEnabled(features::kNetworkService))
     return false;
-  }
   RenderThread::Get()->GetConnector()->BindInterface(
       content::mojom::kBrowserServiceName, &safe_browsing_);
   return true;

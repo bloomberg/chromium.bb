@@ -10925,7 +10925,7 @@
     "gtest_tests": [
       {
         "args": [
-          "--enable-network-service",
+          "--enable-features=NetworkService",
           "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_content_browsertests.filter"
         ],
         "name": "network_service_content_browsertests",
@@ -10938,7 +10938,7 @@
     "isolated_scripts": [
       {
         "args": [
-          "--additional-driver-flag=--enable-network-service"
+          "--additional-driver-flag=--enable-features=NetworkService"
         ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {

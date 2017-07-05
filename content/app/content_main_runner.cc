@@ -664,16 +664,6 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     std::string process_type =
         command_line.GetSwitchValueASCII(switches::kProcessType);
 
-    // --enable-network-service requires both --enable-browser-side-navigation
-    // (PlzNavigate) and the LoadingWithMojo feature.
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableNetworkService)) {
-      base::CommandLine::ForCurrentProcess()->AppendSwitch(
-          switches::kEnableBrowserSideNavigation);
-      base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-          switches::kEnableFeatures, features::kLoadingWithMojo.name);
-    }
-
     // Run this logic on all child processes. Zygotes will run this at a later
     // point in time when the command line has been updated.
     std::unique_ptr<base::FieldTrialList> field_trial_list;

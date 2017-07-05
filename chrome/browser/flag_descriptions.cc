@@ -1067,6 +1067,12 @@ const char kEnableNavigationTracingDescription[] =
     "flag. The trace may include personally identifiable information (PII) "
     "such as the titles and URLs of websites you visit.";
 
+const char kEnableNetworkServiceName[] = "Enable network service";
+
+const char kEnableNetworkServiceDescription[] =
+    "Enables the network service, which makes network requests through a "
+    "separate service. Note: most features don't work with this yet.";
+
 const char kEnablePictureInPictureName[] = "Enable picture in picture.";
 
 const char kEnablePictureInPictureDescription[] =

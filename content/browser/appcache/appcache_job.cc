@@ -9,7 +9,7 @@
 #include "content/browser/appcache/appcache_response.h"
 #include "content/browser/appcache/appcache_url_loader_job.h"
 #include "content/browser/appcache/appcache_url_request_job.h"
-#include "content/public/common/content_switches.h"
+#include "content/public/common/content_features.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
@@ -24,8 +24,7 @@ std::unique_ptr<AppCacheJob> AppCacheJob::Create(
     net::NetworkDelegate* network_delegate,
     const OnPrepareToRestartCallback& restart_callback) {
   std::unique_ptr<AppCacheJob> job;
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableNetworkService)) {
+  if (base::FeatureList::IsEnabled(features::kNetworkService)) {
     job.reset(
         new AppCacheURLLoaderJob(*(request->GetResourceRequest()), storage));
   } else {

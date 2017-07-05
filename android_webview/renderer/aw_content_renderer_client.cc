@@ -33,7 +33,7 @@
 #include "components/visitedlink/renderer/visitedlink_slave.h"
 #include "components/web_restrictions/interfaces/web_restrictions.mojom.h"
 #include "content/public/child/child_thread.h"
-#include "content/public/common/content_switches.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/simple_connection_filter.h"
@@ -335,10 +335,8 @@ bool AwContentRendererClient::ShouldUseMediaPlayerForURL(const GURL& url) {
 bool AwContentRendererClient::UsingSafeBrowsingMojoService() {
   if (safe_browsing_)
     return true;
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableNetworkService)) {
+  if (!base::FeatureList::IsEnabled(features::kNetworkService))
     return false;
-  }
   RenderThread::Get()->GetConnector()->BindInterface(
       content::mojom::kBrowserServiceName, &safe_browsing_);
   return true;
