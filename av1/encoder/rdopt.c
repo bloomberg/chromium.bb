@@ -4384,7 +4384,12 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
       rd_stats->rate +=
           av1_cost_bit(cpi->common.fc->txfm_partition_prob[ctx], 0);
     this_rd = RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist);
+#if CONFIG_LV_MAP
+    tmp_eob = p->txb_entropy_ctx[block];
+#else
     tmp_eob = p->eobs[block];
+#endif
+
 #if CONFIG_TXK_SEL
     best_tx_type = mbmi->txk_type[txk_idx];
 #endif
@@ -4529,8 +4534,15 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
 
   if (this_rd < sum_rd) {
     int idx, idy;
-    for (i = 0; i < tx_size_wide_unit[tx_size]; ++i) pta[i] = !(tmp_eob == 0);
-    for (i = 0; i < tx_size_high_unit[tx_size]; ++i) ptl[i] = !(tmp_eob == 0);
+
+#if CONFIG_LV_MAP
+    p->txb_entropy_ctx[block] = tmp_eob;
+#else
+    p->eobs[block] = tmp_eob;
+#endif
+
+    av1_set_txb_context(x, plane, block, tx_size, pta, ptl);
+
     txfm_partition_update(tx_above + blk_col, tx_left + blk_row, tx_size,
                           tx_size);
     inter_tx_size[0][0] = tx_size;
