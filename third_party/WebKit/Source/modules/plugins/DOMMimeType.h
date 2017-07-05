@@ -32,7 +32,7 @@ namespace blink {
 class DOMPlugin;
 class LocalFrame;
 
-class DOMMimeType final : public GarbageCollectedFinalized<DOMMimeType>,
+class DOMMimeType final : public GarbageCollected<DOMMimeType>,
                           public ScriptWrappable,
                           public ContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(DOMMimeType);
@@ -43,7 +43,6 @@ class DOMMimeType final : public GarbageCollectedFinalized<DOMMimeType>,
                              const MimeClassInfo& mime_class_info) {
     return new DOMMimeType(frame, mime_class_info);
   }
-  virtual ~DOMMimeType();
 
   const String& type() const;
   String suffixes() const;

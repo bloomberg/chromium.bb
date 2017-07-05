@@ -35,8 +35,6 @@ DOMMimeType::DOMMimeType(LocalFrame* frame,
                          const MimeClassInfo& mime_class_info)
     : ContextClient(frame), mime_class_info_(&mime_class_info) {}
 
-DOMMimeType::~DOMMimeType() {}
-
 DEFINE_TRACE(DOMMimeType) {
   ContextClient::Trace(visitor);
   visitor->Trace(mime_class_info_);

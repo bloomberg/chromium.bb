@@ -27,8 +27,6 @@ namespace blink {
 DOMPlugin::DOMPlugin(LocalFrame* frame, const PluginInfo& plugin_info)
     : ContextClient(frame), plugin_info_(&plugin_info) {}
 
-DOMPlugin::~DOMPlugin() {}
-
 DEFINE_TRACE(DOMPlugin) {
   ContextClient::Trace(visitor);
   visitor->Trace(plugin_info_);
