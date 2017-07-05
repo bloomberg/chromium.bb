@@ -25,9 +25,10 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ntp.NtpUiCaptureTestData;
 import org.chromium.chrome.browser.ntp.cards.ItemViewType;
+import org.chromium.chrome.test.BottomSheetTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.SuggestionsBottomSheetTestRule;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
 import org.chromium.content.browser.test.util.TestTouchUtils;
@@ -39,15 +40,15 @@ import org.chromium.content.browser.test.util.TestTouchUtils;
 @Restriction(RESTRICTION_TYPE_PHONE) // ChromeHome is only enabled on phones
 public class SuggestionsBottomSheetTest {
     @Rule
-    public SuggestionsBottomSheetTestRule mSuggestionsTestRule =
-            new SuggestionsBottomSheetTestRule();
+    public BottomSheetTestRule mActivityRule = new BottomSheetTestRule();
     @Rule
-    public SuggestionsDependenciesRule mSuggestionsDeps = new SuggestionsDependenciesRule();
+    public SuggestionsDependenciesRule createSuggestions() {
+        return new SuggestionsDependenciesRule(NtpUiCaptureTestData.createFactory());
+    }
 
     @Before
     public void setUp() throws InterruptedException {
-        mSuggestionsTestRule.initDependencies(mSuggestionsDeps.getFactory());
-        mSuggestionsTestRule.startMainActivityOnBlankPage();
+        mActivityRule.startMainActivityOnBlankPage();
     }
 
     @Test
@@ -55,27 +56,27 @@ public class SuggestionsBottomSheetTest {
     @MediumTest
     public void testContextMenu() throws InterruptedException {
         SuggestionsRecyclerView recyclerView =
-                (SuggestionsRecyclerView) mSuggestionsTestRule.getBottomSheetContent()
+                (SuggestionsRecyclerView) mActivityRule.getBottomSheetContent()
                         .getContentView()
                         .findViewById(R.id.recycler_view);
 
         ViewHolder firstCardViewHolder = RecyclerViewTestUtils.waitForView(recyclerView, 2);
         assertEquals(firstCardViewHolder.getItemViewType(), ItemViewType.SNIPPET);
 
-        assertFalse(mSuggestionsTestRule.getBottomSheet().onInterceptTouchEvent(createTapEvent()));
+        assertFalse(mActivityRule.getBottomSheet().onInterceptTouchEvent(createTapEvent()));
 
         TestTouchUtils.longClickView(
                 InstrumentationRegistry.getInstrumentation(), firstCardViewHolder.itemView);
-        assertTrue(mSuggestionsTestRule.getBottomSheet().onInterceptTouchEvent(createTapEvent()));
+        assertTrue(mActivityRule.getBottomSheet().onInterceptTouchEvent(createTapEvent()));
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mSuggestionsTestRule.getActivity().closeContextMenu();
+                mActivityRule.getActivity().closeContextMenu();
             }
         });
 
-        assertFalse(mSuggestionsTestRule.getBottomSheet().onInterceptTouchEvent(createTapEvent()));
+        assertFalse(mActivityRule.getBottomSheet().onInterceptTouchEvent(createTapEvent()));
     }
 
     private static MotionEvent createTapEvent() {

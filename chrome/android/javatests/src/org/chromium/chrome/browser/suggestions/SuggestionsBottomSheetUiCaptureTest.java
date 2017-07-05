@@ -23,9 +23,10 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.ScreenShooter;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ntp.NtpUiCaptureTestData;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
+import org.chromium.chrome.test.BottomSheetTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.SuggestionsBottomSheetTestRule;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
 
 /**
@@ -35,10 +36,11 @@ import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependencies
 @Restriction(RESTRICTION_TYPE_PHONE) // ChromeHome is only enabled on phones
 public class SuggestionsBottomSheetUiCaptureTest {
     @Rule
-    public SuggestionsBottomSheetTestRule mSuggestionsTestRule =
-            new SuggestionsBottomSheetTestRule();
+    public BottomSheetTestRule mActivityTestRule = new BottomSheetTestRule();
     @Rule
-    public SuggestionsDependenciesRule mSuggestionsDeps = new SuggestionsDependenciesRule();
+    public SuggestionsDependenciesRule createSuggestions() {
+        return new SuggestionsDependenciesRule(NtpUiCaptureTestData.createFactory());
+    }
 
     @Rule
     public ScreenShooter mScreenShooter = new ScreenShooter();
@@ -47,12 +49,11 @@ public class SuggestionsBottomSheetUiCaptureTest {
 
     @Before
     public void setup() throws InterruptedException {
-        mSuggestionsTestRule.initDependencies(mSuggestionsDeps.getFactory());
-        mSuggestionsTestRule.startMainActivityOnBlankPage();
+        mActivityTestRule.startMainActivityOnBlankPage();
     }
 
     private void setSheetState(final int position) {
-        mSuggestionsTestRule.setSheetState(position, false);
+        mActivityTestRule.setSheetState(position, false);
         waitForWindowUpdates();
     }
 

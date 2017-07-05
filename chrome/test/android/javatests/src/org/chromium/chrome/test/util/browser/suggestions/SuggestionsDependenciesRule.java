@@ -32,9 +32,16 @@ public class SuggestionsDependenciesRule extends TestWatcher {
         return mFactory;
     }
 
+    public SuggestionsDependenciesRule(TestFactory factory) {
+        mFactory = factory;
+    }
+
+    public SuggestionsDependenciesRule() {
+        this(new TestFactory());
+    }
+
     @Override
     protected void starting(Description description) {
-        mFactory = new TestFactory();
         SuggestionsDependencyFactory.setInstanceForTesting(mFactory);
     }
 
