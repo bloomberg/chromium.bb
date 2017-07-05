@@ -490,8 +490,7 @@ bool SelectionController::SelectClosestWordFromHitTestResult(
     const HitTestResult& result,
     AppendTrailingWhitespace append_trailing_whitespace,
     SelectInputEventType select_input_event_type) {
-  Node* inner_node = result.InnerNode();
-  VisibleSelectionInFlatTree new_selection;
+  Node* const inner_node = result.InnerNode();
 
   if (!inner_node || !inner_node->GetLayoutObject() ||
       !inner_node->GetLayoutObject()->IsSelectable())
@@ -509,13 +508,13 @@ bool SelectionController::SelectClosestWordFromHitTestResult(
 
   const VisiblePositionInFlatTree& pos =
       VisiblePositionOfHitTestResult(adjusted_hit_test_result);
-  if (pos.IsNotNull()) {
-    new_selection =
-        CreateVisibleSelection(SelectionInFlatTree::Builder()
-                                   .Collapse(pos.ToPositionWithAffinity())
-                                   .SetGranularity(kWordGranularity)
-                                   .Build());
-  }
+  const VisibleSelectionInFlatTree& new_selection =
+      pos.IsNotNull()
+          ? CreateVisibleSelection(SelectionInFlatTree::Builder()
+                                       .Collapse(pos.ToPositionWithAffinity())
+                                       .SetGranularity(kWordGranularity)
+                                       .Build())
+          : VisibleSelectionInFlatTree();
 
   HandleVisibility visibility = HandleVisibility::kNotVisible;
   if (select_input_event_type == SelectInputEventType::kTouch) {
@@ -539,12 +538,14 @@ bool SelectionController::SelectClosestWordFromHitTestResult(
     visibility = HandleVisibility::kVisible;
   }
 
-  if (append_trailing_whitespace == AppendTrailingWhitespace::kShouldAppend)
-    new_selection = new_selection.AppendTrailingWhitespace();
+  const VisibleSelectionInFlatTree& adjusted_selection =
+      append_trailing_whitespace == AppendTrailingWhitespace::kShouldAppend
+          ? new_selection.AppendTrailingWhitespace()
+          : new_selection;
 
   return UpdateSelectionForMouseDownDispatchingSelectStart(
       inner_node,
-      ExpandSelectionToRespectUserSelectAll(inner_node, new_selection),
+      ExpandSelectionToRespectUserSelectAll(inner_node, adjusted_selection),
       kWordGranularity, visibility);
 }
 
