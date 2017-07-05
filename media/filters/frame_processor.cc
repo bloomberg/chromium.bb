@@ -58,6 +58,10 @@ class MseTrackBuffer {
     needs_random_access_point_ = needs_random_access_point;
   }
 
+  DecodeTimestamp last_processed_decode_timestamp() const {
+    return last_processed_decode_timestamp_;
+  }
+
   // Gets a pointer to this track's ChunkDemuxerStream.
   ChunkDemuxerStream* stream() const { return stream_; }
 
@@ -82,10 +86,23 @@ class MseTrackBuffer {
   // |processed_frames_| is cleared in both cases.
   bool FlushProcessedFrames();
 
+  // Signals this track buffer's stream that a coded frame group is starting
+  // with decode timestamp |start_timestamp|.
+  void NotifyStartOfCodedFrameGroup(DecodeTimestamp start_time);
+
  private:
   // The decode timestamp of the last coded frame appended in the current coded
   // frame group. Initially kNoTimestamp, meaning "unset".
   DecodeTimestamp last_decode_timestamp_;
+
+  // On signalling the stream of a new coded frame group start time, this is
+  // reset to that start time. Any buffers subsequently enqueued for emission to
+  // the stream update this. This is managed separately from
+  // |last_decode_timestamp_| because |last_processed_decode_timestamp_| is not
+  // reset during Reset(), to especially be able to track the need to signal
+  // coded frame group start time for muxed post-discontiuity edge cases. See
+  // also FrameProcessor::ProcessFrame().
+  DecodeTimestamp last_processed_decode_timestamp_;
 
   // The coded frame duration of the last coded frame appended in the current
   // coded frame group. Initially kNoTimestamp, meaning "unset".
@@ -116,6 +133,7 @@ class MseTrackBuffer {
 
 MseTrackBuffer::MseTrackBuffer(ChunkDemuxerStream* stream)
     : last_decode_timestamp_(kNoDecodeTimestamp()),
+      last_processed_decode_timestamp_(DecodeTimestamp()),
       last_frame_duration_(kNoTimestamp),
       highest_presentation_timestamp_(kNoTimestamp),
       needs_random_access_point_(true),
@@ -146,6 +164,7 @@ void MseTrackBuffer::SetHighestPresentationTimestampIfIncreased(
 
 void MseTrackBuffer::EnqueueProcessedFrame(
     const scoped_refptr<StreamParserBuffer>& frame) {
+  last_processed_decode_timestamp_ = frame->GetDecodeTimestamp();
   processed_frames_.push_back(frame);
 }
 
@@ -160,6 +179,11 @@ bool MseTrackBuffer::FlushProcessedFrames() {
                        << "(): Failure appending processed frames to stream";
 
   return result;
+}
+
+void MseTrackBuffer::NotifyStartOfCodedFrameGroup(DecodeTimestamp start_time) {
+  last_processed_decode_timestamp_ = start_time;
+  stream_->OnStartOfCodedFrameGroup(start_time);
 }
 
 FrameProcessor::FrameProcessor(const UpdateDurationCB& update_duration_cb,
@@ -188,7 +212,7 @@ void FrameProcessor::SetSequenceMode(bool sequence_mode) {
   } else if (sequence_mode_) {
     // We're switching from 'sequence' to 'segments' mode. Be safe and signal a
     // new coded frame group on the next frame emitted.
-    coded_frame_group_last_dts_ = kNoDecodeTimestamp();
+    pending_notify_all_group_start_ = true;
   }
 
   // Step 8: Update the attribute to new mode.
@@ -314,13 +338,13 @@ void FrameProcessor::Reset() {
     itr->second->Reset();
   }
 
-  // Maintain current |coded_frame_group_last_dts_| state for Reset() during
+  // Maintain current |pending_notify_all_group_start_| state for Reset() during
   // sequence mode. Reset it here only if in segments mode. In sequence mode,
   // the current coded frame group may be continued across Reset() operations to
   // allow the stream to coalesce what might otherwise be gaps in the buffered
-  // ranges. See also the declaration for |coded_frame_group_last_dts_|.
+  // ranges. See also the declaration for |pending_notify_all_group_start_|.
   if (!sequence_mode_) {
-    coded_frame_group_last_dts_ = kNoDecodeTimestamp();
+    pending_notify_all_group_start_ = true;
     return;
   }
 
@@ -357,7 +381,7 @@ void FrameProcessor::NotifyStartOfCodedFrameGroup(
   DVLOG(2) << __func__ << "(" << start_timestamp.InSecondsF() << ")";
 
   for (auto itr = track_buffers_.begin(); itr != track_buffers_.end(); ++itr) {
-    itr->second->stream()->OnStartOfCodedFrameGroup(start_timestamp);
+    itr->second->NotifyStartOfCodedFrameGroup(start_timestamp);
   }
 }
 
@@ -610,7 +634,7 @@ bool FrameProcessor::ProcessFrame(
           decode_timestamp - track_last_decode_timestamp;
       if (track_dts_delta < base::TimeDelta() ||
           track_dts_delta > 2 * track_buffer->last_frame_duration()) {
-        DCHECK(coded_frame_group_last_dts_ != kNoDecodeTimestamp());
+        DCHECK(!pending_notify_all_group_start_);
         // 6.1. If mode equals "segments": Set group end timestamp to
         //      presentation timestamp.
         //      If mode equals "sequence": Set group start timestamp equal to
@@ -619,8 +643,8 @@ bool FrameProcessor::ProcessFrame(
           group_end_timestamp_ = presentation_timestamp;
           // This triggers a discontinuity so we need to treat the next frames
           // appended within the append window as if they were the beginning of
-          // a new coded frame group. |coded_frame_group_last_dts_| is reset in
-          // Reset(), below, for "segments" mode.
+          // a new coded frame group. |pending_notify_all_group_start_| is reset
+          // in Reset(), below, for "segments" mode.
         } else {
           DVLOG(3) << __func__ << " : Sequence mode discontinuity, GETS: "
                    << group_end_timestamp_.InSecondsF();
@@ -711,25 +735,35 @@ bool FrameProcessor::ProcessFrame(
 
     // We now have a processed buffer to append to the track buffer's stream.
     // If it is the first in a new coded frame group (such as following a
-    // discontinuity), notify all the track buffers' streams that a coded frame
-    // group is starting.
-    // If in 'sequence' appendMode, also check to make sure we don't need to
-    // signal the start of a new coded frame group in the case where
-    // timestampOffset adjustments by the app may cause this coded frame to be
-    // in the timeline prior to the last frame processed.
-    if (coded_frame_group_last_dts_ == kNoDecodeTimestamp() ||
-        (sequence_mode_ && coded_frame_group_last_dts_ > decode_timestamp)) {
+    // segments append mode discontinuity, or following a switch to segments
+    // append mode from sequence append mode), notify all the track buffers
+    // that a coded frame group is starting.
+    //
+    // Otherwise, if the buffer's DTS indicates that a new coded frame group
+    // needs signalling, signal just the buffer's track buffer. This can
+    // happen in both sequence and segments append modes when the first
+    // processed track's frame following a discontinuity has a higher DTS than
+    // this later processed track's first frame following that discontinuity.
+    if (pending_notify_all_group_start_ ||
+        track_buffer->last_processed_decode_timestamp() > decode_timestamp) {
+      DCHECK(frame->is_key_frame());
+
       // First, complete the append to track buffer streams of the previous
       // coded frame group's frames, if any.
       if (!FlushProcessedFrames())
         return false;
 
-      // TODO(wolenetz): This should be changed to a presentation timestamp. See
-      // http://crbug.com/402502
-      NotifyStartOfCodedFrameGroup(decode_timestamp);
+      if (pending_notify_all_group_start_) {
+        // TODO(wolenetz): This should be changed to a presentation timestamp.
+        // See http://crbug.com/402502
+        NotifyStartOfCodedFrameGroup(decode_timestamp);
+        pending_notify_all_group_start_ = false;
+      } else {
+        // TODO(wolenetz): This should be changed to a presentation timestamp.
+        // See http://crbug.com/402502
+        track_buffer->NotifyStartOfCodedFrameGroup(decode_timestamp);
+      }
     }
-
-    coded_frame_group_last_dts_ = decode_timestamp;
 
     DVLOG(3) << __func__ << ": Sending processed frame to stream, "
              << "PTS=" << presentation_timestamp.InSecondsF()
@@ -737,7 +771,7 @@ bool FrameProcessor::ProcessFrame(
 
     // Steps 11-16: Note, we optimize by appending groups of contiguous
     // processed frames for each track buffer at end of ProcessFrames() or prior
-    // to NotifyStartOfCodedFrameGroup().
+    // to signalling coded frame group starts.
     track_buffer->EnqueueProcessedFrame(frame);
 
     // 17. Set last decode timestamp for track buffer to decode timestamp.
