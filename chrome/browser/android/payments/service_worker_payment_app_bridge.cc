@@ -42,12 +42,15 @@ void OnGotAllPaymentApps(const JavaRef<jobject>& jweb_contents,
                          content::PaymentAppProvider::PaymentApps apps) {
   JNIEnv* env = AttachCurrentThread();
 
+  // TODO(gogerald): Present payment app instead of instruments to user,
+  // crbug.com/735063.
   for (const auto& app_info : apps) {
     ScopedJavaLocalRef<jobject> java_instruments =
         Java_ServiceWorkerPaymentAppBridge_createInstrumentList(env);
-    for (const auto& instrument : app_info.second) {
+    for (const auto& instrument : app_info.second->instruments) {
       Java_ServiceWorkerPaymentAppBridge_addInstrument(
-          env, java_instruments, jweb_contents, instrument->registration_id,
+          env, java_instruments, jweb_contents,
+          app_info.second->registration_id,
           ConvertUTF8ToJavaString(env, instrument->instrument_key),
           ConvertUTF8ToJavaString(env, instrument->name),
           ToJavaArrayOfStrings(env, instrument->enabled_methods),

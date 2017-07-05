@@ -95,9 +95,9 @@ class PaymentAppBrowserTest : public ContentBrowserTest {
 
     std::map<std::string, int64_t> registrationIds;
     for (const auto& app_info : apps) {
-      for (const auto& instrument : app_info.second) {
+      for (const auto& instrument : app_info.second->instruments) {
         registrationIds.insert(std::pair<std::string, int64_t>(
-            instrument->instrument_key, instrument->registration_id));
+            instrument->instrument_key, app_info.second->registration_id));
       }
     }
 

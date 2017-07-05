@@ -15,6 +15,7 @@ enum PaymentHandlerStatus {
   NO_ACTIVE_WORKER,
   STORAGE_OPERATION_FAILED,
   FETCH_INSTRUMENT_ICON_FAILED,
+  FETCH_PAYMENT_APP_INFO_FAILED,
 };
 
 // This struct is provided to hold an image object from render side
@@ -35,7 +36,7 @@ struct PaymentInstrument {
 // This interface provides implementation of PaymentInstruments.idl
 // in render side.
 interface PaymentManager {
-  Init(string service_worker_scope);
+  Init(string service_worker_script_url, string service_worker_scope);
   DeletePaymentInstrument(string instrument_key)
       => (PaymentHandlerStatus status);
   GetPaymentInstrument(string instrument_key)

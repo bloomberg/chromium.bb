@@ -129,7 +129,11 @@ TEST_F(PaymentManagerTest, SetAndGetPaymentInstrument) {
   write_details->enabled_methods.push_back("visa");
   write_details->stringified_capabilities = "{}";
   SetPaymentInstrument("test_key", std::move(write_details), &write_status);
-  ASSERT_EQ(PaymentHandlerStatus::SUCCESS, write_status);
+  // Write the first instrument of a web payment app will return
+  // FETCH_PAYMENT_APP_INFO_FAILED since the web app's manifest is not
+  // available, but the write of the instrument is succeed, othewise will return
+  // the other errors.
+  ASSERT_EQ(PaymentHandlerStatus::FETCH_PAYMENT_APP_INFO_FAILED, write_status);
 
   PaymentHandlerStatus read_status = PaymentHandlerStatus::NOT_FOUND;
   PaymentInstrumentPtr read_details;
@@ -155,7 +159,11 @@ TEST_F(PaymentManagerTest, DeletePaymentInstrument) {
   write_details->enabled_methods.push_back("visa");
   write_details->stringified_capabilities = "{}";
   SetPaymentInstrument("test_key", std::move(write_details), &write_status);
-  ASSERT_EQ(PaymentHandlerStatus::SUCCESS, write_status);
+  // Write the first instrument of a web payment app will return
+  // FETCH_PAYMENT_APP_INFO_FAILED since the web app's manifest is not
+  // available, but the write of the instrument is succeed, othewise will return
+  // the other errors.
+  ASSERT_EQ(PaymentHandlerStatus::FETCH_PAYMENT_APP_INFO_FAILED, write_status);
 
   PaymentHandlerStatus read_status = PaymentHandlerStatus::NOT_FOUND;
   PaymentInstrumentPtr read_details;
@@ -178,7 +186,11 @@ TEST_F(PaymentManagerTest, HasPaymentInstrument) {
   write_details->enabled_methods.push_back("visa");
   write_details->stringified_capabilities = "{}";
   SetPaymentInstrument("test_key", std::move(write_details), &write_status);
-  ASSERT_EQ(PaymentHandlerStatus::SUCCESS, write_status);
+  // Write the first instrument of a web payment app will return
+  // FETCH_PAYMENT_APP_INFO_FAILED since the web app's manifest is not
+  // available, but the write of the instrument is succeed, othewise will return
+  // the other errors.
+  ASSERT_EQ(PaymentHandlerStatus::FETCH_PAYMENT_APP_INFO_FAILED, write_status);
 
   PaymentHandlerStatus has_status = PaymentHandlerStatus::NOT_FOUND;
   HasPaymentInstrument("test_key", &has_status);
@@ -198,7 +210,12 @@ TEST_F(PaymentManagerTest, KeysOfPaymentInstruments) {
   {
     PaymentHandlerStatus write_status = PaymentHandlerStatus::NOT_FOUND;
     SetPaymentInstrument("test_key1", PaymentInstrument::New(), &write_status);
-    ASSERT_EQ(PaymentHandlerStatus::SUCCESS, write_status);
+    // Write the first instrument of a web payment app will return
+    // FETCH_PAYMENT_APP_INFO_FAILED since the web app's manifest is not
+    // available, but the write of the instrument is succeed, othewise will
+    // return the other errors.
+    ASSERT_EQ(PaymentHandlerStatus::FETCH_PAYMENT_APP_INFO_FAILED,
+              write_status);
   }
   {
     PaymentHandlerStatus write_status = PaymentHandlerStatus::NOT_FOUND;
@@ -230,7 +247,12 @@ TEST_F(PaymentManagerTest, ClearPaymentInstruments) {
   {
     PaymentHandlerStatus write_status = PaymentHandlerStatus::NOT_FOUND;
     SetPaymentInstrument("test_key1", PaymentInstrument::New(), &write_status);
-    ASSERT_EQ(PaymentHandlerStatus::SUCCESS, write_status);
+    // Write the first instrument of a web payment app will return
+    // FETCH_PAYMENT_APP_INFO_FAILED since the web app's manifest is not
+    // available, but the write of the instrument is succeed, othewise will
+    // return the other errors.
+    ASSERT_EQ(PaymentHandlerStatus::FETCH_PAYMENT_APP_INFO_FAILED,
+              write_status);
   }
   {
     PaymentHandlerStatus write_status = PaymentHandlerStatus::NOT_FOUND;
