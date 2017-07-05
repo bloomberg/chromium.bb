@@ -91,10 +91,11 @@ ServiceWorkerDispatcherHost::ServiceWorkerDispatcherHost(
                                                                      this),
       render_process_id_(render_process_id),
       resource_context_(resource_context),
-      channel_ready_(false),
-      weak_factory_(this) {}
+      channel_ready_(false) {}
 
 ServiceWorkerDispatcherHost::~ServiceWorkerDispatcherHost() {
+  // Temporary CHECK for debugging https://crbug.com/736203.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (GetContext())
     GetContext()->RemoveDispatcherHost(render_process_id_);
 }
@@ -117,6 +118,8 @@ void ServiceWorkerDispatcherHost::Init(
 void ServiceWorkerDispatcherHost::OnFilterAdded(IPC::Channel* channel) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerDispatcherHost::OnFilterAdded");
+  // Temporary CHECK for debugging https://crbug.com/736203.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   channel_ready_ = true;
   std::vector<std::unique_ptr<IPC::Message>> messages;
   messages.swap(pending_messages_);
@@ -126,6 +129,8 @@ void ServiceWorkerDispatcherHost::OnFilterAdded(IPC::Channel* channel) {
 }
 
 void ServiceWorkerDispatcherHost::OnFilterRemoved() {
+  // Temporary CHECK for debugging https://crbug.com/736203.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // Don't wait until the destructor to teardown since a new dispatcher host
   // for this process might be created before then.
   if (GetContext())
@@ -135,6 +140,8 @@ void ServiceWorkerDispatcherHost::OnFilterRemoved() {
 }
 
 void ServiceWorkerDispatcherHost::OnDestruct() const {
+  // Destruct on the IO thread since |context_wrapper_| should only be accessed
+  // on the IO thread.
   BrowserThread::DeleteOnIOThread::Destruct(this);
 }
 
@@ -1478,6 +1485,8 @@ void ServiceWorkerDispatcherHost::GetRegistrationForReadyComplete(
 }
 
 ServiceWorkerContextCore* ServiceWorkerDispatcherHost::GetContext() {
+  // Temporary CHECK for debugging https://crbug.com/736203.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!context_wrapper_.get())
     return nullptr;
   return context_wrapper_->context();
