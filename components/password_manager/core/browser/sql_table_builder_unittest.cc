@@ -9,7 +9,10 @@
 #include "base/macros.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using ::testing::UnorderedElementsAre;
 
 namespace password_manager {
 
@@ -266,6 +269,7 @@ TEST_F(SQLTableBuilderTest, MigrateFrom) {
 }
 
 TEST_F(SQLTableBuilderTest, MigrateFrom_RenameAndAddColumns) {
+  builder()->AddColumnToPrimaryKey("id", "INTEGER");
   builder()->AddColumn("old_name", "INTEGER");
   EXPECT_EQ(0u, builder()->SealVersion());
 
@@ -279,14 +283,18 @@ TEST_F(SQLTableBuilderTest, MigrateFrom_RenameAndAddColumns) {
 
   EXPECT_TRUE(builder()->MigrateFrom(0, db()));
   EXPECT_FALSE(db()->DoesColumnExist("my_logins_table", "old_name"));
+  EXPECT_TRUE(db()->DoesColumnExist("my_logins_table", "id"));
   EXPECT_TRUE(db()->DoesColumnExist("my_logins_table", "added"));
   EXPECT_TRUE(db()->DoesColumnExist("my_logins_table", "new_name"));
+  EXPECT_TRUE(IsColumnOfType("id", "INTEGER"));
   EXPECT_TRUE(IsColumnOfType("added", "VARCHAR"));
   EXPECT_TRUE(IsColumnOfType("new_name", "INTEGER"));
-  EXPECT_EQ(3u, builder()->NumberOfColumns());
-  EXPECT_EQ("signon_realm, new_name, added", builder()->ListAllColumnNames());
+  EXPECT_EQ(4u, builder()->NumberOfColumns());
+  EXPECT_EQ("signon_realm, id, new_name, added",
+            builder()->ListAllColumnNames());
   EXPECT_EQ("new_name=?, added=?", builder()->ListAllNonuniqueKeyNames());
-  EXPECT_EQ("signon_realm=?", builder()->ListAllUniqueKeyNames());
+  EXPECT_EQ("signon_realm=? AND id=?", builder()->ListAllUniqueKeyNames());
+  EXPECT_THAT(builder()->AllPrimaryKeyNames(), UnorderedElementsAre("id"));
 }
 
 TEST_F(SQLTableBuilderTest, MigrateFrom_RenameAndAddIndices) {
@@ -306,10 +314,13 @@ TEST_F(SQLTableBuilderTest, MigrateFrom_RenameAndAddIndices) {
   EXPECT_TRUE(db()->DoesIndexExist("added"));
   EXPECT_TRUE(db()->DoesIndexExist("new_name"));
   EXPECT_EQ(2u, builder()->NumberOfIndices());
-  EXPECT_EQ("new_name, added", builder()->ListAllIndexNames());
+  EXPECT_THAT(builder()->AllIndexNames(),
+              UnorderedElementsAre("new_name", "added"));
 }
 
 TEST_F(SQLTableBuilderTest, MigrateFrom_RenameAndAddAndDropColumns) {
+  builder()->AddColumnToPrimaryKey("pk_1", "VARCHAR NOT NULL");
+  builder()->AddColumnToPrimaryKey("pk_2", "VARCHAR NOT NULL");
   builder()->AddColumnToUniqueKey("uni", "VARCHAR NOT NULL");
   builder()->AddColumn("old_name", "INTEGER");
   EXPECT_EQ(0u, builder()->SealVersion());
@@ -328,13 +339,19 @@ TEST_F(SQLTableBuilderTest, MigrateFrom_RenameAndAddAndDropColumns) {
   EXPECT_TRUE(builder()->MigrateFrom(0, db()));
   EXPECT_FALSE(db()->DoesColumnExist("my_logins_table", "old_name"));
   EXPECT_FALSE(db()->DoesColumnExist("my_logins_table", "added"));
+  EXPECT_TRUE(db()->DoesColumnExist("my_logins_table", "pk_1"));
+  EXPECT_TRUE(db()->DoesColumnExist("my_logins_table", "pk_2"));
   EXPECT_TRUE(db()->DoesColumnExist("my_logins_table", "uni"));
   EXPECT_TRUE(db()->DoesColumnExist("my_logins_table", "new_name"));
   EXPECT_TRUE(IsColumnOfType("new_name", "INTEGER"));
-  EXPECT_EQ(3u, builder()->NumberOfColumns());
-  EXPECT_EQ("signon_realm, uni, new_name", builder()->ListAllColumnNames());
+  EXPECT_EQ(5u, builder()->NumberOfColumns());
+  EXPECT_EQ("signon_realm, pk_1, pk_2, uni, new_name",
+            builder()->ListAllColumnNames());
   EXPECT_EQ("new_name=?", builder()->ListAllNonuniqueKeyNames());
-  EXPECT_EQ("signon_realm=? AND uni=?", builder()->ListAllUniqueKeyNames());
+  EXPECT_EQ("signon_realm=? AND pk_1=? AND pk_2=? AND uni=?",
+            builder()->ListAllUniqueKeyNames());
+  EXPECT_THAT(builder()->AllPrimaryKeyNames(),
+              UnorderedElementsAre("pk_1", "pk_2"));
 }
 
 TEST_F(SQLTableBuilderTest, MigrateFrom_RenameAndAddAndDropIndices) {
@@ -357,7 +374,7 @@ TEST_F(SQLTableBuilderTest, MigrateFrom_RenameAndAddAndDropIndices) {
   EXPECT_FALSE(db()->DoesIndexExist("added"));
   EXPECT_TRUE(db()->DoesIndexExist("new_name"));
   EXPECT_EQ(1u, builder()->NumberOfColumns());
-  EXPECT_EQ("new_name", builder()->ListAllIndexNames());
+  EXPECT_THAT(builder()->AllIndexNames(), UnorderedElementsAre("new_name"));
 }
 
 }  // namespace password_manager
