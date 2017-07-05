@@ -643,6 +643,21 @@ need to be translated for each locale.-->
       <message name="IDS_MESSAGE_CENTER_NOTIFICATION_PROGRESS_PERCENTAGE" desc="The summary text in a notification that is shown with progress bar.">
         <ph name="NUMBER">$1<ex>75</ex></ph> %
       </message>
+      <message name="IDS_MESSAGE_NOTIFICATION_NOW_STRING_SHORTEST" desc="A string denoting the current point in time that should be as short as possible. Should be same as AndroidPlatform msgId 8912796667087856402. (frameworks/base/core/res/res/values/strings.xml:string:now_string_shortest)">
+        now
+      </message>
+      <message name="IDS_MESSAGE_NOTIFICATION_DURATION_MINUTES_SHORTEST" desc="Phrase describing a time duration using minutes that is as short as possible, preferrably one character. Should be same as AndroidPlatform msgId 3957499975064245495. (frameworks/base/core/res/res/values/strings.xml:plurals:duration_minutes_shortest) [ICU Syntax]">
+        {MINUTES, plural, =1 {1m} other {#m}}
+      </message>
+      <message name="IDS_MESSAGE_NOTIFICATION_DURATION_HOURS_SHORTEST" desc="Phrase describing a time duration using hours that is as short as possible, preferrably one character. Should be same as AndroidPlatform msgId 3552182110578602356. (frameworks/base/core/res/res/values/strings.xml:plurals:duration_hours_shortest) [ICU Syntax]">
+        {HOURS, plural, =1 {1h} other {#h}}
+      </message>
+      <message name="IDS_MESSAGE_NOTIFICATION_DURATION_DAYS_SHORTEST" desc="Phrase describing a time duration using days that is as short as possible, preferrably one character. Should be same as AndroidPlatform msgId 5213655532597081640. (frameworks/base/core/res/res/values/strings.xml:plurals:duration_days_shortest) [ICU Syntax]">
+        {DAYS, plural, =1 {1d} other {#d}}
+      </message>
+      <message name="IDS_MESSAGE_NOTIFICATION_DURATION_YEARS_SHORTEST" desc="Phrase describing a time duration using years that is as short as possible, preferrably one character. Should be same as AndroidPlatform msgId 7848711145196397042. (frameworks/base/core/res/res/values/strings.xml:plurals:duration_years_shortest) [ICU Syntax]">
+        {YEARS, plural, =1 {1y} other {#y}}
+      </message>
       <if expr="not use_titlecase">
         <message name="IDS_MESSAGE_CENTER_QUIET_MODE_BUTTON_TOOLTIP" desc="The tooltip text for the do not disturb button.">
           Do not disturb

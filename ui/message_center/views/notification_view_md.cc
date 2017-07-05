@@ -467,6 +467,7 @@ void NotificationViewMD::RequestFocusOnCloseButton() {
 void NotificationViewMD::CreateOrUpdateContextTitleView(
     const Notification& notification) {
   header_row_->SetAppName(notification.display_source());
+  header_row_->SetTimestamp(notification.timestamp());
 }
 
 void NotificationViewMD::CreateOrUpdateTitleView(
