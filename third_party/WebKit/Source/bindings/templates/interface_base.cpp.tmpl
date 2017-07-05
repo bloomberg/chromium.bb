@@ -583,7 +583,8 @@ static void install{{v8_class}}Template(
   //   and sets the "prototype" property of its function object.
   //   When |interfaceTemplate|'s function object is created, its
   //   prototype.__proto__ will point to the value of the "prototype" property
-  //   of |iteratorPrototypeTemplate|, which is exactly what we want.
+  //   of |intrinsicIteratorPrototypeInterfaceTemplate|, which is exactly what
+  //   we want.
   //
   // Finally, creating a FunctionTemplate here might look expensive since they
   // have the same lifetime as their context, but:
