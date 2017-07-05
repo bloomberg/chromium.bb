@@ -914,8 +914,8 @@ crbug.com/490511 external/wpt/html/rendering/replaced-elements/embedded-content-
 crbug.com/692560 external/wpt/html/semantics/document-metadata/styling/LinkStyle.html [ Failure Pass ]
 crbug.com/627706 external/wpt/html/semantics/embedded-content/the-img-element/invalid-src.html [ Skip ]
 # MANIFEST.json contains any *-manual.*. https://github.com/w3c/web-platform-tests/issues/4137
-Bug(github) external/wpt/uievents/keyboard/key-manual.css [ Skip ]
-Bug(github) external/wpt/uievents/keyboard/key-manual.js [ Skip ]
+Bug(github) external/wpt/uievents/keyboard/key.css [ Skip ]
+Bug(github) external/wpt/uievents/keyboard/key.js [ Skip ]
 
 crbug.com/698135 external/wpt/editing/run/delete.html [ Crash Failure Timeout ]
 crbug.com/698165 external/wpt/editing/run/forwarddelete.html [ Pass Timeout ]
