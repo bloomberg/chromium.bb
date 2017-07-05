@@ -14,8 +14,11 @@
 
 namespace autofill {
 class AutofillProfile;
-class CreditCard;
 }  // namespace autofill
+
+namespace payments {
+class PaymentInstrument;
+}  // namespace payments
 
 class PaymentRequest;
 
@@ -52,16 +55,10 @@ NSString* GetAddressNotificationLabelFromAutofillProfile(
     PaymentRequest& payment_request,
     const autofill::AutofillProfile& profile);
 
-// Returns whether the credit card is complete to be used as a payment method
-// without further editing.
-BOOL IsCreditCardCompleteForPayment(
-    const autofill::CreditCard& credit_card,
-    const std::vector<autofill::AutofillProfile*>& billing_profiles);
-
 // Helper function to create a notification label for what's missing from a
-// credit card. Returns nil if the resulting label is empty.
-NSString* GetPaymentMethodNotificationLabelFromCreditCard(
-    const autofill::CreditCard& credit_card,
+// payment method. Returns nil if the resulting label is empty.
+NSString* GetPaymentMethodNotificationLabelFromPaymentMethod(
+    payments::PaymentInstrument& payment_method,
     const std::vector<autofill::AutofillProfile*>& billing_profiles);
 
 // Returns the title for the shipping section of the payment summary view given

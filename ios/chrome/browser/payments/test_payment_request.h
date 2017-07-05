@@ -84,8 +84,8 @@ class TestPaymentRequest : public PaymentRequest {
   // Removes all the contact profiles.
   void ClearContactProfiles();
 
-  // Removes all the credit cards.
-  void ClearCreditCards();
+  // Removes all the payment methods.
+  void ClearPaymentMethods();
 
   // Sets the currently selected shipping option for this PaymentRequest flow.
   void set_selected_shipping_option(web::PaymentShippingOption* option) {

@@ -14,9 +14,9 @@
 
 class PaymentRequest;
 
-namespace autofill {
-class CreditCard;
-}  // namespace autofill
+namespace payments {
+class PaymentInstrument;
+}  // namespace payments
 
 @class PaymentMethodSelectionCoordinator;
 
@@ -26,7 +26,8 @@ class CreditCard;
 // Notifies the delegate that the user has selected a payment method.
 - (void)paymentMethodSelectionCoordinator:
             (PaymentMethodSelectionCoordinator*)coordinator
-                   didSelectPaymentMethod:(autofill::CreditCard*)paymentMethod;
+                   didSelectPaymentMethod:
+                       (payments::PaymentInstrument*)paymentMethod;
 
 // Notifies the delegate that the user has chosen to return to the previous
 // screen without making a selection.

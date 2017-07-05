@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/json/json_writer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/payments/core/basic_card_response.h"
@@ -263,9 +264,7 @@ TEST(PaymentRequestTest, ParsingFullyPopulatedRequestDictionarySucceeds) {
 TEST(PaymentRequestTest, EmptyResponseDictionary) {
   base::DictionaryValue expected_value;
 
-  std::unique_ptr<base::DictionaryValue> details(new base::DictionaryValue);
-  details->SetString("cardNumber", "");
-  expected_value.Set("details", std::move(details));
+  expected_value.SetString("details", "");
   expected_value.SetString("paymentRequestID", "");
   expected_value.SetString("methodName", "");
 
@@ -289,7 +288,9 @@ TEST(PaymentRequestTest, PopulatedResponseDictionary) {
       new base::DictionaryValue);
   billing_address->SetString("postalCode", "90210");
   details->Set("billingAddress", std::move(billing_address));
-  expected_value.Set("details", std::move(details));
+  std::string stringified_details;
+  base::JSONWriter::Write(*details, &stringified_details);
+  expected_value.SetString("details", stringified_details);
   expected_value.SetString("paymentRequestID", "12345");
   expected_value.SetString("methodName", "American Express");
   std::unique_ptr<base::DictionaryValue> shipping_address(
@@ -304,14 +305,23 @@ TEST(PaymentRequestTest, PopulatedResponseDictionary) {
   PaymentResponse payment_response;
   payment_response.payment_request_id = base::ASCIIToUTF16("12345");
   payment_response.method_name = base::ASCIIToUTF16("American Express");
-  payment_response.details.card_number =
+
+  payments::BasicCardResponse payment_response_details;
+  payment_response_details.card_number =
       base::ASCIIToUTF16("1111-1111-1111-1111");
-  payment_response.details.cardholder_name = base::ASCIIToUTF16("Jon Doe");
-  payment_response.details.expiry_month = base::ASCIIToUTF16("02");
-  payment_response.details.expiry_year = base::ASCIIToUTF16("2090");
-  payment_response.details.card_security_code = base::ASCIIToUTF16("111");
-  payment_response.details.billing_address.postal_code =
+  payment_response_details.cardholder_name = base::ASCIIToUTF16("Jon Doe");
+  payment_response_details.expiry_month = base::ASCIIToUTF16("02");
+  payment_response_details.expiry_year = base::ASCIIToUTF16("2090");
+  payment_response_details.card_security_code = base::ASCIIToUTF16("111");
+  payment_response_details.billing_address.postal_code =
       base::ASCIIToUTF16("90210");
+  std::unique_ptr<base::DictionaryValue> response_value =
+      payment_response_details.ToDictionaryValue();
+  std::string payment_response_stringified_details;
+  base::JSONWriter::Write(*response_value,
+                          &payment_response_stringified_details);
+  payment_response.details = payment_response_stringified_details;
+
   payment_response.shipping_address.postal_code = base::ASCIIToUTF16("94115");
   payment_response.shipping_option = base::ASCIIToUTF16("666");
   payment_response.payer_name = base::ASCIIToUTF16("Jane Doe");
@@ -630,13 +640,21 @@ TEST(PaymentRequestTest, PaymentResponseEquality) {
 
   payments::BasicCardResponse card_response1;
   card_response1.card_number = base::ASCIIToUTF16("1234");
+  std::unique_ptr<base::DictionaryValue> response_value1 =
+      card_response1.ToDictionaryValue();
+  std::string stringified_card_response1;
+  base::JSONWriter::Write(*response_value1, &stringified_card_response1);
   payments::BasicCardResponse card_response2;
   card_response2.card_number = base::ASCIIToUTF16("8888");
-  response1.details = card_response1;
+  std::unique_ptr<base::DictionaryValue> response_value2 =
+      card_response2.ToDictionaryValue();
+  std::string stringified_card_response2;
+  base::JSONWriter::Write(*response_value2, &stringified_card_response2);
+  response1.details = stringified_card_response1;
   EXPECT_NE(response1, response2);
-  response2.details = card_response2;
+  response2.details = stringified_card_response2;
   EXPECT_NE(response1, response2);
-  response2.details = card_response1;
+  response2.details = stringified_card_response1;
   EXPECT_EQ(response1, response2);
 }
 
