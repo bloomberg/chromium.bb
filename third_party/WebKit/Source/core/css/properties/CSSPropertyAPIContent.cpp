@@ -67,7 +67,7 @@ CSSValue* ConsumeCounterContent(CSSParserTokenRange args, bool counters) {
 
   if (!args.AtEnd())
     return nullptr;
-  return CSSCounterValue::Create(identifier, list_style, separator);
+  return blink::CSSCounterValue::Create(identifier, list_style, separator);
 }
 
 }  // namespace

@@ -14,8 +14,6 @@
 class CSSParserLocalContext;
 namespace blink {
 
-using CSSCursorImageValue = cssvalue::CSSCursorImageValue;
-
 const CSSValue* CSSPropertyAPICursor::parseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
@@ -39,8 +37,8 @@ const CSSValue* CSSPropertyAPICursor::parseSingleValue(
     if (!list)
       list = CSSValueList::CreateCommaSeparated();
 
-    list->Append(
-        *CSSCursorImageValue::Create(*image, hot_spot_specified, hot_spot));
+    list->Append(*cssvalue::CSSCursorImageValue::Create(
+        *image, hot_spot_specified, hot_spot));
     if (!CSSPropertyParserHelpers::ConsumeCommaIncludingWhitespace(range))
       return nullptr;
   }
