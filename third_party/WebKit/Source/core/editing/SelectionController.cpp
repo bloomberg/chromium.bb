@@ -866,21 +866,20 @@ bool SelectionController::HandleTripleClick(
   if (event.Event().button != WebPointerProperties::Button::kLeft)
     return false;
 
-  Node* inner_node = event.InnerNode();
+  Node* const inner_node = event.InnerNode();
   if (!(inner_node && inner_node->GetLayoutObject() &&
         mouse_down_may_start_select_))
     return false;
 
-  VisibleSelectionInFlatTree new_selection;
   const VisiblePositionInFlatTree& pos =
       VisiblePositionOfHitTestResult(event.GetHitTestResult());
-  if (pos.IsNotNull()) {
-    new_selection =
-        CreateVisibleSelection(SelectionInFlatTree::Builder()
-                                   .Collapse(pos.ToPositionWithAffinity())
-                                   .SetGranularity(kParagraphGranularity)
-                                   .Build());
-  }
+  const VisibleSelectionInFlatTree new_selection =
+      pos.IsNotNull()
+          ? CreateVisibleSelection(SelectionInFlatTree::Builder()
+                                       .Collapse(pos.ToPositionWithAffinity())
+                                       .SetGranularity(kParagraphGranularity)
+                                       .Build())
+          : VisibleSelectionInFlatTree();
 
   const bool is_handle_visible =
       event.Event().FromTouch() && new_selection.IsRange();
@@ -894,10 +893,10 @@ bool SelectionController::HandleTripleClick(
   if (!did_select)
     return false;
 
-  if (Selection().IsHandleVisible()) {
-    frame_->GetEventHandler().ShowNonLocatedContextMenu(nullptr,
-                                                        kMenuSourceTouch);
-  }
+  if (!Selection().IsHandleVisible())
+    return true;
+  frame_->GetEventHandler().ShowNonLocatedContextMenu(nullptr,
+                                                      kMenuSourceTouch);
   return true;
 }
 
