@@ -362,7 +362,7 @@ std::unique_ptr<base::DictionaryValue> PaymentResponse::ToDictionaryValue()
 
   result->SetString(kPaymentRequestId, this->payment_request_id);
   result->SetString(kPaymentResponseMethodName, this->method_name);
-  result->Set(kPaymentResponseDetails, this->details.ToDictionaryValue());
+  result->SetString(kPaymentResponseDetails, this->details);
   if (!this->shipping_address.ToDictionaryValue()->empty()) {
     result->Set(kPaymentResponseShippingAddress,
                 this->shipping_address.ToDictionaryValue());

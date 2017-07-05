@@ -22,8 +22,8 @@ void TestPaymentRequest::ClearContactProfiles() {
   contact_profiles_.clear();
 }
 
-void TestPaymentRequest::ClearCreditCards() {
-  credit_cards_.clear();
+void TestPaymentRequest::ClearPaymentMethods() {
+  payment_methods_.clear();
 }
 
 autofill::RegionDataLoader* TestPaymentRequest::GetRegionDataLoader() {
