@@ -187,7 +187,15 @@ ContentSetting GetSettingForOrigin(JNIEnv* env,
                                    jstring embedder,
                                    jboolean is_incognito) {
   GURL url(ConvertJavaStringToUTF8(env, origin));
-  GURL embedder_url(ConvertJavaStringToUTF8(env, embedder));
+  std::string embedder_str = ConvertJavaStringToUTF8(env, embedder);
+  GURL embedder_url;
+  // TODO(raymes): This check to see if '*' is the embedder is a hack that fixes
+  // crbug.com/738377. In general querying the settings for patterns is broken
+  // and needs to be fixed. See crbug.com/738757.
+  if (embedder_str == "*")
+    embedder_url = url;
+  else
+    embedder_url = GURL(embedder_str);
   return PermissionManager::Get(GetActiveUserProfile(is_incognito))
       ->GetPermissionStatus(content_type, url, embedder_url)
       .content_setting;
