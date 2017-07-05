@@ -16,6 +16,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/payments/content/payment_response_helper.h"
 #include "components/payments/core/autofill_payment_instrument.h"
+#include "components/payments/core/journey_logger.h"
 #include "components/payments/core/payment_instrument.h"
 #include "components/payments/core/payment_request_data_util.h"
 #include "components/payments/core/payment_request_delegate.h"
@@ -27,13 +28,15 @@ PaymentRequestState::PaymentRequestState(
     Delegate* delegate,
     const std::string& app_locale,
     autofill::PersonalDataManager* personal_data_manager,
-    PaymentRequestDelegate* payment_request_delegate)
+    PaymentRequestDelegate* payment_request_delegate,
+    JourneyLogger* journey_logger)
     : is_ready_to_pay_(false),
       is_waiting_for_merchant_validation_(false),
       app_locale_(app_locale),
       spec_(spec),
       delegate_(delegate),
       personal_data_manager_(personal_data_manager),
+      journey_logger_(journey_logger),
       selected_shipping_profile_(nullptr),
       selected_shipping_option_error_profile_(nullptr),
       selected_contact_profile_(nullptr),
@@ -272,12 +275,29 @@ void PaymentRequestState::PopulateProfileCache() {
   shipping_profiles_ = profile_comparator()->FilterProfilesForShipping(
       raw_profiles_for_filtering);
 
+  // Set the number of suggestions shown for the sections requested by the
+  // merchant.
+  if (spec_->request_payer_name() || spec_->request_payer_phone() ||
+      spec_->request_payer_email()) {
+    journey_logger_->SetNumberOfSuggestionsShown(
+        JourneyLogger::Section::SECTION_CONTACT_INFO, contact_profiles_.size());
+  }
+  if (spec_->request_shipping()) {
+    journey_logger_->SetNumberOfSuggestionsShown(
+        JourneyLogger::Section::SECTION_SHIPPING_ADDRESS,
+        shipping_profiles_.size());
+  }
+
   // Create the list of available instruments. A copy of each card will be made
   // by their respective AutofillPaymentInstrument.
   const std::vector<autofill::CreditCard*>& cards =
       personal_data_manager_->GetCreditCardsToSuggest();
   for (autofill::CreditCard* card : cards)
     AddAutofillPaymentInstrument(/*selected=*/false, *card);
+
+  journey_logger_->SetNumberOfSuggestionsShown(
+      JourneyLogger::Section::SECTION_CREDIT_CARDS,
+      available_instruments().size());
 }
 
 void PaymentRequestState::SetDefaultProfileSelections() {

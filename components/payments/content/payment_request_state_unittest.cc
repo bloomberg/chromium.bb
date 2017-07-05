@@ -13,6 +13,7 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/payments/content/payment_request_spec.h"
+#include "components/payments/core/journey_logger.h"
 #include "components/payments/core/test_payment_request_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/modules/payments/payment_request.mojom.h"
@@ -26,6 +27,9 @@ class PaymentRequestStateTest : public testing::Test,
   PaymentRequestStateTest()
       : num_on_selected_information_changed_called_(0),
         test_payment_request_delegate_(/*personal_data_manager=*/nullptr),
+        journey_logger_(test_payment_request_delegate_.IsIncognito(),
+                        GURL("http://www.test.com"),
+                        test_payment_request_delegate_.GetUkmRecorder()),
         address_(autofill::test::GetFullProfile()),
         credit_card_visa_(autofill::test::GetCreditCard()) {
     test_personal_data_manager_.AddTestingProfile(&address_);
@@ -59,7 +63,7 @@ class PaymentRequestStateTest : public testing::Test,
         /*observer=*/nullptr, "en-US");
     state_ = base::MakeUnique<PaymentRequestState>(
         spec_.get(), this, "en-US", &test_personal_data_manager_,
-        &test_payment_request_delegate_);
+        &test_payment_request_delegate_, &journey_logger_);
     state_->AddObserver(this);
   }
 
@@ -115,6 +119,7 @@ class PaymentRequestStateTest : public testing::Test,
   mojom::PaymentAddressPtr selected_shipping_address_;
   autofill::TestPersonalDataManager test_personal_data_manager_;
   TestPaymentRequestDelegate test_payment_request_delegate_;
+  JourneyLogger journey_logger_;
 
   // Test data.
   autofill::AutofillProfile address_;
