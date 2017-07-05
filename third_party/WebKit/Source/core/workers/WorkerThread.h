@@ -150,6 +150,7 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   bool IsForciblyTerminated();
 
   void WaitForShutdownForTesting() { shutdown_event_->Wait(); }
+  ExitCode GetExitCodeForTesting();
 
   ParentFrameTaskRunners* GetParentFrameTaskRunners() const {
     return parent_frame_task_runners_.Get();
@@ -234,8 +235,6 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   // lock or you're on the main thread, you should consider directly accessing
   // |m_requestedToTerminate|.
   bool CheckRequestedToTerminateOnWorkerThread();
-
-  ExitCode GetExitCodeForTesting();
 
   // A unique identifier among all WorkerThreads.
   const int worker_thread_id_;

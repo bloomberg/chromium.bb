@@ -306,6 +306,11 @@ bool WorkerThread::IsForciblyTerminated() {
   return false;
 }
 
+ExitCode WorkerThread::GetExitCodeForTesting() {
+  MutexLocker lock(thread_state_mutex_);
+  return exit_code_;
+}
+
 InterfaceProvider* WorkerThread::GetInterfaceProvider() {
   // TODO(https://crbug.com/734210): Instead of returning this interface
   // provider, which maps to a RenderProcessHost in the browser process, this
@@ -608,11 +613,6 @@ bool WorkerThread::IsThreadStateMutexLocked(const MutexLocker& /* unused */) {
 bool WorkerThread::CheckRequestedToTerminateOnWorkerThread() {
   MutexLocker lock(thread_state_mutex_);
   return requested_to_terminate_;
-}
-
-ExitCode WorkerThread::GetExitCodeForTesting() {
-  MutexLocker lock(thread_state_mutex_);
-  return exit_code_;
 }
 
 }  // namespace blink
