@@ -7,12 +7,16 @@ package org.chromium.chrome.browser.suggestions;
 import android.support.v7.widget.RecyclerView;
 
 import org.chromium.base.Callback;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
+import org.chromium.chrome.browser.ntp.snippets.FaviconFetchResult;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.tab.Tab;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * Exposes methods to report suggestions related events, for UMA or Fetch scheduling purposes.
@@ -82,6 +86,30 @@ public abstract class SuggestionsMetrics {
                 SuggestionsEventReporterBridge.onSuggestionTargetVisited(category, visit.duration);
             }
         });
+    }
+
+    // Histogram recordings
+
+    /**
+     * Records the time it took to fetch a favicon for an article.
+     *
+     * @param fetchTime The time it took to fetch the favicon.
+     */
+    public static void recordArticleFaviconFetchTime(long fetchTime) {
+        RecordHistogram.recordMediumTimesHistogram(
+                "NewTabPage.ContentSuggestions.ArticleFaviconFetchTime", fetchTime,
+                TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * Records the result from a favicon fetch for an article.
+     *
+     * @param result {@link FaviconFetchResult} The result from the fetch.
+     */
+    public static void recordArticleFaviconFetchResult(@FaviconFetchResult int result) {
+        RecordHistogram.recordEnumeratedHistogram(
+                "NewTabPage.ContentSuggestions.ArticleFaviconFetchResult", result,
+                FaviconFetchResult.COUNT);
     }
 
     /**
