@@ -5,6 +5,7 @@
 #include "chrome/renderer/plugins/pdf_plugin_placeholder.h"
 
 #include "chrome/grit/renderer_resources.h"
+#include "gin/object_template_builder.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/jstemplate_builder.h"
 
@@ -30,4 +31,15 @@ PDFPluginPlaceholder* PDFPluginPlaceholder::CreatePDFPlaceholder(
 
 v8::Local<v8::Value> PDFPluginPlaceholder::GetV8Handle(v8::Isolate* isolate) {
   return gin::CreateHandle(isolate, this).ToV8();
+}
+
+gin::ObjectTemplateBuilder PDFPluginPlaceholder::GetObjectTemplateBuilder(
+    v8::Isolate* isolate) {
+  return gin::Wrappable<PDFPluginPlaceholder>::GetObjectTemplateBuilder(isolate)
+      .SetMethod<void (PDFPluginPlaceholder::*)()>(
+          "downloadPDF", &PDFPluginPlaceholder::DownloadPDFCallback);
+}
+
+void PDFPluginPlaceholder::DownloadPDFCallback() {
+  // TODO(amberwon): Implement starting PDF download.
 }
