@@ -90,6 +90,8 @@ blink_core_sources("animation") {
     "CSSTransformOriginInterpolationType.h",
     "CSSTranslateInterpolationType.cpp",
     "CSSTranslateInterpolationType.h",
+    "CSSVarCycleInterpolationType.cpp",
+    "CSSVarCycleInterpolationType.h",
     "CSSVisibilityInterpolationType.cpp",
     "CSSVisibilityInterpolationType.h",
     "ColorPropertyFunctions.cpp",

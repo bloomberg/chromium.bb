@@ -66,8 +66,9 @@ CSSVariableData* CSSVariableResolver::ValueForCustomProperty(
   if (!variable_data->NeedsVariableResolution())
     return variable_data;
 
+  bool unused_cycle_detected;
   RefPtr<CSSVariableData> new_variable_data =
-      ResolveCustomProperty(name, *variable_data);
+      ResolveCustomProperty(name, *variable_data, unused_cycle_detected);
   if (!registration) {
     inherited_variables_->SetVariable(name, new_variable_data);
     return new_variable_data.Get();
@@ -93,7 +94,8 @@ CSSVariableData* CSSVariableResolver::ValueForCustomProperty(
 
 PassRefPtr<CSSVariableData> CSSVariableResolver::ResolveCustomProperty(
     AtomicString name,
-    const CSSVariableData& variable_data) {
+    const CSSVariableData& variable_data,
+    bool& cycle_detected) {
   DCHECK(variable_data.NeedsVariableResolution());
 
   bool disallow_animation_tainted = false;
@@ -110,8 +112,10 @@ PassRefPtr<CSSVariableData> CSSVariableResolver::ResolveCustomProperty(
 
   if (!success || !cycle_start_points_.IsEmpty()) {
     cycle_start_points_.erase(name);
+    cycle_detected = true;
     return nullptr;
   }
+  cycle_detected = false;
   return CSSVariableData::CreateResolved(tokens, std::move(backing_strings),
                                          is_animation_tainted);
 }
@@ -301,17 +305,19 @@ const CSSValue* CSSVariableResolver::ResolvePendingSubstitutions(
 
 RefPtr<CSSVariableData>
 CSSVariableResolver::ResolveCustomPropertyAnimationKeyframe(
-    const CSSCustomPropertyDeclaration& keyframe) {
+    const CSSCustomPropertyDeclaration& keyframe,
+    bool& cycle_detected) {
   DCHECK(keyframe.Value());
   DCHECK(keyframe.Value()->NeedsVariableResolution());
   const AtomicString& name = keyframe.GetName();
 
   if (variables_seen_.Contains(name)) {
     cycle_start_points_.insert(name);
+    cycle_detected = true;
     return nullptr;
   }
 
-  return ResolveCustomProperty(name, *keyframe.Value());
+  return ResolveCustomProperty(name, *keyframe.Value(), cycle_detected);
 }
 
 void CSSVariableResolver::ResolveVariableDefinitions() {

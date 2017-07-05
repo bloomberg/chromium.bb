@@ -37,6 +37,7 @@
 #include "core/animation/CSSTransformInterpolationType.h"
 #include "core/animation/CSSTransformOriginInterpolationType.h"
 #include "core/animation/CSSTranslateInterpolationType.h"
+#include "core/animation/CSSVarCycleInterpolationType.h"
 #include "core/animation/CSSVisibilityInterpolationType.h"
 #include "core/css/CSSPropertyMetadata.h"
 #include "core/css/CSSSyntaxDescriptor.h"
@@ -342,6 +343,11 @@ CSSInterpolationTypesMap::CreateInterpolationTypesForCSSSyntax(
     const PropertyRegistration& registration) {
   PropertyHandle property(property_name);
   InterpolationTypes result;
+
+  // All custom properties may encounter var() dependency cycles.
+  result.push_back(
+      WTF::MakeUnique<CSSVarCycleInterpolationType>(property, registration));
+
   for (const CSSSyntaxComponent& component : descriptor.Components()) {
     if (component.repeatable_) {
       // TODO(alancutter): Support animation of repeatable types.
