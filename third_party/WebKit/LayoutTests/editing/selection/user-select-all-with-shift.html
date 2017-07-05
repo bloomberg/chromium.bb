@@ -1,61 +1,112 @@
-<!DOCTYPE html>
-<html>
-<body>
-<style>
-.select-all {
-    border: 1px solid black;
-    height: 100px;
-    width: 100px;
-    -webkit-user-select: all;
-    -moz-user-select: all;
-}
-</style>
-<p id="description">This tests shift + selecting two discontinuous elements with user-select: all. WebKit should select the both elements instead of moving the selection.
-To manually test, click to select the first element and shift-click the second element. WebKit should select both elements.</p>
-<div id="test">
-<div id="first" class="select-all">First element</div>
-Some other text.
-<div id="second" class="select-all">Second element</div>
-</div>
-<script src="../../resources/dump-as-markup.js"></script>
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
+// This tests shift + selecting two discontinuous elements with user-select:
+// all. Blink should select the both elements instead of moving the selection.
+// To manually test, click to select the first element and shift-click the
+// second element. WebKit should select both elements.
 
-Markup.description(document.getElementById('description').textContent);
+// TODO(editing-dev): Once http://crbug.com/736253 fixed, we should use
+// |chrome.pointerActionSequence()| instead of |eventSender|.
 
-function clickOnElement(element, keys) {
-    eventSender.mouseMoveTo(element.offsetLeft + 10, element.offsetTop + 10);
-    eventSender.mouseDown(0, keys);
-    eventSender.mouseUp(0, keys);
+const kStyle = [
+  '<style>',
+  '.select-all {',
+    'border: 1px solid black;',
+    'height: 100px;',
+    'width: 100px;',
+    'user-select: all;',
+  '}',
+  '</style>',
+].join('');
+
+const kSample = [
+    kStyle,
+    '<div class="select-all" id="first">First element</div>',
+    'Some other text.',
+    '<div class="select-all" id="second">Second element</div>',
+].join('');
+
+function clickOnElement(selection, id, keys) {
+  const element = selection.document.getElementById(id);
+  eventSender.mouseMoveTo(selection.computeLeft(element) + 10,
+                          selection.computeTop(element) + 10);
+  eventSender.mouseDown(0, keys);
+  eventSender.mouseUp(0, keys);
 }
 
-function runTest(editingBehavior) {
-    internals.settings.setEditingBehavior(editingBehavior);
-
-    var postfix = ' (' + editingBehavior + ')';
-
-    clickOnElement(document.getElementById('first'));
-    Markup.dump('test', 'After clicking on the first element' + postfix);
-    eventSender.leapForward(300);
-    clickOnElement(document.getElementById('second'), ['shiftKey']);
-    Markup.dump('test', 'After shift clicking on the second element' + postfix);
-
-    getSelection().removeAllRanges();
-
-    clickOnElement(document.getElementById('second'));
-    Markup.dump('test', 'After clicking on the second element' + postfix);
-    eventSender.leapForward(300);
-    clickOnElement(document.getElementById('first'), ['shiftKey']);
-    Markup.dump('test', 'After shift clicking on the first element' + postfix);
+function resetMouseClick() {
+  eventSender.leapForward(1000);
+  eventSender.mouseMoveTo(0, 0);
+  eventSender.mouseDown();
+  eventSender.mouseUp();
+  eventSender.leapForward(1000);
 }
 
-if (window.eventSender) {
-    runTest('Mac');
-    runTest('Win');
-    runTest('Unix');
+function doTest(behavior) {
+  assert_exists(window, 'eventSender', 'This test requires eventSender.');
+  assert_exists(window, 'internals', 'This test requires internals.');
+  internals.settings.setEditingBehavior(behavior);
 
-} else
-    Markup.noAutoDump();
+  assert_selection(
+    kSample,
+    selection => {
+      resetMouseClick();
+      clickOnElement(selection, 'first');
+    },
+    [
+      kStyle,
+      '<div class="select-all" id="first">^First element|</div>',
+      'Some other text.',
+      '<div class="select-all" id="second">Second element</div>',
+    ].join(''),
+    `${behavior}-1: Click "first"`);
 
+  assert_selection(
+    kSample,
+    selection => {
+      resetMouseClick();
+      clickOnElement(selection, 'first');
+      clickOnElement(selection, 'second', ['shiftKey']);
+    },
+    [
+      kStyle,
+      '<div class="select-all" id="first">^First element</div>',
+      'Some other text.',
+      '<div class="select-all" id="second">Second element|</div>',
+    ].join(''),
+    `${behavior}-2: Shift+Click "second"`);
+
+  assert_selection(
+    kSample,
+    selection => clickOnElement(selection, 'second'),
+    [
+      kStyle,
+      '<div class="select-all" id="first">First element</div>',
+      'Some other text.',
+      '<div class="select-all" id="second">^Second element|</div>',
+    ].join(''),
+    `${behavior}-3: Click "second"`);
+
+  assert_selection(
+    kSample,
+    selection => {
+      clickOnElement(selection, 'second'),
+      clickOnElement(selection, 'first', ['shiftKey']);
+    },
+    [
+      kStyle,
+      '<div class="select-all" id="first">|First element</div>',
+      'Some other text.',
+      '<div class="select-all" id="second">Second element^</div>',
+    ].join(''),
+    `${behavior}-4: Shift-Click "first"`);
+}
+
+for (const behavior of ['mac', 'win', 'unix']) {
+  test(() => doTest(behavior),
+       `${behavior}: Shift+Select on user-select:all`);
+}
 </script>
-</body>
-</html>
