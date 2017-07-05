@@ -359,7 +359,8 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (base::FeatureList::IsEnabled(features::kGenericSensor))
     WebRuntimeFeatures::EnableGenericSensor(true);
 
-  if (base::FeatureList::IsEnabled(features::kLoadingWithMojo))
+  if (base::FeatureList::IsEnabled(features::kLoadingWithMojo) ||
+      base::FeatureList::IsEnabled(features::kNetworkService))
     WebRuntimeFeatures::EnableLoadingWithMojo(true);
 
   WebRuntimeFeatures::EnableMediaCastOverlayButton(

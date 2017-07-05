@@ -64,6 +64,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/common/browser_side_navigation_policy.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
@@ -2500,8 +2501,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ProcessTransferAfterError) {
   // Disable host resolution in the test server and try to navigate the subframe
   // cross-site, which will lead to a committed net error.
   GURL url_b = embedded_test_server()->GetURL("b.com", "/title3.html");
-  bool network_service = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableNetworkService);
+  bool network_service =
+      base::FeatureList::IsEnabled(features::kNetworkService);
   mojom::URLLoaderFactoryPtr failing_factory;
   mojo::MakeStrongBinding(base::MakeUnique<FailingLoadFactory>(),
                           mojo::MakeRequest(&failing_factory));

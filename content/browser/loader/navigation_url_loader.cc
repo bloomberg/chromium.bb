@@ -13,7 +13,7 @@
 #include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/loader/navigation_url_loader_network_service.h"
 #include "content/public/browser/navigation_ui_data.h"
-#include "content/public/common/content_switches.h"
+#include "content/public/common/content_features.h"
 
 namespace content {
 
@@ -32,8 +32,7 @@ std::unique_ptr<NavigationURLLoader> NavigationURLLoader::Create(
         resource_context, storage_partition, std::move(request_info),
         std::move(navigation_ui_data), service_worker_handle, delegate);
   }
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableNetworkService)) {
+  if (base::FeatureList::IsEnabled(features::kNetworkService)) {
     return base::MakeUnique<NavigationURLLoaderNetworkService>(
         resource_context, storage_partition, std::move(request_info),
         std::move(navigation_ui_data), service_worker_handle, appcache_handle,

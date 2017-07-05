@@ -6711,10 +6711,7 @@ std::unique_ptr<blink::WebURLLoader> RenderFrameImpl::CreateURLLoader(
     const blink::WebURLRequest& request,
     base::SingleThreadTaskRunner* task_runner) {
   ChildThreadImpl* child_thread = ChildThreadImpl::current();
-  const bool network_service_enabled =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableNetworkService);
-  if (network_service_enabled && child_thread) {
+  if (base::FeatureList::IsEnabled(features::kNetworkService) && child_thread) {
     // Use if per-frame or per-scheme URLLoaderFactory is given.
     mojom::URLLoaderFactory* factory = url_loader_factory_.get();
 

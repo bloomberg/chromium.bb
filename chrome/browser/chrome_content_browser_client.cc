@@ -2915,8 +2915,7 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
                                       base::RetainedRef(context)));
   }
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableNetworkService)) {
+  if (base::FeatureList::IsEnabled(features::kNetworkService)) {
     registry->AddInterface(
         base::Bind(&safe_browsing::MojoSafeBrowsingImpl::Create,
                    safe_browsing_service_->database_manager(),
@@ -3410,8 +3409,7 @@ std::vector<std::unique_ptr<content::URLLoaderThrottle>>
 ChromeContentBrowserClient::CreateURLLoaderThrottles(
     const base::Callback<content::WebContents*()>& wc_getter) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableNetworkService));
+  DCHECK(base::FeatureList::IsEnabled(features::kNetworkService));
 
   std::vector<std::unique_ptr<content::URLLoaderThrottle>> result;
   result.push_back(base::MakeUnique<safe_browsing::BrowserURLLoaderThrottle>(

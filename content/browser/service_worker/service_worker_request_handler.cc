@@ -21,6 +21,7 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/child_process_host.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/common/resource_request_body.h"
@@ -130,8 +131,7 @@ ServiceWorkerRequestHandler::InitializeForNavigationNetworkService(
     scoped_refptr<ResourceRequestBody> body,
     const base::Callback<WebContents*(void)>& web_contents_getter) {
   DCHECK(IsBrowserSideNavigationEnabled() &&
-         base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kEnableNetworkService));
+         base::FeatureList::IsEnabled(features::kNetworkService));
   DCHECK(navigation_handle_core);
 
   // Create the handler even for insecure HTTP since it's used in the

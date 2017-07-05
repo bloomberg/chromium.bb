@@ -67,7 +67,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_switches.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test_utils.h"
 #include "crypto/sha2.h"
 #include "net/cookies/cookie_store.h"
@@ -1483,10 +1483,8 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, StartAndStop) {
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, MalwareWebSocketBlocked) {
   // This test currently only passes when the network service is enabled.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kEnableNetworkService)) {
+  if (!base::FeatureList::IsEnabled(features::kNetworkService))
     return;
-  }
   GURL main_url = embedded_test_server()->GetURL(kMalwareWebSocketPage);
   // This constructs the URL with the same logic as malware_websocket.html.
   GURL resolved = main_url.Resolve("/safe_browsing/malware-ws");
@@ -2254,10 +2252,8 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, CheckBrowseUrl) {
 // when the old database backend stops being used.
 IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, MalwareWebSocketBlocked) {
   // This test currently only passes when the network service is enabled.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kEnableNetworkService)) {
+  if (!base::FeatureList::IsEnabled(features::kNetworkService))
     return;
-  }
   GURL main_url = embedded_test_server()->GetURL(kMalwareWebSocketPage);
   // This constructs the URL with the same logic as malware_websocket.html.
   GURL resolved = main_url.Resolve("/safe_browsing/malware-ws");

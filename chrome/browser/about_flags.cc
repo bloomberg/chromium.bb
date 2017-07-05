@@ -3123,6 +3123,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kModuleScriptsDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kModuleScripts)},
 
+    {"network-service", flag_descriptions::kEnableNetworkServiceName,
+     flag_descriptions::kEnableNetworkServiceDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kNetworkService)},
+
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms/enums.xml. See note in
     // enums.xml and don't forget to run AboutFlagsHistogramTest unit test.

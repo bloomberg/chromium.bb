@@ -3232,8 +3232,7 @@ void RenderFrameHostImpl::CommitNavigation(
   FrameMsg_CommitDataNetworkService_Params commit_data;
   commit_data.handle = handle.release();
   // TODO(scottmg): Pass a factory for SW, etc. once we have one.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableNetworkService)) {
+  if (base::FeatureList::IsEnabled(features::kNetworkService)) {
     if (!subresource_url_loader_factory_info.is_valid()) {
       const auto& schemes = URLDataManagerBackend::GetWebUISchemes();
       if (std::find(schemes.begin(), schemes.end(),

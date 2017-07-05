@@ -9,6 +9,7 @@
 #include "content/child/child_process.h"
 #include "content/network/network_service.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/utility/content_utility_client.h"
@@ -107,8 +108,7 @@ void UtilityServiceFactory::RegisterServices(ServiceMap* services) {
   services->insert(
       std::make_pair(data_decoder::mojom::kServiceName, data_decoder_info));
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableNetworkService)) {
+  if (base::FeatureList::IsEnabled(features::kNetworkService)) {
     GetContentClient()->utility()->RegisterNetworkBinders(
         network_registry_.get());
     service_manager::EmbeddedServiceInfo network_info;

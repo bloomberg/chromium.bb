@@ -31,6 +31,7 @@
 #include "content/public/browser/local_storage_usage_info.h"
 #include "content/public/browser/session_storage_usage_info.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
@@ -529,8 +530,7 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
 
   partition->bluetooth_allowed_devices_map_ = new BluetoothAllowedDevicesMap();
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableNetworkService)) {
+  if (base::FeatureList::IsEnabled(features::kNetworkService)) {
     static mojom::NetworkServicePtr* g_network_service =
         new mojom::NetworkServicePtr;
     if (!g_network_service->is_bound()) {

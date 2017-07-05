@@ -26,6 +26,7 @@
 #include "content/browser/tracing/tracing_controller_impl.h"
 #include "content/public/app/content_main.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/network_service_test.mojom.h"
@@ -380,8 +381,8 @@ bool BrowserTestBase::UsingSoftwareGL() const {
 void BrowserTestBase::InitializeNetworkProcess() {
   const testing::TestInfo* const test_info =
       testing::UnitTest::GetInstance()->current_test_info();
-  bool network_service = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableNetworkService);
+  bool network_service =
+      base::FeatureList::IsEnabled(features::kNetworkService);
   // ProcessTransferAfterError is the only browser test which needs to modify
   // the host rules (when not using the network service).
   if (network_service ||
