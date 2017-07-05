@@ -159,9 +159,8 @@ Polymer({
 
     // Setup drop shadow logic.
     var callback = function(entries) {
-      assert(entries.length == 1);
       this.$.dropShadow.classList.toggle(
-          'has-shadow', entries[0].intersectionRatio == 0);
+          'has-shadow', entries[entries.length - 1].intersectionRatio == 0);
     }.bind(this);
 
     this.intersectionObserver_ = new IntersectionObserver(
