@@ -310,61 +310,6 @@ static INLINE int get_tx_size_context(const MACROBLOCKD *xd) {
   return (above_ctx + left_ctx) > max_tx_size + TX_SIZE_LUMA_MIN;
 }
 
-#if CONFIG_VAR_TX
-static void update_tx_counts(AV1_COMMON *cm, MACROBLOCKD *xd,
-                             MB_MODE_INFO *mbmi, BLOCK_SIZE plane_bsize,
-                             TX_SIZE tx_size, int blk_row, int blk_col,
-                             TX_SIZE max_tx_size, int ctx) {
-  const struct macroblockd_plane *const pd = &xd->plane[0];
-  const BLOCK_SIZE bsize = txsize_to_bsize[tx_size];
-  const int tx_row = blk_row >> (1 - pd->subsampling_y);
-  const int tx_col = blk_col >> (1 - pd->subsampling_x);
-  const TX_SIZE plane_tx_size = mbmi->inter_tx_size[tx_row][tx_col];
-  const int max_blocks_high = max_block_high(xd, plane_bsize, 0);
-  const int max_blocks_wide = max_block_wide(xd, plane_bsize, 0);
-
-  if (blk_row >= max_blocks_high || blk_col >= max_blocks_wide) return;
-
-  if (tx_size == plane_tx_size) {
-    int depth;
-    depth = tx_size_to_depth(tx_size);
-    ++xd->counts->tx_size[max_tx_size - TX_SIZE_CTX_MIN][ctx][depth];
-    mbmi->tx_size = tx_size;
-  } else {
-    int bsl = b_width_log2_lookup[bsize];
-    int i;
-
-    assert(bsl > 0);
-    --bsl;
-
-    for (i = 0; i < 4; ++i) {
-      const int offsetr = blk_row + ((i >> 1) << bsl);
-      const int offsetc = blk_col + ((i & 0x01) << bsl);
-
-      if (offsetr >= max_blocks_high || offsetc >= max_blocks_wide) continue;
-      update_tx_counts(cm, xd, mbmi, plane_bsize, (TX_SIZE)(tx_size - 1),
-                       offsetr, offsetc, max_tx_size, ctx);
-    }
-  }
-}
-
-static INLINE void inter_block_tx_count_update(AV1_COMMON *cm, MACROBLOCKD *xd,
-                                               MB_MODE_INFO *mbmi,
-                                               BLOCK_SIZE plane_bsize,
-                                               int ctx) {
-  const int mi_width = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
-  const int mi_height = block_size_high[plane_bsize] >> tx_size_wide_log2[0];
-  TX_SIZE max_tx_size = max_txsize_lookup[plane_bsize];
-  int bh = tx_size_wide_unit[max_tx_size];
-  int idx, idy;
-
-  for (idy = 0; idy < mi_height; idy += bh)
-    for (idx = 0; idx < mi_width; idx += bh)
-      update_tx_counts(cm, xd, mbmi, plane_bsize, max_tx_size, idy, idx,
-                       max_tx_size, ctx);
-}
-#endif
-
 #ifdef __cplusplus
 }  // extern "C"
 #endif
