@@ -14,11 +14,9 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/numerics/safe_math.h"
-#include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_mock_time_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_fetch_throttler_delegate.h"
@@ -81,7 +79,7 @@ class AffiliationFetchThrottlerTest : public testing::Test {
     net::NetworkChangeNotifier::NotifyObserversOfConnectionTypeChangeForTests(
         has_connectivity ? net::NetworkChangeNotifier::CONNECTION_UNKNOWN
                          : net::NetworkChangeNotifier::CONNECTION_NONE);
-    base::RunLoop().RunUntilIdle();
+    scoped_task_environment_.RunUntilIdle();
   }
 
   // Runs the task runner until no tasks remain, and asserts that by this time,
@@ -125,10 +123,8 @@ class AffiliationFetchThrottlerTest : public testing::Test {
 
  private:
   // Needed because NetworkChangeNotifier uses base::ObserverList, which
-  // notifies
-  // observers on the MessageLoop that belongs to the thread from which they
-  // have registered.
-  base::MessageLoop message_loop_;
+  // notifies observers on the sequence from which they have registered.
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   std::unique_ptr<base::TickClock> mock_tick_clock_;

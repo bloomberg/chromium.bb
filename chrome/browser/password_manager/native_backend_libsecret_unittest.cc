@@ -9,7 +9,6 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -341,14 +340,10 @@ class NativeBackendLibsecretTest : public testing::Test {
   }
 
   void TearDown() override {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
-    base::RunLoop().Run();
+    scoped_task_environment_.RunUntilIdle();
     ASSERT_TRUE(global_mock_libsecret_items);
     global_mock_libsecret_items = nullptr;
   }
-
-  void RunUIThread() { base::RunLoop().Run(); }
 
   void CheckUint32Attribute(const MockSecretItem* item,
                             const std::string& attribute,
