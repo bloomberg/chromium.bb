@@ -59,6 +59,7 @@ extern const base::FilePath::CharType kLocalStorePoolName[];
 extern const base::FilePath::CharType kMediaCacheDirname[];
 extern const base::FilePath::CharType kOfflinePageArchivesDirname[];
 extern const base::FilePath::CharType kOfflinePageMetadataDirname[];
+extern const base::FilePath::CharType kOfflinePagePrefetchStoreDirname[];
 extern const base::FilePath::CharType kOfflinePageRequestQueueDirname[];
 extern const base::FilePath::CharType kPreferencesFilename[];
 extern const base::FilePath::CharType kPreviewsOptOutDBFilename[];

@@ -13,6 +13,7 @@
 #include "components/offline_pages/core/prefetch/prefetch_downloader.h"
 #include "components/offline_pages/core/prefetch/prefetch_gcm_handler.h"
 #include "components/offline_pages/core/prefetch/prefetch_network_request_factory.h"
+#include "components/offline_pages/core/prefetch/store/prefetch_store.h"
 #include "components/offline_pages/core/prefetch/suggested_articles_observer.h"
 
 namespace offline_pages {
@@ -22,12 +23,14 @@ PrefetchServiceImpl::PrefetchServiceImpl(
     std::unique_ptr<PrefetchDispatcher> dispatcher,
     std::unique_ptr<PrefetchGCMHandler> gcm_handler,
     std::unique_ptr<PrefetchNetworkRequestFactory> network_request_factory,
+    std::unique_ptr<PrefetchStore> prefetch_store,
     std::unique_ptr<SuggestedArticlesObserver> suggested_articles_observer,
     std::unique_ptr<PrefetchDownloader> prefetch_downloader)
     : offline_metrics_collector_(std::move(offline_metrics_collector)),
       prefetch_dispatcher_(std::move(dispatcher)),
       prefetch_gcm_handler_(std::move(gcm_handler)),
       network_request_factory_(std::move(network_request_factory)),
+      prefetch_store_(std::move(prefetch_store)),
       suggested_articles_observer_(std::move(suggested_articles_observer)),
       prefetch_downloader_(std::move(prefetch_downloader)) {
   prefetch_dispatcher_->SetService(this);
@@ -54,6 +57,10 @@ PrefetchGCMHandler* PrefetchServiceImpl::GetPrefetchGCMHandler() {
 PrefetchNetworkRequestFactory*
 PrefetchServiceImpl::GetPrefetchNetworkRequestFactory() {
   return network_request_factory_.get();
+}
+
+PrefetchStore* PrefetchServiceImpl::GetPrefetchStore() {
+  return prefetch_store_.get();
 }
 
 SuggestedArticlesObserver* PrefetchServiceImpl::GetSuggestedArticlesObserver() {

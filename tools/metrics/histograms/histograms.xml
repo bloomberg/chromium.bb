@@ -96666,6 +96666,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="OfflinePageMetadata" label="OfflinePageMetadata"/>
   <suffix name="Passwords" label="Passwords"/>
   <suffix name="Precache" label="Precache"/>
+  <suffix name="PrefetchStore" label="PrefetchStore"/>
   <suffix name="Predictor" label="Predictor"/>
   <suffix name="PreviewsOptOut" label="PreviewsOptOut"/>
   <suffix name="Quota" label="Quota"/>

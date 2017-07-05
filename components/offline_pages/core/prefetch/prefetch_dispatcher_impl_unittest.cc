@@ -17,6 +17,8 @@
 #include "components/offline_pages/core/prefetch/prefetch_network_request_factory.h"
 #include "components/offline_pages/core/prefetch/prefetch_service.h"
 #include "components/offline_pages/core/prefetch/prefetch_service_test_taco.h"
+#include "components/offline_pages/core/prefetch/store/prefetch_store.h"
+#include "components/offline_pages/core/prefetch/store/prefetch_store_test_util.h"
 #include "components/offline_pages/core/prefetch/suggested_articles_observer.h"
 #include "components/offline_pages/core/prefetch/test_prefetch_network_request_factory.h"
 #include "components/version_info/channel.h"
@@ -25,8 +27,9 @@
 #include "url/gurl.h"
 
 namespace offline_pages {
-
 namespace {
+
+const std::string kTestNamespace = "TestPrefetchClientNamespace";
 
 class TestScopedBackgroundTask
     : public PrefetchDispatcher::ScopedBackgroundTask {
@@ -45,8 +48,6 @@ class TestScopedBackgroundTask
 
 class PrefetchDispatcherTest : public testing::Test {
  public:
-  const std::string TEST_NAMESPACE = "TestPrefetchClientNamespace";
-
   PrefetchDispatcherTest();
 
   // Test implementation.
@@ -54,6 +55,7 @@ class PrefetchDispatcherTest : public testing::Test {
   void TearDown() override;
 
   void PumpLoop();
+
   PrefetchDispatcher::ScopedBackgroundTask* GetBackgroundTask() {
     return dispatcher_->background_task_.get();
   }
@@ -67,29 +69,27 @@ class PrefetchDispatcherTest : public testing::Test {
   std::vector<PrefetchURL> test_urls_;
 
  private:
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_ =
-      new base::TestSimpleTaskRunner;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
-  OfflineEventLogger logger_;
+  std::unique_ptr<PrefetchServiceTestTaco> taco_;
+
   base::test::ScopedFeatureList feature_list_;
 
-  PrefetchServiceTestTaco taco_;
   // Owned by |taco_|.
   PrefetchDispatcherImpl* dispatcher_;
 };
 
 PrefetchDispatcherTest::PrefetchDispatcherTest()
-    : task_runner_handle_(task_runner_) {
+    : task_runner_(new base::TestSimpleTaskRunner),
+      task_runner_handle_(task_runner_) {
   feature_list_.InitAndEnableFeature(kPrefetchingOfflinePagesFeature);
-
-  dispatcher_ = new PrefetchDispatcherImpl();
-  taco_.SetPrefetchDispatcher(base::WrapUnique(dispatcher_));
-
-  taco_.CreatePrefetchService();
 }
 
 void PrefetchDispatcherTest::SetUp() {
-  ASSERT_FALSE(task_runner()->HasPendingTask());
+  dispatcher_ = new PrefetchDispatcherImpl();
+  taco_.reset(new PrefetchServiceTestTaco);
+  taco_->SetPrefetchDispatcher(base::WrapUnique(dispatcher_));
+  taco_->CreatePrefetchService();
 
   ASSERT_TRUE(test_urls_.empty());
   test_urls_.push_back({"1", GURL("http://testurl.com/foo")});
@@ -97,7 +97,9 @@ void PrefetchDispatcherTest::SetUp() {
 }
 
 void PrefetchDispatcherTest::TearDown() {
-  task_runner()->ClearPendingTasks();
+  // Ensures that the store is properly disposed off.
+  taco_.reset();
+  PumpLoop();
 }
 
 void PrefetchDispatcherTest::PumpLoop() {
@@ -109,7 +111,7 @@ TEST_F(PrefetchDispatcherTest, DispatcherDoesNotCrash) {
   // with the state of adding tasks, and that the end state is we have tests
   // that verify the proper tasks were added in the proper order at each wakeup
   // signal of the dispatcher.
-  prefetch_dispatcher()->AddCandidatePrefetchURLs(TEST_NAMESPACE, test_urls_);
+  prefetch_dispatcher()->AddCandidatePrefetchURLs(kTestNamespace, test_urls_);
   prefetch_dispatcher()->RemoveAllUnprocessedPrefetchURLs(
       kSuggestedArticlesNamespace);
   prefetch_dispatcher()->RemovePrefetchURLsByClientId(
@@ -117,9 +119,8 @@ TEST_F(PrefetchDispatcherTest, DispatcherDoesNotCrash) {
 }
 
 TEST_F(PrefetchDispatcherTest, AddCandidatePrefetchURLsTask) {
-  prefetch_dispatcher()->AddCandidatePrefetchURLs(TEST_NAMESPACE, test_urls_);
+  prefetch_dispatcher()->AddCandidatePrefetchURLs(kTestNamespace, test_urls_);
   EXPECT_TRUE(dispatcher_task_queue()->HasPendingTasks());
-  EXPECT_TRUE(dispatcher_task_queue()->HasRunningTask());
   PumpLoop();
   EXPECT_FALSE(dispatcher_task_queue()->HasPendingTasks());
   EXPECT_FALSE(dispatcher_task_queue()->HasRunningTask());
@@ -132,7 +133,7 @@ TEST_F(PrefetchDispatcherTest, DispatcherDoesNothingIfFeatureNotEnabled) {
   // Don't add a task for new prefetch URLs.
   PrefetchURL prefetch_url("id", GURL("https://www.chromium.org"));
   prefetch_dispatcher()->AddCandidatePrefetchURLs(
-      TEST_NAMESPACE, std::vector<PrefetchURL>(1, prefetch_url));
+      kTestNamespace, std::vector<PrefetchURL>(1, prefetch_url));
   EXPECT_FALSE(dispatcher_task_queue()->HasRunningTask());
 
   // Do nothing with a new background task.

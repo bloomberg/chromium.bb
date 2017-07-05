@@ -6,4 +6,5 @@ include_rules = [
   "+components/ntp_snippets",
   "+components/version_info",
   "+net",
+  "+sql",
 ]

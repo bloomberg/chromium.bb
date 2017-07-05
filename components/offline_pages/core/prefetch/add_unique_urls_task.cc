@@ -4,53 +4,135 @@
 
 #include "components/offline_pages/core/prefetch/add_unique_urls_task.h"
 
+#include <map>
 #include <memory>
+#include <set>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/time/time.h"
+#include "components/offline_pages/core/prefetch/prefetch_types.h"
+#include "components/offline_pages/core/prefetch/store/prefetch_store.h"
+#include "components/offline_pages/core/prefetch/store/prefetch_store_utils.h"
+#include "sql/connection.h"
+#include "sql/statement.h"
+#include "sql/transaction.h"
 #include "url/gurl.h"
 
 namespace offline_pages {
 
 namespace {
 
-// Adds new prefetch item entries to the store using the URLs and client IDs
-// from |prefetch_urls| and the client's |name_space|. Also cleans up entries in
-// the Zombie state from the client's |name_space| except for the ones
-// whose URL is contained in |prefetch_urls|.
-// Returns the number of added prefecth items.
-static int AddUrlsAndCleanupZombies(
-    const std::string& name_space,
-    const std::vector<PrefetchURL>& prefetch_urls) {
-  NOTIMPLEMENTED();
-  return 1;
+std::map<std::string, std::pair<int64_t, PrefetchItemState>>
+FindExistingPrefetchItemsInNamespaceSync(sql::Connection* db,
+                                         const std::string& name_space) {
+  static const char kSql[] =
+      "SELECT offline_id, state, requested_url FROM prefetch_items"
+      " WHERE client_namespace = ?";
+  sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
+  statement.BindString(0, name_space);
+
+  std::map<std::string, std::pair<int64_t, PrefetchItemState>> result;
+  while (statement.Step()) {
+    result.insert(std::make_pair(
+        statement.ColumnString(2),
+        std::make_pair(statement.ColumnInt64(0), static_cast<PrefetchItemState>(
+                                                     statement.ColumnInt(1)))));
+  }
+
+  return result;
 }
 
-// TODO(fgorski): replace this with the SQL executor.
-static void Execute(base::RepeatingCallback<int()> command_callback,
-                    base::OnceCallback<void(int)> result_callback) {
-  std::move(result_callback).Run(command_callback.Run());
+bool CreatePrefetchItemSync(sql::Connection* db,
+                            const std::string& name_space,
+                            const PrefetchURL& prefetch_url) {
+  static const char kSql[] =
+      "INSERT INTO prefetch_items"
+      " (offline_id, requested_url, client_namespace, client_id, creation_time,"
+      " freshness_time)"
+      " VALUES"
+      " (?, ?, ?, ?, ?, ?)";
+
+  int64_t now_internal = base::Time::Now().ToInternalValue();
+  sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
+  statement.BindInt64(0, GenerateOfflineId());
+  statement.BindString(1, prefetch_url.url.spec());
+  statement.BindString(2, name_space);
+  statement.BindString(3, prefetch_url.id);
+  statement.BindInt64(4, now_internal);
+  statement.BindInt64(5, now_internal);
+
+  return statement.Run();
+}
+
+// Adds new prefetch item entries to the store using the URLs and client IDs
+// from |candidate_prefetch_urls| and the client's |name_space|. Also cleans up
+// entries in the Zombie state from the client's |name_space| except for the
+// ones whose URL is contained in |candidate_prefetch_urls|.
+// Returns the number of added prefecth items.
+AddUniqueUrlsTask::Result AddUrlsAndCleanupZombiesSync(
+    const std::string& name_space,
+    const std::vector<PrefetchURL>& candidate_prefetch_urls,
+    sql::Connection* db) {
+  if (!db)
+    return AddUniqueUrlsTask::Result::STORE_ERROR;
+
+  sql::Transaction transaction(db);
+  if (!transaction.Begin())
+    return AddUniqueUrlsTask::Result::STORE_ERROR;
+
+  std::map<std::string, std::pair<int64_t, PrefetchItemState>> existing_items =
+      FindExistingPrefetchItemsInNamespaceSync(db, name_space);
+
+  AddUniqueUrlsTask::Result result(AddUniqueUrlsTask::Result::NOTHING_ADDED);
+  for (const auto& prefetch_url : candidate_prefetch_urls) {
+    auto iter = existing_items.find(prefetch_url.url.spec());
+    if (iter == existing_items.end()) {
+      if (!CreatePrefetchItemSync(db, name_space, prefetch_url))
+        return AddUniqueUrlsTask::Result::STORE_ERROR;  // Transaction rollback.
+      result = AddUniqueUrlsTask::Result::URLS_ADDED;
+    } else {
+      // Removing from the list of existing items if it was requested again, to
+      // prevent it from being removed in the next step.
+      existing_items.erase(iter);
+    }
+  }
+
+  // Purge remaining zombie IDs.
+  for (const auto& existing_item : existing_items) {
+    if (existing_item.second.second != PrefetchItemState::ZOMBIE)
+      continue;
+    if (!DeletePrefetchItemByOfflineIdSync(db, existing_item.second.first))
+      return AddUniqueUrlsTask::Result::STORE_ERROR;  // Transaction rollback.
+  }
+
+  if (!transaction.Commit())
+    return AddUniqueUrlsTask::Result::STORE_ERROR;  // Transaction rollback.
+
+  return result;
 }
 }
 
 AddUniqueUrlsTask::AddUniqueUrlsTask(
+    PrefetchStore* prefetch_store,
     const std::string& name_space,
     const std::vector<PrefetchURL>& prefetch_urls)
-    : name_space_(name_space),
+    : prefetch_store_(prefetch_store),
+      name_space_(name_space),
       prefetch_urls_(prefetch_urls),
       weak_ptr_factory_(this) {}
 
 AddUniqueUrlsTask::~AddUniqueUrlsTask() {}
 
 void AddUniqueUrlsTask::Run() {
-  Execute(base::BindRepeating(&AddUrlsAndCleanupZombies, name_space_,
-                              prefetch_urls_),
-          base::BindOnce(&AddUniqueUrlsTask::OnUrlsAdded,
-                         weak_ptr_factory_.GetWeakPtr()));
+  prefetch_store_->Execute(base::BindOnce(&AddUrlsAndCleanupZombiesSync,
+                                          name_space_, prefetch_urls_),
+                           base::BindOnce(&AddUniqueUrlsTask::OnUrlsAdded,
+                                          weak_ptr_factory_.GetWeakPtr()));
 }
 
-void AddUniqueUrlsTask::OnUrlsAdded(int added_entry_count) {
+void AddUniqueUrlsTask::OnUrlsAdded(Result result) {
   // TODO(carlosk): schedule NWake here if at least one new entry was added to
   // the store.
   TaskComplete();

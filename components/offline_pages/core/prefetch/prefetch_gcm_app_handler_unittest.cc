@@ -38,21 +38,29 @@ class PrefetchGCMAppHandlerTest : public testing::Test {
  public:
   PrefetchGCMAppHandlerTest()
       : task_runner_(new base::TestSimpleTaskRunner),
-        task_runner_handle_(task_runner_) {
+        task_runner_handle_(task_runner_) {}
+
+  void SetUp() override {
     auto dispatcher = base::MakeUnique<TestPrefetchDispatcher>();
+    test_dispatcher_ = dispatcher.get();
 
     auto token_factory = base::MakeUnique<TestTokenFactory>();
     token_factory_ = token_factory.get();
 
     auto gcm_app_handler =
         base::MakeUnique<PrefetchGCMAppHandler>(std::move(token_factory));
-
-    test_dispatcher_ = dispatcher.get();
     handler_ = gcm_app_handler.get();
 
-    prefetch_service_taco_.SetPrefetchGCMHandler(std::move(gcm_app_handler));
-    prefetch_service_taco_.SetPrefetchDispatcher(std::move(dispatcher));
-    prefetch_service_taco_.CreatePrefetchService();
+    prefetch_service_taco_.reset(new PrefetchServiceTestTaco);
+    prefetch_service_taco_->SetPrefetchGCMHandler(std::move(gcm_app_handler));
+    prefetch_service_taco_->SetPrefetchDispatcher(std::move(dispatcher));
+    prefetch_service_taco_->CreatePrefetchService();
+  }
+
+  void TearDown() override {
+    // Ensures that the store is properly disposed off.
+    prefetch_service_taco_.reset();
+    task_runner_->RunUntilIdle();
   }
 
   TestPrefetchDispatcher* dispatcher() { return test_dispatcher_; }
@@ -62,7 +70,8 @@ class PrefetchGCMAppHandlerTest : public testing::Test {
  private:
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
-  PrefetchServiceTestTaco prefetch_service_taco_;
+  std::unique_ptr<PrefetchServiceTestTaco> prefetch_service_taco_;
+
   // Owned by the taco.
   TestPrefetchDispatcher* test_dispatcher_;
   // Owned by the taco.
