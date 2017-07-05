@@ -8,6 +8,7 @@
 #include "base/memory/weak_ptr.h"
 
 namespace gl {
+class ScopedJavaSurface;
 class SurfaceTexture;
 }
 
@@ -39,7 +40,8 @@ class MailboxToSurfaceBridge {
   bool CopyMailboxToSurfaceAndSwap(const gpu::MailboxHolder& mailbox);
 
  private:
-  void OnContextAvailable(scoped_refptr<cc::ContextProvider>);
+  void OnContextAvailable(std::unique_ptr<gl::ScopedJavaSurface> surface,
+                          scoped_refptr<cc::ContextProvider>);
   void InitializeRenderer();
   void DestroyContext();
   void DrawQuad(unsigned int textureHandle);
