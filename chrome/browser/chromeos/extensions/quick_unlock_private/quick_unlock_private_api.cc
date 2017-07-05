@@ -361,8 +361,9 @@ ExtensionFunction::ResponseAction QuickUnlockPrivateSetModesFunction::Run() {
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&chromeos::ExtendedAuthenticator::AuthenticateToCheck,
-                 extended_authenticator_.get(), user_context, base::Closure()));
+      base::BindOnce(&chromeos::ExtendedAuthenticator::AuthenticateToCheck,
+                     extended_authenticator_.get(), user_context,
+                     base::Closure()));
 
   return RespondLater();
 }

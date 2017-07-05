@@ -197,8 +197,8 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
   // request thumbnail in the javascript callback.
   task_runner->PostTask(
       FROM_HERE,
-      base::Bind(&WallpaperSetWallpaperFunction::GenerateThumbnail, this,
-                 thumbnail_path, base::Passed(std::move(deep_copy))));
+      base::BindOnce(&WallpaperSetWallpaperFunction::GenerateThumbnail, this,
+                     thumbnail_path, std::move(deep_copy)));
 }
 
 void WallpaperSetWallpaperFunction::GenerateThumbnail(
@@ -219,9 +219,9 @@ void WallpaperSetWallpaperFunction::GenerateThumbnail(
       &thumbnail_data, NULL);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&WallpaperSetWallpaperFunction::ThumbnailGenerated, this,
-                 base::RetainedRef(original_data),
-                 base::RetainedRef(thumbnail_data)));
+      base::BindOnce(&WallpaperSetWallpaperFunction::ThumbnailGenerated, this,
+                     base::RetainedRef(original_data),
+                     base::RetainedRef(thumbnail_data)));
 }
 
 void WallpaperSetWallpaperFunction::ThumbnailGenerated(

@@ -306,8 +306,9 @@ void ExternalCache::OnPutExtension(const std::string& id,
                                    const base::FilePath& file_path,
                                    bool file_ownership_passed) {
   if (local_cache_.is_shutdown() || file_ownership_passed) {
-    backend_task_runner_->PostTask(FROM_HERE,
-        base::Bind(base::IgnoreResult(&base::DeleteFile), file_path, true));
+    backend_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(base::IgnoreResult(&base::DeleteFile), file_path, true));
     return;
   }
 
@@ -333,7 +334,7 @@ void ExternalCache::OnPutExtension(const std::string& id,
 
   if (flush_on_put_) {
     backend_task_runner_->PostTask(FROM_HERE,
-                                   base::Bind(&FlushFile, file_path));
+                                   base::BindOnce(&FlushFile, file_path));
   }
 
   std::string update_url;

@@ -56,8 +56,8 @@ class NotificationButtonClicker : public RequestManager::Observer {
   void OnRequestTimeouted(int request_id) override {
     // Call asynchronously so the notification is setup is completed.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&NotificationButtonClicker::ClickButton,
-                              base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&NotificationButtonClicker::ClickButton,
+                                  base::Unretained(this)));
   }
 
  private:
