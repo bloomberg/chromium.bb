@@ -18,6 +18,7 @@
 #include "base/strings/string_util.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/password_manager/core/browser/password_reuse_detector.h"
 #include "components/safe_browsing/password_protection/password_protection_request.h"
 #include "components/safe_browsing_db/database_manager.h"
 #include "components/safe_browsing_db/v4_protocol_manager_util.h"
@@ -86,6 +87,8 @@ const char kPasswordOnFocusRequestOutcomeHistogramName[] =
     "PasswordProtection.RequestOutcome.PasswordFieldOnFocus";
 const char kPasswordEntryRequestOutcomeHistogramName[] =
     "PasswordProtection.RequestOutcome.ProtectedPasswordEntry";
+const char kSyncPasswordEntryRequestOutcomeHistogramName[] =
+    "PasswordProtection.RequestOutcome.SyncPasswordEntry";
 
 PasswordProtectionService::PasswordProtectionService(
     const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager,
@@ -329,7 +332,7 @@ void PasswordProtectionService::MaybeStartPasswordFieldOnFocusRequest(
     const GURL& password_form_action,
     const GURL& password_form_frame_url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (CanSendPing(kPasswordFieldOnFocusPinging, main_frame_url)) {
+  if (CanSendPing(kPasswordFieldOnFocusPinging, main_frame_url, false)) {
     StartRequest(web_contents, main_frame_url, password_form_action,
                  password_form_frame_url,
                  std::string(), /* saved_domain: not used for this type */
@@ -343,7 +346,9 @@ void PasswordProtectionService::MaybeStartProtectedPasswordEntryRequest(
     const std::string& saved_domain,
     bool password_field_exists) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (CanSendPing(kProtectedPasswordEntryPinging, main_frame_url)) {
+  if (CanSendPing(
+          kProtectedPasswordEntryPinging, main_frame_url,
+          saved_domain == std::string(password_manager::kSyncPasswordDomain))) {
     StartRequest(web_contents, main_frame_url, GURL(), GURL(), saved_domain,
                  LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
                  password_field_exists);
@@ -351,13 +356,14 @@ void PasswordProtectionService::MaybeStartProtectedPasswordEntryRequest(
 }
 
 bool PasswordProtectionService::CanSendPing(const base::Feature& feature,
-                                            const GURL& main_frame_url) {
+                                            const GURL& main_frame_url,
+                                            bool is_sync_password) {
   RequestOutcome request_outcome = URL_NOT_VALID_FOR_REPUTATION_COMPUTING;
   if (IsPingingEnabled(kPasswordFieldOnFocusPinging, &request_outcome) &&
       CanGetReputationOfURL(main_frame_url)) {
     return true;
   }
-  RecordNoPingingReason(feature, request_outcome);
+  RecordNoPingingReason(feature, request_outcome, is_sync_password);
   return false;
 }
 
@@ -717,7 +723,8 @@ PasswordProtectionService::CreateDictionaryFromVerdict(
 
 void PasswordProtectionService::RecordNoPingingReason(
     const base::Feature& feature,
-    RequestOutcome reason) {
+    RequestOutcome reason,
+    bool is_sync_password) {
   DCHECK(feature.name == kProtectedPasswordEntryPinging.name ||
          feature.name == kPasswordFieldOnFocusPinging.name);
 
@@ -725,8 +732,13 @@ void PasswordProtectionService::RecordNoPingingReason(
       feature.name == kProtectedPasswordEntryPinging.name;
 
   if (is_password_entry_ping) {
-    UMA_HISTOGRAM_ENUMERATION(kPasswordEntryRequestOutcomeHistogramName, reason,
-                              MAX_OUTCOME);
+    if (is_sync_password) {
+      UMA_HISTOGRAM_ENUMERATION(kSyncPasswordEntryRequestOutcomeHistogramName,
+                                reason, MAX_OUTCOME);
+    } else {
+      UMA_HISTOGRAM_ENUMERATION(kPasswordEntryRequestOutcomeHistogramName,
+                                reason, MAX_OUTCOME);
+    }
   } else {
     UMA_HISTOGRAM_ENUMERATION(kPasswordOnFocusRequestOutcomeHistogramName,
                               reason, MAX_OUTCOME);

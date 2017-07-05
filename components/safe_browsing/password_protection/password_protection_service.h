@@ -42,6 +42,7 @@ extern const base::Feature kProtectedPasswordEntryPinging;
 extern const base::Feature kPasswordProtectionInterstitial;
 extern const char kPasswordOnFocusRequestOutcomeHistogramName[];
 extern const char kPasswordEntryRequestOutcomeHistogramName[];
+extern const char kSyncPasswordEntryRequestOutcomeHistogramName[];
 
 // Manage password protection pings and verdicts. There is one instance of this
 // class per profile. Therefore, every PasswordProtectionService instance is
@@ -144,8 +145,10 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // Chrome can send password protection ping if it is allowed by Finch config
   // and if Safe Browsing can compute reputation of |main_frame_url| (e.g.
   // Safe Browsing is not able to compute reputation of a private IP or
-  // a local host.)
-  bool CanSendPing(const base::Feature& feature, const GURL& main_frame_url);
+  // a local host). |is_sync_password| is used for UMA metric recording.
+  bool CanSendPing(const base::Feature& feature,
+                   const GURL& main_frame_url,
+                   bool is_sync_password);
 
   // Called by a PasswordProtectionRequest instance when it finishes to remove
   // itself from |requests_|.
@@ -262,7 +265,8 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
       const base::Time& receive_time);
 
   static void RecordNoPingingReason(const base::Feature& feature,
-                                    RequestOutcome reason);
+                                    RequestOutcome reason,
+                                    bool is_sync_password);
   // Number of verdict stored for this profile for password on focus pings.
   int stored_verdict_count_password_on_focus_;
 
