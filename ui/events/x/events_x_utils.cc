@@ -474,6 +474,9 @@ int EventFlagsFromXEvent(const XEvent& xev) {
       return flags;
     }
     case EnterNotify:
+      // EnterNotify creates ET_MOUSE_MOVED. Mark as synthesized as this is not
+      // a real mouse move event.
+      return GetEventFlagsFromXState(xev.xcrossing.state) | EF_IS_SYNTHESIZED;
     case LeaveNotify:
       return GetEventFlagsFromXState(xev.xcrossing.state);
     case MotionNotify:

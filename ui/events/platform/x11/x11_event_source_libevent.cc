@@ -87,10 +87,6 @@ std::unique_ptr<ui::Event> TranslateXEventToEvent(const XEvent& xev) {
   switch (xev.type) {
     case LeaveNotify:
     case EnterNotify:
-      // EnterNotify creates ET_MOUSE_MOVED. Mark as synthesized as this is
-      // not real mouse move event.
-      if (xev.type == EnterNotify)
-        flags |= EF_IS_SYNTHESIZED;
       return base::MakeUnique<MouseEvent>(ET_MOUSE_MOVED,
                                           EventLocationFromXEvent(xev),
                                           EventSystemLocationFromXEvent(xev),

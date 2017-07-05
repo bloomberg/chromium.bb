@@ -252,9 +252,6 @@ uint32_t WindowTreeHostX11::DispatchEvent(const ui::PlatformEvent& event) {
                     root_window);
             cursor_client->SetDisplay(display);
           }
-          // EnterNotify creates ET_MOUSE_MOVE. Mark as synthesized as this is
-          // not a real mouse move event.
-          mouse_event.set_flags(mouse_event.flags() | ui::EF_IS_SYNTHESIZED);
         }
 
         TranslateAndDispatchLocatedEvent(&mouse_event);

@@ -313,9 +313,10 @@ void RenderWidgetHostViewEventHandler::OnMouseEvent(ui::MouseEvent* event) {
   // As the overscroll is handled during scroll events from the trackpad, the
   // RWHVA window is transformed by the overscroll controller. This transform
   // triggers a synthetic mouse-move event to be generated (by the aura
-  // RootWindow). But this event interferes with the overscroll gesture. So,
-  // ignore such synthetic mouse-move events if an overscroll gesture is in
-  // progress.
+  // RootWindow). Also, with a touchscreen, we may get a synthetic mouse-move
+  // caused by a pointer grab. But these events interfere with the overscroll
+  // gesture. So, ignore such synthetic mouse-move events if an overscroll
+  // gesture is in progress.
   OverscrollController* overscroll_controller =
       delegate_->overscroll_controller();
   if (overscroll_controller &&

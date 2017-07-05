@@ -189,6 +189,7 @@ TEST_F(EventsXTest, EnterLeaveEvent) {
   // the way views handle mouse enter. See comments for EnterNotify case in
   // ui::EventTypeFromNative for more details.
   EXPECT_EQ(ui::ET_MOUSE_MOVED, ui::EventTypeFromNative(&event));
+  EXPECT_TRUE(ui::EventFlagsFromNative(&event) & ui::EF_IS_SYNTHESIZED);
   EXPECT_EQ(
       "10,20",
       gfx::ToFlooredPoint(ui::EventLocationFromNative(&event)).ToString());
