@@ -29,7 +29,7 @@
 
 namespace blink {
 
-class DOMPlugin final : public GarbageCollectedFinalized<DOMPlugin>,
+class DOMPlugin final : public GarbageCollected<DOMPlugin>,
                         public ScriptWrappable,
                         public ContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(DOMPlugin);
@@ -39,7 +39,6 @@ class DOMPlugin final : public GarbageCollectedFinalized<DOMPlugin>,
   static DOMPlugin* Create(LocalFrame* frame, const PluginInfo& plugin_info) {
     return new DOMPlugin(frame, plugin_info);
   }
-  virtual ~DOMPlugin();
 
   String name() const;
   String filename() const;
