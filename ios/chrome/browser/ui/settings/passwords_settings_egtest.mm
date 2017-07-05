@@ -500,7 +500,8 @@ id<GREYMatcher> DeleteButton() {
 
 // Checks that deleting a password from password details view goes back to the
 // list-of-passwords view.
-- (void)testDeletion {
+// TODO(crbug.com/739395): Fix.
+- (void)DISABLED_testDeletion {
   [self scopedEnablePasswordManagementAndViewingUI];
 
   // Save form to be deleted later.
@@ -550,7 +551,8 @@ id<GREYMatcher> DeleteButton() {
 }
 
 // Checks that deleting a password from password details can be cancelled.
-- (void)testCancelDeletion {
+// TODO(crbug.com/739395): Fix.
+- (void)DISABLED_testCancelDeletion {
   [self scopedEnablePasswordManagementAndViewingUI];
 
   // Save form to be deleted later.
