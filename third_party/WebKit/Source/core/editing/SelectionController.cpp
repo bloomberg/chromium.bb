@@ -424,14 +424,12 @@ void SelectionController::UpdateSelectionForMouseDrag(
   // |newSelection| are valid for |m_frame->document()|.
   // |dispatchSelectStart()| can change them by "selectstart" event handler.
 
-  PositionInFlatTree base_position;
-  if (selection_state_ != SelectionState::kExtendedSelection) {
-    // Always extend selection here because it's caused by a mouse drag
-    selection_state_ = SelectionState::kExtendedSelection;
-    base_position = target_position.DeepEquivalent();
-  } else {
-    base_position = Selection().ComputeVisibleSelectionInFlatTree().Base();
-  }
+  // Always extend selection here because it's caused by a mouse drag
+  const PositionInFlatTree base_position =
+      selection_state_ == SelectionState::kExtendedSelection
+          ? Selection().ComputeVisibleSelectionInFlatTree().Base()
+          : target_position.DeepEquivalent();
+  selection_state_ = SelectionState::kExtendedSelection;
   if (base_position.IsNull())
     return;
 
