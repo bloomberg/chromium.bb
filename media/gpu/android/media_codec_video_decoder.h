@@ -56,6 +56,7 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder {
   MediaCodecVideoDecoder(
       scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
       base::Callback<gpu::GpuCommandBufferStub*()> get_stub_cb,
+      VideoFrameFactory::OutputWithReleaseMailboxCB output_cb,
       DeviceInfo* device_info,
       AVDACodecAllocator* codec_allocator,
       std::unique_ptr<AndroidVideoSurfaceChooser> surface_chooser,
@@ -138,7 +139,7 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder {
   State state_;
   bool lazy_init_pending_;
   std::deque<PendingDecode> pending_decodes_;
-  OutputCB output_cb_;
+  VideoFrameFactory::OutputWithReleaseMailboxCB output_cb_;
 
   // The ongoing drain operation, if any.
   base::Optional<DrainType> drain_type_;

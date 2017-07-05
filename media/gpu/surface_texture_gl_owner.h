@@ -35,6 +35,10 @@ class MEDIA_GPU_EXPORT SurfaceTextureGLOwner
  public:
   SurfaceTextureGLOwner();
 
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner() {
+    return task_runner_;
+  }
+
   // Returns the GL texture id that the SurfaceTexture is attached to.
   virtual GLuint GetTextureId() const = 0;
   virtual gl::GLContext* GetContext() const = 0;
@@ -71,9 +75,11 @@ class MEDIA_GPU_EXPORT SurfaceTextureGLOwner
  protected:
   friend class base::RefCountedDeleteOnSequence<SurfaceTextureGLOwner>;
   friend class base::DeleteHelper<SurfaceTextureGLOwner>;
-  virtual ~SurfaceTextureGLOwner() = default;
+  virtual ~SurfaceTextureGLOwner();
 
  private:
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
   DISALLOW_COPY_AND_ASSIGN(SurfaceTextureGLOwner);
 };
 

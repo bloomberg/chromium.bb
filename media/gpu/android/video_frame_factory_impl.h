@@ -37,7 +37,7 @@ class MEDIA_GPU_EXPORT VideoFrameFactoryImpl : public VideoFrameFactory {
                         scoped_refptr<SurfaceTextureGLOwner> surface_texture,
                         base::TimeDelta timestamp,
                         gfx::Size natural_size,
-                        FrameCreatedCb frame_created_cb) override;
+                        OutputWithReleaseMailboxCB output_cb) override;
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner_;
@@ -48,29 +48,57 @@ class MEDIA_GPU_EXPORT VideoFrameFactoryImpl : public VideoFrameFactory {
 
 // GpuVideoFrameFactory is an implementation detail of VideoFrameFactoryImpl. It
 // may be created on any thread but only accessed on the gpu thread thereafter.
-class GpuVideoFrameFactory {
+class GpuVideoFrameFactory
+    : public gpu::GpuCommandBufferStub::DestructionObserver {
  public:
   GpuVideoFrameFactory();
-  ~GpuVideoFrameFactory();
+  ~GpuVideoFrameFactory() override;
 
   scoped_refptr<SurfaceTextureGLOwner> Initialize(
       VideoFrameFactory::GetStubCb get_stub_cb);
-  scoped_refptr<VideoFrame> CreateVideoFrame(
+
+  // Creates a VideoFrame and returns it via posting |output_cb| to
+  // |task_runner|.
+  void CreateVideoFrame(
       std::unique_ptr<CodecOutputBuffer> output_buffer,
       scoped_refptr<SurfaceTextureGLOwner> surface_texture,
       base::TimeDelta timestamp,
-      gfx::Size natural_size);
+      gfx::Size natural_size,
+      VideoFrameFactory::OutputWithReleaseMailboxCB output_cb,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
  private:
+  // Creates a TextureRef and VideoFrame.
+  void CreateVideoFrameInternal(
+      std::unique_ptr<CodecOutputBuffer> output_buffer,
+      scoped_refptr<SurfaceTextureGLOwner> surface_texture,
+      base::TimeDelta timestamp,
+      gfx::Size natural_size,
+      scoped_refptr<VideoFrame>* video_frame_out,
+      scoped_refptr<gpu::gles2::TextureRef>* texture_ref_out);
+
   // Removes |image| from |images_|.
   void OnImageDestructed(CodecImage* image);
 
-  // Tries to render the first renderable image from |images_|.
-  void MaybeRenderEarly();
+  void OnWillDestroyStub() override;
+
+  // Clears |texture_refs_|. Makes the gl context current.
+  void ClearTextureRefs();
+
+  // Removes |ref| from texture_refs_. Makes the gl context current.
+  // |token| is ignored because MojoVideoDecoderService guarantees that it has
+  // already passed by the time we get the callback.
+  void DropTextureRef(gpu::gles2::TextureRef* ref, const gpu::SyncToken& token);
 
   // Outstanding images that should be considered for early rendering.
   std::vector<CodecImage*> images_;
-  base::WeakPtr<gpu::GpuCommandBufferStub> stub_;
+
+  // Outstanding TextureRefs that are still referenced by a mailbox VideoFrame.
+  // They're kept alive until their mailboxes are released (or |this| is
+  // destructed).
+  std::map<gpu::gles2::TextureRef*, scoped_refptr<gpu::gles2::TextureRef>>
+      texture_refs_;
+  gpu::GpuCommandBufferStub* stub_;
   base::WeakPtrFactory<GpuVideoFrameFactory> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuVideoFrameFactory);
