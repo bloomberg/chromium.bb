@@ -47,7 +47,8 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
                             PaymentAppFactory.PaymentAppCreatedCallback callback) {
                         String[] supportedMethodNames = {"https://bobpay.com", "basic-card"};
                         callback.onPaymentAppCreated(new ServiceWorkerPaymentApp(webContents,
-                                0 /* registrationId */, "BobPay" /* label */, null /* icon */,
+                                0 /* registrationId */, "BobPay" /* label */,
+                                "https://bobpay.com" /* sublabel */, null /* icon */,
                                 hasSupportedMethods ? supportedMethodNames
                                                     : new String[0] /* methodNames */));
                         callback.onAllPaymentAppsCreated();
