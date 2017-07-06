@@ -1081,6 +1081,10 @@ void WebContentsViewAura::OnOverscrollModeChange(OverscrollMode old_mode,
   completed_overscroll_gesture_ = OVERSCROLL_NONE;
 }
 
+base::Optional<float> WebContentsViewAura::GetMaxOverscrollDelta() const {
+  return navigation_overlay_->relay_delegate()->GetMaxOverscrollDelta();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WebContentsViewAura, aura::WindowDelegate implementation:
 

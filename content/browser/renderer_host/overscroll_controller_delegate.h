@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/common/content_export.h"
 #include "ui/gfx/geometry/size.h"
@@ -14,7 +15,8 @@
 namespace content {
 
 // The delegate receives overscroll gesture updates from the controller and
-// should perform appropriate actions.
+// should perform appropriate actions. The delegate can optionally cap the
+// overscroll deltas maintained and reported by the controller.
 class CONTENT_EXPORT OverscrollControllerDelegate {
  public:
   OverscrollControllerDelegate() {}
@@ -34,13 +36,17 @@ class CONTENT_EXPORT OverscrollControllerDelegate {
   // This is called when the overscroll completes.
   virtual void OnOverscrollComplete(OverscrollMode overscroll_mode) = 0;
 
-  // This is called when the direction of the overscroll changes.
-  // When a new overscroll is started (i.e. when |new_mode| is not
-  // equal to OVERSCROLL_NONE), |source| will be set to the device that
-  // triggered the overscroll gesture.
+  // This is called when the direction of the overscroll changes. When a new
+  // overscroll is started (i.e. when |new_mode| is not equal to
+  // OVERSCROLL_NONE), |source| will be set to the device that triggered the
+  // overscroll gesture.
   virtual void OnOverscrollModeChange(OverscrollMode old_mode,
                                       OverscrollMode new_mode,
                                       OverscrollSource source) = 0;
+
+  // Returns the optional maximum amount allowed for the absolute value of
+  // overscroll delta corresponding to the current overscroll mode.
+  virtual base::Optional<float> GetMaxOverscrollDelta() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(OverscrollControllerDelegate);
