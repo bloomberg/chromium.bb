@@ -28,6 +28,8 @@
 #include "base/strings/string_split.h"
 #include "base/sys_info.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_scheduler.h"
+#include "base/task_scheduler/task_traits.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -137,6 +139,7 @@
 #include "components/metrics/metrics_service.h"
 #include "components/ownership/owner_key_util.h"
 #include "components/prefs/pref_service.h"
+#include "components/quirks/quirks_manager.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user.h"
@@ -612,7 +615,7 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
   quirks::QuirksManager::Initialize(
       std::unique_ptr<quirks::QuirksManager::Delegate>(
           new quirks::QuirksManagerDelegateImpl()),
-      content::BrowserThread::GetBlockingPool(),
+      base::CreateTaskRunnerWithTraits({base::MayBlock()}),
       g_browser_process->local_state(),
       g_browser_process->system_request_context());
 
