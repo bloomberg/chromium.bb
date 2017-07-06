@@ -13,6 +13,7 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/task_runner_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
@@ -118,11 +119,8 @@ bool SessionCrashedBubble::Show(Browser* browser) {
           new SessionCrashedBubbleView::BrowserRemovalObserver(browser));
 
   if (DoesSupportConsentCheck()) {
-    // Schedule a task to run GoogleUpdateSettings::GetCollectStatsConsent() on
-    // FILE thread, since it does IO. Then, call
-    // SessionCrashedBubbleView::ShowForReal with the result.
-    content::BrowserThread::PostTaskAndReplyWithResult(
-        content::BrowserThread::FILE, FROM_HERE,
+    base::PostTaskAndReplyWithResult(
+        GoogleUpdateSettings::CollectStatsConsentTaskRunner(), FROM_HERE,
         base::Bind(&GoogleUpdateSettings::GetCollectStatsConsent),
         base::Bind(&SessionCrashedBubbleView::ShowForReal,
                    base::Passed(&browser_observer)));
