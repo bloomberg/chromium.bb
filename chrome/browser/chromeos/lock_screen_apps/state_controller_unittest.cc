@@ -36,6 +36,9 @@
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/devices/input_device_manager.h"
+#include "ui/events/devices/stylus_state.h"
+#include "ui/events/test/device_data_manager_test_api.h"
 
 using ash::mojom::TrayActionState;
 using extensions::DictionaryBuilder;
@@ -143,6 +146,7 @@ class TestAppManager : public lock_screen_apps::AppManager {
   State state() const { return state_; }
 
   int launch_count() const { return launch_count_; }
+  void ResetLaunchCount() { launch_count_ = 0; }
 
  private:
   const Profile* const expected_primary_profile_;
@@ -338,7 +342,7 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
 
     std::unique_ptr<TestAppManager> app_manager =
         base::MakeUnique<TestAppManager>(
-            &profile_, lock_screen_profile_->GetOriginalProfile());
+            profile(), lock_screen_profile()->GetOriginalProfile());
     app_manager_ = app_manager.get();
 
     state_controller_ = base::MakeUnique<lock_screen_apps::StateController>();
@@ -402,7 +406,7 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
   }
 
   void SetPrimaryProfileAndWaitUntilReady() {
-    state_controller_->SetPrimaryProfile(&profile_);
+    state_controller_->SetPrimaryProfile(profile());
     ready_waiter_.Run();
   }
 
@@ -447,6 +451,8 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
       ADD_FAILURE() << "Unable to move to launching state.";
       return false;
     }
+    app_manager_->ResetLaunchCount();
+
     if (target_state == TrayActionState::kLaunching)
       return true;
 
@@ -790,6 +796,72 @@ TEST_F(LockScreenAppStateTest, HandleActionWithLaunchFailure) {
       {TrayActionState::kLaunching, TrayActionState::kAvailable},
       "Second failed launch on new note request");
   EXPECT_EQ(2, app_manager()->launch_count());
+}
+
+TEST_F(LockScreenAppStateTest, LaunchActionWhenStylusGetsRemoved) {
+  ui::test::DeviceDataManagerTestAPI devices_test_api;
+  ASSERT_TRUE(InitializeNoteTakingApp(TrayActionState::kAvailable,
+                                      true /* enable_app_launch */));
+  devices_test_api.NotifyObserversStylusStateChanged(ui::StylusState::REMOVED);
+
+  ExpectObservedStatesMatch({TrayActionState::kLaunching},
+                            "Launch on new note request");
+  ClearObservedStates();
+  EXPECT_EQ(1, app_manager()->launch_count());
+
+  // If the stylus is inserted and removed while launching the app, there should
+  // be no new launch event.
+  devices_test_api.NotifyObserversStylusStateChanged(ui::StylusState::INSERTED);
+  devices_test_api.NotifyObserversStylusStateChanged(ui::StylusState::REMOVED);
+  EXPECT_EQ(0u, observer()->observed_states().size());
+  EXPECT_EQ(0u, tray_action()->observed_states().size());
+  EXPECT_EQ(1, app_manager()->launch_count());
+}
+
+TEST_F(LockScreenAppStateTest, StylusRemovedBeforeScreenLock) {
+  ui::test::DeviceDataManagerTestAPI devices_test_api;
+  ASSERT_TRUE(InitializeNoteTakingApp(TrayActionState::kNotAvailable,
+                                      true /* enable_app_launch */));
+
+  devices_test_api.NotifyObserversStylusStateChanged(ui::StylusState::REMOVED);
+  session_manager()->SetSessionState(session_manager::SessionState::LOCKED);
+
+  // Stylus removed event should be ignored if it came before note taking on
+  // lock screen was available (in this case due to session being active).
+  // Screen unlock should still make lock screen note taking available.
+  ExpectObservedStatesMatch({TrayActionState::kAvailable},
+                            "Remove stylus, then unlock.");
+
+  ClearObservedStates();
+  EXPECT_EQ(0, app_manager()->launch_count());
+}
+
+TEST_F(LockScreenAppStateTest, StylusRemovedWhileActive) {
+  ui::test::DeviceDataManagerTestAPI devices_test_api;
+  ASSERT_TRUE(InitializeNoteTakingApp(TrayActionState::kActive,
+                                      true /* enable_app_launch */));
+
+  devices_test_api.NotifyObserversStylusStateChanged(ui::StylusState::REMOVED);
+
+  EXPECT_EQ(0u, observer()->observed_states().size());
+  EXPECT_EQ(0u, tray_action()->observed_states().size());
+
+  ClearObservedStates();
+  EXPECT_EQ(0, app_manager()->launch_count());
+}
+
+TEST_F(LockScreenAppStateTest, StylusRemovedWhileInBackground) {
+  ui::test::DeviceDataManagerTestAPI devices_test_api;
+  ASSERT_TRUE(InitializeNoteTakingApp(TrayActionState::kBackground,
+                                      true /* enable_app_launch */));
+
+  devices_test_api.NotifyObserversStylusStateChanged(ui::StylusState::REMOVED);
+
+  EXPECT_EQ(0u, observer()->observed_states().size());
+  EXPECT_EQ(0u, tray_action()->observed_states().size());
+
+  ClearObservedStates();
+  EXPECT_EQ(0, app_manager()->launch_count());
 }
 
 TEST_F(LockScreenAppStateTest, AppWindowRegistration) {

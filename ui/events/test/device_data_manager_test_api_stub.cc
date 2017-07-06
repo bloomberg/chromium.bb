@@ -39,6 +39,11 @@ void DeviceDataManagerTestAPI::NotifyObserversDeviceListsComplete() {
   NOTREACHED();
 }
 
+void DeviceDataManagerTestAPI::NotifyObserversStylusStateChanged(
+    StylusState stylus_state) {
+  NOTREACHED();
+}
+
 void DeviceDataManagerTestAPI::OnDeviceListsComplete() {
   NOTREACHED();
 }
