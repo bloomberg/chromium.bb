@@ -15,6 +15,7 @@
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/frame_sink_manager_client.h"
 #include "cc/surfaces/referenced_surface_tracker.h"
+#include "cc/surfaces/surface_client.h"
 #include "cc/surfaces/surface_info.h"
 #include "cc/surfaces/surface_resource_holder.h"
 #include "cc/surfaces/surface_resource_holder_client.h"
@@ -29,7 +30,8 @@ class SurfaceManager;
 class CC_SURFACES_EXPORT CompositorFrameSinkSupport
     : public BeginFrameObserver,
       public SurfaceResourceHolderClient,
-      public FrameSinkManagerClient {
+      public FrameSinkManagerClient,
+      public SurfaceClient {
  public:
   static std::unique_ptr<CompositorFrameSinkSupport> Create(
       CompositorFrameSinkSupportClient* client,
@@ -37,17 +39,22 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
       const FrameSinkId& frame_sink_id,
       bool is_root,
       bool handles_frame_sink_id_invalidation,
-      bool needs_sync_points);
+      bool needs_sync_tokens);
 
   ~CompositorFrameSinkSupport() override;
 
   const FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
 
   SurfaceManager* surface_manager() { return surface_manager_; }
-  bool needs_sync_points() { return needs_sync_points_; }
 
-  // SurfaceResourceHolderClient implementation.
+  // SurfaceClient implementation.
+  void OnSurfaceActivated(Surface* surface) override;
+  void RefResources(
+      const std::vector<TransferableResource>& resources) override;
+  void UnrefResources(const std::vector<ReturnedResource>& resources) override;
   void ReturnResources(const std::vector<ReturnedResource>& resources) override;
+  void ReceiveFromChild(
+      const std::vector<TransferableResource>& resources) override;
 
   // FrameSinkManagerClient implementation.
   void SetBeginFrameSource(BeginFrameSource* begin_frame_source) override;
@@ -60,12 +67,6 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
   void RequestCopyOfSurface(std::unique_ptr<CopyOutputRequest> request);
   void ClaimTemporaryReference(const SurfaceId& surface_id);
 
-  // TODO(staraz): Move the following 3 methods to private.
-  void ReceiveFromChild(const std::vector<TransferableResource>& resources);
-  void RefResources(const std::vector<TransferableResource>& resources);
-  void UnrefResources(const std::vector<ReturnedResource>& resources);
-
-  void OnSurfaceActivated(Surface* surface);
 
   Surface* GetCurrentSurfaceForTesting();
 
@@ -74,7 +75,7 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
                              const FrameSinkId& frame_sink_id,
                              bool is_root,
                              bool handles_frame_sink_id_invalidation,
-                             bool needs_sync_points);
+                             bool needs_sync_tokens);
 
   void Init(SurfaceManager* surface_manager);
 
@@ -134,7 +135,7 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
   bool added_frame_observer_ = false;
 
   const bool is_root_;
-  const bool needs_sync_points_;
+  const bool needs_sync_tokens_;
   bool seen_first_frame_activation_ = false;
 
   // TODO(staraz): Remove this flag once ui::Compositor no longer needs to call
