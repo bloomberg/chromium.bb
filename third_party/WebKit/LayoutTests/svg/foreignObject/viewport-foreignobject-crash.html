@@ -1,6 +1,9 @@
 <html>
 <body>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <script>
+var t = async_test();
 var script = document.getElementsByTagName("script")[0];
 script.parentNode.removeChild(script);
 
@@ -13,7 +16,7 @@ function crash() {
     document.execCommand('InsertHTML', false, document.body.innerHTML);
     if (count == 1) {
         document.removeEventListener("DOMNodeInserted", crash, false);
-        document.body.innerHTML = "PASS";
+        t.done();
         return;
     }
     count += 1;
