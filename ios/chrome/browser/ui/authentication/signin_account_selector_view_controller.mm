@@ -252,7 +252,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 #pragma mark - ChromeIdentityServiceObserver
 
-- (void)onIdentityListChanged {
+- (void)identityListChanged {
   ChromeIdentity* selectedIdentity = [self selectedIdentity];
   [self loadModel];
   [self.collectionView reloadData];
@@ -273,7 +273,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   }
 }
 
-- (void)onChromeIdentityServiceWillBeDestroyed {
+- (void)chromeIdentityServiceWillBeDestroyed {
   _identityServiceObserver.reset();
 }
 
