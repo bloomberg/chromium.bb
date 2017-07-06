@@ -169,6 +169,8 @@ class ASH_EXPORT ShelfView : public views::View,
   // the overflow shelf.
   ShelfView* main_shelf() { return main_shelf_; }
 
+  const ShelfButton* drag_view() const { return drag_view_; }
+
  private:
   friend class ash::test::ShelfViewTestAPI;
 
