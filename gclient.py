@@ -1736,6 +1736,7 @@ class Flattener(object):
     self._hooks = []
     self._hooks_os = {}
     self._pre_deps_hooks = []
+    self._vars = {}
 
     self._flatten()
 
@@ -1759,6 +1760,7 @@ class Flattener(object):
         _HooksToLines('hooks', self._hooks) +
         _HooksToLines('pre_deps_hooks', self._pre_deps_hooks) +
         _HooksOsToLines(self._hooks_os) +
+        _VarsToLines(self._vars) +
         [''])  # Ensure newline at end of file.
 
   def _flatten_solution(self, solution):
@@ -1780,6 +1782,10 @@ class Flattener(object):
 
     assert dep.name not in self._deps
     self._deps[dep.name] = dep
+
+    for key, value in dep.get_vars().iteritems():
+      assert key not in self._vars
+      self._vars[key] = (dep, value)
 
     self._hooks.extend([(dep, hook) for hook in dep.orig_deps_hooks])
     self._pre_deps_hooks.extend([(dep, hook) for hook in dep.pre_deps_hooks])
@@ -1954,6 +1960,22 @@ def _HooksOsToLines(hooks_os):
           ['      ]', '    },', '']
       )
     s.extend(['  ],', ''])
+  s.extend(['}', ''])
+  return s
+
+
+def _VarsToLines(variables):
+  """Converts |variables| dict to list of lines for output."""
+  if not variables:
+    return []
+  s = ['vars = {']
+  for key, tup in sorted(variables.iteritems()):
+    dep, value = tup
+    s.extend([
+        '  # %s' % dep.hierarchy(include_url=False),
+        '  "%s": %r,' % (key, value),
+        '',
+    ])
   s.extend(['}', ''])
   return s
 
