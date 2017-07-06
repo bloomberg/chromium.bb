@@ -397,6 +397,27 @@ TEST(LinkLoaderTest, Preconnect) {
   }
 }
 
+TEST(LinkLoaderTest, PreloadAndPrefetch) {
+  std::unique_ptr<DummyPageHolder> dummy_page_holder =
+      DummyPageHolder::Create(IntSize(500, 500));
+  ResourceFetcher* fetcher = dummy_page_holder->GetDocument().Fetcher();
+  ASSERT_TRUE(fetcher);
+  dummy_page_holder->GetFrame().GetSettings()->SetScriptEnabled(true);
+  Persistent<MockLinkLoaderClient> loader_client =
+      MockLinkLoaderClient::Create(true);
+  LinkLoader* loader = LinkLoader::Create(loader_client.Get());
+  KURL href_url = KURL(KURL(), "https://www.example.com/");
+  URLTestHelpers::RegisterMockedErrorURLLoad(href_url);
+  loader->LoadLink(LinkRelAttribute("preload prefetch"),
+                   kCrossOriginAttributeNotSet, "application/javascript",
+                   "script", "", kReferrerPolicyDefault, href_url,
+                   dummy_page_holder->GetDocument(), NetworkHintsMock());
+  ASSERT_EQ(1, fetcher->CountPreloads());
+  Resource* resource = loader->GetResourceForTesting();
+  ASSERT_NE(resource, nullptr);
+  EXPECT_TRUE(resource->IsLinkPreload());
+}
+
 }  // namespace
 
 }  // namespace blink
