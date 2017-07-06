@@ -106,7 +106,7 @@ class PLATFORM_EXPORT RawResource final : public Resource {
   void ReportResourceTimingToClients(const ResourceTimingInfo&) override;
 };
 
-// TODO(yhirano): Recover #if ENABLE(SECURITY_ASSERT) when we stop adding
+// TODO(yhirano): Recover #if ENABLE_SECURITY_ASSERT when we stop adding
 // RawResources to MemoryCache.
 inline bool IsRawResource(const Resource& resource) {
   Resource::Type type = resource.GetType();

@@ -45,9 +45,6 @@
 /* USE() - use a particular third-party library or optional OS service */
 #define USE(WTF_FEATURE) \
   (defined WTF_USE_##WTF_FEATURE && WTF_USE_##WTF_FEATURE)
-/* ENABLE() - turn on a specific feature of WebKit */
-#define ENABLE(WTF_FEATURE) \
-  (defined ENABLE_##WTF_FEATURE && ENABLE_##WTF_FEATURE)
 
 // There is an assumption in the project that either OS_WIN or OS_POSIX is set.
 #if !defined(OS_WIN) && !defined(OS_POSIX)

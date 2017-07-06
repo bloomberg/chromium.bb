@@ -109,8 +109,8 @@ class WTF_EXPORT ScopedLogger {
   LAZY_STREAM(logging::LogMessage(file, line, #assertion).stream(), \
               DCHECK_IS_ON() ? !(assertion) : false)
 
-// Users must test "#if ENABLE(SECURITY_ASSERT)", which helps ensure
-// that code testing this macro has included this header.
+// Users must test "#if ENABLE_SECURITY_ASSERT", which helps ensure that code
+// testing this macro has included this header.
 #if defined(ADDRESS_SANITIZER) || DCHECK_IS_ON()
 #define ENABLE_SECURITY_ASSERT 1
 #else

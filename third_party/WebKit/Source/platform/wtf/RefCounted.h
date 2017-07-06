@@ -67,7 +67,7 @@ class WTF_EXPORT RefCountedBase {
  protected:
   RefCountedBase()
       : ref_count_(1)
-#if ENABLE(SECURITY_ASSERT)
+#if ENABLE_SECURITY_ASSERT
         ,
         deletion_has_begun_(false)
 #endif
@@ -96,7 +96,7 @@ class WTF_EXPORT RefCountedBase {
     DCHECK_GT(ref_count_, 0);
     --ref_count_;
     if (!ref_count_) {
-#if ENABLE(SECURITY_ASSERT)
+#if ENABLE_SECURITY_ASSERT
       deletion_has_begun_ = true;
 #endif
       return true;
@@ -110,12 +110,12 @@ class WTF_EXPORT RefCountedBase {
 #endif
 
  private:
-#if CHECK_REF_COUNTED_LIFECYCLE || ENABLE(SECURITY_ASSERT)
+#if CHECK_REF_COUNTED_LIFECYCLE || ENABLE_SECURITY_ASSERT
   friend void Adopted(RefCountedBase*);
 #endif
 
   mutable int ref_count_;
-#if ENABLE(SECURITY_ASSERT)
+#if ENABLE_SECURITY_ASSERT
   mutable bool deletion_has_begun_;
 #endif
 #if CHECK_REF_COUNTED_LIFECYCLE
@@ -124,7 +124,7 @@ class WTF_EXPORT RefCountedBase {
 #endif
 };
 
-#if CHECK_REF_COUNTED_LIFECYCLE || ENABLE(SECURITY_ASSERT)
+#if CHECK_REF_COUNTED_LIFECYCLE || ENABLE_SECURITY_ASSERT
 inline void Adopted(RefCountedBase* object) {
   if (!object)
     return;

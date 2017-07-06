@@ -568,7 +568,7 @@ struct HashTableAddResult final {
                      bool is_new_entry)
       : stored_value(stored_value),
         is_new_entry(is_new_entry)
-#if ENABLE(SECURITY_ASSERT)
+#if ENABLE_SECURITY_ASSERT
         ,
         container_(container),
         container_modifications_(container->Modifications())
@@ -581,7 +581,7 @@ struct HashTableAddResult final {
   ValueType* stored_value;
   bool is_new_entry;
 
-#if ENABLE(SECURITY_ASSERT)
+#if ENABLE_SECURITY_ASSERT
   ~HashTableAddResult() {
     // If rehash happened before accessing storedValue, it's
     // use-after-free. Any modification may cause a rehash, so we check for

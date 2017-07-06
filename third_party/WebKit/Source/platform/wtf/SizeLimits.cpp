@@ -41,11 +41,11 @@
 
 namespace WTF {
 
-#if DCHECK_IS_ON() || ENABLE(SECURITY_ASSERT)
+#if DCHECK_IS_ON() || ENABLE_SECURITY_ASSERT
 // The debug/assertion version may get bigger.
 struct SameSizeAsRefCounted {
   int a;
-#if ENABLE(SECURITY_ASSERT)
+#if ENABLE_SECURITY_ASSERT
   bool b;
 #endif
 #if DCHECK_IS_ON()
