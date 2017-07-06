@@ -10,6 +10,10 @@ import android.graphics.Canvas;
 import android.support.test.filters.SmallTest;
 import android.test.InstrumentationTestCase;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
+
+import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.shape_detection.mojom.FaceDetection;
@@ -31,8 +35,16 @@ public class FaceDetectionImplTest extends InstrumentationTestCase {
     // we have to use a large error threshold.
     public static final double BOUNDING_BOX_POSITION_ERROR = 10.0;
     public static final double BOUNDING_BOX_SIZE_ERROR = 5.0;
+    public static enum DetectionProviderType { ANDROID, GMS_CORE }
+    public static final boolean IS_GMS_CORE_SUPPORTED = isGmsCoreSupported();
 
     public FaceDetectionImplTest() {}
+
+    private static boolean isGmsCoreSupported() {
+        return GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(
+                       ContextUtils.getApplicationContext())
+                == ConnectionResult.SUCCESS;
+    }
 
     private static org.chromium.skia.mojom.Bitmap mojoBitmapFromBitmap(Bitmap bitmap) {
         ByteBuffer buffer = ByteBuffer.allocate(bitmap.getByteCount());
@@ -52,11 +64,20 @@ public class FaceDetectionImplTest extends InstrumentationTestCase {
         return mojoBitmapFromBitmap(bitmap);
     }
 
-    private static FaceDetectionResult[] detect(org.chromium.skia.mojom.Bitmap mojoBitmap) {
+    private static FaceDetectionResult[] detect(
+            org.chromium.skia.mojom.Bitmap mojoBitmap, DetectionProviderType api) {
         FaceDetectorOptions options = new FaceDetectorOptions();
-        options.fastMode = false;
+        options.fastMode = true;
         options.maxDetectedFaces = 32;
-        FaceDetection detector = new FaceDetectionImpl(options);
+        FaceDetection detector = null;
+        if (api == DetectionProviderType.ANDROID) {
+            detector = new FaceDetectionImpl(options);
+        } else if (api == DetectionProviderType.GMS_CORE) {
+            detector = new FaceDetectionImplGmsCore(options);
+        } else {
+            assert false;
+            return null;
+        }
 
         final ArrayBlockingQueue<FaceDetectionResult[]> queue = new ArrayBlockingQueue<>(1);
         detector.detect(mojoBitmap, new FaceDetection.DetectResponse() {
@@ -74,10 +95,8 @@ public class FaceDetectionImplTest extends InstrumentationTestCase {
         return toReturn;
     }
 
-    @SmallTest
-    @Feature({"ShapeDetection"})
-    public void testDetectSucceedsOnValidImage() {
-        FaceDetectionResult[] results = detect(MONA_LISA_BITMAP);
+    private void detectSucceedsOnValidImage(DetectionProviderType api) {
+        FaceDetectionResult[] results = detect(MONA_LISA_BITMAP, api);
         assertEquals(1, results.length);
         assertEquals(40.0, results[0].boundingBox.width, BOUNDING_BOX_SIZE_ERROR);
         assertEquals(40.0, results[0].boundingBox.height, BOUNDING_BOX_SIZE_ERROR);
@@ -87,7 +106,21 @@ public class FaceDetectionImplTest extends InstrumentationTestCase {
 
     @SmallTest
     @Feature({"ShapeDetection"})
-    public void testDetectHandlesOddWidths() throws Exception {
+    public void testDetectValidImageWithAndroidAPI() {
+        detectSucceedsOnValidImage(DetectionProviderType.ANDROID);
+    }
+
+    @SmallTest
+    @Feature({"ShapeDetection"})
+    public void testDetectValidImageWithGmsCore() {
+        if (IS_GMS_CORE_SUPPORTED) {
+            detectSucceedsOnValidImage(DetectionProviderType.GMS_CORE);
+        }
+    }
+
+    @SmallTest
+    @Feature({"ShapeDetection"})
+    public void testDetectHandlesOddWidthWithAndroidAPI() throws Exception {
         // Pad the image so that the width is odd.
         Bitmap paddedBitmap = Bitmap.createBitmap(MONA_LISA_BITMAP.width + 1,
                 MONA_LISA_BITMAP.height, Bitmap.Config.ARGB_8888);
@@ -96,7 +129,7 @@ public class FaceDetectionImplTest extends InstrumentationTestCase {
         org.chromium.skia.mojom.Bitmap mojoBitmap = mojoBitmapFromBitmap(paddedBitmap);
         assertEquals(1, mojoBitmap.width % 2);
 
-        FaceDetectionResult[] results = detect(mojoBitmap);
+        FaceDetectionResult[] results = detect(mojoBitmap, DetectionProviderType.ANDROID);
         assertEquals(1, results.length);
         assertEquals(40.0, results[0].boundingBox.width, BOUNDING_BOX_SIZE_ERROR);
         assertEquals(40.0, results[0].boundingBox.height, BOUNDING_BOX_SIZE_ERROR);
