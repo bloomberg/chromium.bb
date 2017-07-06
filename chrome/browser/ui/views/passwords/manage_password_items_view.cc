@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/password_manager/core/common/password_manager_ui.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/resources/grit/ui_resources.h"
@@ -22,6 +23,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/link_listener.h"
+#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 
@@ -70,29 +72,6 @@ void BuildColumnSetIfNeeded(views::GridLayout* layout, int column_set_id) {
   }
 }
 
-std::unique_ptr<views::Label> GenerateUsernameLabel(
-    const autofill::PasswordForm& form) {
-  auto label = base::MakeUnique<views::Label>(GetDisplayUsername(form),
-                                              CONTEXT_DEPRECATED_SMALL);
-  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  return label;
-}
-
-std::unique_ptr<views::Label> GeneratePasswordLabel(
-    const autofill::PasswordForm& form) {
-  base::string16 text =
-      form.federation_origin.unique()
-          ? form.password_value
-          : l10n_util::GetStringFUTF16(
-                IDS_PASSWORDS_VIA_FEDERATION,
-                base::UTF8ToUTF16(form.federation_origin.host()));
-  auto label = base::MakeUnique<views::Label>(text, CONTEXT_DEPRECATED_SMALL);
-  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  if (form.federation_origin.unique())
-    label->SetObscured(true);
-  return label;
-}
-
 std::unique_ptr<views::ImageButton> GenerateDeleteButton(
     views::ButtonListener* listener) {
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
@@ -129,6 +108,36 @@ std::unique_ptr<views::Link> GenerateUndoLink(views::LinkListener* listener) {
 }
 
 }  // namespace
+
+std::unique_ptr<views::Label> GenerateUsernameLabel(
+    const autofill::PasswordForm& form) {
+  auto label = base::MakeUnique<views::Label>(GetDisplayUsername(form),
+                                              CONTEXT_DEPRECATED_SMALL);
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  return label;
+}
+
+std::unique_ptr<views::Textfield> GenerateUsernameEditable(
+    const autofill::PasswordForm& form) {
+  auto editable = base::MakeUnique<views::Textfield>();
+  editable->SetText(form.username_value);
+  return editable;
+}
+
+std::unique_ptr<views::Label> GeneratePasswordLabel(
+    const autofill::PasswordForm& form) {
+  base::string16 text =
+      form.federation_origin.unique()
+          ? form.password_value
+          : l10n_util::GetStringFUTF16(
+                IDS_PASSWORDS_VIA_FEDERATION,
+                base::UTF8ToUTF16(form.federation_origin.host()));
+  auto label = base::MakeUnique<views::Label>(text, CONTEXT_DEPRECATED_SMALL);
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  if (form.federation_origin.unique())
+    label->SetObscured(true);
+  return label;
+}
 
 // Manage credentials: stores credentials state and adds proper row to layout
 // based on credential state.
