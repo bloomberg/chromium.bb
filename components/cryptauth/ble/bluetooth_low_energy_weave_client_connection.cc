@@ -359,7 +359,7 @@ void BluetoothLowEnergyWeaveClientConnection::OnCreateGattConnectionError(
     device::BluetoothDevice::ConnectErrorCode error_code) {
   DCHECK(sub_status_ == SubStatus::WAITING_GATT_CONNECTION);
   PA_LOG(WARNING) << "Error creating GATT connection to "
-                  << remote_device().bluetooth_address
+                  << remote_device().GetTruncatedDeviceIdForLogs()
                   << ". Error code: " << error_code;
   DestroyConnection();
 }
