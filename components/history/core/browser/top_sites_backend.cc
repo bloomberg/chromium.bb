@@ -86,7 +86,7 @@ TopSitesBackend::~TopSitesBackend() {
 }
 
 void TopSitesBackend::InitDBOnDBThread(const base::FilePath& path) {
-  DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
   if (!db_->Init(path)) {
     LOG(ERROR) << "Failed to initialize database.";
     db_.reset();
@@ -94,13 +94,13 @@ void TopSitesBackend::InitDBOnDBThread(const base::FilePath& path) {
 }
 
 void TopSitesBackend::ShutdownDBOnDBThread() {
-  DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
   db_.reset();
 }
 
 void TopSitesBackend::GetMostVisitedThumbnailsOnDBThread(
     scoped_refptr<MostVisitedThumbnails> thumbnails) {
-  DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
 
   if (db_) {
     db_->GetPageThumbnails(&(thumbnails->most_visited),
@@ -142,7 +142,7 @@ void TopSitesBackend::SetPageThumbnailOnDBThread(const MostVisitedURL& url,
 }
 
 void TopSitesBackend::ResetDatabaseOnDBThread(const base::FilePath& file_path) {
-  DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
   db_.reset(NULL);
   sql::Connection::Delete(db_path_);
   db_.reset(new TopSitesDatabase());

@@ -31,7 +31,7 @@ Recorder::~Recorder() = default;
 void Recorder::AddChunk(const std::string& chunk) {
   if (chunk.empty())
     return;
-  if (!background_task_runner_->RunsTasksOnCurrentThread()) {
+  if (!background_task_runner_->RunsTasksInCurrentSequence()) {
     background_task_runner_->PostTask(
         FROM_HERE, base::BindRepeating(&Recorder::AddChunk,
                                        weak_factory_.GetWeakPtr(), chunk));
