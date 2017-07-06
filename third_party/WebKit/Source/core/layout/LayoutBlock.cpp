@@ -925,6 +925,8 @@ void LayoutBlock::InsertPositionedObject(LayoutBox* o) {
   DCHECK(!IsAnonymousBlock());
   DCHECK_EQ(o->ContainingBlock(), this);
 
+  o->ClearContainingBlockOverrideSize();
+
   if (g_positioned_container_map) {
     auto container_map_it = g_positioned_container_map->find(o);
     if (container_map_it != g_positioned_container_map->end()) {
