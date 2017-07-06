@@ -60,3 +60,5 @@ crbug.com/729136 [ Linux ] http/tests/inspector/tracing/timeline-xhr-response-ty
 crbug.com/729136 [ Linux ] inspector/components/file-path-scoring.html [ Timeout ]
 crbug.com/729136 [ Linux ] inspector/elements/styles-4/styles-should-not-force-sync-style-recalc.html [ Timeout ]
 crbug.com/729136 [ Linux ] webaudio/mixing.html [ Timeout ]
+
+crbug.com/739365 [ Linux ] virtual/layout_ng/fast/block/float/assert-when-moving-float.html [ Skip ]
