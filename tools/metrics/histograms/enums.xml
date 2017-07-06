@@ -31696,6 +31696,42 @@ from previous Chrome versions.
   <int value="88" label="IDC_CONTENT_CONTEXT_EXIT_FULLSCREEN"/>
 </enum>
 
+<enum name="ReportingHeaderEndpointOutcome">
+  <int value="0" label="Discarded: not a dictionary"/>
+  <int value="1" label="Discarded: endpoint missing"/>
+  <int value="2" label="Discarded: endpoint not a string"/>
+  <int value="3" label="Discarded: endpoint URL invalid"/>
+  <int value="4" label="Discarded: endpoint URL insecure"/>
+  <int value="5" label="Discarded: TTL missing"/>
+  <int value="6" label="Discarded: TTL not an integer"/>
+  <int value="7" label="Discarded: TTL negative"/>
+  <int value="8" label="Discarded: group not a string"/>
+  <int value="9" label="Removed (max-age = 0)"/>
+  <int value="10" label="Set rejected by delegate (max-age &gt; 0)"/>
+  <int value="11" label="Set (max-age &gt; 0)"/>
+</enum>
+
+<enum name="ReportingHeaderOutcome">
+  <int value="0" label="Discarded: no ReportingService"/>
+  <int value="1" label="Discarded: invalid SSLInfo"/>
+  <int value="2" label="Discarded: cert status error"/>
+  <int value="3" label="Discarded: invalid JSON"/>
+  <int value="4" label="Parsed"/>
+</enum>
+
+<enum name="ReportingReportOutcome">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Discarded: no URLRequestContext"/>
+  <int value="2" label="Discarded: no ReportingService"/>
+  <int value="3" label="Erased: failed"/>
+  <int value="4" label="Erased: expired"/>
+  <int value="5" label="Erased: evicted"/>
+  <int value="6" label="Erased: network changed"/>
+  <int value="7" label="Erased: browsing data removed"/>
+  <int value="8" label="Erased: Reporting shut down"/>
+  <int value="9" label="Delivered"/>
+</enum>
+
 <enum name="ReportProcessingResult">
   <int value="0" label="Success">A report was created and uploaded</int>
   <int value="1" label="Suppressed">
