@@ -58,6 +58,7 @@ class JingleSession : public Session {
 
   // Called by JingleSessionManager for incoming connections.
   void InitializeIncomingConnection(
+      const std::string& message_id,
       const JingleMessage& initiate_message,
       std::unique_ptr<Authenticator> authenticator);
   void AcceptIncomingConnection(const JingleMessage& initiate_message);
