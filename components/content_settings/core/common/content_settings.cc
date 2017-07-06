@@ -4,18 +4,15 @@
 
 #include "components/content_settings/core/common/content_settings.h"
 
-#include "base/containers/hash_tables.h"
+#include <algorithm>
+
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
 
-ContentSetting IntToContentSetting(int content_setting) {
-  return ((content_setting < 0) ||
-          (content_setting >= CONTENT_SETTING_NUM_SETTINGS)) ?
-      CONTENT_SETTING_DEFAULT : static_cast<ContentSetting>(content_setting);
-}
+namespace {
 
 struct HistogramValue {
   ContentSettingsType type;
@@ -26,9 +23,13 @@ struct HistogramValue {
 // specified in the ContentType enum in histograms.xml. Since these values are
 // used for histograms, please do not reuse the same value for a different
 // content setting. Always append to the end and increment.
+//
 // TODO(raymes): We should use a sparse histogram here on the hash of the
 // content settings type name instead.
-HistogramValue kHistogramValue[] = {
+//
+// The array size must be explicit for the static_asserts below.
+constexpr size_t kNumHistogramValues = 29;
+constexpr HistogramValue kHistogramValue[kNumHistogramValues] = {
     {CONTENT_SETTINGS_TYPE_COOKIES, 0},
     {CONTENT_SETTINGS_TYPE_IMAGES, 1},
     {CONTENT_SETTINGS_TYPE_JAVASCRIPT, 2},
@@ -45,9 +46,7 @@ HistogramValue kHistogramValue[] = {
     {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, 16},
     {CONTENT_SETTINGS_TYPE_MIDI_SYSEX, 17},
     {CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS, 19},
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
     {CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER, 21},
-#endif
     {CONTENT_SETTINGS_TYPE_APP_BANNER, 22},
     {CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, 23},
     {CONTENT_SETTINGS_TYPE_DURABLE_STORAGE, 24},
@@ -59,21 +58,40 @@ HistogramValue kHistogramValue[] = {
     {CONTENT_SETTINGS_TYPE_ADS, 32},
     {CONTENT_SETTINGS_TYPE_ADS_DATA, 33},
     {CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, 34},
+    {CONTENT_SETTINGS_TYPE_MEDIA_ENGAGEMENT, 35},
 };
+
+}  // namespace
+
+ContentSetting IntToContentSetting(int content_setting) {
+  return ((content_setting < 0) ||
+          (content_setting >= CONTENT_SETTING_NUM_SETTINGS))
+             ? CONTENT_SETTING_DEFAULT
+             : static_cast<ContentSetting>(content_setting);
+}
 
 int ContentSettingTypeToHistogramValue(ContentSettingsType content_setting,
                                        size_t* num_values) {
-  // Translate the list above into a map for fast lookup.
-  typedef base::hash_map<int, int> Map;
-  CR_DEFINE_STATIC_LOCAL(Map, kMap, ());
-  if (kMap.empty()) {
-    for (const HistogramValue& histogram_value : kHistogramValue)
-      kMap[histogram_value.type] = histogram_value.value;
-  }
-
-  DCHECK(base::ContainsKey(kMap, content_setting));
   *num_values = arraysize(kHistogramValue);
-  return kMap[content_setting];
+
+  // Verify the array is sorted by enum type and contains all values.
+  DCHECK(std::is_sorted(std::begin(kHistogramValue), std::end(kHistogramValue),
+                        [](const HistogramValue& a, const HistogramValue& b) {
+                          return a.type < b.type;
+                        }));
+  static_assert(kHistogramValue[kNumHistogramValues - 1].type ==
+                    CONTENT_SETTINGS_NUM_TYPES_DO_NOT_USE - 1,
+                "Update content settings histogram lookup");
+
+  const HistogramValue* found = std::lower_bound(
+      std::begin(kHistogramValue), std::end(kHistogramValue), content_setting,
+      [](const HistogramValue& a, ContentSettingsType b) {
+        return a.type < b;
+      });
+  if (found != std::end(kHistogramValue) && found->type == content_setting)
+    return found->value;
+  NOTREACHED();
+  return -1;
 }
 
 ContentSettingPatternSource::ContentSettingPatternSource(
