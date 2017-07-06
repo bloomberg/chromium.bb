@@ -5,3 +5,6 @@ rootWebArea
 ++button description='Title3' name='LabelledBy3' descriptionFrom=2
 ++button description='DescribedBy4' name='LabelledBy4' descriptionFrom=5
 ++button description='DescribedBy5' name='InnerText5' descriptionFrom=5
+++button name='Outer inner'
+++button name='Outer inner1'
+++button name='Outer grandchild'
