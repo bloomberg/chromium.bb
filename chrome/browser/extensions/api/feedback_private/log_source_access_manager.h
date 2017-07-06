@@ -15,7 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
-#include "chrome/browser/feedback/system_logs/system_logs_fetcher.h"
+#include "chrome/browser/feedback/system_logs/system_logs_source.h"
 #include "chrome/common/extensions/api/feedback_private.h"
 #include "content/public/browser/browser_context.h"
 

@@ -15,36 +15,15 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/feedback/system_logs/system_logs_source.h"
 #include "components/feedback/anonymizer_tool.h"
 #include "components/feedback/feedback_common.h"
 
 namespace system_logs {
 
-using SystemLogsResponse = FeedbackCommon::SystemLogsMap;
-
-// Callback that the data sources use to return data.
-using SysLogsSourceCallback = base::Callback<void(SystemLogsResponse*)>;
-
 // Callback that the SystemLogsFetcher uses to return data.
 using SysLogsFetcherCallback =
     base::Callback<void(std::unique_ptr<SystemLogsResponse>)>;
-
-// The SystemLogsSource provides an interface for the data sources that
-// the SystemLogsFetcher class uses to fetch logs and other information.
-class SystemLogsSource {
- public:
-  // |source_name| provides a descriptive identifier for debugging.
-  explicit SystemLogsSource(const std::string& source_name);
-  virtual ~SystemLogsSource();
-
-  // Fetches data and passes it by pointer to the callback
-  virtual void Fetch(const SysLogsSourceCallback& callback) = 0;
-
-  const std::string& source_name() const { return source_name_; }
-
- private:
-  std::string source_name_;
-};
 
 // The SystemLogsFetcher fetches key-value data from a list of log sources.
 //
