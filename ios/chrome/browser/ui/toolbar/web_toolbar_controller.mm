@@ -37,6 +37,7 @@
 #import "ios/chrome/browser/ui/animation_util.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
+#import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/history/tab_history_popup_controller.h"
@@ -369,7 +370,8 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
 - (instancetype)initWithDelegate:(id<WebToolbarDelegate>)delegate
                        urlLoader:(id<UrlLoader>)urlLoader
                     browserState:(ios::ChromeBrowserState*)browserState
-                 preloadProvider:(id<PreloadProvider>)preloader {
+                 preloadProvider:(id<PreloadProvider>)preloader
+                      dispatcher:(id<BrowserCommands>)dispatcher {
   DCHECK(delegate);
   DCHECK(urlLoader);
   DCHECK(browserState);
@@ -377,8 +379,10 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
   _urlLoader = urlLoader;
   _browserState = browserState;
   _incognito = browserState->IsOffTheRecord();
-  self = [super initWithStyle:(_incognito ? ToolbarControllerStyleIncognitoMode
-                                          : ToolbarControllerStyleLightMode)];
+  ToolbarControllerStyle style =
+      (_incognito ? ToolbarControllerStyleIncognitoMode
+                  : ToolbarControllerStyleLightMode);
+  self = [super initWithStyle:style dispatcher:dispatcher];
   if (!self)
     return nil;
 
@@ -479,6 +483,13 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
   [_backButton setEnabled:NO];
   [_forwardButton setEnabled:NO];
 
+  // Assign tags before calling -setUpButton, since only buttons with tags
+  // have -chromeExecuteCommand added as a target.
+  [_reloadButton setTag:IDC_RELOAD];
+  [_stopButton setTag:IDC_STOP];
+  [_starButton setTag:IDC_BOOKMARK_PAGE];
+  [_voiceSearchButton setTag:IDC_VOICE_SEARCH];
+
   if (idiom == IPAD_IDIOM) {
     // Note that the reload button gets repositioned when -layoutOmnibox is
     // called.
@@ -542,6 +553,14 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
       hasDisabledImage:YES
          synchronously:NO];
 
+  // Assign targets for buttons using the dispatcher.
+  [_backButton addTarget:self.dispatcher
+                  action:@selector(goBack)
+        forControlEvents:UIControlEventTouchUpInside];
+  [_forwardButton addTarget:self.dispatcher
+                     action:@selector(goForward)
+           forControlEvents:UIControlEventTouchUpInside];
+
   _backButtonMode = ToolbarButtonModeNormal;
   _forwardButtonMode = ToolbarButtonModeNormal;
   UILongPressGestureRecognizer* backLongPress =
@@ -568,13 +587,6 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
   [_stopButton addTarget:self
                   action:@selector(cancelOmniboxEdit)
         forControlEvents:UIControlEventTouchUpInside];
-
-  [_backButton setTag:IDC_BACK];
-  [_forwardButton setTag:IDC_FORWARD];
-  [_reloadButton setTag:IDC_RELOAD];
-  [_stopButton setTag:IDC_STOP];
-  [_starButton setTag:IDC_BOOKMARK_PAGE];
-  [_voiceSearchButton setTag:IDC_VOICE_SEARCH];
 
   SetA11yLabelAndUiAutomationName(_backButton, IDS_ACCNAME_BACK, @"Back");
   SetA11yLabelAndUiAutomationName(_forwardButton, IDS_ACCNAME_FORWARD,
