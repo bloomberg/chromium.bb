@@ -32,7 +32,7 @@ class LatencyInfo;
 
 namespace cc {
 
-class CompositorFrameSinkSupport;
+class SurfaceClient;
 class CopyOutputRequest;
 class SurfaceManager;
 
@@ -41,9 +41,10 @@ class CC_SURFACES_EXPORT Surface {
   using WillDrawCallback =
       base::RepeatingCallback<void(const LocalSurfaceId&, const gfx::Rect&)>;
 
-  Surface(
-      const SurfaceInfo& surface_info,
-      base::WeakPtr<CompositorFrameSinkSupport> compositor_frame_sink_support);
+  Surface(const SurfaceInfo& surface_info,
+          SurfaceManager* surface_manager,
+          base::WeakPtr<SurfaceClient> surface_client,
+          bool needs_sync_tokens);
   ~Surface();
 
   const SurfaceId& surface_id() const { return surface_info_.id(); }
@@ -53,10 +54,18 @@ class CC_SURFACES_EXPORT Surface {
 
   void SetPreviousFrameSurface(Surface* surface);
 
+  // Increments the reference count on resources specified by |resources|.
+  void RefResources(const std::vector<TransferableResource>& resources);
+
+  // Decrements the reference count on resources specified by |resources|.
+  void UnrefResources(const std::vector<ReturnedResource>& resources);
+
+  bool needs_sync_tokens() const { return needs_sync_tokens_; }
+
   // Returns false if |frame| is invalid.
   // |draw_callback| is called once to notify the client that the previously
   // submitted CompositorFrame is processed and that another frame can be
-  // submitted.
+  // there is visible damage.
   // |will_draw_callback| is called when |surface| is scheduled for a draw and
   // there is visible damage.
   bool QueueFrame(CompositorFrame frame,
@@ -93,10 +102,6 @@ class CC_SURFACES_EXPORT Surface {
   void TakeLatencyInfo(std::vector<ui::LatencyInfo>* latency_info);
   void RunDrawCallback();
   void RunWillDrawCallback(const gfx::Rect& damage_rect);
-
-  base::WeakPtr<CompositorFrameSinkSupport> compositor_frame_sink_support() {
-    return compositor_frame_sink_support_;
-  }
 
   // Add a SurfaceSequence that must be satisfied before the Surface is
   // destroyed.
@@ -162,13 +167,14 @@ class CC_SURFACES_EXPORT Surface {
 
   SurfaceInfo surface_info_;
   SurfaceId previous_frame_surface_id_;
-  base::WeakPtr<CompositorFrameSinkSupport> compositor_frame_sink_support_;
   SurfaceManager* const surface_manager_;
+  base::WeakPtr<SurfaceClient> surface_client_;
 
   base::Optional<FrameData> pending_frame_data_;
   base::Optional<FrameData> active_frame_data_;
   int frame_index_;
   bool closed_ = false;
+  const bool needs_sync_tokens_;
   std::vector<SurfaceSequence> destruction_dependencies_;
 
   base::flat_set<SurfaceId> blocking_surfaces_;

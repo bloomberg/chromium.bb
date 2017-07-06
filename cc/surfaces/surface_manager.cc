@@ -12,11 +12,11 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "cc/surfaces/compositor_frame_sink_support.h"
 #include "cc/surfaces/direct_surface_reference_factory.h"
 #include "cc/surfaces/local_surface_id_allocator.h"
 #include "cc/surfaces/stub_surface_reference_factory.h"
 #include "cc/surfaces/surface.h"
+#include "cc/surfaces/surface_client.h"
 #include "cc/surfaces/surface_info.h"
 
 #if DCHECK_IS_ON()
@@ -44,7 +44,7 @@ SurfaceManager::SurfaceManager(LifetimeType lifetime_type)
 }
 
 SurfaceManager::~SurfaceManager() {
-  // All CompositorFrameSinkSupports and their surfaces are supposed to be
+  // All SurfaceClients and their surfaces are supposed to be
   // destroyed before SurfaceManager.
   DCHECK_EQ(surfaces_to_destroy_.size(), surface_map_.size());
 }
@@ -72,20 +72,19 @@ void SurfaceManager::RequestSurfaceResolution(Surface* pending_surface) {
 }
 
 Surface* SurfaceManager::CreateSurface(
-    base::WeakPtr<CompositorFrameSinkSupport> compositor_frame_sink_support,
-    const SurfaceInfo& surface_info) {
+    base::WeakPtr<SurfaceClient> surface_client,
+    const SurfaceInfo& surface_info,
+    bool needs_sync_tokens) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(surface_info.is_valid());
-  DCHECK(compositor_frame_sink_support);
-  DCHECK_EQ(surface_info.id().frame_sink_id(),
-            compositor_frame_sink_support->frame_sink_id());
+  DCHECK(surface_client);
 
   // If no surface with this SurfaceId exists, simply create the surface and
   // return.
   auto it = surface_map_.find(surface_info.id());
   if (it == surface_map_.end()) {
-    surface_map_[surface_info.id()] =
-        base::MakeUnique<Surface>(surface_info, compositor_frame_sink_support);
+    surface_map_[surface_info.id()] = base::MakeUnique<Surface>(
+        surface_info, this, surface_client, needs_sync_tokens);
     return surface_map_[surface_info.id()].get();
   }
 
@@ -95,8 +94,6 @@ Surface* SurfaceManager::CreateSurface(
   Surface* surface = it->second.get();
   DCHECK(IsMarkedForDestruction(surface_info.id()));
   surfaces_to_destroy_.erase(surface_info.id());
-  DCHECK_EQ(compositor_frame_sink_support.get(),
-            surface->compositor_frame_sink_support().get());
   return surface;
 }
 

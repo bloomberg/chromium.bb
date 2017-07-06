@@ -25,8 +25,8 @@
 #include "cc/quads/surface_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/resources/resource_provider.h"
-#include "cc/surfaces/compositor_frame_sink_support.h"
 #include "cc/surfaces/surface.h"
+#include "cc/surfaces/surface_client.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/trees/blocking_task_runner.h"
 
@@ -122,14 +122,6 @@ SurfaceAggregator::ClipData SurfaceAggregator::CalculateClipRect(
   return out_clip;
 }
 
-static void UnrefHelper(
-    base::WeakPtr<CompositorFrameSinkSupport> compositor_frame_sink_support,
-    const std::vector<ReturnedResource>& resources,
-    BlockingTaskRunner* main_thread_task_runner) {
-  if (compositor_frame_sink_support)
-    compositor_frame_sink_support->UnrefResources(resources);
-}
-
 RenderPassId SurfaceAggregator::RemapPassId(RenderPassId surface_local_pass_id,
                                             const SurfaceId& surface_id) {
   auto key = std::make_pair(surface_id, surface_local_pass_id);
@@ -149,12 +141,9 @@ int SurfaceAggregator::ChildIdForSurface(Surface* surface) {
   auto it = surface_id_to_resource_child_id_.find(surface->surface_id());
   if (it == surface_id_to_resource_child_id_.end()) {
     int child_id = provider_->CreateChild(
-        base::Bind(&UnrefHelper, surface->compositor_frame_sink_support()));
-    if (surface->compositor_frame_sink_support()) {
-      provider_->SetChildNeedsSyncTokens(
-          child_id,
-          surface->compositor_frame_sink_support()->needs_sync_points());
-    }
+        base::Bind(&SurfaceAggregator::UnrefResources,
+                   weak_factory_.GetWeakPtr(), surface->surface_id()));
+    provider_->SetChildNeedsSyncTokens(child_id, surface->needs_sync_tokens());
     surface_id_to_resource_child_id_[surface->surface_id()] = child_id;
     return child_id;
   } else {
@@ -184,6 +173,15 @@ gfx::Rect SurfaceAggregator::DamageRectForSurface(
   }
 
   return full_rect;
+}
+
+void SurfaceAggregator::UnrefResources(
+    const SurfaceId& surface_id,
+    const std::vector<ReturnedResource>& resources,
+    BlockingTaskRunner* main_thread_task_runner) {
+  Surface* surface = manager_->GetSurfaceForId(surface_id);
+  if (surface)
+    surface->UnrefResources(resources);
 }
 
 void SurfaceAggregator::HandleSurfaceQuad(
@@ -614,9 +612,7 @@ gfx::Rect SurfaceAggregator::PrewalkTree(const SurfaceId& surface_id,
   // TODO(jbauman): hack for unit tests that don't set up rp
   if (provider_) {
     child_id = ChildIdForSurface(surface);
-    if (surface->compositor_frame_sink_support())
-      surface->compositor_frame_sink_support()->RefResources(
-          frame.resource_list);
+    surface->RefResources(frame.resource_list);
     provider_->ReceiveFromChild(child_id, frame.resource_list);
   }
   CHECK(debug_weak_this.get());
