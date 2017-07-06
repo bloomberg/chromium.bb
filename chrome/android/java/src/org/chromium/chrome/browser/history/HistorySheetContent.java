@@ -27,7 +27,8 @@ public class HistorySheetContent implements BottomSheetContent {
      * @param snackbarManager The {@link SnackbarManager} used to display snackbars.
      */
     public HistorySheetContent(final ChromeActivity activity, SnackbarManager snackbarManager) {
-        mHistoryManager = new HistoryManager(activity, false, snackbarManager);
+        mHistoryManager = new HistoryManager(activity, false, snackbarManager,
+                activity.getTabModelSelector().isIncognitoSelected());
         mContentView = mHistoryManager.getView();
         mToolbarView = mHistoryManager.detachToolbarView();
         mToolbarView.addObserver(new SelectableListToolbar.SelectableListToolbarObserver() {
