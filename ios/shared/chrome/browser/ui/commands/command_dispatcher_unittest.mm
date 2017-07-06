@@ -338,3 +338,27 @@ TEST(CommandDispatcherTest, NoTargetRegisteredForSelector) {
 
   EXPECT_TRUE(exception_caught);
 }
+
+// Tests that -respondsToSelector returns YES for methods once they are
+// dispatched for.
+// Tests handler methods with no arguments.
+TEST(CommandDispatcherTest, RespondsToSelector) {
+  id dispatcher = [[CommandDispatcher alloc] init];
+
+  EXPECT_FALSE([dispatcher respondsToSelector:@selector(show)]);
+  CommandDispatcherTestSimpleTarget* target =
+      [[CommandDispatcherTestSimpleTarget alloc] init];
+
+  [dispatcher startDispatchingToTarget:target forSelector:@selector(show)];
+  EXPECT_TRUE([dispatcher respondsToSelector:@selector(show)]);
+
+  [dispatcher stopDispatchingForSelector:@selector(show)];
+  EXPECT_FALSE([dispatcher respondsToSelector:@selector(show)]);
+
+  // Actual dispatcher methods should still always advertise that they are
+  // responded to.
+  EXPECT_TRUE([dispatcher
+      respondsToSelector:@selector(startDispatchingToTarget:forSelector:)]);
+  EXPECT_TRUE(
+      [dispatcher respondsToSelector:@selector(stopDispatchingForSelector:)]);
+}

@@ -80,4 +80,13 @@
   return [super forwardingTargetForSelector:selector];
 }
 
+// Overriden to return YES for any registered method.
+- (BOOL)respondsToSelector:(SEL)selector {
+  auto target = _forwardingTargets.find(selector);
+  if (target != _forwardingTargets.end()) {
+    return YES;
+  }
+  return [super respondsToSelector:selector];
+}
+
 @end
