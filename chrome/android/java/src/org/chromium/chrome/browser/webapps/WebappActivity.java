@@ -27,7 +27,9 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.SingleTabActivity;
 import org.chromium.chrome.browser.TabState;
+import org.chromium.chrome.browser.compositor.layouts.LayoutManagerDocument;
 import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -37,8 +39,12 @@ import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.chrome.browser.widget.ControlContainer;
+import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.ScreenOrientationProvider;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.PageTransition;
 
@@ -48,7 +54,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Displays a webapp in a nearly UI-less Chrome (InfoBars still appear).
  */
-public class WebappActivity extends FullScreenActivity {
+public class WebappActivity extends SingleTabActivity {
     public static final String WEBAPP_SCHEME = "webapp";
 
     private static final String TAG = "WebappActivity";
@@ -65,6 +71,9 @@ public class WebappActivity extends FullScreenActivity {
             | View.SYSTEM_UI_FLAG_IMMERSIVE;
 
     private final WebappDirectoryManager mDirectoryManager;
+
+    private WebContents mWebContents;
+    private WebContentsObserver mWebContentsObserver;
 
     protected WebappInfo mWebappInfo;
 
@@ -166,10 +175,19 @@ public class WebappActivity extends FullScreenActivity {
         }
 
         initializeUI(getSavedInstanceState());
+        ControlContainer controlContainer = (ControlContainer) findViewById(R.id.control_container);
+        initializeCompositorContent(new LayoutManagerDocument(getCompositorViewHolder()),
+                (View) controlContainer, (ViewGroup) findViewById(android.R.id.content),
+                controlContainer);
+
+        if (getFullscreenManager() != null) getFullscreenManager().setTab(getActivityTab());
         mSplashController.onFinishedNativeInit(getActivityTab());
         super.finishNativeInitialization();
         mIsInitialized = true;
     }
+
+    @Override
+    protected void initializeToolbar() {}
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
@@ -412,6 +430,13 @@ public class WebappActivity extends FullScreenActivity {
         };
     }
 
+    @Override
+    protected Tab createTab() {
+        Tab tab = super.createTab();
+        handleTabContentChanged(tab);
+        return tab;
+    }
+
     protected TabObserver createTabObserver() {
         return new EmptyTabObserver() {
 
@@ -494,6 +519,46 @@ public class WebappActivity extends FullScreenActivity {
             @Override
             public void onDidDetachInterstitialPage(Tab tab) {
                 updateUrlBar();
+            }
+
+            // TODO(piotrs): Remove this and clean up handleTabContentChanged() once pre-rendering
+            //               is disabled and WebContents swapping can no longer happen
+            //               (crbug.com/678332).
+            @Override
+            public void onContentChanged(Tab tab) {
+                assert tab == getActivityTab();
+                handleTabContentChanged(tab);
+            }
+        };
+    }
+
+    private void handleTabContentChanged(final Tab tab) {
+        assert tab != null;
+
+        WebContents webContents = tab.getWebContents();
+        if (mWebContents == webContents) return;
+
+        // Clean up any old references to the previous WebContents.
+        if (mWebContentsObserver != null) {
+            mWebContentsObserver.destroy();
+            mWebContentsObserver = null;
+        }
+
+        mWebContents = webContents;
+        if (mWebContents == null) return;
+
+        ContentViewCore.fromWebContents(webContents).setFullscreenRequiredForOrientationLock(false);
+        mWebContentsObserver = new WebContentsObserver(webContents) {
+            @Override
+            public void didFinishNavigation(String url, boolean isInMainFrame, boolean isErrorPage,
+                    boolean hasCommitted, boolean isSameDocument, boolean isFragmentNavigation,
+                    Integer pageTransition, int errorCode, String errorDescription,
+                    int httpStatusCode) {
+                if (hasCommitted && isInMainFrame) {
+                    // Notify the renderer to permanently hide the top controls since they do
+                    // not apply to fullscreen content views.
+                    tab.updateBrowserControlsState(tab.getBrowserControlsStateConstraints(), true);
+                }
             }
         };
     }
