@@ -16,7 +16,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
-#include "components/net_log/net_log_file_writer.h"
+#include "components/net_log/net_export_file_writer.h"
 #include "components/version_info/version_info.h"
 #include "net/log/net_log_util.h"
 #include "net/log/trace_net_log_observer.h"
@@ -30,7 +30,7 @@ ChromeNetLog::ChromeNetLog() {
 }
 
 ChromeNetLog::~ChromeNetLog() {
-  net_log_file_writer_.reset();
+  net_export_file_writer_.reset();
   // Remove the observers we own before we're destroyed.
   if (write_to_file_observer_)
     write_to_file_observer_->StopObserving(nullptr);
@@ -75,10 +75,10 @@ void ChromeNetLog::StartWritingToFile(
   }
 }
 
-NetLogFileWriter* ChromeNetLog::net_log_file_writer() {
-  if (!net_log_file_writer_)
-    net_log_file_writer_ = base::WrapUnique(new NetLogFileWriter(this));
-  return net_log_file_writer_.get();
+NetExportFileWriter* ChromeNetLog::net_export_file_writer() {
+  if (!net_export_file_writer_)
+    net_export_file_writer_ = base::WrapUnique(new NetExportFileWriter(this));
+  return net_export_file_writer_.get();
 }
 
 // static
