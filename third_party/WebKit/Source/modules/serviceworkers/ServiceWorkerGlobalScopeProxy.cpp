@@ -55,8 +55,8 @@
 #include "modules/notifications/Notification.h"
 #include "modules/notifications/NotificationEvent.h"
 #include "modules/notifications/NotificationEventInit.h"
+#include "modules/payments/PaymentEventDataConversion.h"
 #include "modules/payments/PaymentRequestEvent.h"
-#include "modules/payments/PaymentRequestEventDataConversion.h"
 #include "modules/payments/PaymentRequestEventInit.h"
 #include "modules/payments/PaymentRequestRespondWithObserver.h"
 #include "modules/push_messaging/PushEvent.h"
@@ -462,7 +462,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchPaymentRequestEvent(
 
   Event* event = PaymentRequestEvent::Create(
       EventTypeNames::paymentrequest,
-      PaymentRequestEventDataConversion::ToPaymentRequestEventInit(
+      PaymentEventDataConversion::ToPaymentRequestEventInit(
           WorkerGlobalScope()->ScriptController()->GetScriptState(),
           web_app_request),
       respond_with_observer, wait_until_observer);

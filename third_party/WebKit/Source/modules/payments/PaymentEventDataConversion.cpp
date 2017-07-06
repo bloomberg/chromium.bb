@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/payments/PaymentRequestEventDataConversion.h"
+#include "modules/payments/PaymentEventDataConversion.h"
 
 #include "bindings/core/v8/ToV8ForCore.h"
 #include "modules/payments/PaymentCurrencyAmount.h"
@@ -83,8 +83,7 @@ PaymentMethodData ToPaymentMethodData(
 
 }  // namespace
 
-PaymentRequestEventInit
-PaymentRequestEventDataConversion::ToPaymentRequestEventInit(
+PaymentRequestEventInit PaymentEventDataConversion::ToPaymentRequestEventInit(
     ScriptState* script_state,
     const WebPaymentRequestEventData& web_event_data) {
   DCHECK(script_state);
@@ -110,6 +109,32 @@ PaymentRequestEventDataConversion::ToPaymentRequestEventInit(
   }
   event_data.setModifiers(modifiers);
   event_data.setInstrumentKey(web_event_data.instrument_key);
+  return event_data;
+}
+
+CanMakePaymentEventInit PaymentEventDataConversion::ToCanMakePaymentEventInit(
+    ScriptState* script_state,
+    const WebCanMakePaymentEventData& web_event_data) {
+  DCHECK(script_state);
+
+  CanMakePaymentEventInit event_data;
+  if (!script_state->ContextIsValid())
+    return event_data;
+
+  ScriptState::Scope scope(script_state);
+
+  event_data.setTopLevelOrigin(web_event_data.top_level_origin);
+  event_data.setPaymentRequestOrigin(web_event_data.payment_request_origin);
+  HeapVector<PaymentMethodData> method_data;
+  for (const auto& md : web_event_data.method_data) {
+    method_data.push_back(ToPaymentMethodData(script_state, md));
+  }
+  event_data.setMethodData(method_data);
+  HeapVector<PaymentDetailsModifier> modifiers;
+  for (const auto& modifier : web_event_data.modifiers) {
+    modifiers.push_back(ToPaymentDetailsModifier(script_state, modifier));
+  }
+  event_data.setModifiers(modifiers);
   return event_data;
 }
 
