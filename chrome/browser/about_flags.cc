@@ -3018,10 +3018,11 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(switches::kShowCertLink)},
 #endif
 
-    {"omnibox-ui-hide-suggestion-url-path",
-     flag_descriptions::kOmniboxUIHideSuggestionUrlPathName,
-     flag_descriptions::kOmniboxUIHideSuggestionUrlPathDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(omnibox::kUIExperimentHideSuggestionUrlPath)},
+    {"omnibox-ui-elide-suggestion-url-after-host",
+     flag_descriptions::kOmniboxUIElideSuggestionUrlAfterHostName,
+     flag_descriptions::kOmniboxUIElideSuggestionUrlAfterHostDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(omnibox::kUIExperimentElideSuggestionUrlAfterHost)},
 
     {"omnibox-ui-hide-suggestion-url-scheme",
      flag_descriptions::kOmniboxUIHideSuggestionUrlSchemeName,

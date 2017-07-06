@@ -1071,25 +1071,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Android.RecentTabsManager.OtherDevices" units="count">
   <owner>huayinz@chromium.org</owner>
   <summary>
-    Records the number of other devices listed in recent tabs page
-    when recent tabs page is loaded.
+    Records the number of other devices listed in recent tabs page when recent
+    tabs page is loaded.
   </summary>
 </histogram>
 
 <histogram name="Android.RecentTabsManager.RecentlyClosedTabs" units="count">
   <owner>huayinz@chromium.org</owner>
   <summary>
-    Records the number of recently-closed tabs shown in recent tabs page
-    when recent tabs page is loaded.
+    Records the number of recently-closed tabs shown in recent tabs page when
+    recent tabs page is loaded.
   </summary>
 </histogram>
 
 <histogram name="Android.RecentTabsManager.TotalTabs" units="count">
   <owner>huayinz@chromium.org</owner>
   <summary>
-    Records the total number of tabs listed in recent tabs page (sum of all
-    tab from other devices plus recently-closed tabs) when recent tabs page
-    is loaded.
+    Records the total number of tabs listed in recent tabs page (sum of all tab
+    from other devices plus recently-closed tabs) when recent tabs page is
+    loaded.
   </summary>
 </histogram>
 
