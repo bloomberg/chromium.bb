@@ -24,6 +24,8 @@ enum InsetsMetric {
   // The margins around the title of a bubble (popover)-style dialog. The bottom
   // margin is implied by the content insets.
   INSETS_BUBBLE_TITLE,
+  // Internal border around checkboxes and radio buttons.
+  INSETS_CHECKBOX_RADIO_BUTTON,
   // The margins around the button row of a dialog. The top margin is implied
   // by the content insets.
   INSETS_DIALOG_BUTTON_ROW,

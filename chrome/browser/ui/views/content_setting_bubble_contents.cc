@@ -317,14 +317,6 @@ void ContentSettingBubbleContents::Init() {
       views::RadioButton* radio = new views::RadioButton(*i, 0);
       radio->SetEnabled(bubble_content.radio_group_enabled);
       radio->set_listener(this);
-      if (provider->IsHarmonyMode()) {
-        std::unique_ptr<views::LabelButtonBorder> border =
-            radio->CreateDefaultBorder();
-        gfx::Insets insets = border->GetInsets();
-        border->set_insets(
-            gfx::Insets(insets.top(), 0, insets.bottom(), insets.right()));
-        radio->SetBorder(std::move(border));
-      }
       radio_group_.push_back(radio);
       layout->StartRow(0, indented_kSingleColumnSetId);
       layout->AddView(radio);

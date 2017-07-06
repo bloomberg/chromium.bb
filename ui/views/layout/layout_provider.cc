@@ -42,6 +42,8 @@ gfx::Insets LayoutProvider::GetInsetsMetric(int metric) const {
       return gfx::Insets(bubble_contents.top(), bubble_contents.left(), 0,
                          bubble_contents.right());
     }
+    case InsetsMetric::INSETS_CHECKBOX_RADIO_BUTTON:
+      return gfx::Insets(5, 6);
     case InsetsMetric::INSETS_DIALOG_BUTTON_ROW: {
       const gfx::Insets dialog_contents =
           GetInsetsMetric(INSETS_DIALOG_CONTENTS);

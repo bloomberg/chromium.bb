@@ -51,6 +51,7 @@ class VIEWS_EXPORT Checkbox : public LabelButton {
   SkColor GetInkDropBaseColor() const override;
   void PaintButtonContents(gfx::Canvas* canvas) override;
   gfx::ImageSkia GetImage(ButtonState for_state) const override;
+  std::unique_ptr<LabelButtonBorder> CreateDefaultBorder() const override;
 
   // Set the image shown for each button state depending on whether it is
   // [checked] or [focused].
