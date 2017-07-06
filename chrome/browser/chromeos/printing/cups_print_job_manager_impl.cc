@@ -356,11 +356,11 @@ void CupsPrintJobManagerImpl::ScheduleQuery(const base::TimeDelta& delay) {
   if (!in_query_) {
     in_query_ = true;
 
-    content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
-        ->PostDelayedTask(FROM_HERE,
-                          base::Bind(&CupsPrintJobManagerImpl::PostQuery,
-                                     weak_ptr_factory_.GetWeakPtr()),
-                          delay);
+    content::BrowserThread::PostDelayedTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::Bind(&CupsPrintJobManagerImpl::PostQuery,
+                   weak_ptr_factory_.GetWeakPtr()),
+        delay);
   }
 }
 
@@ -376,7 +376,7 @@ void CupsPrintJobManagerImpl::PostQuery() {
 
   auto result = base::MakeUnique<QueryResult>();
   QueryResult* result_ptr = result.get();
-  // Runs a query on query_runner_ which will rejoin this sequnece on
+  // Runs a query on |query_runner_| which will rejoin this sequnece on
   // completion.
   query_runner_->PostTaskAndReply(
       FROM_HERE,
