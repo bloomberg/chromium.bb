@@ -112,6 +112,10 @@ TEST(AutocompleteMatchTest, MergeClassifications) {
 }
 
 TEST(AutocompleteMatchTest, FormatUrlForSuggestionDisplay) {
+  // This test does not need to verify url_formatter's functionality in-depth,
+  // since url_formatter has its own unit tests. This test is to validate that
+  // flipping feature flags and varying the trim_scheme parameter toggles the
+  // correct behavior within AutocompleteMatch::GetFormatTypes.
   struct FormatUrlTestData {
     const std::string url;
     bool trim_scheme;
@@ -130,7 +134,7 @@ TEST(AutocompleteMatchTest, FormatUrlForSuggestionDisplay) {
   };
 
   FormatUrlTestData normal_cases[] = {
-      // Sanity check that the trim_scheme parameter works.
+      // Test trim_scheme parameter without any feature flags.
       {"http://google.com", true, L"google.com"},
       {"https://google.com", true, L"https://google.com"},
       {"http://google.com", false, L"http://google.com"},
@@ -138,7 +142,9 @@ TEST(AutocompleteMatchTest, FormatUrlForSuggestionDisplay) {
 
       // Test that paths are preserved in the default case.
       {"http://google.com/foobar", true, L"google.com/foobar"},
-  };
+
+      // Verify that trivial subdomains are preserved in the normal case.
+      {"http://www.google.com", false, L"http://www.google.com"}};
   for (FormatUrlTestData& test_case : normal_cases)
     test_case.Validate();
 
@@ -167,6 +173,15 @@ TEST(AutocompleteMatchTest, FormatUrlForSuggestionDisplay) {
   };
   for (FormatUrlTestData& test_case : hide_path_cases)
     test_case.Validate();
+
+  // Test the trim trivial subdomains feature flag.
+  feature_list.reset(new base::test::ScopedFeatureList);
+  feature_list->InitAndEnableFeature(
+      omnibox::kUIExperimentHideSuggestionUrlTrivialSubdomains);
+
+  FormatUrlTestData trim_trivial_subdomains_case = {
+      "http://www.m.google.com", false, L"http://google.com"};
+  trim_trivial_subdomains_case.Validate();
 }
 
 TEST(AutocompleteMatchTest, SupportsDeletion) {

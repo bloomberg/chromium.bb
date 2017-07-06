@@ -63,6 +63,9 @@ extern const FormatUrlType kFormatUrlExperimentalElideAfterHost;
 // kFormatUrlOmitAll.
 extern const FormatUrlType kFormatUrlExperimentalOmitHTTPS;
 
+// Omits some trivially informative subdomains such as "www" or "m".
+extern const FormatUrlType kFormatUrlExperimentalOmitTrivialSubdomains;
+
 // Creates a string representation of |url|. The IDN host name is turned to
 // Unicode if the Unicode representation is deemed safe. |format_type| is a
 // bitmask of FormatUrlTypes, see it for details. |unescape_rules| defines how
