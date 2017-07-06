@@ -20,6 +20,17 @@ def RunSteps(api):
   data = api.gerrit.get_gerrit_branch(host, project, 'master')
   assert data == '67ebf73496383c6777035e374d2d664009e2aa5c'
 
+  # Query for changes in Chromium's CQ.
+  api.gerrit.get_changes(
+      host,
+      query_params=[
+        ('project', 'chromium/src'),
+        ('status', 'open'),
+        ('label', 'Commit-Queue>0'),
+      ],
+      start=1,
+      limit=1,
+  )
 
 def GenTests(api):
   yield (

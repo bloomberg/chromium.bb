@@ -50,13 +50,13 @@ class GerritAuthenticationError(GerritError):
   """Exception class for authentication errors during Gerrit communication."""
 
 
-def _QueryString(param_dict, first_param=None):
+def _QueryString(params, first_param=None):
   """Encodes query parameters in the key:val[+key:val...] format specified here:
 
   https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#list-changes
   """
   q = [urllib.quote(first_param)] if first_param else []
-  q.extend(['%s:%s' % (key, val) for key, val in param_dict.iteritems()])
+  q.extend(['%s:%s' % (key, val) for key, val in params])
   return '+'.join(q)
 
 
@@ -387,14 +387,15 @@ def ReadHttpJsonResponse(conn, accept_statuses=frozenset([200])):
   return json.loads(s)
 
 
-def QueryChanges(host, param_dict, first_param=None, limit=None, o_params=None,
+def QueryChanges(host, params, first_param=None, limit=None, o_params=None,
                  start=None):
   """
   Queries a gerrit-on-borg server for changes matching query terms.
 
   Args:
-    param_dict: A dictionary of search parameters, as documented here:
-        http://gerrit-documentation.googlecode.com/svn/Documentation/2.6/user-search.html
+    params: A list of key:value pairs for search parameters, as documented
+        here (e.g. ('is', 'owner') for a parameter 'is:owner'):
+        https://gerrit-review.googlesource.com/Documentation/user-search.html#search-operators
     first_param: A change identifier
     limit: Maximum number of results to return.
     start: how many changes to skip (starting with the most recent)
@@ -404,9 +405,9 @@ def QueryChanges(host, param_dict, first_param=None, limit=None, o_params=None,
     A list of json-decoded query results.
   """
   # Note that no attempt is made to escape special characters; YMMV.
-  if not param_dict and not first_param:
+  if not params and not first_param:
     raise RuntimeError('QueryChanges requires search parameters')
-  path = 'changes/?q=%s' % _QueryString(param_dict, first_param)
+  path = 'changes/?q=%s' % _QueryString(params, first_param)
   if start:
     path = '%s&start=%s' % (path, start)
   if limit:
@@ -416,7 +417,7 @@ def QueryChanges(host, param_dict, first_param=None, limit=None, o_params=None,
   return ReadHttpJsonResponse(CreateHttpConn(host, path))
 
 
-def GenerateAllChanges(host, param_dict, first_param=None, limit=500,
+def GenerateAllChanges(host, params, first_param=None, limit=500,
                        o_params=None, start=None):
   """
   Queries a gerrit-on-borg server for all the changes matching the query terms.
@@ -429,7 +430,7 @@ def GenerateAllChanges(host, param_dict, first_param=None, limit=500,
   limit.
 
   Args:
-    param_dict, first_param: Refer to QueryChanges().
+    params, first_param: Refer to QueryChanges().
     limit: Maximum number of requested changes per query.
     o_params: Refer to QueryChanges().
     start: Refer to QueryChanges().
@@ -457,7 +458,7 @@ def GenerateAllChanges(host, param_dict, first_param=None, limit=500,
     #   > E get's updated. New order: EABCDFGH
     #   query[3..6] => CDF   # C is a dup
     #   query[6..9] => GH    # E is missed.
-    page = QueryChanges(host, param_dict, first_param, limit, o_params,
+    page = QueryChanges(host, params, first_param, limit, o_params,
                         cur_start)
     for cl in at_most_once(page):
       yield cl
@@ -474,20 +475,20 @@ def GenerateAllChanges(host, param_dict, first_param=None, limit=500,
   # If we paged through, query again the first page which in most circumstances
   # will fetch all changes that were modified while this function was run.
   if start != cur_start:
-    page = QueryChanges(host, param_dict, first_param, limit, o_params, start)
+    page = QueryChanges(host, params, first_param, limit, o_params, start)
     for cl in at_most_once(page):
       yield cl
 
 
-def MultiQueryChanges(host, param_dict, change_list, limit=None, o_params=None,
+def MultiQueryChanges(host, params, change_list, limit=None, o_params=None,
                       start=None):
   """Initiate a query composed of multiple sets of query parameters."""
   if not change_list:
     raise RuntimeError(
         "MultiQueryChanges requires a list of change numbers/id's")
   q = ['q=%s' % '+OR+'.join([urllib.quote(str(x)) for x in change_list])]
-  if param_dict:
-    q.append(_QueryString(param_dict))
+  if params:
+    q.append(_QueryString(params))
   if limit:
     q.append('n=%d' % limit)
   if start:
@@ -540,12 +541,12 @@ def GetChangeCommit(host, change, revision='current'):
 
 def GetChangeCurrentRevision(host, change):
   """Get information about the latest revision for a given change."""
-  return QueryChanges(host, {}, change, o_params=('CURRENT_REVISION',))
+  return QueryChanges(host, [], change, o_params=('CURRENT_REVISION',))
 
 
 def GetChangeRevisions(host, change):
   """Get information about all revisions associated with a change."""
-  return QueryChanges(host, {}, change, o_params=('ALL_REVISIONS',))
+  return QueryChanges(host, [], change, o_params=('ALL_REVISIONS',))
 
 
 def GetChangeReview(host, change, revision=None):

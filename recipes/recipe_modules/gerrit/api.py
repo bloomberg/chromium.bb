@@ -62,3 +62,37 @@ class GerritApi(recipe_api.RecipeApi):
     step_result = self(step_name, args, **kwargs)
     revision = step_result.json.output.get('revision')
     return revision
+
+  def get_changes(self, host, query_params, start=None, limit=None, **kwargs):
+    """
+    Query changes for the given host.
+
+    Args:
+      host: Gerrit host to query.
+      query_params: Query parameters as list of (key, value) tuples to form a
+          query as documented here:
+          https://gerrit-review.googlesource.com/Documentation/user-search.html#search-operators
+      start: How many changes to skip (starting with the most recent).
+      limit: Maximum number of results to return.
+    Returns:
+      A list of change dicts as documented here:
+          https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#list-changes
+    """
+    args = [
+        'changes',
+        '--host', host,
+        '--json_file', self.m.json.output()
+    ]
+    if start:
+      args += ['--start', str(start)]
+    if limit:
+      args += ['--limit', str(limit)]
+    for k, v in query_params:
+      args += ['-p', '%s=%s' % (k, v)]
+
+    return self(
+        'changes',
+        args,
+        step_test_data=lambda: self.test_api.get_changes_response_data(),
+        **kwargs
+    ).json.output

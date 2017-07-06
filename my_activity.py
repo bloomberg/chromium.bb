@@ -342,8 +342,8 @@ class MyActivity(object):
 
   @staticmethod
   def gerrit_changes_over_rest(instance, filters):
-    # Convert the "key:value" filter to a dictionary.
-    req = dict(f.split(':', 1) for f in filters)
+    # Convert the "key:value" filter to a list of (key, value) pairs.
+    req = list(f.split(':', 1) for f in filters)
     try:
       # Instantiate the generator to force all the requests now and catch the
       # errors here.

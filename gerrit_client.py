@@ -63,6 +63,28 @@ def CMDbranch(parser, args):
   write_result(result, opt)
 
 
+@subcommand.usage('[args ...]')
+def CMDchanges(parser, args):
+  parser.add_option('-p', '--param', dest='params', action='append',
+                    help='repeatable query parameter, format: -p key=value')
+  parser.add_option('--limit', dest='limit', type=int,
+                    help='maximum number of results to return')
+  parser.add_option('--start', dest='start', type=int,
+                    help='how many changes to skip '
+                         '(starting with the most recent)')
+
+  (opt, args) = parser.parse_args(args)
+
+  result = gerrit_util.QueryChanges(
+      urlparse.urlparse(opt.host).netloc,
+      list(tuple(p.split('=', 1)) for p in opt.params),
+      start=opt.start,  # Default: None
+      limit=opt.limit,  # Default: None
+  )
+  logging.info('Change query returned %d changes.', len(result))
+  write_result(result, opt)
+
+
 class OptionParser(optparse.OptionParser):
   """Creates the option parse and add --verbose support."""
   def __init__(self, *args, **kwargs):
