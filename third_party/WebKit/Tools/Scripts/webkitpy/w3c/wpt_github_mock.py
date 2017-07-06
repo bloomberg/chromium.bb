@@ -58,6 +58,9 @@ class MockWPTGitHub(object):
         self.calls.append('get_pr_branch')
         return 'fake branch for PR {}'.format(number)
 
+    def pr_for_chromium_commit(self, commit):
+        return self.pr_with_change_id(commit.change_id())
+
     def pr_with_position(self, position):
         self.calls.append('pr_with_position')
         for pr in self.pull_requests:

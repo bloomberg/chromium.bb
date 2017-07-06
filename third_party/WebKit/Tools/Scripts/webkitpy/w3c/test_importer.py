@@ -83,7 +83,7 @@ class TestImporter(object):
                 for commit in commits:
                     _log.info('Commit: %s', commit.url())
                     _log.info('Subject: %s', commit.subject().strip())
-                    pull_request = self.wpt_github.pr_with_position(commit.position)
+                    pull_request = self.wpt_github.pr_for_chromium_commit(commit)
                     if pull_request:
                         _log.info('PR: https://github.com/w3c/web-platform-tests/pull/%d', pull_request.number)
                     else:

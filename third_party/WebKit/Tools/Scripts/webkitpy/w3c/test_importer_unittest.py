@@ -17,11 +17,11 @@ class TestImporterTest(LoggingTestCase):
     def test_abort_on_exportable_commits_pr_found(self):
         host = MockHost()
         wpt_github = MockWPTGitHub(pull_requests=[
-            PullRequest('Title', 5, 'Commit body\nCr-Commit-Position: refs/heads/master@{#431}', 'open'),
+            PullRequest('Title', 5, 'Commit body\nChange-Id: Iba5eba11', 'open'),
         ])
         importer = TestImporter(host, wpt_github=wpt_github)
         importer.exportable_but_not_exported_commits = lambda _: [
-            MockChromiumCommit(host, position='refs/heads/master@{#431}')
+            MockChromiumCommit(host, change_id='Iba5eba11')
         ]
         importer.checkout_is_okay = lambda _: True
         return_code = importer.main([])
@@ -30,7 +30,7 @@ class TestImporterTest(LoggingTestCase):
             'INFO: Cloning repo: https://chromium.googlesource.com/external/w3c/web-platform-tests.git\n',
             'INFO: Local path: /mock-checkout/third_party/WebKit/LayoutTests/wpt\n',
             'INFO: There were exportable but not-yet-exported commits:\n',
-            'INFO: Commit: https://fake-chromium-commit-viewer.org/+/fa2de685c0\n',
+            'INFO: Commit: https://fake-chromium-commit-viewer.org/+/14fd77e88e\n',
             'INFO: Subject: Fake commit message\n',
             'INFO: PR: https://github.com/w3c/web-platform-tests/pull/5\n',
             'INFO: Modified files in wpt directory in this commit:\n',

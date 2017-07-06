@@ -6,10 +6,10 @@ import base64
 import json
 import logging
 import urllib2
-
 from collections import namedtuple
-from webkitpy.w3c.common import WPT_GH_ORG, WPT_GH_REPO_NAME
+
 from webkitpy.common.memoized import memoized
+from webkitpy.w3c.common import WPT_GH_ORG, WPT_GH_REPO_NAME
 
 _log = logging.getLogger(__name__)
 API_BASE = 'https://api.github.com'
@@ -211,6 +211,17 @@ class WPTGitHub(object):
             raise Exception('Received non-204 status code attempting to delete remote branch: {}'.format(status_code))
 
         return data
+
+    def pr_for_chromium_commit(self, chromium_commit):
+        """Returns a PR corresponding to the given ChromiumCommit, or None."""
+        pull_request = self.pr_with_change_id(chromium_commit.change_id())
+        if pull_request:
+            return pull_request
+        # The Change ID can't be used for commits made via Rietveld,
+        # so we fall back to trying to use commit position here, although
+        # commit position is not correct sometimes (https://crbug.com/737178).
+        # TODO(qyearsley): Remove this fallback after full Gerrit migration.
+        pull_request = self.pr_with_position(chromium_commit.position)
 
     def pr_with_change_id(self, target_change_id):
         for pull_request in self.all_pull_requests():
