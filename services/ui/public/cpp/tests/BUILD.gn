@@ -9,6 +9,7 @@ source_set("tests") {
   testonly = true
 
   sources = [
+    "gpu_unittest.cc",
     "property_type_converters_unittest.cc",
   ]
 

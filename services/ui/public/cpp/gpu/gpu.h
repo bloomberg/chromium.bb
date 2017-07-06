@@ -51,10 +51,10 @@ class Gpu : public gpu::GpuChannelHostFactory,
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
 
  private:
-  friend struct base::DefaultSingletonTraits<Gpu>;
+  friend class GpuTest;
 
-  Gpu(service_manager::Connector* connector,
-      const std::string& service_name,
+  using GpuPtrFactory = base::RepeatingCallback<mojom::GpuPtr(void)>;
+  Gpu(GpuPtrFactory factory,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   scoped_refptr<gpu::GpuChannelHost> GetGpuChannel();
@@ -70,8 +70,7 @@ class Gpu : public gpu::GpuChannelHostFactory,
 
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
-  service_manager::Connector* connector_;
-  const std::string service_name_;
+  GpuPtrFactory factory_;
   base::WaitableEvent shutdown_event_;
   std::unique_ptr<base::Thread> io_thread_;
   std::unique_ptr<ClientGpuMemoryBufferManager> gpu_memory_buffer_manager_;
