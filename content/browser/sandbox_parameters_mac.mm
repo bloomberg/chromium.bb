@@ -35,6 +35,9 @@ void SetupRendererSandboxParameters(sandbox::SeatbeltExecClient* client) {
       Sandbox::GetCanonicalSandboxPath(base::GetHomeDir()).value();
   CHECK(client->SetParameter(Sandbox::kSandboxHomedirAsLiteral, homedir));
 
+  CHECK(client->SetBooleanParameter(Sandbox::kSandboxMavericks,
+                                    base::mac::IsOS10_9()));
+
   bool elcap_or_later = base::mac::IsAtLeastOS10_11();
   CHECK(client->SetBooleanParameter(Sandbox::kSandboxElCapOrLater,
                                     elcap_or_later));
