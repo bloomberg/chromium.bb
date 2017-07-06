@@ -5,6 +5,9 @@
 #include "components/os_crypt/key_storage_linux.h"
 
 #include "base/environment.h"
+#include "base/files/file.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/nix/xdg_util.h"
@@ -37,6 +40,8 @@ struct Configuration {
   std::string store;
   std::string product_name;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner;
+  bool should_use_preference;
+  base::FilePath user_data_path;
 };
 
 base::LazyInstance<Configuration>::DestructorAtExit g_config =
@@ -62,14 +67,26 @@ void KeyStorageLinux::SetMainThreadRunner(
 }
 
 // static
+void KeyStorageLinux::ShouldUsePreference(bool should_use_preference) {
+  g_config.Get().should_use_preference = should_use_preference;
+}
+
+// static
+void KeyStorageLinux::SetUserDataPath(const base::FilePath& path) {
+  g_config.Get().user_data_path = path;
+}
+
+// static
 std::unique_ptr<KeyStorageLinux> KeyStorageLinux::CreateService() {
 #if defined(USE_LIBSECRET) || defined(USE_KEYRING) || defined(USE_KWALLET)
   // Select a backend.
+  bool use_backend = !g_config.Get().should_use_preference ||
+                     os_crypt::GetBackendUse(g_config.Get().user_data_path);
   std::unique_ptr<base::Environment> env(base::Environment::Create());
   base::nix::DesktopEnvironment desktop_env =
       base::nix::GetDesktopEnvironment(env.get());
   os_crypt::SelectedLinuxBackend selected_backend =
-      os_crypt::SelectBackend(g_config.Get().store, desktop_env);
+      os_crypt::SelectBackend(g_config.Get().store, use_backend, desktop_env);
 
   // Try initializing the selected backend.
   // In case of GNOME_ANY, prefer Libsecret
@@ -117,6 +134,6 @@ std::unique_ptr<KeyStorageLinux> KeyStorageLinux::CreateService() {
         // defined(USE_KWALLET)
 
   // The appropriate store was not available.
-  VLOG(1) << "OSCrypt could not initialize a backend.";
+  VLOG(1) << "OSCrypt did not initialize a backend.";
   return nullptr;
 }

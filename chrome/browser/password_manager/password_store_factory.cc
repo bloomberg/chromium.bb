@@ -21,6 +21,7 @@
 #include "chrome/browser/sync/glue/sync_start_util.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
+#include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -195,8 +196,17 @@ PasswordStoreFactory::BuildServiceInstanceFor(
   PrefService* prefs = profile->GetPrefs();
   LocalProfileId id = GetLocalProfileId(prefs);
 
+  bool use_preference = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableEncryptionSelection);
+  bool use_backend = true;
+  if (use_preference) {
+    base::FilePath user_data_dir;
+    chrome::GetDefaultUserDataDirectory(&user_data_dir);
+    use_backend = os_crypt::GetBackendUse(user_data_dir);
+  }
+
   os_crypt::SelectedLinuxBackend selected_backend =
-      os_crypt::SelectBackend(store_type, desktop_env);
+      os_crypt::SelectBackend(store_type, use_backend, desktop_env);
 
   std::unique_ptr<PasswordStoreX::NativeBackend> backend;
   if (selected_backend == os_crypt::SelectedLinuxBackend::KWALLET ||

@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/files/file_path.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
@@ -23,6 +24,7 @@
 #if !defined(OS_CHROMEOS)
 #include "base/command_line.h"
 #include "base/linux_util.h"
+#include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/os_crypt/os_crypt.h"
 #include "content/public/browser/browser_thread.h"
@@ -69,6 +71,12 @@ void ChromeBrowserMainPartsLinux::PreProfileInit() {
       content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::UI));
   OSCrypt::SetMainThreadRunner(main_thread_runner);
+  // OSCrypt can be disabled in a special settings file.
+  OSCrypt::ShouldUsePreference(
+      parsed_command_line().HasSwitch(switches::kEnableEncryptionSelection));
+  base::FilePath user_data_dir;
+  chrome::GetDefaultUserDataDirectory(&user_data_dir);
+  OSCrypt::SetUserDataPath(user_data_dir);
 #endif
 
   ChromeBrowserMainPartsPosix::PreProfileInit();

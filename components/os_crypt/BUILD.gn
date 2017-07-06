@@ -160,7 +160,10 @@ source_set("unit_tests") {
   ]
 
   if (is_desktop_linux) {
-    sources += [ "os_crypt_linux_unittest.cc" ]
+    sources += [
+      "key_storage_util_linux_unittest.cc",
+      "os_crypt_linux_unittest.cc",
+    ]
     defines = []
 
     if (use_gnome_keyring) {
