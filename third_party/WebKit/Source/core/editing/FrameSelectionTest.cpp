@@ -238,6 +238,27 @@ TEST_F(FrameSelectionTest, MoveRangeSelectionTest) {
   EXPECT_EQ_SELECTED_TEXT("Foo Bar");
 }
 
+TEST_F(FrameSelectionTest, MoveRangeSelectionNoLiveness) {
+  SetBodyContent("<span id=sample>xyz</span>");
+  Element* const sample = GetDocument().getElementById("sample");
+  // Select as: <span id=sample>^xyz|</span>
+  Selection().MoveRangeSelection(
+      CreateVisiblePosition(Position(sample->firstChild(), 1)),
+      CreateVisiblePosition(Position(sample->firstChild(), 1)),
+      kWordGranularity);
+  EXPECT_EQ("xyz", Selection().SelectedText());
+  sample->insertBefore(Text::Create(GetDocument(), "abc"),
+                       sample->firstChild());
+  GetDocument().UpdateStyleAndLayout();
+  const VisibleSelection& selection =
+      Selection().ComputeVisibleSelectionInDOMTree();
+  // Inserting "abc" before "xyz" should not affect to selection.
+  EXPECT_EQ(Position(sample->lastChild(), 0), selection.Start());
+  EXPECT_EQ(Position(sample->lastChild(), 3), selection.End());
+  EXPECT_EQ("xyz", Selection().SelectedText());
+  EXPECT_EQ("abcxyz", sample->innerText());
+}
+
 // For http://crbug.com/695317
 TEST_F(FrameSelectionTest, SelectAllWithInputElement) {
   SetBodyContent("<input>123");
