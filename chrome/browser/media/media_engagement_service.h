@@ -5,13 +5,21 @@
 #ifndef CHROME_BROWSER_MEDIA_MEDIA_ENGAGEMENT_SERVICE_H_
 #define CHROME_BROWSER_MEDIA_MEDIA_ENGAGEMENT_SERVICE_H_
 
+#include <map>
 #include <set>
 
 #include "base/macros.h"
+#include "base/values.h"
 #include "components/keyed_service/core/keyed_service.h"
 
+class GURL;
 class MediaEngagementContentsObserver;
+class MediaEngagementScore;
 class Profile;
+
+namespace base {
+class Clock;
+}
 
 namespace content {
 class WebContents;
@@ -32,10 +40,38 @@ class MediaEngagementService : public KeyedService {
   explicit MediaEngagementService(Profile* profile);
   ~MediaEngagementService() override;
 
+  // Returns the engagement score of |url|.
+  double GetEngagementScore(const GURL& url) const;
+
+  // Returns a map of all stored origins and their engagement levels.
+  std::map<GURL, double> GetScoreMapForTesting() const;
+
+  // Record a visit of a |url|.
+  void RecordVisit(const GURL& url);
+
+  // Record a media playback on a |url|.
+  void RecordPlayback(const GURL& url);
+
  private:
+  friend class MediaEngagementServiceTest;
+  friend class MediaEngagementContentsObserverTest;
   friend MediaEngagementContentsObserver;
 
+  MediaEngagementService(Profile* profile, std::unique_ptr<base::Clock> clock);
+
+  // Returns true if we should record engagement for this url. Currently,
+  // engagement is only earned for HTTP and HTTPS.
+  bool ShouldRecordEngagement(const GURL& url) const;
+
+  // Retrieves the MediaEngagementScore for |url|.
+  MediaEngagementScore* CreateEngagementScore(const GURL& url) const;
+
   std::set<MediaEngagementContentsObserver*> contents_observers_;
+
+  Profile* profile_;
+
+  // An internal clock for testing.
+  std::unique_ptr<base::Clock> clock_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaEngagementService);
 };

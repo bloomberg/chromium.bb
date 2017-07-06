@@ -59,8 +59,7 @@ void MediaEngagementContentsObserver::DidFinishNavigation(
 
   if (committed_origin_.unique())
     return;
-
-  // TODO(mlamouri): record the visit into content settings.
+  service_->RecordVisit(committed_origin_.GetURL());
 }
 
 void MediaEngagementContentsObserver::WasShown() {
@@ -149,7 +148,7 @@ void MediaEngagementContentsObserver::OnSignificantMediaPlaybackTime() {
   if (committed_origin_.unique())
     return;
 
-  // TODO(mlamouri): record the playback into content settings.
+  service_->RecordPlayback(committed_origin_.GetURL());
 }
 
 void MediaEngagementContentsObserver::MaybeInsertSignificantPlayer(
