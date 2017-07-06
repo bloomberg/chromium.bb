@@ -22,21 +22,18 @@ using mojom::blink::PermissionName;
 bool ConnectToPermissionService(
     ExecutionContext* execution_context,
     mojom::blink::PermissionServiceRequest request) {
-  if (execution_context->IsDocument()) {
-    LocalFrame* frame = ToDocument(execution_context)->GetFrame();
-    if (frame) {
-      frame->Client()->GetInterfaceProvider()->GetInterface(std::move(request));
-      return true;
-    }
-  } else if (execution_context->IsWorkerGlobalScope()) {
+  if (execution_context->IsWorkerGlobalScope()) {
     WorkerThread* thread = ToWorkerGlobalScope(execution_context)->GetThread();
-    if (thread) {
-      thread->GetInterfaceProvider()->GetInterface(std::move(request));
-      return true;
-    }
+    thread->GetInterfaceProvider().GetInterface(std::move(request));
+    return true;
   }
 
-  return false;
+  LocalFrame* frame = ToDocument(execution_context)->GetFrame();
+  if (!frame)
+    return false;
+
+  frame->GetInterfaceProvider()->GetInterface(std::move(request));
+  return true;
 }
 
 PermissionDescriptorPtr CreatePermissionDescriptor(PermissionName name) {

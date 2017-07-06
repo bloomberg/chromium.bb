@@ -13,6 +13,10 @@
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/wtf/text/WTFString.h"
 
+namespace service_manager {
+class InterfaceProvider;
+}
+
 namespace blink {
 
 class ExceptionState;
@@ -59,6 +63,7 @@ class MojoInterfaceInterceptor final
 
   MojoInterfaceInterceptor(ScriptState*, const String& interface_name);
 
+  service_manager::InterfaceProvider* GetInterfaceProvider() const;
   void OnInterfaceRequest(mojo::ScopedMessagePipeHandle);
 
   const String interface_name_;

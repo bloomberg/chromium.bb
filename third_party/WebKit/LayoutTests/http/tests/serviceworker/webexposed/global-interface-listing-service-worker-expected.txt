@@ -692,6 +692,59 @@ interface MessagePort : EventTarget
     method start
     setter onmessage
     setter onmessageerror
+interface Mojo
+    static method bindInterface
+    static method createDataPipe
+    static method createMessagePipe
+    static method createSharedBuffer
+    attribute @@toStringTag
+    attribute RESULT_ABORTED
+    attribute RESULT_ALREADY_EXISTS
+    attribute RESULT_BUSY
+    attribute RESULT_CANCELLED
+    attribute RESULT_DATA_LOSS
+    attribute RESULT_DEADLINE_EXCEEDED
+    attribute RESULT_FAILED_PRECONDITION
+    attribute RESULT_INTERNAL
+    attribute RESULT_INVALID_ARGUMENT
+    attribute RESULT_NOT_FOUND
+    attribute RESULT_OK
+    attribute RESULT_OUT_OF_RANGE
+    attribute RESULT_PERMISSION_DENIED
+    attribute RESULT_RESOURCE_EXHAUSTED
+    attribute RESULT_SHOULD_WAIT
+    attribute RESULT_UNAVAILABLE
+    attribute RESULT_UNIMPLEMENTED
+    attribute RESULT_UNKNOWN
+    method constructor
+interface MojoHandle
+    attribute @@toStringTag
+    method close
+    method constructor
+    method discardData
+    method duplicateBufferHandle
+    method mapBuffer
+    method queryData
+    method readData
+    method readMessage
+    method watch
+    method writeData
+    method writeMessage
+interface MojoInterfaceInterceptor : EventTarget
+    attribute @@toStringTag
+    getter oninterfacerequest
+    method constructor
+    method start
+    method stop
+    setter oninterfacerequest
+interface MojoInterfaceRequestEvent : Event
+    attribute @@toStringTag
+    getter handle
+    method constructor
+interface MojoWatcher
+    attribute @@toStringTag
+    method cancel
+    method constructor
 interface NavigationPreloadManager
     attribute @@toStringTag
     method constructor

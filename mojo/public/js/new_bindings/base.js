@@ -99,12 +99,20 @@ mojo.config = {
     mojomRegistry.set(id, LoadState.LOADED);
   }
 
-  function loadMojomIfNecessary(id, url) {
+  function loadMojomIfNecessary(id, relativePath) {
     if (mojomRegistry.has(id)) {
       return;
     }
 
+    if (internal.global.document === undefined) {
+      throw new Error(
+          'Mojom dependency autoloading is not implemented in workers. ' +
+          'Please see config variable mojo.config.autoLoadMojomDeps for more ' +
+          'details.');
+    }
+
     markMojomPendingLoad(id);
+    var url = new URL(relativePath, document.currentScript.src).href;
     internal.global.document.write('<script type="text/javascript" src="' +
                                    url + '"><' + '/script>');
   }

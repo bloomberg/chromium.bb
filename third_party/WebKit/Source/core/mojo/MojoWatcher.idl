@@ -5,6 +5,7 @@
 [
     ActiveScriptWrappable,
     DependentLifetime,
+    Exposed=(Window,Worker),
     ContextEnabled=MojoJS,
     RuntimeEnabled=MojoJS
 ] interface MojoWatcher {

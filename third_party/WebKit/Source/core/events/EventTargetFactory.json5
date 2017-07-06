@@ -19,7 +19,7 @@
     "core/html/track/TextTrackList",
     "core/html/track/VideoTrackList",
     "core/loader/appcache/ApplicationCache",
-    "core/mojo/testing/MojoInterfaceInterceptor",
+    "core/mojo/test/MojoInterfaceInterceptor",
     "core/offscreencanvas/OffscreenCanvas",
     "core/page/EventSource",
     "core/timing/Performance",

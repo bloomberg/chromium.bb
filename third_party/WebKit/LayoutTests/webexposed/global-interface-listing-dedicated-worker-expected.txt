@@ -644,6 +644,59 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method start
 [Worker]     setter onmessage
 [Worker]     setter onmessageerror
+[Worker] interface Mojo
+[Worker]     static method bindInterface
+[Worker]     static method createDataPipe
+[Worker]     static method createMessagePipe
+[Worker]     static method createSharedBuffer
+[Worker]     attribute @@toStringTag
+[Worker]     attribute RESULT_ABORTED
+[Worker]     attribute RESULT_ALREADY_EXISTS
+[Worker]     attribute RESULT_BUSY
+[Worker]     attribute RESULT_CANCELLED
+[Worker]     attribute RESULT_DATA_LOSS
+[Worker]     attribute RESULT_DEADLINE_EXCEEDED
+[Worker]     attribute RESULT_FAILED_PRECONDITION
+[Worker]     attribute RESULT_INTERNAL
+[Worker]     attribute RESULT_INVALID_ARGUMENT
+[Worker]     attribute RESULT_NOT_FOUND
+[Worker]     attribute RESULT_OK
+[Worker]     attribute RESULT_OUT_OF_RANGE
+[Worker]     attribute RESULT_PERMISSION_DENIED
+[Worker]     attribute RESULT_RESOURCE_EXHAUSTED
+[Worker]     attribute RESULT_SHOULD_WAIT
+[Worker]     attribute RESULT_UNAVAILABLE
+[Worker]     attribute RESULT_UNIMPLEMENTED
+[Worker]     attribute RESULT_UNKNOWN
+[Worker]     method constructor
+[Worker] interface MojoHandle
+[Worker]     attribute @@toStringTag
+[Worker]     method close
+[Worker]     method constructor
+[Worker]     method discardData
+[Worker]     method duplicateBufferHandle
+[Worker]     method mapBuffer
+[Worker]     method queryData
+[Worker]     method readData
+[Worker]     method readMessage
+[Worker]     method watch
+[Worker]     method writeData
+[Worker]     method writeMessage
+[Worker] interface MojoInterfaceInterceptor : EventTarget
+[Worker]     attribute @@toStringTag
+[Worker]     getter oninterfacerequest
+[Worker]     method constructor
+[Worker]     method start
+[Worker]     method stop
+[Worker]     setter oninterfacerequest
+[Worker] interface MojoInterfaceRequestEvent : Event
+[Worker]     attribute @@toStringTag
+[Worker]     getter handle
+[Worker]     method constructor
+[Worker] interface MojoWatcher
+[Worker]     attribute @@toStringTag
+[Worker]     method cancel
+[Worker]     method constructor
 [Worker] interface NavigationPreloadManager
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor

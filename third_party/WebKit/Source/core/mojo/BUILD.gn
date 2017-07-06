@@ -12,10 +12,10 @@ blink_core_sources("mojo") {
     "MojoHandle.h",
     "MojoWatcher.cpp",
     "MojoWatcher.h",
-    "testing/MojoInterfaceInterceptor.cpp",
-    "testing/MojoInterfaceInterceptor.h",
-    "testing/MojoInterfaceRequestEvent.cpp",
-    "testing/MojoInterfaceRequestEvent.h",
+    "test/MojoInterfaceInterceptor.cpp",
+    "test/MojoInterfaceInterceptor.h",
+    "test/MojoInterfaceRequestEvent.cpp",
+    "test/MojoInterfaceRequestEvent.h",
   ]
 
   deps = [

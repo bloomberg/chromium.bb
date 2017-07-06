@@ -6,11 +6,11 @@
 #define MojoInterfaceRequestEvent_h
 
 #include "core/events/Event.h"
-#include "core/mojo/testing/MojoInterfaceRequestEventInit.h"
 
 namespace blink {
 
 class MojoHandle;
+class MojoInterfaceRequestEventInit;
 
 // An event dispatched to a MojoInterfaceInterceptor when its frame sends an
 // outgoing request for the interface it was configured to intercept. The event

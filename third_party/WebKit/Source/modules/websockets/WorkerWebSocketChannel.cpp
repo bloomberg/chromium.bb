@@ -403,7 +403,7 @@ bool Bridge::Connect(std::unique_ptr<SourceLocation> location,
       TaskRunnerHelper::Get(TaskType::kNetworking, worker_global_scope_.Get());
   WorkerThread* worker_thread = worker_global_scope_->GetThread();
   mojom::blink::WebSocketPtrInfo socket_ptr_info;
-  worker_thread->GetInterfaceProvider()->GetInterface(
+  worker_thread->GetInterfaceProvider().GetInterface(
       mojo::MakeRequest(&socket_ptr_info));
   parent_frame_task_runners_->Get(TaskType::kNetworking)
       ->PostTask(

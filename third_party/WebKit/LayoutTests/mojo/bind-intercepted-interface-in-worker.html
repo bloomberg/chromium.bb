@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script>
+'use strict';
+
+async_test(t => {
+  let worker = new Worker('resources/bind-intercepted-interface-in-worker.js');
+  worker.postMessage({});
+  worker.onmessage = e => {
+    if (e.data == 'PASS')
+      t.done();
+  };
+}, 'Can implement a Mojo service and intercept it from a worker');
+</script>

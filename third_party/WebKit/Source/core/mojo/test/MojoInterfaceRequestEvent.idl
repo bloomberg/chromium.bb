@@ -4,6 +4,7 @@
 
 [
     Constructor(DOMString type, optional MojoInterfaceRequestEventInit eventInitDict),
+    Exposed=(Window,Worker),
     RuntimeEnabled=MojoJSTest
 ] interface MojoInterfaceRequestEvent : Event {
     readonly attribute MojoHandle handle;
