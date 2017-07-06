@@ -53,6 +53,23 @@ class OzonePlatformCast : public OzonePlatform {
       // rendering because it failed to create a channel to the GPU process.
       // Returning a null pointer will crash via a null-pointer dereference,
       // so instead perform a controlled crash.
+
+      // TODO(servolk): Odroid EGL implementation says there are no valid
+      // configs when HDMI is not connected. This command-line switch will allow
+      // us to avoid crashes in this situation and work in headless mode when
+      // HDMI is disconnected. But this means that graphics won't work later, if
+      // HDMI is reconnected, until the device is rebooted. We'll need to look
+      // into better way to handle dynamic GPU process restarts on HDMI
+      // connect/disconnect events.
+      bool allow_dummy_software_rendering =
+          base::CommandLine::ForCurrentProcess()->HasSwitch(
+              "allow-dummy-software-rendering");
+      if (allow_dummy_software_rendering) {
+        LOG(INFO) << "Using dummy SurfaceFactoryCast";
+        surface_factory_.reset(new SurfaceFactoryCast());
+        return surface_factory_.get();
+      }
+
       LOG(FATAL) << "Unable to create a GPU graphics context, and Cast doesn't "
                     "support software compositing.";
     }
