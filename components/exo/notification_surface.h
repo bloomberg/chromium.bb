@@ -25,7 +25,8 @@ class NotificationSurface : public SurfaceTreeHost, public SurfaceObserver {
                       const std::string& notification_key);
   ~NotificationSurface() override;
 
-  const gfx::Size& GetSize() const;
+  // Get the content size of the |root_surface()|.
+  const gfx::Size& GetContentSize() const;
 
   const std::string& notification_key() const { return notification_key_; }
 
