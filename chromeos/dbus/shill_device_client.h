@@ -93,7 +93,7 @@ class CHROMEOS_EXPORT ShillDeviceClient : public DBusClient {
   // Calls ProposeScan method.
   // |callback| is called after the method call finishes.
   virtual void ProposeScan(const dbus::ObjectPath& device_path,
-                           const VoidDBusMethodCallback& callback) = 0;
+                           VoidDBusMethodCallback callback) = 0;
 
   // Calls SetProperty method.
   // |callback| is called after the method call finishes.
@@ -107,7 +107,7 @@ class CHROMEOS_EXPORT ShillDeviceClient : public DBusClient {
   // |callback| is called after the method call finishes.
   virtual void ClearProperty(const dbus::ObjectPath& device_path,
                              const std::string& name,
-                             const VoidDBusMethodCallback& callback) = 0;
+                             VoidDBusMethodCallback callback) = 0;
 
   // Calls AddIPConfig method.
   // |callback| is called after the method call finishes.

@@ -6,7 +6,10 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -91,13 +94,10 @@ void OnStringMethodWithErrorCallback(
 
 // Handles responses for methods without results.
 void OnVoidMethod(ShillClientHelper::RefHolder* ref_holder,
-                  const VoidDBusMethodCallback& callback,
+                  VoidDBusMethodCallback callback,
                   dbus::Response* response) {
-  if (!response) {
-    callback.Run(DBUS_METHOD_CALL_FAILURE);
-    return;
-  }
-  callback.Run(DBUS_METHOD_CALL_SUCCESS);
+  std::move(callback).Run(response ? DBUS_METHOD_CALL_SUCCESS
+                                   : DBUS_METHOD_CALL_FAILURE);
 }
 
 // Handles responses for methods with ObjectPath results.
@@ -276,15 +276,14 @@ void ShillClientHelper::MonitorPropertyChangedInternal(
                                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ShillClientHelper::CallVoidMethod(
-    dbus::MethodCall* method_call,
-    const VoidDBusMethodCallback& callback) {
+void ShillClientHelper::CallVoidMethod(dbus::MethodCall* method_call,
+                                       VoidDBusMethodCallback callback) {
   DCHECK(!callback.is_null());
   proxy_->CallMethod(
       method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
       base::Bind(&OnVoidMethod,
                  base::Owned(new RefHolder(weak_ptr_factory_.GetWeakPtr())),
-                 callback));
+                 base::Passed(std::move(callback))));
 }
 
 void ShillClientHelper::CallObjectPathMethod(

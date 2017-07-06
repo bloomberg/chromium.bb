@@ -34,7 +34,7 @@ class FakeSessionManagerClient : public SessionManagerClient {
   void EmitLoginPromptVisible() override;
   void RestartJob(int socket_fd,
                   const std::vector<std::string>& argv,
-                  const VoidDBusMethodCallback& callback) override;
+                  VoidDBusMethodCallback callback) override;
   void StartSession(const cryptohome::Identification& cryptohome_id) override;
   void StopSession() override;
   void NotifySupervisedUserCreationStarted() override;

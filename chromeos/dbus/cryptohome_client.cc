@@ -7,7 +7,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -343,17 +346,17 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  void TpmCanAttemptOwnership(const VoidDBusMethodCallback& callback) override {
+  void TpmCanAttemptOwnership(VoidDBusMethodCallback callback) override {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomeTpmCanAttemptOwnership);
-    CallVoidMethod(&method_call, callback);
+    CallVoidMethod(&method_call, std::move(callback));
   }
 
   // CryptohomeClient overrides.
-  void TpmClearStoredPassword(const VoidDBusMethodCallback& callback) override {
+  void TpmClearStoredPassword(VoidDBusMethodCallback callback) override {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomeTpmClearStoredPassword);
-    CallVoidMethod(&method_call, callback);
+    CallVoidMethod(&method_call, std::move(callback));
   }
 
   // CryptohomeClient override.
@@ -922,7 +925,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   void MigrateToDircrypto(const cryptohome::Identification& cryptohome_id,
-                          const VoidDBusMethodCallback& callback) override {
+                          VoidDBusMethodCallback callback) override {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomeMigrateToDircrypto);
 
@@ -936,7 +939,8 @@ class CryptohomeClientImpl : public CryptohomeClient {
     // user file size and the number. Setting the time limit to infinite.
     proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                        base::Bind(&CryptohomeClientImpl::OnVoidMethod,
-                                  weak_ptr_factory_.GetWeakPtr(), callback));
+                                  weak_ptr_factory_.GetWeakPtr(),
+                                  base::Passed(std::move(callback))));
   }
 
   void NeedsDircryptoMigration(
@@ -1030,20 +1034,16 @@ class CryptohomeClientImpl : public CryptohomeClient {
 
   // Calls a method without result values.
   void CallVoidMethod(dbus::MethodCall* method_call,
-                      const VoidDBusMethodCallback& callback) {
-    proxy_->CallMethod(method_call, kTpmDBusTimeoutMs ,
+                      VoidDBusMethodCallback callback) {
+    proxy_->CallMethod(method_call, kTpmDBusTimeoutMs,
                        base::Bind(&CryptohomeClientImpl::OnVoidMethod,
                                   weak_ptr_factory_.GetWeakPtr(),
-                                  callback));
+                                  base::Passed(std::move(callback))));
   }
 
-  void OnVoidMethod(const VoidDBusMethodCallback& callback,
-                    dbus::Response* response) {
-    if (!response) {
-      callback.Run(DBUS_METHOD_CALL_FAILURE);
-      return;
-    }
-    callback.Run(DBUS_METHOD_CALL_SUCCESS);
+  void OnVoidMethod(VoidDBusMethodCallback callback, dbus::Response* response) {
+    std::move(callback).Run(response ? DBUS_METHOD_CALL_SUCCESS
+                                     : DBUS_METHOD_CALL_FAILURE);
   }
 
   // Calls a method with a bool value reult and block.

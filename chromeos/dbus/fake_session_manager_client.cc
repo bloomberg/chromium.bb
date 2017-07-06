@@ -88,10 +88,9 @@ void FakeSessionManagerClient::EmitLoginPromptVisible() {
     observer.EmitLoginPromptVisibleCalled();
 }
 
-void FakeSessionManagerClient::RestartJob(
-    int socket_fd,
-    const std::vector<std::string>& argv,
-    const VoidDBusMethodCallback& callback) {}
+void FakeSessionManagerClient::RestartJob(int socket_fd,
+                                          const std::vector<std::string>& argv,
+                                          VoidDBusMethodCallback callback) {}
 
 void FakeSessionManagerClient::StartSession(
     const cryptohome::Identification& cryptohome_id) {

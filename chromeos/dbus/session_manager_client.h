@@ -116,7 +116,7 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   // waiting for the result.
   virtual void RestartJob(int socket_fd,
                           const std::vector<std::string>& argv,
-                          const VoidDBusMethodCallback& callback) = 0;
+                          VoidDBusMethodCallback callback) = 0;
 
   // Starts the session for the user.
   virtual void StartSession(

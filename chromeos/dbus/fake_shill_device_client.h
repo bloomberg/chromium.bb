@@ -35,7 +35,7 @@ class CHROMEOS_EXPORT FakeShillDeviceClient
   void GetProperties(const dbus::ObjectPath& device_path,
                      const DictionaryValueCallback& callback) override;
   void ProposeScan(const dbus::ObjectPath& device_path,
-                   const VoidDBusMethodCallback& callback) override;
+                   VoidDBusMethodCallback callback) override;
   void SetProperty(const dbus::ObjectPath& device_path,
                    const std::string& name,
                    const base::Value& value,
@@ -43,7 +43,7 @@ class CHROMEOS_EXPORT FakeShillDeviceClient
                    const ErrorCallback& error_callback) override;
   void ClearProperty(const dbus::ObjectPath& device_path,
                      const std::string& name,
-                     const VoidDBusMethodCallback& callback) override;
+                     VoidDBusMethodCallback callback) override;
   void AddIPConfig(const dbus::ObjectPath& device_path,
                    const std::string& method,
                    const ObjectPathDBusMethodCallback& callback) override;
@@ -133,7 +133,7 @@ class CHROMEOS_EXPORT FakeShillDeviceClient
                                 const DictionaryValueCallback& callback) const;
 
   // Posts a task to run a void callback with status code |status|.
-  void PostVoidCallback(const VoidDBusMethodCallback& callback,
+  void PostVoidCallback(VoidDBusMethodCallback callback,
                         DBusMethodCallStatus status);
 
   void SetPropertyInternal(const dbus::ObjectPath& device_path,
