@@ -36,6 +36,14 @@ gfx::ImageSkia GetNightLightDisabledStateIcon(bool night_light_enabled) {
                                kMenuIconColorDisabled);
 }
 
+base::string16 GetNightLightTooltipText(bool night_light_enabled) {
+  return l10n_util::GetStringFUTF16(
+      IDS_ASH_STATUS_TRAY_NIGHT_LIGHT,
+      l10n_util::GetStringUTF16(
+          night_light_enabled ? IDS_ASH_STATUS_TRAY_NIGHT_LIGHT_ON_STATE
+                              : IDS_ASH_STATUS_TRAY_NIGHT_LIGHT_OFF_STATE));
+}
+
 }  // namespace
 
 NightLightToggleButton::NightLightToggleButton(views::ButtonListener* listener)
@@ -50,6 +58,7 @@ void NightLightToggleButton::Update() {
   const bool night_light_enabled =
       Shell::Get()->night_light_controller()->GetEnabled();
 
+  SetTooltipText(GetNightLightTooltipText(night_light_enabled));
   SetImage(views::Button::STATE_NORMAL,
            GetNightLightNormalStateIcon(night_light_enabled));
   SetImage(views::Button::STATE_DISABLED,

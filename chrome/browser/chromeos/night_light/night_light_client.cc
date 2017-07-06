@@ -4,7 +4,10 @@
 
 #include "chrome/browser/chromeos/night_light/night_light_client.h"
 
+#include <algorithm>
+
 #include "ash/public/interfaces/constants.mojom.h"
+#include "base/time/clock.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -31,7 +34,8 @@ NightLightClient::NightLightClient(
           url_context_getter,
           chromeos::SimpleGeolocationProvider::DefaultGeolocationProviderURL()),
       binding_(this),
-      backoff_delay_(kMinimumDelayAfterFailure) {}
+      backoff_delay_(kMinimumDelayAfterFailure),
+      timer_(base::MakeUnique<base::OneShotTimer>()) {}
 
 NightLightClient::~NightLightClient() {}
 
@@ -49,15 +53,33 @@ void NightLightClient::Start() {
 
 void NightLightClient::OnScheduleTypeChanged(
     ash::mojom::NightLightController::ScheduleType new_type) {
-  if (new_type ==
+  if (new_type !=
       ash::mojom::NightLightController::ScheduleType::kSunsetToSunrise) {
-    // Schedule an immediate request.
-    using_geoposition_ = true;
-    ScheduleNextRequest(base::TimeDelta::FromSeconds(0));
-  } else {
     using_geoposition_ = false;
-    timer_.Stop();
+    timer_->Stop();
+    return;
   }
+
+  using_geoposition_ = true;
+  // No need to request a new position if we already have a valid one from a
+  // request less than kNextRequestDelayAfterSuccess ago.
+  base::Time now = GetNow();
+  if ((now - last_successful_geo_request_time_) <
+      kNextRequestDelayAfterSuccess) {
+    // Use the current valid position to update NightLightController.
+    SendCurrentGeoposition();
+  }
+
+  // Next request is either immediate or kNextRequestDelayAfterSuccess later
+  // than the last success time, whichever is greater.
+  ScheduleNextRequest(std::max(
+      base::TimeDelta::FromSeconds(0),
+      last_successful_geo_request_time_ + kNextRequestDelayAfterSuccess - now));
+}
+
+// static
+base::TimeDelta NightLightClient::GetNextRequestDelayAfterSuccessForTesting() {
+  return kNextRequestDelayAfterSuccess;
 }
 
 void NightLightClient::SetNightLightControllerPtrForTesting(
@@ -67,6 +89,15 @@ void NightLightClient::SetNightLightControllerPtrForTesting(
 
 void NightLightClient::FlushNightLightControllerForTesting() {
   night_light_controller_.FlushForTesting();
+}
+
+void NightLightClient::SetTimerForTesting(
+    std::unique_ptr<base::OneShotTimer> timer) {
+  timer_ = std::move(timer);
+}
+
+void NightLightClient::SetClockForTesting(base::Clock* clock) {
+  clock_ = clock;
 }
 
 void NightLightClient::OnGeoposition(const chromeos::Geoposition& position,
@@ -90,9 +121,11 @@ void NightLightClient::OnGeoposition(const chromeos::Geoposition& position,
     return;
   }
 
-  night_light_controller_->SetCurrentGeoposition(
-      ash::mojom::SimpleGeoposition::New(position.latitude,
-                                         position.longitude));
+  last_successful_geo_request_time_ = GetNow();
+
+  latitude_ = position.latitude;
+  longitude_ = position.longitude;
+  SendCurrentGeoposition();
 
   // On success, reset the backoff delay to its minimum value, and schedule
   // another request.
@@ -100,8 +133,17 @@ void NightLightClient::OnGeoposition(const chromeos::Geoposition& position,
   ScheduleNextRequest(kNextRequestDelayAfterSuccess);
 }
 
+base::Time NightLightClient::GetNow() const {
+  return clock_ ? clock_->Now() : base::Time::Now();
+}
+
+void NightLightClient::SendCurrentGeoposition() {
+  night_light_controller_->SetCurrentGeoposition(
+      ash::mojom::SimpleGeoposition::New(latitude_, longitude_));
+}
+
 void NightLightClient::ScheduleNextRequest(base::TimeDelta delay) {
-  timer_.Start(FROM_HERE, delay, this, &NightLightClient::RequestGeoposition);
+  timer_->Start(FROM_HERE, delay, this, &NightLightClient::RequestGeoposition);
 }
 
 void NightLightClient::RequestGeoposition() {
