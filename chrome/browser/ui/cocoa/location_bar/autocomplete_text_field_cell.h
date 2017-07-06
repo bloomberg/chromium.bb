@@ -75,12 +75,9 @@ class LocationBarDecoration;
 - (NSRect)frameForDecoration:(const LocationBarDecoration*)aDecoration
                      inFrame:(NSRect)cellFrame;
 
-// Returns the frame representing the background of |decoration|. Also sets
-// |isLeftDecoration| according to whether the decoration appears on the left or
-// the right side of the text field.
-- (NSRect)backgroundFrameForDecoration:(LocationBarDecoration*)decoration
-                               inFrame:(NSRect)cellFrame
-                      isLeftDecoration:(BOOL*)isLeftDecoration;
+// Returns whether |decoration| appears on the left or the right side of the
+// text field.
+- (BOOL)isLeftDecoration:(LocationBarDecoration*)decoration;
 
 // Returns true if it's okay to drop dragged data into the view at the
 // given location.

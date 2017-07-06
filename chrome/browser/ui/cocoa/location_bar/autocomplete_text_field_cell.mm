@@ -274,16 +274,11 @@ size_t CalculatePositionsInFrame(
   return NSZeroRect;
 }
 
-- (NSRect)backgroundFrameForDecoration:(LocationBarDecoration*)decoration
-                               inFrame:(NSRect)cellFrame
-                      isLeftDecoration:(BOOL*)isLeftDecoration {
-  NSRect decorationFrame =
-      [self frameForDecoration:decoration inFrame:cellFrame];
+- (BOOL)isLeftDecoration:(LocationBarDecoration*)decoration {
   std::vector<LocationBarDecoration*>& left_decorations =
       cocoa_l10n_util::ShouldDoExperimentalRTLLayout() ? trailingDecorations_
                                                        : leadingDecorations_;
-  *isLeftDecoration = base::ContainsValue(left_decorations, decoration);
-  return decoration->GetBackgroundFrame(decorationFrame);
+  return base::ContainsValue(left_decorations, decoration);
 }
 
 // Overriden to account for the decorations.

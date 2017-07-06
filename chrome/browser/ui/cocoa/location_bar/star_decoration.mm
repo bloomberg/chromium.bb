@@ -41,8 +41,7 @@ void StarDecoration::SetStarred(bool starred, bool location_bar_is_dark) {
   tooltip_.reset([l10n_util::GetNSStringWithFixup(tip_id) retain]);
 }
 
-NSPoint StarDecoration::GetBubblePointInFrame(NSRect frame) {
-  const NSRect draw_frame = GetDrawRectInFrame(frame);
+NSPoint StarDecoration::GetStarBubblePointInFrame(NSRect draw_frame) {
   return NSMakePoint(NSMidX(draw_frame),
                      NSMaxY(draw_frame) - kStarPointYOffset);
 }
@@ -58,6 +57,10 @@ bool StarDecoration::OnMousePressed(NSRect frame, NSPoint location) {
 
 NSString* StarDecoration::GetToolTip() {
   return tooltip_.get();
+}
+
+NSPoint StarDecoration::GetBubblePointInFrame(NSRect frame) {
+  return GetStarBubblePointInFrame(GetDrawRectInFrame(frame));
 }
 
 SkColor StarDecoration::GetMaterialIconColor(bool location_bar_is_dark) const {
