@@ -9,46 +9,46 @@
 <link rel="import" href="../settings_shared_css.html">
 
 <dom-module id="settings-credit-card-edit-dialog">
-  <style include="settings-shared md-select">
-    paper-input {
-      width: var(--paper-input-max-width);
-    }
-
-    .md-select-wrapper {
-      /* Mitigate for md-select's start padding, to make it look aligned with
-       * other elements on the page. */
-      -webkit-margin-start: calc(-1 * var(--md-select-side-padding));
-    }
-
-    .md-select-wrapper + .md-select-wrapper {
-      -webkit-margin-start: 8px;
-    }
-
-    #expired {
-      align-items: center;
-      background-color: var(--paper-red-50);
-      color: var(--settings-error-color);
-      display: flex;
-      height: 40px;
-      margin-top: 12px;
-      padding: 0 0 0 8px;
-    }
-
-    #month {
-      width: 70px;
-    }
-
-    #year {
-      width: 100px;
-    }
-
-    label {
-      color: var(--light-theme-secondary-color);
-      display: block;
-      padding-top: 8px;
-    }
-  </style>
   <template>
+    <style include="settings-shared md-select">
+      paper-input {
+        width: var(--paper-input-max-width);
+      }
+
+      .md-select-wrapper {
+        /* Mitigate for md-select's start padding, to make it look aligned with
+         * other elements on the page. */
+        -webkit-margin-start: calc(-1 * var(--md-select-side-padding));
+      }
+
+      .md-select-wrapper + .md-select-wrapper {
+        -webkit-margin-start: 8px;
+      }
+
+      #expired {
+        align-items: center;
+        background-color: var(--paper-red-50);
+        color: var(--settings-error-color);
+        display: flex;
+        height: 40px;
+        margin-top: 12px;
+        padding: 0 0 0 8px;
+      }
+
+      #month {
+        width: 70px;
+      }
+
+      #year {
+        width: 100px;
+      }
+
+      label {
+        color: var(--light-theme-secondary-color);
+        display: block;
+        padding-top: 8px;
+      }
+    </style>
     <dialog is="cr-dialog" id="dialog" close-text="$i18n{close}">
       <div class="title">[[title_]]</div>
       <div class="body">

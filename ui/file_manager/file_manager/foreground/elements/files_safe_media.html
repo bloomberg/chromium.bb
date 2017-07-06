@@ -4,21 +4,21 @@
 -->
 
 <dom-module id="files-safe-media">
-  <style>
-    #content {
-      height: 100%;
-      width: 100%;
-    }
-    #content.audio {
-      height: 32px;
-    }
-    webview {
-      display: inline-block;
-      height: 100%;
-      width: 100%;
-    }
-  </style>
   <template>
+    <style>
+      #content {
+        height: 100%;
+        width: 100%;
+      }
+      #content.audio {
+        height: 32px;
+      }
+      webview {
+        display: inline-block;
+        height: 100%;
+        width: 100%;
+      }
+    </style>
     <div id="content" class$="[[type]]"></div>
   </template>
 </dom-module>
