@@ -17,13 +17,17 @@ namespace safe_browsing {
 
 namespace {
 
-bool CanStartDataCollection(const SBErrorOptions& error_display_options) {
+bool CanStartDataCollection(const SBErrorOptions& error_display_options,
+                            const TriggerThrottler& throttler,
+                            const TriggerType trigger_type) {
   // We start data collection as long as user is not incognito and is able to
-  // change the Extended Reporting opt-in. We don't require them to be opted-in
-  // to SBER to begin collecting data, since they may be able to change the
-  // setting while data collection is running (eg: on a security interstitial).
+  // change the Extended Reporting opt-in, and the |trigger_type| has available
+  // quota. We don't require users to be opted-in to SBER to begin collecting
+  // data, since they may be able to change the setting while data collection is
+  // running (eg: on a security interstitial).
   return !error_display_options.is_off_the_record &&
-         error_display_options.is_extended_reporting_opt_in_allowed;
+         error_display_options.is_extended_reporting_opt_in_allowed &&
+         throttler.TriggerCanFire(trigger_type);
 }
 
 bool CanSendReport(const SBErrorOptions& error_display_options) {
@@ -59,7 +63,7 @@ SBErrorOptions TriggerManager::GetSBErrorDisplayOptions(
 }
 
 bool TriggerManager::StartCollectingThreatDetails(
-    const SafeBrowsingTriggerType trigger_type,
+    const TriggerType trigger_type,
     content::WebContents* web_contents,
     const security_interstitials::UnsafeResource& resource,
     net::URLRequestContextGetter* request_context_getter,
@@ -67,7 +71,8 @@ bool TriggerManager::StartCollectingThreatDetails(
     const SBErrorOptions& error_display_options) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (!CanStartDataCollection(error_display_options))
+  if (!CanStartDataCollection(error_display_options, trigger_throttler_,
+                              trigger_type))
     return false;
 
   // Ensure we're not already collecting data on this tab.
@@ -85,7 +90,7 @@ bool TriggerManager::StartCollectingThreatDetails(
 }
 
 bool TriggerManager::FinishCollectingThreatDetails(
-    const SafeBrowsingTriggerType trigger_type,
+    const TriggerType trigger_type,
     content::WebContents* web_contents,
     const base::TimeDelta& delay,
     bool did_proceed,
@@ -115,6 +120,9 @@ bool TriggerManager::FinishCollectingThreatDetails(
         base::BindOnce(&ThreatDetails::FinishCollection, threat_details,
                        did_proceed, num_visits),
         delay);
+
+    // Record that this trigger fired and collected data.
+    trigger_throttler_.TriggerFired(trigger_type);
   }
 
   // Regardless of whether the report got sent, clean up the data collector on

@@ -59,8 +59,8 @@ AwSafeBrowsingBlockingPage::AwSafeBrowsingBlockingPage(
     threat_details_in_progress_ =
         aw_browser_context->GetSafeBrowsingTriggerManager()
             ->StartCollectingThreatDetails(
-                safe_browsing::SafeBrowsingTriggerType::SECURITY_INTERSTITIAL,
-                web_contents, unsafe_resources[0],
+                safe_browsing::TriggerType::SECURITY_INTERSTITIAL, web_contents,
+                unsafe_resources[0],
                 aw_browser_context->GetAwURLRequestContext(),
                 /*history_service*/ nullptr,
                 sb_error_ui()->get_error_display_options());
@@ -121,12 +121,11 @@ void AwSafeBrowsingBlockingPage::FinishThreatDetails(
   // to send the report.
   AwBrowserContext* aw_browser_context =
       AwBrowserContext::FromWebContents(web_contents());
-  bool report_sent =
-      aw_browser_context->GetSafeBrowsingTriggerManager()
-          ->FinishCollectingThreatDetails(
-              safe_browsing::SafeBrowsingTriggerType::SECURITY_INTERSTITIAL,
-              web_contents(), delay, did_proceed, num_visits,
-              sb_error_ui()->get_error_display_options());
+  bool report_sent = aw_browser_context->GetSafeBrowsingTriggerManager()
+                         ->FinishCollectingThreatDetails(
+                             safe_browsing::TriggerType::SECURITY_INTERSTITIAL,
+                             web_contents(), delay, did_proceed, num_visits,
+                             sb_error_ui()->get_error_display_options());
 
   if (report_sent) {
     controller()->metrics_helper()->RecordUserInteraction(

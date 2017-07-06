@@ -15,6 +15,7 @@ source_set("triggers") {
     "//content/public/browser:browser",
   ]
   deps = [
+    ":trigger_throttler",
     "//base:base",
     "//components/prefs:prefs",
     "//components/safe_browsing:safe_browsing",
@@ -22,12 +23,24 @@ source_set("triggers") {
   ]
 }
 
+source_set("trigger_throttler") {
+  sources = [
+    "trigger_throttler.cc",
+    "trigger_throttler.h",
+  ]
+  deps = [
+    "//base:base",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [
     "trigger_manager_unittest.cc",
+    "trigger_throttler_unittest.cc",
   ]
   deps = [
+    ":trigger_throttler",
     ":triggers",
     "//base",
     "//chrome/test:test_support",
