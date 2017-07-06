@@ -346,6 +346,7 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockWheelEventRouting) {
   wheel_event.SetPositionInWidget(10, 11);
   wheel_event.delta_x = -12;
   wheel_event.delta_y = -13;
+  wheel_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
   router->RouteMouseWheelEvent(root_view, &wheel_event, ui::LatencyInfo());
 
   // Make sure that the renderer handled the input event.
