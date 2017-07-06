@@ -911,15 +911,11 @@ void ScriptLoader::Execute() {
   DCHECK(pending_script_->IsExternal());
   bool error_occurred = false;
   Script* script = pending_script_->GetSource(NullURL(), error_occurred);
-  const bool was_canceled = pending_script_->WasCanceled();
+  const bool wasCanceled = pending_script_->WasCanceled();
   DetachPendingScript();
   if (error_occurred) {
     DispatchErrorEvent();
-  } else {
-    // TODO(hiroshige): Remove |was_canceled| once it is confirmed that this
-    // CHECK never fails.
-    CHECK(!was_canceled);
-
+  } else if (!wasCanceled) {
     switch (ExecuteScript(script)) {
       case ExecuteScriptResult::kShouldFireLoadEvent:
         DispatchLoadEvent();
