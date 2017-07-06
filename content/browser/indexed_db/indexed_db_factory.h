@@ -64,6 +64,10 @@ class CONTENT_EXPORT IndexedDBFactory
       const base::FilePath& data_directory,
       bool force_close) = 0;
 
+  virtual void AbortTransactionsAndCompactDatabase(
+      base::OnceCallback<void(leveldb::Status)> callback,
+      const url::Origin& origin) = 0;
+
   virtual void HandleBackingStoreFailure(const url::Origin& origin) = 0;
   virtual void HandleBackingStoreCorruption(
       const url::Origin& origin,

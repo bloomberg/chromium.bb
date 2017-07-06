@@ -297,6 +297,38 @@ void IndexedDBFactoryImpl::DatabaseDeleted(
   context_->DatabaseDeleted(identifier.first);
 }
 
+void IndexedDBFactoryImpl::AbortTransactionsAndCompactDatabase(
+    base::OnceCallback<void(leveldb::Status)> callback,
+    const url::Origin& origin) {
+  IDB_TRACE("IndexedDBFactoryImpl::AbortTransactionsAndCompactDatabase");
+  const scoped_refptr<IndexedDBBackingStore>& backing_store =
+      backing_store_map_[origin];
+  if (!backing_store) {
+    std::move(callback).Run(leveldb::Status::IOError(
+        "Internal error opening backing store for "
+        "indexedDB.abortTransactionsAndCompactDatabase."));
+    return;
+  }
+
+  leveldb::Status get_names_status;
+  std::vector<base::string16> db_names =
+      backing_store->GetDatabaseNames(&get_names_status);
+  if (!get_names_status.ok()) {
+    std::move(callback).Run(leveldb::Status::IOError(
+        "Internal error getting origin database names for "
+        "indexedDB.abortTransactionsAndCompactDatabase."));
+    return;
+  }
+  for (base::string16& name : db_names) {
+    const scoped_refptr<IndexedDBDatabase>& db =
+        database_map_[std::make_pair(origin, name)];
+    db->AbortAllTransactionsForConnections();
+  }
+
+  backing_store->Compact();
+  std::move(callback).Run(leveldb::Status::OK());
+}
+
 void IndexedDBFactoryImpl::HandleBackingStoreFailure(const Origin& origin) {
   // NULL after ContextDestroyed() called, and in some unit tests.
   if (!context_)

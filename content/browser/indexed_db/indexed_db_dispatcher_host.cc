@@ -4,6 +4,8 @@
 
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/guid.h"
@@ -33,6 +35,28 @@ bool IsValidOrigin(const url::Origin& origin) {
   return !origin.unique();
 }
 
+void DoCallStatusCallback(
+    IndexedDBDispatcherHost::AbortTransactionsAndCompactDatabaseCallback
+        callback,
+    leveldb::Status status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (status.ok())
+    std::move(callback).Run(::indexed_db::mojom::CompactionStatus::OK);
+  else
+    std::move(callback).Run(::indexed_db::mojom::CompactionStatus::Error);
+}
+
+void CallStatusCallbackOnIOThread(
+    scoped_refptr<base::SequencedTaskRunner> io_runner,
+    IndexedDBDispatcherHost::AbortTransactionsAndCompactDatabaseCallback
+        mojo_callback,
+    leveldb::Status status) {
+  io_runner->PostTask(
+      FROM_HERE,
+      base::BindOnce(&DoCallStatusCallback, std::move(mojo_callback), status));
+}
+
 }  // namespace
 
 class IndexedDBDispatcherHost::IDBSequenceHelper {
@@ -59,6 +83,9 @@ class IndexedDBDispatcherHost::IDBSequenceHelper {
                                  const url::Origin& origin,
                                  const base::string16& name,
                                  bool force_close);
+  void AbortTransactionsAndCompactDatabaseOnIDBThread(
+      base::OnceCallback<void(leveldb::Status)> callback,
+      const url::Origin& origin);
 
  private:
   const int ipc_process_id_;
@@ -229,6 +256,27 @@ void IndexedDBDispatcherHost::DeleteDatabase(
                      origin, name, force_close));
 }
 
+void IndexedDBDispatcherHost::AbortTransactionsAndCompactDatabase(
+    const url::Origin& origin,
+    AbortTransactionsAndCompactDatabaseCallback mojo_callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (!IsValidOrigin(origin)) {
+    mojo::ReportBadMessage(kInvalidOrigin);
+    return;
+  }
+
+  base::OnceCallback<void(leveldb::Status)> callback_on_io = base::BindOnce(
+      &CallStatusCallbackOnIOThread, base::ThreadTaskRunnerHandle::Get(),
+      std::move(mojo_callback));
+  idb_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &IDBSequenceHelper::AbortTransactionsAndCompactDatabaseOnIDBThread,
+          base::Unretained(idb_helper_), base::Passed(&callback_on_io),
+          origin));
+}
+
 void IndexedDBDispatcherHost::InvalidateWeakPtrsAndClearBindings() {
   weak_factory_.InvalidateWeakPtrs();
   cursor_bindings_.CloseAllBindings();
@@ -282,6 +330,16 @@ void IndexedDBDispatcherHost::IDBSequenceHelper::DeleteDatabaseOnIDBThread(
   indexed_db_context_->GetIDBFactory()->DeleteDatabase(
       name, request_context_getter_, callbacks, origin, indexed_db_path,
       force_close);
+}
+
+void IndexedDBDispatcherHost::IDBSequenceHelper::
+    AbortTransactionsAndCompactDatabaseOnIDBThread(
+        base::OnceCallback<void(leveldb::Status)> callback,
+        const url::Origin& origin) {
+  DCHECK(indexed_db_context_->TaskRunner()->RunsTasksInCurrentSequence());
+
+  indexed_db_context_->GetIDBFactory()->AbortTransactionsAndCompactDatabase(
+      std::move(callback), origin);
 }
 
 }  // namespace content

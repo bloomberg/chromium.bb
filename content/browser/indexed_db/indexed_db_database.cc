@@ -1930,6 +1930,16 @@ void IndexedDBDatabase::VersionChangeAbortOperation(int64_t previous_version) {
   metadata_.version = previous_version;
 }
 
+void IndexedDBDatabase::AbortAllTransactionsForConnections() {
+  IDB_TRACE("IndexedDBDatabase::AbortAllTransactionsForConnections");
+
+  for (IndexedDBConnection* connection : connections_) {
+    connection->AbortAllTransactions(
+        IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionUnknownError,
+                               "Database is compacting."));
+  }
+}
+
 void IndexedDBDatabase::ReportError(leveldb::Status status) {
   DCHECK(!status.ok());
   if (status.IsCorruption()) {
