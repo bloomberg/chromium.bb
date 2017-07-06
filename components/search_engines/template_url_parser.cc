@@ -280,8 +280,10 @@ void TemplateURLParsingContext::EndElementImpl(void* ctx, const xmlChar* name) {
       break;
     }
     case TemplateURLParsingContext::ALIAS: {
-      context->data_.SetKeyword(context->string_);
-      context->has_custom_keyword_ = true;
+      if (!context->string_.empty()) {
+        context->data_.SetKeyword(context->string_);
+        context->has_custom_keyword_ = true;
+      }
       break;
     }
     default:
