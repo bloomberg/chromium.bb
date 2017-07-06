@@ -9,10 +9,10 @@
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/field_trial_param_associator.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "cc/test/ordered_simple_task_runner.h"
-#include "components/variations/variations_associated_data.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/scheduler/base/test_time_source.h"
 #include "platform/scheduler/child/scheduler_tqm_delegate_for_test.h"
@@ -783,7 +783,7 @@ TEST_F(WebViewSchedulerImplTest, BackgroundTimerThrottling) {
       ElementsAre(base::TimeTicks() + base::TimeDelta::FromSeconds(4),
                   base::TimeTicks() + base::TimeDelta::FromSeconds(26)));
 
-  variations::testing::ClearAllVariationParams();
+  base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
 }
 
 TEST_F(WebViewSchedulerImplTest, OpenWebSocketExemptsFromBudgetThrottling) {
@@ -899,7 +899,7 @@ TEST_F(WebViewSchedulerImplTest, OpenWebSocketExemptsFromBudgetThrottling) {
                   base::TimeTicks() + base::TimeDelta::FromSeconds(109),
                   base::TimeTicks() + base::TimeDelta::FromSeconds(134)));
 
-  variations::testing::ClearAllVariationParams();
+  base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
 }
 
 }  // namespace scheduler
