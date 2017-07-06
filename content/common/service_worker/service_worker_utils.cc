@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "content/public/common/browser_side_navigation_policy.h"
@@ -139,6 +140,11 @@ bool ServiceWorkerUtils::AllOriginsMatchAndCanAccessServiceWorkers(
 bool ServiceWorkerUtils::IsServicificationEnabled() {
   return IsBrowserSideNavigationEnabled() &&
          base::FeatureList::IsEnabled(features::kNetworkService);
+}
+
+// static
+bool ServiceWorkerUtils::IsScriptStreamingEnabled() {
+  return base::FeatureList::IsEnabled(features::kServiceWorkerScriptStreaming);
 }
 
 bool LongestScopeMatcher::MatchLongest(const GURL& scope) {

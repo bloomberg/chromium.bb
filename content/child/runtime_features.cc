@@ -334,6 +334,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   WebRuntimeFeatures::EnableServiceWorkerNavigationPreload(
       base::FeatureList::IsEnabled(features::kServiceWorkerNavigationPreload));
 
+  WebRuntimeFeatures::EnableServiceWorkerScriptStreaming(
+      base::FeatureList::IsEnabled(features::kServiceWorkerScriptStreaming));
+
   WebRuntimeFeatures::EnableOffMainThreadFetch(
       base::FeatureList::IsEnabled(features::kOffMainThreadFetch));
 

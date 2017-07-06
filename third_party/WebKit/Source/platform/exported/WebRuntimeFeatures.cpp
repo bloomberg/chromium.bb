@@ -364,6 +364,10 @@ void WebRuntimeFeatures::EnableServiceWorkerNavigationPreload(bool enable) {
   RuntimeEnabledFeatures::SetServiceWorkerNavigationPreloadEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableServiceWorkerScriptStreaming(bool enable) {
+  RuntimeEnabledFeatures::SetServiceWorkerScriptStreamingEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableAutoplayMutedVideos(bool enable) {
   RuntimeEnabledFeatures::SetAutoplayMutedVideosEnabled(enable);
 }

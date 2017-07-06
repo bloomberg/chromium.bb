@@ -67,6 +67,7 @@ CONTENT_EXPORT extern const base::Feature
     kRequireSecureOriginsForPepperMediaRequests;
 CONTENT_EXPORT extern const base::Feature kScrollAnchoring;
 CONTENT_EXPORT extern const base::Feature kServiceWorkerNavigationPreload;
+CONTENT_EXPORT extern const base::Feature kServiceWorkerScriptStreaming;
 CONTENT_EXPORT extern const base::Feature kSharedArrayBuffer;
 CONTENT_EXPORT extern const base::Feature kSkipCompositingSmallScrollers;
 CONTENT_EXPORT extern const base::Feature kSlimmingPaintInvalidation;
