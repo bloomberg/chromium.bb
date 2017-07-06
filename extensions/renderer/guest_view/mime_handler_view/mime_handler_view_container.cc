@@ -148,7 +148,7 @@ void MimeHandlerViewContainer::OnReady() {
   if (!render_frame() || !is_embedded_)
     return;
 
-  blink::WebFrame* frame = render_frame()->GetWebFrame();
+  blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
 
   blink::WebAssociatedURLLoaderOptions options;
   DCHECK(!loader_);

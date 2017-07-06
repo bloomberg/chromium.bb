@@ -47,8 +47,6 @@ namespace blink {
 class Frame;
 class OpenedFrameTracker;
 class Visitor;
-class WebAssociatedURLLoader;
-struct WebAssociatedURLLoaderOptions;
 class WebElement;
 class WebLocalFrame;
 class WebPerformance;
@@ -200,14 +198,6 @@ class BLINK_EXPORT WebFrame {
   // it to be rendered in view-source mode.
   virtual void EnableViewSourceMode(bool) = 0;
   virtual bool IsViewSourceModeEnabled() const = 0;
-
-  // Returns an AssociatedURLLoader that is associated with this frame.  The
-  // loader will, for example, be cancelled when WebFrame::stopLoading is
-  // called.
-  //
-  // FIXME: stopLoading does not yet cancel an associated loader!!
-  virtual WebAssociatedURLLoader* CreateAssociatedURLLoader(
-      const WebAssociatedURLLoaderOptions&) = 0;
 
   // Will return true if between didStartLoading and didStopLoading
   // notifications.
