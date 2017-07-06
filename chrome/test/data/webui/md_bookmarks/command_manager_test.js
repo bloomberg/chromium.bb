@@ -382,4 +382,13 @@ suite('<bookmarks-item> CommandManager integration', function() {
 
     assertOpenedTabs(['http://111/', 'http://13/']);
   });
+
+  test('meta-down triggers Open on Mac', function() {
+    if (!cr.isMac)
+      return;
+
+    customClick(items[0]);
+    MockInteractions.pressAndReleaseKeyOn(items[0], 0, 'meta', 'ArrowDown');
+    assertEquals('11', store.data.selectedFolder);
+  });
 });
