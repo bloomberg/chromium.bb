@@ -63,24 +63,12 @@ class GFX_EXPORT SkiaTextRenderer {
   void SetTextSize(SkScalar size);
   void SetForegroundColor(SkColor foreground);
   void SetShader(std::unique_ptr<cc::PaintShader> shader);
-  // Sets underline metrics to use if the text will be drawn with an underline.
-  // If not set, default values based on the size of the text will be used. The
-  // two metrics must be set together.
-  void SetUnderlineMetrics(SkScalar thickness, SkScalar position);
   void DrawSelection(const std::vector<Rect>& selection, SkColor color);
   virtual void DrawPosText(const SkPoint* pos,
                            const uint16_t* glyphs,
                            size_t glyph_count);
-  // Draw underline and strike-through text decorations.
-  // Based on |SkCanvas::DrawTextDecorations()| and constants from:
-  //   third_party/skia/src/core/SkTextFormatParams.h
-  virtual void DrawDecorations(int x,
-                               int y,
-                               int width,
-                               bool underline,
-                               bool strike);
   void DrawUnderline(int x, int y, int width);
-  void DrawStrike(int x, int y, int width) const;
+  void DrawStrike(int x, int y, int width, SkScalar thickness_factor);
 
  private:
   friend class test::RenderTextTestApi;
@@ -88,8 +76,6 @@ class GFX_EXPORT SkiaTextRenderer {
   Canvas* canvas_;
   cc::PaintCanvas* canvas_skia_;
   cc::PaintFlags flags_;
-  SkScalar underline_thickness_;
-  SkScalar underline_position_;
 
   DISALLOW_COPY_AND_ASSIGN(SkiaTextRenderer);
 };
@@ -500,6 +486,8 @@ class GFX_EXPORT RenderText {
   // Retrieves the text in the given |range|.
   base::string16 GetTextFromRange(const Range& range) const;
 
+  void set_strike_thickness_factor(SkScalar f) { strike_thickness_factor_ = f; }
+
  protected:
   RenderText();
 
@@ -513,6 +501,7 @@ class GFX_EXPORT RenderText {
   const BreakList<BaselineStyle>& baselines() const { return baselines_; }
   const BreakList<Font::Weight>& weights() const { return weights_; }
   const std::vector<BreakList<bool> >& styles() const { return styles_; }
+  SkScalar strike_thickness_factor() const { return strike_thickness_factor_; }
 
   const std::vector<internal::Line>& lines() const { return lines_; }
   void set_lines(std::vector<internal::Line>* lines) { lines_.swap(*lines); }
@@ -834,6 +823,9 @@ class GFX_EXPORT RenderText {
   // Lines computed by EnsureLayout. These should be invalidated upon
   // OnLayoutTextAttributeChanged and OnDisplayTextAttributeChanged calls.
   std::vector<internal::Line> lines_;
+
+  // The ratio of strike-through line thickness to text height.
+  SkScalar strike_thickness_factor_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderText);
 };

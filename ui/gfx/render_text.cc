@@ -54,12 +54,13 @@ const SkColor kDefaultColor = SK_ColorBLACK;
 // Default color used for drawing selection background.
 const SkColor kDefaultSelectionBackgroundColor = SK_ColorGRAY;
 
-// Fraction of the text size to lower a strike through below the baseline.
-const SkScalar kStrikeThroughOffset = (-SK_Scalar1 * 6 / 21);
+// Fraction of the text size to raise the center of a strike-through line above
+// the baseline.
+const SkScalar kStrikeThroughOffset = (SK_Scalar1 * 65 / 252);
 // Fraction of the text size to lower an underline below the baseline.
 const SkScalar kUnderlineOffset = (SK_Scalar1 / 9);
-// Fraction of the text size to use for a strike through or under-line.
-const SkScalar kLineThickness = (SK_Scalar1 / 18);
+// Default fraction of the text size to use for a strike-through or underline.
+const SkScalar kLineThicknessFactor = (SK_Scalar1 / 18);
 
 // Invalid value of baseline.  Assigning this value to |baseline_| causes
 // re-calculation of baseline.
@@ -188,15 +189,8 @@ void RestoreBreakList(RenderText* render_text, BreakList<T>* break_list) {
 
 namespace internal {
 
-// Value of |underline_thickness_| that indicates that underline metrics have
-// not been set explicitly.
-const SkScalar kUnderlineMetricsNotSet = -1.0f;
-
 SkiaTextRenderer::SkiaTextRenderer(Canvas* canvas)
-    : canvas_(canvas),
-      canvas_skia_(canvas->sk_canvas()),
-      underline_thickness_(kUnderlineMetricsNotSet),
-      underline_position_(0.0f) {
+    : canvas_(canvas), canvas_skia_(canvas->sk_canvas()) {
   DCHECK(canvas_skia_);
   flags_.setTextEncoding(cc::PaintFlags::kGlyphID_TextEncoding);
   flags_.setStyle(cc::PaintFlags::kFill_Style);
@@ -234,12 +228,6 @@ void SkiaTextRenderer::SetShader(std::unique_ptr<cc::PaintShader> shader) {
   flags_.setShader(std::move(shader));
 }
 
-void SkiaTextRenderer::SetUnderlineMetrics(SkScalar thickness,
-                                           SkScalar position) {
-  underline_thickness_ = thickness;
-  underline_position_ = position;
-}
-
 void SkiaTextRenderer::DrawPosText(const SkPoint* pos,
                                    const uint16_t* glyphs,
                                    size_t glyph_count) {
@@ -247,37 +235,25 @@ void SkiaTextRenderer::DrawPosText(const SkPoint* pos,
   canvas_skia_->drawPosText(&glyphs[0], byte_length, &pos[0], flags_);
 }
 
-void SkiaTextRenderer::DrawDecorations(int x,
-                                       int y,
-                                       int width,
-                                       bool underline,
-                                       bool strike) {
-  if (underline)
-    DrawUnderline(x, y, width);
-  if (strike)
-    DrawStrike(x, y, width);
-}
-
 void SkiaTextRenderer::DrawUnderline(int x, int y, int width) {
   SkScalar x_scalar = SkIntToScalar(x);
+  const SkScalar text_size = flags_.getTextSize();
   SkRect r = SkRect::MakeLTRB(
-      x_scalar, y + underline_position_, x_scalar + width,
-      y + underline_position_ + underline_thickness_);
-  if (underline_thickness_ == kUnderlineMetricsNotSet) {
-    const SkScalar text_size = flags_.getTextSize();
-    r.fTop = text_size * kUnderlineOffset + y;
-    r.fBottom = r.fTop + text_size * kLineThickness;
-  }
+      x_scalar, y + text_size * kUnderlineOffset, x_scalar + width,
+      y + (text_size * (kUnderlineOffset + kLineThicknessFactor)));
   canvas_skia_->drawRect(r, flags_);
 }
 
-void SkiaTextRenderer::DrawStrike(int x, int y, int width) const {
+void SkiaTextRenderer::DrawStrike(int x,
+                                  int y,
+                                  int width,
+                                  SkScalar thickness_factor) {
   const SkScalar text_size = flags_.getTextSize();
-  const SkScalar height = text_size * kLineThickness;
-  const SkScalar offset = text_size * kStrikeThroughOffset + y;
+  const SkScalar height = text_size * thickness_factor;
+  const SkScalar top = y - text_size * kStrikeThroughOffset - height / 2;
   SkScalar x_scalar = SkIntToScalar(x);
   const SkRect r =
-      SkRect::MakeLTRB(x_scalar, offset, x_scalar + width, offset + height);
+      SkRect::MakeLTRB(x_scalar, top, x_scalar + width, top + height);
   canvas_skia_->drawRect(r, flags_);
 }
 
@@ -1006,7 +982,8 @@ RenderText::RenderText()
       subpixel_rendering_suppressed_(false),
       clip_to_display_rect_(true),
       baseline_(kInvalidBaseline),
-      cached_bounds_and_offset_valid_(false) {}
+      cached_bounds_and_offset_valid_(false),
+      strike_thickness_factor_(kLineThicknessFactor) {}
 
 SelectionModel RenderText::GetAdjacentSelectionModel(
     const SelectionModel& current,

@@ -29,4 +29,8 @@ void RenderTextWrapper::ApplyStyle(gfx::TextStyle style,
   render_text_->ApplyStyle(style, value, range);
 }
 
+void RenderTextWrapper::SetStrikeThicknessFactor(SkScalar factor) {
+  render_text_->set_strike_thickness_factor(factor);
+}
+
 }  // namespace vr_shell

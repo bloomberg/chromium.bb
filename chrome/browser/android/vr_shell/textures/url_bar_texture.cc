@@ -33,6 +33,7 @@ static constexpr float kSecurityIconSize = 0.03;
 static constexpr float kUrlRightMargin = 0.02;
 static constexpr float kSeparatorWidth = 0.002;
 static constexpr float kChipTextLineMargin = kHeight * 0.3;
+static constexpr SkScalar kStrikeThicknessFactor = (SK_Scalar1 / 9);
 
 using security_state::SecurityLevel;
 
@@ -403,6 +404,7 @@ void UrlBarTexture::ApplyUrlStyling(
     render_text->ApplyColor(GetSchemeColor(security_level, color_scheme),
                             scheme_range);
     if (security_level == SecurityLevel::DANGEROUS) {
+      render_text->SetStrikeThicknessFactor(kStrikeThicknessFactor);
       render_text->ApplyStyle(gfx::TextStyle::STRIKE, true, scheme_range);
     }
   }
