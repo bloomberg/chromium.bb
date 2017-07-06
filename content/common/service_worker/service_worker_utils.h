@@ -43,8 +43,6 @@ class ServiceWorkerUtils {
                                           const GURL& script_url,
                                           std::string* error_message);
 
-  static bool IsMojoForServiceWorkerEnabled();
-
   // Returns true if all members of |urls| have the same origin, and
   // OriginCanAccessServiceWorkers is true for this origin.
   // If --disable-web-security is enabled, the same origin check is

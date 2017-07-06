@@ -141,11 +141,6 @@ bool ServiceWorkerUtils::IsServicificationEnabled() {
          base::FeatureList::IsEnabled(features::kNetworkService);
 }
 
-// static
-bool ServiceWorkerUtils::IsMojoForServiceWorkerEnabled() {
-  return true;
-}
-
 bool LongestScopeMatcher::MatchLongest(const GURL& scope) {
   if (!ServiceWorkerUtils::ScopeMatches(scope, url_))
     return false;
