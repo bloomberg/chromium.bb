@@ -295,6 +295,12 @@ cr.define('bookmarks', function() {
      * @private {BookmarksDndChipElement}
      */
     this.chip_ = null;
+
+    /**
+     * The element that initiated a drag.
+     * @private {BookmarkElement}
+     */
+    this.dragElement_ = null;
   }
 
   DNDManager.prototype = {
@@ -394,6 +400,7 @@ cr.define('bookmarks', function() {
     /** @private */
     clearDragData_: function() {
       this.dndChip.hide();
+      this.dragElement_ = null;
 
       // Defer the clearing of the data so that the bookmark manager API's drop
       // event doesn't clear the drop data before the web drop event has a
@@ -416,6 +423,7 @@ cr.define('bookmarks', function() {
 
       var store = bookmarks.Store.getInstance();
       var dragId = dragElement.itemId;
+      this.dragElement_ = dragElement;
 
       // Determine the selected bookmarks.
       var state = store.data;
@@ -489,11 +497,13 @@ cr.define('bookmarks', function() {
       if (!this.dragInfo_.isDragValid())
         return;
 
+      var state = bookmarks.Store.getInstance().data;
+      var items = this.dragInfo_.dragData.elements.map(function(x) {
+        return bookmarks.util.normalizeNode(x);
+      });
       this.dndChip.showForItems(
-          e.clientX, e.clientY,
-          this.dragInfo_.dragData.elements.map(function(x) {
-            return bookmarks.util.normalizeNode(x);
-          }));
+          e.clientX, e.clientY, items,
+          this.dragElement_ ? state.nodes[this.dragElement_.itemId] : items[0]);
 
       var overElement = getBookmarkElement(e.path);
       this.autoExpander_.update(e, overElement);
