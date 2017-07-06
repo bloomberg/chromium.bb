@@ -22,7 +22,6 @@
 #include "platform/bindings/V8ObjectConstructor.h"
 #include "platform/wtf/GetPtr.h"
 #include "platform/wtf/RefPtr.h"
-#include "public/platform/WebFeature.h"
 
 namespace blink {
 
