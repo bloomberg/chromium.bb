@@ -2010,7 +2010,6 @@ test("blink_platform_unittests") {
     "//cc",
     "//cc:test_support",
     "//cc/blink",
-    "//components/variations",
     "//device/base/synchronization",
     "//mojo/common:test_common_custom_types_blink",
     "//mojo/edk/system",

@@ -29,7 +29,7 @@ include_rules = [
 
 specific_include_rules = {
   ".*test\.cc": [
+    "+base/metrics/field_trial_param_associator.h",
     "+testing",
-    "+components/variations/variations_associated_data.h",
   ],
 }
