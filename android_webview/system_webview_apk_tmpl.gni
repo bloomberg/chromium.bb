@@ -39,6 +39,9 @@ template("system_webview_apk_tmpl") {
       "*.9.*",  # Most nine-patches contain shadows.
     ]
 
+    # Used as an additional apk in test scripts.
+    never_incremental = true
+
     if (is_java_debug) {
       enable_multidex = true
     } else {
