@@ -290,8 +290,6 @@ static aom_codec_err_t decoder_peek_si_internal(
     }
 #endif
     if (si->is_kf) {
-      if (!av1_read_sync_code(&rb)) return AOM_CODEC_UNSUP_BITSTREAM;
-
       if (!parse_bitdepth_colorspace_sampling(profile, &rb))
         return AOM_CODEC_UNSUP_BITSTREAM;
       av1_read_frame_size(&rb, (int *)&si->w, (int *)&si->h);
@@ -301,7 +299,6 @@ static aom_codec_err_t decoder_peek_si_internal(
       rb.bit_offset += error_resilient ? 0 : 2;  // reset_frame_context
 
       if (intra_only_flag) {
-        if (!av1_read_sync_code(&rb)) return AOM_CODEC_UNSUP_BITSTREAM;
         if (profile > PROFILE_0) {
           if (!parse_bitdepth_colorspace_sampling(profile, &rb))
             return AOM_CODEC_UNSUP_BITSTREAM;

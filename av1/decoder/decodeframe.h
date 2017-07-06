@@ -24,7 +24,6 @@ struct aom_read_bit_buffer;
 void read_sequence_header(SequenceHeader *seq_params);
 #endif
 
-int av1_read_sync_code(struct aom_read_bit_buffer *const rb);
 void av1_read_frame_size(struct aom_read_bit_buffer *rb, int *width,
                          int *height);
 BITSTREAM_PROFILE av1_read_profile(struct aom_read_bit_buffer *rb);
