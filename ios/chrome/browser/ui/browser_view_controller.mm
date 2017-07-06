@@ -3083,7 +3083,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     pageController.swipeRecognizerProvider = self.sideSwipeController;
 
     // Panel is always NTP for iPhone.
-    NewTabPage::PanelIdentifier panelType = NewTabPage::kMostVisitedPanel;
+    NewTabPage::PanelIdentifier panelType = NewTabPage::kHomePanel;
 
     if (IsIPadIdiom()) {
       // New Tab Page can have multiple panels. Each panel is addressable

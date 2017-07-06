@@ -43,7 +43,7 @@
 
   NewTabPageBarItem* mostVisitedItem = [NewTabPageBarItem
       newTabPageBarItemWithTitle:mostVisited
-                      identifier:NewTabPage::kMostVisitedPanel
+                      identifier:NewTabPage::kHomePanel
                            image:[UIImage imageNamed:@"ntp_mv_search"]];
   NewTabPageBarItem* bookmarksItem = [NewTabPageBarItem
       newTabPageBarItemWithTitle:bookmarks

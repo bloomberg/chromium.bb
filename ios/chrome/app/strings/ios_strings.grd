@@ -758,6 +758,9 @@ To adjust your search term, long press to select. To refine your search, slide t
       <message name="IDS_IOS_NEW_TAB_BOOKMARKS_PAGE_TITLE_MOBILE" desc="The 'Bookmarks' title on the new tab page [Length: 10em]">
         Bookmarks
       </message>
+      <message name="IDS_IOS_NEW_TAB_HOME" desc="Title for the Home panel of the new tab page. [Length: 10em] [iOS only]">
+        Home
+      </message>
       <message name="IDS_IOS_NEW_TAB_INCOGNITO" desc="Title for the Incognito panel of the new tab page.">
         Incognito
       </message>

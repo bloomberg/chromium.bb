@@ -153,7 +153,7 @@
   if (item.identifier == NewTabPage::kBookmarksPanel &&
       !self.bookmarksViewController)
     [self.dispatcher showNTPBookmarksPanel];
-  else if (item.identifier == NewTabPage::kMostVisitedPanel &&
+  else if (item.identifier == NewTabPage::kHomePanel &&
            !self.homeViewController)
     [self.dispatcher showNTPHomePanel];
   else if (item.identifier == NewTabPage::kOpenTabsPanel &&
