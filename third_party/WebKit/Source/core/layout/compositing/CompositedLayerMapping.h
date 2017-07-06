@@ -498,11 +498,11 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   // layer and we can stop checking clips at that layer because higher layer
   // clips will be applied elsewhere.
   // This is a fast approximate test. Depending on the shape of the child and
-  // the size of the clips, this method may return false when in fact
+  // the size of the clips, this method may return true when in fact
   // the child is not clipped. We accept the approximation because most border
   // radii are small and the outcome is used to reduce the number of layers,
   // not influence correctness.
-  bool AncestorRoundedCornersWontClip(const PaintLayer* compositing_ancestor);
+  bool AncestorRoundedCornersWillClip(const PaintLayer* compositing_ancestor);
 
   // Return true in |owningLayerIsClipped| iff |m_owningLayer|'s compositing
   // ancestor is not a descendant (inclusive) of the clipping container for
