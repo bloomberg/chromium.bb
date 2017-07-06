@@ -140,6 +140,7 @@ ManagePasswordsStateTest::CreateFormManagerInternal(bool include_federated) {
           &password_manager_, &stub_client_, driver_.AsWeakPtr(),
           test_local_form(),
           base::WrapUnique(new password_manager::StubFormSaver), &fetcher_));
+  test_form_manager->Init(nullptr);
   fetcher_.SetNonFederated(test_stored_forms_, 0u);
   if (include_federated) {
     fetcher_.set_federated({&test_local_federated_form()});
