@@ -346,7 +346,6 @@ source_set("common") {
     "url_schemes.cc",
     "url_schemes.h",
     "user_agent.cc",
-    "utility_messages.h",
     "view_message_enums.h",
     "view_messages.h",
     "worker_messages.h",
