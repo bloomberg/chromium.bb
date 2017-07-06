@@ -46,6 +46,8 @@ blink_modules_sources("media_controls") {
     "elements/MediaControlRemainingTimeDisplayElement.h",
     "elements/MediaControlTextTrackListElement.cpp",
     "elements/MediaControlTextTrackListElement.h",
+    "elements/MediaControlTimeDisplayElement.cpp",
+    "elements/MediaControlTimeDisplayElement.h",
     "elements/MediaControlTimelineElement.cpp",
     "elements/MediaControlTimelineElement.h",
     "elements/MediaControlTimelineMetrics.cpp",
