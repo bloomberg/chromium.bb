@@ -570,6 +570,13 @@ void NavigationHandleImpl::WillStartRequest(
     const ThrottleChecksFinishedCallback& callback) {
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
                                "WillStartRequest");
+  // WillStartRequest should only be called once.
+  if (state_ != INITIAL) {
+    state_ = CANCELING;
+    RunCompleteCallback(NavigationThrottle::CANCEL);
+    return;
+  }
+
   if (method != "POST")
     DCHECK(!resource_request_body);
 
