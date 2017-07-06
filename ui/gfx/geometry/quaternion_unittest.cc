@@ -142,16 +142,15 @@ TEST(QuatTest, SlerpOppositeAngles) {
   Quaternion start(axis, start_radians);
   Quaternion stop(axis, stop_radians);
 
-  // When quaternions are pointed in the fully opposite direction, we take the
-  // interpolated quaternion to be the first. This is arbitrary, but if we
-  // change this policy, this test should fail.
-  Quaternion expected = start;
+  // When quaternions are pointed in the fully opposite direction, this is
+  // ambiguous, so we rotate as per https://www.w3.org/TR/css-transforms-1/
+  Quaternion expected(axis, 0);
 
-  for (size_t i = 0; i < 100; ++i) {
-    float t = static_cast<float>(i) / 100.0f;
-    Quaternion interpolated = start.Slerp(stop, t);
-    CompareQuaternions(expected, interpolated);
-  }
+  Quaternion interpolated = start.Slerp(stop, 0.5f);
+  EXPECT_NEAR(expected.x(), interpolated.x(), kEpsilon);
+  EXPECT_NEAR(expected.y(), interpolated.y(), kEpsilon);
+  EXPECT_NEAR(expected.z(), interpolated.z(), kEpsilon);
+  EXPECT_NEAR(expected.w(), interpolated.w(), kEpsilon);
 }
 
 }  // namespace gfx

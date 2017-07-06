@@ -745,8 +745,13 @@ TEST(XFormTest, CanBlend180DegreeRotation) {
       // A 180 degree rotation is exactly opposite on the sphere, therefore
       // either great circle arc to it is equivalent (and numerical precision
       // will determine which is closer).  Test both directions.
-      Transform expected = from;
-      EXPECT_TRUE(MatricesAreNearlyEqual(expected, to))
+      Transform expected1;
+      expected1.RotateAbout(axes[index], 180.0 * t);
+      Transform expected2;
+      expected2.RotateAbout(axes[index], -180.0 * t);
+
+      EXPECT_TRUE(MatricesAreNearlyEqual(expected1, to) ||
+                  MatricesAreNearlyEqual(expected2, to))
           << "axis: " << index << ", i: " << i;
     }
   }

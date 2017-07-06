@@ -66,15 +66,6 @@ Quaternion Quaternion::Slerp(const Quaternion& q, double t) const {
   if (std::abs(dot - 1.0) < kEpsilon || std::abs(dot + 1.0) < kEpsilon)
     return *this;
 
-  // TODO(vmpstr): In case the dot is 0, the vectors are exactly opposite
-  // of each other. In this case, it's technically not correct to just pick one
-  // of the vectors, we instead need to pick how to interpolate. However, the
-  // spec isn't clear on this. If we don't handle the -1 case explicitly, it
-  // results in inf and nans however, which is worse. See crbug.com/506543 for
-  // more discussion.
-  if (std::abs(dot) < kEpsilon)
-    return *this;
-
   double denom = std::sqrt(1.0 - dot * dot);
   double theta = std::acos(dot);
   double w = std::sin(t * theta) * (1.0 / denom);
