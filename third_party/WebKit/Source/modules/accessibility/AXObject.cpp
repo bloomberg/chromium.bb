@@ -1992,7 +1992,6 @@ bool AXObject::NameFromContents(bool recursive) const {
     case kOutlineRole:
     case kProgressIndicatorRole:
     case kRadioGroupRole:
-    case kRegionRole:
     case kRootWebAreaRole:
     case kScrollBarRole:
     case kSearchRole:
@@ -2053,6 +2052,7 @@ bool AXObject::NameFromContents(bool recursive) const {
     case kParagraphRole:
     case kPreRole:
     case kPresentationalRole:
+    case kRegionRole:
     // Spec says we should always expose the name on rows,
     // but for performance reasons we only do it
     // if the row might receive focus
