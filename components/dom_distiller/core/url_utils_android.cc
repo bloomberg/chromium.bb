@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/dom_distiller/core/url_utils_android.h"
-
 #include <string>
 
 #include "base/android/jni_string.h"
@@ -87,8 +85,6 @@ ScopedJavaLocalRef<jstring> GetValueForKeyInUrl(
   return base::android::ConvertUTF8ToJavaString(
       env, dom_distiller::url_utils::GetValueForKeyInUrl(url, key));
 }
-
-bool RegisterUrlUtils(JNIEnv* env) { return RegisterNativesImpl(env); }
 
 }  // namespace android
 

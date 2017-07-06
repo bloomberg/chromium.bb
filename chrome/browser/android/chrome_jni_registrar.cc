@@ -10,7 +10,6 @@
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/after_startup_task_utils_android.h"
 #include "chrome/browser/android/accessibility/font_size_prefs_android.h"
-#include "chrome/browser/android/appmenu/app_menu_drag_helper.h"
 #include "chrome/browser/android/banners/app_banner_infobar_delegate_android.h"
 #include "chrome/browser/android/banners/app_banner_manager_android.h"
 #include "chrome/browser/android/bookmarks/bookmark_bridge.h"
@@ -46,7 +45,6 @@
 #include "chrome/browser/android/dom_distiller/distiller_ui_handle_android.h"
 #include "chrome/browser/android/download/download_controller.h"
 #include "chrome/browser/android/download/download_manager_service.h"
-#include "chrome/browser/android/download/items/offline_content_aggregator_factory_android.h"
 #include "chrome/browser/android/download/service/download_background_task.h"
 #include "chrome/browser/android/download/ui/thumbnail_provider.h"
 #include "chrome/browser/android/favicon_helper.h"
@@ -177,25 +175,13 @@
 #include "chrome/browser/ui/android/tab_model/tab_model_jni_bridge.h"
 #include "chrome/browser/ui/android/toolbar/toolbar_model_android.h"
 #include "chrome/browser/ui/android/usb_chooser_dialog_android.h"
-#include "components/dom_distiller/content/browser/android/content_jni_registrar.h"
-#include "components/dom_distiller/core/android/core_jni_registrar.h"
 #include "components/feature_engagement_tracker/public/android/feature_engagement_tracker_jni_registrar.h"
-#include "components/gcm_driver/android/component_jni_registrar.h"
-#include "components/gcm_driver/instance_id/android/component_jni_registrar.h"
-#include "components/invalidation/impl/android/component_jni_registrar.h"
-#include "components/offline_items_collection/core/android/offline_content_aggregator_bridge.h"
 #include "components/offline_pages/features/features.h"
-#include "components/payments/content/android/component_jni_registrar.h"
-#include "components/policy/core/browser/android/component_jni_registrar.h"
 #include "components/safe_browsing_db/android/jni_registrar.h"
-#include "components/safe_json/android/component_jni_registrar.h"
-#include "components/signin/core/browser/android/component_jni_registrar.h"
 #include "components/spellcheck/browser/android/component_jni_registrar.h"
 #include "components/spellcheck/spellcheck_build_features.h"
 #include "components/sync/android/sync_jni_registrar.h"
-#include "components/url_formatter/android/component_jni_registrar.h"
 #include "components/variations/android/component_jni_registrar.h"
-#include "components/web_contents_delegate_android/component_jni_registrar.h"
 #include "device/vr/features/features.h"
 #include "printing/features/features.h"
 
@@ -219,25 +205,6 @@
 namespace android {
 
 static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
-    // Register JNI for components we depend on.
-    {"AppMenuDragHelper", RegisterAppMenuDragHelper},
-    {"DomDistillerContent",
-     dom_distiller::content::android::RegisterDomDistiller},
-    {"DomDistillerCore", dom_distiller::core::android::RegisterDomDistiller},
-    {"GCMDriver", gcm::android::RegisterGCMDriverJni},
-    {"InstanceID", instance_id::android::RegisterInstanceIDJni},
-    {"Invalidation", invalidation::android::RegisterInvalidationJni},
-    {"OfflineContentAggregatorBridge",
-     offline_items_collection::android::OfflineContentAggregatorBridge::
-         Register},
-    {"OfflineContentAggregator", RegisterOfflineContentAggregatorFactoryJni},
-    {"Payments", payments::android::RegisterPayments},
-    {"Policy", policy::android::RegisterPolicy},
-    {"SafeJson", safe_json::android::RegisterSafeJsonJni},
-    {"Signin", signin::android::RegisterSigninJni},
-    {"UrlFormatter", url_formatter::android::RegisterUrlFormatter},
-    {"WebContentsDelegateAndroid",
-     web_contents_delegate_android::RegisterWebContentsDelegateAndroidJni},
     // Register JNI for chrome classes.
     {"AccountChooserDialogAndroid", RegisterAccountChooserDialogAndroid},
     {"AutoSigninFirstRunDialogAndroid",

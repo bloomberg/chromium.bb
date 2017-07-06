@@ -168,9 +168,4 @@ void InvalidationServiceAndroid::Invalidate(
   logger_.OnInvalidation(object_invalidation_map);
 }
 
-// static
-bool InvalidationServiceAndroid::RegisterJni(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace invalidation

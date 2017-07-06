@@ -37,9 +37,6 @@ class InstanceIDAndroid : public InstanceID {
     DISALLOW_COPY_AND_ASSIGN(ScopedBlockOnAsyncTasksForTesting);
   };
 
-  // Register JNI methods.
-  static bool RegisterJni(JNIEnv* env);
-
   InstanceIDAndroid(const std::string& app_id, gcm::GCMDriver* gcm_driver);
   ~InstanceIDAndroid() override;
 

@@ -49,9 +49,6 @@ class ColorChooserAndroid : public content::ColorChooser {
   DISALLOW_COPY_AND_ASSIGN(ColorChooserAndroid);
 };
 
-// Native JNI methods
-bool RegisterColorChooserAndroid(JNIEnv* env);
-
 }  // namespace web_contents_delegate_android
 
 #endif  // COMPONENTS_WEB_CONTENTS_DELEGATE_ANDROID_COLOR_CHOOSER_ANDROID_H_

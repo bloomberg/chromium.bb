@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/payments/content/android/origin_security_checker_android.h"
-
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "components/payments/content/origin_security_checker.h"
@@ -40,10 +38,6 @@ jboolean IsOriginLocalhostOrFile(JNIEnv* env,
                                  const JavaParamRef<jstring>& jurl) {
   return OriginSecurityChecker::IsOriginLocalhostOrFile(
       GURL(ConvertJavaStringToUTF8(env, jurl)));
-}
-
-bool RegisterOriginSecurityChecker(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }
 
 }  // namespace payments

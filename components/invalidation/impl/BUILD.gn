@@ -89,8 +89,6 @@ static_library("impl") {
 
   if (is_android) {
     sources += [
-      "android/component_jni_registrar.cc",
-      "android/component_jni_registrar.h",
       "invalidation_service_android.cc",
       "invalidation_service_android.h",
     ]

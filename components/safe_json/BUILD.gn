@@ -8,8 +8,6 @@ if (is_android) {
 
 static_library("safe_json") {
   sources = [
-    "android/component_jni_registrar.cc",
-    "android/component_jni_registrar.h",
     "json_sanitizer.cc",
     "json_sanitizer.h",
     "json_sanitizer_android.cc",

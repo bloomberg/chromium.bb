@@ -71,10 +71,6 @@ jlong Init(JNIEnv* env,
   return reinterpret_cast<intptr_t>(distilled_page_prefs_android);
 }
 
-bool DistilledPagePrefsAndroid::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 void DistilledPagePrefsAndroid::AddObserver(JNIEnv* env,
                                             const JavaParamRef<jobject>& obj,
                                             jlong observer_ptr) {

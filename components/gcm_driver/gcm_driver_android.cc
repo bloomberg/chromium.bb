@@ -109,11 +109,6 @@ void GCMDriverAndroid::OnMessageReceived(
   DispatchMessage(app_id, message);
 }
 
-// static
-bool GCMDriverAndroid::RegisterJni(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 void GCMDriverAndroid::ValidateRegistration(
     const std::string& app_id,
     const std::vector<std::string>& sender_ids,

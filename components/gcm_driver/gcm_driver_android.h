@@ -51,9 +51,6 @@ class GCMDriverAndroid : public GCMDriver,
       const base::android::JavaParamRef<jbyteArray>& raw_data,
       const base::android::JavaParamRef<jobjectArray>& data_keys_and_values);
 
-  // Register JNI methods.
-  static bool RegisterJni(JNIEnv* env);
-
   // GCMDriver implementation:
   void ValidateRegistration(
       const std::string& app_id,
