@@ -22,7 +22,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParams;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
-import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
 import org.chromium.chrome.browser.webapps.WebappDataStorage;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -80,18 +79,16 @@ public class ServiceTabLauncher {
         final TabDelegate tabDelegate = new TabDelegate(incognito);
 
         // 1. Launch WebAPK if one matches the target URL.
-        if (ChromeWebApkHost.isEnabled()) {
-            String webApkPackageName =
-                    WebApkValidator.queryWebApkPackage(ContextUtils.getApplicationContext(), url);
-            if (webApkPackageName != null) {
-                Intent intent = WebApkNavigationClient.createLaunchWebApkIntent(
-                        webApkPackageName, url, true /* forceNavigation */);
-                if (intent != null) {
-                    intent.putExtra(ShortcutHelper.EXTRA_SOURCE, ShortcutSource.NOTIFICATION);
-                    ContextUtils.getApplicationContext().startActivity(intent);
-                    return;
-                }
+        String webApkPackageName =
+                WebApkValidator.queryWebApkPackage(ContextUtils.getApplicationContext(), url);
+        if (webApkPackageName != null) {
+            Intent intent = WebApkNavigationClient.createLaunchWebApkIntent(
+                    webApkPackageName, url, true /* forceNavigation */);
+            if (intent != null) {
+                intent.putExtra(ShortcutHelper.EXTRA_SOURCE, ShortcutSource.NOTIFICATION);
+                ContextUtils.getApplicationContext().startActivity(intent);
             }
+            return;
         }
 
         // 2. Launch WebappActivity if one matches the target URL and was opened recently.
@@ -103,10 +100,7 @@ public class ServiceTabLauncher {
         // - We did not find a WebappDataStorage corresponding to this URL.
         // OR
         // - The WebappDataStorage hasn't been opened recently enough.
-        // OR
-        // - The WebappDataStorage corresponds to a WebAPK (and WebAPKs are disabled).
-        if (storage == null || !storage.wasUsedRecently()
-                || storage.getWebApkPackageName() != null) {
+        if (storage == null || !storage.wasUsedRecently()) {
             LoadUrlParams loadUrlParams = new LoadUrlParams(url, PageTransition.LINK);
             loadUrlParams.setPostData(postData);
             loadUrlParams.setVerbatimHeaders(extraHeaders);

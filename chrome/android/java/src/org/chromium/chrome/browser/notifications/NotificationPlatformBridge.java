@@ -40,7 +40,6 @@ import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences;
 import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
 import org.chromium.chrome.browser.preferences.website.SiteSettingsCategory;
-import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.webapk.lib.client.WebApkValidator;
 
@@ -155,8 +154,6 @@ public class NotificationPlatformBridge {
      */
     @CalledByNative
     private String queryWebApkPackage(String url) {
-        if (!ChromeWebApkHost.isEnabled()) return "";
-
         String webApkPackage =
                 WebApkValidator.queryWebApkPackage(ContextUtils.getApplicationContext(), url);
         return webApkPackage == null ? "" : webApkPackage;
@@ -191,13 +188,10 @@ public class NotificationPlatformBridge {
         Log.i(TAG, "Dispatching notification event to native: " + notificationId);
 
         if (NotificationConstants.ACTION_CLICK_NOTIFICATION.equals(intent.getAction())) {
-            String webApkPackage = "";
-            if (ChromeWebApkHost.isEnabled()) {
-                webApkPackage = intent.getStringExtra(
+            String webApkPackage = intent.getStringExtra(
                     NotificationConstants.EXTRA_NOTIFICATION_INFO_WEBAPK_PACKAGE);
-                if (webApkPackage == null) {
-                    webApkPackage = "";
-                }
+            if (webApkPackage == null) {
+                webApkPackage = "";
             }
             int actionIndex = intent.getIntExtra(
                     NotificationConstants.EXTRA_NOTIFICATION_INFO_ACTION_INDEX, -1);
