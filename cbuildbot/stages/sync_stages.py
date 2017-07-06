@@ -247,6 +247,8 @@ class BootstrapStage(PatchChangesStage):
     _, minor = cros_build_lib.GetTargetChromiteApiVersion(buildroot)
     args = [cbuildbot_path]
     args.extend(options.build_targets)
+    # Increment the ts-mon task_num so the metrics don't collide.
+    args.extend(['--ts-mon-task-num', str(options.ts_mon_task_num + 1)])
     args.extend(cls._FilterArgsForApi(options.parsed_args, minor))
 
     # Only pass down --cache-dir if it was specified. By default, we want

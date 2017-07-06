@@ -39,25 +39,27 @@ def TrivialContextManager():
 
 
 def SetupTsMonGlobalState(service_name,
-                          short_lived=False,
                           indirect=False,
+                          suppress_exception=True,
+                          short_lived=False,
                           auto_flush=True,
                           debug_file=None,
-                          suppress_exception=True):
+                          task_num=0):
   """Uses a dummy argument parser to get the default behavior from ts-mon.
 
   Args:
     service_name: The name of the task we are sending metrics from.
-    short_lived: Whether this process is short-lived and should use the autogen
-                 hostname prefix.
     indirect: Whether to create a metrics.METRICS_QUEUE object and a separate
               process for indirect metrics flushing. Useful for forking,
               because forking would normally create a duplicate ts_mon thread.
+    suppress_exception: True to silence any exception during the setup. Default
+                        is set to True.
+    short_lived: Whether this process is short-lived and should use the autogen
+                 hostname prefix.
     auto_flush: Whether to create a thread to automatically flush metrics every
                 minute.
     debug_file: If non-none, send metrics to this path instead of to PubSub.
-    suppress_exception: True to silence any exception during the setup. Default
-                        is set to True.
+    task_num: (Default 0) The task_num target field of the metrics to emit.
   """
   if not config:
     return TrivialContextManager()
@@ -71,6 +73,37 @@ def SetupTsMonGlobalState(service_name,
   googleapiclient.discovery.logger.setLevel(logging.WARNING)
   parser = argparse.ArgumentParser()
   config.add_argparse_options(parser)
+  args = GenerateTsMonArgparseOptions(
+      service_name, short_lived, auto_flush, debug_file, task_num)
+
+  try:
+    config.process_argparse_options(parser.parse_args(args=args))
+    logging.notice('ts_mon was set up.')
+    global _WasSetup  # pylint: disable=global-statement
+    _WasSetup = True
+  except Exception as e:
+    logging.warning('Failed to configure ts_mon, monitoring is disabled: %s', e,
+                    exc_info=True)
+    if not suppress_exception:
+      raise
+
+
+  return TrivialContextManager()
+
+
+def GenerateTsMonArgparseOptions(service_name, short_lived,
+                                 auto_flush, debug_file, task_num):
+  """Generates an arg list for ts-mon to consume.
+
+  Args:
+    service_name: The name of the task we are sending metrics from.
+    short_lived: Whether this process is short-lived and should use the autogen
+                 hostname prefix.
+    auto_flush: Whether to create a thread to automatically flush metrics every
+                minute.
+    debug_file: If non-none, send metrics to this path instead of to PubSub.
+    task_num: Override the default task num of 0.
+  """
   args = [
       '--ts-mon-target-type', 'task',
       '--ts-mon-task-service-name', service_name,
@@ -92,23 +125,11 @@ def SetupTsMonGlobalState(service_name,
     host = fqdn.split('.')[0]
     args.extend(['--ts-mon-task-hostname', 'autogen:' + host,
                  '--ts-mon-task-number', str(os.getpid())])
+  elif task_num:
+    args.extend(['--ts-mon-task-number', task_num])
 
   args.extend(['--ts-mon-flush', 'auto' if auto_flush else 'manual'])
-
-  try:
-    config.process_argparse_options(parser.parse_args(args=args))
-    logging.notice('ts_mon was set up.')
-    global _WasSetup  # pylint: disable=global-statement
-    _WasSetup = True
-  except Exception as e:
-    logging.warning('Failed to configure ts_mon, monitoring is disabled: %s', e,
-                    exc_info=True)
-    if not suppress_exception:
-      raise
-
-
-  return TrivialContextManager()
-
+  return args
 
 @contextlib.contextmanager
 def _CreateTsMonFlushingProcess(setup_args, setup_kwargs):

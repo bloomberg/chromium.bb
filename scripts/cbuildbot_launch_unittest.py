@@ -92,7 +92,8 @@ class RunTests(cros_build_lib_unittest.RunCommandTestCase):
   """Tests for cbuildbot_launch script."""
 
   ARGS_BASE = ['--buildroot', '/buildroot']
-  EXPECTED_ARGS_BASE = ['--buildroot', '/cbuildbot_buildroot']
+  EXPECTED_ARGS_BASE = ['--ts-mon-task-num', '1',
+                        '--buildroot', '/cbuildbot_buildroot']
   ARGS_GIT_CACHE = ['--git-cache-dir', '/git-cache']
   ARGS_CONFIG = ['config']
   CMD = ['/cbuildbot_buildroot/chromite/bin/cbuildbot']
@@ -170,7 +171,9 @@ class RunTests(cros_build_lib_unittest.RunCommandTestCase):
     # Ensure we invoke cbuildbot, as expected.
     self.assertCommandCalled(
         ['/root/repository/chromite/bin/cbuildbot',
-         'config', '-r', '/root/repository'],
+         'config',
+         '--ts-mon-task-num', '1',
+         '-r', '/root/repository'],
         cwd='/root/repository',
         error_code_ok=True)
 
@@ -220,6 +223,7 @@ class RunTests(cros_build_lib_unittest.RunCommandTestCase):
     self.assertCommandCalled(
         ['/root/repository/chromite/bin/cbuildbot',
          'config',
+         '--ts-mon-task-num', '1',
          '--buildroot', '/root/repository',
          '--branch', 'branch',
          '--git-cache-dir', '/git-cache',

@@ -705,6 +705,10 @@ def _CreateParser():
                    help='Used for compatibility checks w/tryjobs running in '
                         'older chromite instances')
   group.add_option('--sourceroot', type='path', default=constants.SOURCE_ROOT)
+  group.add_option('--ts-mon-task-num', type='int', default=0,
+                   help='The task number of this process. Defaults to 0. '
+                        'This argument is useful for running multiple copies '
+                        'of cbuildbot without their metrics colliding.')
   group.add_remote_option('--test-bootstrap', action='store_true',
                           default=False,
                           help='Causes cbuildbot to bootstrap itself twice, '
@@ -1056,7 +1060,8 @@ def _SetupConnections(options, build_config):
 
   if run_type == _ENVIRONMENT_PROD:
     cidb.CIDBConnectionFactory.SetupProdCidb()
-    context = ts_mon_config.SetupTsMonGlobalState('cbuildbot', indirect=True)
+    context = ts_mon_config.SetupTsMonGlobalState(
+        'cbuildbot', indirect=True, task_num=options.ts_mon_task_num)
   elif run_type == _ENVIRONMENT_DEBUG:
     cidb.CIDBConnectionFactory.SetupDebugCidb()
     context = ts_mon_config.TrivialContextManager()
