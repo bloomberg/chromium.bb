@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/logo_service.h"
 
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -13,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
+#include "chrome/common/chrome_switches.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_provider_logos/fixed_logo_api.h"
@@ -115,7 +117,15 @@ void LogoService::GetLogo(search_provider_logos::LogoObserver* observer) {
   if (!template_url)
     return;
 
-  const bool use_fixed_logo = !template_url->logo_url().is_empty();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  GURL logo_url;
+  if (command_line->HasSwitch(switches::kSearchProviderLogoURL)) {
+    logo_url = GURL(
+        command_line->GetSwitchValueASCII(switches::kSearchProviderLogoURL));
+  } else {
+    logo_url = template_url->logo_url();
+  }
+  const bool use_fixed_logo = logo_url.is_valid();
 
   if (!template_url->url_ref().HasGoogleBaseURLs(
           template_url_service->search_terms_data()) &&
@@ -131,8 +141,7 @@ void LogoService::GetLogo(search_provider_logos::LogoObserver* observer) {
         base::MakeUnique<ChromeLogoDelegate>());
   }
 
-  GURL url =
-      use_fixed_logo ? template_url->logo_url() : GetGoogleDoodleURL(profile_);
+  GURL url = use_fixed_logo ? logo_url : GetGoogleDoodleURL(profile_);
   auto parse_logo_response_callback =
       use_fixed_logo
           ? base::Bind(&search_provider_logos::ParseFixedLogoResponse)
