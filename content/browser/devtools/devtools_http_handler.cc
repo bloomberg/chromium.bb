@@ -70,10 +70,8 @@ const char kTargetFaviconUrlField[] = "faviconUrl";
 const char kTargetWebSocketDebuggerUrlField[] = "webSocketDebuggerUrl";
 const char kTargetDevtoolsFrontendUrlField[] = "devtoolsFrontendUrl";
 
-// Maximum write buffer size of devtools http/websocket connections.
-// TODO(rmcilroy/pfieldman): Reduce this back to 100Mb when we have
-// added back pressure on the TraceComplete message protocol - crbug.com/456845.
 const int32_t kSendBufferSizeForDevTools = 256 * 1024 * 1024;  // 256Mb
+const int32_t kReceiveBufferSizeForDevTools = 100 * 1024 * 1024;  // 100Mb
 
 }  // namespace
 
@@ -137,6 +135,7 @@ int ServerWrapper::GetLocalAddress(net::IPEndPoint* address) {
 void ServerWrapper::AcceptWebSocket(int connection_id,
                                     const net::HttpServerRequestInfo& request) {
   server_->SetSendBufferSize(connection_id, kSendBufferSizeForDevTools);
+  server_->SetReceiveBufferSize(connection_id, kReceiveBufferSizeForDevTools);
   server_->AcceptWebSocket(connection_id, request);
 }
 
