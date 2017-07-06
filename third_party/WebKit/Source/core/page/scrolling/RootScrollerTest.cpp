@@ -614,6 +614,51 @@ TEST_P(RootScrollerTest, SetRootScrollerIframeUsesCorrectLayerAndCallback) {
   }
 }
 
+// Ensures that disconnecting the element currently set as the root scroller
+// recomputes the effective root scroller, before a lifecycle update.
+TEST_P(RootScrollerTest, RemoveCurrentRootScroller) {
+  Initialize();
+
+  WebURL base_url = URLTestHelpers::ToKURL("http://www.test.com/");
+  FrameTestHelpers::LoadHTMLString(GetWebView()->MainFrameImpl(),
+                                   "<!DOCTYPE html>"
+                                   "<style>"
+                                   "  body {"
+                                   "    margin: 0px;"
+                                   "  }"
+                                   "  #container {"
+                                   "    width: 100%;"
+                                   "    height: 100%;"
+                                   "    position: absolute;"
+                                   "    overflow: auto;"
+                                   "  }"
+                                   "</style>"
+                                   "<div id='container'></div>",
+                                   base_url);
+
+  RootScrollerController& controller =
+      MainFrame()->GetDocument()->GetRootScrollerController();
+  Element* container = MainFrame()->GetDocument()->getElementById("container");
+
+  // Set the div as the rootScroller. After a lifecycle update it will be the
+  // effective root scroller.
+  {
+    MainFrame()->GetDocument()->setRootScroller(container, ASSERT_NO_EXCEPTION);
+    ASSERT_EQ(container, controller.Get());
+    MainFrameView()->UpdateAllLifecyclePhases();
+    ASSERT_EQ(container, controller.EffectiveRootScroller());
+  }
+
+  // Remove the div from the document. It should remain the
+  // document.rootScroller, however, it should be demoted from the effective
+  // root scroller. The effective will fallback to the document Node.
+  {
+    MainFrame()->GetDocument()->body()->setTextContent("");
+    EXPECT_EQ(container, controller.Get());
+    EXPECT_EQ(MainFrame()->GetDocument(), controller.EffectiveRootScroller());
+  }
+}
+
 // Ensures that the root scroller always gets composited with scrolling layers.
 // This is necessary since we replace the Frame scrolling layers in CC as the
 // OuterViewport, we need something to replace them with.

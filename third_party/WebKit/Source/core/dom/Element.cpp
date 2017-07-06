@@ -1764,6 +1764,8 @@ void Element::RemovedFrom(ContainerNode* insertion_point) {
           *this);
   }
 
+  GetDocument().GetRootScrollerController().ElementRemoved(*this);
+
   GetDocument().RemoveFromTopLayer(this);
 
   ClearElementFlag(kIsInCanvasSubtree);
