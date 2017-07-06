@@ -447,7 +447,7 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
   [super collectionView:collectionView didSelectItemAtIndexPath:indexPath];
 
   // Actions should only take effect when not in editing mode.
-  if (self.editing) {
+  if ([self.editor isEditing]) {
     return;
   }
 

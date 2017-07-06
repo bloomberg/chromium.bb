@@ -599,4 +599,29 @@ id<GREYMatcher> DeleteButton() {
   [self clearPasswordStore];
 }
 
+// Checks that if the list view is in edit mode, then the details password view
+// is not accessible on tapping the entries.
+- (void)testEditMode {
+  [self scopedEnablePasswordManagementAndViewingUI];
+
+  // Save a form to have something to tap on.
+  [self saveExamplePasswordForm];
+
+  [self openPasswordSettings];
+
+  [self tapEdit];
+
+  [[EarlGrey selectElementWithMatcher:Entry(@"https://example.com, user")]
+      performAction:grey_tap()];
+
+  // Check that the current view is not the detail view, by failing to locate
+  // the Copy button.
+  [[EarlGrey selectElementWithMatcher:CopyPasswordButton()]
+      assertWithMatcher:grey_nil()];
+
+  [self tapBackArrow];
+  [self tapDone];
+  [self clearPasswordStore];
+}
+
 @end
