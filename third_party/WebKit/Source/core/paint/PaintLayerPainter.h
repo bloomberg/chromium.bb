@@ -139,7 +139,8 @@ class CORE_EXPORT PaintLayerPainter {
   void FillMaskingFragment(GraphicsContext&, const ClipRect&);
 
   static bool NeedsToClip(const PaintLayerPaintingInfo& local_painting_info,
-                          const ClipRect&);
+                          const ClipRect&,
+                          const PaintLayerFlags&);
 
   // Returns whether this layer should be painted during sofware painting (i.e.,
   // not via calls from CompositedLayerMapping to draw into composited layers).

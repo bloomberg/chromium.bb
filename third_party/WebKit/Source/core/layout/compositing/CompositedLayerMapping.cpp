@@ -508,7 +508,7 @@ void CompositedLayerMapping::UpdateCompositingReasons() {
       owning_layer_.GetSquashingDisallowedReasons());
 }
 
-bool CompositedLayerMapping::AncestorRoundedCornersWontClip(
+bool CompositedLayerMapping::AncestorRoundedCornersWillClip(
     const PaintLayer* compositing_ancestor) {
   // Find all clips up to the ancestor compositing container to correctly
   // handle nested clips.
@@ -527,13 +527,12 @@ bool CompositedLayerMapping::AncestorRoundedCornersWontClip(
     // entirely outside the rectangular border (ignoring rounded corners) so
     // is also unaffected by the rounded corners. In both cases the existing
     // rectangular clip is adequate and the mask is unnecessary.
-    if (!(inner_clip_rect.Contains(FloatRect(composited_bounds_)) ||
-          !composited_bounds_.Intersects(
-              EnclosingLayoutRect(clip_rect.Rect())))) {
-      return false;
+    if (!inner_clip_rect.Contains(FloatRect(composited_bounds_)) &&
+        composited_bounds_.Intersects(EnclosingLayoutRect(clip_rect.Rect()))) {
+      return true;
     }
   }
-  return true;
+  return false;
 }
 
 void CompositedLayerMapping::
@@ -587,7 +586,7 @@ void CompositedLayerMapping::
   // https://bugs.chromium.org/p/chromium/issues/detail?id=615870
   if (owning_layer_is_clipped) {
     owning_layer_is_masked =
-        !AncestorRoundedCornersWontClip(compositing_ancestor);
+        AncestorRoundedCornersWillClip(compositing_ancestor);
   }
 }
 

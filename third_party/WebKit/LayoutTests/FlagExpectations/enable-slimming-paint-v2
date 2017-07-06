@@ -313,6 +313,7 @@ Bug(none) compositing/overflow/body-switch-composited-scrolling.html [ Failure ]
 Bug(none) compositing/overflow/clear-scroll-parent.html [ Failure ]
 Bug(none) compositing/overflow/clip-descendents.html [ Failure ]
 # puts the 'scroller' layer after 'overlap' and 'target'
+Bug(none) compositing/overflow/composited-layer-under-border-radius-under-composited-layer.html [ Failure ]
 Bug(none) compositing/overflow/composited-scroll-overlap-test.html [ Failure ]
 Bug(none) compositing/overflow/composited-scrolling-paint-phases.html [ Failure ]
 Bug(none) compositing/overflow/content-loses-scrollbars.html [ Failure ]
