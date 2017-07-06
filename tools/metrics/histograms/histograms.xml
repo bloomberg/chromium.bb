@@ -26090,6 +26090,29 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Installer.Recovery.Count" units="count">
+  <owner>ahassani@chromium.org</owner>
+  <summary>
+    The number of times the device has been recovered.
+
+    This is reported on reboot after a successful recovery. Cleared only when
+    switching to dev mode or on factory reset.
+
+    This metric is specific to ChromeOS.
+  </summary>
+</histogram>
+
+<histogram name="Installer.Recovery.Reason" enum="ChromeOSRecoveryReason">
+  <owner>lannm@chromium.org</owner>
+  <summary>
+    The reason for entering recovery mode immediately prior to a recovery.
+
+    This is reported on reboot after a successful recovery.
+
+    This metric is specific to ChromeOS.
+  </summary>
+</histogram>
+
 <histogram name="Installer.SuccessfulMBsDownloadedFrom" units="MB">
   <owner>zeuthen@chromium.org</owner>
   <summary>
@@ -81166,17 +81189,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>zeuthen@chromium.org</owner>
   <summary>
     The age of the OS in days, defined as the age of the /etc/lsb-release file.
-
-    This is reported on every update check but at most once a day.
-
-    This metric is specific to ChromeOS.
-  </summary>
-</histogram>
-
-<histogram name="UpdateEngine.Daily.RecoveryCount" units="count">
-  <owner>ahassani@chromium.org</owner>
-  <summary>
-    The number of times the device has been recovered.
 
     This is reported on every update check but at most once a day.
 
