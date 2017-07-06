@@ -33,7 +33,7 @@ class BasicSeqLockTestThread : public base::PlatformThread::Delegate {
     ready_ = ready;
   }
   void ThreadMain() override {
-    while (base::AtomicRefCountIsZero(ready_)) {
+    while (ready_->IsZero()) {
       base::PlatformThread::YieldCurrentThread();
     }
 
@@ -49,7 +49,7 @@ class BasicSeqLockTestThread : public base::PlatformThread::Delegate {
       EXPECT_EQ(copy.c, copy.b + copy.a);
     }
 
-    base::AtomicRefCountDec(ready_);
+    ready_->Decrement();
   }
 
  private:
@@ -91,9 +91,9 @@ TEST(OneWriterSeqLockTest, MAYBE_ManyThreads) {
     seqlock.WriteEnd();
 
     if (counter == 1)
-      base::AtomicRefCountIncN(&ready, kNumReaderThreads);
+      ready.Increment(kNumReaderThreads);
 
-    if (base::AtomicRefCountIsZero(&ready))
+    if (ready.IsZero())
       break;
   }
 

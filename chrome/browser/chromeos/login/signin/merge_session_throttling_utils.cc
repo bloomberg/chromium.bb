@@ -71,7 +71,7 @@ bool ShouldAttachNavigationThrottle() {
 }
 
 bool AreAllSessionMergedAlready() {
-  return !base::AtomicRefCountIsZero(&g_all_profiles_restored_);
+  return !g_all_profiles_restored_.IsZero();
 }
 
 void BlockProfile(Profile* profile) {
@@ -85,7 +85,7 @@ void BlockProfile(Profile* profile) {
     // Since a new profile just got blocked, we can not assume that
     // all sessions are merged anymore.
     if (AreAllSessionMergedAlready()) {
-      base::AtomicRefCountDec(&g_all_profiles_restored_);
+      g_all_profiles_restored_.Decrement();
       DVLOG(1) << "Marking all sessions unmerged!";
     }
   }
@@ -100,7 +100,7 @@ void UnblockProfile(Profile* profile) {
 
   // Check if there is any other profile to block on.
   if (ProfileSet::Get()->size() == 0) {
-    base::AtomicRefCountInc(&g_all_profiles_restored_);
+    g_all_profiles_restored_.Increment();
     DVLOG(1) << "All profiles merged "
              << g_all_profiles_restored_.SubtleRefCountForDebug();
   }
@@ -116,7 +116,7 @@ bool ShouldDelayRequestForProfile(Profile* profile) {
     // This is not a regular user session, let's remove the throttle
     // permanently.
     if (!AreAllSessionMergedAlready())
-      base::AtomicRefCountInc(&g_all_profiles_restored_);
+      g_all_profiles_restored_.Increment();
 
     return false;
   }
