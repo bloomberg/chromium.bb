@@ -108,6 +108,7 @@
 #include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/root_window_finder.h"
 #include "ash/wm/screen_pinning_controller.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/system_gesture_event_filter.h"
 #include "ash/wm/system_modal_container_event_filter.h"
 #include "ash/wm/system_modal_container_layout_manager.h"
@@ -464,6 +465,10 @@ void Shell::DoInitialWorkspaceAnimation() {
       ->DoInitialAnimation();
 }
 
+bool Shell::IsSplitViewModeActive() const {
+  return split_view_controller_->IsSplitViewModeActive();
+}
+
 void Shell::AddShellObserver(ShellObserver* observer) {
   shell_observers_.AddObserver(observer);
 }
@@ -527,6 +532,16 @@ void Shell::NotifyOverviewModeStarting() {
 void Shell::NotifyOverviewModeEnded() {
   for (auto& observer : shell_observers_)
     observer.OnOverviewModeEnded();
+}
+
+void Shell::NotifySplitViewModeStarting() {
+  for (auto& observer : shell_observers_)
+    observer.OnSplitViewModeStarting();
+}
+
+void Shell::NotifySplitViewModeEnded() {
+  for (auto& observer : shell_observers_)
+    observer.OnSplitViewModeEnded();
 }
 
 void Shell::NotifyFullscreenStateChanged(bool is_fullscreen,
@@ -642,7 +657,9 @@ Shell::~Shell() {
   // See bug crbug.com/134502.
   aura::client::GetFocusClient(GetPrimaryRootWindow())->FocusWindow(nullptr);
 
-  // Please keep in same order as in Init() because it's easy to miss one.
+  // Please keep in reverse order as in Init() because it's easy to miss one.
+  split_view_controller_.reset();
+
   if (window_modality_controller_)
     window_modality_controller_.reset();
 
@@ -1107,6 +1124,8 @@ void Shell::Init(const ShellInitParams& init_params) {
       base::MakeUnique<ScreenOrientationController>();
   screen_layout_observer_.reset(new ScreenLayoutObserver());
   sms_observer_.reset(new SmsObserver());
+
+  split_view_controller_.reset(new SplitViewController());
 
   // The compositor thread and main message loop have to be running in
   // order to create mirror window. Run it after the main message loop
