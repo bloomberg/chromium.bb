@@ -50,7 +50,9 @@ class SurfaceTreeHost : public SurfaceDelegate {
 
   aura::Window* host_window() { return host_window_.get(); }
   const aura::Window* host_window() const { return host_window_.get(); }
+
   Surface* root_surface() { return root_surface_; }
+  const Surface* root_surface() const { return root_surface_; }
 
   // Overridden from SurfaceDelegate:
   void OnSurfaceCommit() override;
