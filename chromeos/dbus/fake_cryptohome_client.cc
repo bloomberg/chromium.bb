@@ -7,6 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
@@ -234,15 +236,15 @@ bool FakeCryptohomeClient::CallTpmIsBeingOwnedAndBlock(bool* owning) {
 }
 
 void FakeCryptohomeClient::TpmCanAttemptOwnership(
-    const VoidDBusMethodCallback& callback) {
+    VoidDBusMethodCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS));
+      FROM_HERE, base::BindOnce(std::move(callback), DBUS_METHOD_CALL_SUCCESS));
 }
 
 void FakeCryptohomeClient::TpmClearStoredPassword(
-    const VoidDBusMethodCallback& callback) {
+    VoidDBusMethodCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS));
+      FROM_HERE, base::BindOnce(std::move(callback), DBUS_METHOD_CALL_SUCCESS));
 }
 
 bool FakeCryptohomeClient::CallTpmClearStoredPasswordAndBlock() {
@@ -593,9 +595,9 @@ void FakeCryptohomeClient::FlushAndSignBootAttributes(
 
 void FakeCryptohomeClient::MigrateToDircrypto(
     const cryptohome::Identification& cryptohome_id,
-    const VoidDBusMethodCallback& callback) {
+    VoidDBusMethodCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS));
+      FROM_HERE, base::BindOnce(std::move(callback), DBUS_METHOD_CALL_SUCCESS));
   dircrypto_migration_progress_ = 0;
   dircrypto_migration_progress_timer_.Start(
       FROM_HERE,

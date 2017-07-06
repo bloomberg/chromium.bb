@@ -26,10 +26,9 @@ class MockSessionManagerClient : public SessionManagerClient {
   MOCK_CONST_METHOD1(HasObserver, bool(const Observer*));
   MOCK_CONST_METHOD0(IsScreenLocked, bool(void));
   MOCK_METHOD0(EmitLoginPromptVisible, void(void));
-  MOCK_METHOD3(RestartJob,
-               void(int,
-                    const std::vector<std::string>&,
-                    const VoidDBusMethodCallback&));
+  void RestartJob(int socket_fd,
+                  const std::vector<std::string>& argv,
+                  VoidDBusMethodCallback callback) override;
   MOCK_METHOD1(StartSession, void(const cryptohome::Identification&));
   MOCK_METHOD0(StopSession, void(void));
   MOCK_METHOD0(NotifySupervisedUserCreationStarted, void(void));

@@ -4,11 +4,18 @@
 
 #include "chromeos/dbus/mock_session_manager_client.h"
 
+#include "base/logging.h"
+
 namespace chromeos {
 
 MockSessionManagerClient::MockSessionManagerClient() {}
 
 MockSessionManagerClient::~MockSessionManagerClient() {}
 
-}  // namespace chromeos
+void MockSessionManagerClient::RestartJob(int socket_fd,
+                                          const std::vector<std::string>& argv,
+                                          VoidDBusMethodCallback callback) {
+  NOTREACHED() << "No mock for RestartJob";
+}
 
+}  // namespace chromeos

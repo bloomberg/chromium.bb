@@ -16,7 +16,7 @@ void EmptyVoidDBusMethodCallbackBody(DBusMethodCallStatus result) {
 
 
 VoidDBusMethodCallback EmptyVoidDBusMethodCallback() {
-  return base::Bind(&EmptyVoidDBusMethodCallbackBody);
+  return base::BindOnce(&EmptyVoidDBusMethodCallbackBody);
 }
 
 }  // namespace chromeos

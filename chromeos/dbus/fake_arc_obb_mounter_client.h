@@ -22,9 +22,9 @@ class CHROMEOS_EXPORT FakeArcObbMounterClient : public ArcObbMounterClient {
   void MountObb(const std::string& obb_file,
                 const std::string& mount_path,
                 int32_t owner_gid,
-                const VoidDBusMethodCallback& callback) override;
+                VoidDBusMethodCallback callback) override;
   void UnmountObb(const std::string& mount_path,
-                  const VoidDBusMethodCallback& callback) override;
+                  VoidDBusMethodCallback callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeArcObbMounterClient);

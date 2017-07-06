@@ -72,8 +72,8 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
   bool CallTpmIsOwnedAndBlock(bool* owned) override;
   void TpmIsBeingOwned(const BoolDBusMethodCallback& callback) override;
   bool CallTpmIsBeingOwnedAndBlock(bool* owning) override;
-  void TpmCanAttemptOwnership(const VoidDBusMethodCallback& callback) override;
-  void TpmClearStoredPassword(const VoidDBusMethodCallback& callback) override;
+  void TpmCanAttemptOwnership(VoidDBusMethodCallback callback) override;
+  void TpmClearStoredPassword(VoidDBusMethodCallback callback) override;
   bool CallTpmClearStoredPasswordAndBlock() override;
   void Pkcs11IsTpmTokenReady(const BoolDBusMethodCallback& callback) override;
   void Pkcs11GetTpmTokenInfo(
@@ -197,7 +197,7 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
       const cryptohome::FlushAndSignBootAttributesRequest& request,
       const ProtobufMethodCallback& callback) override;
   void MigrateToDircrypto(const cryptohome::Identification& cryptohome_id,
-                          const VoidDBusMethodCallback& callback) override;
+                          VoidDBusMethodCallback callback) override;
   void SetDircryptoMigrationProgressHandler(
       const DircryptoMigrationProgessHandler& handler) override;
   void RemoveFirmwareManagementParametersFromTpm(
