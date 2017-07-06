@@ -99,6 +99,12 @@ java_cpp_enum("aw_error_ui") {
   ]
 }
 
+java_cpp_enum("aw_safe_browsing_action") {
+  sources = [
+    "browser/aw_safe_browsing_resource_throttle.h",
+  ]
+}
+
 jinja_template("system_webview_manifest") {
   input = "apk/java/AndroidManifest.xml"
   output = system_webview_android_manifest
@@ -796,10 +802,12 @@ android_library("android_webview_java") {
     "java/src/org/chromium/android_webview/AwPicture.java",
     "java/src/org/chromium/android_webview/AwPrintDocumentAdapter.java",
     "java/src/org/chromium/android_webview/AwSafeBrowsingConfigHelper.java",
+    "java/src/org/chromium/android_webview/AwSafeBrowsingResponse.java",
     "java/src/org/chromium/android_webview/AwQuotaManagerBridge.java",
     "java/src/org/chromium/android_webview/AwRendererPriorityManager.java",
     "java/src/org/chromium/android_webview/AwRenderProcessGoneDetail.java",
     "java/src/org/chromium/android_webview/AwResource.java",
+    "java/src/org/chromium/android_webview/AwSafeBrowsingConversionHelper.java",
     "java/src/org/chromium/android_webview/AwScrollOffsetManager.java",
     "java/src/org/chromium/android_webview/AwServiceWorkerClient.java",
     "java/src/org/chromium/android_webview/AwServiceWorkerController.java",
@@ -867,6 +875,8 @@ android_library("android_webview_java") {
     ":aw_permission_request_resource",
     ":aw_renderer_priority_manager_renderer_priority",
     ":aw_error_ui",
+    ":aw_safe_browsing_action",
+    "//components/safe_browsing_db:sb_threat_values",
   ]
 }
 

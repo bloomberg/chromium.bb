@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "android_webview/browser/aw_contents.h"
 #include "android_webview/common/devtools_instrumentation.h"
 #include "android_webview/grit/components_strings.h"
 #include "base/android/jni_android.h"
@@ -451,6 +450,29 @@ void AwContentsClientBridge::OnReceivedError(
       safebrowsing_hit);
 }
 
+void AwContentsClientBridge::OnSafeBrowsingHit(
+    const AwWebResourceRequest& request,
+    const safe_browsing::SBThreatType& threat_type,
+    const SafeBrowsingActionCallback& callback) {
+  int request_id = safe_browsing_callbacks_.Add(
+      base::MakeUnique<SafeBrowsingActionCallback>(callback));
+
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+
+  AwWebResourceRequest::AwJavaWebResourceRequest java_web_resource_request;
+  AwWebResourceRequest::ConvertToJava(env, request, &java_web_resource_request);
+  Java_AwContentsClientBridge_onSafeBrowsingHit(
+      env, obj, java_web_resource_request.jurl, request.is_main_frame,
+      request.has_user_gesture, java_web_resource_request.jmethod,
+      java_web_resource_request.jheader_names,
+      java_web_resource_request.jheader_values, static_cast<int>(threat_type),
+      request_id);
+}
+
 void AwContentsClientBridge::OnReceivedHttpError(
     const AwWebResourceRequest& request,
     const scoped_refptr<const net::HttpResponseHeaders>& response_headers) {
@@ -516,6 +538,23 @@ void AwContentsClientBridge::ConfirmJsResult(JNIEnv* env,
   }
   callback->Run(true, prompt_text);
   pending_js_dialog_callbacks_.Remove(id);
+}
+
+void AwContentsClientBridge::TakeSafeBrowsingAction(JNIEnv*,
+                                                    const JavaRef<jobject>&,
+                                                    int action,
+                                                    bool reporting,
+                                                    int request_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  auto* callback = safe_browsing_callbacks_.Lookup(request_id);
+  if (!callback) {
+    LOG(WARNING) << "Unexpected TakeSafeBrowsingAction. " << request_id;
+    return;
+  }
+  callback->Run(
+      static_cast<AwSafeBrowsingResourceThrottle::SafeBrowsingAction>(action),
+      reporting);
+  safe_browsing_callbacks_.Remove(request_id);
 }
 
 void AwContentsClientBridge::CancelJsResult(JNIEnv*,

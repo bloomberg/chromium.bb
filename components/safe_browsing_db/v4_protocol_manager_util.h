@@ -77,6 +77,8 @@ struct V4ProtocolConfig {
 
 // Different types of threats that SafeBrowsing protects against. This is the
 // type that's returned to the clients of SafeBrowsing in Chromium.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.safe_browsing
+// GENERATED_JAVA_PREFIX_TO_STRIP: SB_THREAT_TYPE_
 enum SBThreatType {
   // This type can be used for lists that can be checked synchronously so a
   // client callback isn't required, or for whitelists.

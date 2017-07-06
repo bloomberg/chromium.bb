@@ -8,12 +8,14 @@
 #include <jni.h>
 #include <memory>
 
+#include "android_webview/browser/aw_safe_browsing_resource_throttle.h"
 #include "android_webview/browser/net/aw_web_resource_request.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
 #include "base/id_map.h"
 #include "base/supports_user_data.h"
+#include "components/security_interstitials/content/unsafe_resource.h"
 #include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/resource_request_info.h"
@@ -99,6 +101,12 @@ class AwContentsClientBridge {
                        int error_code,
                        bool safebrowsing_hit);
 
+  void OnSafeBrowsingHit(const AwWebResourceRequest& request,
+                         const safe_browsing::SBThreatType& threat_type,
+                         const base::Callback<void(
+                             AwSafeBrowsingResourceThrottle::SafeBrowsingAction,
+                             bool)>& callback);
+
   // Called when a response from the server is received with status code >= 400.
   void OnReceivedHttpError(
       const AwWebResourceRequest& request,
@@ -121,12 +129,22 @@ class AwContentsClientBridge {
                        const base::android::JavaRef<jstring>& prompt);
   void CancelJsResult(JNIEnv*, const base::android::JavaRef<jobject>&, int id);
 
+  void TakeSafeBrowsingAction(JNIEnv*,
+                              const base::android::JavaRef<jobject>&,
+                              int action,
+                              bool reporting,
+                              int request_id);
+
  private:
   JavaObjectWeakGlobalRef java_ref_;
 
   typedef const base::Callback<void(content::CertificateRequestResultType)>
       CertErrorCallback;
+  typedef const base::Callback<
+      void(AwSafeBrowsingResourceThrottle::SafeBrowsingAction, bool)>
+      SafeBrowsingActionCallback;
   IDMap<std::unique_ptr<CertErrorCallback>> pending_cert_error_callbacks_;
+  IDMap<std::unique_ptr<SafeBrowsingActionCallback>> safe_browsing_callbacks_;
   IDMap<std::unique_ptr<content::JavaScriptDialogManager::DialogClosedCallback>>
       pending_js_dialog_callbacks_;
   IDMap<std::unique_ptr<content::ClientCertificateDelegate>>

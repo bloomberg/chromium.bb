@@ -70,7 +70,8 @@ AwSafeBrowsingBlockingPage::AwSafeBrowsingBlockingPage(
 // static
 void AwSafeBrowsingBlockingPage::ShowBlockingPage(
     AwSafeBrowsingUIManager* ui_manager,
-    const UnsafeResource& unsafe_resource) {
+    const UnsafeResource& unsafe_resource,
+    bool extended_reporting_allowed) {
   DVLOG(1) << __func__ << " " << unsafe_resource.url.spec();
   WebContents* web_contents = unsafe_resource.web_contents_getter.Run();
 
@@ -88,13 +89,12 @@ void AwSafeBrowsingBlockingPage::ShowBlockingPage(
     const UnsafeResourceList unsafe_resources{unsafe_resource};
     BaseSafeBrowsingErrorUI::SBErrorDisplayOptions display_options =
         BaseSafeBrowsingErrorUI::SBErrorDisplayOptions(
-            IsMainPageLoadBlocked(unsafe_resources),
-            false,  // kSafeBrowsingExtendedReportingOptInAllowed
-            false,  // is_off_the_record
-            false,  // is_extended_reporting
-            false,  // is_scout
-            false,  // kSafeBrowsingProceedAnywayDisabled
-            false,  // should_open_links_in_new_tab
+            IsMainPageLoadBlocked(unsafe_resources), extended_reporting_allowed,
+            false,                    // is_off_the_record
+            false,                    // is_extended_reporting
+            false,                    // is_scout
+            false,                    // kSafeBrowsingProceedAnywayDisabled
+            false,                    // should_open_links_in_new_tab
             "cpn_safe_browsing_wv");  // help_center_article_link
 
     ErrorUiType errorType =

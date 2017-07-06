@@ -361,6 +361,40 @@ public class AwContentsClientBridge {
     }
 
     @CalledByNative
+    public void onSafeBrowsingHit(
+            // WebResourceRequest
+            String url, boolean isMainFrame, boolean hasUserGesture, String method,
+            String[] requestHeaderNames, String[] requestHeaderValues, int threatType,
+            final int requestId) {
+        AwContentsClient.AwWebResourceRequest request = new AwContentsClient.AwWebResourceRequest();
+        request.url = url;
+        request.isMainFrame = isMainFrame;
+        request.hasUserGesture = hasUserGesture;
+        request.method = method;
+        request.requestHeaders = new HashMap<String, String>(requestHeaderNames.length);
+        for (int i = 0; i < requestHeaderNames.length; ++i) {
+            request.requestHeaders.put(requestHeaderNames[i], requestHeaderValues[i]);
+        }
+
+        ValueCallback<AwSafeBrowsingResponse> callback =
+                new ValueCallback<AwSafeBrowsingResponse>() {
+                    @Override
+                    public void onReceiveValue(final AwSafeBrowsingResponse response) {
+                        ThreadUtils.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                nativeTakeSafeBrowsingAction(mNativeContentsClientBridge,
+                                        response.action(), response.reporting(), requestId);
+                            }
+                        });
+                    }
+                };
+
+        mClient.getCallbackHelper().postOnSafeBrowsingHit(
+                request, AwSafeBrowsingConversionHelper.convertThreatType(threatType), callback);
+    }
+
+    @CalledByNative
     private void onReceivedHttpError(
             // WebResourceRequest
             String url, boolean isMainFrame, boolean hasUserGesture, String method,
@@ -417,6 +451,8 @@ public class AwContentsClientBridge {
     //--------------------------------------------------------------------------------------------
     //  Native methods
     //--------------------------------------------------------------------------------------------
+    private native void nativeTakeSafeBrowsingAction(
+            long nativeAwContentsClientBridge, int action, boolean reporting, int requestId);
     private native void nativeProceedSslError(long nativeAwContentsClientBridge, boolean proceed,
             int id);
     private native void nativeProvideClientCertificateResponse(long nativeAwContentsClientBridge,

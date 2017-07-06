@@ -66,6 +66,10 @@ class BaseResourceThrottle
       SBThreatType threat_type,
       const ThreatMetadata& metadata) override;
 
+  // Called on the IO thread when the user has decided to proceed with the
+  // current request, or go back.
+  void OnBlockingPageComplete(bool proceed);
+
  protected:
   BaseResourceThrottle(
       const net::URLRequest* request,
@@ -96,6 +100,13 @@ class BaseResourceThrottle
   // page, but may be overridden in a subclass.
   virtual void CancelResourceLoad();
 
+  // Starts displaying the safe browsing interstitial page. Called on the UI
+  // thread.
+  static void StartDisplayingBlockingPage(
+      const base::WeakPtr<BaseResourceThrottle>& throttle,
+      scoped_refptr<BaseUIManager> ui_manager,
+      const security_interstitials::UnsafeResource& resource);
+
   scoped_refptr<BaseUIManager> ui_manager();
 
  private:
@@ -120,10 +131,6 @@ class BaseResourceThrottle
 
   scoped_refptr<BaseUIManager> ui_manager_;
 
-  // Called on the IO thread when the user has decided to proceed with the
-  // current request, or go back.
-  void OnBlockingPageComplete(bool proceed);
-
   // Starts running |url| through the safe browsing check. Returns true if the
   // URL is safe to visit. Otherwise returns false and will call
   // OnBrowseUrlResult() when the check has completed.
@@ -132,13 +139,6 @@ class BaseResourceThrottle
   // Callback for when the safe browsing check (which was initiated by
   // StartCheckingUrl()) has taken longer than kCheckUrlTimeoutMs.
   void OnCheckUrlTimeout();
-
-  // Starts displaying the safe browsing interstitial page. Called on the UI
-  // thread.
-  static void StartDisplayingBlockingPage(
-      const base::WeakPtr<BaseResourceThrottle>& throttle,
-      scoped_refptr<BaseUIManager> ui_manager,
-      const security_interstitials::UnsafeResource& resource);
 
   void ResumeRequest();
 

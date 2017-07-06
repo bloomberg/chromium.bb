@@ -369,6 +369,9 @@ public abstract class AwContentsClient {
     protected abstract void onReceivedError2(
             AwWebResourceRequest request, AwWebResourceError error);
 
+    protected abstract void onSafeBrowsingHit(AwWebResourceRequest request, int threatType,
+            ValueCallback<AwSafeBrowsingResponse> callback);
+
     public abstract void onReceivedHttpError(AwWebResourceRequest request,
             AwWebResourceResponse response);
 
