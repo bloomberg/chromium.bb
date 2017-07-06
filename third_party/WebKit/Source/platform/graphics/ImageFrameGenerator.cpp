@@ -344,11 +344,13 @@ bool ImageFrameGenerator::Decode(SegmentReader* data,
 
   ImageFrame* frame = (*decoder)->FrameBufferAtIndex(index);
 
+  // SetMemoryAllocator() can try to access decoder's data, so
+  // we have to do it before clearing SegmentReader.
+  if (using_external_allocator)
+    (*decoder)->SetMemoryAllocator(nullptr);
   (*decoder)->SetData(PassRefPtr<SegmentReader>(nullptr),
                       false);  // Unref SegmentReader from ImageDecoder.
   (*decoder)->ClearCacheExceptFrame(index);
-  if (using_external_allocator)
-    (*decoder)->SetMemoryAllocator(0);
 
   if (!frame || frame->GetStatus() == ImageFrame::kFrameEmpty)
     return false;
