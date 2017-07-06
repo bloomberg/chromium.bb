@@ -122,7 +122,8 @@ int ChromeMain(int argc, const char** argv) {
   if (command_line->GetSwitchValueASCII(switches::kProcessType) ==
       switches::kProfiling)
     return profiling::ProfilingMain(*command_line);
-  profiling::InitMemlogSenderIfNecessary(*command_line);
+  if (command_line->HasSwitch(switches::kProcessType))
+    profiling::InitMemlogSenderIfNecessary(*command_line);
 #endif  // ENABLE_OOP_HEAP_PROFILING
 
 #if defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)

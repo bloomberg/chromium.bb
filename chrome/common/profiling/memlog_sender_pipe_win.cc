@@ -5,12 +5,13 @@
 #include "chrome/common/profiling/memlog_sender_pipe_win.h"
 
 #include "base/logging.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/common/profiling/memlog_stream.h"
 
 namespace profiling {
 
-MemlogSenderPipe::MemlogSenderPipe(const base::string16& pipe_id)
-    : pipe_id_(pipe_id), handle_(INVALID_HANDLE_VALUE) {}
+MemlogSenderPipe::MemlogSenderPipe(const base::string& pipe_id)
+    : pipe_id_(base::UTF8ToUTF16(pipe_id)), handle_(INVALID_HANDLE_VALUE) {}
 
 MemlogSenderPipe::~MemlogSenderPipe() {
   if (handle_ != INVALID_HANDLE_VALUE)

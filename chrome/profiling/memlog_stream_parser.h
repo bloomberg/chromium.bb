@@ -38,7 +38,7 @@ class MemlogStreamParser : public MemlogStreamReceiver {
     READ_NO_DATA  // Not enough data, try again when we get more
   };
 
-  ~MemlogStreamParser();
+  ~MemlogStreamParser() override;
 
   // Returns true if the given number of bytes are available now.
   bool AreBytesAvailable(size_t count) const;

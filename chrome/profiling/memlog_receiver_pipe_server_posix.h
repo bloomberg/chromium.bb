@@ -8,6 +8,8 @@
 #include <memory>
 
 #include "base/callback_forward.h"
+#include "base/containers/flat_map.h"
+#include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_pump_libevent.h"
@@ -46,9 +48,28 @@ class MemlogReceiverPipeServer
   friend class base::RefCountedThreadSafe<MemlogReceiverPipeServer>;
   ~MemlogReceiverPipeServer();
 
+  void StartOnIO();
+
+  class PipePoller : public base::MessageLoopForIO::Watcher {
+   public:
+    PipePoller();
+    ~PipePoller() override;
+
+    scoped_refptr<MemlogReceiverPipe> CreatePipe(base::ScopedFD fd);
+
+    void OnFileCanReadWithoutBlocking(int fd) override;
+    void OnFileCanWriteWithoutBlocking(int fd) override;
+
+   private:
+    base::MessageLoopForIO::FileDescriptorWatcher controller_;
+
+    base::flat_map<int, scoped_refptr<MemlogReceiverPipe>> pipes_;
+  };
+
   scoped_refptr<base::TaskRunner> io_runner_;
-  std::string pipe_id_;
+  base::ScopedFD first_pipe_;
   NewConnectionCallback on_new_connection_;
+  PipePoller pipe_poller_;
 
   DISALLOW_COPY_AND_ASSIGN(MemlogReceiverPipeServer);
 };

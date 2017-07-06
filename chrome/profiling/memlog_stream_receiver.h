@@ -27,7 +27,7 @@ class MemlogStreamReceiver
 
  protected:
   friend class base::RefCountedThreadSafe<MemlogStreamReceiver>;
-  ~MemlogStreamReceiver() {}
+  virtual ~MemlogStreamReceiver() {}
 };
 
 }  // namespace profiling
