@@ -456,10 +456,7 @@ void XMLDocumentParser::NotifyFinished(Resource* unused_resource) {
 
   if (error_occurred) {
     script_loader->DispatchErrorEvent();
-  } else {
-    // TODO(hiroshige): Remove |was_canceled| once it is confirmed that this
-    // CHECK never fails.
-    CHECK(!was_canceled);
+  } else if (!was_canceled) {
     if (script_parser_blocking_time > 0.0) {
       DocumentParserTiming::From(*GetDocument())
           .RecordParserBlockedOnScriptLoadDuration(
