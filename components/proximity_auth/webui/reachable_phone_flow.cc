@@ -13,6 +13,7 @@
 #include "components/cryptauth/cryptauth_client.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/proximity_auth/logging/logging.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace proximity_auth {
 
@@ -43,11 +44,35 @@ void ReachablePhoneFlow::Run(const ReachablePhonesCallback& callback) {
   // Ping the user's devices to update themselves with CryptAuth.
   cryptauth::SendDeviceSyncTickleRequest tickle_request;
   tickle_request.set_tickle_type(cryptauth::UPDATE_ENROLLMENT);
+  net::PartialNetworkTrafficAnnotationTag partial_traffic_annotation =
+      net::DefinePartialNetworkTrafficAnnotation("cryptauth_device_sync_tickle",
+                                                 "oauth2_api_call_flow", R"(
+      semantics {
+        sender: "EasyUnlock Debug UI"
+        description:
+          "Triggers a sync on all other device (for the same user) registered "
+          "on CryptAuth."
+        trigger: "User manually opens the EasyUnlock debug UI."
+        data: "OAuth 2.0 token and the device public key."
+        destination: GOOGLE_OWNED_SERVICE
+      }
+      policy {
+        setting:
+          "This feature cannot be disabled in settings, but this request will "
+          "only be sent if the user opens the EasyUnlock debug UI."
+        chrome_policy {
+          SigninAllowed {
+            SigninAllowed: false
+          }
+        }
+      })");
   client_->SendDeviceSyncTickle(
-      tickle_request, base::Bind(&ReachablePhoneFlow::OnSyncTickleSuccess,
-                                 weak_ptr_factory_.GetWeakPtr()),
+      tickle_request,
+      base::Bind(&ReachablePhoneFlow::OnSyncTickleSuccess,
+                 weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&ReachablePhoneFlow::OnApiCallError,
-                 weak_ptr_factory_.GetWeakPtr()));
+                 weak_ptr_factory_.GetWeakPtr()),
+      partial_traffic_annotation);
 }
 
 void ReachablePhoneFlow::OnSyncTickleSuccess(

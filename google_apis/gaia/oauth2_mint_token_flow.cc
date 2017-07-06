@@ -279,3 +279,31 @@ bool OAuth2MintTokenFlow::ParseIssueAdviceResponse(
 
   return success;
 }
+
+net::PartialNetworkTrafficAnnotationTag
+OAuth2MintTokenFlow::GetNetworkTrafficAnnotationTag() {
+  return net::DefinePartialNetworkTrafficAnnotation(
+      "oauth2_mint_token_flow", "oauth2_api_call_flow", R"(
+      semantics {
+        sender: "Chrome Identity API"
+        description:
+          "Requests a token from gaia allowing an app or extension to act as "
+          "the user when calling other google APIs."
+        trigger: "API call from the app/extension."
+        data:
+          "User's login token, the identity of a chrome app/extension, and a "
+          "list of oauth scopes requested by the app/extension."
+        destination: GOOGLE_OWNED_SERVICE
+      }
+      policy {
+        setting:
+          "This feature cannot be disabled by settings, however the request is "
+          "made only for signed-in users."
+        chrome_policy {
+          SigninAllowed {
+            policy_options {mode: MANDATORY}
+            SigninAllowed: false
+          }
+        }
+      })");
+}

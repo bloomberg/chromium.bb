@@ -66,44 +66,148 @@ CryptAuthClientImpl::~CryptAuthClientImpl() {
 void CryptAuthClientImpl::GetMyDevices(
     const GetMyDevicesRequest& request,
     const GetMyDevicesCallback& callback,
-    const ErrorCallback& error_callback) {
-  MakeApiCall(kGetMyDevicesPath, request, callback, error_callback);
+    const ErrorCallback& error_callback,
+    const net::PartialNetworkTrafficAnnotationTag& partial_traffic_annotation) {
+  MakeApiCall(kGetMyDevicesPath, request, callback, error_callback,
+              partial_traffic_annotation);
 }
 
 void CryptAuthClientImpl::FindEligibleUnlockDevices(
     const FindEligibleUnlockDevicesRequest& request,
     const FindEligibleUnlockDevicesCallback& callback,
     const ErrorCallback& error_callback) {
-  MakeApiCall(kFindEligibleUnlockDevicesPath, request, callback,
-              error_callback);
+  net::PartialNetworkTrafficAnnotationTag partial_traffic_annotation =
+      net::DefinePartialNetworkTrafficAnnotation(
+          "cryptauth_find_eligible_unlock_devices", "oauth2_api_call_flow",
+          R"(
+      semantics {
+        sender: "CryptAuth Device Manager"
+        description:
+          "Gets the list of mobile devices that can be used by Smart Lock to "
+          "unlock the current device."
+        trigger:
+          "This request is sent when the user starts the Smart Lock setup flow."
+        data: "OAuth 2.0 token and the device's public key."
+        destination: GOOGLE_OWNED_SERVICE
+      }
+      policy {
+        setting:
+          "This feature cannot be disabled in settings, but the request will "
+          "only be sent if the user explicitly tries to enable Smart Lock "
+          "(EasyUnlock), i.e. starts the setup flow."
+        chrome_policy {
+          EasyUnlockAllowed {
+            EasyUnlockAllowed: false
+          }
+        }
+      })");
+  MakeApiCall(kFindEligibleUnlockDevicesPath, request, callback, error_callback,
+              partial_traffic_annotation);
 }
 
 void CryptAuthClientImpl::SendDeviceSyncTickle(
     const SendDeviceSyncTickleRequest& request,
     const SendDeviceSyncTickleCallback& callback,
-    const ErrorCallback& error_callback) {
-  MakeApiCall(kSendDeviceSyncTicklePath, request, callback, error_callback);
+    const ErrorCallback& error_callback,
+    const net::PartialNetworkTrafficAnnotationTag& partial_traffic_annotation) {
+  MakeApiCall(kSendDeviceSyncTicklePath, request, callback, error_callback,
+              partial_traffic_annotation);
 }
 
 void CryptAuthClientImpl::ToggleEasyUnlock(
     const ToggleEasyUnlockRequest& request,
     const ToggleEasyUnlockCallback& callback,
     const ErrorCallback& error_callback) {
-  MakeApiCall(kToggleEasyUnlockPath, request, callback, error_callback);
+  net::PartialNetworkTrafficAnnotationTag partial_traffic_annotation =
+      net::DefinePartialNetworkTrafficAnnotation("cryptauth_toggle_easyunlock",
+                                                 "oauth2_api_call_flow", R"(
+      semantics {
+        sender: "CryptAuth Device Manager"
+        description: "Enables Smart Lock (EasyUnlock) for the current device."
+        trigger:
+          "This request is send after the user goes through the EasyUnlock "
+          "setup flow."
+        data: "OAuth 2.0 token and the device public key."
+        destination: GOOGLE_OWNED_SERVICE
+      }
+      policy {
+        setting:
+          "This feature cannot be disabled in settings, but the request will "
+          "only be send if the user explicitly enables Smart Lock "
+          "(EasyUnlock), i.e. uccessfully complete the setup flow."
+        chrome_policy {
+          EasyUnlockAllowed {
+            EasyUnlockAllowed: false
+          }
+        }
+      })");
+  MakeApiCall(kToggleEasyUnlockPath, request, callback, error_callback,
+              partial_traffic_annotation);
 }
 
 void CryptAuthClientImpl::SetupEnrollment(
     const SetupEnrollmentRequest& request,
     const SetupEnrollmentCallback& callback,
     const ErrorCallback& error_callback) {
-  MakeApiCall(kSetupEnrollmentPath, request, callback, error_callback);
+  net::PartialNetworkTrafficAnnotationTag partial_traffic_annotation =
+      net::DefinePartialNetworkTrafficAnnotation(
+          "cryptauth_enrollment_flow_setup", "oauth2_api_call_flow", R"(
+      semantics {
+        sender: "CryptAuth Device Manager"
+        description: "Starts the CryptAuth registration flow."
+        trigger:
+          "Occurs periodically, at least once a month, because if the device "
+          "does not re-enroll for more than a specific number of days "
+          "(currently 45) it will be removed from the server."
+        data:
+          "Various device information (public key, bluetooth MAC address, "
+          "model, OS version, screen size, manufacturer, has screen lock "
+          "enabled), and OAuth 2.0 token."
+        destination: GOOGLE_OWNED_SERVICE
+      }
+      policy {
+        setting:
+          "This feature cannot be disabled by settings. However, this request "
+          "is made only for signed-in users."
+        chrome_policy {
+          SigninAllowed {
+            SigninAllowed: false
+          }
+        }
+      })");
+  MakeApiCall(kSetupEnrollmentPath, request, callback, error_callback,
+              partial_traffic_annotation);
 }
 
 void CryptAuthClientImpl::FinishEnrollment(
     const FinishEnrollmentRequest& request,
     const FinishEnrollmentCallback& callback,
     const ErrorCallback& error_callback) {
-  MakeApiCall(kFinishEnrollmentPath, request, callback, error_callback);
+  net::PartialNetworkTrafficAnnotationTag partial_traffic_annotation =
+      net::DefinePartialNetworkTrafficAnnotation(
+          "cryptauth_enrollment_flow_finish", "oauth2_api_call_flow", R"(
+      semantics {
+        sender: "CryptAuth Device Manager"
+        description: "Finishes the CryptAuth registration flow."
+        trigger:
+          "Occurs periodically, at least once a month, because if the device "
+          "does not re-enroll for more than a specific number of days "
+          "(currently 45) it will be removed from the server."
+        data: "OAuth 2.0 token."
+        destination: GOOGLE_OWNED_SERVICE
+      }
+      policy {
+        setting:
+          "This feature cannot be disabled by settings. However, this request "
+          "is made only for signed-in users."
+        chrome_policy {
+          SigninAllowed {
+            SigninAllowed: false
+          }
+        }
+      })");
+  MakeApiCall(kFinishEnrollmentPath, request, callback, error_callback,
+              partial_traffic_annotation);
 }
 
 std::string CryptAuthClientImpl::GetAccessTokenUsed() {
@@ -115,13 +219,17 @@ void CryptAuthClientImpl::MakeApiCall(
     const std::string& request_path,
     const RequestProto& request_proto,
     const base::Callback<void(const ResponseProto&)>& response_callback,
-    const ErrorCallback& error_callback) {
+    const ErrorCallback& error_callback,
+    const net::PartialNetworkTrafficAnnotationTag& partial_traffic_annotation) {
   if (has_call_started_) {
     error_callback.Run(
         "Client has been used for another request. Do not reuse.");
     return;
   }
   has_call_started_ = true;
+
+  api_call_flow_->SetPartialNetworkTrafficAnnotation(
+      partial_traffic_annotation);
 
   // The |device_classifier| field must be present for all CryptAuth requests.
   RequestProto request_copy(request_proto);

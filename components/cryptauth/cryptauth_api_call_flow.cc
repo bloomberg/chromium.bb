@@ -6,6 +6,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "components/proximity_auth/logging/logging.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 
 namespace cryptauth {
@@ -78,6 +79,12 @@ void CryptAuthApiCallFlow::ProcessApiCallFailure(
   source->GetResponseAsString(&response);
   PA_LOG(INFO) << "API call failed:\n" << response;
   error_callback_.Run(error_message);
+}
+
+net::PartialNetworkTrafficAnnotationTag
+CryptAuthApiCallFlow::GetNetworkTrafficAnnotationTag() {
+  DCHECK(partial_network_annotation_ != nullptr);
+  return *partial_network_annotation_.get();
 }
 
 }  // namespace cryptauth

@@ -18,6 +18,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/proximity_auth/logging/logging.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace cryptauth {
 
@@ -542,11 +543,38 @@ void CryptAuthDeviceManager::OnSyncRequested(
   GetMyDevicesRequest request;
   request.set_invocation_reason(invocation_reason);
   request.set_allow_stale_read(is_sync_speculative);
+  net::PartialNetworkTrafficAnnotationTag partial_traffic_annotation =
+      net::DefinePartialNetworkTrafficAnnotation("cryptauth_get_my_devices",
+                                                 "oauth2_api_call_flow", R"(
+      semantics {
+        sender: "CryptAuth Device Manager"
+        description:
+          "Gets a list of the devices registered (for the same user) on "
+          "CryptAuth."
+        trigger:
+          "Once every day, or by API request. Periodic calls happen because "
+          "devides that do not re-enrolled for more than X days (currently 45) "
+          "are automatically removed from the server."
+        data: "OAuth 2.0 token."
+        destination: GOOGLE_OWNED_SERVICE
+      }
+      policy {
+        setting:
+          "This feature cannot be disabled in settings. However, this request "
+          "is made only for signed-in users."
+        chrome_policy {
+          SigninAllowed {
+            SigninAllowed: false
+          }
+        }
+      })");
   cryptauth_client_->GetMyDevices(
-      request, base::Bind(&CryptAuthDeviceManager::OnGetMyDevicesSuccess,
-                          weak_ptr_factory_.GetWeakPtr()),
+      request,
+      base::Bind(&CryptAuthDeviceManager::OnGetMyDevicesSuccess,
+                 weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&CryptAuthDeviceManager::OnGetMyDevicesFailure,
-                 weak_ptr_factory_.GetWeakPtr()));
+                 weak_ptr_factory_.GetWeakPtr()),
+      partial_traffic_annotation);
 }
 
 }  // namespace cryptauth
