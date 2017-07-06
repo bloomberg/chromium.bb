@@ -28,10 +28,10 @@
 #include "core/paint/MediaControlsPainter.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/TimeRanges.h"
 #include "core/html/media/MediaControls.h"
-#include "core/html/shadow/MediaControlElementTypes.h"
 #include "core/layout/LayoutBox.h"
 #include "core/paint/PaintInfo.h"
 #include "core/style/ComputedStyle.h"
@@ -40,24 +40,45 @@
 
 namespace blink {
 
-static const double kCurrentTimeBufferedDelta = 1.0;
+namespace {
+
+const double kCurrentTimeBufferedDelta = 1.0;
 
 typedef WTF::HashMap<const char*, Image*> MediaControlImageMap;
-static MediaControlImageMap* g_media_control_image_map = 0;
+MediaControlImageMap* g_media_control_image_map = 0;
 
 // Slider thumb sizes, shard between time and volume.
-static const int kMediaSliderThumbTouchWidth = 36;  // Touch zone size.
-static const int kMediaSliderThumbTouchHeight = 48;
-static const int kMediaSliderThumbPaintWidth = 12;  // Painted area.
-static const int kMediaSliderThumbPaintHeight = 12;
+const int kMediaSliderThumbTouchWidth = 36;  // Touch zone size.
+const int kMediaSliderThumbTouchHeight = 48;
+const int kMediaSliderThumbPaintWidth = 12;  // Painted area.
+const int kMediaSliderThumbPaintHeight = 12;
 
 // Overlay play button size. If this changes, it must also be changed in
 // core/html/shadow/MediaControls.cpp.
-static const int kMediaOverlayPlayButtonWidth = 48;
-static const int kMediaOverlayPlayButtonHeight = 48;
+const int kMediaOverlayPlayButtonWidth = 48;
+const int kMediaOverlayPlayButtonHeight = 48;
 
 // Alpha for disabled elements.
-static const float kDisabledAlpha = 0.4;
+const float kDisabledAlpha = 0.4;
+
+const HTMLMediaElement* ToParentMediaElement(const Node* node) {
+  if (!node)
+    return nullptr;
+  const Node* media_node = node->OwnerShadowHost();
+  if (!media_node)
+    return nullptr;
+  if (!IsHTMLMediaElement(media_node))
+    return nullptr;
+
+  return ToHTMLMediaElement(media_node);
+}
+
+const HTMLMediaElement* ToParentMediaElement(
+    const LayoutObject& layout_object) {
+  return ToParentMediaElement(layout_object.GetNode());
+}
+
+}  // anonymous namespace
 
 static Image* PlatformResource(const char* name) {
   if (!g_media_control_image_map)
@@ -161,11 +182,7 @@ bool MediaControlsPainter::PaintMediaPlayButton(const LayoutObject& object,
     return PaintMediaButton(paint_info.context, rect, media_play, &object,
                             false);
 
-  Image* image =
-      !object.GetNode()->IsMediaControlElement() ||
-              GetMediaControlElementType(object.GetNode()) == kMediaPlayButton
-          ? media_play
-          : media_pause;
+  Image* image = media_element->paused() ? media_play : media_pause;
   return PaintMediaButton(paint_info.context, rect, image, &object, true);
 }
 
@@ -491,10 +508,8 @@ bool MediaControlsPainter::PaintMediaFullscreenButton(
   static Image* media_exit_fullscreen_button =
       PlatformResource("mediaplayerExitFullscreen");
 
-  Image* image = (GetMediaControlElementType(object.GetNode()) ==
-                  kMediaExitFullscreenButton)
-                     ? media_exit_fullscreen_button
-                     : media_enter_fullscreen_button;
+  Image* image = media_element->IsFullscreen() ? media_exit_fullscreen_button
+                                               : media_enter_fullscreen_button;
   const bool is_enabled = HasSource(media_element);
   return PaintMediaButton(paint_info.context, rect, image, &object, is_enabled);
 }
@@ -535,22 +550,23 @@ bool MediaControlsPainter::PaintMediaCastButton(const LayoutObject& object,
       PlatformResource("mediaplayerOverlayCastOff");
 
   bool is_enabled = media_element->HasRemoteRoutes();
+  bool playing_remotely = media_element->IsPlayingRemotely();
+  bool native_controls = media_element->ShouldShowControls();
 
-  switch (GetMediaControlElementType(object.GetNode())) {
-    case kMediaCastOnButton:
+  if (playing_remotely) {
+    if (native_controls) {
       return PaintMediaButton(paint_info.context, rect, media_cast_on, &object,
                               is_enabled);
-    case kMediaOverlayCastOnButton:
-      return PaintMediaButton(paint_info.context, rect, media_cast_on);
-    case kMediaCastOffButton:
-      return PaintMediaButton(paint_info.context, rect, media_cast_off, &object,
-                              is_enabled);
-    case kMediaOverlayCastOffButton:
-      return PaintMediaButton(paint_info.context, rect, media_overlay_cast_off);
-    default:
-      NOTREACHED();
-      return false;
+    }
+    return PaintMediaButton(paint_info.context, rect, media_cast_on);
   }
+
+  if (native_controls) {
+    return PaintMediaButton(paint_info.context, rect, media_cast_off, &object,
+                            is_enabled);
+  }
+
+  return PaintMediaButton(paint_info.context, rect, media_overlay_cast_off);
 }
 
 bool MediaControlsPainter::PaintMediaTrackSelectionCheckmark(
