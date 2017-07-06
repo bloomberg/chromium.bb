@@ -426,7 +426,7 @@ deps_os = {
 
     # Graphics buffer allocator for Chrome OS.
     'src/third_party/minigbm/src':
-      Var('chromium_git') + '/chromiumos/platform/minigbm.git' + '@' + '878fed4088662309dc57689650fa4648cc4b480b',
+      Var('chromium_git') + '/chromiumos/platform/minigbm.git' + '@' + '3909dc011bf32c13858fb80c33a3cce68769cb26',
 
     # Userspace interface to kernel DRM services.
     'src/third_party/libdrm/src':
