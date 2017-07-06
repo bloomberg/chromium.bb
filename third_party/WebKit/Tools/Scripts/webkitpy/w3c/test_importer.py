@@ -260,7 +260,7 @@ class TestImporter(object):
     def _commit_message(self, chromium_commit, import_commit):
         return ('Import %s\n\n'
                 'Using wpt-import in Chromium %s.\n\n'
-                'NOEXPORT=true' %
+                'No-Export: true' %
                 (import_commit, chromium_commit))
 
     def _delete_orphaned_baselines(self, dest_path):
@@ -420,12 +420,12 @@ class TestImporter(object):
 
         if directory_owners:
             description += self._format_directory_owners(directory_owners) + '\n\n'
-        description += 'TBR=qyearsley@chromium.org\n'
+        description += 'TBR: qyearsley@chromium.org\n'
 
-        # Move any NOEXPORT tag to the end of the description.
-        description = description.replace('NOEXPORT=true', '')
+        # Move any No-Export tag to the end of the description.
+        description = description.replace('No-Export: true', '')
         description = description.replace('\n\n\n\n', '\n\n')
-        description += 'NOEXPORT=true'
+        description += 'No-Export: true'
         return description
 
     @staticmethod
