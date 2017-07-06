@@ -1,0 +1,15 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x50
+  LayoutBlockFlow {HTML} at (0,0) size 800x50
+    LayoutBlockFlow {BODY} at (8,16) size 784x18
+      LayoutBlockFlow {P} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 377x18
+          text run at (0,0) width 377: "Check if a validation bubble is shown at a correct position."
+layer at (661,573) size 131x19 clip at (663,575) size 127x15
+  LayoutTextControl (positioned) {INPUT} at (661,573) size 131x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+layer at (664,576) size 125x13
+  LayoutBlockFlow {DIV} at (3,3) size 125x13
+    LayoutText {#text} at (0,0) size 19x13
+      text run at (0,0) width 19: "abc"
+caret: position 0 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 3 {INPUT} of body

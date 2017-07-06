@@ -1,4 +1,3 @@
-ValidationMessageClient: main-message=Please select a file. sub-message=
   
 This tests that a reset file input with a required value doesn't validate.
 
