@@ -199,10 +199,19 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
   if (!buffer.is_valid())
     return;
 
+  DCHECK(dimensions.height());
+  DCHECK(dimensions.width());
+
   auto buffer_access = buffer.handle_provider->GetHandleForInProcessAccess();
-  uint8_t *y_plane_data, *u_plane_data, *v_plane_data;
-  InitializeI420PlanePointers(dimensions, buffer_access->data(), &y_plane_data,
-                              &u_plane_data, &v_plane_data);
+  uint8_t* y_plane_data = buffer_access->data();
+  uint8_t* u_plane_data =
+      y_plane_data + VideoFrame::PlaneSize(media::PIXEL_FORMAT_I420,
+                                           VideoFrame::kYPlane, dimensions)
+                         .GetArea();
+  uint8_t* v_plane_data =
+      u_plane_data + VideoFrame::PlaneSize(media::PIXEL_FORMAT_I420,
+                                           VideoFrame::kUPlane, dimensions)
+                         .GetArea();
 
   const int yplane_stride = dimensions.width();
   const int uv_plane_stride = yplane_stride / 2;
@@ -430,27 +439,6 @@ void VideoCaptureDeviceClient::OnStarted() {
 
 double VideoCaptureDeviceClient::GetBufferPoolUtilization() const {
   return buffer_pool_->GetBufferPoolUtilization();
-}
-
-void VideoCaptureDeviceClient::InitializeI420PlanePointers(
-    const gfx::Size& dimensions,
-    uint8_t* const data,
-    uint8_t** y_plane_data,
-    uint8_t** u_plane_data,
-    uint8_t** v_plane_data) {
-  DCHECK(dimensions.height());
-  DCHECK(dimensions.width());
-
-  const media::VideoPixelFormat format = media::PIXEL_FORMAT_I420;
-  // TODO(emircan): See http://crbug.com/521068, move this pointer
-  // arithmetic inside Buffer::data() when this bug is resolved.
-  *y_plane_data = data;
-  *u_plane_data =
-      *y_plane_data +
-      VideoFrame::PlaneSize(format, VideoFrame::kYPlane, dimensions).GetArea();
-  *v_plane_data =
-      *u_plane_data +
-      VideoFrame::PlaneSize(format, VideoFrame::kUPlane, dimensions).GetArea();
 }
 
 void VideoCaptureDeviceClient::OnIncomingCapturedY16Data(
