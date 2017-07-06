@@ -591,4 +591,29 @@ TEST_F(FormSaverImplTest, WipeOutdatedCopies_NotOutdated) {
   form_saver_.WipeOutdatedCopies(pending, &best_matches, &preferred);
 }
 
+// Check that presaving a password once in original and then once in clone
+// results in the clone calling update, not a fresh save.
+TEST_F(FormSaverImplTest, PresaveGeneratedPassword_CloneUpdates) {
+  PasswordForm generated = CreatePending("nameofuser", "wordToP4a55");
+
+  EXPECT_CALL(*mock_store_, AddLogin(_));
+  form_saver_.PresaveGeneratedPassword(generated);
+  std::unique_ptr<FormSaver> clone = form_saver_.Clone();
+  EXPECT_CALL(*mock_store_, UpdateLoginWithPrimaryKey(_, _));
+  clone->PresaveGeneratedPassword(generated);
+}
+
+// Check that a clone can still work after the original is destroyed.
+TEST_F(FormSaverImplTest, PresaveGeneratedPassword_CloneSurvives) {
+  auto original = base::MakeUnique<FormSaverImpl>(mock_store_.get());
+  PasswordForm generated = CreatePending("nameofuser", "wordToP4a55");
+
+  EXPECT_CALL(*mock_store_, AddLogin(_));
+  original->PresaveGeneratedPassword(generated);
+  std::unique_ptr<FormSaver> clone = original->Clone();
+  original.reset();
+  EXPECT_CALL(*mock_store_, UpdateLoginWithPrimaryKey(_, _));
+  clone->PresaveGeneratedPassword(generated);
+}
+
 }  // namespace password_manager

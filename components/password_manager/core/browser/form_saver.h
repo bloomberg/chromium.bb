@@ -69,6 +69,9 @@ class FormSaver {
       std::map<base::string16, const autofill::PasswordForm*>* best_matches,
       const autofill::PasswordForm** preferred_match) = 0;
 
+  // Creates a new FormSaver with the same state as |*this|.
+  virtual std::unique_ptr<FormSaver> Clone() = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(FormSaver);
 };
