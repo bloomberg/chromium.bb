@@ -10,6 +10,8 @@
  * authentication events should pass a listener object of type
  * cr.login.GaiaAuthHost.Listener as defined in this file. After initialization,
  * call {@code load} to start the authentication flow.
+ *
+ * See go/cros-auth-design for details on Google API.
  */
 
 cr.define('cr.login', function() {
@@ -77,16 +79,19 @@ cr.define('cr.login', function() {
                      // not called before dispatching |authCopleted|.
                      // Default is |true|.
     'flow',          // One of 'default', 'enterprise', or 'theftprotection'.
-    'enterpriseDomain',    // Domain in which hosting device is (or should be)
-                           // enrolled.
-    'emailDomain',         // Value used to prefill domain for email.
-    'chromeType',          // Type of Chrome OS device, e.g. "chromebox".
-    'clientVersion',       // Version of the Chrome build.
-    'platformVersion',     // Version of the OS build.
-    'releaseChannel',      // Installation channel.
-    'endpointGen',         // Current endpoint generation.
-    'gapsCookie',          // GAPS cookie
-    'chromeOSApiVersion',  // GAIA Chrome OS API version
+    'enterpriseDomain',     // Domain in which hosting device is (or should be)
+                            // enrolled.
+    'emailDomain',          // Value used to prefill domain for email.
+    'chromeType',           // Type of Chrome OS device, e.g. "chromebox".
+    'clientVersion',        // Version of the Chrome build.
+    'platformVersion',      // Version of the OS build.
+    'releaseChannel',       // Installation channel.
+    'endpointGen',          // Current endpoint generation.
+    'gapsCookie',           // GAPS cookie
+    'chromeOSApiVersion',   // GAIA Chrome OS API version
+    'menuGuestMode',        // Enables "Guest mode" menu item
+    'menuKeyboardOptions',  // Enables "Keyboard options" menu item
+    'menuEnterpriseEnrollment',  // Enables "Enterprise enrollment" menu item.
 
     // The email fields allow for the following possibilities:
     //
@@ -316,6 +321,17 @@ cr.define('cr.login', function() {
         url = appendParam(url, 'release_channel', data.releaseChannel);
       if (data.endpointGen)
         url = appendParam(url, 'endpoint_gen', data.endpointGen);
+      if (data.chromeOSApiVersion == 2) {
+        var mi = '';
+        if (data.menuGuestMode)
+          mi += 'gm,';
+        if (data.menuKeyboardOptions)
+          mi += 'ko,';
+        if (data.menuEnterpriseEnrollment)
+          mi += 'ee,';
+        if (mi.length)
+          url = appendParam(url, 'mi', mi);
+      }
     } else {
       url = appendParam(url, 'continue', this.continueUrl_);
       url = appendParam(url, 'service', data.service || SERVICE_ID);
@@ -589,6 +605,9 @@ cr.define('cr.login', function() {
       this.dispatchEvent(new CustomEvent('backButton', {detail: msg.show}));
     } else if (msg.method == 'showView') {
       this.dispatchEvent(new Event('showView'));
+    } else if (msg.method == 'menuItemClicked') {
+      this.dispatchEvent(
+          new CustomEvent('menuItemClicked', {detail: msg.item}));
     } else if (msg.method == 'identifierEntered') {
       this.dispatchEvent(new CustomEvent(
           'identifierEntered',

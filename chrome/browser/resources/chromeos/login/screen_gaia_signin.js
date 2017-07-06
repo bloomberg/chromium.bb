@@ -228,6 +228,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
                 'dialogShown', frameFilter(that.onDialogShown_));
             frame.addEventListener(
                 'dialogHidden', frameFilter(that.onDialogHidden_));
+            frame.addEventListener(
+                'menuItemClicked', frameFilter(that.onMenuItemClicked_));
           });
 
       this.gaiaAuthHost_.addEventListener(
@@ -660,8 +662,12 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       params.isNewGaiaFlow = true;
       params.doSamlRedirect =
           (this.screenMode_ == ScreenMode.SAML_INTERSTITIAL);
+      params.menuGuestMode = data.guestSignin;
+      params.menuKeyboardOptions = false;
+      params.menuEnterpriseEnrollment = true;
 
       this.gaiaAuthParams_ = params;
+
       switch (this.screenMode_) {
         case ScreenMode.DEFAULT:
           this.loadGaiaAuthHost_(false /* doSamlRedirect */);
@@ -807,6 +813,19 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      */
     onDialogHidden_: function() {
       this.navigation_.disabled = false;
+    },
+
+    /**
+     * Invoked when user activates menu item.
+     * @private
+     */
+    onMenuItemClicked_: function(e) {
+      if (e.detail == 'gm') {
+        Oobe.disableSigninUI();
+        chrome.send('launchIncognito');
+      } else if (e.detail == 'ee') {
+        cr.ui.Oobe.handleAccelerator(ACCELERATOR_ENROLLMENT);
+      }
     },
 
     /**
