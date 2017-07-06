@@ -10,9 +10,9 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
-#include "device/generic_sensor/public/interfaces/sensor.mojom-blink.h"
 #include "modules/sensor/SensorErrorEvent.h"
 #include "modules/sensor/SensorProviderProxy.h"
+#include "services/device/public/interfaces/sensor.mojom-blink.h"
 
 using namespace device::mojom::blink;
 

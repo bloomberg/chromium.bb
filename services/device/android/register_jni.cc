@@ -5,6 +5,7 @@
 #include "services/device/android/register_jni.h"
 
 #include "base/android/jni_android.h"
+#include "services/device/generic_sensor/android/sensors_jni_registrar.h"
 #include "services/device/time_zone_monitor/android/time_zone_monitor_jni_registrar.h"
 
 namespace device {
@@ -14,6 +15,9 @@ bool EnsureJniRegistered() {
 
   if (!g_jni_init_done) {
     JNIEnv* env = base::android::AttachCurrentThread();
+
+    if (!android::RegisterSensorsJni(env))
+      return false;
 
     if (!android::RegisterTimeZoneMonitorJni(env))
       return false;

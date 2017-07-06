@@ -13,13 +13,13 @@
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "device/base/synchronization/one_writer_seqlock.h"
-#include "device/generic_sensor/platform_sensor.h"
-#include "device/generic_sensor/platform_sensor_provider.h"
-#include "device/generic_sensor/public/cpp/sensor_reading.h"
-#include "device/generic_sensor/sensor_provider_impl.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/device/device_service_test_base.h"
+#include "services/device/generic_sensor/platform_sensor.h"
+#include "services/device/generic_sensor/platform_sensor_provider.h"
+#include "services/device/generic_sensor/sensor_provider_impl.h"
 #include "services/device/public/cpp/device_features.h"
+#include "services/device/public/cpp/generic_sensor/sensor_reading.h"
 #include "services/device/public/interfaces/constants.mojom.h"
 
 namespace device {

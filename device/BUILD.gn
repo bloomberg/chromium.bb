@@ -67,7 +67,6 @@ test("device_unittests") {
     "gamepad/gamepad_provider_unittest.cc",
     "gamepad/gamepad_service_unittest.cc",
     "gamepad/public/interfaces/gamepad_struct_traits_unittest.cc",
-    "generic_sensor/platform_sensor_and_provider_unittest_win.cc",
     "sensors/data_fetcher_shared_memory_base_unittest.cc",
     "sensors/sensor_manager_android_unittest.cc",
     "sensors/sensor_manager_chromeos_unittest.cc",
@@ -87,7 +86,6 @@ test("device_unittests") {
     "//device/gamepad/public/cpp:shared_with_blink",
     "//device/gamepad/public/interfaces",
     "//device/gamepad/public/interfaces:gamepad_struct_traits_test",
-    "//device/generic_sensor",
     "//device/geolocation:unittests",
     "//device/power_save_blocker",
     "//device/sensors",
@@ -104,11 +102,6 @@ test("device_unittests") {
     "//tools/usb_gadget",
     "//url",
   ]
-
-  if (!is_linux_without_udev) {
-    sources +=
-        [ "generic_sensor/platform_sensor_and_provider_unittest_linux.cc" ]
-  }
 
   # HID and Serial:
   # Android doesn't compile.
@@ -245,12 +238,6 @@ test("device_unittests") {
       "bluetooth/bluetooth_classic_win_fake.h",
       "bluetooth/bluetooth_low_energy_win_fake.cc",
       "bluetooth/bluetooth_low_energy_win_fake.h",
-    ]
-
-    # Needed for "generic_sensor/platform_sensor_and_provider_unittest_win.cc"
-    libs = [
-      "propsys.lib",
-      "sensorsapi.lib",
     ]
   }
 

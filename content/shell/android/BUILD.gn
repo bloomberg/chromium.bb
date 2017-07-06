@@ -41,7 +41,6 @@ shared_library("libcontent_shell_content_view") {
   if (is_component_build) {
     deps += [
       "//device/gamepad",
-      "//device/generic_sensor",
       "//device/sensors",
       "//media/midi",
     ]
@@ -277,7 +276,6 @@ if (current_cpu != "x64") {
     if (is_component_build) {
       deps += [
         "//device/gamepad",
-        "//device/generic_sensor",
         "//device/sensors",
         "//media/midi",
       ]

@@ -18,14 +18,14 @@
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_javascript_dialog_manager.h"
 #include "device/base/synchronization/one_writer_seqlock.h"
-#include "device/generic_sensor/public/cpp/platform_sensor_configuration.h"
-#include "device/generic_sensor/public/cpp/sensor_reading.h"
-#include "device/generic_sensor/public/interfaces/sensor.mojom.h"
-#include "device/generic_sensor/public/interfaces/sensor_provider.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/buffer.h"
+#include "services/device/public/cpp/generic_sensor/platform_sensor_configuration.h"
+#include "services/device/public/cpp/generic_sensor/sensor_reading.h"
 #include "services/device/public/interfaces/constants.mojom.h"
+#include "services/device/public/interfaces/sensor.mojom.h"
+#include "services/device/public/interfaces/sensor_provider.mojom.h"
 #include "services/service_manager/public/cpp/service_context.h"
 
 namespace content {
