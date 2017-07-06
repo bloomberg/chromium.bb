@@ -37,6 +37,7 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
+#include "components/signin/core/common/profile_management_switches.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/base/bind_to_task_runner.h"
 #include "components/sync/base/cryptographer.h"
@@ -1961,6 +1962,14 @@ void ProfileSyncService::GoogleSigninSucceededWithPassword(
   if (!IsEngineInitialized() || GetAuthError().state() != AuthError::NONE) {
     // Track the fact that we're still waiting for auth to complete.
     is_auth_in_progress_ = true;
+  }
+
+  if (switches::IsAccountConsistencyDiceEnabled() &&
+      oauth2_token_service_->RefreshTokenIsAvailable(account_id)) {
+    // When Dice is enabled, the refresh token may be available before the user
+    // enables sync. Start sync if the refresh token is already available in the
+    // token service when the authenticated account is set.
+    OnRefreshTokenAvailable(account_id);
   }
 }
 

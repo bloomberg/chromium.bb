@@ -115,10 +115,11 @@ void SigninManagerAndroid::CheckPolicyBeforeSignIn(
   username_ = base::android::ConvertJavaStringToUTF8(env, username);
   policy::UserPolicySigninService* service =
       policy::UserPolicySigninServiceFactory::GetForProfile(profile_);
-  service->RegisterForPolicy(
-      username_, AccountTrackerServiceFactory::GetForProfile(profile_)
-                     ->FindAccountInfoByEmail(username_)
-                     .account_id,
+  service->RegisterForPolicyWithAccountId(
+      username_,
+      AccountTrackerServiceFactory::GetForProfile(profile_)
+          ->FindAccountInfoByEmail(username_)
+          .account_id,
       base::Bind(&SigninManagerAndroid::OnPolicyRegisterDone,
                  weak_factory_.GetWeakPtr()));
 }
@@ -341,10 +342,11 @@ static void IsUserManaged(
       base::android::ConvertJavaStringToUTF8(env, j_username);
   policy::UserPolicySigninService* service =
       policy::UserPolicySigninServiceFactory::GetForProfile(profile);
-  service->RegisterForPolicy(
-      username, AccountTrackerServiceFactory::GetForProfile(profile)
-                     ->FindAccountInfoByEmail(username)
-                     .account_id,
+  service->RegisterForPolicyWithAccountId(
+      username,
+      AccountTrackerServiceFactory::GetForProfile(profile)
+          ->FindAccountInfoByEmail(username)
+          .account_id,
       base::Bind(&UserManagementDomainFetched, callback));
 }
 
