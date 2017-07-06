@@ -239,8 +239,12 @@ PasswordFormManager::PasswordFormManager(
                              true /* should_query_suppressed_https_forms */)),
       form_fetcher_(form_fetcher ? form_fetcher : owned_form_fetcher_.get()),
       is_main_frame_secure_(client->IsMainFrameSecure()) {
-  DCHECK_EQ(observed_form.scheme == PasswordForm::SCHEME_HTML,
-            driver != nullptr);
+  // Non-HTML forms should not need any interaction with the renderer, and hence
+  // no driver. Note that cloned PasswordFormManager instances can have HTML
+  // forms without drivers as well.
+  DCHECK((observed_form.scheme == PasswordForm::SCHEME_HTML) ||
+         (driver == nullptr))
+      << observed_form.scheme;
   if (driver)
     drivers_.push_back(driver);
 }
@@ -1285,6 +1289,63 @@ void PasswordFormManager::GrabFetcher(std::unique_ptr<FormFetcher> fetcher) {
   form_fetcher_->RemoveConsumer(this);
   form_fetcher_ = owned_form_fetcher_.get();
   form_fetcher_->AddConsumer(this);
+}
+
+std::unique_ptr<PasswordFormManager> PasswordFormManager::Clone() {
+  // Fetcher is cloned to avoid re-fetching data from PasswordStore.
+  std::unique_ptr<FormFetcher> fetcher = form_fetcher_->Clone();
+
+  // Some data is filled through the constructor. No PasswordManagerDriver is
+  // needed, because the UI does not need any functionality related to the
+  // renderer process, to which the driver serves as an interface. The full
+  // |observed_form_| needs to be copied, because it is used to created the
+  // blacklisting entry if needed.
+  auto result = base::MakeUnique<PasswordFormManager>(
+      password_manager_, client_, base::WeakPtr<PasswordManagerDriver>(),
+      observed_form_, form_saver_->Clone(), fetcher.get());
+  result->Init(metrics_recorder_);
+
+  // The constructor only can take a weak pointer to the fetcher, so moving the
+  // owning one needs to happen explicitly.
+  result->GrabFetcher(std::move(fetcher));
+
+  // |best_matches_| are skipped, because those are regenerated from the new
+  // fetcher automatically.
+
+  // These data members all satisfy:
+  //   (1) They could have been changed by |*this| between its construction and
+  //       calling Clone().
+  //   (2) They are potentially used in the clone as the clone is used in the UI
+  //       code.
+  //   (3) They are not changed during ProcessMatches, triggered at some point
+  //       by the cloned FormFetcher.
+  if (submitted_form_)
+    result->submitted_form_ = base::MakeUnique<PasswordForm>(*submitted_form_);
+  result->other_possible_username_action_ = other_possible_username_action_;
+  if (username_correction_vote_) {
+    result->username_correction_vote_ =
+        base::MakeUnique<PasswordForm>(*username_correction_vote_);
+  }
+  result->pending_credentials_ = pending_credentials_;
+  result->is_new_login_ = is_new_login_;
+  result->has_autofilled_ = has_autofilled_;
+  result->has_generated_password_ = has_generated_password_;
+  result->generated_password_changed_ = generated_password_changed_;
+  result->is_manual_generation_ = is_manual_generation_;
+  result->generation_element_ = generation_element_;
+  result->generation_popup_was_shown_ = generation_popup_was_shown_;
+  result->form_classifier_outcome_ = form_classifier_outcome_;
+  result->generation_element_detected_by_classifier_ =
+      generation_element_detected_by_classifier_;
+  result->password_overridden_ = password_overridden_;
+  result->retry_password_form_password_update_ =
+      retry_password_form_password_update_;
+  result->selected_username_ = selected_username_;
+  result->is_possible_change_password_form_without_username_ =
+      is_possible_change_password_form_without_username_;
+  result->user_action_ = user_action_;
+
+  return result;
 }
 
 void PasswordFormManager::SendVotesOnSave() {

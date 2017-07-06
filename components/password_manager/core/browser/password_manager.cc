@@ -355,11 +355,7 @@ void PasswordManager::ProvisionallySavePassword(
     return;
   }
 
-  std::unique_ptr<PasswordFormManager> manager;
-  // Transfer ownership of the manager from |pending_login_managers_| to
-  // |manager|.
-  manager.swap(*matched_manager_it);
-  pending_login_managers_.erase(matched_manager_it);
+  std::unique_ptr<PasswordFormManager> manager = (*matched_manager_it)->Clone();
 
   PasswordForm submitted_form(form);
   submitted_form.preferred = true;
