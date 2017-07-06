@@ -30,15 +30,15 @@ struct ParamTraits<BadType> {
 
 #endif  // IPC_CHANNEL_PROXY_UNITTEST_MESSAGES_H_
 
-
+#undef IPC_MESSAGE_START
 #define IPC_MESSAGE_START TestMsgStart
 IPC_MESSAGE_CONTROL0(TestMsg_Bounce)
 IPC_MESSAGE_CONTROL0(TestMsg_SendBadMessage)
 IPC_MESSAGE_CONTROL1(TestMsg_BadMessage, BadType)
 
 #undef IPC_MESSAGE_START
-#define IPC_MESSAGE_START UtilityMsgStart
-IPC_MESSAGE_CONTROL0(UtilityMsg_Bounce)
+#define IPC_MESSAGE_START AutomationMsgStart
+IPC_MESSAGE_CONTROL0(AutomationMsg_Bounce)
 
 #undef IPC_MESSAGE_START
 #define IPC_MESSAGE_START WorkerMsgStart

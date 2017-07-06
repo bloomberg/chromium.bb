@@ -18,7 +18,7 @@ class CONTENT_EXPORT UtilityThread : virtual public ChildThread {
   UtilityThread();
   ~UtilityThread() override;
 
-  // Releases the process if we are not (or no longer) in batch mode.
+  // Releases the process. TODO(noel): rename this routine and update callers.
   virtual void ReleaseProcessIfNeeded() = 0;
 
   // Initializes blink if it hasn't already been initialized.

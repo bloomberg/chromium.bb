@@ -52,13 +52,6 @@ class UtilityProcessHost : public IPC::Sender {
 
   virtual base::WeakPtr<UtilityProcessHost> AsWeakPtr() = 0;
 
-  // Starts utility process in batch mode. Caller must call EndBatchMode()
-  // to finish the utility process.
-  virtual bool StartBatchMode() = 0;
-
-  // Ends the utility process. Must be called after StartBatchMode().
-  virtual void EndBatchMode() = 0;
-
   // Allows a directory to be opened through the sandbox, in case it's needed by
   // the operation.
   virtual void SetExposedDir(const base::FilePath& dir) = 0;
