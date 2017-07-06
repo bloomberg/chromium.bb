@@ -104,7 +104,7 @@ namespace {
 
 // All jobs created by this module have a specific description so they can
 // be found at run-time or by using system administration tools.
-const base::char16 kJobDescription[] = L"Chrome Component Updater";
+const base::char16 kJobName[] = L"Chrome Component Updater";
 
 // How often the code looks for changes in the BITS job state.
 const int kJobPollingIntervalSec = 4;
@@ -256,12 +256,12 @@ HRESULT GetJobByteCount(IBackgroundCopyJob* job,
   return S_OK;
 }
 
-HRESULT GetJobDescription(IBackgroundCopyJob* job, base::string16* name) {
-  ScopedCoMem<base::char16> description;
-  const HRESULT hr = job->GetDescription(&description);
+HRESULT GetJobDisplayName(IBackgroundCopyJob* job, base::string16* name) {
+  ScopedCoMem<base::char16> local_name;
+  const HRESULT hr = job->GetDisplayName(&local_name);
   if (FAILED(hr))
     return hr;
-  *name = description.get();
+  *name = local_name.get();
   return S_OK;
 }
 
@@ -308,9 +308,9 @@ HRESULT FindBitsJobIf(Predicate pred,
     ScopedComPtr<IBackgroundCopyJob> current_job;
     if (enum_jobs->Next(1, current_job.GetAddressOf(), NULL) == S_OK &&
         pred(current_job.Get())) {
-      base::string16 job_description;
-      hr = GetJobDescription(current_job.Get(), &job_description);
-      if (job_description.compare(kJobDescription) == 0)
+      base::string16 job_name;
+      hr = GetJobDisplayName(current_job.Get(), &job_name);
+      if (job_name.compare(kJobName) == 0)
         jobs->push_back(current_job);
     }
   }
@@ -381,16 +381,29 @@ HRESULT CreateBitsManager(IBackgroundCopyManager** bits_manager) {
   return S_OK;
 }
 
-void CleanupJobFiles(IBackgroundCopyJob* job) {
-  std::vector<ScopedComPtr<IBackgroundCopyFile>> files;
-  if (FAILED(GetFilesInJob(job, &files)))
+void CleanupJob(IBackgroundCopyJob* job) {
+  if (!job)
     return;
-  for (size_t i = 0; i != files.size(); ++i) {
+
+  // Get the file paths associated with this job before canceling the job.
+  // Canceling the job removes it from the BITS queue right away. It appears
+  // that it is still possible to query for the properties of the job after
+  // the job has been canceled. It seems safer though to get the paths first.
+  std::vector<ScopedComPtr<IBackgroundCopyFile>> files;
+  GetFilesInJob(job, &files);
+
+  std::vector<base::FilePath> paths;
+  for (const auto& file : files) {
     base::string16 local_name;
-    HRESULT hr(GetJobFileProperties(files[i].Get(), &local_name, NULL, NULL));
+    HRESULT hr = GetJobFileProperties(file.Get(), &local_name, NULL, NULL);
     if (SUCCEEDED(hr))
-      DeleteFileAndEmptyParentDirectory(base::FilePath(local_name));
+      paths.push_back(base::FilePath(local_name));
   }
+
+  job->Cancel();
+
+  for (const auto& path : paths)
+    DeleteFileAndEmptyParentDirectory(path);
 }
 
 // Cleans up incompleted jobs that are too old.
@@ -416,10 +429,8 @@ HRESULT CleanupStaleJobs(
   if (FAILED(hr))
     return hr;
 
-  for (size_t i = 0; i != jobs.size(); ++i) {
-    jobs[i]->Cancel();
-    CleanupJobFiles(jobs[i].Get());
-  }
+  for (const auto& job : jobs)
+    CleanupJob(job.Get());
 
   return S_OK;
 }
@@ -599,10 +610,8 @@ void BackgroundDownloader::EndDownload(HRESULT error) {
   int64_t total_bytes = -1;
   GetJobByteCount(job_.Get(), &downloaded_bytes, &total_bytes);
 
-  if (FAILED(error) && job_.Get()) {
-    job_->Cancel();
-    CleanupJobFiles(job_.Get());
-  }
+  if (FAILED(error))
+    CleanupJob(job_.Get());
 
   CleanupStaleJobs(bits_manager_);
 
@@ -734,24 +743,20 @@ HRESULT BackgroundDownloader::QueueBitsJob(const GURL& url,
   GetBackgroundDownloaderJobCount(bits_manager_, &num_jobs);
   UMA_HISTOGRAM_COUNTS_100("UpdateClient.BackgroundDownloaderJobs", num_jobs);
 
-  ScopedComPtr<IBackgroundCopyJob> p;
-  HRESULT hr = CreateOrOpenJob(url, p.GetAddressOf());
-  if (FAILED(hr))
+  ScopedComPtr<IBackgroundCopyJob> local_job;
+  HRESULT hr = CreateOrOpenJob(url, local_job.GetAddressOf());
+  if (FAILED(hr)) {
+    CleanupJob(local_job.Get());
     return hr;
-
-  if (hr == S_OK) {
-    // This is a new job and it needs initialization.
-    hr = InitializeNewJob(p, url);
-    if (FAILED(hr))
-      return hr;
   }
 
-  hr = p->Resume();
-  if (FAILED(hr))
+  hr = local_job->Resume();
+  if (FAILED(hr)) {
+    CleanupJob(local_job.Get());
     return hr;
+  }
 
-  *job = p.Detach();
-
+  *job = local_job.Detach();
   return S_OK;
 }
 
@@ -763,40 +768,44 @@ HRESULT BackgroundDownloader::CreateOrOpenJob(const GURL& url,
       bits_manager_.Get(), &jobs);
   if (SUCCEEDED(hr) && !jobs.empty()) {
     *job = jobs.front().Detach();
-    return S_FALSE;
+    return hr;
   }
 
-  // Use kJobDescription as a temporary job display name until the proper
-  // display name is initialized later on.
-  GUID guid = {0};
-  hr = bits_manager_->CreateJob(kJobDescription, BG_JOB_TYPE_DOWNLOAD, &guid,
-                                job);
-  if (FAILED(hr))
-    return hr;
+  ScopedComPtr<IBackgroundCopyJob> local_job;
 
+  GUID guid = {0};
+  hr = bits_manager_->CreateJob(kJobName, BG_JOB_TYPE_DOWNLOAD, &guid,
+                                local_job.GetAddressOf());
+  if (FAILED(hr)) {
+    CleanupJob(local_job.Get());
+    return hr;
+  }
+
+  hr = InitializeNewJob(local_job, url);
+  if (FAILED(hr)) {
+    CleanupJob(local_job.Get());
+    return hr;
+  }
+
+  *job = local_job.Detach();
   return S_OK;
 }
 
 HRESULT BackgroundDownloader::InitializeNewJob(
     const base::win::ScopedComPtr<IBackgroundCopyJob>& job,
     const GURL& url) {
-  const base::string16 filename(base::SysUTF8ToWide(url.ExtractFileName()));
-
   base::FilePath tempdir;
   if (!base::CreateNewTempDirectory(FILE_PATH_LITERAL("chrome_BITS_"),
                                     &tempdir))
     return E_FAIL;
 
+  const base::string16 filename(base::SysUTF8ToWide(url.ExtractFileName()));
   HRESULT hr = job->AddFile(base::SysUTF8ToWide(url.spec()).c_str(),
                             tempdir.Append(filename).AsUTF16Unsafe().c_str());
   if (FAILED(hr))
     return hr;
 
-  hr = job->SetDisplayName(filename.c_str());
-  if (FAILED(hr))
-    return hr;
-
-  hr = job->SetDescription(kJobDescription);
+  hr = job->SetDescription(filename.c_str());
   if (FAILED(hr))
     return hr;
 
