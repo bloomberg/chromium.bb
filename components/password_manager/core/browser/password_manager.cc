@@ -242,7 +242,6 @@ void PasswordManager::SetGenerationElementAndReasonForForm(
       this, client_, driver->AsWeakPtr(), form,
       base::WrapUnique(new FormSaverImpl(client_->GetPasswordStore())),
       nullptr);
-  manager->Init(nullptr);
   pending_login_managers_.push_back(std::move(manager));
 }
 
@@ -541,7 +540,6 @@ void PasswordManager::CreatePendingLoginManagers(
         (driver ? driver->AsWeakPtr() : base::WeakPtr<PasswordManagerDriver>()),
         *iter, base::WrapUnique(new FormSaverImpl(client_->GetPasswordStore())),
         nullptr);
-    manager->Init(nullptr);
     pending_login_managers_.push_back(std::move(manager));
   }
 

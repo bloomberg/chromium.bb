@@ -54,7 +54,6 @@ TEST_F(CredentialManagerPasswordFormManagerTest, AbortEarly) {
       &client_, driver_.AsWeakPtr(), observed_form,
       base::MakeUnique<PasswordForm>(observed_form), &delegate,
       base::MakeUnique<StubFormSaver>(), base::MakeUnique<FakeFormFetcher>());
-  form_manager->Init(nullptr);
 
   auto deleter = [&form_manager]() { form_manager.reset(); };
 
