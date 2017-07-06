@@ -8,6 +8,8 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -193,7 +195,7 @@ class MultiThreadFileSystemOperationRunnerTest : public testing::Test {
     base::FilePath base_dir = base_.GetPath();
     file_system_context_ = new FileSystemContext(
         base::ThreadTaskRunnerHandle::Get().get(),
-        BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE).get(),
+        base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()}).get(),
         storage::ExternalMountPoints::CreateRefCounted().get(),
         make_scoped_refptr(new MockSpecialStoragePolicy()).get(), nullptr,
         std::vector<std::unique_ptr<storage::FileSystemBackend>>(),
