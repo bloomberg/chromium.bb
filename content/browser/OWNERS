@@ -12,3 +12,7 @@ per-file find_request_manager*=paulmeyer@chromium.org
 # Mac Sandbox profiles.
 per-file *.sb=set noparent
 per-file *.sb=rsesek@chromium.org
+
+# Mac Sandbox parameters.
+per-file sandbox_parameters_mac.*=rsesek@chromium.org
+per-file sandbox_parameters_mac.*=kerrnel@chromium.org

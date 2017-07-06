@@ -79,6 +79,7 @@ const char* Sandbox::kSandboxDisableDenialLogging =
     "DISABLE_SANDBOX_DENIAL_LOGGING";
 const char* Sandbox::kSandboxHomedirAsLiteral = "USER_HOMEDIR_AS_LITERAL";
 const char* Sandbox::kSandboxElCapOrLater = "ELCAP_OR_LATER";
+const char* Sandbox::kSandboxMavericks = "IS_MAVERICKS";
 const char* Sandbox::kSandboxPermittedDir = "PERMITTED_DIR";
 const char* Sandbox::kSandboxBundlePath = "BUNDLE_PATH";
 const char* Sandbox::kSandboxLoggingPathAsLiteral = "LOG_FILE_PATH";
