@@ -50,10 +50,6 @@ bool MockContentSettingsClient::AllowStorage(bool enabled_per_settings) {
   return flags_->storage_allowed();
 }
 
-bool MockContentSettingsClient::AllowPlugins(bool enabled_per_settings) {
-  return enabled_per_settings && flags_->plugins_allowed();
-}
-
 bool MockContentSettingsClient::AllowRunningInsecureContent(
     bool enabled_per_settings,
     const blink::WebSecurityOrigin& context,

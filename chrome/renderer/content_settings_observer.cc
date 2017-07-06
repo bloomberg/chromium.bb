@@ -298,10 +298,6 @@ bool ContentSettingsObserver::AllowIndexedDB(const WebString& name,
   return result;
 }
 
-bool ContentSettingsObserver::AllowPlugins(bool enabled_per_settings) {
-  return enabled_per_settings;
-}
-
 bool ContentSettingsObserver::AllowScript(bool enabled_per_settings) {
   if (!enabled_per_settings)
     return false;

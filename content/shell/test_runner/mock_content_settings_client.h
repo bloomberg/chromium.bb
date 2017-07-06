@@ -28,7 +28,6 @@ class MockContentSettingsClient : public blink::WebContentSettingsClient {
   bool AllowScriptFromSource(bool enabled_per_settings,
                              const blink::WebURL& script_url) override;
   bool AllowStorage(bool local) override;
-  bool AllowPlugins(bool enabled_per_settings) override;
   bool AllowRunningInsecureContent(bool enabled_per_settings,
                                    const blink::WebSecurityOrigin& context,
                                    const blink::WebURL& url) override;
