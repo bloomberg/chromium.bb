@@ -108,6 +108,9 @@ bool MediaStreamSource::RemoveAudioConsumer(
 
 void MediaStreamSource::GetSettings(WebMediaStreamTrack::Settings& settings) {
   settings.device_id = Id();
+
+  if (echo_cancellation_.has_value())
+    settings.echo_cancellation = *echo_cancellation_;
 }
 
 void MediaStreamSource::SetAudioFormat(size_t number_of_channels,

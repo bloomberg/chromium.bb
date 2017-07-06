@@ -49,6 +49,7 @@ class WebMediaStreamTrack {
     bool HasHeight() const { return height >= 0; }
     bool HasAspectRatio() const { return aspect_ratio >= 0.0; }
     bool HasFacingMode() const { return facing_mode != FacingMode::kNone; }
+    bool HasEchoCancellationValue() const { return echo_cancellation >= 0; }
     bool HasVideoKind() const { return !video_kind.IsNull(); }
     bool HasFocalLengthX() const { return focal_length_x >= 0.0; }
     bool HasFocalLengthY() const { return focal_length_y >= 0.0; }
@@ -62,6 +63,9 @@ class WebMediaStreamTrack {
     double aspect_ratio = -1.0;
     WebString device_id;
     FacingMode facing_mode = FacingMode::kNone;
+    // |echo_cancellation| should be some form of Optional<bool> instead of int,
+    // but none is available for this file. Using -1 to indicate no value.
+    int echo_cancellation = -1;
     // Media Capture Depth Stream Extensions.
     WebString video_kind;
     double focal_length_x = -1.0;

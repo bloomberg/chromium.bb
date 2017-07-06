@@ -800,6 +800,29 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
       MediaStreamManager::GenerateStreamTestCallback());
 }
 
+IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest, GetAudioSettingsDefault) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
+  NavigateToURL(shell(), url);
+  ExecuteJavascriptAndWaitForOk("getAudioSettingsDefault()");
+}
+
+IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
+                       GetAudioSettingsNoEchoCancellation) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
+  NavigateToURL(shell(), url);
+  ExecuteJavascriptAndWaitForOk("getAudioSettingsNoEchoCancellation()");
+}
+
+IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
+                       GetAudioSettingsDeviceId) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
+  NavigateToURL(shell(), url);
+  ExecuteJavascriptAndWaitForOk("getAudioSettingsDeviceId()");
+}
+
 // TODO(guidou): Remove this test. http://crbug.com/706408
 class WebRtcGetUserMediaOldConstraintsBrowserTest
     : public WebRtcContentBrowserTestBase {

@@ -33,9 +33,12 @@
 #define MediaStreamSource_h
 
 #include <memory>
+#include <utility>
+
 #include "platform/PlatformExport.h"
 #include "platform/audio/AudioDestinationConsumer.h"
 #include "platform/wtf/Allocator.h"
+#include "platform/wtf/Optional.h"
 #include "platform/wtf/ThreadingPrimitives.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
@@ -90,6 +93,10 @@ class PLATFORM_EXPORT MediaStreamSource final
     extra_data_ = std::move(extra_data);
   }
 
+  void SetEchoCancellation(bool echo_cancellation) {
+    echo_cancellation_ = WTF::make_optional(echo_cancellation);
+  }
+
   void SetConstraints(WebMediaConstraints constraints) {
     constraints_ = constraints;
   }
@@ -131,6 +138,7 @@ class PLATFORM_EXPORT MediaStreamSource final
   HashSet<AudioDestinationConsumer*> audio_consumers_;
   std::unique_ptr<ExtraData> extra_data_;
   WebMediaConstraints constraints_;
+  WTF::Optional<bool> echo_cancellation_;
 };
 
 typedef HeapVector<Member<MediaStreamSource>> MediaStreamSourceVector;
