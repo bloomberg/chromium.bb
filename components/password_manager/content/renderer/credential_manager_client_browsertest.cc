@@ -13,12 +13,12 @@
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "content/public/common/associated_interface_provider.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/test/render_view_test.h"
 #include "content/public/test/test_utils.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebCredential.h"
 #include "third_party/WebKit/public/platform/WebCredentialManagerClient.h"
@@ -39,7 +39,7 @@ class FakeCredentialManager : public mojom::CredentialManager {
   FakeCredentialManager() {}
   ~FakeCredentialManager() override {}
 
-  void BindRequest(mojom::CredentialManagerRequest request) {
+  void BindRequest(mojom::CredentialManagerAssociatedRequest request) {
     bindings_.AddBinding(this, std::move(request));
   }
 
@@ -74,7 +74,7 @@ class FakeCredentialManager : public mojom::CredentialManager {
     }
   }
 
-  mojo::BindingSet<mojom::CredentialManager> bindings_;
+  mojo::AssociatedBindingSet<mojom::CredentialManager> bindings_;
 };
 
 class CredentialManagerClientTest : public content::RenderViewTest {
@@ -87,10 +87,9 @@ class CredentialManagerClientTest : public content::RenderViewTest {
     content::RenderViewTest::SetUp();
     client_.reset(new CredentialManagerClient(view_));
 
-    service_manager::InterfaceProvider* remote_interfaces =
-        view_->GetMainRenderFrame()->GetRemoteInterfaces();
-    service_manager::InterfaceProvider::TestApi test_api(remote_interfaces);
-    test_api.SetBinderForName(
+    content::AssociatedInterfaceProvider* remote_interfaces =
+        view_->GetMainRenderFrame()->GetRemoteAssociatedInterfaces();
+    remote_interfaces->OverrideBinderForTesting(
         mojom::CredentialManager::Name_,
         base::Bind(&CredentialManagerClientTest::BindCredentialManager,
                    base::Unretained(this)));
@@ -107,8 +106,9 @@ class CredentialManagerClientTest : public content::RenderViewTest {
   bool callback_succeeded() const { return callback_succeeded_; }
   void set_callback_succeeded(bool state) { callback_succeeded_ = state; }
 
-  void BindCredentialManager(mojo::ScopedMessagePipeHandle handle) {
-    fake_cm_.BindRequest(mojom::CredentialManagerRequest(std::move(handle)));
+  void BindCredentialManager(mojo::ScopedInterfaceEndpointHandle handle) {
+    fake_cm_.BindRequest(
+        mojom::CredentialManagerAssociatedRequest(std::move(handle)));
   }
 
   std::unique_ptr<blink::WebPasswordCredential> credential_;

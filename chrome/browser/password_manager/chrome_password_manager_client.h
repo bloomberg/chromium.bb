@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "build/build_config.h"
 #include "components/autofill/content/common/autofill_driver.mojom.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/password_manager/content/browser/credential_manager_impl.h"
@@ -130,13 +131,19 @@ class ChromePasswordManagerClient
   void SetTestObserver(autofill::PasswordGenerationPopupObserver* observer);
 
   static void BindCredentialManager(
-      const service_manager::BindSourceInfo& source_info,
-      password_manager::mojom::CredentialManagerRequest request,
+      password_manager::mojom::CredentialManagerAssociatedRequest request,
       content::RenderFrameHost* render_frame_host);
 
   // A helper method to determine whether a save/update bubble can be shown
   // on this |url|.
   static bool CanShowBubbleOnURL(const GURL& url);
+
+#if defined(UNIT_TEST)
+  bool was_store_ever_called() const { return was_store_ever_called_; }
+  bool has_binding_for_credential_manager() const {
+    return credential_manager_impl_.HasBinding();
+  }
+#endif
 
  protected:
   // Callable for tests.
@@ -149,11 +156,11 @@ class ChromePasswordManagerClient
   // content::WebContentsObserver overrides.
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
-// TODO(crbug.com/706392): Fix password reuse detection for Android.
-#if !defined(OS_ANDROID)
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
 
+// TODO(crbug.com/706392): Fix password reuse detection for Android.
+#if !defined(OS_ANDROID)
   // content::RenderWidgetHost::InputEventObserver overrides.
   void OnInputEvent(const blink::WebInputEvent&) override;
 #endif
@@ -231,6 +238,10 @@ class ChromePasswordManagerClient
   // times. Sends statistics on destruction.
   base::Optional<password_manager::PasswordManagerMetricsRecorder>
       metrics_recorder_;
+
+  // Whether navigator.credentials.store() was ever called from this
+  // WebContents. Used for testing.
+  bool was_store_ever_called_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ChromePasswordManagerClient);
 };

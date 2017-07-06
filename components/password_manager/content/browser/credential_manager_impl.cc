@@ -40,7 +40,10 @@ void RunMojoGetCallback(mojom::CredentialManager::GetCallback callback,
 
 CredentialManagerImpl::CredentialManagerImpl(content::WebContents* web_contents,
                                              PasswordManagerClient* client)
-    : WebContentsObserver(web_contents), client_(client), weak_factory_(this) {
+    : WebContentsObserver(web_contents),
+      client_(client),
+      binding_(this),
+      weak_factory_(this) {
   DCHECK(web_contents);
   auto_signin_enabled_.Init(prefs::kCredentialsEnableAutosignin,
                             client_->GetPrefs());
@@ -49,8 +52,26 @@ CredentialManagerImpl::CredentialManagerImpl(content::WebContents* web_contents,
 CredentialManagerImpl::~CredentialManagerImpl() {}
 
 void CredentialManagerImpl::BindRequest(
-    mojom::CredentialManagerRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+    mojom::CredentialManagerAssociatedRequest request) {
+  DCHECK(!binding_.is_bound());
+  binding_.Bind(std::move(request));
+
+  // The browser side will close the message pipe on DidFinishNavigation before
+  // the renderer side would be destroyed, and the renderer never explicitly
+  // closes the pipe. So a connection error really means an error here, in which
+  // case the renderer will try to reconnect when the next call to the API is
+  // made. Make sure this implementation will no longer be bound to a broken
+  // pipe once that happens, so the DCHECK above will succeed.
+  binding_.set_connection_error_handler(base::Bind(
+      &CredentialManagerImpl::DisconnectBinding, base::Unretained(this)));
+}
+
+bool CredentialManagerImpl::HasBinding() const {
+  return binding_.is_bound();
+}
+
+void CredentialManagerImpl::DisconnectBinding() {
+  binding_.Close();
 }
 
 void CredentialManagerImpl::Store(const CredentialInfo& credential,
