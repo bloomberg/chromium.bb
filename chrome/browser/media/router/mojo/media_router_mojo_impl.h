@@ -38,7 +38,6 @@ class BrowserContext;
 }
 
 namespace extensions {
-class EventPageTracker;
 class Extension;
 }
 
@@ -46,6 +45,7 @@ namespace media_router {
 
 enum class MediaRouteProviderWakeReason;
 class DialMediaSinkServiceProxy;
+class EventPageRequestManager;
 
 // MediaRouter implementation that delegates calls to the component extension.
 // Also handles the suspension and wakeup of the component extension.
@@ -114,9 +114,8 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   scoped_refptr<MediaRouteController> GetRouteController(
       const MediaRoute::Id& route_id) override;
 
-  const std::string& media_route_provider_extension_id() const {
-    return media_route_provider_extension_id_;
-  }
+  // TODO(crbug.com/597778): Remove this getter.
+  const std::string& media_route_provider_extension_id() const;
 
   void set_instance_id_for_test(const std::string& instance_id) {
     instance_id_ = instance_id;
@@ -168,14 +167,6 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoExtensionTest,
                            SyncStateToMediaRouteProvider);
 
-  // The max number of pending requests allowed. When number of pending requests
-  // exceeds this number, the oldest request will be dropped.
-  static const int kMaxPendingRequests = 30;
-
-  // Max consecutive attempts to wake up the component extension before
-  // giving up and draining the pending request queue.
-  static const int kMaxWakeupAttemptCount = 3;
-
   // Represents a query to the MRPM for media sinks and holds observers for the
   // query.
   struct MediaSinksQuery {
@@ -221,8 +212,7 @@ class MediaRouterMojoImpl : public MediaRouterBase,
 
   // Standard constructor, used by
   // MediaRouterMojoImplFactory::GetApiForBrowserContext.
-  MediaRouterMojoImpl(extensions::EventPageTracker* event_page_tracker,
-                      content::BrowserContext* context,
+  MediaRouterMojoImpl(content::BrowserContext* context,
                       FirewallCheck check_firewall = FirewallCheck::RUN);
 
   // Binds |this| to a Mojo interface request, so that clients can acquire a
@@ -231,20 +221,6 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   void BindToMojoRequest(
       mojo::InterfaceRequest<mojom::MediaRouter> request,
       const extensions::Extension& extension);
-
-  // Enqueues a closure for later execution by ExecutePendingRequests().
-  void EnqueueTask(base::OnceClosure closure);
-
-  // Runs a closure if the extension monitored by |extension_monitor_| is
-  // active, or defers it for later execution if the extension is suspended.
-  void RunOrDefer(base::OnceClosure request);
-
-  // Dispatches the Mojo requests queued in |pending_requests_|.
-  void ExecutePendingRequests();
-
-  // Drops all pending requests. Called when we have a connection error to
-  // component extension and further reattempts are unlikely to help.
-  void DrainPendingRequests();
 
   // MediaRouter implementation.
   bool RegisterMediaSinksObserver(MediaSinksObserver* observer) override;
@@ -368,30 +344,6 @@ class MediaRouterMojoImpl : public MediaRouterBase,
                              const base::Optional<std::string>& error_text,
                              RouteRequestResult::ResultCode result_code);
 
-  // Callback invoked by |event_page_tracker_| after an attempt to wake the
-  // component extension. If |success| is false, the pending request queue is
-  // drained.
-  void EventPageWakeComplete(bool success);
-
-  // Removes all requests from the pending requests queue. Called when there is
-  // a permanent error connecting to component extension.
-  void DrainRequestQueue();
-
-  // Calls to |event_page_tracker_| to wake the component extension.
-  // |media_route_provider_extension_id_| must not be empty and the extension
-  // should be currently suspended.
-  // If there have already been too many wakeup attempts, give up and drain
-  // the pending request queue.
-  void AttemptWakeEventPage();
-
-  // Sets the reason why we are attempting to wake the extension.  Since
-  // multiple tasks may be enqueued for execution each time the extension runs,
-  // we record the first such reason.
-  void SetWakeReason(MediaRouteProviderWakeReason reason);
-
-  // Clears the wake reason after the extension has been awoken.
-  void ClearWakeReason();
-
 #if defined(OS_WIN)
   // Ensures that mDNS discovery is enabled in the MRPM extension. This can be
   // called many times but the MRPM will only be called once per registration
@@ -421,10 +373,6 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   // Callback called by MRP's CreateMediaRouteController().
   void OnMediaControllerCreated(const MediaRoute::Id& route_id, bool success);
 
-  // Pending requests queued to be executed once component extension
-  // becomes ready.
-  std::deque<base::OnceClosure> pending_requests_;
-
   std::unordered_map<MediaSource::Id, std::unique_ptr<MediaSinksQuery>>
       sinks_queries_;
 
@@ -447,15 +395,6 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   // if or a Mojo channel error occured.
   mojom::MediaRouteProviderPtr media_route_provider_;
 
-  // Id of the component extension. Used for managing its suspend/wake state
-  // via event_page_tracker_.
-  std::string media_route_provider_extension_id_;
-
-  // Allows the extension to be monitored for suspend, and woken.
-  // This is a reference to a BrowserContext keyed service that outlives this
-  // instance.
-  extensions::EventPageTracker* event_page_tracker_;
-
   // GUID unique to each browser run. Component extension uses this to detect
   // when its persisted state was written by an older browser instance, and is
   // therefore stale.
@@ -463,16 +402,6 @@ class MediaRouterMojoImpl : public MediaRouterBase,
 
   // The last reported sink availability from the media route provider manager.
   mojom::MediaRouter::SinkAvailability availability_;
-
-  int wakeup_attempt_count_ = 0;
-
-  // Records the current reason the extension is being woken up.  Is set to
-  // MediaRouteProviderWakeReason::TOTAL_COUNT if there is no pending reason.
-  MediaRouteProviderWakeReason current_wake_reason_;
-
-  // A flag to ensure that we record the provider version once, during the
-  // initial event page wakeup attempt.
-  bool provider_version_was_recorded_ = false;
 
   // Stores route controllers that can be used to send media commands to the
   // extension.
@@ -482,6 +411,14 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   scoped_refptr<DialMediaSinkServiceProxy> dial_media_sink_service_proxy_;
 
   content::BrowserContext* const context_;
+
+  // Request manager responsible for waking the component extension and calling
+  // the requests to it.
+  EventPageRequestManager* const event_page_request_manager_;
+
+  // A flag to ensure that we record the provider version once, during the
+  // initial event page wakeup attempt.
+  bool provider_version_was_recorded_ = false;
 
 #if defined(OS_WIN)
   // A pair of flags to ensure that mDNS discovery is only enabled on Windows
