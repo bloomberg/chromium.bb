@@ -112,6 +112,11 @@ class CORE_EXPORT InspectorPageAgent final
                                                String* identifier) override;
   protocol::Response removeScriptToEvaluateOnLoad(
       const String& identifier) override;
+  protocol::Response addScriptToEvaluateOnNewDocument(
+      const String& source,
+      String* identifier) override;
+  protocol::Response removeScriptToEvaluateOnNewDocument(
+      const String& identifier) override;
   protocol::Response setAutoAttachToCreatedPages(bool) override;
   protocol::Response reload(Maybe<bool> bypass_cache,
                             Maybe<String> script_to_evaluate_on_load) override;
